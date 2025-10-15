@@ -84,6 +84,16 @@ We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for:
 
 ## Troubleshooting
 
+### Codespaces Won't Start or "Nothing Works"
+
+If your Codespace fails to start, crashes immediately, or displays errors about the devcontainer configuration:
+
+1. **The devcontainer.json file may be corrupted** - This was previously an issue with malformed JSON syntax
+2. **Solution**: Delete your existing Codespace and create a new one
+3. **See**: [docs/DEVCONTAINER_FIX.md](./docs/DEVCONTAINER_FIX.md) for details about the fix that was applied
+
+The latest version of this repository has a corrected `.devcontainer/devcontainer.json` file. If you created your Codespace before this fix, you'll need to rebuild or recreate it.
+
 ### Git Push Fails in Codespaces
 
 If you're experiencing authentication issues when pushing to GitHub from Codespaces:
@@ -130,6 +140,7 @@ pkill -9 git
 ```
 
 For more troubleshooting resources:
+- [Devcontainer Configuration Fix](./docs/DEVCONTAINER_FIX.md) - Fix for "nothing works" issue
 - [Git Authentication Troubleshooting](./docs/GIT_AUTH_TROUBLESHOOTING.md)
 - [Codespaces Crash Recovery](./docs/CODESPACES_CRASH_RECOVERY.md)
 - [Quick Fix Guide](./docs/QUICK_FIX.md)
