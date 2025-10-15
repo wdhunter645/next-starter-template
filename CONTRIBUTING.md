@@ -1,205 +1,215 @@
 # Contributing to Next.js Starter Template
 
-Thank you for your interest in contributing! This guide will help you set up your development environment and contribute effectively.
+Thank you for your interest in contributing to this project! This guide will help you get started with development, especially when using GitHub Codespaces.
 
-## Getting Started
+## Development Setup
 
-### 1. Fork and Clone the Repository
+### Using GitHub Codespaces
 
-1. Fork this repository on GitHub
-2. Clone your fork:
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/next-starter-template.git
-   cd next-starter-template
-   ```
+This repository is configured to work seamlessly with GitHub Codespaces. When you open this project in Codespaces:
 
-### 2. Set Up Git Configuration
+1. The development environment will be automatically configured
+2. Dependencies will be installed
+3. You'll have access to all necessary tools
 
-Before making any commits, configure Git with your information:
+### Local Development
 
-```bash
-# Set your name and email
-git config user.name "Your Name"
-git config user.email "your.email@example.com"
-```
-
-### 3. Configure Git Authentication
-
-Choose one of the following authentication methods:
-
-#### Option A: HTTPS with Personal Access Token (Easier for beginners)
-
-1. Create a Personal Access Token:
-   - Go to [GitHub Settings > Developer settings > Personal access tokens > Tokens (classic)](https://github.com/settings/tokens)
-   - Click "Generate new token (classic)"
-   - Give it a descriptive name (e.g., "Next Starter Template Development")
-   - Select the `repo` scope (full control of private repositories)
-   - Click "Generate token"
-   - **Important:** Copy the token immediately - you won't be able to see it again!
-
-2. Configure Git credential helper:
-   ```bash
-   # For macOS
-   git config --global credential.helper osxkeychain
-   
-   # For Windows
-   git config --global credential.helper wincred
-   
-   # For Linux
-   git config --global credential.helper cache
-   # Or to store permanently (less secure)
-   git config --global credential.helper store
-   ```
-
-3. When you push for the first time, Git will prompt for credentials:
-   - **Username:** Your GitHub username
-   - **Password:** Paste your Personal Access Token (NOT your GitHub password)
-
-#### Option B: SSH Keys (Recommended for experienced developers)
-
-1. Check for existing SSH keys:
-   ```bash
-   ls -al ~/.ssh
-   # Look for id_ed25519.pub or id_rsa.pub
-   ```
-
-2. If you don't have an SSH key, generate one:
-   ```bash
-   ssh-keygen -t ed25519 -C "your.email@example.com"
-   # Press Enter to accept the default file location
-   # Enter a secure passphrase when prompted
-   ```
-
-3. Start the SSH agent and add your key:
-   ```bash
-   eval "$(ssh-agent -s)"
-   ssh-add ~/.ssh/id_ed25519
-   ```
-
-4. Copy your public key:
-   ```bash
-   # macOS
-   pbcopy < ~/.ssh/id_ed25519.pub
-   
-   # Linux
-   cat ~/.ssh/id_ed25519.pub
-   # Then manually copy the output
-   
-   # Windows (Git Bash)
-   clip < ~/.ssh/id_ed25519.pub
-   ```
-
-5. Add the SSH key to your GitHub account:
-   - Go to [GitHub Settings > SSH and GPG keys](https://github.com/settings/keys)
-   - Click "New SSH key"
-   - Paste your key and give it a descriptive title
-   - Click "Add SSH key"
-
-6. Test your connection:
-   ```bash
-   ssh -T git@github.com
-   # You should see: "Hi username! You've successfully authenticated..."
-   ```
-
-7. Update your repository to use SSH:
-   ```bash
-   git remote set-url origin git@github.com:YOUR_USERNAME/next-starter-template.git
-   ```
-
-### 4. Install Dependencies
+If you prefer to work locally:
 
 ```bash
+# Install dependencies
 npm install
+
+# Run development server
+npm run dev
+
+# Run linting
+npm run lint
+
+# Build the project
+npm run build
 ```
 
-### 5. Set Up Upstream Remote
+## Git Authentication
 
-To keep your fork synchronized with the original repository:
+### Git Authentication for Local Development
+
+If you're working locally (not in Codespaces), you'll need to configure Git authentication before you can push changes:
+
+#### Prerequisites
+
+Before you begin, ensure you have Git configured with your credentials:
 
 ```bash
-git remote add upstream https://github.com/wdhunter645/next-starter-template.git
+# Configure your Git username and email
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"
 ```
 
-## Development Workflow
+#### Option A: HTTPS with Personal Access Token (Recommended)
 
-### Create a Feature Branch
-
-```bash
-# Update your main branch
-git checkout main
-git pull upstream main
-
-# Create a new feature branch
-git checkout -b feature/your-feature-name
-```
-
-### Make Your Changes
-
-1. Make your code changes
-2. Test your changes locally:
+1. Create a [Personal Access Token](https://github.com/settings/tokens) with `repo` scope
+2. Configure Git to use the token:
    ```bash
-   npm run dev
-   npm run lint
-   npm run build
+   # Store credentials (will prompt for username and token on first push)
+   git config --global credential.helper store
+   # Or for macOS
+   git config --global credential.helper osxkeychain
+   # Or for Windows
+   git config --global credential.helper wincred
+   ```
+3. When prompted for credentials:
+   - Username: Your GitHub username
+   - Password: Your Personal Access Token (not your GitHub password)
+
+#### Option B: SSH Authentication
+
+1. [Generate an SSH key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
+2. [Add the SSH key to your GitHub account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
+3. Update the remote URL:
+   ```bash
+   git remote set-url origin git@github.com:wdhunter645/next-starter-template.git
    ```
 
-### Commit Your Changes
+For more detailed instructions on local Git setup, see the troubleshooting section below.
+
+## Git Authentication in Codespaces
+
+### Common Issue: Git Push Failures
+
+If you encounter errors when trying to push to the repository in Codespaces, such as:
+- "Authentication failed"
+- "Permission denied"
+- Git not prompting for credentials
+
+This typically happens because the Codespaces implicit token doesn't have Git CLI permissions.
+
+### 🔴 Codespaces Won't Let You Log Out?
+
+If you're experiencing issues where **Codespaces isn't letting you log out** to sign back in with your account-level token, see the dedicated guide:
+
+👉 **[docs/CODESPACES_LOGOUT.md - Complete Logout & Re-authentication Guide](./docs/CODESPACES_LOGOUT.md)**
+
+### Solution: Using a Personal Access Token (PAT)
+
+To resolve Git authentication issues in Codespaces:
+
+#### 1. Create a Personal Access Token
+
+1. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
+   - Or visit: https://github.com/settings/tokens
+2. Click "Generate new token" → "Generate new token (classic)"
+3. Give your token a descriptive name (e.g., "Codespaces Development")
+4. Set an expiration period (recommended: 90 days or custom)
+5. Select the following scopes:
+   - `repo` (Full control of private repositories)
+   - `workflow` (Update GitHub Action workflows)
+   - `write:packages` (if you work with packages)
+6. Click "Generate token"
+7. **Important**: Copy the token immediately - you won't be able to see it again!
+
+#### 2. Configure Git in Codespaces
+
+Once you have your PAT, configure Git in your Codespace:
 
 ```bash
-# Stage your changes
-git add .
+# Clear any existing credentials
+git config --global --unset credential.helper
 
-# Commit with a descriptive message
-git commit -m "feat: add new feature description"
+# Configure Git to use your token
+git config --global credential.helper store
+
+# Now when you push, Git will prompt for credentials
+# Username: your-github-username
+# Password: paste-your-PAT-here
 ```
 
-Use conventional commit messages:
-- `feat:` for new features
-- `fix:` for bug fixes
-- `docs:` for documentation changes
-- `style:` for formatting changes
-- `refactor:` for code refactoring
-- `test:` for adding tests
-- `chore:` for maintenance tasks
-
-### Push Your Changes
+Alternatively, you can update the remote URL to include your credentials:
 
 ```bash
-# Push to your fork
-git push origin feature/your-feature-name
+# Remove the existing remote
+git remote remove origin
+
+# Add the remote with your credentials
+git remote add origin https://YOUR_USERNAME:YOUR_PAT@github.com/wdhunter645/next-starter-template.git
 ```
 
-If this is your first push and you're using HTTPS, you'll be prompted for credentials:
-- **Username:** Your GitHub username
-- **Password:** Your Personal Access Token
+⚠️ **Security Note**: Never commit tokens to your repository!
 
-### Create a Pull Request
+#### 3. Alternative: Use GitHub CLI
 
-1. Go to your fork on GitHub
-2. Click "Compare & pull request"
-3. Provide a clear description of your changes
-4. Submit the pull request
-
-## Troubleshooting Git Issues
-
-### Issue: "fatal: could not read Username for 'https://github.com': No such device or address"
-
-**Solution:** Your credential helper isn't configured. Set it up:
+GitHub Codespaces comes with GitHub CLI (`gh`) pre-installed:
 
 ```bash
-# For macOS
-git config --global credential.helper osxkeychain
+# Authenticate with GitHub CLI
+gh auth login
 
-# For Windows
-git config --global credential.helper wincred
+# Choose GitHub.com
+# Choose HTTPS as your preferred protocol
+# Authenticate with your browser or paste an authentication token
 
-# For Linux
-git config --global credential.helper cache
+# After authentication, Git operations will work automatically
 ```
 
-### Issue: "Authentication failed"
+### Clearing Git Cache in Codespaces
 
-**Solutions:**
+If you need to clear cached credentials:
+
+```bash
+# Clear credential helper cache
+git credential-cache exit
+
+# Or clear the stored credentials
+rm ~/.git-credentials
+
+# Reconfigure credential helper
+git config --global credential.helper store
+```
+
+### Troubleshooting
+
+#### Issue: "fatal: could not read Username"
+
+**Solution**: Ensure you've configured Git with your credentials or authenticated via `gh auth login`.
+
+#### Issue: "remote: Permission to repository denied"
+
+**Solutions**:
+1. Verify your PAT has the correct scopes (especially `repo`)
+2. Ensure the PAT hasn't expired
+3. Try regenerating the PAT and updating your credentials
+
+#### Issue: "Support for password authentication was removed"
+
+**Solution**: GitHub no longer accepts passwords for Git operations. You must use a Personal Access Token (PAT) instead.
+
+#### Issue: Codespaces crashed or extensions keep restarting
+
+**Solution**: See the [Codespaces Crash Recovery Guide](docs/CODESPACES_CRASH_RECOVERY.md) for comprehensive troubleshooting steps.
+
+### Local Git Authentication Troubleshooting
+
+#### Issue: Git doesn't prompt for username/password
+
+**Solution**: Reconfigure or clear the credential helper:
+
+```bash
+# Clear stored credentials
+git credential reject
+# Type: protocol=https, host=github.com, and press Enter twice
+
+# Or unset the helper temporarily
+git config --unset credential.helper
+
+# Then configure it again
+git config --global credential.helper store  # Linux
+git config --global credential.helper osxkeychain  # macOS
+git config --global credential.helper wincred  # Windows
+```
+
+#### Issue: "Authentication failed" when pushing (local development)
+
+**Solutions**:
 
 1. If using HTTPS with Personal Access Token:
    - Ensure your token has the `repo` scope
@@ -213,8 +223,7 @@ git config --global credential.helper cache
      # Linux
      git credential-cache exit
      
-     # Windows
-     # Open Credential Manager and remove GitHub credentials
+     # Windows - Open Credential Manager and remove GitHub credentials
      ```
 
 2. If using SSH:
@@ -223,22 +232,9 @@ git config --global credential.helper cache
    - Ensure SSH agent is running: `eval "$(ssh-agent -s)"`
    - Add your key: `ssh-add ~/.ssh/id_ed25519`
 
-### Issue: Git doesn't prompt for username/password
+#### Issue: "Permission denied (publickey)" when using SSH
 
-**Solution:** Reconfigure or clear the credential helper:
-
-```bash
-# Clear stored credentials
-git credential reject
-# Type: protocol=https, host=github.com, and press Enter twice
-
-# Or unset the helper temporarily
-git config --unset credential.helper
-```
-
-### Issue: "Permission denied (publickey)" (SSH)
-
-**Solution:**
+**Solution**:
 
 1. Verify your SSH key is added to your GitHub account
 2. Check the SSH agent has your key:
@@ -250,17 +246,32 @@ git config --unset credential.helper
    ssh-add ~/.ssh/id_ed25519
    ```
 
+## Pull Request Guidelines
+
+1. **Fork the repository** (if you're an external contributor)
+2. **Create a feature branch**: `git checkout -b feature/your-feature-name`
+3. **Make your changes** with clear, descriptive commit messages
+4. **Test your changes**: Run `npm run lint` and `npm run build`
+5. **Push to your fork**: Use the authentication methods described above
+6. **Open a Pull Request** with a clear description of your changes
+
 ## Code Style
 
-- Follow the existing code style
-- Run `npm run lint` before committing
-- Ensure `npm run build` succeeds
+This project uses:
+- **ESLint** for linting (configuration in `eslint.config.mjs`)
+- **TypeScript** for type safety
+- **Prettier** formatting (via Next.js defaults)
 
-## Questions?
+Run linting before committing:
+```bash
+npm run lint
+```
 
-If you have questions or need help, please:
-- Check the [GitHub authentication documentation](https://docs.github.com/en/authentication)
-- Open an issue in the repository
-- Reach out to the maintainers
+## Questions or Issues?
 
-Thank you for contributing!
+If you encounter any problems not covered in this guide, please:
+1. Check existing GitHub Issues
+2. Open a new issue with detailed information about your problem
+3. Include error messages, steps to reproduce, and your environment details
+
+Thank you for contributing! 🎉

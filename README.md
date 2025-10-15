@@ -20,40 +20,17 @@ A live public deployment of this template is available at [https://next-starter-
 
 ## Getting Started
 
-### Prerequisites
+### Using GitHub Codespaces (Recommended)
 
-Before you begin, ensure you have Git configured with your credentials:
+This repository is configured for GitHub Codespaces. Click the button below to create a new Codespace:
 
-```bash
-# Configure your Git username and email
-git config --global user.name "Your Name"
-git config --global user.email "your.email@example.com"
-```
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/wdhunter645/next-starter-template)
 
-For authentication with GitHub, you have two options:
+When working in Codespaces, dependencies will be installed automatically. The development server will be available on port 3000.
 
-**Option 1: HTTPS with Personal Access Token (Recommended)**
+**Note**: If you encounter Git authentication issues in Codespaces, see the [CONTRIBUTING.md](./CONTRIBUTING.md#git-authentication-in-codespaces) guide for solutions.
 
-1. Create a [Personal Access Token](https://github.com/settings/tokens) with `repo` scope
-2. Configure Git to use the token:
-   ```bash
-   # Store credentials (will prompt for username and token on first push)
-   git config --global credential.helper store
-   ```
-3. When prompted for credentials:
-   - Username: Your GitHub username
-   - Password: Your Personal Access Token (not your GitHub password)
-
-**Option 2: SSH Authentication**
-
-1. [Generate an SSH key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
-2. [Add the SSH key to your GitHub account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
-3. Update the remote URL:
-   ```bash
-   git remote set-url origin git@github.com:wdhunter645/next-starter-template.git
-   ```
-
-### Installation
+### Local Development
 
 First, run:
 
@@ -66,6 +43,29 @@ pnpm install
 # or
 bun install
 ```
+
+#### Git Authentication Setup (Local Development)
+
+Before you can push changes, configure Git credentials:
+
+```bash
+# Configure your Git username and email
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"
+
+# Configure credential helper
+git config --global credential.helper store  # Linux
+# OR
+git config --global credential.helper osxkeychain  # macOS
+# OR
+git config --global credential.helper wincred  # Windows
+```
+
+When you push for the first time, you'll be prompted for:
+- **Username**: Your GitHub username
+- **Password**: Your [Personal Access Token](https://github.com/settings/tokens) (NOT your GitHub password)
+
+For detailed authentication setup, see [CONTRIBUTING.md](./CONTRIBUTING.md#git-authentication-for-local-development).
 
 Then run the development server (using the package manager of your choice):
 
@@ -99,53 +99,60 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Contributing
 
-Interested in contributing? Check out our [Contributing Guide](CONTRIBUTING.md) for detailed information on:
-- Setting up your development environment
-- Configuring Git authentication (HTTPS or SSH)
-- Development workflow and best practices
-- Troubleshooting common Git issues
+We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for:
+- Development setup instructions
+- Git authentication troubleshooting (especially for Codespaces)
+- Pull request guidelines
+- Code style guide
 
 ## Troubleshooting
 
-### Git Push Issues
+### Git Push Fails in Codespaces
 
-If you encounter errors when pushing to the repository:
+If you're experiencing authentication issues when pushing to GitHub from Codespaces:
 
-**"Authentication failed" or "Permission denied"**
+1. The Codespaces implicit token may not have Git CLI permissions
+2. You'll need to authenticate using a Personal Access Token (PAT)
+3. See the detailed solution in [CONTRIBUTING.md - Git Authentication](./CONTRIBUTING.md#git-authentication-in-codespaces)
 
-1. Verify your credentials are configured:
-   ```bash
-   git config --list | grep user
-   ```
+#### 🔴 Codespaces Won't Let You Log Out?
 
-2. If using HTTPS, ensure you're using a Personal Access Token:
-   - Go to [GitHub Settings > Developer settings > Personal access tokens](https://github.com/settings/tokens)
-   - Generate a new token with `repo` scope
-   - Use the token as your password when prompted
+If **Codespaces isn't letting you log out** to sign back in with your account-level token:
 
-3. If the credential helper isn't prompting for credentials:
-   ```bash
-   # Clear stored credentials
-   git credential reject
-   # Or unset the credential helper temporarily
-   git config --unset credential.helper
-   ```
+👉 **See: [docs/CODESPACES_LOGOUT.md](./docs/CODESPACES_LOGOUT.md)** - Complete guide for forcing logout and re-authentication
 
-4. If using SSH, verify your key is added:
-   ```bash
-   ssh -T git@github.com
-   ```
-
-**"fatal: could not read Username"**
-
-This means Git isn't configured to prompt for credentials. Fix it with:
+Quick fix:
 ```bash
-# Enable credential prompting
-git config --global credential.helper cache
-# Or for macOS
-git config --global credential.helper osxkeychain
-# Or for Windows
-git config --global credential.helper wincred
+# Authenticate using GitHub CLI (recommended)
+gh auth login
+
+# Or configure Git with a PAT
+git config --global credential.helper store
+# Then push - you'll be prompted for your GitHub username and PAT
 ```
 
-For more help, see the [GitHub authentication documentation](https://docs.github.com/en/authentication).
+### Codespaces Crashed or Extensions Keep Restarting
+
+If your Codespace has crashed or remote extensions are bouncing on/off:
+
+1. See the [Codespaces Crash Recovery Guide](./docs/CODESPACES_CRASH_RECOVERY.md) for comprehensive recovery steps
+2. Try stopping and restarting your Codespace from https://github.com/codespaces
+3. If you have uncommitted changes, use GitHub's "Export changes to branch" feature
+
+Quick recovery:
+```bash
+# Save your work immediately
+git add . && git commit -m "WIP: saving before recovery"
+
+# Or stash changes
+git stash save "Before crash recovery"
+
+# Kill hung processes
+pkill -9 node
+pkill -9 git
+```
+
+For more troubleshooting resources:
+- [Git Authentication Troubleshooting](./docs/GIT_AUTH_TROUBLESHOOTING.md)
+- [Codespaces Crash Recovery](./docs/CODESPACES_CRASH_RECOVERY.md)
+- [Quick Fix Guide](./docs/QUICK_FIX.md)
