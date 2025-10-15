@@ -28,7 +28,7 @@ This repository is configured for GitHub Codespaces. Click the button below to c
 
 When working in Codespaces, dependencies will be installed automatically. The development server will be available on port 3000.
 
-**Note**: If you encounter Git authentication issues in Codespaces, see the [quick fix below](#git-push-fails-in-codespaces) or the [CONTRIBUTING.md](./CONTRIBUTING.md#git-authentication-in-codespaces) guide for solutions.
+**Note**: If you encounter Git authentication issues in Codespaces, **[see START_HERE.md for immediate fix →](./START_HERE.md)** or the [quick fix below](#git-push-fails-in-codespaces).
 
 ### Local Development
 
