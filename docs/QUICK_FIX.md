@@ -2,6 +2,18 @@
 
 Hi! This addresses your specific issue: "problem appears to be implicit token doesn't have git cli permissions and codespaces isn't letting me clear the cache, current auth in order to login using account level PAT"
 
+## 🔴 CODESPACES WON'T LOG OUT? 🔴
+
+**If Codespaces isn't letting you log out to sign back in with your account-level token**, see the comprehensive guide:
+
+👉 **[CODESPACES_LOGOUT.md - Complete Logout & Re-authentication Guide](./CODESPACES_LOGOUT.md)**
+
+This guide covers:
+- Forcing a complete logout from GitHub CLI and Git
+- Clearing all authentication caches
+- Handling Codespaces that keep re-authenticating
+- Step-by-step token setup
+
 ## TL;DR - Fix It Now
 
 Run this in your Codespace terminal:
