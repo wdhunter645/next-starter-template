@@ -88,4 +88,6 @@ If the above doesn't work:
 3. Try `gh auth logout` then `gh auth login` again
 4. Check the troubleshooting docs for more solutions
 
+**If Codespaces crashed or extensions are restarting**: See [CODESPACES_CRASH_RECOVERY.md](./CODESPACES_CRASH_RECOVERY.md) for recovery steps.
+
 The repository now has proper Codespaces configuration, so future developers won't face this issue with the pre-installed GitHub CLI.

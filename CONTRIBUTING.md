@@ -134,6 +134,10 @@ git config --global credential.helper store
 
 **Solution**: GitHub no longer accepts passwords for Git operations. You must use a Personal Access Token (PAT) instead.
 
+#### Issue: Codespaces crashed or extensions keep restarting
+
+**Solution**: See the [Codespaces Crash Recovery Guide](docs/CODESPACES_CRASH_RECOVERY.md) for comprehensive troubleshooting steps.
+
 ## Pull Request Guidelines
 
 1. **Fork the repository** (if you're an external contributor)
