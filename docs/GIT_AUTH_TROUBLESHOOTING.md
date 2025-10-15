@@ -125,6 +125,8 @@ git ls-remote
 3. Check that you're using HTTPS URLs (not SSH) if using a PAT
 4. Try `gh auth logout` then `gh auth login` again
 
+**If Codespaces has crashed or extensions are restarting**: See [CODESPACES_CRASH_RECOVERY.md](./CODESPACES_CRASH_RECOVERY.md) for comprehensive troubleshooting.
+
 ## Additional Resources
 
 - [GitHub: Creating a Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
