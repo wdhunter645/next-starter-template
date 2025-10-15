@@ -44,6 +44,29 @@ pnpm install
 bun install
 ```
 
+#### Git Authentication Setup (Local Development)
+
+Before you can push changes, configure Git credentials:
+
+```bash
+# Configure your Git username and email
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"
+
+# Configure credential helper
+git config --global credential.helper store  # Linux
+# OR
+git config --global credential.helper osxkeychain  # macOS
+# OR
+git config --global credential.helper wincred  # Windows
+```
+
+When you push for the first time, you'll be prompted for:
+- **Username**: Your GitHub username
+- **Password**: Your [Personal Access Token](https://github.com/settings/tokens) (NOT your GitHub password)
+
+For detailed authentication setup, see [CONTRIBUTING.md](./CONTRIBUTING.md#git-authentication-for-local-development).
+
 Then run the development server (using the package manager of your choice):
 
 ```bash
