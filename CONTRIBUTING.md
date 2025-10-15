@@ -41,6 +41,12 @@ If you encounter errors when trying to push to the repository in Codespaces, suc
 
 This typically happens because the Codespaces implicit token doesn't have Git CLI permissions.
 
+### 🔴 Codespaces Won't Let You Log Out?
+
+If you're experiencing issues where **Codespaces isn't letting you log out** to sign back in with your account-level token, see the dedicated guide:
+
+👉 **[docs/CODESPACES_LOGOUT.md - Complete Logout & Re-authentication Guide](./docs/CODESPACES_LOGOUT.md)**
+
 ### Solution: Using a Personal Access Token (PAT)
 
 To resolve Git authentication issues in Codespaces:

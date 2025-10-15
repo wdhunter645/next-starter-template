@@ -92,6 +92,12 @@ If you're experiencing authentication issues when pushing to GitHub from Codespa
 2. You'll need to authenticate using a Personal Access Token (PAT)
 3. See the detailed solution in [CONTRIBUTING.md - Git Authentication](./CONTRIBUTING.md#git-authentication-in-codespaces)
 
+#### 🔴 Codespaces Won't Let You Log Out?
+
+If **Codespaces isn't letting you log out** to sign back in with your account-level token:
+
+👉 **See: [docs/CODESPACES_LOGOUT.md](./docs/CODESPACES_LOGOUT.md)** - Complete guide for forcing logout and re-authentication
+
 Quick fix:
 ```bash
 # Authenticate using GitHub CLI (recommended)

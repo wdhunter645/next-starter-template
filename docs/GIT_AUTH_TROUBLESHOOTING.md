@@ -2,6 +2,11 @@
 
 This quick reference guide helps resolve Git authentication issues, particularly in GitHub Codespaces.
 
+## 🔴 Can't Log Out of Codespaces?
+
+If Codespaces isn't letting you log out to use your account-level token, see:
+**[CODESPACES_LOGOUT.md - Complete Logout & Re-authentication Guide](./CODESPACES_LOGOUT.md)**
+
 ## Problem
 
 When trying to push to the repository, you encounter one of these errors:
