@@ -2,6 +2,16 @@
 
 **Frustrated with browser tabs opening? This guide shows you how to authenticate Git using only your terminal.**
 
+## Quick Command Reference
+
+| Task | Command |
+|------|---------|
+| **One-click fix** | `./fix-git-auth.sh` (in repo root) |
+| **Clear all auth** | `gh auth logout --hostname github.com 2>/dev/null \|\| true && rm -f ~/.git-credentials` |
+| **Auth with PAT** | `echo "YOUR_PAT" \| gh auth login --with-token` |
+| **Configure Git** | `git config --global credential.helper store` |
+| **Get PAT** | https://github.com/settings/tokens (needs `repo` scope) |
+
 ## Problem
 
 When you run `gh auth login`, it tries to open a browser tab for authentication. This is annoying and doesn't work well in some Codespaces environments.
@@ -9,6 +19,16 @@ When you run `gh auth login`, it tries to open a browser tab for authentication.
 ## Solution: Use a Personal Access Token Directly
 
 This method **never opens a browser** and works entirely in your terminal.
+
+### Quick Start: Use the Helper Script
+
+We've created a helper script that automates the cleanup:
+
+```bash
+./fix-git-auth.sh
+```
+
+This will clear all credentials and show you the exact commands to authenticate.
 
 ### Step 1: Clear All Existing Authentication
 
@@ -150,6 +170,23 @@ Verify your token has the right scopes:
 Your credentials aren't being saved. Run:
 ```bash
 git config --global credential.helper store
+```
+
+### Browser still opening when I run `gh auth login`
+
+You're running the interactive version. Make sure to use the `--with-token` flag:
+```bash
+# WRONG (opens browser)
+gh auth login
+
+# RIGHT (terminal only)
+echo "YOUR_PAT" | gh auth login --with-token
+```
+
+Or use this one-liner:
+```bash
+gh auth login --with-token
+# Paste your PAT and press Ctrl+D
 ```
 
 ## Security Notes

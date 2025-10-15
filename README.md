@@ -28,7 +28,7 @@ This repository is configured for GitHub Codespaces. Click the button below to c
 
 When working in Codespaces, dependencies will be installed automatically. The development server will be available on port 3000.
 
-**Note**: If you encounter Git authentication issues in Codespaces, see the [CONTRIBUTING.md](./CONTRIBUTING.md#git-authentication-in-codespaces) guide for solutions.
+**Note**: If you encounter Git authentication issues in Codespaces, see the [quick fix below](#git-push-fails-in-codespaces) or the [CONTRIBUTING.md](./CONTRIBUTING.md#git-authentication-in-codespaces) guide for solutions.
 
 ### Local Development
 
@@ -93,13 +93,15 @@ If you're experiencing authentication issues when pushing to GitHub from Codespa
 3. See the detailed solution in [CONTRIBUTING.md - Git Authentication](./CONTRIBUTING.md#git-authentication-in-codespaces)
 
 **Quick fix (Terminal-only, no browser tabs):**
+
 ```bash
-# 1. Clear everything and authenticate with your PAT
+# Option 1: Use the helper script
+./fix-git-auth.sh
+
+# Option 2: Manual commands
 gh auth logout --hostname github.com 2>/dev/null || true
 rm -f ~/.git-credentials
 echo "YOUR_PAT" | gh auth login --with-token
-
-# 2. Configure Git
 git config --global credential.helper store
 git push
 # Enter username and PAT when prompted

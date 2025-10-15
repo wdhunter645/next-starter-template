@@ -7,18 +7,17 @@ Hi! This addresses your specific issue: "problem appears to be implicit token do
 **Don't want browser tabs opening?** Use your Personal Access Token directly:
 
 ```bash
-# 1. Clear everything
-gh auth logout --hostname github.com 2>/dev/null || true
-rm -f ~/.git-credentials
-git config --global --unset credential.helper 2>/dev/null || true
+# Option 1: Use the helper script (easiest!)
+./fix-git-auth.sh
 
-# 2. Authenticate with your PAT (replace YOUR_PAT with your actual token)
-echo "YOUR_PAT" | gh auth login --with-token
-
-# 3. Configure Git
+# Option 2: One-liner
+gh auth logout --hostname github.com 2>/dev/null || true && \
+rm -f ~/.git-credentials && \
+echo "YOUR_PAT" | gh auth login --with-token && \
 git config --global credential.helper store
+
+# Then test it
 git push
-# Enter username and PAT when prompted
 ```
 
 **Get your PAT here:** https://github.com/settings/tokens (needs `repo` scope)
