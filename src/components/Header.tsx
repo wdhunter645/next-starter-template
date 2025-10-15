@@ -1,43 +1,36 @@
 import Link from "next/link";
+import styles from "./Header.module.css";
 
 export default function Header() {
 	return (
-		<header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-black/[.08] dark:border-white/[.145]">
-			<nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-				<div className="flex justify-between items-center h-16">
-					<div className="flex-shrink-0">
-						<Link 
-							href="/" 
-							className="text-xl font-bold hover:opacity-80 transition-opacity"
-							aria-label="LGFC Home"
-						>
-							LGFC
+		<header className={styles.header}>
+			<nav className={styles.nav} aria-label="Main navigation">
+				<div className={styles.navContent}>
+					<Link 
+						href="/" 
+						className={styles.logo}
+						aria-label="Lou Gehrig Fan Club Home"
+					>
+						LGFC
+					</Link>
+					<div className={styles.navLinks}>
+						<Link href="/weekly" className={styles.navLink}>
+							Weekly Matchup
 						</Link>
-					</div>
-					<div className="flex space-x-8">
-						<Link 
-							href="/" 
-							className="text-sm font-medium hover:underline hover:underline-offset-4"
-						>
-							Home
+						<Link href="/milestones" className={styles.navLink}>
+							Milestones
 						</Link>
-						<Link 
-							href="/about" 
-							className="text-sm font-medium hover:underline hover:underline-offset-4"
-						>
-							About
+						<Link href="/charities" className={styles.navLink}>
+							Charities
 						</Link>
-						<Link 
-							href="/services" 
-							className="text-sm font-medium hover:underline hover:underline-offset-4"
-						>
-							Services
+						<Link href="/news" className={styles.navLink}>
+							News &amp; Q&amp;A
 						</Link>
-						<Link 
-							href="/contact" 
-							className="text-sm font-medium hover:underline hover:underline-offset-4"
-						>
-							Contact
+						<Link href="/calendar" className={styles.navLink}>
+							Calendar
+						</Link>
+						<Link href="/member" className={styles.navLink}>
+							Join
 						</Link>
 					</div>
 				</div>

@@ -14,6 +14,18 @@ This guide covers:
 - Handling Codespaces that keep re-authenticating
 - Step-by-step token setup
 
+## TL;DR - Fix It Now
+
+**If Codespaces isn't letting you log out to sign back in with your account-level token**, see the comprehensive guide:
+
+👉 **[CODESPACES_LOGOUT.md - Complete Logout & Re-authentication Guide](./CODESPACES_LOGOUT.md)**
+
+This guide covers:
+- Forcing a complete logout from GitHub CLI and Git
+- Clearing all authentication caches
+- Handling Codespaces that keep re-authenticating
+- Step-by-step token setup
+
 ## TL;DR - Fix It Now (No Browser Required!)
 
 **Don't want browser tabs opening?** Use your Personal Access Token directly:

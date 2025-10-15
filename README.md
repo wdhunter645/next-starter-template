@@ -44,6 +44,29 @@ pnpm install
 bun install
 ```
 
+#### Git Authentication Setup (Local Development)
+
+Before you can push changes, configure Git credentials:
+
+```bash
+# Configure your Git username and email
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"
+
+# Configure credential helper
+git config --global credential.helper store  # Linux
+# OR
+git config --global credential.helper osxkeychain  # macOS
+# OR
+git config --global credential.helper wincred  # Windows
+```
+
+When you push for the first time, you'll be prompted for:
+- **Username**: Your GitHub username
+- **Password**: Your [Personal Access Token](https://github.com/settings/tokens) (NOT your GitHub password)
+
+For detailed authentication setup, see [CONTRIBUTING.md](./CONTRIBUTING.md#git-authentication-for-local-development).
+
 Then run the development server (using the package manager of your choice):
 
 ```bash
@@ -98,8 +121,7 @@ If **Codespaces isn't letting you log out** to sign back in with your account-le
 
 👉 **See: [docs/CODESPACES_LOGOUT.md](./docs/CODESPACES_LOGOUT.md)** - Complete guide for forcing logout and re-authentication
 
-**Quick fix (Terminal-only, no browser tabs):**
-
+Quick fix:
 ```bash
 # Option 1: Use the helper script
 ./fix-git-auth.sh
@@ -112,12 +134,6 @@ git config --global credential.helper store
 git push
 # Enter username and PAT when prompted
 ```
-
-**Get your PAT:** https://github.com/settings/tokens (needs `repo` scope)
-
-**Full guides:**
-- [Terminal-Only Auth Guide](./docs/TERMINAL_ONLY_AUTH.md) - No browser required!
-- [Git Auth Troubleshooting](./docs/GIT_AUTH_TROUBLESHOOTING.md) - All methods
 
 ### Codespaces Crashed or Extensions Keep Restarting
 
