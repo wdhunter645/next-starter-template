@@ -136,7 +136,7 @@ git remote add origin https://YOUR_USERNAME:YOUR_PAT@github.com/wdhunter645/next
 
 ⚠️ **Security Note**: Never commit tokens to your repository!
 
-#### 3. Alternative: Use GitHub CLI
+#### 3. Alternative: Use GitHub CLI (Interactive)
 
 GitHub Codespaces comes with GitHub CLI (`gh`) pre-installed:
 

@@ -28,7 +28,7 @@ This repository is configured for GitHub Codespaces. Click the button below to c
 
 When working in Codespaces, dependencies will be installed automatically. The development server will be available on port 3000.
 
-**Note**: If you encounter Git authentication issues in Codespaces, see the [CONTRIBUTING.md](./CONTRIBUTING.md#git-authentication-in-codespaces) guide for solutions.
+**Note**: If you encounter Git authentication issues in Codespaces, **[see START_HERE.md for immediate fix →](./START_HERE.md)** or the [quick fix below](#git-push-fails-in-codespaces).
 
 ### Local Development
 
@@ -123,12 +123,16 @@ If **Codespaces isn't letting you log out** to sign back in with your account-le
 
 Quick fix:
 ```bash
-# Authenticate using GitHub CLI (recommended)
-gh auth login
+# Option 1: Use the helper script
+./fix-git-auth.sh
 
-# Or configure Git with a PAT
+# Option 2: Manual commands
+gh auth logout --hostname github.com 2>/dev/null || true
+rm -f ~/.git-credentials
+echo "YOUR_PAT" | gh auth login --with-token
 git config --global credential.helper store
-# Then push - you'll be prompted for your GitHub username and PAT
+git push
+# Enter username and PAT when prompted
 ```
 
 ### Codespaces Crashed or Extensions Keep Restarting
