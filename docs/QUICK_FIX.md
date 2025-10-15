@@ -16,13 +16,37 @@ This guide covers:
 
 ## TL;DR - Fix It Now
 
-Run this in your Codespace terminal:
+**If Codespaces isn't letting you log out to sign back in with your account-level token**, see the comprehensive guide:
+
+👉 **[CODESPACES_LOGOUT.md - Complete Logout & Re-authentication Guide](./CODESPACES_LOGOUT.md)**
+
+This guide covers:
+- Forcing a complete logout from GitHub CLI and Git
+- Clearing all authentication caches
+- Handling Codespaces that keep re-authenticating
+- Step-by-step token setup
+
+## TL;DR - Fix It Now (No Browser Required!)
+
+**Don't want browser tabs opening?** Use your Personal Access Token directly:
 
 ```bash
-gh auth login
+# Option 1: Use the helper script (easiest!)
+./fix-git-auth.sh
+
+# Option 2: One-liner
+gh auth logout --hostname github.com 2>/dev/null || true && \
+rm -f ~/.git-credentials && \
+echo "YOUR_PAT" | gh auth login --with-token && \
+git config --global credential.helper store
+
+# Then test it
+git push
 ```
 
-Then follow the prompts. This is the easiest and recommended solution.
+**Get your PAT here:** https://github.com/settings/tokens (needs `repo` scope)
+
+**See detailed terminal-only guide:** [TERMINAL_ONLY_AUTH.md](./TERMINAL_ONLY_AUTH.md)
 
 ## What Happened?
 
