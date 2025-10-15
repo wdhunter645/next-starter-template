@@ -17,7 +17,28 @@ In GitHub Codespaces, the implicit token provided by the environment doesn't hav
 
 ## Solutions
 
-### Solution 1: GitHub CLI (Recommended)
+### Solution 1: Terminal-Only Authentication (No Browser!) ⭐ NEW
+
+**Fed up with browser tabs opening?** This method works entirely in your terminal:
+
+```bash
+# Step 1: Complete reset
+gh auth logout --hostname github.com 2>/dev/null || true
+rm -f ~/.git-credentials
+git config --global --unset credential.helper 2>/dev/null || true
+
+# Step 2: Authenticate with your PAT (get one at https://github.com/settings/tokens)
+echo "YOUR_PAT" | gh auth login --with-token
+
+# Step 3: Configure Git
+git config --global credential.helper store
+git push
+# Enter username and PAT when prompted
+```
+
+**[📖 Full Terminal-Only Guide →](./TERMINAL_ONLY_AUTH.md)**
+
+### Solution 2: GitHub CLI (Interactive)
 
 GitHub CLI is pre-installed in Codespaces and provides the easiest authentication:
 
@@ -34,7 +55,7 @@ gh auth login
 git push
 ```
 
-### Solution 2: Personal Access Token (PAT)
+### Solution 3: Personal Access Token (PAT)
 
 If you prefer using a Personal Access Token:
 
@@ -63,7 +84,7 @@ git push
 
 ⚠️ **Warning**: Never commit tokens to your repository!
 
-### Solution 3: SSH Keys
+### Solution 4: SSH Keys
 
 If you prefer SSH authentication:
 

@@ -2,15 +2,28 @@
 
 Hi! This addresses your specific issue: "problem appears to be implicit token doesn't have git cli permissions and codespaces isn't letting me clear the cache, current auth in order to login using account level PAT"
 
-## TL;DR - Fix It Now
+## TL;DR - Fix It Now (No Browser Required!)
 
-Run this in your Codespace terminal:
+**Don't want browser tabs opening?** Use your Personal Access Token directly:
 
 ```bash
-gh auth login
+# 1. Clear everything
+gh auth logout --hostname github.com 2>/dev/null || true
+rm -f ~/.git-credentials
+git config --global --unset credential.helper 2>/dev/null || true
+
+# 2. Authenticate with your PAT (replace YOUR_PAT with your actual token)
+echo "YOUR_PAT" | gh auth login --with-token
+
+# 3. Configure Git
+git config --global credential.helper store
+git push
+# Enter username and PAT when prompted
 ```
 
-Then follow the prompts. This is the easiest and recommended solution.
+**Get your PAT here:** https://github.com/settings/tokens (needs `repo` scope)
+
+**See detailed terminal-only guide:** [TERMINAL_ONLY_AUTH.md](./TERMINAL_ONLY_AUTH.md)
 
 ## What Happened?
 

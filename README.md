@@ -92,12 +92,21 @@ If you're experiencing authentication issues when pushing to GitHub from Codespa
 2. You'll need to authenticate using a Personal Access Token (PAT)
 3. See the detailed solution in [CONTRIBUTING.md - Git Authentication](./CONTRIBUTING.md#git-authentication-in-codespaces)
 
-Quick fix:
+**Quick fix (Terminal-only, no browser tabs):**
 ```bash
-# Authenticate using GitHub CLI (recommended)
-gh auth login
+# 1. Clear everything and authenticate with your PAT
+gh auth logout --hostname github.com 2>/dev/null || true
+rm -f ~/.git-credentials
+echo "YOUR_PAT" | gh auth login --with-token
 
-# Or configure Git with a PAT
+# 2. Configure Git
 git config --global credential.helper store
-# Then push - you'll be prompted for your GitHub username and PAT
+git push
+# Enter username and PAT when prompted
 ```
+
+**Get your PAT:** https://github.com/settings/tokens (needs `repo` scope)
+
+**Full guides:**
+- [Terminal-Only Auth Guide](./docs/TERMINAL_ONLY_AUTH.md) - No browser required!
+- [Git Auth Troubleshooting](./docs/GIT_AUTH_TROUBLESHOOTING.md) - All methods

@@ -41,7 +41,32 @@ If you encounter errors when trying to push to the repository in Codespaces, suc
 
 This typically happens because the Codespaces implicit token doesn't have Git CLI permissions.
 
-### Solution: Using a Personal Access Token (PAT)
+### Solution 1: Terminal-Only Authentication (No Browser!) ⭐ RECOMMENDED
+
+**Tired of browser tabs opening?** Use this terminal-only method:
+
+```bash
+# 1. Complete reset - clear all cached credentials
+gh auth logout --hostname github.com 2>/dev/null || true
+rm -f ~/.git-credentials
+git config --global --unset credential.helper 2>/dev/null || true
+
+# 2. Authenticate using your PAT (no browser required!)
+echo "YOUR_PAT" | gh auth login --with-token
+
+# 3. Configure Git to store credentials
+git config --global credential.helper store
+
+# 4. Test it works
+git push
+# Enter your username and PAT when prompted
+```
+
+**Get your PAT:** https://github.com/settings/tokens (needs `repo` scope)
+
+**Full guide:** [docs/TERMINAL_ONLY_AUTH.md](./docs/TERMINAL_ONLY_AUTH.md)
+
+### Solution 2: Using a Personal Access Token (PAT)
 
 To resolve Git authentication issues in Codespaces:
 
@@ -87,7 +112,7 @@ git remote add origin https://YOUR_USERNAME:YOUR_PAT@github.com/wdhunter645/next
 
 ⚠️ **Security Note**: Never commit tokens to your repository!
 
-#### 3. Alternative: Use GitHub CLI
+#### 3. Alternative: Use GitHub CLI (Interactive)
 
 GitHub Codespaces comes with GitHub CLI (`gh`) pre-installed:
 
