@@ -27,17 +27,22 @@
 	},
 
 	"postCreateCommand": "npm install",
-
-	"forwardPorts": [3000],
-
-	"portsAttributes": {
-		"3000": {
-			"label": "Next.js Dev Server",
-			"onAutoForward": "notify"
 		}
 	},
 
 	"remoteEnv": {
 		"GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
 	}
+}
+
+},
+  "secrets": { "GH_PAT": {} },
+  "postCreateCommand": "gh auth login --with-token < /run/secrets/GH_PAT && gh auth setup-git && npm install",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Next.js Dev Server",
+      "onAutoForward": "notify"
+    }
+  }
 }
