@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
 	"name": "Next.js Starter Template",
 	"image": "mcr.microsoft.com/devcontainers/typescript-node:1-20-bookworm",
 	
@@ -26,50 +25,19 @@
 			}
 		}
 	},
-
+	
+	"remoteEnv": {
+		"GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
+	},
+	
 	"postCreateCommand": "npm install",
-
+	
 	"forwardPorts": [3000],
-
+	
 	"portsAttributes": {
 		"3000": {
 			"label": "Next.js Dev Server",
 			"onAutoForward": "notify"
 		}
-	},
-
-	"remoteEnv": {
-		"GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
 	}
-=======
-  "name": "Next.js Starter Template",
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-20-bookworm",
-  "features": {
-    "ghcr.io/devcontainers/features/github-cli:1": {
-      "installDirectlyFromGitHubRelease": true,
-      "version": "latest"
-    }
-  },
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode",
-        "bradlc.vscode-tailwindcss"
-      ],
-      "settings": {
-        "editor.formatOnSave": true,
-        "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "files.associations": { "wrangler.json": "jsonc" }
-      }
-    }
-  },
-  "remoteEnv": { "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}" },
-  "secrets": { "GH_PAT": {} },
-  "postCreateCommand": "gh auth login --with-token < /run/secrets/GH_PAT && gh auth setup-git && npm install",
-  "forwardPorts": [3000],
-  "portsAttributes": {
-    "3000": { "label": "Next.js Dev Server", "onAutoForward": "notify" }
-  }
->>>>>>> origin/main
 }
