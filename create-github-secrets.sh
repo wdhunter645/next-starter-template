@@ -5,6 +5,25 @@
 
 set -e
 
+# Show help if requested
+if [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
+    echo "Usage: ./create-github-secrets.sh [OPTIONS]"
+    echo ""
+    echo "Read variables from .env file and create GitHub repository secrets"
+    echo ""
+    echo "OPTIONS:"
+    echo "  --dry-run    Test mode - shows what would be done without creating secrets"
+    echo "  --help, -h   Show this help message"
+    echo ""
+    echo "PREREQUISITES:"
+    echo "  - GitHub CLI (gh) must be installed"
+    echo "  - GitHub CLI must be authenticated (run: gh auth login)"
+    echo "  - .env file must exist in the current directory"
+    echo ""
+    echo "See SECRETS_SETUP.md for detailed documentation"
+    exit 0
+fi
+
 # Color codes for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
