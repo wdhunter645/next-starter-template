@@ -5,11 +5,7 @@ export default function Admin() {
 				<div className="text-center">
 					<h1 className="text-4xl font-bold mb-4">Admin</h1>
 					<p className="text-lg text-foreground/80">
-<<<<<<< HEAD:src/app/admin/page.tsx
 						Administrative dashboard for site management.
-=======
-						Discover the comprehensive services we offer
->>>>>>> origin/main:src/app/services/page.tsx
 					</p>
 					{/* TODO: Add admin authentication and dashboard components */}
 				</div>
