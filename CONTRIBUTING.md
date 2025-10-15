@@ -30,6 +30,49 @@ npm run lint
 npm run build
 ```
 
+## Git Authentication
+
+### Git Authentication for Local Development
+
+If you're working locally (not in Codespaces), you'll need to configure Git authentication before you can push changes:
+
+#### Prerequisites
+
+Before you begin, ensure you have Git configured with your credentials:
+
+```bash
+# Configure your Git username and email
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"
+```
+
+#### Option A: HTTPS with Personal Access Token (Recommended)
+
+1. Create a [Personal Access Token](https://github.com/settings/tokens) with `repo` scope
+2. Configure Git to use the token:
+   ```bash
+   # Store credentials (will prompt for username and token on first push)
+   git config --global credential.helper store
+   # Or for macOS
+   git config --global credential.helper osxkeychain
+   # Or for Windows
+   git config --global credential.helper wincred
+   ```
+3. When prompted for credentials:
+   - Username: Your GitHub username
+   - Password: Your Personal Access Token (not your GitHub password)
+
+#### Option B: SSH Authentication
+
+1. [Generate an SSH key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
+2. [Add the SSH key to your GitHub account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
+3. Update the remote URL:
+   ```bash
+   git remote set-url origin git@github.com:wdhunter645/next-starter-template.git
+   ```
+
+For more detailed instructions on local Git setup, see the troubleshooting section below.
+
 ## Git Authentication in Codespaces
 
 ### Common Issue: Git Push Failures
@@ -143,6 +186,65 @@ git config --global credential.helper store
 #### Issue: Codespaces crashed or extensions keep restarting
 
 **Solution**: See the [Codespaces Crash Recovery Guide](docs/CODESPACES_CRASH_RECOVERY.md) for comprehensive troubleshooting steps.
+
+### Local Git Authentication Troubleshooting
+
+#### Issue: Git doesn't prompt for username/password
+
+**Solution**: Reconfigure or clear the credential helper:
+
+```bash
+# Clear stored credentials
+git credential reject
+# Type: protocol=https, host=github.com, and press Enter twice
+
+# Or unset the helper temporarily
+git config --unset credential.helper
+
+# Then configure it again
+git config --global credential.helper store  # Linux
+git config --global credential.helper osxkeychain  # macOS
+git config --global credential.helper wincred  # Windows
+```
+
+#### Issue: "Authentication failed" when pushing (local development)
+
+**Solutions**:
+
+1. If using HTTPS with Personal Access Token:
+   - Ensure your token has the `repo` scope
+   - Token may have expired - generate a new one
+   - Clear cached credentials:
+     ```bash
+     # macOS
+     git credential-osxkeychain erase
+     # Then enter: protocol=https, host=github.com, and press Enter twice
+     
+     # Linux
+     git credential-cache exit
+     
+     # Windows - Open Credential Manager and remove GitHub credentials
+     ```
+
+2. If using SSH:
+   - Verify your SSH key is added to GitHub
+   - Test connection: `ssh -T git@github.com`
+   - Ensure SSH agent is running: `eval "$(ssh-agent -s)"`
+   - Add your key: `ssh-add ~/.ssh/id_ed25519`
+
+#### Issue: "Permission denied (publickey)" when using SSH
+
+**Solution**:
+
+1. Verify your SSH key is added to your GitHub account
+2. Check the SSH agent has your key:
+   ```bash
+   ssh-add -l
+   ```
+3. If not listed, add it:
+   ```bash
+   ssh-add ~/.ssh/id_ed25519
+   ```
 
 ## Pull Request Guidelines
 
