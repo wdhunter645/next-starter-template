@@ -54,18 +54,35 @@ The main branch had a merge conflict in `.devcontainer/devcontainer.json` caused
 
 Delete the following branches as they are fully merged:
 
+#### Option 1: Use the Provided Script (Recommended)
+
+```bash
+./delete-reviewed-branches.sh
+```
+
+This interactive script will prompt for confirmation before deleting the branches.
+
+#### Option 2: Manual Git Commands
+
 ```bash
 git push origin --delete copilot/fix-codespaces-instability
 git push origin --delete copilot/fix-codespaces-login-issue
 git push origin --delete copilot/fix-git-push-auth-issue
 ```
 
-Or using GitHub CLI:
+#### Option 3: Using GitHub CLI
+
 ```bash
 gh api -X DELETE /repos/wdhunter645/next-starter-template/git/refs/heads/copilot/fix-codespaces-instability
 gh api -X DELETE /repos/wdhunter645/next-starter-template/git/refs/heads/copilot/fix-codespaces-login-issue
 gh api -X DELETE /repos/wdhunter645/next-starter-template/git/refs/heads/copilot/fix-git-push-auth-issue
 ```
+
+#### Option 4: Via GitHub Web Interface
+
+Navigate to: https://github.com/wdhunter645/next-starter-template/branches
+
+Click the delete button (trash icon) next to each branch.
 
 ## Verification
 
