@@ -41,6 +41,12 @@ If you encounter errors when trying to push to the repository in Codespaces, suc
 
 This typically happens because the Codespaces implicit token doesn't have Git CLI permissions.
 
+### 🔴 Codespaces Won't Let You Log Out?
+
+If you're experiencing issues where **Codespaces isn't letting you log out** to sign back in with your account-level token, see the dedicated guide:
+
+👉 **[docs/CODESPACES_LOGOUT.md - Complete Logout & Re-authentication Guide](./docs/CODESPACES_LOGOUT.md)**
+
 ### Solution 1: Terminal-Only Authentication (No Browser!) ⭐ RECOMMENDED
 
 **Tired of browser tabs opening?** Use this terminal-only method:
@@ -158,6 +164,10 @@ git config --global credential.helper store
 #### Issue: "Support for password authentication was removed"
 
 **Solution**: GitHub no longer accepts passwords for Git operations. You must use a Personal Access Token (PAT) instead.
+
+#### Issue: Codespaces crashed or extensions keep restarting
+
+**Solution**: See the [Codespaces Crash Recovery Guide](docs/CODESPACES_CRASH_RECOVERY.md) for comprehensive troubleshooting steps.
 
 ## Pull Request Guidelines
 

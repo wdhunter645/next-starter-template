@@ -2,6 +2,11 @@
 
 This quick reference guide helps resolve Git authentication issues, particularly in GitHub Codespaces.
 
+## 🔴 Can't Log Out of Codespaces?
+
+If Codespaces isn't letting you log out to use your account-level token, see:
+**[CODESPACES_LOGOUT.md - Complete Logout & Re-authentication Guide](./CODESPACES_LOGOUT.md)**
+
 ## Problem
 
 When trying to push to the repository, you encounter one of these errors:
@@ -145,6 +150,8 @@ git ls-remote
 2. Verify the PAT has correct scopes (`repo` at minimum)
 3. Check that you're using HTTPS URLs (not SSH) if using a PAT
 4. Try `gh auth logout` then `gh auth login` again
+
+**If Codespaces has crashed or extensions are restarting**: See [CODESPACES_CRASH_RECOVERY.md](./CODESPACES_CRASH_RECOVERY.md) for comprehensive troubleshooting.
 
 ## Additional Resources
 

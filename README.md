@@ -92,6 +92,12 @@ If you're experiencing authentication issues when pushing to GitHub from Codespa
 2. You'll need to authenticate using a Personal Access Token (PAT)
 3. See the detailed solution in [CONTRIBUTING.md - Git Authentication](./CONTRIBUTING.md#git-authentication-in-codespaces)
 
+#### 🔴 Codespaces Won't Let You Log Out?
+
+If **Codespaces isn't letting you log out** to sign back in with your account-level token:
+
+👉 **See: [docs/CODESPACES_LOGOUT.md](./docs/CODESPACES_LOGOUT.md)** - Complete guide for forcing logout and re-authentication
+
 **Quick fix (Terminal-only, no browser tabs):**
 
 ```bash
@@ -112,3 +118,29 @@ git push
 **Full guides:**
 - [Terminal-Only Auth Guide](./docs/TERMINAL_ONLY_AUTH.md) - No browser required!
 - [Git Auth Troubleshooting](./docs/GIT_AUTH_TROUBLESHOOTING.md) - All methods
+
+### Codespaces Crashed or Extensions Keep Restarting
+
+If your Codespace has crashed or remote extensions are bouncing on/off:
+
+1. See the [Codespaces Crash Recovery Guide](./docs/CODESPACES_CRASH_RECOVERY.md) for comprehensive recovery steps
+2. Try stopping and restarting your Codespace from https://github.com/codespaces
+3. If you have uncommitted changes, use GitHub's "Export changes to branch" feature
+
+Quick recovery:
+```bash
+# Save your work immediately
+git add . && git commit -m "WIP: saving before recovery"
+
+# Or stash changes
+git stash save "Before crash recovery"
+
+# Kill hung processes
+pkill -9 node
+pkill -9 git
+```
+
+For more troubleshooting resources:
+- [Git Authentication Troubleshooting](./docs/GIT_AUTH_TROUBLESHOOTING.md)
+- [Codespaces Crash Recovery](./docs/CODESPACES_CRASH_RECOVERY.md)
+- [Quick Fix Guide](./docs/QUICK_FIX.md)
