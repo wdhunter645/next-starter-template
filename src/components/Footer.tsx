@@ -1,11 +1,12 @@
 import Link from "next/link";
 import styles from "./Footer.module.css";
+import packageJson from "../../package.json";
 
 // Environment variables with safe fallbacks
 const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Lou Gehrig Fan Club";
 const commitSha = process.env.CF_PAGES_COMMIT_SHA || process.env.VERCEL_GIT_COMMIT_SHA || "";
 const shortSha = commitSha ? commitSha.substring(0, 7) : null;
-const version = "1.0.0";
+const version = packageJson.version || "1.0.0";
 
 export default function Footer() {
 	return (

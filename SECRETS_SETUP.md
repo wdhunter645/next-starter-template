@@ -24,8 +24,6 @@ This script (`create-github-secrets.sh`) automates the process of reading enviro
 
 ## Usage
 
-The script automatically detects your repository from the git remote URL. You can also specify a different repository using the `--repo` option.
-
 ### Dry Run (Test Mode)
 To test the script without actually creating secrets:
 ```bash
@@ -34,7 +32,6 @@ To test the script without actually creating secrets:
 
 This will:
 - Parse the `.env` file
-- Auto-detect the repository from git remote (or use --repo to specify)
 - Show which secrets would be created
 - Display the length of each value (without showing the actual value)
 - Provide a summary of what would happen
@@ -42,11 +39,7 @@ This will:
 ### Create Secrets
 To actually create the repository secrets:
 ```bash
-# Auto-detect repository from git remote
 ./create-github-secrets.sh
-
-# Or specify a different repository
-./create-github-secrets.sh --repo OWNER/REPO
 ```
 
 ## What the Script Does
@@ -61,9 +54,9 @@ To actually create the repository secrets:
 
 ## Important Notes
 
-- The script automatically detects the repository from your git remote URL
-- To use with a different repository, use the `--repo OWNER/REPO` option
-- The script processes **18 variables** from the `.env` file
+- The script creates secrets for the repository: `wdhunter645/next-starter-template`
+- If you want to use this for a different repository, modify the `--repo` parameter in the script
+- The script currently processes **18 variables** from the `.env` file
 - Existing secrets with the same name will be overwritten
 - Secret values are sent securely through the GitHub CLI
 
