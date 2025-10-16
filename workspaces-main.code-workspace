@@ -1,0 +1,12 @@
+{
+  "folders": [
+    {
+      "path": "workspaces/main"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.devcontainer": true
+    }
+  }
+}

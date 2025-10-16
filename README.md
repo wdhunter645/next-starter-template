@@ -60,6 +60,7 @@ git config --global credential.helper wincred  # Windows
 ```
 
 When you push for the first time, you'll be prompted for:
+
 - **Username**: Your GitHub username
 - **Password**: Your [Personal Access Token](https://github.com/settings/tokens) (NOT your GitHub password)
 
@@ -98,6 +99,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 ## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for:
+
 - Development setup instructions
 - Git authentication troubleshooting (especially for Codespaces)
 - Pull request guidelines
@@ -120,6 +122,7 @@ If **Codespaces isn't letting you log out** to sign back in with your account-le
 👉 **See: [docs/CODESPACES_LOGOUT.md](./docs/CODESPACES_LOGOUT.md)** - Complete guide for forcing logout and re-authentication
 
 Quick fix:
+
 ```bash
 # Option 1: Use the helper script
 ./fix-git-auth.sh
@@ -142,6 +145,7 @@ If your Codespace has crashed or remote extensions are bouncing on/off:
 3. If you have uncommitted changes, use GitHub's "Export changes to branch" feature
 
 Quick recovery:
+
 ```bash
 # Save your work immediately
 git add . && git commit -m "WIP: saving before recovery"
@@ -155,6 +159,7 @@ pkill -9 git
 ```
 
 For more troubleshooting resources:
+
 - [Git Authentication Troubleshooting](./docs/GIT_AUTH_TROUBLESHOOTING.md)
 - [Codespaces Crash Recovery](./docs/CODESPACES_CRASH_RECOVERY.md)
 - [Quick Fix Guide](./docs/QUICK_FIX.md)
