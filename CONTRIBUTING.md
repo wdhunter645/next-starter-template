@@ -91,6 +91,7 @@ This guide covers:
 ### Common Issue: Git Push Failures
 
 If you encounter errors when trying to push to the repository in Codespaces, such as:
+
 - "Authentication failed"
 - "Permission denied"
 - Git not prompting for credentials
@@ -179,6 +180,31 @@ rm ~/.git-credentials
 git config --global credential.helper store
 ```
 
+### NOTE: Devcontainer Removed
+
+This repository previously included a `.devcontainer` configuration which set environment variables and attempted to override Codespaces tokens. That devcontainer has been removed because it caused persistent permission and authentication issues in some Codespaces environments. Key points:
+
+- The repository no longer forces a Codespaces token or environment variables.
+- You must authenticate manually in Codespaces using a Personal Access Token (PAT) or `gh auth login`.
+- If you need an automated devcontainer for your workflow, create one in a feature branch or fork and test it locally before committing.
+
+Recommended minimal steps for Codespaces when authentication is required:
+
+```bash
+# In your Codespace, authenticate with gh (recommended):
+gh auth login --with-token < ~/secrets/my_codespaces_pat.txt
+
+# Or store a PAT in the credential helper (safer than environment overrides):
+git config --global credential.helper store
+printf "%s\n" "YOUR_GITHUB_USERNAME" "YOUR_PERSONAL_ACCESS_TOKEN" > ~/.git-credentials
+chmod 600 ~/.git-credentials
+
+# Verify push works
+git push
+```
+
+Security reminder: Do NOT commit tokens. If you need help generating a scoped PAT, follow the steps earlier in this document.
+
 ### Troubleshooting
 
 #### Issue: "fatal: could not read Username"
@@ -188,6 +214,7 @@ git config --global credential.helper store
 #### Issue: "remote: Permission to repository denied"
 
 **Solutions**:
+
 1. Verify your PAT has the correct scopes (especially `repo`)
 2. Ensure the PAT hasn't expired
 3. Try regenerating the PAT and updating your credentials
@@ -225,17 +252,19 @@ git config --global credential.helper wincred  # Windows
 **Solutions**:
 
 1. If using HTTPS with Personal Access Token:
+
    - Ensure your token has the `repo` scope
    - Token may have expired - generate a new one
    - Clear cached credentials:
+
      ```bash
      # macOS
      git credential-osxkeychain erase
      # Then enter: protocol=https, host=github.com, and press Enter twice
-     
+
      # Linux
      git credential-cache exit
-     
+
      # Windows - Open Credential Manager and remove GitHub credentials
      ```
 
@@ -271,11 +300,13 @@ git config --global credential.helper wincred  # Windows
 ## Code Style
 
 This project uses:
+
 - **ESLint** for linting (configuration in `eslint.config.mjs`)
 - **TypeScript** for type safety
 - **Prettier** formatting (via Next.js defaults)
 
 Run linting before committing:
+
 ```bash
 npm run lint
 ```
@@ -283,6 +314,7 @@ npm run lint
 ## Questions or Issues?
 
 If you encounter any problems not covered in this guide, please:
+
 1. Check existing GitHub Issues
 2. Open a new issue with detailed information about your problem
 3. Include error messages, steps to reproduce, and your environment details
