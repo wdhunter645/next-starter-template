@@ -24,9 +24,9 @@ A live public deployment of this template is available at [https://next-starter-
 
 ## Getting Started
 
-### Using GitHub Codespaces (Recommended)
+### Using GitHub Codespaces
 
-This repository is configured for GitHub Codespaces. Click the button below to create a new Codespace:
+This repository used to include a Codespaces devcontainer, but the devcontainer configuration has been removed to avoid persistent permission and token issues. If you prefer Codespaces, you can still open one manually:
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/wdhunter645/next-starter-template)
 
@@ -68,6 +68,7 @@ git config --global credential.helper wincred  # Windows
 ```
 
 When you push for the first time, you'll be prompted for:
+
 - **Username**: Your GitHub username
 - **Password**: Your [Personal Access Token](https://github.com/settings/tokens) (NOT your GitHub password)
 
@@ -106,6 +107,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 ## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for:
+
 - Development setup instructions
 - Git authentication troubleshooting (especially for Codespaces)
 - Pull request guidelines
@@ -137,6 +139,7 @@ If **Codespaces isn't letting you log out** to sign back in with your account-le
 👉 **See: [docs/CODESPACES_LOGOUT.md](./docs/CODESPACES_LOGOUT.md)** - Complete guide for forcing logout and re-authentication
 
 Quick fix:
+
 ```bash
 # Option 1: Use the helper script
 ./fix-git-auth.sh
@@ -163,6 +166,7 @@ If your Codespace has crashed or remote extensions are bouncing on/off:
 3. If you have uncommitted changes, use GitHub's "Export changes to branch" feature
 
 Quick recovery:
+
 ```bash
 # Save your work immediately
 git add . && git commit -m "WIP: saving before recovery"
