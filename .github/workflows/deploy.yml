@@ -31,7 +31,7 @@ jobs:
       - name: Install deps
         run: npm ci
 
-      - name: Build (OpenNext)
+      - name: Build (OpenNext Cloudflare)
         run: |
           npx opennextjs-cloudflare build 2>&1 | tee open-next-build.log
         # If the build fails, upload logs for easy inspection
