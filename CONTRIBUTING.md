@@ -166,6 +166,31 @@ rm ~/.git-credentials
 git config --global credential.helper store
 ```
 
+### NOTE: Devcontainer Removed
+
+This repository previously included a `.devcontainer` configuration which set environment variables and attempted to override Codespaces tokens. That devcontainer has been removed because it caused persistent permission and authentication issues in some Codespaces environments. Key points:
+
+- The repository no longer forces a Codespaces token or environment variables.
+- You must authenticate manually in Codespaces using a Personal Access Token (PAT) or `gh auth login`.
+- If you need an automated devcontainer for your workflow, create one in a feature branch or fork and test it locally before committing.
+
+Recommended minimal steps for Codespaces when authentication is required:
+
+```bash
+# In your Codespace, authenticate with gh (recommended):
+gh auth login --with-token < ~/secrets/my_codespaces_pat.txt
+
+# Or store a PAT in the credential helper (safer than environment overrides):
+git config --global credential.helper store
+printf "%s\n" "YOUR_GITHUB_USERNAME" "YOUR_PERSONAL_ACCESS_TOKEN" > ~/.git-credentials
+chmod 600 ~/.git-credentials
+
+# Verify push works
+git push
+```
+
+Security reminder: Do NOT commit tokens. If you need help generating a scoped PAT, follow the steps earlier in this document.
+
 ### Troubleshooting
 
 #### Issue: "fatal: could not read Username"

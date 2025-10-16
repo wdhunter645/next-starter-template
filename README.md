@@ -20,15 +20,13 @@ A live public deployment of this template is available at [https://next-starter-
 
 ## Getting Started
 
-### Using GitHub Codespaces (Recommended)
+### Using GitHub Codespaces
 
-This repository is configured for GitHub Codespaces. Click the button below to create a new Codespace:
+This repository used to include a Codespaces devcontainer, but the devcontainer configuration has been removed to avoid persistent permission and token issues. If you prefer Codespaces, you can still open one manually:
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/wdhunter645/next-starter-template)
 
-When working in Codespaces, dependencies will be installed automatically. The development server will be available on port 3000.
-
-**Note**: If you encounter Git authentication issues in Codespaces, **[see START_HERE.md for immediate fix →](./START_HERE.md)** or the [quick fix below](#git-push-fails-in-codespaces).
+Note: The project no longer supplies an automatic devcontainer. You will need to install dependencies yourself and configure authentication. If you encounter Git authentication issues in Codespaces, follow the instructions in `CONTRIBUTING.md` (search for "Git Authentication in Codespaces").
 
 ### Local Development
 
