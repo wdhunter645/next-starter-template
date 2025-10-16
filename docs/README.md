@@ -24,6 +24,13 @@ Essential reading for understanding the project:
   - Metadata configuration
   - Type definitions
 
+- **[Configuration Reference](./CONFIGURATION_REFERENCE.md)** - Complete reference for all configuration files
+  - package.json
+  - next.config.ts
+  - tsconfig.json
+  - wrangler.jsonc
+  - Environment files
+
 - **[Architecture](./ARCHITECTURE.md)** - Technical architecture and design patterns
   - Technology stack
   - Project structure
@@ -87,6 +94,9 @@ Authentication and workflow guides:
 
 **Learn about available components**
 → [API Reference](./API_REFERENCE.md)
+
+**Understand configuration files**
+→ [Configuration Reference](./CONFIGURATION_REFERENCE.md)
 
 **Deploy to production**
 → [Deployment Guide](./DEPLOYMENT_GUIDE.md)
