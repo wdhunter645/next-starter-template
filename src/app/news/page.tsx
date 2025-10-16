@@ -1,3 +1,5 @@
+import SocialWall from "@/components/SocialWall";
+
 export default function News() {
 	return (
 		<div className="min-h-screen flex flex-col items-center justify-center p-8">
@@ -8,6 +10,9 @@ export default function News() {
 						Stay updated with the latest news and community discussions.
 					</p>
 					{/* TODO: Add news feed and Q&A data hooks */}
+				</div>
+				<div className="mt-8">
+					<SocialWall />
 				</div>
 			</div>
 		</div>
