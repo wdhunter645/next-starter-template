@@ -95,6 +95,26 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 | `npm run build && npm run deploy` | Deploy your production site to Cloudflare    |
 | `npm wrangler tail`               | View real-time logs for all Workers          |
 
+## Documentation
+
+Comprehensive documentation is available in the `docs/` directory:
+
+### Getting Started
+- **[API Reference](./docs/API_REFERENCE.md)** - Complete API documentation for components, pages, and environment variables
+- **[Development Workflow](./docs/DEVELOPMENT_WORKFLOW.md)** - Guide to daily development workflow, code standards, and best practices
+
+### Architecture & Deployment
+- **[Architecture](./docs/ARCHITECTURE.md)** - Technical architecture, project structure, and design patterns
+- **[Deployment Guide](./docs/DEPLOYMENT_GUIDE.md)** - Step-by-step deployment instructions for Cloudflare Workers
+
+### Troubleshooting
+- **[Troubleshooting Guide](./docs/TROUBLESHOOTING_GUIDE.md)** - Solutions to common issues and debugging tips
+
+### Additional Resources
+- **[Git Authentication](./docs/CODESPACES_TOKEN_SETUP.md)** - Comprehensive Git authentication setup for Codespaces
+- **[Quick Fixes](./docs/QUICK_FIX.md)** - Fast solutions to common problems
+- **[Security Notice](./docs/SECURITY_NOTICE.md)** - Important security information
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
