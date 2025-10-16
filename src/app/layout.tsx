@@ -3,14 +3,18 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
+// Environment variables with safe fallbacks
+const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Lou Gehrig Fan Club";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.lougehrigfanclub.com";
+
 export const metadata: Metadata = {
-	title: "Lou Gehrig Fan Club",
+	title: SITE_NAME,
 	description: "Honoring the legacy of baseball's Iron Horse through community, education, and support for ALS research and awareness.",
 	openGraph: {
-		title: "Lou Gehrig Fan Club",
+		title: SITE_NAME,
 		description: "Honoring the legacy of baseball's Iron Horse through community, education, and support for ALS research and awareness.",
-		url: "https://www.lougehrigfanclub.com",
-		siteName: "Lou Gehrig Fan Club",
+		url: SITE_URL,
+		siteName: SITE_NAME,
 		type: "website",
 	},
 	icons: {
