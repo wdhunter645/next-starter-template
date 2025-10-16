@@ -75,6 +75,19 @@ For more detailed instructions on local Git setup, see the troubleshooting secti
 
 ## Git Authentication in Codespaces
 
+### Quick Reference
+
+For complete instructions on setting up GitHub token permissions in Codespaces, see:
+
+📖 **[docs/CODESPACES_TOKEN_SETUP.md - Complete Codespaces Token Configuration Guide](./docs/CODESPACES_TOKEN_SETUP.md)**
+
+This guide covers:
+- Creating Personal Access Tokens with proper scopes
+- Configuring Codespaces secrets (recommended for persistent setup)
+- Manual token configuration for individual Codespaces
+- All troubleshooting scenarios
+- Security best practices
+
 ### Common Issue: Git Push Failures
 
 If you encounter errors when trying to push to the repository in Codespaces, such as:
