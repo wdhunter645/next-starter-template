@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to read variables from .env file and create GitHub repository secrets
-# Usage: ./create-github-secrets.sh [--dry-run]
+# Usage: ./create-github-secrets.sh [--dry-run] [--repo OWNER/REPO]
 
 set -e
 
@@ -12,8 +12,9 @@ if [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
     echo "Read variables from .env file and create GitHub repository secrets"
     echo ""
     echo "OPTIONS:"
-    echo "  --dry-run    Test mode - shows what would be done without creating secrets"
-    echo "  --help, -h   Show this help message"
+    echo "  --dry-run         Test mode - shows what would be done without creating secrets"
+    echo "  --repo OWNER/REPO Specify target repository (default: auto-detect from git remote)"
+    echo "  --help, -h        Show this help message"
     echo ""
     echo "PREREQUISITES:"
     echo "  - GitHub CLI (gh) must be installed"
@@ -45,8 +46,48 @@ fi
 
 # Parse command line arguments
 DRY_RUN=false
-if [ "$1" == "--dry-run" ]; then
-    DRY_RUN=true
+REPO=""
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        --repo)
+            REPO="$2"
+            shift 2
+            ;;
+        *)
+            echo -e "${RED}Error: Unknown option: $1${NC}"
+            echo "Run with --help for usage information"
+            exit 1
+            ;;
+    esac
+done
+
+# Auto-detect repository from git remote if not specified
+if [ -z "$REPO" ]; then
+    if git remote get-url origin &> /dev/null; then
+        # Extract owner/repo from git remote URL
+        REMOTE_URL=$(git remote get-url origin)
+        # Handle both HTTPS and SSH URLs
+        if [[ "$REMOTE_URL" =~ github\.com[:/]([^/]+/[^/\.]+) ]]; then
+            REPO="${BASH_REMATCH[1]}"
+            echo -e "${GREEN}Auto-detected repository: ${REPO}${NC}"
+        else
+            echo -e "${RED}Error: Could not parse repository from git remote URL${NC}"
+            echo "Please specify repository with --repo OWNER/REPO"
+            exit 1
+        fi
+    else
+        echo -e "${RED}Error: Could not auto-detect repository from git remote${NC}"
+        echo "Please specify repository with --repo OWNER/REPO"
+        exit 1
+    fi
+fi
+
+if [ "$DRY_RUN" = true ]; then
     echo -e "${YELLOW}Running in DRY-RUN mode - no secrets will be created${NC}"
     echo ""
 fi
@@ -92,7 +133,7 @@ while IFS= read -r line || [ -n "$line" ]; do
             SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
         else
             # Create the secret using gh CLI
-            if echo "$VAR_VALUE" | gh secret set "$VAR_NAME" --repo wdhunter645/next-starter-template; then
+            if echo "$VAR_VALUE" | gh secret set "$VAR_NAME" --repo "$REPO"; then
                 echo -e "  ${GREEN}✓ Successfully created secret: ${VAR_NAME}${NC}"
                 SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
             else
