@@ -27,8 +27,19 @@ export default function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	const cfToken = process.env.NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN;
+	
 	return (
 		<html lang="en">
+			<head>
+				{cfToken && (
+					<script
+						defer
+						src="https://static.cloudflareinsights.com/beacon.min.js"
+						data-cf-beacon={`{"token": "${cfToken}"}`}
+					/>
+				)}
+			</head>
 			<body className="antialiased">
 				<Header />
 				<main className="pt-16">
