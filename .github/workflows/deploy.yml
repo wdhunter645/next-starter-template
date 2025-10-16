@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      pull-requests: write
 
     steps:
       - name: Checkout
@@ -49,3 +50,105 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Get main HEAD SHA
+        id: get-head-sha
+        run: |
+          HEAD_SHA=$(git rev-parse HEAD)
+          echo "head_sha=$HEAD_SHA" >> $GITHUB_OUTPUT
+          echo "short_head_sha=$(echo $HEAD_SHA | cut -c1-7)" >> $GITHUB_OUTPUT
+          echo "Main HEAD SHA: $HEAD_SHA"
+
+      - name: Get Active Deployment SHA from Cloudflare
+        id: get-deployment-sha
+        if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && secrets.CLOUDFLARE_PROJECT_NAME != ''
+        continue-on-error: true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          echo "Fetching active deployment SHA from Cloudflare Pages API..."
+          
+          # Fetch the deployments for the project
+          RESPONSE=$(curl -s -X GET \
+            "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/${{ secrets.CLOUDFLARE_PROJECT_NAME }}/deployments" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json")
+          
+          # Extract the latest deployment SHA (first deployment in the list is the most recent)
+          DEPLOYMENT_SHA=$(echo "$RESPONSE" | jq -r '.result[0].deployment_trigger.metadata.commit_hash // empty')
+          
+          if [ -z "$DEPLOYMENT_SHA" ]; then
+            echo "⚠️ Could not fetch deployment SHA from Cloudflare API"
+            echo "deployment_sha=unknown" >> $GITHUB_OUTPUT
+            echo "short_deployment_sha=unknown" >> $GITHUB_OUTPUT
+          else
+            echo "deployment_sha=$DEPLOYMENT_SHA" >> $GITHUB_OUTPUT
+            echo "short_deployment_sha=$(echo $DEPLOYMENT_SHA | cut -c1-7)" >> $GITHUB_OUTPUT
+            echo "Active Deployment SHA: $DEPLOYMENT_SHA"
+          fi
+
+      - name: Check for associated PR
+        id: find-pr
+        if: steps.get-deployment-sha.outcome == 'success'
+        continue-on-error: true
+        run: |
+          # Find PR associated with this commit
+          PR_NUMBER=$(gh pr list --state all --search "${{ steps.get-head-sha.outputs.head_sha }}" --json number --jq '.[0].number // empty')
+          
+          if [ -n "$PR_NUMBER" ]; then
+            echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+            echo "Found PR #$PR_NUMBER"
+          else
+            echo "No PR found for this commit"
+            echo "pr_number=" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Post PR comment with SHA comparison
+        if: steps.find-pr.outputs.pr_number != '' && steps.get-deployment-sha.outcome == 'success'
+        continue-on-error: true
+        run: |
+          HEAD_SHA="${{ steps.get-head-sha.outputs.head_sha }}"
+          SHORT_HEAD="${{ steps.get-head-sha.outputs.short_head_sha }}"
+          DEPLOYMENT_SHA="${{ steps.get-deployment-sha.outputs.deployment_sha }}"
+          SHORT_DEPLOYMENT="${{ steps.get-deployment-sha.outputs.short_deployment_sha }}"
+          
+          if [ "$DEPLOYMENT_SHA" = "unknown" ]; then
+            COMMENT_BODY="### 🚀 Deployment Status
+          
+          **Main HEAD SHA:** \`$SHORT_HEAD\` (\`$HEAD_SHA\`)
+          **Active Deployment SHA:** ⚠️ Unable to fetch from Cloudflare API
+          
+          Please ensure \`CLOUDFLARE_API_TOKEN\` and \`CLOUDFLARE_ACCOUNT_ID\` secrets are configured with proper permissions."
+          elif [ "$HEAD_SHA" = "$DEPLOYMENT_SHA" ]; then
+            COMMENT_BODY="### ✅ Deployment Verified
+          
+          **Main HEAD SHA:** \`$SHORT_HEAD\` (\`$HEAD_SHA\`)
+          **Active Deployment SHA:** \`$SHORT_DEPLOYMENT\` (\`$DEPLOYMENT_SHA\`)
+          
+          🎉 Production deployment matches main branch HEAD!"
+          else
+            COMMENT_BODY="### ⚠️ Deployment Drift Detected
+          
+          **Main HEAD SHA:** \`$SHORT_HEAD\` (\`$HEAD_SHA\`)
+          **Active Deployment SHA:** \`$SHORT_DEPLOYMENT\` (\`$DEPLOYMENT_SHA\`)
+          
+          ⚠️ The active deployment does not match the main branch HEAD. This may indicate:
+          - The deployment is still propagating
+          - A previous deployment is still active
+          - Manual intervention may be required"
+          fi
+          
+          gh pr comment "${{ steps.find-pr.outputs.pr_number }}" --body "$COMMENT_BODY"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Log deployment verification guidance
+        if: steps.get-deployment-sha.outcome != 'success'
+        run: |
+          echo "::notice::SHA verification skipped. To enable automatic verification:"
+          echo "::notice::1. Ensure CLOUDFLARE_API_TOKEN secret is set with Pages:Read permissions"
+          echo "::notice::2. Ensure CLOUDFLARE_ACCOUNT_ID secret is set"
+          echo "::notice::3. Ensure CLOUDFLARE_PROJECT_NAME secret is set"
