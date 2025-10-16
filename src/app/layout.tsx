@@ -4,8 +4,18 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-	title: "LGFC - Your Trusted Partner",
-	description: "LGFC provides exceptional services tailored to your needs",
+	title: "Lou Gehrig Fan Club",
+	description: "Honoring the legacy of baseball's Iron Horse through community, education, and support for ALS research and awareness.",
+	openGraph: {
+		title: "Lou Gehrig Fan Club",
+		description: "Honoring the legacy of baseball's Iron Horse through community, education, and support for ALS research and awareness.",
+		url: "https://www.lougehrigfanclub.com",
+		siteName: "Lou Gehrig Fan Club",
+		type: "website",
+	},
+	icons: {
+		icon: "/favicon.ico",
+	},
 };
 
 export default function RootLayout({
