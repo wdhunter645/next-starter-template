@@ -4,15 +4,23 @@ This script (`create-github-secrets.sh`) automates the process of reading enviro
 
 ## Prerequisites
 
-1. **GitHub CLI (gh)** must be installed
+1. **Create your `.env` file** from the example template:
+   ```bash
+   cp .env.example .env
+   # Then edit .env with your actual values
+   ```
+
+2. **GitHub CLI (gh)** must be installed
    - Installation instructions: https://cli.github.com/
    
-2. **GitHub CLI must be authenticated**
+3. **GitHub CLI must be authenticated**
    ```bash
    gh auth login
    ```
+   
+   **For Codespaces users**: See [docs/CODESPACES_TOKEN_SETUP.md](docs/CODESPACES_TOKEN_SETUP.md) for setting up GitHub token permissions.
 
-3. **Appropriate permissions** - You must have admin access to the repository to create secrets
+4. **Appropriate permissions** - You must have admin access to the repository to create secrets
 
 ## Usage
 
@@ -91,3 +99,21 @@ Make sure you're running the script from the repository root directory where the
 ⚠️ **Never commit the `.env` file to version control!** 
 
 The `.env` file contains sensitive credentials and should remain in `.gitignore`.
+
+### Important: .env File Removed from Git
+
+If you cloned this repository before the `.env` file was removed from version control, you may have a committed version with exposed secrets. Here's what to do:
+
+1. **Regenerate ALL secrets** that were in the committed `.env` file (API tokens, passwords, etc.)
+2. **Update your new `.env`** file with the new secrets
+3. **Run this script** to update GitHub repository secrets with new values
+4. **Verify** the old `.env` is not in your git history: `git log --all -- .env`
+
+## Codespaces Setup
+
+When working in GitHub Codespaces, you'll need to configure your environment with proper GitHub token permissions. See [docs/CODESPACES_TOKEN_SETUP.md](docs/CODESPACES_TOKEN_SETUP.md) for detailed instructions on:
+
+- Setting up your Personal Access Token (PAT)
+- Configuring Codespaces secrets
+- Authenticating GitHub CLI with full permissions
+- Troubleshooting authentication issues

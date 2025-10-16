@@ -2,6 +2,10 @@
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/next-starter-template)
 
+## 🔴 SECURITY NOTICE
+
+**If you cloned this repository before October 16, 2025**: The `.env` file with secrets was accidentally committed and has been removed. **You must regenerate ALL credentials** if you use any of the exposed services. See [docs/SECURITY_NOTICE.md](./docs/SECURITY_NOTICE.md) for details and action steps.
+
 <!-- dash-content-start -->
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app). It's deployed on Cloudflare Workers as a [static website](https://developers.cloudflare.com/workers/static-assets/).
@@ -26,7 +30,11 @@ This repository used to include a Codespaces devcontainer, but the devcontainer 
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/wdhunter645/next-starter-template)
 
-Note: The project no longer supplies an automatic devcontainer. You will need to install dependencies yourself and configure authentication. If you encounter Git authentication issues in Codespaces, follow the instructions in `CONTRIBUTING.md` (search for "Git Authentication in Codespaces").
+When working in Codespaces, dependencies will be installed automatically. The development server will be available on port 3000.
+
+**Important Codespaces Setup:**
+- **Git Authentication**: Codespaces uses a read-only token by default. To push changes, you need to configure your personal GitHub token. **[See CODESPACES_TOKEN_SETUP.md for complete setup guide →](./docs/CODESPACES_TOKEN_SETUP.md)**
+- **Quick Fix**: If you encounter Git authentication issues, **[see START_HERE.md for immediate fix →](./START_HERE.md)** or the [quick fix below](#git-push-fails-in-codespaces).
 
 ### Local Development
 
@@ -111,11 +119,20 @@ We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for:
 
 If you're experiencing authentication issues when pushing to GitHub from Codespaces:
 
-1. The Codespaces implicit token may not have Git CLI permissions
-2. You'll need to authenticate using a Personal Access Token (PAT)
-3. See the detailed solution in [CONTRIBUTING.md - Git Authentication](./CONTRIBUTING.md#git-authentication-in-codespaces)
+**The Issue**: Codespaces provides a read-only ephemeral token by default that doesn't have Git CLI push permissions.
 
-#### 🔴 Codespaces Won't Let You Log Out?
+**The Solution**: Configure your personal GitHub token with full repository access.
+
+📖 **[Complete Setup Guide: docs/CODESPACES_TOKEN_SETUP.md](./docs/CODESPACES_TOKEN_SETUP.md)**
+
+This comprehensive guide covers:
+- Creating a Personal Access Token (PAT) with proper scopes
+- Configuring Codespaces secrets (recommended)
+- Manual token configuration for individual Codespaces
+- Troubleshooting common authentication issues
+- Security best practices
+
+#### Quick Fix (Manual Configuration)
 
 If **Codespaces isn't letting you log out** to sign back in with your account-level token:
 
@@ -135,6 +152,10 @@ git config --global credential.helper store
 git push
 # Enter username and PAT when prompted
 ```
+
+For persistent configuration across all Codespaces, use Codespaces Secrets as described in the [complete setup guide](./docs/CODESPACES_TOKEN_SETUP.md).
+
+#### 🔴 Codespaces Won't Let You Log Out?
 
 ### Codespaces Crashed or Extensions Keep Restarting
 
@@ -159,7 +180,7 @@ pkill -9 git
 ```
 
 For more troubleshooting resources:
-
+- [Codespaces Token Setup](./docs/CODESPACES_TOKEN_SETUP.md)
 - [Git Authentication Troubleshooting](./docs/GIT_AUTH_TROUBLESHOOTING.md)
 - [Codespaces Crash Recovery](./docs/CODESPACES_CRASH_RECOVERY.md)
 - [Quick Fix Guide](./docs/QUICK_FIX.md)
