@@ -113,6 +113,8 @@ We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for:
 - Pull request guidelines
 - Code style guide
 
+For feature requests and enhancement tracking, see [FEATURES.md](./FEATURES.md).
+
 ## Troubleshooting
 
 ### Git Push Fails in Codespaces
