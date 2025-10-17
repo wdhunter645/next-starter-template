@@ -201,3 +201,7 @@ dist
 ### OpenNext ###
 .open-next/
 next-env.d.ts
+
+### Documentation artifacts ###
+/docs/archive/*.bak
+/OPERATIONAL_BACKLOG.md.log
