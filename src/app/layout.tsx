@@ -3,18 +3,14 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-// Environment variables with safe fallbacks
-const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Lou Gehrig Fan Club";
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.lougehrigfanclub.com";
-
 export const metadata: Metadata = {
-	title: SITE_NAME,
+	title: "Lou Gehrig Fan Club",
 	description: "Honoring the legacy of baseball's Iron Horse through community, education, and support for ALS research and awareness.",
 	openGraph: {
-		title: SITE_NAME,
+		title: "Lou Gehrig Fan Club",
 		description: "Honoring the legacy of baseball's Iron Horse through community, education, and support for ALS research and awareness.",
-		url: SITE_URL,
-		siteName: SITE_NAME,
+		url: "https://www.lougehrigfanclub.com",
+		siteName: "Lou Gehrig Fan Club",
 		type: "website",
 	},
 	icons: {
@@ -27,19 +23,8 @@ export default function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
-	const cfToken = process.env.NEXT_PUBLIC_CLOUDFLARE_WEB_ANALYTICS_TOKEN;
-	
 	return (
 		<html lang="en">
-			<head>
-				{cfToken && (
-					<script
-						defer
-						src="https://static.cloudflareinsights.com/beacon.min.js"
-						data-cf-beacon={`{"token": "${cfToken}"}`}
-					/>
-				)}
-			</head>
 			<body className="antialiased">
 				<Header />
 				<main className="pt-16">
