@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { siteConfig } from "@/lib/site/config";
-import styles from "./Header.module.css";
+import styles from "./SiteHeader.module.css";
 
-export default function Header() {
+export default function SiteHeader() {
 	return (
 		<header className={styles.header}>
 			<nav className={styles.nav} aria-label="Main navigation">
