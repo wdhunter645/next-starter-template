@@ -1,28 +1,40 @@
-/**
- * Environment Check API
- * Returns basic environment configuration status
- */
 import { NextResponse } from 'next/server';
 
-export const runtime = 'edge';
+/**
+ * Environment Check API
+ * 
+ * Returns a list of required environment variables and their presence status.
+ * Does NOT return actual values for security.
+ * 
+ * GET /api/env/check
+ */
 
 export async function GET() {
-	const env = process.env as Record<string, string | undefined>;
+	const requiredVars = [
+		'NEXT_PUBLIC_SUPABASE_URL',
+		'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+		'SUPABASE_SERVICE_ROLE_KEY',
+		'ADMIN_EMAILS',
+		'B2_APPLICATION_KEY_ID',
+		'B2_APPLICATION_KEY',
+		'B2_BUCKET_NAME',
+		'B2_ENDPOINT',
+	];
 
-	// Check critical environment variables
-	const checks = {
-		siteUrl: !!env.NEXT_PUBLIC_SITE_URL,
-		adminEmails: !!env.ADMIN_EMAILS,
-		supabaseUrl: !!env.NEXT_PUBLIC_SUPABASE_URL,
-		supabaseAnon: !!env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-		b2Configured: !!(env.B2_KEY_ID && env.B2_APP_KEY && env.B2_BUCKET && env.B2_ENDPOINT),
-		githubOAuth: !!(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET),
-	};
+	const envCheck = requiredVars.map((varName) => ({
+		name: varName,
+		present: !!process.env[varName],
+	}));
+
+	const allPresent = envCheck.every((check) => check.present);
 
 	return NextResponse.json({
-		ok: true,
-		environment: env.NODE_ENV || 'development',
-		checks,
-		timestamp: new Date().toISOString(),
+		status: allPresent ? 'ok' : 'incomplete',
+		variables: envCheck,
+		summary: {
+			total: requiredVars.length,
+			present: envCheck.filter((check) => check.present).length,
+			missing: envCheck.filter((check) => !check.present).length,
+		},
 	});
 }

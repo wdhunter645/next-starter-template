@@ -1,17 +1,55 @@
 name: docs-secret-audit
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - "**/*.md"
 
 jobs:
-  audit:
+  detect:
     runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.maybe_skip.outputs.skip }}
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          # Need full history for accurate diff on forked PRs and rebases
+          fetch-depth: 0
+
+      - name: Determine changed markdown files
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            md:
+              - added: "**/*.md"
+              - modified: "**/*.md"
+
+      - name: Set skip flag if no md changes
+        id: maybe_skip
+        run: |
+          if [[ "${{ steps.changes.outputs.md }}" != "true" ]]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+  audit:
+    needs: detect
+    if: needs.detect.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Use Node
         uses: actions/setup-node@v4
@@ -21,8 +59,10 @@ jobs:
       - name: Install (no deps needed; ensure repo is valid)
         run: npm ci --ignore-scripts || true
 
-      - name: Run docs secret audit
+      - name: Run docs secret audit (PR diff)
         env:
-          GITHUB_BASE_REF: ${{ github.base_ref }}
-          GITHUB_SHA: ${{ github.sha }}
+          # Feed exact SHAs to the script for reliability on forks/rebases
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          DEBUG: "1"
         run: npm run audit:docs

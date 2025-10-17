@@ -206,3 +206,4 @@ next-env.d.ts
 /docs/archive/*.bak
 /OPERATIONAL_BACKLOG.md.log
 .secret-audit/
+docs/SECRET-AUDIT-*.txt

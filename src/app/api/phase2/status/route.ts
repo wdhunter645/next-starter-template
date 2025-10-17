@@ -1,47 +1,61 @@
-/**
- * Phase 2 Features Status API
- * Returns implementation status of phase 2 features
- */
 import { NextResponse } from 'next/server';
 
-export const runtime = 'edge';
+/**
+ * Phase 2 Status API
+ * 
+ * Returns a JSON health summary for Phase 2 features.
+ * This endpoint checks the status of various services and configurations.
+ * 
+ * GET /api/phase2/status
+ */
 
 export async function GET() {
-	// Track phase 2 feature implementation status
-	const features = {
-		supabaseIntegration: {
-			implemented: true,
-			endpoints: ['/api/supabase/status'],
-		},
-		b2StorageIntegration: {
-			implemented: true,
-			endpoints: ['/api/admin/b2/presign', '/api/admin/b2/sync'],
-		},
-		githubOAuth: {
-			implemented: true,
-			endpoints: ['/api/auth/callback'],
-		},
-		adminPortal: {
-			implemented: true,
-			routes: ['/admin'],
-		},
-		memberPortal: {
-			implemented: true,
-			routes: ['/member'],
-		},
-		contentPages: {
-			implemented: true,
-			routes: ['/weekly', '/milestones', '/news', '/calendar'],
-		},
-	};
+	// Check environment variables
+	const hasSupabase = !!(
+		process.env.NEXT_PUBLIC_SUPABASE_URL &&
+		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+	);
+	
+	const hasSupabaseServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+	
+	const hasAdminConfig = !!process.env.ADMIN_EMAILS;
+	
+	const hasB2Config = !!(
+		process.env.B2_APPLICATION_KEY_ID &&
+		process.env.B2_APPLICATION_KEY &&
+		process.env.B2_BUCKET_NAME &&
+		process.env.B2_ENDPOINT
+	);
 
-	const allImplemented = Object.values(features).every((f) => f.implemented);
+	// Overall health status
+	const isHealthy = hasSupabase && hasAdminConfig;
 
 	return NextResponse.json({
-		ok: true,
-		phase: 2,
-		status: allImplemented ? 'complete' : 'in-progress',
-		features,
+		status: isHealthy ? 'healthy' : 'degraded',
 		timestamp: new Date().toISOString(),
+		checks: {
+			supabase: {
+				configured: hasSupabase,
+				serviceRole: hasSupabaseServiceKey,
+				status: hasSupabase ? 'ok' : 'missing',
+			},
+			admin: {
+				configured: hasAdminConfig,
+				status: hasAdminConfig ? 'ok' : 'missing',
+			},
+			storage: {
+				configured: hasB2Config,
+				status: hasB2Config ? 'ok' : 'not_configured',
+				optional: true,
+			},
+		},
+		features: {
+			authentication: hasSupabase ? 'available' : 'unavailable',
+			adminPanel: hasAdminConfig ? 'available' : 'unavailable',
+			fileUploads: hasB2Config ? 'available' : 'unavailable',
+		},
+		message: isHealthy
+			? 'Phase 2 is operational'
+			: 'Some required services are not configured',
 	});
 }
