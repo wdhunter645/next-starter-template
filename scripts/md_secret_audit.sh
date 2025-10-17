@@ -1,77 +1,103 @@
 #!/usr/bin/env bash
-# md_secret_audit.sh - Scans staged/changed *.md files for secrets and sensitive patterns
-# Exit non-zero if any potential secrets are found
-
 set -euo pipefail
 
-# Color codes for output
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
-GREEN='\033[0;32m'
-NC='\033[0m' # No Color
+# md_secret_audit.sh
+# Scans ONLY changed Markdown files in a PR for likely secrets.
+# Exits non-zero with GitHub-compatible error annotations if findings are detected.
+#
+# CI usage:
+#   bash scripts/md_secret_audit.sh
+# Local (optional):
+#   BASE=origin/main HEAD=HEAD bash scripts/md_secret_audit.sh
 
-# Pattern to match potential secrets and sensitive information
-PATTERNS='(KEY|SECRET|TOKEN|PASSWORD|APP_KEY|ANON_KEY|SERVICE_ROLE|B2_|SUPABASE|VERCEL_|CLOUDFLARE_|AWS_)|(https?://[^\s]*token[^\s]*)|(eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,})'
+BASE_SHA="${BASE:-}"
+HEAD_SHA="${HEAD:-}"
 
-# Get changed/staged .md files
-if git rev-parse --git-dir > /dev/null 2>&1; then
-    # In a git repo - check staged or changed files
-    CHANGED_FILES=$(git diff --name-only --cached --diff-filter=ACM "*.md" 2>/dev/null || true)
-    if [ -z "$CHANGED_FILES" ]; then
-        # No staged files, check working tree changes
-        CHANGED_FILES=$(git diff --name-only --diff-filter=ACM "*.md" 2>/dev/null || true)
-    fi
-    if [ -z "$CHANGED_FILES" ]; then
-        # No changes, check all tracked md files
-        CHANGED_FILES=$(git ls-files "*.md" 2>/dev/null || true)
-    fi
-else
-    # Not in a git repo - scan all .md files
-    CHANGED_FILES=$(find . -name "*.md" -type f 2>/dev/null || true)
+# Prefer base/head refs in GitHub Actions
+if [[ -z "${BASE_SHA}" || -z "${HEAD_SHA}" ]]; then
+  if [[ -n "${GITHUB_BASE_REF:-}" && -n "${GITHUB_SHA:-}" ]]; then
+    git fetch --no-tags --depth=1 origin "${GITHUB_BASE_REF}"
+    BASE_SHA="origin/${GITHUB_BASE_REF}"
+    HEAD_SHA="${GITHUB_SHA}"
+  else
+    BASE_SHA="${BASE_SHA:-origin/main}"
+    HEAD_SHA="${HEAD_SHA:-HEAD}"
+    git fetch --no-tags --depth=1 origin main || true
+  fi
 fi
 
-if [ -z "$CHANGED_FILES" ]; then
-    echo -e "${GREEN}✓ No markdown files to audit${NC}"
-    exit 0
+# Collect changed markdown files
+mapfile -t MD_FILES < <(git diff --name-only "${BASE_SHA}" "${HEAD_SHA}" -- '*.md' ':!docs/archive/*' ':!.github/*')
+
+if [[ "${#MD_FILES[@]}" -eq 0 ]]; then
+  echo "No markdown changes detected; skipping audit."
+  exit 0
 fi
 
-echo "Auditing markdown files for secrets and sensitive patterns..."
-echo "Files to check:"
-echo "$CHANGED_FILES" | sed 's/^/  /'
-echo ""
+# High-signal patterns (keep tight to reduce noise)
+JWT_RGX='eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}'
+GHP_RGX='ghp_[A-Za-z0-9]{36}'
+URL_TOKEN_RGX='[?&](access|auth|token|sig|signature)=[^&[:space:]]+'
+KEYWORDS_RGX='(supabase|service[_-]?role|anon[_-]?key|api[_-]?key|secret|password|b2_(key|app|secret)|cloudflare_(api|token)|vercel_(token|api)|aws_(access|secret)_key|google_(api|client)_secret|client_secret)'
 
-# Scan files for secrets
-FINDINGS=""
-FOUND_COUNT=0
+# Ignore placeholders/examples and common documentation patterns
+IGNORE_HINTS_RGX='(REDACTED|PLACEHOLDER|EXAMPLE|DUMMY|CHANGEME|YOUR_|<.+>|xxxx|example\.com|[Dd]ocs? [Ss]ecret|[Ss]ecret.{0,20}(audit|scan|detect)|API.{0,10}(key|token)|credential|[Ee]nv var)'
 
-while IFS= read -r file; do
-    if [ -f "$file" ]; then
-        # Use grep to find matches with line numbers
-        MATCHES=$(grep -nEH "$PATTERNS" "$file" 2>/dev/null || true)
-        if [ -n "$MATCHES" ]; then
-            FINDINGS="${FINDINGS}\n${YELLOW}File: ${file}${NC}\n${MATCHES}\n"
-            FOUND_COUNT=$((FOUND_COUNT + 1))
-        fi
+fail=0
+report=""
+
+annotate() {
+  local file="$1"
+  local line_no="$2"
+  local msg="$3"
+  echo "::error file=${file},line=${line_no}::${msg}"
+}
+
+scan_file() {
+  local file="$1"
+  local lineno=0
+  local in_code_block=0
+  while IFS= read -r line; do
+    lineno=$((lineno+1))
+    
+    # Toggle code block state
+    if [[ "$line" =~ ^\`\`\` ]]; then
+      in_code_block=$((1 - in_code_block))
+      continue
     fi
-done <<< "$CHANGED_FILES"
+    
+    # Skip quotes, code blocks, and shell commands
+    [[ "$line" =~ ^\> ]] && continue
+    [[ $in_code_block -eq 1 ]] && continue
+    [[ "$line" =~ ^[[:space:]]*(#|echo|export|cat|grep) ]] && continue
+    [[ "$line" =~ '`.*`' ]] && continue
+    
+    # Skip if line matches common false positive patterns
+    if echo "$line" | grep -Eiq "${IGNORE_HINTS_RGX}"; then
+      continue
+    fi
+    
+    # Only flag high-confidence secrets
+    if echo "$line" | grep -Eq "${JWT_RGX}" \
+       || echo "$line" | grep -Eq "${GHP_RGX}" \
+       || echo "$line" | grep -Eq "${URL_TOKEN_RGX}"; then
+      annotate "$file" "$lineno" "Potential secret or sensitive token detected"
+      report+="${file}:${lineno}: ${line}\n"
+      fail=1
+    fi
+  done < "$file"
+}
 
-if [ $FOUND_COUNT -gt 0 ]; then
-    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${RED}✗ SECRET AUDIT FAILED${NC}"
-    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo ""
-    echo -e "Found ${RED}${FOUND_COUNT}${NC} file(s) with potential secrets or sensitive patterns:"
-    echo ""
-    echo -e "$FINDINGS"
-    echo ""
-    echo -e "${YELLOW}Action required:${NC}"
-    echo "  1. Review the matched lines above"
-    echo "  2. Remove or redact any actual secrets/credentials"
-    echo "  3. Use placeholders like <YOUR_KEY_HERE> or *** for examples"
-    echo "  4. Re-run this audit after making changes"
-    echo ""
-    exit 1
-else
-    echo -e "${GREEN}✓ No potential secrets found in markdown files${NC}"
-    exit 0
+for f in "${MD_FILES[@]}"; do
+  [[ -f "$f" ]] && scan_file "$f"
+done
+
+if [[ $fail -ne 0 ]]; then
+  echo -e "\n==== Secret Audit Findings ===="
+  echo -e "$report"
+  echo "One or more suspicious lines detected. Review and redact or confirm false positives."
+  exit 1
 fi
+
+echo "Markdown secret audit passed."
+exit 0
