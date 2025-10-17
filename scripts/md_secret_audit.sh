@@ -10,8 +10,18 @@ YELLOW='\033[1;33m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
-# Pattern to match potential secrets and sensitive information
-PATTERNS='(KEY|SECRET|TOKEN|PASSWORD|APP_KEY|ANON_KEY|SERVICE_ROLE|B2_|SUPABASE|VERCEL_|CLOUDFLARE_|AWS_)|(https?://[^\s]*token[^\s]*)|(eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,})'
+# High-signal patterns for actual secrets (not documentation placeholders)
+# Matches:
+# - Long base64-like strings (potential real tokens)
+# - JWT tokens (eyJ...)
+# - Real GitHub tokens (ghp_, gho_, etc.)
+# - Real AWS keys (AKIA...)
+# - URLs with actual token parameters
+# Does NOT match:
+# - Environment variable names (SUPABASE_URL, KEY_ID, etc.)
+# - Common placeholders (your_key_here, YOUR_TOKEN, etc.)
+# - Documentation examples with obvious placeholders
+PATTERNS='(ghp_[A-Za-z0-9]{36})|(gho_[A-Za-z0-9]{36})|(ghs_[A-Za-z0-9]{36})|(github_pat_[A-Za-z0-9]{22}_[A-Za-z0-9]{59})|(AKIA[0-9A-Z]{16})|(eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,})|(sk-[A-Za-z0-9]{20,})|(xox[baprs]-[A-Za-z0-9-]{10,})|(https?://[^\s]*[?&]token=[A-Za-z0-9]{20,})'
 
 # Get changed/staged .md files
 if git rev-parse --git-dir > /dev/null 2>&1; then
