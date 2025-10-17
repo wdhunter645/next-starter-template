@@ -32,6 +32,7 @@
 		"wrangler": "4.21.x"
 	},
 	"scripts": {
+		"audit:docs": "bash scripts/md_secret_audit.sh",
 		"build": "next build",
 		"cf-typegen": "wrangler types --env-interface CloudflareEnv env.d.ts",
 		"check": "npm run build && tsc",
