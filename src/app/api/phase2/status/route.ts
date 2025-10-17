@@ -21,9 +21,9 @@ export async function GET() {
 	const hasAdminConfig = !!process.env.ADMIN_EMAILS;
 	
 	const hasB2Config = !!(
-		process.env.B2_APPLICATION_KEY_ID &&
-		process.env.B2_APPLICATION_KEY &&
-		process.env.B2_BUCKET_NAME &&
+		process.env.B2_KEY_ID &&
+		process.env.B2_APP_KEY &&
+		process.env.B2_BUCKET &&
 		process.env.B2_ENDPOINT
 	);
 

@@ -40,9 +40,9 @@ curl -X GET "${BASE_URL}/api/env/check" | jq
     { "name": "NEXT_PUBLIC_SUPABASE_ANON_KEY", "present": true },
     { "name": "SUPABASE_SERVICE_ROLE_KEY", "present": true },
     { "name": "ADMIN_EMAILS", "present": true },
-    { "name": "B2_APPLICATION_KEY_ID", "present": true },
-    { "name": "B2_APPLICATION_KEY", "present": true },
-    { "name": "B2_BUCKET_NAME", "present": true },
+    { "name": "B2_KEY_ID", "present": true },
+    { "name": "B2_APP_KEY", "present": true },
+    { "name": "B2_BUCKET", "present": true },
     { "name": "B2_ENDPOINT", "present": true }
   ],
   "summary": {
@@ -177,7 +177,7 @@ curl -X POST "${BASE_URL}/api/admin/b2/presign" \
 }
 ```
 
-**Status code:** `401` or `503` (if B2 not configured)
+**Status code:** `401` (not authenticated), `403` (not admin), or `503` (if B2 or admin config not set)
 
 ### B2 Sync (Admin only)
 
@@ -195,7 +195,7 @@ curl -X GET "${BASE_URL}/api/admin/b2/sync" | jq
 }
 ```
 
-**Status code:** `401` or `503` (if B2 not configured)
+**Status code:** `401` (not authenticated), `403` (not admin), or `503` (if B2 or admin config not set)
 
 ## Complete Smoke Test Script
 
