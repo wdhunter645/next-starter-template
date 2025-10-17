@@ -74,13 +74,13 @@ scan_file() {
     [[ "$line" =~ ^\> ]] && continue
     # Skip lines inside code fences
     [[ $in_fence -eq 1 ]] && continue
-    if echo "$line" | grep -Eq "${IGNORE_HINTS_RGX}"; then
+    if echo "$line" | grep -Pq "${IGNORE_HINTS_RGX}"; then
       continue
     fi
     if echo "$line" | grep -Eq "${JWT_RGX}" \
        || echo "$line" | grep -Eq "${GHP_RGX}" \
        || echo "$line" | grep -Eq "${URL_TOKEN_RGX}" \
-       || echo "$line" | grep -Eq "${KEYWORDS_RGX}"; then
+       || echo "$line" | grep -Pq "${KEYWORDS_RGX}"; then
       annotate "$file" "$lineno" "Potential secret or sensitive token detected"
       if [[ "$DEBUG" == "1" ]]; then
         report+="${file}:${lineno}: ${line:0:200}\n"
