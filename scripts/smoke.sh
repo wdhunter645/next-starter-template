@@ -2,7 +2,8 @@
 # Smoke test script for verifying staging/preview deployments
 # Tests critical routes and API endpoints
 
-set -e
+# Don't exit on first error - we want to run all tests
+# set -e removed to allow continuing after failures
 
 # Get base URL from environment or use default
 BASE_URL="${SMOKE_URL:-http://localhost:3000}"
