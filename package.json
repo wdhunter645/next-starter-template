@@ -44,9 +44,9 @@
 		"lint": "next lint",
 		"preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
 		"smoke": "bash scripts/smoke.sh",
-		"smoke:preview": "bash scripts/smoke.sh https://preview.lougehrigfanclub.com",
-		"smoke:staging": "bash scripts/smoke.sh https://staging.lougehrigfanclub.com",
-		"smoke:prod": "bash scripts/smoke.sh https://lougehrigfanclub.com",
+		"smoke:preview": "bash scripts/smoke.sh",
+		"smoke:staging": "bash scripts/smoke.sh https://test.lougehrigfanclub.com",
+		"smoke:prod": "bash scripts/smoke.sh https://www.lougehrigfanclub.com",
 		"start": "next start",
 		"typecheck": "tsc --noEmit"
 	}
