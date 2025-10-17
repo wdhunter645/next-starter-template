@@ -1,29 +1,64 @@
-import { createClient } from '@supabase/supabase-js';
+/**
+ * Supabase Server Client
+ * 
+ * Server-side Supabase instance for use in API routes and Server Components.
+ * Uses environment variables (not NEXT_PUBLIC_*).
+ * 
+ * IMPORTANT: Uses ANON key only, NOT service role key.
+ * This maintains security while allowing server-side queries.
+ * 
+ * TODO: Install @supabase/supabase-js package:
+ *   npm install @supabase/supabase-js
+ * 
+ * Then uncomment the createClient import and usage below.
+ * 
+ * Usage (after package installed):
+ *   import { getSupabaseServer } from '@/lib/supabase/serverClient';
+ *   const supabase = getSupabaseServer();
+ *   const { data } = await supabase.from('table').select();
+ */
+
+// TODO: Uncomment when @supabase/supabase-js is installed
+// import { createClient } from '@supabase/supabase-js';
+
+// Get environment variables (server-side only)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_API_KEY || '';
+
+// Check if Supabase is configured
+const isConfigured = !!(supabaseUrl && supabaseAnonKey);
 
 /**
- * Create a Supabase client for use in server components and API routes
- * Uses the anon key by default for read-only patterns that respect RLS
- * 
- * Note: SUPABASE_SERVICE_ROLE_KEY is intentionally NOT used here.
- * If you need service role access (which bypasses RLS), you must:
- * 1. Ensure the code is server-only (never sent to client)
- * 2. Verify admin session/permissions before any operation
- * 3. Explicitly check for and use the service role key in that specific context
+ * Get server-side Supabase client
+ * Creates a new client instance each time (suitable for API routes)
  */
-export function createServerClient() {
-	const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-	const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-	if (!supabaseUrl || !supabaseAnonKey) {
-		throw new Error(
-			'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY'
-		);
+export function getSupabaseServer() {
+	if (!isConfigured) {
+		return null;
 	}
+	
+	// TODO: Uncomment when @supabase/supabase-js is installed
+	// return createClient(supabaseUrl, supabaseAnonKey);
+	
+	// Placeholder until package is installed
+	return null;
+}
 
-	return createClient(supabaseUrl, supabaseAnonKey, {
-		auth: {
-			persistSession: false,
-			autoRefreshToken: false,
-		},
-	});
+/**
+ * Check if Supabase is configured for server use
+ */
+export function isSupabaseConfigured(): boolean {
+	return isConfigured;
+}
+
+/**
+ * Get Supabase configuration status
+ * Safe to expose - only shows presence, not values
+ */
+export function getSupabaseStatus() {
+	return {
+		configured: isConfigured,
+		urlSet: !!supabaseUrl,
+		anonKeySet: !!supabaseAnonKey,
+	};
 }

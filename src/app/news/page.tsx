@@ -1,10 +1,4 @@
-import type { Metadata } from "next";
 import SocialWall from "@/components/SocialWall";
-
-export const metadata: Metadata = {
-	title: "News & Q&A | Lou Gehrig Fan Club",
-	description: "Stay updated with the latest news and community discussions about Lou Gehrig and the fan club.",
-};
 
 export default function News() {
 	return (

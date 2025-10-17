@@ -1,6 +1,6 @@
 .footer {
 	border-top: 1px solid rgba(0, 0, 0, 0.08);
-	background: var(--background);
+	background: var(--color-bg);
 	margin-top: auto;
 }
 
@@ -45,6 +45,7 @@
 .copyright {
 	font-size: 0.875rem;
 	text-align: center;
+	color: var(--color-fg);
 }
 
 @media (min-width: 768px) {
@@ -63,18 +64,18 @@
 .link {
 	font-size: 0.875rem;
 	text-decoration: none;
-	color: inherit;
+	color: var(--color-link);
 	padding: 0.25rem 0;
 	border-bottom: 2px solid transparent;
 	transition: border-color 0.2s;
 }
 
 .link:hover {
-	border-bottom-color: currentColor;
+	border-bottom-color: var(--color-accent);
 }
 
 .link:focus {
-	outline: 2px solid;
+	outline: 2px solid var(--color-accent);
 	outline-offset: 4px;
 }
 
@@ -82,7 +83,7 @@
 	font-size: 0.75rem;
 	text-align: center;
 	margin-top: 1rem;
-	opacity: 0.6;
+	color: var(--color-muted);
 }
 
 @media (min-width: 768px) {
