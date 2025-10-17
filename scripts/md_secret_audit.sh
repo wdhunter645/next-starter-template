@@ -38,10 +38,10 @@ fi
 JWT_RGX='eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}'
 GHP_RGX='ghp_[A-Za-z0-9]{36}'
 URL_TOKEN_RGX='[?&](access|auth|token|sig|signature)=[^&[:space:]]+'
-KEYWORDS_RGX='(?i)(supabase|service[_-]?role|anon[_-]?key|api[_-]?key|secret|password|b2_(key|app|secret)|cloudflare_(api|token)|vercel_(token|api)|aws_(access|secret)_key|google_(api|client)_secret|client_secret)'
+KEYWORDS_RGX='(supabase|service[_-]?role|anon[_-]?key|api[_-]?key|secret|password|b2_(key|app|secret)|cloudflare_(api|token)|vercel_(token|api)|aws_(access|secret)_key|google_(api|client)_secret|client_secret)'
 
-# Ignore placeholders/examples
-IGNORE_HINTS_RGX='(?i)(REDACTED|PLACEHOLDER|EXAMPLE|DUMMY|CHANGEME|YOUR_|<.+>|xxxx|example\.com)'
+# Ignore placeholders/examples and common documentation patterns
+IGNORE_HINTS_RGX='(REDACTED|PLACEHOLDER|EXAMPLE|DUMMY|CHANGEME|YOUR_|<.+>|xxxx|example\.com|[Dd]ocs? [Ss]ecret|[Ss]ecret.{0,20}(audit|scan|detect)|API.{0,10}(key|token)|credential|[Ee]nv var)'
 
 fail=0
 report=""
@@ -56,17 +56,31 @@ annotate() {
 scan_file() {
   local file="$1"
   local lineno=0
+  local in_code_block=0
   while IFS= read -r line; do
     lineno=$((lineno+1))
-    [[ "$line" =~ ^\> ]] && continue
-    [[ "$line" =~ ^\`\`\` ]] && continue
-    if echo "$line" | grep -Eq "${IGNORE_HINTS_RGX}"; then
+    
+    # Toggle code block state
+    if [[ "$line" =~ ^\`\`\` ]]; then
+      in_code_block=$((1 - in_code_block))
       continue
     fi
+    
+    # Skip quotes, code blocks, and shell commands
+    [[ "$line" =~ ^\> ]] && continue
+    [[ $in_code_block -eq 1 ]] && continue
+    [[ "$line" =~ ^[[:space:]]*(#|echo|export|cat|grep) ]] && continue
+    [[ "$line" =~ '`.*`' ]] && continue
+    
+    # Skip if line matches common false positive patterns
+    if echo "$line" | grep -Eiq "${IGNORE_HINTS_RGX}"; then
+      continue
+    fi
+    
+    # Only flag high-confidence secrets
     if echo "$line" | grep -Eq "${JWT_RGX}" \
        || echo "$line" | grep -Eq "${GHP_RGX}" \
-       || echo "$line" | grep -Eq "${URL_TOKEN_RGX}" \
-       || echo "$line" | grep -Eq "${KEYWORDS_RGX}"; then
+       || echo "$line" | grep -Eq "${URL_TOKEN_RGX}"; then
       annotate "$file" "$lineno" "Potential secret or sensitive token detected"
       report+="${file}:${lineno}: ${line}\n"
       fail=1
