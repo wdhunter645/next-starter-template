@@ -43,7 +43,7 @@
 		"dev": "next dev",
 		"lint": "next lint",
 		"preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-		"smoke": "bash scripts/smoke.sh",
+		"smoke:preview": "bash scripts/smoke.sh",
 		"start": "next start",
 		"typecheck": "tsc --noEmit"
 	}

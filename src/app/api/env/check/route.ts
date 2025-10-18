@@ -1,45 +1,66 @@
 import { NextResponse } from "next/server";
 
 /**
- * GET /api/env/check
- * Returns a list of required environment variables and whether they are set.
- * Never returns actual values - only presence/absence.
+ * Environment Variable Check API
+ * 
+ * Returns a list of required environment variable names and their presence status.
+ * NEVER returns actual values - only names and boolean presence indicators.
+ * 
+ * This is safe for preview/staging environments and helps diagnose configuration issues.
  */
-export async function GET() {
-  const envVars = {
-    // Cloudflare
-    CLOUDFLARE_ACCOUNT_ID: !!process.env.CLOUDFLARE_ACCOUNT_ID,
-    CLOUDFLARE_API_TOKEN: !!process.env.CLOUDFLARE_API_TOKEN,
-    
-    // Site
-    NEXT_PUBLIC_SITE_URL: !!process.env.NEXT_PUBLIC_SITE_URL,
-    NEXT_PUBLIC_SITE_NAME: !!process.env.NEXT_PUBLIC_SITE_NAME,
-    
-    // Supabase
-    NEXT_PUBLIC_SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-    
-    // Admin
-    ADMIN_EMAILS: !!process.env.ADMIN_EMAILS,
-    
-    // B2
-    B2_KEY_ID: !!process.env.B2_KEY_ID,
-    B2_APP_KEY: !!process.env.B2_APP_KEY,
-    B2_BUCKET: !!process.env.B2_BUCKET,
-    B2_ENDPOINT: !!process.env.B2_ENDPOINT,
-    PUBLIC_B2_BASE_URL: !!process.env.PUBLIC_B2_BASE_URL,
-    
-    // Worker
-    WORKER_BASE_URL: !!process.env.WORKER_BASE_URL,
-    NEXT_PUBLIC_WORKER_BASE_URL: !!process.env.NEXT_PUBLIC_WORKER_BASE_URL,
-    
-    // GitHub App OAuth
-    GITHUB_APP_CLIENT_ID: !!process.env.GITHUB_APP_CLIENT_ID,
-    GITHUB_APP_CLIENT_SECRET: !!process.env.GITHUB_APP_CLIENT_SECRET,
-    GITHUB_APP_ID: !!process.env.GITHUB_APP_ID,
-    GITHUB_APP_INSTALLATION_ID: !!process.env.GITHUB_APP_INSTALLATION_ID,
-  };
 
-  return NextResponse.json(envVars);
+// List of environment variables to check
+const ENV_VARS_TO_CHECK = [
+	// Cloudflare
+	"CLOUDFLARE_ACCOUNT_ID",
+	"CLOUDFLARE_API_TOKEN",
+	
+	// Site
+	"NEXT_PUBLIC_SITE_URL",
+	"NEXT_PUBLIC_SITE_NAME",
+	
+	// Supabase
+	"NEXT_PUBLIC_SUPABASE_URL",
+	"NEXT_PUBLIC_SUPABASE_API_KEY",
+	"SUPABASE_ACCESS_TOKEN",
+	"SUPABASE_PROJECT_ID",
+	"SUPABASE_DB_PASSWORD",
+	
+	// Admin
+	"ADMIN_EMAILS",
+	
+	// B2 (optional)
+	"B2_KEY_ID",
+	"B2_APP_KEY",
+	"B2_BUCKET",
+	"B2_ENDPOINT",
+	"PUBLIC_B2_BASE_URL",
+	
+	// GitHub OAuth
+	"GITHUB_APP_CLIENT_ID",
+	"GITHUB_APP_CLIENT_SECRET",
+	"GITHUB_APP_ID",
+	"GITHUB_APP_INSTALLATION_ID",
+];
+
+export async function GET() {
+	const envStatus = ENV_VARS_TO_CHECK.map((varName) => ({
+		name: varName,
+		present: !!process.env[varName],
+		required: !varName.includes("B2"), // B2 is optional
+	}));
+	
+	const requiredCount = envStatus.filter(e => e.required).length;
+	const requiredPresent = envStatus.filter(e => e.required && e.present).length;
+	const optionalCount = envStatus.filter(e => !e.required).length;
+	const optionalPresent = envStatus.filter(e => !e.required && e.present).length;
+	
+	return NextResponse.json({
+		ok: requiredPresent === requiredCount,
+		summary: {
+			required: `${requiredPresent}/${requiredCount}`,
+			optional: `${optionalPresent}/${optionalCount}`,
+		},
+		variables: envStatus,
+	});
 }

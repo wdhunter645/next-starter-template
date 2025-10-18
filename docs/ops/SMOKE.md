@@ -1,89 +1,191 @@
-# Smoke Test Documentation
+# Smoke Testing
 
-This document describes the smoke test suite used to verify that all critical endpoints are functional.
+Smoke tests are quick validation checks to ensure core functionality is working after deployment.
 
 ## Overview
 
-The smoke test script (`scripts/smoke.sh`) performs basic availability checks on all public pages and API endpoints. It's designed to run quickly and catch obvious failures.
+The smoke test script (`scripts/smoke.sh`) validates:
+- API endpoints return expected status codes
+- JSON responses are valid
+- Public routes are accessible
+- Protected routes respond appropriately
 
-## Usage
+## Running Smoke Tests
 
-### Local Testing
-
+### Local Development
 ```bash
-# Start the development server
+# Start dev server in one terminal
 npm run dev
 
-# In another terminal, run smoke tests
-BASE_URL=http://localhost:3000 npm run smoke
+# Run smoke tests in another terminal
+./scripts/smoke.sh http://localhost:3000
 ```
 
-### Production/Staging Testing
-
+### Preview/Staging
 ```bash
-# Test against a deployed environment
-BASE_URL=https://your-site.pages.dev npm run smoke
+# Test against preview deployment
+./scripts/smoke.sh https://preview-pr-123.pages.dev
+
+# Test against staging
+./scripts/smoke.sh https://test.lougehrigfanclub.com
 ```
 
-## Endpoints Tested
+### Production
+```bash
+# Test production site
+./scripts/smoke.sh https://www.lougehrigfanclub.com
+```
 
-### Public Pages
-
-All public pages should return HTTP 200:
-
-- **`/`** - Home page
-- **`/weekly`** - Weekly updates page
-- **`/milestones`** - Milestones page
-- **`/charities`** - Charities page
-- **`/news`** - News & Q&A page
-- **`/calendar`** - Calendar page
+## What Gets Tested
 
 ### API Endpoints
+1. **`/api/env/check`**
+   - Returns environment variable status
+   - Validates JSON response
+   - Shows which env vars are present/missing
 
-#### `/api/env/check`
+2. **`/api/phase2/status`**
+   - Returns build information
+   - Lists expected routes
+   - Validates system health
 
-Returns environment variable configuration status (without values).
+### Public Routes
+All public pages should return HTTP 200:
+- `/` - Home
+- `/weekly` - Weekly Matchup
+- `/milestones` - Milestones
+- `/charities` - Charities
+- `/news` - News & Q&A
+- `/calendar` - Calendar
+- `/privacy` - Privacy Policy
+- `/terms` - Terms of Service
 
-**Expected Response:**
-```json
-{
-  "CLOUDFLARE_ACCOUNT_ID": true,
-  "CLOUDFLARE_API_TOKEN": false,
-  ...
-}
-```
+### Protected Routes
+These should return HTTP 200 but show auth required messages:
+- `/member` - Member area (requires session)
+- `/admin` - Admin area (requires session + admin role)
 
-**Verification:**
+## Script Requirements
+
+The smoke script requires:
+- `curl` - Make HTTP requests
+- `jq` - Parse JSON responses (optional but recommended)
+
+Install on Ubuntu/Debian:
 ```bash
-curl https://your-site.pages.dev/api/env/check
+sudo apt-get install curl jq
 ```
 
-#### `/api/phase2/status`
+Install on macOS:
+```bash
+brew install curl jq
+```
 
-Returns JSON health summary of Phase 2 integrations.
+## Output Format
 
-**Expected Response:**
-```json
+The script provides color-coded output:
+- ✓ **Green** - Test passed
+- ✗ **Red** - Test failed
+- ⚠ **Yellow** - Warning (e.g., invalid JSON)
+
+Example output:
+```
+🔍 Running smoke tests against: http://localhost:3000
+
+═══════════════════════════════════════
+  API Endpoints
+═══════════════════════════════════════
+Testing: Environment variable check... ✓ PASS (HTTP 200, valid JSON)
 {
   "ok": true,
-  "timestamp": "2025-10-17T15:30:00.000Z",
-  "services": {
-    "supabase": {
-      "configured": true,
-      "status": "available"
-    },
-    "b2": {
-      "configured": false,
-      "status": "not configured"
-    },
-    ...
+  "summary": {
+Testing: Phase 2 status... ✓ PASS (HTTP 200, valid JSON)
+{
+  "ok": true,
+  "timestamp": "2025-01-15T10:30:00.000Z",
+
+═══════════════════════════════════════
+  Public Routes
+═══════════════════════════════════════
+Testing: Home page... ✓ PASS (HTTP 200)
+Testing: Weekly page... ✓ PASS (HTTP 200)
+...
+
+═══════════════════════════════════════
+  Summary
+═══════════════════════════════════════
+Tests run:    12
+Tests passed: 12
+Tests failed: 0
+
+✓ All smoke tests passed!
+```
+
+## Using in CI/CD
+
+### GitHub Actions
+```yaml
+- name: Run smoke tests
+  run: |
+    npm run build
+    npm start &
+    sleep 5
+    ./scripts/smoke.sh http://localhost:3000
+```
+
+### Cloudflare Pages Deploy Hook
+After deployment:
+```bash
+# In deployment script
+PREVIEW_URL="https://${CF_PAGES_URL}"
+./scripts/smoke.sh "$PREVIEW_URL"
+```
+
+## NPM Script Alias
+
+Add to `package.json` for convenience:
+```json
+{
+  "scripts": {
+    "smoke:preview": "bash scripts/smoke.sh"
   }
 }
 ```
 
-**Verification:**
+Run with:
 ```bash
-curl https://your-site.pages.dev/api/phase2/status
+npm run smoke:preview http://localhost:3000
+```
+
+## Troubleshooting
+
+### Test fails with "000" status code
+- Server is not running or unreachable
+- Check URL is correct
+- Verify firewall/network settings
+
+### JSON validation fails
+- Endpoint returned non-JSON response
+- Check endpoint implementation
+- Verify Content-Type header is `application/json`
+
+### curl command not found
+```bash
+# Ubuntu/Debian
+sudo apt-get install curl
+
+# macOS
+brew install curl
+```
+
+### jq command not found
+Script will work without `jq` but won't validate JSON or show pretty output:
+```bash
+# Ubuntu/Debian
+sudo apt-get install jq
+
+# macOS
+brew install jq
 ```
 
 ## Exit Codes
@@ -91,55 +193,51 @@ curl https://your-site.pages.dev/api/phase2/status
 - **0** - All tests passed
 - **1** - One or more tests failed
 
-## Adding New Endpoints
-
-When adding new pages or APIs, update both:
-1. The `scripts/smoke.sh` script
-2. This documentation file
-
-### Example
-
+Use in CI:
 ```bash
-# In scripts/smoke.sh, add:
-test_endpoint "/your-new-page"
-
-# In this file, document the endpoint under the appropriate section
+if ./scripts/smoke.sh "$PREVIEW_URL"; then
+  echo "Smoke tests passed"
+else
+  echo "Smoke tests failed - blocking deployment"
+  exit 1
+fi
 ```
 
-## CI Integration
+## Extending Smoke Tests
 
-The smoke test can be integrated into CI/CD workflows:
+To add new tests, edit `scripts/smoke.sh`:
 
-```yaml
-- name: Run smoke tests
-  run: |
-    npm run start &
-    sleep 5
-    npm run smoke
+### Add new endpoint test
+```bash
+test_json_endpoint "/api/my-new-endpoint" "My new endpoint description"
 ```
 
-## Troubleshooting
+### Add new route test
+```bash
+test_endpoint "/my-new-route" 200 "My new route description"
+```
 
-### Connection Timeouts
+### Add custom validation
+```bash
+RESPONSE=$(curl -s "$BASE_URL/api/custom")
+if echo "$RESPONSE" | grep -q "expected_value"; then
+  echo "✓ Custom check passed"
+else
+  echo "✗ Custom check failed"
+fi
+```
 
-If tests timeout, ensure:
-- The server is running
-- The BASE_URL is correct
-- Firewall rules allow connections
+## Best Practices
 
-### Non-200 Status Codes
+1. **Run after every deployment** - Catch issues early
+2. **Test preview URLs** - Validate before merging
+3. **Keep tests fast** - Smoke tests should complete in seconds
+4. **Test critical paths only** - Don't test every possible scenario
+5. **Log failures** - Save output when tests fail for debugging
+6. **Automate in CI** - Make smoke tests part of deploy pipeline
 
-- **401/403** - Authentication required (expected for admin/member pages)
-- **404** - Endpoint doesn't exist (check URL spelling)
-- **500** - Server error (check logs)
-- **503** - Service unavailable (check environment configuration)
+## Related Documentation
 
-## Env-Absent Behavior
-
-When environment variables are not configured:
-
-- **Supabase/B2 endpoints** should return HTTP 503 with `{reason: "service not configured"}`
-- **Admin APIs** without auth should return HTTP 401/403 (never 500)
-- **Public pages** should always return HTTP 200
-
-This ensures graceful degradation when services are not configured.
+- [API Reference](../API_REFERENCE.md)
+- [Deployment Guide](../DEPLOYMENT_GUIDE.md)
+- [Rollout Checklist](./ROLLOUT.md) (to be created in PR #13)
