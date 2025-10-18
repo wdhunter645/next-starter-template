@@ -1,29 +1,33 @@
 /**
  * Site Configuration
- * 
- * Central configuration for site metadata, navigation, and branding.
- * This file is the single source of truth for site-wide constants.
+ * Central configuration for site identity, navigation, and core settings.
  */
 
 export const siteConfig = {
-	// Site metadata
-	siteName: "Lou Gehrig Fan Club",
-	siteDescription: "Honoring the legacy of baseball's Iron Horse through community, education, and support for ALS research and awareness.",
-	siteUrl: "https://www.lougehrigfanclub.com",
+	name: "Lou Gehrig Fan Club",
+	shortName: "LGFC",
+	description: "Honoring the legacy of baseball's Iron Horse through community, education, and support for ALS research and awareness.",
+	url: "https://www.lougehrigfanclub.com",
 	
-	// Navigation structure
-	navigation: {
-		main: [
-			{ label: "Weekly", path: "/weekly" },
-			{ label: "Milestones", path: "/milestones" },
-			{ label: "Charities", path: "/charities" },
-			{ label: "News & Q&A", path: "/news" },
-			{ label: "Calendar", path: "/calendar" },
-		],
-		footer: [
+	// Main navigation links (header)
+	nav: [
+		{ label: "Weekly", path: "/weekly" },
+		{ label: "Milestones", path: "/milestones" },
+		{ label: "Charities", path: "/charities" },
+		{ label: "News & Q&A", path: "/news" },
+		{ label: "Calendar", path: "/calendar" },
+	],
+	
+	// Footer links
+	footer: {
+		legal: [
 			{ label: "Privacy", path: "/privacy" },
 			{ label: "Terms", path: "/terms" },
+		],
+		admin: [
 			{ label: "Admin", path: "/admin" },
 		],
 	},
 } as const;
+
+export type SiteConfig = typeof siteConfig;

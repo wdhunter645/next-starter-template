@@ -1,182 +1,162 @@
 # Authentication Gates
 
-This document describes the authentication and authorization guards used in the application.
+This document describes the authentication and authorization system for protected routes.
 
 ## Overview
 
-The application has two levels of protected content:
-1. **Member Area** - Requires any authenticated session
-2. **Admin Area** - Requires authenticated session + admin email verification
+The site has two levels of access control:
+1. **Member-only pages** - Require user authentication
+2. **Admin-only pages** - Require authentication + admin role
 
-## Implementation Status
+## Protected Routes
 
-**Current State:** Placeholder guards with documentation
-- Guards are stubbed for future authentication integration
-- `/member` page shows member-only content structure
-- `/admin` page shows admin-only content structure
-- `lib/auth/adminGuard.ts` provides server-side admin checking
+### Member Area (`/member`)
+- **Access**: Authenticated users only
+- **Location**: `src/app/member/page.tsx`
+- **Guard**: Checks for valid session via `getSession()`
+- **Behavior**: Shows "Authentication Required" message if not signed in
 
-**Future Integration:** When authentication is added (e.g., Supabase Auth, GitHub OAuth):
-1. Replace placeholder session checks with real auth provider
-2. Extract user email from verified session
-3. Guards will work automatically with minimal changes
+### Admin Area (`/admin`)
+- **Access**: Authenticated admin users only
+- **Location**: `src/app/admin/page.tsx`
+- **Guards**: 
+  1. Checks for valid session via `getSession()`
+  2. Checks email against ADMIN_EMAILS via `isUserAdmin()`
+- **Behavior**: 
+  - Not signed in → "Authentication Required"
+  - Signed in but not admin → "Access Denied"
+  - Admin user → Dashboard access
 
-## Member Area (`/member`)
+## Auth Libraries
 
-**Path:** `/member/index.tsx`
+### Session Management (`src/lib/auth/session.ts`)
+Handles user session checking.
 
-**Requirements:**
-- Valid authenticated session (any user)
-
-**Current Implementation:**
+**Functions:**
 ```typescript
-// TODO: Replace with actual auth check
-// const session = await getServerSession();
-// if (!session) {
-//   redirect('/auth/login');
-// }
+getSession(): Promise<Session>
+// Returns current user session or { user: null }
+
+isAuthenticated(): Promise<boolean>
+// Check if user has valid session
+
+getUserEmail(): Promise<string | null>
+// Get current user's email
 ```
 
-**Displays:**
-- User email and account info
-- Member-only features and benefits
-- Sign out button
+**Current Status:** Placeholder implementation
+- Returns `{ user: null }` (no session)
+- TODO: Implement real session management with cookies/database
 
-## Admin Area (`/admin`)
+### Admin Guard (`src/lib/auth/adminGuard.ts`)
+Server-side helper for admin authorization. **Never use on client side.**
 
-**Path:** `/admin/index.tsx`
-
-**Requirements:**
-- Valid authenticated session
-- User email must be in `ADMIN_EMAILS` environment variable
-
-**Current Implementation:**
+**Functions:**
 ```typescript
-// TODO: Replace with actual auth check
-// const session = await getServerSession();
-// if (!session) {
-//   redirect('/auth/login');
-// }
-// const adminCheck = await checkAdminAccess(session.user.email);
-// if (!adminCheck.authorized) {
-//   return <div>403 Forbidden</div>;
-// }
+isUserAdmin(email: string | null): boolean
+// Check if email is in ADMIN_EMAILS list
+
+getAdminEmails(): string[]
+// Get list of admin emails from environment
+
+hasAdminConfig(): boolean
+// Check if ADMIN_EMAILS is configured
 ```
 
-**Displays:**
-- Admin email and role
-- Admin tools (B2 storage, Supabase status)
-- Links to API endpoints
-- Security notes
-
-## Admin Guard Helper
-
-**File:** `lib/auth/adminGuard.ts`
-
-### Functions
-
-#### `checkAdminAccess(request: NextRequest)`
-
-Checks if a request has admin access based on:
-1. Authentication status
-2. Email in ADMIN_EMAILS environment variable
-
-**Returns:**
-```typescript
-interface AdminCheckResult {
-  authorized: boolean;
-  status: number;        // 200, 401, 403, or 503
-  reason: string;
-  userEmail?: string;
-}
-```
-
-**Status Codes:**
-- `200` - Authorized (admin access granted)
-- `401` - Not authenticated (no session)
-- `403` - Insufficient permissions (not an admin)
-- `503` - Configuration issue (ADMIN_EMAILS not set)
-
-### Usage Example
-
-```typescript
-import { checkAdminAccess } from '@/lib/auth/adminGuard';
-
-export async function GET(request: NextRequest) {
-  const adminCheck = await checkAdminAccess(request);
-  if (!adminCheck.authorized) {
-    return NextResponse.json(
-      { error: adminCheck.reason },
-      { status: adminCheck.status }
-    );
-  }
-  
-  // Proceed with admin operation
-  return NextResponse.json({ message: 'Admin access granted' });
-}
-```
-
-#### `getAdminEmails()`
-
-Returns the list of admin emails from environment.
-
-**Returns:** `string[]`
+**How it works:**
+1. Reads `ADMIN_EMAILS` environment variable
+2. Splits by comma, trims whitespace
+3. Compares user email (case-insensitive)
 
 ## Environment Configuration
 
-### ADMIN_EMAILS
-
-Comma-separated list of admin email addresses.
+### Required Environment Variables
 
 ```bash
-ADMIN_EMAILS="admin@example.com,superadmin@example.com"
+# Admin emails (comma-separated)
+ADMIN_EMAILS=admin@example.com,another-admin@example.com
 ```
 
-**Security Notes:**
-- Always use environment variables, never hardcode emails
-- Keep the list minimal (principle of least privilege)
-- Use work/organizational emails, not personal emails
-- Rotate access when team members change
+Add to `.env.local` or configure in hosting platform (Cloudflare Pages, etc.).
 
-## Integration Checklist
+## Acceptance Checks
 
-When adding authentication:
+### Testing Member Area
+1. **Without session**: Visit `/member`
+   - ✅ Should show "Authentication Required" message
+   - ✅ Should NOT show member content
 
-- [ ] Choose auth provider (Supabase, GitHub OAuth, etc.)
-- [ ] Update `/member/page.tsx` to check real session
-- [ ] Update `/admin/page.tsx` to check real session + admin
-- [ ] Update `adminGuard.ts` to extract email from session
-- [ ] Add redirect to login for unauthenticated users
-- [ ] Test member access with regular user
-- [ ] Test admin access with admin email
-- [ ] Test admin access with non-admin email (should fail)
-- [ ] Document provider-specific setup
+2. **With session**: (Once auth implemented)
+   - ✅ Should show member content
+   - ✅ Should display user email
+   - ✅ Should show sign out option
 
-## Testing
+### Testing Admin Area
+1. **Without session**: Visit `/admin`
+   - ✅ Should show "Authentication Required" message
+   - ✅ Should NOT show admin dashboard
 
-**Development Testing:**
+2. **With session (non-admin)**: (Once auth implemented)
+   - ✅ Should show "Access Denied" message
+   - ✅ Should NOT show admin dashboard
 
-The admin guard currently accepts a `x-user-email` header for testing:
+3. **With session (admin user)**:
+   - ✅ Email must be in ADMIN_EMAILS
+   - ✅ Should show admin dashboard
+   - ✅ Should display admin email
 
+### Environment Variable Check
 ```bash
-curl -H "x-user-email: admin@example.com" \
-  http://localhost:3000/api/admin/...
+# Verify ADMIN_EMAILS is set
+echo $ADMIN_EMAILS
+
+# Test admin guard logic (example in Node.js)
+node -e "console.log(process.env.ADMIN_EMAILS?.split(',').map(e => e.trim()))"
 ```
 
-**⚠️ Security Warning:** This header-based auth is NOT SECURE and is only for development. Remove before production deployment.
+## Implementation Status
 
-## Rollback Plan
+### ✅ Completed
+- [x] Auth guard helper functions
+- [x] Session interface and placeholder
+- [x] Member page with session requirement
+- [x] Admin page with session + admin check
+- [x] Documentation
 
-All auth guards are additive and non-breaking:
+### 🚧 TODO: Real Authentication
+- [ ] Implement session storage (cookies, database)
+- [ ] Add login/logout pages
+- [ ] Integrate with OAuth callback handler
+- [ ] Add CSRF protection
+- [ ] Session expiration and renewal
+- [ ] Sign out functionality
+- [ ] Redirect to login instead of showing messages
+
+## Security Notes
+
+1. **Server-side only**: Auth checks happen server-side (Next.js Server Components)
+2. **No service role**: Does not use Supabase service role or privileged keys
+3. **Environment separation**: Admin emails in environment, not in code
+4. **Case-insensitive**: Email comparison is case-insensitive
+5. **Graceful degradation**: Shows clear messages instead of crashing
+
+## Future Enhancements
+
+Consider adding:
+- Role-based access control (RBAC) beyond admin/member
+- Permission levels within admin role
+- Session management UI for admins
+- Audit logging for admin actions
+- Two-factor authentication
+- Rate limiting on auth endpoints
+
+## Rollback
+
+To revert auth gates:
 ```bash
-git revert <commit-sha>
+git checkout HEAD -- src/app/member/page.tsx
+git checkout HEAD -- src/app/admin/page.tsx
+rm -rf src/lib/auth/
 ```
 
-Pages will function without auth (as they did before), just without protection.
-
-## Related Documentation
-
-- [Website Buildout Plan](../../README.md) - Parent planning document
-- Admin Guard: `src/lib/auth/adminGuard.ts`
-- Member Page: `src/app/member/page.tsx`
-- Admin Page: `src/app/admin/page.tsx`
+Pages will return to simple placeholder state.

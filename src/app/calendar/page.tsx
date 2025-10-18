@@ -1,10 +1,3 @@
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-	title: "Calendar | Lou Gehrig Fan Club",
-	description: "View upcoming events and important dates for the Lou Gehrig Fan Club community.",
-};
-
 export default function Calendar() {
 	return (
 		<div className="min-h-screen flex flex-col items-center justify-center p-8">

@@ -1,42 +1,45 @@
 @import "tailwindcss";
 
 :root {
-	/* Background and foreground colors */
+	/* Base colors */
 	--background: #ffffff;
 	--foreground: #171717;
 	
-	/* Accent and interactive colors */
-	--accent: #2563eb;
-	--link: #2563eb;
-	--muted: #6b7280;
+	/* Theme colors - CSS variables for site theming */
+	--color-bg: #ffffff;
+	--color-fg: #171717;
+	--color-accent: #1a73e8;
+	--color-link: #1a73e8;
+	--color-muted: #6b7280;
 	
-	/* Font families */
-	--font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-	--font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Monaco, 'Cascadia Mono', monospace;
+	/* Font stacks */
+	--font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	--font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 }
 
 @theme inline {
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
-	--color-accent: var(--accent);
-	--color-link: var(--link);
-	--color-muted: var(--muted);
-	--font-sans: var(--font-sans);
-	--font-mono: var(--font-mono);
+	--font-sans: var(--font-geist-sans);
+	--font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
 	:root {
 		--background: #0a0a0a;
 		--foreground: #ededed;
-		--accent: #3b82f6;
-		--link: #60a5fa;
-		--muted: #9ca3af;
+		
+		/* Dark mode theme colors */
+		--color-bg: #0a0a0a;
+		--color-fg: #ededed;
+		--color-accent: #4a9eff;
+		--color-link: #4a9eff;
+		--color-muted: #9ca3af;
 	}
 }
 
 body {
-	background: var(--background);
-	color: var(--foreground);
+	background: var(--color-bg);
+	color: var(--color-fg);
 	font-family: var(--font-sans);
 }
