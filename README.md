@@ -94,6 +94,28 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 | `npm run build && npm run deploy` | Deploy your production site to Cloudflare    |
 | `npm wrangler tail`               | View real-time logs for all Workers          |
 
+## Verifying Test Site
+
+We maintain a staging mirror at **test.lougehrigfanclub.com** that mirrors production for safe testing.
+
+**Quick Verification:**
+```bash
+# Run smoke tests against staging
+SMOKE_URL=https://test.lougehrigfanclub.com npm run smoke:preview
+```
+
+**For detailed staging mirror setup and operations:**
+- **Setup Guide:** [docs/ops/STAGING-MIRROR.md](./docs/ops/STAGING-MIRROR.md)
+  - Branch deployment configuration
+  - Custom domain setup (CNAME)
+  - Environment variable configuration
+  - Staging refresh procedures
+- **Operations Runbook:** [docs/staging-runbook.md](./docs/staging-runbook.md)
+  - Daily operations and monitoring
+  - Environment variable management
+  - API endpoint testing
+  - Troubleshooting guide
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
