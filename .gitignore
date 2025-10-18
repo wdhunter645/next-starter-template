@@ -205,4 +205,3 @@ next-env.d.ts
 ### Documentation artifacts ###
 /docs/archive/*.bak
 /OPERATIONAL_BACKLOG.md.log
-.secret-audit/

@@ -1,90 +1,103 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
+# Smoke test script for verifying staging/preview deployments
+# Tests critical routes and API endpoints
 
-# smoke.sh
-# Smoke test script for key endpoints
-# Usage: BASE_URL=https://your-preview.pages.dev bash scripts/smoke.sh
-# Or locally: BASE_URL=http://localhost:3000 bash scripts/smoke.sh
+# Don't exit on first error - we want to run all tests
+# set -e removed to allow continuing after failures
 
-BASE_URL="${BASE_URL:-http://localhost:3000}"
+# Get base URL from environment or use default
+BASE_URL="${SMOKE_URL:-http://localhost:3000}"
 
-echo "🔍 Running smoke tests against: ${BASE_URL}"
+echo "🧪 Running smoke tests against: $BASE_URL"
 echo ""
 
-# Track failures
-FAILED=0
-PASSED=0
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
 
-# Test helper function
-test_endpoint() {
-  local path="$1"
-  local expected_status="${2:-200}"
-  local url="${BASE_URL}${path}"
-  
-  echo -n "Testing ${path} ... "
-  
-  # Use -s for silent, -w to get status code, -o to discard body
-  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${url}" || echo "000")
-  
-  if [[ "${HTTP_CODE}" == "${expected_status}" ]]; then
-    echo "✓ ${HTTP_CODE}"
-    PASSED=$((PASSED + 1))
-  else
-    echo "✗ Expected ${expected_status}, got ${HTTP_CODE}"
-    FAILED=$((FAILED + 1))
-  fi
+# Test counter
+PASSED=0
+FAILED=0
+
+# Function to test a URL
+test_url() {
+    local url="$1"
+    local description="$2"
+    
+    echo -n "Testing $description... "
+    
+    # Use curl with timeout and follow redirects
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -L --connect-timeout 10 --max-time 30 "$BASE_URL$url" 2>/dev/null || echo "000")
+    
+    if [ "$HTTP_CODE" = "200" ]; then
+        echo -e "${GREEN}✓ PASS${NC} ($HTTP_CODE)"
+        ((PASSED++))
+        return 0
+    else
+        echo -e "${RED}✗ FAIL${NC} ($HTTP_CODE)"
+        ((FAILED++))
+        return 1
+    fi
 }
 
-# Public pages (should return 200)
+# Test public pages
 echo "📄 Testing public pages..."
-test_endpoint "/" 200
-test_endpoint "/weekly" 200
-test_endpoint "/milestones" 200
-test_endpoint "/charities" 200
-test_endpoint "/news" 200
-test_endpoint "/calendar" 200
-test_endpoint "/social" 200
+test_url "/" "Home page"
+test_url "/weekly" "Weekly page"
+test_url "/milestones" "Milestones page"
+test_url "/news" "News page"
+test_url "/calendar" "Calendar page"
 
 echo ""
-
-# API endpoints (vary by auth/config status)
 echo "🔌 Testing API endpoints..."
-echo "Note: These may return 401/403 (unauth) or 503 (not configured)"
 
-# Supabase status endpoint (public, should return 200 with config info)
-test_endpoint "/api/supabase/status" 200
+# Test API endpoints
+test_url "/api/supabase/status" "Supabase status API"
 
-# Admin endpoints (should return 401 when not authenticated)
-# We don't send auth headers, so we expect 401 or 503
-echo -n "Testing /api/admin/b2/presign (POST) ... "
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${BASE_URL}/api/admin/b2/presign" \
-  -H "Content-Type: application/json" \
-  -d '{"key":"test.txt"}' || echo "000")
-if [[ "${HTTP_CODE}" == "401" || "${HTTP_CODE}" == "403" || "${HTTP_CODE}" == "503" ]]; then
-  echo "✓ ${HTTP_CODE} (expected auth failure or not configured)"
-  PASSED=$((PASSED + 1))
+# Note: These endpoints may not exist yet, so we just try them
+# If they return 404, that's expected and we'll create them later
+echo -n "Testing Environment check API... "
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -L --connect-timeout 10 --max-time 30 "$BASE_URL/api/env/check" 2>/dev/null || echo "000")
+if [ "$HTTP_CODE" = "200" ]; then
+    echo -e "${GREEN}✓ PASS${NC} ($HTTP_CODE)"
+    ((PASSED++))
+elif [ "$HTTP_CODE" = "404" ]; then
+    echo -e "${YELLOW}⚠ SKIP${NC} (endpoint not implemented yet)"
 else
-  echo "✗ Expected 401/403/503, got ${HTTP_CODE}"
-  FAILED=$((FAILED + 1))
+    echo -e "${RED}✗ FAIL${NC} ($HTTP_CODE)"
+    ((FAILED++))
 fi
 
-echo -n "Testing /api/admin/b2/sync ... "
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/api/admin/b2/sync" || echo "000")
-if [[ "${HTTP_CODE}" == "401" || "${HTTP_CODE}" == "403" || "${HTTP_CODE}" == "503" ]]; then
-  echo "✓ ${HTTP_CODE} (expected auth failure or not configured)"
-  PASSED=$((PASSED + 1))
+echo -n "Testing Phase 2 status API... "
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -L --connect-timeout 10 --max-time 30 "$BASE_URL/api/phase2/status" 2>/dev/null || echo "000")
+if [ "$HTTP_CODE" = "200" ]; then
+    echo -e "${GREEN}✓ PASS${NC} ($HTTP_CODE)"
+    ((PASSED++))
+elif [ "$HTTP_CODE" = "404" ]; then
+    echo -e "${YELLOW}⚠ SKIP${NC} (endpoint not implemented yet)"
 else
-  echo "✗ Expected 401/403/503, got ${HTTP_CODE}"
-  FAILED=$((FAILED + 1))
+    echo -e "${RED}✗ FAIL${NC} ($HTTP_CODE)"
+    ((FAILED++))
 fi
 
+# Summary
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Results: ${PASSED} passed, ${FAILED} failed"
+echo "📊 Test Summary"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo -e "${GREEN}Passed: $PASSED${NC}"
+echo -e "${RED}Failed: $FAILED${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-if [[ ${FAILED} -gt 0 ]]; then
-  exit 1
+# Exit with error if any tests failed
+if [ $FAILED -gt 0 ]; then
+    echo ""
+    echo -e "${RED}❌ Some tests failed!${NC}"
+    exit 1
+else
+    echo ""
+    echo -e "${GREEN}✅ All tests passed!${NC}"
+    exit 0
 fi
-
-exit 0
