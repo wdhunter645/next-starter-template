@@ -1,10 +1,3 @@
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-	title: "Terms of Service | Lou Gehrig Fan Club",
-	description: "Terms of service for the Lou Gehrig Fan Club website.",
-};
-
 export default function Terms() {
 	return (
 		<div className="min-h-screen flex flex-col items-center justify-center p-8">

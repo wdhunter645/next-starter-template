@@ -1,53 +1,89 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { checkAdminAccess } from '@/lib/auth/adminGuard';
+import { NextResponse } from "next/server";
+import { getSession } from "@/lib/auth/session";
+import { isUserAdmin } from "@/lib/auth/adminGuard";
 
 /**
- * B2 Sync Endpoint - Admin Only (Stub)
+ * B2 Sync API (Admin Only) - STUB
  * 
- * Future endpoint for syncing/listing files in B2 bucket.
- * Currently returns a stub response for future implementation.
+ * Stub endpoint for syncing media to B2 storage.
+ * This endpoint is feature-flagged - returns 503 if B2 not configured.
  * 
  * Security:
- * - Requires admin authentication (checked via ADMIN_EMAILS)
- * - Returns 401/403 for unauthorized requests
- * - Returns 503 if B2 environment variables are not configured
+ * - Requires authentication (session)
+ * - Requires admin role (ADMIN_EMAILS)
+ * - Returns 401 if not authenticated
+ * - Returns 403 if not admin
+ * - Returns 503 if B2 env vars missing
  * 
- * Future functionality:
- * - List objects in bucket
- * - Sync local metadata with B2
- * - Bulk operations
+ * This ensures the endpoint degrades gracefully and never crashes CI.
  */
 
-export async function GET(request: NextRequest) {
-	// Check admin access
-	const adminCheck = await checkAdminAccess(request);
-	if (!adminCheck.authorized) {
+// Check if B2 is configured
+function isB2Configured(): boolean {
+	return !!(
+		process.env.B2_KEY_ID &&
+		process.env.B2_APP_KEY &&
+		process.env.B2_BUCKET &&
+		process.env.B2_ENDPOINT
+	);
+}
+
+// Get missing B2 environment variables
+function getMissingB2Vars(): string[] {
+	const missing: string[] = [];
+	if (!process.env.B2_KEY_ID) missing.push("B2_KEY_ID");
+	if (!process.env.B2_APP_KEY) missing.push("B2_APP_KEY");
+	if (!process.env.B2_BUCKET) missing.push("B2_BUCKET");
+	if (!process.env.B2_ENDPOINT) missing.push("B2_ENDPOINT");
+	return missing;
+}
+
+export async function POST() {
+	// Check authentication
+	const session = await getSession();
+	
+	if (!session.user) {
 		return NextResponse.json(
-			{ ok: false, error: adminCheck.reason },
-			{ status: adminCheck.status }
+			{ error: "Authentication required" },
+			{ status: 401 }
 		);
 	}
-
-	// Check B2 configuration
-	const b2KeyId = process.env.B2_KEY_ID;
-	const b2AppKey = process.env.B2_APP_KEY;
-	const b2Bucket = process.env.B2_BUCKET;
-	const b2Endpoint = process.env.B2_ENDPOINT;
-
-	if (!b2KeyId || !b2AppKey || !b2Bucket || !b2Endpoint) {
+	
+	// Check admin role
+	const isAdmin = isUserAdmin(session.user.email);
+	
+	if (!isAdmin) {
+		return NextResponse.json(
+			{ error: "Admin access required" },
+			{ status: 403 }
+		);
+	}
+	
+	// Check if B2 is configured
+	if (!isB2Configured()) {
+		const missing = getMissingB2Vars();
 		return NextResponse.json(
 			{
-				ok: false,
-				reason: 'B2 not configured',
+				error: "Service unavailable",
+				reason: "B2 storage is not configured",
+				missing: missing,
+				message: "B2 sync requires environment variables",
 			},
 			{ status: 503 }
 		);
 	}
-
-	// Stub response - to be implemented
+	
+	// TODO: Implement actual B2 sync logic
+	// This would typically:
+	// 1. List files from source (e.g., local uploads)
+	// 2. Compare with B2 bucket contents
+	// 3. Upload new/changed files
+	// 4. Return sync summary
+	
 	return NextResponse.json({
-		ok: true,
-		todo: 'implement listing/sync later',
-		configured: true,
+		success: true,
+		message: "B2 sync endpoint ready",
+		note: "TODO: Implement sync logic",
+		stub: true,
 	});
 }

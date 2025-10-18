@@ -1,13 +1,7 @@
 import Link from "next/link";
 import { siteConfig } from "@/lib/site/config";
-import styles from "../Header.module.css";
+import styles from "./SiteHeader.module.css";
 
-/**
- * SiteHeader Component
- * 
- * Main site header with navigation, reading from centralized site config.
- * Uses existing Header.module.css for styling to maintain consistency.
- */
 export default function SiteHeader() {
 	return (
 		<header className={styles.header}>
@@ -16,23 +10,20 @@ export default function SiteHeader() {
 					<Link 
 						href="/" 
 						className={styles.logo}
-						aria-label={`${siteConfig.siteName} Home`}
+						aria-label={`${siteConfig.name} Home`}
 					>
-						LGFC
+						{siteConfig.shortName}
 					</Link>
 					<div className={styles.navLinks}>
-						{siteConfig.navigation.main.map((item) => (
+						{siteConfig.nav.map((link) => (
 							<Link 
-								key={item.path}
-								href={item.path} 
+								key={link.path}
+								href={link.path} 
 								className={styles.navLink}
 							>
-								{item.label}
+								{link.label}
 							</Link>
 						))}
-						<Link href="/member" className={styles.navLink}>
-							Join
-						</Link>
 					</div>
 				</div>
 			</nav>

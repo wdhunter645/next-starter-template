@@ -1,0 +1,74 @@
+.sections {
+	background: var(--color-bg);
+}
+
+.section {
+	padding: 4rem 1rem;
+	border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+	.section {
+		border-top-color: rgba(255, 255, 255, 0.1);
+	}
+}
+
+.section:nth-child(even) {
+	background: rgba(0, 0, 0, 0.02);
+}
+
+@media (prefers-color-scheme: dark) {
+	.section:nth-child(even) {
+		background: rgba(255, 255, 255, 0.02);
+	}
+}
+
+.container {
+	max-width: 56rem;
+	margin: 0 auto;
+	text-align: center;
+}
+
+.sectionTitle {
+	font-size: 2rem;
+	font-weight: 700;
+	margin-bottom: 1rem;
+	color: var(--color-fg);
+}
+
+@media (min-width: 640px) {
+	.sectionTitle {
+		font-size: 2.5rem;
+	}
+}
+
+.sectionDescription {
+	font-size: 1.125rem;
+	line-height: 1.75;
+	margin-bottom: 1.5rem;
+	color: var(--color-fg);
+	opacity: 0.85;
+	max-width: 40rem;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.sectionLink {
+	display: inline-block;
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--color-link);
+	text-decoration: none;
+	padding: 0.5rem 0;
+	border-bottom: 2px solid transparent;
+	transition: border-color 0.2s;
+}
+
+.sectionLink:hover {
+	border-bottom-color: var(--color-accent);
+}
+
+.sectionLink:focus {
+	outline: 2px solid var(--color-accent);
+	outline-offset: 4px;
+}

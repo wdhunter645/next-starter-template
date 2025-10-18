@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import SiteHeader from "@/components/Layout/SiteHeader";
-import SiteFooter from "@/components/Layout/SiteFooter";
-import { siteConfig } from "@/lib/site/config";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-	title: siteConfig.siteName,
-	description: siteConfig.siteDescription,
+	title: "Lou Gehrig Fan Club",
+	description: "Honoring the legacy of baseball's Iron Horse through community, education, and support for ALS research and awareness.",
 	openGraph: {
-		title: siteConfig.siteName,
-		description: siteConfig.siteDescription,
-		url: siteConfig.siteUrl,
-		siteName: siteConfig.siteName,
+		title: "Lou Gehrig Fan Club",
+		description: "Honoring the legacy of baseball's Iron Horse through community, education, and support for ALS research and awareness.",
+		url: "https://www.lougehrigfanclub.com",
+		siteName: "Lou Gehrig Fan Club",
 		type: "website",
 	},
 	icons: {
@@ -27,11 +26,11 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body className="antialiased">
-				<SiteHeader />
+				<Header />
 				<main className="pt-16">
 					{children}
 				</main>
-				<SiteFooter />
+				<Footer />
 			</body>
 		</html>
 	);

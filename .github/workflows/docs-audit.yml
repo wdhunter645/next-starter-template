@@ -1,68 +1,43 @@
-name: docs-secret-audit
+name: Docs Secret Audit
+
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
     paths:
-      - "**/*.md"
+      - '**/*.md'
 
 jobs:
-  detect:
-    runs-on: ubuntu-latest
-    outputs:
-      skip: ${{ steps.maybe_skip.outputs.skip }}
-    permissions:
-      contents: read
-      pull-requests: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          # Need full history for accurate diff on forked PRs and rebases
-          fetch-depth: 0
-
-      - name: Determine changed markdown files
-        id: changes
-        uses: dorny/paths-filter@v3
-        with:
-          filters: |
-            md:
-              - added: "**/*.md"
-              - modified: "**/*.md"
-
-      - name: Set skip flag if no md changes
-        id: maybe_skip
-        run: |
-          if [[ "${{ steps.changes.outputs.md }}" != "true" ]]; then
-            echo "skip=true" >> $GITHUB_OUTPUT
-          else
-            echo "skip=false" >> $GITHUB_OUTPUT
-          fi
-
-  audit:
-    needs: detect
-    if: needs.detect.outputs.skip != 'true'
+  audit-docs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
+      pull-requests: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Use Node
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
-      - name: Install (no deps needed; ensure repo is valid)
-        run: npm ci --ignore-scripts || true
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Run docs secret audit (PR diff)
-        env:
-          # Feed exact SHAs to the script for reliability on forks/rebases
-          BASE: ${{ github.event.pull_request.base.sha }}
-          HEAD: ${{ github.event.pull_request.head.sha }}
-          DEBUG: "1"
+      - name: Run docs secret audit
         run: npm run audit:docs
+
+      - name: Post failure comment on PR
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🔒 **Docs Secret Audit Failed**\n\nPotential secrets or sensitive patterns detected in markdown files. Please review the workflow logs and remove any actual credentials before merging.\n\nRun `npm run audit:docs` locally to see detailed findings.'
+            })

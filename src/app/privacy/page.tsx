@@ -1,10 +1,3 @@
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-	title: "Privacy Policy | Lou Gehrig Fan Club",
-	description: "Privacy policy for the Lou Gehrig Fan Club website.",
-};
-
 export default function Privacy() {
 	return (
 		<div className="min-h-screen flex flex-col items-center justify-center p-8">

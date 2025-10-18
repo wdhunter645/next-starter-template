@@ -1,109 +1,147 @@
 # Theme Configuration
 
-This document describes the theme system and how to customize colors, fonts, and design tokens for the site.
+This document describes the site's theming system using CSS variables and centralized configuration.
 
-## Overview
+## CSS Variables
 
-The site uses CSS custom properties (CSS variables) for theming, making it easy to maintain consistent styling and support dark mode.
-
-## CSS Custom Properties
-
-Theme tokens are defined in `src/app/globals.css`:
+All theme colors and typography are defined as CSS variables in `src/app/globals.css`. This allows for consistent theming across the entire site.
 
 ### Color Tokens
 
+Located in `:root` selector in `globals.css`:
+
 ```css
 :root {
-  /* Background and foreground colors */
-  --background: #ffffff;
-  --foreground: #171717;
-  
-  /* Accent and interactive colors */
-  --accent: #2563eb;
-  --link: #2563eb;
-  --muted: #6b7280;
+  /* Base colors */
+  --color-bg: #ffffff;      /* Background color (light mode) */
+  --color-fg: #171717;      /* Foreground/text color (light mode) */
+  --color-accent: #1a73e8;  /* Accent color for highlights and focus */
+  --color-link: #1a73e8;    /* Link color */
+  --color-muted: #6b7280;   /* Muted text (e.g., build info) */
 }
+```
 
+### Dark Mode
+
+Dark mode colors are automatically applied via `prefers-color-scheme: dark` media query:
+
+```css
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --accent: #3b82f6;
-    --link: #60a5fa;
-    --muted: #9ca3af;
+    --color-bg: #0a0a0a;      /* Dark background */
+    --color-fg: #ededed;      /* Light text */
+    --color-accent: #4a9eff;  /* Lighter blue for contrast */
+    --color-link: #4a9eff;    /* Lighter link color */
+    --color-muted: #9ca3af;   /* Lighter muted text */
   }
 }
 ```
 
-### Font Tokens
+### Font Stacks
+
+Typography is controlled through font stack variables:
 
 ```css
 :root {
-  /* Font families */
-  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Monaco, 'Cascadia Mono', monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 }
 ```
 
-## How to Change Theme Tokens
-
-1. **Edit `src/app/globals.css`** - Modify the CSS custom properties in the `:root` selector
-2. **Update both light and dark modes** - Make sure to update values in the `@media (prefers-color-scheme: dark)` block
-3. **Use semantic names** - Keep token names semantic (e.g., `--accent` not `--blue`)
-
 ## Site Configuration
 
-Site metadata and navigation are centralized in `src/lib/site/config.ts`:
+Site identity and navigation structure are centralized in `src/lib/site/config.ts`:
 
 ```typescript
 export const siteConfig = {
-  siteName: "Lou Gehrig Fan Club",
-  siteDescription: "...",
-  siteUrl: "https://www.lougehrigfanclub.com",
+  name: "Lou Gehrig Fan Club",
+  shortName: "LGFC",
+  description: "...",
+  url: "https://www.lougehrigfanclub.com",
   
-  navigation: {
-    main: [
-      { label: "Weekly", path: "/weekly" },
-      // ...
-    ],
-    footer: [
+  // Header navigation links
+  nav: [
+    { label: "Weekly", path: "/weekly" },
+    { label: "Milestones", path: "/milestones" },
+    // ...
+  ],
+  
+  // Footer links
+  footer: {
+    legal: [
       { label: "Privacy", path: "/privacy" },
-      // ...
+      { label: "Terms", path: "/terms" },
+    ],
+    admin: [
+      { label: "Admin", path: "/admin" },
     ],
   },
 };
 ```
 
-### How to Change Navigation
+## How to Adjust Theming
 
-1. **Edit `src/lib/site/config.ts`** - Add, remove, or modify items in `navigation.main` or `navigation.footer`
-2. **Components update automatically** - `SiteHeader` and `SiteFooter` read from this config
+### Changing Colors
 
-## Layout Components
+1. Open `src/app/globals.css`
+2. Locate the `:root` selector
+3. Update color values (use hex, rgb, or hsl)
+4. Check dark mode values in the media query
+5. Build and preview changes
 
-- `src/components/Layout/SiteHeader.tsx` - Main header with navigation
-- `src/components/Layout/SiteFooter.tsx` - Footer with links and build info
+### Changing Typography
 
-Both components read from `siteConfig` for a single source of truth.
+1. Update `--font-sans` or `--font-mono` in `globals.css`
+2. Add any custom web fonts to `src/app/layout.tsx`
+3. Reference font variables in component CSS modules
 
-## Styling Guidelines
+### Changing Navigation
 
-- Use CSS custom properties for colors to support dark mode
-- Use Tailwind utility classes for layout and spacing
-- Keep custom CSS minimal and scoped to CSS modules
-- Maintain consistency with existing component styles
+1. Open `src/lib/site/config.ts`
+2. Update `nav` array for header links
+3. Update `footer.legal` or `footer.admin` for footer links
+4. Labels and paths are automatically used by Header/Footer components
 
-## Rollback Plan
+## Using Theme Variables in Components
 
-To revert theme changes:
-```bash
-git revert <commit-sha>
+In CSS modules, reference variables like this:
+
+```css
+.myComponent {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  border: 1px solid var(--color-accent);
+}
+
+.myLink {
+  color: var(--color-link);
+}
+
+.myLink:hover {
+  color: var(--color-accent);
+}
 ```
 
-All theme changes are in isolated files and can be safely reverted without breaking functionality.
+## Component Structure
 
-## Related Documentation
+- **Header**: `src/components/Header.tsx` + `Header.module.css`
+- **Footer**: `src/components/Footer.tsx` + `Footer.module.css`
+- **Layout Components**: Also available in `src/components/Layout/` (SiteHeader, SiteFooter)
 
-- [Website Buildout Plan](../../README.md) - Parent planning document
-- Site config: `src/lib/site/config.ts`
-- Global styles: `src/app/globals.css`
+Both use the same configuration from `lib/site/config.ts`.
+
+## Best Practices
+
+1. **Always use CSS variables** for colors instead of hardcoded values
+2. **Test in both light and dark modes** when making theme changes
+3. **Keep navigation structure in sync** - update `siteConfig` only
+4. **Avoid inline styles** - use CSS modules with theme variables
+5. **Maintain consistent spacing** - consider adding spacing variables if needed
+
+## Future Enhancements
+
+Consider adding:
+- Spacing scale variables (`--space-xs`, `--space-sm`, etc.)
+- Border radius variables (`--radius-sm`, `--radius-md`, etc.)
+- Shadow variables for consistent depth
+- Transition/animation timing variables
