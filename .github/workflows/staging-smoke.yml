@@ -1,0 +1,129 @@
+name: Staging Smoke Tests
+
+on:
+  pull_request:
+    branches: ['**']
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+jobs:
+  smoke-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Get Cloudflare Preview URL
+        id: get-preview-url
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: |
+          # For PRs, we'll try to construct the preview URL
+          # Note: Cloudflare Pages preview URLs follow pattern: <commit-hash>.<project>.pages.dev
+          # or <pr-number>.<project>.pages.dev
+          
+          # Get PR number
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          
+          # Check if CLOUDFLARE_PROJECT_NAME is set
+          if [ -n "${{ secrets.CLOUDFLARE_PROJECT_NAME }}" ]; then
+            PREVIEW_URL="https://${PR_NUMBER}.${{ secrets.CLOUDFLARE_PROJECT_NAME }}.pages.dev"
+            echo "preview_url=$PREVIEW_URL" >> $GITHUB_OUTPUT
+            echo "Preview URL: $PREVIEW_URL"
+          else
+            echo "⚠️ CLOUDFLARE_PROJECT_NAME secret not set, skipping preview smoke tests"
+            echo "preview_url=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Wait for Cloudflare Preview Deployment
+        if: steps.get-preview-url.outputs.preview_url != ''
+        continue-on-error: true
+        timeout-minutes: 5
+        run: |
+          PREVIEW_URL="${{ steps.get-preview-url.outputs.preview_url }}"
+          echo "Waiting for preview deployment at: $PREVIEW_URL"
+          
+          # Wait up to 3 minutes for the deployment to be ready
+          for i in {1..36}; do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$PREVIEW_URL" 2>/dev/null || echo "000")
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ Preview deployment is ready!"
+              exit 0
+            fi
+            echo "Attempt $i/36: Preview not ready yet (HTTP $HTTP_CODE), waiting..."
+            sleep 5
+          done
+          
+          echo "⚠️ Preview deployment not ready after 3 minutes"
+          exit 1
+
+      - name: Run smoke tests against preview
+        if: steps.get-preview-url.outputs.preview_url != ''
+        continue-on-error: true
+        run: |
+          PREVIEW_URL="${{ steps.get-preview-url.outputs.preview_url }}"
+          echo "Running smoke tests against: $PREVIEW_URL"
+          SMOKE_URL="$PREVIEW_URL" npm run smoke:preview
+
+      - name: Smoke tests note (no preview available)
+        if: github.event_name == 'pull_request' && steps.get-preview-url.outputs.preview_url == ''
+        run: |
+          echo "::notice::Smoke tests skipped - Cloudflare preview URL not available"
+          echo "::notice::To enable preview smoke tests, ensure CLOUDFLARE_PROJECT_NAME secret is set"
+
+      - name: Run smoke tests for staging branch
+        if: github.ref == 'refs/heads/staging'
+        run: |
+          # For staging branch, test against the staging domain
+          echo "Running smoke tests against staging environment"
+          SMOKE_URL="https://test.lougehrigfanclub.com" npm run smoke:preview || \
+          SMOKE_URL="https://staging.${{ secrets.CLOUDFLARE_PROJECT_NAME }}.pages.dev" npm run smoke:preview
+
+      - name: Post PR comment with results
+        if: github.event_name == 'pull_request' && steps.get-preview-url.outputs.preview_url != ''
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const previewUrl = '${{ steps.get-preview-url.outputs.preview_url }}';
+            const runUrl = '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}';
+            
+            const comment = `### 🧪 Staging Smoke Tests
+            
+            **Preview URL:** ${previewUrl}
+            **Build Status:** ✅ Passed
+            **Type Check:** ✅ Passed
+            **Lint:** ✅ Passed
+            **Smoke Tests:** See [workflow run](${runUrl}) for details
+            
+            To verify the staging mirror setup, see [docs/ops/STAGING-MIRROR.md](https://github.com/${{ github.repository }}/blob/${{ github.head_ref || github.ref_name }}/docs/ops/STAGING-MIRROR.md)`;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
