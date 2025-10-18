@@ -1,14 +1,7 @@
 import Link from "next/link";
 import { siteConfig } from "@/lib/site/config";
-import styles from "../Footer.module.css";
+import styles from "./SiteFooter.module.css";
 import packageJson from "../../../package.json";
-
-/**
- * SiteFooter Component
- * 
- * Main site footer with links and build info, reading from centralized site config.
- * Uses existing Footer.module.css for styling to maintain consistency.
- */
 
 // Environment variables with safe fallbacks
 const commitSha = process.env.CF_PAGES_COMMIT_SHA || process.env.VERCEL_GIT_COMMIT_SHA || "";
@@ -21,16 +14,25 @@ export default function SiteFooter() {
 			<div className={styles.container}>
 				<div className={styles.content}>
 					<div className={styles.copyright}>
-						<p>&copy; {new Date().getFullYear()} {siteConfig.siteName}. All rights reserved.</p>
+						<p>&copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved.</p>
 					</div>
 					<div className={styles.links}>
-						{siteConfig.navigation.footer.map((item) => (
+						{siteConfig.footer.legal.map((link) => (
 							<Link 
-								key={item.path}
-								href={item.path} 
+								key={link.path}
+								href={link.path} 
 								className={styles.link}
 							>
-								{item.label}
+								{link.label}
+							</Link>
+						))}
+						{siteConfig.footer.admin.map((link) => (
+							<Link 
+								key={link.path}
+								href={link.path} 
+								className={styles.link}
+							>
+								{link.label}
 							</Link>
 						))}
 					</div>
