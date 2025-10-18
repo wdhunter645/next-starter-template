@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { siteConfig } from "@/lib/site/config";
 import styles from "./Header.module.css";
 
 export default function Header() {
@@ -9,29 +10,20 @@ export default function Header() {
 					<Link 
 						href="/" 
 						className={styles.logo}
-						aria-label="Lou Gehrig Fan Club Home"
+						aria-label={`${siteConfig.name} Home`}
 					>
-						LGFC
+						{siteConfig.shortName}
 					</Link>
 					<div className={styles.navLinks}>
-						<Link href="/weekly" className={styles.navLink}>
-							Weekly Matchup
-						</Link>
-						<Link href="/milestones" className={styles.navLink}>
-							Milestones
-						</Link>
-						<Link href="/charities" className={styles.navLink}>
-							Charities
-						</Link>
-						<Link href="/news" className={styles.navLink}>
-							News &amp; Q&amp;A
-						</Link>
-						<Link href="/calendar" className={styles.navLink}>
-							Calendar
-						</Link>
-						<Link href="/member" className={styles.navLink}>
-							Join
-						</Link>
+						{siteConfig.nav.map((link) => (
+							<Link 
+								key={link.path}
+								href={link.path} 
+								className={styles.navLink}
+							>
+								{link.label}
+							</Link>
+						))}
 					</div>
 				</div>
 			</nav>

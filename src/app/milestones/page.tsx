@@ -1,10 +1,3 @@
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-	title: "Milestones | Lou Gehrig Fan Club",
-	description: "Explore the career milestones and achievements of Lou Gehrig, baseball's Iron Horse.",
-};
-
 export default function Milestones() {
 	return (
 		<div className="min-h-screen flex flex-col items-center justify-center p-8">

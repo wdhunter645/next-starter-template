@@ -1,21 +1,25 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
+import { getSupabaseStatus } from "@/lib/supabase/serverClient";
 
 /**
- * Supabase Status Endpoint
+ * Supabase Status API
  * 
- * Returns the configuration status of Supabase environment variables
- * without exposing any secrets or attempting to connect to the database.
+ * Returns configuration status for Supabase connection.
+ * Does NOT expose actual values - only presence indicators.
  * 
- * This is a smoke test to verify environment variables are set correctly
- * without causing runtime failures if Supabase is not configured.
+ * Safe for preview/staging environments.
  */
-export async function GET() {
-	const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-	const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+export async function GET() {
+	const status = getSupabaseStatus();
+	
 	return NextResponse.json({
-		ok: true,
-		urlSet: !!supabaseUrl,
-		anonSet: !!supabaseAnonKey,
+		ok: status.configured,
+		urlSet: status.urlSet,
+		anonSet: status.anonKeySet,
+		message: status.configured 
+			? "Supabase is configured" 
+			: "Supabase environment variables are not set",
+		note: "Only using ANON key (not service role)",
 	});
 }

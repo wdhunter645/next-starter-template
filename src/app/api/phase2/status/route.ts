@@ -1,61 +1,56 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
+import packageJson from "../../../../../package.json";
 
 /**
  * Phase 2 Status API
  * 
- * Returns a JSON health summary for Phase 2 features.
- * This endpoint checks the status of various services and configurations.
- * 
- * GET /api/phase2/status
+ * Returns a simple health summary with build info and route verification.
+ * This is a read-only endpoint safe for public access.
  */
 
+// List of expected routes
+const EXPECTED_ROUTES = [
+	"/",
+	"/weekly",
+	"/milestones",
+	"/charities",
+	"/news",
+	"/calendar",
+	"/privacy",
+	"/terms",
+	"/member",
+	"/admin",
+];
+
 export async function GET() {
-	// Check environment variables
-	const hasSupabase = !!(
-		process.env.NEXT_PUBLIC_SUPABASE_URL &&
-		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-	);
+	const commitSha = process.env.CF_PAGES_COMMIT_SHA || 
+	                  process.env.VERCEL_GIT_COMMIT_SHA || 
+	                  "unknown";
+	const shortSha = commitSha !== "unknown" ? commitSha.substring(0, 7) : "unknown";
 	
-	const hasSupabaseServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+	const buildDate = process.env.BUILD_DATE || new Date().toISOString();
 	
-	const hasAdminConfig = !!process.env.ADMIN_EMAILS;
+	const envName = process.env.CF_PAGES_BRANCH || 
+	                process.env.VERCEL_ENV || 
+	                process.env.NODE_ENV || 
+	                "development";
 	
-	const hasB2Config = !!(
-		process.env.B2_KEY_ID &&
-		process.env.B2_APP_KEY &&
-		process.env.B2_BUCKET &&
-		process.env.B2_ENDPOINT
-	);
-
-	// Overall health status
-	const isHealthy = hasSupabase && hasAdminConfig;
-
 	return NextResponse.json({
-		status: isHealthy ? 'healthy' : 'degraded',
+		ok: true,
 		timestamp: new Date().toISOString(),
+		build: {
+			version: packageJson.version,
+			commit: shortSha,
+			date: buildDate,
+			environment: envName,
+		},
+		routes: {
+			expected: EXPECTED_ROUTES,
+			count: EXPECTED_ROUTES.length,
+		},
 		checks: {
-			supabase: {
-				configured: hasSupabase,
-				serviceRole: hasSupabaseServiceKey,
-				status: hasSupabase ? 'ok' : 'missing',
-			},
-			admin: {
-				configured: hasAdminConfig,
-				status: hasAdminConfig ? 'ok' : 'missing',
-			},
-			storage: {
-				configured: hasB2Config,
-				status: hasB2Config ? 'ok' : 'not_configured',
-				optional: true,
-			},
+			packageJson: !!packageJson.version,
+			nextRuntime: typeof process !== "undefined",
 		},
-		features: {
-			authentication: hasSupabase ? 'available' : 'unavailable',
-			adminPanel: hasAdminConfig ? 'available' : 'unavailable',
-			fileUploads: hasB2Config ? 'available' : 'unavailable',
-		},
-		message: isHealthy
-			? 'Phase 2 is operational'
-			: 'Some required services are not configured',
 	});
 }

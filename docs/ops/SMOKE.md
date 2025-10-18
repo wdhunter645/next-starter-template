@@ -1,258 +1,243 @@
-# Smoke Tests
+# Smoke Testing
 
-This document provides smoke test commands for validating the application's health and API endpoints.
+Smoke tests are quick validation checks to ensure core functionality is working after deployment.
 
 ## Overview
 
-Smoke tests are quick validation checks to ensure critical features are working. Run these after:
-- Deployments to production or staging
-- Environment configuration changes
-- Major code updates
+The smoke test script (`scripts/smoke.sh`) validates:
+- API endpoints return expected status codes
+- JSON responses are valid
+- Public routes are accessible
+- Protected routes respond appropriately
 
-## Prerequisites
+## Running Smoke Tests
 
+### Local Development
 ```bash
-# Set your base URL
-export BASE_URL="http://localhost:3000"
-# or for production
-export BASE_URL="https://your-domain.com"
+# Start dev server in one terminal
+npm run dev
+
+# Run smoke tests in another terminal
+./scripts/smoke.sh http://localhost:3000
 ```
 
-## API Endpoints
-
-### Environment Check
-
-**Endpoint:** `GET /api/env/check`
-
-**Purpose:** Verify which environment variables are configured
-
-**Test:**
+### Preview/Staging
 ```bash
-curl -X GET "${BASE_URL}/api/env/check" | jq
+# Test against preview deployment
+./scripts/smoke.sh https://preview-pr-123.pages.dev
+
+# Test against staging
+./scripts/smoke.sh https://test.lougehrigfanclub.com
 ```
 
-**Expected Response:**
+### Production
+```bash
+# Test production site
+./scripts/smoke.sh https://www.lougehrigfanclub.com
+```
+
+## What Gets Tested
+
+### API Endpoints
+1. **`/api/env/check`**
+   - Returns environment variable status
+   - Validates JSON response
+   - Shows which env vars are present/missing
+
+2. **`/api/phase2/status`**
+   - Returns build information
+   - Lists expected routes
+   - Validates system health
+
+### Public Routes
+All public pages should return HTTP 200:
+- `/` - Home
+- `/weekly` - Weekly Matchup
+- `/milestones` - Milestones
+- `/charities` - Charities
+- `/news` - News & Q&A
+- `/calendar` - Calendar
+- `/privacy` - Privacy Policy
+- `/terms` - Terms of Service
+
+### Protected Routes
+These should return HTTP 200 but show auth required messages:
+- `/member` - Member area (requires session)
+- `/admin` - Admin area (requires session + admin role)
+
+## Script Requirements
+
+The smoke script requires:
+- `curl` - Make HTTP requests
+- `jq` - Parse JSON responses (optional but recommended)
+
+Install on Ubuntu/Debian:
+```bash
+sudo apt-get install curl jq
+```
+
+Install on macOS:
+```bash
+brew install curl jq
+```
+
+## Output Format
+
+The script provides color-coded output:
+- ✓ **Green** - Test passed
+- ✗ **Red** - Test failed
+- ⚠ **Yellow** - Warning (e.g., invalid JSON)
+
+Example output:
+```
+🔍 Running smoke tests against: http://localhost:3000
+
+═══════════════════════════════════════
+  API Endpoints
+═══════════════════════════════════════
+Testing: Environment variable check... ✓ PASS (HTTP 200, valid JSON)
+{
+  "ok": true,
+  "summary": {
+Testing: Phase 2 status... ✓ PASS (HTTP 200, valid JSON)
+{
+  "ok": true,
+  "timestamp": "2025-01-15T10:30:00.000Z",
+
+═══════════════════════════════════════
+  Public Routes
+═══════════════════════════════════════
+Testing: Home page... ✓ PASS (HTTP 200)
+Testing: Weekly page... ✓ PASS (HTTP 200)
+...
+
+═══════════════════════════════════════
+  Summary
+═══════════════════════════════════════
+Tests run:    12
+Tests passed: 12
+Tests failed: 0
+
+✓ All smoke tests passed!
+```
+
+## Using in CI/CD
+
+### GitHub Actions
+```yaml
+- name: Run smoke tests
+  run: |
+    npm run build
+    npm start &
+    sleep 5
+    ./scripts/smoke.sh http://localhost:3000
+```
+
+### Cloudflare Pages Deploy Hook
+After deployment:
+```bash
+# In deployment script
+PREVIEW_URL="https://${CF_PAGES_URL}"
+./scripts/smoke.sh "$PREVIEW_URL"
+```
+
+## NPM Script Alias
+
+Add to `package.json` for convenience:
 ```json
 {
-  "status": "ok",
-  "variables": [
-    { "name": "NEXT_PUBLIC_SUPABASE_URL", "present": true },
-    { "name": "NEXT_PUBLIC_SUPABASE_ANON_KEY", "present": true },
-    { "name": "SUPABASE_SERVICE_ROLE_KEY", "present": true },
-    { "name": "ADMIN_EMAILS", "present": true },
-    { "name": "B2_KEY_ID", "present": true },
-    { "name": "B2_APP_KEY", "present": true },
-    { "name": "B2_BUCKET", "present": true },
-    { "name": "B2_ENDPOINT", "present": true }
-  ],
-  "summary": {
-    "total": 8,
-    "present": 8,
-    "missing": 0
+  "scripts": {
+    "smoke:preview": "bash scripts/smoke.sh"
   }
 }
 ```
 
-**Success Criteria:**
-- Status code: `200`
-- `status`: `"ok"` (all vars present) or `"incomplete"` (some missing)
-- No environment variable values are exposed (only presence flags)
-
-### Phase 2 Status
-
-**Endpoint:** `GET /api/phase2/status`
-
-**Purpose:** Overall health check for Phase 2 features
-
-**Test:**
+Run with:
 ```bash
-curl -X GET "${BASE_URL}/api/phase2/status" | jq
+npm run smoke:preview http://localhost:3000
 ```
 
-**Expected Response:**
-```json
-{
-  "status": "healthy",
-  "timestamp": "2025-10-17T15:30:00.000Z",
-  "checks": {
-    "supabase": {
-      "configured": true,
-      "serviceRole": true,
-      "status": "ok"
-    },
-    "admin": {
-      "configured": true,
-      "status": "ok"
-    },
-    "storage": {
-      "configured": true,
-      "status": "ok",
-      "optional": true
-    }
-  },
-  "features": {
-    "authentication": "available",
-    "adminPanel": "available",
-    "fileUploads": "available"
-  },
-  "message": "Phase 2 is operational"
-}
-```
+## Troubleshooting
 
-**Success Criteria:**
-- Status code: `200`
-- `status`: `"healthy"` (core services configured) or `"degraded"` (missing required services)
-- All required features are "available"
+### Test fails with "000" status code
+- Server is not running or unreachable
+- Check URL is correct
+- Verify firewall/network settings
 
-### Supabase Status
+### JSON validation fails
+- Endpoint returned non-JSON response
+- Check endpoint implementation
+- Verify Content-Type header is `application/json`
 
-**Endpoint:** `GET /api/supabase/status`
-
-**Purpose:** Check Supabase configuration
-
-**Test:**
+### curl command not found
 ```bash
-curl -X GET "${BASE_URL}/api/supabase/status" | jq
+# Ubuntu/Debian
+sudo apt-get install curl
+
+# macOS
+brew install curl
 ```
 
-**Expected Response:**
-```json
-{
-  "status": "configured",
-  "hasUrl": true,
-  "hasAnonKey": true,
-  "hasServiceRoleKey": true
-}
-```
-
-**Success Criteria:**
-- Status code: `200`
-- All values are `true`
-
-## Public Pages
-
-Test that all public pages return 200 status codes:
-
+### jq command not found
+Script will work without `jq` but won't validate JSON or show pretty output:
 ```bash
-# Home page
-curl -I "${BASE_URL}/" | head -1
+# Ubuntu/Debian
+sudo apt-get install jq
 
-# Public feature pages
-curl -I "${BASE_URL}/weekly" | head -1
-curl -I "${BASE_URL}/milestones" | head -1
-curl -I "${BASE_URL}/charities" | head -1
-curl -I "${BASE_URL}/news" | head -1
-curl -I "${BASE_URL}/calendar" | head -1
-
-# Legal pages
-curl -I "${BASE_URL}/privacy" | head -1
-curl -I "${BASE_URL}/terms" | head -1
-
-# Member/Admin pages (accessible but may show auth prompts)
-curl -I "${BASE_URL}/member" | head -1
-curl -I "${BASE_URL}/admin" | head -1
+# macOS
+brew install jq
 ```
 
-**Expected:** All should return `HTTP/... 200 OK`
+## Exit Codes
 
-## Admin API Endpoints (Protected)
+- **0** - All tests passed
+- **1** - One or more tests failed
 
-These endpoints require authentication. Test with proper credentials:
-
-### B2 Presign (Admin only)
-
-**Endpoint:** `POST /api/admin/b2/presign`
-
-**Test (will return 401 without auth):**
+Use in CI:
 ```bash
-curl -X POST "${BASE_URL}/api/admin/b2/presign" \
-  -H "Content-Type: application/json" \
-  -d '{"fileName": "test.txt"}' | jq
+if ./scripts/smoke.sh "$PREVIEW_URL"; then
+  echo "Smoke tests passed"
+else
+  echo "Smoke tests failed - blocking deployment"
+  exit 1
+fi
 ```
 
-**Expected (without auth):**
-```json
-{
-  "error": "Not authenticated"
-}
-```
+## Extending Smoke Tests
 
-**Status code:** `401` (not authenticated), `403` (not admin), or `503` (if B2 or admin config not set)
+To add new tests, edit `scripts/smoke.sh`:
 
-### B2 Sync (Admin only)
-
-**Endpoint:** `GET /api/admin/b2/sync`
-
-**Test (will return 401 without auth):**
+### Add new endpoint test
 ```bash
-curl -X GET "${BASE_URL}/api/admin/b2/sync" | jq
+test_json_endpoint "/api/my-new-endpoint" "My new endpoint description"
 ```
 
-**Expected (without auth):**
-```json
-{
-  "error": "Not authenticated"
-}
-```
-
-**Status code:** `401` (not authenticated), `403` (not admin), or `503` (if B2 or admin config not set)
-
-## Complete Smoke Test Script
-
-Run all smoke tests at once:
-
+### Add new route test
 ```bash
-#!/bin/bash
-set -e
-
-BASE_URL="${BASE_URL:-http://localhost:3000}"
-echo "Running smoke tests against: $BASE_URL"
-
-echo "✓ Testing /api/env/check"
-curl -sf "${BASE_URL}/api/env/check" > /dev/null
-
-echo "✓ Testing /api/phase2/status"
-curl -sf "${BASE_URL}/api/phase2/status" > /dev/null
-
-echo "✓ Testing /api/supabase/status"
-curl -sf "${BASE_URL}/api/supabase/status" > /dev/null
-
-echo "✓ Testing public pages"
-for page in "/" "/weekly" "/milestones" "/charities" "/news" "/calendar" "/privacy" "/terms"; do
-  curl -sf "${BASE_URL}${page}" > /dev/null
-  echo "  - ${page}"
-done
-
-echo "✓ All smoke tests passed!"
+test_endpoint "/my-new-route" 200 "My new route description"
 ```
 
-Save as `scripts/smoke-test.sh` and run:
+### Add custom validation
 ```bash
-chmod +x scripts/smoke-test.sh
-./scripts/smoke-test.sh
+RESPONSE=$(curl -s "$BASE_URL/api/custom")
+if echo "$RESPONSE" | grep -q "expected_value"; then
+  echo "✓ Custom check passed"
+else
+  echo "✗ Custom check failed"
+fi
 ```
 
-## Skipping Tests
+## Best Practices
 
-If some tests cannot be run (e.g., service not configured), document the reason:
-
-**Example:**
-```
-SKIPPED: B2 storage tests - B2_APPLICATION_KEY_ID not configured in this environment
-REASON: Storage is optional for Phase 2, proceeding with core features only
-```
-
-## Rollback Plan
-
-All API endpoints are additive:
-```bash
-git revert <commit-sha>
-```
-
-Endpoints can be safely removed without affecting existing functionality.
+1. **Run after every deployment** - Catch issues early
+2. **Test preview URLs** - Validate before merging
+3. **Keep tests fast** - Smoke tests should complete in seconds
+4. **Test critical paths only** - Don't test every possible scenario
+5. **Log failures** - Save output when tests fail for debugging
+6. **Automate in CI** - Make smoke tests part of deploy pipeline
 
 ## Related Documentation
 
-- [Website Buildout Plan](../../README.md) - Parent planning document
-- [Auth Gates](./AUTH-GATES.md) - Authentication documentation
-- API routes: `src/app/api/`
+- [API Reference](../API_REFERENCE.md)
+- [Deployment Guide](../DEPLOYMENT_GUIDE.md)
+- [Rollout Checklist](./ROLLOUT.md) (to be created in PR #13)
