@@ -1,15 +1,12 @@
 "use client";
 
-import Link from "next/link";
-
 /**
- * Global Error Page (500)
+ * Global Error Boundary
  * 
- * This page is displayed when an unhandled error occurs in the application.
- * It must be a Client Component in Next.js App Router.
- * 
- * Note: This is rendered in place of the root layout in case of errors in layout.tsx
+ * This catches errors in the root layout.
+ * It must render its own <html> and <body> tags.
  */
+
 export default function GlobalError({
 	error,
 	reset,
@@ -19,33 +16,52 @@ export default function GlobalError({
 }) {
 	return (
 		<html lang="en">
-			<body>
-				<div className="min-h-screen flex flex-col items-center justify-center p-8">
-					<div className="max-w-4xl w-full space-y-8 text-center">
-						<h1 className="text-6xl font-bold">500</h1>
-						<h2 className="text-2xl font-semibold">Something went wrong</h2>
-						<p className="text-lg opacity-80">
-							We encountered an unexpected error. Please try again.
+			<body style={{ 
+				margin: 0, 
+				fontFamily: "var(--font-sans)", 
+				background: "var(--color-bg)", 
+				color: "var(--color-fg)" 
+			}}>
+				<div style={{ 
+					minHeight: "100vh", 
+					display: "flex", 
+					alignItems: "center", 
+					justifyContent: "center", 
+					padding: "2rem" 
+				}}>
+					<div style={{ maxWidth: "42rem", textAlign: "center" }}>
+						<h1 style={{ fontSize: "3rem", fontWeight: "700", marginBottom: "1rem" }}>
+							500
+						</h1>
+						<h2 style={{ fontSize: "1.5rem", fontWeight: "600", marginBottom: "1rem" }}>
+							Server Error
+						</h2>
+						<p style={{ fontSize: "1.125rem", marginBottom: "2rem", opacity: 0.8 }}>
+							Something went wrong on our end. Please try again later.
 						</p>
-						{process.env.NODE_ENV === "development" && error.message && (
-							<pre className="mt-4 p-4 bg-red-900/10 border border-red-500/20 rounded text-left text-sm overflow-x-auto">
-								{error.message}
-							</pre>
+						{error.digest && (
+							<p style={{ fontSize: "0.875rem", opacity: 0.6, marginBottom: "2rem" }}>
+								Error ID: {error.digest}
+							</p>
 						)}
-						<div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-							<button
-								onClick={reset}
-								className="inline-block px-6 py-3 bg-foreground text-background font-medium rounded hover:opacity-90 transition-opacity"
-							>
-								Try Again
-							</button>
-							<Link
-								href="/"
-								className="inline-block px-6 py-3 border border-current font-medium rounded hover:opacity-80 transition-opacity"
-							>
-								Return Home
-							</Link>
-						</div>
+						<button
+							onClick={reset}
+							style={{
+								display: "inline-block",
+								padding: "0.75rem 2rem",
+								fontSize: "1rem",
+								fontWeight: "600",
+								background: "var(--color-accent)",
+								color: "var(--color-bg)",
+								border: "none",
+								borderRadius: "0.5rem",
+								cursor: "pointer",
+							}}
+							onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.9")}
+							onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+						>
+							Try Again
+						</button>
 					</div>
 				</div>
 			</body>

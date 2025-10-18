@@ -5,6 +5,7 @@
 	align-items: center;
 	justify-content: center;
 	padding: 2rem 1rem;
+	background: var(--color-bg);
 }
 
 .container {
@@ -18,14 +19,14 @@
 	font-weight: 700;
 	margin-bottom: 1.5rem;
 	line-height: 1.2;
+	color: var(--color-fg);
 }
 
 .subtitle {
 	font-size: 1rem;
 	font-weight: 500;
 	margin-bottom: 1rem;
-	opacity: 0.8;
-	color: var(--foreground);
+	color: var(--color-muted);
 }
 
 @media (min-width: 640px) {
@@ -44,6 +45,7 @@
 	font-size: 1.125rem;
 	line-height: 1.75;
 	margin-bottom: 2.5rem;
+	color: var(--color-fg);
 	opacity: 0.9;
 	max-width: 42rem;
 	margin-left: auto;
@@ -78,8 +80,8 @@
 	font-size: 1.125rem;
 	font-weight: 600;
 	text-decoration: none;
-	background: var(--foreground);
-	color: var(--background);
+	background: var(--color-accent);
+	color: var(--color-bg);
 	border-radius: 0.5rem;
 	transition: opacity 0.2s;
 	min-width: 10rem;
@@ -91,7 +93,7 @@
 }
 
 .primaryButton:focus {
-	outline: 2px solid;
+	outline: 2px solid var(--color-accent);
 	outline-offset: 4px;
 }
 
@@ -101,8 +103,8 @@
 	font-size: 1.125rem;
 	font-weight: 500;
 	text-decoration: none;
-	color: inherit;
-	border: 2px solid currentColor;
+	color: var(--color-fg);
+	border: 2px solid var(--color-accent);
 	border-radius: 0.5rem;
 	transition: opacity 0.2s;
 	min-width: 10rem;
@@ -111,9 +113,11 @@
 
 .secondaryLink:hover {
 	opacity: 0.8;
+	background: var(--color-accent);
+	color: var(--color-bg);
 }
 
 .secondaryLink:focus {
-	outline: 2px solid;
+	outline: 2px solid var(--color-accent);
 	outline-offset: 4px;
 }

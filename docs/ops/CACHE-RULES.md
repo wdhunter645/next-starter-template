@@ -1,124 +1,108 @@
-# Cloudflare Pages Cache Rules
+# Cache Rules for Cloudflare Pages
 
-This document describes recommended cache configuration for optimal performance with Cloudflare Pages and Next.js.
+This document describes the caching strategy for static assets and API responses to optimize performance.
 
 ## Overview
 
-Proper caching improves application performance, reduces origin requests, and provides a better user experience. This guide covers:
+Cloudflare Pages automatically caches static assets, but custom cache rules can fine-tune behavior for optimal performance and freshness.
 
-1. Cloudflare Pages Cache Rules configuration
-2. Next.js static asset headers
-3. Cache behavior for different content types
+## Recommended Cache Strategy
 
-## Cloudflare Pages Cache Rules
+### Static Assets (Immutable)
+**Pattern**: `/_next/static/*`
+- **Cache TTL**: Long (1 year)
+- **Browser Cache**: Long
+- **Reason**: Next.js content-hashes these files, they're immutable
 
-Configure these rules in your Cloudflare dashboard under **Pages** > **Your Project** > **Cache Rules**.
+### Public Assets
+**Pattern**: `/favicon.ico`, `/robots.txt`, `/*.png`, `/*.jpg`, `/*.svg`
+- **Cache TTL**: Medium (1 day - 1 week)
+- **Browser Cache**: Medium
+- **Reason**: These change infrequently but may need updates
 
-### Rule 1: Cache Static Assets (Highest Priority)
+### HTML Pages
+**Pattern**: `/*` (HTML)
+- **Cache TTL**: Short (5-15 minutes) or None
+- **Browser Cache**: Short or None
+- **Reason**: Content updates frequently, need freshness
 
-**Pattern:** `/_next/static/*`
+### API Routes
+**Pattern**: `/api/**`
+- **Cache TTL**: None (bypass cache)
+- **Browser Cache**: None
+- **Reason**: Dynamic data, always fetch fresh
 
-**Actions:**
-- **Cache Level:** Cache Everything
-- **Edge TTL:** 31536000 seconds (1 year)
-- **Browser TTL:** 31536000 seconds (1 year)
-- **Cache on Cookie:** Yes
+## Cloudflare Pages Configuration
 
-**Rationale:** Next.js static assets are content-hashed and immutable. They can be cached indefinitely.
+Cloudflare Pages provides automatic caching, but you can configure custom rules via:
 
-**Example URL:** `https://yourdomain.com/_next/static/chunks/main-abc123.js`
+### Option 1: Cloudflare Dashboard (Recommended)
 
-### Rule 2: Cache Images and Media
+1. **Go to Cloudflare Dashboard**
+   - Select your domain
+   - Go to Rules → Page Rules OR Cache → Configuration
 
-**Pattern:** `/images/*` or `*.{jpg,jpeg,png,gif,webp,svg,ico}`
+2. **Create Cache Rule for Static Assets**
+   - **If URL matches**: `*yourdomain.com/_next/static/*`
+   - **Then**:
+     - Cache Level: Standard
+     - Edge Cache TTL: 1 year
+     - Browser Cache TTL: 1 year
 
-**Actions:**
-- **Cache Level:** Cache Everything
-- **Edge TTL:** 86400 seconds (1 day)
-- **Browser TTL:** 3600 seconds (1 hour)
-- **Cache on Cookie:** Yes
+3. **Create Cache Rule for API Routes**
+   - **If URL matches**: `*yourdomain.com/api/*`
+   - **Then**:
+     - Cache Level: Bypass
+     - Browser Cache TTL: 0
 
-**Rationale:** Media files change infrequently but may be updated. Shorter browser cache allows faster updates.
+4. **HTML/Dynamic Content** (Optional)
+   - **If URL matches**: `*yourdomain.com/*`
+   - **And**: Content-Type equals `text/html`
+   - **Then**:
+     - Cache Level: Standard
+     - Edge Cache TTL: 5 minutes
+     - Browser Cache TTL: 0 (or 5 minutes)
 
-### Rule 3: Bypass API Routes
+### Option 2: `_headers` File (Pages-specific)
 
-**Pattern:** `/api/*`
+Create a `public/_headers` file:
 
-**Actions:**
-- **Cache Level:** Bypass
-- **Edge TTL:** N/A
-- **Browser TTL:** 0 seconds
+```
+# Cache static Next.js assets (content-hashed, immutable)
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
 
-**Rationale:** API responses are dynamic and should not be cached by Cloudflare edge. This includes:
-- `/api/admin/*` - Admin endpoints
-- `/api/supabase/*` - Integration status endpoints
-- `/api/auth/*` - Authentication callbacks
+# Cache public assets (moderate TTL)
+/*.png
+  Cache-Control: public, max-age=86400
 
-**Important:** Individual API routes can still use browser cache headers if needed.
+/*.jpg
+  Cache-Control: public, max-age=86400
 
-### Rule 4: Short TTL for HTML Pages
+/*.svg
+  Cache-Control: public, max-age=86400
 
-**Pattern:** `/*.html` or all other requests (default)
+/favicon.ico
+  Cache-Control: public, max-age=86400
 
-**Actions:**
-- **Cache Level:** Cache Everything
-- **Edge TTL:** 300 seconds (5 minutes)
-- **Browser TTL:** 60 seconds (1 minute)
-- **Cache on Cookie:** No (respect Vary header)
+# Don't cache API routes
+/api/*
+  Cache-Control: no-cache, no-store, must-revalidate
 
-**Rationale:** HTML pages may change frequently. Short TTL ensures users see recent content while still benefiting from edge caching.
+# HTML pages - short cache or no cache
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+```
 
-## Configuration via Cloudflare Dashboard
+### Option 3: Next.js `next.config.js` Headers (Implemented)
 
-### Step-by-Step Setup
-
-1. **Navigate to Cache Rules**
-   ```
-   Cloudflare Dashboard > Pages > [Your Project] > Settings > Cache Rules
-   ```
-
-2. **Add Rule for Static Assets**
-   - Click "Create Rule"
-   - Name: "Cache Next.js Static Assets"
-   - If: Request URL matches `/_next/static/*`
-   - Then:
-     - Cache eligibility: Eligible for cache
-     - Edge TTL: 1 year
-     - Browser TTL: 1 year
-
-3. **Add Rule for API Bypass**
-   - Click "Create Rule"
-   - Name: "Bypass API Routes"
-   - If: Request URL matches `/api/*`
-   - Then:
-     - Cache eligibility: Bypass cache
-
-4. **Add Rule for HTML**
-   - Click "Create Rule"
-   - Name: "Short TTL for HTML"
-   - If: File extension matches `html`
-   - Then:
-     - Cache eligibility: Eligible for cache
-     - Edge TTL: 5 minutes
-     - Browser TTL: 1 minute
-
-5. **Order Rules by Priority**
-   - Drag to reorder (most specific first)
-   - Priority order:
-     1. Static Assets
-     2. API Bypass
-     3. HTML/Default
-
-## Next.js Configuration
-
-Add cache-friendly headers in `next.config.ts`:
+Already configured via `next.config.ts` (if added):
 
 ```typescript
-const nextConfig: NextConfig = {
+const nextConfig = {
   async headers() {
     return [
       {
-        // Cache Next.js static assets immutably
         source: '/_next/static/:path*',
         headers: [
           {
@@ -127,231 +111,220 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-      {
-        // Cache public images for 1 day
-        source: '/images/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=86400, s-maxage=86400',
-          },
-        ],
-      },
-      {
-        // Prevent caching of API routes
-        source: '/api/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-cache, no-store, must-revalidate',
-          },
-        ],
-      },
     ];
   },
 };
-
-export default nextConfig;
 ```
 
-### Header Explanations
+**Note**: For this project, relying on Cloudflare Pages' automatic caching + Dashboard rules is sufficient. Next.js already sets appropriate cache headers.
 
-**`public, max-age=31536000, immutable`**
-- `public`: Can be cached by CDN and browsers
-- `max-age=31536000`: Cache for 1 year (31536000 seconds)
-- `immutable`: Content never changes (safe to cache forever)
+## Cache Verification
 
-**`public, max-age=86400, s-maxage=86400`**
-- `public`: Can be cached by CDN and browsers
-- `max-age=86400`: Browser cache for 1 day
-- `s-maxage=86400`: CDN cache for 1 day (takes precedence at edge)
+### Check Cache Headers
 
-**`no-cache, no-store, must-revalidate`**
-- `no-cache`: Revalidate with origin before using cached copy
-- `no-store`: Don't cache at all
-- `must-revalidate`: Don't use stale cache
-
-## Cache Behavior by Content Type
-
-### Static Assets (Optimal Caching)
-- **Pattern:** `/_next/static/*`, `*.js`, `*.css`
-- **Edge:** 1 year
-- **Browser:** 1 year
-- **Rationale:** Content-hashed, never changes
-
-### Images (Long Caching)
-- **Pattern:** `*.jpg`, `*.png`, `*.webp`
-- **Edge:** 1 day
-- **Browser:** 1 hour
-- **Rationale:** Change occasionally, update within hours
-
-### HTML Pages (Short Caching)
-- **Pattern:** `/*.html`, `/`, `/about`
-- **Edge:** 5 minutes
-- **Browser:** 1 minute
-- **Rationale:** Dynamic content, frequent updates
-
-### API Routes (No Caching)
-- **Pattern:** `/api/*`
-- **Edge:** Bypass
-- **Browser:** No cache
-- **Rationale:** Always fresh, user-specific data
-
-## Verification
-
-### Test Cache Headers
+Using `curl`:
 
 ```bash
-# Check static asset headers
-curl -I https://yourdomain.com/_next/static/chunks/main.js
+# Check static asset caching
+curl -I https://www.lougehrigfanclub.com/_next/static/chunks/main.js
 
-# Expected output:
-# cache-control: public, max-age=31536000, immutable
-# cf-cache-status: HIT
+# Look for:
+# Cache-Control: public, max-age=31536000, immutable
+# CF-Cache-Status: HIT (on subsequent requests)
 
-# Check API route headers
-curl -I https://yourdomain.com/api/supabase/status
+# Check API route (should not be cached)
+curl -I https://www.lougehrigfanclub.com/api/env/check
 
-# Expected output:
-# cache-control: no-cache, no-store, must-revalidate
-# cf-cache-status: DYNAMIC
+# Look for:
+# Cache-Control: private, no-cache, no-store, must-revalidate
+# CF-Cache-Status: DYNAMIC
+
+# Check HTML page
+curl -I https://www.lougehrigfanclub.com/
+
+# Look for:
+# Cache-Control: public, max-age=0, must-revalidate (or similar)
+# CF-Cache-Status: MISS or DYNAMIC
 ```
 
-### Cache Status Headers
+### Browser DevTools
 
-Cloudflare adds `cf-cache-status` header:
-- `HIT`: Served from edge cache
-- `MISS`: Not in cache, fetched from origin
-- `EXPIRED`: Was cached, but TTL expired
-- `DYNAMIC`: Bypassed cache (API routes)
-- `BYPASS`: Explicitly bypassed via cache rule
+1. Open DevTools (F12)
+2. Go to Network tab
+3. Reload page
+4. Check response headers for:
+   - `Cache-Control`
+   - `CF-Cache-Status` (MISS, HIT, DYNAMIC, BYPASS)
+   - `Age` (seconds since cached)
 
-## Performance Impact
+### Cloudflare Dashboard
 
-With proper caching, you should see:
+1. **Analytics → Caching**
+   - View cache hit ratio
+   - Identify frequently requested assets
+   - Check cache performance
 
-### Before Optimization
-- Static assets: Origin hit every time
-- HTML: Origin hit every time
-- API: Origin hit (expected)
+2. **Cache → Configuration**
+   - Review active cache rules
+   - Test cache behavior with Cache Purge
 
-### After Optimization
-- Static assets: 99%+ edge cache hit rate
-- HTML: 80-90% edge cache hit rate
-- API: 0% cache hit rate (expected)
+## Cache Purge
 
-### Metrics to Monitor
-
-In Cloudflare Analytics:
-1. **Cache Hit Ratio** - Target: >85%
-2. **Bandwidth Saved** - Measure CDN offload
-3. **Origin Requests** - Should decrease significantly
-4. **Edge Response Time** - Faster with cache hits
-
-## Advanced Configuration
-
-### Cache by Device Type
-
-```typescript
-// In next.config.ts
-{
-  source: '/mobile/:path*',
-  headers: [
-    {
-      key: 'Vary',
-      value: 'User-Agent',
-    },
-    {
-      key: 'Cache-Control',
-      value: 'public, max-age=3600',
-    },
-  ],
-}
-```
-
-### Purge Cache
-
-**Selective Purge:**
+### Purge Everything (Use Sparingly)
 ```bash
 # Via Cloudflare API
 curl -X POST "https://api.cloudflare.com/client/v4/zones/{zone_id}/purge_cache" \
   -H "Authorization: Bearer {api_token}" \
   -H "Content-Type: application/json" \
-  --data '{"files":["https://yourdomain.com/_next/static/chunks/main.js"]}'
+  --data '{"purge_everything":true}'
 ```
 
-**Purge Everything:**
-- Cloudflare Dashboard > Caching > Configuration > Purge Everything
-- Use sparingly (impacts performance temporarily)
+### Purge Specific Files
+```bash
+# Purge specific URLs
+curl -X POST "https://api.cloudflare.com/client/v4/zones/{zone_id}/purge_cache" \
+  -H "Authorization: Bearer {api_token}" \
+  -H "Content-Type: application/json" \
+  --data '{"files":["https://www.lougehrigfanclub.com/favicon.ico"]}'
+```
 
-### Cache Tags (Enterprise)
+### Purge by Tag or Prefix
+For fine-grained control, use Cache-Tag headers (requires Enterprise plan).
 
-If using Cloudflare Enterprise:
-```typescript
-// Add cache tags to responses
-{
-  source: '/blog/:slug',
-  headers: [
-    {
-      key: 'Cache-Tag',
-      value: 'blog-post',
-    },
-  ],
-}
+## Best Practices
+
+### 1. Long Cache for Immutable Assets
+- Next.js `/_next/static/*` files are content-hashed
+- Safe to cache for a year (31536000 seconds)
+- Browser and CDN can serve without revalidation
+
+### 2. Short or No Cache for Dynamic Content
+- HTML pages: Short cache (5-15 min) or no cache
+- API routes: Always bypass cache
+- User-specific content: Never cache
+
+### 3. Appropriate Browser Cache
+- Static assets: Long browser cache
+- HTML: Short or no browser cache (revalidate with CDN)
+- API: No browser cache
+
+### 4. Cache Purging Strategy
+- Deploy: Purge HTML and API cache (leave static assets)
+- Content update: Purge affected pages
+- Emergency: Purge everything (last resort)
+
+### 5. Monitor Cache Performance
+- Check cache hit ratio in Cloudflare Analytics
+- Aim for >80% cache hit ratio
+- Identify frequently requested uncached resources
+
+## Common Cache Scenarios
+
+### Scenario 1: Deploy New Version
+**Problem**: Users see old HTML with new JS chunks (mismatch)
+
+**Solution**:
+- Purge HTML pages after deploy
+- Static assets remain cached (content-hashed, no conflict)
+- Next.js handles chunk loading correctly
+
+### Scenario 2: API Returns Stale Data
+**Problem**: API response cached when it shouldn't be
+
+**Solution**:
+- Ensure `/api/**` has `Cache-Control: no-cache`
+- Check Cloudflare rules don't override API headers
+- Use `CF-Cache-Status: DYNAMIC` to verify
+
+### Scenario 3: Image Not Updating
+**Problem**: Updated image still shows old version
+
+**Solution**:
+- Change filename or add query param: `image.png?v=2`
+- Purge specific file via Cloudflare Dashboard
+- Or set shorter cache TTL for images
+
+### Scenario 4: Staging vs Production Caching
+**Problem**: Staging needs shorter cache for testing
+
+**Solution**:
+- Set different cache rules per environment
+- Use subdomain-specific rules in Cloudflare
+- Or use query param to bypass: `?nocache=true`
+
+## Cache Headers Reference
+
+### Cache-Control Values
+
+```
+public             - Can be cached by CDN and browser
+private            - Can be cached by browser only (not CDN)
+no-cache           - Must revalidate before use
+no-store           - Don't cache at all
+must-revalidate    - Must check with origin when stale
+max-age=3600       - Cache for 3600 seconds
+immutable          - Never revalidate (file won't change)
+```
+
+### Cloudflare-Specific Headers
+
+```
+CF-Cache-Status
+- HIT        - Served from Cloudflare cache
+- MISS       - Not in cache, fetched from origin
+- EXPIRED    - In cache but expired, revalidated
+- BYPASS     - Cache explicitly bypassed
+- DYNAMIC    - Not cacheable (e.g., API routes)
+- REVALIDATED - Cache hit but revalidated with origin
+
+CF-RAY       - Cloudflare request ID (for debugging)
+Age          - Seconds since cached
 ```
 
 ## Troubleshooting
 
-### Issue: Static assets not caching
+### Cache Not Working
+1. Check `Cache-Control` headers in response
+2. Verify Cloudflare cache rules in dashboard
+3. Check for cookies (may prevent caching)
+4. Verify content-type is cacheable
 
-**Check:**
-1. Verify cache rule is active and matches pattern
-2. Check origin response headers don't set `Cache-Control: no-cache`
-3. Confirm TTL values are correct
+### Wrong Content Cached
+1. Purge cache for affected URLs
+2. Review cache rules (ensure correct patterns)
+3. Add `Vary` header if content varies by request header
 
-**Solution:**
-- Update Next.js config to set appropriate headers
-- Verify Cloudflare cache rules are ordered correctly
+### Performance Not Improved
+1. Check cache hit ratio in analytics
+2. Identify frequently requested uncached resources
+3. Adjust cache rules to increase hit ratio
+4. Consider longer TTLs for static content
 
-### Issue: Stale content after deployment
+## Related Documentation
 
-**Check:**
-1. Edge TTL may be too long for dynamic content
-2. Cache wasn't purged after deployment
+- [Cloudflare Cache Documentation](https://developers.cloudflare.com/cache/)
+- [Next.js Caching](https://nextjs.org/docs/app/building-your-application/caching)
+- [Deployment Guide](../DEPLOYMENT_GUIDE.md)
+- [Staging Mirror](./STAGING-MIRROR.md)
 
-**Solution:**
-- Reduce Edge TTL for frequently changing content
-- Add cache purge to deployment pipeline
-- Use versioned URLs for assets
+## Maintenance
 
-### Issue: API responses being cached
+### Regular Review
+- **Weekly**: Check cache hit ratio
+- **Monthly**: Review cache rules effectiveness
+- **After Deploy**: Verify cache purge worked correctly
+- **After Issues**: Investigate cache-related problems
 
-**Check:**
-1. Verify bypass rule for `/api/*` is active
-2. Check rule priority (should be high)
-3. Confirm API doesn't set cache headers explicitly
+### Adjustments
+- Tweak TTLs based on update frequency
+- Add new patterns as site evolves
+- Monitor cache size and invalidation patterns
+- Optimize for actual usage patterns
 
-**Solution:**
-- Move API bypass rule higher in priority
-- Set explicit `no-cache` headers in API responses
+## Notes
 
-## Best Practices
-
-1. **Use content hashing** - Next.js does this automatically for `/_next/static/*`
-2. **Cache immutable content aggressively** - Static assets, versioned files
-3. **Cache dynamic content conservatively** - HTML pages, user-specific data
-4. **Never cache authenticated responses** - Set appropriate headers
-5. **Monitor cache hit rates** - Adjust rules based on metrics
-6. **Purge cache on deployments** - For non-versioned assets
-7. **Test in incognito mode** - Avoid browser cache confusion
-
-## Resources
-
-- [Cloudflare Pages Cache Documentation](https://developers.cloudflare.com/pages/configuration/cache/)
-- [Next.js Caching Documentation](https://nextjs.org/docs/app/building-your-application/caching)
-- [HTTP Caching Headers Guide](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching)
-- [Cache-Control Header Syntax](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control)
-
----
-
-**Note:** These cache rules are recommendations based on typical Next.js deployments. Adjust TTL values based on your specific needs and content update frequency.
+- Cloudflare Pages handles most caching automatically
+- Dashboard rules provide fine-grained control when needed
+- Start conservative (shorter TTLs), increase as confidence grows
+- Monitor and adjust based on real-world usage
+- Document any custom cache rules for team awareness

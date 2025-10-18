@@ -1,5 +1,5 @@
 import Hero from "@/components/Home/Hero";
-import SectionTeasers from "@/components/Home/SectionTeasers";
+import Sections from "@/components/Home/Sections";
 
 /**
  * Home Page
@@ -12,7 +12,7 @@ export default function Home() {
 	return (
 		<>
 			<Hero />
-			<SectionTeasers />
+			<Sections />
 		</>
 	);
 }
