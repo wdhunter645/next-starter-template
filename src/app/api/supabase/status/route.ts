@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSupabaseStatus } from "@/lib/supabase/serverClient";
 
+export const runtime = 'edge';
+
 /**
  * Supabase Status API
  * 

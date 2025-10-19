@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import packageJson from "../../../../../package.json";
 
+export const runtime = 'edge';
+
 /**
  * Phase 2 Status API
  * 

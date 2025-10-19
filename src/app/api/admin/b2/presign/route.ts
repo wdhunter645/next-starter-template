@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { isUserAdmin } from "@/lib/auth/adminGuard";
 
+export const runtime = 'edge';
+
 /**
  * B2 Presign URL API (Admin Only)
  * 
