@@ -1,0 +1,22 @@
+name: CF Release (staging + production)
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to build from"
+        required: true
+        default: main
+jobs:
+  stage:
+    uses: ./.github/workflows/cf-triage.yml
+    with:
+      environment: staging
+      branch: ${{ inputs.branch }}
+    secrets: inherit
+  prod:
+    needs: stage
+    uses: ./.github/workflows/cf-triage.yml
+    with:
+      environment: production
+      branch: ${{ inputs.branch }}
+    secrets: inherit
