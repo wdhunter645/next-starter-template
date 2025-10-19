@@ -1,11 +1,3 @@
-Open the repository wdhunter645/next-starter-template.
-
-# 1) Create .github/workflows/codex-bridge.yml on main (commit directly to main)
-
-Create or overwrite the file .github/workflows/codex-bridge.yml with the exact content below, then commit to main with message:
-"chore(actions): add authenticated codex-bridge workflow"
-
----8<--- .github/workflows/codex-bridge.yml
 name: codex-bridge
 on:
   repository_dispatch:
@@ -89,21 +81,3 @@ jobs:
                 core.warning(`docs-audit dispatch failed: ${e.message}`);
               }
             }
----8<---
-
-# 2) Immediately run the bridge via workflow_dispatch (from Actions context)
-
-Dispatch the workflow with:
-- ref: main
-- inputs:
-    branch: codex/docs-audit-smoketest
-    base: main
-    file: docs/README.md
-    append: Codex bridge: end-to-end verification.
-    title: codex: docs-audit smoke test (bridge)
-    body: Automated PR via codex-bridge.
-    trigger_docs_audit: true
-
-# 3) Output:
-- The run log MUST include "Opened PR: <url>" → print that URL.
-- Confirm docs-audit was triggered (or list its run URL).
