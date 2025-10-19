@@ -1,4 +1,4 @@
-name: Deploy to Cloudflare Pages
+name: Deploy to Cloudflare Pages (Hardened)
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ on:
         options: [staging, production]
         default: staging
       branch:
-        description: "Git branch to deploy from"
+        description: "Git branch to deploy"
         required: true
         default: main
 
@@ -23,30 +23,98 @@ jobs:
     env:
       CF_API_TOKEN:  ${{ secrets.CF_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+      NEXT_TELEMETRY_DISABLED: "1"
+      NODE_OPTIONS: "--max_old_space_size=3072"
     steps:
-      - uses: actions/checkout@v4
-        with: { ref: ${{ inputs.branch }} }
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
 
-      - uses: actions/setup-node@v4
-        with: { node-version: '20', cache: 'npm' }
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
 
-      - run: npm ci
-      - run: npm run cf:build
-      - run: npm i -g wrangler
+      - name: Install deps
+        run: npm ci
+
+      - name: Build Next & prepare Pages artifact
+        run: |
+          set -euxo pipefail
+          npm run cf:build
+          # Verify required outputs exist
+          test -d ".vercel/output/static" || (echo "::error::Missing build output (.vercel/output/static). next-on-pages did not produce artifacts." && exit 11)
+          # Show what we're deploying (top-level only)
+          find .vercel/output/static -maxdepth 2 -type f | head -n 200
+
+      - name: Upload build artifact (for debugging if deploy fails)
+        uses: actions/upload-artifact@v4
+        with:
+          name: cf-pages-artifact-${{ inputs.environment }}
+          path: .vercel/output/static
+          if-no-files-found: error
+
+      - name: Install Wrangler + jq
+        run: |
+          npm i -g wrangler
+          sudo apt-get update -y
+          sudo apt-get install -y jq
 
       - name: Ensure Pages project exists
         run: |
-          set -e
+          set -euxo pipefail
           if [ "${{ inputs.environment }}" = "production" ]; then PROJ="lgfc-prod"; else PROJ="lgfc-staging"; fi
-          wrangler pages project list | grep -q "$PROJ" || wrangler pages project create "$PROJ" --production-branch main
+          # List projects (auth check)
+          wrangler pages project list 1>/tmp/projects.txt
+          grep -q "$PROJ" /tmp/projects.txt || wrangler pages project create "$PROJ" --production-branch main
 
-      - name: Deploy to Cloudflare Pages
+      - name: Deploy via Wrangler (JSON) and print URL
+        id: deploy
         run: |
+          set -euxo pipefail
           if [ "${{ inputs.environment }}" = "production" ]; then
-            wrangler pages deploy .vercel/output/static --project-name lgfc-prod --branch main --commit-dirty=true
+            PROJ="lgfc-prod"
+            BRANCH="main"
           else
-            wrangler pages deploy .vercel/output/static --project-name lgfc-staging
+            PROJ="lgfc-staging"
+            BRANCH="staging"
           fi
 
-      - name: Echo next steps
-        run: echo "Deployment done for ${{ inputs.environment }}. Check Pages dashboard for the URL."
+          # Deploy with JSON output; capture URL
+          # (wrangler pages deploy returns a URL in structured output)
+          OUT=$(wrangler pages deploy .vercel/output/static --project-name "$PROJ" --branch "$BRANCH" --commit-dirty=true --format json)
+          echo "$OUT" | tee /tmp/deploy.json
+
+          # Try to pull a URL from output; fallback to listing deployments
+          URL=$(jq -r '..|.url? // empty' /tmp/deploy.json | tail -n1)
+          if [ -z "$URL" ]; then
+            wrangler pages deployment list --project-name "$PROJ" --format json | tee /tmp/list.json
+            URL=$(jq -r '.[0].url // empty' /tmp/list.json)
+          fi
+
+          if [ -z "$URL" ]; then
+            echo "::error::Deployed but no URL found in Wrangler output."
+            exit 17
+          fi
+
+          echo "url=$URL" >> $GITHUB_OUTPUT
+          echo "::notice::Deployed $PROJ (${BRANCH}) → $URL"
+
+      - name: Smoke check (GET / should be 200)
+        run: |
+          set -euxo pipefail
+          URL="${{ steps.deploy.outputs.url }}"
+          echo "Checking $URL/"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL/")
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::Smoke check failed ($STATUS) for $URL/"
+            exit 23
+          fi
+          echo "::notice::Smoke check passed for $URL/"
+
+      - name: Summary
+        run: |
+          echo "Environment: ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "URL: ${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY
