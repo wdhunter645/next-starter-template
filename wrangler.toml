@@ -1,0 +1,9 @@
+name = "lgfc-site"
+compatibility_date = "2024-10-01"
+pages_build_output_dir = ".vercel/output/static"
+
+[env.staging]
+# uses preview *.pages.dev URL; no custom domain
+
+[env.production]
+# custom domain can be attached later in Cloudflare UI
