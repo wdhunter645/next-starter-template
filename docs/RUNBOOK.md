@@ -1,53 +1,25 @@
-# RUNBOOK - Operations Manual
+# LGFC Cloudflare Runbook
 
-This runbook provides comprehensive operational procedures for deploying, monitoring, and maintaining the LGFC application on Cloudflare Pages.
+## Deploy
+- Actions → "CF Release (staging → production)" → branch=main
+- Or run "Deploy to Cloudflare Pages (Hardened)" twice (staging then production)
+- URLs printed in job summary.
 
-## Table of Contents
+## URLs → Uptime
+- Copy staging URL to repo secret: LGFC_STAGING_URL
+- Copy production URL to repo secret: LGFC_PROD_URL
 
-- [Quick Reference](#quick-reference)
-- [Deployment](#deployment)
-- [Rollback](#rollback)
-- [Smoke Testing](#smoke-testing)
-- [Incident Response](#incident-response)
-- [Environment Variables](#environment-variables)
-- [Contact Information](#contact-information)
+## Verify
+curl -sf "$URL/api/healthz"  →  200 OK with JSON { ok:true }
 
-## Quick Reference
+## Rollback
+wrangler pages deployment list --project-name <proj> --format json
+wrangler pages deployment rollback --project-name <proj> <deployment-id>
 
-### Essential URLs
-
-- **Production:** https://lgfc-prod.pages.dev (or custom domain when configured)
-- **Staging:** https://lgfc-staging.pages.dev
-- **Cloudflare Dashboard:** https://dash.cloudflare.com
-- **GitHub Repository:** https://github.com/wdhunter645/next-starter-template
-
-### Key Commands
-
-```bash
-# Build locally
-npm ci
-npm run build
-
-# Cloudflare Pages build
-npm run cf:build
-
-# Manual deploy to staging
-npm run cf:deploy:staging
-
-# Manual deploy to production
-npm run cf:deploy:prod
-
-# Health check
-curl https://lgfc-staging.pages.dev/api/healthz
-```
-
-## Deployment
-
-### Automated Deployment (CI/CD)
-
-The application automatically deploys via GitHub Actions when changes are pushed:
-
-1. **Staging:** Deploys on push to any branch (preview deployments)
+## Troubleshooting
+- ::error::Missing .vercel/output/static → Build/next-on-pages didn't produce artifacts.
+- ::error::Failed to list Pages projects → CF_API_TOKEN scope wrong or account mismatch.
+- ::error::Deployed but no URL found → Confirm project names (lgfc-staging/lgfc-prod) and branch mapping.
 2. **Production:** Deploys on push to `main` branch
 
 Monitor deployment status:
