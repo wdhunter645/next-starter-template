@@ -12,6 +12,34 @@
 
 set -e
 
+# Parse command line arguments
+DRY_RUN=false
+ISSUE_NUMBER=""
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        --help|-h)
+            echo "Usage: $0 [OPTIONS] [ISSUE_NUMBER]"
+            echo ""
+            echo "Options:"
+            echo "  --dry-run    Run in dry-run mode (skip actual deployments)"
+            echo "  --help, -h   Show this help message"
+            echo ""
+            echo "Arguments:"
+            echo "  ISSUE_NUMBER Optional issue or PR number to post results to"
+            exit 0
+            ;;
+        *)
+            ISSUE_NUMBER="$1"
+            shift
+            ;;
+    esac
+done
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -43,54 +71,86 @@ echo ""
 
 # PRECHECK: Validate required secrets
 echo -e "${YELLOW}PRECHECK: Validating required secrets...${NC}"
+if [ "$DRY_RUN" = true ]; then
+    echo -e "${YELLOW}(DRY RUN MODE - Skipping actual validation)${NC}"
+fi
 echo ""
 
-# Check if gh CLI is authenticated
-if ! gh auth status &>/dev/null; then
-    echo -e "${RED}✗ Error: GitHub CLI (gh) is not authenticated${NC}"
-    echo "Please run: gh auth login"
-    exit 1
-fi
-
-echo -e "${GREEN}✓ GitHub CLI authenticated${NC}"
-
-# Check required secrets
-REQUIRED_SECRETS=("CF_API_TOKEN" "CF_ACCOUNT_ID")
-MISSING_SECRETS=()
-
-for secret in "${REQUIRED_SECRETS[@]}"; do
-    if gh secret list -R "$REPO" 2>/dev/null | grep -q "^$secret"; then
-        echo -e "${GREEN}✓ Secret found: $secret${NC}"
-    else
-        echo -e "${RED}✗ Secret missing: $secret${NC}"
-        MISSING_SECRETS+=("$secret")
-    fi
-done
-
-if [ ${#MISSING_SECRETS[@]} -gt 0 ]; then
+if [ "$DRY_RUN" = true ]; then
+    echo -e "${GREEN}✓ [DRY RUN] Skipping GitHub CLI authentication check${NC}"
+    echo -e "${GREEN}✓ [DRY RUN] Assuming secrets CF_API_TOKEN and CF_ACCOUNT_ID exist${NC}"
     echo ""
-    echo -e "${RED}✗ FAIL FAST: Missing required secrets: ${MISSING_SECRETS[*]}${NC}"
-    echo "Please add these secrets to the repository at:"
-    echo "https://github.com/$REPO/settings/secrets/actions"
-    exit 1
+    echo -e "${GREEN}✓ All required secrets are configured (dry run)${NC}"
+    echo ""
+else
+    # Check if gh CLI is authenticated
+    if ! gh auth status &>/dev/null; then
+        echo -e "${RED}✗ Error: GitHub CLI (gh) is not authenticated${NC}"
+        echo "Please run: gh auth login"
+        exit 1
+    fi
+
+    echo -e "${GREEN}✓ GitHub CLI authenticated${NC}"
+
+    # Check required secrets
+    REQUIRED_SECRETS=("CF_API_TOKEN" "CF_ACCOUNT_ID")
+    MISSING_SECRETS=()
+
+    for secret in "${REQUIRED_SECRETS[@]}"; do
+        if gh secret list -R "$REPO" 2>/dev/null | grep -q "^$secret"; then
+            echo -e "${GREEN}✓ Secret found: $secret${NC}"
+        else
+            echo -e "${RED}✗ Secret missing: $secret${NC}"
+            MISSING_SECRETS+=("$secret")
+        fi
+    done
+
+    if [ ${#MISSING_SECRETS[@]} -gt 0 ]; then
+        echo ""
+        echo -e "${RED}✗ FAIL FAST: Missing required secrets: ${MISSING_SECRETS[*]}${NC}"
+        echo "Please add these secrets to the repository at:"
+        echo "https://github.com/$REPO/settings/secrets/actions"
+        exit 1
+    fi
+
+    echo ""
+    echo -e "${GREEN}✓ All required secrets are configured${NC}"
+
+    # Try to fetch secret values for wrangler usage later
+    # Note: gh secret list doesn't return values, but we can check if they're set
+    # The actual values will need to be passed via environment or fetched via gh CLI in the workflow context
+    echo ""
+    echo -e "${YELLOW}Note: Secret values are not accessible via gh CLI${NC}"
+    echo "To use wrangler CLI for URL extraction, set CF_API_TOKEN and CF_ACCOUNT_ID environment variables"
+    echo ""
 fi
-
-echo ""
-echo -e "${GREEN}✓ All required secrets are configured${NC}"
-
-# Try to fetch secret values for wrangler usage later
-# Note: gh secret list doesn't return values, but we can check if they're set
-# The actual values will need to be passed via environment or fetched via gh CLI in the workflow context
-echo ""
-echo -e "${YELLOW}Note: Secret values are not accessible via gh CLI${NC}"
-echo "To use wrangler CLI for URL extraction, set CF_API_TOKEN and CF_ACCOUNT_ID environment variables"
-echo ""
 
 # STEP 1: Trigger deployments in parallel
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${BLUE}STEP 1: Triggering deployments in parallel${NC}"
+if [ "$DRY_RUN" = true ]; then
+    echo -e "${YELLOW}(DRY RUN MODE - No actual deployments will be triggered)${NC}"
+fi
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
+
+if [ "$DRY_RUN" = true ]; then
+    echo -e "${YELLOW}[DRY RUN] Would trigger STAGING deployment${NC}"
+    echo -e "${YELLOW}[DRY RUN] Would wait 20 seconds${NC}"
+    echo -e "${YELLOW}[DRY RUN] Would trigger PRODUCTION deployment${NC}"
+    echo ""
+    echo -e "${GREEN}✓ Dry run completed successfully${NC}"
+    echo ""
+    echo "In a real run, this would:"
+    echo "  1. Trigger staging deployment via: gh workflow run $WORKFLOW_FILE -R $REPO --ref $BRANCH -f environment=staging -f branch=$BRANCH"
+    echo "  2. Wait 20 seconds"
+    echo "  3. Trigger production deployment via: gh workflow run $WORKFLOW_FILE -R $REPO --ref $BRANCH -f environment=production -f branch=$BRANCH"
+    echo "  4. Monitor both workflow runs"
+    echo "  5. Extract deployment URLs"
+    echo "  6. Run smoke checks"
+    echo "  7. Post final report"
+    exit 0
+fi
 
 # Trigger staging deployment
 echo -e "${YELLOW}Triggering STAGING deployment...${NC}"
@@ -464,9 +524,9 @@ echo "Report saved to: $REPORT_FILE"
 echo ""
 
 # If running in PR context or issue number provided, post comment
-if [ -n "$1" ]; then
-    echo "Posting comment to issue/PR #$1..."
-    gh issue comment "$1" -R "$REPO" -F "$REPORT_FILE"
+if [ -n "$ISSUE_NUMBER" ]; then
+    echo "Posting comment to issue/PR #$ISSUE_NUMBER..."
+    gh issue comment "$ISSUE_NUMBER" -R "$REPO" -F "$REPORT_FILE"
     echo -e "${GREEN}✓ Comment posted${NC}"
 elif [ -n "$GITHUB_REF" ] && [[ "$GITHUB_REF" == refs/pull/* ]]; then
     PR_NUMBER=$(echo "$GITHUB_REF" | sed 's|refs/pull/||' | sed 's|/merge||')

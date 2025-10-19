@@ -43,6 +43,14 @@ If any secrets are missing, the script will fail fast with an error message.
 ./scripts/deploy-pages-orchestrator.sh
 ```
 
+### Dry Run Mode (Test without deploying)
+
+```bash
+./scripts/deploy-pages-orchestrator.sh --dry-run
+```
+
+This will validate the script logic without triggering any actual deployments.
+
 ### Post Report to Issue/PR
 
 ```bash
@@ -52,6 +60,12 @@ If any secrets are missing, the script will fail fast with an error message.
 Example:
 ```bash
 ./scripts/deploy-pages-orchestrator.sh 42
+```
+
+### Show Help
+
+```bash
+./scripts/deploy-pages-orchestrator.sh --help
 ```
 
 ## What It Does
