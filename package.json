@@ -23,6 +23,7 @@
 		"react-dom": "19.0.0"
 	},
 	"devDependencies": {
+		"@cloudflare/next-on-pages": "^1.13.16",
 		"@eslint/eslintrc": "3",
 		"@tailwindcss/postcss": "4.1.4",
 		"@types/node": "24.0.4",
@@ -32,7 +33,7 @@
 		"eslint-config-next": "15.3.3",
 		"tailwindcss": "4.1.1",
 		"typescript": "5.8.3",
-		"wrangler": "4.21.x"
+		"wrangler": "^4.19.1"
 	},
 	"scripts": {
 		"audit:docs": "bash scripts/md_secret_audit.sh",
