@@ -19,6 +19,14 @@ This script implements a complete deployment pipeline that:
 - Repository: `wdhunter645/next-starter-template`
 - Cloudflare Pages projects: `lgfc-staging`, `lgfc-prod`
 
+## Optional Environment Variables
+
+For enhanced URL extraction via wrangler CLI:
+- `CF_API_TOKEN` - Cloudflare API token (optional, for wrangler CLI)
+- `CF_ACCOUNT_ID` - Cloudflare account ID (optional, for wrangler CLI)
+
+These are only needed if workflow logs don't contain the deployment URLs.
+
 ## Required Secrets
 
 The following repository secrets must be configured:
@@ -67,8 +75,8 @@ Example:
 
 ### Step 4: Extract URLs
 - Attempts to extract Cloudflare Pages URLs from workflow logs
-- Falls back to `wrangler pages deployment list` if not found in logs
-- Uses default URLs as last resort
+- Falls back to `wrangler pages deployment list` if not found in logs (requires CF_API_TOKEN and CF_ACCOUNT_ID env vars)
+- Uses default URLs as last resort (https://lgfc-staging.pages.dev, https://lgfc-prod.pages.dev)
 
 ### Step 5: Smoke Checks
 - Tests HTTP 200 response from `<url>/`

@@ -77,6 +77,13 @@ fi
 
 echo ""
 echo -e "${GREEN}✓ All required secrets are configured${NC}"
+
+# Try to fetch secret values for wrangler usage later
+# Note: gh secret list doesn't return values, but we can check if they're set
+# The actual values will need to be passed via environment or fetched via gh CLI in the workflow context
+echo ""
+echo -e "${YELLOW}Note: Secret values are not accessible via gh CLI${NC}"
+echo "To use wrangler CLI for URL extraction, set CF_API_TOKEN and CF_ACCOUNT_ID environment variables"
 echo ""
 
 # STEP 1: Trigger deployments in parallel
@@ -118,7 +125,9 @@ sleep 10
 # Get the run IDs
 echo "Fetching workflow run IDs..."
 
-# Get staging run (most recent run for pages-deploy.yml)
+# Get the two most recent runs for pages-deploy.yml
+# Note: Production was triggered last, so it will be [0]
+# Staging was triggered first, so it will be [1]
 RUNS_JSON=$(gh run list \
     -R "$REPO" \
     --workflow="$WORKFLOW_FILE" \
@@ -127,8 +136,10 @@ RUNS_JSON=$(gh run list \
     --jq 'sort_by(.createdAt) | reverse')
 
 # Parse the two most recent runs
-STAGING_RUN_ID=$(echo "$RUNS_JSON" | jq -r '.[0].databaseId')
-PRODUCTION_RUN_ID=$(echo "$RUNS_JSON" | jq -r '.[1].databaseId')
+# Most recent (index 0) = Production (triggered last)
+# Second most recent (index 1) = Staging (triggered first)
+PRODUCTION_RUN_ID=$(echo "$RUNS_JSON" | jq -r '.[0].databaseId')
+STAGING_RUN_ID=$(echo "$RUNS_JSON" | jq -r '.[1].databaseId')
 
 if [ -z "$STAGING_RUN_ID" ] || [ "$STAGING_RUN_ID" = "null" ]; then
     echo -e "${RED}✗ Error: Could not find staging workflow run${NC}"
@@ -295,41 +306,52 @@ PRODUCTION_URL_FROM_LOG=$(echo "$PRODUCTION_LOG" | grep -oP 'https://[a-zA-Z0-9\
 
 # If not found in logs, use wrangler CLI
 if [ -z "$STAGING_URL_FROM_LOG" ]; then
-    echo "URL not found in staging logs, fetching via wrangler CLI..."
+    echo "URL not found in staging logs, trying wrangler CLI..."
     
-    # Check if wrangler is available
-    if ! command -v wrangler &> /dev/null; then
-        echo "Installing wrangler..."
-        npm install -g wrangler
+    # Try to use wrangler to get deployment URL
+    # Note: This requires CF_API_TOKEN and CF_ACCOUNT_ID to be set
+    if [ -n "$CF_API_TOKEN" ] && [ -n "$CF_ACCOUNT_ID" ]; then
+        STAGING_DEPLOYMENT_JSON=$(CLOUDFLARE_API_TOKEN="$CF_API_TOKEN" CLOUDFLARE_ACCOUNT_ID="$CF_ACCOUNT_ID" npx wrangler pages deployment list --project-name "$STAGING_PROJECT" --format json 2>/dev/null || echo "[]")
+        STAGING_URL=$(echo "$STAGING_DEPLOYMENT_JSON" | jq -r '.[0].url // empty' 2>/dev/null || echo "")
+    else
+        echo -e "${YELLOW}⚠ CF_API_TOKEN or CF_ACCOUNT_ID not available for wrangler${NC}"
+        STAGING_URL=""
     fi
     
-    # Get staging URL from wrangler
-    STAGING_DEPLOYMENT_JSON=$(npx wrangler pages deployment list --project-name "$STAGING_PROJECT" --format json 2>/dev/null || echo "[]")
-    STAGING_URL=$(echo "$STAGING_DEPLOYMENT_JSON" | jq -r '.[0].url // empty' || echo "")
-    
     if [ -z "$STAGING_URL" ]; then
-        echo -e "${YELLOW}⚠ Warning: Could not fetch staging URL from wrangler${NC}"
+        echo -e "${YELLOW}⚠ Using default staging URL${NC}"
         STAGING_URL="https://${STAGING_PROJECT}.pages.dev"
-        echo "Using default URL: $STAGING_URL"
+        echo "Default URL: $STAGING_URL"
+    else
+        echo "Found URL from wrangler: $STAGING_URL"
     fi
 else
     STAGING_URL="$STAGING_URL_FROM_LOG"
+    echo "Found URL from logs: $STAGING_URL"
 fi
 
 if [ -z "$PRODUCTION_URL_FROM_LOG" ]; then
-    echo "URL not found in production logs, fetching via wrangler CLI..."
+    echo "URL not found in production logs, trying wrangler CLI..."
     
-    # Get production URL from wrangler
-    PRODUCTION_DEPLOYMENT_JSON=$(npx wrangler pages deployment list --project-name "$PRODUCTION_PROJECT" --format json 2>/dev/null || echo "[]")
-    PRODUCTION_URL=$(echo "$PRODUCTION_DEPLOYMENT_JSON" | jq -r '.[0].url // empty' || echo "")
+    # Try to use wrangler to get deployment URL
+    if [ -n "$CF_API_TOKEN" ] && [ -n "$CF_ACCOUNT_ID" ]; then
+        PRODUCTION_DEPLOYMENT_JSON=$(CLOUDFLARE_API_TOKEN="$CF_API_TOKEN" CLOUDFLARE_ACCOUNT_ID="$CF_ACCOUNT_ID" npx wrangler pages deployment list --project-name "$PRODUCTION_PROJECT" --format json 2>/dev/null || echo "[]")
+        PRODUCTION_URL=$(echo "$PRODUCTION_DEPLOYMENT_JSON" | jq -r '.[0].url // empty' 2>/dev/null || echo "")
+    else
+        echo -e "${YELLOW}⚠ CF_API_TOKEN or CF_ACCOUNT_ID not available for wrangler${NC}"
+        PRODUCTION_URL=""
+    fi
     
     if [ -z "$PRODUCTION_URL" ]; then
-        echo -e "${YELLOW}⚠ Warning: Could not fetch production URL from wrangler${NC}"
+        echo -e "${YELLOW}⚠ Using default production URL${NC}"
         PRODUCTION_URL="https://${PRODUCTION_PROJECT}.pages.dev"
-        echo "Using default URL: $PRODUCTION_URL"
+        echo "Default URL: $PRODUCTION_URL"
+    else
+        echo "Found URL from wrangler: $PRODUCTION_URL"
     fi
 else
     PRODUCTION_URL="$PRODUCTION_URL_FROM_LOG"
+    echo "Found URL from logs: $PRODUCTION_URL"
 fi
 
 echo -e "${GREEN}✓ Staging URL: $STAGING_URL${NC}"
