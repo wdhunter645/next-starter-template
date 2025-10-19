@@ -39,11 +39,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with: { ref: ${{ inputs.branch }} }
+        with:
+          ref: ${{ inputs.branch }}
 
       - name: Tooling
         uses: actions/setup-node@v4
-        with: { node-version: '20', cache: 'npm' }
+        with:
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install deps
         run: npm ci
