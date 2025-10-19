@@ -94,8 +94,11 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 | `npm run build && npm run deploy` | Deploy your production site to Cloudflare    |
 | `npm wrangler tail`               | View real-time logs for all Workers          |
 | `./scripts/deploy-orchestrator.sh` | Automated staging & production deployment with smoke tests |
+| `./scripts/deploy-pages-orchestrator.sh` | Cloudflare Pages deployment orchestrator (lgfc-staging/lgfc-prod) |
 
 ### Automated Deployment Pipeline
+
+#### Option 1: Custom Domain Deployment (deploy-orchestrator.sh)
 
 For a fully automated deployment to both staging and production with smoke testing:
 
@@ -112,6 +115,30 @@ This orchestrates the complete deployment process:
 6. Posts deployment summary with results
 
 See [docs/DEPLOYMENT_ORCHESTRATOR.md](./docs/DEPLOYMENT_ORCHESTRATOR.md) for detailed documentation.
+
+#### Option 2: Cloudflare Pages Deployment (deploy-pages-orchestrator.sh)
+
+For parallel deployment to Cloudflare Pages staging and production projects:
+
+```bash
+./scripts/deploy-pages-orchestrator.sh
+```
+
+This orchestrates parallel Cloudflare Pages deployments:
+1. Validates required secrets (CF_API_TOKEN, CF_ACCOUNT_ID)
+2. Triggers staging deployment (lgfc-staging) via GitHub Actions
+3. Triggers production deployment (lgfc-prod) via GitHub Actions (20s delay)
+4. Monitors both workflow runs to completion
+5. Extracts Cloudflare Pages URLs
+6. Runs smoke checks (HTTP 200 verification)
+7. Posts final report with deployment URLs
+
+**Dry run mode:**
+```bash
+./scripts/deploy-pages-orchestrator.sh --dry-run
+```
+
+See [scripts/deploy-pages-orchestrator.md](./scripts/deploy-pages-orchestrator.md) for detailed documentation.
 
 ## Verifying Test Site
 
