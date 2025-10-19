@@ -93,6 +93,25 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 | `npm run preview`                 | Preview your build locally, before deploying |
 | `npm run build && npm run deploy` | Deploy your production site to Cloudflare    |
 | `npm wrangler tail`               | View real-time logs for all Workers          |
+| `./scripts/deploy-orchestrator.sh` | Automated staging & production deployment with smoke tests |
+
+### Automated Deployment Pipeline
+
+For a fully automated deployment to both staging and production with smoke testing:
+
+```bash
+./scripts/deploy-orchestrator.sh
+```
+
+This orchestrates the complete deployment process:
+1. Validates required secrets (CF_API_TOKEN, CF_ACCOUNT_ID, OPENAI_API_KEY)
+2. Deploys to staging via GitHub Actions
+3. Runs smoke tests against staging (test.lougehrigfanclub.com)
+4. Deploys to production via GitHub Actions
+5. Runs smoke tests against production (www.lougehrigfanclub.com)
+6. Posts deployment summary with results
+
+See [docs/DEPLOYMENT_ORCHESTRATOR.md](./docs/DEPLOYMENT_ORCHESTRATOR.md) for detailed documentation.
 
 ## Verifying Test Site
 
