@@ -105,6 +105,28 @@ The workflow automatically syncs configured secrets to the Cloudflare Pages proj
 - Currently configured: OPENAI_API_KEY
 - Additional secrets can be added in the workflow's "Sync secrets" step
 
+## Important Notes
+
+### Existing Cloudflare Workers Integration
+The repository has an existing Cloudflare Workers deployment using `wrangler.jsonc` and `opennextjs-cloudflare`. The new setup adds a **separate** Cloudflare Pages deployment using `wrangler.toml` and `@cloudflare/next-on-pages`.
+
+**Two configurations coexist:**
+- `wrangler.jsonc` - For Workers deployment (existing, automatic on PR)
+- `wrangler.toml` - For Pages deployment (new, manual workflow_dispatch)
+
+The existing Workers deployment may fail due to configuration conflicts. This is expected and can be resolved by either:
+1. Removing the old Workers integration if Pages is preferred
+2. Adjusting configurations to avoid conflicts
+3. Keeping both but using different project names
+
+### Cloudflare Workers Deployment Status
+The automatic Cloudflare Workers deployment on the PR failed. This is likely due to:
+- Configuration conflict between wrangler.jsonc and wrangler.toml
+- The Workers deployment is separate from the new Pages setup
+- The Pages deployment will use a different workflow (workflow_dispatch)
+
+**Recommended approach**: Merge the PR and use the new Pages deployment workflow, which is independent of the Workers deployment.
+
 ## Limitations Encountered
 
 The following actions could not be completed automatically due to tool limitations:
