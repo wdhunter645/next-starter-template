@@ -202,6 +202,9 @@ dist
 .open-next/
 next-env.d.ts
 
+### Vercel build output ###
+.vercel/
+
 ### Documentation artifacts ###
 /docs/archive/*.bak
 /OPERATIONAL_BACKLOG.md.log

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Environment to deploy"
+        description: "Environment"
         required: true
         type: choice
         options: [staging, production]
@@ -21,53 +21,32 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
       CF_API_TOKEN:  ${{ secrets.CF_API_TOKEN }}
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.branch }}
+      - uses: actions/checkout@v4
+        with: { ref: ${{ inputs.branch }} }
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22.x'
-          cache: 'npm'
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'npm' }
 
-      - name: Install deps
-        run: npm ci
+      - run: npm ci
+      - run: npm run cf:build
+      - run: npm i -g wrangler
 
-      - name: Build Next & prepare for Cloudflare Pages
-        run: npm run cf:build
-
-      - name: Install Wrangler
-        run: npm i -g wrangler
-
-      - name: Ensure Pages project exists (idempotent)
+      - name: Ensure Pages project exists
         run: |
           set -e
           if [ "${{ inputs.environment }}" = "production" ]; then PROJ="lgfc-prod"; else PROJ="lgfc-staging"; fi
           wrangler pages project list | grep -q "$PROJ" || wrangler pages project create "$PROJ" --production-branch main
 
-      - name: Sync secrets to Pages project (idempotent)
-        run: |
-          if [ "${{ inputs.environment }}" = "production" ]; then PROJ="lgfc-prod"; else PROJ="lgfc-staging"; fi
-          : "${OPENAI_API_KEY:=}"
-          rm -f /tmp/.pages.env
-          if [ -n "$OPENAI_API_KEY" ]; then printf 'OPENAI_API_KEY=%s\n' "$OPENAI_API_KEY" >> /tmp/.pages.env; fi
-          # TODO: add more app secrets here as needed, one per line KEY=VALUE
-          if [ -f /tmp/.pages.env ]; then wrangler pages secret bulk /tmp/.pages.env --project-name "$PROJ"; fi
-
-      - name: Deploy to Pages
+      - name: Deploy to Cloudflare Pages
         run: |
           if [ "${{ inputs.environment }}" = "production" ]; then
-            npm run cf:deploy:prod
+            wrangler pages deploy .vercel/output/static --project-name lgfc-prod --branch main --commit-dirty=true
           else
-            npm run cf:deploy:staging
+            wrangler pages deploy .vercel/output/static --project-name lgfc-staging
           fi
 
-      - name: Output URLs
-        run: |
-          echo "::notice::Deployment complete for ${{ inputs.environment }}. Check Pages project dashboard for the URL."
+      - name: Echo next steps
+        run: echo "Deployment done for ${{ inputs.environment }}. Check Pages dashboard for the URL."
