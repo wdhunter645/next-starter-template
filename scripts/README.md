@@ -4,7 +4,42 @@ This directory contains helper scripts for operational tasks and automation.
 
 ## Available Scripts
 
-### 1. md_secret_audit.sh
+### 1. deploy-orchestrator.sh
+
+**Purpose:** Automated deployment pipeline for staging and production environments with smoke testing.
+
+**Usage:**
+```bash
+# Run full deployment pipeline
+./scripts/deploy-orchestrator.sh
+
+# Run and post comment to specific PR/issue
+./scripts/deploy-orchestrator.sh 123
+```
+
+**What it does:**
+1. Validates required secrets (CF_API_TOKEN, CF_ACCOUNT_ID, OPENAI_API_KEY)
+2. Deploys to staging via GitHub Actions
+3. Runs smoke tests against staging (test.lougehrigfanclub.com)
+4. Deploys to production via GitHub Actions
+5. Runs smoke tests against production (www.lougehrigfanclub.com)
+6. Posts deployment summary with results
+
+**Requirements:**
+- GitHub CLI (`gh`) installed and authenticated
+- `curl` for HTTP smoke tests
+- `jq` for JSON parsing
+- Repository secrets configured
+
+**Exit codes:**
+- `0` - All deployments and smoke tests passed
+- `1` - Preconditions failed, deployment failed, or smoke tests failed
+
+**See also:** [../docs/DEPLOYMENT_ORCHESTRATOR.md](../docs/DEPLOYMENT_ORCHESTRATOR.md) for detailed documentation.
+
+---
+
+### 2. md_secret_audit.sh
 
 **Purpose:** Scans markdown files for potential secrets and sensitive patterns.
 
@@ -39,7 +74,7 @@ npm run audit:docs
 
 ---
 
-### 2. create-parent-issue.sh
+### 3. create-parent-issue.sh
 
 **Purpose:** Creates the parent tracking issue "Operational Backlog from After-Action Reports".
 
@@ -66,7 +101,7 @@ npm run audit:docs
 
 ---
 
-### 3. post-parent-status.sh
+### 4. post-parent-status.sh
 
 **Purpose:** Posts a comprehensive status report on the parent issue.
 
@@ -101,7 +136,28 @@ npm run audit:docs
 
 ---
 
-## Quick Start Workflow
+## Quick Start Workflows
+
+### Automated Deployment (Staging + Production)
+
+Deploy to both staging and production with automated smoke testing:
+
+```bash
+# Ensure GitHub CLI is authenticated
+gh auth status || gh auth login
+
+# Run full deployment pipeline
+./scripts/deploy-orchestrator.sh
+
+# Or post results to a specific PR/issue
+./scripts/deploy-orchestrator.sh 456
+```
+
+**Total time:** ~10-15 minutes (depending on build times)
+
+---
+
+### After-Action Backlog Finalization
 
 Complete the after-action backlog finalization in 4 steps:
 
