@@ -1,0 +1,19 @@
+name: Uptime check
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check staging
+        run: |
+          URL="${{ secrets.LGFC_STAGING_URL }}"
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$URL/api/healthz" || true)
+          if [ "$code" != "200" ]; then echo "::error::staging $code"; exit 1; fi
+      - name: Check production
+        run: |
+          URL="${{ secrets.LGFC_PROD_URL }}"
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$URL/api/healthz" || true)
+          if [ "$code" != "200" ]; then echo "::error::prod $code"; exit 1; fi
