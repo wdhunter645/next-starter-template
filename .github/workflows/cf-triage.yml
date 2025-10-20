@@ -73,9 +73,9 @@ jobs:
         run: |
           set -euo pipefail
           npm run cf:build
-          test -d ".vercel/output/static" || { echo "::error::Missing .vercel/output/static (next-on-pages produced no artifacts)"; exit 11; }
+          test -d ".vercel/output" || { echo "::error::Missing .vercel/output (next-on-pages produced no artifacts)"; exit 11; }
           echo "Top of artifact:"
-          find .vercel/output/static -maxdepth 2 -type f | head -n 100
+          find .vercel/output -maxdepth 2 -type f | head -n 100
 
       - name: Ensure project exists
         id: proj
@@ -93,7 +93,7 @@ jobs:
           set -euo pipefail
           PROJ="${{ steps.proj.outputs.proj }}"
           BR="${{ steps.proj.outputs.branch }}"
-          OUT=$(wrangler pages deploy .vercel/output/static --project-name "$PROJ" --branch "$BR" --commit-dirty=true --format json)
+          OUT=$(wrangler pages deploy .vercel/output --project-name "$PROJ" --branch "$BR" --commit-dirty=true --format json)
           echo "$OUT" > /tmp/deploy.json
           URL=$(jq -r '..|.url? // empty' /tmp/deploy.json | tail -n1)
           if [ -z "$URL" ]; then
@@ -121,5 +121,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cf-pages-artifact-${{ inputs.environment }}
-          path: .vercel/output/static
+          path: .vercel/output
           if-no-files-found: error
