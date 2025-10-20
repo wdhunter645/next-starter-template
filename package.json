@@ -43,8 +43,8 @@
     "cf-typegen": "wrangler types --env-interface CloudflareEnv env.d.ts",
     "cf:prep": "npx @cloudflare/next-on-pages@latest --experimental-minify",
     "cf:build": "npm run build && npm run cf:adapt",
-    "cf:deploy:staging": "npx wrangler pages deploy .vercel/output/static --project-name lgfc-staging",
-    "cf:deploy:prod": "npx wrangler pages deploy .vercel/output/static --project-name lgfc-prod --branch main --commit-dirty=true",
+    "cf:deploy:staging": "npx wrangler pages deploy .vercel/output --project-name lgfc-staging",
+    "cf:deploy:prod": "npx wrangler pages deploy .vercel/output --project-name lgfc-prod --branch main --commit-dirty=true",
     "check": "npm run build && tsc",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "dev": "next dev",
@@ -54,6 +54,6 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "cf:adapt": "npx @cloudflare/next-on-pages@latest",
-    "cf:preview": "npx wrangler pages dev .vercel/output/static --port=8788"
+    "cf:preview": "npx wrangler pages dev .vercel/output --port=8788"
   }
 }

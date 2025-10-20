@@ -40,7 +40,7 @@ jobs:
             cat > wrangler.toml <<'EOF'
           name = "lgfc-site"
           compatibility_date = "2024-10-01"
-          pages_build_output_dir = ".vercel/output/static"
+          pages_build_output_dir = ".vercel/output"
           EOF
           fi
 
@@ -67,13 +67,13 @@ jobs:
         run: |
           set -euxo pipefail
           npm run cf:build
-          test -d ".vercel/output/static" || { echo "::error::Missing .vercel/output/static"; exit 11; }
-          find .vercel/output/static -maxdepth 2 -type f | head -n 100
+          test -d ".vercel/output" || { echo "::error::Missing .vercel/output"; exit 11; }
+          find .vercel/output -maxdepth 2 -type f | head -n 100
 
       - uses: actions/upload-artifact@v4
         with:
           name: cf-pages-artifact-${{ inputs.environment }}
-          path: .vercel/output/static
+          path: .vercel/output
           if-no-files-found: error
 
       - name: Install wrangler + jq
@@ -99,7 +99,7 @@ jobs:
           set -euxo pipefail
           PROJ="${{ steps.proj.outputs.proj }}"
           BR="${{ steps.proj.outputs.branch }}"
-          OUT=$(wrangler pages deploy .vercel/output/static --project-name "$PROJ" --branch "$BR" --commit-dirty=true --format json)
+          OUT=$(wrangler pages deploy .vercel/output --project-name "$PROJ" --branch "$BR" --commit-dirty=true --format json)
           echo "$OUT" > /tmp/deploy.json
           URL=$(jq -r '..|.url? // empty' /tmp/deploy.json | tail -n1)
           if [ -z "$URL" ]; then
