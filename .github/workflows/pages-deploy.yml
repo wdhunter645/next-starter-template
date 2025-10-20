@@ -12,6 +12,21 @@ on:
         description: Git branch to deploy
         required: true
         default: main
+  workflow_call:
+    inputs:
+      environment:
+        description: Environment
+        required: true
+        type: string
+      branch:
+        description: Git branch to deploy
+        required: true
+        type: string
+    secrets:
+      CF_API_TOKEN:
+        required: true
+      CF_ACCOUNT_ID:
+        required: true
 permissions:
   contents: read
 jobs:
@@ -24,9 +39,12 @@ jobs:
       NODE_OPTIONS: "--max_old_space_size=3072"
     steps:
       - uses: actions/checkout@v4
-        with: { ref: ${{ inputs.branch }} }
+        with:
+          ref: ${{ inputs.branch }}
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: npm }
+        with:
+          node-version: 20
+          cache: npm
       - name: Install deps
         run: npm ci
       - name: Build Next & prepare artifact
