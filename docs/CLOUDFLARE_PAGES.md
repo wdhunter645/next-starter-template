@@ -12,7 +12,7 @@ This site deploys via GitHub Actions and Cloudflare Pages build output.
 
 ## Cloudflare Pages (Dashboard → Pages → <project> → Settings → Build & deploy)
 - **Build command:**  
-  `npx @cloudflare/next-on-pages@latest && npm run build`
+  `npm run build && npx @cloudflare/next-on-pages@latest`
 - **Output directory:**  
   `.vercel/output/static`
 - **Node:** 20 (or "Latest" with Node 20+)
