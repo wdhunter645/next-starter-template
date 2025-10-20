@@ -1,45 +1,39 @@
-name: Cloudflare Pages — Build & Deploy
+name: cf-pages (Next.js → next-on-pages)
+
 on:
   push:
-    branches: [main]
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
-  build-deploy:
+  build-and-publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-      CF_API_TOKEN:  ${{ secrets.CF_API_TOKEN }}
-      # optional: OPENAI_API_KEY etc.
-
+    permissions:
+      contents: read
+      deployments: write
     steps:
       - uses: actions/checkout@v4
 
-      - name: Node setup
+      - name: Use Node 20
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
+          node-version: 20
+          cache: npm
 
-      - name: Install deps (clean)
+      - name: Install deps
         run: npm ci
 
-      - name: Build + adapt (Next.js -> Pages)
-        run: |
-          npm run cf:build
-          test -d .vercel/output/static || (echo "Adapter output missing" && exit 1)
+      - name: Patch Next for Cloudflare
+        run: npx @cloudflare/next-on-pages@latest
 
-      - name: Deploy to STAGING (Pages)
-        run: |
-          npx wrangler pages deploy .vercel/output/static \
-            --project-name lgfc-staging \
-            --commit-dirty=true
+      - name: Build
+        run: npm run build
 
-      - name: Deploy to PRODUCTION (Pages)
-        if: github.ref == 'refs/heads/main'
-        run: |
-          npx wrangler pages deploy .vercel/output/static \
-            --project-name lgfc-prod \
-            --branch main \
-            --commit-dirty=true
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          projectName: ${{ vars.CF_PAGES_PROJECT || 'next-starter-template' }}
+          directory: .vercel/output/static
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
