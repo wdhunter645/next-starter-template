@@ -2,6 +2,8 @@
 
 This document provides step-by-step instructions for completing the setup of PR #79 and the operational backlog.
 
+> **Note:** For Phase 1 GitHub setup with detailed instructions and troubleshooting, see [phase1_github_setup.md](../../phase1_github_setup.md)
+
 ## Prerequisites
 
 - GitHub CLI (`gh`) installed and authenticated
