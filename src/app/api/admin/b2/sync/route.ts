@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { isUserAdmin } from "@/lib/auth/adminGuard";
