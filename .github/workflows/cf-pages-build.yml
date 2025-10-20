@@ -135,17 +135,12 @@ jobs:
   verify:
     name: Verify required routes (project plan)
     needs: [deploy-staging, deploy-prod]
+    if: always() && needs.deploy-staging.result == 'success'
     runs-on: ubuntu-latest
     steps:
-      - name: Get URLs
-        id: urls
-        run: |
-          echo "STG=${{ needs.deploy-staging.outputs.url }}" >> $GITHUB_OUTPUT
-          echo "PRD=${{ needs.deploy-prod.outputs.url }}"   >> $GITHUB_OUTPUT || true
-
       - name: Check staging routes
         run: |
-          URL="${{ steps.urls.outputs.STG }}"
+          URL="${{ needs.deploy-staging.outputs.url }}"
           test -n "$URL" || { echo "::error::Missing staging URL"; exit 1; }
           for path in "/" "/weekly" "/milestones" "/charities" "/about" "/api/healthz"; do
             code=$(curl -s -o /dev/null -w "%{http_code}" "$URL$path" || true)
@@ -156,7 +151,7 @@ jobs:
       - name: Check production routes (only if prod deployed in this run)
         if: needs.deploy-prod.result == 'success'
         run: |
-          URL="${{ steps.urls.outputs.PRD }}"
+          URL="${{ needs.deploy-prod.outputs.url }}"
           test -n "$URL" || { echo "Prod URL not available in this context"; exit 0; }
           for path in "/" "/weekly" "/milestones" "/charities" "/about" "/api/healthz"; do
             code=$(curl -s -o /dev/null -w "%{http_code}" "$URL$path" || true)
