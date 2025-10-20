@@ -1,3 +1,4 @@
-name = "lgfc-site"
-compatibility_date = "2024-10-01"
+name = "lgfc-next"
+compatibility_date = "2025-10-01"
+# next-on-pages outputs here
 pages_build_output_dir = ".vercel/output/static"
