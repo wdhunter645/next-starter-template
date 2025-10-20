@@ -146,7 +146,8 @@ After reviewing all after-action reports (START_HERE.md, IMPLEMENTATION_COMPLETE
 - Documentation guides: docs/ directory
 - Helper scripts: Root directory .sh files
 - Security notices: docs/SECURITY_NOTICE.md
+- **Phase 1 setup guide:** [phase1_github_setup.md](./phase1_github_setup.md)
 
 ---
 
-**Next Steps:** Create GitHub issues from this backlog, starting with High Priority items.
+**Next Steps:** Create GitHub issues from this backlog, starting with High Priority items. See [phase1_github_setup.md](./phase1_github_setup.md) for detailed setup instructions.

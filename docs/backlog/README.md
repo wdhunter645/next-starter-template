@@ -7,6 +7,7 @@ This directory contains the complete operational backlog derived from analyzing 
 - **Parent Issue Specification:** [PARENT_ISSUE.md](PARENT_ISSUE.md)
 - **Sub-Issues:** 8 items (see below)
 - **Related PR:** #79
+- **Phase 1 Setup Guide:** [phase1_github_setup.md](../../phase1_github_setup.md) - **Start here for GitHub setup**
 
 ## Background
 
@@ -40,9 +41,21 @@ gh issue create --title "[Title from file]" \
   --label "docs,cleanup,ops"
 ```
 
-### Option 3: Automated Script (To Be Created)
+### Option 3: Automated Script
 
-A script could be added to automate issue creation.
+**Recommended!** Use the automated script in the repository root:
+
+```bash
+# Navigate to repository root
+cd /home/runner/work/next-starter-template/next-starter-template
+
+# Run the script
+./create-backlog-issues.sh
+
+# Choose option 2 for Phase 1 (High priority issues 1-3)
+```
+
+**For complete setup instructions, see:** [phase1_github_setup.md](../../phase1_github_setup.md)
 
 ## Sub-Issue Index
 
