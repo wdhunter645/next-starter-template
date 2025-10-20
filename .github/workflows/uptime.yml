@@ -9,12 +9,12 @@ jobs:
       - name: Check staging
         run: |
           URL="${{ secrets.LGFC_STAGING_URL }}"
-          [ -n "$URL" ] || { echo "::warning::LGFC_STAGING_URL missing"; exit 0; }
+          [ -z "$URL" ] && echo "no staging URL yet" && exit 0
           code=$(curl -s -o /dev/null -w "%{http_code}" "$URL/api/healthz" || true)
-          [ "$code" = 200 ] || { echo "::error::staging $code"; exit 1; }
+          if [ "$code" != "200" ]; then echo "::error::staging $code"; exit 1; fi
       - name: Check production
         run: |
           URL="${{ secrets.LGFC_PROD_URL }}"
-          [ -n "$URL" ] || { echo "::warning::LGFC_PROD_URL missing"; exit 0; }
+          [ -z "$URL" ] && echo "no prod URL yet" && exit 0
           code=$(curl -s -o /dev/null -w "%{http_code}" "$URL/api/healthz" || true)
-          [ "$code" = 200 ] || { echo "::error::prod $code"; exit 1; }
+          if [ "$code" != "200" ]; then echo "::error::prod $code"; exit 1; fi
