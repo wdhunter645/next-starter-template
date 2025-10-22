@@ -1,4 +1,4 @@
-name: Cloudflare Pages (Next.js → next-on-pages)
+name: Cloudflare Pages (Next.js → OpenNext)
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
         run: npm ci
 
       - name: Build Next.js and adapt for Cloudflare Pages
-        run: npm run build && npx @cloudflare/next-on-pages@latest
+        run: npx opennextjs-cloudflare build
 
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
@@ -32,6 +32,6 @@ jobs:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           projectName: ${{ vars.CF_PAGES_PROJECT || 'next-starter-template' }}
-          # Output directory must be .vercel/output (root of adapter's output for static assets and serverless functions)
-          directory: .vercel/output
+          # Output directory for OpenNext Cloudflare adapter
+          directory: .open-next
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}

@@ -40,40 +40,24 @@ jobs:
             cat > wrangler.toml <<'EOF'
           name = "lgfc-site"
           compatibility_date = "2024-10-01"
-          pages_build_output_dir = ".vercel/output"
+          pages_build_output_dir = ".open-next"
           EOF
           fi
-
-      - name: Inject/merge package.json keys (non-destructive)
-        run: |
-          sudo apt-get update -y && sudo apt-get install -y jq
-          test -f package.json || { echo "::error::package.json missing"; exit 10; }
-          TMP=.pkg.tmp.json
-          jq '
-            .scripts = (.scripts // {}) |
-            .scripts["build"] = "next build" |
-            .scripts["cf:prep"] = "npx @cloudflare/next-on-pages@latest --experimental-minify" |
-            .scripts["cf:build"] = "npm run build && npm run cf:prep" |
-            .devDependencies = (.devDependencies // {}) |
-            .devDependencies["@cloudflare/next-on-pages"] = "latest" |
-            .devDependencies["wrangler"] = "^3"
-          ' package.json > "$TMP" && mv "$TMP" package.json
-          cat package.json
 
       - name: Install deps
         run: npm ci
 
-      - name: Build Next + next-on-pages → verify artifact
+      - name: Build Next with OpenNext Cloudflare adapter
         run: |
           set -euxo pipefail
-          npm run cf:build
-          test -d ".vercel/output" || { echo "::error::Missing .vercel/output"; exit 11; }
-          find .vercel/output -maxdepth 2 -type f | head -n 100
+          npx opennextjs-cloudflare build
+          test -d ".open-next" || { echo "::error::Missing .open-next"; exit 11; }
+          find .open-next -maxdepth 2 -type f | head -n 100
 
       - uses: actions/upload-artifact@v4
         with:
           name: cf-pages-artifact-${{ inputs.environment }}
-          path: .vercel/output
+          path: .open-next
           if-no-files-found: error
 
       - name: Install wrangler + jq
@@ -99,7 +83,7 @@ jobs:
           set -euxo pipefail
           PROJ="${{ steps.proj.outputs.proj }}"
           BR="${{ steps.proj.outputs.branch }}"
-          OUT=$(wrangler pages deploy .vercel/output --project-name "$PROJ" --branch "$BR" --commit-dirty=true --format json)
+          OUT=$(wrangler pages deploy .open-next --project-name "$PROJ" --branch "$BR" --commit-dirty=true --format json)
           echo "$OUT" > /tmp/deploy.json
           URL=$(jq -r '..|.url? // empty' /tmp/deploy.json | tail -n1)
           if [ -z "$URL" ]; then
