@@ -1,8 +1,8 @@
-// Cloudflare config for Pages + Functions via next-on-pages
+// Cloudflare config for Pages + Functions via OpenNext
 {
   "name": "lgfc-next",
   "compatibility_date": "2025-10-01",
-  "pages_build_output_dir": ".vercel/output/static",
+  "pages_build_output_dir": ".open-next",
   "vars": {},
   "observability": { "enabled": true }
 }

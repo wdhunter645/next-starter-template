@@ -55,7 +55,6 @@ jobs:
         run: |
           node -v
           npm -v
-          npm ls @cloudflare/next-on-pages || true
           npm i -g wrangler
           wrangler --version
           echo "Account ID present? ${CF_ACCOUNT_ID:+yes}"
@@ -72,10 +71,10 @@ jobs:
       - name: Build for Cloudflare Pages
         run: |
           set -euo pipefail
-          npm run cf:build
-          test -d ".vercel/output" || { echo "::error::Missing .vercel/output (next-on-pages produced no artifacts)"; exit 11; }
+          npx opennextjs-cloudflare build
+          test -d ".open-next" || { echo "::error::Missing .open-next (OpenNext produced no artifacts)"; exit 11; }
           echo "Top of artifact:"
-          find .vercel/output -maxdepth 2 -type f | head -n 100
+          find .open-next -maxdepth 2 -type f | head -n 100
 
       - name: Ensure project exists
         id: proj
@@ -93,7 +92,7 @@ jobs:
           set -euo pipefail
           PROJ="${{ steps.proj.outputs.proj }}"
           BR="${{ steps.proj.outputs.branch }}"
-          OUT=$(wrangler pages deploy .vercel/output --project-name "$PROJ" --branch "$BR" --commit-dirty=true --format json)
+          OUT=$(wrangler pages deploy .open-next --project-name "$PROJ" --branch "$BR" --commit-dirty=true --format json)
           echo "$OUT" > /tmp/deploy.json
           URL=$(jq -r '..|.url? // empty' /tmp/deploy.json | tail -n1)
           if [ -z "$URL" ]; then
@@ -121,5 +120,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cf-pages-artifact-${{ inputs.environment }}
-          path: .vercel/output
+          path: .open-next
           if-no-files-found: error
