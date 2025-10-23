@@ -17,7 +17,7 @@ wrangler pages deployment list --project-name <proj> --format json
 wrangler pages deployment rollback --project-name <proj> <deployment-id>
 
 ## Troubleshooting
-- ::error::Missing .vercel/output/static → Build/next-on-pages didn't produce artifacts.
+- ::error::Missing .open-next → Build/OpenNext didn't produce artifacts.
 - ::error::Failed to list Pages projects → CF_API_TOKEN scope wrong or account mismatch.
 - ::error::Deployed but no URL found → Confirm project names (lgfc-staging/lgfc-prod) and branch mapping.
 2. **Production:** Deploys on push to `main` branch
@@ -46,22 +46,20 @@ export CLOUDFLARE_API_TOKEN=<your-token>
 ```bash
 cd /path/to/next-starter-template
 npm ci
-npm run build
-npx @cloudflare/next-on-pages@latest
-test -d .vercel/output/static || { echo "no build output"; exit 1; }
-npx wrangler pages deploy .vercel/output/static --project-name lgfc-staging
+npx opennextjs-cloudflare build
+test -d .open-next || { echo "no build output"; exit 1; }
+npx wrangler pages deploy .open-next --project-name lgfc-staging
 ```
 
 **Deploy to Production:**
 ```bash
 # Same build process as staging
 npm ci
-npm run build
-npx @cloudflare/next-on-pages@latest
-test -d .vercel/output/static || { echo "no build output"; exit 1; }
+npx opennextjs-cloudflare build
+test -d .open-next || { echo "no build output"; exit 1; }
 
 # Deploy with production settings
-npx wrangler pages deploy .vercel/output/static \
+npx wrangler pages deploy .open-next \
   --project-name lgfc-prod \
   --branch main \
   --commit-dirty=true
