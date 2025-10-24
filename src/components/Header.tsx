@@ -17,9 +17,6 @@ export default function Header() {
 						<Link href="/weekly" className={styles.navLink}>
 							Weekly Matchup
 						</Link>
-						<Link href="/milestones" className={styles.navLink}>
-							Milestones
-						</Link>
 						<Link href="/charities" className={styles.navLink}>
 							Charities
 						</Link>
