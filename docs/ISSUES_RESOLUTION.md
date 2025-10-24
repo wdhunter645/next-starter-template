@@ -67,7 +67,7 @@ October 16, 2025
 #### Issues #8, #12: Wire site envs and display build info
 **Status:** Completed (already implemented)
 - Footer displays app version from package.json
-- Shows commit SHA (from CF_PAGES_COMMIT_SHA or VERCEL_GIT_COMMIT_SHA)
+- Shows commit SHA (from CF_PAGES_COMMIT_SHA)
 - Site name read from NEXT_PUBLIC_SITE_NAME with fallback
 - No environment values logged to console
 - Footer shows "v1.0.0" and short SHA when available

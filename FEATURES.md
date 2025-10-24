@@ -19,7 +19,7 @@ The core MVP requirements have been successfully implemented:
 - [x] Build info in footer showing version and commit SHA
   - Displays site version from `package.json`
   - Shows first 7 characters of commit SHA
-  - Uses `CF_PAGES_COMMIT_SHA` or `VERCEL_GIT_COMMIT_SHA` environment variables
+  - Uses `CF_PAGES_COMMIT_SHA` environment variable
 
 #### B) Navigation & Page Structure ✅
 - [x] Site-wide header (`src/components/Header.tsx`)
