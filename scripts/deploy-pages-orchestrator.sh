@@ -494,7 +494,6 @@ echo "  → Workflow: $PRODUCTION_RUN_URL"
 echo ""
 echo -e "${GREEN}✅ Both deployments completed successfully${NC}"
 echo -e "${GREEN}✅ All smoke checks passed${NC}"
-echo -e "${GREEN}✅ No Vercel usage detected in pipeline${NC}"
 echo ""
 
 # Create comment body for posting to GitHub
@@ -514,8 +513,7 @@ COMMENT_BODY="# 🚀 Cloudflare Pages Deployment Complete
 
 **Deployment Status:** ✅ COMPLETE
 
-Both staging and production deployments completed successfully with all smoke tests passing.
-No Vercel usage detected in the pipeline."
+Both staging and production deployments completed successfully with all smoke tests passing."
 
 # Save report to file
 REPORT_FILE="/tmp/deployment-report.md"

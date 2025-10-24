@@ -100,7 +100,6 @@ Example:
 ### Step 6: Final Report
 - Displays summary with both URLs and workflow links
 - Optionally posts comment to GitHub issue/PR
-- Confirms no Vercel usage in pipeline
 
 ## Output
 
@@ -140,7 +139,6 @@ PRODUCTION ✅  https://lgfc-prod.pages.dev
 The script meets all acceptance criteria:
 - ✅ Both deploy runs complete successfully
 - ✅ Both URLs return HTTP 200 on "/"
-- ✅ No Vercel usage anywhere in the pipeline
 - ✅ Time-bound operations with proper timeouts
 - ✅ Fail-fast on missing secrets
 - ✅ Immediate error reporting on failures

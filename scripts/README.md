@@ -54,7 +54,7 @@ npm run audit:docs
 
 **What it scans:**
 - API keys, secrets, tokens, passwords
-- Cloud provider credentials (Supabase, Vercel, Cloudflare, AWS)
+- Cloud provider credentials (Supabase, Cloudflare, AWS)
 - JWT-like tokens (eyJ...)
 - URLs containing tokens
 
