@@ -87,6 +87,8 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 
 ## Deploying To Production
 
+> **⚠️ First-time setup required**: Before deploying, you need to configure GitHub secrets with your Cloudflare credentials. See **[Cloudflare Deployment Setup Guide →](./docs/CLOUDFLARE_DEPLOYMENT_SETUP.md)** for step-by-step instructions.
+
 | Command                           | Action                                       |
 | :-------------------------------- | :------------------------------------------- |
 | `npm run build`                   | Build your production site                   |
