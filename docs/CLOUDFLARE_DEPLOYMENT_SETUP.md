@@ -116,6 +116,17 @@ The workflow should now:
 4. ✅ Build Next.js with OpenNext adapter
 5. ✅ Deploy to Cloudflare Pages
 
+## Workflows Affected
+
+Setting up these secrets will fix **all** Cloudflare-related workflows:
+
+- ✅ `cf-pages.yml` - Main Cloudflare Pages deployment on push to main
+- ✅ `cf-one-shot.yml` - Manual deployment with smoke tests
+- ✅ `cf-triage.yml` - Deployment triage workflow
+- ✅ `cf-killswitch-triage.yml` - Emergency deployment control
+
+All these workflows require the same `CF_API_TOKEN` and `CF_ACCOUNT_ID` secrets.
+
 ## What the Workflow Does
 
 The `.github/workflows/cf-pages.yml` workflow:
