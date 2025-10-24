@@ -12,8 +12,8 @@ This site deploys via GitHub Actions and Cloudflare Pages build output.
 
 ## Cloudflare Pages (Dashboard → Pages → <project> → Settings → Build & deploy)
 - **Build command:**  
-  `npm run build && npx @cloudflare/next-on-pages@latest`
+  `npx opennextjs-cloudflare build`
 - **Output directory:**  
-  `.vercel/output/static`
+  `.open-next`
 - **Node:** 20 (or "Latest" with Node 20+)
 - **Deploy command:** leave **empty** (Pages publishes the output; no `wrangler deploy`)
