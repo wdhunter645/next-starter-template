@@ -4,7 +4,7 @@ import styles from "./SiteFooter.module.css";
 import packageJson from "../../../package.json";
 
 // Environment variables with safe fallbacks
-const commitSha = process.env.CF_PAGES_COMMIT_SHA || process.env.VERCEL_GIT_COMMIT_SHA || "";
+const commitSha = process.env.CF_PAGES_COMMIT_SHA || "";
 const shortSha = commitSha ? commitSha.substring(0, 7) : null;
 const version = packageJson.version || "1.0.0";
 
