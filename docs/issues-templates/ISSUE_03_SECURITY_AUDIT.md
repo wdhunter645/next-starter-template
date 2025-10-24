@@ -31,7 +31,6 @@ Based on .env.example, the following credential types were likely exposed:
    - CLOUDFLARE_API_TOKEN
 4. **Deployment Tokens**
    - CF_PAGES_COMMIT_SHA
-   - VERCEL_GIT_COMMIT_SHA (if used)
 5. **Application Secrets**
    - NEXT_PUBLIC_SITE_NAME
    - NEXT_PUBLIC_SITE_URL
