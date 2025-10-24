@@ -12,7 +12,6 @@ export const siteConfig = {
 	// Main navigation links (header)
 	nav: [
 		{ label: "Weekly", path: "/weekly" },
-		{ label: "Milestones", path: "/milestones" },
 		{ label: "Charities", path: "/charities" },
 		{ label: "News & Q&A", path: "/news" },
 		{ label: "Calendar", path: "/calendar" },
