@@ -21,7 +21,7 @@ This document provides the complete implementation and manual steps required to 
    - File: `scripts/md_secret_audit.sh`
    - Scans markdown files for patterns:
      - API keys: `KEY|SECRET|TOKEN|PASSWORD`
-     - Cloud providers: `SUPABASE|VERCEL_|CLOUDFLARE_|AWS_`
+     - Cloud providers: `SUPABASE|CLOUDFLARE_|AWS_`
      - JWT tokens: `eyJ[A-Za-z0-9_-]{10,}...`
      - URLs with tokens: `https?://[^\s]*token[^\s]*`
    - Exit codes: 0 (pass), 1 (findings detected)
