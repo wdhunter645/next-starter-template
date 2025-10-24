@@ -89,7 +89,7 @@ All pages have h1 titles, descriptions, and TODO comments for future data hooks.
 **Status:** ✅ COMPLETE (2 duplicate issues)  
 **Implementation:**
 - Footer displays version from `package.json`
-- Shows commit SHA (first 7 chars) from `CF_PAGES_COMMIT_SHA` or `VERCEL_GIT_COMMIT_SHA`
+- Shows commit SHA (first 7 chars) from `CF_PAGES_COMMIT_SHA`
 - Reads `NEXT_PUBLIC_SITE_NAME` with fallback
 - No environment values logged to console
 

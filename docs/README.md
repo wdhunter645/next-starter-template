@@ -271,7 +271,7 @@ Recommended order for learning the codebase:
 ### Next.js
 - [Official Documentation](https://nextjs.org/docs)
 - [Learn Next.js](https://nextjs.org/learn)
-- [Next.js GitHub](https://github.com/vercel/next.js)
+- [Next.js GitHub](https://github.com/nextjs/next.js)
 
 ### React
 - [React Documentation](https://react.dev)
