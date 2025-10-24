@@ -201,10 +201,3 @@ dist
 ### OpenNext ###
 .open-next/
 next-env.d.ts
-
-### Documentation artifacts ###
-/docs/archive/*.bak
-/OPERATIONAL_BACKLOG.md.log
-
-# Backup of old app directory
-src/app.backup/
