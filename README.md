@@ -8,7 +8,7 @@
 
 <!-- dash-content-start -->
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app). It's deployed on Cloudflare Workers as a [static website](https://developers.cloudflare.com/workers/static-assets/).
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app). It's deployed on Cloudflare Workers as a [static website](https://developers.cloudflare.com/workers/static-assets/).
 
 This template uses [OpenNext](https://opennext.js.org/) via the [OpenNext Cloudflare adapter](https://opennext.js.org/cloudflare), which works by taking the Next.js build output and transforming it, so that it can run in Cloudflare Workers.
 
@@ -87,82 +87,12 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 
 ## Deploying To Production
 
-> **⚠️ First-time setup required**: Before deploying, you need to configure GitHub secrets with your Cloudflare credentials. See **[Cloudflare Deployment Setup Guide →](./docs/CLOUDFLARE_DEPLOYMENT_SETUP.md)** for step-by-step instructions.
-
 | Command                           | Action                                       |
 | :-------------------------------- | :------------------------------------------- |
 | `npm run build`                   | Build your production site                   |
 | `npm run preview`                 | Preview your build locally, before deploying |
 | `npm run build && npm run deploy` | Deploy your production site to Cloudflare    |
 | `npm wrangler tail`               | View real-time logs for all Workers          |
-| `./scripts/deploy-orchestrator.sh` | Automated staging & production deployment with smoke tests |
-| `./scripts/deploy-pages-orchestrator.sh` | Cloudflare Pages deployment orchestrator (lgfc-staging/lgfc-prod) |
-
-### Automated Deployment Pipeline
-
-#### Option 1: Custom Domain Deployment (deploy-orchestrator.sh)
-
-For a fully automated deployment to both staging and production with smoke testing:
-
-```bash
-./scripts/deploy-orchestrator.sh
-```
-
-This orchestrates the complete deployment process:
-1. Validates required secrets (CF_API_TOKEN, CF_ACCOUNT_ID, OPENAI_API_KEY)
-2. Deploys to staging via GitHub Actions
-3. Runs smoke tests against staging (test.lougehrigfanclub.com)
-4. Deploys to production via GitHub Actions
-5. Runs smoke tests against production (www.lougehrigfanclub.com)
-6. Posts deployment summary with results
-
-See [docs/DEPLOYMENT_ORCHESTRATOR.md](./docs/DEPLOYMENT_ORCHESTRATOR.md) for detailed documentation.
-
-#### Option 2: Cloudflare Pages Deployment (deploy-pages-orchestrator.sh)
-
-For parallel deployment to Cloudflare Pages staging and production projects:
-
-```bash
-./scripts/deploy-pages-orchestrator.sh
-```
-
-This orchestrates parallel Cloudflare Pages deployments:
-1. Validates required secrets (CF_API_TOKEN, CF_ACCOUNT_ID)
-2. Triggers staging deployment (lgfc-staging) via GitHub Actions
-3. Triggers production deployment (lgfc-prod) via GitHub Actions (20s delay)
-4. Monitors both workflow runs to completion
-5. Extracts Cloudflare Pages URLs
-6. Runs smoke checks (HTTP 200 verification)
-7. Posts final report with deployment URLs
-
-**Dry run mode:**
-```bash
-./scripts/deploy-pages-orchestrator.sh --dry-run
-```
-
-See [scripts/deploy-pages-orchestrator.md](./scripts/deploy-pages-orchestrator.md) for detailed documentation.
-
-## Verifying Test Site
-
-We maintain a staging mirror at **test.lougehrigfanclub.com** that mirrors production for safe testing.
-
-**Quick Verification:**
-```bash
-# Run smoke tests against staging
-SMOKE_URL=https://test.lougehrigfanclub.com npm run smoke:preview
-```
-
-**For detailed staging mirror setup and operations:**
-- **Setup Guide:** [docs/ops/STAGING-MIRROR.md](./docs/ops/STAGING-MIRROR.md)
-  - Branch deployment configuration
-  - Custom domain setup (CNAME)
-  - Environment variable configuration
-  - Staging refresh procedures
-- **Operations Runbook:** [docs/staging-runbook.md](./docs/staging-runbook.md)
-  - Daily operations and monitoring
-  - Environment variable management
-  - API endpoint testing
-  - Troubleshooting guide
 
 ## Learn More
 
@@ -171,7 +101,7 @@ To learn more about Next.js, take a look at the following resources:
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/nextjs/next.js) - your feedback and contributions are welcome!
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
 
 ## Contributing
 
