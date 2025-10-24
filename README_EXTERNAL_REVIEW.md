@@ -13,7 +13,7 @@ This branch (`copilot/update-gitignore-and-acceptance-checks`) implements the ex
 2. **Automated docs secret scanning** ✅
    - Created `scripts/md_secret_audit.sh` - Bash script that scans markdown files for:
      - API keys, secrets, tokens, passwords
-     - Supabase/Vercel/Cloudflare/AWS credentials
+     - Supabase/Cloudflare/AWS credentials
      - JWT-like tokens
      - URLs with tokens
    - Created `.github/workflows/docs-audit.yml` - CI workflow that:
