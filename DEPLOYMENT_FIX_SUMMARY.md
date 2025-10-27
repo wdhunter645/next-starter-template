@@ -93,7 +93,7 @@ jobs:
 5. ✅ Added verification step to confirm build completes successfully
 6. ✅ Updated concurrency group from `deploy-main` to `build-main`
 
-## How Deployment Works Now (Updated)
+## How Deployment Works
 
 ### GitHub Actions Workflow (Build and Deploy)
 When code is pushed to `main`:
@@ -106,7 +106,7 @@ When code is pushed to `main`:
 
 ### Deployment Method
 The workflow uses `wrangler pages deploy` to directly deploy the built application to Cloudflare Pages, using the following secrets:
-- `CLOUDFLARE_API_TOKEN`: API token with Cloudflare Pages deploy permissions
+- `CLOUDFLARE_API_TOKEN`: API token with "Cloudflare Pages:Edit" permission
 - `CLOUDFLARE_ACCOUNT_ID`: Cloudflare account ID
 - `CLOUDFLARE_PROJECT_NAME`: Name of the Cloudflare Pages project
 

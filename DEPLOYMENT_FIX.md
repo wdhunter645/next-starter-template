@@ -59,6 +59,6 @@ When code is pushed to the `main` branch:
 3. The deployment is accessible at your Cloudflare Pages project URL
 
 The deployment requires the following GitHub secrets to be configured:
-- `CLOUDFLARE_API_TOKEN`: API token with Cloudflare Pages deploy permissions
-- `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare account ID  
+- `CLOUDFLARE_API_TOKEN`: API token with "Cloudflare Pages:Edit" permission
+- `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare account ID
 - `CLOUDFLARE_PROJECT_NAME`: The name of your Cloudflare Pages project
