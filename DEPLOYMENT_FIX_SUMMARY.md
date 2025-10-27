@@ -1,6 +1,36 @@
 # Deployment Fix Summary
 
-## Problem
+## Latest Issue (Current Fix)
+PR #140 failed to deploy to Cloudflare Pages due to the presence of static HTML files in the repository root.
+
+### Root Cause
+PR #140 added two files to the repository root:
+- `index.html` - A static HTML page for Lou Gehrig Fan Club (171 lines)
+- `styles.css` - CSS styles for the static HTML page (48 lines)
+
+These files conflicted with the Next.js application structure because:
+1. **Routing Conflicts**: Next.js uses `src/app/page.tsx` for the home page, while `index.html` in the root creates ambiguity
+2. **Build System Conflicts**: OpenNext expects a pure Next.js structure, not mixed static/dynamic content
+3. **Deployment Conflicts**: Cloudflare Pages needs clear instructions on whether to serve static HTML or a Next.js app
+
+### Solution Applied
+1. **Removed conflicting files** (219 lines deleted total):
+   - Deleted `index.html` from repository root
+   - Deleted `styles.css` from repository root
+
+2. **Added prevention measures**:
+   - Updated `.gitignore` with explicit rules to prevent future static HTML in root
+   - Created `DEPLOYMENT_FIX.md` with detailed explanation
+
+3. **Verification**:
+   - ✅ Next.js build succeeds: `npm run build`
+   - ✅ OpenNext Cloudflare build succeeds: `npx opennextjs-cloudflare build`
+   - ✅ Code review completed with no issues
+   - ✅ Security scan completed
+
+---
+
+## Previous Issue (Fixed in PR #139)
 PR #137 merged successfully but the GitHub Actions "Deploy to Cloudflare" workflow was failing with authentication errors when trying to deploy to Cloudflare Pages.
 
 ## Root Cause Analysis
