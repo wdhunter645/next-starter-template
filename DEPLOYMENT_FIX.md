@@ -51,4 +51,14 @@ Added entries to `.gitignore` to prevent future static HTML files in the root:
 ```
 
 ## Deployment
-The application deploys successfully to Cloudflare Pages using the GitHub Actions workflow in `.github/workflows/deploy.yml`.
+The application deploys to Cloudflare Pages using the GitHub Actions workflow in `.github/workflows/deploy.yml`. 
+
+When code is pushed to the `main` branch:
+1. The workflow builds the application using `opennextjs-cloudflare build`
+2. The workflow deploys the built application to Cloudflare Pages using `wrangler pages deploy`
+3. The deployment is accessible at your Cloudflare Pages project URL
+
+The deployment requires the following GitHub secrets to be configured:
+- `CLOUDFLARE_API_TOKEN`: API token with Cloudflare Pages deploy permissions
+- `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare account ID  
+- `CLOUDFLARE_PROJECT_NAME`: The name of your Cloudflare Pages project

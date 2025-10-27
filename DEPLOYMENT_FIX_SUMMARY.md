@@ -93,32 +93,30 @@ jobs:
 5. ✅ Added verification step to confirm build completes successfully
 6. ✅ Updated concurrency group from `deploy-main` to `build-main`
 
-## How Deployment Works Now
+## How Deployment Works Now (Updated)
 
-### GitHub Actions Workflow (Build Only)
+### GitHub Actions Workflow (Build and Deploy)
 When code is pushed to `main`:
-1. GitHub Actions runs the "Build for Cloudflare" workflow
+1. GitHub Actions runs the "Deploy to Cloudflare Pages" workflow
 2. Workflow installs dependencies with `npm ci`
 3. Workflow builds the project with `opennextjs-cloudflare build`
 4. Workflow verifies the `.open-next/` directory is created
-5. **Workflow completes successfully** ✅
+5. Workflow deploys to Cloudflare Pages using `wrangler pages deploy`
+6. **Workflow completes with deployment to Cloudflare Pages** ✅
 
-### Cloudflare Pages (Automatic Deployment)
-Separately, Cloudflare Pages (configured via Cloudflare dashboard):
-1. Detects the push to the repository
-2. Clones the repository
-3. Runs the build command (`npm run build`)
-4. Deploys the built site automatically
-5. Makes it available at the production URL
+### Deployment Method
+The workflow uses `wrangler pages deploy` to directly deploy the built application to Cloudflare Pages, using the following secrets:
+- `CLOUDFLARE_API_TOKEN`: API token with Cloudflare Pages deploy permissions
+- `CLOUDFLARE_ACCOUNT_ID`: Cloudflare account ID
+- `CLOUDFLARE_PROJECT_NAME`: Name of the Cloudflare Pages project
 
 ## Benefits of This Approach
 
-1. **No Authentication Errors**: GitHub Actions no longer needs Cloudflare API credentials
-2. **Simplified Setup**: No need to manage `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets
-3. **Single Source of Truth**: Cloudflare Pages is the only system responsible for deployment
-4. **CI/CD Validation**: GitHub Actions still validates that builds work on every push
-5. **Best Practice**: Uses Cloudflare Pages as intended (automatic deployments from Git)
-6. **Faster Feedback**: Build failures are caught in GitHub Actions before Cloudflare Pages even attempts deployment
+1. **Complete CI/CD**: GitHub Actions handles both build and deployment
+2. **Single Workflow**: One workflow for complete deployment process
+3. **Git-based Tracking**: Each deployment is tied to a specific commit
+4. **Fast Deployment**: Direct deployment from GitHub Actions
+5. **Rollback Support**: Compatible with the rollback workflow
 
 ## Rollback Workflow
 The `.github/workflows/cloudflare-rollback.yml` workflow remains unchanged and functional. It uses the Cloudflare API to promote/restore existing Cloudflare Pages deployments to production when needed.
@@ -139,7 +137,7 @@ This uses `opennextjs-cloudflare deploy` which is separate from GitHub Actions a
 
 ## Next Steps
 When this PR is merged:
-1. The GitHub Actions workflow will run and should complete successfully
-2. Cloudflare Pages will automatically deploy the site
-3. No authentication errors should occur
-4. Monitor the first deployment to confirm both systems work as expected
+1. The GitHub Actions workflow will run and build the application
+2. The workflow will deploy directly to Cloudflare Pages using wrangler
+3. The deployment will be live at the Cloudflare Pages URL
+4. Monitor the deployment to confirm it completes successfully
