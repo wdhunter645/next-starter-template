@@ -201,3 +201,9 @@ dist
 ### OpenNext ###
 .open-next/
 next-env.d.ts
+
+### Next.js Application Root ###
+# Prevent static HTML files in root that conflict with Next.js routing
+# Static content should be placed in public/ directory instead
+/index.html
+/styles.css
