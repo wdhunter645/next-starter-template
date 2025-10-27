@@ -26,7 +26,12 @@ The application already has a proper Next.js implementation for the Lou Gehrig F
 - All routes (/, /member, /milestones, /calendar, etc.) are implemented as Next.js pages
 
 ## Static Files in Next.js
-If you need to add static files (HTML, CSS, images, etc.), they should be placed in the `public/` directory, NOT in the repository root. Files in the `public/` directory are served at the root path and don't conflict with Next.js routing.
+If you need to add static files (HTML, CSS, images, etc.), they should be placed in the `public/` directory, NOT in the repository root. 
+
+Files in the `public/` directory are served from the root URL path (e.g., `public/favicon.ico` becomes accessible at `/favicon.ico`). However, they don't conflict with Next.js routing because Next.js gives priority to its file-based routing system (pages/routes) over static files. This means:
+- Dynamic routes (like `src/app/page.tsx`) take precedence
+- Static files from `public/` are served when no matching route exists
+- Build outputs are properly handled by the framework
 
 ## Verification
 After the fix, both build processes work correctly:
