@@ -48,9 +48,10 @@ Are you missing the User->User Details->Read permission?
 
 **Current Permissions:**
 - ✅ Cloudflare Pages:Edit (has this)
-  
+
 **Missing Permissions:**
 - ❌ User:User Details:Read (**THIS IS THE PROBLEM**)
+
 
 **Why It Fails:**
 Wrangler CLI requires "User Details Read" to:
