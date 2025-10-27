@@ -87,12 +87,24 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 
 ## Deploying To Production
 
+⚠️ **Current Deployment Issue**: Builds are succeeding but deployments are failing due to API token permissions. See [DEPLOYMENT_TROUBLESHOOTING.md](./DEPLOYMENT_TROUBLESHOOTING.md) for details and fix instructions.
+
 | Command                           | Action                                       |
 | :-------------------------------- | :------------------------------------------- |
 | `npm run build`                   | Build your production site                   |
 | `npm run preview`                 | Preview your build locally, before deploying |
 | `npm run build && npm run deploy` | Deploy your production site to Cloudflare    |
 | `npm wrangler tail`               | View real-time logs for all Workers          |
+
+### Automated Deployment (GitHub Actions)
+
+The repository is configured to automatically build and deploy to Cloudflare Pages when code is pushed to the `main` branch. The deployment workflow:
+
+1. Builds the application using OpenNext
+2. Deploys to Cloudflare Pages using wrangler
+3. Makes the deployment live at your Cloudflare Pages URL
+
+**Current Status**: The workflow builds successfully but deployment fails. See [DEPLOYMENT_TROUBLESHOOTING.md](./DEPLOYMENT_TROUBLESHOOTING.md) to fix.
 
 ## Learn More
 
