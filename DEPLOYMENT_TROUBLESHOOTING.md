@@ -1,30 +1,56 @@
 # Deployment Troubleshooting Guide
 
-## Current Issue: Builds Not Deploying to Production
+## Issue RESOLVED: Multi-line Commit Messages Breaking Deployment
 
 ### Problem Summary
-PR #142 and subsequent builds successfully complete but fail to deploy to Cloudflare Pages. The builds are created but never promoted to production, leaving the live site running an 8-day-old deployment.
+The GitHub Actions workflow was failing during the deployment step with errors like:
+```
+✘ [ERROR] Unknown argument: Milestones link from homepage
+```
+
+This happened because multi-line commit messages (which often contain markdown, special characters, and newlines) were being passed directly to the `wrangler pages deploy` command, causing shell parsing issues.
 
 ### Root Cause
-The GitHub Actions workflow fails during the deployment step with:
+The workflow was passing the full commit message directly to wrangler:
+```yaml
+--commit-message="${{ github.event.head_commit.message }}"
+```
+
+GitHub commit messages often contain:
+- Multiple lines (title + body + co-authors)
+- Special characters (`*`, `#`, `-`, etc.)
+- Markdown formatting
+- Pull request references
+
+When bash encountered these multi-line messages with special characters, it interpreted them as separate command-line arguments, causing wrangler to fail.
+
+### Fix Applied
+The workflow now uses only the first line (title) of the commit message:
+```yaml
+COMMIT_MSG=$(echo "${{ github.event.head_commit.message }}" | head -n 1)
+--commit-message="$COMMIT_MSG"
+```
+
+This ensures:
+- Single-line messages that won't break shell parsing
+- Proper quoting and escaping
+- Reliable deployments
+
+## Previous Issue: API Token Permissions (if encountered)
+
+If you see authentication errors like:
 ```
 Authentication error [code: 10000]
 Unable to retrieve email for this user. Are you missing the `User->User Details->Read` permission?
 ```
 
-This occurs because the `CLOUDFLARE_API_TOKEN` GitHub secret has insufficient permissions.
-
-## Required Fix
-
 ### Step 1: Update Cloudflare API Token Permissions
 
 The Cloudflare API token stored in the `CLOUDFLARE_API_TOKEN` GitHub secret needs the following permissions:
 
-**Currently has:**
+**Required permissions:**
 - ✅ Cloudflare Pages:Edit
-
-**Missing (required):**
-- ❌ User:User Details:Read
+- ✅ User:User Details:Read (if the error above occurs)
 
 ### Step 2: How to Update the API Token
 
