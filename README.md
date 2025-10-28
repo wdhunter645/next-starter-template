@@ -32,6 +32,21 @@ npm create cloudflare@latest -- --template=cloudflare/templates/next-starter-tem
 
 A live public deployment of this template is available at [https://next-starter-template.templates.workers.dev](https://next-starter-template.templates.workers.dev)
 
+## 📋 Repository Metadata
+
+To improve discoverability and clearly communicate the template's value, we recommend adding the following metadata to the GitHub repository:
+
+- **Description**: A modern Next.js 15 starter template with TypeScript, Tailwind CSS 4, React 19, and Cloudflare Pages deployment configuration
+- **Website**: https://next-starter-template.templates.workers.dev
+- **Topics**: nextjs, typescript, tailwindcss, cloudflare-pages, cloudflare-workers, starter-template, react, opennext, nextjs-template, fullstack, cloudflare, workers, nextjs-15, react-19, tailwind-css-4
+
+**For repository maintainers**: You can apply these settings using the helper script:
+```bash
+./scripts/update-repository-metadata.sh
+```
+
+Or manually via the GitHub web UI (click the gear icon ⚙️ next to "About"). See [.github/REPOSITORY_METADATA.md](./.github/REPOSITORY_METADATA.md) for detailed instructions.
+
 ## Getting Started
 
 ### Using GitHub Codespaces (Recommended)
@@ -97,8 +112,6 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 
 ## Deploying To Production
 
-⚠️ **Current Deployment Issue**: Builds are succeeding but deployments are failing due to API token permissions. See [DEPLOYMENT_TROUBLESHOOTING.md](./DEPLOYMENT_TROUBLESHOOTING.md) for details and fix instructions.
-
 | Command                           | Action                                       |
 | :-------------------------------- | :------------------------------------------- |
 | `npm run build`                   | Build your production site                   |
@@ -114,7 +127,12 @@ The repository is configured to automatically build and deploy to Cloudflare Pag
 2. Deploys to Cloudflare Pages using wrangler
 3. Makes the deployment live at your Cloudflare Pages URL
 
-**Current Status**: The workflow builds successfully but deployment fails. See [DEPLOYMENT_TROUBLESHOOTING.md](./DEPLOYMENT_TROUBLESHOOTING.md) to fix.
+The deployment requires the following GitHub repository secrets to be configured:
+- `CLOUDFLARE_API_TOKEN` or `CF_API_TOKEN`: Your Cloudflare API token with Pages:Edit permission
+- `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare account ID
+- `CLOUDFLARE_PROJECT_NAME`: Your Cloudflare Pages project name
+
+For troubleshooting deployment issues, see [DEPLOYMENT_TROUBLESHOOTING.md](./DEPLOYMENT_TROUBLESHOOTING.md).
 
 ## Learn More
 

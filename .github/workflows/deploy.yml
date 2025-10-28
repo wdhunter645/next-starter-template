@@ -53,7 +53,7 @@ jobs:
 
       - name: Deploy to Cloudflare Pages
         run: |
-          # Extract just the first line of commit message to avoid shell parsing issues
+          # Use only the first line of commit message to avoid shell escaping issues
           COMMIT_MSG=$(echo "${{ github.event.head_commit.message }}" | head -n 1)
           npx wrangler pages deploy .open-next/ \
             --project-name="${{ secrets.CLOUDFLARE_PROJECT_NAME }}" \
