@@ -14,6 +14,20 @@ This template uses [OpenNext](https://opennext.js.org/) via the [OpenNext Cloudf
 
 <!-- dash-content-end -->
 
+## Tech Stack
+
+This starter template uses the following core dependencies:
+
+- **Next.js**: 15.3.3
+- **React**: 19.0.0
+- **TypeScript**: 5.8.3
+- **Tailwind CSS**: 4.1.1
+- **OpenNext Cloudflare**: 1.3.0
+
+All dependencies are kept minimal and production-ready. See [package.json](./package.json) for the complete dependency list.
+
+## Getting Started with This Template
+
 Outside of this repo, you can start a new project with this template using [C3](https://developers.cloudflare.com/pages/get-started/c3/) (the `create-cloudflare` CLI):
 
 ```bash
