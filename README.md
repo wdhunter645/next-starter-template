@@ -22,6 +22,21 @@ npm create cloudflare@latest -- --template=cloudflare/templates/next-starter-tem
 
 A live public deployment of this template is available at [https://next-starter-template.templates.workers.dev](https://next-starter-template.templates.workers.dev)
 
+## 📋 Repository Metadata
+
+To improve discoverability and clearly communicate the template's value, we recommend adding the following metadata to the GitHub repository:
+
+- **Description**: A modern Next.js 15 starter template with TypeScript, Tailwind CSS 4, React 19, and Cloudflare Pages deployment configuration
+- **Website**: https://next-starter-template.templates.workers.dev
+- **Topics**: nextjs, typescript, tailwindcss, cloudflare-pages, cloudflare-workers, starter-template, react, opennext, nextjs-template, fullstack, cloudflare, workers, nextjs-15, react-19, tailwind-css-4
+
+**For repository maintainers**: You can apply these settings using the helper script:
+```bash
+./scripts/update-repository-metadata.sh
+```
+
+Or manually via the GitHub web UI (click the gear icon ⚙️ next to "About"). See [.github/REPOSITORY_METADATA.md](./.github/REPOSITORY_METADATA.md) for detailed instructions.
+
 ## Getting Started
 
 ### Using GitHub Codespaces (Recommended)
