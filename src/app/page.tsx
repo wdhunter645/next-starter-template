@@ -14,9 +14,6 @@ export default function Home() {
 					<Link href="/member" className={styles.primaryButton}>
 						Join the Club
 					</Link>
-					<Link href="/milestones" className={styles.secondaryLink}>
-						See Milestones
-					</Link>
 				</div>
 			</div>
 		</div>
