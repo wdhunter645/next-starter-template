@@ -34,7 +34,7 @@ When working in Codespaces, dependencies will be installed automatically. The de
 
 **Important Codespaces Setup:**
 - **Git Authentication**: Codespaces uses a read-only token by default. To push changes, you need to configure your personal GitHub token. **[See CODESPACES_TOKEN_SETUP.md for complete setup guide →](./docs/CODESPACES_TOKEN_SETUP.md)**
-- **Quick Fix**: If you encounter Git authentication issues, **[see START_HERE.md for immediate fix →](./START_HERE.md)** or the [quick fix below](#git-push-fails-in-codespaces).
+- **Quick Fix**: If you encounter Git authentication issues, see the [quick fix below](#git-push-fails-in-codespaces).
 
 ### Local Development
 
@@ -87,8 +87,6 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 
 ## Deploying To Production
 
-⚠️ **Current Deployment Issue**: Builds are succeeding but deployments are failing due to API token permissions. See [DEPLOYMENT_TROUBLESHOOTING.md](./DEPLOYMENT_TROUBLESHOOTING.md) for details and fix instructions.
-
 | Command                           | Action                                       |
 | :-------------------------------- | :------------------------------------------- |
 | `npm run build`                   | Build your production site                   |
@@ -103,8 +101,6 @@ The repository is configured to automatically build and deploy to Cloudflare Pag
 1. Builds the application using OpenNext
 2. Deploys to Cloudflare Pages using wrangler
 3. Makes the deployment live at your Cloudflare Pages URL
-
-**Current Status**: The workflow builds successfully but deployment fails. See [DEPLOYMENT_TROUBLESHOOTING.md](./DEPLOYMENT_TROUBLESHOOTING.md) to fix.
 
 ## Learn More
 
