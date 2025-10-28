@@ -53,11 +53,13 @@ jobs:
 
       - name: Deploy to Cloudflare Pages
         run: |
+          # Extract just the first line of commit message to avoid shell parsing issues
+          COMMIT_MSG=$(echo "${{ github.event.head_commit.message }}" | head -n 1)
           npx wrangler pages deploy .open-next/ \
             --project-name="${{ secrets.CLOUDFLARE_PROJECT_NAME }}" \
             --branch="${{ github.ref_name }}" \
             --commit-hash="${{ github.sha }}" \
-            --commit-message="${{ github.event.head_commit.message }}"
+            --commit-message="$COMMIT_MSG"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN || secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
