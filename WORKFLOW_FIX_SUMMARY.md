@@ -53,8 +53,11 @@ The workflow requires the following GitHub repository secrets:
 
 1. **CLOUDFLARE_API_TOKEN**
    - Purpose: Authenticate with Cloudflare API
-   - Required Permission: "Cloudflare Pages:Edit"
+   - Required Permissions: 
+     - **"Cloudflare Pages:Edit"** (for deploying)
+     - **"User:User Details:Read"** (for authentication) ⚠️ **CURRENTLY MISSING**
    - Where to get: Cloudflare Dashboard → Profile → API Tokens
+   - **Status**: ⚠️ Token needs to be updated with User Details Read permission
 
 2. **CLOUDFLARE_ACCOUNT_ID**
    - Purpose: Identify the Cloudflare account
@@ -109,9 +112,15 @@ After merging this PR:
 3. Visit the production URL to confirm changes are live
 4. Monitor future deployments to ensure consistent success
 
+## Current Status
+
+⚠️ **DEPLOYMENT STILL FAILING** - While this PR re-added the deployment step, deployments are still failing due to insufficient API token permissions. The `CLOUDFLARE_API_TOKEN` needs the "User:User Details:Read" permission added.
+
+**See [DEPLOYMENT_TROUBLESHOOTING.md](./DEPLOYMENT_TROUBLESHOOTING.md) for complete fix instructions.**
+
 ## Related PRs
 
 - PR#139: Removed deployment step (caused the issue)
 - PR#140: Added static files (unrelated)
 - PR#141: Removed static files (built but never deployed)
-- This PR: Fixes deployment to actually deploy to Cloudflare Pages
+- PR#142: Re-added deployment step (but auth still fails - needs token update)
