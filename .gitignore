@@ -351,7 +351,6 @@ local.properties
 ### Additional Deployment Platforms ###
 # Vercel
 .vercel/
-.vercel
 
 # Cloudflare (additional)
 .cloudflare/
@@ -368,7 +367,6 @@ playwright/.cache/
 
 # Additional env file backups
 .env*.backup
-.env.backup
 
 ### Temporary Files ###
 *.temp
