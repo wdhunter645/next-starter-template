@@ -148,6 +148,21 @@ The deployment requires the following GitHub repository secrets to be configured
 
 For troubleshooting deployment issues, see [DEPLOYMENT_TROUBLESHOOTING.md](./DEPLOYMENT_TROUBLESHOOTING.md).
 
+### Reviewing Cloudflare Build Logs
+
+To review Cloudflare Pages deployment history and identify builds that should be rerun:
+
+```bash
+./scripts/review-cloudflare-builds.sh
+```
+
+This script analyzes deployments from the last 72 hours and provides:
+- Summary of successful, failed, and canceled builds
+- Detailed information about problematic deployments
+- Recommendations on which builds to rerun
+
+For detailed usage instructions, see [CLOUDFLARE_BUILD_REVIEW.md](./CLOUDFLARE_BUILD_REVIEW.md).
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
