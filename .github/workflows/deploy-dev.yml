@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: Cache
+      - name: Cache deps and Next cache
         uses: actions/cache@v4
         with:
           path: |
@@ -30,10 +30,11 @@ jobs:
 
       - run: npm ci
 
-      - run: npm run cf:build
+      - name: Build with OpenNext
+        run: npm run cf:build
 
-      - name: Wrangler deploy (dev)
-        run: npx wrangler deploy --env dev --config wrangler.toml
+      - name: Deploy (dev)
+        run: npm run deploy:dev
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
