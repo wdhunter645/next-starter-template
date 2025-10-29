@@ -11,6 +11,7 @@ These files document various development issues, fixes, and implementation notes
 - **Implementation notes**: Completion summaries and task documentation
 - **Workflow documentation**: PR reviews and workflow fix summaries
 - **Setup checklists**: Cloudflare configuration and deployment checklists
+- **Build reviews**: Cloudflare build analysis and review documentation
 
 ## Note
 
