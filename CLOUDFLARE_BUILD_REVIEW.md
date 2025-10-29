@@ -204,7 +204,33 @@ git push origin main
 
 ## Automating Build Reviews
 
-You can set up automated build reviews by creating a scheduled GitHub Actions workflow:
+### Using the Included Workflow
+
+This repository includes a GitHub Actions workflow (`.github/workflows/review-builds.yml`) for automated build reviews.
+
+To run a manual review:
+
+```bash
+# Using GitHub CLI
+gh workflow run review-builds.yml --ref main
+
+# Or trigger from the GitHub UI:
+# Actions → Review Cloudflare Build Logs → Run workflow
+```
+
+To enable automatic scheduled reviews, edit `.github/workflows/review-builds.yml` and uncomment the schedule section:
+
+```yaml
+on:
+  workflow_dispatch:
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+```
+
+### Creating a Custom Workflow
+
+You can also create a custom workflow for your specific needs:
 
 ```yaml
 name: Weekly Build Review
