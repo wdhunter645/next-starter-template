@@ -244,6 +244,24 @@ pkill -9 node
 pkill -9 git
 ```
 
+### Package.json Merge Conflicts
+
+If you encounter merge conflicts in `package.json` after merging branches:
+
+```bash
+./scripts/fix-package-json-conflicts.sh
+```
+
+This script automatically:
+- Resolves merge conflict markers by keeping the first side (pre-`=======`)
+- Validates the resulting JSON
+- Creates a timestamped backup before modifications
+- Ensures Next-on-Pages adapter is configured
+- Installs required dependencies
+- Commits and pushes changes to retrigger CI deployments
+
+**Note**: The script keeps the "ours" side (first half) of conflicts. Review the changes before running if you need to preserve specific changes from the "theirs" side.
+
 For more troubleshooting resources:
 - [Codespaces Token Setup](./docs/CODESPACES_TOKEN_SETUP.md)
 - [Git Authentication Troubleshooting](./docs/GIT_AUTH_TROUBLESHOOTING.md)
