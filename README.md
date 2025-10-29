@@ -2,6 +2,16 @@
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/next-starter-template)
 
+## ⚠️ DEPLOYMENT SETUP REQUIRED
+
+**Automated deployments are currently not working.** The GitHub Actions workflow builds successfully but fails to deploy to Cloudflare Pages due to a missing API token permission.
+
+**👉 Repository Owner Action Required**: [Complete Cloudflare Setup Checklist →](./CLOUDFLARE_SETUP_CHECKLIST.md)
+
+**Time to fix**: ~5 minutes | **Impact**: Automated deployments will work on every push to main
+
+---
+
 ## 🔴 SECURITY NOTICE
 
 **If you cloned this repository before October 16, 2025**: The `.env` file with secrets was accidentally committed and has been removed. **You must regenerate ALL credentials** if you use any of the exposed services. See [docs/SECURITY_NOTICE.md](./docs/SECURITY_NOTICE.md) for details and action steps.
@@ -13,6 +23,20 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 This template uses [OpenNext](https://opennext.js.org/) via the [OpenNext Cloudflare adapter](https://opennext.js.org/cloudflare), which works by taking the Next.js build output and transforming it, so that it can run in Cloudflare Workers.
 
 <!-- dash-content-end -->
+
+## Tech Stack
+
+This starter template uses the following core dependencies:
+
+- **Next.js**: 15.3.3
+- **React**: 19.0.0
+- **TypeScript**: 5.8.3
+- **Tailwind CSS**: 4.1.1
+- **OpenNext Cloudflare**: 1.3.0
+
+All dependencies are kept minimal and production-ready. See [package.json](./package.json) for the complete dependency list.
+
+## Getting Started with This Template
 
 Outside of this repo, you can start a new project with this template using [C3](https://developers.cloudflare.com/pages/get-started/c3/) (the `create-cloudflare` CLI):
 
