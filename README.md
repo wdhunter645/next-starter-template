@@ -120,6 +120,23 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+### Cloudflare Development Mode
+
+To develop with Cloudflare-specific features and bindings (like environment variables, KV, R2, etc.), use the Cloudflare dev server:
+
+```bash
+npm run dev:cloudflare
+```
+
+This command runs the Next.js development server through Wrangler Pages, providing:
+- Access to Cloudflare bindings and environment variables
+- Cloudflare-specific runtime behavior
+- Better simulation of the production Cloudflare environment
+
+The Cloudflare dev server runs on [http://localhost:8788](http://localhost:8788) by default.
+
+**Note**: For most development work, `npm run dev` is sufficient. Use `npm run dev:cloudflare` when you need to test Cloudflare-specific features.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
@@ -128,10 +145,13 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 
 | Command                           | Action                                       |
 | :-------------------------------- | :------------------------------------------- |
+| `npm run dev`                     | Run Next.js development server               |
+| `npm run dev:cloudflare`          | Run development server with Cloudflare runtime |
 | `npm run build`                   | Build your production site                   |
 | `npm run preview`                 | Preview your build locally, before deploying |
-| `npm run build && npm run deploy` | Deploy your production site to Cloudflare    |
-| `npm wrangler tail`               | View real-time logs for all Workers          |
+| `npm run deploy`                  | Deploy your production site to Cloudflare    |
+| `npm run cf-typegen`              | Generate TypeScript types for Cloudflare bindings |
+| `npx wrangler tail`               | View real-time logs for all Workers          |
 
 ### Automated Deployment (GitHub Actions)
 

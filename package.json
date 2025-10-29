@@ -1,32 +1,4 @@
 {
-<<<<<<< HEAD
-  "name": "next-starter-template",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.76.1",
-    "next": "15.3.3",
-    "react": "18.3.1",
-    "react-dom": "18.3.1"
-  },
-  "devDependencies": {
-    "@opennextjs/cloudflare": "^1.11.0",
-    "@tailwindcss/postcss": "^4.1.15",
-    "@types/node": "^24.9.1",
-    "@types/react": "^19.2.2",
-    "eslint": "^9.38.0",
-    "eslint-config-next": "^16.0.0",
-    "tailwindcss": "^4.1.15",
-    "typescript": "^5.9.3",
-    "wrangler": "^4.45.1"
-  }
-=======
 	"name": "next-starter-template",
 	"version": "1.0.0",
 	"description": "A modern Next.js 15 starter template with TypeScript, Tailwind CSS 4, React 19, and Cloudflare Pages deployment configuration",
@@ -90,9 +62,9 @@
 		"check": "npm run build && tsc",
 		"deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
 		"dev": "next dev",
+		"dev:cloudflare": "wrangler pages dev --compatibility-date=2025-10-08 --compatibility-flags=nodejs_compat --port 8788 -- npm run dev",
 		"lint": "next lint",
 		"preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
 		"start": "next start"
 	}
->>>>>>> 0915c8f186cf5686084c49548349e6f11097fb3b
 }
