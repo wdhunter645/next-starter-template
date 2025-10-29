@@ -1,6 +1,6 @@
 name = "next-starter-template"
 main = ".open-next/worker.js"
-compatibility_date = "2024-09-01"
+compatibility_date = "2024-10-01"
 
 [env.dev]
 name = "spring-frost-7a2c"
