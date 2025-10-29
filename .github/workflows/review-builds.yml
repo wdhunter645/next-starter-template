@@ -1,0 +1,32 @@
+name: Review Cloudflare Build Logs
+
+on:
+  # Run manually when needed
+  workflow_dispatch:
+  # Optionally run on a schedule (commented out by default)
+  # Uncomment to enable weekly reviews every Monday at 9 AM UTC
+  # schedule:
+  #   - cron: '0 9 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  review-builds:
+    name: Review Cloudflare Deployment History
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Review Cloudflare Build Logs
+        run: |
+          ./scripts/review-cloudflare-builds.sh
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_PROJECT_NAME: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
