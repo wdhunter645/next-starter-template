@@ -10,6 +10,7 @@ These files document various development issues, fixes, and implementation notes
 - **Investigation reports**: Diagnostic and investigation summaries
 - **Implementation notes**: Completion summaries and task documentation
 - **Workflow documentation**: PR reviews and workflow fix summaries
+- **Setup checklists**: Cloudflare configuration and deployment checklists
 
 ## Note
 
