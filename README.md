@@ -120,18 +120,45 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Cloudflare Development Mode
+
+For local development with Cloudflare-specific features:
+
+**Option 1: Standard Next.js Development (Recommended for most cases)**
+```bash
+npm run dev
+```
+
+This uses the standard Next.js dev server with Cloudflare bindings support via `@opennextjs/cloudflare`. You can access Cloudflare context using `getCloudflareContext()` in your server-side code.
+
+**Option 2: Wrangler Dev Server (For testing with Cloudflare runtime)**
+```bash
+npm run dev:wrangler
+```
+
+This builds your application and runs it using the Wrangler dev server, providing:
+- Full Cloudflare Workers runtime environment
+- Access to all Cloudflare bindings (KV, R2, D1, etc.)
+- More accurate simulation of production behavior
+
+**Note**: The `dev:wrangler` command rebuilds the app each time, so it's slower than `npm run dev`. Use it when you need to test Cloudflare-specific runtime behavior.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file (when using `npm run dev`).
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
-## Deploying To Production
+## Available Commands
 
 | Command                           | Action                                       |
 | :-------------------------------- | :------------------------------------------- |
-| `npm run build`                   | Build your production site                   |
-| `npm run preview`                 | Preview your build locally, before deploying |
-| `npm run build && npm run deploy` | Deploy your production site to Cloudflare    |
-| `npm wrangler tail`               | View real-time logs for all Workers          |
+| `npm run dev`                     | Run Next.js development server (with Cloudflare support) |
+| `npm run dev:wrangler`            | Build and run with Wrangler dev server (full Cloudflare runtime) |
+| `npm run build`                   | Build your production Next.js site           |
+| `npm run preview`                 | Build and preview with Cloudflare runtime    |
+| `npm run deploy`                  | Build and deploy to Cloudflare Pages         |
+| `npm run cf-typegen`              | Generate TypeScript types for Cloudflare bindings |
+| `npm run lint`                    | Run ESLint to check code quality             |
+| `npx wrangler tail`               | View real-time logs for deployed Workers     |
 
 ### Automated Deployment (GitHub Actions)
 

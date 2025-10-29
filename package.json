@@ -40,6 +40,7 @@
   },
   "scripts": {
     "dev": "next dev",
+    "dev:wrangler": "npm run cf:build && wrangler dev",
     "build": "next build",
     "cf:adapt": "npx @cloudflare/next-on-pages@latest",
     "cf:build": "npm run build && npm run cf:adapt",
