@@ -1,16 +1,6 @@
+name = "next-starter-template"
+main = ".vercel/output/static/_worker.js/index.js"
+compatibility_date = "2024-10-01"
+
+[env.dev]
 name = "spring-frost-7a2c"
-main = ".open-next/worker.js"
-compatibility_date = "2024-09-23"
-compatibility_flags = ["nodejs_compat"]
-
-# Upload source maps for better debugging
-upload_source_maps = true
-
-# Assets configuration for Next.js static files
-[assets]
-binding = "ASSETS"
-directory = ".open-next/assets"
-
-# Enable observability for production monitoring
-[observability]
-enabled = true
