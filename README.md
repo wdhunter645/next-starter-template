@@ -2,6 +2,16 @@
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/next-starter-template)
 
+## ⚠️ DEPLOYMENT SETUP REQUIRED
+
+**Automated deployments are currently not working.** The GitHub Actions workflow builds successfully but fails to deploy to Cloudflare Pages due to a missing API token permission.
+
+**👉 Repository Owner Action Required**: [Complete Cloudflare Setup Checklist →](./CLOUDFLARE_SETUP_CHECKLIST.md)
+
+**Time to fix**: ~5 minutes | **Impact**: Automated deployments will work on every push to main
+
+---
+
 ## 🔴 SECURITY NOTICE
 
 **If you cloned this repository before October 16, 2025**: The `.env` file with secrets was accidentally committed and has been removed. **You must regenerate ALL credentials** if you use any of the exposed services. See [docs/SECURITY_NOTICE.md](./docs/SECURITY_NOTICE.md) for details and action steps.
@@ -14,6 +24,20 @@ This template uses [OpenNext](https://opennext.js.org/) via the [OpenNext Cloudf
 
 <!-- dash-content-end -->
 
+## Tech Stack
+
+This starter template uses the following core dependencies:
+
+- **Next.js**: 15.3.3
+- **React**: 19.0.0
+- **TypeScript**: 5.8.3
+- **Tailwind CSS**: 4.1.1
+- **OpenNext Cloudflare**: 1.3.0
+
+All dependencies are kept minimal and production-ready. See [package.json](./package.json) for the complete dependency list.
+
+## Getting Started with This Template
+
 Outside of this repo, you can start a new project with this template using [C3](https://developers.cloudflare.com/pages/get-started/c3/) (the `create-cloudflare` CLI):
 
 ```bash
@@ -21,6 +45,21 @@ npm create cloudflare@latest -- --template=cloudflare/templates/next-starter-tem
 ```
 
 A live public deployment of this template is available at [https://next-starter-template.templates.workers.dev](https://next-starter-template.templates.workers.dev)
+
+## 📋 Repository Metadata
+
+To improve discoverability and clearly communicate the template's value, we recommend adding the following metadata to the GitHub repository:
+
+- **Description**: A modern Next.js 15 starter template with TypeScript, Tailwind CSS 4, React 19, and Cloudflare Pages deployment configuration
+- **Website**: https://next-starter-template.templates.workers.dev
+- **Topics**: nextjs, typescript, tailwindcss, cloudflare-pages, cloudflare-workers, starter-template, react, opennext, nextjs-template, fullstack, cloudflare, workers, nextjs-15, react-19, tailwind-css-4
+
+**For repository maintainers**: You can apply these settings using the helper script:
+```bash
+./scripts/update-repository-metadata.sh
+```
+
+Or manually via the GitHub web UI (click the gear icon ⚙️ next to "About"). See [.github/REPOSITORY_METADATA.md](./.github/REPOSITORY_METADATA.md) for detailed instructions.
 
 ## Getting Started
 
@@ -93,74 +132,36 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 | `npm run preview`                 | Preview your build locally, before deploying |
 | `npm run build && npm run deploy` | Deploy your production site to Cloudflare    |
 | `npm wrangler tail`               | View real-time logs for all Workers          |
-| `./scripts/deploy-orchestrator.sh` | Automated staging & production deployment with smoke tests |
-| `./scripts/deploy-pages-orchestrator.sh` | Cloudflare Pages deployment orchestrator (lgfc-staging/lgfc-prod) |
 
-### Automated Deployment Pipeline
+### Automated Deployment (GitHub Actions)
 
-#### Option 1: Custom Domain Deployment (deploy-orchestrator.sh)
+The repository is configured to automatically build and deploy to Cloudflare Pages when code is pushed to the `main` branch. The deployment workflow:
 
-For a fully automated deployment to both staging and production with smoke testing:
+1. Builds the application using OpenNext
+2. Deploys to Cloudflare Pages using wrangler
+3. Makes the deployment live at your Cloudflare Pages URL
 
-```bash
-./scripts/deploy-orchestrator.sh
-```
+The deployment requires the following GitHub repository secrets to be configured:
+- `CLOUDFLARE_API_TOKEN` or `CF_API_TOKEN`: Your Cloudflare API token with Pages:Edit permission
+- `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare account ID
+- `CLOUDFLARE_PROJECT_NAME`: Your Cloudflare Pages project name
 
-This orchestrates the complete deployment process:
-1. Validates required secrets (CF_API_TOKEN, CF_ACCOUNT_ID, OPENAI_API_KEY)
-2. Deploys to staging via GitHub Actions
-3. Runs smoke tests against staging (test.lougehrigfanclub.com)
-4. Deploys to production via GitHub Actions
-5. Runs smoke tests against production (www.lougehrigfanclub.com)
-6. Posts deployment summary with results
+For troubleshooting deployment issues, see [DEPLOYMENT_TROUBLESHOOTING.md](./DEPLOYMENT_TROUBLESHOOTING.md).
 
-See [docs/DEPLOYMENT_ORCHESTRATOR.md](./docs/DEPLOYMENT_ORCHESTRATOR.md) for detailed documentation.
+### Reviewing Cloudflare Build Logs
 
-#### Option 2: Cloudflare Pages Deployment (deploy-pages-orchestrator.sh)
-
-For parallel deployment to Cloudflare Pages staging and production projects:
+To review Cloudflare Pages deployment history and identify builds that should be rerun:
 
 ```bash
-./scripts/deploy-pages-orchestrator.sh
+./scripts/review-cloudflare-builds.sh
 ```
 
-This orchestrates parallel Cloudflare Pages deployments:
-1. Validates required secrets (CF_API_TOKEN, CF_ACCOUNT_ID)
-2. Triggers staging deployment (lgfc-staging) via GitHub Actions
-3. Triggers production deployment (lgfc-prod) via GitHub Actions (20s delay)
-4. Monitors both workflow runs to completion
-5. Extracts Cloudflare Pages URLs
-6. Runs smoke checks (HTTP 200 verification)
-7. Posts final report with deployment URLs
+This script analyzes deployments from the last 72 hours and provides:
+- Summary of successful, failed, and canceled builds
+- Detailed information about problematic deployments
+- Recommendations on which builds to rerun
 
-**Dry run mode:**
-```bash
-./scripts/deploy-pages-orchestrator.sh --dry-run
-```
-
-See [scripts/deploy-pages-orchestrator.md](./scripts/deploy-pages-orchestrator.md) for detailed documentation.
-
-## Verifying Test Site
-
-We maintain a staging mirror at **test.lougehrigfanclub.com** that mirrors production for safe testing.
-
-**Quick Verification:**
-```bash
-# Run smoke tests against staging
-SMOKE_URL=https://test.lougehrigfanclub.com npm run smoke:preview
-```
-
-**For detailed staging mirror setup and operations:**
-- **Setup Guide:** [docs/ops/STAGING-MIRROR.md](./docs/ops/STAGING-MIRROR.md)
-  - Branch deployment configuration
-  - Custom domain setup (CNAME)
-  - Environment variable configuration
-  - Staging refresh procedures
-- **Operations Runbook:** [docs/staging-runbook.md](./docs/staging-runbook.md)
-  - Daily operations and monitoring
-  - Environment variable management
-  - API endpoint testing
-  - Troubleshooting guide
+For detailed usage instructions, see [CLOUDFLARE_BUILD_REVIEW.md](./CLOUDFLARE_BUILD_REVIEW.md).
 
 ## Learn More
 
