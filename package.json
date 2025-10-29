@@ -62,7 +62,7 @@
 		"check": "npm run build && tsc",
 		"deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
 		"dev": "next dev",
-		"dev:cloudflare": "wrangler pages dev --compatibility-date=2025-10-08 --compatibility-flags=nodejs_compat --port 8788 -- npm run dev",
+		"dev:wrangler": "opennextjs-cloudflare build && wrangler dev",
 		"lint": "next lint",
 		"preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
 		"start": "next start"
