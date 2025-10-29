@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "next-starter-template",
   "version": "1.0.0",
   "private": true,
@@ -25,4 +26,73 @@
     "typescript": "^5.9.3",
     "wrangler": "^4.45.1"
   }
+=======
+	"name": "next-starter-template",
+	"version": "1.0.0",
+	"description": "A modern Next.js 15 starter template with TypeScript, Tailwind CSS 4, React 19, and Cloudflare Pages deployment configuration",
+	"keywords": [
+		"nextjs",
+		"typescript",
+		"tailwindcss",
+		"cloudflare-pages",
+		"cloudflare-workers",
+		"starter-template",
+		"react",
+		"opennext",
+		"nextjs-template",
+		"fullstack",
+		"cloudflare",
+		"workers",
+		"nextjs-15",
+		"react-19",
+		"tailwind-css-4"
+	],
+	"private": true,
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/wdhunter645/next-starter-template.git"
+	},
+	"homepage": "https://next-starter-template.templates.workers.dev",
+	"bugs": {
+		"url": "https://github.com/wdhunter645/next-starter-template/issues"
+	},
+	"cloudflare": {
+		"label": "Next.js Framework Starter",
+		"products": [
+			"Workers"
+		],
+		"categories": [],
+		"preview_icon_url": "https://imagedelivery.net/wSMYJvS3Xw-n339CbDyDIA/05eee9e0-2c04-48fd-11bf-84e65f839000/public",
+		"preview_image_url": "https://imagedelivery.net/wSMYJvS3Xw-n339CbDyDIA/4e913a56-fd99-4372-0586-9f1364173100/preview",
+		"publish": true
+	},
+	"dependencies": {
+		"@opennextjs/cloudflare": "1.3.0",
+		"next": "15.3.3",
+		"react": "19.0.0",
+		"react-dom": "19.0.0"
+	},
+	"devDependencies": {
+		"@eslint/eslintrc": "3",
+		"@tailwindcss/postcss": "4.1.4",
+		"@types/node": "24.0.4",
+		"@types/react": "19.0.10",
+		"@types/react-dom": "19.0.4",
+		"eslint": "9.27.0",
+		"eslint-config-next": "15.3.3",
+		"tailwindcss": "4.1.1",
+		"typescript": "5.8.3",
+		"wrangler": "4.21.x"
+	},
+	"scripts": {
+		"build": "next build",
+		"cf-typegen": "wrangler types --env-interface CloudflareEnv env.d.ts",
+		"check": "npm run build && tsc",
+		"deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+		"dev": "next dev",
+		"lint": "next lint",
+		"preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+		"start": "next start"
+	}
+>>>>>>> 0915c8f186cf5686084c49548349e6f11097fb3b
 }
