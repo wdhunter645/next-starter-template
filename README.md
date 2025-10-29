@@ -2,6 +2,16 @@
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/next-starter-template)
 
+## ⚠️ DEPLOYMENT SETUP REQUIRED
+
+**Automated deployments are currently not working.** The GitHub Actions workflow builds successfully but fails to deploy to Cloudflare Pages due to a missing API token permission.
+
+**👉 Repository Owner Action Required**: [Complete Cloudflare Setup Checklist →](./CLOUDFLARE_SETUP_CHECKLIST.md)
+
+**Time to fix**: ~5 minutes | **Impact**: Automated deployments will work on every push to main
+
+---
+
 ## 🔴 SECURITY NOTICE
 
 **If you cloned this repository before October 16, 2025**: The `.env` file with secrets was accidentally committed and has been removed. **You must regenerate ALL credentials** if you use any of the exposed services. See [docs/SECURITY_NOTICE.md](./docs/SECURITY_NOTICE.md) for details and action steps.
