@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Header from "@/components/Header";
+import "./../styles/variables.css";
+import Header from "../components/Header";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-	title: "LGFC - Your Trusted Partner",
-	description: "LGFC provides exceptional services tailored to your needs",
+	title: "LGFC",
+	description: "Lou Gehrig Fan Club",
 };
 
 export default function RootLayout({
@@ -16,10 +17,9 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body className="antialiased">
-				<Header />
-				<main className="pt-16">
-					{children}
-				</main>
+				{/* Top fixed header (notice text via env) */}
+				<Header noticeText={process.env.NEXT_PUBLIC_NOTICE_TEXT ?? undefined} />
+				{children}
 				<Footer />
 			</body>
 		</html>
