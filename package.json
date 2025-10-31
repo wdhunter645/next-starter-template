@@ -49,7 +49,8 @@
     "cf-typegen": "wrangler types --env-interface CloudflareEnv env.d.ts",
     "check": "npm run build && tsc",
     "deploy:prod": "npx wrangler deploy --config wrangler.toml",
-    "deploy:dev": "npx wrangler deploy --env dev --config wrangler.toml"
+    "deploy:dev": "npx wrangler deploy --env dev --config wrangler.toml",
+    "build:cf": "npx @cloudflare/next-on-pages@latest"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.76.1",
@@ -71,5 +72,8 @@
     "tailwindcss": "4.1.1",
     "typescript": "5.8.3",
     "wrangler": "^4.45.1"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
