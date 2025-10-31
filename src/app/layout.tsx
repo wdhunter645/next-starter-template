@@ -4,8 +4,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-	title: "LGFC - Your Trusted Partner",
-	description: "LGFC provides exceptional services tailored to your needs",
+	title: "Next.js Starter Template",
+	description: "A modern Next.js 15 starter template with TypeScript, Tailwind CSS 4, React 19, and Cloudflare Pages deployment",
 };
 
 export default function RootLayout({

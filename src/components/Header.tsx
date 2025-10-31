@@ -9,25 +9,25 @@ export default function Header() {
 					<Link 
 						href="/" 
 						className={styles.logo}
-						aria-label="Lou Gehrig Fan Club Home"
+						aria-label="Next.js Starter Home"
 					>
-						LGFC
+						Next.js Starter
 					</Link>
 					<div className={styles.navLinks}>
 						<Link href="/weekly" className={styles.navLink}>
-							Weekly Matchup
+							Features
 						</Link>
 						<Link href="/charities" className={styles.navLink}>
-							Charities
+							Examples
 						</Link>
 						<Link href="/news" className={styles.navLink}>
-							News &amp; Q&amp;A
+							Docs
 						</Link>
 						<Link href="/calendar" className={styles.navLink}>
-							Calendar
+							Roadmap
 						</Link>
 						<Link href="/member" className={styles.navLink}>
-							Join
+							Get Started
 						</Link>
 					</div>
 				</div>

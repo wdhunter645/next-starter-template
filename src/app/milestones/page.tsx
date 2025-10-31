@@ -5,9 +5,9 @@ export default function Milestones() {
 				<div className="text-center">
 					<h1 className="text-4xl font-bold mb-4">Milestones</h1>
 					<p className="text-lg text-foreground/80">
-						Explore the career milestones and achievements of Lou Gehrig.
+						Track development milestones and version history for this template.
 					</p>
-					{/* TODO: Add milestones data hooks and timeline display */}
+					{/* TODO: Add version timeline and release notes */}
 				</div>
 			</div>
 		</div>
