@@ -17,6 +17,7 @@ export default function WeeklyPreview() {
 						className="weekly-preview-image"
 						width={800}
 						height={450}
+						loading="lazy"
 					/>
 				</div>
 				
