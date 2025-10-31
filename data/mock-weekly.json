@@ -1,0 +1,14 @@
+{
+  "id": "weekly-2025-w44",
+  "week": "Week 44",
+  "year": 2025,
+  "title": "Yankees vs Red Sox: Classic Rivalry",
+  "matchupImage": "/images/weekly-matchup-placeholder.jpg",
+  "caption": "The historic rivalry continues as the Yankees face off against the Red Sox in what promises to be an epic showdown at Yankee Stadium.",
+  "date": "2025-11-01",
+  "teams": {
+    "home": "New York Yankees",
+    "away": "Boston Red Sox"
+  },
+  "status": "active"
+}
