@@ -17,7 +17,8 @@ const mockEvents = [
 
 // Format date as "Nov 15, 2025"
 function formatEventDate(dateString: string): string {
-	const date = new Date(dateString);
+	const [year, month, day] = dateString.split("-").map(Number);
+	const date = new Date(year, month - 1, day);
 	return date.toLocaleDateString("en-US", {
 		year: "numeric",
 		month: "short",
