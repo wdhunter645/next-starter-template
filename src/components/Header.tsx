@@ -2,13 +2,16 @@
 import Link from "next/link";
 import "../styles/header.css";
 
-export default function Header() {
+type HeaderProps = {
+  noticeText?: string;
+};
+
+export default function Header({ noticeText }: HeaderProps) {
   return (
     <>
-      {/* Optional notice bar (env-controlled later) */}
-      <div className="lgfc-notice" hidden>
-        Site announcement…
-      </div>
+      {noticeText ? (
+        <div className="lgfc-notice">{noticeText}</div>
+      ) : null}
 
       <header className="lgfc-header" role="banner">
         <div className="lgfc-header-inner">
