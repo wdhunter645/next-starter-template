@@ -1,0 +1,9 @@
+:root{
+  --lgfc-blue:#002868;
+  --lgfc-red:#BF0A30;
+  --lgfc-offwhite:#F8F9FA;
+  --lgfc-charcoal:#212529;
+  --lgfc-divider:#DEE2E6;
+  --container-max:1200px;
+}
+html,body{background:var(--lgfc-offwhite);color:var(--lgfc-charcoal);}
