@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Header from "@/components/Header";
+import "./../styles/variables.css";
+import Header from "../components/Header";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-	title: "Next.js Starter Template",
-	description: "A modern Next.js 15 starter template with TypeScript, Tailwind CSS 4, React 19, and Cloudflare Pages deployment",
+	title: "LGFC",
+	description: "Lou Gehrig Fan Club",
 };
 
 export default function RootLayout({
@@ -16,10 +17,9 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body className="antialiased">
-				<Header />
-				<main className="pt-16">
-					{children}
-				</main>
+				{/* Top fixed header (notice text via env) */}
+				<Header noticeText={process.env.NEXT_PUBLIC_NOTICE_TEXT ?? undefined} />
+				{children}
 				<Footer />
 			</body>
 		</html>

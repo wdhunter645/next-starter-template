@@ -5,14 +5,14 @@ export default function Home() {
 	return (
 		<div className={styles.hero}>
 			<div className={styles.container}>
-				<h1 className={styles.title}>Next.js Starter Template</h1>
-				<p className={styles.subtitle}>A modern Next.js application deployed on Cloudflare</p>
+				<h1 className={styles.title}>Lou Gehrig Fan Club</h1>
+				<p className={styles.subtitle}>LGFC live via Cloudflare</p>
 				<p className={styles.mission}>
-					Get started with Next.js 15, React 19, TypeScript, and Tailwind CSS 4. Deploy instantly to Cloudflare Workers.
+					Honoring the legacy of baseball&apos;s Iron Horse through community, education, and support for ALS research and awareness.
 				</p>
 				<div className={styles.actions}>
 					<Link href="/member" className={styles.primaryButton}>
-						Get Started
+						Join the Club
 					</Link>
 				</div>
 			</div>
