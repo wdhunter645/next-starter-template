@@ -8,7 +8,7 @@
 
 @media (prefers-color-scheme: dark) {
 	.cta {
-		background: #1a1a1a;
+		background: var(--lgfc-charcoal);
 	}
 }
 
@@ -71,6 +71,6 @@
 @media (prefers-color-scheme: dark) {
 	.button {
 		background: var(--lgfc-offwhite);
-		color: #1a1a1a;
+		color: var(--lgfc-charcoal);
 	}
 }
