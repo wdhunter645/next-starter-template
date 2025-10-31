@@ -1,10 +1,10 @@
 import Link from "next/link";
 import styles from "./MilestoneTeaser.module.css";
 
-interface Milestone {
+type Milestone = {
 	year: string;
 	title: string;
-}
+};
 
 const milestones: Milestone[] = [
 	{ year: "1925", title: "Major League Debut" },
