@@ -1,38 +1,27 @@
 'use client';
 import Link from "next/link";
-import Image from "next/image";
 import "../styles/header.css";
 
-type HeaderProps = {
-  noticeText?: string | null; // optional top notice copy
-};
-
-export default function Header({ noticeText }: HeaderProps) {
-  const hasNotice = Boolean((noticeText ?? "").trim());
+export default function Header() {
   return (
     <>
-      <div className="lgfc-header-wrap" data-has-notice={hasNotice}>
-        {hasNotice && (
-          <div className="lgfc-notice" style={{ display: 'flex' }}>
-            {noticeText}
-          </div>
-        )}
-        <header className="lgfc-header">
-          <Link href="/" className="lgfc-logo" aria-label="Lou Gehrig Fan Club">
-            <Image src="/logo.svg" alt="LGFC Logo" width={28} height={28} />
-            <span>LGFC</span>
-          </Link>
-          <nav className="lgfc-menu" aria-label="Main navigation">
-            <Link href="/weekly">Weekly Matchup</Link>
-            <Link href="/charities">Charities</Link>
-            <Link href="/news">News &amp; Q&amp;A</Link>
-            <Link href="/calendar">Calendar</Link>
-            <Link href="/member" className="lgfc-login">Join</Link>
-          </nav>
-        </header>
+      {/* Optional notice bar (env-controlled later) */}
+      <div className="lgfc-notice" hidden>
+        Site announcement…
       </div>
-      {/* spacer to offset fixed header */}
-      <div className="lgfc-header-spacer" />
+
+      <header className="lgfc-header" role="banner">
+        <div className="lgfc-header-inner">
+          <Link href="/" className="lgfc-link" aria-label="LGFC home">LGFC</Link>
+          <nav className="lgfc-nav" aria-label="Main">
+            <Link className="lgfc-link" href="/weekly">Weekly Matchup</Link>
+            <Link className="lgfc-link" href="/charities">Charities</Link>
+            <Link className="lgfc-link" href="/news">News & Q&A</Link>
+            <Link className="lgfc-link" href="/calendar">Calendar</Link>
+            <Link className="lgfc-link" href="/member">Join</Link>
+          </nav>
+        </div>
+      </header>
     </>
   );
 }

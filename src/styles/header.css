@@ -18,6 +18,11 @@
   display:flex; align-items:center; justify-content:space-between;
   gap:16px; padding:10px 16px;
 }
-.lgfc-nav{display:flex; gap:16px; align-items:center;}
+
+/* Nav spacing – robust selectors */
+.lgfc-nav{display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
+.lgfc-nav a{display:inline-block; padding:4px 0;}
+
+/* Links */
 .lgfc-link{color:var(--lgfc-charcoal); text-decoration:none; font-weight:600;}
 .lgfc-link:hover{color:var(--lgfc-blue); text-decoration:underline;}
