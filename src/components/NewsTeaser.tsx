@@ -2,9 +2,16 @@ import Link from "next/link";
 import styles from "./NewsTeaser.module.css";
 import mockPosts from "../../data/mock-posts.json";
 
+interface Post {
+	id: number;
+	title: string;
+	date: string;
+	excerpt: string;
+}
+
 export default function NewsTeaser() {
 	// Get the two latest posts (sorted by date descending)
-	const latestPosts = mockPosts
+	const latestPosts = (mockPosts as Post[])
 		.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 		.slice(0, 2);
 
