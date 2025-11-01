@@ -1,6 +1,7 @@
 import styles from "./page.module.css";
 import MilestoneTeaser from "@/components/MilestoneTeaser";
 import WeeklyMatchup from "@/components/WeeklyMatchup";
+import JoinLogin from "@/components/JoinLogin";
 
 export default function Home() {
 	return (
@@ -14,6 +15,7 @@ export default function Home() {
 				</div>
 			</div>
 			<WeeklyMatchup />
+			<JoinLogin />
 			<MilestoneTeaser />
 		</>
 	);
