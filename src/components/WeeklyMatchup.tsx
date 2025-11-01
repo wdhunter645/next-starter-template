@@ -15,8 +15,7 @@ export default function WeeklyMatchup() {
 					<h3 className="matchup-title">Yankees vs Red Sox (1936)</h3>
 					<button 
 						className="matchup-button" 
-						disabled 
-						aria-disabled="true"
+						disabled
 					>
 						Vote
 					</button>
@@ -30,8 +29,7 @@ export default function WeeklyMatchup() {
 					<h3 className="matchup-title">Gehrig at bat (1934)</h3>
 					<button 
 						className="matchup-button" 
-						disabled 
-						aria-disabled="true"
+						disabled
 					>
 						Vote
 					</button>
