@@ -3,6 +3,7 @@ import "./globals.css";
 import "./../styles/variables.css";
 import Header from "../components/Header";
 import JoinCTA from "@/components/JoinCTA";
+import SocialWall from "@/components/SocialWall";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
@@ -22,6 +23,7 @@ export default function RootLayout({
 				<Header noticeText={process.env.NEXT_PUBLIC_NOTICE_TEXT ?? undefined} />
 				{children}
 				<JoinCTA />
+				<SocialWall />
 				<Footer />
 			</body>
 		</html>
