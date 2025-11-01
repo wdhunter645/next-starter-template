@@ -1,0 +1,66 @@
+.banner {
+	padding: 3rem 1rem;
+	background: var(--background);
+	border-top: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.container {
+	max-width: 56rem;
+	margin: 0 auto;
+}
+
+.heading {
+	font-size: 2rem;
+	font-weight: 700;
+	text-align: center;
+	margin-bottom: 2rem;
+}
+
+.events {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 1rem;
+}
+
+@media (min-width: 640px) {
+	.events {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+.eventCard {
+	display: block;
+	padding: 1.5rem;
+	background: rgba(128, 128, 128, 0.05);
+	border: 1px solid rgba(128, 128, 128, 0.2);
+	border-radius: 0.5rem;
+	text-decoration: none;
+	color: inherit;
+	transition: all 0.2s;
+}
+
+.eventCard:hover {
+	background: rgba(128, 128, 128, 0.1);
+	border-color: rgba(128, 128, 128, 0.3);
+	transform: translateY(-2px);
+}
+
+.eventCard:focus {
+	outline: 2px solid var(--foreground);
+	outline-offset: 2px;
+}
+
+.eventDate {
+	font-size: 0.875rem;
+	font-weight: 600;
+	opacity: 0.7;
+	margin-bottom: 0.5rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+.eventTitle {
+	font-size: 1.125rem;
+	font-weight: 600;
+	line-height: 1.4;
+}
