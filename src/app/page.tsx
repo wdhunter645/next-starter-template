@@ -1,6 +1,7 @@
 import Link from "next/link";
 import styles from "./page.module.css";
 import CharitySpotlight from "@/components/CharitySpotlight";
+import MilestoneTeaser from "@/components/MilestoneTeaser";
 
 export default function Home() {
 	return (
@@ -19,6 +20,7 @@ export default function Home() {
 				</div>
 			</div>
 			<CharitySpotlight />
+			<MilestoneTeaser />
 		</>
 	);
 }
