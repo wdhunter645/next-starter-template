@@ -1,6 +1,6 @@
 import styles from "./page.module.css";
 import MilestoneTeaser from "@/components/MilestoneTeaser";
-import WeeklyPreview from "@/components/WeeklyPreview";
+import WeeklyMatchup from "@/components/WeeklyMatchup";
 
 export default function Home() {
 	return (
@@ -13,7 +13,7 @@ export default function Home() {
 					</p>
 				</div>
 			</div>
-			<WeeklyPreview />
+			<WeeklyMatchup />
 			<MilestoneTeaser />
 		</>
 	);
