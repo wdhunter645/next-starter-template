@@ -1,0 +1,61 @@
+.spotlight {
+	background: var(--background);
+	padding: 4rem 1rem;
+	border-top: 1px solid var(--lgfc-divider, #dee2e6);
+}
+
+.container {
+	max-width: var(--container-max, 1200px);
+	margin: 0 auto;
+	text-align: center;
+}
+
+.heading {
+	font-size: 2rem;
+	font-weight: 700;
+	margin-bottom: 3rem;
+	color: var(--foreground);
+}
+
+@media (min-width: 768px) {
+	.heading {
+		font-size: 2.5rem;
+	}
+}
+
+.logos {
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
+	align-items: center;
+	justify-content: center;
+}
+
+@media (min-width: 768px) {
+	.logos {
+		flex-direction: row;
+		gap: 3rem;
+	}
+}
+
+.logoLink {
+	display: block;
+	transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.logoLink:hover {
+	transform: scale(1.05);
+	opacity: 0.9;
+}
+
+.logoLink:focus {
+	outline: 2px solid var(--lgfc-blue, #002868);
+	outline-offset: 4px;
+	border-radius: 4px;
+}
+
+.logo {
+	width: 200px;
+	height: 80px;
+	object-fit: contain;
+}
