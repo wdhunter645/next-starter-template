@@ -17,9 +17,8 @@ export default function SocialWall() {
 		// Create and load the Elfsight script
 		const script = document.createElement("script");
 		script.src = "https://static.elfsight.com/platform/platform.js";
-		script.async = true;
-		script.setAttribute("data-use-service-core", "");
 		script.defer = true;
+		script.setAttribute("data-use-service-core", "");
 
 		script.onload = () => {
 			setScriptLoaded(true);
@@ -32,7 +31,7 @@ export default function SocialWall() {
 		document.body.appendChild(script);
 
 		return () => {
-			// Cleanup if needed
+			// Only cleanup the script if we created it
 			if (script.parentNode) {
 				script.parentNode.removeChild(script);
 			}
