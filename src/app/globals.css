@@ -3,6 +3,11 @@
 :root {
 	--background: #ffffff;
 	--foreground: #171717;
+	--header-h: 64px;
+	--hero-pad-y: 36px;
+	--hero-pad-y-tablet: 20px;
+	--hero-min-h: 68vh;
+	--hero-min-h-tablet: 58vh;
 }
 
 @theme inline {
@@ -23,4 +28,50 @@ body {
 	background: var(--background);
 	color: var(--foreground);
 	font-family: Arial, Helvetica, sans-serif;
+	padding-top: 0;
+}
+
+header.site-header {
+	position: sticky;
+	top: 0;
+	z-index: 1000;
+	height: var(--header-h);
+	margin: 0;
+}
+
+.hero {
+	margin-top: 0 !important;
+	padding-top: var(--hero-pad-y);
+	padding-bottom: var(--hero-pad-y);
+	min-height: var(--hero-min-h);
+	display: grid;
+	align-items: center;
+}
+
+.hero > *:first-child {
+	margin-top: 0 !important;
+}
+
+.hero h1, .hero h2 {
+	margin-top: 0;
+}
+
+@media (max-width: 1024px) {
+	:root {
+		--hero-pad-y: var(--hero-pad-y-tablet);
+		--hero-min-h: var(--hero-min-h-tablet);
+	}
+	.hero h1 {
+		font-size: clamp(1.8rem, 3.5vw, 2.2rem);
+		line-height: 1.15;
+	}
+	.hero p {
+		font-size: clamp(1rem, 1.8vw, 1.1rem);
+		line-height: 1.35;
+		margin-top: 0.5rem;
+	}
+}
+
+[id] {
+	scroll-margin-top: calc(var(--header-h) + 12px);
 }
