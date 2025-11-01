@@ -17,11 +17,10 @@ export default function Header({ noticeText }: HeaderProps) {
         <div className="lgfc-header-inner">
           <Link href="/" className="lgfc-link" aria-label="LGFC home">LGFC</Link>
           <nav className="lgfc-nav" aria-label="Main">
-            <Link className="lgfc-link" href="/weekly">Weekly Matchup</Link>
-            <Link className="lgfc-link" href="/charities">Charities</Link>
-            <Link className="lgfc-link" href="/news">News & Q&A</Link>
-            <Link className="lgfc-link" href="/calendar">Calendar</Link>
-            <Link className="lgfc-link" href="/member">Join</Link>
+            <Link className="lgfc-link" href="/about">About</Link>
+            <Link className="lgfc-link" href="/store">Store</Link>
+            <Link className="lgfc-link" href="/search">Search</Link>
+            <Link className="lgfc-link" href="/login">Login</Link>
           </nav>
         </div>
       </header>
