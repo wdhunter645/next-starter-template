@@ -15,7 +15,7 @@ export default function Header({ noticeText }: HeaderProps) {
       ) : null}
       {/* END:NOTICE_BAR */}
 
-      <header className="lgfc-header" role="banner">
+      <header className="lgfc-header site-header" role="banner">
         <div className="lgfc-header-inner">
           {/* BEGIN:HEADER_LOGO */}
           <Link href="/" className="lgfc-link" aria-label="LGFC home">LGFC</Link>
