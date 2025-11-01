@@ -1,6 +1,5 @@
 import Link from "next/link";
 import styles from "./page.module.css";
-import NewsTeaser from "@/components/NewsTeaser";
 import MilestoneTeaser from "@/components/MilestoneTeaser";
 
 export default function Home() {
@@ -19,7 +18,6 @@ export default function Home() {
 					</div>
 				</div>
 			</div>
-			<NewsTeaser />
 			<MilestoneTeaser />
 		</>
 	);
