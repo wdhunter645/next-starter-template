@@ -10,7 +10,7 @@
 }
 
 .hero {
-	min-height: calc(100vh - 4rem);
+	min-height: 30vh;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
