@@ -14,8 +14,8 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: center;
-	padding: 2rem 1rem;
+	justify-content: flex-start;
+	padding: 3rem 1rem 2rem;
 }
 
 .container {
@@ -23,6 +23,10 @@
 	width: 100%;
 	text-align: center;
 	animation: fadeIn 1s ease-out;
+	background: var(--lgfc-blue);
+	padding: 2.5rem 2rem;
+	border-radius: 0.5rem;
+	color: white;
 }
 
 .title {
@@ -36,15 +40,20 @@
 	font-size: 1.125rem;
 	line-height: 1.75;
 	margin-bottom: 2.5rem;
-	opacity: 0.9;
+	opacity: 1;
 	max-width: 42rem;
 	margin-left: auto;
 	margin-right: auto;
+	color: white;
 }
 
 @media (min-width: 640px) {
 	.subtitle {
 		font-size: 1.25rem;
+	}
+
+	.container {
+		padding: 3rem;
 	}
 }
 
@@ -82,8 +91,8 @@
 	font-size: 1.125rem;
 	font-weight: 600;
 	text-decoration: none;
-	background: var(--foreground);
-	color: var(--background);
+	background: white;
+	color: var(--lgfc-blue);
 	border-radius: 0.5rem;
 	transition: opacity 0.2s;
 	min-width: 10rem;
