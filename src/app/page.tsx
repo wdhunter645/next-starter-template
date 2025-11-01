@@ -1,7 +1,7 @@
 import Link from "next/link";
 import styles from "./page.module.css";
 import MilestoneTeaser from "@/components/MilestoneTeaser";
-import WeeklyPreview from "@/components/WeeklyPreview";
+import WeeklyMatchup from "@/components/WeeklyMatchup";
 
 export default function Home() {
 	return (
@@ -19,7 +19,7 @@ export default function Home() {
 					</div>
 				</div>
 			</div>
-			<WeeklyPreview />
+			<WeeklyMatchup />
 			<MilestoneTeaser />
 		</>
 	);
