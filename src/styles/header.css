@@ -2,12 +2,12 @@
 
 /* Account for fixed header height */
 body {
-  padding-top:60px; /* base header height */
+  padding-top:32px; /* base header height */
 }
 
 /* Add extra padding when notice bar is present */
 body:has(.lgfc-notice) {
-  padding-top:88px; /* notice + header height */
+  padding-top:60px; /* notice + header height */
 }
 
 /* Top notice bar (optional) */
@@ -32,7 +32,7 @@ body:has(.lgfc-notice) {
 .lgfc-header-inner{
   max-width:var(--container-max); margin:0 auto;
   display:flex; align-items:center; justify-content:space-between;
-  gap:16px; padding:10px 16px;
+  gap:16px; padding:4px 16px;
 }
 
 /* Nav spacing – robust selectors */

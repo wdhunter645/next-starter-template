@@ -3,7 +3,7 @@
 :root {
 	--background: #ffffff;
 	--foreground: #171717;
-	--header-h: 64px;
+	--header-h: 32px;
 	--hero-pad-y: 36px;
 	--hero-pad-y-tablet: 20px;
 	--hero-min-h: 68vh;
