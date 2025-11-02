@@ -8,7 +8,7 @@
   --lgfc-gold: #CBA135;       /* Optional accent */
 
   /* Header sizing */
-  --header-height: 56px;
+  --header-height: 28px;
   --notice-height: 32px;
   --container-max: 1200px;
 }
