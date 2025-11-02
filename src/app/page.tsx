@@ -2,6 +2,7 @@ import styles from "./page.module.css";
 import MilestoneTeaser from "@/components/MilestoneTeaser";
 import WeeklyMatchup from "@/components/WeeklyMatchup";
 import JoinLogin from "@/components/JoinLogin";
+import SocialWall from "@/components/SocialWall";
 
 export default function Home() {
 	return (
@@ -16,6 +17,7 @@ export default function Home() {
 			</div>
 			<WeeklyMatchup />
 			<JoinLogin />
+			<SocialWall />
 			<MilestoneTeaser />
 		</>
 	);
