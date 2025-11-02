@@ -2,6 +2,16 @@
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/next-starter-template)
 
+## ⚠️ CLOUDFLARE PAGES DASHBOARD UPDATE REQUIRED
+
+**If you're seeing preview build failures**, the Cloudflare Pages dashboard settings need to be updated to use the new build configuration.
+
+**👉 [Update Cloudflare Dashboard Settings →](./CLOUDFLARE_DASHBOARD_UPDATE.md)** | **[Quick Reference →](./QUICK_REFERENCE.md)**
+
+**Time to fix**: ~2 minutes | **Impact**: Preview builds and deployments will work
+
+---
+
 ## ⚠️ DEPLOYMENT SETUP REQUIRED
 
 **Automated deployments are currently not working.** The GitHub Actions workflow builds successfully but fails to deploy to Cloudflare Pages due to a missing API token permission.
@@ -18,9 +28,9 @@
 
 <!-- dash-content-start -->
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app). It's deployed on Cloudflare Workers as a [static website](https://developers.cloudflare.com/workers/static-assets/).
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app). It's deployed on Cloudflare Pages using [@cloudflare/next-on-pages](https://github.com/cloudflare/next-on-pages).
 
-This template uses [OpenNext](https://opennext.js.org/) via the [OpenNext Cloudflare adapter](https://opennext.js.org/cloudflare), which works by taking the Next.js build output and transforming it, so that it can run in Cloudflare Workers.
+This template uses the Cloudflare next-on-pages adapter, which transforms the Next.js build output so it can run on Cloudflare Pages.
 
 <!-- dash-content-end -->
 
@@ -32,7 +42,7 @@ This starter template uses the following core dependencies:
 - **React**: 19.0.0
 - **TypeScript**: 5.8.3
 - **Tailwind CSS**: 4.1.1
-- **OpenNext Cloudflare**: 1.3.0
+- **@cloudflare/next-on-pages**: 1.13.16
 
 All dependencies are kept minimal and production-ready. See [package.json](./package.json) for the complete dependency list.
 
