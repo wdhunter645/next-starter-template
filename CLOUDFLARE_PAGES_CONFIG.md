@@ -2,19 +2,31 @@
 
 This repository is now standardized on a single build path using @cloudflare/next-on-pages.
 
-## Dashboard Settings
+## ⚠️ IMPORTANT: Dashboard Settings Must Be Updated
 
-Configure these settings in your Cloudflare Pages project dashboard:
+The previous OpenNext configuration has been removed. You **MUST** update your Cloudflare Pages dashboard settings:
+
+### How to Update Settings
+
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/) → Workers & Pages → Your project
+2. Click on **Settings** → **Builds & deployments**
+3. Update the following settings:
 
 ### Build Configuration
 - **Framework preset**: Next.js
 - **Build command**: `npm run cf:build`
 - **Build output directory**: `.vercel/output/static`
 - **Root directory**: (leave empty - use repository root)
+- **Node version**: 20 (or will use the version from `package.json` engines field)
 
 ### Environment Variables
-- **Node version**: Will use the version specified in `package.json` engines field (20.x)
-- Add any required environment variables in the dashboard
+- Add any required environment variables in the **Environment variables** section
+- The build will use Node 20.x as specified in `package.json` engines field
+
+### Old Configuration (No Longer Valid)
+❌ ~~Build command: `npx opennextjs-cloudflare build`~~  
+❌ ~~Output directory: `.open-next/worker`~~  
+❌ ~~Using wrangler for deployment~~
 
 ## Local Development
 
