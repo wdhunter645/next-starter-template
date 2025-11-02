@@ -2,19 +2,9 @@
 import Link from "next/link";
 import "../styles/header.css";
 
-type HeaderProps = {
-  noticeText?: string;
-};
-
-export default function Header({ noticeText }: HeaderProps) {
+export default function Header() {
   return (
     <>
-      {/* BEGIN:NOTICE_BAR */}
-      {noticeText ? (
-        <div className="lgfc-notice">{noticeText}</div>
-      ) : null}
-      {/* END:NOTICE_BAR */}
-
       <header className="lgfc-header site-header" role="banner">
         <div className="lgfc-header-inner">
           {/* BEGIN:HEADER_LOGO */}
