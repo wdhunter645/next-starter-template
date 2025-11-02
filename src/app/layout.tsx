@@ -18,8 +18,8 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body className="antialiased">
-				{/* Top fixed header (notice text via env) */}
-				<Header noticeText={process.env.NEXT_PUBLIC_NOTICE_TEXT ?? undefined} />
+				{/* Top fixed header */}
+				<Header />
 				{children}
 				<JoinCTA />
 				<Footer />

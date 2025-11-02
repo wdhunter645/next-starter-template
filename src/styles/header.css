@@ -5,28 +5,11 @@ body {
   padding-top:32px; /* base header height */
 }
 
-/* Add extra padding when notice bar is present */
-body:has(.lgfc-notice) {
-  padding-top:60px; /* notice + header height */
-}
-
-/* Top notice bar (optional) */
-.lgfc-notice {
-  position:fixed; top:0; z-index:60;
-  width:100%; background:var(--lgfc-red); color:#fff;
-  text-align:center; padding:6px 10px; font-weight:600;
-}
-
 /* Main header */
 .lgfc-header {
   position:fixed; top:0; z-index:50;
   width:100%; background:var(--lgfc-offwhite);
   border-bottom:1px solid var(--lgfc-divider);
-}
-
-/* Push header down when notice bar is present */
-.lgfc-notice + .lgfc-header {
-  top:28px; /* approximate height of notice bar */
 }
 
 .lgfc-header-inner{
