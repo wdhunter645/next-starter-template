@@ -25,3 +25,4 @@ body {
 /* Links */
 .lgfc-link{color:var(--lgfc-charcoal); text-decoration:none; font-weight:600;}
 .lgfc-link:hover{color:var(--lgfc-blue); text-decoration:underline;}
+.lgfc-link[aria-current="page"]{color:var(--lgfc-blue); text-decoration:underline;}

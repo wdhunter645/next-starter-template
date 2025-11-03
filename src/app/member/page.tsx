@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+	title: "Member Area - LGFC",
+	description: "Access member-exclusive content and manage your Lou Gehrig Fan Club membership.",
+};
+
 export default function Member() {
 	return (
 		<div className="min-h-screen flex flex-col items-center justify-center p-8">
