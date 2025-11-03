@@ -13,7 +13,7 @@ jobs:
       CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CF_PAGES_PROJECT: ${{ secrets.CLOUDFLARE_PAGES_PROJECT || 'next-starter-template' }}
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-      MAX_RETRIES: "2"
+      MAX_RETRIES: '2'
     steps:
       - name: Guard secrets
         run: |

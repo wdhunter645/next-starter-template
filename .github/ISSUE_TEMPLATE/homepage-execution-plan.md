@@ -1,12 +1,13 @@
 ---
 name: Homepage Execution Plan (Locked Framework)
 about: Parent issue orchestrating serialized sub-tasks for LGFC homepage
-title: "LGFC Homepage: Locked Framework v2025-10-31 — Execution Plan"
-labels: ["epic","spec-locked","copilot:run"]
+title: 'LGFC Homepage: Locked Framework v2025-10-31 — Execution Plan'
+labels: ['epic', 'spec-locked', 'copilot:run']
 assignees: []
 ---
 
 ## Canonical Spec (do not modify)
+
 - Top Notice Bar (optional)
 - Header (fixed): **logo → “/”** left; **About · Store · Search · Login** right (exact)
 - Hero Banner
@@ -23,6 +24,7 @@ assignees: []
 **Markers**: keep JSX section markers from `docs/HOMEPAGE_SPEC.md`.
 
 ## Orchestration (serialized)
+
 Create sub-issues for each; only **one** active (non-draft) PR at a time.
 
 - [ ] 0. Install/verify spec guard + CODEOWNERS
@@ -38,6 +40,7 @@ Create sub-issues for each; only **one** active (non-draft) PR at a time.
 - [ ] 10. Hidden route `/weekly/results` (winner + prior champion)
 
 ## Quality Gates (every PR)
+
 - [ ] spec-guard CI green
 - [ ] Cloudflare Pages preview green
 - [ ] Screenshots attached
