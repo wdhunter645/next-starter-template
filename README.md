@@ -2,19 +2,17 @@
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/next-starter-template)
 
-## ⚠️ DEPLOYMENT SETUP REQUIRED
+## 🚀 Quick Start
 
-**Automated deployments are currently not working.** The GitHub Actions workflow builds successfully but fails to deploy to Cloudflare Pages due to a missing API token permission.
+**New to this template?** Start here: **[docs/START_HERE.md](./docs/START_HERE.md)**
 
-**👉 Repository Owner Action Required**: [Complete Cloudflare Setup Checklist →](./CLOUDFLARE_SETUP_CHECKLIST.md)
-
-**Time to fix**: ~5 minutes | **Impact**: Automated deployments will work on every push to main
+For deployment setup, see: **[docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md)**
 
 ---
 
 ## 🔴 SECURITY NOTICE
 
-**If you cloned this repository before October 16, 2025**: The `.env` file with secrets was accidentally committed and has been removed. **You must regenerate ALL credentials** if you use any of the exposed services. See [docs/SECURITY_NOTICE.md](./docs/SECURITY_NOTICE.md) for details and action steps.
+**If you cloned this repository before October 16, 2025**: The `.env` file with secrets was accidentally committed and has been removed. **You must regenerate ALL credentials** if you use any of the exposed services.
 
 <!-- dash-content-start -->
 
@@ -63,85 +61,27 @@ Or manually via the GitHub web UI (click the gear icon ⚙️ next to "About"). 
 
 ## Getting Started
 
-### Using GitHub Codespaces (Recommended)
+**For detailed setup instructions**, see **[docs/START_HERE.md](./docs/START_HERE.md)**
 
-This repository is configured for GitHub Codespaces. Click the button below to create a new Codespace:
+### Quick Start
+
+#### Using GitHub Codespaces (Recommended)
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/wdhunter645/next-starter-template)
 
-When working in Codespaces, dependencies will be installed automatically. The development server will be available on port 3000.
+**Note:** Codespaces requires Git authentication setup. See [docs/START_HERE.md](./docs/START_HERE.md#git-authentication-setup) for details.
 
-**Important Codespaces Setup:**
-- **Git Authentication**: Codespaces uses a read-only token by default. To push changes, you need to configure your personal GitHub token. **[See CODESPACES_TOKEN_SETUP.md for complete setup guide →](./docs/CODESPACES_TOKEN_SETUP.md)**
-- **Quick Fix**: If you encounter Git authentication issues, **[see START_HERE.md for immediate fix →](./START_HERE.md)** or the [quick fix below](#git-push-fails-in-codespaces).
-
-### Local Development
-
-First, run:
+#### Local Development
 
 ```bash
+# Install dependencies
 npm install
-# or
-yarn install
-# or
-pnpm install
-# or
-bun install
-```
 
-#### Git Authentication Setup (Local Development)
-
-Before you can push changes, configure Git credentials:
-
-```bash
-# Configure your Git username and email
-git config --global user.name "Your Name"
-git config --global user.email "your.email@example.com"
-
-# Configure credential helper
-git config --global credential.helper store  # Linux
-# OR
-git config --global credential.helper osxkeychain  # macOS
-# OR
-git config --global credential.helper wincred  # Windows
-```
-
-When you push for the first time, you'll be prompted for:
-- **Username**: Your GitHub username
-- **Password**: Your [Personal Access Token](https://github.com/settings/tokens) (NOT your GitHub password)
-
-For detailed authentication setup, see [CONTRIBUTING.md](./CONTRIBUTING.md#git-authentication-for-local-development).
-
-Then run the development server (using the package manager of your choice):
-
-```bash
+# Run development server
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-### Cloudflare Development Mode
-
-For local development with Cloudflare-specific features:
-
-**Option 1: Standard Next.js Development (Recommended for most cases)**
-```bash
-npm run dev
-```
-
-This uses the standard Next.js dev server with Cloudflare bindings support via `@opennextjs/cloudflare`. You can access Cloudflare context using `getCloudflareContext()` in your server-side code.
-
-**Option 2: Wrangler Dev Server (For testing with Cloudflare runtime)**
-```bash
-npm run dev:wrangler
-```
-
-This builds your application and runs it using the Wrangler dev server, providing:
-- Full Cloudflare Workers runtime environment
-- Access to all Cloudflare bindings (KV, R2, D1, etc.)
-- More accurate simulation of production behavior
-
-**Note**: The `dev:wrangler` command rebuilds the app each time, so it's slower than `npm run dev`. Use it when you need to test Cloudflare-specific runtime behavior.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file (when using `npm run dev`).
 
@@ -160,69 +100,16 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 | `npm run lint`                    | Run ESLint to check code quality             |
 | `npx wrangler tail`               | View real-time logs for deployed Workers     |
 
-## Deployment
+### Deployment
 
-This repository is configured to automatically deploy to Cloudflare Pages when code is pushed to the `main` branch using GitHub Actions.
+**For complete deployment setup**, see **[docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md)**
 
-### Required GitHub Secrets
+This template uses GitHub Actions to automatically deploy to Cloudflare Pages when code is pushed to the `main` branch.
 
-To enable automated deployments, you need to configure the following secrets in your GitHub repository settings (`Settings` → `Secrets and variables` → `Actions`):
-
-| Secret Name | Description | How to Get It |
-|-------------|-------------|---------------|
-| `CLOUDFLARE_API_TOKEN` | API token with Pages:Edit and User Details:Read permissions | 1. Go to [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)<br>2. Click "Create Token"<br>3. Add permissions:<br>&nbsp;&nbsp;• Account → Cloudflare Pages → Edit<br>&nbsp;&nbsp;• User → User Details → Read<br>4. Copy the token |
-| `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID | Found in your [Cloudflare Dashboard](https://dash.cloudflare.com) (right sidebar) |
-
-### How Deployment Works
-
-When you push to the `main` branch, the GitHub Actions workflow (`.github/workflows/deploy.yml`) will:
-
-1. Check out your code
-2. Install dependencies with `npm ci`
-3. Build the application using `npm run cf:build` which:
-   - Runs `npm run build` (Next.js build)
-   - Runs `npm run build:open-next` (OpenNext transformation for Cloudflare)
-4. Deploy the `.open-next/worker` directory to Cloudflare Pages using `wrangler pages deploy`
-
-The deployment will be live at your Cloudflare Pages URL within a few minutes.
-
-### Manual Deployment
-
-You can also deploy manually from your local machine:
-
-```bash
-# Build the application
-npm run cf:build
-
-# Deploy to Cloudflare Pages (requires wrangler login)
-npx wrangler pages deploy .open-next/worker --project-name=your-project-name
-```
-
-### Troubleshooting Deployment Issues
-
-If deployments are failing, check:
-
-1. **Verify secrets are set correctly** in GitHub repository settings
-2. **Check API token permissions** - ensure it has both "Cloudflare Pages: Edit" and "User Details: Read" permissions
-3. **Review workflow logs** at `https://github.com/[owner]/[repo]/actions` for specific error messages
-4. **Verify account ID** matches your Cloudflare account
-
-For more detailed troubleshooting, see [DEPLOYMENT_TROUBLESHOOTING.md](./DEPLOYMENT_TROUBLESHOOTING.md).
-
-### Reviewing Cloudflare Build Logs
-
-To review Cloudflare Pages deployment history and identify builds that should be rerun:
-
-```bash
-./scripts/review-cloudflare-builds.sh
-```
-
-This script analyzes deployments from the last 72 hours and provides:
-- Summary of successful, failed, and canceled builds
-- Detailed information about problematic deployments
-- Recommendations on which builds to rerun
-
-For detailed usage instructions, see [CLOUDFLARE_BUILD_REVIEW.md](./CLOUDFLARE_BUILD_REVIEW.md).
+**Required GitHub Secrets:**
+- `CLOUDFLARE_API_TOKEN` - Cloudflare API token with Pages:Edit and User Details:Read permissions
+- `CLOUDFLARE_ACCOUNT_ID` - Your Cloudflare account ID
+- `CLOUDFLARE_PROJECT_NAME` - Your Cloudflare Pages project name
 
 ## Learn More
 
@@ -243,88 +130,11 @@ We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for:
 
 ## Troubleshooting
 
-### Git Push Fails in Codespaces
+**For common issues and solutions**, see **[docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md)**
 
-If you're experiencing authentication issues when pushing to GitHub from Codespaces:
+Quick links:
+- [Git Authentication Issues](./docs/TROUBLESHOOTING.md#git-authentication-issues)
+- [Codespaces Issues](./docs/TROUBLESHOOTING.md#codespaces-issues)
+- [Build and Development Issues](./docs/TROUBLESHOOTING.md#build-and-development-issues)
 
-**The Issue**: Codespaces provides a read-only ephemeral token by default that doesn't have Git CLI push permissions.
-
-**The Solution**: Configure your personal GitHub token with full repository access.
-
-📖 **[Complete Setup Guide: docs/CODESPACES_TOKEN_SETUP.md](./docs/CODESPACES_TOKEN_SETUP.md)**
-
-This comprehensive guide covers:
-- Creating a Personal Access Token (PAT) with proper scopes
-- Configuring Codespaces secrets (recommended)
-- Manual token configuration for individual Codespaces
-- Troubleshooting common authentication issues
-- Security best practices
-
-#### Quick Fix (Manual Configuration)
-
-If **Codespaces isn't letting you log out** to sign back in with your account-level token:
-
-👉 **See: [docs/CODESPACES_LOGOUT.md](./docs/CODESPACES_LOGOUT.md)** - Complete guide for forcing logout and re-authentication
-
-Quick fix:
-```bash
-# Option 1: Use the helper script
-./fix-git-auth.sh
-
-# Option 2: Manual commands
-gh auth logout --hostname github.com 2>/dev/null || true
-rm -f ~/.git-credentials
-echo "YOUR_PAT" | gh auth login --with-token
-git config --global credential.helper store
-git push
-# Enter username and PAT when prompted
-```
-
-For persistent configuration across all Codespaces, use Codespaces Secrets as described in the [complete setup guide](./docs/CODESPACES_TOKEN_SETUP.md).
-
-#### 🔴 Codespaces Won't Let You Log Out?
-
-### Codespaces Crashed or Extensions Keep Restarting
-
-If your Codespace has crashed or remote extensions are bouncing on/off:
-
-1. See the [Codespaces Crash Recovery Guide](./docs/CODESPACES_CRASH_RECOVERY.md) for comprehensive recovery steps
-2. Try stopping and restarting your Codespace from https://github.com/codespaces
-3. If you have uncommitted changes, use GitHub's "Export changes to branch" feature
-
-Quick recovery:
-```bash
-# Save your work immediately
-git add . && git commit -m "WIP: saving before recovery"
-
-# Or stash changes
-git stash save "Before crash recovery"
-
-# Kill hung processes
-pkill -9 node
-pkill -9 git
-```
-
-### Package.json Merge Conflicts
-
-If you encounter merge conflicts in `package.json` after merging branches:
-
-```bash
-./scripts/fix-package-json-conflicts.sh
-```
-
-This script automatically:
-- Resolves merge conflict markers by keeping the first side (pre-`=======`)
-- Validates the resulting JSON
-- Creates a timestamped backup before modifications
-- Ensures Next-on-Pages adapter is configured
-- Installs required dependencies
-- Commits and pushes changes to retrigger CI deployments
-
-**Note**: The script keeps the "ours" side (first half) of conflicts. Review the changes before running if you need to preserve specific changes from the "theirs" side.
-
-For more troubleshooting resources:
-- [Codespaces Token Setup](./docs/CODESPACES_TOKEN_SETUP.md)
-- [Git Authentication Troubleshooting](./docs/GIT_AUTH_TROUBLESHOOTING.md)
-- [Codespaces Crash Recovery](./docs/CODESPACES_CRASH_RECOVERY.md)
-- [Quick Fix Guide](./docs/QUICK_FIX.md)
+For deployment issues, see [docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md#common-deployment-issues)
