@@ -10,21 +10,23 @@
 }
 
 .hero {
-	margin-top: 0 !important;
-	padding: var(--hero-pad-y) 1rem;
+	margin-top: -32px !important;
+	padding-top: calc(var(--hero-pad-y) + 32px);
+	padding-bottom: var(--hero-pad-y);
+	padding-left: 0;
+	padding-right: 0;
 	min-height: var(--hero-min-h);
 	display: grid;
 	place-items: center;
+	background: var(--lgfc-blue);
 }
 
 .container {
-	max-width: 56rem;
 	width: 100%;
 	text-align: center;
 	animation: fadeIn 1s ease-out;
 	background: var(--lgfc-blue);
 	padding: 2.5rem 2rem;
-	border-radius: 0.5rem;
 	color: white;
 }
 
