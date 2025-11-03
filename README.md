@@ -104,6 +104,35 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 
 **For complete deployment setup**, see **[docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md)**
 
+## Developer Workflow
+
+This project includes a `Makefile` for common development tasks. You can use either `make` commands or the equivalent `npm` scripts.
+
+### Using Make Commands
+
+| Command          | Description                                  |
+| :--------------- | :------------------------------------------- |
+| `make help`      | Show available make targets                  |
+| `make dev`       | Start development server                     |
+| `make build`     | Build the application for production         |
+| `make lint`      | Run ESLint                                   |
+| `make lint-fix`  | Run ESLint with auto-fix                     |
+| `make format`    | Format code with Prettier                    |
+| `make test`      | Run tests                                    |
+| `make typecheck` | Run TypeScript type checking                 |
+| `make deploy`    | Deploy to production (Cloudflare Pages)      |
+| `make clean`     | Clean build artifacts and node_modules       |
+
+### Additional npm Scripts
+
+| Script                 | Description                                  |
+| :--------------------- | :------------------------------------------- |
+| `npm run lint:fix`     | Run ESLint with auto-fix                     |
+| `npm run format`       | Format code with Prettier                    |
+| `npm run typecheck`    | Run TypeScript type checking                 |
+| `npm run test:watch`   | Run tests in watch mode                      |
+| `npm run test:coverage`| Run tests with coverage report               |
+
 This template uses GitHub Actions to automatically deploy to Cloudflare Pages when code is pushed to the `main` branch.
 
 **Required GitHub Secrets:**
