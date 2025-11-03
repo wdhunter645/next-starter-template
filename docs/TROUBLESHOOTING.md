@@ -17,7 +17,8 @@
    - Go to [GitHub Settings → Tokens](https://github.com/settings/tokens)
    - Click "Generate new token (classic)"
    - Name: "Codespaces Development"
-   - Scope: Check `repo` (full repository access)
+   - Scopes: Check `repo` (full repository access)
+     - For more granular permissions, use fine-grained tokens with `contents:write` and `metadata:read`
    - Copy the generated token
 
 2. Configure Git authentication (no browser required):

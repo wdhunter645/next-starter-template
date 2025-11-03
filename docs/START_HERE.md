@@ -118,11 +118,13 @@ npm run deploy:prod
 
 ## Tech Stack
 
-- **Framework**: Next.js 15.3.3
-- **UI Library**: React 19.0.0
-- **Language**: TypeScript 5.8.3
-- **Styling**: Tailwind CSS 4.1.1
-- **Deployment**: Cloudflare Pages with OpenNext 1.3.0
+- **Framework**: Next.js 15
+- **UI Library**: React 19
+- **Language**: TypeScript 5
+- **Styling**: Tailwind CSS 4
+- **Deployment**: Cloudflare Pages with OpenNext
+
+See [package.json](../package.json) for exact versions of all dependencies.
 
 ## Getting Help
 

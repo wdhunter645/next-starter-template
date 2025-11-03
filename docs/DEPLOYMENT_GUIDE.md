@@ -30,7 +30,7 @@ Navigate to your repository settings: `Settings → Secrets and variables → Ac
 Add these repository secrets:
 
 - **CLOUDFLARE_API_TOKEN**: Your API token from Step 1
-- **CLOUDFLARE_ACCOUNT_ID**: Find this in your Cloudflare dashboard
+- **CLOUDFLARE_ACCOUNT_ID**: Find in Cloudflare dashboard (right sidebar under "Account ID")
 - **CLOUDFLARE_PROJECT_NAME**: Your Cloudflare Pages project name (e.g., `next-starter-template`)
 
 ### 3. Automated Deployment
