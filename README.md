@@ -115,13 +115,15 @@ This project includes a `Makefile` for streamlined development workflows. Using 
 All core development tasks can be run using `make`:
 
 ```bash
-make dev        # Start the Next.js development server
-make build      # Build the application for production
-make lint       # Run ESLint to check code quality
-make format     # Format code with Prettier
-make test       # Run tests with Vitest
-make deploy     # Deploy to Cloudflare Pages (production)
-make typecheck  # Run TypeScript type checking
+make dev            # Start the Next.js development server
+make build          # Build the application for production
+make lint           # Run ESLint to check code quality
+make format         # Format code with Prettier
+make test           # Run tests with Vitest
+make test-watch     # Run tests in watch mode
+make test-coverage  # Run tests with coverage report
+make deploy         # Deploy to Cloudflare Pages (production)
+make typecheck      # Run TypeScript type checking
 ```
 
 **Tip**: Run `make help` to see all available commands.
@@ -138,6 +140,7 @@ make typecheck  # Run TypeScript type checking
    make format    # Format your code
    make lint      # Check for linting issues
    make typecheck # Verify TypeScript types
+   make test      # Run tests
    ```
 
 3. **Build and deploy**:
@@ -152,6 +155,9 @@ You can also use npm scripts directly if preferred:
 - `npm run lint:fix` - Auto-fix linting issues
 - `npm run format` - Format all files with Prettier
 - `npm run typecheck` - Run TypeScript compiler checks
+- `npm run test` - Run tests
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:coverage` - Run tests with coverage
 
 ### Automated Deployment (GitHub Actions)
 
