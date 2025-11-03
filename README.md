@@ -195,7 +195,7 @@ You can also deploy manually from your local machine:
 npm run cf:build
 
 # Deploy to Cloudflare Pages (requires wrangler login)
-npx wrangler pages deploy .open-next/worker --project-name=next-starter-template
+npx wrangler pages deploy .open-next/worker --project-name=your-project-name
 ```
 
 ### Troubleshooting Deployment Issues
