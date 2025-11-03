@@ -16,9 +16,9 @@ This archive maintains a record of removed documentation to:
 
 The following files were removed from the `docs/` directory. Their content has been consolidated into:
 
-- [START_HERE.md](./START_HERE.md) - Getting started guide
-- [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Deployment setup and configuration
-- [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) - Common issues and solutions
+- [START_HERE.md](../START_HERE.md) - Getting started guide
+- [DEPLOYMENT_GUIDE.md](../DEPLOYMENT_GUIDE.md) - Deployment setup and configuration
+- [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) - Common issues and solutions
 
 **Archived files:**
 
