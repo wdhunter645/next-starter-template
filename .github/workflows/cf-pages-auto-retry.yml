@@ -11,14 +11,19 @@ jobs:
     env:
       CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      CF_PAGES_PROJECT: ${{ secrets.CLOUDFLARE_PAGES_PROJECT }} # e.g. next-starter-template
+      CF_PAGES_PROJECT: ${{ secrets.CLOUDFLARE_PAGES_PROJECT || 'next-starter-template' }}
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
       MAX_RETRIES: "2"
     steps:
       - name: Guard secrets
         run: |
-          test -n "$CF_API_TOKEN" && test -n "$CF_ACCOUNT_ID" && test -n "$CF_PAGES_PROJECT" || {
-            echo "Missing CF secrets (CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_PAGES_PROJECT)"; exit 0; }
+          if [ -z "$CF_API_TOKEN" ] || [ -z "$CF_ACCOUNT_ID" ]; then
+            echo "Missing required secrets (CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID)"
+            exit 0
+          fi
+          if [ -z "$CF_PAGES_PROJECT" ]; then
+            echo "Warning: CLOUDFLARE_PAGES_PROJECT not set, using default 'next-starter-template'"
+          fi
       - name: Fetch latest deployment for this branch
         id: latest
         run: |
