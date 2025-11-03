@@ -165,6 +165,8 @@ The repository is configured to automatically build and deploy to Cloudflare Pag
 
 **For complete deployment setup**, see **[docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md)**
 
+**For complete website design specifications**, see **[docs/Design-spec.md] (./docs/design-spec.md)**
+
 This template uses GitHub Actions to automatically deploy to Cloudflare Pages when code is pushed to the `main` branch.
 
 **Required GitHub Secrets:**
