@@ -1,6 +1,7 @@
 # Next.js Framework Starter
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/next-starter-template)
+[![CI Validation](https://github.com/wdhunter645/next-starter-template/actions/workflows/ci.yml/badge.svg)](https://github.com/wdhunter645/next-starter-template/actions/workflows/ci.yml)
 
 ## 🚀 Quick Start
 
