@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+	title: "Charities - LGFC",
+	description: "Learn about charitable organizations honoring Lou Gehrig's legacy and supporting ALS research.",
+};
+
 export default function Charities() {
 	return (
 		<div className="min-h-screen flex flex-col items-center justify-center p-8">

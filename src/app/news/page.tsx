@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+	title: "News & Q&A - LGFC",
+	description: "Stay updated with the latest news and community discussions about Lou Gehrig and the fan club.",
+};
+
 export default function News() {
 	return (
 		<div className="min-h-screen flex flex-col items-center justify-center p-8">
