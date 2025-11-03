@@ -62,7 +62,7 @@ To improve discoverability and clearly communicate the template's value, we reco
 
 - **Description**: A modern Next.js 15 starter template with TypeScript, Tailwind CSS 4, React 19, and Cloudflare Pages deployment configuration
 - **Website**: https://next-starter-template.templates.workers.dev
-- **Topics**: nextjs, typescript, tailwindcss, cloudflare-pages, cloudflare-workers, starter-template, react, opennext, nextjs-template, fullstack, cloudflare, workers, nextjs-15, react-19, tailwind-css-4
+- **Topics**: nextjs, typescript, tailwindcss, cloudflare-pages, next-on-pages, starter-template, react, nextjs-template, fullstack, cloudflare, nextjs-15, react-19, tailwind-css-4
 
 **For repository maintainers**: You can apply these settings using the helper script:
 ```bash
@@ -128,55 +128,41 @@ Then run the development server (using the package manager of your choice):
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This starts the Next.js dev server on port 3000. Open [http://localhost:3000](http://localhost:3000) to see your application.
 
-### Cloudflare Development Mode
-
-For local development with Cloudflare-specific features:
-
-**Option 1: Standard Next.js Development (Recommended for most cases)**
-```bash
-npm run dev
-```
-
-This uses the standard Next.js dev server with Cloudflare bindings support via `@opennextjs/cloudflare`. You can access Cloudflare context using `getCloudflareContext()` in your server-side code.
-
-**Option 2: Wrangler Dev Server (For testing with Cloudflare runtime)**
-```bash
-npm run dev:wrangler
-```
-
-This builds your application and runs it using the Wrangler dev server, providing:
-- Full Cloudflare Workers runtime environment
-- Access to all Cloudflare bindings (KV, R2, D1, etc.)
-- More accurate simulation of production behavior
-
-**Note**: The `dev:wrangler` command rebuilds the app each time, so it's slower than `npm run dev`. Use it when you need to test Cloudflare-specific runtime behavior.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file (when using `npm run dev`).
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
 ## Available Commands
 
-| Command                           | Action                                       |
-| :-------------------------------- | :------------------------------------------- |
-| `npm run dev`                     | Run Next.js development server (with Cloudflare support) |
-| `npm run dev:wrangler`            | Build and run with Wrangler dev server (full Cloudflare runtime) |
-| `npm run build`                   | Build your production Next.js site           |
-| `npm run preview`                 | Build and preview with Cloudflare runtime    |
-| `npm run deploy`                  | Build and deploy to Cloudflare Pages         |
-| `npm run cf-typegen`              | Generate TypeScript types for Cloudflare bindings |
-| `npm run lint`                    | Run ESLint to check code quality             |
-| `npx wrangler tail`               | View real-time logs for deployed Workers     |
+| Command | Action |
+| :------ | :----- |
+| `npm run dev` | Start Next.js development server on port 3000 |
+| `npm run build` | Build production Next.js site |
+| `npm run cf:build` (or `npm run build:cf`) | Build and adapt for Cloudflare Pages |
+| `npm run start` | Start production server locally |
+| `npm run lint` | Run ESLint to check code quality |
 
-### Automated Deployment (GitHub Actions)
+See [BUILD.md](./BUILD.md) for detailed build documentation.
 
-The repository is configured to automatically build and deploy to Cloudflare Pages when code is pushed to the `main` branch. The deployment workflow:
+## Deployment to Cloudflare Pages
 
-1. Builds the application using OpenNext
-2. Deploys to Cloudflare Pages using wrangler
-3. Makes the deployment live at your Cloudflare Pages URL
+This template is designed for deployment to Cloudflare Pages using the `@cloudflare/next-on-pages` adapter.
+
+### Cloudflare Pages Configuration
+
+In your Cloudflare Pages project dashboard, set:
+
+- **Build command**: `npm run build:cf` (or `npm run cf:build`)
+- **Build output directory**: `.vercel/output/static`
+- **Node version**: `20`
+
+See [CLOUDFLARE_PAGES_CONFIG.md](./CLOUDFLARE_PAGES_CONFIG.md) and [BUILD.md](./BUILD.md) for complete deployment documentation.
+
+### CI/CD
+
+The repository includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that automatically validates builds on pull requests. Cloudflare Pages handles deployments automatically via its GitHub integration.
 
 The deployment requires the following GitHub repository secrets to be configured:
 - `CLOUDFLARE_API_TOKEN` or `CF_API_TOKEN`: Your Cloudflare API token with Pages:Edit permission
