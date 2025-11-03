@@ -5,6 +5,7 @@ This file contains links to documentation that has been removed or consolidated 
 ## Purpose
 
 This archive maintains a record of removed documentation to:
+
 - Provide historical context for project evolution
 - Help locate information that was moved or consolidated
 - Serve as reference for specific implementation details
@@ -14,11 +15,13 @@ This archive maintains a record of removed documentation to:
 ### Removed from `docs/` Directory
 
 The following files were removed from the `docs/` directory. Their content has been consolidated into:
+
 - [START_HERE.md](./START_HERE.md) - Getting started guide
 - [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Deployment setup and configuration
 - [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) - Common issues and solutions
 
 **Archived files:**
+
 - `BRANCH_CLEANUP.md` - Branch management procedures
 - `CODESPACES_CRASH_RECOVERY.md` - Codespaces crash recovery steps (→ TROUBLESHOOTING.md)
 - `CODESPACES_LOGOUT.md` - Codespaces logout procedures (→ TROUBLESHOOTING.md)
@@ -37,6 +40,7 @@ The following files were removed from the `docs/` directory. Their content has b
 The following files were removed from the repository root. Relevant content has been integrated into the main documentation:
 
 **Deployment-related:**
+
 - `CLOUDFLARE_BUILD_REVIEW.md` - Build review procedures
 - `CLOUDFLARE_SETUP_CHECKLIST.md` - Setup checklist (→ DEPLOYMENT_GUIDE.md)
 - `CLOUDFLARE_WORKER_DEPLOYMENT.md` - Worker deployment details
@@ -53,6 +57,7 @@ The following files were removed from the repository root. Relevant content has 
 - `SECRETS_SETUP.md` - Secrets configuration (→ DEPLOYMENT_GUIDE.md)
 
 **Implementation and workflow:**
+
 - `DIAGNOSIS_SUMMARY.md` - Diagnostic summaries
 - `IMPLEMENTATION_COMPLETE.md` - Implementation completion notes
 - `IMPLEMENTATION_SUMMARY.md` - Implementation summaries
@@ -64,6 +69,7 @@ The following files were removed from the repository root. Relevant content has 
 - `WORKFLOW_REVIEW_PR144.md` - PR review notes
 
 **Migrated:**
+
 - `START_HERE.md` (root) - Moved to `docs/START_HERE.md` with improvements
 
 ## How to Access Archived Files
@@ -88,7 +94,7 @@ The simplified documentation structure is:
 ```
 docs/
 ├── START_HERE.md          # Getting started guide
-├── DEPLOYMENT_GUIDE.md    # Deployment setup and troubleshooting  
+├── DEPLOYMENT_GUIDE.md    # Deployment setup and troubleshooting
 ├── TROUBLESHOOTING.md     # Common issues and solutions
 └── ARCHIVE.md             # This file
 
@@ -109,6 +115,7 @@ If you're looking for information that was in archived files:
 ## Maintenance
 
 This archive should be updated when:
+
 - Additional documentation is removed or consolidated
 - File locations change significantly
 - Historical references need clarification
