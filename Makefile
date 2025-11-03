@@ -1,4 +1,4 @@
-.PHONY: dev build lint format test deploy help
+.PHONY: dev build lint format test deploy typecheck help
 
 # Default target
 help:
@@ -7,7 +7,7 @@ help:
 	@echo "  make build    - Build the Next.js application for production"
 	@echo "  make lint     - Run ESLint to check code quality"
 	@echo "  make format   - Format code with Prettier"
-	@echo "  make test     - Run tests (placeholder - no tests configured)"
+	@echo "  make test     - Run tests with Vitest"
 	@echo "  make deploy   - Deploy to Cloudflare Pages (production)"
 	@echo ""
 	@echo "Additional commands:"
@@ -29,11 +29,9 @@ lint:
 format:
 	npm run format
 
-# Run tests (placeholder - no test framework configured)
+# Run tests with Vitest
 test:
-	@echo "No test framework configured yet."
-	@echo "To add tests, install a testing framework like Jest or Vitest."
-	@echo "Example: npm install --save-dev jest @testing-library/react @testing-library/jest-dom"
+	npm run test
 
 # Deploy to production
 deploy:

@@ -5,16 +5,19 @@ This file documents the recommended GitHub repository metadata to improve discov
 ## Recommended Settings
 
 ### Description
+
 ```
 A modern Next.js 15 starter template with TypeScript, Tailwind CSS 4, React 19, and Cloudflare Pages deployment configuration
 ```
 
 ### Website
+
 ```
 https://next-starter-template.templates.workers.dev
 ```
 
 ### Topics (Keywords)
+
 ```
 nextjs
 typescript
@@ -36,6 +39,7 @@ tailwind-css-4
 ## How to Apply These Settings
 
 ### Option 1: GitHub Web UI
+
 1. Go to the repository homepage: https://github.com/wdhunter645/next-starter-template
 2. Click the gear icon (⚙️) next to "About" on the right sidebar
 3. In the dialog that appears:
@@ -45,6 +49,7 @@ tailwind-css-4
 4. Click "Save changes"
 
 ### Option 2: GitHub CLI (gh)
+
 Run the following command from the repository root:
 
 ```bash
@@ -78,6 +83,7 @@ gh api repos/wdhunter645/next-starter-template/topics \
 ```
 
 ### Option 3: Using the Helper Script
+
 We've provided a convenience script to apply these settings:
 
 ```bash
@@ -87,6 +93,7 @@ We've provided a convenience script to apply these settings:
 ## Why This Matters
 
 Adding this metadata:
+
 - **Improves Discoverability**: Users can find the template through GitHub search using relevant keywords
 - **Communicates Value**: The description clearly states what technologies and features the template includes
 - **Provides Context**: The website link gives users a live demo to explore
@@ -95,6 +102,7 @@ Adding this metadata:
 ## Verification
 
 After applying the settings, verify them by:
+
 1. Visiting https://github.com/wdhunter645/next-starter-template
 2. Checking that the "About" section shows the description, website, and topics
 3. Searching for the repository using one of the topics (e.g., "nextjs-template")

@@ -36,3 +36,7 @@ Thumbs.db
 
 # Git
 .git/
+
+# Generated types
+env.d.ts
+worker-configuration.d.ts

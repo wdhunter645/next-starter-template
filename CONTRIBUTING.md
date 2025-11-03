@@ -82,6 +82,7 @@ For complete instructions on setting up GitHub token permissions in Codespaces, 
 📖 **[docs/CODESPACES_TOKEN_SETUP.md - Complete Codespaces Token Configuration Guide](./docs/CODESPACES_TOKEN_SETUP.md)**
 
 This guide covers:
+
 - Creating Personal Access Tokens with proper scopes
 - Configuring Codespaces secrets (recommended for persistent setup)
 - Manual token configuration for individual Codespaces
@@ -91,6 +92,7 @@ This guide covers:
 ### Common Issue: Git Push Failures
 
 If you encounter errors when trying to push to the repository in Codespaces, such as:
+
 - "Authentication failed"
 - "Permission denied"
 - Git not prompting for credentials
@@ -188,6 +190,7 @@ git config --global credential.helper store
 #### Issue: "remote: Permission to repository denied"
 
 **Solutions**:
+
 1. Verify your PAT has the correct scopes (especially `repo`)
 2. Ensure the PAT hasn't expired
 3. Try regenerating the PAT and updating your credentials
@@ -228,14 +231,15 @@ git config --global credential.helper wincred  # Windows
    - Ensure your token has the `repo` scope
    - Token may have expired - generate a new one
    - Clear cached credentials:
+
      ```bash
      # macOS
      git credential-osxkeychain erase
      # Then enter: protocol=https, host=github.com, and press Enter twice
-     
+
      # Linux
      git credential-cache exit
-     
+
      # Windows - Open Credential Manager and remove GitHub credentials
      ```
 
@@ -271,11 +275,13 @@ git config --global credential.helper wincred  # Windows
 ## Code Style
 
 This project uses:
+
 - **ESLint** for linting (configuration in `eslint.config.mjs`)
 - **TypeScript** for type safety
 - **Prettier** formatting (via Next.js defaults)
 
 Run linting before committing:
+
 ```bash
 npm run lint
 ```
@@ -283,6 +289,7 @@ npm run lint
 ## Questions or Issues?
 
 If you encounter any problems not covered in this guide, please:
+
 1. Check existing GitHub Issues
 2. Open a new issue with detailed information about your problem
 3. Include error messages, steps to reproduce, and your environment details
