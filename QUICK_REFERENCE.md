@@ -15,10 +15,12 @@ Navigate to: **Cloudflare Dashboard** → **Workers & Pages** → **next-starter
 | Setting | Value |
 |---------|-------|
 | Framework preset | Next.js |
-| Build command | `npm run cf:build` |
+| Build command | `npm run cf:build` (or `npm run build:cf`) |
 | Build output directory | `.vercel/output/static` |
 | Root directory | (empty) |
 | Node version | 20 |
+
+**Note**: Both `npm run cf:build` and `npm run build:cf` work as aliases.
 
 ### Before vs After
 

@@ -43,6 +43,7 @@
     "build": "next build",
     "cf:adapt": "npx @cloudflare/next-on-pages@latest",
     "cf:build": "npm run build && npm run cf:adapt",
+    "build:cf": "npm run cf:build",
     "start": "next start",
     "lint": "next lint"
   },

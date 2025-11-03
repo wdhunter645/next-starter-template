@@ -38,13 +38,14 @@ Framework preset: Next.js
 Build command: npm run cf:build
 Build output directory: .vercel/output/static
 Root directory: (leave blank or /)
-Node version: 20
+Node version: (leave blank to use .nvmrc, or set to 20)
 ```
 
 **Important Notes:**
-- Make sure to type **exactly**: `npm run cf:build` (no extra spaces)
+- Build command can be either `npm run cf:build` OR `npm run build:cf` (both work as aliases)
 - Make sure to type **exactly**: `.vercel/output/static` (no trailing slash)
-- Node version should be **20** or **20.x**
+- Node version: Leave blank to auto-detect from `.nvmrc` file, or manually set to `20`
+- If you see Node 22 being used, explicitly set Node version to `20` in the dashboard
 
 ### 5. Save Changes
 1. Click **Save** or **Save and Deploy**
@@ -81,10 +82,17 @@ After updating and triggering a new deployment:
 
 ## Troubleshooting
 
-### Build still fails with "command not found"
-- Double-check the build command is exactly: `npm run cf:build`
-- Make sure you saved the settings
-- Clear browser cache and refresh the page
+### Build command mismatch error
+If you see `Missing script: "build:cf"` or `Missing script: "cf:build"`:
+- Both `npm run cf:build` and `npm run build:cf` are supported (they're aliases)
+- Try using the alternate command name in the dashboard
+- Clear Cloudflare Pages cache and retry deployment
+
+### Wrong Node version (Node 22 instead of Node 20)
+If build log shows Node v22 instead of v20:
+- In Cloudflare dashboard, explicitly set Node version to `20`
+- Don't rely on auto-detection if it's not working
+- The `.nvmrc` file should help, but dashboard setting takes precedence
 
 ### Build succeeds but site doesn't work
 - Check the output directory is exactly: `.vercel/output/static`
