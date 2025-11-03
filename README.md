@@ -160,20 +160,54 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 | `npm run lint`                    | Run ESLint to check code quality             |
 | `npx wrangler tail`               | View real-time logs for deployed Workers     |
 
-### Automated Deployment (GitHub Actions)
+## Deployment
 
-The repository is configured to automatically build and deploy to Cloudflare Pages when code is pushed to the `main` branch. The deployment workflow:
+This repository is configured to automatically deploy to Cloudflare Pages when code is pushed to the `main` branch using GitHub Actions.
 
-1. Builds the application using OpenNext
-2. Deploys to Cloudflare Pages using wrangler
-3. Makes the deployment live at your Cloudflare Pages URL
+### Required GitHub Secrets
 
-The deployment requires the following GitHub repository secrets to be configured:
-- `CLOUDFLARE_API_TOKEN` or `CF_API_TOKEN`: Your Cloudflare API token with Pages:Edit permission
-- `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare account ID
-- `CLOUDFLARE_PROJECT_NAME`: Your Cloudflare Pages project name
+To enable automated deployments, you need to configure the following secrets in your GitHub repository settings (`Settings` → `Secrets and variables` → `Actions`):
 
-For troubleshooting deployment issues, see [DEPLOYMENT_TROUBLESHOOTING.md](./DEPLOYMENT_TROUBLESHOOTING.md).
+| Secret Name | Description | How to Get It |
+|-------------|-------------|---------------|
+| `CLOUDFLARE_API_TOKEN` | API token with Pages:Edit and User Details:Read permissions | 1. Go to [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)<br>2. Click "Create Token"<br>3. Add permissions:<br>&nbsp;&nbsp;• Account → Cloudflare Pages → Edit<br>&nbsp;&nbsp;• User → User Details → Read<br>4. Copy the token |
+| `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID | Found in your [Cloudflare Dashboard](https://dash.cloudflare.com) (right sidebar) |
+
+### How Deployment Works
+
+When you push to the `main` branch, the GitHub Actions workflow (`.github/workflows/deploy.yml`) will:
+
+1. Check out your code
+2. Install dependencies with `npm ci`
+3. Build the application using `npm run cf:build` which:
+   - Runs `npm run build` (Next.js build)
+   - Runs `npm run build:open-next` (OpenNext transformation for Cloudflare)
+4. Deploy the `.open-next/worker` directory to Cloudflare Pages using `wrangler pages deploy`
+
+The deployment will be live at your Cloudflare Pages URL within a few minutes.
+
+### Manual Deployment
+
+You can also deploy manually from your local machine:
+
+```bash
+# Build the application
+npm run cf:build
+
+# Deploy to Cloudflare Pages (requires wrangler login)
+npx wrangler pages deploy .open-next/worker --project-name=next-starter-template
+```
+
+### Troubleshooting Deployment Issues
+
+If deployments are failing, check:
+
+1. **Verify secrets are set correctly** in GitHub repository settings
+2. **Check API token permissions** - ensure it has both "Cloudflare Pages: Edit" and "User Details: Read" permissions
+3. **Review workflow logs** at `https://github.com/[owner]/[repo]/actions` for specific error messages
+4. **Verify account ID** matches your Cloudflare account
+
+For more detailed troubleshooting, see [DEPLOYMENT_TROUBLESHOOTING.md](./DEPLOYMENT_TROUBLESHOOTING.md).
 
 ### Reviewing Cloudflare Build Logs
 
