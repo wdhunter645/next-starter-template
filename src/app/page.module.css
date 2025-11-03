@@ -25,8 +25,9 @@
 	width: 100%;
 	text-align: center;
 	animation: fadeIn 1s ease-out;
-	padding: 1.25rem 2rem;
+	padding: 1.25rem 1rem;
 	color: white;
+	overflow-x: auto;
 }
 
 .title {
@@ -37,7 +38,7 @@
 }
 
 .subtitle {
-	font-size: 1.125rem;
+	font-size: 0.75rem;
 	line-height: 1.75;
 	margin-bottom: 0;
 	opacity: 1;
@@ -46,15 +47,23 @@
 	margin-right: auto;
 	color: white;
 	white-space: nowrap;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
 }
 
 @media (min-width: 640px) {
 	.subtitle {
-		font-size: 1.25rem;
+		font-size: 1rem;
 	}
 
 	.container {
 		padding: 1.5rem;
+	}
+}
+
+@media (min-width: 1024px) {
+	.subtitle {
+		font-size: 1.125rem;
 	}
 }
 
