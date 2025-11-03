@@ -6,8 +6,8 @@
 	--header-h: 32px;
 	--hero-pad-y: 36px;
 	--hero-pad-y-tablet: 20px;
-	--hero-min-h: 68vh;
-	--hero-min-h-tablet: 58vh;
+	--hero-min-h: 34vh;
+	--hero-min-h-tablet: 29vh;
 }
 
 @theme inline {
