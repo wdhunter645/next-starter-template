@@ -79,7 +79,7 @@ For more detailed instructions on local Git setup, see the troubleshooting secti
 
 For complete instructions on setting up GitHub token permissions in Codespaces, see:
 
-📖 **[docs/CODESPACES_TOKEN_SETUP.md - Complete Codespaces Token Configuration Guide](./docs/CODESPACES_TOKEN_SETUP.md)**
+📖 **[docs/TROUBLESHOOTING.md - Git Authentication Issues](./docs/TROUBLESHOOTING.md#git-authentication-issues)**
 
 This guide covers:
 
@@ -101,9 +101,9 @@ This typically happens because the Codespaces implicit token doesn't have Git CL
 
 ### 🔴 Codespaces Won't Let You Log Out?
 
-If you're experiencing issues where **Codespaces isn't letting you log out** to sign back in with your account-level token, see the dedicated guide:
+If you're experiencing issues where **Codespaces isn't letting you log out** to sign back in with your account-level token, see:
 
-👉 **[docs/CODESPACES_LOGOUT.md - Complete Logout & Re-authentication Guide](./docs/CODESPACES_LOGOUT.md)**
+👉 **[docs/TROUBLESHOOTING.md - Codespaces Won't Let You Log Out](./docs/TROUBLESHOOTING.md#codespaces-wont-let-you-log-out)**
 
 ### Solution: Using a Personal Access Token (PAT)
 
@@ -201,7 +201,7 @@ git config --global credential.helper store
 
 #### Issue: Codespaces crashed or extensions keep restarting
 
-**Solution**: See the [Codespaces Crash Recovery Guide](docs/CODESPACES_CRASH_RECOVERY.md) for comprehensive troubleshooting steps.
+**Solution**: See the [Codespaces Issues](docs/TROUBLESHOOTING.md#codespace-crashed-or-frozen) section for comprehensive troubleshooting steps.
 
 ### Local Git Authentication Troubleshooting
 
