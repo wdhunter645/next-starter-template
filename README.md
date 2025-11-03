@@ -54,6 +54,7 @@ To improve discoverability and clearly communicate the template's value, we reco
 - **Topics**: nextjs, typescript, tailwindcss, cloudflare-pages, cloudflare-workers, starter-template, react, opennext, nextjs-template, fullstack, cloudflare, workers, nextjs-15, react-19, tailwind-css-4
 
 **For repository maintainers**: You can apply these settings using the helper script:
+
 ```bash
 ./scripts/update-repository-metadata.sh
 ```
@@ -90,22 +91,22 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 
 ## Available Commands
 
-| Command                           | Action                                       |
-| :-------------------------------- | :------------------------------------------- |
-| `npm run dev`                     | Run Next.js development server (with Cloudflare support) |
-| `npm run dev:wrangler`            | Build and run with Wrangler dev server (full Cloudflare runtime) |
-| `npm run build`                   | Build your production Next.js site           |
-| `npm run preview`                 | Build and preview with Cloudflare runtime    |
-| `npm run deploy`                  | Build and deploy to Cloudflare Pages         |
-| `npm run cf-typegen`              | Generate TypeScript types for Cloudflare bindings |
-| `npm run lint`                    | Run ESLint to check code quality             |
-| `npm run lint:fix`                | Run ESLint and auto-fix issues               |
-| `npm run format`                  | Format code with Prettier                    |
-| `npm run typecheck`               | Run TypeScript type checking                 |
-| `npm run test`                    | Run tests with Vitest                        |
-| `npm run test:watch`              | Run tests in watch mode                      |
-| `npm run test:coverage`           | Run tests with coverage report               |
-| `npx wrangler tail`               | View real-time logs for deployed Workers     |
+| Command                 | Action                                                           |
+| :---------------------- | :--------------------------------------------------------------- |
+| `npm run dev`           | Run Next.js development server (with Cloudflare support)         |
+| `npm run dev:wrangler`  | Build and run with Wrangler dev server (full Cloudflare runtime) |
+| `npm run build`         | Build your production Next.js site                               |
+| `npm run preview`       | Build and preview with Cloudflare runtime                        |
+| `npm run deploy`        | Build and deploy to Cloudflare Pages                             |
+| `npm run cf-typegen`    | Generate TypeScript types for Cloudflare bindings                |
+| `npm run lint`          | Run ESLint to check code quality                                 |
+| `npm run lint:fix`      | Run ESLint and auto-fix issues                                   |
+| `npm run format`        | Format code with Prettier                                        |
+| `npm run typecheck`     | Run TypeScript type checking                                     |
+| `npm run test`          | Run tests with Vitest                                            |
+| `npm run test:watch`    | Run tests in watch mode                                          |
+| `npm run test:coverage` | Run tests with coverage report                                   |
+| `npx wrangler tail`     | View real-time logs for deployed Workers                         |
 
 ## Developer Workflow
 
@@ -132,11 +133,13 @@ make typecheck      # Run TypeScript type checking
 ### Quick Start Workflow
 
 1. **Start development**:
+
    ```bash
    make dev
    ```
 
 2. **Before committing**:
+
    ```bash
    make format    # Format your code
    make lint      # Check for linting issues
@@ -153,6 +156,7 @@ make typecheck      # Run TypeScript type checking
 ### Using npm scripts directly
 
 You can also use npm scripts directly if preferred:
+
 - `npm run lint:fix` - Auto-fix linting issues
 - `npm run format` - Format all files with Prettier
 - `npm run typecheck` - Run TypeScript compiler checks
@@ -171,6 +175,7 @@ The repository is configured to automatically build and deploy to Cloudflare Pag
 This template uses GitHub Actions to automatically deploy to Cloudflare Pages when code is pushed to the `main` branch.
 
 **Required GitHub Secrets:**
+
 - `CLOUDFLARE_API_TOKEN` - Cloudflare API token with Pages:Edit and User Details:Read permissions
 - `CLOUDFLARE_ACCOUNT_ID` - Your Cloudflare account ID
 - `CLOUDFLARE_PROJECT_NAME` - Your Cloudflare Pages project name
@@ -187,6 +192,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 ## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for:
+
 - Development setup instructions
 - Git authentication troubleshooting (especially for Codespaces)
 - Pull request guidelines
@@ -197,8 +203,11 @@ We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for:
 **For common issues and solutions**, see **[docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md)**
 
 Quick links:
+
 - [Git Authentication Issues](./docs/TROUBLESHOOTING.md#git-authentication-issues)
 - [Codespaces Issues](./docs/TROUBLESHOOTING.md#codespaces-issues)
 - [Build and Development Issues](./docs/TROUBLESHOOTING.md#build-and-development-issues)
 
 For deployment issues, see [docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md#common-deployment-issues)
+
+See [legacy notes](./docs/legacy-notes) for archived build reviews and investigation summaries.
