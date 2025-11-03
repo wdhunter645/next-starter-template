@@ -158,7 +158,57 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 | `npm run deploy`                  | Build and deploy to Cloudflare Pages         |
 | `npm run cf-typegen`              | Generate TypeScript types for Cloudflare bindings |
 | `npm run lint`                    | Run ESLint to check code quality             |
+| `npm run lint:fix`                | Run ESLint and auto-fix issues               |
+| `npm run format`                  | Format code with Prettier                    |
+| `npm run typecheck`               | Run TypeScript type checking                 |
 | `npx wrangler tail`               | View real-time logs for deployed Workers     |
+
+## Developer Workflow
+
+This project includes a `Makefile` for streamlined development workflows. Using `make` commands provides a convenient, consistent interface for common development tasks.
+
+### Make Commands
+
+All core development tasks can be run using `make`:
+
+```bash
+make dev        # Start the Next.js development server
+make build      # Build the application for production
+make lint       # Run ESLint to check code quality
+make format     # Format code with Prettier
+make test       # Run tests (placeholder - no tests configured)
+make deploy     # Deploy to Cloudflare Pages (production)
+make typecheck  # Run TypeScript type checking
+```
+
+**Tip**: Run `make help` to see all available commands.
+
+### Quick Start Workflow
+
+1. **Start development**:
+   ```bash
+   make dev
+   ```
+
+2. **Before committing**:
+   ```bash
+   make format    # Format your code
+   make lint      # Check for linting issues
+   make typecheck # Verify TypeScript types
+   ```
+
+3. **Build and deploy**:
+   ```bash
+   make build     # Build for production
+   make deploy    # Deploy to Cloudflare
+   ```
+
+### Using npm scripts directly
+
+You can also use npm scripts directly if preferred:
+- `npm run lint:fix` - Auto-fix linting issues
+- `npm run format` - Format all files with Prettier
+- `npm run typecheck` - Run TypeScript compiler checks
 
 ### Automated Deployment (GitHub Actions)
 
