@@ -3,6 +3,9 @@ import MilestoneTeaser from "@/components/MilestoneTeaser";
 import WeeklyMatchup from "@/components/WeeklyMatchup";
 import JoinLogin from "@/components/JoinLogin";
 import SocialWall from "@/components/SocialWall";
+import MemberPostsPreview from "@/components/MemberPostsPreview";
+import FriendsOfFanClub from "@/components/FriendsOfFanClub";
+import EventsCalendar from "@/components/EventsCalendar";
 
 export default function Home() {
 	return (
@@ -18,7 +21,10 @@ export default function Home() {
 			<WeeklyMatchup />
 			<JoinLogin />
 			<SocialWall />
+			<MemberPostsPreview />
 			<MilestoneTeaser />
+			<FriendsOfFanClub />
+			<EventsCalendar />
 		</>
 	);
 }

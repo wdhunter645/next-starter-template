@@ -5,5 +5,7 @@
   --lgfc-charcoal:#212529;
   --lgfc-divider:#DEE2E6;
   --container-max:1200px;
+  --font-head: "Georgia", "Times New Roman", serif;
+  --font-body: "Helvetica Neue", Arial, sans-serif;
 }
 html,body{background:var(--lgfc-offwhite);color:var(--lgfc-charcoal);}
