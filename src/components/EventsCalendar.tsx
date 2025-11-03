@@ -20,8 +20,9 @@ const events: Event[] = [
 ];
 
 export default function EventsCalendar() {
-	const [currentMonth] = useState(11); // November
-	const [currentYear] = useState(2025);
+	const now = new Date();
+	const [currentMonth] = useState(now.getMonth() + 1); // 1-12
+	const [currentYear] = useState(now.getFullYear());
 	
 	// Get days in month
 	const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();

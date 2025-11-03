@@ -129,7 +129,7 @@
 }
 
 .button:hover {
-	background: #941b1b;
+	background: var(--lgfc-red-dark);
 }
 
 @media (min-width: 768px) {

@@ -50,7 +50,7 @@ export default function MemberPostsPreview() {
 							<div className={styles.content}>
 								<h3 className={styles.title}>{post.title}</h3>
 								<p className={styles.excerpt}>{post.excerpt}</p>
-								<Link href={`/news/${post.id}`} className={styles.link}>
+								<Link href={`/posts/${post.id}`} className={styles.link}>
 									Read More →
 								</Link>
 							</div>
