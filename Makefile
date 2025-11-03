@@ -1,4 +1,4 @@
-.PHONY: dev build lint format test deploy help
+.PHONY: dev build lint format test deploy typecheck help
 
 # Default target
 help:
