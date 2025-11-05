@@ -1,7 +1,5 @@
 # Deployment Guide
 
-# Deployment Guide
-
 ## Overview
 
 This Next.js application is designed to be deployed on Cloudflare Pages using GitHub Actions for automated deployment. The application uses **Next.js's built-in static export** feature (`output: "export"`) to generate a fully static site.
