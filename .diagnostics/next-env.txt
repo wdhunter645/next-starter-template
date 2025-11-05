@@ -1,0 +1,72 @@
+# Next.js Environment Information
+
+## Versions
+
+- **Next.js:** 15.3.3
+- **React:** 18.3.1
+- **TypeScript:** 5.8.3
+- **Node.js:** 20.x (as specified in package.json engines)
+
+## Cloudflare Adapter
+
+- **@cloudflare/next-on-pages:** 1.13.16 (deprecated)
+  - Note: Package warns to use OpenNext adapter instead
+- **@opennextjs/cloudflare:** 1.11.0 (current approach)
+- **open-next:** 3.1.3
+
+## Build Scripts
+
+### Standard Next.js Build
+```bash
+npm run build
+# Runs: next build
+```
+
+### Cloudflare-specific Build
+```bash
+npm run cf:build
+# Runs: npm run build && npm run build:open-next
+```
+
+### OpenNext Build
+```bash
+npm run build:open-next
+# Runs: npx opennextjs-cloudflare build
+```
+
+### Alternative Cloudflare Build
+```bash
+npm run build:cf
+# Runs: npx @cloudflare/next-on-pages@latest
+```
+
+## Build Configuration
+
+### next.config.ts
+```typescript
+const nextConfig: NextConfig = {
+	images: {
+		unoptimized: true, // Required for Cloudflare Pages
+	},
+};
+```
+
+### Key Settings
+- **images.unoptimized:** `true` - Disables Node.js image optimization (not available in Cloudflare)
+- **No output: "standalone"** - Not needed for Cloudflare Pages
+- **No basePath** - Uses root path
+- **No assetPrefix** - Uses default paths
+
+## Cloudflare Pages Integration
+
+The project uses OpenNext for Cloudflare Pages deployment:
+1. Run standard Next.js build: `npm run build`
+2. Run OpenNext adapter: `npm run build:open-next`
+3. Cloudflare Pages serves the OpenNext output
+
+## Notes
+
+- Cloudflare Pages uses V8 isolates, not Node.js runtime
+- No access to Node.js file system at runtime
+- Environment variables must use `NEXT_PUBLIC_` prefix for client-side access
+- Image optimization is handled by Cloudflare (or disabled with unoptimized: true)
