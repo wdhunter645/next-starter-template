@@ -1,12 +1,7 @@
 import Link from "next/link";
 import styles from "./page.module.css";
-import MilestoneTeaser from "@/components/MilestoneTeaser";
 import WeeklyMatchup from "@/components/WeeklyMatchup";
-import JoinLogin from "@/components/JoinLogin";
 import SocialWall from "@/components/SocialWall";
-import MemberPostsPreview from "@/components/MemberPostsPreview";
-import FriendsOfFanClub from "@/components/FriendsOfFanClub";
-import EventsCalendar from "@/components/EventsCalendar";
 
 export default function Home() {
 	return (
@@ -27,19 +22,8 @@ export default function Home() {
 			</div>
 			{/* Section: Weekly Photo Matchup */}
 			<WeeklyMatchup />
-			{/* Section: Join/Login CTA */}
-			<JoinLogin />
 			{/* Section: Social Wall */}
 			<SocialWall />
-			{/* Section: Member Posts Preview */}
-			<MemberPostsPreview />
-			{/* Section: Milestone Highlight */}
-			<MilestoneTeaser />
-			{/* Section: Friends of the Fan Club */}
-			<FriendsOfFanClub />
-			{/* Section: Events Calendar */}
-			<EventsCalendar />
-			{/* Section: Footer (handled by layout) */}
 		</>
 	);
 }
