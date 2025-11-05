@@ -36,12 +36,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build with OpenNext
-        run: npm run cf:build
+      - name: Build static site
+        run: npm run build
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy .open-next/worker --project-name=${{ env.CLOUDFLARE_PROJECT_NAME }}
+          command: pages deploy out --project-name=${{ env.CLOUDFLARE_PROJECT_NAME }}

@@ -17,9 +17,9 @@ For deployment setup, see: **[docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.
 
 <!-- dash-content-start -->
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app). It's deployed on Cloudflare Workers as a [static website](https://developers.cloudflare.com/workers/static-assets/).
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app). It's deployed on Cloudflare Pages as a [static website](https://developers.cloudflare.com/pages/framework-guides/deploy-a-nextjs-site/).
 
-This template uses [OpenNext](https://opennext.js.org/) via the [OpenNext Cloudflare adapter](https://opennext.js.org/cloudflare), which works by taking the Next.js build output and transforming it, so that it can run in Cloudflare Workers.
+This template uses Next.js's built-in static export feature (`output: "export"`), which generates a fully static site that can be deployed directly to Cloudflare Pages without any server-side runtime.
 
 <!-- dash-content-end -->
 
@@ -28,10 +28,9 @@ This template uses [OpenNext](https://opennext.js.org/) via the [OpenNext Cloudf
 This starter template uses the following core dependencies:
 
 - **Next.js**: 15.3.3
-- **React**: 19.0.0
+- **React**: 18.3.1
 - **TypeScript**: 5.8.3
 - **Tailwind CSS**: 4.1.1
-- **OpenNext Cloudflare**: 1.3.0
 
 All dependencies are kept minimal and production-ready. See [package.json](./package.json) for the complete dependency list.
 
@@ -93,12 +92,9 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 
 | Command                 | Action                                                           |
 | :---------------------- | :--------------------------------------------------------------- |
-| `npm run dev`           | Run Next.js development server (with Cloudflare support)         |
-| `npm run dev:wrangler`  | Build and run with Wrangler dev server (full Cloudflare runtime) |
+| `npm run dev`           | Run Next.js development server                                   |
 | `npm run build`         | Build your production Next.js site                               |
-| `npm run preview`       | Build and preview with Cloudflare runtime                        |
-| `npm run deploy`        | Build and deploy to Cloudflare Pages                             |
-| `npm run cf-typegen`    | Generate TypeScript types for Cloudflare bindings                |
+| `npm run build:cf`      | Build static site for Cloudflare Pages deployment               |
 | `npm run lint`          | Run ESLint to check code quality                                 |
 | `npm run lint:fix`      | Run ESLint and auto-fix issues                                   |
 | `npm run format`        | Format code with Prettier                                        |
@@ -106,7 +102,6 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 | `npm run test`          | Run tests with Vitest                                            |
 | `npm run test:watch`    | Run tests in watch mode                                          |
 | `npm run test:coverage` | Run tests with coverage report                                   |
-| `npx wrangler tail`     | View real-time logs for deployed Workers                         |
 
 ## Developer Workflow
 
