@@ -12,7 +12,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64px;
+  height: 208px;
   max-width: 1120px;
   margin: 0 auto;
   padding: 0 16px;
@@ -21,6 +21,10 @@
 .logoLink {
   display: flex;
   align-items: center;
+}
+
+.logoLink img {
+  max-height: 192px;
 }
 
 .hamburger {
@@ -45,7 +49,7 @@
 
 .drawer {
   position: absolute;
-  top: var(--header-h, 64px);
+  top: var(--header-h, 208px);
   right: 16px;
   background: #fff;
   border: 1px solid #ddd;
