@@ -1,10 +1,9 @@
 name = "next-starter-template"
-main = ".open-next/worker.js"
 compatibility_date = "2025-01-01"
+pages_build_output_dir = "out"
 
-# OpenNext Cloudflare adapter configuration
-# The adapter generates the worker code and static assets in .open-next/
-# This configuration points to the generated worker entry point
+# Cloudflare Pages configuration for static export
+# The Next.js app is built as a static export to the 'out' directory
 
 [env.dev]
 name = "next-starter-template-dev"
