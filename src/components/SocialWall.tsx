@@ -2,10 +2,10 @@
 import { useEffect, useState } from 'react';
 import styles from './social-wall.module.css';
 
-const WIDGET_ID = 'ef0af9bb-7f80-416f-a68b-d78b9f9c5697'; // Replace with your real Elfsight widget id
+const WIDGET_ID = 'ef0af9bb-7f80-416f-a68b-d78b9f9c5697';
 
 export default function SocialWall() {
-  const [loaded, setLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     // Prevent duplicate loads
@@ -15,11 +15,8 @@ export default function SocialWall() {
       s.src = 'https://static.elfsight.com/platform/platform.js';
       s.defer = true;
       s.setAttribute('data-elfsight-platform', '1');
-      s.onload = () => setLoaded(true);
-      s.onerror = () => setLoaded(false);
+      s.onerror = () => setHasError(true);
       document.body.appendChild(s);
-    } else {
-      setLoaded(true);
     }
   }, []);
 
@@ -30,8 +27,8 @@ export default function SocialWall() {
         {/* Elfsight container */}
         <div className={`elfsight-app-${WIDGET_ID}`}></div>
 
-        {/* Fallback if script blocked */}
-        {!loaded && (
+        {/* Fallback if script blocked or failed to load */}
+        {hasError && (
           <div className={styles.fallback} role="status" aria-live="polite">
             Social feed unavailable right now. Try refreshing or visit our Facebook page.
           </div>
