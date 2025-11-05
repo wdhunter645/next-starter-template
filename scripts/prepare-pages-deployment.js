@@ -6,6 +6,13 @@
  * - Copies static assets from .open-next/assets to .open-next/worker
  * - Copies worker.js to .open-next/worker/_worker.js for Pages Functions
  * - Copies supporting directories needed by the worker
+ * 
+ * Compatible with @opennextjs/cloudflare@1.11.0
+ * 
+ * If this script fails after upgrading @opennextjs/cloudflare, check:
+ * 1. The output directory structure in .open-next/
+ * 2. The list of support directories (lines 45-53)
+ * 3. The OpenNext Cloudflare changelog for breaking changes
  */
 
 const fs = require('fs');
@@ -42,14 +49,16 @@ console.log('⚙️ Copying worker...');
 fs.copyFileSync(sourceWorkerFile, path.join(targetDir, '_worker.js'));
 
 // Copy supporting directories needed by the worker
+// Based on @opennextjs/cloudflare@1.11.0 output structure
+// These directories contain runtime dependencies for the Cloudflare Worker
 const supportDirs = [
-  'cloudflare',
-  'cloudflare-templates', 
-  'middleware',
-  'server-functions',
-  '.build',
-  'cache',
-  'dynamodb-provider'
+  'cloudflare',          // Cloudflare-specific runtime utilities
+  'cloudflare-templates', // Template files for Cloudflare integration
+  'middleware',          // Next.js middleware handlers
+  'server-functions',    // Server-side rendering functions
+  '.build',             // Build-time generated files
+  'cache',              // Cache handling utilities
+  'dynamodb-provider'   // DynamoDB-compatible cache provider
 ];
 
 supportDirs.forEach(dir => {
