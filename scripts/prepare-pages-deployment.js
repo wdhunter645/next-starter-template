@@ -15,6 +15,19 @@ const sourceAssetsDir = path.join(__dirname, '../.open-next/assets');
 const sourceWorkerFile = path.join(__dirname, '../.open-next/worker.js');
 const targetDir = path.join(__dirname, '../.open-next/worker');
 
+// Verify required source files exist
+if (!fs.existsSync(sourceAssetsDir)) {
+  console.error('❌ Error: .open-next/assets directory not found');
+  console.error('Please run "npx opennextjs-cloudflare build" first');
+  process.exit(1);
+}
+
+if (!fs.existsSync(sourceWorkerFile)) {
+  console.error('❌ Error: .open-next/worker.js file not found');
+  console.error('Please run "npx opennextjs-cloudflare build" first');
+  process.exit(1);
+}
+
 // Ensure target directory exists
 if (!fs.existsSync(targetDir)) {
   fs.mkdirSync(targetDir, { recursive: true });
