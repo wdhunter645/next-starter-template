@@ -8,7 +8,8 @@ export default function SocialWall() {
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    // Prevent duplicate loads
+    // Prevent duplicate loads - script persists across component remounts
+    // to avoid re-downloading and potential race conditions
     const existing = document.querySelector('script[data-elfsight-platform]');
     if (!existing) {
       const s = document.createElement('script');
@@ -18,6 +19,7 @@ export default function SocialWall() {
       s.onerror = () => setHasError(true);
       document.body.appendChild(s);
     }
+    // Note: No cleanup function - script intentionally persists to avoid re-downloads
   }, []);
 
   return (
