@@ -2,7 +2,21 @@
 
 ## Overview
 
-This Next.js application is designed to be deployed on Cloudflare Pages using GitHub Actions for automated deployment.
+This Next.js application is designed to be deployed on Cloudflare Pages using GitHub Actions for automated deployment. The application uses the **OpenNext Cloudflare adapter** (`@opennextjs/cloudflare`) for compatibility with Next.js 15 and React 19.
+
+### Build Adapter
+
+This project uses `@opennextjs/cloudflare` instead of the deprecated `@cloudflare/next-on-pages`. The OpenNext adapter provides:
+- Full Next.js 15 and React 19 compatibility
+- Better runtime performance on Cloudflare Pages
+- Active maintenance and support
+- Proper server-side rendering (SSR) and static site generation (SSG)
+
+The build process:
+1. Runs `next build` to compile the Next.js application
+2. Runs `opennextjs-cloudflare build` to transform output for Cloudflare
+3. Runs `prepare-pages-deployment.js` script to create Pages-compatible structure
+4. Deploys `.open-next/worker/` directory to Cloudflare Pages
 
 ## Prerequisites
 
@@ -73,6 +87,29 @@ npm run deploy:prod
 - Check build logs for specific errors
 - Ensure all dependencies are installed: `npm install`
 - Verify Node.js version matches `.node-version` file
+- If you see deprecation warnings about `@cloudflare/next-on-pages`, ensure it's not in `package.json`
+
+### White Screen / Blank Page
+
+**Issue**: Cloudflare Pages deployment succeeds but shows a white screen
+
+**Common Causes**:
+1. **Wrong adapter**: Using deprecated `@cloudflare/next-on-pages` instead of `@opennextjs/cloudflare`
+   - **Solution**: Ensure `package.json` uses `@opennextjs/cloudflare` and `build:cf` script runs OpenNext
+2. **Runtime import errors**: Importing Node.js build artifacts (e.g., `package.json`) in runtime code
+   - **Solution**: Use environment variables instead of build artifact imports
+3. **Missing error boundaries**: Errors fail silently without `error.tsx` or `global-error.tsx`
+   - **Solution**: Check browser console for errors; add error boundaries if needed
+
+### Missing Static Assets (404 on /_next/static/*)
+
+**Issue**: Static chunks fail to load with 404 errors
+
+**Common Causes**:
+1. **Incorrect deployment directory**: Deploying wrong directory to Pages
+   - **Solution**: Ensure workflows deploy `.open-next/worker/` directory
+2. **CSP blocking assets**: Content-Security-Policy headers blocking chunks
+   - **Solution**: Check and update CSP headers in `_headers` file
 
 ### Deployment Not Updating
 

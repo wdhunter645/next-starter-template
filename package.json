@@ -42,7 +42,7 @@
 		"dev": "next dev",
 		"dev:wrangler": "npm run cf:build && wrangler dev",
 		"build": "next build",
-		"build:open-next": "npx opennextjs-cloudflare build",
+		"build:open-next": "npx opennextjs-cloudflare build && node scripts/prepare-pages-deployment.js",
 		"cf:build": "npm run build && npm run build:open-next",
 		"build:cf": "npm run cf:build",
 		"start": "next start",
