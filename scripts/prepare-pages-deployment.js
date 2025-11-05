@@ -35,10 +35,12 @@ if (!fs.existsSync(sourceWorkerFile)) {
   process.exit(1);
 }
 
-// Ensure target directory exists
-if (!fs.existsSync(targetDir)) {
-  fs.mkdirSync(targetDir, { recursive: true });
+// Ensure target directory exists and is clean
+if (fs.existsSync(targetDir)) {
+  console.log('🧹 Cleaning previous build...');
+  fs.rmSync(targetDir, { recursive: true, force: true });
 }
+fs.mkdirSync(targetDir, { recursive: true });
 
 // Copy static assets
 console.log('📦 Copying static assets...');
