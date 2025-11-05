@@ -4,6 +4,3 @@ pages_build_output_dir = "out"
 
 # Cloudflare Pages configuration for static export
 # The Next.js app is built as a static export to the 'out' directory
-
-[env.dev]
-name = "next-starter-template-dev"
