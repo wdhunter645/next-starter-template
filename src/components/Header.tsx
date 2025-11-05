@@ -16,8 +16,8 @@ export default function Header() {
           <Image 
             src="/IMG_1946.png" 
             alt="Lou Gehrig Fan Club Logo" 
-            width={48} 
-            height={48}
+            width={192} 
+            height={192}
             priority
           />
         </Link>
