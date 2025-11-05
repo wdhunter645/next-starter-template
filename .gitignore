@@ -349,7 +349,7 @@ local.properties
 *.vsix
 
 ### Additional Deployment Platforms ###
-# Vercel
+# Vercel (deprecated next-on-pages adapter artifacts)
 .vercel/
 
 # Cloudflare (additional)
