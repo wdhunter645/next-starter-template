@@ -1,3 +1,7 @@
 # https://developers.cloudflare.com/workers/static-assets/headers
 /_next/static/*
   Cache-Control: public,max-age=31536000,immutable
+
+/*
+  X-Content-Type-Options: nosniff
+  Content-Security-Policy: script-src 'self' https://static.elfsight.com; frame-src https://*.elfsight.com; connect-src 'self' https://*.elfsight.com; img-src * data: blob:; style-src 'self' 'unsafe-inline';
