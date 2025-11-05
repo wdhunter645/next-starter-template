@@ -15,8 +15,8 @@ export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
   }, []);
 
   const items = [
-    { label: 'About', href: '/about' },
-    { label: 'Contact', href: '/contact' },
+    { label: 'About', href: '/about', external: false },
+    { label: 'Contact', href: '/contact', external: false },
     { label: 'Store', href: 'https://www.bonfire.com/store/lou-gehrig-fan-club/', external: true },
     loggedIn
       ? { label: 'Members Area', href: 'https://members.lougehrigfanclub.com/', external: true }
