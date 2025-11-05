@@ -44,6 +44,7 @@
 		"build": "next build",
 		"build:open-next": "npx opennextjs-cloudflare build",
 		"cf:build": "npm run build && npm run build:open-next",
+		"build:cf": "npm run cf:build",
 		"start": "next start",
 		"lint": "next lint",
 		"lint:fix": "next lint --fix",
@@ -56,7 +57,7 @@
 		"check": "npm run build && tsc",
 		"deploy:prod": "npx wrangler deploy --config wrangler.toml",
 		"deploy:dev": "npx wrangler deploy --env dev --config wrangler.toml",
-		"build:cf": "npx @cloudflare/next-on-pages@latest"
+		"deploy:cf": "npx opennextjs-cloudflare deploy"
 	},
 	"dependencies": {
 		"@supabase/supabase-js": "^2.76.1",
@@ -65,7 +66,6 @@
 		"react-dom": "^18.3.1"
 	},
 	"devDependencies": {
-		"@cloudflare/next-on-pages": "^1.13.16",
 		"@eslint/eslintrc": "3",
 		"@opennextjs/cloudflare": "^1.11.0",
 		"@tailwindcss/postcss": "4.1.4",
