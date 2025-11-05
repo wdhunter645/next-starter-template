@@ -1,33 +1,69 @@
 # Architecture Overview
 
-This document highlights the key structural patterns in the Next.js starter template so that new contributors can quickly orient themselves.
+This document summarizes the layout of the Next.js starter template so new contributors can quickly understand how the major pieces fit together. It complements the feature specifications under `docs/` and the inline documentation inside each module.
 
-## High-Level Summary
+## Technology stack
 
-- **Framework baseline** – The template ships with Next.js 15, React, TypeScript 5, and Tailwind CSS 4 configured for Cloudflare Pages deployments. 【F:README.md†L1-L109】【F:package.json†L1-L78】
-- **App Router layout** – Global UI chrome is composed in `src/app/layout.tsx`, which wires in the header, a join call-to-action, and the footer around all routed content. 【F:src/app/layout.tsx†L1-L29】
-- **Homepage composition** – The landing page stitches together dedicated feature sections such as the weekly matchup, social wall, milestone teaser, and events calendar via modular React components. 【F:src/app/page.tsx†L1-L45】
+- **Framework**: Next.js 15 with the App Router enabled and the Edge runtime for pages that can run on Cloudflare Pages.
+- **Language**: TypeScript 5 with strict type-checking, ESLint, and Prettier integration.
+- **Styling**: Tailwind CSS 4 paired with a small collection of custom CSS files for more specialized layouts.
+- **Testing**: Vitest and @testing-library/react for component-level unit tests.
 
-## Core UI Building Blocks
+## Project layout
 
-| Concern | Implementation Notes |
-| --- | --- |
-| **Navigation** | `Header` renders a fixed banner with a responsive hamburger toggle and brand logo sourced from the public assets. 【F:src/components/Header.tsx†L1-L36】 |
-| **Weekly matchup** | `WeeklyMatchup` delivers a static voting layout styled by `src/styles/weekly.css`, including accessible hidden text for results. 【F:src/components/WeeklyMatchup.tsx†L1-L44】【F:src/styles/weekly.css†L1-L82】 |
-| **Membership CTA** | `JoinLogin` shows primary and secondary actions that deep-link to member onboarding routes. 【F:src/components/JoinLogin.tsx†L1-L18】 |
-| **Community feed** | `SocialWall` dynamically loads the Elfsight script, surfaces loading and error states, and exposes a fallback message if the script fails. 【F:src/components/SocialWall.tsx†L1-L52】 |
-| **Events** | `EventsCalendar` derives a monthly grid, highlights mocked events, and links through to a full calendar page. 【F:src/components/EventsCalendar.tsx†L1-L94】 |
-| **Footer** | `Footer` pulls metadata from environment variables and `package.json` to show deployment context alongside key policy links. 【F:src/components/Footer.tsx†L1-L39】 |
+```
+src/
+  app/
+    layout.tsx           # Shared shell for all routes
+    page.tsx             # Landing page composition
+    globals.css          # Global Tailwind and reset styles
+  components/            # Reusable UI building blocks
+  styles/                # Shared CSS outside of Tailwind
+  lib/                   # Helper utilities (e.g., API clients)
+  data/                  # Static JSON and fixtures surfaced in the UI
+```
 
-## Styling Conventions
+Important documentation lives alongside the code in `docs/`, and static assets (logos, icons, etc.) are kept in `public/`.
 
-- Global resets and design tokens live in `src/app/globals.css` and `src/styles/variables.css`, while most components rely on colocated CSS modules for encapsulated styling. 【F:src/app/globals.css†L1-L51】【F:src/styles/variables.css†L1-L12】
-- Shared utility styles (e.g., the weekly matchup grid) stay in the `src/styles/` folder and are imported where needed. 【F:src/components/WeeklyMatchup.tsx†L1-L44】【F:src/styles/weekly.css†L1-L82】
+## App Router structure
 
-## Testing and Tooling
+- `src/app/layout.tsx` defines the global chrome (header, join/login prompt, footer) that wraps every page.
+- `src/app/page.tsx` stitches together the landing page sections using component imports from `src/components/`.
+- Additional routes are collocated underneath `src/app/` following Next.js conventions (e.g., `src/app/events/page.tsx`). Shared metadata is exported via the `metadata` object within these route files.
 
-- Vitest is configured with a jsdom environment, global APIs, and module aliasing for `@` to point at `src`. 【F:vitest.config.ts†L1-L18】
-- `src/components/__tests__/SampleComponent.test.tsx` demonstrates Testing Library usage against the client-side `SampleComponent`. 【F:src/components/__tests__/SampleComponent.test.tsx†L1-L25】【F:src/components/SampleComponent.tsx†L1-L18】
-- The root `package.json` surfaces scripts for local development, Cloudflare-aligned builds, linting, formatting, typing, and test automation. 【F:package.json†L38-L77】
+## Core components
 
-Use this overview alongside `docs/START_HERE.md` and the component source files to dig deeper into specific areas of the template. 【F:docs/START_HERE.md†L1-L165】
+Each UI section is encapsulated in its own React component with co-located styles and tests where necessary:
+
+- **Header** (`src/components/Header.tsx`) renders the top navigation, responsive hamburger menu, and logo.
+- **JoinLogin** (`src/components/JoinLogin.tsx`) displays prominent calls to action for prospective or returning members.
+- **WeeklyMatchup** (`src/components/WeeklyMatchup.tsx`) presents a static matchup voting card backed by CSS grid utilities found in `src/styles/weekly.css`.
+- **SocialWall** (`src/components/SocialWall.tsx`) hydrates the social feed by loading an external Elfsight script and gracefully handles loading or failure states.
+- **EventsCalendar** (`src/components/EventsCalendar.tsx`) builds a monthly grid with highlighted events sourced from static data in `data/events.json`.
+- **Footer** (`src/components/Footer.tsx`) shows site metadata, deployment information, and key policy links using values from environment variables and `package.json`.
+
+## Styling conventions
+
+- Tailwind is enabled globally; utility classes compose the majority of layout and typography.
+- Shared CSS lives under `src/styles/` for cases where Tailwind utilities are insufficient (e.g., complex grid layouts).
+- Variables and root-level resets are defined in `src/app/globals.css` and `src/styles/variables.css`.
+- Component-specific styles should remain close to their React counterparts to encourage cohesion.
+
+## Data and configuration
+
+- Static JSON files live under `data/` and are imported directly into React components when needed.
+- Environment variables for runtime configuration are declared in `env.d.ts` and read via `process.env` inside server components.
+- The project exposes standard npm scripts in `package.json` for development (`npm run dev`), linting (`npm run lint`), formatting (`npm run format`), testing (`npm run test`), and type-checking (`npm run type-check`).
+
+## Testing and quality
+
+- Vitest is configured in `vitest.config.ts` with jsdom, module aliasing (`@` → `src`), and global test utilities (`vitest.setup.ts`).
+- Example component tests live in `src/components/__tests__/`, demonstrating how to render React components and assert UI output.
+- ESLint rules are defined in `eslint.config.mjs`, and formatting standards follow the Prettier configuration consumed by the lint workflow.
+
+## Deployment workflow
+
+- The template is pre-configured for Cloudflare Pages using the settings in `open-next.config.ts` and `functions/`.
+- CI/CD automation relies on GitHub Actions definitions and the scripts bundled inside `scripts/` to build and deploy.
+
+Use this overview as a jumping-off point when exploring new features. The combination of route files, reusable components, and shared styles should make it straightforward to trace behavior from the UI down through supporting utilities.
