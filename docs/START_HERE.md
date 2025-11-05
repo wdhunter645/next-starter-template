@@ -76,11 +76,10 @@ git config --global credential.helper store  # or osxkeychain/wincred
 
 | Command | Description |
 | --- | --- |
-| `npm run dev` | Start development server with Cloudflare support |
-| `npm run dev:wrangler` | Run with full Cloudflare Workers runtime |
-| `npm run build` | Build production application |
-| `npm run preview` | Build and preview with Cloudflare runtime |
-| `npm run deploy:prod` | Deploy to Cloudflare Pages |
+| `npm run dev` | Start development server |
+| `npm run build` | Build production static site |
+| `npm run build:cf` | Build for Cloudflare Pages (same as build) |
+| `npm run start` | Start production server locally |
 | `npm run lint` | Run ESLint code quality checks |
 
 ## Project Structure

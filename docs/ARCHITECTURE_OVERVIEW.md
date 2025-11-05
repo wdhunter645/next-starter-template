@@ -63,7 +63,7 @@ Each UI section is encapsulated in its own React component with co-located style
 
 ## Deployment workflow
 
-- The template is pre-configured for Cloudflare Pages using the settings in `open-next.config.ts` and `functions/`.
-- CI/CD automation relies on GitHub Actions definitions and the scripts bundled inside `scripts/` to build and deploy.
+- The template is pre-configured for Cloudflare Pages using Next.js's static export feature (`output: "export"` in `next.config.ts`).
+- CI/CD automation relies on GitHub Actions definitions to build and deploy the static site from the `out/` directory.
 
 Use this overview as a jumping-off point when exploring new features. The combination of route files, reusable components, and shared styles should make it straightforward to trace behavior from the UI down through supporting utilities.

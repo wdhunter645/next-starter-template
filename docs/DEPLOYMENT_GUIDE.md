@@ -1,22 +1,24 @@
 # Deployment Guide
 
+# Deployment Guide
+
 ## Overview
 
-This Next.js application is designed to be deployed on Cloudflare Pages using GitHub Actions for automated deployment. The application uses the **OpenNext Cloudflare adapter** (`@opennextjs/cloudflare`) for compatibility with Next.js 15 and React 19.
+This Next.js application is designed to be deployed on Cloudflare Pages using GitHub Actions for automated deployment. The application uses **Next.js's built-in static export** feature (`output: "export"`) to generate a fully static site.
 
-### Build Adapter
+### Static Export Build
 
-This project uses `@opennextjs/cloudflare` instead of the deprecated `@cloudflare/next-on-pages`. The OpenNext adapter provides:
+This project uses Next.js's native static export feature instead of server-side rendering or Workers-based adapters. The static export provides:
+- Pure static HTML/CSS/JS output
+- No server-side runtime required
+- Fast deployment and serving from Cloudflare's global CDN
+- Simple, maintainable architecture
 - Full Next.js 15 and React 19 compatibility
-- Better runtime performance on Cloudflare Pages
-- Active maintenance and support
-- Proper server-side rendering (SSR) and static site generation (SSG)
 
 The build process:
 1. Runs `next build` to compile the Next.js application
-2. Runs `opennextjs-cloudflare build` to transform output for Cloudflare
-3. Runs `prepare-pages-deployment.js` script to create Pages-compatible structure
-4. Deploys `.open-next/worker/` directory to Cloudflare Pages
+2. Automatically generates static HTML files in the `out/` directory
+3. Deploys `out/` directory to Cloudflare Pages
 
 ## Prerequisites
 
@@ -63,13 +65,13 @@ To deploy manually from your local machine:
 
 ```bash
 # Build the application
-npm run cf:build
+npm run build
 
-# Deploy to production
-npm run deploy:prod
+# Build for Cloudflare (same as above)
+npm run build:cf
 ```
 
-**Note**: Manual deployment requires Wrangler CLI with valid Cloudflare credentials.
+**Note**: Manual deployment is handled through Cloudflare Pages dashboard or GitHub Actions workflows.
 
 ## Common Deployment Issues
 
@@ -81,25 +83,25 @@ npm run deploy:prod
 
 ### Build Failures
 
-**Error**: Build fails during `next build` or OpenNext transformation
+**Error**: Build fails during `next build`
 
 **Solution**: 
 - Check build logs for specific errors
 - Ensure all dependencies are installed: `npm install`
 - Verify Node.js version matches `.node-version` file
-- If you see deprecation warnings about `@cloudflare/next-on-pages`, ensure it's not in `package.json`
+- Ensure `next.config.ts` has `output: "export"` configured
 
 ### White Screen / Blank Page
 
 **Issue**: Cloudflare Pages deployment succeeds but shows a white screen
 
 **Common Causes**:
-1. **Wrong adapter**: Using deprecated `@cloudflare/next-on-pages` instead of `@opennextjs/cloudflare`
-   - **Solution**: Ensure `package.json` uses `@opennextjs/cloudflare` and `build:cf` script runs OpenNext
-2. **Runtime import errors**: Importing Node.js build artifacts (e.g., `package.json`) in runtime code
-   - **Solution**: Use environment variables instead of build artifact imports
-3. **Missing error boundaries**: Errors fail silently without `error.tsx` or `global-error.tsx`
+1. **Runtime errors**: JavaScript errors preventing page load
    - **Solution**: Check browser console for errors; add error boundaries if needed
+2. **Missing static files**: Build artifacts not properly deployed
+   - **Solution**: Verify GitHub Actions workflow deploys the `out/` directory
+3. **Routing issues**: Client-side routing not working properly
+   - **Solution**: Ensure Cloudflare Pages is configured for single-page applications if using client-side routing
 
 ### Missing Static Assets (404 on /_next/static/*)
 
@@ -107,7 +109,7 @@ npm run deploy:prod
 
 **Common Causes**:
 1. **Incorrect deployment directory**: Deploying wrong directory to Pages
-   - **Solution**: Ensure workflows deploy `.open-next/worker/` directory
+   - **Solution**: Ensure workflows deploy `out/` directory (not `.next/` or root)
 2. **CSP blocking assets**: Content-Security-Policy headers blocking chunks
    - **Solution**: Check and update CSP headers in `_headers` file
 
@@ -131,13 +133,9 @@ View deployment history: `Actions → deploy.yml` in your repository
 
 View deployment details: [Cloudflare Pages Dashboard](https://dash.cloudflare.com)
 
-### Real-time Logs
+### Real-time Monitoring
 
-View live logs from deployed Workers:
-
-```bash
-npx wrangler tail
-```
+View deployment status and analytics in the Cloudflare Pages dashboard.
 
 ## Rollback
 
@@ -148,18 +146,11 @@ To rollback to a previous deployment:
 3. Navigate to deployment history
 4. Click "Rollback" on the desired deployment
 
-Or deploy a specific commit:
-
-```bash
-git checkout <commit-hash>
-npm run deploy:prod
-```
-
 ## Additional Resources
 
 - [Cloudflare Pages Documentation](https://developers.cloudflare.com/pages/)
-- [OpenNext Cloudflare Adapter](https://opennext.js.org/cloudflare)
-- [Wrangler CLI Reference](https://developers.cloudflare.com/workers/wrangler/)
+- [Next.js Static Exports](https://nextjs.org/docs/app/building-your-application/deploying/static-exports)
+- [Next.js Deployment Guide](https://nextjs.org/docs/app/building-your-application/deploying)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 
 ## Getting Help
