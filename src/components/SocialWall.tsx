@@ -1,65 +1,41 @@
-"use client";
+'use client';
+import { useEffect, useState } from 'react';
+import styles from './social-wall.module.css';
 
-import { useEffect, useState } from "react";
-import styles from "./SocialWall.module.css";
+const WIDGET_ID = 'ef0af9bb-7f80-416f-a68b-d78b9f9c5697';
 
 export default function SocialWall() {
-	const [scriptLoaded, setScriptLoaded] = useState(false);
-	const [hasError, setHasError] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
-	useEffect(() => {
-		// Check if script is already loaded
-		if (document.querySelector('script[src="https://static.elfsight.com/platform/platform.js"]')) {
-			setScriptLoaded(true);
-			return;
-		}
+  useEffect(() => {
+    // Prevent duplicate loads - script persists across component remounts
+    // to avoid re-downloading and potential race conditions
+    const existing = document.querySelector('script[data-elfsight-platform]');
+    if (!existing) {
+      const s = document.createElement('script');
+      s.src = 'https://static.elfsight.com/platform/platform.js';
+      s.defer = true;
+      s.setAttribute('data-elfsight-platform', '1');
+      s.onerror = () => setHasError(true);
+      document.body.appendChild(s);
+    }
+    // Note: No cleanup function - script intentionally persists to avoid re-downloads
+  }, []);
 
-		// Create and load the Elfsight script
-		const script = document.createElement("script");
-		script.src = "https://static.elfsight.com/platform/platform.js";
-		script.defer = true;
-		script.setAttribute("data-use-service-core", "");
+  return (
+    <section className={styles.wall} aria-labelledby="social-wall-title">
+      <h2 id="social-wall-title" className={styles.title}>Social Wall</h2>
+      <div className={styles.embed}>
+        {/* Elfsight container */}
+        <div className={`elfsight-app-${WIDGET_ID}`}></div>
 
-		script.onload = () => {
-			setScriptLoaded(true);
-		};
-
-		script.onerror = () => {
-			setHasError(true);
-		};
-
-		document.body.appendChild(script);
-
-		return () => {
-			// Only cleanup the script if we created it
-			if (script.parentNode) {
-				script.parentNode.removeChild(script);
-			}
-		};
-	}, []);
-
-	return (
-		<section className={styles.section}>
-			<div className={styles.container}>
-				<h2 className={styles.heading}>From the Community</h2>
-				<div className={styles.feedContainer}>
-					{hasError ? (
-						<p className={styles.fallback}>
-							Follow us on social media for updates and photos of Lou Gehrig&apos;s legacy.
-						</p>
-					) : (
-						<>
-							<div
-								className="elfsight-app-ef0af9bb-7f80-416f-a68b-d78b9f9c5697"
-								data-elfsight-app-lazy
-							></div>
-							{!scriptLoaded && (
-								<p className={styles.loading}>Loading social feed...</p>
-							)}
-						</>
-					)}
-				</div>
-			</div>
-		</section>
-	);
+        {/* Fallback if script blocked or failed to load */}
+        {hasError && (
+          <div className={styles.fallback} role="status" aria-live="polite">
+            Social feed unavailable right now. Try refreshing or visit our Facebook page.
+          </div>
+        )}
+      </div>
+    </section>
+  );
 }
