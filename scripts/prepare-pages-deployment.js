@@ -52,13 +52,13 @@ fs.copyFileSync(sourceWorkerFile, path.join(targetDir, '_worker.js'));
 // Based on @opennextjs/cloudflare@1.11.0 output structure
 // These directories contain runtime dependencies for the Cloudflare Worker
 const supportDirs = [
-  'cloudflare',          // Cloudflare-specific runtime utilities
-  'cloudflare-templates', // Template files for Cloudflare integration
-  'middleware',          // Next.js middleware handlers
-  'server-functions',    // Server-side rendering functions
-  '.build',             // Build-time generated files
-  'cache',              // Cache handling utilities
-  'dynamodb-provider'   // DynamoDB-compatible cache provider
+  'cloudflare',           // Compiled Cloudflare runtime utilities (JS only)
+  'cloudflare-templates', // Template files and TypeScript definitions
+  'middleware',           // Next.js middleware handlers
+  'server-functions',     // Server-side rendering functions
+  '.build',              // Build-time generated files
+  'cache',               // Cache handling utilities
+  'dynamodb-provider'    // DynamoDB-compatible cache provider
 ];
 
 supportDirs.forEach(dir => {
