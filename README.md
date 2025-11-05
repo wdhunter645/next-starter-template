@@ -50,7 +50,7 @@ To improve discoverability and clearly communicate the template's value, we reco
 
 - **Description**: A modern Next.js 15 starter template with TypeScript, Tailwind CSS 4, React 19, and Cloudflare Pages deployment configuration
 - **Website**: https://next-starter-template.templates.workers.dev
-- **Topics**: nextjs, typescript, tailwindcss, cloudflare-pages, cloudflare-workers, starter-template, react, opennext, nextjs-template, fullstack, cloudflare, workers, nextjs-15, react-19, tailwind-css-4
+- **Topics**: nextjs, typescript, tailwindcss, cloudflare-pages, starter-template, react, nextjs-template, fullstack, cloudflare, static-site, nextjs-15, react-19, tailwind-css-4
 
 **For repository maintainers**: You can apply these settings using the helper script:
 
