@@ -2,27 +2,5 @@
 
 /* Account for fixed header height */
 body {
-  padding-top:32px; /* base header height */
+  padding-top: 64px; /* updated for new header height */
 }
-
-/* Main header */
-.lgfc-header {
-  position:fixed; top:0; z-index:50;
-  width:100%; background:var(--lgfc-offwhite);
-  border-bottom:1px solid var(--lgfc-divider);
-}
-
-.lgfc-header-inner{
-  max-width:var(--container-max); margin:0 auto;
-  display:flex; align-items:center; justify-content:space-between;
-  gap:16px; padding:4px 16px;
-}
-
-/* Nav spacing – robust selectors */
-.lgfc-nav{display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
-.lgfc-nav a{display:inline-block; padding:4px 0;}
-
-/* Links */
-.lgfc-link{color:var(--lgfc-charcoal); text-decoration:none; font-weight:600;}
-.lgfc-link:hover{color:var(--lgfc-blue); text-decoration:underline;}
-.lgfc-link[aria-current="page"]{color:var(--lgfc-blue); text-decoration:underline;}
