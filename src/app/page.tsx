@@ -27,10 +27,10 @@ export default function Home() {
 			</div>
 			{/* Section: Weekly Photo Matchup */}
 			<WeeklyMatchup />
-			{/* Section: Join/Login CTA */}
-			<JoinLogin />
 			{/* Section: Social Wall */}
 			<SocialWall />
+			{/* Section: Join/Login CTA */}
+			<JoinLogin />
 			{/* Section: Member Posts Preview */}
 			<MemberPostsPreview />
 			{/* Section: Milestone Highlight */}
