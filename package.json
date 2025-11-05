@@ -44,6 +44,7 @@
 		"build": "next build",
 		"build:open-next": "npx opennextjs-cloudflare build && node scripts/prepare-pages-deployment.js",
 		"cf:build": "npm run build && npm run build:open-next",
+		"build:cf": "npm run cf:build",
 		"start": "next start",
 		"lint": "next lint",
 		"lint:fix": "next lint --fix",
@@ -55,7 +56,8 @@
 		"cf-typegen": "wrangler types --env-interface CloudflareEnv env.d.ts",
 		"check": "npm run build && tsc",
 		"deploy:prod": "npx wrangler deploy --config wrangler.toml",
-		"deploy:dev": "npx wrangler deploy --env dev --config wrangler.toml"
+		"deploy:dev": "npx wrangler deploy --env dev --config wrangler.toml",
+		"deploy:cf": "npx opennextjs-cloudflare deploy"
 	},
 	"dependencies": {
 		"@supabase/supabase-js": "^2.76.1",
