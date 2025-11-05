@@ -1,6 +1,8 @@
 .header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 50;
   background: #fff;
   border-bottom: 1px solid #e0e0e0;
@@ -43,7 +45,7 @@
 
 .drawer {
   position: absolute;
-  top: 64px;
+  top: var(--header-h, 64px);
   right: 16px;
   background: #fff;
   border: 1px solid #ddd;

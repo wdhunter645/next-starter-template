@@ -8,7 +8,9 @@ export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
   const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
-    const isMember = document.cookie.includes('lgfc_session=1');
+    // More precise cookie check - ensure exact match with equals sign
+    const cookies = document.cookie.split(';').map(c => c.trim());
+    const isMember = cookies.some(cookie => cookie.startsWith('lgfc_session=1'));
     setLoggedIn(isMember);
   }, []);
 
