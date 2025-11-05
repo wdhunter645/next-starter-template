@@ -352,6 +352,9 @@ local.properties
 # Vercel
 .vercel/
 
+# Vercel build output from next-on-pages (deprecated)
+.vercel/output/
+
 # Cloudflare (additional)
 .cloudflare/
 
