@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import styles from './Header.module.css';
 
 export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -21,11 +20,11 @@ export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
   const isAdmin = role === 'admin' || role === 'moderator';
 
   return (
-    <div className={styles.drawer} id="hamburger-menu">
-      <button className={styles.close} onClick={onClose} aria-label="Close menu">
+    <div className="mast-drawer" id="hamburger-menu">
+      <button className="mast-drawer-close" onClick={onClose} aria-label="Close menu">
         ×
       </button>
-      <ul className={styles.menu}>
+      <ul className="mast-drawer-menu">
         <li>
           <Link href="/about" onClick={onClose}>
             About
@@ -54,7 +53,7 @@ export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
               Members Area
             </Link>
           ) : (
-            <span className={styles.menuPlaceholder} aria-label="Members Area (login required)">Members Area</span>
+            <span className="menu-placeholder" aria-label="Members Area (login required)">Members Area</span>
           )}
         </li>
         <li>
@@ -63,7 +62,7 @@ export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
               Admin
             </Link>
           ) : (
-            <span className={styles.menuPlaceholder} aria-label="Admin (restricted access)">Admin</span>
+            <span className="menu-placeholder" aria-label="Admin (restricted access)">Admin</span>
           )}
         </li>
       </ul>

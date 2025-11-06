@@ -1,7 +1,7 @@
 export default function JoinCTA() {
 	return (
 		<div className="join-banner">
-			<div style={{display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap'}}>
+			<div className="join-banner__container">
 				<p className="join-banner__text">
 					Become a member. Get access to the Gehrig library, media archive, memorabilia archive,
 					group discussions, and more.
