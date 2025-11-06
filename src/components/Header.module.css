@@ -24,12 +24,17 @@
 }
 
 .logoLink img {
-  max-height: 44px;
+  display: block;
+  height: 44px;
+  width: auto;
+  aspect-ratio: auto;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
 @media (min-width: 768px) {
   .logoLink img {
-    max-height: 48px;
+    height: 48px;
   }
 }
 
