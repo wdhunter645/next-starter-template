@@ -30,14 +30,15 @@ export default function Home() {
 				<SocialWall />
 			</section>
 			{/* Section: FAQ and Milestones */}
-			<section
-				id="faq-milestones"
-				className="container two-col section"
-				role="region"
-				aria-label="FAQ and Milestones"
-			>
-				<FAQSection />
-				<MilestonesSection />
+			<section id="faq-milestones" className="section">
+				<div className="container two-col" role="region" aria-label="FAQ and Milestones">
+					<div className="section--tight">
+						<FAQSection />
+					</div>
+					<div className="section--tight">
+						<MilestonesSection />
+					</div>
+				</div>
 			</section>
 		</>
 	);

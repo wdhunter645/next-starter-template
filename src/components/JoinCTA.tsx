@@ -1,15 +1,16 @@
-import Link from "next/link";
-import styles from "./JoinCTA.module.css";
-
 export default function JoinCTA() {
 	return (
-		<section className={styles.cta}>
-			<div className={styles.container}>
-				<p className={styles.text}>Become part of the Lou Gehrig Fan Club community.</p>
-				<Link href="/member" className={styles.button}>
-					Join Now
-				</Link>
+		<div className="join-banner">
+			<div style={{display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap'}}>
+				<p className="join-banner__text">
+					Become a member. Get access to the Gehrig library, media archive, memorabilia archive,
+					group discussions, and more.
+				</p>
+				<div className="join-banner__actions">
+					<a className="join-banner__btn" href="/join">Join</a>
+					<a className="join-banner__btn" href="/member">Login</a>
+				</div>
 			</div>
-		</section>
+		</div>
 	);
 }

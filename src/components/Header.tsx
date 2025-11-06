@@ -1,39 +1,32 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import HamburgerMenu from './HamburgerMenu';
-import styles from './Header.module.css';
 
 export default function Header() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className={styles.header} role="banner">
-      <div className={styles.inner}>
-        <Link href="/" className={styles.logoLink} aria-label="LGFC home">
-          <Image 
-            src="/IMG_1946.png" 
-            alt="Lou Gehrig Fan Club Logo" 
-            width={192} 
-            height={192}
-            priority
-          />
+    <div className="mast">
+      <div className="mast-inner">
+        <Link href="/" aria-label="Lou Gehrig Fan Club">
+          <img className="mast-logo" src="/IMG_1946.png" alt="LGFC" />
         </Link>
         <button 
-          className={styles.hamburger} 
+          className="mast-menu" 
           onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
+          aria-label="Open menu"
           aria-expanded={open}
           aria-controls="hamburger-menu"
         >
-          <span className={styles.line}></span>
-          <span className={styles.line}></span>
-          <span className={styles.line}></span>
+          {/* simple hamburger icon */}
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
         </button>
         {open && <HamburgerMenu onClose={() => setOpen(false)} />}
       </div>
-    </header>
+    </div>
   );
 }
