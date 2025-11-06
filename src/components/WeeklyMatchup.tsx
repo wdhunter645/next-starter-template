@@ -41,7 +41,7 @@ export default function WeeklyMatchup() {
 			role="region"
 			aria-label="Weekly Photo Matchup"
 		>
-			<h2 className="weekly-title">Weekly Photo Matchup. Vote for your favorite!</h2>
+			<h2 className="section-title">Weekly Photo Matchup. Vote for your favorite!</h2>
 			<div className="matchup">
 				<article className="tile">
 					<img
