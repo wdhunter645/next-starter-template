@@ -3,7 +3,7 @@
 export default function MilestonesSection() {
 	return (
 		<aside>
-			<h2>Milestones</h2>
+			<h2 className="section-title">Milestones</h2>
 			<p className="sub">Key moments from Gehrig&apos;s life and career.</p>
 			<div className="timeline">
 				<div className="item">
