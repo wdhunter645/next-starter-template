@@ -1,5 +1,6 @@
 import styles from "./page.module.css";
 import WeeklyMatchup from "@/components/WeeklyMatchup";
+import JoinBanner from "@/components/JoinBanner";
 import SocialWall from "@/components/SocialWall";
 import FAQSection from "@/components/FAQSection";
 import MilestonesSection from "@/components/MilestonesSection";
@@ -18,6 +19,8 @@ export default function Home() {
 			</div>
 			{/* Section: Weekly Photo Matchup */}
 			<WeeklyMatchup />
+			{/* Section: Join Banner */}
+			<JoinBanner />
 			{/* Section: Social Wall */}
 			<SocialWall />
 			{/* Section: FAQ and Milestones */}
