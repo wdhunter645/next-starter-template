@@ -1,6 +1,8 @@
 import styles from "./page.module.css";
 import WeeklyMatchup from "@/components/WeeklyMatchup";
 import SocialWall from "@/components/SocialWall";
+import FAQSection from "@/components/FAQSection";
+import MilestonesSection from "@/components/MilestonesSection";
 
 export default function Home() {
 	return (
@@ -18,6 +20,16 @@ export default function Home() {
 			<WeeklyMatchup />
 			{/* Section: Social Wall */}
 			<SocialWall />
+			{/* Section: FAQ and Milestones */}
+			<section
+				className="container two-col"
+				role="region"
+				aria-label="FAQ and Milestones"
+				style={{ padding: "40px 0" }}
+			>
+				<FAQSection />
+				<MilestonesSection />
+			</section>
 		</>
 	);
 }
