@@ -2,12 +2,8 @@
 
 /* Weekly section title spacing */
 .weekly-title {
-	margin-top: 24px;
-}
-
-/* Section spacing */
-.after-hero-gap {
-	margin-top: 20px;
+	margin-top: 0;
+	margin-bottom: 24px;
 }
 
 /* Container for weekly section */

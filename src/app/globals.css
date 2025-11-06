@@ -11,6 +11,8 @@
 	--maxw: 1200px;
 	--radius: 14px;
 	--shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+	--section-gap: 3rem; /* mobile */
+	--brand-blue: #0033cc;
 }
 
 @theme inline {
@@ -45,6 +47,7 @@ header.site-header {
 @media (min-width: 768px) {
 	:root {
 		--header-h: 64px;
+		--section-gap: 4.5rem; /* tablet/desktop */
 	}
 }
 
@@ -63,6 +66,19 @@ header.site-header {
 	max-width: var(--maxw);
 	margin: 0 auto;
 	padding: 0 20px;
+}
+
+/* Global section spacing helpers */
+.section {
+	margin-block: var(--section-gap);
+}
+
+.section--tight {
+	margin-block: calc(var(--section-gap) * 0.5);
+}
+
+.section--loose {
+	margin-block: calc(var(--section-gap) * 1.5);
 }
 
 /* FAQ + Milestones two-column layout */

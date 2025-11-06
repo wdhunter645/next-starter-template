@@ -1,14 +1,14 @@
 .cta {
 	width: 100%;
-	background: var(--lgfc-charcoal);
-	color: var(--lgfc-offwhite);
+	background: var(--brand-blue, #0033cc);
+	color: white;
 	padding: 3rem 1rem;
 	margin-top: auto;
 }
 
 @media (prefers-color-scheme: dark) {
 	.cta {
-		background: var(--lgfc-charcoal);
+		background: var(--brand-blue, #0033cc);
 	}
 }
 
@@ -50,8 +50,8 @@
 	font-size: 1.125rem;
 	font-weight: 600;
 	text-decoration: none;
-	background: var(--lgfc-offwhite);
-	color: var(--lgfc-charcoal);
+	background: white;
+	color: #0033cc;
 	border-radius: 0.5rem;
 	transition: opacity 0.2s;
 	min-width: 10rem;
@@ -64,13 +64,13 @@
 }
 
 .button:focus {
-	outline: 2px solid var(--lgfc-offwhite);
+	outline: 2px solid white;
 	outline-offset: 4px;
 }
 
 @media (prefers-color-scheme: dark) {
 	.button {
-		background: var(--lgfc-offwhite);
-		color: var(--lgfc-charcoal);
+		background: white;
+		color: #0033cc;
 	}
 }
