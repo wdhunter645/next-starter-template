@@ -37,7 +37,7 @@ export default function WeeklyMatchup() {
 
 	return (
 		<section
-			className="container after-hero-gap"
+			className="container"
 			role="region"
 			aria-label="Weekly Photo Matchup"
 		>
