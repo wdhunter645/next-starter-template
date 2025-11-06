@@ -26,6 +26,7 @@ export default function Header() {
           onClick={() => setOpen(!open)}
           aria-label="Toggle menu"
           aria-expanded={open}
+          aria-controls="hamburger-menu"
         >
           <span className={styles.line}></span>
           <span className={styles.line}></span>

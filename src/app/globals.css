@@ -3,7 +3,7 @@
 :root {
 	--background: #ffffff;
 	--foreground: #171717;
-	--header-h: 208px;
+	--header-h: 56px;
 	--hero-pad-y: 18px;
 	--hero-pad-y-tablet: 10px;
 	--hero-min-h: 17vh;
@@ -37,6 +37,12 @@ header.site-header {
 	z-index: 1000;
 	height: var(--header-h);
 	margin: 0;
+}
+
+@media (min-width: 768px) {
+	:root {
+		--header-h: 64px;
+	}
 }
 
 @media (max-width: 1024px) {
