@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./../styles/variables.css";
 import Header from "../components/Header";
-import JoinCTA from "@/components/JoinCTA";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
@@ -21,7 +20,6 @@ export default function RootLayout({
 				{/* Top fixed header */}
 				<Header />
 				{children}
-				<JoinCTA />
 				<Footer />
 			</body>
 		</html>
