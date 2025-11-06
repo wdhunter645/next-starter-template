@@ -11,8 +11,9 @@
 	--maxw: 1200px;
 	--radius: 14px;
 	--shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
-	--section-gap: 3rem; /* mobile */
+	--section-gap: 2.5rem;
 	--brand-blue: #0033cc;
+	--lgfc-blue: #0033cc;
 }
 
 @theme inline {
@@ -196,4 +197,26 @@ header.site-header {
 	.timeline .item {
 		grid-template-columns: 1fr;
 	}
+}
+
+/* LGFC v6 specific styles */
+.section-gap {
+	margin-block: var(--section-gap);
+}
+
+.title-lgfc {
+	color: var(--lgfc-blue);
+	text-align: center;
+	font-weight: 700;
+}
+
+.joinBanner {
+	background: var(--lgfc-blue);
+	color: #fff;
+	border-radius: 14px;
+	padding: 20px;
+}
+
+.topWhitespace {
+	height: 72px;
 }

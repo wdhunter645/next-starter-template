@@ -18,21 +18,21 @@ export default function Home() {
 				</div>
 			</header>
 			{/* Section: Weekly Photo Matchup */}
-			<section id="weekly" className="section">
+			<section id="weekly" className="section section-gap">
 				<WeeklyMatchup />
 			</section>
 			{/* Section: Join Banner */}
-			<section id="join" className="section">
+			<section id="join">
 				<JoinCTA />
 			</section>
 			{/* Section: Social Wall */}
-			<section id="social" className="section">
+			<section id="social" className="section section-gap">
 				<SocialWall />
 			</section>
 			{/* Section: FAQ and Milestones */}
 			<section
 				id="faq-milestones"
-				className="container two-col section"
+				className="container two-col section section-gap"
 				role="region"
 				aria-label="FAQ and Milestones"
 			>
