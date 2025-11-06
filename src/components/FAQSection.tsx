@@ -138,7 +138,7 @@ export default function FAQSection() {
 
 	return (
 		<div>
-			<h2>FAQ and Ask a Question</h2>
+			<h2 className="section-title">FAQ and Ask a Question</h2>
 			<p className="sub">
 				Browse top questions, search, or submit a new one. Submissions are held
 				for admin approval before appearing.
