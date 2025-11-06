@@ -27,7 +27,6 @@
   display: block;
   height: 44px;
   width: auto;
-  max-height: 44px;
   aspect-ratio: auto;
   object-fit: contain;
   border-radius: 8px;
@@ -36,7 +35,6 @@
 @media (min-width: 768px) {
   .logoLink img {
     height: 48px;
-    max-height: 48px;
   }
 }
 
