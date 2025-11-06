@@ -6,42 +6,66 @@ import styles from './Header.module.css';
 
 export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
   const [loggedIn, setLoggedIn] = useState(false);
+  const [role, setRole] = useState('');
 
   useEffect(() => {
-    // More precise cookie check - ensure exact match with equals sign
+    // Check auth cookies
     const cookies = document.cookie.split(';').map(c => c.trim());
-    const isMember = cookies.some(cookie => cookie.startsWith('lgfc_session=1'));
-    setLoggedIn(isMember);
+    const isLoggedIn = cookies.some(cookie => cookie === 'lgfc_logged_in=true');
+    const userRole = cookies.find(cookie => cookie.startsWith('lgfc_role='))?.split('=')[1] || '';
+    
+    setLoggedIn(isLoggedIn);
+    setRole(userRole);
   }, []);
 
-  const items = [
-    { label: 'About', href: '/about', external: false },
-    { label: 'Contact', href: '/contact', external: false },
-    { label: 'Store', href: 'https://www.bonfire.com/store/lou-gehrig-fan-club/', external: true },
-    loggedIn
-      ? { label: 'Members Area', href: '/member', external: false }
-      : { label: 'Login', href: '/member', external: false },
-  ];
+  const isAdmin = role === 'admin' || role === 'moderator';
 
   return (
-    <div className={styles.drawer}>
+    <div className={styles.drawer} id="hamburger-menu">
       <button className={styles.close} onClick={onClose} aria-label="Close menu">
         ×
       </button>
       <ul className={styles.menu}>
-        {items.map((item) => (
-          <li key={item.label}>
-            {item.external ? (
-              <a href={item.href} target="_blank" rel="noopener noreferrer">
-                {item.label}
-              </a>
-            ) : (
-              <Link href={item.href} onClick={onClose}>
-                {item.label}
-              </Link>
-            )}
+        <li>
+          <Link href="/about" onClick={onClose}>
+            About
+          </Link>
+        </li>
+        <li>
+          <Link href="/contact" onClick={onClose}>
+            Contact
+          </Link>
+        </li>
+        <li>
+          <a href="https://www.bonfire.com/store/lou-gehrig-fan-club/" target="_blank" rel="noopener noreferrer">
+            Store
+          </a>
+        </li>
+        {!loggedIn && (
+          <li>
+            <Link href="/member" onClick={onClose}>
+              Login
+            </Link>
           </li>
-        ))}
+        )}
+        <li>
+          {loggedIn ? (
+            <Link href="/member" onClick={onClose}>
+              Members Area
+            </Link>
+          ) : (
+            <span className={styles.menuPlaceholder}>Members Area</span>
+          )}
+        </li>
+        <li>
+          {loggedIn && isAdmin ? (
+            <Link href="/admin" onClick={onClose}>
+              Admin
+            </Link>
+          ) : (
+            <span className={styles.menuPlaceholder}>Admin</span>
+          )}
+        </li>
       </ul>
     </div>
   );

@@ -12,7 +12,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 208px;
+  height: var(--header-h);
   max-width: 1120px;
   margin: 0 auto;
   padding: 0 16px;
@@ -24,7 +24,13 @@
 }
 
 .logoLink img {
-  max-height: 192px;
+  max-height: 44px;
+}
+
+@media (min-width: 768px) {
+  .logoLink img {
+    max-height: 48px;
+  }
 }
 
 .hamburger {
@@ -49,7 +55,7 @@
 
 .drawer {
   position: absolute;
-  top: var(--header-h, 208px);
+  top: var(--header-h);
   right: 16px;
   background: #fff;
   border: 1px solid #ddd;
@@ -76,6 +82,11 @@
 
 .menu a:hover {
   color: #0033cc;
+}
+
+.menu .menuPlaceholder {
+  color: #999;
+  cursor: default;
 }
 
 .close {
