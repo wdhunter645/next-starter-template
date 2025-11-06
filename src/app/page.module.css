@@ -10,8 +10,7 @@
 }
 
 .hero {
-	margin-top: calc(-1 * var(--header-h)) !important;
-	padding-top: calc(var(--hero-pad-y) + var(--header-h));
+	padding-top: var(--hero-pad-y);
 	padding-bottom: var(--hero-pad-y);
 	padding-left: 0;
 	padding-right: 0;
