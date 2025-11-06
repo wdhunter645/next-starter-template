@@ -54,7 +54,7 @@ export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
               Members Area
             </Link>
           ) : (
-            <span className={styles.menuPlaceholder}>Members Area</span>
+            <span className={styles.menuPlaceholder} aria-label="Members Area (login required)">Members Area</span>
           )}
         </li>
         <li>
@@ -63,7 +63,7 @@ export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
               Admin
             </Link>
           ) : (
-            <span className={styles.menuPlaceholder}>Admin</span>
+            <span className={styles.menuPlaceholder} aria-label="Admin (restricted access)">Admin</span>
           )}
         </li>
       </ul>
