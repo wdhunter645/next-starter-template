@@ -140,6 +140,15 @@ header.site-header {
 	margin: 0 0 18px;
 }
 
+/* Section title - shared style for FAQ, Milestones, Social Wall */
+.section-title {
+	text-align: center;
+	font-size: 24px;
+	font-weight: 700;
+	color: #0033cc;
+	margin-bottom: 16px;
+}
+
 /* Timeline */
 .timeline {
 	display: grid;
