@@ -1,82 +1,92 @@
-/* Weekly Matchup Styles */
+/* Weekly Matchup Styles - extracted from lgfc-homepage-legacy-v6.html lines 58-66 */
 
-.matchup {
-	max-width: 80rem;
+/* Section spacing */
+.after-hero-gap {
+	margin-top: 20px;
+}
+
+/* Container for weekly section */
+.container {
+	max-width: 1200px;
 	margin: 0 auto;
-	padding: 16px 20px;
+	padding: 0 20px;
 }
 
-.matchup-heading {
-	font-size: 1.75rem;
-	font-weight: 700;
-	margin-bottom: 1.25rem;
-	text-align: center;
-	color: var(--lgfc-charcoal);
-}
-
-.matchup-grid {
+/* Weekly Matchup Grid */
+.matchup {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
-	gap: 16px;
+	gap: 18px;
 }
 
-@media (max-width: 1023px) {
-	.matchup-grid {
+.matchup .tile {
+	border: 1px solid #e8ecf5;
+	border-radius: 14px;
+	overflow: hidden;
+	background: #fff;
+	box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+}
+
+.matchup .tile img {
+	display: block;
+	width: 100%;
+	aspect-ratio: 4/3;
+	object-fit: cover;
+}
+
+.matchup .tile .cap {
+	padding: 12px 14px;
+}
+
+.matchup .vote-row {
+	display: flex;
+	gap: 10px;
+	padding: 12px;
+	border-top: 1px solid #eef2fb;
+	background: #f5f7ff;
+}
+
+/* Current Voting placeholder/link */
+.current-voting {
+	padding: 10px 0;
+	color: #1a2340;
+}
+
+.current-voting a {
+	color: #0033cc;
+	text-decoration: none;
+}
+
+.current-voting a:hover {
+	text-decoration: underline;
+}
+
+/* Button styles */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	padding: 12px 16px;
+	border-radius: 12px;
+	border: 1px solid #d7dbe7;
+	background: #fff;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.btn.primary {
+	background: #001d80;
+	color: #fff;
+	border-color: #001d80;
+}
+
+.btn.primary:hover {
+	background: #001560;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+	.matchup {
 		grid-template-columns: 1fr;
 	}
-}
-
-.matchup-tile {
-	display: flex;
-	flex-direction: column;
-	gap: 0.75rem;
-}
-
-.matchup-image-placeholder {
-	aspect-ratio: 4 / 3;
-	background: #333;
-	color: white;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 1.25rem;
-	font-weight: 600;
-	border-radius: 0.375rem;
-}
-
-.matchup-title {
-	font-size: 1rem;
-	font-weight: 600;
-	margin: 0;
-	color: var(--lgfc-charcoal);
-	text-align: center;
-}
-
-.matchup-button {
-	padding: 0.75rem 1.5rem;
-	font-size: 1rem;
-	font-weight: 600;
-	background: var(--lgfc-blue);
-	color: white;
-	border: none;
-	border-radius: 0.375rem;
-	cursor: not-allowed;
-	transition: opacity 0.2s;
-}
-
-.matchup-button:disabled {
-	opacity: 0.6;
-}
-
-/* Visually hidden utility for accessibility */
-.visually-hidden {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip-path: inset(50%);
-	white-space: nowrap;
-	border-width: 0;
 }
