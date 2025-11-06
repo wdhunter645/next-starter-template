@@ -10,7 +10,7 @@ export default function Home() {
 				<div className={styles.container}>
 					<h1 className={styles.title}>Lou Gehrig Fan Club</h1>
 					<p className={styles.subtitle}>
-						Celebrating Lou Gehrig & Supporting ALS Research
+						We are proud to be fans of the greatest baseball player ever and are dedicated to celebrating his life and legacy.
 					</p>
 				</div>
 			</div>

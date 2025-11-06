@@ -19,8 +19,8 @@ export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
     { label: 'Contact', href: '/contact', external: false },
     { label: 'Store', href: 'https://www.bonfire.com/store/lou-gehrig-fan-club/', external: true },
     loggedIn
-      ? { label: 'Members Area', href: 'https://members.lougehrigfanclub.com/', external: true }
-      : { label: 'Login', href: 'https://members.lougehrigfanclub.com/login', external: true },
+      ? { label: 'Members Area', href: '/member', external: false }
+      : { label: 'Login', href: '/member', external: false },
   ];
 
   return (
