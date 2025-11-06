@@ -9,6 +9,13 @@
 
 For deployment setup, see: **[docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md)**
 
+### Website Development Process
+
+For contributors working on the LGFC website:
+- **PR Process**: [docs/website-PR-process.md](./docs/website-PR-process.md)
+- **Governance & Rollback**: [docs/website-PR-governance.md](./docs/website-PR-governance.md)
+- **v6 Homepage Baseline**: [docs/lgfc-homepage-legacy-v6.html](./docs/lgfc-homepage-legacy-v6.html)
+
 ---
 
 ## 🔴 SECURITY NOTICE
@@ -30,7 +37,6 @@ This starter template uses the following core dependencies:
 - **Next.js**: 15.3.3
 - **React**: 18.3.1
 - **TypeScript**: 5.8.3
-- **Tailwind CSS**: 4.1.1
 
 All dependencies are kept minimal and production-ready. See [package.json](./package.json) for the complete dependency list.
 

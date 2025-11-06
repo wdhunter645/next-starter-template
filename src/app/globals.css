@@ -1,5 +1,3 @@
-@import "tailwindcss";
-
 :root {
 	--background: #ffffff;
 	--foreground: #171717;
@@ -11,7 +9,7 @@
 	--maxw: 1200px;
 	--radius: 14px;
 	--shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
-	--section-gap: 3rem; /* mobile */
+	--section-gap: 2.5rem;
 	--brand-blue: #0033cc;
 	
 	/* LGFC design tokens */
@@ -22,13 +20,6 @@
 	--rhythm-lg: 48px;
 	--rhythm-md: 32px;
 	--rhythm-sm: 20px;
-}
-
-@theme inline {
-	--color-background: var(--background);
-	--color-foreground: var(--foreground);
-	--font-sans: var(--font-geist-sans);
-	--font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -127,18 +118,9 @@ body {
 	cursor: default;
 }
 
-header.site-header {
-	position: sticky;
-	top: 0;
-	z-index: 1000;
-	height: var(--header-h);
-	margin: 0;
-}
-
 @media (min-width: 768px) {
 	:root {
 		--header-h: 64px;
-		--section-gap: 4.5rem; /* tablet/desktop */
 	}
 }
 
@@ -333,4 +315,49 @@ header.site-header {
 	.timeline .item {
 		grid-template-columns: 1fr;
 	}
+}
+
+/* Global utility classes for v6 baseline */
+.section-gap {
+	margin-block: var(--section-gap);
+}
+
+.title-lgfc {
+	color: var(--lgfc-blue);
+	text-align: center;
+	font-weight: 700;
+}
+
+.joinBanner {
+	background: var(--lgfc-blue);
+	color: #fff;
+	border-radius: 14px;
+	padding: 20px;
+}
+
+.topWhitespace {
+	height: 72px;
+}
+
+/* Header helpers (class-based, low specificity) */
+.header-wrap {
+	position: relative;
+	height: 64px;
+}
+
+.header-logo {
+	position: absolute;
+	top: 12px;
+	left: 16px;
+	display: block;
+	height: 48px;
+	width: auto;
+	aspect-ratio: auto;
+	object-fit: contain;
+}
+
+.header-burger {
+	position: absolute;
+	top: 12px;
+	right: 16px;
 }

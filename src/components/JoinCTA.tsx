@@ -1,6 +1,6 @@
 export default function JoinCTA() {
 	return (
-		<div className="join-banner">
+		<div className="joinBanner section-gap">
 			<div className="join-banner__container">
 				<p className="join-banner__text">
 					Become a member. Get access to the Gehrig library, media archive, memorabilia archive,
