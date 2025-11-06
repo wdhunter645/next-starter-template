@@ -19,6 +19,7 @@ export default function RootLayout({
 			<body className="antialiased">
 				{/* Top fixed header */}
 				<Header />
+				<div className="topWhitespace" />
 				{children}
 				<Footer />
 			</body>
