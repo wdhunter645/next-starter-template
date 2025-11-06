@@ -1,5 +1,10 @@
 /* Weekly Matchup Styles - extracted from lgfc-homepage-legacy-v6.html lines 58-66 */
 
+/* Weekly section title spacing */
+.weekly-title {
+	margin-top: 24px;
+}
+
 /* Section spacing */
 .after-hero-gap {
 	margin-top: 20px;
