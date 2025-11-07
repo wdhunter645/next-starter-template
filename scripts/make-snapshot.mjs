@@ -213,7 +213,7 @@ async function main() {
   const excerpts = [];
   for (const f of KEY_FILES) {
     const p = path.join(ROOT, f);
-    if (fs.existsSync(p)) {
+    if (await exists(p)) {
       const head = readFewLines(p, 60);
       if (head !== null) {
         excerpts.push([
@@ -246,7 +246,7 @@ async function main() {
     '## File Tree (filtered)',
     '',
     '```',
-    ...files.map(f => f),
+    ...files,
     '```',
     '',
     '## Key File Hashes',
