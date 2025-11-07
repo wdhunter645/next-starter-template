@@ -9,11 +9,6 @@ import MilestonesSection from "@/components/MilestonesSection";
 export default function Home() {
 	return (
 		<>
-			<style jsx>{`
-				.section-gap {
-					margin-block: var(--section-gap);
-				}
-			`}</style>
 			{/* Section: Hero Banner */}
 			<header id="banner" className={styles.hero}>
 				<div className={styles.container}>
