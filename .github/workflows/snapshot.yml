@@ -1,0 +1,74 @@
+name: Repository Snapshot
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_notification:
+        description: 'Send test Slack notification (success/failure/warning)'
+        required: false
+        type: choice
+        options:
+          - ''
+          - success
+          - failure
+          - warning
+
+jobs:
+  snapshot:
+    name: Create Repository Snapshot
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 📸 Generate snapshot
+        run: npm run snapshot
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_PAGES_PROJECT: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
+
+      - name: 📋 Display snapshot summary
+        run: |
+          echo "Snapshot created successfully"
+          if [ -f "docs/snapshots/latest.md" ]; then
+            echo "Latest snapshot preview:"
+            head -n 30 docs/snapshots/latest.md
+          fi
+
+      - name: 📤 Notify Slack
+        if: always() && secrets.SLACK_WEBHOOK_URL != ''
+        run: bash scripts/slack_notify.sh "${{ job.status }}" "${{ github.workflow }}" "Run #${{ github.run_number }}"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  test-notification:
+    name: Test Slack Notification
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_notification != ''
+    permissions:
+      contents: read
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔔 Send test notification
+        run: bash scripts/slack_notify.sh "${{ github.event.inputs.test_notification }}" "Test Notification" "Manual test from workflow_dispatch"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
