@@ -252,7 +252,7 @@ git commit -m "Make slack_notify.sh executable"
 │ ✅ Repository Snapshot completed with   │
 │ status: success                         │
 │ Details: Run #123                       │
-│ Repo: wdhunter645/next-starter-template │
+│ Repo: your-org/your-repo                │
 │ Run: 123                                │
 └─────────────────────────────────────────┘
 ```
@@ -266,7 +266,7 @@ git commit -m "Make slack_notify.sh executable"
 │ ❌ Cloudflare Pages Snapshot completed  │
 │ with status: failure                    │
 │ Details: Run #124                       │
-│ Repo: wdhunter645/next-starter-template │
+│ Repo: your-org/your-repo                │
 │ Run: 124                                │
 └─────────────────────────────────────────┘
 ```
