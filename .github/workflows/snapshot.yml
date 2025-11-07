@@ -1,0 +1,47 @@
+name: Repository Snapshot
+
+on:
+  workflow_dispatch: # Manual trigger
+  schedule:
+    - cron: '0 7 * * *' # Daily at 7:00 UTC
+
+permissions:
+  contents: write # Required to commit and push snapshot files
+
+jobs:
+  create-snapshot:
+    name: Create Repository Snapshot
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Get full history for accurate git metadata
+
+      - name: 📸 Run snapshot script
+        run: bash scripts/snapshot_repo.sh
+
+      - name: 📅 Get current date
+        id: date
+        run: echo "date=$(date -u +%Y-%m-%d)" >> $GITHUB_OUTPUT
+
+      - name: 📁 Organize snapshots by date
+        run: |
+          mkdir -p "snapshots/${{ steps.date.outputs.date }}"
+          # Move today's snapshots to dated directory
+          if ls snapshots/repo-snapshot-*.json 1> /dev/null 2>&1; then
+            mv snapshots/repo-snapshot-*.json "snapshots/${{ steps.date.outputs.date }}/" || true
+          fi
+
+      - name: 💾 Commit and push snapshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add snapshots/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: add repository snapshot for ${{ steps.date.outputs.date }}"
+            git push origin main
+          fi

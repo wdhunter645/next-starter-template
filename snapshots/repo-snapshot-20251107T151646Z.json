@@ -1,0 +1,16 @@
+{
+  "snapshot_timestamp": "20251107T151646Z",
+  "repository": {
+    "commit_sha": "ad24a8c48f01f0cfbcb868974c1ccb2a80fec713",
+    "branch": "copilot/add-repo-snapshot-capability",
+    "author": "copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>",
+    "commit_date": "2025-11-07 15:12:26 +0000",
+    "commit_message": "Initial plan"
+  },
+  "changed_files": [],
+  "top_level_tree": [".diagnostics",".editorconfig",".env.example",".github",".gitignore",".node-version",".npmrc",".nvmrc",".prettierignore",".prettierrc",".vscode","CONTRIBUTING.md","Makefile","README.md","audits","create-github-secrets.sh","damp-dream-81b5","data","delete-reviewed-branches.sh","docs","eslint.config.mjs","fix-git-auth.sh","fix_v6_finalize.sh","next.config.ts","package-lock.json","package.json","playwright.config.ts","public","reports","scripts","snapshots","src","styles","tests","tools","tsconfig.json","vitest.config.ts","vitest.setup.ts","wrangler.toml"],
+  "package": {
+    "name": "next-starter-template",
+    "version": "1.0.0"
+  }
+}
