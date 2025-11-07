@@ -20,7 +20,7 @@ OUT="audits/repo_alignment_$(date -u +%Y%m%d_%H%M%SZ).txt"
   echo; echo "== 2) Header.tsx non-sticky + absolute logo/menu, with .topWhitespace below =="
   if grep -qE "Header|header" src/components/Header.tsx 2>/dev/null; then
     grep -nE "position:\s*sticky" src/components/Header.tsx && echo "FAIL  sticky found" || echo "PASS  non-sticky"
-    (grep -qE "position:\s*absolute" src/components/Header.tsx && grep -qE "top:\s*(1[0-9]|12)" src/components/Header.tsx) \
+    (grep -qE "position:\s*absolute" src/components/Header.tsx && grep -qE "top:\s*(1[0-9]|12)px" src/components/Header.tsx) \
       && echo "PASS  absolute positions present" || echo "FAIL  absolute positions missing"
   else
     echo "FAIL  src/components/Header.tsx missing"
