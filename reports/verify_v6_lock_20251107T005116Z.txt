@@ -1,0 +1,38 @@
+# LGFC v6 Lock — Four Verifications
+Timestamp (UTC): 2025-11-07T00:51:16Z
+Repo: next-starter-template
+
+## 1) globals.css has required tokens & utilities
+Expect to find: --lgfc-blue, .section-gap, .title-lgfc, .joinBanner, .topWhitespace
+— globals.css tokens —
+16:    16		--lgfc-blue: #0033cc;
+321:   321	.section-gap {
+325:   325	.title-lgfc {
+326:   326		color: var(--lgfc-blue);
+331:   331	.joinBanner {
+332:   332		background: var(--lgfc-blue);
+338:   338	.topWhitespace {
+
+## 2) Header.tsx non-sticky; abs-pos logo & hamburger with same top; .topWhitespace spacer
+[no sticky]
+OK (no 'sticky' found)
+[absolute positions & top offsets]
+MISSING absolute positioning
+MISSING top offsets
+[lines with absolute/top for quick visual diff]
+[topWhitespace spacer under header]
+MISSING .topWhitespace spacer div
+
+## 3) WeeklyMatchup.tsx title exact text + class 'title-lgfc'
+[exact string]
+44:			<h2 className="title-lgfc">Weekly Photo Matchup. Vote for your favorite!</h2>
+[class=title-lgfc on heading]
+44:    44				<h2 className="title-lgfc">Weekly Photo Matchup. Vote for your favorite!</h2>
+
+## 4) page.tsx wraps sections with .section-gap & Join banner has exact v6 copy
+[.section-gap occurrences]
+MISSING .section-gap wrappers (Weekly/Join/Social/FAQ/Milestones)
+[expected Join banner copy (exact)]
+MISSING exact Join banner copy
+
+— DONE —
