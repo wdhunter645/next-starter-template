@@ -27,7 +27,7 @@ mark_pass() { pass_count=$((pass_count+1)); log "✅ PASS | $*"; }
 mark_fail() { fail_count=$((fail_count+1)); fail_list+=("$*"); log "❌ FAIL | $*"; }
 
 # Grep helpers (quiet). All grep are repo-root relative.
-gq() { grep -R -I -n -E -- "$1" $2 >/dev/null 2>&1; }   # pattern, path
+gq() { grep -R -I -n -E -- "$1" "$2" >/dev/null 2>&1; }   # pattern, path
 gqs() { printf "%s" "$1" | grep -E -- "$2" >/dev/null 2>&1; }
 
 # ---------- start ----------
