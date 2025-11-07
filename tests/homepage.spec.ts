@@ -1,11 +1,16 @@
 import { test, expect } from '@playwright/test';
 
+// V6 Design tokens for verification
+const LGFC_BLUE_RGB = 'rgb(0, 51, 204)';
+const WEEKLY_TITLE_TEXT = 'Weekly Photo Matchup. Vote for your favorite!';
+const JOIN_BANNER_TEXT = 'Become a member. Get access to the Gehrig library, media archive, memorabilia archive, group discussions, and more.';
+
 test.describe('Homepage V6 Token Compliance', () => {
   test('should display exact Weekly title text with correct styling', async ({ page }) => {
     await page.goto('/');
     
     // Assert exact Weekly title text is present
-    const weeklyTitle = page.getByText('Weekly Photo Matchup. Vote for your favorite!');
+    const weeklyTitle = page.getByText(WEEKLY_TITLE_TEXT);
     await expect(weeklyTitle).toBeVisible();
     
     // Assert the title has the correct class
@@ -16,14 +21,14 @@ test.describe('Homepage V6 Token Compliance', () => {
     const titleColor = await titleElement.evaluate((el) => {
       return window.getComputedStyle(el).color;
     });
-    expect(titleColor).toBe('rgb(0, 51, 204)');
+    expect(titleColor).toBe(LGFC_BLUE_RGB);
   });
 
   test('should display exact Join banner copy with correct styling', async ({ page }) => {
     await page.goto('/');
     
     // Assert exact Join banner copy is present
-    const joinText = page.getByText('Become a member. Get access to the Gehrig library, media archive, memorabilia archive, group discussions, and more.');
+    const joinText = page.getByText(JOIN_BANNER_TEXT);
     await expect(joinText).toBeVisible();
     
     // Assert .joinBanner background-color equals rgb(0, 51, 204)
@@ -33,7 +38,7 @@ test.describe('Homepage V6 Token Compliance', () => {
     const bannerBgColor = await joinBanner.evaluate((el) => {
       return window.getComputedStyle(el).backgroundColor;
     });
-    expect(bannerBgColor).toBe('rgb(0, 51, 204)');
+    expect(bannerBgColor).toBe(LGFC_BLUE_RGB);
   });
 
   test('should have topWhitespace spacer below header', async ({ page }) => {
