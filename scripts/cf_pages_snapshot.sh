@@ -101,6 +101,8 @@ echo "$TIMESTAMP" >> "$SMOKETEST_FILE"
 echo "✓ Appended timestamp to _smoketest.txt"
 
 # --- Generate/update README ---
+# Note: We regenerate README.md on each run to ensure it stays synchronized
+# with the script's behavior and provides consistent, up-to-date documentation.
 README_FILE="$SNAPSHOT_DIR/README.md"
 cat > "$README_FILE" << 'EOF'
 # Cloudflare Pages Snapshots
