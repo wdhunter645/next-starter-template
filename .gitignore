@@ -361,6 +361,9 @@ test-results/
 playwright-report/
 playwright/.cache/
 
+# Verification reports
+reports/
+
 ### Environment Variables ###
 # direnv
 .envrc
