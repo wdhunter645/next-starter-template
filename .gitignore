@@ -363,7 +363,9 @@ playwright/.cache/
 
 # Verification reports
 reports/
-audits/
+audits/*.txt
+audits/*.json
+audits/*.log
 
 ### Environment Variables ###
 # direnv
