@@ -24,7 +24,7 @@ export default function Home() {
 			</section>
 			{/* Section: Join Banner */}
 			<section id="join" className="section-gap">
-				<div className="joinBanner">
+				<div className="joinBanner section-gap">
 					<div className="join-banner__container">
 						<p className="join-banner__text">
 							Become a member. Get access to the Gehrig library, media archive, memorabilia archive, group discussions, and more.
