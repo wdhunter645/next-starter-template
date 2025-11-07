@@ -31,7 +31,7 @@ jobs:
           mkdir -p "snapshots/${{ steps.date.outputs.date }}"
           # Move today's snapshots to dated directory
           if ls snapshots/repo-snapshot-*.json 1> /dev/null 2>&1; then
-            mv snapshots/repo-snapshot-*.json "snapshots/${{ steps.date.outputs.date }}/" || true
+            mv snapshots/repo-snapshot-*.json "snapshots/${{ steps.date.outputs.date }}/" || echo "Warning: Failed to move snapshot files"
           fi
 
       - name: 💾 Commit and push snapshots
