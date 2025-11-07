@@ -380,3 +380,7 @@ audits/*.log
 # Backup and disabled workflow files
 *.backup
 *.disabled
+
+### Snapshots ###
+# Generated snapshot files (keep directory with .gitkeep)
+docs/snapshots/*.md
