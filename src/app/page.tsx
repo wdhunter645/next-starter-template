@@ -41,24 +41,6 @@ export default function Home() {
 			{/* Section 4: Social Wall */}
 			<section id="social-wall" className="section-gap">
 				<SocialWall />
-				<div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-					<a 
-						href="/social" 
-						style={{ 
-							color: '#0033cc', 
-							fontSize: '1rem', 
-							fontWeight: 600,
-							textDecoration: 'none',
-							borderBottom: '2px solid #0033cc',
-							paddingBottom: '2px',
-							transition: 'opacity 0.2s'
-						}}
-						onMouseOver={(e) => (e.currentTarget.style.opacity = '0.8')}
-						onMouseOut={(e) => (e.currentTarget.style.opacity = '1')}
-					>
-						View Full Wall
-					</a>
-				</div>
 			</section>
 			{/* Section 5: Friends of the Club */}
 			<section id="friends-of-the-club" className="section-gap">
