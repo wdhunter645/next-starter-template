@@ -1,9 +1,6 @@
 name: Repository Snapshot
 
 on:
-  schedule:
-    # Run daily at 2 AM UTC
-    - cron: '0 2 * * *'
   workflow_dispatch:
     inputs:
       test_notification:
@@ -15,40 +12,48 @@ on:
           - success
           - failure
           - warning
+  schedule:
+    - cron: '0 7 * * *' # Daily at 7:00 UTC
+
+permissions:
+  contents: write # Required to commit and push snapshot files
 
 jobs:
-  snapshot:
+  create-snapshot:
     name: Create Repository Snapshot
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
 
     steps:
       - name: ⬇️ Checkout code
         uses: actions/checkout@v4
-
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          fetch-depth: 0 # Get full history for accurate git metadata
 
-      - name: 📦 Install dependencies
-        run: npm ci
+      - name: 📸 Run snapshot script
+        run: bash scripts/snapshot_repo.sh
 
-      - name: 📸 Generate snapshot
-        run: npm run snapshot
-        env:
-          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CF_PAGES_PROJECT: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
+      - name: 📅 Get current date
+        id: date
+        run: echo "date=$(date -u +%Y-%m-%d)" >> $GITHUB_OUTPUT
 
-      - name: 📋 Display snapshot summary
+      - name: 📁 Organize snapshots by date
         run: |
-          echo "Snapshot created successfully"
-          if [ -f "docs/snapshots/latest.md" ]; then
-            echo "Latest snapshot preview:"
-            head -n 30 docs/snapshots/latest.md
+          mkdir -p "snapshots/${{ steps.date.outputs.date }}"
+          # Move today's snapshots to dated directory
+          if ls snapshots/repo-snapshot-*.json 1> /dev/null 2>&1; then
+            mv snapshots/repo-snapshot-*.json "snapshots/${{ steps.date.outputs.date }}/" || echo "Warning: Failed to move snapshot files"
+          fi
+
+      - name: 💾 Commit and push snapshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add snapshots/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: add repository snapshot for ${{ steps.date.outputs.date }}"
+            git push origin main
           fi
 
       - name: 📤 Notify Slack

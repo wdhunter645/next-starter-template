@@ -1,9 +1,6 @@
 name: Cloudflare Pages Snapshot
 
 on:
-  schedule:
-    # Run daily at 3 AM UTC
-    - cron: '0 3 * * *'
   workflow_dispatch:
     inputs:
       test_notification:
@@ -15,44 +12,42 @@ on:
           - success
           - failure
           - warning
+  schedule:
+    - cron: '0 7 * * *' # Daily at 07:00 UTC
 
 jobs:
-  cf-snapshot:
-    name: Create Cloudflare Pages Snapshot
+  snapshot:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-
+      contents: write
+    
     steps:
-      - name: ⬇️ Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: 📦 Install dependencies
-        run: npm ci
-
-      - name: 📸 Generate Cloudflare snapshot
-        run: npm run snapshot
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Run Cloudflare Pages snapshot
         env:
-          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CF_PAGES_PROJECT: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
-
-      - name: 🔍 Verify Cloudflare deployment info
+          CF_ACCOUNT_ID: ${{ vars.CF_ACCOUNT_ID }}
+          CF_PAGES_PROJECT: ${{ vars.CF_PAGES_PROJECT }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          echo "Checking for Cloudflare deployment information..."
-          if [ -f "docs/snapshots/latest.md" ]; then
-            if grep -q "Cloudflare Pages" docs/snapshots/latest.md; then
-              echo "✅ Cloudflare deployment information captured"
-              grep -A 10 "Cloudflare Pages" docs/snapshots/latest.md
-            else
-              echo "⚠️ Cloudflare deployment information not found"
-            fi
+          ./scripts/cf_pages_snapshot.sh
+      
+      - name: Commit and push snapshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add snapshots/cloudflare/
+          
+          # Only commit if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: cloudflare pages snapshot $(date -u +%Y-%m-%d)"
+            git push
           fi
 
       - name: 📤 Notify Slack
