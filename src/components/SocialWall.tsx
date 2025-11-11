@@ -10,6 +10,18 @@ export default function SocialWall() {
       const script = document.createElement('script');
       script.src = 'https://elfsightcdn.com/platform.js';
       script.async = true;
+      
+      // Add load and error event handlers for debugging
+      script.onload = () => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Elfsight platform.js loaded successfully');
+        }
+      };
+      
+      script.onerror = () => {
+        console.error('Failed to load Elfsight platform.js');
+      };
+      
       document.body.appendChild(script);
     }
   }, []);
