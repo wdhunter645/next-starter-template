@@ -1,19 +1,17 @@
 'use client';
-import styles from './social-wall.module.css';
-
-const ELFSIGHT_WIDGET_URL = 'https://static.elfsight.com/platform/platform.js';
+import { useEffect } from 'react';
 
 export default function SocialWall() {
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://elfsightcdn.com/platform.js';
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
   return (
-    <section className={styles.wall} aria-labelledby="social-wall-title">
-      <h2 id="social-wall-title" className={styles.title}>Social Wall</h2>
-      <div className={styles.embed}>
-        <br />
-        <br />
-        {ELFSIGHT_WIDGET_URL}
-        <br />
-        <br />
-      </div>
-    </section>
+    <div
+      className="elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8"
+      data-elfsight-app-lazy
+    />
   );
 }
