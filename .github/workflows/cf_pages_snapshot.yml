@@ -1,12 +1,19 @@
 name: Cloudflare Pages Snapshot
 
 on:
-  # Manual trigger
   workflow_dispatch:
-  
-  # Daily at 07:00 UTC
+    inputs:
+      test_notification:
+        description: 'Send test Slack notification (success/failure/warning)'
+        required: false
+        type: choice
+        options:
+          - ''
+          - success
+          - failure
+          - warning
   schedule:
-    - cron: '0 7 * * *'
+    - cron: '0 7 * * *' # Daily at 07:00 UTC
 
 jobs:
   snapshot:
@@ -42,3 +49,25 @@ jobs:
             git commit -m "chore: cloudflare pages snapshot $(date -u +%Y-%m-%d)"
             git push
           fi
+
+      - name: 📤 Notify Slack
+        if: always() && secrets.SLACK_WEBHOOK_URL != ''
+        run: bash scripts/slack_notify.sh "${{ job.status }}" "${{ github.workflow }}" "Run #${{ github.run_number }}"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  test-notification:
+    name: Test Slack Notification
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_notification != ''
+    permissions:
+      contents: read
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔔 Send test notification
+        run: bash scripts/slack_notify.sh "${{ github.event.inputs.test_notification }}" "Test Notification (CF Pages)" "Manual test from workflow_dispatch"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
