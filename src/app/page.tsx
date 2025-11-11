@@ -5,6 +5,8 @@ import WeeklyMatchup from "@/components/WeeklyMatchup";
 import SocialWall from "@/components/SocialWall";
 import FAQSection from "@/components/FAQSection";
 import MilestonesSection from "@/components/MilestonesSection";
+import FriendsOfFanClub from "@/components/FriendsOfFanClub";
+import CalendarSection from "@/components/CalendarSection";
 
 export default function Home() {
 	return (
@@ -36,9 +38,35 @@ export default function Home() {
 					</div>
 				</div>
 			</section>
-			{/* Section: Social Wall */}
-			<section id="social" className="section-gap">
+			{/* Section 4: Social Wall */}
+			<section id="social-wall" className="section-gap">
 				<SocialWall />
+				<div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+					<a 
+						href="/social" 
+						style={{ 
+							color: '#0033cc', 
+							fontSize: '1rem', 
+							fontWeight: 600,
+							textDecoration: 'none',
+							borderBottom: '2px solid #0033cc',
+							paddingBottom: '2px',
+							transition: 'opacity 0.2s'
+						}}
+						onMouseOver={(e) => (e.currentTarget.style.opacity = '0.8')}
+						onMouseOut={(e) => (e.currentTarget.style.opacity = '1')}
+					>
+						View Full Wall
+					</a>
+				</div>
+			</section>
+			{/* Section 5: Friends of the Club */}
+			<section id="friends-of-the-club" className="section-gap">
+				<FriendsOfFanClub />
+			</section>
+			{/* Section 6: Calendar */}
+			<section id="calendar" className="section-gap">
+				<CalendarSection />
 			</section>
 			{/* Section: FAQ and Milestones */}
 			<section id="faq-milestones" className="section-gap">
