@@ -1,37 +1,16 @@
-'use client';
-import { useEffect } from 'react';
+import Script from 'next/script';
 
 export default function SocialWall() {
-  useEffect(() => {
-    const existingScript = document.querySelector(
-      'script[src="https://elfsightcdn.com/platform.js"]'
-    );
-    if (!existingScript) {
-      const script = document.createElement('script');
-      script.src = 'https://elfsightcdn.com/platform.js';
-      script.async = true;
-      
-      // Add load and error event handlers for debugging
-      script.onload = () => {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Elfsight platform.js loaded successfully');
-        }
-      };
-      
-      script.onerror = () => {
-        console.error('Failed to load Elfsight platform.js');
-      };
-      
-      document.body.appendChild(script);
-    }
-  }, []);
-
   return (
-    <div
-      className="elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8"
-      data-elfsight-app-lazy
-      role="region"
-      aria-label="Social media feed"
-    />
+    <>
+      <div
+        className="elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8"
+        data-elfsight-app-lazy
+      />
+      <Script
+        src="https://elfsightcdn.com/platform.js"
+        strategy="afterInteractive"
+      />
+    </>
   );
 }
