@@ -41,3 +41,13 @@
   - `.joinBanner` background-color == `rgb(0, 51, 204)`
 - Section rhythm: `.section-gap` applied to Weekly, Join banner, Social Wall, FAQ, Milestones.
 - Social Wall placeholder remains present and unchanged.
+---
+
+## Snapshot Review Cadence
+- Automated repository snapshots are generated daily at 07:00 UTC via GitHub Actions.
+- **Weekly Review**: Compare latest snapshot with previous week to detect drift.
+- **Pre-Deployment**: Reference snapshots before major releases to establish rollback points.
+- **Post-Incident**: After any rollback, review snapshots to identify when issues were introduced.
+- **Maintenance**: Archive or remove snapshots older than 90 days to manage repository size.
+- See `/docs/RECOVERY.md` for detailed snapshot usage and rollback procedures.
+- See `/snapshots/README.md` for snapshot structure and contents.
