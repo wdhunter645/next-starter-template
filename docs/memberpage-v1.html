@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>MemberPage — Lou Gehrig Fan Club</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Members Area — Lou Gehrig Fan Club" />
+  <style>
+    :root {
+      --lgfc-blue: #0033cc;
+      --text: #0b0b0b;
+      --muted: #666;
+      --bg: #fff;
+      --line: #e5e7eb;
+      --tile: #f7f8fc;
+      --radius: 14px;
+      --gap: 22px;
+      --maxw: 1120px;
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; color: var(--text); background: var(--bg); }
+
+    /* Header (shared hamburger) */
+    .header {
+      position: sticky; top: 0; z-index: 50;
+      background: #fff; border-bottom: 1px solid var(--line);
+    }
+    .header__inner {
+      max-width: var(--maxw); margin: 0 auto; padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text);
+      font-weight: 700; letter-spacing: .2px;
+    }
+    .brand img { width: 36px; height: 36px; border-radius: 6px; object-fit: cover; }
+    .hamburger { display: inline-flex; width: 44px; height: 36px; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 10px; background: #fff; cursor: pointer; }
+    .menu {
+      display: none; position: absolute; right: 16px; top: 58px; background: #fff; border: 1px solid var(--line);
+      border-radius: 12px; padding: 8px; min-width: 220px; box-shadow: 0 10px 24px rgba(0,0,0,.08);
+    }
+    .menu a {
+      display:block; padding:10px 12px; border-radius: 8px; text-decoration: none; color: var(--text);
+    }
+    .menu a:hover { background:#f7f7f7; }
+    .menu--open { display: block; }
+
+    /* Banner (shared structure) */
+    .banner {
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(0deg, #ffffff 0%, #f6f8ff 100%);
+    }
+    .banner__inner { max-width: var(--maxw); margin: 0 auto; padding: 36px 16px; }
+    .eyebrow { color: var(--lgfc-blue); font-weight: 700; font-size: 13px; letter-spacing: .2px; text-transform: uppercase; }
+    .h1 { margin: 8px 0 6px; font-size: clamp(28px, 3.6vw, 40px); line-height: 1.15; }
+    .sub { color: var(--muted); max-width: 760px; font-size: 16px; }
+
+    /* Sections */
+    .section { padding: 36px 16px; border-bottom: 1px solid var(--line); }
+    .container { max-width: var(--maxw); margin: 0 auto; }
+    .section h2 { margin: 0 0 14px; font-size: clamp(22px, 2.5vw, 28px); }
+    .lede { color: var(--muted); margin-bottom: 14px; }
+
+    /* Welcome block */
+    .welcome {
+      display: grid; gap: var(--gap);
+      grid-template-columns: 1.2fr .8fr;
+    }
+    .card {
+      background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 16px;
+    }
+    .cta-row { display:flex; gap:10px; flex-wrap: wrap; margin-top: 10px; }
+    .btn {
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      padding: 10px 14px; border-radius: 10px; border: 1px solid var(--line); background:#fff; cursor:pointer; text-decoration:none; color: var(--text);
+    }
+    .btn--primary { background: var(--lgfc-blue); color: #fff; border-color: var(--lgfc-blue); }
+
+    /* Coming up (vertical events list) */
+    .events { display:grid; gap:10px; }
+    .event {
+      display:flex; gap:12px; align-items:flex-start; background: var(--tile); border:1px solid var(--line);
+      border-radius: 12px; padding: 12px;
+    }
+    .event-date { min-width: 84px; font-weight:700; color: var(--lgfc-blue); }
+
+    /* Discussions (posts feed placeholder) */
+    .post {
+      border:1px solid var(--line); border-radius: 12px; padding: 14px; background:#fff; display:grid; gap:10px;
+    }
+    .post__meta { color: var(--muted); font-size: 13px; }
+    .post__media {
+      border:1px dashed var(--line); border-radius: 12px; height: 180px; background:
+      repeating-linear-gradient(-45deg, #fafafa, #fafafa 12px, #f2f2f2 12px, #f2f2f2 24px);
+      display:flex; align-items:center; justify-content:center; color:#999; font-size: 13px;
+    }
+    .post__actions { display:flex; gap:10px; align-items:center; }
+    .icon { width: 18px; height: 18px; display:inline-block; background-size: cover; }
+    .icon--gavel { background-image: url("/gavel.jpg"); } /* file added to repo root per spec */
+
+    /* Archives (three tiles) */
+    .tiles {
+      display:grid; gap: var(--gap);
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .tile {
+      background: var(--tile); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+      display:flex; flex-direction: column; min-height: 240px;
+      text-decoration: none; color: var(--text);
+    }
+    .tile__media { height: 140px; background:#e9ecfb; display:flex; align-items:center; justify-content:center; color:#667; border-bottom:1px solid var(--line); }
+    .tile__body { padding: 14px; display:flex; flex-direction:column; gap:6px; }
+    .tile__title { font-weight: 700; }
+    .tile:hover { outline: 2px solid var(--lgfc-blue); outline-offset: -2px; }
+
+    /* Admin link (hidden unless admin) */
+    .admin-only { display:none; }
+
+    /* Footer (shared) */
+    .footer { padding: 24px 16px; }
+    .footer .container { display:flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; color: var(--muted); font-size: 14px; }
+    .footer a { color: var(--muted); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .welcome { grid-template-columns: 1fr; }
+      .tiles { grid-template-columns: 1fr; }
+      .menu { right: 8px; left: 8px; }
+    }
+  </style>
+  <script>
+    // Simple hamburger toggle; gating of Admin link is handled server-side in real app
+    document.addEventListener('DOMContentLoaded', function () {
+      const btn = document.getElementById('hamburger');
+      const menu = document.getElementById('menu');
+      btn?.addEventListener('click', () => menu.classList.toggle('menu--open'));
+    });
+  </script>
+</head>
+<body>
+
+  <!-- Header (shared) -->
+  <header class="header" role="banner">
+    <div class="header__inner">
+      <a class="brand" href="/">
+        <!-- IMAGE: /public/logo.png -->
+        <img src="/logo.png" alt="Lou Gehrig Fan Club logo" />
+        <span>Lou Gehrig Fan Club</span>
+      </a>
+      <button class="hamburger" id="hamburger" aria-label="Open menu">☰</button>
+      <nav id="menu" class="menu" aria-label="Main Menu">
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+        <a href="/search">Search</a>
+        <a href="/login">Login</a>
+        <a href="/member">Member</a>
+        <!-- Admin visible only to admin/mod roles in real app -->
+        <a href="/admin" class="admin-only">Admin</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Banner (shared structure, member text) -->
+  <section class="banner" aria-label="Banner">
+    <div class="banner__inner">
+      <div class="eyebrow">Members Area</div>
+      <h1 class="h1">Members Area — Lou Gehrig Fan Club</h1>
+      <p class="sub">Welcome to the private club space. Explore discussions, archives, and upcoming events. Update your profile any time.</p>
+    </div>
+  </section>
+
+  <!-- (1) welcome -->
+  <section id="welcome" class="section" aria-labelledby="welcome-title">
+    <div class="container welcome">
+      <div class="card">
+        <h2 id="welcome-title">Welcome</h2>
+        <p class="lede">Welcome back, <strong>[Member Name]</strong>.</p>
+        <div class="cta-row">
+          <a href="/members/profile" class="btn btn--primary">View Profile &amp; Manage Account</a>
+          <a href="/weekly/current" class="btn">Weekly Matchup</a>
+          <a href="/news" class="btn">Club News &amp; Q&amp;A</a>
+        </div>
+
+        <div style="height:12px"></div>
+        <h3 style="margin:6px 0 10px; font-size:18px;">Coming up over the next 30 days</h3>
+        <div class="events">
+          <!-- EVENT ROWS — replace with Supabase-driven content later -->
+          <div class="event">
+            <div class="event-date">Nov 20</div>
+            <div><strong>ALS Awareness Fundraiser</strong><br /><span class="sub">Virtual | Friends of the Fan Club</span></div>
+          </div>
+          <div class="event">
+            <div class="event-date">Nov 28</div>
+            <div><strong>Community Story Night</strong><br /><span class="sub">Zoom | Member submissions</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile quick panel (lives inside welcome conceptually) -->
+      <div class="card">
+        <h3 style="margin:0 0 10px;">Quick Profile</h3>
+        <p class="sub">Update your display name, email (magic-link re-verify), and screen name.</p>
+        <a href="/members/profile" class="btn">Open Profile Page</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- (2) discussions -->
+  <section id="discussions" class="section" aria-labelledby="discussions-title">
+    <div class="container">
+      <h2 id="discussions-title">Member Discussions</h2>
+      <p class="lede">Long-form posts and Q&amp;A. New posts include text plus a photo or video attachment.</p>
+
+      <!-- POST (placeholder / repeated) -->
+      <article class="post">
+        <div class="post__meta">Posted by <strong>@screen_name</strong> • 2h ago</div>
+        <h3 style="margin:0;">Sample post title about Gehrig memorabilia</h3>
+        <div class="post__media"><!-- IMAGE/VIDEO PLACEHOLDER --> Media goes here (thumbnail/reel)</div>
+        <p>Opening comment text… follow-ups are usually text, with occasional attachments.</p>
+        <div class="post__actions">
+          <button class="btn" title="Like">👍 Like</button>
+          <button class="btn" title="Dislike">👎 Dislike</button>
+          <button class="btn" title="Report">
+            <span class="icon icon--gavel" aria-hidden="true"></span> Report
+          </button>
+        </div>
+      </article>
+
+      <div style="height:12px"></div>
+      <a href="/news" class="btn">View All Discussions</a>
+      <a href="/news/new" class="btn btn--primary">Start a Discussion</a>
+    </div>
+  </section>
+
+  <!-- (3) archives -->
+  <section id="archives" class="section" aria-labelledby="archives-title">
+    <div class="container">
+      <h2 id="archives-title">Archives</h2>
+      <p class="lede">Explore the club’s curated collections. Click any tile to enter.</p>
+
+      <div class="tiles">
+        <a class="tile" href="/archives/memorabilia">
+          <div class="tile__media"><!-- IMAGE: B2 rotating hero --> Memorabilia Cover</div>
+          <div class="tile__body">
+            <div class="tile__title">Memorabilia Archive</div>
+            <div class="tile__text">Stories &amp; artifacts with tagged photos for easy filtering.</div>
+          </div>
+        </a>
+
+        <a class="tile" href="/archives/photos">
+          <div class="tile__media"><!-- IMAGE: B2 rotating hero --> Photo Gallery</div>
+          <div class="tile__body">
+            <div class="tile__title">Photo Gallery</div>
+            <div class="tile__text">Member-submitted images/videos (admin-reviewed &amp; tagged).</div>
+          </div>
+        </a>
+
+        <a class="tile" href="/archives/library">
+          <div class="tile__media"><!-- IMAGE: B2 rotating hero --> Library</div>
+          <div class="tile__body">
+            <div class="tile__title">Library</div>
+            <div class="tile__text">Books, magazines, periodicals—text lists + linked thumbnails.</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- (4) admin-dashboard-link (hidden unless admin) -->
+  <section id="admin-dashboard-link" class="section admin-only" aria-labelledby="admin-title">
+    <div class="container">
+      <h2 id="admin-title">Admin Dashboard</h2>
+      <p class="lede">Restricted: view and act on reported items (posts, comments, etc.).</p>
+      <a href="/admin/dashboard" class="btn btn--primary">Open Admin Dashboard</a>
+    </div>
+  </section>
+
+  <!-- Footer (shared) -->
+  <footer class="footer">
+    <div class="container">
+      <div>© <span id="y"></span> Lou Gehrig Fan Club</div>
+      <div>
+        <a href="/privacy">Privacy</a> ·
+        <a href="/terms">Terms</a> ·
+        <a href="/admin">Admin</a> ·
+        <a href="mailto:LouGehrigFanClub@gmail.com">LouGehrigFanClub@gmail.com</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>
