@@ -64,7 +64,31 @@ Copilot PR review comment: "If the Social Wall displays Instagram content (commo
 
 ---
 
-### 3. **HIGH: Removed `'unsafe-inline'` from `script-src`**
+### 3. **CRITICAL: Missing Elfsight CDN in `style-src`**
+
+**Severity**: 🔴 Critical - Blocked widget styling, causing images not to display
+
+**Problem**:
+The CSP `style-src` directive didn't include `https://elfsightcdn.com`:
+```diff
+- style-src 'self' 'unsafe-inline';
++ style-src 'self' 'unsafe-inline' https://elfsightcdn.com;
+```
+
+**Impact**: 
+- Elfsight widget loads CSS from `https://elfsightcdn.com` for proper layout and image display
+- Without this directive, widget styles were blocked by CSP
+- Images existed in the DOM but were not displayed due to missing CSS
+- Users saw text-only tiles without images
+
+**Evidence**: 
+User feedback: "The elfsight social wall still doesnt include its pictures, only text in each tile"
+
+**Fix Applied**: Added `https://elfsightcdn.com` to `style-src` directive in commit da0e6b7+
+
+---
+
+### 4. **HIGH: Removed `'unsafe-inline'` from `script-src`**
 
 **Severity**: 🟠 High - May have blocked widget initialization
 
@@ -81,7 +105,7 @@ Copilot PR review comment: "If the Social Wall displays Instagram content (commo
 
 ---
 
-### 4. **HIGH: Performance Degradation - Unconditional Polling**
+### 5. **HIGH: Performance Degradation - Unconditional Polling**
 
 **Severity**: 🟠 High - Performance issue affecting all users
 
@@ -113,7 +137,7 @@ cubic-dev-ai[bot] review (confidence: 10/10): "persistent DOM polling operation 
 
 ---
 
-### 5. **MEDIUM: Code Quality Issues**
+### 6. **MEDIUM: Code Quality Issues**
 
 **Severity**: 🟡 Medium - Does not cause failures but reduces maintainability
 
