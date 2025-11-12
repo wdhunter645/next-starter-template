@@ -4,14 +4,13 @@ import { useEffect } from 'react';
 import styles from './page.module.css';
 
 import WeeklyMatchup from '@/components/WeeklyMatchup';
-import SocialWall from '@/components/SocialWall';
 import FAQSection from '@/components/FAQSection';
 import MilestonesSection from '@/components/MilestonesSection';
 import FriendsOfFanClub from '@/components/FriendsOfFanClub';
 import CalendarSection from '@/components/CalendarSection';
 
 export default function HomePage() {
-  // Inject Elfsight script once on page load
+  // Inject Elfsight script on page load
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://elfsightcdn.com/platform.js';
@@ -20,13 +19,13 @@ export default function HomePage() {
   }, []);
 
   return (
-    <main>
+    <>
       {/* Section: Hero Banner */}
       <header id="banner" className={styles.hero}>
         <div className={styles.container}>
           <h1 className={styles.title}>Lou Gehrig Fan Club</h1>
           <p className={styles.subtitle}>
-            We are proud to be fans of the greatest baseball player ever and are excited to share our passion with you!
+            We are proud to be fans of the greatest baseball player ever and are dedicated to preserving his legacy.
           </p>
         </div>
       </header>
@@ -51,8 +50,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Section: Social Wall */}
+      {/* Section: Social Wall with Elfsight Embed */}
       <section id="social-wall" className="section-gap">
+        <h2 className="section-title">Social Wall</h2>
         <div
           className="elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8"
           data-elfsight-app-lazy
@@ -80,6 +80,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-    </main>
+    </>
   );
 }
