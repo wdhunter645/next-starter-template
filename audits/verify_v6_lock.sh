@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+<<<<<<< HEAD
 OUTDIR="audits"
 STAMP="$(date -u +%Y%m%d_%H%M%S)"
 REPORT="$OUTDIR/verify_v6_lock_${STAMP}.txt"
@@ -66,3 +67,34 @@ else
 fi
 
 echo -e "\nReport written to: $REPORT"
+=======
+mkdir -p audits
+
+REPORT="audits/verify_v6_lock_$(date +%Y%m%d_%H%M%S).txt"
+{
+  echo "LGFC V6 Lock Verification"
+  echo "Timestamp: $(date +%Y%m%d_%H%M%S)"
+  echo "Repo: $(basename "$(pwd)")"
+  echo "==========================================="
+  echo
+  echo "Checking anchor docs exist (process/governance/v6 HTML)"
+  echo "-------------------------------------------"
+
+  FAIL=0
+  for f in docs/website-PR-process.md docs/website-PR-governance.md docs/lgfc-homepage-legacy-v6.html; do
+    if [[ -f "$f" ]]; then
+      echo "PASS | Found anchor: $f"
+    else
+      echo "FAIL | Missing anchor: $f"
+      FAIL=1
+    fi
+  done
+
+  echo
+  if [[ $FAIL -eq 0 ]]; then
+    echo "✅ All required anchors found."
+  else
+    echo "❌ Aborting: required anchors missing."
+  fi
+} | tee "$REPORT"
+>>>>>>> 2c12d41 (elfsight installation)

@@ -1,0 +1,12 @@
+LGFC V6 Lock Verification
+Timestamp: 20251107_023519
+Repo: next-starter-template
+===========================================
+
+Checking anchor docs exist (process/governance/v6 HTML)
+-------------------------------------------
+PASS | Found anchor: docs/website-PR-process.md
+PASS | Found anchor: docs/website-PR-governance.md
+PASS | Found anchor: docs/lgfc-homepage-legacy-v6.html
+
+✅ All required anchors found.
