@@ -62,6 +62,11 @@ The CSP removed Instagram and Facebook CDN domains from `img-src`:
 **Evidence**: 
 Copilot PR review comment: "If the Social Wall displays Instagram content (common for Elfsight Social Wall widgets), these domains may need to be retained"
 
+**Fix Applied**: Added comprehensive Facebook/Instagram CDN domains including:
+- `https://*.cdninstagram.com` - All Instagram CDN subdomains
+- `https://*.fbcdn.net` - Facebook CDN network
+- `https://instagram.*.fbcdn.net` - Instagram images on Facebook CDN
+
 ---
 
 ### 3. **CRITICAL: Missing Elfsight CDN in `style-src`**
