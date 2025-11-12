@@ -10,14 +10,6 @@ import FriendsOfFanClub from '@/components/FriendsOfFanClub';
 import CalendarSection from '@/components/CalendarSection';
 
 export default function HomePage() {
-  // Inject Elfsight script on page load
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://elfsightcdn.com/platform.js';
-    script.async = true;
-    document.body.appendChild(script);
-  }, []);
-
   return (
     <>
       {/* Section: Hero Banner */}
@@ -25,7 +17,7 @@ export default function HomePage() {
         <div className={styles.container}>
           <h1 className={styles.title}>Lou Gehrig Fan Club</h1>
           <p className={styles.subtitle}>
-            We are proud to be fans of the greatest baseball player ever and are dedicated to preserving his legacy.
+            We are proud to be fans of the greatest baseball player ever and are dedicated to honoring his legacy.
           </p>
         </div>
       </header>
@@ -53,10 +45,16 @@ export default function HomePage() {
       {/* Section: Social Wall with Elfsight Embed */}
       <section id="social-wall" className="section-gap">
         <h2 className="section-title">Social Wall</h2>
-        <div
-          className="elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8"
-          data-elfsight-app-lazy
-        />
+        <div style={{ width: '100%', minHeight: '600px' }}>
+          <iframe
+            src="https://805f3c5c67cd4edfbde62d5978e386a8.elf.site"
+            width="100%"
+            height="600"
+            style={{ border: 'none', overflow: 'hidden' }}
+            loading="lazy"
+            allowFullScreen
+          ></iframe>
+        </div>
       </section>
 
       {/* Section: Friends of the Club */}
