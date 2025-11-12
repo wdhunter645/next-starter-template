@@ -4,4 +4,4 @@
 
 /*
   X-Content-Type-Options: nosniff
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://elfsightcdn.com; img-src 'self' data: https://elfsightcdn.com https://cdn.elfsight.com https://files.elfsightcdn.com; frame-src https://elfsightcdn.com; style-src 'self' 'unsafe-inline' https://elfsightcdn.com;
+  Content-Security-Policy: script-src 'self' 'unsafe-inline' https://static.elfsight.com https://elfsightcdn.com; frame-src https://*.elfsight.com; connect-src 'self' https://*.elfsight.com; img-src 'self' data: blob: https://*.elfsight.com https://scontent.cdninstagram.com https://scontent-*.cdninstagram.com https://platform-lookaside.fbsbx.com; style-src 'self' 'unsafe-inline';
