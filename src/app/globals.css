@@ -361,17 +361,3 @@ body {
 	top: 12px;
 	right: 16px;
 }
-
-/* Social Wall Section */
-.social-wall .section-title {
-	color: #0033cc; /* LGFC Blue */
-	text-align: center;
-	font-weight: 700;
-	margin: 2rem 0 1rem;
-}
-
-.social-wall .social-wall-frame {
-	max-width: 1200px;
-	margin: 0 auto;
-	padding: 0 1rem;
-}

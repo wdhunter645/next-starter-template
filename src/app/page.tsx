@@ -7,7 +7,6 @@ import FAQSection from "@/components/FAQSection";
 import MilestonesSection from "@/components/MilestonesSection";
 import FriendsOfFanClub from "@/components/FriendsOfFanClub";
 import CalendarSection from "@/components/CalendarSection";
-import DebugOverlay from "@/components/DebugOverlay";
 
 export default function Home() {
 	return (
@@ -62,7 +61,6 @@ export default function Home() {
 					</div>
 				</div>
 			</section>
-			<DebugOverlay />
 		</>
 	);
 }
