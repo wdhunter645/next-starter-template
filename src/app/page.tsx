@@ -46,7 +46,7 @@ export default function HomePage() {
         <h2 className="section-title">Social Wall</h2>
         <div style={{ width: '100%', minHeight: '600px' }}>
           <iframe
-            src="https://805f3c5c67cd4edfbde62d5978e386a8.elf.site"
+            src="https://805f3c5c67cd4edfbde62d5978e386a8.elf.site/"
             width="100%"
             height="600"
             style={{ border: 'none', overflow: 'hidden' }}
