@@ -1,6 +1,15 @@
-"use client";
-import { ElfsightWidget } from "next-elfsight-widget";
-
 export default function SocialWall() {
-  return <ElfsightWidget widgetId="805f3c5c-67cd-4edf-bde6-2d5978e386a8" />;
+  return (
+    <iframe
+      src="https://805f3c5c67cd4edfbde62d5978e386a8.elf.site/"
+      width="100%"
+      height="800"
+      frameBorder="0"
+      title="Social Wall"
+      style={{
+        border: 'none',
+        overflow: 'hidden'
+      }}
+    />
+  );
 }
