@@ -7,6 +7,7 @@ import FAQSection from "@/components/FAQSection";
 import MilestonesSection from "@/components/MilestonesSection";
 import FriendsOfFanClub from "@/components/FriendsOfFanClub";
 import CalendarSection from "@/components/CalendarSection";
+import DebugOverlay from "@/components/DebugOverlay";
 
 export default function Home() {
 	return (
@@ -40,7 +41,6 @@ export default function Home() {
 			</section>
 			{/* Section 4: Social Wall */}
 			<section id="social-wall" className="section-gap">
-				<h2>Social Wall</h2>
 				<SocialWall />
 			</section>
 			{/* Section 5: Friends of the Club */}
@@ -62,6 +62,7 @@ export default function Home() {
 					</div>
 				</div>
 			</section>
+			<DebugOverlay />
 		</>
 	);
 }
