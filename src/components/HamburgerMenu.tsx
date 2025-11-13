@@ -26,6 +26,11 @@ export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
       </button>
       <ul className="mast-drawer-menu">
         <li>
+          <Link href="/" onClick={onClose}>
+            Home
+          </Link>
+        </li>
+        <li>
           <Link href="/about" onClick={onClose}>
             About
           </Link>

@@ -4,7 +4,12 @@ import Link from 'next/link';
 import { useState } from 'react';
 import HamburgerMenu from './HamburgerMenu';
 
-export default function Header() {
+type HeaderProps = {
+  homeRoute?: string; // where logo should point
+  showLogo?: boolean; // allow hiding logo for admin
+};
+
+export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps = {}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -31,9 +36,11 @@ export default function Header() {
         }
       `}</style>
       <header>
-        <Link href="/" aria-label="Lou Gehrig Fan Club" className="logo-link">
-          <img className="logo-img" src="/IMG_1946.png" alt="LGFC" />
-        </Link>
+        {showLogo && (
+          <Link href={homeRoute} aria-label="Lou Gehrig Fan Club" className="logo-link">
+            <img className="logo-img" src="/IMG_1946.png" alt="LGFC" />
+          </Link>
+        )}
         <button 
           className="burger-btn"
           onClick={() => setOpen(!open)}
