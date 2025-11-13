@@ -4,7 +4,8 @@
 #### Reference
 Refer to `/docs/website-PR-process.md` for structure and formatting.  
 Follow operational, rollback, and testing standards in `/docs/website-PR-governance.md`.  
-Use `/docs/homepage.html` as the canonical markup source for line-range copying.
+Use `/docs/homepage.html` as the canonical markup source for line-range copying.  
+Use `/docs/memberpage.html` as the canonical MemberPage specification (versioned snapshots: `memberpage-v1.html`, etc.).
 
 ---
 

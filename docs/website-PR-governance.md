@@ -27,10 +27,11 @@
 ---
 
 ## Drift Control
-- Structural edits must copy from `/docs/homepage.html` via explicit line ranges.
+- Structural edits must copy from `/docs/homepage.html` or `/docs/memberpage.html` via explicit line ranges.
 - No paraphrasing or freehand rewrites of canonical HTML/CSS.
 - If canonical file missing or outdated, mark PR **Blocked** and request correction.
 - Legacy snapshots are preserved at `/docs/lgfc-homepage-legacy-v6.html`, `/docs/lgfc-homepage-legacy-v7.html`, etc.
+- MemberPage versioning follows the same pattern: `/docs/memberpage.html` (current standard) with versioned snapshots at `/docs/memberpage-v1.html`, future `/docs/memberpage-v2.html`, etc.
 
 ---
 
