@@ -24,28 +24,64 @@ export default function Header() {
           height: 48px;
           width: auto;
         }
-        .burger-btn {
+        .header-right {
           position: absolute;
           top: 12px;
           right: 16px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .login-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 10px 16px;
+          border-radius: 12px;
+          border: 1px solid rgba(0, 0, 0, 0.15);
+          background: #fff;
+          color: var(--brand-blue);
+          font-weight: 600;
+          text-decoration: none;
+          transition: opacity 0.2s;
+          font-size: 14px;
+        }
+        .login-btn:hover {
+          opacity: 0.9;
+        }
+        .burger-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          padding: 0;
         }
       `}</style>
       <header>
         <Link href="/" aria-label="Lou Gehrig Fan Club" className="logo-link">
           <img className="logo-img" src="/IMG_1946.png" alt="LGFC" />
         </Link>
-        <button 
-          className="burger-btn"
-          onClick={() => setOpen(!open)}
-          aria-label="Open menu"
-          aria-expanded={open}
-          aria-controls="hamburger-menu"
-        >
-          {/* simple hamburger icon */}
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-        </button>
+        <div className="header-right">
+          <Link href="/member" className="login-btn">
+            Login
+          </Link>
+          <button 
+            className="burger-btn"
+            onClick={() => setOpen(!open)}
+            aria-label="Open menu"
+            aria-expanded={open}
+            aria-controls="hamburger-menu"
+          >
+            {/* simple hamburger icon */}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </button>
+        </div>
         {open && <HamburgerMenu onClose={() => setOpen(false)} />}
       </header>
       <div className="topWhitespace" />
