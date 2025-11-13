@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lou Gehrig Fan Club — Home</title>
+  <meta name="description" content="Celebrating Lou Gehrig’s legacy and supporting the ALS community through history, community, and charity." />
+  <style>
+    :root{
+      --brand-blue:#0033cc;
+      --brand-dark:#0b1220;
+      --brand-light:#f5f7ff;
+      --text:#1d2533;
+      --muted:#5b6472;
+      --accent:#ffcc00;
+      --maxw:1200px;
+      --radius:14px;
+      --shadow:0 6px 24px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;color:var(--text);background:#fff}
+    a{color:var(--brand-blue);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .container{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+
+    /* Optional notice bar (hidden by default) */
+    .notice{display:none;background:var(--brand-blue);color:#fff}
+    .notice .container{display:flex;gap:12px;align-items:center;justify-content:center;padding:10px 20px;font-weight:600}
+
+    /* Header – logo + hamburger only */
+    header.site{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #e8ecf5}
+    .nav-row{display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand img.logo{width:44px;height:44px;border-radius:8px;object-fit:cover;border:1px solid #d7dbe7;box-shadow:var(--shadow)}
+    .hamburger{border:1px solid #d7dbe7;border-radius:10px;padding:10px 12px;background:#fff;display:inline-flex;gap:8px;align-items:center}
+    .hamburger .bars{width:20px;height:2px;background:#1a2340;position:relative;display:block}
+    .hamburger .bars:before,.hamburger .bars:after{content:"";position:absolute;left:0;width:20px;height:2px;background:#1a2340}
+    .hamburger .bars:before{top:-6px}.hamburger .bars:after{top:6px}
+
+    /* Mobile drawer menu */
+    .drawer{display:none;border-top:1px solid #e8ecf5;background:#fff}
+    .drawer .container{padding:8px 20px}
+    .drawer a{display:block;padding:14px 6px;border-bottom:1px solid #eef2fb;color:#1a2340;font-weight:600}
+    .drawer a.external::after{content:"↗";font-size:12px;margin-left:6px;color:#5b6472}
+
+    /* Blue Banner (Hero) */
+    .hero{background:var(--brand-blue);color:#fff;padding:36px 0 28px;border-bottom:1px solid #0027a0}
+    .hero .wrap{display:block}
+    .hero h1{font-size:clamp(30px,5vw,44px);line-height:1.12;margin:0 0 10px}
+    .hero p{font-size:clamp(16px,2.2vw,20px);color:#e6ecff;margin:0}
+
+    /* Sections */
+    section{padding:40px 0}
+    section h2{font-size:28px;margin:0 0 12px;color:#0e1530}
+    section .sub{color:var(--muted);margin:0 0 18px}
+    .after-hero-gap{margin-top:20px}
+
+    /* Weekly Matchup */
+    .matchup{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .matchup .tile{border:1px solid #e8ecf5;border-radius:var(--radius);overflow:hidden;background:#fff;box-shadow:var(--shadow)}
+    .matchup .tile img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
+    .matchup .tile .cap{padding:12px 14px}
+    .matchup .vote-row{display:flex;gap:10px;padding:12px;border-top:1px solid #eef2fb;background:var(--brand-light)}
+
+    /* Current Voting placeholder/link */
+    .current-voting{padding:10px 0;color:#1a2340}
+
+    /* CTA band */
+    .cta-band{background:#0e1530;color:#fff;border-radius:var(--radius);padding:22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+    .cta-actions{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;gap:10px;padding:12px 16px;border-radius:12px;border:1px solid #d7dbe7;background:#fff;font-weight:700}
+    .btn.primary{background:#001d80;color:#fff;border-color:#001d80}
+
+    /* Social wall */
+    .social-embed{border:1px dashed #b8c2dd;border-radius:var(--radius);padding:18px;color:#495067;background:#fbfcff}
+
+    /* Cards grid */
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .card{border:1px solid #e8ecf5;border-radius:var(--radius);background:#fff;box-shadow:var(--shadow)}
+    .card .body{padding:14px}
+    .card img{width:100%;aspect-ratio:4/3;object-fit:cover;border-bottom:1px solid #eef2fb}
+
+    /* Timeline */
+    .timeline{display:grid;gap:12px}
+    .timeline .item{display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:start}
+    .badge{display:inline-block;background:#eef2ff;color:#0e1530;border:1px solid #d7defa;padding:6px 10px;border-radius:999px;font-weight:700}
+
+    /* Sponsors */
+    .sponsors{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+    .sponsor{border:1px solid #e8ecf5;border-radius:12px;display:grid;place-items:center;height:72px;background:#fff}
+
+    /* Calendar (interactive month grid) */
+    .calendar{border:1px solid #e8ecf5;border-radius:var(--radius);padding:16px;background:#fff}
+    .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .cal-header .nav{display:flex;gap:8px}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+    .cal-grid .dow{font-weight:700;color:#394054;text-align:center;padding:6px 0}
+    .cal-grid .cell{border:1px solid #eef2fb;border-radius:10px;min-height:80px;padding:6px 8px;position:relative}
+    .cal-grid .cell .day{font-weight:700;color:#0e1530}
+    .cal-grid .cell .events{margin-top:6px;display:grid;gap:6px}
+    .event{display:block;font-size:12px;line-height:1.2;padding:6px 8px;border:1px solid #e8ecf5;border-radius:8px;background:#f9fbff;color:#1a2340;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+    /* FAQ + Milestones two-column layout */
+    .two-col{display:grid;grid-template-columns:2fr 1fr;gap:18px}
+    .faq{border:1px solid #e8ecf5;border-radius:var(--radius);padding:16px;background:#fff}
+    .faq .search{display:flex;gap:8px;margin-bottom:12px}
+    .faq input{flex:1;padding:10px 12px;border:1px solid #d7dbe7;border-radius:10px}
+    .faq button{padding:10px 14px;border:1px solid #d7dbe7;background:#fff;border-radius:10px;font-weight:700}
+    .faq .q{border-top:1px solid #eef2fb;padding:12px 0}
+    .faq .q:first-of-type{border-top:none}
+    .faq form{margin-top:14px;border-top:1px solid #eef2fb;padding-top:14px;display:grid;gap:8px}
+    .faq textarea{min-height:80px;padding:10px 12px;border:1px solid #d7dbe7;border-radius:10px}
+    .success{color:#0a7f25;font-weight:700}
+
+    /* Footer */
+    footer.site{border-top:1px solid #e8ecf5;background:#fafbff}
+    .foot-top{padding:28px 0}
+    .foot-flex{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+    .brand-inline{display:flex;align-items:center;gap:10px}
+    .foot-links{display:flex;gap:16px;flex-wrap:wrap;margin-left:auto}
+    .foot-admin{margin-left:auto;font-weight:700}
+    .copyright{background:#f2f5ff;padding:14px 0;color:#495067;font-size:14px}
+    .admin-only{display:none}
+
+    /* Responsive */
+    @media (max-width: 1024px){
+      .grid{grid-template-columns:repeat(2,1fr)}
+      .sponsors{grid-template-columns:repeat(3,1fr)}
+      .matchup{grid-template-columns:1fr}
+      .two-col{grid-template-columns:1fr}
+    }
+    @media (max-width: 720px){
+      .grid{grid-template-columns:1fr}
+      .sponsors{grid-template-columns:repeat(2,1fr)}
+      .timeline .item{grid-template-columns:1fr}
+      .foot-links{width:100%;justify-content:flex-start;margin-left:0}
+      .foot-admin{width:100%;text-align:right}
+    }
+  </style>
+</head>
+<body>
+  <!-- Optional top notice bar -->
+  <div class="notice">
+    <div class="container">
+      <span>🎗️ 100% of proceeds support ALS research via ALS Cure Project.</span>
+      <a href="/charities" style="color:#fff;text-decoration:underline">Learn more</a>
+    </div>
+  </div>
+
+  <header class="site" role="banner">
+    <div class="container nav-row">
+      <a class="brand" href="/" aria-label="Lou Gehrig Fan Club, home">
+        <img src="/IMG_1946.png" alt="Lou Gehrig Fan Club logo" class="logo" />
+      </a>
+      <button class="hamburger" id="menuBtn" aria-controls="drawer" aria-expanded="false" aria-label="Open menu">
+        <span class="bars"></span>
+      </button>
+    </div>
+    <nav id="drawer" class="drawer" aria-label="Hamburger Menu">
+      <div class="container">
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+        <a class="external" href="https://www.bonfire.com/" target="_blank" rel="noopener">Store</a>
+        <a id="loginLink" href="/member">Login</a>
+        <a id="membersLink" href="/member" style="display:none">Members Area</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="content">
+    <!-- Blue Banner (Hero) immediately below menu -->
+    <section class="hero" role="region" aria-label="Hero">
+      <div class="container wrap">
+        <h1>Welcome to the Lou Gehrig Fan Club!</h1>
+        <p>We are proud to be fans of the greatest baseball player ever and are dedicated to celebrating his life and legacy.</p>
+      </div>
+    </section>
+
+    <!-- Weekly Photo Matchup (with extra gap below hero) -->
+    <section class="container after-hero-gap" role="region" aria-label="Weekly Photo Matchup">
+      <h2>Weekly Photo Matchup. Vote for your favorite!</h2>
+      <div class="matchup">
+        <article class="tile">
+          <img src="https://placehold.co/800x600/jpg?text=Photo+A" alt="Photo A of Lou Gehrig" />
+          <div class="cap"><strong>Photo A:</strong> On-deck focus, Yankee Stadium.</div>
+          <div class="vote-row">
+            <button class="btn primary" type="button" aria-label="Vote Photo A" id="voteA">Vote A</button>
+          </div>
+        </article>
+        <article class="tile">
+          <img src="https://placehold.co/800x600/jpg?text=Photo+B" alt="Photo B of Lou Gehrig" />
+          <div class="cap"><strong>Photo B:</strong> Classic swing, late afternoon.</div>
+          <div class="vote-row">
+            <button class="btn primary" type="button" aria-label="Vote Photo B" id="voteB">Vote B</button>
+          </div>
+        </article>
+      </div>
+
+      <!-- Current Voting placeholder/link (below the vote buttons on left) -->
+      <div class="current-voting" id="currentVotingWrap">
+        <span id="currentVotingText">Current Voting</span>
+      </div>
+    </section>
+
+    <!-- Social Wall -->
+    <section class="container" role="region" aria-label="Social Wall">
+      <h2>Social Wall</h2>
+      <p class="sub">Live fan posts from Facebook, Instagram, X, and Pinterest.</p>
+      <div class="social-embed">
+        <p><strong>Embed placeholder:</strong> Insert Elfsight widget code here.</p>
+        <blockquote>&lt;div class="elfsight-app-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"&gt;&lt;/div&gt;</blockquote>
+      </div>
+    </section>
+
+    <!-- Recent Club Activity -->
+    <section class="container" role="region" aria-label="Recent Club Activity">
+      <h2>Recent Club Activity</h2>
+      <p class="sub">Displays the last 5 to 10 posts from the Members Area in read-only mode.</p>
+      <div class="grid">
+        <article class="card">
+          <img src="https://placehold.co/800x600/jpg?text=Post+1" alt="Club contribution 1" />
+          <div class="body">
+            <h3 style="margin:0 0 8px">Rare program find</h3>
+            <p class="sub">A 1930s game-day program featuring Gehrig.</p>
+            <a href="/news">Read</a>
+          </div>
+        </article>
+        <article class="card">
+          <img src="https://placehold.co/800x600/jpg?text=Post+2" alt="Club contribution 2" />
+          <div class="body">
+            <h3 style="margin:0 0 8px">Signed ball story</h3>
+            <p class="sub">Family heirloom with a Lou signature and provenance.</p>
+            <a href="/news">Read</a>
+          </div>
+        </article>
+        <article class="card">
+          <img src="https://placehold.co/800x600/jpg?text=Post+3" alt="Club contribution 3" />
+          <div class="body">
+            <h3 style="margin:0 0 8px">Photo restoration tips</h3>
+            <p class="sub">Preserving historic photos the right way.</p>
+            <a href="/news">Read</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Friends of the Fan Club -->
+    <section class="container" role="region" aria-label="Friends of the Fan Club">
+      <h2>Friends of the Fan Club</h2>
+      <p class="sub">Thanks to our supporters and partners.</p>
+      <div class="sponsors">
+        <div class="sponsor">Partner 1</div>
+        <div class="sponsor">Partner 2</div>
+        <div class="sponsor">Partner 3</div>
+        <div class="sponsor">Partner 4</div>
+        <div class="sponsor">Partner 5</div>
+      </div>
+    </section>
+
+    <!-- Calendar: month grid with navigation -->
+    <section class="container" role="region" aria-label="Events Calendar">
+      <h2>Calendar</h2>
+      <p class="sub">Browse events month by month.</p>
+      <div class="calendar" id="calendar">
+        <div class="cal-header">
+          <button id="calPrev" aria-label="Previous month">◀</button>
+          <div id="calLabel" aria-live="polite"></div>
+          <div class="nav">
+            <button id="calToday">Today</button>
+            <button id="calNext" aria-label="Next month">▶</button>
+          </div>
+        </div>
+        <div class="cal-grid" id="calGrid">
+          <!-- Days of week -->
+          <div class="dow">Sun</div><div class="dow">Mon</div><div class="dow">Tue</div><div class="dow">Wed</div><div class="dow">Thu</div><div class="dow">Fri</div><div class="dow">Sat</div>
+          <!-- Cells injected by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ (left) + Milestones (right) two-column block -->
+    <section class="container two-col" role="region" aria-label="FAQ and Milestones">
+      <div>
+        <h2>FAQ and Ask a Question</h2>
+        <p class="sub">Browse top questions, search, or submit a new one. Submissions are held for admin approval before appearing.</p>
+        <div class="faq">
+          <div class="search">
+            <input id="faqSearch" type="search" placeholder="Search questions..." aria-label="Search questions" />
+            <button id="faqClear">Clear</button>
+          </div>
+          <div id="faqList">
+            <!-- Top 10 FAQs populate here -->
+          </div>
+          <form id="faqForm" aria-label="Submit a question">
+            <label for="qtext"><strong>Ask a question</strong></label>
+            <textarea id="qtext" placeholder="Type your question..."></textarea>
+            <button type="submit">Submit</button>
+            <div id="qsuccess" class="success" style="display:none">Thanks! Your question was received and queued for review.</div>
+          </form>
+        </div>
+      </div>
+      <aside>
+        <h2>Milestones</h2>
+        <p class="sub">Key moments from Gehrig’s life and career.</p>
+        <div class="timeline">
+          <div class="item">
+            <div><span class="badge">1923</span></div>
+            <div><strong>MLB Debut</strong><br/><span class="sub">First appearance with the New York Yankees.</span></div>
+          </div>
+          <div class="item">
+            <div><span class="badge">1939</span></div>
+            <div><strong>Farewell Address</strong><br/><span class="sub">“The luckiest man on the face of the earth.”</span></div>
+          </div>
+          <div class="item">
+            <div><span class="badge">2021</span></div>
+            <div><strong>Lou Gehrig Day</strong><br/><span class="sub">MLB establishes annual day in his honor.</span></div>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="site" role="contentinfo">
+    <div class="container foot-top">
+      <div class="foot-flex">
+        <div class="brand-inline">
+          <img src="/IMG_1946.png" alt="Lou Gehrig Fan Club logo" class="logo" style="width:36px;height:36px;border-radius:8px;border:1px solid #d7dbe7" />
+          <span id="quoteRotator"></span>
+        </div>
+        <nav class="foot-links">
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms and Conditions</a>
+          <a href="/admin" class="admin-only">Admin</a>
+        </nav>
+        <span id="adminPlaceholder" class="foot-admin">Admin</span>
+      </div>
+    </div>
+    <div class="copyright">
+      <div class="container">
+        © <span id="yearSpan"></span> Lou Gehrig Fan Club — Contact: <a href="mailto:LouGehrigFanClub@gmail.com">LouGehrigFanClub@gmail.com</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Year
+    document.getElementById('yearSpan').textContent = new Date().getFullYear();
+
+    // Drawer toggle
+    const btn = document.getElementById('menuBtn');
+    const drawer = document.getElementById('drawer');
+    btn.addEventListener('click', function(){
+      const open = drawer.style.display === 'block';
+      drawer.style.display = open ? 'none' : 'block';
+      btn.setAttribute('aria-expanded', String(!open));
+    });
+
+    // Cookie helpers
+    function getCookie(name){
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? decodeURIComponent(match[2]) : null;
+    }
+    function setCookie(name, value, days){
+      const max = days ? '; max-age=' + (days*24*60*60) : '';
+      document.cookie = name + '=' + encodeURIComponent(value) + '; path=/' + max;
+    }
+
+    // Auth toggle (login vs members) + admin visibility
+    function applyAuthState(){
+      const isLoggedIn = getCookie('lgfc_logged_in') === 'true';
+      const adminRole = getCookie('lgfc_role');
+      const adminLinks = document.querySelectorAll('.admin-only');
+      const adminPlaceholder = document.getElementById('adminPlaceholder');
+
+      if(isLoggedIn && (adminRole === 'admin' || adminRole === 'moderator')){
+        // Show real Admin link(s), hide placeholder
+        adminLinks.forEach(el => el.style.display = 'inline');
+        if(adminPlaceholder) adminPlaceholder.style.display = 'none';
+      }else{
+        // Hide real links, show placeholder word on far right
+        adminLinks.forEach(el => el.style.display = 'none');
+        if(adminPlaceholder) adminPlaceholder.style.display = 'inline';
+      }
+
+      // Login vs Members Area in menu
+      const loginLink = document.getElementById('loginLink');
+      const membersLink = document.getElementById('membersLink');
+      if(isLoggedIn){
+        loginLink.style.display = 'none';
+        membersLink.style.display = 'block';
+      }else{
+        loginLink.style.display = 'block';
+        membersLink.style.display = 'none';
+      }
+    }
+    window.setLoggedIn = (v)=>{ setCookie('lgfc_logged_in', v ? 'true' : 'false', 365); applyAuthState(); };
+    window.setRole = (r)=>{ setCookie('lgfc_role', r||'', 365); applyAuthState(); };
+    applyAuthState();
+
+    // Voting: cookie + reveal Current Voting link
+    const voteA = document.getElementById('voteA');
+    const voteB = document.getElementById('voteB');
+    function applyVotingState(){
+      const hasVoted = getCookie('lgfc_voted_weekly') === 'true';
+      const wrap = document.getElementById('currentVotingWrap');
+      wrap.innerHTML = '';
+      if(hasVoted){
+        const a = document.createElement('a');
+        a.href = '/weekly/current';
+        a.textContent = 'Current Voting';
+        wrap.appendChild(a);
+      } else {
+        const span = document.createElement('span');
+        span.id = 'currentVotingText';
+        span.textContent = 'Current Voting';
+        wrap.appendChild(span);
+      }
+    }
+    function registerVote(which){
+      setCookie('lgfc_voted_weekly','true',7);
+      applyVotingState();
+      alert('Thanks for voting ' + which + '!');
+    }
+    voteA.addEventListener('click', ()=>registerVote('A'));
+    voteB.addEventListener('click', ()=>registerVote('B'));
+    applyVotingState();
+
+    // Calendar month grid
+    const calGrid = document.getElementById('calGrid');
+    const calLabel = document.getElementById('calLabel');
+    let view = new Date(); view.setDate(1);
+
+    const events = {
+      "2025-11-19": ["ALS fundraiser auction"],
+      "2025-12-04": ["Member meetup"],
+      "2026-01-06": ["Milestone livestream"]
+    };
+
+    function buildMonth(){
+      while(calGrid.children.length > 7){ calGrid.removeChild(calGrid.lastChild); }
+      const year = view.getFullYear();
+      const month = view.getMonth();
+      calLabel.textContent = view.toLocaleString(undefined,{month:'long', year:'numeric'});
+      const firstDow = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month+1, 0).getDate();
+      for(let i=0;i<firstDow;i++){ const b=document.createElement('div'); b.className='cell'; calGrid.appendChild(b); }
+      for(let d=1; d<=daysInMonth; d++){
+        const cell = document.createElement('div'); cell.className='cell';
+        const day = document.createElement('div'); day.className='day'; day.textContent = d;
+        const evWrap = document.createElement('div'); evWrap.className='events';
+        const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        if(events[key]){
+          events[key].forEach(title=>{
+            const a=document.createElement('a'); a.href='/calendar#'+key; a.className='event'; a.textContent=title; evWrap.appendChild(a);
+          });
+        }
+        cell.appendChild(day); cell.appendChild(evWrap); calGrid.appendChild(cell);
+      }
+    }
+    document.getElementById('calPrev').addEventListener('click', ()=>{ view.setMonth(view.getMonth()-1); buildMonth(); });
+    document.getElementById('calNext').addEventListener('click', ()=>{ view.setMonth(view.getMonth()+1); buildMonth(); });
+    document.getElementById('calToday').addEventListener('click', ()=>{ view = new Date(); view.setDate(1); buildMonth(); });
+    buildMonth();
+
+    // FAQ
+    const defaultFaq = [
+      {q:"How do I join the Fan Club?", a:"Use the Join link in the menu to create your account via email.", approved:true},
+      {q:"Is the Club a nonprofit?", a:"Yes. All proceeds benefit ALS research via partner charities.", approved:true},
+      {q:"Where can I vote in the weekly photo matchup?", a:"Here on the homepage while voting is open.", approved:true},
+      {q:"How do I submit memorabilia?", a:"Members can post details and photos in the discussion area.", approved:true},
+      {q:"Can I request a specific photo in the matchup?", a:"Yes—post your suggestion in the discussion area.", approved:true},
+      {q:"What is the Members Area?", a:"A private space for posts, archives, and events.", approved:true},
+      {q:"How do I reset my login?", a:"Use the email magic-link flow on the login page.", approved:true},
+      {q:"How can I donate to ALS research?", a:"See the Charities page for direct links.", approved:true},
+      {q:"Do you sell merchandise?", a:"Yes—see Store for official items.", approved:true},
+      {q:"Can I help moderate?", a:"Message an admin in the Members Area.", approved:true}
+    ];
+    const FAQ_KEY = 'lgfc_faq_list';
+    function loadFaq(){
+      const fromLS = localStorage.getItem(FAQ_KEY);
+      return fromLS ? JSON.parse(fromLS) : defaultFaq;
+    }
+    function saveFaq(list){ localStorage.setItem(FAQ_KEY, JSON.stringify(list)); }
+    function renderFaq(list){
+      const wrap = document.getElementById('faqList'); wrap.innerHTML = '';
+      const approved = list.filter(x=>x.approved !== false).slice(0,10);
+      if(!approved.length){ wrap.innerHTML = '<p class="sub">No questions yet.</p>'; return;}
+      approved.forEach(item=>{
+        const div=document.createElement('div'); div.className='q';
+        div.innerHTML = '<strong>'+item.q+'</strong><br/><span class="sub">'+item.a+'</span>';
+        wrap.appendChild(div);
+      });
+    }
+    const faqList = loadFaq();
+    renderFaq(faqList);
+
+    // FAQ search
+    const faqSearch = document.getElementById('faqSearch');
+    const faqClear = document.getElementById('faqClear');
+    faqSearch.addEventListener('input', ()=>{
+      const term = faqSearch.value.trim().toLowerCase();
+      const list = loadFaq();
+      if(!term){ renderFaq(list); return; }
+      const filtered = list.filter(x => x.q.toLowerCase().includes(term) || (x.a||'').toLowerCase().includes(term));
+      renderFaq(filtered);
+    });
+    faqClear.addEventListener('click', ()=>{ faqSearch.value=''; renderFaq(loadFaq()); });
+
+    // FAQ submission (flagged not approved by default)
+    document.getElementById('faqForm').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const area = document.getElementById('qtext');
+      const text = area.value.trim();
+      if(!text) return;
+      const list = loadFaq();
+      list.unshift({q:text, a:"(Pending answer)", approved:false});
+      saveFaq(list);
+      area.value='';
+      document.getElementById('qsuccess').style.display='block';
+      setTimeout(()=>{ document.getElementById('qsuccess').style.display='none'; }, 3000);
+    });
+
+    // Quote rotator
+    const quotes = [
+      "“Today I consider myself the luckiest man on the face of the earth.”",
+      "“There is no room in baseball for discrimination.”",
+      "“Don’t think I am depressed or pessimistic about my condition.”",
+      "“I might have been given a bad break, but I’ve got an awful lot to live for.”"
+    ];
+    let qi = 0;
+    const qEl = document.getElementById('quoteRotator');
+    function rotate(){ qEl.textContent = quotes[qi % quotes.length]; qi++; }
+    rotate(); setInterval(rotate, 6000);
+  </script>
+</body>
+<!-- Homepage Spec Version: v7 (canonical alias: docs/homepage.html) -->
+</html>
