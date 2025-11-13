@@ -1,15 +1,20 @@
-# Next.js Framework Starter
+# Lou Gehrig Fan Club — Next.js Framework Starter
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/next-starter-template)
-[![CI Validation](https://github.com/wdhunter645/next-starter-template/actions/workflows/ci.yml/badge.svg)](https://github.com/wdhunter645/next-starter-template/actions/workflows/ci.yml)
+This repository contains the **public website** for the **Lou Gehrig Fan Club (LGFC)**, implemented as a Next.js application and deployed to **Cloudflare Pages** using a static export build.
 
-## 🚀 Quick Start
+It is also the canonical baseline for future LGFC sites that share the same architecture and governance model.
 
-**New to this template?** Start here: **[docs/START_HERE.md](./docs/START_HERE.md)**
+---
 
-For deployment setup, see: **[docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md)**
+## 1. Overview
 
-### Website Development Process
+- **Project:** Lou Gehrig Fan Club — Public Website
+- **Framework:** Next.js (App Router) with TypeScript
+- **Hosting:** Cloudflare Pages (static export)
+- **Primary Audience:** Fans, visitors, and prospective members at `www.lougehrigfanclub.com`
+- **Related Systems:**
+  - Members/Admin area is hosted in a **separate repository** (Vercel).
+  - Supabase (database) and Backblaze B2 (media) are part of the wider LGFC architecture and integrated via API from this and other repos.
 
 For contributors working on the LGFC website:
 - **PR Process**: [docs/website-PR-process.md](./docs/website-PR-process.md)
@@ -17,199 +22,200 @@ For contributors working on the LGFC website:
 - **Current Homepage Standard**: [docs/homepage.html](./docs/homepage.html)
 - **Legacy Snapshots**: [v6](./docs/lgfc-homepage-legacy-v6.html), [v7](./docs/lgfc-homepage-legacy-v7.html)
 
+- The **public-facing homepage and spokes** (Weekly Matchup, Milestones, Charities, News & Q&A, Calendar, Join).
+- A **strictly controlled deployment pipeline** to Cloudflare Pages.
+- A **documented design standard** that must remain in sync with the code.
+
+For a full visual and functional specification, see:
+
+- `docs/Design-spec.md` (LGFC website design)
+- `docs/lgfc-homepage-legacy-v6.html` (homepage structure standard)
+
 ---
 
-## 🔴 SECURITY NOTICE
+## 2. Quick Start for Contributors
 
-**If you cloned this repository before October 16, 2025**: The `.env` file with secrets was accidentally committed and has been removed. **You must regenerate ALL credentials** if you use any of the exposed services.
+If you are working on the LGFC website, start here:
 
-<!-- dash-content-start -->
+- **Getting started & environment setup:**
+  - `docs/START_HERE.md`
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app). It's deployed on Cloudflare Pages as a [static website](https://developers.cloudflare.com/pages/framework-guides/deploy-a-nextjs-site/).
+- **Deployment details (Cloudflare Pages):**
+  - `docs/DEPLOYMENT_GUIDE.md`
 
-This template uses Next.js's built-in static export feature (`output: "export"`), which generates a fully static site that can be deployed directly to Cloudflare Pages without any server-side runtime.
+- **Website development process / governance:**
+  - `docs/website-PR-process.md`
+  - `docs/website-PR-governance.md`
 
-<!-- dash-content-end -->
+These documents define:
 
-## Tech Stack
+- How to open PRs
+- Required checks before merge
+- Rollback expectations
+- How to keep the implementation aligned with the design spec
 
-This starter template uses the following core dependencies:
+---
 
-- **Next.js**: 15.3.3
-- **React**: 18.3.1
-- **TypeScript**: 5.8.3
+## 3. Security Notice
 
-All dependencies are kept minimal and production-ready. See [package.json](./package.json) for the complete dependency list.
+If you cloned or used this repository before **October 16, 2025**, be aware:
 
-## Getting Started with This Template
+> A `.env` file containing secrets was accidentally committed in a historical revision and has since been removed.  
+> Any exposed credentials must be considered compromised.
 
-Outside of this repo, you can start a new project with this template using [C3](https://developers.cloudflare.com/pages/get-started/c3/) (the `create-cloudflare` CLI):
+If you used any of those credentials, you **must**:
 
-```bash
-npm create cloudflare@latest -- --template=cloudflare/templates/next-starter-template
-```
+- Rotate keys for affected services (Cloudflare, Supabase, B2, etc.).
+- Update the secure environment variables in the Cloudflare and GitHub settings as described in `docs/DEPLOYMENT_GUIDE.md`.
 
-A live public deployment of this template is available at [https://next-starter-template.templates.workers.dev](https://next-starter-template.templates.workers.dev)
+All current deployments and contributors should assume **only** the new rotated credentials are valid.
 
-## 📋 Repository Metadata
+---
 
-To improve discoverability and clearly communicate the template's value, we recommend adding the following metadata to the GitHub repository:
+## 4. Architecture Summary
 
-- **Description**: A modern Next.js 15 starter template with TypeScript, Tailwind CSS 4, React 19, and Cloudflare Pages deployment configuration
-- **Website**: https://next-starter-template.templates.workers.dev
-- **Topics**: nextjs, typescript, tailwindcss, cloudflare-pages, starter-template, react, nextjs-template, fullstack, cloudflare, static-site, nextjs-15, react-19, tailwind-css-4
+At a high level, this repo provides:
 
-**For repository maintainers**: You can apply these settings using the helper script:
+- A **Next.js front-end** using the App Router and static export.
+- A **Cloudflare Pages** deployment target configured for:
+  - `npm run build:cf` to generate a static build
+  - Automatic deployment via GitHub Actions when code is merged to `main`
+- A **document-driven design contract**:
+  - Global website design: `docs/Design-spec.md`
+  - Homepage standard: `docs/lgfc-homepage-legacy-v6.html` (versioned baseline)
 
-```bash
-./scripts/update-repository-metadata.sh
-```
+The members/admin application lives in another repo and is hosted separately (typically on Vercel). This repo remains focused on the **public site**.
 
-Or manually via the GitHub web UI (click the gear icon ⚙️ next to "About"). See [.github/REPOSITORY_METADATA.md](./.github/REPOSITORY_METADATA.md) for detailed instructions.
+---
 
-## Getting Started
+## 5. Development Setup
 
-**For detailed setup instructions**, see **[docs/START_HERE.md](./docs/START_HERE.md)**
+### 5.1 Using GitHub Codespaces (Recommended)
 
-### Quick Start
+This repository is optimized for GitHub Codespaces.
 
-#### Using GitHub Codespaces (Recommended)
+- Click the **"Code" → "Open with Codespaces"** button in GitHub.
+- Follow the instructions in `docs/START_HERE.md` for:
+  - Git authentication
+  - Node version management
+  - First-time setup
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/wdhunter645/next-starter-template)
+### 5.2 Local Development
 
-**Note:** Codespaces requires Git authentication setup. See [docs/START_HERE.md](./docs/START_HERE.md#git-authentication-setup) for details.
+If you prefer local development:
 
-#### Local Development
-
-```bash
-# Install dependencies
-npm install
-
-# Run development server
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file (when using `npm run dev`).
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Available Commands
-
-| Command                 | Action                                                           |
-| :---------------------- | :--------------------------------------------------------------- |
-| `npm run dev`           | Run Next.js development server                                   |
-| `npm run build`         | Build your production Next.js site                               |
-| `npm run build:cf`      | Build static site for Cloudflare Pages deployment               |
-| `npm run lint`          | Run ESLint to check code quality                                 |
-| `npm run lint:fix`      | Run ESLint and auto-fix issues                                   |
-| `npm run format`        | Format code with Prettier                                        |
-| `npm run typecheck`     | Run TypeScript type checking                                     |
-| `npm run test`          | Run tests with Vitest                                            |
-| `npm run test:watch`    | Run tests in watch mode                                          |
-| `npm run test:coverage` | Run tests with coverage report                                   |
-
-## Developer Workflow
-
-This project includes a `Makefile` for streamlined development workflows. Using `make` commands provides a convenient, consistent interface for common development tasks.
-
-### Make Commands
-
-All core development tasks can be run using `make`:
-
-```bash
-make dev            # Start the Next.js development server
-make build          # Build the application for production
-make lint           # Run ESLint to check code quality
-make format         # Format code with Prettier
-make test           # Run tests with Vitest
-make test-watch     # Run tests in watch mode
-make test-coverage  # Run tests with coverage report
-make deploy         # Deploy to Cloudflare Pages (production)
-make typecheck      # Run TypeScript type checking
-```
-
-**Tip**: Run `make help` to see all available commands.
-
-### Quick Start Workflow
-
-1. **Start development**:
+1. Install dependencies:
 
    ```bash
-   make dev
+   npm install
    ```
 
-2. **Before committing**:
+2. Start the dev server:
 
    ```bash
-   make format    # Format your code
-   make lint      # Check for linting issues
-   make typecheck # Verify TypeScript types
-   make test      # Run tests
+   npm run dev
    ```
 
-3. **Build and deploy**:
-   ```bash
-   make build     # Build for production
-   make deploy    # Deploy to Cloudflare
-   ```
+3. Open `http://localhost:3000` in your browser.
 
-### Using npm scripts directly
+The main homepage entry file is typically `src/app/page.tsx`. When running `npm run dev`, changes will live-reload.
 
-You can also use npm scripts directly if preferred:
+---
 
-- `npm run lint:fix` - Auto-fix linting issues
-- `npm run format` - Format all files with Prettier
-- `npm run typecheck` - Run TypeScript compiler checks
-- `npm run test` - Run tests
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:coverage` - Run tests with coverage
+## 6. Commands & Workflow
 
-### Automated Deployment (GitHub Actions)
+This project supports both `npm` scripts and `make` commands. Either approach is fine, but **Makefile workflows** are encouraged for consistency.
 
-The repository is configured to automatically build and deploy to Cloudflare Pages when code is pushed to the `main` branch. The deployment workflow:
+### 6.1 npm Scripts (common)
 
-**For complete deployment setup**, see **[docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md)**
+- `npm run dev` — Start Next.js development server
+- `npm run build` — Build production site
+- `npm run build:cf` — Build static site for Cloudflare Pages
+- `npm run lint` — Run ESLint
+- `npm run lint:fix` — Lint and auto-fix
+- `npm run format` — Format code with Prettier
+- `npm run typecheck` — TypeScript checks
+- `npm run test` — Run tests (Vitest)
+- `npm run test:watch` — Tests in watch mode
+- `npm run test:coverage` — Tests with coverage
 
-**For complete website design specifications**, see **[docs/Design-spec.md](./docs/Design-spec.md)**
+### 6.2 Makefile Shortcuts
 
-This template uses GitHub Actions to automatically deploy to Cloudflare Pages when code is pushed to the `main` branch.
+The `Makefile` wraps common tasks:
 
-**Required GitHub Secrets:**
+- `make dev` — Start dev server
+- `make build` — Production build
+- `make deploy` — Deploy to Cloudflare Pages
+- `make lint` — Lint code
+- `make format` — Format code
+- `make typecheck` — TypeScript checks
+- `make test`, `make test-watch`, `make test-coverage` — Test workflows
 
-- `CLOUDFLARE_API_TOKEN` - Cloudflare API token with Pages:Edit and User Details:Read permissions
-- `CLOUDFLARE_ACCOUNT_ID` - Your Cloudflare account ID
-- `CLOUDFLARE_PROJECT_NAME` - Your Cloudflare Pages project name
+Run `make help` to see all available commands.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 7. Deployment (Cloudflare Pages)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This repository is configured to deploy to **Cloudflare Pages** when changes are merged into `main` and the CI pipeline passes.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+For complete deployment details (including required GitHub secrets and Cloudflare configuration), see:
 
-## Contributing
+- `docs/DEPLOYMENT_GUIDE.md`
 
-We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for:
+In short:
 
-- Development setup instructions
-- Git authentication troubleshooting (especially for Codespaces)
-- Pull request guidelines
-- Code style guide
+- The build step uses `npm run build:cf` to generate a static export.
+- GitHub Actions takes care of building and publishing to Cloudflare Pages.
+- Required secrets (API token, account ID, project name, etc.) must be configured in GitHub.
 
-## Troubleshooting
+---
 
-**For common issues and solutions**, see **[docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md)**
+## 8. Design & Homepage Standards
 
-Quick links:
+The LGFC project uses **documented design contracts**:
 
-- [Git Authentication Issues](./docs/TROUBLESHOOTING.md#git-authentication-issues)
-- [Codespaces Issues](./docs/TROUBLESHOOTING.md#codespaces-issues)
-- [Build and Development Issues](./docs/TROUBLESHOOTING.md#build-and-development-issues)
+- Overall website design:
+  - `docs/Design-spec.md`
 
-For deployment issues, see [docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md#common-deployment-issues)
+- Homepage structure and content order (baseline spec):
+  - `docs/lgfc-homepage-legacy-v6.html`
 
-See [legacy notes](./docs/legacy-notes) for archived build reviews and investigation summaries.
+Any changes to homepage layout, section order, or major visual structure **must**:
+
+1. Update the relevant spec document.
+2. Ensure the implementation (e.g. `src/app/page.tsx`) aligns with the spec.
+3. Follow the PR governance rules so that drift between design and implementation is minimized.
+
+---
+
+## 9. Contributing & Governance
+
+For contributors working specifically on the LGFC website:
+
+- **PR Process:**
+  - `docs/website-PR-process.md`
+
+- **Governance & Rollback Rules:**
+  - `docs/website-PR-governance.md`
+
+These documents define:
+
+- How to propose changes
+- Required checks (lint, tests, visual alignment)
+- Rollback and incident handling expectations
+- How to keep the repo compliant with LGFC's long-term design and operations strategy
+
+Before opening a PR, make sure you:
+
+1. Read `docs/START_HERE.md`.
+2. Follow the commit & branch naming guidance in the PR process docs.
+3. Run the recommended `make` or `npm` commands (lint, typecheck, tests) locally or in Codespaces.
+
+---
+
+## 10. License / Ownership
+
+This repository is part of the **Lou Gehrig Fan Club** project and is intended for use in building and maintaining the LGFC public website.
+
+If you are evaluating this as a "starter template," treat it as a **reference implementation** rather than a generic drop-in boilerplate, and be aware that some documentation and workflows are specifically tailored to the LGFC environment.
