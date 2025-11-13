@@ -16,7 +16,11 @@ It is also the canonical baseline for future LGFC sites that share the same arch
   - Members/Admin area is hosted in a **separate repository** (Vercel).
   - Supabase (database) and Backblaze B2 (media) are part of the wider LGFC architecture and integrated via API from this and other repos.
 
-This repository focuses on:
+For contributors working on the LGFC website:
+- **PR Process**: [docs/website-PR-process.md](./docs/website-PR-process.md)
+- **Governance & Rollback**: [docs/website-PR-governance.md](./docs/website-PR-governance.md)
+- **Current Homepage Standard**: [docs/homepage.html](./docs/homepage.html)
+- **Legacy Snapshots**: [v6](./docs/lgfc-homepage-legacy-v6.html), [v7](./docs/lgfc-homepage-legacy-v7.html)
 
 - The **public-facing homepage and spokes** (Weekly Matchup, Milestones, Charities, News & Q&A, Calendar, Join).
 - A **strictly controlled deployment pipeline** to Cloudflare Pages.

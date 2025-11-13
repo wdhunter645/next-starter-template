@@ -2,7 +2,7 @@
 
 **All PR prompts must follow this structure:**
 1) Reference: `/docs/website-PR-process.md`
-2) Change Summary: exact edits with file paths + (when applicable) line ranges from `/docs/lgfc-homepage-legacy-v6.html`
+2) Change Summary: exact edits with file paths + (when applicable) line ranges from `/docs/homepage.html`
 3) Governance Reference: `/docs/website-PR-governance.md`
 
 ---
@@ -27,9 +27,10 @@
 ---
 
 ## Drift Control
-- Structural edits must copy from `/docs/lgfc-homepage-legacy-v6.html` via explicit line ranges.
+- Structural edits must copy from `/docs/homepage.html` via explicit line ranges.
 - No paraphrasing or freehand rewrites of canonical HTML/CSS.
 - If canonical file missing or outdated, mark PR **Blocked** and request correction.
+- Legacy snapshots are preserved at `/docs/lgfc-homepage-legacy-v6.html`, `/docs/lgfc-homepage-legacy-v7.html`, etc.
 
 ---
 
