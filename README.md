@@ -14,7 +14,8 @@ For deployment setup, see: **[docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.
 For contributors working on the LGFC website:
 - **PR Process**: [docs/website-PR-process.md](./docs/website-PR-process.md)
 - **Governance & Rollback**: [docs/website-PR-governance.md](./docs/website-PR-governance.md)
-- **v6 Homepage Baseline**: [docs/lgfc-homepage-legacy-v6.html](./docs/lgfc-homepage-legacy-v6.html)
+- **Current Homepage Standard**: [docs/homepage.html](./docs/homepage.html)
+- **Legacy Snapshots**: [v6](./docs/lgfc-homepage-legacy-v6.html), [v7](./docs/lgfc-homepage-legacy-v7.html)
 
 ---
 
