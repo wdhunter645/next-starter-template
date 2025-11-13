@@ -26,21 +26,6 @@ export default function HomePage() {
         <WeeklyMatchup />
       </section>
 
-      {/* Section: Join Banner */}
-      <section id="join" className="section-gap">
-        <div className="joinBanner section-gap">
-          <div className="join-banner__container">
-            <p className="join-banner__text">
-              Become a member. Get access to the Gehrig library, media archive, memorabilia, and more.
-            </p>
-            <div className="join-banner__actions">
-              <a className="join-banner__btn" href="/join">Join</a>
-              <a className="join-banner__btn" href="/member">Login</a>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Section: Social Wall with Elfsight Embed */}
       <section id="social-wall" className="section-gap">
         <h2 className="section-title">Social Wall</h2>
@@ -54,6 +39,12 @@ export default function HomePage() {
             allowFullScreen
           ></iframe>
         </div>
+      </section>
+
+      {/* Section: Recent Club Activity */}
+      <section id="recent-club-activity" className="section-gap">
+        <h2 className="section-title">Recent Club Activity</h2>
+        {/* This section will later be populated by the Members Area, showing the last 5 to 10 posts in read-only mode */}
       </section>
 
       {/* Section: Friends of the Club */}
