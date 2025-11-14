@@ -45,13 +45,6 @@ export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
             Store
           </a>
         </li>
-        {!loggedIn && (
-          <li>
-            <Link href="/member" onClick={onClose}>
-              Login
-            </Link>
-          </li>
-        )}
         <li>
           {loggedIn ? (
             <Link href="/member" onClick={onClose}>
