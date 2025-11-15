@@ -266,7 +266,43 @@ Standard footer + “Sign Out” link when logged in.
 
 ---
 
-## 8. Acceptance Criteria
+## 8. V6 Homepage Invariants (Non-Negotiable Contract)
+
+The following homepage structural requirements are **locked and enforced by automated tests** (`tests/homepage-structure.test.tsx`). Any PR attempting to violate these invariants will fail CI.
+
+### Required Sections (in order)
+
+1. **Hero Banner** — Must contain `<h1>` with "Welcome to the Lou Gehrig Fan Club!"
+2. **Weekly Photo Matchup** — Must contain `<h2>` with "Weekly Photo Matchup. Vote for your favorite!"
+3. **Join/Login CTA** — Must contain membership call-to-action text
+4. **Social Wall** — Must contain `<h2>` with "Social Wall" and description of social platforms
+5. **Recent Club discussions** — Must contain `<h2>` with "Recent Club discussions"
+6. **Friends of the Fan Club** — Must contain `<h2>` with "Friends of the Fan Club"
+7. **Events Calendar** — Must contain `<h2>` with "Calendar"
+8. **FAQ and Milestones** — Must contain both `<h2>` with "FAQ" and `<h2>` with "Milestones"
+9. **Footer** — Standard global footer (handled by layout)
+
+### Enforcement Rules
+
+- **Section Order:** Sections must appear in DOM order exactly as listed above.
+- **Heading Visibility:** Each section must have a visible heading matching the specified text.
+- **No Removal:** Sections cannot be removed without explicit authorization and test updates.
+- **No Reordering:** Section order cannot be changed without explicit authorization and test updates.
+
+### Making Approved Changes
+
+If a PR has explicit authorization to modify homepage structure:
+
+1. **Update this document** with the new invariant specification
+2. **Update `tests/homepage-structure.test.tsx`** to match the new structure
+3. **Update `/docs/HOMEPAGE_SPEC.md`** with detailed implementation changes
+4. **Reference the authorization** (issue number, governance decision) in the PR description
+
+**Rationale:** These invariants prevent homepage drift (Audit #2) and ensure a single source of truth that cannot be violated accidentally through misapplied PRs (Audit #5). The v6 specification is now the enforced standard.
+
+---
+
+## 9. Acceptance Criteria
 1. Header compacted to 64 px desktop / 48 px mobile, zero gap above hero.  
 2. Hero full-width, edge-to-edge, flush under header.  
 3. Homepage sections render in order 1–9 exactly as mapped.  
