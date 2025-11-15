@@ -35,6 +35,27 @@
 - **Automated drift guard:** All PRs must pass `npm run test:homepage-structure` to prevent structural violations.
 - **Historical drift incidents:** See `/docs/drift-log.md` for documented cases and remediation guidance.
 
+### Social Wall Drift & Regressions
+**Historical Context:**
+- Social Wall has had **multiple regressions** historically due to undocumented changes
+- Common issues:
+  - Wrong Elfsight script URL (static.elfsight.com vs elfsightcdn.com)
+  - Missing `data-elfsight-app-lazy` attribute
+  - Complete removal of widget code
+  - "Cleanup" or "simplification" PRs that broke the working implementation
+
+**Prevention Requirements:**
+All Social Wall changes must:
+1. **Review** the canonical configuration in `docs/lgfc-homepage-legacy-v6.html` (Social Wall subsection)
+2. **Update** both `SocialWall.tsx` and the configuration documentation if making changes
+3. **Test** on the deployed site to confirm the feed renders (not just fallback text)
+4. **Document** the change reason and verification steps in PR description
+
+**Never:**
+- Remove the Elfsight widget container without explicit authorization
+- Change script URLs without updating documentation
+- "Clean up" Social Wall without verifying against canonical configuration
+
 ---
 
 ## Acceptance Checks
@@ -44,7 +65,11 @@
   - Weekly title color == `rgb(0, 51, 204)`
   - `.joinBanner` background-color == `rgb(0, 51, 204)`
 - Section rhythm: `.section-gap` applied to Weekly, Join banner, Social Wall, FAQ, Milestones.
-- Social Wall placeholder remains present and unchanged.
+- **Social Wall configuration matches canonical spec:**
+  - Script URL: `https://elfsightcdn.com/platform.js`
+  - Widget container class: `elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8`
+  - `data-elfsight-app-lazy` attribute present
+  - Fallback text present
 ---
 
 ## Snapshot Review Cadence
