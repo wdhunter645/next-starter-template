@@ -28,6 +28,18 @@ Use `/docs/memberpage.html` as the canonical MemberPage specification (versioned
     - Weekly title computed color == `rgb(0, 51, 204)`
     - `.joinBanner` background-color == `rgb(0, 51, 204)`
 
+#### Regression Test Requirements
+For any PR affecting the homepage or Social Wall:
+- Developer **must** run `npm run test:homepage-sections` locally before submitting PR
+- Developer **must** run existing Playwright tests: `npm run test:e2e`
+- Any failing regression test must be fixed before PR approval
+- If a test failure is legitimate (due to intentional changes), update the test accordingly and document the change in the PR description
+
+**Critical Tests:**
+- Homepage section visibility tests (`tests/e2e/homepage-sections.spec.ts`)
+- V6 token compliance tests (`tests/homepage.spec.ts`)
+- Social Wall regression guard (ensures widget container is present and section is not empty)
+
 ---
 
 ### Commit Message Standard
