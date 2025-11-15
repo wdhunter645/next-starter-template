@@ -1,17 +1,17 @@
 'use client';
-import { useEffect } from 'react';
+import Script from 'next/script';
 
 export default function SocialWall() {
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://elfsightcdn.com/platform.js';
-    script.async = true;
-    document.body.appendChild(script);
-  }, []);
   return (
-    <div
-      className="elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8"
-      data-elfsight-app-lazy
-    />
+    <>
+      <Script
+        src="https://static.elfsight.com/platform/platform.js"
+        strategy="lazyOnload"
+      />
+      <div className="elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8" />
+      <p style={{ marginTop: '1rem', color: '#666' }}>
+        Loading social wall content...
+      </p>
+    </>
   );
 }
