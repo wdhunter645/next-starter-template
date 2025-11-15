@@ -57,6 +57,27 @@ The Profile Page is a **separate view** (linked from MemberPage), not a section 
 - On MemberPage, logged-in users should see a clear `Logout` option.
 - `Admin` menu item must only render for accounts listed in `ADMIN_EMAILS`.
 
+### Logo & Nav Behavior (Member Area)
+
+- On all **member-only pages** (MemberPage and member-only spokes), the logo:
+  - Links to `/memberpage`
+  - Returns to the top of MemberPage.
+- Member nav must include:
+  - `Home` → `/` (public homepage)
+  - `Members` → `/memberpage`
+  - `Admin` (if user is admin) → `/admin`
+
+**Important:**
+- Members should never feel "trapped" in the member area; there must always be a clear path back to the public homepage.
+
+### Admin Nav Behavior
+
+Admin dashboard header uses **text links**, not the site logo:
+- Admin dashboard must always provide:
+  - `Home` → `/` (public homepage)
+  - `Member` → `/memberpage` (MemberPage)
+- Admin pages are considered part of the member/admin context; they share the same overall navigation model, but the logo can be hidden to simplify and emphasize explicit links.
+
 ---
 
 ## 3. Welcome Section
