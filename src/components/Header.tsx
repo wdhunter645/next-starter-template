@@ -4,7 +4,12 @@ import Link from 'next/link';
 import { useState } from 'react';
 import HamburgerMenu from './HamburgerMenu';
 
-export default function Header() {
+type HeaderProps = {
+  homeRoute?: string; // where logo should point
+  showLogo?: boolean; // allow hiding logo for admin
+};
+
+export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps = {}) {
   const [open, setOpen] = useState(false);
 
   return (
