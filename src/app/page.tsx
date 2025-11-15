@@ -8,6 +8,7 @@ import MilestonesSection from '@/components/MilestonesSection';
 import FriendsOfFanClub from '@/components/FriendsOfFanClub';
 import CalendarSection from '@/components/CalendarSection';
 import SocialWall from '@/components/SocialWall';
+import JoinCTA from '@/components/JoinCTA';
 
 export default function HomePage() {
   return (
@@ -15,9 +16,9 @@ export default function HomePage() {
       {/* Section: Hero Banner */}
       <header id="banner" className={styles.hero}>
         <div className={styles.container}>
-          <h1 className={styles.title}>Lou Gehrig Fan Club</h1>
+          <h1 className={styles.title}>Welcome to the Lou Gehrig Fan Club!</h1>
           <p className={styles.subtitle}>
-            We are proud to be fans of the greatest baseball player ever and are dedicated to honoring his legacy.
+            We are proud to be fans of the greatest baseball player ever and are dedicated to celebrating his life and legacy.
           </p>
         </div>
       </header>
@@ -27,25 +28,32 @@ export default function HomePage() {
         <WeeklyMatchup />
       </section>
 
+      {/* Section: Membership CTA */}
+      <section id="join-cta" className="container section-gap">
+        <JoinCTA />
+      </section>
+
       {/* Section: Social Wall with Elfsight Embed */}
-      <section id="social-wall" className="section-gap">
+      <section id="social-wall" className="container section-gap">
         <h2 className="section-title">Social Wall</h2>
+        <p className="sub" style={{ textAlign: 'center' }}>Live fan posts from Facebook, Instagram, X, and Pinterest.</p>
         <SocialWall />
       </section>
 
-      {/* Section: Recent Club Activity */}
-      <section id="recent-club-activity" className="section-gap">
-        <h2 className="section-title">Recent Club Activity</h2>
-        {/* This section will later be populated by the Members Area, showing the last 5 to 10 posts in read-only mode */}
+      {/* Section: Recent Club discussions */}
+      <section id="recent-club-discussions" className="container section-gap">
+        <h2 className="section-title">Recent Club discussions</h2>
+        <p className="sub" style={{ textAlign: 'center' }}>Displays the last 5 posts from the members&apos; discussion area.</p>
+        {/* Grid of cards will be populated from member posts */}
       </section>
 
-      {/* Section: Friends of the Club */}
-      <section id="friends-of-the-club" className="section-gap">
+      {/* Section: Friends of the Fan Club */}
+      <section id="friends-of-the-club" className="container section-gap">
         <FriendsOfFanClub />
       </section>
 
       {/* Section: Calendar */}
-      <section id="calendar" className="section-gap">
+      <section id="calendar" className="container section-gap">
         <CalendarSection />
       </section>
 

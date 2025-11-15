@@ -9,8 +9,9 @@ export default function CalendarSection() {
   ];
 
   return (
-    <section className={styles.calendar} aria-labelledby="calendar-title">
-      <h2 id="calendar-title" className={styles.title}>Upcoming Events</h2>
+    <>
+      <h2 className="section-title">Calendar</h2>
+      <p className="sub" style={{ textAlign: 'center' }}>Browse events month by month.</p>
       <div className={styles.events}>
         {events.map((event) => (
           <div key={event.id} className={styles.eventCard}>
@@ -22,6 +23,6 @@ export default function CalendarSection() {
           </div>
         ))}
       </div>
-    </section>
+    </>
   );
 }
