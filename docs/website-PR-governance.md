@@ -32,6 +32,8 @@
 - If canonical file missing or outdated, mark PR **Blocked** and request correction.
 - Legacy snapshots are preserved at `/docs/lgfc-homepage-legacy-v6.html`, `/docs/lgfc-homepage-legacy-v7.html`, etc.
 - MemberPage versioning follows the same pattern: `/docs/memberpage.html` (current standard) with versioned snapshots at `/docs/memberpage-v1.html`, future `/docs/memberpage-v2.html`, etc.
+- **Automated drift guard:** All PRs must pass `npm run test:homepage-structure` to prevent structural violations.
+- **Historical drift incidents:** See `/docs/drift-log.md` for documented cases and remediation guidance.
 
 ---
 
