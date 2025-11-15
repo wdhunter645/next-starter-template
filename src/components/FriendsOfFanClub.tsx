@@ -10,8 +10,9 @@ export default function FriendsOfFanClub() {
   ];
 
   return (
-    <section className={styles.friends} aria-labelledby="friends-title">
-      <h2 id="friends-title" className={styles.title}>Friends of the Fan Club</h2>
+    <>
+      <h2 className="section-title">Friends of the Fan Club</h2>
+      <p className="sub" style={{ textAlign: 'center' }}>Thanks to our supporters and partners.</p>
       <div className={styles.grid}>
         {sponsors.map((sponsor) => (
           <div key={sponsor.id} className={styles.card}>
@@ -20,6 +21,6 @@ export default function FriendsOfFanClub() {
           </div>
         ))}
       </div>
-    </section>
+    </>
   );
 }
