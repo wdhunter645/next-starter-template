@@ -41,11 +41,6 @@ export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
           </Link>
         </li>
         <li>
-          <Link href="/#social-wall" onClick={onClose}>
-            Social
-          </Link>
-        </li>
-        <li>
           <a href="https://www.bonfire.com/store/lou-gehrig-fan-club/" target="_blank" rel="noopener noreferrer">
             Store
           </a>
