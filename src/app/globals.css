@@ -336,7 +336,7 @@ body {
 }
 
 .topWhitespace {
-	height: 72px;
+	height: 16px;
 }
 
 /* Header helpers (class-based, low specificity) */
