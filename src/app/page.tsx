@@ -7,6 +7,7 @@ import FAQSection from '@/components/FAQSection';
 import MilestonesSection from '@/components/MilestonesSection';
 import FriendsOfFanClub from '@/components/FriendsOfFanClub';
 import CalendarSection from '@/components/CalendarSection';
+import SocialWall from '@/components/SocialWall';
 
 export default function HomePage() {
   return (
@@ -29,16 +30,7 @@ export default function HomePage() {
       {/* Section: Social Wall with Elfsight Embed */}
       <section id="social-wall" className="section-gap">
         <h2 className="section-title">Social Wall</h2>
-        <div style={{ width: '100%', minHeight: '600px' }}>
-          <iframe
-            src="https://805f3c5c67cd4edfbde62d5978e386a8.elf.site/"
-            width="100%"
-            height="600"
-            style={{ border: 'none', overflow: 'hidden' }}
-            loading="lazy"
-            allowFullScreen
-          ></iframe>
-        </div>
+        <SocialWall />
       </section>
 
       {/* Section: Recent Club Activity */}
