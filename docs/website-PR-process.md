@@ -40,6 +40,21 @@ For any PR affecting the homepage or Social Wall:
 - V6 token compliance tests (`tests/homepage.spec.ts`)
 - Social Wall regression guard (ensures widget container is present and section is not empty)
 
+#### Social Wall Specific Rules
+**When modifying homepage sections:**
+- If a PR touches the Social Wall section or `src/components/SocialWall.tsx`:
+  - Developer **must** review the Social Wall configuration description in `docs/lgfc-homepage-legacy-v6.html` (Social Wall subsection)
+  - Developer **must** confirm that the Elfsight script URL and app container class remain correct, or update them deliberately and document the change
+  - Developer **must** verify that:
+    - Script URL is `https://elfsightcdn.com/platform.js` (NOT static.elfsight.com)
+    - Widget container class is `elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8`
+    - `data-elfsight-app-lazy` attribute is present on the widget container
+    - Fallback text remains in the component
+  - Developer **must** test the deployed site to confirm the social feed renders (not just fallback text)
+  - Any configuration change must update both:
+    1. `src/components/SocialWall.tsx`
+    2. The Social Wall subsection in `docs/lgfc-homepage-legacy-v6.html`
+
 ---
 
 ### Commit Message Standard

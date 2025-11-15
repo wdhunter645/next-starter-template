@@ -129,10 +129,23 @@ Public front page for storytelling, engagement, and member recruitment.
 | Buttons | Accent color, 16 px font, 6 px radius |
 
 #### 4. Social Wall
+| Property | Value |
+|----------|-------|
 | Height | Variable (auto) |
-| Embed | Elfsight social feed `<div class="elfsight-app-…">` |
+| Embed | Elfsight social feed widget |
 | Lazy-load | Yes (below fold) |
 | Background | `--color-bg` |
+
+**Configuration:**
+- **Provider:** Elfsight Social Feed Widget
+- **Script URL (canonical):** `https://elfsightcdn.com/platform.js`
+- **Widget container class:** `elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8`
+- **Required attribute:** `data-elfsight-app-lazy`
+- **Implemented via:** `src/components/SocialWall.tsx`
+- **Fallback text:** "Loading social wall content..." (must remain in DOM)
+- **Tag line:** "Live fan posts from Facebook, Instagram, X, and Pinterest."
+
+**Note:** See `docs/lgfc-homepage-legacy-v6.html` Social Wall subsection for detailed configuration and change procedures.
 
 #### 5. Member Posts Preview
 | Card width | 280 px–320 px |

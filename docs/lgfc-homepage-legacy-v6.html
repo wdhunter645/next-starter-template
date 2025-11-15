@@ -223,6 +223,57 @@
         <p><strong>Embed placeholder:</strong> Insert Elfsight widget code here.</p>
         <blockquote>&lt;div class="elfsight-app-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"&gt;&lt;/div&gt;</blockquote>
       </div>
+      
+      <!-- 
+        ═══════════════════════════════════════════════════════════════════════════
+        SOCIAL WALL — CONFIGURATION & INTEGRATION
+        ═══════════════════════════════════════════════════════════════════════════
+        
+        Provider: Elfsight Social Feed Widget
+        
+        Canonical Configuration:
+        - Script URL: https://elfsightcdn.com/platform.js
+        - App container class: elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8
+        - Required attribute: data-elfsight-app-lazy
+        
+        DOM Location:
+        - Lives inside the Social Wall section: <section id="social-wall">
+        - Rendered by the SocialWall React component: src/components/SocialWall.tsx
+        
+        Implementation Structure:
+        <div class="social-wall-embed">
+          <div class="elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8" data-elfsight-app-lazy></div>
+          <p class="social-wall-fallback">Loading social wall content...</p>
+          <script src="https://elfsightcdn.com/platform.js" strategy="lazyOnload"></script>
+        </div>
+        
+        Behavioral Notes:
+        - Fallback text "Loading social wall content..." must remain in the DOM 
+          for cases where Elfsight fails to load
+        - The tag line "Live fan posts from Facebook, Instagram, X, and Pinterest." 
+          appears above the widget (as per v6 copy)
+        - Script loads with lazyOnload strategy (below fold optimization)
+        - Widget auto-initializes when Elfsight script loads
+        
+        Change Procedure:
+        Any change to the Elfsight widget (new app ID, different service) must:
+        1. Update the container class and/or script URL in SocialWall.tsx
+        2. Update this configuration subsection with the new ID/URL
+        3. Re-run lint/build: npm run lint && npm run build:cf
+        4. Test on deployed site to confirm feed renders
+        5. Document the change reason in PR description
+        
+        Historical Context:
+        - Social Wall has regressed multiple times due to undocumented changes
+        - Previous issues: wrong script URL (static.elfsight.com vs elfsightcdn.com),
+          missing data-elfsight-app-lazy attribute, complete removal of widget
+        - This configuration is now the single source of truth
+        
+        DO NOT modify the Social Wall implementation without referencing and updating
+        this configuration documentation. Any PR touching SocialWall.tsx MUST update
+        this section if configuration changes.
+        ═══════════════════════════════════════════════════════════════════════════
+      -->
     </section>
 
     <!-- Recent Club discussions -->
