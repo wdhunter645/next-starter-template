@@ -35,6 +35,21 @@ Use `/docs/memberpage.html` as the canonical MemberPage specification (versioned
 
 ---
 
+### CI Enforcement Policy
+- **All PRs to `main` must have green `lgfc-validate` status checks before merge.**
+- The `lgfc-validate` workflow runs on every PR and validates:
+  1. `npm run lint` — ESLint passes without errors
+  2. `npm test` — Unit/component tests pass
+  3. `npm run build:cf` — Cloudflare static build succeeds
+- **Manual merges that bypass CI checks are forbidden** except under explicit "emergency hotfix" protocol.
+- Emergency hotfix protocol:
+  - Must be approved by repository owner (@wdhunter645).
+  - Must include post-merge follow-up PR to restore compliance.
+  - Must be documented in PR thread with justification.
+- CI failures must be resolved **before** Cloudflare deployment, preventing production issues.
+
+---
+
 ### Notes and Prohibitions
 - Do not add new dependencies or frameworks for layout/spacing fixes (no Tailwind, no UI kits, no CSS-in-JS).
 - Maintain global CSS styling approach.
