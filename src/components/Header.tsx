@@ -67,9 +67,11 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
         }
       `}</style>
       <header>
-        <Link href="/" aria-label="Lou Gehrig Fan Club" className="logo-link">
-          <img className="logo-img" src="/IMG_1946.png" alt="LGFC" />
-        </Link>
+        {showLogo && (
+          <Link href={homeRoute} aria-label="Lou Gehrig Fan Club" className="logo-link">
+            <img className="logo-img" src="/IMG_1946.png" alt="LGFC" />
+          </Link>
+        )}
         <div className="header-right">
           <Link href="/member" className="login-btn">
             Login
