@@ -29,11 +29,7 @@ export default function HomePage() {
 
       {/* Section: Social Wall with Elfsight Embed */}
       <section id="social-wall" className="section-gap">
-        <h2 className="section-title">
-          <a href="https://elfsight.com/social-feed-widget/" target="_blank" rel="noopener noreferrer">
-            Social Wall
-          </a>
-        </h2>
+        <h2 className="section-title">Social Wall</h2>
         <SocialWall />
       </section>
 
