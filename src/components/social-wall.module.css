@@ -24,7 +24,7 @@
 .embed {
   max-width: 1120px;
   margin: 0 auto;
-  min-height: 520px; /* reserve space while widget loads */
+  min-height: 800px; /* reserve space while widget loads */
   display: flex;
   align-items: center;
   justify-content: center;
