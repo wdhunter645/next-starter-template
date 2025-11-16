@@ -1,20 +1,20 @@
 .spotlight {
-	background: var(--background);
+	background: var(--lgfc-bg-card);
 	padding: 4rem 1rem;
-	border-top: 1px solid var(--lgfc-divider, #dee2e6);
+	border-top: 1px solid var(--lgfc-border-soft);
 }
 
 .container {
-	max-width: var(--container-max, 1200px);
+	max-width: var(--maxw);
 	margin: 0 auto;
 	text-align: center;
 }
 
 .heading {
-	font-size: 2rem;
+	font-size: var(--lgfc-font-size-h1);
 	font-weight: 700;
 	margin-bottom: 3rem;
-	color: var(--foreground);
+	color: var(--lgfc-blue);
 }
 
 @media (min-width: 768px) {
@@ -49,7 +49,7 @@
 }
 
 .logoLink:focus {
-	outline: 2px solid var(--lgfc-blue, #002868);
+	outline: 2px solid var(--lgfc-blue);
 	outline-offset: 4px;
 	border-radius: 4px;
 }

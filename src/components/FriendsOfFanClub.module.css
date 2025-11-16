@@ -1,14 +1,14 @@
 .friends {
   text-align: center;
   padding: 2.5rem 1rem;
-  background: #ffffff;
+  background: var(--lgfc-bg-card);
 }
 
 .title {
-  font-size: 24px;
+  font-size: var(--lgfc-font-size-h2);
   font-weight: 700;
   margin-bottom: 2rem;
-  color: #0033cc;
+  color: var(--lgfc-blue);
 }
 
 .grid {
@@ -32,9 +32,9 @@
 }
 
 .card {
-  background: #f8f9fa;
-  border: 1px solid #e6e6e6;
-  border-radius: 12px;
+  background: var(--lgfc-bg-subtle);
+  border: 1px solid var(--lgfc-border-soft);
+  border-radius: var(--lgfc-radius-md);
   padding: 2rem 1rem;
   display: flex;
   flex-direction: column;
@@ -57,7 +57,7 @@
 
 .label {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: var(--lgfc-font-size-small);
   font-weight: 600;
-  color: #333;
+  color: var(--lgfc-text-main);
 }

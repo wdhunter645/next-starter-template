@@ -1,15 +1,9 @@
 .cta {
 	width: 100%;
-	background: var(--brand-blue, #0033cc);
+	background: var(--lgfc-blue);
 	color: white;
 	padding: 3rem 1rem;
 	margin-top: auto;
-}
-
-@media (prefers-color-scheme: dark) {
-	.cta {
-		background: var(--brand-blue, #0033cc);
-	}
 }
 
 .container {
@@ -50,9 +44,9 @@
 	font-size: 1.125rem;
 	font-weight: 600;
 	text-decoration: none;
-	background: white;
-	color: #0033cc;
-	border-radius: 0.5rem;
+	background: var(--lgfc-bg-card);
+	color: var(--lgfc-blue);
+	border-radius: var(--lgfc-radius-md);
 	transition: opacity 0.2s;
 	min-width: 10rem;
 	text-align: center;
@@ -66,11 +60,4 @@
 .button:focus {
 	outline: 2px solid white;
 	outline-offset: 4px;
-}
-
-@media (prefers-color-scheme: dark) {
-	.button {
-		background: white;
-		color: #0033cc;
-	}
 }
