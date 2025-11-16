@@ -1,21 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import Script from 'next/script';
 import styles from './social-wall.module.css';
 
 export default function SocialWall() {
-  useEffect(() => {
-    const scriptId = 'elfsight-platform-script';
-    if (document.getElementById(scriptId)) return;
-
-    const script = document.createElement('script');
-    script.id = scriptId;
-    script.src = 'https://static.elfsight.com/platform/platform.js';
-    script.defer = true;
-    script.setAttribute('data-use-service-core', '');
-    document.body.appendChild(script);
-  }, []);
-
   return (
     <section id="social-wall" className={styles.section}>
       <div className={styles.container}>
@@ -32,6 +20,11 @@ export default function SocialWall() {
           <p className={styles.fallback}>Loading social wall content…</p>
         </div>
       </div>
+
+      <Script
+        src="https://apps.elfsight.com/p/platform.js"
+        strategy="lazyOnload"
+      />
     </section>
   );
 }
