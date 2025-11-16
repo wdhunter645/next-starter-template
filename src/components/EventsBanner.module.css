@@ -1,7 +1,7 @@
 .banner {
 	padding: 3rem 1rem;
-	background: var(--background);
-	border-top: 1px solid rgba(128, 128, 128, 0.2);
+	background: var(--lgfc-bg-page);
+	border-top: 1px solid var(--lgfc-border-light);
 }
 
 .container {
@@ -10,10 +10,11 @@
 }
 
 .heading {
-	font-size: 2rem;
+	font-size: var(--lgfc-font-size-h1);
 	font-weight: 700;
 	text-align: center;
 	margin-bottom: 2rem;
+	color: var(--lgfc-blue);
 }
 
 .events {
@@ -31,36 +32,37 @@
 .eventCard {
 	display: block;
 	padding: 1.5rem;
-	background: rgba(128, 128, 128, 0.05);
-	border: 1px solid rgba(128, 128, 128, 0.2);
-	border-radius: 0.5rem;
+	background: var(--lgfc-bg-subtle);
+	border: 1px solid var(--lgfc-border-soft);
+	border-radius: var(--lgfc-radius-md);
 	text-decoration: none;
 	color: inherit;
 	transition: all 0.2s;
 }
 
 .eventCard:hover {
-	background: rgba(128, 128, 128, 0.1);
-	border-color: rgba(128, 128, 128, 0.3);
+	background: var(--lgfc-bg-card);
+	box-shadow: 0 4px 12px rgba(0, 51, 204, 0.15);
 	transform: translateY(-2px);
 }
 
 .eventCard:focus {
-	outline: 2px solid var(--foreground);
+	outline: 2px solid var(--lgfc-blue);
 	outline-offset: 2px;
 }
 
 .eventDate {
-	font-size: 0.875rem;
+	font-size: var(--lgfc-font-size-small);
 	font-weight: 600;
-	opacity: 0.7;
+	color: var(--lgfc-blue);
 	margin-bottom: 0.5rem;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 }
 
 .eventTitle {
-	font-size: 1.125rem;
+	font-size: var(--lgfc-font-size-h3);
 	font-weight: 600;
 	line-height: 1.4;
+	color: var(--lgfc-text-main);
 }

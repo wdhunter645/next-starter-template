@@ -1,12 +1,13 @@
 .footer {
-	border-top: 1px solid rgba(0, 0, 0, 0.08);
-	background: var(--background);
+	border-top: 1px solid var(--lgfc-border-light);
+	background: var(--lgfc-bg-card);
 	margin-top: auto;
 }
 
 @media (prefers-color-scheme: dark) {
 	.footer {
-		border-top-color: rgba(255, 255, 255, 0.145);
+		border-top-color: var(--lgfc-border-light);
+		background: var(--lgfc-bg-card);
 	}
 }
 
@@ -43,8 +44,9 @@
 }
 
 .copyright {
-	font-size: 0.875rem;
+	font-size: var(--lgfc-font-size-small);
 	text-align: center;
+	color: var(--lgfc-text-main);
 }
 
 @media (min-width: 768px) {
@@ -61,9 +63,9 @@
 }
 
 .link {
-	font-size: 0.875rem;
+	font-size: var(--lgfc-font-size-small);
 	text-decoration: none;
-	color: inherit;
+	color: var(--lgfc-blue);
 	padding: 0.25rem 0;
 	border-bottom: 2px solid transparent;
 	transition: border-color 0.2s;
@@ -79,10 +81,11 @@
 }
 
 .buildInfo {
-	font-size: 0.75rem;
+	font-size: var(--lgfc-font-size-fine);
 	text-align: center;
 	margin-top: 1rem;
 	opacity: 0.6;
+	color: var(--lgfc-text-muted);
 }
 
 @media (min-width: 768px) {
