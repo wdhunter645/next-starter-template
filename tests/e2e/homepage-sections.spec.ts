@@ -7,8 +7,6 @@ import { test, expect } from '@playwright/test';
  * 1. Structurally present in the DOM
  * 2. Actually visible to users (not hidden or empty)
  * 3. Contain non-empty content elements
- * 
- * Critical for preventing regressions like the Social Wall empty box issue.
  */
 
 test.describe('Homepage Section Visibility and Content', () => {
@@ -28,32 +26,6 @@ test.describe('Homepage Section Visibility and Content', () => {
     // Verify the section has visible content (not just an empty container)
     const weeklyContent = weeklySection.locator('div, p, a, img').first();
     await expect(weeklyContent).toBeVisible();
-  });
-
-  test('should display Social Wall section with Elfsight widget container', async ({ page }) => {
-    // Find the Social Wall section
-    const socialSection = page.locator('section#social-wall');
-    await expect(socialSection).toBeVisible();
-
-    // Verify the section heading is present
-    const socialHeading = page.getByRole('heading', { name: /social wall/i });
-    await expect(socialHeading).toBeVisible();
-
-    // Verify subtitle/description is visible
-    const socialDescription = page.getByText(/Live fan posts from/i);
-    await expect(socialDescription).toBeVisible();
-
-    // Verify the Elfsight widget container exists in the DOM (even if not visually rendered yet)
-    const elfsightContainer = page.locator('.elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8');
-    await expect(elfsightContainer).toBeAttached();
-
-    // Verify fallback text is present (for when script loads slowly or fails)
-    const fallbackText = page.getByText(/Loading social wall content/i);
-    await expect(fallbackText).toBeVisible();
-
-    // Verify the section has at least one visible element
-    const socialContent = socialSection.locator('div, p, h2').first();
-    await expect(socialContent).toBeVisible();
   });
 
   test('should display Friends of the Fan Club section with visible content', async ({ page }) => {
@@ -116,8 +88,8 @@ test.describe('Homepage Section Visibility and Content', () => {
     // Get all main sections in order
     const sections = await page.locator('section[id]').all();
     
-    // Verify we have at least 6 major sections
-    expect(sections.length).toBeGreaterThanOrEqual(6);
+    // Verify we have at least 5 major sections (removed social-wall)
+    expect(sections.length).toBeGreaterThanOrEqual(5);
 
     // Verify key sections exist by checking their IDs
     const sectionIds = await Promise.all(
@@ -126,32 +98,8 @@ test.describe('Homepage Section Visibility and Content', () => {
 
     expect(sectionIds).toContain('weekly');
     expect(sectionIds).toContain('join-cta');
-    expect(sectionIds).toContain('social-wall');
     expect(sectionIds).toContain('friends-of-the-club');
     expect(sectionIds).toContain('calendar');
     expect(sectionIds).toContain('faq-milestones');
-  });
-
-  test('Social Wall should not be an empty box - regression guard', async ({ page }) => {
-    // This test specifically guards against the Social Wall empty box regression
-    const socialSection = page.locator('section#social-wall');
-    await expect(socialSection).toBeVisible();
-
-    // Check that the section has meaningful content
-    const elfsightWidget = page.locator('.elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8');
-    const hasElfsightWidget = await elfsightWidget.count() > 0;
-    const hasFallbackText = await page.getByText(/Loading social wall content/i).isVisible();
-    const hasHeading = await page.getByRole('heading', { name: /social wall/i }).isVisible();
-
-    // At minimum, we should have the heading AND (widget container OR fallback text)
-    expect(hasHeading).toBeTruthy();
-    expect(hasElfsightWidget || hasFallbackText).toBeTruthy();
-
-    // Verify the section has a reasonable height (not collapsed to 0 or tiny)
-    const sectionBox = await socialSection.boundingBox();
-    expect(sectionBox).not.toBeNull();
-    if (sectionBox) {
-      expect(sectionBox.height).toBeGreaterThan(50); // At least 50px tall
-    }
   });
 });
