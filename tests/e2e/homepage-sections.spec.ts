@@ -57,8 +57,8 @@ test.describe('Homepage Section Visibility and Content', () => {
   });
 
   test('should display FAQ section with visible content', async ({ page }) => {
-    // Find the FAQ section (it's inside a two-column layout with milestones)
-    const faqSection = page.locator('section#faq-milestones');
+    // Find the FAQ section (now standalone)
+    const faqSection = page.locator('section#faq');
     await expect(faqSection).toBeVisible();
 
     // Verify FAQ heading is present (actual heading is "FAQ and Ask a Question")
@@ -71,8 +71,8 @@ test.describe('Homepage Section Visibility and Content', () => {
   });
 
   test('should display Milestones section with visible content', async ({ page }) => {
-    // Find the milestones section (it's inside a two-column layout with FAQ)
-    const milestonesSection = page.locator('section#faq-milestones');
+    // Find the milestones section (now standalone)
+    const milestonesSection = page.locator('section#milestones');
     await expect(milestonesSection).toBeVisible();
 
     // Verify Milestones heading is present
@@ -84,12 +84,26 @@ test.describe('Homepage Section Visibility and Content', () => {
     await expect(milestonesContent).toBeVisible();
   });
 
+  test('should display Social Wall section with visible content', async ({ page }) => {
+    // Find the Social Wall section
+    const socialWallSection = page.locator('section#social-wall');
+    await expect(socialWallSection).toBeVisible();
+
+    // Verify Social Wall heading is present
+    const socialWallHeading = page.getByRole('heading', { name: /social wall/i });
+    await expect(socialWallHeading).toBeVisible();
+
+    // Verify Social Wall has subtitle
+    const socialWallSubtitle = page.getByText(/live fan posts from facebook/i);
+    await expect(socialWallSubtitle).toBeVisible();
+  });
+
   test('should verify all sections are present in correct order', async ({ page }) => {
     // Get all main sections in order
     const sections = await page.locator('section[id]').all();
     
-    // Verify we have at least 5 major sections (removed social-wall)
-    expect(sections.length).toBeGreaterThanOrEqual(5);
+    // Verify we have at least 7 major sections (including social-wall)
+    expect(sections.length).toBeGreaterThanOrEqual(7);
 
     // Verify key sections exist by checking their IDs
     const sectionIds = await Promise.all(
@@ -98,8 +112,11 @@ test.describe('Homepage Section Visibility and Content', () => {
 
     expect(sectionIds).toContain('weekly');
     expect(sectionIds).toContain('join-cta');
+    expect(sectionIds).toContain('social-wall');
+    expect(sectionIds).toContain('recent-club-discussions');
     expect(sectionIds).toContain('friends-of-the-club');
+    expect(sectionIds).toContain('milestones');
     expect(sectionIds).toContain('calendar');
-    expect(sectionIds).toContain('faq-milestones');
+    expect(sectionIds).toContain('faq');
   });
 });

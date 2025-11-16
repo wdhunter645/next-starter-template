@@ -1,24 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 
 export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [role, setRole] = useState('');
-
-  useEffect(() => {
-    // Check auth cookies
-    const cookies = document.cookie.split(';').map(c => c.trim());
-    const isLoggedIn = cookies.some(cookie => cookie === 'lgfc_logged_in=true');
-    const userRole = cookies.find(cookie => cookie.startsWith('lgfc_role='))?.split('=')[1] || '';
-    
-    setLoggedIn(isLoggedIn);
-    setRole(userRole);
-  }, []);
-
-  const isAdmin = role === 'admin' || role === 'moderator';
-
   return (
     <div className="mast-drawer" id="hamburger-menu">
       <button className="mast-drawer-close" onClick={onClose} aria-label="Close menu">
@@ -46,22 +30,14 @@ export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
           </a>
         </li>
         <li>
-          {loggedIn ? (
-            <Link href="/member" onClick={onClose}>
-              Members Area
-            </Link>
-          ) : (
-            <span className="menu-placeholder" aria-label="Members Area (login required)">Members Area</span>
-          )}
+          <Link href="/member" onClick={onClose}>
+            Members Area
+          </Link>
         </li>
         <li>
-          {loggedIn && isAdmin ? (
-            <Link href="/admin" onClick={onClose}>
-              Admin
-            </Link>
-          ) : (
-            <span className="menu-placeholder" aria-label="Admin (restricted access)">Admin</span>
-          )}
+          <Link href="/admin" onClick={onClose}>
+            Admin
+          </Link>
         </li>
       </ul>
     </div>

@@ -8,6 +8,7 @@ import MilestonesSection from '@/components/MilestonesSection';
 import FriendsOfFanClub from '@/components/FriendsOfFanClub';
 import CalendarSection from '@/components/CalendarSection';
 import JoinCTA from '@/components/JoinCTA';
+import SocialWall from '@/components/SocialWall';
 
 export default function HomePage() {
   return (
@@ -32,6 +33,9 @@ export default function HomePage() {
         <JoinCTA />
       </section>
 
+      {/* Section: Social Wall */}
+      <SocialWall />
+
       {/* Section: Recent Club discussions */}
       <section id="recent-club-discussions" className="container section-gap">
         <h2 className="section-title">Recent Club discussions</h2>
@@ -44,20 +48,20 @@ export default function HomePage() {
         <FriendsOfFanClub />
       </section>
 
+      {/* Section: Milestones */}
+      <section id="milestones" className="container section-gap">
+        <MilestonesSection />
+      </section>
+
       {/* Section: Calendar */}
       <section id="calendar" className="container section-gap">
         <CalendarSection />
       </section>
 
-      {/* Section: FAQ and Milestones */}
-      <section id="faq-milestones" className="section-gap">
-        <div className="container two-col" role="region" aria-label="FAQ and Milestones">
-          <div className="section--tight">
-            <FAQSection />
-          </div>
-          <div className="section--tight">
-            <MilestonesSection />
-          </div>
+      {/* Section: FAQ */}
+      <section id="faq" className="section-gap">
+        <div className="container">
+          <FAQSection />
         </div>
       </section>
     </>
