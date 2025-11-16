@@ -18,12 +18,15 @@
 	--lgfc-blue: #0033cc;
 	--lgfc-blue-hover: #0028a3;
 	--lgfc-navy: #001a66;
+	--lgfc-dark: #222222;
 	--lgfc-text-main: #333333;
 	--lgfc-text-muted: #666666;
 	--lgfc-text-light: #999999;
 	--lgfc-bg-page: #f5f7fb;
+	--lgfc-bg-light: #f8f9fa;
 	--lgfc-bg-card: #ffffff;
 	--lgfc-bg-subtle: #f8f9ff;
+	--lgfc-border: #e0e0e0;
 	--lgfc-border-soft: #dde3f5;
 	--lgfc-border-light: #e8ecf5;
 	
@@ -61,6 +64,63 @@ body {
 	font-size: var(--lgfc-font-size-body);
 	line-height: 1.6;
 	padding-top: 0;
+}
+
+/* Canonical heading styles */
+h1 {
+	font-size: var(--lgfc-font-size-h1);
+	font-weight: 700;
+	line-height: 1.2;
+	color: var(--lgfc-blue);
+	margin: 0 0 0.75rem 0;
+}
+
+h2 {
+	font-size: var(--lgfc-font-size-h2);
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--lgfc-blue);
+	margin: 0 0 0.75rem 0;
+}
+
+h3 {
+	font-size: var(--lgfc-font-size-h3);
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--lgfc-text-main);
+	margin: 0 0 0.5rem 0;
+}
+
+h4 {
+	font-size: var(--lgfc-font-size-body);
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--lgfc-text-main);
+	margin: 0 0 0.5rem 0;
+}
+
+p, li {
+	font-size: var(--lgfc-font-size-body);
+	line-height: 1.6;
+	color: var(--lgfc-text-main);
+}
+
+a {
+	color: var(--lgfc-blue);
+	text-decoration: none;
+}
+
+a:hover {
+	color: var(--lgfc-blue-hover);
+	text-decoration: underline;
+}
+
+/* Mobile typography adjustments */
+@media (max-width: 768px) {
+	:root {
+		--lgfc-font-size-h1: 1.5rem; /* ~24px on mobile */
+		--lgfc-font-size-h2: 1.25rem; /* ~20px on mobile */
+	}
 }
 
 /* Floating mast (logo + hamburger) */
@@ -141,7 +201,7 @@ body {
 }
 
 .mast-drawer-menu .menu-placeholder {
-	color: #999;
+	color: var(--lgfc-text-light);
 	cursor: default;
 }
 
@@ -417,14 +477,19 @@ body {
 }
 
 .memberpage-title {
-	font-size: 2.1rem;
+	font-size: var(--lgfc-font-size-h1);
+	font-weight: 700;
 	line-height: 1.2;
 	margin: 0 0 0.5rem;
+	color: var(--lgfc-blue);
 }
 
 .memberpage-section-title {
-	font-size: 1.6rem;
+	font-size: var(--lgfc-font-size-h2);
+	font-weight: 700;
+	line-height: 1.3;
 	margin: 0 0 0.25rem;
+	color: var(--lgfc-blue);
 }
 
 .memberpage-subtitle {
@@ -470,8 +535,9 @@ body {
 
 .memberpage-card-title {
 	margin: 0 0 0.5rem;
-	font-size: 1.1rem;
+	font-size: var(--lgfc-font-size-h3);
 	font-weight: 600;
+	color: var(--lgfc-text-main);
 }
 
 .memberpage-card-text {
@@ -533,7 +599,7 @@ body {
 .memberpage-card-note {
 	margin-top: 0.5rem;
 	font-size: 0.8rem;
-	color: #666;
+	color: var(--lgfc-text-muted);
 }
 
 /* Events list */
@@ -572,7 +638,7 @@ body {
 
 .memberpage-events-location {
 	font-size: 0.85rem;
-	color: #666;
+	color: var(--lgfc-text-muted);
 }
 
 /* Form stubs */
@@ -592,7 +658,7 @@ body {
 	font-weight: 600;
 	text-transform: uppercase;
 	letter-spacing: 0.04em;
-	color: #555;
+	color: var(--lgfc-text-main);
 }
 
 .memberpage-input,
@@ -613,7 +679,7 @@ body {
 
 .memberpage-input::placeholder,
 .memberpage-textarea::placeholder {
-	color: #999;
+	color: var(--lgfc-text-light);
 }
 
 .memberpage-upload-placeholder {
@@ -621,7 +687,7 @@ body {
 	border: 1px dashed #ccd3ea;
 	padding: 0.6rem 0.7rem;
 	font-size: 0.85rem;
-	color: #666;
+	color: var(--lgfc-text-muted);
 }
 
 /* Threads / replies */
@@ -632,12 +698,14 @@ body {
 
 .memberpage-thread-title {
 	margin: 0 0 0.2rem;
-	font-size: 1.1rem;
+	font-size: var(--lgfc-font-size-h3);
+	font-weight: 600;
+	color: var(--lgfc-text-main);
 }
 
 .memberpage-thread-meta {
 	font-size: 0.8rem;
-	color: #666;
+	color: var(--lgfc-text-muted);
 	display: flex;
 	gap: 0.4rem;
 	align-items: center;
@@ -689,7 +757,7 @@ body {
 
 .memberpage-reply-meta {
 	font-size: 0.8rem;
-	color: #666;
+	color: var(--lgfc-text-muted);
 	display: flex;
 	gap: 0.35rem;
 	align-items: center;
@@ -734,14 +802,15 @@ body {
 
 .memberpage-archive-title {
 	margin: 0 0 0.5rem;
-	font-size: 1.15rem;
+	font-size: var(--lgfc-font-size-h3);
 	font-weight: 600;
+	color: var(--lgfc-text-main);
 }
 
 .memberpage-archive-text {
 	margin: 0 0 0.75rem;
 	font-size: 0.92rem;
-	color: #555;
+	color: var(--lgfc-text-main);
 	line-height: 1.5;
 }
 
