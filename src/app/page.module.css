@@ -18,7 +18,7 @@
 	min-height: var(--hero-min-h);
 	display: grid;
 	place-items: center;
-	background: #0033cc;
+	background: var(--lgfc-blue);
 }
 
 .container {
@@ -30,7 +30,7 @@
 }
 
 .title {
-	font-size: 2.5rem;
+	font-size: var(--lgfc-font-size-hero);
 	font-weight: 700;
 	margin-bottom: 0.75rem;
 	line-height: 1.2;
@@ -63,7 +63,7 @@
 	}
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
 	.title {
 		font-size: 3.5rem;
 	}

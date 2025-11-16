@@ -42,14 +42,15 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           align-items: center;
           justify-content: center;
           padding: 10px 16px;
-          border-radius: 12px;
+          border-radius: var(--lgfc-radius-md);
           border: 1px solid rgba(0, 0, 0, 0.15);
-          background: #fff;
-          color: var(--brand-blue);
+          background: var(--lgfc-bg-card);
+          color: var(--lgfc-blue);
           font-weight: 600;
           text-decoration: none;
           transition: opacity 0.2s;
           font-size: 14px;
+          font-family: var(--lgfc-font-family);
         }
         .login-btn:hover {
           opacity: 0.9;

@@ -1,14 +1,14 @@
 .calendar {
   text-align: center;
   padding: 2.5rem 1rem;
-  background: #f8f9fa;
+  background: var(--lgfc-bg-subtle);
 }
 
 .title {
-  font-size: 24px;
+  font-size: var(--lgfc-font-size-h2);
   font-weight: 700;
   margin-bottom: 2rem;
-  color: #0033cc;
+  color: var(--lgfc-blue);
 }
 
 .events {
@@ -20,9 +20,9 @@
 }
 
 .eventCard {
-  background: #ffffff;
-  border: 1px solid #e6e6e6;
-  border-radius: 12px;
+  background: var(--lgfc-bg-card);
+  border: 1px solid var(--lgfc-border-soft);
+  border-radius: var(--lgfc-radius-md);
   padding: 1.5rem;
   text-align: left;
   display: flex;
@@ -38,22 +38,22 @@
 
 .date {
   font-weight: 700;
-  color: #0033cc;
-  font-size: 0.875rem;
+  color: var(--lgfc-blue);
+  font-size: var(--lgfc-font-size-small);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .eventTitle {
-  font-size: 1.125rem;
+  font-size: var(--lgfc-font-size-h3);
   font-weight: 600;
-  color: #333;
+  color: var(--lgfc-text-main);
   line-height: 1.4;
 }
 
 .viewMore {
-  font-size: 0.875rem;
-  color: #0033cc;
+  font-size: var(--lgfc-font-size-small);
+  color: var(--lgfc-blue);
   text-decoration: none;
   font-weight: 600;
   align-self: flex-start;
@@ -62,7 +62,7 @@
 }
 
 .viewMore:hover {
-  border-bottom-color: #0033cc;
+  border-bottom-color: var(--lgfc-blue);
 }
 
 @media (min-width: 768px) {
