@@ -35,8 +35,8 @@ export default function NewsPage() {
   return (
     <main style={{ maxWidth: 960, margin: "0 auto", padding: "2rem 1.25rem 3rem" }}>
       <header style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ fontSize: "2rem", margin: 0 }}>News &amp; Q&amp;A</h1>
-        <p style={{ marginTop: "0.5rem", color: "#555", maxWidth: 720 }}>
+        <h1 style={{ fontSize: "var(--lgfc-font-size-h1)", margin: 0, color: "var(--lgfc-blue)" }}>News &amp; Q&amp;A</h1>
+        <p style={{ marginTop: "0.5rem", color: "var(--lgfc-text-muted)", maxWidth: 720 }}>
           Updates from the Lou Gehrig Fan Club, including project progress, upcoming events, and
           future plans for fan Q&amp;A and member conversations.
         </p>
@@ -48,13 +48,13 @@ export default function NewsPage() {
             key={item.date + item.title}
             style={{
               padding: "0.9rem 0",
-              borderBottom: "1px solid #e1e4f2",
+              borderBottom: "1px solid var(--lgfc-border-light)",
             }}
           >
             <div
               style={{
-                fontSize: "0.8rem",
-                color: "#666",
+                fontSize: "var(--lgfc-font-size-fine)",
+                color: "var(--lgfc-text-muted)",
                 marginBottom: "0.15rem",
                 display: "flex",
                 gap: "0.5rem",
@@ -65,8 +65,8 @@ export default function NewsPage() {
               <span>•</span>
               <span>{item.type}</span>
             </div>
-            <h2 style={{ margin: 0, fontSize: "1.05rem" }}>{item.title}</h2>
-            <p style={{ margin: "0.25rem 0 0.4rem", fontSize: "0.9rem", color: "#444" }}>
+            <h2 style={{ margin: 0, fontSize: "var(--lgfc-font-size-h3)" }}>{item.title}</h2>
+            <p style={{ margin: "0.25rem 0 0.4rem", fontSize: "var(--lgfc-font-size-small)", color: "var(--lgfc-text-main)" }}>
               {item.summary}
             </p>
           </article>
@@ -74,8 +74,8 @@ export default function NewsPage() {
       </section>
 
       <section style={{ marginTop: "1.75rem" }}>
-        <h2 style={{ fontSize: "1.25rem", marginBottom: "0.5rem" }}>Future Q&amp;A</h2>
-        <p style={{ fontSize: "0.9rem", color: "#555" }}>
+        <h2 style={{ fontSize: "var(--lgfc-font-size-h2)", marginBottom: "0.5rem", color: "var(--lgfc-blue)" }}>Future Q&amp;A</h2>
+        <p style={{ fontSize: "var(--lgfc-font-size-small)", color: "var(--lgfc-text-muted)" }}>
           Member-only Q&amp;A sessions will eventually live in the members area, but this page
           will always serve as the public front door for major announcements and summaries of
           those discussions.

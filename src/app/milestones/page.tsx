@@ -61,8 +61,8 @@ export default function MilestonesPage() {
   return (
     <main style={{ maxWidth: 960, margin: "0 auto", padding: "2rem 1.25rem 3rem" }}>
       <header style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ fontSize: "2rem", margin: 0 }}>Lou Gehrig Milestones</h1>
-        <p style={{ marginTop: "0.5rem", color: "#555", maxWidth: 680 }}>
+        <h1 style={{ fontSize: "var(--lgfc-font-size-h1)", margin: 0, color: "var(--lgfc-blue)" }}>Lou Gehrig Milestones</h1>
+        <p style={{ marginTop: "0.5rem", color: "var(--lgfc-text-muted)", maxWidth: 680 }}>
           A high-level timeline of key moments in Lou Gehrig&apos;s life and career. The club
           will expand this into a full historical timeline in future phases.
         </p>
@@ -77,14 +77,14 @@ export default function MilestonesPage() {
               gridTemplateColumns: "84px minmax(0, 1fr)",
               columnGap: "1rem",
               padding: "0.75rem 0",
-              borderTop: index === 0 ? "1px solid #e1e4f2" : "none",
-              borderBottom: "1px solid #e1e4f2",
+              borderTop: index === 0 ? "1px solid var(--lgfc-border-light)" : "none",
+              borderBottom: "1px solid var(--lgfc-border-light)",
             }}
           >
-            <div style={{ fontWeight: 700, color: "#0033cc" }}>{m.year}</div>
+            <div style={{ fontWeight: 700, color: "var(--lgfc-blue)" }}>{m.year}</div>
             <div>
-              <h2 style={{ margin: 0, fontSize: "1rem" }}>{m.title}</h2>
-              <p style={{ margin: "0.25rem 0 0.4rem", fontSize: "0.9rem", color: "#444" }}>
+              <h2 style={{ margin: 0, fontSize: "var(--lgfc-font-size-body)", fontWeight: 600 }}>{m.title}</h2>
+              <p style={{ margin: "0.25rem 0 0.4rem", fontSize: "var(--lgfc-font-size-small)", color: "var(--lgfc-text-main)" }}>
                 {m.description}
               </p>
             </div>
@@ -93,7 +93,7 @@ export default function MilestonesPage() {
       </section>
 
       <section style={{ marginTop: "1.75rem" }}>
-        <p style={{ fontSize: "0.9rem", color: "#555" }}>
+        <p style={{ fontSize: "var(--lgfc-font-size-small)", color: "var(--lgfc-text-muted)" }}>
           This page is a starting point. The long-term goal is a detailed, source-backed
           historical timeline, with links to articles, books, and archival materials curated by
           the Lou Gehrig Fan Club.
