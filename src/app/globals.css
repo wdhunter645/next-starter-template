@@ -363,7 +363,7 @@ body {
 }
 
 .topWhitespace {
-	height: 16px;
+	height: 8px;
 }
 
 /* Header helpers (class-based, low specificity) */
