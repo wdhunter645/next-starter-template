@@ -7,7 +7,6 @@ import FAQSection from '@/components/FAQSection';
 import MilestonesSection from '@/components/MilestonesSection';
 import FriendsOfFanClub from '@/components/FriendsOfFanClub';
 import CalendarSection from '@/components/CalendarSection';
-import SocialWall from '@/components/SocialWall';
 import JoinCTA from '@/components/JoinCTA';
 
 export default function HomePage() {
@@ -31,13 +30,6 @@ export default function HomePage() {
       {/* Section: Membership CTA */}
       <section id="join-cta" className="container section-gap">
         <JoinCTA />
-      </section>
-
-      {/* Section: Social Wall with Elfsight Embed */}
-      <section id="social-wall" className="container section-gap">
-        <h2 className="section-title">Social Wall</h2>
-        <p className="sub" style={{ textAlign: 'center' }}>Live fan posts from Facebook, Instagram, X, and Pinterest.</p>
-        <SocialWall />
       </section>
 
       {/* Section: Recent Club discussions */}
