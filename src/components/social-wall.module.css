@@ -12,13 +12,13 @@
   font-weight: 700;
   margin-bottom: 8px;
   text-align: center;
-  color: #0033cc;
+  color: var(--lgfc-blue);
 }
 
 .sectionSubtitle {
   margin-bottom: 24px;
   text-align: center;
-  color: #333333;
+  color: var(--lgfc-text-main);
 }
 
 .embed {
@@ -37,5 +37,5 @@
   left: 50%;
   transform: translateX(-50%);
   font-size: 14px;
-  color: #666666;
+  color: var(--lgfc-text-muted);
 }
