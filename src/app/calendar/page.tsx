@@ -1,22 +1,81 @@
-import type { Metadata } from "next";
+import React from "react";
 
-export const metadata: Metadata = {
-	title: "Calendar - LGFC",
-	description: "View upcoming events and important dates for the Lou Gehrig Fan Club.",
+type EventItem = {
+  date: string;
+  name: string;
+  location: string;
+  description: string;
 };
 
-export default function Calendar() {
-	return (
-		<div className="min-h-screen flex flex-col items-center justify-center p-8">
-			<div className="max-w-4xl w-full space-y-8">
-				<div className="text-center">
-					<h1 className="text-4xl font-bold mb-4">Calendar</h1>
-					<p className="text-lg text-foreground/80">
-						View upcoming events and important dates for the fan club.
-					</p>
-					{/* TODO: Add calendar data hooks and event display */}
-				</div>
-			</div>
-		</div>
-	);
+const events: EventItem[] = [
+  {
+    date: "Dec 15, 2025",
+    name: "Annual Lou Gehrig Memorial Event",
+    location: "Yankee Stadium / Virtual",
+    description:
+      "A day to remember Lou Gehrig&apos;s life and legacy, featuring fan stories, historical content, and ALS awareness.",
+  },
+  {
+    date: "Jan 8, 2026",
+    name: "Virtual Q&amp;A with Baseball Historians",
+    location: "Online",
+    description:
+      "Planned session with historians to discuss Gehrig&apos;s career, the 1927 Yankees, and the evolution of first base.",
+  },
+  {
+    date: "Feb 3, 2026",
+    name: "Fan Club Meet &amp; Greet",
+    location: "New York / Hybrid",
+    description:
+      "Informal gathering for club members and supporters, with an emphasis on community building and charitable planning.",
+  },
+];
+
+export default function CalendarPage() {
+  return (
+    <main style={{ maxWidth: 960, margin: "0 auto", padding: "2rem 1.25rem 3rem" }}>
+      <header style={{ marginBottom: "1.5rem" }}>
+        <h1 style={{ fontSize: "2rem", margin: 0 }}>Club Calendar</h1>
+        <p style={{ marginTop: "0.5rem", color: "#555", maxWidth: 720 }}>
+          A snapshot of upcoming Lou Gehrig Fan Club events. As the club grows, this page will
+          sync with the member calendar and event registration tools.
+        </p>
+      </header>
+
+      <section aria-label="Upcoming events">
+        {events.map((event) => (
+          <article
+            key={event.date + event.name}
+            style={{
+              padding: "0.9rem 0",
+              borderBottom: "1px solid #e1e4f2",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "0.85rem",
+                color: "#0033cc",
+                fontWeight: 600,
+                marginBottom: "0.2rem",
+              }}
+            >
+              {event.date}
+            </div>
+            <h2 style={{ margin: 0, fontSize: "1.05rem" }}>{event.name}</h2>
+            <div style={{ fontSize: "0.85rem", color: "#666", marginBottom: "0.25rem" }}>
+              {event.location}
+            </div>
+            <p style={{ margin: 0, fontSize: "0.9rem", color: "#444" }}>{event.description}</p>
+          </article>
+        ))}
+      </section>
+
+      <section style={{ marginTop: "1.75rem" }}>
+        <p style={{ fontSize: "0.9rem", color: "#555" }}>
+          Dates and details are subject to change. Final information will always be shared via
+          the News &amp; Q&amp;A page and club email announcements.
+        </p>
+      </section>
+    </main>
+  );
 }
