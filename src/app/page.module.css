@@ -63,15 +63,15 @@
 	}
 }
 
-@media (min-width: 768px) {
+@media (min-width: 640px) {
 	.title {
-		font-size: 3.5rem;
+		font-size: 4rem;
 	}
 }
 
 @media (min-width: 1024px) {
 	.title {
-		font-size: 4rem;
+		font-size: 4.5rem;
 	}
 }
 
