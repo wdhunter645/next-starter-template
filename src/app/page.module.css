@@ -30,7 +30,7 @@
 }
 
 .title {
-	font-size: var(--lgfc-font-size-hero);
+	font-size: 3rem;
 	font-weight: 700;
 	margin-bottom: 0.75rem;
 	line-height: 1.2;

@@ -1,6 +1,5 @@
 .section {
   padding: 64px 16px;
-  background: var(--lgfc-bg-subtle);
 }
 
 .container {
@@ -9,17 +8,17 @@
 }
 
 .sectionTitle {
-  font-size: var(--lgfc-font-size-h2);
+  font-size: 24px;
   font-weight: 700;
   margin-bottom: 8px;
   text-align: center;
-  color: var(--lgfc-blue);
+  color: #0033cc;
 }
 
 .sectionSubtitle {
   margin-bottom: 24px;
   text-align: center;
-  color: var(--lgfc-text-main);
+  color: #333333;
 }
 
 .embed {
@@ -37,6 +36,6 @@
   bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: var(--lgfc-font-size-small);
-  color: var(--lgfc-text-muted);
+  font-size: 14px;
+  color: #666666;
 }
