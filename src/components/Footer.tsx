@@ -3,10 +3,6 @@ import styles from "./Footer.module.css";
 
 // Environment variables with safe fallbacks
 const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Lou Gehrig Fan Club";
-const commitSha = process.env.CF_PAGES_COMMIT_SHA;
-const shortSha = commitSha ? commitSha.substring(0, 7) : null;
-// Version from env var or default (package.json not available at runtime in Cloudflare)
-const version = process.env.NEXT_PUBLIC_APP_VERSION || "1.0.0";
 
 export default function Footer() {
 	return (
@@ -27,12 +23,6 @@ export default function Footer() {
 							Admin
 						</Link>
 					</div>
-				</div>
-				<div className={styles.buildInfo}>
-					<p>
-						v{version}
-						{shortSha && ` • ${shortSha}`}
-					</p>
 				</div>
 			</div>
 		</footer>
