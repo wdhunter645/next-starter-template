@@ -23,8 +23,8 @@ describe('Homepage Structure - V6 Specification Enforcement', () => {
     // Get all sections and headings to verify order
     const sections = container.querySelectorAll('section, header');
     
-    // Assert we have the expected number of major sections (removed social-wall)
-    expect(sections.length).toBeGreaterThanOrEqual(6);
+    // Assert we have the expected number of major sections (including social-wall)
+    expect(sections.length).toBeGreaterThanOrEqual(8);
   });
 
   it('should have Hero/Banner section first', () => {
@@ -90,6 +90,17 @@ describe('Homepage Structure - V6 Specification Enforcement', () => {
     expect(calendarHeading).toBeInTheDocument();
   });
 
+  it('should have Social Wall section', () => {
+    render(<HomePage />);
+    
+    // Social Wall section heading
+    const socialWallHeading = screen.getByRole('heading', { 
+      name: /social wall/i,
+      level: 2 
+    });
+    expect(socialWallHeading).toBeInTheDocument();
+  });
+
   it('should have FAQ and Milestones section', () => {
     render(<HomePage />);
     
@@ -108,7 +119,7 @@ describe('Homepage Structure - V6 Specification Enforcement', () => {
     expect(milestonesHeading).toBeInTheDocument();
   });
 
-  it('should maintain section order: Hero -> Weekly -> Join -> Discussions -> Friends -> Calendar -> FAQ/Milestones', () => {
+  it('should maintain section order: Hero -> Weekly -> Join -> Social Wall -> Discussions -> Friends -> Milestones -> Calendar -> FAQ', () => {
     const { container } = render(<HomePage />);
     
     // Collect all h1 and h2 headings in order
@@ -119,28 +130,30 @@ describe('Homepage Structure - V6 Specification Enforcement', () => {
     // Define expected order by checking indices
     const heroIndex = headings.findIndex(h => h.includes('welcome to the lou gehrig fan club'));
     const weeklyIndex = headings.findIndex(h => h.includes('weekly photo matchup'));
+    const socialWallIndex = headings.findIndex(h => h.includes('social wall'));
     const discussionsIndex = headings.findIndex(h => h.includes('recent club discussions'));
     const friendsIndex = headings.findIndex(h => h.includes('friends of the fan club'));
+    const milestonesIndex = headings.findIndex(h => h === 'milestones');
     const calendarIndex = headings.findIndex(h => h === 'calendar');
     const faqIndex = headings.findIndex(h => h.includes('faq'));
-    const milestonesIndex = headings.findIndex(h => h === 'milestones');
     
     // Verify all sections are found
     expect(heroIndex).toBeGreaterThanOrEqual(0);
     expect(weeklyIndex).toBeGreaterThanOrEqual(0);
+    expect(socialWallIndex).toBeGreaterThanOrEqual(0);
     expect(discussionsIndex).toBeGreaterThanOrEqual(0);
     expect(friendsIndex).toBeGreaterThanOrEqual(0);
+    expect(milestonesIndex).toBeGreaterThanOrEqual(0);
     expect(calendarIndex).toBeGreaterThanOrEqual(0);
     expect(faqIndex).toBeGreaterThanOrEqual(0);
-    expect(milestonesIndex).toBeGreaterThanOrEqual(0);
     
     // Verify order (each section should come after the previous)
     expect(heroIndex).toBeLessThan(weeklyIndex);
-    expect(weeklyIndex).toBeLessThan(discussionsIndex);
+    expect(weeklyIndex).toBeLessThan(socialWallIndex);
+    expect(socialWallIndex).toBeLessThan(discussionsIndex);
     expect(discussionsIndex).toBeLessThan(friendsIndex);
-    expect(friendsIndex).toBeLessThan(calendarIndex);
+    expect(friendsIndex).toBeLessThan(milestonesIndex);
+    expect(milestonesIndex).toBeLessThan(calendarIndex);
     expect(calendarIndex).toBeLessThan(faqIndex);
-    // FAQ and Milestones can be in either order since they're in same section
-    expect(Math.min(faqIndex, milestonesIndex)).toBeGreaterThan(calendarIndex);
   });
 });

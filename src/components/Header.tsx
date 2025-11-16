@@ -17,7 +17,7 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
       <style jsx>{`
         header {
           position: relative;
-          height: 64px;
+          height: 120px;
         }
         .logo-link {
           position: absolute;
@@ -26,7 +26,7 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           display: block;
         }
         .logo-img {
-          height: 48px;
+          height: 96px;
           width: auto;
         }
         .header-right {
