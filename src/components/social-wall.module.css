@@ -1,14 +1,14 @@
 .wall {
   text-align: center;
   padding: 0 16px;
-  background: #f8f9fa;
+  background: var(--lgfc-bg-subtle);
 }
 
 .title {
-  font-size: 24px;
+  font-size: var(--lgfc-font-size-h2);
   font-weight: 700;
   margin-bottom: 16px;
-  color: #0033cc;
+  color: var(--lgfc-blue);
 }
 
 .embed {
@@ -24,9 +24,9 @@
 .fallback {
   width: 100%;
   padding: 24px;
-  border-radius: 10px;
-  background: #ffffff;
-  border: 1px solid #e6e6e6;
+  border-radius: var(--lgfc-radius-md);
+  background: var(--lgfc-bg-card);
+  border: 1px solid var(--lgfc-border-soft);
   box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-  color: #333;
+  color: var(--lgfc-text-main);
 }
