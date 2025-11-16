@@ -361,3 +361,353 @@ body {
 	top: 12px;
 	right: 16px;
 }
+
+/* Memberpage layout */
+
+.memberpage {
+	max-width: 1120px;
+	margin: 0 auto;
+	padding: 2.5rem 1.5rem 3.5rem;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.memberpage-section {
+	margin-bottom: 3rem;
+}
+
+.memberpage-section-header {
+	margin-bottom: 1.5rem;
+}
+
+.memberpage-title {
+	font-size: 2.1rem;
+	line-height: 1.2;
+	margin: 0 0 0.5rem;
+}
+
+.memberpage-section-title {
+	font-size: 1.6rem;
+	margin: 0 0 0.25rem;
+}
+
+.memberpage-subtitle {
+	margin: 0;
+	color: #555;
+	font-size: 0.95rem;
+}
+
+/* Cards and grids */
+
+.memberpage-welcome-grid,
+.memberpage-discussions-grid,
+.memberpage-archives-grid {
+	display: grid;
+	gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+	.memberpage-welcome-grid {
+		grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr);
+		align-items: flex-start;
+	}
+
+	.memberpage-discussions-grid {
+		grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
+		align-items: flex-start;
+	}
+
+	.memberpage-archives-grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+.memberpage-card {
+	border-radius: 0.75rem;
+	border: 1px solid #dde3f5;
+	background: #f8f9ff;
+	padding: 1.5rem;
+	box-shadow: 0 2px 4px rgba(0, 30, 80, 0.08);
+}
+
+.memberpage-card-title {
+	margin: 0 0 0.5rem;
+	font-size: 1.1rem;
+	font-weight: 600;
+}
+
+.memberpage-card-text {
+	margin: 0 0 0.5rem;
+	font-size: 0.95rem;
+	color: #333;
+}
+
+.memberpage-card-profile {
+	background: #f8fbff;
+}
+
+.memberpage-card-events {
+	background: #f5f7ff;
+}
+
+.memberpage-card-admin {
+	background: #fdf9f3;
+}
+
+/* Buttons / links */
+
+.memberpage-button {
+	display: inline-block;
+	margin-top: 0.75rem;
+	padding: 0.55rem 1.2rem;
+	border-radius: 999px;
+	border: none;
+	background: #0033cc;
+	color: #fff;
+	font-size: 0.9rem;
+	font-weight: 600;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.memberpage-button:hover {
+	background: #0028a3;
+}
+
+.memberpage-button-disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.memberpage-link {
+	display: inline-block;
+	margin-top: 0.75rem;
+	font-size: 0.9rem;
+	color: #0033cc;
+	text-decoration: none;
+}
+
+.memberpage-link:hover {
+	text-decoration: underline;
+}
+
+.memberpage-card-note {
+	margin-top: 0.5rem;
+	font-size: 0.8rem;
+	color: #666;
+}
+
+/* Events list */
+
+.memberpage-events-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.memberpage-events-item {
+	display: flex;
+	gap: 0.75rem;
+	padding: 0.6rem 0;
+	border-bottom: 1px solid #e1e4f2;
+}
+
+.memberpage-events-item:last-child {
+	border-bottom: none;
+}
+
+.memberpage-events-date {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: #0033cc;
+	min-width: 7rem;
+}
+
+.memberpage-events-meta {
+	font-size: 0.9rem;
+}
+
+.memberpage-events-title {
+	font-weight: 600;
+}
+
+.memberpage-events-location {
+	font-size: 0.85rem;
+	color: #666;
+}
+
+/* Form stubs */
+
+.memberpage-composer-fields {
+	margin-top: 0.75rem;
+}
+
+.memberpage-field {
+	margin-bottom: 0.75rem;
+}
+
+.memberpage-label {
+	display: block;
+	margin-bottom: 0.25rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: #555;
+}
+
+.memberpage-input,
+.memberpage-textarea {
+	width: 100%;
+	border-radius: 0.5rem;
+	border: 1px solid #ccd3ea;
+	padding: 0.5rem 0.6rem;
+	font-size: 0.9rem;
+	font-family: inherit;
+	background: #fdfdff;
+}
+
+.memberpage-textarea {
+	min-height: 4.5rem;
+	resize: vertical;
+}
+
+.memberpage-input::placeholder,
+.memberpage-textarea::placeholder {
+	color: #999;
+}
+
+.memberpage-upload-placeholder {
+	border-radius: 0.5rem;
+	border: 1px dashed #ccd3ea;
+	padding: 0.6rem 0.7rem;
+	font-size: 0.85rem;
+	color: #666;
+}
+
+/* Threads / replies */
+
+.memberpage-thread-header {
+	margin-bottom: 0.5rem;
+}
+
+.memberpage-thread-title {
+	margin: 0 0 0.2rem;
+	font-size: 1.1rem;
+}
+
+.memberpage-thread-meta {
+	font-size: 0.8rem;
+	color: #666;
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+
+.memberpage-thread-body {
+	margin: 0.75rem 0;
+	font-size: 0.95rem;
+}
+
+.memberpage-thread-controls {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	margin-bottom: 0.75rem;
+}
+
+.memberpage-pill-button {
+	border-radius: 999px;
+	border: 1px solid #ccd3ea;
+	background: #ffffff;
+	padding: 0.25rem 0.7rem;
+	font-size: 0.8rem;
+	cursor: pointer;
+}
+
+.memberpage-pill-button:hover {
+	background: #eef2ff;
+}
+
+.memberpage-pill-danger {
+	border-color: #e5a4a4;
+	color: #8b1a1a;
+}
+
+.memberpage-thread-replies {
+	border-top: 1px solid #e1e4f2;
+	padding-top: 0.75rem;
+	margin-top: 0.5rem;
+}
+
+.memberpage-reply {
+	margin-bottom: 0.75rem;
+}
+
+.memberpage-reply:last-child {
+	margin-bottom: 0;
+}
+
+.memberpage-reply-meta {
+	font-size: 0.8rem;
+	color: #666;
+	display: flex;
+	gap: 0.35rem;
+	align-items: center;
+	margin-bottom: 0.2rem;
+}
+
+.memberpage-reply p {
+	margin: 0 0 0.25rem;
+	font-size: 0.9rem;
+}
+
+.memberpage-reply-controls {
+	display: flex;
+	gap: 0.4rem;
+	margin-top: 0.25rem;
+}
+
+/* Archives */
+
+.memberpage-archives-grid {
+	margin-top: 0.5rem;
+}
+
+.memberpage-archive-tile {
+	display: block;
+	border-radius: 0.9rem;
+	padding: 1.1rem 1rem;
+	border: 1px solid #dde3f5;
+	background: #ffffff;
+	text-decoration: none;
+	color: inherit;
+	transition: transform 0.05s ease-out, box-shadow 0.05s ease-out;
+}
+
+.memberpage-archive-tile:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 3px 8px rgba(0, 30, 80, 0.12);
+}
+
+.memberpage-archive-title {
+	margin: 0 0 0.25rem;
+	font-size: 1rem;
+}
+
+.memberpage-archive-text {
+	margin: 0 0 0.5rem;
+	font-size: 0.9rem;
+	color: #555;
+}
+
+.memberpage-archive-link {
+	font-size: 0.85rem;
+	color: #0033cc;
+	font-weight: 600;
+}
+
+/* Admin section */
+
+.memberpage-admin .memberpage-card-admin {
+	border-color: #f2c48a;
+}
