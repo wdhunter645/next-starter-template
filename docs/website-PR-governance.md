@@ -35,6 +35,28 @@
 - **Automated drift guard:** All PRs must pass `npm run test:homepage-structure` to prevent structural violations.
 - **Historical drift incidents:** See `/docs/drift-log.md` for documented cases and remediation guidance.
 
+### As-Built Documentation Requirement
+
+**Any change to Cloudflare-rendered pages must update `/docs/as-built/cloudflare-frontend.md` in the same PR.**
+
+This requirement applies to changes affecting:
+- Public route structure (new pages, removed pages, route modifications)
+- Page-level layouts (section order, major component additions/removals)
+- Header/footer navigation structure
+- Major section additions/removals on homepage or other public pages
+- Global styling baseline (color tokens, typography scale, layout variables)
+
+**Enforcement**:
+- Manual code review checks for as-built doc updates
+- Future: Sentinel-Write Bot will automatically validate as-built doc changes (PR #311)
+- PRs missing required as-built doc updates will be rejected
+
+**Purpose**:
+- Maintains authoritative baseline for Cloudflare static frontend
+- Enables Sentinel-Write Bot drift detection
+- Supports Supabase/Vercel integration planning
+- Provides reference for Codex, Copilot Agent, and automated tooling
+
 ### Social Wall Drift & Regressions
 **Historical Context:**
 - Social Wall has had **multiple regressions** historically due to undocumented changes
@@ -70,6 +92,7 @@ All Social Wall changes must:
   - Widget container class: `elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8`
   - `data-elfsight-app-lazy` attribute present
   - Fallback text present
+- **If PR touches Cloudflare page layout**: `/docs/as-built/cloudflare-frontend.md` is updated in the same PR
 ---
 
 ## Snapshot Review Cadence
