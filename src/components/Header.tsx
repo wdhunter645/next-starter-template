@@ -17,21 +17,21 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
       <style jsx>{`
         header {
           position: relative;
-          height: 120px;
+          height: 96px;
         }
         .logo-link {
           position: absolute;
-          top: 12px;
+          top: 8px;
           left: 16px;
           display: block;
         }
         .logo-img {
-          height: 96px;
+          height: 80px;
           width: auto;
         }
         .header-right {
           position: absolute;
-          top: 12px;
+          top: 8px;
           right: 16px;
           display: flex;
           align-items: center;
