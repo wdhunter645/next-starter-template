@@ -10,6 +10,8 @@
 	--radius: 14px;
 	--shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
 	--section-gap: 2.5rem;
+	--section-gap-tight: 3rem;
+	--section-gap-moderate: 4rem;
 	--brand-blue: #0033cc;
 	
 	/* LGFC design tokens - Centralized colors */
@@ -347,6 +349,14 @@ body {
 	margin-block: var(--section-gap);
 }
 
+.section-gap-tight {
+	margin-block: var(--section-gap-tight);
+}
+
+.section-gap-moderate {
+	margin-block: var(--section-gap-moderate);
+}
+
 .title-lgfc {
 	color: var(--lgfc-blue);
 	text-align: center;
@@ -394,7 +404,7 @@ body {
 .memberpage {
 	max-width: 1120px;
 	margin: 0 auto;
-	padding: 2.5rem 1.5rem 3.5rem;
+	padding: 1.5rem 1.5rem 3.5rem;
 	font-family: var(--lgfc-font-family);
 }
 
@@ -418,9 +428,11 @@ body {
 }
 
 .memberpage-subtitle {
+	max-width: 720px;
 	margin: 0;
 	color: var(--lgfc-text-muted);
 	font-size: 0.95rem;
+	line-height: 1.4;
 }
 
 /* Cards and grids */
@@ -474,6 +486,7 @@ body {
 
 .memberpage-card-events {
 	background: #f5f7ff;
+	padding: 1.25rem;
 }
 
 .memberpage-card-admin {
@@ -703,32 +716,37 @@ body {
 .memberpage-archive-tile {
 	display: block;
 	border-radius: 0.9rem;
-	padding: 1.1rem 1rem;
+	padding: 1.75rem 1.5rem;
+	min-height: 190px;
 	border: 1px solid #dde3f5;
 	background: #ffffff;
 	text-decoration: none;
 	color: inherit;
-	transition: transform 0.05s ease-out, box-shadow 0.05s ease-out;
+	transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+	cursor: pointer;
 }
 
 .memberpage-archive-tile:hover {
-	transform: translateY(-1px);
-	box-shadow: 0 3px 8px rgba(0, 30, 80, 0.12);
+	transform: translateY(-2px);
+	box-shadow: 0 6px 16px rgba(0, 30, 80, 0.14);
+	border-color: var(--lgfc-blue);
 }
 
 .memberpage-archive-title {
-	margin: 0 0 0.25rem;
-	font-size: 1rem;
+	margin: 0 0 0.5rem;
+	font-size: 1.15rem;
+	font-weight: 600;
 }
 
 .memberpage-archive-text {
-	margin: 0 0 0.5rem;
-	font-size: 0.9rem;
+	margin: 0 0 0.75rem;
+	font-size: 0.92rem;
 	color: #555;
+	line-height: 1.5;
 }
 
 .memberpage-archive-link {
-	font-size: 0.85rem;
+	font-size: 0.9rem;
 	color: var(--lgfc-blue);
 	font-weight: 600;
 }

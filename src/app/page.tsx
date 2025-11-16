@@ -44,22 +44,22 @@ export default function HomePage() {
       </section>
 
       {/* Section: Friends of the Fan Club */}
-      <section id="friends-of-the-club" className="container section-gap">
+      <section id="friends-of-the-club" className="container section-gap-moderate">
         <FriendsOfFanClub />
       </section>
 
       {/* Section: Milestones */}
-      <section id="milestones" className="container section-gap">
+      <section id="milestones" className="container section-gap-tight">
         <MilestonesSection />
       </section>
 
       {/* Section: Calendar */}
-      <section id="calendar" className="container section-gap">
+      <section id="calendar" className="container section-gap-tight">
         <CalendarSection />
       </section>
 
       {/* Section: FAQ */}
-      <section id="faq" className="section-gap">
+      <section id="faq" className="section-gap-tight">
         <div className="container">
           <FAQSection />
         </div>

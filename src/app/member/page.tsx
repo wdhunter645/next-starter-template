@@ -33,7 +33,7 @@ export default function MemberPage() {
 	return (
 		<main className="memberpage">
 			{/* Welcome section */}
-			<section className="memberpage-section memberpage-welcome">
+			<section className="memberpage-section memberpage-welcome" style={{ marginBottom: '2.5rem' }}>
 				<div className="memberpage-section-header">
 					<h1 className="memberpage-title">Welcome back, Member</h1>
 					<p className="memberpage-subtitle">
@@ -76,7 +76,7 @@ export default function MemberPage() {
 			</section>
 
 			{/* Discussions section */}
-			<section className="memberpage-section memberpage-discussions">
+			<section className="memberpage-section memberpage-discussions" style={{ marginBottom: '2.5rem' }}>
 				<div className="memberpage-section-header">
 					<h2 className="memberpage-section-title">Club Discussions</h2>
 					<p className="memberpage-subtitle">
@@ -203,7 +203,7 @@ export default function MemberPage() {
 			</section>
 
 			{/* Archives tiles */}
-			<section className="memberpage-section memberpage-archives">
+			<section className="memberpage-section memberpage-archives" style={{ marginBottom: '2.5rem' }}>
 				<div className="memberpage-section-header">
 					<h2 className="memberpage-section-title">Club Archives</h2>
 					<p className="memberpage-subtitle">
