@@ -5,7 +5,8 @@
 Refer to `/docs/website-PR-process.md` for structure and formatting.  
 Follow operational, rollback, and testing standards in `/docs/website-PR-governance.md`.  
 Use `/docs/homepage.html` as the canonical markup source for line-range copying.  
-Use `/docs/memberpage.html` as the canonical MemberPage specification (versioned snapshots: `memberpage-v1.html`, etc.).
+Use `/docs/memberpage.html` as the canonical MemberPage specification (versioned snapshots: `memberpage-v1.html`, etc.).  
+Use `/docs/as-built/cloudflare-frontend.md` as the authoritative baseline for the Cloudflare static frontend.
 
 ---
 
@@ -80,3 +81,28 @@ For any PR affecting the homepage or Social Wall:
 ### Notes and Prohibitions
 - Do not add new dependencies or frameworks for layout/spacing fixes (no Tailwind, no UI kits, no CSS-in-JS).
 - Maintain global CSS styling approach.
+
+---
+
+## Cloudflare As-Built Frontend
+
+The canonical baseline for the **Cloudflare Pages-hosted public frontend** is documented in:
+
+**`/docs/as-built/cloudflare-frontend.md`**
+
+### Cloudflare vs. Vercel Responsibilities
+
+- **Cloudflare Pages** = Static public site (homepage, weekly matchup, milestones, charities, calendar, news, static member stub, legal pages)
+- **Vercel** = Members/admin app + dynamic content (authentication, database-backed features, real-time interactions)
+
+### When to Update As-Built Documentation
+
+Any PR that changes the following on the **Cloudflare side** must update `/docs/as-built/cloudflare-frontend.md`:
+
+1. **Route structure** (new pages, removed pages, route changes)
+2. **Page-level layouts** (section order, major component additions/removals)
+3. **Header/footer structure** (navigation items, layout changes)
+4. **Major section changes** (homepage sections, memberpage sections)
+5. **Styling baseline** (color tokens, typography scale, global layout variables)
+
+Future contributors must consult and update the as-built doc whenever making visual or structural changes to the Cloudflare frontend. This is required for Sentinel-Write Bot enforcement and long-term maintainability.
