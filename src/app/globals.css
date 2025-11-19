@@ -511,17 +511,17 @@ a:hover {
 
 @media (min-width: 768px) {
 	.memberpage-welcome-grid {
-		grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr);
+		grid-template-columns: 1fr;
 		align-items: flex-start;
 	}
 
 	.memberpage-discussions-grid {
-		grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
+		grid-template-columns: 1fr;
 		align-items: flex-start;
 	}
 
 	.memberpage-archives-grid {
-		grid-template-columns: repeat(3, minmax(0, 1fr));
+		grid-template-columns: 1fr;
 	}
 }
 
