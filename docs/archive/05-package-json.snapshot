@@ -46,12 +46,8 @@
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"test:coverage": "vitest run --coverage",
-		"test:homepage-structure": "vitest run tests/homepage-structure.test.tsx",
-		"verify-homepage": "npm run test:homepage-structure",
 		"test:e2e": "playwright test",
 		"test:e2e:ui": "playwright test --ui",
-		"test:homepage-sections": "playwright test tests/e2e/homepage-sections.spec.ts",
-		"verify-homepage-e2e": "playwright test tests/e2e/homepage-sections.spec.ts",
 		"check": "npm run build && tsc",
 		"snapshot": "node scripts/make-snapshot.mjs"
 	},
