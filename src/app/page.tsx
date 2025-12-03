@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import styles from './page.module.css';
 
 import WeeklyMatchup from '@/components/WeeklyMatchup';
-import SocialWall from '@/components/SocialWall';
 import FAQSection from '@/components/FAQSection';
 import MilestonesSection from '@/components/MilestonesSection';
 import FriendsOfFanClub from '@/components/FriendsOfFanClub';
