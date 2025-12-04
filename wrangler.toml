@@ -10,4 +10,5 @@ pages_build_output_dir = "./out"
 [[d1_databases]]
 binding = "DB"                     # Must match Cloudflare binding name
 database_name = "lgfc_lite"        # Must match CF dashboard
-database_id = "TODO_FILL_ME_IN"    # Will fill after fetching via wrangler
+database_id = "22d0dc3e-ad34-43af-8e6a-2063df1a1e04"   # Will fill after fetching via wrangler
+
