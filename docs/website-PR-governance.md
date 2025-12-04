@@ -2,7 +2,7 @@
 
 **All PR prompts must follow this structure:**
 1) Reference: `/docs/website-PR-process.md`
-2) Change Summary: exact edits with file paths + (when applicable) line ranges from `/docs/homepage.html`
+2) Change Summary: exact edits with file paths + (when applicable) line ranges from `/docs/archive/lgfc-main/homepage.html`
 3) Governance Reference: `/docs/website-PR-governance.md`
 
 ---
@@ -27,17 +27,17 @@
 ---
 
 ## Drift Control
-- Structural edits must copy from `/docs/homepage.html` or `/docs/memberpage.html` via explicit line ranges.
+- Structural edits must copy from `/docs/archive/lgfc-main/homepage.html` or `/docs/archive/lgfc-main/memberpage.html` via explicit line ranges.
 - No paraphrasing or freehand rewrites of canonical HTML/CSS.
 - If canonical file missing or outdated, mark PR **Blocked** and request correction.
-- Legacy snapshots are preserved at `/docs/lgfc-homepage-legacy-v6.html`, `/docs/lgfc-homepage-legacy-v7.html`, etc.
-- MemberPage versioning follows the same pattern: `/docs/memberpage.html` (current standard) with versioned snapshots at `/docs/memberpage-v1.html`, future `/docs/memberpage-v2.html`, etc.
+- Legacy snapshots are preserved at `/docs/lgfc-homepage-legacy-v6.html`, `/docs/archive/lgfc-main/lgfc-homepage-legacy-v7.html`, etc.
+- MemberPage versioning follows the same pattern: `/docs/archive/lgfc-main/memberpage.html` (current standard) with versioned snapshots at `/docs/memberpage-v1.html`, future `/docs/memberpage-v2.html`, etc.
 - **Automated drift guard:** All PRs must pass `npm run test:homepage-structure` to prevent structural violations.
-- **Historical drift incidents:** See `/docs/drift-log.md` for documented cases and remediation guidance.
+- **Historical drift incidents:** See `/docs/archive/lgfc-main/drift-log.md` for documented cases and remediation guidance.
 
 ### As-Built Documentation Requirement
 
-**Any change to Cloudflare-rendered pages must update `/docs/as-built/cloudflare-frontend.md` in the same PR.**
+**Any change to Cloudflare-rendered pages must update `/docs/archive/lgfc-main/cloudflare-frontend.md` in the same PR.**
 
 This requirement applies to changes affecting:
 - Public route structure (new pages, removed pages, route modifications)
@@ -92,7 +92,7 @@ All Social Wall changes must:
   - Widget container class: `elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8`
   - `data-elfsight-app-lazy` attribute present
   - Fallback text present
-- **If PR touches Cloudflare page layout**: `/docs/as-built/cloudflare-frontend.md` is updated in the same PR
+- **If PR touches Cloudflare page layout**: `/docs/archive/lgfc-main/cloudflare-frontend.md` is updated in the same PR
 ---
 
 ## Snapshot Review Cadence

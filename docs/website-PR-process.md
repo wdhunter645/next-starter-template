@@ -4,9 +4,9 @@
 #### Reference
 Refer to `/docs/website-PR-process.md` for structure and formatting.  
 Follow operational, rollback, and testing standards in `/docs/website-PR-governance.md`.  
-Use `/docs/homepage.html` as the canonical markup source for line-range copying.  
-Use `/docs/memberpage.html` as the canonical MemberPage specification (versioned snapshots: `memberpage-v1.html`, etc.).  
-Use `/docs/as-built/cloudflare-frontend.md` as the authoritative baseline for the Cloudflare static frontend.
+Use `/docs/archive/lgfc-main/homepage.html` as the canonical markup source for line-range copying.  
+Use `/docs/archive/lgfc-main/memberpage.html` as the canonical MemberPage specification (versioned snapshots: `memberpage-v1.html`, etc.).  
+Use `/docs/archive/lgfc-main/cloudflare-frontend.md` as the authoritative baseline for the Cloudflare static frontend.
 
 ---
 
@@ -88,7 +88,7 @@ For any PR affecting the homepage or Social Wall:
 
 The canonical baseline for the **Cloudflare Pages-hosted public frontend** is documented in:
 
-**`/docs/as-built/cloudflare-frontend.md`**
+**`/docs/archive/lgfc-main/cloudflare-frontend.md`**
 
 ### Cloudflare vs. Vercel Responsibilities
 
@@ -97,7 +97,7 @@ The canonical baseline for the **Cloudflare Pages-hosted public frontend** is do
 
 ### When to Update As-Built Documentation
 
-Any PR that changes the following on the **Cloudflare side** must update `/docs/as-built/cloudflare-frontend.md`:
+Any PR that changes the following on the **Cloudflare side** must update `/docs/archive/lgfc-main/cloudflare-frontend.md`:
 
 1. **Route structure** (new pages, removed pages, route changes)
 2. **Page-level layouts** (section order, major component additions/removals)
@@ -105,4 +105,4 @@ Any PR that changes the following on the **Cloudflare side** must update `/docs/
 4. **Major section changes** (homepage sections, memberpage sections)
 5. **Styling baseline** (color tokens, typography scale, global layout variables)
 
-Future contributors must consult and update the as-built doc whenever making visual or structural changes to the Cloudflare frontend. This is required for Sentinel-Write Bot enforcement and long-term maintainability.
+Future contributors must consult and update the as-built doc whenever making visual or structural changes to the Cloudflare frontend. This is required for Sentinel-Write Bot enforcement and long-term maintainability. (Note: As of Phase-0, this doc is archived at `/docs/archive/lgfc-main/cloudflare-frontend.md`.)
