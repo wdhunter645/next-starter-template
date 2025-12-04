@@ -1,6 +1,13 @@
-name = "next-starter-template"
-compatibility_date = "2025-01-01"
-pages_build_output_dir = "out"
+name = "lgfc-lite"
+main = "./functions"
 
-# Cloudflare Pages configuration for static export
-# The Next.js app is built as a static export to the 'out' directory
+compatibility_date = "2025-10-30"
+compatibility_flags = ["nodejs_compat"]
+
+# Pages project config
+pages_build_output_dir = "./out"
+
+[[d1_databases]]
+binding = "DB"                     # Must match Cloudflare binding name
+database_name = "lgfc_lite"        # Must match CF dashboard
+database_id = "TODO_FILL_ME_IN"    # Will fill after fetching via wrangler
