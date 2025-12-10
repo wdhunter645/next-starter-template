@@ -1,79 +1,16 @@
-name: Repository Snapshot
+name: Legacy LGFC-main Workflow (Parked)
+
+# This workflow belonged to the pre-LGFC-Lite architecture (Next.js/Vercel).
+# It is intentionally disabled during the LGFC-Lite phase to avoid false failures.
+# When LGFC main resumes, replace this stub with a new implementation
+# aligned to the current architecture and the governance docs in /docs.
 
 on:
   workflow_dispatch:
-    inputs:
-      test_notification:
-        description: 'Send test Slack notification (success/failure/warning)'
-        required: false
-        type: choice
-        options:
-          - ''
-          - success
-          - failure
-          - warning
-  schedule:
-    - cron: '0 7 * * *' # Daily at 7:00 UTC
-
-permissions:
-  contents: write # Required to commit and push snapshot files
 
 jobs:
-  create-snapshot:
-    name: Create Repository Snapshot
+  noop:
     runs-on: ubuntu-latest
-
     steps:
-      - name: ⬇️ Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Get full history for accurate git metadata
-
-      - name: 📸 Run snapshot script
-        run: bash scripts/snapshot_repo.sh
-
-      - name: 📅 Get current date
-        id: date
-        run: echo "date=$(date -u +%Y-%m-%d)" >> $GITHUB_OUTPUT
-
-      - name: 📁 Organize snapshots by date
-        run: |
-          mkdir -p "snapshots/${{ steps.date.outputs.date }}"
-          # Move today's snapshots to dated directory
-          if ls snapshots/repo-snapshot-*.json 1> /dev/null 2>&1; then
-            mv snapshots/repo-snapshot-*.json "snapshots/${{ steps.date.outputs.date }}/" || echo "Warning: Failed to move snapshot files"
-          fi
-
-      - name: 💾 Commit and push snapshots
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add snapshots/
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "chore: add repository snapshot for ${{ steps.date.outputs.date }}"
-            git push origin main
-          fi
-
-      - name: 📤 Notify Slack
-        if: always() && secrets.SLACK_WEBHOOK_URL != ''
-        run: bash scripts/slack_notify.sh "${{ job.status }}" "${{ github.workflow }}" "Run #${{ github.run_number }}"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-  test-notification:
-    name: Test Slack Notification
-    runs-on: ubuntu-latest
-    if: github.event.inputs.test_notification != ''
-    permissions:
-      contents: read
-
-    steps:
-      - name: ⬇️ Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🔔 Send test notification
-        run: bash scripts/slack_notify.sh "${{ github.event.inputs.test_notification }}" "Test Notification" "Manual test from workflow_dispatch"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Legacy workflow parked
+        run: echo "Legacy LGFC-main workflow is parked; does not run automatically."

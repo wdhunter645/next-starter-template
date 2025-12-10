@@ -1,41 +1,16 @@
-name: Deploy Cloudflare (prod)
+name: Legacy LGFC-main Workflow (Parked)
+
+# This workflow belonged to the pre-LGFC-Lite architecture (Next.js/Vercel).
+# It is intentionally disabled during the LGFC-Lite phase to avoid false failures.
+# When LGFC main resumes, replace this stub with a new implementation
+# aligned to the current architecture and the governance docs in /docs.
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
-  deploy:
+  noop:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Cache deps and Next cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.npm
-            **/.next/cache
-          key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            npm-${{ runner.os }}-
-
-      - run: npm ci
-
-      - name: Build static site
-        run: npm run build:cf
-
-      - name: Deploy to Cloudflare Pages (prod)
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy out --project-name=next-starter-template
+      - name: Legacy workflow parked
+        run: echo "Legacy LGFC-main workflow is parked; does not run automatically."
