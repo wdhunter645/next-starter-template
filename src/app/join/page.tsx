@@ -1,114 +1,49 @@
-'use client';
+"use client";
+import { useState } from "react";
 
-import React, { FormEvent, useState } from "react";
+export default function JoinPage() {
+  const [status, setStatus] = useState<null | string>(null);
+  const [error, setError] = useState<null | string>(null);
 
-interface JoinResponse {
-  ok: boolean;
-  id?: number | null;
-  message?: string;
-  error?: string;
-}
-
-const JoinPage: React.FC = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    setLoading(true);
+  async function handleSubmit(e: any) {
+    e.preventDefault();
     setStatus(null);
     setError(null);
+
+    const form = new FormData(e.target);
+    const payload = {
+      name: form.get("name") as string,
+      email: form.get("email") as string,
+    };
 
     try {
       const res = await fetch("/api/join", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/json" },
       });
 
-      const data = (await res.json()) as JoinResponse;
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Unknown error");
 
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Join request failed");
-      }
-
-      setStatus(
-        "Thank you for joining the Lou Gehrig Fan Club! Check your email for next steps."
-      );
-      setName("");
-      setEmail("");
+      setStatus("You're on the list! Welcome to the LGFC.");
     } catch (err: any) {
-      setError(err?.message ?? "Something went wrong submitting your request.");
-    } finally {
-      setLoading(false);
+      setError(err.message);
     }
-  };
+  }
 
   return (
-    <main style={{ maxWidth: 640, margin: "2rem auto", padding: "1rem" }}>
-      <h1 style={{ fontSize: "2rem", marginBottom: "1rem" }}>
-        Join the Lou Gehrig Fan Club
-      </h1>
-      <p style={{ marginBottom: "1.5rem" }}>
-        Share your name and email to be added to the LGFC-Lite mailing list.
-        We&apos;ll send announcements, event details, and updates about new
-        club features.
-      </p>
+    <div style={{ maxWidth: 520, margin: "40px auto", fontFamily: "sans-serif" }}>
+      <h1>Join the Fan Club</h1>
 
-      <form
-        onSubmit={handleSubmit}
-        style={{ display: "grid", gap: "0.75rem" }}
-      >
-        <label style={{ display: "grid", gap: "0.25rem" }}>
-          <span>Name</span>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            disabled={loading}
-            style={{ padding: "0.5rem", fontSize: "1rem" }}
-          />
-        </label>
+      {status && <p style={{ color: "green" }}>{status}</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
-        <label style={{ display: "grid", gap: "0.25rem" }}>
-          <span>Email</span>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            disabled={loading}
-            style={{ padding: "0.5rem", fontSize: "1rem" }}
-          />
-        </label>
-
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            padding: "0.6rem 1.2rem",
-            fontSize: "1rem",
-            cursor: loading ? "default" : "pointer",
-          }}
-        >
-          {loading ? "Submitting…" : "Join the Club"}
-        </button>
+      <form onSubmit={handleSubmit}>
+        <p><input name="name" placeholder="Your name" required /></p>
+        <p><input name="email" type="email" placeholder="Your email" required /></p>
+        <button type="submit">Join</button>
       </form>
-
-      {status && (
-        <p style={{ marginTop: "1rem", color: "green" }}>{status}</p>
-      )}
-      {error && (
-        <p style={{ marginTop: "1rem", color: "red" }}>{error}</p>
-      )}
-    </main>
+    </div>
   );
-};
-
-export default JoinPage;
+}
