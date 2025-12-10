@@ -2,16 +2,18 @@
 
 import React, { FormEvent, useState } from "react";
 
-interface JoinResponse {
+interface LibraryResponse {
   ok: boolean;
   id?: number | null;
   message?: string;
   error?: string;
 }
 
-const JoinPage: React.FC = () => {
+const LibraryPage: React.FC = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -23,41 +25,41 @@ const JoinPage: React.FC = () => {
     setError(null);
 
     try {
-      const res = await fetch("/api/join", {
+      const res = await fetch("/api/library/submit", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({ name, email, title, content }),
       });
 
-      const data = (await res.json()) as JoinResponse;
+      const data = (await res.json()) as LibraryResponse;
 
       if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Join request failed");
+        throw new Error(data.error || "Library submission failed");
       }
 
-      setStatus(
-        "Thank you for joining the Lou Gehrig Fan Club! Check your email for next steps."
-      );
-      setName("");
-      setEmail("");
+      setStatus("Thank you for contributing to the LGFC Library!");
+      setTitle("");
+      setContent("");
+      // Keep name/email so members can submit multiple entries easily
     } catch (err: any) {
-      setError(err?.message ?? "Something went wrong submitting your request.");
+      setError(
+        err?.message ?? "Something went wrong submitting your library entry."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main style={{ maxWidth: 640, margin: "2rem auto", padding: "1rem" }}>
+    <main style={{ maxWidth: 720, margin: "2rem auto", padding: "1rem" }}>
       <h1 style={{ fontSize: "2rem", marginBottom: "1rem" }}>
-        Join the Lou Gehrig Fan Club
+        LGFC Library Submission
       </h1>
       <p style={{ marginBottom: "1.5rem" }}>
-        Share your name and email to be added to the LGFC-Lite mailing list.
-        We&apos;ll send announcements, event details, and updates about new
-        club features.
+        Share your Lou Gehrig memories, stories, or reflections. Approved
+        entries will appear in the public LGFC-Lite Library.
       </p>
 
       <form
@@ -65,7 +67,7 @@ const JoinPage: React.FC = () => {
         style={{ display: "grid", gap: "0.75rem" }}
       >
         <label style={{ display: "grid", gap: "0.25rem" }}>
-          <span>Name</span>
+          <span>Your Name</span>
           <input
             type="text"
             value={name}
@@ -88,6 +90,30 @@ const JoinPage: React.FC = () => {
           />
         </label>
 
+        <label style={{ display: "grid", gap: "0.25rem" }}>
+          <span>Story Title</span>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            disabled={loading}
+            style={{ padding: "0.5rem", fontSize: "1rem" }}
+          />
+        </label>
+
+        <label style={{ display: "grid", gap: "0.25rem" }}>
+          <span>Your Story</span>
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            required
+            disabled={loading}
+            rows={8}
+            style={{ padding: "0.5rem", fontSize: "1rem" }}
+          />
+        </label>
+
         <button
           type="submit"
           disabled={loading}
@@ -97,7 +123,7 @@ const JoinPage: React.FC = () => {
             cursor: loading ? "default" : "pointer",
           }}
         >
-          {loading ? "Submitting…" : "Join the Club"}
+          {loading ? "Submitting…" : "Submit to the Library"}
         </button>
       </form>
 
@@ -111,4 +137,4 @@ const JoinPage: React.FC = () => {
   );
 };
 
-export default JoinPage;
+export default LibraryPage;
