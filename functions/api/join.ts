@@ -1,70 +1,49 @@
-export const onRequestPost = async (context: any): Promise<Response> => {
-  const { env, request } = context;
+// Cloudflare Pages Function for POST /api/join
+// Stores a join request in the D1 `join_requests` table.
+
+export async function onRequestPost(context: any): Promise<Response> {
+  const { request, env } = context;
+
+  let body: any;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(
+      JSON.stringify({ ok: false, error: "Invalid JSON body" }),
+      { status: 400, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  const nameRaw = typeof body.name === "string" ? body.name.trim() : "";
+  const emailRaw = typeof body.email === "string" ? body.email.trim() : "";
+
+  if (!nameRaw || !emailRaw) {
+    return new Response(
+      JSON.stringify({ ok: false, error: "Name and email are required." }),
+      { status: 400, headers: { "Content-Type": "application/json" } }
+    );
+  }
 
   try {
-    const body = await request.json().catch(() => null);
-
-    if (!body || typeof body !== "object") {
-      return new Response(
-        JSON.stringify({ ok: false, error: "Invalid JSON body" }, null, 2),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+    const db = (env as any).DB;
+    if (!db || typeof db.prepare !== "function") {
+      throw new Error("D1 binding 'DB' is not configured on env.");
     }
 
-    const name = String((body as any).name ?? "").trim();
-    const email = String((body as any).email ?? "").trim().toLowerCase();
-
-    if (!name || !email) {
-      return new Response(
-        JSON.stringify(
-          { ok: false, error: "Both 'name' and 'email' are required" },
-          null,
-          2
-        ),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    // Very basic email sanity check, just to reject obvious junk
-    if (!email.includes("@") || email.startsWith("@") || email.endsWith("@")) {
-      return new Response(
-        JSON.stringify({ ok: false, error: "Invalid email format" }, null, 2),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    const result = await env.DB.prepare(
-      "INSERT INTO join_requests (name, email) VALUES (?, ?);"
-    )
-      .bind(name, email)
-      .run();
-
-    const insertedId =
-      (result as any)?.meta?.last_row_id ?? (result as any)?.meta?.lastRowId ?? null;
+    const stmt = db.prepare(
+      "INSERT INTO join_requests (name, email) VALUES (?1, ?2)"
+    );
+    await stmt.bind(nameRaw, emailRaw).run();
 
     return new Response(
-      JSON.stringify(
-        {
-          ok: true,
-          id: insertedId,
-          message: "Join request stored",
-        },
-        null,
-        2
-      ),
+      JSON.stringify({ ok: true }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
   } catch (err: any) {
+    console.error("Error inserting join request:", err);
     return new Response(
-      JSON.stringify(
-        {
-          ok: false,
-          error: String(err?.message ?? err),
-        },
-        null,
-        2
-      ),
+      JSON.stringify({ ok: false, error: "Failed to save join request." }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
-};
+}
