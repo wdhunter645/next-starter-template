@@ -21,13 +21,18 @@ export async function POST(req: Request) {
       }
     );
 
-    const data = await res.json();
-    return NextResponse.json(data, { status: res.status });
+const text = await res.text();
+
+let data: any;
+if (text) {
+  try {
+    data = JSON.parse(text);
   } catch (err) {
-    console.error("API /api/join error:", err);
-    return NextResponse.json(
-      { ok: false, error: "Server error" },
-      { status: 500 }
-    );
+    console.error("API /api/join non-JSON body:", err, text);
+    data = { error: "Invalid response from join service" };
   }
+} else {
+  data = {};
 }
+
+return NextResponse.json(data, { status: res.status });
