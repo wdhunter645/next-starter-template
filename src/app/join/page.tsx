@@ -11,7 +11,7 @@ export default function JoinPage() {
     e.preventDefault();
     setStatus("Sending...");
 
-    const res = await fetch("/api/join/start", {
+const res = await fetch("/api/join", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email }),
