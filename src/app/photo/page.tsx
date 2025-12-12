@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 type PhotoItem = {
   id: number;
@@ -12,8 +12,8 @@ type PhotoItem = {
 };
 
 export default function PhotoDetailPage() {
-  const params = useParams<{ id?: string }>();
-  const id = useMemo(() => Number(params?.id), [params]);
+  const search = useSearchParams();
+  const id = useMemo(() => Number(search.get("id")), [search]);
 
   const [item, setItem] = useState<PhotoItem | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +24,7 @@ export default function PhotoDetailPage() {
       setItem(null);
 
       if (!id || Number.isNaN(id)) {
-        setError("Invalid id.");
+        setError("Missing or invalid id. Use /photo?id=123");
         return;
       }
 
@@ -46,11 +46,14 @@ export default function PhotoDetailPage() {
 
   return (
     <main style={{ maxWidth: 900, margin: "40px auto", fontFamily: "sans-serif", padding: "0 16px" }}>
-      <h1>Photo #{params?.id ?? ""}</h1>
+      <h1>Photo</h1>
+
       {error && <p style={{ color: "red", fontWeight: 700 }}>{error}</p>}
       {!error && !item && <p>Loading…</p>}
+
       {item && (
         <>
+          <h2 style={{ marginTop: 0 }}>#{item.id}</h2>
           <img src={item.url} alt={item.description ?? `Photo ${item.id}`} style={{ width: "100%", borderRadius: 12 }} />
           <p style={{ marginTop: 12, opacity: 0.9 }}>{item.description ?? "No description yet."}</p>
           <p style={{ fontSize: 12, opacity: 0.7 }}>

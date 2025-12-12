@@ -68,7 +68,7 @@ export default function PhotosPage() {
           {items.map((p) => (
             <Link
               key={p.id}
-              href={`/photos/${p.id}`}
+              href={`/photo?id=${p.id}`}
               style={{ display: "block", border: "1px solid #ddd", borderRadius: 12, padding: 8, textDecoration: "none", color: "inherit" }}
             >
               {/* Keeping <img> for now to avoid Next/Image config on Cloudflare. */}
