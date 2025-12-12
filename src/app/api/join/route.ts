@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     });
 
     const text = await res.text();
-    let data: any = {};
+    let data: unknown = {};
     try {
       data = text ? JSON.parse(text) : {};
     } catch {
