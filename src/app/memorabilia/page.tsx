@@ -68,7 +68,7 @@ export default function MemorabiliaPage() {
           {items.map((p) => (
             <Link
               key={p.id}
-              href={`/photos/${p.id}`}
+              href={`/photo?id=${p.id}`}
               style={{ display: "block", border: "1px solid #ddd", borderRadius: 12, padding: 8, textDecoration: "none", color: "inherit" }}
             >
               <img src={p.url} alt={p.description ?? `Photo ${p.id}`} style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 10 }} />
