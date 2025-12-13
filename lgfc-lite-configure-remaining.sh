@@ -29,7 +29,7 @@ JOIN_PAGE="src/app/join/page.tsx"
 if [ -f "$JOIN_PAGE" ]; then
   echo "== Update JOIN page copy =="
   # Normalize indentation and replace status message
-  perl -0777 -i -pe 's/setStatus\("A verification code has been emailed to you\. Check your inbox\."\);/setStatus("Thanks \u2014 your request has been received. We\u2019ll email you updates as the club launches.");/g' "$JOIN_PAGE"
+  perl -0777 -i -pe 's/setStatus\("Thanks[^"]*"\);/setStatus("Thanks — your request has been received. We\'ll email you updates as the club launches.");/g' "$JOIN_PAGE"
 else
   echo "WARN: $JOIN_PAGE not found; skipping JOIN copy update."
 fi

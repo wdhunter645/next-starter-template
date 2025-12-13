@@ -384,3 +384,6 @@ audits/*.log
 ### Snapshots ###
 # Generated snapshot files (keep directory with .gitkeep)
 docs/snapshots/*.md
+
+# Build artifacts (do not commit)
+LGFC-Lite-CF-FixPack-v1.zip
