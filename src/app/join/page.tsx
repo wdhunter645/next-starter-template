@@ -24,7 +24,7 @@ const res = await fetch("/api/join", {
       return;
     }
 
-    setStatus("Thanks 2014 your request has been received. We2019ll email you updates as the club launches.");
+    setStatus("Thanks — your request has been received. We'll email you updates as the club launches.");
   }
 
   return (
