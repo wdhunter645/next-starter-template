@@ -6,7 +6,8 @@ const nextConfig: NextConfig = {
 	images: {
 		unoptimized: true, // Required for Cloudflare Pages (no Node.js image optimization)
 	},
-	// Skip trailing slash to match Cloudflare Pages defaults
+	trailingSlash: true, // Export /route/index.html for Pages
+	// (Pages does not reliably map /route to /route.html)
 };
 
 export default nextConfig;
