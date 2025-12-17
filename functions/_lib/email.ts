@@ -88,6 +88,7 @@ Thanks for joining the Lou Gehrig Fan Club mailing list.
 		}
 
 		// Any other status (including other 2xx codes) is treated as failure
+		// Truncate error message for API response (600 chars), separate from log truncation (2KB)
 		const errorMsg = `MailChannels status ${res.status}: ${truncatedBody}`.slice(0, 600);
 		return { sent: false, provider: 'mailchannels', error: errorMsg };
 	} catch (e: any) {
