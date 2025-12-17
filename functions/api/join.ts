@@ -8,7 +8,7 @@ export async function onRequestPost(context: any): Promise<Response> {
   const { request, env } = context;
 
   // Generate a simple request ID for tracking
-  const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
   let body: any;
   try {
@@ -63,7 +63,7 @@ export async function onRequestPost(context: any): Promise<Response> {
       hasError: !!emailResult.error,
     });
 
-    // If email failed to send, return 502 Bad Gateway
+    // If email failed to send, return 503 Service Unavailable
     if (!emailResult.sent) {
       return new Response(
         JSON.stringify({
@@ -74,7 +74,7 @@ export async function onRequestPost(context: any): Promise<Response> {
             error: emailResult.error || 'Email delivery failed',
           },
         }),
-        { status: 502, headers: { "Content-Type": "application/json" } }
+        { status: 503, headers: { "Content-Type": "application/json" } }
       );
     }
 
