@@ -16,6 +16,9 @@ export async function sendWelcomeEmail(opts: {
 	const enabled = String(opts.env?.MAILCHANNELS_ENABLED || '0') === '1';
 	if (!enabled) return { sent: false, provider: 'disabled' };
 
+	const apiKey = String(opts.env?.MAILCHANNELS_API_KEY || '').trim();
+	if (!apiKey) return { sent: false, provider: 'mailchannels', error: 'Missing MAILCHANNELS_API_KEY' };
+
 	const fromRaw = String(opts.env?.MAIL_FROM || '').trim();
 	if (!fromRaw) return { sent: false, provider: 'mailchannels', error: 'MAIL_FROM not configured' };
 
@@ -60,7 +63,7 @@ Thanks for joining the Lou Gehrig Fan Club mailing list.
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				'X-MailChannels-API-Key': 'mailchannels',
+				'X-Api-Key': apiKey,
 			},
 			body: JSON.stringify(payload),
 		});
