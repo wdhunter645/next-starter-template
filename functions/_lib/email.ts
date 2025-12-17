@@ -59,6 +59,11 @@ Thanks for joining the Lou Gehrig Fan Club mailing list.
 	if (replyTo) payload.reply_to = parseFrom(replyTo);
 
 	try {
+		console.log('join: mailchannels request start', {
+			to: opts.toEmail,
+			from: from.email,
+		});
+
 		const res = await fetch('https://api.mailchannels.net/tx/v1/send', {
 			method: 'POST',
 			headers: {
@@ -68,13 +73,26 @@ Thanks for joining the Lou Gehrig Fan Club mailing list.
 			body: JSON.stringify(payload),
 		});
 
-		if (!res.ok) {
-			const body = await res.text().catch(() => '');
-			return { sent: false, provider: 'mailchannels', error: `MailChannels error ${res.status}: ${body}`.slice(0, 600) };
+		const responseBody = await res.text().catch(() => '');
+		const truncatedBody = responseBody.slice(0, 2048);
+
+		console.log('join: mailchannels response', {
+			status: res.status,
+			statusText: res.statusText,
+			body: truncatedBody,
+		});
+
+		// MailChannels returns 202 Accepted on success
+		if (res.status === 202) {
+			return { sent: true, provider: 'mailchannels' };
 		}
 
-		return { sent: true, provider: 'mailchannels' };
+		// Any other status (including other 2xx codes) is treated as failure
+		const errorMsg = `MailChannels status ${res.status}: ${truncatedBody}`.slice(0, 600);
+		return { sent: false, provider: 'mailchannels', error: errorMsg };
 	} catch (e: any) {
-		return { sent: false, provider: 'mailchannels', error: String(e?.message || e) };
+		const errorMsg = String(e?.message || e);
+		console.log('join: mailchannels exception', { error: errorMsg });
+		return { sent: false, provider: 'mailchannels', error: errorMsg };
 	}
 }
