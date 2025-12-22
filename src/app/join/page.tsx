@@ -36,7 +36,7 @@ export default function JoinPage() {
       });
 
       const text = await res.text();
-      let data: any = {};
+      let data: { ok?: boolean; error?: string; email?: { error?: string } } = {};
       try {
         data = text ? JSON.parse(text) : {};
       } catch {
@@ -51,8 +51,8 @@ export default function JoinPage() {
         const msg = data?.error || data?.email?.error || "Join request failed. Please try again.";
         setResult({ ok: false, message: msg });
       }
-    } catch (err: any) {
-      setResult({ ok: false, message: String(err?.message || err) });
+    } catch (err: unknown) {
+      setResult({ ok: false, message: String((err as Error)?.message || err) });
     } finally {
       setBusy(false);
     }

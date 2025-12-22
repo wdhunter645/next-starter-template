@@ -77,8 +77,8 @@ export default function LibraryPage() {
       } else {
         setResult({ ok: false, message: data?.error || "Submission failed." });
       }
-    } catch (err: any) {
-      setResult({ ok: false, message: String(err?.message || err) });
+    } catch (err: unknown) {
+      setResult({ ok: false, message: String((err as Error)?.message || err) });
     } finally {
       setSubmitBusy(false);
     }
