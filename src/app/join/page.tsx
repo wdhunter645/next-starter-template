@@ -43,12 +43,13 @@ export default function JoinPage() {
         data = { ok: false, error: text || "Non-JSON response" };
       }
 
-      if (res.ok && data?.ok) {
-        if (data.status === "already_subscribed") {
-          setResult({ ok: true, message: "You're already on the list for this email address." });
-        } else {
-          setResult({ ok: true, message: "You're in. Check your inbox for a welcome message." });
-        }
+      // Handle 409 Conflict (duplicate email)
+      if (res.status === 409) {
+        setResult({ ok: true, message: "You're already on the list for this email address." });
+        setName("");
+        setEmail("");
+      } else if (res.ok && data?.ok) {
+        setResult({ ok: true, message: "You're in. Check your inbox for a welcome message." });
         setName("");
         setEmail("");
       } else {
