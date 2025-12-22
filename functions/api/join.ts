@@ -97,10 +97,11 @@ export async function onRequestPost(context: any): Promise<Response> {
       // Check if this is a UNIQUE constraint violation
       // D1/SQLite returns errors with message containing "UNIQUE constraint failed"
       const errMsg = String(insertErr?.message || insertErr).toLowerCase();
+      const errCode = String(insertErr?.code || "").toUpperCase();
       const isUniqueViolation = 
         errMsg.includes("unique constraint") || 
-        errMsg.includes("sqlite_constraint") ||
-        (insertErr?.code && String(insertErr.code).includes("SQLITE_CONSTRAINT"));
+        errCode.includes("SQLITE_CONSTRAINT") ||
+        errMsg.includes("constraint failed");
       
       if (isUniqueViolation) {
         status = "duplicate";
@@ -237,7 +238,7 @@ export async function onRequestPost(context: any): Promise<Response> {
       );
     }
 
-    // Should not be reached: duplicate returns at line 110, created handled above
+    // Should not be reached: duplicate returns earlier (line 116), created handled above
     console.error("join: unexpected state reached", { requestId, status, isDuplicate });
     throw new Error("Unexpected state: email insert succeeded but status not 'created'");
   } catch (err: any) {

@@ -12,7 +12,7 @@
  */
 
 const BASE_URL = process.env.BASE || 'http://localhost:3000';
-const TEST_EMAIL = `billhunter71+dupecheck-${Date.now()}@gmail.com`;
+const TEST_EMAIL = `test-dupecheck-${Date.now()}@example.com`;
 
 async function testJoinEndpoint() {
   console.log('Testing /api/join endpoint...');
