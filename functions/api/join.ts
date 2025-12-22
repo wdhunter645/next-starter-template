@@ -12,6 +12,7 @@ type EmailAttempt = {
   provider: string;
   statusCode?: number;
   error?: string;
+  skipped?: boolean;
 };
 
 async function writeEmailLog(env: any, attempt: EmailAttempt, requestId: string): Promise<void> {
@@ -20,7 +21,14 @@ async function writeEmailLog(env: any, attempt: EmailAttempt, requestId: string)
     const stmt = db.prepare(
       "INSERT INTO join_email_log (request_id, message_type, recipient_email, result, provider, status_code, error) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)"
     );
-    const result = attempt.sent ? "sent" : attempt.provider === "disabled" ? "skipped" : "failed";
+    let result: string;
+    if (attempt.sent) {
+      result = "sent";
+    } else if (attempt.skipped || attempt.provider === "disabled") {
+      result = "skipped";
+    } else {
+      result = "failed";
+    }
     await stmt
       .bind(
         requestId,
@@ -77,9 +85,20 @@ export async function onRequestPost(context: any): Promise<Response> {
   try {
     const db = env.DB as any;
 
-    // 1) Persist join request
-    const stmt = db.prepare("INSERT INTO join_requests (name, email, created_at) VALUES (?1, ?2, datetime('now'))");
-    await stmt.bind(nameRaw, emailRaw).run();
+    // 1) Check for existing join request (idempotent)
+    const existingStmt = db.prepare("SELECT id FROM join_requests WHERE email = ?1 LIMIT 1");
+    const existing = await existingStmt.bind(emailRaw).first();
+    
+    let status: "joined" | "already_subscribed" = "joined";
+    
+    if (!existing) {
+      // Insert new join request
+      const stmt = db.prepare("INSERT INTO join_requests (name, email, created_at) VALUES (?1, ?2, datetime('now'))");
+      await stmt.bind(nameRaw, emailRaw).run();
+    } else {
+      status = "already_subscribed";
+      console.log("join: duplicate email, skipping insert", { requestId, emailDomain });
+    }
 
     // 2) Email + admin ops (Phase 6)
     const mailEnabled = String(env?.MAILCHANNELS_ENABLED || "0") === "1";
@@ -106,76 +125,99 @@ export async function onRequestPost(context: any): Promise<Response> {
       );
     }
 
-    // Welcome email
-    const welcome = await sendWelcomeEmail({
-      env,
-      toEmail: emailRaw,
-      toName: nameRaw,
-      siteUrl: String(env?.NEXT_PUBLIC_SITE_URL || ""),
-    });
+    // Welcome email (only send for new joins)
+    if (status === "joined") {
+      const welcome = await sendWelcomeEmail({
+        env,
+        toEmail: emailRaw,
+        toName: nameRaw,
+        siteUrl: String(env?.NEXT_PUBLIC_SITE_URL || ""),
+      });
 
-    const welcomeAttempt: EmailAttempt = {
-      messageType: "welcome",
-      recipientEmail: emailRaw,
-      sent: !!welcome.sent,
-      provider: welcome.provider || "mailchannels",
-      statusCode: welcome.statusCode,
-      error: welcome.error,
-    };
-    await writeEmailLog(env, welcomeAttempt, requestId);
+      const welcomeAttempt: EmailAttempt = {
+        messageType: "welcome",
+        recipientEmail: emailRaw,
+        sent: !!welcome.sent,
+        provider: welcome.provider || "mailchannels",
+        statusCode: welcome.statusCode,
+        error: welcome.error,
+      };
+      await writeEmailLog(env, welcomeAttempt, requestId);
 
-    // Admin notification
-    const admin = await sendAdminJoinNotification({
-      env,
-      name: nameRaw,
-      email: emailRaw,
-      requestId,
-      siteUrl: String(env?.NEXT_PUBLIC_SITE_URL || ""),
-    });
+      // Admin notification (non-fatal)
+      const admin = await sendAdminJoinNotification({
+        env,
+        name: nameRaw,
+        email: emailRaw,
+        requestId,
+        siteUrl: String(env?.NEXT_PUBLIC_SITE_URL || ""),
+      });
 
-    const adminTo = String(env?.MAIL_ADMIN_TO || "").trim() || "unknown";
-    const adminAttempt: EmailAttempt = {
-      messageType: "admin",
-      recipientEmail: adminTo,
-      sent: !!admin.sent,
-      provider: admin.provider || "mailchannels",
-      statusCode: admin.statusCode,
-      error: admin.error,
-    };
-    await writeEmailLog(env, adminAttempt, requestId);
+      const adminTo = String(env?.MAIL_ADMIN_TO || "").trim() || "unknown";
+      const adminAttempt: EmailAttempt = {
+        messageType: "admin",
+        recipientEmail: adminTo,
+        sent: !!admin.sent,
+        provider: admin.provider || "mailchannels",
+        statusCode: admin.statusCode,
+        error: admin.error,
+        skipped: admin.skipped,
+      };
+      await writeEmailLog(env, adminAttempt, requestId);
 
-    const allOk = welcome.sent && admin.sent;
+      console.log("join: email results", {
+        requestId,
+        welcomeSent: !!welcome.sent,
+        welcomeStatus: welcome.statusCode,
+        adminSent: !!admin.sent,
+        adminStatus: admin.statusCode,
+        adminSkipped: !!admin.skipped,
+      });
 
-    console.log("join: email results", {
-      requestId,
-      welcomeSent: !!welcome.sent,
-      welcomeStatus: welcome.statusCode,
-      adminSent: !!admin.sent,
-      adminStatus: admin.statusCode,
-    });
+      // Success when join inserted and welcome sent
+      if (!welcome.sent) {
+        return new Response(
+          JSON.stringify({
+            ok: false,
+            requestId,
+            error: "Failed to send welcome email.",
+            email: {
+              welcome: { sent: false, provider: welcome.provider, statusCode: welcome.statusCode, error: welcome.error || null },
+            },
+          }),
+          { status: 503, headers: { "Content-Type": "application/json" } }
+        );
+      }
 
-    if (!allOk) {
-      return new Response(
-        JSON.stringify({
-          ok: false,
-          requestId,
-          email: {
-            welcome: { sent: !!welcome.sent, provider: welcome.provider, statusCode: welcome.statusCode, error: welcome.error || null },
-            admin: { sent: !!admin.sent, provider: admin.provider, statusCode: admin.statusCode, error: admin.error || null },
-          },
-        }),
-        { status: 503, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    return new Response(
-      JSON.stringify({
+      // Welcome sent successfully - return success even if admin failed
+      const responseData: any = {
         ok: true,
+        status,
         requestId,
         email: {
           welcome: { sent: true, provider: welcome.provider, statusCode: welcome.statusCode },
-          admin: { sent: true, provider: admin.provider, statusCode: admin.statusCode },
         },
+      };
+
+      // Add warning if admin notification was skipped or failed
+      if (admin.skipped) {
+        responseData.warn = "admin_notify_skipped";
+      } else if (!admin.sent) {
+        responseData.warn = "admin_notify_failed";
+      }
+
+      return new Response(
+        JSON.stringify(responseData),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Already subscribed - return success without sending emails
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        status,
+        requestId,
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );

@@ -16,9 +16,11 @@ These must be set in Cloudflare Pages **Project Settings → Environment Variabl
 - `MAILCHANNELS_API_KEY` (MailChannels HTTP API key)
 - `MAIL_FROM` (example: `Lou Gehrig Fan Club <noreply@lougehrigfanclub.com>`)
 - `MAIL_REPLY_TO` (optional)
-- `MAIL_ADMIN_TO` (one or more emails, comma-separated)
+- `MAIL_ADMIN_TO` (optional; one or more emails, comma-separated)
 
-If `MAILCHANNELS_ENABLED=1` and required vars are missing, `/api/join` **fails fast** with HTTP 500.
+**Note:** `MAIL_ADMIN_TO` is optional. If not configured, admin notifications are skipped but join requests still succeed and welcome emails are sent.
+
+If `MAILCHANNELS_ENABLED=1` and required vars (MAIL_FROM, MAILCHANNELS_API_KEY) are missing, `/api/join` **fails fast** with HTTP 500.
 
 ## Audit log
 Table: `join_email_log`

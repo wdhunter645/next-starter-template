@@ -36,7 +36,7 @@ export default function JoinPage() {
       });
 
       const text = await res.text();
-      let data: { ok?: boolean; error?: string; email?: { error?: string } } = {};
+      let data: { ok?: boolean; status?: string; error?: string; email?: { error?: string } } = {};
       try {
         data = text ? JSON.parse(text) : {};
       } catch {
@@ -44,7 +44,11 @@ export default function JoinPage() {
       }
 
       if (res.ok && data?.ok) {
-        setResult({ ok: true, message: "You’re in. Check your inbox for a welcome message." });
+        if (data.status === "already_subscribed") {
+          setResult({ ok: true, message: "You're already on the list — check your email or watch for updates." });
+        } else {
+          setResult({ ok: true, message: "You're on the list — check your email for a welcome message." });
+        }
         setName("");
         setEmail("");
       } else {
@@ -62,7 +66,7 @@ export default function JoinPage() {
     <main style={{ ...styles.main }}>
       <h1 style={{ ...styles.h1 }}>Join</h1>
       <p style={{ ...styles.lead }}>
-        Joining the Lou Gehrig Fan Club starts with our mailing list. You’ll receive occasional updates about new site content,
+        Joining the Lou Gehrig Fan Club starts with our mailing list. You&apos;ll receive occasional updates about new site content,
         upcoming events, and community highlights.
       </p>
       <p style={{ ...styles.p }}>
