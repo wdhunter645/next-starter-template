@@ -27,30 +27,5 @@ Prevent repeat regressions and CI / deployment drift. Make the repo predictable.
 - CI is loud only when something is actually wrong (lint/typecheck/tests/secrets).
 - Cloudflare deploys stop surprising you.
 
-5) **Dependency security**
-   - Regular `npm audit` checks to identify vulnerabilities.
-   - Critical vulnerabilities must be addressed immediately with minimal, targeted updates.
-
-## Security Audit History
-
-### PR 330 — Critical npm audit Fix (December 2025)
-**Vulnerability Identified:**
-- Package: `next`
-- Vulnerable versions: `15.5.0 - 15.5.7`
-- Severity: Critical (CVSS 10.0)
-- CVEs:
-  - GHSA-9qr9-h5gf-34mp: Next.js RCE in React flight protocol
-  - GHSA-w37m-7fhw-fmv9: Next Server Actions Source Code Exposure (Moderate)
-  - GHSA-mwv6-3258-q52c: Next DoS with Server Components (High)
-
-**Resolution:**
-- Updated `next` from `^15.5.6` to `^15.5.8` in package.json
-- Ran `npm install` to update package-lock.json
-- Verified: `npm audit` now shows 0 vulnerabilities
-- Verified: `npm run build:cf` succeeds with Next.js 15.5.9
-
-**Current Status:**
-- ✅ 0 critical vulnerabilities
-- ✅ 0 high vulnerabilities
-- ✅ 0 moderate vulnerabilities
-- ✅ Build passing on Next.js 15.5.9
+## /admin Route Security
+`/admin` is 404 in-app for all users. Admin/mod access is enforced via Cloudflare Access (email allow-list) when enabled.
