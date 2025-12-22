@@ -94,9 +94,15 @@ export async function onRequestPost(context: any): Promise<Response> {
       const stmt = db.prepare("INSERT INTO join_requests (name, email, created_at) VALUES (?1, ?2, datetime('now'))");
       await stmt.bind(nameRaw, emailRaw).run();
     } catch (insertErr: any) {
-      // Check if this is a UNIQUE constraint violation (SQLite error code or message)
+      // Check if this is a UNIQUE constraint violation
+      // D1/SQLite returns errors with message containing "UNIQUE constraint failed"
       const errMsg = String(insertErr?.message || insertErr).toLowerCase();
-      if (errMsg.includes("unique") || errMsg.includes("constraint")) {
+      const isUniqueViolation = 
+        errMsg.includes("unique constraint") || 
+        errMsg.includes("sqlite_constraint") ||
+        (insertErr?.code && String(insertErr.code).includes("SQLITE_CONSTRAINT"));
+      
+      if (isUniqueViolation) {
         status = "duplicate";
         isDuplicate = true;
         console.log("join: duplicate email detected via UNIQUE constraint", { requestId, emailDomain });
@@ -231,11 +237,9 @@ export async function onRequestPost(context: any): Promise<Response> {
       );
     }
 
-    // This should not be reached (duplicate returns earlier, created handles above)
-    return new Response(
-      JSON.stringify({ ok: false, error: "Unexpected state.", requestId }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    // Should not be reached: duplicate returns at line 110, created handled above
+    console.error("join: unexpected state reached", { requestId, status, isDuplicate });
+    throw new Error("Unexpected state: email insert succeeded but status not 'created'");
   } catch (err: any) {
     console.error("join: error", { requestId, error: String(err?.message || err) });
     return new Response(JSON.stringify({ ok: false, error: "Failed to save join request.", requestId }), {
