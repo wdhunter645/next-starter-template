@@ -153,7 +153,7 @@ export async function onRequestPost(context: any): Promise<Response> {
         siteUrl: String(env?.NEXT_PUBLIC_SITE_URL || ""),
       });
 
-      const adminTo = String(env?.MAIL_ADMIN_TO || "").trim() || "unknown";
+      const adminTo = String(env?.MAIL_ADMIN_TO || "").trim() || "not-configured";
       const adminAttempt: EmailAttempt = {
         messageType: "admin",
         recipientEmail: adminTo,
