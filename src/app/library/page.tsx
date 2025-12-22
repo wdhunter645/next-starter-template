@@ -1,202 +1,150 @@
-"use client";
+'use client';
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
-type LibraryListItem = {
-  id: number;
-  title: string;
-  content: string;
-  created_at: string;
+type LibraryItem = { id: number; title: string; content: string; created_at: string };
+
+const styles: Record<string, React.CSSProperties> = {
+  main: { padding: "40px 16px", maxWidth: 1000, margin: "0 auto" },
+  h1: { fontSize: 34, lineHeight: 1.15, margin: "0 0 12px 0" },
+  lead: { fontSize: 18, lineHeight: 1.6, margin: "0 0 18px 0" },
+  p: { fontSize: 16, lineHeight: 1.7, margin: "0 0 14px 0" },
+  grid: { display: "grid", gridTemplateColumns: "1fr", gap: 18 },
+  card: { border: "1px solid rgba(0,0,0,0.15)", borderRadius: 16, padding: 16 },
+  form: { display: "grid", gap: 10 },
+  label: { display: "grid", gap: 6, fontSize: 14 },
+  input: { padding: "10px 12px", fontSize: 16, borderRadius: 10, border: "1px solid rgba(0,0,0,0.2)" },
+  textarea: { padding: "10px 12px", fontSize: 16, borderRadius: 10, border: "1px solid rgba(0,0,0,0.2)", minHeight: 120 },
+  btn: { padding: "10px 14px", fontSize: 16, borderRadius: 12, border: "1px solid rgba(0,0,0,0.2)", cursor: "pointer" },
+  msg: { marginTop: 10, padding: 12, borderRadius: 12, border: "1px solid rgba(0,0,0,0.15)" },
+  meta: { opacity: 0.75, fontSize: 13, marginTop: 6 },
+  hr: { margin: "18px 0", opacity: 0.25 },
 };
 
 export default function LibraryPage() {
+  const [items, setItems] = useState<LibraryItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [submitBusy, setSubmitBusy] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
-  const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const [loadingList, setLoadingList] = useState(false);
-  const [listError, setListError] = useState<string | null>(null);
-  const [items, setItems] = useState<LibraryListItem[]>([]);
-
   const canSubmit = useMemo(() => {
-    return name.trim() && email.trim() && title.trim() && content.trim();
+    return name.trim() && email.includes("@") && title.trim().length >= 3 && content.trim().length >= 10;
   }, [name, email, title, content]);
 
-  async function refreshList() {
-    setLoadingList(true);
-    setListError(null);
+  async function load() {
+    setLoading(true);
     try {
-      const res = await fetch("/api/library/list?limit=10", { method: "GET" });
-      const data = await res.json();
-      if (!res.ok || !data?.ok) {
-        setListError(typeof data?.error === "string" ? data.error : "Could not load entries.");
-      } else {
-        setItems(Array.isArray(data.items) ? data.items : []);
-      }
-    } catch (e) {
-      console.error(e);
-      setListError("Network error while loading entries.");
+      const res = await fetch("/api/library/list?limit=20");
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data?.ok) setItems(Array.isArray(data.items) ? data.items : []);
     } finally {
-      setLoadingList(false);
+      setLoading(false);
     }
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    load();
+  }, []);
+
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setSubmitting(true);
-    setMessage(null);
-    setError(null);
+    if (!canSubmit || submitBusy) return;
 
-    const payload = {
-      name: name.trim(),
-      email: email.trim().toLowerCase(),
-      title: title.trim(),
-      content: content.trim(),
-    };
-
-    if (!payload.name || !payload.email || !payload.title || !payload.content) {
-      setError("Name, email, title, and story are required.");
-      setSubmitting(false);
-      return;
-    }
-
+    setSubmitBusy(true);
+    setResult(null);
     try {
       const res = await fetch("/api/library/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          title: title.trim(),
+          content: content.trim(),
+        }),
       });
-
       const data = await res.json().catch(() => ({}));
-
-      if (!res.ok || !data?.ok) {
-        const msg =
-          typeof data?.error === "string" ? data.error : "We couldn’t save your entry. Please try again.";
-        setError(msg);
-      } else {
-        setMessage("Thanks — your entry has been saved.");
+      if (res.ok && data?.ok) {
+        setResult({ ok: true, message: "Submitted. Thank you — entries appear publicly once approved." });
         setTitle("");
         setContent("");
-        // Keep name/email for convenience; refresh list
-        refreshList().catch(() => null);
+        await load();
+      } else {
+        setResult({ ok: false, message: data?.error || "Submission failed." });
       }
-    } catch (err) {
-      console.error("Library submit failed:", err);
-      setError("Network error. Please try again in a moment.");
+    } catch (err: any) {
+      setResult({ ok: false, message: String(err?.message || err) });
     } finally {
-      setSubmitting(false);
+      setSubmitBusy(false);
     }
   }
 
   return (
-    <main style={{ maxWidth: 820, margin: "40px auto", fontFamily: "sans-serif", padding: "0 16px" }}>
-      <h1>Library</h1>
-      <p>
-        Share your favorite Lou Gehrig story or memory. Submissions are stored immediately. (Moderation/approval can be
-        added later.)
+    <main style={{ ...styles.main }}>
+      <h1 style={{ ...styles.h1 }}>Library</h1>
+      <p style={{ ...styles.lead }}>
+        Submit short entries about Lou Gehrig: stories, quotes, memories, book recommendations, and links to trusted resources.
+      </p>
+      <p style={{ ...styles.p }}>
+        Rules: be respectful, don’t post copyrighted material you don’t own, cite sources when you can, and keep it focused.
       </p>
 
-      <section style={{ marginTop: 24, padding: 16, border: "1px solid #ddd", borderRadius: 12 }}>
-        <h2 style={{ marginTop: 0 }}>Submit a story</h2>
-
-        <form onSubmit={handleSubmit}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            <div>
-              <label htmlFor="name" style={{ display: "block", fontWeight: 600 }}>
-                Name
-              </label>
-              <input
-                id="name"
-                type="text"
-                value={name}
-                required
-                onChange={(e) => setName(e.target.value)}
-                style={{ width: "100%", padding: 8, boxSizing: "border-box" }}
-              />
-            </div>
-            <div>
-              <label htmlFor="email" style={{ display: "block", fontWeight: 600 }}>
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                required
-                onChange={(e) => setEmail(e.target.value)}
-                style={{ width: "100%", padding: 8, boxSizing: "border-box" }}
-              />
-            </div>
-          </div>
-
-          <div style={{ marginTop: 12 }}>
-            <label htmlFor="title" style={{ display: "block", fontWeight: 600 }}>
+      <div style={{ ...styles.grid }}>
+        <section style={{ ...styles.card }}>
+          <h2 style={{ margin: 0 }}>Submit an entry</h2>
+          <hr style={{ ...styles.hr }} />
+          <form style={{ ...styles.form }} onSubmit={submit}>
+            <label style={{ ...styles.label }}>
+              Name
+              <input style={{ ...styles.input }} value={name} onChange={(e) => setName(e.target.value)} />
+            </label>
+            <label style={{ ...styles.label }}>
+              Email
+              <input style={{ ...styles.input }} value={email} onChange={(e) => setEmail(e.target.value)} inputMode="email" autoCapitalize="none" />
+            </label>
+            <label style={{ ...styles.label }}>
               Title
+              <input style={{ ...styles.input }} value={title} onChange={(e) => setTitle(e.target.value)} />
             </label>
-            <input
-              id="title"
-              type="text"
-              value={title}
-              required
-              onChange={(e) => setTitle(e.target.value)}
-              style={{ width: "100%", padding: 8, boxSizing: "border-box" }}
-            />
-          </div>
-
-          <div style={{ marginTop: 12 }}>
-            <label htmlFor="content" style={{ display: "block", fontWeight: 600 }}>
-              Story
+            <label style={{ ...styles.label }}>
+              Entry
+              <textarea style={{ ...styles.textarea }} value={content} onChange={(e) => setContent(e.target.value)} />
             </label>
-            <textarea
-              id="content"
-              value={content}
-              required
-              onChange={(e) => setContent(e.target.value)}
-              rows={8}
-              style={{ width: "100%", padding: 8, boxSizing: "border-box" }}
-            />
-          </div>
+            <button style={{ ...styles.btn }} disabled={!canSubmit || submitBusy} type="submit">
+              {submitBusy ? "Submitting..." : "Submit"}
+            </button>
+          </form>
+          {result && (
+            <div style={{ ...styles.msg }}>
+              <strong>{result.ok ? "Success" : "Error"}:</strong> {result.message}
+            </div>
+          )}
+        </section>
 
-          <button
-            type="submit"
-            disabled={!canSubmit || submitting}
-            style={{ marginTop: 12, padding: "10px 16px", fontWeight: 700, cursor: submitting ? "default" : "pointer" }}
-          >
-            {submitting ? "Submitting..." : "Submit"}
-          </button>
-        </form>
-
-        {message && <p style={{ marginTop: 12, color: "green", fontWeight: 700 }}>{message}</p>}
-        {error && <p style={{ marginTop: 12, color: "red", fontWeight: 700 }}>{error}</p>}
-      </section>
-
-      <section style={{ marginTop: 24 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <section style={{ ...styles.card }}>
           <h2 style={{ margin: 0 }}>Recent entries</h2>
-          <button onClick={refreshList} disabled={loadingList} style={{ padding: "8px 12px", cursor: "pointer" }}>
-            {loadingList ? "Loading..." : "Refresh"}
-          </button>
-        </div>
-        {listError && <p style={{ color: "red", fontWeight: 700 }}>{listError}</p>}
-        {items.length === 0 ? (
-          <p style={{ opacity: 0.8 }}>No entries loaded yet.</p>
-        ) : (
-          <div style={{ marginTop: 12, display: "grid", gap: 12 }}>
-            {items.map((it) => (
-              <article key={it.id} style={{ border: "1px solid #ddd", borderRadius: 12, padding: 14 }}>
-                <h3 style={{ marginTop: 0 }}>{it.title}</h3>
-                <p style={{ whiteSpace: "pre-wrap" }}>{it.content}</p>
-                <p style={{ marginBottom: 0, opacity: 0.7, fontSize: 12 }}>{it.created_at}</p>
+          <hr style={{ ...styles.hr }} />
+          {loading ? (
+            <p style={{ ...styles.p }}>Loading…</p>
+          ) : items.length === 0 ? (
+            <p style={{ ...styles.p }}>No entries yet.</p>
+          ) : (
+            items.map((it) => (
+              <article key={it.id} style={{ marginBottom: 14 }}>
+                <h3 style={{ margin: "0 0 6px 0" }}>{it.title}</h3>
+                <div style={{ ...styles.meta }}>{new Date(it.created_at).toLocaleString()}</div>
+                <p style={{ ...styles.p, marginTop: 8, whiteSpace: "pre-wrap" }}>{it.content}</p>
+                <hr style={{ ...styles.hr }} />
               </article>
-            ))}
-          </div>
-        )}
-      </section>
+            ))
+          )}
+        </section>
+      </div>
     </main>
   );
 }
