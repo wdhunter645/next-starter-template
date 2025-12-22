@@ -20,7 +20,7 @@ export default function JoinPage() {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
 
-  const canSubmit = useMemo(() => name.trim().length > 0 && email.trim().length > 3, [name, email]);
+  const canSubmit = useMemo(() => name.trim().length > 0 && email.trim().includes('@') && email.trim().length > 3, [name, email]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
