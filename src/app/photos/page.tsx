@@ -1,84 +1,84 @@
-"use client";
+'use client';
 
-import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
-type PhotoItem = {
-  id: number;
-  url: string;
-  is_memorabilia: number;
-  description?: string | null;
-  created_at: string;
+type PhotoItem = { id: number; url: string; is_memorabilia: number; description?: string | null; created_at: string };
+
+const styles: Record<string, React.CSSProperties> = {
+  main: { padding: "40px 16px", maxWidth: 1100, margin: "0 auto" },
+  h1: { fontSize: 34, lineHeight: 1.15, margin: "0 0 12px 0" },
+  lead: { fontSize: 18, lineHeight: 1.6, margin: "0 0 18px 0" },
+  p: { fontSize: 16, lineHeight: 1.7, margin: "0 0 14px 0" },
+  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 12 },
+  card: { border: "1px solid rgba(0,0,0,0.15)", borderRadius: 14, overflow: "hidden", background: "rgba(255,255,255,0.6)" },
+  img: { width: "100%", height: 160, objectFit: "cover", display: "block" },
+  cap: { padding: 10, fontSize: 13, lineHeight: 1.4, opacity: 0.9 },
+  btnRow: { display: "flex", gap: 10, marginTop: 14 },
+  btn: { padding: "10px 14px", fontSize: 16, borderRadius: 12, border: "1px solid rgba(0,0,0,0.2)", cursor: "pointer" },
 };
 
 export default function PhotosPage() {
   const [items, setItems] = useState<PhotoItem[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
+  const [loading, setLoading] = useState(false);
   const [offset, setOffset] = useState(0);
-  const limit = 20;
+  const limit = 24;
 
   async function load(nextOffset: number) {
     setLoading(true);
-    setError(null);
     try {
-      const res = await fetch(`/api/photos/list?limit=${limit}&offset=${nextOffset}`, { method: "GET" });
-      const data = await res.json();
-      if (!res.ok || !data?.ok) {
-        setError(typeof data?.error === "string" ? data.error : "Failed to load photos.");
-      } else {
-        setItems(Array.isArray(data.items) ? data.items : []);
-        setOffset(nextOffset);
+      const res = await fetch(`/api/photos/list?limit=${limit}&offset=${nextOffset}`);
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data?.ok) {
+        const incoming = Array.isArray(data.items) ? data.items : [];
+        if (nextOffset === 0) setItems(incoming);
+        else setItems((prev) => [...prev, ...incoming]);
       }
-    } catch (e) {
-      console.error(e);
-      setError("Network error.");
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    load(0).catch(() => null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    load(0);
   }, []);
 
   return (
-    <main style={{ maxWidth: 1000, margin: "40px auto", fontFamily: "sans-serif", padding: "0 16px" }}>
-      <h1>Photo Archive</h1>
-      <p>Browse photos. (Seed/import tooling can be added next.)</p>
+    <main style={{ ...styles.main }}>
+      <h1 style={{ ...styles.h1 }}>Photo Archive</h1>
+      <p style={{ ...styles.lead }}>
+        A growing gallery of images connected to Lou Gehrig, Yankees history, and related memorabilia.
+      </p>
 
-      {error && <p style={{ color: "red", fontWeight: 700 }}>{error}</p>}
-
-      <div style={{ display: "flex", gap: 12, alignItems: "center", margin: "12px 0" }}>
-        <button disabled={loading || offset === 0} onClick={() => load(Math.max(0, offset - limit))} style={{ padding: "8px 12px" }}>
-          Prev
-        </button>
-        <button disabled={loading} onClick={() => load(offset + limit)} style={{ padding: "8px 12px" }}>
-          Next
-        </button>
-        <span style={{ opacity: 0.7 }}>Showing {items.length} items (offset {offset})</span>
-      </div>
-
-      {loading ? (
-        <p>Loading…</p>
+      {loading && items.length === 0 ? (
+        <p style={{ ...styles.p }}>Loading…</p>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
-          {items.map((p) => (
-            <Link
-              key={p.id}
-              href={`/photo?id=${p.id}`}
-              style={{ display: "block", border: "1px solid #ddd", borderRadius: 12, padding: 8, textDecoration: "none", color: "inherit" }}
-            >
-              {/* Keeping <img> for now to avoid Next/Image config on Cloudflare. */}
-              <img src={p.url} alt={p.description ?? `Photo ${p.id}`} style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 10 }} />
-              <div style={{ marginTop: 8, fontSize: 12, opacity: 0.85 }}>
-                #{p.id} {p.is_memorabilia ? "• Memorabilia" : ""}
+        <>
+          <div style={{ ...styles.grid }}>
+            {items.map((p) => (
+              <div key={p.id} style={{ ...styles.card }}>
+                <img src={p.url} alt={p.description || `Photo ${p.id}`} style={{ ...styles.img }} loading="lazy" />
+                <div style={{ ...styles.cap }}>{p.description || "—"}</div>
               </div>
-            </Link>
-          ))}
-        </div>
+            ))}
+          </div>
+
+          <div style={{ ...styles.btnRow }}>
+            <button
+              style={{ ...styles.btn }}
+              disabled={loading}
+              onClick={() => {
+                const next = offset + limit;
+                setOffset(next);
+                load(next);
+              }}
+            >
+              {loading ? "Loading..." : "Load more"}
+            </button>
+            <a style={{ ...styles.btn, textDecoration: "none", display: "inline-flex", alignItems: "center" }} href="/memorabilia">
+              View memorabilia
+            </a>
+          </div>
+        </>
       )}
     </main>
   );

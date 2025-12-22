@@ -1,109 +1,27 @@
 import React from "react";
 
-type Charity = {
-  name: string;
-  url: string;
-  focus: string;
-  summary: string;
-};
-
-const charities: Charity[] = [
-  {
-    name: "ALS Cure Project",
-    url: "https://www.alscure.org/",
-    focus: "Research",
-    summary:
-      "Family-driven nonprofit organization focused on funding cutting-edge ALS research and accelerating paths to a cure.",
-  },
-  {
-    name: "LiveLikeLou",
-    url: "https://livelikelou.org/",
-    focus: "Support & Legacy",
-    summary:
-      "Honors Lou Gehrig&apos;s legacy by supporting ALS families, funding research, and raising awareness about the disease.",
-  },
-  {
-    name: "Additional Partners",
-    url: "#",
-    focus: "Future Collaborations",
-    summary:
-      "The Lou Gehrig Fan Club plans to highlight additional ALS-focused charities and initiatives as the club grows.",
-  },
-];
-
-export default function CharitiesPage() {
+export default function Page() {
   return (
-    <main style={{ maxWidth: 960, margin: "0 auto", padding: "2rem 1.25rem 3rem" }}>
-      <header style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ fontSize: "var(--lgfc-font-size-h1)", margin: 0, color: "var(--lgfc-blue)" }}>Charity Partners</h1>
-        <p style={{ marginTop: "0.5rem", color: "var(--lgfc-text-muted)", maxWidth: 700 }}>
-          The Lou Gehrig Fan Club exists to celebrate Lou&apos;s legacy and support organizations
-          working to defeat ALS and support families affected by the disease.
-        </p>
-      </header>
-
-      <section
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-          gap: "1.25rem",
-        }}
-      >
-        {charities.map((charity) => (
-          <article
-            key={charity.name}
-            style={{
-              borderRadius: "var(--lgfc-radius-lg)",
-              border: "1px solid var(--lgfc-border-soft)",
-              background: "var(--lgfc-bg-card)",
-              padding: "1.25rem 1.1rem",
-              boxShadow: "0 2px 4px rgba(0, 30, 80, 0.06)",
-            }}
-          >
-            <h2 style={{ marginTop: 0, marginBottom: "0.35rem", fontSize: "var(--lgfc-font-size-h3)" }}>
-              {charity.name}
-            </h2>
-            <div
-              style={{
-                fontSize: "var(--lgfc-font-size-fine)",
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                color: "var(--lgfc-blue)",
-                marginBottom: "0.4rem",
-              }}
-            >
-              {charity.focus}
-            </div>
-            <p style={{ margin: 0, fontSize: "var(--lgfc-font-size-small)", color: "var(--lgfc-text-main)" }}>{charity.summary}</p>
-            {charity.url !== "#" && (
-              <p style={{ marginTop: "0.75rem" }}>
-                <a
-                  href={charity.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    fontSize: "var(--lgfc-font-size-small)",
-                    color: "var(--lgfc-blue)",
-                    textDecoration: "underline",
-                    textUnderlineOffset: "0.1rem",
-                  }}
-                >
-                  Visit website →
-                </a>
-              </p>
-            )}
-          </article>
-        ))}
-      </section>
-
-      <section style={{ marginTop: "1.75rem" }}>
-        <p style={{ fontSize: "var(--lgfc-font-size-small)", color: "var(--lgfc-text-muted)" }}>
-          The club will not promote any ALS charity casually. Each organization featured here is
-          vetted for mission alignment, transparency, and real-world impact. As the fan club
-          grows, this page will become the central hub for our fundraising and awareness efforts.
-        </p>
-      </section>
+    <main style={{...styles.main}}>
+      <h1 style={{...styles.h1}}>Charities</h1>
+      <p style={{...styles.lead}}>ALS changed history when Lou Gehrig stood at home plate on July 4, 1939 and delivered one of the most famous speeches in sports. Today, ALS remains a disease that demands research, support, and compassion.</p>
+      <p style={{...styles.p}}>The Lou Gehrig Fan Club highlights ALS charities and encourages members to donate directly whenever possible. If the club ever generates proceeds in the future, the intent is that those proceeds exist solely to support ALS‑related charitable giving — not private profit.</p>
+      <p style={{...styles.p}}>On this page you’ll find:</p>
+      <ul style={{...styles.ul}}>
+        <li style={{...styles.li}}>A short list of ALS organizations we recommend starting with</li>
+        <li style={{...styles.li}}>Occasional featured fundraisers and events</li>
+        <li style={{...styles.li}}>Simple guidance on how to donate and verify charities</li>
+      </ul>
     </main>
   );
 }
+
+const styles: Record<string, React.CSSProperties> = {
+  main: { padding: "40px 16px", maxWidth: 900, margin: "0 auto" },
+  h1: { fontSize: 34, lineHeight: 1.15, margin: "0 0 12px 0" },
+  lead: { fontSize: 18, lineHeight: 1.6, margin: "0 0 18px 0" },
+  p: { fontSize: 16, lineHeight: 1.7, margin: "0 0 14px 0" },
+  ul: { paddingLeft: 18, margin: "0 0 14px 0" },
+  li: { margin: "0 0 8px 0", lineHeight: 1.6 },
+  hr: { margin: "26px 0", opacity: 0.25 },
+};
