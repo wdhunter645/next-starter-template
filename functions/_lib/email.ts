@@ -7,7 +7,7 @@ function parseFrom(from: string): MailChannelsAddress {
 	return { email: from.trim() };
 }
 
-type MailSendResult = { sent: boolean; provider: string; statusCode?: number; error?: string };
+type MailSendResult = { sent: boolean; provider: string; statusCode?: number; error?: string; skipped?: boolean };
 
 function requiredEnv(opts: { env: any; key: string; hint?: string }): string {
 	const v = String(opts.env?.[opts.key] || '').trim();
@@ -124,7 +124,7 @@ export async function sendAdminJoinNotification(opts: {
 	if (!enabled) return { sent: false, provider: 'disabled' };
 
 	const adminToRaw = String(opts.env?.MAIL_ADMIN_TO || '').trim();
-	if (!adminToRaw) return { sent: false, provider: 'mailchannels', error: 'MAIL_ADMIN_TO not configured' };
+	if (!adminToRaw) return { sent: false, provider: 'mailchannels', error: 'MAIL_ADMIN_TO not configured', skipped: true };
 
 	const siteUrl = (opts.siteUrl || String(opts.env?.NEXT_PUBLIC_SITE_URL || '')).trim();
 
