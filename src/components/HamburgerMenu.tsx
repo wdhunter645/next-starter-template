@@ -25,7 +25,6 @@ export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
         </li>
         <li><Link href="/privacy" onClick={onClose}>Privacy</Link></li>
         <li><Link href="/terms" onClick={onClose}>Terms</Link></li>
-        <li><Link href="/admin" onClick={onClose}>Admin</Link></li>
       </ul>
     </div>
   );
