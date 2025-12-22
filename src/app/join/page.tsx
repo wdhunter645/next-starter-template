@@ -45,9 +45,9 @@ export default function JoinPage() {
 
       if (res.ok && data?.ok) {
         if (data.status === "already_subscribed") {
-          setResult({ ok: true, message: "You're already on the list — check your email or watch for updates." });
+          setResult({ ok: true, message: "You're already on the list for this email address." });
         } else {
-          setResult({ ok: true, message: "You're on the list — check your email for a welcome message." });
+          setResult({ ok: true, message: "You're in. Check your inbox for a welcome message." });
         }
         setName("");
         setEmail("");
