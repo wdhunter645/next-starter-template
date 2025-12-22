@@ -26,3 +26,6 @@ Prevent repeat regressions and CI / deployment drift. Make the repo predictable.
 - CI is quiet when repo is clean.
 - CI is loud only when something is actually wrong (lint/typecheck/tests/secrets).
 - Cloudflare deploys stop surprising you.
+
+## /admin Route Security
+`/admin` is 404 in-app for all users. Admin/mod access is enforced via Cloudflare Access (email allow-list) when enabled.
