@@ -19,9 +19,6 @@ export default function Footer() {
 						<Link href="/terms" className={styles.link}>
 							Terms
 						</Link>
-						<Link href="/admin" className={styles.link}>
-							Admin
-						</Link>
 					</div>
 				</div>
 			</div>
