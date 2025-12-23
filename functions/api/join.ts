@@ -86,11 +86,9 @@ export async function onRequestPost(context: any): Promise<Response> {
     const db = env.DB as any;
 
     // 1) Attempt INSERT first (authoritative, DB-level idempotency via UNIQUE constraint)
-    let insertSucceeded = false;
     try {
       const stmt = db.prepare("INSERT INTO join_requests (name, email, created_at) VALUES (?1, ?2, datetime('now'))");
       await stmt.bind(nameRaw, emailRaw).run();
-      insertSucceeded = true;
       console.log("join: new subscription created", { requestId, emailDomain });
     } catch (insertErr: any) {
       // Check if error is UNIQUE constraint violation
