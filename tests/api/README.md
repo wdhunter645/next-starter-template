@@ -29,8 +29,8 @@ BASE=http://localhost:3000 node tests/api/join-duplicate-test.mjs
 
 The test validates three scenarios:
 
-1. **First Insert**: Returns HTTP 200 with `{ ok: true, status: "created" }`
-2. **Duplicate Insert**: Returns HTTP 409 with `{ ok: false, status: "duplicate", error: "Email already subscribed." }`
+1. **First Insert**: Returns HTTP 200 with `{ ok: true, status: "joined" }`
+2. **Duplicate Insert**: Returns HTTP 409 with `{ ok: false, status: "already_joined" }`
 3. **Normalized Email**: Whitespace and case variations of the same email also return HTTP 409
 
 All three tests should pass for the fix to be considered successful.
