@@ -212,14 +212,15 @@ export async function onRequestPost(context: any): Promise<Response> {
       );
     }
 
-    // Already subscribed - return success without sending emails
+    // Already subscribed - return 409 Conflict (duplicate is not a success for UX)
     return new Response(
       JSON.stringify({
-        ok: true,
+        ok: false,
         status,
+        error: "Email already subscribed.",
         requestId,
       }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
+      { status: 409, headers: { "Content-Type": "application/json" } }
     );
   } catch (err: any) {
     console.error("join: error", { requestId, error: String(err?.message || err) });
