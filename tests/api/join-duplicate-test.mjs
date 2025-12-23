@@ -2,8 +2,8 @@
  * Manual test for /api/join duplicate handling
  * 
  * This test validates the following behaviors:
- * 1. First insert returns 200 with ok: true and status: "created"
- * 2. Duplicate insert returns 409 with ok: false and status: "duplicate"
+ * 1. First insert returns 200 with ok: true and status: "joined"
+ * 2. Duplicate insert returns 409 with ok: false and status: "already_joined"
  * 3. Email normalization (case/whitespace) is handled correctly
  * 
  * Run this test against a deployed or local environment:
@@ -62,11 +62,11 @@ async function testJoinEndpoint() {
     console.log('  Status:', res2.status);
     console.log('  Response:', JSON.stringify(data2, null, 2));
 
-    if (res2.status === 409 && data2.ok === false && data2.status === 'duplicate') {
-      console.log('  ✓ PASS: Duplicate returned 409 with ok: false and status: duplicate');
+    if (res2.status === 409 && data2.ok === false && data2.status === 'already_joined') {
+      console.log('  ✓ PASS: Duplicate returned 409 with ok: false and status: already_joined');
       testsPassed++;
     } else {
-      console.log('  ✗ FAIL: Expected status 409, ok: false, and status: duplicate');
+      console.log('  ✗ FAIL: Expected status 409, ok: false, and status: already_joined');
       testsFailed++;
     }
   } catch (err) {
@@ -90,7 +90,7 @@ async function testJoinEndpoint() {
     console.log('  Test email:', JSON.stringify(normalizedEmail));
     console.log('  Response:', JSON.stringify(data3, null, 2));
 
-    if (res3.status === 409 && data3.ok === false && data3.status === 'duplicate') {
+    if (res3.status === 409 && data3.ok === false && data3.status === 'already_joined') {
       console.log('  ✓ PASS: Normalized email returned 409 (duplicate detected)');
       testsPassed++;
     } else {

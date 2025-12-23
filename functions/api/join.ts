@@ -13,26 +13,23 @@ function json(data: any, status: number): Response {
   });
 }
 
-// Helper: check if error is a unique constraint violation
-function isUniqueViolation(err: any): boolean {
-  const errMsg = String(err?.message || err).toLowerCase();
-  const errCode = String(err?.code || "").toUpperCase();
-  return (
-    errMsg.includes("unique constraint") ||
-    errCode.includes("SQLITE_CONSTRAINT") ||
-    errMsg.includes("constraint failed")
-  );
-}
-
-// Helper: insert join request into DB
+// Helper: insert join request into DB using INSERT...SELECT...WHERE NOT EXISTS
+// Returns true if inserted (new record), false if duplicate (already exists)
 async function insertJoinRequest(
   db: any,
   data: { name: string; email: string }
-): Promise<void> {
+): Promise<boolean> {
   const stmt = db.prepare(
-    "INSERT INTO join_requests (name, email, created_at) VALUES (?1, ?2, datetime('now'))"
+    `INSERT INTO join_requests (name, email, created_at)
+     SELECT ?1, ?2, datetime('now')
+     WHERE NOT EXISTS (
+       SELECT 1 FROM join_requests WHERE lower(email) = lower(?2)
+     )`
   );
-  await stmt.bind(data.name, data.email).run();
+  const result = await stmt.bind(data.name, data.email).run();
+  // If changes === 1, insert succeeded (new record)
+  // If changes === 0, duplicate was detected (no insert)
+  return result.meta.changes === 1;
 }
 
 export async function onRequestPost(context: any): Promise<Response> {
@@ -54,33 +51,27 @@ export async function onRequestPost(context: any): Promise<Response> {
       );
     }
 
-    // Attempt insert (DB is authoritative)
-    try {
-      await insertJoinRequest(env.DB, { name, email });
+    // Attempt insert using INSERT...SELECT...WHERE NOT EXISTS
+    const inserted = await insertJoinRequest(env.DB, { name, email });
 
-      // SUCCESS: first-time join
+    if (inserted) {
+      // SUCCESS: first-time join (insert occurred)
       await sendWelcomeEmail({ env, toEmail: email, toName: name });
 
       return json(
         { ok: true, status: "joined", requestId },
         200
       );
-    } catch (err: any) {
-      // Duplicate constraint violation
-      if (isUniqueViolation(err)) {
-        return json(
-          {
-            ok: false,
-            status: "already_subscribed",
-            error: "Email already subscribed.",
-            requestId,
-          },
-          409
-        );
-      }
-
-      // Unknown DB error
-      throw err;
+    } else {
+      // DUPLICATE: email already exists (no insert)
+      return json(
+        {
+          ok: false,
+          status: "already_joined",
+          requestId,
+        },
+        409
+      );
     }
   } catch (err) {
     // Guaranteed fallback return (prevents TS fallthrough)
