@@ -66,6 +66,7 @@ export async function onRequestPost(context: any): Promise<Response> {
   }
 
   const nameRaw = typeof body?.name === "string" ? body.name.trim() : "";
+  // Normalize email: trim whitespace and lowercase for consistent storage and duplicate detection
   const emailRaw = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
   const emailDomain = emailRaw.includes("@") ? emailRaw.split("@")[1] : "unknown";
 
@@ -85,32 +86,47 @@ export async function onRequestPost(context: any): Promise<Response> {
   try {
     const db = env.DB as any;
 
-    // 1) Attempt INSERT first (authoritative, DB-level idempotency via UNIQUE constraint)
+    // 1) Attempt to insert (let UNIQUE constraint enforce idempotency)
+    let status: "created" | "duplicate" = "created";
+    let isDuplicate = false;
+    
     try {
       const stmt = db.prepare("INSERT INTO join_requests (name, email, created_at) VALUES (?1, ?2, datetime('now'))");
       await stmt.bind(nameRaw, emailRaw).run();
-      console.log("join: new subscription created", { requestId, emailDomain });
     } catch (insertErr: any) {
-      // Check if error is UNIQUE constraint violation
+      // Check if this is a UNIQUE constraint violation
+      // D1/SQLite returns errors with message containing "UNIQUE constraint failed"
       const errMsg = String(insertErr?.message || insertErr).toLowerCase();
-      if (errMsg.includes("unique") || errMsg.includes("constraint")) {
-        // Duplicate email - return 409 immediately (no email sent)
-        console.log("join: duplicate email detected (UNIQUE constraint)", { requestId, emailDomain });
-        return new Response(
-          JSON.stringify({
-            ok: false,
-            status: "already_subscribed",
-            error: "Email already subscribed.",
-            requestId,
-          }),
-          { status: 409, headers: { "Content-Type": "application/json" } }
-        );
+      const errCode = String(insertErr?.code || "").toUpperCase();
+      const isUniqueViolation = 
+        errMsg.includes("unique constraint") || 
+        errCode.includes("SQLITE_CONSTRAINT") ||
+        errMsg.includes("constraint failed");
+      
+      if (isUniqueViolation) {
+        status = "duplicate";
+        isDuplicate = true;
+        console.log("join: duplicate email detected via UNIQUE constraint", { requestId, emailDomain });
+      } else {
+        // Re-throw if it's not a duplicate error
+        throw insertErr;
       }
-      // Re-throw if it's a different DB error
-      throw insertErr;
     }
 
-    // 2) Email + admin ops (Phase 6) - only if INSERT succeeded
+    // 2) Return 409 immediately if duplicate (before email operations)
+    if (isDuplicate) {
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          status: "duplicate",
+          error: "Email already subscribed.",
+          requestId,
+        }),
+        { status: 409, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // 3) Email + admin ops (Phase 6) - only for new inserts
     const mailEnabled = String(env?.MAILCHANNELS_ENABLED || "0") === "1";
 
     if (!mailEnabled) {
@@ -135,13 +151,54 @@ export async function onRequestPost(context: any): Promise<Response> {
       );
     }
 
-    // Send welcome email (INSERT succeeded, this is a new join)
-    const welcome = await sendWelcomeEmail({
-      env,
-      toEmail: emailRaw,
-      toName: nameRaw,
-      siteUrl: String(env?.NEXT_PUBLIC_SITE_URL || ""),
-    });
+    // Welcome email (send for new joins)
+    if (status === "created") {
+      const welcome = await sendWelcomeEmail({
+        env,
+        toEmail: emailRaw,
+        toName: nameRaw,
+        siteUrl: String(env?.NEXT_PUBLIC_SITE_URL || ""),
+      });
+
+      const welcomeAttempt: EmailAttempt = {
+        messageType: "welcome",
+        recipientEmail: emailRaw,
+        sent: !!welcome.sent,
+        provider: welcome.provider || "mailchannels",
+        statusCode: welcome.statusCode,
+        error: welcome.error,
+      };
+      await writeEmailLog(env, welcomeAttempt, requestId);
+
+      // Admin notification (non-fatal)
+      const admin = await sendAdminJoinNotification({
+        env,
+        name: nameRaw,
+        email: emailRaw,
+        requestId,
+        siteUrl: String(env?.NEXT_PUBLIC_SITE_URL || ""),
+      });
+
+      const adminTo = String(env?.MAIL_ADMIN_TO || "").trim() || "not-configured";
+      const adminAttempt: EmailAttempt = {
+        messageType: "admin",
+        recipientEmail: adminTo,
+        sent: !!admin.sent,
+        provider: admin.provider || "mailchannels",
+        statusCode: admin.statusCode,
+        error: admin.error,
+        skipped: admin.skipped,
+      };
+      await writeEmailLog(env, adminAttempt, requestId);
+
+      console.log("join: email results", {
+        requestId,
+        welcomeSent: !!welcome.sent,
+        welcomeStatus: welcome.statusCode,
+        adminSent: !!admin.sent,
+        adminStatus: admin.statusCode,
+        adminSkipped: !!admin.skipped,
+      });
 
     const welcomeAttempt: EmailAttempt = {
       messageType: "welcome",
@@ -198,27 +255,9 @@ export async function onRequestPost(context: any): Promise<Response> {
       );
     }
 
-    // Welcome sent successfully - return success even if admin failed
-    const responseData: any = {
-      ok: true,
-      status: "joined",
-      requestId,
-      email: {
-        welcome: { sent: true, provider: welcome.provider, statusCode: welcome.statusCode },
-      },
-    };
-
-    // Add warning if admin notification was skipped or failed
-    if (admin.skipped) {
-      responseData.warn = "admin_notify_skipped";
-    } else if (!admin.sent) {
-      responseData.warn = "admin_notify_failed";
-    }
-
-    return new Response(
-      JSON.stringify(responseData),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    // Should not be reached: duplicate returns earlier (line 116), created handled above
+    console.error("join: unexpected state reached", { requestId, status, isDuplicate });
+    throw new Error("Unexpected state: email insert succeeded but status not 'created'");
   } catch (err: any) {
     console.error("join: error", { requestId, error: String(err?.message || err) });
     return new Response(JSON.stringify({ ok: false, error: "Failed to save join request.", requestId }), {

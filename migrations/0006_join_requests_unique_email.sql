@@ -1,22 +1,35 @@
--- Migration: Add UNIQUE constraint on email (normalized) for join_requests
--- Ensures DB-level idempotency for join submissions
+-- Add UNIQUE constraint to email column in join_requests table
+-- This enforces idempotency at the database level
 
--- Step 1: Normalize existing emails (lowercase + trim)
--- SQLite doesn't have UPDATE with FROM, so we update in place
-UPDATE join_requests
-SET email = LOWER(TRIM(email))
-WHERE email != LOWER(TRIM(email));
-
--- Step 2: Remove any exact duplicates that may exist (keep oldest)
--- This ensures the UNIQUE constraint won't fail on existing data
-DELETE FROM join_requests
-WHERE id NOT IN (
-  SELECT MIN(id)
-  FROM join_requests
-  GROUP BY email
+-- SQLite doesn't support ADD CONSTRAINT for UNIQUE, so we need to recreate the table
+-- First, create the new table with the UNIQUE constraint
+CREATE TABLE IF NOT EXISTS join_requests_new (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  name        TEXT    NOT NULL,
+  email       TEXT    NOT NULL UNIQUE,
+  message     TEXT,
+  created_at  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
 
--- Step 3: Create UNIQUE index on email column
--- This enforces idempotency at the DB level
-CREATE UNIQUE INDEX IF NOT EXISTS idx_join_requests_email_unique
+-- Copy existing data (deduplicate by keeping the oldest entry per email)
+INSERT INTO join_requests_new (id, name, email, message, created_at)
+SELECT id, name, email, message, created_at
+FROM join_requests
+WHERE id IN (
+  SELECT MIN(id)
+  FROM join_requests
+  GROUP BY LOWER(TRIM(email))
+);
+
+-- Drop the old table
+DROP TABLE join_requests;
+
+-- Rename the new table to the original name
+ALTER TABLE join_requests_new RENAME TO join_requests;
+
+-- Recreate indexes
+CREATE INDEX IF NOT EXISTS idx_join_requests_email
   ON join_requests (email);
+
+CREATE INDEX IF NOT EXISTS idx_join_requests_created_at
+  ON join_requests (created_at);
