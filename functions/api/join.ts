@@ -200,41 +200,58 @@ export async function onRequestPost(context: any): Promise<Response> {
         adminSkipped: !!admin.skipped,
       });
 
-      // Success when join inserted and welcome sent
-      if (!welcome.sent) {
-        return new Response(
-          JSON.stringify({
-            ok: false,
-            requestId,
-            error: "Failed to send welcome email.",
-            email: {
-              welcome: { sent: false, provider: welcome.provider, statusCode: welcome.statusCode, error: welcome.error || null },
-            },
-          }),
-          { status: 503, headers: { "Content-Type": "application/json" } }
-        );
-      }
+    const welcomeAttempt: EmailAttempt = {
+      messageType: "welcome",
+      recipientEmail: emailRaw,
+      sent: !!welcome.sent,
+      provider: welcome.provider || "mailchannels",
+      statusCode: welcome.statusCode,
+      error: welcome.error,
+    };
+    await writeEmailLog(env, welcomeAttempt, requestId);
 
-      // Welcome sent successfully - return success even if admin failed
-      const responseData: any = {
-        ok: true,
-        status,
-        requestId,
-        email: {
-          welcome: { sent: true, provider: welcome.provider, statusCode: welcome.statusCode },
-        },
-      };
+    // Admin notification (non-fatal)
+    const admin = await sendAdminJoinNotification({
+      env,
+      name: nameRaw,
+      email: emailRaw,
+      requestId,
+      siteUrl: String(env?.NEXT_PUBLIC_SITE_URL || ""),
+    });
 
-      // Add warning if admin notification was skipped or failed
-      if (admin.skipped) {
-        responseData.warn = "admin_notify_skipped";
-      } else if (!admin.sent) {
-        responseData.warn = "admin_notify_failed";
-      }
+    const adminTo = String(env?.MAIL_ADMIN_TO || "").trim() || "not-configured";
+    const adminAttempt: EmailAttempt = {
+      messageType: "admin",
+      recipientEmail: adminTo,
+      sent: !!admin.sent,
+      provider: admin.provider || "mailchannels",
+      statusCode: admin.statusCode,
+      error: admin.error,
+      skipped: admin.skipped,
+    };
+    await writeEmailLog(env, adminAttempt, requestId);
 
+    console.log("join: email results", {
+      requestId,
+      welcomeSent: !!welcome.sent,
+      welcomeStatus: welcome.statusCode,
+      adminSent: !!admin.sent,
+      adminStatus: admin.statusCode,
+      adminSkipped: !!admin.skipped,
+    });
+
+    // Success when join inserted and welcome sent
+    if (!welcome.sent) {
       return new Response(
-        JSON.stringify(responseData),
-        { status: 200, headers: { "Content-Type": "application/json" } }
+        JSON.stringify({
+          ok: false,
+          requestId,
+          error: "Failed to send welcome email.",
+          email: {
+            welcome: { sent: false, provider: welcome.provider, statusCode: welcome.statusCode, error: welcome.error || null },
+          },
+        }),
+        { status: 503, headers: { "Content-Type": "application/json" } }
       );
     }
 
