@@ -12,7 +12,7 @@
  */
 
 import { existsSync, readdirSync, statSync } from 'fs';
-import { join, dirname } from 'path';
+import { join, dirname, relative } from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -56,7 +56,7 @@ function findPackageJsonFiles(root, currentDepth = 0, maxDepth = 2) {
       } else if (entry.name === 'package.json') {
         results.push({
           path: fullPath,
-          relativePath: fullPath.replace(REPO_ROOT + '/', ''),
+          relativePath: relative(REPO_ROOT, fullPath),
           depth: currentDepth,
         });
       }
