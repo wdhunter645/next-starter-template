@@ -25,6 +25,9 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Check repo structure
+        run: npm run check:structure
+
       - name: Typecheck
         run: npm run typecheck
 
