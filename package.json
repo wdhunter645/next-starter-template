@@ -53,6 +53,7 @@
 		"test:homepage-sections": "playwright test tests/e2e/homepage-sections.spec.ts",
 		"verify-homepage-e2e": "playwright test tests/e2e/homepage-sections.spec.ts",
 		"check": "npm run build && tsc",
+		"check:structure": "node scripts/check-repo-structure.mjs",
 		"snapshot": "node scripts/make-snapshot.mjs"
 	},
 	"dependencies": {
