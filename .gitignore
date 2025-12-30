@@ -387,3 +387,8 @@ docs/snapshots/*.md
 
 # Build artifacts (do not commit)
 LGFC-Lite-CF-FixPack-v1.zip
+
+### Archive Files ###
+# ZIP files
+*.zip
+*.ZIP
