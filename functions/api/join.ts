@@ -3,7 +3,7 @@
 // - Sends welcome email via MailChannels
 // - Returns 409 for duplicate emails (idempotent)
 
-import { sendWelcomeEmail } from "../_lib/email";
+import { assertEmailEnvOrThrow, sendAdminJoinNotification, sendWelcomeEmail } from "../_lib/email";
 
 // Helper: create JSON Response
 function json(data: any, status: number): Response {
@@ -11,6 +11,47 @@ function json(data: any, status: number): Response {
     status,
     headers: { "Content-Type": "application/json" },
   });
+}
+
+type EmailLogResult = {
+  result: "sent" | "failed" | "skipped";
+  provider: string;
+  statusCode?: number;
+  error?: string;
+};
+
+async function logEmailAttempt(opts: {
+  db: any;
+  requestId: string;
+  messageType: "welcome" | "admin";
+  recipientEmail: string;
+  sendResult: { sent: boolean; provider: string; statusCode?: number; error?: string; skipped?: boolean };
+}) {
+  const { db, requestId, messageType, recipientEmail, sendResult } = opts;
+  const result: EmailLogResult["result"] =
+    sendResult.sent ? "sent" : (sendResult.skipped || sendResult.provider === "disabled") ? "skipped" : "failed";
+
+  try {
+    await db
+      .prepare(
+        `INSERT INTO join_email_log
+          (request_id, message_type, recipient_email, result, provider, status_code, error)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)`
+      )
+      .bind(
+        requestId,
+        messageType,
+        recipientEmail,
+        result,
+        String(sendResult.provider || "unknown"),
+        sendResult.statusCode ?? null,
+        sendResult.error ?? null
+      )
+      .run();
+  } catch (e) {
+    // Never fail the join flow because audit logging failed.
+    console.error("join_email_log insert failed:", e);
+  }
 }
 
 // Helper: insert join request into DB using INSERT...SELECT...WHERE NOT EXISTS
@@ -40,6 +81,17 @@ export async function onRequestPost(context: any): Promise<Response> {
 
   try {
     const body = await request.json();
+
+  // Phase 7 guardrail: if email is enabled, fail fast on missing required env vars.
+  try {
+    assertEmailEnvOrThrow(env);
+  } catch (e: any) {
+    return json(
+      { ok: false, error: "Email is enabled but required configuration is missing.", detail: String(e?.message || e), requestId },
+      500
+    );
+  }
+
     const name = (body?.name ?? "").toString().trim();
     const emailRaw = (body?.email ?? "").toString();
     const email = emailRaw.trim().toLowerCase();
@@ -56,13 +108,47 @@ export async function onRequestPost(context: any): Promise<Response> {
 
     if (inserted) {
       // SUCCESS: first-time join (insert occurred)
-      await sendWelcomeEmail({ env, toEmail: email, toName: name });
+      const db = env.DB as any;
+
+      // Email (optional). Join succeeds even if email fails; results are returned and logged.
+      const welcomeResult = await sendWelcomeEmail({ env, toEmail: email, toName: name });
+      await logEmailAttempt({
+        db,
+        requestId,
+        messageType: "welcome",
+        recipientEmail: email,
+        sendResult: welcomeResult,
+      });
+
+      const adminRecipients = String(env?.MAIL_ADMIN_TO || "")
+        .split(",")
+        .map((s: string) => s.trim())
+        .filter(Boolean);
+
+      const adminResult = await sendAdminJoinNotification({ env, name, email, requestId });
+      for (const r of adminRecipients.length ? adminRecipients : [String(env?.MAIL_ADMIN_TO || "").trim()].filter(Boolean)) {
+        await logEmailAttempt({
+          db,
+          requestId,
+          messageType: "admin",
+          recipientEmail: r,
+          sendResult: adminResult,
+        });
+      }
 
       return json(
-        { ok: true, status: "joined", requestId },
+        {
+          ok: true,
+          status: "joined",
+          requestId,
+          email: {
+            welcome: welcomeResult,
+            admin: adminResult,
+          },
+        },
         200
       );
-    } else {
+} else {
       // DUPLICATE: email already exists (no insert)
       return json(
         {

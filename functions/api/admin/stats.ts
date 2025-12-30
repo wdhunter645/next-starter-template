@@ -11,7 +11,7 @@ export const onRequestGet = async (context: any): Promise<Response> => {
 
   try {
     const db = env.DB as any;
-    const tables = ["join_requests", "library_entries", "photos"];
+    const tables = ["join_requests", "join_email_log", "library_entries", "photos", "page_content"];
     const counts: Record<string, number> = {};
 
     for (const t of tables) {
