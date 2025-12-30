@@ -1,9 +1,10 @@
 # Rollback Anchor
 
 ## Last Known Good SHA
-`____________`
+`<commit-sha-here>`
 
 **Instructions:** Update this SHA after every successful production deployment with green checks.
+Example: `abc123def456789...` (full 40-character SHA or short 7-character SHA)
 
 ---
 
@@ -33,7 +34,7 @@ For more complex rollbacks or multiple bad commits:
    git reset --hard <last-known-good-sha>
    git push origin main --force-with-lease
    ```
-   ⚠️ **Warning:** Force push should be coordinated with team.
+   ⚠️ **Warning:** Force push should be coordinated with team. Use `--force-with-lease` to avoid overwriting changes pushed by others. Check recent commits and notify team members before proceeding.
 
 3. **Verify:**
    - Monitor Cloudflare Pages deployment logs
