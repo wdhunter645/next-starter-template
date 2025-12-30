@@ -36,3 +36,6 @@ jobs:
 
       - name: Unit tests
         run: npm test
+
+      - name: Build (Cloudflare authoritative)
+        run: npm run build:cf
