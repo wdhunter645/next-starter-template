@@ -1,4 +1,4 @@
-// GET /api/admin/export?table=join_requests|library_entries|photos
+// GET /api/admin/export?table=join_requests|join_email_log|library_entries|photos|page_content
 // Returns CSV. Protected by ADMIN_TOKEN.
 
 import { requireAdmin } from "../../_lib/auth";
@@ -13,7 +13,7 @@ export const onRequestGet = async (context: any): Promise<Response> => {
   const url = new URL(request.url);
   const table = (url.searchParams.get("table") || "join_requests").trim();
 
-  const allowed = new Set(["join_requests", "library_entries", "photos"]);
+  const allowed = new Set(["join_requests", "join_email_log", "library_entries", "photos", "page_content"]);
   if (!allowed.has(table)) {
     return new Response(JSON.stringify({ ok: false, error: "Invalid table." }), {
       status: 400,
