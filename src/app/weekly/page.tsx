@@ -2,11 +2,20 @@ import React from "react";
 
 export default function Page() {
   return (
-    <main style={{...styles.main}}>
-      <h1 style={{...styles.h1}}>Weekly Matchup</h1>
-      <p style={{...styles.lead}}>Weekly Matchup is a fun way to feature two images side‑by‑side — classic photos, memorabilia, or moments — and let the community vote.</p>
-      <p style={{...styles.p}}>LGFC‑Lite uses a simplified version of this concept while we stabilize the site. Results and deeper interaction will expand later.</p>
-      <p style={{...styles.p}}>For now: enjoy the featured matchup and check back each week.</p>
+    <main style={{ ...styles.main }}>
+      <h1 style={{ ...styles.h1 }}>Weekly Matchup</h1>
+
+      <p style={{ ...styles.lead }}>
+        Weekly Matchup is a simple, repeatable feature: we pick two photos (or moments), and the community votes.
+        It’s a fun way to keep the archive moving while we build richer browsing and tagging.
+      </p>
+
+      <p style={{ ...styles.p }}>
+        LGFC‑Lite starts with a lightweight version so we can keep the site stable. The voting mechanics and results
+        display will expand later as we harden the content pipeline.
+      </p>
+
+      <p style={{ ...styles.p }}>For now: enjoy the featured matchup and check back each week.</p>
     </main>
   );
 }
