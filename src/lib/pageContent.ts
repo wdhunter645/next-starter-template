@@ -31,7 +31,7 @@ export async function fetchPageContent(slug: string): Promise<PageContentRespons
     const data = (await res.json()) as unknown;
     if (!data || typeof data !== "object") return null;
     const obj = data as Record<string, unknown>;
-    if (obj.ok !== true || typeof obj.slug !== "string" || typeof obj.sections !== "object") return null;
+    if (obj.ok !== true || typeof obj.slug !== "string" || !obj.sections || typeof obj.sections !== "object") return null;
 
     return obj as PageContentResponse;
   } catch {
