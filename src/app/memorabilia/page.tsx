@@ -48,6 +48,10 @@ export default function PhotosPage() {
       <p style={{ ...styles.lead }}>
         A filtered view of the archive focused on items such as cards, programs, tickets, and collectibles.
       </p>
+      <p style={{ ...styles.p }}>
+        This starts as a simple gallery. As we tag items (year, type, source, and notes), browsing will get faster and more precise.
+        If you can help identify an item or provide a better caption/source, email the club.
+      </p>
 
       {loading && items.length === 0 ? (
         <p style={{ ...styles.p }}>Loading…</p>

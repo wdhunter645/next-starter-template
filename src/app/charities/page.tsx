@@ -1,17 +1,67 @@
 import React from "react";
+import { fetchPageContent } from "@/lib/pageContent";
 
-export default function Page() {
+export default async function Page() {
+  const data = await fetchPageContent("/charities");
+  const sections = data?.sections;
+
+  const title = sections?.title?.content ?? "Charities";
+  const leadHtml = sections?.lead_html?.content ?? null;
+  const bodyHtml = sections?.body_html?.content ?? null;
+
   return (
-    <main style={{...styles.main}}>
-      <h1 style={{...styles.h1}}>Charities</h1>
-      <p style={{...styles.lead}}>ALS changed history when Lou Gehrig stood at home plate on July 4, 1939 and delivered one of the most famous speeches in sports. Today, ALS remains a disease that demands research, support, and compassion.</p>
-      <p style={{...styles.p}}>The Lou Gehrig Fan Club highlights ALS charities and encourages members to donate directly whenever possible. If the club ever generates proceeds in the future, the intent is that those proceeds exist solely to support ALS‑related charitable giving — not private profit.</p>
-      <p style={{...styles.p}}>On this page you’ll find:</p>
-      <ul style={{...styles.ul}}>
-        <li style={{...styles.li}}>A short list of ALS organizations we recommend starting with</li>
-        <li style={{...styles.li}}>Occasional featured fundraisers and events</li>
-        <li style={{...styles.li}}>Simple guidance on how to donate and verify charities</li>
-      </ul>
+    <main style={{ ...styles.main }}>
+      <h1 style={{ ...styles.h1 }}>{title}</h1>
+
+      {leadHtml ? (
+        <p style={{ ...styles.lead }} dangerouslySetInnerHTML={{ __html: leadHtml }} />
+      ) : (
+        <p style={{ ...styles.lead }}>
+          Lou Gehrig’s story is inseparable from ALS awareness. This page is the club’s starting point for reputable
+          places to learn, donate, and participate in fundraisers.
+        </p>
+      )}
+
+      {bodyHtml ? (
+        <div style={{ ...styles.body }} dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+      ) : (
+        <>
+          <h2 style={{ ...styles.h2 }}>How we choose what to list</h2>
+          <p style={{ ...styles.p }}>
+            We prioritize established ALS research and patient-support organizations, clear financial reporting, and
+            transparency about how funds are used. If you have a suggestion, send it to the club email with a link and
+            a short rationale.
+          </p>
+
+          <h2 style={{ ...styles.h2 }}>Recommended starting points</h2>
+          <ul style={{ ...styles.ul }}>
+            <li style={{ ...styles.li }}>
+              National ALS organizations supporting research, advocacy, and patient services (start with the biggest,
+              most established groups; we’ll add vetted options over time).
+            </li>
+            <li style={{ ...styles.li }}>
+              Local chapters and clinics (often the most direct help for families—especially for equipment and care
+              navigation).
+            </li>
+            <li style={{ ...styles.li }}>
+              Lou Gehrig Day initiatives and related MLB/community events that raise funds and awareness.
+            </li>
+          </ul>
+
+          <h2 style={{ ...styles.h2 }}>Fundraisers and recognition</h2>
+          <p style={{ ...styles.p }}>
+            The club plans periodic fundraisers and an annual recognition tradition tied to our community’s impact.
+            Details will live here as soon as the first campaign is published.
+          </p>
+
+          <h2 style={{ ...styles.h2 }}>Donation safety</h2>
+          <ul style={{ ...styles.ul }}>
+            <li style={{ ...styles.li }}>Donate using the charity’s official website (avoid look‑alike links).</li>
+            <li style={{ ...styles.li }}>Keep your receipt and note the campaign name/date for your records.</li>
+            <li style={{ ...styles.li }}>If something feels off, pause—then confirm through the charity directly.</li>
+          </ul>
+        </>
+      )}
     </main>
   );
 }
@@ -19,9 +69,10 @@ export default function Page() {
 const styles: Record<string, React.CSSProperties> = {
   main: { padding: "40px 16px", maxWidth: 900, margin: "0 auto" },
   h1: { fontSize: 34, lineHeight: 1.15, margin: "0 0 12px 0" },
+  h2: { fontSize: 22, lineHeight: 1.25, margin: "22px 0 10px 0" },
   lead: { fontSize: 18, lineHeight: 1.6, margin: "0 0 18px 0" },
+  body: { fontSize: 16, lineHeight: 1.7 },
   p: { fontSize: 16, lineHeight: 1.7, margin: "0 0 14px 0" },
   ul: { paddingLeft: 18, margin: "0 0 14px 0" },
   li: { margin: "0 0 8px 0", lineHeight: 1.6 },
-  hr: { margin: "26px 0", opacity: 0.25 },
 };
