@@ -28,8 +28,11 @@ export async function fetchPageContent(slug: string): Promise<PageContentRespons
     const res = await fetch(buildContentUrl(slug), { cache: "no-store" });
     if (!res.ok) return null;
 
-    const data = (await res.json()) as any;
-    if (!data || data.ok !== true || typeof data.slug !== "string" || typeof data.sections !== "object") return null;
+    const data = (await res.json()) as unknown;
+    if (!data || typeof data !== "object") return null;
+    
+    const obj = data as Record<string, unknown>;
+    if (obj.ok !== true || typeof obj.slug !== "string" || typeof obj.sections !== "object") return null;
 
     return data as PageContentResponse;
   } catch {
