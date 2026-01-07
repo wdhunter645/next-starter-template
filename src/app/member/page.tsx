@@ -2,17 +2,27 @@ import React from "react";
 
 export default function Page() {
   return (
-    <main style={{...styles.main}}>
-      <h1 style={{...styles.h1}}>Member Area</h1>
-      <p style={{...styles.lead}}>Member features are being built in stages. Right now, the public site and mailing list are the priority.</p>
-      <p style={{...styles.p}}>Future member experience goals:</p>
-      <p style={{...styles.p}}>If you’re here early: thank you. Join the mailing list to stay in the loop.</p>
-      <ul style={{...styles.ul}}>
-        <li style={{...styles.li}}>A welcome landing page after login</li>
-        <li style={{...styles.li}}>Member posts and discussions</li>
-        <li style={{...styles.li}}>Personal profile page</li>
-        <li style={{...styles.li}}>Media submissions with tagging</li>
+    <main style={{ ...styles.main }}>
+      <h1 style={{ ...styles.h1 }}>Member Area</h1>
+
+      <p style={{ ...styles.lead }}>
+        Member features are under active development. For now, the public site content and the Join mailing list are the
+        priority so we can publish reliably before adding more moving parts.
+      </p>
+
+      <p style={{ ...styles.p }}>Planned member experience:</p>
+      <ul style={{ ...styles.ul }}>
+        <li style={{ ...styles.li }}>A welcome landing page after login with recent activity and upcoming events.</li>
+        <li style={{ ...styles.li }}>Member posts and discussions (with simple moderation and reporting).</li>
+        <li style={{ ...styles.li }}>A personal profile page (screen name, email management, contribution history).</li>
+        <li style={{ ...styles.li }}>Media submissions with tagging to improve search over time.</li>
       </ul>
+
+      <hr style={{ ...styles.hr }} />
+
+      <p style={{ ...styles.p }}>
+        If you’re here early: thank you. Join the mailing list so you’ll get a note when member access opens.
+      </p>
     </main>
   );
 }

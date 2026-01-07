@@ -1,23 +1,53 @@
 import React from "react";
+import { fetchPageContent } from "@/lib/pageContent";
 
-export default function Page() {
+export default async function Page() {
+  const data = await fetchPageContent("/contact");
+  const sections = data?.sections;
+
+  const title = sections?.title?.content ?? "Contact";
+  const leadHtml = sections?.lead_html?.content ?? null;
+  const bodyHtml = sections?.body_html?.content ?? null;
+
   return (
-    <main style={{...styles.main}}>
-      <h1 style={{...styles.h1}}>Contact</h1>
-      <p style={{...styles.lead}}>Contact the Lou Gehrig Fan Club team for:</p>
-      <p style={{...styles.p}}>Email: Admin@LouGehrigFanClub.com</p>
-      <p style={{...styles.p}}>Mailing Address:</p>
-      <p style={{...styles.p}}>Lou Gehrig Fan Club</p>
-      <p style={{...styles.p}}>P.O. Box 145</p>
-      <p style={{...styles.p}}>Glastonbury, CT 06033</p>
-      <p style={{...styles.p}}>We try to respond quickly, but please allow a little time — we’re building this as a long‑term community project.</p>
-      <ul style={{...styles.ul}}>
-        <li style={{...styles.li}}>General questions about the site</li>
-        <li style={{...styles.li}}>Content corrections (errors, attribution, updates)</li>
-        <li style={{...styles.li}}>Copyright or trademark concerns</li>
-        <li style={{...styles.li}}>Reporting inappropriate user submissions</li>
-        <li style={{...styles.li}}>Partnership / charity coordination</li>
-      </ul>
+    <main style={{ ...styles.main }}>
+      <h1 style={{ ...styles.h1 }}>{title}</h1>
+
+      {leadHtml ? (
+        <p style={{ ...styles.lead }} dangerouslySetInnerHTML={{ __html: leadHtml }} />
+      ) : (
+        <p style={{ ...styles.lead }}>
+          The club is fan‑run. Email is the fastest way to reach us for questions, contributions, corrections, or
+          partnerships.
+        </p>
+      )}
+
+      {bodyHtml ? (
+        <div style={{ ...styles.body }} dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+      ) : (
+        <>
+          <p style={{ ...styles.p }}>
+            <strong>LouGehrigFanClub@gmail.com</strong>
+          </p>
+
+          <h2 style={{ ...styles.h2 }}>Good reasons to email</h2>
+          <ul style={{ ...styles.ul }}>
+            <li style={{ ...styles.li }}>You found an error and can provide a source to correct it.</li>
+            <li style={{ ...styles.li }}>You want to contribute photos, clippings, memorabilia, or a story.</li>
+            <li style={{ ...styles.li }}>You’re coordinating an ALS fundraiser or Lou Gehrig Day–related activity.</li>
+            <li style={{ ...styles.li }}>You want to suggest a charity, event, or community partner.</li>
+          </ul>
+
+          <h2 style={{ ...styles.h2 }}>What to include</h2>
+          <ul style={{ ...styles.ul }}>
+            <li style={{ ...styles.li }}>A short subject line (e.g., “Photo submission”, “Correction”, “Partnership”).</li>
+            <li style={{ ...styles.li }}>Links to sources or attachments (if you have them).</li>
+            <li style={{ ...styles.li }}>
+              Any usage notes (credit line, rights, or how we should attribute the item).
+            </li>
+          </ul>
+        </>
+      )}
     </main>
   );
 }
@@ -25,9 +55,10 @@ export default function Page() {
 const styles: Record<string, React.CSSProperties> = {
   main: { padding: "40px 16px", maxWidth: 900, margin: "0 auto" },
   h1: { fontSize: 34, lineHeight: 1.15, margin: "0 0 12px 0" },
+  h2: { fontSize: 22, lineHeight: 1.25, margin: "22px 0 10px 0" },
   lead: { fontSize: 18, lineHeight: 1.6, margin: "0 0 18px 0" },
+  body: { fontSize: 16, lineHeight: 1.7 },
   p: { fontSize: 16, lineHeight: 1.7, margin: "0 0 14px 0" },
   ul: { paddingLeft: 18, margin: "0 0 14px 0" },
   li: { margin: "0 0 8px 0", lineHeight: 1.6 },
-  hr: { margin: "26px 0", opacity: 0.25 },
 };
