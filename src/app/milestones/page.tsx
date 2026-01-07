@@ -6,40 +6,63 @@ export default function Page() {
       <h1 style={{ ...styles.h1 }}>Milestones</h1>
 
       <p style={{ ...styles.lead }}>
-        Lou Gehrig’s story spans baseball greatness, a historic farewell, and the modern ALS awareness movement. This is a draft
-        timeline we’ll keep tightening as sources and media are linked in.
+        Lou Gehrig&rsquo;s story spans baseball greatness, a historic farewell, and the modern ALS awareness movement. This timeline captures key moments from his life, career, and enduring legacy.
       </p>
 
-      <h2 style={{ ...styles.h2 }}>Draft timeline</h2>
+      <h2 style={{ ...styles.h2 }}>Life and Career Timeline</h2>
       <ul style={{ ...styles.ul }}>
         <li style={{ ...styles.li }}>
-          <strong>1903</strong> — Born in New York City (June 19).
+          <strong>June 19, 1903</strong> — Henry Louis &ldquo;Lou&rdquo; Gehrig born in New York City to German immigrant parents.
         </li>
         <li style={{ ...styles.li }}>
-          <strong>1923</strong> — Debuts with the New York Yankees.
+          <strong>Early 1920s</strong> — Attends Columbia University before joining professional baseball.
         </li>
         <li style={{ ...styles.li }}>
-          <strong>1925–1939</strong> — Iron Man streak era; plays 2,130 consecutive games.
+          <strong>1923</strong> — Debuts with the New York Yankees, beginning a 17-year career with the team.
         </li>
         <li style={{ ...styles.li }}>
-          <strong>1939</strong> — Diagnosed with ALS; delivers the “Luckiest Man” speech at Yankee Stadium (July 4).
+          <strong>1925</strong> — Begins his legendary consecutive games streak, earning the nickname &ldquo;The Iron Horse.&rdquo;
         </li>
         <li style={{ ...styles.li }}>
-          <strong>1941</strong> — Dies from ALS (June 2). His name becomes widely associated with the disease.
+          <strong>1927–1936</strong> — Peak years: contributes to multiple World Series championships (6 total), wins 2 American League MVP awards, and becomes a 7-time All-Star.
         </li>
         <li style={{ ...styles.li }}>
-          <strong>20th century</strong> — Gehrig’s legacy grows as a symbol of dignity, sportsmanship, and perseverance.
+          <strong>1939 (early)</strong> — Experiences rapid physical decline; voluntarily removes himself from Yankees lineup on May 2 after 2,130 consecutive games.
         </li>
         <li style={{ ...styles.li }}>
-          <strong>2021–present</strong> — MLB’s annual Lou Gehrig Day expands ALS awareness and fundraising.
+          <strong>July 4, 1939</strong> — Delivers his famous &ldquo;Luckiest Man&rdquo; farewell speech at Yankee Stadium during Lou Gehrig Appreciation Day.
+        </li>
+        <li style={{ ...styles.li }}>
+          <strong>June 2, 1941</strong> — Dies from ALS at age 37. His name becomes widely associated with the disease.
+        </li>
+      </ul>
+
+      <h2 style={{ ...styles.h2 }}>Posthumous Legacy</h2>
+      <ul style={{ ...styles.ul }}>
+        <li style={{ ...styles.li }}>
+          <strong>1941</strong> — Yankees retire his uniform number 4; inducted into Baseball Hall of Fame via special election.
+        </li>
+        <li style={{ ...styles.li }}>
+          <strong>1942</strong> — <em>The Pride of the Yankees</em> film starring Gary Cooper introduces Gehrig&rsquo;s story to a national audience.
+        </li>
+        <li style={{ ...styles.li }}>
+          <strong>1995</strong> — Cal Ripken Jr. breaks Gehrig&rsquo;s consecutive games record, bringing renewed attention to his legacy.
+        </li>
+        <li style={{ ...styles.li }}>
+          <strong>2014</strong> — Ice Bucket Challenge raises over $115 million globally for ALS research, with Gehrig&rsquo;s legacy central to the campaign.
+        </li>
+        <li style={{ ...styles.li }}>
+          <strong>June 2, 2021</strong> — Major League Baseball establishes Lou Gehrig Day as an annual observance to honor his legacy and support ALS awareness.
+        </li>
+        <li style={{ ...styles.li }}>
+          <strong>Present day</strong> — Lou Gehrig remains one of baseball&rsquo;s most revered figures and a central symbol in the fight against ALS.
         </li>
       </ul>
 
       <hr style={{ ...styles.hr }} />
 
       <p style={{ ...styles.p }}>
-        Over time, we’ll expand this into a fully cross‑linked timeline (photos, quotes, primary sources, and club notes). If you
-        spot an error or have a source we should add, contact us.
+        Over time, we&rsquo;ll expand this into a fully cross‑linked timeline with photos, quotes, primary sources, and club notes. If you spot an error or have a source we should add, contact us at <strong>LouGehrigFanClub@gmail.com</strong>.
       </p>
     </main>
   );
