@@ -48,6 +48,10 @@ export default function PhotosPage() {
       <p style={{ ...styles.lead }}>
         A growing gallery of images connected to Lou Gehrig, Yankees history, and related memorabilia.
       </p>
+      <p style={{ ...styles.p }}>
+        Captions and tags will improve over time. If you know the date, location, opponent, or source for an image,
+        send us a note so we can upgrade the metadata and make the archive more searchable.
+      </p>
 
       {loading && items.length === 0 ? (
         <p style={{ ...styles.p }}>Loading…</p>

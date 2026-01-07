@@ -88,10 +88,10 @@ export default function LibraryPage() {
     <main style={{ ...styles.main }}>
       <h1 style={{ ...styles.h1 }}>Library</h1>
       <p style={{ ...styles.lead }}>
-        Submit short entries about Lou Gehrig: stories, quotes, memories, book recommendations, and links to trusted resources.
+        Submit short, source‑aware entries about Lou Gehrig and the surrounding history: stories, quotes, timelines, book notes, and links to trustworthy resources.
       </p>
       <p style={{ ...styles.p }}>
-        Rules: be respectful, don’t post copyrighted material you don’t own, cite sources when you can, and keep it focused.
+        Guidelines: be respectful, don’t upload copyrighted material you don’t own, cite sources when you can, and keep it focused. Depth comes from cross‑referencing (multiple sources that agree), not from a single link.
       </p>
 
       <div style={{ ...styles.grid }}>
