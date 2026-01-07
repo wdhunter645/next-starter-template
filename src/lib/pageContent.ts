@@ -15,7 +15,11 @@ export type PageContentResponse = {
 type UnknownRecord = Record<string, unknown>;
 
 function isUnknownRecord(v: unknown): v is UnknownRecord {
-  return typeof v === "object" && v !== null;
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+function isOptionalString(value: unknown): boolean {
+  return value === undefined || value === null || typeof value === "string";
 }
 
 function isPageContentResponse(v: unknown): v is PageContentResponse {
@@ -28,13 +32,9 @@ function isPageContentResponse(v: unknown): v is PageContentResponse {
   // sections is a map of sectionName -> { content, asset_url?, updated_at? }
   for (const section of Object.values(v.sections)) {
     if (!isUnknownRecord(section)) return false;
-    if (!(section.content === null || typeof section.content === "string")) return false;
-
-    const assetUrl = section.asset_url;
-    if (!(assetUrl === undefined || assetUrl === null || typeof assetUrl === "string")) return false;
-
-    const updatedAt = section.updated_at;
-    if (!(updatedAt === undefined || updatedAt === null || typeof updatedAt === "string")) return false;
+    if (section.content !== null && typeof section.content !== "string") return false;
+    if (!isOptionalString(section.asset_url)) return false;
+    if (!isOptionalString(section.updated_at)) return false;
   }
 
   return true;
