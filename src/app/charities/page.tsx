@@ -17,8 +17,7 @@ export default async function Page() {
         <p style={{ ...styles.lead }} dangerouslySetInnerHTML={{ __html: leadHtml }} />
       ) : (
         <p style={{ ...styles.lead }}>
-          Lou Gehrig’s story is inseparable from ALS awareness. This page is the club’s starting point for reputable
-          places to learn, donate, and participate in fundraisers.
+          Lou Gehrig&rsquo;s legacy extends far beyond baseball—his battle with ALS brought global attention to the disease, now commonly known as &ldquo;Lou Gehrig&rsquo;s disease.&rdquo; This page connects fans with reputable organizations advancing ALS research, patient support, and advocacy.
         </p>
       )}
 
@@ -26,37 +25,43 @@ export default async function Page() {
         <div style={{ ...styles.body }} dangerouslySetInnerHTML={{ __html: bodyHtml }} />
       ) : (
         <>
+          <h2 style={{ ...styles.h2 }}>The Lou Gehrig Connection</h2>
+          <p style={{ ...styles.p }}>
+            After Lou Gehrig was diagnosed with amyotrophic lateral sclerosis (ALS) in 1939, his name became synonymous with the disease. His courage and dignity in facing this devastating illness inspired generations of advocates and researchers. Today, the fight against ALS honors his memory and continues the mission of finding treatments and a cure.
+          </p>
+          <p style={{ ...styles.p }}>
+            Since MLB established <strong>Lou Gehrig Day</strong> in 2021 (observed annually on June 2), the baseball community has rallied to raise awareness and funds for ALS research. The 2014 Ice Bucket Challenge alone generated over $115 million globally, demonstrating the power of collective action in the fight against this disease.
+          </p>
+
           <h2 style={{ ...styles.h2 }}>How we choose what to list</h2>
           <p style={{ ...styles.p }}>
-            We prioritize established ALS research and patient-support organizations, clear financial reporting, and
-            transparency about how funds are used. If you have a suggestion, send it to the club email with a link and
-            a short rationale.
+            We prioritize established ALS research and patient-support organizations with clear financial reporting and transparency about how funds are used. If you have a suggestion, send it to the club email with a link and a short rationale.
           </p>
 
           <h2 style={{ ...styles.h2 }}>Recommended starting points</h2>
           <ul style={{ ...styles.ul }}>
             <li style={{ ...styles.li }}>
-              National ALS organizations supporting research, advocacy, and patient services (start with the biggest,
-              most established groups; we’ll add vetted options over time).
+              <strong>National ALS organizations</strong> — Supporting research, advocacy, and patient services. Start with the largest, most established groups; we&rsquo;ll add vetted options over time.
             </li>
             <li style={{ ...styles.li }}>
-              Local chapters and clinics (often the most direct help for families—especially for equipment and care
-              navigation).
+              <strong>Local chapters and clinics</strong> — Often the most direct help for families, especially for equipment and care navigation.
             </li>
             <li style={{ ...styles.li }}>
-              Lou Gehrig Day initiatives and related MLB/community events that raise funds and awareness.
+              <strong>Lou Gehrig Day initiatives</strong> — MLB and community events that raise funds and awareness, directly honoring Gehrig&rsquo;s legacy.
             </li>
           </ul>
 
-          <h2 style={{ ...styles.h2 }}>Fundraisers and recognition</h2>
+          <h2 style={{ ...styles.h2 }}>Take Action: Support ALS Research and Care</h2>
           <p style={{ ...styles.p }}>
-            The club plans periodic fundraisers and an annual recognition tradition tied to our community’s impact.
-            Details will live here as soon as the first campaign is published.
+            Whether you choose to donate, volunteer, or participate in awareness campaigns, your contribution helps advance the mission Lou Gehrig inspired. Every dollar supports research breakthroughs, patient care improvements, and family support services. Consider making a donation to a reputable ALS organization, joining a Lou Gehrig Day event, or participating in community fundraisers.
+          </p>
+          <p style={{ ...styles.p }}>
+            The club plans periodic fundraisers and an annual recognition tradition tied to our community&rsquo;s impact. Details will be published here as campaigns are launched.
           </p>
 
           <h2 style={{ ...styles.h2 }}>Donation safety</h2>
           <ul style={{ ...styles.ul }}>
-            <li style={{ ...styles.li }}>Donate using the charity’s official website (avoid look‑alike links).</li>
+            <li style={{ ...styles.li }}>Donate using the charity&rsquo;s official website (avoid look‑alike links).</li>
             <li style={{ ...styles.li }}>Keep your receipt and note the campaign name/date for your records.</li>
             <li style={{ ...styles.li }}>If something feels off, pause—then confirm through the charity directly.</li>
           </ul>
