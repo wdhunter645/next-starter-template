@@ -35,8 +35,8 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       },
     });
 
-    // Write to edge cache as "last known good"
-    await cache.put(cacheKey, response.clone());
+    // Write to edge cache as "last known good" (fire-and-forget)
+    context.waitUntil(cache.put(cacheKey, response.clone()));
 
     return response;
   } catch (err: any) {
@@ -44,7 +44,7 @@ export const onRequestGet = async (context: any): Promise<Response> => {
     const cached = await cache.match(cacheKey);
     if (cached) {
       // Return cached "last known good" response
-      const cachedClone = new Response(cached.body, cached);
+      const cachedClone = cached.clone();
       cachedClone.headers.set("X-Content-Source", "edge-cache");
       return cachedClone;
     }
