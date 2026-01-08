@@ -117,7 +117,11 @@ CURRENT_KEYS=$(jq -r '.objects[].key' "$CURRENT_LISTING" | sort)
 
 # Find new keys (in current but not in prior)
 NEW_KEYS=$(comm -13 <(echo "$PRIOR_KEYS") <(echo "$CURRENT_KEYS"))
-NEW_COUNT=$(echo "$NEW_KEYS" | grep -c . || echo "0")
+if [[ -z "$NEW_KEYS" ]]; then
+  NEW_COUNT=0
+else
+  NEW_COUNT=$(echo "$NEW_KEYS" | wc -l)
+fi
 
 echo "New objects detected: $NEW_COUNT"
 
