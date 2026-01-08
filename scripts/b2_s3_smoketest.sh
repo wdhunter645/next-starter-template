@@ -85,7 +85,7 @@ if ! RESPONSE=$(aws --endpoint-url "$B2_ENDPOINT" s3api list-objects-v2 \
 fi
 
 # Count objects returned
-OBJECT_COUNT=$(echo "$RESPONSE" | jq -r '.Contents | length // 0')
+OBJECT_COUNT=$(echo "$RESPONSE" | jq -r '.Contents // [] | length')
 
 echo "============================================"
 echo "✓ SUCCESS: B2 S3 connectivity verified"
