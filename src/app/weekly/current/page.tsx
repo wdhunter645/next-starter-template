@@ -12,9 +12,26 @@ export default function CurrentVoting() {
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-4">Current Voting</h1>
           <p className="text-lg text-foreground/80">
-            This page will display the current matchup and live totals once the full voting/results wiring is enabled.
-            For Phase 7 reviews, it serves as a placeholder with finalized copy and layout.
+            This page is reserved for the “live view” of the current Weekly Matchup—what&apos;s being voted on right now, plus
+            the running totals and final results once voting closes.
           </p>
+
+          <div className="mt-6 text-left max-w-2xl mx-auto space-y-3">
+            <p className="text-base text-foreground/80">
+              Today, LGFC‑Lite is still hardening the content pipeline. That means the matchup tiles are live, but the
+              live-vote wiring is intentionally not enabled yet. The priority is stability first, then interactivity.
+            </p>
+
+            <ul className="list-disc pl-5 text-base text-foreground/80 space-y-2">
+              <li>Want to participate? Start on the homepage Weekly Matchup section.</li>
+              <li>Want the “vote is live” announcement? Join the mailing list on the Join page.</li>
+              <li>Found a mislabeled photo or missing credit? Use the Contact page so we can correct it.</li>
+            </ul>
+
+            <p className="text-base text-foreground/80">
+              When voting is switched on, this page becomes the canonical place to see the current matchup and results.
+            </p>
+          </div>
         </div>
       </div>
     </div>
