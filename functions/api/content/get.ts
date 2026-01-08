@@ -4,7 +4,7 @@ export const onRequestGet = async (context: any): Promise<Response> => {
   // Setup cache handling
   const url = new URL(request.url);
   const slug = (url.searchParams.get("slug") || "/").trim();
-  const cache = (caches as any).default;
+  const cache = (globalThis.caches as any)?.default;
   const cacheKey = new Request(url.toString(), { method: "GET" });
 
   try {
@@ -44,11 +44,12 @@ export const onRequestGet = async (context: any): Promise<Response> => {
     const cached = await cache.match(cacheKey);
     if (cached) {
       // Return cached "last known good" response with source header
-      const headers = new Headers(cached.headers);
+      const cachedClone = cached.clone();
+      const headers = new Headers(cachedClone.headers);
       headers.set("X-Content-Source", "edge-cache");
-      return new Response(cached.body, {
-        status: cached.status,
-        statusText: cached.statusText,
+      return new Response(cachedClone.body, {
+        status: cachedClone.status,
+        statusText: cachedClone.statusText,
         headers,
       });
     }
