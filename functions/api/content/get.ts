@@ -43,10 +43,14 @@ export const onRequestGet = async (context: any): Promise<Response> => {
     // D1 failed - try edge cache fallback
     const cached = await cache.match(cacheKey);
     if (cached) {
-      // Return cached "last known good" response
-      const cachedClone = cached.clone();
-      cachedClone.headers.set("X-Content-Source", "edge-cache");
-      return cachedClone;
+      // Return cached "last known good" response with source header
+      const headers = new Headers(cached.headers);
+      headers.set("X-Content-Source", "edge-cache");
+      return new Response(cached.body, {
+        status: cached.status,
+        statusText: cached.statusText,
+        headers,
+      });
     }
 
     // Both D1 and cache failed - return 503
