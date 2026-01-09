@@ -18,7 +18,7 @@ export default function HomePage() {
         <div className={styles.container}>
           <h1 className={styles.title}>Welcome to the Lou Gehrig Fan Club!</h1>
           <p className={styles.subtitle}>
-            We are proud to be fans of the greatest baseball player ever and are dedicated to celebrating his life and legacy.
+            Celebrating the Iron Horse — his record-setting career, his courage, and the continuing fight against ALS (Lou Gehrig’s disease).
           </p>
         </div>
       </header>
