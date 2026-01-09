@@ -60,7 +60,13 @@ export default function PhotosPage() {
           <div style={{ ...styles.grid }}>
             {items.map((p) => (
               <div key={p.id} style={{ ...styles.card }}>
-                <img src={p.url} alt={p.description || `Photo ${p.id}`} style={{ ...styles.img }} loading="lazy" />
+                {p.url ? (
+                  <img src={p.url} alt={p.description || `Photo ${p.id}`} style={{ ...styles.img }} loading="lazy" />
+                ) : (
+                  <div style={{ ...styles.img, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, opacity: 0.7 }}>
+                    Image URL not configured
+                  </div>
+                )}
                 <div style={{ ...styles.cap }}>{p.description || "—"}</div>
               </div>
             ))}
