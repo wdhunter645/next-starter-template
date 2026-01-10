@@ -7,6 +7,10 @@
  * Phase 2B — Server-side read helpers for Admin UI and page rendering
  */
 
+// Type for Cloudflare D1 Database
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type D1Database = any;
+
 export interface ContentBlock {
   key: string;
   page: string;

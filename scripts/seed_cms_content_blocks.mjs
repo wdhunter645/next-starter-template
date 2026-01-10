@@ -14,6 +14,7 @@
  *   - Migration 0011_cms_content_blocks.sql applied
  */
 
+import { writeFileSync, unlinkSync } from 'fs';
 import { spawn } from 'child_process';
 
 // Seed data: key, page, section, title, body_md
@@ -84,17 +85,25 @@ const SEED_BLOCKS = [
 ];
 
 /**
- * Execute SQL via wrangler d1 execute
+ * Execute SQL via wrangler d1 execute using a temp file
  */
 function executeD1SQL(sql) {
   return new Promise((resolve, reject) => {
+    const tempFile = '/tmp/cms_seed_temp.sql';
+    
+    try {
+      writeFileSync(tempFile, sql);
+    } catch (err) {
+      reject(err);
+      return;
+    }
+
     const proc = spawn('npx', [
       'wrangler', 'd1', 'execute', 'lgfc_lite',
       '--local',
-      '--command', sql
+      '--file', tempFile
     ], {
-      stdio: ['ignore', 'pipe', 'pipe'],
-      shell: true
+      stdio: ['ignore', 'pipe', 'pipe']
     });
 
     let stdout = '';
@@ -109,6 +118,12 @@ function executeD1SQL(sql) {
     });
 
     proc.on('close', (code) => {
+      try {
+        unlinkSync(tempFile);
+      } catch (e) {
+        // ignore cleanup errors
+      }
+      
       if (code === 0) {
         resolve({ stdout, stderr });
       } else {
@@ -117,6 +132,11 @@ function executeD1SQL(sql) {
     });
 
     proc.on('error', (err) => {
+      try {
+        unlinkSync(tempFile);
+      } catch (e) {
+        // ignore cleanup errors
+      }
       reject(err);
     });
   });
@@ -131,21 +151,7 @@ async function seedCMSBlocks() {
   const now = new Date().toISOString();
 
   for (const block of SEED_BLOCKS) {
-    const sql = `
-      INSERT OR IGNORE INTO content_blocks (
-        key, page, section, title, body_md, status, version, updated_at, updated_by
-      ) VALUES (
-        '${block.key}',
-        '${block.page}',
-        '${block.section}',
-        '${block.title}',
-        '${block.body_md.replace(/'/g, "''")}',
-        'draft',
-        1,
-        '${now}',
-        'seed'
-      );
-    `.trim();
+    const sql = `INSERT OR IGNORE INTO content_blocks (key, page, section, title, body_md, status, version, updated_at, updated_by) VALUES ('${block.key}', '${block.page}', '${block.section}', '${block.title}', '${block.body_md.replace(/'/g, "''")}', 'draft', 1, '${now}', 'seed');`;
 
     try {
       console.log(`  Seeding: ${block.key}`);
