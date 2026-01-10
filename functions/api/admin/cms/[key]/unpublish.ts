@@ -2,7 +2,7 @@
 // Unpublishes block, sets status to draft, clears published_body_md
 // Protected by admin gate
 
-import { requireAdminEmail } from "../../../../../_lib/auth";
+import { requireAdminEmail } from "../../../../_lib/auth";
 
 export const onRequestPost = async (context: any): Promise<Response> => {
   const { request, env, params } = context;
