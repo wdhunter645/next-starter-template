@@ -66,10 +66,10 @@ This runs the full pipeline:
 - **Inventory:** `data/b2/inventory*.{json,csv}`
 - **Enriched:** `data/b2/inventory_enriched.json`
 
-### Daily Inventory Check
+### Daily Sync
 
-A GitHub Actions workflow runs daily at 03:15 AM ET to check B2 for new content:
-- Workflow: `.github/workflows/b2_daily_inventory_check.yml`
-- No D1 updates or repo commits
-- Uploads inventory artifacts for comparison
-- Prints delta summary in workflow logs
+A GitHub Actions workflow runs daily at 06:17 UTC to sync B2 content to D1:
+- Workflow: `.github/workflows/b2-d1-daily-sync.yml`
+- Incrementally syncs new B2 objects to D1
+- Fully idempotent and safe to run repeatedly
+- Can be manually triggered via workflow_dispatch
