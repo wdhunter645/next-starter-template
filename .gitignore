@@ -376,6 +376,7 @@ audits/*.log
 
 ### Temporary Files ###
 *.temp
+.tmp/
 
 # Backup and disabled workflow files
 *.backup

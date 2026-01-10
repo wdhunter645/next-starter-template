@@ -14,3 +14,62 @@ Baseline expectations:
 
 Operational rule:
 - After baseline tag: additive PRs only. No more recovery ZIP cycles.
+
+---
+
+## B2 → D1 Sync Operations
+
+### One-Command Sync
+
+To sync B2 inventory to D1 photos table:
+
+```bash
+bash scripts/b2_sync_photos_to_d1.sh
+```
+
+This runs the full pipeline:
+1. B2 inventory report
+2. Inventory enrichment
+3. SQL seed generation
+4. D1 execution via wrangler
+5. Photo count verification
+
+### Required Environment Variables
+
+**B2 Credentials:**
+- `B2_KEY_ID` - B2 application key ID
+- `B2_APP_KEY` - B2 application key
+- `B2_ENDPOINT` - B2 S3-compatible endpoint (e.g., `https://s3.us-west-004.backblazeb2.com`)
+- `B2_BUCKET` - B2 bucket name
+- `PUBLIC_B2_BASE_URL` - Public base URL for images
+
+**Cloudflare D1:**
+- `CLOUDFLARE_API_TOKEN` (or `CF_API_TOKEN`) - Cloudflare API token with D1 edit permissions
+- `CLOUDFLARE_ACCOUNT_ID` (or `CF_ACCOUNT_ID`) - Cloudflare account ID
+
+**Optional:**
+- `D1_DB_NAME` - D1 database name (default: `lgfc_lite`)
+
+### Required Tools
+
+- `bash` - Shell interpreter
+- `node` - Node.js runtime (for converter script)
+- `wrangler` - Cloudflare Wrangler CLI (or `npx`)
+- `aws` - AWS CLI (for S3-compatible B2 access)
+- `jq` - JSON processor
+- `python3` - Python 3 (for enrichment script)
+
+### Output Files
+
+- **Logs:** `.tmp/b2_sync_*.log`
+- **SQL:** `.tmp/seed_photos.sql`
+- **Inventory:** `data/b2/inventory*.{json,csv}`
+- **Enriched:** `data/b2/inventory_enriched.json`
+
+### Daily Inventory Check
+
+A GitHub Actions workflow runs daily at 03:15 AM ET to check B2 for new content:
+- Workflow: `.github/workflows/b2_daily_inventory_check.yml`
+- No D1 updates or repo commits
+- Uploads inventory artifacts for comparison
+- Prints delta summary in workflow logs

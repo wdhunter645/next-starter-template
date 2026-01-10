@@ -1,0 +1,125 @@
+name: B2 Daily Inventory Check
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Daily at 03:15 America/New_York = 08:15 UTC (EST) or 07:15 UTC (EDT)
+    # Using 08:15 UTC as baseline (works for EST; during EDT will be 04:15 ET)
+    - cron: "15 8 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  inventory-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install jq
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y jq
+
+      - name: Install AWS CLI v2
+        run: |
+          if ! command -v aws >/dev/null 2>&1; then
+            curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
+            unzip -q /tmp/awscliv2.zip -d /tmp
+            sudo /tmp/aws/install
+            rm -rf /tmp/awscliv2.zip /tmp/aws
+          fi
+          aws --version
+
+      - name: Download previous inventory (if exists)
+        id: download-prev
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: b2-inventory-previous
+          path: .tmp/previous
+
+      - name: Run B2 inventory report
+        env:
+          B2_KEY_ID: ${{ secrets.B2_KEY_ID }}
+          B2_APP_KEY: ${{ secrets.B2_APP_KEY }}
+          B2_ENDPOINT: ${{ secrets.B2_ENDPOINT }}
+          B2_BUCKET: ${{ secrets.B2_BUCKET }}
+          PUBLIC_B2_BASE_URL: ${{ secrets.PUBLIC_B2_BASE_URL }}
+        run: |
+          bash scripts/b2_inventory_report.sh
+
+      - name: Enrich inventory
+        run: |
+          bash scripts/b2_enrich_inventory.sh
+
+      - name: Generate summary
+        id: summary
+        run: |
+          TOTAL=$(jq '.objects | length' data/b2/inventory.json)
+          echo "total_objects=${TOTAL}" >> $GITHUB_OUTPUT
+          
+          echo "## B2 Inventory Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Total Objects:** ${TOTAL}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Show latest 10 objects
+          echo "### Latest 10 Objects" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          jq -r '.objects[-10:][].key' data/b2/inventory.json >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Compare with previous if available
+          if [[ -f ".tmp/previous/inventory.json" ]]; then
+            PREV_TOTAL=$(jq '.objects | length' .tmp/previous/inventory.json)
+            DELTA=$((TOTAL - PREV_TOTAL))
+            echo "**Previous Count:** ${PREV_TOTAL}" >> $GITHUB_STEP_SUMMARY
+            echo "**Delta:** ${DELTA}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            if [[ ${DELTA} -gt 0 ]]; then
+              echo "✅ **${DELTA} new objects detected**" >> $GITHUB_STEP_SUMMARY
+            elif [[ ${DELTA} -lt 0 ]]; then
+              echo "⚠️ **${DELTA} objects removed**" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "ℹ️ **No change in object count**" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "ℹ️ No previous inventory for comparison" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload current inventory artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: b2-inventory-${{ github.run_number }}
+          path: |
+            data/b2/inventory.csv
+            data/b2/inventory.json
+            data/b2/inventory_enriched.json
+          retention-days: 30
+
+      - name: Save current as previous for next run
+        uses: actions/upload-artifact@v4
+        with:
+          name: b2-inventory-previous
+          path: data/b2/inventory.json
+          retention-days: 7
+
+      - name: Print summary to log
+        run: |
+          echo "============================================"
+          echo "B2 Inventory Check Complete"
+          echo "============================================"
+          echo "Total Objects: ${{ steps.summary.outputs.total_objects }}"
+          echo "Artifacts uploaded: b2-inventory-${{ github.run_number }}"
+          echo "============================================"
