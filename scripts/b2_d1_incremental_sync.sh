@@ -171,7 +171,7 @@ fi
 
 # Parse D1 output to extract photo_id values
 # Wrangler output format varies, attempt multiple parsing strategies
-> "$EXISTING_IDS_FILE"  # Clear file
+true > "$EXISTING_IDS_FILE"  # Clear file
 
 # Try JSON parsing first
 if echo "$D1_OUTPUT" | jq -e '.results' >/dev/null 2>&1; then
@@ -214,7 +214,8 @@ log "Generating SQL INSERT statements for $NEW_COUNT new objects..."
 
 # SQL escape helper (inline)
 sql_escape() {
-  echo "$1" | sed "s/'/''/g"
+  local input="$1"
+  echo "${input//\'/\'\'}"
 }
 
 # Start SQL file
@@ -239,14 +240,11 @@ while IFS= read -r external_id; do
   fi
   
   # Extract fields
-  FILENAME=$(echo "$OBJECT" | jq -r '.filename')
   PUBLIC_URL=$(echo "$OBJECT" | jq -r '.public_url')
-  SIZE=$(echo "$OBJECT" | jq -r '.size')
   UPLOADED_AT=$(echo "$OBJECT" | jq -r '.uploaded_at')
   
   # SQL escape all string fields
   ESCAPED_ID=$(sql_escape "$external_id")
-  ESCAPED_FILENAME=$(sql_escape "$FILENAME")
   ESCAPED_URL=$(sql_escape "$PUBLIC_URL")
   ESCAPED_UPLOADED_AT=$(sql_escape "$UPLOADED_AT")
   
