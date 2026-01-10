@@ -8,6 +8,12 @@
 import { marked } from 'marked';
 import DOMPurify from 'isomorphic-dompurify';
 
+// Configure marked once at module initialization
+marked.setOptions({
+  breaks: true, // Convert line breaks to <br>
+  gfm: true, // GitHub Flavored Markdown
+});
+
 /**
  * Render markdown to safe HTML
  * Sanitizes output to prevent XSS attacks
@@ -17,12 +23,6 @@ import DOMPurify from 'isomorphic-dompurify';
  */
 export function renderMarkdown(markdown: string): string {
   if (!markdown) return '';
-  
-  // Configure marked for safe rendering
-  marked.setOptions({
-    breaks: true, // Convert line breaks to <br>
-    gfm: true, // GitHub Flavored Markdown
-  });
   
   // Render markdown to HTML
   const rawHtml = marked(markdown) as string;
@@ -51,11 +51,6 @@ export function renderMarkdown(markdown: string): string {
  */
 export function renderMarkdownPreview(markdown: string): string {
   if (!markdown) return '';
-  
-  marked.setOptions({
-    breaks: true,
-    gfm: true,
-  });
   
   const rawHtml = marked(markdown) as string;
   

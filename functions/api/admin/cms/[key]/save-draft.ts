@@ -4,6 +4,7 @@
 // Protected by admin gate
 
 import { requireAdminEmail } from "../../../../_lib/auth";
+import { DEFAULT_ADMIN_USER } from "../_constants";
 
 export const onRequestPost = async (context: any): Promise<Response> => {
   const { request, env, params } = context;
@@ -49,7 +50,7 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     const newVersion = current.version + 1;
     const now = new Date().toISOString();
     const updatedTitle = title !== undefined ? title : current.title;
-    const updatedBy = "admin"; // TODO: use actual user when auth is available
+    const updatedBy = DEFAULT_ADMIN_USER; // TODO: use actual user when auth is available
 
     // Update content_blocks
     await db
