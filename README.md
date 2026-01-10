@@ -171,6 +171,29 @@ In short:
 
 ---
 
+## 7.5 Automated Background Processes
+
+This repository includes automated workflows for maintaining data synchronization:
+
+### B2 → D1 Media Ingestion Pipeline
+
+A daily automated workflow syncs media files from Backblaze B2 storage to the Cloudflare D1 database for indexing and discovery.
+
+**Key Features:**
+- **Fully idempotent**: Safe to run repeatedly without duplicating data
+- **INSERT-only**: Never modifies or deletes existing records
+- **Scheduled**: Runs daily at 06:17 UTC
+- **Manual trigger**: Can be run on-demand via GitHub Actions
+
+**Documentation:**
+- Pipeline architecture: `docs/b2-d1-sync-pipeline.md`
+- Workflow: `.github/workflows/b2-d1-daily-sync.yml`
+- Database schema: `migrations/0010_media_assets.sql`
+
+The pipeline maintains a complete historical record of all media assets ingested from B2, enabling the site to index and serve ~1,000 media files efficiently.
+
+---
+
 ## 8. Design & Homepage Standards
 
 The LGFC project uses **documented design contracts**:
