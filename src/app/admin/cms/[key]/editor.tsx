@@ -105,7 +105,7 @@ export default function AdminCMSEditorPage() {
     }
 
     try {
-      // Use dynamic import for markdown rendering on client side
+      // Dynamic import for client-side only (avoids SSR issues)
       const { renderMarkdownPreview } = await import('@/lib/markdown');
       const html = renderMarkdownPreview(bodyMd);
       setPreviewHtml(html);
