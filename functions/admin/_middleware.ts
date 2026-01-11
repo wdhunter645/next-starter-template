@@ -3,7 +3,7 @@
 
 import { requireAdmin } from "../_lib/auth";
 
-export const onRequest: PagesFunction = async (context) => {
+export const onRequest = async (context: any): Promise<Response> => {
   const { request, env, next } = context;
 
   // For HTML page requests to /admin, check authentication

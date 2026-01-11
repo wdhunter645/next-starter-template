@@ -21,7 +21,7 @@ export default function MemberPage() {
       <hr style={{ ...styles.hr }} />
 
       <p style={{ ...styles.p }}>
-        If you're here early: thank you. Join the mailing list so you'll get a note when member access opens.
+        If you&apos;re here early: thank you. Join the mailing list so you&apos;ll get a note when member access opens.
       </p>
     </main>
   );
