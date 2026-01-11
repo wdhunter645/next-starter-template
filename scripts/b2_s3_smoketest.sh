@@ -18,11 +18,14 @@ require B2_APP_KEY
 require B2_ENDPOINT
 require B2_BUCKET
 
+# Validate B2_ENDPOINT format
+if [[ "${B2_ENDPOINT}" != https://* ]]; then
+  echo "ERROR: B2_ENDPOINT must start with https:// (got: ${B2_ENDPOINT})" >&2
+  exit 2
+fi
+
 # Normalize endpoint
 ENDPOINT="${B2_ENDPOINT}"
-if [[ "${ENDPOINT}" != https://* && "${ENDPOINT}" != http://* ]]; then
-  ENDPOINT="https://${ENDPOINT}"
-fi
 
 if ! command -v aws >/dev/null 2>&1; then
   echo "ERROR: aws CLI is required but not installed." >&2
@@ -41,13 +44,18 @@ trap cleanup EXIT
 
 export AWS_ACCESS_KEY_ID="${B2_KEY_ID}"
 export AWS_SECRET_ACCESS_KEY="${B2_APP_KEY}"
+export AWS_EC2_METADATA_DISABLED=true
 
 # Region is ignored by B2 S3, but aws CLI may require a value in some contexts
 export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
 
 set +e
 OUT="$(
-  aws s3api list-objects-v2     --bucket "${B2_BUCKET}"     --max-keys 1     --endpoint-url "${ENDPOINT}"     --output json 2>&1
+  aws s3api list-objects-v2 \
+    --bucket "${B2_BUCKET}" \
+    --max-items 1 \
+    --endpoint-url "${ENDPOINT}" \
+    --output json 2>&1
 )"
 RC=$?
 set -e
