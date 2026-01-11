@@ -9,6 +9,9 @@ concurrency:
   group: b2-s3-smoke-test
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   smoke-test:
     runs-on: ubuntu-latest

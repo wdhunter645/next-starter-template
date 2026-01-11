@@ -9,6 +9,9 @@ concurrency:
   group: b2-d1-daily-sync
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   smoke-test:
     runs-on: ubuntu-latest
