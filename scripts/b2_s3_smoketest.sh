@@ -53,7 +53,7 @@ set +e
 OUT="$(
   aws s3api list-objects-v2 \
     --bucket "${B2_BUCKET}" \
-    --max-items 1 \
+    --max-keys 1 \
     --endpoint-url "${ENDPOINT}" \
     --output json 2>&1
 )"

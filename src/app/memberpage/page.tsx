@@ -1,5 +1,7 @@
 import React from "react";
 
+// Note: This page exists at /memberpage to meet the requirement for a /memberpage route.
+// There's also a /member page with identical content. Both routes are intentionally maintained.
 export default function MemberPage() {
   return (
     <main style={{ ...styles.main }}>
