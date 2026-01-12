@@ -53,6 +53,8 @@ echo "✓ Environment variables validated"
 echo "✓ Testing connectivity to B2 bucket via S3 endpoint..."
 echo "  - Endpoint: ${ENDPOINT}"
 echo "  - Bucket: ${B2_BUCKET}"
+echo "B2_KEY_ID length: ${#B2_KEY_ID}"
+echo "B2_ENDPOINT host: $(echo "$B2_ENDPOINT" | sed -E 's#^https?://##' | cut -d/ -f1)"
 
 # Use dedicated temp config so we don't mutate any runner/user config
 TMPDIR="$(mktemp -d)"
