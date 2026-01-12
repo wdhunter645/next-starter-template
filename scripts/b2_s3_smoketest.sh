@@ -24,6 +24,23 @@ if [[ "${B2_ENDPOINT}" != https://* ]]; then
   exit 2
 fi
 
+# Derive AWS region from B2_ENDPOINT
+# Expected format: https://s3.<region>.backblazeb2.com
+# Extract region from hostname
+ENDPOINT_HOST="${B2_ENDPOINT#https://}"
+ENDPOINT_HOST="${ENDPOINT_HOST%%/*}"
+# Extract region from s3.<region>.backblazeb2.com pattern
+if [[ "$ENDPOINT_HOST" =~ ^s3\.([^.]+)\.backblazeb2\.com$ ]]; then
+  DERIVED_REGION="${BASH_REMATCH[1]}"
+  export AWS_DEFAULT_REGION="$DERIVED_REGION"
+  echo "✓ Derived AWS region from endpoint: ${DERIVED_REGION}"
+else
+  echo "ERROR: Could not extract region from B2_ENDPOINT format" >&2
+  echo "  Expected: https://s3.<region>.backblazeb2.com" >&2
+  echo "  Got: ${B2_ENDPOINT}" >&2
+  exit 2
+fi
+
 # Normalize endpoint
 ENDPOINT="${B2_ENDPOINT}"
 
@@ -46,8 +63,7 @@ export AWS_ACCESS_KEY_ID="${B2_KEY_ID}"
 export AWS_SECRET_ACCESS_KEY="${B2_APP_KEY}"
 export AWS_EC2_METADATA_DISABLED=true
 
-# Hard-bind to B2 endpoint to prevent AWS fallback
-export AWS_DEFAULT_REGION=us-west-004
+# AWS_DEFAULT_REGION already set above from endpoint derivation
 export AWS_ENDPOINT_URL="${B2_ENDPOINT}"
 
 set +e
