@@ -46,8 +46,9 @@ export AWS_ACCESS_KEY_ID="${B2_KEY_ID}"
 export AWS_SECRET_ACCESS_KEY="${B2_APP_KEY}"
 export AWS_EC2_METADATA_DISABLED=true
 
-# Region is ignored by B2 S3, but aws CLI may require a value in some contexts
-export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
+# Hard-bind to B2 endpoint to prevent AWS fallback
+export AWS_DEFAULT_REGION=us-west-004
+export AWS_ENDPOINT_URL="${B2_ENDPOINT}"
 
 set +e
 OUT="$(
