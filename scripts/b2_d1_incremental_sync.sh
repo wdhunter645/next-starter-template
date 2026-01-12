@@ -53,11 +53,28 @@ for var in "${REQUIRED_VARS[@]}"; do
   fi
 done
 
+# Derive AWS region from B2_ENDPOINT
+# Expected format: https://s3.<region>.backblazeb2.com
+# Extract region from hostname
+ENDPOINT_HOST="${B2_ENDPOINT#https://}"
+ENDPOINT_HOST="${ENDPOINT_HOST%%/*}"
+# Extract region from s3.<region>.backblazeb2.com pattern
+if [[ "$ENDPOINT_HOST" =~ ^s3\.([^.]+)\.backblazeb2\.com$ ]]; then
+  DERIVED_REGION="${BASH_REMATCH[1]}"
+  export AWS_DEFAULT_REGION="$DERIVED_REGION"
+  log "Derived AWS region from endpoint: ${DERIVED_REGION}"
+else
+  log "ERROR: Could not extract region from B2_ENDPOINT format"
+  log "  Expected: https://s3.<region>.backblazeb2.com"
+  log "  Got: ${B2_ENDPOINT}"
+  exit 2
+fi
+
 # Configure AWS CLI for B2 S3 compatibility
 export AWS_ACCESS_KEY_ID="$B2_KEY_ID"
 export AWS_SECRET_ACCESS_KEY="$B2_APP_KEY"
 export AWS_EC2_METADATA_DISABLED=true
-export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
+# AWS_DEFAULT_REGION already set above from endpoint derivation
 
 # Configure Cloudflare credentials
 export CLOUDFLARE_API_TOKEN
