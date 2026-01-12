@@ -17,7 +17,7 @@ set -euo pipefail
 #   B2_BUCKET            - B2 bucket name
 #   B2_KEY_ID            - B2 application key ID
 #   B2_APP_KEY           - B2 application key
-#   D1_DATABASE_ID       - D1 database ID (or name)
+#   D1_DATABASE_NAME       - D1 database name
 #   CLOUDFLARE_API_TOKEN - Cloudflare API token with D1 access
 #
 # Optional environment variables:
@@ -42,7 +42,7 @@ REQUIRED_VARS=(
   "B2_BUCKET"
   "B2_KEY_ID"
   "B2_APP_KEY"
-  "D1_DATABASE_ID"
+  "D1_DATABASE_NAME"
   "CLOUDFLARE_API_TOKEN"
 )
 
@@ -88,7 +88,7 @@ PUBLIC_BASE_URL="${PUBLIC_B2_BASE_URL:-${B2_ENDPOINT}}"
 PUBLIC_BASE_URL="${PUBLIC_BASE_URL%/}"
 
 # Determine database reference (ID or name)
-DB_REF="$D1_DATABASE_ID"
+DB_REF="$D1_DATABASE_NAME"
 
 # Dry run mode
 DRY_RUN="${DRY_RUN:-0}"
