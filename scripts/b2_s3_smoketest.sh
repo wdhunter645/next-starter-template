@@ -73,7 +73,7 @@ OUT="$(
   aws s3api list-objects-v2 \
     --bucket "${B2_BUCKET}" \
     --max-keys 1 \
-    --endpoint-url "${ENDPOINT}" \
+    --endpoint-url "${B2_ENDPOINT}" \
     --output json 2>&1
 )"
 RC=$?
