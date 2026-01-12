@@ -67,7 +67,7 @@ else
   log "ERROR: Could not extract region from B2_ENDPOINT format"
   log "  Expected: https://s3.<region>.backblazeb2.com"
   log "  Got: ${B2_ENDPOINT}"
-  exit 1
+  exit 2
 fi
 
 # Configure AWS CLI for B2 S3 compatibility
