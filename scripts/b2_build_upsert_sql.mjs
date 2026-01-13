@@ -76,7 +76,6 @@ if (fs.existsSync(overlayPath)) {
 }
 
 const lines = [];
-lines.push("BEGIN TRANSACTION;");
 lines.push("CREATE UNIQUE INDEX IF NOT EXISTS idx_photos_photo_id ON photos(photo_id);");
 
 for (const obj of keys) {
@@ -122,5 +121,4 @@ for (const obj of keys) {
   );
 }
 
-lines.push("COMMIT;");
 process.stdout.write(lines.join("\n") + "\n");
