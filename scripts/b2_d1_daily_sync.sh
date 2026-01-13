@@ -143,7 +143,7 @@ fi
 BASE_URL=$(echo "$PUBLIC_B2_BASE_URL" | sed 's:/*$::')
 
 cat > "$SQL_FILE" <<'SQL_HEADER'
-BEGIN TRANSACTION;
+
 CREATE UNIQUE INDEX IF NOT EXISTS idx_photos_photo_id ON photos(photo_id);
 SQL_HEADER
 
@@ -167,7 +167,7 @@ VALUES ('${ESCAPED_KEY}', '${URL}', 0, '');
 SQL_INSERT
 done <<< "$NEW_KEYS"
 
-echo "COMMIT;" >> "$SQL_FILE"
+
 
 echo "Generated SQL with $NEW_COUNT INSERT statements at: $SQL_FILE"
 

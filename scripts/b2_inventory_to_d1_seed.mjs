@@ -107,7 +107,6 @@ sqlLines.push("-- B2 Inventory → D1 Photos Seed");
 sqlLines.push(`-- Generated: ${new Date().toISOString()}`);
 sqlLines.push(`-- Source: ${inputFile}`);
 sqlLines.push("");
-sqlLines.push("BEGIN TRANSACTION;");
 sqlLines.push("");
 
 // Delete existing photos (deterministic seeding)
@@ -135,7 +134,6 @@ for (const obj of objects) {
 }
 
 sqlLines.push("");
-sqlLines.push("COMMIT;");
 sqlLines.push("");
 sqlLines.push(`-- Inserted ${insertCount} photos`);
 
