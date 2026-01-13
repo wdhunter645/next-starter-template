@@ -211,7 +211,7 @@ function main() {
   }
   
   // Generate INSERT statements
-  const sqlStatements = ['BEGIN TRANSACTION;'];
+  const sqlStatements = [];
   
   // Ensure index exists
   sqlStatements.push('CREATE UNIQUE INDEX IF NOT EXISTS idx_media_assets_media_uid ON media_assets(media_uid);');
@@ -225,7 +225,7 @@ function main() {
     verbose(`  Will insert: ${key} -> ${media_uid}`);
   }
   
-  sqlStatements.push('COMMIT;');
+  // COMMIT omitted for D1 exec
   
   const fullSql = sqlStatements.join('\n');
   
