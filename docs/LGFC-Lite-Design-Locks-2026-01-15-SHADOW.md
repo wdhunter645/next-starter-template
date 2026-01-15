@@ -1,7 +1,7 @@
-# LGFC‑Lite Design Locks — January 15, 2026 (SHADOW)
+# LGFC-Lite Design Locks — January 15, 2026 (SHADOW)
 
-This document captures the design decisions explicitly locked in the design review thread ending January 15, 2026.
-It is additive (does not overwrite existing authoritative docs) and is intended to be maintained via the SHADOW workflow.
+This document captures **all** design decisions explicitly locked in the design review threads up to January 15, 2026.
+It is additive (does not overwrite existing authoritative docs) and is maintained via the SHADOW workflow.
 
 ---
 
@@ -10,13 +10,13 @@ It is additive (does not overwrite existing authoritative docs) and is intended 
 ### Entry
 - Visitors and members arrive at **`home/page.tsx`** (www.lougehrigfanclub.com).
 
-### Visitor experience (public)
+### Visitor experience (public) — Home page sections
 Home page sections, in order:
 1. Header
 2. Weekly Vote (two photos; rotates weekly)
-3. **JOIN** promoted conversion block (only promoted CTA; located directly under Weekly Vote and above Social Wall)
+3. **JOIN** promoted conversion block (only promoted CTA; directly under Weekly Vote and above Social Wall)
 4. Social Wall (Elfsight widget)
-5. Recent Discussion teaser (shows last 5–10 items from member Discussions; read‑only teaser)
+5. Recent Discussion teaser (shows last 5–10 items from member Discussions; read-only teaser)
 6. Friends of the Club (tiles for charities and businesses that sponsor/collaborate/benefit)
 7. Milestones (Gehrig career timeline)
 8. Events Calendar (current month grid)
@@ -29,13 +29,52 @@ Home page sections, in order:
 
 ---
 
-## 2) Home CTA Lock
-- **JOIN** is the only promoted conversion block on Home.
-- **LOGIN** is not promoted in page content sections; it exists only as a utility entry (Header + Hamburger).
+## 2) Visitor Header (Public) — Final Lock
+
+### Left → Right
+1. **Logo / Home**
+2. **JOIN**
+3. **Search**
+4. **LOGIN**
+5. **Hamburger menu**
+
+### Rules
+- JOIN is the **only promoted conversion CTA**.
+- LOGIN is a utility entry (not promoted as a content section).
+- Visitor header is intentionally minimal.
 
 ---
 
-## 3) LOGIN — Behavior Lock
+## 3) Visitor Hamburger Menu — Final Lock
+
+### Primary menu
+- Home
+- About
+- Contact
+- Support (mailto: Support@LouGehrigFanClub.com, subject "Support Needed")
+
+### Member-only resources (visible but gated)
+- Library
+- Photos
+- Memorabilia
+
+Behavior:
+- If a visitor selects a member-only resource while logged out → route to LOGIN.
+
+### Home sections (jump links / anchors)
+- Charities
+- Events
+- FAQ
+
+---
+
+## 4) Home CTA Lock (re-affirmed)
+- **JOIN** is the only promoted conversion block on Home.
+- **LOGIN** is not promoted in page content sections; it exists only in the header + hamburger.
+
+---
+
+## 5) LOGIN — Behavior Lock
 
 ### Access points
 - Home header has **LOGIN** button; hamburger menu also has **LOGIN**.
@@ -51,7 +90,7 @@ Home page sections, in order:
 
 ---
 
-## 4) JOIN — Behavior Lock
+## 6) JOIN — Behavior Lock
 
 ### Fields
 - First name (required)
@@ -71,7 +110,8 @@ Home page sections, in order:
 
 ---
 
-## 5) Support Access Lock
+## 7) Support Access Lock
+
 - Header and hamburger menu include **Support** item:
   - mailto: `Support@LouGehrigFanClub.com`
   - subject: **"Support Needed"**
@@ -84,7 +124,8 @@ Support is separate from Ask a Question.
 
 ---
 
-## 6) Ask a Question — Behavior Lock
+## 8) Ask a Question — Behavior Lock
+
 - Entry: from FAQ section link **Ask a Question**.
 - Form collects same fields as JOIN + freeform question.
 - Submitting Ask a Question:
@@ -96,7 +137,8 @@ Support is separate from Ask a Question.
 
 ---
 
-## 7) FAQ — Final Lock
+## 9) FAQ — Final Lock
+
 - Retain existing structure: **search + last 10 shown**.
 - Backed by D1 canonical FAQ entries (POST only for public).
 - Ordering: **most recently answered / updated first**.
@@ -105,50 +147,87 @@ Support is separate from Ask a Question.
 
 ---
 
-## 8) Event Calendar — Final Lock
+## 10) Event Calendar — Final Lock
 
 ### Content scope
 - Calendar entries must be strictly limited to Lou Gehrig’s life, career, and baseball legacy.
-- Explicit exclusion: ALS-related discussions, support groups, awareness events, or non‑Gehrig ALS content.
+- Explicit exclusion: ALS-related discussions, support groups, awareness events, or non-Gehrig ALS content.
 
 ### Update model (v1)
-- **Admin‑manual only** (no automated online searching in v1).
+- **Admin-manual only** (no automated online searching in v1).
 - Members may suggest events via email:
   - to: `admin@lougehrigfanclub.com`
   - subject: **"Calendar Event"**
+
+### Display + interaction
 - Display: **current month grid** on Home.
-  - Grid does not expand for long titles; titles truncate/ellipsis.
-  - Event titles are clickable to open full detail view (date/time, location, host, admission fees optional, description, external link optional).
+- Grid does not expand for long titles; titles truncate/ellipsis.
+- Event titles are clickable to open full detail view (date/time, location, host, admission fees optional, description, external link optional).
 
 ---
 
-## 9) Members-Only Header — Final Lock
+## 11) Members-Only Header — Final Lock
+
 Members-only pages header (left → right):
-1. Large site logo
-2. My Profile (button)
-3. Support (button)
-4. Logout (button)
-5. Hamburger menu
+1. **Large site logo**
+2. **My Profile** (button)
+3. **Support** (button; mailto Support@LouGehrigFanClub.com, subject "Support Needed")
+4. **Logout** (button)
+5. **Hamburger menu**
 
 Hamburger menu omits Profile/Support/Logout (already in header) and contains member navigation links.
 Members never see JOIN or LOGIN in the header. If not authenticated → route to LOGIN.
 
 ---
 
-## 10) Member Welcome Hero (MEMBER/page.tsx)
+## 12) Member Welcome Hero (MEMBER/page.tsx)
+
 - Welcome section is a hero banner: full-width Lou Gehrig image with overlay text:
   - **"WELCOME LOU GEHRIG FAN CLUB MEMBERS!"**
 - Banner image is changeable; photos must be tagged for banner eligibility (avoid portraits stretched as banners).
 
 ---
 
-## 11) Photo Usage Tagging + Member Profile Picture
-- Photos require usage tagging/eligibility (e.g., banner-eligible, decor-eligible, matchup-eligible, profile-avatar-eligible, thumbnail-safe, featured/spotlight).
-- Member profile pictures: members select a profile pic from the photo gallery (curated eligibility).
-- No uploads for profile pics.
+## 13) Member Pages — Large Logo Overlapping Banner (Final Lock)
+
+### Purpose
+- Strong members-only branding and “club crest” identity.
+
+### Placement & overlap
+- Logo partially overlaps the bottom edge of the hero banner and the content below.
+- Left-aligned to the page content gutter.
+- Overlap target: ~60–70% on banner, ~30–40% on content below.
+
+### Treatment
+- Logo placed inside a solid container (light background) with padding.
+- Subtle border/shadow to remain readable over any banner image.
+- Header controls remain above both banner and logo (no interaction overlap).
+
+### Responsiveness
+- Desktop: full overlap treatment.
+- Tablet/mobile: reduced logo size and reduced overlap depth to prevent layout compression.
+
+### Interaction
+- Logo links to `MEMBER/page.tsx`.
 
 ---
 
-## 12) MEMBER/page.tsx Update
+## 14) Photo Usage Tagging + Member Profile Picture (Final Lock)
+
+### Usage tagging/eligibility
+Photos require usage tagging/eligibility for safe selection by placement:
+- banner-eligible
+- decor-eligible
+- matchup-eligible
+- profile-avatar-eligible
+- (optionally later) thumbnail-safe, featured/spotlight, etc.
+
+### Member profile pictures
+- Members select a profile pic from the existing photo gallery (curated eligibility).
+- No member uploads for profile pics (now, and potentially ever).
+
+---
+
+## 15) MEMBER/page.tsx Update (Final Lock)
 - The prior "Member Overview" section is removed from `MEMBER/page.tsx`.
 - Account details and overview live exclusively on a dedicated **My Profile** page (accessed via header button).
