@@ -63,3 +63,18 @@ It exists to support clean thread transitions and prevent loss of “still open�
 ## H) Admin Dashboard (overall) — not revisited in this pass
 - Reports list (unified reports) details are locked historically, but Admin UI page structure is not reviewed in this pass.
 
+## Updates captured on 2026-01-16
+
+### Locked this session (summary)
+- Visitor + Member headers (desktop/mobile behavior, hamburger ordering, sticky controls + non-sticky overlap logo)
+- Search (dedicated page; scope rules)
+- Login/Logout clarification (success → Member Home; failed stays on Login; logout → Visitor Home)
+- Footer layout (logo center; rotating quote left; links right; mobile behavior)
+- My Profile (editable fields + Save/Cancel + UUID hidden)
+- Admin Page v1 (health status; Search+Add; suppression flags; Footer Quotes; content management; Admin Team Worklist)
+
+### Open / pending (not locked)
+- Member Home page content/section order (still pending final lock)
+- Stub pages off Member Home (Gehrig Library / Memorabilia Archive / Photo Gallery) are D1-driven; detailed page layouts, schemas, and filters to be finalized in a future design session
+- Reports/Moderation section is deferred (Day 2/Day 3)
+- Membership card front/back images to be selected and added to the MembershipCard page (content files are locked; images pending)
