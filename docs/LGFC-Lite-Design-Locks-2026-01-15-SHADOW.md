@@ -29,44 +29,57 @@ Home page sections, in order:
 
 ---
 
-## 2) Visitor Header (Public) — Final Lock
+## 2) Visitor Header (Public) — Final Lock (Updated 2026-01-16)
 
-### Left → Right
-1. **Logo / Home**
-2. **JOIN**
-3. **Search**
-4. **LOGIN**
-5. **Hamburger menu**
+### Desktop / Tablet header layout
+- Layout: **Logo + 3 buttons + Hamburger**
+- Sticky: **the 3 buttons + hamburger**
+- Not sticky: **the large overlapping logo** (it scrolls away and must not obstruct content)
+- Logo destination: **Home**
 
-### Rules
-- JOIN is the **only promoted conversion CTA**.
-- LOGIN is a utility entry (not promoted as a content section).
-- Visitor header is intentionally minimal.
+Buttons (left → right):
+1. **Join**
+2. **Search**
+3. **Login**
+4. **Hamburger**
 
----
+### Visitor hamburger menu (desktop/tablet)
+Order:
+1. **About**
+2. **Contact**
+3. **Support** (mailto: Support@LouGehrigFanClub.com, subject: “Support Needed”)
 
-## 3) Visitor Hamburger Menu — Final Lock
+### Mobile header layout
+- Visible: **Logo + Hamburger only**
+- Sticky: **Hamburger**
+- Not sticky: **Logo**
+- All header buttons move into the hamburger to save space.
 
-### Primary menu
-- Home
+Mobile visitor hamburger order:
+1. **Search**
+2. **Home**
+3. **Join**
+4. **About**
+5. **Contact**
+6. **Support**
+7. **Login**
+
+## 3) Visitor Hamburger Menu — Final Lock (Updated 2026-01-16)
+
+### Desktop / Tablet
 - About
 - Contact
-- Support (mailto: Support@LouGehrigFanClub.com, subject "Support Needed")
+- Support (mailto: Support@LouGehrigFanClub.com, subject: “Support Needed”)
 
-### Member-only resources (visible but gated)
-- Library
-- Photos
-- Memorabilia
-
-Behavior:
-- If a visitor selects a member-only resource while logged out → route to LOGIN.
-
-### Home sections (jump links / anchors)
-- Charities
-- Events
-- FAQ
-
----
+### Mobile
+Mobile visitor hamburger order:
+1. Search
+2. Home
+3. Join
+4. About
+5. Contact
+6. Support
+7. Login
 
 ## 4) Home CTA Lock (re-affirmed)
 - **JOIN** is the only promoted conversion block on Home.
@@ -74,21 +87,20 @@ Behavior:
 
 ---
 
-## 5) LOGIN — Behavior Lock
+## LOGIN / LOGOUT — Final Lock (Updated 2026-01-16)
 
-### Access points
-- Home header has **LOGIN** button; hamburger menu also has **LOGIN**.
-- JOIN welcome email **CONFIRM** button links to LOGIN.
-- Ask a Question welcome email **CONFIRM** button links to LOGIN.
+### Login
+- Login routes to the Login page.
+- Successful login lands on **Member Home**.
+- Failed login remains on the Login page and shows an on-page message for **email unknown**.
 
-### Unknown email handling (security + UX)
-- If email entered on LOGIN does **not** exist:
-  - **Do NOT send any email**
-  - Show on-screen: **"Email not found."**
-  - Secondary copy: **"If you are not a member yet, join us here"** (link to `JOIN/page.tsx`)
-- Rate limit: **max 3 LOGIN attempts per hour per source; after 3 failures, lock for 1 hour.**
+### Security guardrails (re-affirmed)
+- If email entered on Login does not exist: do **not** send any email.
+- Show: “Email not found.” and provide a Join link.
+- Allow max **3** failed Login attempts per hour per source; lock out for 1 hour after 3 failures.
 
----
+### Logout
+- Logout signs the member out and lands on **Visitor Home**.
 
 ## 6) JOIN — Behavior Lock
 
@@ -166,19 +178,47 @@ Support is separate from Ask a Question.
 
 ---
 
-## 11) Members-Only Header — Final Lock
+## 11) Members Header — Final Lock (Updated 2026-01-16)
 
-Members-only pages header (left → right):
-1. **Large site logo**
-2. **My Profile** (button)
-3. **Support** (button; mailto Support@LouGehrigFanClub.com, subject "Support Needed")
-4. **Logout** (button)
-5. **Hamburger menu**
+### Desktop / Tablet header layout (same structure as Visitor)
+- Layout: **Logo + 3 buttons + Hamburger**
+- Sticky: **the 3 buttons + hamburger**
+- Not sticky: **the large overlapping logo** (it scrolls away and must not obstruct content)
+- Logo destination: **Home**
 
-Hamburger menu omits Profile/Support/Logout (already in header) and contains member navigation links.
-Members never see JOIN or LOGIN in the header. If not authenticated → route to LOGIN.
+Buttons (left → right):
+1. **Member Home**
+2. **Search**
+3. **Logout**
+4. **Hamburger**
 
----
+My Profile is **not** a header button.
+
+### Member hamburger menu (desktop/tablet)
+Order:
+1. **My Profile**
+2. **Obtain Membership Card**
+3. **About**
+4. **Contact**
+5. **Support** (mailto: Support@LouGehrigFanClub.com, subject: “Support Needed”)
+
+### Mobile header layout
+- Visible: **Logo + Hamburger only**
+- Sticky: **Hamburger**
+- Not sticky: **Logo**
+- All header buttons move into the hamburger to save space.
+
+Mobile member hamburger order:
+1. **Search**
+2. **Home**
+3. **Member Home**
+4. **My Profile**
+5. **Obtain Membership Card**
+6. **About**
+7. **Contact**
+8. **Support**
+9. **Login**
+10. **Logout** (must be last)
 
 ## 12) Member Welcome Hero (MEMBER/page.tsx)
 
@@ -231,3 +271,99 @@ Photos require usage tagging/eligibility for safe selection by placement:
 ## 15) MEMBER/page.tsx Update (Final Lock)
 - The prior "Member Overview" section is removed from `MEMBER/page.tsx`.
 - Account details and overview live exclusively on a dedicated **My Profile** page (accessed via header button).
+
+## Search — Final Lock (Updated 2026-01-16)
+
+### Interaction
+- Search is accessed via the header Search control.
+- Search opens a **dedicated Search page** (not a modal, not a drawer).
+
+### Scope
+- Visitor Search: searches **visitor-accessible content only**.
+- Member Search: searches **visitor + member-accessible content**.
+- Admin Search: separate admin-only search with **no exclusions**.
+
+### Results behavior
+- Keywords/criteria entered on the Search page.
+- Results list renders on the page with pagination as needed.
+
+## Footer — Final Lock (Updated 2026-01-16)
+
+### Global rules
+- Same footer on **all pages** (visitor + member)
+- Not sticky
+- Auto-updating year in the copyright line
+
+### Desktop / Tablet layout
+- **Center:** Small LGFC logo
+- **Left:** Rotating quote (from or about Lou Gehrig) + copyright/legal line
+  - `© Lou Gehrig Fan Club, {auto-year}`
+- **Right (2×2 stack):**
+  - Terms
+  - Privacy
+  - Contact
+  - Support (opens email draft)
+
+### Mobile layout
+Default:
+- Logo left
+- Terms / Privacy / Contact / Support to the right
+- Copyright line with auto-year
+
+Optional (if space requires):
+- Logo left + footer hamburger right
+  - Menu items: Terms, Privacy, Contact, Support
+
+## My Profile — Final Lock (Updated 2026-01-16)
+
+### Identity
+- Each member has an internal UUID (used for lookups only).
+- UUID must never be shown on the profile page.
+
+### Member-editable fields
+- First name
+- Last name
+- Screen name
+- Email address
+- Email communication opt in/out
+- Profile picture selected from the gallery (filtered to size-vetted/approved images only)
+
+### Save behavior
+- Page uses **Save** and **Cancel** buttons.
+- Save persists changes; Cancel discards unsaved changes and reverts to last saved state.
+
+## Admin Page — Final Lock (Updated 2026-01-16)
+
+### Top of page — Health Status
+A quick health snapshot including:
+- Uptime
+- Errors
+- Utilization
+
+### Admin sections (each supports Search + Add records)
+1. Members
+2. FAQ / Q&A
+3. Events (suppression flag supports Gehrig-only compliance review; admin may unsuppress if permitted)
+4. Friends of the Club (suppress flag to hide tiles without deleting)
+5. Footer Quotes (rotating quotes management)
+6. Membership Card Content (canonical content management)
+7. Welcome Email Content (canonical content management)
+
+8. Reports — Deferred (not required for Launch; Day 2/Day 3)
+
+9. Admin Team Worklist (tasks needing attention)
+- Fields: task, date opened, needed completion date, admin/mod owner, status (open/in progress/completed)
+
+## Membership Card — Final Lock (Updated 2026-01-16)
+
+### Label + page name
+- Hamburger label: **Obtain Membership Card**
+- Page name: **MembershipCard**
+
+### Canonical content sources
+- `/docs/MembershipCard.MD` is the canonical MembershipCard instructions content.
+- `/docs/WelcomeEmail.MD` is the canonical Welcome Email top-half copy.
+
+### Welcome email assembly rule
+- Welcome email = `WelcomeEmail.MD` (upper half) + `MembershipCard.MD` (lower half).
+- The CONFIRM CTA is presented as a button labeled **CONFIRM** (link provided by the email system).
