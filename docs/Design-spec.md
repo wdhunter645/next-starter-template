@@ -1,6 +1,12 @@
 # Lou Gehrig Fan Club — Full Website Design Specification  
 *(Comprehensive visual, structural, and functional reference — locked production design, v2025-11-03)*
 
+## Authority Note (Design Locks)
+
+The authoritative, LOCKED implementation standards live in:
+- `docs/LGFC-Lite-Design-Locks.md`
+
+If any document conflicts with that file, **the Design Locks file wins**.
 ---
 
 ## 1. Global Visual & Technical Standards
