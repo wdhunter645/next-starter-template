@@ -1,4 +1,4 @@
-# LGFC-Lite Design Locks — January 15, 2026 (SHADOW)
+# LGFC-Lite Design Locks — January 16, 2026 (AUTHORITATIVE)
 
 This document captures **all** design decisions explicitly locked in the design review threads up to January 15, 2026.
 It is additive (does not overwrite existing authoritative docs) and is maintained via the SHADOW workflow.
@@ -367,3 +367,72 @@ A quick health snapshot including:
 ### Welcome email assembly rule
 - Welcome email = `WelcomeEmail.MD` (upper half) + `MembershipCard.MD` (lower half).
 - The CONFIRM CTA is presented as a button labeled **CONFIRM** (link provided by the email system).
+---
+
+# Addendum — January 16, 2026 Session Locks (Must Match Implementation)
+
+This addendum captures every design/standards decision finalized in-session after the baseline January 15 locks. These items are **LOCKED** and override any conflicting older language.
+
+## Navigation & Menus — FINAL
+- Hamburger menus list **ONLY standalone pages**. Never list page sections, anchors, or footer-only destinations.
+- **Charities** and **Events** are **sections of Visitor Home**, not pages.
+- **Privacy Policy** and **Terms of Service** are **footer-only destinations** and **never appear** in hamburger menus.
+- **Desktop & tablet** hamburger menus do **NOT** include **Home** or **Member Home**.
+- Desktop and tablet hamburger menus do NOT include Home or Member Home.
+- **Mobile** hamburger menus also must not include page sections or footer-only items.
+- **Join** and **Login** never appear in hamburger menus (all device sizes).
+- Header buttons and hamburger menus are distinct; do not assume parity.
+
+## Fan Club Store — FINAL
+- **Fan Club Store** is a standalone **PUBLIC** destination implemented as an **external Bonfire.com URL**.
+- Must open in a **new browser tab**.
+- Appears as:
+  - Header button on **Visitor** and **Member** headers
+  - A page link in **all hamburger menus** (desktop/tablet/mobile)
+- Header button position: **#3 of 4** from the left.
+
+## Search — FINAL
+- Search covers the whole site but results are permission-filtered:
+  - Visitors: public only
+  - Members: public + member-only (no admin-only)
+  - Admin: all
+- Ranking:
+  1) Closest textual match
+  2) Most-used / most-accessed
+
+## Presence (“Members Online”) — FINAL
+- On login: set member status to **Active** (in D1).
+- On logout: set member status to **Inactive** and remove from online list.
+- Timeout: **1 hour of no detected activity** (scroll/click/etc.) → set to **Inactive**.
+- Display: count of logged-in members + list of screen names currently Active.
+
+## Media & Photos — FINAL
+- Profile pictures: **no member uploads** for avatars; profile image is chosen from existing **approved Photo Gallery** items only.
+- Members may submit photos to the gallery (uploads allowed) but all submissions are hidden pending admin moderation.
+- Moderation state: all submissions received but **hidden** pending admin approval for visibility/use.
+- Admin-controlled publish to B2: because B2 bucket is public, photos must not become publicly reachable until approved/published.
+
+## Admin UX — FINAL
+- Admin Dashboard is a **router/index** only (no crowded inline editing).
+- One dedicated **review page per content type** (full-width for readability).
+- Admin landing lists pages by type:
+  - Public Pages / Member Pages / Admin Pages (names-only list, status tracked separately).
+- Project tracking uses an internal XY table (Design Locked / Build Exists / Standards Aligned) and **does not appear on the website**.
+
+## Operations — Photo Moderation Cleanup (Day 2/3 Enhancement) — FINAL
+- Cleanup cadence: **quarterly**.
+- Job scope:
+  1) Identify D1 photo records with `status = declined` older than retention window.
+  2) Delete corresponding B2 objects by object key.
+  3) Delete D1 records only after successful B2 deletion (or if object already missing).
+- Reporting on completion:
+  - Total records evaluated
+  - Number successfully removed
+  - Number failed
+  - Explicit list of failures for manual admin intervention
+- Include a **dry-run** capability prior to destructive execution.
+- This is an operations/maintenance job, not part of the public website UI.
+
+## Accessibility — FINAL
+- Support browser/OS accessibility scaling (browser zoom, iPad pinch-to-zoom, OS font scaling).
+- No in-app font size controls are required.
