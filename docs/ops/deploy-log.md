@@ -7,9 +7,10 @@
 **Action**: Applied `npm audit fix --force` to remediate low-severity vulnerabilities in the dependency tree.
 
 **Changes**:
-- Updated wrangler from 4.59.2 → 4.35.0 (major version downgrade required to fix undici vulnerability)
+- Updated wrangler from 4.52.1 → 4.35.0 (major version downgrade required to fix undici vulnerability)
 - Updated various Cloudflare workerd and related packages
 - Updated sharp and image processing dependencies
+- Note: `npm audit fix` initially upgraded wrangler to 4.59.2, but this didn't resolve the vulnerability; `npm audit fix --force` was required to downgrade to 4.35.0
 
 **Result**: **0 vulnerabilities** (down from 3 low-severity vulnerabilities)
 
