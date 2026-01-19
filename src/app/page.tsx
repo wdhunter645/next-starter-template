@@ -17,7 +17,7 @@ export default function HomePage() {
       {/* Section: Hero Banner */}
       <header id="banner" className={styles.hero}>
         <div className={styles.container}>
-          <h1 className={styles.title}>Welcome to the Lou Gehrig Fan Club!</h1>
+          <h1 className={styles.title}>Welcome to the Lou Gehrig Fan Club</h1>
           <p className={styles.subtitle}>
             Celebrating the Iron Horse — his record-setting career, his character, and the stories that keep his legacy alive.
           </p>

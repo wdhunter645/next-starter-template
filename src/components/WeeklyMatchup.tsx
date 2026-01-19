@@ -31,7 +31,7 @@ export default function WeeklyMatchup() {
 
   return (
     <div className="container">
-      <h2 className="section-title">Weekly Photo Matchup</h2>
+      <h2 className="section-title">Weekly Photo Matchup — Vote for your favorite</h2>
       <p className="sub">Two photos pulled live from D1 photos table.</p>
 
       {loading ? (
