@@ -16,7 +16,8 @@ export default function Footer() {
 			if (typeof window === 'undefined') return;
 			
 			const email = window.localStorage.getItem('lgfc_member_email');
-			if (!email) {
+			// Validate email format before using it
+			if (!email || !email.includes('@') || email.length < 3) {
 				setIsAdmin(false);
 				return;
 			}

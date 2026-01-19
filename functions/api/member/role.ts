@@ -1,6 +1,10 @@
 // Cloudflare Pages Function for GET /api/member/role
 // Returns the role of the logged-in member
 
+interface MemberRow {
+  role: string;
+}
+
 function json(data: any, status: number): Response {
   return new Response(JSON.stringify(data), {
     status,
@@ -14,7 +18,7 @@ async function getMemberRole(db: any, email: string): Promise<string | null> {
       .prepare(`SELECT role FROM members WHERE lower(email) = lower(?1) LIMIT 1`)
       .bind(email)
       .first();
-    return (row as any)?.role || null;
+    return (row as MemberRow)?.role || null;
   } catch (e) {
     console.error('Failed to get member role:', e);
     return null;
