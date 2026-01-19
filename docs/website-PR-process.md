@@ -90,7 +90,7 @@ For any PR affecting the homepage or Social Wall:
 1. If using a ZIP for transport: Extract contents to appropriate paths
 2. Delete the ZIP file immediately
 3. Commit only the extracted/modified files
-4. Verify with `git ls-files '*.zip'` before pushing
+4. Verify with `git ls-files '*.zip' '*.ZIP'` before pushing
 
 ---
 
