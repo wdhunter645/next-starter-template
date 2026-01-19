@@ -4,28 +4,37 @@ import Link from 'next/link';
 
 export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
   return (
-    <div className="mast-drawer" id="hamburger-menu">
-      <button className="mast-drawer-close" onClick={onClose} aria-label="Close menu">
-        ×
-      </button>
-      <ul className="mast-drawer-menu">
-        <li><Link href="/" onClick={onClose}>Home</Link></li>
-        <li><Link href="/join" onClick={onClose}>Join</Link></li>
-        <li><Link href="/library" onClick={onClose}>Library</Link></li>
-        <li><Link href="/photos" onClick={onClose}>Photos</Link></li>
-        <li><Link href="/memorabilia" onClick={onClose}>Memorabilia</Link></li>
-        <li><Link href="/charities" onClick={onClose}>Charities</Link></li>
-        <li><Link href="/calendar" onClick={onClose}>Events</Link></li>
-        <li><Link href="/about" onClick={onClose}>About</Link></li>
-        <li><Link href="/contact" onClick={onClose}>Contact</Link></li>
-        <li>
-          <a href="https://www.bonfire.com/store/lou-gehrig-fan-club/" target="_blank" rel="noopener noreferrer">
-            Store
-          </a>
-        </li>
-        <li><Link href="/privacy" onClick={onClose}>Privacy</Link></li>
-        <li><Link href="/terms" onClick={onClose}>Terms</Link></li>
-      </ul>
-    </div>
+    <>
+      <style jsx>{`
+        .only-mobile {
+          display: block;
+        }
+        @media (min-width: 768px) {
+          .only-mobile {
+            display: none;
+          }
+        }
+      `}</style>
+      <div className="mast-drawer" id="hamburger-menu">
+        <button className="mast-drawer-close" onClick={onClose} aria-label="Close menu">
+          ×
+        </button>
+        <ul className="mast-drawer-menu">
+          <li className="only-mobile"><Link href="/" onClick={onClose}>Home</Link></li>
+          <li><Link href="/about" onClick={onClose}>About</Link></li>
+          <li><Link href="/contact" onClick={onClose}>Contact</Link></li>
+          <li>
+            <a href="mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed">
+              Support
+            </a>
+          </li>
+          <li>
+            <a href="https://www.bonfire.com/store/lou-gehrig-fan-club/" target="_blank" rel="noopener noreferrer">
+              Store
+            </a>
+          </li>
+        </ul>
+      </div>
+    </>
   );
 }

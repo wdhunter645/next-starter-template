@@ -45,7 +45,7 @@ Home page sections, in order:
 
 Buttons (left → right):
 1. **Join**
-2. **Search**
+2. **Store** (https://www.bonfire.com/store/lou-gehrig-fan-club/)
 3. **Login**
 4. **Hamburger**
 
@@ -62,13 +62,11 @@ Order:
 - All header buttons move into the hamburger to save space.
 
 Mobile visitor hamburger order:
-1. **Search**
-2. **Home**
-3. **Join**
-4. **About**
-5. **Contact**
-6. **Support**
-7. **Login**
+1. **Home**
+2. **About**
+3. **Contact**
+4. **Support**
+5. **Store**
 
 ## 3) Visitor Hamburger Menu — Final Lock (Updated 2026-01-16)
 
@@ -79,17 +77,15 @@ Mobile visitor hamburger order:
 
 ### Mobile
 Mobile visitor hamburger order:
-1. Search
-2. Home
-3. Join
-4. About
-5. Contact
-6. Support
-7. Login
+1. Home
+2. About
+3. Contact
+4. Support
+5. Store
 
 ## 4) Home CTA Lock (re-affirmed)
 - **JOIN** is the only promoted conversion block on Home.
-- **LOGIN** is not promoted in page content sections; it exists only in the header + hamburger.
+- **LOGIN** is not promoted in page content sections; it exists only in the header.
 
 ---
 

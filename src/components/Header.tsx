@@ -37,7 +37,7 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           align-items: center;
           gap: 12px;
         }
-        .login-btn {
+        .header-btn {
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -52,8 +52,16 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           font-size: 14px;
           font-family: var(--lgfc-font-family);
         }
-        .login-btn:hover {
+        .header-btn:hover {
           opacity: 0.9;
+        }
+        .desktop-tablet-only {
+          display: none;
+        }
+        @media (min-width: 768px) {
+          .desktop-tablet-only {
+            display: inline-flex;
+          }
         }
         .burger-btn {
           display: inline-flex;
@@ -74,7 +82,18 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           </Link>
         )}
         <div className="header-right">
-          <Link href="/member" className="login-btn">
+          <Link href="/join" className="header-btn desktop-tablet-only">
+            Join
+          </Link>
+          <a 
+            href="https://www.bonfire.com/store/lou-gehrig-fan-club/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="header-btn desktop-tablet-only"
+          >
+            Store
+          </a>
+          <Link href="/member" className="header-btn desktop-tablet-only">
             Login
           </Link>
           <button 
