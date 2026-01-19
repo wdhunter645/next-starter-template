@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import HamburgerMenu from './HamburgerMenu';
+import MemberHamburgerMenu from './MemberHamburgerMenu';
 
-type HeaderProps = {
-  homeRoute?: string; // where logo should point
-  showLogo?: boolean; // allow hiding logo for admin
+type MemberHeaderProps = {
+  homeRoute?: string;
+  showLogo?: boolean;
 };
 
-export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps = {}) {
+export default function MemberHeader({ homeRoute = '/', showLogo = true }: MemberHeaderProps = {}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -30,7 +30,6 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           width: auto;
         }
         .header-right {
-          /* Sticky controls: buttons + hamburger are sticky; logo is not. */
           position: fixed;
           top: 8px;
           right: 16px;
@@ -89,35 +88,28 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           </Link>
         )}
         <div className="header-right">
-          <Link href="/join" className="header-btn desktop-tablet-only">
-            Join
+          <Link href="/member" className="header-btn desktop-tablet-only">
+            Member Home
           </Link>
-          <a 
-            href="https://www.bonfire.com/store/lou-gehrig-fan-club/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            referrerPolicy="no-referrer"
-            className="header-btn desktop-tablet-only"
-          >
-            Store
-          </a>
-          <Link href="/login" className="header-btn desktop-tablet-only">
-            Login
+          <Link href="/search" className="header-btn desktop-tablet-only">
+            Search
           </Link>
-          <button 
+          <Link href="/logout" className="header-btn desktop-tablet-only">
+            Logout
+          </Link>
+          <button
             className="burger-btn"
             onClick={() => setOpen(!open)}
             aria-label="Open menu"
             aria-expanded={open}
             aria-controls="hamburger-menu"
           >
-            {/* simple hamburger icon */}
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </button>
         </div>
-        {open && <HamburgerMenu onClose={() => setOpen(false)} />}
+        {open && <MemberHamburgerMenu onClose={() => setOpen(false)} />}
       </header>
     </>
   );

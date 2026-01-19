@@ -27,11 +27,17 @@ All PR drafts must follow this structure and must be delivered as **one continuo
 #### 2) Build / test
 - [List exact commands to run.]
 
+#### 3) Documentation updates (mandatory)
+- Update the required documentation files for this PR. You MUST either:
+  - List the specific docs to update (with exact paths), OR
+  - Explicitly state: **No documentation updates required** (only allowed when the change truly does not affect docs).
+
 ### Acceptance Criteria
 - ZIP file(s) uploaded to repo root are **deleted** and **not committed**.
 - All changed files match the Change Summary.
 - Build/tests pass (or explicitly stated if none exist).
 - No secrets or credentials added anywhere (including docs).
+- Documentation updates are present and accurate (or the PR explicitly states **No documentation updates required**).
 
 ### Commit Message
 - [Single commit message, imperative mood.]
