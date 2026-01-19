@@ -55,6 +55,8 @@ export default function PhotosPage() {
 
       {loading && items.length === 0 ? (
         <p style={{ ...styles.p }}>Loading…</p>
+      ) : items.length === 0 ? (
+        <p style={{ ...styles.p }}>No photos yet. Check back soon as we continue to build the archive.</p>
       ) : (
         <>
           <div style={{ ...styles.grid }}>
