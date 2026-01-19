@@ -1,3 +1,8 @@
+## ZIP File Policy (MANDATORY)
+<!-- CRITICAL: ZIP files are transport-only and must NEVER be committed -->
+- [ ] **I have confirmed no ZIP files are committed in this PR**
+- [ ] I understand that ZIP files are for transport only and must be deleted before merge
+
 ## Reference
 <!-- REQUIRED: Link to documentation that defines this change -->
 - [ ] `/docs/website-PR-process.md` — PR structure and process reference
