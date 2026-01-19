@@ -1,28 +1,71 @@
 'use client';
-import styles from './CalendarSection.module.css';
+
+import { useEffect, useMemo, useState } from 'react';
+import { apiGet } from '@/lib/api';
+
+type EventRow = {
+  id: number;
+  title: string;
+  start_date: string;
+  start_time?: string;
+  location?: string;
+  description?: string;
+  external_url?: string;
+};
+
+function yyyymm(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  return `${y}-${m}`;
+}
 
 export default function CalendarSection() {
-  const events = [
-    { id: 1, date: 'Dec 15, 2024', title: 'Annual Lou Gehrig Memorial Event' },
-    { id: 2, date: 'Jan 8, 2025', title: 'Virtual Q&A with Baseball Historians' },
-    { id: 3, date: 'Feb 3, 2025', title: 'Fan Club Meet & Greet' },
-  ];
+  const [items, setItems] = useState<EventRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const month = useMemo(() => yyyymm(new Date()), []);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const data = await apiGet<{ ok: boolean; items: EventRow[] }>(`/api/events/month?month=${encodeURIComponent(month)}`);
+        if (alive) setItems(data.items || []);
+      } catch {
+        if (alive) setItems([]);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, [month]);
 
   return (
-    <>
-      <h2 className="section-title">Calendar</h2>
-      <p className="sub" style={{ textAlign: 'center' }}>Browse events month by month.</p>
-      <div className={styles.events}>
-        {events.map((event) => (
-          <div key={event.id} className={styles.eventCard}>
-            <div className={styles.date}>{event.date}</div>
-            <div className={styles.eventTitle}>{event.title}</div>
-            <a href="#" className={styles.viewMore} onClick={(e) => e.preventDefault()}>
-              View More
-            </a>
-          </div>
-        ))}
-      </div>
-    </>
+    <div>
+      <h2 className="section-title">Events Calendar</h2>
+      <p className="sub">Current month events pulled live from D1 events table.</p>
+
+      {loading ? (
+        <p className="sub">Loading…</p>
+      ) : items.length === 0 ? (
+        <p className="sub">No events yet for {month} (D1 table is empty).</p>
+      ) : (
+        <div className="grid">
+          {items.map((e) => (
+            <div key={e.id} className="card">
+              <strong>{e.start_date}{e.start_time ? ` @ ${e.start_time}` : ''}</strong>
+              <div style={{ marginTop: 6, fontWeight: 700 }}>{e.title}</div>
+              {e.location ? <div className="sub" style={{ marginTop: 6 }}>{e.location}</div> : null}
+              {e.description ? <div className="sub" style={{ marginTop: 10 }}>{e.description}</div> : null}
+              {e.external_url ? (
+                <div style={{ marginTop: 10 }}>
+                  <a className="link" href={e.external_url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">Details</a>
+                </div>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

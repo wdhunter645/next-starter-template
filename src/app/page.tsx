@@ -8,6 +8,7 @@ import MilestonesSection from '@/components/MilestonesSection';
 import FriendsOfFanClub from '@/components/FriendsOfFanClub';
 import CalendarSection from '@/components/CalendarSection';
 import JoinCTA from '@/components/JoinCTA';
+import RecentDiscussionsTeaser from '@/components/RecentDiscussionsTeaser';
 import SocialWall from '@/components/SocialWall';
 
 export default function HomePage() {
@@ -36,12 +37,7 @@ export default function HomePage() {
       {/* Section: Social Wall */}
       <SocialWall />
 
-      {/* Section: Recent Club discussions */}
-      <section id="recent-club-discussions" className="container section-gap">
-        <h2 className="section-title">Recent Club discussions</h2>
-        <p className="sub" style={{ textAlign: 'center' }}>Displays the last 5 posts from the members&apos; discussion area.</p>
-        {/* Grid of cards will be populated from member posts */}
-      </section>
+      <RecentDiscussionsTeaser />
 
       {/* Section: Friends of the Fan Club */}
       <section id="friends-of-the-club" className="container section-gap-moderate">

@@ -11,7 +11,7 @@ import MemberHeader from './MemberHeader';
  */
 export default function SiteHeader() {
   const pathname = usePathname() || '/';
-  const isMember = pathname === '/member' || pathname.startsWith('/member/');
+  const isMember = pathname === '/member' || pathname === '/memberpage' || pathname.startsWith('/member/') || pathname.startsWith('/memberpage/');
   const isAdmin = pathname === '/admin' || pathname.startsWith('/admin/');
 
   if (isMember) return <MemberHeader showLogo={!isAdmin} />;
