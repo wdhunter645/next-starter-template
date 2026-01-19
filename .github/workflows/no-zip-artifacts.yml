@@ -1,0 +1,54 @@
+name: No ZIP Artifacts Guard
+
+# This workflow enforces the ZIP artifact policy documented in /docs/website-PR-governance.md
+# It fails if any ZIP files are tracked in the repository, preventing them from being committed.
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  check-no-zip-artifacts:
+    runs-on: ubuntu-latest
+    name: Verify No ZIP Files Are Tracked
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check for tracked ZIP files
+        id: check_zips
+        run: |
+          echo "Checking for tracked ZIP files in the repository..."
+          
+          # Search for all tracked ZIP files (case-insensitive)
+          ZIP_FILES=$(git ls-files '*.zip' '*.ZIP')
+          
+          if [ -n "$ZIP_FILES" ]; then
+            echo "❌ ERROR: ZIP files detected in repository!"
+            echo ""
+            echo "The following ZIP files are tracked and must be removed:"
+            echo "$ZIP_FILES" | sed 's/^/  - /'
+            echo ""
+            echo "ZIP Artifact Policy Violation:"
+            echo "  - ZIP files are transport-only and must never be committed"
+            echo "  - See /docs/website-PR-governance.md for the full policy"
+            echo ""
+            echo "To fix this:"
+            echo "  1. Remove the ZIP file(s): git rm <filename>.zip"
+            echo "  2. Commit the deletion: git commit -m 'Remove ZIP artifacts'"
+            echo "  3. Push the update to your branch"
+            echo ""
+            exit 1
+          else
+            echo "✅ No ZIP files detected. Repository is clean."
+            exit 0
+          fi

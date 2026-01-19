@@ -14,6 +14,31 @@
 
 ---
 
+## ZIP Artifact Policy
+
+**ZIP files are transport-only and must never be committed to the repository.**
+
+### Rules
+- ZIP files are used for temporary transport of code changes only (e.g., uploaded work packages).
+- ZIP files must be deleted immediately after extraction and before any commits are made.
+- **Any PR containing tracked ZIP files is invalid and must be blocked/rejected.**
+- All ZIPs are blocked via `.gitignore` (`*.zip`, `*.ZIP`).
+- A CI guard workflow automatically fails any PR if ZIP artifacts are detected.
+
+### Enforcement
+- `.gitignore` includes `*.zip` and `*.ZIP` entries.
+- CI workflow `.github/workflows/no-zip-artifacts.yml` runs on all pull requests.
+- The workflow fails with a clear error listing offending ZIP paths if any are found.
+- Manual code review must verify no ZIPs are present in PR file changes.
+
+### Violation Response
+If a PR contains ZIP files:
+1. The PR must be marked as invalid.
+2. The contributor must remove all ZIP files and force-push an updated branch.
+3. CI checks must pass (green) before merge is permitted.
+
+---
+
 ## Rollback Protocol
 - If any PR causes a white-screen or layout regression, stop forward changes immediately.
 - Roll back to last-known-good:
