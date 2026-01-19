@@ -8,7 +8,7 @@ export async function apiPost<T>(path: string, body: Record<string, unknown>): P
   const res = await fetch(path, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body ?? {}),
+    body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`api_error_${res.status}`);
   return res.json();
