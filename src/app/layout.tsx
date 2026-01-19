@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./../styles/variables.css";
-import Header from "../components/Header";
+import SiteHeader from "../components/SiteHeader";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
@@ -17,8 +17,9 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body className="antialiased">
-				{/* Top fixed header */}
-				<Header />
+				{/* Header: visitor vs member */}
+				<SiteHeader />
+				{/* Offset for sticky controls */}
 				<div className="topWhitespace" />
 				{children}
 				<Footer />
