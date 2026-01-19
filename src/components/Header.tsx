@@ -89,6 +89,7 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
             href="https://www.bonfire.com/store/lou-gehrig-fan-club/" 
             target="_blank" 
             rel="noopener noreferrer"
+            referrerPolicy="no-referrer"
             className="header-btn desktop-tablet-only"
           >
             Store
