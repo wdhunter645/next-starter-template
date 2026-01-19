@@ -78,6 +78,22 @@ For any PR affecting the homepage or Social Wall:
 
 ---
 
+### ZIP File Policy (CRITICAL)
+**ZIP files are strictly prohibited from being committed to this repository.**
+
+- **Transport only**: ZIP files may be used for local transport of changes (e.g., uploaded to agent context), but must **never** be committed.
+- **Enforcement**: Any PR containing a tracked ZIP file (`.zip` or `.ZIP`) is **invalid** and **must be rejected**.
+- **Cleanup required**: If a ZIP file is uploaded for work purposes, it must be deleted before creating commits.
+- **CI enforcement**: Automated workflows will fail any PR that contains tracked ZIP files.
+
+**Process:**
+1. If using a ZIP for transport: Extract contents to appropriate paths
+2. Delete the ZIP file immediately
+3. Commit only the extracted/modified files
+4. Verify with `git ls-files '*.zip'` before pushing
+
+---
+
 ### Notes and Prohibitions
 - Do not add new dependencies or frameworks for layout/spacing fixes (no Tailwind, no UI kits, no CSS-in-JS).
 - Maintain global CSS styling approach.
