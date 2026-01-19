@@ -1,38 +1,76 @@
-import React from "react";
+'use client';
 
-export default function Page() {
+import React, { useEffect, useState } from 'react';
+
+export default function MemberHomePage() {
+  const [email, setEmail] = useState<string>('');
+
+  useEffect(() => {
+    try {
+      setEmail(window.localStorage.getItem('lgfc_member_email') || '');
+    } catch {
+      setEmail('');
+    }
+  }, []);
+
   return (
-    <main style={{ ...styles.main }}>
-      <h1 style={{ ...styles.h1 }}>Member Area</h1>
+    <main style={{ padding: '40px 16px', maxWidth: 1100, margin: '0 auto' }}>
+      <h1 style={{ fontSize: 34, margin: '0 0 12px 0' }}>Member Home</h1>
+      {!email ? (
+        <div style={{ padding: 16, borderRadius: 14, border: '1px solid rgba(0,0,0,0.12)' }}>
+          <p style={{ marginTop: 0, opacity: 0.85 }}>
+            You’re not signed in yet. Use Login to continue.
+          </p>
+          <a href="/login" style={{ color: 'var(--lgfc-blue)', fontWeight: 700, textDecoration: 'none' }}>
+            Go to Login
+          </a>
+        </div>
+      ) : (
+        <p style={{ marginTop: 0, opacity: 0.85 }}>Signed in as: <strong>{email}</strong></p>
+      )}
 
-      <p style={{ ...styles.lead }}>
-        Member features are under active development. For now, the public site content and the Join mailing list are the
-        priority so we can publish reliably before adding more moving parts.
-      </p>
+      <section style={{ marginTop: 22 }}>
+        <h2 style={{ textAlign: 'center', color: 'var(--lgfc-blue)', margin: '0 0 10px 0' }}>What’s New</h2>
+        <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
+          <div style={{ padding: 16, borderRadius: 14, border: '1px solid rgba(0,0,0,0.12)' }}>
+            <strong>Member Posts</strong>
+            <p style={{ margin: '8px 0 0 0', opacity: 0.85 }}>Coming next: last 5 member discussions, with moderation flags.</p>
+          </div>
+          <div style={{ padding: 16, borderRadius: 14, border: '1px solid rgba(0,0,0,0.12)' }}>
+            <strong>Library Submissions</strong>
+            <p style={{ margin: '8px 0 0 0', opacity: 0.85 }}>Members can submit Gehrig stories and research notes.</p>
+          </div>
+          <div style={{ padding: 16, borderRadius: 14, border: '1px solid rgba(0,0,0,0.12)' }}>
+            <strong>Media & Memorabilia</strong>
+            <p style={{ margin: '8px 0 0 0', opacity: 0.85 }}>In progress: photos and memorabilia archive browsing + submission.</p>
+          </div>
+          <div style={{ padding: 16, borderRadius: 14, border: '1px solid rgba(0,0,0,0.12)' }}>
+            <strong>Events</strong>
+            <p style={{ margin: '8px 0 0 0', opacity: 0.85 }}>Upcoming fan club events will appear here once entered via CMS.</p>
+          </div>
+        </div>
+      </section>
 
-      <p style={{ ...styles.p }}>Planned member experience:</p>
-      <ul style={{ ...styles.ul }}>
-        <li style={{ ...styles.li }}>A welcome landing page after login with recent activity and upcoming events.</li>
-        <li style={{ ...styles.li }}>Member posts and discussions (with simple moderation and reporting).</li>
-        <li style={{ ...styles.li }}>A personal profile page (screen name, email management, contribution history).</li>
-        <li style={{ ...styles.li }}>Media submissions with tagging to improve search over time.</li>
-      </ul>
+      <section style={{ marginTop: 28, padding: 16, borderRadius: 14, background: 'var(--lgfc-blue)', color: '#fff' }}>
+        <h2 style={{ margin: '0 0 6px 0' }}>Member Quick Links</h2>
+        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+          <a href="/member/profile" style={{ color: '#fff', fontWeight: 700, textDecoration: 'underline' }}>My Profile</a>
+          <a href="/member/card" style={{ color: '#fff', fontWeight: 700, textDecoration: 'underline' }}>Membership Card</a>
+          <a href="/library" style={{ color: '#fff', fontWeight: 700, textDecoration: 'underline' }}>Gehrig Library</a>
+          <a href="/photos" style={{ color: '#fff', fontWeight: 700, textDecoration: 'underline' }}>Photo Gallery</a>
+          <a href="/memorabilia" style={{ color: '#fff', fontWeight: 700, textDecoration: 'underline' }}>Memorabilia Archive</a>
+        </div>
+      </section>
 
-      <hr style={{ ...styles.hr }} />
-
-      <p style={{ ...styles.p }}>
-        If you’re here early: thank you. Join the mailing list so you’ll get a note when member access opens.
-      </p>
+      <section style={{ marginTop: 28, textAlign: 'center' }}>
+        <h2 style={{ margin: '0 0 10px 0' }}>Need help?</h2>
+        <a
+          href="mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed%20MEMBER"
+          style={{ color: 'var(--lgfc-blue)', fontWeight: 700, textDecoration: 'none' }}
+        >
+          Support
+        </a>
+      </section>
     </main>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  main: { padding: "40px 16px", maxWidth: 900, margin: "0 auto" },
-  h1: { fontSize: 34, lineHeight: 1.15, margin: "0 0 12px 0" },
-  lead: { fontSize: 18, lineHeight: 1.6, margin: "0 0 18px 0" },
-  p: { fontSize: 16, lineHeight: 1.7, margin: "0 0 14px 0" },
-  ul: { paddingLeft: 18, margin: "0 0 14px 0" },
-  li: { margin: "0 0 8px 0", lineHeight: 1.6 },
-  hr: { margin: "26px 0", opacity: 0.25 },
-};
