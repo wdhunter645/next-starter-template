@@ -42,7 +42,7 @@ export default function CalendarSection() {
 
   return (
     <div>
-      <h2 className="section-title">Events Calendar</h2>
+      <h2 className="section-title">Calendar</h2>
       <p className="sub">Current month events pulled live from D1 events table.</p>
 
       {loading ? (

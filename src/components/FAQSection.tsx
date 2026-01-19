@@ -59,7 +59,7 @@ export default function FAQSection() {
 
   return (
     <div>
-      <h2 className="section-title">FAQ and Ask a Question</h2>
+      <h2 className="section-title">FAQ – Frequently Asked Questions</h2>
       <p className="sub">
         FAQ is pulled live from D1. Search shows up to 10 approved answers.
         If you don&apos;t find what you need, submit a new question for admin review.
@@ -100,7 +100,8 @@ export default function FAQSection() {
         </div>
 
         <div style={{ marginTop: 18 }}>
-          <label htmlFor="qtext"><strong>Ask a question</strong></label>
+          <h3 style={{marginTop: 20}}>Ask a Question</h3>
+          <label htmlFor="qtext" className="visually-hidden">Ask a question</label>
           <textarea
             id="qtext"
             placeholder="Type your question..."
