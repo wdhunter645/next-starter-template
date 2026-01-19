@@ -39,7 +39,7 @@ export default function LoginPage() {
       });
 
       const text = await res.text();
-      let data: any = {};
+      let data: { ok?: boolean; error?: string } = {};
       try {
         data = text ? JSON.parse(text) : {};
       } catch {
@@ -56,8 +56,9 @@ export default function LoginPage() {
 
       const msg = data?.error || 'Login failed.';
       setResult({ ok: false, message: msg });
-    } catch (err: any) {
-      setResult({ ok: false, message: String(err?.message || err) });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setResult({ ok: false, message });
     } finally {
       setBusy(false);
     }

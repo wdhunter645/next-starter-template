@@ -44,7 +44,7 @@ export default function JoinPage() {
       });
 
       const text = await res.text();
-      let data: any = {};
+      let data: { ok?: boolean; error?: string; email?: { error?: string } } = {};
       try {
         data = text ? JSON.parse(text) : {};
       } catch {
