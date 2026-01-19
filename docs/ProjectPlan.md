@@ -27,7 +27,15 @@ Purpose: the canonical “what’s next” plan. This is **not** a history log (
 - [ ] Confirm footer routes exist and render correctly
 - [ ] Confirm `/admin` route behavior matches governance docs
 
-### 4) Day 2 / Day 3 future enhancements (DEFERRED until stability)
+### 4) Security hardening (REQUIRED post-merge)
+- [ ] Run `npm audit` locally and in CI; record full output
+- [ ] Remediate the reported 3 low severity vulnerabilities:
+  - Prefer `npm audit fix`
+  - Only use `npm audit fix --force` if reviewed and accepted (breaking changes risk)
+- [ ] Add a CI step that fails if vulnerabilities are detected (or explicitly allows low only with justification)
+- [ ] Verify: `npm audit` returns 0 vulnerabilities
+
+### 5) Day 2 / Day 3 future enhancements (DEFERRED until stability)
 - [ ] Cloudflare Future Enhancements list (redirect rules, cache rules, headers, WAF/bots, analytics)
 - [ ] Health status / monitoring summary view
 - [ ] Ops automation (audits, drift detection, PR guardrails)

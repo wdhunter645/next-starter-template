@@ -1,4 +1,5 @@
 import React from "react";
+import CharitiesTiles from "@/components/CharitiesTiles";
 import { fetchPageContent } from "@/lib/pageContent";
 
 export default async function Page() {
@@ -67,6 +68,8 @@ export default async function Page() {
           </ul>
         </>
       )}
+    
+      <section style={{ marginTop: 40 }}><CharitiesTiles /></section>
     </main>
   );
 }
