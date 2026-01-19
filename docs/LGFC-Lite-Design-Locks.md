@@ -1,3 +1,9 @@
+# LGFC Lite Design Locks (Historical)
+
+> **Status:** Historical reference only.
+> **Authority:** Non-authoritative. All binding design and standards are consolidated into
+> `LGFC-Production-Design-and-Standards.md`.
+
 # LGFC-Lite Design Locks — January 16, 2026 (AUTHORITATIVE)
 
 This document captures **all** design decisions explicitly locked in the design review threads up to January 15, 2026.
