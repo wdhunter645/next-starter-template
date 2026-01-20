@@ -24,10 +24,13 @@ export default function MemberHeader({ homeRoute = '/', showLogo = true }: Membe
           top: 8px;
           left: 16px;
           display: block;
+          z-index: 999;
+          pointer-events: auto;
         }
         .logo-img {
-          height: 80px;
+          height: 240px;
           width: auto;
+          pointer-events: auto;
         }
         .header-right {
           position: fixed;
