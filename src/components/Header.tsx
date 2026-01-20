@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import HamburgerMenu from './HamburgerMenu';
 
 type HeaderProps = {
@@ -11,6 +11,7 @@ type HeaderProps = {
 
 export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps = {}) {
   const [open, setOpen] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
@@ -129,6 +130,7 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
         <div className="header-right">
           <div className="burger-wrapper">
             <button 
+              ref={toggleRef}
               className="burger-btn"
               onClick={() => setOpen(!open)}
               aria-label="Open menu"
@@ -142,7 +144,7 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
             </button>
           </div>
         </div>
-        {open && <HamburgerMenu onClose={() => setOpen(false)} />}
+        {open && <HamburgerMenu onClose={() => setOpen(false)} toggleRef={toggleRef} />}
       </header>
     </>
   );
