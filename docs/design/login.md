@@ -12,6 +12,15 @@ The login page serves to:
 3. Redirect authenticated members to the member area
 4. Direct new visitors to the Join flow
 
+## Cross-Reference to Authoritative Documentation
+
+**This specification aligns with:**
+- `/docs/LGFC-Production-Design-and-Standards.md` — See "LOGIN / LOGOUT — Final Lock" section for the authoritative phase definition and deferred behavior specification.
+
+The authoritative doc clearly separates:
+- **LGFC-Lite (Current)**: Login is an informational stub; authentication is intentionally disabled.
+- **Future: Auth Phase Lock (Deferred)**: Full authentication behavior (successful login → Member Home, email validation, rate limiting, etc.) will be implemented in a future phase with Vercel/Supabase or equivalent backend.
+
 ## Implementation Status
 
 ### Current Phase: LGFC-Lite (Cloudflare Pages + Local Sessions)
@@ -120,13 +129,14 @@ if (!memberEmail) {
 
 Enhanced authentication may be introduced in a **future phase** (outside LGFC-Lite scope).
 
-Potential enhancements:
-- Password-based authentication
-- Magic link (passwordless) authentication
-- OAuth providers (Google, etc.)
-- Server-side session management
-- Multi-factor authentication
-- Cross-device session sync
+**Deferred Auth Phase Details:**
+- Full specification of authentication behavior (successful login → Member Home, email validation, rate limiting, logout behavior) is documented in `/docs/LGFC-Production-Design-and-Standards.md` under "Future: Auth Phase Lock (Deferred Behavior)".
+
+When that phase begins:
+- Technology stack will be determined (Supabase, Auth0, custom, etc.)
+- Full authentication specification will be written
+- Login page will be re-implemented with real functionality
+- This document will be updated to reflect the new implementation
 
 ### Phase Boundary
 When transitioning to enhanced authentication:

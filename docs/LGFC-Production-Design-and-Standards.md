@@ -132,17 +132,32 @@ Mobile visitor hamburger order:
 
 ## LOGIN / LOGOUT — Final Lock (Updated 2026-01-16)
 
-### Login
+### Phase Reality: LGFC-Lite vs Future Auth Phase
+
+**LGFC-Lite (Current — Cloudflare Pages Static Export):**
+- `/login` is an **informational stub page only**.
+- Authentication is **intentionally disabled** in LGFC-Lite.
+- The login page informs visitors that member login functionality is not yet live and directs them to the Join flow.
+- **No email/password fields, no authentication logic, no backend dependencies.**
+
+**Authoritative Spec Reference:**
+- See `/docs/design/login.md` for the current LGFC-Lite login page specification.
+
+### Future: Auth Phase Lock (Deferred Behavior)
+
+The detailed login/logout behavior below is **deferred to the future Auth phase** (Vercel/Supabase or equivalent backend). This content documents the intended behavior when authentication is implemented but does **not** apply to LGFC-Lite.
+
+#### Login (Future Auth Phase)
 - Login routes to the Login page.
 - Successful login lands on **Member Home**.
 - Failed login remains on the Login page and shows an on-page message for **email unknown**.
 
-### Security guardrails (re-affirmed)
+#### Security guardrails (Future Auth Phase)
 - If email entered on Login does not exist: do **not** send any email.
-- Show: “Email not found.” and provide a Join link.
+- Show: "Email not found." and provide a Join link.
 - Allow max **3** failed Login attempts per hour per source; lock out for 1 hour after 3 failures.
 
-### Logout
+#### Logout (Future Auth Phase)
 - Logout signs the member out and lands on **Visitor Home**.
 
 ## 6) JOIN — Behavior Lock
