@@ -25,12 +25,10 @@ export default function MemberHeader({ homeRoute = '/', showLogo = true }: Membe
           left: 16px;
           display: block;
           z-index: 999;
-          pointer-events: auto;
         }
         .logo-img {
           height: 240px;
           width: auto;
-          pointer-events: auto;
         }
         .header-right {
           position: fixed;

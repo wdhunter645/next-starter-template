@@ -25,12 +25,10 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           left: 16px;
           display: block;
           z-index: 999;
-          pointer-events: auto;
         }
         .logo-img {
           height: 240px;
           width: auto;
-          pointer-events: auto;
         }
         .header-right {
           /* Sticky controls: buttons + hamburger are sticky; logo is not. */
