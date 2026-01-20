@@ -32,7 +32,8 @@ export default function MemberHeader({ homeRoute = '/', showLogo = true }: Membe
         .header-right {
           position: fixed;
           top: 8px;
-          right: 16px;
+          left: 50%;
+          transform: translateX(-50%);
           display: flex;
           align-items: center;
           gap: 12px;

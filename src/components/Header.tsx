@@ -33,7 +33,8 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           /* Sticky controls: buttons + hamburger are sticky; logo is not. */
           position: fixed;
           top: 8px;
-          right: 16px;
+          left: 50%;
+          transform: translateX(-50%);
           display: flex;
           align-items: center;
           gap: 12px;

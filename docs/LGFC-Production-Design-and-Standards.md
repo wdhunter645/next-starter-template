@@ -448,3 +448,103 @@ This addendum captures every design/standards decision finalized in-session afte
 ## Accessibility — FINAL
 - Support browser/OS accessibility scaling (browser zoom, iPad pinch-to-zoom, OS font scaling).
 - No in-app font size controls are required.
+
+---
+
+## ADDENDUM — January 20, 2026: Header Layout & Hamburger Menu Clarifications (PR #392)
+
+### Header Layout Lock (Visitor + Member Headers)
+
+**Desktop/Tablet Header Button Positioning:**
+- Header button groups MUST be **centered horizontally** on both visitor and member headers.
+- Implementation:
+  - Use `left: 50%` positioning
+  - Use `transform: translateX(-50%)` for centering
+  - Logo remains on the left (not centered)
+  - Button container is sticky; logo is not sticky
+
+**Visitor Header Buttons (Desktop/Tablet):**
+1. Join
+2. Search
+3. Store (external link)
+4. Login
+5. Hamburger
+
+**Member Header Buttons (Desktop/Tablet):**
+1. Member Home
+2. Search
+3. Store (external link)
+4. Logout
+5. Hamburger
+
+### Hamburger Menu — Store Placement Rules (CRITICAL)
+
+**Desktop/Tablet Hamburger Menus:**
+- Store MUST NOT appear in hamburger menus on desktop/tablet
+- Reason: Store is a header button on desktop/tablet
+
+**Visitor hamburger (desktop/tablet):**
+- About
+- Contact
+- Support (mailto: Support@LouGehrigFanClub.com)
+
+**Member hamburger (desktop/tablet):**
+- My Profile
+- Obtain Membership Card
+- About
+- Contact
+- Support (mailto: Support@LouGehrigFanClub.com)
+
+**Mobile Hamburger Menus:**
+- Store MUST appear in hamburger menus on mobile
+- Reason: No header button row on mobile; hamburger is the only navigation
+
+**Visitor hamburger (mobile):**
+1. Home
+2. About
+3. Contact
+4. Support
+5. Store
+
+**Member hamburger (mobile):**
+1. Search
+2. Home
+3. Member Home
+4. My Profile
+5. Obtain Membership Card
+6. About
+7. Contact
+8. Store
+9. Support
+10. Login
+11. Logout
+
+### Footer Lock
+
+**Footer Structure:**
+- Line 1: Rotating quote (from or about Lou Gehrig)
+- Line 2: Copyright line with auto-updating year (NO email address visible)
+- Line 3: Links row
+
+**Footer Links:**
+- Privacy → `/privacy`
+- Terms → `/terms`
+- Contact → `/contact`
+- Support → mailto:Support@LouGehrigFanClub.com?subject=Support%20Request
+- Admin → `/admin` (only visible to admin users)
+
+**Email Display Policy:**
+- Footer displays NO email address
+- Contact page (`/contact`) displays: `admin@lougehrigfanclub.com`
+- Support emails go to: `Support@LouGehrigFanClub.com`
+
+### Member Home Quick Links
+
+**Required links on Member Home (`/member/page.tsx`):**
+- My Profile → `/member/profile`
+- Membership Card → `/member/card`
+- Gehrig Library → `/library`
+- Photo → `/photo`
+- Photo Gallery → `/photos`
+- Memorabilia Archive → `/memorabilia`
+
