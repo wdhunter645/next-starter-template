@@ -80,9 +80,9 @@ export default function Footer() {
 						<Link href="/contact" className={styles.link}>
 							Contact
 						</Link>
-						<Link href="/support" className={styles.link}>
+						<a href="mailto:admin@lougehrigfanclub.com?subject=Support%20Needed" className={styles.link}>
 							Support
-						</Link>
+						</a>
 						{isAdmin && (
 							<Link href="/admin" className={styles.link}>
 								Admin
