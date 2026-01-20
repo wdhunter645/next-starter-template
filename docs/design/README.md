@@ -12,6 +12,29 @@ Design documentation serves as the single source of truth for:
 
 ## Documents
 
+### [login.md](./login.md)
+**Login Page Specification (LGFC-Lite)**
+
+Defines the login page behavior for LGFC-Lite phase, including:
+- Login page is a stub/informational page only
+- Authentication is explicitly disabled in LGFC-Lite
+- What the login page shows and what it must never do
+- Hard rules preventing premature authentication implementation
+- Phase boundary enforcement
+
+**When to consult**: Before making any changes to the login page, adding authentication features, or when questions arise about login/auth functionality.
+
+### [phases.md](./phases.md)
+**LGFC Development Phases**
+
+Defines phase boundaries and technology constraints for the LGFC website, including:
+- Current phase: LGFC-Lite (static export, no authentication)
+- Future phase: Authentication & Member Features (planned)
+- Phase transition rules and approval requirements
+- What is and is not supported in each phase
+
+**When to consult**: Before adding new features, especially authentication-related features, or when determining if a feature is in scope for current phase.
+
 ### [visitor-header.md](./visitor-header.md)
 **Visitor Header Layout Specification**
 
@@ -20,6 +43,7 @@ Defines the locked layout behavior for the public site header, including:
 - Button group centering requirements
 - Hamburger right-alignment rules
 - Dropdown positioning and anchoring
+- Login button behavior in LGFC-Lite
 - Regression prevention guidelines
 
 **When to consult**: Before making any changes to header layout, navigation, or hamburger menu positioning.
