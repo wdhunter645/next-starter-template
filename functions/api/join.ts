@@ -142,21 +142,21 @@ export async function onRequestPost(context: any): Promise<Response> {
       // SUCCESS: first-time join (insert occurred)
       const db = env.DB as any;
 
-	      // Optional: admin-managed welcome email copy.
-	      let welcomeIntroMd: string | undefined = undefined;
-	      try {
-	        const row = await db
-	          .prepare(
-	            `SELECT body_md FROM welcome_email_content WHERE status='posted' ORDER BY updated_at DESC, id DESC LIMIT 1`
-	          )
-	          .first();
-	        if ((row as any)?.body_md) welcomeIntroMd = String((row as any).body_md);
-	      } catch {
-	        // ignore; fallback to default welcome copy
-	      }
+      // Optional: admin-managed welcome email copy.
+      let welcomeIntroMd: string | undefined = undefined;
+      try {
+        const row = await db
+          .prepare(
+            `SELECT body_md FROM welcome_email_content WHERE status='posted' ORDER BY updated_at DESC, id DESC LIMIT 1`
+          )
+          .first();
+        if ((row as any)?.body_md) welcomeIntroMd = String((row as any).body_md);
+      } catch {
+        // ignore; fallback to default welcome copy
+      }
 
       // Email (optional). Join succeeds even if email fails; results are returned and logged.
-	      const welcomeResult = await sendWelcomeEmail({ env, toEmail: email, toName: name, introMd: welcomeIntroMd });
+      const welcomeResult = await sendWelcomeEmail({ env, toEmail: email, toName: name, introMd: welcomeIntroMd });
       await logEmailAttempt({
         db,
         requestId,

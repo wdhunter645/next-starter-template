@@ -27,7 +27,7 @@ export default function JoinPage() {
   const canSubmit = useMemo(() => {
     const e = email.trim();
     return first.trim().length > 0 && last.trim().length > 0 && e.includes('@') && e.length > 3;
-  }, [first, last, screen, email]);
+  }, [first, last, email]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
