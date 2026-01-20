@@ -81,32 +81,64 @@ export function assertEmailEnvOrThrow(env: any): void {
 	// Optional: MAIL_REPLY_TO, NEXT_PUBLIC_SITE_URL, MAIL_ADMIN_TO
 }
 
+function mdToPlain(md: string): string {
+	return String(md || '')
+		.replace(/^#+\s+/gm, '')
+		.replace(/\*\*(.*?)\*\*/g, '$1')
+		.replace(/\*(.*?)\*/g, '$1')
+		.replace(/`([^`]*)`/g, '$1')
+		.trim();
+}
+
+function mdToBasicHtml(md: string): string {
+	const plain = mdToPlain(md);
+	const parts = plain.split(/\n\s*\n/g).map((s) => s.trim()).filter(Boolean);
+	return parts.map((p) => `<p>${escapeHtml(p).replace(/\n/g, '<br/>')}</p>`).join('\n');
+}
+
+function escapeHtml(s: string): string {
+	return s
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#039;');
+}
+
 export async function sendWelcomeEmail(opts: {
 	env: any;
 	toEmail: string;
 	toName?: string;
 	siteUrl?: string;
+	introMd?: string; // optional: admin-managed welcome email top-half copy
 }): Promise<MailSendResult> {
 	const siteUrl = (opts.siteUrl || String(opts.env?.NEXT_PUBLIC_SITE_URL || '')).trim();
 	const to: MailChannelsAddress = { email: opts.toEmail, name: opts.toName || undefined };
 
 	const subject = 'Welcome to the Lou Gehrig Fan Club';
 
-	const text = `Hi${opts.toName ? ` ${opts.toName}` : ''},
-
-Thanks for joining the Lou Gehrig Fan Club mailing list.
+	const introMd = String(opts.introMd || '').trim();
+	const defaultIntroText = `Thanks for joining the Lou Gehrig Fan Club mailing list.
 
 You’ll get periodic updates about new content, milestones, events, and ways to support ALS charities.
 
-If you ever want to stop receiving messages, reply to this email and we’ll remove you.
+If you ever want to stop receiving messages, reply to this email and we’ll remove you.`;
+	const introText = introMd ? mdToPlain(introMd) : defaultIntroText;
+
+	const text = `Hi${opts.toName ? ` ${opts.toName}` : ''},
+
+${introText}
 
 ${siteUrl ? `Visit: ${siteUrl}
 ` : ''}— Lou Gehrig Fan Club`;
 
-	const html = `<p>Hi${opts.toName ? ` ${opts.toName}` : ''},</p>
-<p>Thanks for joining the <strong>Lou Gehrig Fan Club</strong> mailing list.</p>
+	const defaultIntroHtml = `<p>Thanks for joining the <strong>Lou Gehrig Fan Club</strong> mailing list.</p>
 <p>You’ll get periodic updates about new content, milestones, events, and ways to support ALS charities.</p>
-<p>If you ever want to stop receiving messages, reply to this email and we’ll remove you.</p>
+<p>If you ever want to stop receiving messages, reply to this email and we’ll remove you.</p>`;
+	const introHtml = introMd ? mdToBasicHtml(introMd) : defaultIntroHtml;
+
+	const html = `<p>Hi${opts.toName ? ` ${opts.toName}` : ''},</p>
+${introHtml}
 ${siteUrl ? `<p>Visit: <a href="${siteUrl}">${siteUrl}</a></p>` : ''}
 <p>— Lou Gehrig Fan Club</p>`;
 

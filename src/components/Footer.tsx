@@ -9,6 +9,7 @@ const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Lou Gehrig Fan Club";
 
 export default function Footer() {
 	const [isAdmin, setIsAdmin] = useState(false);
+	const [footerQuote, setFooterQuote] = useState<{ quote: string; attribution?: string | null } | null>(null);
 
 	useEffect(() => {
 		// Check if user is admin
@@ -37,9 +38,32 @@ export default function Footer() {
 		checkAdmin();
 	}, []);
 
+	useEffect(() => {
+		async function loadQuote() {
+			try {
+				const res = await fetch('/api/footer-quote');
+				const data = await res.json();
+				if (data?.ok && data?.quote?.quote) {
+					setFooterQuote({ quote: String(data.quote.quote), attribution: data.quote.attribution ?? null });
+				}
+			} catch {
+				// silent
+			}
+		}
+		loadQuote();
+	}, []);
+
 	return (
 		<footer className={styles.footer}>
 			<div className={styles.container}>
+				{footerQuote && (
+					<div style={{ marginBottom: 10, padding: '10px 12px', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 12 }}>
+						<span style={{ opacity: 0.95 }}>&ldquo;{footerQuote.quote}&rdquo;</span>
+						{footerQuote.attribution && (
+							<span style={{ marginLeft: 8, opacity: 0.85 }}>— {footerQuote.attribution}</span>
+						)}
+					</div>
+				)}
 				<div className={styles.content}>
 					<div className={styles.copyright}>
 						<p>

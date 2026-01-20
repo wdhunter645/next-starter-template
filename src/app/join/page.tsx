@@ -26,8 +26,8 @@ export default function JoinPage() {
 
   const canSubmit = useMemo(() => {
     const e = email.trim();
-    return first.trim().length > 0 && last.trim().length > 0 && screen.trim().length > 0 && e.includes('@') && e.length > 3;
-  }, [first, last, screen, email]);
+    return first.trim().length > 0 && last.trim().length > 0 && e.includes('@') && e.length > 3;
+  }, [first, last, email]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -36,11 +36,15 @@ export default function JoinPage() {
     setBusy(true);
     setResult(null);
     try {
-      const fullName = `${first.trim()} ${last.trim()}`.trim();
       const res = await fetch('/api/join', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: `${fullName} (${screen.trim()})`, email: email.trim().toLowerCase() }),
+        body: JSON.stringify({
+          first_name: first.trim(),
+          last_name: last.trim(),
+          screen_name: screen.trim() || null,
+          email: email.trim().toLowerCase(),
+        }),
       });
 
       const text = await res.text();
