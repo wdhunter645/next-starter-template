@@ -432,6 +432,16 @@ a:hover {
 	padding: 20px;
 }
 
+/* Force all text in joinBanner to white for proper contrast */
+.joinBanner h2,
+.joinBanner h3,
+.joinBanner h4,
+.joinBanner p,
+.joinBanner a,
+.joinBanner .section-title {
+	color: #fff !important;
+}
+
 .topWhitespace {
 	height: 8px;
 }

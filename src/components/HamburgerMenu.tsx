@@ -25,12 +25,49 @@ export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
             display: block;
           }
         }
+        .hamburger-dropdown {
+          position: absolute;
+          top: 60px;
+          right: 0;
+          background: #fff;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          padding: 12px;
+          z-index: 1002;
+          min-width: 200px;
+        }
+        .hamburger-close {
+          position: absolute;
+          top: 4px;
+          right: 8px;
+          font-size: 24px;
+          border: none;
+          background: transparent;
+          cursor: pointer;
+        }
+        .hamburger-menu {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+        }
+        .hamburger-menu li {
+          padding: 8px 0;
+          text-align: right;
+        }
+        .hamburger-menu a {
+          color: #000;
+          text-decoration: none;
+        }
+        .hamburger-menu a:hover {
+          color: var(--lgfc-blue);
+        }
       `}</style>
-      <div className="mast-drawer" id="hamburger-menu">
-        <button className="mast-drawer-close" onClick={onClose} aria-label="Close menu">
+      <div className="hamburger-dropdown" id="hamburger-menu">
+        <button className="hamburger-close" onClick={onClose} aria-label="Close menu">
           ×
         </button>
-        <ul className="mast-drawer-menu">
+        <ul className="hamburger-menu">
           <li className="only-mobile">
             <Link href="/" onClick={onClose}>
               Home
