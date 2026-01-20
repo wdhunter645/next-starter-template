@@ -95,6 +95,64 @@ All Social Wall changes must:
 - **If PR touches Cloudflare page layout**: `/docs/as-built/cloudflare-frontend.md` is updated in the same PR
 ---
 
+## Documentation ↔ Implementation Sync Gate (MANDATORY)
+
+**All PRs that change UI behavior, navigation, header/footer, or login flow MUST update documentation.**
+
+### Required Documentation Updates
+
+Any PR that modifies the following areas **MUST** update the corresponding documentation files in the same PR:
+
+#### UI Behavior Changes
+- Header (visitor or member) → Update `/docs/LGFC-Production-Design-and-Standards.md` (Section 2 or 11) AND `/docs/NAVIGATION-INVARIANTS.md`
+- Footer → Update `/docs/LGFC-Production-Design-and-Standards.md` (Footer Lock section)
+- Navigation/menus/hamburger → Update `/docs/LGFC-Production-Design-and-Standards.md` AND `/docs/NAVIGATION-INVARIANTS.md`
+- Login/authentication flow → Update `/docs/LGFC-Production-Design-and-Standards.md` (LOGIN/LOGOUT section) AND `/docs/design/login.md`
+- Page layout/sections → Update `/docs/LGFC-Production-Design-and-Standards.md` AND relevant `/docs/design/*.md` files
+
+#### Specification File Changes
+- Any change to `/docs/design/*.md` files → Update `/docs/LGFC-Production-Design-and-Standards.md` to maintain cross-reference consistency
+
+### Placeholder Prohibition
+
+**No "..." placeholders are allowed in authoritative documentation.**
+
+- If a PR touches any section in `/docs/LGFC-Production-Design-and-Standards.md`, all "..." ellipses in that section MUST be removed and replaced with complete specification text.
+- Incomplete sections with ellipses indicate missing or deferred decisions and must be resolved before merging.
+
+### PR Acceptance Criteria Requirements
+
+Every PR description MUST include:
+
+**Option A — Documentation updates present:**
+- List specific documentation files updated (with exact paths)
+- Confirm: "Docs updated and consistent with implementation"
+
+**Option B — No documentation updates required:**
+- Explicitly state: "No documentation updates required"
+- This is ONLY allowed when the PR genuinely does not affect any documented behavior (e.g., internal refactors with no observable changes, test-only changes, build config)
+
+### Enforcement
+
+**PRs will be rejected if:**
+- UI/navigation/login behavior changes are made WITHOUT corresponding documentation updates
+- Documentation paths are not explicitly listed in PR description
+- Ellipses ("...") remain in touched documentation sections
+- PR claims "No documentation updates required" when behavior changes are present
+
+### Cross-Reference Chain of Truth
+
+The repository maintains a **single chain of truth**:
+
+1. `/docs/LGFC-Production-Design-and-Standards.md` — **Authoritative source** for all design decisions
+2. `/docs/design/*.md` — Detailed specs that MUST cross-reference back to the authoritative doc
+3. `/docs/NAVIGATION-INVARIANTS.md` — Navigation rules that MUST align with the authoritative doc
+4. Implementation code — MUST match the authoritative doc and spec files
+
+Any conflict MUST be resolved in favor of `/docs/LGFC-Production-Design-and-Standards.md`.
+
+---
+
 ## Snapshot Review Cadence
 - Automated repository snapshots are generated daily at 07:00 UTC via GitHub Actions.
 - **Weekly Review**: Compare latest snapshot with previous week to detect drift.
