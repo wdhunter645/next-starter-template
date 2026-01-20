@@ -1,0 +1,118 @@
+name: Site Assessment (Nightly Drift Detection)
+
+on:
+  schedule:
+    # Run nightly at 2:00 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  assess-nightly:
+    name: Nightly Assessment
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run assessment
+        id: assess
+        run: npm run assess:ci
+        continue-on-error: true
+      
+      - name: Upload assessment report (JSON)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nightly-assess-report-json
+          path: reports/assess/assess-report.json
+          retention-days: 90
+      
+      - name: Upload assessment summary (Markdown)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nightly-assess-summary-md
+          path: reports/assess/assess-summary.md
+          retention-days: 90
+      
+      - name: Upload routes found
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nightly-routes-found
+          path: reports/assess/routes-found.json
+          retention-days: 90
+      
+      - name: Create issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // Read the summary if it exists
+            let summaryContent = 'Assessment failed. Check workflow logs for details.';
+            try {
+              summaryContent = fs.readFileSync('reports/assess/assess-summary.md', 'utf8');
+            } catch (error) {
+              console.log('Could not read summary file:', error.message);
+            }
+            
+            const issueTitle = `🚨 Nightly Assessment Failed - ${new Date().toISOString().split('T')[0]}`;
+            const issueBody = `## Nightly Site Assessment Failed
+            
+            The nightly site assessment detected issues.
+            
+            **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            
+            **Date:** ${new Date().toISOString()}
+            
+            ---
+            
+            ${summaryContent}
+            
+            ---
+            
+            Please review the attached artifacts and workflow logs for details.`;
+            
+            // Check if there's already an open issue for today
+            const today = new Date().toISOString().split('T')[0];
+            const { data: existingIssues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'assessment-failure,automated',
+              per_page: 10
+            });
+            
+            const todayIssue = existingIssues.find(issue => 
+              issue.title.includes(today)
+            );
+            
+            if (!todayIssue) {
+              // Create new issue
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: issueTitle,
+                body: issueBody,
+                labels: ['assessment-failure', 'automated', 'needs-triage']
+              });
+              console.log('Created new issue for assessment failure');
+            } else {
+              console.log('Issue already exists for today, skipping creation');
+            }
+      
+      - name: Fail job if assessment failed
+        if: steps.assess.outcome == 'failure'
+        run: exit 1
