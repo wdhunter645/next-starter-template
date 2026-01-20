@@ -4,13 +4,12 @@ import Link from 'next/link';
 
 /**
  * Member hamburger menu.
- * Desktop/Tablet order:
+ * Desktop/Tablet order (NO Store - it's a header button):
  * 1) My Profile
  * 2) Obtain Membership Card
  * 3) About
  * 4) Contact
- * 5) Store
- * 6) Support
+ * 5) Support
  *
  * Mobile member hamburger order (locked):
  * 1) Search
@@ -20,7 +19,7 @@ import Link from 'next/link';
  * 5) Obtain Membership Card
  * 6) About
  * 7) Contact
- * 8) Store
+ * 8) Store (mobile only - replaces header button)
  * 9) Support
  * 10) Login
  * 11) Logout
@@ -51,7 +50,9 @@ export default function MemberHamburgerMenu({ onClose }: { onClose: () => void }
           <li><Link href="/member/card" onClick={onClose}>Obtain Membership Card</Link></li>
           <li><Link href="/about" onClick={onClose}>About</Link></li>
           <li><Link href="/contact" onClick={onClose}>Contact</Link></li>
-          <li>
+          
+          {/* Store: MOBILE ONLY (desktop/tablet has it as header button) */}
+          <li className="only-mobile">
             <a
               href="https://www.bonfire.com/store/lou-gehrig-fan-club/"
               target="_blank"
@@ -62,6 +63,7 @@ export default function MemberHamburgerMenu({ onClose }: { onClose: () => void }
               Store
             </a>
           </li>
+          
           <li>
             <a href="mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed" aria-label="Contact support via email" onClick={onClose}>
               Support
