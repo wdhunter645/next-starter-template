@@ -86,7 +86,7 @@ Verify Join CTA text contrast by:
 
 The Join and Login buttons within the section have their own styling:
 - **Background**: White (`#fff`)
-- **Text color**: LGFC Blue (`var(--lgfc-blue)`)
+- **Text color**: Black (`#000`)
 - **Border**: Semi-transparent white
 
 This provides visual hierarchy and clear call-to-action affordance while maintaining contrast.
