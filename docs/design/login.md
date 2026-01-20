@@ -9,6 +9,15 @@ The `/login` page in **LGFC-Lite** is an **informational stub page only**.
 2. Explain that LGFC-Lite does not support authentication
 3. Direct users to the Join flow to express interest in membership
 
+## Cross-Reference to Authoritative Documentation
+
+**This specification aligns with:**
+- `/docs/LGFC-Production-Design-and-Standards.md` — See "LOGIN / LOGOUT — Final Lock" section for the authoritative phase definition and deferred behavior specification.
+
+The authoritative doc clearly separates:
+- **LGFC-Lite (Current)**: Login is an informational stub; authentication is intentionally disabled.
+- **Future: Auth Phase Lock (Deferred)**: Full authentication behavior (successful login → Member Home, email validation, rate limiting, etc.) will be implemented in a future phase with Vercel/Supabase or equivalent backend.
+
 ## Implementation Status
 
 ### Current Phase: LGFC-Lite (Cloudflare Pages Static Export)
@@ -141,6 +150,9 @@ export default function LoginPage() {
 ## Future Phase: Authentication Implementation
 
 Authentication will be introduced in a **future, explicitly-defined phase**.
+
+**Deferred Auth Phase Details:**
+- Full specification of authentication behavior (successful login → Member Home, email validation, rate limiting, logout behavior) is documented in `/docs/LGFC-Production-Design-and-Standards.md` under "Future: Auth Phase Lock (Deferred Behavior)".
 
 When that phase begins:
 - Technology stack will be determined (Supabase, Auth0, custom, etc.)
