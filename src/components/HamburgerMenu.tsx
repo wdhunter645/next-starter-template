@@ -1,13 +1,24 @@
 'use client';
 
 import Link from 'next/link';
+import { useRef, RefObject } from 'react';
+import { useClickAway } from '@/hooks/useClickAway';
 
 /**
  * Visitor hamburger menu.
  * Desktop/Tablet: About, Contact, Support (NO Store - it's a header button)
  * Mobile: Home, About, Contact, Support, Store
  */
-export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
+export default function HamburgerMenu({ 
+  onClose, 
+  toggleRef 
+}: { 
+  onClose: () => void;
+  toggleRef: RefObject<HTMLButtonElement | null>;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  useClickAway(containerRef, toggleRef, onClose, true);
   return (
     <>
       <style jsx>{`
@@ -63,7 +74,7 @@ export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
           color: var(--lgfc-blue);
         }
       `}</style>
-      <div className="hamburger-dropdown" id="hamburger-menu">
+      <div className="hamburger-dropdown" id="hamburger-menu" ref={containerRef}>
         <button className="hamburger-close" onClick={onClose} aria-label="Close menu">
           ×
         </button>
