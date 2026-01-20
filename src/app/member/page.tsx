@@ -156,6 +156,7 @@ export default function MemberHomePage() {
                 <a className="link" href="/member/profile">My Profile</a>
                 <a className="link" href="/member/card">Membership Card</a>
                 <a className="link" href="/library">Gehrig Library</a>
+                <a className="link" href="/photo">Photo</a>
                 <a className="link" href="/photos">Photo Gallery</a>
                 <a className="link" href="/memorabilia">Memorabilia Archive</a>
               </div>
