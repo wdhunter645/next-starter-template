@@ -24,6 +24,14 @@ The Visitor header uses a three-region layout:
   - Drop shadow
 - **Behavior**: Buttons are centered as a group, independent of hamburger position
 
+#### Login Button Behavior (LGFC-Lite)
+- **Label**: "Login"
+- **Destination**: `/login` route
+- **Important**: The Login button routes to an informational stub page in LGFC-Lite phase
+- **Does NOT**: Imply live authentication functionality
+- **See**: `/docs/design/login.md` for login page specification
+- **See**: `/docs/design/phases.md` for phase-based authentication status
+
 ### 3. Right Region: Hamburger Menu
 - **Position**: Fixed, pinned to right edge
 - **Location**: `top: 8px; right: 16px;`
