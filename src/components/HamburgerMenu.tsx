@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 /**
  * Visitor hamburger menu.
- * Desktop/Tablet: About, Contact, Support
+ * Desktop/Tablet: About, Contact, Store, Support
  * Mobile: Home, About, Contact, Support, Store
  */
 export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
@@ -14,9 +14,15 @@ export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
         .only-mobile {
           display: block;
         }
+        .only-desktop {
+          display: none;
+        }
         @media (min-width: 768px) {
           .only-mobile {
             display: none;
+          }
+          .only-desktop {
+            display: block;
           }
         }
       `}</style>
@@ -43,6 +49,11 @@ export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
           <li>
             <a href="mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed" aria-label="Contact support via email">
               Support
+            </a>
+          </li>
+          <li className="only-desktop">
+            <a href="https://www.bonfire.com/store/lou-gehrig-fan-club/" target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">
+              Store
             </a>
           </li>
           <li className="only-mobile">

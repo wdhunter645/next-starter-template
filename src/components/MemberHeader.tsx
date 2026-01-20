@@ -94,6 +94,15 @@ export default function MemberHeader({ homeRoute = '/', showLogo = true }: Membe
           <Link href="/search" className="header-btn desktop-tablet-only">
             Search
           </Link>
+          <a
+            href="https://www.bonfire.com/store/lou-gehrig-fan-club/"
+            target="_blank"
+            rel="noopener noreferrer"
+            referrerPolicy="no-referrer"
+            className="header-btn desktop-tablet-only"
+          >
+            Store
+          </a>
           <Link href="/logout" className="header-btn desktop-tablet-only">
             Logout
           </Link>
