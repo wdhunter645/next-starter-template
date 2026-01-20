@@ -27,7 +27,7 @@ export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
         }
         .hamburger-dropdown {
           position: absolute;
-          top: 60px;
+          top: calc(40px + 6px + 6px + 8px); /* burger height + wrapper padding * 2 + spacing */
           right: 0;
           background: #fff;
           border: 1px solid #ddd;
