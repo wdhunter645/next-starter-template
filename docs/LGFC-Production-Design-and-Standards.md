@@ -40,6 +40,14 @@ Home page sections, in order:
 10. Ask a Question (linked from FAQ; dedicated stub page)
 11. Footer
 
+#### Social Wall Implementation
+- **Platform Script:** Loaded globally in `src/app/layout.tsx` using `next/script` with `strategy="beforeInteractive"`
+- **Script URL:** `https://static.elfsight.com/platform/platform.js`
+- **Widget Container:** Located in `src/components/SocialWall.tsx`
+- **Widget ID:** `elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8` (stored in the container class)
+- **Loading:** Platform script is loaded once globally in the layout head, not per component
+- **Important:** Do not reintroduce per-component script loading or use the older `apps.elfsight.com/p/platform.js` URL
+
 ### Members-only
 - **All other features** are members-only and accessed from **`MEMBER/page.tsx`**.
 
