@@ -361,7 +361,7 @@ a:hover {
 	border-radius: var(--lgfc-radius-md);
 	border: 1px solid rgba(255, 255, 255, 0.4);
 	background: #fff;
-	color: var(--lgfc-blue);
+	color: #000;
 	font-weight: 600;
 	text-decoration: none;
 	transition: opacity 0.2s;
@@ -440,6 +440,11 @@ a:hover {
 .joinBanner a,
 .joinBanner .section-title {
 	color: #fff !important;
+}
+
+/* Exception: buttons within joinBanner have black text */
+.joinBanner .join-banner__btn {
+	color: #000 !important;
 }
 
 .topWhitespace {
