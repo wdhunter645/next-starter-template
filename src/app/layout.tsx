@@ -17,13 +17,11 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<head>
-				<Script
-					src="https://static.elfsight.com/platform/platform.js"
-					strategy="beforeInteractive"
-					data-use-service-core="true"
-				/>
-			</head>
+			<Script
+				src="https://static.elfsight.com/platform/platform.js"
+				strategy="beforeInteractive"
+				data-use-service-core="true"
+			/>
 			<body className="antialiased">
 				{/* Header: visitor vs member */}
 				<SiteHeader />
