@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import MemberHamburgerMenu from './MemberHamburgerMenu';
 
 type MemberHeaderProps = {
@@ -11,6 +11,7 @@ type MemberHeaderProps = {
 
 export default function MemberHeader({ homeRoute = '/', showLogo = true }: MemberHeaderProps = {}) {
   const [open, setOpen] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
@@ -109,6 +110,7 @@ export default function MemberHeader({ homeRoute = '/', showLogo = true }: Membe
             Logout
           </Link>
           <button
+            ref={toggleRef}
             className="burger-btn"
             onClick={() => setOpen(!open)}
             aria-label="Open menu"
@@ -120,7 +122,7 @@ export default function MemberHeader({ homeRoute = '/', showLogo = true }: Membe
             </svg>
           </button>
         </div>
-        {open && <MemberHamburgerMenu onClose={() => setOpen(false)} />}
+        {open && <MemberHamburgerMenu onClose={() => setOpen(false)} toggleRef={toggleRef} />}
       </header>
     </>
   );
