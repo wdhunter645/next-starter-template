@@ -37,7 +37,8 @@
 	"scripts": {
 		"dev": "next dev",
 		"build": "next build",
-		"build:cf": "next build",
+		"postbuild": "cp _routes.json out/_routes.json",
+		"build:cf": "next build && npm run postbuild",
 		"start": "next start",
 		"lint": "next lint",
 		"lint:fix": "next lint --fix",
