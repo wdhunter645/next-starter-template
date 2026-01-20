@@ -556,3 +556,90 @@ This addendum captures every design/standards decision finalized in-session afte
 - Photo Gallery → `/photos`
 - Memorabilia Archive → `/memorabilia`
 
+---
+
+## ADDENDUM — January 20, 2026: Header Logo Implementation Details
+
+This addendum clarifies the technical implementation of the header logo behavior defined in Section 2 (Visitor Header) and Section 11 (Member Header).
+
+### Logo Sizing
+
+**Locked Specification:**
+- Logo height: **240px** (3× baseline of 80px)
+- Logo width: **auto** (preserves aspect ratio)
+- Logo asset: `/public/IMG_1946.png`
+
+### Z-Index Layering Hierarchy
+
+**Locked Z-Index Values:**
+1. **Sticky header controls**: `z-index: 1000` (always on top)
+2. **Logo**: `z-index: 999` (below controls, above banner)
+3. **Banner**: default z-index (base layer)
+
+**Purpose:**
+- Ensures sticky header controls remain clickable when scrolling
+- Allows logo to overlap banner area without blocking navigation
+- Maintains visual hierarchy across all page states
+
+### Positioning Implementation
+
+**Logo:**
+- Position: `absolute` (non-sticky, scrolls with page)
+- Top: `8px`
+- Left: `16px`
+- Z-index: `999`
+
+**Header Controls:**
+- Position: `fixed` or `sticky` (remains at top when scrolling)
+- Z-index: `1000`
+- Centered horizontally (per Section "ADDENDUM — January 20, 2026: Header Layout")
+
+### Component Implementation Reference
+
+**Affected Files:**
+- `/src/components/Header.tsx` (Visitor Header)
+- `/src/components/MemberHeader.tsx` (Member Header)
+
+**CSS Class Pattern:**
+```css
+.logo-link {
+  position: absolute;
+  top: 8px;
+  left: 16px;
+  z-index: 999;
+}
+
+.logo-img {
+  height: 240px;
+  width: auto;
+}
+
+.header-right {
+  position: fixed;  /* or sticky */
+  z-index: 1000;
+}
+```
+
+### Behavior Verification
+
+**Required Tests:**
+- Logo scrolls out of view when page scrolls (non-sticky confirmed)
+- Header controls remain fixed at top when scrolling (sticky confirmed)
+- Logo overlaps banner area below header
+- All header controls remain clickable at all scroll positions
+- Logo click target routes to Home (visitor) or Member Home (member)
+
+### Guardrails
+
+**DO NOT:**
+- Change logo z-index to 1000 or higher (blocks header controls)
+- Make logo sticky/fixed (must scroll with page)
+- Reduce logo size below 240px height
+- Center logo horizontally
+
+**DO:**
+- Maintain z-index hierarchy (controls > logo > banner)
+- Keep logo at 240px height with auto width
+- Ensure logo scrolls with page content
+- Preserve logo overlap behavior over banner
+

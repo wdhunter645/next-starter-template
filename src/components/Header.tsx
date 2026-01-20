@@ -24,9 +24,10 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           top: 8px;
           left: 16px;
           display: block;
+          z-index: 999;
         }
         .logo-img {
-          height: 80px;
+          height: 240px;
           width: auto;
         }
         .header-center {
