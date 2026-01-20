@@ -122,3 +122,106 @@ Any PR that changes the following on the **Cloudflare side** must update `/docs/
 5. **Styling baseline** (color tokens, typography scale, global layout variables)
 
 Future contributors must consult and update the as-built doc whenever making visual or structural changes to the Cloudflare frontend. This is required for Sentinel-Write Bot enforcement and long-term maintainability.
+
+---
+
+## Site Assessment Harness
+
+### Overview
+
+The LGFC repository includes an automated site assessment harness that validates:
+- Build completes successfully
+- All required routes exist in the static export
+- Forbidden/legacy routes are absent
+- Header, navigation, and footer invariants match design standards
+- Key page markers and structure are present
+
+### Running Assessments
+
+**Local Development:**
+```bash
+npm run assess
+```
+
+**CI Mode:**
+```bash
+npm run assess:ci
+```
+
+The assessment produces:
+- `reports/assess/assess-report.json` (detailed machine-readable results)
+- `reports/assess/assess-summary.md` (human-readable summary)
+- `reports/assess/routes-found.json` (route index)
+
+### Assessment Manifest
+
+The assessment is driven by `docs/assess/manifest.json`, which encodes:
+- `requiredRoutes`: Routes that must exist
+- `forbiddenRoutes`: Routes that must not exist (legacy/parked)
+- `navInvariants`: Header button labels/order, hamburger menu rules
+- `footerLinks`: Required footer links and copyright format
+- `pageMarkers`: Required headings/sections/markers for key pages
+
+**Source of Truth:** The manifest is derived from `/docs/LGFC-Production-Design-and-Standards.md`.
+
+### Updating the Manifest
+
+When design standards change (rare, locked changes only):
+
+1. Update `/docs/LGFC-Production-Design-and-Standards.md` first (via governance process)
+2. Update `/docs/assess/manifest.json` to match
+3. Run `npm run assess` to verify changes
+4. Document the update in the PR
+
+**IMPORTANT:** The manifest enforces locked design standards. Changes should be rare and require explicit design review approval.
+
+### CI Gating Policy
+
+#### PR Gate (`.github/workflows/assess.yml`)
+- Runs on every pull request
+- Runs on push to `main`
+- **PRs cannot merge if assessment fails**
+- Uploads artifacts for review:
+  - `assess-report-json` (30-day retention)
+  - `assess-summary-md` (30-day retention)
+  - `routes-found` (30-day retention)
+
+#### Nightly Drift Detection (`.github/workflows/assess-nightly.yml`)
+- Runs nightly at 2:00 AM UTC
+- Detects drift from dependencies or unintended changes
+- On failure:
+  - Creates a GitHub issue with label `assessment-failure`
+  - Uploads artifacts with 90-day retention
+  - Marks workflow as failed
+- Can be manually triggered via workflow dispatch
+
+### Troubleshooting Assessment Failures
+
+**Build Failure:**
+- Check for TypeScript errors: `npm run typecheck`
+- Check for lint errors: `npm run lint`
+- Ensure all dependencies are installed: `npm ci`
+
+**Missing Routes:**
+- Verify the route exists in `src/app/`
+- Check Next.js build output in console
+- Ensure static export is configured correctly
+
+**Navigation Invariants:**
+- Review header component implementation
+- Verify hamburger menu items match manifest
+- Check for forbidden items (Join/Login in hamburger, etc.)
+
+**Page Markers:**
+- Verify required headings are present in page content
+- Check for case-sensitive text matching
+- Review HTML structure (header/footer elements)
+
+### Artifact Locations
+
+Assessment artifacts are stored in `reports/assess/` (gitignored):
+- `assess-report.json` - Full detailed results
+- `assess-summary.md` - Human-readable summary
+- `routes-found.json` - List of found/missing routes
+
+These artifacts are uploaded to GitHub Actions on every run and available for download from the workflow run page.

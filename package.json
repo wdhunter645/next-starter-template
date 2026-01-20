@@ -55,7 +55,9 @@
 		"verify-homepage-e2e": "playwright test tests/e2e/homepage-sections.spec.ts",
 		"check": "npm run build && tsc",
 		"check:structure": "node scripts/check-repo-structure.mjs",
-		"snapshot": "node scripts/make-snapshot.mjs"
+		"snapshot": "node scripts/make-snapshot.mjs",
+		"assess": "node scripts/assess.mjs",
+		"assess:ci": "node scripts/assess.mjs --ci"
 	},
 	"dependencies": {
 		"@pinecone-database/pinecone": "^6.1.3",
