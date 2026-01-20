@@ -29,8 +29,8 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           height: 80px;
           width: auto;
         }
-        .header-right {
-          /* Sticky controls: buttons + hamburger are sticky; logo is not. */
+        .header-center {
+          /* Centered button group only */
           position: fixed;
           top: 8px;
           left: 50%;
@@ -44,6 +44,22 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           backdrop-filter: blur(6px);
           box-shadow: 0 2px 10px rgba(0,0,0,0.06);
           z-index: 1000;
+        }
+        .header-right {
+          /* Hamburger pinned to right edge */
+          position: fixed;
+          top: 8px;
+          right: 16px;
+          z-index: 1001;
+        }
+        .burger-wrapper {
+          position: relative;
+          display: inline-flex;
+          padding: 6px;
+          border-radius: 14px;
+          background: rgba(255,255,255,0.9);
+          backdrop-filter: blur(6px);
+          box-shadow: 0 2px 10px rgba(0,0,0,0.06);
         }
         .header-btn {
           display: inline-flex;
@@ -89,7 +105,7 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
             <img className="logo-img" src="/IMG_1946.png" alt="LGFC" />
           </Link>
         )}
-        <div className="header-right">
+        <div className="header-center">
           <Link href="/join" className="header-btn desktop-tablet-only">
             Join
           </Link>
@@ -108,18 +124,22 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           <Link href="/login" className="header-btn desktop-tablet-only">
             Login
           </Link>
-          <button 
-            className="burger-btn"
-            onClick={() => setOpen(!open)}
-            aria-label="Open menu"
-            aria-expanded={open}
-            aria-controls="hamburger-menu"
-          >
-            {/* simple hamburger icon */}
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-          </button>
+        </div>
+        <div className="header-right">
+          <div className="burger-wrapper">
+            <button 
+              className="burger-btn"
+              onClick={() => setOpen(!open)}
+              aria-label="Open menu"
+              aria-expanded={open}
+              aria-controls="hamburger-menu"
+            >
+              {/* simple hamburger icon */}
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </button>
+          </div>
         </div>
         {open && <HamburgerMenu onClose={() => setOpen(false)} />}
       </header>
