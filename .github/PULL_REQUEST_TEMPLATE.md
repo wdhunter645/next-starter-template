@@ -56,9 +56,17 @@ Describe the change at a high level. This PR must implement exactly what is defi
 
 ---
 
-#### Documentation Updates (REQUIRED)
-List all documentation files updated. If none are required, explicitly state:
-> **Documentation updates:** None required.
+#### Documentation Updates (REQUIRED — see `/docs/website-process.md` "Documentation ↔ Implementation Sync Gate")
+List all documentation files updated with exact paths. If none are required, explicitly state with justification:
+> **Documentation updates:** None required — [provide reason: e.g., "internal refactor with no observable behavior changes" or "test-only changes"]
+
+**Common documentation requirements:**
+- Header/Footer/Navigation changes → `/docs/LGFC-Production-Design-and-Standards.md` + `/docs/NAVIGATION-INVARIANTS.md`
+- Login/auth flow changes → `/docs/LGFC-Production-Design-and-Standards.md` (LOGIN/LOGOUT section) + `/docs/design/login.md`
+- Page layout changes → `/docs/LGFC-Production-Design-and-Standards.md` + relevant `/docs/design/*.md` files
+
+**Placeholder prohibition:**
+- If this PR touches any section in `/docs/LGFC-Production-Design-and-Standards.md`, all "..." ellipses in that section MUST be removed and replaced with complete specification text.
 
 ---
 
@@ -68,7 +76,8 @@ List all documentation files updated. If none are required, explicitly state:
 - [ ] Conflicting legacy code removed
 - [ ] Build passes
 - [ ] CI checks pass
-- [ ] Documentation updates present and accurate
+- [ ] Documentation updates present and accurate (or explicitly justified as "None required")
+- [ ] No "..." ellipses remain in documentation sections touched by this PR
 
 ---
 
