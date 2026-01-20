@@ -27,7 +27,7 @@ export default async function Page() {
         <>
           <h2 style={{ ...styles.h2 }}>How to Get Support</h2>
           <p style={{ ...styles.p }}>
-            Email us at: <strong>LouGehrigFanClub@gmail.com</strong>
+            Email us at: <strong>admin@lougehrigfanclub.com</strong>
           </p>
 
           <h2 style={{ ...styles.h2 }}>What We Can Help With</h2>

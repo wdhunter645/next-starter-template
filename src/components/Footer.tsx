@@ -67,9 +67,7 @@ export default function Footer() {
 				<div className={styles.content}>
 					<div className={styles.copyright}>
 						<p>
-							&copy; {new Date().getFullYear()} {SITE_NAME}. All rights reserved. Contact:
-							{' '}
-							<a href="mailto:LouGehrigFanClub@gmail.com">LouGehrigFanClub@gmail.com</a>
+							&copy; {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
 						</p>
 					</div>
 					<div className={styles.links}>
@@ -82,9 +80,9 @@ export default function Footer() {
 						<Link href="/contact" className={styles.link}>
 							Contact
 						</Link>
-						<Link href="/support" className={styles.link}>
+						<a href="mailto:admin@lougehrigfanclub.com?subject=Support%20Needed" className={styles.link}>
 							Support
-						</Link>
+						</a>
 						{isAdmin && (
 							<Link href="/admin" className={styles.link}>
 								Admin

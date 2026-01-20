@@ -36,7 +36,7 @@ export default async function Page() {
           <p style={{ ...styles.p }}>
             If you’re organizing an ALS fundraiser, a remembrance event, or a community gathering connected to Gehrig’s
             legacy, email the details (date/time/timezone, location, link, and organizer) to{" "}
-            <strong>LouGehrigFanClub@gmail.com</strong>.
+            <strong>admin@lougehrigfanclub.com</strong>.
           </p>
 
           <p style={{ ...styles.p }}>
