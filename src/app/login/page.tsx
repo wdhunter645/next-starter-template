@@ -1,4 +1,7 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 const styles: Record<string, React.CSSProperties> = {
@@ -17,99 +20,168 @@ const styles: Record<string, React.CSSProperties> = {
     margin: '0 0 20px 0',
     color: 'var(--lgfc-blue)',
   },
-  infoBox: {
-    background: '#f5f5f5',
-    border: '2px solid var(--lgfc-blue)',
-    borderRadius: 12,
-    padding: 24,
-    marginBottom: 24,
-  },
-  infoTitle: {
-    fontSize: 20,
-    fontWeight: 600,
-    margin: '0 0 12px 0',
-    color: '#333',
-  },
-  infoParagraph: {
+  lead: {
     fontSize: 16,
     lineHeight: 1.6,
-    margin: '0 0 12px 0',
+    margin: '0 0 24px 0',
     color: '#555',
   },
-  ctaContainer: {
-    display: 'flex',
-    gap: 16,
-    marginTop: 24,
-    flexWrap: 'wrap',
+  form: {
+    display: 'grid',
+    gap: 12,
+    maxWidth: 520,
   },
-  primaryBtn: {
-    display: 'inline-block',
-    padding: '14px 28px',
-    fontSize: 18,
-    fontWeight: 600,
-    color: '#fff',
-    background: 'var(--lgfc-blue)',
-    border: 'none',
+  label: {
+    display: 'grid',
+    gap: 6,
+    fontSize: 14,
+  },
+  input: {
+    padding: '10px 12px',
+    fontSize: 16,
+    borderRadius: 10,
+    border: '1px solid rgba(0,0,0,0.2)',
+  },
+  btn: {
+    padding: '10px 14px',
+    fontSize: 16,
     borderRadius: 12,
-    textDecoration: 'none',
+    border: '1px solid rgba(0,0,0,0.2)',
     cursor: 'pointer',
-    transition: 'background 0.2s',
+    background: 'var(--lgfc-blue)',
+    color: '#fff',
+    fontWeight: 600,
+  },
+  msg: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 12,
+    border: '1px solid rgba(0,0,0,0.15)',
+  },
+  link: {
+    color: 'var(--lgfc-blue)',
+    textDecoration: 'none',
+    fontWeight: 700,
   },
   secondaryBtn: {
     display: 'inline-block',
-    padding: '14px 28px',
-    fontSize: 18,
+    padding: '10px 20px',
+    fontSize: 14,
     fontWeight: 600,
     color: 'var(--lgfc-blue)',
     background: '#fff',
     border: '2px solid var(--lgfc-blue)',
-    borderRadius: 12,
+    borderRadius: 8,
     textDecoration: 'none',
     cursor: 'pointer',
-    transition: 'all 0.2s',
+    marginTop: 16,
   },
 };
 
 /**
- * Login Page - LGFC-Lite Stub Implementation
+ * Login Page - Operational Implementation for LGFC-Lite
  * 
- * This is an informational stub page only.
- * Authentication is NOT implemented in LGFC-Lite phase.
+ * This page validates member email via /api/login and creates a local member session.
  * 
- * Purpose:
- * - Inform visitors that member login is not yet live
- * - Explain that LGFC-Lite does not support authentication
- * - Direct users to the Join flow to become members
+ * Flow:
+ * 1. User enters email
+ * 2. POST to /api/login to validate email exists in join_requests
+ * 3. If valid: set lgfc_member_email in localStorage and redirect to /member
+ * 4. If invalid: show error and provide link to /join
  * 
- * IMPORTANT: This page must NOT implement any authentication logic.
+ * Note: This is a local-session approach for LGFC-Lite, NOT secure authentication.
  * See /docs/design/login.md for full specification.
  */
 export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const canSubmit = useMemo(() => {
+    const e = email.trim();
+    return e.includes('@') && e.length > 3;
+  }, [email]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!canSubmit || busy) return;
+
+    setBusy(true);
+    setError(null);
+
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data?.ok) {
+        // Success: set member email in localStorage and redirect to /member
+        window.localStorage.setItem('lgfc_member_email', email.trim().toLowerCase());
+        router.push('/member');
+      } else {
+        // Failed: show error message
+        const errorMsg = data?.error || 'Login failed. Please try again.';
+        setError(errorMsg);
+      }
+    } catch (err: unknown) {
+      setError(String((err as Error)?.message || err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <main style={styles.main}>
       <h1 style={styles.h1}>Member Login</h1>
       
-      <div style={styles.infoBox}>
-        <h2 style={styles.infoTitle}>Member Login Is Not Yet Available</h2>
-        <p style={styles.infoParagraph}>
-          We&apos;re building something great! The Lou Gehrig Fan Club member login system is currently in development.
-        </p>
-        <p style={styles.infoParagraph}>
-          LGFC-Lite (our current phase) is a public information site and does not yet support member authentication or login functionality.
-        </p>
-        <p style={styles.infoParagraph}>
-          Interested in joining the Lou Gehrig Fan Club? Click the button below to learn more about membership and get notified when member features become available.
-        </p>
-      </div>
+      <p style={styles.lead}>
+        Enter your email address to access the member area.
+      </p>
 
-      <div style={styles.ctaContainer}>
-        <Link href="/member" style={styles.primaryBtn}>
-          Join the Fan Club
-        </Link>
-        <Link href="/" style={styles.secondaryBtn}>
-          Back to Home
-        </Link>
-      </div>
+      <form style={styles.form} onSubmit={handleSubmit}>
+        <label style={styles.label}>
+          Email
+          <input
+            style={styles.input}
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            inputMode="email"
+            autoCapitalize="none"
+          />
+        </label>
+
+        <button style={styles.btn} disabled={!canSubmit || busy} type="submit">
+          {busy ? 'Logging in...' : 'Login'}
+        </button>
+      </form>
+
+      {error && (
+        <div style={styles.msg}>
+          <strong>Error:</strong> {error}
+          <br />
+          <br />
+          {error.toLowerCase().includes('not found') && (
+            <>
+              Email not found. Please{' '}
+              <Link href="/join" style={styles.link}>
+                join the fan club
+              </Link>{' '}
+              to create an account.
+            </>
+          )}
+        </div>
+      )}
+
+      <Link href="/" style={styles.secondaryBtn}>
+        Back to Home
+      </Link>
     </main>
   );
 }

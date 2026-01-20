@@ -398,3 +398,4 @@ LGFC-Lite-CF-FixPack-v1.zip
 # Temporary files generated during B2 sync (do not commit)
 data/b2/current.json
 data/b2/new_objects_upsert.sql
+.api-dev-only
