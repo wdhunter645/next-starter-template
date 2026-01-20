@@ -7,6 +7,9 @@ type PostCreationProps = {
   onPostCreated?: () => void;
 };
 
+const MAX_TITLE_LENGTH = 100;
+const SUCCESS_MESSAGE_TIMEOUT = 3000;
+
 export default function PostCreation({ email, onPostCreated }: PostCreationProps) {
   const [text, setText] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -28,7 +31,7 @@ export default function PostCreation({ email, onPostCreated }: PostCreationProps
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: text.substring(0, 100), // Use first 100 chars as title
+          title: text.substring(0, MAX_TITLE_LENGTH), // Use first 100 chars as title
           body: text,
           author_email: email,
         }),
@@ -42,8 +45,8 @@ export default function PostCreation({ email, onPostCreated }: PostCreationProps
         if (onPostCreated) {
           onPostCreated();
         }
-        // Clear success message after 3 seconds
-        setTimeout(() => setSuccess(false), 3000);
+        // Clear success message after timeout
+        setTimeout(() => setSuccess(false), SUCCESS_MESSAGE_TIMEOUT);
       } else {
         setError(data.error || 'Failed to create post.');
       }
