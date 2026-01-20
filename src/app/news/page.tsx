@@ -27,7 +27,7 @@ export default function Page() {
 
       <p style={{ ...styles.p }}>
         If you have a question you’d like answered publicly (or a correction with a source), email{" "}
-        <strong>LouGehrigFanClub@gmail.com</strong>.
+        <strong>admin@lougehrigfanclub.com</strong>.
       </p>
     </main>
   );

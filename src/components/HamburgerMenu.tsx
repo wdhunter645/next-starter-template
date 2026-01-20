@@ -47,7 +47,7 @@ export default function HamburgerMenu({ onClose }: { onClose: () => void }) {
             </Link>
           </li>
           <li>
-            <a href="mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed" aria-label="Contact support via email">
+            <a href="mailto:admin@lougehrigfanclub.com?subject=Support%20Needed" aria-label="Contact support via email">
               Support
             </a>
           </li>

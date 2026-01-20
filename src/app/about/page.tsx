@@ -61,7 +61,7 @@ export default async function Page() {
 
           <h2 style={{ ...styles.h2 }}>Contact</h2>
           <p style={{ ...styles.p }}>
-            The simplest way to reach the club is email: <strong>LouGehrigFanClub@gmail.com</strong>.
+            The simplest way to reach the club is email: <strong>admin@lougehrigfanclub.com</strong>.
           </p>
         </>
       )}

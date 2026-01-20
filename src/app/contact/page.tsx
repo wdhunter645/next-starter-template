@@ -27,7 +27,7 @@ export default async function Page() {
       ) : (
         <>
           <p style={{ ...styles.p }}>
-            <strong>LouGehrigFanClub@gmail.com</strong>
+            <strong>admin@lougehrigfanclub.com</strong>
           </p>
 
           <h2 style={{ ...styles.h2 }}>Good reasons to email</h2>

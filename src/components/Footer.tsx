@@ -67,9 +67,7 @@ export default function Footer() {
 				<div className={styles.content}>
 					<div className={styles.copyright}>
 						<p>
-							&copy; {new Date().getFullYear()} {SITE_NAME}. All rights reserved. Contact:
-							{' '}
-							<a href="mailto:LouGehrigFanClub@gmail.com">LouGehrigFanClub@gmail.com</a>
+							&copy; {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
 						</p>
 					</div>
 					<div className={styles.links}>
