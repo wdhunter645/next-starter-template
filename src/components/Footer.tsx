@@ -79,6 +79,12 @@ export default function Footer() {
 						<Link href="/terms" className={styles.link}>
 							Terms
 						</Link>
+						<Link href="/contact" className={styles.link}>
+							Contact
+						</Link>
+						<Link href="/support" className={styles.link}>
+							Support
+						</Link>
 						{isAdmin && (
 							<Link href="/admin" className={styles.link}>
 								Admin
