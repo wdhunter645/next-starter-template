@@ -91,7 +91,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'open',
-              labels: 'assessment-failure,automated',
+              labels: ['assessment-failure', 'automated'],
               per_page: 10
             });
             

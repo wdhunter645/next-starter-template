@@ -195,38 +195,25 @@ async function checkRequiredRoutes(routes) {
   for (const route of routes) {
     const filePaths = routeToFilePath(route, OUTPUT_DIR);
     
-    // If route is '/', filePaths is a string
-    if (typeof filePaths === 'string') {
-      const exists = existsSync(filePaths);
-      if (exists) {
-        result.details.found.push(route);
-        console.log(`   ✅ ${route} → ${filePaths}`);
-      } else {
-        result.details.missing.push(route);
-        result.passed = false;
-        console.log(`   ❌ ${route} → ${filePaths} (NOT FOUND)`);
+    // Try all possible file paths
+    let found = false;
+    let foundPath = '';
+    
+    for (const filePath of filePaths) {
+      if (existsSync(filePath)) {
+        found = true;
+        foundPath = filePath;
+        break;
       }
+    }
+    
+    if (found) {
+      result.details.found.push(route);
+      console.log(`   ✅ ${route} → ${foundPath}`);
     } else {
-      // Try both patterns
-      let found = false;
-      let foundPath = '';
-      
-      for (const filePath of filePaths) {
-        if (existsSync(filePath)) {
-          found = true;
-          foundPath = filePath;
-          break;
-        }
-      }
-      
-      if (found) {
-        result.details.found.push(route);
-        console.log(`   ✅ ${route} → ${foundPath}`);
-      } else {
-        result.details.missing.push(route);
-        result.passed = false;
-        console.log(`   ❌ ${route} → ${filePaths.join(' or ')} (NOT FOUND)`);
-      }
+      result.details.missing.push(route);
+      result.passed = false;
+      console.log(`   ❌ ${route} → ${filePaths.join(' or ')} (NOT FOUND)`);
     }
   }
 
@@ -252,17 +239,12 @@ async function checkForbiddenRoutes(routes) {
   for (const route of routes) {
     const filePaths = routeToFilePath(route, OUTPUT_DIR);
     
-    // If route is '/', filePaths is a string
+    // Check if any of the possible paths exist
     let exists = false;
-    if (typeof filePaths === 'string') {
-      exists = existsSync(filePaths);
-    } else {
-      // Try both patterns
-      for (const filePath of filePaths) {
-        if (existsSync(filePath)) {
-          exists = true;
-          break;
-        }
+    for (const filePath of filePaths) {
+      if (existsSync(filePath)) {
+        exists = true;
+        break;
       }
     }
     
@@ -296,14 +278,10 @@ async function checkPageMarkers(pageMarkers) {
     let actualFilePath = null;
     
     // Find which file path exists
-    if (typeof filePaths === 'string') {
-      actualFilePath = filePaths;
-    } else {
-      for (const fp of filePaths) {
-        if (existsSync(fp)) {
-          actualFilePath = fp;
-          break;
-        }
+    for (const fp of filePaths) {
+      if (existsSync(fp)) {
+        actualFilePath = fp;
+        break;
       }
     }
     
@@ -397,8 +375,17 @@ async function checkFooterLinks(footerConfig) {
     details: {}
   };
 
-  const homePath = routeToFilePath('/', OUTPUT_DIR);
-  const html = await loadHTML(homePath);
+  const homePaths = routeToFilePath('/', OUTPUT_DIR);
+  let homePathFound = null;
+  
+  for (const path of homePaths) {
+    if (existsSync(path)) {
+      homePathFound = path;
+      break;
+    }
+  }
+  
+  const html = await loadHTML(homePathFound);
 
   if (!html) {
     result.passed = false;

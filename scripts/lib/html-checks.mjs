@@ -43,15 +43,20 @@ export function containsForbiddenText(html, forbiddenTexts) {
  */
 export function extractHeadings(html) {
   if (!html) return [];
-  const headingRegex = /<h[1-6][^>]*>(.*?)<\/h[1-6]>/gi;
-  const matches = [];
-  let match;
-  while ((match = headingRegex.exec(html)) !== null) {
-    // Strip HTML tags from heading content
-    const text = match[1].replace(/<[^>]*>/g, '').trim();
-    if (text) matches.push(text);
+  const headings = [];
+  
+  // Process each heading level separately to avoid mismatched tags
+  for (let level = 1; level <= 6; level++) {
+    const regex = new RegExp(`<h${level}[^>]*>(.*?)<\\/h${level}>`, 'gi');
+    let match;
+    while ((match = regex.exec(html)) !== null) {
+      // Strip HTML tags from heading content
+      const text = match[1].replace(/<[^>]*>/g, '').trim();
+      if (text) headings.push(text);
+    }
   }
-  return matches;
+  
+  return headings;
 }
 
 /**
@@ -81,22 +86,21 @@ export function extractLinks(html) {
 
 /**
  * Check if route exists in output directory
- * Tries both directory/index.html and file.html patterns
+ * Returns array of possible file paths to try (directory/index.html and file.html patterns)
  */
 export function routeToFilePath(route, outputDir = 'out') {
   // Normalize route
   if (route === '/') {
-    return `${outputDir}/index.html`;
+    return [`${outputDir}/index.html`];
   }
-  // Remove leading slash and add /index.html
+  // Remove leading slash and trailing slash
   const normalized = route.replace(/^\//, '').replace(/\/$/, '');
   
-  // Try both patterns: directory/index.html and file.html
-  const directoryPattern = `${outputDir}/${normalized}/index.html`;
-  const filePattern = `${outputDir}/${normalized}.html`;
-  
-  // Return an array of possible paths to try
-  return [directoryPattern, filePattern];
+  // Return both patterns: directory/index.html and file.html
+  return [
+    `${outputDir}/${normalized}/index.html`,
+    `${outputDir}/${normalized}.html`
+  ];
 }
 
 /**
