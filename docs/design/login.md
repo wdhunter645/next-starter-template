@@ -2,12 +2,15 @@
 
 ## Purpose
 
-The `/login` page in **LGFC-Lite** is an **informational stub page only**.
+The `/login` page in **LGFC-Lite** provides a **local member session** mechanism for accessing member features.
 
-**Authentication is explicitly disabled** in the LGFC-Lite phase. The login page serves to:
-1. Inform visitors that member login functionality is not yet live
-2. Explain that LGFC-Lite does not support authentication
-3. Direct users to the Join flow to express interest in membership
+**Authentication Implementation:** The login page validates member email addresses and establishes local browser sessions using `localStorage`. This is a lightweight, single-path approach suitable for LGFC-Lite's current phase requirements.
+
+The login page serves to:
+1. Validate that a visitor's email exists in the join_requests database
+2. Create a local member session by storing the email in `localStorage`
+3. Redirect authenticated members to the member area
+4. Direct new visitors to the Join flow
 
 ## Cross-Reference to Authoritative Documentation
 
@@ -20,80 +23,73 @@ The authoritative doc clearly separates:
 
 ## Implementation Status
 
-### Current Phase: LGFC-Lite (Cloudflare Pages Static Export)
-- **Authentication**: ❌ NOT IMPLEMENTED (intentional)
-- **Login page**: ✅ Stub/informational page only
-- **Backend dependencies**: ✅ ZERO (static page)
+### Current Phase: LGFC-Lite (Cloudflare Pages + Local Sessions)
+- **Authentication**: ✅ IMPLEMENTED (local session via localStorage)
+- **Login page**: ✅ Operational with email validation
+- **Backend dependencies**: ✅ Cloudflare D1 (via `/api/login` function)
+- **Session mechanism**: ✅ localStorage-based (lgfc_member_email)
+
+## How Login Works
+
+The `/login` page implements a simple email-based validation flow:
+
+1. **User enters email address**
+2. **POST to `/api/login`** (proxied to Cloudflare Function)
+   - Validates email exists in `join_requests` table
+   - Rate limits failed attempts (3 per IP per hour)
+3. **On success:**
+   - Stores `lgfc_member_email` in `localStorage`
+   - Redirects to `/member`
+4. **On failure:**
+   - Shows error message
+   - Provides link to `/join` for new members
 
 ## What the Login Page Shows
 
 The `/login` page displays:
 
 1. **Page title**: "Member Login"
-2. **Informational message box** clearly stating:
-   - Member login is not yet available
-   - LGFC-Lite is a public information site
-   - Authentication functionality is in development
-3. **Call-to-Action buttons**:
-   - **Primary CTA**: "Join the Fan Club" → routes to `/member`
-   - **Secondary CTA**: "Back to Home" → routes to `/`
+2. **Email input field** with validation
+3. **Submit button** ("Login")
+4. **Error messaging** for:
+   - Email not found → directs to `/join`
+   - Rate limit exceeded → wait 1 hour
+   - Server errors
+5. **Secondary CTA**: "Back to Home" → routes to `/`
 
-## What the Login Page Must NEVER Do
+## Session Management
 
-The login page in LGFC-Lite **must NOT** include:
+### Local Session (lgfc_member_email)
+- **Storage**: `localStorage.setItem('lgfc_member_email', email)`
+- **Duration**: Persists until cleared by user
+- **Scope**: Browser-specific, not cross-device
+- **Security**: NOT cryptographically secure; suitable for LGFC-Lite only
 
-### ❌ Prohibited UI Elements
-- Email input fields
-- Password input fields
-- "Remember me" checkboxes
-- "Forgot password" links
-- Magic link request forms
-- OAuth/social login buttons (Google, Facebook, etc.)
-- Any other authentication UI components
+### Member Area Access
+The `/member` page checks for the presence of `lgfc_member_email`:
+```typescript
+const memberEmail = window.localStorage.getItem('lgfc_member_email');
+if (!memberEmail) {
+  // Show "not signed in" prompt with link to /login
+}
+```
 
-### ❌ Prohibited Functionality
-- Email validation or submission
-- Password validation
-- Session token generation
-- Cookie management
-- API calls to authentication endpoints
-- Redirect logic based on authentication state
-- LocalStorage/SessionStorage manipulation for auth state
+## What This Is (and What It Isn't)
 
-### ❌ Prohibited Dependencies
-- Supabase client libraries
-- Auth0 or other authentication SDKs
-- Session management libraries
-- JWT libraries
-- OAuth client libraries
-- Any backend authentication services
+### ✅ What This IS
+- Email-based membership validation
+- Local browser session for member access
+- Lightweight, single-path authentication for LGFC-Lite
+- Protection against rapid-fire login attempts
 
-## Hard Rules
-
-### Rule 1: DO NOT Implement Authentication Before Auth Phase
-**Authentication functionality is explicitly deferred to a future phase.**
-
-Any PR that introduces authentication-related code, configuration, or dependencies to LGFC-Lite **must be rejected**.
-
-This includes:
-- Installing auth packages
-- Creating auth API routes
-- Adding authentication middleware
-- Configuring OAuth providers
-- Setting up session management
-
-### Rule 2: DO NOT Introduce Backend Dependencies
-The login page **must build and deploy** as a static page with **zero backend dependencies**.
-
-The LGFC-Lite phase uses Next.js static export (`output: "export"`). Any code that requires server-side runtime will break the build.
-
-### Rule 3: Stub Page Must Be Obvious
-The login page **must not** give the impression that login functionality is available.
-
-Messages must be:
-- Clear and direct
-- Explicitly state that login is not available
-- Provide actionable next steps (Join flow)
+### ❌ What This IS NOT
+- Cryptographically secure authentication
+- Password-based login
+- Multi-factor authentication
+- OAuth/social login
+- Server-side session management
+- Cross-device session sync
+- Enterprise-grade authorization
 
 ## Technical Implementation
 
@@ -102,54 +98,36 @@ Messages must be:
 - **Route**: `/login`
 
 ### Page Type
-- **Next.js App Router**: Server Component (default)
-- **No client-side state**: No `'use client'` directive needed
-- **No interactivity**: Pure informational content + navigation links
+- **Next.js App Router**: Client Component (`'use client'`)
+- **Client-side state**: Email input, error messages, loading state
+- **Navigation**: Uses `useRouter` from `next/navigation`
+
+### API Integration
+- **Endpoint**: `POST /api/login`
+- **Proxy Route**: `src/app/api/login/route.ts` (for local dev)
+- **Upstream Function**: `functions/api/login.ts` (Cloudflare Pages Function)
 
 ### Styling Approach
-- **Inline styles**: Consistent with other stub pages
+- **Inline styles**: Consistent with other pages
 - **CSS variables**: Use `var(--lgfc-blue)` for brand color
 - **Responsive**: Mobile-friendly layout
-
-### Example Structure
-```tsx
-import React from 'react';
-import Link from 'next/link';
-
-export default function LoginPage() {
-  return (
-    <main>
-      <h1>Member Login</h1>
-      
-      <div className="info-box">
-        <h2>Member Login Is Not Yet Available</h2>
-        <p>LGFC-Lite does not support authentication...</p>
-      </div>
-
-      <div className="cta-container">
-        <Link href="/member">Join the Fan Club</Link>
-        <Link href="/">Back to Home</Link>
-      </div>
-    </main>
-  );
-}
-```
 
 ## Routing Requirements
 
 ### Public Accessibility
-- **`/login` route**: ✅ Must be publicly accessible
-- **No middleware**: ❌ Do NOT add authentication middleware
-- **No redirects**: ❌ Do NOT redirect based on auth state
+- **`/login` route**: ✅ Publicly accessible
+- **No middleware**: ❌ No authentication middleware required
+- **No pre-redirects**: ❌ No redirects based on existing session state
 
 ### Navigation Flow
 - **From header "Login" button**: Routes to `/login`
-- **From `/login` "Join" button**: Routes to `/member`
+- **From `/login` on success**: Redirects to `/member`
+- **From `/login` "Join" link**: Routes to `/join` (shown on error)
 - **From `/login` "Home" button**: Routes to `/`
 
-## Future Phase: Authentication Implementation
+## Future Phase: Enhanced Authentication
 
-Authentication will be introduced in a **future, explicitly-defined phase**.
+Enhanced authentication may be introduced in a **future phase** (outside LGFC-Lite scope).
 
 **Deferred Auth Phase Details:**
 - Full specification of authentication behavior (successful login → Member Home, email validation, rate limiting, logout behavior) is documented in `/docs/LGFC-Production-Design-and-Standards.md` under "Future: Auth Phase Lock (Deferred Behavior)".
@@ -161,12 +139,19 @@ When that phase begins:
 - This document will be updated to reflect the new implementation
 
 ### Phase Boundary
-See `/docs/design/phases.md` for the explicit phase definition and authentication timeline.
+When transitioning to enhanced authentication:
+- Local session mechanism may be replaced or supplemented
+- Login page will be updated with new authentication UI
+- Migration path for existing members will be provided
+- This document will be updated to reflect new implementation
+
+See `/docs/design/phases.md` for phase definitions and boundaries.
 
 ## Related Documentation
 
-- **Visitor Header**: `/docs/design/visitor-header.md` — Login button behavior
-- **Phase Definitions**: `/docs/design/phases.md` — LGFC-Lite vs Auth Phase
+- **Phase Definitions**: `/docs/design/phases.md` — LGFC-Lite capabilities
+- **Join Flow**: `/docs/design/join.md` — Member join/signup process
+- **Member Page**: `/docs/memberpage.html` — Member area specification
 - **Navigation Invariants**: `/docs/NAVIGATION-INVARIANTS.md` — Header structure
 - **Website Process**: `/docs/website-process.md` — Development standards
 
@@ -174,16 +159,17 @@ See `/docs/design/phases.md` for the explicit phase definition and authenticatio
 
 Before accepting any changes to the login page:
 
-- [ ] Page displays informational message stating login is not available
-- [ ] Page clearly explains LGFC-Lite does not support authentication
-- [ ] Primary CTA routes to `/member` (Join flow)
-- [ ] Secondary CTA routes to `/` (Home)
-- [ ] NO email/password fields present
-- [ ] NO authentication logic (API calls, session management, etc.)
-- [ ] NO authentication dependencies added to `package.json`
-- [ ] Page builds successfully with `npm run build:cf`
-- [ ] No middleware or redirects related to authentication
-- [ ] `/login` route is publicly accessible
+- [x] Page displays email input field
+- [x] Page validates email via POST /api/login
+- [x] On success: sets lgfc_member_email in localStorage
+- [x] On success: redirects to /member
+- [x] On failure: shows error message
+- [x] Email not found error provides link to /join
+- [x] NO password fields present
+- [x] Client component with 'use client' directive
+- [x] Page builds successfully with `npm run build:cf`
+- [x] `/login` route is publicly accessible
+- [x] Styling consistent with site design
 
 ## Governance
 

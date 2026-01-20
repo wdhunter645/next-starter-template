@@ -13,25 +13,18 @@ function getUpstreamBase(): string {
   ).replace(/\/$/, "");
 }
 
-export async function POST(req: Request) {
+export async function GET(req: Request) {
   try {
-    const body = await req.json();
+    const { searchParams } = new URL(req.url);
+    const email = searchParams.get('email');
 
-    // Forward the full join payload to upstream Cloudflare Function
-    // Expected fields: first_name, last_name, screen_name, email, email_opt_in (and legacy name if provided)
-    const payload: Record<string, string | boolean | null> = {};
-    
-    if (body.first_name) payload.first_name = body.first_name;
-    if (body.last_name) payload.last_name = body.last_name;
-    if (body.screen_name !== undefined) payload.screen_name = body.screen_name;
-    if (body.email) payload.email = body.email;
-    if (body.email_opt_in !== undefined) payload.email_opt_in = body.email_opt_in;
-    if (body.name) payload.name = body.name;
+    if (!email) {
+      return NextResponse.json({ ok: false, error: "Email is required." }, { status: 400 });
+    }
 
-    const res = await fetch(`${getUpstreamBase()}/api/join`, {
-      method: "POST",
+    const res = await fetch(`${getUpstreamBase()}/api/member/role?email=${encodeURIComponent(email)}`, {
+      method: "GET",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
     });
 
     const text = await res.text();
@@ -44,7 +37,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(data, { status: res.status });
   } catch (err) {
-    console.error("API /api/join error:", err);
+    console.error("API /api/member/role error:", err);
     return NextResponse.json({ ok: false, error: "Internal server error." }, { status: 500 });
   }
 }

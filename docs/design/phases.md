@@ -30,19 +30,23 @@ This document defines the **phase boundaries** and explicitly documents what is 
 - Calendar display
 - FAQ display and search
 - Join/signup form (email collection for future notification)
+- **Member login** (email validation with local session via localStorage)
+- **Member area access** (gated by lgfc_member_email localStorage key)
 - D1 database queries (read-only or write for public forms)
 - B2 image serving
 - Email sending (via Cloudflare Email Workers or external service)
 
 #### ❌ NOT Supported in LGFC-Lite
-- **Authentication** (email/password, magic links, OAuth, etc.)
-- **Login functionality** (login page is a stub only)
-- **Session management** (cookies, tokens, etc.)
-- **Member-only content** (all content is public in LGFC-Lite)
-- **Authorization/access control** (no protected routes or data)
-- **User accounts** (no persistent user state)
-- **Member profiles** (no editable profile pages)
-- **Protected API routes** (all APIs are public or unauthenticated)
+- **Password-based authentication** (no passwords stored or validated)
+- **Magic link authentication** (no email-based token authentication)
+- **OAuth/social login** (no Google, Facebook, etc. authentication)
+- **Server-side session management** (local browser sessions only)
+- **Cryptographically secure authentication** (localStorage is not secure)
+- **Cross-device session sync** (sessions are browser-specific)
+- **User accounts with passwords** (no password storage or management)
+- **Authorization/role-based access control** (basic member/visitor distinction only)
+- **Member profiles with sensitive data** (no password-protected data)
+- **Protected API routes requiring secure auth** (APIs rely on localStorage email)
 
 ### Architecture Constraints
 
@@ -66,23 +70,21 @@ LGFC-Lite **must not** include:
 
 ### Join Flow in LGFC-Lite
 
-The "Join the Fan Club" flow in LGFC-Lite is **informational only**:
-- Collects visitor information (name, email)
-- Stores in D1 for future notification
+The "Join the Fan Club" flow in LGFC-Lite collects visitor information and creates a membership record:
+- Collects visitor information (first name, last name, screen name, email)
+- Stores in D1 `join_requests` table
 - Sends confirmation email
-- **Does NOT** create authenticated accounts
-- **Does NOT** grant access to member features
+- Creates a membership record for future login access
+- Members can then use the login page to access member features
 
-When authentication is introduced in a future phase, existing join submissions will be migrated to full accounts.
+### Login Flow in LGFC-Lite
 
-### Login Page in LGFC-Lite
-
-The `/login` page is a **stub/informational page**:
-- Clearly states that login is not yet available
-- Explains LGFC-Lite does not support authentication
-- Directs users to the Join flow
-- **Does NOT** accept credentials
-- **Does NOT** perform authentication
+The `/login` page provides email-based member access:
+- Validates email exists in D1 `join_requests` table (via `/api/login`)
+- On success: stores `lgfc_member_email` in `localStorage` and redirects to `/member`
+- On failure: shows error and directs to `/join` for new members
+- Rate limits failed attempts (3 per IP per hour)
+- **Note**: This is a local browser session, NOT cryptographically secure authentication
 
 See `/docs/design/login.md` for full login page specification.
 
@@ -132,16 +134,22 @@ When transitioning from LGFC-Lite to Auth Phase:
 
 ## Phase Boundary Rules
 
-### Rule 1: No Premature Auth Implementation
-**Authentication MUST NOT be implemented before the Auth Phase is explicitly activated.**
+### Rule 1: No Premature Enterprise Auth Implementation
+**Enterprise-grade authentication (passwords, OAuth, magic links) MUST NOT be implemented before the Auth Phase is explicitly activated.**
 
-Any PR that introduces authentication code, configuration, or dependencies during LGFC-Lite phase **must be rejected**.
+Any PR that introduces password-based authentication, OAuth, or other enterprise auth features during LGFC-Lite phase **must be rejected**.
+
+However, LGFC-Lite **does support** a lightweight local-session login mechanism:
+- Email validation via `/api/login`
+- Local browser session via `localStorage` (lgfc_member_email)
+- Member area access gated by localStorage key
+- NOT cryptographically secure (suitable for LGFC-Lite only)
 
 This rule prevents:
-- Scope creep
-- Architectural drift
+- Scope creep into enterprise authentication
+- Architectural drift toward complex auth systems
 - Deployment complexity
-- Broken builds (static export incompatibility)
+- Broken builds (static export incompatibility with secure auth)
 
 ### Rule 2: Phase Transitions Require Explicit Approval
 Phase transitions are **major milestones** and require:
