@@ -8,6 +8,8 @@ Use `/docs/homepage.html` as the canonical markup source for line-range copying.
 Use `/docs/memberpage.html` as the canonical MemberPage specification (versioned snapshots: `memberpage-v1.html`, etc.).  
 Use `/docs/as-built/cloudflare-frontend.md` as the authoritative baseline for the Cloudflare static frontend.
 
+**All PRs must use `.github/PULL_REQUEST_TEMPLATE.md` and must keep the Progress + Readiness block updated.**
+
 ---
 
 ### Structural Rules
