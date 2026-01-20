@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 
+// Mark as dynamic to skip static generation (these routes are for dev only)
+export const dynamic = "force-dynamic";
+
 function getUpstreamBase(): string {
   // Used during `next dev` so API calls still reach the deployed Cloudflare Pages Functions.
   // In production (Cloudflare Pages build), these Next.js API routes may not be used.
@@ -16,7 +19,7 @@ export async function POST(req: Request) {
 
     // Forward the full join payload to upstream Cloudflare Function
     // Expected fields: first_name, last_name, screen_name, email, email_opt_in (and legacy name if provided)
-    const payload: Record<string, any> = {};
+    const payload: Record<string, string | boolean | null> = {};
     
     if (body.first_name) payload.first_name = body.first_name;
     if (body.last_name) payload.last_name = body.last_name;

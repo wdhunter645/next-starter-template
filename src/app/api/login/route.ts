@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 
+// Mark as dynamic to skip static generation (these routes are for dev only)
+export const dynamic = "force-dynamic";
+
 function getUpstreamBase(): string {
   // Used during `next dev` so API calls still reach the deployed Cloudflare Pages Functions.
   // In production (Cloudflare Pages build), these Next.js API routes may not be used.
