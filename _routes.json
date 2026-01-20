@@ -1,5 +1,5 @@
 {
   "version": 1,
-  "include": ["/api/*", "/admin", "/admin/*"],
-  "exclude": []
+  "include": ["/*"],
+  "exclude": ["/_next/*", "/favicon.ico", "/images/*", "/*.png", "/*.jpg", "/*.jpeg", "/*.gif", "/*.svg", "/*.webp", "/*.css", "/robots.txt", "/sitemap.xml"]
 }
