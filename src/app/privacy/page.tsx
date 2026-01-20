@@ -52,7 +52,7 @@ export default async function Page() {
 
           <h2 style={{ ...styles.h2 }}>Removal requests</h2>
           <p style={{ ...styles.p }}>
-            To request removal of your email or a submission, contact: <strong>LouGehrigFanClub@gmail.com</strong>.
+            To request removal of your email or a submission, contact: <strong>admin@lougehrigfanclub.com</strong>.
           </p>
 
           <p style={{ ...styles.p }}>

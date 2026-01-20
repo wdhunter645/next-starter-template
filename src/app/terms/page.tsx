@@ -52,7 +52,7 @@ export default async function Page() {
 
           <h2 style={{ ...styles.h2 }}>5) Contact</h2>
           <p style={{ ...styles.p }}>
-            Questions, corrections, or removal requests: <strong>LouGehrigFanClub@gmail.com</strong>.
+            Questions, corrections, or removal requests: <strong>admin@lougehrigfanclub.com</strong>.
           </p>
         </>
       )}

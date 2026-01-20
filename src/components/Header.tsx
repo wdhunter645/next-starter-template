@@ -92,6 +92,9 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           <Link href="/join" className="header-btn desktop-tablet-only">
             Join
           </Link>
+          <Link href="/search" className="header-btn desktop-tablet-only">
+            Search
+          </Link>
           <a 
             href="https://www.bonfire.com/store/lou-gehrig-fan-club/" 
             target="_blank" 

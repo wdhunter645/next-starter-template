@@ -62,7 +62,7 @@ export default function Page() {
       <hr style={{ ...styles.hr }} />
 
       <p style={{ ...styles.p }}>
-        Over time, we&rsquo;ll expand this into a fully cross‑linked timeline with photos, quotes, primary sources, and club notes. If you spot an error or have a source we should add, contact us at <strong>LouGehrigFanClub@gmail.com</strong>.
+        Over time, we&rsquo;ll expand this into a fully cross‑linked timeline with photos, quotes, primary sources, and club notes. If you spot an error or have a source we should add, contact us at <strong>admin@lougehrigfanclub.com</strong>.
       </p>
     </main>
   );
