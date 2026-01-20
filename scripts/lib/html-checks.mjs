@@ -81,6 +81,7 @@ export function extractLinks(html) {
 
 /**
  * Check if route exists in output directory
+ * Tries both directory/index.html and file.html patterns
  */
 export function routeToFilePath(route, outputDir = 'out') {
   // Normalize route
@@ -89,7 +90,13 @@ export function routeToFilePath(route, outputDir = 'out') {
   }
   // Remove leading slash and add /index.html
   const normalized = route.replace(/^\//, '').replace(/\/$/, '');
-  return `${outputDir}/${normalized}/index.html`;
+  
+  // Try both patterns: directory/index.html and file.html
+  const directoryPattern = `${outputDir}/${normalized}/index.html`;
+  const filePattern = `${outputDir}/${normalized}.html`;
+  
+  // Return an array of possible paths to try
+  return [directoryPattern, filePattern];
 }
 
 /**
