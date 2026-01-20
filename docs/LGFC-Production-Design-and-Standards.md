@@ -101,6 +101,29 @@ Mobile visitor hamburger order:
 4. Support
 5. Store
 
+## 3.1) Hamburger Menu Interaction Behavior — Final Lock (Added 2026-01-20)
+
+### Click-Away Close (All Headers, All Breakpoints)
+- When the hamburger dropdown is open, clicking or tapping **outside** the dropdown container AND outside the hamburger toggle button **closes** the dropdown.
+- Clicking or tapping **inside** the dropdown does NOT close it.
+- Implementation uses `pointerdown` event on `document` to avoid focus/click ordering issues.
+
+### Keyboard Close (All Headers, All Breakpoints)
+- Pressing the **Escape** key when the dropdown is open **closes** the dropdown.
+
+### Focus Management (All Headers, All Breakpoints)
+- When the dropdown is closed via click-away or Escape key, focus **returns to the hamburger toggle button**.
+- This ensures keyboard navigation and accessibility are maintained.
+
+### Implementation Standard
+- The dropdown close behavior is implemented in a shared `useClickAway` hook located at `src/hooks/useClickAway.ts`.
+- This hook is used by both `HamburgerMenu.tsx` (Visitor) and `MemberHamburgerMenu.tsx` (Member) to ensure consistent behavior across all header variants.
+- Event listeners are added only while the dropdown is open and removed on close/unmount to optimize performance.
+
+### Regression Prevention
+- This behavior standard must NOT regress. Any changes to hamburger menu components must maintain click-away and Escape key close functionality.
+- Focus restoration to the toggle button is required for accessibility compliance.
+
 ## 4) Home CTA Lock (re-affirmed)
 - **JOIN** is the only promoted conversion block on Home.
 - **LOGIN** is not promoted in page content sections; it exists only in the header.

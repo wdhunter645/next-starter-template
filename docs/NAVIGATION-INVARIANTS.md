@@ -20,6 +20,13 @@ Hamburger menus must NEVER include:
 - Join or Login
 - Member-only header buttons
 
+
+### Hamburger menu interaction behavior
+- **Click-away close**: Clicking/tapping outside the open dropdown (but not on the toggle button) closes it.
+- **Escape key close**: Pressing Escape when the dropdown is open closes it.
+- **Focus restoration**: When closed via click-away or Escape, focus returns to the toggle button.
+- **X button**: The X close button remains functional as an explicit close option.
+- This behavior applies to all header variants (Visitor and Member) and all breakpoints (desktop/tablet/mobile).
 ### Visitor hamburger (standalone pages only)
 - Home (MOBILE ONLY)
 - About
