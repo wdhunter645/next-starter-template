@@ -367,26 +367,95 @@ function SingleDocAdmin({ token, title, getUrl, postUrl }: { token: string; titl
 
 export default function AdminPage() {
   const { token, setToken } = useAdminToken();
+  const [email, setEmail] = useState<string>('');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [counts, setCounts] = useState<Counts | null>(null);
   const [statsMsg, setStatsMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    // Check if member is logged in and is admin
+    async function checkAdmin() {
+      try {
+        const memberEmail = window.localStorage.getItem('lgfc_member_email');
+        if (!memberEmail) {
+          setIsLoading(false);
+          return;
+        }
+        
+        setEmail(memberEmail);
+        
+        // Check if user is admin
+        const res = await fetch(`/api/member/role?email=${encodeURIComponent(memberEmail)}`);
+        const data = await res.json();
+        
+        if (data.ok && data.role === 'admin') {
+          setIsAdmin(true);
+        }
+      } catch {
+        // Failed to check admin status
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    checkAdmin();
+  }, []);
 
   async function refreshStats() {
     setBusy(true);
     setStatsMsg(null);
     const { res, data } = await adminFetch(token, '/api/admin/stats');
     if (res.ok && data?.ok) setCounts((data.counts as Record<string, number>) || {});
-    else setStatsMsg((data?.error as string) || 'Stats not available. Check ADMIN_TOKEN and try again.');
+    else setStatsMsg((data?.error as string) || 'Stats not available. Check ADMIN_TOKEN.');
     setBusy(false);
   }
 
-  useEffect(() => { /* don't auto-call without token */ }, []);
+  // If still loading, show loading state
+  if (isLoading) {
+    return (
+      <main style={styles.main}>
+        <h1 style={styles.h1}>Admin</h1>
+        <p style={styles.lead}>Loading...</p>
+      </main>
+    );
+  }
 
+  // If not logged in, show login prompt
+  if (!email) {
+    return (
+      <main style={styles.main}>
+        <h1 style={styles.h1}>Admin Access</h1>
+        <p style={styles.lead}>You need to be logged in as a member to access this page.</p>
+        <div style={styles.row}>
+          <a style={styles.link} href="/login">Go to Login</a>
+        </div>
+      </main>
+    );
+  }
+
+  // If logged in but not admin, show access denied
+  if (!isAdmin) {
+    return (
+      <main style={styles.main}>
+        <h1 style={styles.h1}>Access Denied</h1>
+        <p style={styles.lead}>
+          You are logged in as {email}, but you do not have administrator privileges.
+        </p>
+        <div style={styles.row}>
+          <a style={styles.link} href="/member">Return to Member Home</a>
+        </div>
+      </main>
+    );
+  }
+
+  // Admin user - show dashboard
   return (
     <main style={styles.main}>
       <h1 style={styles.h1}>Admin</h1>
       <p style={styles.lead}>
-        Admin operations hub. This page is protected by <code>ADMIN_TOKEN</code> (sent as <code>x-admin-token</code>).
+        Admin operations hub. Logged in as: <strong>{email}</strong>
       </p>
 
       <Section title="Admin Access">
@@ -402,7 +471,7 @@ export default function AdminPage() {
           <a style={styles.link} href="/" target="_blank" rel="noopener noreferrer">Open Site</a>
         </div>
         <div style={styles.small}>
-          Token is stored in <code>sessionStorage</code> only.
+          Token is stored in <code>sessionStorage</code> only. You must be a logged-in admin member to access this page.
         </div>
       </Section>
 

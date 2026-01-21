@@ -129,10 +129,25 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           </Link>
         )}
         <div className="header-center">
+          <Link href="/join" className="header-btn desktop-tablet-only">
+            Join
+          </Link>
+          <Link href="/search" className="header-btn desktop-tablet-only">
+            Search
+          </Link>
+          <a 
+            href="https://www.bonfire.com/store/lou-gehrig-fan-club/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            referrerPolicy="no-referrer"
+            className="header-btn desktop-tablet-only"
+          >
+            Store
+          </a>
           {isLoggedIn ? (
             <>
               <Link href="/member" className="header-btn desktop-tablet-only">
-                Member Home
+                Members
               </Link>
               <button 
                 onClick={handleLogout}
@@ -142,26 +157,9 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
               </button>
             </>
           ) : (
-            <>
-              <Link href="/join" className="header-btn desktop-tablet-only">
-                Join
-              </Link>
-              <Link href="/search" className="header-btn desktop-tablet-only">
-                Search
-              </Link>
-              <a 
-                href="https://www.bonfire.com/store/lou-gehrig-fan-club/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                referrerPolicy="no-referrer"
-                className="header-btn desktop-tablet-only"
-              >
-                Store
-              </a>
-              <Link href="/login" className="header-btn desktop-tablet-only">
-                Login
-              </Link>
-            </>
+            <Link href="/login" className="header-btn desktop-tablet-only">
+              Login
+            </Link>
           )}
         </div>
         <div className="header-right">
