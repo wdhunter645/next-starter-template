@@ -14,6 +14,40 @@
 
 ---
 
+## Local Development Workflow
+
+### Supported Development Modes
+
+**For testing Cloudflare Pages Functions (LGFC-Lite runtime):**
+- Command: `npm run dev:cf`
+- What it does: Runs Wrangler Pages dev server with the built static output + Cloudflare Functions
+- What it enables:
+  - `/api/*` endpoints via `functions/api/*` (Cloudflare Pages Functions)
+  - D1 database bindings
+  - Full runtime environment matching Cloudflare Pages production
+- When to use: Testing JOIN, LOGIN, member pages, or any feature that requires API endpoints
+
+**For Next.js development (frontend only):**
+- Command: `npm run dev` (or `next dev`)
+- What it does: Runs Next.js development server with hot reload
+- What it enables: Frontend development with instant hot module replacement
+- Limitations: **Does NOT provide `/api/*` endpoints** (no Cloudflare Functions in Next.js dev mode)
+- When to use: Frontend-only changes (styling, layout, components) that don't require API calls
+
+### Important Notes
+
+**Static Export Constraints:**
+- Production uses `output: export` (static site generation)
+- Next.js App Router API routes (`src/app/api/**/route.ts`) are **NOT compatible** with static export
+- All runtime API logic must be in `functions/api/*` (Cloudflare Pages Functions)
+
+**Development Workflow:**
+1. Build static output: `npm run build:cf`
+2. Test with Cloudflare runtime: `npm run dev:cf`
+3. For frontend-only changes: `npm run dev` (but remember: no API endpoints available)
+
+---
+
 ## Rollback Protocol
 - If any PR causes a white-screen or layout regression, stop forward changes immediately.
 - Roll back to last-known-good:
