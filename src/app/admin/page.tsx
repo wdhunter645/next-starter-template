@@ -388,13 +388,20 @@ export default function AdminPage() {
         
         // Check if user is admin
         const res = await fetch(`/api/member/role?email=${encodeURIComponent(memberEmail)}`);
+        
+        if (!res.ok) {
+          console.error('Failed to check admin role: HTTP', res.status);
+          return;
+        }
+        
         const data = await res.json();
         
         if (data.ok && data.role === 'admin') {
           setIsAdmin(true);
         }
-      } catch {
-        // Failed to check admin status
+      } catch (err) {
+        console.error('Error checking admin status:', err);
+        // User is not admin (default state)
       } finally {
         setIsLoading(false);
       }
