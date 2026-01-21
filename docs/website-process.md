@@ -48,6 +48,127 @@
 
 ---
 
+## D1 Database Binding Requirements
+
+### Critical Requirements
+
+**All Cloudflare Pages Functions that use D1 REQUIRE:**
+1. D1 binding named `DB` configured in Cloudflare Pages environment
+2. Migrations applied to the D1 database before first use
+3. Runtime guards to handle missing binding or incomplete schema
+
+### Configuring D1 Binding
+
+**Local Development (`wrangler.toml`):**
+```toml
+[[d1_databases]]
+binding = "DB"                     # Must match this exact name
+database_name = "lgfc_lite"        # Your D1 database name
+database_id = "..."                # Your D1 database ID
+```
+
+**Cloudflare Pages Production:**
+1. Go to Cloudflare Dashboard → Pages → Your Project → Settings → Functions
+2. Add D1 Database Binding:
+   - Variable name: `DB` (must match exactly)
+   - D1 Database: Select your `lgfc_lite` database
+3. Save and redeploy
+
+**Verification Endpoint:**
+```bash
+# Test D1 binding and schema
+curl https://your-site.pages.dev/api/d1-test
+
+# Expected response (200 OK):
+{
+  "ok": true,
+  "status": "healthy",
+  "checks": {
+    "d1Binding": "present",
+    "requiredTables": "present"
+  }
+}
+```
+
+### Runtime Guards (Functions)
+
+**All API endpoints that use D1 must use runtime guards** to prevent silent failures:
+
+```typescript
+import { requireD1, requireTables, jsonResponse, type Env } from '../_lib/d1';
+
+export async function onRequestPost(context: { env: Env; request: Request }): Promise<Response> {
+  const { request, env } = context;
+
+  // Step 1: Check D1 binding exists
+  const d1Check = requireD1(env);
+  if (!d1Check.ok) {
+    return jsonResponse(d1Check.body, d1Check.status);
+  }
+  
+  const db = d1Check.db;
+
+  // Step 2: Check required tables exist (validates migrations applied)
+  const tablesCheck = await requireTables(db, ['join_requests', 'members']);
+  if (!tablesCheck.ok) {
+    return jsonResponse(tablesCheck.body, tablesCheck.status);
+  }
+
+  // Now safe to use db...
+}
+```
+
+### Error Responses
+
+**Missing D1 Binding (503 Service Unavailable):**
+```json
+{
+  "ok": false,
+  "error": "Database unavailable",
+  "detail": "D1 binding \"DB\" not found. Ensure wrangler.toml has [[d1_databases]] with binding=\"DB\" and Cloudflare Pages environment has the D1 binding configured.",
+  "docs": "https://developers.cloudflare.com/pages/functions/bindings/#d1-databases"
+}
+```
+
+**Missing Tables (503 Service Unavailable):**
+```json
+{
+  "ok": false,
+  "error": "Database schema incomplete",
+  "detail": "Missing required table(s): join_requests, members. Run migrations with: npx wrangler d1 migrations apply lgfc_lite",
+  "missingTables": ["join_requests", "members"],
+  "docs": "See /docs/website-process.md § D1 Database Seeding"
+}
+```
+
+### Troubleshooting
+
+**Problem: `/api/join` or `/api/login` returns 503**
+- Check D1 binding is configured (see Configuring D1 Binding above)
+- Verify migrations applied: `npx wrangler d1 migrations list lgfc_lite --local`
+- Test with `/api/d1-test` endpoint
+
+**Problem: "Database unavailable" error**
+- D1 binding not configured in Cloudflare Pages environment
+- Check binding name is exactly `DB` (case-sensitive)
+- Redeploy after adding binding
+
+**Problem: "Database schema incomplete" error**
+- Migrations not applied to this environment
+- Run: `npx wrangler d1 migrations apply lgfc_lite [--local|--remote]`
+- Verify with: `./scripts/d1-report.sh local`
+
+### Deployment Checklist
+
+Before deploying to production:
+- [ ] D1 database created in Cloudflare
+- [ ] D1 binding `DB` configured in Cloudflare Pages
+- [ ] Migrations applied: `npx wrangler d1 migrations apply lgfc_lite --remote`
+- [ ] Seeding completed (optional): `./scripts/d1-seed-all.sh production`
+- [ ] Verification test: `curl https://your-site.pages.dev/api/d1-test`
+
+---
+
 ## Rollback Protocol
 - If any PR causes a white-screen or layout regression, stop forward changes immediately.
 - Roll back to last-known-good:

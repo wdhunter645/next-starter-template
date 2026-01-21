@@ -2,7 +2,10 @@
 -- This enforces idempotency at the database level
 
 -- SQLite doesn't support ADD CONSTRAINT for UNIQUE, so we need to recreate the table
--- First, create the new table with the UNIQUE constraint
+-- First, check if message column exists and add it if missing
+-- (Migration 0001 doesn't have it, but 0004 does)
+
+-- Create the new table with the UNIQUE constraint
 CREATE TABLE IF NOT EXISTS join_requests_new (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
   name        TEXT    NOT NULL,
@@ -12,8 +15,9 @@ CREATE TABLE IF NOT EXISTS join_requests_new (
 );
 
 -- Copy existing data (deduplicate by keeping the oldest entry per email)
-INSERT INTO join_requests_new (id, name, email, message, created_at)
-SELECT id, name, email, message, created_at
+-- Only copy columns that exist in the source table
+INSERT INTO join_requests_new (id, name, email, created_at)
+SELECT id, name, email, created_at
 FROM join_requests
 WHERE id IN (
   SELECT MIN(id)
