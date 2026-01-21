@@ -129,18 +129,26 @@ class D1Seeder {
   /**
    * Determine if column is likely a photo/media URL
    */
-  isPhotoUrlColumn(table, col) {
+  isPhotoUrlColumn(table, colName) {
     const urlPatterns = ['url', 'photo_url', 'image_url', 'src', 'public_url', 'asset_url'];
     const photoTables = ['photos', 'media', 'friends'];
     
-    return urlPatterns.some(p => col.toLowerCase().includes(p)) || 
+    return urlPatterns.some(p => colName.toLowerCase().includes(p)) || 
            photoTables.some(t => table.toLowerCase().includes(t));
+  }
+
+  /**
+   * Escape SQL identifier (table/column name) for safe use in queries
+   */
+  escapeIdentifier(identifier) {
+    // SQLite uses double quotes for identifiers
+    return `"${identifier.replace(/"/g, '""')}"`;
   }
 
   /**
    * Generate value for a column
    */
-  generateValue(table, col, type, n, isPk = false, isFk = false, fkTable = null) {
+  generateValue(table, colInfo, type, n, isPk = false, isFk = false, fkTable = null) {
     // Handle foreign keys
     if (isFk && fkTable) {
       // For FK, we'll use the modulo to cycle through parent IDs
@@ -152,19 +160,19 @@ class D1Seeder {
     }
 
     // Photo/Media URL columns
-    if (this.isPhotoUrlColumn(table, col.name)) {
+    if (this.isPhotoUrlColumn(table, colInfo.name)) {
       return `'${WIKIMEDIA_PHOTOS[n % WIKIMEDIA_PHOTOS.length]}'`;
     }
 
     // Handle by column name patterns
-    const colLower = col.name.toLowerCase();
+    const colLower = colInfo.name.toLowerCase();
     
     if (colLower.includes('email')) {
       return `'user${n}@example.com'`;
     }
     
     if (colLower.includes('uuid') || colLower.includes('uid')) {
-      return `'${this.generateUUID(table, col.name, n)}'`;
+      return `'${this.generateUUID(table, colInfo.name, n)}'`;
     }
     
     if (colLower.includes('date') && type === 'TEXT') {
@@ -218,7 +226,7 @@ class D1Seeder {
           return `'${kinds[n % kinds.length]}'`;
         }
         
-        return `'${table}_${col.name}_${n}'`;
+        return `'${table}_${colInfo.name}_${n}'`;
     }
   }
 
@@ -269,8 +277,9 @@ class D1Seeder {
       }).filter(v => v !== null);
       
       if (values.length > 0) {
-        const colNames = insertColumns.map(c => c.name).join(', ');
-        const sql = `INSERT INTO ${table} (${colNames}) VALUES (${values.join(', ')})`;
+        const colNames = insertColumns.map(c => this.escapeIdentifier(c.name)).join(', ');
+        const escapedTable = this.escapeIdentifier(table);
+        const sql = `INSERT INTO ${escapedTable} (${colNames}) VALUES (${values.join(', ')})`;
         
         try {
           this.execD1(sql, true);
