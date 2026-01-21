@@ -24,8 +24,7 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
     }
   }, []);
 
-  const handleLogout = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
+  const handleLogout = () => {
     try {
       window.localStorage.removeItem('lgfc_member_email');
       window.location.href = '/';
@@ -135,13 +134,12 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
               <Link href="/member" className="header-btn desktop-tablet-only">
                 Member Home
               </Link>
-              <a 
-                href="#" 
+              <button 
                 onClick={handleLogout}
                 className="header-btn desktop-tablet-only"
               >
                 Logout
-              </a>
+              </button>
             </>
           ) : (
             <>

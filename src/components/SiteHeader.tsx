@@ -24,7 +24,7 @@ export default function SiteHeader() {
     } catch {
       setIsLoggedIn(false);
     }
-  }, []);
+  }, [pathname]);
 
   // For member routes, always use MemberHeader
   if (isMember) return <MemberHeader showLogo={!isAdmin} />;
