@@ -161,3 +161,143 @@ Any conflict MUST be resolved in favor of `/docs/LGFC-Production-Design-and-Stan
 - **Maintenance**: Archive or remove snapshots older than 90 days to manage repository size.
 - See `/docs/RECOVERY.md` for detailed snapshot usage and rollback procedures.
 - See `/snapshots/README.md` for snapshot structure and contents.
+
+---
+
+## D1 Database Seeding
+
+### Overview
+
+The repository includes automated D1 database seeding scripts that populate all tables with pseudo data for validation and testing. This enables immediate validation of page↔D1 wiring without manual data entry.
+
+### Seeding Policy
+
+- **Target**: Minimum 15 rows per table
+- **Idempotent**: Safe to re-run without creating duplicates
+- **Deterministic**: Produces predictable IDs/keys for foreign key references
+- **Complete coverage**: Seeds ALL tables defined in D1 migrations
+
+### Photo/Media URLs
+
+Photo and media tables use **public internet URLs from Wikimedia Commons** (Lou Gehrig collection):
+- Uses `Special:FilePath` URLs for stable, direct file resolution
+- No local assets or fragile scraping dependencies
+- Rotates through 15 historical Lou Gehrig photos
+
+### Scripts
+
+#### `scripts/d1-seed-all.sh` - End-to-End Bootstrap
+
+Complete bootstrap workflow: applies migrations, seeds data, generates report.
+
+**Usage:**
+```bash
+# Local development
+./scripts/d1-seed-all.sh local
+
+# Production (admin-only)
+./scripts/d1-seed-all.sh production
+```
+
+**Workflow:**
+1. Applies all D1 migrations via wrangler
+2. Seeds all tables to minimum 15 rows
+3. Prints row count report with validation status
+
+#### `scripts/d1-seed-all.mjs` - Programmatic Seeder
+
+Node.js script that discovers tables, analyzes schema, and generates deterministic inserts.
+
+**Features:**
+- Discovers tables via `sqlite_master`
+- Analyzes columns via `PRAGMA table_info`
+- Detects foreign keys via `PRAGMA foreign_key_list`
+- Seeds in dependency order (FK parents first)
+- Generates type-appropriate values (TEXT, INTEGER, REAL, dates, UUIDs)
+- Special handling for photo/media URLs (Wikimedia Commons)
+- Idempotent: checks row count before inserting
+
+**Direct usage:**
+```bash
+# Local
+node scripts/d1-seed-all.mjs
+
+# Production
+node scripts/d1-seed-all.mjs --env production
+```
+
+#### `scripts/d1-report.sh` - Row Count Report
+
+Generates validation report showing row counts for all tables.
+
+**Usage:**
+```bash
+# Local
+./scripts/d1-report.sh local
+
+# Production
+./scripts/d1-report.sh production
+```
+
+**Output:**
+- Row count per table with ✅/⚠️ status
+- Total row count across all tables
+- Sample IDs for FK target tables (photos, members, etc.)
+- Warnings for tables below 15-row threshold
+
+### One-Command Workflow
+
+For a clean environment setup:
+
+```bash
+# Apply migrations + seed + report (local)
+./scripts/d1-seed-all.sh local
+```
+
+This is the recommended workflow for:
+- Initial local development setup
+- CI/validation environments
+- Post-migration validation
+
+### Important Notes
+
+**Cloudflare Pages Deployment:**
+- Pages deployments do **NOT** auto-seed D1
+- Seeding is a manual admin operation
+- Run seeding when needed (new environments, validation testing)
+
+**Production Seeding:**
+- Admin-only operation
+- Use repository's established wrangler configuration
+- Verify with report script before deploying pages that depend on data
+
+**Data Characteristics:**
+- Deterministic: Same seed run produces same data
+- Minimal: Only required NOT NULL columns populated
+- Valid FKs: Foreign keys reference existing parent rows
+- Real URLs: Photo URLs point to actual Wikimedia Commons images
+
+### Verification Checklist
+
+After seeding, verify:
+- [ ] All tables show count >= 15 (via `d1-report.sh`)
+- [ ] No foreign key constraint errors
+- [ ] Photo tables contain valid Wikimedia URLs
+- [ ] `npm run build:cf` passes
+
+### Troubleshooting
+
+**"Table not found" errors:**
+- Run migrations first: `npx wrangler d1 migrations apply lgfc_lite --local`
+
+**Foreign key errors:**
+- Seeder handles FK order automatically
+- If errors persist, check migrations for circular dependencies
+
+**Row count below 15:**
+- Re-run seeder (idempotent, will insert missing rows)
+- Check seeder output for insert failures
+
+**Permission errors (production):**
+- Ensure wrangler is authenticated
+- Verify database binding in `wrangler.toml`
