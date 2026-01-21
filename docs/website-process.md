@@ -471,8 +471,11 @@ This section defines the authoritative design rules for header behavior and navi
 - Login → `/login` (NEVER `/member`)
 
 **When logged in (member detected via `lgfc_member_email` in localStorage):**
-- Display buttons: Member Home, Logout
-- Member Home → `/member`
+- Display buttons: Join, Search, Store, Members, Logout
+- Join → `/join`
+- Search → `/search`
+- Store → external link
+- Members → `/member`
 - Logout:
   - Clears `lgfc_member_email` from localStorage
   - Redirects to `/` (Visitor Home)
@@ -500,8 +503,15 @@ This section defines the authoritative design rules for header behavior and navi
 
 ### Admin Routes
 
+**Page access gating:**
+- Admin pages (`/admin/**`) check member login state and admin role
+- Access control flow:
+  1. Not logged in → Prompt to login
+  2. Logged in, not admin → Access Denied with "Return to Member Home" link
+  3. Logged in, admin → Dashboard displayed
+
 **Header behavior:**
-- Admin routes (`/admin/**`) detect member login state
+- Admin routes detect member login state
 - When `lgfc_member_email` exists in localStorage:
   - Render Member Header (not Visitor Header)
   - Logo/home navigation points to `/member`
@@ -512,6 +522,8 @@ This section defines the authoritative design rules for header behavior and navi
 **Purpose:**
 - Prevents re-login loops for logged-in members navigating to admin areas
 - Logged-in members maintain consistent navigation context
+- Admin access is gated by member session + role allowlist (not x-admin-token on the page)
+- Non-admin members see appropriate error message with path back to Member Home
 
 ### Implementation Notes
 
