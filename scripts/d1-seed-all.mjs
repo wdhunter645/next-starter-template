@@ -159,6 +159,11 @@ class D1Seeder {
       return 1; // Fallback
     }
 
+    // For TEXT primary keys, use UUID to ensure uniqueness
+    if (isPk && type === 'TEXT') {
+      return `'${this.generateUUID(table, colInfo.name, n)}'`;
+    }
+
     // Photo/Media URL columns
     if (this.isPhotoUrlColumn(table, colInfo.name)) {
       return `'${WIKIMEDIA_PHOTOS[n % WIKIMEDIA_PHOTOS.length]}'`;
@@ -253,7 +258,8 @@ class D1Seeder {
     // Filter columns: skip auto-increment PKs and columns with defaults
     const insertColumns = columns.filter(col => {
       const isPk = col.pk === 1;
-      const hasDefault = col.dflt_value !== null;
+      // SQLite returns "null" as string, not actual null
+      const hasDefault = col.dflt_value !== null && col.dflt_value !== 'null';
       const isAutoIncrement = isPk && col.type === 'INTEGER';
       
       return !isAutoIncrement && !hasDefault;
