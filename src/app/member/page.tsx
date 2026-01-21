@@ -14,9 +14,9 @@ import AdminLink from '@/components/member/AdminLink';
  * Section order (per spec):
  * 1. Header (in layout.tsx)
  * 2. Welcome Section
- * 3. Post Creation / Work Area
- * 4. Member Discussion Feed
- * 5. Archives Tiles
+ * 3. Archives Tiles
+ * 4. Post Creation / Work Area
+ * 5. Member Discussion Feed
  * 6. Gehrig Timeline
  * 7. Admin Dashboard Link (conditional)
  */
@@ -108,14 +108,14 @@ export default function MemberHomePage() {
       {/* 2. Welcome Section */}
       <WelcomeSection email={email} />
 
-      {/* 3. Post Creation / Work Area */}
+      {/* 3. Archives Tiles */}
+      <ArchivesTiles />
+
+      {/* 4. Post Creation / Work Area */}
       <PostCreation email={email} onPostCreated={handlePostCreated} />
 
-      {/* 4. Member Discussion Feed */}
+      {/* 5. Member Discussion Feed */}
       <DiscussionFeed refreshTrigger={refreshTrigger} />
-
-      {/* 5. Archives Tiles */}
-      <ArchivesTiles />
 
       {/* 6. Gehrig Timeline */}
       <GehrigTimeline />

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import HamburgerMenu from './HamburgerMenu';
 
 type HeaderProps = {
@@ -12,6 +12,27 @@ type HeaderProps = {
 export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps = {}) {
   const [open, setOpen] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Check if member is logged in
+    try {
+      const memberEmail = window.localStorage.getItem('lgfc_member_email');
+      setIsLoggedIn(!!memberEmail);
+    } catch {
+      setIsLoggedIn(false);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    try {
+      window.localStorage.removeItem('lgfc_member_email');
+      window.location.href = '/';
+    } catch {
+      // Fallback
+      window.location.href = '/';
+    }
+  };
 
   return (
     <>
@@ -108,24 +129,40 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           </Link>
         )}
         <div className="header-center">
-          <Link href="/join" className="header-btn desktop-tablet-only">
-            Join
-          </Link>
-          <Link href="/search" className="header-btn desktop-tablet-only">
-            Search
-          </Link>
-          <a 
-            href="https://www.bonfire.com/store/lou-gehrig-fan-club/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            referrerPolicy="no-referrer"
-            className="header-btn desktop-tablet-only"
-          >
-            Store
-          </a>
-          <Link href="/login" className="header-btn desktop-tablet-only">
-            Login
-          </Link>
+          {isLoggedIn ? (
+            <>
+              <Link href="/member" className="header-btn desktop-tablet-only">
+                Member Home
+              </Link>
+              <button 
+                onClick={handleLogout}
+                className="header-btn desktop-tablet-only"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/join" className="header-btn desktop-tablet-only">
+                Join
+              </Link>
+              <Link href="/search" className="header-btn desktop-tablet-only">
+                Search
+              </Link>
+              <a 
+                href="https://www.bonfire.com/store/lou-gehrig-fan-club/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                referrerPolicy="no-referrer"
+                className="header-btn desktop-tablet-only"
+              >
+                Store
+              </a>
+              <Link href="/login" className="header-btn desktop-tablet-only">
+                Login
+              </Link>
+            </>
+          )}
         </div>
         <div className="header-right">
           <div className="burger-wrapper">
