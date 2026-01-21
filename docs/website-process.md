@@ -190,6 +190,41 @@ Before deploying to production:
 - **Automated drift guard:** All PRs must pass `npm run test:homepage-structure` to prevent structural violations.
 - **Historical drift incidents:** See `/docs/drift-log.md` for documented cases and remediation guidance.
 
+### Design Compliance Warning System
+
+**Purpose:** Automated early detection of PRs drifting from documented design process.
+
+**Implementation Phases:**
+
+**Phase 1 (Current): WARN-only checks**
+- Design compliance workflow runs on all PRs
+- Detects missing template sections, allowlist violations, undocumented changes
+- Posts informational warnings as PR comments
+- **Never blocks or fails PRs** (always green ✅)
+- Intended use:
+  - During active design implementation, warnings are expected and acceptable
+  - Helps developers self-check before requesting review
+  - Provides early feedback without disrupting development flow
+
+**Phase 2 (Future, Day-2 hardening):**
+- After design implementation reaches "final lockdown"
+- Warnings can be upgraded to blocking checks in a separate governance PR
+- Requires explicit review and approval
+- **Explicitly not in scope for Phase 1 implementation**
+
+**Governance:**
+- WARN-only checks are the default and preferred mode during active development
+- Upgrades to blocking must be justified by demonstrated need
+- Blocking checks require documented override/exception process
+- Changes to enforcement levels require PR with governance review
+
+**Developer guidance:**
+- Warnings during WIP/Draft PRs: Normal and expected
+- Warnings before "Ready for Review": Must be addressed
+- Persistent warnings after "Ready for Review": Reviewer may request resolution
+
+---
+
 ### As-Built Documentation Requirement
 
 **Any change to Cloudflare-rendered pages must update `/docs/as-built/cloudflare-frontend.md` in the same PR.**
