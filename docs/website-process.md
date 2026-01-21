@@ -456,3 +456,71 @@ After seeding, verify:
 **Permission errors (production):**
 - Ensure wrangler is authenticated
 - Verify database binding in `wrangler.toml`
+
+---
+
+## Header State & Navigation Rules
+
+This section defines the authoritative design rules for header behavior and navigation across visitor and member contexts.
+
+### Visitor Header
+
+**When logged out:**
+- Display buttons: Join, Search, Store, Login
+- Join → `/join`
+- Login → `/login` (NEVER `/member`)
+
+**When logged in (member detected via `lgfc_member_email` in localStorage):**
+- Display buttons: Member Home, Logout
+- Member Home → `/member`
+- Logout:
+  - Clears `lgfc_member_email` from localStorage
+  - Redirects to `/` (Visitor Home)
+
+### Member Header
+
+**Always displays:**
+- Member Home → `/member`
+- Search → `/search`
+- Store → external link
+- Logout:
+  - Clears `lgfc_member_email` from localStorage
+  - Redirects to `/` (Visitor Home)
+
+### JOIN CTA Component
+
+**Links:**
+- Join → `/join`
+- Login → `/login` (NEVER `/member`)
+
+**Design requirement:**
+- Both buttons must be visible and clickable
+- No hidden or collapsed states
+- Text must be readable (proper contrast)
+
+### Admin Routes
+
+**Header behavior:**
+- Admin routes (`/admin/**`) detect member login state
+- When `lgfc_member_email` exists in localStorage:
+  - Render Member Header (not Visitor Header)
+  - Logo/home navigation points to `/member`
+- When logged out:
+  - Render Visitor Header
+  - Normal visitor navigation applies
+
+**Purpose:**
+- Prevents re-login loops for logged-in members navigating to admin areas
+- Logged-in members maintain consistent navigation context
+
+### Implementation Notes
+
+**Client-side detection:**
+- All header state logic uses `localStorage.getItem('lgfc_member_email')`
+- No server-side auth checks in header components
+- Uses React `useEffect` for client-side initialization
+
+**Navigation consistency:**
+- Logged-in members always see path to `/member`
+- Logout always returns to `/` (Visitor Home)
+- Admin routes respect member context when logged in
