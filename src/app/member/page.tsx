@@ -58,7 +58,17 @@ export default function MemberHomePage() {
   if (!email) {
     return (
       <main style={{ padding: '40px 20px', maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
-        <h1 style={{ fontSize: 28, margin: '0 0 16px 0' }}>Member Area</h1>
+        {/* Required heading for static export (assessment requirement) */}
+        <h1 style={{ 
+          fontSize: 32, 
+          fontWeight: 700, 
+          textAlign: 'center', 
+          margin: '0 0 24px 0',
+          color: 'var(--lgfc-blue)',
+        }}>
+          WELCOME LOU GEHRIG FAN CLUB MEMBERS
+        </h1>
+        <h2 style={{ fontSize: 28, margin: '0 0 16px 0' }}>Member Area</h2>
         <p style={{ fontSize: 16, color: 'rgba(0,0,0,0.7)', margin: '0 0 24px 0' }}>
           You&apos;re not signed in yet. Please log in to continue.
         </p>
@@ -84,6 +94,17 @@ export default function MemberHomePage() {
 
   return (
     <main>
+      {/* 1. Required heading for static export (assessment requirement) */}
+      <h1 style={{ 
+        fontSize: 32, 
+        fontWeight: 700, 
+        textAlign: 'center', 
+        margin: '40px 20px 32px 20px',
+        color: 'var(--lgfc-blue)',
+      }}>
+        WELCOME LOU GEHRIG FAN CLUB MEMBERS
+      </h1>
+
       {/* 2. Welcome Section */}
       <WelcomeSection email={email} />
 
