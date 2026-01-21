@@ -19,8 +19,6 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const fs = require('fs');
-            
             // Get PR details
             const prNumber = context.payload.pull_request.number;
             const prBody = context.payload.pull_request.body || '';
@@ -60,8 +58,10 @@ jobs:
             // ============================================================
             // Step 2: Validate ZIP safety statement
             // ============================================================
-            const hasZipStatement = prBody.includes('No ZIP found in repo root') || 
-                                    (prBody.includes('ZIP') && (prBody.includes('deleted') || prBody.includes('removed')));
+            // Look for explicit statement OR proof of deletion
+            const hasNoZipStatement = prBody.includes('No ZIP found in repo root');
+            const hasZipDeletionProof = /ZIP.*(?:deleted|removed)|(?:deleted|removed).*ZIP/i.test(prBody);
+            const hasZipStatement = hasNoZipStatement || hasZipDeletionProof;
             
             if (hasZipStatement) {
               passed.push('✅ ZIP safety statement present');
@@ -76,18 +76,23 @@ jobs:
             let allowlistParsed = false;
             
             // Extract "Allowed files:" section
-            const allowedFilesMatch = prBody.match(/Allowed files?:([\s\S]*?)(?=\n#+|Forbidden:|$)/i);
+            // Look for section starting with "Allowed files:" up to next major section or end
+            const allowedFilesMatch = prBody.match(/Allowed files?:([\s\S]*?)(?=\n##|$)/i);
             
             if (allowedFilesMatch) {
               const allowedSection = allowedFilesMatch[1];
               // Extract bullet points (lines starting with - or *)
-              const bulletRegex = /^[\s]*[-*]\s*`?([^`\n]+?)`?$/gm;
+              // Match optional backticks around the filepath
+              const bulletRegex = /^[\s]*[-*]\s*`?([^`\n]+?)`?\s*$/gm;
               let match;
               
               while ((match = bulletRegex.exec(allowedSection)) !== null) {
                 const filepath = match[1].trim();
-                // Skip empty lines and lines that are section headers
-                if (filepath && filepath.length > 0 && !filepath.match(/^[A-Z][^:]*:$/)) {
+                // Skip empty lines, section headers, and the "Forbidden:" marker
+                if (filepath && 
+                    filepath.length > 0 && 
+                    !filepath.match(/^[A-Z][^:]*:$/) &&
+                    !filepath.toLowerCase().includes('forbidden')) {
                   allowlist.push(filepath);
                 }
               }
