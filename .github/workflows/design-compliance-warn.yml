@@ -61,7 +61,7 @@ jobs:
             // Step 2: Validate ZIP safety statement
             // ============================================================
             const hasZipStatement = prBody.includes('No ZIP found in repo root') || 
-                                    prBody.includes('ZIP') && (prBody.includes('deleted') || prBody.includes('removed'));
+                                    (prBody.includes('ZIP') && (prBody.includes('deleted') || prBody.includes('removed')));
             
             if (hasZipStatement) {
               passed.push('✅ ZIP safety statement present');
@@ -76,17 +76,18 @@ jobs:
             let allowlistParsed = false;
             
             // Extract "Allowed files:" section
-            const allowedFilesMatch = prBody.match(/Allowed files?:[\s\S]*?(?=Forbidden:|$)/i);
+            const allowedFilesMatch = prBody.match(/Allowed files?:([\s\S]*?)(?=\n#+|Forbidden:|$)/i);
             
             if (allowedFilesMatch) {
-              const allowedSection = allowedFilesMatch[0];
+              const allowedSection = allowedFilesMatch[1];
               // Extract bullet points (lines starting with - or *)
               const bulletRegex = /^[\s]*[-*]\s*`?([^`\n]+?)`?$/gm;
               let match;
               
               while ((match = bulletRegex.exec(allowedSection)) !== null) {
                 const filepath = match[1].trim();
-                if (filepath && !filepath.toLowerCase().startsWith('forbidden')) {
+                // Skip empty lines and lines that are section headers
+                if (filepath && filepath.length > 0 && !filepath.match(/^[A-Z][^:]*:$/)) {
                   allowlist.push(filepath);
                 }
               }
@@ -128,8 +129,17 @@ jobs:
             // ============================================================
             // Step 5: Docs-change heuristic
             // ============================================================
-            const codeFiles = changedFiles.filter(f => !f.startsWith('docs/'));
-            const docFiles = changedFiles.filter(f => f.startsWith('docs/'));
+            const isDocFile = (f) => {
+              return f.startsWith('docs/') || 
+                     f.endsWith('.md') || 
+                     f.endsWith('.rst') || 
+                     f.endsWith('.txt') ||
+                     f.includes('/README') ||
+                     f.includes('/CHANGELOG');
+            };
+            
+            const codeFiles = changedFiles.filter(f => !isDocFile(f));
+            const docFiles = changedFiles.filter(f => isDocFile(f));
             
             if (codeFiles.length > 0 && docFiles.length === 0) {
               warnings.push('⚠️ Code/config changed without docs updates (heuristic warning)');
