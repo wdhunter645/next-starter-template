@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
+DB_NAME="lgfc_lite"
+
 mkdir -p reports/d1
 ts="$(date -u +%Y%m%dT%H%M%SZ)"
 log="reports/d1/d1-prod-diagnose-$ts.log"
@@ -17,14 +20,14 @@ log="reports/d1/d1-prod-diagnose-$ts.log"
   npx wrangler d1 list
 
   echo
-  echo "== Tables in lgfc_lite (REMOTE) =="
-  npx wrangler d1 execute lgfc_lite --remote --command "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;"
+  echo "== Tables in $DB_NAME (REMOTE) =="
+  npx wrangler d1 execute "$DB_NAME" --remote --command "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;"
 
   echo
   echo "== Row counts (REMOTE) =="
   for t in join_requests join_email_log members login_attempts; do
     echo "-- $t"
-    npx wrangler d1 execute lgfc_lite --remote --command "SELECT COUNT(*) AS count FROM $t;"
+    npx wrangler d1 execute "$DB_NAME" --remote --command "SELECT COUNT(*) AS count FROM $t;"
   done
 
 } | tee "$log"
