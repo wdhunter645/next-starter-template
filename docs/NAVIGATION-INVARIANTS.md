@@ -31,7 +31,7 @@ Hamburger menus must NEVER include:
 - Home (MOBILE ONLY)
 - About
 - Contact
-- Support (mailto)
+- Support → `/support` with `from` query parameter
 - Store (external)
 
 ### Desktop/tablet hamburger rule
@@ -41,10 +41,30 @@ Hamburger menus must NEVER include:
 ## Footer (footer-only)
 - Privacy → `/privacy`
 - Terms → `/terms`
-- Admin → `/admin`
+- Contact → `/contact`
+- Support → `/support` with `from` query parameter
+- Admin → `/admin` (conditional, admin-only)
 
 ## Support + Store
-- Support is a mailto link (not a page unless explicitly implemented later).
+- Support routes to `/support` page with `from` query parameter for return-to-source behavior
+- Support page:
+  - Public intake form for Visitors and Members
+  - Email field: required and validated for logged-out users; auto-filled/hidden for logged-in users
+  - Optional "Subject detail" field
+  - Required "Message" textarea
+  - Cancel button: returns to validated `from` path (fallback `/`)
+  - Send button: submits server-side email via authorized sender model
+  - Success confirmation with explicit return control
+- Email envelope (locked):
+  - From: `support@lougehrigfanclub.com`
+  - To: `lougehrigfanclub@gmail.com`
+  - Reply-To: requester's email
+  - Subject: `SUPPORT - <requester_email>` or `SUPPORT - <requester_email> - <subject detail>`
+  - Body includes: requester email, message, source page (validated `from`), timestamp (ISO)
+- Safe `from` validation:
+  - Must start with `/`
+  - Must not contain `http://`, `https://`, or `//`
+  - Invalid/missing values fallback to `/`
 - Store is an external link.
 
 ## Search
