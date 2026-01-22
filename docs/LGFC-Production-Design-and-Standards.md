@@ -83,22 +83,22 @@ Mobile visitor hamburger order:
 1. **Home**
 2. **About**
 3. **Contact**
-4. **Support**
+4. **Support** → `/support` with `from` query parameter
 5. **Store**
 
-## 3) Visitor Hamburger Menu — Final Lock (Updated 2026-01-16)
+## 3) Visitor Hamburger Menu — Final Lock (Updated 2026-01-22)
 
 ### Desktop / Tablet
 - About
 - Contact
-- Support (mailto: Support@LouGehrigFanClub.com, subject: “Support Needed”)
+- Support → /support with `from` query parameter
 
 ### Mobile
 Mobile visitor hamburger order:
 1. Home
 2. About
 3. Contact
-4. Support
+4. Support → /support with `from` query parameter
 5. Store
 
 ## 3.1) Hamburger Menu Interaction Behavior — Final Lock (Added 2026-01-20)
@@ -180,17 +180,48 @@ The detailed login/logout behavior below is **deferred to the future Auth phase*
 
 ---
 
-## 7) Support Access Lock
+## 7) Support Access Lock (Updated 2026-01-22)
 
-- Header and hamburger menu include **Support** item:
-  - mailto: `Support@LouGehrigFanClub.com`
-  - subject: **"Support Needed"**
-- JOIN page includes Support button:
-  - subject: **"Support Needed JOIN"**
-- LOGIN page includes Support button:
-  - subject: **"Support Needed LOGIN"**
+### Support Page Implementation
+- Header, footer, and hamburger menu include **Support** item that routes to `/support` with `from` query parameter
+- `/support` page is a public intake form usable by Visitors and Members
 
-Support is separate from Ask a Question.
+### Support Page Behavior
+- **Email field:**
+  - Logged out: required, validated email format
+  - Logged in: auto-filled from session email (`lgfc_member_email` in localStorage) and hidden/readonly
+- **Subject Detail field:** optional
+- **Message field:** required textarea
+- **Cancel button:** returns to validated `from` path (fallback `/`)
+- **Send button:** submits server-side email
+- **Success confirmation:** shows success message with explicit "Return to Previous Page" button
+
+### Email Envelope (Locked — Authorized Sender Model)
+- **From:** `support@lougehrigfanclub.com`
+- **To:** `lougehrigfanclub@gmail.com`
+- **Reply-To:** requester's email address
+- **Subject Format:**
+  - Without subject detail: `SUPPORT - <requester_email>`
+  - With subject detail: `SUPPORT - <requester_email> - <subject detail>`
+- **Body must include:**
+  - Requester email
+  - Message
+  - Source page (validated `from` parameter)
+  - Timestamp (ISO 8601 format)
+
+### Security Requirements
+- Safe `from` parameter validation:
+  - Must start with `/`
+  - Must not contain `http://`, `https://`, or `//`
+  - Invalid or missing values fallback to `/`
+- Do NOT send email "From" the requester's email address
+- Do NOT use mailto or Gmail compose links
+
+### Implementation Notes
+- Uses existing MailChannels integration
+- JOIN page may include Support link (optional)
+- LOGIN page may include Support link (optional)
+- Support is separate from Ask a Question feature
 
 ---
 
@@ -236,7 +267,7 @@ Support is separate from Ask a Question.
 
 ---
 
-## 11) Members Header — Final Lock (Updated 2026-01-16)
+## 11) Members Header — Final Lock (Updated 2026-01-22)
 
 ### Desktop / Tablet header layout (same structure as Visitor)
 - Layout: **Logo + 3 buttons + Hamburger**
@@ -258,7 +289,7 @@ Order:
 2. **Obtain Membership Card**
 3. **About**
 4. **Contact**
-5. **Support** (mailto: Support@LouGehrigFanClub.com, subject: “Support Needed”)
+5. **Support** → `/support` with `from` query parameter
 
 ### Mobile header layout
 - Visible: **Logo + Hamburger only**
@@ -274,7 +305,7 @@ Mobile member hamburger order:
 5. **Obtain Membership Card**
 6. **About**
 7. **Contact**
-8. **Support**
+8. **Support** → `/support` with `from` query parameter
 9. **Login**
 10. **Logout** (must be last)
 
@@ -345,7 +376,7 @@ Photos require usage tagging/eligibility for safe selection by placement:
 - Keywords/criteria entered on the Search page.
 - Results list renders on the page with pagination as needed.
 
-## Footer — Final Lock (Updated 2026-01-16)
+## Footer — Final Lock (Updated 2026-01-22)
 
 ### Global rules
 - Same footer on **all pages** (visitor + member)
@@ -360,7 +391,7 @@ Photos require usage tagging/eligibility for safe selection by placement:
   - Terms
   - Privacy
   - Contact
-  - Support (opens email draft)
+  - Support → `/support` with `from` query parameter
 
 ### Mobile layout
 Default:
@@ -370,7 +401,7 @@ Default:
 
 Optional (if space requires):
 - Logo left + footer hamburger right
-  - Menu items: Terms, Privacy, Contact, Support
+  - Menu items: Terms, Privacy, Contact, Support → `/support`
 
 ## My Profile — Final Lock (Updated 2026-01-16)
 
@@ -576,7 +607,7 @@ This addendum captures every design/standards decision finalized in-session afte
 - Privacy → `/privacy`
 - Terms → `/terms`
 - Contact → `/contact`
-- Support → mailto:Support@LouGehrigFanClub.com?subject=Support%20Request
+- Support → `/support` with `from` query parameter
 - Admin → `/admin` (only visible to admin users)
 
 **Email Display Policy:**
@@ -681,3 +712,22 @@ This addendum clarifies the technical implementation of the header logo behavior
 - Ensure logo scrolls with page content
 - Preserve logo overlap behavior over banner
 
+
+---
+
+## Health Page — Final Lock (Added 2026-01-22)
+
+### Purpose
+- `/health` is a minimal public endpoint for uptime monitoring and basic server-side rendering validation
+- Returns "OK: health" with timestamp
+
+### Layout Requirements
+- **Must** display "OK" text fully visible beneath the header on all viewports (mobile + desktop)
+- **Top padding:** Minimum 80px to prevent header overlap
+- **Content:** Plain text "OK: health" + timestamp in ISO format
+- **Styling:** Minimal monospace font for quick visual scan
+
+### Accessibility
+- Public route (no authentication required)
+- Must remain fast and lightweight for automated health checks
+- Must not be hidden or obstructed by header, navigation, or other UI elements
