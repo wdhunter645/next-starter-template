@@ -25,7 +25,7 @@ This is the high-level, human-readable summary of this repository. It is intende
 ## Auth Model (current implementation)
 
 - Login state is represented client-side via `localStorage` key: `lgfc_member_email`.
-- FanClub routes (`/fanclub/**`) are protected by redirecting unauthenticated traffic to `/`.
+- Member content pages (e.g., `/photo`, `/library`, `/memorabilia`) are protected by redirecting unauthenticated traffic to `/`.
 - Admin privilege is determined by `/api/member/role?email=...`.
 
 ---
@@ -36,7 +36,8 @@ Authoritative list is in `/docs/NAVIGATION-INVARIANTS.md`.
 
 High-level:
 - Public: `/`, `/about`, `/contact`, `/support`, `/terms`, `/privacy`, `/search`, `/join`, `/login`, `/logout`, `/faq`, `/health`
-- FanClub (auth required): `/fanclub` and `/fanclub/**` subpages
+- Member: `/member` (member home) and `/member/**` sub-pages (e.g., `/member/profile`, `/member/card`)
+- Member Content (auth required): `/photo`, `/photos`, `/library`, `/memorabilia`, `/ask`, `/news`
 - Admin: `/admin/**`
 - Store: external Bonfire link only (no `/store` route)
 
