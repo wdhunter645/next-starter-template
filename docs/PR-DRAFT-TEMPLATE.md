@@ -1,4 +1,5 @@
 # LGFC — Agent PR Draft Template (Authoritative)
+Version 1 – Explicit Commands
 
 This file is the **single authoritative PR draft template** for LGFC work when using an uploaded ZIP workflow.
 All PR drafts must follow this structure and must be delivered as **one continuous, single-fence Markdown block**.
