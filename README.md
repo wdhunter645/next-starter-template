@@ -1,244 +1,59 @@
-# Lou Gehrig Fan Club — Next.js Framework Starter
+# Lou Gehrig Fan Club (LGFC) — Website Repository
 
-This repository contains the **public website** for the **Lou Gehrig Fan Club (LGFC)**, implemented as a Next.js application and deployed to **Cloudflare Pages** using a static export build.
+This repo contains the **LGFC public website** and the **FanClub (authenticated)** area.
 
-It is also the canonical baseline for future LGFC sites that share the same architecture and governance model.
-
----
-
-## 1. Overview
-
-- **Project:** Lou Gehrig Fan Club — Public Website
-- **Framework:** Next.js (App Router) with TypeScript
-- **Hosting:** Cloudflare Pages (static export)
-- **Primary Audience:** Fans, visitors, and prospective members at `www.lougehrigfanclub.com`
-- **Related Systems:**
-  - Members/Admin area is hosted in a **separate repository** (Vercel).
-  - Supabase (database) and Backblaze B2 (media) are part of the wider LGFC architecture and integrated via API from this and other repos.
-
-For contributors working on the LGFC website:
-- **PR Process**: [docs/website-PR-process.md](./docs/website-PR-process.md)
-- **Governance & Rollback**: [docs/website-PR-governance.md](./docs/website-PR-governance.md)
-- **Current Homepage Standard**: [docs/homepage.html](./docs/homepage.html)
-- **Legacy Snapshots**: [v6](./docs/lgfc-homepage-legacy-v6.html), [v7](./docs/lgfc-homepage-legacy-v7.html)
-
-- The **public-facing homepage and spokes** (Weekly Matchup, Milestones, Charities, News & Q&A, Calendar, Join).
-- A **strictly controlled deployment pipeline** to Cloudflare Pages.
-- A **documented design standard** that must remain in sync with the code.
-
-For a full visual and functional specification, see:
-
-- `docs/Design-spec.md` (LGFC website design)
-- `docs/lgfc-homepage-legacy-v6.html` (homepage structure standard)
+Hosting: Cloudflare Pages (static export)  
+Framework: Next.js (App Router) + TypeScript
 
 ---
 
-## 2. Quick Start for Contributors
+## Start Here
 
-If you are working on the LGFC website, start here:
-
-- **Getting started & environment setup:**
-  - `docs/START_HERE.md`
-
-- **Deployment details (Cloudflare Pages):**
-  - `docs/DEPLOYMENT_GUIDE.md`
-
-- **Website development process / governance:**
-  - `docs/website-PR-process.md`
-  - `docs/website-PR-governance.md`
-
-These documents define:
-
-- How to open PRs
-- Required checks before merge
-- Rollback expectations
-- How to keep the implementation aligned with the design spec
+- **`/context.md`** — high-level repository + architecture summary (read first)
+- **`/Agent.md`** — rules for Agent/Codex work in this repo (mandatory)
+- **`/active_tasklist.md`** — daily work list (ephemeral; open vs completed)
 
 ---
 
-## 3. Security Notice
+## Authoritative Design & Navigation
 
-If you cloned or used this repository before **October 16, 2025**, be aware:
+The source-of-truth documents are:
+- `/docs/LGFC-Production-Design-and-Standards.md`
+- `/docs/NAVIGATION-INVARIANTS.md`
 
-> A `.env` file containing secrets was accidentally committed in a historical revision and has since been removed.  
-> Any exposed credentials must be considered compromised.
-
-If you used any of those credentials, you **must**:
-
-- Rotate keys for affected services (Cloudflare, Supabase, B2, etc.).
-- Update the secure environment variables in the Cloudflare and GitHub settings as described in `docs/DEPLOYMENT_GUIDE.md`.
-
-All current deployments and contributors should assume **only** the new rotated credentials are valid.
+If code or other docs conflict with the above, the above wins.
 
 ---
 
-## 4. Architecture Summary
+## Day 1 Canonical Routes (summary)
 
-At a high level, this repo provides:
+Public:
+- `/`, `/about`, `/contact`, `/support`, `/terms`, `/privacy`, `/search`, `/join`, `/login`, `/logout`, `/faq`, `/health`
 
-- A **Next.js front-end** using the App Router and static export.
-- A **Cloudflare Pages** deployment target configured for:
-  - `npm run build:cf` to generate a static build
-  - Automatic deployment via GitHub Actions when code is merged to `main`
-- A **document-driven design contract**:
-  - Global website design: `docs/Design-spec.md`
-  - Homepage standard: `docs/lgfc-homepage-legacy-v6.html` (versioned baseline)
+FanClub (auth required; unauth redirects to `/`):
+- `/fanclub`, `/fanclub/myprofile`, `/fanclub/membercard`, `/fanclub/photo`, `/fanclub/library`, `/fanclub/memorabilia`
 
-The members/admin application lives in another repo and is hosted separately (typically on Vercel). This repo remains focused on the **public site**.
+Admin (admin gate):
+- `/admin/**`
 
----
+Store:
+- External Bonfire link (no `/store` route)
 
-## 5. Development Setup
-
-### 5.1 Using GitHub Codespaces (Recommended)
-
-This repository is optimized for GitHub Codespaces.
-
-- Click the **"Code" → "Open with Codespaces"** button in GitHub.
-- Follow the instructions in `docs/START_HERE.md` for:
-  - Git authentication
-  - Node version management
-  - First-time setup
-
-### 5.2 Local Development
-
-If you prefer local development:
-
-1. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-2. Start the dev server:
-
-   ```bash
-   npm run dev
-   ```
-
-3. Open `http://localhost:3000` in your browser.
-
-The main homepage entry file is typically `src/app/page.tsx`. When running `npm run dev`, changes will live-reload.
+Weekly vote:
+- In transition; do not delete weekly-related routes until the hidden-results behavior is finalized.
 
 ---
 
-## 6. Commands & Workflow
+## Local Development
 
-This project supports both `npm` scripts and `make` commands. Either approach is fine, but **Makefile workflows** are encouraged for consistency.
-
-### 6.1 npm Scripts (common)
-
-- `npm run dev` — Start Next.js development server
-- `npm run build` — Build production site
-- `npm run build:cf` — Build static site for Cloudflare Pages
-- `npm run lint` — Run ESLint
-- `npm run lint:fix` — Lint and auto-fix
-- `npm run format` — Format code with Prettier
-- `npm run typecheck` — TypeScript checks
-- `npm run test` — Run tests (Vitest)
-- `npm run test:watch` — Tests in watch mode
-- `npm run test:coverage` — Tests with coverage
-
-### 6.2 Makefile Shortcuts
-
-The `Makefile` wraps common tasks:
-
-- `make dev` — Start dev server
-- `make build` — Production build
-- `make deploy` — Deploy to Cloudflare Pages
-- `make lint` — Lint code
-- `make format` — Format code
-- `make typecheck` — TypeScript checks
-- `make test`, `make test-watch`, `make test-coverage` — Test workflows
-
-Run `make help` to see all available commands.
+```bash
+npm install
+npm run dev
+```
 
 ---
 
-## 7. Deployment (Cloudflare Pages)
+## CI / Governance
 
-This repository is configured to deploy to **Cloudflare Pages** when changes are merged into `main` and the CI pipeline passes.
-
-For complete deployment details (including required GitHub secrets and Cloudflare configuration), see:
-
-- `docs/DEPLOYMENT_GUIDE.md`
-
-In short:
-
-- The build step uses `npm run build:cf` to generate a static export.
-- GitHub Actions takes care of building and publishing to Cloudflare Pages.
-- Required secrets (API token, account ID, project name, etc.) must be configured in GitHub.
-
----
-
-## 7.5 Automated Background Processes
-
-This repository includes automated workflows for maintaining data synchronization:
-
-### B2 → D1 Media Ingestion Pipeline
-
-A daily automated workflow syncs media files from Backblaze B2 storage to the Cloudflare D1 database for indexing and discovery.
-
-**Key Features:**
-- **Fully idempotent**: Safe to run repeatedly without duplicating data
-- **INSERT-only**: Never modifies or deletes existing records
-- **Scheduled**: Runs daily at 06:17 UTC
-- **Manual trigger**: Can be run on-demand via GitHub Actions
-
-**Documentation:**
-- Pipeline architecture: `docs/b2-d1-sync-pipeline.md`
-- Workflow: `.github/workflows/b2-d1-daily-sync.yml`
-- Database schema: `migrations/0010_media_assets.sql`
-
-The pipeline maintains a complete historical record of all media assets ingested from B2, enabling the site to index and serve ~1,000 media files efficiently.
-
----
-
-## 8. Design & Homepage Standards
-
-The LGFC project uses **documented design contracts**:
-
-- Overall website design:
-  - `docs/Design-spec.md`
-
-- Homepage structure and content order (baseline spec):
-  - `docs/lgfc-homepage-legacy-v6.html`
-
-Any changes to homepage layout, section order, or major visual structure **must**:
-
-1. Update the relevant spec document.
-2. Ensure the implementation (e.g. `src/app/page.tsx`) aligns with the spec.
-3. Follow the PR governance rules so that drift between design and implementation is minimized.
-
----
-
-## 9. Contributing & Governance
-
-For contributors working specifically on the LGFC website:
-
-- **PR Process:**
-  - `docs/website-PR-process.md`
-
-- **Governance & Rollback Rules:**
-  - `docs/website-PR-governance.md`
-
-These documents define:
-
-- How to propose changes
-- Required checks (lint, tests, visual alignment)
-- Rollback and incident handling expectations
-- How to keep the repo compliant with LGFC's long-term design and operations strategy
-
-Before opening a PR, make sure you:
-
-1. Read `docs/START_HERE.md`.
-2. Follow the commit & branch naming guidance in the PR process docs.
-3. Run the recommended `make` or `npm` commands (lint, typecheck, tests) locally or in Codespaces.
-
----
-
-## 10. License / Ownership
-
-This repository is part of the **Lou Gehrig Fan Club** project and is intended for use in building and maintaining the LGFC public website.
-
-If you are evaluating this as a "starter template," treat it as a **reference implementation** rather than a generic drop-in boilerplate, and be aware that some documentation and workflows are specifically tailored to the LGFC environment.
+This repo enforces design and safety gates (including ZIP artifact blocking).  
+Follow `/Agent.md` for required workflow and file-touch rules.
