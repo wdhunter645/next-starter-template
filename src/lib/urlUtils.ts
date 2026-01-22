@@ -47,3 +47,22 @@ export function getCurrentPath(fallback = '/'): string {
   }
   return window.location.pathname || fallback;
 }
+
+/**
+ * Validates an email address using a simple but effective regex pattern.
+ * 
+ * @param email - The email address to validate
+ * @returns true if the email is valid, false otherwise
+ */
+export function isValidEmail(email: string | null | undefined): boolean {
+  if (!email || typeof email !== 'string') {
+    return false;
+  }
+  
+  const trimmed = email.trim();
+  
+  // Simple but effective email validation
+  // Ensures: something@something.something
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(trimmed);
+}

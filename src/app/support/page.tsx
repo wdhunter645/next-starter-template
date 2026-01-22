@@ -1,14 +1,15 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { validateInternalPath } from '@/lib/urlUtils';
+import { validateInternalPath, isValidEmail } from '@/lib/urlUtils';
 
 function SupportForm() {
-const router = useRouter();
-const searchParams = useSearchParams();
-const fromParam = searchParams.get('from');
-const validatedFrom = validateInternalPath(fromParam, '/');
+	const router = useRouter();
+	const searchParams = useSearchParams();
+	const fromParam = searchParams.get('from');
+	// Memoize the validated path since it won't change during component lifecycle
+	const validatedFrom = useMemo(() => validateInternalPath(fromParam, '/'), [fromParam]);
 
 const [email, setEmail] = useState('');
 const [subjectDetail, setSubjectDetail] = useState('');
@@ -19,13 +20,14 @@ const [showSuccess, setShowSuccess] = useState(false);
 const [error, setError] = useState('');
 
 useEffect(() => {
-if (typeof window !== 'undefined') {
-const memberEmail = window.localStorage.getItem('lgfc_member_email');
-if (memberEmail && memberEmail.includes('@')) {
-setEmail(memberEmail);
-setIsLoggedIn(true);
-}
-}
+	if (typeof window !== 'undefined') {
+		const memberEmail = window.localStorage.getItem('lgfc_member_email');
+		// Use proper email validation
+		if (memberEmail && isValidEmail(memberEmail)) {
+			setEmail(memberEmail);
+			setIsLoggedIn(true);
+		}
+	}
 }, []);
 
 const handleCancel = () => {
@@ -37,13 +39,14 @@ router.push(validatedFrom);
 };
 
 const handleSubmit = async (e: React.FormEvent) => {
-e.preventDefault();
-setError('');
+	e.preventDefault();
+	setError('');
 
-if (!email || !email.includes('@')) {
-setError('Please enter a valid email address.');
-return;
-}
+	// Client-side validation using proper email validation
+	if (!isValidEmail(email)) {
+		setError('Please enter a valid email address.');
+		return;
+	}
 
 if (!message.trim()) {
 setError('Please enter a message.');
