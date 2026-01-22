@@ -8,12 +8,12 @@ The `/join` page provides the primary visitor → member intake flow for the Lou
 1. Submit a join request with their contact information
 2. Opt into the mailing list
 3. Receive a welcome email with membership instructions
-4. Enable future member area access (once authentication is enabled)
+4. Enable future member area access when authentication is implemented
 
 ## Cross-Reference to Authoritative Documentation
 
 **This specification aligns with:**
-- `/docs/LGFC-Production-Design-and-Standards.md` — See "JOIN — Behavior Lock" (Section 6) for authoritative field definitions and duplicate handling
+- `/docs/LGFC-Production-Design-and-Standards.md` — See "6) JOIN — Behavior Lock" for authoritative field definitions and duplicate handling
 - `/docs/NAVIGATION-INVARIANTS.md` — Join button placement in header
 
 The authoritative design doc defines:
@@ -62,7 +62,7 @@ The `/join` page implements a simple contact intake flow:
 
 ## Required Fields
 
-Per `/docs/LGFC-Production-Design-and-Standards.md` Section 6:
+Per `/docs/LGFC-Production-Design-and-Standards.md` "6) JOIN — Behavior Lock":
 
 ### Client-side Required
 - **First name** (`first_name`): Text, must be non-empty after trim
@@ -134,7 +134,7 @@ Implemented in `/functions/api/join.ts`:
 
 ## What Happens on Success
 
-Per `/docs/LGFC-Production-Design-and-Standards.md` Section 6:
+Per `/docs/LGFC-Production-Design-and-Standards.md` "6) JOIN — Behavior Lock":
 
 1. **Database Record Created**
    - New row inserted into `join_requests` table
@@ -218,7 +218,7 @@ Per `/docs/NAVIGATION-INVARIANTS.md`:
 
 ## Support Access
 
-Per `/docs/LGFC-Production-Design-and-Standards.md` Section 7:
+Per `/docs/LGFC-Production-Design-and-Standards.md` "7) Support Access Lock":
 
 - **Support Button** visible on form
 - **Link:** `mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed%20JOIN`
