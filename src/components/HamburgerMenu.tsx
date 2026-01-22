@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRef, RefObject } from 'react';
 import { useClickAway } from '@/hooks/useClickAway';
+import { getCurrentPath } from '@/lib/urlUtils';
 
 /**
  * Visitor hamburger menu.
@@ -95,9 +96,9 @@ export default function HamburgerMenu({
             </Link>
           </li>
           <li>
-            <a href="mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed" aria-label="Contact support via email">
+            <Link href={`/support?from=${encodeURIComponent(getCurrentPath())}`} onClick={onClose}>
               Support
-            </a>
+            </Link>
           </li>
           <li className="only-mobile">
             <a href="https://www.bonfire.com/store/lou-gehrig-fan-club/" target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">
