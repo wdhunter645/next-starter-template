@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import styles from "./Footer.module.css";
+import { getCurrentPath } from "@/lib/urlUtils";
 
 // Environment variables with safe fallbacks
 const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Lou Gehrig Fan Club";
@@ -80,9 +81,9 @@ export default function Footer() {
 						<Link href="/contact" className={styles.link}>
 							Contact
 						</Link>
-						<a href="mailto:Support@LouGehrigFanClub.com?subject=Support%20Request" className={styles.link}>
+						<Link href={`/support?from=${encodeURIComponent(getCurrentPath())}`} className={styles.link}>
 							Support
-						</a>
+						</Link>
 						{isAdmin && (
 							<Link href="/admin" className={styles.link}>
 								Admin
