@@ -46,7 +46,6 @@ High-level:
 
 - `/docs/LGFC-Production-Design-and-Standards.md`
 - `/docs/NAVIGATION-INVARIANTS.md`
-- `/docs/fanclub.md`
 
 If any code or other doc conflicts with these, these win.
 

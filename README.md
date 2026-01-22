@@ -20,7 +20,6 @@ Framework: Next.js (App Router) + TypeScript
 The source-of-truth documents are:
 - `/docs/LGFC-Production-Design-and-Standards.md`
 - `/docs/NAVIGATION-INVARIANTS.md`
-- `/docs/fanclub.md`
 
 If code or other docs conflict with the above, the above wins.
 
