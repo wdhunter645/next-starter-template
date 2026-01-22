@@ -30,8 +30,11 @@ If code or other docs conflict with the above, the above wins.
 Public:
 - `/`, `/about`, `/contact`, `/support`, `/terms`, `/privacy`, `/search`, `/join`, `/login`, `/logout`, `/faq`, `/health`
 
-FanClub (auth required; unauth redirects to `/`):
-- `/fanclub`, `/fanclub/myprofile`, `/fanclub/membercard`, `/fanclub/photo`, `/fanclub/library`, `/fanclub/memorabilia`
+Member Home and Sub-pages:
+- `/member` (member home), `/member/profile`, `/member/card`, `/memberpage` (alias to `/member`)
+
+Member Content (auth required; unauth redirects to `/`):
+- `/photo`, `/photos`, `/library`, `/memorabilia`, `/ask`, `/news`
 
 Admin (admin gate):
 - `/admin/**`
