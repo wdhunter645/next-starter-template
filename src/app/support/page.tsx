@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { validateInternalPath } from '@/lib/urlUtils';
 
-export default function SupportPage() {
+function SupportForm() {
 const router = useRouter();
 const searchParams = useSearchParams();
 const fromParam = searchParams.get('from');
@@ -178,6 +178,14 @@ Cancel
 </div>
 </form>
 </main>
+);
+}
+
+export default function SupportPage() {
+return (
+<Suspense fallback={<div style={styles.main}>Loading...</div>}>
+<SupportForm />
+</Suspense>
 );
 }
 
