@@ -58,8 +58,8 @@ export default function FanClubHamburgerMenu({
           <li className="only-mobile"><Link href="/fanclub" onClick={onClose}>Fan Club Home</Link></li>
 
           {/* Desktop/tablet (and also present on mobile lower in list) */}
-          <li><Link href="/fanclub/profile" onClick={onClose}>My Profile</Link></li>
-          <li><Link href="/fanclub/card" onClick={onClose}>Obtain Fan Clubship Card</Link></li>
+          <li><Link href="/fanclub/myprofile" onClick={onClose}>My Profile</Link></li>
+          <li><Link href="/fanclub/membercard" onClick={onClose}>Obtain Fan Clubship Card</Link></li>
           <li><Link href="/about" onClick={onClose}>About</Link></li>
           <li><Link href="/contact" onClick={onClose}>Contact</Link></li>
           

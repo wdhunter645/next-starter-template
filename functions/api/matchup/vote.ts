@@ -5,7 +5,7 @@
 //
 // Vote uniqueness is enforced by weekly_votes(week_start, source_hash).
 
-function json(data: any, status = 200): Response {
+function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data, null, 2), {
     status,
     headers: { 'Content-Type': 'application/json' },
