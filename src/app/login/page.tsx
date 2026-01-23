@@ -86,7 +86,7 @@ const styles: Record<string, React.CSSProperties> = {
  * Flow:
  * 1. User enters email
  * 2. POST to /api/login to validate email exists in join_requests
- * 3. If valid: set lgfc_member_email in localStorage and redirect to /member
+ * 3. If valid: set lgfc_member_email in localStorage and redirect to /fanclub
  * 4. If invalid: show error and provide link to /join
  * 
  * Note: This is a local-session approach for LGFC-Lite, NOT secure authentication.
@@ -120,9 +120,9 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok && data?.ok) {
-        // Success: set member email in localStorage and redirect to /member
+        // Success: set member email in localStorage and redirect to /fanclub
         window.localStorage.setItem('lgfc_member_email', email.trim().toLowerCase());
-        router.push('/member');
+        router.push('/fanclub');
       } else {
         // Failed: show error message
         const errorMsg = data?.error || 'Login failed. Please try again.';

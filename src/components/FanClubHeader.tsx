@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { useState, useRef } from 'react';
-import MemberHamburgerMenu from './MemberHamburgerMenu';
+import FanClubHamburgerMenu from './FanClubHamburgerMenu';
 
-type MemberHeaderProps = {
+type FanClubHeaderProps = {
   homeRoute?: string;
   showLogo?: boolean;
 };
 
-export default function MemberHeader({ homeRoute = '/', showLogo = true }: MemberHeaderProps = {}) {
+export default function FanClubHeader({ homeRoute = '/', showLogo = true }: FanClubHeaderProps = {}) {
   const [open, setOpen] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
 
@@ -91,8 +91,8 @@ export default function MemberHeader({ homeRoute = '/', showLogo = true }: Membe
           </Link>
         )}
         <div className="header-right">
-          <Link href="/member" className="header-btn desktop-tablet-only">
-            Member Home
+          <Link href="/fanclub" className="header-btn desktop-tablet-only">
+            Fan Club Home
           </Link>
           <Link href="/search" className="header-btn desktop-tablet-only">
             Search
@@ -122,7 +122,7 @@ export default function MemberHeader({ homeRoute = '/', showLogo = true }: Membe
             </svg>
           </button>
         </div>
-        {open && <MemberHamburgerMenu onClose={() => setOpen(false)} toggleRef={toggleRef} />}
+        {open && <FanClubHamburgerMenu onClose={() => setOpen(false)} toggleRef={toggleRef} />}
       </header>
     </>
   );

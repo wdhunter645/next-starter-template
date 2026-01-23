@@ -146,8 +146,8 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           </a>
           {isLoggedIn ? (
             <>
-              <Link href="/member" className="header-btn desktop-tablet-only">
-                Members
+              <Link href="/fanclub" className="header-btn desktop-tablet-only">
+                Fan Clubs
               </Link>
               <button 
                 onClick={handleLogout}
