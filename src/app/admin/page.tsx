@@ -451,7 +451,7 @@ export default function AdminPage() {
           You are logged in as {email}, but you do not have administrator privileges.
         </p>
         <div style={styles.row}>
-          <a style={styles.link} href="/member">Return to Member Home</a>
+          <a style={styles.link} href="/fanclub">Return to Member Home</a>
         </div>
       </main>
     );

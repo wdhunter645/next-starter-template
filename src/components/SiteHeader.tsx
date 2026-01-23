@@ -3,16 +3,16 @@
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Header from './Header';
-import MemberHeader from './MemberHeader';
+import FanClubHeader from './FanClubHeader';
 
 /**
  * Chooses Visitor vs Member header based on route and login state.
- * - /member and /member/**: member header
+ * - /fanclub and /fanclub/**: member header
  * - /admin**: member header if logged in, visitor header otherwise
  */
 export default function SiteHeader() {
   const pathname = usePathname() || '/';
-  const isMember = pathname === '/member' || pathname === '/memberpage' || pathname.startsWith('/member/') || pathname.startsWith('/memberpage/');
+  const isMember = pathname === '/fanclub' || pathname === '/memberpage' || pathname.startsWith('/member/') || pathname.startsWith('/memberpage/');
   const isAdmin = pathname === '/admin' || pathname.startsWith('/admin/');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -26,11 +26,11 @@ export default function SiteHeader() {
     }
   }, [pathname]);
 
-  // For member routes, always use MemberHeader
-  if (isMember) return <MemberHeader showLogo={!isAdmin} />;
+  // For member routes, always use FanClubHeader
+  if (isMember) return <FanClubHeader showLogo={!isAdmin} />;
   
-  // For admin routes, use MemberHeader if logged in
-  if (isAdmin && isLoggedIn) return <MemberHeader showLogo={!isAdmin} homeRoute="/member" />;
+  // For admin routes, use FanClubHeader if logged in
+  if (isAdmin && isLoggedIn) return <FanClubHeader showLogo={!isAdmin} homeRoute="/fanclub" />;
   
   // Otherwise use visitor Header
   return <Header showLogo={!isAdmin} />;

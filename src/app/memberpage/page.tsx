@@ -1,8 +1,11 @@
-// Alias route to support /memberpage.
-// Source of truth is /member.
+'use client';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-import MemberHomePage from '../member/page';
-
-export default function MemberPageAlias() {
-  return <MemberHomePage />;
+export default function RedirectPage() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace('/fanclub');
+  }, [router]);
+  return null;
 }
