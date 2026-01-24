@@ -1,32 +1,5 @@
 # Social Wall Troubleshooting Guide
 
-## Installation
-
-### Platform Script Configuration
-
-The Elfsight platform script must be loaded globally from the document `<head>` to ensure proper widget initialization on all pages, including after client-side navigation.
-
-**Current Implementation:**
-- **Location:** `src/app/layout.tsx`
-- **Script URL:** `https://static.elfsight.com/platform/platform.js`
-- **Strategy:** `beforeInteractive` (ensures early loading)
-- **Attribute:** `data-use-service-core="true"` (required by Elfsight)
-
-**Widget Container:**
-- **Location:** `src/components/SocialWall.tsx`
-- **Container:** `<div className="elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8" data-elfsight-app-lazy />`
-- **No component-level script loading**
-
-**Important:**
-- Do NOT reintroduce per-component script loading
-- Do NOT use the older `apps.elfsight.com/p/platform.js` URL
-- The platform script should only be loaded once, globally, in the layout head
-
-**Rationale:**
-According to Elfsight documentation, widgets that only appear after a page refresh indicate that the platform script needs to be moved into the `<head>` element. The global load from `static.elfsight.com` ensures the widget initializes correctly on first load and after client-side navigation.
-
----
-
 ## Issue: Text-Only Display (No Images)
 
 The Elfsight social wall widget displays text content from posts but images are not showing.

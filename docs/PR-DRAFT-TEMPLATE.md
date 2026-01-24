@@ -1,5 +1,4 @@
 # LGFC — Agent PR Draft Template (Authoritative)
-Version 1 – Explicit Commands
 
 This file is the **single authoritative PR draft template** for LGFC work when using an uploaded ZIP workflow.
 All PR drafts must follow this structure and must be delivered as **one continuous, single-fence Markdown block**.
@@ -28,23 +27,17 @@ All PR drafts must follow this structure and must be delivered as **one continuo
 #### 2) Build / test
 - [List exact commands to run.]
 
-#### 3) Documentation updates (mandatory — see `/docs/website-process.md` "Documentation ↔ Implementation Sync Gate")
+#### 3) Documentation updates (mandatory)
 - Update the required documentation files for this PR. You MUST either:
   - List the specific docs to update (with exact paths), OR
-  - Explicitly state: **No documentation updates required** (only allowed when the change truly does not affect UI behavior, navigation, header/footer, login flow, or documented specifications).
-- If the PR touches any section in `/docs/LGFC-Production-Design-and-Standards.md`, remove all "..." ellipses in that section and replace with complete specification text.
-- Required doc updates for common change types:
-  - Header/Footer/Navigation changes → `/docs/LGFC-Production-Design-and-Standards.md` + `/docs/NAVIGATION-INVARIANTS.md`
-  - Login/auth flow changes → `/docs/LGFC-Production-Design-and-Standards.md` (LOGIN/LOGOUT section) + `/docs/design/login.md`
-  - Page layout changes → `/docs/LGFC-Production-Design-and-Standards.md` + relevant `/docs/design/*.md` files
+  - Explicitly state: **No documentation updates required** (only allowed when the change truly does not affect docs).
 
 ### Acceptance Criteria
 - ZIP file(s) uploaded to repo root are **deleted** and **not committed**.
 - All changed files match the Change Summary.
 - Build/tests pass (or explicitly stated if none exist).
 - No secrets or credentials added anywhere (including docs).
-- Documentation updates are present and accurate (or the PR explicitly states **No documentation updates required** with justification).
-- No "..." ellipses remain in any documentation sections touched by this PR.
+- Documentation updates are present and accurate (or the PR explicitly states **No documentation updates required**).
 
 ### Commit Message
 - [Single commit message, imperative mood.]

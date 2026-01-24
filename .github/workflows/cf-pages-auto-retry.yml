@@ -1,0 +1,64 @@
+name: CF Pages Auto-Retry on Flake
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch: {}
+
+jobs:
+  retry-on-internal-error:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    env:
+      CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CF_PAGES_PROJECT: ${{ secrets.CLOUDFLARE_PAGES_PROJECT || 'next-starter-template' }}
+      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+      MAX_RETRIES: '2'
+    steps:
+      - name: Guard secrets
+        run: |
+          if [ -z "$CF_API_TOKEN" ] || [ -z "$CF_ACCOUNT_ID" ]; then
+            echo "Missing required secrets (CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID)"
+            exit 0
+          fi
+          if [ -z "$CF_PAGES_PROJECT" ]; then
+            echo "Warning: CLOUDFLARE_PAGES_PROJECT not set, using default 'next-starter-template'"
+          fi
+      - name: Fetch latest deployment for this branch
+        id: latest
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq jq >/dev/null
+          url="https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/pages/projects/$CF_PAGES_PROJECT/deployments?branch=${BRANCH_NAME}&per_page=1"
+          resp=$(curl -fsSL -H "Authorization: Bearer $CF_API_TOKEN" "$url")
+          echo "$resp" | jq '.' >/dev/null || { echo "No JSON from CF API"; exit 0; }
+          id=$(echo "$resp" | jq -r '.result[0].id // empty')
+          stage_name=$(echo "$resp" | jq -r '.result[0].latest_stage.name // empty')
+          stage_status=$(echo "$resp" | jq -r '.result[0].latest_stage.status // empty')
+          internal_msg=$(echo "$resp" | jq -r '.result[0].deployment_trigger.metadata | tostring')
+          echo "id=$id" >> $GITHUB_OUTPUT
+          echo "stage_name=$stage_name" >> $GITHUB_OUTPUT
+          echo "stage_status=$stage_status" >> $GITHUB_OUTPUT
+          echo "meta=$internal_msg"
+      - name: Auto-retry if publish failed with internal error
+        if: ${{ steps.latest.outputs.id != '' && steps.latest.outputs.stage_name == 'deploy' && steps.latest.outputs.stage_status == 'failure' }}
+        run: |
+          dep_id="${{ steps.latest.outputs.id }}"
+          for i in $(seq 1 "$MAX_RETRIES"); do
+            echo "Retry #$i for deployment $dep_id ..."
+            curl -fsS -X POST \
+              -H "Authorization: Bearer $CF_API_TOKEN" \
+              -H "Content-Type: application/json" \
+              "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/pages/projects/$CF_PAGES_PROJECT/deployments/$dep_id/retry" \
+              || true
+            # brief backoff, then re-check status
+            sleep 10
+            status=$(curl -fsSL -H "Authorization: Bearer $CF_API_TOKEN" \
+              "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/pages/projects/$CF_PAGES_PROJECT/deployments/$dep_id" \
+              | jq -r '.result.latest_stage.status // empty')
+            echo "Latest stage status: $status"
+            if [ "$status" = "success" ]; then
+              echo "Recovered on retry #$i"; exit 0
+            fi
+          done
+          echo "Still failing after $MAX_RETRIES retries (likely CF-side)."
+          exit 0
