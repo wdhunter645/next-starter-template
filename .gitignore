@@ -390,8 +390,7 @@ docs/snapshots/*.md
 LGFC-Lite-CF-FixPack-v1.zip
 
 ### Archive Files ###
-# ZIP files (blocked globally and at repo root)
-/*.zip
+# ZIP files
 *.zip
 *.ZIP
 
@@ -399,4 +398,3 @@ LGFC-Lite-CF-FixPack-v1.zip
 # Temporary files generated during B2 sync (do not commit)
 data/b2/current.json
 data/b2/new_objects_upsert.sql
-.api-dev-only

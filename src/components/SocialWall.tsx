@@ -1,5 +1,6 @@
 'use client';
 
+import Script from 'next/script';
 import styles from './social-wall.module.css';
 
 export default function SocialWall() {
@@ -19,6 +20,11 @@ export default function SocialWall() {
           <p className={styles.fallback}>Loading social wall content…</p>
         </div>
       </div>
+
+      <Script
+        src="https://apps.elfsight.com/p/platform.js"
+        strategy="lazyOnload"
+      />
     </section>
   );
 }

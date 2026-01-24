@@ -20,18 +20,11 @@ Hamburger menus must NEVER include:
 - Join or Login
 - Member-only header buttons
 
-
-### Hamburger menu interaction behavior
-- **Click-away close**: Clicking/tapping outside the open dropdown (but not on the toggle button) closes it.
-- **Escape key close**: Pressing Escape when the dropdown is open closes it.
-- **Focus restoration**: When closed via click-away or Escape, focus returns to the toggle button.
-- **X button**: The X close button remains functional as an explicit close option.
-- This behavior applies to all header variants (Visitor and Member) and all breakpoints (desktop/tablet/mobile).
 ### Visitor hamburger (standalone pages only)
 - Home (MOBILE ONLY)
 - About
 - Contact
-- Support → `/support` with `from` query parameter
+- Support (mailto)
 - Store (external)
 
 ### Desktop/tablet hamburger rule
@@ -41,30 +34,10 @@ Hamburger menus must NEVER include:
 ## Footer (footer-only)
 - Privacy → `/privacy`
 - Terms → `/terms`
-- Contact → `/contact`
-- Support → `/support` with `from` query parameter
-- Admin → `/admin` (conditional, admin-only)
+- Admin → `/admin`
 
 ## Support + Store
-- Support routes to `/support` page with `from` query parameter for return-to-source behavior
-- Support page:
-  - Public intake form for Visitors and Members
-  - Email field: required and validated for logged-out users; auto-filled/hidden for logged-in users
-  - Optional "Subject detail" field
-  - Required "Message" textarea
-  - Cancel button: returns to validated `from` path (fallback `/`)
-  - Send button: submits server-side email via authorized sender model
-  - Success confirmation with explicit return control
-- Email envelope (locked):
-  - From: `support@lougehrigfanclub.com`
-  - To: `lougehrigfanclub@gmail.com`
-  - Reply-To: requester's email
-  - Subject: `SUPPORT - <requester_email>` or `SUPPORT - <requester_email> - <subject detail>`
-  - Body includes: requester email, message, source page (validated `from`), timestamp (ISO)
-- Safe `from` validation:
-  - Must start with `/`
-  - Must not contain `http://`, `https://`, or `//`
-  - Invalid/missing values fallback to `/`
+- Support is a mailto link (not a page unless explicitly implemented later).
 - Store is an external link.
 
 ## Search

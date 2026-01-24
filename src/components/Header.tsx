@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import HamburgerMenu from './HamburgerMenu';
 
 type HeaderProps = {
@@ -11,28 +11,6 @@ type HeaderProps = {
 
 export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps = {}) {
   const [open, setOpen] = useState(false);
-  const toggleRef = useRef<HTMLButtonElement>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    // Check if member is logged in
-    try {
-      const memberEmail = window.localStorage.getItem('lgfc_member_email');
-      setIsLoggedIn(!!memberEmail);
-    } catch {
-      setIsLoggedIn(false);
-    }
-  }, []);
-
-  const handleLogout = () => {
-    try {
-      window.localStorage.removeItem('lgfc_member_email');
-      window.location.href = '/';
-    } catch {
-      // Fallback
-      window.location.href = '/';
-    }
-  };
 
   return (
     <>
@@ -46,18 +24,16 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           top: 8px;
           left: 16px;
           display: block;
-          z-index: 999;
         }
         .logo-img {
-          height: 240px;
+          height: 80px;
           width: auto;
         }
-        .header-center {
-          /* Centered button group only */
+        .header-right {
+          /* Sticky controls: buttons + hamburger are sticky; logo is not. */
           position: fixed;
           top: 8px;
-          left: 50%;
-          transform: translateX(-50%);
+          right: 16px;
           display: flex;
           align-items: center;
           gap: 12px;
@@ -67,22 +43,6 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           backdrop-filter: blur(6px);
           box-shadow: 0 2px 10px rgba(0,0,0,0.06);
           z-index: 1000;
-        }
-        .header-right {
-          /* Hamburger pinned to right edge */
-          position: fixed;
-          top: 8px;
-          right: 16px;
-          z-index: 1001;
-        }
-        .burger-wrapper {
-          position: relative;
-          display: inline-flex;
-          padding: 6px;
-          border-radius: 14px;
-          background: rgba(255,255,255,0.9);
-          backdrop-filter: blur(6px);
-          box-shadow: 0 2px 10px rgba(0,0,0,0.06);
         }
         .header-btn {
           display: inline-flex;
@@ -128,7 +88,7 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
             <img className="logo-img" src="/IMG_1946.png" alt="LGFC" />
           </Link>
         )}
-        <div className="header-center">
+        <div className="header-right">
           <Link href="/join" className="header-btn desktop-tablet-only">
             Join
           </Link>
@@ -144,42 +104,23 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           >
             Store
           </a>
-          {isLoggedIn ? (
-            <>
-              <Link href="/member" className="header-btn desktop-tablet-only">
-                Members
-              </Link>
-              <button 
-                onClick={handleLogout}
-                className="header-btn desktop-tablet-only"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <Link href="/login" className="header-btn desktop-tablet-only">
-              Login
-            </Link>
-          )}
+          <Link href="/login" className="header-btn desktop-tablet-only">
+            Login
+          </Link>
+          <button 
+            className="burger-btn"
+            onClick={() => setOpen(!open)}
+            aria-label="Open menu"
+            aria-expanded={open}
+            aria-controls="hamburger-menu"
+          >
+            {/* simple hamburger icon */}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </button>
         </div>
-        <div className="header-right">
-          <div className="burger-wrapper">
-            <button 
-              ref={toggleRef}
-              className="burger-btn"
-              onClick={() => setOpen(!open)}
-              aria-label="Open menu"
-              aria-expanded={open}
-              aria-controls="hamburger-menu"
-            >
-              {/* simple hamburger icon */}
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-        {open && <HamburgerMenu onClose={() => setOpen(false)} toggleRef={toggleRef} />}
+        {open && <HamburgerMenu onClose={() => setOpen(false)} />}
       </header>
     </>
   );
