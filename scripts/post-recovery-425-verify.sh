@@ -33,16 +33,16 @@ echo ""
 # Helper functions
 check_pass() {
   local check_name="$1"
-  ((CHECK_COUNT++))
-  ((PASS_COUNT++))
+  CHECK_COUNT=$((CHECK_COUNT + 1))
+  PASS_COUNT=$((PASS_COUNT + 1))
   echo -e "${GREEN}✓ PASS${NC}: $check_name"
 }
 
 check_fail() {
   local check_name="$1"
   local details="${2:-}"
-  ((CHECK_COUNT++))
-  ((FAIL_COUNT++))
+  CHECK_COUNT=$((CHECK_COUNT + 1))
+  FAIL_COUNT=$((FAIL_COUNT + 1))
   echo -e "${RED}✗ FAIL${NC}: $check_name"
   if [ -n "$details" ]; then
     echo -e "  ${RED}Details: $details${NC}"
@@ -90,13 +90,21 @@ echo "----------------------------------------"
 echo "B) Build Checks"
 echo "----------------------------------------"
 
-# Run npm ci
+# Run npm ci (or skip if node_modules exists and is recent)
 echo "Running: npm ci"
+if [ -d "node_modules" ] && [ -f "package-lock.json" ]; then
+  # Check if node_modules is newer than package-lock.json
+  if [ "node_modules" -nt "package-lock.json" ]; then
+    check_info "node_modules exists and is up-to-date, running npm ci anyway for verification"
+  fi
+fi
+
 if npm ci > /tmp/npm-ci.log 2>&1; then
   check_pass "npm ci completed successfully"
 else
   check_fail "npm ci failed" "See /tmp/npm-ci.log for details"
-  tail -20 /tmp/npm-ci.log
+  echo "Last 20 lines of npm-ci.log:"
+  tail -20 /tmp/npm-ci.log || true
 fi
 
 echo ""
@@ -107,7 +115,8 @@ if npm run build > /tmp/npm-build.log 2>&1; then
   check_pass "npm run build completed successfully"
 else
   check_fail "npm run build failed" "See /tmp/npm-build.log for details"
-  tail -20 /tmp/npm-build.log
+  echo "Last 20 lines of npm-build.log:"
+  tail -20 /tmp/npm-build.log || true
 fi
 
 echo ""
@@ -119,7 +128,8 @@ if grep -q '"build:cf"' package.json; then
     check_pass "npm run build:cf completed successfully"
   else
     check_fail "npm run build:cf failed" "See /tmp/npm-build-cf.log for details"
-    tail -20 /tmp/npm-build-cf.log
+    echo "Last 20 lines of npm-build-cf.log:"
+    tail -20 /tmp/npm-build-cf.log || true
   fi
 else
   check_info "build:cf script not found in package.json (skipping)"
