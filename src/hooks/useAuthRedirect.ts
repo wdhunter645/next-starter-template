@@ -37,11 +37,10 @@ export function useAuthRedirect() {
         return;
       }
       setIsAuthenticated(true);
+      setIsChecking(false);
     } catch {
       window.location.href = '/';
-      return;
     }
-    setIsChecking(false);
   }, []);
 
   return { isAuthenticated, isChecking };
