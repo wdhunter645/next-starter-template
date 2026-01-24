@@ -1,18 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, RefObject } from 'react';
-import { useClickAway } from '@/hooks/useClickAway';
-import { getCurrentPath } from '@/lib/urlUtils';
 
 /**
  * Member hamburger menu.
- * Desktop/Tablet order (NO Store - it's a header button):
+ * Desktop/Tablet order:
  * 1) My Profile
  * 2) Obtain Membership Card
  * 3) About
  * 4) Contact
- * 5) Support
+ * 5) Store
+ * 6) Support
  *
  * Mobile member hamburger order (locked):
  * 1) Search
@@ -22,21 +20,12 @@ import { getCurrentPath } from '@/lib/urlUtils';
  * 5) Obtain Membership Card
  * 6) About
  * 7) Contact
- * 8) Store (mobile only - replaces header button)
+ * 8) Store
  * 9) Support
  * 10) Login
  * 11) Logout
  */
-export default function MemberHamburgerMenu({ 
-  onClose, 
-  toggleRef 
-}: { 
-  onClose: () => void;
-  toggleRef: RefObject<HTMLButtonElement | null>;
-}) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  
-  useClickAway(containerRef, toggleRef, onClose, true);
+export default function MemberHamburgerMenu({ onClose }: { onClose: () => void }) {
   return (
     <>
       <style jsx>{`
@@ -48,7 +37,7 @@ export default function MemberHamburgerMenu({
         }
       `}</style>
 
-      <div className="mast-drawer" id="hamburger-menu" ref={containerRef}>
+      <div className="mast-drawer" id="hamburger-menu">
         <button className="mast-drawer-close" onClick={onClose} aria-label="Close menu">×</button>
 
         <ul className="mast-drawer-menu">
@@ -62,9 +51,7 @@ export default function MemberHamburgerMenu({
           <li><Link href="/member/card" onClick={onClose}>Obtain Membership Card</Link></li>
           <li><Link href="/about" onClick={onClose}>About</Link></li>
           <li><Link href="/contact" onClick={onClose}>Contact</Link></li>
-          
-          {/* Store: MOBILE ONLY (desktop/tablet has it as header button) */}
-          <li className="only-mobile">
+          <li>
             <a
               href="https://www.bonfire.com/store/lou-gehrig-fan-club/"
               target="_blank"
@@ -75,11 +62,10 @@ export default function MemberHamburgerMenu({
               Store
             </a>
           </li>
-          
           <li>
-            <Link href={`/support?from=${encodeURIComponent(getCurrentPath())}`} onClick={onClose}>
+            <a href="mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed" aria-label="Contact support via email" onClick={onClose}>
               Support
-            </Link>
+            </a>
           </li>
 
           {/* Mobile-only bottom items */}

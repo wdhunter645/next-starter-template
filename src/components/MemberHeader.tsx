@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import MemberHamburgerMenu from './MemberHamburgerMenu';
 
 type MemberHeaderProps = {
@@ -11,7 +11,6 @@ type MemberHeaderProps = {
 
 export default function MemberHeader({ homeRoute = '/', showLogo = true }: MemberHeaderProps = {}) {
   const [open, setOpen] = useState(false);
-  const toggleRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
@@ -25,17 +24,15 @@ export default function MemberHeader({ homeRoute = '/', showLogo = true }: Membe
           top: 8px;
           left: 16px;
           display: block;
-          z-index: 999;
         }
         .logo-img {
-          height: 240px;
+          height: 80px;
           width: auto;
         }
         .header-right {
           position: fixed;
           top: 8px;
-          left: 50%;
-          transform: translateX(-50%);
+          right: 16px;
           display: flex;
           align-items: center;
           gap: 12px;
@@ -110,7 +107,6 @@ export default function MemberHeader({ homeRoute = '/', showLogo = true }: Membe
             Logout
           </Link>
           <button
-            ref={toggleRef}
             className="burger-btn"
             onClick={() => setOpen(!open)}
             aria-label="Open menu"
@@ -122,7 +118,7 @@ export default function MemberHeader({ homeRoute = '/', showLogo = true }: Membe
             </svg>
           </button>
         </div>
-        {open && <MemberHamburgerMenu onClose={() => setOpen(false)} toggleRef={toggleRef} />}
+        {open && <MemberHamburgerMenu onClose={() => setOpen(false)} />}
       </header>
     </>
   );

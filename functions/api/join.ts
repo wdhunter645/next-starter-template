@@ -4,7 +4,14 @@
 // - Returns 409 for duplicate emails (idempotent)
 
 import { assertEmailEnvOrThrow, sendAdminJoinNotification, sendWelcomeEmail } from "../_lib/email";
-import { requireD1, requireTables, jsonResponse, type Env } from "../_lib/d1";
+
+// Helper: create JSON Response
+function json(data: any, status: number): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
 
 type EmailLogResult = {
   result: "sent" | "failed" | "skipped";
@@ -83,25 +90,11 @@ async function insertJoinRequest(
   return result.meta.changes === 1;
 }
 
-export async function onRequestPost(context: { env: Env; request: Request }): Promise<Response> {
+export async function onRequestPost(context: any): Promise<Response> {
   const { request, env } = context;
   const requestId = `req_${Date.now()}_${Math.random()
     .toString(36)
     .substring(2, 11)}`;
-
-  // Step 1: Check D1 binding exists
-  const d1Check = requireD1(env);
-  if (!d1Check.ok) {
-    return jsonResponse(d1Check.body, d1Check.status);
-  }
-  
-  const db = d1Check.db;
-
-  // Step 2: Check required tables exist
-  const tablesCheck = await requireTables(db, ['join_requests', 'join_email_log']);
-  if (!tablesCheck.ok) {
-    return jsonResponse(tablesCheck.body, tablesCheck.status);
-  }
 
   try {
     const body = await request.json();
@@ -110,7 +103,7 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
   try {
     assertEmailEnvOrThrow(env);
   } catch (e: any) {
-    return jsonResponse(
+    return json(
       { ok: false, error: "Email is enabled but required configuration is missing.", detail: String(e?.message || e), requestId },
       500
     );
@@ -129,24 +122,25 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
     const name = legacyName || `${first_name} ${last_name}${screen_name ? ` (${screen_name})` : ''}`.trim();
 
     if (!email) {
-      return jsonResponse(
+      return json(
         { ok: false, error: "Email is required.", requestId },
         400
       );
     }
 
     if (!name || !first_name || !last_name) {
-      return jsonResponse(
+      return json(
         { ok: false, error: "First name and last name are required.", requestId },
         400
       );
     }
 
     // Attempt insert using INSERT...SELECT...WHERE NOT EXISTS
-    const inserted = await insertJoinRequest(db, { name, email, first_name, last_name, screen_name: screen_name || null, email_opt_in });
+    const inserted = await insertJoinRequest(env.DB, { name, email, first_name, last_name, screen_name: screen_name || null, email_opt_in });
 
     if (inserted) {
       // SUCCESS: first-time join (insert occurred)
+      const db = env.DB as any;
 
       // Optional: admin-managed welcome email copy.
       let welcomeIntroMd: string | undefined = undefined;
@@ -187,7 +181,7 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
         });
       }
 
-      return jsonResponse(
+      return json(
         {
           ok: true,
           status: "joined",
@@ -201,7 +195,7 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
       );
 } else {
       // DUPLICATE: email already exists (no insert)
-      return jsonResponse(
+      return json(
         {
           ok: false,
           status: "already_joined",
@@ -212,7 +206,7 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
     }
   } catch (err) {
     // Guaranteed fallback return (prevents TS fallthrough)
-    return jsonResponse(
+    return json(
       { ok: false, error: "Server error", requestId },
       500
     );

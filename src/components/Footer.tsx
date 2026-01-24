@@ -71,18 +71,18 @@ export default function Footer() {
 						</p>
 					</div>
 					<div className={styles.links}>
-						<Link href="/contact" className={styles.link}>
-							Contact
-						</Link>
-						<Link href="/support" className={styles.link}>
-							Support
+						<Link href="/privacy" className={styles.link}>
+							Privacy
 						</Link>
 						<Link href="/terms" className={styles.link}>
 							Terms
 						</Link>
-						<Link href="/privacy" className={styles.link}>
-							Privacy
+						<Link href="/contact" className={styles.link}>
+							Contact
 						</Link>
+						<a href="mailto:admin@lougehrigfanclub.com?subject=Support%20Needed" className={styles.link}>
+							Support
+						</a>
 						{isAdmin && (
 							<Link href="/admin" className={styles.link}>
 								Admin

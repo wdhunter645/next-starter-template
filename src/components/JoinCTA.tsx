@@ -9,7 +9,7 @@ export default function JoinCTA() {
 				</p>
 				<div className="join-banner__actions">
 					<a className="join-banner__btn" href="/join">Join</a>
-					<a className="join-banner__btn" href="/login">Login</a>
+					<a className="join-banner__btn" href="/member">Login</a>
 				</div>
 			</div>
 		</div>
