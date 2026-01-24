@@ -30,6 +30,13 @@ echo "Commit SHA: $(git rev-parse HEAD)"
 echo "Base URL: ${BASE_URL:-"Not provided (skipping endpoint checks)"}"
 echo ""
 
+# Verify we're in the right directory
+if [ ! -f "package.json" ]; then
+  echo "ERROR: package.json not found in current directory"
+  echo "Please run this script from the repository root"
+  exit 1
+fi
+
 # Helper functions
 check_pass() {
   local check_name="$1"
@@ -154,9 +161,19 @@ if [ -n "$BASE_URL" ]; then
     
     # Make request and capture response
     HTTP_CODE=$(curl -o /tmp/endpoint-response.txt -w "%{http_code}" -fsS "$url" 2>/tmp/curl-error.log || echo "000")
-    RESPONSE=$(head -c 2000 /tmp/endpoint-response.txt)
+    RESPONSE=$(head -c 2000 /tmp/endpoint-response.txt 2>/dev/null || echo "")
     
     echo "  HTTP Status: $HTTP_CODE"
+    
+    # If curl failed, show error
+    if [ "$HTTP_CODE" = "000" ]; then
+      check_fail "Endpoint $endpoint - curl request failed"
+      if [ -f /tmp/curl-error.log ]; then
+        echo "  Curl error:"
+        cat /tmp/curl-error.log
+      fi
+      return
+    fi
     
     # Check if response is empty
     if [ -z "$RESPONSE" ]; then
