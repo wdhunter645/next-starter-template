@@ -1,6 +1,15 @@
+'use client';
+
 import React from "react";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 export default function Page() {
+  const { isAuthenticated, isChecking } = useAuthRedirect();
+
+  if (isChecking || !isAuthenticated) {
+    return null;
+  }
+
   return (
     <main style={{ ...styles.main }}>
       <h1 style={{ ...styles.h1 }}>News &amp; Q&amp;A</h1>

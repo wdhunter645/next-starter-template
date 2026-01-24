@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 type PhotoItem = { id: number; url: string; is_memorabilia: number; description?: string | null; created_at: string };
 
@@ -18,6 +19,7 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function PhotosPage() {
+  const { isAuthenticated, isChecking } = useAuthRedirect();
   const [items, setItems] = useState<PhotoItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [offset, setOffset] = useState(0);
@@ -41,6 +43,10 @@ export default function PhotosPage() {
   useEffect(() => {
     load(0);
   }, []);
+
+  if (isChecking || !isAuthenticated) {
+    return null;
+  }
 
   return (
     <main style={{ ...styles.main }}>

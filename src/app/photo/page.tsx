@@ -1,6 +1,7 @@
 'use client';
 
 import React from "react";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 const styles: Record<string, React.CSSProperties> = {
   main: { padding: "40px 16px", maxWidth: 1000, margin: "0 auto" },
@@ -9,6 +10,12 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function PhotoPage() {
+  const { isAuthenticated, isChecking } = useAuthRedirect();
+
+  if (isChecking || !isAuthenticated) {
+    return null;
+  }
+
   return (
     <main style={{ ...styles.main }}>
       <h1 style={{ ...styles.h1 }}>Photo</h1>

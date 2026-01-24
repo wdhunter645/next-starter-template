@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from "react";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 type LibraryItem = { id: number; title: string; content: string; created_at: string };
 
@@ -22,6 +23,7 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function LibraryPage() {
+  const { isAuthenticated, isChecking } = useAuthRedirect();
   const [items, setItems] = useState<LibraryItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitBusy, setSubmitBusy] = useState(false);
@@ -50,6 +52,10 @@ export default function LibraryPage() {
   useEffect(() => {
     load();
   }, []);
+
+  if (isChecking || !isAuthenticated) {
+    return null;
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
