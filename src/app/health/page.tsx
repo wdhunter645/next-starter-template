@@ -4,7 +4,7 @@
  */
 export default function HealthPage() {
 	return (
-		<div style={{ padding: '80px 2rem 2rem 2rem', fontFamily: 'monospace' }}>
+		<div style={{ padding: '2rem', fontFamily: 'monospace' }}>
 			<div>OK: health</div>
 			<div style={{ fontSize: '0.8rem', color: '#666', marginTop: '1rem' }}>
 				Timestamp: {new Date().toISOString()}

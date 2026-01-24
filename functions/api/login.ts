@@ -3,7 +3,12 @@
 // - Does NOT send any email
 // - Rate limits: max 3 failed attempts per IP per hour
 
-import { requireD1, requireTables, jsonResponse, type Env } from '../_lib/d1';
+function json(data: any, status: number): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
 
 function getIp(request: Request): string {
   return (
@@ -50,24 +55,10 @@ async function emailExists(db: any, email: string): Promise<boolean> {
   return Boolean((row as any)?.ok);
 }
 
-export async function onRequestPost(context: { env: Env; request: Request }): Promise<Response> {
+export async function onRequestPost(context: any): Promise<Response> {
   const { request, env } = context;
   const ip = getIp(request);
   const requestId = `login_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-
-  // Step 1: Check D1 binding exists
-  const d1Check = requireD1(env);
-  if (!d1Check.ok) {
-    return jsonResponse(d1Check.body, d1Check.status);
-  }
-  
-  const db = d1Check.db;
-
-  // Step 2: Check required tables exist
-  const tablesCheck = await requireTables(db, ['join_requests', 'login_attempts']);
-  if (!tablesCheck.ok) {
-    return jsonResponse(tablesCheck.body, tablesCheck.status);
-  }
 
   try {
     const body = await request.json();
@@ -75,26 +66,26 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
     const email = emailRaw.trim().toLowerCase();
 
     if (!email || !email.includes('@')) {
-      return jsonResponse({ ok: false, error: 'Email is required.', requestId }, 400);
+      return json({ ok: false, error: 'Email is required.', requestId }, 400);
     }
 
-    const failed = await countRecentFailedAttempts(db, ip);
+    const failed = await countRecentFailedAttempts(env.DB, ip);
     if (failed >= 3) {
-      return jsonResponse(
+      return json(
         { ok: false, error: 'Too many failed attempts. Please wait one hour and try again.', requestId },
         429
       );
     }
 
-    const exists = await emailExists(db, email);
+    const exists = await emailExists(env.DB, email);
     if (!exists) {
-      await logAttempt(db, ip, email, false);
-      return jsonResponse({ ok: false, error: 'Email not found.', requestId }, 404);
+      await logAttempt(env.DB, ip, email, false);
+      return json({ ok: false, error: 'Email not found.', requestId }, 404);
     }
 
-    await logAttempt(db, ip, email, true);
-    return jsonResponse({ ok: true, status: 'ok', requestId }, 200);
+    await logAttempt(env.DB, ip, email, true);
+    return json({ ok: true, status: 'ok', requestId }, 200);
   } catch (e: any) {
-    return jsonResponse({ ok: false, error: 'Server error', requestId }, 500);
+    return json({ ok: false, error: 'Server error', requestId }, 500);
   }
 }

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import "./globals.css";
 import "./../styles/variables.css";
 import SiteHeader from "../components/SiteHeader";
@@ -17,11 +16,6 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<Script
-				src="https://static.elfsight.com/platform/platform.js"
-				strategy="beforeInteractive"
-				data-use-service-core="true"
-			/>
 			<body className="antialiased">
 				{/* Header: visitor vs member */}
 				<SiteHeader />

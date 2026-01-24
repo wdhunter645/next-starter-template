@@ -105,20 +105,21 @@
   "footerLinks": {
     "required": [
       {
-        "label": "Contact",
-        "target": "/contact"
-      },
-      {
-        "label": "Support",
-        "target": "/support"
-      },
-      {
         "label": "Terms",
         "target": "/terms"
       },
       {
         "label": "Privacy",
         "target": "/privacy"
+      },
+      {
+        "label": "Contact",
+        "target": "/contact"
+      },
+      {
+        "label": "Support",
+        "type": "mailto",
+        "description": "Email link to Support@LouGehrigFanClub.com"
       }
     ],
     "copyright": {
