@@ -37,6 +37,17 @@ if [ ! -f "package.json" ]; then
   exit 1
 fi
 
+# Create unique temporary directory for logs
+TMP_DIR=$(mktemp -d)
+trap "rm -rf $TMP_DIR" EXIT
+
+# Define log file paths
+NPM_CI_LOG="$TMP_DIR/npm-ci.log"
+NPM_BUILD_LOG="$TMP_DIR/npm-build.log"
+NPM_BUILD_CF_LOG="$TMP_DIR/npm-build-cf.log"
+CURL_ERROR_LOG="$TMP_DIR/curl-error.log"
+ENDPOINT_RESPONSE="$TMP_DIR/endpoint-response.txt"
+
 # Helper functions
 check_pass() {
   local check_name="$1"
@@ -106,24 +117,24 @@ if [ -d "node_modules" ] && [ -f "package-lock.json" ]; then
   fi
 fi
 
-if npm ci > /tmp/npm-ci.log 2>&1; then
+if npm ci > "$NPM_CI_LOG" 2>&1; then
   check_pass "npm ci completed successfully"
 else
-  check_fail "npm ci failed" "See /tmp/npm-ci.log for details"
+  check_fail "npm ci failed" "See log for details"
   echo "Last 20 lines of npm-ci.log:"
-  tail -20 /tmp/npm-ci.log || true
+  tail -20 "$NPM_CI_LOG" || true
 fi
 
 echo ""
 
 # Run npm run build
 echo "Running: npm run build"
-if npm run build > /tmp/npm-build.log 2>&1; then
+if npm run build > "$NPM_BUILD_LOG" 2>&1; then
   check_pass "npm run build completed successfully"
 else
-  check_fail "npm run build failed" "See /tmp/npm-build.log for details"
+  check_fail "npm run build failed" "See log for details"
   echo "Last 20 lines of npm-build.log:"
-  tail -20 /tmp/npm-build.log || true
+  tail -20 "$NPM_BUILD_LOG" || true
 fi
 
 echo ""
@@ -131,12 +142,12 @@ echo ""
 # Check if build:cf exists and run it
 if grep -q '"build:cf"' package.json; then
   echo "Running: npm run build:cf"
-  if npm run build:cf > /tmp/npm-build-cf.log 2>&1; then
+  if npm run build:cf > "$NPM_BUILD_CF_LOG" 2>&1; then
     check_pass "npm run build:cf completed successfully"
   else
-    check_fail "npm run build:cf failed" "See /tmp/npm-build-cf.log for details"
+    check_fail "npm run build:cf failed" "See log for details"
     echo "Last 20 lines of npm-build-cf.log:"
-    tail -20 /tmp/npm-build-cf.log || true
+    tail -20 "$NPM_BUILD_CF_LOG" || true
   fi
 else
   check_info "build:cf script not found in package.json (skipping)"
@@ -160,17 +171,17 @@ if [ -n "$BASE_URL" ]; then
     echo "Checking: $url"
     
     # Make request and capture response
-    HTTP_CODE=$(curl -o /tmp/endpoint-response.txt -w "%{http_code}" -fsS "$url" 2>/tmp/curl-error.log || echo "000")
-    RESPONSE=$(head -c 2000 /tmp/endpoint-response.txt 2>/dev/null || echo "")
+    HTTP_CODE=$(curl -o "$ENDPOINT_RESPONSE" -w "%{http_code}" -fsS "$url" 2>"$CURL_ERROR_LOG" || echo "000")
+    RESPONSE=$(head -c 2000 "$ENDPOINT_RESPONSE" 2>/dev/null || echo "")
     
     echo "  HTTP Status: $HTTP_CODE"
     
     # If curl failed, show error
     if [ "$HTTP_CODE" = "000" ]; then
       check_fail "Endpoint $endpoint - curl request failed"
-      if [ -f /tmp/curl-error.log ]; then
+      if [ -f "$CURL_ERROR_LOG" ]; then
         echo "  Curl error:"
-        cat /tmp/curl-error.log
+        cat "$CURL_ERROR_LOG"
       fi
       return
     fi
