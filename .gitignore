@@ -390,7 +390,8 @@ docs/snapshots/*.md
 LGFC-Lite-CF-FixPack-v1.zip
 
 ### Archive Files ###
-# ZIP files
+# ZIP files (blocked globally and at repo root)
+/*.zip
 *.zip
 *.ZIP
 
