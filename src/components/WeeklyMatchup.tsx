@@ -66,7 +66,8 @@ export default function WeeklyMatchup() {
           }
         }
       } catch (e: unknown) {
-        setErr(String((e as Error)?.message ?? e));
+        const errorMsg = e instanceof Error ? e.message : String(e);
+        setErr(errorMsg);
       } finally {
         setLoading(false);
       }
@@ -89,7 +90,8 @@ export default function WeeklyMatchup() {
       const rr = await apiGet<ResultsResp>(`/api/matchup/results?week_start=${encodeURIComponent(weekStart)}`);
       setLastWeek(rr.last_week);
     } catch (e: unknown) {
-      setErr(String((e as Error)?.message ?? e));
+      const errorMsg = e instanceof Error ? e.message : String(e);
+      setErr(errorMsg);
     } finally {
       setSubmitting(false);
     }
