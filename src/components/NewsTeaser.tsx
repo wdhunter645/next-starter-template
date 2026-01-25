@@ -36,14 +36,14 @@ export default function NewsTeaser() {
 								{formatDate(post.date)}
 							</time>
 							<p className={styles.excerpt}>{post.excerpt}</p>
-							<Link href="/news" className={styles.readMore}>
+							<Link href="/faq" className={styles.readMore}>
 								Read More
 							</Link>
 						</article>
 					))}
 				</div>
 				<div className={styles.actions}>
-					<Link href="/news" className={styles.visitButton}>
+					<Link href="/faq" className={styles.visitButton}>
 						Visit News &amp; Q&amp;A
 					</Link>
 				</div>

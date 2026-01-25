@@ -10,6 +10,40 @@ Any conflict must be resolved in favor of this file.
 
 ---
 
+
+---
+
+## Day 1 Design Locks — Explicit (Authoritative)
+
+### 1) Auth Boundaries (explicit)
+- `/fanclub/**` requires login; unauthenticated access redirects to `/`.
+- Public pages remain visitor-accessible: `/contact`, `/about`, `/support`, `/terms`, `/privacy`, `/search`, `/join`, `/login`, `/faq`, `/health`.
+
+### 2) Canonical Routes (explicit)
+See `/docs/NAVIGATION-INVARIANTS.md` for the canonical route list. This file and NAVIGATION-INVARIANTS are the source of truth.
+
+### 3) Headers (explicit)
+- Public header:
+  - Not logged in: Join, Search, Store (external), Login
+  - Logged in while on public pages: add Club Home + Logout (6 total)
+- FanClub header (single variant): Club Home, My Profile, Search, Store (external), Logout
+- Global logo always links to `/`.
+
+### 4) Footer (explicit)
+- Left: quote line + legal line
+- Center: small logo scroll-to-top current page
+- Right links (order): Contact, Support, Terms, Privacy
+- No email displayed in footer.
+
+### 5) Weekly Vote (explicit, deferred)
+- Current matchup appears on the public home page.
+- `/weeklyvote` is a hidden results page revealed only after a vote.
+- Weekly vote route consolidation is deferred; do not delete weekly-related routes until finalized.
+
+### 6) Store (explicit)
+- Store is an external Bonfire link. There is no internal `/store` route.
+
+
 ## Consolidated Design Locks (Authoritative) — merged 2026-01-19 UTC
 
 The content below was merged from `LGFC-Lite-Design-Locks.md` so that this document is self-contained.
@@ -39,6 +73,14 @@ Home page sections, in order:
 9. FAQ (preview 5–10; link to full FAQ page)
 10. Ask a Question (linked from FAQ; dedicated stub page)
 11. Footer
+
+#### Social Wall Implementation
+- **Platform Script:** Loaded globally in `src/app/layout.tsx` using `next/script` with `strategy="beforeInteractive"`
+- **Script URL:** `https://static.elfsight.com/platform/platform.js`
+- **Widget Container:** Located in `src/components/SocialWall.tsx`
+- **Widget ID:** `elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8` (stored in the container class)
+- **Loading:** Platform script is loaded once globally in the layout head, not per component
+- **Important:** Do not reintroduce per-component script loading or use the older `apps.elfsight.com/p/platform.js` URL
 
 ### Members-only
 - **All other features** are members-only and accessed from **`MEMBER/page.tsx`**.
@@ -93,6 +135,29 @@ Mobile visitor hamburger order:
 4. Support
 5. Store
 
+## 3.1) Hamburger Menu Interaction Behavior — Final Lock (Added 2026-01-20)
+
+### Click-Away Close (All Headers, All Breakpoints)
+- When the hamburger dropdown is open, clicking or tapping **outside** the dropdown container AND outside the hamburger toggle button **closes** the dropdown.
+- Clicking or tapping **inside** the dropdown does NOT close it.
+- Implementation uses `pointerdown` event on `document` to avoid focus/click ordering issues.
+
+### Keyboard Close (All Headers, All Breakpoints)
+- Pressing the **Escape** key when the dropdown is open **closes** the dropdown.
+
+### Focus Management (All Headers, All Breakpoints)
+- When the dropdown is closed via click-away or Escape key, focus **returns to the hamburger toggle button**.
+- This ensures keyboard navigation and accessibility are maintained.
+
+### Implementation Standard
+- The dropdown close behavior is implemented in a shared `useClickAway` hook located at `src/hooks/useClickAway.ts`.
+- This hook is used by both `HamburgerMenu.tsx` (Visitor) and `MemberHamburgerMenu.tsx` (Member) to ensure consistent behavior across all header variants.
+- Event listeners are added only while the dropdown is open and removed on close/unmount to optimize performance.
+
+### Regression Prevention
+- This behavior standard must NOT regress. Any changes to hamburger menu components must maintain click-away and Escape key close functionality.
+- Focus restoration to the toggle button is required for accessibility compliance.
+
 ## 4) Home CTA Lock (re-affirmed)
 - **JOIN** is the only promoted conversion block on Home.
 - **LOGIN** is not promoted in page content sections; it exists only in the header.
@@ -101,17 +166,32 @@ Mobile visitor hamburger order:
 
 ## LOGIN / LOGOUT — Final Lock (Updated 2026-01-16)
 
-### Login
+### Phase Reality: LGFC-Lite vs Future Auth Phase
+
+**LGFC-Lite (Current — Cloudflare Pages Static Export):**
+- `/login` is an **informational stub page only**.
+- Authentication is **intentionally disabled** in LGFC-Lite.
+- The login page informs visitors that member login functionality is not yet live and directs them to the Join flow.
+- **No email/password fields, no authentication logic, no backend dependencies.**
+
+**Authoritative Spec Reference:**
+- See `/docs/design/login.md` for the current LGFC-Lite login page specification.
+
+### Future: Auth Phase Lock (Deferred Behavior)
+
+The detailed login/logout behavior below is **deferred to the future Auth phase** (Vercel/Supabase or equivalent backend). This content documents the intended behavior when authentication is implemented but does **not** apply to LGFC-Lite.
+
+#### Login (Future Auth Phase)
 - Login routes to the Login page.
 - Successful login lands on **Member Home**.
 - Failed login remains on the Login page and shows an on-page message for **email unknown**.
 
-### Security guardrails (re-affirmed)
+#### Security guardrails (Future Auth Phase)
 - If email entered on Login does not exist: do **not** send any email.
-- Show: “Email not found.” and provide a Join link.
+- Show: "Email not found." and provide a Join link.
 - Allow max **3** failed Login attempts per hour per source; lock out for 1 hour after 3 failures.
 
-### Logout
+#### Logout (Future Auth Phase)
 - Logout signs the member out and lands on **Visitor Home**.
 
 ## 6) JOIN — Behavior Lock
@@ -448,3 +528,190 @@ This addendum captures every design/standards decision finalized in-session afte
 ## Accessibility — FINAL
 - Support browser/OS accessibility scaling (browser zoom, iPad pinch-to-zoom, OS font scaling).
 - No in-app font size controls are required.
+
+---
+
+## ADDENDUM — January 20, 2026: Header Layout & Hamburger Menu Clarifications (PR #392)
+
+### Header Layout Lock (Visitor + Member Headers)
+
+**Desktop/Tablet Header Button Positioning:**
+- Header button groups MUST be **centered horizontally** on both visitor and member headers.
+- Implementation:
+  - Use `left: 50%` positioning
+  - Use `transform: translateX(-50%)` for centering
+  - Logo remains on the left (not centered)
+  - Button container is sticky; logo is not sticky
+
+**Visitor Header Buttons (Desktop/Tablet):**
+1. Join
+2. Search
+3. Store (external link)
+4. Login
+5. Hamburger
+
+**Member Header Buttons (Desktop/Tablet):**
+1. Member Home
+2. Search
+3. Store (external link)
+4. Logout
+5. Hamburger
+
+### Hamburger Menu — Store Placement Rules (CRITICAL)
+
+**Desktop/Tablet Hamburger Menus:**
+- Store MUST NOT appear in hamburger menus on desktop/tablet
+- Reason: Store is a header button on desktop/tablet
+
+**Visitor hamburger (desktop/tablet):**
+- About
+- Contact
+- Support (mailto: Support@LouGehrigFanClub.com)
+
+**Member hamburger (desktop/tablet):**
+- My Profile
+- Obtain Membership Card
+- About
+- Contact
+- Support (mailto: Support@LouGehrigFanClub.com)
+
+**Mobile Hamburger Menus:**
+- Store MUST appear in hamburger menus on mobile
+- Reason: No header button row on mobile; hamburger is the only navigation
+
+**Visitor hamburger (mobile):**
+1. Home
+2. About
+3. Contact
+4. Support
+5. Store
+
+**Member hamburger (mobile):**
+1. Search
+2. Home
+3. Member Home
+4. My Profile
+5. Obtain Membership Card
+6. About
+7. Contact
+8. Store
+9. Support
+10. Login
+11. Logout
+
+### Footer Lock
+
+**Footer Structure:**
+- Line 1: Rotating quote (from or about Lou Gehrig)
+- Line 2: Copyright line with auto-updating year (NO email address visible)
+- Line 3: Links row
+
+**Footer Links:**
+- Privacy → `/privacy`
+- Terms → `/terms`
+- Contact → `/contact`
+- Support → mailto:Support@LouGehrigFanClub.com?subject=Support%20Request
+- Admin → `/admin` (only visible to admin users)
+
+**Email Display Policy:**
+- Footer displays NO email address
+- Contact page (`/contact`) displays: `admin@lougehrigfanclub.com`
+- Support emails go to: `Support@LouGehrigFanClub.com`
+
+### Member Home Quick Links
+
+**Required links on Member Home (`/member/page.tsx`):**
+- My Profile → `/member/profile`
+- Membership Card → `/member/card`
+- Gehrig Library → `/library`
+- Photo → `/photo`
+- Photo Gallery → `/photos`
+- Memorabilia Archive → `/memorabilia`
+
+---
+
+## ADDENDUM — January 20, 2026: Header Logo Implementation Details
+
+This addendum clarifies the technical implementation of the header logo behavior defined in Section 2 (Visitor Header) and Section 11 (Member Header).
+
+### Logo Sizing
+
+**Locked Specification:**
+- Logo height: **240px** (3× baseline of 80px)
+- Logo width: **auto** (preserves aspect ratio)
+- Logo asset: `/public/IMG_1946.png`
+
+### Z-Index Layering Hierarchy
+
+**Locked Z-Index Values:**
+1. **Sticky header controls**: `z-index: 1000` (always on top)
+2. **Logo**: `z-index: 999` (below controls, above banner)
+3. **Banner**: default z-index (base layer)
+
+**Purpose:**
+- Ensures sticky header controls remain clickable when scrolling
+- Allows logo to overlap banner area without blocking navigation
+- Maintains visual hierarchy across all page states
+
+### Positioning Implementation
+
+**Logo:**
+- Position: `absolute` (non-sticky, scrolls with page)
+- Top: `8px`
+- Left: `16px`
+- Z-index: `999`
+
+**Header Controls:**
+- Position: `fixed` or `sticky` (remains at top when scrolling)
+- Z-index: `1000`
+- Centered horizontally (per Section "ADDENDUM — January 20, 2026: Header Layout")
+
+### Component Implementation Reference
+
+**Affected Files:**
+- `/src/components/Header.tsx` (Visitor Header)
+- `/src/components/MemberHeader.tsx` (Member Header)
+
+**CSS Class Pattern:**
+```css
+.logo-link {
+  position: absolute;
+  top: 8px;
+  left: 16px;
+  z-index: 999;
+}
+
+.logo-img {
+  height: 240px;
+  width: auto;
+}
+
+.header-right {
+  position: fixed;  /* or sticky */
+  z-index: 1000;
+}
+```
+
+### Behavior Verification
+
+**Required Tests:**
+- Logo scrolls out of view when page scrolls (non-sticky confirmed)
+- Header controls remain fixed at top when scrolling (sticky confirmed)
+- Logo overlaps banner area below header
+- All header controls remain clickable at all scroll positions
+- Logo click target routes to Home (visitor) or Member Home (member)
+
+### Guardrails
+
+**DO NOT:**
+- Change logo z-index to 1000 or higher (blocks header controls)
+- Make logo sticky/fixed (must scroll with page)
+- Reduce logo size below 240px height
+- Center logo horizontally
+
+**DO:**
+- Maintain z-index hierarchy (controls > logo > banner)
+- Keep logo at 240px height with auto width
+- Ensure logo scrolls with page content
+- Preserve logo overlap behavior over banner
+

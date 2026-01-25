@@ -13,6 +13,7 @@ If you cannot comply, stop and request guidance rather than guessing.
 Before any change, read:
 - `/docs/LGFC-Production-Design-and-Standards.md`
 - `/docs/NAVIGATION-INVARIANTS.md`
+- `/docs/fanclub.md`
 
 These documents are the design law. Do not invent routes, labels, or layouts.
 
@@ -21,8 +22,8 @@ These documents are the design law. Do not invent routes, labels, or layouts.
 ## 2) Route + IA Guardrails
 
 - Do not create new top-level routes without explicit instruction.
-- Member home is `/member`; member-specific pages are under `/member/**` (e.g., `/member/profile`, `/member/card`).
-- Member content pages exist as top-level routes (e.g., `/photo`, `/photos`, `/library`, `/memorabilia`, `/ask`, `/news`).
+- FanClub content lives under `/fanclub/**` only.
+- Do not reintroduce deleted aliases (e.g. `/member*`, `/photos`, `/ask`, `/news`).
 - Store is external only (no `/store` route).
 - Weekly vote routes are in transition; do not delete weekly-related routes unless explicitly instructed.
 
@@ -35,7 +36,7 @@ Follow `/docs/NAVIGATION-INVARIANTS.md` exactly.
 Highlights:
 - Public header (logged out): Join / Search / Store / Login
 - Public header (logged in): add Club Home + Logout (6 total)
-- Member header: Club Home / My Profile / Search / Store / Logout
+- FanClub header: Club Home / My Profile / Search / Store / Logout
 - Logo always links to `/`
 - Footer: left quote + legal, center logo scroll-to-top, right links Contact/Support/Terms/Privacy, no email displayed
 
@@ -70,5 +71,5 @@ If a ZIP file is present in the repo root during PR work:
 
 When you change routing, headers, or footer:
 - Verify the route exists and renders
-- Verify authentication redirects work for member content pages
+- Verify redirects work for `/fanclub/**`
 - Verify header variants and footer layout match the invariants

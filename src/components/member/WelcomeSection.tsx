@@ -94,7 +94,7 @@ export default function WelcomeSection({ email }: WelcomeSectionProps) {
 
       {/* Profile link */}
       <a
-        href="/member/profile"
+        href="/fanclub/myprofile"
         style={{
           display: 'inline-block',
           color: 'var(--lgfc-blue)',

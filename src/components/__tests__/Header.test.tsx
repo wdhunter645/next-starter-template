@@ -12,10 +12,10 @@ describe('Header', () => {
   });
 
   it('renders with custom homeRoute', () => {
-    render(<Header homeRoute="/memberpage" />);
+    render(<Header homeRoute="/fanclub" />);
     
     const logo = screen.getByRole('link', { name: /lou gehrig fan club/i });
-    expect(logo).toHaveAttribute('href', '/memberpage');
+    expect(logo).toHaveAttribute('href', '/fanclub');
   });
 
   it('hides logo when showLogo is false', () => {
