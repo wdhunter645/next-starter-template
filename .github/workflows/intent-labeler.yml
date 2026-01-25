@@ -22,7 +22,6 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const { execSync } = require('child_process');
             
             // Load intent rules from config
             const configPath = '.github/intent-labeler.json';
@@ -123,6 +122,7 @@ jobs:
               
               // Post success comment
               const commentMarker = '<!-- intent-labeler-result -->';
+              // Note: Using string concatenation instead of template literals to avoid YAML parsing issues
               const successComment = commentMarker + '\n## ✅ Intent Label Applied\n\nThis PR has been automatically labeled with intent: **`' + matchedIntent + '`**\n\nAll changed files match the allowlist for this intent. The PR can proceed to review.';
               
               // Check for existing comment
@@ -153,6 +153,7 @@ jobs:
               // Mixed intent - no label applied
               console.log('⚠️ Mixed intent detected - no label will be applied');
               
+              // Note: Using string concatenation instead of template literals to avoid YAML parsing issues
               const commentMarker = '<!-- intent-labeler-result -->';
               const fileList = changedFiles.map(f => '- `' + f + '`').join('\n');
               const mixedComment = commentMarker + '\n## ⚠️ Mixed Intent Detected\n\nThis PR contains changes that don\'t fit a single intent category. **No intent label has been applied.**\n\n### Why this matters\nThe drift-gate workflow requires exactly ONE intent label to validate file-touch allowlists. Mixed-intent PRs cannot pass drift-gate.\n\n### Required action\nPlease split this PR into separate PRs, one for each intent:\n\n**Available intents (auto-assigned):**\n- `docs-only`: Only changes to `docs/**` files\n- `infra`: Changes to `.github/**`, `scripts/**`, build configs (but NOT `docs/**`)\n- `feature`: Changes to `src/**`, `functions/**`, `migrations/**`, `public/**` (but NOT `.github/workflows/**` or `docs/**`)\n\n**Manual intent (not auto-assigned):**\n- `recovery`: Emergency fixes that may touch multiple areas (must be manually assigned)\n\n### Changed files in this PR\n' + fileList + '\n\nOnce you\'ve split the changes into focused PRs, each PR will be automatically labeled with the appropriate intent.';
