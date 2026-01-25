@@ -1,0 +1,39 @@
+name: Purge ZIPs from Git History (FORCE PUSH)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (mirror)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install git-filter-repo
+        run: |
+          python3 -m pip install --user git-filter-repo
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Create rollback tag
+        run: |
+          TAG="pre-zip-purge-$(date +%Y%m%d-%H%M%S)"
+          git tag "$TAG"
+          git push origin "$TAG"
+
+      - name: Rewrite history (remove all *.zip)
+        run: |
+          git filter-repo --path-glob '*.zip' --invert-paths
+
+      - name: Force-push rewritten history
+        env:
+          GIT_AUTHOR_NAME: history-purge-bot
+          GIT_AUTHOR_EMAIL: bot@users.noreply.github.com
+          GIT_COMMITTER_NAME: history-purge-bot
+          GIT_COMMITTER_EMAIL: bot@users.noreply.github.com
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.HISTORY_PURGE_PAT }}@github.com/${{ github.repository }}.git
+          git push --force --all
+          git push --force --tags

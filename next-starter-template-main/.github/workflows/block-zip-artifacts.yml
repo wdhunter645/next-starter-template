@@ -1,0 +1,36 @@
+name: Block ZIP Artifacts
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  check-no-zip-files:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for tracked ZIP files
+        run: |
+          echo "Checking for tracked ZIP files..."
+          ZIP_FILES=$(git ls-files '*.zip' '*.ZIP')
+          
+          if [ -n "$ZIP_FILES" ]; then
+            echo "❌ ERROR: ZIP files are not allowed to be committed to this repository."
+            echo ""
+            echo "The following ZIP files were found:"
+            echo "$ZIP_FILES"
+            echo ""
+            echo "ZIP files are for transport only and must be deleted before merge."
+            echo "Please remove these files and commit the deletion."
+            echo ""
+            echo "To remove: git rm <filename> && git commit -m 'Remove ZIP artifact'"
+            exit 1
+          else
+            echo "✅ No ZIP files found. Check passed."
+          fi
