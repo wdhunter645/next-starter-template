@@ -26,7 +26,12 @@ export default function HomePage() {
 
       {/* Section: Weekly Photo Matchup */}
       <section id="weekly" className="section-gap">
-        <WeeklyMatchup />
+        <div className="container">
+          <h2 className="section-title" style={{ textAlign: 'center', color: 'var(--lgfc-blue)', marginBottom: '1rem' }}>
+            Weekly Photo Matchup. Vote for your favorite!
+          </h2>
+          <WeeklyMatchup />
+        </div>
       </section>
 
       {/* Section: Membership CTA */}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { apiGet, apiPost } from '@/lib/api';
 
 type Photo = {
@@ -39,7 +39,6 @@ export default function WeeklyMatchup() {
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  const storageKey = useMemo(() => (weekStart ? `lgfc_weekly_vote_${weekStart}` : null), [weekStart]);
   const [hasVoted, setHasVoted] = useState(false);
   const [totals, setTotals] = useState<{ a: number; b: number } | null>(null);
   const [lastWeek, setLastWeek] = useState<ResultsResp['last_week']>(null);
@@ -66,8 +65,8 @@ export default function WeeklyMatchup() {
             setLastWeek(r.last_week);
           }
         }
-      } catch (e: any) {
-        setErr(String(e?.message ?? e));
+      } catch (e: unknown) {
+        setErr(String((e as Error)?.message ?? e));
       } finally {
         setLoading(false);
       }
@@ -89,8 +88,8 @@ export default function WeeklyMatchup() {
 
       const rr = await apiGet<ResultsResp>(`/api/matchup/results?week_start=${encodeURIComponent(weekStart)}`);
       setLastWeek(rr.last_week);
-    } catch (e: any) {
-      setErr(String(e?.message ?? e));
+    } catch (e: unknown) {
+      setErr(String((e as Error)?.message ?? e));
     } finally {
       setSubmitting(false);
     }
@@ -105,9 +104,8 @@ export default function WeeklyMatchup() {
 
   return (
     <div className="card">
-      <h2 style={{ margin: '0 0 10px 0' }}>Weekly Matchup</h2>
       <div className="sub" style={{ marginBottom: 14 }}>
-        Vote for your favorite. Results remain hidden until you vote.
+        Results remain hidden until you vote.
         {weekStart ? <span style={{ marginLeft: 8, opacity: 0.7 }}>Week of {weekStart}</span> : null}
       </div>
 
