@@ -1,0 +1,11 @@
+title = "LGFC-Lite gitleaks config (noise-reduced)"
+
+[allowlist]
+description = "Allow known-safe templates and generated artifacts"
+paths = [
+  '''^\.env\.example$''',
+  '''^docs/''',
+  '''^reports/''',
+  '''^snapshots?/''',
+  '''^\.diagnostics/''',
+]

@@ -1,0 +1,65 @@
+name: Drift Gate (Lean)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled, ready_for_review]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  drift-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Capture PR context (base/head/labels)
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          set -euo pipefail
+          echo "GITHUB_BASE_SHA=${{ github.event.pull_request.base.sha }}" >> $GITHUB_ENV
+          echo "GITHUB_HEAD_SHA=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
+          LABELS="$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH" | paste -sd, - || true)"
+          echo "GITHUB_PR_LABELS=$LABELS" >> $GITHUB_ENV
+          echo "Labels: $LABELS"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: ZIP guard (tree)
+        run: |
+          set -euo pipefail
+          if git ls-files | grep -Eim 1 '\.zip$'; then
+            echo "ERROR: ZIP file present in repo tree."
+            exit 1
+          fi
+          echo "OK: No ZIP in tree."
+
+      - name: ZIP guard (PR-range history)
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          set -euo pipefail
+          chmod +x scripts/ci/verify_zip_history_pr.sh
+          scripts/ci/verify_zip_history_pr.sh
+
+      - name: PR intent allowlist
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          set -euo pipefail
+          node scripts/ci/verify_pr_intent_allowlist.mjs
+
+      - name: Critical LGFC invariants
+        run: |
+          set -euo pipefail
+          node scripts/ci/verify_lgfc_invariants.mjs

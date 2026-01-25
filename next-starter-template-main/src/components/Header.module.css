@@ -1,0 +1,105 @@
+.header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--lgfc-bg-card);
+  border-bottom: 1px solid var(--lgfc-border-light);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-h);
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.logoLink {
+  display: flex;
+  align-items: center;
+}
+
+.logoLink img {
+  display: block;
+  height: 44px;
+  width: auto;
+  aspect-ratio: auto;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+@media (min-width: 768px) {
+  .logoLink img {
+    height: 48px;
+  }
+}
+
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--lgfc-border-light);
+  border-radius: 6px;
+  background: var(--lgfc-bg-card);
+  cursor: pointer;
+}
+
+.line {
+  width: 22px;
+  height: 2px;
+  background: var(--lgfc-text-main);
+  margin: 0 auto;
+}
+
+.drawer {
+  position: absolute;
+  top: var(--header-h);
+  right: 16px;
+  background: var(--lgfc-bg-card);
+  border: 1px solid var(--lgfc-border-soft);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 12px;
+}
+
+.menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.menu li {
+  padding: 8px 0;
+  text-align: right;
+}
+
+.menu a {
+  color: var(--lgfc-text-main);
+  text-decoration: none;
+}
+
+.menu a:hover {
+  color: var(--lgfc-blue);
+}
+
+.menu .menuPlaceholder {
+  color: var(--lgfc-text-light);
+  cursor: default;
+}
+
+.close {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  font-size: 24px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}

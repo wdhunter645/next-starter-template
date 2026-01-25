@@ -1,0 +1,18 @@
+# npm audit report
+
+undici  7.0.0 - 7.18.1
+Undici has an unbounded decompression chain in HTTP responses on Node.js Fetch API via Content-Encoding leads to resource exhaustion - https://github.com/advisories/GHSA-g9mf-h72j-4rw9
+fix available via `npm audit fix --force`
+Will install wrangler@4.35.0, which is a breaking change
+node_modules/undici
+  miniflare  >=4.20250906.1
+  Depends on vulnerable versions of undici
+  node_modules/miniflare
+    wrangler  <=0.0.0-31bfd374c || >=4.36.0
+    Depends on vulnerable versions of miniflare
+    node_modules/wrangler
+
+3 low severity vulnerabilities
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
