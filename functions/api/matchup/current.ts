@@ -1,9 +1,34 @@
 export const onRequestGet = async (context: any): Promise<Response> => {
-  const { env } = context;
+  const { env, request } = context;
 
   try {
-    // Prefer matchup eligible photos if column exists; otherwise fallback to first 2 photos.
-    // SQLite will error if column missing; we catch and fallback.
+    // 1) Prefer an active weekly_matchups row (authoritative)
+    try {
+      const m = await env.DB.prepare(
+        "SELECT id, week_start, photo_a_id, photo_b_id, status, created_at FROM weekly_matchups WHERE status = 'active' ORDER BY week_start DESC LIMIT 1;"
+      ).first();
+
+      if (m && m.photo_a_id && m.photo_b_id) {
+        const a = await env.DB.prepare("SELECT id, url, description, title FROM photos WHERE id = ?;").bind(m.photo_a_id).first();
+        const b = await env.DB.prepare("SELECT id, url, description, title FROM photos WHERE id = ?;").bind(m.photo_b_id).first();
+
+        const items = [a, b].filter(Boolean);
+
+        return new Response(JSON.stringify({
+          ok: true,
+          week_start: m.week_start,
+          matchup_id: m.id,
+          items
+        }, null, 2), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    } catch {
+      // fall through to photo-pick fallback
+    }
+
+    // 2) Fallback: pick two photos (legacy)
     const pickTwo = async (sql: string) => {
       const rows = await env.DB.prepare(sql).all();
       const items = (rows.results ?? []) as any[];
