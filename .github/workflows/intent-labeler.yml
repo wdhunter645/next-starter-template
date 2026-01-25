@@ -1,0 +1,183 @@
+name: Intent Labeler
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  label-intent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Auto-assign intent label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const { execSync } = require('child_process');
+            
+            // Load intent rules from config
+            const configPath = '.github/intent-labeler.json';
+            const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+            
+            // Get PR details
+            const prNumber = context.payload.pull_request.number;
+            const baseSha = context.payload.pull_request.base.sha;
+            const headSha = context.payload.pull_request.head.sha;
+            
+            // Get changed files
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+            });
+            
+            const changedFiles = files.map(f => f.filename);
+            
+            console.log(`Changed files (${changedFiles.length}):`);
+            changedFiles.forEach(f => console.log(`  - ${f}`));
+            
+            // Function to check if a file is allowed by an intent
+            function isAllowedByIntent(filepath, intentConfig) {
+              // Check deny prefixes first
+              if (intentConfig.deny_prefixes) {
+                for (const denyPrefix of intentConfig.deny_prefixes) {
+                  if (filepath.startsWith(denyPrefix)) {
+                    return false;
+                  }
+                }
+              }
+              
+              // Check allow prefixes
+              if (intentConfig.allow_prefixes) {
+                for (const allowPrefix of intentConfig.allow_prefixes) {
+                  if (filepath.startsWith(allowPrefix)) {
+                    return true;
+                  }
+                }
+              }
+              
+              return false;
+            }
+            
+            // Determine which intent matches ALL changed files
+            // Priority order: docs-only → infra → feature → recovery
+            const intentOrder = ['docs-only', 'infra', 'feature', 'recovery'];
+            let matchedIntent = null;
+            
+            for (const intentName of intentOrder) {
+              const intentConfig = config.intents[intentName];
+              
+              // Check if ALL changed files are allowed by this intent
+              const allFilesMatch = changedFiles.every(file => 
+                isAllowedByIntent(file, intentConfig)
+              );
+              
+              if (allFilesMatch) {
+                matchedIntent = intentName;
+                console.log(`✅ All files match intent: ${intentName}`);
+                break;
+              }
+            }
+            
+            // Get current labels
+            const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+            
+            const currentLabelNames = currentLabels.map(l => l.name);
+            const intentLabels = Object.keys(config.intents);
+            const existingIntentLabels = currentLabelNames.filter(l => intentLabels.includes(l));
+            
+            // Remove existing intent labels
+            for (const label of existingIntentLabels) {
+              console.log(`Removing existing intent label: ${label}`);
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                name: label,
+              });
+            }
+            
+            // Apply the matched intent label or post guidance for mixed changes
+            if (matchedIntent) {
+              console.log(`Applying intent label: ${matchedIntent}`);
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                labels: [matchedIntent],
+              });
+              
+              // Post success comment
+              const commentMarker = '<!-- intent-labeler-result -->';
+              const successComment = commentMarker + '\n## ✅ Intent Label Applied\n\nThis PR has been automatically labeled with intent: **`' + matchedIntent + '`**\n\nAll changed files match the allowlist for this intent. The PR can proceed to review.';
+              
+              // Check for existing comment
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+              });
+              
+              const existingComment = comments.find(c => c.body?.includes(commentMarker));
+              
+              if (existingComment) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existingComment.id,
+                  body: successComment,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  body: successComment,
+                });
+              }
+            } else {
+              // Mixed intent - no label applied
+              console.log('⚠️ Mixed intent detected - no label will be applied');
+              
+              const commentMarker = '<!-- intent-labeler-result -->';
+              const fileList = changedFiles.map(f => '- `' + f + '`').join('\n');
+              const mixedComment = commentMarker + '\n## ⚠️ Mixed Intent Detected\n\nThis PR contains changes that don\'t fit a single intent category. **No intent label has been applied.**\n\n### Why this matters\nThe drift-gate workflow requires exactly ONE intent label to validate file-touch allowlists. Mixed-intent PRs cannot pass drift-gate.\n\n### Required action\nPlease split this PR into separate PRs, one for each intent:\n\n**Available intents:**\n- `docs-only`: Only changes to `docs/**` files\n- `infra`: Changes to `.github/**`, `scripts/**`, build configs (but NOT `docs/**`)\n- `feature`: Changes to `src/**`, `functions/**`, `migrations/**`, `public/**` (but NOT `.github/workflows/**` or `docs/**`)\n- `recovery`: Emergency fixes that can touch most paths\n\n### Changed files in this PR\n' + fileList + '\n\nOnce you\'ve split the changes into focused PRs, each PR will be automatically labeled with the appropriate intent.';
+              
+              // Check for existing comment
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+              });
+              
+              const existingComment = comments.find(c => c.body?.includes(commentMarker));
+              
+              if (existingComment) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existingComment.id,
+                  body: mixedComment,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  body: mixedComment,
+                });
+              }
+            }
