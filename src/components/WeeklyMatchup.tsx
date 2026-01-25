@@ -1,54 +1,157 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { apiGet } from '@/lib/api';
+import { apiGet, apiPost } from '@/lib/api';
 
 type Photo = {
   id: number;
   url: string;
   description?: string;
-  photo_id?: string;
+  title?: string;
+};
+
+type CurrentResp = {
+  ok: boolean;
+  week_start?: string;
+  matchup_id?: number;
+  items: Photo[];
+};
+
+type VoteResp = {
+  ok: boolean;
+  week_start: string;
+  choice: 'a' | 'b';
+  already_voted: boolean;
+  totals: { a: number; b: number };
+};
+
+type ResultsResp = {
+  ok: boolean;
+  week_start: string | null;
+  totals: { a: number; b: number };
+  last_week: null | { week_start: string; totals: { a: number; b: number }; winner: 'a' | 'b' | 'tie' };
 };
 
 export default function WeeklyMatchup() {
   const [items, setItems] = useState<Photo[]>([]);
+  const [weekStart, setWeekStart] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const [hasVoted, setHasVoted] = useState(false);
+  const [totals, setTotals] = useState<{ a: number; b: number } | null>(null);
+  const [lastWeek, setLastWeek] = useState<ResultsResp['last_week']>(null);
 
   useEffect(() => {
-    let alive = true;
-    (async () => {
+    async function load() {
       try {
-        const data = await apiGet<{ ok: boolean; items: Photo[] }>(`/api/matchup/current`);
-        if (alive) setItems(data.items || []);
-      } catch {
-        if (alive) setItems([]);
+        setErr(null);
+        setLoading(true);
+
+        const data = await apiGet<CurrentResp>('/api/matchup/current');
+        const gotWeek = data.week_start ?? null;
+
+        setWeekStart(gotWeek);
+        setItems((data.items ?? []).slice(0, 2));
+
+        if (gotWeek) {
+          const voted = window.localStorage.getItem(`lgfc_weekly_vote_${gotWeek}`) === '1';
+          setHasVoted(voted);
+
+          if (voted) {
+            const r = await apiGet<ResultsResp>(`/api/matchup/results?week_start=${encodeURIComponent(gotWeek)}`);
+            setTotals(r.totals);
+            setLastWeek(r.last_week);
+          }
+        }
+      } catch (e: unknown) {
+        const errorMsg = e instanceof Error ? e.message : String(e);
+        setErr(errorMsg);
       } finally {
-        if (alive) setLoading(false);
+        setLoading(false);
       }
-    })();
-    return () => { alive = false; };
+    }
+    load();
   }, []);
 
-  return (
-    <div className="container">
-      <h2 className="section-title">Weekly Photo Matchup — Vote for your favorite</h2>
-      <p className="sub">Two photos pulled live from D1 photos table.</p>
+  async function submit(choice: 'a' | 'b') {
+    if (!weekStart) return;
+    try {
+      setSubmitting(true);
+      setErr(null);
 
-      {loading ? (
-        <p className="sub">Loading…</p>
-      ) : items.length < 2 ? (
-        <p className="sub">Not enough photos in D1 yet to show a matchup.</p>
-      ) : (
-        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
-          {items.slice(0, 2).map((p) => (
-            <div key={p.id} className="card" style={{ textAlign: 'center' }}>
-              <img src={p.url} alt={p.description || 'Lou Gehrig'} style={{ width: '100%', borderRadius: 12 }} />
-              <div className="sub" style={{ marginTop: 10 }}>{p.description || 'Photo from archive'}</div>
-              <div style={{ marginTop: 12, fontWeight: 700, color: 'var(--lgfc-blue)' }}>
-                Voting wired next (Phase: Day 2)
-              </div>
+      const r = await apiPost<VoteResp>('/api/matchup/vote', { week_start: weekStart, choice });
+      // Reveal results after vote (or if already voted server-side)
+      window.localStorage.setItem(`lgfc_weekly_vote_${weekStart}`, '1');
+      setHasVoted(true);
+      setTotals(r.totals);
+
+      const rr = await apiGet<ResultsResp>(`/api/matchup/results?week_start=${encodeURIComponent(weekStart)}`);
+      setLastWeek(rr.last_week);
+    } catch (e: unknown) {
+      const errorMsg = e instanceof Error ? e.message : String(e);
+      setErr(errorMsg);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (loading) return <div className="card">Loading matchup…</div>;
+  if (err) return <div className="card">Error loading matchup: {err}</div>;
+  if (items.length < 2) return <div className="card">No matchup available yet.</div>;
+
+  const a = items[0];
+  const b = items[1];
+
+  return (
+    <div className="card">
+      <div className="sub" style={{ marginBottom: 14 }}>
+        Results remain hidden until you vote.
+        {weekStart ? <span style={{ marginLeft: 8, opacity: 0.7 }}>Week of {weekStart}</span> : null}
+      </div>
+
+      <div className="grid">
+        <div className="card" style={{ textAlign: 'center' }}>
+          <img src={a.url} alt={a.description || 'Lou Gehrig'} style={{ width: '100%', borderRadius: 12 }} />
+          <div className="sub" style={{ marginTop: 10 }}>{a.title || a.description || 'Photo A'}</div>
+          {!hasVoted && (
+            <button
+              disabled={submitting}
+              onClick={() => submit('a')}
+              className="btn"
+              style={{ marginTop: 12, width: '100%' }}
+            >
+              {submitting ? 'Submitting…' : 'Vote A'}
+            </button>
+          )}
+        </div>
+
+        <div className="card" style={{ textAlign: 'center' }}>
+          <img src={b.url} alt={b.description || 'Lou Gehrig'} style={{ width: '100%', borderRadius: 12 }} />
+          <div className="sub" style={{ marginTop: 10 }}>{b.title || b.description || 'Photo B'}</div>
+          {!hasVoted && (
+            <button
+              disabled={submitting}
+              onClick={() => submit('b')}
+              className="btn"
+              style={{ marginTop: 12, width: '100%' }}
+            >
+              {submitting ? 'Submitting…' : 'Vote B'}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {hasVoted && totals && (
+        <div style={{ marginTop: 16 }}>
+          <div style={{ fontWeight: 800, color: 'var(--lgfc-blue)' }}>Results (revealed)</div>
+          <div className="sub" style={{ marginTop: 6 }}>A: {totals.a} · B: {totals.b}</div>
+          {lastWeek && (
+            <div className="sub" style={{ marginTop: 10, opacity: 0.85 }}>
+              Last closed week ({lastWeek.week_start}): A {lastWeek.totals.a} · B {lastWeek.totals.b} · Winner: {lastWeek.winner.toUpperCase()}
             </div>
-          ))}
+          )}
         </div>
       )}
     </div>
