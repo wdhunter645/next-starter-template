@@ -1,45 +1,93 @@
-# LGFC — Navigation Invariants (Authoritative)
+# LGFC — Navigation Invariants (AUTHORITATIVE)
 
 This document is **authoritative**. If any UI or doc contradicts this file, this file wins.
 
-## Global header (public site)
-**Header nav labels and order are fixed:**
-1. Weekly Matchup → `/weekly`
-2. Milestones → `/milestones`
-3. Charities → `/charities`
-4. News & Q&A → `/news`
-5. Calendar → `/calendar`
-6. Join → `/member`
+Effective Date: 2026-01-21
 
-## Hamburger menu (global rules)
-Hamburger menus list **ONLY standalone pages**.
+---
 
-Hamburger menus must NEVER include:
-- Home page sections (e.g., “Charities section”, “Events section”, “Social Wall”)
-- Footer-only links (Privacy, Terms)
-- Join or Login
-- Member-only header buttons
+## Canonical Routes — Day 1
 
-### Visitor hamburger (standalone pages only)
-- Home (MOBILE ONLY)
-- About
-- Contact
-- Support (mailto)
-- Store (external)
+### Public (visitor-accessible)
+- `/` (Home)
+- `/about`
+- `/contact`
+- `/support`
+- `/terms`
+- `/privacy`
+- `/search`
+- `/join`
+- `/login`
+- `/logout`
+- `/faq`
+- `/health`
 
-### Desktop/tablet hamburger rule
-- Desktop/tablet hamburger does **NOT** include Home.
-- Home may appear on mobile only.
+### FanClub (auth required; unauthenticated traffic redirects to `/`)
+- `/fanclub`
+- `/fanclub/myprofile`
+- `/fanclub/membercard`
+- `/fanclub/photo`
+- `/fanclub/library`
+- `/fanclub/memorabilia`
 
-## Footer (footer-only)
-- Privacy → `/privacy`
-- Terms → `/terms`
-- Admin → `/admin`
+### Admin (admin gate)
+- `/admin/**`
 
-## Support + Store
-- Support is a mailto link (not a page unless explicitly implemented later).
-- Store is an external link.
+### Store
+- Store is an **external** Bonfire link. There is **no** `/store` route.
 
-## Search
-Search appears as a header button **only** if an actual `/search` page exists.
-Search must never be placed into the hamburger unless explicitly locked later.
+### Weekly Vote
+- Weekly vote routes are in transition. Do **not** delete existing weekly-related routes until the home page + hidden results page behavior is finalized.
+
+---
+
+## Global Header — Public pages
+
+### Public header (not logged in)
+Desktop/Tablet buttons (centered, fixed order):
+1. Join → `/join`
+2. Search → `/search`
+3. Store → external Bonfire link
+4. Login → `/login`
+
+### Public header (logged in, but browsing public pages)
+The same center group of 4 buttons remains visible, plus **two additional buttons** appear to the right:
+
+5. Club Home → `/fanclub`
+6. Logout → `/logout`
+
+---
+
+## FanClub Header — `/fanclub/**`
+
+Single header variant (because unauthenticated traffic redirects to `/`):
+
+1. Club Home → `/fanclub`
+2. My Profile → `/fanclub/myprofile`
+3. Search → `/search`
+4. Store → external Bonfire link
+5. Logout → `/logout`
+
+Global logo behavior:
+- The logo always links to `/` across the entire site.
+
+---
+
+## Footer (global)
+
+Layout is locked:
+
+- Left (left-justified)
+  - Line 1: Quote (rotating)
+  - Line 2: Legal tag
+
+- Center
+  - Small LGFC logo; clicking it scrolls to top of the current page (no navigation)
+
+- Right (right-justified links, exact order)
+  1. Contact → `/contact`
+  2. Support → `/support`
+  3. Terms → `/terms`
+  4. Privacy → `/privacy`
+
+The footer must not display any email address directly.
