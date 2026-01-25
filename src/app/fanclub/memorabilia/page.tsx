@@ -2,6 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 
+// FanClub auth gate (LGFC-Lite): redirect unauthenticated users to public home.
+function requireFanclubAuth(): string | null {
+  if (typeof window === 'undefined') return null;
+  const email = window.localStorage.getItem('lgfc_member_email');
+  return email && email.trim() ? email.trim() : null;
+}
+
+
 type PhotoItem = { id: number; url: string; is_memorabilia: number; description?: string | null; created_at: string };
 
 const styles: Record<string, React.CSSProperties> = {
@@ -18,6 +26,13 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function PhotosPage() {
+
+  useEffect(() => {
+    const email = requireFanclubAuth();
+    if (!email) {
+      window.location.href = '/';
+    }
+  }, []);
   const [items, setItems] = useState<PhotoItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [offset, setOffset] = useState(0);
@@ -26,7 +41,7 @@ export default function PhotosPage() {
   async function load(nextOffset: number) {
     setLoading(true);
     try {
-      const res = await fetch(`/api/photos/list?limit=${limit}&offset=${nextOffset}`);
+      const res = await fetch(`/api/fanclub/fanclub/photo/list?limit=${limit}&offset=${nextOffset}&memorabilia=1`);
       const data = await res.json().catch(() => ({}));
       if (res.ok && data?.ok) {
         const incoming = Array.isArray(data.items) ? data.items : [];
@@ -44,19 +59,19 @@ export default function PhotosPage() {
 
   return (
     <main style={{ ...styles.main }}>
-      <h1 style={{ ...styles.h1 }}>Photo Archive</h1>
+      <h1 style={{ ...styles.h1 }}>Memorabilia</h1>
       <p style={{ ...styles.lead }}>
-        A growing gallery of images connected to Lou Gehrig, Yankees history, and related memorabilia.
+        A filtered view of the archive focused on items such as cards, programs, tickets, and collectibles.
       </p>
       <p style={{ ...styles.p }}>
-        Captions and tags will improve over time. If you know the date, location, opponent, or source for an image,
-        send us a note so we can upgrade the metadata and make the archive more searchable.
+        This starts as a simple gallery. As we tag items (year, type, source, and notes), browsing will get faster and more precise.
+        If you can help identify an item or provide a better caption/source, email the club.
       </p>
 
       {loading && items.length === 0 ? (
         <p style={{ ...styles.p }}>Loading…</p>
       ) : items.length === 0 ? (
-        <p style={{ ...styles.p }}>No photos yet. Check back soon as we continue to build the archive.</p>
+        <p style={{ ...styles.p }}>No memorabilia items yet. Check back soon as we continue to catalog the collection.</p>
       ) : (
         <>
           <div style={{ ...styles.grid }}>
@@ -86,8 +101,8 @@ export default function PhotosPage() {
             >
               {loading ? "Loading..." : "Load more"}
             </button>
-            <a style={{ ...styles.btn, textDecoration: "none", display: "inline-flex", alignItems: "center" }} href="/memorabilia">
-              View memorabilia
+            <a style={{ ...styles.btn, textDecoration: "none", display: "inline-flex", alignItems: "center" }} href="/fanclub/fanclub/photo">
+              View photos
             </a>
           </div>
         </>

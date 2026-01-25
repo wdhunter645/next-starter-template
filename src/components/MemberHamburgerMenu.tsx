@@ -1,31 +1,41 @@
 'use client';
 
 import Link from 'next/link';
+import { useRef, RefObject } from 'react';
+import { useClickAway } from '@/hooks/useClickAway';
 
 /**
  * Member hamburger menu.
- * Desktop/Tablet order:
+ * Desktop/Tablet order (NO Store - it's a header button):
  * 1) My Profile
  * 2) Obtain Membership Card
  * 3) About
  * 4) Contact
- * 5) Store
- * 6) Support
+ * 5) Support
  *
  * Mobile member hamburger order (locked):
  * 1) Search
  * 2) Home
- * 3) Member Home
+ * 3) Club Home
  * 4) My Profile
  * 5) Obtain Membership Card
  * 6) About
  * 7) Contact
- * 8) Store
+ * 8) Store (mobile only - replaces header button)
  * 9) Support
  * 10) Login
  * 11) Logout
  */
-export default function MemberHamburgerMenu({ onClose }: { onClose: () => void }) {
+export default function MemberHamburgerMenu({ 
+  onClose, 
+  toggleRef 
+}: { 
+  onClose: () => void;
+  toggleRef: RefObject<HTMLButtonElement | null>;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  useClickAway(containerRef, toggleRef, onClose, true);
   return (
     <>
       <style jsx>{`
@@ -37,21 +47,23 @@ export default function MemberHamburgerMenu({ onClose }: { onClose: () => void }
         }
       `}</style>
 
-      <div className="mast-drawer" id="hamburger-menu">
+      <div className="mast-drawer" id="hamburger-menu" ref={containerRef}>
         <button className="mast-drawer-close" onClick={onClose} aria-label="Close menu">×</button>
 
         <ul className="mast-drawer-menu">
           {/* Mobile-specific top items */}
           <li className="only-mobile"><Link href="/search" onClick={onClose}>Search</Link></li>
           <li className="only-mobile"><Link href="/" onClick={onClose}>Home</Link></li>
-          <li className="only-mobile"><Link href="/member" onClick={onClose}>Member Home</Link></li>
+          <li className="only-mobile"><Link href="/fanclub" onClick={onClose}>Club Home</Link></li>
 
           {/* Desktop/tablet (and also present on mobile lower in list) */}
-          <li><Link href="/member/profile" onClick={onClose}>My Profile</Link></li>
-          <li><Link href="/member/card" onClick={onClose}>Obtain Membership Card</Link></li>
+          <li><Link href="/fanclub/myprofile" onClick={onClose}>My Profile</Link></li>
+          <li><Link href="/fanclub/membercard" onClick={onClose}>Obtain Membership Card</Link></li>
           <li><Link href="/about" onClick={onClose}>About</Link></li>
           <li><Link href="/contact" onClick={onClose}>Contact</Link></li>
-          <li>
+          
+          {/* Store: MOBILE ONLY (desktop/tablet has it as header button) */}
+          <li className="only-mobile">
             <a
               href="https://www.bonfire.com/store/lou-gehrig-fan-club/"
               target="_blank"
@@ -62,6 +74,7 @@ export default function MemberHamburgerMenu({ onClose }: { onClose: () => void }
               Store
             </a>
           </li>
+          
           <li>
             <a href="mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed" aria-label="Contact support via email" onClick={onClose}>
               Support

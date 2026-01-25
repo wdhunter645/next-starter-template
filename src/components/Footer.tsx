@@ -4,93 +4,68 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import styles from "./Footer.module.css";
 
-// Environment variables with safe fallbacks
 const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Lou Gehrig Fan Club";
 
+type Quote = { quote: string; attribution?: string | null };
+
 export default function Footer() {
-	const [isAdmin, setIsAdmin] = useState(false);
-	const [footerQuote, setFooterQuote] = useState<{ quote: string; attribution?: string | null } | null>(null);
+  const [footerQuote, setFooterQuote] = useState<Quote | null>(null);
 
-	useEffect(() => {
-		// Check if user is admin
-		async function checkAdmin() {
-			if (typeof window === 'undefined') return;
-			
-			const email = window.localStorage.getItem('lgfc_member_email');
-			// Validate email format before using it
-			if (!email || !email.includes('@') || email.length < 3) {
-				setIsAdmin(false);
-				return;
-			}
+  useEffect(() => {
+    // Best-effort: pull one quote for rotation if available; silent failure is fine.
+    (async () => {
+      try {
+        const res = await fetch("/api/quotes/random");
+        const data = await res.json();
+        if (data?.ok && data?.quote) {
+          setFooterQuote({ quote: data.quote, attribution: data.attribution ?? null });
+        }
+      } catch {
+        // No-op
+      }
+    })();
+  }, []);
 
-			try {
-				const res = await fetch(`/api/member/role?email=${encodeURIComponent(email)}`);
-				const data = await res.json();
-				if (data?.ok && data?.role === 'admin') {
-					setIsAdmin(true);
-				}
-			} catch {
-				// Fail silently - admin link just won't show
-				setIsAdmin(false);
-			}
-		}
+  const scrollToTop = () => {
+    try {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch {
+      window.scrollTo(0, 0);
+    }
+  };
 
-		checkAdmin();
-	}, []);
+  return (
+    <footer className={styles.footer}>
+      <div className={styles.container}>
+        <div className={styles.left}>
+          <div className={styles.quoteLine}>
+            {footerQuote ? (
+              <>
+                <span className={styles.quoteMark}>&ldquo;</span>
+                <span className={styles.quoteText}>{footerQuote.quote}</span>
+                <span className={styles.quoteMark}>&rdquo;</span>
+                {footerQuote.attribution ? <span className={styles.quoteAttr}> — {footerQuote.attribution}</span> : null}
+              </>
+            ) : (
+              <span className={styles.quoteText}>&nbsp;</span>
+            )}
+          </div>
+          <div className={styles.legalLine}>
+            © {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
+          </div>
+        </div>
 
-	useEffect(() => {
-		async function loadQuote() {
-			try {
-				const res = await fetch('/api/footer-quote');
-				const data = await res.json();
-				if (data?.ok && data?.quote?.quote) {
-					setFooterQuote({ quote: String(data.quote.quote), attribution: data.quote.attribution ?? null });
-				}
-			} catch {
-				// silent
-			}
-		}
-		loadQuote();
-	}, []);
+        <button type="button" className={styles.centerLogo} onClick={scrollToTop} aria-label="Back to top">
+          <img src="/IMG_1946.png" alt="LGFC" className={styles.logoImg} />
+        </button>
 
-	return (
-		<footer className={styles.footer}>
-			<div className={styles.container}>
-				{footerQuote && (
-					<div style={{ marginBottom: 10, padding: '10px 12px', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 12 }}>
-						<span style={{ opacity: 0.95 }}>&ldquo;{footerQuote.quote}&rdquo;</span>
-						{footerQuote.attribution && (
-							<span style={{ marginLeft: 8, opacity: 0.85 }}>— {footerQuote.attribution}</span>
-						)}
-					</div>
-				)}
-				<div className={styles.content}>
-					<div className={styles.copyright}>
-						<p>
-							&copy; {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
-						</p>
-					</div>
-					<div className={styles.links}>
-						<Link href="/privacy" className={styles.link}>
-							Privacy
-						</Link>
-						<Link href="/terms" className={styles.link}>
-							Terms
-						</Link>
-						<Link href="/contact" className={styles.link}>
-							Contact
-						</Link>
-						<a href="mailto:admin@lougehrigfanclub.com?subject=Support%20Needed" className={styles.link}>
-							Support
-						</a>
-						{isAdmin && (
-							<Link href="/admin" className={styles.link}>
-								Admin
-							</Link>
-						)}
-					</div>
-				</div>
-			</div>
-		</footer>
-	);
+        <div className={styles.right}>
+          <Link href="/contact" className={styles.link}>Contact</Link>
+          <a href="mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed" className={styles.link}>Support</a>
+          <Link href="/terms" className={styles.link}>Terms</Link>
+          <Link href="/privacy" className={styles.link}>Privacy</Link>
+        </div>
+      </div>
+    </footer>
+  );
 }

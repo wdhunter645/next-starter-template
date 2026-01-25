@@ -1,170 +1,69 @@
-# FanClub / Member Content — Authentication Requirements
+# LGFC — FanClub Area Specification (AUTHORITATIVE)
 
-**Status:** AUTHORITATIVE  
-**Effective Date:** 2026-01-24
+Status: LOCKED — PRODUCTION SOURCE OF TRUTH  
+Effective Date: 2026-01-21
 
-This document defines authentication and access control requirements for FanClub (member-only) content pages.
-
----
-
-## Overview
-
-FanClub content pages are **member-only** and require authentication. Unauthenticated users must be redirected to the visitor home page (`/`).
+This document defines the **FanClub** (authenticated) experience and routes.
+If any UI, code, or other doc conflicts with this file, this file wins.
 
 ---
 
-## Authentication Model
+## Canonical Route
 
-- **Auth State:** Client-side via `localStorage` key `lgfc_member_email`
-- **When Present:** User is considered authenticated (logged in member)
-- **When Absent:** User is unauthenticated (visitor)
-
----
-
-## Member-Only Routes
-
-The following routes enforce authentication and redirect unauthenticated users to `/`:
-
-### Top-Level Member Content Pages
-- `/photo` — Single photo viewer
-- `/photos` — Photo gallery
-- `/library` — Gehrig library submissions
-- `/memorabilia` — Memorabilia archive
-- `/ask` — Ask a question
-- `/news` — Member news
-
-### Member-Specific Pages (under `/member/**`)
-- `/member` — Member home
-- `/member/profile` — Member profile
-- `/member/card` — Membership card
-- All other `/member/**` routes
+- **FanClub Home (Club Home)**: `/fanclub`
+- Auth boundary: `/fanclub` and all `/fanclub/**` routes require login.
+- Unauthenticated access to `/fanclub/**` must **redirect to** `/` (public home).
 
 ---
 
-## Authentication Enforcement Behavior
+## FanClub Header (single variant)
 
-### Unauthenticated User Access Attempt
-When an unauthenticated user (no `lgfc_member_email` in localStorage) attempts to access a member-only route:
+The FanClub header has **one** variant because unauthenticated traffic is redirected away.
 
-1. **Redirect immediately** to `/` (visitor home)
-2. **No content rendering** before redirect
-3. **Client-side check** runs on page load
+Desktop/Tablet buttons (in this exact order):
+1. Club Home → `/fanclub`
+2. My Profile → `/fanclub/myprofile`
+3. Search → `/search`
+4. Store → external Bonfire link (no `/store` route)
+5. Logout → `/logout`
 
-### Implementation Pattern
-
-All member-only pages MUST include this auth check pattern:
-
-```tsx
-'use client';
-
-import { useEffect, useState } from 'react';
-
-export default function MemberOnlyPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isChecking, setIsChecking] = useState(true);
-
-  useEffect(() => {
-    const email = window.localStorage.getItem('lgfc_member_email');
-    if (!email) {
-      window.location.href = '/';
-      return;
-    }
-    setIsAuthenticated(true);
-    setIsChecking(false);
-  }, []);
-
-  if (isChecking) {
-    return null; // or loading indicator
-  }
-
-  if (!isAuthenticated) {
-    return null;
-  }
-
-  // Actual page content here
-  return (
-    <main>
-      {/* Member content */}
-    </main>
-  );
-}
-```
+Global logo behavior:
+- The logo always links to **public home** `/` across the entire site (public, fanclub, admin).
 
 ---
 
-## Routes WITHOUT Auth Enforcement
+## FanClub Pages
 
-Public routes (no authentication required):
+FanClub-only subpages (canonical):
+- `/fanclub/photo`
+- `/fanclub/library`
+- `/fanclub/memorabilia`
+- `/fanclub/myprofile`
+- `/fanclub/membercard`
 
-- `/` — Visitor home
-- `/about` — About page
-- `/contact` — Contact page
-- `/support` — Support (mailto link)
-- `/join` — Join/registration page
-- `/login` — Login page
-- `/logout` — Logout page
-- `/weekly` — Weekly matchup
-- `/milestones` — Milestones timeline
-- `/charities` — Charities/Friends of the Club
-- `/calendar` — Events calendar
-- `/faq` — Frequently asked questions
-- `/terms` — Terms of service
-- `/privacy` — Privacy policy
-- `/search` — Search (if implemented)
-- `/admin/**` — Admin routes (separate auth check for admin role)
+Notes:
+- The public routes `/photo`, `/photos`, `/library`, `/memorabilia` must not exist (fanclub only).
 
 ---
 
-## Admin Routes
+## FanClub Home Page (Club Home) — section order
 
-Admin routes (`/admin/**`) have **separate access control**:
-1. Check member login state
-2. Check admin role via `/api/member/role?email=...`
-3. Display appropriate message if not admin
+The FanClub home must present the following sections in this order:
 
-Admin auth is **independent** of FanClub member auth (admins must also be logged-in members).
+1. Header (rendered by the global header system)
+2. Welcome Section
+3. Archives Tiles (Photo, Memorabilia, Library) — links to the FanClub subpages
+4. Post Creation / Work Area
+5. Member Discussion Feed
+6. Gehrig Timeline
+7. Admin Dashboard Link (conditional; admins only)
 
----
-
-## Header Behavior
-
-### Visitor Header (Logged Out)
-- Join, Search, Store, Login buttons visible
-
-### Visitor Header (Logged In)
-- Join, Search, Store, Members, Logout buttons visible
-- "Members" button links to `/member`
-
-### Member Header
-- Member Home, Search, Store, Logout buttons visible
+The profile and member card are separate pages (linked), not inline sections.
 
 ---
 
-## Compliance Verification
+## Weekly Vote Interaction (explicit design note)
 
-### Manual Verification
-1. Clear `localStorage` (simulate logged-out user)
-2. Navigate to each member-only route
-3. Verify immediate redirect to `/`
-4. No member content should flash/render before redirect
-
-### Automated Verification
-- E2E tests should verify redirect behavior
-- Tests should check both authenticated and unauthenticated states
-
----
-
-## No Exceptions
-
-**There are NO exceptions to FanClub auth enforcement.**
-
-Every route listed under "Member-Only Routes" MUST enforce authentication.
-
----
-
-## References
-
-- `/docs/NAVIGATION-INVARIANTS.md` — Navigation structure
-- `/docs/LGFC-Production-Design-and-Standards.md` — Design standards
-- `/context.md` — Auth model overview
-- `/docs/website-process.md` — Header state rules
+- The current matchup (two photos) is displayed on the **public home page**.
+- The results route `/weeklyvote` is a **hidden results page** revealed only **after** a user votes.
+- This is intentionally deferred for implementation detail work; do not delete existing weekly-related routes during the FanClub routing migration.

@@ -1,133 +1,68 @@
 #!/usr/bin/env bash
-# rewrite_zip_history.sh — Git History Cleanup for ZIP Artifacts
-#
-# PURPOSE:
-# Remove ZIP files from git history that were accidentally committed during
-# repository recovery operations. This script rewrites git history to purge
-# ZIP artifacts completely.
-#
-# CRITICAL SAFETY WARNING:
-# This script performs DESTRUCTIVE operations that rewrite git history.
-# - All contributors must re-clone the repository after this runs
-# - Any open PRs will need to be rebased
-# - Local branches will become incompatible
-# - Force push is REQUIRED
-#
-# USAGE:
-#   ./scripts/rewrite_zip_history.sh
-#
-# REQUIREMENTS:
-# - git-filter-repo (install: pip install git-filter-repo)
-# - Clean working directory (no uncommitted changes)
-# - Backup recommended before running
-#
-# POST-EXECUTION:
-# - Verify with: git log --all --full-history --source -- '*.zip'
-# - Force push: git push origin --force --all
-# - Notify all contributors to re-clone
-
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$REPO_ROOT"
+# ZIP history purge for wdhunter645/next-starter-template
+# Removes all *.zip from git history and force-pushes rewritten history.
+# SAFETY: creates a remote backup tag first.
 
-echo "╔════════════════════════════════════════════════════════════════╗"
-echo "║  ZIP History Cleanup — Git Filter-Repo                        ║"
-echo "╚════════════════════════════════════════════════════════════════╝"
-echo ""
-echo "This script will REWRITE GIT HISTORY to remove ZIP files."
-echo "⚠️  WARNING: This is a DESTRUCTIVE operation!"
-echo ""
-echo "Requirements:"
-echo "  - Clean working directory"
-echo "  - git-filter-repo installed"
-echo "  - Repository backup recommended"
-echo ""
-echo "After running:"
-echo "  - Force push required: git push origin --force --all"
-echo "  - All contributors must re-clone"
-echo "  - All open PRs must be rebased"
-echo ""
-read -p "Are you sure you want to continue? (yes/NO): " confirm
+REPO_URL="${REPO_URL:-https://github.com/wdhunter645/next-starter-template.git}"
+WORKDIR="${WORKDIR:-/tmp/lgfc-zip-history-rewrite}"
+ZIP_GLOB="${ZIP_GLOB:-*.zip}"
+DRY_RUN="${DRY_RUN:-0}"
 
-if [[ "${confirm}" != "yes" ]]; then
-  echo "❌ Aborted. No changes made."
-  exit 1
+log(){ printf "%s %s\n" "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')]" "$*"; }
+die(){ log "ERROR: $*"; exit 1; }
+
+command -v git >/dev/null 2>&1 || die "git not found"
+command -v python3 >/dev/null 2>&1 || die "python3 not found"
+
+log "Starting ZIP history purge"
+log "REPO_URL=$REPO_URL"
+log "WORKDIR=$WORKDIR"
+log "ZIP_GLOB=$ZIP_GLOB"
+log "DRY_RUN=$DRY_RUN"
+
+git config --global http.postBuffer 524288000 >/dev/null 2>&1 || true
+git config --global core.compression 1 >/dev/null 2>&1 || true
+git config --global pack.threads 1 >/dev/null 2>&1 || true
+
+git ls-remote "$REPO_URL" >/dev/null 2>&1 || die "Cannot access remote (auth/network)."
+
+rm -rf "$WORKDIR"
+mkdir -p "$WORKDIR"
+cd "$WORKDIR"
+
+git clone --mirror "$REPO_URL" repo.git
+cd repo.git
+
+python3 -m pip install --user --upgrade git-filter-repo >/dev/null
+export PATH="$HOME/.local/bin:$PATH"
+command -v git-filter-repo >/dev/null 2>&1 || die "git-filter-repo install failed"
+
+BACKUP_TAG="backup/pre-zip-purge-$(date -u +'%Y%m%d-%H%M%S')"
+log "Creating backup tag: $BACKUP_TAG"
+if git show-ref --verify --quiet "refs/remotes/origin/main"; then
+  git tag -f "$BACKUP_TAG" "refs/remotes/origin/main"
+else
+  git tag -f "$BACKUP_TAG" HEAD
 fi
+git push origin "refs/tags/$BACKUP_TAG" --force
 
-# Verify working directory is clean
-if ! git diff --quiet || ! git diff --cached --quiet; then
-  echo "❌ Error: Working directory is not clean."
-  echo "   Commit or stash changes before running this script."
-  exit 1
+log "Rewriting history to remove: $ZIP_GLOB"
+git filter-repo --force --path-glob "$ZIP_GLOB" --invert-paths
+
+log "Verifying no ZIPs remain..."
+if git rev-list --objects --all | grep -Eim 1 '\.zip$'; then
+  die "ZIPs still present after rewrite. Aborting."
 fi
+log "Verification PASS."
 
-# Check if git-filter-repo is installed
-if ! command -v git-filter-repo &> /dev/null; then
-  echo "❌ Error: git-filter-repo is not installed."
-  echo "   Install with: pip install git-filter-repo"
-  echo "   Or visit: https://github.com/newren/git-filter-repo"
-  exit 1
-fi
-
-# Backup current branch
-CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-echo "📋 Current branch: $CURRENT_BRANCH"
-
-# Search for ZIP files in history
-echo ""
-echo "🔍 Searching for ZIP files in git history..."
-ZIP_FILES=$(git log --all --full-history --source --pretty=format: --name-only -- '*.zip' '*.ZIP' | sort -u || true)
-
-if [[ -z "$ZIP_FILES" ]]; then
-  echo "✅ No ZIP files found in git history."
-  echo "   Nothing to clean up."
+if [[ "$DRY_RUN" == "1" ]]; then
+  log "DRY_RUN=1: not pushing. Rewritten mirror at $WORKDIR/repo.git"
   exit 0
 fi
 
-echo "Found ZIP files in history:"
-echo "$ZIP_FILES" | sed 's/^/  - /'
-echo ""
+log "Force-pushing rewritten history..."
+git push --force --mirror
 
-# Create backup tag
-BACKUP_TAG="backup-before-zip-cleanup-$(date +%Y%m%d-%H%M%S)"
-echo "📌 Creating backup tag: $BACKUP_TAG"
-git tag "$BACKUP_TAG"
-
-# Run git-filter-repo to remove ZIP files
-echo ""
-echo "🗑️  Removing ZIP files from git history..."
-git-filter-repo --force --invert-paths \
-  --path-glob '*.zip' \
-  --path-glob '*.ZIP'
-
-echo ""
-echo "✅ ZIP files removed from git history."
-echo ""
-echo "📊 Repository stats:"
-git count-objects -vH
-
-echo ""
-echo "╔════════════════════════════════════════════════════════════════╗"
-echo "║  NEXT STEPS (REQUIRED)                                         ║"
-echo "╚════════════════════════════════════════════════════════════════╝"
-echo ""
-echo "1. Verify cleanup:"
-echo "   git log --all --full-history --source -- '*.zip'"
-echo "   (Should return no results)"
-echo ""
-echo "2. Force push to remote:"
-echo "   git push origin --force --all"
-echo "   git push origin --force --tags"
-echo ""
-echo "3. Notify all contributors:"
-echo "   - Delete local clones"
-echo "   - Re-clone from origin"
-echo "   - Rebase any open PRs"
-echo ""
-echo "4. Backup tag created: $BACKUP_TAG"
-echo "   To restore if needed:"
-echo "   git reset --hard $BACKUP_TAG"
-echo ""
-echo "⚠️  Do NOT forget to force push!"
-echo ""
+log "DONE. Rollback tag: $BACKUP_TAG"

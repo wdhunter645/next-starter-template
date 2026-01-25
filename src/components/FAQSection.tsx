@@ -85,7 +85,7 @@ export default function FAQSection() {
             <p className="sub">
               No matching FAQ answers.
               <span style={{ marginLeft: 8 }}>
-                <Link className="link" href="/ask">Ask a Question</Link>
+                <Link className="link" href="/faq#ask">Ask a Question</Link>
               </span>
             </p>
           ) : (
@@ -110,7 +110,7 @@ export default function FAQSection() {
           />
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <button type="button" onClick={submit}>Submit</button>
-            <Link className="link" href="/ask">Open full Ask-a-Question page</Link>
+            
           </div>
           {submitOk ? (
             <div id="qsuccess" className="success">Thanks! Your question was received and queued for review.</div>

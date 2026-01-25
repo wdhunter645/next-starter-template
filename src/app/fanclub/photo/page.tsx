@@ -1,6 +1,14 @@
 'use client';
 
-import React from "react";
+import React, { useEffect } from "react";
+
+// FanClub auth gate (LGFC-Lite): redirect unauthenticated users to public home.
+function requireFanclubAuth(): string | null {
+  if (typeof window === 'undefined') return null;
+  const email = window.localStorage.getItem('lgfc_member_email');
+  return email && email.trim() ? email.trim() : null;
+}
+
 
 const styles: Record<string, React.CSSProperties> = {
   main: { padding: "40px 16px", maxWidth: 1000, margin: "0 auto" },
@@ -9,6 +17,13 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function PhotoPage() {
+
+  useEffect(() => {
+    const email = requireFanclubAuth();
+    if (!email) {
+      window.location.href = '/';
+    }
+  }, []);
   return (
     <main style={{ ...styles.main }}>
       <h1 style={{ ...styles.h1 }}>Photo</h1>

@@ -4,19 +4,19 @@ export default function ArchivesTiles() {
       id: 1,
       title: 'Memorabilia Archive',
       description: 'Browse member-curated memorabilia and artifacts.',
-      href: '/memorabilia',
+      href: '/fanclub/memorabilia',
     },
     {
       id: 2,
       title: 'Photo Gallery',
       description: "Explore photos from Gehrig's life, career, and fan collections.",
-      href: '/photos',
+      href: '/fanclub/photo',
     },
     {
       id: 3,
       title: 'Library',
       description: 'Read articles, books, clippings, and historical references.',
-      href: '/library',
+      href: '/fanclub/library',
     },
   ];
 

@@ -2,12 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { apiGet, apiPost } from '@/lib/api';
-import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 
 type FAQItem = { id: number; question: string; answer: string; updated_at: string };
 
 export default function AskPage() {
-  const { isAuthenticated, isChecking } = useAuthRedirect();
   const [query, setQuery] = useState('');
   const [question, setQuestion] = useState('');
   const [items, setItems] = useState<FAQItem[]>([]);
@@ -33,10 +31,6 @@ export default function AskPage() {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q]);
-
-  if (isChecking || !isAuthenticated) {
-    return null;
-  }
 
   const submit = async () => {
     setSubmitOk(false);

@@ -2,6 +2,14 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 
+// FanClub auth gate (LGFC-Lite): redirect unauthenticated users to public home.
+function requireFanclubAuth(): string | null {
+  if (typeof window === 'undefined') return null;
+  const email = window.localStorage.getItem('lgfc_member_email');
+  return email && email.trim() ? email.trim() : null;
+}
+
+
 type LibraryItem = { id: number; title: string; content: string; created_at: string };
 
 const styles: Record<string, React.CSSProperties> = {
@@ -22,6 +30,13 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function LibraryPage() {
+
+  useEffect(() => {
+    const email = requireFanclubAuth();
+    if (!email) {
+      window.location.href = '/';
+    }
+  }, []);
   const [items, setItems] = useState<LibraryItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitBusy, setSubmitBusy] = useState(false);

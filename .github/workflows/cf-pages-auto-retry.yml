@@ -8,8 +8,6 @@ jobs:
   retry-on-internal-error:
     if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     env:
       CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
