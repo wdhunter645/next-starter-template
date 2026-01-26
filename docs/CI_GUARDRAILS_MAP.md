@@ -99,9 +99,19 @@ npm run build:cf
 
 **Enforcement:** ✅ **BLOCKING** - Must pass before merge  
 **Failure Actions:**
-- ZIP detected → Remove ZIP files, amend commits
-- Intent violation → Add appropriate labels
+- ZIP detected → Remove ZIP files, close PR, create fresh PR from clean branch
+- Intent violation → Add appropriate labels OR split PR into multiple PRs
 - Invariant violation → Restore locked design elements
+
+**Intent Labels:**
+The workflow validates that PRs have exactly ONE intent label matching file-touch patterns:
+- `platform` — Cloudflare runtime config only (`wrangler.toml`, `functions/**`)
+- `infra` — CI/workflows/build config (`.github/**`, `scripts/**`, config files)
+- `feature` — App code/UI/API (`src/**`, `functions/**`, `migrations/**`)
+- `docs-only` — Documentation only (`docs/**`)
+- `recovery` — Break-glass (all paths allowed)
+
+See `/docs/governance/platform-intent-and-zip-governance.md` for full intent governance.
 
 ---
 

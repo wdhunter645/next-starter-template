@@ -87,12 +87,21 @@ For any PR affecting the homepage or Social Wall:
 - **Enforcement**: Any PR containing a tracked ZIP file (`.zip` or `.ZIP`) is **invalid** and **must be rejected**.
 - **Cleanup required**: If a ZIP file is uploaded for work purposes, it must be deleted before creating commits.
 - **CI enforcement**: Automated workflows will fail any PR that contains tracked ZIP files.
+- **ZIP taint is permanent**: ZIPs introduced anywhere in PR commit range (`BASE..HEAD`) permanently taint the PR. Deleting ZIPs in later commits does NOT fix the PR. See `/docs/governance/platform-intent-and-zip-governance.md` for full details.
 
 **Process:**
 1. If using a ZIP for transport: Extract contents to appropriate paths
 2. Delete the ZIP file immediately
 3. Commit only the extracted/modified files
 4. Verify with `git ls-files '*.zip' '*.ZIP'` before pushing
+
+**If ZIP taint detected:**
+1. Close the tainted PR (do NOT try to fix with commits)
+2. Create NEW branch from clean base
+3. Reapply changes WITHOUT committing ZIPs
+4. Open NEW PR
+
+See `/docs/governance/platform-intent-and-zip-governance.md` for ZIP taint behavior and purge workflow policy.
 
 ---
 

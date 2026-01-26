@@ -12,6 +12,46 @@
 - Node runtime: do not change Cloudflare’s Node runtime in PRs unless explicitly requested. (Current production build logs show Node 20; upgrade to 22 will be handled separately.)
 - No Tailwind/PostCSS/framework swaps. Keep global CSS approach.
 
+### Platform Intent for Cloudflare Config Changes
+
+PRs that modify **only** Cloudflare runtime configuration must use the `platform` intent label:
+
+**When to use `platform` intent:**
+- PR touches ONLY `wrangler.toml` and/or `functions/**`
+- No UI, docs, CI, or dependency changes
+
+**File-touch restrictions:**
+- ✅ Allowed: `wrangler.toml`, `functions/**`
+- ❌ Prohibited: `docs/`, `src/`, `.github/workflows/`, `package.json`, `migrations/`
+
+**Mixed changes require PR split:**
+- If a PR needs to change BOTH `wrangler.toml` AND app code (`src/`), split into:
+  - PR #1: `platform` intent (wrangler.toml only)
+  - PR #2: `feature` intent (src/ changes)
+
+See `/docs/governance/platform-intent-and-zip-governance.md` for full intent governance and allowlist details.
+
+
+### Platform Intent for Cloudflare Config Changes
+
+PRs that modify **only** Cloudflare runtime configuration must use the `platform` intent label:
+
+**When to use `platform` intent:**
+- PR touches ONLY `wrangler.toml` and/or `functions/**`
+- No UI, docs, CI, or dependency changes
+
+**File-touch restrictions:**
+- ✅ Allowed: `wrangler.toml`, `functions/**`
+- ❌ Prohibited: `docs/`, `src/`, `.github/workflows/`, `package.json`, `migrations/`
+
+**Mixed changes require PR split:**
+- If a PR needs to change BOTH `wrangler.toml` AND app code (`src/`), split into:
+  - PR #1: `platform` intent (wrangler.toml only)
+  - PR #2: `feature` intent (src/ changes)
+
+See `/docs/governance/platform-intent-and-zip-governance.md` for full intent governance and allowlist details.
+
+
 ---
 
 ## Local Development Workflow
