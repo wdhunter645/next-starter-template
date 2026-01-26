@@ -67,7 +67,33 @@ If a ZIP file is present in the repo root during PR work:
 
 ---
 
-## 7) Every change must include verification
+## 7) PR Intent Labels
+
+**Every PR must include exactly ONE intent label.**
+
+Available labels: `recovery`, `feature`, `docs-only`, `infra`, `platform`
+
+**Agent must select the correct intent:**
+
+- **Both `wrangler.toml` + `functions/**` are touched?** → Use `platform` (REQUIRED)
+- **Only docs?** → Use `docs-only`
+- **UI/features/app logic?** → Use `feature`
+- **CI/workflows/build config?** → Use `infra`
+- **Emergency fix?** → Use `recovery`
+
+**Special rule for `platform`:**
+- If you touch BOTH `wrangler.toml` AND `functions/**`, you MUST use the `platform` label
+- Do NOT create split PRs for platform work
+- Do NOT use `feature` or `infra` when both are touched
+- The Drift Gate will fail with a clear error message if you use the wrong label
+
+**Do NOT split platform PRs.** A single PR with `platform` label is preferred over two separate PRs.
+
+For complete definitions, see `/docs/website.md` § PR Intent Labels.
+
+---
+
+## 8) Every change must include verification
 
 When you change routing, headers, or footer:
 - Verify the route exists and renders

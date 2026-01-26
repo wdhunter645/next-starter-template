@@ -98,6 +98,86 @@ For any PR affecting the homepage or Social Wall:
 
 ### Notes and Prohibitions
 - Do not add new dependencies or frameworks for layout/spacing fixes (no Tailwind, no UI kits, no CSS-in-JS).
+
+---
+
+## PR Intent Labels
+
+**All PRs must include exactly ONE intent label.**
+
+### Available Intent Labels
+
+#### `recovery`
+**When to use:** Emergency fixes, urgent production issues, critical bugs requiring immediate resolution.
+
+**Allowed files:**
+- `src/`, `functions/`, `migrations/`, `public/`, `docs/`, `.github/`, `scripts/`
+- `package.json`, `package-lock.json`, `next.config.ts`, `wrangler.toml`
+- `.env.example`, `.gitignore`, `Agent.md`, `context.md`, `active_tasklist.md`
+
+**Restrictions:** None (broad allowlist for emergency fixes)
+
+#### `feature`
+**When to use:** New features, UI changes, component additions, application logic changes.
+
+**Allowed files:**
+- `src/`, `functions/`, `migrations/`, `public/`, `reports/`
+- `scripts/assess.mjs`, `scripts/lib/`
+- `package.json`, `package-lock.json`
+
+**Restrictions:**
+- **Cannot touch:** `.github/workflows/`, `.github/CODEOWNERS`, `docs/`
+- Use `docs-only` for documentation changes
+- Use `infra` for workflow/CI changes
+- Use `platform` for mixed wrangler.toml + functions/** changes
+
+#### `docs-only`
+**When to use:** Documentation-only changes with no code modifications.
+
+**Allowed files:**
+- `docs/` only
+
+**Restrictions:** Cannot touch any code, configuration, or infrastructure files
+
+#### `infra`
+**When to use:** Infrastructure changes, CI/CD workflows, build configuration, tooling.
+
+**Allowed files:**
+- `.github/`, `scripts/`
+- `package.json`, `package-lock.json`
+- `wrangler.toml`, `next.config.ts`
+- `.node-version`, `.nvmrc`, `.npmrc`, `.prettierrc`, `.prettierignore`, `.editorconfig`
+
+**Restrictions:**
+- Use `feature` for application code changes
+- Use `platform` for mixed wrangler.toml + functions/** changes
+
+#### `platform` (NEW)
+**When to use:** Platform hardening work that touches BOTH `wrangler.toml` AND `functions/**` in a single PR.
+
+**Allowed files:**
+- `wrangler.toml`
+- `functions/**`
+
+**Restrictions:**
+- **Cannot touch:** UI/app code (`src/`), docs, workflows, dependencies, migrations
+- This intent is strictly for platform configuration + edge functions work
+- Use `feature` for UI changes
+- Use `docs-only` for documentation
+- Use `infra` for CI/workflow changes
+
+**Special enforcement:** If a PR touches BOTH `wrangler.toml` and `functions/**`, the label MUST be `platform`. Other intent labels will be rejected with an error message.
+
+### Intent Selection Guidance
+
+**Decision tree:**
+1. Touching BOTH `wrangler.toml` + `functions/**`? → Use `platform`
+2. Only documentation? → Use `docs-only`
+3. UI/features/app logic? → Use `feature`
+4. CI/workflows/build config? → Use `infra`
+5. Emergency production fix? → Use `recovery`
+
+---
 - Maintain global CSS styling approach.
 
 ---

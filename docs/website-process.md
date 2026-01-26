@@ -190,6 +190,53 @@ Before deploying to production:
 - **Automated drift guard:** All PRs must pass `npm run test:homepage-structure` to prevent structural violations.
 - **Historical drift incidents:** See `/docs/drift-log.md` for documented cases and remediation guidance.
 
+---
+
+## PR Intent Labels and File-Touch Allowlists
+
+**All PRs must include exactly ONE intent label.**
+
+See `/docs/website.md` § PR Intent Labels for complete definitions.
+
+### Intent Label Enforcement
+
+The Drift Gate workflow (`.github/workflows/drift-gate.yml`) enforces file-touch allowlists based on PR intent labels:
+
+- **`recovery`**: Broad allowlist for emergency fixes
+- **`feature`**: Application code, components, migrations; excludes workflows and docs
+- **`docs-only`**: Documentation only; excludes all code
+- **`infra`**: CI/CD, workflows, build config; excludes application code
+- **`platform`**: ONLY `wrangler.toml` + `functions/**`; strict platform-only scope
+
+### Platform Intent Special Rules
+
+**When to use `platform`:**
+- PR touches BOTH `wrangler.toml` AND `functions/**`
+- No other files allowed (no UI, docs, workflows, deps, migrations)
+
+**Enforcement:**
+- If both `wrangler.toml` and `functions/**` are touched, label MUST be `platform`
+- Using any other intent label will fail with explicit error message
+- This prevents PR churn from split PRs for platform hardening work
+
+**Non-goals:**
+- Docs changes remain `docs-only`
+- UI/app changes remain `feature`
+- Infra-only (no functions) remains `infra`
+
+### Agent Guidance
+
+**Copilot/Agent must select the correct intent label:**
+1. Check if both `wrangler.toml` and `functions/**` are touched → Use `platform`
+2. If only docs → Use `docs-only`
+3. If UI/features → Use `feature`
+4. If CI/workflows only → Use `infra`
+5. If emergency fix → Use `recovery`
+
+**Do NOT create split PRs for platform work.** If both wrangler.toml and functions/** need updates, use a single PR with `platform` label.
+
+---
+
 ### Design Compliance Warning System
 
 **Purpose:** Automated early detection of PRs drifting from documented design process.
