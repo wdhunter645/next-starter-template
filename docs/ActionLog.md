@@ -9,4 +9,5 @@ Rules:
 
 | Date (YYYY-MM-DD) | PR / Commit | Summary |
 |---|---|---|
-| 2026-01-26 | ZIP3 (pending PR) | Add Next.js dev-proxy for `/api/login`; mark ProjectPlan section 1 complete. |
+| 2026-01-26 | PR #441 | ZIP 3: JOIN + LOGIN baseline implementation |
+| 2026-01-26 | PR #442 | Docs-only update for ZIP 3 (JOIN + LOGIN baseline) |
