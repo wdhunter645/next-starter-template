@@ -39,6 +39,16 @@ function isAllowed(p) {
 
 const violations = changed.filter(p => !isAllowed(p));
 
+// Special check: if both wrangler.toml and functions/** are touched, recommend platform label
+const hasWrangler = changed.some(p => p === 'wrangler.toml');
+const hasFunctions = changed.some(p => p.startsWith('functions/'));
+if (hasWrangler && hasFunctions && intent !== 'platform') {
+  console.error('ERROR: Use intent label `platform` for mixed wrangler.toml + functions/** changes.');
+  console.error('This PR touches both wrangler.toml and functions/** files.');
+  console.error('Please apply the `platform` label instead of `' + intent + '`.');
+  process.exit(1);
+}
+
 if (violations.length) {
   console.error(`ERROR: File-touch allowlist violation for intent '${intent}'.`);
   console.error(`Allowed prefixes: ${(allow.allow_prefixes||[]).join(', ') || '(none)'}`);

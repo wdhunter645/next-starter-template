@@ -11,7 +11,14 @@ fi
 
 echo "Checking PR-range history for ZIP paths: ${BASE_SHA}..${HEAD_SHA}"
 if git rev-list --objects "${BASE_SHA}..${HEAD_SHA}" | grep -Eim 1 '\.zip$'; then
-  echo "ERROR: ZIP file path detected in PR commit range. This introduces ZIPs into history."
+  echo ""
+  echo "ERROR: This PR branch is tainted: a ZIP existed somewhere in BASE..HEAD history."
+  echo ""
+  echo "Deleting the ZIP in later commits will NOT fix this."
+  echo ""
+  echo "Fix: recreate PR from clean main."
+  echo "Only run manual purge if a ZIP was merged to main."
+  echo ""
   exit 1
 fi
 
