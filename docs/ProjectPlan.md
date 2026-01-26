@@ -10,24 +10,32 @@ Purpose: the canonical “what’s next” plan. This is **not** a history log (
 
 ## Plan (ordered)
 
-### 1) Documentation + governance hardening (NOW)
-- [ ] Add authoritative PR draft template (`/docs/PR-DRAFT-TEMPLATE.md`)
-- [ ] Add Copilot/Agent instructions (`/.github/copilot-instructions.md`)
-- [ ] Add navigation invariants (`/docs/NAVIGATION-INVARIANTS.md`)
-- [ ] Add action log (`/docs/ActionLog.md`)
-- [ ] Add this project plan (`/docs/ProjectPlan.md`)
+### 1) Documentation + governance hardening (COMPLETED)
+- [x] Add authoritative PR draft template (`/docs/PR-DRAFT-TEMPLATE.md`)
+- [x] Add Copilot/Agent instructions (`/.github/copilot-instructions.md`)
+- [x] Add navigation invariants (`/docs/NAVIGATION-INVARIANTS.md`)
+- [x] Add action log (`/docs/ActionLog.md`)
+- [x] Add this project plan (`/docs/ProjectPlan.md`)
 
-### 2) Navigation compliance pass (NEXT)
+### 2) ZIP 3: JOIN + LOGIN baseline (COMPLETED - PR #441)
+- [x] Implement `/join` page and form
+- [x] Implement `/login` page and form
+- [x] Create `/api/join` endpoint for new member registration
+- [x] Create `/api/login` endpoint for member authentication
+- [x] Add JOIN and LOGIN buttons to visitor header
+- [x] Update documentation (PR #442)
+
+### 3) Navigation compliance pass (NEXT)
 - [ ] Ensure `Header` matches navigation invariants on desktop/tablet/mobile
 - [ ] Ensure `HamburgerMenu` matches invariants (no Join/Login, no footer links, Home mobile-only)
 - [ ] Remove any conflicting doc statements
 
-### 3) Page inventory + routing sanity
+### 4) Page inventory + routing sanity
 - [ ] Confirm required routes exist and match header targets
 - [ ] Confirm footer routes exist and render correctly
 - [ ] Confirm `/admin` route behavior matches governance docs
 
-### 4) Security hardening (REQUIRED post-merge)
+### 5) Security hardening (REQUIRED post-merge)
 - [ ] Run `npm audit` locally and in CI; record full output
 - [ ] Remediate the reported 3 low severity vulnerabilities:
   - Prefer `npm audit fix`
@@ -35,7 +43,7 @@ Purpose: the canonical “what’s next” plan. This is **not** a history log (
 - [ ] Add a CI step that fails if vulnerabilities are detected (or explicitly allows low only with justification)
 - [ ] Verify: `npm audit` returns 0 vulnerabilities
 
-### 5) Day 2 / Day 3 future enhancements (DEFERRED until stability)
+### 6) Day 2 / Day 3 future enhancements (DEFERRED until stability)
 - [ ] Cloudflare Future Enhancements list (redirect rules, cache rules, headers, WAF/bots, analytics)
 - [ ] Health status / monitoring summary view
 - [ ] Ops automation (audits, drift detection, PR guardrails)
