@@ -207,9 +207,9 @@ Per `/docs/NAVIGATION-INVARIANTS.md`:
 **Current Implementation:**
 - Duplicate email detection prevents multiple join requests with same email
 - Email audit logging via `join_email_log` table for monitoring
+- **ZIP 4:** Cloudflare-native rate limiting enforced on write methods for `/api/join` (via `functions/api/_middleware.ts`)
 
 **Not Yet Implemented:**
-- IP-based rate limiting (deferred to future phase)
 - CAPTCHA or bot protection (deferred to future phase)
 
 **Defensive Behavior:**
