@@ -11,3 +11,10 @@ binding = "DB"                     # Must match Cloudflare binding name
 database_name = "lgfc_lite"        # Must match CF dashboard
 database_id = "22d0dc3e-ad34-43af-8e6a-2063df1a1e04"   # Will fill after fetching via wrangler
 
+# Cloudflare native rate limiting for sensitive API routes
+# Applies to write methods only (POST/PUT/PATCH/DELETE) on auth, member, admin, and write endpoints
+[[ratelimits]]
+binding = "RATE_LIMIT"
+# Allow 10 requests per minute per IP for sensitive endpoints
+simple = { limit = 10, period = 60 }
+
