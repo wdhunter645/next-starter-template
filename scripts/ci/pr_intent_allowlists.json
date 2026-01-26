@@ -61,6 +61,13 @@
         ".editorconfig"
       ],
       "deny_prefixes": []
+    },
+    "platform": {
+      "allow_prefixes": [
+        "wrangler.toml",
+        "functions/"
+      ],
+      "deny_prefixes": []
     }
   }
 }
