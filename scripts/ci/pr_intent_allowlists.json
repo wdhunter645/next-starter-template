@@ -41,7 +41,8 @@
     },
     "docs-only": {
       "allow_prefixes": [
-        "docs/"
+        "docs/",
+        "Agent.md"
       ],
       "deny_prefixes": []
     },
