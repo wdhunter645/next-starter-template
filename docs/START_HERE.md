@@ -12,6 +12,7 @@ This repo is the **LGFC-Lite** website running on **Cloudflare Pages + Pages Fun
 - **Local dev**: `npm ci && npm run dev`
   - Pages Functions do **not** run in `next dev`.
   - The Next.js route `src/app/api/join/route.ts` proxies to the deployed Pages site using `PAGES_SITE_URL` (see `.env.example`).
+- The Next.js route `src/app/api/login/route.ts` proxies to the deployed Pages site for local dev login testing.
 
 ## Required Cloudflare configuration
 Set these in Cloudflare Pages project environment variables (NOT in the repo):

@@ -11,11 +11,11 @@ Purpose: the canonical “what’s next” plan. This is **not** a history log (
 ## Plan (ordered)
 
 ### 1) Documentation + governance hardening (NOW)
-- [ ] Add authoritative PR draft template (`/docs/PR-DRAFT-TEMPLATE.md`)
-- [ ] Add Copilot/Agent instructions (`/.github/copilot-instructions.md`)
-- [ ] Add navigation invariants (`/docs/NAVIGATION-INVARIANTS.md`)
-- [ ] Add action log (`/docs/ActionLog.md`)
-- [ ] Add this project plan (`/docs/ProjectPlan.md`)
+- [x] Add authoritative PR draft template (`/docs/PR-DRAFT-TEMPLATE.md`)
+- [x] Add Copilot/Agent instructions (`/.github/copilot-instructions.md`)
+- [x] Add navigation invariants (`/docs/NAVIGATION-INVARIANTS.md`)
+- [x] Add action log (`/docs/ActionLog.md`)
+- [x] Add this project plan (`/docs/ProjectPlan.md`)
 
 ### 2) Navigation compliance pass (NEXT)
 - [ ] Ensure `Header` matches navigation invariants on desktop/tablet/mobile
