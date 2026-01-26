@@ -30,12 +30,31 @@ Purpose: the canonical “what’s next” plan. This is **not** a history log (
 - [ ] Ensure `HamburgerMenu` matches invariants (no Join/Login, no footer links, Home mobile-only)
 - [ ] Remove any conflicting doc statements
 
-### 4) Page inventory + routing sanity
+### 4) ZIP 4: Environment variable/binding validation + rate limiting
+- [ ] Fail-fast environment variable validation for all sensitive API routes
+- [ ] Cloudflare-native rate limiting on sensitive API routes (join, login, admin endpoints)
+- [ ] Runtime binding verification (D1, KV, secrets) with graceful error responses
+- [ ] Update documentation with rate limiting configuration and validation patterns
+
+### 5) ZIP 5: Content Security Policy implementation
+- [ ] Implement Content Security Policy headers (after external dependencies stabilize)
+- [ ] Configure CSP for Elfsight widget and other approved third-party resources
+- [ ] Test and validate CSP in staging environment before production rollout
+- [ ] Document CSP policy decisions and override procedures
+
+### 6) ZIP 6: Final production-ready declaration
+- [ ] Final security audit and penetration testing review
+- [ ] Performance optimization verification and baseline establishment
+- [ ] Complete deployment checklist validation
+- [ ] Production monitoring and alerting configuration
+- [ ] Official production-ready declaration and handoff documentation
+
+### 7) Page inventory + routing sanity
 - [ ] Confirm required routes exist and match header targets
 - [ ] Confirm footer routes exist and render correctly
 - [ ] Confirm `/admin` route behavior matches governance docs
 
-### 5) Security hardening (REQUIRED post-merge)
+### 8) Security hardening (REQUIRED post-merge)
 - [ ] Run `npm audit` locally and in CI; record full output
 - [ ] Remediate the reported 3 low severity vulnerabilities:
   - Prefer `npm audit fix`
@@ -43,7 +62,7 @@ Purpose: the canonical “what’s next” plan. This is **not** a history log (
 - [ ] Add a CI step that fails if vulnerabilities are detected (or explicitly allows low only with justification)
 - [ ] Verify: `npm audit` returns 0 vulnerabilities
 
-### 6) Day 2 / Day 3 future enhancements (DEFERRED until stability)
+### 9) Day 2 / Day 3 future enhancements (DEFERRED until stability)
 - [ ] Cloudflare Future Enhancements list (redirect rules, cache rules, headers, WAF/bots, analytics)
 - [ ] Health status / monitoring summary view
 - [ ] Ops automation (audits, drift detection, PR guardrails)
