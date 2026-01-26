@@ -30,8 +30,12 @@ export function requireEnv(env: Env, required: string[]): EnvCheckResult {
   
   for (const key of required) {
     const value = env[key];
-    // Check if binding/env is missing or empty
-    if (value === undefined || value === null || value === '') {
+    // Check if binding/env is missing or not properly set
+    // Note: For bindings, undefined/null indicates missing; empty string may be valid for some env vars
+    if (value === undefined || value === null) {
+      missing.push(key);
+    } else if (typeof value === 'string' && value.trim() === '') {
+      // Only treat empty strings as missing for string-type env vars
       missing.push(key);
     }
   }
@@ -86,7 +90,15 @@ export function getEnvDiagnostics(env: Env): Record<string, 'present' | 'missing
   
   for (const key of knownEnvVars) {
     const value = env[key];
-    diagnostics[key] = (value !== undefined && value !== null && value !== '') ? 'present' : 'missing';
+    // Check for presence: undefined/null = missing, everything else = present
+    // This handles objects (bindings), strings, and other types appropriately
+    if (value === undefined || value === null) {
+      diagnostics[key] = 'missing';
+    } else if (typeof value === 'string' && value.trim() === '') {
+      diagnostics[key] = 'missing';
+    } else {
+      diagnostics[key] = 'present';
+    }
   }
   
   return diagnostics;

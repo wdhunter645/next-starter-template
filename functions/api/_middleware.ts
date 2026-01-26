@@ -70,11 +70,37 @@ export async function onRequest(context: PagesContext): Promise<Response> {
     // Apply Cloudflare native rate limiting
     // Using the RATE_LIMIT binding configured in wrangler.toml
     const clientIp = request.headers.get('CF-Connecting-IP') || 
-                     request.headers.get('X-Forwarded-For') || 
-                     'unknown';
+                     request.headers.get('X-Forwarded-For');
     
-    // Create rate limit key based on IP and path
-    const rateLimitKey = `${clientIp}:${url.pathname}`;
+    if (!clientIp) {
+      // No IP available - fail request for security
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          error: 'Unable to identify client',
+          detail: 'Request missing required IP headers'
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+    
+    // Create rate limit key based on IP and route pattern (not full path)
+    // Normalize route patterns to reduce cache entries
+    let routePattern = url.pathname;
+    if (routePattern.startsWith('/api/admin/')) {
+      routePattern = '/api/admin/*';
+    } else if (routePattern.startsWith('/api/member/')) {
+      routePattern = '/api/member/*';
+    } else if (routePattern.startsWith('/api/cms/')) {
+      routePattern = '/api/cms/*';
+    } else if (routePattern.startsWith('/api/content/')) {
+      routePattern = '/api/content/*';
+    }
+    
+    const rateLimitKey = `${clientIp}:${routePattern}`;
     
     // Check rate limit using Cloudflare's Rate Limiting API
     const { success } = await env.RATE_LIMIT.limit({ key: rateLimitKey });
