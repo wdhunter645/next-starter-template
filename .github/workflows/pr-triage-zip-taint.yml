@@ -26,38 +26,38 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          
+
           # Ensure reports directory exists
           mkdir -p reports
-          
+
           REPORT="reports/pr-triage-zip-taint.md"
-          
+
           echo "# PR Triage - ZIP Taint Classification" > "$REPORT"
           echo "" >> "$REPORT"
           echo "Report generated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> "$REPORT"
           echo "" >> "$REPORT"
-          
+
           # Fetch open PRs using GitHub API
           echo "Fetching open PRs..."
           PR_LIST=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
             "https://api.github.com/repos/${{ github.repository }}/pulls?state=open&per_page=100")
-          
+
           # Count total PRs
           PR_COUNT=$(echo "$PR_LIST" | jq '. | length')
           echo "Total open PRs: $PR_COUNT" >> "$REPORT"
           echo "" >> "$REPORT"
-          
+
           if [ "$PR_COUNT" -eq 0 ]; then
             echo "No open PRs found." >> "$REPORT"
           else
             echo "## Classification Results" >> "$REPORT"
             echo "" >> "$REPORT"
-            
+
             # Initialize counters
             SAFE_COUNT=0
             BLOCKING_COUNT=0
             TAINTED_COUNT=0
-            
+
             # Process each PR
             for i in $(seq 0 $((PR_COUNT - 1))); do
               PR_NUMBER=$(echo "$PR_LIST" | jq -r ".[$i].number")
@@ -65,15 +65,15 @@ jobs:
               PR_BASE=$(echo "$PR_LIST" | jq -r ".[$i].base.sha")
               PR_HEAD=$(echo "$PR_LIST" | jq -r ".[$i].head.sha")
               PR_URL=$(echo "$PR_LIST" | jq -r ".[$i].html_url")
-              
+
               echo "Checking PR #$PR_NUMBER..."
-              
+
               # Check if ZIP is in current tree
               TREE_CHECK=$(git ls-tree -r "$PR_HEAD" --name-only | grep -Eim 1 '\.zip$' || true)
-              
+
               # Check if ZIP is in PR history (BASE..HEAD)
               HISTORY_CHECK=$(git rev-list --objects "$PR_BASE..$PR_HEAD" 2>/dev/null | grep -Eim 1 '\.zip$' || true)
-              
+
               STATUS="SAFE"
               if [ -n "$TREE_CHECK" ]; then
                 STATUS="BLOCKING"
@@ -84,7 +84,7 @@ jobs:
               else
                 SAFE_COUNT=$((SAFE_COUNT + 1))
               fi
-              
+
               echo "### PR #$PR_NUMBER - $STATUS" >> "$REPORT"
               echo "" >> "$REPORT"
               echo "**Title:** $PR_TITLE" >> "$REPORT"
@@ -97,7 +97,7 @@ jobs:
               fi
               echo "" >> "$REPORT"
             done
-            
+
             echo "## Summary" >> "$REPORT"
             echo "" >> "$REPORT"
             echo "- **SAFE:** $SAFE_COUNT PRs" >> "$REPORT"
@@ -105,7 +105,7 @@ jobs:
             echo "- **TAINTED:** $TAINTED_COUNT PRs (ZIP in history)" >> "$REPORT"
             echo "- **Total:** $PR_COUNT PRs" >> "$REPORT"
           fi
-          
+
           echo ""
           echo "Report generated at: $REPORT"
           cat "$REPORT"
