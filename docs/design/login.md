@@ -19,7 +19,7 @@ The login page serves to:
 
 The authoritative doc clearly separates:
 - **LGFC-Lite (Current)**: Login is an informational stub; authentication is intentionally disabled.
-- **Future: Auth Phase Lock (Deferred)**: Full authentication behavior (successful login → Member Home, email validation, rate limiting, etc.) will be implemented in a future phase with Vercel/Supabase or equivalent backend.
+- **Future: Auth Phase Lock (Deferred)**: Full authentication behavior (session-based gating, member role enforcement, logout flows, etc.) will be implemented in a future phase with Vercel/Supabase or equivalent backend.
 
 ## Implementation Status
 
@@ -130,7 +130,7 @@ if (!memberEmail) {
 Enhanced authentication may be introduced in a **future phase** (outside LGFC-Lite scope).
 
 **Deferred Auth Phase Details:**
-- Full specification of authentication behavior (successful login → Member Home, email validation, rate limiting, logout behavior) is documented in `/docs/LGFC-Production-Design-and-Standards.md` under "Future: Auth Phase Lock (Deferred Behavior)".
+- Full specification of authentication behavior (session-based gating, member role enforcement, logout behavior) is documented in `/docs/LGFC-Production-Design-and-Standards.md` under "Future: Auth Phase Lock (Deferred Behavior)".
 
 When that phase begins:
 - Technology stack will be determined (Supabase, Auth0, custom, etc.)
