@@ -13,7 +13,10 @@ export async function onRequest(context: {
   const { request } = context;
 
   if (request.method.toUpperCase() !== "POST") {
-    return new Response("method_not_allowed", { status: 405 });
+    return new Response(
+      JSON.stringify({ error: "method_not_allowed" }),
+      { status: 405, headers: { "Content-Type": "application/json" } }
+    );
   }
 
   // Read and discard (we rely on Cloudflare request logs during rollout).
