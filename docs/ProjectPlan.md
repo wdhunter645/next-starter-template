@@ -30,17 +30,18 @@ Purpose: the canonical “what’s next” plan. This is **not** a history log (
 - [ ] Ensure `HamburgerMenu` matches invariants (no Join/Login, no footer links, Home mobile-only)
 - [ ] Remove any conflicting doc statements
 
-### 4) ZIP 4: Environment variable/binding validation + rate limiting
-- [ ] Fail-fast environment variable validation for all sensitive API routes
-- [ ] Cloudflare-native rate limiting on sensitive API routes (join, login, admin endpoints)
-- [ ] Runtime binding verification (D1, KV, secrets) with graceful error responses
-- [ ] Update documentation with rate limiting configuration and validation patterns
+### 4) ZIP 4: Environment variable/binding validation + rate limiting (COMPLETED)
+- [x] Fail-fast environment variable validation for all sensitive API routes
+- [x] Cloudflare-native rate limiting on sensitive API routes (join, login, admin endpoints)
+- [x] Runtime binding verification (D1, Rate Limit binding) with graceful error responses
+- [x] Update documentation with rate limiting configuration and validation patterns
 
-### 5) ZIP 5: Content Security Policy implementation
-- [ ] Implement Content Security Policy headers (after external dependencies stabilize)
-- [ ] Configure CSP for Elfsight widget and other approved third-party resources
-- [ ] Test and validate CSP in staging environment before production rollout
-- [ ] Document CSP policy decisions and override procedures
+### 5) ZIP 5: Content Security Policy implementation (ZIP #5)
+- [x] Add CSP header in **Report-Only** mode via Pages middleware
+- [x] Add CSP report endpoint (`/api/csp-report`) for rollout telemetry
+- [x] Baseline policy includes required Elfsight allowlists
+- [ ] Promote CSP from Report-Only to Enforced after staging validation
+- [ ] Document CSP policy decisions, troubleshooting, and override procedure
 
 ### 6) ZIP 6: Final production-ready declaration
 - [ ] Final security audit and penetration testing review
