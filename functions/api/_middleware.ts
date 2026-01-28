@@ -45,11 +45,11 @@ export async function onRequest(context: {
   }
 
   // Fail-fast validation for sensitive routes.
+  // NOTE: API_RATE_LIMITER is optional - gracefully degrade if not configured
   const missing = checkEnv({
     env,
     requiredBindings: [
       { key: "DB", hint: "D1 binding is required for auth/admin/member APIs" },
-      { key: "API_RATE_LIMITER", hint: "Cloudflare Rate Limit binding required (wrangler.toml [[ratelimits]])" },
     ],
     // We intentionally do NOT require ADMIN_TOKEN globally here, because most /api/admin/*
     // endpoints already guard themselves and return a clear error when missing.
@@ -59,17 +59,24 @@ export async function onRequest(context: {
     return jsonMissingResponse(missing);
   }
 
-  // Apply rate limiting for write operations and auth attempts.
+  // Apply rate limiting for write operations and auth attempts (if binding is available).
   const method = request.method.toUpperCase();
   const shouldLimit = method === "POST" || method === "PUT" || method === "PATCH" || method === "DELETE";
-  if (shouldLimit) {
+  const hasRateLimiter = env.API_RATE_LIMITER && typeof env.API_RATE_LIMITER.limit === 'function';
+  
+  if (shouldLimit && hasRateLimiter) {
     const key = getClientKey(request, pathname);
-    const { success } = await env.API_RATE_LIMITER.limit({ key });
-    if (!success) {
-      return new Response(
-        JSON.stringify({ ok: false, error: "rate_limited", status: 429 }),
-        { status: 429, headers: { "Content-Type": "application/json" } }
-      );
+    try {
+      const { success } = await env.API_RATE_LIMITER.limit({ key });
+      if (!success) {
+        return new Response(
+          JSON.stringify({ ok: false, error: "rate_limited", status: 429 }),
+          { status: 429, headers: { "Content-Type": "application/json" } }
+        );
+      }
+    } catch (e) {
+      // Rate limiter failed - log but continue (graceful degradation)
+      console.warn('Rate limiter error:', e);
     }
   }
 

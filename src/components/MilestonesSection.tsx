@@ -17,6 +17,13 @@ export default function MilestonesSection() {
 
   useEffect(() => {
     let alive = true;
+    const timer = setTimeout(() => {
+      if (alive && loading) {
+        setLoading(false);
+        setItems([]);
+      }
+    }, 10000); // 10 second timeout
+    
     (async () => {
       try {
         const data = await apiGet<{ ok: boolean; items: Milestone[] }>(`/api/milestones/list?limit=40`);
@@ -29,6 +36,7 @@ export default function MilestonesSection() {
     })();
     return () => {
       alive = false;
+      clearTimeout(timer);
     };
   }, []);
 
@@ -38,9 +46,9 @@ export default function MilestonesSection() {
       <p className="sub">Pulled live from D1 milestones table.</p>
 
       {loading ? (
-        <p className="sub">Loading…</p>
+        <p className="sub">Loading milestones…</p>
       ) : items.length === 0 ? (
-        <p className="sub">No milestones yet (D1 table is empty).</p>
+        <p className="sub">Milestones coming soon. Check back later!</p>
       ) : (
         <div className="grid">
           {items.map((m) => (

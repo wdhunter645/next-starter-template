@@ -27,6 +27,13 @@ export default function CalendarSection() {
 
   useEffect(() => {
     let alive = true;
+    const timer = setTimeout(() => {
+      if (alive && loading) {
+        setLoading(false);
+        setItems([]);
+      }
+    }, 10000); // 10 second timeout
+    
     (async () => {
       try {
         const data = await apiGet<{ ok: boolean; items: EventRow[] }>(`/api/events/month?month=${encodeURIComponent(month)}`);
@@ -37,7 +44,10 @@ export default function CalendarSection() {
         if (alive) setLoading(false);
       }
     })();
-    return () => { alive = false; };
+    return () => { 
+      alive = false;
+      clearTimeout(timer);
+    };
   }, [month]);
 
   return (
@@ -46,9 +56,9 @@ export default function CalendarSection() {
       <p className="sub">Current month events pulled live from D1 events table.</p>
 
       {loading ? (
-        <p className="sub">Loading…</p>
+        <p className="sub">Loading events…</p>
       ) : items.length === 0 ? (
-        <p className="sub">No events yet for {month} (D1 table is empty).</p>
+        <p className="sub">No upcoming events for {month}. Check back later!</p>
       ) : (
         <div className="grid">
           {items.map((e) => (

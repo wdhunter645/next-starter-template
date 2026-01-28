@@ -18,6 +18,13 @@ export default function FriendsOfFanClub() {
 
   useEffect(() => {
     let alive = true;
+    const timer = setTimeout(() => {
+      if (alive && loading) {
+        setLoading(false);
+        setItems([]);
+      }
+    }, 10000); // 10 second timeout
+    
     (async () => {
       try {
         const data = await apiGet<{ ok: boolean; items: Friend[] }>(`/api/friends/list`);
@@ -28,7 +35,10 @@ export default function FriendsOfFanClub() {
         if (alive) setLoading(false);
       }
     })();
-    return () => { alive = false; };
+    return () => { 
+      alive = false;
+      clearTimeout(timer);
+    };
   }, []);
 
   return (
@@ -37,9 +47,9 @@ export default function FriendsOfFanClub() {
       <p className="sub">Tiles pulled live from D1 friends table.</p>
 
       {loading ? (
-        <p className="sub">Loading…</p>
+        <p className="sub">Loading friends…</p>
       ) : items.length === 0 ? (
-        <p className="sub">No friends yet (D1 table is empty).</p>
+        <p className="sub">No friends available at this time. Check back later!</p>
       ) : (
         <div className="grid">
           {items.map((f) => (
