@@ -11,7 +11,7 @@
  * 1. Discovers all tables in the bound D1 database
  * 2. For each table, discovers columns and foreign keys
  * 3. Seeds tables in dependency order (FK parents first)
- * 4. Inserts up to 15 rows per table (idempotent)
+ * 4. Inserts rows per table based on TABLE_MIN_ROWS (default: 15, custom: photos=50, events=25, etc.)
  * 5. Uses Wikimedia Commons URLs for photo/media columns
  */
 
