@@ -491,6 +491,7 @@ export default function AdminPage() {
         <Section title="Quick Links">
           <div style={{ display: 'grid', gap: 8 }}>
             <a style={styles.link} href="/admin/content">Site Content (CMS)</a>
+            <a style={styles.link} href="/admin/d1-test">D1 Test (Tables + Samples)</a>
             <a style={styles.link} href="/admin/fanclub/library">Gehrig Library</a>
             <a style={styles.link} href="/admin/fanclub/fanclub/photo">Photos</a>
             <a style={styles.link} href="/admin/export">Export</a>
