@@ -1,6 +1,6 @@
 # active_tasklist.md — Daily Work List (Ephemeral)
 
-Date: 2026-01-21
+Date: 2026-01-28
 
 This file is a **daily** FYI task tracker. Keep it lightweight.
 - Start the day with remaining open items at the top.
@@ -11,18 +11,15 @@ This file is a **daily** FYI task tracker. Keep it lightweight.
 
 ## Open (Today)
 
-- Align FanClub routing: ensure Photo/Library/Memorabilia are FanClub-only under `/fanclub/**`
-- Align headers:
-  - Public header supports logged-in variant (adds Club Home + Logout)
-  - FanClub header buttons match invariants
-- Align footer to locked design (quote + legal left, center logo scroll-to-top, right links order)
-- Docs refresh:
-  - NAVIGATION invariants
-  - FanClub spec
-  - README + 3-file method
+- D1 pseudo-data population for all tables + verification via `/admin/d1-test`
+- Weekly Photo Matchup images not loading (D1/B2 sync and API path)
+- Social Wall widget restore (or remove section + whitespace + loading text)
+- Home page JOIN section button not routing to `/join`
+- Logout must refresh/reset header state automatically
+- Footer quote line + center logo size fix
 
 ---
 
 ## Completed (Today)
 
-- (none)
+- /admin access denied (fixed via ZIP 41 - admin UI now browser-reachable, APIs token-gated)
