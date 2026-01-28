@@ -42,7 +42,8 @@
     "docs-only": {
       "allow_prefixes": [
         "docs/",
-        "Agent.md"
+        "Agent.md",
+        "active_tasklist.md"
       ],
       "deny_prefixes": []
     },
