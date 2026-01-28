@@ -433,27 +433,6 @@ Optional (if space requires):
 - Page uses **Save** and **Cancel** buttons.
 - Save persists changes; Cancel discards unsaved changes and reverts to last saved state.
 
-## Admin Access Control (Updated 2026-01-28)
-
-### Admin Access Model
-- **Admin UI pages** (`/admin`, `/admin/*`): Accessible via browser navigation without token requirement
-  - UI pages allow admin users to enter and store their token in the session
-  - Token is stored in `sessionStorage` as `lgfc_admin_token`
-- **Admin API endpoints** (`/api/admin/**`): Protected by `ADMIN_TOKEN` environment variable
-  - Requires `x-admin-token` header or `Authorization: Bearer <token>` header
-  - Returns 401 Unauthorized if token is missing or incorrect
-  - Returns 503 Service Unavailable if `ADMIN_TOKEN` is not configured
-
-### Cloudflare Pages Environment Variables
-Configure in Cloudflare Pages → Settings → Environment Variables (for both Preview and Production):
-- `ADMIN_TOKEN`: Long random secret (minimum 32 characters recommended)
-
-### Admin Pages
-- `/admin` — Main admin dashboard
-- `/admin/content` — Site content management (CMS)
-- `/admin/cms` — CMS interface
-- `/admin/d1-test` — D1 database inspection (tables, schema, sample rows)
-
 ## Admin Page — Final Lock (Updated 2026-01-16)
 
 ### Top of page — Health Status
