@@ -640,8 +640,9 @@ node scripts/ci/verify_lgfc_invariants.mjs
 
 **Intent violations:**
 ```bash
-# Add appropriate labels to PR
-# docs-only, feature, bugfix, etc.
+# Add appropriate intent label to PR
+# Available: infra, feature, docs-only, platform, change-ops, codex
+# See /docs/governance/pr-intent-labels.md for details
 ```
 
 ---
