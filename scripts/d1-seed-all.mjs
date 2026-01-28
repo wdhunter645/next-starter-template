@@ -142,10 +142,8 @@ class D1Seeder {
    */
   isPhotoUrlColumn(table, colName) {
     const urlPatterns = ['url', 'photo_url', 'image_url', 'src', 'public_url', 'asset_url'];
-    const photoTables = ['photos', 'media', 'friends'];
     
-    return urlPatterns.some(p => colName.toLowerCase().includes(p)) || 
-           photoTables.some(t => table.toLowerCase().includes(t));
+    return urlPatterns.some(p => colName.toLowerCase().includes(p));
   }
 
   /**
@@ -258,6 +256,43 @@ class D1Seeder {
     // Handle description columns
     if (colLower === 'description') {
       return `'This is a detailed description for ${table} row ${n + 1}. It provides context and information about this entry.'`;
+    }
+    
+    // Handle photo-specific columns
+    if (table.toLowerCase() === 'photos') {
+      if (colLower === 'photo_id') {
+        return `'photo_${this.generateUUID(table, colInfo.name, n).substring(0, 16)}'`;
+      }
+      if (colLower === 'era') {
+        const eras = ['Early Career', 'Prime Years', 'Later Career', 'Championship Era'];
+        return `'${eras[n % eras.length]}'`;
+      }
+      if (colLower === 'type') {
+        const types = ['action', 'portrait', 'team', 'memorabilia', 'ceremony'];
+        return `'${types[n % types.length]}'`;
+      }
+      if (colLower === 'game_context') {
+        return `'Game ${(n % 162) + 1}, 19${23 + (n % 16)}'`;
+      }
+      if (colLower === 'people') {
+        const people = ['Lou Gehrig', 'Babe Ruth', 'Lou Gehrig, Babe Ruth', 'Lou Gehrig, team', 'crowd'];
+        return `'${people[n % people.length]}'`;
+      }
+      if (colLower === 'teams') {
+        const teams = ['New York Yankees', 'Yankees vs Red Sox', 'Yankees vs Tigers', 'All-Stars'];
+        return `'${teams[n % teams.length]}'`;
+      }
+      if (colLower === 'tags') {
+        const tags = ['baseball', 'historic', 'vintage', 'action shot', 'portrait', 'team photo'];
+        return `'${tags[n % tags.length]}'`;
+      }
+      if (colLower === 'source') {
+        const sources = ['Wikimedia Commons', 'National Archives', 'Baseball Hall of Fame', 'Library of Congress'];
+        return `'${sources[n % sources.length]}'`;
+      }
+      if (colLower === 'rights_notes') {
+        return `'Public domain - sourced from Wikimedia Commons'`;
+      }
     }
 
     // Handle by type
