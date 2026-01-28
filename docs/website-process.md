@@ -114,7 +114,16 @@ database_id = "..."                # Your D1 database ID
    - D1 Database: Select your `lgfc_lite` database
 3. Save and redeploy
 
-**Verification Endpoint:**
+**Verification:**
+
+**Option 1: D1 Diagnostic Tool (Browser-based):**
+- Navigate to `/admin/d1-test` in your browser
+- Enter admin token when prompted (stored in sessionStorage)
+- View all tables with row counts, schemas, and sample data
+- Ideal for: Visual inspection, troubleshooting, verifying seeding results
+- See `/docs/admin/access-model.md` for full D1 diagnostic tool documentation
+
+**Option 2: API Endpoint (Command-line):**
 ```bash
 # Test D1 binding and schema
 curl https://your-site.pages.dev/api/d1-test
@@ -186,17 +195,19 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
 **Problem: `/api/join` or `/api/login` returns 503**
 - Check D1 binding is configured (see Configuring D1 Binding above)
 - Verify migrations applied: `npx wrangler d1 migrations list lgfc_lite --local`
-- Test with `/api/d1-test` endpoint
+- Test with `/api/d1-test` endpoint or use `/admin/d1-test` diagnostic page
 
 **Problem: "Database unavailable" error**
 - D1 binding not configured in Cloudflare Pages environment
 - Check binding name is exactly `DB` (case-sensitive)
 - Redeploy after adding binding
+- Use `/admin/d1-test` to verify D1 binding status
 
 **Problem: "Database schema incomplete" error**
 - Migrations not applied to this environment
 - Run: `npx wrangler d1 migrations apply lgfc_lite [--local|--remote]`
 - Verify with: `./scripts/d1-report.sh local`
+- Or use `/admin/d1-test` to inspect table schemas
 
 ### Deployment Checklist
 
@@ -205,7 +216,8 @@ Before deploying to production:
 - [ ] D1 binding `DB` configured in Cloudflare Pages
 - [ ] Migrations applied: `npx wrangler d1 migrations apply lgfc_lite --remote`
 - [ ] Seeding completed (optional): `./scripts/d1-seed-all.sh production`
-- [ ] Verification test: `curl https://your-site.pages.dev/api/d1-test`
+- [ ] Verification test: `curl https://your-site.pages.dev/api/d1-test` OR navigate to `/admin/d1-test`
+- [ ] Admin access configured: `ADMIN_TOKEN` environment variable set in Cloudflare Pages
 
 ---
 
@@ -578,12 +590,35 @@ This section defines the authoritative design rules for header behavior and navi
 
 ### Admin Routes
 
-**Page access gating:**
-- Admin pages (`/admin/**`) check member login state and admin role
-- Access control flow:
-  1. Not logged in → Prompt to login
-  2. Logged in, not admin → Access Denied with "Return to Member Home" link
-  3. Logged in, admin → Dashboard displayed
+**As-Built (Post ZIP 41):**
+
+Admin access uses a **two-tier model** (see `/docs/admin/access-model.md` for full details):
+
+1. **Admin UI Pages (`/admin/**`)** — Browser-reachable, no page-level gate
+   - `/admin` — Main admin dashboard
+   - `/admin/d1-test` — D1 database diagnostic tool (canonical for D1 inspection)
+   - `/admin/cms` — CMS content management
+   - `/admin/content` — Page content editor
+   - Pages are client-side rendered and publicly accessible
+   - Token stored in `sessionStorage` (`lgfc_admin_token`)
+
+2. **Admin API Endpoints (`/api/admin/**`)** — Token-gated (fail closed)
+   - All endpoints require `ADMIN_TOKEN` environment variable
+   - Client sends token via `x-admin-token` request header
+   - Missing or invalid token → `403 Forbidden`
+   - Examples: `/api/admin/stats`, `/api/admin/d1-inspect`, `/api/admin/export`
+
+**Required Environment Variable:**
+- **Name:** `ADMIN_TOKEN`
+- **Set in:** Cloudflare Pages → Settings → Environment Variables
+- **Format:** Secure random string (32+ characters recommended)
+- **Security boundary:** API layer only (pages are open for UI development)
+
+**D1 Diagnostic Tool:**
+- **Route:** `/admin/d1-test`
+- **Purpose:** Browser-based D1 database inspection (tables, schemas, row counts, sample data)
+- **Access:** Browser-reachable page, API calls token-gated
+- **Use cases:** Verify D1 binding, troubleshoot migrations, validate seeding
 
 **Header behavior:**
 - Admin routes detect member login state
@@ -593,12 +628,6 @@ This section defines the authoritative design rules for header behavior and navi
 - When logged out:
   - Render Visitor Header
   - Normal visitor navigation applies
-
-**Purpose:**
-- Prevents re-login loops for logged-in members navigating to admin areas
-- Logged-in members maintain consistent navigation context
-- Admin access is gated by member session + role allowlist (not x-admin-token on the page)
-- Non-admin members see appropriate error message with path back to Member Home
 
 ### Implementation Notes
 
