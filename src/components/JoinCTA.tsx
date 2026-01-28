@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function JoinCTA() {
 	return (
 		<div className="joinBanner section-gap">
@@ -8,8 +10,8 @@ export default function JoinCTA() {
 					group discussions, and more.
 				</p>
 				<div className="join-banner__actions">
-					<a className="join-banner__btn" href="/join">Join</a>
-					<a className="join-banner__btn" href="/login">Login</a>
+					<Link className="join-banner__btn" href="/join">Join</Link>
+					<Link className="join-banner__btn" href="/login">Login</Link>
 				</div>
 			</div>
 		</div>
