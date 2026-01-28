@@ -74,16 +74,22 @@ export default function WeeklyMatchup() {
     }
     
     // Set a timeout to prevent infinite loading
+    let completed = false;
     const timer = setTimeout(() => {
-      if (loading) {
+      if (!completed) {
         setLoading(false);
         setErr('Unable to load matchup. Please try again later.');
       }
     }, 10000); // 10 second timeout
 
-    load();
+    load().finally(() => {
+      completed = true;
+      clearTimeout(timer);
+    });
     
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, []);
 
   async function submit(choice: 'a' | 'b') {

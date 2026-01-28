@@ -17,8 +17,10 @@ export default function MilestonesSection() {
 
   useEffect(() => {
     let alive = true;
+    let completed = false;
+    
     const timer = setTimeout(() => {
-      if (alive && loading) {
+      if (alive && !completed) {
         setLoading(false);
         setItems([]);
       }
@@ -31,7 +33,10 @@ export default function MilestonesSection() {
       } catch {
         if (alive) setItems([]);
       } finally {
-        if (alive) setLoading(false);
+        if (alive) {
+          setLoading(false);
+          completed = true;
+        }
       }
     })();
     return () => {

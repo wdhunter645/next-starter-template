@@ -23,8 +23,10 @@ export default function FAQSection() {
 
   useEffect(() => {
     let alive = true;
+    let completed = false;
+    
     const timer = setTimeout(() => {
-      if (alive && loading) {
+      if (alive && !completed) {
         setLoading(false);
         setItems([]);
       }
@@ -39,7 +41,10 @@ export default function FAQSection() {
       } catch {
         if (alive) setItems([]);
       } finally {
-        if (alive) setLoading(false);
+        if (alive) {
+          setLoading(false);
+          completed = true;
+        }
       }
     })();
     return () => {
