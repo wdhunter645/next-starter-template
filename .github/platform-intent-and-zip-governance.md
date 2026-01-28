@@ -340,7 +340,7 @@ Purge is **break-glass only**, used AFTER a ZIP is merged and discovered later.
 ## References
 
 **Related Documentation:**
-- `/docs/CI_GUARDRAILS_MAP.md` — CI workflow reference
+- `/.github/CI_GUARDRAILS_MAP.md` — CI workflow reference
 - `/docs/website.md` — PR process and ZIP policy
 - `/docs/website-process.md` — Governance and standards
 - `Agent.md` — Agent rules for file-touch discipline

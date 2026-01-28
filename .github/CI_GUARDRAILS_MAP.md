@@ -111,7 +111,7 @@ The workflow validates that PRs have exactly ONE intent label matching file-touc
 - `docs-only` — Documentation only (`docs/**`)
 - `recovery` — Break-glass (all paths allowed)
 
-See `/docs/governance/platform-intent-and-zip-governance.md` for full intent governance.
+See `/.github/platform-intent-and-zip-governance.md` for full intent governance.
 
 ---
 
@@ -429,6 +429,109 @@ See `/docs/governance/platform-intent-and-zip-governance.md` for full intent gov
 
 ---
 
+### 21. Design Compliance Audit (`design-compliance-audit.yml`)
+
+**Purpose:** Day 2 Operations — Fail-Loud Design Compliance Audit  
+**Triggers:**
+- `pull_request` (all branches)
+- `push` to `main`
+- Scheduled: Nightly at 2:00 AM UTC
+- `workflow_dispatch` (manual)
+
+**What it validates:**
+
+This workflow monitors and reports misalignment between **as-built production/preview behavior** and **documented design expectations** through HTTP + HTML assertions:
+
+1. **Homepage Sanity**
+   - HTTP 200 status code
+   - No infinite-loading markers (`Loading matchup`, `Loading…`)
+
+2. **Auth-State Correctness (Logged-Out)**
+   - Homepage must NOT contain auth-only elements when unauthenticated:
+     - `Logout` button
+     - `Club Home` button
+
+3. **Route Gating**
+   - `/fanclub` must return redirect (3xx) for unauthenticated requests
+   - Should NOT return 200 (indicates broken auth gate)
+
+4. **Join/Login Runtime Health**
+   - `/join` returns HTTP 200
+   - `/login` returns HTTP 200
+   - Neither page contains `missing_env` marker
+
+5. **Contact/Support Pages**
+   - `/contact` returns HTTP 200
+   - `/support` returns HTTP 200
+   - No Cloudflare email obfuscation links (`/cdn-cgi/l/email-protection`)
+
+**Output:**
+
+Generates a **Mismatch Report** in job logs with clear PASS/FAIL status for each check.
+
+**Example:**
+```
+================================================================================
+DESIGN COMPLIANCE AUDIT — MISMATCH REPORT
+================================================================================
+Target URL: https://www.lougehrigfanclub.com
+
+FAILURES (2):
+  ✗ FAIL: /fanclub returned 200 (expected redirect)
+  ✗ FAIL: Homepage contains "Logout" while logged out
+
+PASSED (8):
+  ✓ PASS: Homepage returns 200
+  ✓ PASS: Homepage does not contain loading indicators
+  ...
+================================================================================
+```
+
+**Enforcement:** ✅ **ALERT-ONLY (ALWAYS GREEN)**  
+- Workflow always succeeds (green ✅) regardless of audit results
+- Uses `continue-on-error: true` to ensure non-blocking behavior
+- **NOT** added to branch protection required checks
+- **DOES NOT** block PR merges
+- Purpose: **Observability only** — surface drift for triage
+- Mismatch reports saved as artifacts for review
+
+**Behavior by Trigger:**
+- **PRs:** Audit is SKIPPED (preview URL not yet available; no production fallback)
+- **Push to main:** Audits production URL
+- **Nightly schedule:** Audits production URL
+- **Manual dispatch:** Audits production URL
+
+**Triage Process:**
+
+When a mismatch is detected, it should be triaged as either:
+
+1. **Code/Config Fix** — as-built should match as-designed
+   - Example: Auth gate is broken → fix the auth middleware
+   - Create a follow-up PR to restore expected behavior
+
+2. **Documentation Update** — as-designed should match as-built
+   - Example: Design spec is outdated → update the docs
+   - Create a follow-up PR to align documentation with reality
+
+**Implementation:**
+- Script: `scripts/ci/design-compliance-audit.mjs`
+- Uses Node.js built-in `http`/`https` modules (no external dependencies)
+- Deterministic checks only (no flaky UI automation)
+- Runtime: < 10 seconds
+- Artifacts: Audit report uploaded with 30-day retention
+
+**Current Behavior:**
+- **PRs are skipped** — no preview URL integration yet; production fallback removed
+- Production audits run on: push to main, nightly schedule, manual dispatch
+- Workflow always exits green to ensure truly non-blocking behavior
+
+**Future Enhancements:**
+- Integrate with Cloudflare API to get PR preview URLs
+- Add comment-triggered workflow that runs after deployment completes
+- Expand checks based on documented design invariants
+
+---
+
 ## Gate Enforcement Policy
 
 ### Blocking Gates (MUST PASS)
@@ -448,6 +551,20 @@ These should pass but may not block:
 1. ⚠️ Design Compliance Warning (warn-only)
 2. ⚠️ Quality metrics
 3. ⚠️ CI extended tests
+
+### Fail-Loud, Non-Blocking Gates
+
+These fail with red ❌ when issues are detected but **DO NOT** block PR merges:
+1. (None currently — Design Compliance Audit migrated to Alert-Only)
+
+### Alert-Only Gates (ALWAYS GREEN)
+
+These always show green ✅ but provide observability alerts:
+1. ✅ Design Compliance Audit (alert-only, observability)
+   - Purpose: Surface production drift for triage
+   - Skips PR runs (no preview URL); audits production on main/nightly
+   - Mismatches saved in artifacts for review
+   - Not enforced as a merge requirement
 
 ### Monitoring Gates (NON-BLOCKING)
 
