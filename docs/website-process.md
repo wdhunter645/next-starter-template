@@ -183,6 +183,13 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
 
 ### Troubleshooting
 
+**Admin Diagnostics:**
+- Use `/api/d1-test` endpoint to verify D1 database health and connectivity
+- Returns JSON with binding status, required tables check, and row counts
+- Query specific table schema: `/api/d1-test?table=<name>`
+- Example: `curl https://your-site.pages.dev/api/d1-test`
+- Expected healthy response: `{"ok": true, "status": "healthy", "checks": {...}}`
+
 **Problem: `/api/join` or `/api/login` returns 503**
 - Check D1 binding is configured (see Configuring D1 Binding above)
 - Verify migrations applied: `npx wrangler d1 migrations list lgfc_lite --local`
@@ -192,11 +199,13 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
 - D1 binding not configured in Cloudflare Pages environment
 - Check binding name is exactly `DB` (case-sensitive)
 - Redeploy after adding binding
+- Verify with `/api/d1-test` endpoint
 
 **Problem: "Database schema incomplete" error**
 - Migrations not applied to this environment
 - Run: `npx wrangler d1 migrations apply lgfc_lite [--local|--remote]`
 - Verify with: `./scripts/d1-report.sh local`
+- Check with `/api/d1-test` endpoint for table status
 
 ### Deployment Checklist
 

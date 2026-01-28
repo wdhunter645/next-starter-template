@@ -11,6 +11,7 @@ This file is a **daily** FYI task tracker. Keep it lightweight.
 
 ## Open (Today)
 
+- Admin diagnostics: Use `/api/d1-test` endpoint for D1 database health checks and troubleshooting
 - Align FanClub routing: ensure Photo/Library/Memorabilia are FanClub-only under `/fanclub/**`
 - Align headers:
   - Public header supports logged-in variant (adds Club Home + Logout)
@@ -25,4 +26,6 @@ This file is a **daily** FYI task tracker. Keep it lightweight.
 
 ## Completed (Today)
 
-- (none)
+- Admin access configuration: `/admin` now accessible via browser with `ADMIN_TOKEN` environment variable
+- Admin API endpoints: `/api/admin/**` protected by token-based authentication
+- D1 diagnostics endpoint: `/api/d1-test` available for database health monitoring

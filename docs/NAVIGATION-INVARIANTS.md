@@ -32,6 +32,12 @@ Effective Date: 2026-01-21
 
 ### Admin (admin gate)
 - `/admin/**`
+  - Main admin dashboard: `/admin`
+  - Admin content management: `/admin/content`
+  - Admin CMS: `/admin/cms`
+  - Protected by `ADMIN_TOKEN` environment variable via Cloudflare Pages Functions middleware
+  - Authentication via `x-admin-token` header or `Authorization: Bearer <token>` header
+  - Not accessible via public navigation; admin-only access path
 
 ### Store
 - Store is an **external** Bonfire link. There is **no** `/store` route.

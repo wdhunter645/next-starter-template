@@ -435,6 +435,32 @@ Optional (if space requires):
 
 ## Admin Page — Final Lock (Updated 2026-01-16)
 
+### Admin Access Model
+
+**Browser-accessible admin interface:**
+- `/admin` is the main admin dashboard page, accessible via browser navigation
+- Protected by Cloudflare Pages Functions middleware at `/functions/admin/_middleware.ts`
+- Requires `x-admin-token` header for authentication
+
+**API endpoint protection:**
+- All `/api/admin/**` endpoints are token-gated via `ADMIN_TOKEN` environment variable
+- Middleware validates the `x-admin-token` header or `Authorization: Bearer <token>` header
+- If `ADMIN_TOKEN` is not configured in the environment, all admin endpoints return 503 (Service Unavailable)
+- Unauthorized requests return 401 with friendly HTML error page for browser requests, JSON for API requests
+
+**Environment configuration:**
+- Cloudflare Pages environment variable: `ADMIN_TOKEN` (required)
+- Set in: Cloudflare Dashboard → Pages → Project → Settings → Environment Variables
+- Add variable name: `ADMIN_TOKEN` with a secure token value
+- Both preview and production environments should have this configured
+
+**Admin diagnostics tooling:**
+- D1 database diagnostics available at `/api/d1-test` endpoint
+- Provides health checks for D1 binding, schema validation, and table counts
+- Query parameters: `?table=<name>` to inspect specific table schemas
+- Use for troubleshooting database connectivity and migration status
+- Returns JSON with `ok: true/false`, status, and diagnostics data
+
 ### Top of page — Health Status
 A quick health snapshot including:
 - Uptime
