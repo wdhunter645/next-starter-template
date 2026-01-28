@@ -27,11 +27,9 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
   const handleLogout = () => {
     try {
       window.localStorage.removeItem('lgfc_member_email');
-      window.location.href = '/';
-    } catch {
-      // Fallback
-      window.location.href = '/';
-    }
+    } catch {}
+    // Force full page reload to reset header state
+    window.location.href = '/';
   };
 
   return (
