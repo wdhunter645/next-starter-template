@@ -58,6 +58,9 @@
     },
     "change-ops": {
       "allow_prefixes": [
+        "src/",
+        "functions/",
+        "docs/",
         "migrations/",
         "scripts/d1-",
         "scripts/b2-",
@@ -66,8 +69,6 @@
         "wrangler.toml"
       ],
       "deny_prefixes": [
-        "src/",
-        "docs/",
         ".github/workflows/"
       ]
     },
