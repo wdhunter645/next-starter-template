@@ -1,0 +1,94 @@
+name: Design Compliance Audit (Fail-Loud)
+
+# Purpose: Monitor and report misalignment between as-built production/preview behavior
+# and documented design expectations.
+#
+# - Fail-loud: red ❌ when misalignment detected
+# - Non-blocking: NOT added to required PR checks
+# - Observability-only: no auto-fixing, no commits from CI
+
+on:
+  pull_request:
+    branches:
+      - '**'
+  push:
+    branches:
+      - main
+  schedule:
+    # Run nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Design Compliance Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+      
+      - name: Determine target URL
+        id: target
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            # For PRs, we would ideally use the Cloudflare preview URL
+            # However, since Cloudflare deploys asynchronously and we don't have
+            # direct access to the preview URL in this workflow context,
+            # we'll use production URL for now and document this limitation
+            # 
+            # TODO: Enhancement - integrate with Cloudflare API to get preview URL
+            # or use a comment-triggered workflow that runs after deployment
+            TARGET_URL="https://www.lougehrigfanclub.com"
+            echo "context=PR (using production URL as fallback)" >> $GITHUB_OUTPUT
+          else
+            # For main branch and nightly runs, use production
+            TARGET_URL="https://www.lougehrigfanclub.com"
+            echo "context=production" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "url=$TARGET_URL" >> $GITHUB_OUTPUT
+          echo "Testing against: $TARGET_URL (${{ github.event_name }})"
+      
+      - name: Run design compliance audit
+        env:
+          TARGET_URL: ${{ steps.target.outputs.url }}
+        run: |
+          echo "Running audit against: $TARGET_URL"
+          echo "Context: ${{ steps.target.outputs.context }}"
+          echo ""
+          
+          node scripts/ci/design-compliance-audit.mjs
+      
+      - name: Audit summary
+        if: always()
+        run: |
+          echo "## Design Compliance Audit Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Target URL:** ${{ steps.target.outputs.url }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Context:** ${{ steps.target.outputs.context }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "✅ **Status:** All checks passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Status:** Mismatches detected (see job logs for details)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "This is a **fail-loud, non-blocking** audit. PR can still be merged." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Triage each mismatch as:" >> $GITHUB_STEP_SUMMARY
+            echo "- **Code fix:** as-built should match as-designed, OR" >> $GITHUB_STEP_SUMMARY
+            echo "- **Doc update:** as-designed should match as-built" >> $GITHUB_STEP_SUMMARY
+          fi
