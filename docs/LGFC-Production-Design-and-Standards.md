@@ -16,7 +16,7 @@ Any conflict must be resolved in favor of this file.
 ## Day 1 Design Locks — Explicit (Authoritative)
 
 ### 1) Auth Boundaries (explicit)
-- `/fanclub/**` requires login; unauthenticated access is hard-gated with client-side redirect to `/` (implemented in fanclub/layout.tsx).
+- `/fanclub/**` requires login; unauthenticated access redirects to `/`.
 - Public pages remain visitor-accessible: `/contact`, `/about`, `/support`, `/terms`, `/privacy`, `/search`, `/join`, `/login`, `/faq`, `/health`.
 
 ### 2) Canonical Routes (explicit)
@@ -76,11 +76,11 @@ Home page sections, in order:
 
 #### Social Wall Implementation
 - **Platform Script:** Loaded globally in `src/app/layout.tsx` using `next/script` with `strategy="beforeInteractive"`
-- **Script URL:** `https://elfsightcdn.com/platform/platform.js`
+- **Script URL:** `https://static.elfsight.com/platform/platform.js`
 - **Widget Container:** Located in `src/components/SocialWall.tsx`
 - **Widget ID:** `elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8` (stored in the container class)
 - **Loading:** Platform script is loaded once globally in the layout head, not per component
-- **Important:** Do not use older URLs like `static.elfsight.com` or `apps.elfsight.com/p/platform.js`
+- **Important:** Do not reintroduce per-component script loading or use the older `apps.elfsight.com/p/platform.js` URL
 
 ### Members-only
 - **All other features** are members-only and accessed from **`MEMBER/page.tsx`**.
