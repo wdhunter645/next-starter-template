@@ -32,6 +32,9 @@ Effective Date: 2026-01-21
 
 ### Admin (admin gate)
 - `/admin/**`
+  - **UI Access:** Browser-reachable admin pages (diagnostic tools, CMS interfaces)
+  - **API Access:** Token-gated via `ADMIN_TOKEN` environment variable
+  - See `/docs/admin/access-model.md` for full admin access model documentation
 
 ### Store
 - Store is an **external** Bonfire link. There is **no** `/store` route.
