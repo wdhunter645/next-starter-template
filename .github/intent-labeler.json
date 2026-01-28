@@ -2,7 +2,9 @@
   "intents": {
     "docs-only": {
       "allow_prefixes": [
-        "docs/"
+        "docs/",
+        "Agent.md",
+        "active_tasklist.md"
       ],
       "deny_prefixes": []
     },
@@ -10,6 +12,12 @@
       "allow_prefixes": [
         ".github/",
         "scripts/",
+        "functions/",
+        "src/app/admin/",
+        "docs/governance/",
+        "docs/website-process.md",
+        "docs/website-PR-process.md",
+        "docs/OPERATING_MANUAL.md",
         "package.json",
         "package-lock.json",
         "wrangler.toml",
@@ -21,9 +29,7 @@
         ".prettierignore",
         ".editorconfig"
       ],
-      "deny_prefixes": [
-        "docs/"
-      ]
+      "deny_prefixes": []
     },
     "feature": {
       "allow_prefixes": [
@@ -41,6 +47,42 @@
         ".github/workflows/",
         ".github/CODEOWNERS",
         "docs/"
+      ]
+    },
+    "platform": {
+      "allow_prefixes": [
+        "wrangler.toml",
+        "functions/"
+      ],
+      "deny_prefixes": []
+    },
+    "change-ops": {
+      "allow_prefixes": [
+        "migrations/",
+        "scripts/d1-",
+        "scripts/b2-",
+        "scripts/ci/",
+        "data/",
+        "wrangler.toml"
+      ],
+      "deny_prefixes": [
+        "src/",
+        "docs/",
+        ".github/workflows/"
+      ]
+    },
+    "codex": {
+      "allow_prefixes": [
+        ".github/copilot-instructions.md",
+        ".github/agents/",
+        "Agent.md",
+        "context.md",
+        "docs/",
+        "scripts/ci/"
+      ],
+      "deny_prefixes": [
+        "src/",
+        "functions/"
       ]
     },
     "recovery": {
