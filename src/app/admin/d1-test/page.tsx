@@ -44,6 +44,7 @@ async function adminFetch(token: string, url: string) {
   if (token) headers['x-admin-token'] = token;
   const res = await fetch(url, { headers });
   const text = await res.text();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let data: any = null;
   try { data = JSON.parse(text); } catch { data = { raw: text }; }
   return { res, data };
@@ -53,6 +54,7 @@ export default function AdminD1TestPage() {
   const { token, setToken } = useAdminToken();
   const [tables, setTables] = useState<TableInfo[]>([]);
   const [selected, setSelected] = useState<string>('');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [detail, setDetail] = useState<any>(null);
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -67,6 +69,7 @@ export default function AdminD1TestPage() {
       const { res, data } = await adminFetch(token, '/api/admin/d1-inspect');
       if (!res.ok) throw new Error(JSON.stringify(data, null, 2));
       setTables(data.tables || []);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       setError(e?.message || String(e));
     } finally {
@@ -83,6 +86,7 @@ export default function AdminD1TestPage() {
       const { res, data } = await adminFetch(token, `/api/admin/d1-inspect?table=${encodeURIComponent(name)}&limit=5`);
       if (!res.ok) throw new Error(JSON.stringify(data, null, 2));
       setDetail(data);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       setError(e?.message || String(e));
     } finally {
