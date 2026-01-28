@@ -1,0 +1,74 @@
+{
+  "intents": {
+    "recovery": {
+      "allow_prefixes": [
+        "src/",
+        "functions/",
+        "migrations/",
+        "public/",
+        "docs/",
+        ".github/",
+        "scripts/",
+        "package.json",
+        "package-lock.json",
+        "next.config.ts",
+        "wrangler.toml",
+        ".env.example",
+        ".gitignore",
+        "Agent.md",
+        "context.md",
+        "active_tasklist.md"
+      ],
+      "deny_prefixes": []
+    },
+    "feature": {
+      "allow_prefixes": [
+        "src/",
+        "functions/",
+        "migrations/",
+        "public/",
+        "reports/",
+        "scripts/assess.mjs",
+        "scripts/lib/",
+        "package.json",
+        "package-lock.json"
+      ],
+      "deny_prefixes": [
+        ".github/workflows/",
+        ".github/CODEOWNERS",
+        "docs/"
+      ]
+    },
+    "docs-only": {
+      "allow_prefixes": [
+        "docs/",
+        "Agent.md"
+      ],
+      "deny_prefixes": []
+    },
+    "infra": {
+      "allow_prefixes": [
+        ".github/",
+        "scripts/",
+        "package.json",
+        "package-lock.json",
+        "wrangler.toml",
+        "next.config.ts",
+        ".node-version",
+        ".nvmrc",
+        ".npmrc",
+        ".prettierrc",
+        ".prettierignore",
+        ".editorconfig"
+      ],
+      "deny_prefixes": []
+    },
+    "platform": {
+      "allow_prefixes": [
+        "wrangler.toml",
+        "functions/"
+      ],
+      "deny_prefixes": []
+    }
+  }
+}
