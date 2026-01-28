@@ -28,6 +28,10 @@ All pull requests to this repository MUST have exactly ONE intent label applied.
 **Allowed paths:**
 - `.github/**` (workflows, actions, templates)
 - `scripts/**` (all scripts except application code)
+- `functions/**` (when modifying for infrastructure/runtime purposes only)
+- `src/app/admin/` (admin dashboard and operational tools)
+- `docs/governance/` (governance and process documentation)
+- `docs/website-process.md`, `docs/website-PR-process.md`, `docs/OPERATING_MANUAL.md` (process docs)
 - Build configuration files (`package.json`, `next.config.ts`, `wrangler.toml`, etc.)
 - Editor/formatter configuration (`.prettierrc`, `.editorconfig`, etc.)
 - Node version files (`.node-version`, `.nvmrc`, `.npmrc`)
@@ -41,6 +45,13 @@ All pull requests to this repository MUST have exactly ONE intent label applied.
 - Build configuration modifications
 - Script additions/updates
 - Dependency version updates (infrastructure tools)
+- Admin dashboard changes (operational tools)
+- Governance and process documentation updates
+
+**Important:**
+- `functions/**` in infra: Only for infrastructure changes (runtime config, bindings). Feature changes to functions should use `feature` or `platform` intent.
+- `src/app/admin/`: Admin tools are considered infrastructure since they're operational/diagnostic tools, not user-facing features.
+- Process/governance docs: Use `infra` when changing governance that affects CI/workflows. Use `docs-only` for pure documentation updates without process changes.
 
 ---
 
@@ -50,7 +61,7 @@ All pull requests to this repository MUST have exactly ONE intent label applied.
 **Allowed paths:**
 - `src/**` (all application source code)
 - `functions/**` (Cloudflare Pages Functions / API endpoints)
-- `migrations/**` (database schema changes)
+- `migrations/**` (database schema changes for features)
 - `public/**` (static assets)
 - `reports/**` (generated reports)
 - `scripts/assess.mjs`, `scripts/lib/**` (assessment tooling)
@@ -59,15 +70,18 @@ All pull requests to this repository MUST have exactly ONE intent label applied.
 **Denied paths:**
 - `.github/workflows/**` (use `infra` instead)
 - `.github/CODEOWNERS` (use `infra` instead)
-- `docs/**` (use `docs-only` instead)
+- `docs/**` (use `docs-only` or `infra` for governance docs)
 
 **Use cases:**
 - New UI components
 - API endpoint implementation
 - Business logic changes
-- Database migrations
+- Database migrations that support new features
 - Static asset additions
 - Application dependency updates
+
+**Important:**
+- `migrations/**`: Use `feature` when migrations support a new feature being developed. Use `change-ops` for operational migrations, data fixes, or schema refactoring without associated feature changes.
 
 ---
 
@@ -224,26 +238,46 @@ The following labels are **RETIRED** for pull requests and should only be used f
 
 ### Deterministic Selection (for agents/automation)
 
+The intent-labeler workflow checks intents in this priority order:
+
 1. **Check docs-only first:**
    - If ALL changed files match `docs/**`, `Agent.md`, or `active_tasklist.md` → `docs-only`
 
 2. **Check infra:**
-   - If ALL changed files match `.github/**`, `scripts/**`, or config files → `infra`
+   - If ALL changed files match `.github/**`, `scripts/**`, `functions/` (infra only), `src/app/admin/`, governance docs, or config files → `infra`
 
 3. **Check platform:**
    - If ALL changed files match `wrangler.toml` or `functions/**` → `platform`
 
-4. **Check feature:**
-   - If ALL changed files match `src/**`, `functions/**`, `migrations/**`, `public/**` → `feature`
+4. **Check change-ops (before feature):**
+   - If ALL changed files match `migrations/**`, `scripts/d1-*`, `scripts/b2-*`, `data/`, etc. → `change-ops`
+   - Note: This is checked BEFORE feature so that migrations-only PRs get change-ops label
 
-5. **Check change-ops:**
-   - If ALL changed files match `migrations/**`, `scripts/d1-*`, `scripts/b2-*`, etc. → `change-ops`
+5. **Check feature:**
+   - If ALL changed files match `src/**`, `functions/**`, `migrations/**` (with features), `public/**` → `feature`
 
 6. **Check codex:**
-   - If ALL changed files match `.github/copilot-instructions.md`, `.github/agents/**`, etc. → `codex`
+   - If ALL changed files match `.github/copilot-instructions.md`, `.github/agents/**`, `Agent.md`, etc. → `codex`
 
 7. **If files span multiple intents:**
    - MUST split PR into separate PRs (one per intent)
+
+### Common Scenarios
+
+**Migrations:**
+- **migrations/ ONLY** → `change-ops` (operational database work)
+- **migrations/ + src/ changes** → Split into 2 PRs OR use `feature` if migration directly supports the feature
+- **migrations/ + data seeding scripts** → `change-ops`
+
+**Functions:**
+- **functions/ ONLY (new API endpoint)** → `platform` or `feature` (depending on whether it's infrastructure or application logic)
+- **functions/ + src/ changes** → `feature` (unless Cloudflare-specific runtime config, then split)
+- **functions/ + wrangler.toml** → `platform`
+
+**Documentation:**
+- **docs/ ONLY (content updates)** → `docs-only`
+- **docs/governance/ + .github/workflows/** → `infra` (governance affecting CI)
+- **docs/ + src/ changes** → Split into 2 PRs
 
 ### When to Split PRs
 

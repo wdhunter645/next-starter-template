@@ -68,9 +68,10 @@ jobs:
             }
             
             // Determine which intent matches ALL changed files
-            // Priority order: docs-only → infra → platform → feature → change-ops → codex
+            // Priority order: docs-only → infra → platform → change-ops → feature → codex
             // Note: 'recovery' is NOT auto-assigned; it must be manually applied for emergency fixes
-            const intentOrder = ['docs-only', 'infra', 'platform', 'feature', 'change-ops', 'codex'];
+            // Note: change-ops is checked before feature so migrations-only PRs get change-ops label
+            const intentOrder = ['docs-only', 'infra', 'platform', 'change-ops', 'feature', 'codex'];
             let matchedIntent = null;
             
             for (const intentName of intentOrder) {
