@@ -14,6 +14,7 @@ Before any change, read:
 - `/docs/LGFC-Production-Design-and-Standards.md`
 - `/docs/NAVIGATION-INVARIANTS.md`
 - `/docs/fanclub.md`
+- `/docs/admin/access-model.md` (for admin-related changes)
 
 These documents are the design law. Do not invent routes, labels, or layouts.
 
