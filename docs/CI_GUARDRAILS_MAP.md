@@ -463,7 +463,7 @@ This workflow monitors and reports misalignment between **as-built production/pr
 5. **Contact/Support Pages**
    - `/contact` returns HTTP 200
    - `/support` returns HTTP 200
-   - No redirect loops or email protection errors
+   - No Cloudflare email obfuscation links (`/cdn-cgi/l/email-protection`)
 
 **Output:**
 
@@ -471,8 +471,9 @@ Generates a **Mismatch Report** in job logs with clear PASS/FAIL status for each
 
 **Example:**
 ```
+================================================================================
 DESIGN COMPLIANCE AUDIT — MISMATCH REPORT
-==========================================
+================================================================================
 Target URL: https://www.lougehrigfanclub.com
 
 FAILURES (2):
@@ -483,6 +484,7 @@ PASSED (8):
   ✓ PASS: Homepage returns 200
   ✓ PASS: Homepage does not contain loading indicators
   ...
+================================================================================
 ```
 
 **Enforcement:** ❌ **FAIL-LOUD, NON-BLOCKING**  

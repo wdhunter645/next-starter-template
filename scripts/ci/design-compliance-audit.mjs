@@ -16,6 +16,28 @@ import http from 'http';
 
 const TARGET_URL = process.env.TARGET_URL || 'https://www.lougehrigfanclub.com';
 
+// Validate TARGET_URL for security
+const ALLOWED_HOSTS = [
+  'www.lougehrigfanclub.com',
+  'lougehrigfanclub.com'
+];
+
+try {
+  const urlObj = new URL(TARGET_URL);
+  if (!ALLOWED_HOSTS.includes(urlObj.hostname)) {
+    console.error(`Error: TARGET_URL host "${urlObj.hostname}" is not in the allowed list`);
+    console.error(`Allowed hosts: ${ALLOWED_HOSTS.join(', ')}`);
+    process.exit(1);
+  }
+  if (urlObj.protocol !== 'https:') {
+    console.error(`Error: TARGET_URL must use HTTPS protocol, got ${urlObj.protocol}`);
+    process.exit(1);
+  }
+} catch (error) {
+  console.error(`Error: Invalid TARGET_URL: ${error.message}`);
+  process.exit(1);
+}
+
 // ANSI colors for output
 const RED = '\x1b[31m';
 const GREEN = '\x1b[32m';
@@ -36,13 +58,13 @@ async function fetchURL(url, options = {}) {
     const protocol = urlObj.protocol === 'https:' ? https : http;
     
     const requestOptions = {
+      ...options,
       method: options.method || 'GET',
       headers: {
         'User-Agent': 'LGFC-Design-Compliance-Audit/1.0',
         ...options.headers
-      },
+      }
       // Don't follow redirects automatically - we want to check them
-      ...options
     };
 
     const req = protocol.request(url, requestOptions, (res) => {
@@ -75,10 +97,10 @@ async function fetchURL(url, options = {}) {
 }
 
 /**
- * Check if response is a redirect (3xx status code)
+ * Check if response is a redirect (3xx status code, excluding 304 Not Modified)
  */
 function isRedirect(statusCode) {
-  return statusCode >= 300 && statusCode < 400;
+  return (statusCode >= 300 && statusCode < 400) && statusCode !== 304;
 }
 
 /**
@@ -229,11 +251,11 @@ async function checkContactSupport() {
         report(false, `${endpoint} returned ${res.statusCode} (expected 200)`);
       }
       
-      // Check for Cloudflare email protection redirect
+      // Check for Cloudflare email obfuscation links (not a redirect)
       if (res.body.includes('/cdn-cgi/l/email-protection')) {
-        report(false, `${endpoint} contains Cloudflare email protection redirect`);
+        report(false, `${endpoint} contains Cloudflare email obfuscation link`);
       } else {
-        report(true, `${endpoint} does not contain email protection redirect`);
+        report(true, `${endpoint} does not contain email obfuscation link`);
       }
     } catch (error) {
       report(false, `${endpoint} check failed: ${error.message}`);
@@ -290,12 +312,17 @@ async function main() {
   console.log('Starting Design Compliance Audit...');
   console.log(`Target: ${TARGET_URL}`);
   
-  // Run all checks
-  await checkHomepageSanity();
-  await checkAuthState();
-  await checkRouteGating();
-  await checkJoinLoginHealth();
-  await checkContactSupport();
+  try {
+    // Run all checks
+    await checkHomepageSanity();
+    await checkAuthState();
+    await checkRouteGating();
+    await checkJoinLoginHealth();
+    await checkContactSupport();
+  } catch (error) {
+    console.error('\nUnexpected error during audit:', error);
+    // Continue to print report even if there was an error
+  }
   
   // Print report
   printMismatchReport();
@@ -307,6 +334,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error('Audit script error:', error);
+  console.error('Fatal audit script error:', error);
   process.exit(1);
 });

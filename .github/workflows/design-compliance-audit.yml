@@ -35,24 +35,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: .node-version
-          cache: npm
       
       - name: Determine target URL
         id: target
         run: |
+          # For now, all contexts use production URL
+          # TODO: Enhancement - integrate with Cloudflare API to get preview URL for PRs
+          TARGET_URL="https://www.lougehrigfanclub.com"
+          
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            # For PRs, we would ideally use the Cloudflare preview URL
-            # However, since Cloudflare deploys asynchronously and we don't have
-            # direct access to the preview URL in this workflow context,
-            # we'll use production URL for now and document this limitation
-            # 
-            # TODO: Enhancement - integrate with Cloudflare API to get preview URL
-            # or use a comment-triggered workflow that runs after deployment
-            TARGET_URL="https://www.lougehrigfanclub.com"
             echo "context=PR (using production URL as fallback)" >> $GITHUB_OUTPUT
           else
-            # For main branch and nightly runs, use production
-            TARGET_URL="https://www.lougehrigfanclub.com"
             echo "context=production" >> $GITHUB_OUTPUT
           fi
           
@@ -60,6 +53,7 @@ jobs:
           echo "Testing against: $TARGET_URL (${{ github.event_name }})"
       
       - name: Run design compliance audit
+        id: audit
         env:
           TARGET_URL: ${{ steps.target.outputs.url }}
         run: |
@@ -79,7 +73,7 @@ jobs:
           echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          if [ "${{ job.status }}" = "success" ]; then
+          if [ "${{ steps.audit.outcome }}" = "success" ]; then
             echo "✅ **Status:** All checks passed" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ **Status:** Mismatches detected (see job logs for details)" >> $GITHUB_STEP_SUMMARY
