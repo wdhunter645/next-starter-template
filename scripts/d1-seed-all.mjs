@@ -11,7 +11,7 @@
  * 1. Discovers all tables in the bound D1 database
  * 2. For each table, discovers columns and foreign keys
  * 3. Seeds tables in dependency order (FK parents first)
- * 4. Inserts up to 15 rows per table (idempotent)
+ * 4. Inserts rows per table based on TABLE_MIN_ROWS (default: 15, custom: photos=50, events=25, etc.)
  * 5. Uses Wikimedia Commons URLs for photo/media columns
  */
 
@@ -19,6 +19,17 @@ import { execSync } from 'child_process';
 import crypto from 'crypto';
 
 const MIN_ROWS = 15;
+
+// Table-specific minimum row counts
+const TABLE_MIN_ROWS = {
+  'photos': 50,           // Need 50+ for photo archive
+  'members': 20,          // Need decent member base
+  'events': 25,           // Need events for calendar
+  'milestones': 25,       // Need milestones for timeline
+  'faq_entries': 20,      // Need FAQs for list
+  'discussions': 15,      // Need discussions for forum
+  'weekly_votes': 30,     // Need votes for matchup stats
+};
 
 // Wikimedia Commons photo URLs (Lou Gehrig collection)
 const WIKIMEDIA_PHOTOS = [
@@ -131,10 +142,8 @@ class D1Seeder {
    */
   isPhotoUrlColumn(table, colName) {
     const urlPatterns = ['url', 'photo_url', 'image_url', 'src', 'public_url', 'asset_url'];
-    const photoTables = ['photos', 'media', 'friends'];
     
-    return urlPatterns.some(p => colName.toLowerCase().includes(p)) || 
-           photoTables.some(t => table.toLowerCase().includes(t));
+    return urlPatterns.some(p => colName.toLowerCase().includes(p));
   }
 
   /**
@@ -173,6 +182,13 @@ class D1Seeder {
     const colLower = colInfo.name.toLowerCase();
     
     if (colLower.includes('email')) {
+      // For members table, use more realistic emails
+      if (table.toLowerCase() === 'members') {
+        const names = ['john.smith', 'jane.doe', 'bob.jones', 'alice.brown', 'charlie.davis', 
+                       'diana.miller', 'evan.wilson', 'frank.moore', 'grace.taylor', 'henry.anderson',
+                       'ivy.thomas', 'jack.jackson', 'karen.white', 'leo.harris', 'mary.martin'];
+        return `'${names[n % names.length]}${n >= names.length ? n : ''}@example.com'`;
+      }
       return `'user${n}@example.com'`;
     }
     
@@ -181,13 +197,102 @@ class D1Seeder {
     }
     
     if (colLower.includes('date') && type === 'TEXT') {
+      // For events, spread dates across months
+      if (table.toLowerCase() === 'events') {
+        const baseDate = new Date('2026-01-15T00:00:00Z');
+        baseDate.setDate(baseDate.getDate() + (n * 7)); // Weekly events
+        return `'${baseDate.toISOString().split('T')[0]}'`;
+      }
       const baseDate = new Date('2026-01-01T00:00:00Z');
       baseDate.setDate(baseDate.getDate() + n);
       return `'${baseDate.toISOString()}'`;
     }
     
     if (colLower.includes('year') && type === 'INTEGER') {
+      // For milestones, use historical years
+      if (table.toLowerCase() === 'milestones') {
+        return 1923 + (n % 16); // 1923-1939 (Lou Gehrig's playing years)
+      }
       return 1920 + (n % 20);
+    }
+    
+    // Handle title columns with context-specific values
+    if (colLower === 'title') {
+      if (table.toLowerCase() === 'events') {
+        const titles = [
+          'Annual Lou Gehrig Day',
+          'Baseball History Lecture',
+          'Memorial Exhibition',
+          'Fan Club Meetup',
+          'Charity Baseball Game',
+          'Documentary Screening',
+          'Museum Tour',
+          'Youth Baseball Clinic',
+          'Hall of Fame Visit',
+          'Vintage Baseball Game'
+        ];
+        return `'${titles[n % titles.length]}${n >= titles.length ? ' ' + (Math.floor(n / titles.length) + 1) : ''}'`;
+      }
+      if (table.toLowerCase() === 'milestones') {
+        const milestones = [
+          'Signed with Yankees',
+          'First Home Run',
+          'MVP Award',
+          'World Series Victory',
+          'Record Consecutive Games',
+          'Triple Crown Season',
+          'All-Star Selection',
+          '500th Career RBI',
+          'Retirement Announcement',
+          'Hall of Fame Induction'
+        ];
+        return `'${milestones[n % milestones.length]}'`;
+      }
+      if (table.toLowerCase() === 'faq_entries') {
+        return `'FAQ Question ${n + 1}'`;
+      }
+    }
+    
+    // Handle description columns
+    if (colLower === 'description') {
+      return `'This is a detailed description for ${table} row ${n + 1}. It provides context and information about this entry.'`;
+    }
+    
+    // Handle photo-specific columns
+    if (table.toLowerCase() === 'photos') {
+      if (colLower === 'photo_id') {
+        return `'photo_${this.generateUUID(table, colInfo.name, n).substring(0, 16)}'`;
+      }
+      if (colLower === 'era') {
+        const eras = ['Early Career', 'Prime Years', 'Later Career', 'Championship Era'];
+        return `'${eras[n % eras.length]}'`;
+      }
+      if (colLower === 'type') {
+        const types = ['action', 'portrait', 'team', 'memorabilia', 'ceremony'];
+        return `'${types[n % types.length]}'`;
+      }
+      if (colLower === 'game_context') {
+        return `'Game ${(n % 162) + 1}, 19${23 + (n % 16)}'`;
+      }
+      if (colLower === 'people') {
+        const people = ['Lou Gehrig', 'Babe Ruth', 'Lou Gehrig, Babe Ruth', 'Lou Gehrig, team', 'crowd'];
+        return `'${people[n % people.length]}'`;
+      }
+      if (colLower === 'teams') {
+        const teams = ['New York Yankees', 'Yankees vs Red Sox', 'Yankees vs Tigers', 'All-Stars'];
+        return `'${teams[n % teams.length]}'`;
+      }
+      if (colLower === 'tags') {
+        const tags = ['baseball', 'historic', 'vintage', 'action shot', 'portrait', 'team photo'];
+        return `'${tags[n % tags.length]}'`;
+      }
+      if (colLower === 'source') {
+        const sources = ['Wikimedia Commons', 'National Archives', 'Baseball Hall of Fame', 'Library of Congress'];
+        return `'${sources[n % sources.length]}'`;
+      }
+      if (colLower === 'rights_notes') {
+        return `'Public domain - sourced from Wikimedia Commons'`;
+      }
     }
 
     // Handle by type
@@ -230,6 +335,50 @@ class D1Seeder {
           const kinds = ['charity', 'business', 'sponsor'];
           return `'${kinds[n % kinds.length]}'`;
         }
+        if (colLower === 'location') {
+          const locations = [
+            'Yankee Stadium, Bronx NY',
+            'Columbia University, New York NY',
+            'Baseball Hall of Fame, Cooperstown NY',
+            'Lou Gehrig Memorial Park, New Rochelle NY',
+            'New York Public Library',
+            'Central Park, New York NY',
+            'Madison Square Garden, New York NY',
+            'Online Event (Virtual)',
+            'Community Center, Manhattan NY',
+            'Sports Museum, New York NY'
+          ];
+          return `'${locations[n % locations.length]}'`;
+        }
+        if (colLower === 'host') {
+          const hosts = [
+            'Lou Gehrig Fan Club',
+            'New York Yankees Foundation',
+            'Baseball History Society',
+            'ALS Research Foundation',
+            'Sports Heritage Museum',
+            'Community Baseball League',
+            'Youth Sports Foundation',
+            'Hall of Fame Association'
+          ];
+          return `'${hosts[n % hosts.length]}'`;
+        }
+        if (colLower === 'fees') {
+          const fees = ['Free', '$10', '$25', '$50', 'Members Free, $15 for guests', 'Donation suggested'];
+          return `'${fees[n % fees.length]}'`;
+        }
+        if (colLower === 'external_url') {
+          return `'https://example.com/event-${n + 1}'`;
+        }
+        if (colLower === 'source_hash') {
+          return `'${this.generateUUID(table, colInfo.name, n)}'`;
+        }
+        if (colLower === 'week_start') {
+          // Generate Monday dates
+          const baseDate = new Date('2026-01-05T00:00:00Z'); // A Monday
+          baseDate.setDate(baseDate.getDate() + (n * 7));
+          return `'${baseDate.toISOString().split('T')[0]}'`;
+        }
         
         return `'${table}_${colInfo.name}_${n}'`;
     }
@@ -242,14 +391,15 @@ class D1Seeder {
     console.log(`\n📊 Seeding table: ${table}`);
     
     const currentCount = this.getRowCount(table);
-    console.log(`   Current rows: ${currentCount}`);
+    const targetRows = TABLE_MIN_ROWS[table] || MIN_ROWS;
+    console.log(`   Current rows: ${currentCount} (target: ${targetRows})`);
     
-    if (currentCount >= MIN_ROWS) {
-      console.log(`   ✅ Already has ${MIN_ROWS}+ rows, skipping`);
+    if (currentCount >= targetRows) {
+      console.log(`   ✅ Already has ${targetRows}+ rows, skipping`);
       return;
     }
     
-    const needed = MIN_ROWS - currentCount;
+    const needed = targetRows - currentCount;
     console.log(`   Inserting ${needed} rows...`);
     
     const columns = this.getTableInfo(table);
@@ -361,7 +511,8 @@ class D1Seeder {
   async seed() {
     console.log(`\n🌱 D1 Seeding started (environment: ${this.env})`);
     console.log(`   Database: ${this.dbName}`);
-    console.log(`   Target: ${MIN_ROWS} rows per table\n`);
+    console.log(`   Default target: ${MIN_ROWS} rows per table`);
+    console.log(`   Special targets: photos=${TABLE_MIN_ROWS.photos}, members=${TABLE_MIN_ROWS.members}, events=${TABLE_MIN_ROWS.events}\n`);
     
     // Get all tables
     const tables = this.getTables();
