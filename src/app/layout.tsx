@@ -18,7 +18,7 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<Script
-				src="https://static.elfsight.com/platform/platform.js"
+				src="https://elfsightcdn.com/platform/platform.js"
 				strategy="beforeInteractive"
 				data-use-service-core="true"
 			/>
