@@ -89,23 +89,39 @@ Home page sections, in order:
 
 ## 2) Visitor Header (Public) — Final Lock (Updated 2026-01-16)
 
-### Desktop / Tablet header layout
-- Layout: **Logo + 3 buttons + Hamburger**
-- Sticky: **the 3 buttons + hamburger**
+### Desktop / Tablet header layout — Not logged in
+- Layout: **Logo + 4 buttons + Hamburger**
+- Sticky: **the 4 buttons + hamburger**
 - Not sticky: **the large overlapping logo** (it scrolls away and must not obstruct content)
 - Logo destination: **Home**
 
 Buttons (left → right):
-1. **Join**
-2. **Store** (https://www.bonfire.com/store/lou-gehrig-fan-club/)
-3. **Login**
-4. **Hamburger**
+1. **Join** → `/join`
+2. **Search** → `/search`
+3. **Store** → external Bonfire link (https://www.bonfire.com/store/lou-gehrig-fan-club/)
+4. **Login** → `/login`
+5. **Hamburger**
+
+### Desktop / Tablet header layout — Logged in (browsing public pages)
+When a member is logged in but browsing public pages (not `/fanclub/**`), the header shows all 4 public buttons PLUS two additional buttons:
+
+Buttons (left → right):
+1. **Join** → `/join`
+2. **Search** → `/search`
+3. **Store** → external Bonfire link
+4. **Login** → `/login`
+5. **Club Home** → `/fanclub`
+6. **Logout** → `/logout`
+7. **Hamburger**
 
 ### Visitor hamburger menu (desktop/tablet)
+Same for both logged-out and logged-in states (hamburger contains only standalone pages, not header button duplicates):
+
 Order:
-1. **About**
-2. **Contact**
-3. **Support** (mailto: Support@LouGehrigFanClub.com, subject: “Support Needed”)
+1. **About** → `/about`
+2. **Contact** → `/contact`
+3. **Support** → mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed
+
 
 ### Mobile header layout
 - Visible: **Logo + Hamburger only**
@@ -113,29 +129,15 @@ Order:
 - Not sticky: **Logo**
 - All header buttons move into the hamburger to save space.
 
-Mobile visitor hamburger order:
-1. **Home**
-2. **About**
-3. **Contact**
-4. **Support**
-5. **Store**
+Mobile visitor hamburger order (same for logged-out and logged-in states):
+1. **Home** → `/`
+2. **About** → `/about`
+3. **Contact** → `/contact`
+4. **Support** → mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed
+5. **Store** → external Bonfire link (opens new tab)
 
-## 3) Visitor Hamburger Menu — Final Lock (Updated 2026-01-16)
 
-### Desktop / Tablet
-- About
-- Contact
-- Support (mailto: Support@LouGehrigFanClub.com, subject: “Support Needed”)
-
-### Mobile
-Mobile visitor hamburger order:
-1. Home
-2. About
-3. Contact
-4. Support
-5. Store
-
-## 3.1) Hamburger Menu Interaction Behavior — Final Lock (Added 2026-01-20)
+## 3) Hamburger Menu Interaction Behavior — Final Lock (Added 2026-01-20)
 
 ### Click-Away Close (All Headers, All Breakpoints)
 - When the hamburger dropdown is open, clicking or tapping **outside** the dropdown container AND outside the hamburger toggle button **closes** the dropdown.
@@ -273,26 +275,30 @@ Support is separate from Ask a Question.
 ## 11) Members Header — Final Lock (Updated 2026-01-16)
 
 ### Desktop / Tablet header layout (same structure as Visitor)
-- Layout: **Logo + 3 buttons + Hamburger**
-- Sticky: **the 3 buttons + hamburger**
+- Layout: **Logo + 5 buttons + Hamburger**
+- Sticky: **the 5 buttons + hamburger**
 - Not sticky: **the large overlapping logo** (it scrolls away and must not obstruct content)
-- Logo destination: **Home**
+- Logo destination: **/** (global home)
 
 Buttons (left → right):
-1. **Member Home**
-2. **Search**
-3. **Logout**
-4. **Hamburger**
+1. **Club Home** → `/fanclub`
+2. **My Profile** → `/fanclub/myprofile`
+3. **Search** → `/search`
+4. **Store** → external Bonfire link (opens new tab)
+5. **Logout** → `/logout`
+6. **Hamburger**
 
-My Profile is **not** a header button.
+Note: This header only appears on `/fanclub/**` routes. Unauthenticated access to `/fanclub/**` redirects to `/`.
 
 ### Member hamburger menu (desktop/tablet)
+Same items for all FanClub pages (hamburger contains only standalone pages not already in header buttons):
+
 Order:
-1. **My Profile**
-2. **Obtain Membership Card**
-3. **About**
-4. **Contact**
-5. **Support** (mailto: Support@LouGehrigFanClub.com, subject: “Support Needed”)
+1. **About** → `/about`
+2. **Contact** → `/contact`
+3. **Support** → mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed
+
+Note: Obtain Membership Card is accessed via Member Home quick links, not hamburger menu.
 
 ### Mobile header layout
 - Visible: **Logo + Hamburger only**
@@ -301,16 +307,19 @@ Order:
 - All header buttons move into the hamburger to save space.
 
 Mobile member hamburger order:
-1. **Search**
-2. **Home**
-3. **Member Home**
-4. **My Profile**
-5. **Obtain Membership Card**
-6. **About**
-7. **Contact**
-8. **Support**
-9. **Login**
-10. **Logout** (must be last)
+Note: On mobile, all header buttons move into hamburger. Store does not appear because it's not currently implemented on mobile for FanClub pages.
+
+1. **Home** → `/`
+2. **Club Home** → `/fanclub`
+3. **My Profile** → `/fanclub/myprofile`
+4. **Search** → `/search`
+5. **About** → `/about`
+6. **Contact** → `/contact`
+7. **Support** → mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed
+8. **Logout** → `/logout` (must be last)
+
+Note: Obtain Membership Card is accessed via Member Home quick links.
+
 
 ## 12) Member Welcome Hero (MEMBER/page.tsx)
 
@@ -543,19 +552,29 @@ This addendum captures every design/standards decision finalized in-session afte
   - Logo remains on the left (not centered)
   - Button container is sticky; logo is not sticky
 
-**Visitor Header Buttons (Desktop/Tablet):**
-1. Join
-2. Search
-3. Store (external link)
-4. Login
+**Visitor Header Buttons (Desktop/Tablet) — Not logged in:**
+1. Join → `/join`
+2. Search → `/search`
+3. Store → external Bonfire link
+4. Login → `/login`
 5. Hamburger
 
+**Visitor Header Buttons (Desktop/Tablet) — Logged in (browsing public pages):**
+1. Join → `/join`
+2. Search → `/search`
+3. Store → external Bonfire link
+4. Login → `/login`
+5. Club Home → `/fanclub`
+6. Logout → `/logout`
+7. Hamburger
+
 **Member Header Buttons (Desktop/Tablet):**
-1. Member Home
-2. Search
-3. Store (external link)
-4. Logout
-5. Hamburger
+1. Club Home → `/fanclub`
+2. My Profile → `/fanclub/myprofile`
+3. Search → `/search`
+4. Store → external Bonfire link
+5. Logout → `/logout`
+6. Hamburger
 
 ### Hamburger Menu — Store Placement Rules (CRITICAL)
 
@@ -564,40 +583,39 @@ This addendum captures every design/standards decision finalized in-session afte
 - Reason: Store is a header button on desktop/tablet
 
 **Visitor hamburger (desktop/tablet):**
-- About
-- Contact
-- Support (mailto: Support@LouGehrigFanClub.com)
+- About → `/about`
+- Contact → `/contact`
+- Support → mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed
 
 **Member hamburger (desktop/tablet):**
-- My Profile
-- Obtain Membership Card
-- About
-- Contact
-- Support (mailto: Support@LouGehrigFanClub.com)
+- About → `/about`
+- Contact → `/contact`
+- Support → mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed
+
+Note: My Profile is now a header button. Obtain Membership Card is accessed via Member Home quick links.
 
 **Mobile Hamburger Menus:**
 - Store MUST appear in hamburger menus on mobile
 - Reason: No header button row on mobile; hamburger is the only navigation
 
 **Visitor hamburger (mobile):**
-1. Home
-2. About
-3. Contact
-4. Support
-5. Store
+1. Home → `/`
+2. About → `/about`
+3. Contact → `/contact`
+4. Support → mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed
+5. Store → external Bonfire link (opens new tab)
 
 **Member hamburger (mobile):**
-1. Search
-2. Home
-3. Member Home
-4. My Profile
-5. Obtain Membership Card
-6. About
-7. Contact
-8. Store
-9. Support
-10. Login
-11. Logout
+1. Home → `/`
+2. Club Home → `/fanclub`
+3. My Profile → `/fanclub/myprofile`
+4. Search → `/search`
+5. About → `/about`
+6. Contact → `/contact`
+7. Support → mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed
+8. Logout → `/logout` (must be last)
+
+Note: Obtain Membership Card is accessed via Member Home quick links. Store is not currently shown on mobile for FanClub pages.
 
 ### Footer Lock
 
