@@ -1,6 +1,6 @@
 # active_tasklist.md — Daily Work List (Ephemeral)
 
-Date: 2026-01-21
+Date: 2026-01-28
 
 This file is a **daily** FYI task tracker. Keep it lightweight.
 - Start the day with remaining open items at the top.
@@ -25,4 +25,7 @@ This file is a **daily** FYI task tracker. Keep it lightweight.
 
 ## Completed (Today)
 
-- (none)
+- ZIP 41: Unblock `/admin` UI access (removed HTML middleware gate)
+- ZIP 41: Add `/admin/d1-test` page for D1 table inspection
+- ZIP 41: Add `/api/admin/d1-inspect` endpoint for table list + schema + samples
+- ZIP 41: Admin APIs remain token-gated via `ADMIN_TOKEN`
