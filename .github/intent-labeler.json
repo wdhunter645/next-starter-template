@@ -14,7 +14,7 @@
         "scripts/",
         "functions/",
         "src/app/admin/",
-        "docs/ops/"
+        "docs/ops/",
         "docs/governance/",
         "docs/website-process.md",
         "docs/website-PR-process.md",
