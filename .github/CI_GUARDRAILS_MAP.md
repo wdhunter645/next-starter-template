@@ -111,7 +111,7 @@ The workflow validates that PRs have exactly ONE intent label matching file-touc
 - `docs-only` — Documentation only (`docs/**`)
 - `recovery` — Break-glass (all paths allowed)
 
-See `/docs/governance/platform-intent-and-zip-governance.md` for full intent governance.
+See `/.github/platform-intent-and-zip-governance.md` for full intent governance.
 
 ---
 

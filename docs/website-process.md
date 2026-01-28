@@ -29,7 +29,7 @@ PRs that modify **only** Cloudflare runtime configuration must use the `platform
   - PR #1: `platform` intent (wrangler.toml only)
   - PR #2: `feature` intent (src/ changes)
 
-See `/docs/governance/platform-intent-and-zip-governance.md` for full intent governance and allowlist details.
+See `/.github/platform-intent-and-zip-governance.md` for full intent governance and allowlist details.
 
 
 ### Platform Intent for Cloudflare Config Changes
@@ -49,7 +49,7 @@ PRs that modify **only** Cloudflare runtime configuration must use the `platform
   - PR #1: `platform` intent (wrangler.toml only)
   - PR #2: `feature` intent (src/ changes)
 
-See `/docs/governance/platform-intent-and-zip-governance.md` for full intent governance and allowlist details.
+See `/.github/platform-intent-and-zip-governance.md` for full intent governance and allowlist details.
 
 
 ---
