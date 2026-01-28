@@ -86,7 +86,8 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       const schemaResult = await db.prepare(`PRAGMA table_info(${tableName})`).all();
       const schema = schemaResult.results || [];
 
-      // Note: SQLite D1 prepare() escapes values, so this is safe after validation
+      // Note: Table identifiers cannot be parameterized in SQL, but tableName
+      // has been validated above (regex + whitelist + length) to ensure safety.
       const rowsResult = await db.prepare(`SELECT * FROM ${tableName} LIMIT ${limit}`).all();
       const rows = rowsResult.results || [];
 
