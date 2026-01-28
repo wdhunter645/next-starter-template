@@ -61,6 +61,28 @@
 		"platform": {
 			"allow_prefixes": ["wrangler.toml", "functions/"],
 			"deny_prefixes": []
+		},
+		"change-ops": {
+			"allow_prefixes": [
+				"migrations/",
+				"scripts/d1-",
+				"scripts/b2-",
+				"scripts/ci/",
+				"data/",
+				"wrangler.toml"
+			],
+			"deny_prefixes": ["src/", "docs/", ".github/workflows/"]
+		},
+		"codex": {
+			"allow_prefixes": [
+				".github/copilot-instructions.md",
+				".github/agents/",
+				"Agent.md",
+				"context.md",
+				"docs/",
+				"scripts/ci/"
+			],
+			"deny_prefixes": ["src/", "functions/"]
 		}
 	}
 }

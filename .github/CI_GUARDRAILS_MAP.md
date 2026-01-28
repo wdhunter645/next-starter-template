@@ -105,13 +105,16 @@ npm run build:cf
 
 **Intent Labels:**
 The workflow validates that PRs have exactly ONE intent label matching file-touch patterns:
-- `platform` — Cloudflare runtime config only (`wrangler.toml`, `functions/**`)
 - `infra` — CI/workflows/build config (`.github/**`, `scripts/**`, config files)
 - `feature` — App code/UI/API (`src/**`, `functions/**`, `migrations/**`)
-- `docs-only` — Documentation only (`docs/**`)
-- `recovery` — Break-glass (all paths allowed)
+- `docs-only` — Documentation only (`docs/**`, `Agent.md`, `active_tasklist.md`)
+- `platform` — Cloudflare runtime config only (`wrangler.toml`, `functions/**`)
+- `change-ops` — Operational changes (`migrations/**`, database scripts, operational tools)
+- `codex` — AI/agent config (`.github/copilot-instructions.md`, `.github/agents/**`)
+- `recovery` — Break-glass emergency fixes (all paths allowed, manual assignment only)
 
-See `/.github/platform-intent-and-zip-governance.md` for full intent governance.
+See `/docs/governance/pr-intent-labels.md` for full intent definitions and allowlists.
+See `/.github/platform-intent-and-zip-governance.md` for intent governance and ZIP policy.
 
 ---
 
@@ -400,18 +403,26 @@ See `/.github/platform-intent-and-zip-governance.md` for full intent governance.
 
 ### 19. Intent Labeler (`intent-labeler.yml`)
 
-**Purpose:** Automatic PR labeling based on changes  
-**Triggers:** `pull_request`
+**Purpose:** Automatic PR labeling based on file-touch analysis  
+**Triggers:** `pull_request` (opened, synchronize, reopened, ready_for_review)
 
 **What it does:**
-- Analyzes changed files
-- Applies appropriate labels:
-  - `docs-only` - Only documentation changed
-  - `frontend` - UI/component changes
-  - `backend` - API/function changes
-  - `tests` - Test changes
+- Analyzes changed files in PR
+- Determines which intent matches ALL changed files
+- Applies appropriate intent label:
+  - `docs-only` — Only documentation changed
+  - `infra` — CI/workflows/build config
+  - `platform` — Cloudflare runtime config only
+  - `feature` — App code/UI/API
+  - `change-ops` — Operational changes/migrations
+  - `codex` — AI/agent configuration
+- Posts guidance comment if mixed intent detected (files span multiple categories)
 
-**Enforcement:** ⚠️ **AUTOMATIC LABELING**  
+**Priority order:** docs-only → infra → platform → feature → change-ops → codex
+
+**Note:** `recovery` intent is NOT auto-assigned; must be manually applied for emergency fixes.
+
+**Enforcement:** ⚠️ **AUTOMATIC LABELING** (does not block PRs, but drift-gate requires intent label)  
 
 ---
 

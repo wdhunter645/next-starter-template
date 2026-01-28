@@ -68,9 +68,9 @@ jobs:
             }
             
             // Determine which intent matches ALL changed files
-            // Priority order: docs-only → infra → feature
+            // Priority order: docs-only → infra → platform → feature → change-ops → codex
             // Note: 'recovery' is NOT auto-assigned; it must be manually applied for emergency fixes
-            const intentOrder = ['docs-only', 'infra', 'feature'];
+            const intentOrder = ['docs-only', 'infra', 'platform', 'feature', 'change-ops', 'codex'];
             let matchedIntent = null;
             
             for (const intentName of intentOrder) {
@@ -156,7 +156,7 @@ jobs:
               // Note: Using string concatenation instead of template literals to avoid YAML parsing issues
               const commentMarker = '<!-- intent-labeler-result -->';
               const fileList = changedFiles.map(f => '- `' + f + '`').join('\n');
-              const mixedComment = commentMarker + '\n## ⚠️ Mixed Intent Detected\n\nThis PR contains changes that don\'t fit a single intent category. **No intent label has been applied.**\n\n### Why this matters\nThe drift-gate workflow requires exactly ONE intent label to validate file-touch allowlists. Mixed-intent PRs cannot pass drift-gate.\n\n### Required action\nPlease split this PR into separate PRs, one for each intent:\n\n**Available intents (auto-assigned):**\n- `docs-only`: Only changes to `docs/**` files\n- `infra`: Changes to `.github/**`, `scripts/**`, build configs (but NOT `docs/**`)\n- `feature`: Changes to `src/**`, `functions/**`, `migrations/**`, `public/**` (but NOT `.github/workflows/**` or `docs/**`)\n\n**Manual intent (not auto-assigned):**\n- `recovery`: Emergency fixes that may touch multiple areas (must be manually assigned)\n\n### Changed files in this PR\n' + fileList + '\n\nOnce you\'ve split the changes into focused PRs, each PR will be automatically labeled with the appropriate intent.';
+              const mixedComment = commentMarker + '\n## ⚠️ Mixed Intent Detected\n\nThis PR contains changes that don\'t fit a single intent category. **No intent label has been applied.**\n\n### Why this matters\nThe drift-gate workflow requires exactly ONE intent label to validate file-touch allowlists. Mixed-intent PRs cannot pass drift-gate.\n\n### Required action\nPlease split this PR into separate PRs, one for each intent:\n\n**Available intents (auto-assigned):**\n- `docs-only`: Only changes to `docs/**` files\n- `infra`: Changes to `.github/**`, `scripts/**`, build configs\n- `feature`: Changes to `src/**`, `functions/**`, `migrations/**`, `public/**`\n- `platform`: Changes to `wrangler.toml` and/or `functions/**` only\n- `change-ops`: Changes to `migrations/**`, database scripts, operational scripts\n- `codex`: Changes to agent/copilot instructions, AI tooling configuration\n\n**Manual intent (not auto-assigned):**\n- `recovery`: Emergency fixes that may touch multiple areas (must be manually assigned)\n\n### Changed files in this PR\n' + fileList + '\n\nOnce you\'ve split the changes into focused PRs, each PR will be automatically labeled with the appropriate intent.';
               
               // Check for existing comment
               const { data: comments } = await github.rest.issues.listComments({
