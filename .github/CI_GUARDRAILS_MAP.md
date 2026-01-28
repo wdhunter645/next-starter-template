@@ -487,11 +487,19 @@ PASSED (8):
 ================================================================================
 ```
 
-**Enforcement:** ❌ **FAIL-LOUD, NON-BLOCKING**  
-- Job fails (red ❌) when mismatches are detected
+**Enforcement:** ✅ **ALERT-ONLY (ALWAYS GREEN)**  
+- Workflow always succeeds (green ✅) regardless of audit results
+- Uses `continue-on-error: true` to ensure non-blocking behavior
 - **NOT** added to branch protection required checks
 - **DOES NOT** block PR merges
 - Purpose: **Observability only** — surface drift for triage
+- Mismatch reports saved as artifacts for review
+
+**Behavior by Trigger:**
+- **PRs:** Audit is SKIPPED (preview URL not yet available; no production fallback)
+- **Push to main:** Audits production URL
+- **Nightly schedule:** Audits production URL
+- **Manual dispatch:** Audits production URL
 
 **Triage Process:**
 
@@ -510,11 +518,12 @@ When a mismatch is detected, it should be triaged as either:
 - Uses Node.js built-in `http`/`https` modules (no external dependencies)
 - Deterministic checks only (no flaky UI automation)
 - Runtime: < 10 seconds
+- Artifacts: Audit report uploaded with 30-day retention
 
-**Current Limitations:**
-- PRs test against production URL (not preview URL)
-- Preview URL integration planned for future enhancement
-- Nightly runs and main branch pushes test production
+**Current Behavior:**
+- **PRs are skipped** — no preview URL integration yet; production fallback removed
+- Production audits run on: push to main, nightly schedule, manual dispatch
+- Workflow always exits green to ensure truly non-blocking behavior
 
 **Future Enhancements:**
 - Integrate with Cloudflare API to get PR preview URLs
@@ -546,9 +555,15 @@ These should pass but may not block:
 ### Fail-Loud, Non-Blocking Gates
 
 These fail with red ❌ when issues are detected but **DO NOT** block PR merges:
-1. ❌ Design Compliance Audit (fail-loud, observability-only)
-   - Purpose: Surface drift for triage
-   - Mismatches should be addressed in follow-up PRs
+1. (None currently — Design Compliance Audit migrated to Alert-Only)
+
+### Alert-Only Gates (ALWAYS GREEN)
+
+These always show green ✅ but provide observability alerts:
+1. ✅ Design Compliance Audit (alert-only, observability)
+   - Purpose: Surface production drift for triage
+   - Skips PR runs (no preview URL); audits production on main/nightly
+   - Mismatches saved in artifacts for review
    - Not enforced as a merge requirement
 
 ### Monitoring Gates (NON-BLOCKING)
