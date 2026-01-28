@@ -53,7 +53,7 @@ Desktop/Tablet buttons (centered, fixed order):
 4. Login → `/login`
 
 ### Public header (logged in, but browsing public pages)
-The Login button is replaced with two buttons:
+When logged in, the 4 public buttons remain, but Login is replaced with Club Home + Logout (5 total buttons):
 
 1. Join → `/join`
 2. Search → `/search`
@@ -62,7 +62,7 @@ The Login button is replaced with two buttons:
 5. Logout → `/logout`
 
 Note: The header uses client-side localStorage ('lgfc_member_email') to determine login state.
-When logged in, Club Home and Logout buttons replace the Login button.
+When logged in, the Login button is replaced by Club Home and Logout buttons.
 
 ---
 

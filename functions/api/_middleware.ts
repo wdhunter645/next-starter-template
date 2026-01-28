@@ -62,7 +62,9 @@ export async function onRequest(context: {
   // Apply rate limiting for write operations and auth attempts (if binding is available).
   const method = request.method.toUpperCase();
   const shouldLimit = method === "POST" || method === "PUT" || method === "PATCH" || method === "DELETE";
-  const hasRateLimiter = env.API_RATE_LIMITER && typeof env.API_RATE_LIMITER.limit === 'function';
+  const hasRateLimiter = env.API_RATE_LIMITER && 
+                          typeof env.API_RATE_LIMITER === 'object' && 
+                          typeof env.API_RATE_LIMITER.limit === 'function';
   
   if (shouldLimit && hasRateLimiter) {
     const key = getClientKey(request, pathname);

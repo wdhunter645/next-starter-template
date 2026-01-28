@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 /**
- * FanClub Layout - Hard-gates /fanclub/** routes
+ * FanClub Layout - Client-side route protection for /fanclub/** routes
  * 
- * Unauthenticated users are redirected to / (home)
- * This provides server-side route protection per design specs
+ * Unauthenticated users (no 'lgfc_member_email' in localStorage) are redirected to / (home)
+ * This is client-side only protection - runs after initial page load in the browser
  */
 export default function MemberLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -29,13 +29,10 @@ export default function MemberLayout({ children }: { children: React.ReactNode }
     }
   }, [router]);
 
-  // Don't render children until authorization check is complete
+  // Don't render anything until authorization check is complete
+  // This prevents flash of content before redirect
   if (!isAuthorized) {
-    return (
-      <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-        <p>Checking authorization...</p>
-      </div>
-    );
+    return null;
   }
 
   return <>{children}</>;
