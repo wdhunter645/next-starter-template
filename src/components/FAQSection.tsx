@@ -23,6 +23,15 @@ export default function FAQSection() {
 
   useEffect(() => {
     let alive = true;
+    let completed = false;
+    
+    const timer = setTimeout(() => {
+      if (alive && !completed) {
+        setLoading(false);
+        setItems([]);
+      }
+    }, 10000); // 10 second timeout
+    
     (async () => {
       try {
         const data = await apiGet<{ ok: boolean; items: FAQItem[] }>(
@@ -32,11 +41,15 @@ export default function FAQSection() {
       } catch {
         if (alive) setItems([]);
       } finally {
-        if (alive) setLoading(false);
+        if (alive) {
+          setLoading(false);
+          completed = true;
+        }
       }
     })();
     return () => {
       alive = false;
+      clearTimeout(timer);
     };
   }, [query]);
 
@@ -80,10 +93,10 @@ export default function FAQSection() {
 
         <div id="faqList">
           {loading ? (
-            <p className="sub">Loading…</p>
+            <p className="sub">Loading FAQ…</p>
           ) : items.length === 0 ? (
             <p className="sub">
-              No matching FAQ answers.
+              No matching FAQ answers found.
               <span style={{ marginLeft: 8 }}>
                 <Link className="link" href="/faq#ask">Ask a Question</Link>
               </span>
