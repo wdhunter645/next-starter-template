@@ -72,7 +72,24 @@ export default function WeeklyMatchup() {
         setLoading(false);
       }
     }
-    load();
+    
+    // Set a timeout to prevent infinite loading
+    let completed = false;
+    const timer = setTimeout(() => {
+      if (!completed) {
+        setLoading(false);
+        setErr('Unable to load matchup. Please try again later.');
+      }
+    }, 10000); // 10 second timeout
+
+    load().finally(() => {
+      completed = true;
+      clearTimeout(timer);
+    });
+    
+    return () => {
+      clearTimeout(timer);
+    };
   }, []);
 
   async function submit(choice: 'a' | 'b') {
@@ -98,8 +115,8 @@ export default function WeeklyMatchup() {
   }
 
   if (loading) return <div className="card">Loading matchup…</div>;
-  if (err) return <div className="card">Error loading matchup: {err}</div>;
-  if (items.length < 2) return <div className="card">No matchup available yet.</div>;
+  if (err) return <div className="card">Unable to load matchup. Please check back later.</div>;
+  if (items.length < 2) return <div className="card">No matchup available at this time. Check back next week for a new photo vote!</div>;
 
   const a = items[0];
   const b = items[1];

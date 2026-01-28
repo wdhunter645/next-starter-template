@@ -40,6 +40,7 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
         header {
           position: relative;
           height: 104px;
+          margin-bottom: 24px;
         }
         .logo-link {
           position: absolute;
@@ -49,7 +50,7 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           z-index: 999;
         }
         .logo-img {
-          height: 240px;
+          height: 180px;
           width: auto;
         }
         .header-center {
@@ -69,11 +70,16 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           z-index: 1000;
         }
         .header-right {
-          /* Hamburger pinned to right edge */
+          /* Hamburger adjacent to center buttons */
           position: fixed;
           top: 8px;
-          right: 16px;
+          right: calc(50% - 310px);
           z-index: 1001;
+        }
+        @media (max-width: 768px) {
+          .header-right {
+            right: 16px;
+          }
         }
         .burger-wrapper {
           position: relative;
@@ -144,10 +150,11 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           >
             Store
           </a>
-          <Link href="/login" className="header-btn desktop-tablet-only">
-            Login
-          </Link>
-          {isLoggedIn && (
+          {!isLoggedIn ? (
+            <Link href="/login" className="header-btn desktop-tablet-only">
+              Login
+            </Link>
+          ) : (
             <>
               <Link href="/fanclub" className="header-btn desktop-tablet-only">
                 Club Home
