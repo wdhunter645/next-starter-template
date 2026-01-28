@@ -50,6 +50,8 @@
       "allow_prefixes": [
         ".github/",
         "scripts/",
+        "functions/",
+        "src/app/admin/",
         "package.json",
         "package-lock.json",
         "wrangler.toml",
