@@ -38,6 +38,39 @@ export const onRequestGet = async (context: any): Promise<Response> => {
         headers: { "Content-Type": "application/json" },
       });
     } else {
+      // Validate tableName to prevent SQL injection
+      // Step 1: Check length
+      if (tableName.length > 64) {
+        return new Response(
+          JSON.stringify({ ok: false, error: "Invalid table name: exceeds maximum length" }),
+          { status: 400, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      // Step 2: Check regex pattern (alphanumeric and underscore only)
+      const tableNameRegex = /^[A-Za-z0-9_]+$/;
+      if (!tableNameRegex.test(tableName)) {
+        return new Response(
+          JSON.stringify({ ok: false, error: "Invalid table name: contains forbidden characters" }),
+          { status: 400, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      // Step 3: Whitelist against actual D1 tables
+      const tablesResult = await db
+        .prepare(`SELECT name FROM sqlite_master WHERE type='table'`)
+        .all();
+      const allowedTables = new Set(
+        (tablesResult.results || []).map((row: any) => row.name)
+      );
+
+      if (!allowedTables.has(tableName)) {
+        return new Response(
+          JSON.stringify({ ok: false, error: "Invalid table name: table does not exist" }),
+          { status: 400, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
       // Return schema and sample rows for the specified table
       const schemaResult = await db.prepare(`PRAGMA table_info(${tableName})`).all();
       const schema = schemaResult.results || [];

@@ -109,6 +109,7 @@ export default function AdminD1TestPage() {
         <div style={styles.row}>
           <input
             style={styles.input}
+            type="password"
             placeholder="Paste ADMIN_TOKEN here"
             value={token}
             onChange={(e) => setToken(e.target.value)}
