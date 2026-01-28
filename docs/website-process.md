@@ -12,7 +12,53 @@
 - Node runtime: do not change Cloudflare’s Node runtime in PRs unless explicitly requested. (Current production build logs show Node 20; upgrade to 22 will be handled separately.)
 - No Tailwind/PostCSS/framework swaps. Keep global CSS approach.
 
-### Platform Intent for Cloudflare Config Changes
+
+---
+
+## PR Intent Labels (REQUIRED)
+
+**All PRs MUST have exactly ONE intent label.** The label determines which files can be modified and how CI validates the PR.
+
+### Canonical Intent Labels
+
+| Intent | Purpose | Allowed Paths |
+|--------|---------|---------------|
+| **infra** | CI/CD, workflows, build config | `.github/**`, `scripts/**`, config files |
+| **feature** | Application features, UI, API | `src/**`, `functions/**`, `migrations/**`, `public/**` |
+| **docs-only** | Documentation changes only | `docs/**`, `Agent.md`, `active_tasklist.md` |
+| **platform** | Cloudflare runtime config only | `wrangler.toml`, `functions/**` |
+| **change-ops** | Operational changes, migrations | `migrations/**`, database scripts, operational tools |
+| **codex** | AI/agent configuration | `.github/copilot-instructions.md`, `.github/agents/**` |
+| **recovery** | Emergency fixes (break-glass) | All paths (manual assignment only) |
+
+**Full definitions:** See `/docs/governance/pr-intent-labels.md`
+
+### Enforcement
+
+- **Auto-labeling:** The `intent-labeler` workflow automatically applies labels based on file-touch analysis
+- **Validation:** The `drift-gate` workflow validates that:
+  - PR has exactly ONE intent label
+  - All changed files are allowed under that intent
+  - PRs cannot merge if validation fails
+
+### When to Split PRs
+
+If a PR touches files across multiple intent categories, it MUST be split into separate PRs:
+- Platform + Feature → 2 PRs
+- Feature + Docs → 2 PRs
+- Infra + Docs → 2 PRs
+- Change-ops + Feature → 2 PRs
+
+**Exception:** Use `recovery` intent for emergency fixes (manual assignment only).
+
+### Legacy Labels (RETIRED for PRs)
+
+The following labels are **no longer used for pull requests**:
+- `bug`, `enhancement`, `question`, `help wanted`, `good first issue`, `duplicate`, `invalid`, `wontfix`
+
+These may still be used for issues, but all PRs must use the canonical intent labels above.
+
+### Platform Intent Details
 
 PRs that modify **only** Cloudflare runtime configuration must use the `platform` intent label:
 
@@ -30,27 +76,6 @@ PRs that modify **only** Cloudflare runtime configuration must use the `platform
   - PR #2: `feature` intent (src/ changes)
 
 See `/docs/governance/platform-intent-and-zip-governance.md` for full intent governance and allowlist details.
-
-
-### Platform Intent for Cloudflare Config Changes
-
-PRs that modify **only** Cloudflare runtime configuration must use the `platform` intent label:
-
-**When to use `platform` intent:**
-- PR touches ONLY `wrangler.toml` and/or `functions/**`
-- No UI, docs, CI, or dependency changes
-
-**File-touch restrictions:**
-- ✅ Allowed: `wrangler.toml`, `functions/**`
-- ❌ Prohibited: `docs/`, `src/`, `.github/workflows/`, `package.json`, `migrations/`
-
-**Mixed changes require PR split:**
-- If a PR needs to change BOTH `wrangler.toml` AND app code (`src/`), split into:
-  - PR #1: `platform` intent (wrangler.toml only)
-  - PR #2: `feature` intent (src/ changes)
-
-See `/docs/governance/platform-intent-and-zip-governance.md` for full intent governance and allowlist details.
-
 
 ---
 

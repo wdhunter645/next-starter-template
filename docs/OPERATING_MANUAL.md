@@ -108,11 +108,16 @@ All PRs must include:
    - Acceptance criteria checklist
    - Verification steps
 
-3. **Appropriate labels:**
+3. **Appropriate intent label (exactly ONE required):**
+   - `infra` - CI/CD, workflows, build config
+   - `feature` - Application features, UI, API
    - `docs-only` - Documentation-only changes
-   - `feature` - New features
-   - `bugfix` - Bug fixes
-   - `hotfix` - Critical production fixes
+   - `platform` - Cloudflare runtime config only
+   - `change-ops` - Operational changes, migrations
+   - `codex` - AI/agent configuration
+   - `recovery` - Emergency fixes (manual assignment only)
+   
+   See `/docs/governance/pr-intent-labels.md` for full definitions.
 
 ### PR Review Process
 
