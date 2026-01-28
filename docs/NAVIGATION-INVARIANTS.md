@@ -30,6 +30,8 @@ Effective Date: 2026-01-21
 - `/fanclub/library`
 - `/fanclub/memorabilia`
 
+**Authentication Enforcement:** The `/fanclub/**` routes are protected by a hard-gate implemented in `/fanclub/layout.tsx`. Unauthenticated users (those without 'lgfc_member_email' in localStorage) are immediately redirected to `/` (home page).
+
 ### Admin (admin gate)
 - `/admin/**`
 
@@ -51,10 +53,16 @@ Desktop/Tablet buttons (centered, fixed order):
 4. Login → `/login`
 
 ### Public header (logged in, but browsing public pages)
-The same center group of 4 buttons remains visible, plus **two additional buttons** appear to the right:
+The Login button is replaced with two buttons:
 
-5. Club Home → `/fanclub`
-6. Logout → `/logout`
+1. Join → `/join`
+2. Search → `/search`
+3. Store → external Bonfire link
+4. Club Home → `/fanclub`
+5. Logout → `/logout`
+
+Note: The header uses client-side localStorage ('lgfc_member_email') to determine login state.
+When logged in, Club Home and Logout buttons replace the Login button.
 
 ---
 
