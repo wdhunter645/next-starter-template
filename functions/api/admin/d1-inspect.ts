@@ -56,25 +56,37 @@ export const onRequestGet = async (context: any): Promise<Response> => {
         );
       }
 
-      // Step 3: Whitelist against actual D1 tables
+      // Step 3: Whitelist against actual D1 tables (excluding SQLite internal tables)
       const tablesResult = await db
-        .prepare(`SELECT name FROM sqlite_master WHERE type='table'`)
+        .prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'`)
         .all();
       const allowedTables = new Set(
-        (tablesResult.results || []).map((row: any) => row.name)
+        (tablesResult.results || []).map((row: any) => (row.name as string).toLowerCase())
       );
 
-      if (!allowedTables.has(tableName)) {
+      // Case-insensitive comparison for SQLite compatibility
+      if (!allowedTables.has(tableName.toLowerCase())) {
         return new Response(
           JSON.stringify({ ok: false, error: "Invalid table name: table does not exist" }),
           { status: 400, headers: { "Content-Type": "application/json" } }
         );
       }
 
+      // Validate limit to prevent resource exhaustion
+      if (limit < 1 || limit > 100) {
+        return new Response(
+          JSON.stringify({ ok: false, error: "Invalid limit: must be between 1 and 100" }),
+          { status: 400, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
       // Return schema and sample rows for the specified table
+      // Note: PRAGMA statements don't support parameterized queries in SQLite,
+      // but tableName has been validated above (regex + whitelist) to ensure safety.
       const schemaResult = await db.prepare(`PRAGMA table_info(${tableName})`).all();
       const schema = schemaResult.results || [];
 
+      // Note: SQLite D1 prepare() escapes values, so this is safe after validation
       const rowsResult = await db.prepare(`SELECT * FROM ${tableName} LIMIT ${limit}`).all();
       const rows = rowsResult.results || [];
 
