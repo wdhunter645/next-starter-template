@@ -190,7 +190,35 @@ Per `/docs/website.md` and `/docs/website-process.md`:
 - `_routes.json` copied to `out/` for Cloudflare Functions routing
 - Functions in `functions/` directory are deployed alongside static assets
 
+### Admin Access Model (ZIP 41)
+
+**Admin UI Pages** (`/admin`, `/admin/d1-test`, `/admin/cms`, `/admin/content`):
+- Browser-reachable static pages
+- Client-side rendered (`'use client'` Next.js components)
+- No server-side access gate
+- Used for diagnostics, CMS, content management
+
+**Admin API Endpoints** (`/api/admin/**`):
+- Token-gated via `ADMIN_TOKEN` environment variable
+- All admin operations require `x-admin-token` header
+- Enforces security boundary at API layer
+
+**D1 Diagnostic Tool** (`/admin/d1-test`):
+- Browser-based D1 database inspector
+- Lists tables, schemas, row counts
+- Queries table contents with pagination
+- Calls `/api/admin/d1-inspect` (token-gated)
+
+See `/docs/admin/access-model.md` for complete admin architecture documentation.
+
 ### Change History
+
+**2026-01-28:** ZIP 41 (PR #457) - Admin Access Model
+- Added admin UI pages: `/admin`, `/admin/d1-test`, `/admin/cms`, `/admin/content`
+- Admin pages are browser-reachable (no server-side gate)
+- Admin API endpoints token-gated via `ADMIN_TOKEN`
+- D1 diagnostic tool for database inspection
+- See `/docs/admin/access-model.md` for details
 
 **2026-01-20:** Initial implementation of Member Home per `docs/memberpage.html` v1 spec
 - Implemented all 7 required sections in correct order

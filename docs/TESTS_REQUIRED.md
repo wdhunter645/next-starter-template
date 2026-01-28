@@ -5,7 +5,9 @@ These tests must be executed after deploying the updated ZIP. They prove that th
 ## A) Deployment sanity
 1. Cloudflare Pages build is green.
 2. `GET /api/health` returns `ok: true`.
-3. `GET /api/d1-test` returns `ok: true`.
+3. `GET /api/d1-test` returns `ok: true` (public endpoint; D1 binding check).
+4. `GET /admin/d1-test` loads (admin diagnostic page; browser-reachable).
+5. `GET /api/admin/stats` requires `x-admin-token` header (returns 403 without token).
 
 ## B) Public pages exist + render
 - `/` Home loads without console errors.
