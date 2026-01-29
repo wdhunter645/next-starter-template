@@ -45,15 +45,15 @@ test("Logged-out header/footer contain required navigation targets (sanity)", as
   const header = page.locator("header");
   await expect(header).toBeVisible();
 
-  await expect(page.locator('a[href="/join"], a[href$="/join"]')).toHaveCountGreaterThan(0);
-  await expect(page.locator('a[href="/login"], a[href$="/login"]')).toHaveCountGreaterThan(0);
-  await expect(page.locator('a[href="/search"], a[href$="/search"]')).toHaveCountGreaterThan(0);
+  await expect(page.locator('a[href="/join"], a[href$="/join"]').first()).toBeVisible();
+  await expect(page.locator('a[href="/login"], a[href$="/login"]').first()).toBeVisible();
+  await expect(page.locator('a[href="/search"], a[href$="/search"]').first()).toBeVisible();
 
   const footer = page.locator("footer");
   await expect(footer).toBeVisible();
 
-  await expect(page.locator('footer a[href="/contact"], footer a[href$="/contact"]')).toHaveCountGreaterThan(0);
-  await expect(page.locator('footer a[href="/support"], footer a[href$="/support"]')).toHaveCountGreaterThan(0);
-  await expect(page.locator('footer a[href="/terms"], footer a[href$="/terms"]')).toHaveCountGreaterThan(0);
-  await expect(page.locator('footer a[href="/privacy"], footer a[href$="/privacy"]')).toHaveCountGreaterThan(0);
+  await expect(page.locator('footer a[href="/contact"], footer a[href$="/contact"]').first()).toBeVisible();
+  await expect(page.locator('footer a[href="/support"], footer a[href$="/support"]').first()).toBeVisible();
+  await expect(page.locator('footer a[href="/terms"], footer a[href$="/terms"]').first()).toBeVisible();
+  await expect(page.locator('footer a[href="/privacy"], footer a[href$="/privacy"]').first()).toBeVisible();
 });
