@@ -1,0 +1,137 @@
+name: Production Audit (Playwright Invariants)
+
+on:
+  schedule:
+    # Twice daily (UTC). Adjust later if needed.
+    - cron: "15 12,0 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+  actions: read
+
+concurrency:
+  group: production-audit
+  cancel-in-progress: false
+
+jobs:
+  prod_audit:
+    name: Production Audit (https)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Install Playwright browsers
+        run: |
+          npx playwright install --with-deps
+
+      - name: Set production BASE_URL
+        id: base
+        run: |
+          if [ ! -f scripts/ci/production_base_url.txt ]; then
+            echo "Missing scripts/ci/production_base_url.txt"
+            exit 1
+          fi
+          BASE_URL="$(cat scripts/ci/production_base_url.txt | tr -d '\r\n' | sed -E 's/[[:space:]]+$//')"
+          if [ -z "$BASE_URL" ]; then
+            echo "Empty production BASE_URL"
+            exit 1
+          fi
+          echo "BASE_URL=$BASE_URL"
+          echo "base_url=$BASE_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Run Playwright invariants against production
+        id: test
+        env:
+          BASE_URL: ${{ steps.base.outputs.base_url }}
+        run: |
+          npx playwright test --reporter=html
+        continue-on-error: true
+
+      - name: Upload Playwright report (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-production
+          path: playwright-report
+          if-no-files-found: warn
+
+      - name: Fail job if tests failed
+        id: failcheck
+        run: |
+          if [ "${{ steps.test.outcome }}" = "success" ]; then
+            echo "tests_failed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "tests_failed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open/Update issue on failure (no auto-fix)
+        if: steps.failcheck.outputs.tests_failed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const baseUrl = "${{ steps.base.outputs.base_url }}";
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const title = "Production Audit Failed (Playwright Invariants)";
+            const body =
+`Production audit failed.
+
+Base URL: ${baseUrl}
+Run: ${runUrl}
+
+Artifact:
+- "playwright-report-production" (download from the run)
+
+Next steps:
+- Review the HTML report, identify failing invariants, and fix via PR.
+- Do NOT hot-patch main.`;
+
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              per_page: 100
+            });
+
+            const existing = issues.find(i => i.title === title);
+
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ["change-ops"]
+              });
+            }
+
+      - name: Hard fail workflow on test failure
+        if: steps.failcheck.outputs.tests_failed == 'true'
+        run: |
+          echo "Production audit failed."
+          exit 1
