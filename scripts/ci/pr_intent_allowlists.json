@@ -54,6 +54,8 @@
 				"package-lock.json",
 				"wrangler.toml",
 				"next.config.ts",
+				"playwright.config.ts",
+				"tests/",
 				".node-version",
 				".nvmrc",
 				".npmrc",
