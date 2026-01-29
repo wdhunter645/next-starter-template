@@ -1,0 +1,49 @@
+name: ZIP History Audit (Full History)
+
+on:
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: zip-history-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan full git history for ZIPs
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Scanning entire git history for *.zip ..."
+
+          # List any ZIP paths that appear anywhere in history (deduped).
+          FOUND="$(git log --all --name-only --pretty=format: -- "*.zip" | sed '/^\s*$/d' | sort -u || true)"
+
+          if [ -n "$FOUND" ]; then
+            echo ""
+            echo "ERROR: ZIP files detected in ENTIRE git history."
+            echo ""
+            echo "ZIP paths found:"
+            echo "$FOUND"
+            echo ""
+            echo "REQUIRED REMEDIATION:"
+            echo "Run the manual workflow to purge ZIPs from history:"
+            echo "Actions -> Purge ZIPs from Git History (FORCE PUSH) -> Run workflow"
+            echo ""
+            echo "DO NOT attempt to fix this with a normal PR commit. This requires history rewrite."
+            exit 1
+          fi
+
+          echo "OK: No ZIPs found anywhere in git history."

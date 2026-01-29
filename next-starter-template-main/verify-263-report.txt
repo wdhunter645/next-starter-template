@@ -1,0 +1,21 @@
+[FILE] docs/lgfc-homepage-legacy-v6.html                          OK
+[FILE] docs/website-PR-process.md                                 OK
+[FILE] docs/website-PR-governance.md                              OK
+[FILE] src/app/globals.css                                        OK
+[CHECK] src/app/globals.css :: --lgfc-blue\s*:\s*#0033cc          FAIL
+[CHECK] src/app/globals.css :: \.section-gap\s*{\s*margin-block:\s*var\(--section-gap\) FAIL
+[CHECK] src/app/globals.css :: \.title-lgfc\s*{[^}]*text-align:\s*center FAIL
+[CHECK] src/app/globals.css :: \.joinBanner\s*{[^}]*background:\s*var\(--lgfc-blue\) FAIL
+[CHECK] src/app/globals.css :: \.topWhitespace\s*{\s*height:\s*72px FAIL
+[FILE] src/components/Header.tsx                                  OK
+[CHECK] Header.tsx no sticky                                      OK
+[CHECK] src/components/Header.tsx :: position:\s*absolute.*top:\s*12px.*left:\s*16px FAIL
+[CHECK] src/components/Header.tsx :: position:\s*absolute.*top:\s*12px.*right:\s*16px FAIL
+[CHECK] src/components/Header.tsx :: <div className="topWhitespace" OK
+[FILE] src/components/WeeklyMatchup.tsx                           OK
+[CHECK] src/components/WeeklyMatchup.tsx :: <h2[^>]*className=.*title-lgfc.*>Weekly Photo Matchup\. Vote for your favorite!</h2> OK
+[FILE] src/app/page.tsx                                           OK
+[CHECK] page.tsx section-gap wrappers (>=5)                       FAIL [4 found]
+[CHECK] src/app/page.tsx :: Become a member\. Get access to the Gehrig library, media archive, memorabilia archive, group discussions, and more\. OK
+[CHECK] src/app/page.tsx :: className=.*joinBanner.*section-gap   FAIL
+[CHECK] src/app/page.tsx :: elfsight-app-[A-F0-9-]{36}            FAIL

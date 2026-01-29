@@ -1,0 +1,50 @@
+name: Post-Recovery Verification (PR #425)
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'scripts/post-recovery-425-verify.sh'
+      - 'docs/verification/post-recovery-425.md'
+      - '.github/workflows/post-recovery-425-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  verify-post-recovery:
+    name: Run Post-Recovery Verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+          cache: 'npm'
+      
+      - name: Run verification script (build checks only)
+        run: |
+          bash scripts/post-recovery-425-verify.sh
+        shell: bash
+        
+      - name: Verification Summary
+        if: always()
+        run: |
+          echo "## Post-Recovery Verification Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.head_ref || github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✓ Build checks completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> Note: Endpoint checks require preview URL and should be run manually:" >> $GITHUB_STEP_SUMMARY
+          echo "> \`bash scripts/post-recovery-425-verify.sh <PREVIEW_URL>\`" >> $GITHUB_STEP_SUMMARY

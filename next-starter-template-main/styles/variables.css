@@ -1,0 +1,14 @@
+:root {
+  /* LGFC palette */
+  --lgfc-blue: #002868;       /* Primary blue */
+  --lgfc-red: #BF0A30;        /* Accent red */
+  --lgfc-offwhite: #F8F9FA;   /* Off-white background */
+  --lgfc-charcoal: #212529;   /* Text */
+  --lgfc-divider: #DEE2E6;    /* Light gray */
+  --lgfc-gold: #CBA135;       /* Optional accent */
+
+  /* Header sizing */
+  --header-height: 28px;
+  --notice-height: 32px;
+  --container-max: 1200px;
+}
