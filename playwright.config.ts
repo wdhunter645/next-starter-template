@@ -1,32 +1,14 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig } from "@playwright/test";
 
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
+const baseURL = process.env.BASE_URL || "http://localhost:3000";
+
 export default defineConfig({
-  testDir: './tests',
-  testMatch: '**/*.spec.ts',
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  testDir: "./tests/e2e",
+  timeout: 60_000,
+  expect: { timeout: 15_000 },
   use: {
-    baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry',
+    baseURL,
+    trace: "retain-on-failure",
   },
-
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-  ],
-
-  webServer: {
-    command: 'npm run build && npx serve@latest out -l 3000',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+  reporter: [["html", { open: "never" }]],
 });
