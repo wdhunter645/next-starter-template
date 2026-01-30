@@ -91,7 +91,7 @@ jobs:
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const title = "Production Audit Failed (Playwright Invariants)";
             const body =
-Production audit failed.
+"Production audit failed."
 
 Base URL: ${baseUrl}
 Run: ${runUrl}
