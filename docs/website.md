@@ -95,6 +95,11 @@ For any PR affecting the homepage or Social Wall:
 3. Commit only the extracted/modified files
 4. Verify with `git ls-files '*.zip' '*.ZIP'` before pushing
 
+**Accessing GitHub Release ZIPs:**
+- GitHub release assets can be accessed directly via their URL (e.g., `https://github.com/wdhunter645/next-starter-template/releases/download/zip43A/repo43A-updated-PREFLIGHTED.zip`)
+- curl is **not required** — the release can be downloaded directly in a browser or accessed programmatically
+- When using release ZIPs for deployment: download to `/tmp` or a temporary location, extract, apply changes, then delete the ZIP before committing
+
 **If ZIP taint detected:**
 1. Close the tainted PR (do NOT try to fix with commits)
 2. Create NEW branch from clean base
