@@ -90,18 +90,19 @@ jobs:
             const baseUrl = "${{ steps.base.outputs.base_url }}";
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const title = "Production Audit Failed (Playwright Invariants)";
-            const body =
-"Production audit failed."
+            
+            // FIX: We use backticks (`) here to allow multiple lines safely
+            const body = `Production audit failed.
 
-Base URL: ${baseUrl}
-Run: ${runUrl}
+            Base URL: ${baseUrl}
+            Run: ${runUrl}
 
-Artifact:
-- "playwright-report-production" (download from the run)
+            Artifact:
+            - "playwright-report-production" (download from the run)
 
-Next steps:
-- Review the HTML report, identify failing invariants, and fix via PR.
-- Do NOT hot-patch main.`;
+            Next steps:
+            - Review the HTML report, identify failing invariants, and fix via PR.
+            - Do NOT hot-patch main.`;
 
             const { data: issues } = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
@@ -117,14 +118,14 @@ Next steps:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: existing.number,
-                body
+                body: body
               });
             } else {
               await github.rest.issues.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                title,
-                body,
+                title: title,
+                body: body,
                 labels: ["change-ops"]
               });
             }
