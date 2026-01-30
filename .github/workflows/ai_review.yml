@@ -10,7 +10,7 @@ jobs:
 
       - name: Ask Hugging Face to Review
         run: |
-          curl https://api-inference.huggingface.co/models/bigcode/starcoder2-15b \
+          curl https://router.huggingface.co/hf-inference/models/bigcode/starcoder2-15b
             -X POST \
             -d '{"inputs": "Review this code for bugs: ${{ github.event.head_commit.message }}"}' \
             -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}"
