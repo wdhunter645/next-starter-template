@@ -2,16 +2,16 @@ name: OpenCode Maintenance
 on:
   issue_comment:
     types: [created]
-  pull_request_review_comment:
-    types: [created]
+
 permissions:
-  id-token: write      # Required for the agent to authenticate
-  contents: write      # Required to push code changes
-  pull-requests: write # Required to create PRs
-  issues: write        # Required to comment on issues
+  id-token: write      # Fixes the OIDC token failure
+  contents: write      # Allows the agent to push code
+  pull-requests: write # Allows the agent to open PRs
+  issues: write        # Allows the agent to reply to your comments
 
 jobs:
   opencode:
+    # Only runs if you comment /oc on an issue
     if: contains(github.event.comment.body, '/oc')
     runs-on: ubuntu-latest
     steps:
@@ -20,4 +20,5 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         with:
-          model: "Qwen/Qwen2.5-Coder-32B-Instruct" # A top-tier coding model
+          # Using the standardized identifier for the Hugging Face provider
+          model: "opencode/qwen-2.5-coder-32b" 
