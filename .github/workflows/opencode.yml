@@ -21,4 +21,4 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         with:
           # Using the standardized identifier for the Hugging Face provider
-          model: "opencode/qwen-2.5-coder-32b" 
+          model: "Qwen/Qwen2.5-Coder-7B-Instruct" 
