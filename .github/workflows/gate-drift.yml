@@ -53,11 +53,50 @@ jobs:
           chmod +x scripts/ci/verify_zip_history_pr.sh
           scripts/ci/verify_zip_history_pr.sh
 
-      - name: PR intent allowlist
+      - name: Wait for exactly one intent label (3 tries)
         if: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
         run: |
-          set -euo pipefail
-          node scripts/ci/verify_pr_intent_allowlist.mjs
+          set -e
+
+          intent_labels='["recovery","feature","docs-only","infra","platform","change-ops","codex"]'
+
+          fetch_intents () {
+            curl -sSf -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${REPO}/issues/${PR_NUMBER}/labels" \
+            | jq -r --argjson allowed "${intent_labels}" '
+                [.[].name | select(IN($allowed[]))] | unique | @json
+              '
+          }
+
+          attempts=0
+          while true; do
+            attempts=$((attempts+1))
+            intents_json="$(fetch_intents)"
+            intents_count="$(echo "${intents_json}" | jq -r 'length')"
+
+            echo "Detected intent labels: ${intents_json}"
+
+            if [ "${intents_count}" -eq 1 ]; then
+              echo "OK: Exactly one intent label present."
+              exit 0
+            fi
+
+            if [ "${attempts}" -ge 3 ]; then
+              echo "ERROR: PR must include exactly ONE intent label."
+              echo "Allowed intent labels: recovery, feature, docs-only, infra, platform, change-ops, codex"
+              echo "Found: ${intents_json}"
+              exit 1
+            fi
+
+            if [ "${attempts}" -eq 1 ]; then sleep 10; fi
+            if [ "${attempts}" -eq 2 ]; then sleep 20; fi
+          done
 
       - name: Critical LGFC invariants
         run: |
