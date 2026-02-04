@@ -11,6 +11,8 @@ on:
 jobs:
   retry-on-internal-error:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     env:
       CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
