@@ -43,15 +43,22 @@ test("Logged-out header/footer contain required navigation targets (sanity)", as
   const header = page.locator("header");
   await expect(header).toBeVisible();
 
-  await expect(page.locator('a[href="/join"], a[href$="/join"]')).toHaveCountGreaterThan(0);
-  await expect(page.locator('a[href="/login"], a[href$="/login"]')).toHaveCountGreaterThan(0);
-  await expect(page.locator('a[href="/search"], a[href$="/search"]')).toHaveCountGreaterThan(0);
+  const joinLinkCount = await page.locator('a[href="/join"], a[href$="/join"]').count();
+  expect(joinLinkCount).toBeGreaterThan(0);
+  const loginLinkCount = await page.locator('a[href="/login"], a[href$="/login"]').count();
+  expect(loginLinkCount).toBeGreaterThan(0);
+  const searchLinkCount = await page.locator('a[href="/search"], a[href$="/search"]').count();
+  expect(searchLinkCount).toBeGreaterThan(0);
 
   const footer = page.locator("footer");
   await expect(footer).toBeVisible();
 
-  await expect(page.locator('footer a[href="/contact"], footer a[href$="/contact"]')).toHaveCountGreaterThan(0);
-  await expect(page.locator('footer a[href="/support"], footer a[href$="/support"]')).toHaveCountGreaterThan(0);
-  await expect(page.locator('footer a[href="/terms"], footer a[href$="/terms"]')).toHaveCountGreaterThan(0);
-  await expect(page.locator('footer a[href="/privacy"], footer a[href$="/privacy"]')).toHaveCountGreaterThan(0);
+  const contactLinkCount = await page.locator('footer a[href="/contact"], footer a[href$="/contact"]').count();
+  expect(contactLinkCount).toBeGreaterThan(0);
+  const supportLinkCount = await page.locator('footer a[href="/support"], footer a[href$="/support"]').count();
+  expect(supportLinkCount).toBeGreaterThan(0);
+  const termsLinkCount = await page.locator('footer a[href="/terms"], footer a[href$="/terms"]').count();
+  expect(termsLinkCount).toBeGreaterThan(0);
+  const privacyLinkCount = await page.locator('footer a[href="/privacy"], footer a[href$="/privacy"]').count();
+  expect(privacyLinkCount).toBeGreaterThan(0);
 });

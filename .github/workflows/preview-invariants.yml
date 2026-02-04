@@ -1,8 +1,7 @@
 name: Preview Invariants (Cloudflare Pages)
 
+# TEMP DISABLED (manual only): This workflow is not production-configured and is currently disruptive/noisy. Re-enable only when fully configured and correctly placed in the ops pipeline.
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch: {}
 
 permissions:
