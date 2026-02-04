@@ -1,0 +1,210 @@
+name: OPS — Main Change Monitor
+
+# Purpose: Detect and alert on unapproved direct pushes to main branch
+# - Merged PRs: INFO-only logging (SUCCESS)
+# - Direct pushes: Create issue + FAIL (triggers notifications)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  monitor-main-changes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 10
+      
+      - name: Check if commit is from merged PR
+        id: check_pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const sha = context.sha;
+            const actor = context.actor;
+            
+            console.log(`Checking commit: ${sha}`);
+            console.log(`Actor: ${actor}`);
+            
+            // Search for PRs that were merged with this commit
+            const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: sha
+            });
+            
+            const mergedPRs = prs.filter(pr => pr.merged_at);
+            
+            if (mergedPRs.length > 0) {
+              const pr = mergedPRs[0];
+              console.log(`✅ Commit is from merged PR #${pr.number}: ${pr.title}`);
+              core.setOutput('is_pr_merge', 'true');
+              core.setOutput('pr_number', pr.number);
+              core.setOutput('pr_title', pr.title);
+              core.setOutput('pr_url', pr.html_url);
+            } else {
+              console.log(`⚠️  Commit is NOT from a merged PR`);
+              core.setOutput('is_pr_merge', 'false');
+            }
+            
+            core.setOutput('sha', sha);
+            core.setOutput('actor', actor);
+      
+      - name: Get changed files
+        id: files
+        run: |
+          # Get list of changed files in this commit
+          FILES=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | head -50)
+          echo "Changed files:"
+          echo "$FILES"
+          
+          # Save to output (escape newlines for GitHub Actions)
+          FILES_ESCAPED=$(echo "$FILES" | sed ':a;N;$!ba;s/\n/, /g')
+          echo "files=$FILES_ESCAPED" >> $GITHUB_OUTPUT
+      
+      - name: Log approved PR merge (INFO)
+        if: steps.check_pr.outputs.is_pr_merge == 'true'
+        run: |
+          echo "## ✅ Approved Change to Main" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Type:** Merged Pull Request" >> $GITHUB_STEP_SUMMARY
+          echo "**PR:** #${{ steps.check_pr.outputs.pr_number }} - ${{ steps.check_pr.outputs.pr_title }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Link:** ${{ steps.check_pr.outputs.pr_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ steps.check_pr.outputs.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Actor:** ${{ steps.check_pr.outputs.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Changed files:** ${{ steps.files.outputs.files }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "This change went through the standard PR review process. No action required." >> $GITHUB_STEP_SUMMARY
+      
+      - name: Create issue for unapproved change
+        if: steps.check_pr.outputs.is_pr_merge != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const sha = '${{ steps.check_pr.outputs.sha }}';
+            const actor = '${{ steps.check_pr.outputs.actor }}';
+            const files = '${{ steps.files.outputs.files }}';
+            const compareUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/commit/${sha}`;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            
+            // Get admin GitHub usernames from repo variable or use default
+            let admins = [];
+            try {
+              const { data: variable } = await github.rest.actions.getRepoVariable({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'ADMIN_GITHUB_LOGINS'
+              });
+              admins = variable.value.split(',').map(u => u.trim()).filter(u => u);
+            } catch (error) {
+              console.log('ADMIN_GITHUB_LOGINS variable not found, using default');
+              admins = ['wdhunter645']; // Default admin
+            }
+            
+            const mentions = admins.map(u => `@${u}`).join(' ');
+            
+            const title = '⚠️ Unapproved change detected on main';
+            const label = 'unapproved-main-change';
+            
+            const body = `## ⚠️ Unapproved Change Detected on Main Branch
+            
+            ${mentions} - Action required
+            
+            A commit was pushed directly to \`main\` without going through the pull request review process.
+            
+            ### Change Details
+            - **Commit:** [\`${sha.substring(0, 7)}\`](${compareUrl})
+            - **Actor:** @${actor}
+            - **Timestamp:** ${new Date().toISOString()}
+            - **Workflow Run:** [View logs](${runUrl})
+            
+            ### Changed Files
+            ${files || 'Unable to retrieve file list'}
+            
+            ### Required Actions
+            1. **Review the commit** to determine if the change is authorized
+            2. **If unauthorized:**
+               - Revert the commit immediately
+               - Investigate how the direct push occurred
+               - Ensure branch protection rules are properly configured
+            3. **If authorized (emergency hotfix):**
+               - Document the justification in this issue
+               - Create a follow-up PR to validate the changes
+            4. **Close this issue** once the situation is resolved
+            
+            ### Next Steps
+            - Review the [commit diff](${compareUrl})
+            - Check branch protection settings
+            - Verify required status checks are configured
+            
+            ---
+            
+            This issue was automatically created by the \`OPS — Main Change Monitor\` workflow.
+            `;
+            
+            // Check for existing open issue
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: label
+            });
+            
+            if (issues.length > 0) {
+              // Update existing issue with new occurrence
+              const updateComment = `### 🔄 New Unapproved Change Detected
+              
+              - **Commit:** [\`${sha.substring(0, 7)}\`](${compareUrl})
+              - **Actor:** @${actor}
+              - **Timestamp:** ${new Date().toISOString()}
+              - **Changed Files:** ${files || 'Unable to retrieve file list'}
+              `;
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issues[0].number,
+                body: updateComment
+              });
+              
+              console.log(`Updated existing issue #${issues[0].number}`);
+            } else {
+              // Create new issue
+              const issue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: [label]
+              });
+              
+              console.log(`Created new issue #${issue.data.number}`);
+            }
+      
+      - name: Fail workflow for unapproved change
+        if: steps.check_pr.outputs.is_pr_merge != 'true'
+        run: |
+          echo "## ❌ Unapproved Change Detected" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Type:** Direct push to main (NOT from a merged PR)" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ steps.check_pr.outputs.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Actor:** ${{ steps.check_pr.outputs.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Changed files:** ${{ steps.files.outputs.files }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️  This change did NOT go through the standard PR review process." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "An issue has been created to track this unapproved change." >> $GITHUB_STEP_SUMMARY
+          echo "Review the issue and take appropriate action." >> $GITHUB_STEP_SUMMARY
+          
+          echo "❌ FAILURE: Unapproved change to main branch"
+          exit 1

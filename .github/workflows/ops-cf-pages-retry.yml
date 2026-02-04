@@ -1,0 +1,98 @@
+name: OPS — Cloudflare Pages Auto-Retry
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_id:
+        description: 'Deployment ID to retry (optional - if not provided, will find latest failed deployment)'
+        required: false
+        type: string
+
+jobs:
+  retry-on-internal-error:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CF_PAGES_PROJECT: ${{ secrets.CLOUDFLARE_PAGES_PROJECT || 'next-starter-template' }}
+      DEPLOYMENT_ID: ${{ inputs.deployment_id }}
+      MAX_RETRIES: '2'
+    steps:
+      - name: Guard secrets
+        run: |
+          if [ -z "$CF_API_TOKEN" ] || [ -z "$CF_ACCOUNT_ID" ]; then
+            echo "❌ Missing required secrets (CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID)"
+            exit 1
+          fi
+          if [ -z "$CF_PAGES_PROJECT" ]; then
+            echo "Warning: CLOUDFLARE_PAGES_PROJECT not set, using default 'next-starter-template'"
+          fi
+      
+      - name: Fetch deployment to retry
+        id: deployment
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq jq >/dev/null
+          
+          if [ -n "$DEPLOYMENT_ID" ]; then
+            # Use provided deployment ID
+            echo "Using provided deployment ID: $DEPLOYMENT_ID"
+            echo "id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+          else
+            # Find latest failed deployment
+            echo "Finding latest failed deployment..."
+            url="https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/pages/projects/$CF_PAGES_PROJECT/deployments?per_page=20"
+            resp=$(curl -fsSL -H "Authorization: Bearer $CF_API_TOKEN" "$url")
+            echo "$resp" | jq '.' >/dev/null || { echo "❌ No JSON from CF API"; exit 1; }
+            
+            # Find first deployment with failed deploy stage
+            id=$(echo "$resp" | jq -r '.result[] | select(.latest_stage.name == "deploy" and .latest_stage.status == "failure") | .id' | head -1)
+            
+            if [ -z "$id" ]; then
+              echo "ℹ️  No failed deployments found. Nothing to retry."
+              exit 0
+            fi
+            
+            echo "Found failed deployment: $id"
+            echo "id=$id" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Retry deployment
+        if: steps.deployment.outputs.id != ''
+        run: |
+          dep_id="${{ steps.deployment.outputs.id }}"
+          echo "Retrying deployment: $dep_id"
+          
+          for i in $(seq 1 "$MAX_RETRIES"); do
+            echo ""
+            echo "=== Retry attempt #$i ==="
+            
+            curl -fsS -X POST \
+              -H "Authorization: Bearer $CF_API_TOKEN" \
+              -H "Content-Type: application/json" \
+              "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/pages/projects/$CF_PAGES_PROJECT/deployments/$dep_id/retry" \
+              || { echo "⚠️  Retry API call failed"; continue; }
+            
+            # Wait and check status
+            echo "Waiting 15 seconds for deployment to process..."
+            sleep 15
+            
+            status=$(curl -fsSL -H "Authorization: Bearer $CF_API_TOKEN" \
+              "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/pages/projects/$CF_PAGES_PROJECT/deployments/$dep_id" \
+              | jq -r '.result.latest_stage.status // empty')
+            
+            echo "Latest stage status: $status"
+            
+            if [ "$status" = "success" ]; then
+              echo "✅ Deployment recovered on retry #$i"
+              exit 0
+            elif [ "$status" = "active" ]; then
+              echo "🔄 Deployment is in progress, waiting..."
+              sleep 15
+            fi
+          done
+          
+          echo "⚠️  Still failing after $MAX_RETRIES retry attempts"
+          echo "This likely indicates a persistent Cloudflare-side issue or a legitimate build failure."
+          exit 1
