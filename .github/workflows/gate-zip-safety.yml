@@ -1,16 +1,16 @@
-name: Block ZIP Artifacts
+name: GATE — ZIP Safety
 
 on:
   pull_request:
     branches:
       - main
-      - develop
+
+permissions:
+  contents: read
 
 jobs:
   check-no-zip-files:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

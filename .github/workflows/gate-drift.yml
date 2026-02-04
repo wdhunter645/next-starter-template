@@ -1,4 +1,4 @@
-name: Drift Gate (Lean)
+name: GATE — Drift Control
 
 on:
   pull_request:
