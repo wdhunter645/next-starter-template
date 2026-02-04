@@ -1,5 +1,13 @@
 ### PR Template (REVISED — DESIGN COMPLIANCE GATES ARE MANDATORY)
 
+### ISSUE (REQUIRED)
+
+- **Issue:** <paste GitHub Issue link here if it already exists>
+
+If the Issue link is blank when this PR is opened, the repo automation will create a work-tracking Issue and comment the link on this PR. The PR should then be updated to reference that Issue.
+
+---
+
 #### Reference
 Refer to `/docs/website.md` for required structure and change conventions.
 Then follow `/docs/website-process.md` for operational, rollback, and testing standards.
