@@ -1,5 +1,7 @@
 # Troubleshooting Guide
 
+**Backup/restore reference:** `docs/backup.md` (restore sources) and `docs/RECOVERY.md` (restore procedure).
+
 ## Git Authentication Issues
 
 ### GitHub Codespaces: Cannot Push Changes
@@ -79,7 +81,7 @@ When pushing, use your GitHub username and PAT (not password).
 
 ```bash
 # Save work immediately
-git add . && git commit -m "WIP: saving before recovery"
+git add . && git commit -m "checkpoint: save before recovery"
 
 # Kill hung processes
 pkill -9 node

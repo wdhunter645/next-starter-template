@@ -1,5 +1,7 @@
 # Recovery and Rollback Procedures
 
+**Backup policy:** See `docs/backup.md` for cadence, retention (6 weekly snapshots), and artifact expectations.
+
 This document describes procedures for recovering from repository issues using snapshots and git commands.
 
 ## Overview

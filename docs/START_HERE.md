@@ -36,3 +36,55 @@ Set these in Cloudflare Pages project environment variables (NOT in the repo):
   - Returns session information for authenticated members
 - Both pages are accessible to visitors (non-authenticated users)
 - JOIN and LOGIN buttons appear in the visitor header (desktop/tablet)
+
+
+## FINAL AUTHORITATIVE DOCUMENT SET (DAY 1)
+
+Day 1 is considered complete only when the documents below are present, fully written, and consistent with implementation.
+
+### Entry & Authority
+- `docs/START_HERE.md`
+- `docs/ProjectPlan.md`
+
+### Architecture & Design
+- `docs/ARCHITECTURE_OVERVIEW.md`
+- `docs/LGFC-Production-Design-and-Standards.md`
+- `docs/NAVIGATION-INVARIANTS.md`
+
+### Governance & Workflow
+- `docs/website.md`
+- `docs/website-process.md`
+- `docs/website-PR-governance.md`
+- `docs/PR-DRAFT-TEMPLATE.md`
+- `Agent.md`
+
+### Operations & Reliability
+- `docs/OPERATING_MANUAL.md`
+- `docs/backup.md`
+- `docs/RECOVERY.md`
+- `docs/TROUBLESHOOTING.md`
+- `docs/ci-inventory.md`
+
+### Content (Day 1 Launch)
+- `docs/CONTENT_COLLECTION.md`
+- `docs/CONTENT_USAGE_GUIDE.md`
+
+### Day 1 Required Feature Docs
+- `docs/phase-6-email.md`
+- `docs/phase-7-guardrails.md`
+- `docs/b2-d1-sync-pipeline.md`
+
+### Roadmaps (Future Work)
+- `docs/Day2.md`
+- `docs/Day3.md`
+
+
+## Documentation Hierarchy Strategy (Post Day 1)
+
+After Day 1 is stable in production, documentation will transition from project-oriented naming to ops-oriented naming and hierarchy. No files are deleted during transition; consolidation is performed by moving authoritative content into the ops hierarchy and retaining historical materials under `docs/archive/`.
+
+Planned evolution:
+- Roadmaps consolidate into `Roadmap.md`
+- Active priorities consolidate into `ActiveTasklist.md`
+- Operational procedures consolidate into `Operations.md`
+- Continuous improvement log consolidates into `Improvements.md`
