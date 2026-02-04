@@ -1,4 +1,4 @@
-name: Design Compliance Audit (Alert-Only)
+name: OPS — Design Compliance Audit
 
 # Purpose: Monitor and report misalignment between as-built production behavior
 # and documented design expectations.
@@ -6,13 +6,9 @@ name: Design Compliance Audit (Alert-Only)
 # - Alert-only: always green ✅ regardless of audit results
 # - Non-blocking: NOT added to required PR checks
 # - Observability-only: no auto-fixing, no commits from CI
-# - PR runs: SKIPPED (no preview URL; no production fallback)
 # - Production runs: main branch, nightly schedule, manual dispatch
 
 on:
-  pull_request:
-    branches:
-      - '**'
   push:
     branches:
       - main
@@ -41,25 +37,14 @@ jobs:
       - name: Determine target URL
         id: target
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            # For PRs, we need the Cloudflare preview URL
-            # Since we don't have access to it yet, SKIP the audit
-            echo "skip=true" >> $GITHUB_OUTPUT
-            echo "context=PR (preview URL not available - skipping audit)" >> $GITHUB_OUTPUT
-            echo "url=" >> $GITHUB_OUTPUT
-            echo "Skipping audit for PR - preview URL integration not yet implemented"
-          else
-            # For main branch and nightly runs, use production
-            TARGET_URL="https://www.lougehrigfanclub.com"
-            echo "skip=false" >> $GITHUB_OUTPUT
-            echo "context=production" >> $GITHUB_OUTPUT
-            echo "url=$TARGET_URL" >> $GITHUB_OUTPUT
-            echo "Testing against: $TARGET_URL (${{ github.event_name }})"
-          fi
+          # For main branch and nightly runs, use production
+          TARGET_URL="https://www.lougehrigfanclub.com"
+          echo "context=production" >> $GITHUB_OUTPUT
+          echo "url=$TARGET_URL" >> $GITHUB_OUTPUT
+          echo "Testing against: $TARGET_URL (${{ github.event_name }})"
       
       - name: Run design compliance audit
         id: audit
-        if: steps.target.outputs.skip != 'true'
         continue-on-error: true
         env:
           TARGET_URL: ${{ steps.target.outputs.url }}
@@ -83,16 +68,12 @@ jobs:
         run: |
           echo "## Design Compliance Audit Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Target URL:** ${{ steps.target.outputs.url || 'N/A' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Target URL:** ${{ steps.target.outputs.url }}" >> $GITHUB_STEP_SUMMARY
           echo "**Context:** ${{ steps.target.outputs.context }}" >> $GITHUB_STEP_SUMMARY
           echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          if [ "${{ steps.target.outputs.skip }}" = "true" ]; then
-            echo "⏭️ **Status:** Audit skipped (preview URL not available for PRs)" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "The audit will run automatically once Cloudflare preview URL integration is implemented." >> $GITHUB_STEP_SUMMARY
-          elif [ "${{ steps.audit.outcome }}" = "success" ]; then
+          if [ "${{ steps.audit.outcome }}" = "success" ]; then
             echo "✅ **Status:** All checks passed" >> $GITHUB_STEP_SUMMARY
           elif [ "${{ steps.audit.outcome }}" = "failure" ]; then
             echo "⚠️ **Status:** Mismatches detected (see job logs and artifact for details)" >> $GITHUB_STEP_SUMMARY
