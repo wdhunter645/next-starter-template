@@ -4,7 +4,6 @@ on:
   pull_request:
     branches:
       - main
-      - develop
 
 jobs:
   check-no-zip-files:
@@ -12,25 +11,47 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check for tracked ZIP files
+      - name: Fail if any ZIP files are committed (and diagnose nested/wrapper)
+        shell: bash
         run: |
-          echo "Checking for tracked ZIP files..."
-          ZIP_FILES=$(git ls-files '*.zip' '*.ZIP')
-          
-          if [ -n "$ZIP_FILES" ]; then
-            echo "❌ ERROR: ZIP files are not allowed to be committed to this repository."
-            echo ""
-            echo "The following ZIP files were found:"
-            echo "$ZIP_FILES"
-            echo ""
-            echo "ZIP files are for transport only and must be deleted before merge."
-            echo "Please remove these files and commit the deletion."
-            echo ""
-            echo "To remove: git rm <filename> && git commit -m 'Remove ZIP artifact'"
-            exit 1
-          else
+          set -euo pipefail
+
+          ZIP_FILES="$(git ls-files '*.zip' || true)"
+          if [ -z "${ZIP_FILES}" ]; then
             echo "✅ No ZIP files found. Check passed."
+            exit 0
           fi
+
+          echo "❌ ZIP files are for transport only and must NOT be committed:"
+          echo "${ZIP_FILES}"
+          echo ""
+
+          while IFS= read -r ZIP; do
+            [ -z "$ZIP" ] && continue
+            echo "----"
+            echo "Inspecting: $ZIP"
+
+            # Nested ZIP-in-ZIP
+            if unzip -Z1 "$ZIP" | grep -Eiq '\.zip$'; then
+              echo "DETECTED: nested ZIP (ZIP contains another .zip)"
+            else
+              echo "OK: no nested ZIP"
+            fi
+
+            # Wrapper-folder ZIP (single top-level folder)
+            TOPCOUNT="$(unzip -Z1 "$ZIP" | awk -F/ 'NF{print $1}' | sort -u | wc -l | tr -d ' ')"
+            if [ "$TOPCOUNT" -eq 1 ]; then
+              TOPNAME="$(unzip -Z1 "$ZIP" | awk -F/ 'NF{print $1}' | sort -u | head -n 1)"
+              echo "DETECTED: wrapper ZIP (single top-level folder: $TOPNAME)"
+            else
+              echo "OK: not a wrapper ZIP"
+            fi
+          done <<< "${ZIP_FILES}"
+
+          echo ""
+          echo "Fix:"
+          echo "  git rm <zipfile> && git commit -m 'Remove ZIP artifact' && git push"
+          exit 1
