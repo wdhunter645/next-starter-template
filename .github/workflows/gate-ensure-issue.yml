@@ -2,7 +2,7 @@ name: gate-ensure-issue
 
 on:
   pull_request_target:
-    types: [opened, edited, reopened]
+    types: [opened, reopened]
 
 permissions:
   issues: write
@@ -12,6 +12,9 @@ permissions:
 jobs:
   ensure-issue:
     runs-on: ubuntu-latest
+    concurrency:
+      group: gate-ensure-issue-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     steps:
       - name: Ensure PR references an Issue (auto-create if missing)
         uses: actions/github-script@v7
@@ -38,6 +41,59 @@ jobs:
               return;
             }
 
+
+            // Dedupe guard: ensure we only ever have ONE work-tracking Issue per PR.
+            // Search for an existing Issue with a deterministic title key.
+            const issueKey = `[Work][PR #${prNumber}]`;
+
+            const findExisting = async (state) => {
+              const q = `repo:${owner}/${repo} type:issue in:title "${issueKey}" state:${state}`;
+              const res = await github.rest.search.issuesAndPullRequests({ q, per_page: 5 });
+              return (res.data.items || []).find(i => i.pull_request === undefined) || null;
+            };
+
+            let existingIssue = await findExisting("open");
+            if (!existingIssue) {
+              // If it exists but is closed (e.g., PR reopened), reopen it instead of creating a duplicate.
+              const closed = await findExisting("closed");
+              if (closed) {
+                await github.rest.issues.update({
+                  owner,
+                  repo,
+                  issue_number: closed.number,
+                  state: "open",
+                });
+                existingIssue = await findExisting("open");
+              }
+            }
+
+            if (existingIssue) {
+              const issueUrl = existingIssue.html_url;
+
+              core.info(`Existing work-tracking Issue found: ${issueUrl}`);
+
+              // Best-effort: update PR body to include Issue link near the top (idempotent).
+              let newBody = body;
+              if (body.match(/- \*\*Issue:\*\*/i)) {
+                newBody = body.replace(/- \*\*Issue:\*\*.*$/im, `- **Issue:** ${issueUrl}`);
+              } else {
+                newBody = `- **Issue:** ${issueUrl}\n\n` + body;
+              }
+
+              try {
+                await github.rest.pulls.update({
+                  owner,
+                  repo,
+                  pull_number: prNumber,
+                  body: newBody,
+                });
+              } catch (e) {
+                core.info("Unable to update PR body; existing Issue still linked by title key.");
+              }
+
+              return;
+            }
+
             // Build Issue body from PR content (full PR template content preserved).
             const issueBody =
               `Auto-created work-tracking Issue for PR #${prNumber}.\n\n` +
@@ -57,7 +113,7 @@ jobs:
                 const res = await github.rest.issues.create({
                   owner,
                   repo,
-                  title: `[Work] ${title}`,
+                  title: `[Work][PR #${prNumber}] ${title}`,
                   body: issueBody,
                 });
                 createdIssue = res.data;
@@ -131,7 +187,7 @@ jobs:
               owner,
               repo,
               issue_number: prNumber,
-              body: `✅ Work-tracking Issue auto-created: ${issueUrl}\n\nPlease edit this PR to add the Issue link in the "Issue:" field at the top.`,
+              body: `✅ Work-tracking Issue auto-created: ${issueUrl}\n\nThe PR body has been updated to include the Issue link in the "Issue:" field.`,
             });
 
             // Best-effort: update PR body to include Issue link near the top
