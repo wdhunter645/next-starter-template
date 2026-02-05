@@ -1,2 +1,0 @@
-# Roles
-Coordinator, Builder, Verifier.
