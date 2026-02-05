@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
 import "./../styles/variables.css";
+import TopNoticeBar from "../components/TopNoticeBar";
 import SiteHeader from "../components/SiteHeader";
 import Footer from "@/components/Footer";
 
@@ -23,6 +24,7 @@ export default function RootLayout({
 				data-use-service-core="true"
 			/>
 			<body className="antialiased">
+				<TopNoticeBar />
 				{/* Header: visitor vs member */}
 				<SiteHeader />
 				{/* Offset for sticky controls */}

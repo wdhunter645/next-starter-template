@@ -1,6 +1,47 @@
-# Home Page Design Specification
+# Home Page Design Specification (Authoritative)
 
-## Join CTA Section Contrast Requirements
+This document is the **single source of truth** for the public HOME page structure and section ordering.
+
+## Canonical Section Order (must match `src/app/page.tsx`)
+
+1) Hero Banner  
+2) Weekly Photo Matchup  
+3) Join CTA  
+4) Social Wall  
+5) Recent Discussions (teaser)  
+6) Friends of the Fan Club  
+7) Milestones  
+8) Calendar  
+9) FAQ
+
+## Section-to-Component Map (code source of truth)
+
+- Hero Banner → `src/app/page.tsx` (hero header markup)
+- Weekly Photo Matchup → `src/components/WeeklyMatchup`
+- Join CTA → `src/components/JoinCTA`
+- Social Wall → `src/components/SocialWall`
+- Recent Discussions (teaser) → `src/components/RecentDiscussionsTeaser`
+- Friends of the Fan Club → `src/components/FriendsOfFanClub`
+- Milestones → `src/components/MilestonesSection`
+- Calendar → `src/components/CalendarSection`
+- FAQ → `src/components/FAQSection`
+
+## Documented-but-missing UI (must be implemented)
+
+### Optional Top Notice Bar (global, above header)
+A compact banner strip displayed **above the site header** on all public pages.
+
+- Component: `src/components/TopNoticeBar`
+- Mounted in: `src/app/layout.tsx` above `<SiteHeader />`
+- Copy:
+  - Left: "🎗️ 100% of proceeds support ALS research via ALS Cure Project."
+  - Right: "Learn more" link to `/charities`
+- Behavior:
+  - Always visible (until a future PR introduces a toggle)
+  - Must be keyboard accessible
+  - Must not shift layout unexpectedly (fixed height, predictable padding)
+
+## Join CTA Section Contrast Requirements (locked)
 
 ### Background Color
 The Join CTA section uses the LGFC blue brand color:
@@ -9,84 +50,16 @@ The Join CTA section uses the LGFC blue brand color:
 - **RGB Value**: `rgb(0, 51, 204)`
 
 ### Text Color Requirement
+All text within the Join CTA section MUST be white for proper contrast, including headings, body copy, and links.
 
-**All text within the Join CTA section MUST be white for proper contrast.**
-
-This applies to:
-1. **Section heading** (`<h2 class="section-title">`)
-2. **Body copy** (`.join-banner__text`)
-3. **Links and any inline text** within the blue background area
-
-### Implementation
-
-#### CSS Rule (Authoritative)
-```css
-.joinBanner {
-  background: var(--lgfc-blue);
-  color: #fff;
-  border-radius: var(--lgfc-radius-lg);
-  padding: 20px;
-}
-
-/* Force all text in joinBanner to white for proper contrast */
-.joinBanner h2,
-.joinBanner h3,
-.joinBanner h4,
-.joinBanner p,
-.joinBanner a,
-.joinBanner .section-title {
-  color: #fff !important;
-}
-```
-
-#### Component Structure
-```tsx
-<div className="joinBanner section-gap">
-  <h2 className="section-title">Join the Lou Gehrig Fan Club</h2>
-  <div className="join-banner__container">
-    <p className="join-banner__text">
-      Become a member. Get access to the Gehrig library, media archive, 
-      memorabilia archive, group discussions, and more.
-    </p>
-    <div className="join-banner__actions">
-      <a className="join-banner__btn" href="/join">Join</a>
-      <a className="join-banner__btn" href="/member">Login</a>
-    </div>
-  </div>
-</div>
-```
-
-### Rationale
-
-The WCAG 2.1 contrast ratio requirements mandate:
-- **Minimum contrast**: 4.5:1 for normal text
-- **Large text**: 3:1 for text 18pt+ or 14pt+ bold
-
-Blue background (`#0033cc`) with white text (`#ffffff`) provides:
-- **Contrast ratio**: ~8.6:1
-- **Result**: Passes WCAG AAA for both normal and large text
-
-### Common Issues to Avoid
-
-1. **Inherited heading colors**: The global `h2` style sets `color: var(--lgfc-blue)`, which would create blue-on-blue text if not overridden
-2. **Link color inheritance**: Default link colors may not have sufficient contrast
-3. **Missing specificity**: Generic text color rules may be overridden by more specific selectors
-
-### Testing
-
-Verify Join CTA text contrast by:
-1. Opening the home page
-2. Scrolling to the "Join the Lou Gehrig Fan Club" section
-3. Confirming:
-   - Section heading is white
-   - Body copy is white
-   - All text is readable against the blue background
+### Implementation (Authoritative)
+CSS must ensure headings do not inherit `var(--lgfc-blue)` on the blue background.
 
 ### Buttons Exception
+Join/Login buttons may use white backgrounds with dark text for hierarchy while maintaining contrast.
 
-The Join and Login buttons within the section have their own styling:
-- **Background**: White (`#fff`)
-- **Text color**: Black (`#000`)
-- **Border**: Semi-transparent white
-
-This provides visual hierarchy and clear call-to-action affordance while maintaining contrast.
+## Notes on Documentation Drift (tracked)
+The following sections exist on the HOME page and are now explicitly documented here:
+- Social Wall
+- Recent Discussions (teaser)
+If any future homepage sections are added, this document MUST be updated in the same PR.
