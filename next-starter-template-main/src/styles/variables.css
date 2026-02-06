@@ -1,0 +1,13 @@
+:root{
+  /* NOTE: Do NOT override canonical core tokens defined in src/app/globals.css.
+     This file is limited to supplemental tokens only. */
+
+  --lgfc-red:#BF0A30;
+  --lgfc-red-dark:#941b1b;
+  --lgfc-offwhite:#F8F9FA;
+  --lgfc-charcoal:#212529;
+  --lgfc-divider:#DEE2E6;
+  --container-max:1200px;
+  --font-head: "Georgia", "Times New Roman", serif;
+  --font-body: "Helvetica Neue", Arial, sans-serif;
+}

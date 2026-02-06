@@ -1,0 +1,65 @@
+# Home Page Design Specification (Authoritative)
+
+This document is the **single source of truth** for the public HOME page structure and section ordering.
+
+## Canonical Section Order (must match `src/app/page.tsx`)
+
+1) Hero Banner  
+2) Weekly Photo Matchup  
+3) Join CTA  
+4) Social Wall  
+5) Recent Discussions (teaser)  
+6) Friends of the Fan Club  
+7) Milestones  
+8) Calendar  
+9) FAQ
+
+## Section-to-Component Map (code source of truth)
+
+- Hero Banner → `src/app/page.tsx` (hero header markup)
+- Weekly Photo Matchup → `src/components/WeeklyMatchup`
+- Join CTA → `src/components/JoinCTA`
+- Social Wall → `src/components/SocialWall`
+- Recent Discussions (teaser) → `src/components/RecentDiscussionsTeaser`
+- Friends of the Fan Club → `src/components/FriendsOfFanClub`
+- Milestones → `src/components/MilestonesSection`
+- Calendar → `src/components/CalendarSection`
+- FAQ → `src/components/FAQSection`
+
+## Documented-but-missing UI (must be implemented)
+
+### Optional Top Notice Bar (global, above header)
+A compact banner strip displayed **above the site header** on all public pages.
+
+- Component: `src/components/TopNoticeBar`
+- Mounted in: `src/app/layout.tsx` above `<SiteHeader />`
+- Copy:
+  - Left: "🎗️ 100% of proceeds support ALS research via ALS Cure Project."
+  - Right: "Learn more" link to `/charities`
+- Behavior:
+  - Always visible (until a future PR introduces a toggle)
+  - Must be keyboard accessible
+  - Must not shift layout unexpectedly (fixed height, predictable padding)
+
+## Join CTA Section Contrast Requirements (locked)
+
+### Background Color
+The Join CTA section uses the LGFC blue brand color:
+- **CSS Variable**: `var(--lgfc-blue)`
+- **Hex Value**: `#0033cc`
+- **RGB Value**: `rgb(0, 51, 204)`
+
+### Text Color Requirement
+All text within the Join CTA section MUST be white for proper contrast, including headings, body copy, and links.
+
+### Implementation (Authoritative)
+CSS must ensure headings do not inherit `var(--lgfc-blue)` on the blue background.
+
+### Buttons Exception
+Join/Login buttons may use white backgrounds with dark text for hierarchy while maintaining contrast.
+
+## Notes on Documentation Drift (tracked)
+The following sections exist on the HOME page and are now explicitly documented here:
+- Social Wall
+- Recent Discussions (teaser)
+If any future homepage sections are added, this document MUST be updated in the same PR.

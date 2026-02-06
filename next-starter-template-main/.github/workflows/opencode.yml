@@ -1,0 +1,24 @@
+name: OpenCode Maintenance
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  id-token: write      # Fixes the OIDC token failure
+  contents: write      # Allows the agent to push code
+  pull-requests: write # Allows the agent to open PRs
+  issues: write        # Allows the agent to reply to your comments
+
+jobs:
+  opencode:
+    # Only runs if you comment /oc on an issue
+    if: contains(github.event.comment.body, '/oc')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: anomalyco/opencode/github@latest
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        with:
+          # Using the standardized identifier for the Hugging Face provider
+  model: "Qwen/Qwen2.5-Coder-32B-Instruct"

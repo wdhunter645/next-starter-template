@@ -1,0 +1,16 @@
+name: Legacy LGFC-main Workflow (Parked)
+
+# This workflow belonged to the pre-LGFC-Lite architecture (Next.js/Vercel).
+# It is intentionally disabled during the LGFC-Lite phase to avoid false failures.
+# When LGFC main resumes, replace this stub with a new implementation
+# aligned to the current architecture and the governance docs in /docs.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Legacy workflow parked
+        run: echo "Legacy LGFC-main workflow is parked; does not run automatically."

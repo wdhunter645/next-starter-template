@@ -1,0 +1,169 @@
+name: GATE — Drift Control
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled, ready_for_review]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+
+jobs:
+  drift-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Capture PR context (base/head/labels)
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          set -euo pipefail
+          echo "GITHUB_BASE_SHA=${{ github.event.pull_request.base.sha }}" >> $GITHUB_ENV
+          echo "GITHUB_HEAD_SHA=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
+          LABELS="$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH" | paste -sd, - || true)"
+          echo "GITHUB_PR_LABELS=$LABELS" >> $GITHUB_ENV
+          echo "Labels: $LABELS"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: ZIP guard (tree)
+        run: |
+          set -euo pipefail
+          if git ls-files | grep -Eim 1 '\.zip$'; then
+            echo "ERROR: ZIP file present in repo tree."
+            exit 1
+          fi
+          echo "OK: No ZIP in tree."
+
+      - name: ZIP guard (PR-range history)
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          set -euo pipefail
+          chmod +x scripts/ci/verify_zip_history_pr.sh
+          scripts/ci/verify_zip_history_pr.sh
+
+      - name: Wait for Intent Labeler to complete (PR head SHA)
+        if: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -e
+
+          echo "Waiting for Intent Labeler workflow to complete for SHA: ${HEAD_SHA}"
+          
+          # Poll for workflow run completion
+          attempts=0
+          max_attempts=6
+          sleep_interval=30
+          
+          while [ "${attempts}" -lt "${max_attempts}" ]; do
+            attempts=$((attempts+1))
+            echo "Attempt ${attempts}/${max_attempts}: Checking for Intent Labeler workflow run..."
+            
+            # Query workflow runs for the labeler workflow
+            response=$(curl -sS -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${REPO}/actions/workflows/gate-intent-labeler.yml/runs?event=pull_request&per_page=20" \
+              2>&1)
+            
+            # Check if curl failed
+            if [ $? -ne 0 ]; then
+              echo "⚠️ API request failed: ${response}"
+              response='{"workflow_runs":[]}'
+            fi
+            
+            # Find run matching this PR's head SHA
+            run_status=$(echo "${response}" | jq -r --arg sha "${HEAD_SHA}" \
+              '.workflow_runs[] | select(.head_sha == $sha) | .status' | head -n 1)
+            
+            if [ -n "${run_status}" ]; then
+              echo "Found workflow run for SHA ${HEAD_SHA} with status: ${run_status}"
+              
+              if [ "${run_status}" = "completed" ]; then
+                echo "✅ Intent Labeler workflow completed."
+                break
+              else
+                echo "⏳ Workflow still running (status: ${run_status}). Waiting..."
+              fi
+            else
+              echo "⏳ No workflow run found yet for SHA ${HEAD_SHA}. Waiting..."
+            fi
+            
+            if [ "${attempts}" -lt "${max_attempts}" ]; then
+              sleep "${sleep_interval}"
+            fi
+          done
+          
+          if [ "${attempts}" -ge "${max_attempts}" ]; then
+            echo "⚠️ Timeout waiting for Intent Labeler (${max_attempts} attempts). Continuing anyway..."
+            echo "The next step will still enforce exactly one intent label requirement."
+          fi
+
+      - name: Wait for exactly one intent label (after labeler)
+        if: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+
+          intent_labels='["recovery","feature","docs-only","infra","platform","change-ops","codex"]'
+
+          fetch_intents () {
+            curl -sSf -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${REPO}/issues/${PR_NUMBER}/labels" \
+            | jq -r --argjson allowed "${intent_labels}" '
+                [.[].name | select(IN($allowed[]))] | unique | @json
+              '
+          }
+
+          attempts=0
+          while true; do
+            attempts=$((attempts+1))
+            intents_json="$(fetch_intents)"
+            intents_count="$(echo "${intents_json}" | jq -r 'length')"
+
+            echo "Detected intent labels: ${intents_json}"
+
+            if [ "${intents_count}" -eq 1 ]; then
+              echo "OK: Exactly one intent label present."
+              exit 0
+            fi
+
+            if [ "${attempts}" -ge 6 ]; then
+              echo "ERROR: PR must include exactly ONE intent label."
+              echo "Allowed intent labels: recovery, feature, docs-only, infra, platform, change-ops, codex"
+              echo "Found: ${intents_json}"
+              exit 1
+            fi
+
+            # Progressive backoff (sleep between attempts 1-5): 10s, 20s, 30s, 40s, 60s
+            if [ "${attempts}" -eq 1 ]; then sleep 10; fi
+            if [ "${attempts}" -eq 2 ]; then sleep 20; fi
+            if [ "${attempts}" -eq 3 ]; then sleep 30; fi
+            if [ "${attempts}" -eq 4 ]; then sleep 40; fi
+            if [ "${attempts}" -eq 5 ]; then sleep 60; fi
+          done
+
+      - name: Critical LGFC invariants
+        run: |
+          set -euo pipefail
+          node scripts/ci/verify_lgfc_invariants.mjs

@@ -1,0 +1,39 @@
+name: AI Code Review
+
+# TEMP DISABLED (manual only): This workflow is not production-configured and is currently disruptive/noisy. Re-enable only when fully configured and correctly placed in the ops pipeline.
+on:
+  workflow_dispatch: {}
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # Required if using PRs
+      issues: write        # Required to post comments
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Ask Hugging Face to Review
+        id: hf_api
+        run: |
+          # We use the new 2026 Router URL and format the JSON correctly
+          RESPONSE=$(curl -s https://router.huggingface.co/hf-inference/models/bigcode/starcoder2-15b \
+            -X POST \
+            -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"inputs\": \"Review this code change: ${{ github.event.head_commit.message }}\"}")
+          
+          # This saves the AI response so the next step can use it
+          echo "ai_comment=$RESPONSE" >> $GITHUB_OUTPUT
+
+      - name: Post Comment to GitHub
+        uses: peter-evans/commit-comment@v3
+        with:
+          body: |
+            ### 🤖 AI Code Review
+            **Model:** Starcoder2-15b
+            **Feedback:**
+            ${{ steps.hf_api.outputs.ai_comment }}

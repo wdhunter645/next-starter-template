@@ -1,0 +1,18 @@
+name: gate-ensure-issue
+
+on:
+  pull_request_target:
+    types: [opened, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deprecated — Issue accounting moved to Tier B (OPS)
+        run: |
+          echo "Deprecated: PR→Issue accounting is Tier B (OPS) support-only."
+          echo "See docs/governance/tier-a-tier-b-overwatch-model_MASTER.md"
+          echo "See .github/workflows/ops-pr-issue-accounting.yml"

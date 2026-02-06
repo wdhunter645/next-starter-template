@@ -1,0 +1,18 @@
+.embed {
+  max-width: 1120px;
+  margin: 0 auto;
+  min-height: 420px; /* reserve space while widget loads (avoid huge gaps) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.fallback {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  color: var(--lgfc-text-muted);
+}
