@@ -162,6 +162,27 @@ These workflows operate on `main` branch only and **must never** be configured a
   - Example: `wdhunter645,admin-user`
   - Default: `wdhunter645` (if variable not set)
 
+### `snapshot.yml`
+- **Name:** Daily Snapshot Safety Net
+- **Purpose:** Automated daily snapshots of repository state and Cloudflare Pages configuration
+- **Behavior:**
+  - Runs daily at 08:00 UTC (~3-4AM Eastern depending on DST)
+  - Creates two types of snapshots:
+    1. Repository snapshot: Captures commit state, changed files, package.json metadata
+    2. Cloudflare Pages snapshot: Captures project config, domains, recent deployments
+  - All snapshots stored as GitHub Actions artifacts
+  - Manual trigger available via workflow_dispatch for emergency lock-in snapshots
+- **Retention:** 10 days (automatic artifact rolloff prevents repo disk growth)
+- **Triggers:** `schedule` (daily 08:00 UTC), `workflow_dispatch`
+- **Artifacts:**
+  - `repo-snapshot`: Repository metadata and state (retention: 10 days)
+  - `cloudflare-pages-snapshot`: Cloudflare Pages configuration (retention: 10 days)
+- **Required Secrets:**
+  - `CLOUDFLARE_API_TOKEN`: Cloudflare API token with Pages read access
+  - `CF_ACCOUNT_ID`: Cloudflare account ID
+  - `CF_PAGES_PROJECT`: Cloudflare Pages project name
+- **Usage:** See `/docs/RECOVERY.md` for disaster recovery procedures using snapshots
+
 ---
 
 ## Enforcement Rules
@@ -268,7 +289,6 @@ The following workflows are **not part of this redesign** and remain as-is:
 - `preview-invariants.yml`
 - `production-audit.yml`
 - `purge-zip-history.yml`
-- `snapshot.yml`
 - `test-homepage.yml`
 - `test.yml`
 - `zip-history-audit.yml`
