@@ -260,18 +260,6 @@ After the workflow completes:
 
 ---
 
-## Creating a Manual Repository Snapshot (Legacy)
-
-To create a reference point before risky operations:
-
-```bash
-# Run the snapshot script
-bash scripts/snapshot_repo.sh
-
-# Or trigger via GitHub Actions
-# Navigate to Actions → Snapshot Backup (Repo + Cloudflare Pages) → Run workflow
-```
-
 ## Common Recovery Scenarios
 
 ### Scenario 1: Build Broken by Recent Commit
