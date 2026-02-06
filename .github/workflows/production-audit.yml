@@ -1,6 +1,11 @@
 name: Production Audit (Playwright Invariants)
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/ops/scan-trigger.md'
   schedule:
     - cron: "15 12,0 * * *"
   workflow_dispatch: {}

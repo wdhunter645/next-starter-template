@@ -119,10 +119,10 @@ These workflows operate on `main` branch only and **must never** be configured a
 - **Name:** `OPS — Site Assessment`
 - **Purpose:** Validates site build, routes, navigation, and page markers
 - **Behavior:**
-  - Runs nightly and on `main` push
+  - Runs nightly and on `main` push when `docs/ops/scan-trigger.md` changes
   - Creates GitHub issue on failure (with `assessment-failure` label)
   - Uploads detailed artifacts (90-day retention)
-- **Triggers:** `schedule` (nightly 2 AM UTC), `push` (main), `workflow_dispatch`
+- **Triggers:** `schedule` (nightly 2 AM UTC), `push` (main, when `docs/ops/scan-trigger.md` changes), `workflow_dispatch`
 - **Artifacts:**
   - `assess-report-json` (machine-readable results)
   - `assess-summary-md` (human-readable summary)
@@ -135,7 +135,7 @@ These workflows operate on `main` branch only and **must never** be configured a
   - Alert-only: always green ✅ regardless of audit results
   - Non-blocking: observability only, no auto-fixing
   - Tests production site: `https://www.lougehrigfanclub.com`
-- **Triggers:** `push` (main), `schedule` (nightly 2 AM UTC), `workflow_dispatch`
+- **Triggers:** `push` (main, when `docs/ops/scan-trigger.md` changes), `schedule` (nightly 2 AM UTC), `workflow_dispatch`
 - **Note:** Previously included `pull_request` trigger with skip logic - now removed entirely
 
 ### `ops-cf-pages-retry.yml`
@@ -162,6 +162,41 @@ These workflows operate on `main` branch only and **must never** be configured a
   - Example: `wdhunter645,admin-user`
   - Default: `wdhunter645` (if variable not set)
 
+### `production-audit.yml`
+- **Name:** `Production Audit (Playwright Invariants)`
+- **Purpose:** Validates production site against invariant test suite
+- **Behavior:**
+  - Runs Playwright tests against production URL
+  - Creates/updates GitHub issue on failure
+  - Uploads Playwright HTML report (30-day retention)
+- **Triggers:** `push` (main, when `docs/ops/scan-trigger.md` changes), `schedule` (twice daily at 12:15 UTC and 00:15 UTC), `workflow_dispatch`
+- **Artifacts:**
+  - `playwright-report-production` (HTML report)
+
+---
+
+## Production Scan Trigger Mechanism
+
+### On-Demand Production Scans
+
+To run production scans immediately (without waiting for scheduled runs):
+
+1. **Update the trigger marker file:** `docs/ops/scan-trigger.md`
+   - Update the timestamp
+   - Document the reason for triggering scans
+   - Optionally link to the PR that prompted this scan
+
+2. **Commit and merge to main:**
+   - Create a feature branch
+   - Commit the changes
+   - Create and merge a PR
+
+3. **Workflows triggered on merge:**
+   - `production-audit.yml` — Playwright invariants
+   - `ops-assess.yml` — Site assessment
+   - `ops-design-compliance-audit.yml` — Design compliance
+
+**Alternative:** Use `workflow_dispatch` in GitHub Actions UI for individual workflow runs.
 ### `snapshot.yml`
 - **Name:** `Snapshot Backup (Repo + Cloudflare Pages)`
 - **Purpose:** Creates recoverable moment-in-time snapshots of repository state and Cloudflare Pages configuration
@@ -293,7 +328,6 @@ The following workflows are **not part of this redesign** and remain as-is:
 - `post-recovery-425-verify.yml`
 - `pr-triage-zip-taint.yml`
 - `preview-invariants.yml`
-- `production-audit.yml`
 - `purge-zip-history.yml`
 - `test-homepage.yml`
 - `test.yml`

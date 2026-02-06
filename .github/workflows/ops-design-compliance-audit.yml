@@ -12,6 +12,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'docs/ops/scan-trigger.md'
   schedule:
     # Run nightly at 2 AM UTC
     - cron: '0 2 * * *'
