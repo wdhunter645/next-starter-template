@@ -16,6 +16,7 @@ export default function FAQSection() {
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [question, setQuestion] = useState("");
+  const [email, setEmail] = useState("");
   const [submitOk, setSubmitOk] = useState(false);
   const [submitErr, setSubmitErr] = useState<string | null>(null);
 
@@ -53,16 +54,28 @@ export default function FAQSection() {
     };
   }, [query]);
 
+  const isValidEmail = (email: string): boolean => {
+    const trimmed = email.trim();
+    return trimmed.length > 0 && 
+           trimmed.includes('@') && 
+           trimmed.includes('.') && 
+           trimmed.length <= 254;
+  };
+
+  const canSubmit = question.trim().length >= 10 && isValidEmail(email);
+
   const submit = async () => {
     const text = question.trim();
-    if (!text) return;
+    const emailText = email.trim();
+    if (!text || !emailText || !canSubmit) return;
     setSubmitOk(false);
     setSubmitErr(null);
 
     try {
-      const res = await apiPost<{ ok: boolean; error?: string }>("/api/faq/submit", { question: text });
+      const res = await apiPost<{ ok: boolean; error?: string }>("/api/faq/submit", { question: text, email: emailText });
       if (!res.ok) throw new Error(res.error || "Submit failed");
       setQuestion("");
+      setEmail("");
       setSubmitOk(true);
       // do not reload approved list (pending won't show). keep UX simple.
     } catch (e: unknown) {
@@ -112,17 +125,27 @@ export default function FAQSection() {
           )}
         </div>
 
-        <div style={{ marginTop: 18 }}>
+        <div style={{ marginTop: 18 }} id="ask">
           <h3 style={{marginTop: 20}}>Ask a Question</h3>
           <label htmlFor="qtext" className="visually-hidden">Ask a question</label>
           <textarea
             id="qtext"
-            placeholder="Type your question..."
+            placeholder="Type your question (minimum 10 characters)..."
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
           />
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <button type="button" onClick={submit}>Submit</button>
+          <label htmlFor="qemail" className="visually-hidden">Your email address</label>
+          <input
+            id="qemail"
+            type="email"
+            placeholder="Your email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{ marginTop: 10, padding: 8, width: '100%', maxWidth: 400 }}
+            required
+          />
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10 }}>
+            <button type="button" onClick={submit} disabled={!canSubmit}>Submit</button>
             
           </div>
           {submitOk ? (
