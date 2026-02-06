@@ -1,25 +1,11 @@
 -- 0027_faq_email_and_seed.sql
 -- Add submitter_email column and seed approved FAQ entries
 
--- Add submitter_email column if it doesn't exist
--- SQLite doesn't support ALTER TABLE IF NOT EXISTS, so we use a workaround
--- Check if the column exists before adding it
-PRAGMA foreign_keys=off;
-
--- Add column (will fail silently if it exists in some SQLite versions, so we handle it safely)
--- We'll use a conditional approach by checking the table info
--- For idempotency, we create a new table with the column, copy data, and rename
--- But SQLite ALTER TABLE ADD COLUMN is idempotent in practice - it errors if column exists
--- We'll use a simpler approach: just try to add it, and migrations should handle errors
-
--- Safe approach: Just add the column. If it exists, the migration runner should handle the error.
--- But to be truly idempotent, we can check first
+-- Add submitter_email column
 ALTER TABLE faq_entries ADD COLUMN submitter_email TEXT;
 
-PRAGMA foreign_keys=on;
-
 -- Seed approved FAQ entries (only if they don't already exist)
--- Use INSERT OR IGNORE with unique constraint on question
+-- Use INSERT ... SELECT ... WHERE NOT EXISTS pattern for idempotency
 
 INSERT INTO faq_entries (question, answer, status)
 SELECT 'What is the Lou Gehrig Fan Club?', 'The Lou Gehrig Fan Club brings fans together to celebrate Gehrig''s life and baseball legacy through stories, history, stats, memorabilia, and community events.', 'approved'
