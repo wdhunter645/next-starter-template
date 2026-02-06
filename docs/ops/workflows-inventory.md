@@ -163,25 +163,31 @@ These workflows operate on `main` branch only and **must never** be configured a
   - Default: `wdhunter645` (if variable not set)
 
 ### `snapshot.yml`
-- **Name:** Daily Snapshot Safety Net
-- **Purpose:** Automated daily snapshots of repository state and Cloudflare Pages configuration
-- **Behavior:**
-  - Runs daily at 08:00 UTC (~3-4AM Eastern depending on DST)
-  - Creates two types of snapshots:
-    1. Repository snapshot: Captures commit state, changed files, package.json metadata
-    2. Cloudflare Pages snapshot: Captures project config, domains, recent deployments
-  - All snapshots stored as GitHub Actions artifacts
-  - Manual trigger available via workflow_dispatch for emergency lock-in snapshots
-- **Retention:** 10 days (automatic artifact rolloff prevents repo disk growth)
-- **Triggers:** `schedule` (daily 08:00 UTC), `workflow_dispatch`
-- **Artifacts:**
-  - `repo-snapshot`: Repository metadata and state (retention: 10 days)
-  - `cloudflare-pages-snapshot`: Cloudflare Pages configuration (retention: 10 days)
-- **Required Secrets:**
-  - `CLOUDFLARE_API_TOKEN`: Cloudflare API token with Pages read access
-  - `CF_ACCOUNT_ID`: Cloudflare account ID
-  - `CF_PAGES_PROJECT`: Cloudflare Pages project name
-- **Usage:** See `/docs/RECOVERY.md` for disaster recovery procedures using snapshots
+- **Name:** `Snapshot Backup (Repo + Cloudflare Pages)`
+- **Purpose:** Creates recoverable moment-in-time snapshots of repository state and Cloudflare Pages configuration
+- **What it captures:**
+  - **Repository snapshot:**
+    - Current commit SHA, branch, author, and timestamp
+    - Changed files from last commit
+    - Package.json metadata (name, version)
+    - Top-level repository tree
+  - **Cloudflare Pages snapshot:**
+    - Pages project configuration (build settings, environment variable names)
+    - Custom domain configurations
+    - Latest 3 deployment records
+- **Triggers:**
+  - `workflow_dispatch` (manual run - recommended before major changes)
+  - `push` to `main` (limited to workflow/script/snapshot/docs changes only)
+- **Artifacts produced:**
+  - `repo-snapshot`: Repository snapshot JSON + smoketest log (90-day retention)
+  - `cloudflare-pages-snapshot`: Cloudflare JSONs + README + smoketest log (90-day retention)
+- **Required secrets/environment variables:**
+  - `CLOUDFLARE_API_TOKEN` (secret)
+  - `CF_ACCOUNT_ID` (secret or environment variable)
+  - `CF_PAGES_PROJECT` (secret or environment variable)
+- **Expected runtime:** 1-2 minutes (both jobs run in parallel)
+- **Artifacts location:** GitHub Actions artifacts (downloadable from workflow run page)
+- **Security:** Captures environment variable names only, never values; no secrets written to artifacts
 
 ---
 
