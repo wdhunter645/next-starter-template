@@ -1,6 +1,9 @@
 name: Snapshot Backup (Repo + Cloudflare Pages)
 
 on:
+  schedule:
+    # Run daily at 08:00 UTC (~3-4AM Eastern depending on DST)
+    - cron: '0 8 * * *'
   workflow_dispatch:
   push:
     branches:
@@ -18,6 +21,10 @@ permissions:
 jobs:
   repo_snapshot:
     runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
