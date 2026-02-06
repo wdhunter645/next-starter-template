@@ -13,7 +13,16 @@ export const onRequestPost = async (context: any): Promise<Response> => {
       });
     }
 
-    if (!email || !email.includes('@') || !email.includes('.') || email.length > 254) {
+    if (!email || email.length > 254) {
+      return new Response(JSON.stringify({ ok: false, error: 'Valid email address is required' }, null, 2), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Basic email validation: at least one char before @, domain name, and TLD
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
       return new Response(JSON.stringify({ ok: false, error: 'Valid email address is required' }, null, 2), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },

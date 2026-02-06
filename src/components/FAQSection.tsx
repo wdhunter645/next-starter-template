@@ -56,10 +56,11 @@ export default function FAQSection() {
 
   const isValidEmail = (email: string): boolean => {
     const trimmed = email.trim();
+    // Basic email validation: at least one char before @, domain name, and TLD
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return trimmed.length > 0 && 
-           trimmed.includes('@') && 
-           trimmed.includes('.') && 
-           trimmed.length <= 254;
+           trimmed.length <= 254 &&
+           emailRegex.test(trimmed);
   };
 
   const canSubmit = question.trim().length >= 10 && isValidEmail(email);
