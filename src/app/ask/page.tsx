@@ -72,7 +72,7 @@ export default function AskPage() {
           placeholder="Type your question (minimum 10 characters)..."
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          style={{ marginTop: 8 }}
+          style={{ marginTop: 8, padding: 8, width: '100%', maxWidth: 500, display: 'block', boxSizing: 'border-box' }}
           rows={6}
         />
 
