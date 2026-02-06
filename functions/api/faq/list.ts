@@ -6,8 +6,8 @@ export const onRequestGet = async (context: any): Promise<Response> => {
     const q = (url.searchParams.get('q') || '').trim();
     const limit = Math.max(1, Math.min(50, Number(url.searchParams.get('limit') || '10')));
 
-    // For public pages: only approved, newest first
-    let sql = "SELECT id, question, answer, updated_at FROM faq_entries WHERE status='approved'";
+    // For public pages: only approved with non-empty answer
+    let sql = "SELECT id, question, answer, view_count, pinned, updated_at FROM faq_entries WHERE status='approved' AND answer IS NOT NULL AND answer != ''";
     const args: any[] = [];
 
     if (q) {
@@ -15,7 +15,8 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       args.push(`%${q.toLowerCase()}%`, `%${q.toLowerCase()}%`);
     }
 
-    sql += " ORDER BY updated_at DESC LIMIT ?";
+    // Top FAQs order: pinned DESC, view_count DESC, updated_at DESC
+    sql += " ORDER BY pinned DESC, view_count DESC, updated_at DESC LIMIT ?";
     args.push(limit);
 
     const rows = await env.DB.prepare(sql).bind(...args).all();

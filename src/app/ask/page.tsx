@@ -1,91 +1,107 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { apiGet, apiPost } from '@/lib/api';
-
-type FAQItem = { id: number; question: string; answer: string; updated_at: string };
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { apiPost } from '@/lib/api';
 
 export default function AskPage() {
-  const [query, setQuery] = useState('');
+  const router = useRouter();
   const [question, setQuestion] = useState('');
-  const [items, setItems] = useState<FAQItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState('');
   const [submitOk, setSubmitOk] = useState(false);
   const [submitErr, setSubmitErr] = useState<string>('');
 
-  const q = useMemo(() => query.trim(), [query]);
-
-  const load = async () => {
-    setLoading(true);
-    try {
-      const data = await apiGet<{ ok: boolean; items: FAQItem[] }>(`/api/faq/list?limit=50&q=${encodeURIComponent(q)}`);
-      setItems(data.items || []);
-    } catch {
-      setItems([]);
-    } finally {
-      setLoading(false);
-    }
+  const isValidEmail = (email: string): boolean => {
+    const trimmed = email.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return trimmed.length > 0 && 
+           trimmed.length <= 254 &&
+           emailRegex.test(trimmed);
   };
 
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q]);
+  const canSubmit = question.trim().length >= 10 && isValidEmail(email);
 
   const submit = async () => {
     setSubmitOk(false);
     setSubmitErr('');
     const text = question.trim();
-    if (!text) return;
+    const emailText = email.trim();
+    if (!text || !emailText || !canSubmit) return;
 
     try {
-      await apiPost<{ ok: boolean }>(`/api/faq/submit`, { question: text });
+      const res = await apiPost<{ ok: boolean; error?: string }>('/api/faq/submit', { 
+        question: text, 
+        email: emailText 
+      });
+      if (!res.ok) throw new Error(res.error || 'Submit failed');
       setQuestion('');
+      setEmail('');
       setSubmitOk(true);
-      setTimeout(() => setSubmitOk(false), 3000);
     } catch (e: unknown) {
       setSubmitErr(String((e as Error)?.message ?? e));
     }
   };
 
+  const handleCancel = () => {
+    router.push('/faq');
+  };
+
   return (
     <main className="container" style={{ padding: '40px 16px', maxWidth: 900, margin: '0 auto' }}>
-      <h1 style={{ fontSize: 34, margin: '0 0 10px 0' }}>FAQ and Ask a Question</h1>
+      <h1 style={{ fontSize: 34, margin: '0 0 10px 0' }}>Ask a Question</h1>
       <p className="sub" style={{ marginTop: 0 }}>
-        This page proves live connectivity to D1: FAQ results read from <code>faq_entries</code>, and new questions submit into that table as <code>pending</code>.
+        Submit your question for review. If approved, it will appear in our FAQ library.
       </p>
 
-      <section className="card" style={{ marginTop: 18 }}>
-        <label htmlFor="qtext"><strong>Ask a question</strong></label>
-        <textarea id="qtext" placeholder="Type your question..." value={question} onChange={(e) => setQuestion(e.target.value)} />
-        <button type="button" onClick={submit}>Submit</button>
-        {submitOk ? <div className="success" style={{ marginTop: 10 }}>Thanks! Your question was received and queued for review.</div> : null}
-        {submitErr ? <div className="sub" style={{ marginTop: 10, color: '#b00020' }}>Submit failed: {submitErr}</div> : null}
-      </section>
+      <section className="card" style={{ marginTop: 28 }}>
+        <label htmlFor="qemail"><strong>Your Email</strong></label>
+        <input
+          id="qemail"
+          type="email"
+          placeholder="your.email@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          style={{ marginTop: 8, padding: 8, width: '100%', maxWidth: 500 }}
+          required
+        />
 
-      <section style={{ marginTop: 28 }}>
-        <h2 className="section-title">Browse FAQ</h2>
-        <div className="faq" style={{ marginTop: 10 }}>
-          <div className="search">
-            <input type="search" placeholder="Search questions..." aria-label="Search questions" value={query} onChange={(e) => setQuery(e.target.value)} />
-            <button onClick={() => setQuery('')}>Clear</button>
-          </div>
+        <label htmlFor="qtext" style={{ marginTop: 20, display: 'block' }}><strong>Your Question</strong></label>
+        <textarea
+          id="qtext"
+          placeholder="Type your question (minimum 10 characters)..."
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          style={{ marginTop: 8 }}
+          rows={6}
+        />
 
-          {loading ? (
-            <p className="sub">Loading…</p>
-          ) : items.length === 0 ? (
-            <p className="sub">No approved FAQs found.</p>
-          ) : (
-            items.map((item) => (
-              <div key={item.id} className="q">
-                <strong>{item.question}</strong>
-                <br />
-                <span className="sub">{item.answer}</span>
-              </div>
-            ))
-          )}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 20 }}>
+          <button type="button" onClick={submit} disabled={!canSubmit}>
+            Submit
+          </button>
+          <button type="button" onClick={handleCancel} style={{ background: '#666' }}>
+            Cancel
+          </button>
         </div>
+
+        {submitOk ? (
+          <div className="success" style={{ marginTop: 20 }}>
+            Thanks — your question was submitted for review.
+          </div>
+        ) : null}
+        {submitErr ? (
+          <div className="sub" style={{ marginTop: 20, color: '#b00020' }}>
+            Submit failed: {submitErr}
+          </div>
+        ) : null}
       </section>
+
+      <div style={{ marginTop: 24 }}>
+        <Link href="/faq" className="link">
+          ← Back to FAQ
+        </Link>
+      </div>
     </main>
   );
 }

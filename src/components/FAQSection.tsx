@@ -8,6 +8,8 @@ type FAQItem = {
   id: number;
   question: string;
   answer: string;
+  view_count: number;
+  pinned: number;
   updated_at: string;
 };
 
@@ -15,10 +17,7 @@ export default function FAQSection() {
   const [items, setItems] = useState<FAQItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
-  const [question, setQuestion] = useState("");
-  const [email, setEmail] = useState("");
-  const [submitOk, setSubmitOk] = useState(false);
-  const [submitErr, setSubmitErr] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const query = useMemo(() => q.trim(), [q]);
 
@@ -35,8 +34,11 @@ export default function FAQSection() {
     
     (async () => {
       try {
+        // When search is empty, show Top 5 FAQs
+        // When search has text, show up to 10 matching FAQs
+        const limit = query ? 10 : 5;
         const data = await apiGet<{ ok: boolean; items: FAQItem[] }>(
-          `/api/faq/list?limit=10${query ? `&q=${encodeURIComponent(query)}` : ""}`
+          `/api/faq/list?limit=${limit}${query ? `&q=${encodeURIComponent(query)}` : ""}`
         );
         if (alive) setItems(data.items || []);
       } catch {
@@ -54,33 +56,18 @@ export default function FAQSection() {
     };
   }, [query]);
 
-  const isValidEmail = (email: string): boolean => {
-    const trimmed = email.trim();
-    // Basic email validation: at least one char before @, domain name, and TLD
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return trimmed.length > 0 && 
-           trimmed.length <= 254 &&
-           emailRegex.test(trimmed);
-  };
-
-  const canSubmit = question.trim().length >= 10 && isValidEmail(email);
-
-  const submit = async () => {
-    const text = question.trim();
-    const emailText = email.trim();
-    if (!text || !emailText || !canSubmit) return;
-    setSubmitOk(false);
-    setSubmitErr(null);
-
-    try {
-      const res = await apiPost<{ ok: boolean; error?: string }>("/api/faq/submit", { question: text, email: emailText });
-      if (!res.ok) throw new Error(res.error || "Submit failed");
-      setQuestion("");
-      setEmail("");
-      setSubmitOk(true);
-      // do not reload approved list (pending won't show). keep UX simple.
-    } catch (e: unknown) {
-      setSubmitErr(String((e as Error)?.message || e));
+  const handleItemClick = async (id: number) => {
+    // Toggle expansion
+    const newExpandedId = expandedId === id ? null : id;
+    setExpandedId(newExpandedId);
+    
+    // If expanding (not collapsing), increment view count
+    if (newExpandedId === id) {
+      try {
+        await apiPost("/api/faq/view", { id });
+      } catch {
+        // Silently fail - view count is not critical
+      }
     }
   };
 
@@ -88,8 +75,7 @@ export default function FAQSection() {
     <div>
       <h2 className="section-title">FAQ – Frequently Asked Questions</h2>
       <p className="sub">
-        FAQ is pulled live from D1. Search shows up to 10 approved answers.
-        If you don&apos;t find what you need, submit a new question for admin review.
+        Search our FAQ or browse the top questions below.
       </p>
 
       <div className="faq">
@@ -109,52 +95,36 @@ export default function FAQSection() {
           {loading ? (
             <p className="sub">Loading FAQ…</p>
           ) : items.length === 0 ? (
-            <p className="sub">
-              No matching FAQ answers found.
-              <span style={{ marginLeft: 8 }}>
-                <Link className="link" href="/faq#ask">Ask a Question</Link>
-              </span>
-            </p>
+            <p className="sub">No matching FAQ answers found.</p>
           ) : (
             items.map((item) => (
-              <div key={item.id} className="q">
+              <div key={item.id} className="q" style={{ cursor: 'pointer' }} onClick={() => handleItemClick(item.id)}>
                 <strong>{item.question}</strong>
-                <br />
-                <span className="sub">{item.answer}</span>
+                {expandedId === item.id && (
+                  <>
+                    <br />
+                    <span className="sub">{item.answer}</span>
+                  </>
+                )}
               </div>
             ))
           )}
         </div>
 
-        <div style={{ marginTop: 18 }} id="ask">
-          <h3 style={{marginTop: 20}}>Ask a Question</h3>
-          <label htmlFor="qtext" className="visually-hidden">Ask a question</label>
-          <textarea
-            id="qtext"
-            placeholder="Type your question (minimum 10 characters)..."
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-          />
-          <label htmlFor="qemail" className="visually-hidden">Your email address</label>
-          <input
-            id="qemail"
-            type="email"
-            placeholder="Your email address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={{ marginTop: 10, padding: 8, width: '100%', maxWidth: 400 }}
-            required
-          />
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10 }}>
-            <button type="button" onClick={submit} disabled={!canSubmit}>Submit</button>
-            
-          </div>
-          {submitOk ? (
-            <div id="qsuccess" className="success">Thanks! Your question was received and queued for review.</div>
-          ) : null}
-          {submitErr ? (
-            <div className="sub" style={{ marginTop: 8, color: "#b00020" }}>Submit failed: {submitErr}</div>
-          ) : null}
+        {query && items.length > 0 && (
+          <p className="sub" style={{ marginTop: 16 }}>
+            <Link className="link" href={`/faq?q=${encodeURIComponent(query)}`}>View all results</Link>
+          </p>
+        )}
+
+        <div style={{ marginTop: 18, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <Link href="/faq" className="link" style={{ fontSize: 16 }}>
+            View all FAQs
+          </Link>
+          <span className="sub">•</span>
+          <Link href="/ask" className="link" style={{ fontSize: 16 }}>
+            Ask a Question
+          </Link>
         </div>
       </div>
     </div>
