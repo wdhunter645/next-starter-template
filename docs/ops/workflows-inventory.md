@@ -295,7 +295,6 @@ The following workflows are **not part of this redesign** and remain as-is:
 - `preview-invariants.yml`
 - `production-audit.yml`
 - `purge-zip-history.yml`
-- `snapshot.yml`
 - `test-homepage.yml`
 - `test.yml`
 - `zip-history-audit.yml`

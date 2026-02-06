@@ -6,6 +6,106 @@ This document describes procedures for recovering from repository issues using s
 
 Repository snapshots provide deterministic reference points for rollback audits and recovery operations. Combined with git's version control capabilities, you can quickly restore to a known-good state.
 
+## Daily Snapshot Recovery Net
+
+The repository includes an automated daily snapshot system that captures recoverable system state every day. This safety net provides:
+
+- **Automated daily snapshots** at 08:00 UTC (~3-4AM Eastern depending on DST)
+- **10-day rolling retention** - last 10 days of snapshots are always available
+- **Two snapshot types:**
+  1. **Repository snapshots** - Git state, commit metadata, changed files, package.json info
+  2. **Cloudflare Pages snapshots** - Project config, domains, recent deployments
+
+### Where Snapshots Live
+
+Snapshots are stored as **GitHub Actions artifacts** (not in the repository itself):
+
+1. Navigate to **Actions** tab in GitHub
+2. Click on **Daily Snapshot Safety Net** workflow
+3. Select a recent workflow run
+4. Download artifacts:
+   - `repo-snapshot` - Repository state artifacts
+   - `cloudflare-pages-snapshot` - Cloudflare Pages configuration
+
+**Retention:** All artifacts automatically expire after 10 days to prevent storage bloat.
+
+### How to Download Snapshots
+
+**Via GitHub UI:**
+1. Go to repository → **Actions** tab
+2. Select **Daily Snapshot Safety Net** workflow (or filter by workflow name)
+3. Click on a successful workflow run
+4. Scroll to **Artifacts** section
+5. Click artifact name to download ZIP file
+6. Extract ZIP to view JSON snapshot files
+
+**Via GitHub CLI:**
+```bash
+# List recent workflow runs
+gh run list --workflow=snapshot.yml --limit 10
+
+# Download artifacts from a specific run
+gh run download <run-id> --name repo-snapshot
+gh run download <run-id> --name cloudflare-pages-snapshot
+```
+
+### When to Run Manual Snapshot
+
+Use the manual trigger (`workflow_dispatch`) for emergency lock-in snapshots:
+
+**Before risky operations:**
+- Major dependency upgrades
+- Architecture changes
+- Database migrations
+- Cloudflare configuration changes
+
+**After critical milestones:**
+- Successful production deployment
+- Passing all tests after major feature
+- Before holiday/vacation periods
+
+**To create manual snapshot:**
+1. Go to **Actions** tab
+2. Select **Daily Snapshot Safety Net** workflow
+3. Click **Run workflow** button
+4. Select branch (usually `main`)
+5. Click **Run workflow**
+
+The snapshot will be available as artifacts within a few minutes.
+
+### How Snapshots Support Disaster Recovery
+
+**Repository Recovery:**
+- Repository snapshots contain commit SHA and full git metadata
+- Use commit SHA to restore exact repository state
+- Cross-reference with `changed_files` to understand what changed
+- Package version info helps identify dependency state
+
+**Cloudflare Pages Recovery:**
+- Cloudflare snapshots capture full project configuration
+- Includes build settings, environment variable names, custom domains
+- Recent deployments list shows last known good deployment ID
+- Use to rebuild Pages project if accidentally deleted
+- See `/docs/CLOUDFLARE_RECOVERY.md` for detailed Cloudflare recovery procedures
+
+**Recovery workflow:**
+1. Download relevant snapshot artifact from GitHub Actions
+2. Extract and review JSON files to identify last known good state
+3. For repository issues: Use commit SHA with git recovery methods (see below)
+4. For Cloudflare issues: Use snapshot data to restore configuration
+5. For combined issues: Coordinate both recovery procedures
+
+**Example: Finding last known good deployment**
+```bash
+# Download latest cloudflare-pages-snapshot artifact
+gh run download <run-id> --name cloudflare-pages-snapshot
+
+# View recent deployments
+cat snapshots/cloudflare/cf-deployments-*.json | jq '.result[] | {id, created_on, deployment_trigger: .deployment_trigger.metadata.branch, url}'
+
+# Identify successful deployment ID and use for rollback
+```
+
 ## Snapshot Locations
 
 - **Snapshot Directory**: `/snapshots/`
