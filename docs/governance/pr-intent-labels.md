@@ -299,7 +299,7 @@ The intent-labeler workflow checks intents in this priority order:
 
 The intent labeling and validation process follows a specific sequence:
 
-1. **Intent Labeler runs first:** When a PR is opened or updated, the Intent Labeler workflow analyzes changed files and may remove/reapply intent labels based on file-touch patterns.
+1. **Intent Labeler runs first:** When a PR is opened or updated, the Intent Labeler workflow analyzes changed files and removes/reapplies intent labels during reclassification. If mixed intent is detected, all auto-assigned intent labels are removed.
 2. **Drift-gate waits for completion:** The drift-gate workflow explicitly waits for the Intent Labeler to complete before validating labels. This prevents false failures due to transient label removal.
 3. **Drift-gate validates:** Once the labeler completes, drift-gate enforces that exactly one intent label is present and all changed files match that intent's allowlist.
 

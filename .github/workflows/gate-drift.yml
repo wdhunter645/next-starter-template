@@ -76,10 +76,16 @@ jobs:
             echo "Attempt ${attempts}/${max_attempts}: Checking for Intent Labeler workflow run..."
             
             # Query workflow runs for the labeler workflow
-            response=$(curl -sSf -H "Authorization: Bearer ${GH_TOKEN}" \
+            response=$(curl -sS -H "Authorization: Bearer ${GH_TOKEN}" \
               -H "Accept: application/vnd.github+json" \
               "https://api.github.com/repos/${REPO}/actions/workflows/gate-intent-labeler.yml/runs?event=pull_request&per_page=20" \
-              || echo '{"workflow_runs":[]}')
+              2>&1)
+            
+            # Check if curl failed
+            if [ $? -ne 0 ]; then
+              echo "⚠️ API request failed: ${response}"
+              response='{"workflow_runs":[]}'
+            fi
             
             # Find run matching this PR's head SHA
             run_status=$(echo "${response}" | jq -r --arg sha "${HEAD_SHA}" \
@@ -149,7 +155,7 @@ jobs:
               exit 1
             fi
 
-            # Progressive backoff: 10s, 20s, 30s, 40s, 60s
+            # Progressive backoff (sleep between attempts 1-5): 10s, 20s, 30s, 40s, 60s
             if [ "${attempts}" -eq 1 ]; then sleep 10; fi
             if [ "${attempts}" -eq 2 ]; then sleep 20; fi
             if [ "${attempts}" -eq 3 ]; then sleep 30; fi
