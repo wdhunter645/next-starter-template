@@ -1,0 +1,217 @@
+name: OPS — PR Issue Accounting
+
+on:
+  pull_request_target:
+    types: [opened, reopened, edited, synchronize, closed]
+
+permissions:
+  issues: write
+  pull-requests: write
+  contents: read
+
+jobs:
+  pr-issue-accounting:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ops-pr-issue-accounting-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    steps:
+      - name: Ensure PR has a tracker Issue (Tier B support-only)
+        if: ${{ github.event.action != 'closed' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+
+            const pr = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
+            const prTitle = pr.data.title || '';
+            const prBody = pr.data.body || '';
+
+            const desiredTitle = `[Work][PR #${prNumber}] ${prTitle}`.trim();
+
+            function extractIssueUrl(body) {
+              const m = body.match(/\*\*Issue:\*\*\s*(https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/issues\/\d+)/i)
+                     || body.match(/-\s*\*\*Issue:\*\*\s*(https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/issues\/\d+)/i)
+                     || body.match(/Issue:\s*(https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/issues\/\d+)/i);
+              return m ? m[1] : null;
+            }
+
+            async function findIssueByTitle() {
+              const q = `repo:${owner}/${repo} is:issue in:title "[Work][PR #${prNumber}]"`;
+              const res = await github.rest.search.issuesAndPullRequests({ q, per_page: 5 });
+              return (res.data.items || []).find(i => !i.pull_request) || null;
+            }
+
+            async function tryAddLabels(issueNumber, labels) {
+              try {
+                await github.rest.issues.addLabels({ owner, repo, issue_number: issueNumber, labels });
+              } catch (e) {
+                // label(s) may not exist; ignore
+              }
+            }
+
+            async function ensureIssue() {
+              // 1) If PR body already references an Issue, use it.
+              const existingUrl = extractIssueUrl(prBody);
+              if (existingUrl) {
+                const issueNumber = parseInt(existingUrl.split('/').pop(), 10);
+                try {
+                  const issue = await github.rest.issues.get({ owner, repo, issue_number: issueNumber });
+                  return { issueNumber, issueUrl: existingUrl, issueTitle: issue.data.title || '' };
+                } catch (e) {
+                  // reference is stale; continue
+                }
+              }
+
+              // 2) Search by deterministic title pattern.
+              const found = await findIssueByTitle();
+              if (found) {
+                return { issueNumber: found.number, issueUrl: found.html_url, issueTitle: found.title || '' };
+              }
+
+              // 3) Create new tracker Issue.
+              const body = [
+                `Tracker Issue for PR #${prNumber}.`,
+                ``,
+                `- **PR:** ${pr.data.html_url}`,
+                `- **Status:** open`,
+                `- **Tier:** B (OPS / Overwatch) — support-only`,
+                ``,
+                `This Issue exists to keep the **Issues queue** as the unified work view.`,
+              ].join('\n');
+
+              const created = await github.rest.issues.create({
+                owner,
+                repo,
+                title: desiredTitle,
+                body,
+              });
+
+              await tryAddLabels(created.data.number, ['work-accounting', 'needs-triage']);
+
+              return { issueNumber: created.data.number, issueUrl: created.data.html_url, issueTitle: created.data.title || '' };
+            }
+
+            const issue = await ensureIssue();
+
+            // Ensure Issue title matches desiredTitle (keeps search stable, preserves current PR title)
+            if ((issue.issueTitle || '').trim() !== desiredTitle) {
+              try {
+                await github.rest.issues.update({
+                  owner,
+                  repo,
+                  issue_number: issue.issueNumber,
+                  title: desiredTitle,
+                });
+              } catch (e) {
+                // ignore (permissions/locked)
+              }
+            }
+
+            // Ensure PR body includes Issue link (idempotent).
+            const issueLine = `- **Issue:** ${issue.issueUrl}`;
+            let newBody = prBody || '';
+            if (!extractIssueUrl(newBody)) {
+              newBody = [issueLine, '', newBody].join('\n').trim();
+              await github.rest.pulls.update({
+                owner,
+                repo,
+                pull_number: prNumber,
+                body: newBody,
+              });
+            }
+
+            // Comment on PR once (best-effort) for visibility.
+            const marker = 'OPS: Tracker Issue';
+            try {
+              const comments = await github.rest.issues.listComments({ owner, repo, issue_number: prNumber, per_page: 50 });
+              const already = (comments.data || []).some(c => (c.body || '').includes(marker));
+              if (!already) {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  body: `${marker} created/linked: ${issue.issueUrl}`,
+                });
+              }
+            } catch (e) {
+              // ignore
+            }
+
+      - name: Close associated tracker Issue on PR close (Tier B support-only)
+        if: ${{ github.event.action == 'closed' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+            const merged = !!context.payload.pull_request.merged;
+
+            const pr = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
+            const prTitle = pr.data.title || '';
+            const prBody = pr.data.body || '';
+            const desiredTitle = `[Work][PR #${prNumber}] ${prTitle}`.trim();
+
+            function extractIssueUrl(body) {
+              const m = body.match(/\*\*Issue:\*\*\s*(https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/issues\/\d+)/i)
+                     || body.match(/-\s*\*\*Issue:\*\*\s*(https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/issues\/\d+)/i)
+                     || body.match(/Issue:\s*(https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/issues\/\d+)/i);
+              return m ? m[1] : null;
+            }
+
+            async function findIssueByTitle() {
+              const q = `repo:${owner}/${repo} is:issue in:title "[Work][PR #${prNumber}]"`;
+              const res = await github.rest.search.issuesAndPullRequests({ q, per_page: 5 });
+              return (res.data.items || []).find(i => !i.pull_request) || null;
+            }
+
+            let issueNumber = null;
+            let issueUrl = null;
+
+            const url = extractIssueUrl(prBody);
+            if (url) {
+              issueNumber = parseInt(url.split('/').pop(), 10);
+              issueUrl = url;
+            } else {
+              const found = await findIssueByTitle();
+              if (found) {
+                issueNumber = found.number;
+                issueUrl = found.html_url;
+              }
+            }
+
+            if (!issueNumber) {
+              // Nothing to close; log only.
+              console.log(`No tracker Issue found for PR #${prNumber}`);
+              return;
+            }
+
+            // Keep title aligned (best-effort)
+            try {
+              await github.rest.issues.update({ owner, repo, issue_number: issueNumber, title: desiredTitle });
+            } catch (e) {}
+
+            const msg = merged
+              ? `PR #${prNumber} merged. Closing tracker Issue.\n\n- PR: ${pr.data.html_url}`
+              : `PR #${prNumber} closed without merge. Closing tracker Issue.\n\n- PR: ${pr.data.html_url}`;
+
+            try {
+              await github.rest.issues.createComment({ owner, repo, issue_number: issueNumber, body: msg });
+            } catch (e) {}
+
+            try {
+              await github.rest.issues.update({ owner, repo, issue_number: issueNumber, state: 'closed' });
+            } catch (e) {}
+
+            // Optional: comment on PR to confirm closure (best-effort)
+            try {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body: `OPS: Tracker Issue closed: ${issueUrl || `(issue #${issueNumber})`}`,
+              });
+            } catch (e) {}
