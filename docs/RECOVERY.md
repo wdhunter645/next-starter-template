@@ -166,15 +166,99 @@ npm run dev
 
 ## Creating a Manual Snapshot
 
-To create a reference point before risky operations:
+### Snapshot Backup
 
+**Purpose:** Create recoverable moment-in-time snapshots of the repository and Cloudflare Pages configuration, enabling restoration without repeating recent work.
+
+**When to run:**
+- Before major workflow or tooling changes
+- Before significant refactoring
+- Before Cloudflare Pages configuration updates
+- When establishing a recovery baseline
+- As part of pre-deployment verification
+
+**How to run:**
+
+**Option 1: Via GitHub Actions (Recommended)**
+1. Navigate to the repository in GitHub
+2. Click **Actions** tab
+3. Select **Snapshot Backup (Repo + Cloudflare Pages)** from the workflow list
+4. Click **Run workflow** button
+5. Select branch: `main`
+6. Click **Run workflow**
+7. Wait 1-2 minutes for completion
+
+**Option 2: Via Local Scripts**
 ```bash
-# Run the snapshot script
+# Repository snapshot only
 bash scripts/snapshot_repo.sh
 
-# Or trigger via GitHub Actions
-# Navigate to Actions → Repository Snapshot → Run workflow
+# Cloudflare Pages snapshot (requires secrets)
+# Set environment variables first:
+export CLOUDFLARE_API_TOKEN="your-token"
+export CF_ACCOUNT_ID="your-account-id"
+export CF_PAGES_PROJECT="your-project-name"
+bash scripts/cf_pages_snapshot.sh
 ```
+
+**How to retrieve artifacts:**
+
+After the workflow completes:
+1. On the workflow run page, scroll to **Artifacts** section
+2. Download artifacts:
+   - **repo-snapshot**: Repository state JSON and smoketest log
+   - **cloudflare-pages-snapshot**: Cloudflare Pages configuration JSONs, README, and smoketest log
+3. Extract ZIP files to review snapshot contents
+
+**Artifact locations and retention:**
+- **GitHub Actions artifacts**: 90-day retention (downloadable from workflow run page)
+- **Local snapshots**: 
+  - Repository: `/snapshots/repo-snapshot-{timestamp}.json`
+  - Cloudflare: `/snapshots/cloudflare/cf-project-{timestamp}.json`, `cf-domains-{timestamp}.json`, `cf-deployments-{timestamp}.json`
+
+**What the artifacts contain:**
+
+**Repository snapshot (`repo-snapshot-*.json`):**
+- Current commit SHA, branch, author, commit date, and message
+- List of files changed in last commit
+- Package.json metadata (name, version)
+- Top-level repository tree structure
+- Snapshot timestamp in ISO 8601 format
+
+**Cloudflare Pages snapshots:**
+- `cf-project-*.json`: Pages project configuration, build settings, environment variable names (NOT values)
+- `cf-domains-*.json`: Custom domain configurations and DNS requirements
+- `cf-deployments-*.json`: Latest 3 deployment records with commit SHAs and build metadata
+- `README.md`: Documentation of snapshot contents and security model
+
+**Using snapshots during recovery:**
+
+1. **Identify target state:** Review snapshot JSON to find commit SHA and configuration
+2. **Restore repository:** Use git commands (see recovery methods above) to restore to snapshot commit
+3. **Restore Cloudflare Pages:** Use snapshot JSONs to manually recreate Pages configuration if needed
+4. **Verify:** Compare current state with snapshot to confirm recovery success
+
+**Security notes:**
+- Snapshots capture environment variable **names only**, never values
+- No secrets, API tokens, or credentials are written to snapshot artifacts
+- All snapshot files are safe to commit to the repository
+- Cloudflare API token is required to run the snapshot but is never exported
+
+**Troubleshooting:**
+
+**Workflow fails with "CF_ACCOUNT_ID not set":**
+- Ensure repository secrets are configured: Settings → Secrets and variables → Actions
+- Required secrets: `CLOUDFLARE_API_TOKEN`, `CF_ACCOUNT_ID`, `CF_PAGES_PROJECT`
+
+**Snapshot files not found in artifacts:**
+- Check workflow run logs for script errors
+- Verify `jq` is installed (GitHub Actions runners include it by default)
+- For local runs, ensure scripts have execute permissions: `chmod +x scripts/*.sh`
+
+**For detailed Cloudflare Pages recovery procedures, see:**
+- `/docs/CLOUDFLARE_RECOVERY.md`
+
+---
 
 ## Common Recovery Scenarios
 
