@@ -20,15 +20,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y jq
-      
+
       - name: Run repo snapshot script
         run: bash scripts/snapshot_repo.sh
-      
+
       - name: Upload repo snapshot artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -43,19 +43,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
+
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y jq curl
-      
+
       - name: Run Cloudflare Pages snapshot script
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_PAGES_PROJECT: ${{ secrets.CF_PAGES_PROJECT }}
         run: bash scripts/cf_pages_snapshot.sh
-      
+
       - name: Upload Cloudflare Pages snapshot artifacts
         uses: actions/upload-artifact@v4
         with:
