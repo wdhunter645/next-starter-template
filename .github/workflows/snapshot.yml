@@ -12,6 +12,9 @@ on:
       - 'snapshots/**'
       - 'docs/**'
 
+permissions:
+  contents: read
+
 jobs:
   repo_snapshot:
     runs-on: ubuntu-latest
