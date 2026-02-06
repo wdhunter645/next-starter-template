@@ -6,6 +6,106 @@ This document describes procedures for recovering from repository issues using s
 
 Repository snapshots provide deterministic reference points for rollback audits and recovery operations. Combined with git's version control capabilities, you can quickly restore to a known-good state.
 
+## Daily Snapshot Recovery Net
+
+The repository includes an automated daily snapshot system that captures recoverable system state every day. This safety net provides:
+
+- **Automated daily snapshots** at 08:00 UTC (~3-4AM Eastern depending on DST)
+- **10-day rolling retention** - last 10 days of snapshots are always available
+- **Two snapshot types:**
+  1. **Repository snapshots** - Git state, commit metadata, changed files, package.json info
+  2. **Cloudflare Pages snapshots** - Project config, domains, recent deployments
+
+### Where Snapshots Live
+
+Snapshots are stored as **GitHub Actions artifacts** (not in the repository itself):
+
+1. Navigate to **Actions** tab in GitHub
+2. Click on **Daily Snapshot Safety Net** workflow
+3. Select a recent workflow run
+4. Download artifacts:
+   - `repo-snapshot` - Repository state artifacts
+   - `cloudflare-pages-snapshot` - Cloudflare Pages configuration
+
+**Retention:** All artifacts automatically expire after 10 days to prevent storage bloat.
+
+### How to Download Snapshots
+
+**Via GitHub UI:**
+1. Go to repository → **Actions** tab
+2. Select **Daily Snapshot Safety Net** workflow (or filter by workflow name)
+3. Click on a successful workflow run
+4. Scroll to **Artifacts** section
+5. Click artifact name to download ZIP file
+6. Extract ZIP to view JSON snapshot files
+
+**Via GitHub CLI:**
+```bash
+# List recent workflow runs
+gh run list --workflow=snapshot.yml --limit 10
+
+# Download artifacts from a specific run
+gh run download <run-id> --name repo-snapshot
+gh run download <run-id> --name cloudflare-pages-snapshot
+```
+
+### When to Run Manual Snapshot
+
+Use the manual trigger (`workflow_dispatch`) for emergency lock-in snapshots:
+
+**Before risky operations:**
+- Major dependency upgrades
+- Architecture changes
+- Database migrations
+- Cloudflare configuration changes
+
+**After critical milestones:**
+- Successful production deployment
+- Passing all tests after major feature
+- Before holiday/vacation periods
+
+**To create manual snapshot:**
+1. Go to **Actions** tab
+2. Select **Daily Snapshot Safety Net** workflow
+3. Click **Run workflow** button
+4. Select branch (usually `main`)
+5. Click **Run workflow**
+
+The snapshot will be available as artifacts within a few minutes.
+
+### How Snapshots Support Disaster Recovery
+
+**Repository Recovery:**
+- Repository snapshots contain commit SHA and full git metadata
+- Use commit SHA to restore exact repository state
+- Cross-reference with `changed_files` to understand what changed
+- Package version info helps identify dependency state
+
+**Cloudflare Pages Recovery:**
+- Cloudflare snapshots capture full project configuration
+- Includes build settings, environment variable names, custom domains
+- Recent deployments list shows last known good deployment ID
+- Use to rebuild Pages project if accidentally deleted
+- See `/docs/CLOUDFLARE_RECOVERY.md` for detailed Cloudflare recovery procedures
+
+**Recovery workflow:**
+1. Download relevant snapshot artifact from GitHub Actions
+2. Extract and review JSON files to identify last known good state
+3. For repository issues: Use commit SHA with git recovery methods (see below)
+4. For Cloudflare issues: Use snapshot data to restore configuration
+5. For combined issues: Coordinate both recovery procedures
+
+**Example: Finding last known good deployment**
+```bash
+# Download latest cloudflare-pages-snapshot artifact
+gh run download <run-id> --name cloudflare-pages-snapshot
+
+# View recent deployments
+cat snapshots/cloudflare/cf-deployments-*.json | jq '.result[] | {id, created_on, deployment_trigger: .deployment_trigger.metadata.branch, url}'
+
+# Identify successful deployment ID and use for rollback
+```
+
 ## Snapshot Locations
 
 - **Snapshot Directory**: `/snapshots/`
@@ -166,15 +266,99 @@ npm run dev
 
 ## Creating a Manual Snapshot
 
-To create a reference point before risky operations:
+### Snapshot Backup
 
+**Purpose:** Create recoverable moment-in-time snapshots of the repository and Cloudflare Pages configuration, enabling restoration without repeating recent work.
+
+**When to run:**
+- Before major workflow or tooling changes
+- Before significant refactoring
+- Before Cloudflare Pages configuration updates
+- When establishing a recovery baseline
+- As part of pre-deployment verification
+
+**How to run:**
+
+**Option 1: Via GitHub Actions (Recommended)**
+1. Navigate to the repository in GitHub
+2. Click **Actions** tab
+3. Select **Snapshot Backup (Repo + Cloudflare Pages)** from the workflow list
+4. Click **Run workflow** button
+5. Select branch: `main`
+6. Click **Run workflow**
+7. Wait 1-2 minutes for completion
+
+**Option 2: Via Local Scripts**
 ```bash
-# Run the snapshot script
+# Repository snapshot only
 bash scripts/snapshot_repo.sh
 
-# Or trigger via GitHub Actions
-# Navigate to Actions → Repository Snapshot → Run workflow
+# Cloudflare Pages snapshot (requires secrets)
+# Set environment variables first:
+export CLOUDFLARE_API_TOKEN="your-token"
+export CF_ACCOUNT_ID="your-account-id"
+export CF_PAGES_PROJECT="your-project-name"
+bash scripts/cf_pages_snapshot.sh
 ```
+
+**How to retrieve artifacts:**
+
+After the workflow completes:
+1. On the workflow run page, scroll to **Artifacts** section
+2. Download artifacts:
+   - **repo-snapshot**: Repository state JSON and smoketest log
+   - **cloudflare-pages-snapshot**: Cloudflare Pages configuration JSONs, README, and smoketest log
+3. Extract ZIP files to review snapshot contents
+
+**Artifact locations and retention:**
+- **GitHub Actions artifacts**: 90-day retention (downloadable from workflow run page)
+- **Local snapshots**: 
+  - Repository: `/snapshots/repo-snapshot-{timestamp}.json`
+  - Cloudflare: `/snapshots/cloudflare/cf-project-{timestamp}.json`, `cf-domains-{timestamp}.json`, `cf-deployments-{timestamp}.json`
+
+**What the artifacts contain:**
+
+**Repository snapshot (`repo-snapshot-*.json`):**
+- Current commit SHA, branch, author, commit date, and message
+- List of files changed in last commit
+- Package.json metadata (name, version)
+- Top-level repository tree structure
+- Snapshot timestamp in ISO 8601 format
+
+**Cloudflare Pages snapshots:**
+- `cf-project-*.json`: Pages project configuration, build settings, environment variable names (NOT values)
+- `cf-domains-*.json`: Custom domain configurations and DNS requirements
+- `cf-deployments-*.json`: Latest 3 deployment records with commit SHAs and build metadata
+- `README.md`: Documentation of snapshot contents and security model
+
+**Using snapshots during recovery:**
+
+1. **Identify target state:** Review snapshot JSON to find commit SHA and configuration
+2. **Restore repository:** Use git commands (see recovery methods above) to restore to snapshot commit
+3. **Restore Cloudflare Pages:** Use snapshot JSONs to manually recreate Pages configuration if needed
+4. **Verify:** Compare current state with snapshot to confirm recovery success
+
+**Security notes:**
+- Snapshots capture environment variable **names only**, never values
+- No secrets, API tokens, or credentials are written to snapshot artifacts
+- All snapshot files are safe to commit to the repository
+- Cloudflare API token is required to run the snapshot but is never exported
+
+**Troubleshooting:**
+
+**Workflow fails with "CF_ACCOUNT_ID not set":**
+- Ensure repository secrets are configured: Settings → Secrets and variables → Actions
+- Required secrets: `CLOUDFLARE_API_TOKEN`, `CF_ACCOUNT_ID`, `CF_PAGES_PROJECT`
+
+**Snapshot files not found in artifacts:**
+- Check workflow run logs for script errors
+- Verify `jq` is installed (GitHub Actions runners include it by default)
+- For local runs, ensure scripts have execute permissions: `chmod +x scripts/*.sh`
+
+**For detailed Cloudflare Pages recovery procedures, see:**
+- `/docs/CLOUDFLARE_RECOVERY.md`
+
+---
 
 ## Common Recovery Scenarios
 

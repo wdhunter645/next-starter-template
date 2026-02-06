@@ -197,6 +197,32 @@ To run production scans immediately (without waiting for scheduled runs):
    - `ops-design-compliance-audit.yml` — Design compliance
 
 **Alternative:** Use `workflow_dispatch` in GitHub Actions UI for individual workflow runs.
+### `snapshot.yml`
+- **Name:** `Snapshot Backup (Repo + Cloudflare Pages)`
+- **Purpose:** Creates recoverable moment-in-time snapshots of repository state and Cloudflare Pages configuration
+- **What it captures:**
+  - **Repository snapshot:**
+    - Current commit SHA, branch, author, and timestamp
+    - Changed files from last commit
+    - Package.json metadata (name, version)
+    - Top-level repository tree
+  - **Cloudflare Pages snapshot:**
+    - Pages project configuration (build settings, environment variable names)
+    - Custom domain configurations
+    - Latest 3 deployment records
+- **Triggers:**
+  - `workflow_dispatch` (manual run - recommended before major changes)
+  - `push` to `main` (limited to workflow/script/snapshot/docs changes only)
+- **Artifacts produced:**
+  - `repo-snapshot`: Repository snapshot JSON + smoketest log (90-day retention)
+  - `cloudflare-pages-snapshot`: Cloudflare JSONs + README + smoketest log (90-day retention)
+- **Required secrets/environment variables:**
+  - `CLOUDFLARE_API_TOKEN` (secret)
+  - `CF_ACCOUNT_ID` (secret or environment variable)
+  - `CF_PAGES_PROJECT` (secret or environment variable)
+- **Expected runtime:** 1-2 minutes (both jobs run in parallel)
+- **Artifacts location:** GitHub Actions artifacts (downloadable from workflow run page)
+- **Security:** Captures environment variable names only, never values; no secrets written to artifacts
 
 ---
 
@@ -303,7 +329,6 @@ The following workflows are **not part of this redesign** and remain as-is:
 - `pr-triage-zip-taint.yml`
 - `preview-invariants.yml`
 - `purge-zip-history.yml`
-- `snapshot.yml`
 - `test-homepage.yml`
 - `test.yml`
 - `zip-history-audit.yml`

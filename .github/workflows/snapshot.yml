@@ -1,16 +1,67 @@
-name: Legacy LGFC-main Workflow (Parked)
-
-# This workflow belonged to the pre-LGFC-Lite architecture (Next.js/Vercel).
-# It is intentionally disabled during the LGFC-Lite phase to avoid false failures.
-# When LGFC main resumes, replace this stub with a new implementation
-# aligned to the current architecture and the governance docs in /docs.
+name: Snapshot Backup (Repo + Cloudflare Pages)
 
 on:
+  schedule:
+    # Run daily at 08:00 UTC (~3-4AM Eastern depending on DST)
+    - cron: '0 8 * * *'
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/snapshot.yml'
+      - 'scripts/snapshot_repo.sh'
+      - 'scripts/cf_pages_snapshot.sh'
+      - 'snapshots/**'
+      - 'docs/**'
+
+permissions:
+  contents: read
 
 jobs:
-  noop:
+  repo_snapshot:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run repo snapshot script
+        run: bash scripts/snapshot_repo.sh
+
+      - name: Upload repo snapshot artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-snapshot
+          path: |
+            snapshots/repo-snapshot-*.json
+            snapshots/_smoketest.txt
+          retention-days: 90
+
+  cloudflare_pages_snapshot:
     runs-on: ubuntu-latest
     steps:
-      - name: Legacy workflow parked
-        run: echo "Legacy LGFC-main workflow is parked; does not run automatically."
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Cloudflare Pages snapshot script
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_PAGES_PROJECT: ${{ secrets.CF_PAGES_PROJECT }}
+        run: bash scripts/cf_pages_snapshot.sh
+
+      - name: Upload Cloudflare Pages snapshot artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudflare-pages-snapshot
+          path: |
+            snapshots/cloudflare/cf-project-*.json
+            snapshots/cloudflare/cf-domains-*.json
+            snapshots/cloudflare/cf-deployments-*.json
+            snapshots/cloudflare/_smoketest.txt
+            snapshots/cloudflare/README.md
+          retention-days: 90
