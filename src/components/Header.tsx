@@ -52,7 +52,7 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           width: auto;
         }
         .header-center {
-          /* Centered button group only */
+          /* Centered button + hamburger group */
           position: fixed;
           top: 8px;
           left: 50%;
@@ -67,26 +67,16 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           box-shadow: 0 2px 10px rgba(0,0,0,0.06);
           z-index: 1000;
         }
-        .header-right {
-          /* Hamburger adjacent to center buttons */
-          position: fixed;
-          top: 8px;
-          right: calc(50% - 310px);
-          z-index: 1001;
-        }
-        @media (max-width: 768px) {
-          .header-right {
-            right: 16px;
-          }
-        }
         .burger-wrapper {
           position: relative;
           display: inline-flex;
-          padding: 6px;
-          border-radius: 14px;
-          background: rgba(255,255,255,0.9);
-          backdrop-filter: blur(6px);
-          box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+          align-items: center;
+          justify-content: center;
+          width: 44px;
+          height: 44px;
+          border-radius: var(--lgfc-radius-md);
+          border: 1px solid rgba(0, 0, 0, 0.15);
+          background: var(--lgfc-bg-card);
         }
         .header-btn {
           display: inline-flex;
@@ -162,8 +152,7 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
               </button>
             </>
           )}
-        </div>
-        <div className="header-right">
+
           <div className="burger-wrapper">
             <button 
               ref={toggleRef}
@@ -173,7 +162,6 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
               aria-expanded={open}
               aria-controls="hamburger-menu"
             >
-              {/* simple hamburger icon */}
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
               </svg>

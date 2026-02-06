@@ -22,7 +22,9 @@
 }
 
 .container {
-	width: 100%;
+  width: 100%;
+  max-width: var(--maxw);
+  margin: 0 auto;
 	text-align: center;
 	animation: fadeIn 1s ease-out;
 	padding: 2rem 1rem;
