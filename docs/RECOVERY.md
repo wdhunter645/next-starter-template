@@ -403,6 +403,62 @@ git revert --no-edit <bad-commit>..HEAD
 git push origin main
 ```
 
+## Running Production Scans On Demand
+
+Production monitoring workflows (Class B operational scans) run automatically on schedule, but can be triggered on demand when needed (e.g., after a critical fix, before a major release, or for baseline verification).
+
+### Method 1: Trigger via Scan Marker File (Recommended)
+
+This method triggers all production scans with a single merge:
+
+1. **Update the trigger marker file:**
+   ```bash
+   # Edit docs/ops/scan-trigger.md
+   # Update the timestamp and reason
+   ```
+
+2. **Commit and create PR:**
+   ```bash
+   git checkout -b trigger-production-scans
+   git add docs/ops/scan-trigger.md
+   git commit -m "change-ops: trigger production scans - <reason>"
+   git push origin trigger-production-scans
+   # Create PR and merge to main
+   ```
+
+3. **Workflows triggered on merge:**
+   - `production-audit.yml` — Playwright invariants against production
+   - `ops-assess.yml` — Site assessment and health checks
+   - `ops-design-compliance-audit.yml` — Design compliance monitoring
+
+### Method 2: Manual Workflow Dispatch
+
+To run individual workflows:
+
+1. Navigate to **Actions** tab in GitHub
+2. Select the workflow to run:
+   - **Production Audit (Playwright Invariants)**
+   - **OPS — Site Assessment**
+   - **OPS — Design Compliance Audit**
+3. Click **Run workflow** → Select `main` branch → **Run workflow**
+
+### When to Run Production Scans
+
+- After merging critical bug fixes to main
+- Before major releases or announcements
+- After infrastructure changes (DNS, CDN, hosting)
+- When investigating user-reported issues
+- For baseline verification after recovery operations
+- To validate design compliance after significant UI changes
+
+### Viewing Scan Results
+
+All production scans upload artifacts and create GitHub issues on failure:
+
+- **Artifacts:** Available in Actions run (30-90 day retention)
+- **Issues:** Labeled with `change-ops` or specific failure labels
+- **Logs:** Full output in GitHub Actions workflow run details
+
 ## Prevention Best Practices
 
 1. **Always Create Snapshots** before major changes
