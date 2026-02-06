@@ -8,6 +8,7 @@ on:
 permissions:
   contents: read
   pull-requests: read
+  actions: read
 
 jobs:
   drift-gate:
@@ -53,7 +54,67 @@ jobs:
           chmod +x scripts/ci/verify_zip_history_pr.sh
           scripts/ci/verify_zip_history_pr.sh
 
-      - name: Wait for exactly one intent label (3 tries)
+      - name: Wait for Intent Labeler to complete (PR head SHA)
+        if: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -e
+
+          echo "Waiting for Intent Labeler workflow to complete for SHA: ${HEAD_SHA}"
+          
+          # Poll for workflow run completion
+          attempts=0
+          max_attempts=6
+          sleep_interval=30
+          
+          while [ "${attempts}" -lt "${max_attempts}" ]; do
+            attempts=$((attempts+1))
+            echo "Attempt ${attempts}/${max_attempts}: Checking for Intent Labeler workflow run..."
+            
+            # Query workflow runs for the labeler workflow
+            response=$(curl -sS -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${REPO}/actions/workflows/gate-intent-labeler.yml/runs?event=pull_request&per_page=20" \
+              2>&1)
+            
+            # Check if curl failed
+            if [ $? -ne 0 ]; then
+              echo "⚠️ API request failed: ${response}"
+              response='{"workflow_runs":[]}'
+            fi
+            
+            # Find run matching this PR's head SHA
+            run_status=$(echo "${response}" | jq -r --arg sha "${HEAD_SHA}" \
+              '.workflow_runs[] | select(.head_sha == $sha) | .status' | head -n 1)
+            
+            if [ -n "${run_status}" ]; then
+              echo "Found workflow run for SHA ${HEAD_SHA} with status: ${run_status}"
+              
+              if [ "${run_status}" = "completed" ]; then
+                echo "✅ Intent Labeler workflow completed."
+                break
+              else
+                echo "⏳ Workflow still running (status: ${run_status}). Waiting..."
+              fi
+            else
+              echo "⏳ No workflow run found yet for SHA ${HEAD_SHA}. Waiting..."
+            fi
+            
+            if [ "${attempts}" -lt "${max_attempts}" ]; then
+              sleep "${sleep_interval}"
+            fi
+          done
+          
+          if [ "${attempts}" -ge "${max_attempts}" ]; then
+            echo "⚠️ Timeout waiting for Intent Labeler (${max_attempts} attempts). Continuing anyway..."
+            echo "The next step will still enforce exactly one intent label requirement."
+          fi
+
+      - name: Wait for exactly one intent label (after labeler)
         if: ${{ github.event_name == 'pull_request' }}
         shell: bash
         env:
@@ -87,15 +148,19 @@ jobs:
               exit 0
             fi
 
-            if [ "${attempts}" -ge 3 ]; then
+            if [ "${attempts}" -ge 6 ]; then
               echo "ERROR: PR must include exactly ONE intent label."
               echo "Allowed intent labels: recovery, feature, docs-only, infra, platform, change-ops, codex"
               echo "Found: ${intents_json}"
               exit 1
             fi
 
+            # Progressive backoff (sleep between attempts 1-5): 10s, 20s, 30s, 40s, 60s
             if [ "${attempts}" -eq 1 ]; then sleep 10; fi
             if [ "${attempts}" -eq 2 ]; then sleep 20; fi
+            if [ "${attempts}" -eq 3 ]; then sleep 30; fi
+            if [ "${attempts}" -eq 4 ]; then sleep 40; fi
+            if [ "${attempts}" -eq 5 ]; then sleep 60; fi
           done
 
       - name: Critical LGFC invariants

@@ -80,6 +80,7 @@ These workflows run on pull requests and are the **only** workflows that should 
   - PR intent allowlist validation
   - Critical LGFC invariants
 - **Triggers:** `pull_request`, `workflow_dispatch`
+- **Note:** Drift-gate now waits for intent labeler completion to avoid transient label removal flake. If labeler detects mixed intent, it may remove intent labels; operator must split PR or apply correct single intent label per governance.
 
 ### `gate-intent-labeler.yml`
 - **Name:** `GATE — Intent Labeler`
