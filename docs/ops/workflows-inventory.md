@@ -119,7 +119,7 @@ These workflows operate on `main` branch only and **must never** be configured a
 - **Name:** `OPS — Site Assessment`
 - **Purpose:** Validates site build, routes, navigation, and page markers
 - **Behavior:**
-  - Runs nightly and on `main` push (when `docs/ops/scan-trigger.md` changes)
+  - Runs nightly and on `main` push when `docs/ops/scan-trigger.md` changes
   - Creates GitHub issue on failure (with `assessment-failure` label)
   - Uploads detailed artifacts (90-day retention)
 - **Triggers:** `schedule` (nightly 2 AM UTC), `push` (main, when `docs/ops/scan-trigger.md` changes), `workflow_dispatch`
