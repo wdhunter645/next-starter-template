@@ -1,5 +1,3 @@
-'use client';
-
 import styles from './page.module.css';
 
 import WeeklyMatchup from '@/components/WeeklyMatchup';
@@ -27,16 +25,16 @@ export default function HomePage() {
       {/* Section: Weekly Photo Matchup */}
       <section id="weekly" className="section-gap">
         <div className="container">
-          <h2 className="section-title" style={{ textAlign: 'center', color: 'var(--lgfc-blue)', marginBottom: '1rem' }}>
-            Weekly Photo Matchup. Vote for your favorite!
-          </h2>
+          <h2 className="section-title">Weekly Photo Matchup. Vote for your favorite!</h2>
           <WeeklyMatchup />
         </div>
       </section>
 
       {/* Section: Membership CTA */}
-      <section id="join-cta" className="container section-gap">
-        <JoinCTA />
+      <section id="join-cta" className="section-gap">
+        <div className="container">
+          <JoinCTA />
+        </div>
       </section>
 
       {/* Section: Social Wall */}
@@ -45,18 +43,24 @@ export default function HomePage() {
       <RecentDiscussionsTeaser />
 
       {/* Section: Friends of the Fan Club */}
-      <section id="friends-of-the-club" className="container section-gap-moderate">
-        <FriendsOfFanClub />
+      <section id="friends-of-the-club" className="section-gap-moderate">
+        <div className="container">
+          <FriendsOfFanClub />
+        </div>
       </section>
 
       {/* Section: Milestones */}
-      <section id="milestones" className="container section-gap-tight">
-        <MilestonesSection />
+      <section id="milestones" className="section-gap-tight">
+        <div className="container">
+          <MilestonesSection />
+        </div>
       </section>
 
       {/* Section: Calendar */}
-      <section id="calendar" className="container section-gap-tight">
-        <CalendarSection />
+      <section id="calendar" className="section-gap-tight">
+        <div className="container">
+          <CalendarSection />
+        </div>
       </section>
 
       {/* Section: FAQ */}
