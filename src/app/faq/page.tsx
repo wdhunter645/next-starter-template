@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { apiGet, apiPost } from '@/lib/api';
@@ -14,7 +14,7 @@ type FAQItem = {
   updated_at: string;
 };
 
-export default function FAQPage() {
+function FAQContent() {
   const searchParams = useSearchParams();
   const [query, setQuery] = useState(searchParams.get('q') || '');
   const [items, setItems] = useState<FAQItem[]>([]);
@@ -58,7 +58,7 @@ export default function FAQPage() {
   };
 
   return (
-    <main className="container" style={{ padding: '40px 16px', maxWidth: 900, margin: '0 auto' }}>
+    <>
       <h1 style={{ fontSize: 34, margin: '0 0 10px 0' }}>FAQ – Frequently Asked Questions</h1>
       <p className="sub" style={{ marginTop: 0 }}>
         Browse all approved FAQ entries. Click a question to reveal the answer.
@@ -107,6 +107,21 @@ export default function FAQPage() {
           </Link>
         </div>
       </section>
+    </>
+  );
+}
+
+export default function FAQPage() {
+  return (
+    <main className="container" style={{ padding: '40px 16px', maxWidth: 900, margin: '0 auto' }}>
+      <Suspense fallback={
+        <>
+          <h1 style={{ fontSize: 34, margin: '0 0 10px 0' }}>FAQ – Frequently Asked Questions</h1>
+          <p className="sub">Loading...</p>
+        </>
+      }>
+        <FAQContent />
+      </Suspense>
     </main>
   );
 }
