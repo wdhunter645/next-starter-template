@@ -2,6 +2,9 @@
 
 ## Overview
 
+Authoritative tier model:
+- `docs/governance/tier-a-tier-b-overwatch-model_MASTER.md`
+
 This repository uses a **two-tier workflow architecture** to separate PR governance checks (GATE) from operational monitoring and maintenance tasks (OPS). This separation ensures that PRs are never blocked by operational workflows and that required status checks remain predictable and deterministic.
 
 ---
@@ -13,11 +16,11 @@ This repository uses a **two-tier workflow architecture** to separate PR governa
 **Purpose:** Fast, deterministic, repository-local governance gates that validate PR quality before merge.
 
 **Characteristics:**
-- **Allowed triggers:** `pull_request` (targeting `main`), optional `workflow_dispatch` for debugging
-- **Purpose:** Governance gates only (fast, deterministic, repo-local)
-- **Must NOT:** Call OPS workflows, make live-site calls, or perform "in-use vs design" comparisons that could block feature work
-- **File naming:** `.github/workflows/gate-*.yml`
-- **Workflow name:** Must begin with `GATE — `
+- **Allowed triggers:** `schedule`, `workflow_dispatch`, `push` (main-only), and `pull_request_target` **only when used for non-gating work accounting** (e.g., PR→Issue lifecycle)
+- **Never:** become a required PR check or block merges
+- **Operates on:** `main` branch state unless explicitly operating on PR metadata (e.g., PR→Issue association)
+- **Must:** signal through Issues and logs (not by failing PR-required checks)
+- **Naming:** `.github/workflows/ops-*.yml` and workflow name begins with `OPS — `
 
 **Examples:**
 - Code quality checks (lint, typecheck, tests)
@@ -28,15 +31,16 @@ This repository uses a **two-tier workflow architecture** to separate PR governa
 
 ### Tier B: OPS (Operations & Monitoring)
 
-**Purpose:** Operational workflows for monitoring, alerting, and maintenance tasks that run on `main` only.
+**Purpose:** Operational monitoring, overwatch logging, and Issue-driven work routing.
+
+**Key rule:** Tier B may respond to PR events for **work accounting** (PR→Issue creation/association and PR-close→Issue close), but Tier B workflows are **never** required PR checks and must never block merges.
 
 **Characteristics:**
-- **Allowed triggers:** `schedule`, `workflow_dispatch`, optional `push` to `main` only
-- **Never use:** `pull_request` trigger (not even with "skip" logic)
-- **Operates on:** `main` branch only (unless explicitly expanded later)
-- **Must NOT:** Call GATE workflows or rely on GATE outputs
-- **File naming:** `.github/workflows/ops-*.yml`
-- **Workflow name:** Must begin with `OPS — `
+- **Allowed triggers:** `schedule`, `workflow_dispatch`, `push` (main-only), and `pull_request_target` **only when used for non-gating work accounting** (e.g., PR→Issue lifecycle)
+- **Never:** become a required PR check or block merges
+- **Operates on:** `main` branch state unless explicitly operating on PR metadata (e.g., PR→Issue association)
+- **Must:** signal through Issues and logs (not by failing PR-required checks)
+- **Naming:** `.github/workflows/ops-*.yml` and workflow name begins with `OPS — `
 
 **Examples:**
 - Site health assessment
