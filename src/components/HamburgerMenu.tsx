@@ -38,15 +38,14 @@ export default function HamburgerMenu({
         }
         .hamburger-dropdown {
           position: absolute;
-          top: calc(40px + 6px + 6px + 8px); /* burger height + wrapper padding * 2 + spacing */
+          top: calc(100% + 8px);
           right: 0;
           background: #fff;
           border: 1px solid #ddd;
           border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
           padding: 12px;
-          z-index: 1002;
-          min-width: 200px;
+          z-index: 100;
         }
         .hamburger-close {
           position: absolute;
