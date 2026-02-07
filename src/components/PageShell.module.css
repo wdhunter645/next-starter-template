@@ -1,0 +1,57 @@
+.shell{
+  padding: 34px 0 54px;
+}
+
+.header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.titleBlock{
+  min-width: 0;
+}
+
+.title{
+  margin: 0;
+  font-family: var(--font-head, var(--font-headline, "Georgia", "Times New Roman", serif));
+  font-size: 2.05rem;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--lgfc-charcoal, var(--text, #111));
+}
+
+.subtitle{
+  margin: 10px 0 0;
+  max-width: 78ch;
+  color: rgba(0,0,0,0.72);
+  font-size: 1.02rem;
+  line-height: 1.5;
+}
+
+.actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 2px;
+}
+
+.content{
+  display:block;
+}
+
+/* Desktop-first: keep actions right-aligned; stack only on narrow viewports */
+@media (max-width: 820px){
+  .header{
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .actions{
+    justify-content:flex-start;
+    padding-top: 6px;
+  }
+}
