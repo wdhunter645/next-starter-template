@@ -1,0 +1,32 @@
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:24px;
+  margin-top:12px;
+}
+
+.card{
+  border:1px solid #e5e5e5;
+  border-radius:10px;
+  padding:18px;
+  background:white;
+}
+
+.card h2{
+  margin:0 0 6px 0;
+  font-size:1.2rem;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  margin-top:14px;
+}
+
+.actions button{
+  padding:8px 12px;
+  border:1px solid #ddd;
+  background:#f7f7f7;
+  border-radius:6px;
+  cursor:pointer;
+}
