@@ -1,7 +1,30 @@
+.section {
+  padding: 64px 16px;
+}
+
+.container {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.sectionTitle {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-align: center;
+  color: var(--lgfc-blue);
+}
+
+.sectionSubtitle {
+  margin-bottom: 24px;
+  text-align: center;
+  color: var(--lgfc-text-main);
+}
+
 .embed {
   max-width: 1120px;
   margin: 0 auto;
-  min-height: 420px; /* reserve space while widget loads (avoid huge gaps) */
+  min-height: 800px; /* reserve space while widget loads */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -10,7 +33,7 @@
 
 .fallback {
   position: absolute;
-  bottom: 12px;
+  bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 14px;

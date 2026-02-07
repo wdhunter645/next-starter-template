@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiPost } from '@/lib/api';
-import PageShell from '@/components/PageShell';
 
 export default function AskPage() {
   const router = useRouter();
@@ -45,20 +44,11 @@ export default function AskPage() {
   };
 
   const handleCancel = () => {
-    // Prefer returning to the prior page (e.g. /faq), with a safe fallback.
-    try {
-      if (typeof window !== 'undefined' && window.history.length > 1) {
-        router.back();
-        return;
-      }
-    } catch {
-      // ignore
-    }
     router.push('/faq');
   };
 
   return (
-    <PageShell>
+    <main className="container" style={{ padding: '40px 16px', maxWidth: 900, margin: '0 auto' }}>
       <h1 style={{ fontSize: 34, margin: '0 0 10px 0' }}>Ask a Question</h1>
       <p className="sub" style={{ marginTop: 0 }}>
         Submit your question for review. If approved, it will appear in our FAQ library.
@@ -112,6 +102,6 @@ export default function AskPage() {
           ← Back to FAQ
         </Link>
       </div>
-    </PageShell>
+    </main>
   );
 }
