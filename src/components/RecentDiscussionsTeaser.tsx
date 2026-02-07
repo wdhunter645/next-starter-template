@@ -32,8 +32,7 @@ export default function RecentDiscussionsTeaser() {
   }, []);
 
   return (
-    <section id="recent-club-discussions" className="section-gap">
-      <div className="container">
+    <section id="recent-club-discussions" className="container section-gap">
       <h2 className="section-title">Recent Club discussions</h2>
       <p className="sub" style={{ textAlign: 'center' }}>
         Pulled live from D1 discussions table (latest 5 posts).
@@ -56,7 +55,6 @@ export default function RecentDiscussionsTeaser() {
           ))}
         </div>
       )}
-      </div>
     </section>
   );
 }
