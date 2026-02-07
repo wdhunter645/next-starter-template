@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { apiGet, apiPost } from '@/lib/api';
-import PageShell from '@/components/PageShell';
 
 type FAQItem = { 
   id: number; 
@@ -60,11 +59,6 @@ function FAQContent() {
 
   return (
     <>
-      <div style={{ marginBottom: 14 }}>
-        <Link href="/" className="link" style={{ fontSize: 16 }}>
-          ← Back to Home
-        </Link>
-      </div>
       <h1 style={{ fontSize: 34, margin: '0 0 10px 0' }}>FAQ – Frequently Asked Questions</h1>
       <p className="sub" style={{ marginTop: 0 }}>
         Browse all approved FAQ entries. Click a question to reveal the answer.
@@ -119,7 +113,7 @@ function FAQContent() {
 
 export default function FAQPage() {
   return (
-    <PageShell>
+    <main className="container" style={{ padding: '40px 16px', maxWidth: 900, margin: '0 auto' }}>
       <Suspense fallback={
         <>
           <h1 style={{ fontSize: 34, margin: '0 0 10px 0' }}>FAQ – Frequently Asked Questions</h1>
@@ -128,6 +122,6 @@ export default function FAQPage() {
       }>
         <FAQContent />
       </Suspense>
-    </PageShell>
+    </main>
   );
 }

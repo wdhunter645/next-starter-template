@@ -117,10 +117,11 @@ export default function FAQSection() {
           </p>
         )}
 
-        <div style={{ marginTop: 18, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-          <Link href="/faq" className="btn" style={{ textDecoration: 'none' }}>
-            Open the FAQ Library
+        <div style={{ marginTop: 18, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <Link href="/faq" className="link" style={{ fontSize: 16 }}>
+            View all FAQs
           </Link>
+          <span className="sub">•</span>
           <Link href="/ask" className="link" style={{ fontSize: 16 }}>
             Ask a Question
           </Link>

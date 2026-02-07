@@ -125,6 +125,7 @@ export default function WeeklyMatchup() {
     <div className="card">
       <div className="sub" style={{ marginBottom: 14 }}>
         Results remain hidden until you vote.
+        {weekStart ? <span style={{ marginLeft: 8, opacity: 0.7 }}>Week of {weekStart}</span> : null}
       </div>
 
       <div className="grid">

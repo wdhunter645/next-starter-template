@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, RefObject, useState } from 'react';
+import { useRef, RefObject } from 'react';
 import { useClickAway } from '@/hooks/useClickAway';
 
 /**
@@ -17,37 +17,8 @@ export default function HamburgerMenu({
   toggleRef: RefObject<HTMLButtonElement | null>;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState<{ top: number; left: number; minWidth: number } | null>(null);
   
   useClickAway(containerRef, toggleRef, onClose, true);
-
-  useEffect(() => {
-    const calc = () => {
-      const btn = toggleRef.current;
-      if (!btn) return;
-
-      const r = btn.getBoundingClientRect();
-      const minWidth = 220;
-      const pad = 8;
-      const top = Math.round(r.bottom + pad);
-
-      // Prefer left alignment to the button; clamp to viewport.
-      const vw = typeof window !== 'undefined' ? window.innerWidth : 1200;
-      let left = Math.round(r.left);
-      if (left + minWidth + pad > vw) left = Math.max(pad, vw - minWidth - pad);
-
-      setPos({ top, left, minWidth });
-    };
-
-    calc();
-    window.addEventListener('resize', calc);
-    window.addEventListener('scroll', calc, { passive: true });
-    return () => {
-      window.removeEventListener('resize', calc);
-      window.removeEventListener('scroll', calc);
-    };
-  }, [toggleRef]);
-
   return (
     <>
       <style jsx>{`
@@ -66,14 +37,16 @@ export default function HamburgerMenu({
           }
         }
         .hamburger-dropdown {
-          position: fixed;
+          position: absolute;
+          top: calc(40px + 6px + 6px + 8px); /* burger height + wrapper padding * 2 + spacing */
+          right: 0;
           background: #fff;
           border: 1px solid #ddd;
           border-radius: 8px;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
           padding: 12px;
           z-index: 1002;
-          min-width: 220px;
+          min-width: 200px;
         }
         .hamburger-close {
           position: absolute;
@@ -91,7 +64,7 @@ export default function HamburgerMenu({
         }
         .hamburger-menu li {
           padding: 8px 0;
-          text-align: left;
+          text-align: right;
         }
         .hamburger-menu a {
           color: #000;
@@ -101,12 +74,7 @@ export default function HamburgerMenu({
           color: var(--lgfc-blue);
         }
       `}</style>
-      <div
-        className="hamburger-dropdown"
-        id="hamburger-menu"
-        ref={containerRef}
-        style={pos ? { top: pos.top, left: pos.left, minWidth: pos.minWidth } : { top: 64, left: 16, minWidth: 220 }}
-      >
+      <div className="hamburger-dropdown" id="hamburger-menu" ref={containerRef}>
         <button className="hamburger-close" onClick={onClose} aria-label="Close menu">
           ×
         </button>
