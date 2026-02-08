@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import PageShell from '@/components/PageShell';
+import AdminNav from '@/components/admin/AdminNav';
 
 type Block = {
   key: string;
@@ -114,7 +116,10 @@ export default function AdminCMS() {
   }, [token]);
 
   return (
-    <main style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
+    <PageShell title="Admin – CMS Blocks" subtitle="Manage published CMS blocks (content_blocks) in D1">
+      <AdminNav />
+
+    <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0 }}>CMS Editor</h1>
@@ -236,6 +241,7 @@ export default function AdminCMS() {
           </div>
         </section>
       </div>
-    </main>
+    </div>
+    </PageShell>
   );
 }
