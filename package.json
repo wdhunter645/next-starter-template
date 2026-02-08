@@ -39,7 +39,7 @@
     "dev:cf": "wrangler pages dev out --compatibility-date=2025-10-30 --compatibility-flags=nodejs_compat --d1=DB --live-reload",
     "build": "next build",
     "postbuild": "cp _routes.json out/_routes.json",
-    "build:cf": "next build && npm run postbuild",
+    "build:cf": "rm -rf out .next && next build && npm run postbuild",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
