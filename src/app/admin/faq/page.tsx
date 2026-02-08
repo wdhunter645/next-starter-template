@@ -1,281 +1,213 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import React, { useEffect, useMemo, useState } from 'react';
 import PageShell from '@/components/PageShell';
 import AdminNav from '@/components/admin/AdminNav';
 
-type FAQEntry = {
-  id: number;
+type FaqItem = {
+  id: string;
   question: string;
   answer: string;
-  status: string;
-  submitter_email: string | null;
-  view_count: number;
-  pinned: number;
-  created_at: string;
-  updated_at: string;
+  approved: boolean;
+  pinned: boolean;
+  views: number;
 };
 
-function getStoredToken(): string {
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null;
+}
+
+function asString(v: unknown): string | null {
+  return typeof v === 'string' ? v : null;
+}
+
+function asNumber(v: unknown): number | null {
+  return typeof v === 'number' && Number.isFinite(v) ? v : null;
+}
+
+function asBool(v: unknown): boolean | null {
+  return typeof v === 'boolean' ? v : null;
+}
+
+function normalize(raw: unknown): FaqItem | null {
+  if (!isRecord(raw)) return null;
+  const id = asString(raw.id) ?? asString(raw.uuid) ?? asString(raw.faq_id) ?? null;
+  const question = asString(raw.question) ?? null;
+  const answer = asString(raw.answer) ?? '';
+  if (!id || !question) return null;
+
+  const approved =
+    asBool(raw.approved) ??
+    (asNumber(raw.approved) !== null ? (asNumber(raw.approved) as number) !== 0 : false);
+
+  const pinned =
+    asBool(raw.pinned) ??
+    (asNumber(raw.pinned) !== null ? (asNumber(raw.pinned) as number) !== 0 : false);
+
+  const views = asNumber(raw.views) ?? 0;
+
+  return { id, question, answer, approved, pinned, views };
+}
+
+function getToken(): string {
   if (typeof window === 'undefined') return '';
   return window.localStorage.getItem('lgfc_admin_token') || '';
 }
 
-function setStoredToken(t: string) {
+function persistToken(t: string) {
   if (typeof window === 'undefined') return;
   window.localStorage.setItem('lgfc_admin_token', t);
 }
 
-export default function AdminFAQPage() {
+export default function AdminFaqPage() {
   const [token, setToken] = useState('');
-  const [pendingItems, setPendingItems] = useState<FAQEntry[]>([]);
-  const [approvedItems, setApprovedItems] = useState<FAQEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editAnswer, setEditAnswer] = useState('');
+  const [status, setStatus] = useState<string>('');
+  const [items, setItems] = useState<FaqItem[]>([]);
+  const [filter, setFilter] = useState<'all' | 'approved' | 'pending'>('all');
 
   useEffect(() => {
-    setToken(getStoredToken());
+    setToken(getToken());
   }, []);
 
-  const loadFAQs = async (overrideToken?: string) => {
-    const useToken = (overrideToken ?? token).trim();
-    if (!useToken) {
-      setError('Admin token required.');
-      setLoading(false);
+  const filtered = useMemo(() => {
+    if (filter === 'approved') return items.filter((x) => x.approved);
+    if (filter === 'pending') return items.filter((x) => !x.approved);
+    return items;
+  }, [items, filter]);
+
+  async function load() {
+    if (!token) {
+      setStatus('Enter ADMIN_TOKEN to load FAQ.');
       return;
     }
-
-    setLoading(true);
-    setError('');
-
-    try {
-      setStoredToken(useToken);
-      const headers = { 'x-admin-token': useToken };
-
-      const [pendingRes, approvedRes] = await Promise.all([
-        fetch('/api/admin/faq/pending', { headers }),
-        fetch('/api/admin/faq/approved', { headers }),
-      ]);
-
-      const pendingData = await pendingRes.json();
-      const approvedData = await approvedRes.json();
-
-      if (!pendingData.ok) throw new Error(pendingData.error || 'Failed to load pending FAQs');
-      if (!approvedData.ok) throw new Error(approvedData.error || 'Failed to load approved FAQs');
-
-      setPendingItems(pendingData.items || []);
-      setApprovedItems(approvedData.items || []);
-    } catch (e: any) {
-      setError(String(e?.message || e));
-      setPendingItems([]);
-      setApprovedItems([]);
-    } finally {
-      setLoading(false);
+    setStatus('Loading…');
+    const res = await fetch('/api/admin/faq/list', {
+      headers: { 'x-admin-token': token },
+      cache: 'no-store',
+    });
+    const data: unknown = await res.json().catch(() => ({}));
+    if (!isRecord(data) || data.ok !== true) {
+      const err = isRecord(data) && typeof data.error === 'string' ? data.error : `HTTP ${res.status}`;
+      setStatus(`Error: ${err}`);
+      setItems([]);
+      return;
     }
-  };
+    const raw = (data as Record<string, unknown>).items;
+    const arr = Array.isArray(raw) ? raw : [];
+    const normalized = arr.map(normalize).filter((x): x is FaqItem => x !== null);
+    setItems(normalized);
+    setStatus('');
+  }
 
-  useEffect(() => {
-    if (token) loadFAQs(token);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
-
-  const startEdit = (item: FAQEntry) => {
-    setEditingId(item.id);
-    setEditAnswer(item.answer || '');
-  };
-
-  const cancelEdit = () => {
-    setEditingId(null);
-    setEditAnswer('');
-  };
-
-  const approve = async (id: number) => {
+  async function patch(id: string, changes: Partial<Pick<FaqItem, 'approved' | 'pinned'>>) {
     if (!token) return;
-    setError('');
-    try {
-      const res = await fetch('/api/admin/faq/approve', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
-        body: JSON.stringify({ id, answer: editAnswer }),
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || 'Approve failed');
-      cancelEdit();
-      await loadFAQs(token);
-    } catch (e: any) {
-      setError(String(e?.message || e));
+    setStatus('Saving…');
+    const res = await fetch('/api/admin/faq/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+      body: JSON.stringify({ id, ...changes }),
+    });
+    const data: unknown = await res.json().catch(() => ({}));
+    if (!isRecord(data) || data.ok !== true) {
+      const err = isRecord(data) && typeof data.error === 'string' ? data.error : `HTTP ${res.status}`;
+      setStatus(`Error: ${err}`);
+      return;
     }
-  };
+    await load();
+    setStatus('');
+  }
 
-  const deny = async (id: number) => {
+  async function bumpView(id: string) {
     if (!token) return;
-    setError('');
-    try {
-      const res = await fetch('/api/admin/faq/deny', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
-        body: JSON.stringify({ id }),
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || 'Deny failed');
-      cancelEdit();
-      await loadFAQs(token);
-    } catch (e: any) {
-      setError(String(e?.message || e));
-    }
-  };
-
-  const pin = async (id: number, pinned: number) => {
-    if (!token) return;
-    setError('');
-    try {
-      const res = await fetch('/api/admin/faq/pin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
-        body: JSON.stringify({ id, pinned }),
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || 'Pin failed');
-      await loadFAQs(token);
-    } catch (e: any) {
-      setError(String(e?.message || e));
-    }
-  };
+    await fetch('/api/admin/faq/bump', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+      body: JSON.stringify({ id }),
+    }).catch(() => {});
+    await load();
+  }
 
   return (
-    <PageShell title="Admin – FAQ Queue" subtitle="Approve, deny, pin, and publish FAQ content from D1">
+    <PageShell title="Admin • FAQ" subtitle="Approve, pin, and manage FAQ questions">
       <AdminNav />
 
-      <section style={{ border: '1px solid rgba(0,0,0,0.12)', borderRadius: 16, padding: 16, background: 'rgba(255,255,255,0.95)' }}>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-          <label htmlFor="admintoken" style={{ fontWeight: 700 }}>Admin token</label>
+      <div style={{ display: 'grid', gap: 12, maxWidth: 980 }}>
+        <label style={{ display: 'grid', gap: 6 }}>
+          <span style={{ fontWeight: 600 }}>ADMIN_TOKEN</span>
           <input
-            id="admintoken"
-            type="password"
             value={token}
-            onChange={e => setToken(e.target.value)}
-            placeholder="ADMIN_TOKEN"
-            style={{ padding: '10px 12px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.22)', minWidth: 260 }}
+            onChange={(e) => {
+              const v = e.target.value;
+              setToken(v);
+              persistToken(v);
+            }}
+            placeholder="Paste ADMIN_TOKEN (stored locally in this browser)"
+            style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
           />
+        </label>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
           <button
-            type="button"
-            onClick={() => loadFAQs(token)}
-            style={{ padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.22)', background: '#fff', fontWeight: 700 }}
+            onClick={() => void load()}
+            style={{ padding: '10px 14px', borderRadius: 10, border: '1px solid #333', cursor: 'pointer' }}
           >
-            Reload
+            Load FAQ
           </button>
-          <Link href="/faq" style={{ fontWeight: 700, textDecoration: 'none' }}>View public FAQ</Link>
+
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value as 'all' | 'approved' | 'pending')}
+            style={{ padding: 10, borderRadius: 10 }}
+          >
+            <option value="all">All</option>
+            <option value="approved">Approved</option>
+            <option value="pending">Pending</option>
+          </select>
+
+          {status ? <span style={{ opacity: 0.85 }}>{status}</span> : null}
         </div>
 
-        <p style={{ margin: '10px 0 0 0', fontSize: 13, opacity: 0.85 }}>
-          Token is stored in your browser localStorage as <code>lgfc_admin_token</code>.
-        </p>
-
-        {error ? <p style={{ margin: '10px 0 0 0', color: '#b00020', fontWeight: 700 }}>{error}</p> : null}
-      </section>
-
-      <section style={{ marginTop: 18 }}>
-        <h2 style={{ margin: 0 }}>Pending ({pendingItems.length})</h2>
-        {loading ? <p>Loading…</p> : null}
-        {!loading && pendingItems.length === 0 ? <p>No pending items.</p> : null}
-
-        {pendingItems.map(item => {
-          const isEditing = editingId === item.id;
-          return (
-            <div
-              key={item.id}
-              style={{ border: '1px solid rgba(0,0,0,0.12)', borderRadius: 16, padding: 16, background: '#fff', marginTop: 12 }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
-                <div>
-                  <div style={{ fontSize: 12, opacity: 0.75 }}>ID {item.id} • {item.created_at}</div>
-                  <div style={{ fontWeight: 800, fontSize: 16, marginTop: 6 }}>{item.question}</div>
-                  {item.submitter_email ? <div style={{ fontSize: 12, opacity: 0.75, marginTop: 6 }}>From: {item.submitter_email}</div> : null}
-                </div>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                  {!isEditing ? (
-                    <button
-                      type="button"
-                      onClick={() => startEdit(item)}
-                      style={{ padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.22)', background: '#fff', fontWeight: 700 }}
-                    >
-                      Write answer
-                    </button>
-                  ) : null}
+        <div style={{ display: 'grid', gap: 10 }}>
+          {filtered.map((f) => (
+            <div key={f.id} style={{ border: '1px solid #ddd', borderRadius: 12, padding: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'baseline', flexWrap: 'wrap' }}>
+                <div style={{ fontWeight: 800 }}>{f.question}</div>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <span style={{ opacity: 0.75, fontSize: 13 }}>Views: {f.views}</span>
                   <button
-                    type="button"
-                    onClick={() => deny(item.id)}
-                    style={{ padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.22)', background: '#fff', fontWeight: 700 }}
+                    onClick={() => void bumpView(f.id)}
+                    style={{ padding: '6px 10px', borderRadius: 10, border: '1px solid #333', cursor: 'pointer' }}
                   >
-                    Deny
+                    +1 View
                   </button>
                 </div>
               </div>
 
-              {isEditing ? (
-                <div style={{ marginTop: 12 }}>
-                  <label style={{ display: 'block', fontWeight: 700, marginBottom: 6 }}>Answer</label>
-                  <textarea
-                    value={editAnswer}
-                    onChange={e => setEditAnswer(e.target.value)}
-                    rows={5}
-                    style={{ width: '100%', padding: 12, borderRadius: 12, border: '1px solid rgba(0,0,0,0.22)' }}
-                  />
-                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
-                    <button
-                      type="button"
-                      onClick={() => approve(item.id)}
-                      style={{ padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.22)', background: '#fff', fontWeight: 700 }}
-                    >
-                      Approve + Publish
-                    </button>
-                    <button
-                      type="button"
-                      onClick={cancelEdit}
-                      style={{ padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.22)', background: '#fff', fontWeight: 700 }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          );
-        })}
-      </section>
+              {f.answer ? <div style={{ marginTop: 10, lineHeight: 1.35, opacity: 0.95 }}>{f.answer}</div> : null}
 
-      <section style={{ marginTop: 26 }}>
-        <h2 style={{ margin: 0 }}>Approved ({approvedItems.length})</h2>
-        {!loading && approvedItems.length === 0 ? <p>No approved items.</p> : null}
-
-        {approvedItems.map(item => (
-          <div
-            key={item.id}
-            style={{ border: '1px solid rgba(0,0,0,0.12)', borderRadius: 16, padding: 16, background: '#fff', marginTop: 12 }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
-              <div>
-                <div style={{ fontSize: 12, opacity: 0.75 }}>ID {item.id} • views {item.view_count} • updated {item.updated_at}</div>
-                <div style={{ fontWeight: 800, fontSize: 16, marginTop: 6 }}>{item.question}</div>
-              </div>
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
                 <button
-                  type="button"
-                  onClick={() => pin(item.id, item.pinned ? 0 : 1)}
-                  style={{ padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.22)', background: '#fff', fontWeight: 700 }}
+                  onClick={() => void patch(f.id, { approved: !f.approved })}
+                  style={{ padding: '8px 10px', borderRadius: 10, border: '1px solid #333', cursor: 'pointer' }}
                 >
-                  {item.pinned ? 'Unpin' : 'Pin'}
+                  {f.approved ? 'Unapprove' : 'Approve'}
                 </button>
+
+                <button
+                  onClick={() => void patch(f.id, { pinned: !f.pinned })}
+                  style={{ padding: '8px 10px', borderRadius: 10, border: '1px solid #333', cursor: 'pointer' }}
+                >
+                  {f.pinned ? 'Unpin' : 'Pin'}
+                </button>
+
+                <span style={{ opacity: 0.75, alignSelf: 'center' }}>
+                  Status: {f.approved ? 'Approved' : 'Pending'} • {f.pinned ? 'Pinned' : 'Not pinned'}
+                </span>
               </div>
             </div>
-
-            <div style={{ marginTop: 10, whiteSpace: 'pre-wrap' }}>{item.answer}</div>
-          </div>
-        ))}
-      </section>
+          ))}
+        </div>
+      </div>
     </PageShell>
   );
 }
