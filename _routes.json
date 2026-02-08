@@ -1,5 +1,20 @@
 {
   "version": 1,
-  "include": ["/api/*"],
-  "exclude": []
+  "include": ["/*"],
+  "exclude": [
+    "/_next/*",
+    "/images/*",
+    "/favicon.ico",
+    "/robots.txt",
+    "/sitemap.xml",
+    "/*.png",
+    "/*.jpg",
+    "/*.jpeg",
+    "/*.gif",
+    "/*.svg",
+    "/*.webp",
+    "/*.css",
+    "/*.js",
+    "/*.txt"
+  ]
 }
