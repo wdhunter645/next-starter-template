@@ -1,43 +1,37 @@
-export const onRequestGet: PagesFunction = async (ctx) => {
+// GET /api/admin/media-assets/list?limit=100
+// Returns recent media_assets. Protected by ADMIN_TOKEN.
+
+import { requireAdmin } from "../../../_lib/auth";
+
+export const onRequestGet = async (context: any): Promise<Response> => {
+  const { request, env } = context;
+
+  const deny = requireAdmin(request, env);
+  if (deny) return deny;
+
   try {
-    const url = new URL(ctx.request.url);
-    const limitRaw = url.searchParams.get("limit") ?? "100";
-    const limit = Math.max(1, Math.min(500, Number(limitRaw) || 100));
+    const url = new URL(request.url);
+    const limitRaw = Number(url.searchParams.get("limit") || "100");
+    const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(limitRaw, 1), 500) : 100;
 
-    const token = ctx.request.headers.get("x-admin-token") || ctx.request.headers.get("authorization") || "";
-    const expected = (ctx.env as any).ADMIN_TOKEN;
-    if (expected && token.replace(/^Bearer\s+/i, "") !== expected) {
-      return new Response(JSON.stringify({ ok: false, error: "unauthorized" }), {
-        status: 401,
-        headers: { "content-type": "application/json", "cache-control": "no-store" },
-      });
-    }
-
-    const db = (ctx.env as any).DB as D1Database;
-
-    const sql = `
-      SELECT
-        id,
-        media_uid,
-        b2_key,
-        b2_file_id,
-        size,
-        etag,
-        ingested_at
+    const db = env.DB as any;
+    const q = `
+      SELECT id, media_uid, b2_key, b2_file_id, size, etag, ingested_at
       FROM media_assets
-      ORDER BY ingested_at DESC
-      LIMIT ?1
+      ORDER BY id DESC
+      LIMIT ?
     `;
+    const r = await db.prepare(q).bind(limit).all();
 
-    const result = await db.prepare(sql).bind(limit).all();
-
-    return new Response(JSON.stringify({ ok: true, items: result.results ?? [] }), {
-      headers: { "content-type": "application/json", "cache-control": "no-store" },
+    return new Response(JSON.stringify({ ok: true, items: r?.results || [] }, null, 2), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
     });
-  } catch (e: any) {
-    return new Response(JSON.stringify({ ok: false, error: e?.message ?? "error" }), {
+  } catch (err: any) {
+    console.error("media-assets list error:", err);
+    return new Response(JSON.stringify({ ok: false, error: "Failed to list media assets." }), {
       status: 500,
-      headers: { "content-type": "application/json", "cache-control": "no-store" },
+      headers: { "Content-Type": "application/json" },
     });
   }
 };
