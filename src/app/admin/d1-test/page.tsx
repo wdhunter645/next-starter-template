@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import PageShell from '@/components/PageShell';
+import AdminNav from '@/components/admin/AdminNav';
 
 type TableInfo = { name: string; count: number };
 
@@ -101,7 +103,10 @@ export default function AdminD1TestPage() {
   }, [token]);
 
   return (
-    <main style={styles.main}>
+    <PageShell title="Admin – D1 Inspect" subtitle="Inspect tables and run safe, read-only queries">
+      <AdminNav />
+
+    <div style={styles.main}>
       <h1 style={styles.h1}>Admin • D1 Test</h1>
       <p style={styles.lead}>
         This page is a diagnostic view of all D1 tables: row counts, schema, and sample rows.
@@ -167,6 +172,7 @@ export default function AdminD1TestPage() {
           </div>
         </div>
       )}
-    </main>
+    </div>
+    </PageShell>
   );
 }
