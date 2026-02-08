@@ -9,7 +9,7 @@ type Discussion = {
   created_at?: string | null;
 };
 
-type RecentDiscussionsProps = {
+type Props = {
   limit?: number;
 };
 
@@ -31,7 +31,7 @@ function normalize(raw: unknown): Discussion | null {
   return { id, title, href, created_at };
 }
 
-export default function RecentDiscussions({ limit = 6 }: RecentDiscussionsProps) {
+export default function RecentDiscussions({ limit = 6 }: Props) {
   const [items, setItems] = useState<Discussion[]>([]);
   const [status, setStatus] = useState<string>('');
 
@@ -40,20 +40,19 @@ export default function RecentDiscussions({ limit = 6 }: RecentDiscussionsProps)
       setStatus('Loading…');
       const res = await fetch('/api/discussions/list', { cache: 'no-store' });
       const data: unknown = await res.json().catch(() => ({}));
+
       if (!isRecord(data) || data.ok !== true) {
         const err = isRecord(data) && typeof data.error === 'string' ? data.error : `HTTP ${res.status}`;
         setStatus(`Error: ${err}`);
         setItems([]);
         return;
       }
+
       const raw = (data as Record<string, unknown>).items;
       const arr = Array.isArray(raw) ? raw : [];
       const normalized = arr.map(normalize).filter((x): x is Discussion => x !== null);
-
-      const limited = Number.isFinite(limit) && limit > 0 ? normalized.slice(0, limit) : normalized;
-
-      setItems(limited);
-      setStatus(limited.length ? '' : 'No discussions found.');
+      setItems(normalized.slice(0, Math.max(0, limit)));
+      setStatus(normalized.length ? '' : 'No discussions found.');
     })().catch(() => {
       setStatus('Error loading discussions.');
       setItems([]);
