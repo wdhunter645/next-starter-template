@@ -4,58 +4,60 @@ import React, { useEffect, useState } from 'react';
 import PageShell from '@/components/PageShell';
 import AdminNav from '@/components/admin/AdminNav';
 
-type Row = { id: number; name: string; email: string; created_at: string };
-
-function getToken(): string {
-  if (typeof window === 'undefined') return '';
-  return window.localStorage.getItem('lgfc_admin_token') || '';
-}
+type JoinRequest = {
+  id: number;
+  created_at: string;
+  name: string;
+  email: string;
+  message?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  screen_name?: string | null;
+  email_opt_in: number;
+  profile_photo_id?: number | null;
+  presence_status: string;
+  presence_updated_at?: string | null;
+};
 
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null;
 }
 
 export default function AdminJoinRequestsPage() {
-  const [items, setItems] = useState<Row[]>([]);
+  const [items, setItems] = useState<JoinRequest[]>([]);
   const [status, setStatus] = useState<string>('Loading…');
 
   useEffect(() => {
     (async () => {
-      try {
-        setStatus('Loading…');
-        const token = getToken();
-        const res = await fetch('/api/admin/join-requests/list?limit=100', {
-          headers: token ? { 'x-admin-token': token } : {},
-          cache: 'no-store',
-        });
-        const data: unknown = await res.json().catch(() => ({}));
-        if (!isRecord(data) || data.ok !== true) {
-          const err = isRecord(data) && typeof data.error === 'string' ? data.error : `HTTP ${res.status}`;
-          setStatus(`Error: ${err}`);
-          setItems([]);
-          return;
-        }
-        const arr = Array.isArray((data as any).items) ? (data as any).items : [];
-        setItems(arr as Row[]);
-        setStatus(arr.length ? '' : 'No join requests found.');
-      } catch (e: any) {
-        setStatus(`Error: ${String(e?.message || e)}`);
+      setStatus('Loading…');
+      const res = await fetch('/api/admin/join-requests/list?limit=200', { cache: 'no-store' });
+      const data: unknown = await res.json().catch(() => ({}));
+
+      if (!isRecord(data) || data.ok !== true || !Array.isArray((data as any).items)) {
         setItems([]);
+        setStatus('No data (or not authorized).');
+        return;
       }
-    })();
+
+      setItems((data as any).items as JoinRequest[]);
+      setStatus('');
+    })().catch(() => {
+      setItems([]);
+      setStatus('Error loading join requests.');
+    });
   }, []);
 
   return (
-    <PageShell title="Join Requests" subtitle="Recent Join form submissions (D1)">
+    <PageShell title="Join Requests" subtitle="Newest requests from join_requests">
       <AdminNav />
-      {status ? <p style={{ marginTop: 14, opacity: 0.85 }}>{status}</p> : null}
+      {status ? <p style={{ marginTop: 12, opacity: 0.85 }}>{status}</p> : null}
 
-      <div style={{ overflowX: 'auto', marginTop: 14, border: '1px solid rgba(0,0,0,0.15)', borderRadius: 12 }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+      <div style={{ marginTop: 12, overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
-              {['id', 'name', 'email', 'created_at'].map(h => (
-                <th key={h} style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '1px solid rgba(0,0,0,0.15)', background: 'rgba(0,0,0,0.03)' }}>
+              {['id','created_at','name','email','screen_name','message','email_opt_in','presence_status'].map((h) => (
+                <th key={h} style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '8px 6px', fontSize: 13 }}>
                   {h}
                 </th>
               ))}
@@ -64,19 +66,21 @@ export default function AdminJoinRequestsPage() {
           <tbody>
             {items.map((r) => (
               <tr key={r.id}>
-                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(0,0,0,0.08)' }}>{r.id}</td>
-                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(0,0,0,0.08)' }}>{r.name}</td>
-                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(0,0,0,0.08)' }}>{r.email}</td>
-                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(0,0,0,0.08)' }}>{r.created_at}</td>
+                <td style={{ borderBottom: '1px solid #f0f0f0', padding: '8px 6px', fontSize: 13 }}>{r.id}</td>
+                <td style={{ borderBottom: '1px solid #f0f0f0', padding: '8px 6px', fontSize: 13 }}>{r.created_at}</td>
+                <td style={{ borderBottom: '1px solid #f0f0f0', padding: '8px 6px', fontSize: 13 }}>{r.name}</td>
+                <td style={{ borderBottom: '1px solid #f0f0f0', padding: '8px 6px', fontSize: 13 }}>{r.email}</td>
+                <td style={{ borderBottom: '1px solid #f0f0f0', padding: '8px 6px', fontSize: 13 }}>{r.screen_name ?? ''}</td>
+                <td style={{ borderBottom: '1px solid #f0f0f0', padding: '8px 6px', fontSize: 13, maxWidth: 420 }}>
+                  {(r.message ?? '').slice(0, 240)}
+                </td>
+                <td style={{ borderBottom: '1px solid #f0f0f0', padding: '8px 6px', fontSize: 13 }}>{r.email_opt_in ? 'yes' : 'no'}</td>
+                <td style={{ borderBottom: '1px solid #f0f0f0', padding: '8px 6px', fontSize: 13 }}>{r.presence_status}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-
-      <p style={{ marginTop: 14, opacity: 0.85 }}>
-        If you see “Admin access is not configured”, ADMIN_TOKEN isn’t set in Cloudflare env.
-      </p>
     </PageShell>
   );
 }
