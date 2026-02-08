@@ -1,62 +1,71 @@
-/about          /about.html          200
-/about/         /about.html          200
+/about          /about/               308
+/about/         /about/index.html     200
 
-/calendar       /calendar.html       200
-/calendar/      /calendar.html       200
+/calendar       /calendar/            308
+/calendar/      /calendar/index.html  200
 
-/charities      /charities.html      200
-/charities/     /charities.html      200
+/charities      /charities/               308
+/charities/     /charities/index.html     200
 
-/contact        /contact.html        200
-/contact/       /contact.html        200
+/contact        /contact/               308
+/contact/       /contact/index.html     200
 
-/join           /join.html           200
-/join/          /join.html           200
+/join           /join/               308
+/join/          /join/index.html     200
 
-/library        /library.html        200
-/library/       /library.html        200
+/library        /library/               308
+/library/       /library/index.html     200
 
-/login          /login.html          200
-/login/         /login.html          200
+/login          /login/               308
+/login/         /login/index.html     200
 
-/logout         /logout.html         200
-/logout/        /logout.html         200
+/logout         /logout/               308
+/logout/        /logout/index.html     200
 
-/matchup        /matchup.html        200
-/matchup/       /matchup.html        200
+/matchup        /matchup/               308
+/matchup/       /matchup/index.html     200
 
-/member         /member.html         200
-/member/        /member.html         200
+/member         /member/               308
+/member/        /member/index.html     200
 
-/memorabilia    /memorabilia.html    200
-/memorabilia/   /memorabilia.html    200
+/memorabilia        /memorabilia/               308
+/memorabilia/       /memorabilia/index.html     200
 
-/milestones     /milestones.html     200
-/milestones/    /milestones.html     200
+/milestones     /milestones/               308
+/milestones/    /milestones/index.html     200
 
-/news           /news.html           200
-/news/          /news.html           200
+/news           /news/               308
+/news/          /news/index.html     200
 
-/photo          /photo.html          200
-/photo/         /photo.html          200
+/photo          /photo/               308
+/photo/         /photo/index.html     200
 
-/photos         /photos.html         200
-/photos/        /photos.html         200
+/photos         /photos/               308
+/photos/        /photos/index.html     200
 
-/privacy        /privacy.html        200
-/privacy/       /privacy.html        200
+/privacy        /privacy/               308
+/privacy/       /privacy/index.html     200
 
-/search         /search.html         200
-/search/        /search.html         200
+/search         /search/               308
+/search/        /search/index.html     200
 
-/support        /support.html        200
-/support/       /support.html        200
+/support        /support/               308
+/support/       /support/index.html     200
 
-/terms          /terms.html          200
-/terms/         /terms.html          200
+/terms          /terms/               308
+/terms/         /terms/index.html     200
 
-/weekly         /weekly.html         200
-/weekly/        /weekly.html         200
+/weekly         /weekly/               308
+/weekly/        /weekly/index.html     200
 
-/admin          /admin.html          200
-/admin/         /admin.html          200
+/admin          /admin/               308
+/admin/         /admin/index.html     200
+
+/ask            /ask/               308
+/ask/           /ask/index.html     200
+
+/faq            /faq/               308
+/faq/           /faq/index.html     200
+
+/fanclub        /fanclub/               308
+/fanclub/       /fanclub/index.html     200
