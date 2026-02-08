@@ -78,7 +78,7 @@ export default function RecentDiscussions({ limit = 6 }: Props) {
         if (!alive) return;
         setItems(normalized.slice(0, safeLimit));
         setStatus(normalized.length ? '' : 'No discussions yet.');
-      } catch (e: any) {
+      } catch {
         if (!alive) return;
         setItems([]);
         setStatus('Error loading discussions.');
