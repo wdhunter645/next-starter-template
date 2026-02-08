@@ -9,6 +9,10 @@ type Discussion = {
   created_at?: string | null;
 };
 
+type RecentDiscussionsProps = {
+  limit?: number;
+};
+
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null;
 }
@@ -27,7 +31,7 @@ function normalize(raw: unknown): Discussion | null {
   return { id, title, href, created_at };
 }
 
-export default function RecentDiscussions() {
+export default function RecentDiscussions({ limit = 6 }: RecentDiscussionsProps) {
   const [items, setItems] = useState<Discussion[]>([]);
   const [status, setStatus] = useState<string>('');
 
@@ -45,13 +49,16 @@ export default function RecentDiscussions() {
       const raw = (data as Record<string, unknown>).items;
       const arr = Array.isArray(raw) ? raw : [];
       const normalized = arr.map(normalize).filter((x): x is Discussion => x !== null);
-      setItems(normalized);
-      setStatus(normalized.length ? '' : 'No discussions found.');
+
+      const limited = Number.isFinite(limit) && limit > 0 ? normalized.slice(0, limit) : normalized;
+
+      setItems(limited);
+      setStatus(limited.length ? '' : 'No discussions found.');
     })().catch(() => {
       setStatus('Error loading discussions.');
       setItems([]);
     });
-  }, []);
+  }, [limit]);
 
   return (
     <div style={{ border: '1px solid #ddd', borderRadius: 12, padding: 14 }}>
