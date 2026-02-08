@@ -9,6 +9,8 @@ const items: Array<{ href: string; label: string }> = [
   { href: '/admin/faq', label: 'FAQ Queue' },
   { href: '/admin/content', label: 'Page Content' },
   { href: '/admin/cms', label: 'CMS Blocks' },
+  { href: '/admin/join-requests', label: 'Join Requests' },
+  { href: '/admin/media-assets', label: 'Media Assets' },
   { href: '/admin/d1-test', label: 'D1 Inspect' },
 ];
 
@@ -18,7 +20,7 @@ export default function AdminNav() {
   return (
     <nav className={styles.nav} aria-label="Admin navigation">
       {items.map(i => {
-        const active = pathname === i.href || (i.href !== '/admin' && pathname.startsWith(i.href + '/')) || pathname === i.href;
+        const active = pathname === i.href || (i.href !== '/admin' && pathname.startsWith(i.href + '/'));
         return (
           <Link
             key={i.href}

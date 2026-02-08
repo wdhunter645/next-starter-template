@@ -76,6 +76,17 @@ export default function AdminDashboard() {
           <div className={styles.cardTitle}>D1 Test</div>
           <div className={styles.cardBody}>Connectivity checks and diagnostics.</div>
         </a>
+
+        <a className={styles.card} href="/admin/join-requests">
+          <div className={styles.cardTitle}>Join Requests</div>
+          <div className={styles.cardBody}>View recent Join form submissions.</div>
+        </a>
+
+        <a className={styles.card} href="/admin/media-assets">
+          <div className={styles.cardTitle}>Media Assets</div>
+          <div className={styles.cardBody}>View B2-ingested files tracked in D1.</div>
+        </a>
+
       </div>
 
       <div className={styles.panel}>
