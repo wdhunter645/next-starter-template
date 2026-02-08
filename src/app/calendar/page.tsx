@@ -1,4 +1,5 @@
 import React from "react";
+import EventsMonth from "@/components/calendar/EventsMonth";
 import { fetchPageContent } from "@/lib/pageContent";
 
 export default async function Page() {
@@ -44,7 +45,9 @@ export default async function Page() {
           </p>
         </>
       )}
-    </main>
+    
+      <EventsMonth />
+</main>
   );
 }
 
