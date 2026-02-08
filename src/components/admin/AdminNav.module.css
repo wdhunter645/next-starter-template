@@ -1,0 +1,28 @@
+.nav{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin: 6px 0 18px 0;
+}
+
+.link{
+  display:inline-flex;
+  align-items:center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.18);
+  background: #fff;
+  color: #111;
+  text-decoration:none;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.link:hover{
+  border-color: rgba(0,0,0,0.30);
+}
+
+.active{
+  border-color: rgba(0,0,0,0.40);
+  background: rgba(0,51,204,0.08);
+}
