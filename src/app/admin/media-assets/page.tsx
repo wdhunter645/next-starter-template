@@ -18,6 +18,42 @@ function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null;
 }
 
+
+function asString(v: unknown): string | null {
+  return typeof v === 'string' ? v : null;
+}
+
+function asNumber(v: unknown): number | null {
+  if (typeof v === 'number' && Number.isFinite(v)) return v;
+  if (typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v))) return Number(v);
+  return null;
+}
+
+function normalize(raw: unknown): MediaAsset | null {
+  if (!isRecord(raw)) return null;
+
+  const id = asNumber(raw.id);
+  const media_uid = asString(raw.media_uid);
+  const b2_key = asString(raw.b2_key);
+  const size = asNumber(raw.size);
+
+  if (id === null || !media_uid || !b2_key || size === null) return null;
+
+  const b2_file_id = asString(raw.b2_file_id);
+  const etag = asString(raw.etag);
+  const ingested_at = asString(raw.ingested_at);
+
+  return {
+    id: Math.trunc(id),
+    media_uid,
+    b2_key,
+    b2_file_id,
+    size: Math.trunc(size),
+    etag,
+    ingested_at,
+  };
+}
+
 function getToken(): string {
   if (typeof window === 'undefined') return '';
   return window.localStorage.getItem('lgfc_admin_token') || '';
@@ -45,9 +81,7 @@ export default function AdminMediaAssetsPage() {
 
     const raw = (data as Record<string, unknown>).items;
     const arr = Array.isArray(raw) ? raw : [];
-    const normalized: MediaAsset[] = arr
-      .map((r) => (isRecord(r) ? (r as any) : null))
-      .filter((x): x is MediaAsset => x !== null);
+    const normalized = arr.map(normalize).filter((x): x is MediaAsset => x !== null);
 
     setItems(normalized);
     setStatus(normalized.length ? '' : 'No media assets found.');
