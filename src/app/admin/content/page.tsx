@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import PageShell from '@/components/PageShell';
+import AdminNav from '@/components/admin/AdminNav';
 
 type ContentBlock = {
   content: string | null;
@@ -97,7 +99,10 @@ export default function AdminContentPage() {
   }
 
   return (
-    <main style={{ maxWidth: 960, margin: '0 auto', padding: 24 }}>
+    <PageShell title="Admin – Page Content" subtitle="Edit page_content sections stored in D1">
+      <AdminNav />
+
+    <div style={{ maxWidth: 960, margin: '0 auto', padding: 24 }}>
       <h1 style={{ fontSize: 28, fontWeight: 700 }}>Admin • Page Content</h1>
       <p style={{ opacity: 0.9, lineHeight: 1.4 }}>
         Edit DB-backed content blocks in D1. This tool saves drafts and lets you publish them without redeploying.
@@ -166,7 +171,7 @@ export default function AdminContentPage() {
           ))}
         </div>
       )}
-    </main>
+    </div>
   );
 }
 
@@ -247,5 +252,6 @@ function SectionEditor({
         </details>
       </div>
     </section>
+    </PageShell>
   );
 }
