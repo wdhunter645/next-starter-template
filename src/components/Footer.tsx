@@ -1,12 +1,20 @@
 'use client';
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import styles from "./Footer.module.css";
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import styles from './Footer.module.css';
 
-const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Lou Gehrig Fan Club";
+const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'Lou Gehrig Fan Club';
 
 type Quote = { quote: string; attribution?: string | null };
+
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null;
+}
+
+function asString(v: unknown): string | null {
+  return typeof v === 'string' ? v : null;
+}
 
 export default function Footer() {
   const [footerQuote, setFooterQuote] = useState<Quote | null>(null);
@@ -15,11 +23,19 @@ export default function Footer() {
     // Best-effort: pull one quote for rotation if available; silent failure is fine.
     (async () => {
       try {
-        const res = await fetch("/api/quotes/random");
-        const data = await res.json();
-        if (data?.ok && data?.quote) {
-          setFooterQuote({ quote: data.quote, attribution: data.attribution ?? null });
-        }
+        const res = await fetch('/api/footer-quote', { cache: 'no-store' });
+        const data: unknown = await res.json().catch(() => ({}));
+
+        if (!isRecord(data) || data.ok !== true) return;
+
+        const item = (data as Record<string, unknown>).item;
+        if (!isRecord(item)) return;
+
+        const quote = asString(item.quote);
+        if (!quote) return;
+
+        const attribution = asString(item.attribution);
+        setFooterQuote({ quote, attribution });
       } catch {
         // No-op
       }
@@ -28,7 +44,7 @@ export default function Footer() {
 
   const scrollToTop = () => {
     try {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch {
       window.scrollTo(0, 0);
     }
@@ -41,29 +57,29 @@ export default function Footer() {
           <div className={styles.quoteLine}>
             {footerQuote ? (
               <>
-                <span className={styles.quoteMark}>&ldquo;</span>
-                <span className={styles.quoteText}>{footerQuote.quote}</span>
-                <span className={styles.quoteMark}>&rdquo;</span>
-                {footerQuote.attribution ? <span className={styles.quoteAttr}> — {footerQuote.attribution}</span> : null}
+                <span className={styles.quote}>&ldquo;{footerQuote.quote}&rdquo;</span>
+                {footerQuote.attribution ? <span className={styles.attr}> — {footerQuote.attribution}</span> : null}
               </>
             ) : (
-              <span className={styles.quoteText}>&nbsp;</span>
+              <span className={styles.quote}>&ldquo;A community for baseball history, character, and courage.&rdquo;</span>
             )}
           </div>
-          <div className={styles.legalLine}>
+          <div className={styles.legal}>
             © {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
           </div>
         </div>
 
-        <button type="button" className={styles.centerLogo} onClick={scrollToTop} aria-label="Back to top">
-          <img src="/IMG_1946.png" alt="LGFC" className={styles.logoImg} />
-        </button>
+        <div className={styles.center}>
+          <button type="button" onClick={scrollToTop} className={styles.toTop} aria-label="Scroll to top">
+            ↑
+          </button>
+        </div>
 
         <div className={styles.right}>
-          <Link href="/contact" className={styles.link}>Contact</Link>
-          <a href="mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed" className={styles.link}>Support</a>
-          <Link href="/terms" className={styles.link}>Terms</Link>
-          <Link href="/privacy" className={styles.link}>Privacy</Link>
+          <Link href="/contact">Contact</Link>
+          <Link href="/support">Support</Link>
+          <Link href="/terms">Terms</Link>
+          <Link href="/privacy">Privacy</Link>
         </div>
       </div>
     </footer>
