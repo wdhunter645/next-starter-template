@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import PageShell from '@/components/PageShell';
+import AdminNav from '@/components/admin/AdminNav';
 
 type FAQEntry = {
   id: number;
@@ -15,6 +17,16 @@ type FAQEntry = {
   updated_at: string;
 };
 
+function getStoredToken(): string {
+  if (typeof window === 'undefined') return '';
+  return window.localStorage.getItem('lgfc_admin_token') || '';
+}
+
+function setStoredToken(t: string) {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem('lgfc_admin_token', t);
+}
+
 export default function AdminFAQPage() {
   const [token, setToken] = useState('');
   const [pendingItems, setPendingItems] = useState<FAQEntry[]>([]);
@@ -25,13 +37,13 @@ export default function AdminFAQPage() {
   const [editAnswer, setEditAnswer] = useState('');
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('lgfc_admin_token');
-    if (stored) setToken(stored);
+    setToken(getStoredToken());
   }, []);
 
-  const loadFAQs = async () => {
-    if (!token) {
-      setError('Admin token required');
+  const loadFAQs = async (overrideToken?: string) => {
+    const useToken = (overrideToken ?? token).trim();
+    if (!useToken) {
+      setError('Admin token required.');
       setLoading(false);
       return;
     }
@@ -40,222 +52,230 @@ export default function AdminFAQPage() {
     setError('');
 
     try {
-      const headers = { 'x-admin-token': token };
-      
-      // Load pending entries
-      const pendingRes = await fetch('/api/admin/faq/pending', { headers });
-      if (!pendingRes.ok) throw new Error('Failed to load pending FAQs');
-      const pendingData = await pendingRes.json();
-      setPendingItems(pendingData.items || []);
+      setStoredToken(useToken);
+      const headers = { 'x-admin-token': useToken };
 
-      // Load approved entries
-      const approvedRes = await fetch('/api/admin/faq/approved', { headers });
-      if (!approvedRes.ok) throw new Error('Failed to load approved FAQs');
+      const [pendingRes, approvedRes] = await Promise.all([
+        fetch('/api/admin/faq/pending', { headers }),
+        fetch('/api/admin/faq/approved', { headers }),
+      ]);
+
+      const pendingData = await pendingRes.json();
       const approvedData = await approvedRes.json();
+
+      if (!pendingData.ok) throw new Error(pendingData.error || 'Failed to load pending FAQs');
+      if (!approvedData.ok) throw new Error(approvedData.error || 'Failed to load approved FAQs');
+
+      setPendingItems(pendingData.items || []);
       setApprovedItems(approvedData.items || []);
-    } catch (e: unknown) {
-      setError(String((e as Error)?.message ?? e));
+    } catch (e: any) {
+      setError(String(e?.message || e));
+      setPendingItems([]);
+      setApprovedItems([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (token) loadFAQs();
+    if (token) loadFAQs(token);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  const handleApprove = async (id: number, answer: string) => {
-    if (!answer.trim()) {
-      alert('Answer is required to approve');
-      return;
-    }
+  const startEdit = (item: FAQEntry) => {
+    setEditingId(item.id);
+    setEditAnswer(item.answer || '');
+  };
 
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditAnswer('');
+  };
+
+  const approve = async (id: number) => {
+    if (!token) return;
+    setError('');
     try {
       const res = await fetch('/api/admin/faq/approve', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-token': token,
-        },
-        body: JSON.stringify({ id, answer: answer.trim() }),
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+        body: JSON.stringify({ id, answer: editAnswer }),
       });
-
-      if (!res.ok) throw new Error('Failed to approve');
-      setEditingId(null);
-      setEditAnswer('');
-      loadFAQs();
-    } catch (e: unknown) {
-      alert(`Approve failed: ${String((e as Error)?.message ?? e)}`);
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Approve failed');
+      cancelEdit();
+      await loadFAQs(token);
+    } catch (e: any) {
+      setError(String(e?.message || e));
     }
   };
 
-  const handleDeny = async (id: number) => {
-    if (!confirm('Are you sure you want to deny this question?')) return;
-
+  const deny = async (id: number) => {
+    if (!token) return;
+    setError('');
     try {
       const res = await fetch('/api/admin/faq/deny', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-token': token,
-        },
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
         body: JSON.stringify({ id }),
       });
-
-      if (!res.ok) throw new Error('Failed to deny');
-      loadFAQs();
-    } catch (e: unknown) {
-      alert(`Deny failed: ${String((e as Error)?.message ?? e)}`);
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Deny failed');
+      cancelEdit();
+      await loadFAQs(token);
+    } catch (e: any) {
+      setError(String(e?.message || e));
     }
   };
 
-  const handleTogglePin = async (id: number, currentPinned: number) => {
-    const newPinned = currentPinned ? 0 : 1;
-
+  const pin = async (id: number, pinned: number) => {
+    if (!token) return;
+    setError('');
     try {
       const res = await fetch('/api/admin/faq/pin', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-token': token,
-        },
-        body: JSON.stringify({ id, pinned: newPinned }),
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+        body: JSON.stringify({ id, pinned }),
       });
-
-      if (!res.ok) throw new Error('Failed to toggle pin');
-      loadFAQs();
-    } catch (e: unknown) {
-      alert(`Pin toggle failed: ${String((e as Error)?.message ?? e)}`);
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Pin failed');
+      await loadFAQs(token);
+    } catch (e: any) {
+      setError(String(e?.message || e));
     }
   };
-
-  const handleTokenSubmit = () => {
-    const input = prompt('Enter admin token:');
-    if (input) {
-      setToken(input);
-      sessionStorage.setItem('lgfc_admin_token', input);
-    }
-  };
-
-  if (!token) {
-    return (
-      <main className="container" style={{ padding: '40px 16px', maxWidth: 1200 }}>
-        <h1>Admin FAQ Management</h1>
-        <p className="sub">Admin token required</p>
-        <button onClick={handleTokenSubmit}>Set Token</button>
-      </main>
-    );
-  }
 
   return (
-    <main className="container" style={{ padding: '40px 16px', maxWidth: 1200 }}>
-      <h1>Admin FAQ Management</h1>
-      <div style={{ marginBottom: 20 }}>
-        <Link href="/admin" className="link">← Back to Admin Dashboard</Link>
-      </div>
+    <PageShell title="Admin – FAQ Queue" subtitle="Approve, deny, pin, and publish FAQ content from D1">
+      <AdminNav />
 
-      {loading && <p className="sub">Loading...</p>}
-      {error && <p style={{ color: '#b00020' }}>{error}</p>}
+      <section style={{ border: '1px solid rgba(0,0,0,0.12)', borderRadius: 16, padding: 16, background: 'rgba(255,255,255,0.95)' }}>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+          <label htmlFor="admintoken" style={{ fontWeight: 700 }}>Admin token</label>
+          <input
+            id="admintoken"
+            type="password"
+            value={token}
+            onChange={e => setToken(e.target.value)}
+            placeholder="ADMIN_TOKEN"
+            style={{ padding: '10px 12px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.22)', minWidth: 260 }}
+          />
+          <button
+            type="button"
+            onClick={() => loadFAQs(token)}
+            style={{ padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.22)', background: '#fff', fontWeight: 700 }}
+          >
+            Reload
+          </button>
+          <Link href="/faq" style={{ fontWeight: 700, textDecoration: 'none' }}>View public FAQ</Link>
+        </div>
 
-      {/* Pending Entries */}
-      <section style={{ marginTop: 30 }}>
-        <h2>Pending Questions ({pendingItems.length})</h2>
-        {pendingItems.length === 0 ? (
-          <p className="sub">No pending questions</p>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            {pendingItems.map((item) => (
-              <div key={item.id} className="card" style={{ padding: 16 }}>
-                <div><strong>Q:</strong> {item.question}</div>
-                <div className="sub" style={{ marginTop: 8 }}>
-                  Submitted by: {item.submitter_email || 'Unknown'}
-                  {' • '}
-                  {new Date(item.created_at).toLocaleString()}
-                </div>
+        <p style={{ margin: '10px 0 0 0', fontSize: 13, opacity: 0.85 }}>
+          Token is stored in your browser localStorage as <code>lgfc_admin_token</code>.
+        </p>
 
-                {editingId === item.id ? (
-                  <div style={{ marginTop: 12 }}>
-                    <label htmlFor={`answer-${item.id}`}><strong>Answer:</strong></label>
-                    <textarea
-                      id={`answer-${item.id}`}
-                      value={editAnswer}
-                      onChange={(e) => setEditAnswer(e.target.value)}
-                      placeholder="Type the answer..."
-                      rows={4}
-                      style={{ marginTop: 8, width: '100%' }}
-                    />
-                    <div style={{ marginTop: 10, display: 'flex', gap: 10 }}>
-                      <button onClick={() => handleApprove(item.id, editAnswer)}>
-                        Approve with Answer
-                      </button>
-                      <button 
-                        onClick={() => {
-                          setEditingId(null);
-                          setEditAnswer('');
-                        }}
-                        style={{ background: '#666' }}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ marginTop: 12, display: 'flex', gap: 10 }}>
-                    <button 
-                      onClick={() => {
-                        setEditingId(item.id);
-                        setEditAnswer('');
-                      }}
-                    >
-                      Approve...
-                    </button>
-                    <button 
-                      onClick={() => handleDeny(item.id)}
-                      style={{ background: '#b00020' }}
-                    >
-                      Deny
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+        {error ? <p style={{ margin: '10px 0 0 0', color: '#b00020', fontWeight: 700 }}>{error}</p> : null}
       </section>
 
-      {/* Approved Entries */}
-      <section style={{ marginTop: 50 }}>
-        <h2>Approved FAQs ({approvedItems.length})</h2>
-        {approvedItems.length === 0 ? (
-          <p className="sub">No approved FAQs</p>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {approvedItems.map((item) => (
-              <div key={item.id} className="card" style={{ padding: 16 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                  <div style={{ flex: 1 }}>
-                    <div><strong>Q:</strong> {item.question}</div>
-                    <div style={{ marginTop: 4 }}><strong>A:</strong> {item.answer}</div>
-                    <div className="sub" style={{ marginTop: 8 }}>
-                      Views: {item.view_count} • 
-                      {item.pinned ? ' 📌 Pinned' : ' Not pinned'}
-                    </div>
-                  </div>
-                  <div style={{ marginLeft: 16 }}>
-                    <button 
-                      onClick={() => handleTogglePin(item.id, item.pinned)}
-                      style={{ fontSize: 14, padding: '6px 12px' }}
+      <section style={{ marginTop: 18 }}>
+        <h2 style={{ margin: 0 }}>Pending ({pendingItems.length})</h2>
+        {loading ? <p>Loading…</p> : null}
+        {!loading && pendingItems.length === 0 ? <p>No pending items.</p> : null}
+
+        {pendingItems.map(item => {
+          const isEditing = editingId === item.id;
+          return (
+            <div
+              key={item.id}
+              style={{ border: '1px solid rgba(0,0,0,0.12)', borderRadius: 16, padding: 16, background: '#fff', marginTop: 12 }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.75 }}>ID {item.id} • {item.created_at}</div>
+                  <div style={{ fontWeight: 800, fontSize: 16, marginTop: 6 }}>{item.question}</div>
+                  {item.submitter_email ? <div style={{ fontSize: 12, opacity: 0.75, marginTop: 6 }}>From: {item.submitter_email}</div> : null}
+                </div>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                  {!isEditing ? (
+                    <button
+                      type="button"
+                      onClick={() => startEdit(item)}
+                      style={{ padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.22)', background: '#fff', fontWeight: 700 }}
                     >
-                      {item.pinned ? 'Unpin' : 'Pin'}
+                      Write answer
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => deny(item.id)}
+                    style={{ padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.22)', background: '#fff', fontWeight: 700 }}
+                  >
+                    Deny
+                  </button>
+                </div>
+              </div>
+
+              {isEditing ? (
+                <div style={{ marginTop: 12 }}>
+                  <label style={{ display: 'block', fontWeight: 700, marginBottom: 6 }}>Answer</label>
+                  <textarea
+                    value={editAnswer}
+                    onChange={e => setEditAnswer(e.target.value)}
+                    rows={5}
+                    style={{ width: '100%', padding: 12, borderRadius: 12, border: '1px solid rgba(0,0,0,0.22)' }}
+                  />
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
+                    <button
+                      type="button"
+                      onClick={() => approve(item.id)}
+                      style={{ padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.22)', background: '#fff', fontWeight: 700 }}
+                    >
+                      Approve + Publish
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelEdit}
+                      style={{ padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.22)', background: '#fff', fontWeight: 700 }}
+                    >
+                      Cancel
                     </button>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ) : null}
+            </div>
+          );
+        })}
       </section>
-    </main>
+
+      <section style={{ marginTop: 26 }}>
+        <h2 style={{ margin: 0 }}>Approved ({approvedItems.length})</h2>
+        {!loading && approvedItems.length === 0 ? <p>No approved items.</p> : null}
+
+        {approvedItems.map(item => (
+          <div
+            key={item.id}
+            style={{ border: '1px solid rgba(0,0,0,0.12)', borderRadius: 16, padding: 16, background: '#fff', marginTop: 12 }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+              <div>
+                <div style={{ fontSize: 12, opacity: 0.75 }}>ID {item.id} • views {item.view_count} • updated {item.updated_at}</div>
+                <div style={{ fontWeight: 800, fontSize: 16, marginTop: 6 }}>{item.question}</div>
+              </div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => pin(item.id, item.pinned ? 0 : 1)}
+                  style={{ padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.22)', background: '#fff', fontWeight: 700 }}
+                >
+                  {item.pinned ? 'Unpin' : 'Pin'}
+                </button>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 10, whiteSpace: 'pre-wrap' }}>{item.answer}</div>
+          </div>
+        ))}
+      </section>
+    </PageShell>
   );
 }
