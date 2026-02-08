@@ -6,80 +6,87 @@ import AdminNav from '@/components/admin/AdminNav';
 
 type JoinRequest = {
   id: number;
-  created_at: string;
   name: string;
   email: string;
   message?: string | null;
+  created_at?: string | null;
   first_name?: string | null;
   last_name?: string | null;
   screen_name?: string | null;
-  email_opt_in: number;
-  profile_photo_id?: number | null;
-  presence_status: string;
-  presence_updated_at?: string | null;
+  email_opt_in?: number | null;
+  presence_status?: string | null;
 };
 
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null;
 }
 
+function getToken(): string {
+  if (typeof window === 'undefined') return '';
+  return window.localStorage.getItem('lgfc_admin_token') || '';
+}
+
 export default function AdminJoinRequestsPage() {
+  const [status, setStatus] = useState<string>('');
   const [items, setItems] = useState<JoinRequest[]>([]);
-  const [status, setStatus] = useState<string>('Loading…');
+
+  async function load() {
+    setStatus('Loading…');
+    const token = getToken();
+    const res = await fetch('/api/admin/join-requests/list?limit=50', {
+      headers: token ? { 'x-admin-token': token } : {},
+      cache: 'no-store',
+    });
+    const data: unknown = await res.json().catch(() => ({}));
+
+    if (!isRecord(data) || data.ok !== true) {
+      const err = isRecord(data) && typeof data.error === 'string' ? data.error : `HTTP ${res.status}`;
+      setStatus(`Error: ${err}`);
+      setItems([]);
+      return;
+    }
+
+    const raw = (data as Record<string, unknown>).items;
+    const arr = Array.isArray(raw) ? raw : [];
+    const normalized: JoinRequest[] = arr
+      .map((r) => (isRecord(r) ? (r as any) : null))
+      .filter((x): x is JoinRequest => x !== null);
+
+    setItems(normalized);
+    setStatus(normalized.length ? '' : 'No join requests found.');
+  }
 
   useEffect(() => {
-    (async () => {
-      setStatus('Loading…');
-      const res = await fetch('/api/admin/join-requests/list?limit=200', { cache: 'no-store' });
-      const data: unknown = await res.json().catch(() => ({}));
-
-      if (!isRecord(data) || data.ok !== true || !Array.isArray((data as any).items)) {
-        setItems([]);
-        setStatus('No data (or not authorized).');
-        return;
-      }
-
-      setItems((data as any).items as JoinRequest[]);
-      setStatus('');
-    })().catch(() => {
-      setItems([]);
-      setStatus('Error loading join requests.');
-    });
+    void load();
   }, []);
 
   return (
-    <PageShell title="Join Requests" subtitle="Newest requests from join_requests">
+    <PageShell title="Join Requests" subtitle="Recent join requests captured from /join">
       <AdminNav />
-      {status ? <p style={{ marginTop: 12, opacity: 0.85 }}>{status}</p> : null}
+      <div style={{ marginTop: 14 }}>
+        <button
+          onClick={() => void load()}
+          style={{ border: '1px solid #ddd', borderRadius: 10, padding: '10px 12px', fontWeight: 700, cursor: 'pointer' }}
+        >
+          Refresh
+        </button>
 
-      <div style={{ marginTop: 12, overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              {['id','created_at','name','email','screen_name','message','email_opt_in','presence_status'].map((h) => (
-                <th key={h} style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '8px 6px', fontSize: 13 }}>
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((r) => (
-              <tr key={r.id}>
-                <td style={{ borderBottom: '1px solid #f0f0f0', padding: '8px 6px', fontSize: 13 }}>{r.id}</td>
-                <td style={{ borderBottom: '1px solid #f0f0f0', padding: '8px 6px', fontSize: 13 }}>{r.created_at}</td>
-                <td style={{ borderBottom: '1px solid #f0f0f0', padding: '8px 6px', fontSize: 13 }}>{r.name}</td>
-                <td style={{ borderBottom: '1px solid #f0f0f0', padding: '8px 6px', fontSize: 13 }}>{r.email}</td>
-                <td style={{ borderBottom: '1px solid #f0f0f0', padding: '8px 6px', fontSize: 13 }}>{r.screen_name ?? ''}</td>
-                <td style={{ borderBottom: '1px solid #f0f0f0', padding: '8px 6px', fontSize: 13, maxWidth: 420 }}>
-                  {(r.message ?? '').slice(0, 240)}
-                </td>
-                <td style={{ borderBottom: '1px solid #f0f0f0', padding: '8px 6px', fontSize: 13 }}>{r.email_opt_in ? 'yes' : 'no'}</td>
-                <td style={{ borderBottom: '1px solid #f0f0f0', padding: '8px 6px', fontSize: 13 }}>{r.presence_status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {status ? <p style={{ marginTop: 10, opacity: 0.85 }}>{status}</p> : null}
+
+        <div style={{ display: 'grid', gap: 10, marginTop: 12 }}>
+          {items.map((j) => (
+            <div key={j.id} style={{ border: '1px solid #eee', borderRadius: 12, padding: 12 }}>
+              <div style={{ fontWeight: 800 }}>{j.name}</div>
+              <div style={{ opacity: 0.85, marginTop: 4 }}>{j.email}</div>
+              <div style={{ opacity: 0.75, marginTop: 6, fontSize: 13 }}>
+                {j.created_at ? new Date(j.created_at).toLocaleString() : ''}
+                {j.presence_status ? ` • ${j.presence_status}` : ''}
+                {typeof j.email_opt_in === 'number' ? ` • opt-in: ${j.email_opt_in ? 'yes' : 'no'}` : ''}
+              </div>
+              {j.message ? <div style={{ marginTop: 10, whiteSpace: 'pre-wrap' }}>{j.message}</div> : null}
+            </div>
+          ))}
+        </div>
       </div>
     </PageShell>
   );
