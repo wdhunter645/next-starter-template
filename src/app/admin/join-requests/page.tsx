@@ -21,6 +21,50 @@ function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null;
 }
 
+
+function asString(v: unknown): string | null {
+  return typeof v === 'string' ? v : null;
+}
+
+function asNumber(v: unknown): number | null {
+  if (typeof v === 'number' && Number.isFinite(v)) return v;
+  if (typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v))) return Number(v);
+  return null;
+}
+
+function normalize(raw: unknown): JoinRequest | null {
+  if (!isRecord(raw)) return null;
+
+  const id = asNumber(raw.id);
+  const name = asString(raw.name);
+  const email = asString(raw.email);
+
+  if (id === null || !name || !email) return null;
+
+  const message = asString(raw.message);
+  const created_at = asString(raw.created_at);
+  const first_name = asString(raw.first_name);
+  const last_name = asString(raw.last_name);
+  const screen_name = asString(raw.screen_name);
+  const presence_status = asString(raw.presence_status);
+
+  const email_opt_in = asNumber(raw.email_opt_in);
+  const email_opt_in_norm = email_opt_in === null ? null : Math.trunc(email_opt_in);
+
+  return {
+    id: Math.trunc(id),
+    name,
+    email,
+    message,
+    created_at,
+    first_name,
+    last_name,
+    screen_name,
+    email_opt_in: email_opt_in_norm,
+    presence_status,
+  };
+}
+
 function getToken(): string {
   if (typeof window === 'undefined') return '';
   return window.localStorage.getItem('lgfc_admin_token') || '';
@@ -48,9 +92,7 @@ export default function AdminJoinRequestsPage() {
 
     const raw = (data as Record<string, unknown>).items;
     const arr = Array.isArray(raw) ? raw : [];
-    const normalized: JoinRequest[] = arr
-      .map((r) => (isRecord(r) ? (r as any) : null))
-      .filter((x): x is JoinRequest => x !== null);
+    const normalized = arr.map(normalize).filter((x): x is JoinRequest => x !== null);
 
     setItems(normalized);
     setStatus(normalized.length ? '' : 'No join requests found.');
