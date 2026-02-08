@@ -37,7 +37,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:cf": "wrangler pages dev out --compatibility-date=2025-10-30 --compatibility-flags=nodejs_compat --d1=DB --live-reload",
-    "build": "rm -rf out .next && next build && next export && npm run postbuild",
+    "build": "rm -rf out .next && next build && npm run postbuild",
     "postbuild": "cp _routes.json out/_routes.json",
     "build:cf": "npm run build",
     "start": "next start",
