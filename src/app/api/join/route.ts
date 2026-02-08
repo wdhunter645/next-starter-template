@@ -12,16 +12,20 @@ function getUpstreamBase(): string {
 
 export async function POST(req: Request) {
   try {
-    const { name, email } = await req.json();
+    const body = await req.json().catch(() => ({} as any));
 
-    if (!name || !email) {
-      return NextResponse.json({ ok: false, error: "Name and email are required." }, { status: 400 });
+    // Minimal validation: require email so dev errors are clear,
+    // but do NOT force a specific shape (Cloudflare function accepts multiple fields).
+    const emailRaw = (body?.email ?? "").toString();
+    const email = emailRaw.trim().toLowerCase();
+    if (!email) {
+      return NextResponse.json({ ok: false, error: "Email is required." }, { status: 400 });
     }
 
     const res = await fetch(`${getUpstreamBase()}/api/join`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email }),
+      body: JSON.stringify(body),
     });
 
     const text = await res.text();
