@@ -17,28 +17,18 @@ export default function MemberHeader({ homeRoute = '/', showLogo = true }: Membe
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
-        {/* LEFT: Logo (hard constrained hitbox) */}
-        <div className={styles.left} style={{ width: 72, maxWidth: 72, flex: '0 0 72px' }}>
+        {/* LEFT: Logo (small header logo; hidden when FloatingLogo is active) */}
+        <div className={styles.left}>
           {showLogo ? (
-            <Link
-              href={homeRoute}
-              aria-label="Lou Gehrig Fan Club"
-              className={styles.logoLink}
-              style={{ display: 'inline-flex', width: 72, maxWidth: 72 }}
-            >
-              <img
-                className={styles.logoImg}
-                src="/IMG_1946.png"
-                alt="LGFC"
-                style={{ display: 'block', height: 44, width: 'auto', maxWidth: 72 }}
-              />
+            <Link href={homeRoute} aria-label="Lou Gehrig Fan Club" className={styles.logoLink}>
+              <img className={styles.logoImg} src="/IMG_1946.png" alt="LGFC" />
             </Link>
           ) : (
             <span />
           )}
         </div>
 
-        {/* CENTER: Member buttons */}
+        {/* CENTER: Member buttons + Hamburger grouped together */}
         <nav className={styles.center} aria-label="Member">
           <Link className={styles.btn} href="/fanclub">Club Home</Link>
           <Link className={styles.btn} href="/fanclub/myprofile">My Profile</Link>
@@ -53,29 +43,26 @@ export default function MemberHeader({ homeRoute = '/', showLogo = true }: Membe
             Store
           </a>
           <Link className={styles.btn} href="/logout">Logout</Link>
-        
 
-{/* RIGHT: Hamburger */}
-        <div className={styles.right}>
-          <button
-            ref={toggleRef}
-            className={styles.hamburger}
-            type="button"
-            onClick={() => setOpen(v => !v)}
-            aria-label="Open menu"
-            aria-expanded={open}
-            aria-controls="hamburger-menu"
-          >
-            <span className={styles.hamburgerBar} />
-            <span className={styles.hamburgerBar} />
-            <span className={styles.hamburgerBar} />
-          </button>
+          {/* Hamburger (grouped with buttons) */}
+          <div className={styles.right}>
+            <button
+              ref={toggleRef}
+              className={styles.hamburger}
+              type="button"
+              onClick={() => setOpen(v => !v)}
+              aria-label="Open menu"
+              aria-expanded={open}
+              aria-controls="member-hamburger-menu"
+            >
+              <span className={styles.hamburgerBar} />
+              <span className={styles.hamburgerBar} />
+              <span className={styles.hamburgerBar} />
+            </button>
 
-          {open ? <MemberHamburgerMenu onClose={() => setOpen(false)} toggleRef={toggleRef} /> : null}
-        </div>
-</nav>
-
-        
+            {open ? <MemberHamburgerMenu onClose={() => setOpen(false)} toggleRef={toggleRef} /> : null}
+          </div>
+        </nav>
       </div>
     </header>
   );
