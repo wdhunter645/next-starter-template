@@ -15,7 +15,7 @@ export default function SiteHeader() {
   const showFloatingLogo = pathname === '/' || pathname === '/fanclub' || pathname === '/fanclub/';
   const isFanClub = pathname === '/fanclub' || pathname.startsWith('/fanclub/');
 
-  if (isFanClub) return <MemberHeader showLogo />;
+  if (isFanClub) return <MemberHeader showLogo / showLogo={!showFloatingLogo}>;
 
-  return <Header showLogo />;
+  return <Header showLogo / showLogo={!showFloatingLogo}>;
 }
