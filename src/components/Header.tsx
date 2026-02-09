@@ -88,9 +88,9 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
               <button className={styles.btn} type="button" onClick={handleLogout}>Logout</button>
             </>
           )}
-        </nav>
+        
 
-        {/* RIGHT: Hamburger */}
+{/* RIGHT: Hamburger */}
         <div className={styles.right}>
           <button
             ref={toggleRef}
@@ -108,6 +108,9 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
 
           {open ? <HamburgerMenu onClose={() => setOpen(false)} toggleRef={toggleRef} /> : null}
         </div>
+</nav>
+
+        
       </div>
     </header>
   );
