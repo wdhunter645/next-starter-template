@@ -1,24 +1,38 @@
-/* Fixed at page top-left; hides when user scrolls (see component logic). */
 .wrap{
   position: fixed;
+  top: 10px;
   left: 16px;
-  top: 6px;
-  z-index: 80;            /* above the sticky header (z=50) */
-  pointer-events: none;   /* container never blocks clicks */
+
+  /* Must sit above sticky header + hero */
+  z-index: 80;
+
+  /* Don't block clicks except on the logo itself */
+  pointer-events: none;
 }
 
 .link{
-  pointer-events: auto;   /* only the link is clickable */
+  pointer-events: auto;
   display: inline-flex;
   align-items: flex-start;
+
+  /* The white pill behind the logo (classic look) */
+  background: #fff;
+  border-radius: 18px;
+  padding: 10px 12px;
+
+  box-shadow: 0 8px 22px rgba(0,0,0,0.16);
+
+  /* This is the overlap: let it “hang” down into the hero */
+  transform: translateY(18px);
 }
 
 .img{
   display: block;
-  height: 92px;          /* BIG + legible */
+
+  /* Bigger + legible */
+  height: 112px;
   width: auto;
-  max-width: 160px;
+  max-width: 220px;
+
   object-fit: contain;
-  border-radius: 14px;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.14);
 }
