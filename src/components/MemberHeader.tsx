@@ -53,9 +53,9 @@ export default function MemberHeader({ homeRoute = '/', showLogo = true }: Membe
             Store
           </a>
           <Link className={styles.btn} href="/logout">Logout</Link>
-        </nav>
+        
 
-        {/* RIGHT: Hamburger */}
+{/* RIGHT: Hamburger */}
         <div className={styles.right}>
           <button
             ref={toggleRef}
@@ -73,6 +73,9 @@ export default function MemberHeader({ homeRoute = '/', showLogo = true }: Membe
 
           {open ? <MemberHamburgerMenu onClose={() => setOpen(false)} toggleRef={toggleRef} /> : null}
         </div>
+</nav>
+
+        
       </div>
     </header>
   );
