@@ -83,13 +83,15 @@
 }
 
 .right{
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 3;
+  position: relative;   /* anchor dropdown to this container */
+  right: auto;
+  top: auto;
+  transform: none;
+  z-index: 4;
+  margin-left: 10px;    /* space from last button */
+  display: inline-flex;
+  align-items: center;
 }
-
 .hamburger{
   display: inline-flex;
   flex-direction: column;
