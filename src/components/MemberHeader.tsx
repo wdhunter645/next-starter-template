@@ -17,18 +17,28 @@ export default function MemberHeader({ homeRoute = '/', showLogo = true }: Membe
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
-        {/* LEFT: Logo */}
-        <div className={styles.left}>
+        {/* LEFT: Logo (hard constrained hitbox) */}
+        <div className={styles.left} style={{ width: 72, maxWidth: 72, flex: '0 0 72px' }}>
           {showLogo ? (
-            <Link href={homeRoute} aria-label="Lou Gehrig Fan Club" className={styles.logoLink}>
-              <img className={styles.logoImg} src="/IMG_1946.png" alt="LGFC" />
+            <Link
+              href={homeRoute}
+              aria-label="Lou Gehrig Fan Club"
+              className={styles.logoLink}
+              style={{ display: 'inline-flex', width: 72, maxWidth: 72 }}
+            >
+              <img
+                className={styles.logoImg}
+                src="/IMG_1946.png"
+                alt="LGFC"
+                style={{ display: 'block', height: 44, width: 'auto', maxWidth: 72 }}
+              />
             </Link>
           ) : (
             <span />
           )}
         </div>
 
-        {/* CENTER: Page-centered primary buttons */}
+        {/* CENTER: Member buttons */}
         <nav className={styles.center} aria-label="Member">
           <Link className={styles.btn} href="/fanclub">Club Home</Link>
           <Link className={styles.btn} href="/fanclub/myprofile">My Profile</Link>
@@ -45,7 +55,7 @@ export default function MemberHeader({ homeRoute = '/', showLogo = true }: Membe
           <Link className={styles.btn} href="/logout">Logout</Link>
         </nav>
 
-        {/* RIGHT: Hamburger (rightmost) */}
+        {/* RIGHT: Hamburger */}
         <div className={styles.right}>
           <button
             ref={toggleRef}
