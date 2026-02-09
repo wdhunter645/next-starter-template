@@ -17,7 +17,7 @@
 
 .img{
   display: block;
-  height: 92px;      /* increase/decrease as desired */
+  height: 115px;      /* increase/decrease as desired */
   width: auto;
   object-fit: contain;
 }
