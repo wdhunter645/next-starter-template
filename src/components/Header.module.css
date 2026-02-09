@@ -15,7 +15,7 @@
   justify-content: center;
 }
 
-/* LEFT: logo — absolute so it does NOT span full width */
+/* LEFT: logo */
 .left{
   position: absolute;
   left: 16px;
@@ -25,7 +25,6 @@
   display: flex;
   align-items: center;
   width: auto;
-  pointer-events: auto;
 }
 
 .logo{
@@ -33,17 +32,20 @@
   width: auto;
 }
 
-/* CENTER: main nav buttons */
+/* CENTER: nav buttons (bring to very top) */
 .center{
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 3;
+  z-index: 9999; /* force above any overlay */
   display: flex;
   gap: 12px;
+  pointer-events: auto;
 }
 
 .button{
+  position: relative;
+  z-index: 10000; /* make each link topmost */
   display: inline-block;
   padding: 8px 14px;
   border-radius: 9999px;
@@ -66,7 +68,7 @@
   right: 16px;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 4;
+  z-index: 10001;
 }
 
 .hamburger{
@@ -89,7 +91,7 @@
   border-radius: 12px;
   padding: 8px 0;
   box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-  z-index: 10;
+  z-index: 10002;
   min-width: 160px;
 }
 
