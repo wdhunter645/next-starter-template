@@ -1,38 +1,23 @@
 .wrap{
   position: fixed;
-  top: 10px;
-  left: 16px;
-
-  /* Must sit above sticky header + hero */
-  z-index: 80;
-
-  /* Don't block clicks except on the logo itself */
-  pointer-events: none;
+  left: 12px;
+  top: 12px;
+  z-index: 120;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
 }
 
 .link{
-  pointer-events: auto;
   display: inline-flex;
   align-items: flex-start;
-
-  /* The white pill behind the logo (classic look) */
-  background: #fff;
-  border-radius: 18px;
-  padding: 10px 12px;
-
-  box-shadow: 0 8px 22px rgba(0,0,0,0.16);
-
-  /* This is the overlap: let it “hang” down into the hero */
-  transform: translateY(18px);
+  text-decoration: none;
 }
 
 .img{
   display: block;
-
-  /* Bigger + legible */
-  height: 112px;
+  height: 92px;      /* increase/decrease as desired */
   width: auto;
-  max-width: 220px;
-
   object-fit: contain;
 }
