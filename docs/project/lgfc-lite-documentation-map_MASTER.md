@@ -4,8 +4,8 @@
 ## Purpose
 Define how project documentation supports development and eventual turnover to Operations.
 
-## Objective
-This is the default instruction set for Agent/AI work in this repo.
+## Governance
+- '/docs/AI-GUIDE.md — Default instruction set for Agent/AI work in this repo (must follow locked design standards).'
 
 ## Scope
 - Intended design
