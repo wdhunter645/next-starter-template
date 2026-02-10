@@ -1,0 +1,34 @@
+name: LGFC D1 Migrate (remote)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run remote D1 migrations + verify
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          echo "Wrangler:"
+          npx --yes wrangler --version
+
+          echo "Apply migrations to PRODUCTION D1 (lgfc_lite)"
+          npx --yes wrangler d1 execute lgfc_lite --remote --yes --file migrations/0029_member_sessions.sql
+          npx --yes wrangler d1 execute lgfc_lite --remote --yes --file migrations/0030_reports.sql
+
+          echo "Verify tables exist in PRODUCTION"
+          npx --yes wrangler d1 execute lgfc_lite --remote --command "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('member_sessions','reports');"
