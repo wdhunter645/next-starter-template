@@ -1,6 +1,6 @@
 // Cloudflare Pages Function for POST /api/login
 // - Validates that the email exists in join_requests
-// - Creates a cookie-backed session in member_sessions (30 days)
+// - Does NOT send any email
 // - Rate limits: max 3 failed attempts per IP per hour
 
 import { requireD1, requireTables, jsonResponse, type Env } from '../_lib/d1';
@@ -37,8 +37,9 @@ async function logAttempt(db: any, ip: string, email: string, ok: boolean) {
       )
       .bind(ip, email, ok ? 1 : 0)
       .run();
-  } catch {
+  } catch (e) {
     // Never fail login just because logging failed.
+    console.error('login_attempts insert failed:', e);
   }
 }
 
@@ -60,7 +61,7 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
   if (!d1Check.ok) {
     return jsonResponse(d1Check.body, d1Check.status);
   }
-
+  
   const db = d1Check.db;
 
   // Step 2: Check required tables exist
@@ -92,24 +93,21 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
       return jsonResponse({ ok: false, error: 'Email not found.', requestId }, 404);
     }
 
-    // Mark OK attempt
     await logAttempt(db, ip, email, true);
 
-    // Ensure member exists (default role=member). Admins should be seeded separately.
+    // Ensure member exists (default role=member). Admins are seeded via migrations.
     try {
-      await db.prepare("INSERT OR IGNORE INTO members (email, role) VALUES (?1, 'member');")
-        .bind(email).run();
+      await db.prepare("INSERT OR IGNORE INTO members (email, role) VALUES (?1, 'member');").bind(email).run();
     } catch {}
 
     // Create session (30 days)
     const sessionId = newSessionIdHex(24);
     const ua = (request.headers.get('User-Agent') || '').slice(0, 300);
-
     try {
       await db.prepare(
         "INSERT INTO member_sessions (id, email, expires_at, ip, ua) VALUES (?1, ?2, datetime('now','+30 days'), ?3, ?4)"
       ).bind(sessionId, email, ip, ua).run();
-    } catch {
+    } catch (e) {
       return jsonResponse({ ok: false, error: 'Session create failed', requestId }, 500);
     }
 
@@ -118,9 +116,9 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
       headers: {
         'Content-Type': 'application/json',
         'Set-Cookie': setSessionCookie(sessionId),
-      },
+      }
     });
-  } catch {
+  } catch (e: any) {
     return jsonResponse({ ok: false, error: 'Server error', requestId }, 500);
   }
 }
