@@ -1,86 +1,82 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { apiGet } from '@/lib/api';
+import { useEffect, useState } from 'react';
 
 type EventRow = {
   id: number;
   title: string;
   start_date: string;
-  start_time?: string;
-  location?: string;
-  description?: string;
-  external_url?: string;
+  end_date?: string | null;
+  location?: string | null;
+  host?: string | null;
+  fees?: string | null;
+  description?: string | null;
+  external_url?: string | null;
 };
-
-function yyyymm(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  return `${y}-${m}`;
-}
 
 export default function CalendarSection() {
   const [items, setItems] = useState<EventRow[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const month = useMemo(() => yyyymm(new Date()), []);
+  const [status, setStatus] = useState<string>('Loading events…');
 
   useEffect(() => {
     let alive = true;
-    let completed = false;
-    
-    const timer = setTimeout(() => {
-      if (alive && !completed) {
-        setLoading(false);
-        setItems([]);
-      }
-    }, 10000); // 10 second timeout
-    
+
     (async () => {
       try {
-        const data = await apiGet<{ ok: boolean; items: EventRow[] }>(`/api/events/month?month=${encodeURIComponent(month)}`);
-        if (alive) setItems(data.items || []);
-      } catch {
-        if (alive) setItems([]);
-      } finally {
-        if (alive) {
-          setLoading(false);
-          completed = true;
+        const res = await fetch('/api/events/next?limit=10', { cache: 'no-store' });
+        const data = await res.json().catch(() => null);
+        if (!alive) return;
+
+        if (!res.ok || !data?.ok) {
+          setStatus('Error loading events.');
+          setItems([]);
+          return;
         }
+
+        const rows: EventRow[] = Array.isArray(data.items) ? data.items : [];
+        setItems(rows);
+        setStatus(rows.length ? '' : 'No upcoming events posted yet.');
+      } catch {
+        if (!alive) return;
+        setStatus('Error loading events.');
+        setItems([]);
       }
     })();
-    return () => { 
-      alive = false;
-      clearTimeout(timer);
-    };
-  }, [month]);
+
+    return () => { alive = false; };
+  }, []);
 
   return (
-    <div>
-      <h2 className="section-title">Calendar</h2>
-      <p className="sub">Current month events pulled live from D1 events table.</p>
+    <section style={{ marginTop: 24 }}>
+      <h2 style={{ fontSize: 22, lineHeight: 1.25, margin: '0 0 10px 0' }}>Upcoming events (next 10)</h2>
 
-      {loading ? (
-        <p className="sub">Loading events…</p>
-      ) : items.length === 0 ? (
-        <p className="sub">No upcoming events for {month}. Check back later!</p>
+      {status ? (
+        <p style={{ fontSize: 14, color: 'rgba(0,0,0,0.6)', margin: 0 }}>{status}</p>
       ) : (
-        <div className="grid">
+        <ul style={{ paddingLeft: 18, margin: 0 }}>
           {items.map((e) => (
-            <div key={e.id} className="card">
-              <strong>{e.start_date}{e.start_time ? ` @ ${e.start_time}` : ''}</strong>
-              <div style={{ marginTop: 6, fontWeight: 700 }}>{e.title}</div>
-              {e.location ? <div className="sub" style={{ marginTop: 6 }}>{e.location}</div> : null}
-              {e.description ? <div className="sub" style={{ marginTop: 10 }}>{e.description}</div> : null}
+            <li key={e.id} style={{ margin: '0 0 10px 0', lineHeight: 1.5 }}>
+              <div style={{ fontWeight: 700 }}>{e.title}</div>
+              <div style={{ fontSize: 13, color: 'rgba(0,0,0,0.7)' }}>
+                {e.start_date}{e.end_date && e.end_date !== e.start_date ? ` → ${e.end_date}` : ''}
+                {e.location ? ` • ${e.location}` : ''}
+                {e.host ? ` • Host: ${e.host}` : ''}
+                {e.fees ? ` • ${e.fees}` : ''}
+              </div>
+              {e.description ? (
+                <div style={{ fontSize: 14, color: 'rgba(0,0,0,0.75)', marginTop: 4 }}>{e.description}</div>
+              ) : null}
               {e.external_url ? (
-                <div style={{ marginTop: 10 }}>
-                  <a className="link" href={e.external_url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">Details</a>
+                <div style={{ marginTop: 4 }}>
+                  <a href={e.external_url} target="_blank" rel="noreferrer" style={{ fontSize: 14 }}>
+                    Details
+                  </a>
                 </div>
               ) : null}
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
-    </div>
+    </section>
   );
 }
