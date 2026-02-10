@@ -1,5 +1,5 @@
 import React from "react";
-import EventsMonth from "@/components/calendar/EventsMonth";
+import EventsNextTen from "@/components/calendar/EventsNextTen";
 import { fetchPageContent } from "@/lib/pageContent";
 
 export default async function Page() {
@@ -46,7 +46,7 @@ export default async function Page() {
         </>
       )}
     
-      <EventsMonth />
+      <EventsNextTen />
 </main>
   );
 }
