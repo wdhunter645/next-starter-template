@@ -1,9 +1,10 @@
 // Cloudflare Pages Function for POST /api/login
 // - Validates that the email exists in join_requests
-// - Does NOT send any email
+// - Creates a cookie-backed session in member_sessions (30 days)
 // - Rate limits: max 3 failed attempts per IP per hour
 
 import { requireD1, requireTables, jsonResponse, type Env } from '../_lib/d1';
+import { newSessionIdHex, setSessionCookie } from '../_lib/session';
 
 function getIp(request: Request): string {
   return (
@@ -36,9 +37,8 @@ async function logAttempt(db: any, ip: string, email: string, ok: boolean) {
       )
       .bind(ip, email, ok ? 1 : 0)
       .run();
-  } catch (e) {
+  } catch {
     // Never fail login just because logging failed.
-    console.error('login_attempts insert failed:', e);
   }
 }
 
@@ -60,11 +60,11 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
   if (!d1Check.ok) {
     return jsonResponse(d1Check.body, d1Check.status);
   }
-  
+
   const db = d1Check.db;
 
   // Step 2: Check required tables exist
-  const tablesCheck = await requireTables(db, ['join_requests', 'login_attempts']);
+  const tablesCheck = await requireTables(db, ['join_requests', 'login_attempts', 'members', 'member_sessions']);
   if (!tablesCheck.ok) {
     return jsonResponse(tablesCheck.body, tablesCheck.status);
   }
@@ -92,9 +92,35 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
       return jsonResponse({ ok: false, error: 'Email not found.', requestId }, 404);
     }
 
+    // Mark OK attempt
     await logAttempt(db, ip, email, true);
-    return jsonResponse({ ok: true, status: 'ok', requestId }, 200);
-  } catch (e: any) {
+
+    // Ensure member exists (default role=member). Admins should be seeded separately.
+    try {
+      await db.prepare("INSERT OR IGNORE INTO members (email, role) VALUES (?1, 'member');")
+        .bind(email).run();
+    } catch {}
+
+    // Create session (30 days)
+    const sessionId = newSessionIdHex(24);
+    const ua = (request.headers.get('User-Agent') || '').slice(0, 300);
+
+    try {
+      await db.prepare(
+        "INSERT INTO member_sessions (id, email, expires_at, ip, ua) VALUES (?1, ?2, datetime('now','+30 days'), ?3, ?4)"
+      ).bind(sessionId, email, ip, ua).run();
+    } catch {
+      return jsonResponse({ ok: false, error: 'Session create failed', requestId }, 500);
+    }
+
+    return new Response(JSON.stringify({ ok: true, status: 'ok', requestId }, null, 2), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Set-Cookie': setSessionCookie(sessionId),
+      },
+    });
+  } catch {
     return jsonResponse({ ok: false, error: 'Server error', requestId }, 500);
   }
 }
