@@ -12,7 +12,8 @@ Project documentation (_INCOMPLETE/_DRAFT) is reference-only until turnover.
 
 If documents conflict, follow:
 - `/docs/governance/document-authority-hierarchy_MASTER.md`
-
+- '/docs/AI-GUIDE.md — Default instruction set for Agent/AI work in this repo (must follow locked design standards).'
+  
 ## Category model
 - Category A: Operations authority (production-ready). Stored as `_MASTER.md`.
 - Category B: Project reference (usable but evolving). Stored as `_INCOMPLETE.md`.
