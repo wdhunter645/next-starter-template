@@ -185,3 +185,20 @@ This keeps all work contained, traceable, and consistent across time.
 
 This guide serves as the permanent welcome point to the repository.
 It exists to align understanding before any work begins.
+
+## Execution Delivery Rules (Codespaces Safety)
+
+1. Prefer file delivery over pasted code blocks.
+   - If a change is more than ~15–20 lines, deliver as a file to upload.
+   - If multiple files are required, deliver as a ZIP.
+
+2. Codespaces truncates long pasted blocks.
+   - Large code pasted into terminal/editor may silently cut off.
+   - This can create partial files and break builds.
+
+3. When truncation risk exists:
+   - DO NOT paste large blocks.
+   - Create a new file and provide it for upload instead.
+
+4. Pacing rule:
+   - After providing a file or code snippet, wait for confirmation before continuing.
