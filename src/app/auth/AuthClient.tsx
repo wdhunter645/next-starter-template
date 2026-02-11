@@ -75,7 +75,7 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
       }
 
       window.location.href = '/fanclub';
-    } catch (err: any) {
+    } catch (err: unknown) {
       setMsg(err?.message || 'Join failed.');
     } finally {
       setBusy(false);
@@ -98,7 +98,7 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
         return;
       }
       window.location.href = '/fanclub';
-    } catch (err: any) {
+    } catch (err: unknown) {
       setMsg(err?.message || 'Login failed.');
     } finally {
       setBusy(false);
