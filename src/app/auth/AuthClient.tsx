@@ -53,6 +53,12 @@ function InnerAuthClient() {
       {mode === 'join' && (
         <form method="POST" action="/api/join">
           <input
+            name="alias"
+            placeholder="Screen Name / Alias (optional)"
+            style={{ width: '100%', marginBottom: 10 }}
+            autoComplete="nickname"
+          />
+<input
             name="name"
             placeholder="Full Name"
             required
