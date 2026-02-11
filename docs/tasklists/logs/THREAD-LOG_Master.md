@@ -27,36 +27,42 @@ OBSERVATIONS
 NEXT START POINT
 - Next task ID:
 - Exact next action:
----
 
-## THREAD CLOSEOUT RECORD — 2026-02-11 — T01 — Foundation stabilization (Header/Auth/Alias)
+## THREAD CLOSEOUT RECORD — 2026-02-11 — T01 — Production validation (Join + Login) + Logout bug found
 
 STARTING STATE
-- ZIP/commit baseline: deploy-marker shows last deployed commit=9983ba4062df7344097496bf0d328facb91fdefe (2026-02-08T19:52:19Z)
+- ZIP/commit baseline: repo ZIP attached to ChatGPT thread 2026-02-11
 - Known issues at start:
-  - Recurring header regressions / dead nav links reported in prior threads
-  - Join flow missing required Alias (screen name) enforcement
+  - T01 production flow validation pending on Cloudflare (Join + Login end-to-end)
 
 INTENDED OBJECTIVE
-- Stabilize shared UI/auth foundations enough to safely proceed with routing + production validation.
+- Validate Join + Login flow on Cloudflare Production and confirm logout clears session.
 
 CHANGES MADE
-- Note: This closeout records the thread-end status as reported in the handoff notes; exact file list should be derived from git history for the commit(s) made in T01.
-- Reported outcomes:
-  - Build stabilized ✔
-  - Auth UI corrected ✔
-  - Alias requirement enforced ✔
-  - Cloudflare build blockers removed ✔
+- Files touched:
+  - functions/api/logout.ts
+  - src/app/logout/page.tsx
+  - docs/tasklists/IMPLEMENTATION-WORKLIST_Master.md
+  - docs/tasklists/logs/THREAD-LOG_Master.md
+- Key changes:
+  - Fix logout behavior by making /api/logout support GET + POST and always clear cookie + DB session.
+  - Make /logout page call POST /api/logout before redirecting home.
 
 WHAT WORKED
-- Shared foundations are stable enough to proceed.
+- Join: 200 OK, creates join_request and sends welcome email via MailChannels.
+- Duplicate Join: 409 already_joined.
+- Login: 200 OK, sets lgfc_session cookie.
+- Session check: ok:true with member role.
 
 WHAT BROKE (and fix status)
-- No new breakage reported at closeout.
+- Logout: GET /api/logout returned 404 (function only handled POST); /logout page did not call logout API, so session remained valid.
+- Fix status: FIX DELIVERED IN THIS ZIP — pending operator verification via rerun of the production validation commands.
 
 OBSERVATIONS
-- Production flow validation is still pending ⏳ (Join + Login end-to-end on Cloudflare)
+- MailChannels admin notification is skipped because MAIL_ADMIN_TO is not configured (expected per response).
 
 NEXT START POINT
-- Next task ID: T01 (finish)
-- Exact next action: Validate Join + Login end-to-end on Cloudflare and record results; then close T01 as DONE.
+- Next task ID: T01 (finish verification)
+- Exact next action:
+  - Upload this ZIP, redeploy, then rerun the production validation commands using POST /api/logout (or /logout page) and confirm session is cleared.
+
