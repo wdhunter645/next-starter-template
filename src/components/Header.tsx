@@ -3,6 +3,10 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+type HeaderProps = {
+  showLogo?: boolean;
+};
+
 type SessionState =
   | { status: 'unknown' }
   | { status: 'guest' }
@@ -20,7 +24,7 @@ function asBoolean(v: unknown): boolean | undefined {
   return typeof v === 'boolean' ? v : undefined;
 }
 
-export default function Header() {
+export default function Header({ showLogo = true }: HeaderProps = {}) {
   const [session, setSession] = useState<SessionState>({ status: 'unknown' });
 
   useEffect(() => {
@@ -71,7 +75,7 @@ export default function Header() {
           gap: 12,
         }}
       >
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', visibility: showLogo ? 'visible' : 'hidden' }}>
           <img
             src="/logo.png"
             alt="Lou Gehrig Fan Club"
