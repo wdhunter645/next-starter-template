@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation';
+import AuthClient from '../auth/AuthClient';
 
-export default function Page() {
-  redirect('/auth');
+export default function LoginPage() {
+  return <AuthClient forcedMode="login" hideModeToggle />;
 }
