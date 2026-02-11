@@ -65,4 +65,39 @@ NEXT START POINT
 - Next task ID: T01 (finish verification)
 - Exact next action:
   - Upload this ZIP, redeploy, then rerun the production validation commands using POST /api/logout (or /logout page) and confirm session is cleared.
+---
 
+# THREAD CLOSEOUT RECORD — 2026-02-11 — T01 UI auth submit + build failures
+
+WHAT WE INTENDED TO DO
+- Fix UI Join/Login form submission so it no longer lands on an error page.
+- Keep API auth flow working and make Cloudflare build pass.
+
+WHAT ACTUALLY GOT CHANGED
+- Multiple candidate ZIP change-sets were generated for T01 (T01d/T01e/T01f/T01g).
+- Operator applied ZIP F changes to the repo (ZIP G was not applied).
+
+WHAT WORKED
+- API endpoints confirmed working in production via curl:
+  - POST /api/join returns ok:true and creates join_request; MailChannels welcome sent.
+  - POST /api/login sets lgfc_session cookie.
+  - GET /api/session/me returns ok:true with member role when cookie present; ok:false after logout.
+
+WHAT BROKE (and fix status)
+- Cloudflare Pages build FAILED after ZIP F commits due to compile/type issues:
+  - Earlier builds: eslint build-stoppers for `@typescript-eslint/no-explicit-any` in Header/Footer.
+  - Latest build: TypeScript error in `src/app/auth/AuthClient.tsx` (err typed as unknown / {}; `.message` access fails).
+- UI join/login submit still routes to an error page (cannot validate until CF build passes).
+
+OBSERVATIONS
+- Codespaces local `npm run build` can pass while Cloudflare fails because Cloudflare's build step is failing on stricter lint/type checks.
+- `rg` is not installed in the Codespaces image used; avoid commands that depend on it.
+- wrangler.toml shows warning: unexpected top-level field `ratelimits` (warning only; not the current blocker).
+
+WHERE THE NEXT THREAD STARTS
+- Task remains: T01.
+- Start with build blockers:
+  1) Remove explicit any types in Header/Footer.
+  2) Fix AuthClient catch typing (`err instanceof Error ? err.message : ...`).
+  3) Confirm Cloudflare build PASS.
+  4) Re-test UI Join/Login submit in production.
