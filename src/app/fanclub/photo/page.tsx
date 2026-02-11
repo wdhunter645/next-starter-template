@@ -29,8 +29,9 @@ export default function FanclubPhotoGalleryPage() {
       const json = await res.json();
       if (!json?.ok) throw new Error(json?.error || 'list_failed');
       setItems(json.items || []);
-    } catch (e: any) {
-      setErr(String(e?.message || e));
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setErr(msg);
     } finally {
       setLoading(false);
     }
@@ -80,7 +81,7 @@ export default function FanclubPhotoGalleryPage() {
       {!loading && !err && (
         <div style={{ marginTop: 14, display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
           {items.map((p) => {
-            const src = (p as any).b2_url || (p as any).url || '';
+            const src = p.b2_url || p.url || '';
             return (
               <div key={p.id} style={{ borderRadius: 16, border: '1px solid rgba(255,255,255,0.12)', overflow: 'hidden' }}>
                 <div style={{ aspectRatio: '4/3', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
