@@ -1,5 +1,26 @@
 import { NextResponse } from "next/server";
 
+type JoinBody = { alias?: string; name?: string; email?: string };
+
+async function readJoinBody(req: Request): Promise<JoinBody> {
+  const ct = (req.headers.get('content-type') || '').toLowerCase();
+  try {
+    if (ct.includes('application/json')) {
+      return (await readJoinBody(req)) as JoinBody;
+    }
+    // Browser <form> posts typically land here
+    const fd = await req.formData();
+    return {
+      alias: String(fd.get('alias') || ''),
+      name: String(fd.get('name') || ''),
+      email: String(fd.get('email') || ''),
+    };
+  } catch {
+    return {};
+  }
+}
+
+
 /**
  * Dev/Next proxy for Cloudflare Pages Function: /api/join
  * - In production on Pages, the Function handles this route.
