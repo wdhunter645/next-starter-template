@@ -71,23 +71,19 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
 
   try {
     const ct = (request.headers.get('content-type') || '').toLowerCase();
-    let body: any = {};
-    try {
-      if (ct.includes('application/json')) {
-        body = await request.json();
-      } else if (ct.includes('application/x-www-form-urlencoded') || ct.includes('multipart/form-data')) {
-        const fd = await request.formData();
-        body = Object.fromEntries(fd.entries());
-      } else {
-        try { body = await request.json(); } catch { body = {}; }
-      }
-    } catch {
-      body = {};
-    }
 
-    // Support both JSON and form submissions:
-    // - email field is required
-    const emailRaw = (body?.email ?? '').toString();
+let body: any = {};
+if (ct.includes('application/json')) {
+  body = await request.json();
+} else if (ct.includes('application/x-www-form-urlencoded') || ct.includes('multipart/form-data')) {
+  const fd = await request.formData();
+  body = Object.fromEntries(fd.entries());
+} else {
+  // best-effort fallback
+  try { body = await request.json(); } catch { body = {}; }
+}
+
+const emailRaw = (body?.email ?? '').toString();
 
     const email = emailRaw.trim().toLowerCase();
 
