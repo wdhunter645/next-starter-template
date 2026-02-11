@@ -3,7 +3,7 @@
 //
 // Body: { id, title, date, time?, location?, description? }
 
-import { requireAdmin } from "../../_lib/auth";
+import { requireAdmin } from "../../../_lib/auth";
 
 export const onRequestPost = async (context: any): Promise<Response> => {
   const { request, env } = context;
