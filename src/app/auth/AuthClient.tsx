@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useMemo, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 type Mode = 'login' | 'join';
@@ -51,7 +51,7 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
-  async function doJoin(e: React.FormEvent) {
+  async function doJoin(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setMsg(null);
     setBusy(true);
@@ -102,7 +102,7 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
     }
   }
 
-  async function doLogin(e: React.FormEvent) {
+  async function doLogin(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setMsg(null);
     setBusy(true);
