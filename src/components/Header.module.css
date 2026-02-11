@@ -11,7 +11,7 @@
   max-width: 1120px;
   margin: 0 auto;
   padding: 12px 16px;
-  height: 72px;
+  height: 80px;
 }
 
 /* LEFT: logo area (hard constrained) */
@@ -21,19 +21,19 @@
   display: flex;
   align-items: center;
   height: 100%;
-  width: 96px;
-  max-width: 96px;
-  flex: 0 0 96px;
-  overflow: hidden;        /* critical: prevent giant hitbox */
+  width: 92px;
+  max-width: 92px;
+  flex: 0 0 92px;
+  overflow: hidden;        /* prevent giant hitbox */
   pointer-events: none;    /* container never intercepts clicks */
 }
 
 .logoLink{
   display: inline-flex;
   align-items: center;
-  width: 96px;
-  max-width: 96px;
-  flex: 0 0 96px;
+  width: 92px;
+  max-width: 92px;
+  flex: 0 0 92px;
   pointer-events: auto;    /* only the link is clickable */
 }
 
@@ -41,9 +41,9 @@
   display: block;
   height: 56px;
   width: auto;
-  max-width: 96px;
+  max-width: 92px;
   object-fit: contain;
-  border-radius: 10px;
+  border-radius: 12px;
   pointer-events: auto;
 }
 
@@ -83,15 +83,13 @@
 }
 
 .right{
-  position: relative;   /* anchor dropdown to this container */
-  right: auto;
-  top: auto;
-  transform: none;
+  position: relative;
   z-index: 4;
-  margin-left: 10px;    /* space from last button */
+  margin-left: 10px;
   display: inline-flex;
   align-items: center;
 }
+
 .hamburger{
   display: inline-flex;
   flex-direction: column;
@@ -115,11 +113,25 @@
   margin: 0 auto;
 }
 
-/* Keep the centered button group stable on desktop; allow wrap on narrower widths */
 @media (max-width: 920px){
   .center{
-    gap: 10px;
+    position: static;
+    transform: none;
+    justify-content: flex-start;
     flex-wrap: wrap;
-    max-width: calc(100% - 140px);
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .inner{
+    height: auto;
+    padding-bottom: 14px;
+  }
+}
+
+@media (max-width: 520px){
+  .btn{
+    padding: 10px 12px;
+    font-size: 13px;
   }
 }
