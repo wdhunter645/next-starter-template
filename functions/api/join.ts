@@ -104,7 +104,28 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
   }
 
   try {
-    const body = await request.json();
+    const ct = (request.headers.get("content-type") || "").toLowerCase();
+
+      let body: any = {};
+      if (ct.includes("application/json")) {
+        body = await request.json();
+      } else if (ct.includes("application/x-www-form-urlencoded") || ct.includes("multipart/form-data")) {
+        const fd = await request.formData();
+        body = Object.fromEntries(fd.entries());
+      } else {
+        // best effort fallback
+        try { body = await request.json(); } catch { body = {}; }
+      }
+
+      // Map legacy fields coming from the /auth form:
+      // - alias -> screen_name
+      if (body && body.alias != null && body.screen_name == null) body.screen_name = String(body.alias);
+      // - full name -> split to first/last if missing
+      if (body && body.name && (!body.first_name || !body.last_name)) {
+        const parts = String(body.name).trim().split(/\s+/).filter(Boolean);
+        body.first_name = body.first_name || (parts[0] || "");
+        body.last_name = body.last_name || (parts.slice(1).join(" ") || "");
+      }
 
   // Phase 7 guardrail: if email is enabled, fail fast on missing required env vars.
   try {
