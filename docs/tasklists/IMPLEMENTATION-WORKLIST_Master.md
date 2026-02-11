@@ -48,11 +48,38 @@ Closeout: record paths created and commit hash.
 
 # PHASE 1 — Foundation Stabilization (stop regressions)
 
-## T01 — Lock Header + PageShell ownership (stop recurring header breakage)
-Status: PARTIAL (prod validation pending until logout verified)
-Scope: Header component(s), PageShell, global CSS only.
-Exit: Header links work on Home/About/FAQ/Join; Join+Login+Logout verified in Cloudflare Production.
-Closeout: list exact files that define header + shell; add “do not change” note.
+## T01 — UI Auth (Join/Login) Submit Flow + Build Pass
+
+STATUS: BLOCKED — Cloudflare build failing (TypeScript/ESLint), so UI fixes cannot be validated in prod yet.
+
+GOAL
+- Join + Login pages submit without errors.
+- Successful Join → confirmation + optional redirect to /auth (or /fanclub if you choose).
+- Successful Login → sets lgfc_session and redirects to /fanclub.
+- Cloudflare Pages build must PASS (no TypeScript errors, no eslint build-stoppers).
+
+CURRENT SIGNALS (2026-02-11)
+- API layer works (join/login/logout/session endpoints verified via curl).
+- UI submit still hits an error page.
+- Cloudflare build fails due to:
+  - @typescript-eslint/no-explicit-any errors in Header/Footer (in earlier failure logs)
+  - Type error in src/app/auth/AuthClient.tsx: accessing err.message on {} (latest failure)
+
+NEXT ACTIONS (THIS TASK)
+1) Fix build blockers (MUST be zero errors)
+   - Remove all explicit `any` from Header/Footer (use typed interfaces / unknown with narrowing).
+   - In AuthClient catch blocks: use safe message extraction:
+     - `const msg = err instanceof Error ? err.message : 'Join failed.';`
+2) Re-run local build sanity
+   - `npm ci && npm run build`
+3) Push, wait for Cloudflare build PASS
+4) Production verify
+   - Visit /join and /login, submit forms.
+   - Re-run the curl validation script to confirm cookie + /api/session/me behavior.
+
+NOTES
+- Codespaces may not have `rg` installed; use `grep -R` instead.
+- wrangler.toml warns about top-level `ratelimits` (not the blocker), but keep an eye on it.
 
 ## T02 — Routing verification sweep (public pages)
 Scope: route config + page link targets only (no styling).
