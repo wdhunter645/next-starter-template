@@ -1,90 +1,97 @@
 'use client';
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import styles from "./Header.module.css";
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
-type SessionMe = {
-  ok?: boolean;
-  role?: string;
-};
+type SessionState =
+  | { status: 'unknown' }
+  | { status: 'guest' }
+  | { status: 'member'; email?: string; role?: string };
 
-function parseSessionMe(value: unknown): SessionMe {
-  if (!value || typeof value !== "object") return {};
-  const v = value as Record<string, unknown>;
-  return {
-    ok: v.ok === true,
-    role: typeof v.role === "string" ? v.role : undefined,
-  };
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null;
+}
+
+function asString(v: unknown): string | undefined {
+  return typeof v === 'string' ? v : undefined;
+}
+
+function asBoolean(v: unknown): boolean | undefined {
+  return typeof v === 'boolean' ? v : undefined;
 }
 
 export default function Header() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [session, setSession] = useState<SessionState>({ status: 'unknown' });
 
   useEffect(() => {
-    let mounted = true;
+    let cancelled = false;
 
-    async function checkSession() {
+    async function load() {
       try {
-        const res = await fetch("/api/session/me", { cache: "no-store" });
-        const raw: unknown = await res.json().catch(() => ({}));
-        const data = parseSessionMe(raw);
+        const res = await fetch('/api/session/me', { credentials: 'include' });
+        const json: unknown = await res.json().catch(() => null);
 
-        if (!mounted) return;
+        if (!isRecord(json)) {
+          if (!cancelled) setSession({ status: 'guest' });
+          return;
+        }
 
-        const role = data.role || "";
-        setIsLoggedIn(data.ok === true && (role === "member" || role === "admin"));
+        const ok = asBoolean(json.ok) === true;
+        const email = asString(json.email);
+        const role = asString(json.role);
+
+        if (ok && email) {
+          if (!cancelled) setSession({ status: 'member', email, role });
+        } else {
+          if (!cancelled) setSession({ status: 'guest' });
+        }
       } catch {
-        if (!mounted) return;
-        setIsLoggedIn(false);
+        if (!cancelled) setSession({ status: 'guest' });
       }
     }
 
-    checkSession();
+    load();
     return () => {
-      mounted = false;
+      cancelled = true;
     };
   }, []);
 
-  return (
-    <header className={styles.header}>
-      <div className={styles.inner}>
-        <div className={styles.left}>
-          <Link className={styles.logoLink} href="/" aria-label="Lou Gehrig Fan Club Home">
-            <img
-              className={styles.logoImg}
-              src="/img/lgfc-logo.png"
-              alt="Lou Gehrig Fan Club"
-              loading="eager"
-              decoding="async"
-            />
-          </Link>
-        </div>
+  const isLoggedIn = session.status === 'member';
 
-        <nav className={styles.nav} aria-label="Primary">
-          <Link className={styles.navLink} href="/join">
-            Join
-          </Link>
-          <Link className={styles.navLink} href="/search">
-            Search
-          </Link>
-          <a className={styles.navLink} href="https://www.bonfire.com/store/lou-gehrig-fan-club/" target="_blank" rel="noreferrer">
-            Store
-          </a>
-          {!isLoggedIn ? (
-            <Link className={styles.navLink} href="/login">
-              Login
-            </Link>
-          ) : (
-            <>
-              <Link className={styles.navLink} href="/fanclub">
-                Club
-              </Link>
-              <Link className={styles.navLink} href="/logout">
-                Logout
-              </Link>
-            </>
-          )}
+  return (
+    <header style={{ borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
+      <div
+        style={{
+          maxWidth: 1100,
+          margin: '0 auto',
+          padding: '14px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+        }}
+      >
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+          <img
+            src="/logo.png"
+            alt="Lou Gehrig Fan Club"
+            width={38}
+            height={38}
+            style={{ display: 'block' }}
+          />
+          <div style={{ lineHeight: 1.1 }}>
+            <div style={{ fontWeight: 800, fontSize: 16, color: '#0033cc' }}>Lou Gehrig Fan Club</div>
+            <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.65)' }}>Character • Courage • Community</div>
+          </div>
+        </Link>
+
+        <nav style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <Link href="/join">Join</Link>
+          <Link href="/search">Search</Link>
+          <a href="https://www.bonfire.com/" target="_blank" rel="noreferrer">Store</a>
+          {!isLoggedIn && <Link href="/login">Login</Link>}
+          {isLoggedIn && <Link href="/fanclub">Club</Link>}
+          {isLoggedIn && <Link href="/logout">Logout</Link>}
         </nav>
       </div>
     </header>
