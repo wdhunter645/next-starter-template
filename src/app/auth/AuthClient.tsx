@@ -36,16 +36,8 @@ function InnerAuthClient() {
             style={{ width: '100%', marginBottom: 10 }}
             autoComplete="email"
           />
-          <input
-            name="password"
-            type="password"
-            placeholder="Password"
-            required
-            style={{ width: '100%', marginBottom: 10 }}
-            autoComplete="current-password"
-          />
           <button type="submit" style={{ width: '100%' }}>
-            Login
+            Send login link
           </button>
         </form>
       )}
