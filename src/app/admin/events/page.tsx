@@ -26,8 +26,9 @@ export default function AdminEventsPage() {
       const json = await res.json();
       if (!json?.ok) throw new Error(json?.error || 'list_failed');
       setItems(json.items || []);
-    } catch (e: any) {
-      setErr(String(e?.message || e));
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setErr(msg);
     } finally {
       setLoading(false);
     }
@@ -53,8 +54,9 @@ export default function AdminEventsPage() {
       if (!json?.ok) throw new Error(json?.error || 'create_failed');
       setMsg('Created.');
       await load();
-    } catch (e: any) {
-      setMsg('Error: ' + String(e?.message || e));
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setMsg('Error: ' + msg);
     }
   }
 
