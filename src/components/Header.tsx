@@ -49,7 +49,7 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
         <nav className={styles.center} aria-label="Primary">
           {!isLoggedIn ? (
             <>
-              <Link className={styles.btn} href="/join">Join</Link>
+              <Link className={styles.btn} href="/auth">JOIN/LOGIN</Link>
               <Link className={styles.btn} href="/search">Search</Link>
               <a
                 className={styles.btn}
@@ -60,7 +60,7 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
               >
                 Store
               </a>
-              <Link className={styles.btn} href="/login">Login</Link>
+              
             </>
           ) : (
             <>
