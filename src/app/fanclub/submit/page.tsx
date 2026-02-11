@@ -32,8 +32,9 @@ export default function FanclubSubmitPage() {
       setTitle('');
       setContent('');
       setMsg('Submitted. Thank you!');
-    } catch (e: any) {
-      setMsg(`Error: ${String(e?.message || e)}`);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setMsg(`Error: ${msg}`);
     } finally {
       setBusy(false);
     }
