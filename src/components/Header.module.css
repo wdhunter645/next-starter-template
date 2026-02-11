@@ -21,9 +21,9 @@
   display: flex;
   align-items: center;
   height: 100%;
-  width: 72px;
-  max-width: 72px;
-  flex: 0 0 72px;
+  width: 96px;
+  max-width: 96px;
+  flex: 0 0 96px;
   overflow: hidden;        /* critical: prevent giant hitbox */
   pointer-events: none;    /* container never intercepts clicks */
 }
@@ -31,17 +31,17 @@
 .logoLink{
   display: inline-flex;
   align-items: center;
-  width: 72px;
-  max-width: 72px;
-  flex: 0 0 72px;
+  width: 96px;
+  max-width: 96px;
+  flex: 0 0 96px;
   pointer-events: auto;    /* only the link is clickable */
 }
 
 .logoImg{
   display: block;
-  height: 44px;
+  height: 56px;
   width: auto;
-  max-width: 72px;
+  max-width: 96px;
   object-fit: contain;
   border-radius: 10px;
   pointer-events: auto;

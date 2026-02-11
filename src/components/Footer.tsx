@@ -12,34 +12,34 @@ function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null;
 }
 
-function asString(v: unknown): string | null {
-  return typeof v === 'string' ? v : null;
+function asString(v: unknown): string {
+  return typeof v === 'string' ? v : '';
 }
 
 export default function Footer() {
   const [footerQuote, setFooterQuote] = useState<Quote | null>(null);
 
   useEffect(() => {
-    // Best-effort: pull one quote for rotation if available; silent failure is fine.
+    let alive = true;
     (async () => {
       try {
         const res = await fetch('/api/footer-quote', { cache: 'no-store' });
-        const data: unknown = await res.json().catch(() => ({}));
+        const data = await res.json().catch(() => ({} as any));
+        if (!alive) return;
 
-        if (!isRecord(data) || data.ok !== true) return;
-
-        const item = (data as Record<string, unknown>).item;
-        if (!isRecord(item)) return;
-
-        const quote = asString(item.quote);
-        if (!quote) return;
-
-        const attribution = asString(item.attribution);
-        setFooterQuote({ quote, attribution });
+        if (data?.ok && isRecord(data) && isRecord((data as any).item)) {
+          const item = (data as any).item;
+          const q = asString(item.quote);
+          const a = asString(item.attribution);
+          if (q) setFooterQuote({ quote: q, attribution: a || null });
+        }
       } catch {
-        // No-op
+        // ignore
       }
     })();
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const scrollToTop = () => {
@@ -71,7 +71,7 @@ export default function Footer() {
 
         <div className={styles.center}>
           <button type="button" onClick={scrollToTop} className={styles.toTop} aria-label="Scroll to top">
-            ↑
+            <img className={styles.centerLogo} src="/IMG_1946.png" alt="LGFC" />
           </button>
         </div>
 
