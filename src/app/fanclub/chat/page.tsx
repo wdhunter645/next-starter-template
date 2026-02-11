@@ -38,8 +38,9 @@ export default function FanclubChatPage() {
       const json = await res.json();
       if (!json?.ok) throw new Error(json?.error || 'list_failed');
       setItems(json.items || []);
-    } catch (e: any) {
-      setError(String(e?.message || e));
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -169,8 +170,9 @@ function ChatFeed({ items, onReport }: { items: DiscussionItem[]; onReport: (id:
       setReportOk('Report submitted.');
       setReportReason('');
       setReportingId(null);
-    } catch (e: any) {
-      setReportError(String(e?.message || e));
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setReportError(msg);
     }
   }
 
