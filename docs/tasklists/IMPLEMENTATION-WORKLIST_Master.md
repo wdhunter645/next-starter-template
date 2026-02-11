@@ -49,9 +49,9 @@ Closeout: record paths created and commit hash.
 # PHASE 1 — Foundation Stabilization (stop regressions)
 
 ## T01 — Lock Header + PageShell ownership (stop recurring header breakage)
-Status: PARTIAL — foundations stabilized; production validation pending (Join + Login e2e on Cloudflare)
+Status: PARTIAL (prod validation pending until logout verified)
 Scope: Header component(s), PageShell, global CSS only.
-Exit: Header links work on Home/About/FAQ/Join; verified in Cloudflare Production (pending).
+Exit: Header links work on Home/About/FAQ/Join; Join+Login+Logout verified in Cloudflare Production.
 Closeout: list exact files that define header + shell; add “do not change” note.
 
 ## T02 — Routing verification sweep (public pages)
