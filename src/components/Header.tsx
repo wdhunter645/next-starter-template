@@ -1,112 +1,91 @@
 'use client';
 
-import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
-import styles from './Header.module.css';
-import HamburgerMenu from './HamburgerMenu';
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import styles from "./Header.module.css";
 
-type HeaderProps = {
-  homeRoute?: string;
-  showLogo?: boolean;
+type SessionMe = {
+  ok?: boolean;
+  role?: string;
 };
 
-export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps = {}) {
-  const [open, setOpen] = useState(false);
-  const toggleRef = useRef<HTMLButtonElement>(null);
+function parseSessionMe(value: unknown): SessionMe {
+  if (!value || typeof value !== "object") return {};
+  const v = value as Record<string, unknown>;
+  return {
+    ok: v.ok === true,
+    role: typeof v.role === "string" ? v.role : undefined,
+  };
+}
+
+export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    let alive = true;
-    (async () => {
+    let mounted = true;
+
+    async function checkSession() {
       try {
-        const res = await fetch('/api/session/me', { cache: 'no-store' });
-        const data = await res.json().catch(() => ({} as any));
-        if (!alive) return;
-        setIsLoggedIn(!!data?.ok && (data?.role === 'member' || data?.role === 'admin'));
+        const res = await fetch("/api/session/me", { cache: "no-store" });
+        const raw: unknown = await res.json().catch(() => ({}));
+        const data = parseSessionMe(raw);
+
+        if (!mounted) return;
+
+        const role = data.role || "";
+        setIsLoggedIn(data.ok === true && (role === "member" || role === "admin"));
       } catch {
-        if (!alive) return;
+        if (!mounted) return;
         setIsLoggedIn(false);
       }
-    })();
+    }
+
+    checkSession();
     return () => {
-      alive = false;
+      mounted = false;
     };
   }, []);
-
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/logout', { method: 'POST' });
-    } catch {}
-    window.location.href = '/';
-  };
 
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
-        {/* LEFT: Logo */}
         <div className={styles.left}>
-          {showLogo ? (
-            <Link aria-label="Lou Gehrig Fan Club" className={styles.logoLink} href={homeRoute}>
-              <img className={styles.logoImg} src="/IMG_1946.png" alt="LGFC" />
-            </Link>
-          ) : null}
+          <Link className={styles.logoLink} href="/" aria-label="Lou Gehrig Fan Club Home">
+            <img
+              className={styles.logoImg}
+              src="/img/lgfc-logo.png"
+              alt="Lou Gehrig Fan Club"
+              loading="eager"
+              decoding="async"
+            />
+          </Link>
         </div>
 
-        {/* CENTER: buttons */}
-        <nav className={styles.center} aria-label="Primary">
-          {/* Public header per locked design:
-              Not logged in: Join, Search, Store, Login
-              Logged in: Join, Search, Store, Login, Club, Logout (6 total)
-          */}
-          <Link className={styles.btn} href="/join">
+        <nav className={styles.nav} aria-label="Primary">
+          <Link className={styles.navLink} href="/join">
             Join
           </Link>
-          <Link className={styles.btn} href="/search">
+          <Link className={styles.navLink} href="/search">
             Search
           </Link>
-          <a
-            className={styles.btn}
-            href="https://www.bonfire.com/store/lou-gehrig-fan-club/"
-            target="_blank"
-            rel="noopener noreferrer"
-            referrerPolicy="no-referrer"
-          >
+          <a className={styles.navLink} href="https://www.bonfire.com/store/lou-gehrig-fan-club/" target="_blank" rel="noreferrer">
             Store
           </a>
-          <Link className={styles.btn} href="/login">
-            Login
-          </Link>
-
-          {isLoggedIn ? (
+          {!isLoggedIn ? (
+            <Link className={styles.navLink} href="/login">
+              Login
+            </Link>
+          ) : (
             <>
-              <Link className={styles.btn} href="/fanclub">
+              <Link className={styles.navLink} href="/fanclub">
                 Club
               </Link>
-              <button className={styles.btn} type="button" onClick={handleLogout}>
+              <Link className={styles.navLink} href="/logout">
                 Logout
-              </button>
+              </Link>
             </>
-          ) : null}
-
-          {/* Hamburger (mobile / overflow) */}
-          <div className={styles.right}>
-            <button
-              ref={toggleRef}
-              className={styles.hamburger}
-              type="button"
-              onClick={() => setOpen((v) => !v)}
-              aria-label="Open menu"
-              aria-expanded={open ? 'true' : 'false'}
-              aria-controls="hamburger-menu"
-            >
-              <span className={styles.hamburgerBar}></span>
-              <span className={styles.hamburgerBar}></span>
-              <span className={styles.hamburgerBar}></span>
-            </button>
-          </div>
+          )}
         </nav>
-
-        <HamburgerMenu open={open} setOpen={setOpen} toggleRef={toggleRef} />
       </div>
     </header>
   );
