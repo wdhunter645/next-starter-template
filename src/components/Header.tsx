@@ -16,17 +16,26 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    try {
-      const memberEmail = window.localStorage.getItem('lgfc_member_email');
-      setIsLoggedIn(!!memberEmail);
-    } catch {
-      setIsLoggedIn(false);
-    }
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/session/me', { cache: 'no-store' });
+        const data = await res.json().catch(() => ({} as any));
+        if (!alive) return;
+        setIsLoggedIn(!!data?.ok && (data?.role === 'member' || data?.role === 'admin'));
+      } catch {
+        if (!alive) return;
+        setIsLoggedIn(false);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     try {
-      window.localStorage.removeItem('lgfc_member_email');
+      await fetch('/api/logout', { method: 'POST' });
     } catch {}
     window.location.href = '/';
   };
@@ -34,70 +43,70 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
-        {/* LEFT: Logo (small header logo; hidden when FloatingLogo is active) */}
+        {/* LEFT: Logo */}
         <div className={styles.left}>
           {showLogo ? (
-            <Link href={homeRoute} aria-label="Lou Gehrig Fan Club" className={styles.logoLink}>
+            <Link aria-label="Lou Gehrig Fan Club" className={styles.logoLink} href={homeRoute}>
               <img className={styles.logoImg} src="/IMG_1946.png" alt="LGFC" />
             </Link>
-          ) : (
-            <span />
-          )}
+          ) : null}
         </div>
 
-        {/* CENTER: Buttons + Hamburger grouped together */}
+        {/* CENTER: buttons */}
         <nav className={styles.center} aria-label="Primary">
-          {!isLoggedIn ? (
-            <>
-              <Link className={styles.btn} href="/auth">JOIN/LOGIN</Link>
-              <Link className={styles.btn} href="/search">Search</Link>
-              <a
-                className={styles.btn}
-                href="https://www.bonfire.com/store/lou-gehrig-fan-club/"
-                target="_blank"
-                rel="noopener noreferrer"
-                referrerPolicy="no-referrer"
-              >
-                Store
-              </a>
-              
-            </>
-          ) : (
-            <>
-              <Link className={styles.btn} href="/search">Search</Link>
-              <a
-                className={styles.btn}
-                href="https://www.bonfire.com/store/lou-gehrig-fan-club/"
-                target="_blank"
-                rel="noopener noreferrer"
-                referrerPolicy="no-referrer"
-              >
-                Store
-              </a>
-              <Link className={styles.btn} href="/fanclub">Club</Link>
-              <button className={styles.btn} type="button" onClick={handleLogout}>Logout</button>
-            </>
-          )}
+          {/* Public header per locked design:
+              Not logged in: Join, Search, Store, Login
+              Logged in: Join, Search, Store, Login, Club, Logout (6 total)
+          */}
+          <Link className={styles.btn} href="/join">
+            Join
+          </Link>
+          <Link className={styles.btn} href="/search">
+            Search
+          </Link>
+          <a
+            className={styles.btn}
+            href="https://www.bonfire.com/store/lou-gehrig-fan-club/"
+            target="_blank"
+            rel="noopener noreferrer"
+            referrerPolicy="no-referrer"
+          >
+            Store
+          </a>
+          <Link className={styles.btn} href="/login">
+            Login
+          </Link>
 
-          {/* Hamburger (grouped with buttons) */}
+          {isLoggedIn ? (
+            <>
+              <Link className={styles.btn} href="/fanclub">
+                Club
+              </Link>
+              <button className={styles.btn} type="button" onClick={handleLogout}>
+                Logout
+              </button>
+            </>
+          ) : null}
+
+          {/* Hamburger (mobile / overflow) */}
           <div className={styles.right}>
             <button
               ref={toggleRef}
               className={styles.hamburger}
               type="button"
-              onClick={() => setOpen(v => !v)}
+              onClick={() => setOpen((v) => !v)}
               aria-label="Open menu"
-              aria-expanded={open}
+              aria-expanded={open ? 'true' : 'false'}
               aria-controls="hamburger-menu"
             >
-              <span className={styles.hamburgerBar} />
-              <span className={styles.hamburgerBar} />
-              <span className={styles.hamburgerBar} />
+              <span className={styles.hamburgerBar}></span>
+              <span className={styles.hamburgerBar}></span>
+              <span className={styles.hamburgerBar}></span>
             </button>
-
-            {open ? <HamburgerMenu onClose={() => setOpen(false)} toggleRef={toggleRef} /> : null}
           </div>
         </nav>
+
+        <HamburgerMenu open={open} setOpen={setOpen} toggleRef={toggleRef} />
       </div>
     </header>
   );
