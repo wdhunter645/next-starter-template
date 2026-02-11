@@ -12,6 +12,24 @@ function splitName(full: string): { first: string; last: string } {
   return { first: parts[0], last: parts.slice(1).join(' ') };
 }
 
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null;
+}
+
+function pickServerMsg(json: unknown, fallback: string): string {
+  if (!isRecord(json)) return fallback;
+  const error = json.error;
+  const status = json.status;
+  if (typeof error === 'string' && error.trim()) return error;
+  if (typeof status === 'string' && status.trim()) return status;
+  return fallback;
+}
+
+function pickErrMsg(err: unknown, fallback: string): string {
+  if (err instanceof Error && typeof err.message === 'string' && err.message.trim()) return err.message;
+  return fallback;
+}
+
 function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
   const sp = useSearchParams();
 
@@ -23,13 +41,11 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
 
   const [mode, setMode] = useState<Mode>(initialMode);
 
-  // join fields
   const [screenName, setScreenName] = useState('');
   const [fullName, setFullName] = useState('');
   const [emailJoin, setEmailJoin] = useState('');
   const [emailOptIn, setEmailOptIn] = useState(true);
 
-  // login field
   const [emailLogin, setEmailLogin] = useState('');
 
   const [busy, setBusy] = useState(false);
@@ -41,6 +57,7 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
     setBusy(true);
     try {
       const { first, last } = splitName(fullName);
+
       const res = await fetch('/api/join', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -52,23 +69,26 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
           email_opt_in: emailOptIn,
         }),
       });
-      const data = await res.json().catch(() => ({}));
+
+      const data: unknown = await res.json().catch(() => null);
+
       if (!res.ok) {
-        setMsg(data?.error || data?.status || 'Join failed.');
+        setMsg(pickServerMsg(data, 'Join failed.'));
         return;
       }
-      // If already joined, still allow login.
+
       setMsg('Joined. Logging you in…');
 
-      // Auto-login (requires join request to exist; OK either way)
       const res2 = await fetch('/api/login', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ email: emailJoin }),
       });
-      const data2 = await res2.json().catch(() => ({}));
+
+      const data2: unknown = await res2.json().catch(() => null);
+
       if (!res2.ok) {
-        setMsg(data2?.error || 'Joined, but login failed. Try the Login tab.');
+        setMsg(pickServerMsg(data2, 'Joined, but login failed. Try the Login tab.'));
         setMode('login');
         setEmailLogin(emailJoin);
         return;
@@ -76,7 +96,7 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
 
       window.location.href = '/fanclub';
     } catch (err: unknown) {
-      setMsg(err?.message || 'Join failed.');
+      setMsg(pickErrMsg(err, 'Join failed.'));
     } finally {
       setBusy(false);
     }
@@ -92,14 +112,17 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ email: emailLogin }),
       });
-      const data = await res.json().catch(() => ({}));
+
+      const data: unknown = await res.json().catch(() => null);
+
       if (!res.ok) {
-        setMsg(data?.error || 'Login failed.');
+        setMsg(pickServerMsg(data, 'Login failed.'));
         return;
       }
+
       window.location.href = '/fanclub';
     } catch (err: unknown) {
-      setMsg(err?.message || 'Login failed.');
+      setMsg(pickErrMsg(err, 'Login failed.'));
     } finally {
       setBusy(false);
     }
