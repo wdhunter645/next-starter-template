@@ -92,6 +92,11 @@ Exit: logged-out access to `/fanclub/**` redirects; logged-in access works.
 Closeout: record exact rule and test URLs.
 
 ## T04 — Production smoke harness (repeatable checklist + commands)
+
+STATUS NOTE (2026-02-11)
+- Parallel prep complete (Pack01). Files delivered in separate ZIP; integrate when Thread 2 pauses.
+- Contents: scripts/prod-smoke.sh + docs/verification/PRODUCTION_SMOKE.md (commit-worthy).
+
 Scope: docs/scripts only (no app change).
 Exit: a short “smoke commands” section exists in repo docs.
 Closeout: record commands + expected outputs.
@@ -184,6 +189,11 @@ Exit: profile renders; identity fields render; membership card instructions rend
 Closeout: record fields + data source.
 
 ## T32 — Member Chat: post + list + report flow (Day 1)
+
+STATUS NOTE (2026-02-11)
+- Parallel prep complete (Pack01). Files delivered in separate ZIP; integrate when Thread 2 pauses.
+- Contents: /fanclub/chat page shell + reports create endpoint (admin moderation hook noted).
+
 Scope: chat components + storage only.
 Exit: submit works; newest first; report works; admin moderation hook noted.
 Closeout: record tables + endpoints.
@@ -194,11 +204,20 @@ Exit: article displays reliably; empty-state acceptable.
 Closeout: record source + selection rules.
 
 ## T34 — Member submissions: article upload (PDF) pipeline
+
+STATUS NOTE (2026-02-11)
+- Parallel prep started (Pack01, PARTIAL). UI shell created; full B2 PDF pipeline + allowlist/limits still pending.
+- Contents: /fanclub/submit page shell (uses existing /api/library/submit if present).
+
 Scope: upload endpoint + storage + metadata only.
 Exit: PDF allowlist enforced; stored to B2; metadata stored; UI confirms success.
 Closeout: record limits + allowlist.
 
 ## T35 — Photo Gallery: browse + report incorrect tags (Day 1)
+
+STATUS NOTE (2026-02-11)
+- Parallel prep started (Pack01, PARTIAL). Gallery browse + report hook page file prepared; wiring/verification pending.
+
 Scope: gallery browse + report flow.
 Exit: browse works; report works; admin review hook noted.
 Closeout: record tag model + report target.
@@ -218,6 +237,11 @@ Exit: only admins access `/admin/**`; non-admin blocked.
 Closeout: record gate logic and admin roster source.
 
 ## T41 — Admin moderation: reported items queue (posts/photos/tags)
+
+STATUS NOTE (2026-02-11)
+- Parallel prep complete (Pack01). Files delivered in separate ZIP; integrate when Thread 2 pauses.
+- Contents: /admin/moderation page shell + admin reports list/close endpoints.
+
 Scope: moderation UI + endpoints.
 Exit: admin can view reports; hide/remove; audit trail preserved.
 Closeout: record actions and audit entries.
@@ -228,6 +252,10 @@ Exit: create/edit/pin/unpin works; changes visible on public FAQ.
 Closeout: record workflow and schema.
 
 ## T43 — Admin events tools: create/edit events
+
+STATUS NOTE (2026-02-11)
+- Parallel prep started (Pack01, STARTER). Admin events page + create/update endpoint shells prepared; validation + public view refresh pending.
+
 Scope: events admin only.
 Exit: admin can create/edit; public views update.
 Closeout: record validation rules.
