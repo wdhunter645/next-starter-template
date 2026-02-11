@@ -101,3 +101,42 @@ WHERE THE NEXT THREAD STARTS
   2) Fix AuthClient catch typing (`err instanceof Error ? err.message : ...`).
   3) Confirm Cloudflare build PASS.
   4) Re-test UI Join/Login submit in production.
+
+## THREAD CLOSEOUT RECORD — 2026-02-11 — Parallel Lane — Pack01 bulk file prep (T04/T32/T34/T35/T41/T43)
+
+STARTING STATE
+- ZIP/commit baseline: next-starter-template-main.zip provided for parallel work (separate from Thread 2 “T01” troubleshooting ZIPs).
+- Known issues at start:
+  - Thread 2 still working T01 (build/type/lint + UI submit validation); parallel lane must avoid shared foundations (Header/PageShell/auth gates).
+
+INTENDED OBJECTIVE
+- Prepare safe “ADD-only” implementation artifacts in parallel for tasks not dependent on T01/T02/T03 troubleshooting.
+
+CHANGES MADE
+- Files prepared (delivered as separate ZIP: LGFC_parallel_pack_P1.zip):
+  - T04: docs/verification/PRODUCTION_SMOKE.md; scripts/prod-smoke.sh
+  - T32: src/app/fanclub/chat/page.tsx; functions/api/reports/create.ts
+  - T34 (partial): src/app/fanclub/submit/page.tsx (uses existing /api/library/submit)
+  - T35 (partial): src/app/fanclub/photo/page.tsx (gallery browse + report hook)
+  - T41: src/app/admin/moderation/page.tsx; functions/api/admin/reports/list.ts; functions/api/admin/reports/close.ts
+  - T43 (starter): src/app/admin/events/page.tsx; functions/api/admin/events/create.ts; functions/api/admin/events/update.ts
+- Guardrails observed:
+  - No edits to Header/PageShell/shared CSS/middleware/auth gate/routing sweep.
+  - No edits to logout/session/auth core files touched by Thread 2.
+
+WHAT WORKED
+- Conflict audit performed against current repo ZIP and Thread 2 “T01f” ZIP: no overlaps detected (safe merge).
+- “Manifest” file in Pack01 is for transfer verification only; not intended to be committed.
+
+WHAT BROKE (and fix status)
+- None encountered in this thread (file-prep only; runtime/build validation deferred to integration thread).
+
+OBSERVATIONS
+- Parallel work model is viable: additive packs can ship while critical-path debugging continues.
+- Only potential collision risk is when a parallel pack includes an existing page file; treat those as “merge-by-diff” items (avoid unless explicitly needed).
+
+NEXT START POINT
+- Next task ID: Parallel Lane — Pack02
+- Exact next action:
+  - Start from latest repo ZIP AFTER Thread 2 pauses; then generate Pack02 as ADD-only for remaining non-blocking tasks (FanClub shells, Admin tools, FAQ/events public surfaces), excluding any files touched in Thread 2.
+
