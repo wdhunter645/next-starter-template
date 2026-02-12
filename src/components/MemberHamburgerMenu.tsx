@@ -11,7 +11,7 @@ import { useClickAway } from '@/hooks/useClickAway';
  * 2) Obtain Membership Card
  * 3) About
  * 4) Contact
- * 5) Support
+ * 5) (Support removed)
  *
  * Mobile member hamburger order (locked):
  * 1) Search
@@ -22,7 +22,7 @@ import { useClickAway } from '@/hooks/useClickAway';
  * 6) About
  * 7) Contact
  * 8) Store (mobile only - replaces header button)
- * 9) Support
+ * 9) (Support removed)
  * 10) Login
  * 11) Logout
  */
@@ -73,15 +73,7 @@ export default function MemberHamburgerMenu({
             >
               Store
             </a>
-          </li>
-          
-          <li>
-            <a href="mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed" aria-label="Contact support via email" onClick={onClose}>
-              Support
-            </a>
-          </li>
-
-          {/* Mobile-only bottom items */}
+          </li>          {/* Mobile-only bottom items */}
           <li className="only-mobile"><Link href="/login" onClick={onClose}>Login</Link></li>
           <li className="only-mobile"><Link href="/logout" onClick={onClose}>Logout</Link></li>
         </ul>
