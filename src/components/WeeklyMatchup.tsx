@@ -78,8 +78,7 @@ export default function WeeklyMatchup() {
     const timer = setTimeout(() => {
       if (!completed) {
         setLoading(false);
-        setErr('Unable to load matchup. Please try again later.');
-      }
+        }
     }, 10000); // 10 second timeout
 
     load().finally(() => {
@@ -115,8 +114,8 @@ export default function WeeklyMatchup() {
   }
 
   if (loading) return <div className="card">Loading matchup…</div>;
-  if (err) return <div className="card">Unable to load matchup. Please check back later.</div>;
-  if (items.length < 2) return <div className="card">No matchup available at this time. Check back next week for a new photo vote!</div>;
+  if (err) return null;
+  if (items.length < 2) return null;
 
   const a = items[0];
   const b = items[1];

@@ -23,16 +23,13 @@ export default function Footer() {
       try {
         const res = await fetch('/api/footer-quote', { cache: 'no-store' });
         const json: unknown = await res.json().catch(() => null);
-
         if (!isRecord(json)) return;
 
-        // expected shape: { ok:true, quote:{ quote:string, source?:string } }
         const quoteObj = isRecord(json.quote) ? (json.quote as Record<string, unknown>) : null;
         if (!quoteObj) return;
 
         const quote = asString(quoteObj.quote);
         const source = asString(quoteObj.source);
-
         if (!quote) return;
 
         if (!cancelled) setQ({ quote, source });
@@ -48,35 +45,65 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer style={{ borderTop: '1px solid rgba(0,0,0,0.1)', marginTop: 40 }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '20px 16px' }}>
-        {q && (
-          <div style={{ fontStyle: 'italic', marginBottom: 10 }}>
-            “{q.quote}”
-            {q.source ? <span style={{ fontStyle: 'normal', marginLeft: 8 }}>— {q.source}</span> : null}
+    <footer style={{ borderTop: '1px solid rgba(0,0,0,0.1)', marginTop: 48 }}>
+      <div
+        style={{
+          maxWidth: 1100,
+          margin: '0 auto',
+          padding: '18px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 16,
+          flexWrap: 'wrap',
+        }}
+      >
+        {/* Left: quote + legal (left aligned) */}
+        <div style={{ flex: '1 1 320px', minWidth: 260 }}>
+          <div style={{ fontStyle: 'italic', marginBottom: 8, lineHeight: 1.35 }}>
+            {q ? (
+              <>
+                “{q.quote}”
+                {q.source ? <span style={{ fontStyle: 'normal', marginLeft: 8 }}>— {q.source}</span> : null}
+              </>
+            ) : (
+              <span style={{ opacity: 0.7 }}> </span>
+            )}
           </div>
-        )}
-
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 12,
-            flexWrap: 'wrap',
-          }}
-        >
           <div style={{ color: 'rgba(0,0,0,0.65)', fontSize: 12 }}>
             © {new Date().getFullYear()} Lou Gehrig Fan Club
           </div>
-
-          <div style={{ display: 'flex', gap: 12, fontSize: 12 }}>
-            <Link href="/contact">Contact</Link>
-            <Link href="/support">Support</Link>
-            <Link href="/terms">Terms</Link>
-            <Link href="/privacy">Privacy</Link>
-          </div>
         </div>
+
+        {/* Center: small logo (uses available footer height) */}
+        <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button type="button" aria-label="Back to top" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} style={{ background: 'transparent', border: 0, padding: 0, cursor: 'pointer' }}>
+            <img
+              src="/logo.svg"
+              alt="Lou Gehrig Fan Club"
+              style={{ height: 44, width: 'auto', display: 'block' }}
+            />
+          </button>
+        </div>
+
+        {/* Right: links (right aligned) */}
+        <nav
+          aria-label="Footer links"
+          style={{
+            flex: '1 1 260px',
+            minWidth: 220,
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: 14,
+            fontSize: 12,
+            flexWrap: 'wrap',
+          }}
+        >
+          <Link href="/terms">Terms</Link>
+          <Link href="/privacy">Privacy</Link>
+          <Link href="/about">About</Link>
+          <Link href="/contact">Contact</Link>
+        </nav>
       </div>
     </footer>
   );
