@@ -44,7 +44,7 @@ export default function AskPage() {
   };
 
   const handleCancel = () => {
-    router.push('/faq');
+    router.push('/#faq');
   };
 
   return (
@@ -98,7 +98,7 @@ export default function AskPage() {
       </section>
 
       <div style={{ marginTop: 24 }}>
-        <Link href="/faq" className="link">
+        <Link href="/#faq" className="link">
           ← Back to FAQ
         </Link>
       </div>
