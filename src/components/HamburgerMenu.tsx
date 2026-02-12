@@ -94,7 +94,7 @@ export default function HamburgerMenu({
             </Link>
           </li>
           <li>
-            <a href="/support" aria-label="Contact support via email">
+            <a href="mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed" aria-label="Contact support via email">
               Support
             </a>
           </li>
