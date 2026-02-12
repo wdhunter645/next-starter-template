@@ -20,6 +20,11 @@ export default async function Page() {
           The club is fan‑run. Email is the fastest way to reach us for questions, contributions, corrections, or
           partnerships.
         </p>
+
+      <p>
+        Need help? Email us at <a href="mailto:Support@LouGehrigFanClub.com">Support@LouGehrigFanClub.com</a>.
+      </p>
+
       )}
 
       {bodyHtml ? (
