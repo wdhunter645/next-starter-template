@@ -1,3 +1,0 @@
-./.env.example
-./damp-dream-81b5/wrangler.jsonc
-./wrangler.toml
