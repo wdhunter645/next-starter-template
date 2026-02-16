@@ -8,8 +8,8 @@ All PR drafts must follow this structure and must be delivered as **one continuo
 ## PR Template
 
 ### Reference
-- Refer to `/docs/website.md` for required structure and change conventions.
-- Follow operational, rollback, and testing standards in `/docs/website-process.md`.
+- Refer to `/docs/website-PR-process.md` for required structure and change conventions.
+- Follow operational, rollback, and testing standards in `/docs/website-PR-governance.md`.
 - Follow navigation rules in `/docs/NAVIGATION-INVARIANTS.md`.
 
 ### Change Summary
@@ -27,7 +27,7 @@ All PR drafts must follow this structure and must be delivered as **one continuo
 #### 2) Build / test
 - [List exact commands to run.]
 
-#### 3) Documentation updates (mandatory — see `/docs/website-process.md` "Documentation ↔ Implementation Sync Gate")
+#### 3) Documentation updates (mandatory — see `/docs/website-PR-governance.md` "Documentation ↔ Implementation Sync Gate")
 - Update the required documentation files for this PR. You MUST either:
   - List the specific docs to update (with exact paths), OR
   - Explicitly state: **No documentation updates required** (only allowed when the change truly does not affect UI behavior, navigation, header/footer, login flow, or documented specifications).
