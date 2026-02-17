@@ -1,3 +1,6 @@
+> **STATUS:** INCOMPLETE  
+> This document is a working draft and does not yet fully represent the implemented state.
+
 # LGFC — Admin Dashboard Specification  
 ## Lou Gehrig Fan Club — Admin & CMS UI  
 **Version:** 2025-11-16
