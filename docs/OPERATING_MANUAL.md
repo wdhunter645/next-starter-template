@@ -1,5 +1,9 @@
 # LGFC Operating Manual
 
+## Codespaces Shell Rule (Hard Prohibition)
+
+**Do NOT use `set -euo pipefail` in GitHub Codespaces for this repo.** It can crash the Codespaces terminal session. This prohibition applies to all contributors and all AI agent outputs.
+
 **Status:** LOCKED  
 **Effective Date:** 2026-01-25  
 **Purpose:** Operational reference for LGFC repository maintainers and contributors
