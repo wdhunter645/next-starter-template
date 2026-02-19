@@ -1,13 +1,22 @@
+import React from "react";
 
-type Props = {
-  email?: string;
+type WelcomeSectionProps = {
+  email?: string | null;
 };
 
-export default function WelcomeSection({ email: _email }: Props) {
+export default function WelcomeSection({ email }: WelcomeSectionProps) {
+  // Use email safely (no full email exposure). This also satisfies eslint no-unused-vars.
+  const emailHint =
+    typeof email === "string" && email.includes("@")
+      ? email.split("@")[0]
+      : "";
+
   return (
-    <section aria-label="WelcomeSection" style={{ padding: 16, border: "1px solid rgba(0,0,0,0.12)", borderRadius: 12 }}>
-      <h2 style={{ margin: "0 0 8px 0" }}>WelcomeSection</h2>
-      <p style={{ margin: 0 }}>Placeholder component. Implement per FanClub design.</p>
+    <section aria-label="Welcome section">
+      <h2>Welcome back{emailHint ? `, ${emailHint}` : ""}.</h2>
+      <p>
+        This is your FanClub home. New features will appear here as they go live.
+      </p>
     </section>
   );
 }
