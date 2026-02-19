@@ -15,24 +15,32 @@ Framework: Next.js (App Router) + TypeScript
 
 ---
 
-## Authoritative Design & Navigation
+## Design Authority (Day 1)
 
-The source-of-truth documents are:
+### MASTER design (implementation-level detail)
+- `/docs/design/master_design.md`
+- `/docs/design/master/Header_Design.md`
+- `/docs/design/master/Footer_Design.md`
+- `/docs/design/master/Auth_Design.md`
+- `/docs/design/master/Home_Design.md`
+
+### Tier-2 governance / standards (must reference MASTER files; must not restate specifics)
 - `/docs/LGFC-Production-Design-and-Standards.md`
 - `/docs/NAVIGATION-INVARIANTS.md`
+- `/docs/design/RECONCILIATION-NOTES.md`
 - `/docs/fanclub.md`
 
-If code or other docs conflict with the above, the above wins.
+If code or docs conflict, **MASTER design wins**.
 
 ---
 
 ## Day 1 Canonical Routes (summary)
 
 Public:
-- `/`, `/about`, `/contact`, `/terms`, `/privacy`, `/search`, `/join`, `/login`, `/logout`, `/faq`, `/health`
+- `/`, `/about`, `/contact`, `/terms`, `/privacy`, `/search`, `/auth`, `/logout`, `/faq`, `/health`
 
 FanClub (auth required; unauth redirects to `/`):
-- `/fanclub`, `/fanclub/myprofile`, ``, `/fanclub/photo`, `/fanclub/library`, `/fanclub/memorabilia`
+- `/fanclub`, `/fanclub/myprofile`, `/fanclub/photo`, `/fanclub/library`, `/fanclub/memorabilia`
 
 Admin (admin gate):
 - `/admin/**`
