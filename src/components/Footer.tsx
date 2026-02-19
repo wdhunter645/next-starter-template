@@ -86,7 +86,7 @@ export default function Footer() {
           </button>
         </div>
 
-        {{/* Right: links (right aligned) */}
+        {/* Right: links (right aligned) */}
         <nav
           aria-label="Footer links"
           style={{
