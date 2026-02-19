@@ -39,7 +39,6 @@ FanClub-only subpages (canonical):
 - `/fanclub/library`
 - `/fanclub/memorabilia`
 - `/fanclub/myprofile`
-- `/fanclub/membercard`
 
 Notes:
 - The public routes `/photo`, `/photos`, `/library`, `/memorabilia` must not exist (fanclub only).
