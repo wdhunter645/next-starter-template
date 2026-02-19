@@ -86,23 +86,26 @@ export default function Footer() {
           </button>
         </div>
 
-        {/* Right: links (right aligned) */}
+        {{/* Right: links (right aligned) */}
         <nav
           aria-label="Footer links"
           style={{
             flex: '1 1 260px',
             minWidth: 220,
             display: 'flex',
-            justifyContent: 'flex-end',
-            gap: 14,
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: 8,
             fontSize: 12,
-            flexWrap: 'wrap',
           }}
         >
-          <Link href="/terms">Terms</Link>
-          <Link href="/privacy">Privacy</Link>
-          <Link href="/about">About</Link>
-          <Link href="/contact">Contact</Link>
+          <div style={{ display: 'flex', gap: 14 }}>
+            <Link href="/terms">Terms</Link>
+            <Link href="/privacy">Privacy</Link>
+          </div>
+          <div>
+            <Link href="/contact">Contact</Link>
+          </div>
         </nav>
       </div>
     </footer>
