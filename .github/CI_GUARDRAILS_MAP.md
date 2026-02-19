@@ -473,7 +473,6 @@ This workflow monitors and reports misalignment between **as-built production/pr
 
 5. **Contact/Support Pages**
    - `/contact` returns HTTP 200
-   - `/support` returns HTTP 200
    - No Cloudflare email obfuscation links (`/cdn-cgi/l/email-protection`)
 
 **Output:**
