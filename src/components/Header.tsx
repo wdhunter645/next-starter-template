@@ -30,7 +30,8 @@ function asBoolean(v: unknown): boolean | undefined {
 /**
  * Visitor Header (public pages).
  * Design invariants (repo docs):
- * - Desktop/Tablet buttons: Join, Search, Store (external), Login
+ * - Not logged in: Join, Search, Store (external), Login, Hamburger
+ * - Logged in: Club Home, Search, Store (external), Logout, Hamburger
  * - When logged-in (browsing public pages): add Club Home + Logout
  * - Hamburger present on all public pages
  * - Store must open new tab to Bonfire storefront URL
@@ -91,7 +92,11 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
 
         {/* CENTER: Public buttons */}
         <nav className={styles.center} aria-label="Site">
-          <Link className={styles.btn} href="/join">Join</Link>
+          {!isLoggedIn ? (
+            <Link className={styles.btn} href="/join">Join</Link>
+          ) : (
+            <Link className={styles.btn} href="/fanclub">Club Home</Link>
+          )}
           <Link className={styles.btn} href="/search">Search</Link>
 
           <a
@@ -108,7 +113,6 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
             <Link className={styles.btn} href="/login">Login</Link>
           ) : (
             <>
-              <Link className={styles.btn} href="/fanclub">Club Home</Link>
               <Link className={styles.btn} href="/logout">Logout</Link>
             </>
           )}
