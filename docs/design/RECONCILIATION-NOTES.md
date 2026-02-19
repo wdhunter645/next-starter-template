@@ -33,18 +33,7 @@ Includes a table of which existing docs need to be updated (the four docs that c
 
 -----
 
-### 2. `/support` Route
-
-**Conflict:**
-
-- `NAVIGATION-INVARIANTS.md` lists `/support` as a canonical public route.
-- `master_design.md` explicitly retires `/support`; contact and support
-  guidance are consolidated into `/contact`.
-
-**Resolution:** `/support` is retired. `/contact` is the single destination
-for both contact and support. `NAVIGATION-INVARIANTS.md` must remove `/support`
-from the canonical route list. All hamburger menu `Support` mailto links remain;
-only the `/support` page route is retired.
+### 2. `/support` Route is retired. support email address is provided in text on the /contact page.
 
 -----
 
