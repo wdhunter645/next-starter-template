@@ -11,7 +11,7 @@ bash scripts/prod-smoke.sh https://www.lougehrigfanclub.com
 
 ## What it checks
 
-- Public pages respond (2xx/3xx): `/`, `/about`, `/contact`, `/support`, `/terms`, `/privacy`, `/join`, `/login`, `/faq`, `/health`
+- Public pages respond (2xx/3xx): `/`, `/about`, `/contact`, `/terms`, `/privacy`, `/join`, `/login`, `/faq`, `/health`
 - Public JSON endpoints return `ok:true`
 - `/fanclub` is not directly accessible when logged out (redirect or client-side gating marker)
 

@@ -12,7 +12,6 @@ Effective Date: 2026-01-21
 - `/` (Home)
 - `/about`
 - `/contact`
-- `/support`
 - `/terms`
 - `/privacy`
 - `/search`
@@ -89,7 +88,6 @@ Layout is locked:
 
 - Right (right-justified links, exact order)
   1. Contact → `/contact`
-  2. Support → `/support`
   3. Terms → `/terms`
   4. Privacy → `/privacy`
 

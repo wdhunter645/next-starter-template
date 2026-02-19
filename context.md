@@ -35,7 +35,7 @@ This is the high-level, human-readable summary of this repository. It is intende
 Authoritative list is in `/docs/NAVIGATION-INVARIANTS.md`.
 
 High-level:
-- Public: `/`, `/about`, `/contact`, `/support`, `/terms`, `/privacy`, `/search`, `/join`, `/login`, `/logout`, `/faq`, `/health`
+- Public: `/`, `/about`, `/contact`, `/terms`, `/privacy`, `/search`, `/join`, `/login`, `/logout`, `/faq`, `/health`
 - FanClub (auth required): `/fanclub` and `/fanclub/**` subpages
 - Admin: `/admin/**`
 - Store: external Bonfire link only (no `/store` route)

@@ -90,7 +90,7 @@ async function run() {
   });
 
   // Sev-1 pages
-  const corePages = ["/about", "/contact", "/support", "/terms", "/privacy", "/join", "/login", "/faq"];
+  const corePages = ["/about", "/contact", "/terms", "/privacy", "/join", "/login", "/faq"];
   for (const p of corePages) {
     await add(`page-${p}`, 1, `${p} responds`, async () => {
       const r = await httpGet(p);
