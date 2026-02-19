@@ -14,7 +14,6 @@ This document serves as the authoritative baseline for the Cloudflare Pages-host
 - **Alias Route:** (none)  — `/member` is not used (FanClub is `/fanclub`)
 - **Sub-routes:**
   - `/fanclub/myprofile` (member profile/settings)
-  - `/fanclub/membercard` (membership card display)
 
 ### Implementation Status
 
