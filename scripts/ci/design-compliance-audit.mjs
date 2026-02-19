@@ -237,7 +237,7 @@ async function checkJoinLoginHealth() {
 async function checkContactSupport() {
   console.log('\n🔍 Checking Contact/Support pages...');
   
-  const endpoints = ['/contact', '/support'];
+  const endpoints = ['/contact'];
   
   for (const endpoint of endpoints) {
     try {

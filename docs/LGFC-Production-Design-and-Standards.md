@@ -17,7 +17,7 @@ Any conflict must be resolved in favor of this file.
 
 ### 1) Auth Boundaries (explicit)
 - `/fanclub/**` requires login; unauthenticated access redirects to `/`.
-- Public pages remain visitor-accessible: `/contact`, `/about`, `/support`, `/terms`, `/privacy`, `/search`, `/join`, `/login`, `/faq`, `/health`.
+- Public pages remain visitor-accessible: `/contact`, `/about`, `/terms`, `/privacy`, `/search`, `/join`, `/login`, `/faq`, `/health`.
 
 ### 2) Canonical Routes (explicit)
 See `/docs/NAVIGATION-INVARIANTS.md` for the canonical route list. This file and NAVIGATION-INVARIANTS are the source of truth.

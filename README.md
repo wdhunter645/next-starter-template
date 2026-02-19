@@ -29,7 +29,7 @@ If code or other docs conflict with the above, the above wins.
 ## Day 1 Canonical Routes (summary)
 
 Public:
-- `/`, `/about`, `/contact`, `/support`, `/terms`, `/privacy`, `/search`, `/join`, `/login`, `/logout`, `/faq`, `/health`
+- `/`, `/about`, `/contact`, `/terms`, `/privacy`, `/search`, `/join`, `/login`, `/logout`, `/faq`, `/health`
 
 FanClub (auth required; unauth redirects to `/`):
 - `/fanclub`, `/fanclub/myprofile`, `/fanclub/membercard`, `/fanclub/photo`, `/fanclub/library`, `/fanclub/memorabilia`
