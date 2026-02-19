@@ -32,7 +32,7 @@ Public:
 - `/`, `/about`, `/contact`, `/terms`, `/privacy`, `/search`, `/join`, `/login`, `/logout`, `/faq`, `/health`
 
 FanClub (auth required; unauth redirects to `/`):
-- `/fanclub`, `/fanclub/myprofile`, `/fanclub/membercard`, `/fanclub/photo`, `/fanclub/library`, `/fanclub/memorabilia`
+- `/fanclub`, `/fanclub/myprofile`, ``, `/fanclub/photo`, `/fanclub/library`, `/fanclub/memorabilia`
 
 Admin (admin gate):
 - `/admin/**`
