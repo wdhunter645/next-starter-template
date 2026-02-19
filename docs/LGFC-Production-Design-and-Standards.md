@@ -32,7 +32,7 @@ See `/docs/NAVIGATION-INVARIANTS.md` for the canonical route list. This file and
 ### 4) Footer (explicit)
 - Left: quote line + legal line
 - Center: small logo scroll-to-top current page
-- Right links (order): Contact, Support, Terms, Privacy
+- Right links (order): Contact, Contact, Terms, Privacy
 - No email displayed in footer.
 
 ### 5) Weekly Vote (explicit, deferred)
@@ -120,7 +120,7 @@ Same for both logged-out and logged-in states (hamburger contains only standalon
 Order:
 1. **About** → `/about`
 2. **Contact** → `/contact`
-3. **Support** → mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed
+3. **Contact** → mailto:Contact@LouGehrigFanClub.com?subject=Contact%20Needed
 
 
 ### Mobile header layout
@@ -133,7 +133,7 @@ Mobile visitor hamburger order (same for logged-out and logged-in states):
 1. **Home** → `/`
 2. **About** → `/about`
 3. **Contact** → `/contact`
-4. **Support** → mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed
+4. **Contact** → mailto:Contact@LouGehrigFanClub.com?subject=Contact%20Needed
 5. **Store** → external Bonfire link (opens new tab)
 
 
@@ -216,17 +216,17 @@ The detailed login/logout behavior below is **deferred to the future Auth phase*
 
 ---
 
-## 7) Support Access Lock
+## 7) Contact Access Lock
 
-- Header and hamburger menu include **Support** item:
-  - mailto: `Support@LouGehrigFanClub.com`
-  - subject: **"Support Needed"**
-- JOIN page includes Support button:
-  - subject: **"Support Needed JOIN"**
-- LOGIN page includes Support button:
-  - subject: **"Support Needed LOGIN"**
+- Header and hamburger menu include **Contact** item:
+  - mailto: `Contact@LouGehrigFanClub.com`
+  - subject: **"Contact Needed"**
+- JOIN page includes Contact button:
+  - subject: **"Contact Needed JOIN"**
+- LOGIN page includes Contact button:
+  - subject: **"Contact Needed LOGIN"**
 
-Support is separate from Ask a Question.
+Contact is separate from Ask a Question.
 
 ---
 
@@ -296,7 +296,7 @@ Same items for all FanClub pages (hamburger contains only standalone pages not a
 Order:
 1. **About** → `/about`
 2. **Contact** → `/contact`
-3. **Support** → mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed
+3. **Contact** → mailto:Contact@LouGehrigFanClub.com?subject=Contact%20Needed
 
 Note: Obtain Membership Card is accessed via Member Home quick links, not hamburger menu.
 
@@ -315,7 +315,7 @@ Note: On mobile, all header buttons move into hamburger. Store does not appear b
 4. **Search** → `/search`
 5. **About** → `/about`
 6. **Contact** → `/contact`
-7. **Support** → mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed
+7. **Contact** → mailto:Contact@LouGehrigFanClub.com?subject=Contact%20Needed
 8. **Logout** → `/logout` (must be last)
 
 Note: Obtain Membership Card is accessed via Member Home quick links.
@@ -403,17 +403,17 @@ Photos require usage tagging/eligibility for safe selection by placement:
   - Terms
   - Privacy
   - Contact
-  - Support (opens email draft)
+  - Contact (opens email draft)
 
 ### Mobile layout
 Default:
 - Logo left
-- Terms / Privacy / Contact / Support to the right
+- Terms / Privacy / Contact / Contact to the right
 - Copyright line with auto-year
 
 Optional (if space requires):
 - Logo left + footer hamburger right
-  - Menu items: Terms, Privacy, Contact, Support
+  - Menu items: Terms, Privacy, Contact, Contact
 
 ## My Profile — Final Lock (Updated 2026-01-16)
 
@@ -535,7 +535,7 @@ This addendum captures every design/standards decision finalized in-session afte
 - This is an operations/maintenance job, not part of the public website UI.
 
 ## Accessibility — FINAL
-- Support browser/OS accessibility scaling (browser zoom, iPad pinch-to-zoom, OS font scaling).
+- Contact browser/OS accessibility scaling (browser zoom, iPad pinch-to-zoom, OS font scaling).
 - No in-app font size controls are required.
 
 ---
@@ -585,12 +585,12 @@ This addendum captures every design/standards decision finalized in-session afte
 **Visitor hamburger (desktop/tablet):**
 - About → `/about`
 - Contact → `/contact`
-- Support → mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed
+- Contact → mailto:Contact@LouGehrigFanClub.com?subject=Contact%20Needed
 
 **Member hamburger (desktop/tablet):**
 - About → `/about`
 - Contact → `/contact`
-- Support → mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed
+- Contact → mailto:Contact@LouGehrigFanClub.com?subject=Contact%20Needed
 
 Note: My Profile is now a header button. Obtain Membership Card is accessed via Member Home quick links.
 
@@ -602,7 +602,7 @@ Note: My Profile is now a header button. Obtain Membership Card is accessed via 
 1. Home → `/`
 2. About → `/about`
 3. Contact → `/contact`
-4. Support → mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed
+4. Contact → mailto:Contact@LouGehrigFanClub.com?subject=Contact%20Needed
 5. Store → external Bonfire link (opens new tab)
 
 **Member hamburger (mobile):**
@@ -612,7 +612,7 @@ Note: My Profile is now a header button. Obtain Membership Card is accessed via 
 4. Search → `/search`
 5. About → `/about`
 6. Contact → `/contact`
-7. Support → mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed
+7. Contact → mailto:Contact@LouGehrigFanClub.com?subject=Contact%20Needed
 8. Logout → `/logout` (must be last)
 
 Note: Obtain Membership Card is accessed via Member Home quick links. Store is not currently shown on mobile for FanClub pages.
@@ -628,19 +628,19 @@ Note: Obtain Membership Card is accessed via Member Home quick links. Store is n
 - Privacy → `/privacy`
 - Terms → `/terms`
 - Contact → `/contact`
-- Support → mailto:Support@LouGehrigFanClub.com?subject=Support%20Request
+- Contact → mailto:Contact@LouGehrigFanClub.com?subject=Contact%20Request
 - Admin → `/admin` (only visible to admin users)
 
 **Email Display Policy:**
 - Footer displays NO email address
 - Contact page (`/contact`) displays: `admin@lougehrigfanclub.com`
-- Support emails go to: `Support@LouGehrigFanClub.com`
+- Contact emails go to: `Contact@LouGehrigFanClub.com`
 
 ### Member Home Quick Links
 
 **Required links on FanClub Home (`/fanclub/page.tsx`):**
 - My Profile → `/fanclub/myprofile`
-- Membership Card → `/fanclub/membercard`
+- Membership Card → ``
 - Gehrig Library → `/library`
 - Photo → `/photo`
 - Photo Gallery → `/photos`

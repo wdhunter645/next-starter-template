@@ -1,4 +1,30 @@
+## Headers (desktop only; mobile/tablet deferred)
+
+All button groupings are page-centered. Hamburger is always present.
+
+- Public, not logged in: Join, Search, Store, Login, Hamburger
+- Public, logged in: Club Home, Search, Store, Logout, Hamburger
+- FanClub (logged in): Club Home, My Profile, Search, Store, Logout, Hamburger
+- FanClub (not logged in): redirect to public home (not logged in)
+
+Hamburger menu items:
+- /about (Fan Club history)
+- /contact (admin + support contact info in text)
+
 # LGFC — Navigation Invariants (AUTHORITATIVE)
+
+## Footer (single design)
+
+- Left:
+  - Line 1: rotating quote from D1
+  - Line 2: legal statement (static text)
+- Center:
+  - Small LGFC logo (uses the height of lines 1–2) that scrolls to top of current page
+- Right:
+  - Line 1: Terms + Privacy
+  - Line 2: Contact
+- No Support page. Contact page contains admin + support contact info in text.
+
 
 This document is **authoritative**. If any UI or doc contradicts this file, this file wins.
 
@@ -24,7 +50,7 @@ Effective Date: 2026-01-21
 ### FanClub (auth required; unauthenticated traffic redirects to `/`)
 - `/fanclub`
 - `/fanclub/myprofile`
-- `/fanclub/membercard`
+- ``
 - `/fanclub/photo`
 - `/fanclub/library`
 - `/fanclub/memorabilia`
@@ -88,7 +114,7 @@ Layout is locked:
 
 - Right (right-justified links, exact order)
   1. Contact → `/contact`
-  2. Support → `/contact`
+  2. Contact → `/contact`
   3. Terms → `/terms`
   4. Privacy → `/privacy`
 
