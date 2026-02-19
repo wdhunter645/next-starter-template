@@ -88,6 +88,7 @@ Layout is locked:
 
 - Right (right-justified links, exact order)
   1. Contact → `/contact`
+  2. Support → `/contact`
   3. Terms → `/terms`
   4. Privacy → `/privacy`
 

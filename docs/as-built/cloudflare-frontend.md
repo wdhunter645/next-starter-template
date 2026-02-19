@@ -7,54 +7,54 @@
 
 This document serves as the authoritative baseline for the Cloudflare Pages-hosted public frontend and member area of the LGFC website.
 
-## Member Home Page Implementation
+## FanClub Home Page Implementation
 
 ### Route Structure
-- **Primary Route:** `/member` (main member home page)
-- **Alias Route:** `/memberpage` (redirects to `/member`)
+- **Primary Route:** `/fanclub` (main member home page)
+- **Alias Route:** (none)  — `/member` is not used (FanClub is `/fanclub`)
 - **Sub-routes:**
-  - `/member/profile` (member profile/settings)
-  - `/member/card` (membership card display)
+  - `/fanclub/myprofile` (member profile/settings)
+  - `/fanclub/membercard` (membership card display)
 
 ### Implementation Status
 
-✅ **IMPLEMENTED** per `/docs/memberpage.html` specification (v1)
+✅ **IMPLEMENTED** per `/docs/fanclub.html` specification (v1)
 
 ### Source of Truth
-- Canonical Specification: `/docs/memberpage.html`
-- Versioned Specification: `/docs/memberpage-v1.html`
+- Canonical Specification: `/docs/fanclub.html`
+- Versioned Specification: `/docs/fanclub-v1.html`
 - Navigation Rules: `/docs/NAVIGATION-INVARIANTS.md`
-- Process Guidelines: `/docs/website-process.md`
+- Process Guidelines: `/docs/website-PR-governance.md`
 
 ### Architecture
 
-#### Layout (`src/app/member/layout.tsx`)
-Member area uses a dedicated layout with:
+#### Layout (`src/appfanclub/layout.tsx`)
+FanClub area uses a dedicated layout with:
 - **Header:**
-  - Logo (links to `/memberpage`)
+  - Logo (links to `/fanclub`)
   - Logout button (visible when authenticated)
   - Hamburger menu with: Home, About, Contact, Support, Store, Members, Admin (conditional)
 - **Navigation:**
   - Home → `/` (public homepage)
-  - Members → `/memberpage` (member home)
+  - Members → `/fanclub` (member home)
   - Admin → `/admin` (conditional, only for admins)
 - **Authentication:**
   - Reads member email from localStorage (`lgfc_member_email`)
-  - Checks admin role via `/api/member/role` endpoint
+  - Checks admin role via `/apifanclub/role` endpoint
   - Shows/hides Admin menu item based on role
 
-#### Page Sections (`src/app/member/page.tsx`)
+#### Page Sections (`src/appfanclub/page.tsx`)
 
 Sections are rendered in **exact spec order**:
 
 1. **Header** (via layout.tsx)
-   - Member-specific navigation
+   - FanClub-specific navigation
    - Logout functionality
    - Conditional admin access
 
 2. **Welcome Section** (`WelcomeSection.tsx`)
    - Personalized greeting using email-based display name
-   - Profile link to `/member/profile`
+   - Profile link to `/fanclub/myprofile`
    - 30-day events summary
    - **D1 Connectivity:** Fetches events from `events` table for current and next month, filters to 30-day window
 
@@ -65,7 +65,7 @@ Sections are rendered in **exact spec order**:
    - **D1 Connectivity:** POSTs to `/api/discussions/create` endpoint
    - **Future Enhancement:** Photo/video attachments (noted in UI)
 
-4. **Member Discussion Feed** (`DiscussionFeed.tsx`)
+4. **FanClub Discussion Feed** (`DiscussionFeed.tsx`)
    - Reverse chronological feed of member posts
    - Shows: author name, timestamp, title, body
    - **D1 Connectivity:** Fetches from `discussions` table (status='posted', limit 20)
@@ -79,18 +79,18 @@ Sections are rendered in **exact spec order**:
    - Hover effects for visual feedback
 
 6. **Gehrig Timeline** (`GehrigTimeline.tsx`)
-   - Member-focused timeline with 8 major life events
+   - FanClub-focused timeline with 8 major life events
    - Events: Birth (1903), Yankees Debut (1923), The Streak Begins (1925), Murderers' Row (1927), Triple Crown (1934), Farewell Speech (1939), Passing (1941), MLB's Greatest First Baseman (1969)
    - Visual timeline with vertical line and event markers
 
 7. **Admin Dashboard Link** (`AdminLink.tsx`)
    - **Conditional:** Only visible to admin users
    - "Admin Tools" section with dashboard link
-   - **Authorization:** Uses role check from `/api/member/role`
+   - **Authorization:** Uses role check from `/apifanclub/role`
 
 ### Components
 
-All member-specific components are in `src/components/member/`:
+All member-specific components are in `src/componentsfanclub/`:
 
 - `WelcomeSection.tsx` - Welcome message and upcoming events
 - `PostCreation.tsx` - Post creation form
@@ -102,7 +102,7 @@ All member-specific components are in `src/components/member/`:
 ### D1 Database Integration
 
 #### Tables Used
-- **discussions:** Member posts (title, body, author_email, status, created_at)
+- **discussions:** FanClub posts (title, body, author_email, status, created_at)
 - **events:** Calendar events (title, start_date, end_date, location, status)
 - **members:** User roles (email, role: 'member'|'admin')
 
@@ -110,11 +110,11 @@ All member-specific components are in `src/components/member/`:
 - `GET /api/discussions/list` - Fetch posted discussions (limit 1-20)
 - `POST /api/discussions/create` - Create new discussion post
 - `GET /api/events/month` - Fetch events by month (YYYY-MM format)
-- `GET /api/member/role` - Check user role by email
+- `GET /apifanclub/role` - Check user role by email
 
 ### Authentication & Authorization
 
-#### Member Authentication
+#### FanClub Authentication
 - Email-based authentication via localStorage (`lgfc_member_email`)
 - Not authenticated → Shows login prompt, redirects to `/login`
 - No server-side session management (client-side state only)
@@ -146,14 +146,14 @@ All member-specific components are in `src/components/member/`:
 
 Per `/docs/NAVIGATION-INVARIANTS.md`:
 
-**Member Area Logo:**
-- Always links to `/memberpage` (not public homepage)
+**FanClub Area Logo:**
+- Always links to `/fanclub` (not public homepage)
 - Provides clear "home" for member context
 
 **Hamburger Menu:**
 - Contains **only standalone pages** (no sections, no footer links)
 - Visitor hamburger items: Home (mobile only), About, Contact, Support, Store
-- Member hamburger adds: Members (current location indicator), Admin (conditional)
+- FanClub hamburger adds: Members (current location indicator), Admin (conditional)
 - Desktop/tablet: Does not include "Home"
 - Mobile: Includes "Home" for easy navigation
 
@@ -169,14 +169,14 @@ Per `/docs/NAVIGATION-INVARIANTS.md`:
 
 ### Testing Requirements
 
-Per `/docs/website.md` and `/docs/website-process.md`:
+Per `/docs/website.md` and `/docs/website-PR-governance.md`:
 
 - **Build Validation:** `npm run build:cf` must pass
 - **Lint:** `npm run lint` (warnings acceptable, no errors)
 - **Assessment:** `npm run assess` validates route structure and page markers
 - **Manual Testing:**
-  - Navigate to `/member` without login → Redirected to login prompt
-  - Navigate to `/member` with login → All sections visible
+  - Navigate to `/fanclub` without login → Redirected to `/` (or login flow)
+  - Navigate to `/fanclub` with login → FanClub sections visible
   - Post creation → Submits to D1 and refreshes feed
   - Events display → Shows next 30 days from D1
   - Admin user → Sees Admin menu item and Admin Tools section
@@ -220,7 +220,7 @@ See `/docs/admin/access-model.md` for complete admin architecture documentation.
 - D1 diagnostic tool for database inspection
 - See `/docs/admin/access-model.md` for details
 
-**2026-01-20:** Initial implementation of Member Home per `docs/memberpage.html` v1 spec
+**2026-01-20:** Initial implementation of FanClub Home per `docs/fanclub.html` v1 spec
 - Implemented all 7 required sections in correct order
 - Created member area layout with proper header/navigation
 - Added D1 connectivity for discussions, events

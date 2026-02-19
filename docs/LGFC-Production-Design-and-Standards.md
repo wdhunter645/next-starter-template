@@ -638,9 +638,9 @@ Note: Obtain Membership Card is accessed via Member Home quick links. Store is n
 
 ### Member Home Quick Links
 
-**Required links on Member Home (`/member/page.tsx`):**
-- My Profile → `/member/profile`
-- Membership Card → `/member/card`
+**Required links on FanClub Home (`/fanclub/page.tsx`):**
+- My Profile → `/fanclub/myprofile`
+- Membership Card → `/fanclub/membercard`
 - Gehrig Library → `/library`
 - Photo → `/photo`
 - Photo Gallery → `/photos`

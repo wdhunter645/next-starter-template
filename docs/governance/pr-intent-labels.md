@@ -31,7 +31,7 @@ All pull requests to this repository MUST have exactly ONE intent label applied.
 - `functions/**` (when modifying for infrastructure/runtime purposes only)
 - `src/app/admin/` (admin dashboard and operational tools)
 - `docs/governance/` (governance and process documentation)
-- `docs/website-process.md`, `docs/website-PR-process.md`, `docs/OPERATING_MANUAL.md` (process docs)
+- `docs/website-PR-governance.md`, `docs/website-PR-process.md`, `docs/OPERATING_MANUAL.md` (process docs)
 - Build configuration files (`package.json`, `next.config.ts`, `wrangler.toml`, etc.)
 - Editor/formatter configuration (`.prettierrc`, `.editorconfig`, etc.)
 - Node version files (`.node-version`, `.nvmrc`, `.npmrc`)
@@ -386,7 +386,7 @@ Both files MUST stay synchronized. Changes to intent definitions require updatin
 **Related Documentation:**
 - `/.github/platform-intent-and-zip-governance.md` — Platform intent and ZIP policy
 - `/.github/CI_GUARDRAILS_MAP.md` — CI workflow reference
-- `/docs/website-process.md` — PR process and governance
+- `/docs/website-PR-governance.md` — PR process and governance
 
 **Configuration Files:**
 - `scripts/ci/pr_intent_allowlists.json` — Intent allowlist definitions

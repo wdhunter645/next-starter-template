@@ -39,7 +39,7 @@ The `/login` page implements a simple email-based validation flow:
    - Rate limits failed attempts (3 per IP per hour)
 3. **On success:**
    - Stores `lgfc_member_email` in `localStorage`
-   - Redirects to `/member`
+   - Redirects to `/fanclub`
 4. **On failure:**
    - Shows error message
    - Provides link to `/join` for new members
@@ -66,7 +66,7 @@ The `/login` page displays:
 - **Security**: NOT cryptographically secure; suitable for LGFC-Lite only
 
 ### Member Area Access
-The `/member` page checks for the presence of `lgfc_member_email`:
+The `/fanclub` page checks for the presence of `lgfc_member_email`:
 ```typescript
 const memberEmail = window.localStorage.getItem('lgfc_member_email');
 if (!memberEmail) {
@@ -121,7 +121,7 @@ if (!memberEmail) {
 
 ### Navigation Flow
 - **From header "Login" button**: Routes to `/login`
-- **From `/login` on success**: Redirects to `/member`
+- **From `/login` on success**: Redirects to `/fanclub`
 - **From `/login` "Join" link**: Routes to `/join` (shown on error)
 - **From `/login` "Home" button**: Routes to `/`
 
@@ -153,7 +153,7 @@ See `/docs/design/phases.md` for phase definitions and boundaries.
 - **Join Flow**: `/docs/design/join.md` — Member join/signup process
 - **Member Page**: `/docs/memberpage.html` — Member area specification
 - **Navigation Invariants**: `/docs/NAVIGATION-INVARIANTS.md` — Header structure
-- **Website Process**: `/docs/website-process.md` — Development standards
+- **Website Process**: `/docs/website-PR-governance.md` — Development standards
 
 ## Verification Checklist
 
@@ -162,7 +162,7 @@ Before accepting any changes to the login page:
 - [x] Page displays email input field
 - [x] Page validates email via POST /api/login
 - [x] On success: sets lgfc_member_email in localStorage
-- [x] On success: redirects to /member
+- [x] On success: redirects to /fanclub
 - [x] On failure: shows error message
 - [x] Email not found error provides link to /join
 - [x] NO password fields present

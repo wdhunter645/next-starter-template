@@ -22,7 +22,7 @@ Define the non-negotiable invariants that must remain true in production.
 - Footer link order and content.
 
 ## Platform invariants
-- Cloudflare Pages build remains within defined constraints (see `/docs/website-process.md`).
+- Cloudflare Pages build remains within defined constraints (see `/docs/website-PR-governance.md`).
 - No unapproved runtime/framework swaps.
 
 ## How invariants are enforced

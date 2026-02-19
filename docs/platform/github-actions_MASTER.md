@@ -15,7 +15,7 @@ Define how GitHub Actions is used operationally to enforce governance and to val
 ## Where rules live
 - `.github/` governance docs (maps, intent labeler config).
 - Repo governance docs:
-  - `/docs/website-process.md`
+  - `/docs/website-PR-governance.md`
   - `/docs/governance/pr-intent-labels.md`
   - `/docs/governance/ci-preview-invariants.md`
 
@@ -49,5 +49,5 @@ Any CI change must include:
 - Rollback plan (revert PR)
 
 ## References
-- `/docs/website-process.md`
+- `/docs/website-PR-governance.md`
 - `.github/CI_GUARDRAILS_MAP.md`

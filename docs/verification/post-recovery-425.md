@@ -58,6 +58,6 @@ Details: Will be completed after merge
 
 This verification follows:
 - `/docs/website.md` - Required structure and change conventions
-- `/docs/website-process.md` - Operational, rollback, and testing standards
+- `/docs/website-PR-governance.md` - Operational, rollback, and testing standards
 - `/docs/NAVIGATION-INVARIANTS.md` - Design consistency requirements
 - `/docs/PR-DRAFT-TEMPLATE.md` - PR governance standards

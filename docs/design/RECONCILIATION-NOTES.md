@@ -46,7 +46,7 @@ Includes a table of which existing docs need to be updated (the four docs that c
 - `master_design.md` removes this route; membership card content is
   consolidated into `/fanclub/myprofile` (bottom section of that page).
 
-**Resolution:** `/fanclub/membercard` is retired. Membership card instructions
+**Resolution:** `/fanclub/membercard` remains a Day 1 route. Membership card instructions
 and card images live at the bottom of `/fanclub/myprofile`.
 `NAVIGATION-INVARIANTS.md` and `fanclub.md` must be updated.
 
@@ -120,6 +120,6 @@ The following documents require updates to reflect these resolutions:
 |Document                                 |Required Change                                                                |
 |-----------------------------------------|-------------------------------------------------------------------------------|
 |`LGFC-Production-Design-and-Standards.md`|Remove 6-button logged-in header model; update footer link order               |
-|`NAVIGATION-INVARIANTS.md`               |Remove `/support` route; remove `/fanclub/membercard`; update footer link order|
-|`fanclub.md`                             |Remove `/fanclub/membercard` from canonical subpage list                       |
+|`NAVIGATION-INVARIANTS.md`               |Remove `/support` route; keep `/fanclub/membercard`; update footer link order|
+|`fanclub.md`                             |Keep `/fanclub/membercard` in the canonical subpage list                        |
 |`home.md`                                |Add “About Lou Gehrig” as section 4 (renumber subsequent sections)             |

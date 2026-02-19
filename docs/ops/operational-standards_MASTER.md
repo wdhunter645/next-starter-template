@@ -33,6 +33,6 @@ After any production change:
 - Append to deploy log if significant
 
 ## Required references
-- `/docs/website-process.md` (PR process and runtime policy)
+- `/docs/website-PR-governance.md` (PR process and runtime policy)
 - `/docs/LGFC-Production-Design-and-Standards.md` (design authority)
 - `/docs/NAVIGATION-INVARIANTS.md` (navigation authority)
