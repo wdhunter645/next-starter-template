@@ -282,7 +282,7 @@ When member authentication is implemented:
 
 1. **Session Creation on Join:**
    - Successful join may automatically create session
-   - User redirected to `/member` (Member Home)
+   - User redirected to `/fanclub` (Member Home)
    - No separate login required for first-time access
 
 2. **Email Confirmation:**

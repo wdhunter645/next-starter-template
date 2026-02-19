@@ -16,7 +16,7 @@ Define how production changes are proposed, reviewed, executed, verified, and (i
 - If documents conflict, follow `/docs/governance/document-authority-hierarchy_MASTER.md`.
 
 ## Change units (non-negotiable)
-- One PR = one intent label (see `/docs/governance/pr-intent-labels.md` and `/docs/website-process.md`).
+- One PR = one intent label (see `/docs/governance/pr-intent-labels.md` and `/docs/website-PR-governance.md`).
 - PR templates and file-touch allowlists are enforced by CI (drift gates).
 
 ## Standard change flow (Day-2 Operations)

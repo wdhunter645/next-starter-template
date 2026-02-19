@@ -390,7 +390,7 @@ All changes must:
 
 **Primary Documentation:**
 - `/docs/LGFC-Production-Design-and-Standards.md` - Authoritative design standards
-- `/docs/website-process.md` - Operational and rollback standards
+- `/docs/website-PR-governance.md` - Operational and rollback standards
 - `/docs/website.md` - PR structure and formatting
 - `/docs/NAVIGATION-INVARIANTS.md` - Navigation rules
 

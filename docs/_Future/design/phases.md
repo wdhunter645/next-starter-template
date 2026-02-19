@@ -81,7 +81,7 @@ The "Join the Fan Club" flow in LGFC-Lite collects visitor information and creat
 
 The `/login` page provides email-based member access:
 - Validates email exists in D1 `join_requests` table (via `/api/login`)
-- On success: stores `lgfc_member_email` in `localStorage` and redirects to `/member`
+- On success: stores `lgfc_member_email` in `localStorage` and redirects to `/fanclub`
 - On failure: shows error and directs to `/join` for new members
 - Rate limits failed attempts (3 per IP per hour)
 - **Note**: This is a local browser session, NOT cryptographically secure authentication

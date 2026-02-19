@@ -9,7 +9,7 @@ Prevent design drift by defining the single source of truth for UI/UX, routes, h
 ## Source of truth (Day-2 Ops)
 - Primary: `/docs/LGFC-Production-Design-and-Standards.md` (explicitly marked AUTHORITATIVE/LOCKED).
 - Navigation: `/docs/NAVIGATION-INVARIANTS.md`.
-- Governance mechanics: `/docs/website-process.md`, `/docs/website-PR-process.md`, `/docs/website-PR-governance.md`.
+- Governance mechanics: `/docs/website-PR-process.md`, `/docs/website-PR-process.md`, `/docs/website-PR-governance.md`.
 - Authority conflicts: `/docs/governance/document-authority-hierarchy_MASTER.md`.
 
 ## What Operations enforces

@@ -22,7 +22,7 @@ Repeat until stable.
 
 ## PR governance (required)
 Follow:
-- `/docs/website-process.md`
+- `/docs/website-PR-governance.md`
 - `/docs/website-PR-process.md`
 - `/docs/website-PR-governance.md`
 

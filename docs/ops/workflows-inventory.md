@@ -414,7 +414,7 @@ The following workflows are **not part of this redesign** and remain as-is:
 
 - **PR Template:** `.github/PULL_REQUEST_TEMPLATE.md`
 - **Website Process:** `/docs/website.md`
-- **Website Governance:** `/docs/website-process.md`
+- **Website Governance:** `/docs/website-PR-governance.md`
 - **Intent Labels:** `/docs/governance/pr-intent-labels.md`
 - **ZIP Governance:** `/docs/governance/platform-intent-and-zip-governance.md`
 
