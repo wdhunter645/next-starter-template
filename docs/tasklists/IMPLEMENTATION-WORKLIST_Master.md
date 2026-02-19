@@ -1,0 +1,216 @@
+# IMPLEMENTATION-WORKLIST_Master.md
+Location (authoritative): /docs/tasklists/IMPLEMENTATION-WORKLIST_Master.md
+Purpose: Day-1 execution map (1 task = 1 thread) + zero-drift guardrails.
+
+> This file was **previously overwritten** during thread turnover. This version restores the canonical tasklist structure and the thread-closeout workflow.
+
+---
+
+## Operating Rules (non-negotiable)
+
+- **One Task = One Thread.** Close the thread when the task is DONE / PARTIAL / BLOCKED.
+- **Fresh ZIP per thread.** Start each thread with the latest repo ZIP attached (authoritative snapshot).
+- **Thread must end with a Closeout Record** appended to `/docs/tasklists/logs/THREAD-LOG_Master.md` (append-only; newest at bottom).
+- **No mixed intent.** A task may touch shared foundations (Header/PageShell/global CSS/auth gate) OR page/content features, not both, unless explicitly stated in that task.
+- **No regressions allowed.** Any task that touches shared UI must run the regression checklist below.
+- **Case-sensitive file safety.** Do not create duplicate “same name, different casing” files (Cloudflare/Linux and macOS behave differently).
+
+---
+
+## Regression Checklist (run for any shared UI / routing change)
+
+- Header buttons: hover/click works on Home + at least 3 other public pages.
+- Logo link: routes correctly to `/`.
+- Footer links: route correctly and match NAVIGATION invariants.
+- Auth gating: `/fanclub/**` redirects to `/` when logged out.
+- Cloudflare build: succeeds.
+- Production smoke: Home loads; no obvious broken layout.
+
+---
+
+## Thread Template (use for every task)
+
+### Task Card
+- **Objective**
+- **Scope (files/areas allowed)**
+- **Execution Steps (Codespaces commands)**
+- **Verification Steps**
+- **Exit Criteria**
+- **Closeout Record Required** → append to `/docs/tasklists/logs/THREAD-LOG_Master.md`
+
+---
+
+# CURRENT STATUS SNAPSHOT (best-known as of {today})
+
+## Build / Deploy
+- Status: UNKNOWN from this ZIP alone (needs current Cloudflare build log confirmation).
+- Known risk: “documentation-only” commits previously triggered Cloudflare build failures (see thread log history).
+
+## Known active design compliance gaps (must reconcile before claiming “Day 1 complete”)
+- **Footer link order/content currently does not match NAVIGATION-INVARIANTS** (must be Contact, Support, Terms, Privacy in that order; no “About” in footer). Confirm against production before closing T02/T19.
+
+---
+
+# PHASE 0 — Continuity Spine (must exist before anything else)
+
+✅ COMPLETED
+## T00 — Create logs + tasklist structure (repo hygiene)
+Scope: folders/docs only; no app behavior change.
+Exit: `/docs/tasklists/logs/THREAD-LOG_Master.md` exists; this file exists under `/docs/tasklists/`.
+
+---
+
+# PHASE 1 — Foundation Stabilization (stop regressions)
+
+⚠️ OPEN
+## T01 — Lock Header + PageShell ownership (stop recurring header breakage)
+Scope: Header component(s), PageShell/layout, global CSS only.
+Exit: Header links work on Home/About/FAQ/Join; verified in production.
+Closeout: list exact files that define header + shell; add “do not change” note.
+
+⚠️ OPEN
+## T02 — Routing verification sweep (public pages)
+Scope: routing + link targets only (no styling).
+Exit: All header + footer links route correctly; no 404/redirect surprises.
+Closeout: record route map + any redirects observed.
+
+⚠️ OPEN
+## T03 — Auth gating verification (fanclub + admin)
+Scope: middleware/auth gate only.
+Exit: logged-out access to `/fanclub/**` redirects; logged-in access works.
+Closeout: record exact rule and test URLs.
+
+✅ COMPLETED / EXISTS
+## T04 — Production smoke harness (repeatable checklist + commands)
+Scope: docs/scripts only (no app change).
+Exit: production smoke doc exists and is runnable.
+
+---
+
+# PHASE 2 — Public Homepage Integrity (section-by-section, no regressions)
+
+## T10 — Hero banner: lock structure + style invariants
+Scope: hero section only; no header/footer edits.
+Exit: hero renders correctly; no shadow/border regressions vs design lock.
+Closeout: file ownership recorded.
+
+## T11 — Weekly Photo Matchup: UI wiring verification
+Scope: weekly matchup components + API endpoints used by Home.
+Exit: Home shows 2 photos; vote submits; results behave as designed.
+Closeout: endpoints + tables recorded.
+
+## T12 — Join section: CTA correctness
+Scope: Join CTA only.
+Exit: Join button routes correctly; copy correct; no dead buttons.
+Closeout: destination URLs recorded.
+
+## T14 — Social wall (Elfsight): embed stability
+Scope: Elfsight embed only.
+Exit: widget loads; no console hard-fail; CSP does not break it.
+Closeout: required domains + config location recorded.
+
+## T16 — Friends tiles (6) stability
+Scope: friends section only.
+Exit: 6 tiles render; links open external URLs; layout stable.
+
+## T17 — Events (next 10) wiring
+Scope: events section + endpoint only.
+Exit: shows next 10; empty-state acceptable; no runtime errors.
+
+## T18 — FAQ preview wiring
+Scope: FAQ preview only.
+Exit: preview renders; links route to FAQ page.
+
+## T19 — Footer: lock invariants
+Scope: footer only.
+Exit: footer matches NAVIGATION invariants; links work; no layout regressions.
+Closeout: footer ownership files recorded.
+
+---
+
+# PHASE 3 — Public Core Features (complete end-to-end)
+
+## T20 — FAQ page: search + view count + pinned
+Scope: FAQ page + its API/DB only.
+Exit: search works; pinned works; view count increments; ask form works.
+
+## T21 — Ask-a-question intake: persistence + basic validation
+Scope: ask form + storage only.
+Exit: email + question stored; basic rate-limit if defined.
+
+## T22 — Events page: month view + list view
+Scope: events page + its data only.
+Exit: renders correctly; stable navigation.
+
+---
+
+# PHASE 4 — Fan Club (auth required) Core
+
+## T30 — Fanclub home shell + navigation
+Scope: fanclub layout + nav only.
+Exit: fanclub loads post-login; header rules preserved.
+
+## T31 — Member Profile: identity + membership card panel
+Scope: profile page only.
+Exit: identity fields render; membership card panel renders.
+
+## T32 — Member Chat: post + list + report flow (Day 1)
+Scope: chat components + storage only.
+Exit: post works; newest first; report works.
+
+## T33 — Library: read path + Article #2 display
+Scope: library read only.
+Exit: article displays reliably; empty-state acceptable.
+
+## T34 — Member submissions: article upload (PDF) pipeline
+Scope: upload endpoint + storage + metadata only.
+Exit: PDF allowlist + size limits; stored to B2; metadata stored.
+
+## T35 — Photo Gallery: browse + report incorrect tags (Day 1)
+Scope: gallery browse + report flow.
+Exit: browse works; report works.
+
+## T36 — Memorabilia: browse + long description render
+Scope: memorabilia browse only.
+Exit: images render; long descriptions render below image.
+
+---
+
+# PHASE 5 — Admin (moderation + management)
+
+## T40 — Admin access gate (fail closed)
+Scope: admin auth only.
+Exit: only admins access `/admin/**`; non-admin blocked.
+
+## T41 — Admin moderation: reported items queue
+Scope: moderation UI + endpoints.
+Exit: admin can view reports; resolve; audit trail preserved.
+
+## T42 — Admin content tools: FAQ management
+Scope: FAQ admin only.
+Exit: create/edit/pin/unpin works; public reflects changes.
+
+## T43 — Admin events tools: create/edit events
+Scope: events admin only.
+Exit: admin create/edit works; public reflects.
+
+## T44 — Admin media tools: upload/tag for photos + memorabilia
+Scope: admin media only.
+Exit: admin upload works; tagging stored; public reflects.
+
+---
+
+# PHASE 6 — Hardening (after core stability)
+
+## T50 — Rate limiting on sensitive endpoints (Cloudflare-native)
+## T51 — Env validation fail-fast (build/runtime)
+## T52 — Security sweep: upload limits + MIME enforcement
+## T53 — CSP implementation
+
+---
+
+# PHASE 7 — Release Readiness
+
+## T60 — Full production smoke pass + no-regression signoff
+Scope: verification only.
+Exit: all core flows pass; no broken headers; no dead links.
