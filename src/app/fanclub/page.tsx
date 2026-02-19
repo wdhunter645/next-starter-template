@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import WelcomeSection from '@/components/member/WelcomeSection';
-import PostCreation from '@/components/member/PostCreation';
-import DiscussionFeed from '@/components/member/DiscussionFeed';
-import ArchivesTiles from '@/components/member/ArchivesTiles';
-import GehrigTimeline from '@/components/member/GehrigTimeline';
-import AdminLink from '@/components/member/AdminLink';
+import WelcomeSection from '@/components/fanclub/WelcomeSection';
+import PostCreation from '@/components/fanclub/PostCreation';
+import DiscussionFeed from '@/components/fanclub/DiscussionFeed';
+import ArchivesTiles from '@/components/fanclub/ArchivesTiles';
+import GehrigTimeline from '@/components/fanclub/GehrigTimeline';
+import AdminLink from '@/components/fanclub/AdminLink';
 
 /**
  * FanClub Home Page - Authoritative implementation per docs/fanclub.md
