@@ -1,3 +1,8 @@
+type Props = {
+  email: string;
+  onPostCreated: () => void;
+};
+
 export default function PostCreation() {
   return (
     <section aria-label="PostCreation" style={{ padding: 16, border: "1px solid rgba(0,0,0,0.12)", borderRadius: 12 }}>
