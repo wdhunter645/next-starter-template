@@ -86,14 +86,13 @@ Inherits the global container from the style guide:
 **Purpose:** Contact and support guidance for visitors and members.
 
 This page consolidates both contact and support destinations.
-The `/support` route is retired; all support traffic goes to `/contact`.
 
 **Content:** Awaiting copy.
 
 **Required content elements (must appear regardless of copy):**
 
 - Admin contact email displayed on page: `admin@lougehrigfanclub.com`
-- Support email reference: `Support@LouGehrigFanClub.com`
+- Contact email reference: `Contact@LouGehrigFanClub.com`
 - Note: footer does not display email addresses directly; this page is the
   canonical location for contact details.
 

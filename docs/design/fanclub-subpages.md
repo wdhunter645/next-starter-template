@@ -5,7 +5,6 @@ Covers all four FanClub sub-pages:
 photo gallery (3-column grid, tag filters, submit flow)
 library (tabular list with year/author/title)
 memorabilia (grid + tag filters + Library cross-links)
-myprofile (editable fields, profile picture selector, Save/Cancel, plus the membership card section that replaces the retired /fanclub/membercard route).
 
 
 Covers: `/fanclub/photo`, `/fanclub/library`, `/fanclub/memorabilia`, `/fanclub/myprofile`
@@ -203,7 +202,6 @@ Same pill-button pattern as Photo Gallery. Example tags: “Baseball Card”,
 # `/fanclub/myprofile` — My Profile
 
 **Purpose:** Member profile view and edit page. Also hosts the membership
-card section (replaces the retired `/fanclub/membercard` route).
 
 ## Page Layout
 

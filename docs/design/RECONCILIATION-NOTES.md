@@ -33,20 +33,16 @@ Includes a table of which existing docs need to be updated (the four docs that c
 
 -----
 
-### 2. `/support` Route is retired. support email address is provided in text on the /contact page.
 
 -----
 
-### 3. `/fanclub/membercard` Route
 
 **Conflict:**
 
-- `NAVIGATION-INVARIANTS.md` and `fanclub.md` list `/fanclub/membercard` as a
   canonical FanClub subpage.
 - `master_design.md` removes this route; membership card content is
   consolidated into `/fanclub/myprofile` (bottom section of that page).
 
-**Resolution:** `/fanclub/membercard` remains a Day 1 route. Membership card instructions
 and card images live at the bottom of `/fanclub/myprofile`.
 `NAVIGATION-INVARIANTS.md` and `fanclub.md` must be updated.
 
@@ -56,9 +52,9 @@ and card images live at the bottom of `/fanclub/myprofile`.
 
 **Conflict:**
 
-- `NAVIGATION-INVARIANTS.md`: Contact, Support, Terms, Privacy
+- `NAVIGATION-INVARIANTS.md`: Contact, Contact, Terms, Privacy
 - `LGFC-Production-Design-and-Standards.md` (Jan 20 addendum): Privacy, Terms,
-  Contact, Support (with Admin conditional)
+  Contact, Contact (with Admin conditional)
 
 **Resolution:** The Jan 20 addendum in `LGFC-Production-Design-and-Standards.md`
 is more recent and includes the Admin conditional link. Canonical footer link
@@ -67,7 +63,7 @@ order (right side):
 1. Privacy → `/privacy`
 1. Terms → `/terms`
 1. Contact → `/contact`
-1. Support → mailto link
+1. Contact → mailto link
 1. Admin → `/admin` (visible to admin users only)
 
 `NAVIGATION-INVARIANTS.md` must be updated to match.
@@ -120,6 +116,4 @@ The following documents require updates to reflect these resolutions:
 |Document                                 |Required Change                                                                |
 |-----------------------------------------|-------------------------------------------------------------------------------|
 |`LGFC-Production-Design-and-Standards.md`|Remove 6-button logged-in header model; update footer link order               |
-|`NAVIGATION-INVARIANTS.md`               |Remove `/support` route; keep `/fanclub/membercard`; update footer link order|
-|`fanclub.md`                             |Keep `/fanclub/membercard` in the canonical subpage list                        |
 |`home.md`                                |Add “About Lou Gehrig” as section 4 (renumber subsequent sections)             |

@@ -195,7 +195,7 @@ Per `/docs/NAVIGATION-INVARIANTS.md`:
 
 ### Footer
 - Same footer as all other pages
-- Rotating quote, copyright, links to Terms/Privacy/Contact/Support
+- Rotating quote, copyright, links to Terms/Privacy/Contact/Contact
 
 ### Navigation Invariants
 - `/join` does NOT change header or footer structure
@@ -216,13 +216,13 @@ Per `/docs/NAVIGATION-INVARIANTS.md`:
 - Join succeeds even if email sending fails (logged but not blocking)
 - Duplicate submissions return 409 without error (idempotent)
 
-## Support Access
+## Contact Access
 
-Per `/docs/LGFC-Production-Design-and-Standards.md` "7) Support Access Lock":
+Per `/docs/LGFC-Production-Design-and-Standards.md` "7) Contact Access Lock":
 
-- **Support Button** visible on form
-- **Link:** `mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed%20JOIN`
-- **Subject:** "Support Needed JOIN" (distinguishes from Login support)
+- **Contact Button** visible on form
+- **Link:** `mailto:Contact@LouGehrigFanClub.com?subject=Contact%20Needed%20JOIN`
+- **Subject:** "Contact Needed JOIN" (distinguishes from Login support)
 
 ## Technical Implementation
 
@@ -274,7 +274,7 @@ Per `/docs/LGFC-Production-Design-and-Standards.md` "7) Support Access Lock":
 - **From header "Join" button:** Routes to `/join`
 - **From `/join` on success:** User remains on `/join` (can submit another)
 - **From `/join` on duplicate:** Link to `/login` shown in error message
-- **From `/join` "Support" link:** Opens email draft to support
+- **From `/join` "Contact" link:** Opens email draft to support
 
 ## Future Phase: Authentication Integration
 
@@ -317,7 +317,7 @@ Before accepting any changes to the join page:
 - [x] Duplicate message shown on 409 response
 - [x] Error message shown on 400/500 response
 - [x] Form fields cleared on success
-- [x] Support link present with correct subject line
+- [x] Contact link present with correct subject line
 - [x] Client component with 'use client' directive
 - [x] No Node.js-specific APIs used
 - [x] Builds successfully with `npm run build:cf`

@@ -135,7 +135,7 @@ Entry point: FAQ section link “Ask a Question” on both homepage and `/faq`.
     [Email — required]
     [Question — required, textarea]
     [Submit button]
-    [Support link]
+    [Contact link]
   [Status messages]
 [Global Footer]
 ```
@@ -196,11 +196,11 @@ Server-side:
 
 -----
 
-## Support Link
+## Contact Link
 
 Below the form (same pattern as Join page):
 
-`mailto:Support@LouGehrigFanClub.com?subject=Support%20Needed%20ASK`
+`mailto:Contact@LouGehrigFanClub.com?subject=Contact%20Needed%20ASK`
 
 -----
 

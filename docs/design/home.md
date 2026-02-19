@@ -28,14 +28,12 @@ This document is the **single source of truth** for the public HOME page structu
 
 ## Documented-but-missing UI (must be implemented)
 
-### Optional Top Notice Bar (global, above header)
 A compact banner strip displayed **above the site header** on all public pages.
 
 - Component: `src/components/TopNoticeBar`
 - Mounted in: `src/app/layout.tsx` above `<SiteHeader />`
 - Copy:
   - Left: "🎗️ 100% of proceeds support ALS research via ALS Cure Project."
-  - Right: "Learn more" link to `/charities`
 - Behavior:
   - Always visible (until a future PR introduces a toggle)
   - Must be keyboard accessible
@@ -63,3 +61,8 @@ The following sections exist on the HOME page and are now explicitly documented 
 - Social Wall
 - Recent Discussions (teaser)
 If any future homepage sections are added, this document MUST be updated in the same PR.
+
+
+## Required section: ABOUT LOU GEHRIG (Day 1)
+
+Insert between JOIN and SOCIAL WALL sections. This is NOT the /about page.
