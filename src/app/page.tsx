@@ -40,9 +40,9 @@ export default function HomePage() {
       </section>
 
 
-      {/* Who was Lou Gehrig */}
-      <section id="who-was-lou-gehrig" className="container section-gap">
-        <h2 className="section-title">Who was Lou Gehrig</h2>
+      {/* Section: ABOUT LOU GEHRIG */}
+      <section id="about-lou-gehrig" className="container section-gap">
+        <h2 className="section-title">ABOUT LOU GEHRIG</h2>
         <div className="card" style={{ padding: 22 }}>
           <p style={{ marginTop: 0 }}>
             Henry Louis “Lou” Gehrig (1903–1941) was one of baseball&apos;s greatest players and a symbol of courage in the face of adversity.
