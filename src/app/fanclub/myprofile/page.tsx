@@ -30,6 +30,51 @@ export default function MemberProfilePage() {
           </div>
         </div>
       </div>
+    
+      {/* Membership card instructions (moved from removed /fanclub/membercard page) */}
+      <section style={{ marginTop: 36 }}>
+        <h2 style={{ fontSize: 24, margin: '0 0 12px 0' }}>Membership Card</h2>
+        <div
+          style={{
+            display: 'flex',
+            gap: 18,
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+          }}
+        >
+          <div style={{ flex: '1 1 420px', minWidth: 280 }}>
+            <p style={{ marginTop: 0, opacity: 0.9 }}>
+              Your membership card is a digital keepsake. Save the images on the right, or show them on your phone when you want to share that you&apos;re a member of the Lou Gehrig Fan Club.
+            </p>
+            <ul style={{ marginTop: 10 }}>
+              <li>Front and back are provided.</li>
+              <li>These images are for personal use and sharing.</li>
+              <li>If you need help, use the Contact page.</li>
+            </ul>
+          </div>
+
+          <div style={{ flex: '0 0 360px', maxWidth: 420, display: 'flex', gap: 12, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+            <figure style={{ margin: 0 }}>
+              <img
+                src="/membercard-front.png"
+                alt="Membership card - front"
+                style={{ width: 170, height: 'auto', borderRadius: 10, border: '1px solid rgba(0,0,0,0.12)' }}
+              />
+              <figcaption style={{ fontSize: 12, opacity: 0.75, marginTop: 6, textAlign: 'center' }}>Front</figcaption>
+            </figure>
+            <figure style={{ margin: 0 }}>
+              <img
+                src="/membercard-back.png"
+                alt="Membership card - back"
+                style={{ width: 170, height: 'auto', borderRadius: 10, border: '1px solid rgba(0,0,0,0.12)' }}
+              />
+              <figcaption style={{ fontSize: 12, opacity: 0.75, marginTop: 6, textAlign: 'center' }}>Back</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
     </main>
   );
 }
