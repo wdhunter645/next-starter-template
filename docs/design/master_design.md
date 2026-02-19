@@ -1,3 +1,16 @@
+## Authority & Design Hierarchy
+
+This document is the global model and route authority.
+
+Design hierarchy:
+1) docs/design/master_design.md (global model and routes)
+2) docs/LGFC-Production-Design-and-Standards.md
+3) docs/NAVIGATION-INVARIANTS.md
+4) docs/design/RECONCILIATION-NOTES.md
+5) docs/design/home.md (defines the homepage page only; not the project)
+
+Mobile/tablet is deferred (halted). Desktop is the only binding target for Day 1.
+
 # MASTER DESIGN — LGFC (REVISED)
 
 Purpose:
@@ -32,7 +45,6 @@ Always 4 buttons + hamburger.
 
 ### Hamburger menu
 - About → fan club history
-- Contact → admin/support email guidance
 
 Logo:
 - Always visible
@@ -87,7 +99,6 @@ Unauthorized access:
 
 Contact model:
 - `/contact` contains both contact + support guidance
-- `/support` retired
 
 Search model:
 - `/search` is a real page
@@ -151,7 +162,6 @@ Data:
 - membership_card_content
 
 Route removed:
-- `/fanclub/membercard`
 
 ### Timeline (FanClub only)
 - Full Gehrig life + legacy timeline
@@ -205,3 +215,14 @@ This document defines:
 - What data powers each surface
 
 Implementation detail, layout rules, and behavior locks live in the next-level design/standards documentation.
+
+
+- /about page is for Fan Club history (linked from hamburger).
+
+
+## Footer (single design)
+
+- Left: rotating quote (D1) + legal statement
+- Center: small LGFC logo scroll-to-top (height uses both left lines)
+- Right: line 1 Terms + Privacy; line 2 Contact
+- Support page does not exist.
