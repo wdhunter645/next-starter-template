@@ -86,7 +86,7 @@ Inherits the global container from the style guide:
 **Purpose:** Contact and support guidance for visitors and members.
 
 This page consolidates both contact and support destinations.
-The `/support` route is retired; all support traffic routes here.
+The `/support` route is retired; all support traffic goes to `/contact`.
 
 **Content:** Awaiting copy.
 

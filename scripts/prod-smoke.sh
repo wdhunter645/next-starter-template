@@ -17,7 +17,7 @@ need sed
 echo "== Smoke: BASE_URL=$BASE_URL =="
 
 # 1) Basic pages must respond (2xx/3xx)
-for p in "/" "/about" "/contact" "/support" "/terms" "/privacy" "/join" "/login" "/faq" "/health"; do
+for p in "/" "/about" "/contact"  "/terms" "/privacy" "/join" "/login" "/faq" "/health"; do
   code="$(curl -sS -o /dev/null -w "%{http_code}" "$BASE_URL$p" || true)"
   echo "GET $p -> $code"
   if [[ "$code" != 2* && "$code" != 3* ]]; then
