@@ -13,9 +13,9 @@ inclusive, and harassment-free environment for all participants.
 
 ## Unacceptable Behavior
 
-- Harassment, hate speech, or discrimination.
+- Harassment, hate speech, discrimination, or abusive conduct.
 - Personal attacks.
-- Disruptive or abusive conduct.
+- Disruptive or hostile behavior.
 
 ## Enforcement
 
