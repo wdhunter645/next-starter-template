@@ -224,3 +224,14 @@ Exit: admin upload works; tagging stored; public reflects.
 ## T60 — Full production smoke pass + no-regression signoff
 Scope: verification only.
 Exit: all core flows pass; no broken headers; no dead links.
+
+---
+
+## Documentation Freeze (Day-1 Stability Gate)
+
+- Status: ACTIVE (freeze)
+- Effective: 2026-02-20
+- Scope: docs/** (all documentation)
+- Rule: No doc edits unless required to remove drift that blocks builds/ops, or to document an active production incident.
+- Canonical baseline: /docs/README.md and /docs/governance/standards/document-authority-hierarchy_MASTER.md
+- Rationale: Documentation architecture is now stabilized; focus shifts to production implementation tasks.

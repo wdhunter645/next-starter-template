@@ -1,0 +1,30 @@
+name: Docs Guardrails
+
+on:
+  pull_request:
+    paths:
+      - "docs/**"
+      - "scripts/ci/**"
+      - ".github/workflows/docs-guardrails.yml"
+  push:
+    branches: ["main"]
+    paths:
+      - "docs/**"
+      - "scripts/ci/**"
+      - ".github/workflows/docs-guardrails.yml"
+
+jobs:
+  docs_guardrails:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Docs header check (active docs)
+        run: ./scripts/ci/docs_check_headers.sh .
+
+      - name: Docs path bucket check
+        run: ./scripts/ci/docs_check_paths.sh .
+
+      - name: Canonical drift check (design)
+        run: ./scripts/ci/docs_canonical_hashes_verify.sh .
