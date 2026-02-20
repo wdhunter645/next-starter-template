@@ -2,12 +2,12 @@
 
 import { usePathname } from 'next/navigation';
 import Header from './Header';
-import MemberHeader from './MemberHeader';
+import FanClubHeader from './FanClubHeader';
 import FloatingLogo from './FloatingLogo';
 
 /**
  * Route-based header selection ONLY.
- * - /fanclub and /fanclub/** => MemberHeader
+ * - /fanclub and /fanclub/** => FanClubHeader
  * - everything else => Header
  *
  * Classic/locked behavior:
@@ -28,7 +28,7 @@ export default function SiteHeader() {
     <>
       {showFloatingLogo ? <FloatingLogo homeRoute="/" /> : null}
       {isFanClub ? (
-        <MemberHeader showLogo={!showFloatingLogo} />
+        <FanClubHeader showLogo={!showFloatingLogo} />
       ) : (
         <Header showLogo={!showFloatingLogo} />
       )}
