@@ -176,8 +176,8 @@
         <a href="/about">About</a>
         <a href="/contact">Contact</a>
         <a class="external" href="https://www.bonfire.com/" target="_blank" rel="noopener">Store</a>
-        <a id="loginLink" href="/member">Login</a>
-        <a id="membersLink" href="/member" style="display:none">Members Area</a>
+        <a id="loginLink" href="/fanclub">Login</a>
+        <a id="membersLink" href="/fanclub" style="display:none">Fan Club</a>
       </div>
     </nav>
   </header>
@@ -230,7 +230,7 @@
     <!-- Recent Club Activity -->
     <section class="container" role="region" aria-label="Recent Club Activity">
       <h2>Recent Club Activity</h2>
-      <p class="sub">Displays the last 5 to 10 posts from the Members Area in read-only mode.</p>
+      <p class="sub">Displays the last 5 to 10 posts from the Fan Club in read-only mode.</p>
       <div class="grid">
         <article class="card">
           <img src="https://placehold.co/800x600/jpg?text=Post+1" alt="Club contribution 1" />
@@ -397,7 +397,7 @@
         if(adminPlaceholder) adminPlaceholder.style.display = 'inline';
       }
 
-      // Login vs Members Area in menu
+      // Login vs Fan Club in menu
       const loginLink = document.getElementById('loginLink');
       const membersLink = document.getElementById('membersLink');
       if(isLoggedIn){
@@ -484,11 +484,11 @@
       {q:"Where can I vote in the weekly photo matchup?", a:"Here on the homepage while voting is open.", approved:true},
       {q:"How do I submit memorabilia?", a:"Members can post details and photos in the discussion area.", approved:true},
       {q:"Can I request a specific photo in the matchup?", a:"Yes—post your suggestion in the discussion area.", approved:true},
-      {q:"What is the Members Area?", a:"A private space for posts, archives, and events.", approved:true},
+      {q:"What is the Fan Club?", a:"A private space for posts, archives, and events.", approved:true},
       {q:"How do I reset my login?", a:"Use the email magic-link flow on the login page.", approved:true},
       {q:"How can I donate to ALS research?", a:"See the Charities page for direct links.", approved:true},
       {q:"Do you sell merchandise?", a:"Yes—see Store for official items.", approved:true},
-      {q:"Can I help moderate?", a:"Message an admin in the Members Area.", approved:true}
+      {q:"Can I help moderate?", a:"Message an admin in the Fan Club.", approved:true}
     ];
     const FAQ_KEY = 'lgfc_faq_list';
     function loadFaq(){
