@@ -9,7 +9,7 @@ Last Reviewed: 2026-02-20
 ---
 
 # THREAD-LOG_Master.md
-Location (authoritative): /docs/tasklists/logs/THREAD-LOG_Master.md
+Location (authoritative): /docs/ops/trackers/THREAD-LOG_Master.md
 Purpose: Append-only closeout records so each new thread can start executing immediately.
 
 > This file was **previously duplicated/overwritten** by casing variants. This version is the single canonical log file.
@@ -195,3 +195,26 @@ NEXT START POINT
 - Next task ID: Parallel Lane — Pack02
 - Exact next action:
   - Start from latest repo ZIP AFTER Thread 2 pauses; then generate Pack02 as ADD-only for remaining non-blocking tasks (FanClub shells, Admin tools, FAQ/events public surfaces), excluding any files touched in Thread 2.
+
+---
+
+## T02 — Documentation Model Redesign (Phases 1–3) + Guardrails (2026-02-20)
+
+### Summary
+- Rebuilt `docs/` into Diátaxis-aligned buckets and separated governance vs specs vs ops.
+- Added authority headers across active docs and normalized intra-doc paths to new locations.
+- Added docs CI guardrails: header enforcement, bucket path enforcement, canonical drift hashes.
+
+### Repo changes (high-level)
+- Docs moved into: `docs/governance`, `docs/reference`, `docs/how-to`, `docs/explanation`, `docs/ops`, plus historical buckets (`archive`, `as-built`, `snapshots`, etc.).
+- New CI: `.github/workflows/docs-guardrails.yml` + scripts in `scripts/ci/`.
+
+### Verification (local)
+- `./scripts/ci/docs_check_headers.sh .` → PASS
+- `./scripts/ci/docs_check_paths.sh .` → PASS
+- `./scripts/ci/docs_canonical_hashes_verify.sh .` → PASS
+
+### Outcome
+- Phases 1–3 COMPLETE. Next: implement website (Day‑1), then Phases 4–5 cleanup.
+
+
