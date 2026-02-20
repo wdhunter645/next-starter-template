@@ -2,15 +2,15 @@
 
 import Link from 'next/link';
 import { useRef, useState } from 'react';
-import styles from './MemberHeader.module.css';
+import styles from './FanClubHeader.module.css';
 import MemberHamburgerMenu from './MemberHamburgerMenu';
 
-type MemberHeaderProps = {
+type FanClubHeaderProps = {
   homeRoute?: string;
   showLogo?: boolean;
 };
 
-export default function MemberHeader({ homeRoute = '/', showLogo = true }: MemberHeaderProps = {}) {
+export default function FanClubHeader({ homeRoute = '/', showLogo = true }: FanClubHeaderProps = {}) {
   const [open, setOpen] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
 
