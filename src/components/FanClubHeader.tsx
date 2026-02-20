@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 import styles from './FanClubHeader.module.css';
-import MemberHamburgerMenu from './MemberHamburgerMenu';
+import HamburgerMenu from './HamburgerMenu';
 
 type FanClubHeaderProps = {
   homeRoute?: string;
@@ -60,7 +60,7 @@ export default function FanClubHeader({ homeRoute = '/', showLogo = true }: FanC
               <span className={styles.hamburgerBar} />
             </button>
 
-            {open ? <MemberHamburgerMenu onClose={() => setOpen(false)} toggleRef={toggleRef} /> : null}
+            {open ? <HamburgerMenu onClose={() => setOpen(false)} toggleRef={toggleRef} /> : null}
           </div>
         </nav>
       </div>
