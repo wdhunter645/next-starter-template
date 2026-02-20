@@ -271,4 +271,37 @@ NEXT START POINT
   1) Upload the updated component files.
   2) Delete `src/components/MemberHamburgerMenu.tsx` from the repo.
   3) Re-run production smoke for header navigation (Home/About/Contact/Join/Login/FanClub) and confirm no regressions.
+ 
+## THREAD COMPLETION ADDENDUM — 2026-02-20 — T02 — Header rename + drift resolution
+
+FOLLOW-UP ACTIONS EXECUTED (AFTER INITIAL CLOSEOUT ENTRY)
+
+Header naming alignment (member → fanclub):
+- Renamed src/components/MemberHeader.tsx → src/components/FanClubHeader.tsx
+- Renamed src/components/MemberHeader.module.css → src/components/FanClubHeader.module.css
+- Updated SiteHeader to reference FanClubHeader
+- Verified: no remaining "MemberHeader" references in src/**
+
+Hamburger standardization correction:
+- Removed stale import of MemberHamburgerMenu inside FanClubHeader (caused build failure).
+- Updated FanClubHeader to import and render shared HamburgerMenu.tsx.
+- Verified: no remaining "MemberHamburgerMenu" references in src/**
+
+Repo hygiene:
+- src/components/MemberHamburgerMenu.tsx deleted (completed).
+- src/components/SiteHeaderOLD.tsx deleted (remote already removed; rebase conflict resolved by preserving deletion).
+
+BUILD VERIFICATION
+
+- npm run build: PASS
+- No webpack errors.
+- Only non-blocking ESLint <img> warnings remain.
+
+TASK STATUS
+
+T02 is now COMPLETE.
+All member→fanclub UI naming drift removed.
+Shared hamburger architecture is enforced.
+Repository is clean and synchronized with origin/main.
+
 
