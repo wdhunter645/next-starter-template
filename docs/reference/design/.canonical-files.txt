@@ -1,0 +1,16 @@
+docs/reference/design/LGFC-Production-Design-and-Standards.md
+docs/reference/design/NAVIGATION-INVARIANTS.md
+docs/reference/design/fanclub.md
+docs/reference/design/master_design.md
+docs/reference/design/master_design_index.md
+docs/reference/design/style-guide.md
+docs/reference/design/visitor-header.md
+docs/reference/design/auth-and-logout.md
+docs/reference/design/login.md
+docs/reference/design/join.md
+docs/reference/design/home.md
+docs/reference/design/search.md
+docs/reference/design/fanclub-subpages.md
+docs/reference/design/RECONCILIATION-NOTES.md
+docs/reference/design/locks/header-memberheader-logo-banner-design-lock.md
+docs/reference/design/reference/lgfc-homepage-legacy-v6.html
