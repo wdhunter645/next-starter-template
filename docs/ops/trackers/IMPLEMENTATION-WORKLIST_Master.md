@@ -302,3 +302,24 @@ Confirm zero /member UI-route references in active docs.
 Confirm Cloudflare build remains green.
 Status: In Progress (Documentation Redesign Phase 4–5)
 
+
+---
+
+# APPENDED UPDATES (do not edit prior content)
+
+## 2026-02-20 — T02 — Routing verification sweep (public pages) — Progress Update
+
+Changes (code only; no styling changes):
+- Unify hamburger menu behavior across headers: hamburger menu is **NOT login-aware** and contains only:
+  - `/about`
+  - `/contact`
+- Member header now uses the shared `HamburgerMenu.tsx` (no separate member hamburger).
+- `HamburgerMenu.tsx` now provides a stable `id="hamburger-menu"` target for `aria-controls`.
+
+Routing cleanup (member → fanclub):
+- Verified `src/**` contains **no UI links** to `/member` routes.
+- `/api/member/**` routes are **intentionally preserved** (API surface, not UI routing).
+
+Repo hygiene note:
+- `src/components/MemberHamburgerMenu.tsx` is now obsolete by design and should be deleted from the repo to prevent drift.
+

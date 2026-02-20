@@ -241,3 +241,34 @@ Fixes:
 
 Thread closed.
 
+---
+
+## THREAD CLOSEOUT RECORD — 2026-02-20 — T02 — Hamburger unification + member→fanclub routing cleanup (UI)
+
+WHAT WE INTENDED TO DO
+- Align hamburger menu to the locked design: hamburger contains only `/about` and `/contact`.
+- Ensure hamburger is not login-aware (header variant already handles login-aware buttons).
+- Remove ongoing drift risk from a separate member-specific hamburger menu.
+- Sweep for UI route references to `/member` and normalize toward `/fanclub`.
+
+WHAT ACTUALLY GOT CHANGED
+- `src/components/MemberHeader.tsx`
+  - Switched to use the shared `HamburgerMenu.tsx`.
+  - Normalized `aria-controls` to `hamburger-menu`.
+- `src/components/HamburgerMenu.tsx`
+  - Added `id="hamburger-menu"` to match header `aria-controls`.
+
+ROUTING CLEANUP RESULT
+- `src/**` contains no UI links to `/member` routes (only valid API routes exist under `/api/member/**`).
+
+REQUIRED MANUAL REPO ACTION (DRIFT PREVENTION)
+- Delete obsolete file: `src/components/MemberHamburgerMenu.tsx`
+  - Rationale: design requires a single hamburger menu shared by all header variants.
+
+NEXT START POINT
+- Task remains: T02.
+- Exact next action:
+  1) Upload the updated component files.
+  2) Delete `src/components/MemberHamburgerMenu.tsx` from the repo.
+  3) Re-run production smoke for header navigation (Home/About/Contact/Join/Login/FanClub) and confirm no regressions.
+
