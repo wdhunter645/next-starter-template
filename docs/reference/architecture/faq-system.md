@@ -1,10 +1,10 @@
 ---
-Doc Type: TBD
+Doc Type: Specification
 Audience: Human + AI
-Authority Level: TBD
-Owns: TBD
-Does Not Own: TBD
-Canonical Reference: TBD
+Authority Level: Canonical Architecture Specification
+Owns: System architecture, data flows, access model, runtime dependencies
+Does Not Own: Operational runbooks; governance policies; UI/UX design specifics
+Canonical Reference: /docs/explanation/ARCHITECTURE_OVERVIEW.md
 Last Reviewed: 2026-02-20
 ---
 

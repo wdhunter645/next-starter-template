@@ -1,18 +1,18 @@
 ---
-Doc Type: TBD
+Doc Type: Template
 Audience: Human + AI
-Authority Level: TBD
-Owns: TBD
-Does Not Own: TBD
-Canonical Reference: TBD
+Authority Level: Controlled
+Owns: Reusable templates for repeatable repo operations
+Does Not Own: Specifications; policy enforcement beyond the template itself
+Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md
 Last Reviewed: 2026-02-20
 ---
 
-# THREAD LOG — TEMPLATE (append to /docs/tasklists/logs/THREAD-LOG_MASTER.md)
+# THREAD LOG — TEMPLATE (append to /docs/ops/trackers/THREAD-LOG_Master.md)
 
 Purpose:
 - This template is used to create a complete Thread Closeout Record for each implementation task.
-- Copy the block below, fill it in, and append it to `/docs/tasklists/logs/THREAD-LOG_MASTER.md`.
+- Copy the block below, fill it in, and append it to `/docs/ops/trackers/THREAD-LOG_Master.md`.
 
 ---
 

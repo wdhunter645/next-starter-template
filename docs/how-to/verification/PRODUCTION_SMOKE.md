@@ -1,10 +1,10 @@
 ---
-Doc Type: TBD
+Doc Type: How-To
 Audience: Human + AI
-Authority Level: TBD
-Owns: TBD
-Does Not Own: TBD
-Canonical Reference: TBD
+Authority Level: Operational
+Owns: Step-by-step procedures to accomplish tasks safely
+Does Not Own: Defining specs; redefining design/architecture/platform rules
+Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md
 Last Reviewed: 2026-02-20
 ---
 

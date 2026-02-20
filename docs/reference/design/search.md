@@ -1,10 +1,10 @@
 ---
-Doc Type: TBD
+Doc Type: Specification
 Audience: Human + AI
-Authority Level: TBD
-Owns: TBD
-Does Not Own: TBD
-Canonical Reference: TBD
+Authority Level: Canonical Design Specification
+Owns: Routes, navigation invariants, UI/UX contracts, page content contracts
+Does Not Own: How-to procedures; operational runbooks; governance policies
+Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-02-20
 ---
 
