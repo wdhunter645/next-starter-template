@@ -323,3 +323,24 @@ Routing cleanup (member → fanclub):
 Repo hygiene note:
 - `src/components/MemberHamburgerMenu.tsx` is now obsolete by design and should be deleted from the repo to prevent drift.
 
+## - 2026-02-20 — T02 — Routing verification sweep (headers + fanclub naming) — Completion Update
+Changes (code only; no styling changes):
+
+Header naming alignment (member → fanclub):
+- Renamed src/components/MemberHeader.tsx → src/components/FanClubHeader.tsx
+- Renamed src/components/MemberHeader.module.css → src/components/FanClubHeader.module.css
+- Updated SiteHeader to reference FanClubHeader (no remaining MemberHeader references in src/**)
+
+Hamburger menu standardization:
+- Confirmed single shared src/components/HamburgerMenu.tsx is the standard.
+- Removed member-specific hamburger usage from FanClubHeader; FanClubHeader now imports and renders HamburgerMenu.
+- Verified: no remaining references to MemberHamburgerMenu in src/**.
+
+Repo hygiene / drift reduction:
+- src/components/MemberHamburgerMenu.tsx deleted (completed).
+- src/components/SiteHeaderOLD.tsx deleted (completed; file was not referenced in src/** and removed to prevent drift).
+
+Verification:
+- grep drift-gate: no “MemberHeader” or “MemberHamburgerMenu” references remain in src/**.
+- npm run build: PASS (warnings only for <img> lint rule; no build failures).
+
