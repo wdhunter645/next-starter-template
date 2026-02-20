@@ -14,7 +14,7 @@ export default function HamburgerMenu({
   toggleRef
 }: {
   onClose: () => void;
-  toggleRef: RefObject<HTMLButtonElement>;
+  toggleRef: RefObject<HTMLButtonElement | null>;
 }) {
   const menuRef = useRef<HTMLDivElement>(null);
 
