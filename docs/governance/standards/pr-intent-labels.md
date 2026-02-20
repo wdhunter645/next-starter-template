@@ -1,3 +1,13 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # PR Intent Labels — Canonical Set
 
 **Status:** AUTHORITATIVE  
@@ -386,7 +396,7 @@ Both files MUST stay synchronized. Changes to intent definitions require updatin
 **Related Documentation:**
 - `/.github/platform-intent-and-zip-governance.md` — Platform intent and ZIP policy
 - `/.github/CI_GUARDRAILS_MAP.md` — CI workflow reference
-- `/docs/website-PR-governance.md` — PR process and governance
+- `/docs/governance/PR_GOVERNANCE.md` — PR process and governance
 
 **Configuration Files:**
 - `scripts/ci/pr_intent_allowlists.json` — Intent allowlist definitions

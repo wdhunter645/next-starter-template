@@ -1,3 +1,13 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # Header + MemberHeader + Logo + Banner Design Lock (DO NOT REGRESS)
 
 **Purpose:** This is the authoritative design and implementation spec for the LGFC header system.  

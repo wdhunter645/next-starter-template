@@ -1,3 +1,13 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # LGFC Operating Manual
 
 ## Codespaces Shell Rule (Hard Prohibition)
@@ -394,12 +404,12 @@ All changes must:
 
 **Primary Documentation:**
 - `/docs/LGFC-Production-Design-and-Standards.md` - Authoritative design standards
-- `/docs/website-PR-governance.md` - Operational and rollback standards
+- `/docs/governance/PR_GOVERNANCE.md` - Operational and rollback standards
 - `/docs/website.md` - PR structure and formatting
 - `/docs/NAVIGATION-INVARIANTS.md` - Navigation rules
 
 **Process Documentation:**
-- `/docs/PR-DRAFT-TEMPLATE.md` - PR template
+- `/docs/governance/PR-DRAFT-TEMPLATE.md` - PR template
 - `/docs/RECOVERY.md` - Snapshot and rollback procedures
 - `/docs/TROUBLESHOOTING.md` - Common issues and solutions
 

@@ -1,3 +1,13 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # Governance — Change Control
 
 Status: _MASTER (Operations authoritative)
@@ -16,7 +26,7 @@ Define how production changes are proposed, reviewed, executed, verified, and (i
 - If documents conflict, follow `/docs/governance/document-authority-hierarchy_MASTER.md`.
 
 ## Change units (non-negotiable)
-- One PR = one intent label (see `/docs/governance/pr-intent-labels.md` and `/docs/website-PR-governance.md`).
+- One PR = one intent label (see `/docs/governance/pr-intent-labels.md` and `/docs/governance/PR_GOVERNANCE.md`).
 - PR templates and file-touch allowlists are enforced by CI (drift gates).
 
 ## Standard change flow (Day-2 Operations)

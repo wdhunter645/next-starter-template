@@ -1,3 +1,13 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # Operations — Operational Standards
 
 Status: _MASTER (Operations authoritative)
@@ -33,6 +43,6 @@ After any production change:
 - Append to deploy log if significant
 
 ## Required references
-- `/docs/website-PR-governance.md` (PR process and runtime policy)
+- `/docs/governance/PR_GOVERNANCE.md` (PR process and runtime policy)
 - `/docs/LGFC-Production-Design-and-Standards.md` (design authority)
 - `/docs/NAVIGATION-INVARIANTS.md` (navigation authority)

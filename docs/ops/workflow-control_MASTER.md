@@ -1,3 +1,13 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # Operations — Workflow Control
 
 Status: _MASTER (Operations authoritative)
@@ -22,9 +32,9 @@ Repeat until stable.
 
 ## PR governance (required)
 Follow:
-- `/docs/website-PR-governance.md`
-- `/docs/website-PR-process.md`
-- `/docs/website-PR-governance.md`
+- `/docs/governance/PR_GOVERNANCE.md`
+- `/docs/governance/PR_PROCESS.md`
+- `/docs/governance/PR_GOVERNANCE.md`
 
 ## Acceptance criteria rule
 Every PR must include:

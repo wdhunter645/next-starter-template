@@ -1,3 +1,13 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # CLOUDFLARE — Resource Inventory (LGFC)
 
 This document captures what currently exists in Cloudflare for the LGFC deployment (design + resource inventory only).

@@ -1,3 +1,13 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # Platform — GitHub Actions Operations
 
 Status: _MASTER (Operations authoritative)
@@ -15,7 +25,7 @@ Define how GitHub Actions is used operationally to enforce governance and to val
 ## Where rules live
 - `.github/` governance docs (maps, intent labeler config).
 - Repo governance docs:
-  - `/docs/website-PR-governance.md`
+  - `/docs/governance/PR_GOVERNANCE.md`
   - `/docs/governance/pr-intent-labels.md`
   - `/docs/governance/ci-preview-invariants.md`
 
@@ -49,5 +59,5 @@ Any CI change must include:
 - Rollback plan (revert PR)
 
 ## References
-- `/docs/website-PR-governance.md`
+- `/docs/governance/PR_GOVERNANCE.md`
 - `.github/CI_GUARDRAILS_MAP.md`

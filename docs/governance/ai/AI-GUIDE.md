@@ -1,3 +1,13 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 MASTER BUILD PROMPT — LOU GEHRIG FAN CLUB PLATFORM
 
 You are a senior full-stack engineer responsible for building a production-ready website and operations platform for the Lou Gehrig Fan Club (LGFC). This is a historical baseball community site centered on Lou Gehrig’s life, legacy, statistics, memorabilia, and fan engagement. The system must be stable, simple to operate, and designed for long-term continuity.

@@ -1,3 +1,13 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # LGFC Admin Access Model — ZIP 41 As-Built
 
 **Version:** 2026-01-28  
@@ -289,4 +299,4 @@ See `/docs/admin/dashboard.md` for full admin feature roadmap.
 - **Admin APIs:** `functions/api/admin/**`
 - **D1 Test Tool:** `src/app/admin/d1-test/page.tsx`
 - **Environment Setup:** `/docs/START_HERE.md`
-- **D1 Configuration:** `/docs/website-PR-governance.md` (D1 Database Binding Requirements)
+- **D1 Configuration:** `/docs/governance/PR_GOVERNANCE.md` (D1 Database Binding Requirements)
