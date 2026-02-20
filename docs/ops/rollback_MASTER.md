@@ -1,10 +1,10 @@
 ---
-Doc Type: TBD
+Doc Type: Operations
 Audience: Human + AI
-Authority Level: TBD
-Owns: TBD
-Does Not Own: TBD
-Canonical Reference: TBD
+Authority Level: Operational Authority
+Owns: Live operating procedures, incident response, monitoring, operator workflows
+Does Not Own: Redefining design/architecture/platform specs; historical records
+Canonical Reference: /docs/ops/OPERATING_MANUAL.md
 Last Reviewed: 2026-02-20
 ---
 

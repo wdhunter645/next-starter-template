@@ -1,10 +1,10 @@
 ---
-Doc Type: TBD
+Doc Type: Specification
 Audience: Human + AI
-Authority Level: TBD
-Owns: TBD
-Does Not Own: TBD
-Canonical Reference: TBD
+Authority Level: Canonical CI Specification
+Owns: CI/CD workflows, required checks, build/test invariants
+Does Not Own: Product design; operational on-call procedures
+Canonical Reference: /docs/reference/ci/github-actions_MASTER.md
 Last Reviewed: 2026-02-20
 ---
 
