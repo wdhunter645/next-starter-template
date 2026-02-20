@@ -9,7 +9,7 @@ Last Reviewed: 2026-02-20
 ---
 
 # IMPLEMENTATION-WORKLIST_Master.md
-Location (authoritative): /docs/tasklists/IMPLEMENTATION-WORKLIST_Master.md
+Location (authoritative): /docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md
 Purpose: Day-1 execution map (1 task = 1 thread) + zero-drift guardrails.
 
 > This file was **previously overwritten** during thread turnover. This version restores the canonical tasklist structure and the thread-closeout workflow.
@@ -20,7 +20,7 @@ Purpose: Day-1 execution map (1 task = 1 thread) + zero-drift guardrails.
 
 - **One Task = One Thread.** Close the thread when the task is DONE / PARTIAL / BLOCKED.
 - **Fresh ZIP per thread.** Start each thread with the latest repo ZIP attached (authoritative snapshot).
-- **Thread must end with a Closeout Record** appended to `/docs/tasklists/logs/THREAD-LOG_Master.md` (append-only; newest at bottom).
+- **Thread must end with a Closeout Record** appended to `/docs/ops/trackers/THREAD-LOG_Master.md` (append-only; newest at bottom).
 - **No mixed intent.** A task may touch shared foundations (Header/PageShell/global CSS/auth gate) OR page/content features, not both, unless explicitly stated in that task.
 - **No regressions allowed.** Any task that touches shared UI must run the regression checklist below.
 - **Case-sensitive file safety.** Do not create duplicate “same name, different casing” files (Cloudflare/Linux and macOS behave differently).
@@ -46,18 +46,36 @@ Purpose: Day-1 execution map (1 task = 1 thread) + zero-drift guardrails.
 - **Execution Steps (Codespaces commands)**
 - **Verification Steps**
 - **Exit Criteria**
-- **Closeout Record Required** → append to `/docs/tasklists/logs/THREAD-LOG_Master.md`
+- **Closeout Record Required** → append to `/docs/ops/trackers/THREAD-LOG_Master.md`
 
 ---
 
-# CURRENT STATUS SNAPSHOT (best-known as of {today})
+# CURRENT STATUS SNAPSHOT (best-known as of 2026-02-20)
 
-## Build / Deploy
-- Status: UNKNOWN from this ZIP alone (needs current Cloudflare build log confirmation).
-- Known risk: “documentation-only” commits previously triggered Cloudflare build failures (see thread log history).
+## Documentation model (Phases 1–3)
+- Status: COMPLETE in this ZIP (Diátaxis buckets + authority headers + path normalization + docs guardrails workflow).
+- Guardrails: `docs_check_headers`, `docs_check_paths`, `docs_canonical_hashes_verify` are present and PASS locally.
+
+## Build / Deploy (needs confirmation)
+- Status: NOT DETERMINABLE from ZIP alone.
+- Required verification (run in Codespaces):
+  - `npm ci`
+  - `npm run build`
+  - `npx wrangler --version`
+  - Confirm latest Cloudflare Pages build log for `main` deploy.
+
+## Day‑1 website readiness (needs confirmation)
+- Status: NOT DETERMINABLE from ZIP alone.
+- Required verification (run in Codespaces / production check):
 
 ## Known active design compliance gaps (must reconcile before claiming “Day 1 complete”)
 - **Footer link order/content currently does not match NAVIGATION-INVARIANTS** (must be Contact, Support, Terms, Privacy in that order; no “About” in footer). Confirm against production before closing T02/T19.
+
+---
+
+  - Route smoke: `/`, `/about`, `/contact`, `/support`, `/terms`, `/privacy`, `/search`, `/join`, `/login`, `/logout`, `/faq`, `/health`
+  - Auth gating: `/fanclub/**` redirects to `/` when logged out; renders when logged in.
+  - Admin gating: `/admin/**` requires session + `ADMIN_EMAILS`.
 
 ---
 
@@ -66,7 +84,7 @@ Purpose: Day-1 execution map (1 task = 1 thread) + zero-drift guardrails.
 ✅ COMPLETED
 ## T00 — Create logs + tasklist structure (repo hygiene)
 Scope: folders/docs only; no app behavior change.
-Exit: `/docs/tasklists/logs/THREAD-LOG_Master.md` exists; this file exists under `/docs/tasklists/`.
+Exit: `/docs/ops/trackers/THREAD-LOG_Master.md` exists; this file exists under `/docs/tasklists/`.
 
 ---
 
@@ -83,6 +101,7 @@ Closeout: list exact files that define header + shell; add “do not change” n
 - Root cause: npm config `install-links=false` in the build environment prevents `node_modules/.bin` from being created, so `next` is not on PATH for npm scripts.
 - Fix (in this thread): Set `install-links=true` and `bin-links=true` in repo `.npmrc` so Next’s CLI link is created in all environments.
 - Verification: After upload + redeploy, Cloudflare build should proceed past dependency install and execute `next build` successfully.
+
 
 ⚠️ OPEN
 ## T02 — Routing verification sweep (public pages)
@@ -242,18 +261,44 @@ Exit: all core flows pass; no broken headers; no dead links.
 - Canonical baseline: /docs/README.md and /docs/governance/standards/document-authority-hierarchy_MASTER.md
 - Rationale: Documentation architecture is now stabilized; focus shifts to production implementation tasks.
 
+
 ---
 
-## Task 01 — CLOSED (2026-02-20 12:19 UTC)
+# PHASE 8 — Documentation Model Redesign (Phases 4–5) (post Day‑1)
 
-Cloudflare Pages builds restored to GREEN.
+## T70 — Phase 4: Rewrite legacy text to match new authority model
+Scope:
+- Remove/replace legacy intra-doc references that point to pre-reorg paths.
+- Ensure each doc’s “Owns / Does Not Own” matches its real content.
+- Remove duplicated design specifics from non-design docs (they must point to canonical spec instead).
 
-Evidence:
-- HEAD: f7d5f3caecfb8e3c8bb77870ed623c5506eb8b2d
-- Local: npm ci && npm run build succeeds (no TS compile failures)
+Exit:
+- No references remain to removed paths (grep check passes).
+- Each active doc’s header fields are accurate (no “TBD” in Doc Type / Authority / Canonical Reference for active docs).
 
-Build blockers resolved:
-- useClickAway signature alignment (+ isOpen)
-- Nullable toggleRef typing fix
-- FanClub AdminLink prop correction
+## T71 — Phase 5: Documentation completeness + maintenance baseline
+Scope:
+- Review docs coverage vs Day‑1 ops needs; create missing “how-to” pages only if needed.
+- Refresh `/docs/README.md` first-read order and map to new buckets.
+- Lock a maintenance cadence: “Last Reviewed” updates + canonical hashes refresh process.
+
+Exit:
+- `/docs/README.md` accurately points to the canonical design/ops docs.
+- `docs-guardrails` workflow remains green on PRs touching docs.
+- Canonical hash list is up to date (regenerate + verify passes).
+
+## T72 — Phase 4–5 Addendum — Route Terminology Alignment (FanClub)
+Objective: Eliminate legacy /member route terminology from all authoritative documentation and design references.
+
+Scope:
+Replace /member with /fanclub in all active design and reference documents.
+Replace “Members Area” wording with “Fan Club.”
+Preserve historical audit artifacts in docs/as-built/ (do not treat as drift).
+Regenerate and store route audit before Phase 5 sign-off.
+
+Verification:
+Repo-wide grep audit excluding snapshots and as-built history.
+Confirm zero /member UI-route references in active docs.
+Confirm Cloudflare build remains green.
+Status: In Progress (Documentation Redesign Phase 4–5)
 
