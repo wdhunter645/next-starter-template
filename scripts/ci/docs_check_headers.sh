@@ -19,13 +19,12 @@ mapfile -t FILES < <(
 
 missing=0
 for f in "${FILES[@]}"; do
-  # Require the full set of keys at top of file (not necessarily within first N lines, but typical).
-  # We keep it simple: keys must exist somewhere in the file and header fences must exist.
   if ! grep -q '^---$' "$f"; then
     echo "FAIL header fence missing: $f"
     missing=1
     continue
   fi
+
   for key in "Doc Type:" "Audience:" "Authority Level:" "Owns:" "Does Not Own:" "Canonical Reference:" "Last Reviewed:"; do
     if ! grep -q "^${key}" "$f"; then
       echo "FAIL header key missing (${key}): $f"
