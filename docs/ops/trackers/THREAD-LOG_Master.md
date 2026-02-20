@@ -225,3 +225,19 @@ NEXT START POINT
   2) Trigger a new Cloudflare Pages deployment.
   3) Confirm build no longer fails with “next: not found”.
   4) If build still fails, capture the *exact* Cloudflare build log error and reopen T01 with that new blocker.
+
+---
+
+## Thread Closeout — 2026-02-20 12:19 UTC
+
+Objective: Restore CF build stability.
+Result: SUCCESS. Builds green locally and in Cloudflare.
+
+Fixes:
+- Corrected useClickAway usage in Hamburger menus
+- Fixed nullable ref typing mismatch
+- Resolved AdminLink prop mismatch
+- Verified static export completes
+
+Thread closed.
+

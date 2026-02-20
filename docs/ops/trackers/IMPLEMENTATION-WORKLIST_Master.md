@@ -241,3 +241,19 @@ Exit: all core flows pass; no broken headers; no dead links.
 - Rule: No doc edits unless required to remove drift that blocks builds/ops, or to document an active production incident.
 - Canonical baseline: /docs/README.md and /docs/governance/standards/document-authority-hierarchy_MASTER.md
 - Rationale: Documentation architecture is now stabilized; focus shifts to production implementation tasks.
+
+---
+
+## Task 01 — CLOSED (2026-02-20 12:19 UTC)
+
+Cloudflare Pages builds restored to GREEN.
+
+Evidence:
+- HEAD: f7d5f3caecfb8e3c8bb77870ed623c5506eb8b2d
+- Local: npm ci && npm run build succeeds (no TS compile failures)
+
+Build blockers resolved:
+- useClickAway signature alignment (+ isOpen)
+- Nullable toggleRef typing fix
+- FanClub AdminLink prop correction
+
