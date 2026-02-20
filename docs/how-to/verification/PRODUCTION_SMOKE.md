@@ -1,3 +1,13 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # Production Smoke Test (read-only)
 
 This is a lightweight, **read-only** smoke test for the public LGFC site.  

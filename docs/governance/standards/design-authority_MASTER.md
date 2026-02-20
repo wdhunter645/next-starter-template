@@ -1,3 +1,13 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # Governance — Design Authority
 
 Status: _MASTER (Operations authoritative)
@@ -9,7 +19,7 @@ Prevent design drift by defining the single source of truth for UI/UX, routes, h
 ## Source of truth (Day-2 Ops)
 - Primary: `/docs/LGFC-Production-Design-and-Standards.md` (explicitly marked AUTHORITATIVE/LOCKED).
 - Navigation: `/docs/NAVIGATION-INVARIANTS.md`.
-- Governance mechanics: `/docs/website-PR-process.md`, `/docs/website-PR-process.md`, `/docs/website-PR-governance.md`.
+- Governance mechanics: `/docs/governance/PR_PROCESS.md`, `/docs/governance/PR_PROCESS.md`, `/docs/governance/PR_GOVERNANCE.md`.
 - Authority conflicts: `/docs/governance/document-authority-hierarchy_MASTER.md`.
 
 ## What Operations enforces

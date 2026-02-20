@@ -1,12 +1,22 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # Website Pull Request Process
 *(Standardized PR Prompt Reference — used for every PR in this repository)*
 
 #### Reference
-Refer to `/docs/website-PR-process.md` for structure and formatting.  
-Follow operational, rollback, and testing standards in `/docs/website-PR-governance.md`.  
-Use `/docs/homepage.html` as the canonical markup source for line-range copying.  
-Use `/docs/fanclub.md` as the canonical FanClub specification (versioned snapshots: `memberpage-v1.html`, etc.).  
-Use `/docs/as-built/cloudflare-frontend.md` as the authoritative baseline for the Cloudflare static frontend.
+Refer to `/docs/governance/PR_PROCESS.md` for structure and formatting.  
+Follow operational, rollback, and testing standards in `/docs/governance/PR_GOVERNANCE.md`.  
+Use `/docs/reference/design/Reference/homepage.html` as the canonical markup source for line-range copying.  
+Use `/docs/reference/design/fanclub.md` as the canonical FanClub specification (versioned snapshots: `memberpage-v1.html`, etc.).  
+Use `/docs/as-built/cloudflare-frontend.md` as the as-built baseline (historical reference) for the Cloudflare static frontend.
 
 ---
 

@@ -1,3 +1,13 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # LGFC — D1 DATABASE DESIGN + OPERATIONS GUIDE
 Authoritative reference for schema control, migrations, and deployment workflow.
 

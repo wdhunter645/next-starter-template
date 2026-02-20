@@ -1,3 +1,13 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # THREAD-LOG_Master.md
 Location (authoritative): /docs/tasklists/logs/THREAD-LOG_Master.md
 Purpose: Append-only closeout records so each new thread can start executing immediately.

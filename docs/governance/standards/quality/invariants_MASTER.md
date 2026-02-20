@@ -1,3 +1,13 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # Quality — Invariants
 
 Status: _MASTER (Operations authoritative)
@@ -22,7 +32,7 @@ Define the non-negotiable invariants that must remain true in production.
 - Footer link order and content.
 
 ## Platform invariants
-- Cloudflare Pages build remains within defined constraints (see `/docs/website-PR-governance.md`).
+- Cloudflare Pages build remains within defined constraints (see `/docs/governance/PR_GOVERNANCE.md`).
 - No unapproved runtime/framework swaps.
 
 ## How invariants are enforced

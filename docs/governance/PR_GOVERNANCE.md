@@ -1,9 +1,19 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # Website Pull Request Governance
 
 **All PR prompts must follow this structure:**
-1) Reference: `/docs/website-PR-process.md`
-2) Change Summary: exact edits with file paths + (when applicable) line ranges from `/docs/homepage.html`
-3) Governance Reference: `/docs/website-PR-governance.md`
+1) Reference: `/docs/governance/PR_PROCESS.md`
+2) Change Summary: exact edits with file paths + (when applicable) line ranges from `/docs/reference/design/Reference/homepage.html`
+3) Governance Reference: `/docs/governance/PR_GOVERNANCE.md`
 
 ---
 
@@ -27,11 +37,11 @@
 ---
 
 ## Drift Control
-- Structural edits must copy from `/docs/homepage.html` or `/docs/fanclub.md` via explicit line ranges.
+- Structural edits must copy from `/docs/reference/design/Reference/homepage.html` or `/docs/reference/design/fanclub.md` via explicit line ranges.
 - No paraphrasing or freehand rewrites of canonical HTML/CSS.
 - If canonical file missing or outdated, mark PR **Blocked** and request correction.
 - Legacy snapshots are preserved at `/docs/lgfc-homepage-legacy-v6.html`, `/docs/lgfc-homepage-legacy-v7.html`, etc.
-- FanClub versioning follows the same pattern: `/docs/fanclub.md` (current standard) with versioned snapshots at `/docsfanclub-v1.html`, future `/docsfanclub-v2.html`, etc.
+- FanClub versioning follows the same pattern: `/docs/reference/design/fanclub.md` (current standard) with versioned snapshots at `/docsfanclub-v1.html`, future `/docsfanclub-v2.html`, etc.
 - **Automated drift guard:** All PRs must pass `npm run test:homepage-structure` to prevent structural violations.
 - **Historical drift incidents:** See `/docs/drift-log.md` for documented cases and remediation guidance.
 

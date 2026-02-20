@@ -1,3 +1,13 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # Post-Recovery Verification Report: PR #425
 
 ## Verification Metadata
@@ -58,6 +68,6 @@ Details: Will be completed after merge
 
 This verification follows:
 - `/docs/website.md` - Required structure and change conventions
-- `/docs/website-PR-governance.md` - Operational, rollback, and testing standards
+- `/docs/governance/PR_GOVERNANCE.md` - Operational, rollback, and testing standards
 - `/docs/NAVIGATION-INVARIANTS.md` - Design consistency requirements
-- `/docs/PR-DRAFT-TEMPLATE.md` - PR governance standards
+- `/docs/governance/PR-DRAFT-TEMPLATE.md` - PR governance standards

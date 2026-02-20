@@ -1,3 +1,13 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # Login Page Specification — LGFC-Lite
 
 ## Purpose
@@ -153,7 +163,7 @@ See `/docs/design/phases.md` for phase definitions and boundaries.
 - **Join Flow**: `/docs/design/join.md` — Member join/signup process
 - **Member Page**: `/docs/memberpage.html` — Member area specification
 - **Navigation Invariants**: `/docs/NAVIGATION-INVARIANTS.md` — Header structure
-- **Website Process**: `/docs/website-PR-governance.md` — Development standards
+- **Website Process**: `/docs/governance/PR_GOVERNANCE.md` — Development standards
 
 ## Verification Checklist
 

@@ -1,3 +1,13 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # Architecture Overview
 
 This document summarizes the layout of the Next.js starter template so new contributors can quickly understand how the major pieces fit together. It complements the feature specifications under `docs/` and the inline documentation inside each module.

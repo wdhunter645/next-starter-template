@@ -1,3 +1,13 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # GitHub Actions Workflows Inventory
 
 ## Overview
@@ -414,7 +424,7 @@ The following workflows are **not part of this redesign** and remain as-is:
 
 - **PR Template:** `.github/PULL_REQUEST_TEMPLATE.md`
 - **Website Process:** `/docs/website.md`
-- **Website Governance:** `/docs/website-PR-governance.md`
+- **Website Governance:** `/docs/governance/PR_GOVERNANCE.md`
 - **Intent Labels:** `/docs/governance/pr-intent-labels.md`
 - **ZIP Governance:** `/docs/governance/platform-intent-and-zip-governance.md`
 

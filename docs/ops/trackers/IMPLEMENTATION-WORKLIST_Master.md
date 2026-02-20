@@ -1,3 +1,13 @@
+---
+Doc Type: TBD
+Audience: Human + AI
+Authority Level: TBD
+Owns: TBD
+Does Not Own: TBD
+Canonical Reference: TBD
+Last Reviewed: 2026-02-20
+---
+
 # IMPLEMENTATION-WORKLIST_Master.md
 Location (authoritative): /docs/tasklists/IMPLEMENTATION-WORKLIST_Master.md
 Purpose: Day-1 execution map (1 task = 1 thread) + zero-drift guardrails.
