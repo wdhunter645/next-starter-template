@@ -275,7 +275,7 @@ Admins, through the Vercel Admin Dashboard, can:
 
 ---
 
-## 6. Public vs Member/Admin Responsibilities
+## 6. Public vs FanClub/Admin Responsibilities
 
 ### Cloudflare Public Site
 - Static content only.

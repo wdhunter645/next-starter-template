@@ -1,0 +1,98 @@
+./docs/reference/architecture/cms.md:278:## 6. Public vs Member/Admin Responsibilities
+./docs/reference/design/join.md:21:4. Enable future member area access when authentication is implemented
+./docs/reference/design/LGFC-Production-Design-and-Standards.md:166:- This hook is used by both `HamburgerMenu.tsx` (Visitor) and `MemberHamburgerMenu.tsx` (Member) to ensure consistent behavior across all header variants.
+./docs/reference/design/LGFC-Production-Design-and-Standards.md:701:- `/src/components/MemberHeader.tsx` (Member Header)
+./docs/reference/design/reference/lgfc-homepage-legacy-v6.html:164:        <a id="loginLink" href="/member">Login</a>
+./docs/reference/design/reference/lgfc-homepage-legacy-v6.html:165:        <a id="membersLink" href="/member" style="display:none">Members Area</a>
+./docs/reference/design/reference/lgfc-homepage-legacy-v6.html:211:            <a class="btn" href="/member">Join</a>
+./docs/reference/design/reference/lgfc-homepage-legacy-v6.html:212:            <a class="btn" href="/member">Login</a>
+./docs/reference/design/reference/lgfc-homepage-legacy-v6.html:449:      // Login vs Members Area in menu
+./docs/reference/design/reference/lgfc-homepage-legacy-v6.html:536:      {q:"What is the Members Area?", a:"A private space for posts, archives, and events.", approved:true},
+./docs/reference/design/reference/lgfc-homepage-legacy-v6.html:540:      {q:"Can I help moderate?", a:"Message an admin in the Members Area.", approved:true}
+./docs/reference/design/reference/memberpage.html:71:- Members should never feel "trapped" in the member area; there must always be a clear path back to the public homepage.
+./docs/reference/design/reference/memberpage-v1.html:71:- Members should never feel "trapped" in the member area; there must always be a clear path back to the public homepage.
+./docs/reference/design/reference/lgfc-homepage-legacy-v7.html:179:        <a id="loginLink" href="/member">Login</a>
+./docs/reference/design/reference/lgfc-homepage-legacy-v7.html:180:        <a id="membersLink" href="/member" style="display:none">Members Area</a>
+./docs/reference/design/reference/lgfc-homepage-legacy-v7.html:233:      <p class="sub">Displays the last 5 to 10 posts from the Members Area in read-only mode.</p>
+./docs/reference/design/reference/lgfc-homepage-legacy-v7.html:400:      // Login vs Members Area in menu
+./docs/reference/design/reference/lgfc-homepage-legacy-v7.html:487:      {q:"What is the Members Area?", a:"A private space for posts, archives, and events.", approved:true},
+./docs/reference/design/reference/lgfc-homepage-legacy-v7.html:491:      {q:"Can I help moderate?", a:"Message an admin in the Members Area.", approved:true}
+./docs/reference/design/locks/header-memberheader-logo-banner-design-lock.md:11:# Header + MemberHeader + Logo + Banner Design Lock (DO NOT REGRESS)
+./docs/reference/design/locks/header-memberheader-logo-banner-design-lock.md:53:  - Chooses between `Header` (public) and `MemberHeader` (member/admin contexts)
+./docs/reference/design/locks/header-memberheader-logo-banner-design-lock.md:57:- `src/components/MemberHeader.tsx`
+./docs/reference/design/locks/header-memberheader-logo-banner-design-lock.md:63:  - `src/components/MemberHeader.module.css`
+./docs/reference/design/locks/header-memberheader-logo-banner-design-lock.md:209:     - `SiteHeader.tsx`, `Header.tsx`, `MemberHeader.tsx`, `FloatingLogo.tsx`
+./docs/reference/design/locks/header-memberheader-logo-banner-design-lock.md:218:- [ ] Confirm no inline sizing overrides exist for logo in Header/MemberHeader
+./docs/reference/design/login.md:22:3. Redirect authenticated members to the member area
+./docs/reference/design/Reference/homepage.html:179:        <a id="loginLink" href="/member">Login</a>
+./docs/reference/design/Reference/homepage.html:180:        <a id="membersLink" href="/member" style="display:none">Members Area</a>
+./docs/reference/design/Reference/homepage.html:233:      <p class="sub">Displays the last 5 to 10 posts from the Members Area in read-only mode.</p>
+./docs/reference/design/Reference/homepage.html:400:      // Login vs Members Area in menu
+./docs/reference/design/Reference/homepage.html:487:      {q:"What is the Members Area?", a:"A private space for posts, archives, and events.", approved:true},
+./docs/reference/design/Reference/homepage.html:491:      {q:"Can I help moderate?", a:"Message an admin in the Members Area.", approved:true}
+./docs/as-built/member-vs-fanclub-audit.txt:1:./docs/reference/architecture/cms.md:278:## 6. Public vs Member/Admin Responsibilities
+./docs/as-built/member-vs-fanclub-audit.txt:2:./docs/reference/design/join.md:21:4. Enable future member area access when authentication is implemented
+./docs/as-built/member-vs-fanclub-audit.txt:3:./docs/reference/design/LGFC-Production-Design-and-Standards.md:166:- This hook is used by both `HamburgerMenu.tsx` (Visitor) and `MemberHamburgerMenu.tsx` (Member) to ensure consistent behavior across all header variants.
+./docs/as-built/member-vs-fanclub-audit.txt:4:./docs/reference/design/LGFC-Production-Design-and-Standards.md:701:- `/src/components/MemberHeader.tsx` (Member Header)
+./docs/as-built/member-vs-fanclub-audit.txt:5:./docs/reference/design/reference/lgfc-homepage-legacy-v6.html:164:        <a id="loginLink" href="/member">Login</a>
+./docs/as-built/member-vs-fanclub-audit.txt:6:./docs/reference/design/reference/lgfc-homepage-legacy-v6.html:165:        <a id="membersLink" href="/member" style="display:none">Members Area</a>
+./docs/as-built/member-vs-fanclub-audit.txt:7:./docs/reference/design/reference/lgfc-homepage-legacy-v6.html:211:            <a class="btn" href="/member">Join</a>
+./docs/as-built/member-vs-fanclub-audit.txt:8:./docs/reference/design/reference/lgfc-homepage-legacy-v6.html:212:            <a class="btn" href="/member">Login</a>
+./docs/as-built/member-vs-fanclub-audit.txt:9:./docs/reference/design/reference/lgfc-homepage-legacy-v6.html:449:      // Login vs Members Area in menu
+./docs/as-built/member-vs-fanclub-audit.txt:10:./docs/reference/design/reference/lgfc-homepage-legacy-v6.html:536:      {q:"What is the Members Area?", a:"A private space for posts, archives, and events.", approved:true},
+./docs/as-built/member-vs-fanclub-audit.txt:11:./docs/reference/design/reference/lgfc-homepage-legacy-v6.html:540:      {q:"Can I help moderate?", a:"Message an admin in the Members Area.", approved:true}
+./docs/as-built/member-vs-fanclub-audit.txt:12:./docs/reference/design/reference/memberpage.html:71:- Members should never feel "trapped" in the member area; there must always be a clear path back to the public homepage.
+./docs/as-built/member-vs-fanclub-audit.txt:13:./docs/reference/design/reference/memberpage-v1.html:71:- Members should never feel "trapped" in the member area; there must always be a clear path back to the public homepage.
+./docs/as-built/member-vs-fanclub-audit.txt:14:./docs/reference/design/reference/lgfc-homepage-legacy-v7.html:179:        <a id="loginLink" href="/member">Login</a>
+./docs/as-built/member-vs-fanclub-audit.txt:15:./docs/reference/design/reference/lgfc-homepage-legacy-v7.html:180:        <a id="membersLink" href="/member" style="display:none">Members Area</a>
+./docs/as-built/member-vs-fanclub-audit.txt:16:./docs/reference/design/reference/lgfc-homepage-legacy-v7.html:233:      <p class="sub">Displays the last 5 to 10 posts from the Members Area in read-only mode.</p>
+./docs/as-built/member-vs-fanclub-audit.txt:17:./docs/reference/design/reference/lgfc-homepage-legacy-v7.html:400:      // Login vs Members Area in menu
+./docs/as-built/member-vs-fanclub-audit.txt:18:./docs/reference/design/reference/lgfc-homepage-legacy-v7.html:487:      {q:"What is the Members Area?", a:"A private space for posts, archives, and events.", approved:true},
+./docs/as-built/member-vs-fanclub-audit.txt:19:./docs/reference/design/reference/lgfc-homepage-legacy-v7.html:491:      {q:"Can I help moderate?", a:"Message an admin in the Members Area.", approved:true}
+./docs/as-built/member-vs-fanclub-audit.txt:20:./docs/reference/design/locks/header-memberheader-logo-banner-design-lock.md:11:# Header + MemberHeader + Logo + Banner Design Lock (DO NOT REGRESS)
+./docs/as-built/member-vs-fanclub-audit.txt:21:./docs/reference/design/locks/header-memberheader-logo-banner-design-lock.md:53:  - Chooses between `Header` (public) and `MemberHeader` (member/admin contexts)
+./docs/as-built/member-vs-fanclub-audit.txt:22:./docs/reference/design/locks/header-memberheader-logo-banner-design-lock.md:57:- `src/components/MemberHeader.tsx`
+./docs/as-built/member-vs-fanclub-audit.txt:23:./docs/reference/design/locks/header-memberheader-logo-banner-design-lock.md:63:  - `src/components/MemberHeader.module.css`
+./docs/as-built/member-vs-fanclub-audit.txt:24:./docs/reference/design/locks/header-memberheader-logo-banner-design-lock.md:209:     - `SiteHeader.tsx`, `Header.tsx`, `MemberHeader.tsx`, `FloatingLogo.tsx`
+./docs/as-built/member-vs-fanclub-audit.txt:25:./docs/reference/design/locks/header-memberheader-logo-banner-design-lock.md:218:- [ ] Confirm no inline sizing overrides exist for logo in Header/MemberHeader
+./docs/as-built/member-vs-fanclub-audit.txt:26:./docs/reference/design/login.md:22:3. Redirect authenticated members to the member area
+./docs/as-built/member-vs-fanclub-audit.txt:27:./docs/reference/design/Reference/homepage.html:179:        <a id="loginLink" href="/member">Login</a>
+./docs/as-built/member-vs-fanclub-audit.txt:28:./docs/reference/design/Reference/homepage.html:180:        <a id="membersLink" href="/member" style="display:none">Members Area</a>
+./docs/as-built/member-vs-fanclub-audit.txt:29:./docs/reference/design/Reference/homepage.html:233:      <p class="sub">Displays the last 5 to 10 posts from the Members Area in read-only mode.</p>
+./docs/as-built/accelerated-webpage-implementations-log.md:64:- `src/components/MemberHeader.module.css`
+./docs/as-built/accelerated-webpage-implementations-log.md:65:- `src/components/MemberHeader.tsx`
+./docs/as-built/accelerated-webpage-implementations-log.md:81:- `src/components/MemberHeader.module.css`
+./docs/as-built/accelerated-webpage-implementations-log.md:155:- The current repo state shows the logo **inside the sticky header** (verified by reading `Header.tsx` and `MemberHeader.tsx`).
+./docs/as-built/cloudflare-frontend.md:8:This document serves as the authoritative baseline for the Cloudflare Pages-hosted public frontend and member area of the LGFC website.
+./docs/as-built/cloudflare-frontend.md:14:- **Alias Route:** (none)  — `/member` is not used (FanClub is `/fanclub`)
+./docs/as-built/cloudflare-frontend.md:224:- Created member area layout with proper header/navigation
+./docs/snapshots/snapshot-20251212-171639.md:161:src/app/member/page.tsx
+./functions/api/member/role.ts:1:// Cloudflare Pages Function for GET /api/member/role
+./functions/api/member/role.ts:49:    console.error('Error in /api/member/role:', e);
+./functions/api/_middleware.ts:25:  // Keep this tight: only auth/admin/member surfaces.
+./functions/api/_middleware.ts:28:  if (pathname.startsWith("/api/member")) return true;
+./functions/api/_middleware.ts:52:      { key: "DB", hint: "D1 binding is required for auth/admin/member APIs" },
+./Agent.md:27:- Do not reintroduce deleted aliases (e.g. `/member*`, `/photos`, `/ask`, `/news`).
+./context.md:29:- Admin privilege is determined by `/api/member/role?email=...`.
+./scripts/ci/verify_lgfc_invariants.mjs:25:const memberHeader = fs.readFileSync('src/components/MemberHeader.tsx', 'utf8');
+./scripts/ci/verify_lgfc_invariants.mjs:26:must(memberHeader.includes('href="/fanclub"') || memberHeader.includes("href='/fanclub'"), 'MemberHeader must include Club Home link to /fanclub');
+./scripts/ci/verify_lgfc_invariants.mjs:27:must(memberHeader.includes('href="/fanclub/myprofile"') || memberHeader.includes("href='/fanclub/myprofile'"), 'MemberHeader must include My Profile link to /fanclub/myprofile');
+./scripts/ci/verify_lgfc_invariants.mjs:28:must(memberHeader.includes('href="/search"') || memberHeader.includes("href='/search'"), 'MemberHeader must include Search link');
+./scripts/ci/verify_lgfc_invariants.mjs:29:must(memberHeader.includes('bonfire.com/store/lou-gehrig-fan-club'), 'MemberHeader must include external Store link');
+./scripts/ci/verify_lgfc_invariants.mjs:30:must(memberHeader.includes('href="/logout"') || memberHeader.includes("href='/logout'"), 'MemberHeader must include Logout link to /logout');
+./migrations/0025_seed_admin_content.sql:6:       'This section is admin-managed.\n\nPublish the official Membership Card content from /admin.\n\nOnce published, members will see it on /member/card.',
+./src/components/MemberHamburgerMenu.tsx:7:export default function MemberHamburgerMenu({
+./src/components/SiteHeader.tsx:5:import MemberHeader from './MemberHeader';
+./src/components/SiteHeader.tsx:10: * - /fanclub and /fanclub/** => MemberHeader
+./src/components/SiteHeader.tsx:31:        <MemberHeader showLogo={!showFloatingLogo} />
+./src/components/MemberHeader.tsx:5:import styles from './MemberHeader.module.css';
+./src/components/MemberHeader.tsx:6:import MemberHamburgerMenu from './MemberHamburgerMenu';
+./src/components/MemberHeader.tsx:8:type MemberHeaderProps = {
+./src/components/MemberHeader.tsx:13:export default function MemberHeader({ homeRoute = '/', showLogo = true }: MemberHeaderProps = {}) {
+./src/components/MemberHeader.tsx:63:            {open ? <MemberHamburgerMenu onClose={() => setOpen(false)} toggleRef={toggleRef} /> : null}
+./src/components/SiteHeaderOLD.tsx:6:import MemberHeader from './MemberHeader';
+./src/components/SiteHeaderOLD.tsx:29:  // For member routes, always use MemberHeader
+./src/components/SiteHeaderOLD.tsx:30:  if (isMember) return <MemberHeader showLogo={!isAdmin} />;
+./src/components/SiteHeaderOLD.tsx:32:  // For admin routes, use MemberHeader if logged in
+./src/components/SiteHeaderOLD.tsx:33:  if (isAdmin && isLoggedIn) return <MemberHeader showLogo={!isAdmin} homeRoute="/fanclub" />;
+./src/app/fanclub/page.tsx:40:        fetch(`/api/member/role?email=${encodeURIComponent(memberEmail)}`)

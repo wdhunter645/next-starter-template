@@ -19,7 +19,7 @@ The `/login` page in **LGFC-Lite** provides a **local member session** mechanism
 The login page serves to:
 1. Validate that a visitor's email exists in the join_requests database
 2. Create a local member session by storing the email in `localStorage`
-3. Redirect authenticated members to the member area
+3. Redirect authenticated members to Fan Club (/fanclub)
 4. Direct new visitors to the Join flow
 
 ## Cross-Reference to Authoritative Documentation
