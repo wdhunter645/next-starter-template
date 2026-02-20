@@ -18,9 +18,8 @@ export default function HamburgerMenu({
 }) {
   const menuRef = useRef<HTMLDivElement>(null);
 
-  useClickAway(menuRef, () => onClose(), [toggleRef]);
-
-  return (
+  useClickAway(menuRef, toggleRef, () => onClose(), true);
+return (
     <div style={styles.overlay} role="dialog" aria-label="Menu">
       <div ref={menuRef} style={styles.menu}>
         <nav aria-label="Primary">
