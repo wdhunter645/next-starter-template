@@ -24,6 +24,19 @@ This document is the **single source of truth** for the public HOME page structu
 8) Calendar  
 9) FAQ
 
+## Terminology and Aliases (drift guardrail)
+
+**Canonical feature name (UI + docs):** *Weekly Photo Matchup*.
+
+Conversation shorthand that refers to the same feature (do not create new files for these names):
+- Weekly Matchup
+- Photo Matchup
+- Weekly Vote *(note: “Weekly Vote” is a nav/routing label in transition; do not rename/delete weekly-related routes unless the canonical design docs explicitly finalize it)*
+
+**Canonical implementation anchors (must not fork):**
+- UI component: `src/components/WeeklyMatchup.tsx`
+- API (Cloudflare Pages Functions): `functions/api/matchup/{current,vote,results}.ts`
+
 ## Section-to-Component Map (code source of truth)
 
 - Hero Banner → `src/app/page.tsx` (hero header markup)
