@@ -494,3 +494,42 @@ v6 lock verifier now runs against current docs layout and surfaced additional ho
 STATUS:
 Task 12 CLOSED.
 
+
+THREAD CLOSEOUT RECORD — 2026-02-21 — T11 — v6 Lock Verifier Realignment + Chronic Reintro Prevention
+WHAT WE INTENDED TO DO
+• Discuss and implement fixes to stop chronic UI regressions by aligning docs + verifier to APPROVED reality.
+• Ensure Weekly section title is component-owned (WeeklyMatchup), not homepage-owned.
+• Remove old references to “rogue text” (section name + date) between Weekly title and photos.
+• Social Wall: reduce excessive whitespace above/below widget; remove old widget-install remnants; lock docs/verifier to prevent reintroduction.
+• Update v6 lock verifier to match approved homepage behavior (Header grouping, JoinCTA ownership, SocialWall ownership) and remove prohibited pipefail.
+
+WHAT ACTUALLY GOT CHANGED
+• src/app/page.tsx
+  - Removed the Weekly section H2 title from homepage section wrapper.
+• src/components/WeeklyMatchup.tsx
+  - Inserted the Weekly section title:
+    "Weekly Photo Matchup. Vote for your favorite!"
+    using class title-lgfc.
+  - Restored WeeklyMatchup to last-known-good after a malformed edit caused a parse error.
+• Result: npm run build PASS (warnings only).
+
+WHAT DID NOT GET COMPLETED (BLOCKER)
+• tools/verify_v6_lock.sh remained on older logic producing 4 false FAILs:
+  - Header absolute-position requirement (not approved)
+  - Join banner checks against homepage (should target JoinCTA)
+  - Social wall placeholder checks against homepage (should target SocialWall component)
+• Root cause: long-thread copy/paste corruption broke multiple attempted patch scripts and prevented safe edits.
+• A file-upload approach was attempted and committed, but subsequent verifier output still indicated old checks persisted.
+
+CURRENT STATE AT THREAD CLOSE
+• Production build: PASS.
+• Verifier: FAIL (4 false failures remain).
+• Next thread must correct verifier + docs so these settings are not reintroduced.
+
+NEXT START POINT (EXACT)
+1) Verify tools/verify_v6_lock.sh contents:
+   grep -n "absolute-aligned top positioning|Join banner missing \\.joinBanner class|Social Wall placeholder missing in page\\.tsx|set -euo pipefail" tools/verify_v6_lock.sh || true
+2) Replace verifier logic using corruption-resistant small edits (marker-based patch) OR write-and-upload the full corrected file.
+3) Re-run verifier until 0 false failures, then lock changes with commit.
+4) Run docs drift scan to find and remove any stale references that could cause Weekly rogue text or SocialWall spacing regressions.
+

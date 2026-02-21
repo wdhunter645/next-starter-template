@@ -497,3 +497,61 @@ SUMMARY:
 NOTES:
 • Subsequent v6 lock verification identified additional homepage invariants failing (handled as a separate task).
 
+
+----------------------------------------------------------------
+TASK 11 — v6 Lock Verifier Realignment + Chronic Reintro Prevention (docs/verifier)
+STATUS: CLOSED (PARTIAL — VERIFIER FALSE FAILS STILL PRESENT)
+DATE CLOSED: 2026-02-21
+COMMITS (THIS THREAD):
+• 54bfecd — change-ops: move Weekly section title into WeeklyMatchup and align v6 verifier
+• cdf9cc4 — change-ops: fix WeeklyMatchup JSX + keep Weekly title inside component
+
+WHAT WE INTENDED TO DO
+• Stop chronic reintroductions by fixing the v6 lock verifier so it reflects APPROVED reality.
+• Specifically: remove over-strict header “absolute positioning” rule, shift Join banner validation to JoinCTA (not homepage), and validate Social Wall widget in SocialWall component (not homepage).
+• Remove prohibited `set -euo pipefail` from verifier to comply with Codespaces stability rule.
+• Scan docs for any stale references causing recurring “rogue text”/spacing regressions and update docs to match the approved UI.
+
+WHAT ACTUALLY HAPPENED (EVIDENCE-BASED)
+• Weekly section title placement was approved and implemented correctly:
+  - Removed Weekly title H2 from src/app/page.tsx
+  - Added Weekly title inside src/components/WeeklyMatchup.tsx
+  - Build now passes (npm run build successful).
+• Attempted verifier edits repeatedly failed due to large-block corruption during copy/paste:
+  - Python heredoc content was observed corrupted by injected shell text (e.g., “git push origin ...” appearing inside Python strings).
+  - As a result, tools/verify_v6_lock.sh remained on OLD logic and continued reporting false FAILs:
+    - “Header missing absolute-aligned top positioning for logo/hamburger”
+    - “Join banner missing .joinBanner class”
+    - “Join banner text does not match exact v6 copy”
+    - “Social Wall placeholder missing in page.tsx”
+• A “write-the-file and upload” approach was used and the file was uploaded/committed,
+  but subsequent verifier runs still showed the OLD checks, confirming the repo file did not reflect the intended edits.
+
+CURRENT STATUS (AT CLOSE)
+• Build: PASS (warnings only; no compile errors).
+• Verifier: STILL FAILING with 4 false failures listed above.
+• Root cause: workflow/paste corruption in this long thread + mismatch between intended verifier file and committed file.
+• Risk: chronic regressions may continue if verifier + docs are not corrected to match APPROVED reality.
+
+REMAINING REQUIRED FOLLOW-UP (NEXT THREAD)
+1) Fix tools/verify_v6_lock.sh using a corruption-resistant approach:
+   - Modify via small marker-based patch (no giant paste blocks), OR
+   - Create the file offline in one go and upload, then confirm with grep that old strings are gone.
+2) Confirm verifier logic matches approved reality:
+   - Header check should validate structure (left/center/right wrappers), NOT absolute positioning.
+   - Join banner check should validate src/components/JoinCTA.tsx (joinBanner + approved copy), NOT homepage.
+   - Social Wall check should validate src/components/SocialWall.tsx contains the Elfsight widget, NOT homepage.
+   - Remove `set -euo pipefail` from verifier.
+3) Documentation drift scan:
+   - Search docs/** for references to “rogue text” (section name + date) between Weekly title and photos.
+   - Ensure docs state: Weekly title is rendered inside WeeklyMatchup component; any text inserted between title and photos is rogue.
+   - Social Wall spacing guidance: maintain 3 blank lines worth of spacing above and below widget; remove old widget-install remnants.
+
+VERIFICATION COMMANDS (FOR NEXT THREAD)
+• prove old checks removed:
+  grep -n "absolute-aligned top positioning|Join banner missing \\.joinBanner class|Social Wall placeholder missing in page\\.tsx|set -euo pipefail" tools/verify_v6_lock.sh || true
+• run verifier:
+  bash tools/verify_v6_lock.sh
+• build:
+  npm run build
+
