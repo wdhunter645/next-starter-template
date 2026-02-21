@@ -447,3 +447,35 @@ Manual verification (browser):
 
 Notes:
 - Results are intentionally hidden until a vote is cast (or client indicates already voted for that week).
+
+## 2026-02-21 — T11 — Weekly Photo Matchup: UI wiring verification — FINAL CLOSEOUT
+
+### Scope
+- Confirm Weekly Photo Matchup renders correctly on Production.
+- Remove stray helper text ("Results remain hidden until you vote.").
+- Eliminate duplicate component file to prevent naming drift.
+- Validate Cloudflare API returns correct JSON payload.
+- Confirm naming variance does not create code-level drift.
+
+### Actions Completed
+- Deleted duplicate file: src/WeeklyMatchup.tsx.
+- Confirmed canonical component: src/components/WeeklyMatchup.tsx.
+- Removed stray UI helper copy from component.
+- Confirmed /api/matchup/current returns:
+  - ok: true
+  - valid week_start
+  - two image items
+- Confirmed Production renders Weekly Photo Matchup section.
+
+### Drift Prevention
+- Canonical naming locked:
+  - Component: WeeklyMatchup
+  - API anchor: /api/matchup/*
+  - Section label: "Weekly Photo Matchup"
+- No additional weekly/photo/matchup code files exist in repo.
+- Documentation guardrail added to docs/reference/design/home.md.
+
+### Status
+T11 — CLOSED
+Production stable for UI + API response.
+

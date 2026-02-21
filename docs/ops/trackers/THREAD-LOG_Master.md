@@ -446,3 +446,30 @@ EXIT CRITERIA
 - Home shows 2 photos.
 - Vote submits and totals display.
 - Results behavior matches design (hidden until vote).
+
+## THREAD CLOSEOUT RECORD — 2026-02-21 — T11 — Weekly Photo Matchup: UI wiring verification
+
+### What We Intended To Do
+Stabilize the Weekly Photo Matchup section on Production, eliminate stray UI copy, and resolve naming drift introduced through conversational variance.
+
+### What Actually Changed
+- Removed duplicate component file (src/WeeklyMatchup.tsx).
+- Confirmed homepage imports src/components/WeeklyMatchup.tsx.
+- Removed rogue helper sentence from UI.
+- Validated Cloudflare Pages Function /api/matchup/current returns correct JSON.
+- Confirmed production rendering of section.
+
+### Production Verification
+- /api/matchup/current → HTTP 200 JSON.
+- Homepage renders section without stray text.
+- No duplicate code artifacts remain.
+
+### Naming Drift Review
+Repository sweep confirmed only one canonical WeeklyMatchup component.
+Documentation updated to explicitly lock terminology.
+
+### Result
+T11 completed without regression.
+Production stable.
+Next logical scope item: image URL normalization (future Task T12).
+
