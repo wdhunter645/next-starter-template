@@ -399,3 +399,20 @@ SUMMARY:
 
 NO DESIGN OR ROUTE CHANGES INTRODUCED.
 ----------------------------------------------------------------
+
+----------------------------------------------------------------
+T10 — Hero banner: lock structure + style invariants
+STATUS: CLOSED
+DATE CLOSED: 2026-02-21
+COMMIT: TBD (set by your commit)
+
+SUMMARY:
+• Hero banner styling now explicitly enforces “no border / no box-shadow” and preserves overlap behavior (does not clip FloatingLogo).
+• Improved tablet-width responsiveness via CSS variable override (prevents layout jump).
+
+FILES TOUCHED:
+• src/app/page.module.css
+• src/app/globals.css
+
+NO ROUTE, NAV, OR HEADER/FOOTER CHANGES INTRODUCED.
+----------------------------------------------------------------
