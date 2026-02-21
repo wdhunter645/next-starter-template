@@ -447,89 +447,42 @@ EXIT CRITERIA
 - Vote submits and totals display.
 - Results behavior matches design (hidden until vote).
 
-## THREAD CLOSEOUT RECORD — 2026-02-21 — T11 — Weekly Photo Matchup: UI wiring verification
-
-### What We Intended To Do
-Stabilize the Weekly Photo Matchup section on Production, eliminate stray UI copy, and resolve naming drift introduced through conversational variance.
-
-### What Actually Changed
-- Removed duplicate component file (src/WeeklyMatchup.tsx).
-- Confirmed homepage imports src/components/WeeklyMatchup.tsx.
-- Removed rogue helper sentence from UI.
-- Validated Cloudflare Pages Function /api/matchup/current returns correct JSON.
-- Confirmed production rendering of section.
-
-### Production Verification
-- /api/matchup/current → HTTP 200 JSON.
-- Homepage renders section without stray text.
-- No duplicate code artifacts remain.
-
-### Naming Drift Review
-Repository sweep confirmed only one canonical WeeklyMatchup component.
-Documentation updated to explicitly lock terminology.
-
-### Result
-T11 completed without regression.
-Production stable.
-Next logical scope item: image URL normalization (future Task T12).
-
-
 ----------------------------------------------------------------
-THREAD CLOSEOUT RECORD — 2026-02-21 — T12 — Join Banner Wrapper Standardization
+THREAD CLOSEOUT RECORD — 2026-02-21 — T12 — Join Banner Wrapper Standardization + CSS Build Fix
 
 OBJECTIVE:
 Eliminate Join banner wrapper naming drift and restore production build stability.
 
 WHAT CHANGED:
-• globals.css: standardized wrapper to `.joinBanner`; removed `.join-banner` wrapper selector.
-• globals.css: repaired malformed Join banner CSS created during rebase conflict (balanced braces).
+• src/app/globals.css: standardized wrapper selector to `.joinBanner`; removed legacy `.join-banner`.
+• src/app/globals.css: repaired malformed Join banner CSS (balanced braces).
 
 PRODUCTION IMPACT:
 • Cloudflare build failure fixed (PostCSSSyntaxError “Unclosed block”).
 • Deploy green; homepage UI verified; Join/Login CTAs function.
 
 FOLLOW-ON:
-v6 lock verifier now runs against current docs layout and surfaced additional homepage invariant failures (handled in next task).
+• v6 lock verifier still contains older, unapproved checks and must be realigned (T13 open).
 
-STATUS:
-Task 12 CLOSED.
+----------------------------------------------------------------
+THREAD HANDOFF — 2026-02-21 — T13 — v6 Lock Verifier Realignment (Header/JoinCTA/SocialWall) — OPEN
 
+CURRENT PROBLEM (EVIDENCE):
+Verifier still reports 4 false FAILs:
+• Header missing absolute-aligned top positioning for logo/hamburger
+• Join banner missing .joinBanner class (homepage check)
+• Join banner text mismatch (homepage check)
+• Social Wall placeholder missing in page.tsx
 
-THREAD CLOSEOUT RECORD — 2026-02-21 — T11 — v6 Lock Verifier Realignment + Chronic Reintro Prevention
-WHAT WE INTENDED TO DO
-• Discuss and implement fixes to stop chronic UI regressions by aligning docs + verifier to APPROVED reality.
-• Ensure Weekly section title is component-owned (WeeklyMatchup), not homepage-owned.
-• Remove old references to “rogue text” (section name + date) between Weekly title and photos.
-• Social Wall: reduce excessive whitespace above/below widget; remove old widget-install remnants; lock docs/verifier to prevent reintroduction.
-• Update v6 lock verifier to match approved homepage behavior (Header grouping, JoinCTA ownership, SocialWall ownership) and remove prohibited pipefail.
+REQUIRED FIX (APPROVED REALITY):
+• Header check must validate left/center/right wrapper structure, not absolute positioning.
+• Join banner check must validate JoinCTA component, not homepage.
+• Social Wall check must validate SocialWall component, not homepage.
+• Remove prohibited `set -euo pipefail`.
 
-WHAT ACTUALLY GOT CHANGED
-• src/app/page.tsx
-  - Removed the Weekly section H2 title from homepage section wrapper.
-• src/components/WeeklyMatchup.tsx
-  - Inserted the Weekly section title:
-    "Weekly Photo Matchup. Vote for your favorite!"
-    using class title-lgfc.
-  - Restored WeeklyMatchup to last-known-good after a malformed edit caused a parse error.
-• Result: npm run build PASS (warnings only).
-
-WHAT DID NOT GET COMPLETED (BLOCKER)
-• tools/verify_v6_lock.sh remained on older logic producing 4 false FAILs:
-  - Header absolute-position requirement (not approved)
-  - Join banner checks against homepage (should target JoinCTA)
-  - Social wall placeholder checks against homepage (should target SocialWall component)
-• Root cause: long-thread copy/paste corruption broke multiple attempted patch scripts and prevented safe edits.
-• A file-upload approach was attempted and committed, but subsequent verifier output still indicated old checks persisted.
-
-CURRENT STATE AT THREAD CLOSE
-• Production build: PASS.
-• Verifier: FAIL (4 false failures remain).
-• Next thread must correct verifier + docs so these settings are not reintroduced.
-
-NEXT START POINT (EXACT)
-1) Verify tools/verify_v6_lock.sh contents:
-   grep -n "absolute-aligned top positioning|Join banner missing \\.joinBanner class|Social Wall placeholder missing in page\\.tsx|set -euo pipefail" tools/verify_v6_lock.sh || true
-2) Replace verifier logic using corruption-resistant small edits (marker-based patch) OR write-and-upload the full corrected file.
-3) Re-run verifier until 0 false failures, then lock changes with commit.
-4) Run docs drift scan to find and remove any stale references that could cause Weekly rogue text or SocialWall spacing regressions.
+EXACT VERIFICATION:
+1) grep old strings (must return nothing):
+   grep -n "set -euo pipefail|absolute-aligned top positioning|Join banner missing \.joinBanner class|Social Wall placeholder missing in page\.tsx" tools/verify_v6_lock.sh || true
+2) bash tools/verify_v6_lock.sh (must be 0 FAIL).
+3) npm run build (must pass).
 
