@@ -479,3 +479,21 @@ Notes:
 T11 — CLOSED
 Production stable for UI + API response.
 
+
+----------------------------------------------------------------
+TASK 12 — Join Banner Wrapper Standardization + CSS Build Fix
+STATUS: CLOSED
+DATE CLOSED: 2026-02-21
+PRODUCTION COMMITS: f10bc73, 6374675
+
+SUMMARY:
+• Standardized Join CTA wrapper class to `.joinBanner` (camelCase wrapper only).
+• Removed legacy `.join-banner` wrapper selector to eliminate wrapper drift.
+• Resolved merge artifact in src/app/globals.css that caused Cloudflare build failure (PostCSS “Unclosed block”).
+• Rewrote Join banner CSS block with balanced braces.
+• Local build passed.
+• Cloudflare deploy succeeded; production UI verified visually; Join + Login buttons confirmed working.
+
+NOTES:
+• Subsequent v6 lock verification identified additional homepage invariants failing (handled as a separate task).
+
