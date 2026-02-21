@@ -486,3 +486,9 @@ EXACT VERIFICATION:
 2) bash tools/verify_v6_lock.sh (must be 0 FAIL).
 3) npm run build (must pass).
 
+
+THREAD UPDATE — 2026-02-21 — T13 CLOSED
+• Final state: tools/verify_v6_lock.sh reports 0 FAIL; npm run build PASS.
+• Fix applied: JoinCTA approved copy match restored (verifier-compatible).
+• Outcome: Homepage v6 lock verification clean; no design/route changes introduced.
+

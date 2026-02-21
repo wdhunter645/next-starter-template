@@ -495,3 +495,17 @@ APPROVED REALITY (WHAT VERIFIER MUST CHECK):
 • Social Wall: validate src/components/SocialWall.tsx contains the Elfsight widget placeholder.
 • Remove `set -euo pipefail`.
 
+
+----------------------------------------------------------------
+TASK 13 — v6 Lock Verifier Realignment (Header/JoinCTA/SocialWall)
+STATUS: CLOSED
+DATE CLOSED: 2026-02-21
+
+EVIDENCE:
+• tools/verify_v6_lock.sh => 0 FAIL (JoinCTA approved copy match restored).
+• npm run build => PASS (warnings only).
+
+SUMMARY:
+• Resolved final verifier failure: JoinCTA approved copy matching (formatting/grep-compat).
+• Verifier now reflects component reality and homepage lock requirements without legacy false FAILs.
+
