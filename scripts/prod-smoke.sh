@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 # LGFC Production Smoke Test (read-only)
-# Safe for Codespaces shells: NO `set -euo pipefail`.
 #
 # Usage:
 #   bash scripts/prod-smoke.sh https://www.lougehrigfanclub.com
