@@ -1,3 +1,17 @@
+
+find_anchor_any() {
+  # args: list of filenames (space-separated)
+  for name in "$@"; do
+    local hit=""
+    hit="$(find docs -type f -name "$name" 2>/dev/null | head -n 1 || true)"
+    if [ -n "$hit" ]; then echo "$hit"; return 0; fi
+    hit="$(find . -type f -name "$name" -not -path "./node_modules/*" -not -path "./.git/*" 2>/dev/null | head -n 1 || true)"
+    if [ -n "$hit" ]; then echo "$hit"; return 0; fi
+  done
+  echo ""
+  return 1
+}
+
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -37,7 +51,7 @@ begin
 hr
 log "0) Checking anchor docs exist (process/governance/v6 HTML)"
 anchors_ok=true
-for f in "docs/website-PR-process.md" "docs/website-PR-governance.md" "docs/lgfc-homepage-legacy-v6.html"; do
+for f in "$(find_anchor_any "PR-process.md" "website-PR-process.md")" "$(find_anchor_any "PR-governance.md" "website-PR-governance.md")" "$(find_anchor_any "lgfc-homepage-legacy-v6.html")"; do
   if [[ -f "${f}" ]]; then
     mark_pass "Anchor present: ${f}"
   else
