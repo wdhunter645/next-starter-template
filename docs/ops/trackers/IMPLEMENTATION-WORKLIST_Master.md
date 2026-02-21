@@ -343,4 +343,42 @@ Repo hygiene / drift reduction:
 Verification:
 - grep drift-gate: no “MemberHeader” or “MemberHamburgerMenu” references remain in src/**.
 - npm run build: PASS (warnings only for <img> lint rule; no build failures).
+---
 
+## T03 Closeout Append — 2026-02-20 — Verified auth model + corrected admin gating statement
+
+This thread verified the **as-built** access model against repository specs (authoritative: `/docs/reference/architecture/access-model.md` and `/docs/reference/design/auth-and-logout.md`).
+
+### Verified behavior (FanClub)
+- **Logged out:** visiting any `/fanclub/**` route redirects to `/` (client-side) when `localStorage.lgfc_member_email` is absent.
+- **Logged in:** visiting `/fanclub` and child routes renders normally when `localStorage.lgfc_member_email` is present.
+
+**As-built implementation:**
+- `src/app/fanclub/layout.tsx` (client-side gate)
+- `src/hooks/useAuthRedirect.ts` (shared helper; optional use)
+- `docs/reference/design/auth-and-logout.md` (spec)
+
+### Verified behavior (Admin)
+- **Admin UI pages (`/admin/**`) are browser-reachable and NOT session-gated server-side.**
+- **Admin API endpoints (`/api/admin/**`) are token-gated** (header `x-admin-token`) with token stored in `sessionStorage` (`lgfc_admin_token`) per `/docs/reference/architecture/access-model.md`.
+
+**As-built reference (authoritative):**
+- `/docs/reference/architecture/access-model.md`
+
+### Concrete test URLs
+- FanClub (logged out): `/fanclub`, `/fanclub/myprofile`, `/fanclub/library` → redirect to `/`
+- FanClub (logged in): same URLs → render
+- Admin UI: `/admin` loads (UI reachable); API calls require token
+
+### Concrete test steps (browser)
+- Logged-out test:
+  - `localStorage.removeItem('lgfc_member_email'); location.href='/fanclub';`
+- Logged-in test:
+  - `localStorage.setItem('lgfc_member_email','test@example.com'); location.href='/fanclub';`
+- Admin token test (UI prompts / uses token as designed):
+  - `sessionStorage.removeItem('lgfc_admin_token'); location.href='/admin';`
+
+### Correction note (drift prevention)
+The earlier “Admin gating requires session + ADMIN_EMAILS” statement in the **CURRENT STATUS SNAPSHOT** section is **not aligned** with the as-built architecture. Use `/docs/reference/architecture/access-model.md` as source of truth.
+
+Status: **T03 VERIFIED (no code changes required in this thread)**.
