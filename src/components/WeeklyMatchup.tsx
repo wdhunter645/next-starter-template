@@ -113,15 +113,30 @@ export default function WeeklyMatchup() {
     }
   }
 
-  if (loading) return <div className="card">Loading matchup…</div>;
-  if (err) return null;
-  if (items.length < 2) return null;
+  if (loading) return (
+    <>
+  <h2 className="title-lgfc">Weekly Photo Matchup. Vote for your favorite!</h2>
+      <div className="card">Loading matchup…</div>
+    </>
+  );
+  if (err) return (
+    <>
+  <h2 className="title-lgfc">Weekly Photo Matchup. Vote for your favorite!</h2>
+    </>
+  );
+  if (items.length < 2) return (
+    <>
+  <h2 className="title-lgfc">Weekly Photo Matchup. Vote for your favorite!</h2>
+    </>
+  );
 
   const a = items[0];
   const b = items[1];
 
   return (
-    <div className="card">
+    <>
+  <h2 className="title-lgfc">Weekly Photo Matchup. Vote for your favorite!</h2>
+      <div className="card">
       <div className="grid">
         <div className="card" style={{ textAlign: 'center' }}>
           <img src={a.url} alt={a.description || 'Lou Gehrig'} style={{ width: '100%', borderRadius: 12 }} />
