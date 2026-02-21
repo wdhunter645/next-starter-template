@@ -416,3 +416,10 @@ FILES TOUCHED:
 
 NO ROUTE, NAV, OR HEADER/FOOTER CHANGES INTRODUCED.
 ----------------------------------------------------------------
+
+NOTE — 2026-02-21 — Worklist housekeeping (append-only)
+- T10 appears twice by design:
+  1) As the original task definition in the Phase list (header "## T10 — ...").
+  2) As the closeout record appended later under "APPENDED UPDATES".
+- This is intentional for audit history. Do NOT add additional T10 entries; future references should point to the existing closeout block.
+
