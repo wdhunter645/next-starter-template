@@ -353,3 +353,31 @@ NEXT START POINT
 - Next task ID: T04 (Production smoke harness) OR return to T01/T02 depending on current blockers.
 - Exact next action:
   - Pick next task and start a new thread with the latest repo ZIP.
+
+THREAD CLOSEOUT RECORD — 2026-02-21 — T04 — Production Smoke Harness Stabilization
+
+WHAT WE INTENDED TO DO
+Ensure production smoke harness is compliant with Codespaces rules and stable for ongoing validation.
+
+WHAT WAS FOUND
+• scripts/prod-smoke.sh contained `set -euo pipefail` (line 2).
+• Push initially rejected due to remote ahead of local.
+• Rebase introduced conflict markers in script.
+• Script temporarily broken during rebase.
+
+WHAT WAS DONE
+• Resolved merge conflict by taking origin/main version.
+• Removed prohibited `set -euo pipefail`.
+• Completed rebase cleanly.
+• Successfully pushed to origin/main (commit 9293215).
+• Re-ran production smoke — all checks passed.
+
+VERIFICATION
+Smoke output confirmed:
+• Public routes responding 2xx/3xx.
+• JSON endpoints returning ok:true.
+• /fanclub logged-out redirect functioning.
+• Script free of pipefail and conflict markers.
+
+STATUS
+T04 CLOSED.

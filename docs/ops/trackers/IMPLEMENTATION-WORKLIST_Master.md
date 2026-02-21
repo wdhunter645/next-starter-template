@@ -382,3 +382,20 @@ This thread verified the **as-built** access model against repository specs (aut
 The earlier “Admin gating requires session + ADMIN_EMAILS” statement in the **CURRENT STATUS SNAPSHOT** section is **not aligned** with the as-built architecture. Use `/docs/reference/architecture/access-model.md` as source of truth.
 
 Status: **T03 VERIFIED (no code changes required in this thread)**.
+
+----------------------------------------------------------------
+TASK 04 — Production Smoke Harness
+STATUS: CLOSED
+DATE CLOSED: 2026-02-21
+COMMIT: 9293215
+
+SUMMARY:
+• Removed prohibited `set -euo pipefail` from scripts/prod-smoke.sh (Codespaces stability rule).
+• Resolved rebase conflict in scripts/prod-smoke.sh.
+• Rebased onto origin/main successfully.
+• Push to remote main successful.
+• Production smoke executed against https://www.lougehrigfanclub.com.
+• All checks passed (pages 2xx/3xx, JSON endpoints ok:true, fanclub logged-out redirect).
+
+NO DESIGN OR ROUTE CHANGES INTRODUCED.
+----------------------------------------------------------------
