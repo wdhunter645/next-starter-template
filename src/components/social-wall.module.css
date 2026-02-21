@@ -1,20 +1,27 @@
+.section {
+  padding: 24px 16px; /* ~3 'blank lines' of breathing room per side */
+}
+
+.container {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
 .sectionTitle {
   font-size: 24px;
   font-weight: 700;
-  margin: 0 0 12px 0;
+  margin: 0 0 16px 0; /* tight title-to-widget spacing */
   text-align: center;
   color: var(--lgfc-blue);
 }
 
-/* Goal: ~“3 blank lines” of visual breathing room above/below the widget
-   without introducing giant vertical whitespace. */
 .embed {
   max-width: 1120px;
-  margin: 12px auto;
-  padding: 12px 0;
-  min-height: 520px; /* reserve space while widget loads */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
+  margin: 0 auto 16px auto; /* ~3 'blank lines' below widget before next section */
+  display: block; /* do not vertically center the widget */
+}
+
+/* If Elfsight injects an iframe or root element with a fixed height, let it size naturally */
+.embed :global(.elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8) {
+  display: block;
 }
