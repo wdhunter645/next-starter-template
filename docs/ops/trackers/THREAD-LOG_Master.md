@@ -303,5 +303,53 @@ T02 is now COMPLETE.
 All member→fanclub UI naming drift removed.
 Shared hamburger architecture is enforced.
 Repository is clean and synchronized with origin/main.
+---
 
+## THREAD CLOSEOUT RECORD — 2026-02-20 — T03 — Auth gating verification (FanClub + Admin)
 
+STARTING STATE
+- Task intent: verify access control behavior for FanClub and Admin and record exact rules + test URLs.
+- Repo baseline: ZIP attached to this thread (source of truth snapshot).
+
+INTENDED OBJECTIVE
+- Confirm logged-out behavior for `/fanclub/**`.
+- Confirm logged-in behavior for `/fanclub/**`.
+- Confirm the as-built Admin access model and ensure tracker language matches authoritative docs.
+
+WHAT WE FOUND (AUTHORITATIVE)
+- FanClub gating is **client-side** and based on local session (`localStorage.lgfc_member_email`) per:
+  - `docs/reference/design/auth-and-logout.md`
+  - `docs/reference/design/login.md`
+  - `src/app/fanclub/layout.tsx`
+- Admin follows a **two-tier model** per `docs/reference/architecture/access-model.md`:
+  - Admin UI (`/admin/**`) is browser-reachable (no server-side gate).
+  - Admin API (`/api/admin/**`) is token-gated using `x-admin-token`; token stored in `sessionStorage.lgfc_admin_token`.
+
+CHANGES MADE
+- No runtime/app changes required.
+- Documentation/trackers only:
+  - Appended a T03 closeout note to `docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md` to correct the admin gating statement and record exact test URLs.
+  - Appended this closeout record to `docs/ops/trackers/THREAD-LOG_Master.md`.
+
+VERIFICATION STEPS (MANUAL)
+- FanClub logged-out redirect:
+  - In browser console: `localStorage.removeItem('lgfc_member_email'); location.href='/fanclub';` → redirects to `/`
+- FanClub logged-in render:
+  - `localStorage.setItem('lgfc_member_email','test@example.com'); location.href='/fanclub';` → renders FanClub home
+- Admin UI reachable:
+  - Navigate to `/admin` → page loads
+- Admin API token gate:
+  - Clear token: `sessionStorage.removeItem('lgfc_admin_token'); location.href='/admin';` → UI requires token for API actions per as-built model
+
+EXIT CRITERIA
+- `/fanclub/**` redirects to `/` when logged out (verified via localStorage clearing).
+- `/fanclub/**` renders when logged in (verified via localStorage set).
+- Admin model recorded and corrected to match `docs/reference/architecture/access-model.md`.
+
+THREAD STATUS
+- ✅ DONE (verification + tracker correction; no code changes)
+
+NEXT START POINT
+- Next task ID: T04 (Production smoke harness) OR return to T01/T02 depending on current blockers.
+- Exact next action:
+  - Pick next task and start a new thread with the latest repo ZIP.
