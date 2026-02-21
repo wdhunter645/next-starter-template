@@ -334,33 +334,26 @@ a:hover {
 }
 
 /* Join banner */
-.join-banner {
-	background: var(--lgfc-blue);
-	color: #fff;
-	border-radius: var(--lgfc-radius-xl);
-	padding: 20px;
-}
-
-.join-banner__container {
+.joinBanner .join-banner__container {
 	display: flex;
 	justify-content: space-between;
 	gap: 16px;
 	flex-wrap: wrap;
 }
 
-.join-banner__text {
+.joinBanner .join-banner__text {
 	font-size: clamp(16px, 2vw, 18px);
 	margin: 0;
 }
 
-.join-banner__actions {
+.joinBanner .join-banner__actions {
 	display: flex;
 	gap: 12px;
 	flex-wrap: wrap;
 	align-items: center;
 }
 
-.join-banner__btn {
+.joinBanner .join-banner__btn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -374,7 +367,7 @@ a:hover {
 	transition: opacity 0.2s;
 }
 
-.join-banner__btn:hover {
+.joinBanner .joinBanner .join-banner__btn:hover {
 	opacity: 0.9;
 }
 
@@ -450,7 +443,7 @@ a:hover {
 }
 
 /* Exception: buttons within joinBanner have black text */
-.joinBanner .join-banner__btn {
+.joinBanner .joinBanner .join-banner__btn {
 	color: #000 !important;
 }
 
