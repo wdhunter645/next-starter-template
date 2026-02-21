@@ -473,3 +473,24 @@ T11 completed without regression.
 Production stable.
 Next logical scope item: image URL normalization (future Task T12).
 
+
+----------------------------------------------------------------
+THREAD CLOSEOUT RECORD — 2026-02-21 — T12 — Join Banner Wrapper Standardization
+
+OBJECTIVE:
+Eliminate Join banner wrapper naming drift and restore production build stability.
+
+WHAT CHANGED:
+• globals.css: standardized wrapper to `.joinBanner`; removed `.join-banner` wrapper selector.
+• globals.css: repaired malformed Join banner CSS created during rebase conflict (balanced braces).
+
+PRODUCTION IMPACT:
+• Cloudflare build failure fixed (PostCSSSyntaxError “Unclosed block”).
+• Deploy green; homepage UI verified; Join/Login CTAs function.
+
+FOLLOW-ON:
+v6 lock verifier now runs against current docs layout and surfaced additional homepage invariant failures (handled in next task).
+
+STATUS:
+Task 12 CLOSED.
+
