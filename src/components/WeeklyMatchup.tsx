@@ -122,11 +122,6 @@ export default function WeeklyMatchup() {
 
   return (
     <div className="card">
-      <div className="sub" style={{ marginBottom: 14 }}>
-        Results remain hidden until you vote.
-        {weekStart ? <span style={{ marginLeft: 8, opacity: 0.7 }}>Week of {weekStart}</span> : null}
-      </div>
-
       <div className="grid">
         <div className="card" style={{ textAlign: 'center' }}>
           <img src={a.url} alt={a.description || 'Lou Gehrig'} style={{ width: '100%', borderRadius: 12 }} />
