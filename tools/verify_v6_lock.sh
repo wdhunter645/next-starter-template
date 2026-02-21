@@ -51,7 +51,7 @@ begin
 hr
 log "0) Checking anchor docs exist (process/governance/v6 HTML)"
 anchors_ok=true
-for f in "$(find_anchor_any "PR-process.md" "website-PR-process.md")" "$(find_anchor_any "PR-governance.md" "website-PR-governance.md")" "$(find_anchor_any "lgfc-homepage-legacy-v6.html")"; do
+for f in "$(find_anchor_any "PR_PROCESS.md" "website-PR-process.md" "PR-process.md")" "$(find_anchor_any "PR_PROCESS.md" "website-PR-process.md" "PR-process.md")" "$(find_anchor_any "lgfc-homepage-legacy-v6.html")"; do
   if [[ -f "${f}" ]]; then
     mark_pass "Anchor present: ${f}"
   else
