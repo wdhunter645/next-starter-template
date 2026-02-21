@@ -407,3 +407,42 @@ VERIFICATION
 
 STATUS
 T10 CLOSED.
+
+## THREAD CLOSEOUT RECORD — 2026-02-21 — T11 — Weekly Photo Matchup: UI wiring verification
+
+STARTING STATE
+- Weekly matchup card exists on Home (`src/app/page.tsx` imports `src/components/WeeklyMatchup.tsx`).
+- Matchup API routes exist under `functions/api/matchup/*`.
+
+ISSUE FOUND
+- In fallback mode (no active `weekly_matchups` row), `GET /api/matchup/current` returned photos but **no `week_start`**.
+  - Result: the UI rendered Vote buttons, but clicking vote was a no-op because `weekStart` was null.
+
+CHANGES MADE
+- `functions/api/matchup/current.ts`
+  - Fallback response now includes a computed `week_start` (Monday of the current week) and `matchup_id: null`.
+- `src/components/WeeklyMatchup.tsx`
+  - Vote buttons now require `weekStart` to render (defensive).
+  - On API error, component shows a minimal “Weekly matchup unavailable” card (no silent disappear).
+
+ENDPOINTS (as-built)
+- `GET /api/matchup/current`
+- `POST /api/matchup/vote`
+- `GET /api/matchup/results`
+
+TABLES (D1)
+- `weekly_matchups`
+- `weekly_votes`
+- `photos`
+
+VERIFICATION STEPS (MANUAL)
+- Home renders matchup:
+  - Visit `/` → Weekly Photo Matchup section shows 2 photos.
+- Vote works:
+  - Click Vote A/B → totals appear (“Results revealed”).
+  - Refresh → results remain revealed for that week (localStorage key `lgfc_weekly_vote_<week_start>`).
+
+EXIT CRITERIA
+- Home shows 2 photos.
+- Vote submits and totals display.
+- Results behavior matches design (hidden until vote).

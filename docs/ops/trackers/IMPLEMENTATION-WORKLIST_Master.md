@@ -422,4 +422,28 @@ NOTE — 2026-02-21 — Worklist housekeeping (append-only)
   1) As the original task definition in the Phase list (header "## T10 — ...").
   2) As the closeout record appended later under "APPENDED UPDATES".
 - This is intentional for audit history. Do NOT add additional T10 entries; future references should point to the existing closeout block.
+---
+## 2026-02-21 — T11 — Weekly Photo Matchup: UI wiring verification — Completion Update
 
+What was verified / fixed (as-built, code + endpoints):
+- Home renders Weekly Photo Matchup with **two photos** via `src/components/WeeklyMatchup.tsx`.
+- API endpoints are wired and functional:
+  - `GET /api/matchup/current` (returns `week_start`, `matchup_id`, and 2 photo items)
+  - `POST /api/matchup/vote` (records vote; returns `already_voted` + totals)
+  - `GET /api/matchup/results?week_start=YYYY-MM-DD` (returns totals + last closed week summary)
+- Safety hardening:
+  - `GET /api/matchup/current` now returns a stable `week_start` even in fallback mode so voting is never a no-op.
+
+Tables used (D1):
+- `weekly_matchups` (authoritative active/closed matchup rows)
+- `weekly_votes` (votes keyed by `week_start` + `source_hash`)
+- `photos` (source of matchup images)
+
+Manual verification (browser):
+- Confirm Home renders 2 images: open `/` and scroll to Weekly Photo Matchup.
+- Vote path:
+  - Click “Vote A” or “Vote B” → results reveal shows totals.
+  - Refresh page → results remain revealed for that `week_start` (localStorage key `lgfc_weekly_vote_<week_start>`).
+
+Notes:
+- Results are intentionally hidden until a vote is cast (or client indicates already voted for that week).
