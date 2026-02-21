@@ -335,6 +335,7 @@ a:hover {
 
 /* Join banner */
 .joinBanner .join-banner__container {
+.join-banner__container {
 	display: flex;
 	justify-content: space-between;
 	gap: 16px;
