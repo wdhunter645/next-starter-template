@@ -381,3 +381,29 @@ Smoke output confirmed:
 
 STATUS
 T04 CLOSED.
+
+THREAD CLOSEOUT RECORD — 2026-02-21 — T10 — Hero banner style invariants (no border/shadow + tablet stability)
+
+WHAT WE INTENDED TO DO
+Lock Home hero banner style invariants per design: no border, no box-shadow, and preserve overlap behavior (no clipping of FloatingLogo).
+
+WHAT WAS FOUND
+• Hero presentation needed explicit CSS invariants to prevent border/shadow regressions.
+• Tablet widths needed a controlled override to avoid layout jump.
+
+WHAT WAS DONE
+• Updated CSS to enforce “no border / no box-shadow” for the hero.
+• Ensured overlap behavior is preserved (hero does not clip the floating logo).
+• Added a tablet-width CSS variable override to stabilize sizing.
+
+FILES TOUCHED
+• src/app/page.module.css
+• src/app/globals.css
+
+VERIFICATION
+• Home hero renders without border/shadow.
+• FloatingLogo overlap is preserved (not clipped).
+• Tablet widths render without layout jump.
+
+STATUS
+T10 CLOSED.
