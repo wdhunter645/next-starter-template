@@ -42,7 +42,11 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       items = await pickTwo("SELECT id, url, description, title FROM photos ORDER BY id DESC LIMIT 2;");
     }
 
-    return new Response(JSON.stringify({ ok: true, items }, null, 2), {
+        // Provide a stable week_start even in fallback mode so voting can work
+    const wsRow = await env.DB.prepare("SELECT date('now','weekday 1','-7 days') AS week_start;").first();
+    const week_start = wsRow && wsRow.week_start ? String(wsRow.week_start) : null;
+
+    return new Response(JSON.stringify({ ok: true, week_start, matchup_id: null, items }, null, 2), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
