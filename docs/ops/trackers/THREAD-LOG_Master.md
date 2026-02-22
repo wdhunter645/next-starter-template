@@ -492,3 +492,25 @@ THREAD UPDATE — 2026-02-21 — T13 CLOSED
 • Fix applied: JoinCTA approved copy match restored (verifier-compatible).
 • Outcome: Homepage v6 lock verification clean; no design/route changes introduced.
 
+
+THREAD CLOSEOUT RECORD — 2026-02-22 — T12/T13/T14 Consolidated
+
+CONTEXT:
+Post-T12 review identified six v6 lock alignment issues affecting verifier logic, section ownership, and Social Wall spacing/rendering.
+
+ACTIONS TAKEN:
+• T12 — Join banner wrapper alignment confirmed and locked.
+• T13 — v6 lock verifier realigned to component ownership (Header, WeeklyMatchup, JoinCTA, SocialWall).
+• T14 — Social Wall spacing corrected; removed min-height + flex centering; added CSS Modules–compliant visibility safeguard.
+
+RESULT:
+• tools/verify_v6_lock.sh => 0 FAIL
+• npm run build => PASS
+• Cloudflare Pages build => PASS
+• Homepage visually aligned with locked v6 design.
+
+STATE:
+Six identified issues resolved.
+No design or route changes introduced.
+Thread closed clean.
+
