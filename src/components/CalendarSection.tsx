@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import styles from './CalendarSection.module.css';
 
 type EventRow = {
   id: number;
@@ -13,6 +14,11 @@ type EventRow = {
   description?: string | null;
   external_url?: string | null;
 };
+
+function splitIntoTwoColumns<T>(items: T[]): { left: T[]; right: T[] } {
+  const mid = Math.ceil(items.length / 2);
+  return { left: items.slice(0, mid), right: items.slice(mid) };
+}
 
 export default function CalendarSection() {
   const [items, setItems] = useState<EventRow[]>([]);
@@ -43,39 +49,54 @@ export default function CalendarSection() {
       }
     })();
 
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, []);
 
+  const cols = useMemo(() => splitIntoTwoColumns(items), [items]);
+
+  const renderList = (rows: EventRow[]) => (
+    <ul className={styles.list}>
+      {rows.map((e) => (
+        <li key={e.id} className={styles.item}>
+          <div className={styles.itemTitle}>{e.title}</div>
+
+          <div className={styles.itemMeta}>
+            {e.start_date}
+            {e.end_date && e.end_date !== e.start_date ? ` → ${e.end_date}` : ''}
+            {e.location ? ` • ${e.location}` : ''}
+            {e.host ? ` • Host: ${e.host}` : ''}
+            {e.fees ? ` • ${e.fees}` : ''}
+          </div>
+
+          {e.description ? <div className={styles.itemDesc}>{e.description}</div> : null}
+
+          {e.external_url ? (
+            <div className={styles.itemLinkWrap}>
+              <a href={e.external_url} target="_blank" rel="noreferrer" className={styles.itemLink}>
+                Details
+              </a>
+            </div>
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  );
+
   return (
-    <section style={{ marginTop: 24 }}>
-      <h2 style={{ fontSize: 22, lineHeight: 1.25, margin: '0 0 10px 0' }}>Fan Club Events Calendar</h2>
+    <section className={styles.calendar} aria-label="Fan Club Events Calendar">
+      <h2 className={styles.title}>Fan Club Events Calendar</h2>
 
       {status ? (
-        <p style={{ fontSize: 14, color: 'rgba(0,0,0,0.6)', margin: 0 }}>{status}</p>
+        <p className={styles.status}>{status}</p>
+      ) : items.length <= 1 ? (
+        <div className={styles.columnsSingle}>{renderList(items)}</div>
       ) : (
-        <ul style={{ paddingLeft: 18, margin: 0 }}>
-          {items.map((e) => (
-            <li key={e.id} style={{ margin: '0 0 10px 0', lineHeight: 1.5 }}>
-              <div style={{ fontWeight: 700 }}>{e.title}</div>
-              <div style={{ fontSize: 13, color: 'rgba(0,0,0,0.7)' }}>
-                {e.start_date}{e.end_date && e.end_date !== e.start_date ? ` → ${e.end_date}` : ''}
-                {e.location ? ` • ${e.location}` : ''}
-                {e.host ? ` • Host: ${e.host}` : ''}
-                {e.fees ? ` • ${e.fees}` : ''}
-              </div>
-              {e.description ? (
-                <div style={{ fontSize: 14, color: 'rgba(0,0,0,0.75)', marginTop: 4 }}>{e.description}</div>
-              ) : null}
-              {e.external_url ? (
-                <div style={{ marginTop: 4 }}>
-                  <a href={e.external_url} target="_blank" rel="noreferrer" style={{ fontSize: 14 }}>
-                    Details
-                  </a>
-                </div>
-              ) : null}
-            </li>
-          ))}
-        </ul>
+        <div className={styles.columns} aria-label="Upcoming events">
+          <div>{renderList(cols.left)}</div>
+          <div>{renderList(cols.right)}</div>
+        </div>
       )}
     </section>
   );
