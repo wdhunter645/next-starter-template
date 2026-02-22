@@ -1,0 +1,20 @@
+HTTP/2 103 
+link: </IMG_1946.png>; as=image; rel=preload, </logo.svg>; as=image; rel=preload, <https://elfsightcdn.com/platform.js>; as=script; rel=preload
+
+HTTP/2 200 
+date: Sun, 22 Feb 2026 14:52:59 GMT
+content-type: text/html; charset=utf-8
+access-control-allow-origin: *
+cache-control: public, max-age=0, must-revalidate
+speculation-rules: "/cdn-cgi/speculation"
+content-security-policy-report-only: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https://*.elfsight.com https://elfsightcdn.com https://cdn.elfsight.com https://files.elfsightcdn.com https://scontent.cdninstagram.com https://scontent-*.cdninstagram.com https://platform-lookaside.fbsbx.com; script-src 'self' https://static.elfsight.com https://elfsightcdn.com; style-src 'self' 'unsafe-inline' https://elfsightcdn.com; connect-src 'self' https://*.elfsight.com; frame-src https://*.elfsight.com; font-src 'self' data:; media-src 'self' blob:; upgrade-insecure-requests; report-uri /api/csp-report
+content-security-policy: script-src 'self' 'unsafe-inline' https://static.elfsight.com https://elfsightcdn.com; frame-src https://*.elfsight.com https://*.elf.site; connect-src 'self' https://*.elfsight.com; img-src 'self' data: blob: https://*.elfsight.com https://scontent.cdninstagram.com https://scontent-*.cdninstagram.com https://*.cdninstagram.com https://platform-lookaside.fbsbx.com https://*.fbcdn.net https://instagram.*.fbcdn.net https://pbs.twimg.com https://*.twimg.com https://i.pinimg.com https://*.pinimg.com; style-src 'self' 'unsafe-inline' https://elfsightcdn.com;
+referrer-policy: strict-origin-when-cross-origin
+x-content-type-options: nosniff
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=C%2FLTizG%2FU1swp9ghkwV2uxiPvG0hPl34pVWtFo08%2BTGOHd1ux7gOzoIvE%2BonlvciRzNaVlPWo3Pw0ujJokii3JJyxTU2zewrRqPbEICvAsrZI5VPHORUog%3D%3D"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server: cloudflare
+cf-cache-status: DYNAMIC
+cf-ray: 9d1f4f76aaa3057d-IAD
+alt-svc: h3=":443"; ma=86400
+
