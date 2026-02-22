@@ -16,15 +16,11 @@
   text-align: center;
   color: var(--lgfc-blue);
 }
-
 .embed {
   max-width: 1120px;
   margin: 0 auto 16px auto; /* ~3 'blank lines' below widget before next section */
   display: block; /* do not vertically center the widget */
 }
-<<<<<<< HEAD
-=======
-
 .embed :global(.elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8 img) {
   opacity: 1 !important;
 }
@@ -44,13 +40,3 @@
   visibility: visible !important;
   filter: none !important;
 }
-
-/* Images sometimes get hidden by global site CSS; force sane defaults */
-.embed :global(.elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8 img) {
-  opacity: 1 !important;
-  visibility: visible !important;
-  display: block !important;
-  max-height: none !important;
-  height: auto !important;
-}
->>>>>>> 8ca1f16 (change-ops: fix Elfsight override (CSS Modules safe) + restore widget images)
