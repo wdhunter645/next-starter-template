@@ -509,3 +509,25 @@ SUMMARY:
 • Resolved final verifier failure: JoinCTA approved copy matching (formatting/grep-compat).
 • Verifier now reflects component reality and homepage lock requirements without legacy false FAILs.
 
+
+----------------------------------------------------------------
+TASK 14 — Social Wall Spacing + Elfsight Visibility Hardening
+STATUS: CLOSED
+DATE CLOSED: 2026-02-22
+
+SCOPE:
+• Removed forced min-height and flex centering from social-wall.module.css.
+• Standardized section spacing to align with global section-gap system.
+• Added CSS Modules–compliant safety override (anchored to .embed) to prevent global CSS from hiding Elfsight content.
+• Confirmed Cloudflare build success after CSS Modules selector correction.
+
+EVIDENCE:
+• npm run build => PASS
+• Cloudflare Pages build => PASS
+• tools/verify_v6_lock.sh => 0 FAIL
+• Homepage renders Social Wall correctly with tightened spacing.
+
+SUMMARY:
+Tasks 12, 13, and 14 collectively resolved the six v6 lock alignment issues identified during post-T12 review.
+Homepage layout, verifier logic, and widget rendering are now aligned with locked design standards.
+
