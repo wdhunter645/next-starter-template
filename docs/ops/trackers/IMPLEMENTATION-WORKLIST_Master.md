@@ -144,6 +144,11 @@ Scope: Elfsight embed only.
 Exit: widget loads; no console hard-fail; CSP does not break it.
 Closeout: required domains + config location recorded.
 
+## T15 Calendar Events
+Scope: section title is missing.
+Exit: title added to section.
+closeout: results confirmed by viewing website.
+
 ## T16 — Friends tiles (6) stability
 Scope: friends section only.
 Exit: 6 tiles render; links open external URLs; layout stable.
