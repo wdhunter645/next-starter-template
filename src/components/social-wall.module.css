@@ -21,18 +21,15 @@
   display: block; /* do not vertically center the widget */
 }
 
-/* If Elfsight injects an iframe or root element with a fixed height, let it size naturally */
-.embed :global(.elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8) {
-  display: block;
-}
-/* SAFETY OVERRIDE: prevent site CSS from hiding Elfsight content */
-:global(.elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8),
-:global(.elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8 *) {
+/* SAFETY OVERRIDE: prevent site CSS from hiding Elfsight content
+   MUST be anchored to a local class for CSS Modules "pure selector" rules. */
+.embed :global(.elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8),
+.embed :global(.elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8 *) {
   opacity: 1 !important;
   visibility: visible !important;
   filter: none !important;
 }
 
-:global(.elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8 img) {
+.embed :global(.elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8 img) {
   opacity: 1 !important;
 }
