@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eu
 
 # ============================================================================
 # B2 → D1 Incremental Sync (Idempotent Daily Sync)
@@ -20,7 +20,7 @@ set -euo pipefail
 #
 # Optional env vars:
 #   CLOUDFLARE_ACCOUNT_ID - account id (some setups require it)
-#   PUBLIC_B2_BASE_URL    - base URL for public access (default: B2_ENDPOINT)
+#   PUBLIC_B2_BASE_URL    - base URL for public access (default: https://<endpoint>/<bucket>)
 #   DRY_RUN=1             - don't execute, just print SQL
 #   D1_BATCH_SIZE=250     - statements per batch wrangler execute (default 250)
 # ============================================================================
@@ -84,6 +84,16 @@ else
   exit 2
 fi
 
+# ----------------------------------------------------------------------------
+# Public URL base for objects
+# - If PUBLIC_B2_BASE_URL is set, we use it verbatim.
+# - Otherwise default to path-style public URL: https://<endpoint-host>/<bucket>
+#   Example: https://s3.us-east-005.backblazeb2.com/LouGehrigFanClub
+# ----------------------------------------------------------------------------
+DEFAULT_PUBLIC_BASE_URL="https://${ENDPOINT_HOST}/${B2_BUCKET}"
+PUBLIC_BASE_URL="${PUBLIC_B2_BASE_URL:-${DEFAULT_PUBLIC_BASE_URL}}"
+PUBLIC_BASE_URL="${PUBLIC_BASE_URL%/}"
+
 # AWS creds for B2 S3
 export AWS_ACCESS_KEY_ID="$B2_KEY_ID"
 export AWS_SECRET_ACCESS_KEY="$B2_APP_KEY"
@@ -95,8 +105,6 @@ if [[ -n "${CLOUDFLARE_ACCOUNT_ID:-}" ]]; then
   export CLOUDFLARE_ACCOUNT_ID
 fi
 
-PUBLIC_BASE_URL="${PUBLIC_B2_BASE_URL:-${B2_ENDPOINT}}"
-PUBLIC_BASE_URL="${PUBLIC_BASE_URL%/}"
 
 WORKDIR="$(mktemp -d)"
 trap 'rm -rf "$WORKDIR"' EXIT
