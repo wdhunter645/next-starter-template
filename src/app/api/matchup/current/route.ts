@@ -36,11 +36,22 @@ export async function GET() {
 
     const data = await response.json();
 
-    const items =
-      (data.items || []).map((item: unknown) => ({
-        ...item,
-        url: normalizeUrl(item.url),
-      })) || [];
+
+      const isRecord = (v: unknown): v is Record<string, unknown> =>
+        typeof v === 'object' && v !== null && !Array.isArray(v);
+
+    const rawItems = Array.isArray((data as { items?: unknown }).items)
+      ? (((data as { items?: unknown }).items) as unknown[])
+      : [];
+
+    const items = rawItems.map((item: unknown) => {
+      const obj: Record<string, unknown> = isRecord(item) ? item : {};
+      const rawUrl = obj.url;
+      return {
+        ...obj,
+        url: normalizeUrl(typeof rawUrl === 'string' ? rawUrl : undefined),
+      };
+    });
 
     return NextResponse.json(
       {
