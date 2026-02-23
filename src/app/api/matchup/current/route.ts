@@ -37,7 +37,7 @@ export async function GET() {
     const data = await response.json();
 
     const items =
-      (data.items || []).map((item: any) => ({
+      (data.items || []).map((item: unknown) => ({
         ...item,
         url: normalizeUrl(item.url),
       })) || [];
@@ -51,7 +51,7 @@ export async function GET() {
       },
       { status: 200 }
     );
-  } catch (err) {
+  } catch (_err) {
     return NextResponse.json(
       { ok: false, error: "internal error" },
       { status: 200 }
