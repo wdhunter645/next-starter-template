@@ -51,7 +51,7 @@ export async function GET() {
       },
       { status: 200 }
     );
-  } catch (_err) {
+  } catch {
     return NextResponse.json(
       { ok: false, error: "internal error" },
       { status: 200 }
