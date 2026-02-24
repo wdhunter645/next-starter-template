@@ -122,10 +122,10 @@ export default function WeeklyMatchup() {
 
   return (
     <div className="card">
-      <h2 className="title-lgfc">Weekly Photo Matchup. Vote for your favorite!</h2>
+      <h2 className="title-lgfc" style={{ marginTop: 24 }}>Weekly Photo Matchup. Vote for your favorite!</h2>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16, alignItems: "start" }}>
         <div className="card" style={{ textAlign: 'center' }}>
-          <img src={a.url} alt={a.description || 'Lou Gehrig'} style={{ width: "100%", height: 360, objectFit: "cover", borderRadius: 12, display: "block" }} />
+          <img src={a.url} alt={a.description || 'Lou Gehrig'} style={{ width: "100%", height: 440, objectFit: "cover", borderRadius: 12, display: "block" }} />
           <div className="sub" style={{ marginTop: 10 }}>{a.title || a.description || 'Photo A'}</div>
           {!hasVoted && (
             <button
@@ -140,7 +140,7 @@ export default function WeeklyMatchup() {
         </div>
 
         <div className="card" style={{ textAlign: 'center' }}>
-          <img src={b.url} alt={b.description || 'Lou Gehrig'} style={{ width: "100%", height: 360, objectFit: "cover", borderRadius: 12, display: "block" }} />
+          <img src={b.url} alt={b.description || 'Lou Gehrig'} style={{ width: "100%", height: 440, objectFit: "cover", borderRadius: 12, display: "block" }} />
           <div className="sub" style={{ marginTop: 10 }}>{b.title || b.description || 'Photo B'}</div>
           {!hasVoted && (
             <button
