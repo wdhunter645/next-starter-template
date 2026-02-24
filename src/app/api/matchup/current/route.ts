@@ -3,7 +3,9 @@ import { NextResponse } from "next/server";
 const B2_PUBLIC_BASE =
   "https://f005.backblazeb2.com/file/LouGehrigFanClub";
 
-function normalizeUrl(storedUrl: string): string {
+function normalizeUrl(storedUrl: string | undefined): string {
+  if (!rawUrl) return "";
+
   if (!storedUrl) return storedUrl;
 
   try {
