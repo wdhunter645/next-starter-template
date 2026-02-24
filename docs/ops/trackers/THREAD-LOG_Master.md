@@ -540,3 +540,69 @@ TASK STATUS
 T15 CLOSED.
 T14 REMAINS OPEN pending Cloudflare green build + production verification.
 
+Summary from a website implementation Thread that was focused on Task #14 and Task #15. --- "THREAD CLOSEOUT SUMMARY — 2026-02-24 — T14 (Cloudflare Build + Social Wall + Calendar Title) OBJECTIVE Stabilize Cloudflare deployment and restore UI integrity without altering any locked design, routing, layout, or navigation standards. THREAD SCOPE Fix Cloudflare Pages build failure. Correct TypeScript error in /api/matchup/current. Investigate Social Wall blank/partial tiles. Confirm Calendar section title. Maintain append-only tracker compliance. BUILD FAILURE DETAILS Cloudflare build failed during npm run build:cf. Hard failure occurred at: src/app/api/matchup/current/route.ts:52 TypeScript error: Argument of type string | undefined not assignable to parameter of type string. The [[ratelimits]] block in wrangler.toml generated warnings but was not the fatal build error. ROOT CAUSE The matchup route conditionally passed undefined into normalizeUrl(). Cloudflare’s strict TypeScript enforcement rejected this during production build. CORRECTIVE ACTIONS Route hardened to guarantee normalizeUrl() always receives a string (fallback ''). Entire [[ratelimits]] block commented out in wrangler.toml to eliminate Pages config noise. Calendar title verified present in source as “Fan Club Events Calendar” (no change required). Social Wall rendering issue isolated as client hydration/layout timing issue (not build-related). Stabilization to be validated post-deploy. TASK STATUS Task 14 — OPEN (awaiting confirmed green Cloudflare deployment and production verification). Task 15 — CLOSED (verified closed in both IMPLEMENTATION-WORKLIST_Master.md and THREAD-LOG_Master.md). DEPLOYMENT STATE AT THREAD CLOSE Pending confirmation: • Successful Cloudflare build (green). • /api/matchup/current returns HTTP 200. • Social Wall renders full image tiles in production. NEXT THREAD START POINT Confirm green deploy. Validate API endpoint. Validate Social Wall rendering. If stable, append T14 closeout entry (append-only) and mark CLOSED." This is a second parallel thread that was looking into why the homepage was not displaying photos in the weekly matchup section. troubleshooting was focused on routing, D1 & B2. --- "
+md
+THREAD CLOSEOUT RECORD — 2026-02-24 — Images Missing / CSP + Matchup API Export Fix — OPEN (stabilization in progress)
+
+WHAT WE INTENDED TO DO
+- Restore homepage images (Weekly Matchup) on both Cloudflare Pages preview and production.
+- Confirm API endpoint behavior and ensure Cloudflare build remains green.
+- Fix CSP so Backblaze B2-hosted images are allowed to render.
+- Remove any merge-conflict artifacts in public/_headers and prevent drift.
+
+WHAT ACTUALLY HAPPENED (EVIDENCE)
+1) Symptom confirmed: no pics render on preview and production.
+   - Preview: https://a2e17345.next-starter-template-6yr.pages.dev/
+   - Prod: https://www.lougehrigfanclub.com/
+
+2) API endpoint test revealed a mismatch:
+   - curl to /api/matchup/current returned HTTP 404 headers (content-type text/html) but the body contained JSON with B2 URLs.
+   - This indicates routing/export behavior is inconsistent with expectation, and/or the endpoint is being produced in a way that doesn’t match static export constraints.
+
+3) CSP header confirmed missing Backblaze:
+   - content-security-policy header contained only elfsight/instagram/etc hosts.
+   - It did NOT include f005.backblazeb2.com or *.backblazeb2.com at the time of the check, which would block the Weekly Matchup images.
+
+4) public/_headers was found in a MERGE-CONFLICT state in the repo at one point:
+   - Contained <<<<<<< HEAD / ======= / >>>>>>> markers.
+   - Also contained “smart quotes” and broken formatting that could not be safely executed/copied.
+   - This was corrected and later committed as a clean unified block.
+
+5) Backblaze image URLs were validated as 200 OK:
+   - https://f005.backblazeb2.com/file/LouGehrigFanClub/IMG_1984.jpeg -> HTTP 200
+   - https://f005.backblazeb2.com/file/LouGehrigFanClub/Photoroom_20250727_233421.png -> HTTP 200
+   - Therefore the images are available; the block is on the site side (CSP and/or build/export).
+
+CHANGES MADE (COMMITS OBSERVED IN LOGS)
+- public/_headers: overwrite to clean CSP format and include Backblaze hosts
+  - Commit: 72d0368 — "change-ops: allow backblaze image hosts in CSP for weekly matchup"
+- src/app/api/matchup/current/route.ts: attempted fixes to normalizeUrl typing + logic, but introduced build-breaking issues
+  - Commit: 8be3547 — "change-ops: fix matchup API build by allowing undefined url normalization" (still failed due to rawUrl reference)
+  - Commit: 21cfa2d — "change-ops: fix normalizeUrl to avoid rawUrl reference and handle undefined"
+    - This resolved the TypeScript error but exposed the Next.js static export constraint error.
+
+CURRENT STATE (WHY CF BUILD IS FAILING NOW)
+- Cloudflare build fails with:
+  - "export const dynamic = 'force-static'/export const revalidate not configured on route '/api/matchup/current' with 'output: export'"
+- This means the project is using static export (output: export), and API routes must be explicitly configured for static export compatibility (dynamic/revalidate), or removed/converted.
+
+KNOWN PROCESS VIOLATIONS / RISKS NOTED
+- User rule: user does not write or edit code blocks manually. Several fixes required direct file edits/overwrites in Codespaces; this increases drift risk and error rate.
+- A “set -u” was used during troubleshooting, which caused shell errors (unbound variable). It is not a reliable default in this repo workflow.
+
+NEXT START POINT (OPEN ITEMS)
+1) Fix /api/matchup/current to be static-export compatible:
+   - Add export const dynamic = "force-static" and/or export const revalidate = <seconds>
+   - Provide deterministic fallback response when env vars are missing (CF build logs show “Build environment variables: (none found)”).
+2) Re-verify CSP header actually includes Backblaze in the deployed environment:
+   - Confirm via curl -I on homepage for content-security-policy header.
+3) Re-verify the homepage renders Weekly Matchup images (no CSP blocks, no 404 page).
+4) Optional but noted: “Unexpected fields … ratelimits” warning in wrangler.toml persists (not build-fatal, but indicates config drift vs CF Pages expectations).
+
+STATUS
+- This thread is NOT cleanly closed yet because Cloudflare build is currently failing on the static export rule for /api/matchup/current.
+- Closure criteria for this thread: CF build green + images visibly render on preview + production.
+"
+
+
+
