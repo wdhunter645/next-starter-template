@@ -399,3 +399,8 @@ LGFC-Lite-CF-FixPack-v1.zip
 data/b2/current.json
 data/b2/new_objects_upsert.sql
 .api-dev-only
+
+# LGFC: never commit diagnostics dumps or repo zips
+/docs/ops/diagnostics/*.txt
+/docs/ops/diagnostics/*.html
+*.zip
