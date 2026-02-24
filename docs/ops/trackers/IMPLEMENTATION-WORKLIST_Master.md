@@ -606,3 +606,46 @@ SCOPE NOTES (GUARDRAILS HONORED):
 • No photo rendering/UX refactor work performed (separate thread).
 • No PR528/doc review work performed here.
 
+
+----------------------------------------------------------------
+TASK 15 — Weekly Matchup UI: side-by-side photos + desktop formatting fixes — CLOSEOUT
+STATUS: CLOSED
+DATE CLOSED: 2026-02-24
+COMMITS:
+• d77a997 — feature: weekly matchup spacing + taller images (no stretch)
+(Notes: WeeklyMatchup updated to 2-up layout on desktop; padding/height adjustments applied.)
+
+RESULT:
+• Weekly Photo Matchup now renders side-by-side on desktop.
+• Layout stability improved; vote buttons align under each photo column.
+
+FOLLOW-ON:
+• Cloudflare build log now reports new operational warnings to address (captured as T16).
+
+----------------------------------------------------------------
+TASK 16 — Cloudflare build log warnings cleanup (Wrangler fields, redirects loops, headers parse) — OPEN
+STATUS: OPEN
+DATE OPENED: 2026-02-24
+TRIGGER (EVIDENCE):
+• Cloudflare Pages build log for deploy commit d77a997 reported warnings that do not block deploy but indicate misconfiguration/noise.
+
+ISSUES TO FIX:
+1) wrangler.toml warning:
+   - "Unexpected fields found in top-level field: ratelimits"
+   - Indicates configuration is being ignored by the Pages/Wrangler config reader.
+2) Dependency security noise:
+   - npm audit reports 15 vulnerabilities (1 moderate, 14 high) during CF build.
+   - Requires controlled remediation (prefer npm audit fix; avoid --force unless reviewed).
+3) Redirects + headers rules warnings:
+   - Multiple redirect rules flagged as infinite loop and ignored (e.g., /about/ -> /about/index.html 200).
+   - Headers rules parsing error: invalid header line (#4 "*/" expected name:value).
+   - Requires cleaning _redirects/_headers rules to remove loops and invalid lines.
+
+ACCEPTANCE CRITERIA:
+• Cloudflare build log no longer reports:
+  - unexpected wrangler.toml fields warning
+  - redirect infinite-loop warnings
+  - invalid header line warning
+• npm audit output reduced to acceptable baseline (goal: 0; minimum: no HIGH without explicit tracking/approval).
+• No regressions: site deploys and core routes still work.
+

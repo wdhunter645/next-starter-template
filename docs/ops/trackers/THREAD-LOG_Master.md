@@ -674,3 +674,32 @@ VERIFICATION
 • Evidence file saved:
   - docs/ops/trackers/_evidence_T14_2026-02-24_matchup-current.txt
 
+
+----------------------------------------------------------------
+THREAD CLOSEOUT RECORD — 2026-02-24 — T15 — Weekly Matchup Desktop Layout Fixes — CLOSED
+
+GOAL:
+• Display weekly matchup photos side-by-side on desktop (not stacked).
+• Improve spacing and photo presentation without stretching.
+
+WHAT CHANGED:
+• src/components/WeeklyMatchup.tsx
+  - Forced 2-column grid on desktop for the matchup cards.
+  - Adjusted spacing above the Weekly Matchup section title.
+  - Increased displayed image height using object-fit: cover (no stretching).
+
+RESULT:
+• Desktop now shows A/B photos side-by-side with aligned vote buttons and improved aesthetics.
+
+DEPLOY:
+• Commit d77a997 pushed to main; Cloudflare Pages build+deploy succeeded.
+
+FOLLOW-ON (NEW TASK CREATED):
+• T16 opened to clean up Cloudflare build log warnings:
+  1) wrangler.toml unexpected top-level field "ratelimits"
+  2) npm audit vulnerabilities (15 total; 14 high)
+  3) redirects infinite-loop warnings + headers invalid line warning
+
+NEXT START POINT:
+• Run repo scan to identify exact _redirects/_headers and wrangler.toml lines causing warnings; patch to eliminate warnings without changing locked routing/design behavior.
+
