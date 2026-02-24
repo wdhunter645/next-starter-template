@@ -43,18 +43,37 @@ Includes a table of which existing docs need to be updated (the four docs that c
 
 -----
 
+### 2. FanClub Membership Card Route Removal
 
------
+**Conflict:** A dedicated membership card FanClub subpage route appeared in
+`NAVIGATION-INVARIANTS.md` as a blank/placeholder entry.
 
-
-**Conflict:**
-
-  canonical FanClub subpage.
+- `NAVIGATION-INVARIANTS.md`: listed a blank canonical FanClub subpage route
+  after `/fanclub/myprofile`.
 - `master_design.md` removes this route; membership card content is
   consolidated into `/fanclub/myprofile` (bottom section of that page).
 
+**Resolution:** `master_design.md` wins. Membership card instructions
 and card images live at the bottom of `/fanclub/myprofile`.
-`NAVIGATION-INVARIANTS.md` and `fanclub.md` must be updated.
+
+`NAVIGATION-INVARIANTS.md` must be updated to remove the blank route entry.
+
+-----
+
+### 3. NAVIGATION-INVARIANTS.md — Logged-In Public Header
+
+**Conflict:** `NAVIGATION-INVARIANTS.md` described the logged-in public header
+as the original 4 public buttons plus two additional buttons (Club Home +
+Logout), totalling 6 buttons — matching the older model in
+`LGFC-Production-Design-and-Standards.md`.
+
+- `NAVIGATION-INVARIANTS.md`: "The same center group of 4 buttons remains
+  visible, plus two additional buttons appear to the right: Club Home, Logout"
+- `master_design.md`: 4-button model — Club Home, Search, Store, Logout
+
+**Resolution:** `master_design.md` wins. `NAVIGATION-INVARIANTS.md` must be
+updated to show the 4-button logged-in public header (same as Conflict #1
+resolution).
 
 -----
 
@@ -123,7 +142,8 @@ layout rules in existing docs are DEFERRED and should not be implemented.
 
 The following documents require updates to reflect these resolutions:
 
-|Document                                 |Required Change                                                                |
-|-----------------------------------------|-------------------------------------------------------------------------------|
-|`LGFC-Production-Design-and-Standards.md`|Remove 6-button logged-in header model; update footer link order               |
-|`home.md`                                |Add “About Lou Gehrig” as section 4 (renumber subsequent sections)             |
+|Document                                 |Required Change                                                                                               |
+|-----------------------------------------|--------------------------------------------------------------------------------------------------------------|
+|`LGFC-Production-Design-and-Standards.md`|Remove 6-button logged-in header model; correct Member Home Quick Links routes; fix footer Contact subject    |
+|`home.md`                                |Add "About Lou Gehrig" as section 4 (renumber subsequent sections)                                            |
+|`NAVIGATION-INVARIANTS.md`              |Remove blank fanclub route; fix logged-in public header to 4 buttons; fix footer link order; add `/ask` route |

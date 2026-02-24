@@ -113,16 +113,14 @@ Buttons (left → right):
 5. **Hamburger**
 
 ### Desktop / Tablet header layout — Logged in (browsing public pages)
-When a member is logged in but browsing public pages (not `/fanclub/**`), the header shows all 4 public buttons PLUS two additional buttons:
+When a member is logged in but browsing public pages (not `/fanclub/**`), the header shows 4 buttons:
 
 Buttons (left → right):
-1. **Join** → `/join`
+1. **Club Home** → `/fanclub`
 2. **Search** → `/search`
 3. **Store** → external Bonfire link
-4. **Login** → `/login`
-5. **Club Home** → `/fanclub`
-6. **Logout** → `/logout`
-7. **Hamburger**
+4. **Logout** → `/logout`
+5. **Hamburger**
 
 ### Visitor hamburger menu (desktop/tablet)
 Same for both logged-out and logged-in states (hamburger contains only standalone pages, not header button duplicates):
@@ -570,13 +568,11 @@ This addendum captures every design/standards decision finalized in-session afte
 5. Hamburger
 
 **Visitor Header Buttons (Desktop/Tablet) — Logged in (browsing public pages):**
-1. Join → `/join`
+1. Club Home → `/fanclub`
 2. Search → `/search`
 3. Store → external Bonfire link
-4. Login → `/login`
-5. Club Home → `/fanclub`
-6. Logout → `/logout`
-7. Hamburger
+4. Logout → `/logout`
+5. Hamburger
 
 **Member Header Buttons (Desktop/Tablet):**
 1. Club Home → `/fanclub`
@@ -638,7 +634,7 @@ Note: Obtain Membership Card is accessed via Member Home quick links. Store is n
 - Privacy → `/privacy`
 - Terms → `/terms`
 - Contact → `/contact`
-- Contact → mailto:Contact@LouGehrigFanClub.com?subject=Contact%20Request
+- Contact → mailto:Contact@LouGehrigFanClub.com?subject=Contact%20Needed
 - Admin → `/admin` (only visible to admin users)
 
 **Email Display Policy:**
@@ -650,11 +646,9 @@ Note: Obtain Membership Card is accessed via Member Home quick links. Store is n
 
 **Required links on FanClub Home (`/fanclub/page.tsx`):**
 - My Profile → `/fanclub/myprofile`
-- Membership Card → ``
-- Gehrig Library → `/library`
-- Photo → `/photo`
-- Photo Gallery → `/photos`
-- Memorabilia Archive → `/memorabilia`
+- Gehrig Library → `/fanclub/library`
+- Photo Gallery → `/fanclub/photo`
+- Memorabilia Archive → `/fanclub/memorabilia`
 
 ---
 

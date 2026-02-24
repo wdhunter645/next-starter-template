@@ -31,8 +31,9 @@ Hamburger menu items:
 - Center:
   - Small LGFC logo (uses the height of lines 1–2) that scrolls to top of current page
 - Right:
-  - Line 1: Terms + Privacy
-  - Line 2: Contact
+  - Line 1: Privacy + Terms
+  - Line 2: Contact (page) + Contact (email)
+  - Admin link (visible to admin users only)
 - No Support page. Contact page contains admin + support contact info in text.
 
 
@@ -55,12 +56,12 @@ Effective Date: 2026-01-21
 - `/login`
 - `/logout`
 - `/faq`
+- `/ask`
 - `/health`
 
 ### FanClub (auth required; unauthenticated traffic redirects to `/`)
 - `/fanclub`
 - `/fanclub/myprofile`
-- ``
 - `/fanclub/photo`
 - `/fanclub/library`
 - `/fanclub/memorabilia`
@@ -89,10 +90,12 @@ Desktop/Tablet buttons (centered, fixed order):
 4. Login → `/login`
 
 ### Public header (logged in, but browsing public pages)
-The same center group of 4 buttons remains visible, plus **two additional buttons** appear to the right:
+When a member is logged in but browsing public pages, the header shows 4 buttons:
 
-5. Club Home → `/fanclub`
-6. Logout → `/logout`
+1. Club Home → `/fanclub`
+2. Search → `/search`
+3. Store → external Bonfire link
+4. Logout → `/logout`
 
 ---
 
@@ -123,9 +126,10 @@ Layout is locked:
   - Small LGFC logo; clicking it scrolls to top of the current page (no navigation)
 
 - Right (right-justified links, exact order)
-  1. Contact → `/contact`
-  2. Contact → `/contact`
-  3. Terms → `/terms`
-  4. Privacy → `/privacy`
+  1. Privacy → `/privacy`
+  2. Terms → `/terms`
+  3. Contact (page) → `/contact`
+  4. Contact (email) → mailto:Contact@LouGehrigFanClub.com?subject=Contact%20Needed
+  5. Admin → `/admin` (visible to admin users only)
 
 The footer must not display any email address directly.

@@ -17,12 +17,13 @@ This document is the **single source of truth** for the public HOME page structu
 1) Hero Banner  
 2) Weekly Photo Matchup  
 3) Join CTA  
-4) Social Wall  
-5) Recent Discussions (teaser)  
-6) Friends of the Fan Club  
-7) Milestones  
-8) Calendar  
-9) FAQ
+4) About Lou Gehrig  
+5) Social Wall  
+6) Recent Discussions (teaser)  
+7) Friends of the Fan Club  
+8) Milestones  
+9) Calendar  
+10) FAQ
 
 ## Terminology and Aliases (drift guardrail)
 
@@ -42,6 +43,7 @@ Conversation shorthand that refers to the same feature (do not create new files 
 - Hero Banner → `src/app/page.tsx` (hero header markup)
 - Weekly Photo Matchup → `src/components/WeeklyMatchup`
 - Join CTA → `src/components/JoinCTA`
+- About Lou Gehrig → `src/components/AboutLouGehrig`
 - Social Wall → `src/components/SocialWall`
 - Recent Discussions (teaser) → `src/components/RecentDiscussionsTeaser`
 - Friends of the Fan Club → `src/components/FriendsOfFanClub`
@@ -83,9 +85,5 @@ Join/Login buttons may use white backgrounds with dark text for hierarchy while 
 The following sections exist on the HOME page and are now explicitly documented here:
 - Social Wall
 - Recent Discussions (teaser)
+- About Lou Gehrig
 If any future homepage sections are added, this document MUST be updated in the same PR.
-
-
-## Required section: ABOUT LOU GEHRIG (Day 1)
-
-Insert between JOIN and SOCIAL WALL sections. This is NOT the /about page.
