@@ -123,7 +123,7 @@ export default function WeeklyMatchup() {
   return (
     <div className="card">
       <h2 className="title-lgfc">Weekly Photo Matchup. Vote for your favorite!</h2>
-      <div className="grid">
+      <style>{`\n.lgfc-matchup-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start;}\n`}</style>\n      <div className="lgfc-matchup-grid">
         <div className="card" style={{ textAlign: 'center' }}>
           <img src={a.url} alt={a.description || 'Lou Gehrig'} style={{ width: '100%', borderRadius: 12 }} />
           <div className="sub" style={{ marginTop: 10 }}>{a.title || a.description || 'Photo A'}</div>
