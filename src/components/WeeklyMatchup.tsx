@@ -113,7 +113,7 @@ export default function WeeklyMatchup() {
     }
   }
 
-  if (loading) return <div className="card">Loading matchup…</div>;
+  if (loading) return <div className="card" style={{ paddingTop: 28 }}>Loading matchup…</div>;
   if (err) return null;
   if (items.length < 2) return null;
 
