@@ -30,19 +30,19 @@ Any conflict must be resolved in favor of this file.
 - Public pages remain visitor-accessible: `/contact`, `/about`, `/terms`, `/privacy`, `/search`, `/join`, `/login`, `/faq`, `/health`.
 
 ### 2) Canonical Routes (explicit)
-See `/docs/NAVIGATION-INVARIANTS.md` for the canonical route list. This file and NAVIGATION-INVARIANTS are the source of truth.
+See `/docs/reference/design/NAVIGATION-INVARIANTS.md` for the canonical route list. This file and NAVIGATION-INVARIANTS are the source of truth.
 
 ### 3) Headers (explicit)
 - Public header:
   - Not logged in: Join, Search, Store (external), Login
-  - Logged in while on public pages: add Club Home + Logout (6 total)
+  - Logged in while on public pages: Club Home, Search, Store (external), Logout (4 buttons)
 - FanClub header (single variant): Club Home, My Profile, Search, Store (external), Logout
 - Global logo always links to `/`.
 
 ### 4) Footer (explicit)
 - Left: quote line + legal line
 - Center: small logo scroll-to-top current page
-- Right links (order): Contact, Contact, Terms, Privacy
+- Right links (order): Privacy, Terms, Contact (page), Contact (email), Admin (admin-only)
 - No email displayed in footer.
 
 ### 5) Weekly Vote (explicit, deferred)
