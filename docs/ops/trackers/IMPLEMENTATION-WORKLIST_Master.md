@@ -536,3 +536,40 @@ SUMMARY:
 Tasks 12, 13, and 14 collectively resolved the six v6 lock alignment issues identified during post-T12 review.
 Homepage layout, verifier logic, and widget rendering are now aligned with locked design standards.
 
+
+----------------------------------------------------------------
+TASK 14 — Matchup API Type Hardening
+STATUS: OPEN
+DATE OPENED: 2026-02-23
+
+SUMMARY:
+- Removed spread of `unknown` in /api/matchup/current route.
+- Introduced `isRecord` type guard.
+- Normalized URL handling to prevent undefined being passed to normalizeUrl().
+- Local build passes.
+- Cloudflare build currently failing; final verification pending.
+
+NEXT ACTION:
+- Confirm CF build completes successfully.
+- Verify production endpoint: /api/matchup/current returns { ok: true }.
+- Close task only after production validation.
+
+----------------------------------------------------------------
+TASK 15 — Calendar Section Layout Correction
+STATUS: CLOSED
+DATE CLOSED: 2026-02-23
+
+SUMMARY:
+- Centered calendar section title.
+- Split event list into two balanced columns.
+- Layout verified visually.
+- No TypeScript or build errors introduced.
+- No routing or API impact.
+
+PRODUCTION STATUS:
+- Rendering correctly.
+- No regression detected.
+
+TASK CLOSED.
+----------------------------------------------------------------
+
