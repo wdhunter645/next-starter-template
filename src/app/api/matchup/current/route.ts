@@ -4,11 +4,12 @@ const B2_PUBLIC_BASE =
   "https://f005.backblazeb2.com/file/LouGehrigFanClub";
 
 function normalizeUrl(storedUrl: string | undefined): string {
-  if (!rawUrl) return "";
-
-  if (!storedUrl) return storedUrl;
-
+  if (!storedUrl) return "";
   try {
+    // If it's already an absolute URL, leave it as-is.
+    if (/^https?:\/\//i.test(storedUrl)) return storedUrl;
+
+    // If storedUrl is a key/filename, normalize to your public B2 base.
     const parts = storedUrl.split("/");
     const key = parts[parts.length - 1];
     return `${B2_PUBLIC_BASE}/${key}`;
