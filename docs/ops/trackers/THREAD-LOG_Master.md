@@ -514,3 +514,29 @@ Six identified issues resolved.
 No design or route changes introduced.
 Thread closed clean.
 
+
+THREAD CLOSEOUT RECORD — 2026-02-23 — T15 — Calendar Section Layout Fix
+
+WHAT WE INTENDED TO DO
+- Center calendar section title.
+- Split events into two visually balanced columns.
+- Preserve existing event data structure.
+- Avoid introducing layout regressions or build failures.
+
+WHAT ACTUALLY GOT CHANGED
+- Updated CalendarSection.tsx layout container alignment.
+- Adjusted CSS module to enforce centered heading.
+- Implemented two-column grid layout for event list.
+- Verified responsive behavior.
+
+RESULT
+- Calendar section renders as intended.
+- Title centered.
+- Events evenly distributed across two columns.
+- No build errors.
+- No production regressions.
+
+TASK STATUS
+T15 CLOSED.
+T14 REMAINS OPEN pending Cloudflare green build + production verification.
+
