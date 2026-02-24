@@ -650,3 +650,27 @@ Images visibly render on preview.
 Images visibly render on production.
 
 
+
+----------------------------------------------------------------
+THREAD CLOSEOUT RECORD — 2026-02-24 — T14 — Cloudflare export build failure (/api/matchup/current) — CLOSED
+
+WHAT WE INTENDED TO DO
+• Restore Cloudflare Pages build to GREEN under output:"export".
+• Ensure /api/matchup/current works via Cloudflare Pages Functions (not Next Route Handlers).
+• Confirm deploy success and that matchup photos display again.
+
+WHAT ACTUALLY CHANGED
+• Deleted export-incompatible Next App Router Route Handlers:
+  - src/app/api/matchup/current/route.ts
+  - src/app/api/join/route.ts
+  - src/app/api/login/route.ts
+• No other codepaths or UI routes altered.
+
+VERIFICATION
+• next.config.ts confirms output:"export".
+• next build + export succeeded locally.
+• Cloudflare Pages deploy succeeded; Functions uploaded.
+• Production /api/matchup/current returns JSON; homepage matchup photos render successfully.
+• Evidence file saved:
+  - docs/ops/trackers/_evidence_T14_2026-02-24_matchup-current.txt
+

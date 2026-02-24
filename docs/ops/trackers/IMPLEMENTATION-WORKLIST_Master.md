@@ -573,3 +573,36 @@ PRODUCTION STATUS:
 TASK CLOSED.
 ----------------------------------------------------------------
 
+
+----------------------------------------------------------------
+TASK 14 — Cloudflare Pages build failure + production instability (/api/matchup/current) — CLOSEOUT
+STATUS: CLOSED
+DATE CLOSED: 2026-02-24
+COMMIT: 2e75b71
+
+PROBLEM (EVIDENCE):
+• Cloudflare Pages build failing under Next.js static export constraints (output: "export").
+• Failure pointed at /api/matchup/current due to App Router Route Handler presence.
+
+ROOT CAUSE:
+• Static export (output: "export") is incompatible with Next.js App Router Route Handlers at src/app/api/**/route.ts.
+
+FIX (EXPORT-COMPLIANT):
+• Removed the following Next Route Handlers (export-incompatible):
+  - src/app/api/matchup/current/route.ts
+  - src/app/api/join/route.ts
+  - src/app/api/login/route.ts
+• Cloudflare Pages Functions remain authoritative for /api/** (functions/api/**), including:
+  - functions/api/matchup/current.ts
+
+RESULT:
+• Local build/export: GREEN (static export succeeded).
+• Cloudflare Pages deploy: GREEN; Functions uploaded.
+• Production homepage now displays matchup photos successfully (via /api/matchup/current Pages Function).
+• Evidence captured: docs/ops/trackers/_evidence_T14_2026-02-24_matchup-current.txt
+
+SCOPE NOTES (GUARDRAILS HONORED):
+• No navigation/design changes.
+• No photo rendering/UX refactor work performed (separate thread).
+• No PR528/doc review work performed here.
+
