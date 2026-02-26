@@ -651,7 +651,7 @@ ACCEPTANCE CRITERIA:
 
 
 ================================================================
-PHASE 2B — Public Homepage Stabilization (Parallel Lane)
+### PHASE 2B — Public Homepage Stabilization (Parallel Lane)
 DATE INSERTED: 2026-02-24
 AUTHORITY: Operational
 RELATIONSHIP: Runs parallel to Phase 2 (T10–T19). Must be complete before Phase 3 begins.
