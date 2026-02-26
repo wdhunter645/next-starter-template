@@ -649,3 +649,98 @@ ACCEPTANCE CRITERIA:
 • npm audit output reduced to acceptable baseline (goal: 0; minimum: no HIGH without explicit tracking/approval).
 • No regressions: site deploys and core routes still work.
 
+
+================================================================
+PHASE 2B — Public Homepage Stabilization (Parallel Lane)
+DATE INSERTED: 2026-02-24
+AUTHORITY: Operational
+RELATIONSHIP: Runs parallel to Phase 2 (T10–T19). Must be complete before Phase 3 begins.
+
+Purpose:
+Capture defects, layout corrections, Cloudflare build noise, and deployment findings
+discovered while executing Phase 2 — without renumbering Phase 2 tasks.
+
+Rules:
+• Do NOT modify Phase 2 task numbering.
+• Use T10B–T19B exclusively for Phase 2B items.
+• Scope must be stabilization, corrections, or compliance.
+• No design changes unless correcting deviation from locked standards.
+• Phase 2B must be fully closed before starting Phase 3.
+
+----------------------------------------------------------------
+TASK 10B — Reserved (Hero findings lane)
+
+----------------------------------------------------------------
+TASK 11B — Weekly Photo Matchup visual corrections — OPEN
+STATUS: OPEN
+DATE OPENED: 2026-02-24
+
+TRIGGER:
+• Images still cropped (object-fit: cover)
+• Heading spacing not visible as intended
+
+SCOPE:
+• src/components/WeeklyMatchup.tsx only
+
+REQUIRED:
+1) Full image visibility (objectFit:"contain"; no crop; no stretch)
+2) Visible whitespace above section heading
+3) Preserve side-by-side desktop layout
+
+ACCEPTANCE:
+• Photos fully visible
+• Heading spacing present
+• Build PASS
+• Cloudflare deploy GREEN
+
+----------------------------------------------------------------
+TASK 12B — Reserved (Join findings lane)
+
+----------------------------------------------------------------
+TASK 13B — Reserved (Verifier findings lane)
+
+----------------------------------------------------------------
+TASK 14B — Reserved (Social Wall findings lane)
+
+----------------------------------------------------------------
+TASK 15B — Reserved (Calendar findings lane)
+
+----------------------------------------------------------------
+TASK 16B — Reserved (Friends findings lane)
+
+----------------------------------------------------------------
+TASK 17B — Reserved (Events findings lane)
+
+----------------------------------------------------------------
+TASK 18B — Reserved (FAQ findings lane)
+
+----------------------------------------------------------------
+TASK 19B — Cloudflare build log warnings cleanup — OPEN
+STATUS: OPEN
+DATE OPENED: 2026-02-24
+
+TRIGGER:
+Cloudflare Pages build log warnings:
+1) wrangler.toml unexpected field "ratelimits"
+2) Redirect infinite-loop warnings
+3) _headers invalid header line parse error
+4) npm audit vulnerability noise
+
+SCOPE:
+• wrangler.toml
+• public/_redirects
+• public/_headers
+• dependencies (minimal remediation only)
+
+CONSTRAINT:
+• No route/navigation/design changes.
+
+ACCEPTANCE:
+• No wrangler warnings
+• No redirect loop warnings
+• No headers parse warnings
+• npm audit reduced to acceptable baseline
+• Build + deploy remain GREEN
+
+================================================================
+

@@ -703,3 +703,12 @@ FOLLOW-ON (NEW TASK CREATED):
 NEXT START POINT:
 • Run repo scan to identify exact _redirects/_headers and wrangler.toml lines causing warnings; patch to eliminate warnings without changing locked routing/design behavior.
 
+
+## GOVERNANCE UPDATE — 2026-02-24 — PHASE 2B CREATED
+
+A parallel Phase 2B lane (T10B–T19B) has been created to capture
+stabilization and correction work discovered during Phase 2 execution.
+
+Phase 2 numbering remains unchanged.
+Phase 3 cannot begin until Phase 2B is closed.
+
