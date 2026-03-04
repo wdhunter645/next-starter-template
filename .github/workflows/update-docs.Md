@@ -6,19 +6,23 @@ on:
       - main
     paths:
       - 'components/**'
-      - 'pages/**'
       - 'app/**'
 permissions:
   contents: write
   pull-requests: write
-agent: github-copilot
+# Corrected: 'agent' now lives inside the engine/sandbox config
+engine:
+  name: github-copilot
+# Corrected: 'tools' must be an object (key: value), not a list
 tools:
-  - name: read-files
-  - name: create-pull-request
+  read-files: {}
+  create-pull-request: {}
 ---
 
 # Goal
 Your goal is to keep the project documentation up to date with the codebase.
+... (rest of your instructions)
+
 
 # Instructions
 1. Scan the `components/`, `app/`, and `lib/` directories for any new files or structural changes.
