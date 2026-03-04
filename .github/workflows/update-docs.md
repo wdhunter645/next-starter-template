@@ -8,7 +8,7 @@ permissions:
   contents: write
   pull-requests: write
 # The compiler wants the engine name directly 
-engine: github-copilot
+engine: copilot
 # Tools must be an object, but keep them empty if using defaults
 tools:
   read-files: {}
