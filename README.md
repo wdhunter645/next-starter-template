@@ -18,17 +18,17 @@ Framework: Next.js (App Router) + TypeScript
 ## Design Authority (Day 1)
 
 ### MASTER design (implementation-level detail)
-- `/docs/design/master_design.md`
-- `/docs/design/master/Header_Design.md`
-- `/docs/design/master/Footer_Design.md`
-- `/docs/design/master/Auth_Design.md`
-- `/docs/design/master/Home_Design.md`
+- `/docs/reference/design/master_design.md`
+- `/docs/reference/design/visitor-header.md`
+- `/docs/reference/design/fanclub-subpages.md`
+- `/docs/reference/design/auth-and-logout.md`
+- `/docs/reference/design/home.md`
 
 ### Tier-2 governance / standards (must reference MASTER files; must not restate specifics)
-- `/docs/LGFC-Production-Design-and-Standards.md`
-- `/docs/NAVIGATION-INVARIANTS.md`
-- `/docs/design/RECONCILIATION-NOTES.md`
-- `/docs/fanclub.md`
+- `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
+- `/docs/reference/design/NAVIGATION-INVARIANTS.md`
+- `/docs/reference/design/RECONCILIATION-NOTES.md`
+- `/docs/reference/design/fanclub.md`
 
 If code or docs conflict, **MASTER design wins**.
 

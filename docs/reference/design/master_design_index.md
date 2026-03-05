@@ -15,27 +15,25 @@ layout, routing, UX invariants, and structural rules are defined.
 
 ## Primary Design Authority
 
--   docs/LOCKED_DESIGN_SPEC.md
--   docs/LGFC-Lite-Design-Locks.md
--   docs/NAVIGATION-INVARIANTS.md
--   docs/LGFC-Production-Design-and-Standards.md
+-   docs/reference/design/master_design.md
+-   docs/reference/design/LGFC-Production-Design-and-Standards.md
+-   docs/reference/design/NAVIGATION-INVARIANTS.md
 
 ## Homepage Structure Authority
 
--   docs/design/reference/lgfc-homepage-legacy-v6.html
+-   docs/reference/design/reference/lgfc-homepage-legacy-v6.html
 
 ## Architecture & System Layout
 
--   docs/architecture/
+-   docs/reference/architecture/
 -   docs/as-built/
 
 ## Governance-Linked Design Controls
 
--   docs/governance/OPERATING_MODEL_MASTER.md
--   docs/REPOSITORY-GUIDE_Master.md
+-   docs/governance/standards/OPERATING_MODEL_MASTER.md
+-   docs/explanation/REPOSITORY-GUIDE_Master.md
 
 ## Functional Area Design Sources
 
--   docs/admin/
--   docs/design/
--   docs/future/
+-   docs/reference/design/
+-   docs/archive/future/

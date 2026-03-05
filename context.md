@@ -44,9 +44,9 @@ High-level:
 
 ## Design Sources of Truth
 
-- `/docs/LGFC-Production-Design-and-Standards.md`
-- `/docs/NAVIGATION-INVARIANTS.md`
-- `/docs/fanclub.md`
+- `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
+- `/docs/reference/design/NAVIGATION-INVARIANTS.md`
+- `/docs/reference/design/fanclub.md`
 
 If any code or other doc conflicts with these, these win.
 
