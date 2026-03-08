@@ -1,33 +1,34 @@
----
-Doc Type: Reference
-Audience: Human + AI
-Authority Level: Technical Reference
-Owns: Data contract for campaign spotlight payload and snapshot sourcing rules
-Does Not Own: UI layout; fundraising rules; analytics strategy
-Canonical Reference: /docs/reference/design/home-temporary-campaign-section.md
-Last Reviewed: 2026-02-26T13:14:02Z
----
 
-# Temporary Campaign Spotlight — Data Contract (Reference)
+# Campaign Spotlight Data Contract
 
-## Design Goal
-Home must not compute drifting standings live.
-Home displays **published snapshots**.
+Last Updated: 2026-03-08
 
-## Required Fields (Public Data Mode)
-At minimum, a published snapshot must provide:
-- asOfEt (timestamp)
-- leaders:
-  - grandPrizeMostPoints
-  - categoryMostSupporters
-  - categoryMostFunds
-- top lists (optional): overall, teams, individuals
+## Data Source
 
-## Privacy Constraint
-No donor PII is stored.
-Donor metric uses “Supporters” counts from Givebutter in public data mode.
+GiveButter public campaign API or exported data snapshots.
 
-## Fail-Closed Behavior
-If no published snapshot exists:
-- spotlight must either render “info only” OR render nothing (config-driven).
-- it must never render stale or partially computed standings.
+## Required Fields
+
+- campaignTitle
+- campaignStart
+- campaignEnd
+- fundsRaised
+- supporters
+- leaderboard[]
+
+Leaderboard entry structure:
+
+{
+  "name": "",
+  "type": "individual|team",
+  "funds": number,
+  "supporters": number,
+  "points": number
+}
+
+## Snapshot Rule
+
+Homepage must render **published snapshots only**.
+
+Admin dashboard generates and validates snapshots before publishing.
+
