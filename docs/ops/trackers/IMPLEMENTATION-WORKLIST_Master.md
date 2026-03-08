@@ -744,3 +744,26 @@ ACCEPTANCE:
 
 ================================================================
 
+----------------------------------------------------------------
+PHASE 2B ADDITION — Documentation-only (Temporary Campaign Spotlight / ALS Fundraiser 2026)
+DATE: 2026-02-26T13:14:02Z
+STATUS: OPEN (Docs delivered; implementation follows separate tasks)
+
+TASK 10B — Temporary Campaign Spotlight (ALS Fundraiser 2026) — DOCUMENTATION PACKAGE
+SCOPE (docs only):
+- Define temporary Home section contract (hidden by default; between Hero and Weekly Matchup when enabled)
+- Define ALS Fundraiser 2026 spotlight content contract, rules, timeline
+- Define snapshot cadence + publish gate + manual tie policy
+- Define test plan + monitoring expectations
+
+DELIVERABLES (new docs):
+- /docs/reference/design/home-temporary-campaign-section.md
+- /docs/reference/design/als-fundraiser-2026-campaign-spotlight.md
+- /docs/reference/architecture/temporary-campaign-spotlight-data-contract.md
+- /docs/how-to/ops/als-fundraiser-snapshots-and-publishing.md
+- /docs/how-to/test/als-fundraiser-spotlight-test-plan.md
+
+NOTES:
+- No code changes in this task record (documentation-only thread).
+- Implementation will be tracked as separate Phase 2B tasks once authorized.
+
