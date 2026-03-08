@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { apiGet, apiPost } from '@/lib/api';
 
 type Photo = {
@@ -30,6 +30,32 @@ type ResultsResp = {
   week_start: string | null;
   totals: { a: number; b: number };
   last_week: null | { week_start: string; totals: { a: number; b: number }; winner: 'a' | 'b' | 'tie' };
+};
+
+const gridStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+  gap: 16,
+  alignItems: 'start',
+};
+
+const photoFrameStyle: CSSProperties = {
+  width: '100%',
+  height: 440,
+  borderRadius: 12,
+  overflow: 'hidden',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  background: '#f3f4f6',
+};
+
+const photoStyle: CSSProperties = {
+  width: '100%',
+  height: '100%',
+  objectFit: 'contain',
+  objectPosition: 'center',
+  display: 'block',
 };
 
 export default function WeeklyMatchup() {
@@ -72,20 +98,19 @@ export default function WeeklyMatchup() {
         setLoading(false);
       }
     }
-    
-    // Set a timeout to prevent infinite loading
+
     let completed = false;
     const timer = setTimeout(() => {
       if (!completed) {
         setLoading(false);
-        }
-    }, 10000); // 10 second timeout
+      }
+    }, 10000);
 
     load().finally(() => {
       completed = true;
       clearTimeout(timer);
     });
-    
+
     return () => {
       clearTimeout(timer);
     };
@@ -98,7 +123,6 @@ export default function WeeklyMatchup() {
       setErr(null);
 
       const r = await apiPost<VoteResp>('/api/matchup/vote', { week_start: weekStart, choice });
-      // Reveal results after vote (or if already voted server-side)
       window.localStorage.setItem(`lgfc_weekly_vote_${weekStart}`, '1');
       setHasVoted(true);
       setTotals(r.totals);
@@ -123,10 +147,19 @@ export default function WeeklyMatchup() {
   return (
     <div className="card">
       <h2 className="title-lgfc" style={{ marginTop: 24 }}>Weekly Photo Matchup. Vote for your favorite!</h2>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16, alignItems: "start" }}>
+
+      <div style={gridStyle}>
         <div className="card" style={{ textAlign: 'center' }}>
-          <img src={a.url} alt={a.description || 'Lou Gehrig'} style={{ width: "100%", height: 440, objectFit: "cover", borderRadius: 12, display: "block" }} />
+          <div style={photoFrameStyle}>
+            <img
+              src={a.url}
+              alt={a.description || 'Lou Gehrig'}
+              style={photoStyle}
+            />
+          </div>
+
           <div className="sub" style={{ marginTop: 10 }}>{a.title || a.description || 'Photo A'}</div>
+
           {!hasVoted && (
             <button
               disabled={submitting}
@@ -140,8 +173,16 @@ export default function WeeklyMatchup() {
         </div>
 
         <div className="card" style={{ textAlign: 'center' }}>
-          <img src={b.url} alt={b.description || 'Lou Gehrig'} style={{ width: "100%", height: 440, objectFit: "cover", borderRadius: 12, display: "block" }} />
+          <div style={photoFrameStyle}>
+            <img
+              src={b.url}
+              alt={b.description || 'Lou Gehrig'}
+              style={photoStyle}
+            />
+          </div>
+
           <div className="sub" style={{ marginTop: 10 }}>{b.title || b.description || 'Photo B'}</div>
+
           {!hasVoted && (
             <button
               disabled={submitting}
@@ -159,6 +200,7 @@ export default function WeeklyMatchup() {
         <div style={{ marginTop: 16 }}>
           <div style={{ fontWeight: 800, color: 'var(--lgfc-blue)' }}>Results (revealed)</div>
           <div className="sub" style={{ marginTop: 6 }}>A: {totals.a} · B: {totals.b}</div>
+
           {lastWeek && (
             <div className="sub" style={{ marginTop: 10, opacity: 0.85 }}>
               Last closed week ({lastWeek.week_start}): A {lastWeek.totals.a} · B {lastWeek.totals.b} · Winner: {lastWeek.winner.toUpperCase()}
