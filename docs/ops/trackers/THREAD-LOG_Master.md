@@ -712,3 +712,33 @@ stabilization and correction work discovered during Phase 2 execution.
 Phase 2 numbering remains unchanged.
 Phase 3 cannot begin until Phase 2B is closed.
 
+
+----------------------------------------------------------------
+THREAD CLOSEOUT RECORD — 2026-02-26T13:14:02Z — Phase 2B — Documentation-only
+TITLE: Temporary Campaign Spotlight (Home) + ALS Fundraiser 2026 (Rules/Timeline/Snapshots)
+
+OBJECTIVE
+Lock the documentation for a temporary Home section (hidden by default) and the ALS Fundraiser 2026 spotlight requirements, including winner logic, tie policy, cadence, and monitoring.
+
+SCOPE
+Documentation only. No code changes. No navigation/route changes.
+
+ARTIFACTS DELIVERED
+- /docs/reference/design/home-temporary-campaign-section.md
+- /docs/reference/design/als-fundraiser-2026-campaign-spotlight.md
+- /docs/reference/architecture/temporary-campaign-spotlight-data-contract.md
+- /docs/how-to/ops/als-fundraiser-snapshots-and-publishing.md
+- /docs/how-to/test/als-fundraiser-spotlight-test-plan.md
+
+TIMELINE LOCKED
+- April 1, 2026 12:01 AM ET fundraiser is announced and participant registration begins
+- May 1, 2026 12:01 AM ET fundraiser live
+- May 26, 2026 12:01 AM ET auction opens
+- June 2, 2026 11:59:59 PM ET close
+- June 3, 2026 manual final snapshot lock
+
+
+
+
+
+
