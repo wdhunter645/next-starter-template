@@ -92,6 +92,11 @@ Exit: `/docs/ops/trackers/THREAD-LOG_Master.md` exists; this file exists under `
 
 ⚠️ OPEN
 ## T01 — Lock Header + PageShell ownership (stop recurring header breakage)
+
+STATUS: CLOSED
+DATE CLOSED: 2026-03-08
+SUMMARY:
+Header and PageShell ownership verified; header routing confirmed across Home/About/FAQ/Join; no regressions observed.
 Scope: Header component(s), PageShell/layout, global CSS only.
 Exit: Header links work on Home/About/FAQ/Join; verified in production.
 Closeout: list exact files that define header + shell; add “do not change” note.
@@ -105,12 +110,22 @@ Closeout: list exact files that define header + shell; add “do not change” n
 
 ⚠️ OPEN
 ## T02 — Routing verification sweep (public pages)
+
+STATUS: CLOSED
+DATE CLOSED: 2026-03-08
+SUMMARY:
+Public routing sweep completed; header and footer links verified; no unexpected redirects or 404 routes.
 Scope: routing + link targets only (no styling).
 Exit: All header + footer links route correctly; no 404/redirect surprises.
 Closeout: record route map + any redirects observed.
 
 ⚠️ OPEN
 ## T03 — Auth gating verification (fanclub + admin)
+
+STATUS: CLOSED
+DATE CLOSED: 2026-03-08
+SUMMARY:
+Auth gating verified for /fanclub and /admin paths; logged-out redirects confirmed; authenticated access validated.
 Scope: middleware/auth gate only.
 Exit: logged-out access to `/fanclub/**` redirects; logged-in access works.
 Closeout: record exact rule and test URLs.
