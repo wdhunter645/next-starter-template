@@ -749,7 +749,7 @@ PHASE 2B ADDITION — Documentation-only (Temporary Campaign Spotlight / ALS Fun
 DATE: 2026-02-26T13:14:02Z
 STATUS: OPEN (Docs delivered; implementation follows separate tasks)
 
-TASK 10B — Temporary Campaign Spotlight (ALS Fundraiser 2026) — DOCUMENTATION PACKAGE
+TASK 19B — Temporary Campaign Spotlight (ALS Fundraiser 2026) — DOCUMENTATION PACKAGE
 SCOPE (docs only):
 - Define temporary Home section contract (hidden by default; between Hero and Weekly Matchup when enabled)
 - Define ALS Fundraiser 2026 spotlight content contract, rules, timeline
