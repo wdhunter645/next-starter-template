@@ -1,64 +1,53 @@
----
-Doc Type: Specification
-Audience: Human + AI
-Authority Level: Canonical Design Specification (Campaign Spotlight Instance)
-Owns: ALS Fundraiser 2026 temporary section content contract + leaderboard rules + tie policy
-Does Not Own: Financial/legal claims; tax guidance; donation processing terms (Givebutter governs)
-Canonical Reference: /docs/reference/design/home-temporary-campaign-section.md
-Last Reviewed: 2026-02-26T13:14:02Z
----
 
-# ALS Fundraiser 2026 — Campaign Spotlight (Home Temporary Section)
+# ALS Fundraiser 2026 Campaign Spotlight
 
-## External Links (Locked)
-- Campaign: https://givebutter.com/LouGehrigFanClub2026
-- Auction: https://givebutter.com/c/LouGehrigFanClub2026/auction
-- Live Feed: https://live.givebutter.com/c/LouGehrigFanClub2026
+Last Updated: 2026-03-08
 
-## Timeline (Locked)
-- March 2026: public website announcement
-- April 2026: fundraiser announced + registration opens
-- **May 1, 2026 12:01 AM ET: fundraiser goes live**
-- **May 26, 2026 12:01 AM ET: auction opens**
-- **June 2, 2026 11:59:59 PM ET: fundraiser + auction close (Lou Gehrig Day)**
-- June 3, 2026: manual final snapshot lock + publish final standings
+## Campaign Links
 
-## Public Data Mode (Locked)
-This campaign spotlight operates in **public data mode** unless and until explicit admin export permissions are confirmed.
+Campaign:
+https://givebutter.com/LouGehrigFanClub2026
 
-Definitions:
-- **Funds** = “Raised” as reported by Givebutter
-- **Donors** = “Supporters” as reported by Givebutter
-- **Points** = Funds × Supporters
+Auction:
+https://givebutter.com/c/LouGehrigFanClub2026/auction
 
-The UI must label the donor metric as **Supporters** (not “unique donors”).
+Live Feed:
+https://live.givebutter.com/c/LouGehrigFanClub2026
 
-## Winners (Locked — No Duplicate Winners)
-Total winners = 3.
+## Timeline
 
-1) **Grand Prize:** Most Points
-2) Exclude Grand Prize winner from remaining categories
-3) **Category Winner:** Most Supporters
-4) Exclude winner
-5) **Category Winner:** Most Funds
+March 2026 — Website announcement
 
-Team prize note:
-- If a **team** wins Grand Prize, the **team lead** receives the main prize and members receive a secondary prize.
+April 2026 — Fundraiser announcement + registration opens
 
-## Tie Policy (Locked)
-Primary ranking stacks (deterministic):
+May 1, 2026 12:01 AM ET — Fundraiser goes live
 
-- Most Points: Points ↓, Supporters ↓, Funds ↓
-- Most Supporters: Supporters ↓, Points ↓, Funds ↓
-- Most Funds: Funds ↓, Points ↓, Supporters ↓
+May 26, 2026 12:01 AM ET — Auction opens
 
-If still tied after the stack:
-- LGFC will consult the official Givebutter dashboard records for the tied entries (registration timestamp / joined/created) and select the earliest registrant as the winner.
-- This tie method must be published in advance (this document is that publication).
+June 2, 2026 11:59:59 PM ET — Fundraiser closes
 
-## Snapshot Display Requirement
-When standings are shown, the section must display:
+June 3, 2026 — Final standings lock
 
-“Standings as of <timestamp ET>”
+## Leaderboard Rules
 
-Standings shown must come from the latest **published snapshot** (not live-calculated on request).
+Metrics:
+
+Funds = Raised
+Supporters = Donor count
+Points = Funds × Supporters
+
+Winner logic:
+
+1. Most Points (Grand Prize)
+2. Remove winner
+3. Most Supporters
+4. Remove winner
+5. Most Funds
+
+## Tie Resolution
+
+If all metrics tie:
+
+LGFC administrators consult the official GiveButter campaign dashboard
+and determine winner by **earliest registration timestamp**.
+
