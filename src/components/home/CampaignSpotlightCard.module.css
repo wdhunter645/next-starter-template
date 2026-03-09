@@ -1,0 +1,147 @@
+.wrap{
+  border:1px solid rgba(0, 51, 204, 0.16);
+  border-radius:24px;
+  background:linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(241,245,255,0.96) 100%);
+  box-shadow:0 18px 40px rgba(0,0,0,0.06);
+  overflow:hidden;
+}
+
+.inner{
+  padding:28px;
+  display:grid;
+  grid-template-columns:minmax(0, 1.8fr) minmax(280px, 1fr);
+  gap:24px;
+}
+
+@media (max-width: 900px){
+  .inner{
+    grid-template-columns:1fr;
+  }
+}
+
+.eyebrowRow{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.eyebrow{
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:#0033cc;
+}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  border:1px solid rgba(0, 51, 204, 0.16);
+  background:#fff;
+  color:#0033cc;
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.title{
+  margin:14px 0 10px;
+  font-size:clamp(28px, 4vw, 40px);
+  line-height:1.08;
+}
+
+.description{
+  margin:0;
+  font-size:17px;
+  line-height:1.65;
+  color:#24324a;
+}
+
+.meta{
+  margin-top:14px;
+  font-size:14px;
+  font-weight:700;
+  color:#0033cc;
+}
+
+.note{
+  margin-top:14px;
+  font-size:14px;
+  line-height:1.55;
+  color:#40516f;
+}
+
+.actions{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-top:20px;
+}
+
+.primary,
+.secondary{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:44px;
+  border-radius:999px;
+  padding:0 18px;
+  text-decoration:none;
+  font-weight:800;
+}
+
+.primary{
+  background:#0033cc;
+  color:#fff;
+}
+
+.secondary{
+  background:#fff;
+  color:#0033cc;
+  border:1px solid rgba(0, 51, 204, 0.24);
+}
+
+.stats{
+  border:1px solid rgba(0, 51, 204, 0.14);
+  border-radius:20px;
+  padding:20px;
+  background:#fff;
+}
+
+.statsLabel{
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:#0033cc;
+}
+
+.amount{
+  margin-top:12px;
+  font-size:30px;
+  font-weight:900;
+  line-height:1;
+}
+
+.goal{
+  margin-top:8px;
+  font-size:15px;
+  color:#42526b;
+}
+
+.supporters{
+  margin-top:18px;
+  font-size:18px;
+  font-weight:800;
+}
+
+.archive{
+  margin-top:18px;
+  padding-top:18px;
+  border-top:1px solid rgba(0, 51, 204, 0.12);
+  font-size:13px;
+  line-height:1.55;
+  color:#5a6881;
+}
