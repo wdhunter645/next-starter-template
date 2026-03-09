@@ -9,6 +9,7 @@ const items: Array<{ href: string; label: string }> = [
   { href: '/admin/faq', label: 'FAQ Queue' },
   { href: '/admin/content', label: 'Page Content' },
   { href: '/admin/cms', label: 'CMS Blocks' },
+  { href: '/admin/fundraiser-preview', label: 'Fundraiser Preview' },
   { href: '/admin/join-requests', label: 'Join Requests' },
   { href: '/admin/media-assets', label: 'Media Assets' },
   { href: '/admin/d1-test', label: 'D1 Inspect' },
