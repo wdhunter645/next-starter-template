@@ -1,17 +1,14 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { useMemberSession } from '@/hooks/useMemberSession';
 
 export default function MemberProfilePage() {
-  const [email, setEmail] = useState<string>('');
+  const { isLoading, isAuthenticated, email } = useMemberSession({ redirectTo: '/' });
 
-  useEffect(() => {
-    try {
-      setEmail(window.localStorage.getItem('lgfc_member_email') || '');
-    } catch {
-      setEmail('');
-    }
-  }, []);
+  if (isLoading || !isAuthenticated) {
+    return null;
+  }
 
   return (
     <main style={{ padding: '40px 16px', maxWidth: 980, margin: '0 auto' }}>
@@ -30,8 +27,7 @@ export default function MemberProfilePage() {
           </div>
         </div>
       </div>
-    
-      {/* Membership card instructions (moved from removed /fanclub/membercard page) */}
+
       <section style={{ marginTop: 36 }}>
         <h2 style={{ fontSize: 24, margin: '0 0 12px 0' }}>Membership Card</h2>
         <div
@@ -74,7 +70,6 @@ export default function MemberProfilePage() {
           </div>
         </div>
       </section>
-
     </main>
   );
 }
