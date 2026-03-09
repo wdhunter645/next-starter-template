@@ -3,6 +3,7 @@
 import styles from './page.module.css';
 
 import WeeklyMatchup from '@/components/WeeklyMatchup';
+import CampaignSpotlightSlot from '@/components/home/CampaignSpotlightSlot';
 import FAQSection from '@/components/FAQSection';
 import MilestonesSection from '@/components/MilestonesSection';
 import FriendsOfFanClub from '@/components/FriendsOfFanClub';
@@ -23,6 +24,8 @@ export default function HomePage() {
           </p>
         </div>
       </header>
+
+      <CampaignSpotlightSlot />
 
       {/* Section: Weekly Photo Matchup */}
       <section id="weekly" className="section-gap">
