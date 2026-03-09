@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useMemberSession } from '@/hooks/useMemberSession';
 
 type DiscussionItem = {
   id: number;
@@ -10,19 +11,11 @@ type DiscussionItem = {
   created_at: string;
 };
 
-function getLocalEmail(): string {
-  try {
-    return window.localStorage.getItem('lgfc_member_email') || '';
-  } catch {
-    return '';
-  }
-}
-
 export default function FanclubChatPage() {
   const [items, setItems] = useState<DiscussionItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
+  const { isLoading, isAuthenticated, email } = useMemberSession({ redirectTo: '/' });
 
   const baseStyle = useMemo(() => ({
     maxWidth: 980,
@@ -47,9 +40,10 @@ export default function FanclubChatPage() {
   }
 
   useEffect(() => {
-    setEmail(getLocalEmail());
-    load();
-  }, []);
+    if (!isLoading && isAuthenticated) {
+      load();
+    }
+  }, [isLoading, isAuthenticated]);
 
   async function submitPost(title: string, body: string) {
     const res = await fetch('/api/discussions/create', {
@@ -70,6 +64,10 @@ export default function FanclubChatPage() {
     });
     const json = await res.json();
     if (!json?.ok) throw new Error(json?.error || 'report_failed');
+  }
+
+  if (isLoading || !isAuthenticated) {
+    return null;
   }
 
   return (
