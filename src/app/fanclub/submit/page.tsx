@@ -1,22 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
-function getLocalEmail(): string {
-  try { return window.localStorage.getItem('lgfc_member_email') || ''; } catch { return ''; }
-}
+import { useState } from 'react';
+import { useMemberSession } from '@/hooks/useMemberSession';
 
 export default function FanclubSubmitPage() {
-  const [email, setEmail] = useState('');
+  const { isLoading, isAuthenticated, email } = useMemberSession({ redirectTo: '/' });
   const [name, setName] = useState('');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string>('');
-
-  useEffect(() => {
-    setEmail(getLocalEmail());
-  }, []);
 
   async function submit() {
     setMsg('');
@@ -25,7 +18,7 @@ export default function FanclubSubmitPage() {
       const res = await fetch('/api/library/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim(), email: (email || '').trim(), title: title.trim(), content: content.trim() }),
+        body: JSON.stringify({ name: name.trim(), email: email.trim(), title: title.trim(), content: content.trim() }),
       });
       const json = await res.json();
       if (!json?.ok) throw new Error(json?.error || 'submit_failed');
@@ -33,14 +26,18 @@ export default function FanclubSubmitPage() {
       setContent('');
       setMsg('Submitted. Thank you!');
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      setMsg(`Error: ${msg}`);
+      const text = e instanceof Error ? e.message : String(e);
+      setMsg(`Error: ${text}`);
     } finally {
       setBusy(false);
     }
   }
 
-  const can = !busy && name.trim().length >= 2 && (email || '').trim().length >= 5 && title.trim().length >= 3 && content.trim().length >= 20;
+  const can = !busy && name.trim().length >= 2 && email.trim().length >= 5 && title.trim().length >= 3 && content.trim().length >= 20;
+
+  if (isLoading || !isAuthenticated) {
+    return null;
+  }
 
   return (
     <main style={{ maxWidth: 980, margin: '0 auto', padding: '28px 16px' }}>
@@ -61,9 +58,9 @@ export default function FanclubSubmitPage() {
           />
           <input
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            readOnly
             placeholder="Your email"
-            style={{ padding: 10, borderRadius: 10, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(0,0,0,0.2)' }}
+            style={{ padding: 10, borderRadius: 10, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(0,0,0,0.12)' }}
           />
           <input
             value={title}
