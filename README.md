@@ -66,3 +66,10 @@ npm run dev
 
 This repo enforces design and safety gates (including ZIP artifact blocking).  
 Follow `/Agent.md` for required workflow and file-touch rules.
+
+## License
+
+This repository is published as source-available for transparency and reference.
+Reuse, redistribution, or creation of derivative works from this codebase is prohibited without explicit written permission from the Lou Gehrig Fan Club.
+See the LICENSE file for full terms.
+
