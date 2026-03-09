@@ -1,13 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
-
-// FanClub auth gate (LGFC-Lite): redirect unauthenticated users to public home.
-function requireFanclubAuth(): string | null {
-  if (typeof window === 'undefined') return null;
-  const email = window.localStorage.getItem('lgfc_member_email');
-  return email && email.trim() ? email.trim() : null;
-}
+import { useMemberSession } from '@/hooks/useMemberSession';
 
 
 type PhotoItem = { id: number; url: string; is_memorabilia: number; description?: string | null; created_at: string };
@@ -26,13 +20,7 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function PhotosPage() {
-
-  useEffect(() => {
-    const email = requireFanclubAuth();
-    if (!email) {
-      window.location.href = '/';
-    }
-  }, []);
+  const { isLoading, isAuthenticated } = useMemberSession({ redirectTo: '/' });
   const [items, setItems] = useState<PhotoItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [offset, setOffset] = useState(0);
@@ -54,8 +42,14 @@ export default function PhotosPage() {
   }
 
   useEffect(() => {
-    load(0);
-  }, []);
+    if (!isLoading && isAuthenticated) {
+      load(0);
+    }
+  }, [isLoading, isAuthenticated]);
+
+  if (isLoading || !isAuthenticated) {
+    return null;
+  }
 
   return (
     <main style={{ ...styles.main }}>
