@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useMemberSession } from '@/hooks/useMemberSession';
 
 type PhotoItem = {
   id: number;
@@ -11,15 +12,12 @@ type PhotoItem = {
   created_at?: string;
 };
 
-function getLocalEmail(): string {
-  try { return window.localStorage.getItem('lgfc_member_email') || ''; } catch { return ''; }
-}
 
 export default function FanclubPhotoGalleryPage() {
   const [items, setItems] = useState<PhotoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
-  const [email, setEmail] = useState('');
+  const { isLoading, isAuthenticated, email } = useMemberSession({ redirectTo: '/' });
 
   async function load() {
     setLoading(true);
@@ -55,9 +53,14 @@ export default function FanclubPhotoGalleryPage() {
   }
 
   useEffect(() => {
-    setEmail(getLocalEmail());
-    load();
-  }, []);
+    if (!isLoading && isAuthenticated) {
+      load();
+    }
+  }, [isLoading, isAuthenticated]);
+
+  if (isLoading || !isAuthenticated) {
+    return null;
+  }
 
   return (
     <main style={{ maxWidth: 1100, margin: '0 auto', padding: '28px 16px' }}>
