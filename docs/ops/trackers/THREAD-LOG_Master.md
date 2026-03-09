@@ -737,12 +737,60 @@ TIMELINE LOCKED
 - June 2, 2026 11:59:59 PM ET close
 - June 3, 2026 manual final snapshot lock
 
-
-
-
-
-
-
+----------------------------------------------------------------
 
 THREAD UPDATE — Phase 1 Closeout Alignment — 2026-03-08
 T01–T03 formally closed in tracker to reflect verified implementation state.
+
+----------------------------------------------------------------
+THREAD CLOSEOUT RECORD — 2026-03-08 — T10B — Weekly Matchup / Admin Pilot numbering correction
+
+OBJECTIVE
+Resolve Phase 2B task numbering drift caused by temporary duplication between Weekly Matchup follow-on work and the Campaign Spotlight admin pilot.
+
+WHAT CHANGED
+• Reviewed Phase 2B numbering conflicts.
+• Removed fundraiser/admin pilot overlap from T10B.
+• Moved Campaign Spotlight work out of the Weekly Matchup lane and finalized it under T20B.
+• Restored T10B to a closed correction record rather than an active mixed-scope task.
+
+RESULT
+• Phase 2B numbering is stabilized.
+• Weekly Matchup correction work remains isolated from Campaign Spotlight implementation.
+• T20B is now the authoritative task for the Temporary Campaign Spotlight / Admin Pilot work.
+
+VERIFICATION
+• No duplicate Weekly Matchup / Admin Pilot task assignment remains under T10B.
+• T20B is the active fundraiser pilot lane.
+• Tracker structure now reads cleanly for Phase 2B.
+
+NEXT START POINT
+Next task: T20B — Temporary Campaign Spotlight (ALS Fundraiser 2026) — Admin Pilot Implementation
+
+
+----------------------------------------------------------------
+THREAD CLOSEOUT RECORD — 2026-03-08 — T11B — Weekly Photo Matchup visual corrections
+
+OBJECTIVE
+Resolve image cropping and spacing issues in the Weekly Photo Matchup section.
+
+WHAT CHANGED
+• Updated src/components/WeeklyMatchup.tsx image rendering logic.
+• Switched image display to objectFit:"contain".
+• Introduced fixed container sizing to normalize photo layout.
+• Preserved existing two-column desktop layout.
+
+RESULT
+• All images from the Backblaze B2 archive render consistently.
+• No cropping regardless of source dimensions.
+• Section spacing and heading alignment verified visually.
+
+VERIFICATION
+• Production site visually inspected.
+• Cloudflare build PASS.
+• No layout regressions detected.
+
+NEXT START POINT
+Next task: **T20B — Temporary Campaign Spotlight (ALS Fundraiser 2026) — Admin Pilot Implementation**
+
+
