@@ -683,31 +683,49 @@ Rules:
 • Phase 2B must be fully closed before starting Phase 3.
 
 ----------------------------------------------------------------
-TASK 10B — Reserved (Hero findings lane)
+TASK 10B — Weekly Matchup / Admin Pilot numbering correction
+STATUS: CLOSED
+DATE CLOSED: 2026-03-08
 
+SUMMARY:
+• Initial duplicate between Weekly Matchup pilot work and Admin pilot placement.
+• Admin pilot moved from 10B → 19B → finalized under 20B.
+• Weekly Matchup stabilization remained under Phase 2 tasks.
+
+RESULT:
+Task numbering corrected and Phase 2B structure stabilized.
+
+TASK CLOSED.
 ----------------------------------------------------------------
-TASK 11B — Weekly Photo Matchup visual corrections — OPEN
-STATUS: OPEN
-DATE OPENED: 2026-02-24
+----------------------------------------------------------------
+TASK 11B — Weekly Photo Matchup visual corrections
+STATUS: CLOSED
+DATE CLOSED: 2026-03-08
 
 TRIGGER:
-• Images still cropped (object-fit: cover)
-• Heading spacing not visible as intended
+• Images previously cropped due to object-fit: cover
+• Heading spacing required adjustment
 
 SCOPE:
-• src/components/WeeklyMatchup.tsx only
+• src/components/WeeklyMatchup.tsx
 
-REQUIRED:
-1) Full image visibility (objectFit:"contain"; no crop; no stretch)
-2) Visible whitespace above section heading
-3) Preserve side-by-side desktop layout
+CHANGES:
+• Switched image rendering to objectFit:"contain"
+• Added fixed image container sizing for consistent layout
+• Ensured full image visibility (no crop, no stretch)
+• Preserved side-by-side desktop layout
 
-ACCEPTANCE:
-• Photos fully visible
-• Heading spacing present
-• Build PASS
-• Cloudflare deploy GREEN
+RESULT:
+• All B2 images now scale consistently within the matchup card.
+• No cropping occurs regardless of source image dimensions.
+• Desktop layout remains stable with aligned vote buttons.
 
+VERIFICATION:
+• Homepage visually confirmed.
+• Cloudflare build PASS.
+• Production deploy GREEN.
+
+TASK CLOSED.
 ----------------------------------------------------------------
 TASK 12B — Reserved (Join findings lane)
 
@@ -782,3 +800,6 @@ NOTES:
 - No code changes in this task record (documentation-only thread).
 - Implementation will be tracked as separate Phase 2B tasks once authorized.
 
+================================================================
+
+----------------------------------------------------------------
