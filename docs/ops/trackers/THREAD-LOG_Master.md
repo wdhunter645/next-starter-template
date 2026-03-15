@@ -13,7 +13,6 @@ Execution Task List:
 
 
 # THREAD-LOG_Master.md
-Location (authoritative): /docs/tasklists/logs/THREAD-LOG_Master.md
 Purpose: Append-only closeout records so each new thread can start executing immediately.
 
 > This file was **previously duplicated/overwritten** by casing variants. This version is the single canonical log file.
