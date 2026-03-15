@@ -8,6 +8,10 @@ Canonical Reference: /docs/ops/OPERATING_MANUAL.md
 Last Reviewed: 2026-02-20
 ---
 
+Execution Task List:
+/docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md
+
+
 # THREAD-LOG_Master.md
 Location (authoritative): /docs/tasklists/logs/THREAD-LOG_Master.md
 Purpose: Append-only closeout records so each new thread can start executing immediately.
