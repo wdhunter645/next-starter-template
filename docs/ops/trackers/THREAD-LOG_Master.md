@@ -4,7 +4,7 @@ Audience: Human + AI
 Authority Level: Operational Authority
 Owns: Live operating procedures, incident response, monitoring, operator workflows
 Does Not Own: Redefining design/architecture/platform specs; historical records
-Canonical Reference: /docs/ops/OPERATING_MANUAL.md
+Canonical Reference: /docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md
 Last Reviewed: 2026-02-20
 ---
 
