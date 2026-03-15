@@ -24,7 +24,7 @@ The `/join` page provides the primary visitor → member intake flow for the Lou
 
 **This specification aligns with:**
 - `/docs/LGFC-Production-Design-and-Standards.md` — See "6) JOIN — Behavior Lock" for authoritative field definitions and duplicate handling
-- `/docs/NAVIGATION-INVARIANTS.md` — Join button placement in header
+- `docs/reference/design/LGFC-Production-Design-and-Standards.md` — Join button placement in header
 
 The authoritative design doc defines:
 - Required fields: first_name, last_name, email
@@ -191,7 +191,7 @@ Per `/docs/LGFC-Production-Design-and-Standards.md` "6) JOIN — Behavior Lock":
 
 ## Header/Footer/Navigation State
 
-Per `/docs/NAVIGATION-INVARIANTS.md`:
+Per `docs/reference/design/LGFC-Production-Design-and-Standards.md`:
 
 ### Header
 - **Visitor header** applies (user is not logged in on `/join`)
@@ -308,7 +308,7 @@ See `/docs/design/phases.md` and `/docs/design/login.md` for phase boundaries.
 ## Related Documentation
 
 - **Design Standards:** `/docs/LGFC-Production-Design-and-Standards.md` (Section 6)
-- **Navigation:** `/docs/NAVIGATION-INVARIANTS.md`
+- **Navigation:** `docs/reference/design/LGFC-Production-Design-and-Standards.md`
 - **Login Spec:** `/docs/design/login.md`
 - **Phase Definitions:** `/docs/design/phases.md`
 - **Email Content:** `/docs/WelcomeEmail.MD`, `/docs/MembershipCard.MD`

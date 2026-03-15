@@ -45,4 +45,4 @@ After any production change:
 ## Required references
 - `/docs/governance/PR_GOVERNANCE.md` (PR process and runtime policy)
 - `/docs/LGFC-Production-Design-and-Standards.md` (design authority)
-- `/docs/NAVIGATION-INVARIANTS.md` (navigation authority)
+- `docs/reference/design/LGFC-Production-Design-and-Standards.md` (navigation authority)

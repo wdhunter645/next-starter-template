@@ -162,7 +162,7 @@ See `/docs/design/phases.md` for phase definitions and boundaries.
 - **Phase Definitions**: `/docs/design/phases.md` — LGFC-Lite capabilities
 - **Join Flow**: `/docs/design/join.md` — Member join/signup process
 - **Member Page**: `/docs/memberpage.html` — Member area specification
-- **Navigation Invariants**: `/docs/NAVIGATION-INVARIANTS.md` — Header structure
+- **Navigation Invariants**: `docs/reference/design/LGFC-Production-Design-and-Standards.md` — Header structure
 - **Website Process**: `/docs/governance/PR_GOVERNANCE.md` — Development standards
 
 ## Verification Checklist

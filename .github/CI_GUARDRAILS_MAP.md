@@ -662,7 +662,7 @@ npm run assess
 # Check header component
 # Verify button labels match manifest
 # Check hamburger menu structure
-# See /docs/NAVIGATION-INVARIANTS.md
+# See docs/reference/design/LGFC-Production-Design-and-Standards.md
 ```
 
 **Page markers:**

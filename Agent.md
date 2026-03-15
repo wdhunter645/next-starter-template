@@ -12,7 +12,7 @@ If you cannot comply, stop and request guidance rather than guessing.
 
 Before any change, read:
 - `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
-- `/docs/archive/superseded/NAVIGATION-INVARIANTS.md`
+- `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
 - `/docs/reference/design/fanclub.md`
 - `/docs/reference/architecture/access-model.md` (for admin-related changes)
 
@@ -32,7 +32,7 @@ These documents are the design law. Do not invent routes, labels, or layouts.
 
 ## 3) Header / Footer Invariants
 
-Follow `/docs/archive/superseded/NAVIGATION-INVARIANTS.md` exactly.
+Follow `/docs/reference/design/LGFC-Production-Design-and-Standards.md` exactly.
 
 Highlights:
 - Public header (logged out): Join / Search / Store / Login

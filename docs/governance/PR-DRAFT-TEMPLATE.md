@@ -20,7 +20,7 @@ All PR drafts must follow this structure and must be delivered as **one continuo
 ### Reference
 - Refer to `/docs/governance/PR_PROCESS.md` for required structure and change conventions.
 - Follow operational, rollback, and testing standards in `/docs/governance/PR_GOVERNANCE.md`.
-- Follow navigation rules in `/docs/NAVIGATION-INVARIANTS.md`.
+- Follow navigation rules in `docs/reference/design/LGFC-Production-Design-and-Standards.md`.
 
 ### Change Summary
 - [Describe exactly what changes will be made, and where. No options.]
@@ -43,7 +43,7 @@ All PR drafts must follow this structure and must be delivered as **one continuo
   - Explicitly state: **No documentation updates required** (only allowed when the change truly does not affect UI behavior, navigation, header/footer, login flow, or documented specifications).
 - If the PR touches any section in `/docs/LGFC-Production-Design-and-Standards.md`, remove all "..." ellipses in that section and replace with complete specification text.
 - Required doc updates for common change types:
-  - Header/Footer/Navigation changes → `/docs/LGFC-Production-Design-and-Standards.md` + `/docs/NAVIGATION-INVARIANTS.md`
+  - Header/Footer/Navigation changes → `/docs/LGFC-Production-Design-and-Standards.md` + `docs/reference/design/LGFC-Production-Design-and-Standards.md`
   - Login/auth flow changes → `/docs/LGFC-Production-Design-and-Standards.md` (LOGIN/LOGOUT section) + `/docs/design/login.md`
   - Page layout changes → `/docs/LGFC-Production-Design-and-Standards.md` + relevant `/docs/design/*.md` files
 

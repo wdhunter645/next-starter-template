@@ -11,7 +11,7 @@ You are operating on the LGFC repository. Follow these rules exactly.
 
 ## Required reads before changes
 - `/docs/PR-DRAFT-TEMPLATE.md`
-- `/docs/NAVIGATION-INVARIANTS.md`
+- `docs/reference/design/LGFC-Production-Design-and-Standards.md`
 - `/docs/website.md`
 - `/docs/website-process.md`
 

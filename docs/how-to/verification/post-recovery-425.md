@@ -69,5 +69,5 @@ Details: Will be completed after merge
 This verification follows:
 - `/docs/website.md` - Required structure and change conventions
 - `/docs/governance/PR_GOVERNANCE.md` - Operational, rollback, and testing standards
-- `/docs/NAVIGATION-INVARIANTS.md` - Design consistency requirements
+- `docs/reference/design/LGFC-Production-Design-and-Standards.md` - Design consistency requirements
 - `/docs/governance/PR-DRAFT-TEMPLATE.md` - PR governance standards

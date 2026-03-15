@@ -26,7 +26,7 @@ Framework: Next.js (App Router) + TypeScript
 
 ### Tier-2 governance / standards (must reference MASTER files; must not restate specifics)
 - `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
-- `/docs/archive/superseded/NAVIGATION-INVARIANTS.md`
+- `docs/reference/design/LGFC-Production-Design-and-Standards.md`
 - `/docs/as-built/RECONCILIATION-NOTES_2026-02.md`
 - `/docs/reference/design/fanclub.md`
 

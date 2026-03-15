@@ -22,7 +22,7 @@ This document serves as the authoritative baseline for the Cloudflare Pages-host
 ### Source of Truth
 - Canonical Specification: `/docs/fanclub.html`
 - Versioned Specification: `/docs/fanclub-v1.html`
-- Navigation Rules: `/docs/NAVIGATION-INVARIANTS.md`
+- Navigation Rules: `docs/reference/design/LGFC-Production-Design-and-Standards.md`
 - Process Guidelines: `/docs/website-PR-governance.md`
 
 ### Architecture
@@ -143,7 +143,7 @@ All member-specific components are in `src/componentsfanclub/`:
 
 ### Navigation Behavior
 
-Per `/docs/NAVIGATION-INVARIANTS.md`:
+Per `docs/reference/design/LGFC-Production-Design-and-Standards.md`:
 
 **FanClub Area Logo:**
 - Always links to `/fanclub` (not public homepage)
