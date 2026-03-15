@@ -7,8 +7,8 @@ function must(cond, msg) {
   }
 }
 
-const navDoc = fs.readFileSync('docs/NAVIGATION-INVARIANTS.md', 'utf8');
-must(navDoc.includes('LGFC — Navigation Invariants'), 'NAVIGATION-INVARIANTS.md missing expected header');
+const navDoc = fs.readFileSync('docs/reference/design/LGFC-Production-Design-and-Standards.md', 'utf8');
+must(navDoc.includes('LGFC — Navigation Invariants'), 'LGFC-Production-Design-and-Standards.md missing expected header');
 
 const header = fs.readFileSync('src/components/Header.tsx', 'utf8');
 const idxJoin = header.indexOf('href="/join"');

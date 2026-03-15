@@ -150,7 +150,7 @@ All PRs must include:
 
 3. **Documentation validation:**
    - If UI/navigation changes: docs updated
-   - If header/footer changes: NAVIGATION-INVARIANTS.md updated
+   - If header/footer changes: LGFC-Production-Design-and-Standards.md updated
    - If design changes: LGFC-Production-Design-and-Standards.md updated
    - No "..." placeholders in touched documentation sections
 
@@ -406,7 +406,7 @@ All changes must:
 - `/docs/LGFC-Production-Design-and-Standards.md` - Authoritative design standards
 - `/docs/governance/PR_GOVERNANCE.md` - Operational and rollback standards
 - `/docs/website.md` - PR structure and formatting
-- `/docs/NAVIGATION-INVARIANTS.md` - Navigation rules
+- `docs/reference/design/LGFC-Production-Design-and-Standards.md` - Navigation rules
 
 **Process Documentation:**
 - `/docs/governance/PR-DRAFT-TEMPLATE.md` - PR template

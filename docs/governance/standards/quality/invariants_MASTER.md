@@ -18,7 +18,7 @@ Define the non-negotiable invariants that must remain true in production.
 
 ## Primary invariants (authoritative references)
 - Routes and auth boundaries: `/docs/LGFC-Production-Design-and-Standards.md`
-- Canonical navigation: `/docs/NAVIGATION-INVARIANTS.md` (or `NAVIGATION-INVARIANTS.md` as present)
+- Canonical navigation: `docs/reference/design/LGFC-Production-Design-and-Standards.md` (or `LGFC-Production-Design-and-Standards.md` as present)
 
 ## Governance invariants
 - Exactly one intent label per PR.
