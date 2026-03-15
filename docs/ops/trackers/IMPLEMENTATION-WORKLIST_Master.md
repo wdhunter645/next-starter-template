@@ -8,6 +8,9 @@ Canonical Reference: /docs/ops/OPERATING_MANUAL.md
 Last Reviewed: 2026-02-20
 ---
 
+Project Plan (authoritative roadmap):
+/docs/ops/trackers/LGFC-REPO-RECOVERY-AND-IMPLEMENTATION_PLAN.md
+
 # IMPLEMENTATION-WORKLIST_Master.md
 Location (authoritative): /docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md
 Purpose: Day-1 execution map (1 task = 1 thread) + zero-drift guardrails.
