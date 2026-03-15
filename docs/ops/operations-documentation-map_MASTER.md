@@ -21,7 +21,7 @@ Operations documentation (_MASTER) is authoritative for production behavior.
 Project documentation (_INCOMPLETE/_DRAFT) is reference-only until turnover.
 
 If documents conflict, follow:
-- `/docs/governance/document-authority-hierarchy_MASTER.md`
+- `/docs/governance/standards/document-authority-hierarchy_MASTER.md`
 - '/docs/AI-GUIDE.md — Default instruction set for Agent/AI work in this repo (must follow locked design standards).'
   
 ## Category model
