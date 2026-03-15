@@ -32,7 +32,7 @@ This is the high-level, human-readable summary of this repository. It is intende
 
 ## Canonical Routes (Day 1)
 
-Authoritative list is in `/docs/NAVIGATION-INVARIANTS.md`.
+Authoritative list is in `/docs/archive/superseded/NAVIGATION-INVARIANTS.md`.
 
 High-level:
 - Public: `/`, `/about`, `/contact`, `/terms`, `/privacy`, `/search`, `/join`, `/login`, `/logout`, `/faq`, `/health`
@@ -44,9 +44,9 @@ High-level:
 
 ## Design Sources of Truth
 
-- `/docs/LGFC-Production-Design-and-Standards.md`
-- `/docs/NAVIGATION-INVARIANTS.md`
-- `/docs/fanclub.md`
+- `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
+- `/docs/archive/superseded/NAVIGATION-INVARIANTS.md`
+- `/docs/reference/design/fanclub.md`
 
 If any code or other doc conflicts with these, these win.
 

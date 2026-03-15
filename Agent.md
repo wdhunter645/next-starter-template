@@ -11,10 +11,10 @@ If you cannot comply, stop and request guidance rather than guessing.
 ## 1) Sources of Truth (non-negotiable)
 
 Before any change, read:
-- `/docs/LGFC-Production-Design-and-Standards.md`
-- `/docs/NAVIGATION-INVARIANTS.md`
-- `/docs/fanclub.md`
-- `/docs/admin/access-model.md` (for admin-related changes)
+- `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
+- `/docs/archive/superseded/NAVIGATION-INVARIANTS.md`
+- `/docs/reference/design/fanclub.md`
+- `/docs/reference/architecture/access-model.md` (for admin-related changes)
 
 These documents are the design law. Do not invent routes, labels, or layouts.
 
@@ -32,7 +32,7 @@ These documents are the design law. Do not invent routes, labels, or layouts.
 
 ## 3) Header / Footer Invariants
 
-Follow `/docs/NAVIGATION-INVARIANTS.md` exactly.
+Follow `/docs/archive/superseded/NAVIGATION-INVARIANTS.md` exactly.
 
 Highlights:
 - Public header (logged out): Join / Search / Store / Login
