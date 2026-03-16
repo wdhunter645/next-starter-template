@@ -12,7 +12,6 @@ If you cannot comply, stop and request guidance rather than guessing.
 
 Before any change, read:
 - `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
-- `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
 - `/docs/reference/design/fanclub.md`
 - `/docs/reference/architecture/access-model.md` (for admin-related changes)
 
@@ -36,7 +35,7 @@ Follow `/docs/reference/design/LGFC-Production-Design-and-Standards.md` exactly.
 
 Highlights:
 - Public header (logged out): Join / Search / Store / Login
-- Public header (logged in): add Club Home + Logout (6 total)
+- Public header (logged in): Club Home / Search / Store / Logout (4 total)
 - FanClub header: Club Home / My Profile / Search / Store / Logout
 - Logo always links to `/`
 - Footer: left quote + legal, center logo scroll-to-top, right links Contact/Support/Terms/Privacy, no email displayed

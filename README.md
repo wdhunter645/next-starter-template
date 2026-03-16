@@ -17,39 +17,23 @@ Framework: Next.js (App Router) + TypeScript
 
 ## Design Authority (Day 1)
 
-### MASTER design (implementation-level detail)
-- `/docs/archive/superseded/master_design.md`
-- `/docs/design/master/Header_Design.md`
-- `/docs/design/master/Footer_Design.md`
-- `/docs/design/master/Auth_Design.md`
-- `/docs/design/master/Home_Design.md`
-
-### Tier-2 governance / standards (must reference MASTER files; must not restate specifics)
+Canonical design authority:
 - `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
-- `docs/reference/design/LGFC-Production-Design-and-Standards.md`
-- `/docs/as-built/RECONCILIATION-NOTES_2026-02.md`
+- `/docs/reference/design/home.md`
 - `/docs/reference/design/fanclub.md`
 
-If code or docs conflict, **MASTER design wins**.
+Historical / superseded material:
+- `/docs/archive/superseded/`
+- `/docs/as-built/RECONCILIATION-NOTES_2026-02.md`
+
+If code or docs conflict, **`/docs/reference/design/LGFC-Production-Design-and-Standards.md` wins**.
 
 ---
 
-## Day 1 Canonical Routes (summary)
+## Day 1 Canonical Routes
 
-Public:
-- `/`, `/about`, `/contact`, `/terms`, `/privacy`, `/search`, `/auth`, `/logout`, `/faq`, `/health`
-
-FanClub (auth required; unauth redirects to `/`):
-- `/fanclub`, `/fanclub/myprofile`, `/fanclub/photo`, `/fanclub/library`, `/fanclub/memorabilia`
-
-Admin (admin gate):
-- `/admin/**`
-
-Store:
-- External Bonfire link (no `/store` route)
-
-Weekly vote:
-- In transition; do not delete weekly-related routes until the hidden-results behavior is finalized.
+Do not treat this README as the route source of truth.
+Use `/docs/reference/design/LGFC-Production-Design-and-Standards.md` for the canonical route list and navigation behavior.
 
 ---
 

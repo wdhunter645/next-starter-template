@@ -45,7 +45,6 @@ High-level:
 ## Design Sources of Truth
 
 - `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
-- `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
 - `/docs/reference/design/fanclub.md`
 
 If any code or other doc conflicts with these, these win.
