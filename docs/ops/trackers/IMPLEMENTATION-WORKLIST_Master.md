@@ -2,882 +2,341 @@
 Doc Type: Operations
 Audience: Human + AI
 Authority Level: Operational Authority
-Owns: Live operating procedures, incident response, monitoring, operator workflows
+Owns: Live implementation sequencing, launch readiness, production restoration, monitoring follow-through
 Does Not Own: Redefining design/architecture/platform specs; historical records
 Canonical Reference: /docs/ops/OPERATING_MANUAL.md
-Last Reviewed: 2026-02-20
+Last Reviewed: 2026-03-16
 ---
 
 Project Plan (authoritative roadmap):
 /docs/ops/trackers/LGFC-REPO-RECOVERY-AND-IMPLEMENTATION_PLAN.md
 
-Thread Closeout Log: /docs/ops/trackers/THREAD-LOG_Master.md
+Thread Closeout Log:
+/docs/ops/trackers/THREAD-LOG_Master.md
 
 # IMPLEMENTATION-WORKLIST_Master.md
-Location (authoritative): /docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md
-Purpose: Day-1 execution map (1 task = 1 thread) + zero-drift guardrails.
 
-> This file was **previously overwritten** during thread turnover. This version restores the canonical tasklist structure and the thread-closeout workflow.
-
----
-
-## Operating Rules (non-negotiable)
-
-- **One Task = One Thread.** Close the thread when the task is DONE / PARTIAL / BLOCKED.
-- **Fresh ZIP per thread.** Start each thread with the latest repo ZIP attached (authoritative snapshot).
-- **Thread must end with a Closeout Record** appended to `/docs/ops/trackers/THREAD-LOG_Master.md` (append-only; newest at bottom).
-- **No mixed intent.** A task may touch shared foundations (Header/PageShell/global CSS/auth gate) OR page/content features, not both, unless explicitly stated in that task.
-- **No regressions allowed.** Any task that touches shared UI must run the regression checklist below.
-- **Case-sensitive file safety.** Do not create duplicate “same name, different casing” files (Cloudflare/Linux and macOS behave differently).
-
----
-
-## Regression Checklist (run for any shared UI / routing change)
-
-- Header buttons: hover/click works on Home + at least 3 other public pages.
-- Logo link: routes correctly to `/`.
-- Footer links: route correctly and match NAVIGATION invariants.
-- Auth gating: `/fanclub/**` redirects to `/` when logged out.
-- Cloudflare build: succeeds.
-- Production smoke: Home loads; no obvious broken layout.
-
----
-
-## Thread Template (use for every task)
-
-### Task Card
-- **Objective**
-- **Scope (files/areas allowed)**
-- **Execution Steps (Codespaces commands)**
-- **Verification Steps**
-- **Exit Criteria**
-- **Closeout Record Required** → append to `/docs/ops/trackers/THREAD-LOG_Master.md`
-
----
-
-# CURRENT STATUS SNAPSHOT (best-known as of 2026-02-20)
-
-## Documentation model (Phases 1–3)
-- Status: COMPLETE in this ZIP (Diátaxis buckets + authority headers + path normalization + docs guardrails workflow).
-- Guardrails: `docs_check_headers`, `docs_check_paths`, `docs_canonical_hashes_verify` are present and PASS locally.
-
-## Build / Deploy (needs confirmation)
-- Status: NOT DETERMINABLE from ZIP alone.
-- Required verification (run in Codespaces):
-  - `npm ci`
-  - `npm run build`
-  - `npx wrangler --version`
-  - Confirm latest Cloudflare Pages build log for `main` deploy.
-
-## Day‑1 website readiness (needs confirmation)
-- Status: NOT DETERMINABLE from ZIP alone.
-- Required verification (run in Codespaces / production check):
-
-## Known active design compliance gaps (must reconcile before claiming “Day 1 complete”)
-- **Footer link order/content currently does not match NAVIGATION-INVARIANTS** (must be Contact, Support, Terms, Privacy in that order; no “About” in footer). Confirm against production before closing T02/T19.
-
----
-
-  - Route smoke: `/`, `/about`, `/contact`, `/support`, `/terms`, `/privacy`, `/search`, `/join`, `/login`, `/logout`, `/faq`, `/health`
-  - Auth gating: `/fanclub/**` redirects to `/` when logged out; renders when logged in.
-  - Admin gating: `/admin/**` requires session + `ADMIN_EMAILS`.
-
----
-
-# PHASE 0 — Continuity Spine (must exist before anything else)
-
-✅ COMPLETED
-## T00 — Create logs + tasklist structure (repo hygiene)
-Scope: folders/docs only; no app behavior change.
-Exit: `/docs/ops/trackers/THREAD-LOG_Master.md` exists; this file exists under `/docs/tasklists/`.
-
----
-
-# PHASE 1 — Foundation Stabilization (stop regressions)
-
-⚠️ OPEN
-## T01 — Lock Header + PageShell ownership (stop recurring header breakage)
-
-STATUS: CLOSED
-DATE CLOSED: 2026-03-08
-SUMMARY:
-Header and PageShell ownership verified; header routing confirmed across Home/About/FAQ/Join; no regressions observed.
-Scope: Header component(s), PageShell/layout, global CSS only.
-Exit: Header links work on Home/About/FAQ/Join; verified in production.
-Closeout: list exact files that define header + shell; add “do not change” note.
-
-### T01 Incident Note — 2026-02-20 — Cloudflare Pages build blocker (Next CLI not found)
-- Symptom: Cloudflare Pages build fails during `npm run build` with `sh: 1: next: not found`.
-- Root cause: npm config `install-links=false` in the build environment prevents `node_modules/.bin` from being created, so `next` is not on PATH for npm scripts.
-- Fix (in this thread): Set `install-links=true` and `bin-links=true` in repo `.npmrc` so Next’s CLI link is created in all environments.
-- Verification: After upload + redeploy, Cloudflare build should proceed past dependency install and execute `next build` successfully.
-
-
-⚠️ OPEN
-## T02 — Routing verification sweep (public pages)
-
-STATUS: CLOSED
-DATE CLOSED: 2026-03-08
-SUMMARY:
-Public routing sweep completed; header and footer links verified; no unexpected redirects or 404 routes.
-Scope: routing + link targets only (no styling).
-Exit: All header + footer links route correctly; no 404/redirect surprises.
-Closeout: record route map + any redirects observed.
-
-⚠️ OPEN
-## T03 — Auth gating verification (fanclub + admin)
-
-STATUS: CLOSED
-DATE CLOSED: 2026-03-08
-SUMMARY:
-Auth gating verified for /fanclub and /admin paths; logged-out redirects confirmed; authenticated access validated.
-Scope: middleware/auth gate only.
-Exit: logged-out access to `/fanclub/**` redirects; logged-in access works.
-Closeout: record exact rule and test URLs.
-
-✅ COMPLETED / EXISTS
-## T04 — Production smoke harness (repeatable checklist + commands)
-Scope: docs/scripts only (no app change).
-Exit: production smoke doc exists and is runnable.
-
----
-
-# PHASE 2 — Public Homepage Integrity (section-by-section, no regressions)
-
-## T10 — Hero banner: lock structure + style invariants
-Scope: hero section only; no header/footer edits.
-Exit: hero renders correctly; no shadow/border regressions vs design lock.
-Closeout: file ownership recorded.
-
-## T11 — Weekly Photo Matchup: UI wiring verification
-Scope: weekly matchup components + API endpoints used by Home.
-Exit: Home shows 2 photos; vote submits; results behave as designed.
-Closeout: endpoints + tables recorded.
-
-## T12 — Join section: CTA correctness
-Scope: Join CTA only.
-Exit: Join button routes correctly; copy correct; no dead buttons.
-Closeout: destination URLs recorded.
-
-## T14 — Social wall (Elfsight): embed stability
-Scope: Elfsight embed only.
-Exit: widget loads; no console hard-fail; CSP does not break it.
-Closeout: required domains + config location recorded.
-
-## T15 Calendar Events
-Scope: section title is missing.
-Exit: title added to section.
-closeout: results confirmed by viewing website.
-
-## T16 — Friends tiles (6) stability
-Scope: friends section only.
-Exit: 6 tiles render; links open external URLs; layout stable.
-
-## T17 — Events (next 10) wiring
-Scope: events section + endpoint only.
-Exit: shows next 10; empty-state acceptable; no runtime errors.
-
-## T18 — FAQ preview wiring
-Scope: FAQ preview only.
-Exit: preview renders; links route to FAQ page.
-
-## T19 — Footer: lock invariants
-Scope: footer only.
-Exit: footer matches NAVIGATION invariants; links work; no layout regressions.
-Closeout: footer ownership files recorded.
-
----
-
-# PHASE 3 — Public Core Features (complete end-to-end)
-
-## T20 — FAQ page: search + view count + pinned
-Scope: FAQ page + its API/DB only.
-Exit: search works; pinned works; view count increments; ask form works.
-
-## T21 — Ask-a-question intake: persistence + basic validation
-Scope: ask form + storage only.
-Exit: email + question stored; basic rate-limit if defined.
-
-## T22 — Events page: month view + list view
-Scope: events page + its data only.
-Exit: renders correctly; stable navigation.
-
----
-
-# PHASE 4 — Fan Club (auth required) Core
-
-## T30 — Fanclub home shell + navigation
-Scope: fanclub layout + nav only.
-Exit: fanclub loads post-login; header rules preserved.
-
-## T31 — Member Profile: identity + membership card panel
-Scope: profile page only.
-Exit: identity fields render; membership card panel renders.
-
-## T32 — Member Chat: post + list + report flow (Day 1)
-Scope: chat components + storage only.
-Exit: post works; newest first; report works.
-
-## T33 — Library: read path + Article #2 display
-Scope: library read only.
-Exit: article displays reliably; empty-state acceptable.
-
-## T34 — Member submissions: article upload (PDF) pipeline
-Scope: upload endpoint + storage + metadata only.
-Exit: PDF allowlist + size limits; stored to B2; metadata stored.
-
-## T35 — Photo Gallery: browse + report incorrect tags (Day 1)
-Scope: gallery browse + report flow.
-Exit: browse works; report works.
-
-## T36 — Memorabilia: browse + long description render
-Scope: memorabilia browse only.
-Exit: images render; long descriptions render below image.
-
----
-
-# PHASE 5 — Admin (moderation + management)
-
-## T40 — Admin access gate (fail closed)
-Scope: admin auth only.
-Exit: only admins access `/admin/**`; non-admin blocked.
-
-## T41 — Admin moderation: reported items queue
-Scope: moderation UI + endpoints.
-Exit: admin can view reports; resolve; audit trail preserved.
-
-## T42 — Admin content tools: FAQ management
-Scope: FAQ admin only.
-Exit: create/edit/pin/unpin works; public reflects changes.
-
-## T43 — Admin events tools: create/edit events
-Scope: events admin only.
-Exit: admin create/edit works; public reflects.
-
-## T44 — Admin media tools: upload/tag for photos + memorabilia
-Scope: admin media only.
-Exit: admin upload works; tagging stored; public reflects.
-
----
-
-# PHASE 6 — Hardening (after core stability)
-
-## T50 — Rate limiting on sensitive endpoints (Cloudflare-native)
-## T51 — Env validation fail-fast (build/runtime)
-## T52 — Security sweep: upload limits + MIME enforcement
-## T53 — CSP implementation
-
----
-
-# PHASE 7 — Release Readiness
-
-## T60 — Full production smoke pass + no-regression signoff
-Scope: verification only.
-Exit: all core flows pass; no broken headers; no dead links.
-
----
-
-## Documentation Freeze (Day-1 Stability Gate)
-
-- Status: ACTIVE (freeze)
-- Effective: 2026-02-20
-- Scope: docs/** (all documentation)
-- Rule: No doc edits unless required to remove drift that blocks builds/ops, or to document an active production incident.
-- Canonical baseline: /docs/README.md and /docs/governance/standards/document-authority-hierarchy_MASTER.md
-- Rationale: Documentation architecture is now stabilized; focus shifts to production implementation tasks.
-
-
----
-
-# PHASE 8 — Documentation Model Redesign (Phases 4–5) (post Day‑1)
-
-## T70 — Phase 4: Rewrite legacy text to match new authority model
-Scope:
-- Remove/replace legacy intra-doc references that point to pre-reorg paths.
-- Ensure each doc’s “Owns / Does Not Own” matches its real content.
-- Remove duplicated design specifics from non-design docs (they must point to canonical spec instead).
-
-Exit:
-- No references remain to removed paths (grep check passes).
-- Each active doc’s header fields are accurate (no “TBD” in Doc Type / Authority / Canonical Reference for active docs).
-
-## T71 — Phase 5: Documentation completeness + maintenance baseline
-Scope:
-- Review docs coverage vs Day‑1 ops needs; create missing “how-to” pages only if needed.
-- Refresh `/docs/README.md` first-read order and map to new buckets.
-- Lock a maintenance cadence: “Last Reviewed” updates + canonical hashes refresh process.
-
-Exit:
-- `/docs/README.md` accurately points to the canonical design/ops docs.
-- `docs-guardrails` workflow remains green on PRs touching docs.
-- Canonical hash list is up to date (regenerate + verify passes).
-
-## T72 — Phase 4–5 Addendum — Route Terminology Alignment (FanClub)
-Objective: Eliminate legacy /member route terminology from all authoritative documentation and design references.
-
-Scope:
-Replace /member with /fanclub in all active design and reference documents.
-Replace “Members Area” wording with “Fan Club.”
-Preserve historical audit artifacts in docs/as-built/ (do not treat as drift).
-Regenerate and store route audit before Phase 5 sign-off.
-
-Verification:
-Repo-wide grep audit excluding snapshots and as-built history.
-Confirm zero /member UI-route references in active docs.
-Confirm Cloudflare build remains green.
-Status: In Progress (Documentation Redesign Phase 4–5)
-
-
----
-
-# APPENDED UPDATES (do not edit prior content)
-
-## 2026-02-20 — T02 — Routing verification sweep (public pages) — Progress Update
-
-Changes (code only; no styling changes):
-- Unify hamburger menu behavior across headers: hamburger menu is **NOT login-aware** and contains only:
-  - `/about`
-  - `/contact`
-- Member header now uses the shared `HamburgerMenu.tsx` (no separate member hamburger).
-- `HamburgerMenu.tsx` now provides a stable `id="hamburger-menu"` target for `aria-controls`.
-
-Routing cleanup (member → fanclub):
-- Verified `src/**` contains **no UI links** to `/member` routes.
-- `/api/member/**` routes are **intentionally preserved** (API surface, not UI routing).
-
-Repo hygiene note:
-- `src/components/MemberHamburgerMenu.tsx` is now obsolete by design and should be deleted from the repo to prevent drift.
-
-## - 2026-02-20 — T02 — Routing verification sweep (headers + fanclub naming) — Completion Update
-Changes (code only; no styling changes):
-
-Header naming alignment (member → fanclub):
-- Renamed src/components/MemberHeader.tsx → src/components/FanClubHeader.tsx
-- Renamed src/components/MemberHeader.module.css → src/components/FanClubHeader.module.css
-- Updated SiteHeader to reference FanClubHeader (no remaining MemberHeader references in src/**)
-
-Hamburger menu standardization:
-- Confirmed single shared src/components/HamburgerMenu.tsx is the standard.
-- Removed member-specific hamburger usage from FanClubHeader; FanClubHeader now imports and renders HamburgerMenu.
-- Verified: no remaining references to MemberHamburgerMenu in src/**.
-
-Repo hygiene / drift reduction:
-- src/components/MemberHamburgerMenu.tsx deleted (completed).
-- src/components/SiteHeaderOLD.tsx deleted (completed; file was not referenced in src/** and removed to prevent drift).
-
-Verification:
-- grep drift-gate: no “MemberHeader” or “MemberHamburgerMenu” references remain in src/**.
-- npm run build: PASS (warnings only for <img> lint rule; no build failures).
----
-
-## T03 Closeout Append — 2026-02-20 — Verified auth model + corrected admin gating statement
-
-This thread verified the **as-built** access model against repository specs (authoritative: `/docs/reference/architecture/access-model.md` and `/docs/reference/design/auth-and-logout.md`).
-
-### Verified behavior (FanClub)
-- **Logged out:** visiting any `/fanclub/**` route redirects to `/` (client-side) when `localStorage.lgfc_member_email` is absent.
-- **Logged in:** visiting `/fanclub` and child routes renders normally when `localStorage.lgfc_member_email` is present.
-
-**As-built implementation:**
-- `src/app/fanclub/layout.tsx` (client-side gate)
-- `src/hooks/useAuthRedirect.ts` (shared helper; optional use)
-- `docs/reference/design/auth-and-logout.md` (spec)
-
-### Verified behavior (Admin)
-- **Admin UI pages (`/admin/**`) are browser-reachable and NOT session-gated server-side.**
-- **Admin API endpoints (`/api/admin/**`) are token-gated** (header `x-admin-token`) with token stored in `sessionStorage` (`lgfc_admin_token`) per `/docs/reference/architecture/access-model.md`.
-
-**As-built reference (authoritative):**
-- `/docs/reference/architecture/access-model.md`
-
-### Concrete test URLs
-- FanClub (logged out): `/fanclub`, `/fanclub/myprofile`, `/fanclub/library` → redirect to `/`
-- FanClub (logged in): same URLs → render
-- Admin UI: `/admin` loads (UI reachable); API calls require token
-
-### Concrete test steps (browser)
-- Logged-out test:
-  - `localStorage.removeItem('lgfc_member_email'); location.href='/fanclub';`
-- Logged-in test:
-  - `localStorage.setItem('lgfc_member_email','test@example.com'); location.href='/fanclub';`
-- Admin token test (UI prompts / uses token as designed):
-  - `sessionStorage.removeItem('lgfc_admin_token'); location.href='/admin';`
-
-### Correction note (drift prevention)
-The earlier “Admin gating requires session + ADMIN_EMAILS” statement in the **CURRENT STATUS SNAPSHOT** section is **not aligned** with the as-built architecture. Use `/docs/reference/architecture/access-model.md` as source of truth.
-
-Status: **T03 VERIFIED (no code changes required in this thread)**.
-
-----------------------------------------------------------------
-TASK 04 — Production Smoke Harness
-STATUS: CLOSED
-DATE CLOSED: 2026-02-21
-COMMIT: 9293215
-
-SUMMARY:
-• Removed prohibited `set -euo pipefail` from scripts/prod-smoke.sh (Codespaces stability rule).
-• Resolved rebase conflict in scripts/prod-smoke.sh.
-• Rebased onto origin/main successfully.
-• Push to remote main successful.
-• Production smoke executed against https://www.lougehrigfanclub.com.
-• All checks passed (pages 2xx/3xx, JSON endpoints ok:true, fanclub logged-out redirect).
-
-NO DESIGN OR ROUTE CHANGES INTRODUCED.
-----------------------------------------------------------------
-
-----------------------------------------------------------------
-T10 — Hero banner: lock structure + style invariants
-STATUS: CLOSED
-DATE CLOSED: 2026-02-21
-COMMIT: TBD (set by your commit)
-
-SUMMARY:
-• Hero banner styling now explicitly enforces “no border / no box-shadow” and preserves overlap behavior (does not clip FloatingLogo).
-• Improved tablet-width responsiveness via CSS variable override (prevents layout jump).
-
-FILES TOUCHED:
-• src/app/page.module.css
-• src/app/globals.css
-
-NO ROUTE, NAV, OR HEADER/FOOTER CHANGES INTRODUCED.
-----------------------------------------------------------------
-
-NOTE — 2026-02-21 — Worklist housekeeping (append-only)
-- T10 appears twice by design:
-  1) As the original task definition in the Phase list (header "## T10 — ...").
-  2) As the closeout record appended later under "APPENDED UPDATES".
-- This is intentional for audit history. Do NOT add additional T10 entries; future references should point to the existing closeout block.
----
-## 2026-02-21 — T11 — Weekly Photo Matchup: UI wiring verification — FINAL CLOSEOUT
-
-### Scope
-- Confirm Weekly Photo Matchup renders correctly on Production.
-- Remove stray helper text ("Results remain hidden until you vote.").
-- Eliminate duplicate component file to prevent naming drift.
-- Validate Cloudflare API returns correct JSON payload.
-- Confirm naming variance does not create code-level drift.
-
-### Actions Completed
-- Deleted duplicate file: src/WeeklyMatchup.tsx.
-- Confirmed canonical component: src/components/WeeklyMatchup.tsx.
-- Removed stray UI helper copy from component.
-- Confirmed /api/matchup/current returns:
-  - ok: true
-  - valid week_start
-  - two image items
-- Confirmed Production renders Weekly Photo Matchup section.
-
-### Drift Prevention
-- Canonical naming locked:
-  - Component: WeeklyMatchup
-  - API anchor: /api/matchup/*
-  - Section label: "Weekly Photo Matchup"
-- No additional weekly/photo/matchup code files exist in repo.
-- Documentation guardrail added to docs/reference/design/home.md.
-
-### Status
-T13 — OPEN
-Production stable for UI + API response.
-
-## 2026-02-21 — T12 — Join Banner Wrapper Standardization + CSS Build Fix — FINAL CLOSEOUT
-
-STATUS: CLOSED
-DATE CLOSED: 2026-02-21
-PRODUCTION COMMITS: f10bc73, 6374675
-
-SUMMARY:
-• Standardized Join CTA wrapper class to `.joinBanner` (camelCase wrapper only).
-• Removed legacy `.join-banner` wrapper selector to eliminate wrapper drift.
-• Repaired malformed Join banner CSS (balanced braces) that caused Cloudflare build failure (PostCSS “Unclosed block”).
-• Local build passed. Cloudflare deploy green; homepage UI verified; Join/Login CTAs function.
-
-FOLLOW-ON:
-• Verifier realignment remains open as T13 (false FAILs must be removed to stop chronic reintro).
-
-## 2026-02-21 — T13 — v6 Lock Verifier Realignment (Header/JoinCTA/SocialWall) — OPEN
-
-STATUS: OPEN
-DATE OPENED: 2026-02-21
-
-PROBLEM:
-tools/verify_v6_lock.sh is still enforcing older, unapproved checks and is producing 4 false FAILs:
-• Header “absolute-aligned top positioning for logo/hamburger”
-• Join banner checks against homepage (should validate JoinCTA component)
-• Social Wall placeholder checks against homepage (should validate SocialWall component)
-• Prohibited `set -euo pipefail` still present in the verifier (Codespaces stability rule)
-
-ACCEPTANCE CRITERIA:
-1) grep proves old strings are gone:
-   grep -n "set -euo pipefail|absolute-aligned top positioning|Join banner missing \.joinBanner class|Social Wall placeholder missing in page\.tsx" tools/verify_v6_lock.sh || true
-2) Verifier passes with 0 FAIL:
-   bash tools/verify_v6_lock.sh
-3) npm run build passes.
-4) Commit evidence: audits/verify_v6_lock_*.txt shows 0 FAIL lines.
-
-APPROVED REALITY (WHAT VERIFIER MUST CHECK):
-• Header: validate left/center/right wrapper structure, not absolute positioning.
-• Join CTA: validate src/components/JoinCTA.tsx uses joinBanner + approved copy.
-• Social Wall: validate src/components/SocialWall.tsx contains the Elfsight widget placeholder.
-• Remove `set -euo pipefail`.
-
-
-----------------------------------------------------------------
-TASK 13 — v6 Lock Verifier Realignment (Header/JoinCTA/SocialWall)
-STATUS: CLOSED
-DATE CLOSED: 2026-02-21
-
-EVIDENCE:
-• tools/verify_v6_lock.sh => 0 FAIL (JoinCTA approved copy match restored).
-• npm run build => PASS (warnings only).
-
-SUMMARY:
-• Resolved final verifier failure: JoinCTA approved copy matching (formatting/grep-compat).
-• Verifier now reflects component reality and homepage lock requirements without legacy false FAILs.
-
-
-----------------------------------------------------------------
-TASK 14 — Social Wall Spacing + Elfsight Visibility Hardening
-STATUS: CLOSED
-DATE CLOSED: 2026-02-22
-
-SCOPE:
-• Removed forced min-height and flex centering from social-wall.module.css.
-• Standardized section spacing to align with global section-gap system.
-• Added CSS Modules–compliant safety override (anchored to .embed) to prevent global CSS from hiding Elfsight content.
-• Confirmed Cloudflare build success after CSS Modules selector correction.
-
-EVIDENCE:
-• npm run build => PASS
-• Cloudflare Pages build => PASS
-• tools/verify_v6_lock.sh => 0 FAIL
-• Homepage renders Social Wall correctly with tightened spacing.
-
-SUMMARY:
-Tasks 12, 13, and 14 collectively resolved the six v6 lock alignment issues identified during post-T12 review.
-Homepage layout, verifier logic, and widget rendering are now aligned with locked design standards.
-
-
-----------------------------------------------------------------
-TASK 14 — Matchup API Type Hardening
-STATUS: OPEN
-DATE OPENED: 2026-02-23
-
-SUMMARY:
-- Removed spread of `unknown` in /api/matchup/current route.
-- Introduced `isRecord` type guard.
-- Normalized URL handling to prevent undefined being passed to normalizeUrl().
-- Local build passes.
-- Cloudflare build currently failing; final verification pending.
-
-NEXT ACTION:
-- Confirm CF build completes successfully.
-- Verify production endpoint: /api/matchup/current returns { ok: true }.
-- Close task only after production validation.
-
-----------------------------------------------------------------
-TASK 15 — Calendar Section Layout Correction
-STATUS: CLOSED
-DATE CLOSED: 2026-02-23
-
-SUMMARY:
-- Centered calendar section title.
-- Split event list into two balanced columns.
-- Layout verified visually.
-- No TypeScript or build errors introduced.
-- No routing or API impact.
-
-PRODUCTION STATUS:
-- Rendering correctly.
-- No regression detected.
-
-TASK CLOSED.
-----------------------------------------------------------------
-
-
-----------------------------------------------------------------
-TASK 14 — Cloudflare Pages build failure + production instability (/api/matchup/current) — CLOSEOUT
-STATUS: CLOSED
-DATE CLOSED: 2026-02-24
-COMMIT: 2e75b71
-
-PROBLEM (EVIDENCE):
-• Cloudflare Pages build failing under Next.js static export constraints (output: "export").
-• Failure pointed at /api/matchup/current due to App Router Route Handler presence.
-
-ROOT CAUSE:
-• Static export (output: "export") is incompatible with Next.js App Router Route Handlers at src/app/api/**/route.ts.
-
-FIX (EXPORT-COMPLIANT):
-• Removed the following Next Route Handlers (export-incompatible):
-  - src/app/api/matchup/current/route.ts
-  - src/app/api/join/route.ts
-  - src/app/api/login/route.ts
-• Cloudflare Pages Functions remain authoritative for /api/** (functions/api/**), including:
-  - functions/api/matchup/current.ts
-
-RESULT:
-• Local build/export: GREEN (static export succeeded).
-• Cloudflare Pages deploy: GREEN; Functions uploaded.
-• Production homepage now displays matchup photos successfully (via /api/matchup/current Pages Function).
-• Evidence captured: docs/ops/trackers/_evidence_T14_2026-02-24_matchup-current.txt
-
-SCOPE NOTES (GUARDRAILS HONORED):
-• No navigation/design changes.
-• No photo rendering/UX refactor work performed (separate thread).
-• No PR528/doc review work performed here.
-
-
-----------------------------------------------------------------
-TASK 15 — Weekly Matchup UI: side-by-side photos + desktop formatting fixes — CLOSEOUT
-STATUS: CLOSED
-DATE CLOSED: 2026-02-24
-COMMITS:
-• d77a997 — feature: weekly matchup spacing + taller images (no stretch)
-(Notes: WeeklyMatchup updated to 2-up layout on desktop; padding/height adjustments applied.)
-
-RESULT:
-• Weekly Photo Matchup now renders side-by-side on desktop.
-• Layout stability improved; vote buttons align under each photo column.
-
-FOLLOW-ON:
-• Cloudflare build log now reports new operational warnings to address (captured as T16).
-
-----------------------------------------------------------------
-TASK 16 — Cloudflare build log warnings cleanup (Wrangler fields, redirects loops, headers parse) — OPEN
-STATUS: OPEN
-DATE OPENED: 2026-02-24
-TRIGGER (EVIDENCE):
-• Cloudflare Pages build log for deploy commit d77a997 reported warnings that do not block deploy but indicate misconfiguration/noise.
-
-ISSUES TO FIX:
-1) wrangler.toml warning:
-   - "Unexpected fields found in top-level field: ratelimits"
-   - Indicates configuration is being ignored by the Pages/Wrangler config reader.
-2) Dependency security noise:
-   - npm audit reports 15 vulnerabilities (1 moderate, 14 high) during CF build.
-   - Requires controlled remediation (prefer npm audit fix; avoid --force unless reviewed).
-3) Redirects + headers rules warnings:
-   - Multiple redirect rules flagged as infinite loop and ignored (e.g., /about/ -> /about/index.html 200).
-   - Headers rules parsing error: invalid header line (#4 "*/" expected name:value).
-   - Requires cleaning _redirects/_headers rules to remove loops and invalid lines.
-
-ACCEPTANCE CRITERIA:
-• Cloudflare build log no longer reports:
-  - unexpected wrangler.toml fields warning
-  - redirect infinite-loop warnings
-  - invalid header line warning
-• npm audit output reduced to acceptable baseline (goal: 0; minimum: no HIGH without explicit tracking/approval).
-• No regressions: site deploys and core routes still work.
-
-
-================================================================
-### PHASE 2B — Public Homepage Stabilization (Parallel Lane)
-DATE INSERTED: 2026-02-24
-AUTHORITY: Operational
-RELATIONSHIP: Runs parallel to Phase 2 (T10–T19). Must be complete before Phase 3 begins.
+Location (authoritative):
+/docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md
 
 Purpose:
-Capture defects, layout corrections, Cloudflare build noise, and deployment findings
-discovered while executing Phase 2 — without renumbering Phase 2 tasks.
+Execution map for LGFC Phase 2 website implementation, pre-launch stabilization, and Day 2 operations restoration.
 
-Rules:
-• Do NOT modify Phase 2 task numbering.
-• Use T10B–T19B exclusively for Phase 2B items.
-• Scope must be stabilization, corrections, or compliance.
-• No design changes unless correcting deviation from locked standards.
-• Phase 2B must be fully closed before starting Phase 3.
+This file is the operational control document for thread-by-thread execution.
 
-----------------------------------------------------------------
-TASK 10B — Weekly Matchup / Admin Pilot numbering correction
-STATUS: CLOSED
-DATE CLOSED: 2026-03-08
+---
 
-SUMMARY:
-• Initial duplicate between Weekly Matchup pilot work and Admin pilot placement.
-• Admin pilot moved from 10B → 19B → finalized under 20B.
-• Weekly Matchup stabilization remained under Phase 2 tasks.
+# HARD DATES (LOCKED)
 
-RESULT:
-Task numbering corrected and Phase 2B structure stabilized.
+- Target implementation complete date: **2026-03-24**
+- Review / adjust / finalize window: **2026-03-25 through 2026-03-31**
+- Hard production + fundraiser announcement date: **2026-04-01**
 
-TASK CLOSED.
-----------------------------------------------------------------
-----------------------------------------------------------------
-TASK 11B — Weekly Photo Matchup visual corrections
-STATUS: CLOSED
-DATE CLOSED: 2026-03-08
+Operational meaning:
 
-TRIGGER:
-• Images previously cropped due to object-fit: cover
-• Heading spacing required adjustment
+- By **2026-03-24**, all required website implementation work must be functionally complete.
+- By **2026-03-31**, production readiness, smoke coverage, and post-launch monitoring must be restored and verified.
+- On **2026-04-01**, the website and ALS fundraiser announcement must be supportable as a live production event.
 
-SCOPE:
-• src/components/WeeklyMatchup.tsx
+---
 
-CHANGES:
-• Switched image rendering to objectFit:"contain"
-• Added fixed image container sizing for consistent layout
-• Ensured full image visibility (no crop, no stretch)
-• Preserved side-by-side desktop layout
+# OPERATING RULES (NON-NEGOTIABLE)
 
-RESULT:
-• All B2 images now scale consistently within the matchup card.
-• No cropping occurs regardless of source image dimensions.
-• Desktop layout remains stable with aligned vote buttons.
+- **One Task = One Thread.** Close the thread when the task is DONE / PARTIAL / BLOCKED.
+- **Fresh ZIP per thread.** Start each implementation or recovery thread with the latest repo ZIP attached.
+- **Thread must end with a Closeout Record** appended to `/docs/ops/trackers/THREAD-LOG_Master.md`.
+- **No mixed intent.** A task may touch shared foundations OR feature/page implementation unless explicitly allowed in the task card.
+- **No regressions allowed.** Any task that touches shared UI, auth, routes, data flow, or admin paths must run verification before closeout.
+- **Case-sensitive file safety.** Do not create duplicate paths that differ only by letter casing.
+- **Design authority remains locked.** If any conflict appears, follow `/docs/reference/design/LGFC-Production-Design-and-Standards.md`.
+- **Implementation priority beats documentation expansion.** Phase 3 documentation architecture work stays deferred until Phase 2 implementation and launch readiness are stable.
 
-VERIFICATION:
-• Homepage visually confirmed.
-• Cloudflare build PASS.
-• Production deploy GREEN.
+---
 
-TASK CLOSED.
-----------------------------------------------------------------
-TASK 12B — Reserved (Join findings lane)
+# REQUIRED VERIFICATION FOR IMPLEMENTATION TASKS
 
-----------------------------------------------------------------
-TASK 13B — Reserved (Verifier findings lane)
+Run as applicable to the files touched:
 
-----------------------------------------------------------------
-TASK 14B — Reserved (Social Wall findings lane)
+- `npm ci`
+- `npm run build`
+- Route smoke for impacted routes
+- Logged-out auth gate check for `/fanclub/**`
+- Logged-in validation for impacted member/admin paths
+- Cloudflare build verification for preview or production as applicable
+- Production smoke verification before declaring any launch-critical task complete
 
-----------------------------------------------------------------
-TASK 15B — Reserved (Calendar findings lane)
+---
 
-----------------------------------------------------------------
-TASK 16B — Reserved (Friends findings lane)
+# THREAD TEMPLATE (USE FOR EVERY TASK)
 
-----------------------------------------------------------------
-TASK 17B — Reserved (Events findings lane)
+### Task Card
+- Objective
+- Scope (files/areas allowed)
+- Execution Steps
+- Verification Steps
+- Exit Criteria
+- Closeout Record Required → append to `/docs/ops/trackers/THREAD-LOG_Master.md`
 
-----------------------------------------------------------------
-TASK 18B — Reserved (FAQ findings lane)
+---
 
-----------------------------------------------------------------
-TASK 19B — Cloudflare build log warnings cleanup — OPEN
-STATUS: OPEN
-DATE OPENED: 2026-02-24
+# CURRENT STATUS SNAPSHOT (AS OF 2026-03-16)
 
-TRIGGER:
-Cloudflare Pages build log warnings:
-1) wrangler.toml unexpected field "ratelimits"
-2) Redirect infinite-loop warnings
-3) _headers invalid header line parse error
-4) npm audit vulnerability noise
+## Phase 1 Documentation Stabilization
+Status: **COMPLETE**
 
-SCOPE:
-• wrangler.toml
-• public/_redirects
-• public/_headers
-• dependencies (minimal remediation only)
+Verification commit:
+`156afa647fad1aba7230a48ca7872b82c2c592bc`
 
-CONSTRAINT:
-• No route/navigation/design changes.
+Result:
+- Documentation authority stabilized.
+- Phase 2 website implementation can resume.
+- Phase 3 long-term documentation architecture remains deferred until implementation stabilizes.
 
-ACCEPTANCE:
-• No wrangler warnings
-• No redirect loop warnings
-• No headers parse warnings
-• npm audit reduced to acceptable baseline
-• Build + deploy remain GREEN
+## Tracker health
+Status: **PARTIALLY READY**
 
-================================================================
+What changed in this revision:
+- Added locked target dates through 2026-04-01.
+- Added phase-level target completion dates.
+- Added explicit pre-launch and Day 2 operations restoration phases.
+- Preserved one-task-per-thread execution model.
 
-----------------------------------------------------------------
-PHASE 2B ADDITION — Documentation-only (Temporary Campaign Spotlight / ALS Fundraiser 2026)
-DATE: 2026-02-26T13:14:02Z
-STATUS: OPEN (Docs delivered; implementation follows separate tasks)
+## Day 2 Operations state
+Status: **NOT YET RESTORED**
 
-TASK 19B — Temporary Campaign Spotlight (ALS Fundraiser 2026) — DOCUMENTATION PACKAGE
-SCOPE (docs only):
-- Define temporary Home section contract (hidden by default; between Hero and Weekly Matchup when enabled)
-- Define ALS Fundraiser 2026 spotlight content contract, rules, timeline
-- Define snapshot cadence + publish gate + manual tie policy
-- Define test plan + monitoring expectations
+Repository contains monitoring and operational artifacts, but the worklist previously did not schedule restoration work required to support post-launch production operation.
 
-DELIVERABLES (new docs):
-- /docs/reference/design/home-temporary-campaign-section.md
-- /docs/reference/design/als-fundraiser-2026-campaign-spotlight.md
-- /docs/reference/architecture/temporary-campaign-spotlight-data-contract.md
-- /docs/how-to/ops/als-fundraiser-snapshots-and-publishing.md
-- /docs/how-to/test/als-fundraiser-spotlight-test-plan.md
+Day 2 restoration is now tracked as required work before the 2026-04-01 announcement.
 
-NOTES:
-- No code changes in this task record (documentation-only thread).
-- Implementation will be tracked as separate Phase 2B tasks once authorized.
+---
 
-================================================================
+# PHASE TARGET SCHEDULE
 
-----------------------------------------------------------------
+## Phase 2 — Public Website Implementation
+Target complete: **2026-03-20**
 
-----------------------------------------------------------------
-TASK 20B — FanClub/Auth Access Repair
-STATUS: CLOSED
-DATE CLOSED: 2026-03-09
+## Phase 3 — Fan Club + Admin implementation required for launch support
+Target complete: **2026-03-22**
 
-OBJECTIVE
-Restore proper authentication flow to the FanClub area and eliminate
-the legacy localStorage login workaround.
+## Phase 4 — Launch-critical production verification and defect closure
+Target complete: **2026-03-24**
 
-PROBLEM
-FanClub access relied on localStorage key `lgfc_member_email`, causing
-redirect loops and inconsistent session recognition in production.
+## Phase 5 — Day 2 Operations & Monitoring restoration
+Target complete: **2026-03-31**
 
-RESOLUTION
-• Implemented session-based member authentication hook.
-• Removed reliance on lgfc_member_email localStorage logic.
-• Restored proper login redirect to /fanclub.
-• Restored Admin dashboard visibility for admin role users.
+This schedule supports:
+- implementation complete by 2026-03-24
+- final review / adjustment window through 2026-03-31
+- hard launch and fundraiser announcement on 2026-04-01
 
-VERIFICATION
-Cloudflare deployment verified:
+---
 
-https://99aa079a.next-starter-template-6yr.pages.dev/
+# PHASE 2 — PUBLIC WEBSITE IMPLEMENTATION
 
-Confirmed:
-• Login redirects to /fanclub
-• FanClub route accessible when authenticated
-• Admin dashboard reachable
-• Redirect loop resolved
+Status: **OPEN**
+Target complete: **2026-03-20**
 
-FOLLOW‑ON
-FanClub UI components remain placeholder implementations.
+## T10 — Homepage implementation validation against design authority
+Scope: homepage sections against locked design authority only.
+Exit: homepage structure validated against canonical design; missing or broken sections identified and corrected.
+Target date: **2026-03-17**
 
-----------------------------------------------------------------
-TASK 20C — FanClub Page Implementation (Design Compliance)
-STATUS: OPEN
-DATE OPENED: 2026-03-09
+## T11 — Hero / banner integrity
+Scope: hero banner only.
+Exit: banner structure, content, and styling stable with no shared-layout regression.
+Target date: **2026-03-17**
 
-OBJECTIVE
-Implement the FanClub home page per locked design specification
-/docs/fanclub.md.
+## T12 — Weekly Photo Matchup wiring verification
+Scope: homepage matchup components + supporting endpoint/data path.
+Exit: homepage shows two valid photos; vote flow works; results behavior verified.
+Target date: **2026-03-18**
 
-CURRENT STATE
-FanClub renders but uses placeholder components:
-• WelcomeSection
-• ArchivesTiles
-• PostCreation
-• DiscussionFeed
-• GehrigTimeline
-• AdminLink
+## T13 — Join / Login call-to-action correctness
+Scope: homepage/member-entry CTA area only.
+Exit: Join and Login paths/buttons are correct, visible, and non-dead.
+Target date: **2026-03-18**
 
-SCOPE
-Implement the full FanClub UI layout including:
+## T14 — Social wall embed stability
+Scope: social wall embed only.
+Exit: widget loads without breaking homepage render; required domains/config recorded.
+Target date: **2026-03-18**
 
-1. Welcome section
-2. FanClub navigation/archive tiles
-3. Post creation interface
-4. Discussion feed
-5. Lou Gehrig timeline
-6. Admin dashboard link section
-7. Proper container spacing and LGFC styling
+## T15 — Calendar section title + presentation integrity
+Scope: homepage calendar/events section only.
+Exit: section title present; section renders cleanly in homepage layout.
+Target date: **2026-03-19**
 
-CONSTRAINTS
-• Do not modify authentication logic.
-• Do not modify routes or navigation.
-• Maintain Cloudflare static export compatibility.
+## T16 — Friends tiles stability
+Scope: friends/supporters tile section only.
+Exit: six tiles render and route correctly; layout stable.
+Target date: **2026-03-19**
 
-ACCEPTANCE CRITERIA
-• FanClub page matches design structure.
-• Placeholder content removed.
-• Admin link visible only for admin users.
-• Cloudflare build passes.
+## T17 — Events preview wiring
+Scope: homepage events preview only.
+Exit: next events display works or empty state renders without runtime errors.
+Target date: **2026-03-19**
+
+## T18 — FAQ preview wiring
+Scope: homepage FAQ preview only.
+Exit: preview renders and routes correctly to FAQ page.
+Target date: **2026-03-20**
+
+## T19 — Footer invariants lock
+Scope: footer only.
+Exit: footer matches locked navigation order/content and links route correctly.
+Target date: **2026-03-20**
+
+---
+
+# PHASE 3 — FAN CLUB + ADMIN IMPLEMENTATION REQUIRED FOR LAUNCH SUPPORT
+
+Status: **OPEN**
+Target complete: **2026-03-22**
+
+## T20 — Public FAQ page functionality
+Scope: FAQ page + supporting public data flow.
+Exit: FAQ render, search, pinned behavior, and ask flow work at launch-safe level.
+Target date: **2026-03-20**
+
+## T21 — Ask-a-question intake persistence + validation
+Scope: ask form + storage only.
+Exit: intake persists required fields and basic validation works.
+Target date: **2026-03-20**
+
+## T22 — Public events page functionality
+Scope: events page only.
+Exit: events page renders cleanly and supports intended public viewing path.
+Target date: **2026-03-21**
+
+## T30 — Fan Club home shell + navigation integrity
+Scope: fanclub layout + navigation only.
+Exit: post-login shell loads correctly; navigation is stable; public header rules remain intact.
+Target date: **2026-03-21**
+
+## T31 — Member Profile + membership card panel
+Scope: member profile page only.
+Exit: required identity and membership card panel render correctly.
+Target date: **2026-03-21**
+
+## T40 — Admin access gate fail-closed verification
+Scope: admin auth gate only.
+Exit: only authorized admins can access `/admin/**`; non-admins fail closed.
+Target date: **2026-03-22**
+
+## T41 — Admin fundraiser pilot / launch support area
+Scope: admin-only implementation area used to safely build and validate fundraiser-related functionality before public exposure.
+Exit: fundraiser pilot area is usable in admin, hidden from public, and available for operational testing.
+Target date: **2026-03-22**
+
+---
+
+# PHASE 4 — LAUNCH-CRITICAL VERIFICATION AND DEFECT CLOSURE
+
+Status: **OPEN**
+Target complete: **2026-03-24**
+
+## T50 — Route structure verification sweep
+Scope: all launch-critical public/member/admin routes.
+Exit: required routes load, redirect, or fail closed exactly as intended.
+Target date: **2026-03-23**
+
+## T51 — Auth gating verification sweep
+Scope: `/fanclub/**` and `/admin/**`.
+Exit: logged-out redirects, logged-in access, and admin restrictions are verified end-to-end.
+Target date: **2026-03-23**
+
+## T52 — Production smoke harness execution
+Scope: production smoke scripts/checklists only.
+Exit: repeatable smoke run completed and recorded for launch-critical routes and features.
+Target date: **2026-03-24**
+
+## T53 — Launch blocker defect closure
+Scope: defects discovered in T50–T52 only.
+Exit: all launch-blocking defects either fixed or explicitly documented as accepted non-blockers.
+Target date: **2026-03-24**
+
+---
+
+# PHASE 5 — DAY 2 OPERATIONS & MONITORING RESTORATION
+
+Status: **OPEN**
+Target complete: **2026-03-31**
+
+Purpose:
+Restore the repository to a functional Day 2 operational state so the site and fundraiser announcement can be supported after launch.
+
+## T60 — Monitoring inventory verification
+Scope: monitoring docs + scripts inventory only.
+Exit: confirm what monitoring exists, what still functions, and what gaps remain.
+Target date: **2026-03-25**
+
+## T61 — Production build/deploy review path restoration
+Scope: Cloudflare build review path, deployment review commands, and operational runbook references.
+Exit: operators have a current, repeatable path to inspect build/deploy health.
+Target date: **2026-03-26**
+
+## T62 — Production smoke and rollback readiness
+Scope: smoke + rollback operational readiness only.
+Exit: smoke procedure, rollback reference, and production verification path are aligned and usable.
+Target date: **2026-03-27**
+
+## T63 — Launch-week incident response readiness
+Scope: incident-response quick-use operator path only.
+Exit: operator can respond to outage, partial failure, or degraded fundraiser/site behavior without reconstructing process during live operations.
+Target date: **2026-03-28**
+
+## T64 — Post-launch monitoring/check cadence
+Scope: operational cadence for 2026-03-31 through 2026-04-07.
+Exit: review cadence defined for site availability, build status, key launch flows, and fundraiser-related checks.
+Target date: **2026-03-29**
+
+## T65 — Day 2 operations restore complete
+Scope: closeout verification for T60–T64.
+Exit: repository is back in functional Day 2 operations state for launch support.
+Target date: **2026-03-31**
+
+---
+
+# PHASE 6 — DEFERRED UNTIL POST-LAUNCH
+
+Status: **DEFERRED**
+
+## T70 — Long-term documentation architecture migration
+Scope: Phase 3 documentation architecture work from the recovery plan.
+Exit: execute only after implementation and launch stabilization are complete.
+
+---
+
+# COMPLETED WORK
+
+## T01 — Lock Header + PageShell ownership
+Status: CLOSED
+Date closed: 2026-03-08
+Summary: Header and PageShell ownership verified; header routing confirmed across Home/About/FAQ/Join; no regressions observed.
+
+## T02 — Routing verification sweep (public pages)
+Status: CLOSED
+Date closed: 2026-03-08
+Summary: Public routing sweep completed; header and footer links verified; no unexpected redirects or 404 routes.
+
+## T03 — Auth gating verification (fanclub + admin)
+Status: CLOSED
+Date closed: 2026-03-08
+Summary: Auth gating verified for /fanclub and /admin paths; logged-out redirects confirmed; authenticated access validated.
+
+## T04 — Production smoke harness (repeatable checklist + commands)
+Status: EXISTS
+Summary: Production smoke artifacts exist and must be executed again in Phase 4 / Phase 5 launch readiness work.
+
+---
+
+# NOTES FOR EXECUTION MODE
+
+Recommended execution model for the 2026-03-24 target:
+
+- Atlas / ChatGPT = control plane, task authoring, acceptance criteria, verification, tracker updates.
+- Cursor = implementation agent working directly in the live repo for thread-by-thread execution.
+- Human operator = approves direction, uploads ZIPs when needed, and controls repo merges/deploy timing.
+
+Reason:
+The documentation is now stable enough for implementation work, and the schedule is compressed enough that direct in-repo execution is the practical path.
