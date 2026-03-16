@@ -44,8 +44,8 @@ All PR drafts must follow this structure and must be delivered as **one continuo
 - If the PR touches any section in `/docs/reference/design/LGFC-Production-Design-and-Standards.md`, remove all "..." ellipses in that section and replace with complete specification text.
 - Required doc updates for common change types:
   - Header/Footer/Navigation changes → `/docs/reference/design/LGFC-Production-Design-and-Standards.md` + `docs/reference/design/LGFC-Production-Design-and-Standards.md`
-  - Login/auth flow changes → `/docs/reference/design/LGFC-Production-Design-and-Standards.md` (LOGIN/LOGOUT section) + `/docs/design/login.md`
-  - Page layout changes → `/docs/reference/design/LGFC-Production-Design-and-Standards.md` + relevant `/docs/design/*.md` files
+  - Login/auth flow changes → `/docs/reference/design/LGFC-Production-Design-and-Standards.md` (LOGIN/LOGOUT section) + `/docs/reference/design/join-login.md`
+  - Page layout changes → `/docs/reference/design/LGFC-Production-Design-and-Standards.md` + relevant `/docs/reference/design/*.md` files
 
 ### Acceptance Criteria
 - ZIP file(s) uploaded to repo root are **deleted** and **not committed**.

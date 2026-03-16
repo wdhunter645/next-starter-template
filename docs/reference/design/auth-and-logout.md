@@ -50,8 +50,8 @@ No persistent UI. During processing, display a minimal loading state:
 
 - This page should not appear in navigation or be linked directly
 - If user navigates to `/auth` with no parameters, redirect to `/`
-- Part of the LGFC-Lite local session model (see `docs/design/login.md`
-  and `docs/design/phases.md`)
+- Part of the LGFC-Lite local session model (see `docs/reference/design/join-login.md`
+  and `docs/archive/future/phases.md`)
 
 -----
 
