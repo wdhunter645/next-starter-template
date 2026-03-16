@@ -22,7 +22,7 @@ Define how production changes are proposed, reviewed, executed, verified, and (i
 
 ## Authority & precedence
 - This file governs change mechanics.
-- Design truth comes from `/docs/LGFC-Production-Design-and-Standards.md` and `docs/reference/design/LGFC-Production-Design-and-Standards.md`.
+- Design truth comes from `/docs/reference/design/LGFC-Production-Design-and-Standards.md` and `docs/reference/design/LGFC-Production-Design-and-Standards.md`.
 - If documents conflict, follow `/docs/governance/document-authority-hierarchy_MASTER.md`.
 
 ## Change units (non-negotiable)
