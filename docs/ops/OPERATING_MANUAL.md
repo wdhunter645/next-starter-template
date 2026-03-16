@@ -403,7 +403,7 @@ All changes must:
 ## References
 
 **Primary Documentation:**
-- `/docs/LGFC-Production-Design-and-Standards.md` - Authoritative design standards
+- `/docs/reference/design/LGFC-Production-Design-and-Standards.md` - Authoritative design standards
 - `/docs/governance/PR_GOVERNANCE.md` - Operational and rollback standards
 - `/docs/website.md` - PR structure and formatting
 - `docs/reference/design/LGFC-Production-Design-and-Standards.md` - Navigation rules
