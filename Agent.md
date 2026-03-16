@@ -1,75 +1,124 @@
-# Agent.md — Rules for Agent/Codex Work in This Repository
-
-Effective Date: 2026-01-21
-
-This file defines **mandatory** rules for any automated agent (Copilot Agent, Codex, or similar) making changes in this repo.
-
-If you cannot comply, stop and request guidance rather than guessing.
+# Agent.md
+Repository: next-starter-template
+Purpose: Primary entry point for all AI agents operating in this repository.
 
 ---
 
-## 1) Sources of Truth (non-negotiable)
+## Agent Governance
 
-Before any change, read:
-- `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
-- `/docs/reference/design/fanclub.md`
-- `/docs/reference/architecture/access-model.md` (for admin-related changes)
+All AI agents must follow the shared governance rules defined in:
 
-These documents are the design law. Do not invent routes, labels, or layouts.
+/docs/ops/ai/AGENT-RULES.md
 
----
+Agent‑specific behavior is defined in:
 
-## 2) Route + IA Guardrails
+/docs/ops/ai/CURSOR-RULES.md  
+/docs/ops/ai/CHATGPT-RULES.md
 
-- Do not create new top-level routes without explicit instruction.
-- FanClub content lives under `/fanclub/**` only.
-- Do not reintroduce deleted aliases (e.g. `/member*`, `/photos`, `/ask`, `/news`).
-- Store is external only (no `/store` route).
-- Weekly vote routes are in transition; do not delete weekly-related routes unless explicitly instructed.
+### Authority Hierarchy
 
----
+1. Locked design / standards documents
+2. Repository governance documentation
+3. /docs/ops/ai/AGENT-RULES.md
+4. /Agent.md
+5. Agent‑specific rules (Cursor / ChatGPT)
+6. Task prompts
 
-## 3) Header / Footer Invariants
-
-Follow `/docs/reference/design/LGFC-Production-Design-and-Standards.md` exactly.
-
-Highlights:
-- Public header (logged out): Join / Search / Store / Login
-- Public header (logged in): Club Home / Search / Store / Logout (4 total)
-- FanClub header: Club Home / My Profile / Search / Store / Logout
-- Logo always links to `/`
-- Footer: left quote + legal, center logo scroll-to-top, right links Contact/Support/Terms/Privacy, no email displayed
+Higher authority always overrides lower authority.
 
 ---
 
-## 4) File-Touch Discipline
+## Purpose of this File
 
-- Make the smallest change set required to satisfy the task.
-- Do not “refactor for cleanliness” unless explicitly instructed.
-- Do not add new libraries, new frameworks, or new build systems without explicit instruction.
+This file provides the **entry instructions** for AI agents that read the repository directly.
 
----
+It defines:
+- allowed behavior
+- prohibited behavior
+- safety rules
+- verification requirements
 
-## 5) No Wildcard Hacking
-
-Prohibited:
-- Renaming large folders, mass reformatting, mass linting, or “sweeping” edits not required for the task
-- Introducing new routes/components because “it seems useful”
-- Rewriting docs without aligning to the explicit design requirements
+Detailed operating discipline is defined in AGENT-RULES.md.
 
 ---
 
-## 6) ZIP Safety
+## Operating Model
 
-If a ZIP file is present in the repo root during PR work:
-- Delete it first (before any other changes)
-- Acceptance criteria must confirm it is removed and not committed
+Agents must:
+
+- Read repository documentation before making changes
+- Follow locked design authority
+- Avoid introducing new routes or structures unless authorized
+- Verify repository state before making claims
+- Keep edits scoped strictly to the task being performed
+
+Agents should produce deterministic, minimal changes aligned to repository governance.
 
 ---
 
-## 7) Every change must include verification
+## Prohibited Actions
 
-When you change routing, headers, or footer:
-- Verify the route exists and renders
+The following actions are prohibited unless explicitly required by the task:
+
+- Renaming large folders
+- Mass reformatting unrelated files
+- Mass linting changes
+- Sweeping refactors unrelated to the task
+- Introducing new routes/components because they “seem useful”
+- Rewriting documentation without aligning to design authority
+- Modifying navigation or layout structures without authorization
+
+---
+
+## ZIP Safety
+
+If a ZIP file appears in the repository root during PR work:
+
+1. Delete the ZIP file first before any other change.
+2. Ensure the ZIP file is not committed to the repository.
+3. PR acceptance criteria must confirm the ZIP was removed.
+
+---
+
+## Verification Requirements
+
+Every change must include verification.
+
+When modifying routing, headers, or footer:
+
+- Verify the route renders correctly
 - Verify redirects work for `/fanclub/**`
-- Verify header variants and footer layout match the invariants
+- Verify header variants match design invariants
+- Verify footer layout matches locked design rules
+
+---
+
+## Implementation Discipline
+
+Agents must:
+
+- Keep edits minimal and scoped
+- Align changes to design authority
+- Avoid speculative improvements
+- Avoid rewriting unrelated sections
+
+---
+
+## Design Authority Reminder
+
+Implementation must align with repository design documentation, including but not limited to:
+
+- LGFC Production Design and Standards
+- Navigation invariants
+- Header and footer layout rules
+- Public vs FanClub route boundaries
+
+Agents must not reinterpret or redesign these rules.
+
+---
+
+## Final Rule
+
+Agents must behave as disciplined engineering resources.
+
+The objective is stable, reproducible, design‑aligned implementation — not experimentation.
