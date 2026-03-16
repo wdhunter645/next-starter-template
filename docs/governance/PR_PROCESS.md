@@ -224,13 +224,13 @@ The assessment is driven by `docs/assess/manifest.json`, which encodes:
 - `footerLinks`: Required footer links and copyright format
 - `pageMarkers`: Required headings/sections/markers for key pages
 
-**Source of Truth:** The manifest is derived from `/docs/LGFC-Production-Design-and-Standards.md`.
+**Source of Truth:** The manifest is derived from `/docs/reference/design/LGFC-Production-Design-and-Standards.md`.
 
 ### Updating the Manifest
 
 When design standards change (rare, locked changes only):
 
-1. Update `/docs/LGFC-Production-Design-and-Standards.md` first (via governance process)
+1. Update `/docs/reference/design/LGFC-Production-Design-and-Standards.md` first (via governance process)
 2. Update `/docs/assess/manifest.json` to match
 3. Run `npm run assess` to verify changes
 4. Document the update in the PR

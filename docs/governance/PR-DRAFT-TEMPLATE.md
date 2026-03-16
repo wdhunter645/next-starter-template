@@ -41,11 +41,11 @@ All PR drafts must follow this structure and must be delivered as **one continuo
 - Update the required documentation files for this PR. You MUST either:
   - List the specific docs to update (with exact paths), OR
   - Explicitly state: **No documentation updates required** (only allowed when the change truly does not affect UI behavior, navigation, header/footer, login flow, or documented specifications).
-- If the PR touches any section in `/docs/LGFC-Production-Design-and-Standards.md`, remove all "..." ellipses in that section and replace with complete specification text.
+- If the PR touches any section in `/docs/reference/design/LGFC-Production-Design-and-Standards.md`, remove all "..." ellipses in that section and replace with complete specification text.
 - Required doc updates for common change types:
-  - Header/Footer/Navigation changes → `/docs/LGFC-Production-Design-and-Standards.md` + `docs/reference/design/LGFC-Production-Design-and-Standards.md`
-  - Login/auth flow changes → `/docs/LGFC-Production-Design-and-Standards.md` (LOGIN/LOGOUT section) + `/docs/design/login.md`
-  - Page layout changes → `/docs/LGFC-Production-Design-and-Standards.md` + relevant `/docs/design/*.md` files
+  - Header/Footer/Navigation changes → `/docs/reference/design/LGFC-Production-Design-and-Standards.md` + `docs/reference/design/LGFC-Production-Design-and-Standards.md`
+  - Login/auth flow changes → `/docs/reference/design/LGFC-Production-Design-and-Standards.md` (LOGIN/LOGOUT section) + `/docs/design/login.md`
+  - Page layout changes → `/docs/reference/design/LGFC-Production-Design-and-Standards.md` + relevant `/docs/design/*.md` files
 
 ### Acceptance Criteria
 - ZIP file(s) uploaded to repo root are **deleted** and **not committed**.
