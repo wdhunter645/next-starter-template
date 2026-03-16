@@ -17,7 +17,7 @@ Last Updated: 2026-02-05
 Define the non-negotiable invariants that must remain true in production.
 
 ## Primary invariants (authoritative references)
-- Routes and auth boundaries: `/docs/LGFC-Production-Design-and-Standards.md`
+- Routes and auth boundaries: `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
 - Canonical navigation: `docs/reference/design/LGFC-Production-Design-and-Standards.md` (or `LGFC-Production-Design-and-Standards.md` as present)
 
 ## Governance invariants
