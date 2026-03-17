@@ -73,7 +73,7 @@ Work includes completing missing pages, correcting layout regressions, and conti
 ## Phase 2 Initial Work Areas
 
 1. Homepage implementation validation against home.md.
-2. FanClub member area layout corrections.
+2. Fan Club area layout corrections.
 3. Header and navigation compliance with design authority.
 4. Route structure validation against canonical route list.
 5. Component reconstruction using legacy reference HTML where required.

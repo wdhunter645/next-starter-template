@@ -5,7 +5,7 @@
 
 ## Overview
 
-This document serves as the authoritative baseline for the Cloudflare Pages-hosted public frontend and member area of the LGFC website.
+This document serves as the authoritative baseline for the Cloudflare Pages-hosted public frontend and Fan Club area of the LGFC website.
 
 ## FanClub Home Page Implementation
 
@@ -221,7 +221,7 @@ See `/docs/admin/access-model.md` for complete admin architecture documentation.
 
 **2026-01-20:** Initial implementation of FanClub Home per `docs/fanclub.html` v1 spec
 - Implemented all 7 required sections in correct order
-- Created member area layout with proper header/navigation
+- Created Fan Club area layout with proper header/navigation
 - Added D1 connectivity for discussions, events
 - Created post creation endpoint
 - Added admin role checking and conditional UI

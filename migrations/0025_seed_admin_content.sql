@@ -3,7 +3,7 @@
 
 INSERT INTO membership_card_content (title, body_md, status, updated_at)
 SELECT 'Membership Card',
-       'This section is admin-managed.\n\nPublish the official Membership Card content from /admin.\n\nOnce published, members will see it on /member/card.',
+       'This section is admin-managed.\n\nPublish the official Membership Card content from /admin.\n\nOnce published, members will see it on /fanclub/membercard.',
        'posted',
        datetime('now')
 WHERE NOT EXISTS (SELECT 1 FROM membership_card_content);
