@@ -1,6 +1,9 @@
 ## Reference
 Refer to /docs/governance/PR_PROCESS.md
 
+## Label
+define the label to use for this pull request
+
 ## Change Summary
 Describe what this PR does.
 
