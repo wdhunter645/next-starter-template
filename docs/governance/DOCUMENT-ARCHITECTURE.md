@@ -1,3 +1,13 @@
+---
+Doc Type: Governance Authority
+Audience: Human + AI
+Authority Level: Architecture Authority
+Owns: Document structure, folder ownership model, path resolution rules
+Does Not Own: Product design, operational procedures, CI implementation details
+Canonical Reference: /docs/governance/DOCUMENT-ARCHITECTURE.md
+Last Reviewed: 2026-03-18
+---
+
 # DOCUMENT ARCHITECTURE (AUTHORITY)
 
 ## Purpose

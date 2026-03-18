@@ -1,4 +1,14 @@
 
+---
+Doc Type: Design Reference
+Audience: Human + AI
+Authority Level: Section Layout Authority
+Owns: Temporary campaign spotlight section placement and activation rules
+Does Not Own: Global homepage layout order, campaign data contract, CI behavior
+Canonical Reference: /docs/reference/design/home-temporary-campaign-section.md
+Last Reviewed: 2026-03-18
+---
+
 # Temporary Campaign Spotlight Section (Homepage)
 
 Last Updated: 2026-03-08

@@ -1,4 +1,14 @@
 
+---
+Doc Type: How-To Guide
+Audience: Human + AI
+Authority Level: Operational Procedure
+Owns: Snapshot publishing schedule and publish conditions for ALS fundraiser
+Does Not Own: Campaign data contract, homepage layout, CI behavior
+Canonical Reference: /docs/how-to/ops/als-fundraiser-snapshots-and-publishing.md
+Last Reviewed: 2026-03-18
+---
+
 # Snapshot Publishing Procedure
 
 Last Updated: 2026-03-08

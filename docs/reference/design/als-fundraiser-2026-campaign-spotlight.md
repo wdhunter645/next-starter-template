@@ -1,4 +1,14 @@
 
+---
+Doc Type: Design Reference
+Audience: Human + AI
+Authority Level: Campaign Reference
+Owns: ALS Fundraiser 2026 campaign spotlight design and link inventory
+Does Not Own: Homepage layout rules, global navigation, CI behavior
+Canonical Reference: /docs/reference/design/als-fundraiser-2026-campaign-spotlight.md
+Last Reviewed: 2026-03-18
+---
+
 # ALS Fundraiser 2026 Campaign Spotlight
 
 Last Updated: 2026-03-08

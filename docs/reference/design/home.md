@@ -3,6 +3,9 @@
 Doc Type: Design Reference
 Audience: Human + AI
 Authority Level: Section Layout Authority
+Owns: Homepage canonical section order and layout rules
+Does Not Own: Global navigation rules, campaign data contract, CI behavior
+Canonical Reference: /docs/reference/design/home.md
 Last Reviewed: 2026-03-15
 ---
 

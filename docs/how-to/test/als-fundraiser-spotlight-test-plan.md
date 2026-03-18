@@ -1,4 +1,14 @@
 
+---
+Doc Type: How-To Guide
+Audience: Human + AI
+Authority Level: Test Authority
+Owns: ALS fundraiser campaign spotlight test plan and validation criteria
+Does Not Own: Homepage layout rules, campaign data contract, CI behavior
+Canonical Reference: /docs/how-to/test/als-fundraiser-spotlight-test-plan.md
+Last Reviewed: 2026-03-18
+---
+
 # Campaign Spotlight Test Plan
 
 Last Updated: 2026-03-08

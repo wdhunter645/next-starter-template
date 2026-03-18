@@ -5,6 +5,7 @@ Audience: Human + AI
 Authority Level: Canonical Design
 Owns: Production behavior, routing rules, navigation invariants
 Does Not Own: Implementation details inside components
+Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-03-15
 ---
 

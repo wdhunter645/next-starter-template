@@ -1,3 +1,13 @@
+---
+Doc Type: Operations Log
+Audience: Human + AI
+Authority Level: Historical Record
+Owns: Thread closeout records, phase completion summaries, and session history
+Does Not Own: Design authority, CI behavior, canonical file list
+Canonical Reference: /docs/ops/trackers/THREAD-LOG_Master.md
+Last Reviewed: 2026-03-18
+---
+
 # LGFC Thread Log (Master)
 
 ------------------------------------------------------------------------

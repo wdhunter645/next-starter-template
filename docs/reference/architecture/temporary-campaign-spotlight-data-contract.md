@@ -1,4 +1,14 @@
 
+---
+Doc Type: Architecture Reference
+Audience: Human + AI
+Authority Level: Data Contract Authority
+Owns: Campaign spotlight data shape, required fields, and leaderboard structure
+Does Not Own: Campaign UI design, homepage layout, CI behavior
+Canonical Reference: /docs/reference/architecture/temporary-campaign-spotlight-data-contract.md
+Last Reviewed: 2026-03-18
+---
+
 # Campaign Spotlight Data Contract
 
 Last Updated: 2026-03-08
