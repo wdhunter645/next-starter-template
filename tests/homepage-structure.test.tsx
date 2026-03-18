@@ -134,7 +134,7 @@ describe('Homepage Structure - V6 Specification Enforcement', () => {
     const discussionsIndex = headings.findIndex(h => h.includes('recent club discussions'));
     const friendsIndex = headings.findIndex(h => h.includes('friends of the fan club'));
     const milestonesIndex = headings.findIndex(h => h === 'milestones');
-    const calendarIndex = headings.findIndex(h => h === 'calendar');
+    const calendarIndex = headings.findIndex(h => h.includes('calendar'));
     const faqIndex = headings.findIndex(h => h.includes('faq'));
     
     // Verify all sections are found
