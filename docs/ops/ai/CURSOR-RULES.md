@@ -9,145 +9,153 @@ Last Reviewed: 2026-03-15
 ---
 
 # CURSOR-RULES.md
-Location: /docs/ops/ai/CURSOR-RULES.md
-Purpose: Execution discipline for Cursor AI when working with this repository.
+
+Location (authoritative):  
+`/docs/ops/ai/CURSOR-RULES.md`
+
+Purpose:
+
+Execution discipline for Cursor AI when working with this repository.
 
 ---
 
-## Authority Level
+# Authority Model
 
 Cursor must obey the highest applicable authority in this order:
 
-1. Locked design / standards docs
-2. Repo governance docs
-3. AGENT-RULES.md
-4. CURSOR-RULES.md
-5. Cursor task prompt
+1. locked design / platform / governance documents
+2. operational trackers
+3. `/docs/ops/ai/AGENT-RULES.md`
+4. `/Agent.md`
+5. `/docs/ops/ai/CURSOR-RULES.md`
+6. current approved task prompt
 
 If a lower-level instruction conflicts with a higher-level authority, Cursor must stop and follow the higher-level authority.
 
 ---
 
-## Core Execution Rule
+# Core Execution Rule
 
-One task → One thread → One prompt → One deliverable.
+One task → one thread → one prompt → one deliverable.
 
 Never reuse Cursor threads for implementation work.
 
 ---
 
-## Thread Discipline
+# Required Context Before Execution
 
-For every task:
+Before editing files, Cursor must read:
 
-1. Start a brand-new Cursor thread
-2. Provide one prompt only
-3. Do not stack instructions
-4. Keep the task scoped to one deliverable
-5. Close the thread after the deliverable is produced
+- `/Agent.md`
+- `/docs/ops/ai/AGENT-RULES.md`
+- `/docs/ops/ai/CURSOR-RULES.md`
+- task-relevant tracker entries
+- task-relevant design / governance docs named in the prompt
+
+Cursor must work from repository authority plus the current approved task prompt.  
+It must not fill gaps with assumptions.
 
 ---
 
-## Analysis-First Rule
+# Analysis-First Rule
 
 Implementation tasks must begin with analysis / diff mode.
 
-Cursor must first produce:
+Cursor must first produce a proposed change plan or proposed diffs only.
 
-PART 1 — PROPOSED DIFFS ONLY
+During analysis phase Cursor must not:
 
-No commands
-No commits
-No branches
-No PR creation
-No file edits
+- edit files
+- run build or git commands
+- create branches
+- commit changes
+- open PRs
 
-Stop after diff output.
-
-END OF PART 1 — WAITING FOR APPROVAL
-
-Cursor must not proceed beyond analysis until approval is explicitly given.
+Stop after analysis and wait for approval when the task requires review before execution.
 
 ---
 
-## Execution Phase
+# Approved Execution Phase
 
-After approval:
+After approval, Cursor may:
 
-- Cursor may create a branch if instructed
-- Cursor may apply only the approved edits
-- Cursor may run only the commands needed for the approved task
-- Cursor may update only files within the approved task scope
-- Cursor may open a PR only if instructed
+- edit only the approved files
+- run only the commands needed for the approved task
+- create a branch only if instructed
+- open a PR only if instructed
+- produce verification evidence tied to the accepted scope
 
-Execution must follow the reviewed diff.
+Execution must match the reviewed plan.
 
-If new work is discovered during execution, Cursor must stop and report it rather than silently expanding scope.
+If new work is discovered, stop and report it separately.
 
 ---
 
-## File and Scope Control
+# File and Scope Control
 
 Cursor must not:
 
-- create duplicate governance or authority files when a canonical file already exists
-- introduce a second source of truth for the same ruleset
-- rename, relocate, replace, or split authority files unless explicitly instructed
+- create duplicate governance files
+- invent new canonical filenames
+- create variant files when an existing canonical file should be updated
+- rename, relocate, or split authority files unless explicitly instructed
 - edit unrelated files for convenience
-- combine multiple intents into one deliverable
+- mix multiple intents in one deliverable
 
-When a requested change overlaps an existing canonical rules file, Cursor must consolidate the update into the canonical file instead of creating a parallel document.
-
----
-
-## Commit and Branch Discipline
-
-Cursor must not:
-
-- create branches before approval
-- commit changes before diff review
-- commit changes before human review when review is required by task instructions
-- make autonomous cleanup commits outside the approved task
-
-Any branch, commit, or PR activity must remain strictly tied to the approved scope.
+If documentation updates are required, touch only the approved canonical files for that task.
 
 ---
 
-## Prohibited Behavior
+# Tracker Update Rule
+
+If a task explicitly requires tracker updates, Cursor may touch only the approved tracker files:
+
+- `/docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md`
+- `/docs/ops/trackers/THREAD-LOG_Master.md`
+
+Tracker edits must preserve historical content unless the task explicitly authorizes reconstruction work.
+
+---
+
+# Commit / PR Discipline
 
 Cursor must not:
 
-- run commands during analysis phase
-- modify files without authorization
+- commit before approved edits are complete
+- create cleanup commits outside task scope
+- open mixed-intent PRs
+- bypass label / allowlist / governance expectations defined by the repo
+
+One PR should map to one task intent and one allowed file-touch pattern.
+
+---
+
+# Prohibited Behavior
+
+Cursor must not:
+
 - stack prompts in the same thread
-- make speculative fixes
-- silently resolve unrelated failures
-- widen task scope without approval
-- create conflicting docs that duplicate existing operational authority
+- silently fix unrelated issues
+- modify package or config files unless the task explicitly requires it
+- rewrite docs outside scope
+- create alternative rule files because naming seems preferable
+- continue execution through ambiguity
 
 ---
 
-## Post-Task Review
+# Post-Task Review Checklist
 
-Before a deliverable is considered complete, Cursor should verify that:
+Before considering a deliverable complete, Cursor must verify:
 
 1. only approved files changed
-2. no duplicate rule or authority file was created
-3. the deliverable matches the requested task intent
-4. no unrelated cleanup or refactor was bundled in
-5. the final output is ready for human review
+2. no duplicate authority file was created
+3. no mixed intent was introduced
+4. required docs updates were included if the task required them
+5. the deliverable is ready for human review
 
 ---
 
-## Purpose
+# Final Rule
 
-These rules prevent:
-
-- agent drift
-- prompt stacking
-- context pollution
-- accidental repository modification
-- duplicate sources of truth
-- mixed-intent pull requests
-
-They enforce deterministic, reviewable AI-assisted development.
+Cursor is the scoped execution engine.  
+It must stay inside the approved lane and stop at the lane boundary.

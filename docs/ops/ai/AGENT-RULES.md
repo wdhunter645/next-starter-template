@@ -1,4 +1,5 @@
 ---
+<<<<<<< copilot/docs-only-remediate-header-compliance
 Doc Type: Operational Rules
 Audience: Human + AI
 Authority Level: Operational
@@ -12,111 +13,139 @@ Last Reviewed: 2026-03-15
 Location: /docs/ops/ai/AGENT-RULES.md
 Purpose: Shared operating rules for all AI agents (ChatGPT, Cursor, Copilot, others) interacting with this repository.
 
+=======
+Doc Type: Operations
+Audience: Human + AI
+Authority Level: Operational Authority
+Owns: Shared AI operating discipline, source-of-truth handling, stop conditions, drift prevention
+Does Not Own: Product design, route architecture, platform specifications, tracker status truth
+Canonical Reference: /Agent.md
+Last Reviewed: 2026-03-18
+>>>>>>> main
 ---
 
-## Authority Level
+# AGENT-RULES.md
 
-Hierarchy of authority for repository work:
+Location (authoritative):  
+`/docs/ops/ai/AGENT-RULES.md`
 
-1. Locked design / standards documents (highest authority)
-2. Repository governance and operational documentation
-3. AGENT-RULES.md (shared agent discipline)
-4. Agent-specific rules (CURSOR-RULES.md, CHATGPT-RULES.md)
-5. Session prompts or temporary instructions (lowest authority)
+Purpose:
 
-If any rule conflicts with a higher authority document, the higher authority wins.
-
----
-
-## Source of Truth
-
-The repository and its documentation are the source of truth.
-
-When a repository ZIP is provided:
-- Treat the ZIP as the working snapshot of the repository.
-- Verify file state before making claims.
-- Do not assume repository state.
-
-If thread context becomes unreliable for ZIP-based work, start a new thread.
+Shared operating rules for all AI agents working in this repository, including ChatGPT, Cursor, Copilot, and other task execution agents.
 
 ---
 
-## No Guessing
+# Required Repository Authority
 
-Agents must never guess repository state, file contents, design rules, routes, or implementation status.
+Agents must obey the highest applicable authority in this order:
 
-If uncertain:
-- verify using repo files
-- or ask for clarification
+1. locked design / platform / governance documents
+2. operational tracker documents
+3. `/docs/ops/ai/AGENT-RULES.md`
+4. agent-specific rules
+5. temporary task prompts
 
-Transparency is required.
+If a lower-level instruction conflicts with a higher-level document, the higher-level document wins.
 
 ---
 
-## Design Lock
+# Required Reads Before Repository Claims
 
-Locked design authority governs implementation.
+Before claiming repository status, implementation state, design alignment, or task completion, an agent must read and verify the relevant files.
+
+Minimum verification set for most website implementation threads:
+
+- `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
+- `/docs/reference/design/fanclub.md`
+- `/docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md`
+- `/docs/ops/trackers/THREAD-LOG_Master.md`
+- relevant governance or platform file for the task being discussed
+
+No guessing.
+
+---
+
+# Source of Truth Handling
+
+When a repository ZIP is attached:
+
+- treat the ZIP as the working snapshot
+- inspect actual file contents before making claims
+- do not rely on memory over the ZIP
+- do not rely on prior thread assumptions if the ZIP is newer
+
+If thread context becomes unreliable for ZIP-based work, stop and move the work to a fresh thread with a fresh ZIP.
+
+---
+
+# Drift Prevention Rules
 
 Agents must not:
-- redesign routes
-- rename navigation items
-- modify layout structure
-- change header or footer invariants
 
-unless explicitly authorized.
+- redesign routes, labels, layout structure, or access boundaries
+- create duplicate governance files when a canonical file already exists
+- create case-variant duplicates of existing folders or files
+- mix multiple intents in a single deliverable unless the task explicitly allows it
+- widen scope because another issue was discovered during execution
 
----
-
-## No Drift Rule
-
-Agents must not reinterpret locked documentation.
-
-Implementation must follow:
-- existing design documents
-- route rules
-- navigation invariants
-- governance docs
+If adjacent work is discovered, record it for follow-up. Do not bundle it silently.
 
 ---
 
-## Verification Requirement
+# One-Task Discipline
 
-Before making repository claims agents must:
+Repository work follows strict task isolation:
 
-1. read the relevant file(s)
-2. verify current state
-3. confirm alignment with design authority
+- one task per thread
+- one deliverable per thread
+- one PR per intent
+- one closeout entry per completed thread
 
----
-
-## Troubleshooting Doctrine
-
-When diagnosing issues agents must prefer:
-
-1. evidence
-2. configuration verification
-3. dependency validation
-4. rollback to last known good state
-
-Avoid speculative redesign during incident handling.
+This rule exists to reduce drift, preserve review quality, and keep tracker history reliable.
 
 ---
 
-## Execution Discipline
+# Documentation Discipline
 
-Agents should:
+When a task changes implementation status, closeout state, or repository governance state, update the canonical tracker files only:
 
-- provide deterministic outputs
-- avoid speculation
-- keep instructions precise
-- minimize unnecessary explanations
+- `/docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md`
+- `/docs/ops/trackers/THREAD-LOG_Master.md`
 
-Chat responses should remain concise.
+Tracker edits must be append-preserving. Do not delete or rewrite historical entries unless the task explicitly authorizes historical reconstruction.
+
+Agents must not invent alternate tracker locations.
 
 ---
 
-## Final Rule
+# Verification Doctrine
 
-Repository documents define behavior.
+Agents must prefer:
 
-Agent rules enforce discipline but do not override repository authority.
+1. file inspection
+2. configuration validation
+3. dependency / workflow verification
+4. rollback-first reasoning for incidents
+5. deterministic validation steps
+
+Avoid speculative redesign during diagnosis.
+
+---
+
+# Mandatory Stop Conditions
+
+Stop immediately and report when:
+
+- instructions conflict with higher-authority docs
+- repository state cannot be verified
+- the requested action would create duplicate authority
+- there is material ambiguity
+- acceptance criteria cannot be met inside scope
+
+---
+
+# Final Rule
+
+Repository documents define behavior.  
+AI rules enforce discipline.  
+Session prompts provide current objective only.
