@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# scripts/ci/docs_canonical_hashes_generate.sh
 # Generates canonical hash baseline file.
 
 set +u
@@ -12,7 +13,9 @@ if [ ! -f "$LIST" ]; then
   exit 1
 fi
 
+LIST_DIR="$(dirname "$LIST")"
 tmp="$(mktemp)"
+
 while IFS= read -r f; do
   [ -z "$f" ] && continue
   [ ! -f "$LIST_DIR/$f" ] && { echo "Missing canonical file: $f"; exit 1; }

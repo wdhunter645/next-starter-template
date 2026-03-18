@@ -3,6 +3,9 @@
 Doc Type: Design Reference
 Audience: Human + AI
 Authority Level: Section Layout Authority
+Owns: Homepage section layout and component mapping
+Does Not Own: Component implementation; global navigation standards
+Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-03-15
 ---
 

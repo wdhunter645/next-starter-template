@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# scripts/ci/docs_canonical_hashes_verify.sh
 # Verifies canonical hash baseline file matches current.
 
 set +u
@@ -11,13 +12,16 @@ if [ ! -f "$LIST" ]; then
   echo "Missing canonical file list: $LIST"
   exit 1
 fi
+
 if [ ! -f "$BASE" ]; then
   echo "Missing canonical hash baseline: $BASE"
-  echo "Run: scripts/ci/docs_canonical_hashes_generate.sh"
+  echo "Run: ./scripts/ci/docs_canonical_hashes_generate.sh"
   exit 1
 fi
 
+LIST_DIR="$(dirname "$LIST")"
 tmp="$(mktemp)"
+
 while IFS= read -r f; do
   [ -z "$f" ] && continue
   [ ! -f "$LIST_DIR/$f" ] && { echo "Missing canonical file: $f"; exit 1; }

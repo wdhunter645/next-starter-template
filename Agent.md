@@ -1,124 +1,76 @@
 # Agent.md
-Repository: next-starter-template
-Purpose: Primary entry point for all AI agents operating in this repository.
+
+Repository: next-starter-template  
+Purpose: Primary repository entry point for AI agents operating in this repo.  
+Status: Active control file.  
 
 ---
 
-## Agent Governance
+## Required Read Order
 
-All AI agents must follow the shared governance rules defined in:
+1. `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
+2. `/docs/reference/design/fanclub.md`
+3. `/docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md`
+4. `/docs/ops/trackers/THREAD-LOG_Master.md`
+5. `/docs/ops/ai/AGENT-RULES.md`
+6. Agent-specific rules:
+   - `/docs/ops/ai/CHATGPT-RULES.md`
+   - `/docs/ops/ai/CURSOR-RULES.md`
 
-/docs/ops/ai/AGENT-RULES.md
-
-Agent‑specific behavior is defined in:
-
-/docs/ops/ai/CURSOR-RULES.md  
-/docs/ops/ai/CHATGPT-RULES.md
-
-### Authority Hierarchy
-
-1. Locked design / standards documents
-2. Repository governance documentation
-3. /docs/ops/ai/AGENT-RULES.md
-4. /Agent.md
-5. Agent‑specific rules (Cursor / ChatGPT)
-6. Task prompts
-
-Higher authority always overrides lower authority.
+If conflict exists, the higher-authority file wins.
 
 ---
 
-## Purpose of this File
+## Authority Hierarchy
 
-This file provides the **entry instructions** for AI agents that read the repository directly.
+1. Locked design / platform / governance authority docs
+2. Operational tracker docs
+3. `/docs/ops/ai/AGENT-RULES.md`
+4. `/Agent.md`
+5. Agent-specific rules
+6. Task prompt / session instructions
 
-It defines:
-- allowed behavior
-- prohibited behavior
-- safety rules
-- verification requirements
-
-Detailed operating discipline is defined in AGENT-RULES.md.
-
----
-
-## Operating Model
-
-Agents must:
-
-- Read repository documentation before making changes
-- Follow locked design authority
-- Avoid introducing new routes or structures unless authorized
-- Verify repository state before making claims
-- Keep edits scoped strictly to the task being performed
-
-Agents should produce deterministic, minimal changes aligned to repository governance.
+Prompts do not override repository authority.
 
 ---
 
-## Prohibited Actions
+## Core Operating Model
 
-The following actions are prohibited unless explicitly required by the task:
+- One task = one thread = one deliverable.
+- One PR = one intent label.
+- No mixed-intent changes.
+- No duplicate governance files.
+- No speculative “cleanup” or convenience edits.
+- If a canonical file already exists, update it instead of creating a variant.
 
-- Renaming large folders
-- Mass reformatting unrelated files
-- Mass linting changes
-- Sweeping refactors unrelated to the task
-- Introducing new routes/components because they “seem useful”
-- Rewriting documentation without aligning to design authority
-- Modifying navigation or layout structures without authorization
+---
+
+## Mandatory Stop Conditions
+
+Stop immediately and report if any of the following occur:
+
+- task instructions conflict with locked design or governance docs
+- repository state is unclear or cannot be verified
+- multiple valid interpretations exist
+- a requested change would create a second source of truth
+- task scope expands beyond the approved objective
+
+Do not improvise around conflicts.
 
 ---
 
 ## ZIP Safety
 
-If a ZIP file appears in the repository root during PR work:
+If a ZIP file exists in the repository root during implementation or PR work:
 
-1. Delete the ZIP file first before any other change.
-2. Ensure the ZIP file is not committed to the repository.
-3. PR acceptance criteria must confirm the ZIP was removed.
-
----
-
-## Verification Requirements
-
-Every change must include verification.
-
-When modifying routing, headers, or footer:
-
-- Verify the route renders correctly
-- Verify redirects work for `/fanclub/**`
-- Verify header variants match design invariants
-- Verify footer layout matches locked design rules
+1. delete the ZIP first
+2. do not commit it
+3. include ZIP removal in acceptance criteria when relevant
 
 ---
 
-## Implementation Discipline
+## Execution Principle
 
-Agents must:
+AI agents are disciplined engineering resources for this repository.
 
-- Keep edits minimal and scoped
-- Align changes to design authority
-- Avoid speculative improvements
-- Avoid rewriting unrelated sections
-
----
-
-## Design Authority Reminder
-
-Implementation must align with repository design documentation, including but not limited to:
-
-- LGFC Production Design and Standards
-- Navigation invariants
-- Header and footer layout rules
-- Public vs FanClub route boundaries
-
-Agents must not reinterpret or redesign these rules.
-
----
-
-## Final Rule
-
-Agents must behave as disciplined engineering resources.
-
-The objective is stable, reproducible, design‑aligned implementation — not experimentation.
+The objective is stable, design-aligned, reproducible implementation with minimal, reviewable changes.
