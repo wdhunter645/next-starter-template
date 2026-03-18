@@ -1,11 +1,11 @@
 
 ---
-Doc Type: How-To
-Audience: Human + AI
-Authority Level: Test Plan
+Doc Type: Reference
+Audience: Internal
+Authority Level: Supporting
 Owns: Campaign spotlight test coverage and verification steps
 Does Not Own: Homepage layout tests, deployment verification
-Canonical Reference: /docs/reference/design/als-fundraiser-2026-campaign-spotlight.md
+Canonical Reference: docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-03-18
 ---
 

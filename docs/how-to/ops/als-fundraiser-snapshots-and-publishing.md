@@ -1,11 +1,11 @@
 
 ---
-Doc Type: How-To
-Audience: Human + AI
-Authority Level: Operational Procedure
+Doc Type: Reference
+Audience: Internal
+Authority Level: Supporting
 Owns: Snapshot publishing procedure and cadence for ALS Fundraiser
 Does Not Own: Campaign data contract, leaderboard calculation logic
-Canonical Reference: /docs/reference/architecture/temporary-campaign-spotlight-data-contract.md
+Canonical Reference: docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-03-18
 ---
 

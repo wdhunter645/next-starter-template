@@ -1,10 +1,10 @@
 ---
-Doc Type: Operational Reference
-Audience: AI
-Authority Level: Agent Discipline
-Owns: ChatGPT operating rules for this repository
-Does Not Own: Repository design authority, shared agent rules
-Canonical Reference: /docs/ops/ai/AGENT-RULES.md
+Doc Type: Rules
+Audience: Internal
+Authority Level: Operational
+Owns: AI behavior rules
+Does Not Own: Application logic
+Canonical Reference: docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-03-18
 ---
 

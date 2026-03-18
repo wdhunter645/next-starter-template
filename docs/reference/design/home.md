@@ -1,12 +1,12 @@
 
 ---
-Doc Type: Design Reference
-Audience: Human + AI
-Authority Level: Section Layout Authority
+Doc Type: Reference
+Audience: Internal
+Authority Level: Supporting
 Owns: Homepage canonical section order and component mapping
 Does Not Own: Individual component internals, campaign section conditional logic
-Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Last Reviewed: 2026-03-15
+Canonical Reference: docs/reference/design/LGFC-Production-Design-and-Standards.md
+Last Reviewed: 2026-03-18
 ---
 
 # Homepage Layout

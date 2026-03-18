@@ -1,11 +1,11 @@
 
 ---
-Doc Type: Design Reference
-Audience: Human + AI
-Authority Level: Section Layout Authority
+Doc Type: Reference
+Audience: Internal
+Authority Level: Supporting
 Owns: Campaign spotlight section conditional visibility and layout
 Does Not Own: Global homepage section order, campaign data contract
-Canonical Reference: /docs/reference/design/home.md
+Canonical Reference: docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-03-18
 ---
 

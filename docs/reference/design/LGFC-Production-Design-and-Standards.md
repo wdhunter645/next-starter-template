@@ -1,12 +1,12 @@
 
 ---
-Doc Type: Design Authority
-Audience: Human + AI
-Authority Level: Canonical Design
+Doc Type: Reference
+Audience: Internal
+Authority Level: Supporting
 Owns: Production behavior, routing rules, navigation invariants
 Does Not Own: Implementation details inside components
-Canonical Reference: N/A
-Last Reviewed: 2026-03-15
+Canonical Reference: docs/reference/design/LGFC-Production-Design-and-Standards.md
+Last Reviewed: 2026-03-18
 ---
 
 # LGFC Production Design and Standards

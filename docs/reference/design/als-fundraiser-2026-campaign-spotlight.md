@@ -1,11 +1,11 @@
 
 ---
-Doc Type: Design Reference
-Audience: Human + AI
-Authority Level: Campaign Reference
+Doc Type: Reference
+Audience: Internal
+Authority Level: Supporting
 Owns: ALS Fundraiser 2026 campaign spotlight content and links
 Does Not Own: Homepage layout, leaderboard logic, snapshot infrastructure
-Canonical Reference: /docs/reference/design/home-temporary-campaign-section.md
+Canonical Reference: docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-03-18
 ---
 

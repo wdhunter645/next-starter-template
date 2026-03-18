@@ -1,10 +1,10 @@
 ---
-Doc Type: Operational Reference
-Audience: AI
-Authority Level: Agent Discipline
-Owns: Shared operating rules for all AI agents interacting with this repository
-Does Not Own: Repository design authority, agent-specific rules
-Canonical Reference: N/A
+Doc Type: Rules
+Audience: Internal
+Authority Level: Operational
+Owns: AI behavior rules
+Does Not Own: Application logic
+Canonical Reference: docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-03-18
 ---
 
