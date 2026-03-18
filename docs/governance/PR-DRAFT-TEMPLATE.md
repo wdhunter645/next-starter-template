@@ -5,58 +5,67 @@ Authority Level: Canonical
 Owns: Governance rules, PR process, enforcement, AI guardrails
 Does Not Own: Design/architecture/platform specifications; step-by-step ops procedures
 Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md
-Last Reviewed: 2026-02-20
+Last Reviewed: 2026-03-18
 ---
 
-# LGFC — Agent PR Draft Template (Authoritative)
+# LGFC — Agent PR Draft Template (Workflow-Aligned)
 
-This file is the **single authoritative PR draft template** for LGFC work when using an uploaded ZIP workflow.
-All PR drafts must follow this structure and must be delivered as **one continuous, single-fence Markdown block**.
+This file is the canonical PR drafting template for LGFC work.
+It is intentionally aligned to the exact section names checked by `.github/workflows/design-compliance-warn.yml`.
+If this file and `.github/pull_request_template.md` ever differ, fix them immediately.
 
 ---
 
 ## PR Template
 
-### Reference
-- Refer to `/docs/governance/PR_PROCESS.md` for required structure and change conventions.
-- Follow operational, rollback, and testing standards in `/docs/governance/PR_GOVERNANCE.md`.
-- Follow navigation rules in `docs/reference/design/LGFC-Production-Design-and-Standards.md`.
+## MANDATORY FIRST STEP (ZIP SAFETY)
+- [ ] No ZIP file exists in the repo root
+- [ ] OR any ZIP file that was present in the repo root was deleted before any other change
+- [ ] Final diff confirms no ZIP file is committed
 
-### Change Summary
-- [Describe exactly what changes will be made, and where. No options.]
+## DESIGN SOURCE OF TRUTH (NON-NEGOTIABLE)
+- Canonical process reference: `/docs/governance/PR_PROCESS.md`
+- Canonical governance reference: `/docs/governance/PR_GOVERNANCE.md`
+- Canonical design reference: `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
+- Additional design/reference docs used for this PR:
+  - `[path/to/doc-or-state-none]`
 
-### Implementation (Agent instructions)
-#### 0) ZIP cleanup (mandatory, first step)
-- If there is any uploaded ZIP file in the repo root (example: `*.zip`), **delete it immediately** before doing anything else.
-- The final PR diff must show the ZIP file(s) removed and **not re-added**.
+## FILE-TOUCH ALLOWLIST (MANDATORY)
+Allowed files:
+- `path/to/file1`
+- `path/to/file2`
+- `path/to/file3`
 
-#### 1) Apply changes
-- [List exact file edits/additions/deletions. Include paths.]
-- [If copying from a ZIP: unzip locally, copy files into their target paths, then delete the ZIP.]
+## VISUAL / UX INVARIANTS (MANDATORY)
+- [ ] Header, footer, navigation, auth, and route invariants preserved unless this PR explicitly changes them
+- [ ] No unauthorized visual drift introduced
+- [ ] No out-of-scope UX changes introduced
+- [ ] Store behavior, Join/Login behavior, and Fan Club/Admin gating remain compliant unless explicitly in scope
 
-#### 2) Build / test
-- [List exact commands to run.]
+## LABEL
+- Intent label for this PR: `[change-ops|feature|docs-only|infra|platform|codex]`
 
-#### 3) Documentation updates (mandatory — see `/docs/governance/PR_GOVERNANCE.md` "Documentation ↔ Implementation Sync Gate")
-- Update the required documentation files for this PR. You MUST either:
-  - List the specific docs to update (with exact paths), OR
-  - Explicitly state: **No documentation updates required** (only allowed when the change truly does not affect UI behavior, navigation, header/footer, login flow, or documented specifications).
-- If the PR touches any section in `/docs/reference/design/LGFC-Production-Design-and-Standards.md`, remove all "..." ellipses in that section and replace with complete specification text.
-- Required doc updates for common change types:
-  - Header/Footer/Navigation changes → `/docs/reference/design/LGFC-Production-Design-and-Standards.md` + `docs/reference/design/LGFC-Production-Design-and-Standards.md`
-  - Login/auth flow changes → `/docs/reference/design/LGFC-Production-Design-and-Standards.md` (LOGIN/LOGOUT section) + `/docs/reference/design/join-login.md`
-  - Page layout changes → `/docs/reference/design/LGFC-Production-Design-and-Standards.md` + relevant `/docs/reference/design/*.md` files
+## CHANGE SUMMARY
+- [Describe exactly what this PR changes, with no filler and no out-of-scope work.]
 
-### Acceptance Criteria
-- ZIP file(s) uploaded to repo root are **deleted** and **not committed**.
-- All changed files match the Change Summary.
-- Build/tests pass (or explicitly stated if none exist).
-- No secrets or credentials added anywhere (including docs).
-- Documentation updates are present and accurate (or the PR explicitly states **No documentation updates required** with justification).
-- No "..." ellipses remain in any documentation sections touched by this PR.
+## BUILD / TEST / VERIFICATION
+- Commands run:
+  - `[command 1]`
+  - `[command 2]`
+- Result summary:
+  - `[pass/fail and relevant notes]`
 
-### Commit Message
-- [Single commit message, imperative mood.]
+## DOCUMENTATION UPDATES
+- [ ] Documentation updated in this PR
+- [ ] No documentation updates required
+- Documentation files touched or intentionally not required:
+  - `[path/to/doc1 or justification]`
+  - `[path/to/doc2 or justification]`
 
-### Verification
-- [What to click/check in the UI. Device breakpoints if relevant.]
+## REQUIRED PRE-REVIEW SELF-CHECK
+- [ ] PR body contains all mandatory sections with exact required headings
+- [ ] `Allowed files:` section is present and matches the final diff exactly
+- [ ] No files changed outside the allowlist
+- [ ] ZIP safety handled correctly
+- [ ] Docs/code/config are synchronized for the change
+- [ ] No secrets, credentials, or forbidden artifacts were introduced
