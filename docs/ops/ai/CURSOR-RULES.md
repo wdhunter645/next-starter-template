@@ -1,11 +1,11 @@
 ---
-Doc Type: Operations
-Audience: Human + AI
-Authority Level: Operational Authority
-Owns: Cursor execution discipline, thread isolation, analysis-first workflow, scope control
-Does Not Own: Product design, tracker truth, ChatGPT operating procedure
+Doc Type: Operational Rules
+Audience: AI (Cursor)
+Authority Level: Operational
+Owns: Cursor AI execution discipline for this repository
+Does Not Own: Repository design authority; governance policies
 Canonical Reference: /docs/ops/ai/AGENT-RULES.md
-Last Reviewed: 2026-03-18
+Last Reviewed: 2026-03-15
 ---
 
 # CURSOR-RULES.md

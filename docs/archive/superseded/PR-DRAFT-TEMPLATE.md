@@ -1,3 +1,23 @@
+---
+Doc Type: Governance
+Audience: Human + AI
+Authority Level: Canonical
+Owns: Governance rules, PR process, enforcement, AI guardrails
+Does Not Own: Design/architecture/platform specifications; step-by-step ops procedures
+Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md
+Last Reviewed: 2026-03-18
+---
+
+# LGFC — Agent PR Draft Template (Workflow-Aligned)
+
+This file is the canonical PR drafting template for LGFC work.
+It is intentionally aligned to the exact section names checked by `.github/workflows/design-compliance-warn.yml`.
+If this file and `.github/pull_request_template.md` ever differ, fix them immediately.
+
+---
+
+## PR Template
+
 ## MANDATORY FIRST STEP (ZIP SAFETY)
 - [ ] No ZIP file exists in the repo root
 - [ ] OR any ZIP file that was present in the repo root was deleted before any other change
