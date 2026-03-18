@@ -1,4 +1,14 @@
 
+---
+Doc Type: Data Contract
+Audience: Human + AI
+Authority Level: Architecture Reference
+Owns: Campaign spotlight data structure, required fields, and snapshot rules
+Does Not Own: UI layout; campaign schedule; fundraiser policies
+Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
+Last Reviewed: 2026-03-08
+---
+
 # Campaign Spotlight Data Contract
 
 Last Updated: 2026-03-08

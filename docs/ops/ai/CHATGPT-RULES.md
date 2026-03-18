@@ -1,11 +1,11 @@
 ---
-Doc Type: Operations
-Audience: Human + AI
-Authority Level: Operational Authority
-Owns: ChatGPT repository operating procedure, thread start discipline, output contract, closeout behavior
-Does Not Own: Product design, canonical implementation status, Cursor execution policy
+Doc Type: Operational Rules
+Audience: AI (ChatGPT)
+Authority Level: Operational
+Owns: ChatGPT operating rules for this repository
+Does Not Own: Repository design authority; governance policies
 Canonical Reference: /docs/ops/ai/AGENT-RULES.md
-Last Reviewed: 2026-03-18
+Last Reviewed: 2026-03-15
 ---
 
 # CHATGPT-RULES.md

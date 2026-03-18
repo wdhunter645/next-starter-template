@@ -5,6 +5,7 @@ Audience: Human + AI
 Authority Level: Canonical Design
 Owns: Production behavior, routing rules, navigation invariants
 Does Not Own: Implementation details inside components
+Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md
 Last Reviewed: 2026-03-15
 ---
 
