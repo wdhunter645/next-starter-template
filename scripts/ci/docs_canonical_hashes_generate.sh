@@ -4,6 +4,7 @@
 set +u
 ROOT="${1:-.}"
 LIST="$ROOT/docs/reference/design/.canonical-files.txt"
+LIST_DIR="$(dirname "$LIST")"
 OUT="$ROOT/docs/reference/design/.canonical-hashes.sha256"
 
 if [ ! -f "$LIST" ]; then
@@ -14,8 +15,8 @@ fi
 tmp="$(mktemp)"
 while IFS= read -r f; do
   [ -z "$f" ] && continue
-  [ ! -f "$ROOT/$f" ] && { echo "Missing canonical file: $f"; exit 1; }
-  sha256sum "$ROOT/$f" >> "$tmp"
+  [ ! -f "$LIST_DIR/$f" ] && { echo "Missing canonical file: $f"; exit 1; }
+  sha256sum "$LIST_DIR/$f" >> "$tmp"
 done < "$LIST"
 
 sort "$tmp" > "$OUT"
