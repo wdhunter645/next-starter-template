@@ -22,11 +22,11 @@ must(idxStore !== -1, 'Header missing Store external link');
 must(idxLogin !== -1, 'Header missing Login link to /login');
 must(idxJoin < idxSearch && idxSearch < idxStore && idxStore < idxLogin, 'Header public button order must be Join, Search, Store, Login');
 
-const memberHeader = fs.readFileSync('src/components/MemberHeader.tsx', 'utf8');
-must(memberHeader.includes('href="/fanclub"') || memberHeader.includes("href='/fanclub'"), 'MemberHeader must include Club Home link to /fanclub');
-must(memberHeader.includes('href="/fanclub/myprofile"') || memberHeader.includes("href='/fanclub/myprofile'"), 'MemberHeader must include My Profile link to /fanclub/myprofile');
-must(memberHeader.includes('href="/search"') || memberHeader.includes("href='/search'"), 'MemberHeader must include Search link');
-must(memberHeader.includes('bonfire.com/store/lou-gehrig-fan-club'), 'MemberHeader must include external Store link');
-must(memberHeader.includes('href="/logout"') || memberHeader.includes("href='/logout'"), 'MemberHeader must include Logout link to /logout');
+const fanClubHeader = fs.readFileSync('src/components/FanClubHeader.tsx', 'utf8');
+must(fanClubHeader.includes('href="/fanclub"') || fanClubHeader.includes("href='/fanclub'"), 'FanClubHeader must include Club Home link to /fanclub');
+must(fanClubHeader.includes('href="/fanclub/myprofile"') || fanClubHeader.includes("href='/fanclub/myprofile'"), 'FanClubHeader must include My Profile link to /fanclub/myprofile');
+must(fanClubHeader.includes('href="/search"') || fanClubHeader.includes("href='/search'"), 'FanClubHeader must include Search link');
+must(fanClubHeader.includes('bonfire.com/store/lou-gehrig-fan-club'), 'FanClubHeader must include external Store link');
+must(fanClubHeader.includes('href="/logout"') || fanClubHeader.includes("href='/logout'"), 'FanClubHeader must include Logout link to /logout');
 
 console.log('OK: LGFC critical invariants satisfied (nav/auth surfaces).');
