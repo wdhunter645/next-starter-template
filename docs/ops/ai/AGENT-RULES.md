@@ -1,3 +1,13 @@
+---
+Doc Type: Operational Reference
+Audience: AI
+Authority Level: Agent Discipline
+Owns: Shared operating rules for all AI agents interacting with this repository
+Does Not Own: Repository design authority, agent-specific rules
+Canonical Reference: N/A
+Last Reviewed: 2026-03-18
+---
+
 # AGENT-RULES.md
 Location: /docs/ops/ai/AGENT-RULES.md
 Purpose: Shared operating rules for all AI agents (ChatGPT, Cursor, Copilot, others) interacting with this repository.

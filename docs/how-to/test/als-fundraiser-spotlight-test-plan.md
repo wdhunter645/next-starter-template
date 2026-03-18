@@ -1,4 +1,14 @@
 
+---
+Doc Type: How-To
+Audience: Human + AI
+Authority Level: Test Plan
+Owns: Campaign spotlight test coverage and verification steps
+Does Not Own: Homepage layout tests, deployment verification
+Canonical Reference: /docs/reference/design/als-fundraiser-2026-campaign-spotlight.md
+Last Reviewed: 2026-03-18
+---
+
 # Campaign Spotlight Test Plan
 
 Last Updated: 2026-03-08

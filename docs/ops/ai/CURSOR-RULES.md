@@ -1,3 +1,13 @@
+---
+Doc Type: Operational Reference
+Audience: AI
+Authority Level: Agent Discipline
+Owns: Cursor AI execution rules for this repository
+Does Not Own: Repository design authority, shared agent rules
+Canonical Reference: /docs/ops/ai/AGENT-RULES.md
+Last Reviewed: 2026-03-18
+---
+
 # CURSOR-RULES.md
 Location: /docs/ops/ai/CURSOR-RULES.md
 Purpose: Execution discipline for Cursor AI when working with this repository.

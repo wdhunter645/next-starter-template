@@ -6,6 +6,7 @@ Authority Level: Implementation Design
 Owns: Join/Login page UI, behavior, and auth flow
 Does Not Own: Global navigation rules, header/footer standards
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
+Last Reviewed: 2026-03-18
 ---
 
 # Join / Login Page Design

@@ -3,6 +3,9 @@
 Doc Type: Design Reference
 Audience: Human + AI
 Authority Level: Section Layout Authority
+Owns: Homepage canonical section order and component mapping
+Does Not Own: Individual component internals, campaign section conditional logic
+Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-03-15
 ---
 

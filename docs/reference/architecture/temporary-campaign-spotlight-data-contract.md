@@ -1,4 +1,14 @@
 
+---
+Doc Type: Architecture Reference
+Audience: Human + AI
+Authority Level: Data Contract
+Owns: Campaign spotlight data structure and required field definitions
+Does Not Own: Data fetching implementation, snapshot publishing infrastructure
+Canonical Reference: N/A
+Last Reviewed: 2026-03-18
+---
+
 # Campaign Spotlight Data Contract
 
 Last Updated: 2026-03-08

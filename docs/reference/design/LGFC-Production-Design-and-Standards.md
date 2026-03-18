@@ -5,6 +5,7 @@ Audience: Human + AI
 Authority Level: Canonical Design
 Owns: Production behavior, routing rules, navigation invariants
 Does Not Own: Implementation details inside components
+Canonical Reference: N/A
 Last Reviewed: 2026-03-15
 ---
 
