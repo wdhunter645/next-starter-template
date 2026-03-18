@@ -1,3 +1,13 @@
+---
+Doc Type: Operational Rules
+Audience: AI (ChatGPT)
+Authority Level: Operational
+Owns: ChatGPT operating rules for this repository
+Does Not Own: Repository design authority; governance policies
+Canonical Reference: /docs/ops/ai/AGENT-RULES.md
+Last Reviewed: 2026-03-15
+---
+
 # CHATGPT-RULES.md
 Location: /docs/ops/ai/CHATGPT-RULES.md
 Purpose: Define how ChatGPT must behave when supporting this repository.
