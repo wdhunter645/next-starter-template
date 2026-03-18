@@ -84,7 +84,7 @@ describe('Homepage Structure - V6 Specification Enforcement', () => {
     
     // Calendar section heading
     const calendarHeading = screen.getByRole('heading', { 
-      name: /calendar/i,
+      name: /fan club events calendar/i,
       level: 2 
     });
     expect(calendarHeading).toBeInTheDocument();
