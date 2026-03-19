@@ -1,7 +1,7 @@
 ---
 Doc Type: Operations
 Audience: Human + AI
-Authority Level: Operational
+Authority Level: Operational Authority
 Owns: Thread closeout records, implementation history, execution log
 Does Not Own: Design authority, governance rules, product requirements
 Canonical Reference: /docs/ops/trackers/THREAD-LOG_Master.md

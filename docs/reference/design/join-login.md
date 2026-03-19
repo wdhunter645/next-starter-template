@@ -2,7 +2,7 @@
 ---
 Doc Type: Design Authority
 Audience: Human + AI
-Authority Level: Implementation Design
+Authority Level: Controlled
 Owns: Join/Login page UI, behavior, and auth flow
 Does Not Own: Global navigation rules, header/footer standards
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
