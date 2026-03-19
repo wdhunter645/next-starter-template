@@ -11,3 +11,4 @@ join-login.md
 search.md
 style-guide.md
 text-pages.md
+join-login.md
