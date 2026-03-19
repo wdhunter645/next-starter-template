@@ -1,3 +1,13 @@
+---
+Doc Type: Governance
+Audience: Human + AI
+Authority Level: Canonical
+Owns: Document structure, folder ownership model, path resolution rules, CI script requirements
+Does Not Own: Design/architecture/platform specifications; step-by-step ops procedures
+Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md
+Last Reviewed: 2026-03-19
+---
+
 # DOCUMENT ARCHITECTURE (AUTHORITY)
 
 ## Purpose
