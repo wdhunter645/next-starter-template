@@ -70,4 +70,4 @@ This verification follows:
 - `/.github/pull_request_template.md` - Required structure and change conventions
 - `/docs/governance/PR_GOVERNANCE.md` - Operational, rollback, and testing standards
 - `docs/reference/design/LGFC-Production-Design-and-Standards.md` - Design consistency requirements
-- `/docs/governance/PR-DRAFT-TEMPLATE.md` - PR governance standards
+- `/.github/pull_request_template.md` - PR governance standards

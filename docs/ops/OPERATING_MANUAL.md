@@ -409,7 +409,7 @@ All changes must:
 - `docs/reference/design/LGFC-Production-Design-and-Standards.md` - Navigation rules
 
 **Process Documentation:**
-- `/docs/governance/PR-DRAFT-TEMPLATE.md` - PR template
+- `/.github/pull_request_template.md` - PR template
 - `/docs/RECOVERY.md` - Snapshot and rollback procedures
 - `/docs/TROUBLESHOOTING.md` - Common issues and solutions
 
