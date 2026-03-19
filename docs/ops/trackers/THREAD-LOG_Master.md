@@ -1,3 +1,13 @@
+---
+Doc Type: Operational Tracker
+Audience: Human + AI
+Authority Level: Operational Authority
+Owns: Append-only thread closeout history for LGFC implementation work
+Does Not Own: Canonical design specs; governance policy; implementation work planning
+Canonical Reference: /docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md
+Last Reviewed: 2026-03-19
+---
+
 # LGFC Thread Log (Master)
 
 ------------------------------------------------------------------------
