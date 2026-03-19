@@ -1,5 +1,11 @@
 ### PR Template
 
+#### Reference
+Refer to `/docs/website.md` for required structure and change conventions.
+
+#### Governance Reference
+Follow operational, rollback, and testing standards in `/docs/website-process.md`.
+
 ## MANDATORY FIRST STEP (ZIP SAFETY)
 - [ ] No ZIP file exists in the repo root
 - [ ] OR any ZIP file that was present in the repo root was deleted before any other change
