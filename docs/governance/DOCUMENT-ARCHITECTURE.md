@@ -1,3 +1,13 @@
+---
+Doc Type: Governance
+Audience: Human + AI
+Authority Level: Canonical
+Owns: Document structure, ownership boundaries, path resolution rules
+Does Not Own: Implementation sequencing, tracker state, design authority
+Canonical Reference: /docs/governance/DOCUMENT-ARCHITECTURE.md
+Last Reviewed: 2026-03-19
+---
+
 # DOCUMENT ARCHITECTURE (AUTHORITY)
 
 ## Purpose
