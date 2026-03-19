@@ -1,3 +1,13 @@
+---
+Doc Type: Governance
+Audience: Human + AI
+Authority Level: Authoritative
+Owns: Document structure, ownership boundaries, and path resolution rules for the repository
+Does Not Own: Design decisions, implementation tracking, CI/CD behavior
+Canonical Reference: /docs/governance/DOCUMENT-ARCHITECTURE.md
+Last Reviewed: 2026-03-19
+---
+
 # DOCUMENT ARCHITECTURE (AUTHORITY)
 
 ## Purpose

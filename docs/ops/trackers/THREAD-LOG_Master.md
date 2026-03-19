@@ -1,3 +1,13 @@
+---
+Doc Type: Tracker
+Audience: Human + AI
+Authority Level: Operational
+Owns: Thread closeout records and session continuity log
+Does Not Own: Design decisions, system rules, implementation task definitions
+Canonical Reference: /docs/ops/trackers/THREAD-LOG_Master.md
+Last Reviewed: 2026-03-19
+---
+
 # LGFC Thread Log (Master)
 
 ------------------------------------------------------------------------
