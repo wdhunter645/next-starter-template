@@ -1,10 +1,10 @@
 ---
-Doc Type: Operational Tracker
+Doc Type: Tracker
 Audience: Human + AI
-Authority Level: Operational Authority
-Owns: Append-only thread closeout history for LGFC implementation work
-Does Not Own: Canonical design specs; governance policy; implementation work planning
-Canonical Reference: /docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md
+Authority Level: Operational
+Owns: Thread closeout records and session continuity log
+Does Not Own: Design decisions, system rules, implementation task definitions
+Canonical Reference: /docs/ops/trackers/THREAD-LOG_Master.md
 Last Reviewed: 2026-03-19
 ---
 

@@ -1,8 +1,10 @@
 ---
 Doc Type: Governance
-Audience: Maintainers, Contributors, AI Agents
-Authority Level: Operational Authority
-Canonical Reference: docs/governance/PR_GOVERNANCE.md
+Audience: Human + AI
+Authority Level: Authoritative
+Owns: Document structure, ownership boundaries, and path resolution rules for the repository
+Does Not Own: Design decisions, implementation tracking, CI/CD behavior
+Canonical Reference: /docs/governance/DOCUMENT-ARCHITECTURE.md
 Last Reviewed: 2026-03-19
 ---
 
