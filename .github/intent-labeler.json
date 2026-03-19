@@ -28,7 +28,9 @@
         ".prettierrc",
         ".prettierignore",
         ".editorconfig",
-        "docs/ops/"
+        "docs/ops/",
+        "playwright.config.ts",
+        "tests/"
       ],
       "deny_prefixes": []
     },
@@ -42,7 +44,8 @@
         "scripts/assess.mjs",
         "scripts/lib/",
         "package.json",
-        "package-lock.json"
+        "package-lock.json",
+        "tests/"
       ],
       "deny_prefixes": [
         ".github/workflows/",

@@ -1,10 +1,10 @@
 ---
 Doc Type: Operations
 Audience: Human + AI
-Authority Level: Operational Authority
-Owns: Thread closeout records and execution history
-Does Not Own: Design specifications or implementation task definitions
-Canonical Reference: /docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md
+Authority Level: Operational
+Owns: Thread closeout records, implementation history, execution log
+Does Not Own: Design authority, governance rules, product requirements
+Canonical Reference: /docs/ops/trackers/THREAD-LOG_Master.md
 Last Reviewed: 2026-03-19
 ---
 

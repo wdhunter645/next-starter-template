@@ -1,4 +1,3 @@
-```md id="u3kz8p"
 ## MANDATORY FIRST STEP (ZIP SAFETY)
 - [ ] No ZIP file exists in the repo root
 - [ ] OR any ZIP file that was present in the repo root was deleted before any other change
@@ -85,4 +84,3 @@ All other files are out of scope
 - [ ] Local checks executed and passed
 - [ ] Commit message aligns with scope
 - [ ] No secrets or forbidden artifacts introduced
-```
