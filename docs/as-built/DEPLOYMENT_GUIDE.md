@@ -172,7 +172,7 @@ Configure your Cloudflare Pages project with the following settings:
 - **Framework preset**: Next.js
 - **Build command**: `npm run build:cf`
 - **Build output directory**: `out`
-- **Node.js version**: `20.x` (set via `.node-version` file)
+- **Node.js version**: `22` (set via `.node-version` file)
 
 ### Why Static Export?
 
