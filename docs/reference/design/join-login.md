@@ -1,4 +1,3 @@
-
 ---
 Doc Type: Reference
 Audience: Internal
@@ -8,7 +7,6 @@ Does Not Own: Global navigation rules, header/footer standards
 Canonical Reference: docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-03-18
 ---
-
 # Join / Login Page Design
 
 This document defines the **combined Join/Login page** used for member authentication and account creation.

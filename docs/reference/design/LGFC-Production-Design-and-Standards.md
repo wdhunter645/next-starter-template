@@ -1,4 +1,3 @@
-
 ---
 Doc Type: Reference
 Audience: Internal
@@ -8,7 +7,6 @@ Does Not Own: Implementation details inside components
 Canonical Reference: docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-03-18
 ---
-
 # LGFC Production Design and Standards
 
 This document defines the **production behavior of the Lou Gehrig Fan Club website**.

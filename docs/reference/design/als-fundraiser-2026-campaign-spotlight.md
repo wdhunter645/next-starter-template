@@ -1,4 +1,3 @@
-
 ---
 Doc Type: Reference
 Audience: Internal
@@ -8,7 +7,6 @@ Does Not Own: Homepage layout, leaderboard logic, snapshot infrastructure
 Canonical Reference: docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-03-18
 ---
-
 # ALS Fundraiser 2026 Campaign Spotlight
 
 Last Updated: 2026-03-08

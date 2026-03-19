@@ -137,17 +137,34 @@ export default function WeeklyMatchup() {
     }
   }
 
-  if (loading) return <div className="card" style={{ paddingTop: 28 }}>Loading matchup…</div>;
-  if (err) return null;
-  if (items.length < 2) return null;
-
-  const a = items[0];
-  const b = items[1];
+  const hasMatchup = !loading && !err && items.length >= 2;
 
   return (
     <div className="card">
       <h2 className="title-lgfc" style={{ marginTop: 24 }}>Weekly Photo Matchup. Vote for your favorite!</h2>
 
+      {loading && <div style={{ paddingTop: 12 }}>Loading matchup…</div>}
+      {!loading && err && <div style={{ paddingTop: 12 }}>{err}</div>}
+      {!loading && !err && items.length < 2 && <div style={{ paddingTop: 12 }}>No matchup available this week.</div>}
+
+      {hasMatchup && renderMatchupBody(items, hasVoted, submitting, totals, lastWeek, submit)}
+    </div>
+  );
+}
+
+function renderMatchupBody(
+  items: { id: number; url: string; description?: string; title?: string }[],
+  hasVoted: boolean,
+  submitting: boolean,
+  totals: { a: number; b: number } | null,
+  lastWeek: { week_start: string; totals: { a: number; b: number }; winner: 'a' | 'b' | 'tie' } | null,
+  submit: (choice: 'a' | 'b') => void,
+) {
+  const a = items[0];
+  const b = items[1];
+
+  return (
+    <>
       <div style={gridStyle}>
         <div className="card" style={{ textAlign: 'center' }}>
           <div style={photoFrameStyle}>
@@ -208,6 +225,6 @@ export default function WeeklyMatchup() {
           )}
         </div>
       )}
-    </div>
+    </>
   );
 }

@@ -7,8 +7,7 @@ fanclub.md
 faq-and-ask.md
 home-temporary-campaign-section.md
 home.md
-join.md
-login.md
+join-login.md
 search.md
 style-guide.md
 text-pages.md
