@@ -1,10 +1,10 @@
 ### PR Template
 
 #### Reference
-Refer to `/docs/website.md` for required structure and change conventions.
+Refer to `/.github/pull_request_template.md` for required structure and change conventions.
 
 #### Governance Reference
-Follow operational, rollback, and testing standards in `/docs/website-process.md`.
+Follow operational, rollback, and testing standards in `/docs/governance/PR_GOVERNANCE.md`.
 
 ## MANDATORY FIRST STEP (ZIP SAFETY)
 - [ ] No ZIP file exists in the repo root
