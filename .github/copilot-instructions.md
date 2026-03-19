@@ -10,10 +10,10 @@ You are operating on the LGFC repository. Follow these rules exactly.
 5) **No secrets**: Never add credentials, tokens, keys, or sensitive identifiers into code or docs.
 
 ## Required reads before changes
-- `/docs/PR-DRAFT-TEMPLATE.md`
+- `/.github/pull_request_template.md`
 - `docs/reference/design/LGFC-Production-Design-and-Standards.md`
-- `/docs/website.md`
-- `/docs/website-process.md`
+- `/.github/pull_request_template.md`
+- `/docs/governance/PR_GOVERNANCE.md`
 
 ## Change discipline
 - Keep diffs minimal and directly tied to stated acceptance criteria.
