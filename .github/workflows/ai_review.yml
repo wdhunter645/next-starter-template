@@ -18,13 +18,16 @@ jobs:
 
       - name: Ask Hugging Face to Review
         id: hf_api
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           # We use the new 2026 Router URL and format the JSON correctly
           RESPONSE=$(curl -s https://router.huggingface.co/hf-inference/models/bigcode/starcoder2-15b \
             -X POST \
-            -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}" \
+            -H "Authorization: Bearer $HF_TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{\"inputs\": \"Review this code change: ${{ github.event.head_commit.message }}\"}")
+            -d "{\"inputs\": \"Review this code change: $COMMIT_MESSAGE\"}")
           
           # This saves the AI response so the next step can use it
           echo "ai_comment=$RESPONSE" >> $GITHUB_OUTPUT
