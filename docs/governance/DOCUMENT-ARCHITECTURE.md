@@ -1,3 +1,11 @@
+---
+Doc Type: Governance
+Audience: Maintainers, Contributors, AI Agents
+Authority Level: Operational Authority
+Canonical Reference: docs/governance/PR_GOVERNANCE.md
+Last Reviewed: 2026-03-19
+---
+
 # DOCUMENT ARCHITECTURE (AUTHORITY)
 
 ## Purpose
