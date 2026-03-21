@@ -1,27 +1,11 @@
 ---
-<<<<<<< copilot/docs-only-remediate-header-compliance
 Doc Type: Operational Rules
 Audience: Human + AI
 Authority Level: Operational
 Owns: Shared AI agent operating rules and discipline for this repository
-Does Not Own: Repository design authority; governance policies
-Canonical Reference: /docs/governance/PR_GOVERNANCE.md
-Last Reviewed: 2026-03-15
----
-
-# AGENT-RULES.md
-Location: /docs/ops/ai/AGENT-RULES.md
-Purpose: Shared operating rules for all AI agents (ChatGPT, Cursor, Copilot, others) interacting with this repository.
-
-=======
-Doc Type: Operations
-Audience: Human + AI
-Authority Level: Operational Authority
-Owns: Shared AI operating discipline, source-of-truth handling, stop conditions, drift prevention
-Does Not Own: Product design, route architecture, platform specifications, tracker status truth
+Does Not Own: Repository design authority; governance policies; tracker status truth
 Canonical Reference: /Agent.md
-Last Reviewed: 2026-03-18
->>>>>>> main
+Last Reviewed: 2026-03-21
 ---
 
 # AGENT-RULES.md
@@ -42,8 +26,9 @@ Agents must obey the highest applicable authority in this order:
 1. locked design / platform / governance documents
 2. operational tracker documents
 3. `/docs/ops/ai/AGENT-RULES.md`
-4. agent-specific rules
-5. temporary task prompts
+4. `/Agent.md`
+5. agent-specific rules
+6. temporary task prompts
 
 If a lower-level instruction conflicts with a higher-level document, the higher-level document wins.
 
@@ -51,7 +36,7 @@ If a lower-level instruction conflicts with a higher-level document, the higher-
 
 # Required Reads Before Repository Claims
 
-Before claiming repository status, implementation state, design alignment, or task completion, an agent must read and verify the relevant files.
+Before claiming repository status, implementation state, design alignment, task completion, or blocker status, an agent must read and verify the relevant files.
 
 Minimum verification set for most website implementation threads:
 
@@ -59,7 +44,7 @@ Minimum verification set for most website implementation threads:
 - `/docs/reference/design/fanclub.md`
 - `/docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md`
 - `/docs/ops/trackers/THREAD-LOG_Master.md`
-- relevant governance or platform file for the task being discussed
+- relevant governance, workflow, or platform file for the task being discussed
 
 No guessing.
 
@@ -69,7 +54,7 @@ No guessing.
 
 When a repository ZIP is attached:
 
-- treat the ZIP as the working snapshot
+- treat the ZIP as the active working snapshot
 - inspect actual file contents before making claims
 - do not rely on memory over the ZIP
 - do not rely on prior thread assumptions if the ZIP is newer
@@ -85,6 +70,7 @@ Agents must not:
 - redesign routes, labels, layout structure, or access boundaries
 - create duplicate governance files when a canonical file already exists
 - create case-variant duplicates of existing folders or files
+- create alternate rule files when a canonical rule file already exists
 - mix multiple intents in a single deliverable unless the task explicitly allows it
 - widen scope because another issue was discovered during execution
 
@@ -124,11 +110,36 @@ Agents must prefer:
 
 1. file inspection
 2. configuration validation
-3. dependency / workflow verification
+3. dependency and workflow verification
 4. rollback-first reasoning for incidents
 5. deterministic validation steps
 
 Avoid speculative redesign during diagnosis.
+
+---
+
+# PR Discipline
+
+For PR-based work:
+
+- the PR body is the execution contract
+- the file-touch allowlist is binding
+- out-of-scope files are forbidden unless the PR is explicitly classified as recovery
+- recovery PRs may use looser scope only when clearly declared and justified
+- agents must not self-expand a PR beyond its approved intent
+
+---
+
+# Monitoring and Alerting Alignment
+
+AI management must stay aligned with PR monitoring.
+
+That means:
+
+- rule files must not create a second authority tree
+- agent-specific rules must remain subordinate to this file
+- workflows may report PASS / FAIL and scope violations on PRs
+- monitoring comments inform review; they do not override repository authority
 
 ---
 
