@@ -2,7 +2,7 @@
 ---
 Doc Type: How-To
 Audience: Human + AI
-Authority Level: Operational
+Authority Level: Operational Authority
 Owns: Snapshot publishing procedures for ALS fundraiser data
 Does Not Own: Campaign data structure; homepage layout rules
 Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md

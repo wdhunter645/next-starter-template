@@ -2,7 +2,7 @@
 ---
 Doc Type: Design Reference
 Audience: Human + AI
-Authority Level: Campaign Design Reference
+Authority Level: Controlled
 Owns: ALS Fundraiser 2026 campaign spotlight UI, content, and campaign links
 Does Not Own: Homepage layout order; global navigation standards
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md

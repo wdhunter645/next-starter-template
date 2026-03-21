@@ -2,7 +2,7 @@
 ---
 Doc Type: How-To
 Audience: Human + AI
-Authority Level: Operational
+Authority Level: Operational Authority
 Owns: Test plan for ALS fundraiser campaign spotlight feature
 Does Not Own: Test infrastructure; design specifications
 Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md
