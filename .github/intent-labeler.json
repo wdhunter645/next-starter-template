@@ -15,7 +15,7 @@
         "functions/",
         "src/app/admin/",
         "docs/governance/",
-        "docs/website-process.md",
+        "docs/governance/PR_GOVERNANCE.md",
         "docs/website-PR-process.md",
         "docs/OPERATING_MANUAL.md",
         "package.json",

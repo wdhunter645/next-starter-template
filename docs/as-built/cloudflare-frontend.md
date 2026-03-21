@@ -168,7 +168,7 @@ Per `docs/reference/design/LGFC-Production-Design-and-Standards.md`:
 
 ### Testing Requirements
 
-Per `/docs/website.md` and `/docs/website-PR-governance.md`:
+Per `/.github/pull_request_template.md` and `/docs/website-PR-governance.md`:
 
 - **Build Validation:** `npm run build:cf` must pass
 - **Lint:** `npm run lint` (warnings acceptable, no errors)

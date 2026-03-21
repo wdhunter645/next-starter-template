@@ -821,7 +821,7 @@ docker run -v $(pwd):/repo zricethezav/gitleaks:latest detect --source /repo
 **Related Documentation:**
 - `/docs/OPERATING_MANUAL.md` - Operational procedures
 - `/docs/LOCKED_DESIGN_SPEC.md` - Design standards
-- `/docs/website-process.md` - Process and governance
+- `/docs/governance/PR_GOVERNANCE.md` - Process and governance
 - `/docs/TROUBLESHOOTING.md` - General troubleshooting
 
 ---

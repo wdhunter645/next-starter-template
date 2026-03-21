@@ -87,7 +87,7 @@ export async function requireTables(
           error: 'Database schema incomplete',
           detail: `Missing required table(s): ${missingTables.join(', ')}. Run migrations with: npx wrangler d1 migrations apply lgfc_lite`,
           missingTables,
-          docs: 'See /docs/website-process.md § D1 Database Seeding'
+          docs: 'See /docs/governance/PR_GOVERNANCE.md § D1 Database Seeding'
         }
       };
     }

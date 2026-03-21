@@ -405,11 +405,11 @@ All changes must:
 **Primary Documentation:**
 - `/docs/reference/design/LGFC-Production-Design-and-Standards.md` - Authoritative design standards
 - `/docs/governance/PR_GOVERNANCE.md` - Operational and rollback standards
-- `/docs/website.md` - PR structure and formatting
+- `/.github/pull_request_template.md` - PR structure and formatting
 - `docs/reference/design/LGFC-Production-Design-and-Standards.md` - Navigation rules
 
 **Process Documentation:**
-- `/docs/governance/PR-DRAFT-TEMPLATE.md` - PR template
+- `/.github/pull_request_template.md` - PR template
 - `/docs/RECOVERY.md` - Snapshot and rollback procedures
 - `/docs/TROUBLESHOOTING.md` - Common issues and solutions
 
