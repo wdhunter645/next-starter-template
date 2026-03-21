@@ -71,8 +71,8 @@ The profile and member card are separate pages (linked), not inline sections.
 
 ---
 
-## Weekly Vote Interaction (explicit design note)
+## Weekly Photo Matchup Interaction (explicit design note)
 
-- The current matchup (two photos) is displayed on the **public home page**.
+- The current Weekly Photo Matchup (Photo A vs Photo B) is displayed as an inline section on the **public home page**.
 - The results route `/weeklyvote` is a **hidden results page** revealed only **after** a user votes.
 - This is intentionally deferred for implementation detail work; do not delete existing weekly-related routes during the FanClub routing migration.

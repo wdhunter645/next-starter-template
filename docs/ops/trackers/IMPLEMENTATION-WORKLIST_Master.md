@@ -176,11 +176,17 @@ Execution Constraint Added:
 - No direct manual edits outside PR workflow.
 - Cursor tasks must begin in a brand-new thread with one opening prompt and one deliverable.
 
-## T10 — Homepage validation against design authority
+## T10 — Homepage Weekly Photo Matchup
 Status: CLOSED
 Date Closed: 2026-03-16
 Summary:
 Homepage structure validated against design authority. All 11 canonical homepage sections confirmed. Design authority documentation synchronized to match the verified implementation. Footer specification corrected. Naming clarifications documented. Route privacy rules documented. T17 absorbed into T15 for homepage event visibility.
+Notes:
+- Implemented as "Weekly Photo Matchup"
+- Located directly on homepage (inline section)
+- A/B voting UI (Photo A vs Photo B) confirmed
+- Vote buttons (Vote A / Vote B) present
+- Documentation aligned to as-built implementation
 
 ## T11 — Hero / banner integrity
 Status: OPEN

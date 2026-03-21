@@ -127,9 +127,38 @@ Core D1 domains:
 - timeline
 - faq
 
-These tables support the fan club member system, media library, weekly matchup voting, event calendar, memorabilia catalog, and timeline/FAQ content surfaces.
+These tables support the fan club member system, media library, weekly photo matchup voting, event calendar, memorabilia catalog, and timeline/FAQ content surfaces.
 
 Implementation-level schema definitions and migrations are maintained separately from the design authority.
 
+---
+
+## Weekly Photo Matchup (Homepage Section)
+
+- Location: Homepage (inline, below hero section)
+- Function: A/B image voting (Photo A vs Photo B)
+- UI Elements:
+  - Two images labeled Photo A and Photo B
+  - Buttons: "Vote A" and "Vote B"
+- Behavior:
+  - User selects one option
+  - Vote submitted via API
+  - Results display is future enhancement
+  - Content rotates weekly (operational process)
+
+---
+
+## Feature Mapping (Design → Implementation)
+
+- WeeklyMatchup (design term)
+  = Weekly Photo Matchup (as-built UI label)
+  = Homepage section (not a dedicated route)
+  = Component: WeeklyMatchup.tsx
+
+---
+
+## Verification Rule
+
+Feature validation must be based on rendered UI and behavior, not file names or assumed routes.
 
 ---
