@@ -5,7 +5,7 @@ Authority Level: Operational
 Owns: ChatGPT operating rules for this repository
 Does Not Own: Repository design authority; governance policies
 Canonical Reference: /docs/ops/ai/AGENT-RULES.md
-Last Reviewed: 2026-03-15
+Last Reviewed: 2026-03-21
 ---
 
 # CHATGPT-RULES.md
@@ -13,9 +13,18 @@ Last Reviewed: 2026-03-15
 Location (authoritative):  
 `/docs/ops/ai/CHATGPT-RULES.md`
 
-Purpose:
+---
 
-Define how ChatGPT must behave when supporting repository planning, verification, tracker maintenance, prompt drafting, repo file rewrites, and task closeout preparation.
+# Purpose
+
+Define how ChatGPT must behave when supporting:
+
+- website implementation (#website mode)
+- repository operations (#repository mode)
+- planning, validation, PR creation, agent coordination
+- tracker maintenance and task closeout
+
+This file is the **execution contract** for all ChatGPT behavior.
 
 ---
 
@@ -23,131 +32,256 @@ Define how ChatGPT must behave when supporting repository planning, verification
 
 ChatGPT must obey the highest applicable authority in this order:
 
-1. locked design / platform / governance documents
-2. operational trackers
-3. `/docs/ops/ai/AGENT-RULES.md`
-4. `/docs/ops/ai/CHATGPT-RULES.md`
-5. chat thread prompt
+1. locked design / platform / governance documents  
+2. operational trackers  
+3. `/docs/ops/ai/AGENT-RULES.md`  
+4. `/docs/ops/ai/CHATGPT-RULES.md`  
+5. chat thread prompt  
 
 Persistent memory provides context.  
 Repository files and attached ZIP snapshots define truth.
 
 ---
 
-# Default Thread Start Model
+# Execution Binding (MANDATORY)
 
-A normal repository thread may start with a short opener that references this file rather than pasting long instructions.
+When a thread references this file:
 
-Standard pattern:
+- All execution MUST follow this document strictly
+- No deviations are allowed
+- Do not partially apply rules
+- Do not reinterpret rules
 
-- run startup
-- enable control
-- reference `/Agent.md`
-- reference `/docs/ops/ai/CHATGPT-RULES.md`
-- identify the attached repo ZIP as source of truth
-- state the current task or next objective
+---
 
-That short opener is valid only because this file holds the operating contract.
+# Mode System (FOUNDATIONAL)
+
+Every thread operates in exactly one mode:
+
+- `#website`
+- `#repository`
+
+Mode defines:
+- allowed tools
+- deliverables
+- workflow
+- closeout behavior
+
+Mode must not be mixed.
+
+---
+
+# Mode Enforcement
+
+Once MODE is defined:
+
+- All behavior MUST follow that mode only
+- Do not cross-use tools between modes
+- Do not produce outputs from another mode
+- Stop if instructions conflict with mode
 
 ---
 
 # Required Reads at Thread Start
 
-For repo-specific work, ChatGPT must read:
+ChatGPT must read:
 
-- the attached repository ZIP snapshot
+- attached repository ZIP snapshot
+- task-relevant design / governance docs
+
+IF MODE = `#website`, ALSO read:
+
 - `/docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md`
 - `/docs/ops/trackers/THREAD-LOG_Master.md`
-- task-relevant design / platform / governance files
 
-Do not claim current repo status without reading the files.
+Do not claim repo state without reading.
 
 ---
 
-# ChatGPT Responsibilities
+# Alignment Gate (MANDATORY)
 
-ChatGPT is responsible for:
+Before any execution:
 
-- reading repo state before giving recommendations
-- identifying exact task scope from tracker docs
-- keeping work aligned to locked design and governance
-- drafting precise prompts for other agents when needed
-- producing rewritten repo files when the human is handling upload
-- producing one-download ZIP deliverables when file replacement is needed
-- providing deterministic validation commands when verification is required
-- preparing thread closeout updates for canonical tracker files when task state changes
+1. Restate task in 1–3 lines  
+2. Confirm exact scope (files, systems, PR vs files vs config)  
+3. Identify risks / unknowns  
+4. STOP and wait for CONFIRM  
+
+No execution without confirmation.
+
+---
+
+# Execution Model
+
+## IF MODE = #website
+
+- Cursor = ALL implementation (code, files, updates)
+- ChatGPT = research, design, validation, PR template creation, Cursor PR prompt creation
+- Copilot = NOT used
+
+## IF MODE = #repository
+
+- Copilot = ALL implementation (PRs, workflows, repo changes)
+- ChatGPT = research, design, validation, PR template creation
+- Cursor = NOT used
+
+---
+
+# Workflow Rules
+
+- One task per thread
+- No scope expansion
+- No assumptions
+- No mixed intent
+- Stop immediately on drift
+- Do not bundle unrelated work
+
+---
+
+# Deliverables Model
+
+## IF MODE = #website
+
+ChatGPT must produce:
+
+1. Research / design / validation
+2. PR template (for PR creation)
+3. Cursor PR prompt (for implementation)
+4. Rewritten files ONLY if required
+
+File handling:
+
+- Files may be created by ChatGPT
+- Human uploads files to repository BEFORE PR work begins
+- PR must assume files already exist
+- PR scope = integration, configuration, validation, documentation
+
+ZIP usage:
+
+- Provide one ZIP ONLY when file rewrites are required
+- Do not generate ZIP unnecessarily
+
+---
+
+## IF MODE = #repository
+
+ChatGPT must produce:
+
+1. Research / design / validation
+2. PR template
+
+Rules:
+
+- All work executed via PR
+- One PR = one task
+- No tracker usage
+- No ZIP output unless explicitly required
+
+---
+
+# Coordination Rules (Cursor / Copilot)
+
+ChatGPT must:
+
+- anchor all work to repo authority
+- keep scope to one task
+- avoid stacked prompts
+- avoid mixed intent
+- ensure PR template defines exact scope
+- ensure agent prompt enforces file allowlist
+- require minimal, deterministic changes only
+
+---
+
+# Tracker Rules (#website ONLY)
+
+Trackers are authoritative logs.
+
+Required files:
+
+- `/docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md`
+- `/docs/ops/trackers/THREAD-LOG_Master.md`
+
+Rules:
+
+- align all work to tracker state
+- reflect task progress accurately
+- never fabricate updates
+
+---
+
+# Thread Closeout Rules (#website ONLY)
+
+When task state changes:
+
+Update (append-only behavior):
+
+- `/docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md`
+- `/docs/ops/trackers/THREAD-LOG_Master.md`
+
+File delivery:
+
+- provide updated files as ZIP for human upload
+
+---
+
+# Content Preservation Rule (CRITICAL)
+
+For tracker files:
+
+- Existing content MUST NOT be deleted or removed
+- Only append new entries OR update existing entries in place where required
+- Full historical record must be preserved
+
+This rule applies ONLY to tracker files.
 
 ---
 
 # Output Contract
 
-When ChatGPT is asked to rewrite repository files, it must provide complete files, not patch fragments, unless the user explicitly asks for diffs only.
+ChatGPT must provide:
 
-When file delivery is requested, ChatGPT should package the deliverables in one ZIP whenever practical.
+- complete files (not fragments) unless diff requested
+- one ZIP when delivering multiple files
+- one command block for verification when needed
+- concise, execution-focused output
 
-Expected outputs may include:
-
-- exact rewritten files
-- one ZIP for download
-- one command block for Codespaces validation
-- concise status / risk notes tied to repo evidence
-
-No placeholders unless explicitly approved.
-
----
-
-# Coordination With Cursor or Copilot
-
-When coordinating another agent, ChatGPT must:
-
-- anchor the task to current repo authority
-- keep scope to one task
-- avoid stacked prompts
-- avoid mixed intent
-- require review of proposed diffs before broader execution when appropriate
-- call out follow-up work separately instead of bundling it
-
----
-
-# Tracker Closeout Rules
-
-When a thread closes a task or materially changes task state, ChatGPT must update, in append-preserving fashion:
-
-- `/docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md`
-- `/docs/ops/trackers/THREAD-LOG_Master.md`
-
-Do not delete historical tracker content during ordinary closeout.
-
-If the task did not change tracker state, say so explicitly instead of fabricating updates.
-
----
-
-# Concision Standard
-
-Default response mode for this repository:
-
-- concise
-- direct
-- execution-focused
-- minimal narrative
-
-Long explanations are provided only when needed or requested.
+No placeholders unless approved.
 
 ---
 
 # Mandatory Stop Conditions
 
-ChatGPT must stop and report when:
+Stop and report when:
 
-- the ZIP snapshot is missing needed files
-- repository state is unclear
-- a requested change conflicts with locked authority docs
-- the thread no longer has reliable ZIP context
-- the task would require guessing
+- ZIP snapshot is incomplete
+- repo state is unclear
+- task conflicts with authority docs
+- instructions violate mode rules
+- task requires guessing
+- thread has lost reliable repo context
+
+---
+
+# Success Criteria
+
+- Task completed
+- Mode rules followed
+- No drift
+- Scope preserved
+- Deliverables correct
+- Validation complete
 
 ---
 
 # Final Rule
 
-ChatGPT is the repo-aware planning and output layer.  
-It must verify first, act second, and keep all work deterministic.
+ChatGPT is the execution control layer.
+
+It must:
+- verify first
+- align to authority
+- enforce mode
+- produce deterministic outputs
+
+No deviation.
