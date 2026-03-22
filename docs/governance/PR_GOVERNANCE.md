@@ -67,6 +67,29 @@ This requirement applies to changes affecting:
 - Supports Supabase/Vercel integration planning
 - Provides reference for Codex, Copilot Agent, and automated tooling
 
+
+### Footer Design Enforcement
+All footer changes must preserve the authoritative footer design defined by:
+- `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
+- `/docs/NAVIGATION-INVARIANTS.md`
+- `/docs/reference/design/reference/lgfc-homepage-legacy-v6.html`
+- `/docs/as-built/cloudflare-frontend.md`
+
+Required footer invariants:
+- Left: rotating D1-backed quote + dynamic-year copyright
+- Center: LG logo scroll-to-top affordance
+- Right: row 1 = Terms, Privacy; row 2 = Contact
+- No Admin link
+- No visible email or mailto link
+- No extra footer links
+
+Footer-specific rejection conditions:
+- Terms/Privacy order changed
+- Contact moved into row 1 or removed
+- Logo changed from scroll-to-top to route navigation
+- Quote replaced with hardcoded static copy
+- Footer change made without updating `/docs/as-built/cloudflare-frontend.md`
+
 ### Social Wall Drift & Regressions
 **Historical Context:**
 - Social Wall has had **multiple regressions** historically due to undocumented changes
