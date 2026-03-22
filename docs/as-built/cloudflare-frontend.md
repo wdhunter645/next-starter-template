@@ -157,7 +157,22 @@ Per `docs/reference/design/LGFC-Production-Design-and-Standards.md`:
 - Mobile: Includes "Home" for easy navigation
 
 **Footer:**
-- Privacy, Terms, Admin links (footer-only, not in hamburger)
+- Left:
+  - Quote fetched from `/api/footer-quote` (D1-backed)
+  - Quote may include Lou Gehrig quotes or quotes about Lou Gehrig
+  - Dynamic display, not hardcoded page text
+- Center:
+  - LG logo button
+  - Behavior: scroll to top of current page
+- Right:
+  - Row 1: Terms (`/terms`), Privacy (`/privacy`)
+  - Row 2: Contact (`/contact`)
+- Copyright:
+  - `© {new Date().getFullYear()} Lou Gehrig Fan Club`
+- Constraints:
+  - No Admin link in footer
+  - No visible email or mailto link
+  - Footer links remain footer-only and are not duplicated into the hamburger menu
 
 ### Styling
 
