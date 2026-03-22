@@ -100,13 +100,46 @@ A page link in mobile hamburger menus only.
 
 # Footer
 
-Order:
+Purpose:
+- Preserve a quiet, public-facing footer that supports legal navigation, light brand anchoring, and rotating historical context without advertising admin surfaces or exposing raw email text.
 
-Privacy  
-Terms  
-Contact  
-Contact (mailto)  
-Admin (admin only)
+Structure:
+
+Left
+- Rotating quote sourced from the D1-backed footer quote flow
+- Copyright line rendered as:
+  © {current_year} Lou Gehrig Fan Club
+
+Center
+- LG logo
+- Behavior: scroll-to-top of the current page
+- Must not navigate to `/`
+
+Right
+- Row 1: Terms, Privacy
+- Row 2: Contact
+
+Behavior Rules:
+- Quote content is data-driven, not hardcoded in the design
+- Quote pool may include:
+  - Lou Gehrig quotes
+  - Quotes about Lou Gehrig
+- Copyright year is dynamic and derived from the current year
+- The right-side layout is intentionally two-row, not one continuous link row
+
+Constraints:
+- No Admin link in footer
+- No visible email address
+- No visible mailto link
+- No additional footer links beyond Terms, Privacy, Contact
+- Order is fixed:
+  - Terms → Privacy
+  - Contact on second row
+
+Design Intent:
+- Left = rotating historical/editorial context
+- Center = visual anchor and return-to-top affordance
+- Right = minimal legal/contact utility
 
 ---
 
