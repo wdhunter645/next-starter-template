@@ -115,12 +115,15 @@
     /* Footer */
     footer.site{border-top:1px solid #e8ecf5;background:#fafbff}
     .foot-top{padding:28px 0}
-    .foot-flex{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
-    .brand-inline{display:flex;align-items:center;gap:10px}
-    .foot-links{display:flex;gap:16px;flex-wrap:wrap;margin-left:auto}
-    .foot-admin{margin-left:auto;font-weight:700}
-    .copyright{background:#f2f5ff;padding:14px 0;color:#495067;font-size:14px}
-    .admin-only{display:none}
+    .foot-flex{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+    .foot-left{flex:1 1 320px;min-width:260px}
+    .foot-quote{font-style:italic;line-height:1.35;margin-bottom:8px}
+    .foot-copyright{color:#495067;font-size:14px}
+    .foot-center{flex:0 0 auto;display:flex;justify-content:center;align-items:center}
+    .foot-center button{background:transparent;border:0;padding:0;cursor:pointer}
+    .foot-center img{height:44px;width:auto;display:block}
+    .foot-right{flex:1 1 220px;min-width:220px;display:flex;flex-direction:column;align-items:flex-end;gap:8px;font-size:12px}
+    .foot-links-row{display:flex;gap:14px;flex-wrap:wrap;justify-content:flex-end}
 
     /* Responsive */
     @media (max-width: 1024px){
@@ -133,8 +136,8 @@
       .grid{grid-template-columns:1fr}
       .sponsors{grid-template-columns:repeat(2,1fr)}
       .timeline .item{grid-template-columns:1fr}
-      .foot-links{width:100%;justify-content:flex-start;margin-left:0}
-      .foot-admin{width:100%;text-align:right}
+      .foot-right{width:100%;align-items:flex-start}
+      .foot-links-row{justify-content:flex-start}
     }
   </style>
 </head>
@@ -387,21 +390,24 @@
   <footer class="site" role="contentinfo">
     <div class="container foot-top">
       <div class="foot-flex">
-        <div class="brand-inline">
-          <img src="/IMG_1946.png" alt="Lou Gehrig Fan Club logo" class="logo" style="width:36px;height:36px;border-radius:8px;border:1px solid #d7dbe7" />
-          <span id="quoteRotator"></span>
+        <div class="foot-left">
+          <div id="quoteRotator" class="foot-quote"></div>
+          <div class="foot-copyright">© <span id="yearSpan"></span> Lou Gehrig Fan Club</div>
         </div>
-        <nav class="foot-links">
-          <a href="/privacy">Privacy</a>
-          <a href="/terms">Terms and Conditions</a>
-          <a href="/admin" class="admin-only">Admin</a>
+        <div class="foot-center">
+          <button type="button" aria-label="Back to top" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">
+            <img src="/IMG_1946.png" alt="Lou Gehrig Fan Club logo" />
+          </button>
+        </div>
+        <nav class="foot-right" aria-label="Footer links">
+          <div class="foot-links-row">
+            <a href="/terms">Terms</a>
+            <a href="/privacy">Privacy</a>
+          </div>
+          <div class="foot-links-row">
+            <a href="/contact">Contact</a>
+          </div>
         </nav>
-        <span id="adminPlaceholder" class="foot-admin">Admin</span>
-      </div>
-    </div>
-    <div class="copyright">
-      <div class="container">
-        © <span id="yearSpan"></span> Lou Gehrig Fan Club — Contact: <a href="mailto:LouGehrigFanClub@gmail.com">LouGehrigFanClub@gmail.com</a>
       </div>
     </div>
   </footer>
