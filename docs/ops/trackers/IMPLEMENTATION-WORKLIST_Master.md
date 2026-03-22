@@ -178,7 +178,7 @@ Execution Constraint Added:
 
 ## T10 — Homepage validation against design authority
 Status: CLOSED
-Date Closed: 2026-03-16
+Date Closed: 2026-03-16 (corrected and closed. 2026-03-22)
 Summary:
 Homepage structure validated against design authority. All 11 canonical homepage sections confirmed. Design authority documentation synchronized to match the verified implementation. Footer specification corrected. Naming clarifications documented. Route privacy rules documented. T17 absorbed into T15 for homepage event visibility.
 
@@ -320,3 +320,53 @@ Notes:
 4. Resume Phase 2 website implementation sequentially starting with T11.
 
 ---
+
+# UPDATE — IMPLEMENTATION-WORKLIST_Master.md
+
+## T10 — Homepage validation against design authority
+
+Status: CLOSED (REVALIDATED)  
+Date Closed: 2026-03-22  
+
+### Summary
+Homepage revalidated against active design hierarchy after footer design audit and correction.
+
+### Validation Scope
+- Header / navigation invariants
+- Section order (v6 canonical)
+- Footer design (layout + behavior)
+
+### Footer Revalidation (Critical)
+The footer design was previously not fully defined across the design hierarchy.
+
+Actions taken:
+- Updated design documentation to match live production footer:
+  - `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
+  - `/docs/reference/design/reference/lgfc-homepage-legacy-v6.html`
+- Updated as-built documentation:
+  - `/docs/as-built/cloudflare-frontend.md`
+
+### Final Footer State (Locked)
+- Left:
+  - D1-driven rotating quote
+  - Dynamic year (`new Date().getFullYear()`)
+- Center:
+  - LG logo (scroll-to-top)
+- Right:
+  - Row 1: Terms, Privacy
+  - Row 2: Contact
+
+Constraints:
+- No Admin link
+- No mailto/email
+- No additional links
+- Order fixed
+
+### Result
+Design hierarchy and as-built configuration are now aligned with live production.
+
+T10 is confirmed complete after revalidation.
+
+---
+
+
