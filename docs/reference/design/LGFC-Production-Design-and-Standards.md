@@ -1,54 +1,54 @@
 
 ---
-Doc Type: Design Authority
-Audience: Human + AI
-Authority Level: Canonical
-Owns: Production behavior, routing rules, navigation invariants
-Does Not Own: Implementation details inside components
-Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md
-Last Reviewed: 2026-03-15
+oc Type: esign thority
+dience: Hman + I
+thority Level: anonical
+Owns: Prodction behavior, roting rles, navigation invariants
+oes Not Own: Implementation details inside components
+anonical Reference: /docs/governance/standards/docment-athority-hierarchy_MSTR.md
+Last Reviewed: 6-3-15
 ---
 
-# LGFC Production Design and Standards
+# LG Prodction esign and Standards
 
-This document defines the **production behavior of the Lou Gehrig Fan Club website**.
+This docment defines the **prodction behavior of the Lo Gehrig an lb website**.
 
-All implementations must conform to this document.
+ll implementations mst conform to this docment.
 
-If any implementation conflicts with this file, **this document wins**.
+If any implementation conflicts with this file, **this docment wins**.
 
 ---
 
 # Navigation Model
 
-Navigation is divided into four logical areas:
+Navigation is divided into for logical areas:
 
-Public  
-FanClub  
-Admin  
+Pblic  
+anlb  
+dmin  
 Store
 
 ---
 
-# Canonical Routes
+# anonical Rotes
 
-Public:
-/, /about, /contact, /terms, /privacy, /search, /join, /login, /auth, /logout, /faq, /ask, /health
+Pblic:
+/, /abot, /contact, /terms, /privacy, /search, /join, /login, /ath, /logot, /faq, /ask, /health
 
-FanClub (auth required):
-/fanclub, /fanclub/myprofile, /fanclub/photo, /fanclub/library, /fanclub/memorabilia
+anlb (ath reqired):
+/fanclb, /fanclb/myprofile, /fanclb/photo, /fanclb/library, /fanclb/memorabilia
 
-Admin:
+dmin:
 /admin/**
 
 Store:
-external Bonfire link (no /store route)
+external onfire link (no /store rote)
 
 ---
 
-# Public Header (not logged in)
+# Pblic Header (not logged in)
 
-Buttons:
+ttons:
 
 Join  
 Search  
@@ -57,108 +57,108 @@ Login
 
 ---
 
-# Public Header (logged in)
+# Pblic Header (logged in)
 
-Buttons:
+ttons:
 
-Club Home  
+lb Home  
 Search  
 Store (external)  
-Logout  
+Logot  
 
-(4 total — Club Home replaces Join, Logout replaces Login)
+(4 total — lb Home replaces Join, Logot replaces Login)
 
 ---
 
-# Header Button Mapping
+# Header tton Mapping
 
-Club Home → /fanclub  
+lb Home → /fanclb  
 Search → /search  
-Store → external Bonfire link  
-Logout → /logout  
+Store → external onfire link  
+Logot → /logot  
 
 ---
 
-# FanClub Header
+# anlb Header
 
-Buttons:
+ttons:
 
-Club Home  
+lb Home  
 My Profile  
 Search  
 Store (external)  
-Logout
+Logot
 
 ---
 
-# Hamburger Menu Behavior
+# Hambrger Men ehavior
 
 Store is:
-A page link in mobile hamburger menus only.
+ page link in mobile hambrger mens only.
 
 ---
 
-# Footer
+# ooter
 
 Order:
 
 Privacy  
 Terms  
-Contact  
-Contact (mailto)  
-Admin (admin only)
+ontact  
+ontact (mailto)  
+dmin (admin only)
 
 ---
 
-## Data Model (Cloudflare D1)
+## ata Model (lodflare 1)
 
-The LGFC platform uses **Cloudflare D1** as its primary relational datastore.
+The LG platform ses **lodflare 1** as its primary relational datastore.
 
-Core D1 domains:
+ore 1 domains:
 
 - members
 - member_sessions
 - photos
 - library
 - memorabilia
-- matchups
+- matchps
 - votes
 - events
 - timeline
 - faq
 
-These tables support the fan club member system, media library, weekly photo matchup voting, event calendar, memorabilia catalog, and timeline/FAQ content surfaces.
+These tables spport the fan clb member system, media library, weekly photo matchp voting, event calendar, memorabilia catalog, and timeline/Q content srfaces.
 
-Implementation-level schema definitions and migrations are maintained separately from the design authority.
+Implementation-level schema definitions and migrations are maintained separately from the design athority.
 
 ---
 
-## Weekly Photo Matchup (Homepage Section)
+## Weekly Photo Matchp (Homepage Section)
 
 - Location: Homepage (inline, below hero section)
-- Function: A/B image voting (Photo A vs Photo B)
-- UI Elements:
-  - Two images labeled Photo A and Photo B
-  - Buttons: "Vote A" and "Vote B"
-- Behavior:
+- nction: / image voting (Photo  vs Photo )
+- UI lements:
+  - Two images labeled Photo  and Photo 
+  - ttons: "Vote " and "Vote "
+- ehavior:
   - User selects one option
-  - Vote submitted via API
-  - Results display is future enhancement
-  - Content rotates weekly (operational process)
+  - Vote sbmitted via PI
+  - Reslts display is ftre enhancement
+  - ontent rotates weekly (operational process)
 
 ---
 
-## Feature Mapping (Design → Implementation)
+## eatre Mapping (esign → Implementation)
 
-- WeeklyMatchup (design term)
-  = Weekly Photo Matchup (as-built UI label)
-  = Homepage section (not a dedicated route)
-  = Component: WeeklyMatchup.tsx
+- WeeklyMatchp (design term)
+  = Weekly Photo Matchp (as-bilt UI label)
+  = Homepage section (not a dedicated rote)
+  = omponent: WeeklyMatchp.tsx
 
 ---
 
-## Verification Rule
+## Verification Rle
 
-Feature validation must be based on rendered UI and behavior, not file names or assumed routes.
+eatre validation mst be based on rendered UI and behavior, not file names or assmed rotes.
 
 ---
