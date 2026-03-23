@@ -1,8 +1,7 @@
 // Cloudflare Pages Function for GET /api/d1-test
-// Verifies D1 binding exists and required tables are present
-// Returns 200 OK if all checks pass, otherwise returns detailed error
-// Query params: ?table=<name> to get schema info for a specific table
+// Admin-only diagnostic endpoint. Returns 403 for non-admins.
 
+import { requireAdminMember } from '../_lib/session';
 import { requireD1, requireTables, jsonResponse, type Env } from '../_lib/d1';
 
 // Core tables required for basic functionality
@@ -15,6 +14,11 @@ const REQUIRED_TABLES = [
 ];
 
 export const onRequestGet = async (context: { env: Env; request: Request }): Promise<Response> => {
+  const auth = await requireAdminMember(context as any);
+  if (!auth.ok) {
+    return jsonResponse(auth.body, auth.status);
+  }
+
   const { env, request } = context;
 
   // Step 1: Check D1 binding exists

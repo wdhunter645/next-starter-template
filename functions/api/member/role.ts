@@ -1,9 +1,7 @@
 // Cloudflare Pages Function for GET /api/member/role
-// Returns the role of the logged-in member
+// Returns the role of the authenticated member session only.
 
-interface MemberRow {
-  role: string;
-}
+import { requireMember, getMemberRole } from '../../_lib/session';
 
 function json(data: any, status: number): Response {
   return new Response(JSON.stringify(data), {
@@ -12,38 +10,14 @@ function json(data: any, status: number): Response {
   });
 }
 
-async function getMemberRole(db: any, email: string): Promise<string | null> {
-  try {
-    const row = await db
-      .prepare(`SELECT role FROM members WHERE lower(email) = lower(?1) LIMIT 1`)
-      .bind(email)
-      .first();
-    return (row as MemberRow)?.role || null;
-  } catch (e) {
-    console.error('Failed to get member role:', e);
-    return null;
-  }
-}
-
 export async function onRequestGet(context: any): Promise<Response> {
-  const { request, env } = context;
+  const auth = await requireMember(context);
+  if (!auth.ok) {
+    return json(auth.body, auth.status);
+  }
 
   try {
-    // Get email from query parameter (passed from client localStorage)
-    const url = new URL(request.url);
-    const email = url.searchParams.get('email')?.trim().toLowerCase();
-
-    if (!email || !email.includes('@')) {
-      return json({ ok: false, error: 'Email is required.' }, 400);
-    }
-
-    const role = await getMemberRole(env.DB, email);
-    
-    if (!role) {
-      // Member not found in members table
-      return json({ ok: true, role: 'visitor' }, 200);
-    }
-
+    const role = await getMemberRole(auth.db, auth.email);
     return json({ ok: true, role }, 200);
   } catch (e: any) {
     console.error('Error in /api/member/role:', e);
