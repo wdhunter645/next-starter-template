@@ -1,9 +1,9 @@
 // Cloudflare Pages Function for GET /api/d1-test
 // Verifies D1 binding exists and required tables are present
-// Returns 200 OK if all checks pass, otherwise returns detailed error
-// Query params: ?table=<name> to get schema info for a specific table
+// Admin-only: requires authenticated admin session
 
-import { requireD1, requireTables, jsonResponse, type Env } from '../_lib/d1';
+import { requireAdminMember } from '../_lib/session';
+import { requireTables, jsonResponse } from '../_lib/d1';
 
 // Core tables required for basic functionality
 const REQUIRED_TABLES = [
@@ -14,19 +14,16 @@ const REQUIRED_TABLES = [
   'photos'
 ];
 
-export const onRequestGet = async (context: { env: Env; request: Request }): Promise<Response> => {
-  const { env, request } = context;
-
-  // Step 1: Check D1 binding exists
-  const d1Check = requireD1(env);
-  if (!d1Check.ok) {
-    return jsonResponse(d1Check.body, d1Check.status);
+export const onRequestGet = async (context: any): Promise<Response> => {
+  const admin = await requireAdminMember(context);
+  if (!admin.ok) {
+    return jsonResponse(admin.body, admin.status);
   }
-  
-  const db = d1Check.db;
+
+  const db = admin.db;
 
   try {
-    const url = new URL(request.url);
+    const url = new URL(context.request.url);
     const table = url.searchParams.get("table");
 
     // If a table is specified, return its column info
@@ -78,18 +75,18 @@ export const onRequestGet = async (context: { env: Env; request: Request }): Pro
       );
     }
 
-    // Step 2: Check required tables exist (validates migrations applied)
+    // Check required tables exist (validates migrations applied)
     const tablesCheck = await requireTables(db, REQUIRED_TABLES);
     if (!tablesCheck.ok) {
       return jsonResponse(tablesCheck.body, tablesCheck.status);
     }
 
-    // Step 3: List all tables with count
+    // List all tables with count
     const result = await db.prepare(
       `SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name;`
     ).all();
 
-    // Step 4: Get sample row count from join_requests for validation
+    // Get sample row count from join_requests for validation
     let joinRequestsCount = 0;
     try {
       const countResult = await db.prepare(`SELECT COUNT(*) as count FROM join_requests`).first();

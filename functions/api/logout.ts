@@ -23,6 +23,5 @@ async function doLogout(context: any): Promise<Response> {
   });
 }
 
-// Support both POST (preferred) and GET (for simple link-based logout).
+// POST-only logout to prevent CSRF via GET requests.
 export const onRequestPost = async (context: any): Promise<Response> => doLogout(context);
-export const onRequestGet = async (context: any): Promise<Response> => doLogout(context);
