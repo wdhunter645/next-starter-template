@@ -58,15 +58,27 @@ jobs:
             // ============================================================
             // Step 2: Validate ZIP safety statement
             // ============================================================
-            // Look for explicit statement OR proof of deletion
-            const hasNoZipStatement = prBody.includes('No ZIP found in repo root');
+            // Accept equivalent phrases (case-insensitive, pattern-based):
+            //   "No ZIP found in repo root"
+            //   "No ZIP file exists in [the] repo root"
+            //   "No ZIP file exists in repo root"
+            // OR explicit deletion confirmation
+            const hasNoZipStatement = /no zip(?:\s+file)?\s+(?:found|exists|present)\s+in(?:\s+the)?\s+repo\s+root/i.test(prBody);
             const hasZipDeletionProof = /ZIP.*(?:deleted|removed)|(?:deleted|removed).*ZIP/i.test(prBody);
             const hasZipStatement = hasNoZipStatement || hasZipDeletionProof;
             
             if (hasZipStatement) {
               passed.push('✅ ZIP safety statement present');
             } else {
-              warnings.push('⚠️ Missing ZIP safety statement: PR body must either state "No ZIP found in repo root" or confirm deletion of ZIP from repo root');
+              warnings.push(
+                '⚠️ Missing ZIP safety statement\n' +
+                '  **What failed:** No ZIP safety confirmation found in PR body\n' +
+                '  **Why:** The PR body must confirm that no ZIP files exist in the repo root, or that any ZIP was deleted as the first step\n' +
+                '  **Fix:** Add one of the following to your PR body under "MANDATORY FIRST STEP (ZIP SAFETY)":\n' +
+                '    - `- [x] No ZIP file exists in the repo root`\n' +
+                '    - `- [x] No ZIP found in repo root`\n' +
+                '    - `- [x] Any ZIP file present in the repo root was deleted before any other change`'
+              );
             }
             
             // ============================================================
@@ -146,10 +158,22 @@ jobs:
             const codeFiles = changedFiles.filter(f => !isDocFile(f));
             const docFiles = changedFiles.filter(f => isDocFile(f));
             
-            if (codeFiles.length > 0 && docFiles.length === 0) {
-              warnings.push('⚠️ Code/config changed without docs updates (heuristic warning)');
+            // Check whether PR body contains explicit docs justification
+            // e.g. "No documentation updates required", "No documentation update required"
+            const hasDocsJustification = /(?:no documentation(?:\s+updates?)?\s+required|no\s+docs?\s+(?:updates?\s+)?required)/i.test(prBody);
+            
+            if (codeFiles.length > 0 && docFiles.length === 0 && !hasDocsJustification) {
+              warnings.push(
+                '⚠️ Docs update REQUIRED or explicitly justified in PR body\n' +
+                `  **What failed:** ${codeFiles.length} code/config file(s) changed with no docs updated and no justification in PR body\n` +
+                '  **Why:** Code or config changes may require corresponding documentation updates in /docs/\n' +
+                '  **Fix:** Either update the relevant docs under /docs/ OR add an explicit statement in your PR body such as:\n' +
+                '    `- [x] No documentation updates required — <brief reason>`'
+              );
             } else if (docFiles.length > 0) {
               passed.push('✅ Documentation changes detected');
+            } else if (hasDocsJustification) {
+              passed.push('✅ Docs justification present in PR body');
             }
             
             // ============================================================
