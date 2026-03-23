@@ -54,9 +54,14 @@ Validate homepage structure and synchronize design authority documentation with 
 - Documented naming clarification between About Lou Gehrig and About Fan Club.
 - Documented route privacy rules for FanClub content.
 - Updated implementation worklist alignment.
+- Clarified Weekly Photo Matchup feature name (as-built UI label; component: WeeklyMatchup.tsx).
+- Confirmed placement: homepage inline section (not a /weekly route).
+- Resolved documentation drift between design term "WeeklyMatchup" and as-built label "Weekly Photo Matchup".
+- UI validation completed: A/B voting (Photo A vs Photo B, Vote A / Vote B buttons) confirmed.
 
 ### Result
 T10 complete. Homepage validated. Documentation synchronized with the verified production design.
+Weekly Photo Matchup feature name and homepage placement authoritative; no /weekly route assumption remains.
 
 ### Next Action
 Proceed to T11 — Hero / banner integrity.

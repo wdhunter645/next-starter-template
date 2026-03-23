@@ -100,46 +100,13 @@ A page link in mobile hamburger menus only.
 
 # Footer
 
-Purpose:
-- Preserve a quiet, public-facing footer that supports legal navigation, light brand anchoring, and rotating historical context without advertising admin surfaces or exposing raw email text.
+Order:
 
-Structure:
-
-Left
-- Rotating quote sourced from the D1-backed footer quote flow
-- Copyright line rendered as:
-  © {current_year} Lou Gehrig Fan Club
-
-Center
-- LG logo
-- Behavior: scroll-to-top of the current page
-- Must not navigate to `/`
-
-Right
-- Row 1: Terms, Privacy
-- Row 2: Contact
-
-Behavior Rules:
-- Quote content is data-driven, not hardcoded in the design
-- Quote pool may include:
-  - Lou Gehrig quotes
-  - Quotes about Lou Gehrig
-- Copyright year is dynamic and derived from the current year
-- The right-side layout is intentionally two-row, not one continuous link row
-
-Constraints:
-- No Admin link in footer
-- No visible email address
-- No visible mailto link
-- No additional footer links beyond Terms, Privacy, Contact
-- Order is fixed:
-  - Terms → Privacy
-  - Contact on second row
-
-Design Intent:
-- Left = rotating historical/editorial context
-- Center = visual anchor and return-to-top affordance
-- Right = minimal legal/contact utility
+Privacy  
+Terms  
+Contact  
+Contact (mailto)  
+Admin (admin only)
 
 ---
 
@@ -160,9 +127,38 @@ Core D1 domains:
 - timeline
 - faq
 
-These tables support the fan club member system, media library, weekly matchup voting, event calendar, memorabilia catalog, and timeline/FAQ content surfaces.
+These tables support the fan club member system, media library, weekly photo matchup voting, event calendar, memorabilia catalog, and timeline/FAQ content surfaces.
 
 Implementation-level schema definitions and migrations are maintained separately from the design authority.
 
+---
+
+## Weekly Photo Matchup (Homepage Section)
+
+- Location: Homepage (inline, below hero section)
+- Function: A/B image voting (Photo A vs Photo B)
+- UI Elements:
+  - Two images labeled Photo A and Photo B
+  - Buttons: "Vote A" and "Vote B"
+- Behavior:
+  - User selects one option
+  - Vote submitted via API
+  - Results display is future enhancement
+  - Content rotates weekly (operational process)
+
+---
+
+## Feature Mapping (Design → Implementation)
+
+- WeeklyMatchup (design term)
+  = Weekly Photo Matchup (as-built UI label)
+  = Homepage section (not a dedicated route)
+  = Component: WeeklyMatchup.tsx
+
+---
+
+## Verification Rule
+
+Feature validation must be based on rendered UI and behavior, not file names or assumed routes.
 
 ---
