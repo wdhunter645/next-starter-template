@@ -188,3 +188,34 @@ T10: CLOSED (REVALIDATED)
 
 ------------------------------------------------------------------------
 
+------------------------------------------------------------------------
+
+## THREAD CLOSEOUT RECORD --- 2026-03-23 --- T12 Weekly Photo Matchup UI Wiring Verification
+
+### Starting State
+Homepage already rendered Weekly Matchup inline with existing matchup APIs, but final locked-reference wiring verification remained open for Current Voting behavior and in-page results anchor behavior.
+
+### Objective
+Close T12 by verifying and finalizing Weekly Matchup homepage UI behavior against the locked homepage reference without introducing new routes.
+
+### Work Performed
+- Kept `WeeklyMatchup` inline on the homepage (no route changes).
+- Preserved existing API flow:
+  - `GET /api/matchup/current`
+  - `POST /api/matchup/vote`
+  - `GET /api/matchup/results`
+- Verified title and two-photo side-by-side desktop layout with caption/title and Vote A / Vote B controls under each photo.
+- Implemented Current Voting behavior:
+  - before vote: plain text `Current Voting`
+  - after vote: clickable in-page `Current Voting` link
+- Added stable in-page anchor id on the results container for navigation.
+- Preserved existing fallback handling when fewer than two photos exist, existing error display behavior, and local vote state behavior.
+
+### Result
+T12 Weekly Photo Matchup UI wiring verification is complete and closed.
+
+Homepage behavior now matches required locked-reference interaction for pre-vote and post-vote Current Voting states and in-component results navigation.
+
+### Next Action
+Proceed with the next open homepage integrity task per `IMPLEMENTATION-WORKLIST_Master.md`.
+

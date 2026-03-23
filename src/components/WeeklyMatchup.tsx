@@ -162,6 +162,7 @@ function renderMatchupBody(
 ) {
   const a = items[0];
   const b = items[1];
+  const resultsAnchorId = 'weekly-matchup-results';
 
   return (
     <>
@@ -213,8 +214,16 @@ function renderMatchupBody(
         </div>
       </div>
 
+      <div style={{ marginTop: 12 }}>
+        {hasVoted ? (
+          <a href={`#${resultsAnchorId}`}>Current Voting</a>
+        ) : (
+          <span>Current Voting</span>
+        )}
+      </div>
+
       {hasVoted && totals && (
-        <div style={{ marginTop: 16 }}>
+        <div id={resultsAnchorId} style={{ marginTop: 16, scrollMarginTop: 96 }}>
           <div style={{ fontWeight: 800, color: 'var(--lgfc-blue)' }}>Results (revealed)</div>
           <div className="sub" style={{ marginTop: 6 }}>A: {totals.a} · B: {totals.b}</div>
 
