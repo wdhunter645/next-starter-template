@@ -1,14 +1,22 @@
 // functions/api/env/check.ts
-// ZIP 4: Fail-fast env validation (diagnostic endpoint).
+// Admin-only env validation endpoint. Returns 403 for non-admins.
 //
-// Returns missing keys by NAME ONLY (never values).
-// Safe to call in production.
+// Never expose missing bindings publicly.
 //
 // GET /api/env/check
 
+import { requireAdminMember } from "../../_lib/session";
 import { checkEnv } from "../../_lib/env";
 
 export const onRequestGet = async (context: any): Promise<Response> => {
+  const auth = await requireAdminMember(context);
+  if (!auth.ok) {
+    return new Response(JSON.stringify(auth.body), {
+      status: auth.status,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const env = context.env || {};
 
   // Keep this list minimal and stable. Add more only when the code requires it.

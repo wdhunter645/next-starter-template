@@ -23,6 +23,5 @@ async function doLogout(context: any): Promise<Response> {
   });
 }
 
-// Support both POST (preferred) and GET (for simple link-based logout).
+// POST only — GET logout is intentionally not supported.
 export const onRequestPost = async (context: any): Promise<Response> => doLogout(context);
-export const onRequestGet = async (context: any): Promise<Response> => doLogout(context);

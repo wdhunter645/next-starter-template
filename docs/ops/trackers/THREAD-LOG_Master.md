@@ -141,3 +141,50 @@ Recreated tracker replacements prepared for repo overwrite and immediate use.
 Upload restored tracker files to repo, then continue active PR/gate repair and Phase 2 execution.
 
 ------------------------------------------------------------------------
+
+# UPDATE — THREAD-LOG_Master.md
+
+## 2026-03-22 — T10 Revalidation (Footer Design Correction)
+
+### Context
+During follow-up review of Task #10, inconsistency was identified in footer design documentation.
+
+- Implementation (`Footer.tsx`) and live site were correct
+- Design hierarchy contained incomplete or outdated footer definitions
+- As-built documentation was out of sync
+
+### Issue
+Footer design was:
+- Not fully defined in active design documents
+- Inconsistent across sources
+- Partially derived from legacy/archived references
+
+This resulted in T10 being marked complete without full design alignment.
+
+### Action Taken
+- Established live footer as canonical design
+- Updated design documentation to reflect actual implementation
+- Updated as-built documentation to match production behavior
+- Confirmed:
+  - D1-driven quote rotation
+  - Dynamic copyright year
+  - Scroll-to-top logo behavior
+  - Correct link set and layout
+
+### Design Authority Clarification
+- Archived documents are NOT part of active design hierarchy
+- Implementation (`Footer.tsx`) is NOT design authority
+- Design hierarchy must explicitly define all UI components
+
+### Outcome
+- Footer design now explicitly defined and consistent across:
+  - Design docs
+  - As-built docs
+  - Live implementation
+- T10 revalidated and properly closed
+
+### Status
+T10: CLOSED (REVALIDATED)
+
+------------------------------------------------------------------------
+

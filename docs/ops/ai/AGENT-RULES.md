@@ -18,6 +18,30 @@ Purpose:
 Shared operating rules for all AI agents working in this repository, including ChatGPT, Cursor, Copilot, and other task execution agents.
 
 ---
+# Agent-Specific Rules Enforcement
+
+If an agent-specific rules file exists for the active agent, the agent must read it before:
+
+- editing files
+- creating a branch
+- pushing commits
+- opening or updating a PR
+- making repository status claims
+
+Approved agent-specific rules files currently include:
+
+- `/docs/ops/ai/CHATGPT-RULES.md`
+- `/docs/ops/ai/CURSOR-RULES.md`
+- `/docs/ops/ai/COPILOT-RULES.md`
+- `/docs/ops/ai/DEVIN-RULES.md`
+
+Agent-specific rules are binding but subordinate to repository authority and this file.
+
+Agents must not claim compliance with repository rules unless their agent-specific rules file was read for the current task.
+
+If an agent opens a PR without following its agent-specific rules file, that PR is considered non-compliant by default.
+
+---
 
 # Required Repository Authority
 
@@ -127,6 +151,14 @@ For PR-based work:
 - out-of-scope files are forbidden unless the PR is explicitly classified as recovery
 - recovery PRs may use looser scope only when clearly declared and justified
 - agents must not self-expand a PR beyond its approved intent
+
+For agent-generated PRs:
+
+- draft PR is the default unless the task explicitly authorizes ready-for-review status
+- the PR body must accurately identify the active task, scope, risks, and exact files changed
+- incorrect task numbers, incorrect issue references, or copied notes from unrelated work are trust failures
+- breaking changes must be disclosed explicitly in the PR body
+- after opening a draft PR, the agent must stop unless explicitly instructed to continue
 
 ---
 

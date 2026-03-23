@@ -1,23 +1,32 @@
 /**
  * POST /api/discussions/create
- * Create a new discussion post
+ * Create a new discussion post — requires authenticated member session.
  */
+import { requireMember } from '../../_lib/session';
+
 export async function onRequestPost(ctx: any): Promise<Response> {
+  const auth = await requireMember(ctx);
+  if (!auth.ok) {
+    return new Response(JSON.stringify(auth.body), {
+      status: auth.status,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
     const body = await ctx.request.json();
-    const { title, body: postBody, author_email } = body;
+    const { title, body: postBody } = body;
 
     // Validate inputs
     if (!title || !postBody) {
       return Response.json({ ok: false, error: 'Title and body are required.' }, { status: 400 });
     }
 
-    if (!author_email) {
-      return Response.json({ ok: false, error: 'Author email is required.' }, { status: 400 });
-    }
+    // author_email is derived from the authenticated session — never trust client input
+    const author_email = auth.email;
 
     // Insert into discussions table
-    const result = await ctx.env.DB.prepare(
+    const result = await auth.db.prepare(
       `INSERT INTO discussions (title, body, author_email, status, created_at)
        VALUES (?, ?, ?, 'posted', datetime('now'))
        RETURNING id, title, body, author_email, created_at`

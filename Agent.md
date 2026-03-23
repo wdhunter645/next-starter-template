@@ -16,7 +16,9 @@ Status: Active control file.
 6. Agent-specific rules:
    - `/docs/ops/ai/CHATGPT-RULES.md`
    - `/docs/ops/ai/CURSOR-RULES.md`
-
+   - `/docs/ops/ai/COPILOT-RULES.md`
+   - `/docs/ops/ai/DEVIN-RULES.md`
+     
 If conflict exists, the higher-authority file wins.
 
 ---
@@ -56,6 +58,30 @@ Stop immediately and report if any of the following occur:
 - task scope expands beyond the approved objective
 
 Do not improvise around conflicts.
+
+---
+
+## Agent-Specific Rules Registry
+
+All AI agents must read their agent-specific rules file before making changes or opening a PR.
+
+Approved agent rule files:
+- `/docs/ops/ai/CHATGPT-RULES.md`
+- `/docs/ops/ai/CURSOR-RULES.md`
+- `/docs/ops/ai/COPILOT-RULES.md`
+- `/docs/ops/ai/DEVIN-RULES.md`
+
+If an agent-specific rules file exists for the active agent, that file is mandatory reading.
+
+If no agent-specific rules file exists, the agent must stop and report the missing rule file before proceeding.
+
+Agent-specific rules are subordinate to:
+1. locked design / platform / governance authority docs
+2. operational tracker docs
+3. `/docs/ops/ai/AGENT-RULES.md`
+4. `/Agent.md`
+
+Task prompts do not override repository authority or agent-specific rules.
 
 ---
 
