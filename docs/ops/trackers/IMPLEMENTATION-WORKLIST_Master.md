@@ -189,22 +189,31 @@ Notes:
 - Documentation aligned to as-built implementation
 
 ## T11 — Hero / banner integrity
-Status: OPEN
+Status: CLOSED
+Date Closed: 2026-03-24
 Owner: Cursor
 Scope: homepage hero banner component.
 Exit: banner renders correctly and matches design authority.
+Summary:
+Post-merge tracker correction: task was previously implemented, verified, merged, and deployed; worklist status is now aligned to actual repo state.
 
 ## T12 — Weekly Photo Matchup: UI wiring verification
-Status: OPEN
+Status: CLOSED
+Date Closed: 2026-03-24
 Owner: Cursor
 Scope: weekly matchup UI + supporting data flow used by Home.
 Exit: two-photo render and vote/result behavior verified.
+Summary:
+Post-merge tracker correction: task was previously implemented, verified, merged, and deployed; worklist status is now aligned to actual repo state.
 
 ## T13 — Join / Login CTA correctness
-Status: OPEN
+Status: CLOSED
+Date Closed: 2026-03-24
 Owner: Cursor
 Scope: Join CTA block on homepage.
 Exit: links route correctly to `/join` and `/login`.
+Summary:
+Post-merge tracker correction: task was previously implemented, verified, merged, and deployed; worklist status is now aligned to actual repo state.
 
 ## T14 — Social wall stability
 Status: OPEN

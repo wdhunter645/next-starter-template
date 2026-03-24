@@ -240,3 +240,14 @@ T15 and T16 closed per worklist exit criteria for calendar presentation/event vi
 ### Next Action
 Proceed with the next open homepage integrity task per `IMPLEMENTATION-WORKLIST_Master.md`.
 
+
+## CLOSEOUT — T11 + T13 (Post-Merge Correction)
+- T11 (Hero Banner Integrity): CLOSED
+  - Implementation verified and previously merged (PR #585)
+  - No open defects
+- T13 (Weekly Matchup UI Verification): CLOSED
+  - Implementation verified and previously merged (PR #583)
+  - No open defects
+- Reason for entry:
+  - Close status missing from THREAD-LOG despite successful merge and deployment
+  - This entry corrects tracker completeness only (no code changes)
