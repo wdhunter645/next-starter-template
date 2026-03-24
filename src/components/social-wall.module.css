@@ -1,7 +1,7 @@
 
 
 .section {
-  padding: 24px 16px; /* ~3 'blank lines' of breathing room per side */
+  padding: 24px 16px;
 }
 
 .container {
@@ -12,31 +12,29 @@
 .sectionTitle {
   font-size: 24px;
   font-weight: 700;
-  margin: 0 0 16px 0; /* tight title-to-widget spacing */
+  margin: 0 0 16px 0;
   text-align: center;
   color: var(--lgfc-blue);
 }
+
 .embed {
   max-width: 1120px;
-  margin: 0 auto 16px auto; /* ~3 'blank lines' below widget before next section */
-  display: block; /* do not vertically center the widget */
+  margin: 0 auto 16px auto;
+  display: block;
+  opacity: 1;
+  visibility: visible;
 }
-.embed :global(.elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8 img) {
+
+.embed :global(.elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8) {
+  display: block !important;
   opacity: 1 !important;
+  visibility: visible !important;
 }
-/* Images sometimes get hidden by global site CSS; force sane defaults */
+
+.embed :global(.elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8 *),
 .embed :global(.elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8 img) {
   opacity: 1 !important;
   visibility: visible !important;
   display: block !important;
-  max-height: none !important;
-  height: auto !important;
-}
-/* SAFETY OVERRIDE: prevent site CSS from hiding Elfsight content
-   Anchored to local .embed to satisfy CSS Modules purity rules */
-.embed :global(.elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8),
-.embed :global(.elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8 *) {
-  opacity: 1 !important;
-  visibility: visible !important;
   filter: none !important;
 }
