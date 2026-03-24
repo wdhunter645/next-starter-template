@@ -219,3 +219,24 @@ Homepage behavior now matches required locked-reference interaction for pre-vote
 ### Next Action
 Proceed with the next open homepage integrity task per `IMPLEMENTATION-WORKLIST_Master.md`.
 
+------------------------------------------------------------------------
+
+## THREAD CLOSEOUT RECORD --- 2026-03-24 --- T15 Calendar + T16 Friends UI refresh
+
+### Work Performed
+- **T16 (`FriendsOfFanClub`)**: Switched markup to `FriendsOfFanClub.module.css` (removed generic `grid`/`card` classes). Partner tiles use a top media/logo area, uppercase kind label, name, blurb, and bottom CTA; responsive grid is 1 column mobile, 2 columns from 640px, 3 columns from 1024px; equal-height card structure; existing `apiGet` `/api/friends/list` flow, timeout, and `DEFAULT_FRIENDS` unchanged; links still `target="_blank"` with `rel="noopener noreferrer"` and `referrerPolicy="no-referrer"`.
+- **T15 (`CalendarSection`)**: Replaced two-column list with a calendar-first layout: month header, weekday row, day grid (`/api/events/next?limit=10` unchanged). Event days are `<button>` cells with `aria-pressed` and selected styling; details panel shows selected-day events. On API success, events map to days and the first event day is selected; on empty or error, six seeded fallback club-program entries populate the current month. Added `CalendarSection.module.css` for shell, grid, states, details, and responsive side-by-side desktop / stacked mobile.
+- **Trackers**: `IMPLEMENTATION-WORKLIST_Master.md` updated to close T15 and T16; this log entry appended.
+
+### Files changed (scoped)
+`src/components/FriendsOfFanClub.tsx`, `src/components/FriendsOfFanClub.module.css`, `src/components/CalendarSection.tsx`, `src/components/CalendarSection.module.css`, `docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md`, `docs/ops/trackers/THREAD-LOG_Master.md`
+
+### Validation
+`npm run lint` and `npm run build` were required for this task; they could not be executed in the agent runtime because `npm` is not installed on the execution host. IDE diagnostics reported no issues on the touched component files.
+
+### Result
+T15 and T16 closed per worklist exit criteria for calendar presentation/event visibility and friends tile stability.
+
+### Next Action
+Proceed with the next open homepage integrity task per `IMPLEMENTATION-WORKLIST_Master.md`.
+
