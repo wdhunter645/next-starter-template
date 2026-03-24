@@ -2,6 +2,9 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useMemberSession } from '@/hooks/useMemberSession';
+
+const SUPPORT_EMAIL = 'Support@LouGehrigFanClub.com';
 
 type Quote = { quote: string; source?: string };
 
@@ -14,7 +17,9 @@ function asString(v: unknown): string | undefined {
 }
 
 export default function Footer() {
+  const { role, isLoading } = useMemberSession();
   const [q, setQ] = useState<Quote | null>(null);
+  const showAdmin = !isLoading && role === 'admin';
 
   useEffect(() => {
     let cancelled = false;
@@ -93,19 +98,22 @@ export default function Footer() {
             flex: '1 1 260px',
             minWidth: 220,
             display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-end',
-            gap: 8,
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            gap: 14,
             fontSize: 12,
           }}
         >
-          <div style={{ display: 'flex', gap: 14 }}>
-            <Link href="/terms">Terms</Link>
-            <Link href="/privacy">Privacy</Link>
-          </div>
-          <div>
-            <Link href="/contact">Contact</Link>
-          </div>
+          <Link href="/privacy">Privacy</Link>
+          <Link href="/terms">Terms</Link>
+          <Link href="/contact" aria-label="Contact (club contact page)">
+            Contact
+          </Link>
+          <a href={`mailto:${SUPPORT_EMAIL}`} aria-label={`Contact by email (${SUPPORT_EMAIL})`}>
+            Contact
+          </a>
+          {showAdmin ? <Link href="/admin">Admin</Link> : null}
         </nav>
       </div>
     </footer>
