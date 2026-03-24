@@ -213,16 +213,22 @@ Scope: embed only.
 Exit: widget loads without hard failure.
 
 ## T15 — Calendar section integrity
-Status: OPEN
+Status: CLOSED
+Date Closed: 2026-03-24
 Owner: Cursor
 Scope: homepage calendar/events section only.
 Exit: title, presentation, and event visibility align with locked design.
+Summary:
+Homepage calendar section now uses a compact month grid (client state only) fed by `GET /api/events/next?limit=10`, with button day cells for event days, visible selection, and an adjacent details panel. Empty and error responses show seeded club-programming fallback entries (6) across the visible month so the block stays useful. Month navigation covers months that contain returned events.
 
 ## T16 — Friends tiles stability
-Status: OPEN
+Status: CLOSED
+Date Closed: 2026-03-24
 Owner: Cursor
 Scope: friends section only.
 Exit: expected tiles render and links behave correctly.
+Summary:
+Friends section refactored to CSS-module grid/cards (1 / 2 / 3 columns by breakpoint) with media area, kind label, name, blurb, and bottom CTA; API fetch, timeout fallback, default partners, and safe new-tab links preserved.
 
 ## T17 — Events preview wiring
 Status: CLOSED (ABSORBED INTO T15)

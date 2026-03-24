@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import styles from './CalendarSection.module.css';
 
 type EventRow = {
@@ -15,17 +15,235 @@ type EventRow = {
   external_url?: string | null;
 };
 
-function splitIntoTwoColumns<T>(items: T[]): { left: T[]; right: T[] } {
-  const mid = Math.ceil(items.length / 2);
-  return { left: items.slice(0, mid), right: items.slice(mid) };
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+
+function parseYmd(s: string): { y: number; m: number; d: number } | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s).trim());
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mo = Number(m[2]) - 1;
+  const d = Number(m[3]);
+  const dt = new Date(y, mo, d);
+  if (dt.getFullYear() !== y || dt.getMonth() !== mo || dt.getDate() !== d) return null;
+  return { y, m: mo, d };
+}
+
+function ymdKey(y: number, m: number, d: number): string {
+  return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
+
+function keyFromParsed(p: { y: number; m: number; d: number }): string {
+  return ymdKey(p.y, p.m, p.d);
+}
+
+function uniqueEventMonths(items: EventRow[]): Array<{ y: number; m: number }> {
+  const seen = new Set<string>();
+  const out: Array<{ y: number; m: number }> = [];
+  for (const e of items) {
+    const p = parseYmd(e.start_date);
+    if (!p) continue;
+    const tag = `${p.y}-${p.m}`;
+    if (seen.has(tag)) continue;
+    seen.add(tag);
+    out.push({ y: p.y, m: p.m });
+  }
+  out.sort((a, b) => (a.y !== b.y ? a.y - b.y : a.m - b.m));
+  return out;
+}
+
+function buildFallbackForMonth(year: number, month0: number): EventRow[] {
+  const last = new Date(year, month0 + 1, 0).getDate();
+  const clamp = (day: number) => Math.max(1, Math.min(day, last));
+  const days = [clamp(4), clamp(9), clamp(12), clamp(17), clamp(22), clamp(27)];
+  const templates: Omit<EventRow, 'id' | 'start_date'>[] = [
+    {
+      title: 'Spring Training Watch Party',
+      description: 'Stream together, trivia between innings, and quick club updates.',
+      location: 'LGFC virtual room',
+      host: 'Events committee',
+      fees: null,
+      end_date: null,
+      external_url: null,
+    },
+    {
+      title: 'New Member Coffee',
+      description: 'How dues work, Fan Club perks, and volunteer openings for the season.',
+      location: 'Community session (online)',
+      host: 'Membership',
+      fees: 'Free',
+      end_date: null,
+      external_url: null,
+    },
+    {
+      title: 'ALS Community Ally Briefing',
+      description: 'How the club supports ALS partners and where donations and volunteers go.',
+      location: 'Zoom',
+      host: 'Partnerships',
+      fees: null,
+      end_date: null,
+      external_url: null,
+    },
+    {
+      title: 'Stadium Meet-Up (home series)',
+      description: 'Gate meet-up, photo near Lou markers, optional group seats when available.',
+      location: 'Bronx / stadium vicinity',
+      host: 'Gameday volunteers',
+      fees: 'BYO ticket',
+      end_date: null,
+      external_url: null,
+    },
+    {
+      title: 'Rookie Card & Memorabilia Share',
+      description: 'Bring one item to show—stories and light trading, no high-pressure dealing.',
+      location: 'LGFC virtual room',
+      host: 'History circle',
+      fees: null,
+      end_date: null,
+      external_url: null,
+    },
+    {
+      title: 'Lou Gehrig Day Reflection',
+      description: 'Brief club moment, historic reading, and a snapshot of ongoing fundraising.',
+      location: 'In person + stream',
+      host: 'Board',
+      fees: null,
+      end_date: null,
+      external_url: null,
+    },
+  ];
+  const ids = [-501, -502, -503, -504, -505, -506];
+  return days.map((day, i) => ({
+    id: ids[i],
+    start_date: ymdKey(year, month0, day),
+    ...templates[i],
+  }));
+}
+
+function calendarCells(year: number, month0: number): Array<{ key: string; dayNum: number; inMonth: boolean }> {
+  const first = new Date(year, month0, 1);
+  const startPad = first.getDay();
+  const lastDate = new Date(year, month0 + 1, 0).getDate();
+  const cells: Array<{ key: string; dayNum: number; inMonth: boolean }> = [];
+
+  for (let i = 0; i < startPad; i++) {
+    const d = new Date(year, month0, -startPad + i + 1);
+    cells.push({
+      key: ymdKey(d.getFullYear(), d.getMonth(), d.getDate()),
+      dayNum: d.getDate(),
+      inMonth: false,
+    });
+  }
+  for (let day = 1; day <= lastDate; day++) {
+    cells.push({ key: ymdKey(year, month0, day), dayNum: day, inMonth: true });
+  }
+  while (cells.length % 7 !== 0) {
+    const lastKey = cells[cells.length - 1].key;
+    const [yy, mm, dd] = lastKey.split('-').map(Number);
+    const dt = new Date(yy, mm - 1, dd);
+    dt.setDate(dt.getDate() + 1);
+    cells.push({
+      key: ymdKey(dt.getFullYear(), dt.getMonth(), dt.getDate()),
+      dayNum: dt.getDate(),
+      inMonth: false,
+    });
+  }
+  return cells;
+}
+
+function firstDayKeyInMonth(byDay: Map<string, EventRow[]>, y: number, m: number): string | null {
+  const keys = [...byDay.keys()]
+    .filter((k) => {
+      const p = parseYmd(k);
+      return p && p.y === y && p.m === m;
+    })
+    .sort();
+  return keys[0] ?? null;
 }
 
 export default function CalendarSection() {
   const [items, setItems] = useState<EventRow[]>([]);
-  const [status, setStatus] = useState<string>('Loading events…');
+  const [loading, setLoading] = useState(true);
+  const [usingFallback, setUsingFallback] = useState(false);
+  const [notice, setNotice] = useState('');
+  const [eventMonths, setEventMonths] = useState<Array<{ y: number; m: number }>>([]);
+  const [monthIndex, setMonthIndex] = useState(0);
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+
+  const byDay = useMemo(() => {
+    const map = new Map<string, EventRow[]>();
+    for (const e of items) {
+      const p = parseYmd(e.start_date);
+      if (!p) continue;
+      const k = keyFromParsed(p);
+      const arr = map.get(k) ?? [];
+      arr.push(e);
+      map.set(k, arr);
+    }
+    for (const [, arr] of map) {
+      arr.sort((a, b) => a.start_date.localeCompare(b.start_date) || a.id - b.id);
+    }
+    return map;
+  }, [items]);
+
+  const viewSlot = eventMonths[monthIndex] ?? {
+    y: new Date().getFullYear(),
+    m: new Date().getMonth(),
+  };
+
+  const cells = useMemo(() => calendarCells(viewSlot.y, viewSlot.m), [viewSlot.y, viewSlot.m]);
+
+  const selectedEvents = selectedKey ? byDay.get(selectedKey) ?? [] : [];
+
+  const monthLabel = new Date(viewSlot.y, viewSlot.m, 1).toLocaleString(undefined, {
+    month: 'long',
+    year: 'numeric',
+  });
+
+  const canPrevMonth = monthIndex > 0;
+  const canNextMonth = monthIndex < eventMonths.length - 1;
+
+  const applyMonthIndex = useCallback((nextIdx: number, by: Map<string, EventRow[]>) => {
+    const slot = eventMonths[nextIdx];
+    if (!slot) return;
+    setMonthIndex(nextIdx);
+    const k = firstDayKeyInMonth(by, slot.y, slot.m);
+    setSelectedKey(k);
+  }, [eventMonths]);
+
+  const goPrev = () => {
+    if (!canPrevMonth) return;
+    applyMonthIndex(monthIndex - 1, byDay);
+  };
+
+  const goNext = () => {
+    if (!canNextMonth) return;
+    applyMonthIndex(monthIndex + 1, byDay);
+  };
+
+  const formatDetailDate = (k: string) => {
+    const p = parseYmd(k);
+    if (!p) return k;
+    return new Date(p.y, p.m, p.d).toLocaleDateString(undefined, {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
 
   useEffect(() => {
     let alive = true;
+
+    const finishFallback = (y: number, m0: number, message: string) => {
+      const fallback = buildFallbackForMonth(y, m0);
+      setItems(fallback);
+      setUsingFallback(true);
+      setNotice(message);
+      setEventMonths([{ y, m: m0 }]);
+      setMonthIndex(0);
+      setSelectedKey(fallback[0]?.start_date ?? null);
+      setLoading(false);
+    };
 
     (async () => {
       try {
@@ -34,18 +252,73 @@ export default function CalendarSection() {
         if (!alive) return;
 
         if (!res.ok || !data?.ok) {
-          setStatus('Error loading events.');
-          setItems([]);
+          const now = new Date();
+          finishFallback(
+            now.getFullYear(),
+            now.getMonth(),
+            'Live schedule is temporarily unavailable. Showing typical club programming for this month.'
+          );
           return;
         }
 
         const rows: EventRow[] = Array.isArray(data.items) ? data.items : [];
+        if (rows.length === 0) {
+          const now = new Date();
+          finishFallback(
+            now.getFullYear(),
+            now.getMonth(),
+            'No posted events yet for the weeks ahead. Here is a preview of regular club programming.'
+          );
+          return;
+        }
+
+        const months = uniqueEventMonths(rows);
+        const head = parseYmd(rows[0].start_date);
+        const initial = head
+          ? { y: head.y, m: head.m }
+          : months[0] ?? { y: new Date().getFullYear(), m: new Date().getMonth() };
+        const idx = Math.max(
+          0,
+          months.findIndex((mm) => mm.y === initial.y && mm.m === initial.m)
+        );
+        const indexToUse = months.length ? idx : 0;
+        const monthsToUse = months.length ? months : [initial];
+
+        const map = new Map<string, EventRow[]>();
+        for (const e of rows) {
+          const p = parseYmd(e.start_date);
+          if (!p) continue;
+          const k = keyFromParsed(p);
+          const arr = map.get(k) ?? [];
+          arr.push(e);
+          map.set(k, arr);
+        }
+        for (const [, arr] of map) {
+          arr.sort((a, b) => a.start_date.localeCompare(b.start_date) || a.id - b.id);
+        }
+
+        const slot = monthsToUse[indexToUse] ?? initial;
+        const firstSelected =
+          (head && keyFromParsed(head)) ||
+          firstDayKeyInMonth(map, slot.y, slot.m) ||
+          null;
+
         setItems(rows);
-        setStatus(rows.length ? '' : 'No upcoming events posted yet.');
+        setUsingFallback(false);
+        setNotice('');
+        setEventMonths(monthsToUse);
+        setMonthIndex(indexToUse);
+        setSelectedKey(firstSelected);
       } catch {
         if (!alive) return;
-        setStatus('Error loading events.');
-        setItems([]);
+        const now = new Date();
+        finishFallback(
+          now.getFullYear(),
+          now.getMonth(),
+          'Live schedule is temporarily unavailable. Showing typical club programming for this month.'
+        );
+      } finally {
+        if (alive) setLoading(false);
       }
     })();
 
@@ -54,50 +327,141 @@ export default function CalendarSection() {
     };
   }, []);
 
-  const cols = useMemo(() => splitIntoTwoColumns(items), [items]);
-
-  const renderList = (rows: EventRow[]) => (
-    <ul className={styles.list}>
-      {rows.map((e) => (
-        <li key={e.id} className={styles.item}>
-          <div className={styles.itemTitle}>{e.title}</div>
-
-          <div className={styles.itemMeta}>
-            {e.start_date}
-            {e.end_date && e.end_date !== e.start_date ? ` → ${e.end_date}` : ''}
-            {e.location ? ` • ${e.location}` : ''}
-            {e.host ? ` • Host: ${e.host}` : ''}
-            {e.fees ? ` • ${e.fees}` : ''}
-          </div>
-
-          {e.description ? <div className={styles.itemDesc}>{e.description}</div> : null}
-
-          {e.external_url ? (
-            <div className={styles.itemLinkWrap}>
-              <a href={e.external_url} target="_blank" rel="noreferrer" className={styles.itemLink}>
-                Details
-              </a>
-            </div>
-          ) : null}
-        </li>
-      ))}
-    </ul>
-  );
-
   return (
     <section className={styles.calendar} aria-label="Fan Club Events Calendar">
-      <h2 className={styles.title}>Fan Club Events Calendar</h2>
+      <h2 className="section-title">Fan Club Events Calendar</h2>
 
-      {status ? (
-        <p className={styles.status}>{status}</p>
-      ) : items.length <= 1 ? (
-        <div className={styles.columnsSingle}>{renderList(items)}</div>
-      ) : (
-        <div className={styles.columns} aria-label="Upcoming events">
-          <div>{renderList(cols.left)}</div>
-          <div>{renderList(cols.right)}</div>
-        </div>
-      )}
+      {notice ? (
+        <p className={styles.notice} role="status">
+          {notice}
+        </p>
+      ) : null}
+
+      <div className={styles.shell}>
+        {loading ? (
+          <p className={styles.loading}>Loading calendar…</p>
+        ) : (
+          <div className={styles.layout}>
+            <div className={styles.monthCard}>
+              <div className={styles.monthHeader}>
+                <button
+                  type="button"
+                  className={styles.monthNav}
+                  onClick={goPrev}
+                  disabled={!canPrevMonth}
+                  aria-label="Previous month with events"
+                >
+                  ‹
+                </button>
+                <h3 className={styles.monthTitle} id="calendar-month-label">
+                  {monthLabel}
+                </h3>
+                <button
+                  type="button"
+                  className={styles.monthNav}
+                  onClick={goNext}
+                  disabled={!canNextMonth}
+                  aria-label="Next month with events"
+                >
+                  ›
+                </button>
+              </div>
+
+              <div className={styles.weekdayRow} aria-hidden="true">
+                {WEEKDAYS.map((w) => (
+                  <div key={w} className={styles.weekdayCell}>
+                    {w}
+                  </div>
+                ))}
+              </div>
+
+              <div className={styles.dayGrid} aria-labelledby="calendar-month-label">
+                {cells.map((c) => {
+                  const hasEvents = c.inMonth && byDay.has(c.key);
+                  const isSelected = selectedKey === c.key;
+                  const count = byDay.get(c.key)?.length ?? 0;
+
+                  if (!c.inMonth) {
+                    return (
+                      <div key={c.key} className={styles.dayCellMuted} aria-hidden="true">
+                        <span className={styles.dayNumMuted}>{c.dayNum}</span>
+                      </div>
+                    );
+                  }
+
+                  if (hasEvents) {
+                    return (
+                      <button
+                        key={c.key}
+                        type="button"
+                        className={`${styles.dayCell} ${isSelected ? styles.dayCellSelected : ''}`}
+                        onClick={() => setSelectedKey(c.key)}
+                        aria-pressed={isSelected}
+                        aria-label={`${c.dayNum} ${monthLabel}, ${count} event${count === 1 ? '' : 's'}`}
+                      >
+                        <span className={styles.dayNum}>{c.dayNum}</span>
+                        <span className={styles.eventDot} aria-hidden="true" />
+                      </button>
+                    );
+                  }
+
+                  return (
+                    <div key={c.key} className={styles.dayCellInactive}>
+                      <span className={styles.dayNum}>{c.dayNum}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {!usingFallback ? (
+                <p className={styles.hint}>Days with a dot have posted events. Select a day for details.</p>
+              ) : (
+                <p className={styles.hint}>Sample programming layout—dates refresh when the live calendar returns.</p>
+              )}
+            </div>
+
+            <aside className={styles.details} aria-live="polite">
+              <h3 className={styles.detailsTitle}>
+                {selectedKey ? formatDetailDate(selectedKey) : 'Select a day'}
+              </h3>
+
+              {!selectedKey || selectedEvents.length === 0 ? (
+                <p className={styles.detailsEmpty}>
+                  {selectedKey
+                    ? 'No items on this day in the current view.'
+                    : 'Choose a highlighted day on the calendar to see event details.'}
+                </p>
+              ) : (
+                <ul className={styles.detailsList}>
+                  {selectedEvents.map((e) => (
+                    <li key={e.id} className={styles.detailsItem}>
+                      <div className={styles.detailsItemTitle}>{e.title}</div>
+                      <div className={styles.detailsMeta}>
+                        {e.start_date}
+                        {e.end_date && e.end_date !== e.start_date ? ` → ${e.end_date}` : ''}
+                        {e.location ? ` • ${e.location}` : ''}
+                        {e.host ? ` • Host: ${e.host}` : ''}
+                        {e.fees ? ` • ${e.fees}` : ''}
+                      </div>
+                      {e.description ? <p className={styles.detailsDesc}>{e.description}</p> : null}
+                      {e.external_url ? (
+                        <a
+                          className={styles.detailsLink}
+                          href={e.external_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Details (opens new tab)
+                        </a>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </aside>
+          </div>
+        )}
+      </div>
     </section>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { apiGet } from '@/lib/api';
+import styles from './FriendsOfFanClub.module.css';
 
 type Friend = {
   id: number;
@@ -78,43 +79,48 @@ export default function FriendsOfFanClub() {
   }, []);
 
   return (
-    <div>
+    <section className={styles.friends}>
       <h2 className="section-title">Friends of the Fan Club</h2>
 
       {loading ? (
         <p className="sub">Loading friends…</p>
       ) : (
-        <div className="grid">
+        <div className={styles.grid}>
           {items.map((f) => (
-            <div key={f.id} className="card">
-              {f.photo_url ? (
-                <img
-                  src={f.photo_url}
-                  alt={f.name}
-                  style={{ width: '100%', borderRadius: 12, marginBottom: 10 }}
-                />
-              ) : null}
+            <article key={f.id} className={styles.card}>
+              <div className={`${styles.media} ${f.photo_url ? '' : styles.mediaBare}`}>
+                {f.photo_url ? (
+                  <img className={styles.logoImg} src={f.photo_url} alt={f.name} />
+                ) : (
+                  <span aria-hidden="true">Partner</span>
+                )}
+              </div>
 
-              <strong>{f.name}</strong>
-              <div className="sub" style={{ marginTop: 6 }}>{f.blurb || f.kind}</div>
+              <div className={styles.cardBody}>
+                <p className={styles.kind}>{f.kind}</p>
+                <h3 className={styles.name}>{f.name}</h3>
+                <p className={styles.blurb}>{f.blurb || `Learn more about our ${f.kind.toLowerCase()} community.`}</p>
+              </div>
 
-              {f.url ? (
-                <div style={{ marginTop: 10 }}>
+              <div className={styles.cta}>
+                {f.url ? (
                   <a
-                    className="link"
+                    className={styles.ctaLink}
                     href={f.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     referrerPolicy="no-referrer"
                   >
-                    Visit
+                    Visit {f.name}
                   </a>
-                </div>
-              ) : null}
-            </div>
+                ) : (
+                  <span className={styles.ctaMuted}>Link coming soon</span>
+                )}
+              </div>
+            </article>
           ))}
         </div>
       )}
-    </div>
+    </section>
   );
 }
