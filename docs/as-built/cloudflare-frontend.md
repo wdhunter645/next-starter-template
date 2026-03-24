@@ -205,6 +205,13 @@ Per `/.github/pull_request_template.md` and `/docs/website-PR-governance.md`:
 - `_routes.json` copied to `out/` for Cloudflare Functions routing
 - Functions in `functions/` directory are deployed alongside static assets
 
+### Social Wall (Elfsight) — CSP and runtime
+
+- Social Wall depends on CSP coverage in `public/_headers` for Elfsight and social media asset domains.
+- Social Wall also depends on client-side widget initialization logic in `src/components/SocialWall.tsx`.
+- Known symptom: shell renders but feed is partial/blank.
+- First checks: CSP domains, script load, widget reload/init, external source cache/permissions.
+
 ### Admin Access Model (ZIP 41)
 
 **Admin UI Pages** (`/admin`, `/admin/d1-test`, `/admin/cms`, `/admin/content`):

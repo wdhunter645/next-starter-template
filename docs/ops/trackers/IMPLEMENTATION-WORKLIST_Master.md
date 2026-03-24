@@ -216,10 +216,13 @@ Summary:
 Post-merge tracker correction: task was previously implemented, verified, merged, and deployed; worklist status is now aligned to actual repo state.
 
 ## T14 — Social wall stability
-Status: OPEN
+Status: CLOSED
+Date Closed: 2026-03-24
 Owner: Cursor
 Scope: embed only.
 Exit: widget loads without hard failure.
+Summary:
+Social Wall stabilized through combined CSP and runtime fixes. CSP coverage for Elfsight/social hosts was expanded in `public/_headers`, and runtime widget initialization was stabilized in `src/components/SocialWall.tsx`. Production now renders the Social Wall without hard failure; remaining source-specific variability may depend on external platform/Elfsight cache behavior.
 
 ## T15 — Calendar section integrity
 Status: CLOSED
