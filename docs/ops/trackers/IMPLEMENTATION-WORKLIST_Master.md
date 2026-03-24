@@ -246,7 +246,9 @@ Summary:
 Calendar section satisfies homepage event visibility requirement.
 
 ## T18 — FAQ / Ask preview wiring
-Status: OPEN
+Status: CLOSED
+Date Closed: 2026-03-24
+Summary: Homepage FAQ preview cards implemented; /faq and /ask validated; PR #609.
 Owner: Cursor
 Scope: homepage FAQ preview section including Ask link.
 Exit: preview renders; routes to `/faq`; Ask link routes to `/ask`.
