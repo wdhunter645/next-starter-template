@@ -70,25 +70,23 @@ This requirement applies to changes affecting:
 
 ### Footer Design Enforcement
 All footer changes must preserve the authoritative footer design defined by:
-- `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
+- `/docs/reference/design/LGFC-Production-Design-and-Standards.md` (canonical link order and behavior)
 - `/docs/NAVIGATION-INVARIANTS.md`
-- `/docs/reference/design/reference/lgfc-homepage-legacy-v6.html`
+- `/docs/reference/design/reference/lgfc-homepage-legacy-v6.html` (layout reference only where it does not contradict the locked design doc)
 - `/docs/as-built/cloudflare-frontend.md`
 
 Required footer invariants:
-- Left: rotating D1-backed quote + dynamic-year copyright
-- Center: LG logo scroll-to-top affordance
-- Right: row 1 = Terms, Privacy; row 2 = Contact
-- No Admin link
-- No visible email or mailto link
-- No extra footer links
+- Left: rotating D1-backed quote (via `/api/footer-quote`) + dynamic-year copyright
+- Center: LG logo scroll-to-top affordance (not route navigation)
+- Right: link order exactly **Privacy**, **Terms**, **Contact** (`/contact`), **Contact** (`mailto:` club support — same address family as `/src/app/contact/page.tsx`), **Admin** (only when member session role is `admin`, via `useMemberSession`)
+- No extra footer links beyond the locked set
 
 Footer-specific rejection conditions:
-- Terms/Privacy order changed
-- Contact moved into row 1 or removed
+- Privacy / Terms / Contact / mailto Contact / Admin (when admin) order or presence wrong relative to the locked design doc
+- Admin link shown without admin role, or hidden when role is admin
 - Logo changed from scroll-to-top to route navigation
-- Quote replaced with hardcoded static copy
-- Footer change made without updating `/docs/as-built/cloudflare-frontend.md`
+- Quote replaced with hardcoded static copy or `/api/footer-quote` fetch removed
+- Footer change made without updating `/docs/as-built/cloudflare-frontend.md` when behavior or link set changes
 
 ### Social Wall Drift & Regressions
 **Historical Context:**

@@ -254,10 +254,13 @@ Scope: homepage FAQ preview section including Ask link.
 Exit: preview renders; routes to `/faq`; Ask link routes to `/ask`.
 
 ## T19 — Footer invariants lock
-Status: OPEN
+Status: CLOSED
+Date Closed: 2026-03-24
 Owner: Cursor
 Scope: footer only.
 Exit: footer matches locked design authority.
+Summary:
+Footer `Footer.tsx` aligned to LGFC-Production-Design-and-Standards.md: right column Privacy → Terms → Contact → mailto Contact (support) → Admin when session role is admin (`useMemberSession`). PR_GOVERNANCE and `cloudflare-frontend.md` updated to remove stale “no Admin / no mailto” rules that contradicted the locked design doc.
 
 ## T20 — Campaign Spotlight implementation
 Status: OPEN
@@ -389,6 +392,14 @@ Constraints:
 Design hierarchy and as-built configuration are now aligned with live production.
 
 T10 is confirmed complete after revalidation.
+
+---
+
+## UPDATE — T19 Footer invariants lock (2026-03-24)
+
+**Canonical footer (right column)** is defined solely by `/docs/reference/design/LGFC-Production-Design-and-Standards.md`: Privacy, Terms, Contact (`/contact`), Contact (`mailto` support), Admin (admin session only).
+
+Notes in this file that describe an older footer (e.g. Terms-before-Privacy, no mailto, no Admin) reflected stale tracker/governance text before T19; implementation and governance are aligned to the locked design doc as of T19 closeout.
 
 ---
 

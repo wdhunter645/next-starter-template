@@ -240,7 +240,6 @@ T15 and T16 closed per worklist exit criteria for calendar presentation/event vi
 ### Next Action
 Proceed with the next open homepage integrity task per `IMPLEMENTATION-WORKLIST_Master.md`.
 
-
 ## CLOSEOUT — T11 + T13 (Post-Merge Correction)
 - T11 (Hero Banner Integrity): CLOSED
   - Implementation verified and previously merged (PR #585)
@@ -251,3 +250,28 @@ Proceed with the next open homepage integrity task per `IMPLEMENTATION-WORKLIST_
 - Reason for entry:
   - Close status missing from THREAD-LOG despite successful merge and deployment
   - This entry corrects tracker completeness only (no code changes)
+
+------------------------------------------------------------------------
+
+## THREAD CLOSEOUT RECORD --- 2026-03-24 --- T19 Footer invariants lock
+
+### Starting State
+Footer implementation and repo docs (PR governance, as-built) described a footer that conflicted with the locked design authority in `/docs/reference/design/LGFC-Production-Design-and-Standards.md` (Privacy–Terms–Contact–mailto–Admin).
+
+### Objective
+Resolve the footer authority conflict by aligning `Footer.tsx` and stale documentation to the locked design doc; close T19.
+
+### Work Performed
+- Updated `src/components/Footer.tsx`: preserved rotating `/api/footer-quote`, dynamic year, center logo scroll-to-top; right-side links ordered Privacy, Terms, Contact (`/contact`), Contact (`mailto:Support@LouGehrigFanClub.com`), Admin when `useMemberSession()` role is `admin` (no new auth helpers).
+- Reconciled `docs/governance/PR_GOVERNANCE.md` footer enforcement to match the locked design doc (removed contradictions such as mandatory "no Admin" / "no mailto").
+- Reconciled `docs/as-built/cloudflare-frontend.md` footer section to the same canonical link order and behaviors.
+- Marked T19 CLOSED in `IMPLEMENTATION-WORKLIST_Master.md` with an append-style note clarifying superseded older footer wording elsewhere in the tracker.
+
+### Result
+Footer authority conflict resolved: implementation + docs match LGFC-Production-Design-and-Standards.md. T19 closed.
+
+### Next Action
+Proceed per `IMPLEMENTATION-WORKLIST_Master.md` (e.g. next open Phase 2 task).
+
+------------------------------------------------------------------------
+

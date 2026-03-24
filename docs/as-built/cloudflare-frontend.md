@@ -156,22 +156,23 @@ Per `docs/reference/design/LGFC-Production-Design-and-Standards.md`:
 - Desktop/tablet: Does not include "Home"
 - Mobile: Includes "Home" for easy navigation
 
-**Footer:**
+**Footer:** (per `/docs/reference/design/LGFC-Production-Design-and-Standards.md`)
 - Left:
   - Quote fetched from `/api/footer-quote` (D1-backed)
   - Quote may include Lou Gehrig quotes or quotes about Lou Gehrig
   - Dynamic display, not hardcoded page text
+  - Copyright line: `© {new Date().getFullYear()} Lou Gehrig Fan Club`
 - Center:
   - LG logo button
   - Behavior: scroll to top of current page
-- Right:
-  - Row 1: Terms (`/terms`), Privacy (`/privacy`)
-  - Row 2: Contact (`/contact`)
-- Copyright:
-  - `© {new Date().getFullYear()} Lou Gehrig Fan Club`
+- Right (order fixed):
+  - Privacy (`/privacy`)
+  - Terms (`/terms`)
+  - Contact (`/contact`)
+  - Contact — `mailto:` Support (`Support@LouGehrigFanClub.com`, aligned with contact page)
+  - Admin (`/admin`) — only when `useMemberSession()` reports `role === 'admin'`
 - Constraints:
-  - No Admin link in footer
-  - No visible email or mailto link
+  - No extra footer links beyond the locked set
   - Footer links remain footer-only and are not duplicated into the hamburger menu
 
 ### Styling
