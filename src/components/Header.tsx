@@ -79,16 +79,13 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
-        {/* LEFT: Logo (small header logo; hidden when FloatingLogo is active) */}
-        <div className={styles.left}>
-          {showLogo ? (
+        {showLogo ? (
+          <div className={styles.logoContainer}>
             <Link href={homeRoute} aria-label="Lou Gehrig Fan Club" className={styles.logoLink}>
-              <img className={styles.logoImg} src="/IMG_1946.png" alt="LGFC" />
+              <img className={styles.logo} src="/IMG_1946.png" alt="LGFC Logo" />
             </Link>
-          ) : (
-            <span />
-          )}
-        </div>
+          </div>
+        ) : null}
 
         {/* CENTER: Public buttons */}
         <nav className={styles.center} aria-label="Site">
