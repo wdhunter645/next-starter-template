@@ -80,9 +80,11 @@
       "allow_prefixes": [
         ".github/copilot-instructions.md",
         ".github/agents/",
+        ".github/intent-labeler.json",
         "Agent.md",
         "context.md",
         "docs/",
+        "PROMPTS/",
         "scripts/ci/"
       ],
       "deny_prefixes": [
