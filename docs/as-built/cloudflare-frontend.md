@@ -165,15 +165,14 @@ Per `docs/reference/design/LGFC-Production-Design-and-Standards.md`:
 - Center:
   - LG logo button
   - Behavior: scroll to top of current page
-- Right (order fixed):
-  - Privacy (`/privacy`)
-  - Terms (`/terms`)
-  - Contact (`/contact`)
-  - Contact — `mailto:` Support (`Support@LouGehrigFanClub.com`, aligned with contact page)
-  - Admin (`/admin`) — only when `useMemberSession()` reports `role === 'admin'`
+- Right (two-row layout):
+  - Row 1: Privacy (`/privacy`), Terms (`/terms`)
+  - Row 2: Contact (`/contact`)
 - Constraints:
+  - No `mailto:` footer link
+  - No Admin link in the public footer
+  - Contact/support email belongs on `/contact`, not in footer navigation
   - No extra footer links beyond the locked set
-  - Footer links remain footer-only and are not duplicated into the hamburger menu
 
 ### Styling
 

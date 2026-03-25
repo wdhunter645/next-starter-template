@@ -285,3 +285,30 @@ Proceed per `IMPLEMENTATION-WORKLIST_Master.md`.
 
 ------------------------------------------------------------------------
 
+
+------------------------------------------------------------------------
+
+## THREAD CLOSEOUT RECORD --- 2026-03-25 --- T19 Footer docs reconciliation
+
+### Starting State
+Multiple documentation files described a footer model that included a `mailto:` Contact link and a conditional Admin link (Privacy, Terms, Contact, mailto Contact, Admin when admin). This did not match the production `Footer.tsx`, which implements a two-row right column: Row 1 Privacy/Terms, Row 2 Contact (`/contact`), with no mailto and no Admin link.
+
+### Objective
+Reconcile all documentation to the production footer so no active doc claims the public Cloudflare footer contains a `mailto:` Contact or an Admin link.
+
+### Work Performed
+- Updated `docs/reference/design/LGFC-Production-Design-and-Standards.md`: footer section now reflects the canonical two-row model (Row 1: Privacy/Terms; Row 2: Contact `/contact`; no mailto; no Admin).
+- Updated `docs/governance/PR_GOVERNANCE.md`: footer enforcement rules and rejection conditions updated to match the canonical model; removed stale mailto/Admin requirements.
+- Updated `docs/as-built/cloudflare-frontend.md`: footer section now matches production (two-row right column, no mailto, no Admin).
+- Updated `docs/reference/design/dashboard.md`: removed claim that the public Cloudflare footer contains an Admin link.
+- Added supersession note to `docs/as-built/RECONCILIATION-NOTES_2026-02.md`.
+- Added clarification append to `docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md`.
+- Regenerated canonical design hashes in `docs/reference/design/.canonical-hashes.sha256`.
+
+### Result
+No active doc claims the public footer contains `mailto:` Contact or Admin. All documentation aligns with production footer implementation.
+
+### Next Action
+Proceed per `IMPLEMENTATION-WORKLIST_Master.md`.
+
+------------------------------------------------------------------------

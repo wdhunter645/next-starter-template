@@ -407,3 +407,18 @@ Notes in this file that describe an older footer (e.g. Terms-before-Privacy, no 
 ---
 
 
+
+## UPDATE — T19 Footer docs reconciliation (2026-03-25)
+
+The 2026-03-24 T19 note above described a five-link footer model (Privacy, Terms, Contact, mailto Contact, Admin when admin). That model is **superseded**.
+
+Following the T19 footer invariants reopen (PR #623) and the T19 documentation reconciliation task, the canonical footer is:
+
+- Row 1: Privacy (`/privacy`), Terms (`/terms`)
+- Row 2: Contact (`/contact`)
+- No `mailto:` footer link
+- No Admin link in the public footer
+
+All documentation — `LGFC-Production-Design-and-Standards.md`, `PR_GOVERNANCE.md`, `cloudflare-frontend.md`, and `dashboard.md` — has been updated to match the production footer implementation.
+
+---

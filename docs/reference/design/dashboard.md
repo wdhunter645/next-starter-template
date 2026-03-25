@@ -50,8 +50,8 @@ The dashboard runs **only** on the Vercel members/admin site and provides the UI
 
 ### Link from Public Site
 
-- Footer on Cloudflare includes an `Admin` link pointing to the admin endpoint (e.g. `https://members.lougehrigfanclub.com/admin` or `/admin` depending on final routing).
-- Until the Vercel admin is fully live, public Cloudflare `/admin` may show a placeholder, but the **real** dashboard is on Vercel.
+- The public Cloudflare footer does **not** include an Admin link. Admin access is available only through direct navigation to the admin-site URL (Vercel members/admin app) by authenticated admin users.
+- Until the Vercel admin is fully live, `/admin` on the Cloudflare public site may show a placeholder, but the **real** dashboard is on Vercel.
 
 ---
 
