@@ -1,14 +1,24 @@
+---
+Doc Type: Operations
+Audience: Human + AI
+Authority Level: Operational Authority
+Owns: Task brief for MEDIA-01 B2 → D1 media pipeline verification
+Does Not Own: Product UI / final UX design
+Canonical Reference: /docs/ops/tasks/MEDIA-01.md
+Last Reviewed: 2026-03-25
+---
+
 # MEDIA-01 — B2 → D1 media pipeline verification
 
 ## Objective
 
-Establish a working pipeline between Backblaze B2 and D1 so image (and other) objects can be listed from B2 and indexed in D1 for use by the app—without adding product UI.
+**Backblaze B2 connectivity is already established** (bucket, keys, CDN/public URLs, and existing CLI or asset flows). MEDIA-01 completes the **D1 side**: list objects via the same S3-compatible API, map metadata into `media_assets`, and prove the path from storage to the database—without new product UI.
 
 ## Requirements
 
-- Verify B2 bucket access (S3-compatible ListObjectsV2).
-- Confirm listing capability and stable metadata mapping into D1.
-- Ensure D1 table structure exists for the media index (`media_assets`).
+- Rely on existing B2 access; exercise **ListObjectsV2** from the automation surface you choose (admin sync route and/or scripts).
+- Confirm stable metadata mapping B2 object → D1 `media_assets` rows.
+- Ensure D1 schema includes the media index (`migrations/0010_media_assets.sql`).
 
 ## Implementation in this repo
 
@@ -22,14 +32,14 @@ Establish a working pipeline between Backblaze B2 and D1 so image (and other) ob
 | CLI ingest (inventory JSON → D1) | `scripts/b2_inventory_sync.sh` → `scripts/d1_media_ingest.js` |
 | CLI sync into `photos` (URLs) | `scripts/b2_d1_incremental_sync.sh` |
 
-## Pages / secrets
+## Cloudflare Pages environment secrets
 
-Configure on the Cloudflare Pages project (production and preview as needed):
+B2 is already reachable from your operational setup; for **Pages Functions** the same credentials must appear as **environment secrets** (production is expected to already have them; add or mirror on preview if you run sync there). Values are read from `env`—never commit them to the repo.
 
 - `B2_ENDPOINT` — e.g. `https://s3.<region>.backblazeb2.com`
 - `B2_BUCKET`
 - `B2_KEY_ID` / `B2_APP_KEY` — application key with **listObjects** (and read) on the bucket
-- Existing `ADMIN_TOKEN` for admin API routes
+- `ADMIN_TOKEN` — same pattern for admin API routes
 
 Optional query parameter on sync: `maxObjects` (default `2000`, cap `50000`) to limit a single invocation for large buckets.
 
@@ -42,7 +52,7 @@ Optional query parameter on sync: `maxObjects` (default `2000`, cap `50000`) to 
 
 ## Output
 
-- Confirmed read/list path from B2 (via admin sync or CLI).
+- Confirmed list path against the already-connected B2 bucket (admin sync and/or CLI).
 - D1 contains indexed `media_assets` rows for processed objects.
 
 ## Constraints
@@ -52,4 +62,4 @@ Optional query parameter on sync: `maxObjects` (default `2000`, cap `50000`) to 
 
 ## Exit criteria
 
-Images (and other objects you choose to index) can be listed from B2 and recorded in D1 so frontends and jobs can rely on `media_assets` (and/or follow-on mapping into feature tables).
+Given established B2 connectivity, images (and other objects you index) are listable from the bucket and recorded in D1 so frontends and jobs can rely on `media_assets` (and/or follow-on mapping into feature tables).

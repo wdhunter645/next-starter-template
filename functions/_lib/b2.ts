@@ -1,6 +1,7 @@
 /**
  * Backblaze B2 (S3-compatible) list + stable media UID for MEDIA-01 / D1 ingestion.
- * Requires Pages secrets: B2_ENDPOINT, B2_BUCKET, B2_KEY_ID, B2_APP_KEY
+ * Uses Cloudflare Pages environment secrets for B2 (B2_ENDPOINT, B2_BUCKET, B2_KEY_ID, B2_APP_KEY).
+ * Platform B2 connectivity is already established; missing secrets here usually means this deployment/env (e.g. preview) is not wired the same as production.
  */
 
 import { AwsClient } from "./aws4fetch";
@@ -25,8 +26,9 @@ export function requireB2(env: Record<string, unknown>): { ok: true; cfg: B2Bind
       response: new Response(
         JSON.stringify({
           ok: false,
-          error: "B2 is not configured",
-          detail: "Set B2_ENDPOINT, B2_BUCKET, B2_KEY_ID, B2_APP_KEY on the Pages project (production + preview as needed).",
+          error: "B2 secrets missing for this Pages environment",
+          detail:
+            "B2 connectivity is established for the platform; this worker needs B2_ENDPOINT, B2_BUCKET, B2_KEY_ID, and B2_APP_KEY as environment secrets on this deployment (e.g. mirror production secrets for preview).",
         }),
         { status: 503, headers: { "Content-Type": "application/json" } },
       ),
@@ -103,8 +105,12 @@ export async function listB2Objects(cfg: B2Bindings, opts?: { maxObjects?: numbe
   const aws = new AwsClient({
     accessKeyId: cfg.B2_KEY_ID,
     secretAccessKey: cfg.B2_APP_KEY,
+    sessionToken: undefined,
     service: "s3",
+    region: undefined,
+    cache: undefined,
     retries: 2,
+    initRetryMs: undefined,
   });
 
   const all: ListedB2Object[] = [];
