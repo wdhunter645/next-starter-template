@@ -2,9 +2,6 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useMemberSession } from '@/hooks/useMemberSession';
-
-const SUPPORT_EMAIL = 'Support@LouGehrigFanClub.com';
 
 type Quote = { quote: string; source?: string };
 
@@ -17,9 +14,7 @@ function asString(v: unknown): string | undefined {
 }
 
 export default function Footer() {
-  const { role, isLoading } = useMemberSession();
   const [q, setQ] = useState<Quote | null>(null);
-  const showAdmin = !isLoading && role === 'admin';
 
   useEffect(() => {
     let cancelled = false;
@@ -91,29 +86,26 @@ export default function Footer() {
           </button>
         </div>
 
-        {/* Right: links (right aligned) */}
+        {/* Right: Privacy + Terms (row 1), Contact (row 2); admin/support copy on /contact only */}
         <nav
           aria-label="Footer links"
           style={{
             flex: '1 1 260px',
             minWidth: 220,
             display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            gap: 14,
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: 8,
             fontSize: 12,
           }}
         >
-          <Link href="/privacy">Privacy</Link>
-          <Link href="/terms">Terms</Link>
-          <Link href="/contact" aria-label="Contact (club contact page)">
-            Contact
-          </Link>
-          <a href={`mailto:${SUPPORT_EMAIL}`} aria-label={`Contact by email (${SUPPORT_EMAIL})`}>
-            Contact
-          </a>
-          {showAdmin ? <Link href="/admin">Admin</Link> : null}
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 14 }}>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Link href="/contact">Contact</Link>
+          </div>
         </nav>
       </div>
     </footer>
