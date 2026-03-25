@@ -33,3 +33,9 @@ Define the correct rendering behavior for the LGFC logo on homepage and fanclub 
 ## Enforcement
 
 This behavior is intentional branding and must not be refactored away.
+
+## Implementation
+
+- Component: `src/components/FloatingLogo.tsx` and `FloatingLogo.module.css`.
+- Mounted only from `src/app/page.tsx` and `src/app/fanclub/page.tsx`.
+- `SiteHeader` hides the small header logo on `/` and `/fanclub` via `showFloatingLogo` so the mark is not duplicated.

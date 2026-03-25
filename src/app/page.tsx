@@ -2,6 +2,7 @@
 
 import styles from './page.module.css';
 
+import FloatingLogo from '@/components/FloatingLogo';
 import WeeklyMatchup from '@/components/WeeklyMatchup';
 import CampaignSpotlightSlot from '@/components/home/CampaignSpotlightSlot';
 import FAQSection from '@/components/FAQSection';
@@ -15,6 +16,7 @@ import SocialWall from '@/components/SocialWall';
 export default function HomePage() {
   return (
     <>
+      <FloatingLogo homeRoute="/" />
       {/* Section: Hero Banner */}
       <header id="banner" className={styles.hero}>
         <div className={styles.container}>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import FloatingLogo from '@/components/FloatingLogo';
 import WelcomeSection from '@/components/fanclub/WelcomeSection';
 import PostCreation from '@/components/fanclub/PostCreation';
 import DiscussionFeed from '@/components/fanclub/DiscussionFeed';
@@ -26,6 +27,7 @@ export default function MemberHomePage() {
 
   return (
     <main>
+      <FloatingLogo homeRoute="/fanclub" />
       <h1
         style={{
           fontSize: 32,

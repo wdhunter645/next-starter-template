@@ -3,7 +3,6 @@
 import { usePathname } from 'next/navigation';
 import Header from './Header';
 import FanClubHeader from './FanClubHeader';
-import FloatingLogo from './FloatingLogo';
 
 /**
  * Route-based header selection ONLY.
@@ -12,8 +11,8 @@ import FloatingLogo from './FloatingLogo';
  *
  * Classic/locked behavior:
  * - Sticky header always present.
- * - FloatingLogo is a separate overlay on "/" and "/fanclub" only.
- * - When FloatingLogo is present, we hide the small header logo to avoid duplication.
+ * - Floating logo mounts from `page.tsx` and `fanclub/page.tsx` only.
+ * - When floating logo is active, we hide the small header logo to avoid duplication.
  */
 export default function SiteHeader() {
   const pathname = usePathname() || '/';
@@ -26,7 +25,6 @@ export default function SiteHeader() {
 
   return (
     <>
-      {showFloatingLogo ? <FloatingLogo homeRoute="/" /> : null}
       {isFanClub ? (
         <FanClubHeader showLogo={!showFloatingLogo} />
       ) : (
