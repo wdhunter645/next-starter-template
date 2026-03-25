@@ -1,0 +1,23 @@
+[
+  {
+    "team_id": "yankees",
+    "team_name": "New York Yankees",
+    "total_amount": 0,
+    "donor_count": 0,
+    "timestamp": "2026-03-25T00:00:00Z"
+  },
+  {
+    "team_id": "tigers",
+    "team_name": "Detroit Tigers",
+    "total_amount": 0,
+    "donor_count": 0,
+    "timestamp": "2026-03-25T00:00:00Z"
+  },
+  {
+    "team_id": "guardians",
+    "team_name": "Cleveland Guardians",
+    "total_amount": 0,
+    "donor_count": 0,
+    "timestamp": "2026-03-25T00:00:00Z"
+  }
+]
