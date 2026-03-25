@@ -1,41 +1,61 @@
 ---
-Doc Type: Design Spec
+Doc Type: Design Reference
 Audience: Human + AI
-Authority Level: Supporting
+Authority Level: Supporting Design
+Owns: Homepage and FanClub homepage floating logo presentation behavior
+Does Not Own: Global header navigation invariants, non-homepage logo behavior, implementation details outside the approved floating-logo pattern
+Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
+Last Reviewed: 2026-03-25
 ---
 
-# Homepage Logo Behavior (Canonical)
+# Homepage Logo Behavior
 
 ## Purpose
-Define the correct rendering behavior for the LGFC logo on homepage and fanclub homepage.
+Define the approved logo presentation behavior for the homepage and FanClub homepage only.
 
-## Rules
+## Canonical Rule
 
-1. Homepage and FanClub homepage use a floating logo overlay model
-2. Logo is NOT part of header layout flow
-3. Logo is a separate positioned element
-4. Anchor: top-left (tight to edges)
-5. Logo is intentionally larger than standard header logo
-6. Header and Hero render underneath the logo
-7. Logo must visually overlap hero section
+Homepage and FanClub homepage use a floating logo overlay model.
 
-## Non-Homepage Pages
+This is intentional.
 
-- Use standard inline header logo
-- No floating behavior
+The logo on these two surfaces is:
+- larger than the standard header logo
+- rendered as a separate positioned element
+- not part of normal header layout flow
+- anchored tight to the top-left area
+- layered above the header and hero presentation
+
+Header and hero content render underneath this logo layer.
+
+## Route Scope
+
+This behavior applies only to:
+- `/`
+- `/fanclub`
+
+All other routes keep the standard small inline header logo.
 
 ## Constraints
 
-- Do NOT modify header button layout
-- Do NOT introduce layout shift
-- Must be mobile safe
+- Do not change header button order or route behavior
+- Do not change hamburger behavior
+- Do not introduce duplicate logo rendering
+- Do not convert non-homepage routes to the floating logo model
+- Must remain mobile-safe and avoid clipping/blocking core UI
+
+## Implementation Notes
+
+Current implementation uses:
+- `src/components/FloatingLogo.tsx`
+- `src/components/FloatingLogo.module.css`
+
+The floating logo is mounted from:
+- `src/app/page.tsx`
+- `src/app/fanclub/page.tsx`
+
+`SiteHeader` hides the standard small header logo on `/` and `/fanclub` so the logo is not duplicated.
 
 ## Enforcement
 
-This behavior is intentional branding and must not be refactored away.
-
-## Implementation
-
-- Component: `src/components/FloatingLogo.tsx` and `FloatingLogo.module.css`.
-- Mounted only from `src/app/page.tsx` and `src/app/fanclub/page.tsx`.
-- `SiteHeader` hides the small header logo on `/` and `/fanclub` via `showFloatingLogo` so the mark is not duplicated.
+This behavior is an approved branding/layout rule and must not be refactored away unless the design authority is intentionally changed first.
