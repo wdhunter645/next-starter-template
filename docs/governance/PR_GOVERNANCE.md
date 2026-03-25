@@ -72,18 +72,22 @@ This requirement applies to changes affecting:
 All footer changes must preserve the authoritative footer design defined by:
 - `/docs/reference/design/LGFC-Production-Design-and-Standards.md` (canonical link order and behavior)
 - `/docs/NAVIGATION-INVARIANTS.md`
-- `/docs/reference/design/reference/lgfc-homepage-legacy-v6.html` (layout reference only where it does not contradict the locked design doc)
 - `/docs/as-built/cloudflare-frontend.md`
 
 Required footer invariants:
 - Left: rotating D1-backed quote (via `/api/footer-quote`) + dynamic-year copyright
 - Center: LG logo scroll-to-top affordance (not route navigation)
-- Right: link order exactly **Privacy**, **Terms**, **Contact** (`/contact`), **Contact** (`mailto:` club support — same address family as `/src/app/contact/page.tsx`), **Admin** (only when member session role is `admin`, via `useMemberSession`)
+- Right (two-row layout):
+  - Row 1: **Privacy** (`/privacy`), **Terms** (`/terms`)
+  - Row 2: **Contact** (`/contact`)
+- No `mailto:` footer link
+- No Admin link in the public footer; admin/support contact belongs on `/contact`
 - No extra footer links beyond the locked set
 
 Footer-specific rejection conditions:
-- Privacy / Terms / Contact / mailto Contact / Admin (when admin) order or presence wrong relative to the locked design doc
-- Admin link shown without admin role, or hidden when role is admin
+- Privacy / Terms / Contact order or presence wrong relative to the locked design doc
+- `mailto:` link present in footer
+- Admin link present in public footer
 - Logo changed from scroll-to-top to route navigation
 - Quote replaced with hardcoded static copy or `/api/footer-quote` fetch removed
 - Footer change made without updating `/docs/as-built/cloudflare-frontend.md` when behavior or link set changes

@@ -100,13 +100,19 @@ A page link in mobile hamburger menus only.
 
 # Footer
 
-Order:
+Right column — two-row layout:
 
-Privacy  
-Terms  
-Contact  
-Contact (mailto)  
-Admin (admin only)
+Row 1: Privacy → `/privacy`, Terms → `/terms`  
+Row 2: Contact → `/contact`
+
+Left: D1-backed rotating quote + dynamic-year copyright  
+Center: LG logo — scroll-to-top affordance (not route navigation)
+
+Constraints:
+- No `mailto:` footer link
+- No Admin link in the public footer
+- Contact/support email belongs on `/contact`, not in footer navigation
+- No extra footer links beyond the locked set
 
 ---
 

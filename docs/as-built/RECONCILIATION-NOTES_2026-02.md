@@ -127,3 +127,22 @@ The following documents require updates to reflect these resolutions:
 |-----------------------------------------|-------------------------------------------------------------------------------|
 |`LGFC-Production-Design-and-Standards.md`|Remove 6-button logged-in header model; update footer link order               |
 |`home.md`                                |Add “About Lou Gehrig” as section 4 (renumber subsequent sections)             |
+
+-----
+
+## Supersession Note — Footer Model (2026-03-25)
+
+The five-link footer model described in earlier entries of this file
+(Privacy → Terms → Contact → mailto Contact → Admin conditional) is **no longer current**.
+
+The production public footer was reconciled during T19 (footer invariants reopen, PR #623)
+and the docs were further aligned in the T19 documentation reconciliation task.
+
+**Current canonical footer** (right column, locked):
+
+- Row 1: Privacy (`/privacy`), Terms (`/terms`)
+- Row 2: Contact (`/contact`)
+- No `mailto:` footer link
+- No Admin link in the public footer
+
+Authority: `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
