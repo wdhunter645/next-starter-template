@@ -1,54 +1,34 @@
+type PhotoItem = {
+  id: number;
+  url: string;
+  description?: string;
+  title?: string;
+};
+
+function isUsablePhoto(item: any): item is PhotoItem {
+  return !!item && typeof item.id === "number" && typeof item.url === "string" && item.url.trim().length > 0;
+}
+
+async function readPhotoById(request: Request, id: number): Promise<PhotoItem | null> {
+  const endpoint = new URL(`/api/photos/get/${id}`, request.url);
+  const resp = await fetch(endpoint.toString(), { method: "GET" });
+  if (!resp.ok) return null;
+  const json = await resp.json().catch(() => null);
+  const item = json?.item;
+  return isUsablePhoto(item) ? item : null;
+}
+
+async function readPhotoList(request: Request, limit: number): Promise<PhotoItem[]> {
+  const endpoint = new URL(`/api/photos/list?limit=${limit}&offset=0`, request.url);
+  const resp = await fetch(endpoint.toString(), { method: "GET" });
+  if (!resp.ok) return [];
+  const json = await resp.json().catch(() => null);
+  const rawItems = Array.isArray(json?.items) ? json.items : [];
+  return rawItems.filter(isUsablePhoto);
+}
+
 export const onRequestGet = async (context: any): Promise<Response> => {
-  const { env } = context;
-
-  // Public, browser-loadable base for LGFC bucket (no secrets required client-side).
-  // NOTE: We intentionally use the Backblaze "friendly" public URL format here because
-  // the S3 endpoint form in D1 has been observed to contain a bucket *ID* (or omit the bucket),
-  // which breaks public image loading on the homepage.
-  const PUBLIC_BUCKET_NAME = "LouGehrigFanClub";
-  const PUBLIC_BASE = `https://f005.backblazeb2.com/file/${PUBLIC_BUCKET_NAME}`;
-
-  const encodePath = (p: string) =>
-    p
-      .split("/")
-      .filter(Boolean)
-      .map((seg) => encodeURIComponent(seg))
-      .join("/");
-
-  const normalizePhotoUrl = (raw: any): any => {
-    if (!raw || typeof raw !== "object") return raw;
-
-    const url = typeof raw.url === "string" ? raw.url : "";
-    if (!url) return raw;
-
-    // Already in the desired public format
-    if (url.startsWith(PUBLIC_BASE + "/")) return raw;
-
-    try {
-      const u = new URL(url);
-      const parts = u.pathname.split("/").filter(Boolean);
-
-      // Common stored patterns we have seen:
-      // 1) /<objectKey>
-      // 2) /<bucketName>/<objectKey>
-      // 3) /<bucketId>/<objectKey>
-      // 4) /<bucketName>/<folder>/<objectKey>  (or bucketId instead)
-      //
-      // If there are 2+ segments, assume the first is a bucket identifier and drop it.
-      // If there is only 1 segment, treat it as the object key.
-      const keyParts = parts.length >= 2 ? parts.slice(1) : parts;
-      const key = encodePath(keyParts.join("/"));
-
-      if (!key) return raw;
-
-      return { ...raw, url: `${PUBLIC_BASE}/${key}` };
-    } catch {
-      // If it's not a valid URL, leave it untouched.
-      return raw;
-    }
-  };
-
-  const normalizeItems = (items: any[]) => (items ?? []).map(normalizePhotoUrl);
+  const { env, request } = context;
 
   try {
     // 1) Prefer an active weekly_matchups row (authoritative)
@@ -58,57 +38,71 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       ).first();
 
       if (m && m.photo_a_id && m.photo_b_id) {
-        const a = await env.DB.prepare("SELECT id, url, description, title FROM photos WHERE id = ?;")
-          .bind(m.photo_a_id)
-          .first();
-        const b = await env.DB.prepare("SELECT id, url, description, title FROM photos WHERE id = ?;")
-          .bind(m.photo_b_id)
-          .first();
+        const a = await readPhotoById(request, Number(m.photo_a_id));
+        const b = await readPhotoById(request, Number(m.photo_b_id));
+        const items = [a, b].filter(isUsablePhoto).slice(0, 2);
 
-        const items = normalizeItems([a, b].filter(Boolean));
-
-        return new Response(
-          JSON.stringify(
+        if (items.length >= 2) {
+          return new Response(
+            JSON.stringify(
+              {
+                ok: true,
+                week_start: m.week_start,
+                matchup_id: m.id,
+                items,
+              },
+              null,
+              2
+            ),
             {
-              ok: true,
-              week_start: m.week_start,
-              matchup_id: m.id,
-              items,
-            },
-            null,
-            2
-          ),
-          {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+        }
+
+        // If active matchup entries are unusable, top up from MEDIA-02 list read path.
+        const fillers = await readPhotoList(request, 20);
+        const dedup = new Set(items.map((it) => it.id));
+        for (const f of fillers) {
+          if (!dedup.has(f.id)) {
+            items.push(f);
+            dedup.add(f.id);
           }
-        );
+          if (items.length >= 2) break;
+        }
+
+        if (items.length >= 2) {
+          return new Response(
+            JSON.stringify(
+              {
+                ok: true,
+                week_start: m.week_start,
+                matchup_id: m.id,
+                items: items.slice(0, 2),
+              },
+              null,
+              2
+            ),
+            {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+        }
       }
     } catch {
-      // fall through to photo-pick fallback
+      // fall through to MEDIA-02 list fallback
     }
 
-    // 2) Fallback: pick two photos (legacy)
-    const pickTwo = async (sql: string) => {
-      const rows = await env.DB.prepare(sql).all();
-      const items = (rows.results ?? []) as any[];
-      return items.slice(0, 2);
-    };
-
-    let items: any[] = [];
-    try {
-      items = await pickTwo(
-        "SELECT id, url, description, title FROM photos WHERE is_matchup_eligible = 1 ORDER BY id DESC LIMIT 2;"
-      );
-    } catch {
-      items = await pickTwo("SELECT id, url, description, title FROM photos ORDER BY id DESC LIMIT 2;");
-    }
+    // 2) Fallback: read directly from the MEDIA-02 photo read path
+    const items = (await readPhotoList(request, 2)).slice(0, 2);
 
     // Provide a stable week_start even in fallback mode so voting can work
     const wsRow = await env.DB.prepare("SELECT date('now','weekday 1','-7 days') AS week_start;").first();
     const week_start = wsRow && wsRow.week_start ? String(wsRow.week_start) : null;
 
-    return new Response(JSON.stringify({ ok: true, week_start, matchup_id: null, items: normalizeItems(items) }, null, 2), {
+    return new Response(JSON.stringify({ ok: true, week_start, matchup_id: null, items }, null, 2), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
