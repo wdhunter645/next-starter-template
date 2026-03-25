@@ -127,10 +127,10 @@ else
   fi
 
   # Approved structural invariants (current implementation)
-  if gq "className=\{styles\.left\}" "${HDR_FILE}" && gq "<nav className=\{styles\.center\}" "${HDR_FILE}" && gq "className=\{styles\.right\}" "${HDR_FILE}"; then
-    mark_pass "Header structure present (left + center + right wrappers)"
+  if gq "className=\{styles\.logoContainer\}" "${HDR_FILE}" && gq "<nav className=\{styles\.center\}" "${HDR_FILE}" && gq "className=\{styles\.right\}" "${HDR_FILE}"; then
+    mark_pass "Header structure present (logoContainer + center + right wrappers)"
   else
-    mark_fail "Header structure missing (expected className={styles.left}, nav className={styles.center}, className={styles.right})"
+    mark_fail "Header structure missing (expected className={styles.logoContainer}, nav className={styles.center}, className={styles.right})"
   fi
 
   # Hamburger aria-controls id invariant

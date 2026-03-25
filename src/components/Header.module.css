@@ -14,34 +14,28 @@
   height: 80px;
 }
 
-/* LEFT: logo area (hard constrained) */
-.left{
-  position: relative;
-  z-index: 2;
+.logoContainer{
+  position: absolute;
+  top: 12px;
+  left: 16px;
   display: flex;
   align-items: center;
-  height: 100%;
-  width: 92px;
-  max-width: 92px;
-  flex: 0 0 92px;
-  overflow: hidden;        /* prevent giant hitbox */
-  pointer-events: none;    /* container never intercepts clicks */
+  justify-content: center;
+  z-index: 10;
 }
 
 .logoLink{
   display: inline-flex;
   align-items: center;
-  width: 92px;
-  max-width: 92px;
-  flex: 0 0 92px;
-  pointer-events: auto;    /* only the link is clickable */
+  justify-content: center;
+  pointer-events: auto;
 }
 
-.logoImg{
+.logo{
   display: block;
-  height: 64px;
+  height: 56px;
   width: auto;
-  max-width: 92px;
+  max-height: 56px;
   object-fit: contain;
   border-radius: 12px;
   pointer-events: auto;
@@ -126,6 +120,26 @@
   .inner{
     height: auto;
     padding-bottom: 14px;
+  }
+
+  .inner:has(.logoContainer){
+    padding-top: calc(12px + 56px + 8px);
+  }
+}
+
+@media (max-width: 768px){
+  .logo{
+    height: 44px;
+    max-height: 44px;
+  }
+
+  .logoContainer{
+    top: 10px;
+    left: 12px;
+  }
+
+  .inner:has(.logoContainer){
+    padding-top: calc(10px + 44px + 8px);
   }
 }
 
