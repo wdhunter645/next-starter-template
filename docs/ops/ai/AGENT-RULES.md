@@ -145,9 +145,10 @@ Avoid speculative redesign during diagnosis.
 # Capabilities / Permissions
 - ChatGPT has direct API access to the repository
 - ChatGPT is responsible for creating ALL Pull Requests
-- PR creation is NOT delegated unless explicitly stated
-- ChatGPT acts as the primary PR execution layer for repository operations
-
+- ChatGPT is the ONLY agent authorized to create Pull Requests by default
+- PR creation must NOT be delegated unless explicitly instructed in the task
+- All repository PRs are owned and executed by ChatGPT unless overridden
+ 
 ---
 
 # PR Discipline
