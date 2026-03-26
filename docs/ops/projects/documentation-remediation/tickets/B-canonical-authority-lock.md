@@ -11,7 +11,7 @@ Last Reviewed: 2026-03-26
 # Workstream B — Canonical Authority Lock
 
 Status: OPEN  
-Owner: Copilot Agent
+Owner: UNASSIGNED
 
 ## Purpose
 This workstream ensures that LGFC has a single, explicit canonical authority for production design and standards, and that all dependent documentation clearly and consistently defers to that authority. By locking in a canonical source of truth, we reduce drift, conflicting guidance, and ambiguity in operational and product documentation.
