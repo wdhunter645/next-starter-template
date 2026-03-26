@@ -1,7 +1,7 @@
 {
   "name": "next-starter-template",
   "version": "1.0.0",
-  "description": "A modern Next.js 15 starter template with TypeScript, React 19, and Cloudflare Pages deployment configuration",
+  "description": "Official Lou Gehrig Fan Club website.",
   "keywords": [
     "nextjs",
     "typescript",
@@ -20,7 +20,7 @@
     "type": "git",
     "url": "https://github.com/wdhunter645/next-starter-template.git"
   },
-  "homepage": "https://next-starter-template.templates.workers.dev",
+  "homepage": "https://www.lougehrigfanclub.com",
   "bugs": {
     "url": "https://github.com/wdhunter645/next-starter-template/issues"
   },

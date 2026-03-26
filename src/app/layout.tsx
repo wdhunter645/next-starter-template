@@ -6,8 +6,8 @@ import SiteHeader from "../components/SiteHeader";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-	title: "LGFC",
-	description: "Lou Gehrig Fan Club",
+	title: "Lou Gehrig Fan Club",
+	description: "Official Lou Gehrig Fan Club website with fan stories, historical archives, events, and member access.",
 };
 
 export default function RootLayout({
