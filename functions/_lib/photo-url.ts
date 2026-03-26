@@ -16,6 +16,20 @@ export function normalizePhotoUrl({ rawUrl, request, publicB2BaseUrl }: Normaliz
   const normalizedBase =
     typeof publicB2BaseUrl === "string" && publicB2BaseUrl.trim().length > 0 ? publicB2BaseUrl.trim() : "";
 
+  // 🔴 CRITICAL FIX — handle broken B2 URLs already stored in DB
+  const match = trimmed.match(/^https:\/\/s3\.([^./]+)\.backblazeb2\.com\/(.+)$/);
+  if (match) {
+    const region = match[1];
+    const rest = match[2];
+    const bucket = "LouGehrigFanClub";
+
+    if (!rest.startsWith(`${bucket}/`) && !rest.startsWith(`${bucket}%2F`)) {
+      return `https://s3.${region}.backblazeb2.com/${bucket}/${rest.replace(/^\/+/, "")}`;
+    }
+
+    return encodeURI(trimmed);
+  }
+
   if (/^https?:\/\//i.test(trimmed)) {
     return encodeURI(trimmed);
   }
