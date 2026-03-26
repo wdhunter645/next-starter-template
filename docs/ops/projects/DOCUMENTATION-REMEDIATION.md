@@ -97,5 +97,28 @@ Remove orphan routes unless canonical
 ## 8. Start Order
 A → B → C → D  
 
+## 9. Workstream Status (LIVE — AUTO-SYNC REQUIRED)
+
+### Completed (Merged)
+- A — Architecture Purge → PR #703 (MERGED 2026-03-26)
+- C — Auth Model (LOCKED) → PR #707 (MERGED 2026-03-26)
+
+### In Progress (Open PRs)
+- B — Canonical Authority Lock → PR #705 (OPEN)
+- D — Routing Fix → PR #711 (OPEN)
+- E — Homepage Alignment → PR #715 (OPEN)
+- F — Navigation Sync → PR #717 (OPEN)
+- G — Footer Standardization → PR #721 (OPEN)
+- H — Content Deduplication → PR #723 (OPEN)
+- I — Tracker Alignment → PR #727 (OPEN)
+- J — Governance Cleanup → PR #729 (OPEN)
+- K — Index Cleanup → PR #731 (OPEN)
+- L — Terminology Standardization → PR #741 (OPEN)
+
+### Enforcement Rule (CRITICAL)
+- This section MUST be updated with every PR open/merge
+- This file is the single source of truth for remediation status
+- Any mismatch = governance failure
+
 ## Bottom Line
 Cleanup incomplete. This fixes it fully and removes ambiguity.
