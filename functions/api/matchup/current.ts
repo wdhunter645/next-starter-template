@@ -10,7 +10,7 @@ function isUsablePhoto(item: any): item is PhotoItem {
 }
 
 async function readPhotoById(request: Request, id: number): Promise<PhotoItem | null> {
-  const endpoint = new URL(`/api/photos/get/${id}`, request.url);
+  const endpoint = new URL(`/api/photos/get?id=${id}`, request.url);
   const resp = await fetch(endpoint.toString(), { method: "GET" });
   if (!resp.ok) return null;
   const json = await resp.json().catch(() => null);
