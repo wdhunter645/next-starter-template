@@ -1,13 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-	/* Cloudflare Pages configuration */
+	/* Production static export configuration for Cloudflare Pages */
 	output: "export",
-  trailingSlash: true, // Generate static export for Cloudflare Pages
+  trailingSlash: true, // Keep trailing slashes in generated static routes
 	images: {
 		unoptimized: true, // Required for Cloudflare Pages (no Node.js image optimization)
 	},
-	// Skip trailing slash to match Cloudflare Pages defaults
+	// trailingSlash stays enabled to preserve production route behavior
 };
 
 export default nextConfig;

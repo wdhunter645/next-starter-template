@@ -27,7 +27,7 @@ export default function MemberHomePage() {
 
   return (
     <main>
-      <FloatingLogo homeRoute="/fanclub" />
+      <FloatingLogo homeRoute="/" />
       <h1
         style={{
           fontSize: 32,

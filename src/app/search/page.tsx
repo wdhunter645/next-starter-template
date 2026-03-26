@@ -6,8 +6,8 @@ export default function SearchPage() {
   const [q, setQ] = useState('');
 
   const help = useMemo(() => {
-    if (!q.trim()) return 'Search will cover Photos, Milestones, Charities, Calendar events, and News once CMS content is loaded.';
-    return 'Search results are coming after CMS content is loaded. For now, use navigation links.';
+    if (!q.trim()) return 'Search Lou Gehrig Fan Club content, including photos, timeline moments, events, and news.';
+    return 'Search tools are being expanded. For now, use the main navigation to browse sections directly.';
   }, [q]);
 
   return (
@@ -20,14 +20,14 @@ export default function SearchPage() {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Try: 'World Series', 'bat', 'Yankees', '1934'"
+          placeholder="Try: 'Yankees', '1934', 'Lou Gehrig', 'timeline'"
           type="search"
           style={{ padding: '12px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.2)', fontSize: 16 }}
         />
       </label>
 
       <div style={{ marginTop: 20, padding: 16, borderRadius: 14, border: '1px solid rgba(0,0,0,0.12)' }}>
-        <strong>Placeholder:</strong> Search is wired after CMS content upload and indexing.
+        Search is available for quick keyword entry and will continue improving across public and member sections.
       </div>
     </main>
   );
