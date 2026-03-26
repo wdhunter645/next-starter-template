@@ -1,7 +1,7 @@
 ---
 Doc Type: Specification
 Audience: Human + AI
-Authority Level: Canonical Design Specification
+Authority Level: Canonical
 Owns: Routes, navigation invariants, UI/UX contracts, page content contracts
 Does Not Own: How-to procedures; operational runbooks; governance policies
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
@@ -30,7 +30,7 @@ The **Admin Dashboard** is the primary interface for LGFC administrators and mod
 - Basic user management.
 - System health overview.
 
-The dashboard runs **only** on the Vercel members/admin site and provides the UI layer for the Supabase-based CMS.
+The dashboard runs **only** on the Cloudflare Pages-hosted site and provides the UI layer for the D1-backed CMS.
 
 ---
 
@@ -42,16 +42,16 @@ The dashboard runs **only** on the Vercel members/admin site and provides the UI
 
 ### Access Control
 
-- Only available on the Vercel-hosted members/admin app.
+- Only available on the Cloudflare Pages-hosted admin area.
 - Access requires:
-  1. Valid Supabase session.
+  1. Valid D1 member session (`member_sessions` table).
   2. User email present in `ADMIN_EMAILS` env var (primary gate).
 - All `/admin/**` routes are protected; Cloudflare public site **never** hosts admin functionality.
 
 ### Link from Public Site
 
-- The public Cloudflare footer does **not** include an Admin link. Admin access is available only through direct navigation to the admin-site URL (Vercel members/admin app) by authenticated admin users.
-- Until the Vercel admin is fully live, `/admin` on the Cloudflare public site may show a placeholder, but the **real** dashboard is on Vercel.
+- The public Cloudflare footer does **not** include an Admin link. Admin access is available only through direct navigation to `/admin` by authenticated admin users.
+- Admin dashboard at `/admin` is part of the Cloudflare Pages deployment.
 
 ---
 
@@ -82,9 +82,9 @@ The **Reports** view is the central moderation hub.
 
 ### Data Source
 
-- Supabase `reports` table, joined with:
-  - `profiles` (reporting user)
-  - `posts`, `post_comments`, and `media_assets` (depending on target_type)
+- D1 `reports` table, joined with:
+  - `members` (reporting user)
+  - `discussions`, `media_assets` (depending on target_type)
 
 ### List View
 
@@ -328,8 +328,8 @@ The **System Health** section provides a high-level operational summary.
 
 ### Contents
 
-- Supabase connection checks.
-- Vercel deployment status (version + last deployment time).
+- D1 connection check (`lgfc_lite` database).
+- Cloudflare Pages deployment status (version + last deployment time).
 - Cloudflare Pages status (link to latest deployment).
 - Backblaze B2 connectivity (basic check on bucket access).
 - Elfsight widget status (basic connectivity indication).

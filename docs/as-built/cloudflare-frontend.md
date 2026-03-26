@@ -30,7 +30,7 @@ This document serves as the authoritative baseline for the Cloudflare Pages-host
 #### Layout (`src/appfanclub/layout.tsx`)
 FanClub area uses a dedicated layout with:
 - **Header:**
-  - Logo (links to `/fanclub`)
+  - Logo (links to `/`)
   - Logout button (visible when authenticated)
   - Hamburger menu with: Home, About, Contact, Support, Store, Members, Admin (conditional)
 - **Navigation:**
@@ -146,8 +146,7 @@ All member-specific components are in `src/componentsfanclub/`:
 Per `docs/reference/design/LGFC-Production-Design-and-Standards.md`:
 
 **FanClub Area Logo:**
-- Always links to `/fanclub` (not public homepage)
-- Provides clear "home" for member context
+- Always links to `/` (public home), consistent with global site logo behavior
 
 **Hamburger Menu:**
 - Contains **only standalone pages** (no sections, no footer links)

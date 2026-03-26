@@ -1,3 +1,13 @@
+---
+Doc Type: Operations
+Audience: Human + AI
+Authority Level: Operational Authority
+Owns: Documentation remediation project scope, workstream definitions, execution model
+Does Not Own: Design authority; product specs; implementation sequencing outside this project
+Canonical Reference: /docs/ops/OPERATING_MANUAL.md
+Last Reviewed: 2026-03-26
+---
+
 # LGFC — DOCUMENTATION REMEDIATION PROJECT (CRITICAL)
 
 ## 1. Objective
