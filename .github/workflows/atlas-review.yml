@@ -1,0 +1,28 @@
+name: Atlas Review Trigger
+
+on:
+  pull_request:
+    types: [opened, ready_for_review, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  assign-review-and-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request reviewer
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.pulls.requestReviewers({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number,
+                reviewers: ["wdhunter645"]
+              })
+            } catch (error) {
+              core.info(`requestReviewers skipped: ${error.message}`)
+            }
