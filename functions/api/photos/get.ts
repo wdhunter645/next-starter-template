@@ -1,3 +1,5 @@
+import { normalizePhotoUrl } from "../../_lib/photo-url";
+
 export const onRequestGet = async (context: any): Promise<Response> => {
   const { env, params, request } = context;
 
@@ -26,7 +28,12 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       });
     }
 
-    return new Response(JSON.stringify({ ok: true, item: row }, null, 2), {
+    const item = {
+      ...row,
+      url: normalizePhotoUrl({ rawUrl: row.url, request, publicB2BaseUrl: env.PUBLIC_B2_BASE_URL }),
+    };
+
+    return new Response(JSON.stringify({ ok: true, item }, null, 2), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
