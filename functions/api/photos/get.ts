@@ -1,8 +1,11 @@
 export const onRequestGet = async (context: any): Promise<Response> => {
-  const { env, params } = context;
+  const { env, params, request } = context;
 
   try {
-    const id = Number((params as any)?.id);
+    const url = new URL(request.url);
+    const paramsId = Number((params as any)?.id);
+    const queryId = Number(url.searchParams.get("id"));
+    const id = !Number.isNaN(paramsId) && paramsId > 0 ? paramsId : queryId;
     if (!id || Number.isNaN(id)) {
       return new Response(JSON.stringify({ ok: false, error: "Invalid id" }, null, 2), {
         status: 400,
