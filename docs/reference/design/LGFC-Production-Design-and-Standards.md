@@ -169,54 +169,6 @@ Feature validation must be based on rendered UI and behavior, not file names or 
 
 ---
 
----
-
-## Floating Logo (Homepage + FanClub Only)
-
-### Scope
-- Appears ONLY on:
-  - /
-  - /fanclub
-- MUST NOT appear on any other routes
-- All other pages use the standard header logo
-
-### Positioning
-- position: fixed
-- top: 0
-- left: 0
-- padding: 8px
-
-### Size (LOCKED)
-- height: clamp(120px, 28vw, 180px)
-- width: auto
-- max-width: none
-- object-fit: contain
-- border-radius: 12px
-
-### Layering
-- z-index: 60
-
-### Behavior
-- Visible on initial load
-- Hidden after ~320px scroll
-- Reappears when scrolling to top
-
-### Interaction
-- Click routes to /
-
-### Separation of Concerns
-- Floating logo is NOT part of header
-- Header logo remains persistent across all pages
-
-### Governance Rule
-- Any change to FloatingLogo.tsx or FloatingLogo.module.css MUST:
-  1. Update this section
-  2. Reference change in PR
-  3. Validate on / and /fanclub
-
-
----
-
 ## Floating Logo (Homepage + FanClub Only)
 
 ### Scope
