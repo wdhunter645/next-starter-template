@@ -14,7 +14,7 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       sql += " WHERE is_memorabilia = 1";
     }
 
-    sql += " ORDER BY id ASC LIMIT ? OFFSET ?;";
+    sql += " ORDER BY id DESC LIMIT ? OFFSET ?;";
     args.push(limit, offset);
 
     const rows = await env.DB.prepare(sql).bind(...args).all();
