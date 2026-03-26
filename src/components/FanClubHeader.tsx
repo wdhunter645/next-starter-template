@@ -13,18 +13,19 @@ type FanClubHeaderProps = {
 export default function FanClubHeader({ homeRoute = '/', showLogo = true }: FanClubHeaderProps = {}) {
   const [open, setOpen] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
+  const leftClassName = showLogo ? styles.left : `${styles.left} ${styles.leftOffset}`;
 
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
         {/* LEFT: Logo (small header logo; hidden when FloatingLogo is active) */}
-        <div className={styles.left}>
+        <div className={leftClassName}>
           {showLogo ? (
             <Link href={homeRoute} aria-label="Lou Gehrig Fan Club" className={styles.logoLink}>
               <img className={styles.logoImg} src="/IMG_1946.png" alt="LGFC" />
             </Link>
           ) : (
-            <span />
+            <span className={styles.leftPlaceholder} aria-hidden="true" />
           )}
         </div>
 
