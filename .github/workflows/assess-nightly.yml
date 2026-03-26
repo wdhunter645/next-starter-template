@@ -17,10 +17,10 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
           cache: 'npm'
@@ -34,7 +34,7 @@ jobs:
         continue-on-error: true
       
       - name: Upload assessment report (JSON)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@e69ef54c2d3f3b2f5a1cdbcc5dfdf2f72c8e2d6c
         if: always()
         with:
           name: nightly-assess-report-json
@@ -42,7 +42,7 @@ jobs:
           retention-days: 90
       
       - name: Upload assessment summary (Markdown)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@e69ef54c2d3f3b2f5a1cdbcc5dfdf2f72c8e2d6c
         if: always()
         with:
           name: nightly-assess-summary-md
@@ -50,7 +50,7 @@ jobs:
           retention-days: 90
       
       - name: Upload routes found
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@e69ef54c2d3f3b2f5a1cdbcc5dfdf2f72c8e2d6c
         if: always()
         with:
           name: nightly-routes-found
@@ -59,7 +59,7 @@ jobs:
       
       - name: Create issue on failure
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@e69ef54c2d3f3b2f5a1cdbcc5dfdf2f72c8e2d6c
         with:
           script: |
             const fs = require('fs');

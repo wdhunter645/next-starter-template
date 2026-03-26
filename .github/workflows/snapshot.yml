@@ -27,13 +27,13 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Run repo snapshot script
         run: bash scripts/snapshot_repo.sh
 
       - name: Upload repo snapshot artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@e69ef54c2d3f3b2f5a1cdbcc5dfdf2f72c8e2d6c
         with:
           name: repo-snapshot
           path: |
@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Run Cloudflare Pages snapshot script
         env:
@@ -55,7 +55,7 @@ jobs:
         run: bash scripts/cf_pages_snapshot.sh
 
       - name: Upload Cloudflare Pages snapshot artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@e69ef54c2d3f3b2f5a1cdbcc5dfdf2f72c8e2d6c
         with:
           name: cloudflare-pages-snapshot
           path: |

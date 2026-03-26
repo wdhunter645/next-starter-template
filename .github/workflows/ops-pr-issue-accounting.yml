@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: Ensure PR has a tracker Issue (Tier B support-only)
         if: ${{ github.event.action != 'closed' }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@e69ef54c2d3f3b2f5a1cdbcc5dfdf2f72c8e2d6c
         with:
           script: |
             const owner = context.repo.owner;
@@ -142,7 +142,7 @@ jobs:
 
       - name: Close associated tracker Issue on PR close (Tier B support-only)
         if: ${{ github.event.action == 'closed' }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@e69ef54c2d3f3b2f5a1cdbcc5dfdf2f72c8e2d6c
         with:
           script: |
             const owner = context.repo.owner;

@@ -12,12 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version-file: .node-version
 
@@ -111,7 +111,7 @@ jobs:
           cat "$REPORT"
 
       - name: Upload triage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@e69ef54c2d3f3b2f5a1cdbcc5dfdf2f72c8e2d6c
         with:
           name: pr-triage-zip-taint-report
           path: reports/pr-triage-zip-taint.md
