@@ -139,11 +139,36 @@ All CI scripts must:
 
 ---
 
+## Governance Deduplication Rules (Workstream J)
+
+Each governance topic must have exactly ONE canonical file. No second file may define, restate, or contradict the same authority.
+
+Prohibited patterns:
+- Two files both claiming to define the same process (e.g., two PR process docs)
+- A non-canonical file overriding or restating rules from a canonical file
+- Contradictory definitions of the same concept across multiple docs
+
+Required actions when a duplicate is found:
+1. Identify the canonical file: prefer the file with the highest Authority Level; if tied, prefer the file that is explicitly referenced by the most other docs; if still tied, escalate to operator decision before proceeding
+2. Archive or delete the duplicate
+3. Update all references to point to the canonical file
+4. Do not create new files that duplicate existing canonical authority
+
+Canonical governance files (single source per topic):
+- PR process: `/docs/governance/PR_PROCESS.md`
+- PR governance: `/docs/governance/PR_GOVERNANCE.md`
+- Document architecture: `/docs/governance/DOCUMENT-ARCHITECTURE.md` (this file)
+- Design authority: `/docs/governance/standards/design-authority_MASTER.md`
+- Change control: `/docs/governance/standards/change-control_MASTER.md`
+
+---
+
 ## Summary
 
 This document defines:
 - Where documents live
 - Who owns what
 - How paths are resolved
+- How governance deduplication is enforced
 
 All automation and contributors must follow this model to prevent drift and gate failures.
