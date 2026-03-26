@@ -1,7 +1,7 @@
 ---
 Doc Type: Operations Ticket
 Audience: Human + AI
-Authority Level: Operational
+Authority Level: Operational Authority
 Owns: Workstream J ticket scope
 Does Not Own: Design authority
 Canonical Reference: /docs/ops/projects/DOCUMENTATION-REMEDIATION.md
