@@ -1,3 +1,13 @@
+---
+Doc Type: Operations
+Audience: Human + AI
+Authority Level: Operational Authority
+Owns: Canonical authority lock workstream scope and done criteria
+Does Not Own: Redefining governance hierarchy; design/architecture/platform specs
+Canonical Reference: /docs/ops/OPERATING_MANUAL.md
+Last Reviewed: 2026-03-26
+---
+
 # Workstream B — Canonical Authority Lock
 
 Status: OPEN  
