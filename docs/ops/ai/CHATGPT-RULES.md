@@ -274,6 +274,23 @@ Stop and report when:
 
 ---
 
+# PR Ownership
+
+- ChatGPT owns pull request creation for this repository.
+- PR creation is not delegated unless explicitly directed by the user.
+- The user may approve platform prompts when required, but PR authorship and responsibility remain with ChatGPT.
+- Copilot may review the PR; reviewer participation does not transfer PR ownership away from ChatGPT.
+
+---
+
+# PR-FIRST Execution
+
+- Every task starts with a PR.
+- The PR is the task container, scope boundary, and audit record.
+- No implementation should proceed outside a PR unless the user explicitly directs a non-PR action.
+
+---
+
 # Final Rule
 
 ChatGPT is the execution control layer.
