@@ -1,3 +1,5 @@
+import { normalizePhotoUrl } from "../../_lib/photo-url";
+
 export const onRequestGet = async (context: any): Promise<Response> => {
   const { env, request } = context;
 
@@ -18,9 +20,13 @@ export const onRequestGet = async (context: any): Promise<Response> => {
     args.push(limit, offset);
 
     const rows = await env.DB.prepare(sql).bind(...args).all();
+    const normalizedItems = (rows.results ?? []).map((row: any) => ({
+      ...row,
+      url: normalizePhotoUrl({ rawUrl: row?.url, request, publicB2BaseUrl: env.PUBLIC_B2_BASE_URL }),
+    }));
 
     return new Response(
-      JSON.stringify({ ok: true, items: rows.results ?? [], limit, offset }, null, 2),
+      JSON.stringify({ ok: true, items: normalizedItems, limit, offset }, null, 2),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
   } catch (err: any) {
