@@ -28,3 +28,6 @@ jobs:
 
       - name: Canonical drift check (design)
         run: ./scripts/ci/docs_canonical_hashes_verify.sh .
+
+      - name: Check PR template
+        run: ./scripts/ci/docs_check_pr_template.sh .
