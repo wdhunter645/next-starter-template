@@ -1,7 +1,7 @@
 ---
-Doc Type: Operations Ticket
+Doc Type: Operations
 Audience: Human + AI
-Authority Level: Operational
+Authority Level: Operational Authority
 Owns: Workstream C ticket scope
 Does Not Own: Design authority
 Canonical Reference: /docs/ops/projects/DOCUMENTATION-REMEDIATION.md
