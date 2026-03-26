@@ -18,6 +18,13 @@ If any UI, code, or other doc conflicts with this file, this file wins.
 
 ---
 
+## Runtime Platform Context
+
+FanClub behavior runs on **Cloudflare Pages + Pages Functions**.
+Auth/session, join/login, and member data flows rely on runtime APIs under `functions/api/**`.
+
+---
+
 ## Canonical Route
 
 - **FanClub Home (Club Home)**: `/fanclub`
