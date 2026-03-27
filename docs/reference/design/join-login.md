@@ -32,8 +32,8 @@ Legacy route handling:
 
 Provide a single entry point for:
 
-1. Member join (session creation)
-2. Existing member login (session restoration)
+1. Member join (member record creation)
+2. Existing member login (session creation)
 
 The interface uses tab navigation to switch between Join and Login forms.
 

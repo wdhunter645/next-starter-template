@@ -1,3 +1,13 @@
+---
+Doc Type: Backlog
+Audience: Human + AI
+Authority Level: Deferred Work Backlog
+Owns: Deferred follow-up inventory; future auth/presence improvements; non-Day-1 work candidates
+Does Not Own: Canonical Day 1 behavior; route/page specifications; implementation details; runbook procedures
+Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
+Last Reviewed: 2026-03-27
+---
+
 # LGFC Backlog
 
 This file tracks deferred ideas, improvements, and future enhancements that are intentionally not part of Day 1 canonical behavior.
