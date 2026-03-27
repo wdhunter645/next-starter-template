@@ -5,7 +5,7 @@ Authority Level: Canonical Design Specification
 Owns: Routes, navigation invariants, UI/UX contracts, page content contracts
 Does Not Own: How-to procedures; operational runbooks; governance policies
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Last Reviewed: 2026-02-20
+Last Reviewed: 2026-03-27
 ---
 
 # Auth & Logout Page Specifications — LGFC
@@ -14,24 +14,23 @@ Last Reviewed: 2026-02-20
 
 # `/auth` — Authentication Handler
 
-**Route:** `/auth`
-**Access:** Public (handles redirects post-login)
+**Route:** `/auth`  
+**Access:** Public (handles redirects post-login)  
 **Desktop only.** Mobile/tablet implementation is deferred.
 
 ## Purpose
 
 `/auth` is a client-side handler page, not a user-facing destination.
-It processes the result of an authentication event (e.g., email confirmation
-link click from welcome email) and redirects accordingly.
+It processes the result of an authentication event and redirects accordingly.
 
-Both are thin handler pages with no persistent UI — just a “Signing you in…” / “Signing out…” momentary state before redirecting.​​​​​​​​​​​​​​​​
+Both are thin handler pages with no persistent UI — just a “Signing you in…” / “Signing out…” momentary state before redirecting.
 
 ## Behavior
 
 1. On load, reads URL parameters (e.g., token, email, status)
-1. Validates the session or token
+1. Validates the session payload
 1. On success: sets `lgfc_member_email` in localStorage and redirects to `/fanclub`
-1. On failure: redirects to `/login` with an error indicator
+1. On failure: redirects to `/join#login` with an error indicator
 
 ## UI
 
@@ -55,12 +54,10 @@ No persistent UI. During processing, display a minimal loading state:
 
 -----
 
------
-
 # `/logout` — Logout Handler
 
-**Route:** `/logout`
-**Access:** Public (no auth required to visit — handles clearing session)
+**Route:** `/logout`  
+**Access:** Public (no auth required to visit — handles clearing session)  
 **Desktop only.** Mobile/tablet implementation is deferred.
 
 ## Purpose

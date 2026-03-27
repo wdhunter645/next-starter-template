@@ -6,7 +6,7 @@ Authority Level: Canonical
 Owns: Production behavior, routing rules, navigation invariants
 Does Not Own: Implementation details inside components
 Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md
-Last Reviewed: 2026-03-15
+Last Reviewed: 2026-03-27
 ---
 
 # LGFC Production Design and Standards
@@ -56,6 +56,16 @@ external Bonfire link (no /store route)
 
 ---
 
+
+# Canonical Redirect Policy
+
+- Protected FanClub routes (`/fanclub` and `/fanclub/**`) are auth-gated.
+- If a user is unauthenticated, redirect to `/` (public home).
+- If authentication fails (including invalid auth callback/session validation), redirect to `/join#login`.
+- `/login` is a legacy route and must redirect to `/join#login`.
+
+---
+
 # Public Header (not logged in)
 
 Buttons:
@@ -82,6 +92,8 @@ Logout
 
 # Header Button Mapping
 
+Join → /join  
+Login → /join#login  
 Club Home → /fanclub  
 Search → /search  
 Store → external Bonfire link  
@@ -149,9 +161,27 @@ Implementation-level schema definitions and migrations are maintained separately
 
 ---
 
+## Homepage Canonical Section Order
+
+Homepage sections are locked to this order:
+
+1. Hero Banner
+2. Campaign Spotlight (conditional slot; omitted when inactive)
+3. Weekly Photo Matchup
+4. Join CTA
+5. About Lou Gehrig
+6. Social Wall
+7. Recent Discussions (teaser)
+8. Friends of the Fan Club
+9. Milestones
+10. Calendar
+11. FAQ
+
+---
+
 ## Weekly Photo Matchup (Homepage Section)
 
-- Location: Homepage (inline, below hero section)
+- Location: Homepage section #3, after the optional Campaign Spotlight slot
 - Function: A/B image voting (Photo A vs Photo B)
 - UI Elements:
   - Two images labeled Photo A and Photo B

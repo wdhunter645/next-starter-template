@@ -1,4 +1,3 @@
-
 ---
 Doc Type: Design Authority
 Audience: Human + AI
@@ -6,12 +5,12 @@ Authority Level: Controlled
 Owns: Join/Login page UI, behavior, and auth flow
 Does Not Own: Global navigation rules, header/footer standards
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Last Reviewed: 2026-02-20
+Last Reviewed: 2026-03-27
 ---
 
 # Join / Login Page Design
 
-This document defines the **combined Join/Login page** used for member authentication and account creation.
+This document defines the **combined Join/Login page** used for LGFC-Lite member session entry.
 
 The page uses a **single route and component** with **two tabs** to avoid duplicated logic and UI drift.
 
@@ -21,11 +20,11 @@ The page uses a **single route and component** with **two tabs** to avoid duplic
 
 Primary route:
 
-/join
+`/join`
 
-Legacy route:
+Legacy route handling:
 
-/login → redirect to /join#login
+`/login` → redirect to `/join#login`
 
 ---
 
@@ -33,8 +32,8 @@ Legacy route:
 
 Provide a single entry point for:
 
-1. New member registration
-2. Existing member authentication
+1. Member join (session creation)
+2. Existing member login (session restoration)
 
 The interface uses tab navigation to switch between Join and Login forms.
 
@@ -69,57 +68,53 @@ Behavior:
 
 # Join Form
 
-Purpose: create a new member account.
+Purpose: create a local LGFC-Lite member session identity.
 
 Required fields:
 
 - Screen Name (Alias)
 - Email
-- Password
-- Confirm Password
 
 Validation rules:
 
-- Screen Name must be unique
+- Screen Name is required
 - Email must be valid format
-- Password must meet minimum length requirements
-- Password and Confirm Password must match
+- Alias/email conflicts must return an inline error
 
 ---
 
 # Login Form
 
-Purpose: authenticate existing members.
+Purpose: restore a local LGFC-Lite member session.
 
 Required fields:
 
 - Email
-- Password
 
 Validation rules:
 
-- Email must exist in member database
-- Password must match stored credentials
+- Email must be valid format
+- Email must match an existing member record
 
 ---
 
 # Authentication Flow
 
-Authentication is handled by **Supabase Auth**.
+Authentication follows the LGFC-Lite local session model.
 
 Join flow:
 
 1. User submits Join form
-2. Account created in Supabase
-3. Session established
-4. Redirect to Fan Club dashboard
+2. System validates input and creates a new member record
+3. Client stores `lgfc_member_email` in localStorage
+4. Redirect to `/fanclub`
 
 Login flow:
 
 1. User submits Login form
-2. Supabase validates credentials
-3. Session established
-4. Redirect to Fan Club dashboard
+2. System validates member identity
+3. Client stores `lgfc_member_email` in localStorage
+4. Redirect to `/fanclub`
 
 ---
 
@@ -127,11 +122,15 @@ Login flow:
 
 Successful authentication redirects to:
 
-/fanclub
+`/fanclub`
 
-Unauthenticated access to protected routes redirects to:
+Unauthenticated access to protected FanClub routes (`/fanclub` and `/fanclub/**`) redirects to:
 
-/join#login
+`/`
+
+Failed authentication or invalid auth callback redirects to:
+
+`/join#login`
 
 ---
 
@@ -141,10 +140,10 @@ Errors appear inside the form container.
 
 Typical errors:
 
-- Invalid email
-- Password mismatch
-- Account already exists
-- Invalid login credentials
+- Invalid email format
+- Member not found
+- Alias/email conflict
+- Session creation failure
 
 ---
 
