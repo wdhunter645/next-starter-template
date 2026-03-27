@@ -4,7 +4,7 @@ Audience: Human + AI
 Authority Level: Canonical Architecture Specification
 Owns: System architecture, data flows, access model, runtime dependencies
 Does Not Own: Operational runbooks; governance policies; UI/UX design specifics
-Canonical Reference: /docs/explanation/ARCHITECTURE_OVERVIEW.md
+Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-02-20
 ---
 
@@ -14,7 +14,7 @@ Last Reviewed: 2026-02-20
 
 The FAQ (Frequently Asked Questions) system is a complete content management workflow featuring:
 - Public-facing FAQ library and search
-- User question submission
+- User question intake via `/ask` inbox
 - Admin moderation and approval
 - View tracking and pinning
 - Lifecycle management (pending → approved/denied)
@@ -40,6 +40,21 @@ CREATE TABLE IF NOT EXISTS faq_entries (
 
 CREATE INDEX IF NOT EXISTS idx_faq_status_updated 
   ON faq_entries(status, updated_at DESC);
+```
+
+**Table**: `ask_inbox`
+
+```sql
+CREATE TABLE IF NOT EXISTS ask_inbox (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  first_name TEXT NOT NULL,
+  last_name TEXT NOT NULL,
+  screen_name TEXT,
+  email TEXT NOT NULL,
+  question TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'open',      -- open|responded|hidden
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 ```
 
 **Schema Evolution**:
@@ -82,11 +97,16 @@ CREATE INDEX IF NOT EXISTS idx_faq_status_updated
 - Ordering: `pinned DESC, view_count DESC, updated_at DESC`
 - Search: Case-insensitive match on question OR answer
 
-**`POST /api/faq/submit`**
-- Body: `{ question, email }`
-- Validation: question ≥10 chars, email valid format
-- Creates: New entry with `status='pending'`, empty answer
-- Security: Email not logged to server logs
+**`POST /api/ask`**
+- Body: `{ first_name, last_name, screen_name?, email, question }`
+- Validation:
+  - first_name required (trimmed non-empty)
+  - last_name required (trimmed non-empty)
+  - email valid format
+  - question ≥10 chars after trim
+- Creates: New intake entry in `ask_inbox` with `status='open'`
+- Additional behavior: Join/member write may occur in parallel if first-time email
+- Security: PII fields are not logged to server logs
 
 **`POST /api/faq/view`**
 - Body: `{ id }`
@@ -98,8 +118,12 @@ CREATE INDEX IF NOT EXISTS idx_faq_status_updated
 All require `x-admin-token` header matching `ADMIN_TOKEN` environment variable.
 
 **`GET /api/admin/faq/pending`**
-- Returns: All pending entries, newest first
+- Returns: All pending FAQ content entries (`faq_entries`), newest first
 - Fields: id, question, answer, status, submitter_email, view_count, pinned, timestamps
+
+**`GET /api/admin/ask/open`**
+- Returns: All open ask inbox submissions (`ask_inbox`), newest first
+- Fields: id, first_name, last_name, screen_name, email, question, status, created_at
 
 **`GET /api/admin/faq/approved`**
 - Returns: All approved entries, ordered by pinned/views/date
@@ -149,11 +173,15 @@ All require `x-admin-token` header matching `ADMIN_TOKEN` environment variable.
 - Link to `/ask`
 
 **`AskPage` (/ask)**
-- Email + Question form
-- Validation: email format, question ≥10 chars
-- Submit → pending entry
+- First name + Last name + Screen name + Email + Question form
+- Validation:
+  - first_name required
+  - last_name required
+  - email format
+  - question ≥10 chars
+- Submit → `ask_inbox` intake entry
 - Cancel → returns to `/faq`
-- Success message: "Thanks — your question was submitted for review."
+- Success message: "Your question has been submitted. We’ll reply by email."
 
 **`AdminFAQPage` (/admin/faq)**
 - Token-gated (sessionStorage: `lgfc_admin_token`)
@@ -168,16 +196,16 @@ All require `x-admin-token` header matching `ADMIN_TOKEN` environment variable.
 
 ```
 User (/ask) 
-  → POST /api/faq/submit { question, email }
-    → D1: INSERT status='pending', answer=''
+  → POST /api/ask { first_name, last_name, screen_name, email, question }
+    → D1: INSERT ask_inbox status='open'
   → Confirmation message shown
-  → Entry appears in /admin/faq (pending section)
+  → Entry appears in admin ask inbox queue
 ```
 
 ### Admin Approval Flow
 
 ```
-Admin (/admin/faq)
+Admin (FAQ workflow)
   → GET /api/admin/faq/pending
     → D1: SELECT WHERE status='pending'
   → Admin types answer
@@ -212,7 +240,8 @@ Public pages (/faq, homepage)
 ### Public API Protection
 
 - Submit endpoint validates email format but does not expose list of submitter emails
-- Email not logged to server-side logs (privacy)
+- Ask intake endpoint validates identity + email + question fields and does not expose submitter lists
+- PII fields are not logged to server-side logs (privacy)
 - View endpoint only increments approved entries (prevents gaming pending/denied)
 - Rate limiting handled by Cloudflare Pages platform
 
@@ -230,6 +259,7 @@ Public pages (/faq, homepage)
 - Prevents accidental exposure of pending/denied entries
 - Prevents showing approved entries with empty answers
 - Admin queries explicitly select status-specific content
+- Ask inbox is treated as intake-only content and is never surfaced on public FAQ routes without admin moderation/publishing workflow
 
 ## Performance Characteristics
 

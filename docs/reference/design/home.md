@@ -16,19 +16,21 @@ The homepage uses a fixed canonical section order.
 
 # Homepage Canonical Section Order
 
-1. Hero Banner
-2. Campaign Spotlight (conditional slot; omitted when inactive)
-3. Weekly Photo Matchup
-4. Join CTA
-5. About Lou Gehrig
-6. Social Wall
-7. Recent Discussions (teaser)
-8. Friends of the Fan Club
-9. Milestones
-10. Calendar
-11. FAQ
+1. HEADER
+2. BANNER
+3. SPOTLIGHT (hidden by default)
+4. WEEKLY MATCHUP
+5. JOIN
+6. ABOUT
+7. SOCIAL
+8. DISCUSSIONS
+9. FRIENDS
+10. MILESTONES
+11. CALENDAR
+12. FAQ/ASK
+13. FOOTER
 
-When the campaign spotlight is inactive, the slot is removed and Weekly Photo Matchup becomes the second rendered section.
+When spotlight is inactive, position #3 remains a hidden slot; the locked sequence still governs the page contract.
 
 ---
 
