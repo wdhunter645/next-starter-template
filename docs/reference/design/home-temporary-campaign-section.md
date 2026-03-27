@@ -1,4 +1,3 @@
-
 ---
 Doc Type: Design Reference
 Audience: Human + AI
@@ -6,32 +5,35 @@ Authority Level: Controlled
 Owns: Temporary campaign spotlight section placement rules and homepage activation behavior
 Does Not Own: Homepage canonical section order; global navigation standards
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Last Reviewed: 2026-03-08
+Last Reviewed: 2026-03-27
 ---
 
 # Temporary Campaign Spotlight Section (Homepage)
 
-Last Updated: 2026-03-08
+Last Updated: 2026-03-27
 
 ## Purpose
-This document defines the **conditional campaign section** that appears on the homepage between:
+This document defines the **conditional campaign spotlight slot** on the homepage.
 
-Hero Banner → Campaign Spotlight → Weekly Matchup
-
-The section is **hidden by default** and only activated when a campaign or event is active.
+Canonical order authority remains `LGFC-Production-Design-and-Standards.md` and `home.md`.
+This file provides subordinate rules for the campaign section only.
 
 ## Placement Rule
-Homepage render order:
+Homepage render order is:
 
 1. Hero Banner
 2. Campaign Spotlight (conditional)
 3. Weekly Matchup
-4. Join Section
-5. Social Wall
-6. Calendar
-7. FAQ
+4. Join CTA
+5. About Lou Gehrig
+6. Social Wall
+7. Recent Discussions (teaser)
+8. Friends of the Fan Club
+9. Milestones
+10. Calendar
+11. FAQ
 
-When disabled the page behaves exactly as if the section does not exist.
+When disabled, section #2 is omitted and all other sections retain the same locked order.
 
 ## Permanent Structure
 The section layout itself **does not change** between campaigns.
@@ -56,7 +58,7 @@ Because the section is hidden by default, development occurs in the admin dashbo
 
 Admin preview route:
 
-/admin/fundraiser-preview
+`/admin/fundraiser-preview`
 
 Purpose:
 - build campaigns safely
@@ -76,4 +78,3 @@ The section becomes visible when:
 - preview validation completed
 
 Otherwise it remains hidden.
-

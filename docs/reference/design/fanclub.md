@@ -5,7 +5,7 @@ Authority Level: Canonical Design Specification
 Owns: Routes, navigation invariants, UI/UX contracts, page content contracts
 Does Not Own: How-to procedures; operational runbooks; governance policies
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Last Reviewed: 2026-02-20
+Last Reviewed: 2026-03-27
 ---
 
 # LGFC — FanClub Area Specification (AUTHORITATIVE)
@@ -22,7 +22,8 @@ If any UI, code, or other doc conflicts with this file, this file wins.
 
 - **FanClub Home (Club Home)**: `/fanclub`
 - Auth boundary: `/fanclub` and all `/fanclub/**` routes require login.
-- Unauthenticated access to `/fanclub/**` must **redirect to** `/` (public home).
+- Unauthenticated access to `/fanclub` and `/fanclub/**` must **redirect to** `/` (public home).
+- Failed authentication recovery target is `/join#login`.
 
 ---
 
