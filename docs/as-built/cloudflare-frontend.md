@@ -1,6 +1,6 @@
 # Cloudflare Frontend - As-Built Documentation
 
-**Last Updated:** 2026-01-20  
+**Last Updated:** 2026-03-27  
 **Status:** Active Development
 
 ## Overview
@@ -72,10 +72,11 @@ Sections are rendered in **exact spec order**:
 
 5. **Archives Tiles** (`ArchivesTiles.tsx`)
    - Three clickable tiles in responsive grid:
-     1. **Memorabilia Archive** → `/memorabilia`
-     2. **Photo Gallery** → `/photos`
-     3. **Library** → `/library`
+     1. **Memorabilia Archive** → `/fanclub/memorabilia`
+     2. **Photo Gallery** → `/fanclub/photo`
+     3. **Library** → `/fanclub/library`
    - Hover effects for visual feedback
+   - Public routes `/memorabilia`, `/photos`, `/photo`, and `/library` must not exist
 
 6. **Gehrig Timeline** (`GehrigTimeline.tsx`)
    - FanClub-focused timeline with 8 major life events
@@ -232,6 +233,10 @@ Per `/.github/pull_request_template.md` and `/docs/website-PR-governance.md`:
 See `/docs/admin/access-model.md` for complete admin architecture documentation.
 
 ### Change History
+
+**2026-03-27:** Documentation route correction
+- Updated FanClub Archives Tiles documentation to use canonical fanclub-only routes
+- Recorded that public archive routes must not exist
 
 **2026-01-28:** ZIP 41 (PR #457) - Admin Access Model
 - Added admin UI pages: `/admin`, `/admin/d1-test`, `/admin/cms`, `/admin/content`
