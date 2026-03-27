@@ -68,7 +68,7 @@ Behavior:
 
 # Join Form
 
-Purpose: create a local LGFC-Lite member session identity.
+Purpose: create a Day 1 member record and session entry point.
 
 Required fields:
 
@@ -85,7 +85,7 @@ Validation rules:
 
 # Login Form
 
-Purpose: restore a local LGFC-Lite member session.
+Purpose: create a Day 1 authenticated member session.
 
 Required fields:
 
@@ -94,26 +94,27 @@ Required fields:
 Validation rules:
 
 - Email must be valid format
-- Email must match an existing member record
+- Email must match an existing Day 1 join/member path record
 
 ---
 
 # Authentication Flow
 
-Authentication follows the LGFC-Lite local session model.
+Authentication follows the Day 1 cookie-backed session model.
 
 Join flow:
 
 1. User submits Join form
-2. System validates input and creates a new member record
-3. Client stores `lgfc_member_email` in localStorage
-4. Redirect to `/fanclub`
+2. System validates input and executes the implemented join/member create path
+3. User then authenticates through the login session flow
+4. Login creates `lgfc_session` and a D1 `member_sessions` record
+5. Successful auth lands on `/fanclub`
 
 Login flow:
 
 1. User submits Login form
-2. System validates member identity
-3. Client stores `lgfc_member_email` in localStorage
+2. Login endpoint validates identity against the Day 1 join/member data path
+3. Server creates `lgfc_session` cookie and D1 `member_sessions` session record
 4. Redirect to `/fanclub`
 
 ---

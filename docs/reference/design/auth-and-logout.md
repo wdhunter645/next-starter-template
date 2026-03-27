@@ -20,17 +20,18 @@ Last Reviewed: 2026-03-27
 
 ## Purpose
 
-`/auth` is a client-side handler page, not a user-facing destination.
-It processes the result of an authentication event and redirects accordingly.
+`/auth` is a handler route, not a member-facing destination.
 
-Both are thin handler pages with no persistent UI — just a “Signing you in…” / “Signing out…” momentary state before redirecting.
+Day 1 canonical authentication is cookie-backed and server-validated through `/api/login` + `/api/session/me` using `lgfc_session` and D1 `member_sessions`.
+
+If `/auth` is used in a flow, it must remain aligned to that same Day 1 model and must not become a separate localStorage-based source of truth.
 
 ## Behavior
 
-1. On load, reads URL parameters (e.g., token, email, status)
-1. Validates the session payload
-1. On success: sets `lgfc_member_email` in localStorage and redirects to `/fanclub`
-1. On failure: redirects to `/join#login` with an error indicator
+1. On load, processes auth callback/transition state when present
+1. Uses Day 1 session validation expectations (cookie-backed session resolution via `/api/session/me`)
+1. On successful authenticated state: proceed to `/fanclub`
+1. On failed or invalid callback/session state: redirect to `/join#login`
 
 ## UI
 
@@ -48,9 +49,10 @@ No persistent UI. During processing, display a minimal loading state:
 ## Notes
 
 - This page should not appear in navigation or be linked directly
-- If user navigates to `/auth` with no parameters, redirect to `/`
-- Part of the LGFC-Lite local session model (see `docs/reference/design/join-login.md`
-  and `docs/archive/future/phases.md`)
+- If user navigates to `/auth` with no usable callback/session context, redirect to `/`
+- Day 1 canonical auth/session behavior is defined in:
+  - `docs/reference/design/join-login.md`
+  - `docs/reference/design/LGFC-Production-Design-and-Standards.md`
 
 -----
 
@@ -62,12 +64,12 @@ No persistent UI. During processing, display a minimal loading state:
 
 ## Purpose
 
-Clears the member session and redirects to the public home page.
+Clears the Day 1 cookie-backed member session and redirects to the public home page.
 
 ## Behavior
 
-1. On load: removes `lgfc_member_email` from localStorage
-1. Sets member status to Inactive in D1 (presence/online model)
+1. On load: calls logout endpoint to clear `lgfc_session` and remove the server-side session record from D1 `member_sessions`
+1. Clears stale legacy local browser auth key (`lgfc_member_email`) when present
 1. Redirects to `/` (public home)
 
 ## UI
@@ -88,3 +90,4 @@ No persistent UI. Momentary transition state only:
 - After redirect to `/`, header returns to visitor (not-logged-in) state
 - No confirmation dialog — logout is immediate
 - If user is already logged out and visits `/logout`, redirect to `/` silently
+- Closing the browser is not treated as an immediate logout/offline signal in Day 1
