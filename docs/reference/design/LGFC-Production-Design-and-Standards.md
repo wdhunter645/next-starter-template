@@ -19,6 +19,16 @@ If any implementation conflicts with this file, **this document wins**.
 
 ---
 
+# Runtime Platform Model (LOCKED)
+
+Production runtime is **Cloudflare Pages + Cloudflare Pages Functions**.
+
+- Static assets/routes are built by Next.js and served from Pages.
+- Runtime read/write APIs are served from `functions/api/**`.
+- The site is **not** pure static-only when validating auth, join/login, CMS reads, footer quote, or member flows.
+
+---
+
 # Navigation Model
 
 Navigation is divided into four logical areas:
@@ -239,4 +249,3 @@ Feature validation must be based on rendered UI and behavior, not file names or 
   1. Update this section
   2. Reference change in PR
   3. Validate on / and /fanclub
-
