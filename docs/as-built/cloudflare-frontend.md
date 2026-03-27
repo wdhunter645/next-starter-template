@@ -47,8 +47,8 @@ FanClub area uses a dedicated layout with:
   - Members → `/fanclub` (member home)
   - Admin → `/admin` (conditional, only for admins)
 - **Authentication:**
-  - Reads member email from localStorage (`lgfc_member_email`)
-  - Checks admin role via `/apifanclub/role` endpoint
+  - Uses cookie-backed session (`lgfc_session`) validated via session API
+  - Checks admin role via `members` identity/role resolution
   - Shows/hides Admin menu item based on role
 
 #### Page Sections (`src/appfanclub/page.tsx`)
@@ -124,9 +124,9 @@ All member-specific components are in `src/componentsfanclub/`:
 ### Authentication & Authorization
 
 #### FanClub Authentication
-- Email-based authentication via localStorage (`lgfc_member_email`)
+- Cookie-backed authentication via `lgfc_session`
 - Not authenticated → redirects to `/` (canonical unauthenticated target)
-- No server-side session management (client-side state only)
+- Session validation is server-backed via D1 `member_sessions`
 
 #### Admin Authorization
 - Admin check via `members` table lookup (role='admin')

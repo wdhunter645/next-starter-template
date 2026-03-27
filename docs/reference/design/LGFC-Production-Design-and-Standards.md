@@ -169,9 +169,9 @@ Day 1 auth/session and redirect behavior is defined in the canonical auth docume
 
 - `/join` remains the canonical Join/Login page.
 - `/login` is legacy compatibility and redirects to `/`.
+- Day 1 auth uses the canonical cookie-backed session model (`lgfc_session` + D1 `member_sessions`).
 - Protected FanClub routes (`/fanclub` and `/fanclub/**`) enforce auth and redirect unauthenticated users to `/`.
 - Any failed auth/session validation path redirects to `/`.
-- Supabase Auth and magic-link flows are not part of the current production auth model.
 
 ---
 

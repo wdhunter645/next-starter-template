@@ -66,6 +66,7 @@ Validation:
 Auth/session and redirect behavior are governed by `auth-model.md`.
 
 Implementation in this page must comply with:
+- Login creates server session + `lgfc_session` cookie
 - Successful login target `/fanclub`
 - Unauthenticated/invalid member-route redirect `/`
 - Logout completion redirect `/`

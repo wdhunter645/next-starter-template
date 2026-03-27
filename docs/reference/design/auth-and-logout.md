@@ -43,8 +43,8 @@ Clears Day 1 local member session state and returns the user to the public home 
 
 ### Behavior
 
-1. Clears `lgfc_member_email` from localStorage when present.
-2. Clears any stale compatibility cookie/session artifacts if present.
+1. Clears the `lgfc_session` cookie.
+2. Invalidates the corresponding server session record in `member_sessions`.
 3. Redirects to `/`.
 
 ### Notes
