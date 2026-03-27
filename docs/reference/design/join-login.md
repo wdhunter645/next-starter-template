@@ -2,15 +2,17 @@
 Doc Type: Design Authority
 Audience: Human + AI
 Authority Level: Controlled
-Owns: Join/Login page UI, behavior, and member access flow
-Does Not Own: Global navigation rules, header/footer standards
+Owns: Join/Login page UI structure and form requirements
+Does Not Own: Canonical auth/session rules and redirect policy
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-03-27
 ---
 
 # Join / Login Page Design
 
-This document defines the combined **Join/Login** experience used for the LGFC-lite member access model.
+This document defines the combined **Join/Login** page UI used for LGFC member access.
+
+Canonical auth reference: /docs/reference/design/auth-model.md
 
 ## Route
 
@@ -20,7 +22,7 @@ Primary route:
 
 Legacy route handling:
 
-`/login` → redirect to `/join#login`
+`/login` → redirect to `/`
 
 ## Page Purpose
 
@@ -32,7 +34,7 @@ Provide one entry surface for:
 ## Tabs
 
 - Join tab is default on `/join`
-- Login tab activates on `/join#login`
+- Login tab is available in-page on `/join`
 - Switching tabs does not reload the page
 
 ## Join Form
@@ -59,32 +61,18 @@ Validation:
 - Valid email format
 - Email must match an existing member record
 
-## Authentication Model (Day 1 LGFC-lite)
+## Auth Behavior Contract
 
-Day 1 member access uses a **local browser session marker** model.
+Auth/session and redirect behavior are governed by `auth-model.md`.
 
-- Successful login writes `lgfc_member_email` in localStorage.
-- Member-access checks read `lgfc_member_email` client-side.
-- No Supabase Auth or magic-link flow is part of the current model.
-- Session invalidation/log out clears `lgfc_member_email` and returns user to `/`.
-
-## Redirect Behavior (Canonical)
-
-- Successful login redirects to `/fanclub`.
-- Any unauthenticated member-route access (`/fanclub` and `/fanclub/**`) redirects to `/`.
-- Failed login/session validation redirects to `/`.
-
-## Error Handling
-
-Typical errors:
-
-- Invalid email format
-- Member not found
-- Alias/email conflict
-- Session initialization failure
+Implementation in this page must comply with:
+- Login creates server session + `lgfc_session` cookie
+- Successful login target `/fanclub`
+- Unauthenticated/invalid member-route redirect `/`
+- Logout completion redirect `/`
 
 ## Design Constraints
 
 - Must comply with global header/footer standards.
-- Must follow route and redirect rules in `LGFC-Production-Design-and-Standards.md`.
+- Must follow canonical auth rules in `auth-model.md`.
 - Must not introduce separate standalone Join and Login pages.

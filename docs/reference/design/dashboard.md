@@ -15,6 +15,8 @@ Last Reviewed: 2026-02-20
 ## Lou Gehrig Fan Club — Admin & CMS UI  
 **Version:** 2025-11-16
 
+Canonical auth reference: /docs/reference/design/auth-model.md
+
 ---
 
 ## 1. Purpose and Scope
@@ -45,7 +47,7 @@ The dashboard runs **only** on the Cloudflare Pages-hosted site and provides the
 - Only available on the Cloudflare Pages-hosted admin area.
 - Access requires:
   1. Valid D1 member session (`member_sessions` table).
-  2. User email present in `ADMIN_EMAILS` env var (primary gate).
+  2. Authenticated member session (`lgfc_session`) resolves to role-backed admin authorization in D1 `members`.
 - All `/admin/**` routes are protected; Cloudflare public site **never** hosts admin functionality.
 
 ### Link from Public Site
@@ -343,7 +345,7 @@ This is a **read-only diagnostic view** to guide admin troubleshooting and decis
 
 ### Access
 
-- Only authenticated users whose email is listed in `ADMIN_EMAILS` can access `/admin/**`.
+- Only authenticated users with admin role resolved by canonical auth/session model can access `/admin/**`.
 - RLS and backend policies must ensure that admin-only operations are not reachable by regular members.
 
 ### Logging
@@ -375,7 +377,7 @@ The Admin Dashboard is considered **functionally complete** when:
 - All sections defined in this document exist and are reachable.
 - Reports queue is fully operational and drives moderation workflow.
 - Posts, Media, Milestones, Events, Weekly Matchup, Users, and System Health sections perform their intended CRUD operations end-to-end.
-- All admin routes `/admin/**` are properly gated by auth + `ADMIN_EMAILS`.
+- All admin routes `/admin/**` are properly gated by canonical auth/session + admin role authorization.
 - Core actions are logged.
 - No 404s or dead links in the admin navigation.
 

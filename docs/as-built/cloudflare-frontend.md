@@ -14,6 +14,8 @@ Last Reviewed: 2026-03-27
 
 This document serves as the authoritative baseline for the Cloudflare Pages-hosted public frontend and member area of the LGFC website.
 
+Canonical auth reference: /docs/reference/design/auth-model.md
+
 ## FanClub Home Page Implementation
 
 ### Route Structure
@@ -24,13 +26,13 @@ This document serves as the authoritative baseline for the Cloudflare Pages-host
 
 ### Implementation Status
 
-✅ **IMPLEMENTED** per `/docs/fanclub.html` specification (v1)
+✅ **IMPLEMENTED** per `docs/reference/design/fanclub.md` specification
 
 ### Source of Truth
-- Canonical Specification: `/docs/fanclub.html`
-- Versioned Specification: `/docs/fanclub-v1.html`
+- Canonical Specification: `docs/reference/design/fanclub.md`
+- Canonical Auth: `docs/reference/design/auth-model.md`
 - Navigation Rules: `docs/reference/design/LGFC-Production-Design-and-Standards.md`
-- Process Guidelines: `/docs/website-PR-governance.md`
+- Process Guidelines: `docs/governance/PR_GOVERNANCE.md`
 
 ### Architecture
 
@@ -45,8 +47,8 @@ FanClub area uses a dedicated layout with:
   - Members → `/fanclub` (member home)
   - Admin → `/admin` (conditional, only for admins)
 - **Authentication:**
-  - Reads member email from localStorage (`lgfc_member_email`)
-  - Checks admin role via `/apifanclub/role` endpoint
+  - Uses cookie-backed session (`lgfc_session`) validated via session API
+  - Checks admin role via `members` identity/role resolution
   - Shows/hides Admin menu item based on role
 
 #### Page Sections (`src/appfanclub/page.tsx`)
@@ -64,26 +66,26 @@ Sections are rendered in **exact spec order**:
    - 30-day events summary
    - **D1 Connectivity:** Fetches events from `events` table for current and next month, filters to 30-day window
 
-3. **Post Creation / Work Area** (`PostCreation.tsx`)
-   - "Share with the Club" text area
-   - Post visibility notice (members-only)
-   - Submit button
-   - **D1 Connectivity:** POSTs to `/api/discussions/create` endpoint
-   - **Future Enhancement:** Photo/video attachments (noted in UI)
-
-4. **FanClub Discussion Feed** (`DiscussionFeed.tsx`)
-   - Reverse chronological feed of member posts
-   - Shows: author name, timestamp, title, body
-   - **D1 Connectivity:** Fetches from `discussions` table (status='posted', limit 20)
-   - **Future Enhancements:** Replies, reactions (like/dislike), report buttons (UI placeholders present)
-
-5. **Archives Tiles** (`ArchivesTiles.tsx`)
+3. **Archives Tiles** (`ArchivesTiles.tsx`)
    - Three clickable tiles in responsive grid:
      1. **Photo Gallery** → `/fanclub/photo`
      2. **Memorabilia Archive** → `/fanclub/memorabilia`
      3. **Library** → `/fanclub/library`
    - Hover effects for visual feedback
    - Public routes `/memorabilia`, `/photos`, `/photo`, and `/library` must not exist
+
+4. **Post Creation / Work Area** (`PostCreation.tsx`)
+   - "Share with the Club" text area
+   - Post visibility notice (members-only)
+   - Submit button
+   - **D1 Connectivity:** POSTs to `/api/discussions/create` endpoint
+   - **Future Enhancement:** Photo/video attachments (noted in UI)
+
+5. **FanClub Discussion Feed** (`DiscussionFeed.tsx`)
+   - Reverse chronological feed of member posts
+   - Shows: author name, timestamp, title, body
+   - **D1 Connectivity:** Fetches from `discussions` table (status='posted', limit 20)
+   - **Future Enhancements:** Replies, reactions (like/dislike), report buttons (UI placeholders present)
 
 6. **Gehrig Timeline** (`GehrigTimeline.tsx`)
    - FanClub-focused timeline with 8 major life events
@@ -122,9 +124,9 @@ All member-specific components are in `src/componentsfanclub/`:
 ### Authentication & Authorization
 
 #### FanClub Authentication
-- Email-based authentication via localStorage (`lgfc_member_email`)
+- Cookie-backed authentication via `lgfc_session`
 - Not authenticated → redirects to `/` (canonical unauthenticated target)
-- No server-side session management (client-side state only)
+- Session validation is server-backed via D1 `member_sessions`
 
 #### Admin Authorization
 - Admin check via `members` table lookup (role='admin')
@@ -190,7 +192,7 @@ Per `docs/reference/design/LGFC-Production-Design-and-Standards.md`:
 
 ### Testing Requirements
 
-Per `/.github/pull_request_template.md` and `/docs/website-PR-governance.md`:
+Per `/.github/pull_request_template.md` and `docs/governance/PR_GOVERNANCE.md`:
 
 - **Build Validation:** `npm run build:cf` must pass
 - **Lint:** `npm run lint` (warnings acceptable, no errors)
@@ -252,7 +254,7 @@ See `/docs/admin/access-model.md` for complete admin architecture documentation.
 - D1 diagnostic tool for database inspection
 - See `/docs/admin/access-model.md` for details
 
-**2026-01-20:** Initial implementation of FanClub Home per `docs/fanclub.html` v1 spec
+**2026-01-20:** Initial implementation of FanClub Home per `docs/reference/design/fanclub.md`
 - Implemented all 7 required sections in correct order
 - Created member area layout with proper header/navigation
 - Added D1 connectivity for discussions, events

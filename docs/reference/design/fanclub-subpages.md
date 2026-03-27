@@ -19,6 +19,8 @@ memorabilia (grid + tag filters + Library cross-links)
 
 Covers: `/fanclub/photo`, `/fanclub/library`, `/fanclub/memorabilia`, `/fanclub/myprofile`
 
+Canonical auth reference: /docs/reference/design/auth-model.md
+
 All pages:
 
 - Require login (`/fanclub/**` auth boundary)

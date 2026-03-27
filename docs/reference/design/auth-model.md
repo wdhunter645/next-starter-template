@@ -1,67 +1,60 @@
 ---
 Doc Type: Design Authority
 Audience: Human + AI
-Authority Level: Canonical
-Owns: Authentication model, session model, auth behavior
-Canonical Reference: SELF
+Authority Level: Controlled
+Owns: Canonical authentication and redirect behavior definitions
+Does Not Own: Join/Login UI composition; FanClub content layout; admin feature requirements
+Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-03-27
 ---
 
-# Authentication Model
+# Authentication Model (Canonical Auth Source)
+
+This file is the **single owner/source of truth** for authentication/session behavior and auth-related redirects.
+
+Canonical auth reference: /docs/reference/design/auth-model.md
 
 ## Day 1 Canonical Model (LOCKED)
 
-LGFC uses a **cookie-backed server session model**.
+LGFC Day 1 member access uses a **cookie-backed server session model**.
 
 ### Session
-- Cookie: `lgfc_session`
-- Storage: D1 → `member_sessions`
-- Lookup: `/api/session/me`
-- Identity/role: D1 → `members`
+- Cookie name: `lgfc_session`
+- Session store: D1 table `member_sessions`
+- Session lookup endpoint: `/api/session/me`
+- Member identity and role source: D1 `members`
 
 ### Behavior
-- Login → create session + cookie → redirect `/fanclub`
-- Logout → clear cookie + invalidate session → redirect `/`
-- Browser close → session remains active
-- Presence → approximate via `last_seen_at`
+- Login creates session + cookie, then redirects to `/fanclub`
+- Logout clears the cookie and invalidates the session, then redirects to `/`
+- Closing the browser does not immediately log the member out
+- Online status is approximate and based on session records + `last_seen_at`
 
 ### Protected Routes
 - `/fanclub`
 - `/fanclub/**`
 
-### Unauthenticated Rule (LOCKED)
-Unauthenticated access → redirect to `/`
+## Redirect Policy (LOCKED)
 
----
+1. `/fanclub` or `/fanclub/**` when unauthenticated → `/`
+2. Failed login/session validation → `/`
+3. `/logout` completion (or already logged out) → `/`
+4. `/login` legacy compatibility route → `/`
 
-## PROHIBITED (MUST NOT EXIST IN ANY ACTIVE DOC)
+## Prohibited in Active Docs
 
-- localStorage as auth source of truth
+- localStorage as the auth source of truth
 - Supabase Auth
 - magic-link auth
-- ADMIN_EMAILS as auth control
-- hybrid cookie + localStorage models
+- ADMIN_EMAILS as the primary auth gate
+- hybrid cookie + localStorage auth narratives
 
-These are not Day 1 implementations.
+## Governance / Enforcement
 
----
+Subordinate docs must reference this file for auth behavior and must not redefine or conflict with it.
 
-## GOVERNANCE (THIS IS THE FIX)
+If any subordinate doc conflicts with this file, **this file wins**.
 
-The following files are **NOT allowed to define auth**:
-
-- join-login.md
-- auth-and-logout.md
-- LGFC-Production-Design-and-Standards.md
-- fanclub.md
-- cloudflare-frontend.md
-
-They must only reference this file.
-
----
-
-## REQUIRED LINE (MANDATORY)
-
-Every file that mentions auth MUST include:
+Any file that mentions authentication/session/redirect behavior must include:
 
 Canonical auth reference: /docs/reference/design/auth-model.md

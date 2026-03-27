@@ -51,6 +51,6 @@ If ambiguity exists:
 ## Required Day-2 checks after UI changes
 - Validate canonical routes still resolve.
 - Validate auth redirects (`/fanclub/**` unauth redirects to `/`).
-- Validate failed-auth redirect target (`/join#login`).
+- Validate failed-auth redirect target (`/`).
 - Validate header variant behavior logged in/out.
 - Validate footer link order and content.

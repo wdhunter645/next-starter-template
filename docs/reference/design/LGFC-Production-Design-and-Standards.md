@@ -62,7 +62,7 @@ external Bonfire link (no /store route)
 - Protected FanClub routes (`/fanclub` and `/fanclub/**`) are auth-gated.
 - If a user is unauthenticated, redirect to `/` (public home).
 - If authentication/session validation fails, redirect to `/` (public home).
-- `/login` is a legacy compatibility route and must redirect to `/join#login`.
+- `/login` is a legacy compatibility route and must redirect to `/`.
 
 ---
 
@@ -93,7 +93,7 @@ Logout
 # Header Button Mapping
 
 Join → /join  
-Login → /join#login  
+Login → /join  
 Club Home → /fanclub  
 Search → /search  
 Store → external Bonfire link  
@@ -163,14 +163,15 @@ Implementation-level schema definitions and migrations are maintained separately
 
 ## Authentication Model (Canonical Day 1 Reference)
 
-Day 1 member access uses an LGFC-lite local browser session model.
+Canonical auth reference: /docs/reference/design/auth-model.md
 
-- Join/login is hosted at `/join` (login tab at `/join#login`; `/login` is legacy compatibility only).
-- Successful login writes `lgfc_member_email` to localStorage and routes the member to `/fanclub`.
-- FanClub route protection for `/fanclub` and `/fanclub/**` checks for the local session marker and redirects unauthenticated users to `/`.
-- Any failed login/session validation path redirects to `/`.
-- Logout clears `lgfc_member_email` (and any stale compatibility session artifacts) and redirects to `/`.
-- Supabase Auth and magic-link flows are not part of the current production auth model.
+Day 1 auth/session and redirect behavior is defined in the canonical auth document.
+
+- `/join` remains the canonical Join/Login page.
+- `/login` is legacy compatibility and redirects to `/`.
+- Day 1 auth uses the canonical cookie-backed session model (`lgfc_session` + D1 `member_sessions`).
+- Protected FanClub routes (`/fanclub` and `/fanclub/**`) enforce auth and redirect unauthenticated users to `/`.
+- Any failed auth/session validation path redirects to `/`.
 
 ---
 
