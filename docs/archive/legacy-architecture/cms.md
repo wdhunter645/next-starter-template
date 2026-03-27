@@ -72,7 +72,7 @@ The CMS stack is:
 All structured content is modeled in Supabase tables.  
 All media assets live in B2 with metadata in Supabase.
 
-Supabase is the **single source of truth** for dynamic content.
+Supabase was treated as the primary dynamic-content system in this retired architecture.
 
 ---
 

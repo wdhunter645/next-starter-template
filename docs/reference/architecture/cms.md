@@ -1,22 +1,21 @@
 ---
 Doc Type: Specification
 Audience: Human + AI
-Authority Level: Historical
+Authority Level: Historical Pointer
 Owns: Archive pointer for superseded CMS architecture document
 Does Not Own: Current architecture or design authority
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-03-27
 ---
 
-# LGFC — CMS ARCHITECTURE (Archived)
+# LGFC — CMS Architecture (Archived)
 
-This architecture document has been archived.
+This path is intentionally retained as a **stub**.
 
-The former Vercel/Supabase CMS architecture reference now lives at:
+The former CMS architecture document has been archived and is no longer an active authority:
 
-- `/docs/archive/legacy-architecture/cms.md`
+- Archive: `/docs/archive/legacy-architecture/cms.md`
 
-Current authority for production behavior and design standards lives at:
+Current production architecture/design authority is:
 
 - `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
-- `/docs/reference/architecture/runtime-dependencies_MASTER.md`

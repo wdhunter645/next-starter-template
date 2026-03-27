@@ -116,7 +116,7 @@ All member-specific components are in `src/componentsfanclub/`:
 
 #### FanClub Authentication
 - Email-based authentication via localStorage (`lgfc_member_email`)
-- Not authenticated → Shows login prompt, redirects to `/login`
+- Not authenticated → redirects to `/` (canonical unauthenticated target)
 - No server-side session management (client-side state only)
 
 #### Admin Authorization
@@ -140,7 +140,7 @@ All member-specific components are in `src/componentsfanclub/`:
 **Profile Page:**
 - Edit name, email, screen_name
 - Contributions summary
-- Email change with magic-link verification
+- Email change flow is deferred; no magic-link behavior is canonical in Day 1 docs
 
 ### Navigation Behavior
 

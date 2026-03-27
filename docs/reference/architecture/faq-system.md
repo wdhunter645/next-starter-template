@@ -4,7 +4,7 @@ Audience: Human + AI
 Authority Level: Canonical Architecture Specification
 Owns: System architecture, data flows, access model, runtime dependencies
 Does Not Own: Operational runbooks; governance policies; UI/UX design specifics
-Canonical Reference: /docs/explanation/ARCHITECTURE_OVERVIEW.md
+Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-02-20
 ---
 
