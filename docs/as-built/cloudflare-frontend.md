@@ -72,8 +72,8 @@ Sections are rendered in **exact spec order**:
 
 5. **Archives Tiles** (`ArchivesTiles.tsx`)
    - Three clickable tiles in responsive grid:
-     1. **Memorabilia Archive** → `/fanclub/memorabilia`
-     2. **Photo Gallery** → `/fanclub/photo`
+     1. **Photo Gallery** → `/fanclub/photo`
+     2. **Memorabilia Archive** → `/fanclub/memorabilia`
      3. **Library** → `/fanclub/library`
    - Hover effects for visual feedback
    - Public routes `/memorabilia`, `/photos`, `/photo`, and `/library` must not exist

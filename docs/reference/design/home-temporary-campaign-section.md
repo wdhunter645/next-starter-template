@@ -21,19 +21,21 @@ This file provides subordinate rules for the campaign section only.
 ## Placement Rule
 Homepage render order is:
 
-1. Hero Banner
-2. Campaign Spotlight (conditional)
-3. Weekly Photo Matchup
-4. Join CTA
-5. About Lou Gehrig
-6. Social Wall
-7. Recent Discussions (teaser)
-8. Friends of the Fan Club
-9. Milestones
-10. Calendar
-11. FAQ
+1. HEADER
+2. BANNER
+3. SPOTLIGHT (hidden by default)
+4. WEEKLY MATCHUP
+5. JOIN
+6. ABOUT
+7. SOCIAL
+8. DISCUSSIONS
+9. FRIENDS
+10. MILESTONES
+11. CALENDAR
+12. FAQ/ASK
+13. FOOTER
 
-When disabled, section #2 is omitted and all other sections retain the same locked order.
+When disabled, section #3 remains hidden (slot preserved) and all other sections retain the same locked order.
 
 ## Permanent Structure
 The section layout itself **does not change** between campaigns.

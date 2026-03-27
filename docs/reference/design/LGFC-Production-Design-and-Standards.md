@@ -181,23 +181,25 @@ Day 1 member authentication uses a cookie-backed server session model.
 
 Homepage sections are locked to this order:
 
-1. Hero Banner
-2. Campaign Spotlight (conditional slot; omitted when inactive)
-3. Weekly Photo Matchup
-4. Join CTA
-5. About Lou Gehrig
-6. Social Wall
-7. Recent Discussions (teaser)
-8. Friends of the Fan Club
-9. Milestones
-10. Calendar
-11. FAQ
+1. HEADER
+2. BANNER
+3. SPOTLIGHT (hidden by default)
+4. WEEKLY MATCHUP
+5. JOIN
+6. ABOUT
+7. SOCIAL
+8. DISCUSSIONS
+9. FRIENDS
+10. MILESTONES
+11. CALENDAR
+12. FAQ/ASK
+13. FOOTER
 
 ---
 
 ## Weekly Photo Matchup (Homepage Section)
 
-- Location: Homepage section #3, after the optional Campaign Spotlight slot
+- Location: Homepage section #4, after the Spotlight slot
 - Function: A/B image voting (Photo A vs Photo B)
 - UI Elements:
   - Two images labeled Photo A and Photo B
