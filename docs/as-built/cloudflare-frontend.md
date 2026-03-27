@@ -1,7 +1,14 @@
-# Cloudflare Frontend - As-Built Documentation
+---
+Doc Type: As-Built
+Audience: Human + AI
+Authority Level: Historical
+Owns: Snapshot summary of implemented Cloudflare frontend behaviors at review time
+Does Not Own: Canonical design authority or governance policy
+Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
+Last Reviewed: 2026-03-27
+---
 
-**Last Updated:** 2026-03-27  
-**Status:** Active Development
+# Cloudflare Frontend — As-Built Snapshot
 
 ## Overview
 

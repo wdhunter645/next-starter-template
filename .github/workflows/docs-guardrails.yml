@@ -80,6 +80,7 @@ jobs:
           DOCS_HEADER_TEMPLATE_FILE: docs/templates/markdown-header-template.md
           DOCS_HEADER_FILE_LIST: ${{ github.event_name == 'pull_request' && steps.docs_targets.outputs.count != '0' && format('{0}/docs_header_targets.txt', runner.temp) || '' }}
           DOCS_HEADER_MISSING_FILE: ${{ github.event_name == 'pull_request' && format('{0}/docs_header_missing.txt', runner.temp) || '' }}
+          DOCS_HEADER_MISSING_DETAILS_FILE: ${{ github.event_name == 'pull_request' && format('{0}/docs_header_missing_details.txt', runner.temp) || '' }}
         run: ./scripts/ci/docs_check_headers.sh .
 
       - name: Post or update docs header remediation comment
@@ -88,11 +89,13 @@ jobs:
         env:
           REMEDIATION_MARKER: '<!-- docs-header-remediation -->'
           MISSING_FILE_LIST: ${{ format('{0}/docs_header_missing.txt', runner.temp) }}
+          MISSING_DETAILS_FILE: ${{ format('{0}/docs_header_missing_details.txt', runner.temp) }}
         with:
           script: |
             const fs = require('fs');
             const marker = process.env.REMEDIATION_MARKER;
             const missingFileListPath = process.env.MISSING_FILE_LIST;
+            const missingDetailsPath = process.env.MISSING_DETAILS_FILE;
 
             const missingFiles = fs.existsSync(missingFileListPath)
               ? fs.readFileSync(missingFileListPath, 'utf8').split('\n').map((line) => line.trim()).filter(Boolean)
@@ -103,23 +106,61 @@ jobs:
               return;
             }
 
+            const details = fs.existsSync(missingDetailsPath)
+              ? fs.readFileSync(missingDetailsPath, 'utf8')
+                  .split('\n')
+                  .map((line) => line.trim())
+                  .filter((line) => line && !line.startsWith('#'))
+                  .map((line) => {
+                    const [file, issue, detail] = line.split('|');
+                    return { file, issue, detail };
+                  })
+              : [];
+
             const template = fs.readFileSync('docs/templates/markdown-header-template.md', 'utf8').trim();
-            const filesList = missingFiles.map((file) => `- \`${file}\``).join('\n');
+            const detailsByFile = new Map();
+            for (const item of details) {
+              if (!item.file) continue;
+              if (!detailsByFile.has(item.file)) detailsByFile.set(item.file, []);
+              detailsByFile.get(item.file).push(item);
+            }
+
+            const filesList = missingFiles.map((file) => {
+              const entries = detailsByFile.get(file) || [];
+              if (entries.length === 0) return `- \`${file}\``;
+              const rendered = entries.map((entry) => {
+                if (entry.issue === 'HEADER_FENCE_MISSING') {
+                  return 'header fence missing at top of file';
+                }
+                if (entry.issue === 'HEADER_KEYS_MISSING') {
+                  const keys = (entry.detail || '').split(',').filter(Boolean).join(', ');
+                  return `missing keys: ${keys}`;
+                }
+                return `${entry.issue}: ${entry.detail || ''}`;
+              });
+              return `- \`${file}\` — ${rendered.join('; ')}`;
+            }).join('\n');
+
             const body = `${marker}
-## 🚨 Copilot Remediation Required: Missing Documentation Headers
+## 🚨 Docs Header Remediation Required
 
 @copilot Please fix the missing documentation headers in this PR.
 
 Insert the exact header template shown below at the top of each affected file, then populate every field using that file's context.
-Do **not** leave any placeholder values blank.
+Do **not** leave placeholder values blank.
 
 ### Required Header Template
 \`\`\`md
 ${template}
 \`\`\`
 
-### Affected Files
+### File-Specific Issues
 ${filesList}
+
+### Local Verification Command
+\`\`\`bash
+./scripts/ci/docs_check_headers.sh .
+\`\`\`
 `;
 
             const issue_number = context.payload.pull_request.number;

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Fails if any ACTIVE docs markdown file is missing the required YAML-like header keys.
+# Emits actionable, file-specific remediation guidance using the canonical header template.
 
 set +u
 
@@ -7,6 +8,7 @@ ROOT="${1:-.}"
 TEMPLATE_FILE="${DOCS_HEADER_TEMPLATE_FILE:-$ROOT/docs/templates/markdown-header-template.md}"
 FILE_LIST_PATH="${DOCS_HEADER_FILE_LIST:-}"
 MISSING_FILE_LIST_OUTPUT="${DOCS_HEADER_MISSING_FILE:-}"
+MISSING_DETAILS_OUTPUT="${DOCS_HEADER_MISSING_DETAILS_FILE:-}"
 
 resolve_required_keys() {
   local template="$1"
@@ -36,6 +38,24 @@ Last Reviewed:
 KEYS
 }
 
+render_template_block() {
+  if [ -f "$TEMPLATE_FILE" ]; then
+    cat "$TEMPLATE_FILE"
+  else
+    cat <<'TPL'
+---
+Doc Type: <document type>
+Audience: <intended audience>
+Authority Level: <authority level>
+Owns: <what this document owns>
+Does Not Own: <what this document does not own>
+Canonical Reference: <canonical doc path>
+Last Reviewed: YYYY-MM-DD
+---
+TPL
+  fi
+}
+
 mapfile -t REQUIRED_KEYS < <(resolve_required_keys "$TEMPLATE_FILE")
 
 if [ "${#REQUIRED_KEYS[@]}" -eq 0 ]; then
@@ -61,28 +81,46 @@ fi
 
 missing=0
 missing_files=()
+missing_details=()
+
 for f in "${FILES[@]}"; do
   [ -z "$f" ] && continue
   [ -f "$f" ] || continue
 
-  if ! grep -q '^---$' "$f"; then
-    echo "FAIL header fence missing: $f"
+  first_line="$(head -n 1 "$f")"
+  if [ "$first_line" != "---" ]; then
+    echo "FAIL docs header fence missing at top of file: $f"
+    echo "  remediation: insert canonical template from $TEMPLATE_FILE as the first block in the file"
     missing=1
     missing_files+=("$f")
+    missing_details+=("$f|HEADER_FENCE_MISSING|(entire header block)")
     continue
   fi
 
+  header_block="$(awk '
+    BEGIN { fence=0 }
+    /^---$/ { fence++; print; if (fence==2) exit; next }
+    fence==1 { print }
+  ' "$f")"
+
   file_missing=0
+  file_missing_keys=()
   for key in "${REQUIRED_KEYS[@]}"; do
-    if ! grep -q "^${key}" "$f"; then
-      echo "FAIL header key missing (${key}): $f"
-      missing=1
+    if ! printf '%s\n' "$header_block" | grep -q "^${key}"; then
       file_missing=1
+      file_missing_keys+=("$key")
     fi
   done
 
   if [ "$file_missing" -eq 1 ]; then
+    missing=1
     missing_files+=("$f")
+    keys_csv="$(IFS=,; echo "${file_missing_keys[*]}")"
+    missing_details+=("$f|HEADER_KEYS_MISSING|$keys_csv")
+
+    echo "FAIL docs header keys missing: $f"
+    echo "  missing keys: ${file_missing_keys[*]}"
+    echo "  remediation: copy template from $TEMPLATE_FILE and populate all fields for this file"
   fi
 done
 
@@ -90,7 +128,19 @@ if [ -n "$MISSING_FILE_LIST_OUTPUT" ]; then
   printf '%s\n' "${missing_files[@]}" | awk 'NF' | sort -u > "$MISSING_FILE_LIST_OUTPUT"
 fi
 
+if [ -n "$MISSING_DETAILS_OUTPUT" ]; then
+  {
+    echo "# format: file|issue|details"
+    printf '%s\n' "${missing_details[@]}" | awk 'NF' | sort -u
+  } > "$MISSING_DETAILS_OUTPUT"
+fi
+
 if [ "$missing" -ne 0 ]; then
+  echo
+  echo "Required docs header template ($TEMPLATE_FILE):"
+  echo "---"
+  render_template_block
+  echo "---"
   echo "Docs header check FAILED."
   exit 1
 fi
