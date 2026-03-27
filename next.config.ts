@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-	/* Cloudflare Pages site build; runtime APIs are served by Pages Functions (`functions/api/**`). */
+	/* Cloudflare Pages site build; runtime APIs are served by Cloudflare Pages Functions (`functions/api/**`). */
 	output: "export",
   trailingSlash: true, // Keep trailing slashes in generated static routes
 	images: {

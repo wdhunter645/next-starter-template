@@ -20,7 +20,7 @@ If any UI, code, or other doc conflicts with this file, this file wins.
 
 ## Runtime Platform Context
 
-FanClub behavior runs on **Cloudflare Pages + Pages Functions**.
+FanClub behavior runs on **Cloudflare Pages + Cloudflare Pages Functions**.
 Auth/session, join/login, and member data flows rely on runtime APIs under `functions/api/**`.
 
 ---
