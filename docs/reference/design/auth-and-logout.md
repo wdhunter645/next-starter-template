@@ -20,33 +20,31 @@ Last Reviewed: 2026-03-27
 
 ## Purpose
 
-`/auth` is currently implemented as the public authentication entry route.
+`/join` is the primary public Join/Login entry route for Day 1 authentication/session behavior.
 
-It hosts the shared Join and Login experience for Day 1 authentication/session behavior.
+`/login` is a legacy compatibility route that redirects to `/join#login`.
 
-Within that shared experience:
-
-- Join creates the member record only
-- Login creates the authenticated session (`lgfc_session` + D1 `member_sessions`)
-- Successful login proceeds to `/fanclub`
+`/auth` is not the canonical public Join/Login source of truth; if retained, it is a supporting compatibility/auth-processing route only.
 
 `/auth` must not be described as a separate localStorage-based auth source of truth.
 
 ## Behavior
 
-1. On load, presents the public Join/Login entry experience
-1. Supports the shared Day 1 auth model: Join for member creation, Login for cookie-backed session creation
-1. Uses Day 1 session validation expectations through `/api/login` + `/api/session/me`
-1. On successful authenticated state: proceed to `/fanclub`
-1. On failed or invalid login/session state: remain in the public auth flow
+1. Canonical public Join/Login entry is `/join` (with `/join#login` for login mode)
+1. `/login` is handled as legacy routing behavior to `/join#login`
+1. `/auth` is non-primary and must not be treated as the canonical Join/Login host
+1. Day 1 auth model remains cookie-backed: Join creates member record, Login creates authenticated session (`lgfc_session` + D1 `member_sessions`)
+1. Successful login proceeds to `/fanclub`; failed/invalid login/session state remains in the public auth flow
 
 ## UI
 
-Public authentication entry page containing the shared Join and Login experience.
+When used, `/auth` should mirror the same Day 1 Join/Login behavior without becoming a separate canonical public entry route.
 
 ## Notes
 
-- This is a public auth route
+- Primary public auth entry is `/join` (not `/auth`)
+- `/login` remains legacy redirect behavior to `/join#login`
+- `/auth` is supporting/compatibility-only, not canonical
 - Day 1 canonical auth/session behavior is defined in:
   - `docs/reference/design/join-login.md`
   - `docs/reference/design/LGFC-Production-Design-and-Standards.md`
