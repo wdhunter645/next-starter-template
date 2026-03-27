@@ -105,7 +105,7 @@ Authentication follows the LGFC-Lite local session model.
 Join flow:
 
 1. User submits Join form
-2. System validates input and creates/updates member record
+2. System validates input and creates a new member record
 3. Client stores `lgfc_member_email` in localStorage
 4. Redirect to `/fanclub`
 

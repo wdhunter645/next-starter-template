@@ -92,6 +92,8 @@ Logout
 
 # Header Button Mapping
 
+Join → /join  
+Login → /join#login  
 Club Home → /fanclub  
 Search → /search  
 Store → external Bonfire link  

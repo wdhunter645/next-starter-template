@@ -1,7 +1,7 @@
 ---
 Doc Type: Specification
 Audience: Human + AI
-Authority Level: Archived Stub
+Authority Level: Historical
 Owns: Archive pointer for superseded CMS architecture document
 Does Not Own: Current architecture or design authority
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md

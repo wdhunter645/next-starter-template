@@ -1,11 +1,11 @@
 ---
 Doc Type: Specification
 Audience: Human + AI
-Authority Level: Canonical Architecture Specification
-Owns: System architecture, data flows, access model, runtime dependencies
-Does Not Own: Operational runbooks; governance policies; UI/UX design specifics
-Canonical Reference: /docs/explanation/ARCHITECTURE_OVERVIEW.md
-Last Reviewed: 2026-02-20
+Authority Level: Historical
+Owns: Historical record of superseded CMS architecture
+Does Not Own: Current architecture or design authority
+Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
+Last Reviewed: 2026-03-27
 ---
 
 > **ARCHIVED**: This document describes a superseded Vercel/Supabase architecture and is retained only for historical reference. Current architecture and design authority are maintained in active reference/governance documents.

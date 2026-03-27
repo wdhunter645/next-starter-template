@@ -23,7 +23,7 @@ Homepage render order is:
 
 1. Hero Banner
 2. Campaign Spotlight (conditional)
-3. Weekly Matchup
+3. Weekly Photo Matchup
 4. Join CTA
 5. About Lou Gehrig
 6. Social Wall
