@@ -4,7 +4,7 @@ Audience: Human + AI
 Authority Level: Canonical Architecture Specification
 Owns: System architecture, data flows, access model, runtime dependencies
 Does Not Own: Operational runbooks; governance policies; UI/UX design specifics
-Canonical Reference: /docs/explanation/ARCHITECTURE_OVERVIEW.md
+Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-02-20
 ---
 
@@ -279,13 +279,13 @@ Admin pages are **open** for UI access, APIs are token-gated.
 
 ## Future Enhancements
 
-**Phase 6+:** Supabase-based admin authentication
+**Phase 6+:** Role-backed admin authentication hardening
 
-When Supabase auth is integrated:
-- **Admin UI pages** will check Supabase session + role
-- **Admin APIs** may add Supabase JWT validation (in addition to or replacing `ADMIN_TOKEN`)
-- **D1 diagnostic tool** will require Supabase admin role
-- **Migration path:** Token-based auth remains as fallback or backup access method
+When advanced auth hardening is integrated:
+- **Admin UI pages** may add stronger role/session checks beyond token entry UX
+- **Admin APIs** may add layered role/session verification in addition to `ADMIN_TOKEN`
+- **D1 diagnostic tool** may require explicit admin role confirmation
+- **Migration path:** Token-based auth remains available as fallback/backup access method
 
 See `/docs/admin/dashboard.md` for full admin feature roadmap.
 

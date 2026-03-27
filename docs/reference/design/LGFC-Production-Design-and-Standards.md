@@ -61,8 +61,8 @@ external Bonfire link (no /store route)
 
 - Protected FanClub routes (`/fanclub` and `/fanclub/**`) are auth-gated.
 - If a user is unauthenticated, redirect to `/` (public home).
-- If authentication fails (including invalid auth callback/session validation), redirect to `/join#login`.
-- `/login` is a legacy route and must redirect to `/join#login`.
+- If authentication/session validation fails, redirect to `/` (public home).
+- `/login` is a legacy compatibility route and must redirect to `/join#login`.
 
 ---
 
@@ -161,19 +161,16 @@ Implementation-level schema definitions and migrations are maintained separately
 
 ---
 
-## Authentication Model
+## Authentication Model (Canonical Day 1 Reference)
 
-Day 1 member authentication uses a cookie-backed server session model.
+Day 1 member access uses an LGFC-lite local browser session model.
 
-- Login creates an `lgfc_session` cookie and a corresponding server-side session row in D1 `member_sessions`.
-- Session resolution is server-side: request cookie → D1 `member_sessions` lookup.
-- Member/session state is checked through `/api/session/me`.
-- Member/admin role is resolved from D1 `members`.
-- Protected FanClub routes (`/fanclub` and `/fanclub/**`) redirect unauthenticated users to `/`.
-- Logout clears the cookie-backed session path (`lgfc_session`) and removes the active D1 session, then returns the user to `/`.
-- Closing the browser does not immediately mark a member offline.
-- Presence is approximate through active session records plus `last_seen_at` updates.
-- Advanced auth and presence controls are deferred to later phases/backlog and are non-canonical for Day 1.
+- Join/login is hosted at `/join` (login tab at `/join#login`; `/login` is legacy compatibility only).
+- Successful login writes `lgfc_member_email` to localStorage and routes the member to `/fanclub`.
+- FanClub route protection for `/fanclub` and `/fanclub/**` checks for the local session marker and redirects unauthenticated users to `/`.
+- Any failed login/session validation path redirects to `/`.
+- Logout clears `lgfc_member_email` (and any stale compatibility session artifacts) and redirects to `/`.
+- Supabase Auth and magic-link flows are not part of the current production auth model.
 
 ---
 

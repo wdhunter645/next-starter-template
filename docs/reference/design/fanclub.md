@@ -30,7 +30,7 @@ Auth/session, join/login, and member data flows rely on runtime APIs under `func
 - **FanClub Home (Club Home)**: `/fanclub`
 - Auth boundary: `/fanclub` and all `/fanclub/**` routes require login.
 - Unauthenticated access to `/fanclub` and `/fanclub/**` must **redirect to** `/` (public home).
-- Failed authentication recovery target is `/join#login`.
+- Failed authentication/session-validation recovery target is `/`.
 
 ---
 

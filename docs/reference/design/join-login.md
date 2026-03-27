@@ -2,7 +2,7 @@
 Doc Type: Design Authority
 Audience: Human + AI
 Authority Level: Controlled
-Owns: Join/Login page UI, behavior, and auth flow
+Owns: Join/Login page UI, behavior, and member access flow
 Does Not Own: Global navigation rules, header/footer standards
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-03-27
@@ -10,13 +10,9 @@ Last Reviewed: 2026-03-27
 
 # Join / Login Page Design
 
-This document defines the **combined Join/Login page** used for LGFC-Lite member session entry.
+This document defines the combined **Join/Login** experience used for the LGFC-lite member access model.
 
-The page uses a **single route and component** with **two tabs** to avoid duplicated logic and UI drift.
-
----
-
-# Route
+## Route
 
 Primary route:
 
@@ -26,152 +22,69 @@ Legacy route handling:
 
 `/login` → redirect to `/join#login`
 
----
+## Page Purpose
 
-# Page Purpose
+Provide one entry surface for:
 
-Provide a single entry point for:
+1. New member join
+2. Existing member login
 
-1. Member join (member record creation)
-2. Existing member login (session creation)
+## Tabs
 
-The interface uses tab navigation to switch between Join and Login forms.
-
----
-
-# Page Layout
-
-Page sections:
-
-1. Page Header
-2. Tab Selector
-3. Form Container
-4. Submit Actions
-5. Error / Status Messages
-
----
-
-# Tabs
-
-Two tabs control which form is visible.
-
-TAB 1 — Join  
-TAB 2 — Login
-
-Behavior:
-
-- Join tab is default when visiting `/join`
-- Login tab activates when URL hash is `/join#login`
+- Join tab is default on `/join`
+- Login tab activates on `/join#login`
 - Switching tabs does not reload the page
 
----
-
-# Join Form
-
-Purpose: create a Day 1 member record and session entry point.
+## Join Form
 
 Required fields:
 
 - Screen Name (Alias)
 - Email
 
-Validation rules:
+Validation:
 
-- Screen Name is required
-- Email must be valid format
-- Alias/email conflicts must return an inline error
+- Screen Name required
+- Valid email format
+- Alias/email conflicts return inline error
 
----
-
-# Login Form
-
-Purpose: create a Day 1 authenticated member session.
+## Login Form
 
 Required fields:
 
 - Email
 
-Validation rules:
+Validation:
 
-- Email must be valid format
-- Email must match an existing Day 1 join/member path record
+- Valid email format
+- Email must match an existing member record
 
----
+## Authentication Model (Day 1 LGFC-lite)
 
-# Authentication Flow
+Day 1 member access uses a **local browser session marker** model.
 
-Authentication follows the Day 1 cookie-backed session model.
+- Successful login writes `lgfc_member_email` in localStorage.
+- Member-access checks read `lgfc_member_email` client-side.
+- No Supabase Auth or magic-link flow is part of the current model.
+- Session invalidation/log out clears `lgfc_member_email` and returns user to `/`.
 
-Join flow:
+## Redirect Behavior (Canonical)
 
-1. User submits Join form
-2. System validates input and executes the implemented join/member create path
-3. User then authenticates through the login session flow
-4. Login creates `lgfc_session` and a D1 `member_sessions` record
-5. Successful auth lands on `/fanclub`
+- Successful login redirects to `/fanclub`.
+- Any unauthenticated member-route access (`/fanclub` and `/fanclub/**`) redirects to `/`.
+- Failed login/session validation redirects to `/`.
 
-Login flow:
-
-1. User submits Login form
-2. Login endpoint validates identity against the Day 1 join/member data path
-3. Server creates `lgfc_session` cookie and D1 `member_sessions` session record
-4. Redirect to `/fanclub`
-
----
-
-# Redirect Behavior
-
-Successful authentication redirects to:
-
-`/fanclub`
-
-Unauthenticated access to protected FanClub routes (`/fanclub` and `/fanclub/**`) redirects to:
-
-`/`
-
-Failed authentication or invalid auth callback redirects to:
-
-`/join#login`
-
----
-
-# Error Handling
-
-Errors appear inside the form container.
+## Error Handling
 
 Typical errors:
 
 - Invalid email format
 - Member not found
 - Alias/email conflict
-- Session creation failure
+- Session initialization failure
 
----
+## Design Constraints
 
-# Component Structure
-
-Recommended component layout:
-
-JoinLoginPage  
- ├── TabSelector  
- ├── JoinForm  
- └── LoginForm
-
-State management controls which form is visible.
-
----
-
-# UI Behavior Rules
-
-- Only one form visible at a time
-- Tab switch must be instant
-- No page reload during tab switch
-- Form validation occurs before submission
-
----
-
-# Design Constraints
-
-- Must comply with global header/footer standards
-- Must follow navigation rules defined in LGFC Production Design and Standards
-- Must not introduce separate Join or Login pages
+- Must comply with global header/footer standards.
+- Must follow route and redirect rules in `LGFC-Production-Design-and-Standards.md`.
+- Must not introduce separate standalone Join and Login pages.
