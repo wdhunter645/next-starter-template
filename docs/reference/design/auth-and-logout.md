@@ -12,45 +12,45 @@ Last Reviewed: 2026-03-27
 
 -----
 
-# `/auth` — Authentication Handler
+# `/auth` — Authentication Entry
 
 **Route:** `/auth`  
-**Access:** Public (handles redirects post-login)  
+**Access:** Public  
 **Desktop only.** Mobile/tablet implementation is deferred.
 
 ## Purpose
 
-`/auth` is a client-side handler page, not a user-facing destination.
-It processes the result of an authentication event and redirects accordingly.
+`/auth` is currently implemented as the public authentication entry route.
 
-Both are thin handler pages with no persistent UI — just a “Signing you in…” / “Signing out…” momentary state before redirecting.
+It hosts the shared Join and Login experience for Day 1 authentication/session behavior.
+
+Within that shared experience:
+
+- Join creates the member record only
+- Login creates the authenticated session (`lgfc_session` + D1 `member_sessions`)
+- Successful login proceeds to `/fanclub`
+
+`/auth` must not be described as a separate localStorage-based auth source of truth.
 
 ## Behavior
 
-1. On load, reads URL parameters (e.g., token, email, status)
-1. Validates the session payload
-1. On success: sets `lgfc_member_email` in localStorage and redirects to `/fanclub`
-1. On failure: redirects to `/join#login` with an error indicator
+1. On load, presents the public Join/Login entry experience
+1. Supports the shared Day 1 auth model: Join for member creation, Login for cookie-backed session creation
+1. Uses Day 1 session validation expectations through `/api/login` + `/api/session/me`
+1. On successful authenticated state: proceed to `/fanclub`
+1. On failed or invalid login/session state: remain in the public auth flow
 
 ## UI
 
-No persistent UI. During processing, display a minimal loading state:
-
-```
-[Centered in viewport]
-  "Signing you in…"
-  [Spinner or simple loading indicator]
-```
-
-- Background: page background `#f5f7fb`
-- Text: `16px`, color `#666666`
+Public authentication entry page containing the shared Join and Login experience.
 
 ## Notes
 
-- This page should not appear in navigation or be linked directly
-- If user navigates to `/auth` with no parameters, redirect to `/`
-- Part of the LGFC-Lite local session model (see `docs/reference/design/join-login.md`
-  and `docs/archive/future/phases.md`)
+- This is a public auth route
+- Day 1 canonical auth/session behavior is defined in:
+  - `docs/reference/design/join-login.md`
+  - `docs/reference/design/LGFC-Production-Design-and-Standards.md`
+- Join and Login remain separate functions even when presented through one shared route/form shell
 
 -----
 
@@ -62,12 +62,12 @@ No persistent UI. During processing, display a minimal loading state:
 
 ## Purpose
 
-Clears the member session and redirects to the public home page.
+Clears the Day 1 cookie-backed member session and redirects to the public home page.
 
 ## Behavior
 
-1. On load: removes `lgfc_member_email` from localStorage
-1. Sets member status to Inactive in D1 (presence/online model)
+1. On load: calls logout endpoint to clear `lgfc_session` and remove the server-side session record from D1 `member_sessions`
+1. Clears stale legacy local browser auth key (`lgfc_member_email`) when present
 1. Redirects to `/` (public home)
 
 ## UI
@@ -88,3 +88,4 @@ No persistent UI. Momentary transition state only:
 - After redirect to `/`, header returns to visitor (not-logged-in) state
 - No confirmation dialog — logout is immediate
 - If user is already logged out and visits `/logout`, redirect to `/` silently
+- Closing the browser is not treated as an immediate logout/offline signal in Day 1
