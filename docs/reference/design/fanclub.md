@@ -16,6 +16,8 @@ Effective Date: 2026-01-21
 This document defines the **FanClub** (authenticated) experience and routes.
 If any UI, code, or other doc conflicts with this file, this file wins.
 
+Canonical auth reference: /docs/reference/design/auth-model.md
+
 ---
 
 ## Runtime Platform Context

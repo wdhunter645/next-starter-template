@@ -2,13 +2,15 @@
 Doc Type: Specification
 Audience: Human + AI
 Authority Level: Canonical Design Specification
-Owns: Auth entry compatibility routes and logout behavior
-Does Not Own: Global route inventory; non-auth UI standards
+Owns: Auth compatibility-route purpose and logout page contract
+Does Not Own: Canonical auth/session rules and redirect policy
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-03-27
 ---
 
 # Auth & Logout Page Specifications — LGFC
+
+Canonical auth reference: /docs/reference/design/auth-model.md
 
 ## `/auth` — Compatibility Auth Entry
 
@@ -19,18 +21,16 @@ Last Reviewed: 2026-03-27
 
 `/join` is the canonical public Join/Login entry route.
 
-`/login` is a legacy compatibility route that redirects to `/join#login`.
+`/login` is a legacy compatibility route that redirects to `/`.
 
 `/auth` is a compatibility/auth-processing route and not a separate primary entry route.
 
 ## Behavior
 
 1. Canonical Join/Login entry is `/join`.
-2. `/login` redirects to `/join#login`.
+2. `/login` redirects to `/`.
 3. `/auth` mirrors Join/Login behavior without becoming a separate entry surface.
-4. Day 1 auth model is LGFC-lite local session marker behavior (`lgfc_member_email` in localStorage).
-5. Successful login routes to `/fanclub`.
-6. Failed login or invalid session state redirects to `/`.
+4. Auth/session and redirect behavior are governed by `auth-model.md`.
 
 ## `/logout` — Logout Handler
 
