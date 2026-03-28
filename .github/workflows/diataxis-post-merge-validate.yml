@@ -1,44 +1,7 @@
-name: DIATAXIS Post-Merge Validation
-
-on:
-  pull_request:
-    types: [closed]
-
+name: DIATAXIS Post Merge
+on: pull_request
 jobs:
   validate:
-    if: >-
-      github.event.pull_request.merged == true &&
-      contains(github.event.pull_request.labels.*.name, 'DIATAXIS')
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout merged state
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Log merged PR context
-        run: |
-          echo "PR_NUMBER=${{ github.event.pull_request.number }}"
-          echo "PR_TITLE=${{ github.event.pull_request.title }}"
-          echo "BASE_REF=${{ github.event.pull_request.base.ref }}"
-          echo "HEAD_REF=${{ github.event.pull_request.head.ref }}"
-          echo "MERGE_SHA=${{ github.event.pull_request.merge_commit_sha }}"
-
-      - name: Log changed files
-        run: |
-          git diff --name-only \
-            "${{ github.event.pull_request.base.sha }}" \
-            "${{ github.event.pull_request.merge_commit_sha }}" | tee diataxis_changed_files.txt
-
-      - name: Placeholder - doc type validation
-        run: |
-          echo "TODO: validate tutorials/how-to/reference/explanation compliance"
-
-      - name: Placeholder - contradiction detection
-        run: |
-          echo "TODO: detect duplicate authority and contradictions"
-
-      - name: Placeholder - result summary
-        run: |
-          echo "DIATAXIS post-merge validation skeleton executed"
+      - run: echo "post merge"
