@@ -1,0 +1,26 @@
+name: DIATAXIS Folder Authority Check
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  validate-folder-intent:
+    if: contains(github.event.pull_request.labels.*.name, 'DIATAXIS')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+
+      - name: List changed files
+        run: |
+          git diff --name-only origin/${{ github.base_ref }}...HEAD | tee changed_files.txt
+
+      - name: Validate placeholder
+        run: |
+          echo "Folder validation skeleton"
+
+      - name: Summary
+        run: |
+          echo "DIATAXIS folder authority check executed"
