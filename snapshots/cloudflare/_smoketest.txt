@@ -1,2 +1,0 @@
-# Cloudflare Pages Snapshot - Smoketest Log
-# Each successful run appends a timestamp (UTC) to this file
