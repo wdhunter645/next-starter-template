@@ -24,6 +24,7 @@ export default function PhotosPage() {
   const [items, setItems] = useState<PhotoItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
   const limit = 24;
 
   async function load(nextOffset: number) {
@@ -33,8 +34,18 @@ export default function PhotosPage() {
       const data = await res.json().catch(() => ({}));
       if (res.ok && data?.ok) {
         const incoming = Array.isArray(data.items) ? data.items : [];
-        if (nextOffset === 0) setItems(incoming);
-        else setItems((prev) => [...prev, ...incoming]);
+        setHasMore(incoming.length === limit);
+        if (nextOffset === 0) {
+          setItems(incoming);
+          setOffset(0);
+        } else {
+          setItems((prev) => [...prev, ...incoming]);
+          setOffset(nextOffset);
+        }
+      } else if (nextOffset === 0) {
+        setItems([]);
+        setHasMore(false);
+        setOffset(0);
       }
     } finally {
       setLoading(false);
@@ -43,7 +54,7 @@ export default function PhotosPage() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      load(0);
+      void load(0);
     }
   }, [isLoading, isAuthenticated]);
 
@@ -58,37 +69,44 @@ export default function PhotosPage() {
         A filtered view of the archive focused on items such as cards, programs, tickets, and collectibles.
       </p>
 
-      <div style={{ ...styles.grid }}>
-        {items.map((p) => (
-          <div key={p.id} style={{ ...styles.card }}>
-            {p.url ? (
-              <img src={p.url} alt={p.description || `Photo ${p.id}`} style={{ ...styles.img }} />
-            ) : (
-              <div style={{ ...styles.img, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                No URL
-              </div>
-            )}
-            <div style={{ ...styles.cap }}>{p.description || "—"}</div>
-          </div>
-        ))}
-      </div>
+      {loading && items.length === 0 ? (
+        <p style={{ ...styles.p }}>Loading…</p>
+      ) : items.length === 0 ? (
+        <p style={{ ...styles.p }}>No memorabilia items found.</p>
+      ) : (
+        <div style={{ ...styles.grid }}>
+          {items.map((p) => (
+            <div key={p.id} style={{ ...styles.card }}>
+              {p.url ? (
+                <img src={p.url} alt={p.description || `Photo ${p.id}`} style={{ ...styles.img }} loading="lazy" />
+              ) : (
+                <div style={{ ...styles.img, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  No URL
+                </div>
+              )}
+              <div style={{ ...styles.cap }}>{p.description || "—"}</div>
+            </div>
+          ))}
+        </div>
+      )}
 
-      <div style={{ ...styles.btnRow }}>
-        <button
-          style={{ ...styles.btn }}
-          disabled={loading}
-          onClick={() => {
-            const next = offset + limit;
-            setOffset(next);
-            load(next);
-          }}
-        >
-          {loading ? "Loading..." : "Load more"}
-        </button>
-        <a style={{ ...styles.btn, textDecoration: "none" }} href="/fanclub/photo">
-          View photos
-        </a>
-      </div>
+      {items.length > 0 && (
+        <div style={{ ...styles.btnRow }}>
+          <button
+            style={{ ...styles.btn }}
+            disabled={loading || !hasMore}
+            onClick={() => {
+              const next = offset + limit;
+              void load(next);
+            }}
+          >
+            {loading ? "Loading..." : hasMore ? "Load more" : "No more items"}
+          </button>
+          <a style={{ ...styles.btn, textDecoration: "none" }} href="/fanclub/photo">
+            View photos
+          </a>
+        </div>
+      )}
     </main>
   );
 }
