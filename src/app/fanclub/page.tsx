@@ -42,7 +42,7 @@ export default function MemberHomePage() {
 
       <WelcomeSection email={email} />
       <ArchivesTiles />
-      <PostCreation email={email} onPostCreated={handlePostCreated} />
+      <PostCreation onPostCreated={handlePostCreated} />
       <DiscussionFeed refreshTrigger={refreshTrigger} />
       <GehrigTimeline />
       <AdminLink isAdmin={role === 'admin'} />
