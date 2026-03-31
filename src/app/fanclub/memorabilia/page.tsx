@@ -69,44 +69,37 @@ export default function PhotosPage() {
         A filtered view of the archive focused on items such as cards, programs, tickets, and collectibles.
       </p>
 
-      {loading && items.length === 0 ? (
-        <p style={{ ...styles.p }}>Loading…</p>
-      ) : items.length === 0 ? (
-        <p style={{ ...styles.p }}>No memorabilia items found.</p>
-      ) : (
-        <div style={{ ...styles.grid }}>
-          {items.map((p) => (
-            <div key={p.id} style={{ ...styles.card }}>
-              {p.url ? (
-                <img src={p.url} alt={p.description || `Photo ${p.id}`} style={{ ...styles.img }} loading="lazy" />
-              ) : (
-                <div style={{ ...styles.img, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  No URL
-                </div>
-              )}
-              <div style={{ ...styles.cap }}>{p.description || "—"}</div>
-            </div>
-          ))}
-        </div>
-      )}
+      <div style={{ ...styles.grid }}>
+        {items.map((p) => (
+          <div key={p.id} style={{ ...styles.card }}>
+            {p.url ? (
+              <img src={p.url} alt={p.description || `Photo ${p.id}`} style={{ ...styles.img }} />
+            ) : (
+              <div style={{ ...styles.img, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                No URL
+              </div>
+            )}
+            <div style={{ ...styles.cap }}>{p.description || "—"}</div>
+          </div>
+        ))}
+      </div>
 
-      {items.length > 0 && (
-        <div style={{ ...styles.btnRow }}>
-          <button
-            style={{ ...styles.btn }}
-            disabled={loading || !hasMore}
-            onClick={() => {
-              const next = offset + limit;
-              void load(next);
-            }}
-          >
-            {loading ? "Loading..." : hasMore ? "Load more" : "No more items"}
-          </button>
-          <a style={{ ...styles.btn, textDecoration: "none" }} href="/fanclub/photo">
-            View photos
-          </a>
-        </div>
-      )}
+      <div style={{ ...styles.btnRow }}>
+        <button
+          style={{ ...styles.btn }}
+          disabled={loading}
+          onClick={() => {
+            const next = offset + limit;
+            setOffset(next);
+            load(next);
+          }}
+        >
+          {loading ? "Loading..." : "Load more"}
+        </button>
+        <a style={{ ...styles.btn, textDecoration: "none" }} href="/fanclub/photo">
+          View photos
+        </a>
+      </div>
     </main>
   );
 }
