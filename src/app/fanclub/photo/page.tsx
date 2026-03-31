@@ -6,7 +6,6 @@ import { buildFanclubPhotoListApiUrl } from '@/lib/fanclubApi';
 
 type PhotoItem = {
   id: number;
-  title?: string;
   url?: string;
   description?: string;
 };
@@ -64,17 +63,38 @@ export default function FanclubPhotoGalleryPage() {
     <main style={{ maxWidth: 1100, margin: '0 auto', padding: '28px 16px' }}>
       <h1 style={{ fontSize: 32, margin: '0 0 8px 0' }}>Photo Gallery</h1>
 
-      {loading && <p>Loading…</p>}
-      {err && <p>Error: {err}</p>}
+      {loading && <p style={{ opacity: 0.85 }}>Loading…</p>}
+      {err && <p style={{ color: 'salmon' }}>Error: {err}</p>}
 
       {!loading && !err && (
-        <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
+        <div style={{ marginTop: 14, display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
           {items.map((p) => (
-            <div key={p.id}>
-              {p.url ? <img src={p.url} alt={p.title || ''} style={{ width: '100%' }} /> : <span>No URL</span>}
-              <button onClick={() => reportPhoto(p.id)}>Report</button>
+            <div key={p.id} style={{ borderRadius: 16, border: '1px solid rgba(255,255,255,0.12)', overflow: 'hidden' }}>
+              <div style={{ aspectRatio: '4/3', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {p.url ? (
+                  <img src={p.url} alt={p.description || `Photo ${p.id}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <span style={{ opacity: 0.75, fontSize: 12, padding: 10 }}>No URL available</span>
+                )}
+              </div>
+              <div style={{ padding: 12 }}>
+                <div style={{ fontWeight: 600 }}>{p.description || `Photo #${p.id}`}</div>
+                <div style={{ marginTop: 10, display: 'flex', gap: 10 }}>
+                  <button
+                    onClick={() => reportPhoto(p.id)}
+                    style={{ padding: '7px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.18)', background: 'transparent', cursor: 'pointer', opacity: 0.9 }}
+                  >
+                    Report
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
+          {items.length === 0 && (
+            <div style={{ gridColumn: '1 / -1', padding: 14, borderRadius: 14, border: '1px solid rgba(255,255,255,0.12)', opacity: 0.85 }}>
+              No photos found.
+            </div>
+          )}
         </div>
       )}
     </main>
