@@ -14,12 +14,12 @@ const header = fs.readFileSync('src/components/Header.tsx', 'utf8');
 const idxJoin = header.indexOf('href="/join"');
 const idxSearch = header.indexOf('href="/search"');
 const idxStore = header.indexOf('bonfire.com/store/lou-gehrig-fan-club');
-const idxLogin = header.indexOf('href="/login"');
+const idxLogin = header.indexOf('href="/join?mode=login"');
 
 must(idxJoin !== -1, 'Header missing Join link to /join');
 must(idxSearch !== -1, 'Header missing Search link to /search');
 must(idxStore !== -1, 'Header missing Store external link');
-must(idxLogin !== -1, 'Header missing Login link to /login');
+must(idxLogin !== -1, 'Header missing Login link to /join?mode=login');
 must(idxJoin < idxSearch && idxSearch < idxStore && idxStore < idxLogin, 'Header public button order must be Join, Search, Store, Login');
 
 const fanClubHeader = fs.readFileSync('src/components/FanClubHeader.tsx', 'utf8');
