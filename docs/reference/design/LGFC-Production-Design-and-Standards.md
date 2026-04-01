@@ -1,4 +1,3 @@
-
 ---
 Doc Type: Design Authority
 Audience: Human + AI
@@ -142,20 +141,23 @@ Constraints:
 
 The LGFC platform uses **Cloudflare D1** as its primary relational datastore.
 
-Core D1 domains:
+Canonical Day 1 data references:
 
-- members
-- member_sessions
-- photos
-- library
-- memorabilia
-- matchups
-- votes
-- events
-- timeline
-- faq
+- `members`
+- `member_sessions`
+- `join_requests`
+- `photos`
+- `library_entries`
+- `membership_card_content`
 
-These tables support the fan club member system, media library, weekly photo matchup voting, event calendar, memorabilia catalog, and timeline/FAQ content surfaces.
+Canonical rules:
+
+- `photos` is the D1 table name and must be used consistently in design documentation when referring to the photo data store.
+- Memorabilia is **not** a standalone table. It is a tagged/filtered view of `photos`.
+- `library_entries` is the written content table and should support tagging plus linkage to related `photos`.
+- `/fanclub/myprofile` is a page per member in `members`.
+- The member row is created during the JOIN process.
+- Membership card is **not** a page. It is instructions text plus front/back card images shown on `/fanclub/myprofile`.
 
 Implementation-level schema definitions and migrations are maintained separately from the design authority.
 
