@@ -1,4 +1,3 @@
-
 ---
 Doc Type: Design Authority
 Audience: Human + AI
@@ -6,7 +5,7 @@ Authority Level: Canonical
 Owns: Production behavior, routing rules, navigation invariants
 Does Not Own: Implementation details inside components
 Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md
-Last Reviewed: 2026-03-15
+Last Reviewed: 2026-04-01
 ---
 
 # LGFC Production Design and Standards
@@ -56,6 +55,15 @@ external Bonfire link (no /store route)
 
 ---
 
+# Canonical Redirect Policy
+
+- Protected FanClub routes (`/fanclub` and `/fanclub/**`) are auth-gated.
+- If a user is unauthenticated, redirect to `/` (public home).
+- If authentication/session validation fails, redirect to `/` (public home).
+- `/login` is a legacy compatibility route and must redirect to `/`.
+
+---
+
 # Public Header (not logged in)
 
 Buttons:
@@ -82,6 +90,8 @@ Logout
 
 # Header Button Mapping
 
+Join → /join  
+Login → /join  
 Club Home → /fanclub  
 Search → /search  
 Store → external Bonfire link  
@@ -130,28 +140,65 @@ Constraints:
 
 The LGFC platform uses **Cloudflare D1** as its primary relational datastore.
 
-Core D1 domains:
+Canonical Day 1 data references:
 
-- members
-- member_sessions
-- photos
-- library
-- memorabilia
-- matchups
-- votes
-- events
-- timeline
-- faq
+- `members`
+- `member_sessions`
+- `join_requests`
+- `photos`
+- `library_entries`
+- `membership_card_content`
 
-These tables support the fan club member system, media library, weekly photo matchup voting, event calendar, memorabilia catalog, and timeline/FAQ content surfaces.
+Canonical rules:
+
+- `photos` is the D1 table name and must be used consistently in design documentation when referring to the photo data store.
+- Memorabilia is **not** a standalone table. It is a tagged/filtered view of `photos`.
+- `library_entries` is the written content table and should support tagging plus linkage to related `photos`.
+- `/fanclub/myprofile` is a page per member in `members`.
+- The member row is created during the JOIN process.
+- Membership card is **not** a page. It is instructions text plus front/back card images shown on `/fanclub/myprofile`.
 
 Implementation-level schema definitions and migrations are maintained separately from the design authority.
 
 ---
 
+## Authentication Model (Canonical Day 1 Reference)
+
+Canonical auth reference: /docs/reference/design/auth-model.md
+
+Day 1 auth/session and redirect behavior is defined in the canonical auth document.
+
+- `/join` remains the canonical Join/Login page.
+- `/login` is legacy compatibility and redirects to `/`.
+- Day 1 auth uses the canonical cookie-backed session model (`lgfc_session` + D1 `member_sessions`).
+- Protected FanClub routes (`/fanclub` and `/fanclub/**`) enforce auth and redirect unauthenticated users to `/`.
+- Any failed auth/session validation path redirects to `/`.
+
+---
+
+## Homepage Canonical Section Order
+
+Homepage sections are locked to this order:
+
+1. HEADER
+2. BANNER
+3. SPOTLIGHT (hidden by default)
+4. WEEKLY MATCHUP
+5. JOIN
+6. ABOUT
+7. SOCIAL
+8. DISCUSSIONS
+9. FRIENDS
+10. MILESTONES
+11. CALENDAR
+12. FAQ/ASK
+13. FOOTER
+
+---
+
 ## Weekly Photo Matchup (Homepage Section)
 
-- Location: Homepage (inline, below hero section)
+- Location: Homepage section #4, after the Spotlight slot
 - Function: A/B image voting (Photo A vs Photo B)
 - UI Elements:
   - Two images labeled Photo A and Photo B
