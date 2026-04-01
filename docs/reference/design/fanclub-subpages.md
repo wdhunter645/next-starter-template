@@ -19,6 +19,8 @@ Covers these FanClub pages:
 
 Canonical auth reference: /docs/reference/design/auth-model.md
 
+Canonical auth reference: /docs/reference/design/auth-model.md
+
 All pages:
 
 - Require login (`/fanclub/**` auth boundary)

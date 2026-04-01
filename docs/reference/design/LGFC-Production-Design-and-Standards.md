@@ -5,7 +5,7 @@ Authority Level: Canonical
 Owns: Production behavior, routing rules, navigation invariants
 Does Not Own: Implementation details inside components
 Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md
-Last Reviewed: 2026-04-01
+Last Reviewed: 2026-03-27
 ---
 
 # LGFC Production Design and Standards
@@ -54,6 +54,7 @@ Store:
 external Bonfire link (no /store route)
 
 ---
+
 
 # Canonical Redirect Policy
 

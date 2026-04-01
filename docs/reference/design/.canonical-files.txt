@@ -1,6 +1,7 @@
 LGFC-Production-Design-and-Standards.md
 als-fundraiser-2026-campaign-spotlight.md
 auth-and-logout.md
+auth-model.md
 dashboard.md
 fanclub-subpages.md
 fanclub.md

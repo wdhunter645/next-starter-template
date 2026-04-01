@@ -139,4 +139,24 @@ All documentation changes must respect:
 - Design invariants
 
 Unauthorized structural drift is considered a documentation failure.
+---
+
+# 8. Documentation Header Enforcement
+
+Active documentation files must start with the canonical header template at:
+
+- `docs/templates/markdown-header-template.md`
+
+Validation is enforced by:
+
+- `./scripts/ci/docs_check_headers.sh .`
+- `.github/workflows/docs-guardrails.yml`
+
+When the check fails, remediation output is file-specific and includes:
+
+- which file is missing a header fence or keys
+- which exact header keys are missing
+- the exact template block expected
+
+Run the header check locally before opening or updating docs PRs to prevent avoidable gate failures.
 

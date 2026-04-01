@@ -16,7 +16,7 @@ This document summarizes the layout of the Next.js starter template so new contr
 
 - **Framework**: Next.js 15 with the App Router enabled and the Edge runtime for pages that can run on Cloudflare Pages.
 - **Language**: TypeScript 5 with strict type-checking, ESLint, and Prettier integration.
-- **Styling**: Tailwind CSS 4 paired with a small collection of custom CSS files for more specialized layouts.
+- **Styling**: Global CSS and component-scoped CSS files (no Tailwind/PostCSS in the active stack).
 - **Testing**: Vitest and @testing-library/react for component-level unit tests.
 
 ## Project layout
@@ -26,9 +26,9 @@ src/
   app/
     layout.tsx           # Shared shell for all routes
     page.tsx             # Landing page composition
-    globals.css          # Global Tailwind and reset styles
+    globals.css          # Global reset, tokens, and shared base styles
   components/            # Reusable UI building blocks
-  styles/                # Shared CSS outside of Tailwind
+  styles/                # Shared CSS for reusable layout patterns
   lib/                   # Helper utilities (e.g., API clients)
   data/                  # Static JSON and fixtures surfaced in the UI
 ```
@@ -54,8 +54,8 @@ Each UI section is encapsulated in its own React component with co-located style
 
 ## Styling conventions
 
-- Tailwind is enabled globally; utility classes compose the majority of layout and typography.
-- Shared CSS lives under `src/styles/` for cases where Tailwind utilities are insufficient (e.g., complex grid layouts).
+- The styling baseline is plain CSS (global styles + shared styles under `src/styles/`).
+- Tailwind utilities are not part of the active implementation path.
 - Variables and root-level resets are defined in `src/app/globals.css` and `src/styles/variables.css`.
 - Component-specific styles should remain close to their React counterparts to encourage cohesion.
 

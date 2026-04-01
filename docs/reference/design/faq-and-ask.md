@@ -23,8 +23,7 @@ Full FAQ listing page. Extends the FAQ teaser shown on the homepage.
 Visitors can browse all approved FAQs, search them, and link through to
 the Ask a Question form.
 
-Two specs in one file. /faq covers the full listing with client-side search, accordion expand/collapse, pinning, view-count tracking, 
-and the Ask CTA. /ask covers the form fields (identical to join + question textarea), submission behavior including the dual join+question write, and the admin inbox model.
+Two specs in one file. `/faq` covers the full listing with client-side search, accordion expand/collapse, pinning, view-count tracking, and the Ask CTA. `/ask` covers a standalone submission inbox flow (question intake), including form fields, validation, and admin triage model.
 -----
 
 ## Page Layout
@@ -154,15 +153,15 @@ Entry point: FAQ section link “Ask a Question” on both homepage and `/faq`.
 
 ## Form Fields
 
-Inherits the same identity fields as `/join` plus a question field:
+`/ask` uses this explicit field set:
 
-|Field      |Type    |Required|Notes                            |
-|-----------|--------|--------|---------------------------------|
-|First name |text    |Yes     |                                 |
-|Last name  |text    |Yes     |                                 |
-|Screen name|text    |No      |                                 |
-|Email      |email   |Yes     |Must contain `@`, min 3 chars    |
-|Question   |textarea|Yes     |Freeform, min 10 chars after trim|
+|Field      |Type    |Required|Notes                                          |
+|-----------|--------|--------|-----------------------------------------------|
+|First name |text    |Yes     |Non-empty after trim                           |
+|Last name  |text    |Yes     |Non-empty after trim                           |
+|Screen name|text    |No      |Optional display identity; empty stored as null|
+|Email      |email   |Yes     |Must contain `@`, min 3 chars                  |
+|Question   |textarea|Yes     |Freeform, min 10 chars after trim              |
 
 -----
 
@@ -216,7 +215,7 @@ Below the form (same pattern as Join page):
 
 ## Data
 
-Questions stored in D1 as an inbox (triage via admin UI):
+Questions are stored in D1 `ask_inbox` as intake records (triage via admin UI). `/ask` does **not** write directly to `faq_entries`.
 
 - Fields: `id`, `first_name`, `last_name`, `screen_name`, `email`,
   `question`, `status` (open / responded / hidden), `created_at`

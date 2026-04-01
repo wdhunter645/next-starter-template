@@ -4,23 +4,22 @@ Audience: Human + AI
 Authority Level: Canonical
 Owns: Governance rules, PR process, enforcement, AI guardrails
 Does Not Own: Design/architecture/platform specifications; step-by-step ops procedures
-Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md
-Last Reviewed: 2026-02-20
+Canonical Reference: /docs/governance/standards/design-authority_MASTER.md
+Last Reviewed: 2026-03-27
 ---
 
 # Governance — Design Authority
 
 Status: _MASTER (Operations authoritative)
-Last Updated: 2026-02-05
+Last Updated: 2026-03-27
 
 ## Purpose
 Prevent design drift by defining the single source of truth for UI/UX, routes, headers/footers, and production behavior expectations.
 
 ## Source of truth (Day-2 Ops)
-- Primary: `/docs/reference/design/LGFC-Production-Design-and-Standards.md` (explicitly marked AUTHORITATIVE/LOCKED).
-- Navigation: `/docs/reference/design/LGFC-Production-Design-and-Standards.md`.
-- Governance mechanics: `/docs/governance/PR_PROCESS.md`, `/docs/governance/PR_PROCESS.md`, `/docs/governance/PR_GOVERNANCE.md`.
-- Authority conflicts: `/docs/governance/document-authority-hierarchy_MASTER.md`.
+- Primary design authority: `/docs/reference/design/LGFC-Production-Design-and-Standards.md` (explicitly marked AUTHORITATIVE/LOCKED).
+- Governance mechanics: `/docs/governance/PR_PROCESS.md`, `/docs/governance/PR_GOVERNANCE.md`.
+- Authority conflicts: `/docs/governance/standards/document-authority-hierarchy_MASTER.md`.
 
 ## What Operations enforces
 - Canonical routes and auth boundaries.
@@ -52,5 +51,6 @@ If ambiguity exists:
 ## Required Day-2 checks after UI changes
 - Validate canonical routes still resolve.
 - Validate auth redirects (`/fanclub/**` unauth redirects to `/`).
+- Validate failed-auth redirect target (`/`).
 - Validate header variant behavior logged in/out.
 - Validate footer link order and content.

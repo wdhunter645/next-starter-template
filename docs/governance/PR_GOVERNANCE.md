@@ -5,136 +5,66 @@ Authority Level: Canonical
 Owns: Governance rules, PR process, enforcement, AI guardrails
 Does Not Own: Design/architecture/platform specifications; step-by-step ops procedures
 Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md
-Last Reviewed: 2026-02-20
+Last Reviewed: 2026-03-27
 ---
 
 # Website Pull Request Governance
 
-**All PR prompts must follow this structure:**
-1) Reference: `/docs/governance/PR_PROCESS.md`
-2) Change Summary: exact edits with file paths + (when applicable) line ranges from `/docs/reference/design/Reference/homepage.html`
-3) Governance Reference: `/docs/governance/PR_GOVERNANCE.md`
+## Required PR framing
+1. Reference `/docs/governance/PR_PROCESS.md`.
+2. Summarize exact edits with file paths (and line-level context when relevant).
+3. Link back to this governance file and the canonical design authority.
+
+## Canonical references for UI/layout work
+- `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
+- `/docs/reference/design/home.md`
+- `/docs/reference/design/fanclub.md`
+
+Do not use archived `.html` snapshots as active source-of-truth references.
 
 ---
 
 ## Runtime & Platform Policy
-- Cloudflare Pages build: Next.js static export; no server functions.
-- Node runtime: do not change Cloudflare’s Node runtime in PRs unless explicitly requested. (Current production build logs show Node 20; upgrade to 22 will be handled separately.)
-- No Tailwind/PostCSS/framework swaps. Keep global CSS approach.
-
----
-
-## Rollback Protocol
-- If any PR causes a white-screen or layout regression, stop forward changes immediately.
-- Roll back to last-known-good:
-  - Cite the Cloudflare “Successful deploy” build and its commit hash (from Pages logs).
-  - Re-deploy that commit and confirm live recovery.
-- Record rollback in PR thread with:
-  - Failure type (A/B/C/D)
-  - Commit/PR that introduced regression
-  - Commit/Deploy ID restored
+- Cloudflare Pages + Next.js deployment model is the active platform baseline.
+- Do not perform framework/runtime migrations in unrelated PRs.
+- Keep CSS/layout approach aligned to current repository standards.
 
 ---
 
 ## Drift Control
-- Structural edits must copy from `/docs/reference/design/Reference/homepage.html` or `/docs/reference/design/fanclub.md` via explicit line ranges.
-- No paraphrasing or freehand rewrites of canonical HTML/CSS.
-- If canonical file missing or outdated, mark PR **Blocked** and request correction.
-- Legacy snapshots are preserved at `/docs/lgfc-homepage-legacy-v6.html`, `/docs/lgfc-homepage-legacy-v7.html`, etc.
-- FanClub versioning follows the same pattern: `/docs/reference/design/fanclub.md` (current standard) with versioned snapshots at `/docsfanclub-v1.html`, future `/docsfanclub-v2.html`, etc.
-- **Automated drift guard:** All PRs must pass `npm run test:homepage-structure` to prevent structural violations.
-- **Historical drift incidents:** See `/docs/drift-log.md` for documented cases and remediation guidance.
-
-### As-Built Documentation Requirement
-
-**Any change to Cloudflare-rendered pages must update `/docs/as-built/cloudflare-frontend.md` in the same PR.**
-
-This requirement applies to changes affecting:
-- Public route structure (new pages, removed pages, route modifications)
-- Page-level layouts (section order, major component additions/removals)
-- Header/footer navigation structure
-- Major section additions/removals on homepage or other public pages
-- Global styling baseline (color tokens, typography scale, layout variables)
-
-**Enforcement**:
-- Manual code review checks for as-built doc updates
-- Future: Sentinel-Write Bot will automatically validate as-built doc changes (PR #311)
-- PRs missing required as-built doc updates will be rejected
-
-**Purpose**:
-- Maintains authoritative baseline for Cloudflare static frontend
-- Enables Sentinel-Write Bot drift detection
-- Supports Supabase/Vercel integration planning
-- Provides reference for Codex, Copilot Agent, and automated tooling
-
-
-### Footer Design Enforcement
-All footer changes must preserve the authoritative footer design defined by:
-- `/docs/reference/design/LGFC-Production-Design-and-Standards.md` (canonical link order and behavior)
-- `/docs/NAVIGATION-INVARIANTS.md`
-- `/docs/as-built/cloudflare-frontend.md`
-
-Required footer invariants:
-- Left: rotating D1-backed quote (via `/api/footer-quote`) + dynamic-year copyright
-- Center: LG logo scroll-to-top affordance (not route navigation)
-- Right (two-row layout):
-  - Row 1: **Privacy** (`/privacy`), **Terms** (`/terms`)
-  - Row 2: **Contact** (`/contact`)
-- No `mailto:` footer link
-- No Admin link in the public footer; admin/support contact belongs on `/contact`
-- No extra footer links beyond the locked set
-
-Footer-specific rejection conditions:
-- Privacy / Terms / Contact order or presence wrong relative to the locked design doc
-- `mailto:` link present in footer
-- Admin link present in public footer
-- Logo changed from scroll-to-top to route navigation
-- Quote replaced with hardcoded static copy or `/api/footer-quote` fetch removed
-- Footer change made without updating `/docs/as-built/cloudflare-frontend.md` when behavior or link set changes
-
-### Social Wall Drift & Regressions
-**Historical Context:**
-- Social Wall has had **multiple regressions** historically due to undocumented changes
-- Common issues:
-  - Wrong Elfsight script URL (static.elfsight.com vs elfsightcdn.com)
-  - Missing `data-elfsight-app-lazy` attribute
-  - Complete removal of widget code
-  - "Cleanup" or "simplification" PRs that broke the working implementation
-
-**Prevention Requirements:**
-All Social Wall changes must:
-1. **Review** the canonical configuration in `docs/lgfc-homepage-legacy-v6.html` (Social Wall subsection)
-2. **Update** both `SocialWall.tsx` and the configuration documentation if making changes
-3. **Test** on the deployed site to confirm the feed renders (not just fallback text)
-4. **Document** the change reason and verification steps in PR description
-
-**Never:**
-- Remove the Elfsight widget container without explicit authorization
-- Change script URLs without updating documentation
-- "Clean up" Social Wall without verifying against canonical configuration
+- Structural edits must align with canonical MD specifications under `docs/reference/design/**`.
+- If required canonical documentation is missing/outdated, open or update the relevant spec first.
+- Archived materials under `docs/archive/**` are historical context only.
 
 ---
 
-## Acceptance Checks
-- Text locks match exactly (see “Canonical strings” in process doc).
-- Visual alignment matches v6 (logo left, hamburger right, shared top offset; non-sticky header).
-- Computed styles:
-  - Weekly title color == `rgb(0, 51, 204)`
-  - `.joinBanner` background-color == `rgb(0, 51, 204)`
-- Section rhythm: `.section-gap` applied to Weekly, Join banner, Social Wall, FAQ, Milestones.
-- **Social Wall configuration matches canonical spec:**
-  - Script URL: `https://elfsightcdn.com/platform.js`
-  - Widget container class: `elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8`
-  - `data-elfsight-app-lazy` attribute present
-  - Fallback text present
-- **If PR touches Cloudflare page layout**: `/docs/as-built/cloudflare-frontend.md` is updated in the same PR
+## As-Built Documentation Requirement
+Any PR that changes Cloudflare-rendered page behavior must update `/docs/as-built/cloudflare-frontend.md` in the same PR.
+
 ---
 
-## Snapshot Review Cadence
-- Automated repository snapshots are generated daily at 07:00 UTC via GitHub Actions.
-- **Weekly Review**: Compare latest snapshot with previous week to detect drift.
-- **Pre-Deployment**: Reference snapshots before major releases to establish rollback points.
-- **Post-Incident**: After any rollback, review snapshots to identify when issues were introduced.
-- **Maintenance**: Archive or remove snapshots older than 90 days to manage repository size.
-- See `/docs/RECOVERY.md` for detailed snapshot usage and rollback procedures.
-- See `/snapshots/README.md` for snapshot structure and contents.
+## Footer Design Enforcement
+Footer behavior must remain aligned with `/docs/reference/design/LGFC-Production-Design-and-Standards.md` and `/docs/reference/design/home.md`.
+
+Required invariants:
+- Left: rotating quote + dynamic-year copyright.
+- Center: logo used as scroll-to-top affordance.
+- Right links: Privacy (`/privacy`), Terms (`/terms`), Contact (`/contact`).
+- No extra footer nav links and no footer admin shortcut.
+
+---
+
+## Social Wall Change Control
+For Social Wall changes:
+1. Validate against active design docs.
+2. Update implementation docs when behavior changes.
+3. Verify rendered behavior in preview/production.
+4. Record verification in PR notes.
+
+---
+
+## Documentation Header Compliance (Required)
+For any PR touching active docs (`docs/reference`, `docs/governance`, `docs/how-to`, `docs/explanation`, `docs/ops`, `docs/templates`):
+- Each touched markdown file must include the canonical header from `/docs/templates/markdown-header-template.md`.
+- Run `./scripts/ci/docs_check_headers.sh .` locally before opening/updating the PR.
+- If the guardrail fails, use the file-specific remediation output and apply the exact template fields.

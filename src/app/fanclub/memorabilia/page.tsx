@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import { useMemberSession } from '@/hooks/useMemberSession';
+import { buildFanclubPhotoListApiUrl } from '@/lib/fanclubApi';
 
-
-type PhotoItem = { id: number; url: string; is_memorabilia: number; description?: string | null; created_at: string };
+type PhotoItem = { id: number; url: string; description?: string | null; created_at?: string };
 
 const styles: Record<string, React.CSSProperties> = {
   main: { padding: "40px 16px", maxWidth: 1100, margin: "0 auto" },
@@ -29,7 +29,7 @@ export default function PhotosPage() {
   async function load(nextOffset: number) {
     setLoading(true);
     try {
-      const res = await fetch(`/api/fanclub/fanclub/photo/list?limit=${limit}&offset=${nextOffset}&memorabilia=1`);
+      const res = await fetch(buildFanclubPhotoListApiUrl({ limit, offset: nextOffset, memorabilia: true }));
       const data = await res.json().catch(() => ({}));
       if (res.ok && data?.ok) {
         const incoming = Array.isArray(data.items) ? data.items : [];
@@ -57,50 +57,38 @@ export default function PhotosPage() {
       <p style={{ ...styles.lead }}>
         A filtered view of the archive focused on items such as cards, programs, tickets, and collectibles.
       </p>
-      <p style={{ ...styles.p }}>
-        This starts as a simple gallery. As we tag items (year, type, source, and notes), browsing will get faster and more precise.
-        If you can help identify an item or provide a better caption/source, email the club.
-      </p>
 
-      {loading && items.length === 0 ? (
-        <p style={{ ...styles.p }}>Loading…</p>
-      ) : items.length === 0 ? (
-        <p style={{ ...styles.p }}>No memorabilia items yet. Check back soon as we continue to catalog the collection.</p>
-      ) : (
-        <>
-          <div style={{ ...styles.grid }}>
-            {items.map((p) => (
-              <div key={p.id} style={{ ...styles.card }}>
-                {p.url ? (
-                  <img src={p.url} alt={p.description || `Photo ${p.id}`} style={{ ...styles.img }} loading="lazy" />
-                ) : (
-                  <div style={{ ...styles.img, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, opacity: 0.7 }}>
-                    Image URL not configured
-                  </div>
-                )}
-                <div style={{ ...styles.cap }}>{p.description || "—"}</div>
+      <div style={{ ...styles.grid }}>
+        {items.map((p) => (
+          <div key={p.id} style={{ ...styles.card }}>
+            {p.url ? (
+              <img src={p.url} alt={p.description || `Photo ${p.id}`} style={{ ...styles.img }} />
+            ) : (
+              <div style={{ ...styles.img, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                No URL
               </div>
-            ))}
+            )}
+            <div style={{ ...styles.cap }}>{p.description || "—"}</div>
           </div>
+        ))}
+      </div>
 
-          <div style={{ ...styles.btnRow }}>
-            <button
-              style={{ ...styles.btn }}
-              disabled={loading}
-              onClick={() => {
-                const next = offset + limit;
-                setOffset(next);
-                load(next);
-              }}
-            >
-              {loading ? "Loading..." : "Load more"}
-            </button>
-            <a style={{ ...styles.btn, textDecoration: "none", display: "inline-flex", alignItems: "center" }} href="/fanclub/fanclub/photo">
-              View photos
-            </a>
-          </div>
-        </>
-      )}
+      <div style={{ ...styles.btnRow }}>
+        <button
+          style={{ ...styles.btn }}
+          disabled={loading}
+          onClick={() => {
+            const next = offset + limit;
+            setOffset(next);
+            load(next);
+          }}
+        >
+          {loading ? "Loading..." : "Load more"}
+        </button>
+        <a style={{ ...styles.btn, textDecoration: "none" }} href="/fanclub/photo">
+          View photos
+        </a>
+      </div>
     </main>
   );
 }
