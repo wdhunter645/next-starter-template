@@ -1,5 +1,5 @@
-import AuthClient from '../auth/AuthClient';
+import { redirect } from "next/navigation";
 
-export default function LoginPage(){
-  return <AuthClient defaultMode="login" />;
+export default function Page() {
+  redirect("/");
 }
