@@ -1,5 +1,3 @@
-export const FANCLUB_PHOTO_LIST_API_PATH = '/api/photos/list';
-
 export function buildFanclubPhotoListApiUrl(options?: {
   limit?: number;
   offset?: number;
@@ -7,18 +5,12 @@ export function buildFanclubPhotoListApiUrl(options?: {
 }): string {
   const params = new URLSearchParams();
 
-  if (typeof options?.limit === 'number' && Number.isFinite(options.limit)) {
-    params.set('limit', String(options.limit));
-  }
-
   if (typeof options?.offset === 'number' && Number.isFinite(options.offset)) {
-    params.set('offset', String(options.offset));
+    const page = Math.floor(options.offset / (options?.limit || 24)) + 1;
+    params.set('page', String(Math.max(1, page)));
   }
 
-  if (options?.memorabilia) {
-    params.set('memorabilia', '1');
-  }
-
+  const path = options?.memorabilia ? '/api/fanclub/memorabilia' : '/api/fanclub/photos';
   const query = params.toString();
-  return query ? `${FANCLUB_PHOTO_LIST_API_PATH}?${query}` : FANCLUB_PHOTO_LIST_API_PATH;
+  return query ? `${path}?${query}` : path;
 }

@@ -17,7 +17,6 @@ export const onRequestGet = async (context: any): Promise<Response> => {
 
   try {
     const url = new URL(request.url);
-    const eligible = String(url.searchParams.get('eligible') || '').trim().toLowerCase();
     const limit = parseLimit(url.searchParams.get('limit'));
     const offset = parseOffset(url.searchParams.get('offset'));
     const memorabilia = url.searchParams.get('memorabilia');
@@ -28,12 +27,6 @@ export const onRequestGet = async (context: any): Promise<Response> => {
 
     if (memorabilia === '1') {
       where.push('is_memorabilia = 1');
-    }
-
-    // Canonical profile avatar source: tag contains profile-avatar-eligible.
-    if (eligible === 'profile-avatar') {
-      where.push("lower(COALESCE(tags,'')) LIKE ?");
-      args.push('%profile-avatar-eligible%');
     }
 
     if (where.length) {

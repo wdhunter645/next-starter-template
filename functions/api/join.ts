@@ -98,7 +98,7 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
   const db = d1Check.db;
 
   // Step 2: Check required tables exist
-  const tablesCheck = await requireTables(db, ['join_requests', 'join_email_log']);
+  const tablesCheck = await requireTables(db, ['join_requests', 'join_email_log', 'members']);
   if (!tablesCheck.ok) {
     return jsonResponse(tablesCheck.body, tablesCheck.status);
   }
@@ -168,6 +168,11 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
 
     if (inserted) {
       // SUCCESS: first-time join (insert occurred)
+
+      // Day 1 contract: joining creates a member record.
+      try {
+        await db.prepare("INSERT OR IGNORE INTO members (email, role) VALUES (?1, 'member');").bind(email).run();
+      } catch {}
 
       // Optional: admin-managed welcome email copy.
       let welcomeIntroMd: string | undefined = undefined;

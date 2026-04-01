@@ -31,6 +31,7 @@ export const onRequestGet = async (context: any): Promise<Response> => {
     const page = parsePage(url.searchParams.get('page'));
     const offset = (page - 1) * PAGE_SIZE;
 
+    // Canonical rule: memorabilia is a tagged/filtered view of photos.
     const where: string[] = ['is_memorabilia = 1'];
     const args: any[] = [];
 
@@ -71,12 +72,33 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       title: row.title || null,
       description: row.description || null,
       tags: row.tags || null,
-      // Design field required; this schema has no library foreign key on photos.
-      library_id: null,
+    }));
+
+    // Schema-safe linkage: library_entries has no explicit photo foreign key yet.
+    const relatedLibraryRows = await auth.db
+      .prepare(
+        q
+          ? `SELECT id, title, content
+             FROM library_entries
+             WHERE lower(COALESCE(title,'')) LIKE ? OR lower(COALESCE(content,'')) LIKE ?
+             ORDER BY created_at DESC, id DESC
+             LIMIT 5`
+          : `SELECT id, title, content
+             FROM library_entries
+             ORDER BY created_at DESC, id DESC
+             LIMIT 5`
+      )
+      .bind(...(q ? [`%${q}%`, `%${q}%`] : []))
+      .all();
+
+    const related_library_entries = (relatedLibraryRows.results || []).map((row: any) => ({
+      id: row.id,
+      title: row.title || null,
+      excerpt: row.content ? String(row.content).slice(0, 160) : null,
     }));
 
     return new Response(
-      JSON.stringify({ ok: true, items, page, page_size: PAGE_SIZE, total }, null, 2),
+      JSON.stringify({ ok: true, items, related_library_entries, page, page_size: PAGE_SIZE, total }, null, 2),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (err: any) {
