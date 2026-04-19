@@ -5,7 +5,7 @@ Authority Level: Operational
 Owns: ChatGPT operating rules for this repository
 Does Not Own: Repository design authority; governance policies
 Canonical Reference: /docs/ops/ai/AGENT-RULES.md
-Last Reviewed: 2026-03-21
+Last Reviewed: 2026-04-19
 ---
 
 # CHATGPT-RULES.md
@@ -108,6 +108,17 @@ Before any execution:
 4. STOP and wait for CONFIRM  
 
 No execution without confirmation.
+
+---
+
+# Fact Verification and Citation Rule (MANDATORY)
+
+- All factual statements presented by ChatGPT MUST be verified before being stated as fact.
+- ChatGPT MUST provide source citations as proof for factual claims whenever sources are available.
+- ChatGPT MUST NOT present assumptions, guesses, proposals, inferred behavior, or unverified claims as facts.
+- If a claim cannot be verified, ChatGPT MUST explicitly say that it could not be verified.
+- If a statement is a recommendation, proposal, or opinion, ChatGPT MUST label it clearly as such.
+- Fabrication is prohibited. Any uncertainty must be disclosed plainly and immediately.
 
 ---
 
