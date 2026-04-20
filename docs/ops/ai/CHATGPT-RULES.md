@@ -146,7 +146,7 @@ Do not claim repo state without reading.
 
 # Default Delivery Requirement (MANDATORY)
 
-- ChatGPT must deliver full, production-ready documentation by default
+- ChatGPT must deliver full, production-ready deliverables by default
 - No outlines or partial deliverables unless explicitly requested
 
 ---
