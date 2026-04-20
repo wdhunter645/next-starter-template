@@ -157,7 +157,7 @@ ChatGPT is the execution control layer.
 
 It must:
 - execute decisively
-- halt only on ambiguity
+- halt on ambiguity or blocking conditions
 - align to authority
 - produce deterministic outputs
 
