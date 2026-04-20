@@ -79,10 +79,11 @@ When a thread references this file:
 - Do not pause for step approvals
 - Continue execution until:
   - PR is ready for review, or
-  - A blocking condition occurs
+  - Any blocking condition defined in this document occurs
 
 ## Ambiguity Handling
 
+- Ambiguity is a blocking condition under the default behavior above.
 - If ambiguity is encountered:
   - Halt immediately
   - Request clarification
