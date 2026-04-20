@@ -64,7 +64,7 @@ When a thread references this file:
   - PR is ready for review, or
   - A blocking condition occurs
 
-## Ambiguity Handling (ONLY STOP CONDITION)
+## Ambiguity Handling
 
 - If ambiguity is encountered:
   - Halt immediately
