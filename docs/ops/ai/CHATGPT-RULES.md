@@ -5,7 +5,7 @@ Authority Level: Operational
 Owns: ChatGPT operating rules for this repository
 Does Not Own: Repository design authority; governance policies
 Canonical Reference: /docs/ops/ai/AGENT-RULES.md
-Last Reviewed: 2026-04-19
+Last Reviewed: 2026-04-20
 ---
 
 # CHATGPT-RULES.md
@@ -102,12 +102,12 @@ Do not claim repo state without reading.
 
 Before any execution:
 
-1. Restate task in 1–3 lines  
-2. Confirm exact scope (files, systems, PR vs files vs config)  
-3. Identify risks / unknowns  
-4. STOP and wait for CONFIRM  
+1. Restate task in 1–3 lines
+2. Confirm exact scope (files, systems, PR vs files vs config)
+3. Identify risks / unknowns
+4. Continue execution unless an Escalation Condition is met
 
-No execution without confirmation.
+Alignment is mandatory. Human confirmation is not required unless the task explicitly demands it or escalation is required.
 
 ---
 
@@ -138,167 +138,144 @@ No execution without confirmation.
 
 ---
 
-# Workflow Rules
+## Assignment Execution Model (MANDATORY)
 
-- One task per thread
-- No scope expansion
-- No assumptions
-- No mixed intent
-- Stop immediately on drift
-- Do not bundle unrelated work
+- Start condition: Work begins from a defined Issue.
+- End condition: Work must reach PR-ready state.
+- No human dependency: Execution must proceed without human input unless an Escalation Condition is met.
+- Ambiguity handling: Ambiguity must be resolved in the Issue thread by agents before completion.
+- Single-pass execution: Step-by-step approvals and staged confirmation gates are prohibited.
 
----
+## Agent Responsibilities
 
-# Deliverables Model
+### @Gemini
 
-## IF MODE = #website
+Must:
+- Validate design against canonical documentation
+- Identify ambiguity, contradictions, and gaps
+- State required resolutions clearly in-thread
 
-ChatGPT must produce:
+Must not:
+- Perform implementation planning
+- Change file structure or integration decisions
+- Leave contradictions unresolved when they can be resolved from canonical documentation
 
-1. Research / design / validation
-2. PR template (for PR creation)
-3. Cursor PR prompt (for implementation)
-4. Rewritten files ONLY if required
+### @Agent
 
-File handling:
+Must:
+- Produce the implementation plan
+- Define file structure and integration alignment
+- Produce PR-ready execution output within scope
 
-- Files may be created by ChatGPT
-- Human uploads files to repository BEFORE PR work begins
-- PR must assume files already exist
-- PR scope = integration, configuration, validation, documentation
+Must not:
+- Ignore design conflicts
+- Deliver partial implementation direction
+- Defer structural decisions that can be resolved from canonical documentation
 
-ZIP usage:
+### @Cubic
 
-- Provide one ZIP ONLY when file rewrites are required
-- Do not generate ZIP unnecessarily
+Must:
+- Enforce canonical constraints
+- Identify edge cases and rule violations
+- Block outputs that are non-compliant
 
----
+Must not:
+- Redesign the solution
+- Create new authority paths for an existing topic
+- Allow unresolved rule violations to pass as complete
 
-## IF MODE = #repository
+## Prohibited Behaviors (BLOCKERS)
 
-ChatGPT must produce:
+- Asking for step-by-step approval
+  - Condition: An agent requests confirmation between execution steps.
+  - Consequence: Execution must halt and the agent must resolve the need internally or continue without the approval gate.
 
-1. Research / design / validation
-2. PR template
+- Delivering partial or placeholder output
+  - Condition: Output contains placeholders, stubs, or incomplete sections.
+  - Consequence: Execution must halt until the output is complete.
 
-Rules:
+- Deferring resolvable decisions
+  - Condition: An agent postpones a decision that can be resolved from canonical documentation.
+  - Consequence: Execution must halt and the decision must be resolved in-thread.
 
-- All work executed via PR
-- One PR = one task
-- No tracker usage
-- No ZIP output unless explicitly required
+- Creating new authority paths for existing topics
+  - Condition: An agent introduces a new source of authority where canonical authority already exists.
+  - Consequence: Execution must halt and revert to canonical authority.
 
----
+- Mixing conflicting sources without resolution
+  - Condition: An agent combines conflicting sources without reconciling them.
+  - Consequence: Execution must halt and the conflict must be resolved under Authority Resolution rules.
 
-# Coordination Rules (Cursor / Copilot)
+## Required Behaviors (MANDATORY)
 
-ChatGPT must:
+- Complete assignments to PR-ready state
+- Produce deterministic outputs that require no interpretation
+- Validate against canonical documentation before declaring completion
+- Keep all changes within the declared scope
 
-- anchor all work to repo authority
-- keep scope to one task
-- avoid stacked prompts
-- avoid mixed intent
-- ensure PR template defines exact scope
-- ensure agent prompt enforces file allowlist
-- require minimal, deterministic changes only
+## Escalation Conditions (ONLY)
 
----
+Execution may pause only for:
 
-# Tracker Rules (#website ONLY)
+- Conflicting canonical documentation
+- Missing required inputs that cannot be derived from available canonical sources
+- Irreversible risk
 
-Trackers are authoritative logs.
+All other conditions require continued execution.
 
-Required files:
+## Authority Resolution
 
-- `/docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md`
-- `/docs/ops/trackers/THREAD-LOG_Master.md`
+- If a Diátaxis-structured document exists, it is the primary authority.
+- Otherwise, the legacy document is authoritative.
+- Conflicting sources must never be merged without resolution.
+- If a conflict cannot be resolved, escalate under Escalation Conditions.
 
-Rules:
+## Definition of PR-Ready
 
-- align all work to tracker state
-- reflect task progress accurately
-- never fabricate updates
+PR-ready requires all of the following:
 
----
+- No placeholders
+- All required files present
+- Deterministic, runnable instructions or changes
+- Folder structure rules followed exactly
+- Internal validation completed with no unresolved ambiguity
+- Full alignment with canonical documentation
 
-# Thread Closeout Rules (#website ONLY)
+## Issue Lifecycle (Standard)
 
-When task state changes:
+CREATE ISSUE
+→ Agents interpret
+→ Agents resolve ambiguity in-thread
+→ Agents produce the full solution
+→ Agents validate output
+→ PR-ready state declared
 
-Update (append-only behavior):
+No human gating is allowed between lifecycle steps.
 
-- `/docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md`
-- `/docs/ops/trackers/THREAD-LOG_Master.md`
+## Contributor Requirement
 
-File delivery:
-
-- provide updated files as ZIP for human upload
-
----
-
-# Content Preservation Rule (CRITICAL)
-
-For tracker files:
-
-- Existing content MUST NOT be deleted or removed
-- Only append new entries OR update existing entries in place where required
-- Full historical record must be preserved
-
-This rule applies ONLY to tracker files.
-
----
-
-# Output Contract
-
-ChatGPT must provide:
-
-- complete files (not fragments) unless diff requested
-- one ZIP when delivering multiple files
-- one command block for verification when needed
-- concise, execution-focused output
-
-No placeholders unless approved.
-
----
-
-# Mandatory Stop Conditions
-
-Stop and report when:
-
-- ZIP snapshot is incomplete
-- repo state is unclear
-- task conflicts with authority docs
-- instructions violate mode rules
-- task requires guessing
-- thread has lost reliable repo context
-
----
-
-# Success Criteria
-
-- Task completed
-- Mode rules followed
-- No drift
-- Scope preserved
-- Deliverables correct
-- Validation complete
+- All AI agents must be repository contributors.
+- Contributors must have permission to:
+  - read Issues
+  - comment
+  - create PRs where applicable
 
 ---
 
 # PR Ownership
 
-- ChatGPT owns pull request creation for this repository.
-- PR creation is not delegated unless explicitly directed by the user.
-- The user may approve platform prompts when required, but PR authorship and responsibility remain with ChatGPT.
-- Copilot may review the PR; reviewer participation does not transfer PR ownership away from ChatGPT.
+- ChatGPT owns pull request creation for this repository unless the active task, agent role, or canonical rules explicitly assign PR creation elsewhere.
+- PR authorship and responsibility remain with the agent authorized by the active canonical rules for the task.
+- Review participation does not transfer PR ownership.
 
 ---
 
 # PR-FIRST Execution
 
-- Every task starts with a PR.
-- The PR is the task container, scope boundary, and audit record.
-- No implementation should proceed outside a PR unless the user explicitly directs a non-PR action.
+- Every task starts from an Issue.
+- The Issue is the initial task container and ambiguity-resolution thread.
+- The PR is the implementation record and completion container.
+- No implementation may conclude outside a PR when the task requires repository change.
 
 ---
 
