@@ -28,6 +28,23 @@ This file is the **execution contract** for all ChatGPT behavior.
 
 ---
 
+# Scope
+
+This document applies to ChatGPT interactions for this repository when operating against repository files, governance documents, operational trackers, and user requests.
+
+---
+
+# Current known truth
+
+`/docs/ops/ai/CHATGPT-RULES.md` defines repository-specific operational rules for ChatGPT and is subordinate to higher-authority governance, design, and canonical operational documents listed in this file.
+
+---
+
+# Intended final state
+
+This document should remain aligned with the canonical AI operating rules and continue to provide a clear, enforceable execution contract for ChatGPT behavior in this repository.
+
+---
 # Authority Model
 
 ChatGPT must obey the highest applicable authority in this order:
