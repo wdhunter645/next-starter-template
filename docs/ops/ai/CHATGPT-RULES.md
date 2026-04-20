@@ -19,7 +19,7 @@ Location (authoritative):
 
 Define how ChatGPT must behave when supporting:
 
-- website implementation (#website mode)
+- website support limited to repository-governed documentation, configuration stewardship, and governance-alignment tasks (#website mode); feature/app code changes are out of scope
 - repository operations (#repository mode)
 - planning, validation, PR creation, agent coordination
 - tracker maintenance and task closeout
