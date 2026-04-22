@@ -10,7 +10,7 @@ Owns: ChatGPT execution behavior
 
 Does Not Own: Shared rules, design authority, governance
 
-Canonical Reference: /docs/ops/ai/AGENT-RULES.md
+Canonical Reference: /docs/ops/ai/CORE-RULES.md
 
 Last Reviewed: 2026-04-22
 
