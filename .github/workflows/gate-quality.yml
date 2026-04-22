@@ -2,6 +2,7 @@ name: GATE — Quality Checks
 
 on:
   pull_request:
+  push:
   workflow_dispatch: {}
 
 jobs:
@@ -24,6 +25,9 @@ jobs:
 
       - name: Check repo structure
         run: npm run check:structure
+
+      - name: Enforce backend reference guard
+        run: bash scripts/ci/no_"supa""base"_guard.sh
 
       - name: Typecheck
         run: npm run typecheck
