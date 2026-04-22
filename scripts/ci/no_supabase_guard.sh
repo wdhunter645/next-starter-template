@@ -20,7 +20,5 @@ else
     exit 1
   fi
 fi
-  exit 1
-fi
 
 echo "PASS: no ${needle} references"
