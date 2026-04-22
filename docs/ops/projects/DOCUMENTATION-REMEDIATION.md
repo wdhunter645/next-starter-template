@@ -106,7 +106,7 @@ A → B → C → D
 - A — Architecture Purge → PR #703 (MERGED 2026-03-26)
   - Note: Ticket merged, but archive/stub authority enforcement remained incomplete and is still implementation-pending.
 - C — Auth Model (LOCKED) → PR #707 (MERGED 2026-03-26)
-  - Note: Ticket merged, but active design docs still contained stale auth-language and required implementation follow-through.
+  - Note: Ticket merged, but active design docs still contained stale auth language and required implementation follow-through.
 
 ### In Progress (Open PRs)
 - B — Canonical Authority Lock → PR #705 (OPEN)
