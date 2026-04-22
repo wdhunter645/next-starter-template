@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: Canonical authentication and redirect behavior definitions
 Does Not Own: Join/Login UI composition; FanClub content layout; admin feature requirements
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Last Reviewed: 2026-03-27
+Last Reviewed: 2026-04-22
 ---
 
 # Authentication Model (Canonical Auth Source)
@@ -16,13 +16,13 @@ Canonical auth reference: /docs/reference/design/auth-model.md
 
 ## Day 1 Canonical Model (LOCKED)
 
-LGFC Day 1 member access uses a **cookie-backed server session model**.
+LGFC Day 1 member access uses a **cookie-backed server session model** with **Cloudflare D1 as the only database**.
 
 ### Session
 - Cookie name: `lgfc_session`
 - Session store: D1 table `member_sessions`
 - Session lookup endpoint: `/api/session/me`
-- Member identity and role source: D1 `members`
+- Member identity and role source: D1 table `members`
 
 ### Behavior
 - Login creates session + cookie, then redirects to `/fanclub`
@@ -44,9 +44,10 @@ LGFC Day 1 member access uses a **cookie-backed server session model**.
 ## Prohibited in Active Docs
 
 - localStorage as the auth source of truth
-- Supabase Auth
+- external auth providers
 - magic-link auth
 - ADMIN_EMAILS as the primary auth gate
+- magic-link auth
 - hybrid cookie + localStorage auth narratives
 
 ## Governance / Enforcement

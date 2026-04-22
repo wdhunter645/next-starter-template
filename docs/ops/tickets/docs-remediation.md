@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: Documentation remediation execution scope (workstreams A and B)
 Does Not Own: Design authority; product specs; CI configuration
 Canonical Reference: /docs/ops/OPERATING_MANUAL.md
-Last Reviewed: 2026-03-26
+Last Reviewed: 2026-04-22
 ---
 
 # Documentation Remediation Ticket (A+B)
@@ -14,7 +14,7 @@ Last Reviewed: 2026-03-26
 Execute documentation remediation workstreams A and B:
 
 1. Fix `docs/as-built/cloudflare-frontend.md` — correct FanClub logo link per canonical design
-2. Fix `docs/reference/design/dashboard.md` — remove Supabase/Vercel references, align to D1
+2. Fix `docs/reference/design/dashboard.md` — remove legacy external platform references, align to Cloudflare D1
 3. Align all architecture references to Cloudflare D1 + Backblaze B2
 4. Add required headers to docs missing them (CI compliance)
 
