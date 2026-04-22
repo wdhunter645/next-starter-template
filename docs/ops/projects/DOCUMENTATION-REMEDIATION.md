@@ -43,6 +43,8 @@ Status: BLOCKER (launch impact)
 - Archive cms.md, dashboard.md
 - Move to /docs/archive/legacy-architecture/
 - Add banner: ARCHIVED
+- Before any purge, update active stubs and internal references to current canonical sources
+- If any active docs still point to archived paths, keep the archived files until those references are removed
 
 ### B — Canonical Authority Lock
 - LGFC-Production-Design-and-Standards.md = source of truth
