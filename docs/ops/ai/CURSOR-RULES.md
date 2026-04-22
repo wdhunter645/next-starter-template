@@ -1,161 +1,105 @@
 ---
 Doc Type: Operational Rules
 Audience: AI (Cursor)
-Authority Level: Operational
-Owns: Cursor AI execution discipline for this repository
-Does Not Own: Repository design authority; governance policies
-Canonical Reference: /docs/ops/ai/AGENT-RULES.md
-Last Reviewed: 2026-03-15
+Authority Level: Agent-Specific
+Owns: Cursor execution behavior
+Does Not Own: Shared rules, design authority, governance
+Canonical Reference: /docs/ops/ai/CORE-RULES.md
+Last Reviewed: 2026-04-22
 ---
 
 # CURSOR-RULES.md
 
-Location (authoritative):  
-`/docs/ops/ai/CURSOR-RULES.md`
-
-Purpose:
-
-Execution discipline for Cursor AI when working with this repository.
+Purpose: Defines Cursor-specific execution behavior.
 
 ---
 
-# Authority Model
+# THREAD DISCIPLINE
 
-Cursor must obey the highest applicable authority in this order:
-
-1. locked design / platform / governance documents
-2. operational trackers
-3. `/docs/ops/ai/AGENT-RULES.md`
-4. `/Agent.md`
-5. `/docs/ops/ai/CURSOR-RULES.md`
-6. current approved task prompt
-
-If a lower-level instruction conflicts with a higher-level authority, Cursor must stop and follow the higher-level authority.
+- One task → one Cursor thread  
+- Never reuse threads  
+- No stacked prompts  
 
 ---
 
-# Core Execution Rule
+# ANALYSIS-FIRST RULE
 
-One task → one thread → one prompt → one deliverable.
+All work begins in analysis mode.
 
-Never reuse Cursor threads for implementation work.
+Cursor MUST:
 
----
+- propose plan or diff first  
+- NOT edit files  
+- NOT run commands  
+- NOT create branches  
+- NOT commit  
 
-# Required Context Before Execution
-
-Before editing files, Cursor must read:
-
-- `/Agent.md`
-- `/docs/ops/ai/AGENT-RULES.md`
-- `/docs/ops/ai/CURSOR-RULES.md`
-- task-relevant tracker entries
-- task-relevant design / governance docs named in the prompt
-
-Cursor must work from repository authority plus the current approved task prompt.  
-It must not fill gaps with assumptions.
+Stop and wait for approval before execution.
 
 ---
 
-# Analysis-First Rule
+# EXECUTION ROLE
 
-Implementation tasks must begin with analysis / diff mode.
+Cursor performs:
 
-Cursor must first produce a proposed change plan or proposed diffs only.
+- code changes  
+- file updates  
+- implementation work  
 
-During analysis phase Cursor must not:
+Cursor does NOT:
 
-- edit files
-- run build or git commands
-- create branches
-- commit changes
-- open PRs
-
-Stop after analysis and wait for approval when the task requires review before execution.
+- design solutions  
+- define scope  
+- expand tasks  
 
 ---
 
-# Approved Execution Phase
+# APPROVED EXECUTION
 
 After approval, Cursor may:
 
-- edit only the approved files
-- run only the commands needed for the approved task
-- create a branch only if instructed
-- open a PR only if instructed
-- produce verification evidence tied to the accepted scope
-
-Execution must match the reviewed plan.
-
-If new work is discovered, stop and report it separately.
+- edit ONLY approved files  
+- run ONLY required commands  
+- create branch ONLY if instructed  
+- open PR ONLY if instructed  
 
 ---
 
-# File and Scope Control
+# SCOPE CONTROL
 
-Cursor must not:
+Cursor must NOT:
 
-- create duplicate governance files
-- invent new canonical filenames
-- create variant files when an existing canonical file should be updated
-- rename, relocate, or split authority files unless explicitly instructed
-- edit unrelated files for convenience
-- mix multiple intents in one deliverable
+- modify files outside approved scope  
+- fix unrelated issues  
+- introduce new patterns  
+- expand task intent  
 
-If documentation updates are required, touch only the approved canonical files for that task.
+If new work is discovered → STOP and report.
 
 ---
 
-# Tracker Update Rule
+# VALIDATION REQUIREMENT
 
-If a task explicitly requires tracker updates, Cursor may touch only the approved tracker files:
+Before completion, Cursor must confirm:
 
-- `/docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md`
-- `/docs/ops/trackers/THREAD-LOG_Master.md`
-
-Tracker edits must preserve historical content unless the task explicitly authorizes reconstruction work.
-
----
-
-# Commit / PR Discipline
-
-Cursor must not:
-
-- commit before approved edits are complete
-- create cleanup commits outside task scope
-- open mixed-intent PRs
-- bypass label / allowlist / governance expectations defined by the repo
-
-One PR should map to one task intent and one allowed file-touch pattern.
+- only approved files changed  
+- no scope expansion occurred  
+- no duplicate files created  
 
 ---
 
-# Prohibited Behavior
+# STOP CONDITIONS (CURSOR-SPECIFIC)
 
-Cursor must not:
+Stop if:
 
-- stack prompts in the same thread
-- silently fix unrelated issues
-- modify package or config files unless the task explicitly requires it
-- rewrite docs outside scope
-- create alternative rule files because naming seems preferable
-- continue execution through ambiguity
+- no approval received after analysis  
+- scope unclear  
+- file allowlist missing  
+- instructions conflict  
 
 ---
 
-# Post-Task Review Checklist
+# FINAL
 
-Before considering a deliverable complete, Cursor must verify:
-
-1. only approved files changed
-2. no duplicate authority file was created
-3. no mixed intent was introduced
-4. required docs updates were included if the task required them
-5. the deliverable is ready for human review
-
----
-
-# Final Rule
-
-Cursor is the scoped execution engine.  
-It must stay inside the approved lane and stop at the lane boundary.
+Cursor is the execution engine.  
+It operates only within approved scope and stops at boundaries.
