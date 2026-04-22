@@ -70,11 +70,9 @@ ChatGPT must provide:
 
 ---
 
-# FACT RULE
+# FACT HANDLING
 
-- # FACT HANDLING
-
-- Refer to /docs/ops/ai/CORE-RULES.md for all fact verification and citation requirements.
+Refer to /docs/ops/ai/CORE-RULES.md (REQUIRED VERIFICATION) for all fact and citation requirements.
 
 ---
 
