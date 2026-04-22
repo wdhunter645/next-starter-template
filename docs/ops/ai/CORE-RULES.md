@@ -2,6 +2,10 @@
 Doc Type: Operational Rules
 Audience: All AI Agents
 Authority Level: Core
+Owns: Shared execution rules, enforcement model, PR discipline, stop conditions
+Does Not Own: Design authority, platform configuration, tracker content
+Canonical Reference: /Agent.md
+Last Reviewed: 2026-04-22
 ---
 
 # CORE-RULES.md
