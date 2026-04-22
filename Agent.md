@@ -1,102 +1,57 @@
 # Agent.md
 
-Repository: next-starter-template  
-Purpose: Primary repository entry point for AI agents operating in this repo.  
-Status: Active control file.  
+Purpose: Entry point and navigation file for all AI agents.
 
 ---
 
-## Required Read Order
+## REQUIRED READ ORDER
 
-1. `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
-2. `/docs/reference/design/fanclub.md`
-3. `/docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md`
-4. `/docs/ops/trackers/THREAD-LOG_Master.md`
-5. `/docs/ops/ai/AGENT-RULES.md`
+1. /docs/reference/design/LGFC-Production-Design-and-Standards.md
+2. /docs/reference/design/fanclub.md
+3. /docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md
+4. /docs/ops/trackers/THREAD-LOG_Master.md
+5. /docs/ops/ai/CORE-RULES.md
 6. Agent-specific rules:
-   - `/docs/ops/ai/CHATGPT-RULES.md`
-   - `/docs/ops/ai/CURSOR-RULES.md`
-   - `/docs/ops/ai/COPILOT-RULES.md`
-   - `/docs/ops/ai/DEVIN-RULES.md`
-     
-If conflict exists, the higher-authority file wins.
+   - /docs/ops/ai/CHATGPT-RULES.md
+   - /docs/ops/ai/CURSOR-RULES.md
+   - /docs/ops/ai/COPILOT-RULES.md
+   - /docs/ops/ai/DEVIN-RULES.md
 
 ---
 
-## Authority Hierarchy
+## AUTHORITY HIERARCHY (SINGLE SOURCE)
 
-1. Locked design / platform / governance authority docs
-2. Operational tracker docs
-3. `/docs/ops/ai/AGENT-RULES.md`
-4. `/Agent.md`
-5. Agent-specific rules
-6. Task prompt / session instructions
+1. Locked design / platform / governance documents  
+2. Operational trackers  
+3. /docs/ops/ai/CORE-RULES.md  
+4. Agent-specific rules  
+5. Task prompt  
 
-Prompts do not override repository authority.
-
----
-
-## Core Operating Model
-
-- One task = one thread = one deliverable.
-- One PR = one intent label.
-- No mixed-intent changes.
-- No duplicate governance files.
-- No speculative “cleanup” or convenience edits.
-- If a canonical file already exists, update it instead of creating a variant.
+If conflict exists → follow highest authority.
 
 ---
 
-## Mandatory Stop Conditions
+## EXECUTION MODEL (HIGH LEVEL)
 
-Stop immediately and report if any of the following occur:
-
-- task instructions conflict with locked design or governance docs
-- repository state is unclear or cannot be verified
-- multiple valid interpretations exist
-- a requested change would create a second source of truth
-- task scope expands beyond the approved objective
-
-Do not improvise around conflicts.
+- One task → one thread → one deliverable  
+- One task → one PR  
+- No mixed intent  
+- No scope expansion  
 
 ---
 
-## Agent-Specific Rules Registry
+## STOP CONDITIONS (REFERENCE)
 
-All AI agents must read their agent-specific rules file before making changes or opening a PR.
+Full definitions: `/docs/ops/ai/CORE-RULES.md`
 
-Approved agent rule files:
-- `/docs/ops/ai/CHATGPT-RULES.md`
-- `/docs/ops/ai/CURSOR-RULES.md`
-- `/docs/ops/ai/COPILOT-RULES.md`
-- `/docs/ops/ai/DEVIN-RULES.md`
-
-If an agent-specific rules file exists for the active agent, that file is mandatory reading.
-
-If no agent-specific rules file exists, the agent must stop and report the missing rule file before proceeding.
-
-Agent-specific rules are subordinate to:
-1. locked design / platform / governance authority docs
-2. operational tracker docs
-3. `/docs/ops/ai/AGENT-RULES.md`
-4. `/Agent.md`
-
-Task prompts do not override repository authority or agent-specific rules.
+- Conflict with authority  
+- Ambiguity  
+- Unverified repo state  
+- Scope expansion  
 
 ---
 
-## ZIP Safety
+## FINAL
 
-If a ZIP file exists in the repository root during implementation or PR work:
-
-1. delete the ZIP first
-2. do not commit it
-3. include ZIP removal in acceptance criteria when relevant
-
----
-
-## Execution Principle
-
-AI agents are disciplined engineering resources for this repository.
-
-The objective is stable, design-aligned, reproducible implementation with minimal, reviewable changes.
+This file is navigation only.  
+All rules are defined in CORE-RULES.md.
