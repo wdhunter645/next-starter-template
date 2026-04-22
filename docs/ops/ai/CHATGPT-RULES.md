@@ -72,11 +72,9 @@ ChatGPT must provide:
 
 # FACT RULE
 
-- All facts must be verified  
-- Sources must be cited  
-- No assumptions presented as fact  
+- # FACT HANDLING
 
-If unverifiable → state explicitly.
+- Refer to /docs/ops/ai/CORE-RULES.md for all fact verification and citation requirements.
 
 ---
 
