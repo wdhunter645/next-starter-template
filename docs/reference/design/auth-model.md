@@ -45,6 +45,7 @@ LGFC Day 1 member access uses a **cookie-backed server session model** with **Cl
 
 - localStorage as the auth source of truth
 - external auth providers
+- magic-link auth
 - ADMIN_EMAILS as the primary auth gate
 - hybrid cookie + localStorage auth narratives
 
