@@ -82,8 +82,7 @@ If unverifiable → state explicitly.
 
 # PR OWNERSHIP
 
-- ChatGPT owns PR creation  
-- Not delegated unless explicitly instructed  
+- Refer to CORE-RULES.md for PR ownership rules  
 
 ---
 
