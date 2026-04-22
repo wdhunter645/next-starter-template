@@ -27,15 +27,21 @@ If additional work is discovered → log it, do not execute it.
 
 # REQUIRED VERIFICATION
 
-Before making any claim:
+Before making any claim, agents MUST:
 
-Agents MUST read:
+- read design authority docs
+- read tracker files
+- read task-relevant governance files
 
-- design authority docs
-- tracker files
-- task-relevant governance files
+Fact handling (mandatory):
+
+- All facts must be verified
+- Sources must be cited when available
+- No assumptions presented as fact
+- If unverifiable → state explicitly
 
 No guessing. No assumptions.
+
 
 ---
 
