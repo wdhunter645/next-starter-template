@@ -1,3 +1,13 @@
+---
+Doc Type: Entry / Control File
+Audience: Human + AI
+Authority Level: Navigation
+Owns: Read order, authority hierarchy, execution entry point
+Does Not Own: Execution rules, design authority, governance policies
+Canonical Reference: /docs/ops/ai/CORE-RULES.md
+Last Reviewed: 2026-04-22
+---
+
 # Agent.md
 
 Purpose: Entry point and navigation file for all AI agents.
