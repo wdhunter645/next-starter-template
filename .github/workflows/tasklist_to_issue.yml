@@ -1,0 +1,99 @@
+name: LGFC Orchestrator - tasklist_to_issue
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - active_tasklist.md
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  tasklist-to-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Bootstrap required orchestrator labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const labels = JSON.parse(fs.readFileSync('.github/lgfc-orchestrator-labels.json', 'utf8')).labels;
+            for (const label of labels) {
+              try {
+                await github.rest.issues.getLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                });
+              } catch (error) {
+                if (error.status === 404) {
+                  await github.rest.issues.createLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: label.name,
+                    color: label.color,
+                    description: label.description,
+                  });
+                } else {
+                  throw error;
+                }
+              }
+            }
+
+      - name: Convert active tasklist entries into queued Issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const tasklist = fs.readFileSync('active_tasklist.md', 'utf8');
+            const lines = tasklist.split('\n');
+            const queued = [];
+            const re = /^\s*-\s*\[\s\]\s*\[(website|repository|governance|docs|ci|recovery)\]\s+(.+?)\s*$/i;
+
+            for (const line of lines) {
+              const match = line.match(re);
+              if (!match) continue;
+              queued.push({
+                type: match[1].toLowerCase(),
+                title: match[2].trim(),
+              });
+            }
+
+            for (const task of queued) {
+              const searchQuery = `repo:${context.repo.owner}/${context.repo.repo} is:issue is:open in:title "${task.title}" label:"status:queued"`;
+              const existing = await github.rest.search.issuesAndPullRequests({
+                q: searchQuery,
+                per_page: 1,
+              });
+              if ((existing.data.items || []).length > 0) {
+                continue;
+              }
+
+              const builder = task.type === 'website' ? 'cursor' : 'codex';
+              const body = [
+                '<!-- lgfc-task-origin:active_tasklist -->',
+                `Objective: ${task.title}`,
+                '',
+                'Scope:',
+                '- Implement exactly one objective in one Issue and one PR.',
+                '',
+                'Out of Scope:',
+                '- Any scope not explicitly declared in this Issue.',
+                '',
+                'Design Authority:',
+                '- LGFC Orchestrator Setup — Design Spec (sections 1-19).',
+              ].join('\n');
+
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: task.title,
+                body,
+                labels: [`status:queued`, `type:${task.type}`, `builder:${builder}`],
+              });
+            }

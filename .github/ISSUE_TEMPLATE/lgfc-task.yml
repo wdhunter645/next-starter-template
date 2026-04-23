@@ -1,0 +1,117 @@
+name: LGFC Orchestrator Task
+description: Canonical task contract for LGFC orchestrated execution
+title: "[LGFC Task] "
+labels:
+  - status:queued
+body:
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+      description: State the one objective this issue will implement.
+      placeholder: Implement...
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: Define exact in-scope work items.
+      placeholder: "- ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Out of Scope
+      description: Declare what is explicitly excluded.
+      placeholder: "- ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: files_allowed
+    attributes:
+      label: Files Allowed
+      description: Restrict files this task may touch.
+      value: |
+        .github/ISSUE_TEMPLATE/*
+        .github/workflows/*
+        .github/pull_request_template.md
+        .github/*.json
+        .github/*.yml
+        scripts/*
+        docs/ops/*
+        docs/governance/*
+        docs/reference/*
+        active_tasklist.md
+    validations:
+      required: true
+
+  - type: textarea
+    id: design_authority
+    attributes:
+      label: Design Authority
+      description: Reference the approved design authority used for implementation.
+      placeholder: LGFC Orchestrator Setup — Design Spec (sections 1-19)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: builder_assignment
+    attributes:
+      label: Builder Assignment
+      description: Select the assigned builder.
+      options:
+        - builder:cursor
+        - builder:codex
+        - builder:copilot
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation_requirements
+    attributes:
+      label: Implementation Requirements
+      description: Define constraints and required implementation behavior.
+      placeholder: "- ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: validation_requirements
+    attributes:
+      label: Validation Requirements
+      description: Define required checks and evidence.
+      placeholder: "- ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Define objective pass/fail criteria.
+      placeholder: "- [ ] ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: completion_definition
+    attributes:
+      label: Completion Definition
+      description: Define exact done condition.
+      placeholder: "- ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: failure_handling
+    attributes:
+      label: Failure Handling
+      description: Define failure and recovery handling.
+      placeholder: "- ..."
+    validations:
+      required: true
