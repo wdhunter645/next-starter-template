@@ -1,0 +1,22 @@
+{
+  "labels": [
+    { "name": "status:queued", "color": "1D76DB", "description": "Queued and waiting for orchestration dispatch" },
+    { "name": "status:assigned", "color": "0052CC", "description": "Assigned to a builder by orchestrator" },
+    { "name": "status:in-progress", "color": "5319E7", "description": "Builder acknowledged and is actively working" },
+    { "name": "status:pr-open", "color": "0E8A16", "description": "Linked PR has been opened" },
+    { "name": "status:validation", "color": "FBCA04", "description": "Validation gate is currently passing" },
+    { "name": "status:blocked", "color": "D4C5F9", "description": "Work is blocked and queue progression is halted" },
+    { "name": "status:failed", "color": "B60205", "description": "Work failed and requires remediation before advancing queue" },
+    { "name": "status:post-merge-verify", "color": "F9D0C4", "description": "Merged and awaiting post-merge verification" },
+    { "name": "status:complete", "color": "0E8A16", "description": "Completed and verified" },
+    { "name": "type:website", "color": "C2E0C6", "description": "Website/UI/app/client-side task lane" },
+    { "name": "type:repository", "color": "BFD4F2", "description": "Repository/workflow/CI/docs/governance lane" },
+    { "name": "type:governance", "color": "D4C5F9", "description": "Governance-specific task lane" },
+    { "name": "type:docs", "color": "0075CA", "description": "Documentation-specific task lane" },
+    { "name": "type:ci", "color": "0E8A16", "description": "CI and automation task lane" },
+    { "name": "type:recovery", "color": "D93F0B", "description": "Recovery/remediation task lane" },
+    { "name": "builder:cursor", "color": "0366D6", "description": "Assigned to Cursor website builder" },
+    { "name": "builder:codex", "color": "6F42C1", "description": "Assigned to Codex repository builder" },
+    { "name": "builder:copilot", "color": "24292F", "description": "Assigned to Copilot coordinator" }
+  ]
+}

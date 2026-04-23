@@ -1,0 +1,89 @@
+name: LGFC Orchestrator - issue_dispatch
+
+on:
+  workflow_dispatch:
+  issues:
+    types: [opened, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign next eligible queued issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const statusLabels = [
+              'status:assigned',
+              'status:in-progress',
+              'status:pr-open',
+              'status:validation',
+              'status:blocked',
+              'status:failed',
+              'status:post-merge-verify'
+            ];
+
+            const activeIssues = [];
+            for (const statusLabel of statusLabels) {
+              const issues = await github.paginate(github.rest.issues.listForRepo, {
+                owner,
+                repo,
+                state: 'open',
+                labels: statusLabel,
+                per_page: 100
+              });
+              for (const issue of issues) {
+                if (!issue.pull_request) activeIssues.push(issue);
+              }
+            }
+
+            if (activeIssues.length > 0) {
+              core.info(`Serial queue enforced. Active issue count: ${activeIssues.length}`);
+              return;
+            }
+
+            const queuedIssues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: 'open',
+              labels: 'status:queued',
+              per_page: 100
+            });
+            const queued = queuedIssues.filter(i => !i.pull_request).sort((a, b) =>
+              new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+            );
+
+            if (queued.length === 0) {
+              core.info('No queued issue to dispatch.');
+              return;
+            }
+
+            const issue = queued[0];
+            const labels = (issue.labels || []).map(l => l.name);
+            const nonStatus = labels.filter(name => !name.startsWith('status:'));
+            const builderFromType = labels.includes('type:website') ? 'builder:cursor' : 'builder:codex';
+            const builder = labels.find(name => name.startsWith('builder:')) || builderFromType;
+
+            await github.rest.issues.setLabels({
+              owner,
+              repo,
+              issue_number: issue.number,
+              labels: [...nonStatus.filter(name => !name.startsWith('builder:')), builder, 'status:assigned']
+            });
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: issue.number,
+              body: [
+                'LGFC Orchestrator: assignment started.',
+                `Assigned builder: \`${builder}\``,
+                'LGFC Orchestrator: builder accepted task.'
+              ].join('\n')
+            });
