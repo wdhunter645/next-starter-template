@@ -51,73 +51,6 @@ function uniqueEventMonths(items: EventRow[]): Array<{ y: number; m: number }> {
   return out;
 }
 
-function buildFallbackForMonth(year: number, month0: number): EventRow[] {
-  const last = new Date(year, month0 + 1, 0).getDate();
-  const clamp = (day: number) => Math.max(1, Math.min(day, last));
-  const days = [clamp(4), clamp(9), clamp(12), clamp(17), clamp(22), clamp(27)];
-  const templates: Omit<EventRow, 'id' | 'start_date'>[] = [
-    {
-      title: 'Spring Training Watch Party',
-      description: 'Stream together, trivia between innings, and quick club updates.',
-      location: 'LGFC virtual room',
-      host: 'Events committee',
-      fees: null,
-      end_date: null,
-      external_url: null,
-    },
-    {
-      title: 'New Member Coffee',
-      description: 'How dues work, Fan Club perks, and volunteer openings for the season.',
-      location: 'Community session (online)',
-      host: 'Membership',
-      fees: 'Free',
-      end_date: null,
-      external_url: null,
-    },
-    {
-      title: 'ALS Community Ally Briefing',
-      description: 'How the club supports ALS partners and where donations and volunteers go.',
-      location: 'Zoom',
-      host: 'Partnerships',
-      fees: null,
-      end_date: null,
-      external_url: null,
-    },
-    {
-      title: 'Stadium Meet-Up (home series)',
-      description: 'Gate meet-up, photo near Lou markers, optional group seats when available.',
-      location: 'Bronx / stadium vicinity',
-      host: 'Gameday volunteers',
-      fees: 'BYO ticket',
-      end_date: null,
-      external_url: null,
-    },
-    {
-      title: 'Rookie Card & Memorabilia Share',
-      description: 'Bring one item to show—stories and light trading, no high-pressure dealing.',
-      location: 'LGFC virtual room',
-      host: 'History circle',
-      fees: null,
-      end_date: null,
-      external_url: null,
-    },
-    {
-      title: 'Lou Gehrig Day Reflection',
-      description: 'Brief club moment, historic reading, and a snapshot of ongoing fundraising.',
-      location: 'In person + stream',
-      host: 'Board',
-      fees: null,
-      end_date: null,
-      external_url: null,
-    },
-  ];
-  const ids = [-501, -502, -503, -504, -505, -506];
-  return days.map((day, i) => ({
-    id: ids[i],
-    start_date: ymdKey(year, month0, day),
-    ...templates[i],
-  }));
-}
 
 function calendarCells(year: number, month0: number): Array<{ key: string; dayNum: number; inMonth: boolean }> {
   const first = new Date(year, month0, 1);
@@ -163,7 +96,6 @@ function firstDayKeyInMonth(byDay: Map<string, EventRow[]>, y: number, m: number
 export default function CalendarSection() {
   const [items, setItems] = useState<EventRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usingFallback, setUsingFallback] = useState(false);
   const [notice, setNotice] = useState('');
   const [eventMonths, setEventMonths] = useState<Array<{ y: number; m: number }>>([]);
   const [monthIndex, setMonthIndex] = useState(0);
@@ -234,14 +166,13 @@ export default function CalendarSection() {
   useEffect(() => {
     let alive = true;
 
-    const finishFallback = (y: number, m0: number, message: string) => {
-      const fallback = buildFallbackForMonth(y, m0);
-      setItems(fallback);
-      setUsingFallback(true);
+    const finishEmpty = (message: string) => {
+      const now = new Date();
+      setItems([]);
       setNotice(message);
-      setEventMonths([{ y, m: m0 }]);
+      setEventMonths([{ y: now.getFullYear(), m: now.getMonth() }]);
       setMonthIndex(0);
-      setSelectedKey(fallback[0]?.start_date ?? null);
+      setSelectedKey(null);
       setLoading(false);
     };
 
@@ -252,23 +183,13 @@ export default function CalendarSection() {
         if (!alive) return;
 
         if (!res.ok || !data?.ok) {
-          const now = new Date();
-          finishFallback(
-            now.getFullYear(),
-            now.getMonth(),
-            'Live schedule is temporarily unavailable. Showing typical club programming for this month.'
-          );
+          finishEmpty('Live schedule is temporarily unavailable. Check back soon.');
           return;
         }
 
         const rows: EventRow[] = Array.isArray(data.items) ? data.items : [];
         if (rows.length === 0) {
-          const now = new Date();
-          finishFallback(
-            now.getFullYear(),
-            now.getMonth(),
-            'No posted events yet for the weeks ahead. Here is a preview of regular club programming.'
-          );
+          finishEmpty('No posted events yet for the weeks ahead. Check back soon.');
           return;
         }
 
@@ -304,19 +225,13 @@ export default function CalendarSection() {
           null;
 
         setItems(rows);
-        setUsingFallback(false);
         setNotice('');
         setEventMonths(monthsToUse);
         setMonthIndex(indexToUse);
         setSelectedKey(firstSelected);
       } catch {
         if (!alive) return;
-        const now = new Date();
-        finishFallback(
-          now.getFullYear(),
-          now.getMonth(),
-          'Live schedule is temporarily unavailable. Showing typical club programming for this month.'
-        );
+        finishEmpty('Live schedule is temporarily unavailable. Check back soon.');
       } finally {
         if (alive) setLoading(false);
       }
@@ -413,11 +328,7 @@ export default function CalendarSection() {
                 })}
               </div>
 
-              {!usingFallback ? (
-                <p className={styles.hint}>Days with a dot have posted events. Select a day for details.</p>
-              ) : (
-                <p className={styles.hint}>Sample programming layout—dates refresh when the live calendar returns.</p>
-              )}
+              <p className={styles.hint}>Days with a dot have posted events. Select a day for details.</p>
             </div>
 
             <aside className={styles.details} aria-live="polite">
