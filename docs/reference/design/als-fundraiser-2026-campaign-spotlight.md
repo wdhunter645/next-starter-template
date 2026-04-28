@@ -1,4 +1,3 @@
-
 ---
 Doc Type: Design Reference
 Audience: Human + AI

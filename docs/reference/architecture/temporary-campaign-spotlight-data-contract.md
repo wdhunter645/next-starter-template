@@ -1,4 +1,3 @@
-
 ---
 Doc Type: Data Contract
 Audience: Human + AI

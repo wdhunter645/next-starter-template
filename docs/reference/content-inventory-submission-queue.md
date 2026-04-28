@@ -1,3 +1,13 @@
+---
+Doc Type: Reference
+Audience: Human + AI
+Authority Level: Controlled
+Owns: submission_queue schema fields and review-state rules
+Does Not Own: content_inventory schema; moderation policy; automation implementation
+Canonical Reference: /docs/reference/content-inventory-design-spec.md
+Last Reviewed: 2026-04-28
+---
+
 # Submission Queue Schema
 
 Table: submission_queue

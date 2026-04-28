@@ -1,4 +1,3 @@
-
 ---
 Doc Type: Operations
 Audience: Human + AI

@@ -1,6 +1,11 @@
 ---
 Doc Type: Design Authority
+Audience: Human + AI
 Authority Level: Canonical
+Owns: Content inventory data model boundaries and layout control rules
+Does Not Own: Operational worklists; implementation code; content moderation procedures
+Canonical Reference: /docs/reference/content-inventory-design-spec.md
+Last Reviewed: 2026-04-28
 ---
 # Content Inventory Design
 

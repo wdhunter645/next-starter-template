@@ -1,3 +1,13 @@
+---
+Doc Type: Governance
+Audience: Human + AI
+Authority Level: Canonical
+Owns: Diataxis folder usage rules and no-drift documentation model
+Does Not Own: Design specifications; operational task details; application behavior
+Canonical Reference: /docs/governance/DOCUMENT-ARCHITECTURE.md
+Last Reviewed: 2026-04-28
+---
+
 # DIÁTAXIS FOLDER AUTHORITY (NO-DRIFT MODEL)
 
 ## Purpose

@@ -1,3 +1,13 @@
+---
+Doc Type: Reference
+Audience: Human + AI
+Authority Level: Controlled
+Owns: content_inventory D1 table schema fields and source-of-truth rule
+Does Not Own: submission queue schema; layout rendering; moderation workflow
+Canonical Reference: /docs/reference/content-inventory-design-spec.md
+Last Reviewed: 2026-04-28
+---
+
 # D1 Content Inventory Schema
 
 Table: content_inventory

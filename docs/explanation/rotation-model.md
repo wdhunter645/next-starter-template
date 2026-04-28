@@ -1,3 +1,13 @@
+---
+Doc Type: Explanation
+Audience: Human + AI
+Authority Level: Context
+Owns: Rationale for editorial rotation behavior
+Does Not Own: Content inventory schema; homepage implementation; publishing procedures
+Canonical Reference: /docs/reference/content-inventory-design-spec.md
+Last Reviewed: 2026-04-28
+---
+
 # Editorial Rotation Model
 
 Many key Gehrig events occur in June.

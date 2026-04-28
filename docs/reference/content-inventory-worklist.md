@@ -1,3 +1,13 @@
+---
+Doc Type: Reference
+Audience: Human + AI
+Authority Level: Controlled
+Owns: Content inventory implementation phase worklist
+Does Not Own: D1 schema; submission queue schema; content inventory rationale
+Canonical Reference: /docs/reference/content-inventory-design-spec.md
+Last Reviewed: 2026-04-28
+---
+
 # Content Inventory Worklist
 
 ## Phase 1
