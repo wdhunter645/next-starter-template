@@ -74,6 +74,8 @@ Search
 Store (external)  
 Login
 
+Store is a persistent top menu/header button wherever the public header appears.
+
 ---
 
 # Public Header (logged in)
@@ -86,6 +88,8 @@ Store (external)
 Logout  
 
 (4 total — Club Home replaces Join, Logout replaces Login)
+
+Store is a persistent top menu/header button wherever the public logged-in header appears.
 
 ---
 
@@ -110,12 +114,15 @@ Search
 Store (external)  
 Logout
 
+Store is a persistent top menu/header button wherever the FanClub header appears.
+
 ---
 
 # Hamburger Menu Behavior
 
-Store is:
-A page link in mobile hamburger menus only.
+The hamburger menu is limited to mobile/navigation behavior for standalone pages such as Home, About, Contact, Support, Members, and Admin when applicable.
+
+The external Bonfire Store link remains available only as a persistent top menu/header button for logged-out users, logged-in public users, and FanClub users across all website pages where the relevant top menu/header appears.
 
 ---
 

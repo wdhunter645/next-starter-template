@@ -41,7 +41,8 @@ FanClub area uses a dedicated layout with:
 - **Header:**
   - Logo (links to `/`)
   - Logout button (visible when authenticated)
-  - Hamburger menu with: Home, About, Contact, Support, Store, Members, Admin (conditional)
+  - Store as a persistent top menu/header button (external Bonfire link; no `/store` route)
+  - Responsive navigation menu with: Home, About, Contact, Support, Members, Admin (conditional)
 - **Navigation:**
   - Home → `/` (public homepage)
   - Members → `/fanclub` (member home)
@@ -160,10 +161,16 @@ Per `docs/reference/design/LGFC-Production-Design-and-Standards.md`:
 
 **Hamburger Menu:**
 - Contains **only standalone pages** (no sections, no footer links)
-- Visitor hamburger items: Home (mobile only), About, Contact, Support, Store
+- Visitor hamburger items: Home (mobile only), About, Contact, Support
 - FanClub hamburger adds: Members (current location indicator), Admin (conditional)
 - Desktop/tablet: Does not include "Home"
 - Mobile: Includes "Home" for easy navigation
+
+**Store Header Button:**
+- Public logged-out header: Join, Search, Store, Login
+- Public logged-in header: Club Home, Search, Store, Logout
+- FanClub header: Club Home, My Profile, Search, Store, Logout
+- Store links externally to Bonfire only; there is no `/store` route
 
 **Footer:** (per `/docs/reference/design/LGFC-Production-Design-and-Standards.md`)
 - Left:
