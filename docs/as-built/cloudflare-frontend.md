@@ -41,7 +41,9 @@ FanClub area uses a dedicated layout with:
 - **Header:**
   - Logo (links to `/`)
   - Logout button (visible when authenticated)
-  - Hamburger menu with: Home, About, Contact, Support, Store, Members, Admin (conditional)
+  - Store as a persistent top menu/header button (external Bonfire link; no `/store` route)
+  - Desktop/tablet top menu uses visible top-menu buttons
+  - Mobile has no visible top menu and uses the hamburger drawer for navigation
 - **Navigation:**
   - Home → `/` (public homepage)
   - Members → `/fanclub` (member home)
@@ -49,7 +51,7 @@ FanClub area uses a dedicated layout with:
 - **Authentication:**
   - Uses cookie-backed session (`lgfc_session`) validated via session API
   - Checks admin role via `members` identity/role resolution
-  - Shows/hides Admin menu item based on role
+  - Shows/hides admin-specific UI based on role
 
 #### Page Sections (`src/appfanclub/page.tsx`)
 
@@ -131,8 +133,8 @@ All member-specific components are in `src/componentsfanclub/`:
 #### Admin Authorization
 - Admin check via `members` table lookup (role='admin')
 - Admin-specific UI elements:
-  - "Admin" item in hamburger menu
   - "Admin Tools" section at bottom of member home
+- Admin access is not exposed as a hamburger drawer item
 - Admin dashboard at `/admin` (separate route)
 
 ### Future Enhancements (Noted in Code)
@@ -159,11 +161,22 @@ Per `docs/reference/design/LGFC-Production-Design-and-Standards.md`:
 - Always links to `/` (public home), consistent with global site logo behavior
 
 **Hamburger Menu:**
-- Contains **only standalone pages** (no sections, no footer links)
-- Visitor hamburger items: Home (mobile only), About, Contact, Support, Store
-- FanClub hamburger adds: Members (current location indicator), Admin (conditional)
-- Desktop/tablet: Does not include "Home"
-- Mobile: Includes "Home" for easy navigation
+- Mobile has no visible top menu, so the hamburger drawer contains the relevant top-menu navigation buttons plus About and Contact
+- Mobile public logged-out drawer: Join (`/join`), Search (`/search`), Store (external Bonfire link), Login (`/join`), About (`/about`), Contact (`/contact`)
+- Mobile public logged-in drawer: Club Home (`/fanclub`), Search (`/search`), Store (external Bonfire link), Logout (`/logout`), About (`/about`), Contact (`/contact`)
+- Mobile FanClub drawer: Club Home (`/fanclub`), My Profile (`/fanclub/myprofile`), Search (`/search`), Store (external Bonfire link), Logout (`/logout`), About (`/about`), Contact (`/contact`)
+- Store appears in the mobile hamburger because mobile has no visible top menu
+- Support is consolidated into Contact and is not a hamburger drawer item
+- Admin access is not exposed as a hamburger drawer item
+- Members is not exposed as a separate hamburger drawer item
+- Home is not exposed as a separate hamburger drawer label when Club Home is present
+- The hamburger drawer does not introduce a `/store` route
+
+**Desktop/Tablet Top Menu:**
+- Public logged-out header: Join, Search, Store, Login
+- Public logged-in header: Club Home, Search, Store, Logout
+- FanClub header: Club Home, My Profile, Search, Store, Logout
+- Store links externally to Bonfire only; there is no `/store` route
 
 **Footer:** (per `/docs/reference/design/LGFC-Production-Design-and-Standards.md`)
 - Left:
@@ -202,7 +215,7 @@ Per `/.github/pull_request_template.md` and `docs/governance/PR_GOVERNANCE.md`:
   - Navigate to `/fanclub` with login → FanClub sections visible
   - Post creation → Submits to D1 and refreshes feed
   - Events display → Shows next 30 days from D1
-  - Admin user → Sees Admin menu item and Admin Tools section
+  - Admin user → Sees Admin Tools section and authorized admin UI
   - Non-admin → Does not see admin-specific elements
 
 ### Deployment Notes

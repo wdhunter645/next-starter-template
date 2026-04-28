@@ -215,27 +215,27 @@ The assessment produces:
 - `reports/assess/assess-summary.md` (human-readable summary)
 - `reports/assess/routes-found.json` (route index)
 
-### Assessment Manifest
+### Assessment Invariants
 
-The assessment is driven by `docs/assess/manifest.json`, which encodes:
+Assessment checks validate canonical design invariants, including:
 - `requiredRoutes`: Routes that must exist
 - `forbiddenRoutes`: Routes that must not exist (legacy/parked)
-- `navInvariants`: Header button labels/order, hamburger menu rules
+- `navInvariants`: Header button labels/order and hamburger drawer rules
 - `footerLinks`: Required footer links and copyright format
 - `pageMarkers`: Required headings/sections/markers for key pages
 
-**Source of Truth:** The manifest is derived from `/docs/reference/design/LGFC-Production-Design-and-Standards.md`.
+**Source of Truth:** Assessment expectations are derived from `/docs/reference/design/LGFC-Production-Design-and-Standards.md`.
 
-### Updating the Manifest
+### Updating Assessment Expectations
 
 When design standards change (rare, locked changes only):
 
 1. Update `/docs/reference/design/LGFC-Production-Design-and-Standards.md` first (via governance process)
-2. Update `/docs/assess/manifest.json` to match
-3. Run `npm run assess` to verify changes
+2. Update any assessment implementation or fixture that encodes the changed invariant
+3. Run `npm run assess` to verify changes when assessment tooling is in scope
 4. Document the update in the PR
 
-**IMPORTANT:** The manifest enforces locked design standards. Changes should be rare and require explicit design review approval.
+**IMPORTANT:** Assessment checks enforce locked design standards. Changes should be rare and require explicit design review approval.
 
 ### CI Gating Policy
 
@@ -271,8 +271,9 @@ When design standards change (rare, locked changes only):
 
 **Navigation Invariants:**
 - Review header component implementation
-- Verify hamburger menu items match manifest
-- Check for forbidden items (Join/Login in hamburger, etc.)
+- Verify hamburger drawer items match `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
+- Check responsive behavior: desktop/tablet uses visible top-menu buttons; mobile has no visible top menu and uses the hamburger drawer
+- Check forbidden drawer items such as Support, Admin, Members, a separate Home label when Club Home is present, and any `/store` route
 
 **Page Markers:**
 - Verify required headings are present in page content

@@ -114,6 +114,8 @@ Rules:
 ### 2.5 Hamburger dropdown anchoring
 The hamburger wrapper must be `position: relative` so the dropdown anchors to it, not the viewport edge.
 
+This lock owns hamburger layout, grouping, and anchoring only. Hamburger drawer item membership is owned by `/docs/reference/design/LGFC-Production-Design-and-Standards.md`.
+
 ---
 
 ## 3) Canonical FloatingLogo Behavior (Large Logo)
