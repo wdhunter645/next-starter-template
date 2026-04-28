@@ -42,7 +42,8 @@ FanClub area uses a dedicated layout with:
   - Logo (links to `/`)
   - Logout button (visible when authenticated)
   - Store as a persistent top menu/header button (external Bonfire link; no `/store` route)
-  - Hamburger drawer with exactly: About, Contact
+  - Desktop/tablet top menu uses visible top-menu buttons
+  - Mobile has no visible top menu and uses the hamburger drawer for navigation
 - **Navigation:**
   - Home → `/` (public homepage)
   - Members → `/fanclub` (member home)
@@ -160,12 +161,18 @@ Per `docs/reference/design/LGFC-Production-Design-and-Standards.md`:
 - Always links to `/` (public home), consistent with global site logo behavior
 
 **Hamburger Menu:**
-- Contains exactly: About (`/about`), Contact (`/contact`)
-- Does not include Store, Support, Admin, Members, Home, Join, Login, Logout, Club Home, My Profile, or Search
+- Mobile has no visible top menu, so the hamburger drawer contains the relevant top-menu navigation buttons plus About and Contact
+- Mobile public logged-out drawer: Join (`/join`), Search (`/search`), Store (external Bonfire link), Login (`/join`), About (`/about`), Contact (`/contact`)
+- Mobile public logged-in drawer: Club Home (`/fanclub`), Search (`/search`), Store (external Bonfire link), Logout (`/logout`), About (`/about`), Contact (`/contact`)
+- Mobile FanClub drawer: Club Home (`/fanclub`), My Profile (`/fanclub/myprofile`), Search (`/search`), Store (external Bonfire link), Logout (`/logout`), About (`/about`), Contact (`/contact`)
+- Store appears in the mobile hamburger because mobile has no visible top menu
 - Support is consolidated into Contact and is not a hamburger drawer item
 - Admin access is not exposed as a hamburger drawer item
+- Members is not exposed as a separate hamburger drawer item
+- Home is not exposed as a separate hamburger drawer label when Club Home is present
+- The hamburger drawer does not introduce a `/store` route
 
-**Store Header Button:**
+**Desktop/Tablet Top Menu:**
 - Public logged-out header: Join, Search, Store, Login
 - Public logged-in header: Club Home, Search, Store, Logout
 - FanClub header: Club Home, My Profile, Search, Store, Logout

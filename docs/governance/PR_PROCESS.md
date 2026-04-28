@@ -272,7 +272,8 @@ When design standards change (rare, locked changes only):
 **Navigation Invariants:**
 - Review header component implementation
 - Verify hamburger drawer items match `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
-- Check for forbidden drawer items such as Store, Support, Admin, Members, Home, Join, Login, Logout, Club Home, My Profile, and Search
+- Check responsive behavior: desktop/tablet uses visible top-menu buttons; mobile has no visible top menu and uses the hamburger drawer
+- Check forbidden drawer items such as Support, Admin, Members, a separate Home label when Club Home is present, and any `/store` route
 
 **Page Markers:**
 - Verify required headings are present in page content

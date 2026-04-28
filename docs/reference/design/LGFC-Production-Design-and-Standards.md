@@ -67,20 +67,22 @@ external Bonfire link (no /store route)
 
 # Public Header (not logged in)
 
-Buttons:
+Desktop/tablet top menu buttons:
 
 Join  
 Search  
 Store (external)  
 Login
 
-Store is a persistent top menu/header button wherever the public header appears.
+Store is a visible top menu/header button on desktop/tablet wherever the public logged-out header appears.
+
+Mobile has no visible top menu. Mobile logged-out navigation is handled by the hamburger drawer.
 
 ---
 
 # Public Header (logged in)
 
-Buttons:
+Desktop/tablet top menu buttons:
 
 Club Home  
 Search  
@@ -89,7 +91,9 @@ Logout
 
 (4 total — Club Home replaces Join, Logout replaces Login)
 
-Store is a persistent top menu/header button wherever the public logged-in header appears.
+Store is a visible top menu/header button on desktop/tablet wherever the public logged-in header appears.
+
+Mobile has no visible top menu. Mobile logged-in navigation is handled by the hamburger drawer.
 
 ---
 
@@ -106,7 +110,7 @@ Logout → /logout
 
 # FanClub Header
 
-Buttons:
+Desktop/tablet top menu buttons:
 
 Club Home  
 My Profile  
@@ -114,24 +118,50 @@ Search
 Store (external)  
 Logout
 
-Store is a persistent top menu/header button wherever the FanClub header appears.
+Store is a visible top menu/header button on desktop/tablet wherever the FanClub header appears.
+
+Mobile has no visible top menu. Mobile FanClub navigation is handled by the hamburger drawer.
 
 ---
 
 # Hamburger Menu Behavior
 
-The hamburger drawer contains exactly:
+Mobile has no visible top menu/header button row. Mobile uses one hamburger drawer containing the relevant navigation buttons plus About and Contact.
 
-1. About → /about
-2. Contact → /contact
+Mobile public logged-out hamburger:
+1. Join → /join
+2. Search → /search
+3. Store → external Bonfire link
+4. Login → /join
+5. About → /about
+6. Contact → /contact
 
-The hamburger drawer must not include Store, Support, Admin, Members, Home, Join, Login, Logout, Club Home, My Profile, or Search.
+Mobile public logged-in hamburger:
+1. Club Home → /fanclub
+2. Search → /search
+3. Store → external Bonfire link
+4. Logout → /logout
+5. About → /about
+6. Contact → /contact
 
-The external Bonfire Store link remains available only as a persistent top menu/header button for logged-out users, logged-in public users, and FanClub users across all website pages where the relevant top menu/header appears.
+Mobile FanClub hamburger:
+1. Club Home → /fanclub
+2. My Profile → /fanclub/myprofile
+3. Search → /search
+4. Store → external Bonfire link
+5. Logout → /logout
+6. About → /about
+7. Contact → /contact
+
+Store is included in the mobile hamburger because mobile has no visible top menu. Store remains an external Bonfire link only; no `/store` route exists.
 
 Support is consolidated into Contact and must not appear as a hamburger drawer item.
 
 Admin access must not be exposed as a hamburger drawer item.
+
+Members must not appear as a separate hamburger drawer item.
+
+Home must not appear as a separate hamburger drawer label when Club Home is already present.
 
 ---
 
