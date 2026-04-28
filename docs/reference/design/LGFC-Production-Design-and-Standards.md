@@ -120,9 +120,18 @@ Store is a persistent top menu/header button wherever the FanClub header appears
 
 # Hamburger Menu Behavior
 
-The hamburger menu is limited to mobile/navigation behavior for standalone pages such as Home, About, Contact, Support, Members, and Admin when applicable.
+The hamburger drawer contains exactly:
+
+1. About → /about
+2. Contact → /contact
+
+The hamburger drawer must not include Store, Support, Admin, Members, Home, Join, Login, Logout, Club Home, My Profile, or Search.
 
 The external Bonfire Store link remains available only as a persistent top menu/header button for logged-out users, logged-in public users, and FanClub users across all website pages where the relevant top menu/header appears.
+
+Support is consolidated into Contact and must not appear as a hamburger drawer item.
+
+Admin access must not be exposed as a hamburger drawer item.
 
 ---
 

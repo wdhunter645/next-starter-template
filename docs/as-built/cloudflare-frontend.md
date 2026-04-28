@@ -42,7 +42,7 @@ FanClub area uses a dedicated layout with:
   - Logo (links to `/`)
   - Logout button (visible when authenticated)
   - Store as a persistent top menu/header button (external Bonfire link; no `/store` route)
-  - Responsive navigation menu with: Home, About, Contact, Support, Members, Admin (conditional)
+  - Hamburger drawer with exactly: About, Contact
 - **Navigation:**
   - Home → `/` (public homepage)
   - Members → `/fanclub` (member home)
@@ -50,7 +50,7 @@ FanClub area uses a dedicated layout with:
 - **Authentication:**
   - Uses cookie-backed session (`lgfc_session`) validated via session API
   - Checks admin role via `members` identity/role resolution
-  - Shows/hides Admin menu item based on role
+  - Shows/hides admin-specific UI based on role
 
 #### Page Sections (`src/appfanclub/page.tsx`)
 
@@ -132,8 +132,8 @@ All member-specific components are in `src/componentsfanclub/`:
 #### Admin Authorization
 - Admin check via `members` table lookup (role='admin')
 - Admin-specific UI elements:
-  - "Admin" item in hamburger menu
   - "Admin Tools" section at bottom of member home
+- Admin access is not exposed as a hamburger drawer item
 - Admin dashboard at `/admin` (separate route)
 
 ### Future Enhancements (Noted in Code)
@@ -160,11 +160,10 @@ Per `docs/reference/design/LGFC-Production-Design-and-Standards.md`:
 - Always links to `/` (public home), consistent with global site logo behavior
 
 **Hamburger Menu:**
-- Contains **only standalone pages** (no sections, no footer links)
-- Visitor hamburger items: Home (mobile only), About, Contact, Support
-- FanClub hamburger adds: Members (current location indicator), Admin (conditional)
-- Desktop/tablet: Does not include "Home"
-- Mobile: Includes "Home" for easy navigation
+- Contains exactly: About (`/about`), Contact (`/contact`)
+- Does not include Store, Support, Admin, Members, Home, Join, Login, Logout, Club Home, My Profile, or Search
+- Support is consolidated into Contact and is not a hamburger drawer item
+- Admin access is not exposed as a hamburger drawer item
 
 **Store Header Button:**
 - Public logged-out header: Join, Search, Store, Login
@@ -209,7 +208,7 @@ Per `/.github/pull_request_template.md` and `docs/governance/PR_GOVERNANCE.md`:
   - Navigate to `/fanclub` with login → FanClub sections visible
   - Post creation → Submits to D1 and refreshes feed
   - Events display → Shows next 30 days from D1
-  - Admin user → Sees Admin menu item and Admin Tools section
+  - Admin user → Sees Admin Tools section and authorized admin UI
   - Non-admin → Does not see admin-specific elements
 
 ### Deployment Notes
