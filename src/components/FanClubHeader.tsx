@@ -6,11 +6,10 @@ import styles from './FanClubHeader.module.css';
 import HamburgerMenu from './HamburgerMenu';
 
 type FanClubHeaderProps = {
-  homeRoute?: string;
   showLogo?: boolean;
 };
 
-export default function FanClubHeader({ homeRoute = '/', showLogo = true }: FanClubHeaderProps = {}) {
+export default function FanClubHeader({ showLogo = true }: FanClubHeaderProps = {}) {
   const [open, setOpen] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const leftClassName = showLogo ? styles.left : `${styles.left} ${styles.leftOffset}`;
@@ -21,7 +20,7 @@ export default function FanClubHeader({ homeRoute = '/', showLogo = true }: FanC
         {/* LEFT: Logo (small header logo; hidden when FloatingLogo is active) */}
         <div className={leftClassName}>
           {showLogo ? (
-            <Link href={homeRoute} aria-label="Lou Gehrig Fan Club" className={styles.logoLink}>
+            <Link href="/" aria-label="Lou Gehrig Fan Club" className={styles.logoLink}>
               <img className={styles.logoImg} src="/IMG_1946.png" alt="LGFC" />
             </Link>
           ) : (

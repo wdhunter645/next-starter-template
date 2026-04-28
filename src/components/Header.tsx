@@ -6,7 +6,6 @@ import styles from './Header.module.css';
 import HamburgerMenu from './HamburgerMenu';
 
 type HeaderProps = {
-  homeRoute?: string;
   showLogo?: boolean;
 };
 
@@ -36,7 +35,7 @@ function asBoolean(v: unknown): boolean | undefined {
  * - Hamburger present on all public pages
  * - Store must open new tab to Bonfire storefront URL
  */
-export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps = {}) {
+export default function Header({ showLogo = true }: HeaderProps = {}) {
   const [session, setSession] = useState<SessionState>({ status: 'unknown' });
   const [open, setOpen] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -81,7 +80,7 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
       <div className={styles.inner}>
         {showLogo ? (
           <div className={styles.logoContainer}>
-            <Link href={homeRoute} aria-label="Lou Gehrig Fan Club" className={styles.logoLink}>
+            <Link href="/" aria-label="Lou Gehrig Fan Club" className={styles.logoLink}>
               <img className={styles.logo} src="/IMG_1946.png" alt="LGFC Logo" />
             </Link>
           </div>
@@ -107,7 +106,7 @@ export default function Header({ homeRoute = '/', showLogo = true }: HeaderProps
           </a>
 
           {!isLoggedIn ? (
-            <Link className={styles.btn} href="/login">Login</Link>
+            <Link className={styles.btn} href="/join">Login</Link>
           ) : (
             <>
               <Link className={styles.btn} href="/logout">Logout</Link>

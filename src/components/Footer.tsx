@@ -29,7 +29,7 @@ export default function Footer() {
         if (!quoteObj) return;
 
         const quote = asString(quoteObj.quote);
-        const source = asString(quoteObj.source);
+        const source = asString(quoteObj.source) ?? asString(quoteObj.attribution);
         if (!quote) return;
 
         if (!cancelled) setQ({ quote, source });
