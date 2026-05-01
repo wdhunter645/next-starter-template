@@ -16,7 +16,7 @@ import SocialWall from '@/components/SocialWall';
 export default function HomePage() {
   return (
     <>
-      <FloatingLogo homeRoute="/" />
+      <FloatingLogo />
       {/* Section: Hero Banner */}
       <header id="banner" className={styles.hero}>
         <div className={styles.container}>

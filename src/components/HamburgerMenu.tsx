@@ -7,7 +7,7 @@ import { useClickAway } from '@/hooks/useClickAway';
 /**
  * Visitor hamburger menu.
  * All headers: About, Contact
- * (Support page eliminated by design; Store remains a header button)
+ * Mobile hamburger additionally includes Store as a menu link.
  */
 export default function HamburgerMenu({
   onClose,
@@ -33,6 +33,18 @@ export default function HamburgerMenu({
               <Link href="/contact" onClick={onClose} style={styles.link}>
                 Contact
               </Link>
+            </li>
+            <li style={styles.li}>
+              <a
+                href="https://www.bonfire.com/store/lou-gehrig-fan-club/"
+                target="_blank"
+                rel="noopener noreferrer"
+                referrerPolicy="no-referrer"
+                onClick={onClose}
+                style={styles.link}
+              >
+                Store
+              </a>
             </li>
           </ul>
         </nav>
