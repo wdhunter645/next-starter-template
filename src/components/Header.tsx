@@ -106,7 +106,7 @@ export default function Header({ showLogo = true }: HeaderProps = {}) {
           </a>
 
           {!isLoggedIn ? (
-            <Link className={styles.btn} href="/login">Login</Link>
+            <Link className={styles.btn} href="/join">Login</Link>
           ) : (
             <>
               <Link className={styles.btn} href="/logout">Logout</Link>
