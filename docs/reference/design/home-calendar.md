@@ -24,7 +24,7 @@ Define the homepage calendar section that previews near-term Fan Club events.
 
 ## Data Dependencies
 - Event data via calendar/event APIs consumed by `CalendarSection`.
-- Uses deterministic fallback entries if live data is unavailable.
+- Renders an empty calendar with a status notice when live data is unavailable.
 
 ## Auth / Access Expectations
 - Publicly visible section.
