@@ -24,15 +24,14 @@ jobs:
       - name: Collect merged PR metadata
         env:
           GH_TOKEN: ${{ github.token }}
-          REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          gh pr view "${PR_NUMBER}" --repo "${REPOSITORY}" --json title,body,files,mergeCommit > pr-intent.json
+          gh pr view "${PR_NUMBER}" --json title,body,files > pr-intent.json
           jq -r '.body // ""' pr-intent.json > pr-body.md
           jq -r '.files[].path' pr-intent.json > pr-files.txt
           jq -r '.title' pr-intent.json > pr-title.txt
 
-      - name: Run verification checks
+      - name: Evaluate verification (non-fatal)
         id: verify
         run: |
           failures=0
@@ -50,16 +49,23 @@ jobs:
 
           echo "failures=${failures}" >> $GITHUB_OUTPUT
 
-          if [ "${failures}" -ne 0 ]; then
-            exit 1
-          fi
-
-      - name: Create Copilot remediation issue on failure
-        if: failure()
+      - name: Create remediation issue if needed
+        if: steps.verify.outputs.failures != '0'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh issue create --title "Post-Merge Failure: PR #${{ github.event.pull_request.number }}" --body "Post-merge verification failed for PR #${{ github.event.pull_request.number }}. Review workflow logs and open a remediation PR that restores the intended merged outcome." --label "post-merge-failure" --assignee "copilot-swe-agent[bot]"
+          gh issue create \
+            --title "Post-Merge Failure: PR #${{ github.event.pull_request.number }}" \
+            --body "Post-merge verification failed for PR #${{ github.event.pull_request.number }}.\n\nThis is a remediation issue (not a tracker).\n\nRequired:\n- Identify failed checkpoints\n- Create PR to complete intended outcome" \
+            --label "post-merge-failure" \
+            --assignee "copilot-swe-agent[bot]"
+
+      - name: Fail workflow if verification failed
+        run: |
+          if [ "${{ steps.verify.outputs.failures }}" != "0" ]; then
+            echo "Post-merge verification failed"
+            exit 1
+          fi
 
       - name: Summary
         run: echo "Post-merge verification completed"
