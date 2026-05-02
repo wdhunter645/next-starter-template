@@ -5,13 +5,24 @@ Authority Level: Canonical
 Owns: Diataxis folder usage rules and no-drift documentation model
 Does Not Own: Design specifications; operational task details; application behavior
 Canonical Reference: /docs/governance/DOCUMENT-ARCHITECTURE.md
-Last Reviewed: 2026-04-28
+Last Reviewed: 2026-05-02
 ---
 
 # DIÁTAXIS FOLDER AUTHORITY (NO-DRIFT MODEL)
 
 ## Purpose
 Defines strict folder usage rules. No drift allowed.
+
+## Authority Resolution
+
+Folder correctness alone does not determine authority during the transition.
+
+See: `/docs/governance/standards/DIATAXIS-AUTHORITY-RESOLUTION.md`
+
+That document defines:
+- when Diataxis overrides legacy
+- when legacy remains authoritative
+- how conflicts are resolved
 
 ## Structure
 - tutorials/
