@@ -1,0 +1,45 @@
+name: Post-Merge Intent Verification
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  verify-merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Identify last commit
+        run: |
+          echo "Commit SHA: $(git rev-parse HEAD)"
+
+      - name: Validate DIATAXIS mapping file exists
+        run: |
+          if [ ! -f "docs/reference/DIATAXIS-MAPPING.md" ]; then
+            echo "ERROR: DIATAXIS mapping file missing after merge."
+            exit 1
+          fi
+
+      - name: Validate core DIATAXIS folders exist
+        run: |
+          for dir in docs/tutorials docs/how-to docs/reference docs/explanation; do
+            if [ ! -d "$dir" ]; then
+              echo "ERROR: Missing DIATAXIS directory: $dir"
+              exit 1
+            fi
+          done
+
+      - name: Verify DIATAXIS authority resolution file
+        run: |
+          if [ ! -f "docs/governance/standards/DIATAXIS-AUTHORITY-RESOLUTION.md" ]; then
+            echo "ERROR: Authority resolution doc missing"
+            exit 1
+          fi
+
+      - name: Summary
+        run: |
+          echo "Post-merge intent verification completed successfully."
