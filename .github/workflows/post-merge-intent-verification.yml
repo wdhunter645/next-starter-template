@@ -1,0 +1,152 @@
+name: Post-Merge Intent Verification
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+
+jobs:
+  verify-merged-pr-intent:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout merged state
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
+
+      - name: Collect merged PR metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          echo "Repository: ${REPOSITORY}"
+          echo "PR Number: ${PR_NUMBER}"
+          echo "Merge SHA: ${{ github.event.pull_request.merge_commit_sha }}"
+          gh pr view "${PR_NUMBER}" --repo "${REPOSITORY}" --json title,body,files,mergeCommit,baseRefName,headRefName,state,mergedAt > pr-intent.json
+          jq -r '.body // ""' pr-intent.json > pr-body.md
+          jq -r '.files[].path' pr-intent.json > pr-files.txt
+          jq -r '.title' pr-intent.json > pr-title.txt
+
+      - name: Verify PR contract exists
+        run: |
+          failures=0
+
+          for required_section in \
+            '## Change Summary' \
+            '## Acceptance Criteria' \
+            '## Risk' \
+            '## Validation'; do
+            if ! grep -Fq "${required_section}" pr-body.md; then
+              echo "ERROR: PR body missing required section: ${required_section}"
+              failures=$((failures + 1))
+            fi
+          done
+
+          if grep -Eqi '\b(TBD|TODO|placeholder|populate)\b' pr-body.md; then
+            echo "ERROR: PR body contains unresolved placeholder language."
+            failures=$((failures + 1))
+          fi
+
+          if [ "${failures}" -ne 0 ]; then
+            echo "Post-merge PR contract verification failed."
+            exit 1
+          fi
+
+          echo "PR contract exists."
+
+      - name: Verify changed files landed on merged state
+        run: |
+          failures=0
+
+          if [ ! -s pr-files.txt ]; then
+            echo "ERROR: No PR files found in metadata."
+            exit 1
+          fi
+
+          while IFS= read -r file; do
+            if [ -z "${file}" ]; then
+              continue
+            fi
+
+            if [ ! -e "${file}" ]; then
+              echo "ERROR: Changed file from PR is missing in merged state: ${file}"
+              failures=$((failures + 1))
+            else
+              echo "Verified merged file exists: ${file}"
+            fi
+          done < pr-files.txt
+
+          if [ "${failures}" -ne 0 ]; then
+            echo "Merged-state file verification failed."
+            exit 1
+          fi
+
+          echo "All PR files are present in merged state."
+
+      - name: Verify documentation source reporting when required
+        run: |
+          changed_docs_or_governance="NO"
+
+          if grep -E '^(docs/|\.github/pull_request_template\.md|\.github/workflows/)' pr-files.txt >/dev/null; then
+            changed_docs_or_governance="YES"
+          fi
+
+          if [ "${changed_docs_or_governance}" = "YES" ]; then
+            if ! grep -Fq '## Documentation Source' pr-body.md && ! grep -Fq '## DOCUMENTATION SOURCE' pr-body.md; then
+              echo "ERROR: Documentation/governance PR is missing Documentation Source section."
+              exit 1
+            fi
+
+            if ! grep -Eq 'DIATAXIS_FULL|DIATAXIS_ROUTED|LEGACY_FALLBACK' pr-body.md; then
+              echo "ERROR: Documentation Source section does not identify DIATAXIS/legacy source classification."
+              exit 1
+            fi
+          fi
+
+          echo "Documentation source reporting verified or not required."
+
+      - name: Verify LEGACY_FALLBACK gap handling
+        run: |
+          if grep -Fq 'LEGACY_FALLBACK' pr-body.md; then
+            if ! grep -Fq '## DIATAXIS GAP' pr-body.md && ! grep -Fq '## Diataxis Gap' pr-body.md; then
+              echo "ERROR: LEGACY_FALLBACK used without DIATAXIS GAP section."
+              exit 1
+            fi
+
+            if ! grep -Eiq '(Gap Identified|Link to issue|Description:)' pr-body.md; then
+              echo "ERROR: LEGACY_FALLBACK used without actionable gap detail."
+              exit 1
+            fi
+          fi
+
+          echo "LEGACY_FALLBACK gap handling verified or not required."
+
+      - name: Write post-merge verification summary
+        run: |
+          {
+            echo "# Post-Merge Intent Verification"
+            echo ""
+            echo "PR: #${{ github.event.pull_request.number }}"
+            echo "Title: $(cat pr-title.txt)"
+            echo "Merge SHA: ${{ github.event.pull_request.merge_commit_sha }}"
+            echo ""
+            echo "## Verified"
+            echo "- PR contract sections exist"
+            echo "- Changed files are present in merged state"
+            echo "- Documentation source reporting checked when required"
+            echo "- LEGACY_FALLBACK gap handling checked when required"
+          } | tee post-merge-intent-verification.md
+
+      - name: Upload post-merge verification artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-merge-intent-verification-${{ github.event.pull_request.number }}
+          path: post-merge-intent-verification.md
