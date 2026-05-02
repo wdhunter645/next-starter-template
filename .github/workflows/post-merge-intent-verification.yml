@@ -1,7 +1,7 @@
 name: Post-Merge Intent Verification
 
 on:
-  pull_request:
+  pull_request_target:
     types: [closed]
 
 permissions:
@@ -15,82 +15,51 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Log trigger
+        run: echo "PR merged"
+
       - name: Checkout merged state
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.merge_commit_sha }}
-          fetch-depth: 0
 
-      - name: Collect merged PR metadata
-        id: metadata
-        continue-on-error: true
+      - name: Collect metadata
+        id: meta
         env:
           GH_TOKEN: ${{ github.token }}
-          REPOSITORY: ${{ github.repository }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          gh pr view "${PR_NUMBER}" --repo "${REPOSITORY}" --json title,body,files > pr-intent.json
-          jq -r '.body // ""' pr-intent.json > pr-body.md
-          jq -r '.files[].path' pr-intent.json > pr-files.txt
-          jq -r '.title' pr-intent.json > pr-title.txt
+          gh pr view "${{ github.event.pull_request.number }}" --json body,files > pr.json
+          jq -r '.body // ""' pr.json > body.md
+          jq -r '.files[].path' pr.json > files.txt
 
-      - name: Evaluate verification (non-fatal)
+      - name: Evaluate
         id: verify
         run: |
           failures=0
+          grep -Eqi '\b(TODO|TBD|placeholder)\b' body.md && failures=$((failures+1))
+          for req in '## Change Summary' '## Acceptance Criteria' '## Risk' '## Validation'; do
+            grep -Fq "$req" body.md || failures=$((failures+1))
+          done
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            [ -e "$f" ] || failures=$((failures+1))
+          done < files.txt
+          echo "failures=$failures" >> $GITHUB_OUTPUT
 
-          if [ "${{ steps.metadata.outcome }}" != "success" ]; then
-            failures=$((failures + 1))
-          fi
-
-          if [ -f pr-body.md ]; then
-            for required_section in '## Change Summary' '## Acceptance Criteria' '## Risk' '## Validation'; do
-              grep -Fq "${required_section}" pr-body.md || failures=$((failures + 1))
-            done
-
-            grep -Eqi '\b(TBD|TODO|placeholder|populate)\b' pr-body.md && failures=$((failures + 1))
-          else
-            failures=$((failures + 1))
-          fi
-
-          if [ -f pr-files.txt ]; then
-            while IFS= read -r file; do
-              [ -z "${file}" ] && continue
-              [ -e "${file}" ] || failures=$((failures + 1))
-            done < pr-files.txt
-          else
-            failures=$((failures + 1))
-          fi
-
-          echo "failures=${failures}" >> $GITHUB_OUTPUT
-
-      - name: Create remediation issue if needed
-        if: always() && steps.verify.outputs.failures != '0'
+      - name: Comment on PR
+        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          cat > remediation-issue-body.md <<'EOF'
-          Post-merge verification failed for PR #${{ github.event.pull_request.number }}.
+        run: gh pr comment ${{ github.event.pull_request.number }} --body "Post-merge check failures=${{ steps.verify.outputs.failures }}"
 
-          This is a remediation issue (not a tracker).
+      - name: Create remediation issue
+        if: steps.verify.outputs.failures != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue create --title "Post-Merge Failure: PR #${{ github.event.pull_request.number }}" --body "Fix required" --label "post-merge-failure" --assignee "copilot-swe-agent[bot]"
 
-          Required:
-          - Identify failed checkpoints
-          - Create PR to complete intended outcome
-          EOF
-
-          gh issue create \
-            --title "Post-Merge Failure: PR #${{ github.event.pull_request.number }}" \
-            --body-file remediation-issue-body.md \
-            --label "post-merge-failure" \
-            --assignee "copilot-swe-agent[bot]"
-
-      - name: Fail workflow if verification failed
+      - name: Fail job
         run: |
           if [ "${{ steps.verify.outputs.failures }}" != "0" ]; then
-            echo "Post-merge verification failed"
             exit 1
           fi
-
-      - name: Summary
-        run: echo "Post-merge verification completed"
