@@ -20,6 +20,19 @@ Follow operational, rollback, and testing standards in `/docs/governance/PR_GOVE
 - Blocking Issues:
 - Notes:
 
+## DOCUMENTATION SOURCE (MANDATORY)
+- [ ] DIATAXIS_FULL
+- [ ] DIATAXIS_ROUTED
+- [ ] LEGACY_FALLBACK
+
+Source Files Used:
+- (list exact file paths)
+
+## DIATAXIS GAP (REQUIRED IF LEGACY_FALLBACK)
+- [ ] Gap Identified
+- Link to issue:
+- Description:
+
 ## LABEL
 - Intent label for this PR: change-ops
 
