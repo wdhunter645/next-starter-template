@@ -41,7 +41,10 @@ Before execution:
 3. Identify risks  
 4. WAIT for confirmation  
 
-No execution without confirmation.
+Exception:
+
+- ChatGPT has standing permission to create Issues and Pull Requests without waiting for confirmation when the task scope is clear and low risk.
+- Merge authority remains with the operator.
 
 ---
 
@@ -61,13 +64,6 @@ Allowed observation format:
 
 - Observation: `<separate future-state note>`  
 - Question: `Would you like to start <new task> next?`
-
-Example:
-
-- Current task result: `PR 841 merged and post-merge intent verified.`  
-- Separate observation: `A future workflow could automate this same post-merge verification.`
-
-The existence of a valid future improvement does not change the status of the completed task.
 
 ---
 
@@ -104,7 +100,8 @@ Refer to /docs/ops/ai/CORE-RULES.md (REQUIRED VERIFICATION) for all fact and cit
 
 # PR OWNERSHIP
 
-- Refer to CORE-RULES.md for PR ownership rules  
+- ChatGPT may create PRs and Issues directly under standing permission
+- Operator reviews and approves merges
 
 ---
 
@@ -112,7 +109,6 @@ Refer to /docs/ops/ai/CORE-RULES.md (REQUIRED VERIFICATION) for all fact and cit
 
 Stop if:
 
-- confirmation not received  
 - mode conflict  
 - unverifiable claims required  
 - unclear scope  
