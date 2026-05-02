@@ -54,12 +54,12 @@ jobs:
             exit 1
           fi
 
-      - name: Create remediation issue on failure
+      - name: Create Copilot remediation issue on failure
         if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh issue create --title "Post-Merge Failure: PR #${{ github.event.pull_request.number }}" --body "Post-merge verification failed for PR #${{ github.event.pull_request.number }}. Review workflow logs." --label "post-merge-failure"
+          gh issue create --title "Post-Merge Failure: PR #${{ github.event.pull_request.number }}" --body "Post-merge verification failed for PR #${{ github.event.pull_request.number }}. Review workflow logs and open a remediation PR that restores the intended merged outcome." --label "post-merge-failure" --assignee "copilot-swe-agent[bot]"
 
       - name: Summary
         run: echo "Post-merge verification completed"
