@@ -22,44 +22,75 @@ jobs:
           fetch-depth: 0
 
       - name: Collect merged PR metadata
+        id: metadata
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
           REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          gh pr view "${PR_NUMBER}" --repo "${REPOSITORY}" --json title,body,files,mergeCommit > pr-intent.json
+          gh pr view "${PR_NUMBER}" --repo "${REPOSITORY}" --json title,body,files > pr-intent.json
           jq -r '.body // ""' pr-intent.json > pr-body.md
           jq -r '.files[].path' pr-intent.json > pr-files.txt
           jq -r '.title' pr-intent.json > pr-title.txt
 
-      - name: Run verification checks
+      - name: Evaluate verification (non-fatal)
         id: verify
         run: |
           failures=0
 
-          for required_section in '## Change Summary' '## Acceptance Criteria' '## Risk' '## Validation'; do
-            grep -Fq "${required_section}" pr-body.md || failures=$((failures + 1))
-          done
+          if [ "${{ steps.metadata.outcome }}" != "success" ]; then
+            failures=$((failures + 1))
+          fi
 
-          grep -Eqi '\b(TBD|TODO|placeholder|populate)\b' pr-body.md && failures=$((failures + 1))
+          if [ -f pr-body.md ]; then
+            for required_section in '## Change Summary' '## Acceptance Criteria' '## Risk' '## Validation'; do
+              grep -Fq "${required_section}" pr-body.md || failures=$((failures + 1))
+            done
 
-          while IFS= read -r file; do
-            [ -z "${file}" ] && continue
-            [ -e "${file}" ] || failures=$((failures + 1))
-          done < pr-files.txt
+            grep -Eqi '\b(TBD|TODO|placeholder|populate)\b' pr-body.md && failures=$((failures + 1))
+          else
+            failures=$((failures + 1))
+          fi
+
+          if [ -f pr-files.txt ]; then
+            while IFS= read -r file; do
+              [ -z "${file}" ] && continue
+              [ -e "${file}" ] || failures=$((failures + 1))
+            done < pr-files.txt
+          else
+            failures=$((failures + 1))
+          fi
 
           echo "failures=${failures}" >> $GITHUB_OUTPUT
 
-          if [ "${failures}" -ne 0 ]; then
-            exit 1
-          fi
-
-      - name: Create Copilot remediation issue on failure
-        if: failure()
+      - name: Create remediation issue if needed
+        if: always() && steps.verify.outputs.failures != '0'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh issue create --title "Post-Merge Failure: PR #${{ github.event.pull_request.number }}" --body "Post-merge verification failed for PR #${{ github.event.pull_request.number }}. Review workflow logs and open a remediation PR that restores the intended merged outcome." --label "post-merge-failure" --assignee "copilot-swe-agent[bot]"
+          cat > remediation-issue-body.md <<'EOF'
+          Post-merge verification failed for PR #${{ github.event.pull_request.number }}.
+
+          This is a remediation issue (not a tracker).
+
+          Required:
+          - Identify failed checkpoints
+          - Create PR to complete intended outcome
+          EOF
+
+          gh issue create \
+            --title "Post-Merge Failure: PR #${{ github.event.pull_request.number }}" \
+            --body-file remediation-issue-body.md \
+            --label "post-merge-failure" \
+            --assignee "copilot-swe-agent[bot]"
+
+      - name: Fail workflow if verification failed
+        run: |
+          if [ "${{ steps.verify.outputs.failures }}" != "0" ]; then
+            echo "Post-merge verification failed"
+            exit 1
+          fi
 
       - name: Summary
         run: echo "Post-merge verification completed"
