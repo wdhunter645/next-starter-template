@@ -5,7 +5,7 @@ Authority Level: Core
 Owns: Shared execution rules, enforcement model, PR discipline, stop conditions
 Does Not Own: Design authority, platform configuration, tracker content
 Canonical Reference: /Agent.md
-Last Reviewed: 2026-04-22
+Last Reviewed: 2026-05-02
 ---
 
 # CORE-RULES.md
@@ -42,6 +42,36 @@ Fact handling (mandatory):
 
 No guessing. No assumptions.
 
+---
+
+# DOCUMENTATION SOURCE TRACKING
+
+Every task and PR must identify which documentation source path was used.
+
+Allowed source classifications:
+
+- `DIATAXIS_FULL` — a complete Diataxis document supplied the needed information.
+- `DIATAXIS_ROUTED` — a Diataxis routing document directed the agent to a specific legacy source.
+- `LEGACY_FALLBACK` — no complete Diataxis document or Diataxis routing document existed, so the agent searched legacy documentation directly.
+
+Required agent report format:
+
+```text
+DOC_SOURCE: DIATAXIS_FULL | DIATAXIS_ROUTED | LEGACY_FALLBACK
+DOC_SOURCE_FILES:
+- <exact file path>
+DIATAXIS_GAP:
+- REQUIRED if LEGACY_FALLBACK was used
+- NONE if not applicable
+```
+
+Rules:
+
+- Agents must start with Diataxis when task-relevant documentation exists.
+- Agents may use legacy documentation through a Diataxis routing document.
+- Agents may use direct legacy search only as a safety valve when Diataxis lacks both full coverage and routing coverage.
+- Every `LEGACY_FALLBACK` occurrence must identify a Diataxis coverage gap for follow-up work.
+- `LEGACY_FALLBACK` does not create legacy authority; it identifies transition debt.
 
 ---
 
