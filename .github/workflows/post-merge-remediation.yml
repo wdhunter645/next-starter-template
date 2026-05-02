@@ -1,0 +1,26 @@
+name: Post-Merge Remediation
+
+on:
+  workflow_run:
+    workflows: ["Post-Merge Detection"]
+    types:
+      - completed
+
+permissions:
+  issues: write
+
+jobs:
+  remediate:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create Issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --title "Post-Merge Failure Detected" \
+            --body "Detection workflow failed. Investigate and fix." \
+            --label "post-merge-failure" \
+            --assignee "copilot-swe-agent[bot]"
