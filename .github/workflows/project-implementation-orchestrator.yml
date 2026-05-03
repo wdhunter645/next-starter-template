@@ -6,16 +6,21 @@ on:
 
 jobs:
   orchestrate:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
     steps:
       - name: Create Issue
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           issue_url=$(gh issue create \
             --repo "${{ github.repository }}" \
-            --title "TEST — Cursor Orchestration" \
-            --body "Orchestration test" \
+            --title "Cursor Orchestration — PR #${PR_NUMBER}: ${PR_TITLE}" \
+            --body "Triggered by merge of PR #${PR_NUMBER} (${PR_TITLE})." \
             --label "agent:cursor")
           issue_number=${issue_url##*/}
           gh issue comment "$issue_number" \
