@@ -1,0 +1,16 @@
+name: Enforce PR Only Changes
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  block-direct-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Fail if direct push
+        run: |
+          echo "Direct pushes to main are not allowed. All changes must go through approved PRs."
+          exit 1
