@@ -3,26 +3,173 @@ name: Project Implementation Orchestrator
 on:
   pull_request_target:
     types: [closed]
+  workflow_dispatch:
+    inputs:
+      source_pr:
+        description: "Source PR number for manual orchestration test"
+        required: true
+        type: string
+      agent:
+        description: "Agent route: cursor, copilot, or codex"
+        required: true
+        default: "cursor"
+        type: choice
+        options:
+          - cursor
+          - copilot
+          - codex
+      title:
+        description: "Implementation issue title"
+        required: true
+        type: string
+      body:
+        description: "Implementation issue body"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
-  orchestrate:
-    if: github.event.pull_request.merged == true
+  orchestrate-next-implementation:
+    name: Create next implementation issue
     runs-on: ubuntu-latest
-    permissions:
-      issues: write
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged == true &&
+       contains(github.event.pull_request.labels.*.name, 'orchestrate-next'))
+
     steps:
-      - name: Create Issue
+      - name: Resolve routing context
+        id: route
         env:
-          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          MANUAL_SOURCE_PR: ${{ inputs.source_pr }}
+          MANUAL_AGENT: ${{ inputs.agent }}
+          MANUAL_TITLE: ${{ inputs.title }}
+          MANUAL_BODY: ${{ inputs.body }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
         run: |
-          issue_url=$(gh issue create \
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            source_pr="$MANUAL_SOURCE_PR"
+            agent="$MANUAL_AGENT"
+            issue_title="$MANUAL_TITLE"
+            issue_body="$MANUAL_BODY"
+            pr_url="https://github.com/${{ github.repository }}/pull/$MANUAL_SOURCE_PR"
+          else
+            source_pr="$PR_NUMBER"
+            agent="cursor"
+
+            case ",$PR_LABELS," in
+              *,agent-next:copilot,*) agent="copilot" ;;
+              *,agent-next:codex,*) agent="codex" ;;
+              *,agent-next:cursor,*) agent="cursor" ;;
+            esac
+
+            issue_title="IMPLEMENTATION — Follow-up from PR #$PR_NUMBER: $PR_TITLE"
+            issue_body="Create the next implementation step generated from merged PR #$PR_NUMBER. Use the source PR as context, preserve scope, and open a PR when complete."
+            pr_url="$PR_URL"
+          fi
+
+          case "$agent" in
+            cursor|copilot|codex) ;;
+            *)
+              echo "Unsupported agent route: $agent"
+              exit 1
+              ;;
+          esac
+
+          {
+            echo "source_pr=$source_pr"
+            echo "agent=$agent"
+            echo "issue_title<<EOF"
+            echo "$issue_title"
+            echo "EOF"
+            echo "issue_body<<EOF"
+            cat <<BODY
+## Source
+- Source PR: $pr_url
+- Routed agent: $agent
+
+## Assignment
+$issue_body
+
+## Execution Rules
+- Start from this Issue.
+- Do not expand scope.
+- Make the smallest complete change.
+- Open one PR when complete.
+- Keep implementation, verification, and documentation aligned.
+
+## Agent Handoff
+$([ "$agent" = "cursor" ] && echo "@cursorai Please take this issue. Follow the task body exactly. Open a PR when complete. Do not expand scope.")
+$([ "$agent" = "codex" ] && echo "Codex route selected. Use the Codex-enabled repository workflow or assigned agent queue for execution.")
+$([ "$agent" = "copilot" ] && echo "Copilot route selected. Assigning to copilot-swe-agent[bot] where repository permissions allow.")
+BODY
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create implementation issue
+        id: create_issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_TITLE: ${{ steps.route.outputs.issue_title }}
+          ISSUE_BODY: ${{ steps.route.outputs.issue_body }}
+          AGENT: ${{ steps.route.outputs.agent }}
+        run: |
+          issue_url="$(gh issue create \
             --repo "${{ github.repository }}" \
-            --title "Cursor Orchestration — PR #${PR_NUMBER}: ${PR_TITLE}" \
-            --body "Triggered by merge of PR #${PR_NUMBER} (${PR_TITLE})." \
-            --label "agent:cursor")
-          issue_number=${issue_url##*/}
-          gh issue comment "$issue_number" \
+            --title "$ISSUE_TITLE" \
+            --body "$ISSUE_BODY" \
+            --label "implementation" \
+            --label "workflow:orchestrated" \
+            --label "status:queued" \
+            --label "agent:$AGENT")"
+
+          issue_number="${issue_url##*/}"
+          echo "issue_url=$issue_url" >> "$GITHUB_OUTPUT"
+          echo "issue_number=$issue_number" >> "$GITHUB_OUTPUT"
+
+      - name: Route to agent
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AGENT: ${{ steps.route.outputs.agent }}
+          ISSUE_NUMBER: ${{ steps.create_issue.outputs.issue_number }}
+        run: |
+          if [ "$AGENT" = "cursor" ]; then
+            gh issue comment "$ISSUE_NUMBER" \
+              --repo "${{ github.repository }}" \
+              --body "@cursorai Please take this issue. Follow the task body exactly. Open a PR when complete. Do not expand scope."
+          fi
+
+          if [ "$AGENT" = "copilot" ]; then
+            gh issue edit "$ISSUE_NUMBER" \
+              --repo "${{ github.repository }}" \
+              --add-assignee "copilot-swe-agent[bot]" || true
+          fi
+
+          if [ "$AGENT" = "codex" ]; then
+            gh issue comment "$ISSUE_NUMBER" \
+              --repo "${{ github.repository }}" \
+              --body "Codex route selected. Execute this issue through the repository Codex workflow or Codex agent queue."
+          fi
+
+      - name: Comment orchestration result on source PR
+        if: github.event_name == 'pull_request_target'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_URL: ${{ steps.create_issue.outputs.issue_url }}
+          AGENT: ${{ steps.route.outputs.agent }}
+        run: |
+          gh pr comment "${{ github.event.pull_request.number }}" \
             --repo "${{ github.repository }}" \
-            --body "@cursor Please take this issue.\n\n@cursor autofix on"
+            --body "Project implementation orchestration created next issue: $ISSUE_URL\n\nRouted agent: $AGENT"
