@@ -19,8 +19,21 @@ function runGh(args) {
   return execFileSync('gh', args, { encoding: 'utf8' }).trim();
 }
 
+function runGit(args) {
+  return execFileSync('git', args, { encoding: 'utf8' }).trim();
+}
+
 function isProductionReady(content) {
   return /Status:\s*production-ready/i.test(content);
+}
+
+function markIssuesCreated(filePath, content) {
+  const updated = content.replace(/Status:\s*production-ready/i, 'Status: issues-created');
+  if (updated !== content) {
+    fs.writeFileSync(filePath, updated);
+    return true;
+  }
+  return false;
 }
 
 function projectSlug(filePath) {
@@ -75,6 +88,8 @@ const files = fs.existsSync(planDir)
   ? fs.readdirSync(planDir).filter((name) => name.endsWith('.md') && name !== 'README.md')
   : [];
 
+const updatedPlans = [];
+
 for (const file of files) {
   const filePath = path.join(planDir, file);
   const content = fs.readFileSync(filePath, 'utf8');
@@ -119,4 +134,16 @@ for (const file of files) {
 
     console.log(`CREATED issue for ${marker}`);
   }
+
+  if (tasks.length > 0 && markIssuesCreated(filePath, content)) {
+    updatedPlans.push(filePath);
+  }
+}
+
+if (updatedPlans.length > 0) {
+  runGit(['config', 'user.name', 'github-actions[bot]']);
+  runGit(['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com']);
+  runGit(['add', ...updatedPlans]);
+  runGit(['commit', '-m', 'ops: mark implementation plans as issues-created']);
+  runGit(['push']);
 }
