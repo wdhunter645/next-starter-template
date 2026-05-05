@@ -141,27 +141,29 @@ jobs:
               return `- \`${file}\` — ${rendered.join('; ')}`;
             }).join('\n');
 
-            const body = `${marker}
-## 🚨 Docs Header Remediation Required
-
-@copilot Please fix the missing documentation headers in this PR.
-
-Insert the exact header template shown below at the top of each affected file, then populate every field using that file's context.
-Do **not** leave placeholder values blank.
-
-### Required Header Template
-\`\`\`md
-${template}
-\`\`\`
-
-### File-Specific Issues
-${filesList}
-
-### Local Verification Command
-\`\`\`bash
-./scripts/ci/docs_check_headers.sh .
-\`\`\`
-`;
+            const body = [
+              marker,
+              '## Docs Header Remediation Required',
+              '',
+              '@copilot Please fix the missing documentation headers in this PR.',
+              '',
+              "Insert the exact header template shown below at the top of each affected file, then populate every field using that file's context.",
+              'Do **not** leave placeholder values blank.',
+              '',
+              '### Required Header Template',
+              '```md',
+              template,
+              '```',
+              '',
+              '### File-Specific Issues',
+              filesList,
+              '',
+              '### Local Verification Command',
+              '```bash',
+              './scripts/ci/docs_check_headers.sh .',
+              '```',
+              '',
+            ].join('\n');
 
             const issue_number = context.payload.pull_request.number;
             const { data: comments } = await github.rest.issues.listComments({

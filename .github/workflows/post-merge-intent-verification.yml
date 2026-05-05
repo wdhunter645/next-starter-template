@@ -7,6 +7,7 @@ on:
 permissions:
   contents: read
   pull-requests: read
+  issues: write
 
 jobs:
   detect:
@@ -21,10 +22,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          PR=$(gh pr list --search "${GITHUB_SHA}" --state merged --json number -q '.[0].number')
+          PR=$(gh pr list --search "${GITHUB_SHA}" --state merged --json number -q '.[0].number // ""')
           echo "pr=$PR" >> $GITHUB_OUTPUT
 
+      - name: Skip direct pushes without merged PR context
+        if: steps.pr.outputs.pr == ''
+        run: |
+          echo "No merged pull request found for ${GITHUB_SHA}; skipping post-merge PR checks."
+
       - name: Collect
+        if: steps.pr.outputs.pr != ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -33,11 +40,12 @@ jobs:
           jq -r '.files[].path' pr.json > files.txt
 
       - name: Evaluate
+        if: steps.pr.outputs.pr != ''
         id: verify
         run: |
           failures=0
           grep -Eqi '\b(TODO|TBD|placeholder)\b' body.md && failures=$((failures+1))
-          for req in '## Change Summary' '## Acceptance Criteria' '## Risk' '## Validation'; do
+          for req in '## CHANGE SUMMARY' '## BUILD / TEST / VERIFICATION' '## ACCEPTANCE CRITERIA' '## REQUIRED PRE-REVIEW SELF-CHECK'; do
             grep -Fq "$req" body.md || failures=$((failures+1))
           done
           while IFS= read -r f; do
@@ -47,12 +55,13 @@ jobs:
           echo "failures=$failures" >> $GITHUB_OUTPUT
 
       - name: Comment
-        if: always()
+        if: always() && steps.pr.outputs.pr != ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh pr comment ${{ steps.pr.outputs.pr }} --body "Detection failures=${{ steps.verify.outputs.failures }}"
 
       - name: Fail if needed
+        if: steps.pr.outputs.pr != ''
         run: |
           if [ "${{ steps.verify.outputs.failures }}" != "0" ]; then
             exit 1

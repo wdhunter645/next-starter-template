@@ -5,12 +5,25 @@ on:
     branches:
       - main
 
+permissions:
+  pull-requests: read
+
 jobs:
   block-direct-push:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Fail if direct push
+      - name: Fail if push is not associated with a merged PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
-          echo "Direct pushes to main are not allowed. All changes must go through approved PRs."
+          pr_number="$(gh pr list --state merged --search "${GITHUB_SHA}" --json number -q '.[0].number')"
+
+          if [ -n "$pr_number" ]; then
+            echo "Push to main is associated with merged PR #${pr_number}."
+            exit 0
+          fi
+
+          echo "::error::Direct pushes to main are not allowed. All changes must go through approved PRs."
           exit 1
