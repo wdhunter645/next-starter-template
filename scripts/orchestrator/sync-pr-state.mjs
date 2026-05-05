@@ -16,7 +16,7 @@ function runGh(args) {
 }
 
 function linkedIssueNumber(body) {
-  const match = body.match(/(?:Issue:(?:\*\*)?\s*#)(\d+)/i);
+  const match = body.match(/(?:\*\*Issue:\*\*|Issue:)\s*(?:https?:\/\/github\.com\/[^/\s]+\/[^/\s]+\/issues\/|#)(\d+)/i);
   return match ? match[1] : '';
 }
 
@@ -33,7 +33,7 @@ const pr = JSON.parse(prJson);
 const issueNumber = linkedIssueNumber(pr.body || '');
 
 if (!issueNumber) {
-  console.log(`No linked issue found for PR #${prNumber}.`);
+  console.log(`No linked orchestrator issue found for PR #${prNumber}.`);
   process.exit(0);
 }
 
@@ -58,6 +58,8 @@ if (action === 'post_merge_failure') {
   setStatus(issueNumber, 'status:post-merge-verify', 'status:failed', `Post-merge verification failed for PR #${prNumber}. Recovery issue/PR required: ${pr.url}`);
   process.exit(0);
 }
+
+if (action === 'closed') process.exit(0);
 
 console.error(`Unsupported SYNC_ACTION: ${action}`);
 process.exit(1);
