@@ -135,7 +135,7 @@ for (const file of files) {
     console.log(`CREATED issue for ${marker}`);
   }
 
-  if (tasks.length > 0 && markIssuesCreated(filePath, content)) {
+  if (markIssuesCreated(filePath, content)) {
     updatedPlans.push(filePath);
   }
 }
@@ -145,5 +145,5 @@ if (updatedPlans.length > 0) {
   runGit(['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com']);
   runGit(['add', ...updatedPlans]);
   runGit(['commit', '-m', 'ops: mark implementation plans as issues-created']);
-  runGit(['push']);
+  runGit(['push', 'origin', 'HEAD:main']);
 }
