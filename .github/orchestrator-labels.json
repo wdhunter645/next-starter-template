@@ -2,6 +2,7 @@
   "labels": [
     "orchestrator",
     "status:queued",
+    "status:blocked",
     "status:assigned",
     "status:pr-draft",
     "status:implementation",

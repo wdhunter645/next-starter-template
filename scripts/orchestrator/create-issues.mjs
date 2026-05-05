@@ -2,6 +2,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { execFileSync } from 'node:child_process';
 
 const repo = process.env.GITHUB_REPOSITORY;
@@ -65,7 +66,11 @@ function issueExists(marker) {
   return JSON.parse(result).length > 0;
 }
 
-function labelsForTask(task) {
+export function statusLabelForCreatedTask(createdIssueCount) {
+  return createdIssueCount === 0 ? 'status:queued' : 'status:blocked';
+}
+
+export function agentForTask(task) {
   const route = routing.taskTypes[task.type];
   if (!route) {
     throw new Error(`Unknown task type: ${task.type}`);
@@ -76,74 +81,91 @@ function labelsForTask(task) {
     throw new Error(`Agent ${agent} is not allowed for task type ${task.type}`);
   }
 
+  return agent;
+}
+
+export function labelsForTask(task, statusLabel = 'status:queued') {
+  const agent = agentForTask(task);
+
   return [
     'orchestrator',
-    'status:queued',
+    statusLabel,
     `type:${task.type}`,
     `agent:${agent}`
   ];
 }
 
-const files = fs.existsSync(planDir)
-  ? fs.readdirSync(planDir).filter((name) => name.endsWith('.md') && name !== 'README.md')
-  : [];
+export function main() {
+  const files = fs.existsSync(planDir)
+    ? fs.readdirSync(planDir).filter((name) => name.endsWith('.md') && name !== 'README.md')
+    : [];
 
-const updatedPlans = [];
+  const updatedPlans = [];
+  let taskOrdinal = 0;
 
-for (const file of files) {
-  const filePath = path.join(planDir, file);
-  const content = fs.readFileSync(filePath, 'utf8');
-  if (!isProductionReady(content)) {
-    continue;
-  }
-
-  const slug = projectSlug(filePath);
-  const tasks = parseTasks(content);
-
-  for (const task of tasks) {
-    const marker = `lgfc-task-id:${slug}:${task.id}`;
-    if (issueExists(marker)) {
-      console.log(`SKIP existing issue for ${marker}`);
+  for (const file of files) {
+    const filePath = path.join(planDir, file);
+    const content = fs.readFileSync(filePath, 'utf8');
+    if (!isProductionReady(content)) {
       continue;
     }
 
-    const labels = labelsForTask(task);
-    const body = [
-      `<!-- ${marker} -->`,
-      '',
-      `Implementation Plan: \`${filePath}\``,
-      `Task: ${task.id}`,
-      `Type: ${task.type}`,
-      `Agent: ${task.agent}`,
-      '',
-      task.block
-    ].join('\n');
+    const slug = projectSlug(filePath);
+    const tasks = parseTasks(content);
 
-    runGh([
-      'issue',
-      'create',
-      '--repo',
-      repo,
-      '--title',
-      `[${task.id}] ${task.title}`,
-      '--body',
-      body,
-      '--label',
-      labels.join(',')
-    ]);
+    for (const task of tasks) {
+      const marker = `lgfc-task-id:${slug}:${task.id}`;
+      if (issueExists(marker)) {
+        console.log(`SKIP existing issue for ${marker}`);
+        taskOrdinal += 1;
+        continue;
+      }
 
-    console.log(`CREATED issue for ${marker}`);
+      const agent = agentForTask(task);
+      const statusLabel = statusLabelForCreatedTask(taskOrdinal);
+      const labels = labelsForTask(task, statusLabel);
+      const body = [
+        `<!-- ${marker} -->`,
+        '',
+        `Implementation Plan: \`${filePath}\``,
+        `Task: ${task.id}`,
+        `Type: ${task.type}`,
+        `Agent: ${agent}`,
+        '',
+        task.block
+      ].join('\n');
+
+      runGh([
+        'issue',
+        'create',
+        '--repo',
+        repo,
+        '--title',
+        `[${task.id}] ${task.title}`,
+        '--body',
+        body,
+        '--label',
+        labels.join(',')
+      ]);
+
+      taskOrdinal += 1;
+      console.log(`CREATED issue for ${marker}`);
+    }
+
+    if (markIssuesCreated(filePath, content)) {
+      updatedPlans.push(filePath);
+    }
   }
 
-  if (markIssuesCreated(filePath, content)) {
-    updatedPlans.push(filePath);
+  if (updatedPlans.length > 0) {
+    runGit(['config', 'user.name', 'github-actions[bot]']);
+    runGit(['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com']);
+    runGit(['add', ...updatedPlans]);
+    runGit(['commit', '-m', 'ops: mark implementation plans as issues-created']);
+    runGit(['push', 'origin', 'HEAD:main']);
   }
 }
 
-if (updatedPlans.length > 0) {
-  runGit(['config', 'user.name', 'github-actions[bot]']);
-  runGit(['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com']);
-  runGit(['add', ...updatedPlans]);
-  runGit(['commit', '-m', 'ops: mark implementation plans as issues-created']);
-  runGit(['push', 'origin', 'HEAD:main']);
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main();
 }
