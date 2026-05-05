@@ -31,7 +31,7 @@ function setStatus(issueNumber, removeLabel, addLabel, comment) {
   const args = ['issue', 'edit', issueNumber, '--repo', repo];
   if (removeLabel && labels.has(removeLabel)) args.push('--remove-label', removeLabel);
   if (addLabel && !labels.has(addLabel)) args.push('--add-label', addLabel);
-  if (args.length > 4) runGh(args);
+  if (args.length > 5) runGh(args);
   if (comment) runGh(['issue', 'comment', issueNumber, '--repo', repo, '--body', comment]);
 }
 
