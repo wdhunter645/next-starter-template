@@ -64,6 +64,15 @@ jobs:
           gh pr comment "${{ steps.pr.outputs.pr }}" --body "Detection failures=${failures}" || \
             echo "::warning::Unable to post detection comment; continuing because the verification result is enforced separately."
 
+      - name: Sync orchestrator post-merge state
+        if: steps.pr.outputs.pr != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.pr.outputs.pr }}
+          SYNC_ACTION: ${{ steps.verify.outputs.failures == '0' && 'post_merge_success' || 'post_merge_failure' }}
+        run: node scripts/orchestrator/sync-pr-state.mjs
+
       - name: Fail if needed
         if: steps.pr.outputs.pr != ''
         run: |

@@ -1,15 +1,11 @@
 #!/usr/bin/env node
 
 import { execFileSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 
 const repo = process.env.GITHUB_REPOSITORY;
 const prNumber = process.env.PR_NUMBER;
 const action = process.env.SYNC_ACTION;
-
-if (!repo || !prNumber || !action) {
-  console.error('GITHUB_REPOSITORY, PR_NUMBER, and SYNC_ACTION are required.');
-  process.exit(1);
-}
 
 function runGh(args) {
   return execFileSync('gh', args, { encoding: 'utf8' }).trim();
@@ -36,55 +32,75 @@ function linkedIssueNumber(body) {
   return match ? match[1] : '';
 }
 
-function setStatus(issueNumber, removeLabel, addLabel, comment) {
-  const labels = issueLabelNames(issueNumber);
-  const availableLabels = repoLabelNames();
+export function setStatus(
+  issueNumber,
+  removeLabel,
+  addLabel,
+  comment,
+  { getLabels = issueLabelNames, getRepoLabels = repoLabelNames, run = runGh, warn = console.warn } = {}
+) {
+  const labels = getLabels(issueNumber);
   const args = ['issue', 'edit', issueNumber, '--repo', repo];
   if (removeLabel && labels.has(removeLabel)) args.push('--remove-label', removeLabel);
   if (addLabel && !labels.has(addLabel)) {
+    const availableLabels = getRepoLabels();
     if (availableLabels.has(addLabel)) {
       args.push('--add-label', addLabel);
     } else {
-      console.warn(`Status label ${addLabel} does not exist; leaving issue #${issueNumber} without that label.`);
+      warn(`Status label ${addLabel} does not exist; leaving issue #${issueNumber} without that label.`);
     }
   }
-  if (args.length > 5) runGh(args);
-  if (comment) runGh(['issue', 'comment', issueNumber, '--repo', repo, '--body', comment]);
+  if (args.length > 5) run(args);
+  if (comment) run(['issue', 'comment', issueNumber, '--repo', repo, '--body', comment]);
 }
 
-const prJson = runGh(['pr', 'view', prNumber, '--repo', repo, '--json', 'body,url,mergedAt,state']);
-const pr = JSON.parse(prJson);
-const issueNumber = linkedIssueNumber(pr.body || '');
-const isMerged = Boolean(pr.mergedAt) || pr.state === 'MERGED';
+export function syncPrState({ pr, prNumber, action, setStatusFn = setStatus, run = runGh, log = console.log }) {
+  const issueNumber = linkedIssueNumber(pr.body || '');
+  const isMerged = Boolean(pr.mergedAt) || pr.state === 'MERGED';
 
-if (!issueNumber) {
-  console.log(`No linked orchestrator issue found for PR #${prNumber}.`);
-  process.exit(0);
+  if (!issueNumber) {
+    log(`No linked orchestrator issue found for PR #${prNumber}.`);
+    return 'skipped';
+  }
+
+  if (action === 'ready_for_review') {
+    setStatusFn(issueNumber, 'status:implementation', 'status:review', `PR #${prNumber} is ready for review: ${pr.url}`);
+    return 'review';
+  }
+
+  if (action === 'merged') {
+    if (!isMerged) return 'skipped';
+    setStatusFn(issueNumber, 'status:review', 'status:post-merge-verify', `PR #${prNumber} merged. Post-merge verification pending: ${pr.url}`);
+    return 'post_merge_verify';
+  }
+
+  if (action === 'post_merge_success') {
+    setStatusFn(issueNumber, 'status:post-merge-verify', 'status:complete', `Post-merge verification passed for PR #${prNumber}: ${pr.url}`);
+    run(['issue', 'close', issueNumber, '--repo', repo, '--comment', `Task complete. PR #${prNumber} merged and post-merge verification passed.`]);
+    return 'complete';
+  }
+
+  if (action === 'post_merge_failure') {
+    setStatusFn(issueNumber, 'status:post-merge-verify', 'status:failed', `Post-merge verification failed for PR #${prNumber}. Recovery issue/PR required: ${pr.url}`);
+    return 'failed';
+  }
+
+  if (action === 'closed') return 'skipped';
+
+  throw new Error(`Unsupported SYNC_ACTION: ${action}`);
 }
 
-if (action === 'ready_for_review') {
-  setStatus(issueNumber, 'status:implementation', 'status:review', `PR #${prNumber} is ready for review: ${pr.url}`);
-  process.exit(0);
+export function main() {
+  if (!repo || !prNumber || !action) {
+    console.error('GITHUB_REPOSITORY, PR_NUMBER, and SYNC_ACTION are required.');
+    process.exit(1);
+  }
+
+  const prJson = runGh(['pr', 'view', prNumber, '--repo', repo, '--json', 'body,url,mergedAt,state']);
+  const pr = JSON.parse(prJson);
+  syncPrState({ pr, prNumber, action });
 }
 
-if (action === 'merged') {
-  if (!isMerged) process.exit(0);
-  setStatus(issueNumber, 'status:review', 'status:post-merge-verify', `PR #${prNumber} merged. Post-merge verification pending: ${pr.url}`);
-  process.exit(0);
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main();
 }
-
-if (action === 'post_merge_success') {
-  setStatus(issueNumber, 'status:post-merge-verify', 'status:complete', `Post-merge verification passed for PR #${prNumber}: ${pr.url}`);
-  runGh(['issue', 'close', issueNumber, '--repo', repo, '--comment', `Task complete. PR #${prNumber} merged and post-merge verification passed.`]);
-  process.exit(0);
-}
-
-if (action === 'post_merge_failure') {
-  setStatus(issueNumber, 'status:post-merge-verify', 'status:failed', `Post-merge verification failed for PR #${prNumber}. Recovery issue/PR required: ${pr.url}`);
-  process.exit(0);
-}
-
-if (action === 'closed') process.exit(0);
-
-console.error(`Unsupported SYNC_ACTION: ${action}`);
-process.exit(1);
