@@ -35,7 +35,18 @@ function normalizeRequiredString(value: unknown, field: string, index: number): 
 }
 
 function normalizeAmount(value: unknown, field: string, index: number): number {
-  const normalized = typeof value === 'number' ? value : typeof value === 'string' ? Number(value.trim()) : Number.NaN;
+  let normalized = Number.NaN;
+
+  if (typeof value === 'number') {
+    normalized = value;
+  } else if (typeof value === 'string') {
+    const trimmedValue = value.trim();
+    if (!trimmedValue) {
+      throw new Error(`Fundraiser record ${index} has invalid ${field}.`);
+    }
+
+    normalized = Number(trimmedValue);
+  }
 
   if (!Number.isFinite(normalized) || normalized < 0) {
     throw new Error(`Fundraiser record ${index} has invalid ${field}.`);

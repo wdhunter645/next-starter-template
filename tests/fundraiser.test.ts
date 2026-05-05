@@ -38,8 +38,8 @@ describe('fundraiser ingest layer', () => {
         {
           team_id: 'team-one',
           team_name: 'Team One',
-          total_amount: '125.5',
-          donor_count: '4',
+          total_amount: ' 125.5 ',
+          donor_count: ' 4 ',
           timestamp: '2026-05-01T12:00:00Z',
         },
       ]),
@@ -79,5 +79,29 @@ describe('fundraiser ingest layer', () => {
         },
       ]),
     ).toThrow(/non-integer donor_count/i);
+
+    expect(() =>
+      normalizeFundraiserRecords([
+        {
+          team_id: 'bad-team',
+          team_name: 'Bad Team',
+          total_amount: '   ',
+          donor_count: 1,
+          timestamp: '2026-05-01T12:00:00Z',
+        },
+      ]),
+    ).toThrow(/invalid total_amount/i);
+
+    expect(() =>
+      normalizeFundraiserRecords([
+        {
+          team_id: 'bad-team',
+          team_name: 'Bad Team',
+          total_amount: 10,
+          donor_count: '',
+          timestamp: '2026-05-01T12:00:00Z',
+        },
+      ]),
+    ).toThrow(/invalid donor_count/i);
   });
 });
