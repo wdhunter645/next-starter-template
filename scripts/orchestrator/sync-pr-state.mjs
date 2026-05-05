@@ -11,6 +11,16 @@ function runGh(args) {
   return execFileSync('gh', args, { encoding: 'utf8' }).trim();
 }
 
+let repoLabels;
+function repoLabelNames() {
+  if (!repoLabels) {
+    const labelsJson = runGh(['label', 'list', '--repo', repo, '--json', 'name', '--limit', '1000']);
+    const labels = JSON.parse(labelsJson);
+    repoLabels = new Set((labels || []).map((label) => label.name));
+  }
+  return repoLabels;
+}
+
 function issueLabelNames(issueNumber) {
   const issueJson = runGh(['issue', 'view', issueNumber, '--repo', repo, '--json', 'labels']);
   const issue = JSON.parse(issueJson);
@@ -22,11 +32,24 @@ function linkedIssueNumber(body) {
   return match ? match[1] : '';
 }
 
-export function setStatus(issueNumber, removeLabel, addLabel, comment, { getLabels = issueLabelNames, run = runGh } = {}) {
+export function setStatus(
+  issueNumber,
+  removeLabel,
+  addLabel,
+  comment,
+  { getLabels = issueLabelNames, getRepoLabels = repoLabelNames, run = runGh, warn = console.warn } = {}
+) {
   const labels = getLabels(issueNumber);
   const args = ['issue', 'edit', issueNumber, '--repo', repo];
   if (removeLabel && labels.has(removeLabel)) args.push('--remove-label', removeLabel);
-  if (addLabel && !labels.has(addLabel)) args.push('--add-label', addLabel);
+  if (addLabel && !labels.has(addLabel)) {
+    const availableLabels = getRepoLabels();
+    if (availableLabels.has(addLabel)) {
+      args.push('--add-label', addLabel);
+    } else {
+      warn(`Status label ${addLabel} does not exist; leaving issue #${issueNumber} without that label.`);
+    }
+  }
   if (args.length > 5) run(args);
   if (comment) run(['issue', 'comment', issueNumber, '--repo', repo, '--body', comment]);
 }

@@ -19,6 +19,8 @@ export const ACTIVE_STATES = [
 ];
 
 const ACTIVE = new Set(ACTIVE_STATES);
+const FAILED_STATE = 'status:failed';
+const BLOCKED_STATE = 'status:blocked';
 
 function gh(args) {
   return execFileSync('gh', args, { encoding: 'utf8' }).trim();
@@ -32,58 +34,57 @@ function parseIssues(output) {
   return JSON.parse(output || '[]');
 }
 
-function queryIssues(label, { limit = '1', state = 'open', sort = '', direction = '' } = {}) {
-  const args = [
+function queryIssues({ limit = '100', state = 'open', search = 'label:orchestrator' } = {}) {
+  return parseIssues(gh([
     'issue',
     'list',
     '--repo',
     repo,
     '--state',
     state,
-    '--label',
-    'orchestrator',
-    '--label',
-    label,
+    '--search',
+    search,
     '--json',
     'number,title,labels,createdAt',
     '--limit',
     limit
-  ];
-
-  if (sort && direction) args.push('--search', `sort:${sort}-${direction}`);
-
-  return parseIssues(gh(args));
+  ]));
 }
 
-export function hasFailedIssue(query = queryIssues) {
-  return query('status:failed', { limit: '1', state: 'all' }).some(i => has(i, 'status:failed'));
+function labels(issue) {
+  return new Set(issue.labels.map((label) => label.name));
 }
 
-export function findActiveIssue(query = queryIssues) {
-  for (const state of ACTIVE_STATES) {
-    const active = query(state, { limit: '1' }).find(i => has(i, state) && i.labels.some(l => ACTIVE.has(l.name)));
-    if (active) return active;
-  }
-  return null;
+function firstIssueWithLabel(issues, label) {
+  return issues.find((issue) => labels(issue).has(label)) || null;
 }
 
-export function oldestBlockedIssue(query = queryIssues) {
-  return query('status:blocked', { limit: '1', sort: 'created', direction: 'asc' })
-    .filter(i => has(i, 'status:blocked'))
+export function hasFailedIssue(issues) {
+  return firstIssueWithLabel(issues, FAILED_STATE) !== null;
+}
+
+export function findActiveIssue(issues) {
+  return issues.find((issue) => issue.labels.some((label) => ACTIVE.has(label.name))) || null;
+}
+
+export function oldestBlockedIssue(issues) {
+  return issues
+    .filter((issue) => has(issue, BLOCKED_STATE))
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))[0] || null;
 }
 
 export function queueAdvanceDecision(query = queryIssues) {
-  if (hasFailedIssue(query)) return { action: 'halt_failed' };
+  const issues = query();
+  if (hasFailedIssue(issues)) return { action: 'halt_failed' };
 
-  const active = findActiveIssue(query);
+  const active = findActiveIssue(issues);
   if (active) {
     return has(active, 'status:queued')
       ? { action: 'halt_queued' }
       : { action: 'halt_active' };
   }
 
-  const next = oldestBlockedIssue(query);
+  const next = oldestBlockedIssue(issues);
   if (!next) return { action: 'done_no_blocked' };
 
   return { action: 'advance', issue: next };

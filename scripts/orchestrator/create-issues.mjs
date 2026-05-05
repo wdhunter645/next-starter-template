@@ -97,7 +97,7 @@ export function labelsForTask(task, statusLabel = 'status:queued') {
 
 export function main() {
   const files = fs.existsSync(planDir)
-    ? fs.readdirSync(planDir).filter((name) => name.endsWith('.md') && name !== 'README.md')
+    ? fs.readdirSync(planDir).filter((name) => name.endsWith('.md') && name !== 'README.md').sort()
     : [];
 
   const updatedPlans = [];

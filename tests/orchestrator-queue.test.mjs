@@ -22,7 +22,7 @@ function issue(number, status, createdAt) {
 }
 
 function queryFor(statuses) {
-  return vi.fn((status) => statuses[status] || []);
+  return vi.fn(() => Object.values(statuses).flat());
 }
 
 describe('orchestrator issue creation queue model', () => {
