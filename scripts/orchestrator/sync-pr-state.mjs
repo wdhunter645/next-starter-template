@@ -16,7 +16,7 @@ function runGh(args) {
 }
 
 function linkedIssueNumber(body) {
-  const match = body.match(/(?:Issue:\*\*\s*#|Issue:\s*#|#)(\d+)/i);
+  const match = body.match(/(?:Issue:(?:\*\*)?\s*#)(\d+)/i);
   return match ? match[1] : '';
 }
 
@@ -44,9 +44,20 @@ if (action === 'ready_for_review') {
 
 if (action === 'merged') {
   if (!pr.merged) process.exit(0);
-  setStatus(issueNumber, 'status:review', 'status:merged', `PR #${prNumber} merged. Post-merge verification pending: ${pr.url}`);
-  setStatus(issueNumber, 'status:merged', 'status:post-merge-verify', null);
+  setStatus(issueNumber, 'status:review', 'status:post-merge-verify', `PR #${prNumber} merged. Post-merge verification pending: ${pr.url}`);
   process.exit(0);
 }
 
-console.log(`Unsupported SYNC_ACTION: ${action}`);
+if (action === 'post_merge_success') {
+  setStatus(issueNumber, 'status:post-merge-verify', 'status:complete', `Post-merge verification passed for PR #${prNumber}: ${pr.url}`);
+  runGh(['issue', 'close', issueNumber, '--repo', repo, '--comment', `Task complete. PR #${prNumber} merged and post-merge verification passed.`]);
+  process.exit(0);
+}
+
+if (action === 'post_merge_failure') {
+  setStatus(issueNumber, 'status:post-merge-verify', 'status:failed', `Post-merge verification failed for PR #${prNumber}. Recovery issue/PR required: ${pr.url}`);
+  process.exit(0);
+}
+
+console.error(`Unsupported SYNC_ACTION: ${action}`);
+process.exit(1);
