@@ -33,7 +33,7 @@ function slugify(value) {
 }
 
 function extractBlock(body, heading) {
-  const pattern = new RegExp(`${heading}:\\n([\\s\\S]*?)(?:\\n[A-Z][A-Za-z ]+:|\\n## |$)`, 'm');
+  const pattern = new RegExp(`${heading}:\\n([\\s\\S]*?)(?:\\n[A-Z][A-Za-z ]+:|\\n## |$)`);
   const match = body.match(pattern);
   return match ? match[1].trim() : '';
 }
@@ -64,6 +64,8 @@ const validation = extractBlock(issueBody, 'Validation') || '- To be completed b
 
 runGit(['fetch', 'origin', baseBranch]);
 runGit(['checkout', '-B', branchName, `origin/${baseBranch}`]);
+runGit(['config', 'user.name', 'github-actions[bot]']);
+runGit(['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com']);
 runGit(['commit', '--allow-empty', '-m', `orchestrator: draft PR for issue #${issue.number}`]);
 runGit(['push', '-u', 'origin', branchName]);
 
@@ -185,8 +187,7 @@ const prUrl = runGh([
   prBody
 ]);
 
-runGh(['issue', 'edit', issueNumber, '--repo', repo, '--remove-label', 'status:queued']);
-runGh(['issue', 'edit', issueNumber, '--repo', repo, '--add-label', 'status:pr-draft']);
+runGh(['issue', 'edit', issueNumber, '--repo', repo, '--remove-label', 'status:queued', '--add-label', 'status:pr-draft']);
 runGh([
   'issue',
   'comment',
