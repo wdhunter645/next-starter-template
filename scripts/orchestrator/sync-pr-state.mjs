@@ -15,6 +15,7 @@ function runGh(args) {
   return execFileSync('gh', args, { encoding: 'utf8' }).trim();
 }
 
+<<<<<<< cursor/fix-post-merge-label-check-4270
 const repoLabelExistsCache = new Map();
 
 function repoLabelExists(labelName) {
@@ -28,6 +29,16 @@ function repoLabelExists(labelName) {
   }
 
   return repoLabelExistsCache.get(labelName);
+=======
+let repoLabels;
+function repoLabelNames() {
+  if (!repoLabels) {
+    const labelsJson = runGh(['label', 'list', '--repo', repo, '--json', 'name', '--limit', '1000']);
+    const labels = JSON.parse(labelsJson);
+    repoLabels = new Set((labels || []).map((label) => label.name));
+  }
+  return repoLabels;
+>>>>>>> main
 }
 
 function issueLabelNames(issueNumber) {
@@ -43,6 +54,7 @@ function linkedIssueNumber(body) {
 
 function setStatus(issueNumber, removeLabel, addLabel, comment) {
   const labels = issueLabelNames(issueNumber);
+  const availableLabels = repoLabelNames();
   const args = ['issue', 'edit', issueNumber, '--repo', repo];
   if (addLabel && !labels.has(addLabel)) {
     if (repoLabelExists(addLabel)) {
@@ -54,6 +66,16 @@ function setStatus(issueNumber, removeLabel, addLabel, comment) {
     }
   }
   if (removeLabel && labels.has(removeLabel)) args.push('--remove-label', removeLabel);
+<<<<<<< cursor/fix-post-merge-label-check-4270
+=======
+  if (addLabel && !labels.has(addLabel)) {
+    if (availableLabels.has(addLabel)) {
+      args.push('--add-label', addLabel);
+    } else {
+      console.warn(`Status label ${addLabel} does not exist; leaving issue #${issueNumber} without that label.`);
+    }
+  }
+>>>>>>> main
   if (args.length > 5) runGh(args);
   if (comment) runGh(['issue', 'comment', issueNumber, '--repo', repo, '--body', comment]);
 }
