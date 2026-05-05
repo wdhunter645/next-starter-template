@@ -111,7 +111,7 @@ $issue_body
 - Keep implementation, verification, and documentation aligned.
 
 ## Agent Handoff
-$([ "$agent" = "cursor" ] && echo "@cursorai Please take this issue. Follow the task body exactly. Open a PR when complete. Do not expand scope.")
+$([ "$agent" = "cursor" ] && echo "@cursor Please take this issue. Follow the task body exactly. Create a working branch and open a PR against main when complete. Do not expand scope.")
 $([ "$agent" = "codex" ] && echo "Codex route selected. Use the Codex-enabled repository workflow or assigned agent queue for execution.")
 $([ "$agent" = "copilot" ] && echo "Copilot route selected. Assigning to copilot-swe-agent[bot] where repository permissions allow.")
 BODY
@@ -148,7 +148,7 @@ BODY
           if [ "$AGENT" = "cursor" ]; then
             gh issue comment "$ISSUE_NUMBER" \
               --repo "${{ github.repository }}" \
-              --body "@cursorai Please take this issue. Follow the task body exactly. Open a PR when complete. Do not expand scope."
+              --body "@cursor Please take this issue. Follow the task body exactly. Create a working branch and open a PR against main when complete. Do not expand scope."
           fi
 
           if [ "$AGENT" = "copilot" ]; then

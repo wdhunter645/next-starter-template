@@ -11,6 +11,7 @@
     "infra": {
       "allow_prefixes": [
         ".github/",
+        "PROMPTS/",
         "scripts/",
         "functions/",
         "src/app/admin/",

@@ -14,6 +14,7 @@
 - DO NOT run git commands
 - DO NOT create branches
 - DO NOT create PRs
+- EXCEPTION: GitHub-assigned implementation issues that explicitly ask Cursor to open a PR may create a working branch and PR.
 - DO NOT modify files outside scope
 
 ## OUTPUT

@@ -60,8 +60,10 @@ After approval, Cursor may:
 
 - edit ONLY approved files  
 - run ONLY required commands  
-- create branch ONLY if instructed  
-- open PR ONLY if instructed  
+- create a working branch ONLY if the approved GitHub Issue/PR explicitly instructs it
+- open a PR ONLY if the approved GitHub Issue/PR explicitly instructs it
+
+GitHub Issues created by repository automation may be implementation requests. If such an Issue explicitly says to create a branch and open a PR against `main`, that instruction is approved execution scope.
 
 ---
 
