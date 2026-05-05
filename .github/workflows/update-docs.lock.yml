@@ -29,6 +29,10 @@ name: "Auto-Sync Documentation"
   push:
     branches:
     - main
+    paths:
+    - src/app/**
+    - src/components/**
+    - src/lib/**
 
 permissions: {}
 

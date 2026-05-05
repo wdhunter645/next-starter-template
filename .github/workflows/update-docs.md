@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'src/app/**'
+      - 'src/components/**'
+      - 'src/lib/**'
 permissions:
   contents: read
   pull-requests: read
