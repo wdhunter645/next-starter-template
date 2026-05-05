@@ -66,8 +66,26 @@ function issueExists(marker) {
   return JSON.parse(result).length > 0;
 }
 
-export function statusLabelForCreatedTask(createdIssueCount) {
-  return createdIssueCount === 0 ? 'status:queued' : 'status:blocked';
+function openOrchestratorIssueExists() {
+  const result = runGh([
+    'issue',
+    'list',
+    '--repo',
+    repo,
+    '--state',
+    'open',
+    '--search',
+    'label:orchestrator',
+    '--json',
+    'number',
+    '--limit',
+    '1'
+  ]);
+  return JSON.parse(result).length > 0;
+}
+
+export function statusLabelForCreatedTask(createdIssueCount, queueAlreadyOpen = false) {
+  return !queueAlreadyOpen && createdIssueCount === 0 ? 'status:queued' : 'status:blocked';
 }
 
 export function agentForTask(task) {
@@ -101,7 +119,8 @@ export function main() {
     : [];
 
   const updatedPlans = [];
-  let taskOrdinal = 0;
+  const queueAlreadyOpen = openOrchestratorIssueExists();
+  let createdIssueCount = 0;
 
   for (const file of files) {
     const filePath = path.join(planDir, file);
@@ -117,12 +136,11 @@ export function main() {
       const marker = `lgfc-task-id:${slug}:${task.id}`;
       if (issueExists(marker)) {
         console.log(`SKIP existing issue for ${marker}`);
-        taskOrdinal += 1;
         continue;
       }
 
       const agent = agentForTask(task);
-      const statusLabel = statusLabelForCreatedTask(taskOrdinal);
+      const statusLabel = statusLabelForCreatedTask(createdIssueCount, queueAlreadyOpen);
       const labels = labelsForTask(task, statusLabel);
       const body = [
         `<!-- ${marker} -->`,
@@ -148,7 +166,7 @@ export function main() {
         labels.join(',')
       ]);
 
-      taskOrdinal += 1;
+      createdIssueCount += 1;
       console.log(`CREATED issue for ${marker}`);
     }
 
