@@ -64,8 +64,11 @@ function remoteBranchExists(branchName) {
   try {
     runGit(['ls-remote', '--exit-code', '--heads', 'origin', branchName]);
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    if (typeof error === 'object' && error !== null && 'status' in error && error.status === 2) {
+      return false;
+    }
+    throw error;
   }
 }
 
