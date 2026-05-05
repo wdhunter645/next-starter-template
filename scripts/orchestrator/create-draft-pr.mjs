@@ -62,7 +62,7 @@ function existingPrUrl(branchName) {
 
 function remoteBranchExists(branchName) {
   try {
-    runGit(['ls-remote', '--exit-code', '--heads', 'origin', branchName]);
+    runGit(['ls-remote', '--exit-code', '--heads', 'origin', `refs/heads/${branchName}`]);
     return true;
   } catch (error) {
     if (typeof error === 'object' && error !== null && 'status' in error && error.status === 2) {
