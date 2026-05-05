@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "defaultConcurrency": "serial",
+  "taskTypes": {
+    "repository": {
+      "agent": "codex",
+      "labels": ["orchestrator", "type:repository", "agent:codex"]
+    },
+    "website": {
+      "agent": "cursor",
+      "labels": ["orchestrator", "type:website", "agent:cursor"]
+    },
+    "governance": {
+      "agent": "copilot",
+      "labels": ["orchestrator", "type:governance", "agent:copilot"]
+    },
+    "docs": {
+      "agent": "atlas",
+      "labels": ["orchestrator", "type:docs", "agent:atlas"]
+    },
+    "recovery": {
+      "agent": "atlas",
+      "labels": ["orchestrator", "type:recovery", "agent:atlas"]
+    }
+  },
+  "states": [
+    "status:queued",
+    "status:assigned",
+    "status:pr-draft",
+    "status:implementation",
+    "status:review",
+    "status:merged",
+    "status:post-merge-verify",
+    "status:complete",
+    "status:failed"
+  ]
+}
