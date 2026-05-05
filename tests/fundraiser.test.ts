@@ -103,5 +103,17 @@ describe('fundraiser ingest layer', () => {
         },
       ]),
     ).toThrow(/invalid donor_count/i);
+
+    expect(() =>
+      normalizeFundraiserRecords([
+        {
+          team_id: 'bad-team',
+          team_name: 'Bad Team',
+          total_amount: 10,
+          donor_count: '   ',
+          timestamp: '2026-05-01T12:00:00Z',
+        },
+      ]),
+    ).toThrow(/invalid donor_count/i);
   });
 });
