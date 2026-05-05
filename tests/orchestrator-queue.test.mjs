@@ -41,6 +41,20 @@ describe('orchestrator issue creation queue model', () => {
     expect(labels[1]).toContain('status:blocked');
     expect(labels[2]).toContain('status:blocked');
   });
+
+  it('labels every produced task as blocked when an orchestrator issue is already open', () => {
+    const tasks = [
+      { type: 'repository', agent: 'codex' },
+      { type: 'website', agent: 'cursor' }
+    ];
+
+    const labels = tasks.map((task, index) =>
+      createIssues.labelsForTask(task, createIssues.statusLabelForCreatedTask(index, true))
+    );
+
+    expect(labels[0]).toContain('status:blocked');
+    expect(labels[1]).toContain('status:blocked');
+  });
 });
 
 describe('orchestrator queue advancement', () => {
@@ -185,11 +199,16 @@ describe('orchestrator workflow trigger compatibility', () => {
   it('uses status:queued labels for draft PR creation and label changes for queue advancement', () => {
     const draftWorkflow = fs.readFileSync('.github/workflows/orchestrator-draft-pr.yml', 'utf8');
     const queueWorkflow = fs.readFileSync('.github/workflows/orchestrator-queue-advance.yml', 'utf8');
+    const enforcePrOnlyWorkflow = fs.readFileSync('.github/workflows/enforce-pr-only.yml', 'utf8');
+    const postMergeWorkflow = fs.readFileSync('.github/workflows/post-merge-intent-verification.yml', 'utf8');
 
     expect(draftWorkflow).toContain('types: [opened, labeled]');
     expect(draftWorkflow).toContain("contains(github.event.issue.labels.*.name, 'status:queued')");
     expect(queueWorkflow).toContain('types: [labeled]');
+    expect(queueWorkflow).toContain("node-version: '22'");
     expect(queueWorkflow).toContain("github.event.label.name == 'status:complete'");
     expect(queueWorkflow).toContain("github.event.label.name == 'status:failed'");
+    expect(enforcePrOnlyWorkflow).toContain('commits/${GITHUB_SHA}/pulls');
+    expect(postMergeWorkflow).toContain('commits/${GITHUB_SHA}/pulls');
   });
 });

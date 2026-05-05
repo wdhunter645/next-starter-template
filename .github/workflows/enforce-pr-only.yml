@@ -18,7 +18,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          pr_number="$(gh pr list --state merged --search "${GITHUB_SHA}" --json number -q '.[0].number')"
+          pr_number="$(gh api "repos/${GH_REPO}/commits/${GITHUB_SHA}/pulls" \
+            -H 'Accept: application/vnd.github+json' \
+            --jq 'map(select(.merged_at != null))[0].number // ""')"
 
           if [ -n "$pr_number" ]; then
             echo "Push to main is associated with merged PR #${pr_number}."

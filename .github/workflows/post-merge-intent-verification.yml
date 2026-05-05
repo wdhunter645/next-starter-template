@@ -22,7 +22,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          PR=$(gh pr list --search "${GITHUB_SHA}" --state merged --json number -q '.[0].number // ""')
+          PR=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" \
+            -H 'Accept: application/vnd.github+json' \
+            --jq 'map(select(.state == "closed" and .merged_at != null))[0].number // ""')
           echo "pr=$PR" >> $GITHUB_OUTPUT
 
       - name: Skip direct pushes without merged PR context

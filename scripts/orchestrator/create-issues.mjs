@@ -66,8 +66,26 @@ function issueExists(marker) {
   return JSON.parse(result).length > 0;
 }
 
-export function statusLabelForCreatedTask(createdIssueCount) {
-  return createdIssueCount === 0 ? 'status:queued' : 'status:blocked';
+function openOrchestratorIssueExists() {
+  const result = runGh([
+    'issue',
+    'list',
+    '--repo',
+    repo,
+    '--state',
+    'open',
+    '--search',
+    'label:orchestrator',
+    '--json',
+    'number',
+    '--limit',
+    '1'
+  ]);
+  return JSON.parse(result).length > 0;
+}
+
+export function statusLabelForCreatedTask(createdIssueCount, queueAlreadyOpen = false) {
+  return !queueAlreadyOpen && createdIssueCount === 0 ? 'status:queued' : 'status:blocked';
 }
 
 export function agentForTask(task) {
@@ -101,6 +119,7 @@ export function main() {
     : [];
 
   const updatedPlans = [];
+  const queueAlreadyOpen = openOrchestratorIssueExists();
   let taskOrdinal = 0;
 
   for (const file of files) {
@@ -122,7 +141,7 @@ export function main() {
       }
 
       const agent = agentForTask(task);
-      const statusLabel = statusLabelForCreatedTask(taskOrdinal);
+      const statusLabel = statusLabelForCreatedTask(taskOrdinal, queueAlreadyOpen);
       const labels = labelsForTask(task, statusLabel);
       const body = [
         `<!-- ${marker} -->`,
