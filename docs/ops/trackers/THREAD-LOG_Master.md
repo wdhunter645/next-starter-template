@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: Thread closeout records, implementation history, execution log
 Does Not Own: Design authority, governance rules, product requirements
 Canonical Reference: /docs/ops/trackers/THREAD-LOG_Master.md
-Last Reviewed: 2026-03-19
+Last Reviewed: 2026-05-05
 ---
 
 # LGFC Thread Log (Master)
@@ -340,5 +340,34 @@ Governance deduplication model is now explicitly defined and enforced in the can
 
 ### Next Action
 Proceed per `IMPLEMENTATION-WORKLIST_Master.md`.
+
+------------------------------------------------------------------------
+
+## THREAD CLOSEOUT RECORD --- 2026-05-05 --- Website T20 fundraiser data layer and orchestration documentation alignment
+
+### Starting State
+T20 fundraiser implementation work and orchestration automation had landed in code and workflows, but active documentation did not fully reflect the completed work or separate Diataxis document roles.
+
+### Objective
+Update website implementation documentation for today's completed T20 work and align orchestration documentation with the Diataxis folder model.
+
+### Work Performed
+- Added `/docs/reference/architecture/fundraiser-leaderboard-data-contract.md` for the fundraiser ingest and leaderboard sorting contract.
+- Updated `/docs/reference/design/als-fundraiser-2026-campaign-spotlight.md` to link the design rules to the active leaderboard data contract.
+- Updated `/docs/reference/architecture/temporary-campaign-spotlight-data-contract.md` to point leaderboard data ownership at the new contract.
+- Updated `/docs/ops/tickets/T20-B-fundraiser-ingest-layer.md` with a 2026-05-05 completion note.
+- Updated `/docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md` to record T20-B and T20-C as completed subtask work under the open T20 campaign spotlight parent.
+- Added `/docs/reference/architecture/orchestration-model.md` for orchestration state, labels, routing, queue, and workflow contracts.
+- Added `/docs/explanation/orchestration-model-rationale.md` for orchestration rationale and tradeoffs.
+- Added `/docs/how-to/create-orchestrated-implementation-plan.md` for the implementation-plan authoring procedure.
+- Reduced `/docs/ops/orchestration-tier-design.md` to an operations index that points to the Diataxis-aligned documents.
+
+### Result
+Website implementation documentation now records the fundraiser ingest layer and leaderboard sorting completed on 2026-05-05.
+
+Orchestration documentation is split by Diataxis role: reference for contracts, explanation for rationale, how-to for plan creation, and ops for live operating index.
+
+### Next Action
+Continue T20 campaign spotlight UI/publication work against the active design documents and the fundraiser leaderboard data contract.
 
 ------------------------------------------------------------------------

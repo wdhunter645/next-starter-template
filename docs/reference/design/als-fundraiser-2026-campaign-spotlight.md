@@ -5,12 +5,10 @@ Authority Level: Controlled
 Owns: ALS Fundraiser 2026 campaign spotlight UI, content, and campaign links
 Does Not Own: Homepage layout order; global navigation standards
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Last Reviewed: 2026-03-08
+Last Reviewed: 2026-05-05
 ---
 
 # ALS Fundraiser 2026 Campaign Spotlight
-
-Last Updated: 2026-03-08
 
 ## Campaign Links
 
@@ -44,6 +42,11 @@ Metrics:
 Funds = Raised
 Supporters = Donor count
 Points = Funds × Supporters
+
+Implementation reference:
+
+- `/src/lib/fundraiser.ts` normalizes launch-safe fundraiser records from `/data/fundraiser.json`.
+- `/docs/reference/architecture/fundraiser-leaderboard-data-contract.md` defines the active data contract and sorting behavior.
 
 Winner logic:
 

@@ -4,7 +4,7 @@ Audience: Human + AI
 Authority Level: Operational Authority
 Owns: Implementation plan format for orchestrated GitHub execution
 Does Not Own: Product design, route behavior, visual design, or platform architecture
-Canonical Reference: /docs/ops/orchestration-tier-design.md
+Canonical Reference: /docs/reference/architecture/orchestration-model.md
 Last Reviewed: 2026-05-05
 ---
 
@@ -63,6 +63,8 @@ Required properties:
 - Explicit acceptance criteria.
 - Explicit validation requirements.
 - No mixed website/repository implementation unless explicitly approved.
+
+For a step-by-step plan authoring procedure, use `/docs/how-to/create-orchestrated-implementation-plan.md`.
 
 ## Stable Task Identity
 

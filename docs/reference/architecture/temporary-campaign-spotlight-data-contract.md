@@ -3,9 +3,9 @@ Doc Type: Data Contract
 Audience: Human + AI
 Authority Level: Controlled
 Owns: Campaign spotlight data structure, required fields, and snapshot rules
-Does Not Own: UI layout; campaign schedule; fundraiser policies
+Does Not Own: UI layout; campaign schedule; fundraiser policies; team leaderboard ingest contract
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Last Reviewed: 2026-03-08
+Last Reviewed: 2026-05-05
 ---
 
 # Campaign Spotlight Data Contract
@@ -15,6 +15,10 @@ Last Updated: 2026-03-08
 ## Data Source
 
 GiveButter public campaign API or exported data snapshots.
+
+The current launch-safe fundraiser leaderboard implementation uses a manual JSON seed at `/data/fundraiser.json`, normalized by `/src/lib/fundraiser.ts`.
+
+See `/docs/reference/architecture/fundraiser-leaderboard-data-contract.md` for the current team leaderboard ingest and sort contract.
 
 ## Required Fields
 
