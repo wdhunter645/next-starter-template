@@ -120,7 +120,7 @@ export function main() {
 
   const updatedPlans = [];
   const queueAlreadyOpen = openOrchestratorIssueExists();
-  let taskOrdinal = 0;
+  let createdIssueCount = 0;
 
   for (const file of files) {
     const filePath = path.join(planDir, file);
@@ -136,12 +136,11 @@ export function main() {
       const marker = `lgfc-task-id:${slug}:${task.id}`;
       if (issueExists(marker)) {
         console.log(`SKIP existing issue for ${marker}`);
-        taskOrdinal += 1;
         continue;
       }
 
       const agent = agentForTask(task);
-      const statusLabel = statusLabelForCreatedTask(taskOrdinal, queueAlreadyOpen);
+      const statusLabel = statusLabelForCreatedTask(createdIssueCount, queueAlreadyOpen);
       const labels = labelsForTask(task, statusLabel);
       const body = [
         `<!-- ${marker} -->`,
@@ -167,7 +166,7 @@ export function main() {
         labels.join(',')
       ]);
 
-      taskOrdinal += 1;
+      createdIssueCount += 1;
       console.log(`CREATED issue for ${marker}`);
     }
 

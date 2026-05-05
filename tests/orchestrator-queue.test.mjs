@@ -55,6 +55,20 @@ describe('orchestrator issue creation queue model', () => {
     expect(labels[0]).toContain('status:blocked');
     expect(labels[1]).toContain('status:blocked');
   });
+
+  it('does not count skipped existing tasks when assigning the first newly created task status', () => {
+    const taskAlreadyHasIssue = [true, true, true, false];
+    const producedStatuses = [];
+    let createdIssueCount = 0;
+
+    for (const exists of taskAlreadyHasIssue) {
+      if (exists) continue;
+      producedStatuses.push(createIssues.statusLabelForCreatedTask(createdIssueCount));
+      createdIssueCount += 1;
+    }
+
+    expect(producedStatuses).toEqual(['status:queued']);
+  });
 });
 
 describe('orchestrator queue advancement', () => {
