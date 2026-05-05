@@ -80,13 +80,7 @@ function compareFundraiserLeaderboardEntries(left: FundraiserTeam, right: Fundra
 }
 
 export function sortFundraiserLeaderboard(teams: FundraiserTeam[]): FundraiserTeam[] {
-  return teams
-    .map((team, index) => ({ team, index }))
-    .sort(
-      (left, right) =>
-        compareFundraiserLeaderboardEntries(left.team, right.team) || left.index - right.index,
-    )
-    .map(({ team }) => team);
+  return [...teams].sort((left, right) => compareFundraiserLeaderboardEntries(left, right));
 }
 
 export function normalizeFundraiserRecords(records: unknown): FundraiserTeam[] {
