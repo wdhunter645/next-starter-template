@@ -71,12 +71,30 @@ function normalizeTimestamp(value: unknown, index: number): string {
   return timestamp;
 }
 
+function compareFundraiserLeaderboardEntries(left: FundraiserTeam, right: FundraiserTeam): number {
+  return (
+    right.points - left.points ||
+    right.donorCount - left.donorCount ||
+    right.totalAmount - left.totalAmount
+  );
+}
+
+export function sortFundraiserLeaderboard(teams: FundraiserTeam[]): FundraiserTeam[] {
+  return teams
+    .map((team, index) => ({ team, index }))
+    .sort(
+      (left, right) =>
+        compareFundraiserLeaderboardEntries(left.team, right.team) || left.index - right.index,
+    )
+    .map(({ team }) => team);
+}
+
 export function normalizeFundraiserRecords(records: unknown): FundraiserTeam[] {
   if (!Array.isArray(records)) {
     throw new Error('Fundraiser source must be an array.');
   }
 
-  return records.map((record, index) => {
+  const teams = records.map((record, index) => {
     if (!isRecord(record)) {
       throw new Error(`Fundraiser record ${index} must be an object.`);
     }
@@ -96,6 +114,8 @@ export function normalizeFundraiserRecords(records: unknown): FundraiserTeam[] {
       timestamp,
     };
   });
+
+  return sortFundraiserLeaderboard(teams);
 }
 
 export function getFundraiserTeams(): FundraiserTeam[] {
