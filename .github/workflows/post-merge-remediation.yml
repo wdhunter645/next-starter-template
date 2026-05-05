@@ -27,7 +27,9 @@ jobs:
             --title "Post-Merge Failure Detected" \
             --body "Detection workflow failed. Investigate and fix.")"
 
-          if gh label list --search "post-merge-failure" --json name -q '.[].name' | grep -Fxq "post-merge-failure"; then
+          if ! label_names="$(gh label list --search "post-merge-failure" --json name -q '.[].name')"; then
+            echo "::warning::Unable to verify whether label post-merge-failure exists; creating the issue without it."
+          elif printf '%s\n' "$label_names" | grep -Fxq "post-merge-failure"; then
             gh issue edit "$issue_url" --add-label "post-merge-failure" || \
               echo "::warning::Unable to add post-merge-failure label to $issue_url."
           else
