@@ -15,6 +15,21 @@ function runGh(args) {
   return execFileSync('gh', args, { encoding: 'utf8' }).trim();
 }
 
+const repoLabelExistsCache = new Map();
+
+function repoLabelExists(labelName) {
+  if (!repoLabelExistsCache.has(labelName)) {
+    const labelsJson = runGh(['label', 'list', '--repo', repo, '--search', labelName, '--json', 'name']);
+    const labels = JSON.parse(labelsJson);
+    repoLabelExistsCache.set(
+      labelName,
+      labels.some((label) => label.name === labelName)
+    );
+  }
+
+  return repoLabelExistsCache.get(labelName);
+}
+
 function issueLabelNames(issueNumber) {
   const issueJson = runGh(['issue', 'view', issueNumber, '--repo', repo, '--json', 'labels']);
   const issue = JSON.parse(issueJson);
@@ -29,8 +44,16 @@ function linkedIssueNumber(body) {
 function setStatus(issueNumber, removeLabel, addLabel, comment) {
   const labels = issueLabelNames(issueNumber);
   const args = ['issue', 'edit', issueNumber, '--repo', repo];
+  if (addLabel && !labels.has(addLabel)) {
+    if (repoLabelExists(addLabel)) {
+      args.push('--add-label', addLabel);
+    } else {
+      console.warn(`::warning::Label ${addLabel} does not exist; skipping status transition for issue #${issueNumber}.`);
+      if (comment) runGh(['issue', 'comment', issueNumber, '--repo', repo, '--body', comment]);
+      return;
+    }
+  }
   if (removeLabel && labels.has(removeLabel)) args.push('--remove-label', removeLabel);
-  if (addLabel && !labels.has(addLabel)) args.push('--add-label', addLabel);
   if (args.length > 5) runGh(args);
   if (comment) runGh(['issue', 'comment', issueNumber, '--repo', repo, '--body', comment]);
 }
