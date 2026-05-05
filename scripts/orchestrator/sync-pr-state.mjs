@@ -28,9 +28,10 @@ function setStatus(issueNumber, removeLabel, addLabel, comment) {
   if (comment) runGh(['issue', 'comment', issueNumber, '--repo', repo, '--body', comment]);
 }
 
-const prJson = runGh(['pr', 'view', prNumber, '--repo', repo, '--json', 'body,url,merged,state']);
+const prJson = runGh(['pr', 'view', prNumber, '--repo', repo, '--json', 'body,url,mergedAt,state']);
 const pr = JSON.parse(prJson);
 const issueNumber = linkedIssueNumber(pr.body || '');
+const isMerged = Boolean(pr.mergedAt) || pr.state === 'MERGED';
 
 if (!issueNumber) {
   console.log(`No linked orchestrator issue found for PR #${prNumber}.`);
@@ -43,7 +44,7 @@ if (action === 'ready_for_review') {
 }
 
 if (action === 'merged') {
-  if (!pr.merged) process.exit(0);
+  if (!isMerged) process.exit(0);
   setStatus(issueNumber, 'status:review', 'status:post-merge-verify', `PR #${prNumber} merged. Post-merge verification pending: ${pr.url}`);
   process.exit(0);
 }
