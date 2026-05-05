@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 
 const repo = process.env.GITHUB_REPOSITORY;
@@ -38,6 +41,25 @@ function extractBlock(body, heading) {
   return match ? match[1].trim() : '';
 }
 
+function existingPrUrl(branchName) {
+  const result = runGh([
+    'pr',
+    'list',
+    '--repo',
+    repo,
+    '--head',
+    branchName,
+    '--state',
+    'open',
+    '--json',
+    'url',
+    '--limit',
+    '1'
+  ]);
+  const prs = JSON.parse(result);
+  return prs.length > 0 ? prs[0].url : '';
+}
+
 const issueJson = runGh([
   'issue',
   'view',
@@ -57,10 +79,22 @@ if (!labels.includes('orchestrator') || !labels.includes('status:queued')) {
 }
 
 const branchName = `orchestrator/${issue.number}-${slugify(issue.title)}`;
+const alreadyOpenPr = existingPrUrl(branchName);
+
+if (alreadyOpenPr) {
+  runGh(['issue', 'edit', issueNumber, '--repo', repo, '--remove-label', 'status:queued', '--add-label', 'status:pr-draft']);
+  runGh(['issue', 'comment', issueNumber, '--repo', repo, '--body', `Existing draft PR found: ${alreadyOpenPr}`]);
+  console.log(`Existing PR found for issue #${issueNumber}: ${alreadyOpenPr}`);
+  process.exit(0);
+}
+
 const issueBody = issue.body || '';
 const allowedFiles = extractBlock(issueBody, 'Allowed Files') || '- To be completed by assigned agent from issue scope';
 const acceptanceCriteria = extractBlock(issueBody, 'Acceptance Criteria') || '- To be completed by assigned agent';
 const validation = extractBlock(issueBody, 'Validation') || '- To be completed by assigned agent';
+const canonicalTemplate = fs.existsSync('.github/pull_request_template.md')
+  ? fs.readFileSync('.github/pull_request_template.md', 'utf8')
+  : '';
 
 runGit(['fetch', 'origin', baseBranch]);
 runGit(['checkout', '-B', branchName, `origin/${baseBranch}`]);
@@ -72,104 +106,39 @@ runGit(['push', '-u', 'origin', branchName]);
 const prBody = [
   `- **Issue:** #${issue.number}`,
   '',
-  '### PR Template',
+  '## Orchestrator Draft PR',
   '',
-  '#### Reference',
-  'Refer to `/.github/pull_request_template.md` for required structure and change conventions.',
+  'This draft PR was created by the LGFC orchestration tier.',
   '',
-  '#### Governance Reference',
-  'Follow operational, rollback, and testing standards in `/docs/governance/PR_GOVERNANCE.md`.',
+  '## Change Summary',
+  '- To be completed by assigned agent.',
   '',
-  '## MANDATORY FIRST STEP (ZIP SAFETY)',
-  '- [ ] No ZIP file exists in the repo root',
-  '- [ ] OR any ZIP file that was present in the repo root was deleted before any other change',
-  '- [ ] Final diff confirms no ZIP file is committed',
-  '',
-  '## PROGRESS + READINESS (MANDATORY)',
-  '- Phase: Implementation',
-  `- Task: ${issue.title}`,
-  '- Status: DRAFT',
-  '- Scope Confirmed: YES',
-  '- Out-of-Scope Changes Present: NO',
-  '- Blocking Issues: None currently known',
-  '- Notes: This PR shell was created by the LGFC orchestration tier.',
-  '',
-  '## DOCUMENTATION SOURCE (MANDATORY)',
-  '- [ ] DIATAXIS_FULL',
-  '- [x] DIATAXIS_ROUTED',
-  '- [ ] LEGACY_FALLBACK',
-  '',
-  'Source Files Used:',
-  '- `docs/ops/orchestration-tier-design.md`',
-  '- `docs/ops/implementation-plans/README.md`',
-  '',
-  '## DIATAXIS GAP (REQUIRED IF LEGACY_FALLBACK)',
-  '- [ ] Gap Identified',
-  '- Link to issue: N/A',
-  '- Description: N/A',
-  '',
-  '## LABEL',
-  '- Intent label for this PR: To be completed by assigned agent',
-  '',
-  '## DESIGN SOURCE OF TRUTH (NON-NEGOTIABLE)',
-  '- Canonical process reference: `/docs/governance/PR_PROCESS.md`',
-  '- Canonical governance reference: `/docs/governance/PR_GOVERNANCE.md`',
-  '- Canonical design reference: `/docs/reference/design/LGFC-Production-Design-and-Standards.md`',
-  '- Additional design/reference docs used for this PR:',
-  '  - `docs/ops/orchestration-tier-design.md`',
-  '',
-  '## FILE-TOUCH ALLOWLIST (MANDATORY)',
-  'Allowed files:',
-  allowedFiles,
-  '',
-  'All other files are out of scope',
-  '',
-  '## VISUAL / UX INVARIANTS (MANDATORY)',
-  '- [ ] Header, footer, navigation, auth, and route invariants preserved unless explicitly in scope',
-  '- [ ] No unauthorized visual drift introduced',
-  '- [ ] No out-of-scope UX changes introduced',
-  '- [ ] Store behavior, Join/Login behavior, and Fan Club/Admin gating remain compliant unless explicitly in scope',
-  '',
-  '## DRIFT GATE ALIGNMENT (MANDATORY)',
-  '- [ ] Exactly ONE intent label applied',
-  '- [ ] File changes match allowlist exactly',
-  '- [ ] No mixed-intent changes present',
-  '',
-  '## CHANGE SUMMARY',
-  '- To be completed by assigned agent',
-  '',
-  '## ACCEPTANCE CRITERIA',
+  '## Acceptance Criteria',
   acceptanceCriteria,
   '',
-  '## BUILD / TEST / VERIFICATION',
-  'Required validation:',
+  '## Risk',
+  'Low until implementation commits are added; assigned agent must update this section before review.',
+  '',
+  '## Validation',
   validation,
   '',
-  'Commands run:',
-  '- To be completed by assigned agent',
+  '## Generated Governance Template',
+  canonicalTemplate,
   '',
-  'Result summary:',
-  '- To be completed by assigned agent',
+  '## Orchestrator Prefill',
   '',
-  '## DOCUMENTATION UPDATES',
-  '- [ ] Documentation updated in this PR',
-  '- [ ] No documentation updates required — explain why',
-  'Files:',
-  '- To be completed by assigned agent',
+  '### Allowed Files',
+  allowedFiles,
   '',
-  '## REQUIRED PRE-REVIEW SELF-CHECK',
-  '- [ ] PR body contains all required sections with exact headings',
-  '- [ ] Allowed files section matches diff exactly',
-  '- [ ] No files outside allowlist',
-  '- [ ] ZIP safety confirmed',
-  '- [ ] Intent label correct and singular',
-  '- [ ] Local checks executed and passed',
-  '- [ ] Commit message aligns with scope',
-  '- [ ] No secrets or forbidden artifacts introduced',
+  '### Required Validation',
+  validation,
   '',
-  '## ORCHESTRATOR TASK DETAILS',
+  '### Task Details',
   issueBody
 ].join('\n');
+
+const bodyFile = path.join(os.tmpdir(), `orchestrator-pr-${issue.number}.md`);
+fs.writeFileSync(bodyFile, prBody);
 
 const prUrl = runGh([
   'pr',
@@ -183,8 +152,8 @@ const prUrl = runGh([
   '--draft',
   '--title',
   `[Orchestrator] ${issue.title}`,
-  '--body',
-  prBody
+  '--body-file',
+  bodyFile
 ]);
 
 runGh(['issue', 'edit', issueNumber, '--repo', repo, '--remove-label', 'status:queued', '--add-label', 'status:pr-draft']);
