@@ -41,11 +41,7 @@ function normalizeAmount(value: unknown, field: string, index: number): number {
     normalized = value;
   } else if (typeof value === 'string') {
     const trimmedValue = value.trim();
-    if (!trimmedValue) {
-      throw new Error(`Fundraiser record ${index} has invalid ${field}.`);
-    }
-
-    normalized = Number(trimmedValue);
+    normalized = trimmedValue === '' ? Number.NaN : Number(trimmedValue);
   }
 
   if (!Number.isFinite(normalized) || normalized < 0) {
