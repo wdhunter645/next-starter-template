@@ -15,16 +15,23 @@ function runGh(args) {
   return execFileSync('gh', args, { encoding: 'utf8' }).trim();
 }
 
+function issueLabelNames(issueNumber) {
+  const issueJson = runGh(['issue', 'view', issueNumber, '--repo', repo, '--json', 'labels']);
+  const issue = JSON.parse(issueJson);
+  return new Set((issue.labels || []).map((label) => label.name));
+}
+
 function linkedIssueNumber(body) {
   const match = body.match(/(?:\*\*Issue:\*\*|Issue:)\s*(?:https?:\/\/github\.com\/[^/\s]+\/[^/\s]+\/issues\/|#)(\d+)/i);
   return match ? match[1] : '';
 }
 
 function setStatus(issueNumber, removeLabel, addLabel, comment) {
+  const labels = issueLabelNames(issueNumber);
   const args = ['issue', 'edit', issueNumber, '--repo', repo];
-  if (removeLabel) args.push('--remove-label', removeLabel);
-  if (addLabel) args.push('--add-label', addLabel);
-  runGh(args);
+  if (removeLabel && labels.has(removeLabel)) args.push('--remove-label', removeLabel);
+  if (addLabel && !labels.has(addLabel)) args.push('--add-label', addLabel);
+  if (args.length > 5) runGh(args);
   if (comment) runGh(['issue', 'comment', issueNumber, '--repo', repo, '--body', comment]);
 }
 

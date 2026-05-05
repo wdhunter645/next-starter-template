@@ -23,8 +23,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh issue create \
+          issue_url="$(gh issue create \
             --title "Post-Merge Failure Detected" \
-            --body "Detection workflow failed. Investigate and fix." \
-            --label "post-merge-failure" \
-            --assignee "copilot-swe-agent[bot]"
+            --body "Detection workflow failed. Investigate and fix.")"
+
+          if gh label list --search "post-merge-failure" --json name -q '.[].name' | grep -Fxq "post-merge-failure"; then
+            gh issue edit "$issue_url" --add-label "post-merge-failure" || \
+              echo "::warning::Unable to add post-merge-failure label to $issue_url."
+          else
+            echo "::warning::Label post-merge-failure does not exist; creating the issue without it."
+          fi
+
+          gh issue edit "$issue_url" --add-assignee "copilot-swe-agent[bot]" || \
+            echo "::warning::Unable to assign copilot-swe-agent[bot] to $issue_url."
