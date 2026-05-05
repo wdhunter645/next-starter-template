@@ -60,6 +60,15 @@ function existingPrUrl(branchName) {
   return prs.length > 0 ? prs[0].url : '';
 }
 
+function remoteBranchExists(branchName) {
+  try {
+    runGit(['ls-remote', '--exit-code', '--heads', 'origin', branchName]);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 const issueJson = runGh([
   'issue',
   'view',
@@ -86,6 +95,21 @@ if (alreadyOpenPr) {
   runGh(['issue', 'comment', issueNumber, '--repo', repo, '--body', `Existing draft PR found: ${alreadyOpenPr}`]);
   console.log(`Existing PR found for issue #${issueNumber}: ${alreadyOpenPr}`);
   process.exit(0);
+}
+
+if (remoteBranchExists(branchName)) {
+  runGh(['issue', 'edit', issueNumber, '--repo', repo, '--remove-label', 'status:queued', '--add-label', 'status:failed']);
+  runGh([
+    'issue',
+    'comment',
+    issueNumber,
+    '--repo',
+    repo,
+    '--body',
+    `Orchestrator draft PR creation stopped: remote branch already exists but no open PR was found. Branch: ${branchName}`
+  ]);
+  console.log(`Remote branch exists without open PR for issue #${issueNumber}: ${branchName}`);
+  process.exit(1);
 }
 
 const issueBody = issue.body || '';
