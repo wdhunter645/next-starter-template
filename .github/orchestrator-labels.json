@@ -1,0 +1,23 @@
+{
+  "labels": [
+    "orchestrator",
+    "status:queued",
+    "status:assigned",
+    "status:pr-draft",
+    "status:implementation",
+    "status:review",
+    "status:merged",
+    "status:post-merge-verify",
+    "status:complete",
+    "status:failed",
+    "type:repository",
+    "type:website",
+    "type:governance",
+    "type:docs",
+    "type:recovery",
+    "agent:codex",
+    "agent:cursor",
+    "agent:copilot",
+    "agent:atlas"
+  ]
+}
