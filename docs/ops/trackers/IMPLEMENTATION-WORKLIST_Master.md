@@ -271,6 +271,18 @@ Owner: Cursor
 Scope: CMS-driven homepage Campaign Spotlight section.
 Exit: optional/conditional section renders correctly when enabled and fail-closes when disabled or unset.
 
+### 2026-05-05 Implementation Documentation Update
+
+Completed today:
+
+- T20-B fundraiser ingest layer: `/src/lib/fundraiser.ts` loads `/data/fundraiser.json`, validates source records, normalizes numeric fields, computes `points = totalAmount * donorCount`, and exports typed application records.
+- T20-B validation hardening: numeric strings are normalized only when finite and non-negative; donor counts must be integers; malformed source rows throw deterministic errors.
+- T20-C leaderboard sorting: normalized fundraiser records sort by points, donor count, total amount, then stable source order for remaining ties.
+- Test coverage: `/tests/fundraiser.test.ts` covers seed loading, normalization, sorting, stable ties, and malformed record rejection.
+- Reference documentation: `/docs/reference/architecture/fundraiser-leaderboard-data-contract.md` defines the active data contract.
+
+T20 remains open until the CMS-driven homepage Campaign Spotlight section is enabled, validated in preview, and verified to fail closed on the public homepage.
+
 ---
 
 # Phase 3 — Public Core Features (QUEUED)

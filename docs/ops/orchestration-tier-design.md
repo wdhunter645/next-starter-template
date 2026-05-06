@@ -1,100 +1,58 @@
 ---
 Doc Type: Operations
 Audience: Human + AI
-Authority Level: Design Authority
-Owns: LGFC orchestration tier design
-Does Not Own: Product UI, routes, or content
-Canonical Reference: This document
+Authority Level: Operational Authority
+Owns: Operational index for the LGFC orchestration tier
+Does Not Own: Orchestration state contracts; implementation plan procedure; orchestration rationale; product UI, routes, or content
+Canonical Reference: /docs/reference/architecture/orchestration-model.md
 Last Reviewed: 2026-05-05
 ---
 
-# LGFC Orchestration Tier Design
+# LGFC Orchestration Tier
 
-## Objective
+## Purpose
 
-Establish a GitHub-native orchestration system where implementation is executed through Issues, draft Pull Requests, AI agents, automated review, and human approval.
+This operations document points contributors and agents to the active Diataxis-aligned orchestration documentation.
 
-## Workflow Overview
+## Documentation Map
 
-1. Atlas creates a production-ready implementation plan.
-2. GitHub Actions converts the plan into Issues.
-3. Issues are labeled and routed to the correct AI agent.
-4. A draft PR is created automatically for each Issue.
-5. The AI agent implements the task inside the PR.
-6. Cubic, Gemini, and Copilot review the PR.
-7. Human reviews, approves, and merges.
-8. Post-merge verification validates main.
-9. Failures open recovery Issues automatically.
+| Need | Document |
+| --- | --- |
+| State model, labels, routing, workflow inventory | `/docs/reference/architecture/orchestration-model.md` |
+| Why the system uses GitHub Issues, draft PRs, and a serial queue | `/docs/explanation/orchestration-model-rationale.md` |
+| How to write a production-ready implementation plan | `/docs/how-to/create-orchestrated-implementation-plan.md` |
+| Implementation plan storage and task format | `/docs/ops/implementation-plans/README.md` |
 
-## System Components
+## Current Operating Model
 
-### 1. Implementation Plan
+The orchestration tier uses GitHub-native artifacts:
 
-- Stored in `/docs/ops/implementation-plans/`
-- Created by Atlas
-- Must be `Status: production-ready`
+- Implementation plans under `/docs/ops/implementation-plans/`.
+- Issues generated from production-ready plans.
+- Draft PRs generated from queued issues.
+- Agent trigger comments on linked issues.
+- PR state sync back to issue status labels.
+- A serial queue that advances only after the active issue completes post-merge verification.
 
-### 2. Issue Factory
+## Active Automation
 
-- Trigger: push to main
-- Parses implementation plan
-- Creates Issues per task
-- Applies labels
+| Automation | File |
+| --- | --- |
+| Issue factory | `/.github/workflows/orchestrator-issue-factory.yml` |
+| Draft PR creator | `/.github/workflows/orchestrator-draft-pr.yml` |
+| Agent trigger | `/.github/workflows/orchestrator-agent-trigger.yml` |
+| PR state sync | `/.github/workflows/orchestrator-pr-state-sync.yml` |
+| Queue advance | `/.github/workflows/orchestrator-queue-advance.yml` |
 
-### 3. Router
+## Operating Invariants
 
-Routes Issues to agents:
+- No direct commits to `main` for orchestrated implementation work.
+- One task maps to one generated issue.
+- One issue maps to one generated draft PR.
+- Only one orchestrator issue is active at a time while the concurrency policy remains serial.
+- `status:failed` halts queue advancement until recovery work resolves the failure.
+- Product UI, route behavior, and content design remain owned by `docs/reference/design/`.
 
-- repository → Codex
-- website → Cursor
-- governance → Copilot
-- docs → Atlas/Copilot
-- recovery → Atlas
+## Supersession Note
 
-### 4. Draft PR Creator
-
-- Creates branch per Issue
-- Opens draft PR
-- Links PR to Issue
-
-### 5. AI Agent Execution
-
-- Agent reads Issue
-- Implements within allowed files
-- Updates PR
-
-### 6. Review Layer
-
-- Cubic: validation
-- Gemini: analysis
-- Copilot: structural review
-- Human: final approval
-
-### 7. Post-Merge Verification
-
-- Runs validation on main
-- Opens recovery Issue on failure
-
-## Design Principles
-
-- No direct commits to main
-- All work flows through PRs
-- One task per Issue
-- One PR per Issue
-- Explicit file allowlists
-- Deterministic automation
-- Idempotent workflows
-
-## Implementation Strategy
-
-This design must be implemented in staged PRs:
-
-1. Documentation (this PR)
-2. Labels and routing config
-3. Issue factory
-4. Draft PR creator
-5. Agent routing
-6. Review integration
-7. Post-merge verification
-
-Each stage must be validated before proceeding.
+Earlier versions of this document mixed architecture reference, rationale, and operating notes. Going forward, this file is the operations index only. The reference model owns exact contracts.
