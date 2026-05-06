@@ -1,5 +1,5 @@
 ---
-Doc Type: Data Contract
+Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
 Owns: Campaign spotlight data structure, required fields, and snapshot rules
