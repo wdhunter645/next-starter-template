@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "defaultConcurrency": "serial",
   "concurrencyPolicy": {
     "mode": "serial",
@@ -8,27 +8,32 @@
   "taskTypes": {
     "repository": {
       "defaultAgent": "codex",
-      "allowedAgents": ["codex"],
+      "allowedAgents": ["codex", "cursor", "copilot", "atlas"],
+      "priorityOrder": ["codex", "cursor", "copilot", "atlas"],
       "prIntents": ["infra", "platform", "change-ops", "codex"]
     },
     "website": {
       "defaultAgent": "cursor",
-      "allowedAgents": ["cursor"],
-      "prIntents": ["feature"]
+      "allowedAgents": ["cursor", "codex", "copilot", "atlas"],
+      "priorityOrder": ["cursor", "codex", "copilot", "atlas"],
+      "prIntents": ["feature", "codex"]
     },
     "governance": {
       "defaultAgent": "copilot",
-      "allowedAgents": ["copilot", "atlas"],
+      "allowedAgents": ["copilot", "atlas", "codex", "cursor"],
+      "priorityOrder": ["copilot", "atlas", "codex", "cursor"],
       "prIntents": ["infra", "change-ops"]
     },
     "docs": {
       "defaultAgent": "atlas",
-      "allowedAgents": ["atlas", "copilot"],
+      "allowedAgents": ["atlas", "copilot", "codex", "cursor"],
+      "priorityOrder": ["atlas", "copilot", "codex", "cursor"],
       "prIntents": ["docs-only"]
     },
     "recovery": {
       "defaultAgent": "atlas",
       "allowedAgents": ["atlas", "copilot", "codex", "cursor"],
+      "priorityOrder": ["atlas", "copilot", "codex", "cursor"],
       "prIntents": ["recovery"]
     }
   },
