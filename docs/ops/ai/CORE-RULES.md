@@ -5,7 +5,7 @@ Authority Level: Core
 Owns: Shared execution rules, enforcement model, PR discipline, stop conditions
 Does Not Own: Design authority, platform configuration, tracker content
 Canonical Reference: /Agent.md
-Last Reviewed: 2026-05-02
+Last Reviewed: 2026-05-06
 ---
 
 # CORE-RULES.md
@@ -114,8 +114,28 @@ Defaults:
 
 # CAPABILITIES
 
-- ChatGPT owns PR creation  
-- PR creation is NOT delegated unless explicitly instructed  
+- ChatGPT owns Issue and PR creation under standing operator permission.
+- ChatGPT may create, comment on, label, update, and organize Issues and Pull Requests when task scope is clear.
+- PR creation is NOT delegated unless explicitly instructed.
+- Merge authority remains human/operator only.
+
+---
+
+# AGENT ROUTING PRIORITY
+
+Website implementation tasks:
+
+1. Cursor = primary implementation agent.
+2. Codex = secondary implementation agent when Cursor is unavailable, usage-limited, or unsuitable for the specific task.
+3. All other agents = tertiary/support agents only by explicit routing need.
+
+Repository implementation tasks:
+
+1. Codex = primary implementation agent.
+2. Cursor = secondary implementation agent when Codex is unavailable, usage-limited, or unsuitable for the specific task.
+3. All other agents = tertiary/support agents only by explicit routing need.
+
+Routing priority controls assignment preference only. It does not override design authority, scope limits, PR discipline, or merge approval.
 
 ---
 
