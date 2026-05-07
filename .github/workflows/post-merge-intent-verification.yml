@@ -60,10 +60,13 @@ jobs:
         run: |
           PR=""
           METHOD="none"
+          SKIP_REASON="none"
           if [ "$EVENT_NAME" = "pull_request_target" ]; then
             METHOD="pull_request_target"
             if [ "$EVENT_PR_MERGED" = "true" ] && [ "$EVENT_PR_BASE_REF" = "main" ]; then
               PR="$EVENT_PR_NUMBER"
+            else
+              SKIP_REASON="closed PR was not merged into main"
             fi
           elif [ "$EVENT_NAME" = "workflow_dispatch" ] && [ -n "$INPUT_PR_NUMBER" ]; then
             METHOD="workflow_dispatch"
@@ -73,17 +76,23 @@ jobs:
             PR=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" \
               -H 'Accept: application/vnd.github+json' \
               --jq 'map(select(.state == "closed" and .merged_at != null and .base.ref == "main"))[0].number // ""')
+            if [ -z "$PR" ]; then
+              SKIP_REASON="no merged PR associated with commit"
+            fi
           fi
           echo "pr=$PR" >> "$GITHUB_OUTPUT"
           echo "method=$METHOD" >> "$GITHUB_OUTPUT"
+          echo "skip_reason=$SKIP_REASON" >> "$GITHUB_OUTPUT"
           {
             echo ""
             echo "### PR resolution"
             echo "- Method: ${METHOD}"
             echo "- Resolved PR: ${PR:-none}"
+            echo "- Skip reason: ${SKIP_REASON}"
           } >> "$GITHUB_STEP_SUMMARY"
           echo "post_merge_resolution_method=${METHOD}"
           echo "post_merge_resolved_pr=${PR:-none}"
+          echo "post_merge_skip_reason=${SKIP_REASON}"
 
       - name: Comment validation started
         if: steps.pr.outputs.pr != ''
@@ -105,11 +114,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh pr view "${{ steps.pr.outputs.pr }}" --json number,isDraft,mergedAt,baseRefName --jq 'if (.isDraft == true or .mergedAt == null or .baseRefName != "main") then error("Resolved PR is not a merged PR into main") else .number end' > /dev/null
           pr_json=$(gh pr view "${{ steps.pr.outputs.pr }}" --json number,isDraft,mergedAt,baseRefName)
           base_ref=$(echo "$pr_json" | jq -r '.baseRefName')
           merged_at=$(echo "$pr_json" | jq -r '.mergedAt')
           is_draft=$(echo "$pr_json" | jq -r '.isDraft')
+          echo "$pr_json" | jq -e 'if (.isDraft == true or .mergedAt == null or .baseRefName != "main") then error("Resolved PR is not a merged PR into main") else .number end' > /dev/null
           {
             echo ""
             echo "### Resolved PR validation"
@@ -118,16 +127,18 @@ jobs:
             echo "- Draft: ${is_draft}"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Skip direct pushes without merged PR context
+      - name: Skip run without eligible merged PR
         if: steps.pr.outputs.pr == ''
         run: |
           {
             echo ""
             echo "### Skip result"
-            echo "No merged pull request found for commit ${GITHUB_SHA}."
             echo "Post-merge PR checks skipped for this run."
+            echo "- Method: ${{ steps.pr.outputs.method }}"
+            echo "- Reason: ${{ steps.pr.outputs.skip_reason }}"
+            echo "- Commit: ${GITHUB_SHA}"
           } >> "$GITHUB_STEP_SUMMARY"
-          echo "No merged pull request found for ${GITHUB_SHA}; skipping post-merge PR checks."
+          echo "Post-merge checks skipped: ${{ steps.pr.outputs.skip_reason }}"
 
       - name: Collect
         if: steps.pr.outputs.pr != ''
