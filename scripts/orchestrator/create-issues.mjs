@@ -62,7 +62,20 @@ function parseTasks(content) {
 
 function issueExists(marker) {
   const query = `repo:${repo} is:issue ${marker}`;
-  const result = runGh(['issue', 'list', '--repo', repo, '--search', query, '--json', 'number', '--limit', '1']);
+  const result = runGh([
+    'issue',
+    'list',
+    '--repo',
+    repo,
+    '--state',
+    'all',
+    '--search',
+    query,
+    '--json',
+    'number',
+    '--limit',
+    '1'
+  ]);
   return JSON.parse(result).length > 0;
 }
 
