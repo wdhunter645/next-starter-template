@@ -15,7 +15,7 @@ jobs:
   reviewer-response-completion:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify reviewer response accounting
+      - name: Verify required reviewer presence and response accounting
         uses: actions/github-script@v7
         with:
           script: |
@@ -32,15 +32,64 @@ jobs:
             const { data: pull } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
             const body = pull.body || '';
 
-            const comments = await github.paginate(github.rest.pulls.listReviewComments, {
+            const issueComments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number: prNumber,
+              per_page: 100,
+            });
+
+            const reviewComments = await github.paginate(github.rest.pulls.listReviewComments, {
               owner,
               repo,
               pull_number: prNumber,
               per_page: 100,
             });
 
-            const actionable = comments.filter((comment) => {
-              const user = (comment.user && comment.user.login) || '';
+            const reviews = await github.paginate(github.rest.pulls.listReviews, {
+              owner,
+              repo,
+              pull_number: prNumber,
+              per_page: 100,
+            });
+
+            const allReviewerArtifacts = [
+              ...issueComments.map((comment) => ({ kind: 'issue-comment', user: comment.user?.login || '', body: comment.body || '' })),
+              ...reviewComments.map((comment) => ({ kind: 'review-comment', user: comment.user?.login || '', body: comment.body || '' })),
+              ...reviews.map((review) => ({ kind: 'review', user: review.user?.login || '', body: review.body || '' })),
+            ];
+
+            const requiredReviewers = [
+              {
+                name: 'Copilot',
+                users: ['copilot-pull-request-reviewer[bot]', 'Copilot'],
+                patterns: [/Copilot wasn't able to review/i, /Pull request overview/i],
+              },
+              {
+                name: 'Cubic',
+                users: ['cubic-dev-ai[bot]'],
+                patterns: [/Summary by cubic/i, /cubic found/i, /cubic:review-post/i, /issue found/i],
+              },
+              {
+                name: 'Gemini',
+                users: ['gemini-code-assist[bot]'],
+                patterns: [/Gemini is unable to generate a review/i, /gemini/i],
+              },
+            ];
+
+            const presentReviewers = requiredReviewers.filter((reviewer) => {
+              return allReviewerArtifacts.some((artifact) => {
+                if (reviewer.users.includes(artifact.user)) return true;
+                return reviewer.patterns.some((pattern) => pattern.test(artifact.body));
+              });
+            }).map((reviewer) => reviewer.name);
+
+            const missingReviewers = requiredReviewers
+              .map((reviewer) => reviewer.name)
+              .filter((name) => !presentReviewers.includes(name));
+
+            const actionable = reviewComments.filter((comment) => {
+              const user = comment.user?.login || '';
               const text = comment.body || '';
 
               if (user === 'github-actions[bot]') return false;
@@ -50,44 +99,44 @@ jobs:
               return true;
             });
 
-            if (actionable.length === 0) {
-              core.info('No inline reviewer comments require explicit accounting.');
-              return;
-            }
-
             const hasSection = /##\s+REVIEWER RESPONSE ACCOUNTING/i.test(body);
-            const missing = actionable.filter((comment) => {
+            const missingAccounting = actionable.filter((comment) => {
               const url = comment.html_url || '';
               const idToken = `review-comment:${comment.id}`;
               return !body.includes(url) && !body.includes(idToken);
             });
 
-            if (!hasSection || missing.length > 0) {
+            if (missingReviewers.length > 0 || !hasSection || missingAccounting.length > 0) {
               const lines = [
                 'Reviewer response completion gate failed.',
                 '',
+                'Required reviewer dispositions must be visible before merge readiness:',
+                '- Copilot',
+                '- Cubic',
+                '- Gemini',
+                '',
+                `Present reviewer dispositions: ${presentReviewers.length ? presentReviewers.join(', ') : 'none'}`,
+                `Missing reviewer dispositions: ${missingReviewers.length ? missingReviewers.join(', ') : 'none'}`,
+                '',
                 'Every inline reviewer comment must be explicitly listed in the PR body before merge readiness.',
                 '',
-                'Add a section like:',
+                'Required PR body section:',
                 '',
                 '## REVIEWER RESPONSE ACCOUNTING',
+                '- [x] Copilot disposition received: <summary>',
+                '- [x] Cubic disposition received: <summary>',
+                '- [x] Gemini disposition received: <summary>',
                 '- [x] Reviewed all reviewer comments.',
                 '- [x] Accepted / rejected / ignored each actionable comment with rationale.',
                 '- review-comment:<id> — accepted|rejected|ignored — <rationale>',
                 '',
                 'Unaccounted reviewer comments:',
-                ...missing.map((comment) => `- review-comment:${comment.id} ${comment.html_url}`),
+                ...(missingAccounting.length ? missingAccounting.map((comment) => `- review-comment:${comment.id} ${comment.html_url}`) : ['- none']),
               ];
 
               try {
                 const marker = '<!-- reviewer-response-completion-gate -->';
-                const existing = await github.paginate(github.rest.issues.listComments, {
-                  owner,
-                  repo,
-                  issue_number: prNumber,
-                  per_page: 100,
-                });
-                const prior = existing.find((comment) => (comment.body || '').includes(marker));
+                const prior = issueComments.find((comment) => (comment.body || '').includes(marker));
                 const commentBody = `${marker}\n\n${lines.join('\n')}`;
                 if (prior) {
                   await github.rest.issues.updateComment({ owner, repo, comment_id: prior.id, body: commentBody });
@@ -102,4 +151,4 @@ jobs:
               return;
             }
 
-            core.info(`Reviewer response accounting complete for ${actionable.length} inline reviewer comment(s).`);
+            core.info(`Reviewer response accounting complete. Required reviewers present: ${presentReviewers.join(', ')}. Inline comments accounted: ${actionable.length}.`);
