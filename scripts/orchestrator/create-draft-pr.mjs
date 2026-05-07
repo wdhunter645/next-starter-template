@@ -41,6 +41,10 @@ function extractBlock(body, heading) {
   return match ? match[1].trim() : '';
 }
 
+export function isDuplicateIssueBody(body) {
+  return /\bDuplicate of (?:Issue )?#\d+\b/i.test(body || '') || /\bclosed as duplicate\b/i.test(body || '');
+}
+
 function firstPrUrlFromSearch(search) {
   const result = runGh([
     'pr',
@@ -79,10 +83,12 @@ function existingPrUrl(branchName) {
   return prs.length > 0 ? prs[0].url : '';
 }
 
+export function issuePrSearchQuery(number) {
+  return `"orchestrator-source-issue: ${number}" OR "- **Issue:** #${number}" OR "issues/${number}"`;
+}
+
 function existingOpenPrForIssue(number) {
-  return firstPrUrlFromSearch(`orchestrator-source-issue: ${number}`)
-    || firstPrUrlFromSearch(`Issue: #${number}`)
-    || firstPrUrlFromSearch(`issues/${number}`);
+  return firstPrUrlFromSearch(issuePrSearchQuery(number));
 }
 
 function remoteBranchExists(branchName) {
@@ -116,7 +122,9 @@ if (issue.state !== 'OPEN') {
   process.exit(0);
 }
 
-if (/^Duplicate of Issue #\d+/i.test(issueBody) || /closed as duplicate/i.test(issueBody)) {
+if (isDuplicateIssueBody(issueBody)) {
+  runGh(['issue', 'edit', issueNumber, '--repo', repo, '--remove-label', 'status:queued', '--add-label', 'status:blocked']);
+  runGh(['issue', 'comment', issueNumber, '--repo', repo, '--body', 'Orchestrator draft PR creation skipped: issue is marked duplicate. Removed status:queued to avoid blocking queue advancement.']);
   console.log(`Issue #${issueNumber} is marked duplicate. Skipping draft PR creation.`);
   process.exit(0);
 }
