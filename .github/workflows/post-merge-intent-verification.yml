@@ -56,7 +56,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh pr view "${{ steps.pr.outputs.pr }}" --json number,state,isDraft,mergedAt,baseRefName --jq 'if (.state != "CLOSED" or .isDraft == true or .mergedAt == null or .baseRefName != "main") then error("Resolved PR is not a merged PR into main") else .number end' > /dev/null
+          gh pr view "${{ steps.pr.outputs.pr }}" --json number,isDraft,mergedAt,baseRefName --jq 'if (.isDraft == true or .mergedAt == null or .baseRefName != "main") then error("Resolved PR is not a merged PR into main") else .number end' > /dev/null
 
       - name: Skip direct pushes without merged PR context
         if: steps.pr.outputs.pr == ''
