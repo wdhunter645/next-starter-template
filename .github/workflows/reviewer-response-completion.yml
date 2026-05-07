@@ -3,8 +3,12 @@ name: GATE — Reviewer Response Completion
 on:
   pull_request_target:
     types: [opened, reopened, edited, synchronize, ready_for_review]
+  issue_comment:
+    types: [created, edited, deleted]
   pull_request_review:
     types: [submitted, edited, dismissed]
+  pull_request_review_comment:
+    types: [created, edited, deleted]
 
 permissions:
   pull-requests: read
@@ -22,15 +26,19 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const pr = context.payload.pull_request;
+            const issue = context.payload.issue;
 
-            if (!pr) {
+            const prNumber = pr?.number || (issue?.pull_request ? issue.number : null);
+            if (!prNumber) {
               core.info('No pull request context; skipping reviewer response completion gate.');
               return;
             }
 
-            const prNumber = pr.number;
             const { data: pull } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
             const body = pull.body || '';
+            const accountingSectionMatch = body.match(/##\s+REVIEWER RESPONSE ACCOUNTING\b([\s\S]*?)(?:\n##\s+|$)/i);
+            const accountingSection = accountingSectionMatch?.[1] || '';
+            const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
             const issueComments = await github.paginate(github.rest.issues.listComments, {
               owner,
@@ -73,7 +81,7 @@ jobs:
               {
                 name: 'Gemini',
                 users: ['gemini-code-assist[bot]'],
-                patterns: [/Gemini is unable to generate a review/i, /gemini/i],
+                patterns: [/Gemini is unable to generate a review/i, /Gemini Code Assist/i],
               },
             ];
 
@@ -99,11 +107,15 @@ jobs:
               return true;
             });
 
-            const hasSection = /##\s+REVIEWER RESPONSE ACCOUNTING/i.test(body);
+            const hasSection = Boolean(accountingSectionMatch);
             const missingAccounting = actionable.filter((comment) => {
               const url = comment.html_url || '';
               const idToken = `review-comment:${comment.id}`;
-              return !body.includes(url) && !body.includes(idToken);
+              const accountingPattern = new RegExp(
+                `^-\\s+.*(?:${escapeRegExp(idToken)}|${escapeRegExp(url)})\\s*[—-]\\s*(accepted|rejected|ignored)\\s*[—-]\\s*\\S.+$`,
+                'im'
+              );
+              return !accountingPattern.test(accountingSection);
             });
 
             if (missingReviewers.length > 0 || !hasSection || missingAccounting.length > 0) {
