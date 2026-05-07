@@ -243,7 +243,7 @@ describe('orchestrator workflow trigger compatibility', () => {
     expect(enforcePrOnlyWorkflow).toContain('commits/${GITHUB_SHA}/pulls');
     expect(postMergeWorkflow).toContain('commits/${GITHUB_SHA}/pulls');
     expect(createIssuesScript).toMatch(/['"]--state['"],\s*['"]all['"]/s);
-    expect(createDraftPrScript).toContain('existingOpenPrForIssue(issue.number)');
+    expect(createDraftPrScript).toContain('existingOpenPrForIssue(repo, issue.number)');
     expect(createDraftPrScript).toContain("issue.state !== 'OPEN'");
     expect(createDraftPrScript).toContain('no placeholder PR was created');
     expect(createDraftPrScript).not.toContain('orchestrator-placeholder-pr: true');
