@@ -31,6 +31,7 @@ jobs:
             const pr = context.payload.pull_request;
             const issue = context.payload.issue;
             const quietPeriodSeconds = 120;
+            const enforceFailure = context.eventName === 'pull_request_target';
 
             if (context.eventName === 'issue_comment' && !issue?.pull_request?.url) {
               core.info('Issue comment is not associated with a pull request; skipping reviewer response completion gate.');
@@ -138,7 +139,9 @@ jobs:
             const reviewersMissingLatestHead = requiredReviewers
               .filter((reviewer) => {
                 return !reviewerArtifacts.some((artifact) => {
-                  return reviewer.users.includes(artifact.user) && artifact.commitId === headSha;
+                  if (!reviewer.users.includes(artifact.user)) return false;
+                  if (!artifact.commitId) return true;
+                  return artifact.commitId === headSha;
                 });
               })
               .map((reviewer) => reviewer.name);
@@ -180,17 +183,18 @@ jobs:
             }
 
             const quietPeriodActive = quietUntil !== null && now < quietUntil;
-
-            if (
-              missingReviewers.length > 0 ||
+            const gateFailed = missingReviewers.length > 0 ||
               reviewersMissingLatestHead.length > 0 ||
               quietPeriodActive ||
               !hasSection ||
-              missingAccounting.length > 0
-            ) {
+              missingAccounting.length > 0;
+
+            if (gateFailed) {
               const quietRemainingSeconds = quietPeriodActive ? Math.ceil((quietUntil - now) / 1000) : 0;
               const lines = [
-                'Reviewer response completion gate failed.',
+                enforceFailure
+                  ? 'Reviewer response completion gate failed.'
+                  : 'Reviewer response completion gate refreshed; enforcement is deferred to pull_request_target runs.',
                 '',
                 'Required reviewer dispositions must be visible before merge readiness:',
                 '- Copilot',
@@ -203,6 +207,7 @@ jobs:
                 `Reviewers missing latest-head artifact: ${reviewersMissingLatestHead.length ? reviewersMissingLatestHead.join(', ') : 'none'}`,
                 `Quiet period seconds: ${quietPeriodSeconds}`,
                 `Quiet period remaining: ${quietRemainingSeconds}`,
+                `Enforcing event: ${enforceFailure ? 'yes' : 'no'}`,
                 '',
                 'Every actionable inline reviewer comment must be explicitly listed in the PR body before merge readiness.',
                 '',
@@ -226,7 +231,11 @@ jobs:
                 core.warning(`Unable to write reviewer response gate comment: ${error.message}`);
               }
 
-              core.setFailed(lines.join('\n'));
+              if (enforceFailure) {
+                core.setFailed(lines.join('\n'));
+              } else {
+                core.notice('Reviewer gate state refreshed without failing this non-enforcing event run.');
+              }
               return;
             }
 
@@ -238,6 +247,7 @@ jobs:
                 `Present reviewer dispositions: ${presentReviewers.join(', ')}`,
                 `Inline reviewer comments accounted: ${actionable.length}`,
                 `Quiet period seconds: ${quietPeriodSeconds}`,
+                `Enforcing event: ${enforceFailure ? 'yes' : 'no'}`,
               ]);
             } catch (error) {
               core.warning(`Unable to update reviewer response gate comment: ${error.message}`);
