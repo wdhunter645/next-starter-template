@@ -117,7 +117,7 @@ jobs:
               const url = comment.html_url || '';
               const idToken = `review-comment:${comment.id}`;
               const accountingPattern = new RegExp(
-                `^-\\s+.*(?:${escapeRegExp(idToken)}|${escapeRegExp(url)})\\s*[—-]\\s*(accepted|rejected|ignored)\\s*[—-]\\s*\\S.*$`,
+                `^-\\s+.*(?:${escapeRegExp(idToken)}|${escapeRegExp(url)})\\s*[—\\-]\\s*(accepted|rejected|ignored)\\s*[—\\-]\\s*\\S.*$`,
                 'im'
               );
               return !accountingPattern.test(accountingSection);
