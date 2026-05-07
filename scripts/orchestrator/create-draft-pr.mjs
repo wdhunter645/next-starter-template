@@ -41,6 +41,25 @@ function extractBlock(body, heading) {
   return match ? match[1].trim() : '';
 }
 
+function firstPrUrlFromSearch(search) {
+  const result = runGh([
+    'pr',
+    'list',
+    '--repo',
+    repo,
+    '--state',
+    'open',
+    '--search',
+    search,
+    '--json',
+    'url',
+    '--limit',
+    '1'
+  ]);
+  const prs = JSON.parse(result);
+  return prs.length > 0 ? prs[0].url : '';
+}
+
 function existingPrUrl(branchName) {
   const result = runGh([
     'pr',
@@ -58,6 +77,12 @@ function existingPrUrl(branchName) {
   ]);
   const prs = JSON.parse(result);
   return prs.length > 0 ? prs[0].url : '';
+}
+
+function existingOpenPrForIssue(number) {
+  return firstPrUrlFromSearch(`orchestrator-source-issue: ${number}`)
+    || firstPrUrlFromSearch(`Issue: #${number}`)
+    || firstPrUrlFromSearch(`issues/${number}`);
 }
 
 function remoteBranchExists(branchName) {
@@ -79,11 +104,22 @@ const issueJson = runGh([
   '--repo',
   repo,
   '--json',
-  'number,title,body,labels'
+  'number,title,body,labels,state'
 ]);
 
 const issue = JSON.parse(issueJson);
 const labels = issue.labels.map((label) => label.name);
+const issueBody = issue.body || '';
+
+if (issue.state !== 'OPEN') {
+  console.log(`Issue #${issueNumber} is not open. Skipping draft PR creation.`);
+  process.exit(0);
+}
+
+if (/^Duplicate of Issue #\d+/i.test(issueBody) || /closed as duplicate/i.test(issueBody)) {
+  console.log(`Issue #${issueNumber} is marked duplicate. Skipping draft PR creation.`);
+  process.exit(0);
+}
 
 if (!labels.includes('orchestrator') || !labels.includes('status:queued')) {
   console.log(`Issue #${issueNumber} is not an orchestrator queued issue. Skipping.`);
@@ -91,11 +127,11 @@ if (!labels.includes('orchestrator') || !labels.includes('status:queued')) {
 }
 
 const branchName = `orchestrator/${issue.number}-${slugify(issue.title)}`;
-const alreadyOpenPr = existingPrUrl(branchName);
+const alreadyOpenPr = existingPrUrl(branchName) || existingOpenPrForIssue(issue.number);
 
 if (alreadyOpenPr) {
   runGh(['issue', 'edit', issueNumber, '--repo', repo, '--remove-label', 'status:queued', '--add-label', 'status:pr-draft']);
-  runGh(['issue', 'comment', issueNumber, '--repo', repo, '--body', `Existing draft PR found: ${alreadyOpenPr}`]);
+  runGh(['issue', 'comment', issueNumber, '--repo', repo, '--body', `Existing active PR found: ${alreadyOpenPr}`]);
   console.log(`Existing PR found for issue #${issueNumber}: ${alreadyOpenPr}`);
   process.exit(0);
 }
@@ -115,7 +151,6 @@ if (remoteBranchExists(branchName)) {
   process.exit(1);
 }
 
-const issueBody = issue.body || '';
 const allowedFiles = extractBlock(issueBody, 'Allowed Files') || '- To be completed by assigned agent from issue scope';
 const acceptanceCriteria = extractBlock(issueBody, 'Acceptance Criteria') || '- To be completed by assigned agent';
 const validation = extractBlock(issueBody, 'Validation') || '- To be completed by assigned agent';
@@ -132,11 +167,12 @@ runGit(['push', '-u', 'origin', branchName]);
 
 const prBody = [
   `<!-- orchestrator-source-issue: ${issue.number} -->`,
+  '<!-- orchestrator-placeholder-pr: true -->',
   `- **Issue:** #${issue.number}`,
   '',
   '## Orchestrator Draft PR',
   '',
-  'This draft PR was created by the LGFC orchestration tier.',
+  'This placeholder PR was created by the LGFC orchestration tier after duplicate-preflight checks found no active PR for the source Issue.',
   '',
   '## Change Summary',
   '- To be completed by assigned agent.',
