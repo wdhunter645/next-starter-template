@@ -75,26 +75,20 @@ jobs:
             const requiredReviewers = [
               {
                 name: 'Copilot',
-                users: ['copilot-pull-request-reviewer[bot]', 'Copilot'],
-                patterns: [/Copilot wasn't able to review/i, /Pull request overview/i],
+                users: ['copilot-pull-request-reviewer[bot]', 'copilot-pull-request-reviewer', 'Copilot'],
               },
               {
                 name: 'Cubic',
-                users: ['cubic-dev-ai[bot]'],
-                patterns: [/Summary by cubic/i, /cubic found/i, /cubic:review-post/i, /issue found/i],
+                users: ['cubic-dev-ai[bot]', 'cubic-dev-ai'],
               },
               {
                 name: 'Gemini',
-                users: ['gemini-code-assist[bot]'],
-                patterns: [/Gemini is unable to generate a review/i],
+                users: ['gemini-code-assist[bot]', 'gemini-code-assist'],
               },
             ];
 
             const presentReviewers = requiredReviewers.filter((reviewer) => {
-              return allReviewerArtifacts.some((artifact) => {
-                if (reviewer.users.includes(artifact.user)) return true;
-                return reviewer.patterns.some((pattern) => pattern.test(artifact.body));
-              });
+              return allReviewerArtifacts.some((artifact) => reviewer.users.includes(artifact.user));
             }).map((reviewer) => reviewer.name);
 
             const missingReviewers = requiredReviewers
