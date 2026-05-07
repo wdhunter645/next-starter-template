@@ -18,6 +18,9 @@ permissions:
 jobs:
   reviewer-response-completion:
     runs-on: ubuntu-latest
+    concurrency:
+      group: reviewer-response-completion-${{ github.event.pull_request.number || github.event.issue.number }}
+      cancel-in-progress: true
     steps:
       - name: Verify required reviewer presence and response accounting
         uses: actions/github-script@v7
@@ -66,12 +69,6 @@ jobs:
               per_page: 100,
             });
 
-            const allReviewerArtifacts = [
-              ...issueComments.map((comment) => ({ kind: 'issue-comment', user: comment.user?.login || '', body: comment.body || '' })),
-              ...reviewComments.map((comment) => ({ kind: 'review-comment', user: comment.user?.login || '', body: comment.body || '' })),
-              ...reviews.map((review) => ({ kind: 'review', user: review.user?.login || '', body: review.body || '' })),
-            ];
-
             const requiredReviewers = [
               {
                 name: 'Copilot',
@@ -86,9 +83,22 @@ jobs:
                 users: ['gemini-code-assist[bot]', 'gemini-code-assist'],
               },
             ];
+            const reviewerUsers = new Set(requiredReviewers.flatMap((reviewer) => reviewer.users));
+
+            const reviewerArtifacts = [
+              ...issueComments
+                .filter((comment) => reviewerUsers.has(comment.user?.login || ''))
+                .map((comment) => ({ kind: 'issue-comment', user: comment.user?.login || '', body: comment.body || '' })),
+              ...reviewComments
+                .filter((comment) => reviewerUsers.has(comment.user?.login || ''))
+                .map((comment) => ({ kind: 'review-comment', user: comment.user?.login || '', body: comment.body || '' })),
+              ...reviews
+                .filter((review) => reviewerUsers.has(review.user?.login || ''))
+                .map((review) => ({ kind: 'review', user: review.user?.login || '', body: review.body || '' })),
+            ];
 
             const presentReviewers = requiredReviewers.filter((reviewer) => {
-              return allReviewerArtifacts.some((artifact) => reviewer.users.includes(artifact.user));
+              return reviewerArtifacts.some((artifact) => reviewer.users.includes(artifact.user));
             }).map((reviewer) => reviewer.name);
 
             const missingReviewers = requiredReviewers
@@ -99,9 +109,9 @@ jobs:
               const user = comment.user?.login || '';
               const text = comment.body || '';
 
-              if (user === 'github-actions[bot]') return false;
-              if (user === 'cloudflare-workers-and-pages[bot]') return false;
+              if (!reviewerUsers.has(user)) return false;
               if (/<!--\s*reviewer-response-ignore\s*-->/i.test(text)) return false;
+              if (comment.line == null && comment.position == null) return false;
 
               return true;
             });
@@ -110,12 +120,26 @@ jobs:
             const missingAccounting = actionable.filter((comment) => {
               const url = comment.html_url || '';
               const idToken = `review-comment:${comment.id}`;
+              const nodeToken = comment.node_id ? `review-comment-node:${comment.node_id}` : '';
+              const tokens = [idToken, nodeToken, url].filter(Boolean).map(escapeRegExp).join('|');
               const accountingPattern = new RegExp(
-                `^-\\s+.*(?:${escapeRegExp(idToken)}|${escapeRegExp(url)})\\s*[—\\-]\\s*(accepted|rejected|ignored)\\s*[—\\-]\\s*\\S.*$`,
+                `^-\\s+.*(?:${tokens})\\s*[—\\-]\\s*(accepted|rejected|ignored)\\s*[—\\-]\\s*\\S.*$`,
                 'im'
               );
               return !accountingPattern.test(accountingSection);
             });
+
+            const marker = '<!-- reviewer-response-completion-gate -->';
+
+            async function upsertGateComment(lines) {
+              const prior = issueComments.find((comment) => (comment.body || '').includes(marker));
+              const commentBody = `${marker}\n\n${lines.join('\n')}`;
+              if (prior) {
+                await github.rest.issues.updateComment({ owner, repo, comment_id: prior.id, body: commentBody });
+              } else {
+                await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body: commentBody });
+              }
+            }
 
             if (missingReviewers.length > 0 || !hasSection || missingAccounting.length > 0) {
               const lines = [
@@ -129,7 +153,7 @@ jobs:
                 `Present reviewer dispositions: ${presentReviewers.length ? presentReviewers.join(', ') : 'none'}`,
                 `Missing reviewer dispositions: ${missingReviewers.length ? missingReviewers.join(', ') : 'none'}`,
                 '',
-                'Every inline reviewer comment must be explicitly listed in the PR body before merge readiness.',
+                'Every actionable inline reviewer comment must be explicitly listed in the PR body before merge readiness.',
                 '',
                 'Required PR body section:',
                 '',
@@ -146,20 +170,24 @@ jobs:
               ];
 
               try {
-                const marker = '<!-- reviewer-response-completion-gate -->';
-                const prior = issueComments.find((comment) => (comment.body || '').includes(marker));
-                const commentBody = `${marker}\n\n${lines.join('\n')}`;
-                if (prior) {
-                  await github.rest.issues.updateComment({ owner, repo, comment_id: prior.id, body: commentBody });
-                } else {
-                  await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body: commentBody });
-                }
+                await upsertGateComment(lines);
               } catch (error) {
                 core.warning(`Unable to write reviewer response gate comment: ${error.message}`);
               }
 
               core.setFailed(lines.join('\n'));
               return;
+            }
+
+            try {
+              await upsertGateComment([
+                'Reviewer response completion gate passed.',
+                '',
+                `Present reviewer dispositions: ${presentReviewers.join(', ')}`,
+                `Inline reviewer comments accounted: ${actionable.length}`,
+              ]);
+            } catch (error) {
+              core.warning(`Unable to update reviewer response gate comment: ${error.message}`);
             }
 
             core.info(`Reviewer response accounting complete. Required reviewers present: ${presentReviewers.join(', ')}. Inline comments accounted: ${actionable.length}.`);
