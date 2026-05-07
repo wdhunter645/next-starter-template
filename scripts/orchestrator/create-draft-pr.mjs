@@ -131,6 +131,7 @@ runGit(['commit', '--allow-empty', '-m', `orchestrator: draft PR for issue #${is
 runGit(['push', '-u', 'origin', branchName]);
 
 const prBody = [
+  `<!-- orchestrator-source-issue: ${issue.number} -->`,
   `- **Issue:** #${issue.number}`,
   '',
   '## Orchestrator Draft PR',
