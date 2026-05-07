@@ -28,7 +28,7 @@ jobs:
             const pr = context.payload.pull_request;
             const issue = context.payload.issue;
 
-            if (context.eventName === 'issue_comment' && !issue?.pull_request) {
+            if (context.eventName === 'issue_comment' && !issue?.pull_request?.url) {
               core.info('Issue comment is not associated with a pull request; skipping reviewer response completion gate.');
               return;
             }
@@ -117,7 +117,7 @@ jobs:
               const url = comment.html_url || '';
               const idToken = `review-comment:${comment.id}`;
               const accountingPattern = new RegExp(
-                `^-\\s+.*(?:${escapeRegExp(idToken)}|${escapeRegExp(url)})\\s*[—-]\\s*(accepted|rejected|ignored)\\s*[—-]\\s*\\S.+$`,
+                `^-\\s+.*(?:${escapeRegExp(idToken)}|${escapeRegExp(url)})\\s*[—-]\\s*(accepted|rejected|ignored)\\s*[—-]\\s*\\S.*$`,
                 'im'
               );
               return !accountingPattern.test(accountingSection);
