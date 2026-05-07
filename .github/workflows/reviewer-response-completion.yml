@@ -30,6 +30,7 @@ jobs:
             const repo = context.repo.repo;
             const pr = context.payload.pull_request;
             const issue = context.payload.issue;
+            const quietPeriodSeconds = 120;
 
             if (context.eventName === 'issue_comment' && !issue?.pull_request?.url) {
               core.info('Issue comment is not associated with a pull request; skipping reviewer response completion gate.');
@@ -44,6 +45,7 @@ jobs:
 
             const { data: pull } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
             const body = pull.body || '';
+            const headSha = pull.head?.sha || '';
             const accountingSectionMatch = body.match(/##\s+REVIEWER RESPONSE ACCOUNTING\b([\s\S]*?)(?:\n##\s+|$)/i);
             const accountingSection = accountingSectionMatch?.[1] || '';
             const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -88,14 +90,42 @@ jobs:
             const reviewerArtifacts = [
               ...issueComments
                 .filter((comment) => reviewerUsers.has(comment.user?.login || ''))
-                .map((comment) => ({ kind: 'issue-comment', user: comment.user?.login || '', body: comment.body || '' })),
+                .map((comment) => ({
+                  kind: 'issue-comment',
+                  user: comment.user?.login || '',
+                  body: comment.body || '',
+                  createdAt: comment.created_at,
+                  updatedAt: comment.updated_at,
+                })),
               ...reviewComments
                 .filter((comment) => reviewerUsers.has(comment.user?.login || ''))
-                .map((comment) => ({ kind: 'review-comment', user: comment.user?.login || '', body: comment.body || '' })),
+                .map((comment) => ({
+                  kind: 'review-comment',
+                  user: comment.user?.login || '',
+                  body: comment.body || '',
+                  commitId: comment.commit_id || '',
+                  createdAt: comment.created_at,
+                  updatedAt: comment.updated_at,
+                })),
               ...reviews
                 .filter((review) => reviewerUsers.has(review.user?.login || ''))
-                .map((review) => ({ kind: 'review', user: review.user?.login || '', body: review.body || '' })),
+                .map((review) => ({
+                  kind: 'review',
+                  user: review.user?.login || '',
+                  body: review.body || '',
+                  commitId: review.commit_id || '',
+                  submittedAt: review.submitted_at,
+                })),
             ];
+
+            const latestRelevantTimestamp = reviewerArtifacts
+              .map((artifact) => artifact.updatedAt || artifact.createdAt || artifact.submittedAt)
+              .filter(Boolean)
+              .map((value) => Date.parse(value))
+              .filter((value) => Number.isFinite(value))
+              .sort((a, b) => b - a)[0];
+            const quietUntil = latestRelevantTimestamp ? latestRelevantTimestamp + quietPeriodSeconds * 1000 : null;
+            const now = Date.now();
 
             const presentReviewers = requiredReviewers.filter((reviewer) => {
               return reviewerArtifacts.some((artifact) => reviewer.users.includes(artifact.user));
@@ -104,6 +134,14 @@ jobs:
             const missingReviewers = requiredReviewers
               .map((reviewer) => reviewer.name)
               .filter((name) => !presentReviewers.includes(name));
+
+            const reviewersMissingLatestHead = requiredReviewers
+              .filter((reviewer) => {
+                return !reviewerArtifacts.some((artifact) => {
+                  return reviewer.users.includes(artifact.user) && artifact.commitId === headSha;
+                });
+              })
+              .map((reviewer) => reviewer.name);
 
             const actionable = reviewComments.filter((comment) => {
               const user = comment.user?.login || '';
@@ -141,7 +179,16 @@ jobs:
               }
             }
 
-            if (missingReviewers.length > 0 || !hasSection || missingAccounting.length > 0) {
+            const quietPeriodActive = quietUntil !== null && now < quietUntil;
+
+            if (
+              missingReviewers.length > 0 ||
+              reviewersMissingLatestHead.length > 0 ||
+              quietPeriodActive ||
+              !hasSection ||
+              missingAccounting.length > 0
+            ) {
+              const quietRemainingSeconds = quietPeriodActive ? Math.ceil((quietUntil - now) / 1000) : 0;
               const lines = [
                 'Reviewer response completion gate failed.',
                 '',
@@ -150,8 +197,12 @@ jobs:
                 '- Cubic',
                 '- Gemini',
                 '',
+                `Current head SHA: ${headSha}`,
                 `Present reviewer dispositions: ${presentReviewers.length ? presentReviewers.join(', ') : 'none'}`,
                 `Missing reviewer dispositions: ${missingReviewers.length ? missingReviewers.join(', ') : 'none'}`,
+                `Reviewers missing latest-head artifact: ${reviewersMissingLatestHead.length ? reviewersMissingLatestHead.join(', ') : 'none'}`,
+                `Quiet period seconds: ${quietPeriodSeconds}`,
+                `Quiet period remaining: ${quietRemainingSeconds}`,
                 '',
                 'Every actionable inline reviewer comment must be explicitly listed in the PR body before merge readiness.',
                 '',
@@ -183,8 +234,10 @@ jobs:
               await upsertGateComment([
                 'Reviewer response completion gate passed.',
                 '',
+                `Current head SHA: ${headSha}`,
                 `Present reviewer dispositions: ${presentReviewers.join(', ')}`,
                 `Inline reviewer comments accounted: ${actionable.length}`,
+                `Quiet period seconds: ${quietPeriodSeconds}`,
               ]);
             } catch (error) {
               core.warning(`Unable to update reviewer response gate comment: ${error.message}`);
