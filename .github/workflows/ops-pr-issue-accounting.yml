@@ -6,7 +6,7 @@ on:
 
 permissions:
   issues: write
-  pull-requests: write
+  pull-requests: read
   contents: read
 
 jobs:
@@ -16,24 +16,17 @@ jobs:
       group: ops-pr-issue-accounting-${{ github.event.pull_request.number }}
       cancel-in-progress: true
     steps:
-      - name: Ensure PR has a tracker Issue (Tier B support-only)
-        if: ${{ github.event.action != 'closed' }}
+      - name: Enforce Issue-first pull request accounting
         uses: actions/github-script@v7
         with:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const prNumber = context.payload.pull_request.number;
+            const action = context.payload.action;
 
-            const pr = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
-            const prTitle = pr.data.title || '';
-            const prBody = pr.data.body || '';
-
-            const desiredTitle = `[Work][PR #${prNumber}] ${prTitle}`.trim();
-
-            function hasOrchestratorSourceIssue(body) {
-              return /<!--\s*orchestrator-source-issue:\s*\d+\s*-->/i.test(body || '');
-            }
+            const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
+            const prBody = pr.body || '';
 
             function issueUrlBelongsToCurrentRepo(issueUrl) {
               try {
@@ -53,322 +46,106 @@ jobs:
             function issueNumberFromRef(ref) {
               const value = (ref || '').trim().replace(/[).,;]+$/g, '');
               const local = value.match(/^#(\d+)$/);
-              if (local) return local[1];
+              if (local) return Number(local[1]);
               if (!issueUrlBelongsToCurrentRepo(value)) return null;
               const parts = new URL(value).pathname.split('/').filter(Boolean);
-              return parts[3] || null;
+              return Number(parts[3]);
             }
 
-            function primaryIssueNumbers(body) {
-              const numbers = new Set();
+            function sourceIssueRefs(body) {
+              const refs = [];
               const lines = (body || '').split('\n');
               for (const line of lines) {
                 if (/OPS\s+Tracker/i.test(line)) continue;
+                if (/Umbrella\s+Tracker/i.test(line)) continue;
                 const match = line.match(/^\s*-?\s*(?:\*\*)?Issue(?:\*\*)?\s*:\s*(#\d+|https:\/\/github\.com\/[^\s)]+\/[^\s)]+\/issues\/\d+\/?)/i);
                 if (!match) continue;
                 const issueNumber = issueNumberFromRef(match[1]);
-                if (issueNumber) numbers.add(issueNumber);
+                if (issueNumber) refs.push(issueNumber);
               }
-              return [...numbers];
+              return refs;
             }
 
             async function commentOnce(marker, body) {
               try {
-                const comments = await github.rest.issues.listComments({ owner, repo, issue_number: prNumber, per_page: 100 });
-                const existing = (comments.data || []).find((comment) => (comment.body || '').includes(marker));
+                const comments = await github.paginate(github.rest.issues.listComments, {
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  per_page: 100,
+                });
+                const existing = (comments || []).find((comment) => (comment.body || '').includes(marker));
                 const commentBody = `${marker}\n\n${body}`;
                 if (existing) {
                   await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body: commentBody });
                 } else {
                   await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body: commentBody });
                 }
-              } catch (e) {
-                core.warning(`Unable to write PR accounting comment: ${e.message}`);
+              } catch (error) {
+                core.warning(`Unable to write PR accounting comment: ${error.message}`);
               }
             }
 
-            function extractTrackerIssueUrl(body) {
-              const m = body.match(/\*\*OPS Tracker:\*\*\s*(https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/issues\/\d+\/?)/i)
-                     || body.match(/-\s*\*\*OPS Tracker:\*\*\s*(https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/issues\/\d+\/?)/i)
-                     || body.match(/OPS Tracker:\s*(https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/issues\/\d+\/?)/i);
-              return m ? m[1] : null;
-            }
+            const marker = '<!-- ops-pr-issue-accounting -->';
+            const sourceRefs = sourceIssueRefs(prBody);
+            const uniqueSourceIssues = [...new Set(sourceRefs)];
 
-            function issueMatchesPrTracker(issue) {
-              const body = issue.body || '';
-              const title = issue.title || '';
-              return title.includes(`[Work][PR #${prNumber}]`)
-                && body.includes(`Tracker Issue for PR #${prNumber}.`)
-                && body.includes(pr.data.html_url);
-            }
-
-            async function validTrackerFromUrl(issueUrl) {
-              if (!issueUrl || !issueUrlBelongsToCurrentRepo(issueUrl)) return null;
-              const issueNumber = issueNumberFromRef(issueUrl);
-              if (!issueNumber) return null;
-              try {
-                const issue = await github.rest.issues.get({ owner, repo, issue_number: issueNumber });
-                if (!issueMatchesPrTracker(issue.data)) return null;
-                return { issueNumber, issueUrl, issueTitle: issue.data.title || '' };
-              } catch (e) {
-                return null;
-              }
-            }
-
-            async function findIssueByTitle() {
-              const q = `repo:${owner}/${repo} is:issue in:title "[Work][PR #${prNumber}]"`;
-              const res = await github.rest.search.issuesAndPullRequests({ q, per_page: 10 });
-              return (res.data.items || []).filter((item) => !item.pull_request);
-            }
-
-            async function findValidatedIssueByTitle() {
-              const found = await findIssueByTitle();
-              for (const candidate of found) {
-                try {
-                  const issue = await github.rest.issues.get({ owner, repo, issue_number: candidate.number });
-                  if (issueMatchesPrTracker(issue.data)) {
-                    return { issueNumber: issue.data.number, issueUrl: issue.data.html_url, issueTitle: issue.data.title || '' };
-                  }
-                } catch (e) {
-                  core.warning(`Unable to validate tracker issue #${candidate.number}: ${e.message}`);
-                }
-              }
-              return null;
-            }
-
-            async function tryAddLabels(issueNumber, labels) {
-              try {
-                await github.rest.issues.addLabels({ owner, repo, issue_number: issueNumber, labels });
-              } catch (e) {
-                // label(s) may not exist; ignore
-              }
-            }
-
-            if (hasOrchestratorSourceIssue(prBody)) {
-              console.log(`PR #${prNumber} is task-first by orchestrator marker. Skipping OPS tracker injection.`);
-              return;
-            }
-
-            const sourceIssues = primaryIssueNumbers(prBody);
-            if (sourceIssues.length === 1) {
-              console.log(`PR #${prNumber} is issue-first by primary Issue link #${sourceIssues[0]}. Skipping OPS tracker injection.`);
-              return;
-            }
-
-            if (sourceIssues.length > 1) {
+            if (sourceRefs.length !== 1 || uniqueSourceIssues.length !== 1) {
               await commentOnce(
-                '<!-- ops-pr-issue-accounting-ambiguous-source -->',
+                marker,
                 [
-                  'OPS PR Issue Accounting found multiple primary source Issues and will not create or attach an OPS tracker.',
+                  'OPS PR Issue Accounting failed.',
                   '',
-                  `Detected source Issues: ${sourceIssues.map((issue) => `#${issue}`).join(', ')}`,
+                  'Repository policy is Issue-first only.',
                   '',
-                  'Resolve by keeping exactly one top-level `Issue:` line in the PR body. OPS Tracker links are support-only and do not count as task authority.',
+                  'Every PR must include exactly one primary source Issue line:',
+                  '',
+                  '- **Issue:** #123',
+                  '',
+                  'OPS Tracker and Umbrella Tracker links are allowed as secondary context, but they are not task authority.',
+                  '',
+                  `Detected primary source Issue lines: ${sourceRefs.length}`,
+                  `Detected unique primary source Issues: ${uniqueSourceIssues.length ? uniqueSourceIssues.map((issue) => `#${issue}`).join(', ') : 'none'}`,
+                  '',
+                  'Create or select an open Issue first, then create the PR from that Issue.',
                 ].join('\n')
               );
-              core.setFailed(`Multiple primary source Issues found for PR #${prNumber}: ${sourceIssues.join(', ')}`);
+              core.setFailed(`PR #${prNumber} must have exactly one primary source Issue line. Found lines: ${sourceRefs.length}; unique issues: ${uniqueSourceIssues.length}`);
               return;
             }
 
-            async function ensureIssue() {
-              // 1) If PR body already references a valid OPS tracker Issue for this PR, use it.
-              const existingUrl = extractTrackerIssueUrl(prBody);
-              const validExisting = await validTrackerFromUrl(existingUrl);
-              if (validExisting) return validExisting;
-
-              // 2) Search by deterministic title pattern and validate tracker identity.
-              const validFound = await findValidatedIssueByTitle();
-              if (validFound) return validFound;
-
-              // 3) Create new tracker Issue for PR-first work only.
-              const body = [
-                `Tracker Issue for PR #${prNumber}.`,
-                ``,
-                `- **PR:** ${pr.data.html_url}`,
-                `- **Status:** open`,
-                `- **Tier:** B (OPS / Overwatch) — support-only`,
-                ``,
-                `This Issue exists to keep the **Issues queue** as the unified work view when a PR is opened before a task Issue exists.`,
-              ].join('\n');
-
-              const created = await github.rest.issues.create({ owner, repo, title: desiredTitle, body });
-              await tryAddLabels(created.data.number, ['work-accounting', 'needs-triage']);
-              return { issueNumber: created.data.number, issueUrl: created.data.html_url, issueTitle: created.data.title || '' };
-            }
-
-            const issue = await ensureIssue();
-
-            if ((issue.issueTitle || '').trim() !== desiredTitle) {
-              try {
-                await github.rest.issues.update({ owner, repo, issue_number: issue.issueNumber, title: desiredTitle });
-              } catch (e) {
-                // ignore (permissions/locked)
-              }
-            }
-
-            const issueLine = `- **OPS Tracker:** ${issue.issueUrl}`;
-            let newBody = prBody || '';
-            if (!extractTrackerIssueUrl(newBody)) {
-              newBody = [issueLine, '', newBody].join('\n').trim();
-              await github.rest.pulls.update({ owner, repo, pull_number: prNumber, body: newBody });
-            }
-
-            const marker = 'OPS: Tracker Issue';
+            const sourceIssueNumber = uniqueSourceIssues[0];
+            let sourceIssue;
             try {
-              const comments = await github.rest.issues.listComments({ owner, repo, issue_number: prNumber, per_page: 50 });
-              const already = (comments.data || []).some((comment) => (comment.body || '').includes(marker));
-              if (!already) {
-                await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body: `${marker} created/linked: ${issue.issueUrl}` });
-              }
-            } catch (e) {
-              // ignore
-            }
-
-      - name: Close associated tracker Issue on PR close (Tier B support-only)
-        if: ${{ github.event.action == 'closed' }}
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-            const prNumber = context.payload.pull_request.number;
-            const merged = !!context.payload.pull_request.merged;
-
-            const pr = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
-            const prTitle = pr.data.title || '';
-            const prBody = pr.data.body || '';
-            const desiredTitle = `[Work][PR #${prNumber}] ${prTitle}`.trim();
-
-            function hasOrchestratorSourceIssue(body) {
-              return /<!--\s*orchestrator-source-issue:\s*\d+\s*-->/i.test(body || '');
-            }
-
-            function issueUrlBelongsToCurrentRepo(issueUrl) {
-              try {
-                const url = new URL(issueUrl);
-                const parts = url.pathname.split('/').filter(Boolean);
-                return url.hostname.toLowerCase() === 'github.com'
-                  && parts.length === 4
-                  && parts[0].toLowerCase() === owner.toLowerCase()
-                  && parts[1].toLowerCase() === repo.toLowerCase()
-                  && parts[2] === 'issues'
-                  && /^\d+$/.test(parts[3]);
-              } catch (e) {
-                return false;
-              }
-            }
-
-            function issueNumberFromRef(ref) {
-              const value = (ref || '').trim().replace(/[).,;]+$/g, '');
-              const local = value.match(/^#(\d+)$/);
-              if (local) return local[1];
-              if (!issueUrlBelongsToCurrentRepo(value)) return null;
-              const parts = new URL(value).pathname.split('/').filter(Boolean);
-              return parts[3] || null;
-            }
-
-            function primaryIssueNumbers(body) {
-              const numbers = new Set();
-              const lines = (body || '').split('\n');
-              for (const line of lines) {
-                if (/OPS\s+Tracker/i.test(line)) continue;
-                const match = line.match(/^\s*-?\s*(?:\*\*)?Issue(?:\*\*)?\s*:\s*(#\d+|https:\/\/github\.com\/[^\s)]+\/[^\s)]+\/issues\/\d+\/?)/i);
-                if (!match) continue;
-                const issueNumber = issueNumberFromRef(match[1]);
-                if (issueNumber) numbers.add(issueNumber);
-              }
-              return [...numbers];
-            }
-
-            function extractTrackerIssueUrl(body) {
-              const m = body.match(/\*\*OPS Tracker:\*\*\s*(https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/issues\/\d+\/?)/i)
-                     || body.match(/-\s*\*\*OPS Tracker:\*\*\s*(https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/issues\/\d+\/?)/i)
-                     || body.match(/OPS Tracker:\s*(https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/issues\/\d+\/?)/i);
-              return m ? m[1] : null;
-            }
-
-            function issueMatchesPrTracker(issue) {
-              const body = issue.body || '';
-              const title = issue.title || '';
-              return title.includes(`[Work][PR #${prNumber}]`)
-                && body.includes(`Tracker Issue for PR #${prNumber}.`)
-                && body.includes(pr.data.html_url);
-            }
-
-            async function validTrackerFromUrl(issueUrl) {
-              if (!issueUrl || !issueUrlBelongsToCurrentRepo(issueUrl)) return null;
-              const issueNumber = issueNumberFromRef(issueUrl);
-              if (!issueNumber) return null;
-              try {
-                const issue = await github.rest.issues.get({ owner, repo, issue_number: issueNumber });
-                if (!issueMatchesPrTracker(issue.data)) return null;
-                return { issueNumber, issueUrl, issueTitle: issue.data.title || '' };
-              } catch (e) {
-                return null;
-              }
-            }
-
-            async function findIssueByTitle() {
-              const q = `repo:${owner}/${repo} is:issue in:title "[Work][PR #${prNumber}]"`;
-              const res = await github.rest.search.issuesAndPullRequests({ q, per_page: 10 });
-              return (res.data.items || []).filter((item) => !item.pull_request);
-            }
-
-            async function findValidatedIssueByTitle() {
-              const found = await findIssueByTitle();
-              for (const candidate of found) {
-                try {
-                  const issue = await github.rest.issues.get({ owner, repo, issue_number: candidate.number });
-                  if (issueMatchesPrTracker(issue.data)) {
-                    return { issueNumber: issue.data.number, issueUrl: issue.data.html_url, issueTitle: issue.data.title || '' };
-                  }
-                } catch (e) {
-                  core.warning(`Unable to validate tracker issue #${candidate.number}: ${e.message}`);
-                }
-              }
-              return null;
-            }
-
-            if (hasOrchestratorSourceIssue(prBody)) {
-              console.log(`PR #${prNumber} is task-first by orchestrator marker. No OPS tracker closure needed.`);
+              const { data } = await github.rest.issues.get({ owner, repo, issue_number: sourceIssueNumber });
+              sourceIssue = data;
+            } catch (error) {
+              await commentOnce(marker, `OPS PR Issue Accounting failed. Source Issue #${sourceIssueNumber} could not be loaded.`);
+              core.setFailed(`Source Issue #${sourceIssueNumber} could not be loaded: ${error.message}`);
               return;
             }
 
-            const sourceIssues = primaryIssueNumbers(prBody);
-            if (sourceIssues.length > 0) {
-              console.log(`PR #${prNumber} is issue-first by primary Issue link(s): ${sourceIssues.join(', ')}. No OPS tracker closure needed.`);
+            if (sourceIssue.pull_request) {
+              await commentOnce(marker, `OPS PR Issue Accounting failed. #${sourceIssueNumber} is a pull request, not an Issue.`);
+              core.setFailed(`#${sourceIssueNumber} is a pull request, not an Issue.`);
               return;
             }
 
-            let tracker = await validTrackerFromUrl(extractTrackerIssueUrl(prBody));
-            if (!tracker) tracker = await findValidatedIssueByTitle();
-
-            if (!tracker) {
-              console.log(`No valid OPS tracker Issue found for PR #${prNumber}`);
+            if (sourceIssue.state !== 'open' && action !== 'closed') {
+              await commentOnce(marker, `OPS PR Issue Accounting failed. Source Issue #${sourceIssueNumber} is ${sourceIssue.state}; PRs must start from an open Issue.`);
+              core.setFailed(`Source Issue #${sourceIssueNumber} is not open.`);
               return;
             }
 
-            try {
-              await github.rest.issues.update({ owner, repo, issue_number: tracker.issueNumber, title: desiredTitle });
-            } catch (e) {}
+            await commentOnce(
+              marker,
+              [
+                'OPS PR Issue Accounting passed.',
+                '',
+                `Primary source Issue: #${sourceIssueNumber}`,
+                `Source Issue state: ${sourceIssue.state}`,
+                'No synthetic tracker Issue was created.',
+              ].join('\n')
+            );
 
-            const msg = merged
-              ? `PR #${prNumber} merged. Closing OPS tracker Issue.\n\n- PR: ${pr.data.html_url}`
-              : `PR #${prNumber} closed without merge. Closing OPS tracker Issue.\n\n- PR: ${pr.data.html_url}`;
-
-            try {
-              await github.rest.issues.createComment({ owner, repo, issue_number: tracker.issueNumber, body: msg });
-            } catch (e) {}
-
-            try {
-              await github.rest.issues.update({ owner, repo, issue_number: tracker.issueNumber, state: 'closed' });
-            } catch (e) {}
-
-            try {
-              await github.rest.issues.createComment({
-                owner,
-                repo,
-                issue_number: prNumber,
-                body: `OPS: Tracker Issue closed: ${tracker.issueUrl || `(issue #${tracker.issueNumber})`}`,
-              });
-            } catch (e) {}
+            core.info(`PR #${prNumber} is issue-first with source Issue #${sourceIssueNumber}.`);
