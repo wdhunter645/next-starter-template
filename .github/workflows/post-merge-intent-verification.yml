@@ -3,6 +3,14 @@ name: Post-Merge Detection
 on:
   push:
     branches: [main]
+  pull_request_target:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to verify
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -11,20 +19,36 @@ permissions:
 
 jobs:
   detect:
+    if: >-
+      github.event_name == 'push' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main')
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Resolve PR
         id: pr
         env:
           GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          PR=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" \
-            -H 'Accept: application/vnd.github+json' \
-            --jq 'map(select(.state == "closed" and .merged_at != null))[0].number // ""')
+          PR=""
+          if [ "$EVENT_NAME" = "pull_request_target" ]; then
+            PR="$EVENT_PR_NUMBER"
+          elif [ "$EVENT_NAME" = "workflow_dispatch" ] && [ -n "$INPUT_PR_NUMBER" ]; then
+            PR="$INPUT_PR_NUMBER"
+          else
+            PR=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" \
+              -H 'Accept: application/vnd.github+json' \
+              --jq 'map(select(.state == "closed" and .merged_at != null))[0].number // ""')
+          fi
           echo "pr=$PR" >> $GITHUB_OUTPUT
 
       - name: Skip direct pushes without merged PR context
@@ -37,9 +61,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh pr view "${{ steps.pr.outputs.pr }}" --json body,files > pr.json
+          gh pr view "${{ steps.pr.outputs.pr }}" --json body,files,mergeCommit > pr.json
           jq -r '.body // ""' pr.json > body.md
           jq -r '.files[].path' pr.json > files.txt
+          jq -r '.mergeCommit.oid // ""' pr.json > merge_commit.txt
 
       - name: Evaluate
         if: steps.pr.outputs.pr != ''
@@ -63,7 +88,12 @@ jobs:
         run: |
           failures="${{ steps.verify.outputs.failures }}"
           [ -n "$failures" ] || failures="unknown"
-          gh pr comment "${{ steps.pr.outputs.pr }}" --body "Detection failures=${failures}" || \
+          merge_commit="$(cat merge_commit.txt 2>/dev/null || true)"
+          body="Post-merge detection result: failures=${failures}"
+          if [ -n "$merge_commit" ]; then
+            body="${body}\n\nMerge commit: ${merge_commit}"
+          fi
+          gh pr comment "${{ steps.pr.outputs.pr }}" --body "$body" || \
             echo "::warning::Unable to post detection comment; continuing because the verification result is enforced separately."
 
       - name: Sync orchestrator post-merge state
