@@ -6,6 +6,7 @@ process.env.PR_NUMBER = '42';
 process.env.SYNC_ACTION = 'closed';
 
 const createIssues = await import('../scripts/orchestrator/create-issues.mjs');
+const createDraftPr = await import('../scripts/orchestrator/create-draft-pr.mjs');
 const advanceQueue = await import('../scripts/orchestrator/advance-queue.mjs');
 const syncPrState = await import('../scripts/orchestrator/sync-pr-state.mjs');
 
@@ -68,6 +69,21 @@ describe('orchestrator issue creation queue model', () => {
     }
 
     expect(producedStatuses).toEqual(['status:queued']);
+  });
+});
+
+describe('orchestrator draft PR preflight model', () => {
+  it('recognizes standard duplicate issue markers', () => {
+    expect(createDraftPr.isDuplicateIssueBody('Duplicate of #973')).toBe(true);
+    expect(createDraftPr.isDuplicateIssueBody('Duplicate of Issue #973')).toBe(true);
+    expect(createDraftPr.isDuplicateIssueBody('This was closed as duplicate during triage.')).toBe(true);
+    expect(createDraftPr.isDuplicateIssueBody('Related to #973 but still active.')).toBe(false);
+  });
+
+  it('uses one focused search query for existing implementation PRs', () => {
+    expect(createDraftPr.issuePrSearchQuery(981)).toContain('orchestrator-source-issue: 981');
+    expect(createDraftPr.issuePrSearchQuery(981)).toContain('- **Issue:** #981');
+    expect(createDraftPr.issuePrSearchQuery(981)).toContain('issues/981');
   });
 });
 
@@ -158,7 +174,7 @@ describe('orchestrator queue advancement', () => {
     expect(decision).toMatchObject({ action: 'advance', issue: { number: 2 } });
   });
 
-  it('relabels the next blocked task and leaves traceability comment that triggers draft PR by label change', () => {
+  it('relabels the next blocked task and leaves traceability comment that triggers issue handoff', () => {
     const run = vi.fn();
 
     advanceQueue.advanceIssue(issue(2, 'status:blocked', '2026-05-05T19:01:00Z'), run);
@@ -210,7 +226,7 @@ describe('orchestrator queue advancement', () => {
 });
 
 describe('orchestrator workflow trigger compatibility', () => {
-  it('uses status:queued labels for draft PR creation and label changes for queue advancement', () => {
+  it('uses status:queued labels for issue handoff and label changes for queue advancement', () => {
     const draftWorkflow = fs.readFileSync('.github/workflows/orchestrator-draft-pr.yml', 'utf8');
     const queueWorkflow = fs.readFileSync('.github/workflows/orchestrator-queue-advance.yml', 'utf8');
     const enforcePrOnlyWorkflow = fs.readFileSync('.github/workflows/enforce-pr-only.yml', 'utf8');
@@ -226,10 +242,11 @@ describe('orchestrator workflow trigger compatibility', () => {
     expect(queueWorkflow).toContain("github.event.label.name == 'status:failed'");
     expect(enforcePrOnlyWorkflow).toContain('commits/${GITHUB_SHA}/pulls');
     expect(postMergeWorkflow).toContain('commits/${GITHUB_SHA}/pulls');
-    expect(createIssuesScript).toContain("'--state',");
-    expect(createIssuesScript).toContain("'all',");
+    expect(createIssuesScript).toMatch(/['"]--state['"],\s*['"]all['"]/s);
     expect(createDraftPrScript).toContain('existingOpenPrForIssue(issue.number)');
     expect(createDraftPrScript).toContain("issue.state !== 'OPEN'");
-    expect(createDraftPrScript).toContain('orchestrator-placeholder-pr: true');
+    expect(createDraftPrScript).toContain('no placeholder PR was created');
+    expect(createDraftPrScript).not.toContain('orchestrator-placeholder-pr: true');
+    expect(createDraftPrScript).not.toContain('commit --allow-empty');
   });
 });
