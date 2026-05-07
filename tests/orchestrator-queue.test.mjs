@@ -215,6 +215,8 @@ describe('orchestrator workflow trigger compatibility', () => {
     const queueWorkflow = fs.readFileSync('.github/workflows/orchestrator-queue-advance.yml', 'utf8');
     const enforcePrOnlyWorkflow = fs.readFileSync('.github/workflows/enforce-pr-only.yml', 'utf8');
     const postMergeWorkflow = fs.readFileSync('.github/workflows/post-merge-intent-verification.yml', 'utf8');
+    const createIssuesScript = fs.readFileSync('scripts/orchestrator/create-issues.mjs', 'utf8');
+    const createDraftPrScript = fs.readFileSync('scripts/orchestrator/create-draft-pr.mjs', 'utf8');
 
     expect(draftWorkflow).toContain('types: [opened, labeled]');
     expect(draftWorkflow).toContain("contains(github.event.issue.labels.*.name, 'status:queued')");
@@ -224,5 +226,10 @@ describe('orchestrator workflow trigger compatibility', () => {
     expect(queueWorkflow).toContain("github.event.label.name == 'status:failed'");
     expect(enforcePrOnlyWorkflow).toContain('commits/${GITHUB_SHA}/pulls');
     expect(postMergeWorkflow).toContain('commits/${GITHUB_SHA}/pulls');
+    expect(createIssuesScript).toContain("'--state',");
+    expect(createIssuesScript).toContain("'all',");
+    expect(createDraftPrScript).toContain('existingOpenPrForIssue(issue.number)');
+    expect(createDraftPrScript).toContain("issue.state !== 'OPEN'");
+    expect(createDraftPrScript).toContain('orchestrator-placeholder-pr: true');
   });
 });
