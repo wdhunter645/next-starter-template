@@ -17,11 +17,29 @@ Purpose: Single source of truth for all shared AI execution rules.
 # EXECUTION DISCIPLINE
 
 - One task → one thread → one deliverable  
-- One task → one PR  
+- One task → one Issue → one PR  
 - No mixed intent  
 - No scope expansion  
 
 If additional work is discovered → log it, do not execute it.
+
+---
+
+# ISSUE-FIRST PR DISCIPLINE
+
+Normal repository work must be Issue-first.
+
+Rules:
+
+- Create or identify the source Issue before creating a Pull Request.
+- The PR must explicitly link to the source Issue.
+- The source Issue remains the task authority for implementation, review, post-merge verification, and closure.
+- Open PR count must stay limited and purposeful.
+- PR-first work is an exception, not the default.
+- Auto-created OPS tracker Issues are allowed only for legitimate operations troubleshooting or PR-first exceptions where a PR exists before a task Issue.
+- OPS tracker Issues must not replace, override, or hijack the source task Issue.
+- Post-merge validation must report against the source task Issue when one exists.
+- Merge authority remains human/operator only.
 
 ---
 
@@ -104,6 +122,7 @@ Agents must NOT:
 - PR body = execution contract  
 - File allowlist = hard boundary  
 - Out-of-scope edits = forbidden  
+- Source Issue link = required except documented PR-first operations exceptions  
 
 Defaults:
 
@@ -116,6 +135,7 @@ Defaults:
 
 - ChatGPT owns Issue and PR creation under standing operator permission.
 - ChatGPT may create, comment on, label, update, and organize Issues and Pull Requests when task scope is clear.
+- Issue-first discipline remains mandatory unless the work is a legitimate PR-first operations troubleshooting exception.
 - PR creation is NOT delegated unless explicitly instructed.
 - Merge authority remains human/operator only.
 
