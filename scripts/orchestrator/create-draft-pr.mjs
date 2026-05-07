@@ -31,7 +31,7 @@ function firstPrUrlFromSearch(repo, search) {
 }
 
 export function issuePrSearchQuery(number) {
-  return `"orchestrator-source-issue: ${number}" OR "- **Issue:** #${number}" OR "issues/${number}"`;
+  return `"orchestrator-source-issue: ${number}" OR "- **Issue:** #${number}"`;
 }
 
 function existingOpenPrForIssue(repo, number) {
@@ -72,9 +72,9 @@ export function main() {
   }
 
   if (isDuplicateIssueBody(issueBody)) {
-    runGh(['issue', 'edit', issueNumber, '--repo', repo, '--remove-label', 'status:queued', '--add-label', 'status:blocked']);
-    runGh(['issue', 'comment', issueNumber, '--repo', repo, '--body', 'Orchestrator PR creation skipped: issue is marked duplicate. Removed status:queued to avoid blocking queue advancement.']);
-    console.log(`Issue #${issueNumber} is marked duplicate. Skipping PR creation.`);
+    runGh(['issue', 'edit', issueNumber, '--repo', repo, '--remove-label', 'status:queued', '--add-label', 'status:failed']);
+    runGh(['issue', 'comment', issueNumber, '--repo', repo, '--body', 'Orchestrator PR creation skipped: issue is marked duplicate. Removed status:queued and added status:failed so queue advancement/recovery handling can proceed.']);
+    console.log(`Issue #${issueNumber} is marked duplicate. Skipping PR creation and marking failed for queue handling.`);
     process.exit(0);
   }
 
@@ -92,8 +92,9 @@ export function main() {
     process.exit(0);
   }
 
-  runGh(['issue', 'comment', issueNumber, '--repo', repo, '--body', 'Orchestrator queue handoff: no placeholder PR was created. The assigned agent must create an implementation PR only after producing real file changes.']);
-  console.log(`No placeholder PR created for issue #${issueNumber}. Waiting for assigned agent implementation PR.`);
+  runGh(['issue', 'edit', issueNumber, '--repo', repo, '--remove-label', 'status:queued', '--add-label', 'status:pr-draft']);
+  runGh(['issue', 'comment', issueNumber, '--repo', repo, '--body', 'Orchestrator queue handoff: no placeholder PR was created. Status moved to status:pr-draft to trigger assigned-agent handoff. The assigned agent must create an implementation PR only after producing real file changes.']);
+  console.log(`No placeholder PR created for issue #${issueNumber}. Issue moved to status:pr-draft for assigned-agent implementation handoff.`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
