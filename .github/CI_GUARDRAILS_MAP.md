@@ -20,13 +20,179 @@ This document provides a complete map of all Continuous Integration (CI) and Con
 
 ## Table of Contents
 
-1. [Core CI Workflows](#core-ci-workflows)
-2. [Quality Gates](#quality-gates)
-3. [Security Workflows](#security-workflows)
-4. [Deployment Workflows](#deployment-workflows)
-5. [Monitoring & Validation](#monitoring--validation)
-6. [Gate Enforcement Policy](#gate-enforcement-policy)
-7. [Troubleshooting Guide](#troubleshooting-guide)
+1. [Action Workflow Inventory](#action-workflow-inventory)
+2. [Core CI Workflows](#core-ci-workflows)
+3. [Quality Gates](#quality-gates)
+4. [Security Workflows](#security-workflows)
+5. [Deployment Workflows](#deployment-workflows)
+6. [Monitoring & Validation](#monitoring--validation)
+7. [Gate Enforcement Policy](#gate-enforcement-policy)
+8. [Troubleshooting Guide](#troubleshooting-guide)
+
+---
+
+## Action Workflow Inventory
+
+The table below is the canonical inventory of all GitHub Actions workflows in `.github/workflows/`, including whether each is currently effective (active/operational) or ineffective (parked/legacy or one-off).
+
+| Workflow file | Workflow name | Effectiveness | Primary use |
+|---|---|---|---|
+| `ai_review.yml` | AI Code Review | Effective | Runs AI-assisted PR review comments/checks to improve code review coverage. |
+| `assess-nightly.yml` | Site Assessment (Nightly Drift Detection) | Effective | Nightly drift detection against expected site and route invariants. |
+| `b2-d1-daily-sync.yml` | B2 → D1 Daily Sync | Effective | Scheduled sync of Backblaze B2 inventory/data into D1. |
+| `b2-s3-smoke-test.yml` | B2 S3 Smoke Test | Effective | Validates S3-compatible B2 credentials/connectivity and basic object operations. |
+| `ci.yml` | Legacy LGFC-main Workflow (Parked) | Ineffective (Parked) | Historical legacy CI pipeline; retained only for traceability. |
+| `copilot-setup-steps.yml` | Copilot Setup Steps | Effective | Bootstraps/validates automation steps required by Copilot-assisted workflows. |
+| `cursor-review.yml` | Cursor PR Review | Effective | Triggers Cursor-based PR review automation for change assessment. |
+| `d1-migrations.yml` | D1 Migrations | Effective | Applies/validates D1 schema migrations through controlled CI execution. |
+| `deploy-dev.yml` | Legacy LGFC-main Workflow (Parked) | Ineffective (Parked) | Historical development deploy flow retained for rollback context. |
+| `deploy-prod.yml` | Legacy LGFC-main Workflow (Parked) | Ineffective (Parked) | Historical production deploy flow retained for rollback context. |
+| `deploy.yml` | Legacy LGFC-main Workflow (Parked) | Ineffective (Parked) | Historical unified deploy flow superseded by current deployment controls. |
+| `design-authority-check.yml` | Design Authority Check | Effective | Enforces locked design authority constraints for protected UX/design artifacts. |
+| `design-compliance-warn.yml` | Design Compliance (Warn) | Effective (Warn-only) | Warn-only design compliance checks for early drift visibility without blocking merges. |
+| `diataxis-folder-authority-check.yml` | DIATAXIS Folder Authority Check | Effective | Validates docs folder ownership/boundaries under Diátaxis governance rules. |
+| `diataxis-post-merge-validate.yml` | DIATAXIS Post-Merge Validation | Effective | Post-merge docs validation to confirm Diátaxis structural integrity after landing. |
+| `docs-guardrails.yml` | Docs Guardrails | Effective | Enforces repository documentation structure, required headers, and docs hygiene rules. |
+| `gate-close-work-issue.yml` | gate-close-work-issue | Effective | Closes linked work issues when gating conditions and merge state are satisfied. |
+| `gate-drift.yml` | GATE — Drift Control | Effective | Blocks structural/design/process drift (including ZIP and intent governance checks). |
+| `gate-ensure-issue.yml` | gate-ensure-issue | Effective | Requires valid linked issue context on PRs before progression through review gates. |
+| `gate-intent-labeler.yml` | GATE — Intent Labeler | Effective | Validates/applies PR intent labeling against file-touch governance allowlists. |
+| `gate-quality.yml` | GATE — Quality Checks | Effective | Runs blocking quality checks (lint/test/build and related quality gates). |
+| `gate-zip-safety.yml` | GATE — ZIP Safety | Effective | Prevents ZIP artifacts from entering tree/history and enforces ZIP safety policy. |
+| `gitleaks.yml` | Secret Scan (gitleaks) | Effective | Scans commits and repository content for hardcoded secrets. |
+| `lgfc-d1-migrate.yml` | LGFC D1 Migrate (remote) | Effective | Executes remote D1 migration operations for LGFC environments. |
+| `lgfc-validate.yml` | Legacy LGFC-main Workflow (Parked) | Ineffective (Parked) | Historical validation flow retained for continuity and audit context. |
+| `opencode.yml` | OpenCode Maintenance | Effective | Repository maintenance/automation tasks for OpenCode operations. |
+| `ops-assess.yml` | OPS — Site Assessment | Effective | Operations-oriented site assessment run for production/preview validation. |
+| `ops-cf-pages-retry.yml` | OPS — Cloudflare Pages Auto-Retry | Effective | Detects and retries eligible failed Cloudflare Pages deployments. |
+| `ops-design-compliance-audit.yml` | OPS — Design Compliance Audit | Effective | Performs scheduled/manual design compliance auditing and reporting. |
+| `ops-main-change-monitor.yml` | OPS — Main Change Monitor | Effective | Monitors `main` changes and triggers downstream operational oversight tasks. |
+| `ops-pr-issue-accounting.yml` | OPS — PR Issue Accounting | Effective | Audits PR-to-issue accounting links for operational traceability. |
+| `post-recovery-425-verify.yml` | Post-Recovery Verification (PR #425) | Ineffective (One-off) | Legacy targeted verification workflow created for post-recovery hardening. |
+| `pr-triage-zip-taint.yml` | PR Triage - ZIP Taint Classification | Effective | Classifies PRs for ZIP-history taint and routes remediation triage. |
+| `preview-invariants.yml` | Preview Invariants (Cloudflare Pages) | Effective | Verifies Cloudflare preview deployments against required runtime/UI invariants. |
+| `production-audit.yml` | Production Audit (Playwright Invariants) | Effective | Playwright-based production invariant audit for live environment confidence. |
+| `purge-zip-history.yml` | Purge ZIPs from Git History (FORCE PUSH) | Effective (Break-glass) | Break-glass remediation to remove ZIPs from repository history. |
+| `snapshot.yml` | Snapshot Backup (Repo + Cloudflare Pages) | Effective | Captures repository and deployment snapshots for recovery and forensics. |
+| `test-homepage.yml` | Legacy LGFC-main Workflow (Parked) | Ineffective (Parked) | Historical homepage-specific test flow retained for reference. |
+| `test.yml` | Legacy LGFC-main Workflow (Parked) | Ineffective (Parked) | Historical general test flow retained for reference. |
+| `update-docs.lock.yml` | Auto-Sync Documentation | Effective | Synchronizes/locks documentation state to keep docs and implementation aligned. |
+| `zip-history-audit.yml` | ZIP History Audit (Full History) | Effective | Full-history ZIP artifact audit to detect policy violations in git history. |
+
+> Note: `.github/workflows/update-docs.md` is a markdown playbook, not a runnable workflow.
+
+### Missing Workflow Capabilities (Gap List)
+
+The current workflow suite is strong on governance and drift controls, but these missing capabilities should be considered:
+
+1. **Dependency update automation**
+   - Missing: automated dependency update PRs (e.g., npm/Actions ecosystem updates).
+   - Value: reduces security drift and patch lag.
+
+2. **SBOM and artifact signing/provenance**
+   - Missing: build SBOM generation and signed provenance/attestation for deploy artifacts.
+   - Value: improves supply-chain security posture and incident response confidence.
+
+3. **Performance budget enforcement**
+   - Missing: blocking Lighthouse/Web Vitals budgets on preview/production builds.
+   - Value: prevents gradual UX degradation despite passing functional checks.
+
+4. **Visual regression testing**
+   - Missing: screenshot-diff automation for critical pages/components.
+   - Value: catches unintended UI shifts not covered by structural assertions.
+
+5. **License compliance scanning**
+   - Missing: policy checks for third-party package licenses.
+   - Value: reduces legal/compliance risk in release workflows.
+
+6. **Reusable workflow abstraction**
+   - Missing: shared reusable workflows/composite actions to reduce duplication across ops/gate jobs.
+   - Value: lowers maintenance overhead and configuration drift.
+
+### Workflow Improvement List (Now That New Capabilities Are Being Added)
+
+1. **Consolidate gate overlap into reusable components**
+   - Current issue: `gate-*` and `ops-*` workflows contain repeated checkout/setup/validation patterns.
+   - Improvement: move shared logic to reusable workflows (`workflow_call`) and composite actions in `.github/actions/`.
+   - Outcome: lower maintenance burden and fewer drift bugs.
+
+2. **Standardize workflow outputs and artifacts**
+   - Current issue: artifacts, summaries, and output names are inconsistent across workflows.
+   - Improvement: require a common artifact contract:
+     - `guardrail-summary.json`
+     - `guardrail-summary.md`
+     - `guardrail-failures.json`
+   - Outcome: simpler machine triage and easier post-merge verification automation.
+
+3. **Pin all third-party actions to commit SHAs**
+   - Current issue: mixed pinning strategy can introduce supply-chain drift.
+   - Improvement: enforce SHA pinning with automated policy checks.
+   - Outcome: deterministic and auditable CI execution.
+
+4. **Introduce required duration SLOs per workflow class**
+   - Current issue: no explicit runtime budget for gates vs audits.
+   - Improvement: define SLOs (example: gate jobs < 10 min, nightly audits < 30 min) and alert on breaches.
+   - Outcome: predictable PR cycle times and earlier detection of infrastructure regressions.
+
+5. **Add mandatory status publishing for post-merge operations**
+   - Current issue: post-merge success/failure signals are distributed across multiple workflow logs.
+   - Improvement: write a unified post-merge status record (issue comment, PR comment, and artifact).
+   - Outcome: one place to verify whether intended merged behavior actually materialized.
+
+6. **Harden break-glass workflows with explicit guardrails**
+   - Current issue: high-risk workflows (e.g., history rewrites) rely on process discipline.
+   - Improvement: enforce environment protection rules, manual approval, and mandatory rollback plan input.
+   - Outcome: reduced operational risk during emergency remediation.
+
+### Post-Merge Validation and Auto-Retry (2-Retry Max) Protocol
+
+This repository should use a deterministic closed-loop process after merge to verify intended outcomes and safely retry when drift/failure is detected.
+
+#### A. Validation Trigger and Scope
+- Trigger on `push` to `main` after merge completion.
+- Run a single orchestrator workflow (recommended: extend `ops-main-change-monitor.yml`) that:
+  1. identifies changed files from the merged commits,
+  2. maps changed files to required downstream validations,
+  3. checks whether expected deployment/config/docs outcomes occurred.
+
+#### B. Success/Failure Decision Contract
+- Validation succeeds only if all of the following are true:
+  - required workflows for changed paths completed successfully,
+  - required artifacts/status files were produced,
+  - expected runtime/deploy state is observable (preview/prod invariant checks pass),
+  - documentation guardrails remain compliant for docs-impacting merges.
+- If any condition fails, mark merge outcome as `incomplete` (not just `failed`).
+
+#### C. Automatic Retry PR Mechanism
+- On `incomplete` outcome:
+  1. open a new remediation PR automatically,
+  2. pull failed/missed file set from the merge SHA and apply deterministic retry patching,
+  3. include failure metadata (`failed_workflows`, `missing_artifacts`, `expected_vs_actual`) in PR body.
+- Naming convention:
+  - Branch: `auto/retry-<merge_sha>-r<attempt>`
+  - PR title: `auto-retry: reconcile missed post-merge outcomes (<merge_sha>)`
+
+#### D. Retry Limits and Escalation Rule
+- Maintain retry count in a durable state artifact (issue label/comment or retry state file).
+- Permit **max 2 retries**:
+  - Retry 1: automatic remediation PR
+  - Retry 2: automatic remediation PR (final automated attempt)
+- If still incomplete after retry 2:
+  - stop auto-retry,
+  - open a **Design Review escalation issue** with:
+    - merge SHA timeline,
+    - failed checks and logs,
+    - changed files,
+    - suspected root-cause category (workflow logic, environment, design-governance mismatch),
+  - label with `design-review-required` and `post-merge-retry-exhausted`.
+
+#### E. Implementation Recommendation
+- Reuse existing workflow surfaces instead of creating parallel governance:
+  - `ops-main-change-monitor.yml` (orchestrator trigger),
+  - `ops-assess.yml` + `production-audit.yml` (runtime verification),
+  - `docs-guardrails.yml` + `gate-quality.yml` (quality and docs assertions).
+- Add a new workflow only for retry orchestration if needed:
+  - `ops-post-merge-retry-orchestrator.yml` (state machine + PR creation + escalation).
 
 ---
 
