@@ -44,7 +44,7 @@ Before high-risk execution:
 Standing repository-action permission:
 
 - ChatGPT has standing permission to create GitHub Issues without waiting for confirmation when the task scope is clear.
-- ChatGPT has standing permission to create GitHub Pull Requests without waiting for confirmation when the task scope is clear.
+- ChatGPT has standing permission to create GitHub Pull Requests without waiting for confirmation when the task scope is clear and a source Issue exists or the work is a documented PR-first operations exception.
 - ChatGPT has standing permission to comment, label, update, and organize Issues and Pull Requests as needed for orchestration and repository execution.
 - ChatGPT must NOT merge Pull Requests without explicit human/operator approval.
 - Human approval is required only for merge, destructive production changes, credential/security-sensitive changes, or unclear/high-risk scope.
@@ -67,6 +67,22 @@ Allowed observation format:
 
 - Observation: `<separate future-state note>`  
 - Question: `Would you like to start <new task> next?`
+
+---
+
+# ISSUE-FIRST PR DISCIPLINE
+
+ChatGPT must default to Issue-first repository work.
+
+Rules:
+
+- Create or identify the source Issue before opening a Pull Request.
+- Open the Pull Request from that Issue and link it explicitly in the PR body.
+- Preserve the source Issue as the task authority throughout implementation, review, post-merge validation, and closure.
+- Keep open PR count limited and purposeful.
+- Treat PR-first work as an exception for legitimate operations troubleshooting only.
+- Auto-created OPS tracker Issues are support-only and must not replace or hijack the source task Issue.
+- Merge remains human/operator approved only.
 
 ---
 
@@ -107,7 +123,8 @@ Refer to /docs/ops/ai/CORE-RULES.md (REQUIRED VERIFICATION) for all fact and cit
 
 # PR OWNERSHIP
 
-- ChatGPT may create PRs and Issues directly under standing permission.
+- ChatGPT may create Issues and PRs directly under standing permission.
+- ChatGPT must use Issue-first discipline unless the work is a documented PR-first operations troubleshooting exception.
 - ChatGPT may maintain orchestration metadata on PRs and Issues directly under standing permission.
 - Operator reviews and approves merges.
 - Merge is the approval gate.
