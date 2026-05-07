@@ -80,10 +80,11 @@ describe('orchestrator draft PR preflight model', () => {
     expect(createDraftPr.isDuplicateIssueBody('Related to #973 but still active.')).toBe(false);
   });
 
-  it('uses one focused search query for existing implementation PRs', () => {
-    expect(createDraftPr.issuePrSearchQuery(981)).toContain('orchestrator-source-issue: 981');
-    expect(createDraftPr.issuePrSearchQuery(981)).toContain('- **Issue:** #981');
-    expect(createDraftPr.issuePrSearchQuery(981)).toContain('issues/981');
+  it('uses focused source markers for existing implementation PRs', () => {
+    const query = createDraftPr.issuePrSearchQuery(981);
+    expect(query).toContain('orchestrator-source-issue: 981');
+    expect(query).toContain('- **Issue:** #981');
+    expect(query).not.toContain('issues/981');
   });
 });
 
