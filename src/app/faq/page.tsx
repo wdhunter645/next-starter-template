@@ -1,59 +1,88 @@
 'use client';
 
-import { useEffect, useMemo, useState, Suspense } from 'react';
+import { useMemo, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { apiGet, apiPost } from '@/lib/api';
 
-type FAQItem = { 
-  id: number; 
-  question: string; 
-  answer: string; 
-  view_count: number;
-  pinned: number;
-  updated_at: string;
+type FAQItem = {
+  id: number;
+  question: string;
+  answer: string;
+  pinned?: boolean;
+  view_count?: number;
 };
+
+const FAQ_ITEMS: FAQItem[] = [
+  {
+    id: 1,
+    question: 'How do I join the fan club?',
+    answer:
+      'Visit the Join Fanclub page, choose your membership tier, and complete checkout. Your benefits unlock immediately after payment confirmation.',
+    pinned: true,
+    view_count: 0,
+  },
+  {
+    id: 2,
+    question: 'Where can I buy official merch?',
+    answer:
+      'Our official merch is available in the store section. New drops are announced first on the homepage and social channels.',
+    pinned: true,
+    view_count: 0,
+  },
+  {
+    id: 3,
+    question: 'How can I submit a question to be answered?',
+    answer:
+      'Use the Ask page to submit your question. Our team reviews submissions and publishes approved answers on this FAQ page.',
+    view_count: 0,
+  },
+  {
+    id: 4,
+    question: 'Do you offer refunds for memberships or tickets?',
+    answer:
+      'Refund terms vary by product. Please review checkout policies and contact support with your order details for case-by-case assistance.',
+    view_count: 0,
+  },
+  {
+    id: 5,
+    question: 'How do I get updates about upcoming events?',
+    answer:
+      'Check the Events page regularly and follow announcements on our social channels for schedule updates and venue details.',
+    view_count: 0,
+  },
+];
 
 function FAQContent() {
   const searchParams = useSearchParams();
   const [query, setQuery] = useState(searchParams.get('q') || '');
-  const [items, setItems] = useState<FAQItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [viewCounts, setViewCounts] = useState<Record<number, number>>(() =>
+    FAQ_ITEMS.reduce<Record<number, number>>((acc, item) => {
+      acc[item.id] = item.view_count ?? 0;
+      return acc;
+    }, {})
+  );
 
-  const q = useMemo(() => query.trim(), [query]);
+  const q = useMemo(() => query.trim().toLowerCase(), [query]);
 
-  const load = async () => {
-    setLoading(true);
-    try {
-      const data = await apiGet<{ ok: boolean; items: FAQItem[] }>(
-        `/api/faq/list?limit=50&q=${encodeURIComponent(q)}`
-      );
-      setItems(data.items || []);
-    } catch {
-      setItems([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const filteredItems = useMemo(() => {
+    const matches = q
+      ? FAQ_ITEMS.filter(
+          (item) =>
+            item.question.toLowerCase().includes(q) ||
+            item.answer.toLowerCase().includes(q)
+        )
+      : FAQ_ITEMS;
 
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return [...matches].sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)));
   }, [q]);
 
-  const handleItemClick = async (id: number) => {
-    // Toggle expansion
+  const handleItemClick = (id: number) => {
     const newExpandedId = expandedId === id ? null : id;
     setExpandedId(newExpandedId);
-    
-    // If expanding (not collapsing), increment view count
+
     if (newExpandedId === id) {
-      try {
-        await apiPost("/api/faq/view", { id });
-      } catch {
-        // Silently fail - view count is not critical
-      }
+      setViewCounts((current) => ({ ...current, [id]: (current[id] || 0) + 1 }));
     }
   };
 
@@ -61,41 +90,44 @@ function FAQContent() {
     <>
       <h1 style={{ fontSize: 34, margin: '0 0 10px 0' }}>FAQ – Frequently Asked Questions</h1>
       <p className="sub" style={{ marginTop: 0 }}>
-        Browse all approved FAQ entries. Click a question to reveal the answer.
+        Browse approved FAQ entries, search by keyword, or ask a new question.
       </p>
 
       <section style={{ marginTop: 28 }}>
         <div className="faq" style={{ marginTop: 10 }}>
           <div className="search">
-            <input 
-              type="search" 
-              placeholder="Search questions..." 
-              aria-label="Search questions" 
-              value={query} 
-              onChange={(e) => setQuery(e.target.value)} 
+            <input
+              type="search"
+              placeholder="Search questions..."
+              aria-label="Search questions"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
             />
-            <button onClick={() => setQuery('')}>Clear</button>
+            <button type="button" onClick={() => setQuery('')}>Clear</button>
           </div>
 
-          {loading ? (
-            <p className="sub">Loading…</p>
-          ) : items.length === 0 ? (
-            <p className="sub">No approved FAQs found.</p>
+          {filteredItems.length === 0 ? (
+            <p className="sub">No FAQ entries matched your search.</p>
           ) : (
-            items.map((item) => (
-              <div 
-                key={item.id} 
-                className="q" 
+            filteredItems.map((item) => (
+              <div
+                key={item.id}
+                className="q"
                 style={{ cursor: 'pointer' }}
                 onClick={() => handleItemClick(item.id)}
               >
-                <strong>{item.question}</strong>
-                {expandedId === item.id && (
+                <strong>
+                  {item.pinned ? '📌 ' : ''}
+                  {item.question}
+                </strong>
+                {expandedId === item.id ? (
                   <>
                     <br />
                     <span className="sub">{item.answer}</span>
+                    <br />
+                    <small className="sub">Views: {viewCounts[item.id] ?? 0}</small>
                   </>
-                )}
+                ) : null}
               </div>
             ))
           )}
@@ -114,12 +146,14 @@ function FAQContent() {
 export default function FAQPage() {
   return (
     <main className="container" style={{ padding: '40px 16px', maxWidth: 900, margin: '0 auto' }}>
-      <Suspense fallback={
-        <>
-          <h1 style={{ fontSize: 34, margin: '0 0 10px 0' }}>FAQ – Frequently Asked Questions</h1>
-          <p className="sub">Loading...</p>
-        </>
-      }>
+      <Suspense
+        fallback={
+          <>
+            <h1 style={{ fontSize: 34, margin: '0 0 10px 0' }}>FAQ – Frequently Asked Questions</h1>
+            <p className="sub">Loading...</p>
+          </>
+        }
+      >
         <FAQContent />
       </Suspense>
     </main>
