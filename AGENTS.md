@@ -12,7 +12,7 @@ This file is mandatory routing law for all agents working in this repository.
 6. Do not commit secrets, ZIP files, build output, screenshots, temporary files, or local environment files.
 7. Prefer rollback-first fixes. Do not redesign to solve an incident unless the source Issue authorizes redesign.
 8. Preserve Cloudflare Pages static export compatibility unless the source Issue explicitly changes hosting architecture.
-9. Use the DIATAXIS transition structure for new agent governance documentation. Do not add new agent governance docs to legacy `docs/` or `scripts/` paths.
+9. Use the DIATAXIS transition structure for new agent governance documentation.
 10. Run the required verification checks before handoff.
 
 ## Required skill routing
