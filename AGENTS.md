@@ -12,7 +12,7 @@ This file is mandatory routing law for all agents working in this repository.
 6. Do not commit secrets, ZIP files, build output, screenshots, temporary files, or local environment files.
 7. Prefer rollback-first fixes. Do not redesign to solve an incident unless the source Issue authorizes redesign.
 8. Preserve Cloudflare Pages static export compatibility unless the source Issue explicitly changes hosting architecture.
-9. Use the existing Diataxis documentation structure. Do not create a `DIATAXIS` folder.
+9. Use the DIATAXIS transition structure for new agent governance documentation. Do not add new agent governance docs to legacy `docs/` or `scripts/` paths.
 10. Run the required verification checks before handoff.
 
 ## Required skill routing
@@ -29,14 +29,14 @@ Use these repository skills when the task matches the trigger:
 
 Long-form cross-agent instructions live in:
 
-- `docs/ops/ai/AGENT-GOVERNANCE.md`
-- `docs/ops/ai/CROSS-AGENT-OPERATING-RULES.md`
+- `governance/ai/AGENT-GOVERNANCE.md`
+- `ops/ai/CROSS-AGENT-OPERATING-RULES.md`
 
 ## Enforcement
 
 Agent governance files are checked by:
 
-- `scripts/ci/agent_governance_check.mjs`
+- `.agents/checks/agent-governance-check.mjs`
 - `.github/workflows/agent-governance.yml`
 
 Agents must not bypass these checks.
