@@ -1,27 +1,21 @@
 #!/usr/bin/env node
 
-const fs = require('node:fs');
-const path = require('node:path');
+import fs from 'node:fs';
+import path from 'node:path';
 
 const root = process.argv[2] ? path.resolve(process.argv[2]) : process.cwd();
 
 const requiredFiles = [
   'AGENTS.md',
+  '.agents/checks/agent-governance-check.mjs',
   '.agents/skills/lgfc-pr-governance/SKILL.md',
   '.agents/skills/lgfc-design-compliance/SKILL.md',
   '.agents/skills/lgfc-docs-authority/SKILL.md',
   '.agents/skills/lgfc-cloudflare-static-export/SKILL.md',
   '.agents/skills/lgfc-verification-closeout/SKILL.md',
+  '.github/workflows/agent-governance.yml',
   'governance/ai/AGENT-GOVERNANCE.md',
   'ops/ai/CROSS-AGENT-OPERATING-RULES.md',
-];
-
-const requiredSkillDirs = [
-  '.agents/skills/lgfc-pr-governance',
-  '.agents/skills/lgfc-design-compliance',
-  '.agents/skills/lgfc-docs-authority',
-  '.agents/skills/lgfc-cloudflare-static-export',
-  '.agents/skills/lgfc-verification-closeout',
 ];
 
 const requiredAgentText = [
@@ -33,14 +27,19 @@ const requiredAgentText = [
   'governance/ai/AGENT-GOVERNANCE.md',
   'ops/ai/CROSS-AGENT-OPERATING-RULES.md',
   '.agents/checks/agent-governance-check.mjs',
+  '.github/workflows/agent-governance.yml',
 ];
 
+function filePath(relativePath) {
+  return path.join(root, relativePath);
+}
+
 function exists(relativePath) {
-  return fs.existsSync(path.join(root, relativePath));
+  return fs.existsSync(filePath(relativePath));
 }
 
 function read(relativePath) {
-  return fs.readFileSync(path.join(root, relativePath), 'utf8');
+  return fs.readFileSync(filePath(relativePath), 'utf8');
 }
 
 const failures = [];
@@ -48,13 +47,6 @@ const failures = [];
 for (const file of requiredFiles) {
   if (!exists(file)) {
     failures.push(`missing required file: ${file}`);
-  }
-}
-
-for (const dir of requiredSkillDirs) {
-  const skillFile = path.join(dir, 'SKILL.md');
-  if (!exists(skillFile)) {
-    failures.push(`missing skill manifest: ${skillFile}`);
   }
 }
 
@@ -71,11 +63,13 @@ for (const markdownFile of [
   'governance/ai/AGENT-GOVERNANCE.md',
   'ops/ai/CROSS-AGENT-OPERATING-RULES.md',
 ]) {
-  if (exists(markdownFile)) {
-    const content = read(markdownFile);
-    if (!content.startsWith('---\n')) {
-      failures.push(`${markdownFile} is missing required docs header fence`);
-    }
+  if (!exists(markdownFile)) {
+    continue;
+  }
+
+  const content = read(markdownFile);
+  if (!/^---\r?\n/.test(content)) {
+    failures.push(`${markdownFile} is missing required docs header fence`);
   }
 }
 
