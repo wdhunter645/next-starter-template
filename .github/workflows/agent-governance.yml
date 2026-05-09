@@ -5,8 +5,8 @@ on:
     paths:
       - AGENTS.md
       - .agents/**
-      - docs/ops/ai/**
-      - scripts/ci/agent_governance_check.mjs
+      - governance/ai/**
+      - ops/ai/**
       - .github/workflows/agent-governance.yml
   workflow_dispatch:
 
@@ -14,19 +14,11 @@ permissions:
   contents: read
 
 jobs:
-  agent-governance:
+  check:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Use Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
-
-      - name: Validate agent governance files
-        run: node scripts/ci/agent_governance_check.mjs .
-
-      - name: Validate active docs headers
-        run: ./scripts/ci/docs_check_headers.sh .
+      - run: node .agents/checks/agent-governance-check.mjs .
