@@ -1,6 +1,6 @@
-# LGFC Repository Agent Law
+# LGFC Repository Agent Routing
 
-This file is mandatory routing law for all agents working in this repository.
+This file is a concise OpenAI/Codex-compatible routing overlay for agents working in this repository. Existing canonical ownership and entrypoint authority remain with `Agent.md` and the active governance process. When this file conflicts with those sources, use the canonical source and update this routing overlay.
 
 ## Non-negotiable rules
 
