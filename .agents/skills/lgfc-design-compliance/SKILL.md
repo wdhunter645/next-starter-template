@@ -4,15 +4,13 @@ Use this skill for homepage, navigation, footer, Join/Login, FanClub, member, ad
 
 ## Canonical source
 
-The canonical design reference is:
+Use the active DIATAXIS transition design authority for the affected page, route, or feature.
 
-- `docs/reference/design/LGFC-Production-Design-and-Standards.md`
-
-Do not rely on memory, old screenshots, old PRs, old thread notes, or legacy assumptions when canonical documentation conflicts.
+Do not rely on memory, old screenshots, old PRs, old thread notes, or superseded assumptions when active documentation conflicts.
 
 ## Procedure
 
-1. Read the canonical design reference before editing.
+1. Read the active design authority before editing.
 2. Identify the exact invariant affected by the task.
 3. Confirm the source Issue explicitly authorizes the affected UX or route change.
 4. Preserve locked public header behavior, footer behavior, Join/Login behavior, FanClub gating, Admin gating, and Store behavior unless explicitly in scope.
@@ -25,7 +23,7 @@ Do not rely on memory, old screenshots, old PRs, old thread notes, or legacy ass
 
 Stop and request correction when:
 
-- The requested change conflicts with canonical design documentation.
+- The requested change conflicts with active design authority.
 - The task depends on undocumented design assumptions.
 - The diff would alter routes, gating, nav, footer, or layout outside the source Issue.
 - The change requires runtime architecture beyond the approved hosting model.
