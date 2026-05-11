@@ -4,26 +4,26 @@ Audience: AI agents and repository maintainers
 Authority Level: Operational
 Owns: Cross-agent governance rules for LGFC repository work
 Does Not Own: Canonical product design, runtime architecture, or PR template structure
-Canonical Reference: AGENTS.md
-Last Reviewed: 2026-05-09
+Canonical Reference: Agent.md
+Last Reviewed: 2026-05-11
 ---
 
 # Agent Governance
 
 ## Purpose
 
-This document defines the longer-form operating rules for agents working in the LGFC repository. The root `AGENTS.md` file remains the short mandatory routing law.
+This document defines the longer-form operating rules for agents working in the LGFC repository. The root `Agent.md` file remains the single agent entry point and routing file.
 
 ## Authority order
 
 Agents must resolve conflicts in this order:
 
-1. Source Issue scope.
-2. Canonical design documentation.
-3. Root `AGENTS.md`.
-4. Repository skill files under `.agents/skills/`.
-5. Governance documentation under `governance/`.
-6. Operational AI guidance under `ops/ai/`.
+1. Locked governance / design / platform documents.
+2. Source Issue scope.
+3. Operational trackers.
+4. `Agent.md` navigation and skill routing.
+5. Repository skill files under `.agents/skills/`.
+6. Cross-agent operational guidance under `governance/` and `ops/`.
 7. Historical thread logs and tracker context.
 
 When sources conflict, use the higher authority and document the conflict in the PR.
