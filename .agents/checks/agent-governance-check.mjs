@@ -6,7 +6,7 @@ import path from 'node:path';
 const root = process.argv[2] ? path.resolve(process.argv[2]) : process.cwd();
 
 const requiredFiles = [
-  'AGENTS.md',
+  'Agent.md',
   '.agents/checks/agent-governance-check.mjs',
   '.agents/skills/lgfc-pr-governance/SKILL.md',
   '.agents/skills/lgfc-design-compliance/SKILL.md',
@@ -50,11 +50,11 @@ for (const file of requiredFiles) {
   }
 }
 
-if (exists('AGENTS.md')) {
-  const agents = read('AGENTS.md');
+if (exists('Agent.md')) {
+  const agent = read('Agent.md');
   for (const required of requiredAgentText) {
-    if (!agents.includes(required)) {
-      failures.push(`AGENTS.md does not reference required path: ${required}`);
+    if (!agent.includes(required)) {
+      failures.push(`Agent.md does not reference required path: ${required}`);
     }
   }
 }
