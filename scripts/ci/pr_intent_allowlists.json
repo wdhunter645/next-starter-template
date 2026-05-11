@@ -107,6 +107,7 @@
         ".github/copilot-instructions.md",
         ".github/agents/",
         ".github/intent-labeler.json",
+        ".github/workflows/agent-governance.yml",
         "Agent.md",
         "context.md",
         "docs/",
