@@ -3,7 +3,12 @@ name: GATE — Reviewer Response
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-  workflow_dispatch: {}
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  pull_request_review_comment:
+    types: [created, edited]
+  issue_comment:
+    types: [created, edited]
 
 permissions:
   contents: read
@@ -12,6 +17,7 @@ permissions:
 
 jobs:
   reviewer-response:
+    if: github.event_name == 'pull_request' || github.event_name == 'pull_request_review' || github.event_name == 'pull_request_review_comment' || (github.event_name == 'issue_comment' && github.event.issue.pull_request)
     runs-on: ubuntu-latest
     steps:
       - name: Evaluate reviewer response discipline
@@ -20,7 +26,27 @@ jobs:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const pr = context.payload.pull_request;
+
+            async function resolvePullRequest() {
+              if (context.payload.pull_request) return context.payload.pull_request;
+              if (context.payload.issue?.pull_request) {
+                const { data } = await github.rest.pulls.get({ owner, repo, pull_number: context.payload.issue.number });
+                return data;
+              }
+              if (context.payload.review?.pull_request_url) {
+                const pull_number = Number(context.payload.review.pull_request_url.split('/').pop());
+                const { data } = await github.rest.pulls.get({ owner, repo, pull_number });
+                return data;
+              }
+              if (context.payload.comment?.pull_request_url) {
+                const pull_number = Number(context.payload.comment.pull_request_url.split('/').pop());
+                const { data } = await github.rest.pulls.get({ owner, repo, pull_number });
+                return data;
+              }
+              throw new Error('Unable to resolve pull request context.');
+            }
+
+            const pr = await resolvePullRequest();
             const prNumber = pr.number;
             const prAuthor = pr.user?.login || '';
 
@@ -32,6 +58,7 @@ jobs:
               'cubic-dev-ai',
             ]);
 
+            const permissionCache = new Map();
             const highSeverityPattern = /(^|[^A-Za-z0-9])(P0|P1)([^A-Za-z0-9]|$)|high[- ]priority|request changes|requested changes|must fix|blocking/i;
             const resolvedPattern = /✅\s*Addressed|addressed in|resolved|all checks passed|no findings|no warnings detected/i;
 
@@ -43,9 +70,57 @@ jobs:
               return trustedReviewers.has(loginOf(login));
             }
 
-            function isHumanResponse(login) {
+            async function isAuthorizedResponder(login) {
               const value = loginOf(login);
-              return value && !isTrusted(value) && value !== 'github-actions[bot]';
+              if (!value || isTrusted(value) || value === 'github-actions[bot]') return false;
+              if (value === prAuthor) return true;
+              if (permissionCache.has(value)) return permissionCache.get(value);
+              try {
+                const { data } = await github.rest.repos.getCollaboratorPermissionLevel({ owner, repo, username: value });
+                const allowed = ['admin', 'maintain', 'write'].includes(data.permission);
+                permissionCache.set(value, allowed);
+                return allowed;
+              } catch (_error) {
+                permissionCache.set(value, false);
+                return false;
+              }
+            }
+
+            async function fetchReviewThreads() {
+              const threads = [];
+              let cursor = null;
+              while (true) {
+                const result = await github.graphql(
+                  `query($owner: String!, $repo: String!, $number: Int!, $cursor: String) {
+                    repository(owner: $owner, name: $repo) {
+                      pullRequest(number: $number) {
+                        reviewThreads(first: 100, after: $cursor) {
+                          pageInfo { hasNextPage endCursor }
+                          nodes {
+                            isResolved
+                            isOutdated
+                            comments(first: 100) {
+                              pageInfo { hasNextPage }
+                              nodes {
+                                databaseId
+                                body
+                                createdAt
+                                author { login }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }`,
+                  { owner, repo, number: prNumber, cursor }
+                );
+                const connection = result.repository.pullRequest.reviewThreads;
+                threads.push(...(connection.nodes || []));
+                if (!connection.pageInfo.hasNextPage) break;
+                cursor = connection.pageInfo.endCursor;
+              }
+              return threads;
             }
 
             const issueComments = await github.paginate(github.rest.issues.listComments, {
@@ -62,49 +137,18 @@ jobs:
               per_page: 100,
             });
 
-            const reviewThreadsResult = await github.graphql(
-              `query($owner: String!, $repo: String!, $number: Int!) {
-                repository(owner: $owner, name: $repo) {
-                  pullRequest(number: $number) {
-                    reviewThreads(first: 100) {
-                      nodes {
-                        isResolved
-                        isOutdated
-                        path
-                        comments(first: 100) {
-                          nodes {
-                            databaseId
-                            body
-                            createdAt
-                            author { login }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }`,
-              { owner, repo, number: prNumber }
-            );
-
-            const threads = reviewThreadsResult.repository.pullRequest.reviewThreads.nodes || [];
-
+            const threads = await fetchReviewThreads();
             const trustedSignals = [];
+
             for (const comment of issueComments) {
-              if (isTrusted(comment.user?.login)) {
-                trustedSignals.push(`issue-comment:${comment.id}`);
-              }
+              if (isTrusted(comment.user?.login)) trustedSignals.push(`issue-comment:${comment.id}`);
             }
             for (const review of reviews) {
-              if (isTrusted(review.user?.login)) {
-                trustedSignals.push(`review:${review.id}:${review.state}`);
-              }
+              if (isTrusted(review.user?.login)) trustedSignals.push(`review:${review.id}:${review.state}`);
             }
             for (const thread of threads) {
               for (const comment of thread.comments.nodes || []) {
-                if (isTrusted(comment.author?.login)) {
-                  trustedSignals.push(`thread-comment:${comment.databaseId}`);
-                }
+                if (isTrusted(comment.author?.login)) trustedSignals.push(`thread-comment:${comment.databaseId}`);
               }
             }
 
@@ -113,49 +157,69 @@ jobs:
               return;
             }
 
-            const failures = [];
-
-            function laterHumanIssueComment(createdAt) {
+            async function laterAuthorizedIssueComment(createdAt) {
               const created = new Date(createdAt).getTime();
-              return issueComments.some((comment) =>
-                isHumanResponse(comment.user?.login) && new Date(comment.created_at).getTime() > created
-              );
+              for (const comment of issueComments) {
+                if (new Date(comment.created_at).getTime() <= created) continue;
+                if (await isAuthorizedResponder(comment.user?.login)) return true;
+              }
+              return false;
             }
+
+            async function laterAuthorizedThreadReply(threadComments, createdAt) {
+              const created = new Date(createdAt).getTime();
+              for (const reply of threadComments) {
+                if (new Date(reply.createdAt).getTime() <= created) continue;
+                if (await isAuthorizedResponder(reply.author?.login)) return true;
+              }
+              return false;
+            }
+
+            async function anyLaterResolvedThreadOrReply(createdAt) {
+              const created = new Date(createdAt).getTime();
+              for (const thread of threads) {
+                if (thread.isOutdated) continue;
+                if (thread.isResolved) return true;
+                if (await laterAuthorizedThreadReply(thread.comments.nodes || [], created)) return true;
+              }
+              return false;
+            }
+
+            const failures = [];
 
             for (const comment of issueComments) {
               const login = comment.user?.login || '';
-              if (!isTrusted(login)) continue;
               const body = comment.body || '';
+              if (!isTrusted(login)) continue;
               if (!highSeverityPattern.test(body) || resolvedPattern.test(body)) continue;
-              if (!laterHumanIssueComment(comment.created_at)) {
+              if (!(await laterAuthorizedIssueComment(comment.created_at))) {
                 failures.push(`Trusted reviewer issue comment ${comment.id} has a high-severity finding without a later author/maintainer response.`);
               }
             }
 
             for (const review of reviews) {
               const login = review.user?.login || '';
-              if (!isTrusted(login)) continue;
               const body = review.body || '';
               const state = review.state || '';
+              const submittedAt = review.submitted_at || review.submittedAt || review.created_at;
               const isFinding = state === 'CHANGES_REQUESTED' || highSeverityPattern.test(body);
-              if (!isFinding || resolvedPattern.test(body)) continue;
-              if (!laterHumanIssueComment(review.submitted_at || review.submittedAt || review.created_at)) {
+              if (!isTrusted(login) || !isFinding || resolvedPattern.test(body)) continue;
+              const acknowledged = (await laterAuthorizedIssueComment(submittedAt)) || (await anyLaterResolvedThreadOrReply(submittedAt));
+              if (!acknowledged) {
                 failures.push(`Trusted reviewer review ${review.id} has a high-severity finding without a later author/maintainer response.`);
               }
             }
 
             for (const thread of threads) {
+              if (thread.isOutdated) continue;
               const comments = thread.comments.nodes || [];
               for (const comment of comments) {
                 const login = comment.author?.login || '';
                 const body = comment.body || '';
                 if (!isTrusted(login)) continue;
                 if (!highSeverityPattern.test(body) || resolvedPattern.test(body)) continue;
-                const findingTime = new Date(comment.createdAt).getTime();
-                const laterThreadReply = comments.some((reply) =>
-                  isHumanResponse(reply.author?.login) && new Date(reply.createdAt).getTime() > findingTime
-                );
-                if (!thread.isResolved && !laterThreadReply) {
+                const laterReply = await laterAuthorizedThreadReply(comments, comment.createdAt);
+                if (!thread.isResolved && !laterReply) {
                   failures.push(`Trusted reviewer thread comment ${comment.databaseId} has a high-severity finding without thread resolution or later author/maintainer reply.`);
                 }
               }
