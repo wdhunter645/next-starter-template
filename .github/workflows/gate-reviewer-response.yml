@@ -1,0 +1,175 @@
+name: GATE — Reviewer Response
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+
+jobs:
+  reviewer-response:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Evaluate reviewer response discipline
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pr = context.payload.pull_request;
+            const prNumber = pr.number;
+            const prAuthor = pr.user?.login || '';
+
+            const trustedReviewers = new Set([
+              'chatgpt-codex-connector[bot]',
+              'gemini-code-assist[bot]',
+              'copilot-pull-request-reviewer[bot]',
+              'cubic-dev-ai[bot]',
+              'cubic-dev-ai',
+            ]);
+
+            const highSeverityPattern = /(^|[^A-Za-z0-9])(P0|P1)([^A-Za-z0-9]|$)|high[- ]priority|request changes|requested changes|must fix|blocking/i;
+            const resolvedPattern = /✅\s*Addressed|addressed in|resolved|all checks passed|no findings|no warnings detected/i;
+
+            function loginOf(author) {
+              return typeof author === 'string' ? author : (author?.login || '');
+            }
+
+            function isTrusted(login) {
+              return trustedReviewers.has(loginOf(login));
+            }
+
+            function isHumanResponse(login) {
+              const value = loginOf(login);
+              return value && !isTrusted(value) && value !== 'github-actions[bot]';
+            }
+
+            const issueComments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number: prNumber,
+              per_page: 100,
+            });
+
+            const reviews = await github.paginate(github.rest.pulls.listReviews, {
+              owner,
+              repo,
+              pull_number: prNumber,
+              per_page: 100,
+            });
+
+            const reviewThreadsResult = await github.graphql(
+              `query($owner: String!, $repo: String!, $number: Int!) {
+                repository(owner: $owner, name: $repo) {
+                  pullRequest(number: $number) {
+                    reviewThreads(first: 100) {
+                      nodes {
+                        isResolved
+                        isOutdated
+                        path
+                        comments(first: 100) {
+                          nodes {
+                            databaseId
+                            body
+                            createdAt
+                            author { login }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }`,
+              { owner, repo, number: prNumber }
+            );
+
+            const threads = reviewThreadsResult.repository.pullRequest.reviewThreads.nodes || [];
+
+            const trustedSignals = [];
+            for (const comment of issueComments) {
+              if (isTrusted(comment.user?.login)) {
+                trustedSignals.push(`issue-comment:${comment.id}`);
+              }
+            }
+            for (const review of reviews) {
+              if (isTrusted(review.user?.login)) {
+                trustedSignals.push(`review:${review.id}:${review.state}`);
+              }
+            }
+            for (const thread of threads) {
+              for (const comment of thread.comments.nodes || []) {
+                if (isTrusted(comment.author?.login)) {
+                  trustedSignals.push(`thread-comment:${comment.databaseId}`);
+                }
+              }
+            }
+
+            if (trustedSignals.length === 0) {
+              core.setFailed('Reviewer response gate failed: no trusted reviewer signal found.');
+              return;
+            }
+
+            const failures = [];
+
+            function laterHumanIssueComment(createdAt) {
+              const created = new Date(createdAt).getTime();
+              return issueComments.some((comment) =>
+                isHumanResponse(comment.user?.login) && new Date(comment.created_at).getTime() > created
+              );
+            }
+
+            for (const comment of issueComments) {
+              const login = comment.user?.login || '';
+              if (!isTrusted(login)) continue;
+              const body = comment.body || '';
+              if (!highSeverityPattern.test(body) || resolvedPattern.test(body)) continue;
+              if (!laterHumanIssueComment(comment.created_at)) {
+                failures.push(`Trusted reviewer issue comment ${comment.id} has a high-severity finding without a later author/maintainer response.`);
+              }
+            }
+
+            for (const review of reviews) {
+              const login = review.user?.login || '';
+              if (!isTrusted(login)) continue;
+              const body = review.body || '';
+              const state = review.state || '';
+              const isFinding = state === 'CHANGES_REQUESTED' || highSeverityPattern.test(body);
+              if (!isFinding || resolvedPattern.test(body)) continue;
+              if (!laterHumanIssueComment(review.submitted_at || review.submittedAt || review.created_at)) {
+                failures.push(`Trusted reviewer review ${review.id} has a high-severity finding without a later author/maintainer response.`);
+              }
+            }
+
+            for (const thread of threads) {
+              const comments = thread.comments.nodes || [];
+              for (const comment of comments) {
+                const login = comment.author?.login || '';
+                const body = comment.body || '';
+                if (!isTrusted(login)) continue;
+                if (!highSeverityPattern.test(body) || resolvedPattern.test(body)) continue;
+                const findingTime = new Date(comment.createdAt).getTime();
+                const laterThreadReply = comments.some((reply) =>
+                  isHumanResponse(reply.author?.login) && new Date(reply.createdAt).getTime() > findingTime
+                );
+                if (!thread.isResolved && !laterThreadReply) {
+                  failures.push(`Trusted reviewer thread comment ${comment.databaseId} has a high-severity finding without thread resolution or later author/maintainer reply.`);
+                }
+              }
+            }
+
+            core.summary
+              .addHeading('Reviewer response gate')
+              .addRaw(`Trusted reviewer signals: ${trustedSignals.length}\n`)
+              .addRaw(`High-severity unacknowledged findings: ${failures.length}\n`)
+              .write();
+
+            if (failures.length > 0) {
+              core.setFailed(`Reviewer response gate failed:\n- ${failures.join('\n- ')}`);
+              return;
+            }
+
+            core.info(`Reviewer response gate passed with ${trustedSignals.length} trusted reviewer signal(s).`);
