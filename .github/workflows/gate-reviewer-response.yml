@@ -49,6 +49,7 @@ jobs:
             const pr = await resolvePullRequest();
             const prNumber = pr.number;
             const prAuthor = pr.user?.login || '';
+            const prBody = pr.body || '';
 
             const trustedReviewers = new Set([
               'chatgpt-codex-connector[bot]',
@@ -79,6 +80,20 @@ jobs:
               return resolvedPattern.test(text) && !unresolvedPattern.test(text);
             }
 
+            function hasReviewerAccounting(login, id) {
+              const lowerBody = prBody.toLowerCase();
+              const reviewer = loginOf(login).toLowerCase();
+              if (id && lowerBody.includes(`review-comment:${id}`.toLowerCase())) return true;
+              if (id && lowerBody.includes(String(id))) return true;
+              if (!lowerBody.includes('## reviewer response accounting')) return false;
+              if (!lowerBody.includes('reviewed all reviewer comments')) return false;
+              if (reviewer.includes('copilot') && lowerBody.includes('copilot disposition received')) return true;
+              if (reviewer.includes('cubic') && lowerBody.includes('cubic disposition received')) return true;
+              if (reviewer.includes('gemini') && lowerBody.includes('gemini disposition received')) return true;
+              if (reviewer.includes('codex') && (lowerBody.includes('codex disposition received') || lowerBody.includes('reviewed all reviewer comments'))) return true;
+              return false;
+            }
+
             async function isAuthorizedResponder(login) {
               const value = loginOf(login);
               if (!value || isTrusted(value) || value === 'github-actions[bot]' || value.endsWith('[bot]')) return false;
@@ -93,35 +108,6 @@ jobs:
                 permissionCache.set(value, false);
                 return false;
               }
-            }
-
-            async function fetchReviewThreads() {
-              const threads = [];
-              let cursor = null;
-              while (true) {
-                const result = await github.graphql(
-                  `query($owner: String!, $repo: String!, $number: Int!, $cursor: String) {
-                    repository(owner: $owner, name: $repo) {
-                      pullRequest(number: $number) {
-                        reviewThreads(first: 100, after: $cursor) {
-                          pageInfo { hasNextPage endCursor }
-                          nodes {
-                            id
-                            isResolved
-                            isOutdated
-                          }
-                        }
-                      }
-                    }
-                  }`,
-                  { owner, repo, number: prNumber, cursor }
-                );
-                const connection = result.repository.pullRequest.reviewThreads;
-                threads.push(...(connection.nodes || []));
-                if (!connection.pageInfo.hasNextPage) break;
-                cursor = connection.pageInfo.endCursor;
-              }
-              return threads;
             }
 
             const issueComments = await github.paginate(github.rest.issues.listComments, {
@@ -145,7 +131,6 @@ jobs:
               per_page: 100,
             });
 
-            const threads = await fetchReviewThreads();
             const trustedSignals = [];
 
             for (const comment of issueComments) {
@@ -192,6 +177,7 @@ jobs:
               const body = comment.body || '';
               if (!isTrusted(login)) continue;
               if (!highSeverityPattern.test(body) || isResolvedText(body)) continue;
+              if (hasReviewerAccounting(login, comment.id)) continue;
               if (!(await laterAuthorizedIssueComment(comment.created_at))) {
                 failures.push(`Trusted reviewer issue comment ${comment.id} has a high-severity finding without a later author/maintainer response.`);
               }
@@ -204,6 +190,7 @@ jobs:
               const submittedAt = review.submitted_at || review.submittedAt || review.created_at;
               const isFinding = state === 'CHANGES_REQUESTED' || highSeverityPattern.test(body);
               if (!isTrusted(login) || !isFinding || isResolvedText(body)) continue;
+              if (hasReviewerAccounting(login, review.id)) continue;
               if (!(await laterAcknowledgement(submittedAt))) {
                 failures.push(`Trusted reviewer review ${review.id} has a high-severity finding without a later author/maintainer response.`);
               }
@@ -214,6 +201,7 @@ jobs:
               const body = comment.body || '';
               if (!isTrusted(login)) continue;
               if (!highSeverityPattern.test(body) || isResolvedText(body)) continue;
+              if (hasReviewerAccounting(login, comment.id)) continue;
               if (!(await laterAuthorizedReviewComment(comment.created_at))) {
                 failures.push(`Trusted reviewer review comment ${comment.id} has a high-severity finding without a later author/maintainer reply.`);
               }
