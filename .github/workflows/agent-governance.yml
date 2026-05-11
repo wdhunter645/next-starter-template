@@ -2,12 +2,6 @@ name: Agent Governance
 
 on:
   pull_request:
-    paths:
-      - AGENTS.md
-      - .agents/**
-      - governance/ai/**
-      - ops/ai/**
-      - .github/workflows/agent-governance.yml
   workflow_dispatch:
 
 permissions:
