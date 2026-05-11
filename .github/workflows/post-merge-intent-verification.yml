@@ -71,7 +71,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh pr view "${{ steps.pr.outputs.pr }}" --json body,files,mergeCommit,isDraft,mergedAt,baseRefName > pr.json
-          jq -e 'if (.isDraft == true or .mergedAt == null or .baseRefName != "main") then error("Resolved PR is not a merged PR into main") else .number end' pr.json > /dev/null
+          jq -e 'if (.isDraft == true or .mergedAt == null or .baseRefName != "main") then error("Resolved PR is not a merged PR into main") else true end' pr.json > /dev/null
           jq -r '.body // ""' pr.json > body.md
           jq -r '.files[].path' pr.json > files.txt
 
@@ -148,4 +148,3 @@ jobs:
           fi
           if [ "${{ steps.reviewer_audit.outputs.late_findings }}" != "0" ]; then
             exit 1
-          fi
