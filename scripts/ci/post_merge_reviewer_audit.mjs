@@ -17,15 +17,20 @@ const [owner, repo] = repository.split('/');
 const apiBase = 'https://api.github.com';
 const trustedReviewerPattern = /chatgpt-codex-connector|gemini-code-assist|copilot-pull-request-reviewer|cubic-dev-ai/i;
 const highSeverityPattern = /(^|[^A-Za-z0-9])(P0|P1)([^A-Za-z0-9]|$)|high[- ]priority|request changes|requested changes|must fix|blocking/i;
-const resolvedPattern = /✅\s*Addressed|addressed in|resolved|all checks passed|no warnings detected/i;
+const resolvedPattern = /✅\s*Addressed|addressed in|\bresolved\b|all checks passed|no warnings detected/i;
+const unresolvedPattern = /\bunresolved\b|\bnot\s+resolved\b|\bstill\s+open\b|\bstill\s+blocking\b/i;
 
 async function request(path, options = {}) {
+  const hasBody = Boolean(options.body);
+
   const response = await fetch(`${apiBase}${path}`, {
     ...options,
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
+      'User-Agent': 'lgfc-post-merge-reviewer-audit',
+      ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
       ...(options.headers || {}),
     },
   });
@@ -59,9 +64,14 @@ function isTrusted(login) {
   return trustedReviewerPattern.test(login || '');
 }
 
-function isHighSeverityFinding(body) {
+function isResolvedText(body) {
   const text = body || '';
-  return highSeverityPattern.test(text) && !resolvedPattern.test(text);
+  return resolvedPattern.test(text) && !unresolvedPattern.test(text);
+}
+
+function isHighSeverityFinding(body, state = '') {
+  const text = body || '';
+  return (state === 'CHANGES_REQUESTED' || highSeverityPattern.test(text)) && !isResolvedText(text);
 }
 
 function isAfterMerge(value, mergedAt) {
@@ -72,8 +82,9 @@ function isAfterMerge(value, mergedAt) {
 function findingLine(item, fallbackUrl) {
   const login = item.user?.login || 'unknown-reviewer';
   const url = item.html_url || item.url || item._links?.html?.href || fallbackUrl || 'unknown-url';
-  const body = String(item.body || '').replace(/\s+/g, ' ').slice(0, 240);
-  return `- ${url} by ${login}: ${body}`;
+  let body = String(item.body || '').replace(/\s+/g, ' ').trim();
+  if (!body && item.state) body = `[Review: ${item.state}]`;
+  return `- ${url} by ${login}: ${body.slice(0, 240)}`;
 }
 
 async function main() {
@@ -89,9 +100,11 @@ async function main() {
     return;
   }
 
-  const issueComments = await paginate(`/repos/${owner}/${repo}/issues/${prNumber}/comments`);
-  const reviewComments = await paginate(`/repos/${owner}/${repo}/pulls/${prNumber}/comments`);
-  const reviews = await paginate(`/repos/${owner}/${repo}/pulls/${prNumber}/reviews`);
+  const [issueComments, reviewComments, reviews] = await Promise.all([
+    paginate(`/repos/${owner}/${repo}/issues/${prNumber}/comments`),
+    paginate(`/repos/${owner}/${repo}/pulls/${prNumber}/comments`),
+    paginate(`/repos/${owner}/${repo}/pulls/${prNumber}/reviews`),
+  ]);
 
   const findings = [];
 
@@ -108,7 +121,7 @@ async function main() {
   }
 
   for (const review of reviews) {
-    if (isTrusted(review.user?.login) && isAfterMerge(review.submitted_at, mergedAt) && isHighSeverityFinding(review.body)) {
+    if (isTrusted(review.user?.login) && isAfterMerge(review.submitted_at, mergedAt) && isHighSeverityFinding(review.body, review.state || '')) {
       findings.push(findingLine(review, prUrl));
     }
   }
@@ -139,7 +152,7 @@ async function main() {
         method: 'POST',
         body: JSON.stringify({ body }),
       });
-      auditIssue = `#${existing.number}`;
+      auditIssue = existing.html_url || `#${existing.number}`;
     } else {
       const created = await request(`/repos/${owner}/${repo}/issues`, {
         method: 'POST',
