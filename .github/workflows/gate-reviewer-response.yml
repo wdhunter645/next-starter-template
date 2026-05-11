@@ -52,15 +52,19 @@ jobs:
 
             const trustedReviewers = new Set([
               'chatgpt-codex-connector[bot]',
+              'chatgpt-codex-connector',
               'gemini-code-assist[bot]',
+              'gemini-code-assist',
               'copilot-pull-request-reviewer[bot]',
+              'copilot-pull-request-reviewer',
               'cubic-dev-ai[bot]',
               'cubic-dev-ai',
             ]);
 
             const permissionCache = new Map();
             const highSeverityPattern = /(^|[^A-Za-z0-9])(P0|P1)([^A-Za-z0-9]|$)|high[- ]priority|request changes|requested changes|must fix|blocking/i;
-            const resolvedPattern = /✅\s*Addressed|addressed in|resolved|all checks passed|no findings|no warnings detected/i;
+            const resolvedPattern = /✅\s*Addressed|addressed in|\bresolved\b|all checks passed|no findings|no warnings detected/i;
+            const unresolvedPattern = /\bunresolved\b|\bnot\s+resolved\b|\bstill\s+open\b|\bstill\s+blocking\b/i;
 
             function loginOf(author) {
               return typeof author === 'string' ? author : (author?.login || '');
@@ -70,9 +74,14 @@ jobs:
               return trustedReviewers.has(loginOf(login));
             }
 
+            function isResolvedText(body) {
+              const text = body || '';
+              return resolvedPattern.test(text) && !unresolvedPattern.test(text);
+            }
+
             async function isAuthorizedResponder(login) {
               const value = loginOf(login);
-              if (!value || isTrusted(value) || value === 'github-actions[bot]') return false;
+              if (!value || isTrusted(value) || value === 'github-actions[bot]' || value.endsWith('[bot]')) return false;
               if (value === prAuthor) return true;
               if (permissionCache.has(value)) return permissionCache.get(value);
               try {
@@ -97,17 +106,9 @@ jobs:
                         reviewThreads(first: 100, after: $cursor) {
                           pageInfo { hasNextPage endCursor }
                           nodes {
+                            id
                             isResolved
                             isOutdated
-                            comments(first: 100) {
-                              pageInfo { hasNextPage }
-                              nodes {
-                                databaseId
-                                body
-                                createdAt
-                                author { login }
-                              }
-                            }
                           }
                         }
                       }
@@ -137,6 +138,13 @@ jobs:
               per_page: 100,
             });
 
+            const reviewComments = await github.paginate(github.rest.pulls.listReviewComments, {
+              owner,
+              repo,
+              pull_number: prNumber,
+              per_page: 100,
+            });
+
             const threads = await fetchReviewThreads();
             const trustedSignals = [];
 
@@ -146,10 +154,8 @@ jobs:
             for (const review of reviews) {
               if (isTrusted(review.user?.login)) trustedSignals.push(`review:${review.id}:${review.state}`);
             }
-            for (const thread of threads) {
-              for (const comment of thread.comments.nodes || []) {
-                if (isTrusted(comment.author?.login)) trustedSignals.push(`thread-comment:${comment.databaseId}`);
-              }
+            for (const comment of reviewComments) {
+              if (isTrusted(comment.user?.login)) trustedSignals.push(`review-comment:${comment.id}`);
             }
 
             if (trustedSignals.length === 0) {
@@ -166,23 +172,17 @@ jobs:
               return false;
             }
 
-            async function laterAuthorizedThreadReply(threadComments, createdAt) {
+            async function laterAuthorizedReviewComment(createdAt) {
               const created = new Date(createdAt).getTime();
-              for (const reply of threadComments) {
-                if (new Date(reply.createdAt).getTime() <= created) continue;
-                if (await isAuthorizedResponder(reply.author?.login)) return true;
+              for (const comment of reviewComments) {
+                if (new Date(comment.created_at).getTime() <= created) continue;
+                if (await isAuthorizedResponder(comment.user?.login)) return true;
               }
               return false;
             }
 
-            async function anyLaterResolvedThreadOrReply(createdAt) {
-              const created = new Date(createdAt).getTime();
-              for (const thread of threads) {
-                if (thread.isOutdated) continue;
-                if (thread.isResolved) return true;
-                if (await laterAuthorizedThreadReply(thread.comments.nodes || [], created)) return true;
-              }
-              return false;
+            async function laterAcknowledgement(createdAt) {
+              return (await laterAuthorizedIssueComment(createdAt)) || (await laterAuthorizedReviewComment(createdAt));
             }
 
             const failures = [];
@@ -191,7 +191,7 @@ jobs:
               const login = comment.user?.login || '';
               const body = comment.body || '';
               if (!isTrusted(login)) continue;
-              if (!highSeverityPattern.test(body) || resolvedPattern.test(body)) continue;
+              if (!highSeverityPattern.test(body) || isResolvedText(body)) continue;
               if (!(await laterAuthorizedIssueComment(comment.created_at))) {
                 failures.push(`Trusted reviewer issue comment ${comment.id} has a high-severity finding without a later author/maintainer response.`);
               }
@@ -203,25 +203,19 @@ jobs:
               const state = review.state || '';
               const submittedAt = review.submitted_at || review.submittedAt || review.created_at;
               const isFinding = state === 'CHANGES_REQUESTED' || highSeverityPattern.test(body);
-              if (!isTrusted(login) || !isFinding || resolvedPattern.test(body)) continue;
-              const acknowledged = (await laterAuthorizedIssueComment(submittedAt)) || (await anyLaterResolvedThreadOrReply(submittedAt));
-              if (!acknowledged) {
+              if (!isTrusted(login) || !isFinding || isResolvedText(body)) continue;
+              if (!(await laterAcknowledgement(submittedAt))) {
                 failures.push(`Trusted reviewer review ${review.id} has a high-severity finding without a later author/maintainer response.`);
               }
             }
 
-            for (const thread of threads) {
-              if (thread.isOutdated) continue;
-              const comments = thread.comments.nodes || [];
-              for (const comment of comments) {
-                const login = comment.author?.login || '';
-                const body = comment.body || '';
-                if (!isTrusted(login)) continue;
-                if (!highSeverityPattern.test(body) || resolvedPattern.test(body)) continue;
-                const laterReply = await laterAuthorizedThreadReply(comments, comment.createdAt);
-                if (!thread.isResolved && !laterReply) {
-                  failures.push(`Trusted reviewer thread comment ${comment.databaseId} has a high-severity finding without thread resolution or later author/maintainer reply.`);
-                }
+            for (const comment of reviewComments) {
+              const login = comment.user?.login || '';
+              const body = comment.body || '';
+              if (!isTrusted(login)) continue;
+              if (!highSeverityPattern.test(body) || isResolvedText(body)) continue;
+              if (!(await laterAuthorizedReviewComment(comment.created_at))) {
+                failures.push(`Trusted reviewer review comment ${comment.id} has a high-severity finding without a later author/maintainer reply.`);
               }
             }
 
