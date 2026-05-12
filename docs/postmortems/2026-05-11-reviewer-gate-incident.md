@@ -1,7 +1,7 @@
 ---
 Doc Type: Postmortem
 Audience: Maintainers and AI agents
-Authority Level: Operational record
+Authority Level: Operational Authority
 Owns: Operational incident summary for reviewer gate troubleshooting
 Does Not Own: Repository workflow implementation
 Canonical Reference: .github/workflows/reviewer-response-completion.yml
