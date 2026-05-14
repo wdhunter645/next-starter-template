@@ -22,7 +22,7 @@ jobs:
       group: reviewer-response-completion-${{ github.event.pull_request.number || github.event.issue.number }}
       cancel-in-progress: true
     steps:
-      - name: Verify one reviewer response and scoped response accounting
+      - name: Verify one current reviewer response and scoped response accounting
         uses: actions/github-script@v7
         with:
           script: |
@@ -129,13 +129,14 @@ jobs:
             const quietUntil = latestRelevantTimestamp ? latestRelevantTimestamp + quietPeriodSeconds * 1000 : null;
             const now = Date.now();
 
+            const isHeadLinkedArtifact = (artifact) => {
+              return ['review', 'review-comment'].includes(artifact.kind) && artifact.commitId === headSha;
+            };
+
             const reviewerStates = trustedReviewers.map((reviewer) => {
               const artifacts = reviewerArtifacts.filter((artifact) => reviewer.users.includes(artifact.user));
               const hasAnyArtifact = artifacts.length > 0;
-              const hasCurrentArtifact = artifacts.some((artifact) => {
-                if (!artifact.commitId) return true;
-                return artifact.commitId === headSha;
-              });
+              const hasCurrentArtifact = artifacts.some(isHeadLinkedArtifact);
               return {
                 ...reviewer,
                 artifacts,
@@ -197,12 +198,13 @@ jobs:
                   ? 'Reviewer response completion gate failed.'
                   : 'Reviewer response completion gate refreshed; enforcement is deferred to pull_request_target runs.',
                 '',
-                'Pre-merge requirement: one valid trusted reviewer response path is required.',
+                'Pre-merge requirement: one valid trusted reviewer response path tied to the current head SHA is required.',
+                'Trusted top-level comments without a commit SHA are context only and do not qualify as current-head reviewer artifacts.',
                 'Post-merge reviewer audit remains responsible for identifying late or additional actionable reviewer comments.',
                 '',
                 `Current head SHA: ${headSha}`,
                 `Trusted reviewers with any artifact: ${reviewerStates.filter((reviewer) => reviewer.hasAnyArtifact).map((reviewer) => reviewer.name).join(', ') || 'none'}`,
-                `Trusted reviewers with current artifact: ${qualifyingReviewers.map((reviewer) => reviewer.name).join(', ') || 'none'}`,
+                `Trusted reviewers with current head-linked review artifact: ${qualifyingReviewers.map((reviewer) => reviewer.name).join(', ') || 'none'}`,
                 `Selected reviewer path: ${selectedReviewer?.name || 'none'}`,
                 `Quiet period seconds: ${quietPeriodSeconds}`,
                 `Quiet period remaining: ${quietRemainingSeconds}`,
@@ -240,7 +242,7 @@ jobs:
               await upsertGateComment([
                 'Reviewer response completion gate passed.',
                 '',
-                'Pre-merge requirement met: one valid trusted reviewer response path is present.',
+                'Pre-merge requirement met: one valid trusted reviewer response path tied to the current head SHA is present.',
                 'Post-merge reviewer audit remains responsible for identifying late or additional actionable reviewer comments.',
                 '',
                 `Current head SHA: ${headSha}`,
