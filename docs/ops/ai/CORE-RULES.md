@@ -5,7 +5,7 @@ Authority Level: Core
 Owns: Shared execution rules, enforcement model, PR discipline, stop conditions
 Does Not Own: Design authority, platform configuration, tracker content
 Canonical Reference: /Agent.md
-Last Reviewed: 2026-05-06
+Last Reviewed: 2026-05-14
 ---
 
 # CORE-RULES.md
@@ -40,6 +40,28 @@ Rules:
 - OPS tracker Issues must not replace, override, or hijack the source task Issue.
 - Post-merge validation must report against the source task Issue when one exists.
 - Merge authority remains human/operator only.
+
+---
+
+# REVIEWER GATE TROUBLESHOOTING
+
+When troubleshooting reviewer-gate failures, agents must follow this sequence:
+
+1. patch the underlying content or workflow defect
+2. add or update `REVIEWER RESPONSE ACCOUNTING` in the PR body
+3. resolve GitHub review threads directly in PR review state
+4. verify the live PR check panel and latest gate run together
+
+Rules:
+
+- Do not rely solely on commit-scoped workflow runs.
+- The live PR check panel and unresolved review-thread state are authoritative.
+- A corrected document or workflow alone does not guarantee reviewer-gate success.
+- Reviewer-accounting and thread-resolution state must also be reconciled.
+
+Canonical governance authority:
+
+- `docs/governance/standards/governance-enforcement-standard.md`
 
 ---
 
