@@ -23,13 +23,13 @@ It defines enforcement strategy only. It does not implement workflow files, defi
 
 ## Current Known Truth
 
-The repository already has several governance-related checks, including documentation guardrails, design-compliance warnings, intent labeling, drift control, and reviewer-response gates. These checks are not yet a complete repository-wide governance enforcement framework.
+The repository already has several governance-related checks, including documentation guardrails, design-compliance warnings, intent labeling, drift control, PR issue-accounting, reviewer-response gates, ZIP safety, secret scanning, and quality checks. These checks together form the repository PR gate-readiness model.
 
 Some governance expectations remain documentation-first and should not become blocking until repository-wide audit and migration work confirms that enforcement will not destabilize active workflows.
 
 ## Intended Final State
 
-Governance enforcement should become layered, predictable, and auditable. Warning checks should identify drift early. Blocking checks should apply only where the repository has clear standards, reliable automation, and known migration paths for existing exceptions.
+Governance enforcement should become layered, predictable, auditable, and merge-readiness oriented. Warning checks should identify drift early. Blocking checks should apply only where the repository has clear standards, reliable automation, and known migration paths for existing exceptions.
 
 ## Enforcement Areas
 
@@ -47,6 +47,9 @@ Governance checks may evaluate:
 - unresolved reviewer-response accounting
 - mismatched DIATAXIS folder authority
 - deprecated or historical documents used as active authority
+- unresolved review-thread state
+- missing maintainer acknowledgments
+- failed workflow validation checks
 
 ## Enforcement Levels
 
@@ -58,21 +61,29 @@ Warning checks identify possible drift without blocking merge. Use warning mode 
 
 Blocking checks prevent merge when a rule is mature, objective, machine-detectable, and already supported by repository-wide documentation and migration guidance.
 
-## Reviewer Gate Troubleshooting Procedure
+## PR Gate-Readiness Troubleshooting Procedure
 
-Reviewer-gate remediation must follow this sequence:
+Preparing a PR for merge approval requires validation of all required gate classes, not only reviewer-response remediation.
+
+Required sequence:
 
 1. inspect the live PR check panel before relying on commit-scoped workflow runs
-2. inspect GitHub review-thread state and resolve addressed threads directly in PR review state
-3. inspect the PR body and add or update `REVIEWER RESPONSE ACCOUNTING`
-4. inspect the latest head workflow run and failed reviewer-gate job logs
-5. patch the underlying content or workflow defect
-6. add a later maintainer acknowledgment for any high-severity review-level finding required by the gate logs
-7. rerun or wait for reviewer-gate evaluation and verify the live PR check panel plus latest gate run together
+2. confirm PR issue-accounting uses exactly one same-repository, open, non-PR Issue reference as the primary source Issue
+3. inspect PR body sections, file-touch allowlist, ZIP safety, source authority, acceptance criteria, and issue/reviewer accounting sections
+4. inspect GitHub review-thread state and resolve addressed threads directly in PR review state
+5. inspect the latest head workflow runs for every required gate
+6. inspect failed job logs for any failing gate, including PR issue-accounting, reviewer-response gates, intent labeling, drift control, docs guardrails, quality checks, ZIP safety, and secret scanning
+7. patch the underlying content, workflow, PR body, issue link, or review-state defect
+8. add a later maintainer acknowledgment for any high-severity review-level finding required by the gate logs
+9. rerun or wait for gate evaluation and verify the live PR check panel plus latest gate runs together
 
-Repository maintainers and AI agents must not rely solely on commit-scoped workflow runs when troubleshooting reviewer gates. The live PR check panel, unresolved review-thread state, PR body accounting, latest head workflow run, and failed job logs must be checked together.
+Repository maintainers and AI agents must not rely solely on commit-scoped workflow runs when troubleshooting PR readiness. The live PR check panel, unresolved review-thread state, PR body accounting, issue-accounting, latest head workflow runs, and failed job logs must be checked together.
 
-A corrected document or workflow alone does not guarantee reviewer-gate success. Some gate paths require explicit later maintainer acknowledgment of trusted reviewer reviews in addition to PR-body accounting and resolved review threads.
+The PR issue-accounting gate requires exactly one primary `Issue:` reference to one real numeric issue in the same repository. The referenced issue must be open while the PR is open and must not itself be a pull request. A documented exception does not satisfy the current enforcement workflow unless the workflow itself is changed in a separate reviewed PR.
+
+Design-compliance warnings and manually dispatched deployment workflows may provide useful context, but they are not current blocking PR gate classes unless the live PR check panel shows them as failing required checks.
+
+A green reviewer gate alone does not make a PR merge-ready. A corrected document or workflow alone does not guarantee gate success. Reviewer-accounting, thread-resolution state, issue-accounting, review-level acknowledgments, latest job logs, and all required checks must be reconciled together.
 
 ## Rollout Rules
 
