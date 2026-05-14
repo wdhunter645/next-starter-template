@@ -85,11 +85,11 @@ When preparing any PR for merge approval, agents must validate all required gate
 Required sequence:
 
 1. inspect the live PR check panel before relying on commit-scoped workflow runs
-2. confirm PR issue-accounting uses exactly one real numeric primary source Issue reference
+2. confirm PR issue-accounting uses exactly one same-repository, open, non-PR Issue reference as the primary source Issue
 3. inspect PR body sections, file-touch allowlist, ZIP safety, source authority, acceptance criteria, and issue/reviewer accounting sections
 4. inspect GitHub review-thread state and resolve addressed threads directly in PR review state
 5. inspect the latest head workflow runs for every required gate
-6. inspect failed job logs for any failing gate, including issue-accounting, reviewer response, drift control, docs guardrails, design compliance, quality checks, ZIP safety, secret scanning, and deploy checks
+6. inspect failed job logs for any failing gate, including PR issue-accounting, reviewer-response gates, intent labeling, drift control, docs guardrails, quality checks, ZIP safety, and secret scanning
 7. inspect relevant workflow files or enforcement scripts before documenting gate behavior or exception paths
 8. patch the underlying content, workflow, PR body, issue link, or review-state defect
 9. add a later maintainer acknowledgment for any high-severity review-level finding required by the gate logs
@@ -100,7 +100,8 @@ Rules:
 - The live PR check panel is authoritative for merge readiness.
 - A green reviewer gate alone does not mean the PR is ready for merge approval.
 - PR issue-accounting must be checked separately from reviewer response.
-- The PR issue-accounting gate currently requires exactly one primary `Issue:` reference to one real numeric issue.
+- The PR issue-accounting gate currently requires exactly one primary `Issue:` reference to one same-repository, open, non-PR issue.
+- Design-compliance warnings and manually dispatched deployment workflows are not current blocking PR gate classes unless the live PR panel shows them as failing required checks.
 - Reviewer-accounting, thread-resolution state, issue-accounting, review-level acknowledgments, latest job logs, workflow behavior, and all required checks must be reconciled together.
 
 Canonical governance authority:
