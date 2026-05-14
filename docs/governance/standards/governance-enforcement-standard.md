@@ -62,12 +62,17 @@ Blocking checks prevent merge when a rule is mature, objective, machine-detectab
 
 Reviewer-gate remediation must follow this sequence:
 
-1. patch the underlying content or workflow defect
-2. add or update `REVIEWER RESPONSE ACCOUNTING` in the PR body
-3. resolve GitHub review threads directly in PR review state
-4. verify the live PR check panel and latest gate run together
+1. inspect the live PR check panel before relying on commit-scoped workflow runs
+2. inspect GitHub review-thread state and resolve addressed threads directly in PR review state
+3. inspect the PR body and add or update `REVIEWER RESPONSE ACCOUNTING`
+4. inspect the latest head workflow run and failed reviewer-gate job logs
+5. patch the underlying content or workflow defect
+6. add a later maintainer acknowledgment for any high-severity review-level finding required by the gate logs
+7. rerun or wait for reviewer-gate evaluation and verify the live PR check panel plus latest gate run together
 
-Repository maintainers and AI agents must not rely solely on commit-scoped workflow runs when troubleshooting reviewer gates. The live PR check panel and unresolved review-thread state are authoritative.
+Repository maintainers and AI agents must not rely solely on commit-scoped workflow runs when troubleshooting reviewer gates. The live PR check panel, unresolved review-thread state, PR body accounting, latest head workflow run, and failed job logs must be checked together.
+
+A corrected document or workflow alone does not guarantee reviewer-gate success. Some gate paths require explicit later maintainer acknowledgment of trusted reviewer reviews in addition to PR-body accounting and resolved review threads.
 
 ## Rollout Rules
 
