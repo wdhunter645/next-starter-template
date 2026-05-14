@@ -30,6 +30,7 @@ This document does not replace `Agent.md` as the single agent entry point.
 | Repository governance normalization tracking | Issue #1019 and child governance issues |
 | PR governance | `.github/pull_request_template.md` |
 | Agent entry point | `Agent.md` |
+| Task-specific implementation scope | active source issue for the PR |
 | Operational work tracking | implementation worklists and active issues |
 
 ## Authority Resolution
@@ -37,7 +38,7 @@ This document does not replace `Agent.md` as the single agent entry point.
 When authority conflicts:
 
 1. canonical design authority wins for runtime behavior
-2. canonical reference docs win for schema and operational facts
-3. governance standards win for repository process
-4. implementation issues track work and do not create authority unless explicitly promoted by canonical documentation
-5. historical planning issues are non-authoritative unless reaffirmed by current canonical authority
+2. source issue scope provides task-specific implementation authority for the PR
+3. canonical reference docs win for schema and operational facts
+4. governance standards win for repository process
+5. implementation worklists and historical planning issues do not override current canonical authority unless reaffirmed
