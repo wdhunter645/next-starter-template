@@ -68,7 +68,7 @@ Preparing a PR for merge approval requires validation of all required gate class
 Required sequence:
 
 1. inspect the live PR check panel before relying on commit-scoped workflow runs
-2. confirm PR issue-accounting uses a real numeric source Issue or documented exception
+2. confirm PR issue-accounting uses exactly one real numeric primary source Issue reference
 3. inspect PR body sections, file-touch allowlist, ZIP safety, source authority, acceptance criteria, and reviewer/accounting sections
 4. inspect GitHub review-thread state and resolve addressed threads directly in PR review state
 5. inspect the latest head workflow runs for every required gate
@@ -78,6 +78,8 @@ Required sequence:
 9. rerun or wait for gate evaluation and verify the live PR check panel plus latest gate runs together
 
 Repository maintainers and AI agents must not rely solely on commit-scoped workflow runs when troubleshooting PR readiness. The live PR check panel, unresolved review-thread state, PR body accounting, issue-accounting, latest head workflow runs, and failed job logs must be checked together.
+
+The PR issue-accounting gate requires exactly one primary `Issue:` reference to one real numeric issue. A documented exception does not satisfy the current enforcement workflow unless the workflow itself is changed in a separate reviewed PR.
 
 A green reviewer gate alone does not make a PR merge-ready. A corrected document or workflow alone does not guarantee gate success. Reviewer-accounting, thread-resolution state, issue-accounting, review-level acknowledgments, latest job logs, and all required checks must be reconciled together.
 
