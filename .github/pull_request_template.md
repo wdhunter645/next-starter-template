@@ -72,7 +72,7 @@ All other files are out of scope
 ## CHANGE SUMMARY
 - Describe the exact change in 1–5 bullets
 - No vague language
-- No “cleanup” or “misc” wording
+- No cleanup or misc wording
 
 ## BUILD / TEST / VERIFICATION
 - Commands run:
@@ -87,6 +87,28 @@ All other files are out of scope
 - [ ] No documentation updates required
 - Files:
   - (list exact files)
+
+## REVIEWER RESPONSE ACCOUNTING
+- [ ] Reviewed all reviewer comments.
+- [ ] Copilot disposition received.
+- [ ] Codex disposition received.
+- [ ] Gemini disposition received.
+- [ ] Cubic disposition received.
+
+Reviewer items:
+- review-comment:<id> — accepted/rejected/acknowledged — <specific resolution or reason>
+
+## PR GATE READINESS CHECKLIST
+- [ ] Live PR check panel inspected
+- [ ] Latest head workflow runs inspected
+- [ ] Failed job logs inspected for every failing gate
+- [ ] PR issue-accounting confirms exactly one same-repository, open, non-PR source Issue
+- [ ] Review-thread state inspected and resolved where addressed
+- [ ] Reviewer-response accounting includes required reviewer comment IDs
+- [ ] Later maintainer replies posted where gate logs require them
+- [ ] Workflow files or enforcement scripts inspected before documenting gate behavior
+- [ ] Required gates rerun or re-evaluated after fixes
+- [ ] Final PR panel confirms merge-readiness
 
 ## ACCEPTANCE CRITERIA
 - docs_check_headers.sh passes
@@ -104,4 +126,4 @@ All other files are out of scope
 - [ ] Intent label correct and singular
 - [ ] Local checks executed and passed
 - [ ] Commit message aligns with scope
-- [ ] No secrets or forbidden artifacts introduced
+- [ ] No prohibited artifacts introduced
