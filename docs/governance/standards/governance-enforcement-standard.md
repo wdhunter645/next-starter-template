@@ -23,7 +23,7 @@ It defines enforcement strategy only. It does not implement workflow files, defi
 
 ## Current Known Truth
 
-The repository already has several governance-related checks, including documentation guardrails, design-compliance warnings, intent labeling, drift control, PR issue-accounting, reviewer-response gates, ZIP safety, secret scanning, quality checks, and deployment validation. These checks together form the repository PR gate-readiness model.
+The repository already has several governance-related checks, including documentation guardrails, design-compliance warnings, intent labeling, drift control, PR issue-accounting, reviewer-response gates, ZIP safety, secret scanning, and quality checks. These checks together form the repository PR gate-readiness model.
 
 Some governance expectations remain documentation-first and should not become blocking until repository-wide audit and migration work confirms that enforcement will not destabilize active workflows.
 
