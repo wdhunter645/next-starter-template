@@ -53,11 +53,11 @@ Where applicable, documents may include:
 - `Related PRs:`
 - `Implementation Tracking:`
 
-## Valid Doc Type Values
+## Doc Type Vocabulary
 
-Use the existing repository vocabulary unless a future canonical governance document expands it.
+`Doc Type:` must use the current repository vocabulary or a documented future value introduced by governance migration work.
 
-Allowed values:
+Current known values include:
 
 - `Governance`
 - `Reference`
@@ -65,16 +65,27 @@ Allowed values:
 - `How-To`
 - `Tutorial`
 - `Operations`
+- `Specification`
+- `Template`
+- `Ticket`
 
-## Valid Authority Level Values
+This list is descriptive of current repository usage. Future enforcement must first audit repository-wide values before converting this vocabulary into a blocking whitelist.
 
-Allowed values:
+## Authority Level Vocabulary
 
-- `Canonical` — active source of truth for the owned domain
-- `Controlled` — governed reference that routes, constrains, or supports authority without superseding higher governance
-- `Operational` — current operating record or execution state
-- `Historical` — retained context only; not active authority
-- `Deprecated` — invalid for future implementation unless explicitly reinstated
+`Authority Level:` must describe the document's authority status using the current repository vocabulary or a documented future value introduced by governance migration work.
+
+Current known values include:
+
+- `Canonical`
+- `Controlled`
+- `Operational`
+- `Operational Authority`
+- `Canonical Design Specification`
+- `Historical`
+- `Deprecated`
+
+This list is descriptive of current repository usage. Future enforcement must first audit repository-wide values before converting this vocabulary into a blocking whitelist.
 
 ## Ownership Rules
 
@@ -100,8 +111,8 @@ unless that subject is explicitly listed in `Owns:` and the document is in the c
 Future automated checks may validate:
 
 - presence of required frontmatter keys
-- valid `Doc Type:` values
-- valid `Authority Level:` values
+- documented `Doc Type:` values after a repository-wide metadata audit
+- documented `Authority Level:` values after a repository-wide metadata audit
 - resolvable `Canonical Reference:` paths
 - non-empty `Owns:` and `Does Not Own:` fields
 - absence of authority claims outside the document's declared scope
