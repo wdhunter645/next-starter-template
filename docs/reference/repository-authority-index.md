@@ -37,8 +37,8 @@ This document does not replace `Agent.md` as the single agent entry point.
 
 When authority conflicts:
 
-1. canonical design authority wins for runtime behavior
-2. source issue scope provides task-specific implementation authority for the PR
-3. canonical reference docs win for schema and operational facts
-4. governance standards win for repository process
+1. governance and `_MASTER` documents win for repository process, authority hierarchy, and governance policy
+2. source issue scope provides task-specific implementation authority for the PR within the repository governance hierarchy
+3. canonical design authority wins for runtime website behavior within the repository governance hierarchy
+4. canonical reference docs win for schema and operational facts within their owned domains
 5. implementation worklists and historical planning issues do not override current canonical authority unless reaffirmed
