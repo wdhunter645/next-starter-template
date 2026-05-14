@@ -3,7 +3,7 @@ Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
 Owns: Repository-wide authority routing index
-Does Not Own: Runtime behavior, agent entry-point ownership, or implementation status
+Does Not Own: Runtime behavior, agent entry-point ownership, governance hierarchy ownership, or implementation status
 Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md
 Related Issues: #1019
 Last Reviewed: 2026-05-14
@@ -18,6 +18,8 @@ This document is the canonical index for repository authority routing.
 Humans and AI agents should refer to this index when resolving document precedence, as directed by primary entry points such as `README.md`, `Agent.md`, and repository governance standards.
 
 This document does not replace `Agent.md` as the single agent entry point.
+
+This document does not replace `/docs/governance/standards/document-authority-hierarchy_MASTER.md` as the governance hierarchy authority. It indexes current authority locations and remains subordinate to the MASTER hierarchy for governance precedence rules.
 
 ## Primary Authority Areas
 
