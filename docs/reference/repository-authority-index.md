@@ -2,9 +2,9 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: Repository-wide authority routing index
-Does Not Own: Runtime behavior, agent entry-point ownership, governance hierarchy ownership, or implementation status
-Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md
+Owns: Repository-wide authority location index
+Does Not Own: Runtime behavior, agent entry-point ownership, governance hierarchy ownership, authority-resolution rules, or implementation status
+Canonical Reference: /docs/governance/standards/DIATAXIS-AUTHORITY-RESOLUTION.md
 Related Issues: #1019
 Last Reviewed: 2026-05-14
 ---
@@ -13,34 +13,31 @@ Last Reviewed: 2026-05-14
 
 ## Purpose
 
-This document is the canonical index for repository authority routing.
+This document indexes current repository authority locations.
 
-Humans and AI agents should refer to this index when resolving document precedence, as directed by primary entry points such as `README.md`, `Agent.md`, and repository governance standards.
+Humans and AI agents should use this index to find the correct authority document after entering through the primary repository entry points, including `README.md`, `Agent.md`, and governance standards.
 
 This document does not replace `Agent.md` as the single agent entry point.
 
-This document does not replace `/docs/governance/standards/document-authority-hierarchy_MASTER.md` as the governance hierarchy authority. It indexes current authority locations and remains subordinate to the MASTER hierarchy for governance precedence rules.
+This document does not define authority-resolution rules. Authority resolution is owned by `/docs/governance/standards/DIATAXIS-AUTHORITY-RESOLUTION.md` and `/docs/governance/standards/document-authority-hierarchy_MASTER.md`.
 
-## Primary Authority Areas
+## Primary Authority Locations
 
-| Area | Canonical Authority |
+| Area | Current authority location |
 |---|---|
+| Governance hierarchy | `/docs/governance/standards/document-authority-hierarchy_MASTER.md` |
+| Diataxis and legacy authority resolution | `/docs/governance/standards/DIATAXIS-AUTHORITY-RESOLUTION.md` |
 | Runtime website behavior | `/docs/reference/design/LGFC-Production-Design-and-Standards.md` |
 | Content inventory architecture | `/docs/reference/content-inventory-design-spec.md` |
 | Content inventory schema | `/docs/reference/content-inventory-d1-schema.md` |
-| Repository governance hierarchy | `/docs/governance/standards/document-authority-hierarchy_MASTER.md` |
-| Repository governance normalization tracking | Issue #1019 and child governance issues |
 | PR governance | `.github/pull_request_template.md` |
 | Agent entry point | `Agent.md` |
-| Task-specific implementation scope | active source issue for the PR |
+| Repository governance normalization tracking | Issue #1019 and child governance issues |
 | Operational work tracking | implementation worklists and active issues |
 
-## Authority Resolution
+## Use Notes
 
-When authority conflicts:
-
-1. governance and `_MASTER` documents win for repository process, authority hierarchy, and governance policy
-2. source issue scope provides task-specific implementation authority for the PR within the repository governance hierarchy
-3. canonical design authority wins for runtime website behavior within the repository governance hierarchy
-4. canonical reference docs win for schema and operational facts within their owned domains
-5. implementation worklists and historical planning issues do not override current canonical authority unless reaffirmed
+- Use this document to locate the current authority source.
+- Use governance documents to resolve authority conflicts.
+- Use source issues to understand task scope, not to supersede canonical authority.
+- Use operational worklists and historical planning issues as tracking or context unless current canonical authority explicitly reaffirms them.
