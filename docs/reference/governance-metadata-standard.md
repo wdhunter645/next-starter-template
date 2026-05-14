@@ -27,6 +27,8 @@ Repository documentation already uses YAML-style authority headers, but field us
 
 The current canonical governance source for document status and naming requirements is `/docs/governance/standards/document-status-and-naming_MASTER.md`.
 
+Current repository metadata contains more `Doc Type:` and `Authority Level:` values than this PR can safely normalize without a repository-wide metadata audit.
+
 ## Intended Final State
 
 Repository documents should use consistent frontmatter metadata, clear ownership boundaries, explicit canonical references, and normalized authority levels so future governance checks can validate documentation without relying on tribal knowledge.
@@ -53,39 +55,59 @@ Where applicable, documents may include:
 - `Related PRs:`
 - `Implementation Tracking:`
 
-## Doc Type Vocabulary
+## Metadata Vocabulary Rule
 
-`Doc Type:` must use the current repository vocabulary or a documented future value introduced by governance migration work.
+This PR does not establish a blocking whitelist for `Doc Type:` or `Authority Level:` values.
 
-Current known values include:
+Repository metadata vocabulary must be normalized in this sequence:
 
-- `Governance`
-- `Reference`
+1. audit all current `Doc Type:` and `Authority Level:` values across the repository
+2. classify each observed value as active, transitional, historical, or deprecated
+3. document migration rules for deprecated or duplicate values
+4. only then introduce blocking validation for allowed values
+
+Until that audit is complete, `Doc Type:` and `Authority Level:` values are descriptive metadata fields, not enforceable whitelist fields.
+
+## Observed Doc Type Examples
+
+Examples currently or historically used in the repository include, but are not limited to:
+
+- `Architecture Reference`
+- `Design Authority`
 - `Explanation`
+- `Governance`
 - `How-To`
-- `Tutorial`
+- `Implementation Plan`
 - `Operations`
+- `Operational Rules`
+- `Postmortem`
+- `Reference`
 - `Specification`
+- `Task`
 - `Template`
 - `Ticket`
+- `Tutorial`
 
-This list is descriptive of current repository usage. Future enforcement must first audit repository-wide values before converting this vocabulary into a blocking whitelist.
+These examples are not a final allowed-value list.
 
-## Authority Level Vocabulary
+## Observed Authority Level Examples
 
-`Authority Level:` must describe the document's authority status using the current repository vocabulary or a documented future value introduced by governance migration work.
-
-Current known values include:
+Examples currently or historically used in the repository include, but are not limited to:
 
 - `Canonical`
+- `Canonical Architecture Specification`
+- `Canonical CI Specification`
+- `Canonical Design Specification`
 - `Controlled`
+- `Historical`
+- `Informational`
 - `Operational`
 - `Operational Authority`
-- `Canonical Design Specification`
-- `Historical`
-- `Deprecated`
+- `Supporting`
+- `Task Control`
+- `Working Task`
 
-This list is descriptive of current repository usage. Future enforcement must first audit repository-wide values before converting this vocabulary into a blocking whitelist.
+These examples are not a final allowed-value list.
 
 ## Ownership Rules
 
@@ -116,3 +138,5 @@ Future automated checks may validate:
 - resolvable `Canonical Reference:` paths
 - non-empty `Owns:` and `Does Not Own:` fields
 - absence of authority claims outside the document's declared scope
+
+Future checks must not enforce `Doc Type:` or `Authority Level:` whitelists until the repository-wide metadata audit and migration plan are complete.
