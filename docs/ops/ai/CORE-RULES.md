@@ -10,7 +10,21 @@ Last Reviewed: 2026-05-14
 
 # CORE-RULES.md
 
-Purpose: Single source of truth for all shared AI execution rules.
+## Purpose
+
+This document is the single source of truth for shared AI-agent execution rules, including PR discipline, verification behavior, drift prevention, reviewer-gate troubleshooting, and mandatory stop conditions.
+
+## Scope
+
+This document applies to all AI agents working in this repository. It governs agent behavior, not product design, runtime architecture, platform configuration, or final merge authority.
+
+## Current Known Truth
+
+Repository governance is DIATAXIS-first, PRs are issue-scoped, and human/operator approval remains required for merge. Reviewer-gate troubleshooting requires correlated inspection of PR panel state, review threads, PR body accounting, latest head workflow runs, and failed job logs.
+
+## Intended Final State
+
+Agents should execute repository work predictably: one task per thread, one issue per task, one PR per implementation, no scope drift, and no claims without verification against repository files and live PR state.
 
 ---
 
@@ -47,17 +61,21 @@ Rules:
 
 When troubleshooting reviewer-gate failures, agents must follow this sequence:
 
-1. patch the underlying content or workflow defect
-2. add or update `REVIEWER RESPONSE ACCOUNTING` in the PR body
-3. resolve GitHub review threads directly in PR review state
-4. verify the live PR check panel and latest gate run together
+1. inspect the live PR check panel before relying on commit-scoped workflow runs
+2. inspect GitHub review-thread state and resolve addressed threads directly in PR review state
+3. inspect the PR body and add or update `REVIEWER RESPONSE ACCOUNTING`
+4. inspect the latest head workflow run and failed reviewer-gate job logs
+5. patch the underlying content or workflow defect
+6. add a later maintainer acknowledgment for any high-severity review-level finding required by the gate logs
+7. rerun or wait for reviewer-gate evaluation and verify the live PR check panel plus latest gate run together
 
 Rules:
 
 - Do not rely solely on commit-scoped workflow runs.
 - The live PR check panel and unresolved review-thread state are authoritative.
+- PR body accounting is required but may not satisfy every reviewer-gate path by itself.
 - A corrected document or workflow alone does not guarantee reviewer-gate success.
-- Reviewer-accounting and thread-resolution state must also be reconciled.
+- Reviewer-accounting, thread-resolution state, review-level acknowledgments, and latest job logs must be reconciled together.
 
 Canonical governance authority:
 
