@@ -23,7 +23,7 @@ It defines enforcement strategy only. It does not implement workflow files, defi
 
 ## Current Known Truth
 
-The repository already has several governance-related checks, including documentation guardrails, design-compliance warnings, intent labeling, drift control, PR issue-accounting, reviewer-response gates, and deployment validation. These checks together form the repository PR gate-readiness model.
+The repository already has several governance-related checks, including documentation guardrails, design-compliance warnings, intent labeling, drift control, PR issue-accounting, reviewer-response gates, ZIP safety, secret scanning, quality checks, and deployment validation. These checks together form the repository PR gate-readiness model.
 
 Some governance expectations remain documentation-first and should not become blocking until repository-wide audit and migration work confirms that enforcement will not destabilize active workflows.
 
@@ -69,7 +69,7 @@ Required sequence:
 
 1. inspect the live PR check panel before relying on commit-scoped workflow runs
 2. confirm PR issue-accounting uses exactly one real numeric primary source Issue reference
-3. inspect PR body sections, file-touch allowlist, ZIP safety, source authority, acceptance criteria, and reviewer/accounting sections
+3. inspect PR body sections, file-touch allowlist, ZIP safety, source authority, acceptance criteria, and issue/reviewer accounting sections
 4. inspect GitHub review-thread state and resolve addressed threads directly in PR review state
 5. inspect the latest head workflow runs for every required gate
 6. inspect failed job logs for any failing gate, including issue-accounting, reviewer response, drift control, docs guardrails, design compliance, quality checks, ZIP safety, secret scanning, and deploy checks
