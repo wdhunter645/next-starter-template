@@ -1,3 +1,13 @@
+---
+Doc Type: Reference
+Audience: LGFC maintainers, orchestration operators, AI builders
+Authority Level: Canonical
+Owns: Startup governance doctrine and run-startup operational initialization rules
+Does Not Own: Full DIATAXIS taxonomy, builder implementation details, or repository workflow implementation
+Canonical Reference: docs/reference/orchestration/startup-governance.md
+Last Reviewed: 2026-05-16
+---
+
 # LGFC Startup Governance v1
 
 ## Purpose
