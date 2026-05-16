@@ -6,6 +6,8 @@ Refer to `/.github/pull_request_template.md` for required structure and change c
 #### Governance Reference
 Follow operational, rollback, and testing standards in `/docs/governance/PR_GOVERNANCE.md`.
 
+- **Issue:** #____
+
 ## MANDATORY FIRST STEP (ZIP SAFETY)
 - [ ] No ZIP file exists in the repo root
 - [ ] OR any ZIP file that was present in the repo root was deleted before any other change
@@ -47,10 +49,7 @@ Source Files Used:
 
 ## FILE-TOUCH ALLOWLIST (MANDATORY)
 Allowed files:
-- docs/governance/DOCUMENT-ARCHITECTURE.md
-- docs/ops/trackers/THREAD-LOG_Master.md
-- docs/reference/design/.canonical-files.txt
-- docs/reference/design/.canonical-hashes.sha256
+- (list exact file paths)
 
 All other files are out of scope
 
@@ -100,13 +99,18 @@ Reviewer items:
 
 ## PR GATE READINESS CHECKLIST
 - [ ] Live PR check panel inspected
+- [ ] Commit-level workflow runs inspected
+- [ ] PR-level pull_request_target workflows inspected
 - [ ] Latest head workflow runs inspected
 - [ ] Failed job logs inspected for every failing gate
+- [ ] Workflow YAML or enforcement logic inspected before documenting gate behavior
 - [ ] PR issue-accounting confirms exactly one same-repository, open, non-PR source Issue
-- [ ] Review-thread state inspected and resolved where addressed
+- [ ] PR body contains exact parser-compliant Issue syntax
+- [ ] Review comments inspected
+- [ ] Review threads inspected
+- [ ] Bot comments inspected
 - [ ] Reviewer-response accounting includes required reviewer comment IDs
 - [ ] Later maintainer replies posted where gate logs require them
-- [ ] Workflow files or enforcement scripts inspected before documenting gate behavior
 - [ ] Required gates rerun or re-evaluated after fixes
 - [ ] Final PR panel confirms merge-readiness
 
@@ -120,10 +124,14 @@ Reviewer items:
 
 ## REQUIRED PRE-REVIEW SELF-CHECK
 - [ ] PR body contains all required sections with exact headings
-- [ ] Allowed files section matches diff exactly
+- [ ] PR body contains exact Issue syntax: `- **Issue:** #____`
+- [ ] Allowed files section matches final diff exactly
 - [ ] No files outside allowlist
 - [ ] ZIP safety confirmed
 - [ ] Intent label correct and singular
 - [ ] Local checks executed and passed
 - [ ] Commit message aligns with scope
 - [ ] No prohibited artifacts introduced
+- [ ] All new governance/reference docs include Purpose, Scope, Current Known Truth, and Intended Final State where applicable
+- [ ] All canonical references point to existing repository files
+- [ ] No merge-readiness claim made before all gate surfaces inspected
