@@ -6,7 +6,7 @@ Refer to `/.github/pull_request_template.md` for required structure and change c
 #### Governance Reference
 Follow operational, rollback, and testing standards in `/docs/governance/PR_GOVERNANCE.md`.
 
-- **Issue:** #____
+- **Issue:** #123
 
 ## MANDATORY FIRST STEP (ZIP SAFETY)
 - [ ] No ZIP file exists in the repo root
@@ -28,7 +28,7 @@ Follow operational, rollback, and testing standards in `/docs/governance/PR_GOVE
 - [ ] LEGACY_FALLBACK
 
 Source Files Used:
-- (list exact file paths)
+- Replace this line with exact source file paths used for this PR.
 
 ## DIATAXIS GAP (REQUIRED IF LEGACY_FALLBACK)
 - [ ] Gap Identified
@@ -49,7 +49,7 @@ Source Files Used:
 
 ## FILE-TOUCH ALLOWLIST (MANDATORY)
 Allowed files:
-- (list exact file paths)
+- Replace this line with exact changed file paths before opening the PR.
 
 All other files are out of scope
 
@@ -85,7 +85,7 @@ All other files are out of scope
 - [ ] Documentation updated in this PR
 - [ ] No documentation updates required
 - Files:
-  - (list exact files)
+  - Replace this line with exact documentation file paths when applicable.
 
 ## REVIEWER RESPONSE ACCOUNTING
 - [ ] Reviewed all reviewer comments.
@@ -105,9 +105,8 @@ Reviewer items:
 - [ ] Failed job logs inspected for every failing gate
 - [ ] Workflow YAML or enforcement logic inspected before documenting gate behavior
 - [ ] PR issue-accounting confirms exactly one same-repository, open, non-PR source Issue
-- [ ] PR body contains exact parser-compliant Issue syntax
-- [ ] Review comments inspected
-- [ ] Review threads inspected
+- [ ] PR body contains the required Issue syntax, for example `- **Issue:** #123`
+- [ ] All review threads and comments inspected
 - [ ] Bot comments inspected
 - [ ] Reviewer-response accounting includes required reviewer comment IDs
 - [ ] Later maintainer replies posted where gate logs require them
@@ -124,7 +123,7 @@ Reviewer items:
 
 ## REQUIRED PRE-REVIEW SELF-CHECK
 - [ ] PR body contains all required sections with exact headings
-- [ ] PR body contains exact Issue syntax: `- **Issue:** #____`
+- [ ] PR body contains the required Issue syntax, for example `- **Issue:** #123`
 - [ ] Allowed files section matches final diff exactly
 - [ ] No files outside allowlist
 - [ ] ZIP safety confirmed
