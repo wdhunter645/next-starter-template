@@ -35,6 +35,48 @@ This standard applies to:
 
 ---
 
+## Scope
+
+This standard applies to repository work that affects documentation, governance, orchestration, automation, CI workflows, website implementation, troubleshooting, and operational support.
+
+It governs the expected completion state of work products, documentation, verification evidence, and troubleshooting behavior.
+
+It does not define individual product requirements, page designs, workflow implementation logic, or agent-specific execution prompts.
+
+---
+
+## Current Known Truth
+
+The repository is the canonical operational authority.
+
+Operational continuity must not depend on chat history, individual memory, or uncommitted conversational context.
+
+Enterprise production readiness currently depends on:
+- complete issue and PR traceability
+- accurate file-touch allowlists
+- parser-compliant PR issue accounting
+- evidence-driven troubleshooting
+- reviewer-response accounting
+- DIATAXIS-positioned documentation
+- gate validation before merge-readiness claims
+
+---
+
+## Intended Final State
+
+The intended final state is an LGFC repository ecosystem where any authorized AI agent or human maintainer can understand, support, troubleshoot, verify, and continue work using repository documentation and audit trails alone.
+
+Production readiness should be visible through:
+- complete documentation
+- complete troubleshooting evidence
+- passing gate checks
+- clear issue and PR lineage
+- reproducible verification steps
+- explicit acceptance criteria
+- traceable governance authority
+
+---
+
 # Core Doctrine
 
 ## Production Readiness Requirement
@@ -64,17 +106,36 @@ Operational continuity must not depend on chat history.
 
 ## Troubleshooting Requirement
 
-All troubleshooting must be performed completely using the approved troubleshooting checklist and in accordance with industry best practices.
+All troubleshooting must be performed completely using the checklist defined in this section and in accordance with industry best practices.
 
 Troubleshooting must include:
 - evidence collection
 - root-cause analysis
-- rollback-first methodology
+- rollback-first methodology when applicable
 - configuration validation
 - dependency validation
 - remediation verification
 - post-remediation validation
 - governance reconciliation
+
+For PR and gate troubleshooting, evidence collection must include all applicable data surfaces:
+- PR metadata
+- current head SHA
+- PR body parser requirements
+- workflow run lists
+- workflow YAML definitions
+- job logs
+- PR-level `pull_request_target` workflows
+- commit-level workflow runs
+- bot comments
+- review comments
+- review threads
+- issue scope
+- acceptance criteria
+- changed-file diff
+- repository governance docs
+
+No merge-readiness claim may be made from a single evidence surface alone.
 
 ---
 
@@ -146,13 +207,13 @@ DIATAXIS-positioned documentation is preferred for:
 
 ---
 
-# Relationship To Startup Governance
+# Relationship To Startup Initialization
 
-The startup governance process initializes operational posture.
+Startup initialization is the work-session process that establishes source-of-truth awareness, tool/access honesty, governance posture, execution mode, troubleshooting expectations, and PR gate-readiness discipline before repository work begins.
 
 This document defines the minimum operational standard expected after startup initialization.
 
-Startup governance and enterprise production readiness must remain aligned.
+Startup initialization and enterprise production readiness must remain aligned.
 
 ---
 
