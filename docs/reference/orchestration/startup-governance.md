@@ -33,6 +33,69 @@ The startup process exists to reduce:
 
 ---
 
+## Scope
+
+This document governs the startup posture used when LGFC work begins in an AI-assisted or human-assisted operational context.
+
+It applies to:
+- repository governance work
+- orchestration planning
+- DIATAXIS documentation work
+- PR preparation and review readiness
+- AI builder coordination
+- troubleshooting initialization
+- source-of-truth alignment
+
+It does not define:
+- the complete DIATAXIS taxonomy
+- implementation-specific website architecture
+- workflow YAML implementation logic
+- individual builder prompt templates
+- every operational troubleshooting step
+
+---
+
+## Current Known Truth
+
+The repository is the authoritative operational source of truth.
+
+Memory and chat context may assist continuity, but they are not authoritative when they conflict with repository documentation, issues, PRs, workflow logs, or committed files.
+
+Startup governance is currently being formalized into DIATAXIS-positioned repository documentation so future AI agents and human maintainers can initialize work without relying on transient chat history.
+
+The current startup doctrine includes:
+- source-of-truth verification
+- tool/access honesty
+- no unsupported capability claims
+- execution discipline
+- governance alignment
+- PR gate-readiness awareness
+- reviewer-response accountability
+- drift awareness
+- enterprise supportability expectations
+
+---
+
+## Intended Final State
+
+Startup governance should become a stable repository-governed initialization contract that can be used consistently by:
+- Atlas/ChatGPT
+- orchestration workflows
+- AI builders
+- human maintainers
+- reviewers
+
+The intended final state is a startup process that:
+- initializes the correct operational mode
+- confirms repository authority
+- identifies degraded access or missing tools
+- prevents undocumented assumptions
+- routes work into the correct governance lane
+- enforces enterprise production readiness expectations
+- supports reproducible troubleshooting and PR preparation
+
+---
+
 ## Canonical Authority
 
 ### Source of Truth
@@ -146,8 +209,8 @@ Responsible for:
 - canonical documentation
 
 Actors:
-- Bill Hunter
-- Atlas/ChatGPT acting in governance role
+- Project Owner
+- Primary Orchestration AI acting in governance role
 
 ### Tier 2 — Validation & Documentation
 
@@ -159,9 +222,9 @@ Responsible for:
 - governance verification
 
 Potential actors:
-- Atlas/ChatGPT
-- Gemini
-- Cubic
+- Primary Orchestration AI
+- Secondary Validation AI
+- Specialized Analysis Models
 - governance workflows
 
 ### Tier 3 — Builders
@@ -174,9 +237,9 @@ Responsible for:
 - scoped execution
 
 Potential actors:
-- Cursor
-- Codex
-- Copilot
+- AI-integrated IDEs
+- Code Generation Agents
+- Automated Development Tools
 
 Tier 3 builders may not redefine:
 - governance
@@ -188,15 +251,14 @@ Tier 3 builders may not redefine:
 
 ## Repository Management Model
 
-### #3 — Repository Management
+### #1 — Engineering Management
 
 Focus:
-- governance
-- DIATAXIS
-- orchestration
-- CI workflows
-- repository automation
-- reconciliation
+- brainstorming
+- architecture
+- systems design
+- operational strategy
+- future-state planning
 
 ### #2 — Project Management
 
@@ -207,22 +269,23 @@ Focus:
 - PR flow
 - execution sequencing
 
-### #1 — Engineering Management
+### #3 — Repository Management
 
 Focus:
-- brainstorming
-- architecture
-- systems design
-- operational strategy
-- future-state planning
+- governance
+- DIATAXIS
+- orchestration
+- CI workflows
+- repository automation
+- reconciliation
 
 ---
 
 ## Execution Rules
 
-### One-Window Rule
+### Concise Single-Window Output Rule
 
-Outputs should remain concise, deterministic, and operationally focused.
+Outputs should remain concise, deterministic, operationally focused, and suitable for one-copy review or execution where applicable.
 
 ### No Assumptions Rule
 
@@ -284,6 +347,24 @@ Builders must not:
 
 ---
 
+## PR Preparation And Troubleshooting Expectations
+
+PR preparation must apply the repository gate-readiness pattern used by recent successful governance PRs:
+- confirm ZIP safety
+- identify source-of-truth authority
+- define an exact file-touch allowlist
+- state visual/runtime invariants
+- complete the required pre-review self-check
+- reconcile issue scope against actual diff
+- account for each actionable reviewer comment by review-comment ID
+- verify gate results before claiming merge readiness
+
+Reviewer-response failures may indicate incomplete remediation rather than missing communication alone.
+
+Troubleshooting must inspect actual gate logs, review comments, PR body parsing requirements, and issue acceptance criteria before making remediation claims.
+
+---
+
 ## Recovery Behavior
 
 Operational failures should:
@@ -311,19 +392,3 @@ Legacy operational folders should transition toward:
 - deletion
 
 rather than continued expansion.
-
----
-
-## Current Assessment
-
-The LGFC startup doctrine has evolved through operational experience across:
-- governance work
-- repository management
-- orchestration planning
-- AI builder coordination
-- workflow failures
-- drift-reduction efforts
-
-This document represents a consolidation and normalization effort rather than a complete redesign of the startup model.
-
-Future refinement and decomposition into supporting DIATAXIS documentation is expected over time.
