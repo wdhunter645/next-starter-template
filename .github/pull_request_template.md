@@ -93,9 +93,11 @@ All other files are out of scope
 - [ ] Codex disposition received.
 - [ ] Gemini disposition received.
 - [ ] Cubic disposition received.
+- [ ] Every actionable reviewer comment has a PR-body disposition.
+- [ ] Every GitHub review thread has an explicit thread-state disposition: resolved, outdated, or intentionally left unresolved with rationale.
 
 Reviewer items:
-- review-comment:<id> — accepted/rejected/acknowledged — <specific resolution or reason>
+- review-comment:<id> — accepted/rejected/acknowledged — <specific resolution or reason> — thread state: resolved/outdated/unresolved-with-rationale
 
 ## PR GATE READINESS CHECKLIST
 - [ ] Live PR check panel inspected
@@ -107,6 +109,9 @@ Reviewer items:
 - [ ] PR issue-accounting confirms exactly one same-repository, open, non-PR source Issue
 - [ ] PR body contains the required Issue syntax, for example `- **Issue:** #123`
 - [ ] All review threads and comments inspected
+- [ ] All actionable review comments acknowledged in PR body
+- [ ] All addressed review threads resolved in GitHub
+- [ ] All unresolved review threads have explicit rationale in PR body
 - [ ] Bot comments inspected
 - [ ] Reviewer-response accounting includes required reviewer comment IDs
 - [ ] Later maintainer replies posted where gate logs require them
@@ -133,4 +138,5 @@ Reviewer items:
 - [ ] No prohibited artifacts introduced
 - [ ] All new governance/reference docs include Purpose, Scope, Current Known Truth, and Intended Final State where applicable
 - [ ] All canonical references point to existing repository files
+- [ ] All reviewer feedback has both textual disposition and GitHub thread-state disposition
 - [ ] No merge-readiness claim made before all gate surfaces inspected
