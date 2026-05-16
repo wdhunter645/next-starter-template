@@ -16,40 +16,70 @@ Troubleshooting must inspect all relevant operational data surfaces before remed
 
 Partial visibility creates false-positive remediation claims, prolongs incidents, and causes repeated gate failures.
 
+---
+
+## Scope
+
+This standard applies to repository troubleshooting, PR gate troubleshooting, workflow troubleshooting, reviewer-response troubleshooting, issue-accounting troubleshooting, and governance reconciliation.
+
+It governs the evidence surfaces that must be inspected before any remediation or merge-readiness claim is made.
+
+It does not define individual workflow implementation logic or replace workflow-specific run logs.
+
+---
+
+## Current Known Truth
+
+PR troubleshooting can fail when only one operational surface is inspected.
+
+Commit-level workflow runs do not represent the full PR state. PR-level `pull_request_target` gates, parser-driven governance checks, bot comments, review threads, and PR body parsing rules can still fail while commit-level workflows appear successful.
+
+Parser-driven governance requires exact syntax compliance. Semantic equivalents are not sufficient.
+
+---
+
+## Intended Final State
+
+Troubleshooting should consistently review all relevant repository data surfaces before declaring remediation complete or a PR ready for merge approval.
+
+The intended final state is a repeatable troubleshooting process that reduces false-positive success claims, shortens incident duration, and prevents repeated gate-failure cycles.
+
+---
+
 ## Required Data Surfaces
 
 Troubleshooting must inspect all relevant sources, including:
 - PR metadata
-- current head SHA
+- Current HEAD SHA
 - PR body parser requirements
-- workflow run lists
-- workflow YAML definitions
-- job logs
-- PR-level pull_request_target workflows
-- commit-level workflow runs
-- bot comments
-- review comments
-- review threads
-- issue scope
-- acceptance criteria
-- changed-file diff
-- repository governance docs
+- Workflow run lists
+- Workflow YAML definitions
+- Job logs
+- PR-level `pull_request_target` workflows
+- Commit-level workflow runs
+- Bot comments
+- Review comments
+- Review threads
+- Issue scope
+- Acceptance criteria
+- Changed-file diff
+- Repository governance docs
+
+---
 
 ## PR Gate Troubleshooting
 
 PR troubleshooting must distinguish:
-- commit-level workflow status
+- Commit-level workflow status
 - PR-level governance/accounting gates
-- parser-driven governance workflows
+- Parser-driven governance workflows
 
 Semantic equivalents are not sufficient where workflows require exact syntax.
 
 Example:
-- `Closes #1043`
-- does not satisfy
-- `- **Issue:** #1043`
+- `Closes #1043` does **not** satisfy `- **Issue:** #1043` when the workflow parser expects the latter.
 
-when the workflow parser expects the latter.
+---
 
 ## Operational Requirement
 
