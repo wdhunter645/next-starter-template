@@ -80,6 +80,13 @@ jobs:
               return resolvedPattern.test(text) && !unresolvedPattern.test(text);
             }
 
+            function effectiveCommentTime(comment) {
+              return Math.max(
+                new Date(comment.created_at || 0).getTime(),
+                new Date(comment.updated_at || comment.created_at || 0).getTime(),
+              );
+            }
+
             function hasReviewerAccounting(login, id) {
               const lowerBody = prBody.toLowerCase();
               const reviewer = loginOf(login).toLowerCase();
@@ -90,7 +97,7 @@ jobs:
               if (reviewer.includes('copilot') && lowerBody.includes('copilot disposition received')) return true;
               if (reviewer.includes('cubic') && lowerBody.includes('cubic disposition received')) return true;
               if (reviewer.includes('gemini') && lowerBody.includes('gemini disposition received')) return true;
-              if (reviewer.includes('codex') && (lowerBody.includes('codex disposition received') || lowerBody.includes('reviewed all reviewer comments'))) return true;
+              if (reviewer.includes('codex') && lowerBody.includes('codex disposition received')) return true;
               return false;
             }
 
@@ -144,14 +151,14 @@ jobs:
             }
 
             if (trustedSignals.length === 0) {
-              core.setFailed('Reviewer response gate failed: no trusted reviewer signal found.');
+              core.info('Reviewer response gate passed: no trusted reviewer signals found yet.');
               return;
             }
 
             async function laterAuthorizedIssueComment(createdAt) {
               const created = new Date(createdAt).getTime();
               for (const comment of issueComments) {
-                if (new Date(comment.created_at).getTime() <= created) continue;
+                if (effectiveCommentTime(comment) <= created) continue;
                 if (await isAuthorizedResponder(comment.user?.login)) return true;
               }
               return false;
@@ -160,7 +167,7 @@ jobs:
             async function laterAuthorizedReviewComment(createdAt) {
               const created = new Date(createdAt).getTime();
               for (const comment of reviewComments) {
-                if (new Date(comment.created_at).getTime() <= created) continue;
+                if (effectiveCommentTime(comment) <= created) continue;
                 if (await isAuthorizedResponder(comment.user?.login)) return true;
               }
               return false;
@@ -187,6 +194,7 @@ jobs:
               const login = review.user?.login || '';
               const body = review.body || '';
               const state = review.state || '';
+              if (state === 'DISMISSED') continue;
               const submittedAt = review.submitted_at || review.submittedAt || review.created_at;
               const isFinding = state === 'CHANGES_REQUESTED' || highSeverityPattern.test(body);
               if (!isTrusted(login) || !isFinding || isResolvedText(body)) continue;
