@@ -1,14 +1,17 @@
 name: GATE — Reviewer Response
 
+# TEMPORARILY DISABLED
+#
+# Source issue: #1055
+# Reason: the gate is blocking fresh PRs before any trusted reviewer signal exists.
+# This workflow should remain disabled until reviewer-response behavior is redesigned
+# and validated in a dedicated remediation PR.
+#
+# Do not re-enable pull_request, pull_request_review, pull_request_review_comment,
+# or issue_comment triggers until #1055 is resolved.
+
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
-  pull_request_review:
-    types: [submitted, edited, dismissed]
-  pull_request_review_comment:
-    types: [created, edited]
-  issue_comment:
-    types: [created, edited]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -16,206 +19,11 @@ permissions:
   issues: read
 
 jobs:
-  reviewer-response:
-    if: github.event_name == 'pull_request' || github.event_name == 'pull_request_review' || github.event_name == 'pull_request_review_comment' || (github.event_name == 'issue_comment' && github.event.issue.pull_request)
+  reviewer-response-disabled:
     runs-on: ubuntu-latest
     steps:
-      - name: Evaluate reviewer response discipline
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-
-            async function resolvePullRequest() {
-              if (context.payload.pull_request) return context.payload.pull_request;
-              if (context.payload.issue?.pull_request) {
-                const { data } = await github.rest.pulls.get({ owner, repo, pull_number: context.payload.issue.number });
-                return data;
-              }
-              if (context.payload.review?.pull_request_url) {
-                const pull_number = Number(context.payload.review.pull_request_url.split('/').pop());
-                const { data } = await github.rest.pulls.get({ owner, repo, pull_number });
-                return data;
-              }
-              if (context.payload.comment?.pull_request_url) {
-                const pull_number = Number(context.payload.comment.pull_request_url.split('/').pop());
-                const { data } = await github.rest.pulls.get({ owner, repo, pull_number });
-                return data;
-              }
-              throw new Error('Unable to resolve pull request context.');
-            }
-
-            const pr = await resolvePullRequest();
-            const prNumber = pr.number;
-            const prAuthor = pr.user?.login || '';
-            const prBody = pr.body || '';
-
-            const trustedReviewers = new Set([
-              'chatgpt-codex-connector[bot]',
-              'chatgpt-codex-connector',
-              'gemini-code-assist[bot]',
-              'gemini-code-assist',
-              'copilot-pull-request-reviewer[bot]',
-              'copilot-pull-request-reviewer',
-              'cubic-dev-ai[bot]',
-              'cubic-dev-ai',
-            ]);
-
-            const permissionCache = new Map();
-            const highSeverityPattern = /(^|[^A-Za-z0-9])(P0|P1)([^A-Za-z0-9]|$)|high[- ]priority|request changes|requested changes|must fix|blocking/i;
-            const resolvedPattern = /✅\s*Addressed|addressed in|\bresolved\b|all checks passed|no findings|no warnings detected/i;
-            const unresolvedPattern = /\bunresolved\b|\bnot\s+resolved\b|\bstill\s+open\b|\bstill\s+blocking\b/i;
-
-            function loginOf(author) {
-              return typeof author === 'string' ? author : (author?.login || '');
-            }
-
-            function isTrusted(login) {
-              return trustedReviewers.has(loginOf(login));
-            }
-
-            function isResolvedText(body) {
-              const text = body || '';
-              return resolvedPattern.test(text) && !unresolvedPattern.test(text);
-            }
-
-            function hasReviewerAccounting(login, id) {
-              const lowerBody = prBody.toLowerCase();
-              const reviewer = loginOf(login).toLowerCase();
-              if (id && lowerBody.includes(`review-comment:${id}`.toLowerCase())) return true;
-              if (id && lowerBody.includes(String(id))) return true;
-              if (!lowerBody.includes('## reviewer response accounting')) return false;
-              if (!lowerBody.includes('reviewed all reviewer comments')) return false;
-              if (reviewer.includes('copilot') && lowerBody.includes('copilot disposition received')) return true;
-              if (reviewer.includes('cubic') && lowerBody.includes('cubic disposition received')) return true;
-              if (reviewer.includes('gemini') && lowerBody.includes('gemini disposition received')) return true;
-              if (reviewer.includes('codex') && (lowerBody.includes('codex disposition received') || lowerBody.includes('reviewed all reviewer comments'))) return true;
-              return false;
-            }
-
-            async function isAuthorizedResponder(login) {
-              const value = loginOf(login);
-              if (!value || isTrusted(value) || value === 'github-actions[bot]' || value.endsWith('[bot]')) return false;
-              if (value === prAuthor) return true;
-              if (permissionCache.has(value)) return permissionCache.get(value);
-              try {
-                const { data } = await github.rest.repos.getCollaboratorPermissionLevel({ owner, repo, username: value });
-                const allowed = ['admin', 'maintain', 'write'].includes(data.permission);
-                permissionCache.set(value, allowed);
-                return allowed;
-              } catch (_error) {
-                permissionCache.set(value, false);
-                return false;
-              }
-            }
-
-            const issueComments = await github.paginate(github.rest.issues.listComments, {
-              owner,
-              repo,
-              issue_number: prNumber,
-              per_page: 100,
-            });
-
-            const reviews = await github.paginate(github.rest.pulls.listReviews, {
-              owner,
-              repo,
-              pull_number: prNumber,
-              per_page: 100,
-            });
-
-            const reviewComments = await github.paginate(github.rest.pulls.listReviewComments, {
-              owner,
-              repo,
-              pull_number: prNumber,
-              per_page: 100,
-            });
-
-            const trustedSignals = [];
-
-            for (const comment of issueComments) {
-              if (isTrusted(comment.user?.login)) trustedSignals.push(`issue-comment:${comment.id}`);
-            }
-            for (const review of reviews) {
-              if (isTrusted(review.user?.login)) trustedSignals.push(`review:${review.id}:${review.state}`);
-            }
-            for (const comment of reviewComments) {
-              if (isTrusted(comment.user?.login)) trustedSignals.push(`review-comment:${comment.id}`);
-            }
-
-            if (trustedSignals.length === 0) {
-              core.setFailed('Reviewer response gate failed: no trusted reviewer signal found.');
-              return;
-            }
-
-            async function laterAuthorizedIssueComment(createdAt) {
-              const created = new Date(createdAt).getTime();
-              for (const comment of issueComments) {
-                if (new Date(comment.created_at).getTime() <= created) continue;
-                if (await isAuthorizedResponder(comment.user?.login)) return true;
-              }
-              return false;
-            }
-
-            async function laterAuthorizedReviewComment(createdAt) {
-              const created = new Date(createdAt).getTime();
-              for (const comment of reviewComments) {
-                if (new Date(comment.created_at).getTime() <= created) continue;
-                if (await isAuthorizedResponder(comment.user?.login)) return true;
-              }
-              return false;
-            }
-
-            async function laterAcknowledgement(createdAt) {
-              return (await laterAuthorizedIssueComment(createdAt)) || (await laterAuthorizedReviewComment(createdAt));
-            }
-
-            const failures = [];
-
-            for (const comment of issueComments) {
-              const login = comment.user?.login || '';
-              const body = comment.body || '';
-              if (!isTrusted(login)) continue;
-              if (!highSeverityPattern.test(body) || isResolvedText(body)) continue;
-              if (hasReviewerAccounting(login, comment.id)) continue;
-              if (!(await laterAuthorizedIssueComment(comment.created_at))) {
-                failures.push(`Trusted reviewer issue comment ${comment.id} has a high-severity finding without a later author/maintainer response.`);
-              }
-            }
-
-            for (const review of reviews) {
-              const login = review.user?.login || '';
-              const body = review.body || '';
-              const state = review.state || '';
-              const submittedAt = review.submitted_at || review.submittedAt || review.created_at;
-              const isFinding = state === 'CHANGES_REQUESTED' || highSeverityPattern.test(body);
-              if (!isTrusted(login) || !isFinding || isResolvedText(body)) continue;
-              if (hasReviewerAccounting(login, review.id)) continue;
-              if (!(await laterAcknowledgement(submittedAt))) {
-                failures.push(`Trusted reviewer review ${review.id} has a high-severity finding without a later author/maintainer response.`);
-              }
-            }
-
-            for (const comment of reviewComments) {
-              const login = comment.user?.login || '';
-              const body = comment.body || '';
-              if (!isTrusted(login)) continue;
-              if (!highSeverityPattern.test(body) || isResolvedText(body)) continue;
-              if (hasReviewerAccounting(login, comment.id)) continue;
-              if (!(await laterAuthorizedReviewComment(comment.created_at))) {
-                failures.push(`Trusted reviewer review comment ${comment.id} has a high-severity finding without a later author/maintainer reply.`);
-              }
-            }
-
-            core.summary
-              .addHeading('Reviewer response gate')
-              .addRaw(`Trusted reviewer signals: ${trustedSignals.length}\n`)
-              .addRaw(`High-severity unacknowledged findings: ${failures.length}\n`)
-              .write();
-
-            if (failures.length > 0) {
-              core.setFailed(`Reviewer response gate failed:\n- ${failures.join('\n- ')}`);
-              return;
-            }
-
-            core.info(`Reviewer response gate passed with ${trustedSignals.length} trusted reviewer signal(s).`);
+      - name: Reviewer Response gate temporarily disabled
+        run: |
+          echo "GATE — Reviewer Response is temporarily disabled under Issue #1055."
+          echo "Reason: current logic blocks PRs when no trusted reviewer signal exists."
+          echo "Re-enable only after the gate is redesigned and validated."
