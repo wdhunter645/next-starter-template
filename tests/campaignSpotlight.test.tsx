@@ -1,15 +1,26 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import CampaignSpotlightCard from '@/components/home/CampaignSpotlightCard';
 import CampaignSpotlightSlot from '@/components/home/CampaignSpotlightSlot';
 import {
   CAMPAIGN_SPOTLIGHT_KEY,
   defaultCampaignSpotlightConfig,
   parseCampaignSpotlightConfig,
   serializeCampaignSpotlightConfig,
+  snapshotLeaderboardFromFundraiser,
   validateCampaignSpotlightConfig,
   type CampaignSpotlightConfig,
+  type CampaignSpotlightLeaderboardEntry,
 } from '@/lib/campaignSpotlight';
+
+function sampleLeaderboard(): CampaignSpotlightLeaderboardEntry[] {
+  return [
+    { name: 'New York Yankees', type: 'team', funds: 1200, supporters: 4, points: 4800 },
+    { name: 'Detroit Tigers', type: 'team', funds: 900, supporters: 3, points: 2700 },
+    { name: 'Cleveland Guardians', type: 'team', funds: 750, supporters: 2, points: 1500 },
+  ];
+}
 
 function validConfig(overrides: Partial<CampaignSpotlightConfig> = {}): CampaignSpotlightConfig {
   return {
@@ -30,6 +41,7 @@ function validConfig(overrides: Partial<CampaignSpotlightConfig> = {}): Campaign
     deadlineLabel: 'Closes June 2, 2026',
     note: 'Published snapshot for homepage display.',
     archiveLabel: '',
+    leaderboard: sampleLeaderboard(),
     ...overrides,
   };
 }
@@ -136,6 +148,67 @@ describe('campaignSpotlight config helpers', () => {
     const config = validConfig({ secondaryCtaHref: '', secondaryCtaLabel: '' });
     expect(validateCampaignSpotlightConfig(config)).toEqual([]);
   });
+
+  it('requires a complete leaderboard when the campaign is enabled', () => {
+    const config = validConfig({ leaderboard: [] });
+    expect(validateCampaignSpotlightConfig(config)).toContain(
+      'leaderboard must include at least 3 entries.',
+    );
+  });
+
+  it('rejects malformed leaderboard payloads during parse', () => {
+    expect(
+      parseCampaignSpotlightConfig(
+        JSON.stringify(
+          validConfig({
+            leaderboard: [{ name: 'Broken', type: 'team', funds: -1, supporters: 1, points: 0 }],
+          }),
+        ),
+      ),
+    ).toBeNull();
+  });
+
+  it('snapshots the top three fundraiser teams for published snapshots', () => {
+    expect(snapshotLeaderboardFromFundraiser()).toEqual([
+      { name: 'New York Yankees', type: 'team', funds: 0, supporters: 0, points: 0 },
+      { name: 'Detroit Tigers', type: 'team', funds: 0, supporters: 0, points: 0 },
+      { name: 'Cleveland Guardians', type: 'team', funds: 0, supporters: 0, points: 0 },
+    ]);
+  });
+});
+
+describe('CampaignSpotlightCard leaderboard rendering', () => {
+  it('renders the top three leaderboard rows for a valid snapshot', () => {
+    render(<CampaignSpotlightCard config={validConfig()} />);
+
+    expect(screen.getByTestId('campaign-spotlight-leaderboard')).toBeInTheDocument();
+    expect(screen.getByText('Top Teams')).toBeInTheDocument();
+    expect(screen.getByText('New York Yankees')).toBeInTheDocument();
+    expect(screen.getByText('Detroit Tigers')).toBeInTheDocument();
+    expect(screen.getByText('Cleveland Guardians')).toBeInTheDocument();
+    expect(screen.getByText('4,800 points')).toBeInTheDocument();
+  });
+
+  it('suppresses leaderboard rendering when the snapshot is incomplete', () => {
+    render(<CampaignSpotlightCard config={validConfig({ leaderboard: sampleLeaderboard().slice(0, 2) })} />);
+
+    expect(screen.queryByTestId('campaign-spotlight-leaderboard')).not.toBeInTheDocument();
+  });
+
+  it('suppresses leaderboard rendering when leaderboard entries are malformed', () => {
+    render(
+      <CampaignSpotlightCard
+        config={validConfig({
+          leaderboard: [
+            { name: 'Broken', type: 'team', funds: Number.NaN, supporters: 1, points: 0 },
+            ...sampleLeaderboard(),
+          ],
+        })}
+      />,
+    );
+
+    expect(screen.queryByTestId('campaign-spotlight-leaderboard')).not.toBeInTheDocument();
+  });
 });
 
 describe('CampaignSpotlightSlot fail-closed behavior', () => {
@@ -239,6 +312,43 @@ describe('CampaignSpotlightSlot fail-closed behavior', () => {
     expect(screen.queryByTestId('campaign-spotlight')).not.toBeInTheDocument();
   });
 
+  it('renders nothing when leaderboard data is missing for an enabled campaign', async () => {
+    vi.stubGlobal(
+      'fetch',
+      mockCmsGetResponse({
+        publishedBodyMd: serializeCampaignSpotlightConfig(validConfig({ leaderboard: [] })),
+      }),
+    );
+
+    render(<CampaignSpotlightSlot />);
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalled();
+    });
+
+    expect(screen.queryByTestId('campaign-spotlight')).not.toBeInTheDocument();
+  });
+
+  it('renders nothing when leaderboard data is malformed in the published snapshot', async () => {
+    vi.stubGlobal(
+      'fetch',
+      mockCmsGetResponse({
+        publishedBodyMd: JSON.stringify({
+          ...validConfig(),
+          leaderboard: [{ name: 'Broken', type: 'team', funds: -5, supporters: 1, points: 0 }],
+        }),
+      }),
+    );
+
+    render(<CampaignSpotlightSlot />);
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalled();
+    });
+
+    expect(screen.queryByTestId('campaign-spotlight')).not.toBeInTheDocument();
+  });
+
   it('renders nothing when enabled is false', async () => {
     vi.stubGlobal(
       'fetch',
@@ -291,5 +401,7 @@ describe('CampaignSpotlightSlot fail-closed behavior', () => {
       'href',
       'https://givebutter.com/LouGehrigFanClub2026',
     );
+    expect(screen.getByTestId('campaign-spotlight-leaderboard')).toBeInTheDocument();
+    expect(screen.getByText('New York Yankees')).toBeInTheDocument();
   });
 });

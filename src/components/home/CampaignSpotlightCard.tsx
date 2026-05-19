@@ -1,4 +1,9 @@
-import type { CampaignSpotlightConfig } from '@/lib/campaignSpotlight';
+import {
+  formatCampaignSpotlightFunds,
+  getCampaignSpotlightLeaderboardForDisplay,
+  validateCampaignSpotlightLeaderboard,
+  type CampaignSpotlightConfig,
+} from '@/lib/campaignSpotlight';
 import styles from './CampaignSpotlightCard.module.css';
 
 type Props = {
@@ -7,6 +12,9 @@ type Props = {
 };
 
 export default function CampaignSpotlightCard({ config, previewLabel }: Props) {
+  const leaderboardErrors = validateCampaignSpotlightLeaderboard(config.leaderboard);
+  const leaderboard = leaderboardErrors.length === 0 ? getCampaignSpotlightLeaderboardForDisplay(config) : [];
+
   return (
     <section aria-label="Campaign spotlight" className={styles.wrap}>
       <div className={styles.inner}>
@@ -28,6 +36,27 @@ export default function CampaignSpotlightCard({ config, previewLabel }: Props) {
               <a className={styles.secondary} href={config.secondaryCtaHref}>{config.secondaryCtaLabel}</a>
             ) : null}
           </div>
+
+          {leaderboard.length > 0 ? (
+            <div className={styles.leaderboard} data-testid="campaign-spotlight-leaderboard">
+              <h3 className={styles.leaderboardTitle}>Top Teams</h3>
+              <ol className={styles.leaderboardList}>
+                {leaderboard.map((entry, index) => (
+                  <li key={`${entry.name}-${index}`} className={styles.leaderboardItem}>
+                    <span className={styles.leaderboardRank}>{index + 1}</span>
+                    <div className={styles.leaderboardDetails}>
+                      <div className={styles.leaderboardName}>{entry.name}</div>
+                      <div className={styles.leaderboardMetrics}>
+                        <span>{formatCampaignSpotlightFunds(entry.funds)} raised</span>
+                        <span>{entry.supporters} supporters</span>
+                        <span>{entry.points.toLocaleString('en-US')} points</span>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ) : null}
         </div>
 
         <aside className={styles.stats}>

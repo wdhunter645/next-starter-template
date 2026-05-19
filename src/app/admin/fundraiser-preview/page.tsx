@@ -12,8 +12,10 @@ import {
   defaultCampaignSpotlightConfig,
   parseCampaignSpotlightConfig,
   serializeCampaignSpotlightConfig,
+  snapshotLeaderboardFromFundraiser,
   type CampaignSpotlightConfig,
   validateCampaignSpotlightConfig,
+  validateCampaignSpotlightLeaderboard,
 } from '@/lib/campaignSpotlight';
 
 type Block = {
@@ -34,6 +36,19 @@ function getToken(): string {
 
 function emptyBlock(): Block | null {
   return null;
+}
+
+function buildPersistedCampaignConfig(config: CampaignSpotlightConfig): CampaignSpotlightConfig {
+  if (!config.enabled) return config;
+
+  if (validateCampaignSpotlightLeaderboard(config.leaderboard).length > 0) {
+    return config;
+  }
+
+  return {
+    ...config,
+    leaderboard: snapshotLeaderboardFromFundraiser(),
+  };
 }
 
 export default function FundraiserPreviewPage() {
@@ -100,7 +115,9 @@ export default function FundraiserPreviewPage() {
       setStatus('Missing admin token.');
       return;
     }
-    if (validationErrors.length > 0) {
+    const persistedConfig = buildPersistedCampaignConfig(form);
+    const persistedErrors = validateCampaignSpotlightConfig(persistedConfig);
+    if (persistedErrors.length > 0) {
       setStatus('Draft not saved. Fix validation errors first.');
       return;
     }
@@ -114,7 +131,7 @@ export default function FundraiserPreviewPage() {
         page: CAMPAIGN_SPOTLIGHT_PAGE,
         section: CAMPAIGN_SPOTLIGHT_SECTION,
         title: CAMPAIGN_SPOTLIGHT_TITLE,
-        body_md: serializeCampaignSpotlightConfig(form),
+        body_md: serializeCampaignSpotlightConfig(persistedConfig),
         updated_by: 'admin-fundraiser-preview',
       }),
     });
@@ -134,12 +151,14 @@ export default function FundraiserPreviewPage() {
       setStatus('Missing admin token.');
       return;
     }
-    if (validationErrors.length > 0) {
+    const persistedConfig = buildPersistedCampaignConfig(form);
+    const persistedErrors = validateCampaignSpotlightConfig(persistedConfig);
+    if (persistedErrors.length > 0) {
       setStatus('Publish blocked. Fix validation errors first.');
       return;
     }
 
-    if (block?.body_md !== serializeCampaignSpotlightConfig(form)) {
+    if (block?.body_md !== serializeCampaignSpotlightConfig(persistedConfig)) {
       setStatus('Publish blocked. Save Draft first so the published version matches the current preview.');
       return;
     }
