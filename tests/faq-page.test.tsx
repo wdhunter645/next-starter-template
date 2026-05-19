@@ -1,0 +1,128 @@
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+import FAQPage from '@/app/faq/page';
+import { apiGet, apiPost } from '@/lib/api';
+
+vi.mock('@/lib/api', () => ({
+  apiGet: vi.fn(),
+  apiPost: vi.fn(),
+}));
+
+vi.mock('next/navigation', () => ({
+  useSearchParams: () => new URLSearchParams(''),
+}));
+
+const mockedApiGet = vi.mocked(apiGet);
+const mockedApiPost = vi.mocked(apiPost);
+
+const SAMPLE_ITEMS = [
+  {
+    id: 1,
+    question: 'How do I join?',
+    answer: 'Visit the Join page.',
+    view_count: 2,
+    pinned: 1,
+    updated_at: '2026-05-01T00:00:00Z',
+  },
+  {
+    id: 2,
+    question: 'Where are events posted?',
+    answer: 'Check the Events page.',
+    view_count: 5,
+    pinned: 0,
+    updated_at: '2026-05-02T00:00:00Z',
+  },
+];
+
+describe('FAQ page', () => {
+  beforeEach(() => {
+    mockedApiGet.mockReset();
+    mockedApiPost.mockReset();
+    mockedApiPost.mockResolvedValue({ ok: true } as never);
+  });
+
+  it('loads approved FAQ entries from the API', async () => {
+    mockedApiGet.mockResolvedValue({ ok: true, items: SAMPLE_ITEMS } as never);
+
+    render(<FAQPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/How do I join\?/)).toBeInTheDocument();
+    });
+
+    expect(mockedApiGet).toHaveBeenCalledWith('/api/faq/list?limit=50');
+    expect(screen.getByText(/Where are events posted\?/)).toBeInTheDocument();
+  });
+
+  it('filters loaded entries with client-side search', async () => {
+    mockedApiGet.mockResolvedValue({ ok: true, items: SAMPLE_ITEMS } as never);
+
+    render(<FAQPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/How do I join\?/)).toBeInTheDocument();
+    });
+
+    await userEvent.type(screen.getByRole('searchbox', { name: 'Search questions' }), 'events');
+
+    expect(screen.queryByText(/How do I join\?/)).not.toBeInTheDocument();
+    expect(screen.getByText(/Where are events posted\?/)).toBeInTheDocument();
+  });
+
+  it('shows pinned entries before unpinned entries after filtering', async () => {
+    mockedApiGet.mockResolvedValue({ ok: true, items: SAMPLE_ITEMS } as never);
+
+    render(<FAQPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/How do I join\?/)).toBeInTheDocument();
+    });
+
+    const questions = screen.getAllByText(/How do I join\?|Where are events posted\?/);
+    expect(questions[0]).toHaveTextContent(/How do I join\?/);
+  });
+
+  it('increments view count and posts to the view API when an entry expands', async () => {
+    mockedApiGet.mockResolvedValue({ ok: true, items: SAMPLE_ITEMS } as never);
+
+    render(<FAQPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/How do I join\?/)).toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByText(/How do I join\?/));
+
+    expect(screen.getByText('Views: 3')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(mockedApiPost).toHaveBeenCalledWith('/api/faq/view', { id: 1 });
+    });
+  });
+
+  it('shows a fail-closed empty search state with Ask link', async () => {
+    mockedApiGet.mockResolvedValue({ ok: true, items: SAMPLE_ITEMS } as never);
+
+    render(<FAQPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/How do I join\?/)).toBeInTheDocument();
+    });
+
+    await userEvent.type(screen.getByRole('searchbox', { name: 'Search questions' }), 'zzzz');
+
+    expect(screen.getByText(/No questions match your search/i)).toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: 'Ask a Question' }).length).toBeGreaterThan(0);
+  });
+
+  it('shows an error message when FAQ loading fails', async () => {
+    mockedApiGet.mockRejectedValue(new Error('api_error_500'));
+
+    render(<FAQPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Unable to load FAQ entries right now/i)).toBeInTheDocument();
+    });
+  });
+});
