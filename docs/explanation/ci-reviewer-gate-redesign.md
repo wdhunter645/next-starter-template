@@ -1,3 +1,13 @@
+---
+Doc Type: Explanation
+Audience: Maintainers, operators, AI agents, CI governance contributors
+Authority Level: Canonical Draft
+Owns: Reviewer gate redesign architecture and governance direction for Issue #1058
+Does Not Own: Final implementation behavior, branch protection settings, workflow runtime logic
+Canonical Reference: Issue #1058
+Last Reviewed: 2026-05-19
+---
+
 # CI Reviewer Gate Redesign — Architecture Draft
 
 ## Status
@@ -51,9 +61,6 @@ These must not block merge.
 ## Workflow Separation
 
 ### GATE — Merge Safety
-Filename:
-- gate-merge-safety.yml
-
 Responsibilities:
 - required approvals
 - required review threads
@@ -61,34 +68,20 @@ Responsibilities:
 - protected review enforcement
 
 ### OPS — Reviewer Advisory
-Filename:
-- ops-reviewer-advisory.yml
-
 Responsibilities:
 - stale review reporting
 - reviewer visibility
 - governance reminders
 - operational summaries
 
-Non-blocking.
-
 ### GOV — PR Accounting
-Filename:
-- gov-pr-accounting.yml
-
 Responsibilities:
 - source issue normalization
 - intent mapping
 - allowlist governance
 
 ## Remediation Rule
-PRs labeled:
-- governance
-- ci
-- remediation
-- hotfix-governance
-
-must automatically downgrade reviewer advisory workflows to warning-only.
+Governance remediation PRs must automatically downgrade reviewer advisory workflows to warning-only.
 
 ## Protected File Scope
 Hard reviewer enforcement applies primarily to:
@@ -106,14 +99,3 @@ Target state:
 - remediation-safe governance
 - AI-agent-safe orchestration
 - reduced workflow sprawl
-
-## Remaining Required Work
-Before implementation merge:
-1. Full workflow inventory
-2. Existing reviewer workflow audit
-3. Consolidation matrix
-4. Branch protection compatibility review
-5. Workflow retirement list
-6. Rollback strategy
-7. Documentation reconciliation
-8. Operational runbooks
