@@ -212,10 +212,20 @@ export function validateCampaignSpotlightCtaHref(
 
 export function getCampaignSpotlightLinkProps(
   href: string,
-): { target?: '_blank'; rel?: string } {
+  label?: string,
+): { target?: '_blank'; rel?: string; 'aria-label'?: string } {
   if (!isCampaignSpotlightExternalCtaHref(href)) return {};
 
-  return { target: '_blank', rel: 'noopener noreferrer' };
+  const props: { target: '_blank'; rel: string; 'aria-label'?: string } = {
+    target: '_blank',
+    rel: 'noopener noreferrer',
+  };
+
+  if (label?.trim()) {
+    props['aria-label'] = `${label.trim()} (opens in new tab)`;
+  }
+
+  return props;
 }
 
 export function getCampaignSpotlightPrimaryCtaForDisplay(

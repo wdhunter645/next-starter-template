@@ -9,13 +9,56 @@
 .inner{
   padding:28px;
   display:grid;
-  grid-template-columns:minmax(0, 1.8fr) minmax(280px, 1fr);
+  grid-template-columns:minmax(0, 1.8fr) minmax(0, 1fr);
   gap:24px;
+}
+
+@media (min-width: 901px){
+  .stats{
+    min-width:240px;
+  }
 }
 
 @media (max-width: 900px){
   .inner{
     grid-template-columns:1fr;
+  }
+}
+
+@media (max-width: 520px){
+  .inner{
+    padding:18px;
+    gap:18px;
+  }
+
+  .actions{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .primary,
+  .secondary{
+    width:100%;
+    box-sizing:border-box;
+  }
+
+  .amount{
+    font-size:clamp(24px, 8vw, 30px);
+  }
+
+  .stats{
+    padding:16px;
+  }
+}
+
+@media (max-width: 380px){
+  .inner{
+    padding:14px;
+  }
+
+  .leaderboardItem{
+    padding:10px 12px;
+    gap:10px;
   }
 }
 
@@ -86,10 +129,13 @@
   align-items:center;
   justify-content:center;
   min-height:44px;
+  max-width:100%;
   border-radius:999px;
   padding:0 18px;
   text-decoration:none;
   font-weight:800;
+  text-align:center;
+  white-space:normal;
 }
 
 .primary{
@@ -182,6 +228,7 @@
   display:inline-flex;
   align-items:center;
   justify-content:center;
+  flex-shrink:0;
   width:32px;
   height:32px;
   border-radius:999px;
@@ -191,10 +238,15 @@
   font-weight:800;
 }
 
+.leaderboardDetails{
+  min-width:0;
+}
+
 .leaderboardName{
   font-size:16px;
   font-weight:800;
   line-height:1.3;
+  overflow-wrap:anywhere;
 }
 
 .leaderboardMetrics{

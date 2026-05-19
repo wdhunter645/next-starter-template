@@ -241,6 +241,11 @@ describe('campaignSpotlight config helpers', () => {
       rel: 'noopener noreferrer',
     });
     expect(getCampaignSpotlightLinkProps('/join')).toEqual({});
+    expect(getCampaignSpotlightLinkProps(CAMPAIGN_SPOTLIGHT_GIVEBUTTER_CAMPAIGN_URL, 'Donate Now')).toEqual({
+      target: '_blank',
+      rel: 'noopener noreferrer',
+      'aria-label': 'Donate Now (opens in new tab)',
+    });
   });
 
   it('does not emit duplicate primary CTA required errors', () => {
@@ -273,12 +278,12 @@ describe('CampaignSpotlightCard CTA rendering', () => {
     expect(primary).toHaveAttribute('href', CAMPAIGN_SPOTLIGHT_GIVEBUTTER_CAMPAIGN_URL);
     expect(primary).toHaveAttribute('target', '_blank');
     expect(primary).toHaveAttribute('rel', 'noopener noreferrer');
-    expect(screen.getByRole('link', { name: 'Donate Now' })).toBe(primary);
+    expect(screen.getByRole('link', { name: 'Donate Now (opens in new tab)' })).toBe(primary);
 
     expect(secondary).toHaveAttribute('href', CAMPAIGN_SPOTLIGHT_GIVEBUTTER_AUCTION_URL);
     expect(secondary).toHaveAttribute('target', '_blank');
     expect(secondary).toHaveAttribute('rel', 'noopener noreferrer');
-    expect(screen.getByRole('link', { name: 'View Auction' })).toBe(secondary);
+    expect(screen.getByRole('link', { name: 'View Auction (opens in new tab)' })).toBe(secondary);
   });
 
   it('suppresses malformed primary CTA links without breaking the card', () => {
@@ -343,6 +348,70 @@ describe('CampaignSpotlightCard leaderboard rendering', () => {
     );
 
     expect(screen.queryByTestId('campaign-spotlight-leaderboard')).not.toBeInTheDocument();
+  });
+});
+
+describe('CampaignSpotlightCard operational rendering', () => {
+  it('keeps campaign content visible when leaderboard data is incomplete', () => {
+    render(<CampaignSpotlightCard config={validConfig({ leaderboard: sampleLeaderboard().slice(0, 2) })} />);
+
+    expect(screen.getByRole('heading', { name: 'Support the Campaign' })).toBeInTheDocument();
+    expect(screen.getByTestId('campaign-spotlight-primary-cta')).toBeInTheDocument();
+    expect(screen.queryByTestId('campaign-spotlight-leaderboard')).not.toBeInTheDocument();
+  });
+
+  it('renders a single primary CTA when the optional secondary CTA is intentionally blank', () => {
+    render(
+      <CampaignSpotlightCard
+        config={validConfig({
+          secondaryCtaLabel: '',
+          secondaryCtaHref: '',
+        })}
+      />,
+    );
+
+    expect(screen.getByTestId('campaign-spotlight-primary-cta')).toBeInTheDocument();
+    expect(screen.queryByTestId('campaign-spotlight-secondary-cta')).not.toBeInTheDocument();
+  });
+
+  it('renders long fundraiser labels without collapsing the card shell', () => {
+    render(
+      <CampaignSpotlightCard
+        config={validConfig({
+          title: 'ALS Fundraiser 2026 Community Championship Weekend Spotlight',
+          description:
+            'Support Lou Gehrig Fan Club members and teams competing across the full Givebutter campaign weekend with every donation and registration.',
+          leaderboard: [
+            {
+              name: 'New York Yankees Community All-Stars and Families Fundraising Collective',
+              type: 'team',
+              funds: 1200,
+              supporters: 4,
+              points: 4800,
+            },
+            ...sampleLeaderboard().slice(1),
+          ],
+        })}
+      />,
+    );
+
+    expect(screen.getByRole('region', { name: 'Campaign spotlight' })).toBeInTheDocument();
+    expect(
+      screen.getByText('New York Yankees Community All-Stars and Families Fundraising Collective'),
+    ).toBeInTheDocument();
+  });
+
+  it('applies accessible labels to external Givebutter CTAs', () => {
+    render(<CampaignSpotlightCard config={validConfig()} />);
+
+    expect(screen.getByTestId('campaign-spotlight-primary-cta')).toHaveAttribute(
+      'aria-label',
+      'Donate Now (opens in new tab)',
+    );
+    expect(screen.getByTestId('campaign-spotlight-secondary-cta')).toHaveAttribute(
+      'aria-label',
+      'View Auction (opens in new tab)',
+    );
   });
 });
 
@@ -472,6 +541,27 @@ describe('CampaignSpotlightSlot fail-closed behavior', () => {
           ...validConfig(),
           leaderboard: [{ name: 'Broken', type: 'team', funds: -5, supporters: 1, points: 0 }],
         }),
+      }),
+    );
+
+    render(<CampaignSpotlightSlot />);
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalled();
+    });
+
+    expect(screen.queryByTestId('campaign-spotlight')).not.toBeInTheDocument();
+  });
+
+  it('renders nothing when published config is enabled but missing required CTA label', async () => {
+    vi.stubGlobal(
+      'fetch',
+      mockCmsGetResponse({
+        publishedBodyMd: serializeCampaignSpotlightConfig(
+          validConfig({
+            primaryCtaLabel: '',
+          }),
+        ),
       }),
     );
 
