@@ -6,7 +6,8 @@ Refer to `/.github/pull_request_template.md` for required structure and change c
 #### Governance Reference
 Follow operational, rollback, and testing standards in `/docs/governance/PR_GOVERNANCE.md`.
 
-- **Issue:** #123
+- **Issue**: #____
+<!-- Replace #____ with exactly one same-repository, open, non-PR Issue number before opening/updating the PR. Required final syntax example: `- **Issue**: #123`. -->
 
 ## MANDATORY FIRST STEP (ZIP SAFETY)
 - [ ] No ZIP file exists in the repo root
@@ -49,7 +50,7 @@ Source Files Used:
 
 ## FILE-TOUCH ALLOWLIST (MANDATORY)
 Allowed files:
-- Replace this line with exact changed file paths before opening the PR.
+<!-- Replace this comment with one bullet per exact changed file path before opening the PR. Example: `- .github/pull_request_template.md` -->
 
 All other files are out of scope
 
@@ -107,11 +108,9 @@ Reviewer items:
 - [ ] Failed job logs inspected for every failing gate
 - [ ] Workflow YAML or enforcement logic inspected before documenting gate behavior
 - [ ] PR issue-accounting confirms exactly one same-repository, open, non-PR source Issue
-- [ ] PR body contains the required Issue syntax, for example `- **Issue:** #123`
+- [ ] PR body contains the required Issue syntax (for example, `- **Issue**: #123`)
 - [ ] All review threads and comments inspected
-- [ ] All actionable review comments acknowledged in PR body
-- [ ] All addressed review threads resolved in GitHub
-- [ ] All unresolved review threads have explicit rationale in PR body
+- [ ] Actionable review feedback has PR-body disposition and GitHub thread-state disposition
 - [ ] Bot comments inspected
 - [ ] Reviewer-response accounting includes required reviewer comment IDs
 - [ ] Later maintainer replies posted where gate logs require them
@@ -128,7 +127,7 @@ Reviewer items:
 
 ## REQUIRED PRE-REVIEW SELF-CHECK
 - [ ] PR body contains all required sections with exact headings
-- [ ] PR body contains the required Issue syntax, for example `- **Issue:** #123`
+- [ ] PR body contains the required Issue syntax (for example, `- **Issue**: #123`)
 - [ ] Allowed files section matches final diff exactly
 - [ ] No files outside allowlist
 - [ ] ZIP safety confirmed
@@ -136,7 +135,7 @@ Reviewer items:
 - [ ] Local checks executed and passed
 - [ ] Commit message aligns with scope
 - [ ] No prohibited artifacts introduced
-- [ ] All new governance/reference docs include Purpose, Scope, Current Known Truth, and Intended Final State where applicable
+- [ ] All new governance/reference docs satisfy `/docs/governance/standards/document-status-and-naming_MASTER.md` minimum content requirements: Purpose, Scope, Current known truth, and Intended final state if evolving
 - [ ] All canonical references point to existing repository files
 - [ ] All reviewer feedback has both textual disposition and GitHub thread-state disposition
 - [ ] No merge-readiness claim made before all gate surfaces inspected
