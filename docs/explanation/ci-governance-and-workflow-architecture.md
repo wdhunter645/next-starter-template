@@ -1,3 +1,13 @@
+---
+Doc Type: explanation
+Audience: repository maintainers, governance reviewers, CI maintainers, AI agents
+Authority Level: strategic
+Owns: CI governance architecture direction, workflow rationalization strategy, blocker vs advisory governance model
+Does Not Own: workflow implementation details, workflow inventory state, operational CI configuration values
+Canonical Reference: docs/explanation/ci-governance-and-workflow-architecture.md
+Last Reviewed: 2026-05-19
+---
+
 # LGFC CI Governance and Workflow Architecture
 
 ## Purpose
@@ -134,8 +144,6 @@ These workflows may block merge:
 - security failures
 - broken migrations
 - unsafe platform mutations
-- unresolved drift violations
-- missing source Issue mapping
 
 Requirements:
 - deterministic
@@ -149,7 +157,9 @@ Requirements:
 These workflows may block merge only when governance integrity is compromised.
 
 Examples:
+- missing source Issue mapping
 - missing intent labels
+- unresolved drift violations
 - allowlist violations
 - undocumented operational mutations
 - out-of-scope file changes
@@ -200,7 +210,7 @@ Workflow visible names and YAML filenames must align.
 
 Example:
 - Visible workflow:
-  `OPS — Drift Gate`
+  `OPS - Drift Gate`
 - YAML filename:
   `ops-drift-gate.yml`
 
