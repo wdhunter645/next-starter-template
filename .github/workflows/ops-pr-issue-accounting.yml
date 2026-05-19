@@ -6,7 +6,7 @@ on:
 
 permissions:
   issues: write
-  pull-requests: read
+  pull-requests: write
   contents: read
 
 jobs:
@@ -16,7 +16,7 @@ jobs:
       group: ops-pr-issue-accounting-${{ github.event.pull_request.number }}
       cancel-in-progress: true
     steps:
-      - name: Enforce Issue-first pull request accounting
+      - name: Normalize and verify Issue-first pull request accounting
         uses: actions/github-script@v7
         with:
           script: |
@@ -27,6 +27,7 @@ jobs:
 
             const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
             const prBody = pr.body || '';
+            const headRef = pr.head?.ref || '';
 
             function issueUrlBelongsToCurrentRepo(issueUrl) {
               try {
@@ -38,7 +39,7 @@ jobs:
                   && parts[1].toLowerCase() === repo.toLowerCase()
                   && parts[2] === 'issues'
                   && /^\d+$/.test(parts[3]);
-              } catch (e) {
+              } catch (_error) {
                 return false;
               }
             }
@@ -52,18 +53,72 @@ jobs:
               return Number(parts[3]);
             }
 
-            function sourceIssueRefs(body) {
+            function pushUnique(refs, issueNumber, source) {
+              if (!issueNumber || Number.isNaN(issueNumber)) return;
+              refs.push({ issueNumber, source });
+            }
+
+            function issueRefsFromBody(body) {
               const refs = [];
               const lines = (body || '').split('\n');
               for (const line of lines) {
                 if (/OPS\s+Tracker/i.test(line)) continue;
                 if (/Umbrella\s+Tracker/i.test(line)) continue;
-                const match = line.match(/^\s*-?\s*(?:\*\*)?Issue(?:\*\*)?\s*:\s*(#\d+|https:\/\/github\.com\/[^\s)]+\/[^\s)]+\/issues\/\d+\/?)/i);
-                if (!match) continue;
-                const issueNumber = issueNumberFromRef(match[1]);
-                if (issueNumber) refs.push(issueNumber);
+
+                const primary = line.match(/^\s*-?\s*(?:\*\*)?Issue(?::|\*\*\s*:|\*\*:)\s*(#\d+|https:\/\/github\.com\/[^\s)]+\/[^\s)]+\/issues\/\d+\/?)/i);
+                if (primary) {
+                  pushUnique(refs, issueNumberFromRef(primary[1]), 'primary-body-line');
+                  continue;
+                }
+
+                const closing = line.match(/\b(?:closes|close|closed|fixes|fix|fixed|resolves|resolve|resolved)\s+(#\d+|https:\/\/github\.com\/[^\s)]+\/[^\s)]+\/issues\/\d+\/?)/i);
+                if (closing) {
+                  pushUnique(refs, issueNumberFromRef(closing[1]), 'closing-keyword-body-line');
+                }
               }
               return refs;
+            }
+
+            function issueRefsFromBranch(ref) {
+              const refs = [];
+              const patterns = [
+                /(?:^|[-_/])issue[-_/]?(\d+)(?:$|[-_/])/i,
+                /(?:^|[-_/])(\d{3,6})(?:[-_/][A-Za-z]|$)/,
+              ];
+              for (const pattern of patterns) {
+                const match = (ref || '').match(pattern);
+                if (match) {
+                  pushUnique(refs, Number(match[1]), 'branch-name');
+                  break;
+                }
+              }
+              return refs;
+            }
+
+            function canonicalIssueLine(issueNumber) {
+              return `- **Issue:** #${issueNumber}`;
+            }
+
+            function normalizeIssueLine(body, issueNumber) {
+              const canonical = canonicalIssueLine(issueNumber);
+              const lines = (body || '').split('\n');
+              let replaced = false;
+              const normalized = lines.map((line) => {
+                if (/OPS\s+Tracker/i.test(line) || /Umbrella\s+Tracker/i.test(line)) return line;
+                if (/^\s*-?\s*(?:\*\*)?Issue(?::|\*\*\s*:|\*\*:)\s*(#\d+|https:\/\/github\.com\/[^\s)]+\/[^\s)]+\/issues\/\d+\/?)/i.test(line)) {
+                  if (!replaced) {
+                    replaced = true;
+                    return canonical;
+                  }
+                  return null;
+                }
+                return line;
+              }).filter((line) => line !== null);
+
+              if (!replaced) {
+                return `${canonical}\n\n${body || ''}`.trimEnd();
+              }
+              return normalized.join('\n').trimEnd();
             }
 
             async function commentOnce(marker, body) {
@@ -87,10 +142,13 @@ jobs:
             }
 
             const marker = '<!-- ops-pr-issue-accounting -->';
-            const sourceRefs = sourceIssueRefs(prBody);
-            const uniqueSourceIssues = [...new Set(sourceRefs)];
+            const discoveredRefs = [
+              ...issueRefsFromBody(prBody),
+              ...issueRefsFromBranch(headRef),
+            ];
+            const uniqueSourceIssues = [...new Set(discoveredRefs.map((ref) => ref.issueNumber))];
 
-            if (sourceRefs.length !== 1 || uniqueSourceIssues.length !== 1) {
+            if (uniqueSourceIssues.length !== 1) {
               await commentOnce(
                 marker,
                 [
@@ -98,19 +156,21 @@ jobs:
                   '',
                   'Repository policy is Issue-first only.',
                   '',
-                  'Every PR must include exactly one primary source Issue line:',
+                  'The workflow could not determine exactly one same-repository source Issue from trusted PR surfaces.',
                   '',
-                  '- **Issue:** #123',
+                  'Accepted source surfaces:',
+                  '- Existing primary PR body line such as `- **Issue:** #123`',
+                  '- Compatible primary PR body variants such as `- **Issue**: #123`',
+                  '- Same-repository closing keyword references such as `Closes #123`',
+                  '- Branch names containing an issue number such as `issue-123-example`',
                   '',
-                  'OPS Tracker and Umbrella Tracker links are allowed as secondary context, but they are not task authority.',
+                  `Detected source Issues: ${uniqueSourceIssues.length ? uniqueSourceIssues.map((issue) => `#${issue}`).join(', ') : 'none'}`,
+                  `Detected sources: ${discoveredRefs.length ? discoveredRefs.map((ref) => `${ref.source}:#${ref.issueNumber}`).join(', ') : 'none'}`,
                   '',
-                  `Detected primary source Issue lines: ${sourceRefs.length}`,
-                  `Detected unique primary source Issues: ${uniqueSourceIssues.length ? uniqueSourceIssues.map((issue) => `#${issue}`).join(', ') : 'none'}`,
-                  '',
-                  'Create or select an open Issue first, then create the PR from that Issue.',
+                  'Add or correct the source Issue reference, then edit or synchronize the PR to rerun this workflow.',
                 ].join('\n')
               );
-              core.setFailed(`PR #${prNumber} must have exactly one primary source Issue line. Found lines: ${sourceRefs.length}; unique issues: ${uniqueSourceIssues.length}`);
+              core.setFailed(`PR #${prNumber} must resolve to exactly one source Issue. Found unique issues: ${uniqueSourceIssues.length}`);
               return;
             }
 
@@ -137,6 +197,16 @@ jobs:
               return;
             }
 
+            const normalizedBody = normalizeIssueLine(prBody, sourceIssueNumber);
+            if (normalizedBody !== prBody && action !== 'closed') {
+              await github.rest.pulls.update({
+                owner,
+                repo,
+                pull_number: prNumber,
+                body: normalizedBody,
+              });
+            }
+
             await commentOnce(
               marker,
               [
@@ -144,6 +214,10 @@ jobs:
                 '',
                 `Primary source Issue: #${sourceIssueNumber}`,
                 `Source Issue state: ${sourceIssue.state}`,
+                `Detected source surfaces: ${discoveredRefs.map((ref) => `${ref.source}:#${ref.issueNumber}`).join(', ')}`,
+                normalizedBody !== prBody && action !== 'closed'
+                  ? 'PR body normalized to canonical Issue line.'
+                  : 'PR body already contained canonical or compatible Issue accounting.',
                 'No synthetic tracker Issue was created.',
               ].join('\n')
             );
