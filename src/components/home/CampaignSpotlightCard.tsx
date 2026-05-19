@@ -42,7 +42,7 @@ export default function CampaignSpotlightCard({ config, previewLabel }: Props) {
                   className={styles.primary}
                   data-testid="campaign-spotlight-primary-cta"
                   href={primaryCta.href}
-                  {...getCampaignSpotlightLinkProps(primaryCta.href)}
+                  {...getCampaignSpotlightLinkProps(primaryCta.href, primaryCta.label)}
                 >
                   {primaryCta.label}
                 </a>
@@ -52,7 +52,7 @@ export default function CampaignSpotlightCard({ config, previewLabel }: Props) {
                   className={styles.secondary}
                   data-testid="campaign-spotlight-secondary-cta"
                   href={secondaryCta.href}
-                  {...getCampaignSpotlightLinkProps(secondaryCta.href)}
+                  {...getCampaignSpotlightLinkProps(secondaryCta.href, secondaryCta.label)}
                 >
                   {secondaryCta.label}
                 </a>
