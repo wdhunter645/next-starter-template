@@ -11,8 +11,6 @@ export const CAMPAIGN_SPOTLIGHT_GIVEBUTTER_CAMPAIGN_URL =
   'https://givebutter.com/LouGehrigFanClub2026';
 export const CAMPAIGN_SPOTLIGHT_GIVEBUTTER_AUCTION_URL =
   'https://givebutter.com/c/LouGehrigFanClub2026/auction';
-export const CAMPAIGN_SPOTLIGHT_GIVEBUTTER_LIVE_URL =
-  'https://live.givebutter.com/c/LouGehrigFanClub2026';
 
 const CAMPAIGN_SPOTLIGHT_PLACEHOLDER_CTA_HREFS = new Set(['/charities', '/charities/']);
 
@@ -186,8 +184,8 @@ export function isCampaignSpotlightPlaceholderCtaHref(href: string): boolean {
 }
 
 export function isCampaignSpotlightExternalCtaHref(href: string): boolean {
-  const trimmed = href.trim();
-  return trimmed.startsWith('https://') || trimmed.startsWith('http://');
+  const lower = href.trim().toLowerCase();
+  return lower.startsWith('https://') || lower.startsWith('http://') || lower.startsWith('//');
 }
 
 export function validateCampaignSpotlightCtaHref(
@@ -258,10 +256,9 @@ export function normalizeCampaignSpotlightCtaHrefs(
       ? CAMPAIGN_SPOTLIGHT_GIVEBUTTER_CAMPAIGN_URL
       : config.primaryCtaHref.trim();
 
-  const secondaryCtaHref =
-    isCampaignSpotlightPlaceholderCtaHref(config.secondaryCtaHref) || !config.secondaryCtaHref.trim()
-      ? CAMPAIGN_SPOTLIGHT_GIVEBUTTER_AUCTION_URL
-      : config.secondaryCtaHref.trim();
+  const secondaryCtaHref = isCampaignSpotlightPlaceholderCtaHref(config.secondaryCtaHref)
+    ? CAMPAIGN_SPOTLIGHT_GIVEBUTTER_AUCTION_URL
+    : config.secondaryCtaHref.trim();
 
   if (primaryCtaHref === config.primaryCtaHref && secondaryCtaHref === config.secondaryCtaHref) {
     return config;
@@ -342,7 +339,6 @@ export function validateCampaignSpotlightConfig(config: CampaignSpotlightConfig 
     ['title', config.title],
     ['description', config.description],
     ['primaryCtaLabel', config.primaryCtaLabel],
-    ['primaryCtaHref', config.primaryCtaHref],
     ['progressLabel', config.progressLabel],
     ['goalAmount', config.goalAmount],
     ['raisedAmount', config.raisedAmount],

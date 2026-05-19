@@ -232,7 +232,34 @@ describe('campaignSpotlight config helpers', () => {
       target: '_blank',
       rel: 'noopener noreferrer',
     });
+    expect(getCampaignSpotlightLinkProps('HTTPS://givebutter.com/LouGehrigFanClub2026')).toEqual({
+      target: '_blank',
+      rel: 'noopener noreferrer',
+    });
+    expect(getCampaignSpotlightLinkProps('//givebutter.com/LouGehrigFanClub2026')).toEqual({
+      target: '_blank',
+      rel: 'noopener noreferrer',
+    });
     expect(getCampaignSpotlightLinkProps('/join')).toEqual({});
+  });
+
+  it('does not emit duplicate primary CTA required errors', () => {
+    const config = validConfig({ primaryCtaHref: '' });
+    const errors = validateCampaignSpotlightConfig(config);
+    expect(errors.filter((error) => error === 'primaryCtaHref is required.')).toHaveLength(1);
+  });
+
+  it('preserves intentionally blank secondary CTAs when persisting enabled campaigns', () => {
+    const persisted = buildPersistedCampaignConfig(
+      validConfig({
+        secondaryCtaLabel: 'View Auction',
+        secondaryCtaHref: '',
+        leaderboard: [],
+      }),
+    );
+
+    expect(persisted.secondaryCtaHref).toBe('');
+    expect(validateCampaignSpotlightConfig(persisted)).toEqual([]);
   });
 });
 
