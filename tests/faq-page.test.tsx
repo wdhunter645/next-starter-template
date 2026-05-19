@@ -191,7 +191,7 @@ describe('FAQ page', () => {
 
     render(<FAQPage />);
 
-    act(() => {
+    await act(async () => {
       vi.advanceTimersByTime(10000);
     });
 
@@ -199,11 +199,10 @@ describe('FAQ page', () => {
 
     await act(async () => {
       resolveFaq({ ok: true, items: SAMPLE_ITEMS });
+      await Promise.resolve();
     });
 
-    await waitFor(() => {
-      expect(screen.queryByText(/Unable to load FAQ entries right now/i)).not.toBeInTheDocument();
-      expect(screen.getByText(/How do I join\?/)).toBeInTheDocument();
-    });
+    expect(screen.queryByText(/Unable to load FAQ entries right now/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/How do I join\?/)).toBeInTheDocument();
   });
 });
