@@ -185,6 +185,90 @@ These workflows provide operational guidance only.
 
 ---
 
+# Post-Merge Operational Review Layer
+
+## Purpose
+
+The repository requires operational validation after merge events complete.
+
+Traditional PR gates validate pre-merge safety.
+
+LGFC additionally requires:
+- post-merge operational assurance
+- automation ecosystem validation
+- orchestration regression detection
+- governance synchronization verification
+
+This layer exists because:
+- workflows may pass individually
+- but repository automation may still enter degraded states after merge
+
+---
+
+## Responsibilities
+
+The post-merge operational review layer should:
+- detect automation regressions
+- detect workflow sequencing failures
+- detect governance synchronization drift
+- detect stale workflow references
+- detect broken orchestration assumptions
+- detect documentation synchronization failures
+- validate workflow ownership consistency
+- validate workflow naming consistency
+
+---
+
+## Design Constraints
+
+The post-merge operational review layer must NOT:
+- duplicate all PR gates
+- rerun unnecessary build/test/security suites
+- create contributor deadlocks
+- punish low-signal operational anomalies
+
+This layer exists for:
+- asynchronous operational validation
+- repository health assurance
+- orchestration monitoring
+- governance integrity validation
+
+---
+
+## Severity Model
+
+Default behavior:
+- advisory-first
+- opens Issues automatically when operational anomalies are detected
+- escalates only severe operational regressions
+
+Potential severe conditions:
+- broken governance references
+- broken workflow ownership mappings
+- failed orchestration chains
+- inconsistent workflow naming after normalization rollout
+- governance drift after merge
+
+---
+
+## Operational Separation
+
+### Pre-Merge CI
+Purpose:
+- prevent unsafe merges
+- validate implementation safety
+- validate governance compliance
+
+### Post-Merge Operational Review
+Purpose:
+- validate repository operational integrity
+- validate automation ecosystem health
+- detect orchestration regressions
+- validate governance synchronization
+- ensure long-term repository stability
+
+---
+
 # Workflow Inventory Standard
 
 Every workflow must define:
@@ -234,6 +318,7 @@ This naming alignment becomes repository standard unless technically impractical
 6. Reviewer analysis
 7. Merge-readiness assessment
 8. Human merge approval
+9. Post-merge operational review and governance validation
 
 CI should support this lifecycle without introducing unnecessary deadlocks.
 
@@ -277,5 +362,6 @@ Target state:
 - clear workflow ownership
 - simplified CI troubleshooting
 - scalable governance architecture
+- validated post-merge operational integrity
 
 The CI system should protect repository integrity while preserving operational momentum.
