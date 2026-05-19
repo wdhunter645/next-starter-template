@@ -54,8 +54,12 @@ function FAQContent() {
         const data = await apiGet<{ ok: boolean; items: FAQItem[] }>('/api/faq/list?limit=50');
         if (!alive) return;
 
+        completed = true;
+        clearTimeout(timer);
+
         const rows = Array.isArray(data.items) ? data.items : [];
         setItems(rows);
+        setLoadError('');
         setViewCounts(
           rows.reduce<Record<number, number>>((acc, item) => {
             acc[item.id] = item.view_count;
