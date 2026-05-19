@@ -10,12 +10,11 @@ import {
   CAMPAIGN_SPOTLIGHT_SECTION,
   CAMPAIGN_SPOTLIGHT_TITLE,
   defaultCampaignSpotlightConfig,
+  buildPersistedCampaignConfig,
   parseCampaignSpotlightConfig,
   serializeCampaignSpotlightConfig,
-  snapshotLeaderboardFromFundraiser,
   type CampaignSpotlightConfig,
   validateCampaignSpotlightConfig,
-  validateCampaignSpotlightLeaderboard,
 } from '@/lib/campaignSpotlight';
 
 type Block = {
@@ -36,19 +35,6 @@ function getToken(): string {
 
 function emptyBlock(): Block | null {
   return null;
-}
-
-function buildPersistedCampaignConfig(config: CampaignSpotlightConfig): CampaignSpotlightConfig {
-  if (!config.enabled) return config;
-
-  if (validateCampaignSpotlightLeaderboard(config.leaderboard).length > 0) {
-    return config;
-  }
-
-  return {
-    ...config,
-    leaderboard: snapshotLeaderboardFromFundraiser(),
-  };
 }
 
 export default function FundraiserPreviewPage() {

@@ -167,6 +167,19 @@ export function getCampaignSpotlightLeaderboardForDisplay(
   return config.leaderboard.slice(0, CAMPAIGN_SPOTLIGHT_LEADERBOARD_DISPLAY_COUNT);
 }
 
+export function buildPersistedCampaignConfig(config: CampaignSpotlightConfig): CampaignSpotlightConfig {
+  if (!config.enabled) return config;
+
+  if (validateCampaignSpotlightLeaderboard(config.leaderboard).length === 0) {
+    return config;
+  }
+
+  return {
+    ...config,
+    leaderboard: snapshotLeaderboardFromFundraiser(),
+  };
+}
+
 export function formatCampaignSpotlightFunds(amount: number): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',

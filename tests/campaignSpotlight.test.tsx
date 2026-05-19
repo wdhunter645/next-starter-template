@@ -8,6 +8,7 @@ import {
   defaultCampaignSpotlightConfig,
   parseCampaignSpotlightConfig,
   serializeCampaignSpotlightConfig,
+  buildPersistedCampaignConfig,
   snapshotLeaderboardFromFundraiser,
   validateCampaignSpotlightConfig,
   type CampaignSpotlightConfig,
@@ -174,6 +175,19 @@ describe('campaignSpotlight config helpers', () => {
       { name: 'Detroit Tigers', type: 'team', funds: 0, supporters: 0, points: 0 },
       { name: 'Cleveland Guardians', type: 'team', funds: 0, supporters: 0, points: 0 },
     ]);
+  });
+
+  it('preserves a valid leaderboard and snapshots only when missing or invalid', () => {
+    const valid = validConfig();
+    expect(buildPersistedCampaignConfig(valid)).toBe(valid);
+
+    const missing = validConfig({ leaderboard: [] });
+    const snapshotted = buildPersistedCampaignConfig(missing);
+    expect(validateCampaignSpotlightConfig(snapshotted)).toEqual([]);
+    expect(snapshotted.leaderboard).toHaveLength(3);
+
+    const disabled = validConfig({ enabled: false, leaderboard: [] });
+    expect(buildPersistedCampaignConfig(disabled)).toEqual(disabled);
   });
 });
 
