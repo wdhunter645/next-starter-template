@@ -7,6 +7,13 @@ export const CAMPAIGN_SPOTLIGHT_TITLE = 'Homepage Campaign Spotlight';
 export const CAMPAIGN_SPOTLIGHT_LEADERBOARD_MIN_ENTRIES = 3;
 export const CAMPAIGN_SPOTLIGHT_LEADERBOARD_DISPLAY_COUNT = 3;
 
+export const CAMPAIGN_SPOTLIGHT_GIVEBUTTER_CAMPAIGN_URL =
+  'https://givebutter.com/LouGehrigFanClub2026';
+export const CAMPAIGN_SPOTLIGHT_GIVEBUTTER_AUCTION_URL =
+  'https://givebutter.com/c/LouGehrigFanClub2026/auction';
+
+const CAMPAIGN_SPOTLIGHT_PLACEHOLDER_CTA_HREFS = new Set(['/charities', '/charities/']);
+
 export type CampaignSpotlightLeaderboardType = 'individual' | 'team';
 
 export type CampaignSpotlightLeaderboardEntry = {
@@ -45,9 +52,9 @@ export const defaultCampaignSpotlightConfig: CampaignSpotlightConfig = {
   description:
     'Support Lou Gehrig’s legacy by helping fund ALS research and patient support. This pilot section is developed in the gated admin area first, then published to the homepage when approved.',
   primaryCtaLabel: 'Donate Now',
-  primaryCtaHref: '/charities',
-  secondaryCtaLabel: 'View Fundraiser Details',
-  secondaryCtaHref: '/charities',
+  primaryCtaHref: CAMPAIGN_SPOTLIGHT_GIVEBUTTER_CAMPAIGN_URL,
+  secondaryCtaLabel: 'View Auction',
+  secondaryCtaHref: CAMPAIGN_SPOTLIGHT_GIVEBUTTER_AUCTION_URL,
   progressLabel: 'Campaign Progress',
   goalAmount: '$25,000',
   raisedAmount: '$0',
@@ -167,15 +174,114 @@ export function getCampaignSpotlightLeaderboardForDisplay(
   return config.leaderboard.slice(0, CAMPAIGN_SPOTLIGHT_LEADERBOARD_DISPLAY_COUNT);
 }
 
-export function buildPersistedCampaignConfig(config: CampaignSpotlightConfig): CampaignSpotlightConfig {
+export type CampaignSpotlightCta = {
+  label: string;
+  href: string;
+};
+
+export function isCampaignSpotlightPlaceholderCtaHref(href: string): boolean {
+  return CAMPAIGN_SPOTLIGHT_PLACEHOLDER_CTA_HREFS.has(href.trim().toLowerCase());
+}
+
+export function isCampaignSpotlightExternalCtaHref(href: string): boolean {
+  const lower = href.trim().toLowerCase();
+  return lower.startsWith('https://') || lower.startsWith('http://') || lower.startsWith('//');
+}
+
+export function validateCampaignSpotlightCtaHref(
+  field: string,
+  href: string,
+  options: { required?: boolean } = {},
+): string[] {
+  const trimmed = href.trim();
+  const errors: string[] = [];
+
+  if (options.required && !trimmed) {
+    errors.push(`${field} is required.`);
+    return errors;
+  }
+
+  if (!trimmed) return errors;
+
+  if (!(trimmed.startsWith('/') || isCampaignSpotlightExternalCtaHref(trimmed))) {
+    errors.push(`${field} must start with / or http(s)://.`);
+  }
+
+  return errors;
+}
+
+export function getCampaignSpotlightLinkProps(
+  href: string,
+): { target?: '_blank'; rel?: string } {
+  if (!isCampaignSpotlightExternalCtaHref(href)) return {};
+
+  return { target: '_blank', rel: 'noopener noreferrer' };
+}
+
+export function getCampaignSpotlightPrimaryCtaForDisplay(
+  config: CampaignSpotlightConfig,
+): CampaignSpotlightCta | null {
+  const label = config.primaryCtaLabel.trim();
+  const href = config.primaryCtaHref.trim();
+
+  if (!label || !href) return null;
+  if (isCampaignSpotlightPlaceholderCtaHref(href)) return null;
+  if (validateCampaignSpotlightCtaHref('primaryCtaHref', href, { required: true }).length > 0) {
+    return null;
+  }
+
+  return { label, href };
+}
+
+export function getCampaignSpotlightSecondaryCtaForDisplay(
+  config: CampaignSpotlightConfig,
+): CampaignSpotlightCta | null {
+  const label = config.secondaryCtaLabel.trim();
+  const href = config.secondaryCtaHref.trim();
+
+  if (!label || !href) return null;
+  if (isCampaignSpotlightPlaceholderCtaHref(href)) return null;
+  if (validateCampaignSpotlightCtaHref('secondaryCtaHref', href).length > 0) return null;
+
+  return { label, href };
+}
+
+export function normalizeCampaignSpotlightCtaHrefs(
+  config: CampaignSpotlightConfig,
+): CampaignSpotlightConfig {
   if (!config.enabled) return config;
 
-  if (validateCampaignSpotlightLeaderboard(config.leaderboard).length === 0) {
+  const primaryCtaHref =
+    isCampaignSpotlightPlaceholderCtaHref(config.primaryCtaHref) || !config.primaryCtaHref.trim()
+      ? CAMPAIGN_SPOTLIGHT_GIVEBUTTER_CAMPAIGN_URL
+      : config.primaryCtaHref.trim();
+
+  const secondaryCtaHref = isCampaignSpotlightPlaceholderCtaHref(config.secondaryCtaHref)
+    ? CAMPAIGN_SPOTLIGHT_GIVEBUTTER_AUCTION_URL
+    : config.secondaryCtaHref.trim();
+
+  if (primaryCtaHref === config.primaryCtaHref && secondaryCtaHref === config.secondaryCtaHref) {
     return config;
   }
 
   return {
     ...config,
+    primaryCtaHref,
+    secondaryCtaHref,
+  };
+}
+
+export function buildPersistedCampaignConfig(config: CampaignSpotlightConfig): CampaignSpotlightConfig {
+  if (!config.enabled) return config;
+
+  const withCtas = normalizeCampaignSpotlightCtaHrefs(config);
+
+  if (validateCampaignSpotlightLeaderboard(withCtas.leaderboard).length === 0) {
+    return withCtas;
+  }
+
+  return {
+    ...withCtas,
     leaderboard: snapshotLeaderboardFromFundraiser(),
   };
 }
@@ -233,7 +339,6 @@ export function validateCampaignSpotlightConfig(config: CampaignSpotlightConfig 
     ['title', config.title],
     ['description', config.description],
     ['primaryCtaLabel', config.primaryCtaLabel],
-    ['primaryCtaHref', config.primaryCtaHref],
     ['progressLabel', config.progressLabel],
     ['goalAmount', config.goalAmount],
     ['raisedAmount', config.raisedAmount],
@@ -246,19 +351,20 @@ export function validateCampaignSpotlightConfig(config: CampaignSpotlightConfig 
     if (!value.trim()) errors.push(`${field} is required.`);
   }
 
-  const hrefFields: Array<[string, string]> = [
-    ['primaryCtaHref', config.primaryCtaHref],
-    ['secondaryCtaHref', config.secondaryCtaHref],
-  ];
-
-  for (const [field, value] of hrefFields) {
-    if (!value) continue;
-    if (!(value.startsWith('/') || value.startsWith('https://') || value.startsWith('http://'))) {
-      errors.push(`${field} must start with / or http(s)://.`);
-    }
-  }
+  errors.push(...validateCampaignSpotlightCtaHref('primaryCtaHref', config.primaryCtaHref, { required: true }));
+  errors.push(...validateCampaignSpotlightCtaHref('secondaryCtaHref', config.secondaryCtaHref));
 
   if (config.enabled) {
+    if (isCampaignSpotlightPlaceholderCtaHref(config.primaryCtaHref)) {
+      errors.push('primaryCtaHref must not use the placeholder /charities route when enabled.');
+    }
+    if (
+      config.secondaryCtaLabel.trim() &&
+      config.secondaryCtaHref.trim() &&
+      isCampaignSpotlightPlaceholderCtaHref(config.secondaryCtaHref)
+    ) {
+      errors.push('secondaryCtaHref must not use the placeholder /charities route when enabled.');
+    }
     errors.push(...validateCampaignSpotlightLeaderboard(config.leaderboard));
   }
 

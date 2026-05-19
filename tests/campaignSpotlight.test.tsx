@@ -4,11 +4,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import CampaignSpotlightCard from '@/components/home/CampaignSpotlightCard';
 import CampaignSpotlightSlot from '@/components/home/CampaignSpotlightSlot';
 import {
+  CAMPAIGN_SPOTLIGHT_GIVEBUTTER_AUCTION_URL,
+  CAMPAIGN_SPOTLIGHT_GIVEBUTTER_CAMPAIGN_URL,
   CAMPAIGN_SPOTLIGHT_KEY,
   defaultCampaignSpotlightConfig,
   parseCampaignSpotlightConfig,
   serializeCampaignSpotlightConfig,
   buildPersistedCampaignConfig,
+  getCampaignSpotlightLinkProps,
+  getCampaignSpotlightPrimaryCtaForDisplay,
+  getCampaignSpotlightSecondaryCtaForDisplay,
   snapshotLeaderboardFromFundraiser,
   validateCampaignSpotlightConfig,
   type CampaignSpotlightConfig,
@@ -32,9 +37,9 @@ function validConfig(overrides: Partial<CampaignSpotlightConfig> = {}): Campaign
     title: 'Support the Campaign',
     description: 'Help fund ALS research and patient support.',
     primaryCtaLabel: 'Donate Now',
-    primaryCtaHref: 'https://givebutter.com/LouGehrigFanClub2026',
-    secondaryCtaLabel: 'View Details',
-    secondaryCtaHref: 'https://givebutter.com/c/LouGehrigFanClub2026/auction',
+    primaryCtaHref: CAMPAIGN_SPOTLIGHT_GIVEBUTTER_CAMPAIGN_URL,
+    secondaryCtaLabel: 'View Auction',
+    secondaryCtaHref: CAMPAIGN_SPOTLIGHT_GIVEBUTTER_AUCTION_URL,
     progressLabel: 'Campaign Progress',
     goalAmount: '$25,000',
     raisedAmount: '$1,000',
@@ -188,6 +193,122 @@ describe('campaignSpotlight config helpers', () => {
 
     const disabled = validConfig({ enabled: false, leaderboard: [] });
     expect(buildPersistedCampaignConfig(disabled)).toEqual(disabled);
+  });
+
+  it('uses Givebutter campaign URLs in the default config', () => {
+    expect(defaultCampaignSpotlightConfig.primaryCtaHref).toBe(CAMPAIGN_SPOTLIGHT_GIVEBUTTER_CAMPAIGN_URL);
+    expect(defaultCampaignSpotlightConfig.secondaryCtaHref).toBe(CAMPAIGN_SPOTLIGHT_GIVEBUTTER_AUCTION_URL);
+    expect(defaultCampaignSpotlightConfig.primaryCtaHref).not.toContain('/charities');
+    expect(defaultCampaignSpotlightConfig.secondaryCtaHref).not.toContain('/charities');
+  });
+
+  it('rejects placeholder /charities CTAs for enabled campaigns', () => {
+    const config = validConfig({
+      primaryCtaHref: '/charities',
+      secondaryCtaHref: '/charities',
+    });
+
+    const errors = validateCampaignSpotlightConfig(config);
+    expect(errors).toContain('primaryCtaHref must not use the placeholder /charities route when enabled.');
+    expect(errors).toContain('secondaryCtaHref must not use the placeholder /charities route when enabled.');
+  });
+
+  it('normalizes placeholder CTAs to Givebutter URLs when persisting enabled campaigns', () => {
+    const persisted = buildPersistedCampaignConfig(
+      validConfig({
+        primaryCtaHref: '/charities',
+        secondaryCtaHref: '/charities',
+        leaderboard: [],
+      }),
+    );
+
+    expect(persisted.primaryCtaHref).toBe(CAMPAIGN_SPOTLIGHT_GIVEBUTTER_CAMPAIGN_URL);
+    expect(persisted.secondaryCtaHref).toBe(CAMPAIGN_SPOTLIGHT_GIVEBUTTER_AUCTION_URL);
+    expect(validateCampaignSpotlightConfig(persisted)).toEqual([]);
+  });
+
+  it('exposes external link props for Givebutter CTAs', () => {
+    expect(getCampaignSpotlightLinkProps(CAMPAIGN_SPOTLIGHT_GIVEBUTTER_CAMPAIGN_URL)).toEqual({
+      target: '_blank',
+      rel: 'noopener noreferrer',
+    });
+    expect(getCampaignSpotlightLinkProps('HTTPS://givebutter.com/LouGehrigFanClub2026')).toEqual({
+      target: '_blank',
+      rel: 'noopener noreferrer',
+    });
+    expect(getCampaignSpotlightLinkProps('//givebutter.com/LouGehrigFanClub2026')).toEqual({
+      target: '_blank',
+      rel: 'noopener noreferrer',
+    });
+    expect(getCampaignSpotlightLinkProps('/join')).toEqual({});
+  });
+
+  it('does not emit duplicate primary CTA required errors', () => {
+    const config = validConfig({ primaryCtaHref: '' });
+    const errors = validateCampaignSpotlightConfig(config);
+    expect(errors.filter((error) => error === 'primaryCtaHref is required.')).toHaveLength(1);
+  });
+
+  it('preserves intentionally blank secondary CTAs when persisting enabled campaigns', () => {
+    const persisted = buildPersistedCampaignConfig(
+      validConfig({
+        secondaryCtaLabel: 'View Auction',
+        secondaryCtaHref: '',
+        leaderboard: [],
+      }),
+    );
+
+    expect(persisted.secondaryCtaHref).toBe('');
+    expect(validateCampaignSpotlightConfig(persisted)).toEqual([]);
+  });
+});
+
+describe('CampaignSpotlightCard CTA rendering', () => {
+  it('renders Givebutter CTAs with safe external link handling', () => {
+    render(<CampaignSpotlightCard config={validConfig()} />);
+
+    const primary = screen.getByTestId('campaign-spotlight-primary-cta');
+    const secondary = screen.getByTestId('campaign-spotlight-secondary-cta');
+
+    expect(primary).toHaveAttribute('href', CAMPAIGN_SPOTLIGHT_GIVEBUTTER_CAMPAIGN_URL);
+    expect(primary).toHaveAttribute('target', '_blank');
+    expect(primary).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(screen.getByRole('link', { name: 'Donate Now' })).toBe(primary);
+
+    expect(secondary).toHaveAttribute('href', CAMPAIGN_SPOTLIGHT_GIVEBUTTER_AUCTION_URL);
+    expect(secondary).toHaveAttribute('target', '_blank');
+    expect(secondary).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(screen.getByRole('link', { name: 'View Auction' })).toBe(secondary);
+  });
+
+  it('suppresses malformed primary CTA links without breaking the card', () => {
+    render(
+      <CampaignSpotlightCard
+        config={validConfig({
+          primaryCtaHref: 'givebutter.com/campaign',
+        })}
+      />,
+    );
+
+    expect(screen.queryByTestId('campaign-spotlight-primary-cta')).not.toBeInTheDocument();
+    expect(screen.getByTestId('campaign-spotlight-secondary-cta')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Support the Campaign' })).toBeInTheDocument();
+  });
+
+  it('suppresses placeholder /charities CTAs on the card', () => {
+    render(
+      <CampaignSpotlightCard
+        config={validConfig({
+          primaryCtaHref: '/charities',
+          secondaryCtaHref: '/charities',
+        })}
+      />,
+    );
+
+    expect(screen.queryByTestId('campaign-spotlight-primary-cta')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('campaign-spotlight-secondary-cta')).not.toBeInTheDocument();
+    expect(getCampaignSpotlightPrimaryCtaForDisplay(validConfig({ primaryCtaHref: '/charities' }))).toBeNull();
+    expect(getCampaignSpotlightSecondaryCtaForDisplay(validConfig({ secondaryCtaHref: '/charities' }))).toBeNull();
   });
 });
 
@@ -363,6 +484,27 @@ describe('CampaignSpotlightSlot fail-closed behavior', () => {
     expect(screen.queryByTestId('campaign-spotlight')).not.toBeInTheDocument();
   });
 
+  it('renders nothing when primary CTA uses the placeholder /charities route', async () => {
+    vi.stubGlobal(
+      'fetch',
+      mockCmsGetResponse({
+        publishedBodyMd: serializeCampaignSpotlightConfig(
+          validConfig({
+            primaryCtaHref: '/charities',
+          }),
+        ),
+      }),
+    );
+
+    render(<CampaignSpotlightSlot />);
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalled();
+    });
+
+    expect(screen.queryByTestId('campaign-spotlight')).not.toBeInTheDocument();
+  });
+
   it('renders nothing when enabled is false', async () => {
     vi.stubGlobal(
       'fetch',
@@ -411,10 +553,10 @@ describe('CampaignSpotlightSlot fail-closed behavior', () => {
     });
 
     expect(screen.getByRole('heading', { name: 'Support the Campaign' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Donate Now' })).toHaveAttribute(
-      'href',
-      'https://givebutter.com/LouGehrigFanClub2026',
-    );
+    const primary = screen.getByTestId('campaign-spotlight-primary-cta');
+    expect(primary).toHaveAttribute('href', CAMPAIGN_SPOTLIGHT_GIVEBUTTER_CAMPAIGN_URL);
+    expect(primary).toHaveAttribute('target', '_blank');
+    expect(primary).toHaveAttribute('rel', 'noopener noreferrer');
     expect(screen.getByTestId('campaign-spotlight-leaderboard')).toBeInTheDocument();
     expect(screen.getByText('New York Yankees')).toBeInTheDocument();
   });
