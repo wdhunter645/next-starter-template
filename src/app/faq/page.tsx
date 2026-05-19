@@ -19,7 +19,7 @@ function sortFaqItems(items: FAQItem[]): FAQItem[] {
     const pinnedDelta = Number(right.pinned) - Number(left.pinned);
     if (pinnedDelta !== 0) return pinnedDelta;
 
-    const viewDelta = (right.view_count ?? 0) - (left.view_count ?? 0);
+    const viewDelta = right.view_count - left.view_count;
     if (viewDelta !== 0) return viewDelta;
 
     return right.updated_at.localeCompare(left.updated_at);
@@ -52,7 +52,7 @@ function FAQContent() {
         setItems(rows);
         setViewCounts(
           rows.reduce<Record<number, number>>((acc, item) => {
-            acc[item.id] = item.view_count ?? 0;
+            acc[item.id] = item.view_count;
             return acc;
           }, {}),
         );
