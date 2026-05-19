@@ -1,6 +1,6 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import FAQPage from '@/app/faq/page';
 import { apiGet, apiPost } from '@/lib/api';
@@ -41,6 +41,10 @@ describe('FAQ page', () => {
     mockedApiGet.mockReset();
     mockedApiPost.mockReset();
     mockedApiPost.mockResolvedValue({ ok: true } as never);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('loads approved FAQ entries from the API', async () => {
@@ -172,6 +176,34 @@ describe('FAQ page', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Unable to load FAQ entries right now/i)).toBeInTheDocument();
+    });
+  });
+
+  it('clears timeout error when a delayed FAQ fetch eventually succeeds', async () => {
+    vi.useFakeTimers();
+
+    let resolveFaq: (value: { ok: boolean; items: typeof SAMPLE_ITEMS }) => void = () => {};
+    mockedApiGet.mockReturnValue(
+      new Promise((resolve) => {
+        resolveFaq = resolve;
+      }) as never,
+    );
+
+    render(<FAQPage />);
+
+    act(() => {
+      vi.advanceTimersByTime(10000);
+    });
+
+    expect(screen.getByText(/Unable to load FAQ entries right now/i)).toBeInTheDocument();
+
+    await act(async () => {
+      resolveFaq({ ok: true, items: SAMPLE_ITEMS });
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText(/Unable to load FAQ entries right now/i)).not.toBeInTheDocument();
+      expect(screen.getByText(/How do I join\?/)).toBeInTheDocument();
     });
   });
 });
