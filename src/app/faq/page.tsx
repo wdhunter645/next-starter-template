@@ -19,9 +19,6 @@ function sortFaqItems(items: FAQItem[]): FAQItem[] {
     const pinnedDelta = Number(right.pinned) - Number(left.pinned);
     if (pinnedDelta !== 0) return pinnedDelta;
 
-    const viewDelta = right.view_count - left.view_count;
-    if (viewDelta !== 0) return viewDelta;
-
     return right.updated_at.localeCompare(left.updated_at);
   });
 }
@@ -32,13 +29,22 @@ function FAQContent() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [query, setQuery] = useState(searchParams.get('q') || '');
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<number>>(() => new Set());
   const [viewCounts, setViewCounts] = useState<Record<number, number>>({});
 
   const q = useMemo(() => query.trim().toLowerCase(), [query]);
 
   useEffect(() => {
     let alive = true;
+    let completed = false;
+
+    const timer = setTimeout(() => {
+      if (!alive || completed) return;
+      setLoading(false);
+      setItems([]);
+      setViewCounts({});
+      setLoadError('Unable to load FAQ entries right now.');
+    }, 10000);
 
     (async () => {
       setLoading(true);
@@ -62,12 +68,16 @@ function FAQContent() {
         setViewCounts({});
         setLoadError('Unable to load FAQ entries right now.');
       } finally {
-        if (alive) setLoading(false);
+        if (alive) {
+          setLoading(false);
+          completed = true;
+        }
       }
     })();
 
     return () => {
       alive = false;
+      clearTimeout(timer);
     };
   }, []);
 
@@ -84,15 +94,19 @@ function FAQContent() {
   }, [items, q]);
 
   const handleItemClick = (id: number) => {
-    const newExpandedId = expandedId === id ? null : id;
-    setExpandedId(newExpandedId);
+    setExpandedIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) {
+        next.delete(id);
+        return next;
+      }
 
-    if (newExpandedId !== id) return;
-
-    setViewCounts((current) => ({ ...current, [id]: (current[id] ?? 0) + 1 }));
-
-    void apiPost('/api/faq/view', { id }).catch(() => {
-      // Fire-and-forget per design; UI already updated optimistically.
+      next.add(id);
+      setViewCounts((counts) => ({ ...counts, [id]: (counts[id] ?? 0) + 1 }));
+      void apiPost('/api/faq/view', { id }).catch(() => {
+        // Fire-and-forget per design; UI already updated optimistically.
+      });
+      return next;
     });
   };
 
@@ -143,7 +157,7 @@ function FAQContent() {
                   {item.pinned ? '📌 ' : ''}
                   {item.question}
                 </strong>
-                {expandedId === item.id ? (
+                {expandedIds.has(item.id) ? (
                   <>
                     <br />
                     <span className="sub">{item.answer}</span>

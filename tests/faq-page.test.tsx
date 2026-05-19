@@ -71,7 +71,7 @@ describe('FAQ page', () => {
     expect(screen.getByText(/Where are events posted\?/)).toBeInTheDocument();
   });
 
-  it('shows pinned entries before unpinned entries after filtering', async () => {
+  it('shows pinned entries before unpinned entries', async () => {
     mockedApiGet.mockResolvedValue({ ok: true, items: SAMPLE_ITEMS } as never);
 
     render(<FAQPage />);
@@ -82,6 +82,55 @@ describe('FAQ page', () => {
 
     const questions = screen.getAllByText(/How do I join\?|Where are events posted\?/);
     expect(questions[0]).toHaveTextContent(/How do I join\?/);
+  });
+
+  it('orders unpinned entries by updated_at descending', async () => {
+    mockedApiGet.mockResolvedValue({
+      ok: true,
+      items: [
+        {
+          id: 1,
+          question: 'Older entry',
+          answer: 'Older answer.',
+          view_count: 100,
+          pinned: 0,
+          updated_at: '2026-05-01T00:00:00Z',
+        },
+        {
+          id: 2,
+          question: 'Newer entry',
+          answer: 'Newer answer.',
+          view_count: 1,
+          pinned: 0,
+          updated_at: '2026-05-10T00:00:00Z',
+        },
+      ],
+    } as never);
+
+    render(<FAQPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Newer entry/)).toBeInTheDocument();
+    });
+
+    const questions = screen.getAllByText(/Older entry|Newer entry/);
+    expect(questions[0]).toHaveTextContent(/Newer entry/);
+  });
+
+  it('allows multiple FAQ entries to stay expanded at once', async () => {
+    mockedApiGet.mockResolvedValue({ ok: true, items: SAMPLE_ITEMS } as never);
+
+    render(<FAQPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/How do I join\?/)).toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByText(/How do I join\?/));
+    await userEvent.click(screen.getByText(/Where are events posted\?/));
+
+    expect(screen.getByText('Visit the Join page.')).toBeInTheDocument();
+    expect(screen.getByText('Check the Events page.')).toBeInTheDocument();
   });
 
   it('increments view count and posts to the view API when an entry expands', async () => {
