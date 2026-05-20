@@ -16,10 +16,20 @@ jobs:
       group: ops-pr-issue-accounting-${{ github.event.pull_request.number }}
       cancel-in-progress: true
     steps:
+      - name: Checkout workflow parser helpers
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+
       - name: Normalize and verify Issue-first pull request accounting
         uses: actions/github-script@v7
         with:
           script: |
+            const {
+              issueRefsFromBody,
+              issueRefsFromBranch,
+              normalizeIssueLine,
+            } = require('./scripts/ci/pr-issue-accounting-parser.js');
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const prNumber = context.payload.pull_request.number;
@@ -28,98 +38,6 @@ jobs:
             const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
             const prBody = pr.body || '';
             const headRef = pr.head?.ref || '';
-
-            function issueUrlBelongsToCurrentRepo(issueUrl) {
-              try {
-                const url = new URL(issueUrl);
-                const parts = url.pathname.split('/').filter(Boolean);
-                return url.hostname.toLowerCase() === 'github.com'
-                  && parts.length === 4
-                  && parts[0].toLowerCase() === owner.toLowerCase()
-                  && parts[1].toLowerCase() === repo.toLowerCase()
-                  && parts[2] === 'issues'
-                  && /^\d+$/.test(parts[3]);
-              } catch (_error) {
-                return false;
-              }
-            }
-
-            function issueNumberFromRef(ref) {
-              const value = (ref || '').trim().replace(/[).,;]+$/g, '');
-              const local = value.match(/^#(\d+)$/);
-              if (local) return Number(local[1]);
-              if (!issueUrlBelongsToCurrentRepo(value)) return null;
-              const parts = new URL(value).pathname.split('/').filter(Boolean);
-              return Number(parts[3]);
-            }
-
-            function pushUnique(refs, issueNumber, source) {
-              if (!issueNumber || Number.isNaN(issueNumber)) return;
-              refs.push({ issueNumber, source });
-            }
-
-            function issueRefsFromBody(body) {
-              const refs = [];
-              const lines = (body || '').split('\n');
-              for (const line of lines) {
-                if (/OPS\s+Tracker/i.test(line)) continue;
-                if (/Umbrella\s+Tracker/i.test(line)) continue;
-
-                const primary = line.match(/^\s*-?\s*(?:\*\*)?Issue(?::|\*\*\s*:|\*\*:)\s*(#\d+|https:\/\/github\.com\/[^\s)]+\/[^\s)]+\/issues\/\d+\/?)/i);
-                if (primary) {
-                  pushUnique(refs, issueNumberFromRef(primary[1]), 'primary-body-line');
-                  continue;
-                }
-
-                const closing = line.match(/\b(?:closes|close|closed|fixes|fix|fixed|resolves|resolve|resolved)\s+(#\d+|https:\/\/github\.com\/[^\s)]+\/[^\s)]+\/issues\/\d+\/?)/i);
-                if (closing) {
-                  pushUnique(refs, issueNumberFromRef(closing[1]), 'closing-keyword-body-line');
-                }
-              }
-              return refs;
-            }
-
-            function issueRefsFromBranch(ref) {
-              const refs = [];
-              const patterns = [
-                /(?:^|[-_/])issue[-_/]?(\d+)(?:$|[-_/])/i,
-                /(?:^|[-_/])(\d{3,6})(?:[-_/][A-Za-z]|$)/,
-              ];
-              for (const pattern of patterns) {
-                const match = (ref || '').match(pattern);
-                if (match) {
-                  pushUnique(refs, Number(match[1]), 'branch-name');
-                  break;
-                }
-              }
-              return refs;
-            }
-
-            function canonicalIssueLine(issueNumber) {
-              return `- **Issue:** #${issueNumber}`;
-            }
-
-            function normalizeIssueLine(body, issueNumber) {
-              const canonical = canonicalIssueLine(issueNumber);
-              const lines = (body || '').split('\n');
-              let replaced = false;
-              const normalized = lines.map((line) => {
-                if (/OPS\s+Tracker/i.test(line) || /Umbrella\s+Tracker/i.test(line)) return line;
-                if (/^\s*-?\s*(?:\*\*)?Issue(?::|\*\*\s*:|\*\*:)\s*(#\d+|https:\/\/github\.com\/[^\s)]+\/[^\s)]+\/issues\/\d+\/?)/i.test(line)) {
-                  if (!replaced) {
-                    replaced = true;
-                    return canonical;
-                  }
-                  return null;
-                }
-                return line;
-              }).filter((line) => line !== null);
-
-              if (!replaced) {
-                return `${canonical}\n\n${body || ''}`.trimEnd();
-              }
-              return normalized.join('\n').trimEnd();
-            }
 
             async function commentOnce(marker, body) {
               try {
@@ -142,13 +60,15 @@ jobs:
             }
 
             const marker = '<!-- ops-pr-issue-accounting -->';
+            const bodyRefs = issueRefsFromBody(prBody, owner, repo);
             const discoveredRefs = [
-              ...issueRefsFromBody(prBody),
+              ...bodyRefs.refs,
               ...issueRefsFromBranch(headRef),
             ];
+            const invalidRefs = bodyRefs.invalidRefs || [];
             const uniqueSourceIssues = [...new Set(discoveredRefs.map((ref) => ref.issueNumber))];
 
-            if (uniqueSourceIssues.length !== 1) {
+            if (invalidRefs.length > 0 || uniqueSourceIssues.length !== 1) {
               await commentOnce(
                 marker,
                 [
@@ -161,16 +81,18 @@ jobs:
                   'Accepted source surfaces:',
                   '- Existing primary PR body line such as `- **Issue:** #123`',
                   '- Compatible primary PR body variants such as `- **Issue**: #123`',
+                  '- Semantic primary PR body variants such as `Issue #123` or `Related Issue: #123`',
                   '- Same-repository closing keyword references such as `Closes #123`',
                   '- Branch names containing an issue number such as `issue-123-example`',
                   '',
                   `Detected source Issues: ${uniqueSourceIssues.length ? uniqueSourceIssues.map((issue) => `#${issue}`).join(', ') : 'none'}`,
                   `Detected sources: ${discoveredRefs.length ? discoveredRefs.map((ref) => `${ref.source}:#${ref.issueNumber}`).join(', ') : 'none'}`,
+                  `Invalid issue references: ${invalidRefs.length ? invalidRefs.map((ref) => `${ref.source}:${ref.ref}`).join(', ') : 'none'}`,
                   '',
                   'Add or correct the source Issue reference, then edit or synchronize the PR to rerun this workflow.',
                 ].join('\n')
               );
-              core.setFailed(`PR #${prNumber} must resolve to exactly one source Issue. Found unique issues: ${uniqueSourceIssues.length}`);
+              core.setFailed(`PR #${prNumber} must resolve to exactly one valid same-repository source Issue. Found unique issues: ${uniqueSourceIssues.length}; invalid refs: ${invalidRefs.length}`);
               return;
             }
 
