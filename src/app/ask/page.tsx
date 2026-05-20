@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { apiPost } from '@/lib/api';
 import { isValidEmail } from '@/lib/urlUtils';
@@ -34,7 +34,8 @@ export default function AskPage() {
     );
   }, [firstName, lastName, email, question]);
 
-  const submit = async () => {
+  const submit = async (event?: FormEvent) => {
+    event?.preventDefault();
     if (!canSubmit || busy) return;
 
     setSubmitOk(false);
@@ -73,6 +74,7 @@ export default function AskPage() {
       </p>
 
       <section className="card" style={{ marginTop: 28 }}>
+        <form onSubmit={submit}>
         <label htmlFor="ask-first-name">
           <strong>First name</strong>
         </label>
@@ -166,6 +168,7 @@ export default function AskPage() {
             Contact us directly
           </a>
         </p>
+        </form>
       </section>
 
       <div style={{ marginTop: 24 }}>
