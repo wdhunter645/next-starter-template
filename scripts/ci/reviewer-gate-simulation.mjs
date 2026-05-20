@@ -8,7 +8,9 @@ const {
   issueRefsFromBranch,
 } = require('./pr-issue-accounting-parser.js');
 
-const [DEFAULT_OWNER = 'owner', DEFAULT_REPO = 'repo'] = (process.env.GITHUB_REPOSITORY || '').split('/');
+const [parsedOwner, parsedRepo] = (process.env.GITHUB_REPOSITORY || '').split('/');
+const DEFAULT_OWNER = parsedOwner || 'owner';
+const DEFAULT_REPO = parsedRepo || 'repo';
 const REMEDIATION_LABELS = new Set(['governance', 'ci', 'remediation', 'hotfix-governance']);
 const INTENT_CONFIG_PATH = path.resolve('scripts/ci/pr_intent_allowlists.json');
 

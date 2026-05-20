@@ -16,6 +16,18 @@ Issue #1069 establishes the first executable governance simulation layer for rev
 
 The simulation layer is local and deterministic. It does not call GitHub APIs and does not depend on live pull requests.
 
+## Scope
+
+This document defines the executable reviewer-gate simulation inventory and coverage boundaries used for local governance regression testing.
+
+It covers simulation assets under `scripts/ci/**` and `tests/fixtures/reviewer-gate/**` and does not redefine production workflow enforcement.
+
+## Current known truth
+
+The simulation harness executes deterministic fixture-based cases locally and validates protected-scope, issue-accounting, intent-allowlist, reviewer, and remediation outcomes.
+
+Current fixture and test coverage is intentionally scoped to offline governance decision modeling and remains independent from GitHub API calls and branch protection state.
+
 ## Executable Surfaces
 
 - `scripts/ci/reviewer-gate-simulation.mjs`
