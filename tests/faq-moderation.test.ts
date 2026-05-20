@@ -6,11 +6,18 @@ import {
   normalizeFaqStatus,
   parsePinned,
   parsePositiveInt,
+  parseStrictBoolean,
   validateFaqAnswer,
   validateFaqQuestion,
 } from '../functions/_lib/faqModeration';
 
 describe('faq moderation helpers', () => {
+  it('parses strict boolean flags', () => {
+    expect(parseStrictBoolean(true)).toBe(true);
+    expect(parseStrictBoolean('false')).toBe(false);
+    expect(parseStrictBoolean('falsey')).toBeNull();
+  });
+
   it('parses positive integers fail-closed', () => {
     expect(parsePositiveInt(3)).toBe(3);
     expect(parsePositiveInt('4')).toBe(4);

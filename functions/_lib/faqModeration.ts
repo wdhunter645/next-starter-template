@@ -2,6 +2,17 @@ export type FaqStatus = 'pending' | 'approved' | 'denied';
 
 export type AskInboxStatus = 'open' | 'pending' | 'approved' | 'rejected' | 'archived' | 'responded' | 'hidden';
 
+export function parseStrictBoolean(value: unknown): boolean | null {
+  if (value === true || value === 1) return true;
+  if (value === false || value === 0) return false;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === 'true' || normalized === '1') return true;
+    if (normalized === 'false' || normalized === '0') return false;
+  }
+  return null;
+}
+
 export function parsePositiveInt(value: unknown): number | null {
   const id = Number(value);
   if (!Number.isInteger(id) || id <= 0) return null;

@@ -130,7 +130,8 @@ export default function AdminFaqPage() {
     if (!token) return;
     if (tab === 'ask') void loadAsk();
     else void loadFaq();
-  }, [tab, token, loadAsk, loadFaq]);
+    // Load on tab change only; use Refresh after updating ADMIN_TOKEN to avoid partial-token 401s.
+  }, [tab, loadAsk, loadFaq]);
 
   async function askAction(path: string, id: number, body: Record<string, unknown>) {
     if (!token) return;
@@ -312,6 +313,7 @@ export default function AdminFaqPage() {
                             void askAction('/api/admin/ask/approve', item.id, {
                               answer: askAnswers[item.id] ?? '',
                               moderation_note: askNotes[item.id] ?? '',
+                              create_faq: Boolean((askAnswers[item.id] ?? '').trim()),
                             })
                           }
                         >

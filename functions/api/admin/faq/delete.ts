@@ -16,14 +16,19 @@ export const onRequestPost = async (context: { request: Request; env: { DB?: unk
       });
     }
 
-    const db = env.DB as {
-      prepare: (sql: string) => { bind: (...args: unknown[]) => { run: () => Promise<unknown> } };
-    };
+    const db = env.DB as any;
 
-    await db
+    const result = await db
       .prepare("UPDATE faq_entries SET status = 'denied', updated_at = datetime('now') WHERE id = ?")
       .bind(id)
       .run();
+
+    if (!result.meta?.changes) {
+      return new Response(JSON.stringify({ ok: false, error: 'FAQ entry not found.' }, null, 2), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     return new Response(JSON.stringify({ ok: true, id }, null, 2), {
       status: 200,

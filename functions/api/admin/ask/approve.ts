@@ -15,7 +15,7 @@ export const onRequestPost = async (context: { request: Request; env: { DB?: unk
     const id = parsePositiveInt(body?.id);
     const answer = String(body?.answer ?? '').trim();
     const moderationNote = String(body?.moderation_note ?? '').trim() || null;
-    const createFaq = body?.create_faq !== false;
+    const createFaq = body?.create_faq === true;
 
     if (!id) {
       return new Response(JSON.stringify({ ok: false, error: 'Valid ask inbox ID required.' }, null, 2), {
@@ -24,14 +24,7 @@ export const onRequestPost = async (context: { request: Request; env: { DB?: unk
       });
     }
 
-    const db = env.DB as {
-      prepare: (sql: string) => {
-        bind: (...args: unknown[]) => {
-          first: () => Promise<unknown>;
-          run: () => Promise<{ meta?: { last_row_id?: number } }>;
-        };
-      };
-    };
+    const db = env.DB as any;
 
     const row = (await db
       .prepare(
@@ -57,7 +50,7 @@ export const onRequestPost = async (context: { request: Request; env: { DB?: unk
     }
 
     const question = String(row.question ?? '');
-    const publishAnswer = answer || '';
+    const publishAnswer = answer;
     let faqEntryId = parsePositiveInt(row.faq_entry_id);
 
     if (createFaq && !faqEntryId) {
@@ -88,14 +81,21 @@ export const onRequestPost = async (context: { request: Request; env: { DB?: unk
       faqEntryId = parsePositiveInt(insert.meta?.last_row_id);
     }
 
-    await db
+    const update = await db
       .prepare(
         `UPDATE ask_inbox
-         SET status = 'approved', moderation_note = ?, faq_entry_id = ?, created_at = created_at
-         WHERE id = ?`,
+         SET status = 'approved', moderation_note = ?, faq_entry_id = ?
+         WHERE id = ? AND status IN ('open', 'pending')`,
       )
       .bind(moderationNote, faqEntryId, id)
       .run();
+
+    if (!update.meta?.changes) {
+      return new Response(JSON.stringify({ ok: false, error: 'Ask entry is no longer pending.' }, null, 2), {
+        status: 409,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     return new Response(JSON.stringify({ ok: true, id, faq_entry_id: faqEntryId }, null, 2), {
       status: 200,

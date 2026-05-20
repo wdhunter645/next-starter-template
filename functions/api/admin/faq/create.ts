@@ -1,6 +1,7 @@
 import { requireAdmin } from '../../../_lib/auth';
 import {
   parsePinned,
+  parseStrictBoolean,
   validateFaqAnswer,
   validateFaqQuestion,
 } from '../../../_lib/faqModeration';
@@ -14,8 +15,15 @@ export const onRequestPost = async (context: { request: Request; env: { DB?: unk
     const body = await request.json().catch(() => ({}));
     const question = String(body?.question ?? '');
     const answer = String(body?.answer ?? '');
-    const publish = Boolean(body?.published ?? body?.publish ?? false);
-    const pinned = parsePinned(body?.pinned) ?? 0;
+    const publish =
+      parseStrictBoolean(body?.published) ?? parseStrictBoolean(body?.publish) ?? false;
+    const pinned = parsePinned(body?.pinned);
+    if (pinned === null) {
+      return new Response(JSON.stringify({ ok: false, error: 'Pinned must be 0 or 1.' }, null, 2), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     const questionError = validateFaqQuestion(question);
     if (questionError) {

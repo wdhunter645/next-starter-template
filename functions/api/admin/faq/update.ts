@@ -3,6 +3,7 @@ import {
   normalizeFaqStatus,
   parsePinned,
   parsePositiveInt,
+  parseStrictBoolean,
   validateFaqAnswer,
   validateFaqQuestion,
 } from '../../../_lib/faqModeration';
@@ -49,7 +50,14 @@ export const onRequestPost = async (context: { request: Request; env: { DB?: unk
         : normalizeFaqStatus(existing.status);
 
     if (body?.published != null || body?.approved != null) {
-      const published = Boolean(body?.published ?? body?.approved);
+      const published =
+        parseStrictBoolean(body?.published) ?? parseStrictBoolean(body?.approved);
+      if (published === null) {
+        return new Response(JSON.stringify({ ok: false, error: 'Invalid published flag.' }, null, 2), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
       status = published ? 'approved' : 'pending';
     }
 
