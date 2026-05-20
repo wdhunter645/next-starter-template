@@ -15,6 +15,18 @@ Last Reviewed: 2026-03-27
 2. Summarize exact edits with file paths (and line-level context when relevant).
 3. Link back to this governance file and the canonical design authority.
 
+## Source Issue Accounting
+The PR issue-accounting gate validates semantic issue linkage rather than a single exact Markdown spelling.
+
+Accepted primary source Issue examples include:
+- `- **Issue:** #123`
+- `- **Issue**: #123`
+- `Issue: #123`
+- `Issue #123`
+- `Related Issue: #123`
+
+The gate must still enforce exactly one source Issue, same-repository issue URLs, open-Issue validation while the PR is open, and rejection of pull request references used as source Issues.
+
 ## Canonical references for UI/layout work
 - `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
 - `/docs/reference/design/home.md`
