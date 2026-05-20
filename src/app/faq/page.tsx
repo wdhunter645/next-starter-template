@@ -1,89 +1,117 @@
 'use client';
 
-import { useMemo, useState, Suspense } from 'react';
+import { useEffect, useMemo, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { apiGet, apiPost } from '@/lib/api';
 
 type FAQItem = {
   id: number;
   question: string;
   answer: string;
-  pinned?: boolean;
-  view_count?: number;
+  view_count: number;
+  pinned: number;
+  updated_at: string;
 };
 
-const FAQ_ITEMS: FAQItem[] = [
-  {
-    id: 1,
-    question: 'How do I join the fan club?',
-    answer:
-      'Visit the Join Fanclub page, choose your membership tier, and complete checkout. Your benefits unlock immediately after payment confirmation.',
-    pinned: true,
-    view_count: 0,
-  },
-  {
-    id: 2,
-    question: 'Where can I buy official merch?',
-    answer:
-      'Our official merch is available in the store section. New drops are announced first on the homepage and social channels.',
-    pinned: true,
-    view_count: 0,
-  },
-  {
-    id: 3,
-    question: 'How can I submit a question to be answered?',
-    answer:
-      'Use the Ask page to submit your question. Our team reviews submissions and publishes approved answers on this FAQ page.',
-    view_count: 0,
-  },
-  {
-    id: 4,
-    question: 'Do you offer refunds for memberships or tickets?',
-    answer:
-      'Refund terms vary by product. Please review checkout policies and contact support with your order details for case-by-case assistance.',
-    view_count: 0,
-  },
-  {
-    id: 5,
-    question: 'How do I get updates about upcoming events?',
-    answer:
-      'Check the Events page regularly and follow announcements on our social channels for schedule updates and venue details.',
-    view_count: 0,
-  },
-];
+function sortFaqItems(items: FAQItem[]): FAQItem[] {
+  return [...items].sort((left, right) => {
+    const pinnedDelta = Number(right.pinned) - Number(left.pinned);
+    if (pinnedDelta !== 0) return pinnedDelta;
+
+    return right.updated_at.localeCompare(left.updated_at);
+  });
+}
 
 function FAQContent() {
   const searchParams = useSearchParams();
+  const [items, setItems] = useState<FAQItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [query, setQuery] = useState(searchParams.get('q') || '');
-  const [expandedId, setExpandedId] = useState<number | null>(null);
-  const [viewCounts, setViewCounts] = useState<Record<number, number>>(() =>
-    FAQ_ITEMS.reduce<Record<number, number>>((acc, item) => {
-      acc[item.id] = item.view_count ?? 0;
-      return acc;
-    }, {})
-  );
+  const [expandedIds, setExpandedIds] = useState<Set<number>>(() => new Set());
+  const [viewCounts, setViewCounts] = useState<Record<number, number>>({});
 
   const q = useMemo(() => query.trim().toLowerCase(), [query]);
 
+  useEffect(() => {
+    let alive = true;
+    let completed = false;
+
+    const timer = setTimeout(() => {
+      if (!alive || completed) return;
+      setLoading(false);
+      setItems([]);
+      setViewCounts({});
+      setLoadError('Unable to load FAQ entries right now.');
+    }, 10000);
+
+    (async () => {
+      setLoading(true);
+      setLoadError('');
+
+      try {
+        const data = await apiGet<{ ok: boolean; items: FAQItem[] }>('/api/faq/list?limit=50');
+        if (!alive) return;
+
+        completed = true;
+        clearTimeout(timer);
+
+        const rows = Array.isArray(data.items) ? data.items : [];
+        setItems(rows);
+        setLoadError('');
+        setViewCounts(
+          rows.reduce<Record<number, number>>((acc, item) => {
+            acc[item.id] = item.view_count;
+            return acc;
+          }, {}),
+        );
+      } catch {
+        if (!alive) return;
+        setItems([]);
+        setViewCounts({});
+        setLoadError('Unable to load FAQ entries right now.');
+      } finally {
+        if (alive) {
+          setLoading(false);
+          completed = true;
+        }
+      }
+    })();
+
+    return () => {
+      alive = false;
+      clearTimeout(timer);
+    };
+  }, []);
+
   const filteredItems = useMemo(() => {
     const matches = q
-      ? FAQ_ITEMS.filter(
+      ? items.filter(
           (item) =>
             item.question.toLowerCase().includes(q) ||
-            item.answer.toLowerCase().includes(q)
+            item.answer.toLowerCase().includes(q),
         )
-      : FAQ_ITEMS;
+      : items;
 
-    return [...matches].sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)));
-  }, [q]);
+    return sortFaqItems(matches);
+  }, [items, q]);
 
   const handleItemClick = (id: number) => {
-    const newExpandedId = expandedId === id ? null : id;
-    setExpandedId(newExpandedId);
+    setExpandedIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) {
+        next.delete(id);
+        return next;
+      }
 
-    if (newExpandedId === id) {
-      setViewCounts((current) => ({ ...current, [id]: (current[id] || 0) + 1 }));
-    }
+      next.add(id);
+      setViewCounts((counts) => ({ ...counts, [id]: (counts[id] ?? 0) + 1 }));
+      void apiPost('/api/faq/view', { id }).catch(() => {
+        // Fire-and-forget per design; UI already updated optimistically.
+      });
+      return next;
+    });
   };
 
   return (
@@ -103,11 +131,24 @@ function FAQContent() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
-            <button type="button" onClick={() => setQuery('')}>Clear</button>
+            <button type="button" onClick={() => setQuery('')}>
+              Clear
+            </button>
           </div>
 
-          {filteredItems.length === 0 ? (
-            <p className="sub">No FAQ entries matched your search.</p>
+          {loading ? (
+            <p className="sub">Loading FAQ…</p>
+          ) : loadError ? (
+            <p className="sub">{loadError}</p>
+          ) : filteredItems.length === 0 ? (
+            <p className="sub">
+              {q
+                ? 'No questions match your search.'
+                : 'No FAQ entries are available yet.'}{' '}
+              <Link href="/ask" className="link">
+                Ask a Question
+              </Link>
+            </p>
           ) : (
             filteredItems.map((item) => (
               <div
@@ -120,7 +161,7 @@ function FAQContent() {
                   {item.pinned ? '📌 ' : ''}
                   {item.question}
                 </strong>
-                {expandedId === item.id ? (
+                {expandedIds.has(item.id) ? (
                   <>
                     <br />
                     <span className="sub">{item.answer}</span>
@@ -134,6 +175,9 @@ function FAQContent() {
         </div>
 
         <div style={{ marginTop: 24 }}>
+          <p className="sub" style={{ marginBottom: 10 }}>
+            Have a question we haven&apos;t answered?
+          </p>
           <Link href="/ask" className="link" style={{ fontSize: 16 }}>
             Ask a Question
           </Link>
