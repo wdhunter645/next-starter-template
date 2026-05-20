@@ -4,7 +4,9 @@ import { sendAdminJoinNotification, sendWelcomeEmail } from '../_lib/email';
 import { jsonResponse, requireD1, requireTables, type Env } from '../_lib/d1';
 
 function isValidEmail(email: string): boolean {
-  return email.includes('@') && email.length > 3;
+  const trimmed = email.trim();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return trimmed.length > 0 && trimmed.length <= 254 && emailRegex.test(trimmed);
 }
 
 async function insertJoinRequest(
@@ -118,11 +120,7 @@ async function maybeJoinNewVisitor(opts: {
       .split(',')
       .map((s: string) => s.trim())
       .filter(Boolean);
-    const targets = adminRecipients.length
-      ? adminRecipients
-      : [String(env?.MAIL_ADMIN_TO || '').trim()].filter(Boolean);
-
-    for (const recipient of targets) {
+    for (const recipient of adminRecipients) {
       await logEmailAttempt({
         db,
         requestId,

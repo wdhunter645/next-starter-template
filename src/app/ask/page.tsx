@@ -3,15 +3,16 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { apiPost } from '@/lib/api';
+import { isValidEmail } from '@/lib/urlUtils';
 
 const SUCCESS_MESSAGE = "Your question has been submitted. We'll reply by email.";
 const ERROR_MESSAGE = 'Submission failed. Please try again.';
 const CONTACT_MAILTO =
   'mailto:Contact@LouGehrigFanClub.com?subject=Contact%20Needed%20ASK';
 
-function isValidEmail(value: string): boolean {
+function isValidAskEmail(value: string): boolean {
   const trimmed = value.trim();
-  return trimmed.includes('@') && trimmed.length > 3;
+  return trimmed.length <= 254 && isValidEmail(trimmed);
 }
 
 export default function AskPage() {
@@ -28,7 +29,7 @@ export default function AskPage() {
     return (
       firstName.trim().length > 0 &&
       lastName.trim().length > 0 &&
-      isValidEmail(email) &&
+      isValidAskEmail(email) &&
       question.trim().length >= 10
     );
   }, [firstName, lastName, email, question]);
