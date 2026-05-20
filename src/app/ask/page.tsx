@@ -1,104 +1,174 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { apiPost } from '@/lib/api';
 
+const SUCCESS_MESSAGE = "Your question has been submitted. We'll reply by email.";
+const ERROR_MESSAGE = 'Submission failed. Please try again.';
+const CONTACT_MAILTO =
+  'mailto:Contact@LouGehrigFanClub.com?subject=Contact%20Needed%20ASK';
+
+function isValidEmail(value: string): boolean {
+  const trimmed = value.trim();
+  return trimmed.includes('@') && trimmed.length > 3;
+}
+
 export default function AskPage() {
-  const router = useRouter();
-  const [question, setQuestion] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [screenName, setScreenName] = useState('');
   const [email, setEmail] = useState('');
+  const [question, setQuestion] = useState('');
   const [submitOk, setSubmitOk] = useState(false);
-  const [submitErr, setSubmitErr] = useState<string>('');
+  const [submitErr, setSubmitErr] = useState('');
+  const [busy, setBusy] = useState(false);
 
-  const isValidEmail = (email: string): boolean => {
-    const trimmed = email.trim();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return trimmed.length > 0 && 
-           trimmed.length <= 254 &&
-           emailRegex.test(trimmed);
-  };
-
-  const canSubmit = question.trim().length >= 10 && isValidEmail(email);
+  const canSubmit = useMemo(() => {
+    return (
+      firstName.trim().length > 0 &&
+      lastName.trim().length > 0 &&
+      isValidEmail(email) &&
+      question.trim().length >= 10
+    );
+  }, [firstName, lastName, email, question]);
 
   const submit = async () => {
+    if (!canSubmit || busy) return;
+
     setSubmitOk(false);
     setSubmitErr('');
-    const text = question.trim();
-    const emailText = email.trim();
-    if (!text || !emailText || !canSubmit) return;
+    setBusy(true);
 
     try {
-      const res = await apiPost<{ ok: boolean; error?: string }>('/api/faq/submit', { 
-        question: text, 
-        email: emailText 
+      const res = await apiPost<{ ok: boolean; error?: string }>('/api/ask', {
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        screen_name: screenName.trim() || undefined,
+        email: email.trim(),
+        question: question.trim(),
       });
-      if (!res.ok) throw new Error(res.error || 'Submit failed');
-      setQuestion('');
-      setEmail('');
-      setSubmitOk(true);
-    } catch (e: unknown) {
-      setSubmitErr(String((e as Error)?.message ?? e));
-    }
-  };
+      if (!res.ok) throw new Error(res.error || 'submit_failed');
 
-  const handleCancel = () => {
-    router.push('/#faq');
+      setFirstName('');
+      setLastName('');
+      setScreenName('');
+      setEmail('');
+      setQuestion('');
+      setSubmitOk(true);
+    } catch {
+      setSubmitErr(ERROR_MESSAGE);
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
     <main className="container" style={{ padding: '40px 16px', maxWidth: 900, margin: '0 auto' }}>
       <h1 style={{ fontSize: 34, margin: '0 0 10px 0' }}>Ask a Question</h1>
       <p className="sub" style={{ marginTop: 0 }}>
-        Submit your question for review. If approved, it will appear in our FAQ library.
+        Submit your question for review. New visitors are added to the fan club; we will reply by
+        email.
       </p>
 
       <section className="card" style={{ marginTop: 28 }}>
-        <label htmlFor="qemail"><strong>Your Email</strong></label>
+        <label htmlFor="ask-first-name">
+          <strong>First name</strong>
+        </label>
         <input
-          id="qemail"
-          type="email"
-          placeholder="your.email@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={{ marginTop: 8, padding: 8, width: '100%', maxWidth: 500 }}
+          id="ask-first-name"
+          type="text"
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+          autoComplete="given-name"
           required
+          style={{ marginTop: 8, padding: 8, width: '100%', maxWidth: 500, display: 'block' }}
         />
 
-        <label htmlFor="qtext" style={{ marginTop: 20, display: 'block' }}><strong>Your Question</strong></label>
+        <label htmlFor="ask-last-name" style={{ marginTop: 16, display: 'block' }}>
+          <strong>Last name</strong>
+        </label>
+        <input
+          id="ask-last-name"
+          type="text"
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+          autoComplete="family-name"
+          required
+          style={{ marginTop: 8, padding: 8, width: '100%', maxWidth: 500, display: 'block' }}
+        />
+
+        <label htmlFor="ask-screen-name" style={{ marginTop: 16, display: 'block' }}>
+          <strong>Screen name</strong> <span className="sub">(optional)</span>
+        </label>
+        <input
+          id="ask-screen-name"
+          type="text"
+          value={screenName}
+          onChange={(e) => setScreenName(e.target.value)}
+          autoComplete="nickname"
+          style={{ marginTop: 8, padding: 8, width: '100%', maxWidth: 500, display: 'block' }}
+        />
+
+        <label htmlFor="ask-email" style={{ marginTop: 16, display: 'block' }}>
+          <strong>Email</strong>
+        </label>
+        <input
+          id="ask-email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
+          required
+          style={{ marginTop: 8, padding: 8, width: '100%', maxWidth: 500, display: 'block' }}
+        />
+
+        <label htmlFor="ask-question" style={{ marginTop: 16, display: 'block' }}>
+          <strong>Your question</strong>
+        </label>
         <textarea
-          id="qtext"
+          id="ask-question"
           placeholder="Type your question (minimum 10 characters)..."
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          style={{ marginTop: 8, padding: 8, width: '100%', maxWidth: 500, display: 'block', boxSizing: 'border-box' }}
           rows={6}
+          style={{
+            marginTop: 8,
+            padding: 8,
+            width: '100%',
+            maxWidth: 500,
+            display: 'block',
+            boxSizing: 'border-box',
+          }}
         />
 
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 20 }}>
-          <button type="button" onClick={submit} disabled={!canSubmit}>
-            Submit
-          </button>
-          <button type="button" onClick={handleCancel} style={{ background: '#666' }}>
-            Cancel
+          <button type="button" onClick={submit} disabled={!canSubmit || busy}>
+            {busy ? 'Submitting…' : 'Submit'}
           </button>
         </div>
 
         {submitOk ? (
           <div className="success" style={{ marginTop: 20 }}>
-            Thanks — your question was submitted for review.
+            {SUCCESS_MESSAGE}
           </div>
         ) : null}
         {submitErr ? (
           <div className="sub" style={{ marginTop: 20, color: '#b00020' }}>
-            Submit failed: {submitErr}
+            {submitErr}
           </div>
         ) : null}
+
+        <p className="sub" style={{ marginTop: 24 }}>
+          Prefer email?{' '}
+          <a href={CONTACT_MAILTO} className="link">
+            Contact us directly
+          </a>
+        </p>
       </section>
 
       <div style={{ marginTop: 24 }}>
-        <Link href="/#faq" className="link">
+        <Link href="/faq" className="link">
           ← Back to FAQ
         </Link>
       </div>
