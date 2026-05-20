@@ -293,14 +293,24 @@ Scope: FAQ page + supporting data only.
 Exit: search, pinned behavior, view count, and ask flow operate at launch-safe level.
 
 ## T22 — Ask-a-question intake
-Status: OPEN
+Status: MERGED (PR #1070)
 Scope: ask form + persistence only.
 Exit: submission stores correctly with basic validation.
 
-## T23 — Events page
+## T23 — FAQ CMS moderation (intentional task reassignment)
+Status: IN REVIEW (PR #1072)
+Owner: Cursor
+Scope: ask inbox moderation + FAQ admin CRUD/publish controls only.
+Exit: admins can moderate ask submissions and manage FAQs; public FAQ behavior unchanged.
+
+**Task-number note:** Historical worklist entry “T23 — Events page” is renumbered to **T23-E** below. This is an intentional reassignment of the T23 label to FAQ CMS moderation per the assigned Cursor brief—not implementation drift.
+
+## T23-E — Events page (legacy T23; follow-up track)
 Status: OPEN
-Scope: events page only.
-Exit: stable month/list presentation.
+Scope: events page stabilization and calendar alignment only.
+Exit: stable month/list presentation on `/events` using existing APIs.
+
+Notes: `/events`, `/api/events/next`, admin events routes, and calendar infrastructure already exist historically. This track is separate from T23 FAQ CMS moderation.
 
 ---
 
