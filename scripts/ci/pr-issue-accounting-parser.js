@@ -71,7 +71,7 @@ function semanticLineContainsIssueNumber(line, issueNumber) {
 
     try {
       const parts = new URL(value).pathname.split('/').filter(Boolean);
-      return parts[2] === 'issues' && Number(parts[3]) === issueNumber;
+      return parts.length === 4 && parts[2] === 'issues' && Number(parts[3]) === issueNumber;
     } catch (_error) {
       return false;
     }
