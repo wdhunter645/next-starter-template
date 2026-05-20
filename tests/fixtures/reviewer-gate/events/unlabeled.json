@@ -1,0 +1,18 @@
+{
+  "eventName": "pull_request",
+  "action": "unlabeled",
+  "label": {
+    "name": "remediation"
+  },
+  "pull_request": {
+    "number": 1069,
+    "body": "- **Issue:** #1069",
+    "head": {
+      "ref": "ci/1069-reviewer-gate-simulations",
+      "sha": "5555555555555555555555555555555555555555"
+    },
+    "labels": [
+      { "name": "infra" }
+    ]
+  }
+}
