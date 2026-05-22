@@ -336,11 +336,11 @@ function listCiIssues(repo) {
     '--state',
     'all',
     '--search',
-    'label:orchestrator',
+    'label:orchestrator label:type:ci',
     '--json',
     'number,title,body,labels,state,createdAt,url',
     '--limit',
-    '100'
+    '1000'
   ]);
   return JSON.parse(output).filter(isCiOrchestrationIssue);
 }
