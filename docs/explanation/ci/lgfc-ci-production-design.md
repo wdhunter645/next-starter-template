@@ -4,8 +4,7 @@ Audience: Human + AI
 Authority Level: Controlled
 Owns: CI lifecycle philosophy, production-grade CI design rationale, LGFC workflow domain model
 Does Not Own: Individual workflow implementation, branch protection configuration, runtime secrets
-Canonical Reference: /docs/reference/ci/lgfc-ci-workflow-role-map.md
-Related Issues: #1058
+Canonical Reference: /docs/reference/ci/lgfc-ci-ci-domain-reference.md
 Last Reviewed: 2026-05-21
 ---
 
@@ -16,6 +15,29 @@ Last Reviewed: 2026-05-21
 This document defines the production-grade CI/CD design direction for the Lou Gehrig Fan Club repository.
 
 The repository keeps an enterprise-grade operating mindset while reducing brittle PR approval behavior. The design separates deterministic merge safety, corrective branch hygiene, post-merge governance validation, and live production operations into distinct lifecycle domains.
+
+## Scope
+
+This document governs CI lifecycle philosophy, workflow-domain placement, reviewer-governance direction, corrective CI strategy, and operational CI architecture.
+
+It does not define individual GitHub Actions implementation details or repository runtime configuration.
+
+## Current Known Truth
+
+The current repository workflow inventory contains overlapping merge gates, asynchronous reviewer dependencies, duplicated governance enforcement, and timing-sensitive orchestration behavior.
+
+The reviewer-response-completion workflow exposed the largest architectural weakness by coupling asynchronous reviewer timing to synchronous merge approval.
+
+## Intended Final State
+
+The repository will evolve toward four stable CI lifecycle domains:
+
+- deterministic merge protection
+- corrective PR hygiene
+- retrospective post-merge validation
+- OPS runtime monitoring and self-healing
+
+The final architecture will preserve governance rigor while reducing false-positive failures and reviewer deadlocks.
 
 ## Core Principle
 
@@ -69,7 +91,7 @@ It may auto-retry safe failures, create incident issues, open remediation PRs, a
 
 A workflow may be blocking pre-merge only if the failed condition is deterministic, locally attributable to the PR, and directly related to merge safety.
 
-If a check depends on asynchronous third-party timing, subjective interpretation, retrospective completeness analysis, or runtime observation, it belongs in PR Hygiene, Post-Merge Validation, or OPS.
+If a check depends on asynchronous third-party timing, subjective interpretation, retrospective completeness analysis, or runtime observation, it belongs in PR Branch Correction, Post-Merge Validation, or OPS Runtime.
 
 ## Design Outcome
 
