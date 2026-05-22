@@ -27,6 +27,25 @@ This reduces:
 - rollback complexity
 - branch protection instability
 
+## Execution
+
+The orchestration layer should follow this execution sequence:
+
+1. Validate that no other CI implementation issue is active.
+2. Create one implementation issue for the next dependency phase.
+3. Include exact workflow scope and allowed files.
+4. Assign the implementation issue to Cursor.
+5. Wait for the implementation PR to complete merge protection successfully.
+6. Validate post-merge stability.
+7. Create the next implementation issue only after verification succeeds.
+
+The orchestration layer must pause advancement automatically when:
+
+- CI instability exists
+- rollback is required
+- remediation work remains open
+- branch protection becomes unstable
+
 ## Required Issue Structure
 
 Each implementation issue should contain:
