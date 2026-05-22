@@ -29,6 +29,20 @@ Each implementation step should:
 - avoid simultaneous governance and runtime changes
 - preserve branch protection stability
 
+## Execution
+
+Use this procedure when turning the CI architecture into implementation work:
+
+1. Confirm the previous CI implementation issue is merged and stable.
+2. Select the next phase from the recommended implementation sequence.
+3. Create exactly one Cursor implementation issue for that phase.
+4. Include the allowed files, rollback plan, acceptance criteria, and validation requirements in the issue.
+5. Assign the issue to Cursor for one implementation PR.
+6. Validate the implementation PR with the current merge-protection gates.
+7. After merge, run post-merge verification before creating the next issue.
+
+The orchestration layer must not create the next CI implementation issue until the current issue is merged, validated, and stable.
+
 ## Orchestration Model
 
 The orchestration layer should create exactly one active implementation issue at a time.
