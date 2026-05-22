@@ -128,13 +128,13 @@ Archive content should not:
 
 ## Final Repository Model
 
-The repository ultimately separates into:
+The final repository documentation model should become:
 
-| Layer | Responsibility |
+| Layer | Purpose |
 |---|---|
 | DIATAXIS | Active operational authority |
 | Archive | Historical memory |
-| Governance CI | Integrity enforcement |
+| Governance CI | Routing and integrity enforcement |
 | Orchestration | Controlled migration sequencing |
 
 ## Operational Outcome
