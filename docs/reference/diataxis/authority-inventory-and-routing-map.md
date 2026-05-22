@@ -165,7 +165,8 @@ Archived material should:
 
 ### Rule 5 — Reference Verification
 
-Migration work must verify:
+Migration work must verify that the following components no longer depend on legacy paths:
+
 - workflows
 - scripts
 - PR templates
@@ -174,7 +175,6 @@ Migration work must verify:
 - governance docs
 - indexes
 - cross references
-no longer depend on legacy paths.
 
 ## Long-Term Repository State
 
