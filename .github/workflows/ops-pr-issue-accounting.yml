@@ -61,7 +61,7 @@ jobs:
             const marker = '<!-- ops-pr-issue-accounting -->';
             const sourceRefs = issueRefsFromTrustedSources(prBody, headRef, owner, repo);
             const discoveredRefs = sourceRefs.refs;
-            const invalidRefs = sourceRefs.invalidRefs || [];
+            const invalidRefs = sourceRefs.invalidRefs;
             const uniqueSourceIssues = [...new Set(discoveredRefs.map((ref) => ref.issueNumber))];
 
             if (invalidRefs.length > 0 || uniqueSourceIssues.length !== 1) {
