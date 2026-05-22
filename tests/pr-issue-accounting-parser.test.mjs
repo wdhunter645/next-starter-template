@@ -5,6 +5,7 @@ const require = createRequire(import.meta.url);
 const {
   issueRefsFromBody,
   issueRefsFromBranch,
+  issueRefsFromTrustedSources,
   normalizeIssueLine,
 } = require('../scripts/ci/pr-issue-accounting-parser.js');
 
@@ -103,5 +104,19 @@ describe('PR issue-accounting parser', () => {
     expect(issueRefsFromBranch('ci/1058-semantic-issue-parser')).toEqual([
       { issueNumber: 1058, source: 'branch-name' },
     ]);
+  });
+
+  it('uses branch-name issue discovery only when body source refs are absent', () => {
+    expect(
+      issueRefsFromTrustedSources('- **Issue:** #1075', 'cursor/ci-orchestration-engine-1265', owner, repo)
+    ).toEqual({
+      invalidRefs: [],
+      refs: [{ issueNumber: 1075, source: 'primary-body-line' }],
+    });
+
+    expect(issueRefsFromTrustedSources('## CHANGE SUMMARY', 'ci/1058-semantic-issue-parser', owner, repo)).toEqual({
+      invalidRefs: [],
+      refs: [{ issueNumber: 1058, source: 'branch-name' }],
+    });
   });
 });

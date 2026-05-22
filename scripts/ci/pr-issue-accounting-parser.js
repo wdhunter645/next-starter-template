@@ -127,6 +127,15 @@ function issueRefsFromBranch(ref) {
   return refs;
 }
 
+function issueRefsFromTrustedSources(body, branchRef, owner, repo) {
+  const bodyRefs = issueRefsFromBody(body, owner, repo);
+  const branchRefs = bodyRefs.refs.length === 0 ? issueRefsFromBranch(branchRef) : [];
+  return {
+    refs: [...bodyRefs.refs, ...branchRefs],
+    invalidRefs: bodyRefs.invalidRefs || [],
+  };
+}
+
 function canonicalIssueLine(issueNumber) {
   return `- **Issue:** #${issueNumber}`;
 }
@@ -158,6 +167,7 @@ module.exports = {
   issueNumberFromRef,
   issueRefsFromBody,
   issueRefsFromBranch,
+  issueRefsFromTrustedSources,
   issueUrlBelongsToCurrentRepo,
   normalizeIssueLine,
   normalizeIssueReferenceLine,

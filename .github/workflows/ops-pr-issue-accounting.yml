@@ -26,8 +26,7 @@ jobs:
         with:
           script: |
             const {
-              issueRefsFromBody,
-              issueRefsFromBranch,
+              issueRefsFromTrustedSources,
               normalizeIssueLine,
             } = require('./scripts/ci/pr-issue-accounting-parser.js');
             const owner = context.repo.owner;
@@ -60,12 +59,9 @@ jobs:
             }
 
             const marker = '<!-- ops-pr-issue-accounting -->';
-            const bodyRefs = issueRefsFromBody(prBody, owner, repo);
-            const discoveredRefs = [
-              ...bodyRefs.refs,
-              ...issueRefsFromBranch(headRef),
-            ];
-            const invalidRefs = bodyRefs.invalidRefs || [];
+            const sourceRefs = issueRefsFromTrustedSources(prBody, headRef, owner, repo);
+            const discoveredRefs = sourceRefs.refs;
+            const invalidRefs = sourceRefs.invalidRefs || [];
             const uniqueSourceIssues = [...new Set(discoveredRefs.map((ref) => ref.issueNumber))];
 
             if (invalidRefs.length > 0 || uniqueSourceIssues.length !== 1) {
@@ -83,7 +79,7 @@ jobs:
                   '- Compatible primary PR body variants such as `- **Issue**: #123`',
                   '- Semantic primary PR body variants such as `Issue #123` or `Related Issue: #123`',
                   '- Same-repository closing keyword references such as `Closes #123`',
-                  '- Branch names containing an issue number such as `issue-123-example`',
+                  '- Branch names containing an issue number such as `issue-123-example` when no body source Issue exists',
                   '',
                   `Detected source Issues: ${uniqueSourceIssues.length ? uniqueSourceIssues.map((issue) => `#${issue}`).join(', ') : 'none'}`,
                   `Detected sources: ${discoveredRefs.length ? discoveredRefs.map((ref) => `${ref.source}:#${ref.issueNumber}`).join(', ') : 'none'}`,
