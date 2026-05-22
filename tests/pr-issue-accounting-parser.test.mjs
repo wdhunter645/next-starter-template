@@ -44,6 +44,25 @@ describe('PR issue-accounting parser', () => {
     expect(result).toBe(['- **Issue:** #1053', '', '## CHANGE SUMMARY'].join('\n'));
   });
 
+  it('does not replace ordinary prose that starts with Issue', () => {
+    const result = normalizeIssueLine(
+      [
+        'Closes #1053',
+        'Issue reproduction steps: open the PR body and inspect the source issue line.',
+      ].join('\n'),
+      1053
+    );
+
+    expect(result).toBe(
+      [
+        '- **Issue:** #1053',
+        '',
+        'Closes #1053',
+        'Issue reproduction steps: open the PR body and inspect the source issue line.',
+      ].join('\n')
+    );
+  });
+
   it('continues to detect same-repository closing keyword references', () => {
     const result = bodyRefs('Closes https://github.com/wdhunter645/next-starter-template/issues/1053');
     expect(result.invalidRefs).toEqual([]);
