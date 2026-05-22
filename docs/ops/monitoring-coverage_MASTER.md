@@ -17,7 +17,11 @@ Define what is monitored and identify visibility gaps.
 - CI pipeline status
 - Deployment success/failure
 - Site availability
+- CI orchestration phase status
+- Repeated CI workflow failures
+- Stale queued or in-progress workflow runs
 
 ## Known Gaps
 - Silent data issues
 - Partial feature failures
+- Expected workflow absence is currently reported as a warning, not a hard block, because some workflows do not run on every merge.

@@ -39,7 +39,7 @@ Each task must use this structure:
 ```markdown
 ## Task 001 — <short title>
 
-Type: repository | website | governance | docs | recovery
+Type: repository | website | governance | docs | recovery | ci
 Agent: codex | cursor | copilot | atlas
 Priority: 1
 Depends On: none | Task 000
