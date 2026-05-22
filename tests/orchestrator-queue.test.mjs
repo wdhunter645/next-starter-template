@@ -110,6 +110,13 @@ describe('orchestrator issue creation queue model', () => {
     expect(labels).toContain('type:ci');
     expect(labels).toContain('agent:cursor');
   });
+
+  it('detects missing orchestrator labels before issue creation', () => {
+    expect(createIssues.missingRequiredLabels(
+      ['orchestrator', 'status:queued', 'agent:cursor'],
+      ['orchestrator', 'status:queued', 'status:blocked', 'type:ci', 'agent:cursor']
+    )).toEqual(['status:blocked', 'type:ci']);
+  });
 });
 
 describe('CI orchestration engine', () => {
@@ -492,6 +499,7 @@ describe('orchestrator workflow trigger compatibility', () => {
     expect(ciOrchestrationWorkflow).toContain('node scripts/orchestrator/ci-orchestration-engine.mjs');
     expect(ciOrchestrationScript).toContain('status:failed');
     expect(ciOrchestrationScript).toContain('lgfc-ci-phase:');
+    expect(createIssuesScript).toContain('ensureLabels();');
     expect(createIssuesScript).toMatch(/['"]--state['"],\s*['"]all['"]/s);
     expect(createDraftPrScript).toContain('existingOpenPrForIssue(repo, issue.number)');
     expect(createDraftPrScript).toContain("issue.state !== 'OPEN'");
