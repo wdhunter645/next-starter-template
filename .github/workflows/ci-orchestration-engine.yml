@@ -1,0 +1,46 @@
+name: CI Orchestration Engine
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Evaluate without creating or updating issues'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+  schedule:
+    - cron: '17 */6 * * *'
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+
+concurrency:
+  group: ci-orchestration-engine
+  cancel-in-progress: false
+
+jobs:
+  advance-ci-rollout:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Evaluate CI orchestration state
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+        run: node scripts/orchestrator/ci-orchestration-engine.mjs

@@ -78,6 +78,17 @@ If a phase fails:
 - rollback recommendation may be generated
 - next implementation issue must not be created until stability returns
 
+## As-Built Engine
+
+The active engine is:
+
+- workflow: `/.github/workflows/ci-orchestration-engine.yml`
+- state model: `/.github/ci-orchestration-state.json`
+- script: `/scripts/orchestrator/ci-orchestration-engine.mjs`
+- reference: `/docs/reference/ci/lgfc-ci-orchestration-engine.md`
+
+The engine creates or updates only one CI implementation issue at a time. It pauses when an active or failed CI implementation issue exists, when phase dependencies are incomplete, when a duplicate phase marker exists, or when recent workflow runs show blocking CI instability.
+
 ## Implementation Categories
 
 ### Category A — Merge Protection
