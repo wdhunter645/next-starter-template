@@ -42,6 +42,21 @@ function ciIssue(number, status, createdAt, body = '<!-- lgfc-ci-phase:pr-hygien
   };
 }
 
+function remediationIssue(number, status, createdAt, state = 'OPEN') {
+  return {
+    number,
+    title: `CI remediation ${number}`,
+    createdAt,
+    body: '<!-- lgfc-ci-orchestration-remediation -->\n# CI Orchestration Paused',
+    state,
+    labels: [
+      { name: 'orchestrator' },
+      { name: 'type:ci' },
+      { name: status }
+    ]
+  };
+}
+
 describe('orchestrator issue creation queue model', () => {
   it('labels the first produced task as queued and subsequent tasks as blocked', () => {
     const tasks = [
@@ -190,16 +205,100 @@ describe('CI orchestration engine', () => {
     });
   });
 
+  it('does not count an open status:complete issue as a completed phase', () => {
+    const decision = ciEngine.rolloutDecision({
+      state,
+      issues: [ciIssue(1076, 'status:complete', '2026-05-22T10:00:00Z')],
+      runs: [
+        { workflowName: 'GATE - Quality Checks', status: 'completed', conclusion: 'success', createdAt: '2026-05-22T10:00:00Z' },
+        { workflowName: 'Docs Guardrails', status: 'completed', conclusion: 'success', createdAt: '2026-05-22T10:00:00Z' }
+      ],
+      now: new Date('2026-05-22T11:00:00Z')
+    });
+
+    expect(decision).toMatchObject({
+      action: 'pause',
+      reason: 'duplicate_phase_issue',
+      issue: { number: 1076 }
+    });
+  });
+
+  it('ignores closed failed CI issues when selecting the next phase', () => {
+    const decision = ciEngine.rolloutDecision({
+      state,
+      issues: [ciIssue(1076, 'status:failed', '2026-05-22T10:00:00Z', '<!-- lgfc-ci-phase:pr-hygiene-foundation -->', 'CLOSED')],
+      runs: [
+        { workflowName: 'GATE - Quality Checks', status: 'completed', conclusion: 'success', createdAt: '2026-05-22T10:00:00Z' },
+        { workflowName: 'Docs Guardrails', status: 'completed', conclusion: 'success', createdAt: '2026-05-22T10:00:00Z' }
+      ],
+      now: new Date('2026-05-22T11:00:00Z')
+    });
+
+    expect(decision).toMatchObject({
+      action: 'create',
+      phase: { id: 'pr-hygiene-foundation' }
+    });
+  });
+
+  it('excludes remediation issues from rollout gating', () => {
+    const decision = ciEngine.rolloutDecision({
+      state,
+      issues: [remediationIssue(1080, 'status:failed', '2026-05-22T10:00:00Z')],
+      runs: [
+        { workflowName: 'GATE - Quality Checks', status: 'completed', conclusion: 'success', createdAt: '2026-05-22T10:00:00Z' },
+        { workflowName: 'Docs Guardrails', status: 'completed', conclusion: 'success', createdAt: '2026-05-22T10:00:00Z' }
+      ],
+      now: new Date('2026-05-22T11:00:00Z')
+    });
+
+    expect(decision).toMatchObject({
+      action: 'create',
+      phase: { id: 'pr-hygiene-foundation' }
+    });
+  });
+
   it('pauses rollout on repeated CI workflow failures', () => {
     const report = ciEngine.ciHealthReport([
-      { workflowName: 'GATE - Quality Checks', status: 'completed', conclusion: 'failure', createdAt: '2026-05-22T09:00:00Z' },
-      { workflowName: 'GATE - Quality Checks', status: 'completed', conclusion: 'timed_out', createdAt: '2026-05-22T10:00:00Z' }
+      { workflowName: 'GATE - Quality Checks', status: 'completed', conclusion: 'failure', createdAt: '2026-05-22T09:00:00Z', url: 'https://github.com/owner/repo/actions/runs/1' },
+      { workflowName: 'GATE - Quality Checks', status: 'completed', conclusion: 'timed_out', createdAt: '2026-05-22T10:00:00Z', url: 'https://github.com/owner/repo/actions/runs/2' }
     ], state.monitoring, new Date('2026-05-22T11:00:00Z'));
 
     expect(report.stable).toBe(false);
     expect(report.blocking).toContainEqual(expect.objectContaining({
-      code: 'repeated_workflow_failure'
+      code: 'repeated_workflow_failure',
+      evidence: 'https://github.com/owner/repo/actions/runs/1, https://github.com/owner/repo/actions/runs/2'
     }));
+  });
+
+  it('includes workflow URLs in remediation evidence', () => {
+    const decision = ciEngine.rolloutDecision({
+      state,
+      issues: [],
+      runs: [
+        { workflowName: 'GATE - Quality Checks', status: 'in_progress', conclusion: '', createdAt: '2026-05-22T01:00:00Z', url: 'https://github.com/owner/repo/actions/runs/3' }
+      ],
+      now: new Date('2026-05-22T11:00:00Z')
+    });
+
+    expect(decision).toMatchObject({
+      action: 'pause',
+      reason: 'ci_instability'
+    });
+    expect(decision.evidence).toContain('GATE - Quality Checks has been in_progress since 2026-05-22T01:00:00Z (https://github.com/owner/repo/actions/runs/3)');
+  });
+
+  it('creates remediation body text for duplicate phase pauses', () => {
+    const decision = ciEngine.rolloutDecision({
+      state,
+      issues: [ciIssue(1076, 'status:complete', '2026-05-22T10:00:00Z')],
+      runs: [],
+      now: new Date('2026-05-22T11:00:00Z')
+    });
+    const body = ciEngine.buildRemediationBody(decision);
+
+    expect(decision.reason).toBe('duplicate_phase_issue');
+    expect(body).toContain('Reason: duplicate_phase_issue');
+    expect(body).toContain('Issue #1076 already exists for phase pr-hygiene-foundation.');
   });
 
   it('generates Cursor-ready issue bodies with required orchestration fields', () => {

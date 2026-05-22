@@ -32,6 +32,10 @@ function hasLabel(issue, label) {
   return labelNames(issue).has(label);
 }
 
+function isClosed(issue) {
+  return String(issue.state || '').toUpperCase() === 'CLOSED';
+}
+
 function phaseMarker(id) {
   return `<!-- ${phaseMarkerPrefix}${id} -->`;
 }
@@ -44,8 +48,16 @@ function isCiOrchestrationIssue(issue) {
   return (issue.body || '').includes(phaseMarkerPrefix) || hasLabel(issue, 'type:ci');
 }
 
+function isRemediationIssue(issue) {
+  return (issue.body || '').includes(remediationMarker);
+}
+
+function isRolloutIssue(issue) {
+  return isCiOrchestrationIssue(issue) && !isRemediationIssue(issue);
+}
+
 function isComplete(issue) {
-  return hasLabel(issue, completeStatus);
+  return isClosed(issue) && hasLabel(issue, completeStatus);
 }
 
 function isActiveOrFailed(issue) {
@@ -93,12 +105,18 @@ export function ciHealthReport(runs = [], monitoring = {}, now = new Date()) {
   const warnings = [];
   const observedWorkflows = new Set();
   const failureCounts = new Map();
+  const failureEvidence = new Map();
 
   for (const run of runs) {
     if (run.workflowName) observedWorkflows.add(run.workflowName);
 
     if (failureConclusions.has(run.conclusion)) {
       failureCounts.set(run.workflowName, (failureCounts.get(run.workflowName) || 0) + 1);
+      if (run.url) {
+        const urls = failureEvidence.get(run.workflowName) || [];
+        urls.push(run.url);
+        failureEvidence.set(run.workflowName, urls);
+      }
     }
 
     if (runningStatuses.has(run.status) && hoursBetween(run.createdAt, now) >= staleRunHours) {
@@ -115,7 +133,7 @@ export function ciHealthReport(runs = [], monitoring = {}, now = new Date()) {
       blocking.push({
         code: 'repeated_workflow_failure',
         message: `${workflowName || 'unknown workflow'} failed ${count} times in the recent run window`,
-        evidence: ''
+        evidence: (failureEvidence.get(workflowName) || []).join(', ')
       });
     }
   }
@@ -138,8 +156,8 @@ export function ciHealthReport(runs = [], monitoring = {}, now = new Date()) {
 }
 
 export function rolloutDecision({ state, issues = [], runs = [], now = new Date() }) {
-  const ciIssues = issues.filter(isCiOrchestrationIssue);
-  const failedIssue = ciIssues.find((issue) => hasLabel(issue, failedStatus));
+  const ciIssues = issues.filter(isRolloutIssue);
+  const failedIssue = ciIssues.find((issue) => !isClosed(issue) && hasLabel(issue, failedStatus));
   if (failedIssue) {
     return {
       action: 'pause',
@@ -149,7 +167,7 @@ export function rolloutDecision({ state, issues = [], runs = [], now = new Date(
     };
   }
 
-  const activeIssue = ciIssues.find((issue) => issue.state !== 'CLOSED' && isActiveOrFailed(issue));
+  const activeIssue = ciIssues.find((issue) => !isClosed(issue) && isActiveOrFailed(issue));
   if (activeIssue) {
     const staleDays = daysBetween(activeIssue.createdAt, now);
     const evidence = [`Issue #${activeIssue.number} is still active.`];
@@ -173,7 +191,7 @@ export function rolloutDecision({ state, issues = [], runs = [], now = new Date(
     };
   }
 
-  const duplicate = ciIssues.find((issue) => containsPhaseMarker(issue, next.id));
+  const duplicate = ciIssues.find((issue) => !isClosed(issue) && containsPhaseMarker(issue, next.id));
   if (duplicate) {
     return {
       action: 'pause',
@@ -190,7 +208,7 @@ export function rolloutDecision({ state, issues = [], runs = [], now = new Date(
       reason: 'ci_instability',
       phase: next,
       health,
-      evidence: health.blocking.map((item) => item.message)
+      evidence: health.blocking.map((item) => item.evidence ? `${item.message} (${item.evidence})` : item.message)
     };
   }
 
@@ -371,7 +389,9 @@ function createOrUpdateRemediation(repo, issues, decision) {
   const existing = findRemediationIssue(issues);
 
   if (existing) {
-    gh(['issue', 'comment', String(existing.number), '--repo', repo, '--body', body]);
+    if (existing.body !== body) {
+      gh(['issue', 'edit', String(existing.number), '--repo', repo, '--body', body]);
+    }
     return;
   }
 
@@ -413,7 +433,7 @@ export function main() {
 
   if (decision.action === 'create') {
     createPhaseIssue(repo, state, decision.phase);
-  } else if (decision.action === 'pause' && ['ci_instability', 'failed_issue', 'stale_active_issue'].includes(decision.reason)) {
+  } else if (decision.action === 'pause' && ['ci_instability', 'failed_issue', 'stale_active_issue', 'duplicate_phase_issue'].includes(decision.reason)) {
     createOrUpdateRemediation(repo, issues, decision);
   }
 }
