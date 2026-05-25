@@ -6,8 +6,10 @@ import { pathToFileURL } from 'node:url';
 import { execFileSync } from 'node:child_process';
 
 const repo = process.env.GITHUB_REPOSITORY;
+const dryRun = process.env.DRY_RUN === 'true';
 const planDir = 'docs/ops/implementation-plans';
 const routingPath = '.github/orchestrator-routing.json';
+const labelsPath = '.github/orchestrator-labels.json';
 
 if (!repo) {
   console.error('GITHUB_REPOSITORY is required.');
@@ -22,6 +24,74 @@ function runGh(args) {
 
 function runGit(args) {
   return execFileSync('git', args, { encoding: 'utf8' }).trim();
+}
+
+export function missingRequiredLabels(existingLabels, requiredLabels) {
+  const existing = new Set(existingLabels);
+  return requiredLabels.filter((label) => !existing.has(label));
+}
+
+function labelDefinition(label) {
+  if (label.startsWith('status:')) {
+    return {
+      color: 'FBCA04',
+      description: 'LGFC orchestrator issue state'
+    };
+  }
+
+  if (label.startsWith('type:')) {
+    return {
+      color: '0E8A16',
+      description: 'LGFC orchestrator task type'
+    };
+  }
+
+  if (label.startsWith('agent:')) {
+    return {
+      color: '5319E7',
+      description: 'LGFC orchestrator assigned agent'
+    };
+  }
+
+  return {
+    color: '0E8A16',
+    description: 'LGFC orchestration label'
+  };
+}
+
+function ensureLabels() {
+  const labelsConfig = JSON.parse(fs.readFileSync(labelsPath, 'utf8'));
+  const existingOutput = runGh([
+    'label',
+    'list',
+    '--repo',
+    repo,
+    '--json',
+    'name',
+    '--limit',
+    '1000'
+  ]);
+  const existing = JSON.parse(existingOutput).map((label) => label.name);
+
+  for (const label of missingRequiredLabels(existing, labelsConfig.labels || [])) {
+    const definition = labelDefinition(label);
+    if (dryRun) {
+      console.log(`DRY RUN ensure label ${label}`);
+      continue;
+    }
+
+    runGh([
+      'label',
+      'create',
+      label,
+      '--repo',
+      repo,
+      '--color',
+      definition.color,
+      '--description',
+      definition.description
+    ]);
+  }
 }
 
 function isProductionReady(content) {
@@ -127,6 +197,8 @@ export function labelsForTask(task, statusLabel = 'status:queued') {
 }
 
 export function main() {
+  ensureLabels();
+
   const files = fs.existsSync(planDir)
     ? fs.readdirSync(planDir).filter((name) => name.endsWith('.md') && name !== 'README.md').sort()
     : [];
@@ -166,6 +238,14 @@ export function main() {
         task.block
       ].join('\n');
 
+      if (dryRun) {
+        console.log(`DRY RUN create issue for ${marker}`);
+        console.log(`DRY RUN title: [${task.id}] ${task.title}`);
+        console.log(`DRY RUN labels: ${labels.join(',')}`);
+        createdIssueCount += 1;
+        continue;
+      }
+
       runGh([
         'issue',
         'create',
@@ -183,7 +263,7 @@ export function main() {
       console.log(`CREATED issue for ${marker}`);
     }
 
-    if (markIssuesCreated(filePath, content)) {
+    if (!dryRun && markIssuesCreated(filePath, content)) {
       updatedPlans.push(filePath);
     }
   }
