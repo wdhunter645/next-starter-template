@@ -19,7 +19,7 @@ This document defines the approved operational workflows for ingesting Lou Gehri
 1. Collect source material.
 2. Verify source attribution.
 3. Upload media to B2.
-4. Create story inventory record.
+4. Create or update the canonical `content_inventory` record.
 5. Link media relationships.
 6. Apply tags.
 7. Submit for editorial review.

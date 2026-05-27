@@ -16,9 +16,10 @@ Build the first operational LGFC historical content ingestion pipeline.
 
 ## Step 1 — Create D1 Tables
 
-Create foundational tables:
+Use canonical `content_inventory` as the primary story and layout source of truth.
 
-- story_inventory
+Create only the auxiliary tables needed around it:
+
 - submission_queue
 - media_assets
 - story_relationships
@@ -28,6 +29,7 @@ Validate:
 
 - indexes
 - foreign keys
+- compatibility with canonical `content_inventory` fields
 - rotation fields
 - editorial status constraints
 
@@ -86,7 +88,7 @@ Connect:
 Search indexing should include:
 
 - titles
-- summaries
+- canonical body text
 - OCR text
 - tags
 - alternate-perspective relationships

@@ -25,33 +25,33 @@ Implemented and planned systems must preserve compatibility with:
 
 ## Primary Tables
 
-### story_inventory
+### content_inventory
 
-Primary historical archive table.
+Primary historical archive table and D1 source of truth.
+
+This reference extends the existing canonical `content_inventory` authority rather than creating a parallel story table. Implementers must preserve the table name and required fields defined in `/docs/reference/content-inventory-d1-schema.md`.
 
 | Field | Type | Purpose |
 |---|---|---|
 | id | INTEGER | Internal identifier |
 | tag | TEXT | Canonical story grouping |
 | title | TEXT | Story title |
-| story_text | TEXT | Full story body |
-| story_summary | TEXT | Search and rotation summary |
+| text | TEXT | Full story body |
+| media | JSON | Canonical story media linkage |
 | story_type | TEXT | Story classification |
+| allowed_sections | JSON | Approved rendering surfaces |
+| priority | INTEGER | Editorial ordering weight |
+| search_text | TEXT | Search normalization field |
 | canonical | INTEGER | Canonical story flag |
 | source_name | TEXT | Source attribution |
 | source_url | TEXT | Source reference |
 | credit_line | TEXT | Editorial attribution |
 | event_date | TEXT | Historical event date |
-| event_year | INTEGER | Historical year |
 | rotation_group | TEXT | Homepage rotation grouping |
 | last_featured | TEXT | Last homepage feature timestamp |
 | feature_weight | INTEGER | Editorial weighting |
-| editorial_status | TEXT | Draft/review/published |
-| ai_summary | TEXT | AI-generated summary metadata |
-| ai_keywords | TEXT | AI-generated keyword metadata |
-| search_text | TEXT | Search normalization field |
-| created_at | TEXT | Creation timestamp |
-| updated_at | TEXT | Update timestamp |
+
+Additional workflow metadata, including editorial status, AI suggestions, OCR confidence, and audit timestamps, must be added only when reconciled with canonical schema authority and must not replace the required fields above.
 
 ## Canonical Story Rules
 
@@ -95,7 +95,7 @@ Supported media:
 
 Relationships:
 
-story_inventory -> media_assets
+content_inventory -> media_assets
 submission_queue -> media_assets
 
 ## Editorial Status Values
@@ -116,7 +116,7 @@ AI metadata fields are assistive only.
 
 AI-generated metadata may include:
 
-- summaries
+- summary suggestions
 - keyword suggestions
 - duplicate probability
 - OCR confidence
@@ -159,7 +159,8 @@ Example categories:
 Search indexing is generated from:
 
 - title
-- summary
+- text
+- search_text
 - OCR text
 - tags
 - attribution
@@ -169,7 +170,7 @@ Search indexing is generated from:
 ## Relationship Diagram
 
 ```text
-story_inventory
+content_inventory
  ├── media_assets
  ├── story_tags
  ├── story_relationships

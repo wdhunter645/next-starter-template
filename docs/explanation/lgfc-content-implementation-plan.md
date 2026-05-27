@@ -50,10 +50,10 @@ Objectives:
 
 Deliverables:
 
-- story_inventory
+- content_inventory schema extensions, if required by canonical authority
 - submission_queue
-- media_assets
-- relationship tables
+- auxiliary media relationship tables
+- auxiliary relationship tables
 - indexing strategy
 
 ## Phase 3 — Intake and Editorial Workflows
