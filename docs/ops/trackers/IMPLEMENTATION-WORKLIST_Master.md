@@ -342,8 +342,14 @@ Notes:
 # Phase 4 — Fan Club Core (QUEUED)
 
 ## T30 — FanClub home shell + navigation
-Status: OPEN
+Status: IN REVIEW (PR #1092)
+Issue: #1013
 Notes: Current FanClub formatting/design requires dedicated implementation pass.
+Scope: `/fanclub` shell and authenticated member navigation only.
+Exit: stable authenticated shell with canonical FanClub subpage navigation.
+Progress:
+- Implementation PR opened: #1092
+- Branch: `feat/t30-fanclub-shell-1013`
 
 ## T31 — Member Profile + membership card panel
 Status: OPEN
