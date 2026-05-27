@@ -266,10 +266,16 @@ Summary:
 Footer `Footer.tsx` aligned to LGFC-Production-Design-and-Standards.md: right column Privacy → Terms → Contact → mailto Contact (support) → Admin when session role is admin (`useMemberSession`). PR_GOVERNANCE and `cloudflare-frontend.md` updated to remove stale “no Admin / no mailto” rules that contradicted the locked design doc.
 
 ## T20 — Campaign Spotlight implementation
-Status: OPEN
+Status: CLOSED
+Date Closed: 2026-05-19
 Owner: Cursor
 Scope: CMS-driven homepage Campaign Spotlight section.
 Exit: optional/conditional section renders correctly when enabled and fail-closes when disabled or unset.
+Summary:
+Homepage Campaign Spotlight implementation is merged and operational, including fundraiser ingest/sorting, Spotlight UI + CTA wiring, and post-merge operational QA hardening.
+Issue/PR trace:
+- Master coordination issue: #1053
+- Implementation PRs: #1063, #1065
 
 ### 2026-05-05 Implementation Documentation Update
 
@@ -281,36 +287,55 @@ Completed today:
 - Test coverage: `/tests/fundraiser.test.ts` covers seed loading, normalization, sorting, stable ties, and malformed record rejection.
 - Reference documentation: `/docs/reference/architecture/fundraiser-leaderboard-data-contract.md` defines the active data contract.
 
-T20 remains open until the CMS-driven homepage Campaign Spotlight section is enabled, validated in preview, and verified to fail closed on the public homepage.
+T20 closeout confirmation:
+- CMS-driven Campaign Spotlight enabled.
+- Preview/runtime behavior validated in implementation PR sequence.
+- Public homepage fail-closed behavior preserved under disable/unset conditions.
 
 ---
 
 # Phase 3 — Public Core Features (QUEUED)
 
 ## T21 — FAQ page functionality
-Status: OPEN
+Status: CLOSED
+Date Closed: 2026-05-20
 Scope: FAQ page + supporting data only.
 Exit: search, pinned behavior, view count, and ask flow operate at launch-safe level.
+Summary:
+FAQ page functionality shipped and merged with live API wiring, pinned ordering, stable filtering/search behavior, view-count integration, and ask-flow entry point.
+Issue/PR trace:
+- Task issue: #943
+- Implementation PR: #1066
 
 ## T22 — Ask-a-question intake
-Status: MERGED (PR #1070)
+Status: CLOSED
+Date Closed: 2026-05-20
 Scope: ask form + persistence only.
 Exit: submission stores correctly with basic validation.
+Summary:
+Ask intake is merged with launch-safe form UX, validation, persistence via `POST /api/ask`, and success/failure handling.
+Issue/PR trace:
+- Task issue: #946
+- Implementation PR: #1070
 
 ## T23 — FAQ CMS moderation (intentional task reassignment)
-Status: IN REVIEW (PR #1072)
-Owner: Cursor
-Scope: ask inbox moderation + FAQ admin CRUD/publish controls only.
-Exit: admins can moderate ask submissions and manage FAQs; public FAQ behavior unchanged.
+Status: CLOSED
+Date Closed: 2026-05-25
+Scope: FAQ/Ask moderation admin tooling and moderation API flows.
+Exit: admin moderation workflows for ask inbox + FAQ CMS operate at launch-safe level.
+Summary:
+T23 identity is reserved for FAQ CMS moderation; work merged with admin moderation endpoints and `/admin/faq` moderation interface.
+Issue/PR trace:
+- Master coordination issue: #1053
+- Implementation PR: #1072
 
-**Task-number note:** Historical worklist entry “T23 — Events page” is renumbered to **T23-E** below. This is an intentional reassignment of the T23 label to FAQ CMS moderation per the assigned Cursor brief—not implementation drift.
-
-## T23-E — Events page (legacy T23; follow-up track)
+## T23-E — Events page (legacy T23, active implementation track)
 Status: OPEN
-Scope: events page stabilization and calendar alignment only.
-Exit: stable month/list presentation on `/events` using existing APIs.
-
-Notes: `/events`, `/api/events/next`, admin events routes, and calendar infrastructure already exist historically. This track is separate from T23 FAQ CMS moderation.
+Issue: #947
+Scope: events page only.
+Exit: stable month/list presentation.
+Notes:
+- Historical task alias: T23 (Events) is preserved as T23-E to avoid collision with T23 FAQ CMS moderation.
 
 ---
 
