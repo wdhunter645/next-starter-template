@@ -5,10 +5,24 @@ Authority Level: Working
 Owns: T20-B implementation scope and exit criteria
 Does Not Own: PR body, implementation notes, fundraiser ranking policy
 Canonical Reference: docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md
-Last Reviewed: 2026-03-25
+Last Reviewed: 2026-05-05
 ---
 
 # T20-B — Fundraiser Ingest Layer
+
+## Status
+
+Closed on 2026-05-05.
+
+Related implementation PRs:
+
+- #909 — added fundraiser ingest layer.
+- #911 — tightened numeric validation.
+
+Follow-on:
+
+- T20-C completed leaderboard sorting in PR #917.
+- Active data contract: `/docs/reference/architecture/fundraiser-leaderboard-data-contract.md`.
 
 ## Objective
 Create the application ingest layer for fundraiser data using the launch-safe manual JSON source.

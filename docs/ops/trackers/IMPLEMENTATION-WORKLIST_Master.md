@@ -271,6 +271,18 @@ Owner: Cursor
 Scope: CMS-driven homepage Campaign Spotlight section.
 Exit: optional/conditional section renders correctly when enabled and fail-closes when disabled or unset.
 
+### 2026-05-05 Implementation Documentation Update
+
+Completed today:
+
+- T20-B fundraiser ingest layer: `/src/lib/fundraiser.ts` loads `/data/fundraiser.json`, validates source records, normalizes numeric fields, computes `points = totalAmount * donorCount`, and exports typed application records.
+- T20-B validation hardening: numeric strings are normalized only when finite and non-negative; donor counts must be integers; malformed source rows throw deterministic errors.
+- T20-C leaderboard sorting: normalized fundraiser records sort by points, donor count, total amount, then stable source order for remaining ties.
+- Test coverage: `/tests/fundraiser.test.ts` covers seed loading, normalization, sorting, stable ties, and malformed record rejection.
+- Reference documentation: `/docs/reference/architecture/fundraiser-leaderboard-data-contract.md` defines the active data contract.
+
+T20 remains open until the CMS-driven homepage Campaign Spotlight section is enabled, validated in preview, and verified to fail closed on the public homepage.
+
 ---
 
 # Phase 3 — Public Core Features (QUEUED)
@@ -281,14 +293,24 @@ Scope: FAQ page + supporting data only.
 Exit: search, pinned behavior, view count, and ask flow operate at launch-safe level.
 
 ## T22 — Ask-a-question intake
-Status: OPEN
+Status: MERGED (PR #1070)
 Scope: ask form + persistence only.
 Exit: submission stores correctly with basic validation.
 
-## T23 — Events page
+## T23 — FAQ CMS moderation (intentional task reassignment)
+Status: IN REVIEW (PR #1072)
+Owner: Cursor
+Scope: ask inbox moderation + FAQ admin CRUD/publish controls only.
+Exit: admins can moderate ask submissions and manage FAQs; public FAQ behavior unchanged.
+
+**Task-number note:** Historical worklist entry “T23 — Events page” is renumbered to **T23-E** below. This is an intentional reassignment of the T23 label to FAQ CMS moderation per the assigned Cursor brief—not implementation drift.
+
+## T23-E — Events page (legacy T23; follow-up track)
 Status: OPEN
-Scope: events page only.
-Exit: stable month/list presentation.
+Scope: events page stabilization and calendar alignment only.
+Exit: stable month/list presentation on `/events` using existing APIs.
+
+Notes: `/events`, `/api/events/next`, admin events routes, and calendar infrastructure already exist historically. This track is separate from T23 FAQ CMS moderation.
 
 ---
 

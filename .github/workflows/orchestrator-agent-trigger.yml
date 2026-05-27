@@ -1,0 +1,32 @@
+name: Orchestrator — Agent Trigger
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: orchestrator-agent-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  trigger:
+    if: contains(github.event.issue.labels.*.name, 'orchestrator') && contains(github.event.issue.labels.*.name, 'status:pr-draft')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Trigger agent
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: node scripts/orchestrator/trigger-agent.mjs

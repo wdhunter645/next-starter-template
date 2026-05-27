@@ -1,0 +1,20 @@
+{
+  "eventName": "pull_request",
+  "action": "opened",
+  "pull_request": {
+    "number": 1069,
+    "body": "- **Issue:** #1069\n\n## Summary\nGovernance simulation fixture.",
+    "draft": false,
+    "head": {
+      "ref": "ci/1069-reviewer-gate-simulations",
+      "sha": "1111111111111111111111111111111111111111"
+    },
+    "base": {
+      "ref": "main",
+      "sha": "0000000000000000000000000000000000000000"
+    },
+    "labels": [
+      { "name": "infra" }
+    ]
+  }
+}

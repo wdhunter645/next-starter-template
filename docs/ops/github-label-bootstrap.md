@@ -38,3 +38,18 @@ gh label create "infra"      --color "0E8A16" --description "CI/workflows/monito
 gh label create "platform"   --color "5319E7" --description "Cloudflare/runtime config only (e.g., wrangler bindings/routes)" --force
 gh label create "codex"      --color "FBCA04" --description "Agent/automation control, guardrails, deterministic repo hygiene tooling" --force
 gh label create "recovery"   --color "D93F0B" --description "Break-glass recovery / emergency repair intent (broad scope, controlled)" --force
+
+## Orchestration labels
+
+The CI orchestration engine verifies and creates its required orchestration labels at runtime when permitted by `GITHUB_TOKEN`.
+
+Minimum required labels:
+
+- `orchestrator`
+- `status:queued`
+- `status:failed`
+- `status:complete`
+- `type:ci`
+- `agent:cursor`
+
+The durable label contract is stored in `/.github/ci-orchestration-state.json` and `/.github/orchestrator-labels.json`.

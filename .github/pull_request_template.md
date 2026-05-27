@@ -6,6 +6,9 @@ Refer to `/.github/pull_request_template.md` for required structure and change c
 #### Governance Reference
 Follow operational, rollback, and testing standards in `/docs/governance/PR_GOVERNANCE.md`.
 
+- **Issue**: #____
+<!-- Replace #____ with exactly one same-repository, open, non-PR Issue number before opening/updating the PR. Required final syntax example: `- **Issue**: #123`. -->
+
 ## MANDATORY FIRST STEP (ZIP SAFETY)
 - [ ] No ZIP file exists in the repo root
 - [ ] OR any ZIP file that was present in the repo root was deleted before any other change
@@ -26,7 +29,7 @@ Follow operational, rollback, and testing standards in `/docs/governance/PR_GOVE
 - [ ] LEGACY_FALLBACK
 
 Source Files Used:
-- (list exact file paths)
+- Replace this line with exact source file paths used for this PR.
 
 ## DIATAXIS GAP (REQUIRED IF LEGACY_FALLBACK)
 - [ ] Gap Identified
@@ -47,10 +50,7 @@ Source Files Used:
 
 ## FILE-TOUCH ALLOWLIST (MANDATORY)
 Allowed files:
-- docs/governance/DOCUMENT-ARCHITECTURE.md
-- docs/ops/trackers/THREAD-LOG_Master.md
-- docs/reference/design/.canonical-files.txt
-- docs/reference/design/.canonical-hashes.sha256
+<!-- Replace this comment with one bullet per exact changed file path before opening the PR. Example: `- .github/pull_request_template.md` -->
 
 All other files are out of scope
 
@@ -72,7 +72,7 @@ All other files are out of scope
 ## CHANGE SUMMARY
 - Describe the exact change in 1–5 bullets
 - No vague language
-- No “cleanup” or “misc” wording
+- No cleanup or misc wording
 
 ## BUILD / TEST / VERIFICATION
 - Commands run:
@@ -86,7 +86,36 @@ All other files are out of scope
 - [ ] Documentation updated in this PR
 - [ ] No documentation updates required
 - Files:
-  - (list exact files)
+  - Replace this line with exact documentation file paths when applicable.
+
+## REVIEWER RESPONSE ACCOUNTING
+- [ ] Reviewed all reviewer comments.
+- [ ] Copilot disposition received.
+- [ ] Codex disposition received.
+- [ ] Gemini disposition received.
+- [ ] Cubic disposition received.
+- [ ] Every actionable reviewer comment has a PR-body disposition.
+- [ ] Every GitHub review thread has an explicit thread-state disposition: resolved, outdated, or intentionally left unresolved with rationale.
+
+Reviewer items:
+- review-comment:<id> — accepted/rejected/acknowledged — <specific resolution or reason> — thread state: resolved/outdated/unresolved-with-rationale
+
+## PR GATE READINESS CHECKLIST
+- [ ] Live PR check panel inspected
+- [ ] Commit-level workflow runs inspected
+- [ ] PR-level pull_request_target workflows inspected
+- [ ] Latest head workflow runs inspected
+- [ ] Failed job logs inspected for every failing gate
+- [ ] Workflow YAML or enforcement logic inspected before documenting gate behavior
+- [ ] PR issue-accounting confirms exactly one same-repository, open, non-PR source Issue
+- [ ] PR body contains the required Issue syntax (for example, `- **Issue**: #123`)
+- [ ] All review threads and comments inspected
+- [ ] Actionable review feedback has PR-body disposition and GitHub thread-state disposition
+- [ ] Bot comments inspected
+- [ ] Reviewer-response accounting includes required reviewer comment IDs
+- [ ] Later maintainer replies posted where gate logs require them
+- [ ] Required gates rerun or re-evaluated after fixes
+- [ ] Final PR panel confirms merge-readiness
 
 ## ACCEPTANCE CRITERIA
 - docs_check_headers.sh passes
@@ -98,10 +127,15 @@ All other files are out of scope
 
 ## REQUIRED PRE-REVIEW SELF-CHECK
 - [ ] PR body contains all required sections with exact headings
-- [ ] Allowed files section matches diff exactly
+- [ ] PR body contains the required Issue syntax (for example, `- **Issue**: #123`)
+- [ ] Allowed files section matches final diff exactly
 - [ ] No files outside allowlist
 - [ ] ZIP safety confirmed
 - [ ] Intent label correct and singular
 - [ ] Local checks executed and passed
 - [ ] Commit message aligns with scope
-- [ ] No secrets or forbidden artifacts introduced
+- [ ] No prohibited artifacts introduced
+- [ ] All new governance/reference docs satisfy `/docs/governance/standards/document-status-and-naming_MASTER.md` minimum content requirements: Purpose, Scope, Current known truth, and Intended final state if evolving
+- [ ] All canonical references point to existing repository files
+- [ ] All reviewer feedback has both textual disposition and GitHub thread-state disposition
+- [ ] No merge-readiness claim made before all gate surfaces inspected

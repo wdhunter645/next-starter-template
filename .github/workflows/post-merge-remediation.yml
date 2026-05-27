@@ -7,6 +7,7 @@ on:
       - completed
 
 permissions:
+  contents: read
   issues: write
 
 jobs:
@@ -15,12 +16,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Create Issue
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh issue create \
+          issue_url="$(gh issue create \
             --title "Post-Merge Failure Detected" \
-            --body "Detection workflow failed. Investigate and fix." \
-            --label "post-merge-failure" \
-            --assignee "copilot-swe-agent[bot]"
+            --body "Detection workflow failed. Investigate and fix.")"
+
+          if label_exists="$(gh label list --search "post-merge-failure" --json name -q 'any(.[]; .name == "post-merge-failure")')"; then
+            if [ "$label_exists" = "true" ]; then
+              gh issue edit "$issue_url" --add-label "post-merge-failure" || \
+                echo "::warning::Unable to add post-merge-failure label to $issue_url."
+            else
+              echo "::warning::Label post-merge-failure does not exist; creating the issue without it."
+            fi
+          else
+            echo "::warning::Unable to check for post-merge-failure label; creating the issue without it."
+          fi
+
+          gh issue edit "$issue_url" --add-assignee "copilot-swe-agent[bot]" || \
+            echo "::warning::Unable to assign copilot-swe-agent[bot] to $issue_url."

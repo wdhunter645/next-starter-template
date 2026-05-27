@@ -1,0 +1,33 @@
+name: Orchestrator — Queue Advance
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: orchestrator-queue-advance
+  cancel-in-progress: false
+
+jobs:
+  advance-queue:
+    if: contains(github.event.issue.labels.*.name, 'orchestrator') && (github.event.label.name == 'status:complete' || github.event.label.name == 'status:failed')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run queue advance
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node scripts/orchestrator/advance-queue.mjs

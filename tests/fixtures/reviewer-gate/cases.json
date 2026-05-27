@@ -1,0 +1,127 @@
+[
+  {
+    "name": "remediation-pr-advisory-downgrade",
+    "payload": "events/labeled.json",
+    "labels": ["infra", "remediation"],
+    "changedFiles": ["scripts/ci/reviewer-gate-simulation.mjs"],
+    "body": "- **Issue:** #1069",
+    "openIssues": [1069],
+    "currentHeadLinkedReview": true,
+    "advisoryFindings": 2,
+    "expected": {
+      "mergeSafe": true,
+      "reviewerReason": "advisory-downgraded-for-remediation"
+    }
+  },
+  {
+    "name": "governance-pr-protected-scope-requires-current-review",
+    "payload": "events/pull_request.opened.json",
+    "labels": ["infra"],
+    "changedFiles": [".github/workflows/reviewer-response-completion.yml"],
+    "body": "- **Issue:** #1069",
+    "openIssues": [1069],
+    "eventName": "pull_request_target",
+    "currentHeadLinkedReview": false,
+    "expected": {
+      "mergeSafe": false,
+      "reviewerReason": "missing-current-head-review-for-protected-scope"
+    }
+  },
+  {
+    "name": "malformed-issue-reference",
+    "payload": "events/pull_request.opened.json",
+    "labels": ["infra"],
+    "changedFiles": ["scripts/ci/reviewer-gate-simulation.mjs"],
+    "body": "Issue: not-an-issue",
+    "headRef": "ci/no-ticket",
+    "openIssues": [1069],
+    "currentHeadLinkedReview": true,
+    "expected": {
+      "mergeSafe": false,
+      "issueReason": "missing-issue-mapping"
+    }
+  },
+  {
+    "name": "multiple-issue-violation",
+    "payload": "events/pull_request.opened.json",
+    "labels": ["infra"],
+    "changedFiles": ["scripts/ci/reviewer-gate-simulation.mjs"],
+    "body": "- **Issue:** #1069\nRelated Issue: #1058",
+    "openIssues": [1058, 1069],
+    "currentHeadLinkedReview": true,
+    "expected": {
+      "mergeSafe": false,
+      "issueReason": "multiple-issue-violation"
+    }
+  },
+  {
+    "name": "missing-issue-mapping",
+    "payload": "events/pull_request.opened.json",
+    "labels": ["infra"],
+    "changedFiles": ["scripts/ci/reviewer-gate-simulation.mjs"],
+    "body": "No source issue in this PR body.",
+    "headRef": "ci/no-ticket",
+    "openIssues": [1069],
+    "currentHeadLinkedReview": true,
+    "expected": {
+      "mergeSafe": false,
+      "issueReason": "missing-issue-mapping"
+    }
+  },
+  {
+    "name": "allowlist-violation",
+    "payload": "events/pull_request.opened.json",
+    "labels": ["docs-only"],
+    "changedFiles": [".github/workflows/reviewer-response-completion.yml"],
+    "body": "- **Issue:** #1069",
+    "openIssues": [1069],
+    "currentHeadLinkedReview": true,
+    "expected": {
+      "mergeSafe": false,
+      "allowlistReason": "allowlist-violation"
+    }
+  },
+  {
+    "name": "scripts-ci-protected-scope",
+    "payload": "events/pull_request.synchronize.json",
+    "labels": ["infra"],
+    "changedFiles": ["scripts/ci/reviewer-gate-simulation.mjs"],
+    "body": "- **Issue:** #1069",
+    "openIssues": [1069],
+    "currentHeadLinkedReview": true,
+    "expected": {
+      "mergeSafe": true,
+      "hasProtectedScope": true
+    }
+  },
+  {
+    "name": "docs-only-advisory-first",
+    "payload": "events/pull_request.opened.json",
+    "labels": ["docs-only"],
+    "changedFiles": ["docs/explanation/reviewer-gate-simulation-harness.md"],
+    "body": "- **Issue:** #1069",
+    "openIssues": [1069],
+    "currentHeadLinkedReview": false,
+    "advisoryFindings": 1,
+    "expected": {
+      "mergeSafe": true,
+      "docsOnly": true,
+      "reviewerSeverity": "advisory"
+    }
+  },
+  {
+    "name": "website-only-advisory-first",
+    "payload": "events/pull_request.opened.json",
+    "labels": ["feature"],
+    "changedFiles": ["src/components/Header.tsx"],
+    "body": "- **Issue:** #1069",
+    "openIssues": [1069],
+    "currentHeadLinkedReview": false,
+    "advisoryFindings": 1,
+    "expected": {
+      "mergeSafe": true,
+      "websiteOnly": true,
+      "reviewerSeverity": "advisory"
+    }
+  }
+]

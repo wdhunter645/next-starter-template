@@ -12,7 +12,7 @@ Does Not Own: Shared rules, design authority, governance
 
 Canonical Reference: /docs/ops/ai/CORE-RULES.md
 
-Last Reviewed: 2026-05-02
+Last Reviewed: 2026-05-06
 
 ---
 # CHATGPT-RULES.md
@@ -34,17 +34,20 @@ Modes must NOT be mixed.
 
 # ALIGNMENT GATE (MANDATORY)
 
-Before execution:
+Before high-risk execution:
 
 1. Restate task (1–3 lines)  
 2. Confirm scope  
 3. Identify risks  
-4. WAIT for confirmation  
+4. WAIT for confirmation unless standing repository-action permission applies  
 
-Exception:
+Standing repository-action permission:
 
-- ChatGPT has standing permission to create Issues and Pull Requests without waiting for confirmation when the task scope is clear and low risk.
-- Merge authority remains with the operator.
+- ChatGPT has standing permission to create GitHub Issues without waiting for confirmation when the task scope is clear.
+- ChatGPT has standing permission to create GitHub Pull Requests without waiting for confirmation when the task scope is clear and a source Issue exists or the work is a documented PR-first operations exception.
+- ChatGPT has standing permission to comment, label, update, and organize Issues and Pull Requests as needed for orchestration and repository execution.
+- ChatGPT must NOT merge Pull Requests without explicit human/operator approval.
+- Human approval is required only for merge, destructive production changes, credential/security-sensitive changes, or unclear/high-risk scope.
 
 ---
 
@@ -67,17 +70,37 @@ Allowed observation format:
 
 ---
 
+# ISSUE-FIRST PR DISCIPLINE
+
+ChatGPT must default to Issue-first repository work.
+
+Rules:
+
+- Create or identify the source Issue before opening a Pull Request.
+- Open the Pull Request from that Issue and link it explicitly in the PR body.
+- Preserve the source Issue as the task authority throughout implementation, review, post-merge validation, and closure.
+- Keep open PR count limited and purposeful.
+- Treat PR-first work as an exception for legitimate operations troubleshooting only.
+- Auto-created OPS tracker Issues are support-only and must not replace or hijack the source task Issue.
+- Merge remains human/operator approved only.
+
+---
+
 # EXECUTION ROLE
 
 ## #website
 
-- Cursor → implementation  
-- ChatGPT → design, validation, PR template, prompt  
+- Cursor → primary implementation agent  
+- Codex → secondary implementation agent when Cursor is unavailable, usage-limited, or unsuitable for the specific task  
+- All other agents → tertiary/support implementation agents only by explicit routing need  
+- ChatGPT → control layer: design, validation, Issue/PR creation, orchestration, PR template, agent prompt  
 
 ## #repository
 
-- Copilot → implementation  
-- ChatGPT → design, validation, PR template  
+- Codex → primary implementation agent  
+- Cursor → secondary implementation agent when Codex is unavailable, usage-limited, or unsuitable for the specific task  
+- All other agents → tertiary/support implementation agents only by explicit routing need  
+- ChatGPT → control layer: design, validation, Issue/PR creation, orchestration, PR template, agent prompt  
 
 ---
 
@@ -87,7 +110,7 @@ ChatGPT must provide:
 
 - complete files (not fragments)  
 - one PR template  
-- one agent prompt (Cursor or Copilot)  
+- one agent prompt matched to the routed implementation agent  
 - concise output  
 
 ---
@@ -100,8 +123,11 @@ Refer to /docs/ops/ai/CORE-RULES.md (REQUIRED VERIFICATION) for all fact and cit
 
 # PR OWNERSHIP
 
-- ChatGPT may create PRs and Issues directly under standing permission
-- Operator reviews and approves merges
+- ChatGPT may create Issues and PRs directly under standing permission.
+- ChatGPT must use Issue-first discipline unless the work is a documented PR-first operations troubleshooting exception.
+- ChatGPT may maintain orchestration metadata on PRs and Issues directly under standing permission.
+- Operator reviews and approves merges.
+- Merge is the approval gate.
 
 ---
 

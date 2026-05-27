@@ -1,0 +1,258 @@
+name: GATE — Reviewer Response Completion
+
+on:
+  pull_request_target:
+    types: [opened, reopened, edited, synchronize, ready_for_review]
+  issue_comment:
+    types: [created, edited, deleted]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  pull_request_review_comment:
+    types: [created, edited, deleted]
+
+permissions:
+  pull-requests: read
+  issues: write
+  contents: read
+
+jobs:
+  reviewer-response-completion:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: reviewer-response-completion-${{ github.event.pull_request.number || github.event.issue.number }}
+      cancel-in-progress: true
+    steps:
+      - name: Verify one current reviewer response and scoped response accounting
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pr = context.payload.pull_request;
+            const issue = context.payload.issue;
+            const quietPeriodSeconds = 120;
+            const enforceFailure = context.eventName === 'pull_request_target';
+
+            if (context.eventName === 'issue_comment' && !issue?.pull_request?.url) {
+              core.info('Issue comment is not associated with a pull request; skipping reviewer response completion gate.');
+              return;
+            }
+
+            const prNumber = pr?.number || (issue?.pull_request ? issue.number : null);
+            if (!prNumber) {
+              core.info('No pull request context; skipping reviewer response completion gate.');
+              return;
+            }
+
+            const { data: pull } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
+            const body = pull.body || '';
+            const headSha = pull.head?.sha || '';
+            const accountingSectionMatch = body.match(/##\s+REVIEWER RESPONSE ACCOUNTING\b([\s\S]*?)(?:\n##\s+|$)/i);
+            const accountingSection = accountingSectionMatch?.[1] || '';
+            const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+            const issueComments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number: prNumber,
+              per_page: 100,
+            });
+
+            const reviewComments = await github.paginate(github.rest.pulls.listReviewComments, {
+              owner,
+              repo,
+              pull_number: prNumber,
+              per_page: 100,
+            });
+
+            const reviews = await github.paginate(github.rest.pulls.listReviews, {
+              owner,
+              repo,
+              pull_number: prNumber,
+              per_page: 100,
+            });
+
+            const trustedReviewers = [
+              {
+                name: 'Copilot',
+                users: ['copilot-pull-request-reviewer[bot]', 'copilot-pull-request-reviewer', 'Copilot'],
+              },
+              {
+                name: 'Cubic',
+                users: ['cubic-dev-ai[bot]', 'cubic-dev-ai'],
+              },
+              {
+                name: 'Gemini',
+                users: ['gemini-code-assist[bot]', 'gemini-code-assist'],
+              },
+            ];
+            const reviewerUsers = new Set(trustedReviewers.flatMap((reviewer) => reviewer.users));
+
+            const reviewerArtifacts = [
+              ...issueComments
+                .filter((comment) => reviewerUsers.has(comment.user?.login || ''))
+                .map((comment) => ({
+                  kind: 'issue-comment',
+                  user: comment.user?.login || '',
+                  body: comment.body || '',
+                  createdAt: comment.created_at,
+                  updatedAt: comment.updated_at,
+                })),
+              ...reviewComments
+                .filter((comment) => reviewerUsers.has(comment.user?.login || ''))
+                .map((comment) => ({
+                  kind: 'review-comment',
+                  id: comment.id,
+                  user: comment.user?.login || '',
+                  body: comment.body || '',
+                  commitId: comment.commit_id || '',
+                  createdAt: comment.created_at,
+                  updatedAt: comment.updated_at,
+                })),
+              ...reviews
+                .filter((review) => reviewerUsers.has(review.user?.login || ''))
+                .map((review) => ({
+                  kind: 'review',
+                  user: review.user?.login || '',
+                  body: review.body || '',
+                  commitId: review.commit_id || '',
+                  submittedAt: review.submitted_at,
+                })),
+            ];
+
+            const latestRelevantTimestamp = reviewerArtifacts
+              .map((artifact) => artifact.updatedAt || artifact.createdAt || artifact.submittedAt)
+              .filter(Boolean)
+              .map((value) => Date.parse(value))
+              .filter((value) => Number.isFinite(value))
+              .sort((a, b) => b - a)[0];
+            const quietUntil = latestRelevantTimestamp ? latestRelevantTimestamp + quietPeriodSeconds * 1000 : null;
+            const now = Date.now();
+
+            const isHeadLinkedArtifact = (artifact) => {
+              return ['review', 'review-comment'].includes(artifact.kind) && artifact.commitId === headSha;
+            };
+
+            const reviewerStates = trustedReviewers.map((reviewer) => {
+              const artifacts = reviewerArtifacts.filter((artifact) => reviewer.users.includes(artifact.user));
+              const hasAnyArtifact = artifacts.length > 0;
+              const hasCurrentArtifact = artifacts.some(isHeadLinkedArtifact);
+              return {
+                ...reviewer,
+                artifacts,
+                hasAnyArtifact,
+                hasCurrentArtifact,
+              };
+            });
+
+            const qualifyingReviewers = reviewerStates.filter((reviewer) => reviewer.hasCurrentArtifact);
+            const selectedReviewer = qualifyingReviewers[0] || null;
+            const selectedReviewerUsers = new Set(selectedReviewer?.users || []);
+
+            const actionable = reviewComments.filter((comment) => {
+              const user = comment.user?.login || '';
+              const text = comment.body || '';
+
+              if (!selectedReviewerUsers.has(user)) return false;
+              if (/<!--\s*reviewer-response-ignore\s*-->/i.test(text)) return false;
+              if (comment.line == null && comment.position == null) return false;
+
+              return true;
+            });
+
+            const hasSection = actionable.length === 0 || Boolean(accountingSectionMatch);
+            const missingAccounting = actionable.filter((comment) => {
+              const url = comment.html_url || '';
+              const idToken = `review-comment:${comment.id}`;
+              const nodeToken = comment.node_id ? `review-comment-node:${comment.node_id}` : '';
+              const tokens = [idToken, nodeToken, url].filter(Boolean).map(escapeRegExp).join('|');
+              const accountingPattern = new RegExp(
+                `^-\\s+.*(?:${tokens})\\s*[—\\-]\\s*(accepted|rejected|ignored)\\s*[—\\-]\\s*\\S.*$`,
+                'im'
+              );
+              return !accountingPattern.test(accountingSection);
+            });
+
+            const marker = '<!-- reviewer-response-completion-gate -->';
+
+            async function upsertGateComment(lines) {
+              const prior = issueComments.find((comment) => (comment.body || '').includes(marker));
+              const commentBody = `${marker}\n\n${lines.join('\n')}`;
+              if (prior) {
+                await github.rest.issues.updateComment({ owner, repo, comment_id: prior.id, body: commentBody });
+              } else {
+                await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body: commentBody });
+              }
+            }
+
+            const quietPeriodActive = quietUntil !== null && now < quietUntil;
+            const gateFailed = qualifyingReviewers.length === 0 ||
+              quietPeriodActive ||
+              !hasSection ||
+              missingAccounting.length > 0;
+
+            if (gateFailed) {
+              const quietRemainingSeconds = quietPeriodActive ? Math.ceil((quietUntil - now) / 1000) : 0;
+              const lines = [
+                enforceFailure
+                  ? 'Reviewer response completion gate failed.'
+                  : 'Reviewer response completion gate refreshed; enforcement is deferred to pull_request_target runs.',
+                '',
+                'Pre-merge requirement: one valid trusted reviewer response path tied to the current head SHA is required.',
+                'Trusted top-level comments without a commit SHA are context only and do not qualify as current-head reviewer artifacts.',
+                'Post-merge reviewer audit remains responsible for identifying late or additional actionable reviewer comments.',
+                '',
+                `Current head SHA: ${headSha}`,
+                `Trusted reviewers with any artifact: ${reviewerStates.filter((reviewer) => reviewer.hasAnyArtifact).map((reviewer) => reviewer.name).join(', ') || 'none'}`,
+                `Trusted reviewers with current head-linked review artifact: ${qualifyingReviewers.map((reviewer) => reviewer.name).join(', ') || 'none'}`,
+                `Selected reviewer path: ${selectedReviewer?.name || 'none'}`,
+                `Quiet period seconds: ${quietPeriodSeconds}`,
+                `Quiet period remaining: ${quietRemainingSeconds}`,
+                `Enforcing event: ${enforceFailure ? 'yes' : 'no'}`,
+                '',
+                'Only actionable inline comments from the selected reviewer path must be explicitly listed in the PR body before merge readiness.',
+                '',
+                'Required PR body section when selected reviewer inline comments exist:',
+                '',
+                '## REVIEWER RESPONSE ACCOUNTING',
+                '- [x] <selected reviewer> disposition received: <summary>',
+                '- [x] Reviewed selected reviewer comments.',
+                '- [x] Accepted / rejected / ignored each actionable selected-reviewer comment with rationale.',
+                '- review-comment:<id> — accepted|rejected|ignored — <rationale>',
+                '',
+                'Unaccounted selected-reviewer comments:',
+                ...(missingAccounting.length ? missingAccounting.map((comment) => `- review-comment:${comment.id} ${comment.html_url}`) : ['- none']),
+              ];
+
+              try {
+                await upsertGateComment(lines);
+              } catch (error) {
+                core.warning(`Unable to write reviewer response gate comment: ${error.message}`);
+              }
+
+              if (enforceFailure) {
+                core.setFailed(lines.join('\n'));
+              } else {
+                core.notice('Reviewer gate state refreshed without failing this non-enforcing event run.');
+              }
+              return;
+            }
+
+            try {
+              await upsertGateComment([
+                'Reviewer response completion gate passed.',
+                '',
+                'Pre-merge requirement met: one valid trusted reviewer response path tied to the current head SHA is present.',
+                'Post-merge reviewer audit remains responsible for identifying late or additional actionable reviewer comments.',
+                '',
+                `Current head SHA: ${headSha}`,
+                `Selected reviewer path: ${selectedReviewer.name}`,
+                `Selected reviewer inline comments accounted: ${actionable.length}`,
+                `Quiet period seconds: ${quietPeriodSeconds}`,
+                `Enforcing event: ${enforceFailure ? 'yes' : 'no'}`,
+              ]);
+            } catch (error) {
+              core.warning(`Unable to update reviewer response gate comment: ${error.message}`);
+            }
+
+            core.info(`Reviewer response accounting complete. Selected reviewer path: ${selectedReviewer.name}. Inline comments accounted: ${actionable.length}.`);
