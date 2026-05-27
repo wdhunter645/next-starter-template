@@ -27,6 +27,8 @@ The LGFC orchestration model is a GitHub-native execution system for converting 
 | PR state sync | `/scripts/orchestrator/sync-pr-state.mjs` |
 | Queue advancement | `/scripts/orchestrator/advance-queue.mjs` |
 | Queue tests | `/tests/orchestrator-queue.test.mjs` |
+| CI orchestration state | `/.github/ci-orchestration-state.json` |
+| CI orchestration engine | `/scripts/orchestrator/ci-orchestration-engine.mjs` |
 
 ## Plan Eligibility
 
@@ -55,6 +57,7 @@ The marker prevents duplicate issue creation when a production-ready plan is upd
 | `governance` | `copilot` | `copilot`, `atlas` | `infra`, `change-ops` |
 | `docs` | `atlas` | `atlas`, `copilot` | `docs-only` |
 | `recovery` | `atlas` | `atlas`, `copilot`, `codex`, `cursor` | `recovery` |
+| `ci` | `cursor` | `cursor`, `codex`, `copilot`, `atlas` | `infra`, `change-ops` |
 
 ## Labels
 
@@ -82,6 +85,7 @@ Type labels:
 - `type:governance`
 - `type:docs`
 - `type:recovery`
+- `type:ci`
 
 Agent labels:
 
@@ -136,26 +140,20 @@ Active states:
 | `orchestrator-agent-trigger.yml` | Issue labeled | `trigger-agent.mjs` |
 | `orchestrator-pr-state-sync.yml` | PR ready for review or closed | `sync-pr-state.mjs` |
 | `orchestrator-queue-advance.yml` | Issue labeled complete or failed | `advance-queue.mjs` |
+| `ci-orchestration-engine.yml` | Schedule or manual dispatch | `ci-orchestration-engine.mjs` |
 
 ## Draft PR Contract
 
-Draft PR branches use:
-
-```text
-orchestrator/<issue-number>-<slugified-issue-title>
-```
-
-Draft PRs include:
-
-- The linked issue number.
-- Acceptance criteria copied from the issue.
-- Validation copied from the issue.
-- Allowed files copied from the issue.
-- The repository PR template as generated governance content.
-- The full task body for agent context.
+The current as-built handoff does not create placeholder PRs. `create-draft-pr.mjs` moves queued issues to `status:pr-draft`, comments with handoff instructions, and lets the assigned implementation agent create a PR only after real file changes exist.
 
 ## Failure Contract
 
 An orchestrator issue in `status:failed` halts queue advancement.
 
 The failure state remains until recovery work changes the status through a deliberate follow-up.
+
+## CI Orchestration Contract
+
+The CI orchestration engine creates one active CI implementation issue at a time using the state in `/.github/ci-orchestration-state.json`.
+
+It advances through the CI redesign phases only when the prior phase is complete, post-merge verification has succeeded, and recent CI health does not show blocking instability. Failed or stale CI implementation issues pause the rollout and create or update a remediation issue with evidence.

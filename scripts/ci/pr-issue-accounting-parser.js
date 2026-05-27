@@ -59,6 +59,25 @@ function semanticIssueRefsFromLine(line, owner, repo) {
   return { refs, invalidRefs, matched: true };
 }
 
+function semanticLineContainsIssueNumber(line, issueNumber) {
+  const normalizedLine = normalizeIssueReferenceLine(line);
+  const semantic = normalizedLine.match(/^(?:related\s+)?issue\b(?:\s*:)?\s*(.*)$/i);
+  if (!semantic) return false;
+
+  return issueRefTokens(semantic[1]).some((token) => {
+    const value = token.trim().replace(/[).,;]+$/g, '');
+    const local = value.match(/^#(\d+)$/);
+    if (local) return Number(local[1]) === issueNumber;
+
+    try {
+      const parts = new URL(value).pathname.split('/').filter(Boolean);
+      return parts.length === 4 && parts[2] === 'issues' && Number(parts[3]) === issueNumber;
+    } catch (_error) {
+      return false;
+    }
+  });
+}
+
 function closingIssueRefsFromLine(line, owner, repo) {
   const refs = [];
   const invalidRefs = [];
@@ -108,6 +127,15 @@ function issueRefsFromBranch(ref) {
   return refs;
 }
 
+function issueRefsFromTrustedSources(body, branchRef, owner, repo) {
+  const bodyRefs = issueRefsFromBody(body, owner, repo);
+  const branchRefs = bodyRefs.refs.length === 0 ? issueRefsFromBranch(branchRef) : [];
+  return {
+    refs: [...bodyRefs.refs, ...branchRefs],
+    invalidRefs: bodyRefs.invalidRefs,
+  };
+}
+
 function canonicalIssueLine(issueNumber) {
   return `- **Issue:** #${issueNumber}`;
 }
@@ -118,8 +146,7 @@ function normalizeIssueLine(body, issueNumber) {
   let replaced = false;
   const normalized = lines.map((line) => {
     if (/OPS\s+Tracker/i.test(line) || /Umbrella\s+Tracker/i.test(line)) return line;
-    const normalizedLine = normalizeIssueReferenceLine(line);
-    if (/^(?:related\s+)?issue\b(?:\s*:)?\s*/i.test(normalizedLine)) {
+    if (semanticLineContainsIssueNumber(line, issueNumber)) {
       if (!replaced) {
         replaced = true;
         return canonical;
@@ -140,7 +167,9 @@ module.exports = {
   issueNumberFromRef,
   issueRefsFromBody,
   issueRefsFromBranch,
+  issueRefsFromTrustedSources,
   issueUrlBelongsToCurrentRepo,
   normalizeIssueLine,
   normalizeIssueReferenceLine,
+  semanticLineContainsIssueNumber,
 };

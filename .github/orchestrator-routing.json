@@ -35,6 +35,12 @@
       "allowedAgents": ["atlas", "copilot", "codex", "cursor"],
       "priorityOrder": ["atlas", "copilot", "codex", "cursor"],
       "prIntents": ["recovery"]
+    },
+    "ci": {
+      "defaultAgent": "cursor",
+      "allowedAgents": ["cursor", "codex", "copilot", "atlas"],
+      "priorityOrder": ["cursor", "codex", "copilot", "atlas"],
+      "prIntents": ["infra", "change-ops"]
     }
   },
   "labelDerivation": {

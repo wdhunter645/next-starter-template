@@ -41,6 +41,7 @@ The table below is the canonical inventory of all GitHub Actions workflows in `.
 | `assess-nightly.yml` | Site Assessment (Nightly Drift Detection) | Effective | Nightly drift detection against expected site and route invariants. |
 | `b2-d1-daily-sync.yml` | B2 → D1 Daily Sync | Effective | Scheduled sync of Backblaze B2 inventory/data into D1. |
 | `b2-s3-smoke-test.yml` | B2 S3 Smoke Test | Effective | Validates S3-compatible B2 credentials/connectivity and basic object operations. |
+| `ci-orchestration-engine.yml` | CI Orchestration Engine | Effective | Creates or pauses one-at-a-time CI redesign implementation issues based on phase state and recent CI health. |
 | `ci.yml` | Legacy LGFC-main Workflow (Parked) | Ineffective (Parked) | Historical legacy CI pipeline; retained only for traceability. |
 | `copilot-setup-steps.yml` | Copilot Setup Steps | Effective | Bootstraps/validates automation steps required by Copilot-assisted workflows. |
 | `cursor-review.yml` | Cursor PR Review | Effective | Triggers Cursor-based PR review automation for change assessment. |
@@ -501,6 +502,27 @@ See `/.github/platform-intent-and-zip-governance.md` for intent governance and Z
 - Creates issue if retry exhausted
 
 **Enforcement:** ⚠️ **AUTOMATIC RECOVERY**  
+
+---
+
+### CI Orchestration Engine (`ci-orchestration-engine.yml`)
+
+**Purpose:** One-issue-at-a-time orchestration for the LGFC CI redesign rollout.
+
+**Triggers:**
+- Scheduled every six hours
+- Manual `workflow_dispatch` with optional `dry_run=true`
+
+**What it does:**
+1. Loads `/.github/ci-orchestration-state.json`.
+2. Confirms no active or failed CI implementation issue exists.
+3. Selects the next dependency-ready CI redesign phase.
+4. Checks recent `main` workflow runs for repeated failures or stale queued/in-progress runs.
+5. Creates one Cursor-ready implementation issue or creates/updates remediation evidence when paused.
+
+**Enforcement:** Monitoring and orchestration. It does not replace merge protection gates.
+
+**Failure Action:** Resolve the active, failed, stale, duplicate, or unstable CI evidence before rerunning the engine.
 
 ---
 

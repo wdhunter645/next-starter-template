@@ -9,6 +9,7 @@ const createIssues = await import('../scripts/orchestrator/create-issues.mjs');
 const createDraftPr = await import('../scripts/orchestrator/create-draft-pr.mjs');
 const advanceQueue = await import('../scripts/orchestrator/advance-queue.mjs');
 const syncPrState = await import('../scripts/orchestrator/sync-pr-state.mjs');
+const ciEngine = await import('../scripts/orchestrator/ci-orchestration-engine.mjs');
 
 function issue(number, status, createdAt) {
   return {
@@ -24,6 +25,36 @@ function issue(number, status, createdAt) {
 
 function queryFor(statuses) {
   return vi.fn(() => Object.values(statuses).flat());
+}
+
+function ciIssue(number, status, createdAt, body = '<!-- lgfc-ci-phase:pr-hygiene-foundation -->', state = 'OPEN') {
+  return {
+    number,
+    title: `CI Task ${number}`,
+    createdAt,
+    body,
+    state,
+    labels: [
+      { name: 'orchestrator' },
+      { name: 'type:ci' },
+      { name: status }
+    ]
+  };
+}
+
+function remediationIssue(number, status, createdAt, state = 'OPEN') {
+  return {
+    number,
+    title: `CI remediation ${number}`,
+    createdAt,
+    body: '<!-- lgfc-ci-orchestration-remediation -->\n# CI Orchestration Paused',
+    state,
+    labels: [
+      { name: 'orchestrator' },
+      { name: 'type:ci' },
+      { name: status }
+    ]
+  };
 }
 
 describe('orchestrator issue creation queue model', () => {
@@ -69,6 +100,225 @@ describe('orchestrator issue creation queue model', () => {
     }
 
     expect(producedStatuses).toEqual(['status:queued']);
+  });
+
+  it('routes CI implementation issues to Cursor with CI labels', () => {
+    const labels = createIssues.labelsForTask({ type: 'ci', agent: 'cursor' });
+
+    expect(labels).toContain('orchestrator');
+    expect(labels).toContain('status:queued');
+    expect(labels).toContain('type:ci');
+    expect(labels).toContain('agent:cursor');
+  });
+
+  it('detects missing orchestrator labels before issue creation', () => {
+    expect(createIssues.missingRequiredLabels(
+      ['orchestrator', 'status:queued', 'agent:cursor'],
+      ['orchestrator', 'status:queued', 'status:blocked', 'type:ci', 'agent:cursor']
+    )).toEqual(['status:blocked', 'type:ci']);
+  });
+});
+
+describe('CI orchestration engine', () => {
+  const state = {
+    sourceIssue: 1075,
+    programIssue: 1058,
+    canonicalDocs: [
+      'docs/explanation/ci/lgfc-ci-production-design.md',
+      'docs/how-to/ci/lgfc-ci-implementation-plan.md'
+    ],
+    monitoring: {
+      repeatedFailureThreshold: 2,
+      staleRunHours: 6,
+      staleIssueDays: 7,
+      expectedWorkflows: ['GATE - Quality Checks', 'Docs Guardrails']
+    },
+    phases: [
+      {
+        id: 'pr-hygiene-foundation',
+        title: 'PR Hygiene Foundation',
+        dependsOn: [],
+        objective: 'Normalize PR metadata before merge protection changes.',
+        workflowScope: ['PR metadata normalization'],
+        allowedFiles: ['.github/workflows/docs-guardrails.yml', 'scripts/ci/**'],
+        forbiddenScope: ['production website behavior changes'],
+        rollbackBoundary: 'Revert only PR hygiene automation.',
+        validation: ['npm test -- tests/orchestrator-queue.test.mjs'],
+        acceptanceCriteria: ['Generated issue is Cursor-ready.'],
+        postMergeVerification: ['Confirm post-merge verification passed.']
+      },
+      {
+        id: 'merge-protection-consolidation',
+        title: 'Merge Protection Consolidation',
+        dependsOn: ['pr-hygiene-foundation'],
+        objective: 'Consolidate deterministic gates.',
+        workflowScope: ['deterministic gate consolidation'],
+        allowedFiles: ['.github/workflows/gate-quality.yml'],
+        forbiddenScope: ['reviewer lifecycle redesign'],
+        rollbackBoundary: 'Revert merge-protection changes.',
+        validation: ['npm test'],
+        acceptanceCriteria: ['Deterministic blockers are consolidated.'],
+        postMergeVerification: ['Confirm post-merge verification passed.']
+      }
+    ]
+  };
+
+  it('identifies the first dependency-ready CI phase when no active CI issue exists', () => {
+    const decision = ciEngine.rolloutDecision({
+      state,
+      issues: [],
+      runs: [
+        { workflowName: 'GATE - Quality Checks', status: 'completed', conclusion: 'success', createdAt: '2026-05-22T10:00:00Z' },
+        { workflowName: 'Docs Guardrails', status: 'completed', conclusion: 'success', createdAt: '2026-05-22T10:00:00Z' }
+      ],
+      now: new Date('2026-05-22T11:00:00Z')
+    });
+
+    expect(decision).toMatchObject({
+      action: 'create',
+      phase: { id: 'pr-hygiene-foundation' }
+    });
+  });
+
+  it('refuses to create a duplicate active CI implementation issue', () => {
+    const decision = ciEngine.rolloutDecision({
+      state,
+      issues: [ciIssue(1076, 'status:implementation', '2026-05-22T10:00:00Z')],
+      runs: [],
+      now: new Date('2026-05-22T11:00:00Z')
+    });
+
+    expect(decision).toMatchObject({
+      action: 'pause',
+      reason: 'active_issue',
+      issue: { number: 1076 }
+    });
+  });
+
+  it('advances to the next dependency phase only after the previous phase is complete', () => {
+    const decision = ciEngine.rolloutDecision({
+      state,
+      issues: [ciIssue(1076, 'status:complete', '2026-05-22T10:00:00Z', '<!-- lgfc-ci-phase:pr-hygiene-foundation -->', 'CLOSED')],
+      runs: [
+        { workflowName: 'GATE - Quality Checks', status: 'completed', conclusion: 'success', createdAt: '2026-05-22T10:00:00Z' },
+        { workflowName: 'Docs Guardrails', status: 'completed', conclusion: 'success', createdAt: '2026-05-22T10:00:00Z' }
+      ],
+      now: new Date('2026-05-22T11:00:00Z')
+    });
+
+    expect(decision).toMatchObject({
+      action: 'create',
+      phase: { id: 'merge-protection-consolidation' }
+    });
+  });
+
+  it('does not count an open status:complete issue as a completed phase', () => {
+    const decision = ciEngine.rolloutDecision({
+      state,
+      issues: [ciIssue(1076, 'status:complete', '2026-05-22T10:00:00Z')],
+      runs: [
+        { workflowName: 'GATE - Quality Checks', status: 'completed', conclusion: 'success', createdAt: '2026-05-22T10:00:00Z' },
+        { workflowName: 'Docs Guardrails', status: 'completed', conclusion: 'success', createdAt: '2026-05-22T10:00:00Z' }
+      ],
+      now: new Date('2026-05-22T11:00:00Z')
+    });
+
+    expect(decision).toMatchObject({
+      action: 'pause',
+      reason: 'duplicate_phase_issue',
+      issue: { number: 1076 }
+    });
+  });
+
+  it('ignores closed failed CI issues when selecting the next phase', () => {
+    const decision = ciEngine.rolloutDecision({
+      state,
+      issues: [ciIssue(1076, 'status:failed', '2026-05-22T10:00:00Z', '<!-- lgfc-ci-phase:pr-hygiene-foundation -->', 'CLOSED')],
+      runs: [
+        { workflowName: 'GATE - Quality Checks', status: 'completed', conclusion: 'success', createdAt: '2026-05-22T10:00:00Z' },
+        { workflowName: 'Docs Guardrails', status: 'completed', conclusion: 'success', createdAt: '2026-05-22T10:00:00Z' }
+      ],
+      now: new Date('2026-05-22T11:00:00Z')
+    });
+
+    expect(decision).toMatchObject({
+      action: 'create',
+      phase: { id: 'pr-hygiene-foundation' }
+    });
+  });
+
+  it('excludes remediation issues from rollout gating', () => {
+    const decision = ciEngine.rolloutDecision({
+      state,
+      issues: [remediationIssue(1080, 'status:failed', '2026-05-22T10:00:00Z')],
+      runs: [
+        { workflowName: 'GATE - Quality Checks', status: 'completed', conclusion: 'success', createdAt: '2026-05-22T10:00:00Z' },
+        { workflowName: 'Docs Guardrails', status: 'completed', conclusion: 'success', createdAt: '2026-05-22T10:00:00Z' }
+      ],
+      now: new Date('2026-05-22T11:00:00Z')
+    });
+
+    expect(decision).toMatchObject({
+      action: 'create',
+      phase: { id: 'pr-hygiene-foundation' }
+    });
+  });
+
+  it('pauses rollout on repeated CI workflow failures', () => {
+    const report = ciEngine.ciHealthReport([
+      { workflowName: 'GATE - Quality Checks', status: 'completed', conclusion: 'failure', createdAt: '2026-05-22T09:00:00Z', url: 'https://github.com/owner/repo/actions/runs/1' },
+      { workflowName: 'GATE - Quality Checks', status: 'completed', conclusion: 'timed_out', createdAt: '2026-05-22T10:00:00Z', url: 'https://github.com/owner/repo/actions/runs/2' }
+    ], state.monitoring, new Date('2026-05-22T11:00:00Z'));
+
+    expect(report.stable).toBe(false);
+    expect(report.blocking).toContainEqual(expect.objectContaining({
+      code: 'repeated_workflow_failure',
+      evidence: 'https://github.com/owner/repo/actions/runs/1, https://github.com/owner/repo/actions/runs/2'
+    }));
+  });
+
+  it('includes workflow URLs in remediation evidence', () => {
+    const decision = ciEngine.rolloutDecision({
+      state,
+      issues: [],
+      runs: [
+        { workflowName: 'GATE - Quality Checks', status: 'in_progress', conclusion: '', createdAt: '2026-05-22T01:00:00Z', url: 'https://github.com/owner/repo/actions/runs/3' }
+      ],
+      now: new Date('2026-05-22T11:00:00Z')
+    });
+
+    expect(decision).toMatchObject({
+      action: 'pause',
+      reason: 'ci_instability'
+    });
+    expect(decision.evidence).toContain('GATE - Quality Checks has been in_progress since 2026-05-22T01:00:00Z (https://github.com/owner/repo/actions/runs/3)');
+  });
+
+  it('creates remediation body text for duplicate phase pauses', () => {
+    const decision = ciEngine.rolloutDecision({
+      state,
+      issues: [ciIssue(1076, 'status:complete', '2026-05-22T10:00:00Z')],
+      runs: [],
+      now: new Date('2026-05-22T11:00:00Z')
+    });
+    const body = ciEngine.buildRemediationBody(decision);
+
+    expect(decision.reason).toBe('duplicate_phase_issue');
+    expect(body).toContain('Reason: duplicate_phase_issue');
+    expect(body).toContain('Issue #1076 already exists for phase pr-hygiene-foundation.');
+  });
+
+  it('generates Cursor-ready issue bodies with required orchestration fields', () => {
+    const body = ciEngine.buildIssueBody(state, state.phases[0]);
+
+    expect(body).toContain('<!-- lgfc-ci-phase:pr-hygiene-foundation -->');
+    expect(body).toContain('## Objective');
+    expect(body).toContain('## Source-of-Truth Docs');
+    expect(body).toContain('## Allowed Files');
+    expect(body).toContain('## Rollback Boundary');
+    expect(body).toContain('## Validation Requirements');
+    expect(body).toContain('## Acceptance Criteria');
+    expect(body).toContain('## Post-Merge Verification Requirements');
   });
 });
 
@@ -232,8 +482,10 @@ describe('orchestrator workflow trigger compatibility', () => {
     const queueWorkflow = fs.readFileSync('.github/workflows/orchestrator-queue-advance.yml', 'utf8');
     const enforcePrOnlyWorkflow = fs.readFileSync('.github/workflows/enforce-pr-only.yml', 'utf8');
     const postMergeWorkflow = fs.readFileSync('.github/workflows/post-merge-intent-verification.yml', 'utf8');
+    const ciOrchestrationWorkflow = fs.readFileSync('.github/workflows/ci-orchestration-engine.yml', 'utf8');
     const createIssuesScript = fs.readFileSync('scripts/orchestrator/create-issues.mjs', 'utf8');
     const createDraftPrScript = fs.readFileSync('scripts/orchestrator/create-draft-pr.mjs', 'utf8');
+    const ciOrchestrationScript = fs.readFileSync('scripts/orchestrator/ci-orchestration-engine.mjs', 'utf8');
 
     expect(draftWorkflow).toContain('types: [opened, labeled]');
     expect(draftWorkflow).toContain("contains(github.event.issue.labels.*.name, 'status:queued')");
@@ -243,6 +495,11 @@ describe('orchestrator workflow trigger compatibility', () => {
     expect(queueWorkflow).toContain("github.event.label.name == 'status:failed'");
     expect(enforcePrOnlyWorkflow).toContain('commits/${GITHUB_SHA}/pulls');
     expect(postMergeWorkflow).toContain('commits/${GITHUB_SHA}/pulls');
+    expect(ciOrchestrationWorkflow).toContain("node-version: '22'");
+    expect(ciOrchestrationWorkflow).toContain('node scripts/orchestrator/ci-orchestration-engine.mjs');
+    expect(ciOrchestrationScript).toContain('status:failed');
+    expect(ciOrchestrationScript).toContain('lgfc-ci-phase:');
+    expect(createIssuesScript).toContain('ensureLabels();');
     expect(createIssuesScript).toMatch(/['"]--state['"],\s*['"]all['"]/s);
     expect(createDraftPrScript).toContain('existingOpenPrForIssue(repo, issue.number)');
     expect(createDraftPrScript).toContain("issue.state !== 'OPEN'");
