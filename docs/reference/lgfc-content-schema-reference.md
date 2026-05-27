@@ -66,17 +66,19 @@ Temporary intake and moderation table.
 
 | Field | Type | Purpose |
 |---|---|---|
-| id | INTEGER | Queue identifier |
-| submitter_name | TEXT | Submission source |
-| submitter_email | TEXT | Contact information |
-| alias | TEXT | Public identity |
-| submission_text | TEXT | Raw submission |
-| media_reference | TEXT | Uploaded media linkage |
-| moderation_status | TEXT | Intake state |
+| submission_id | INTEGER | Queue identifier |
+| submitted_by | TEXT | Submission source |
+| title | TEXT | Proposed story title |
+| description | TEXT | Raw submission description |
+| source_url | TEXT | Source reference |
+| proposed_tag | TEXT | Proposed canonical tag |
+| media_url | TEXT | Uploaded media linkage |
+| status | TEXT | pending/approved/rejected_auto/rejected_manual |
 | relevance_score | INTEGER | Automation relevance score |
 | duplicate_candidate | INTEGER | Duplicate flag |
 | risk_flags | TEXT | Objective moderation flags |
-| reviewer_notes | TEXT | Editorial notes |
+| review_notes | TEXT | Editorial notes |
+| purge_flag | INTEGER | Quarterly purge eligibility flag |
 | created_at | TEXT | Intake timestamp |
 
 ## Media Relationships

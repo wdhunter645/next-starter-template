@@ -52,7 +52,7 @@ Build intake process:
 - submission form
 - media upload
 - queue insertion
-- moderation status initialization
+- `status` initialization
 - attribution capture
 
 ### Step 4 — Create Editorial Review Workflow
