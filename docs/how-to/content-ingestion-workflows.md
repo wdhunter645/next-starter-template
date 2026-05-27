@@ -14,7 +14,9 @@ Last Reviewed: 2026-05-14
 
 This document defines the approved operational workflows for ingesting Lou Gehrig historical content into the LGFC archive.
 
-## Manual Ingestion Workflow
+## Procedure
+
+### Manual Ingestion Workflow
 
 1. Collect source material.
 2. Verify source attribution.
@@ -25,7 +27,7 @@ This document defines the approved operational workflows for ingesting Lou Gehri
 7. Submit for editorial review.
 8. Approve for publication.
 
-## Member Submission Workflow
+### Member Submission Workflow
 
 1. Member submits content.
 2. Submission enters submission_queue.
@@ -34,7 +36,7 @@ This document defines the approved operational workflows for ingesting Lou Gehri
 5. Approved content becomes archive material.
 6. Rejected content is retained until quarterly purge.
 
-## OCR Workflow
+### OCR Workflow
 
 OCR processing may include:
 

@@ -14,7 +14,9 @@ Last Reviewed: 2026-05-14
 
 Build the first operational LGFC historical content ingestion pipeline.
 
-## Step 1 — Create D1 Tables
+## Steps
+
+### Step 1 — Create D1 Tables
 
 Use canonical `content_inventory` as the primary story and layout source of truth.
 
@@ -33,7 +35,7 @@ Validate:
 - rotation fields
 - editorial status constraints
 
-## Step 2 — Configure B2 Media Storage
+### Step 2 — Configure B2 Media Storage
 
 Configure:
 
@@ -43,7 +45,7 @@ Configure:
 - public access patterns
 - media relationship identifiers
 
-## Step 3 — Create Submission Intake Flow
+### Step 3 — Create Submission Intake Flow
 
 Build intake process:
 
@@ -53,7 +55,7 @@ Build intake process:
 - moderation status initialization
 - attribution capture
 
-## Step 4 — Create Editorial Review Workflow
+### Step 4 — Create Editorial Review Workflow
 
 Build:
 
@@ -63,7 +65,7 @@ Build:
 - moderation notes
 - publication approval process
 
-## Step 5 — Build Publishing Flow
+### Step 5 — Build Publishing Flow
 
 Publishing flow:
 
@@ -73,7 +75,7 @@ Publishing flow:
 4. search index update
 5. media relationship validation
 
-## Step 6 — Homepage Rotation Integration
+### Step 6 — Homepage Rotation Integration
 
 Connect:
 
@@ -83,7 +85,7 @@ Connect:
 - rotation suppression
 - homepage story selection
 
-## Step 7 — Search Integration
+### Step 7 — Search Integration
 
 Search indexing should include:
 
@@ -94,7 +96,7 @@ Search indexing should include:
 - alternate-perspective relationships
 - metadata enrichment
 
-## Step 8 — Governance Validation
+### Step 8 — Governance Validation
 
 Verify:
 
@@ -104,7 +106,7 @@ Verify:
 - automation restrictions
 - historical preservation requirements
 
-## Step 9 — Future Automation Integration
+### Step 9 — Future Automation Integration
 
 Future orchestration systems may later integrate:
 
