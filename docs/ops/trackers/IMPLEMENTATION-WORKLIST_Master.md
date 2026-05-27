@@ -352,7 +352,13 @@ Progress:
 - Branch: `feat/t30-fanclub-shell-1013`
 
 ## T31 — Member Profile + membership card panel
-Status: OPEN
+Status: IN REVIEW (PR #1093)
+Issue: #1014
+Scope: `/fanclub/myprofile` and `/fanclub/membercard` pages only.
+Exit: launch-safe profile/membercard pages with stable cross-page FanClub navigation.
+Progress:
+- Implementation PR opened: #1093
+- Branch: `feat/t31-profile-membercard-1014`
 
 ## T32 — Member Chat Day-1 flow
 Status: OPEN
