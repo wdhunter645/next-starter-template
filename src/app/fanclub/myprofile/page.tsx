@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useMemberSession } from '@/hooks/useMemberSession';
 
 type Profile = {
@@ -9,13 +10,6 @@ type Profile = {
   last_name: string;
   screen_name: string;
   email_opt_in: boolean;
-};
-
-type MemberCardContent = {
-  id: number;
-  title: string | null;
-  body_md: string | null;
-  updated_at: string | null;
 };
 
 const emptyProfile: Profile = {
@@ -30,7 +24,6 @@ export default function MemberProfilePage() {
   const { isLoading, isAuthenticated } = useMemberSession({ redirectTo: '/' });
   const [profile, setProfile] = useState<Profile>(emptyProfile);
   const [savedProfile, setSavedProfile] = useState<Profile>(emptyProfile);
-  const [cardContent, setCardContent] = useState<MemberCardContent | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string>('');
@@ -45,10 +38,7 @@ export default function MemberProfilePage() {
       setLoadingProfile(true);
       setMessage('');
       try {
-        const [profileRes, cardRes] = await Promise.all([
-          fetch('/api/fanclub/profile', { credentials: 'include' }),
-          fetch('/api/content/membercard', { credentials: 'include' }),
-        ]);
+        const profileRes = await fetch('/api/fanclub/profile', { credentials: 'include' });
 
         const profileData = await profileRes.json().catch(() => ({}));
         if (!cancelled && profileRes.ok && profileData?.ok && profileData.profile) {
@@ -61,11 +51,6 @@ export default function MemberProfilePage() {
           };
           setProfile(nextProfile);
           setSavedProfile(nextProfile);
-        }
-
-        const cardData = await cardRes.json().catch(() => ({}));
-        if (!cancelled && cardRes.ok && cardData?.ok) {
-          setCardContent(cardData.content || null);
         }
       } finally {
         if (!cancelled) setLoadingProfile(false);
@@ -120,7 +105,7 @@ export default function MemberProfilePage() {
   return (
     <main style={{ padding: '40px 16px', maxWidth: 980, margin: '0 auto' }}>
       <h1 style={{ fontSize: 34, margin: '0 0 12px 0' }}>My Profile</h1>
-      <p style={{ opacity: 0.85, marginTop: 0 }}>Your member profile and membership card content.</p>
+      <p style={{ opacity: 0.85, marginTop: 0 }}>Manage your member profile details.</p>
 
       <section style={{ marginTop: 18, padding: 16, borderRadius: 14, border: '1px solid rgba(0,0,0,0.12)' }}>
         <h2 style={{ marginTop: 0 }}>Profile</h2>
@@ -178,43 +163,42 @@ export default function MemberProfilePage() {
         )}
       </section>
 
-      <section style={{ marginTop: 36 }}>
-        <h2 style={{ fontSize: 24, margin: '0 0 12px 0' }}>{cardContent?.title || 'Membership Card'}</h2>
-        <div
-          style={{
-            display: 'flex',
-            gap: 18,
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-          }}
-        >
-          <div style={{ flex: '1 1 420px', minWidth: 280 }}>
-            <p style={{ marginTop: 0, opacity: 0.9, whiteSpace: 'pre-wrap' }}>
-              {cardContent?.body_md ||
-                "Your membership card is a digital keepsake. Save the front and back card images below for personal use and sharing."}
-            </p>
-          </div>
-
-          <div style={{ flex: '0 0 360px', maxWidth: 420, display: 'flex', gap: 12, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-            <figure style={{ margin: 0 }}>
-              <img
-                src="/membercard-front.png"
-                alt="Membership card - front"
-                style={{ width: 170, height: 'auto', borderRadius: 10, border: '1px solid rgba(0,0,0,0.12)' }}
-              />
-              <figcaption style={{ fontSize: 12, opacity: 0.75, marginTop: 6, textAlign: 'center' }}>Front</figcaption>
-            </figure>
-            <figure style={{ margin: 0 }}>
-              <img
-                src="/membercard-back.png"
-                alt="Membership card - back"
-                style={{ width: 170, height: 'auto', borderRadius: 10, border: '1px solid rgba(0,0,0,0.12)' }}
-              />
-              <figcaption style={{ fontSize: 12, opacity: 0.75, marginTop: 6, textAlign: 'center' }}>Back</figcaption>
-            </figure>
-          </div>
-        </div>
+      <section
+        style={{
+          marginTop: 24,
+          display: 'flex',
+          gap: 12,
+          flexWrap: 'wrap',
+        }}
+      >
+        <Link href="/fanclub/membercard" style={{ textDecoration: 'none' }}>
+          <span
+            style={{
+              display: 'inline-flex',
+              padding: '10px 14px',
+              borderRadius: 10,
+              border: '1px solid rgba(0,0,0,0.2)',
+              color: 'inherit',
+              fontWeight: 700,
+            }}
+          >
+            View Membership Card
+          </span>
+        </Link>
+        <Link href="/fanclub" style={{ textDecoration: 'none' }}>
+          <span
+            style={{
+              display: 'inline-flex',
+              padding: '10px 14px',
+              borderRadius: 10,
+              border: '1px solid rgba(0,0,0,0.2)',
+              color: 'inherit',
+              fontWeight: 700,
+            }}
+          >
+            Back to Fan Club Home
+          </span>
+        </Link>
       </section>
     </main>
   );
