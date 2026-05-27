@@ -1,9 +1,9 @@
 ---
 Doc Type: Explanation
 Audience: Human + AI
-Authority Level: Canonical Implementation Plan
-Owns: LGFC content archive execution sequencing
-Does Not Own: Runtime implementation details
+Authority Level: Controlled
+Owns: Strategic rationale and phase model for LGFC content archive implementation
+Does Not Own: Execution authority, project tracking, runtime implementation details, or migration approval
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
 Last Reviewed: 2026-05-14
 ---
@@ -12,7 +12,7 @@ Last Reviewed: 2026-05-14
 
 ## Overview
 
-This plan defines the phased execution strategy for the LGFC historical content archive platform.
+This explanation describes the phased implementation strategy for the LGFC historical content archive platform.
 
 The implementation sequence prioritizes:
 

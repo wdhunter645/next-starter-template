@@ -20,6 +20,8 @@ Build the first operational LGFC historical content ingestion pipeline.
 
 Use canonical `content_inventory` as the primary story and layout source of truth.
 
+Schema changes must be implemented through new files under `/migrations/` and the approved GitHub Actions/Wrangler migration workflow.
+
 Create only the auxiliary tables needed around it:
 
 - submission_queue
@@ -50,10 +52,12 @@ Configure:
 Build intake process:
 
 - submission form
-- media upload
+- media reference capture
 - queue insertion
 - `status` initialization
 - attribution capture
+
+B2 uploads remain admin-controlled; member or developer intake records may reference media but must not write directly to B2.
 
 ### Step 4 — Create Editorial Review Workflow
 

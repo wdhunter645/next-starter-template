@@ -4,7 +4,7 @@ Audience: Human + AI
 Authority Level: Canonical Technical Reference
 Owns: Planned LGFC content archive schema and operational constraints
 Does Not Own: Runtime implementation status or UI behavior
-Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
+Canonical Reference: /docs/reference/content-inventory-design-spec.md
 Last Reviewed: 2026-05-14
 ---
 
@@ -140,7 +140,7 @@ Homepage rotation fields:
 
 ## Tagging Standards
 
-Tags should remain:
+Tag constraints:
 
 - historically meaningful
 - stable
