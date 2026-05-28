@@ -394,13 +394,16 @@ Issue/PR trace:
 - Tracker sync PR: #1098
 
 ## T34 — Homepage dynamic D1 content wiring
-Status: IN REVIEW (PR #1101)
+Status: CLOSED
+Date Closed: 2026-05-28
 Issue: #1017
 Scope: milestones and discussions preview sections on homepage only.
 Exit: D1-driven homepage dynamic sections with safe empty/error behavior while preserving canonical section order.
-Progress:
-- Implementation PR opened: #1101
-- Branch: `feat/t34-homepage-d1-wiring-1017`
+Summary:
+Homepage dynamic D1 wiring is merged with safer discussions/milestones payload normalization, deterministic date rendering, and explicit section-level error/empty handling.
+Issue/PR trace:
+- Implementation PR: #1101
+- Tracker sync PR: #1103
 
 ---
 
