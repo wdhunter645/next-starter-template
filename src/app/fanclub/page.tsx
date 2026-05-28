@@ -1,55 +1,33 @@
 'use client';
 
-import Link from 'next/link';
+import { useState } from 'react';
 import FloatingLogo from '@/components/FloatingLogo';
 import AdminLink from '@/components/fanclub/AdminLink';
+import ArchivesTiles from '@/components/fanclub/ArchivesTiles';
+import DiscussionFeed from '@/components/fanclub/DiscussionFeed';
+import GehrigTimeline from '@/components/fanclub/GehrigTimeline';
+import PostCreation from '@/components/fanclub/PostCreation';
+import WelcomeSection from '@/components/fanclub/WelcomeSection';
 import { useMemberSession } from '@/hooks/useMemberSession';
 
-type NavCard = {
-  href: string;
-  title: string;
-  description: string;
+const sectionStackStyle = {
+  maxWidth: 1100,
+  margin: '0 auto',
+  padding: '0 20px 40px',
+  display: 'flex',
+  flexDirection: 'column' as const,
+  gap: 20,
 };
-
-const FANCLUB_NAV: NavCard[] = [
-  {
-    href: '/fanclub/myprofile',
-    title: 'My Profile',
-    description: 'View and manage your member profile details.',
-  },
-  {
-    href: '/fanclub/library',
-    title: 'Library',
-    description: 'Browse fan club library entries and references.',
-  },
-  {
-    href: '/fanclub/memorabilia',
-    title: 'Memorabilia',
-    description: 'Explore memorabilia highlights curated for members.',
-  },
-  {
-    href: '/fanclub/photo',
-    title: 'Member Photos',
-    description: 'See member photo uploads and visual highlights.',
-  },
-  {
-    href: '/fanclub/submit',
-    title: 'Submit Content',
-    description: 'Send new content for fan club review and publishing.',
-  },
-  {
-    href: '/fanclub/chat',
-    title: 'Member Chat',
-    description: 'Join member discussion threads and ongoing conversation.',
-  },
-];
 
 export default function MemberHomePage() {
   const { isLoading, isAuthenticated, email, role } = useMemberSession({ redirectTo: '/' });
+  const [feedRefresh, setFeedRefresh] = useState(0);
 
   if (isLoading || !isAuthenticated) {
     return null;
   }
+
+  const memberEmail = email || '';
 
   return (
     <main>
@@ -59,57 +37,21 @@ export default function MemberHomePage() {
           fontSize: 32,
           fontWeight: 700,
           textAlign: 'center',
-          margin: '40px 20px 32px 20px',
+          margin: '40px 20px 24px',
           color: 'var(--lgfc-blue)',
         }}
       >
         WELCOME LOU GEHRIG FAN CLUB MEMBERS
       </h1>
 
-      <section
-        aria-label="FanClubMemberShell"
-        style={{
-          maxWidth: 1100,
-          margin: '0 auto',
-          padding: '0 20px',
-        }}
-      >
-        <p style={{ margin: '0 0 20px 0', color: 'rgba(0,0,0,0.72)', lineHeight: 1.55 }}>
-          Signed in as <strong>{email || 'member'}</strong>. Use the member areas below to navigate the
-          Fan Club experience.
-        </p>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: 12,
-          }}
-        >
-          {FANCLUB_NAV.map((card) => (
-            <Link
-              key={card.href}
-              href={card.href}
-              style={{
-                display: 'block',
-                textDecoration: 'none',
-                color: 'inherit',
-                border: '1px solid rgba(0,0,0,0.12)',
-                borderRadius: 12,
-                padding: 14,
-                background: '#fff',
-              }}
-            >
-              <div style={{ fontSize: 16, fontWeight: 700 }}>{card.title}</div>
-              <p style={{ margin: '8px 0 0 0', fontSize: 14, color: 'rgba(0,0,0,0.7)', lineHeight: 1.45 }}>
-                {card.description}
-              </p>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <AdminLink isAdmin={role === 'admin'} />
+      <div style={sectionStackStyle} aria-label="FanClubHomeSections">
+        <WelcomeSection email={memberEmail} />
+        <ArchivesTiles />
+        <PostCreation email={memberEmail} onPostCreated={() => setFeedRefresh((n) => n + 1)} />
+        <DiscussionFeed refreshTrigger={feedRefresh} />
+        <GehrigTimeline />
+        <AdminLink isAdmin={role === 'admin'} />
+      </div>
     </main>
   );
 }
