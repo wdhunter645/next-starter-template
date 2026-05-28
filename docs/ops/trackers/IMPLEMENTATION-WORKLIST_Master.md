@@ -352,16 +352,24 @@ Progress:
 - Branch: `feat/t30-fanclub-shell-1013`
 
 ## T31 — Member Profile + membership card panel
-Status: IN REVIEW (PR #1093)
+Status: CLOSED
+Date Closed: 2026-05-27
 Issue: #1014
 Scope: `/fanclub/myprofile` and `/fanclub/membercard` pages only.
 Exit: launch-safe profile/membercard pages with stable cross-page FanClub navigation.
-Progress:
-- Implementation PR opened: #1093
-- Branch: `feat/t31-profile-membercard-1014`
+Summary:
+Profile and membercard pages are merged with dedicated `/fanclub/membercard` presentation and stable cross-page FanClub navigation.
+Issue/PR trace:
+- Implementation PR: #1093
+- Tracker sync PR: #1094
 
-## T32 — Member Chat Day-1 flow
-Status: OPEN
+## T32 — Fan Club library and memorabilia pages
+Status: IN REVIEW
+Issue: #1015
+Scope: `/fanclub/library` and `/fanclub/memorabilia` read-only presentation, plus safe member navigation between FanClub pages.
+Exit: library and memorabilia pages render safely with no admin/upload workflow expansion.
+Progress:
+- Implementation branch: `feat/t32-library-memorabilia-1015`
 
 ---
 

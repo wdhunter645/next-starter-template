@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import { useMemberSession } from '@/hooks/useMemberSession';
 import { buildFanclubPhotoListApiUrl } from '@/lib/fanclubApi';
@@ -23,10 +24,13 @@ export default function MemorabiliaPage() {
   const [items, setItems] = useState<MemorabiliaItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [offset, setOffset] = useState(0);
+  const [message, setMessage] = useState('');
+  const [query, setQuery] = useState('');
   const limit = 24;
 
   async function load(nextOffset: number) {
     setLoading(true);
+    setMessage('');
     try {
       const res = await fetch(buildFanclubPhotoListApiUrl({ limit, offset: nextOffset, memorabilia: true }));
       const data = await res.json().catch(() => ({}));
@@ -34,6 +38,14 @@ export default function MemorabiliaPage() {
         const incoming = Array.isArray(data.items) ? data.items : [];
         if (nextOffset === 0) setItems(incoming);
         else setItems((prev) => [...prev, ...incoming]);
+      } else if (nextOffset === 0) {
+        setItems([]);
+        setMessage(data?.error || 'Unable to load memorabilia items right now.');
+      }
+    } catch {
+      if (nextOffset === 0) {
+        setItems([]);
+        setMessage('Unable to load memorabilia items right now.');
       }
     } finally {
       setLoading(false);
@@ -50,13 +62,32 @@ export default function MemorabiliaPage() {
     return null;
   }
 
+  const filtered = query.trim()
+    ? items.filter((p) => {
+        const title = (p.title || '').toLowerCase();
+        const description = (p.description || '').toLowerCase();
+        const needle = query.trim().toLowerCase();
+        return title.includes(needle) || description.includes(needle);
+      })
+    : items;
+
   return (
     <main style={{ ...styles.main }}>
       <h1 style={{ ...styles.h1 }}>Memorabilia</h1>
-      <p style={{ ...styles.lead }}>A filtered view of memorabilia-tagged records sourced from the photos archive.</p>
+      <p style={{ ...styles.lead }}>A read-only view of memorabilia-tagged records sourced from the photo archive.</p>
+      <label style={{ display: 'grid', gap: 6, fontSize: 14, marginBottom: 14 }}>
+        Search
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search title or description"
+          style={{ padding: '10px 12px', fontSize: 16, borderRadius: 10, border: '1px solid rgba(0,0,0,0.2)' }}
+        />
+      </label>
+      {message ? <p style={{ opacity: 0.85 }}>{message}</p> : null}
 
       <div style={{ ...styles.grid }}>
-        {items.map((p) => (
+        {filtered.map((p) => (
           <div key={p.id} style={{ ...styles.card }}>
             {p.thumbnail_url ? (
               <img src={p.thumbnail_url} alt={p.description || p.title || `Item ${p.id}`} style={{ ...styles.img }} />
@@ -67,6 +98,7 @@ export default function MemorabiliaPage() {
           </div>
         ))}
       </div>
+      {!loading && filtered.length === 0 ? <p style={{ marginTop: 14, opacity: 0.85 }}>No memorabilia items found.</p> : null}
 
       <div style={{ ...styles.btnRow }}>
         <button
@@ -80,9 +112,15 @@ export default function MemorabiliaPage() {
         >
           {loading ? 'Loading...' : 'Load more'}
         </button>
-        <a style={{ ...styles.btn, textDecoration: 'none' }} href="/fanclub/photo">
+        <Link style={{ ...styles.btn }} href="/fanclub/photo">
           View photos
-        </a>
+        </Link>
+        <Link style={{ ...styles.btn }} href="/fanclub/library">
+          View library
+        </Link>
+        <Link style={{ ...styles.btn }} href="/fanclub">
+          Back to Fan Club Home
+        </Link>
       </div>
     </main>
   );
