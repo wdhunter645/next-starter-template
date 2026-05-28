@@ -1,0 +1,1 @@
+{"parent_issue":1075,"tasks":[{"id":"CI-ORCH-001","title":"Implementation-plan task decomposition engine","status":"complete","depends_on":[]},{"id":"CI-ORCH-002","title":"Post-merge governance audit orchestration","status":"queued","depends_on":["CI-ORCH-001"]}]}
