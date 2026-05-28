@@ -36,12 +36,8 @@ const normalizeDiscussion = (raw: unknown): Discussion | null => {
 const formatCreatedAt = (raw: string): string => {
   const parsed = Date.parse(raw);
   if (Number.isNaN(parsed)) return raw || 'Unknown date';
-
-  return new Date(parsed).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  // Keep formatting deterministic across prerender + hydration.
+  return new Date(parsed).toISOString().slice(0, 10);
 };
 
 export default function RecentDiscussionsTeaser() {
@@ -56,11 +52,10 @@ export default function RecentDiscussionsTeaser() {
         const data = await apiGet<{ ok: boolean; items: Discussion[] }>(`/api/discussions/list?limit=5`);
         if (!alive) return;
 
-        const normalized = Array.isArray(data.items)
-          ? data.items
+        const sourceItems = Array.isArray(data?.items) ? data.items : [];
+        const normalized = sourceItems
               .map((item) => normalizeDiscussion(item))
-              .filter((item): item is Discussion => item !== null)
-          : [];
+              .filter((item): item is Discussion => item !== null);
 
         setItems(normalized);
         setError(null);
