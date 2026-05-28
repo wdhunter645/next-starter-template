@@ -342,14 +342,16 @@ Notes:
 # Phase 4 — Fan Club Core (QUEUED)
 
 ## T30 — FanClub home shell + navigation
-Status: IN REVIEW (PR #1092)
+Status: CLOSED
+Date Closed: 2026-05-27
 Issue: #1013
 Notes: Current FanClub formatting/design requires dedicated implementation pass.
 Scope: `/fanclub` shell and authenticated member navigation only.
 Exit: stable authenticated shell with canonical FanClub subpage navigation.
-Progress:
-- Implementation PR opened: #1092
-- Branch: `feat/t30-fanclub-shell-1013`
+Summary:
+FanClub shell and authenticated member navigation are merged and stable.
+Issue/PR trace:
+- Implementation PR: #1092
 
 ## T31 — Member Profile + membership card panel
 Status: CLOSED
@@ -364,12 +366,24 @@ Issue/PR trace:
 - Tracker sync PR: #1094
 
 ## T32 — Fan Club library and memorabilia pages
-Status: IN REVIEW
+Status: CLOSED
+Date Closed: 2026-05-28
 Issue: #1015
 Scope: `/fanclub/library` and `/fanclub/memorabilia` read-only presentation, plus safe member navigation between FanClub pages.
 Exit: library and memorabilia pages render safely with no admin/upload workflow expansion.
+Summary:
+Library and memorabilia read-only member experiences are merged with safe filtering, empty/error handling, and stable FanClub navigation.
+Issue/PR trace:
+- Implementation PR: #1095
+
+## T33 — Social Wall production integration
+Status: IN REVIEW (PR #1097)
+Issue: #1016
+Scope: Elfsight Social Wall embed integration only.
+Exit: production-safe load behavior with fail-safe fallback while homepage section order remains canonical.
 Progress:
-- Implementation branch: `feat/t32-library-memorabilia-1015`
+- Implementation PR opened: #1097
+- Branch: `feat/t33-socialwall-1016`
 
 ---
 
