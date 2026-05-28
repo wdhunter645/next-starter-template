@@ -49,6 +49,7 @@ const compareMilestones = (a: Milestone, b: Milestone): number => {
 export default function MilestonesSection() {
   const [items, setItems] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -63,8 +64,11 @@ export default function MilestonesSection() {
           : [];
 
         setItems([...normalized].sort(compareMilestones));
+        setError(null);
       } catch {
-        if (alive) setItems([]);
+        if (!alive) return;
+        setItems([]);
+        setError('Unable to load milestones right now.');
       } finally {
         if (alive) setLoading(false);
       }
@@ -82,6 +86,8 @@ export default function MilestonesSection() {
 
       {loading ? (
         <p className="sub">Loading milestones…</p>
+      ) : error ? (
+        <p className="sub">{error}</p>
       ) : items.length === 0 ? (
         <p className="sub">No milestones are available yet.</p>
       ) : (
