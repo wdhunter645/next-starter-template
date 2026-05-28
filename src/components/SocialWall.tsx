@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './social-wall.module.css';
 
 const PLATFORM_SRC = 'https://elfsightcdn.com/platform.js';
@@ -15,13 +15,27 @@ declare global {
 }
 
 export default function SocialWall() {
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+
   useEffect(() => {
+    let cancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
     const existingScript = document.querySelector<HTMLScriptElement>(
       `script[src="${PLATFORM_SRC}"]`
     );
 
     const init = () => {
+      if (cancelled) return;
+      if (timeoutId) clearTimeout(timeoutId);
       window.elfsight?.reload?.();
+      setStatus('ready');
+    };
+
+    const fail = () => {
+      if (cancelled) return;
+      if (timeoutId) clearTimeout(timeoutId);
+      setStatus('error');
     };
 
     if (!existingScript) {
@@ -29,10 +43,23 @@ export default function SocialWall() {
       script.src = PLATFORM_SRC;
       script.async = true;
       script.onload = init;
+      script.onerror = fail;
       document.body.appendChild(script);
     } else {
-      init();
+      if (window.elfsight) {
+        init();
+      } else {
+        existingScript.addEventListener('load', init, { once: true });
+        existingScript.addEventListener('error', fail, { once: true });
+      }
     }
+
+    timeoutId = setTimeout(fail, 8000);
+
+    return () => {
+      cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, []);
 
   return (
@@ -41,7 +68,14 @@ export default function SocialWall() {
         <h2 className={styles.sectionTitle}>Social Wall</h2>
         <p className={styles.subtitle}>Live fan posts from Facebook.</p>
         <div className={styles.embed}>
-          <p className={styles.fallback}>Loading social wall content...</p>
+          {status === 'loading' ? (
+            <p className={styles.fallback}>Loading social wall content...</p>
+          ) : null}
+          {status === 'error' ? (
+            <p className={styles.fallback}>
+              Social wall is temporarily unavailable. Please check back soon.
+            </p>
+          ) : null}
           <div className={WIDGET_ID} data-elfsight-app-lazy />
         </div>
       </div>
