@@ -405,6 +405,17 @@ Issue/PR trace:
 - Implementation PR: #1101
 - Tracker sync PR: #1103
 
+## T35 — FanClub home composition pass
+Status: IN REVIEW (PR #1114)
+Issue: #1113
+Scope: `/fanclub` canonical section composition only.
+Exit: FanClub home renders locked section order with D1-backed discussions/milestones and safe empty/error states.
+Progress:
+- Implementation PR opened: #1114
+- Branch: `feat/t35-fanclub-composition-1113`
+Notes:
+- Completes the dedicated FanClub formatting/design pass called out during T30 closeout.
+
 ---
 
 # Day 2 — Repository Operations & Monitoring (ACTIVE)
