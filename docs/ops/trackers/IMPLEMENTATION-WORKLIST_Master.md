@@ -406,15 +406,25 @@ Issue/PR trace:
 - Tracker sync PR: #1103
 
 ## T35 — FanClub home composition pass
-Status: IN REVIEW (PR #1114)
+Status: CLOSED
+Date Closed: 2026-05-28
 Issue: #1113
 Scope: `/fanclub` canonical section composition only.
 Exit: FanClub home renders locked section order with D1-backed discussions/milestones and safe empty/error states.
-Progress:
-- Implementation PR opened: #1114
-- Branch: `feat/t35-fanclub-composition-1113`
+Summary:
+FanClub home composition is merged with canonical section stack, archive tile links, D1-backed discussions/milestones, and safe empty/error handling.
+Issue/PR trace:
+- Implementation PR: #1114
+- Tracker sync PR: #1115
 Notes:
 - Completes the dedicated FanClub formatting/design pass called out during T30 closeout.
+
+## T25 — Search experience completion and validation
+Status: ACTIVE
+Issue: #1108
+Owner: Cursor
+Scope: `/search`, search input UX, result rendering, empty states, mobile behavior, and fail-closed behavior.
+Exit: public search is launch-safe, responsive, and preserves canonical navigation.
 
 ---
 

@@ -12,6 +12,26 @@ Last Reviewed: 2026-05-05
 
 ------------------------------------------------------------------------
 
+## THREAD CLOSEOUT RECORD --- 2026-05-28 --- T35 FanClub home composition closeout
+
+### Starting State
+T35 implementation PR #1114 merged, but issue #1113 and tracker still reflected in-review/active state.
+
+### Objective
+Close T35 in tracker records and advance website sequencing to T25 search work.
+
+### Work Performed
+- Updated `docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md` to mark T35 CLOSED with PR trace (#1114, #1115).
+- Marked T25 ACTIVE as the next Cursor website implementation task (#1108).
+
+### Result
+T35 is closed and aligned with merged implementation on `main`.
+
+### Next Action
+Execute T25 search experience implementation (#1108).
+
+------------------------------------------------------------------------
+
 ## THREAD CLOSEOUT RECORD --- 2026-05-28 --- T34 tracker closeout sync
 
 ### Starting State
