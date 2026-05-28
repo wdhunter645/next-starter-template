@@ -339,6 +339,7 @@ Summary:
 Events page implementation is merged with stable month/list presentation via composed month and next-ten sections.
 Issue/PR trace:
 - Implementation PR: #1091
+Notes:
 - Historical task alias: T23 (Events) is preserved as T23-E to avoid collision with T23 FAQ CMS moderation.
 
 ---
