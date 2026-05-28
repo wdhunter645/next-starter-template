@@ -330,11 +330,15 @@ Issue/PR trace:
 - Implementation PR: #1072
 
 ## T23-E — Events page (legacy T23, active implementation track)
-Status: OPEN
+Status: CLOSED
+Date Closed: 2026-05-27
 Issue: #947
 Scope: events page only.
 Exit: stable month/list presentation.
-Notes:
+Summary:
+Events page implementation is merged with stable month/list presentation via composed month and next-ten sections.
+Issue/PR trace:
+- Implementation PR: #1091
 - Historical task alias: T23 (Events) is preserved as T23-E to avoid collision with T23 FAQ CMS moderation.
 
 ---
@@ -377,13 +381,25 @@ Issue/PR trace:
 - Implementation PR: #1095
 
 ## T33 — Social Wall production integration
-Status: IN REVIEW (PR #1097)
+Status: CLOSED
+Date Closed: 2026-05-28
 Issue: #1016
 Scope: Elfsight Social Wall embed integration only.
 Exit: production-safe load behavior with fail-safe fallback while homepage section order remains canonical.
+Summary:
+Social Wall production integration is merged with explicit loading/error states, script timeout handling, and safe fail-closed behavior for homepage stability.
+Issue/PR trace:
+- Implementation PR: #1097
+- Tracker sync PR: #1098
+
+## T34 — Homepage dynamic D1 content wiring
+Status: IN REVIEW (PR #1101)
+Issue: #1017
+Scope: milestones and discussions preview sections on homepage only.
+Exit: D1-driven homepage dynamic sections with safe empty/error behavior while preserving canonical section order.
 Progress:
-- Implementation PR opened: #1097
-- Branch: `feat/t33-socialwall-1016`
+- Implementation PR opened: #1101
+- Branch: `feat/t34-homepage-d1-wiring-1017`
 
 ---
 
