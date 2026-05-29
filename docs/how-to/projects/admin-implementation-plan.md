@@ -1,5 +1,5 @@
 ---
-Doc Type: how-to
+Doc Type: How-To
 Audience: AI agents and project maintainers
 Authority Level: supporting
 Owns: Admin implementation sequencing and acceptance planning
@@ -13,6 +13,10 @@ Last Reviewed: 2026-05-29
 ## Objective
 
 Deliver the Admin ecosystem in controlled phases without crossing Fan Club, public-site, or governance boundaries.
+
+## Execution
+
+Implement this plan as serial, reviewable units. Each phase should produce a focused implementation issue or PR with acceptance criteria, verification notes, and no redesign of production authority.
 
 ## Phase 1 — Admin foundation
 
