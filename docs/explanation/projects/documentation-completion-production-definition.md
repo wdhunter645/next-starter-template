@@ -1,5 +1,5 @@
 ---
-Doc Type: explanation
+Doc Type: Explanation
 Audience: human project owner and AI agents
 Authority Level: supporting
 Owns: documentation completion program intent, boundaries, and delivery model
