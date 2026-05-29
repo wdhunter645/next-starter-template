@@ -3,7 +3,7 @@ Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
 Owns: project #1132 documentation ownership map
-Does Not Own: final product design, implementation mechanics, or runtime configuration
+Does Not Own: Final product design, implementation mechanics, or runtime configuration
 Canonical Reference: /docs/README.md
 Related issues: #1132, #1133
 Last Reviewed: 2026-05-29
@@ -31,7 +31,7 @@ This map identifies where LGFC documentation ownership currently lives so produc
 | Historical/legacy material | `docs/archive/` and legacy paths | Migration issues #1019/#1039/#1076 | Reference only unless promoted |
 | AI/agent rules | `docs/ops/ai/`, `.agents/skills/`, `ops/ai/` | Agent.md | Must be normalized to avoid split authority |
 
-## project Package Ownership Targets
+## Package Ownership Targets
 
 | Package | Design document location target | Implementation plan location target | As-built destination |
 |---|---|---|---|
