@@ -450,6 +450,13 @@ Issue/PR trace:
 Notes:
 - Completes the dedicated FanClub formatting/design pass called out during T30 closeout.
 
+## T25 — Search experience completion and validation
+Status: ACTIVE
+Issue: #1108
+Owner: Cursor
+Scope: `/search`, search input UX, result rendering, empty states, mobile behavior, and fail-closed behavior.
+Exit: public search is launch-safe, responsive, and preserves canonical navigation.
+
 ---
 
 # Phase 5 — Website Operational Systems (QUEUED)
