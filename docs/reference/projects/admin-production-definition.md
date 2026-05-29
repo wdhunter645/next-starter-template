@@ -1,5 +1,5 @@
 ---
-Doc Type: reference
+Doc Type: Reference
 Audience: human project owner and AI agents
 Authority Level: supporting
 Owns: Admin system production definition, scope, actors, boundaries, success criteria
@@ -65,32 +65,12 @@ System health is a read-only diagnostic surface for D1, deployment, B2, external
 
 ## Audit and logging requirements
 
-Destructive or high-impact actions must produce an audit record. Examples include deletion, hiding, approval, rejection, warnings, role changes, and configuration changes.
-
-Audit records should capture actor, target, action, timestamp, and optional reason.
+Destructive or high-impact actions must produce an audit record.
 
 ## Boundaries
 
-The Admin system must not own:
-
-- Public navigation design
-- Fan Club member-facing UX
-- Store implementation
-- Secret values
-- CI workflow implementation
-- As-built environment configuration
+The Admin system must not own public navigation design, Fan Club member-facing UX, store implementation, secret values, CI workflow implementation, or as-built environment configuration.
 
 ## Success criteria
 
-The Admin system is production-complete when:
-
-- Admin sections are reachable from `/admin/**` as documented.
-- Sensitive admin APIs are authorization-gated.
-- Content, media, moderation, milestone, event, matchup, user, and system-health areas have defined workflows.
-- High-impact actions are logged.
-- Admin does not appear in public footer or mobile hamburger navigation.
-- Admin workflows have implementation plans and follow-up as-built documentation.
-
-## Conflict note
-
-Some older admin documentation describes an ideal role-backed gate while the current as-built access model describes token-gated APIs. Until implementation changes are made, production work must respect the as-built API security boundary while future design work may define a role-backed target state.
+The Admin system is production-complete when documented admin areas exist, protected actions are authorization-gated, high-impact actions are logged, and admin remains separated from public/member navigation.
