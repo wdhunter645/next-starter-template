@@ -1,6 +1,0 @@
-@import "./variables.css";
-
-/* Account for fixed header height */
-body {
-  padding-top: 64px; /* updated for new header height */
-}
