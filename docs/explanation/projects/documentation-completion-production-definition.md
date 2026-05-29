@@ -56,7 +56,7 @@ The program is complete when:
 
 - Each project has a clear production definition.
 - Each project has a task-order implementation plan.
-- Each plan can be converted into GitHub Issues without additional requirement invention.
+- Each plan can be converted into GitHub issues without additional requirement invention.
 - Legacy documentation remains available only as fallback reference until promoted or archived.
 - As-built and operations docs are clearly assigned to implementation PR follow-up work.
 
