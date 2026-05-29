@@ -33,6 +33,7 @@ Operational implementation tracking:
 - PR bodies
 - implementation worklists
 - post-merge validation records
+- `/docs/ops/trackers/LGFC-WEBSITE-IMPLEMENTATION-QUEUE-NORMALIZATION.md`
 
 ## Issue 173 Closeout Mapping
 
@@ -89,12 +90,16 @@ Authority:
 
 - Production design standards canonical FanClub routes
 - production auth/session model
+- `/docs/reference/design/fanclub.md`
+- `/docs/reference/design/fanclub-home.md`
 
 Tracking:
 
 - Issue #1013
 - Issue #1014
 - Issue #1015
+- Issue #1113
+- T40 / Issue #1118 in the normalized website implementation queue
 
 Implementation readiness:
 
@@ -103,6 +108,104 @@ Implementation readiness:
 - preserve canonical navigation
 - keep membership card behavior aligned to `/fanclub/myprofile`
 - keep memorabilia as a tagged or filtered photo/library experience, not a standalone table unless design authority changes
+- complete member photo/archive, submission, and discussion/chat surfaces through queued Fan Club operations work
+
+### Admin Operational Surfaces
+
+Authority:
+
+- Production design standards canonical Admin route family
+- production auth/session model
+- active repository route/API inventory
+
+Tracking:
+
+- T41 / Issue #1119 in the normalized website implementation queue
+
+Implementation readiness:
+
+- preserve `/admin/**` as an admin-only surface
+- keep admin navigation separate from public and FanClub hamburger navigation
+- validate join-request, stats, worklist, export, and member-operation surfaces with safe empty and failure states
+- avoid exposing admin affordances in public footer or mobile public navigation
+
+### Moderation and Review Workflows
+
+Authority:
+
+- production auth/session model
+- FAQ/Ask moderation implementation trace
+- reports API surfaces
+
+Tracking:
+
+- T23 FAQ CMS moderation closeout
+- T42 / Issue #1120 in the normalized website implementation queue
+
+Implementation readiness:
+
+- preserve auditable approval, rejection, archive, and close transitions
+- keep moderation queues admin-only
+- provide safe empty/error states for review queues
+- avoid bypassing existing FAQ, Ask, or report workflow boundaries
+
+### Content Management and Editorial Archive
+
+Authority:
+
+- content inventory design spec
+- content inventory D1 schema reference
+- content archive implementation plan
+
+Tracking:
+
+- T43 / Issue #1121 and T45 / Issue #1123 in the normalized website implementation queue
+
+Implementation readiness:
+
+- preserve `content_inventory` as the canonical archive/content authority
+- route admin CMS/content operations through existing save, publish, and list API boundaries
+- keep library submissions and archive editorial review distinct from public read paths
+- avoid parallel page-specific content stores unless new authority explicitly permits them
+
+### Media Management
+
+Authority:
+
+- content inventory design spec
+- content inventory D1 schema reference
+- active B2/media route and API inventory
+
+Tracking:
+
+- T44 / Issue #1122 in the normalized website implementation queue
+
+Implementation readiness:
+
+- preserve B2-backed media assumptions
+- validate media-assets listing and sync behavior with safe failure states
+- avoid changing public image rendering contracts outside the media management task scope
+
+### Events, Charity, Matchup, and Reporting Operations
+
+Authority:
+
+- production design standards homepage section order
+- active admin event, fundraiser, matchup, reports, stats, and export surfaces
+
+Tracking:
+
+- T46 / Issue #1124 Event/calendar administration
+- T47 / Issue #1125 Charity/fundraiser administration
+- T48 / Issue #1126 Matchup administration
+- T49 / Issue #1127 Audit/reporting systems
+
+Implementation readiness:
+
+- preserve public homepage and `/events` read behavior when admin event tools change
+- keep campaign/fundraiser preview workflows admin-only until public exposure is intentionally enabled
+- keep matchup operations aligned to current weekly voting behavior
+- preserve protected-data boundaries for audit, reporting, stats, and export flows
 
 ### Dynamic D1 Homepage Integrations
 
@@ -151,6 +254,30 @@ A topic is implementation-ready when all of the following exist:
 4. acceptance criteria
 5. validation expectations
 6. no conflict with existing navigation, auth, D1, B2, or content inventory authority
+
+## Normalized Queue Coverage
+
+| Surface | Current coverage | Remaining queue coverage |
+|---|---|---|
+| Public FAQ and Ask | T21, T22, T23 | post-merge verification or accepted completion record |
+| Public Events | T23-E | post-merge verification or accepted completion record |
+| Public Search | Issue #1108 | T25 queued |
+| Mobile/responsive navigation | Issue #1109 | T26 queued |
+| Join/Login auth UX | Issue #1110 | T28 queued |
+| D1/B2 fail-closed validation | Issue #1111 | T29 queued |
+| FanClub shell/profile/library/memorabilia | Issues #1013-#1015 | post-merge verification or accepted completion record |
+| FanClub home composition | Issue #1113 | T35 active |
+| FanClub operations | Issue #1118 | T40 queued |
+| Admin operations | Issue #1119 | T41 queued |
+| Moderation/review | Issue #1120 | T42 queued |
+| CMS/content management | Issue #1121 | T43 queued |
+| Media management | Issue #1122 | T44 queued |
+| Editorial/archive | Issue #1123 | T45 queued |
+| Event/calendar admin | Issue #1124 | T46 queued |
+| Charity/fundraiser admin | Issue #1125 | T47 queued |
+| Matchup admin | Issue #1126 | T48 queued |
+| Audit/reporting | Issue #1127 | T49 queued |
+| Launch readiness | Issue #1112 duplicate task-number repaired | T50 queued |
 
 ## Closed Historical Issues
 

@@ -342,6 +342,37 @@ Issue/PR trace:
 Notes:
 - Historical task alias: T23 (Events) is preserved as T23-E to avoid collision with T23 FAQ CMS moderation.
 
+## T25 — Search experience completion and validation
+Status: IN REVIEW (PR #1130)
+Issue: #1108
+Owner: Cursor
+Scope: `/search`, search input UX, result rendering, empty states, mobile behavior, and fail-closed behavior.
+Exit: public search is launch-safe, responsive, and preserves canonical navigation.
+Progress:
+- Implementation PR opened: #1130
+- Branch: `feat/t25-search-1108`
+
+## T26 — Mobile navigation and responsive validation suite
+Status: QUEUED
+Issue: #1109
+Owner: Cursor
+Scope: mobile hamburger behavior, Store link behavior, responsive layouts, header/footer invariants, breakpoints, and touch usability.
+Exit: mobile navigation and responsive rendering comply with locked design invariants without viewport overflow.
+
+## T28 — Join/Login UX completion and auth-state validation
+Status: QUEUED
+Issue: #1110
+Owner: Cursor
+Scope: `/join`, `/login` redirect handling, auth-state transitions, logged-in header invariants, logout behavior, and fail-closed behavior.
+Exit: Join/Login behavior is stable, avoids redirect loops, and preserves mobile/header auth-state invariants.
+
+## T29 — D1/B2 integration verification and fail-closed testing
+Status: QUEUED
+Issue: #1111
+Owner: Cursor
+Scope: active D1 queries, B2 image rendering, fallback handling, missing-content behavior, homepage media validation, and runtime error validation.
+Exit: active D1/B2 integrations fail closed without uncaught runtime failures.
+
 ---
 
 # Phase 4 — Fan Club Core (QUEUED)
@@ -406,15 +437,92 @@ Issue/PR trace:
 - Tracker sync PR: #1103
 
 ## T35 — FanClub home composition pass
-Status: IN REVIEW (PR #1114)
+Status: CLOSED
+Date Closed: 2026-05-28
 Issue: #1113
 Scope: `/fanclub` canonical section composition only.
 Exit: FanClub home renders locked section order with D1-backed discussions/milestones and safe empty/error states.
-Progress:
-- Implementation PR opened: #1114
-- Branch: `feat/t35-fanclub-composition-1113`
+Summary:
+FanClub home composition is merged with canonical section stack, archive tile links, D1-backed discussions/milestones, and safe empty/error handling.
+Issue/PR trace:
+- Implementation PR: #1114
+- Tracker sync PR: #1115
 Notes:
 - Completes the dedicated FanClub formatting/design pass called out during T30 closeout.
+
+---
+
+# Phase 5 — Website Operational Systems (QUEUED)
+
+Normalization reference:
+`/docs/ops/trackers/LGFC-WEBSITE-IMPLEMENTATION-QUEUE-NORMALIZATION.md`
+
+## T40 — Fan Club operational workflows
+Status: QUEUED
+Issue: #1118
+Scope: `/fanclub/photo`, `/fanclub/submit`, `/fanclub/chat`, Fan Club APIs, member-only operational states.
+Exit: member-facing Fan Club operational workflows render safely, stay auth-gated, and preserve canonical Fan Club navigation.
+
+## T41 — Admin operating shell and member operations
+Status: QUEUED
+Issue: #1119
+Scope: `/admin`, `/admin/join-requests`, admin stats/worklist/member-operation surfaces.
+Exit: admin operations have launch-safe navigation, member queue visibility, and stable empty/error states.
+
+## T42 — Moderation and review workflows
+Status: QUEUED
+Issue: #1120
+Scope: `/admin/moderation`, reports APIs, ask/FAQ moderation state transitions, review queues.
+Exit: moderation/review workflows expose actionable queues and preserve auditable approval, rejection, archive, and close states.
+
+## T43 — Content management workflows
+Status: QUEUED
+Issue: #1121
+Scope: `/admin/cms`, `/admin/content`, content save/publish/list APIs.
+Exit: admin content management supports safe draft/list/publish operations without bypassing content authority.
+
+## T44 — Media management workflows
+Status: QUEUED
+Issue: #1122
+Scope: `/admin/media-assets`, B2 sync, photo/media list and get APIs.
+Exit: media management supports safe B2-backed inventory review, sync feedback, and fail-closed asset handling.
+
+## T45 — Editorial/archive systems
+Status: QUEUED
+Issue: #1123
+Scope: content inventory, library submissions, archive publication/review state, editorial metadata.
+Exit: editorial/archive workflows preserve `content_inventory` authority and provide a launch-safe submission-to-publication path.
+
+## T46 — Event/calendar administration
+Status: QUEUED
+Issue: #1124
+Scope: `/admin/events`, event create/update/seed APIs, public event read-path validation.
+Exit: event administration can create and update calendar entries while preserving homepage and `/events` read behavior.
+
+## T47 — Charity/fundraiser administration
+Status: QUEUED
+Issue: #1125
+Scope: `/admin/fundraiser-preview`, campaign spotlight/fundraiser data operations.
+Exit: charity/fundraiser administration safely previews and validates campaign content before public exposure.
+
+## T48 — Matchup administration
+Status: QUEUED
+Issue: #1126
+Scope: weekly matchup current/vote/results APIs and operational rotation controls.
+Exit: weekly matchup operations can review or prepare active matchups without breaking public voting behavior.
+
+## T49 — Audit/reporting systems
+Status: QUEUED
+Issue: #1127
+Scope: reports create/list/close APIs, admin export/stats surfaces, operational evidence flows.
+Exit: reporting and audit surfaces expose launch-safe operational evidence without leaking protected data.
+
+## T50 — Launch readiness QA and production validation suite
+Status: QUEUED
+Issue: #1112
+Owner: Cursor
+Scope: cross-route QA, navigation validation, responsive validation, runtime validation, visual QA, invariant verification, and launch-readiness reporting.
+Exit: public, Fan Club, admin, D1/B2, responsive, and production-readiness checks are complete with no critical runtime defects.
 
 ---
 
