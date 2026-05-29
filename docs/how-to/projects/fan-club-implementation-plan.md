@@ -1,5 +1,5 @@
 ---
-Doc Type: how-to
+Doc Type: How-To
 Audience: AI agents and project maintainers
 Authority Level: supporting
 Owns: Fan Club implementation sequencing and acceptance planning
@@ -13,6 +13,10 @@ Last Reviewed: 2026-05-29
 ## Objective
 
 Deliver the complete Fan Club system defined by the production definition using small, verifiable implementation units.
+
+## Execution
+
+Implement work in dependency order. Each phase should produce reviewable implementation issues and PRs that conform to production authority without redefining routes, navigation, or security boundaries.
 
 ## Phase 1
 
