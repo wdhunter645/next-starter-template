@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import fs from 'node:fs';
 
 import AuthClient from '@/app/auth/AuthClient';
 import AuthLegacyRedirectPage from '@/app/auth/page';
@@ -103,5 +104,23 @@ describe('navigation auth links', () => {
   it('routes homepage CTA Login to canonical join login tab', () => {
     render(<JoinCTA />);
     expect(screen.getByRole('link', { name: 'Login' })).toHaveAttribute('href', LOGIN_TAB_ROUTE);
+  });
+});
+
+describe('LGFC header auth invariants', () => {
+  it('keeps public header button order and canonical login route', () => {
+    const header = fs.readFileSync('src/components/Header.tsx', 'utf8');
+    const idxJoin = header.indexOf('href="/join"');
+    const idxSearch = header.indexOf('href="/search"');
+    const idxStore = header.indexOf('bonfire.com/store/lou-gehrig-fan-club');
+    const idxLogin = header.indexOf('LOGIN_TAB_ROUTE');
+
+    expect(idxJoin).toBeGreaterThan(-1);
+    expect(idxSearch).toBeGreaterThan(-1);
+    expect(idxStore).toBeGreaterThan(-1);
+    expect(idxLogin).toBeGreaterThan(-1);
+    expect(idxJoin).toBeLessThan(idxSearch);
+    expect(idxSearch).toBeLessThan(idxStore);
+    expect(idxStore).toBeLessThan(idxLogin);
   });
 });
