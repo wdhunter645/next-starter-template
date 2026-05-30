@@ -14,7 +14,7 @@ const header = fs.readFileSync('src/components/Header.tsx', 'utf8');
 const idxJoin = header.indexOf('href="/join"');
 const idxSearch = header.indexOf('href="/search"');
 const idxStore = header.indexOf('bonfire.com/store/lou-gehrig-fan-club');
-const idxLogin = header.indexOf('LOGIN_TAB_ROUTE');
+const idxLogin = header.indexOf('href={LOGIN_TAB_ROUTE}');
 
 must(idxJoin !== -1, 'Header missing Join link to /join');
 must(idxSearch !== -1, 'Header missing Search link to /search');
