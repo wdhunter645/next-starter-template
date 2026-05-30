@@ -1,7 +1,8 @@
 'use client';
 
-import { Suspense, useMemo, useState, type FormEvent } from 'react';
+import { Suspense, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { isValidEmail, JOIN_ROUTE, POST_LOGIN_ROUTE } from '@/lib/auth-routes';
 
 type Mode = 'login' | 'join';
 
@@ -32,11 +33,12 @@ function pickErrMsg(err: unknown, fallback: string): string {
 
 function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
   const sp = useSearchParams();
+  const [checkingSession, setCheckingSession] = useState(true);
 
   const initialMode = useMemo<Mode>(() => {
     if (defaultMode) return defaultMode;
-    const m = (sp.get('mode') || '').toLowerCase();
-    return m === 'join' ? 'join' : 'login';
+    const mode = (sp.get('mode') || '').toLowerCase();
+    return mode === 'login' ? 'login' : 'join';
   }, [sp, defaultMode]);
 
   const [mode, setMode] = useState<Mode>(initialMode);
@@ -51,15 +53,62 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
+  useEffect(() => {
+    setMode(initialMode);
+  }, [initialMode]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function redirectIfAuthenticated() {
+      try {
+        const res = await fetch('/api/session/me', {
+          credentials: 'include',
+          cache: 'no-store',
+          headers: { accept: 'application/json' },
+        });
+        const json: unknown = await res.json().catch(() => null);
+        const ok = isRecord(json) && json.ok === true;
+        const email = isRecord(json) && typeof json.email === 'string' ? json.email.trim() : '';
+
+        if (!cancelled && ok && email) {
+          window.location.replace(POST_LOGIN_ROUTE);
+          return;
+        }
+      } catch {
+        // Fail closed to guest join/login surface.
+      }
+
+      if (!cancelled) setCheckingSession(false);
+    }
+
+    redirectIfAuthenticated();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   async function doJoin(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setMsg(null);
+
+    if (!screenName.trim()) {
+      setMsg('Screen name is required.');
+      return;
+    }
+
+    if (!isValidEmail(emailJoin)) {
+      setMsg('Enter a valid email address.');
+      return;
+    }
+
     setBusy(true);
     try {
       const { first, last } = splitName(fullName);
 
       const res = await fetch('/api/join', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           first_name: first,
@@ -81,6 +130,7 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
 
       const res2 = await fetch('/api/login', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ email: emailJoin }),
       });
@@ -94,7 +144,7 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
         return;
       }
 
-      window.location.href = '/fanclub';
+      window.location.href = POST_LOGIN_ROUTE;
     } catch (err: unknown) {
       setMsg(pickErrMsg(err, 'Join failed.'));
     } finally {
@@ -105,10 +155,17 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
   async function doLogin(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setMsg(null);
+
+    if (!isValidEmail(emailLogin)) {
+      setMsg('Enter a valid email address.');
+      return;
+    }
+
     setBusy(true);
     try {
       const res = await fetch('/api/login', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ email: emailLogin }),
       });
@@ -120,7 +177,7 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
         return;
       }
 
-      window.location.href = '/fanclub';
+      window.location.href = POST_LOGIN_ROUTE;
     } catch (err: unknown) {
       setMsg(pickErrMsg(err, 'Login failed.'));
     } finally {
@@ -128,29 +185,60 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
     }
   }
 
+  if (checkingSession) {
+    return (
+      <main style={{ maxWidth: 560, margin: '40px auto', padding: 20 }}>
+        Checking session…
+      </main>
+    );
+  }
+
   return (
     <main style={{ maxWidth: 560, margin: '40px auto', padding: 20 }}>
       <h1 style={{ textAlign: 'center', marginBottom: 16 }}>Join / Login</h1>
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-        <button type="button" onClick={() => { setMode('login'); setMsg(null); }} style={{ flex: 1 }}>
-          Login
-        </button>
-        <button type="button" onClick={() => { setMode('join'); setMsg(null); }} style={{ flex: 1 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }} role="tablist" aria-label="Join or Login">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === 'join'}
+          onClick={() => {
+            setMode('join');
+            setMsg(null);
+            window.history.replaceState(null, '', JOIN_ROUTE);
+          }}
+          style={{ flex: 1 }}
+        >
           Join
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === 'login'}
+          onClick={() => {
+            setMode('login');
+            setMsg(null);
+            window.history.replaceState(null, '', `${JOIN_ROUTE}?mode=login`);
+          }}
+          style={{ flex: 1 }}
+        >
+          Login
         </button>
       </div>
 
       {msg && (
-        <div style={{ marginBottom: 14, padding: 10, border: '1px solid #ccc', borderRadius: 8 }}>
+        <div role="alert" style={{ marginBottom: 14, padding: 10, border: '1px solid #ccc', borderRadius: 8 }}>
           {msg}
         </div>
       )}
 
       {mode === 'login' && (
-        <form onSubmit={doLogin}>
-          <label style={{ display: 'block', marginBottom: 6 }}>Email</label>
+        <form onSubmit={doLogin} noValidate>
+          <label style={{ display: 'block', marginBottom: 6 }} htmlFor="login-email">
+            Email
+          </label>
           <input
+            id="login-email"
             value={emailLogin}
             onChange={(e) => setEmailLogin(e.target.value)}
             placeholder="you@example.com"
@@ -158,6 +246,7 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
             style={{ width: '100%', marginBottom: 12, padding: 10 }}
             autoComplete="email"
             inputMode="email"
+            type="email"
           />
           <button type="submit" disabled={busy} style={{ width: '100%', padding: 10 }}>
             {busy ? 'Working…' : 'Login'}
@@ -166,9 +255,12 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
       )}
 
       {mode === 'join' && (
-        <form onSubmit={doJoin}>
-          <label style={{ display: 'block', marginBottom: 6 }}>Screen name / alias</label>
+        <form onSubmit={doJoin} noValidate>
+          <label style={{ display: 'block', marginBottom: 6 }} htmlFor="join-screen-name">
+            Screen name / alias
+          </label>
           <input
+            id="join-screen-name"
             value={screenName}
             onChange={(e) => setScreenName(e.target.value)}
             placeholder="Your public name"
@@ -177,8 +269,11 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
             autoComplete="nickname"
           />
 
-          <label style={{ display: 'block', marginBottom: 6 }}>Full name</label>
+          <label style={{ display: 'block', marginBottom: 6 }} htmlFor="join-full-name">
+            Full name
+          </label>
           <input
+            id="join-full-name"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             placeholder="First Last"
@@ -187,8 +282,11 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
             autoComplete="name"
           />
 
-          <label style={{ display: 'block', marginBottom: 6 }}>Email</label>
+          <label style={{ display: 'block', marginBottom: 6 }} htmlFor="join-email">
+            Email
+          </label>
           <input
+            id="join-email"
             value={emailJoin}
             onChange={(e) => setEmailJoin(e.target.value)}
             placeholder="you@example.com"
@@ -196,6 +294,7 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
             style={{ width: '100%', marginBottom: 10, padding: 10 }}
             autoComplete="email"
             inputMode="email"
+            type="email"
           />
 
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>

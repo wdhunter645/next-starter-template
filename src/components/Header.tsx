@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { LOGIN_TAB_ROUTE } from '@/lib/auth-routes';
 import styles from './Header.module.css';
 import HamburgerMenu from './HamburgerMenu';
 
@@ -106,7 +107,7 @@ export default function Header({ showLogo = true }: HeaderProps = {}) {
           </a>
 
           {!isLoggedIn ? (
-            <Link className={styles.btn} href="/login">Login</Link>
+            <Link className={styles.btn} href={LOGIN_TAB_ROUTE}>Login</Link>
           ) : (
             <>
               <Link className={styles.btn} href="/logout">Logout</Link>
