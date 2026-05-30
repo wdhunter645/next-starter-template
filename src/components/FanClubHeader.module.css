@@ -155,6 +155,10 @@
     width: auto;
     margin-left: auto;
   }
+
+  .right{
+    z-index: 11;
+  }
 }
 
 @media (max-width: 520px){

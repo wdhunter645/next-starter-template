@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, RefObject } from 'react';
+import { useRef, RefObject } from 'react';
 import { useClickAway } from '@/hooks/useClickAway';
 import styles from './HamburgerMenu.module.css';
 
@@ -59,18 +59,9 @@ export default function HamburgerMenu({
 
   useClickAway(menuRef, toggleRef, () => onClose(), true);
 
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') onClose();
-    }
-
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
-
   return (
     <>
-      <div className={styles.backdrop} aria-hidden="true" onClick={onClose} />
+      <div className={styles.backdrop} aria-hidden="true" />
       <div id={menuId} ref={menuRef} className={styles.menu} role="dialog" aria-label="Menu">
         <nav aria-label="Primary">
           <ul className={styles.list}>

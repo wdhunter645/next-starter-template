@@ -167,6 +167,10 @@
   .inner:has(.logoContainer){
     padding-top: 12px;
   }
+
+  .right{
+    z-index: 11;
+  }
 }
 
 @media (max-width: 520px){

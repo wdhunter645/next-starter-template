@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { afterEach, describe, it, expect, vi, beforeEach } from 'vitest';
 
 import Header from '@/components/Header';
 import FanClubHeader from '@/components/FanClubHeader';
@@ -97,6 +97,10 @@ describe('Header mobile navigation wiring', () => {
     vi.unstubAllGlobals();
   });
 
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it('opens guest hamburger drawer when logged out', async () => {
     mockSession({ ok: false });
 
@@ -143,6 +147,10 @@ describe('Footer invariants', () => {
         json: async () => ({ quote: { quote: 'Heroism is endurance for one more day.', source: 'LGFC' } }),
       }),
     );
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it('keeps locked footer link set only', () => {
