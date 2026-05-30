@@ -1,3 +1,13 @@
+---
+Doc Type: Reference
+Audience: human project owner and AI agents
+Authority Level: supporting
+Owns: LGFC vendor architecture workflow and integration map
+Does Not Own: vendor contracts, credentials, runtime configuration, or implementation code
+Canonical Reference: docs/reference/architecture/vendor-inventory.md
+Last Reviewed: 2026-05-30
+---
+
 # LGFC Vendor Architecture
 
 ## Active Vendor Inventory
@@ -26,7 +36,7 @@
 Stakeholder
 → OpenAI (Design / Governance)
 → GitHub Repository
-→ Cursor / Codex
+→ Cursor
 → GitHub Actions
 → Cloudflare
 → LGFC Website
