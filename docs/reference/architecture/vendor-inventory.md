@@ -1,8 +1,16 @@
+---
+Doc Type: Reference
+Audience: human project owner and AI agents
+Authority Level: supporting
+Owns: current LGFC vendor inventory for architecture and workflow documentation
+Does Not Own: vendor contracts, credentials, runtime configuration, or implementation code
+Canonical Reference: docs/reference/architecture/lgfc-vendor-architecture.md
+Last Reviewed: 2026-05-30
+---
+
 # LGFC Vendor Inventory
 
 Status: authoritative current vendor inventory for LGFC architecture discussions and workflow diagrams.
-
-Last reviewed: 2026-05-30
 
 ## Active Vendors
 
