@@ -60,7 +60,14 @@ export default function FanClubHeader({ showLogo = true }: FanClubHeaderProps = 
               <span className={styles.hamburgerBar} />
             </button>
 
-            {open ? <HamburgerMenu onClose={() => setOpen(false)} toggleRef={toggleRef} /> : null}
+            {open ? (
+              <HamburgerMenu
+                variant="fanclub"
+                menuId="member-hamburger-menu"
+                onClose={() => setOpen(false)}
+                toggleRef={toggleRef}
+              />
+            ) : null}
           </div>
         </nav>
       </div>

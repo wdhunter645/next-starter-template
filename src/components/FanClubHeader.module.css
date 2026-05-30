@@ -131,6 +131,32 @@
   }
 }
 
+@media (max-width: 767px){
+  .center .btn{
+    display: none;
+  }
+
+  .inner{
+    min-height: 56px;
+    padding-bottom: 12px;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+  }
+
+  .left,
+  .leftOffset{
+    display: none;
+  }
+
+  .center{
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    width: auto;
+    margin-left: auto;
+  }
+}
+
 @media (max-width: 520px){
   .btn{
     padding: 10px 12px;

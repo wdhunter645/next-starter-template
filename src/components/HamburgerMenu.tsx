@@ -1,83 +1,102 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, RefObject } from 'react';
+import { useEffect, useRef, RefObject } from 'react';
 import { useClickAway } from '@/hooks/useClickAway';
+import styles from './HamburgerMenu.module.css';
 
-/**
- * Visitor hamburger menu.
- * All headers: About, Contact
- * Mobile hamburger additionally includes Store as a menu link.
- */
-export default function HamburgerMenu({
-  onClose,
-  toggleRef
-}: {
+export const STORE_URL = 'https://www.bonfire.com/store/lou-gehrig-fan-club/';
+
+export type HamburgerMenuVariant = 'public-guest' | 'public-member' | 'fanclub';
+
+type MenuItem =
+  | { kind: 'link'; label: string; href: string }
+  | { kind: 'external'; label: string; href: string };
+
+export const HAMBURGER_MENU_ITEMS: Record<HamburgerMenuVariant, MenuItem[]> = {
+  'public-guest': [
+    { kind: 'link', label: 'Join', href: '/join' },
+    { kind: 'link', label: 'Search', href: '/search' },
+    { kind: 'external', label: 'Store', href: STORE_URL },
+    { kind: 'link', label: 'Login', href: '/join' },
+    { kind: 'link', label: 'About', href: '/about' },
+    { kind: 'link', label: 'Contact', href: '/contact' },
+  ],
+  'public-member': [
+    { kind: 'link', label: 'Club Home', href: '/fanclub' },
+    { kind: 'link', label: 'Search', href: '/search' },
+    { kind: 'external', label: 'Store', href: STORE_URL },
+    { kind: 'link', label: 'Logout', href: '/logout' },
+    { kind: 'link', label: 'About', href: '/about' },
+    { kind: 'link', label: 'Contact', href: '/contact' },
+  ],
+  fanclub: [
+    { kind: 'link', label: 'Club Home', href: '/fanclub' },
+    { kind: 'link', label: 'My Profile', href: '/fanclub/myprofile' },
+    { kind: 'link', label: 'Search', href: '/search' },
+    { kind: 'external', label: 'Store', href: STORE_URL },
+    { kind: 'link', label: 'Logout', href: '/logout' },
+    { kind: 'link', label: 'About', href: '/about' },
+    { kind: 'link', label: 'Contact', href: '/contact' },
+  ],
+};
+
+type HamburgerMenuProps = {
+  variant: HamburgerMenuVariant;
+  menuId: string;
   onClose: () => void;
   toggleRef: RefObject<HTMLButtonElement | null>;
-}) {
+};
+
+export default function HamburgerMenu({
+  variant,
+  menuId,
+  onClose,
+  toggleRef,
+}: HamburgerMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
+  const items = HAMBURGER_MENU_ITEMS[variant];
 
   useClickAway(menuRef, toggleRef, () => onClose(), true);
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') onClose();
+    }
+
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
   return (
-    <div style={styles.overlay} role="dialog" aria-label="Menu">
-      <div id="hamburger-menu" ref={menuRef} style={styles.menu}>
+    <>
+      <div className={styles.backdrop} aria-hidden="true" onClick={onClose} />
+      <div id={menuId} ref={menuRef} className={styles.menu} role="dialog" aria-label="Menu">
         <nav aria-label="Primary">
-          <ul style={styles.ul}>
-            <li style={styles.li}>
-              <Link href="/about" onClick={onClose} style={styles.link}>
-                About
-              </Link>
-            </li>
-            <li style={styles.li}>
-              <Link href="/contact" onClick={onClose} style={styles.link}>
-                Contact
-              </Link>
-            </li>
-            <li style={styles.li}>
-              <a
-                href="https://www.bonfire.com/store/lou-gehrig-fan-club/"
-                target="_blank"
-                rel="noopener noreferrer"
-                referrerPolicy="no-referrer"
-                onClick={onClose}
-                style={styles.link}
-              >
-                Store
-              </a>
-            </li>
+          <ul className={styles.list}>
+            {items.map((item) => (
+              <li key={`${item.label}-${item.href}`} className={styles.item}>
+                {item.kind === 'external' ? (
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    referrerPolicy="no-referrer"
+                    onClick={onClose}
+                    className={styles.link}
+                  >
+                    {item.label}
+                  </a>
+                ) : (
+                  <Link href={item.href} onClick={onClose} className={styles.link}>
+                    {item.label}
+                  </Link>
+                )}
+              </li>
+            ))}
           </ul>
         </nav>
       </div>
-    </div>
+    </>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  overlay: {
-    position: 'fixed',
-    inset: 0,
-    background: 'rgba(0,0,0,0.25)',
-    zIndex: 50
-  },
-  menu: {
-    position: 'absolute',
-    top: 68,
-    right: 12,
-    width: 220,
-    background: '#fff',
-    borderRadius: 12,
-    border: '1px solid rgba(0,0,0,0.12)',
-    boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
-    padding: 12
-  },
-  ul: { listStyle: 'none', margin: 0, padding: 0 },
-  li: { margin: 0, padding: 0 },
-  link: {
-    display: 'block',
-    padding: '10px 10px',
-    borderRadius: 10,
-    textDecoration: 'none',
-    color: 'inherit'
-  }
-};
