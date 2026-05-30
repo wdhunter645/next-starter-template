@@ -36,9 +36,10 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
   const [checkingSession, setCheckingSession] = useState(true);
 
   const initialMode = useMemo<Mode>(() => {
-    if (defaultMode) return defaultMode;
-    const mode = (sp.get('mode') || '').toLowerCase();
-    return mode === 'login' ? 'login' : 'join';
+    const queryMode = (sp.get('mode') || '').toLowerCase();
+    if (queryMode === 'login') return 'login';
+    if (queryMode === 'join') return 'join';
+    return defaultMode ?? 'join';
   }, [sp, defaultMode]);
 
   const [mode, setMode] = useState<Mode>(initialMode);
@@ -59,12 +60,15 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
 
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 10_000);
 
     async function redirectIfAuthenticated() {
       try {
         const res = await fetch('/api/session/me', {
           credentials: 'include',
           cache: 'no-store',
+          signal: controller.signal,
           headers: { accept: 'application/json' },
         });
         const json: unknown = await res.json().catch(() => null);
@@ -85,6 +89,8 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
     redirectIfAuthenticated();
     return () => {
       cancelled = true;
+      window.clearTimeout(timeoutId);
+      controller.abort();
     };
   }, []);
 
@@ -94,6 +100,11 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
 
     if (!screenName.trim()) {
       setMsg('Screen name is required.');
+      return;
+    }
+
+    if (!fullName.trim()) {
+      setMsg('Full name is required.');
       return;
     }
 
@@ -202,6 +213,7 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
           type="button"
           role="tab"
           aria-selected={mode === 'join'}
+          tabIndex={mode === 'join' ? 0 : -1}
           onClick={() => {
             setMode('join');
             setMsg(null);
@@ -215,6 +227,7 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
           type="button"
           role="tab"
           aria-selected={mode === 'login'}
+          tabIndex={mode === 'login' ? 0 : -1}
           onClick={() => {
             setMode('login');
             setMsg(null);

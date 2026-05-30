@@ -10,6 +10,12 @@ import Header from '@/components/Header';
 import JoinCTA from '@/components/JoinCTA';
 import { isValidEmail, LOGIN_TAB_ROUTE, POST_LOGOUT_ROUTE } from '@/lib/auth-routes';
 
+const mockSearchParams = vi.hoisted(() => vi.fn(() => new URLSearchParams('')));
+
+vi.mock('next/navigation', () => ({
+  useSearchParams: () => mockSearchParams(),
+}));
+
 describe('auth route helpers', () => {
   it('validates email format', () => {
     expect(isValidEmail('fan@example.com')).toBe(true);
@@ -67,7 +73,21 @@ describe('AuthClient auth-state behavior', () => {
     });
   });
 
+  it('opens login tab when /join?mode=login even with join defaultMode', async () => {
+    mockSearchParams.mockReturnValue(new URLSearchParams('mode=login'));
+
+    render(<AuthClient defaultMode="join" />);
+
+    await waitFor(() => {
+      expect(screen.queryByText(/Checking session/i)).not.toBeInTheDocument();
+    });
+
+    expect(screen.getByRole('tab', { name: 'Login' })).toHaveAttribute('aria-selected', 'true');
+  });
+
   it('shows inline validation before login submit', async () => {
+    mockSearchParams.mockReturnValue(new URLSearchParams('mode=login'));
+
     render(<AuthClient defaultMode="login" />);
 
     await waitFor(() => {
@@ -113,7 +133,7 @@ describe('LGFC header auth invariants', () => {
     const idxJoin = header.indexOf('href="/join"');
     const idxSearch = header.indexOf('href="/search"');
     const idxStore = header.indexOf('bonfire.com/store/lou-gehrig-fan-club');
-    const idxLogin = header.indexOf('LOGIN_TAB_ROUTE');
+    const idxLogin = header.indexOf('href={LOGIN_TAB_ROUTE}');
 
     expect(idxJoin).toBeGreaterThan(-1);
     expect(idxSearch).toBeGreaterThan(-1);

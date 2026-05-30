@@ -10,7 +10,9 @@ export default function AuthLegacyRedirectPage() {
 
   return (
     <main style={{ padding: 24, maxWidth: 900, margin: '0 auto' }}>
-      Redirecting…
+      <p>
+        Redirecting… <a href={JOIN_ROUTE}>Continue to join</a>
+      </p>
     </main>
   );
 }

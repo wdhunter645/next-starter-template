@@ -10,7 +10,9 @@ export default function LoginLegacyRedirectPage() {
 
   return (
     <main style={{ padding: 24, maxWidth: 900, margin: '0 auto' }}>
-      Redirecting…
+      <p>
+        Redirecting… <a href={POST_LOGOUT_ROUTE}>Continue to home</a>
+      </p>
     </main>
   );
 }
