@@ -44,4 +44,4 @@ The repository now has starter production definitions and implementation plans f
 
 ## Closure criteria
 
-Project #1132 can close when each major documentation area has a clear owner, current production definition, implementation plan when needed, migration disposition, and no unresolved duplicate or conflicting authority source remains.
+project #1132 can close when each major documentation area has a clear owner, current production definition, implementation plan when needed, migration disposition, and no unresolved duplicate or conflicting authority source remains.
