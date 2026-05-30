@@ -12,11 +12,32 @@ Last Reviewed: 2026-05-30
 
 Status: authoritative current vendor inventory for LGFC architecture discussions and workflow diagrams.
 
-## Active Vendors
+## Design, Development, and Repository Operations
 
 - OpenAI
+- Codex ChatBot
 - Cursor
 - GitHub
+- GitHub Copilot
+
+## PR Reviewers
+
+- Cubic
+- GitHub Copilot
+- Gemini
+- Codex ChatBot
+
+## Gate Checks and Repository Analysis
+
+- Semgrep
+- Deepwiki
+
+## Repository Wiki
+
+- Cubic
+
+## Hosting, Storage, Email, Website Integrations, and Social Platforms
+
 - Cloudflare
 - Backblaze B2
 - Apple iCloud Mail
