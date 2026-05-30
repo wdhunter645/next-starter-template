@@ -33,17 +33,10 @@ Status: authoritative current vendor inventory for LGFC architecture discussions
 
 - Zapier — available, but not currently in use.
 
-## Explicitly Not Current LGFC Vendors
-
-- Jira
-- Supabase
-- Microsoft Teams
-- 1Password
-- Sourcegraph
-- Cody AI
-
 ## Notes
 
+- This document lists LGFC vendors in use and one available future automation vendor.
+- The supporting diagram shows these vendors and their current workflows.
 - Bonfire is the LGFC store vendor.
 - Apple iCloud Mail is used for the custom email domain mailbox layer.
 - MailChannels is used for outbound transactional email delivery.
