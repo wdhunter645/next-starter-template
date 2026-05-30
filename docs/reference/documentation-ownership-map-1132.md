@@ -38,7 +38,7 @@ This map identifies where LGFC documentation ownership currently lives so produc
 | Fan Club System | `docs/reference/` | `docs/how-to/` | `docs/as-built/` |
 | Admin System | `docs/reference/` | `docs/how-to/` | `docs/as-built/` |
 | Content Collection System | `docs/reference/` | `docs/how-to/` | `docs/as-built/` |
-| CI Orchestration System | `docs/explanation/ci/`, `docs/reference/ci/`, `docs/how-to/ci/` | `docs/how-to/ci/` | `docs/as-built/` |
+| CI Orchestration System | `docs/reference/projects/ci-orchestration-production-definition.md`, `docs/explanation/ci/`, `docs/reference/ci/`, `docs/how-to/ci/` | `docs/how-to/ci/ci-orchestration-production-implementation-plan-1138.md` | `docs/as-built/` |
 | DIATAXIS Migration project | `docs/reference/` or `docs/governance/standards/` as applicable | `docs/how-to/` | `docs/as-built/` |
 | Legacy Retirement project | `docs/reference/` | `docs/how-to/` | `docs/as-built/` |
 
