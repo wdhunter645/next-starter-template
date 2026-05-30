@@ -82,7 +82,7 @@ remediation path first.
 | Milestone | Output | Acceptance gate |
 |---|---|---|
 | 1. Documentation package accepted | Production definition and implementation plan merged | Docs checks pass; source issue #1138 linked |
-| 2. Issue lifecycle normalization | Generated CI issues carry lifecycle states and queue markers | One active issue rule enforced |
+| 2. issue lifecycle normalization | Generated CI issues carry lifecycle states and queue markers | One active issue rule enforced |
 | 3. PR lifecycle normalization | CI PRs require one source issue, one intent lane, allowlist, rollback, and verification | PR issue accounting and drift checks pass |
 | 4. Agent lifecycle normalization | Agent handoff and ownership rules are embedded in generated issues | No scope invention or queue skipping |
 | 5. Review lifecycle redesign | Reviewer timing no longer deadlocks valid PRs | Required protected findings still block |
@@ -109,7 +109,7 @@ Every future CI orchestration implementation issue must include:
 
 ## Lifecycle implementation order
 
-### 1. Issue lifecycle
+### 1. issue lifecycle
 
 Implement or validate:
 
@@ -276,5 +276,5 @@ build checks according to their allowed files and risk.
 
 ## Completion rule
 
-Issue #1138 may close after this documentation package merges and the repository
+issue #1138 may close after this documentation package merges and the repository
 checks confirm that the package is discoverable, source-linked, and docs-only.
