@@ -129,7 +129,14 @@ export default function Header({ showLogo = true }: HeaderProps = {}) {
               <span className={styles.hamburgerBar} />
             </button>
 
-            {open ? <HamburgerMenu onClose={() => setOpen(false)} toggleRef={toggleRef} /> : null}
+            {open ? (
+              <HamburgerMenu
+                variant={isLoggedIn ? 'public-member' : 'public-guest'}
+                menuId="hamburger-menu"
+                onClose={() => setOpen(false)}
+                toggleRef={toggleRef}
+              />
+            ) : null}
           </div>
         </nav>
       </div>
