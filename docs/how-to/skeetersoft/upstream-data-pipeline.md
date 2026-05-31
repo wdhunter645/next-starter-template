@@ -4,7 +4,7 @@ Audience: Project maintainers and future SKEETERSOFT implementers
 Authority Level: Design-stage project guidance
 Owns: SKEETERSOFT upstream data pipeline placement, output path, print bridge requirements, and review checklist
 Does Not Own: LGFC production website behavior, launch scope, application runtime implementation, or source-data licensing decisions
-Canonical Reference: docs/how-to/skeetersoft/project-blueprint.md
+Canonical Reference: docs/how-to/skeetersoft/upstream-data-pipeline.md
 Last Reviewed: 2026-05-31
 ---
 
@@ -24,9 +24,10 @@ When implementation is approved, execute the work in this order:
 
 1. Add the compiler at `scripts/compile_ledger.py`.
 2. Add or generate output at `data/master_print_stream.json`.
-3. Add the print route at `src/app/print/page.jsx`.
-4. Add global print CSS support in `src/app/globals.css`.
-5. Verify the compiler uses real ingested source data rather than mock data.
+3. Add the scoresheet layout component required by the print route.
+4. Add the print route at `src/app/print/page.tsx`.
+5. Add global print CSS support in `src/app/globals.css`.
+6. Verify the compiler uses real ingested source data rather than mock data.
 
 ## Repository Layout
 
@@ -40,9 +41,9 @@ The intended final structure is:
 └── src/
     └── app/
         ├── globals.css
-        ├── page.jsx
+        ├── page.tsx
         └── print/
-            └── page.jsx
+            └── page.tsx
 ```
 
 ## Script Location
@@ -104,16 +105,16 @@ The implementation should keep mock data out of production flow and make source 
 The intended print route is:
 
 ```text
-src/app/print/page.jsx
+src/app/print/page.tsx
 ```
 
-The print page should import the compiled JSON and map each game into the scoresheet layout component.
+The print page should import the compiled JSON and map each game into the scoresheet layout component. The scoresheet component must be created or selected before adding the route.
 
 Reference wrapper:
 
-```jsx
+```tsx
 import React from 'react';
-import masterPrintStream from '@/../data/master_print_stream.json';
+import masterPrintStream from '../../../data/master_print_stream.json';
 import RevisedScoresheet from '@/components/RevisedScoresheet';
 
 export default function PrintPage() {
@@ -124,7 +125,7 @@ export default function PrintPage() {
           {series.Series_Games.map((game) => (
             <div
               key={game.Season_Game_Number}
-              className="print:break-after-page break-after-page"
+              className="break-after-page"
             >
               <RevisedScoresheet game={game} />
             </div>
@@ -167,9 +168,9 @@ Reference CSS:
 - [ ] Script lives at `scripts/compile_ledger.py`.
 - [ ] Generated JSON writes to `data/master_print_stream.json`.
 - [ ] Mock data is replaced by explicit raw schedule ingestion before production use.
-- [ ] Print route lives at `src/app/print/page.jsx`.
-- [ ] Print route imports `data/master_print_stream.json`.
-- [ ] Print route maps each series and game to the scoresheet component.
+- [ ] Print route lives at `src/app/print/page.tsx`.
+- [ ] Print route imports `data/master_print_stream.json` by relative path or approved alias.
+- [ ] Print route maps each series and game to an implemented scoresheet component.
 - [ ] Global CSS contains print-safe page-break rules.
 - [ ] No dependencies outside standard Python libraries for the compiler.
 - [ ] Multi-token surnames are preserved correctly.
