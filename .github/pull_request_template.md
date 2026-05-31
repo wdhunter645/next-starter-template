@@ -138,7 +138,7 @@ Reviewer items:
 - docs_canonical_hashes_verify.sh passes
 - DIATAXIS Folder Authority Check passes for touched Diataxis docs
 - All required document headers present
-- All how-to docs include an execution/procedure/steps section
+- All changed how-to docs include an execution/procedure/steps section
 - All canonical references point to files that exist in the same PR branch
 - No out-of-scope file changes
 - Drift gate passes
