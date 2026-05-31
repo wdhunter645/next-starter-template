@@ -1,3 +1,13 @@
+---
+Doc Type: How-To
+Audience: Project maintainers and future SKEETERSOFT implementers
+Authority Level: Design-stage project guidance
+Owns: SKEETERSOFT project folder placement, design status, launch deferral, and future implementation targets
+Does Not Own: LGFC production website behavior, active LGFC launch scope, runtime implementation, or generated project artifacts
+Canonical Reference: docs/how-to/skeetersoft/project-blueprint.md
+Last Reviewed: 2026-05-31
+---
+
 # SKEETERSOFT Project Blueprint
 
 ## Status
@@ -5,6 +15,18 @@
 SKEETERSOFT is a side project in design and requirements discussion only.
 
 It is not ready to launch. Launch is deferred until after the LGFC website and repository buildouts are completed.
+
+## Execution
+
+This document controls design-stage project organization only. Do not add SKEETERSOFT runtime code, generated output files, or production routes until LGFC website and repository buildouts are complete and SKEETERSOFT receives explicit implementation approval.
+
+During the design stage, execute SKEETERSOFT documentation work in this order:
+
+1. Keep all SKEETERSOFT files under `docs/how-to/skeetersoft/`.
+2. Record requirements and design decisions in project-specific documents.
+3. Keep runtime paths documented as future targets only.
+4. Do not mix SKEETERSOFT implementation with LGFC launch-critical work.
+5. Revisit launch readiness only after the LGFC website and repository buildouts are complete.
 
 ## Repository Placement
 
