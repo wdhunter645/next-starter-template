@@ -125,7 +125,7 @@ Reviewer items:
 - [ ] Failed job logs inspected for every failing gate
 - [ ] Workflow YAML or enforcement logic inspected before documenting gate behavior
 - [ ] PR issue-accounting confirms exactly one same-repository, open, non-PR source Issue
-- [ ] PR body contains the required Issue syntax (for example, `- **Issue**: #123`)
+- [ ] PR body contains the required Issue syntax (for example, `- **Issue:** #123`)
 - [ ] All review threads and comments inspected
 - [ ] Actionable review feedback has PR-body disposition and GitHub thread-state disposition
 - [ ] Bot comments inspected
@@ -148,7 +148,7 @@ Reviewer items:
 
 ## REQUIRED PRE-REVIEW SELF-CHECK
 - [ ] PR body contains all required sections with exact headings
-- [ ] PR body contains the required Issue syntax (for example, `- **Issue**: #123`)
+- [ ] PR body contains the required Issue syntax (for example, `- **Issue:** #123`)
 - [ ] Allowed files section matches final diff exactly
 - [ ] No files outside allowlist
 - [ ] ZIP safety confirmed
