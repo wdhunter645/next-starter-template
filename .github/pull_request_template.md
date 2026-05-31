@@ -5,9 +5,11 @@ Refer to `/.github/pull_request_template.md` for required structure and change c
 
 #### Governance Reference
 Follow operational, rollback, and testing standards in `/docs/governance/PR_GOVERNANCE.md`.
+Use `docs/reference/governance/troubleshooting-data-surface-requirements.md` as the canonical PR-gate troubleshooting reference.
+When new PR-gate troubleshooting information becomes available, maintainers and agents must update both `.github/pull_request_template.md` and `docs/reference/governance/troubleshooting-data-surface-requirements.md`.
 
-- **Issue**: #____
-<!-- Replace #____ with exactly one same-repository, open, non-PR Issue number before opening/updating the PR. Required final syntax example: `- **Issue**: #123`. -->
+- **Issue:** #____
+<!-- Replace #____ with exactly one same-repository, open, non-PR Issue number before opening/updating the PR. Required final syntax example: `- **Issue:** #123`. -->
 
 ## PRE-OPEN GATE PREFLIGHT (MANDATORY)
 - [ ] Read the workflow files that will run for this PR's touched paths before opening the PR.
@@ -138,7 +140,7 @@ Reviewer items:
 - docs_canonical_hashes_verify.sh passes
 - DIATAXIS Folder Authority Check passes for touched Diataxis docs
 - All required document headers present
-- All changed how-to docs include an execution/procedure/steps section
+- All changed how-to docs include a Steps, Procedure, or Execution section
 - All canonical references point to files that exist in the same PR branch
 - No out-of-scope file changes
 - Drift gate passes
