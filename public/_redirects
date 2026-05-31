@@ -16,8 +16,11 @@
 /library        /library/               308
 /library/       /library/index.html     200
 
-/login          /login/               308
-/login/         /login/index.html     200
+/login          /                     302
+/login/         /                     302
+
+/auth           /join/                302
+/auth/          /join/                302
 
 /logout         /logout/               308
 /logout/        /logout/index.html     200

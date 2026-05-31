@@ -1,5 +1,18 @@
-import AuthClient from './AuthClient';
+'use client';
 
-export default function AuthPage() {
-  return <AuthClient />;
+import { useEffect } from 'react';
+import { JOIN_ROUTE } from '@/lib/auth-routes';
+
+export default function AuthLegacyRedirectPage() {
+  useEffect(() => {
+    window.location.replace(JOIN_ROUTE);
+  }, []);
+
+  return (
+    <main style={{ padding: 24, maxWidth: 900, margin: '0 auto' }}>
+      <p>
+        Redirecting… <a href={JOIN_ROUTE}>Continue to join</a>
+      </p>
+    </main>
+  );
 }

@@ -4,8 +4,7 @@ import Link from 'next/link';
 import { useRef, RefObject } from 'react';
 import { useClickAway } from '@/hooks/useClickAway';
 import styles from './HamburgerMenu.module.css';
-
-export const STORE_URL = 'https://www.bonfire.com/store/lou-gehrig-fan-club/';
+import { LOGIN_TAB_ROUTE, STORE_URL } from '@/lib/auth-routes';
 
 export type HamburgerMenuVariant = 'public-guest' | 'public-member' | 'fanclub';
 
@@ -18,7 +17,7 @@ export const HAMBURGER_MENU_ITEMS: Record<HamburgerMenuVariant, MenuItem[]> = {
     { kind: 'link', label: 'Join', href: '/join' },
     { kind: 'link', label: 'Search', href: '/search' },
     { kind: 'external', label: 'Store', href: STORE_URL },
-    { kind: 'link', label: 'Login', href: '/join' },
+    { kind: 'link', label: 'Login', href: LOGIN_TAB_ROUTE },
     { kind: 'link', label: 'About', href: '/about' },
     { kind: 'link', label: 'Contact', href: '/contact' },
   ],

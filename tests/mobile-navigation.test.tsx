@@ -6,8 +6,8 @@ import Header from '@/components/Header';
 import FanClubHeader from '@/components/FanClubHeader';
 import HamburgerMenu, {
   HAMBURGER_MENU_ITEMS,
-  STORE_URL,
 } from '@/components/HamburgerMenu';
+import { STORE_URL } from '@/lib/auth-routes';
 import Footer from '@/components/Footer';
 import { createRef } from 'react';
 
@@ -41,7 +41,7 @@ describe('HamburgerMenu variants', () => {
     const links = screen.getAllByRole('link').map((node) => node.textContent?.trim());
     expect(links).toEqual(labels);
     expect(screen.getByRole('link', { name: 'Store' })).toHaveAttribute('href', STORE_URL);
-    expect(screen.getByRole('link', { name: 'Login' })).toHaveAttribute('href', '/join');
+    expect(screen.getByRole('link', { name: 'Login' })).toHaveAttribute('href', '/join?mode=login');
   });
 
   it('renders public member drawer items in canonical order', () => {
