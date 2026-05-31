@@ -9,6 +9,19 @@ Follow operational, rollback, and testing standards in `/docs/governance/PR_GOVE
 - **Issue**: #____
 <!-- Replace #____ with exactly one same-repository, open, non-PR Issue number before opening/updating the PR. Required final syntax example: `- **Issue**: #123`. -->
 
+## PRE-OPEN GATE PREFLIGHT (MANDATORY)
+- [ ] Read the workflow files that will run for this PR's touched paths before opening the PR.
+- [ ] Read or update `.github/CI_GUARDRAILS_MAP.md` when workflow behavior is unclear or changed.
+- [ ] For docs changes, confirm every changed active Markdown file starts with the required authority header from `docs/templates/markdown-header-template.md`.
+- [ ] For `docs/how-to/**`, confirm every changed file includes `## Steps`, `## Procedure`, or `## Execution`.
+- [ ] For `docs/tutorials/**`, confirm every changed file includes `## Goal`, `## Outcome`, `## Steps`, or `## Walkthrough`.
+- [ ] For `docs/reference/**`, confirm no procedural/runbook sections or executable command blocks are present unless the relevant workflow explicitly permits them.
+- [ ] For `docs/explanation/**`, confirm no procedural/runbook sections or executable command blocks are present unless the relevant workflow explicitly permits them.
+- [ ] Confirm every `Canonical Reference:` value points to a file that exists in the same branch at PR-open time, or is intentionally self-referential.
+- [ ] Confirm every changed file is under the intended project folder when a project-specific folder has been declared.
+- [ ] Confirm all example code paths, extensions, aliases, and imports match current repository conventions.
+- [ ] Confirm PR body file allowlist exactly matches the final changed-file list before opening.
+
 ## MANDATORY FIRST STEP (ZIP SAFETY)
 - [ ] No ZIP file exists in the repo root
 - [ ] OR any ZIP file that was present in the repo root was deleted before any other change
@@ -77,7 +90,9 @@ All other files are out of scope
 ## BUILD / TEST / VERIFICATION
 - Commands run:
   - ./scripts/ci/docs_check_headers.sh .
+  - ./scripts/ci/docs_check_paths.sh .
   - ./scripts/ci/docs_canonical_hashes_verify.sh .
+  - For changed Diataxis docs: inspect `.github/workflows/diataxis-folder-authority-check.yml` and verify the changed files satisfy its folder-specific rules.
 - Result summary:
   - PASS / FAIL
 - If FAIL, explain
@@ -119,8 +134,12 @@ Reviewer items:
 
 ## ACCEPTANCE CRITERIA
 - docs_check_headers.sh passes
+- docs_check_paths.sh passes
 - docs_canonical_hashes_verify.sh passes
+- DIATAXIS Folder Authority Check passes for touched Diataxis docs
 - All required document headers present
+- All how-to docs include an execution/procedure/steps section
+- All canonical references point to files that exist in the same PR branch
 - No out-of-scope file changes
 - Drift gate passes
 - CI passes fully
@@ -136,6 +155,6 @@ Reviewer items:
 - [ ] Commit message aligns with scope
 - [ ] No prohibited artifacts introduced
 - [ ] All new governance/reference docs satisfy `/docs/governance/standards/document-status-and-naming_MASTER.md` minimum content requirements: Purpose, Scope, Current known truth, and Intended final state if evolving
-- [ ] All canonical references point to existing repository files
+- [ ] All canonical references point to existing repository files in the same branch before the PR opens
 - [ ] All reviewer feedback has both textual disposition and GitHub thread-state disposition
 - [ ] No merge-readiness claim made before all gate surfaces inspected
