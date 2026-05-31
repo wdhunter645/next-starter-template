@@ -16,6 +16,18 @@ SKEETERSOFT is a side project temporarily documented inside the LGFC repository.
 
 This documentation is stored under the Diataxis how-to section because it describes an operational implementation path rather than LGFC website design authority.
 
+## Execution
+
+This document is design-stage guidance only. Do not create runtime SKEETERSOFT files from this document until SKEETERSOFT receives explicit implementation approval after LGFC website and repository buildout completion.
+
+When implementation is approved, execute the work in this order:
+
+1. Add the compiler at `scripts/compile_ledger.py`.
+2. Add or generate output at `data/master_print_stream.json`.
+3. Add the print route at `src/app/print/page.jsx`.
+4. Add global print CSS support in `src/app/globals.css`.
+5. Verify the compiler uses real ingested source data rather than mock data.
+
 ## Repository Layout
 
 The intended final structure is:
