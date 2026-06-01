@@ -40,10 +40,10 @@ The intended final structure is:
 │   └── compile_ledger.py
 └── src/
     ├── app/
-        ├── globals.css
-        ├── page.tsx
-        └── print/
-            └── page.tsx
+    │   ├── globals.css
+    │   ├── page.tsx
+    │   └── print/
+    │       └── page.tsx
     └── components/
         └── ScoresheetPrintLayout.tsx
 ```
