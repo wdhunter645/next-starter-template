@@ -8,7 +8,7 @@ Canonical Reference: docs/how-to/skeetersoft/project-blueprint.md
 Last Reviewed: 2026-05-31
 ---
 
-# SKEETERSOFT Project Blueprint
+# SKEETERSOFT project blueprint
 
 ## Status
 
