@@ -12,6 +12,30 @@ Last Reviewed: 2026-05-05
 
 ------------------------------------------------------------------------
 
+## THREAD CLOSEOUT RECORD --- 2026-06-01 --- T29/T40 website tracker closeout
+
+### Starting State
+T29 implementation PR #1169 and T40 implementation PR #1171 were merged, but the implementation trackers still showed T29 as active and T40 as queued.
+
+### Objective
+Close the merged T29 and T40 website tasks in tracker records and advance website sequencing to the next operational-system task.
+
+### Work Performed
+- Updated `docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md`:
+  - Marked T29 `Status: CLOSED` with merged implementation PR #1169.
+  - Marked T40 `Status: CLOSED` with merged implementation PR #1171.
+  - Removed stale duplicate T25 active state.
+  - Marked T41 `Status: ACTIVE` as the next Cursor website implementation task (#1119).
+- Updated `docs/ops/trackers/LGFC-WEBSITE-IMPLEMENTATION-QUEUE-NORMALIZATION.md` to reflect T29/T40 completion and T41 active queue-head status.
+
+### Result
+Tracker state now matches merged website implementation history for T29 and T40 and clearly reflects active T41 execution.
+
+### Next Action
+Execute T41 admin operating shell and member operations (#1119).
+
+------------------------------------------------------------------------
+
 ## THREAD CLOSEOUT RECORD --- 2026-05-28 --- T35 FanClub home composition closeout
 
 ### Starting State

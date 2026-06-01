@@ -380,11 +380,16 @@ Issue/PR trace:
 - Invariant support PRs: #1150, #1152, #1155
 
 ## T29 — D1/B2 integration verification and fail-closed testing
-Status: ACTIVE
+Status: CLOSED
+Date Closed: 2026-06-01
 Issue: #1111
 Owner: Cursor
 Scope: active D1 queries, B2 image rendering, fallback handling, missing-content behavior, homepage media validation, and runtime error validation.
 Exit: active D1/B2 integrations fail closed without uncaught runtime failures.
+Summary:
+D1/B2 fail-closed integration verification merged with guarded homepage Friends and Milestones D1 reads, B2 photo URL normalization, missing binding/table failure handling, and focused regression coverage.
+Issue/PR trace:
+- Implementation PR: #1169
 
 ---
 
@@ -463,29 +468,27 @@ Issue/PR trace:
 Notes:
 - Completes the dedicated FanClub formatting/design pass called out during T30 closeout.
 
-## T25 — Search experience completion and validation
-Status: ACTIVE
-Issue: #1108
-Owner: Cursor
-Scope: `/search`, search input UX, result rendering, empty states, mobile behavior, and fail-closed behavior.
-Exit: public search is launch-safe, responsive, and preserves canonical navigation.
-
----
-
-# Phase 5 — Website Operational Systems (QUEUED)
+# Phase 5 — Website Operational Systems (ACTIVE)
 
 Normalization reference:
 `/docs/ops/trackers/LGFC-WEBSITE-IMPLEMENTATION-QUEUE-NORMALIZATION.md`
 
 ## T40 — Fan Club operational workflows
-Status: QUEUED
+Status: CLOSED
+Date Closed: 2026-06-01
 Issue: #1118
+Owner: Cursor
 Scope: `/fanclub/photo`, `/fanclub/submit`, `/fanclub/chat`, Fan Club APIs, member-only operational states.
 Exit: member-facing Fan Club operational workflows render safely, stay auth-gated, and preserve canonical Fan Club navigation.
+Summary:
+Fan Club operational workflows merged with member-gated discussion and library APIs, launch-safe photo/archive browsing, approved submission entry points, and focused Fan Club operation coverage.
+Issue/PR trace:
+- Implementation PR: #1171
 
 ## T41 — Admin operating shell and member operations
-Status: QUEUED
+Status: ACTIVE
 Issue: #1119
+Owner: Cursor
 Scope: `/admin`, `/admin/join-requests`, admin stats/worklist/member-operation surfaces.
 Exit: admin operations have launch-safe navigation, member queue visibility, and stable empty/error states.
 
