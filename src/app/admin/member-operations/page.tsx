@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import PageShell from '@/components/PageShell';
 import AdminNav from '@/components/admin/AdminNav';
 import AdminTokenPanel from '@/components/admin/AdminTokenPanel';
@@ -61,7 +61,7 @@ export default function AdminMemberOperationsPage() {
     card: 'Loading membership card...',
   });
 
-  async function loadEndpoint(endpoint: ManagedEndpoint) {
+  const loadEndpoint = useCallback(async (endpoint: ManagedEndpoint) => {
     setMessages((current) => ({ ...current, [endpoint.key]: `Loading ${endpoint.heading.toLowerCase()}...` }));
     const result = await adminJson<Record<string, unknown>>(endpoint.path);
     if (!result.ok || !result.data) {
@@ -79,11 +79,11 @@ export default function AdminMemberOperationsPage() {
       ...current,
       [endpoint.key]: nextContent.body_md ? '' : endpoint.emptyText,
     }));
-  }
+  }, []);
 
-  async function loadAll() {
+  const loadAll = useCallback(async () => {
     await Promise.all(endpoints.map(loadEndpoint));
-  }
+  }, [loadEndpoint]);
 
   async function saveEndpoint(endpoint: ManagedEndpoint) {
     const current = content[endpoint.key];
@@ -119,7 +119,7 @@ export default function AdminMemberOperationsPage() {
 
   useEffect(() => {
     void loadAll();
-  }, []);
+  }, [loadAll]);
 
   return (
     <PageShell title="Member Operations" subtitle="Admin-managed member onboarding and card content">
