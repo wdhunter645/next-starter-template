@@ -73,6 +73,7 @@ describe('admin route shell', () => {
     render(<AdminNav />);
 
     expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/admin');
+    expect(screen.getByRole('link', { name: 'Moderation' })).toHaveAttribute('href', '/admin/moderation');
     expect(screen.getByRole('link', { name: 'Join Requests' })).toHaveAttribute('href', '/admin/join-requests');
     expect(screen.getByRole('link', { name: 'Worklist' })).toHaveAttribute('href', '/admin/worklist');
     expect(screen.getByRole('link', { name: 'Member Operations' })).toHaveAttribute(
