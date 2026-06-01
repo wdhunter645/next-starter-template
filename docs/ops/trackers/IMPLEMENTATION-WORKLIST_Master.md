@@ -486,15 +486,21 @@ Issue/PR trace:
 - Implementation PR: #1171
 
 ## T41 — Admin operating shell and member operations
-Status: ACTIVE
+Status: CLOSED
+Date Closed: 2026-06-01
 Issue: #1119
 Owner: Cursor
 Scope: `/admin`, `/admin/join-requests`, admin stats/worklist/member-operation surfaces.
 Exit: admin operations have launch-safe navigation, member queue visibility, and stable empty/error states.
+Summary:
+Admin operating shell and member operations merged with dashboard/worklist/member-operation surfaces, token-aware admin API calls, safe empty/error states, and focused admin operation coverage.
+Issue/PR trace:
+- Implementation PR: #1174
 
 ## T42 — Moderation and review workflows
-Status: QUEUED
+Status: ACTIVE
 Issue: #1120
+Owner: Cursor
 Scope: `/admin/moderation`, reports APIs, ask/FAQ moderation state transitions, review queues.
 Exit: moderation/review workflows expose actionable queues and preserve auditable approval, rejection, archive, and close states.
 

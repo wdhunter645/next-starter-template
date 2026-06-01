@@ -18,7 +18,7 @@ export const onRequestPost = async (context: any): Promise<Response> => {
       return Response.json({ ok: false, error: "Invalid id" }, { status: 400 });
     }
 
-    const admin_note = String(body?.admin_note || "");
+    const admin_note = String(body?.admin_note || "").trim();
 
     if (!env?.DB) {
       return Response.json({ ok: false, error: "missing_db_binding" }, { status: 500 });
@@ -28,8 +28,13 @@ export const onRequestPost = async (context: any): Promise<Response> => {
                  SET status='closed', admin_note=?, resolved_at=datetime('now')
                  WHERE id=?`;
 
-    const out = await env.DB.prepare(sql).bind(admin_note, id).run();
-    return Response.json({ ok: true, changed: out?.meta?.changes || 0 });
+    const out = await env.DB.prepare(sql).bind(admin_note || null, id).run();
+    const changed = out?.meta?.changes || 0;
+    if (!changed) {
+      return Response.json({ ok: false, error: "report_not_found_or_closed" }, { status: 404 });
+    }
+
+    return Response.json({ ok: true, changed });
   } catch (err: any) {
     return Response.json({ ok: false, error: "server_error", detail: String(err?.message || err) }, { status: 500 });
   }
