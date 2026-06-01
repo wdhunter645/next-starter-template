@@ -1,1 +1,1 @@
-export { onRequestGet } from '../../../reports/list';
+export { onRequestGet } from '../../reports/list';

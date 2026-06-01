@@ -1,1 +1,1 @@
-export { onRequestPost } from '../../../reports/close';
+export { onRequestPost } from '../../reports/close';
