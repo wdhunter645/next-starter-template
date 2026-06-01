@@ -4,7 +4,15 @@ import Link from 'next/link';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useMemberSession } from '@/hooks/useMemberSession';
 
-type LibraryItem = { id: number; title: string; content: string; created_at: string };
+type LibraryItem = {
+  id: number;
+  title: string | null;
+  content?: string | null;
+  description?: string | null;
+  author?: string | null;
+  year?: number | null;
+  created_at?: string | null;
+};
 
 const styles: Record<string, React.CSSProperties> = {
   main: { padding: '40px 16px', maxWidth: 1000, margin: '0 auto' },
@@ -31,7 +39,10 @@ export default function LibraryPage() {
     const needle = query.trim().toLowerCase();
     if (!needle) return items;
     return items.filter((it) => {
-      return it.title.toLowerCase().includes(needle) || it.content.toLowerCase().includes(needle);
+      const title = it.title || '';
+      const content = it.content || it.description || '';
+      const author = it.author || '';
+      return title.toLowerCase().includes(needle) || content.toLowerCase().includes(needle) || author.toLowerCase().includes(needle);
     });
   }, [items, query]);
 
@@ -39,7 +50,7 @@ export default function LibraryPage() {
     setLoading(true);
     setMessage('');
     try {
-      const res = await fetch('/api/library/list?limit=20', { cache: 'no-store' });
+      const res = await fetch('/api/fanclub/library?page=1', { cache: 'no-store' });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data?.ok) {
         setItems(Array.isArray(data.items) ? data.items : []);
@@ -89,6 +100,9 @@ export default function LibraryPage() {
             />
           </label>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
+            <Link href="/fanclub/submit" style={styles.btn}>
+              Submit an Article
+            </Link>
             <Link href="/fanclub/memorabilia" style={styles.btn}>
               View Memorabilia
             </Link>
@@ -109,9 +123,13 @@ export default function LibraryPage() {
           ) : (
             filteredItems.map((it) => (
               <article key={it.id} style={{ marginBottom: 14 }}>
-                <h3 style={{ margin: '0 0 6px 0' }}>{it.title}</h3>
-                <div style={styles.meta}>{new Date(it.created_at).toLocaleString()}</div>
-                <p style={{ ...styles.p, marginTop: 8, whiteSpace: 'pre-wrap' }}>{it.content}</p>
+                <h3 style={{ margin: '0 0 6px 0' }}>{it.title || 'Untitled library entry'}</h3>
+                <div style={styles.meta}>
+                  {[it.author ? `By ${it.author}` : null, it.year ? String(it.year) : null, it.created_at ? new Date(it.created_at).toLocaleString() : null]
+                    .filter(Boolean)
+                    .join(' • ') || 'Member library entry'}
+                </div>
+                <p style={{ ...styles.p, marginTop: 8, whiteSpace: 'pre-wrap' }}>{it.content || it.description || 'No description available yet.'}</p>
                 <hr style={styles.hr} />
               </article>
             ))

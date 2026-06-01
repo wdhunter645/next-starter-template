@@ -56,16 +56,6 @@ export default function FanclubChatPage() {
     await load();
   }
 
-  async function reportItem(target_id: number, reason: string) {
-    const res = await fetch('/api/reports/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ kind: 'discussion', target_id, reporter_email: email, reason }),
-    });
-    const json = await res.json();
-    if (!json?.ok) throw new Error(json?.error || 'report_failed');
-  }
-
   if (isLoading || !isAuthenticated) {
     return null;
   }
@@ -99,7 +89,7 @@ export default function FanclubChatPage() {
         {error && <p style={{ color: 'salmon' }}>Error: {error}</p>}
 
         {!loading && !error && (
-          <ChatFeed items={items} onReport={reportItem} />
+          <ChatFeed items={items} />
         )}
       </div>
     </main>
@@ -153,27 +143,7 @@ function ChatComposer({ onSubmit, disabled }: { onSubmit: (title: string, body: 
   );
 }
 
-function ChatFeed({ items, onReport }: { items: DiscussionItem[]; onReport: (id: number, reason: string) => Promise<void> }) {
-  const [reportingId, setReportingId] = useState<number | null>(null);
-  const [reportReason, setReportReason] = useState<string>('');
-  const [reportError, setReportError] = useState<string>('');
-  const [reportOk, setReportOk] = useState<string>('');
-
-  async function submitReport() {
-    if (!reportingId) return;
-    setReportError('');
-    setReportOk('');
-    try {
-      await onReport(reportingId, reportReason.trim());
-      setReportOk('Report submitted.');
-      setReportReason('');
-      setReportingId(null);
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      setReportError(msg);
-    }
-  }
-
+function ChatFeed({ items }: { items: DiscussionItem[] }) {
   return (
     <div style={{ display: 'grid', gap: 12, marginTop: 12 }}>
       {items.length === 0 && (
@@ -189,47 +159,11 @@ function ChatFeed({ items, onReport }: { items: DiscussionItem[]; onReport: (id:
             <span style={{ marginLeft: 'auto', opacity: 0.75, fontSize: 12 }}>{new Date(it.created_at).toLocaleString()}</span>
           </div>
           <p style={{ margin: '10px 0 0 0', opacity: 0.92, whiteSpace: 'pre-wrap' }}>{it.body}</p>
-          <div style={{ marginTop: 10, display: 'flex', gap: 10, alignItems: 'center' }}>
-            <button
-              onClick={() => { setReportingId(it.id); setReportOk(''); setReportError(''); }}
-              style={{ padding: '7px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.18)', background: 'transparent', cursor: 'pointer', opacity: 0.9 }}
-            >
-              Report
-            </button>
+          <div style={{ marginTop: 10, opacity: 0.72, fontSize: 12 }}>
+            Reporting workflow will be handled by the moderation queue.
           </div>
         </article>
       ))}
-
-      {reportingId && (
-        <section style={{ padding: 14, borderRadius: 16, border: '1px solid rgba(255,255,255,0.12)' }}>
-          <h3 style={{ margin: 0, fontSize: 16 }}>Report post #{reportingId}</h3>
-          <textarea
-            value={reportReason}
-            onChange={(e) => setReportReason(e.target.value)}
-            placeholder="Why is this post a problem?"
-            rows={3}
-            style={{ width: '100%', marginTop: 10, padding: 10, borderRadius: 10, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(0,0,0,0.2)' }}
-          />
-          <div style={{ display: 'flex', gap: 10, marginTop: 10, alignItems: 'center' }}>
-            <button
-              onClick={submitReport}
-              disabled={reportReason.trim().length < 5}
-              style={{ padding: '8px 12px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.08)', cursor: 'pointer' }}
-            >
-              Submit report
-            </button>
-            <button
-              onClick={() => { setReportingId(null); setReportReason(''); }}
-              style={{ padding: '8px 12px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.18)', background: 'transparent', cursor: 'pointer' }}
-            >
-              Cancel
-            </button>
-            <span style={{ marginLeft: 'auto', fontSize: 12, opacity: 0.8 }}>Reports are reviewed by admins.</span>
-          </div>
-          {reportError && <p style={{ color: 'salmon', marginTop: 8 }}>Error: {reportError}</p>}
-          {reportOk && <p style={{ color: 'lightgreen', marginTop: 8 }}>{reportOk}</p>}
-        </section>
-      )}
     </div>
   );
 }

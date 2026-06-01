@@ -1,5 +1,15 @@
+import { requireMember } from "../../_lib/session";
+
 export const onRequestGet = async (context: any): Promise<Response> => {
-  const { env, request } = context;
+  const auth = await requireMember(context);
+  if (!auth.ok) {
+    return new Response(JSON.stringify(auth.body), {
+      status: auth.status,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const { request } = context;
 
   try {
     const url = new URL(request.url);
@@ -10,7 +20,7 @@ export const onRequestGet = async (context: any): Promise<Response> => {
                  ORDER BY created_at DESC, id DESC
                  LIMIT ?;`;
 
-    const rows = await env.DB.prepare(sql).bind(limit).all();
+    const rows = await auth.db.prepare(sql).bind(limit).all();
 
     return new Response(JSON.stringify({ ok: true, items: rows.results ?? [] }, null, 2), {
       status: 200,

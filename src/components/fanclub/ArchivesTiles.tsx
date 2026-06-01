@@ -50,6 +50,33 @@ export default function ArchivesTiles() {
           </Link>
         ))}
       </div>
+      <div
+        style={{
+          marginTop: 12,
+          padding: 14,
+          border: '1px solid rgba(0,0,0,0.12)',
+          borderRadius: 12,
+          background: '#fff',
+        }}
+      >
+        <strong>Have something to share?</strong>
+        <p style={{ margin: '8px 0 12px', fontSize: 14, color: 'rgba(0,0,0,0.7)', lineHeight: 1.45 }}>
+          Send a member article, memory, or archive note through the approved submission path.
+        </p>
+        <Link
+          href="/fanclub/submit"
+          style={{
+            display: 'inline-block',
+            textDecoration: 'none',
+            color: 'inherit',
+            border: '1px solid rgba(0,0,0,0.18)',
+            borderRadius: 10,
+            padding: '8px 12px',
+          }}
+        >
+          Submit to the Library
+        </Link>
+      </div>
     </section>
   );
 }
