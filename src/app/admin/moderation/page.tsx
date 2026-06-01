@@ -81,7 +81,7 @@ export default function AdminModerationPage() {
       `/api/admin/reports/list?status=${reportFilter}&limit=200`,
     );
     setReports(result.ok && result.data?.items ? result.data.items : []);
-    setMessage(result.ok ? '' : `Reports error: ${result.error}`);
+    if (!result.ok) setMessage(`Reports error: ${result.error}`);
     setSectionLoading('reports', false);
   }, [reportFilter]);
 
@@ -89,7 +89,7 @@ export default function AdminModerationPage() {
     setSectionLoading('ask', true);
     const result = await adminJson<ItemsResponse<AskItem>>(`/api/admin/ask/list?status=${askFilter}`);
     setAskItems(result.ok && result.data?.items ? result.data.items : []);
-    setMessage(result.ok ? '' : `Ask queue error: ${result.error}`);
+    if (!result.ok) setMessage(`Ask queue error: ${result.error}`);
     setSectionLoading('ask', false);
   }, [askFilter]);
 
@@ -98,7 +98,7 @@ export default function AdminModerationPage() {
     const query = faqFilter === 'all' ? '' : `?status=${faqFilter}`;
     const result = await adminJson<ItemsResponse<FaqItem>>(`/api/admin/faq/list${query}`);
     setFaqItems(result.ok && result.data?.items ? result.data.items : []);
-    setMessage(result.ok ? '' : `FAQ queue error: ${result.error}`);
+    if (!result.ok) setMessage(`FAQ queue error: ${result.error}`);
     setSectionLoading('faq', false);
   }, [faqFilter]);
 
