@@ -31,8 +31,10 @@ Does not cover runtime code changes, CI workflow edits, or legacy doc migration.
 ## Current known truth
 
 - T21–T35 website core tasks are merged or closed in the worklist; T35 closed via #1114/#1115.
-- T25 search implementation is in review on PR #1130 (issue #1108).
-- T26–T29 and T40–T50 remain backlog; orchestrator serial queue advances one active website task at a time.
+- T25 search implementation is merged on PR #1130 (issue #1108).
+- T26 mobile navigation and responsive validation is merged on PR #1166 (issue #1109).
+- T28 Join/Login UX completion and auth-state validation is merged through PR #1149 plus invariant support PRs #1150, #1152, and #1155 (issue #1110).
+- T29 is the current active public-core validation task; T40–T50 remain backlog.
 - Several older issues (#943, #946, #947, #1013–#1017) remain open with stale lifecycle labels despite worklist CLOSED status.
 - Issue #1112 is assigned launch-readiness task **T50** (not T30).
 
@@ -102,10 +104,10 @@ Lifecycle labels:
 | T22 Ask-a-question intake | #946 | post-merge verify or complete | `[T22] Website — Ask-a-question intake — Child #1053` |
 | T23 FAQ CMS moderation | #1053 trace / PR #1072 | complete | `[T23] Website — FAQ CMS moderation — Child #1053` |
 | T23-E Events page | #947 | post-merge verify or complete | `[T23-E] Website — Events page — Child #1053` |
-| T25 Search experience completion and validation | #1108 | in review (PR #1130) | `[T25] Website — Search experience completion and validation — Child #1053` |
-| T26 Mobile navigation and responsive validation suite | #1109 | queued | `[T26] Website — Mobile navigation and responsive validation suite — Child #1053` |
-| T28 Join/Login UX completion and auth-state validation | #1110 | queued | `[T28] Website — Join/Login UX completion and auth-state validation — Child #1053` |
-| T29 D1/B2 integration verification and fail-closed testing | #1111 | queued | `[T29] Website — D1/B2 integration verification and fail-closed testing — Child #1053` |
+| T25 Search experience completion and validation | #1108 | complete (PR #1130) | `[T25] Website — Search experience completion and validation — Child #1053` |
+| T26 Mobile navigation and responsive validation suite | #1109 | post-merge verify or complete (PR #1166) | `[T26] Website — Mobile navigation and responsive validation suite — Child #1053` |
+| T28 Join/Login UX completion and auth-state validation | #1110 | post-merge verify or complete (PRs #1149, #1150, #1152, #1155) | `[T28] Website — Join/Login UX completion and auth-state validation — Child #1053` |
+| T29 D1/B2 integration verification and fail-closed testing | #1111 | active | `[T29] Website — D1/B2 integration verification and fail-closed testing — Child #1053` |
 | T30 FanClub shell and authenticated navigation | #1013 | post-merge verify or complete | `[T30] Website — FanClub shell and authenticated navigation — Child #1053` |
 | T31 FanClub profile and member card pages | #1014 | post-merge verify or complete | `[T31] Website — FanClub profile and member card pages — Child #1053` |
 | T32 FanClub library and memorabilia pages | #1015 | post-merge verify or complete | `[T32] Website — FanClub library and memorabilia pages — Child #1053` |
@@ -147,9 +149,6 @@ launch readiness can be treated as complete.
 
 ### Remaining public-core gaps
 
-- Search completion and validation
-- Mobile navigation and responsive validation
-- Join/Login auth-state validation
 - D1/B2 fail-closed verification
 
 ### Remaining Fan Club gaps
@@ -176,8 +175,10 @@ launch readiness can be treated as complete.
 
 Apply these GitHub issue metadata changes before or with the normalization PR:
 
-- #1108: full website label set; current serial-queue implementation head while PR #1130 is open (`status:pr-draft` or review-state labels per automation)
-- #1109–#1111: full website label set; lifecycle `status:queued` until T25 completes
+- #1108: transition from implementation lifecycle labels to `status:complete` after accepted post-merge evidence for PR #1130
+- #1109: transition from implementation lifecycle labels to `status:post-merge-verify` or `status:complete` after accepted post-merge evidence for PR #1166
+- #1110: transition from implementation lifecycle labels to `status:post-merge-verify` or `status:complete` after accepted post-merge evidence for PRs #1149, #1150, #1152, and #1155
+- #1111: current serial-queue implementation head (`status:pr-draft` or review-state labels per automation)
 - #1112: full website label set; title `[T50] Website — Launch readiness QA and production validation suite — Child #1053`; lifecycle `status:queued`
 - #1113: close or mark `status:complete` after accepted T35 post-merge evidence
 - #1118–#1127: operational-system child issues under #1053; lifecycle `status:queued` until authorized by serial queue

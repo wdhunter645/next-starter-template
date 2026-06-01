@@ -261,10 +261,10 @@ A topic is implementation-ready when all of the following exist:
 |---|---|---|
 | Public FAQ and Ask | T21, T22, T23 | post-merge verification or accepted completion record |
 | Public Events | T23-E | post-merge verification or accepted completion record |
-| Public Search | Issue #1108 | T25 queued |
-| Mobile/responsive navigation | Issue #1109 | T26 queued |
-| Join/Login auth UX | Issue #1110 | T28 queued |
-| D1/B2 fail-closed validation | Issue #1111 | T29 queued |
+| Public Search | Issue #1108 | T25 complete / PR #1130 |
+| Mobile/responsive navigation | Issue #1109 | T26 post-merge verify or complete / PR #1166 |
+| Join/Login auth UX | Issue #1110 | T28 post-merge verify or complete / PRs #1149, #1150, #1152, #1155 |
+| D1/B2 fail-closed validation | Issue #1111 | T29 active |
 | FanClub shell/profile/library/memorabilia | Issues #1013-#1015 | post-merge verification or accepted completion record |
 | FanClub home composition | Issue #1113 | T35 active |
 | FanClub operations | Issue #1118 | T40 queued |

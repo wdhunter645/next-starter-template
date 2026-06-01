@@ -343,31 +343,44 @@ Notes:
 - Historical task alias: T23 (Events) is preserved as T23-E to avoid collision with T23 FAQ CMS moderation.
 
 ## T25 — Search experience completion and validation
-Status: IN REVIEW (PR #1130)
+Status: CLOSED
+Date Closed: 2026-05-29
 Issue: #1108
 Owner: Cursor
 Scope: `/search`, search input UX, result rendering, empty states, mobile behavior, and fail-closed behavior.
 Exit: public search is launch-safe, responsive, and preserves canonical navigation.
-Progress:
-- Implementation PR opened: #1130
-- Branch: `feat/t25-search-1108`
+Summary:
+Search experience completion merged with permission-aware `/api/search`, URL-driven query state, result cards, pagination, empty/error states, and member-scope expansion.
+Issue/PR trace:
+- Implementation PR: #1130
 
 ## T26 — Mobile navigation and responsive validation suite
-Status: QUEUED
+Status: CLOSED
+Date Closed: 2026-06-01
 Issue: #1109
 Owner: Cursor
 Scope: mobile hamburger behavior, Store link behavior, responsive layouts, header/footer invariants, breakpoints, and touch usability.
 Exit: mobile navigation and responsive rendering comply with locked design invariants without viewport overflow.
+Summary:
+Mobile and tablet responsive navigation merged with drawer-only phone navigation, visible tablet header actions, footer/header invariant coverage, overflow fixes, and responsive validation tests.
+Issue/PR trace:
+- Implementation PR: #1166
 
 ## T28 — Join/Login UX completion and auth-state validation
-Status: QUEUED
+Status: CLOSED
+Date Closed: 2026-06-01
 Issue: #1110
 Owner: Cursor
 Scope: `/join`, `/login` redirect handling, auth-state transitions, logged-in header invariants, logout behavior, and fail-closed behavior.
 Exit: Join/Login behavior is stable, avoids redirect loops, and preserves mobile/header auth-state invariants.
+Summary:
+Join/Login UX and auth-state validation merged with canonical `/join?mode=login` entry handling, legacy redirect coverage, authenticated-user guard behavior, validation, and invariant test updates.
+Issue/PR trace:
+- Implementation PR: #1149
+- Invariant support PRs: #1150, #1152, #1155
 
 ## T29 — D1/B2 integration verification and fail-closed testing
-Status: QUEUED
+Status: ACTIVE
 Issue: #1111
 Owner: Cursor
 Scope: active D1 queries, B2 image rendering, fallback handling, missing-content behavior, homepage media validation, and runtime error validation.
