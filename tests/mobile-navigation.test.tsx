@@ -175,13 +175,13 @@ describe('FanClubHeader mobile navigation wiring', () => {
     );
   });
 
-  it('keeps the drawer dismissible while the backdrop blocks click-through targets', async () => {
+  it('keeps the drawer open and scoped to the dialog after activation', async () => {
     render(<FanClubHeader showLogo={false} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'Open menu' }));
 
-    expect(screen.getByRole('dialog', { name: 'Menu' })).toBeInTheDocument();
-    expect(screen.getByText('Club Home').closest('[role="dialog"]')).toBeInTheDocument();
+    const menu = screen.getByRole('dialog', { name: 'Menu' });
+    expect(within(menu).getByRole('link', { name: 'Club Home' })).toBeInTheDocument();
   });
 });
 
