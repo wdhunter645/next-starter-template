@@ -133,8 +133,18 @@
     gap: 10px;
   }
 
+  .inner:has(.leftOffset){
+    display: grid;
+    grid-template-columns: minmax(96px, var(--floating-logo-footprint)) minmax(0, 1fr) minmax(96px, var(--floating-logo-footprint));
+    align-items: center;
+    column-gap: 8px;
+  }
+
   .inner:has(.leftOffset) .center{
-    left: calc(50% + 48px);
+    position: static;
+    grid-column: 2;
+    transform: none;
+    min-width: 0;
   }
 }
 
@@ -154,7 +164,12 @@
     display: none;
   }
 
-  .center{
+  .inner:has(.leftOffset){
+    display: block;
+  }
+
+  .center,
+  .inner:has(.leftOffset) .center{
     position: absolute;
     top: 50%;
     right: 16px;

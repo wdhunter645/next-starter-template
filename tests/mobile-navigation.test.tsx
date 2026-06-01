@@ -174,6 +174,15 @@ describe('FanClubHeader mobile navigation wiring', () => {
       HAMBURGER_MENU_ITEMS.fanclub.map((item) => item.label),
     );
   });
+
+  it('keeps the drawer open and scoped to the dialog after activation', async () => {
+    render(<FanClubHeader showLogo={false} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Open menu' }));
+
+    const menu = screen.getByRole('dialog', { name: 'Menu' });
+    expect(within(menu).getByRole('link', { name: 'Club Home' })).toBeInTheDocument();
+  });
 });
 
 describe('Footer invariants', () => {
