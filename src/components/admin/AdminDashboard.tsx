@@ -2,17 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import styles from './AdminDashboard.module.css';
+import AdminTokenPanel from './AdminTokenPanel';
+import { adminJson, isRecord } from '@/lib/adminClient';
 
 type CountRow = { table: string; count: number };
-
-function isRecord(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null;
-}
-
-function getToken(): string {
-  if (typeof window === 'undefined') return '';
-  return window.localStorage.getItem('lgfc_admin_token') || '';
-}
+type StatsResponse = { ok: true; counts?: Record<string, number | string>; unavailable?: Record<string, string> };
 
 function asCounts(data: unknown): CountRow[] {
   if (!isRecord(data) || data.ok !== true) return [];
@@ -31,25 +25,24 @@ function asCounts(data: unknown): CountRow[] {
 export default function AdminDashboard() {
   const [status, setStatus] = useState<string>('');
   const [rows, setRows] = useState<CountRow[]>([]);
+  const [unavailable, setUnavailable] = useState<string[]>([]);
 
   async function loadStats() {
     setStatus('Loading stats…');
-    const token = getToken();
-    const res = await fetch('/api/admin/stats', {
-      headers: token ? { 'x-admin-token': token } : {},
-      cache: 'no-store',
-    });
+    const result = await adminJson<StatsResponse>('/api/admin/stats');
 
-    const data: unknown = await res.json().catch(() => ({}));
-    if (!isRecord(data) || data.ok !== true) {
-      const err = isRecord(data) && typeof data.error === 'string' ? data.error : `HTTP ${res.status}`;
-      setStatus(`Error: ${err}`);
+    if (!result.ok || !result.data) {
+      setStatus(`Error: ${result.error}`);
       setRows([]);
+      setUnavailable([]);
       return;
     }
 
-    setRows(asCounts(data));
-    setStatus('');
+    const nextRows = asCounts(result.data);
+    const skipped = isRecord(result.data.unavailable) ? Object.keys(result.data.unavailable).sort() : [];
+    setRows(nextRows);
+    setUnavailable(skipped);
+    setStatus(nextRows.length ? '' : 'No D1 table counts returned.');
   }
 
   useEffect(() => {
@@ -58,6 +51,8 @@ export default function AdminDashboard() {
 
   return (
     <div className={styles.wrap}>
+      <AdminTokenPanel onSaved={() => void loadStats()} />
+
       <div className={styles.grid}>
         <a className={styles.card} href="/admin/content">
           <div className={styles.cardTitle}>Page Content</div>
@@ -72,6 +67,16 @@ export default function AdminDashboard() {
         <a className={styles.card} href="/admin/join-requests">
           <div className={styles.cardTitle}>Join Requests</div>
           <div className={styles.cardBody}>View recent join requests captured from /join.</div>
+        </a>
+
+        <a className={styles.card} href="/admin/worklist">
+          <div className={styles.cardTitle}>Worklist</div>
+          <div className={styles.cardBody}>Track admin operations tasks, owners, due dates, and status.</div>
+        </a>
+
+        <a className={styles.card} href="/admin/member-operations">
+          <div className={styles.cardTitle}>Member Operations</div>
+          <div className={styles.cardBody}>Manage welcome email copy and membership card instructions.</div>
         </a>
 
         <a className={styles.card} href="/admin/media-assets">
@@ -104,6 +109,9 @@ export default function AdminDashboard() {
         </div>
 
         {status ? <p className={styles.status}>{status}</p> : null}
+        {unavailable.length ? (
+          <p className={styles.status}>Unavailable tables: {unavailable.join(', ')}</p>
+        ) : null}
 
         <div className={styles.statsGrid}>
           {rows.map((r) => (

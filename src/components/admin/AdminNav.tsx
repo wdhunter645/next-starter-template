@@ -11,6 +11,8 @@ const items: Array<{ href: string; label: string }> = [
   { href: '/admin/cms', label: 'CMS Blocks' },
   { href: '/admin/fundraiser-preview', label: 'Fundraiser Preview' },
   { href: '/admin/join-requests', label: 'Join Requests' },
+  { href: '/admin/worklist', label: 'Worklist' },
+  { href: '/admin/member-operations', label: 'Member Operations' },
   { href: '/admin/media-assets', label: 'Media Assets' },
   { href: '/admin/d1-test', label: 'D1 Inspect' },
 ];

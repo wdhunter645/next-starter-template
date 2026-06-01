@@ -1,3 +1,8 @@
+.wrap{
+  display:grid;
+  gap:18px;
+}
+
 .grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -12,15 +17,130 @@
 }
 
 .card{
+  display:block;
   border:1px solid rgba(0,0,0,0.12);
   border-radius:16px;
   padding:18px;
   background:white;
+  color:#111;
+  text-decoration:none;
+}
+
+.card:hover{
+  border-color: rgba(0,0,0,0.28);
 }
 
 .card h2{
   margin:0 0 6px 0;
   font-size:1.2rem;
+}
+
+.cardTitle{
+  font-weight:800;
+  font-size:1.05rem;
+}
+
+.cardBody{
+  margin-top:6px;
+  opacity:0.82;
+  line-height:1.45;
+}
+
+.panel{
+  border:1px solid rgba(0,0,0,0.12);
+  border-radius:16px;
+  padding:16px;
+  background:rgba(255,255,255,0.95);
+}
+
+.panelHeader{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.panelTitle{
+  font-weight:800;
+  font-size:18px;
+}
+
+.btn{
+  padding:10px 14px;
+  border-radius:12px;
+  border:1px solid rgba(0,0,0,0.22);
+  background:#fff;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.status{
+  margin:10px 0 0 0;
+  opacity:0.86;
+}
+
+.formGrid{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:12px;
+  margin-top:14px;
+}
+
+@media (max-width: 820px){
+  .formGrid{
+    grid-template-columns:1fr;
+  }
+}
+
+.field,
+.fieldWide{
+  display:grid;
+  gap:6px;
+  font-weight:700;
+}
+
+.fieldWide{
+  grid-column:1 / -1;
+}
+
+.field input,
+.fieldWide input,
+.fieldWide textarea{
+  width:100%;
+  border:1px solid rgba(0,0,0,0.22);
+  border-radius:12px;
+  padding:10px 12px;
+  font:inherit;
+  font-weight:400;
+}
+
+.list{
+  display:grid;
+  gap:10px;
+  margin-top:12px;
+}
+
+.listItem{
+  border:1px solid rgba(0,0,0,0.10);
+  border-radius:12px;
+  padding:12px;
+  background:#fff;
+}
+
+.listItem h2{
+  margin:0 0 6px 0;
+  font-size:1.05rem;
+}
+
+.listItem p{
+  margin:6px 0 0 0;
+  opacity:0.82;
+}
+
+.prewrap{
+  margin-top:10px;
+  white-space:pre-wrap;
 }
 
 .actions{
@@ -130,6 +250,24 @@
   grid-template-columns:repeat(3, 1fr);
   gap:10px;
   margin-top:12px;
+}
+
+.stat{
+  border:1px solid rgba(0,0,0,0.10);
+  border-radius:12px;
+  padding:10px 12px;
+  background:#fff;
+}
+
+.statLabel{
+  font-size:12px;
+  opacity:0.75;
+}
+
+.statValue{
+  font-size:18px;
+  font-weight:800;
+  margin-top:4px;
 }
 
 @media (max-width: 820px){
