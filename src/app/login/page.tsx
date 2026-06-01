@@ -1,5 +1,18 @@
-import AuthClient from '../auth/AuthClient';
+'use client';
 
-export default function LoginPage(){
-  return <AuthClient defaultMode="login" />;
+import { useEffect } from 'react';
+import { POST_LOGOUT_ROUTE } from '@/lib/auth-routes';
+
+export default function LoginLegacyRedirectPage() {
+  useEffect(() => {
+    window.location.replace(POST_LOGOUT_ROUTE);
+  }, []);
+
+  return (
+    <main style={{ padding: 24, maxWidth: 900, margin: '0 auto' }}>
+      <p>
+        Redirecting… <a href={POST_LOGOUT_ROUTE}>Continue to home</a>
+      </p>
+    </main>
+  );
 }
