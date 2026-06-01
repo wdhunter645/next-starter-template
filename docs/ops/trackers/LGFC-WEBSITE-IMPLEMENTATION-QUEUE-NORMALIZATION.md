@@ -32,7 +32,7 @@ Does not cover runtime code changes, CI workflow edits, or legacy doc migration.
 
 - T21–T35 website core tasks are merged or closed in the worklist; T35 closed via #1114/#1115.
 - T25 search implementation is merged on PR #1130 (issue #1108).
-- T26 mobile navigation and responsive validation is merged on PR #1166 (issue #1109).
+- T26 mobile navigation and responsive validation is merged on PR #1166 with post-merge backdrop layering fix PR #1178 (issue #1109).
 - T28 Join/Login UX completion and auth-state validation is merged through PR #1149 plus invariant support PRs #1150, #1152, and #1155 (issue #1110).
 - T29 D1/B2 integration verification is merged on PR #1169 (issue #1111).
 - T40 Fan Club operational workflows is merged on PR #1171 (issue #1118).
@@ -107,7 +107,7 @@ Lifecycle labels:
 | T23 FAQ CMS moderation | #1053 trace / PR #1072 | complete | `[T23] Website — FAQ CMS moderation — Child #1053` |
 | T23-E Events page | #947 | post-merge verify or complete | `[T23-E] Website — Events page — Child #1053` |
 | T25 Search experience completion and validation | #1108 | complete (PR #1130) | `[T25] Website — Search experience completion and validation — Child #1053` |
-| T26 Mobile navigation and responsive validation suite | #1109 | post-merge verify or complete (PR #1166) | `[T26] Website — Mobile navigation and responsive validation suite — Child #1053` |
+| T26 Mobile navigation and responsive validation suite | #1109 | complete (PR #1166, follow-up #1178) | `[T26] Website — Mobile navigation and responsive validation suite — Child #1053` |
 | T28 Join/Login UX completion and auth-state validation | #1110 | post-merge verify or complete (PRs #1149, #1150, #1152, #1155) | `[T28] Website — Join/Login UX completion and auth-state validation — Child #1053` |
 | T29 D1/B2 integration verification and fail-closed testing | #1111 | complete (PR #1169) | `[T29] Website — D1/B2 integration verification and fail-closed testing — Child #1053` |
 | T30 FanClub shell and authenticated navigation | #1013 | post-merge verify or complete | `[T30] Website — FanClub shell and authenticated navigation — Child #1053` |
