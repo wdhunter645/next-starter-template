@@ -5,13 +5,19 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import FanclubPhotoGalleryPage from '@/app/fanclub/photo/page';
 import LibraryPage from '@/app/fanclub/library/page';
 import ArchivesTiles from '@/components/fanclub/ArchivesTiles';
+import RecentDiscussionsTeaser from '@/components/RecentDiscussionsTeaser';
 import { onRequestGet as listDiscussions } from '../functions/api/discussions/list';
 import { onRequestGet as listLibrary } from '../functions/api/library/list';
 
 const mockUseMemberSession = vi.hoisted(() => vi.fn());
+const mockApiGet = vi.hoisted(() => vi.fn());
 
 vi.mock('@/hooks/useMemberSession', () => ({
   useMemberSession: mockUseMemberSession,
+}));
+
+vi.mock('@/lib/api', () => ({
+  apiGet: mockApiGet,
 }));
 
 vi.mock('next/link', () => ({
@@ -169,5 +175,24 @@ describe('Fan Club operational pages', () => {
     render(<ArchivesTiles />);
 
     expect(screen.getByRole('link', { name: 'Submit to the Library' })).toHaveAttribute('href', '/fanclub/submit');
+  });
+});
+
+describe('Homepage discussion teaser privacy', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    mockApiGet.mockReset();
+  });
+
+  it('does not call the member-only discussions API for logged-out homepage visitors', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse({ ok: false }, 401) as never);
+
+    render(<RecentDiscussionsTeaser />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/member discussions are private/i)).toBeInTheDocument();
+    });
+    expect(mockApiGet).not.toHaveBeenCalled();
+    expect(screen.getByRole('link', { name: 'Join or log in' })).toHaveAttribute('href', '/join');
   });
 });

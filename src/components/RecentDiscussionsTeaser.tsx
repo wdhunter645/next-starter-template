@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { apiGet } from '@/lib/api';
 
@@ -8,6 +9,11 @@ type Discussion = {
   title: string;
   body: string;
   created_at: string;
+};
+
+type SessionResponse = {
+  ok?: boolean;
+  email?: string;
 };
 
 const safeText = (value: unknown): string | null => {
@@ -44,11 +50,30 @@ export default function RecentDiscussionsTeaser() {
   const [items, setItems] = useState<Discussion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isMember, setIsMember] = useState(false);
 
   useEffect(() => {
     let alive = true;
     (async () => {
+      setLoading(true);
       try {
+        const sessionRes = await fetch('/api/session/me', {
+          credentials: 'include',
+          cache: 'no-store',
+          headers: { accept: 'application/json' },
+        });
+        const session = (await sessionRes.json().catch(() => null)) as SessionResponse | null;
+        const hasMemberSession = Boolean(sessionRes.ok && session?.ok && session.email);
+
+        if (!alive) return;
+        setIsMember(hasMemberSession);
+
+        if (!hasMemberSession) {
+          setItems([]);
+          setError(null);
+          return;
+        }
+
         const data = await apiGet<{ ok: boolean; items: Discussion[] }>(`/api/discussions/list?limit=5`);
         if (!alive) return;
 
@@ -76,11 +101,15 @@ export default function RecentDiscussionsTeaser() {
     <section id="recent-club-discussions" className="container section-gap">
       <h2 className="section-title">Recent Club discussions</h2>
       <p className="sub" style={{ textAlign: 'center' }}>
-        Pulled live from D1 discussions table (latest 5 posts).
+        {isMember ? 'Pulled live from D1 discussions table (latest 5 posts).' : 'Member-only club posts are available after login.'}
       </p>
 
       {loading ? (
         <p className="sub" style={{ textAlign: 'center' }}>Loading…</p>
+      ) : !isMember ? (
+        <p className="sub" style={{ textAlign: 'center' }}>
+          Member discussions are private. <Link href="/join">Join or log in</Link> to read recent club posts.
+        </p>
       ) : error ? (
         <p className="sub" style={{ textAlign: 'center' }}>{error}</p>
       ) : items.length === 0 ? (

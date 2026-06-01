@@ -31,8 +31,8 @@ export default function FanclubPhotoGalleryPage() {
     setErr('');
     try {
       const res = await fetch(buildFanclubPhotoListApiUrl({ limit: 60, q: submittedQuery, tags: submittedTags }), { cache: 'no-store' });
-      const json = await res.json();
-      if (!json?.ok) throw new Error(json?.error || 'list_failed');
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json?.ok) throw new Error(json?.error || 'list_failed');
       setItems(json.items || []);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -59,7 +59,15 @@ export default function FanclubPhotoGalleryPage() {
         Browse member-only photos. Use search and tags to narrow the archive.
       </p>
 
-      <section style={{ marginTop: 14, padding: 14, borderRadius: 16, border: '1px solid rgba(255,255,255,0.14)' }}>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          setSubmittedQuery(query);
+          setSubmittedTags(tagFilter);
+          setRefreshKey((value) => value + 1);
+        }}
+        style={{ marginTop: 14, padding: 14, borderRadius: 16, border: '1px solid rgba(255,255,255,0.14)' }}
+      >
         <div style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', alignItems: 'end' }}>
           <label style={{ display: 'grid', gap: 6 }}>
             Search
@@ -80,11 +88,7 @@ export default function FanclubPhotoGalleryPage() {
             />
           </label>
           <button
-            onClick={() => {
-              setSubmittedQuery(query);
-              setSubmittedTags(tagFilter);
-              setRefreshKey((value) => value + 1);
-            }}
+            type="submit"
             style={{ padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.08)', cursor: 'pointer' }}
           >
             Apply filters
@@ -96,7 +100,7 @@ export default function FanclubPhotoGalleryPage() {
             Submit a story or note
           </Link>
         </div>
-      </section>
+      </form>
 
       {loading && <p style={{ opacity: 0.85 }}>Loading…</p>}
       {err && <p style={{ color: 'salmon' }}>Unable to load member photos right now. {err}</p>}
