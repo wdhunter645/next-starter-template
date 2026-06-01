@@ -9,7 +9,7 @@ Use `docs/reference/governance/troubleshooting-data-surface-requirements.md` as 
 When new PR-gate troubleshooting information becomes available, maintainers and agents must update both `.github/pull_request_template.md` and `docs/reference/governance/troubleshooting-data-surface-requirements.md`.
 
 ## PR LIFECYCLE REQUIREMENT (MANDATORY FOR ALL AGENTS)
-A PR is not complete when it is opened. The creating or working agent owns the PR through the full lifecycle until it is ready for human review.
+A PR is not complete when it is opened. The creating or working agent owns the PR through the full lifecycle until it is ready for human review and then through post-merge closeout once the PR is merged.
 
 Required lifecycle:
 1. Confirm or create exactly one same-repository, open, non-PR source Issue.
@@ -22,8 +22,10 @@ Required lifecycle:
 8. Resolve or explicitly disposition every actionable reviewer item in the PR body.
 9. Rerun or wait for all required gates after fixes.
 10. Mark or claim `READY FOR REVIEW` only after all required gates are green and no actionable reviewer item remains unresolved.
+11. After merge, verify the merge commit, verify the source Issue state, close the source Issue when automation did not, and record tracker/documentation follow-up when applicable.
 
 Agents must not hand a PR to a human approver while any gate, review comment, or review thread still requires agent action.
+Agents must not treat merge as complete closeout until the source Issue and required trackers are reconciled.
 
 - **Issue:** #____
 <!-- Replace #____ with exactly one same-repository, open, non-PR Issue number before opening/updating the PR. Required final syntax example: `- **Issue:** #123`. Do not use `Closes`, `Fixes`, a PR number, an external issue, or a closed issue for this required line. -->
@@ -162,6 +164,15 @@ Reviewer items:
 - [ ] Required gates rerun or re-evaluated after fixes
 - [ ] Final PR panel confirms merge-readiness
 
+## POST-MERGE CLOSEOUT CHECKLIST
+- [ ] PR merged state verified
+- [ ] Merge commit recorded
+- [ ] Source Issue state inspected after merge
+- [ ] Source Issue closed manually when automation did not close it
+- [ ] Source Issue closure comment references merged PR and merge commit
+- [ ] Tracker/documentation update PR opened when implementation PR intentionally omitted tracker updates
+- [ ] Post-merge validation gates inspected when applicable
+
 ## ACCEPTANCE CRITERIA
 - [ ] Required source Issue exists, is open, is same-repository, and is not a PR.
 - [ ] PR issue-accounting gate passes.
@@ -177,6 +188,7 @@ Reviewer items:
 - [ ] No out-of-scope file changes.
 - [ ] All actionable reviewer and bot feedback is resolved or explicitly dispositioned.
 - [ ] PR is ready for human review.
+- [ ] Post-merge source Issue closure and tracker follow-up are complete or explicitly delegated.
 
 ## REQUIRED PRE-REVIEW SELF-CHECK
 - [ ] PR body contains all required sections with exact headings
