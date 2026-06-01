@@ -74,6 +74,8 @@ describe('HamburgerMenu variants', () => {
     expect(links).toEqual(labels);
     expect(screen.queryByRole('link', { name: 'Admin' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Support' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Members' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Home' })).not.toBeInTheDocument();
   });
 
   it('uses external target attributes for Store links', () => {
@@ -89,6 +91,17 @@ describe('HamburgerMenu variants', () => {
     const storeLink = screen.getByRole('link', { name: 'Store' });
     expect(storeLink).toHaveAttribute('target', '_blank');
     expect(storeLink).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  it('keeps every drawer variant free of forbidden mobile items', () => {
+    (Object.keys(HAMBURGER_MENU_ITEMS) as Array<keyof typeof HAMBURGER_MENU_ITEMS>).forEach((variant) => {
+      const labels = HAMBURGER_MENU_ITEMS[variant].map((item) => item.label);
+
+      expect(labels).not.toContain('Admin');
+      expect(labels).not.toContain('Support');
+      expect(labels).not.toContain('Members');
+      expect(labels).not.toContain('Home');
+    });
   });
 });
 
@@ -111,6 +124,9 @@ describe('Header mobile navigation wiring', () => {
     const menu = screen.getByRole('dialog', { name: 'Menu' });
     expect(within(menu).getByRole('link', { name: 'Join' })).toBeInTheDocument();
     expect(within(menu).getByRole('link', { name: 'Login' })).toBeInTheDocument();
+    expect(within(menu).getAllByRole('link').map((node) => node.textContent?.trim())).toEqual(
+      HAMBURGER_MENU_ITEMS['public-guest'].map((item) => item.label),
+    );
   });
 
   it('opens member hamburger drawer when logged in', async () => {
@@ -124,6 +140,24 @@ describe('Header mobile navigation wiring', () => {
     expect(within(menu).getByRole('link', { name: 'Club Home' })).toBeInTheDocument();
     expect(within(menu).getByRole('link', { name: 'Logout' })).toBeInTheDocument();
     expect(within(menu).queryByRole('link', { name: 'Join' })).not.toBeInTheDocument();
+    expect(within(menu).getAllByRole('link').map((node) => node.textContent?.trim())).toEqual(
+      HAMBURGER_MENU_ITEMS['public-member'].map((item) => item.label),
+    );
+  });
+
+  it('closes the open drawer with Escape and restores hamburger focus', async () => {
+    mockSession({ ok: false });
+
+    render(<Header showLogo={false} />);
+
+    const button = screen.getByRole('button', { name: 'Open menu' });
+    await userEvent.click(button);
+    expect(screen.getByRole('dialog', { name: 'Menu' })).toBeInTheDocument();
+
+    await userEvent.keyboard('{Escape}');
+
+    expect(screen.queryByRole('dialog', { name: 'Menu' })).not.toBeInTheDocument();
+    expect(button).toHaveFocus();
   });
 });
 
@@ -136,6 +170,9 @@ describe('FanClubHeader mobile navigation wiring', () => {
     const menu = screen.getByRole('dialog', { name: 'Menu' });
     expect(within(menu).getByRole('link', { name: 'My Profile' })).toBeInTheDocument();
     expect(within(menu).getByRole('link', { name: 'Club Home' })).toBeInTheDocument();
+    expect(within(menu).getAllByRole('link').map((node) => node.textContent?.trim())).toEqual(
+      HAMBURGER_MENU_ITEMS.fanclub.map((item) => item.label),
+    );
   });
 });
 
@@ -161,5 +198,7 @@ describe('Footer invariants', () => {
     expect(screen.getByRole('link', { name: 'Contact' })).toHaveAttribute('href', '/contact');
     expect(screen.queryByRole('link', { name: 'Admin' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Support' })).not.toBeInTheDocument();
+    expect(document.querySelector('a[href^="mailto:"]')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Back to top' })).toBeInTheDocument();
   });
 });

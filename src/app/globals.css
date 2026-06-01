@@ -70,6 +70,7 @@ body {
 	font-family: var(--lgfc-font-family);
 	font-size: var(--lgfc-font-size-body);
 	line-height: 1.6;
+	margin: 0;
 	padding-top: 0;
 }
 

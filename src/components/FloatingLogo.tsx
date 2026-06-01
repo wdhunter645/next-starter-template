@@ -8,13 +8,13 @@ import styles from './FloatingLogo.module.css';
  * FloatingLogo
  * - Independent overlay layer (NOT part of the sticky header)
  * - Visible at top of "/" and "/fanclub"
- * - Disappears only after the user scrolls past the hero area (threshold tuned)
+ * - Disappears once the user scrolls past the page top
  */
 export default function FloatingLogo() {
   const [show, setShow] = useState(true);
 
   useEffect(() => {
-    const THRESHOLD_PX = 320; // tune here if needed (higher = stays longer)
+    const THRESHOLD_PX = 12;
     const onScroll = () => {
       setShow((window.scrollY || 0) < THRESHOLD_PX);
     };
