@@ -12,28 +12,6 @@ Last Reviewed: 2026-05-05
 
 ------------------------------------------------------------------------
 
-## THREAD CLOSEOUT RECORD --- 2026-06-01 --- T41 admin operations closeout
-
-### Starting State
-T41 implementation PR #1174 was merged, but the implementation trackers still showed T41 as active and T42 as queued.
-
-### Objective
-Close the merged T41 website task in tracker records and advance website sequencing to the next moderation/review workflow task.
-
-### Work Performed
-- Updated `docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md`:
-  - Marked T41 `Status: CLOSED` with merged implementation PR #1174.
-  - Marked T42 `Status: ACTIVE` as the next Cursor website implementation task (#1120).
-- Updated `docs/ops/trackers/LGFC-WEBSITE-IMPLEMENTATION-QUEUE-NORMALIZATION.md` and `docs/reference/lgfc-implementation-coverage-map.md` to reflect T41 completion and T42 active queue-head status.
-
-### Result
-Tracker state now matches merged website implementation history for T41 and clearly reflects active T42 execution.
-
-### Next Action
-Execute T42 moderation and review workflows (#1120).
-
-------------------------------------------------------------------------
-
 ## THREAD CLOSEOUT RECORD --- 2026-06-01 --- T29/T40 website tracker closeout
 
 ### Starting State

@@ -264,12 +264,12 @@ A topic is implementation-ready when all of the following exist:
 | Public Search | Issue #1108 | T25 complete / PR #1130 |
 | Mobile/responsive navigation | Issue #1109 | T26 post-merge verify or complete / PR #1166 |
 | Join/Login auth UX | Issue #1110 | T28 post-merge verify or complete / PRs #1149, #1150, #1152, #1155 |
-| D1/B2 fail-closed validation | Issue #1111 | T29 complete / PR #1169 |
+| D1/B2 fail-closed validation | Issue #1111 | T29 active |
 | FanClub shell/profile/library/memorabilia | Issues #1013-#1015 | post-merge verification or accepted completion record |
-| FanClub home composition | Issue #1113 | T35 complete / PRs #1114, #1115 |
-| FanClub operations | Issue #1118 | T40 complete / PR #1171 |
-| Admin operations | Issue #1119 | T41 complete / PR #1174 |
-| Moderation/review | Issue #1120 | T42 active |
+| FanClub home composition | Issue #1113 | T35 active |
+| FanClub operations | Issue #1118 | T40 queued |
+| Admin operations | Issue #1119 | T41 queued |
+| Moderation/review | Issue #1120 | T42 queued |
 | CMS/content management | Issue #1121 | T43 queued |
 | Media management | Issue #1122 | T44 queued |
 | Editorial/archive | Issue #1123 | T45 queued |
