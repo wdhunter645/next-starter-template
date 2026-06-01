@@ -8,24 +8,31 @@
 
 .inner{
   --floating-logo-footprint: clamp(128px, 28vw, 196px);
+  position: relative;
   max-width: 1120px;
   margin: 0 auto;
   padding: 12px 16px;
-  min-height: 80px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  height: 72px;
 }
 
 .left{
-  flex: 0 0 auto;
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  width: 72px;
+  max-width: 72px;
+  height: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 10;
 }
 
 .leftOffset{
   width: var(--floating-logo-footprint);
+  max-width: var(--floating-logo-footprint);
 }
 
 .leftPlaceholder{
@@ -38,19 +45,24 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  pointer-events: auto;
 }
 
 .logoImg{
   display: block;
-  height: 56px;
+  height: 48px;
   width: auto;
-  max-height: 56px;
+  max-height: 48px;
   object-fit: contain;
   border-radius: 12px;
+  pointer-events: auto;
 }
 
 .center{
-  flex: 1 1 auto;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -93,8 +105,8 @@
   flex-direction: column;
   justify-content: center;
   gap: 5px;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: 1px solid var(--lgfc-border-light, rgba(0,0,0,0.12));
   border-radius: 10px;
   background: #fff;
@@ -112,21 +124,12 @@
 }
 
 @media (max-width: 920px){
-  .inner{
-    min-height: auto;
-    padding-bottom: 14px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
   .leftOffset{
     width: 0;
+    max-width: 0;
   }
 
   .center{
-    flex: 1 0 100%;
-    justify-content: center;
-    flex-wrap: wrap;
     gap: 10px;
   }
 }
@@ -137,10 +140,9 @@
   }
 
   .inner{
-    min-height: 56px;
+    height: 56px;
+    padding-top: 12px;
     padding-bottom: 12px;
-    flex-wrap: nowrap;
-    justify-content: flex-end;
   }
 
   .left,
@@ -149,7 +151,11 @@
   }
 
   .center{
-    flex: 0 0 auto;
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    left: auto;
+    transform: none;
     flex-wrap: nowrap;
     justify-content: flex-end;
     width: auto;

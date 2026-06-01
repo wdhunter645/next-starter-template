@@ -1,12 +1,12 @@
 .wrap{
   position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 60;
+  left: 16px;
+  top: 6px;
+  z-index: 80;
   background: transparent;
   border: 0;
   box-shadow: none;
-  padding: 8px;
+  padding: 0;
   pointer-events: none;
 }
 
@@ -19,9 +19,21 @@
 
 .img{
   display: block;
-  height: clamp(120px, 28vw, 180px);
+  height: clamp(86px, 10vw, 98px);
   width: auto;
-  max-width: none;
+  max-width: 160px;
   object-fit: contain;
   border-radius: 12px;
+}
+
+@media (max-width: 767px){
+  .wrap{
+    left: 12px;
+    top: 8px;
+  }
+
+  .img{
+    height: 48px;
+    max-width: 88px;
+  }
 }
