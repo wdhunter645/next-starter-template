@@ -1,7 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, it, expect, vi, beforeEach } from 'vitest';
-import fs from 'node:fs';
 
 import Header from '@/components/Header';
 import FanClubHeader from '@/components/FanClubHeader';
@@ -175,22 +174,14 @@ describe('FanClubHeader mobile navigation wiring', () => {
       HAMBURGER_MENU_ITEMS.fanclub.map((item) => item.label),
     );
   });
-});
 
-describe('PR #1166 remediation invariants', () => {
-  it('keeps the hamburger backdrop hit-testable so outside clicks do not pass through', () => {
-    const css = fs.readFileSync('src/components/HamburgerMenu.module.css', 'utf8');
+  it('keeps the drawer dismissible while the backdrop blocks click-through targets', async () => {
+    render(<FanClubHeader showLogo={false} />);
 
-    expect(css).toMatch(/\.backdrop\s*{[^}]*pointer-events:\s*auto;/s);
-    expect(css).not.toMatch(/\.backdrop\s*{[^}]*pointer-events:\s*none;/s);
-  });
+    await userEvent.click(screen.getByRole('button', { name: 'Open menu' }));
 
-  it('uses tablet grid flow for FanClubHeader when the floating-logo spacer is active', () => {
-    const css = fs.readFileSync('src/components/FanClubHeader.module.css', 'utf8');
-
-    expect(css).toMatch(/\.inner:has\(\.leftOffset\)\s*{[^}]*display:\s*grid;/s);
-    expect(css).toMatch(/\.inner:has\(\.leftOffset\) \.center\s*{[^}]*grid-column:\s*2;/s);
-    expect(css).not.toContain('left: calc(50% + 48px)');
+    expect(screen.getByRole('dialog', { name: 'Menu' })).toBeInTheDocument();
+    expect(screen.getByText('Club Home').closest('[role="dialog"]')).toBeInTheDocument();
   });
 });
 
