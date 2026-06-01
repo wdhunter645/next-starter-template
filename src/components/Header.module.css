@@ -140,10 +140,10 @@
 
   .center{
     position: absolute;
-    top: 12px;
+    top: 50%;
     right: 16px;
     left: auto;
-    transform: none;
+    transform: translateY(-50%);
     margin-top: 0;
     width: auto;
     flex-wrap: nowrap;
