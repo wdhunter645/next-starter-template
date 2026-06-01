@@ -62,6 +62,38 @@ describe("D1 fail-closed guards", () => {
       error: "Database unavailable",
     });
   });
+
+  it("returns 503 for milestones when required D1 tables are missing", async () => {
+    const DB = createD1(() => ({ results: [] }));
+
+    const response = await getMilestones({
+      env: { DB },
+      request: createRequest("/api/milestones/list"),
+    });
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: "Database schema incomplete",
+      missingTables: ["milestones", "photos"],
+    });
+  });
+
+  it("returns 503 for friends when the required D1 table is missing", async () => {
+    const DB = createD1(() => ({ results: [] }));
+
+    const response = await getFriends({
+      env: { DB },
+      request: createRequest("/api/friends/list"),
+    });
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: "Database schema incomplete",
+      missingTables: ["friends"],
+    });
+  });
 });
 
 describe("B2 fail-closed guards", () => {
@@ -142,6 +174,10 @@ describe("B2 photo URL normalization", () => {
 describe("homepage D1/B2 media responses", () => {
   it("normalizes milestone photo URLs before returning homepage data", async () => {
     const DB = createD1((sql) => {
+      if (sql.includes("sqlite_master")) {
+        return { results: [{ name: "milestones" }, { name: "photos" }] };
+      }
+
       if (sql.includes("PRAGMA table_info")) {
         return { results: [{ name: "year" }] };
       }
@@ -176,18 +212,24 @@ describe("homepage D1/B2 media responses", () => {
   });
 
   it("normalizes friends photo URLs before returning homepage data", async () => {
-    const DB = createD1(() => ({
-      results: [
-        {
-          id: 7,
-          name: "Live Like Lou Foundation",
-          kind: "Partner",
-          blurb: "ALS awareness",
-          url: "https://www.livelikelou.org",
-          photo_url: "friends/live-like-lou.png",
-        },
-      ],
-    }));
+    const DB = createD1((sql) => {
+      if (sql.includes("sqlite_master")) {
+        return { results: [{ name: "friends" }] };
+      }
+
+      return {
+        results: [
+          {
+            id: 7,
+            name: "Live Like Lou Foundation",
+            kind: "Partner",
+            blurb: "ALS awareness",
+            url: "https://www.livelikelou.org",
+            photo_url: "friends/live-like-lou.png",
+          },
+        ],
+      };
+    });
 
     const response = await getFriends({
       env: { DB, PUBLIC_B2_BASE_URL: "https://cdn.example.com/lgfc" },

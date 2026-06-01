@@ -1,4 +1,4 @@
-import { requireD1, jsonResponse } from "../../_lib/d1";
+import { requireD1, requireTables, jsonResponse } from "../../_lib/d1";
 import { normalizePhotoUrl } from "../../_lib/photo-url";
 
 export const onRequestGet = async (context: any): Promise<Response> => {
@@ -7,6 +7,9 @@ export const onRequestGet = async (context: any): Promise<Response> => {
   if (!d1.ok) return jsonResponse(d1.body, d1.status);
 
   try {
+    const tables = await requireTables(d1.db, ["milestones", "photos"]);
+    if (!tables.ok) return jsonResponse(tables.body, tables.status);
+
     const url = new URL(request.url);
     const limit = Math.max(1, Math.min(100, Number(url.searchParams.get('limit') || '50')));
 
