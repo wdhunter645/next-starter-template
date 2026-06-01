@@ -24,7 +24,7 @@ When implementation is approved, execute the work in this order:
 
 1. Add the compiler at `scripts/compile_ledger.py`.
 2. Add or generate output at `data/master_print_stream.json`.
-3. Add the scoresheet layout component required by the print route.
+3. Add the scoresheet layout component at `src/components/ScoresheetPrintLayout.tsx`, or update the route to import an approved existing scoresheet component.
 4. Add the print route at `src/app/print/page.tsx`.
 5. Add global print CSS support in `src/app/globals.css`.
 6. Verify the compiler uses real ingested source data rather than mock data.
@@ -39,11 +39,13 @@ The intended final structure is:
 ├── scripts/
 │   └── compile_ledger.py
 └── src/
-    └── app/
+    ├── app/
         ├── globals.css
         ├── page.tsx
         └── print/
             └── page.tsx
+    └── components/
+        └── ScoresheetPrintLayout.tsx
 ```
 
 ## Script Location
@@ -108,14 +110,14 @@ The intended print route is:
 src/app/print/page.tsx
 ```
 
-The print page should import the compiled JSON and map each game into the scoresheet layout component. The scoresheet component must be created or selected before adding the route.
+The print page should import the compiled JSON and map each game into the scoresheet layout component. The scoresheet component must be created or selected before adding the route; do not leave the route pointed at a component that does not exist.
 
 Reference wrapper:
 
 ```tsx
 import React from 'react';
 import masterPrintStream from '../../../data/master_print_stream.json';
-import RevisedScoresheet from '@/components/RevisedScoresheet';
+import ScoresheetPrintLayout from '@/components/ScoresheetPrintLayout';
 
 export default function PrintPage() {
   return (
@@ -127,7 +129,7 @@ export default function PrintPage() {
               key={game.Season_Game_Number}
               className="break-after-page"
             >
-              <RevisedScoresheet game={game} />
+              <ScoresheetPrintLayout game={game} />
             </div>
           ))}
         </div>
@@ -168,6 +170,7 @@ Reference CSS:
 - [ ] Script lives at `scripts/compile_ledger.py`.
 - [ ] Generated JSON writes to `data/master_print_stream.json`.
 - [ ] Mock data is replaced by explicit raw schedule ingestion before production use.
+- [ ] Scoresheet component lives at `src/components/ScoresheetPrintLayout.tsx`, or the print route imports another approved existing scoresheet component.
 - [ ] Print route lives at `src/app/print/page.tsx`.
 - [ ] Print route imports `data/master_print_stream.json` by relative path or approved alias.
 - [ ] Print route maps each series and game to an implemented scoresheet component.
