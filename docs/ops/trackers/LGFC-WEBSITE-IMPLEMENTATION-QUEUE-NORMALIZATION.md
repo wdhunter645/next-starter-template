@@ -34,7 +34,9 @@ Does not cover runtime code changes, CI workflow edits, or legacy doc migration.
 - T25 search implementation is merged on PR #1130 (issue #1108).
 - T26 mobile navigation and responsive validation is merged on PR #1166 (issue #1109).
 - T28 Join/Login UX completion and auth-state validation is merged through PR #1149 plus invariant support PRs #1150, #1152, and #1155 (issue #1110).
-- T29 is the current active public-core validation task; T40–T50 remain backlog.
+- T29 D1/B2 integration verification is merged on PR #1169 (issue #1111).
+- T40 Fan Club operational workflows is merged on PR #1171 (issue #1118).
+- T41 is the current active admin operations task; T42–T50 remain backlog.
 - Several older issues (#943, #946, #947, #1013–#1017) remain open with stale lifecycle labels despite worklist CLOSED status.
 - Issue #1112 is assigned launch-readiness task **T50** (not T30).
 
@@ -42,8 +44,8 @@ Does not cover runtime code changes, CI workflow edits, or legacy doc migration.
 
 - One authoritative issue map with standard `[T##] Website — {scope} — Child #1053` titles
 - Lifecycle labels match orchestrator serial-queue contract and accepted post-merge evidence
-- Worklist and coverage map reflect T25 as current implementation focus after T35 closeout
-- Phase 5 operational-system issues (#1118–#1127, #1112) remain `status:queued` until the serial queue authorizes each task
+- Worklist and coverage map reflect T41 as the current implementation focus after T29/T40 closeout
+- Phase 5 operational-system issues after T41 (#1120–#1127, #1112) remain `status:queued` until the serial queue authorizes each task
 
 ## Source Inputs
 
@@ -107,7 +109,7 @@ Lifecycle labels:
 | T25 Search experience completion and validation | #1108 | complete (PR #1130) | `[T25] Website — Search experience completion and validation — Child #1053` |
 | T26 Mobile navigation and responsive validation suite | #1109 | post-merge verify or complete (PR #1166) | `[T26] Website — Mobile navigation and responsive validation suite — Child #1053` |
 | T28 Join/Login UX completion and auth-state validation | #1110 | post-merge verify or complete (PRs #1149, #1150, #1152, #1155) | `[T28] Website — Join/Login UX completion and auth-state validation — Child #1053` |
-| T29 D1/B2 integration verification and fail-closed testing | #1111 | active | `[T29] Website — D1/B2 integration verification and fail-closed testing — Child #1053` |
+| T29 D1/B2 integration verification and fail-closed testing | #1111 | complete (PR #1169) | `[T29] Website — D1/B2 integration verification and fail-closed testing — Child #1053` |
 | T30 FanClub shell and authenticated navigation | #1013 | post-merge verify or complete | `[T30] Website — FanClub shell and authenticated navigation — Child #1053` |
 | T31 FanClub profile and member card pages | #1014 | post-merge verify or complete | `[T31] Website — FanClub profile and member card pages — Child #1053` |
 | T32 FanClub library and memorabilia pages | #1015 | post-merge verify or complete | `[T32] Website — FanClub library and memorabilia pages — Child #1053` |
@@ -123,8 +125,8 @@ launch readiness can be treated as complete.
 
 | Task | Issue | System | Scope | Lifecycle |
 |---|---:|---|---|---|
-| T40 | #1118 | Fan Club operational workflows | `/fanclub/photo`, `/fanclub/submit`, `/fanclub/chat`, Fan Club APIs | queued |
-| T41 | #1119 | Admin operating shell and member operations | `/admin`, `/admin/join-requests`, stats/worklist/member operations | queued |
+| T40 | #1118 | Fan Club operational workflows | `/fanclub/photo`, `/fanclub/submit`, `/fanclub/chat`, Fan Club APIs | complete (PR #1171) |
+| T41 | #1119 | Admin operating shell and member operations | `/admin`, `/admin/join-requests`, stats/worklist/member operations | active |
 | T42 | #1120 | Moderation and review workflows | `/admin/moderation`, reports APIs, ask/FAQ moderation transitions | queued |
 | T43 | #1121 | Content management workflows | `/admin/cms`, `/admin/content`, content publish/save APIs | queued |
 | T44 | #1122 | Media management workflows | `/admin/media-assets`, B2 sync, photo/media APIs | queued |
@@ -146,17 +148,16 @@ launch readiness can be treated as complete.
 - Social Wall production integration
 - homepage dynamic D1 sections
 - T35 FanClub home composition pass (#1114)
+- T29 D1/B2 fail-closed verification (#1169)
+- T40 Fan Club operational workflows (#1171)
 
 ### Remaining public-core gaps
 
-- D1/B2 fail-closed verification
+- None currently tracked before launch-readiness validation
 
 ### Remaining Fan Club gaps
 
-- member photo/archive browsing completion
-- submission intake flow completion
-- member discussion/chat operational behavior
-- member-only route validation across all Fan Club surfaces
+- None currently tracked before launch-readiness validation
 
 ### Remaining Admin and Operations gaps
 
@@ -178,10 +179,12 @@ Apply these GitHub issue metadata changes before or with the normalization PR:
 - #1108: transition from implementation lifecycle labels to `status:complete` after accepted post-merge evidence for PR #1130
 - #1109: transition from implementation lifecycle labels to `status:post-merge-verify` or `status:complete` after accepted post-merge evidence for PR #1166
 - #1110: transition from implementation lifecycle labels to `status:post-merge-verify` or `status:complete` after accepted post-merge evidence for PRs #1149, #1150, #1152, and #1155
-- #1111: current serial-queue implementation head (`status:pr-draft` or review-state labels per automation)
+- #1111: transition from implementation lifecycle labels to `status:complete` after accepted post-merge evidence for PR #1169
 - #1112: full website label set; title `[T50] Website — Launch readiness QA and production validation suite — Child #1053`; lifecycle `status:queued`
 - #1113: close or mark `status:complete` after accepted T35 post-merge evidence
-- #1118–#1127: operational-system child issues under #1053; lifecycle `status:queued` until authorized by serial queue
+- #1118: transition from implementation lifecycle labels to `status:complete` after accepted post-merge evidence for PR #1171
+- #1119: current serial-queue implementation head (`status:pr-draft` or review-state labels per automation)
+- #1120–#1127: operational-system child issues under #1053; lifecycle `status:queued` until authorized by serial queue
 - #943, #946, #947, #1013, #1014, #1015, #1016, #1017: remove stale blocked/queued labels where present; retain post-merge verification or completion status according to accepted post-merge evidence
 - #1053: update the master coordination body with this normalized issue map
 
