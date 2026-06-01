@@ -28,6 +28,7 @@
 }
 
 .container {
+	box-sizing: border-box;
 	width: 100%;
 	text-align: center;
 	animation: fadeIn 1s ease-out;

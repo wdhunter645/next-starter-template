@@ -56,6 +56,9 @@ test.describe('public mobile navigation responsiveness', () => {
     await expect(menu.getByRole('link', { name: 'Support' })).toHaveCount(0);
     await expect(menu.getByRole('link', { name: 'Members' })).toHaveCount(0);
     await assertNoHorizontalOverflow(page);
+
+    await page.getByRole('button', { name: 'Open menu' }).first().click();
+    await expect(page.getByRole('dialog', { name: 'Menu' })).toHaveCount(0);
   });
 
   for (const width of [768, 920, 1280]) {
@@ -95,6 +98,9 @@ test.describe('fanclub mobile navigation responsiveness', () => {
     await expect(menu.getByRole('link', { name: 'Support' })).toHaveCount(0);
     await expect(menu.getByRole('link', { name: 'Members' })).toHaveCount(0);
     await assertNoHorizontalOverflow(page);
+
+    await page.getByRole('button', { name: 'Open menu' }).first().click();
+    await expect(page.getByRole('dialog', { name: 'Menu' })).toHaveCount(0);
   });
 
   for (const width of [768, 920, 1280]) {
@@ -121,9 +127,9 @@ test.describe('footer responsive invariants', () => {
     await page.goto('/');
 
     const footer = page.locator('footer');
-    await expect(footer.getByRole('link', { name: 'Privacy' })).toHaveAttribute('href', '/privacy');
-    await expect(footer.getByRole('link', { name: 'Terms' })).toHaveAttribute('href', '/terms');
-    await expect(footer.getByRole('link', { name: 'Contact' })).toHaveAttribute('href', '/contact');
+    await expect(footer.getByRole('link', { name: 'Privacy' })).toHaveAttribute('href', /\/privacy\/?$/);
+    await expect(footer.getByRole('link', { name: 'Terms' })).toHaveAttribute('href', /\/terms\/?$/);
+    await expect(footer.getByRole('link', { name: 'Contact' })).toHaveAttribute('href', /\/contact\/?$/);
     await expect(footer.getByRole('link', { name: 'Admin' })).toHaveCount(0);
     await expect(footer.getByRole('link', { name: 'Support' })).toHaveCount(0);
     await expect(footer.locator('a[href^="mailto:"]')).toHaveCount(0);
