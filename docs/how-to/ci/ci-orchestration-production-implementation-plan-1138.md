@@ -109,7 +109,7 @@ Every future CI orchestration implementation issue must include:
 
 ## Lifecycle implementation order
 
-### 1. Lifecycle for issues
+### 1. Lifecycle of issues
 
 Implement or validate:
 
@@ -276,6 +276,6 @@ build checks according to their allowed files and risk.
 
 ## Completion rule
 
-Closure for issue #1138 may proceed after this documentation package merges and
-the repository checks confirm that the package is discoverable, source-linked,
-and docs-only.
+Once this documentation package merges and the repository checks confirm that
+the package is discoverable, source-linked, and docs-only, issue #1138 may
+close.
