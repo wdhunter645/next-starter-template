@@ -1,7 +1,15 @@
+import { requireD1, requireTables, jsonResponse } from "../../_lib/d1";
+import { normalizePhotoUrl } from "../../_lib/photo-url";
+
 export const onRequestGet = async (context: any): Promise<Response> => {
   const { env, request } = context;
+  const d1 = requireD1(env);
+  if (!d1.ok) return jsonResponse(d1.body, d1.status);
 
   try {
+    const tables = await requireTables(d1.db, ["friends"]);
+    if (!tables.ok) return jsonResponse(tables.body, tables.status);
+
     const url = new URL(request.url);
     const kind = (url.searchParams.get('kind') || '').trim();
     const limit = Math.max(1, Math.min(100, Number(url.searchParams.get('limit') || '40')));
@@ -15,9 +23,17 @@ export const onRequestGet = async (context: any): Promise<Response> => {
     sql += " ORDER BY name ASC LIMIT ?";
     args.push(limit);
 
-    const rows = await env.DB.prepare(sql).bind(...args).all();
+    const rows = await d1.db.prepare(sql).bind(...args).all();
+    const items = ((rows.results ?? []) as Array<Record<string, unknown>>).map((row) => ({
+      ...row,
+      photo_url: normalizePhotoUrl({
+        rawUrl: row.photo_url,
+        request,
+        publicB2BaseUrl: env.PUBLIC_B2_BASE_URL,
+      }) || null,
+    }));
 
-    return new Response(JSON.stringify({ ok: true, items: rows.results ?? [] }, null, 2), {
+    return new Response(JSON.stringify({ ok: true, items }, null, 2), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

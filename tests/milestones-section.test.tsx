@@ -49,4 +49,35 @@ describe('MilestonesSection', () => {
       expect(screen.getByText(/no milestones are available yet/i)).toBeInTheDocument();
     });
   });
+
+  it('renders milestone images when normalized B2 photo URLs are present', async () => {
+    mockedApiGet.mockResolvedValue({
+      ok: true,
+      items: [
+        {
+          id: 4,
+          year: 1939,
+          title: 'Farewell address',
+          photo_url: 'https://cdn.example.com/lgfc/milestones/farewell.jpg',
+        },
+      ],
+    } as never);
+
+    render(<MilestonesSection />);
+
+    const image = await screen.findByRole('img', { name: 'Farewell address' });
+    expect(image).toHaveAttribute('src', 'https://cdn.example.com/lgfc/milestones/farewell.jpg');
+  });
+
+  it('fails closed without throwing when the milestones API is unavailable', async () => {
+    mockedApiGet.mockRejectedValue(new Error('api_error_503'));
+
+    render(<MilestonesSection />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/unable to load milestones right now/i)).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
 });
