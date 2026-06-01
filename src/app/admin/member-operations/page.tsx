@@ -134,9 +134,7 @@ export default function AdminMemberOperationsPage() {
               <div className={styles.panelHeader}>
                 <div>
                   <div className={styles.panelTitle}>{endpoint.heading}</div>
-                  <p className={styles.status}>
-                    {current.updated_at ? `Last updated: ${current.updated_at}` : endpoint.emptyText}
-                  </p>
+                  {current.updated_at ? <p className={styles.status}>Last updated: {current.updated_at}</p> : null}
                 </div>
                 <button className={styles.btn} type="button" onClick={() => void saveEndpoint(endpoint)}>
                   Publish
