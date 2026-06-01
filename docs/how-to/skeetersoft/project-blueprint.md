@@ -57,7 +57,7 @@ When SKEETERSOFT moves from design to implementation, the expected application s
 
 Until launch planning begins, these runtime files should remain design targets, not required live implementation files.
 
-## Project Objective
+## project objective
 
 Build an upstream schedule compilation pipeline that prepares baseball replay ledger data for deterministic static PDF/print rendering.
 
