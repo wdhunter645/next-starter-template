@@ -1,5 +1,10 @@
+import { requireD1, jsonResponse } from "../../_lib/d1";
+import { normalizePhotoUrl } from "../../_lib/photo-url";
+
 export const onRequestGet = async (context: any): Promise<Response> => {
   const { env, request } = context;
+  const d1 = requireD1(env);
+  if (!d1.ok) return jsonResponse(d1.body, d1.status);
 
   try {
     const url = new URL(request.url);
@@ -15,9 +20,17 @@ export const onRequestGet = async (context: any): Promise<Response> => {
     sql += " ORDER BY name ASC LIMIT ?";
     args.push(limit);
 
-    const rows = await env.DB.prepare(sql).bind(...args).all();
+    const rows = await d1.db.prepare(sql).bind(...args).all();
+    const items = ((rows.results ?? []) as Array<Record<string, unknown>>).map((row) => ({
+      ...row,
+      photo_url: normalizePhotoUrl({
+        rawUrl: row.photo_url,
+        request,
+        publicB2BaseUrl: env.PUBLIC_B2_BASE_URL,
+      }) || null,
+    }));
 
-    return new Response(JSON.stringify({ ok: true, items: rows.results ?? [] }, null, 2), {
+    return new Response(JSON.stringify({ ok: true, items }, null, 2), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

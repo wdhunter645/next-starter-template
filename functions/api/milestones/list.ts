@@ -1,11 +1,16 @@
+import { requireD1, jsonResponse } from "../../_lib/d1";
+import { normalizePhotoUrl } from "../../_lib/photo-url";
+
 export const onRequestGet = async (context: any): Promise<Response> => {
   const { env, request } = context;
+  const d1 = requireD1(env);
+  if (!d1.ok) return jsonResponse(d1.body, d1.status);
 
   try {
     const url = new URL(request.url);
     const limit = Math.max(1, Math.min(100, Number(url.searchParams.get('limit') || '50')));
 
-    const tableInfo = await env.DB.prepare(`PRAGMA table_info(milestones);`).all();
+    const tableInfo = await d1.db.prepare(`PRAGMA table_info(milestones);`).all();
     const milestoneColumns = new Set(((tableInfo.results ?? []) as Array<{ name?: string }>).map((c) => c.name));
 
     const candidateDateColumns = ['milestone_date', 'date', 'event_date', 'date_iso', 'occurred_on', 'year'];
@@ -35,9 +40,17 @@ export const onRequestGet = async (context: any): Promise<Response> => {
                  ORDER BY ${orderBySql}
                  LIMIT ?;`;
 
-    const rows = await env.DB.prepare(sql).bind(limit).all();
+    const rows = await d1.db.prepare(sql).bind(limit).all();
+    const items = ((rows.results ?? []) as Array<Record<string, unknown>>).map((row) => ({
+      ...row,
+      photo_url: normalizePhotoUrl({
+        rawUrl: row.photo_url,
+        request,
+        publicB2BaseUrl: env.PUBLIC_B2_BASE_URL,
+      }) || null,
+    }));
 
-    return new Response(JSON.stringify({ ok: true, items: rows.results ?? [] }, null, 2), {
+    return new Response(JSON.stringify({ ok: true, items }, null, 2), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
