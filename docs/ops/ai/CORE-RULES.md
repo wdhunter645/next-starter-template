@@ -5,7 +5,7 @@ Authority Level: Core
 Owns: Shared execution rules, enforcement model, PR discipline, stop conditions
 Does Not Own: Design authority, platform configuration, tracker content
 Canonical Reference: /Agent.md
-Last Reviewed: 2026-05-14
+Last Reviewed: 2026-06-02
 ---
 
 # CORE-RULES.md
@@ -22,20 +22,25 @@ This document applies to all AI agents working in this repository. It governs ag
 
 Repository governance is DIATAXIS-first, PRs are issue-scoped, and human/operator approval remains required for merge. PR gate-readiness troubleshooting requires correlated inspection of PR panel state, issue-accounting, review threads, PR body accounting, latest head workflow runs, failed job logs, and workflow implementation behavior.
 
+GitHub Issues and Pull Requests are the authoritative execution record for normal implementation work. Tracker files are historical/status indexes and are not routine implementation closeout ledgers.
+
 ## Intended Final State
 
 Agents should execute repository work predictably: one task per thread, one issue per task, one PR per implementation, all required gates passing, no scope drift, and no claims without verification against repository files and live PR state.
+
+Normal implementation PRs should complete through the source Issue and PR lifecycle without a second tracker-update PR.
 
 ---
 
 # EXECUTION DISCIPLINE
 
-- One task → one thread → one deliverable  
-- One task → one Issue → one PR  
-- No mixed intent  
-- No scope expansion  
+- One task → one thread → one deliverable
+- One task → one Issue → one PR
+- No mixed intent
+- No scope expansion
+- No routine tracker-update PRs for normal implementation tasks
 
-If additional work is discovered → log it, do not execute it.
+If additional work is discovered → log it in the source Issue or PR, do not execute it.
 
 ---
 
@@ -54,6 +59,24 @@ Rules:
 - OPS tracker Issues must not replace, override, or hijack the source task Issue.
 - Post-merge validation must report against the source task Issue when one exists.
 - Merge authority remains human/operator only.
+
+---
+
+# CURSOR-STYLE PR PREFLIGHT STANDARD
+
+All agents must follow the execution pattern that has produced the lowest-friction PRs:
+
+1. Confirm exactly one same-repository, open, non-PR source Issue.
+2. Read the source Issue and only the task-relevant authority documents linked by that Issue.
+3. Define an exact changed-file allowlist before implementation.
+4. Keep the final diff inside the allowlist.
+5. Use exactly one intent label.
+6. Run task-relevant local checks before marking the PR ready.
+7. Update the PR body so the allowlist, change summary, acceptance criteria, and verification evidence match the final diff.
+8. Do not include unrelated tracker, documentation, runtime, workflow, or cleanup edits.
+9. Stop when the scoped PR is ready for review or blocked by a documented gate.
+
+This standard applies to Cursor, Codex, ChatGPT, Copilot, and any future implementation agent.
 
 ---
 
@@ -114,9 +137,11 @@ Canonical governance authority:
 
 Before making any claim, agents MUST:
 
-- read design authority docs
-- read tracker files
-- read task-relevant governance files
+- read the source Issue
+- read task-relevant design, architecture, governance, or implementation-plan files linked from the source Issue
+- inspect the actual changed files and live PR state before readiness or closeout claims
+
+Tracker files are read only when the source Issue explicitly includes tracker governance, tracker reconciliation, or tracker/status-index edits in scope.
 
 Fact handling (mandatory):
 
@@ -181,20 +206,22 @@ Agents must NOT:
 - create alternate “versions” of canonical files
 - silently fix unrelated issues
 - expand task scope
+- add tracker/status-index edits to implementation PRs unless the source Issue explicitly authorizes them
 
 ---
 
 # PR DISCIPLINE
 
-- PR body = execution contract  
-- File allowlist = hard boundary  
-- Out-of-scope edits = forbidden  
-- Source Issue link = required except documented PR-first operations exceptions  
+- PR body = execution contract
+- File allowlist = hard boundary
+- Out-of-scope edits = forbidden
+- Source Issue link = required except documented PR-first operations exceptions
+- Tracker/status-index edits = forbidden unless explicitly in the source Issue scope
 
 Defaults:
 
-- PR = draft  
-- Stop after PR creation unless instructed  
+- PR = draft
+- Stop after PR creation unless instructed
 
 ---
 
@@ -226,18 +253,22 @@ Routing priority controls assignment preference only. It does not override desig
 
 ---
 
-# TRACKER RULES
+# TRACKER / STATUS-INDEX RULES
+
+Tracker files are historical/status indexes, not routine implementation ledgers.
 
 Only allowed tracker files:
 
-- /docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md  
-- /docs/ops/trackers/THREAD-LOG_Master.md  
+- /docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md
+- /docs/ops/trackers/THREAD-LOG_Master.md
 
 Rules:
 
-- append-only  
-- no deletion of history  
-- no alternate trackers  
+- Do not update tracker files during normal website, CI, repository, or documentation implementation PRs.
+- Update tracker files only when the source Issue explicitly authorizes tracker governance, tracker reconciliation, or status-index maintenance.
+- Preserve append-only history when tracker edits are authorized.
+- Do not create alternate trackers.
+- GitHub Issues and PRs are the authoritative execution record for task status and closure.
 
 ---
 
@@ -245,10 +276,10 @@ Rules:
 
 Agents must prefer:
 
-1. file inspection  
-2. config validation  
-3. dependency checks  
-4. deterministic validation  
+1. file inspection
+2. config validation
+3. dependency checks
+4. deterministic validation
 
 No speculative redesign.
 
@@ -258,19 +289,8 @@ No speculative redesign.
 
 STOP immediately if:
 
-- authority conflict exists  
-- repo state unclear  
-- ambiguity exists  
-- scope expands  
-- second source of truth would be created  
-- allowlist unclear  
-
-Do NOT improvise.
-
----
-
-# FINAL RULE
-
-Repository files define truth.  
-This file defines behavior.  
-Prompts define the task only.
+- authority conflict exists
+- scope is unclear
+- required source Issue is missing
+- changed-file allowlist is missing
+- live PR state cannot be verified for a readiness claim
