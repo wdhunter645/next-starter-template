@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildPrHygieneReport,
+  findIssueReferences,
   hasRequiredIssueLine,
   hasZipSafetyStatement,
   parseAllowedFiles,
   renderPrHygieneReport,
+  suggestCanonicalIssueLine,
 } from '../scripts/ci/pr_hygiene_audit.mjs';
 
 const validBody = `- **Issue:** #1131
@@ -35,6 +37,12 @@ describe('PR hygiene audit foundation', () => {
     expect(hasRequiredIssueLine('Closes #1131')).toBe(false);
   });
 
+  it('extracts issue references and suggests a canonical issue line', () => {
+    expect(findIssueReferences('Closes #1131')).toEqual([1131]);
+    expect(suggestCanonicalIssueLine('Closes #1131')).toBe('- **Issue:** #1131');
+    expect(suggestCanonicalIssueLine('Refs #1131 and #1075')).toBe('');
+  });
+
   it('detects ZIP safety statements', () => {
     expect(hasZipSafetyStatement('- [x] No ZIP file exists in the repo root.')).toBe(true);
     expect(hasZipSafetyStatement('No archive attached.')).toBe(false);
@@ -63,6 +71,7 @@ describe('PR hygiene audit foundation', () => {
 
     expect(report.isClean).toBe(false);
     expect(report.hasRequiredIssueLine).toBe(false);
+    expect(report.suggestedIssueLine).toBe('- **Issue:** #1131');
     expect(report.missingSections).toContain('MANDATORY FIRST STEP (ZIP SAFETY)');
     expect(report.unlistedChangedFiles).toEqual(['scripts/ci/pr_hygiene_audit.mjs']);
   });
@@ -75,6 +84,7 @@ describe('PR hygiene audit foundation', () => {
 
     const rendered = renderPrHygieneReport(report);
     expect(rendered).toContain('Missing canonical source issue line');
+    expect(rendered).toContain('Suggested correction');
     expect(rendered).toContain('Changed files not covered');
   });
 });

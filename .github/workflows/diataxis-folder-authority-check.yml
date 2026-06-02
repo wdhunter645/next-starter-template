@@ -12,6 +12,10 @@ on:
 jobs:
   validate-folder-intent:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: write
 
     steps:
       - name: Checkout PR
@@ -27,93 +31,49 @@ jobs:
             | tee diataxis_changed_files.txt || true
 
       - name: Validate DIATAXIS folder authority
-        run: |
-          if [ ! -s diataxis_changed_files.txt ]; then
-            echo "No DIATAXIS markdown files changed."
-            exit 0
-          fi
+        id: diataxis_audit
+        continue-on-error: true
+        env:
+          DIATAXIS_CHANGED_FILES_FILE: diataxis_changed_files.txt
+        run: node scripts/ci/diataxis_folder_audit.mjs > diataxis_folder_report.md
 
-          failures=0
+      - name: Post or update DIATAXIS correction advisory
+        if: steps.diataxis_audit.outcome == 'failure'
+        uses: actions/github-script@v7
+        env:
+          REMEDIATION_MARKER: '<!-- diataxis-folder-advisory -->'
+          REPORT_FILE: diataxis_folder_report.md
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = process.env.REMEDIATION_MARKER;
+            const report = fs.readFileSync(process.env.REPORT_FILE, 'utf8').trim();
+            const body = `${marker}\n${report}\n\nThis advisory is non-blocking during PR Hygiene Foundation rollout.`;
+            const issue_number = context.payload.pull_request.number;
 
-          while IFS= read -r file; do
-            echo "Validating ${file}"
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number,
+              per_page: 100,
+            });
 
-            if [ ! -f "${file}" ]; then
-              echo "Skipping deleted file: ${file}"
-              continue
-            fi
-
-            case "${file}" in
-              docs/tutorials/*)
-                expected_doc_type="Tutorial"
-                ;;
-              docs/how-to/*)
-                expected_doc_type="How-To"
-                ;;
-              docs/reference/*)
-                expected_doc_type="Reference"
-                ;;
-              docs/explanation/*)
-                expected_doc_type="Explanation"
-                ;;
-              *)
-                echo "ERROR: ${file} is outside approved DIATAXIS content folders."
-                failures=$((failures + 1))
-                continue
-                ;;
-            esac
-
-            if ! head -n 1 "${file}" | grep -qx -- '---'; then
-              echo "ERROR: ${file} missing opening YAML-style authority header delimiter."
-              failures=$((failures + 1))
-            fi
-
-            for required_field in 'Doc Type:' 'Audience:' 'Authority Level:' 'Owns:' 'Does Not Own:' 'Canonical Reference:' 'Last Reviewed:'; do
-              if ! grep -q "^${required_field}" "${file}"; then
-                echo "ERROR: ${file} missing required header field: ${required_field}"
-                failures=$((failures + 1))
-              fi
-            done
-
-            if ! grep -qi "^Doc Type: .*${expected_doc_type}" "${file}"; then
-              echo "ERROR: ${file} Doc Type must match folder intent: ${expected_doc_type}"
-              failures=$((failures + 1))
-            fi
-
-            case "${file}" in
-              docs/reference/*)
-                if grep -Eqi '^##[[:space:]]+(Steps|Procedure|How to|Tutorial)|```(bash|sh|zsh|powershell)' "${file}"; then
-                  echo "ERROR: ${file} reference docs must not contain procedure/tutorial sections or executable command blocks."
-                  failures=$((failures + 1))
-                fi
-                ;;
-              docs/explanation/*)
-                if grep -Eqi '^##[[:space:]]+(Steps|Procedure|Commands|Runbook)|```(bash|sh|zsh|powershell)' "${file}"; then
-                  echo "ERROR: ${file} explanation docs must not contain procedural/runbook sections or executable command blocks."
-                  failures=$((failures + 1))
-                fi
-                ;;
-              docs/how-to/*)
-                if ! grep -Eqi '^##[[:space:]]+(Steps|Procedure|Execution)' "${file}"; then
-                  echo "ERROR: ${file} how-to docs must contain a task execution section."
-                  failures=$((failures + 1))
-                fi
-                ;;
-              docs/tutorials/*)
-                if ! grep -Eqi '^##[[:space:]]+(Goal|Outcome|Steps|Walkthrough)' "${file}"; then
-                  echo "ERROR: ${file} tutorial docs must contain learning-flow structure."
-                  failures=$((failures + 1))
-                fi
-                ;;
-            esac
-          done < diataxis_changed_files.txt
-
-          if [ "${failures}" -ne 0 ]; then
-            echo "DIATAXIS folder authority check failed with ${failures} issue(s)."
-            exit 1
-          fi
-
-          echo "DIATAXIS folder authority check passed."
+            const existing = comments.find((comment) => comment.body && comment.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number,
+                body,
+              });
+            }
 
       - name: Summary
         run: |
