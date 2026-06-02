@@ -22,10 +22,10 @@ Required lifecycle:
 8. Resolve or explicitly disposition every actionable reviewer item in the PR body.
 9. Rerun or wait for all required gates after fixes.
 10. Mark or claim `READY FOR REVIEW` only after all required gates are green and no actionable reviewer item remains unresolved.
-11. After merge, verify the merge commit, verify the source issue state, close the source issue when automation did not, and record tracker/documentation follow-up when applicable.
+11. After merge, verify the merge commit, verify the source issue state, close the source issue when automation did not, and record tracker/documentation follow-up only when explicitly required by the source issue.
 
 Agents must not hand a PR to a human approver while any gate, review comment, or review thread still requires agent action.
-Agents must not treat merge as complete closeout until the source issue and required trackers are reconciled.
+Agents must not treat merge as complete closeout until the source issue is reconciled and any explicitly required tracker/status-index work is complete or delegated.
 
 - **Issue:** #____
 <!-- Required: replace #____ with exactly one same-repository, open, non-PR issue number before opening/updating the PR. Preferred final syntax: `- **Issue:** #123`. Other accepted source-issue formats are governed by `/docs/governance/PR_GOVERNANCE.md`. Do not use a PR number, an external issue, or a closed issue as the source issue. -->
@@ -170,7 +170,7 @@ Reviewer items:
 - [ ] Source issue state inspected after merge
 - [ ] Source issue closed manually when automation did not close it
 - [ ] Source issue closure comment references merged PR and merge commit
-- [ ] Tracker/documentation update PR opened when implementation PR intentionally omitted tracker updates
+- [ ] Explicitly required tracker/status-index follow-up is complete or delegated when the source issue authorizes that work
 - [ ] Post-merge validation gates inspected when applicable
 
 ## ACCEPTANCE CRITERIA
@@ -188,7 +188,7 @@ Reviewer items:
 - [ ] No out-of-scope file changes.
 - [ ] All actionable reviewer and bot feedback is resolved or explicitly dispositioned.
 - [ ] PR is ready for human review.
-- [ ] Post-merge source issue closure and tracker follow-up are complete or explicitly delegated.
+- [ ] Post-merge source issue closure is complete; tracker/status-index follow-up is complete only when explicitly authorized by the source issue.
 
 ## REQUIRED PRE-REVIEW SELF-CHECK
 - [ ] PR body contains all required sections with exact headings
