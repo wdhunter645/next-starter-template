@@ -21,6 +21,7 @@
         "docs/website-PR-process.md",
         "docs/OPERATING_MANUAL.md",
         "docs/reference/ci/",
+        "docs/reference/governance/",
         "docs/reference/architecture/orchestration-model.md",
         "package.json",
         "package-lock.json",
