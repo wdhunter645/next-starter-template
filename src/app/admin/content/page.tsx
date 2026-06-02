@@ -1,19 +1,16 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import PageShell from '@/components/PageShell';
-
-/**
- * Admin → Content
- * This page intentionally prioritizes "compile-safe" behavior for Cloudflare Pages.
- * It calls API routes if/when they exist, but will still render cleanly if they 404.
- */
+import AdminNav from '@/components/admin/AdminNav';
+import AdminTokenPanel from '@/components/admin/AdminTokenPanel';
+import { adminJson } from '@/lib/adminClient';
 
 type ContentBlock = {
   slug: string;
   section: string;
-  content: string;
-  asset_url: string;
+  content: string | null;
+  asset_url: string | null;
   updated_at?: string;
 };
 
@@ -27,27 +24,11 @@ type SectionBundle = {
   draft?: ContentDraft;
 };
 
-type ApiOk<T> = { ok: true; data: T };
-type ApiErr = { ok: false; error: string };
-type ApiResp<T> = ApiOk<T> | ApiErr;
-
-async function safeJson<T>(res: Response): Promise<ApiResp<T>> {
-  try {
-    const j = (await res.json()) as unknown;
-    // minimal runtime validation: accept {ok:true,data:*} or {ok:false,error:*}
-    if (
-      typeof j === 'object' &&
-      j !== null &&
-      'ok' in j &&
-      typeof (j as { ok: unknown }).ok === 'boolean'
-    ) {
-      return j as ApiResp<T>;
-    }
-    return { ok: false, error: 'Unexpected API response shape.' };
-  } catch {
-    return { ok: false, error: 'Failed to parse JSON response.' };
-  }
-}
+type ListResponse = {
+  ok: true;
+  slugs: string[];
+  grouped: Record<string, Record<string, { live?: ContentBlock; draft?: ContentDraft }>>;
+};
 
 export default function AdminContentPage() {
   const [slug, setSlug] = useState<string>('/');
@@ -55,83 +36,59 @@ export default function AdminContentPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [sections, setSections] = useState<SectionBundle[]>([]);
 
-  const apiBase = useMemo(() => '/api/admin/content', []);
+  const load = useCallback(async (nextSlug?: string) => {
+    const target = (nextSlug ?? slug).trim() || '/';
+    setLoading(true);
+    setStatus(`Loading sections for "${target}"...`);
 
-  const load = useCallback(
-    async (nextSlug?: string) => {
-      const target = (nextSlug ?? slug).trim() || '/';
-      setLoading(true);
-      setStatus(`Loading sections for "${target}"...`);
+    const result = await adminJson<ListResponse>(
+      `/api/admin/content/list?slug=${encodeURIComponent(target)}`,
+    );
 
-      try {
-        const res = await fetch(`${apiBase}?slug=${encodeURIComponent(target)}`, {
-          method: 'GET',
-          headers: { 'content-type': 'application/json' },
-          cache: 'no-store',
-        });
+    if (!result.ok) {
+      setSections([]);
+      setStatus(`Error: ${result.error}`);
+      setLoading(false);
+      return;
+    }
 
-        if (!res.ok) {
-          setSections([]);
-          setStatus(`API not available (HTTP ${res.status}). Page compiled OK.`);
-          return;
-        }
+    const grouped = result.data?.grouped ?? {};
+    const targetData = grouped[target] ?? {};
+    const bundles: SectionBundle[] = Object.entries(targetData).map(([section, data]) => ({
+      section,
+      live: data.live,
+      draft: data.draft,
+    }));
 
-        const parsed = await safeJson<SectionBundle[]>(res);
-        if (!parsed.ok) {
-          setSections([]);
-          setStatus(`API error: ${parsed.error}`);
-          return;
-        }
-
-        setSections(parsed.data);
-        setStatus(`Loaded ${parsed.data.length} section(s) for "${target}".`);
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : 'Unknown error';
-        setSections([]);
-        setStatus(`Network error: ${msg}`);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [apiBase, slug]
-  );
+    setSections(bundles);
+    setStatus(`Loaded ${bundles.length} section(s) for "${target}".`);
+    setLoading(false);
+  }, [slug]);
 
   const saveDraft = useCallback(
-    async (section: string, contentValue: string, assetUrl: string) => {
+    async (section: string, contentValue: string | null, assetUrl: string | null) => {
       const target = slug.trim() || '/';
       setStatus(`Saving draft: ${target} → ${section}...`);
 
-      try {
-        const res = await fetch(`${apiBase}/draft`, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({
-            slug: target,
-            section,
-            content: contentValue,
-            asset_url: assetUrl,
-          }),
-        });
+      const result = await adminJson<{ ok: true }>('/api/admin/content/save', {
+        method: 'POST',
+        body: JSON.stringify({
+          slug: target,
+          section,
+          content: contentValue,
+          asset_url: assetUrl,
+        }),
+      });
 
-        if (!res.ok) {
-          setStatus(`Draft save failed (HTTP ${res.status}).`);
-          return;
-        }
-
-        const parsed = await safeJson<{ saved: boolean }>(res);
-        if (!parsed.ok) {
-          setStatus(`Draft save error: ${parsed.error}`);
-          return;
-        }
-
-        setStatus('Draft saved.');
-        await load(target);
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : 'Unknown error';
-        setStatus(`Draft save network error: ${msg}`);
+      if (!result.ok) {
+        setStatus(`Draft save error: ${result.error}`);
+        return;
       }
+
+      setStatus('Draft saved.');
+      await load(target);
     },
-    [apiBase, load, slug]
+    [load, slug],
   );
 
   const publish = useCallback(
@@ -139,43 +96,33 @@ export default function AdminContentPage() {
       const target = slug.trim() || '/';
       setStatus(`Publishing: ${target} → ${section}...`);
 
-      try {
-        const res = await fetch(`${apiBase}/publish`, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ slug: target, section }),
-        });
+      const result = await adminJson<{ ok: true }>('/api/admin/content/publish', {
+        method: 'POST',
+        body: JSON.stringify({ slug: target, section }),
+      });
 
-        if (!res.ok) {
-          setStatus(`Publish failed (HTTP ${res.status}).`);
-          return;
-        }
-
-        const parsed = await safeJson<{ published: boolean }>(res);
-        if (!parsed.ok) {
-          setStatus(`Publish error: ${parsed.error}`);
-          return;
-        }
-
-        setStatus('Published.');
-        await load(target);
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : 'Unknown error';
-        setStatus(`Publish network error: ${msg}`);
+      if (!result.ok) {
+        setStatus(`Publish error: ${result.error}`);
+        return;
       }
+
+      setStatus('Published.');
+      await load(target);
     },
-    [apiBase, load, slug]
+    [load, slug],
   );
 
   useEffect(() => {
-    // default load once
     void load('/');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <PageShell title="Admin Content" subtitle="Edit site sections backed by D1 (when configured).">
-      <div style={{ display: 'grid', gap: 14 }}>
+      <AdminNav />
+      <AdminTokenPanel onSaved={() => void load(slug || '/')} />
+
+      <div style={{ display: 'grid', gap: 14, marginTop: 16 }}>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <span style={{ fontSize: 12, opacity: 0.85 }}>Slug</span>
@@ -202,18 +149,19 @@ export default function AdminContentPage() {
               border: '1px solid rgba(0,0,0,0.15)',
               background: loading ? 'rgba(0,0,0,0.05)' : 'white',
               cursor: loading ? 'not-allowed' : 'pointer',
+              alignSelf: 'flex-end',
             }}
           >
             {loading ? 'Loading…' : 'Load'}
           </button>
 
-          <span style={{ opacity: 0.85 }}>{status}</span>
+          <span style={{ opacity: 0.85, alignSelf: 'flex-end', paddingBottom: 4 }}>{status}</span>
         </div>
 
-        <hr style={{ margin: '8px 0' }} />
+        <hr style={{ margin: '4px 0' }} />
 
         {sections.length === 0 ? (
-          <p style={{ opacity: 0.8 }}>No sections returned. (API may be 404 or slug has no rows.)</p>
+          <p style={{ opacity: 0.8 }}>No sections returned. (API may be unavailable or slug has no rows.)</p>
         ) : (
           <div style={{ display: 'grid', gap: 18 }}>
             {sections.map(({ section, live, draft }) => (
@@ -239,7 +187,7 @@ function SectionEditor(props: {
   section: string;
   live?: ContentBlock;
   draft?: ContentDraft;
-  onSaveDraft: (section: string, content: string, asset_url: string) => Promise<void>;
+  onSaveDraft: (section: string, content: string | null, asset_url: string | null) => Promise<void>;
   onPublishSection: () => void;
 }) {
   const { section, live, draft, onSaveDraft, onPublishSection } = props;
@@ -256,7 +204,7 @@ function SectionEditor(props: {
   const save = useCallback(async () => {
     setSaving(true);
     try {
-      await onSaveDraft(section, content, assetUrl);
+      await onSaveDraft(section, content || null, assetUrl || null);
     } finally {
       setSaving(false);
     }
@@ -337,7 +285,8 @@ function SectionEditor(props: {
             padding: '10px 12px',
             borderRadius: 10,
             border: '1px solid rgba(0,0,0,0.15)',
-            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+            fontFamily:
+              'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
           }}
         />
       </label>
