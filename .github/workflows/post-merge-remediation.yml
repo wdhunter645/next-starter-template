@@ -2,41 +2,38 @@ name: Post-Merge Remediation
 
 on:
   workflow_run:
-    workflows: ["Post-Merge Detection"]
-    types:
-      - completed
+    workflows: ['Post-Merge Detection']
+    types: [completed]
 
 permissions:
+  actions: read
   contents: read
   issues: write
 
 jobs:
   remediate:
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create Issue
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Download validation result
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ github.event.workflow_run.id }}
+          name: post-merge-validation-result
+          path: post-merge-validation-result
+
+      - name: Create or update remediation issue
         env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          issue_url="$(gh issue create \
-            --title "Post-Merge Failure Detected" \
-            --body "Detection workflow failed. Investigate and fix.")"
-
-          if label_exists="$(gh label list --search "post-merge-failure" --json name -q 'any(.[]; .name == "post-merge-failure")')"; then
-            if [ "$label_exists" = "true" ]; then
-              gh issue edit "$issue_url" --add-label "post-merge-failure" || \
-                echo "::warning::Unable to add post-merge-failure label to $issue_url."
-            else
-              echo "::warning::Label post-merge-failure does not exist; creating the issue without it."
-            fi
-          else
-            echo "::warning::Unable to check for post-merge-failure label; creating the issue without it."
-          fi
-
-          gh issue edit "$issue_url" --add-assignee "copilot-swe-agent[bot]" || \
-            echo "::warning::Unable to assign copilot-swe-agent[bot] to $issue_url."
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          POST_MERGE_RESULT_PATH: post-merge-validation-result/post-merge-result.json
+        run: node scripts/ci/post_merge_remediation_issue.mjs
