@@ -34,6 +34,10 @@ Type: ci
 Agent: cursor
 Priority: 1
 Depends On: none
+Status: completed
+Issue: #1131
+Implementation PR: #1189
+Merged: 2026-06-02
 Allowed Files:
 - `.github/workflows/gate-intent-labeler.yml`
 - `.github/workflows/docs-guardrails.yml`
@@ -54,6 +58,10 @@ Validation:
 - `./scripts/ci/docs_canonical_hashes_verify.sh .`
 Rollback:
 - Revert only the PR hygiene workflow/script changes and their tests/docs; leave the CI orchestration engine and unrelated gates intact.
+Closeout:
+- PR #1189 merged the PR Hygiene Foundation implementation for issue #1131.
+- Post-merge verification confirmed the merge commit on `origin/main`.
+- Lifecycle normalization removed stale active issue state from issue #1131, preserved post-merge verification evidence, and keeps Task 002 blocked until this closeout PR merges.
 
 ## Task 002 — Merge Protection Consolidation
 
