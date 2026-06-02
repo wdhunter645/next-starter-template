@@ -308,7 +308,7 @@ The homepage evolved into a fixed editorial sequence:
 9. Friends
 10. Milestones
 11. Calendar
-12. FAQ/Ask
+12. FAQ/ASK
 13. Footer
 
 ## Why the direction changed
