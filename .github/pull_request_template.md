@@ -13,7 +13,7 @@ A PR is not complete when it is opened. The creating or working agent owns the P
 
 Required lifecycle:
 1. Confirm or create exactly one same-repository, open, non-PR source Issue.
-2. Insert the source Issue on the first issue-accounting line using exact syntax: `- **Issue:** #123`.
+2. Insert one accepted source-Issue accounting line consistent with `/docs/governance/PR_GOVERNANCE.md`. Preferred format: `- **Issue:** #123`.
 3. Prepare the PR body from this template before or immediately after opening the PR.
 4. Confirm the changed-file allowlist matches the actual final diff.
 5. Inspect all gate checks after every PR body update or commit.
@@ -28,11 +28,11 @@ Agents must not hand a PR to a human approver while any gate, review comment, or
 Agents must not treat merge as complete closeout until the source Issue and required trackers are reconciled.
 
 - **Issue:** #____
-<!-- Replace #____ with exactly one same-repository, open, non-PR Issue number before opening/updating the PR. Required final syntax example: `- **Issue:** #123`. Do not use `Closes`, `Fixes`, a PR number, an external issue, or a closed issue for this required line. -->
+<!-- Replace #____ with exactly one same-repository, open, non-PR Issue number before opening/updating the PR. Preferred final syntax: `- **Issue:** #123`. Other accepted source-Issue formats are governed by `/docs/governance/PR_GOVERNANCE.md`. Do not use a PR number, an external issue, or a closed issue as the source Issue. -->
 
 ## PRE-OPEN GATE PREFLIGHT (MANDATORY)
 - [ ] Confirm exactly one same-repository, open, non-PR source Issue exists.
-- [ ] Confirm the required issue-accounting line is present before opening or updating the PR: `- **Issue:** #123`.
+- [ ] Confirm one accepted issue-accounting line is present before opening or updating the PR. Preferred format: `- **Issue:** #123`.
 - [ ] Read the workflow files that will run for this PR's touched paths before opening the PR.
 - [ ] Read or update `.github/CI_GUARDRAILS_MAP.md` when workflow behavior is unclear or changed.
 - [ ] Read `docs/reference/governance/troubleshooting-data-surface-requirements.md` before making any merge-readiness claim.
@@ -155,7 +155,7 @@ Reviewer items:
 - [ ] Failed job logs inspected for every failing gate
 - [ ] Workflow YAML or enforcement logic inspected before documenting gate behavior
 - [ ] PR issue-accounting confirms exactly one same-repository, open, non-PR source Issue
-- [ ] PR body contains the required Issue syntax (for example, `- **Issue:** #123`)
+- [ ] PR body contains one accepted source-Issue accounting line governed by `/docs/governance/PR_GOVERNANCE.md`.
 - [ ] All review threads and comments inspected
 - [ ] Actionable review feedback has PR-body disposition and GitHub thread-state disposition
 - [ ] Bot comments inspected
@@ -192,7 +192,7 @@ Reviewer items:
 
 ## REQUIRED PRE-REVIEW SELF-CHECK
 - [ ] PR body contains all required sections with exact headings
-- [ ] PR body contains the required Issue syntax (for example, `- **Issue:** #123`)
+- [ ] PR body contains one accepted source-Issue accounting line governed by `/docs/governance/PR_GOVERNANCE.md`.
 - [ ] Allowed files section matches final diff exactly
 - [ ] No files outside allowlist
 - [ ] ZIP safety confirmed
