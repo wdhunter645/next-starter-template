@@ -5,7 +5,7 @@ Authority Level: Operational
 Owns: Cross-agent governance rules for LGFC repository work
 Does Not Own: Canonical product design, runtime architecture, or PR template structure
 Canonical Reference: Agent.md
-Last Reviewed: 2026-05-11
+Last Reviewed: 2026-06-02
 ---
 
 # Agent Governance
@@ -19,12 +19,15 @@ This document defines the longer-form operating rules for agents working in the 
 Agents must resolve conflicts in this order:
 
 1. Locked governance / design / platform documents.
-2. Source Issue scope.
-3. Operational trackers.
-4. `Agent.md` navigation and skill routing.
-5. Repository skill files under `.agents/skills/`.
-6. Cross-agent operational guidance under `governance/` and `ops/`.
-7. Historical thread logs and tracker context.
+2. `Agent.md` navigation and skill routing.
+3. `docs/ops/ai/CORE-RULES.md` execution rules.
+4. Source issue scope.
+5. Task-specific implementation plan or queue issue.
+6. Repository skill files under `.agents/skills/`.
+7. Cross-agent operational guidance under `governance/` and `ops/`.
+8. Historical thread logs and tracker context.
+
+Tracker files are historical/status indexes. They may be read for verification when relevant, but they are not task authority for normal implementation work unless the source issue explicitly scopes tracker governance, tracker reconciliation, or status-index maintenance.
 
 When sources conflict, use the higher authority and document the conflict in the PR.
 
@@ -32,7 +35,7 @@ When sources conflict, use the higher authority and document the conflict in the
 
 Agents must:
 
-- Work from one source Issue.
+- Work from one source issue.
 - Keep scope narrow.
 - Use the relevant repository skill before implementation.
 - Preserve existing repository conventions.
@@ -45,7 +48,7 @@ Agents must:
 
 Agents must not:
 
-- Create PR-first work without one primary source Issue.
+- Create PR-first work without one primary source issue except documented operations troubleshooting exceptions.
 - Treat umbrella trackers as task authority.
 - Invent requirements not present in the repository.
 - Modify unrelated files opportunistically.
@@ -57,7 +60,7 @@ Agents must not:
 
 Every agent handoff must state:
 
-- Source Issue.
+- Source issue.
 - Files changed.
 - Skill or governance path used.
 - Verification commands run.

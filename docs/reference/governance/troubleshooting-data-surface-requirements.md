@@ -5,7 +5,7 @@ Authority Level: Canonical
 Owns: Full-data-surface troubleshooting requirements and PR lifecycle investigation doctrine
 Does Not Own: Individual workflow implementation details
 Canonical Reference: docs/reference/governance/troubleshooting-data-surface-requirements.md
-Last Reviewed: 2026-06-01
+Last Reviewed: 2026-06-02
 ---
 
 # Troubleshooting Data Surface Requirements
@@ -14,7 +14,7 @@ Last Reviewed: 2026-06-01
 
 Troubleshooting must inspect all relevant operational data surfaces before remediation, merge-readiness, or post-merge closeout claims are made.
 
-Partial visibility creates false-positive remediation claims, prolongs incidents, causes repeated gate failures, and leaves merged work unreconciled with source issues or trackers.
+Partial visibility creates false-positive remediation claims, prolongs incidents, causes repeated gate failures, and leaves merged work unreconciled with source issues or explicitly required follow-up records.
 
 ---
 
@@ -38,13 +38,15 @@ Parser-driven governance syntax requirements vary by gate. Some gates require ex
 
 Merge does not always close the source issue. Required issue-accounting syntax links the PR to an issue for governance, but it is not a substitute for post-merge issue-state verification.
 
+Tracker/status-index follow-up is not routine implementation closeout. It is required only when the source issue explicitly authorizes tracker governance, tracker reconciliation, or status-index maintenance.
+
 ---
 
 ## Intended Final State
 
 Troubleshooting should consistently review all relevant repository data surfaces before declaring remediation complete, a PR ready for human review, or a merged task closed.
 
-The intended final state is a repeatable lifecycle process that reduces false-positive success claims, shortens incident duration, prevents repeated gate-failure cycles, and leaves issues, PRs, and trackers reconciled after merge.
+The intended final state is a repeatable lifecycle process that reduces false-positive success claims, shortens incident duration, prevents repeated gate-failure cycles, and leaves issues, PRs, and explicitly required follow-up records reconciled after merge.
 
 ---
 
@@ -71,7 +73,7 @@ Troubleshooting must inspect all relevant sources, including:
 - Acceptance criteria
 - Repository governance docs
 - Post-merge validation checks
-- Tracker or worklist requirements when applicable
+- Tracker or worklist requirements only when explicitly scoped by the source issue
 
 ---
 
@@ -91,11 +93,11 @@ Agents that create or work a PR own the PR through the complete lifecycle:
 10. Human approval and merge
 11. Post-merge verification
 12. Source issue closure
-13. Tracker or documentation follow-up when applicable
+13. Explicitly required tracker/status-index or documentation follow-up when scoped by the source issue
 
 A PR is not ready for human review until gates are green and all actionable comments, review threads, and bot findings are resolved or explicitly dispositioned.
 
-A merged PR is not fully closed out until the source issue and any required tracker/documentation follow-up are reconciled.
+A merged PR is not fully closed out until the source issue and any explicitly required follow-up are reconciled.
 
 ---
 
@@ -239,8 +241,8 @@ Required procedure:
 4. If the source issue remains open, add a closeout comment referencing the merged PR and merge commit.
 5. Close the source issue with completed state when the work satisfies acceptance criteria.
 6. Inspect post-merge validation gates when applicable.
-7. Open or update tracker/documentation follow-up when the implementation PR intentionally omitted tracker updates.
-8. Do not report the task complete until PR, issue, and required tracker state are reconciled or an explicit remaining blocker is documented.
+7. Complete tracker/status-index follow-up only when the source issue explicitly authorized tracker governance, tracker reconciliation, or status-index maintenance.
+8. Do not report the task complete until PR, issue, and explicitly required follow-up are reconciled or an explicit remaining blocker is documented.
 
 ---
 
