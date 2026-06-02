@@ -8,12 +8,34 @@ Follow operational, rollback, and testing standards in `/docs/governance/PR_GOVE
 Use `docs/reference/governance/troubleshooting-data-surface-requirements.md` as the canonical PR-gate troubleshooting reference.
 When new PR-gate troubleshooting information becomes available, maintainers and agents must update both `.github/pull_request_template.md` and `docs/reference/governance/troubleshooting-data-surface-requirements.md`.
 
+## PR LIFECYCLE REQUIREMENT (MANDATORY FOR ALL AGENTS)
+A PR is not complete when it is opened. The creating or working agent owns the PR through the full lifecycle until it is ready for human review and then through post-merge closeout once the PR is merged.
+
+Required lifecycle:
+1. Confirm or create exactly one same-repository, open, non-PR source issue.
+2. Insert one accepted source-issue accounting line consistent with `/docs/governance/PR_GOVERNANCE.md`. Preferred format: `- **Issue:** #123`.
+3. Prepare the PR body from this template before or immediately after opening the PR.
+4. Confirm the changed-file allowlist matches the actual final diff.
+5. Inspect all gate checks after every PR body update or commit.
+6. Troubleshoot every failing gate using `docs/reference/governance/troubleshooting-data-surface-requirements.md`.
+7. Inspect reviewer comments, bot comments, and review threads.
+8. Resolve or explicitly disposition every actionable reviewer item in the PR body.
+9. Rerun or wait for all required gates after fixes.
+10. Mark or claim `READY FOR REVIEW` only after all required gates are green and no actionable reviewer item remains unresolved.
+11. After merge, verify the merge commit, verify the source issue state, close the source issue when automation did not, and record tracker/documentation follow-up when applicable.
+
+Agents must not hand a PR to a human approver while any gate, review comment, or review thread still requires agent action.
+Agents must not treat merge as complete closeout until the source issue and required trackers are reconciled.
+
 - **Issue:** #____
-<!-- Replace #____ with exactly one same-repository, open, non-PR Issue number before opening/updating the PR. Required final syntax example: `- **Issue:** #123`. -->
+<!-- Required: replace #____ with exactly one same-repository, open, non-PR issue number before opening/updating the PR. Preferred final syntax: `- **Issue:** #123`. Other accepted source-issue formats are governed by `/docs/governance/PR_GOVERNANCE.md`. Do not use a PR number, an external issue, or a closed issue as the source issue. -->
 
 ## PRE-OPEN GATE PREFLIGHT (MANDATORY)
+- [ ] Confirm exactly one same-repository, open, non-PR source issue exists.
+- [ ] Confirm one accepted issue-accounting line is present before opening or updating the PR. Preferred format: `- **Issue:** #123`.
 - [ ] Read the workflow files that will run for this PR's touched paths before opening the PR.
 - [ ] Read or update `.github/CI_GUARDRAILS_MAP.md` when workflow behavior is unclear or changed.
+- [ ] Read `docs/reference/governance/troubleshooting-data-surface-requirements.md` before making any merge-readiness claim.
 - [ ] For docs changes, confirm every changed active Markdown file starts with the required authority header from `docs/templates/markdown-header-template.md`.
 - [ ] For `docs/how-to/**`, confirm every changed file includes `## Steps`, `## Procedure`, or `## Execution`.
 - [ ] For `docs/tutorials/**`, confirm every changed file includes `## Goal`, `## Outcome`, `## Steps`, or `## Walkthrough`.
@@ -32,11 +54,16 @@ When new PR-gate troubleshooting information becomes available, maintainers and 
 ## PROGRESS + READINESS (MANDATORY)
 - Phase:
 - Task:
-- Status: READY FOR REVIEW / BLOCKED / DRAFT
+- Status: DRAFT / BLOCKED / READY FOR REVIEW
 - Scope Confirmed: YES / NO
 - Out-of-Scope Changes Present: YES / NO
 - Blocking Issues:
 - Notes:
+
+Status rules:
+- `DRAFT`: Implementation, PR body, tests, or review response is incomplete.
+- `BLOCKED`: A specific external dependency or unresolved gate prevents agent completion.
+- `READY FOR REVIEW`: All required gates are green, reviewer/bot comments are addressed, review threads are resolved or explicitly dispositioned, and the final PR panel has been inspected.
 
 ## DOCUMENTATION SOURCE (MANDATORY)
 - [ ] DIATAXIS_FULL
@@ -44,7 +71,7 @@ When new PR-gate troubleshooting information becomes available, maintainers and 
 - [ ] LEGACY_FALLBACK
 
 Source Files Used:
-- Replace this line with exact source file paths used for this PR.
+- Required: list exact source file paths used for this PR.
 
 ## DIATAXIS GAP (REQUIRED IF LEGACY_FALLBACK)
 - [ ] Gap Identified
@@ -57,15 +84,14 @@ Source Files Used:
 ## DESIGN SOURCE OF TRUTH (NON-NEGOTIABLE)
 - Canonical process reference: `/docs/governance/PR_PROCESS.md`
 - Canonical governance reference: `/docs/governance/PR_GOVERNANCE.md`
+- Canonical troubleshooting reference: `/docs/reference/governance/troubleshooting-data-surface-requirements.md`
 - Canonical design reference: `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
 - Additional design/reference docs used for this PR:
-  - `/docs/governance/DOCUMENT-ARCHITECTURE.md`
-  - `/docs/ops/trackers/THREAD-LOG_Master.md`
-  - `/docs/reference/design/.canonical-files.txt`
+  - Required: list exact applicable paths.
 
 ## FILE-TOUCH ALLOWLIST (MANDATORY)
 Allowed files:
-<!-- Replace this comment with one bullet per exact changed file path before opening the PR. Example: `- .github/pull_request_template.md` -->
+<!-- Required: provide one bullet per exact changed file path before opening the PR. Example: `- .github/pull_request_template.md` -->
 
 All other files are out of scope
 
@@ -91,26 +117,30 @@ All other files are out of scope
 
 ## BUILD / TEST / VERIFICATION
 - Commands run:
-  - ./scripts/ci/docs_check_headers.sh .
-  - ./scripts/ci/docs_check_paths.sh .
-  - ./scripts/ci/docs_canonical_hashes_verify.sh .
-  - For changed Diataxis docs: inspect `.github/workflows/diataxis-folder-authority-check.yml` and verify the changed files satisfy its folder-specific rules.
+  - Required: list exact commands and outcomes.
+- Gate verification:
+  - Commit-level workflow runs inspected: YES / NO
+  - PR-level governance/accounting workflows inspected: YES / NO
+  - Failed job logs inspected for every failing gate: YES / NO / N/A
+  - Required gates rerun or re-evaluated after fixes: YES / NO / N/A
 - Result summary:
-  - PASS / FAIL
-- If FAIL, explain
+  - PASS / FAIL / PENDING
+- If FAIL, explain the exact failing workflow, job, step, and next agent action.
 
 ## DOCUMENTATION UPDATES
 - [ ] Documentation updated in this PR
 - [ ] No documentation updates required
 - Files:
-  - Replace this line with exact documentation file paths when applicable.
+  - Required: list exact documentation file paths when applicable.
 
 ## REVIEWER RESPONSE ACCOUNTING
 - [ ] Reviewed all reviewer comments.
-- [ ] Copilot disposition received.
-- [ ] Codex disposition received.
-- [ ] Gemini disposition received.
-- [ ] Cubic disposition received.
+- [ ] Reviewed all bot comments.
+- [ ] Reviewed all GitHub review threads.
+- [ ] Copilot disposition received or not applicable.
+- [ ] Codex disposition received or not applicable.
+- [ ] Gemini disposition received or not applicable.
+- [ ] Cubic disposition received or not applicable.
 - [ ] Every actionable reviewer comment has a PR-body disposition.
 - [ ] Every GitHub review thread has an explicit thread-state disposition: resolved, outdated, or intentionally left unresolved with rationale.
 
@@ -124,39 +154,54 @@ Reviewer items:
 - [ ] Latest head workflow runs inspected
 - [ ] Failed job logs inspected for every failing gate
 - [ ] Workflow YAML or enforcement logic inspected before documenting gate behavior
-- [ ] PR issue-accounting confirms exactly one same-repository, open, non-PR source Issue
-- [ ] PR body contains the required Issue syntax (for example, `- **Issue:** #123`)
+- [ ] PR issue-accounting confirms exactly one same-repository, open, non-PR source issue
+- [ ] PR body contains one accepted source-issue accounting line governed by `/docs/governance/PR_GOVERNANCE.md`.
 - [ ] All review threads and comments inspected
 - [ ] Actionable review feedback has PR-body disposition and GitHub thread-state disposition
 - [ ] Bot comments inspected
-- [ ] Reviewer-response accounting includes required reviewer comment IDs
+- [ ] Reviewer-response accounting includes required reviewer comment IDs when required by gate logs
 - [ ] Later maintainer replies posted where gate logs require them
 - [ ] Required gates rerun or re-evaluated after fixes
 - [ ] Final PR panel confirms merge-readiness
 
+## POST-MERGE CLOSEOUT CHECKLIST
+- [ ] PR merged state verified
+- [ ] Merge commit recorded
+- [ ] Source issue state inspected after merge
+- [ ] Source issue closed manually when automation did not close it
+- [ ] Source issue closure comment references merged PR and merge commit
+- [ ] Tracker/documentation update PR opened when implementation PR intentionally omitted tracker updates
+- [ ] Post-merge validation gates inspected when applicable
+
 ## ACCEPTANCE CRITERIA
-- docs_check_headers.sh passes
-- docs_check_paths.sh passes
-- docs_canonical_hashes_verify.sh passes
-- DIATAXIS Folder Authority Check passes for touched Diataxis docs
-- All required document headers present
-- All changed how-to docs include a Steps, Procedure, or Execution section
-- All canonical references point to files that exist in the same PR branch
-- No out-of-scope file changes
-- Drift gate passes
-- CI passes fully
+- [ ] Required source issue exists, is open, is same-repository, and is not a PR.
+- [ ] PR issue-accounting gate passes.
+- [ ] Drift gate passes.
+- [ ] Intent gate passes.
+- [ ] ZIP safety gate passes.
+- [ ] Quality checks pass.
+- [ ] Secret scan passes.
+- [ ] Repository-specific governance gates pass.
+- [ ] All required document headers present when docs are changed.
+- [ ] All changed how-to docs include a Steps, Procedure, or Execution section when applicable.
+- [ ] All canonical references point to files that exist in the same PR branch.
+- [ ] No out-of-scope file changes.
+- [ ] All actionable reviewer and bot feedback is resolved or explicitly dispositioned.
+- [ ] PR is ready for human review.
+- [ ] Post-merge source issue closure and tracker follow-up are complete or explicitly delegated.
 
 ## REQUIRED PRE-REVIEW SELF-CHECK
 - [ ] PR body contains all required sections with exact headings
-- [ ] PR body contains the required Issue syntax (for example, `- **Issue:** #123`)
+- [ ] PR body contains one accepted source-issue accounting line governed by `/docs/governance/PR_GOVERNANCE.md`.
 - [ ] Allowed files section matches final diff exactly
 - [ ] No files outside allowlist
 - [ ] ZIP safety confirmed
 - [ ] Intent label correct and singular
-- [ ] Local checks executed and passed
+- [ ] Local checks executed and passed or exact blocker documented
 - [ ] Commit message aligns with scope
 - [ ] No prohibited artifacts introduced
 - [ ] All new governance/reference docs satisfy `/docs/governance/standards/document-status-and-naming_MASTER.md` minimum content requirements: Purpose, Scope, Current known truth, and Intended final state if evolving
 - [ ] All canonical references point to existing repository files in the same branch before the PR opens
 - [ ] All reviewer feedback has both textual disposition and GitHub thread-state disposition
 - [ ] No merge-readiness claim made before all gate surfaces inspected
+- [ ] Status is set to READY FOR REVIEW only after all required gates and reviewer-response obligations are complete

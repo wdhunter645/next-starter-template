@@ -2,27 +2,27 @@
 Doc Type: Reference
 Audience: AI agents, maintainers, reviewers, orchestration operators
 Authority Level: Canonical
-Owns: Full-data-surface troubleshooting requirements and PR gate investigation doctrine
+Owns: Full-data-surface troubleshooting requirements and PR lifecycle investigation doctrine
 Does Not Own: Individual workflow implementation details
 Canonical Reference: docs/reference/governance/troubleshooting-data-surface-requirements.md
-Last Reviewed: 2026-05-16
+Last Reviewed: 2026-06-01
 ---
 
 # Troubleshooting Data Surface Requirements
 
 ## Purpose
 
-Troubleshooting must inspect all relevant operational data surfaces before remediation claims are made.
+Troubleshooting must inspect all relevant operational data surfaces before remediation, merge-readiness, or post-merge closeout claims are made.
 
-Partial visibility creates false-positive remediation claims, prolongs incidents, and causes repeated gate failures.
+Partial visibility creates false-positive remediation claims, prolongs incidents, causes repeated gate failures, and leaves merged work unreconciled with source issues or trackers.
 
 ---
 
 ## Scope
 
-This standard applies to repository troubleshooting, PR gate troubleshooting, workflow troubleshooting, reviewer-response troubleshooting, issue-accounting troubleshooting, and governance reconciliation.
+This standard applies to repository troubleshooting, PR gate troubleshooting, workflow troubleshooting, reviewer-response troubleshooting, issue-accounting troubleshooting, governance reconciliation, and post-merge closeout.
 
-It governs the evidence surfaces that must be inspected before any remediation or merge-readiness claim is made.
+It governs the evidence surfaces that must be inspected before any remediation, ready-for-review, merge-readiness, or closeout claim is made.
 
 It does not define individual workflow implementation logic or replace workflow-specific run logs.
 
@@ -32,17 +32,19 @@ It does not define individual workflow implementation logic or replace workflow-
 
 PR troubleshooting can fail when only one operational surface is inspected.
 
-Commit-level workflow runs do not represent the full PR state. PR-level `pull_request_target` gates, parser-driven governance checks, bot comments, review threads, and PR body parsing rules can still fail while commit-level workflows appear successful.
+Commit-level workflow runs do not represent the full PR state. PR-level `pull_request_target` gates, parser-driven governance checks, bot comments, review threads, PR body parsing rules, source issue state, and post-merge validation can still fail while commit-level workflows appear successful.
 
-Parser-driven governance requires exact syntax compliance. Semantic equivalents are not sufficient.
+Parser-driven governance syntax requirements vary by gate. Some gates require exact syntax, while others accept compatible variants and normalize the PR body; agents must verify the enforcing workflow, script, or gate comment before diagnosing syntax failures.
+
+Merge does not always close the source issue. Required issue-accounting syntax links the PR to an issue for governance, but it is not a substitute for post-merge issue-state verification.
 
 ---
 
 ## Intended Final State
 
-Troubleshooting should consistently review all relevant repository data surfaces before declaring remediation complete or a PR ready for merge approval.
+Troubleshooting should consistently review all relevant repository data surfaces before declaring remediation complete, a PR ready for human review, or a merged task closed.
 
-The intended final state is a repeatable troubleshooting process that reduces false-positive success claims, shortens incident duration, and prevents repeated gate-failure cycles.
+The intended final state is a repeatable lifecycle process that reduces false-positive success claims, shortens incident duration, prevents repeated gate-failure cycles, and leaves issues, PRs, and trackers reconciled after merge.
 
 ---
 
@@ -52,6 +54,8 @@ Troubleshooting must inspect all relevant sources, including:
 - PR metadata
 - Current HEAD SHA
 - PR body parser requirements
+- Source issue state
+- Source issue labels and acceptance criteria
 - Workflow run lists
 - Workflow YAML definitions
 - Job logs
@@ -60,10 +64,38 @@ Troubleshooting must inspect all relevant sources, including:
 - Bot comments
 - Review comments
 - Review threads
-- Issue scope
-- Acceptance criteria
 - Changed-file diff
+- File-touch allowlist
+- Intent label
+- Drift gate output
+- Acceptance criteria
 - Repository governance docs
+- Post-merge validation checks
+- Tracker or worklist requirements when applicable
+
+---
+
+## Full PR Lifecycle Troubleshooting Model
+
+Agents that create or work a PR own the PR through the complete lifecycle:
+
+1. Source issue validation
+2. Branch and changed-file scope validation
+3. PR body creation from the canonical template
+4. Initial gate inspection
+5. Failed-gate diagnosis
+6. Reviewer and bot comment response
+7. Review-thread disposition
+8. Gate rerun or re-evaluation
+9. Ready-for-review declaration
+10. Human approval and merge
+11. Post-merge verification
+12. Source issue closure
+13. Tracker or documentation follow-up when applicable
+
+A PR is not ready for human review until gates are green and all actionable comments, review threads, and bot findings are resolved or explicitly dispositioned.
+
+A merged PR is not fully closed out until the source issue and any required tracker/documentation follow-up are reconciled.
 
 ---
 
@@ -73,14 +105,165 @@ PR troubleshooting must distinguish:
 - Commit-level workflow status
 - PR-level governance/accounting gates
 - Parser-driven governance workflows
+- Bot comments generated by gate failures
+- GitHub review comments and review threads
+- Post-merge validation workflows
 
-Semantic equivalents are not sufficient where workflows require exact syntax.
+Parser behavior is gate-specific. Agents must inspect the active gate comment, workflow YAML, or enforcement script before treating a semantically equivalent issue reference as invalid.
 
 Example:
-- `Closes #1043` does **not** satisfy `- **Issue:** #1043` when the workflow parser expects the latter.
+- `Closes #1043` may satisfy one gate when same-repository closing keywords are accepted, while another gate may require a primary body line such as `- **Issue:** #1043`. The enforcing workflow or gate comment is authoritative.
+
+Required procedure for every failing gate:
+1. Identify the failing workflow name.
+2. Identify the failing job and step.
+3. Read the job logs or gate-generated comment.
+4. Inspect the workflow YAML or script that enforces the rule.
+5. Identify the exact parser or rule requirement.
+6. Apply the smallest scope-correct fix.
+7. Update the PR body if the failure is body/accounting/readiness related.
+8. Rerun or wait for the gate to re-evaluate.
+9. Do not mark `READY FOR REVIEW` until the gate is green.
+
+---
+
+## Common Gate Patterns
+
+### PR issue accounting
+
+Symptoms:
+- Gate fails even though the PR body mentions an issue.
+- Source issue remains open after merge.
+
+Required checks:
+- PR body contains exactly one accepted issue-accounting surface.
+- Preferred PR body syntax is `- **Issue:** #123`.
+- Other accepted formats are governed by `/docs/governance/PR_GOVERNANCE.md` and current gate comments, including compatible `Issue: #123`, `Issue #123`, `Related Issue: #123`, same-repository closing keywords, and issue-number-bearing branch names when the gate supports them.
+- The issue is same-repository, open, and not a PR at PR-open/update time.
+- After merge, the issue state is inspected and closed manually when automation does not close it.
+
+### Intent labeler
+
+Symptoms:
+- Intent label gate fails or assigns unexpected intent.
+- PR combines runtime implementation with unrelated operations, tracker, or documentation changes.
+
+Required checks:
+- PR has exactly one primary intent.
+- PR label matches the primary intent.
+- Ancillary files are directly tied to the same task, or moved into a separate PR when the current governance gate cannot classify the combined scope.
+- PR body clearly states the primary intent and allowlist.
+
+### Drift control
+
+Symptoms:
+- Changed files exceed allowlist.
+- PR contains cross-domain changes.
+- PR claims one task but edits unrelated docs, workflows, runtime code, or configuration.
+
+Required checks:
+- Compare changed-file list against the PR body allowlist.
+- Remove or split unrelated files.
+- Update the PR body only after the actual diff is final.
+- Do not broaden scope just to satisfy a drift failure.
+
+### Quality checks
+
+Symptoms:
+- Tests, typecheck, lint, or build fail.
+
+Required checks:
+- Read the exact failing command and failing output.
+- Fix implementation or tests within the approved allowlist.
+- Do not claim success from local or older runs when the current head SHA is failing.
+
+### Documentation checks
+
+Symptoms:
+- Header, Diataxis, canonical-reference, path, or content-shape checks fail.
+
+Required checks:
+- Confirm required authority header exists.
+- Confirm `Canonical Reference:` points to a file that exists in the same branch.
+- Confirm how-to/tutorial/reference/explanation folder rules are followed.
+- Confirm docs are in the approved Diataxis folder.
+
+---
+
+## Reviewer Response Troubleshooting
+
+Reviewer comments and bot comments must be handled as part of PR completion.
+
+Required procedure:
+1. Inspect all top-level PR comments.
+2. Inspect all review comments.
+3. Inspect all review threads.
+4. Classify each item as accepted, rejected, acknowledged, outdated, or not applicable.
+5. For accepted items, make the code/doc/body change.
+6. For rejected items, provide the rationale in the PR body or thread.
+7. Update the PR body reviewer accounting section with comment IDs when available.
+8. Resolve threads when the platform permits resolution.
+9. If a thread cannot be resolved by the current agent/tool, document the unresolved state and rationale.
+
+No PR may be marked `READY FOR REVIEW` while actionable reviewer items remain unaddressed.
+
+---
+
+## Ready-for-Review Validation
+
+Before a PR may be marked or claimed `READY FOR REVIEW`, the agent must verify:
+- Required issue-accounting line is present and valid.
+- Changed-file list matches the allowlist.
+- Required intent label is singular and correct.
+- All required gates are green.
+- Failing gates were inspected at the log or enforcement-script level.
+- Bot comments are inspected.
+- Reviewer comments are inspected.
+- Review threads are inspected.
+- Actionable items are resolved or explicitly dispositioned.
+- Local or agent-run checks are reflected accurately and do not contradict remote gates.
+- Final PR panel shows no required blocker.
+
+Ready-for-review status is a verified state, not an aspirational status.
+
+---
+
+## Post-Merge Closeout
+
+After merge, the responsible agent must perform closeout verification.
+
+Required procedure:
+1. Verify the PR state is merged.
+2. Record or inspect the merge commit.
+3. Verify the source issue state.
+4. If the source issue remains open, add a closeout comment referencing the merged PR and merge commit.
+5. Close the source issue with completed state when the work satisfies acceptance criteria.
+6. Inspect post-merge validation gates when applicable.
+7. Open or update tracker/documentation follow-up when the implementation PR intentionally omitted tracker updates.
+8. Do not report the task complete until PR, issue, and required tracker state are reconciled or an explicit remaining blocker is documented.
+
+---
+
+## Documentation Update Requirement for New Failure Modes
+
+When troubleshooting exposes a new repeatable failure pattern, agents must update the governance documentation rather than relying on memory or chat history.
+
+Required updates:
+- Update `.github/pull_request_template.md` when agents need a new required checklist, lifecycle item, or body field.
+- Update this troubleshooting document when agents need a new diagnostic procedure, gate interpretation, or post-merge closeout rule.
+- Use a dedicated documentation/governance PR when the update is not directly part of the implementation PR's approved scope.
+
+Examples of failure patterns that require documentation updates:
+- A required issue syntax pattern was not obvious.
+- Merge did not close the source issue.
+- A gate passed at commit level but failed at PR level.
+- Reviewer-response accounting required comment IDs or thread states.
+- Tracker updates caused mixed-intent drift in an implementation PR.
 
 ---
 
 ## Operational Requirement
 
 No merge-readiness claim should be made until all relevant operational surfaces have been reviewed.
+
+No post-merge completion claim should be made until the source issue is closed or the reason it remains open is explicitly documented.
