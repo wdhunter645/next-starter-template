@@ -362,9 +362,10 @@ Owner: Cursor
 Scope: mobile hamburger behavior, Store link behavior, responsive layouts, header/footer invariants, breakpoints, and touch usability.
 Exit: mobile navigation and responsive rendering comply with locked design invariants without viewport overflow.
 Summary:
-Mobile and tablet responsive navigation merged with drawer-only phone navigation, visible tablet header actions, footer/header invariant coverage, overflow fixes, and responsive validation tests.
+Mobile and tablet responsive navigation merged with drawer-only phone navigation, visible tablet header actions, footer/header invariant coverage, overflow fixes, responsive validation tests, and post-merge hamburger backdrop layering verification.
 Issue/PR trace:
 - Implementation PR: #1166
+- Post-merge verification fix PR: #1178
 
 ## T28 — Join/Login UX completion and auth-state validation
 Status: CLOSED

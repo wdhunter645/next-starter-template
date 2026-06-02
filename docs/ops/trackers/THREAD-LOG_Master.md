@@ -12,6 +12,30 @@ Last Reviewed: 2026-05-05
 
 ------------------------------------------------------------------------
 
+## THREAD CLOSEOUT RECORD --- 2026-06-01 --- T26 post-merge verification closeout
+
+### Starting State
+T26 implementation PR #1166 was merged and recorded as closed, but post-merge verification found the hamburger drawer backdrop could intercept the second hamburger click after later mainline merges.
+
+### Objective
+Record the merged T26 post-merge verification fix and keep tracker history aligned with the accepted responsive-navigation closeout state.
+
+### Work Performed
+- Updated `docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md`:
+  - Preserved T26 `Status: CLOSED`.
+  - Added merged post-merge verification fix PR #1178 to the T26 issue/PR trace.
+  - Expanded the T26 summary to include hamburger backdrop layering verification.
+- Updated `docs/ops/trackers/LGFC-WEBSITE-IMPLEMENTATION-QUEUE-NORMALIZATION.md`:
+  - Recorded T26 as complete with implementation PR #1166 and follow-up PR #1178.
+
+### Result
+Tracker state now reflects the full merged T26 implementation and post-merge verification history.
+
+### Next Action
+Continue active T41 admin operating shell and member operations (#1119).
+
+------------------------------------------------------------------------
+
 ## THREAD CLOSEOUT RECORD --- 2026-06-01 --- T29/T40 website tracker closeout
 
 ### Starting State
