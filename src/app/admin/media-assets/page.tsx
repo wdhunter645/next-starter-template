@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import PageShell from '@/components/PageShell';
 import AdminNav from '@/components/admin/AdminNav';
+import AdminTokenPanel from '@/components/admin/AdminTokenPanel';
+import { adminJson } from '@/lib/adminClient';
 
 type MediaAsset = {
   id: number;
@@ -14,10 +16,23 @@ type MediaAsset = {
   ingested_at?: string | null;
 };
 
+type MediaListResponse = {
+  ok: true;
+  items: unknown[];
+};
+
+type MediaSyncResponse = {
+  ok: true;
+  listed: number;
+  maxObjects: number;
+  batches: number;
+  changes_reported: number;
+  note?: string;
+};
+
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null;
 }
-
 
 function asString(v: unknown): string | null {
   return typeof v === 'string' ? v : null;
@@ -54,57 +69,103 @@ function normalize(raw: unknown): MediaAsset | null {
   };
 }
 
-function getToken(): string {
-  if (typeof window === 'undefined') return '';
-  return window.localStorage.getItem('lgfc_admin_token') || '';
-}
-
 export default function AdminMediaAssetsPage() {
-  const [status, setStatus] = useState<string>('');
+  const [status, setStatus] = useState<string>('Idle.');
+  const [syncStatus, setSyncStatus] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [syncing, setSyncing] = useState<boolean>(false);
   const [items, setItems] = useState<MediaAsset[]>([]);
 
-  async function load() {
+  const load = useCallback(async () => {
+    setLoading(true);
     setStatus('Loading…');
-    const token = getToken();
-    const res = await fetch('/api/admin/media-assets/list?limit=100', {
-      headers: token ? { 'x-admin-token': token } : {},
-      cache: 'no-store',
-    });
-    const data: unknown = await res.json().catch(() => ({}));
+    const result = await adminJson<MediaListResponse>('/api/admin/media-assets/list?limit=100');
 
-    if (!isRecord(data) || data.ok !== true) {
-      const err = isRecord(data) && typeof data.error === 'string' ? data.error : `HTTP ${res.status}`;
-      setStatus(`Error: ${err}`);
+    if (!result.ok) {
+      setStatus(`Error: ${result.error}`);
       setItems([]);
+      setLoading(false);
       return;
     }
 
-    const raw = (data as Record<string, unknown>).items;
-    const arr = Array.isArray(raw) ? raw : [];
+    const arr = Array.isArray(result.data?.items) ? result.data.items : [];
     const normalized = arr.map(normalize).filter((x): x is MediaAsset => x !== null);
 
     setItems(normalized);
-    setStatus(normalized.length ? '' : 'No media assets found.');
-  }
+    setStatus(normalized.length ? `Loaded ${normalized.length} media asset(s).` : 'No media assets found.');
+    setLoading(false);
+  }, []);
+
+  const syncFromB2 = useCallback(async () => {
+    setSyncing(true);
+    setSyncStatus('Syncing from B2…');
+
+    const result = await adminJson<MediaSyncResponse>('/api/admin/media-assets/sync-from-b2', {
+      method: 'POST',
+    });
+
+    if (!result.ok) {
+      setSyncStatus(`Sync error: ${result.error}`);
+      setSyncing(false);
+      return;
+    }
+
+    const data = result.data;
+    setSyncStatus(
+      `B2 sync complete: listed ${data?.listed ?? 0} object(s), reported ${data?.changes_reported ?? 0} D1 change(s).`,
+    );
+    setSyncing(false);
+    await load();
+  }, [load]);
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [load]);
 
   return (
     <PageShell title="Media Assets" subtitle="D1 inventory of ingested media (B2 keys, size, etag)">
       <AdminNav />
-      <div style={{ marginTop: 14 }}>
-        <button
-          onClick={() => void load()}
-          style={{ border: '1px solid #ddd', borderRadius: 10, padding: '10px 12px', fontWeight: 700, cursor: 'pointer' }}
-        >
-          Refresh
-        </button>
+      <AdminTokenPanel onSaved={() => void load()} />
+
+      <div style={{ display: 'grid', gap: 14, marginTop: 16 }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => void load()}
+            disabled={loading}
+            style={{
+              border: '1px solid #ddd',
+              borderRadius: 10,
+              padding: '10px 12px',
+              fontWeight: 700,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              background: loading ? 'rgba(0,0,0,0.05)' : 'white',
+            }}
+          >
+            {loading ? 'Loading…' : 'Refresh'}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => void syncFromB2()}
+            disabled={syncing}
+            style={{
+              border: '1px solid #ddd',
+              borderRadius: 10,
+              padding: '10px 12px',
+              fontWeight: 700,
+              cursor: syncing ? 'not-allowed' : 'pointer',
+              background: syncing ? 'rgba(0,0,0,0.05)' : 'white',
+            }}
+          >
+            {syncing ? 'Syncing…' : 'Sync from B2'}
+          </button>
+        </div>
 
         {status ? <p style={{ marginTop: 10, opacity: 0.85 }}>{status}</p> : null}
+        {syncStatus ? <p style={{ marginTop: 0, opacity: 0.85 }}>{syncStatus}</p> : null}
 
-        <div style={{ display: 'grid', gap: 10, marginTop: 12 }}>
+        <div style={{ display: 'grid', gap: 10 }}>
           {items.map((m) => (
             <div key={m.id} style={{ border: '1px solid #eee', borderRadius: 12, padding: 12 }}>
               <div style={{ fontWeight: 800 }}>{m.b2_key}</div>
