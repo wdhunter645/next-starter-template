@@ -34,7 +34,7 @@ PR troubleshooting can fail when only one operational surface is inspected.
 
 Commit-level workflow runs do not represent the full PR state. PR-level `pull_request_target` gates, parser-driven governance checks, bot comments, review threads, PR body parsing rules, source issue state, and post-merge validation can still fail while commit-level workflows appear successful.
 
-Parser-driven governance requires exact syntax compliance. Semantic equivalents are not sufficient.
+Parser-driven governance syntax requirements vary by gate. Some gates require exact syntax, while others accept compatible variants and normalize the PR body; agents must verify the enforcing workflow, script, or gate comment before diagnosing syntax failures.
 
 Merge does not always close the source issue. Required issue-accounting syntax links the PR to an issue for governance, but it is not a substitute for post-merge issue-state verification.
 
@@ -109,10 +109,10 @@ PR troubleshooting must distinguish:
 - GitHub review comments and review threads
 - Post-merge validation workflows
 
-Semantic equivalents are not sufficient where workflows require exact syntax.
+Parser behavior is gate-specific. Agents must inspect the active gate comment, workflow YAML, or enforcement script before treating a semantically equivalent issue reference as invalid.
 
 Example:
-- `Closes #1043` does **not** satisfy `- **Issue:** #1043` when the workflow parser expects the latter.
+- `Closes #1043` may satisfy one gate when same-repository closing keywords are accepted, while another gate may require a primary body line such as `- **Issue:** #1043`. The enforcing workflow or gate comment is authoritative.
 
 Required procedure for every failing gate:
 1. Identify the failing workflow name.
