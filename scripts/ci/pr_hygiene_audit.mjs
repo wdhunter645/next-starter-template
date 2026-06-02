@@ -10,8 +10,24 @@ export const REQUIRED_TEMPLATE_SECTIONS = [
   'REQUIRED PRE-REVIEW SELF-CHECK',
 ];
 
+export function findIssueReferences(body) {
+  const text = body || '';
+  return [...text.matchAll(/#(\d+)/g)].map((match) => Number(match[1]));
+}
+
 export function hasRequiredIssueLine(body) {
   return /^- \*\*Issue:\*\* #\d+\s*$/m.test(body || '');
+}
+
+export function findCanonicalIssueLine(body) {
+  const text = body || '';
+  return text.split(/\r?\n/).find((line) => /^- \*\*Issue:\*\* #\d+\s*$/.test(line.trim())) || '';
+}
+
+export function suggestCanonicalIssueLine(body) {
+  const references = [...new Set(findIssueReferences(body))];
+  if (references.length !== 1) return '';
+  return `- **Issue:** #${references[0]}`;
 }
 
 export function hasZipSafetyStatement(body) {
@@ -56,9 +72,15 @@ export function buildPrHygieneReport({ body = '', changedFiles = [] } = {}) {
   const allowedFiles = parseAllowedFiles(body);
   const missingSections = missingTemplateSections(body);
   const unlistedChangedFiles = findUnlistedChangedFiles(changedFiles, allowedFiles);
+  const issueReferences = [...new Set(findIssueReferences(body))];
+  const canonicalIssueLine = findCanonicalIssueLine(body);
+  const suggestedIssueLine = hasRequiredIssueLine(body) ? canonicalIssueLine : suggestCanonicalIssueLine(body);
 
   return {
     hasRequiredIssueLine: hasRequiredIssueLine(body),
+    issueReferences,
+    canonicalIssueLine,
+    suggestedIssueLine,
     hasZipSafetyStatement: hasZipSafetyStatement(body),
     missingSections,
     allowedFiles,
@@ -80,6 +102,12 @@ export function renderPrHygieneReport(report) {
 
   if (!report.hasRequiredIssueLine) {
     lines.push('- Missing canonical source issue line: `- **Issue:** #123`.');
+    if (report.suggestedIssueLine) {
+      lines.push(`  - Suggested correction: \`${report.suggestedIssueLine}\`.`);
+    }
+    if (report.issueReferences.length > 1) {
+      lines.push(`  - Multiple issue references detected: ${report.issueReferences.map((issue) => `#${issue}`).join(', ')}. Keep exactly one primary source issue in the canonical line.`);
+    }
   }
 
   if (!report.hasZipSafetyStatement) {
@@ -95,6 +123,10 @@ export function renderPrHygieneReport(report) {
     for (const file of report.unlistedChangedFiles) {
       lines.push(`  - \`${file}\``);
     }
+  }
+
+  if (report.allowedFiles.length === 0) {
+    lines.push('- Missing or empty `Allowed files:` list under `FILE-TOUCH ALLOWLIST (MANDATORY)`.');
   }
 
   return lines.join('\n');
