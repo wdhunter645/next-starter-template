@@ -12,8 +12,8 @@ When new PR-gate troubleshooting information becomes available, maintainers and 
 A PR is not complete when it is opened. The creating or working agent owns the PR through the full lifecycle until it is ready for human review and then through post-merge closeout once the PR is merged.
 
 Required lifecycle:
-1. Confirm or create exactly one same-repository, open, non-PR source Issue.
-2. Insert one accepted source-Issue accounting line consistent with `/docs/governance/PR_GOVERNANCE.md`. Preferred format: `- **Issue:** #123`.
+1. Confirm or create exactly one same-repository, open, non-PR source issue.
+2. Insert one accepted source-issue accounting line consistent with `/docs/governance/PR_GOVERNANCE.md`. Preferred format: `- **Issue:** #123`.
 3. Prepare the PR body from this template before or immediately after opening the PR.
 4. Confirm the changed-file allowlist matches the actual final diff.
 5. Inspect all gate checks after every PR body update or commit.
@@ -22,16 +22,16 @@ Required lifecycle:
 8. Resolve or explicitly disposition every actionable reviewer item in the PR body.
 9. Rerun or wait for all required gates after fixes.
 10. Mark or claim `READY FOR REVIEW` only after all required gates are green and no actionable reviewer item remains unresolved.
-11. After merge, verify the merge commit, verify the source Issue state, close the source Issue when automation did not, and record tracker/documentation follow-up when applicable.
+11. After merge, verify the merge commit, verify the source issue state, close the source issue when automation did not, and record tracker/documentation follow-up when applicable.
 
 Agents must not hand a PR to a human approver while any gate, review comment, or review thread still requires agent action.
-Agents must not treat merge as complete closeout until the source Issue and required trackers are reconciled.
+Agents must not treat merge as complete closeout until the source issue and required trackers are reconciled.
 
 - **Issue:** #____
-<!-- Replace #____ with exactly one same-repository, open, non-PR Issue number before opening/updating the PR. Preferred final syntax: `- **Issue:** #123`. Other accepted source-Issue formats are governed by `/docs/governance/PR_GOVERNANCE.md`. Do not use a PR number, an external issue, or a closed issue as the source Issue. -->
+<!-- Replace #____ with exactly one same-repository, open, non-PR issue number before opening/updating the PR. Preferred final syntax: `- **Issue:** #123`. Other accepted source-issue formats are governed by `/docs/governance/PR_GOVERNANCE.md`. Do not use a PR number, an external issue, or a closed issue as the source issue. -->
 
 ## PRE-OPEN GATE PREFLIGHT (MANDATORY)
-- [ ] Confirm exactly one same-repository, open, non-PR source Issue exists.
+- [ ] Confirm exactly one same-repository, open, non-PR source issue exists.
 - [ ] Confirm one accepted issue-accounting line is present before opening or updating the PR. Preferred format: `- **Issue:** #123`.
 - [ ] Read the workflow files that will run for this PR's touched paths before opening the PR.
 - [ ] Read or update `.github/CI_GUARDRAILS_MAP.md` when workflow behavior is unclear or changed.
@@ -154,8 +154,8 @@ Reviewer items:
 - [ ] Latest head workflow runs inspected
 - [ ] Failed job logs inspected for every failing gate
 - [ ] Workflow YAML or enforcement logic inspected before documenting gate behavior
-- [ ] PR issue-accounting confirms exactly one same-repository, open, non-PR source Issue
-- [ ] PR body contains one accepted source-Issue accounting line governed by `/docs/governance/PR_GOVERNANCE.md`.
+- [ ] PR issue-accounting confirms exactly one same-repository, open, non-PR source issue
+- [ ] PR body contains one accepted source-issue accounting line governed by `/docs/governance/PR_GOVERNANCE.md`.
 - [ ] All review threads and comments inspected
 - [ ] Actionable review feedback has PR-body disposition and GitHub thread-state disposition
 - [ ] Bot comments inspected
@@ -167,14 +167,14 @@ Reviewer items:
 ## POST-MERGE CLOSEOUT CHECKLIST
 - [ ] PR merged state verified
 - [ ] Merge commit recorded
-- [ ] Source Issue state inspected after merge
-- [ ] Source Issue closed manually when automation did not close it
-- [ ] Source Issue closure comment references merged PR and merge commit
+- [ ] Source issue state inspected after merge
+- [ ] Source issue closed manually when automation did not close it
+- [ ] Source issue closure comment references merged PR and merge commit
 - [ ] Tracker/documentation update PR opened when implementation PR intentionally omitted tracker updates
 - [ ] Post-merge validation gates inspected when applicable
 
 ## ACCEPTANCE CRITERIA
-- [ ] Required source Issue exists, is open, is same-repository, and is not a PR.
+- [ ] Required source issue exists, is open, is same-repository, and is not a PR.
 - [ ] PR issue-accounting gate passes.
 - [ ] Drift gate passes.
 - [ ] Intent gate passes.
@@ -188,11 +188,11 @@ Reviewer items:
 - [ ] No out-of-scope file changes.
 - [ ] All actionable reviewer and bot feedback is resolved or explicitly dispositioned.
 - [ ] PR is ready for human review.
-- [ ] Post-merge source Issue closure and tracker follow-up are complete or explicitly delegated.
+- [ ] Post-merge source issue closure and tracker follow-up are complete or explicitly delegated.
 
 ## REQUIRED PRE-REVIEW SELF-CHECK
 - [ ] PR body contains all required sections with exact headings
-- [ ] PR body contains one accepted source-Issue accounting line governed by `/docs/governance/PR_GOVERNANCE.md`.
+- [ ] PR body contains one accepted source-issue accounting line governed by `/docs/governance/PR_GOVERNANCE.md`.
 - [ ] Allowed files section matches final diff exactly
 - [ ] No files outside allowlist
 - [ ] ZIP safety confirmed
