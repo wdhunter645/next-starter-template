@@ -12,6 +12,33 @@ Last Reviewed: 2026-05-05
 
 ------------------------------------------------------------------------
 
+## THREAD CLOSEOUT RECORD --- 2026-06-02 --- CI PR Hygiene Foundation post-merge cleanup
+
+### Starting State
+Issue #1131 and merged PR #1189 completed the CI PR Hygiene Foundation work, but the implementation queue still needed lifecycle cleanup before starting the next CI implementation task.
+
+### Objective
+Record the Task 001 closeout state, preserve post-merge verification evidence, and prevent stale active issue state from being carried into Task 002.
+
+### Work Performed
+- Updated `docs/ops/implementation-plans/issue-1075-ci-redesign-rollout.md`:
+  - Marked Task 001 completed with issue #1131, implementation PR #1189, and merge date.
+  - Recorded lifecycle normalization as completed cleanup before Task 002 starts.
+- Updated `docs/reference/ci/pr-hygiene-foundation.md`:
+  - Added post-merge closeout expectations for issue #1131.
+  - Preserved Task 002 as the next CI implementation task after cleanup.
+- Normalized live issue #1131 labels:
+  - Removed stale `status:active`.
+  - Preserved `orchestrator`, `agent:cursor`, `type:ci`, and `status:post-merge-verify`.
+
+### Result
+CI Task 001 closeout is documented as repository governance cleanup, not as a defect in the merged PR Hygiene Foundation implementation.
+
+### Next Action
+After this cleanup PR merges, close the post-merge verification state for issue #1131 and proceed to Task 002 Merge Protection Consolidation.
+
+------------------------------------------------------------------------
+
 ## THREAD CLOSEOUT RECORD --- 2026-06-01 --- T26 post-merge verification closeout
 
 ### Starting State

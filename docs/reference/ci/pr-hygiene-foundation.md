@@ -54,6 +54,21 @@ become noisy gate failures. It should not hide defects; it should report them in
 stable, source-linked PR comments and leave hard merge-safety decisions to the
 Merge Protection domain.
 
+## Post-Merge Closeout
+
+Issue #1131 is the completed PR Hygiene Foundation implementation issue. PR
+#1189 merged on 2026-06-02 and established the foundation described in this
+reference.
+
+After merge, the repository state must not leave issue #1131 represented as an
+active CI implementation task. The correct closeout state is:
+
+- issue #1131 retains CI ownership and post-merge verification traceability
+- stale active execution state is removed
+- Task 002 remains the next CI implementation task after this cleanup closes
+- no merge-protection, reviewer lifecycle, runtime, or website behavior changes
+  are included in the closeout
+
 ## Advisory Surfaces
 
 | Surface | Corrective behavior | Blocking behavior |
