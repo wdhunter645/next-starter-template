@@ -136,8 +136,9 @@ Symptoms:
 - Source issue remains open after merge.
 
 Required checks:
-- PR body contains exactly one required issue-accounting line.
-- The line uses exact syntax: `- **Issue:** #123`.
+- PR body contains exactly one accepted issue-accounting surface.
+- Preferred PR body syntax is `- **Issue:** #123`.
+- Other accepted formats are governed by `/docs/governance/PR_GOVERNANCE.md` and current gate comments, including compatible `Issue: #123`, `Issue #123`, `Related Issue: #123`, same-repository closing keywords, and issue-number-bearing branch names when the gate supports them.
 - The issue is same-repository, open, and not a PR at PR-open/update time.
 - After merge, the issue state is inspected and closed manually when automation does not close it.
 
