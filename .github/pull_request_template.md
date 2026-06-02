@@ -28,7 +28,7 @@ Agents must not hand a PR to a human approver while any gate, review comment, or
 Agents must not treat merge as complete closeout until the source issue and required trackers are reconciled.
 
 - **Issue:** #____
-<!-- Replace #____ with exactly one same-repository, open, non-PR issue number before opening/updating the PR. Preferred final syntax: `- **Issue:** #123`. Other accepted source-issue formats are governed by `/docs/governance/PR_GOVERNANCE.md`. Do not use a PR number, an external issue, or a closed issue as the source issue. -->
+<!-- Required: replace #____ with exactly one same-repository, open, non-PR issue number before opening/updating the PR. Preferred final syntax: `- **Issue:** #123`. Other accepted source-issue formats are governed by `/docs/governance/PR_GOVERNANCE.md`. Do not use a PR number, an external issue, or a closed issue as the source issue. -->
 
 ## PRE-OPEN GATE PREFLIGHT (MANDATORY)
 - [ ] Confirm exactly one same-repository, open, non-PR source issue exists.
@@ -71,7 +71,7 @@ Status rules:
 - [ ] LEGACY_FALLBACK
 
 Source Files Used:
-- Replace this line with exact source file paths used for this PR.
+- Required: list exact source file paths used for this PR.
 
 ## DIATAXIS GAP (REQUIRED IF LEGACY_FALLBACK)
 - [ ] Gap Identified
@@ -87,11 +87,11 @@ Source Files Used:
 - Canonical troubleshooting reference: `/docs/reference/governance/troubleshooting-data-surface-requirements.md`
 - Canonical design reference: `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
 - Additional design/reference docs used for this PR:
-  - Replace this line with exact applicable paths.
+  - Required: list exact applicable paths.
 
 ## FILE-TOUCH ALLOWLIST (MANDATORY)
 Allowed files:
-<!-- Replace this comment with one bullet per exact changed file path before opening the PR. Example: `- .github/pull_request_template.md` -->
+<!-- Required: provide one bullet per exact changed file path before opening the PR. Example: `- .github/pull_request_template.md` -->
 
 All other files are out of scope
 
@@ -117,7 +117,7 @@ All other files are out of scope
 
 ## BUILD / TEST / VERIFICATION
 - Commands run:
-  - Replace this line with exact commands and outcomes.
+  - Required: list exact commands and outcomes.
 - Gate verification:
   - Commit-level workflow runs inspected: YES / NO
   - PR-level governance/accounting workflows inspected: YES / NO
@@ -131,7 +131,7 @@ All other files are out of scope
 - [ ] Documentation updated in this PR
 - [ ] No documentation updates required
 - Files:
-  - Replace this line with exact documentation file paths when applicable.
+  - Required: list exact documentation file paths when applicable.
 
 ## REVIEWER RESPONSE ACCOUNTING
 - [ ] Reviewed all reviewer comments.
