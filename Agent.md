@@ -33,9 +33,9 @@ Tracker files are historical/status indexes. Agents may read tracker files for v
 ## AUTHORITY HIERARCHY (SINGLE SOURCE)
 
 1. Locked design / platform / governance documents
-2. Source GitHub issue for the assigned task
-3. Task-specific implementation plan or queue issue
-4. /docs/ops/ai/CORE-RULES.md
+2. /docs/ops/ai/CORE-RULES.md
+3. Source GitHub issue for task scope and acceptance criteria
+4. Task-specific implementation plan or queue issue
 5. Agent-specific rules
 6. Task prompt
 
