@@ -28,6 +28,8 @@ export const onRequestGet = async (context: any): Promise<Response> => {
     "page_content",
     "content_blocks",
     "content_revisions",
+    "content_inventory",
+    "submission_queue",
     "faq_entries",
     "events",
     "milestones",

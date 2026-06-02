@@ -94,6 +94,11 @@ export default function AdminDashboard() {
           <div className={styles.cardBody}>Admin tools (work in progress).</div>
         </a>
 
+        <a className={styles.card} href="/admin/editorial">
+          <div className={styles.cardTitle}>Editorial Archive</div>
+          <div className={styles.cardBody}>Review member submissions and publish content_inventory records.</div>
+        </a>
+
         <a className={styles.card} href="/admin/fundraiser-preview">
           <div className={styles.cardTitle}>Fundraiser Preview</div>
           <div className={styles.cardBody}>Build and validate the conditional homepage campaign spotlight in the gated admin area.</div>
