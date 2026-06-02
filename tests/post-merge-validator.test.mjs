@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	buildResult,
 	commentBody,
+	latestRunsByWorkflow,
 	metadataFailures,
 	resolvePrNumber,
 	reviewerFindings,
@@ -101,6 +102,15 @@ describe('post-merge reviewer audit classification', () => {
 });
 
 describe('post-merge workflow failure classification', () => {
+	it('ignores stale workflow failures when a newer run for the workflow passed', () => {
+		const latest = latestRunsByWorkflow([
+			{ workflowName: 'GATE - Quality Checks', status: 'completed', conclusion: 'failure', created_at: '2026-06-02T10:00:00Z' },
+			{ workflowName: 'GATE - Quality Checks', status: 'completed', conclusion: 'success', created_at: '2026-06-02T10:05:00Z' },
+		]);
+
+		expect(workflowFailures({ prBody: baseBody, runs: latest })).toEqual([]);
+	});
+
 	it('fails the original PR when a required workflow fails', () => {
 		const failures = workflowFailures({
 			prBody: baseBody,

@@ -84,7 +84,7 @@ export async function upsertRemediationIssue({ token, repository, result }) {
 		repository,
 		path: `/issues?state=open&per_page=100`,
 	});
-	const existing = search.find((issue) => issue.title === title && !issue.pull_request);
+	const existing = Array.isArray(search) ? search.find((issue) => issue.title === title && !issue.pull_request) : undefined;
 
 	if (existing) {
 		await request({

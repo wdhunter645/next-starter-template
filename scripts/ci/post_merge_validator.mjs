@@ -281,6 +281,67 @@ async function paginate(args) {
 	return out;
 }
 
+function uniqueRuns(...runGroups) {
+	const byId = new Map();
+	for (const group of runGroups) {
+		for (const run of group || []) {
+			const id = run.databaseId || run.id || run.html_url || run.url;
+			if (id && !byId.has(id)) byId.set(id, run);
+		}
+	}
+	return [...byId.values()];
+}
+
+function runTimestamp(run) {
+	return Date.parse(run.created_at || run.createdAt || run.run_started_at || run.startedAt || run.updated_at || run.updatedAt || '') || 0;
+}
+
+export function latestRunsByWorkflow(runs = []) {
+	const latest = new Map();
+	for (const run of runs) {
+		const name = run.workflowName || run.name || 'unknown workflow';
+		const current = latest.get(name);
+		if (!current || runTimestamp(run) >= runTimestamp(current)) latest.set(name, run);
+	}
+	return [...latest.values()];
+}
+
+function shouldInspectRun(run, currentRunId = '') {
+	return (
+		String(run.databaseId || run.id || '') !== String(currentRunId || '') &&
+		String(run.status || '').toLowerCase() === 'completed' &&
+		['failure', 'timed_out', 'cancelled', 'action_required'].includes(String(run.conclusion || '').toLowerCase())
+	);
+}
+
+async function enrichFailedRuns({ token, repository, runs, currentRunId }) {
+	return Promise.all(
+		runs.map(async (run) => {
+			if (!shouldInspectRun(run, currentRunId)) return run;
+			const runId = run.databaseId || run.id;
+			if (!runId) return run;
+
+			try {
+				const jobs = await apiRequest({ token, repository, path: `/actions/runs/${runId}/jobs?per_page=100` });
+				const failureText = (jobs.jobs || [])
+					.flatMap((job) => [
+						job.name,
+						...(job.steps || [])
+							.filter((step) =>
+								['failure', 'cancelled', 'timed_out', 'action_required'].includes(String(step.conclusion || '').toLowerCase()),
+							)
+							.map((step) => step.name),
+					])
+					.filter(Boolean)
+					.join(' ');
+				return { ...run, failureText };
+			} catch {
+				return run;
+			}
+		}),
+	);
+}
+
 export async function runValidator({
 	token,
 	repository,
@@ -298,12 +359,17 @@ export async function runValidator({
 
 	if (!resolution.pr) return buildResult({ resolution, mergeSha: sha });
 
-	const [pr, issueComments, reviewComments, reviews, runsResponse] = await Promise.all([
-		apiRequest({ token, repository, path: `/pulls/${resolution.pr}` }),
+	const pr = await apiRequest({ token, repository, path: `/pulls/${resolution.pr}` });
+	const prHeadSha = pr.head?.sha || '';
+
+	const [issueComments, reviewComments, reviews, mergeRunsResponse, headRunsResponse] = await Promise.all([
 		paginate({ token, repository, path: `/issues/${resolution.pr}/comments` }),
 		paginate({ token, repository, path: `/pulls/${resolution.pr}/comments` }),
 		paginate({ token, repository, path: `/pulls/${resolution.pr}/reviews` }),
 		apiRequest({ token, repository, path: `/actions/runs?head_sha=${encodeURIComponent(sha)}&per_page=100` }),
+		prHeadSha
+			? apiRequest({ token, repository, path: `/actions/runs?head_sha=${encodeURIComponent(prHeadSha)}&per_page=100` })
+			: { workflow_runs: [] },
 	]);
 
 	const normalizedPr = {
@@ -319,7 +385,9 @@ export async function runValidator({
 	const filesExist = (filePath) => fs.existsSync(path.join(workspace, filePath));
 	const metadata = metadataFailures(normalizedPr, filesExist);
 	const findings = reviewerFindings({ pr: normalizedPr, issueComments, reviewComments, reviews });
-	const failures = workflowFailures({ runs: runsResponse.workflow_runs || [], prBody: normalizedPr.body, currentRunId: runId });
+	const runs = latestRunsByWorkflow(uniqueRuns(mergeRunsResponse.workflow_runs, headRunsResponse.workflow_runs));
+	const enrichedRuns = await enrichFailedRuns({ token, repository, runs, currentRunId: runId });
+	const failures = workflowFailures({ runs: enrichedRuns, prBody: normalizedPr.body, currentRunId: runId });
 
 	return buildResult({ pr: normalizedPr, resolution, metadata, findings, failures, mergeSha: sha });
 }
