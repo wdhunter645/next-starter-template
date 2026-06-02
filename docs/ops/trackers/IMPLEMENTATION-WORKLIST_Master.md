@@ -487,21 +487,33 @@ Issue/PR trace:
 - Implementation PR: #1171
 
 ## T41 — Admin operating shell and member operations
-Status: ACTIVE
+Status: CLOSED
+Date Closed: 2026-06-01
 Issue: #1119
 Owner: Cursor
 Scope: `/admin`, `/admin/join-requests`, admin stats/worklist/member-operation surfaces.
 Exit: admin operations have launch-safe navigation, member queue visibility, and stable empty/error states.
+Summary:
+Admin operating shell and member operations merged with admin Worklist and Member Operations pages, shared admin token tooling, dashboard/nav updates, stats API hardening, and focused admin operations coverage.
+Issue/PR trace:
+- Implementation PR: #1174
 
 ## T42 — Moderation and review workflows
-Status: QUEUED
+Status: CLOSED
+Date Closed: 2026-06-01
 Issue: #1120
+Owner: Cursor
 Scope: `/admin/moderation`, reports APIs, ask/FAQ moderation state transitions, review queues.
 Exit: moderation/review workflows expose actionable queues and preserve auditable approval, rejection, archive, and close states.
+Summary:
+Moderation and review workflows merged with /admin/moderation, admin report route wrappers, deterministic report/FAQ transition responses, admin nav/dashboard links, and focused moderation tests.
+Issue/PR trace:
+- Implementation PR: #1176
 
 ## T43 — Content management workflows
-Status: QUEUED
+Status: ACTIVE
 Issue: #1121
+Owner: Cursor
 Scope: `/admin/cms`, `/admin/content`, content save/publish/list APIs.
 Exit: admin content management supports safe draft/list/publish operations without bypassing content authority.
 
