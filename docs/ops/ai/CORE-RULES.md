@@ -141,7 +141,7 @@ Before making any claim, agents MUST:
 - read task-relevant design, architecture, governance, or implementation-plan files linked from the source Issue
 - inspect the actual changed files and live PR state before readiness or closeout claims
 
-Tracker files are read only when the source Issue explicitly includes tracker governance, tracker reconciliation, or tracker/status-index edits in scope.
+Tracker files may be read for verification when relevant. Tracker files are updated only when the source Issue explicitly includes tracker governance, tracker reconciliation, or tracker/status-index edits in scope.
 
 Fact handling (mandatory):
 
@@ -291,6 +291,7 @@ STOP immediately if:
 
 - authority conflict exists
 - scope is unclear
+- repo state is unclear
 - required source Issue is missing
 - changed-file allowlist is missing
 - live PR state cannot be verified for a readiness claim
