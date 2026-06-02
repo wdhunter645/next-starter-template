@@ -12,144 +12,254 @@ Last Reviewed: 2026-06-02
 
 ## Purpose
 
-This document preserves the design history behind the Lou Gehrig Fan Club website so implementation agents understand not only what the current design rules are, but why those rules exist.
+This document preserves the historical design decisions behind the Lou Gehrig Fan Club website so implementation agents understand the intended end state instead of filling documentation gaps with local assumptions.
 
-The canonical design rules remain in `/docs/reference/design/LGFC-Production-Design-and-Standards.md`. This document is supporting explanation. It should be read before implementing or revising public, Fan Club, admin, homepage, or navigation work because it explains the intended end state and the decisions that led there.
+The canonical rules remain in `/docs/reference/design/LGFC-Production-Design-and-Standards.md`. This document explains why the current direction exists and how agents should interpret ambiguous implementation choices.
 
 ## Scope
 
 This document covers:
 
 - the original product direction and why it changed
-- the reasoning behind the public / Fan Club / admin separation
-- the reasoning behind the canonical homepage order
-- the reasoning behind route consolidation and retired legacy routes
-- the reasoning behind external vendor boundaries such as Bonfire, Givebutter, Elfsight, Backblaze B2, and Cloudflare D1
-- the intended visual and editorial feel of the site
-- how agents should resolve design gaps without inventing new direction
+- the recurring Lou Gehrig content collection strategy
+- the newspaper-style presentation goal for the public homepage and Fan Club member home
+- the admin area as the operating cockpit for content, members, moderation, media, events, fundraising, matchups, and reporting
+- the public / Fan Club / admin separation
+- route consolidation and retired route aliases
+- bounded vendor integrations
+- how agents should handle design gaps without inventing new product direction
 
-This document does not authorize new routes, features, visual redesigns, data models, or vendor integrations. When this rationale appears to conflict with canonical design authority, the canonical design authority wins and this document should be updated by a documentation PR.
+This document does not authorize new routes, features, data models, vendors, UI redesigns, or implementation scope. If this rationale conflicts with canonical design authority, the canonical authority wins and this document must be corrected.
 
 ## Current Known Truth
 
-The LGFC website is intended to be a stable, durable, public-facing fan club website with a protected member area and a protected admin operating area.
+The LGFC website is a durable, story-centric fan club platform, not a generic club template, not a social-media clone, and not a SaaS dashboard.
 
-The current product direction is not a generic club template, not a social-media clone, and not a modern SaaS dashboard. It is a historically grounded, story-centric fan club site that uses simple, reliable web patterns and a long-term editorial model.
+The product is built around three connected operating ideas:
 
-The implementation must preserve these core outcomes:
+1. **Recurring content collection** — continuously gather, classify, review, and reuse Lou Gehrig-related content over time.
+2. **Newspaper-style presentation** — present the public homepage and Fan Club member home as curated editorial surfaces, not random dashboards.
+3. **Admin operating cockpit** — provide protected tools that let the club operate content, members, moderation, media, events, fundraising, matchups, and reports without leaking admin patterns into public UI.
 
-1. Public visitors immediately understand the Lou Gehrig Fan Club identity.
-2. Visitors can join, search, read, support, and learn without confusion.
-3. Members have a simple Fan Club home and member-specific pages.
-4. Admins have operational tools without leaking admin affordances into public navigation.
-5. Homepage content feels curated and newspaper-like, not randomly assembled.
-6. Data-backed content can grow over time without forcing a redesign.
-7. Vendor integrations remain bounded and replaceable.
-8. The site remains simple enough to maintain for years.
+These three ideas are the missing context behind many design decisions.
 
 ## Intended Final State
 
-The end goal is a visually consistent LGFC website organized around three stable operating zones:
+The end state is a stable LGFC website with three zones:
 
-| Zone | Purpose | Design Intent |
+| Zone | Purpose | Intended feel |
 |---|---|---|
-| Public site | Tell the story, invite participation, expose public content | classic, clear, dignified, story-first |
-| Fan Club area | Give members identity, archive access, submission and discussion entry points | simple, gated, member-centered |
-| Admin area | Operate content, moderation, media, members, events, fundraising, and reports | functional, protected, not public-facing |
+| Public site | Explain the club, tell Lou Gehrig stories, invite participation | classic, clear, dignified, story-first |
+| Fan Club member area | Give members a curated club newspaper/home, profile identity, archive access, participation entry points | member-centered, editorial, simple, protected |
+| Admin area | Operate the site and content pipeline | functional, protected, evidence-driven, tool-based |
 
-Agents should treat implementation gaps as documentation defects first. If the canonical docs are silent, agents should not invent new product direction. They should implement the narrowest behavior consistent with this rationale and create a documentation follow-up when uncertainty remains.
+Agents should treat implementation gaps as documentation defects first. If the docs are silent, agents must not invent a new product direction to close the gap.
+
+---
+
+# Core Design Pillars
+
+## Pillar 1 — Recurring Content Collection
+
+The project evolved toward a continuous content collection model. The site is not meant to be a static brochure. It is meant to gather, preserve, organize, and resurface Lou Gehrig-related material over many years.
+
+Content may include:
+
+- historical stories
+- milestone dates
+- quotes
+- photographs
+- memorabilia references
+- member-submitted memories or discoveries
+- campaign/fundraiser material
+- event records
+- archive/library entries
+- social/community discussion prompts
+
+## Why this matters
+
+Lou Gehrig content is recurring, seasonal, and archival. The same story may be useful in multiple contexts:
+
+- homepage feature
+- Fan Club member newspaper item
+- milestone entry
+- archive/library result
+- search result
+- anniversary rotation
+- social discussion prompt
+- future fundraiser or awareness campaign
+
+A one-page or one-section content model would fragment this material. The design therefore shifted toward a story-centric inventory where content can be reused through tags, dates, allowed sections, priorities, rotation metadata, and editorial decisions.
+
+## Implementation consequence
+
+Agents must not create one-off content silos for individual sections when the content belongs in the recurring collection model.
+
+When implementing CMS/content work, agents should preserve the concept of a central story/content inventory that can feed multiple presentation surfaces. Page-specific display is allowed; page-specific content ownership is not the intended long-term model unless design authority explicitly changes.
+
+---
+
+## Pillar 2 — Newspaper-Style Presentation
+
+The public homepage and Fan Club member home are intended to feel like curated club newspaper surfaces.
+
+This does not mean copying a printed newspaper literally. It means the page should have editorial hierarchy, recurring features, story blocks, timely items, community signals, and archive paths.
+
+## Public homepage newspaper role
+
+The public homepage introduces the club to visitors and should answer:
+
+- What is this club?
+- Why does Lou Gehrig matter here?
+- What is happening now?
+- How do I join or participate?
+- What stories, milestones, events, friends, and discussions show that this club is alive?
+
+The fixed homepage order supports that editorial rhythm.
+
+## Fan Club member home newspaper role
+
+The Fan Club home is not intended to become a generic account dashboard.
+
+It should become the member-facing club newspaper: a protected, curated member surface that can show club activity, member-relevant updates, featured archive material, discussion entry points, submission opportunities, milestones, and selected content drawn from the recurring content inventory.
+
+The member home can contain operational links, but its design intent is editorial membership experience first, control panel second.
+
+## Why this matters
+
+Without this context, an agent may implement `/fanclub` as a dashboard full of cards, counters, utility links, and generic app widgets. That technically satisfies a protected member page, but it misses the product goal.
+
+The member home should feel like entering the club, not like opening admin software.
+
+## Implementation consequence
+
+Agents working on Fan Club pages should avoid generic dashboard bloat. Member home changes should preserve:
+
+- curated editorial sections
+- simple member navigation
+- protected access
+- links into archives, submissions, discussions, and profile identity
+- consistent public-site visual language
+- no admin-only tooling or administrative controls
+
+If a functional member action is needed, it should be presented as part of the member club experience, not as a dense operations dashboard.
+
+---
+
+## Pillar 3 — Admin Operating Cockpit
+
+The admin area is where the site is operated. It is intentionally different from the public and member experience.
+
+Admin tooling should support:
+
+- join request/member operations
+- content inventory management
+- editorial review
+- submission review
+- moderation
+- media/B2 asset management
+- calendar/event administration
+- fundraiser/spotlight administration
+- weekly matchup administration
+- audit/reporting/export surfaces
+- operational evidence and fail-closed validation
+
+## Why this matters
+
+The public site and Fan Club home are presentation surfaces. The admin area is the operating surface.
+
+A recurring content model only works if admins have clear tools to ingest, review, classify, approve, publish, rotate, and audit content. The admin system is therefore not optional decoration; it is the cockpit for running the club.
+
+## Implementation consequence
+
+Agents should keep admin tools inside `/admin/**` and should make them functional, safe, and auditable.
+
+Admin pages may be utilitarian. They do not need to mimic the public newspaper presentation. They do need:
+
+- clear queues
+- clear states
+- deterministic actions
+- safe empty and error states
+- protected admin access
+- no leakage into public navigation
+- clear relationship to the content/member/media/event/fundraiser/matchup/reporting systems they operate
+
+If an implementation requires a control or workflow, the correct default location is admin, not public header, public footer, or Fan Club member navigation.
 
 ---
 
 # Design Evolution Timeline
 
-## 1. Initial Direction: A Fan Club Website With Broad Possibility
+## 1. Initial Direction: Broad Fan Club Platform
 
-The original project direction was expansive. The site could have become a broad fan platform with memberships, posts, galleries, voting, social features, store links, charity features, historical material, and future fan clubs for other figures.
+The project began with broad potential: membership, content, photos, social features, store links, charity/fundraising, historical material, member participation, and eventual expansion to other legacy-driven fan clubs.
 
-The early design goal was not just to make a website. The goal was to create a durable fan club ecosystem that could honor Lou Gehrig, support community participation, preserve stories, and eventually support other legacy-driven fan clubs.
+## Why the direction changed
 
-This broad possibility created a risk: too many features could make the first launch unstable, confusing, or hard to maintain.
+The broad vision created launch risk. Too many simultaneous surfaces would make the site hard to validate and easy for agents to drift.
 
-## Why the direction shifted
+The direction shifted to a launchable Day 1 foundation:
 
-The project shifted toward a Day 1 launch model because durability requires a stable foundation before expansion. The immediate site needed to be understandable, testable, and maintainable.
-
-The design therefore moved from "build every possible fan club feature" to "build a stable public site, protected member area, and protected admin operating layer."
-
-The decision was made to prioritize:
-
-- route clarity
-- header/footer stability
-- homepage section order
-- member gating
-- admin gating
-- fail-closed runtime behavior
-- reliable content storage
-- editorial scalability
+- stable public site
+- protected Fan Club member area
+- protected admin area
+- fixed homepage order
+- bounded vendor integrations
+- recurring content strategy
+- clear content/admin/member separation
 
 ## Implementation consequence
 
-Agents should not add new feature surfaces because they seem useful. New features must fit the existing public / Fan Club / admin model and must be tracked as explicit tasks.
+Agents should not add broad fan-platform features just because they seem aligned with the long-term vision. New features must be scoped, sequenced, and placed in the correct zone.
 
 ---
 
-## 2. Route Consolidation: Reducing Drift and Dead Ends
+## 2. Route Consolidation: Reducing Drift
 
-Earlier planning included or implied several possible routes, including separate member pages, photo pages, library pages, news pages, support pages, store pages, and other aliases.
+Earlier planning allowed or implied multiple aliases and page concepts. The project later consolidated routes into fewer canonical paths.
 
-The design later consolidated those routes into fewer canonical paths.
+## Why the direction changed
 
-## Why the direction shifted
+Route sprawl caused agents to build parallel surfaces. A route could be technically useful but product-confusing.
 
-Too many route aliases created navigation drift, duplicate implementation surfaces, and unclear ownership. Agents could satisfy one document while accidentally building a different version of the product.
+The site therefore locked:
 
-The project therefore locked a smaller route set:
-
-- public pages for general visitors
-- `/fanclub/**` for authenticated member content
-- `/admin/**` for protected operations
-- external Bonfire store instead of an internal `/store` route
-- contact page instead of separate support navigation
+- public routes for general visitors
+- `/fanclub/**` for authenticated member surfaces
+- `/admin/**` for protected operating tools
+- external Bonfire store instead of internal `/store`
+- Contact instead of separate Support navigation
 
 ## Implementation consequence
 
-Agents must not revive retired aliases or create convenience routes unless canonical design authority changes first.
-
-A missing or awkward route should be treated as a design documentation question, not as permission to add a new route.
+Agents must not revive retired aliases or add convenience routes unless canonical design authority changes first.
 
 ---
 
-## 3. Public Navigation: Simple Actions, No Public Clutter
+## 3. Public Navigation: Small Action Row
 
-The public header evolved toward a small action set:
+The public header evolved into a small set of high-value visitor actions:
 
 - Join
 - Search
 - Store
 - Login
 
-For logged-in users browsing public pages, Join becomes Club Home and Login becomes Logout.
+For logged-in users, Join becomes Club Home and Login becomes Logout.
 
-## Why the direction shifted
+## Why the direction changed
 
-The public site needed to stay approachable. The header should not expose the entire site architecture. It should give visitors the main actions without turning the header into a sitemap.
-
-Admin links were intentionally removed from public navigation because admin is an operational area, not a public destination.
-
-Support was consolidated into Contact because separate support navigation created unnecessary complexity for a small launch site.
+The public header should orient visitors, not expose the whole architecture. It should remain clear and restrained.
 
 ## Implementation consequence
 
-Agents should preserve the header as a small, stable action row on desktop/tablet and a hamburger drawer on mobile. The header must not become a dumping ground for new sections.
+Agents should not add admin links, support links, archive sprawl, or section links to the public header. New site areas should not automatically become header buttons.
 
 ---
 
-## 4. Fan Club Navigation: Member Identity Without Dashboard Bloat
+## 4. Fan Club Navigation: Member Experience, Not SaaS Dashboard
 
-The Fan Club area evolved from a possible member dashboard into a simpler member home and member navigation model.
-
-The core Fan Club navigation became:
+The Fan Club navigation evolved into:
 
 - Club Home
 - My Profile
@@ -157,37 +267,33 @@ The core Fan Club navigation became:
 - Store
 - Logout
 
-## Why the direction shifted
+## Why the direction changed
 
-A heavy dashboard would make the site feel like an application before the core public and content surfaces were stable. The Fan Club area should feel like a protected extension of the public fan club, not a separate SaaS product.
+The member area should feel like a protected club experience. It should not become a dense dashboard or admin-lite surface.
 
-Membership card behavior was moved into the profile/member experience instead of becoming a sprawling separate identity system.
-
-Memorabilia was defined as a tagged or filtered view of photos/content rather than a separate standalone data model.
+The member home is intended to become a member newspaper/home base supported by recurring content and participation entry points.
 
 ## Implementation consequence
 
-Agents should implement Fan Club features as simple, gated member experiences. Do not create heavy dashboard mechanics, unrelated analytics widgets, or separate member subsystems unless explicitly tasked.
+Agents should keep Fan Club navigation simple and should not add admin-style operations to member navigation.
 
 ---
 
-## 5. Admin Area: Operational Tools, Not Public Design
+## 5. Admin Area: Tooling Layer
 
-The admin area evolved into a protected operations zone for member operations, moderation, content, media, events, fundraising, matchups, and reporting.
+The admin area evolved into the place where club operations happen.
 
-## Why the direction shifted
+## Why the direction changed
 
-The public site and Fan Club site need polish and narrative clarity. Admin tools need safety, auditability, empty states, and error states. These are different design goals.
-
-Mixing admin links or admin patterns into public UI would confuse users and create security and trust risks.
+The club needs protected tools for content and operations, but those tools should not distort the public or member experience.
 
 ## Implementation consequence
 
-Agents should keep admin affordances inside `/admin/**`. Admin UI can be utilitarian. Public UI should not be reshaped to accommodate admin workflows.
+Agents should build admin workflows as bounded tools inside `/admin/**`. Public and member surfaces should consume the outputs of admin workflows, not expose the controls.
 
 ---
 
-## 6. Homepage: From General Landing Page to Story-Centric Newspaper Model
+## 6. Homepage: Public Newspaper Front Page
 
 The homepage evolved into a fixed editorial sequence:
 
@@ -205,214 +311,164 @@ The homepage evolved into a fixed editorial sequence:
 12. FAQ/Ask
 13. Footer
 
-## Why the direction shifted
+## Why the direction changed
 
-The homepage needed to do more than welcome visitors. It needed to explain the club, show activity, expose Lou Gehrig content, invite membership, and keep the site alive over time.
+The homepage needed to introduce the club, highlight timely material, show interaction, invite joining, provide historical grounding, show community activity, and offer visitor intake.
 
-A newspaper-like sequence provides editorial structure:
-
-- hero identity first
-- timely spotlight when needed
-- interactive weekly feature
-- membership invitation
-- historical grounding
-- social proof and community activity
-- partner/friend visibility
-- milestones and calendar context
-- FAQ and visitor intake
-
-This sequence prevents agents from moving sections based on local component convenience.
+The sequence behaves like a front page. It should not be rearranged for component convenience.
 
 ## Implementation consequence
 
-Agents should not reorder homepage sections to solve spacing, data, or component problems. If a section has no active content, it should fail closed, show a safe empty state, or remain a hidden slot if that is the documented behavior.
+Agents should not reorder homepage sections to solve local layout or data issues. If content is missing, use a documented hidden slot, safe empty state, or fail-closed behavior.
 
 ---
 
-## 7. Spotlight Slot: Temporary Priority Without Permanent Redesign
+## 7. Spotlight Slot: Temporary Priority Without Redesign
 
-The Spotlight slot was created for time-bound campaigns such as fundraiser announcements, holidays, Lou Gehrig Day, or other high-priority club notices.
+The Spotlight slot exists for time-bound priority content such as fundraisers, holidays, Lou Gehrig Day, campaign notices, or other important club moments.
 
-## Why the direction shifted
+## Why the direction changed
 
-The site needed a way to highlight urgent or seasonal material without redesigning the homepage each time. The Spotlight slot solves that by reserving a place near the top of the page while staying hidden when inactive.
+The site needed a way to elevate urgent material without redesigning the homepage each time.
 
 ## Implementation consequence
 
-Agents must not remove the Spotlight slot because it is currently inactive. Hidden-by-default is intentional. Spotlight should remain optional and fail-closed.
+Agents must not remove the slot when inactive. Hidden-by-default is intentional.
 
 ---
 
 ## 8. Store Boundary: Bonfire Is External
 
-The LGFC Store is Bonfire. The site does not own a native store route or checkout.
+Bonfire is the LGFC Store. The LGFC site does not own native commerce or checkout.
 
-## Why the direction shifted
+## Why the direction changed
 
-An internal store would add payment, fulfillment, tax, inventory, and security burdens. Bonfire handles the commerce layer while the LGFC site provides clear outbound navigation.
+Native commerce would add unnecessary payment, tax, inventory, fulfillment, and security burden.
 
 ## Implementation consequence
 
-Agents must not create `/store` unless canonical design changes. Store links should remain external Bonfire links.
+Agents must not create internal store routes or checkout flows unless canonical design authority changes.
 
 ---
 
 ## 9. Fundraising Boundary: Givebutter Handles Funds
 
-Fundraising uses Givebutter. LGFC does not handle funds directly.
+Fundraising uses Givebutter. LGFC does not directly handle funds.
 
-## Why the direction shifted
+## Why the direction changed
 
-This preserves trust, reduces compliance risk, and keeps the LGFC site focused on presentation, campaign visibility, and public context rather than payment processing.
-
-## Implementation consequence
-
-Agents should treat fundraiser content as campaign display and admin preview/validation work, not as native donation processing.
-
----
-
-## 10. Social Wall Boundary: Elfsight Is an Embed, Not Core Infrastructure
-
-The Social Wall uses Elfsight to surface external social activity.
-
-## Why the direction shifted
-
-The site needed social proof without building and maintaining multiple social platform integrations. Elfsight provides a bounded embed layer.
+This preserves trust and reduces compliance and payment-processing risk.
 
 ## Implementation consequence
 
-Agents should keep Social Wall behavior fail-safe. If external embed behavior varies, the LGFC page should remain stable.
+Fundraiser work should be campaign presentation, spotlight support, leaderboard/reporting where scoped, and admin validation tooling. It should not become native donation processing.
 
 ---
 
-## 11. Data Direction: Cloudflare D1 and Backblaze B2
+## 10. Social Wall Boundary: Elfsight Is an Embed
 
-The project moved toward Cloudflare D1 for structured data and Backblaze B2 for media assets.
+The Social Wall uses Elfsight as a bounded external embed.
 
-## Why the direction shifted
+## Why the direction changed
 
-The site needed simple, durable infrastructure aligned with Cloudflare Pages. D1 supports structured operational and editorial data. B2 supports media storage without tying image inventory to the application bundle.
-
-The design direction intentionally avoids overbuilding a complex backend before launch.
+The site needs social proof and current external activity without maintaining direct integrations to every social platform.
 
 ## Implementation consequence
 
-Agents should prefer existing D1/B2 contracts and fail-closed handling. Do not introduce new storage systems or parallel tables unless an explicit data authority document exists.
+Agents should keep Social Wall behavior fail-safe and should not let embed limitations destabilize the page.
 
 ---
 
-## 12. Content Strategy: Story Tags Instead of Section-Specific Content Silos
+## 11. Data Direction: D1 and B2 Support the Editorial System
 
-The content model evolved toward a story-centric inventory. A story can appear in multiple contexts through tags, allowed sections, priority, date fields, and editorial metadata.
+Cloudflare D1 supports structured data. Backblaze B2 supports media assets.
 
-## Why the direction shifted
+## Why the direction changed
 
-Lou Gehrig content is historical, recurring, and seasonal. A single story may matter as a milestone, homepage feature, archive item, search result, or anniversary item.
+The recurring content collection and newspaper presentation require durable content and media sources without bundling everything into the application.
 
-Per-section true/false fields or independent content stores would eventually fragment the archive and make editorial rotation harder.
+D1 and B2 support a simple but expandable architecture.
 
 ## Implementation consequence
 
-Agents should not create separate content silos for each page. Content management work should preserve a central content inventory model and use metadata to determine placement.
+Agents should prefer existing D1/B2 contracts and fail-closed behavior. Do not introduce parallel storage systems or new tables unless a design/data authority document explicitly requires them.
 
 ---
 
-## 13. Member Submissions: Intake First, Manual Editorial Judgment Later
+## 12. Member Submissions: Intake, Triage, Review
 
-Member submissions evolved into an intake-and-review model rather than direct publication.
+Member submissions evolved into a queue-based intake model.
 
-## Why the direction shifted
+## Why the direction changed
 
-Member participation is valuable, but factual accuracy, relevance, media rights, spam control, and editorial quality require review.
+The club should encourage member participation, but factual accuracy, rights, relevance, spam control, and editorial quality require review.
 
-Automation may triage objective issues, but final content judgment remains manual.
+Automation may triage objective issues, but final content decisions remain manual.
 
 ## Implementation consequence
 
-Agents should not auto-publish member-submitted content. Submissions should enter a queue, receive objective triage, and wait for admin/editorial approval.
+Agents should not auto-publish member submissions. Submissions should feed admin review and then, if approved, become part of the recurring content collection.
 
 ---
 
-## 14. Visual Direction: Classic, Dignified, Structured, Not Trend-Driven
+## 13. Visual Direction: Classic, Dignified, Structured
 
-The visual design evolved toward a classic and restrained presentation:
+The visual direction is restrained and historically grounded:
 
 - LGFC blue as the primary brand color
 - white cards on a light page background
-- centered section titles
-- simple button rows
-- clear spacing between homepage sections
-- a sticky header
-- a homepage/FanClub-root floating logo behavior
-- small, stable footer with quote, logo, and legal/contact links
+- clear section rhythm
+- centered section titles where appropriate
+- simple action buttons
+- sticky header
+- homepage/Fan Club root floating logo behavior
+- stable footer with quote, logo, and legal/contact links
 
-## Why the direction shifted
+## Why the direction changed
 
-The site is about Lou Gehrig, baseball history, character, ALS awareness, and community. Trend-heavy layouts, excessive animations, dense dashboards, or modern SaaS styling work against that tone.
-
-The desired feel is closer to a carefully maintained fan club newspaper/archive than a startup landing page.
+The site honors Lou Gehrig, baseball history, character, ALS awareness, and community. Trend-heavy layouts, generic dashboards, and excessive app chrome work against that identity.
 
 ## Implementation consequence
 
-Agents should avoid visual reinterpretation when implementing functionality. If UI must be added, it should use existing card, button, section-title, spacing, and LGFC blue patterns.
+Agents should use existing visual language when adding or repairing UI. Functional work must not gradually transform the site into a generic dashboard product.
 
 ---
 
-## 15. Why Design Drift Happens
+# How Agents Should Resolve Gaps
 
-Design drift occurs when agents correctly follow a narrow written rule but miss the broader historical intent.
+When a gap appears, agents must ask:
 
-Examples:
+1. Does this preserve the recurring content collection model?
+2. Does this preserve the newspaper-style public or member presentation?
+3. Does this keep admin tooling inside `/admin/**`?
+4. Does this preserve public / Fan Club / admin separation?
+5. Does this avoid route aliases and feature sprawl?
+6. Does this use bounded vendor integrations correctly?
+7. Does this fail closed if data or an external service is unavailable?
+8. Does this strengthen the long-term editorial archive rather than fragment it?
 
-- A route can be technically valid but revive a retired navigation model.
-- A section can be present but visually inconsistent with the homepage rhythm.
-- A card can render correctly but feel like an admin panel instead of public storytelling.
-- A feature can pass tests while moving the site toward a generic app interface.
-- A convenience link can solve a local issue while violating the public / Fan Club / admin separation.
+If the answer is uncertain, the correct action is documentation clarification before implementation expansion.
 
-## Implementation consequence
+# Required Reading Order for Design-Sensitive Work
 
-When an implementation gap appears, agents should ask:
-
-1. Does this preserve the public / Fan Club / admin separation?
-2. Does this preserve the newspaper-like homepage sequence?
-3. Does this preserve a classic LGFC visual tone?
-4. Does this avoid new routes or data models?
-5. Does this fail closed if external services or data are unavailable?
-6. Does this keep admin workflows out of public navigation?
-7. Does this strengthen the long-term editorial archive rather than fragment it?
-
-If the answer is uncertain, the correct next step is a documentation update, not an invented implementation pattern.
-
----
-
-# Agent Usage Rules
-
-Agents implementing LGFC work must use this document as rationale context with the canonical design docs.
-
-Required reading order for design-sensitive website tasks:
+Agents implementing design-sensitive LGFC work must read:
 
 1. `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
-2. `/docs/reference/design/home.md` when homepage or section layout is touched
-3. `/docs/reference/design/fanclub.md` and `/docs/reference/design/fanclub-home.md` when Fan Club routes are touched
-4. `/docs/reference/architecture/access-model.md` when auth/admin/Fan Club access is touched
-5. this document for historical rationale and end-state interpretation
+2. the relevant route/page design reference
+3. `/docs/reference/architecture/access-model.md` when access or auth is involved
+4. this document for rationale and end-state interpretation
 
-Agents must not treat this document as permission to bypass canonical design authority. It exists to reduce ambiguity when the canonical rules are close but not expressive enough to explain intent.
-
-# Design Correction Workflow
-
-When drift is detected:
-
-1. Identify the exact implementation surface that drifted.
-2. Identify the canonical design rule that applies.
-3. If the rule exists but lacks visual or historical context, update the design docs first.
-4. Create a scoped implementation task that corrects only the documented drift.
-5. Do not redesign adjacent surfaces.
-6. Do not add new routes, vendors, workflows, or data tables as part of drift correction.
+This document is supporting rationale. It does not override canonical design authority.
 
 # Summary
 
-The LGFC website end state is a durable, historically grounded, story-centric fan club site with clear public, member, and admin zones. The project has intentionally moved away from route sprawl, generic dashboards, unbounded feature growth, and agent-invented layouts.
+The LGFC design direction is not merely a set of routes and buttons. It is a long-term operating model:
 
-The design target is simple but not vague: classic LGFC identity, fixed homepage editorial sequence, bounded vendor integrations, protected member/admin zones, and a content model capable of preserving Lou Gehrig stories over many years.
+- recurring Lou Gehrig content collection
+- public and member newspaper-style presentation
+- protected admin tooling to operate the content and club workflows
+- bounded vendor integrations
+- simple navigation
+- durable editorial growth
+
+Implementation agents must preserve that model. A local gap must not be solved by inventing a new direction.
