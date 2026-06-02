@@ -13,6 +13,7 @@ on:
         type: string
 
 permissions:
+  actions: read
   contents: read
   pull-requests: read
   issues: write
@@ -20,131 +21,57 @@ permissions:
 jobs:
   detect:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           ref: main
 
-      - name: Resolve PR
-        id: pr
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate merged PR
+        id: validate
         env:
-          GH_TOKEN: ${{ github.token }}
-          EVENT_NAME: ${{ github.event_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
           INPUT_PR_NUMBER: ${{ inputs.pr_number }}
           EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
           EVENT_PR_MERGED: ${{ github.event.pull_request.merged }}
           EVENT_PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
-        run: |
-          PR=""
-          METHOD="none"
-          SKIP_REASON="none"
-          if [ "$EVENT_NAME" = "pull_request_target" ]; then
-            METHOD="pull_request_target"
-            if [ "$EVENT_PR_MERGED" = "true" ] && [ "$EVENT_PR_BASE_REF" = "main" ]; then
-              PR="$EVENT_PR_NUMBER"
-            else
-              SKIP_REASON="closed PR was not merged into main"
-            fi
-          elif [ "$EVENT_NAME" = "workflow_dispatch" ] && [ -n "$INPUT_PR_NUMBER" ]; then
-            METHOD="workflow_dispatch"
-            PR="$INPUT_PR_NUMBER"
-          else
-            METHOD="commit-pulls-api"
-            PR=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" -H 'Accept: application/vnd.github+json' --jq 'map(select(.state == "closed" and .merged_at != null and .base.ref == "main"))[0].number // ""')
-            if [ -z "$PR" ]; then
-              SKIP_REASON="no merged PR associated with commit"
-            fi
-          fi
-          echo "pr=$PR" >> "$GITHUB_OUTPUT"
-          echo "method=$METHOD" >> "$GITHUB_OUTPUT"
-          echo "skip_reason=$SKIP_REASON" >> "$GITHUB_OUTPUT"
-          echo "Resolved PR: ${PR:-none}; method=${METHOD}; skip=${SKIP_REASON}"
+        run: node scripts/ci/post_merge_validator.mjs
 
-      - name: Skip run without eligible merged PR
-        if: steps.pr.outputs.pr == ''
-        run: echo "Post-merge checks skipped: ${{ steps.pr.outputs.skip_reason }}"
-
-      - name: Collect PR metadata
-        if: steps.pr.outputs.pr != ''
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh pr view "${{ steps.pr.outputs.pr }}" --json body,files,mergeCommit,isDraft,mergedAt,baseRefName > pr.json
-          jq -e 'if (.isDraft == true or .mergedAt == null or .baseRefName != "main") then error("Resolved PR is not a merged PR into main") else true end' pr.json > /dev/null
-          jq -r '.body // ""' pr.json > body.md
-          jq -r '.files[].path' pr.json > files.txt
-
-      - name: Evaluate merged PR metadata
-        if: steps.pr.outputs.pr != ''
-        id: verify
-        run: |
-          failures=0
-          missing_sections=""
-          if grep -Eqi '\b(TODO|TBD|placeholder)\b' body.md; then
-            failures=$((failures+1))
-            missing_sections="${missing_sections} forbidden-placeholder-token"
-          fi
-          for req in '## CHANGE SUMMARY' '## BUILD / TEST / VERIFICATION' '## ACCEPTANCE CRITERIA' '## REQUIRED PRE-REVIEW SELF-CHECK'; do
-            if ! grep -Fq "$req" body.md; then
-              failures=$((failures+1))
-              missing_sections="${missing_sections} ${req}"
-            fi
-          done
-          missing_files=0
-          while IFS= read -r f; do
-            [ -z "$f" ] && continue
-            [ -e "$f" ] || missing_files=$((missing_files+1))
-          done < files.txt
-          failures=$((failures+missing_files))
-          echo "failures=$failures" >> "$GITHUB_OUTPUT"
-          echo "missing_files=$missing_files" >> "$GITHUB_OUTPUT"
-          echo "missing_sections=${missing_sections}" >> "$GITHUB_OUTPUT"
-
-      - name: Audit late reviewer findings
-        if: steps.pr.outputs.pr != ''
-        id: reviewer_audit
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          PR_NUMBER: ${{ steps.pr.outputs.pr }}
-        run: node scripts/ci/post_merge_reviewer_audit.mjs
+      - name: Upload validation result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-merge-validation-result
+          path: |
+            post-merge-result.json
+            post-merge-result.md
+          if-no-files-found: warn
 
       - name: Comment result
-        if: always() && steps.pr.outputs.pr != ''
+        if: always() && steps.validate.outputs.pr_number != ''
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          failures="${{ steps.verify.outputs.failures }}"
-          [ -n "$failures" ] || failures="unknown"
-          late_findings="${{ steps.reviewer_audit.outputs.late_findings }}"
-          [ -n "$late_findings" ] || late_findings="unknown"
-          audit_issue="${{ steps.reviewer_audit.outputs.audit_issue }}"
-          [ -n "$audit_issue" ] || audit_issue="none"
-          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          gh pr comment "${{ steps.pr.outputs.pr }}" --body "Post-merge validation result: failures=${failures}
-
-- Event: ${GITHUB_EVENT_NAME}
-- Commit: ${GITHUB_SHA}
-- Resolution method: ${{ steps.pr.outputs.method }}
-- Run URL: ${run_url}
-- Late reviewer findings: ${late_findings}
-- Reviewer follow-up issue: ${audit_issue}" || true
+        run: gh pr comment "${{ steps.validate.outputs.pr_number }}" --body-file post-merge-result.md || true
 
       - name: Sync orchestrator post-merge state
-        if: steps.pr.outputs.pr != ''
+        if: always() && steps.validate.outputs.pr_number != ''
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          PR_NUMBER: ${{ steps.pr.outputs.pr }}
-          SYNC_ACTION: ${{ steps.verify.outputs.failures == '0' && steps.reviewer_audit.outputs.late_findings == '0' && 'post_merge_success' || 'post_merge_failure' }}
+          PR_NUMBER: ${{ steps.validate.outputs.pr_number }}
+          SYNC_ACTION: ${{ steps.validate.outputs.sync_action }}
         run: node scripts/orchestrator/sync-pr-state.mjs
 
-      - name: Fail if needed
-        if: steps.pr.outputs.pr != ''
-        run: |
-          if [ "${{ steps.verify.outputs.failures }}" != "0" ]; then
-            exit 1
-          fi
-          if [ "${{ steps.reviewer_audit.outputs.late_findings }}" != "0" ]; then
-            exit 1
+      - name: Fail if validation failed
+        if: always() && steps.validate.outputs.status == 'fail'
+        run: exit 1
