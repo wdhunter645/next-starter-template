@@ -39,6 +39,8 @@ Tracker files are historical/status indexes. Agents may read tracker files for v
 5. Agent-specific rules
 6. Task prompt
 
+This entrypoint defines the active read order for current repository work. Older cross-agent or tracker documents remain supporting references unless the source issue explicitly scopes tracker governance, tracker reconciliation, or status-index maintenance.
+
 If conflict exists → follow highest authority.
 
 ---
