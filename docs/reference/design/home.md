@@ -5,12 +5,14 @@ Authority Level: Controlled
 Owns: Homepage section layout and component mapping
 Does Not Own: Component implementation; global navigation standards
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Last Reviewed: 2026-03-27
+Last Reviewed: 2026-06-02
 ---
 
 # Homepage Layout
 
 The homepage uses a fixed canonical section order.
+
+Design-sensitive homepage work must also read `/docs/explanation/lgfc-design-evolution.md` for historical rationale and end-state intent. That explanation document does not override canonical design authority; it prevents agents from filling documentation gaps with invented product direction.
 
 ---
 
@@ -66,3 +68,4 @@ The following sections are currently implemented inline in `src/app/page.tsx` an
 - `/docs/reference/design/home-friends.md`
 - `/docs/reference/design/home-milestones.md`
 - `/docs/reference/design/home-calendar.md`
+- `/docs/explanation/lgfc-design-evolution.md`
