@@ -1,4 +1,13 @@
 import { requireMember } from "../../_lib/session";
+import { jsonResponse, requireTables } from "../../_lib/d1";
+
+function slugifyTag(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
 
 export const onRequestPost = async (context: any): Promise<Response> => {
   const auth = await requireMember(context);
@@ -10,6 +19,9 @@ export const onRequestPost = async (context: any): Promise<Response> => {
   }
 
   try {
+    const tables = await requireTables(auth.db, ["submission_queue"]);
+    if (!tables.ok) return jsonResponse(tables.body, tables.status);
+
     const body = await context.request.json().catch(() => null);
 
     if (!body || typeof body !== "object") {
@@ -22,6 +34,9 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     const name = String((body as any).name ?? "").trim();
     const title = String((body as any).title ?? "").trim();
     const content = String((body as any).content ?? "").trim();
+    const sourceUrl = String((body as any).source_url ?? "").trim() || null;
+    const mediaUrl = String((body as any).media_url ?? "").trim() || null;
+    const proposedTag = slugifyTag(String((body as any).proposed_tag ?? title).trim());
 
     // email is derived from the authenticated session — never trust client input
     const email = auth.email;
@@ -41,9 +56,11 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     }
 
     const result = await auth.db.prepare(
-      "INSERT INTO library_entries (name, email, title, content) VALUES (?, ?, ?, ?);"
+      `INSERT INTO submission_queue
+        (submitted_by, title, description, source_url, proposed_tag, media_url, status)
+       VALUES (?, ?, ?, ?, ?, ?, 'pending');`
     )
-      .bind(name, email, title, content)
+      .bind(`${name} <${email}>`, title, content, sourceUrl, proposedTag || null, mediaUrl)
       .run();
 
     const insertedId =
@@ -54,7 +71,7 @@ export const onRequestPost = async (context: any): Promise<Response> => {
         {
           ok: true,
           id: insertedId,
-          message: "Library entry stored",
+          message: "Submission queued for editorial review",
         },
         null,
         2
