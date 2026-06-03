@@ -77,3 +77,5 @@ Result summary: PASS
 - Browser install is required once per environment for e2e (`npx playwright install chromium`).
 - Attach `reports/launch-readiness/summary.md` from a post-T48 `npm run launch-readiness` run for operational records.
 <!-- CURSOR_AGENT_PR_BODY_END -->
+
+<!-- closeout-trigger: 2026-06-03 -->
