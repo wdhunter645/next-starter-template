@@ -12,11 +12,11 @@ Last Reviewed: 2026-06-03
 
 This document records the repeatable workflow demonstrated by PR #1200 so Cursor, Codex, and ChatGPT/Atlas can move future PRs to a clean gate state using the same operating pattern.
 
-## Trigger
+## Execution
 
 Use this workflow for every implementation, CI, governance, or website PR before claiming the PR is ready for review or ready to merge.
 
-Do not treat a PR as clean because the visible check list is mostly green. A PR is clean only when the PR body, changed-file allowlist, local checks, remote checks, reviewer accounting, and source-issue accounting all agree.
+Do not treat a PR as clean because the visible checklist is mostly green. A PR is clean only when the PR body, changed-file allowlist, local checks, remote checks, reviewer accounting, and source-issue accounting all agree.
 
 ## Required execution sequence
 
@@ -126,7 +126,7 @@ npm run typecheck
 npm test
 npx prettier --check <changed-workflow-script-test-files>
 git diff --check
-if compgen -G "*.zip" > /dev/null; then echo "Root ZIP file present"; false; else echo "No root ZIP files present"; fi
+if ls *.zip >/dev/null 2>&1; then echo "Root ZIP file present"; false; else echo "No root ZIP files present"; fi
 ```
 
 For workflow validators or GitHub-state scripts, run the validator locally with explicit environment variables when safe and token scope is available. Record the exact command in the PR body.
