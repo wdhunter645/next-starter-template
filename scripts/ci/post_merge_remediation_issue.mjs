@@ -2,6 +2,7 @@
 
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
+import { githubRepoRequest } from './github_issue_api.mjs';
 
 export function remediationTitle(result) {
 	const pr = result?.pr ? `PR #${result.pr}` : `merge ${String(result?.merge_sha || 'unknown').slice(0, 12)}`;
@@ -52,24 +53,8 @@ export function remediationBody(result) {
 	return `${lines.join('\n')}\n`;
 }
 
-async function request({ token, repository, path, method = 'GET', body }) {
-	const response = await fetch(`https://api.github.com/repos/${repository}${path}`, {
-		method,
-		headers: {
-			Authorization: `Bearer ${token}`,
-			Accept: 'application/vnd.github+json',
-			'X-GitHub-Api-Version': '2022-11-28',
-			'User-Agent': 'lgfc-post-merge-remediation',
-			...(body ? { 'Content-Type': 'application/json' } : {}),
-		},
-		...(body ? { body: JSON.stringify(body) } : {}),
-	});
-
-	if (!response.ok) {
-		throw new Error(`${method} ${path} failed: ${response.status} ${await response.text()}`);
-	}
-
-	return response.status === 204 ? null : response.json();
+function request(args) {
+	return githubRepoRequest({ ...args, userAgent: 'lgfc-post-merge-remediation' });
 }
 
 export async function upsertRemediationIssue({ token, repository, result }) {

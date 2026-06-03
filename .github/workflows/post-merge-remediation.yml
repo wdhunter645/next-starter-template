@@ -37,3 +37,9 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           POST_MERGE_RESULT_PATH: post-merge-validation-result/post-merge-result.json
         run: node scripts/ci/post_merge_remediation_issue.mjs
+
+      - name: Close duplicate remediation issues
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node scripts/ci/close_duplicate_remediation_issues.mjs
