@@ -431,8 +431,7 @@ describe('orchestrator queue advancement', () => {
 
 		expect(result).toBe('remediation');
 		expect(transitions.map((transition) => transition.slice(1, 3))).toEqual([
-			['status:failed', null],
-			[null, 'status:post-merge-verify'],
+			['status:failed', 'status:post-merge-verify'],
 		]);
 		expect(run).not.toHaveBeenCalled();
 	});

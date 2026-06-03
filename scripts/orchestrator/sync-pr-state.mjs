@@ -100,8 +100,12 @@ export function syncPrState({ pr, prNumber, action, setStatusFn = setStatus, run
   }
 
   if (action === 'post_merge_remediation') {
-    setStatusFn(issueNumber, 'status:failed', null, null);
-    setStatusFn(issueNumber, null, 'status:post-merge-verify', `Post-merge validation passed for PR #${prNumber}, but remediation remains required. Source issue remains open: ${pr.url}`);
+    setStatusFn(
+      issueNumber,
+      'status:failed',
+      'status:post-merge-verify',
+      `Post-merge validation passed for PR #${prNumber}, but remediation remains required. Source issue remains open: ${pr.url}`,
+    );
     return 'remediation';
   }
 
