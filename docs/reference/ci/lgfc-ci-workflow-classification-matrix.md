@@ -51,7 +51,7 @@ Workflow should be removed once replacement coverage exists.
 | gate-zip-safety.yml | ZIP blocker | Merge Protection | Assimilated | Absorbed into `gate-quality.yml` during Task 002 |
 | gate-drift.yml | Drift enforcement | Scope advisor + post-merge audit | Rebuild | Remove timing-sensitive merge blocking |
 | gate-intent-labeler.yml | Intent labeling | PR Hygiene | Rebuild | Corrective/advisory instead of blocking |
-| reviewer-response-completion.yml | Reviewer lifecycle enforcement | Reviewer audit | Rebuild | Remove brittle synchronous logic |
+| reviewer-response-completion.yml | Reviewer lifecycle enforcement | Reviewer audit + protected-scope gate | Rebuild | Task 003 removes timing/PR-body brittle blocking; protected CI scope only |
 | design-compliance-warn.yml | Advisory PR warnings | PR Hygiene + post-merge audit | Rebuild | Convert to corrective guidance |
 | docs-guardrails.yml | Docs governance | Merge Protection + PR Hygiene | Rebuild | Add deterministic auto-fix capability |
 | diataxis-folder-authority-check.yml | Docs placement validation | PR Hygiene | Assimilate | Fold into docs correction system |
