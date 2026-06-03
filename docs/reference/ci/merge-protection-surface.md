@@ -57,11 +57,9 @@ required status checks unless they are explicitly reclassified.
 
 ## Validation
 
-Run the repository inventory validator:
-
-```bash
-node scripts/ci/merge_protection_surface.mjs
-```
+The repository inventory validator lives at
+`scripts/ci/merge_protection_surface.mjs`. Run it from the repository root
+during CI Task 002 verification and post-merge closeout.
 
 ## Rollback
 
