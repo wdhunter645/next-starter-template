@@ -281,15 +281,19 @@ grep -r "workflow_call" .github/workflows/gate-*.yml .github/workflows/ops-*.yml
 
 ## Branch Protection Configuration
 
-**After merging this PR,** update Branch Protection settings for `main` to include **only** GATE workflows as required status checks.
+**After merging Task 002 merge-protection consolidation,** update Branch Protection settings for `main` to include the consolidated deterministic merge-protection checks documented in `docs/reference/ci/merge-protection-surface.md`.
 
-### Required Status Checks (GATE workflows only)
+### Required Status Checks (merge protection only)
 
 Add these to "Require status checks to pass before merging":
-- `GATE — Drift Control`
-- `GATE — Intent Labeler`
-- `GATE — ZIP Safety`
-- `GATE — Quality Checks`
+- `quality` (`GATE — Quality Checks`)
+- `gitleaks` (`GATE — Secret Scan`)
+- `pr-issue-accounting` (`GATE — PR Issue Accounting`)
+
+Retire this check if it is still listed:
+- `check-no-zip-files` (`GATE — ZIP Safety`) — assimilated into `quality`
+
+Other GATE workflows such as drift control, intent labeler, and reviewer lifecycle remain outside this consolidated surface until their dedicated CI redesign tasks land.
 
 ### DO NOT Include (OPS workflows)
 

@@ -1,4 +1,4 @@
-name: Secret Scan (gitleaks)
+name: GATE — Secret Scan
 
 'on':
   pull_request:
