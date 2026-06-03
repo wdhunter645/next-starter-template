@@ -163,21 +163,21 @@ describe('admin matchup page', () => {
             ok: true,
             active: {
               id: 2,
-              week_start: '2026-06-02',
+              week_start: '2026-06-01',
               photo_a_id: 10,
               photo_b_id: 11,
               status: 'active',
-              created_at: '2026-06-02T12:00:00Z',
+              created_at: '2026-06-01T12:00:00Z',
               votes: { a: 3, b: 5, total: 8, winner: 'b' },
             },
             items: [
               {
                 id: 2,
-                week_start: '2026-06-02',
+                week_start: '2026-06-01',
                 photo_a_id: 10,
                 photo_b_id: 11,
                 status: 'active',
-                created_at: '2026-06-02T12:00:00Z',
+                created_at: '2026-06-01T12:00:00Z',
                 votes: { a: 3, b: 5, total: 8, winner: 'b' },
               },
             ],
@@ -189,7 +189,7 @@ describe('admin matchup page', () => {
         return Promise.resolve(
           jsonResponse({
             ok: true,
-            week_start: '2026-06-02',
+            week_start: '2026-06-01',
             matchup_id: 2,
             items: [
               { id: 10, url: '/photos/10.jpg' },
@@ -201,7 +201,7 @@ describe('admin matchup page', () => {
 
       if (path.startsWith('/api/matchup/results')) {
         return Promise.resolve(
-          jsonResponse({ ok: true, week_start: '2026-06-02', totals: { a: 3, b: 5 }, last_week: null }),
+          jsonResponse({ ok: true, week_start: '2026-06-01', totals: { a: 3, b: 5 }, last_week: null }),
         );
       }
 
@@ -213,7 +213,7 @@ describe('admin matchup page', () => {
     expect(screen.getByRole('link', { name: 'Matchup' })).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByText(/Active matchup: week 2026-06-02/i)).toBeInTheDocument();
+      expect(screen.getByText(/Active matchup: week 2026-06-01/i)).toBeInTheDocument();
     });
   });
 
@@ -256,7 +256,7 @@ describe('admin matchup page', () => {
       if (path === '/api/admin/matchup/create') {
         expect(init?.method).toBe('POST');
         const body = JSON.parse(String(init?.body));
-        expect(body.week_start).toBe('2026-06-09');
+        expect(body.week_start).toBe('2026-06-08');
         expect(body.photo_a_id).toBe(21);
         expect(body.photo_b_id).toBe(22);
         return Promise.resolve(jsonResponse({ ok: true, id: 9 }));
@@ -281,7 +281,7 @@ describe('admin matchup page', () => {
       expect(screen.getByText(/No matchup records found/i)).toBeInTheDocument();
     });
 
-    fireEvent.change(screen.getByLabelText(/Week start/i), { target: { value: '2026-06-09' } });
+    fireEvent.change(screen.getByLabelText(/Week start/i), { target: { value: '2026-06-08' } });
     fireEvent.change(screen.getByLabelText('Photo A ID'), { target: { value: '21' } });
     fireEvent.change(screen.getByLabelText('Photo B ID'), { target: { value: '22' } });
     fireEvent.click(screen.getByRole('button', { name: 'Create matchup' }));
@@ -310,14 +310,14 @@ describe('admin matchup APIs', () => {
       [
         {
           id: 1,
-          week_start: '2026-06-02',
+          week_start: '2026-06-01',
           photo_a_id: 10,
           photo_b_id: 11,
           status: 'active',
-          created_at: '2026-06-02T12:00:00Z',
+          created_at: '2026-06-01T12:00:00Z',
         },
       ],
-      { '2026-06-02': { a: 4, b: 2 } },
+      { '2026-06-01': { a: 4, b: 2 } },
     );
 
     const response = await matchupListGet({
@@ -328,7 +328,7 @@ describe('admin matchup APIs', () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
       ok: true,
-      active: { week_start: '2026-06-02', votes: { a: 4, b: 2, winner: 'a' } },
+      active: { week_start: '2026-06-01', votes: { a: 4, b: 2, winner: 'a' } },
     });
   });
 
@@ -337,7 +337,7 @@ describe('admin matchup APIs', () => {
 
     const createResponse = await matchupCreatePost({
       request: adminPostRequest('/api/admin/matchup/create', {
-        week_start: '2026-06-09',
+        week_start: '2026-06-08',
         photo_a_id: 3,
         photo_b_id: 4,
         status: 'closed',
@@ -350,7 +350,7 @@ describe('admin matchup APIs', () => {
 
     const duplicate = await matchupCreatePost({
       request: adminPostRequest('/api/admin/matchup/create', {
-        week_start: '2026-06-09',
+        week_start: '2026-06-08',
         photo_a_id: 5,
         photo_b_id: 6,
       }),
@@ -364,19 +364,19 @@ describe('admin matchup APIs', () => {
     const { db, matchups } = makeMatchupDb([
       {
         id: 1,
-        week_start: '2026-06-02',
+        week_start: '2026-06-01',
         photo_a_id: 10,
         photo_b_id: 11,
         status: 'active',
-        created_at: '2026-06-02T12:00:00Z',
+        created_at: '2026-06-01T12:00:00Z',
       },
       {
         id: 2,
-        week_start: '2026-06-09',
+        week_start: '2026-06-08',
         photo_a_id: 20,
         photo_b_id: 21,
         status: 'closed',
-        created_at: '2026-06-09T12:00:00Z',
+        created_at: '2026-06-08T12:00:00Z',
       },
     ]);
 
@@ -394,11 +394,11 @@ describe('admin matchup APIs', () => {
     const { db, matchups } = makeMatchupDb([
       {
         id: 3,
-        week_start: '2026-06-02',
+        week_start: '2026-06-01',
         photo_a_id: 10,
         photo_b_id: 11,
         status: 'active',
-        created_at: '2026-06-02T12:00:00Z',
+        created_at: '2026-06-01T12:00:00Z',
       },
     ]);
 
@@ -429,7 +429,7 @@ describe('public matchup read paths', () => {
           all: async () => ({ results: [] }),
         }),
         first: async () => {
-          if (sql.includes("date('now'")) return { week_start: '2026-06-02' };
+          if (sql.includes("date('now'")) return { week_start: '2026-06-01' };
           return null;
         },
       })),
