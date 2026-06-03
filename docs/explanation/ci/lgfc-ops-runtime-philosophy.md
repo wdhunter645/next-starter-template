@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: OPS runtime philosophy, operational monitoring model, self-healing operational design
 Does Not Own: Specific operational workflow implementation
 Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related Issues: #1058
+Related Issues: #1198, #1058
 Last Reviewed: 2026-05-21
 ---
 
@@ -125,3 +125,18 @@ The repository gains:
 - operational recovery capability
 - improved troubleshooting visibility
 - long-term production stability
+
+## Current Known Truth
+
+Task 005 implementation issue #1198 establishes the consolidated OPS runtime
+surface documented in `docs/reference/ci/ops-runtime-surface.md`.
+
+The current model uses:
+
+- consolidated `OPS —` workflow naming across runtime monitoring workflows
+- `scripts/ci/ops_runtime_escalation.mjs` for shared runtime failure escalation
+- `scripts/ci/ops_runtime_surface.mjs` for surface inventory validation
+- capped Cloudflare Pages retry visibility in `ops-cf-pages-retry.yml`
+
+OPS runtime workflows remain separated from merge protection and post-merge
+validation authority.

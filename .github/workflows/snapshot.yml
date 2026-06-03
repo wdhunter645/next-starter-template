@@ -1,4 +1,4 @@
-name: Snapshot Backup (Repo + Cloudflare Pages)
+name: OPS — Snapshot Backup
 
 on:
   schedule:
@@ -17,6 +17,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   repo_snapshot:
@@ -40,6 +41,30 @@ jobs:
             snapshots/repo-snapshot-*.json
             snapshots/_smoketest.txt
           retention-days: 90
+
+      - name: Write repo snapshot summary
+        if: always()
+        run: |
+          {
+            echo "## OPS — Snapshot Backup"
+            echo "- Repo snapshot job: ${{ job.status }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Setup Node for repo escalation
+        if: failure()
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - name: Open repo snapshot escalation issue
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          OPS_ESCALATION_WORKFLOW: OPS — Snapshot Backup
+          OPS_ESCALATION_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          OPS_ESCALATION_DETAILS: Repository snapshot script failed. Rollback evidence may be incomplete until snapshot recovery succeeds.
+          OPS_ESCALATION_LABELS: ops-runtime-failure,snapshot-failure
+        run: node scripts/ci/ops_runtime_escalation.mjs
 
   cloudflare_pages_snapshot:
     runs-on: ubuntu-latest
@@ -67,3 +92,28 @@ jobs:
             snapshots/cloudflare/_smoketest.txt
             snapshots/cloudflare/README.md
           retention-days: 90
+
+      - name: Write Cloudflare snapshot summary
+        if: always()
+        run: |
+          {
+            echo "## OPS — Snapshot Backup"
+            echo "- Cloudflare snapshot job: ${{ job.status }}"
+            echo "- Snapshot created: ${{ steps.cf_snapshot.outputs.snapshot_created || 'unknown' }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Setup Node for Cloudflare escalation
+        if: failure()
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - name: Open Cloudflare snapshot escalation issue
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          OPS_ESCALATION_WORKFLOW: OPS — Snapshot Backup
+          OPS_ESCALATION_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          OPS_ESCALATION_DETAILS: Cloudflare Pages snapshot script failed. Deployment rollback evidence may be incomplete.
+          OPS_ESCALATION_LABELS: ops-runtime-failure,snapshot-failure
+        run: node scripts/ci/ops_runtime_escalation.mjs

@@ -58,7 +58,9 @@ Workflow should be removed once replacement coverage exists.
 | diataxis-post-merge-validate.yml | Post-merge docs validation | Post-Merge Validation | Keep/Rebuild | Expand evidence reporting |
 | ops-pr-issue-accounting.yml | Source issue enforcement | Merge Protection | Keep/Rebuild | Use tolerant parser model |
 | ops-assess.yml | Site assessment | OPS Runtime | Keep | Current operational assessment base |
-| production-audit.yml | Production invariants | OPS Runtime + Post-Merge Validation | Rebuild | Consolidate operational reporting |
+| production-audit.yml | Production invariants | OPS Runtime | Rebuild | Task 005 consolidated naming and runtime escalation evidence |
+| b2-s3-smoke-test.yml | B2 smoke test | OPS Runtime | Assimilated | Task 005 OPS naming and shared escalation |
+| b2-d1-daily-sync.yml | B2/D1 sync | OPS Runtime | Assimilated | Task 005 OPS naming and shared escalation |
 | ops-design-compliance-audit.yml | Design audit | Post-Merge Validation | Keep/Rebuild | Expand implementation-verification role |
 | post-merge-intent-verification.yml | Post-merge metadata validation | Post-Merge Validation | Rebuild | Current YAML instability must be fixed |
 | post-merge-remediation.yml | Remediation workflow | Post-Merge Validation | Keep/Rebuild | Expand remediation issue generation |
