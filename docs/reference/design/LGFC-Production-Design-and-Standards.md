@@ -265,7 +265,7 @@ Homepage sections are locked to this order:
   - User selects one option
   - Vote submitted via API
   - Current-week totals display after the user has voted
-  - Last closed week totals and winner may display when available
+  - Last closed week totals and winner may display after the user has voted when last-week data is available
   - Content rotates weekly (operational process)
 
 ---
