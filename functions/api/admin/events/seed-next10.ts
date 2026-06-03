@@ -1,4 +1,8 @@
+// POST /api/admin/events/seed-next10
+// Admin-only. Inserts placeholder events for the next 10 days when D1 is configured.
+
 import { requireAdmin } from "../../../_lib/auth";
+import { requireD1, requireTables, jsonResponse } from "../../../_lib/d1";
 
 export const onRequestPost = async (context: any): Promise<Response> => {
   const { env, request } = context;
@@ -6,9 +10,30 @@ export const onRequestPost = async (context: any): Promise<Response> => {
   const deny = requireAdmin(request, env);
   if (deny) return deny;
 
+  const d1 = requireD1(env);
+  if (!d1.ok) return jsonResponse(d1.body, d1.status);
+
+  const tables = await requireTables(d1.db, ["events"]);
+  if (!tables.ok) return jsonResponse(tables.body, tables.status);
+
   try {
-    // Insert 10 events for the next 10 days (UTC), posted status.
-    // Safe for day-1: duplicates are acceptable; this is placeholders.
+    const existing = await d1.db
+      .prepare("SELECT COUNT(*) AS n FROM events WHERE status='posted' AND start_date >= date('now');")
+      .first();
+    const upcomingPosted = Number((existing as { n?: number })?.n || 0);
+
+    if (upcomingPosted > 0) {
+      return jsonResponse(
+        {
+          ok: true,
+          inserted: 0,
+          upcoming_posted: upcomingPosted,
+          note: "Upcoming posted events already exist; seed skipped to avoid duplicate placeholders.",
+        },
+        200,
+      );
+    }
+
     const sql = `
       INSERT INTO events (title, start_date, end_date, location, host, fees, description, external_url, status)
       VALUES
@@ -24,20 +49,23 @@ export const onRequestPost = async (context: any): Promise<Response> => {
         ('LGFC Placeholder Event 10', date('now','+10 day'), date('now','+10 day'), 'LGFC', 'Fan Club', 'Free', 'Placeholder event for calendar display (replace with real content later).', 'https://www.lougehrigfanclub.com', 'posted');
     `;
 
-    await env.DB.prepare(sql).run();
+    await d1.db.prepare(sql).run();
 
-    const countRow = await env.DB.prepare(
-      "SELECT COUNT(*) AS n FROM events WHERE status='posted' AND start_date >= date('now');"
-    ).first();
+    const countRow = await d1.db
+      .prepare("SELECT COUNT(*) AS n FROM events WHERE status='posted' AND start_date >= date('now');")
+      .first();
 
-    return new Response(JSON.stringify({ ok: true, inserted: 10, upcoming_posted: Number((countRow as any)?.n || 0) }, null, 2), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        ok: true,
+        inserted: 10,
+        upcoming_posted: Number((countRow as any)?.n || 0),
+        note: "Placeholder events inserted. Replace with real calendar content when ready.",
+      },
+      200,
+    );
   } catch (err: any) {
-    return new Response(JSON.stringify({ ok: false, error: String(err?.message ?? err) }, null, 2), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    console.error("admin events seed error:", err);
+    return jsonResponse({ ok: false, error: "seed_failed", detail: String(err?.message ?? err) }, 500);
   }
 };

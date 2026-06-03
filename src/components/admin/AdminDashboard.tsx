@@ -99,6 +99,11 @@ export default function AdminDashboard() {
           <div className={styles.cardBody}>Review member submissions and publish content_inventory records.</div>
         </a>
 
+        <a className={styles.card} href="/admin/events">
+          <div className={styles.cardTitle}>Event Calendar</div>
+          <div className={styles.cardBody}>Create, update, and seed events for the public calendar.</div>
+        </a>
+
         <a className={styles.card} href="/admin/fundraiser-preview">
           <div className={styles.cardTitle}>Fundraiser Preview</div>
           <div className={styles.cardBody}>Build and validate the conditional homepage campaign spotlight in the gated admin area.</div>
