@@ -1,14 +1,8 @@
 name: GATE — Reviewer Response
 
-# TEMPORARILY DISABLED
-#
-# Source issue: #1055
-# Reason: the gate is blocking fresh PRs before any trusted reviewer signal exists.
-# This workflow should remain disabled until reviewer-response behavior is redesigned
-# and validated in a dedicated remediation PR.
-#
-# Do not re-enable pull_request, pull_request_review, pull_request_review_comment,
-# or issue_comment triggers until #1055 is resolved.
+# Superseded by Task 003 reviewer lifecycle redesign.
+# Active enforcement lives in reviewer-response-completion.yml, which uses
+# scripts/ci/reviewer_lifecycle_gate.mjs for protected-scope blocking only.
 
 on:
   workflow_dispatch:
@@ -22,8 +16,8 @@ jobs:
   reviewer-response-disabled:
     runs-on: ubuntu-latest
     steps:
-      - name: Reviewer Response gate temporarily disabled
+      - name: Reviewer Response gate superseded
         run: |
-          echo "GATE — Reviewer Response is temporarily disabled under Issue #1055."
-          echo "Reason: current logic blocks PRs when no trusted reviewer signal exists."
-          echo "Re-enable only after the gate is redesigned and validated."
+          echo "GATE — Reviewer Response remains disabled."
+          echo "Use GATE — Reviewer Response Completion for Task 003 reviewer lifecycle enforcement."
+          echo "See docs/reference/ci/reviewer-lifecycle-surface.md"

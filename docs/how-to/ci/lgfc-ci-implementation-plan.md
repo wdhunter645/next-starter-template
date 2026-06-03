@@ -94,6 +94,10 @@ Goals:
 - preserve protected review enforcement
 - support asynchronous reviewers safely
 
+Canonical as-built reference:
+- `docs/reference/ci/reviewer-lifecycle-surface.md`
+- `scripts/ci/reviewer_lifecycle_gate.mjs`
+
 ### Phase 5 — Post-Merge Validation
 
 Goals:
