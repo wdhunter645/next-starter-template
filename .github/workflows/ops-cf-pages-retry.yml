@@ -89,6 +89,13 @@ jobs:
             fi
           done
 
-          echo "⚠️  Still failing after $MAX_RETRIES retry attempts"
-          echo "This is an optional recovery helper. Retry exhaustion is reported but does not fail the workflow."
+          echo "::warning title=Cloudflare Pages retry exhausted::Deployment $dep_id still failed after $MAX_RETRIES retry attempts. This optional recovery helper reports exhaustion without failing the workflow."
+          {
+            echo "## Cloudflare Pages retry exhausted"
+            echo ""
+            echo "- Deployment ID: $dep_id"
+            echo "- Retry attempts: $MAX_RETRIES"
+            echo "- Result: still failing after retry exhaustion"
+            echo "- Workflow behavior: non-blocking optional recovery helper"
+          } >> "$GITHUB_STEP_SUMMARY"
           exit 0
