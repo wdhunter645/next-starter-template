@@ -1,0 +1,92 @@
+{
+  "version": "1.0.0",
+  "description": "LGFC launch readiness static export and page marker contract (T50 / issue #1112).",
+  "requiredRoutes": [
+    "/",
+    "/about",
+    "/ask",
+    "/auth",
+    "/contact",
+    "/events",
+    "/faq",
+    "/health",
+    "/join",
+    "/login",
+    "/logout",
+    "/privacy",
+    "/search",
+    "/terms",
+    "/fanclub",
+    "/fanclub/chat",
+    "/fanclub/library",
+    "/fanclub/membercard",
+    "/fanclub/memorabilia",
+    "/fanclub/myprofile",
+    "/fanclub/photo",
+    "/fanclub/submit",
+    "/admin",
+    "/admin/audit",
+    "/admin/cms",
+    "/admin/content",
+    "/admin/d1-test",
+    "/admin/editorial",
+    "/admin/events",
+    "/admin/faq",
+    "/admin/fundraiser-preview",
+    "/admin/join-requests",
+    "/admin/media-assets",
+    "/admin/member-operations",
+    "/admin/moderation",
+    "/admin/worklist"
+  ],
+  "conditionalRoutes": [
+    "/admin/matchup"
+  ],
+  "forbiddenRoutes": [
+    "/store"
+  ],
+  "footerLinks": {
+    "required": [
+      { "label": "Privacy", "target": "/privacy/" },
+      { "label": "Terms", "target": "/terms/" },
+      { "label": "Contact", "target": "/contact/" }
+    ]
+  },
+  "pageMarkers": {
+    "/": {
+      "requiredHeadings": ["Welcome to the Lou Gehrig Fan Club"]
+    },
+    "/about": {
+      "requiredHeadings": ["About This Fan Club"]
+    },
+    "/faq": {
+      "requiredHeadings": ["FAQ"]
+    },
+    "/events": {
+      "requiredHeadings": ["Upcoming Events"]
+    }
+  },
+  "publicPlaywrightRoutes": [
+    "/",
+    "/about",
+    "/ask",
+    "/contact",
+    "/events",
+    "/faq",
+    "/join",
+    "/login",
+    "/search",
+    "/privacy",
+    "/terms"
+  ],
+  "fanclubPlaywrightRoutes": [
+    "/fanclub",
+    "/fanclub/myprofile",
+    "/fanclub/membercard",
+    "/fanclub/library",
+    "/fanclub/memorabilia",
+    "/fanclub/photo",
+    "/fanclub/submit",
+    "/fanclub/chat"
+  ]
+}

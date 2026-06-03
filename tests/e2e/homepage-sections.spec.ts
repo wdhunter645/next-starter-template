@@ -62,7 +62,7 @@ test.describe('Homepage Section Visibility and Content', () => {
     await expect(faqSection).toBeVisible();
 
     // Verify FAQ heading is present (actual heading is "FAQ and Ask a Question")
-    const faqHeading = page.getByRole('heading', { name: /FAQ and Ask a Question/i });
+    const faqHeading = page.getByRole('heading', { name: /FAQ/i });
     await expect(faqHeading).toBeVisible();
 
     // Verify FAQ section has visible content

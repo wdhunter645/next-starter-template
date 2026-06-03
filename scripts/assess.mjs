@@ -38,7 +38,7 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const ROOT_DIR = join(__dirname, '..');
-const MANIFEST_PATH = join(ROOT_DIR, 'docs/assess/manifest.json');
+const MANIFEST_PATH = join(ROOT_DIR, 'scripts/launch-readiness/manifest.json');
 const OUTPUT_DIR = join(ROOT_DIR, 'out');
 const REPORTS_DIR = join(ROOT_DIR, 'reports/assess');
 const REPORT_JSON = join(REPORTS_DIR, 'assess-report.json');
