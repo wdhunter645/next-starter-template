@@ -8,6 +8,9 @@ const REQUIRED_BODY_SECTIONS = [
 	'## CHANGE SUMMARY',
 	'## BUILD / TEST / VERIFICATION',
 	'## ACCEPTANCE CRITERIA',
+];
+
+const ADVISORY_BODY_SECTIONS = [
 	'## REQUIRED PRE-REVIEW SELF-CHECK',
 ];
 
@@ -85,6 +88,16 @@ export function metadataFailures(pr, filesExist = () => true) {
 		}
 	}
 
+	for (const section of ADVISORY_BODY_SECTIONS) {
+		if (!body.includes(section)) {
+			failures.push({
+				code: 'missing_advisory_section',
+				severity: 'advisory',
+				message: `Merged PR body is missing advisory section ${section}.`,
+			});
+		}
+	}
+
 	for (const file of pr?.files || []) {
 		const filePath = typeof file === 'string' ? file : file.path;
 		if (filePath && !filesExist(filePath)) {
@@ -93,6 +106,10 @@ export function metadataFailures(pr, filesExist = () => true) {
 	}
 
 	return failures;
+}
+
+export function blockingMetadataFailures(failures = []) {
+	return failures.filter((failure) => failure.severity !== 'advisory');
 }
 
 export function isResolvedText(body = '') {
@@ -207,7 +224,9 @@ export function buildResult({ pr = null, resolution, metadata = [], findings = [
 	}
 
 	const requiredWorkflowFailures = failures.filter((failure) => failure.required);
-	const status = metadata.length === 0 && findings.length === 0 && requiredWorkflowFailures.length === 0 ? 'pass' : 'fail';
+	const blockingMetadata = blockingMetadataFailures(metadata);
+	const status = blockingMetadata.length === 0 && findings.length === 0 && requiredWorkflowFailures.length === 0 ? 'pass' : 'fail';
+	const remediationRequired = metadata.length > 0 || findings.length > 0 || failures.length > 0;
 
 	return {
 		status,
@@ -216,10 +235,10 @@ export function buildResult({ pr = null, resolution, metadata = [], findings = [
 		source_issue: linkedIssueNumber(pr?.body || '') || null,
 		late_findings: findings.length,
 		workflow_failures: failures,
-		remediation_required: metadata.length > 0 || findings.length > 0 || failures.length > 0,
+		remediation_required: remediationRequired,
 		metadata_failures: metadata,
 		reviewer_findings: findings,
-		sync_action: status === 'pass' ? 'post_merge_success' : 'post_merge_failure',
+		sync_action: status === 'fail' ? 'post_merge_failure' : remediationRequired ? 'post_merge_remediation' : 'post_merge_success',
 	};
 }
 
