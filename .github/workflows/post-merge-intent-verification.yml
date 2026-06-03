@@ -1,8 +1,6 @@
 name: Post-Merge Detection
 
 on:
-  push:
-    branches: [main]
   pull_request_target:
     types: [closed]
   workflow_dispatch:
