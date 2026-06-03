@@ -1,5 +1,5 @@
 ---
-Doc Type: Design Authority
+Doc Type: Reference
 Audience: Human + AI
 Authority Level: Canonical
 Owns: Production behavior, routing rules, navigation invariants
