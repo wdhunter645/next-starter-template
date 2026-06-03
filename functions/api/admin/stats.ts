@@ -40,7 +40,8 @@ export const onRequestGet = async (context: any): Promise<Response> => {
     "footer_quotes",
     "membership_card_content",
     "welcome_email_content",
-    "admin_team_worklist"
+    "admin_team_worklist",
+    "reports",
   ];
   const counts: Record<string, number> = {};
   const unavailable: Record<string, string> = {};

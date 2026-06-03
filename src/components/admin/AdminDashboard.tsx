@@ -69,6 +69,11 @@ export default function AdminDashboard() {
           <div className={styles.cardBody}>Review reports, Ask submissions, and pending FAQ entries.</div>
         </a>
 
+        <a className={styles.card} href="/admin/audit">
+          <div className={styles.cardTitle}>Audit & Reporting</div>
+          <div className={styles.cardBody}>Operational stats, protected CSV exports, and report closeout evidence.</div>
+        </a>
+
         <a className={styles.card} href="/admin/join-requests">
           <div className={styles.cardTitle}>Join Requests</div>
           <div className={styles.cardBody}>View recent join requests captured from /join.</div>
