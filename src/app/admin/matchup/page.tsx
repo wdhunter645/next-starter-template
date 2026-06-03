@@ -157,8 +157,15 @@ export default function AdminMatchupPage() {
     const photo_a_id = Number(draft.photo_a_id);
     const photo_b_id = Number(draft.photo_b_id);
 
-    if (!week_start || !Number.isFinite(photo_a_id) || !Number.isFinite(photo_b_id)) {
-      setStatus('Create blocked. Week start and both photo IDs are required.');
+    if (
+      !week_start ||
+      !Number.isFinite(photo_a_id) ||
+      photo_a_id <= 0 ||
+      !Number.isFinite(photo_b_id) ||
+      photo_b_id <= 0 ||
+      photo_a_id === photo_b_id
+    ) {
+      setStatus('Create blocked. Week start and two distinct positive photo IDs are required.');
       return;
     }
 

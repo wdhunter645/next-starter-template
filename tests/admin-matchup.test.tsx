@@ -46,12 +46,75 @@ function adminPostRequest(path: string, body: unknown = {}, token = 'secret'): R
 }
 
 function makeMatchupDb(matchups: Array<Record<string, unknown>> = [], votes: Record<string, { a: number; b: number }> = {}) {
+  const makeRun = (sql: string, args: unknown[] = []) => async () => {
+    if (sql.includes("SET status='closed' WHERE status='active'") && sql.includes('AND id !=')) {
+      const keepId = Number(args[0]);
+      matchups.forEach((row) => {
+        if (row.status === 'active' && Number(row.id) !== keepId) {
+          row.status = 'closed';
+        }
+      });
+      return { meta: { changes: 1 } };
+    }
+    if (sql.includes("SET status='closed' WHERE status='active'")) {
+      matchups.forEach((row) => {
+        if (row.status === 'active') row.status = 'closed';
+      });
+      return { meta: { changes: 1 } };
+    }
+    if (sql.includes("SET status='active' WHERE id")) {
+      const target = matchups.find((row) => Number(row.id) === Number(args[0]));
+      if (target) target.status = 'active';
+      return { meta: { changes: 1 } };
+    }
+    if (sql.includes('INSERT INTO weekly_matchups')) {
+      const week_start = String(args[0]);
+      if (matchups.some((row) => String(row.week_start) === week_start)) {
+        throw new Error('UNIQUE constraint failed: weekly_matchups.week_start');
+      }
+      const id = matchups.length + 1;
+      matchups.push({
+        id,
+        week_start,
+        photo_a_id: args[1],
+        photo_b_id: args[2],
+        status: args[3],
+        created_at: '2026-06-03T12:00:00Z',
+      });
+      return { meta: { last_row_id: id, changes: 1 } };
+    }
+    if (sql.includes('UPDATE weekly_matchups')) {
+      const target = matchups.find((row) => Number(row.id) === Number(args[3]));
+      if (target) {
+        target.photo_a_id = args[0];
+        target.photo_b_id = args[1];
+        target.status = args[2];
+      }
+      return { meta: { changes: 1 } };
+    }
+    return { meta: { changes: 0 } };
+  };
+
   const db = {
     prepare: vi.fn((sql: string) => ({
       bind: (...args: unknown[]) => ({
         all: async () => {
           if (sql.includes('sqlite_master')) {
             return { results: [{ name: 'weekly_matchups' }, { name: 'weekly_votes' }] };
+          }
+          if (sql.includes('LEFT JOIN weekly_votes')) {
+            const limit = Number(args[0] ?? 50);
+            return {
+              results: matchups.slice(0, limit).map((row) => {
+                const week = String(row.week_start);
+                const totals = votes[week] || { a: 0, b: 0 };
+                return {
+                  ...row,
+                  a: totals.a,
+                  b: totals.b,
+                };
+              }),
+            };
           }
           if (sql.includes('FROM weekly_matchups') && sql.includes('LIMIT')) {
             return { results: matchups };
@@ -72,42 +135,10 @@ function makeMatchupDb(matchups: Array<Record<string, unknown>> = [], votes: Rec
           }
           return null;
         },
-        run: async () => {
-          if (sql.includes("SET status='closed' WHERE status='active'")) {
-            matchups.forEach((row) => {
-              if (row.status === 'active') row.status = 'closed';
-            });
-            return { meta: { changes: 1 } };
-          }
-          if (sql.includes('INSERT INTO weekly_matchups')) {
-            const week_start = String(args[0]);
-            if (matchups.some((row) => String(row.week_start) === week_start)) {
-              throw new Error('UNIQUE constraint failed: weekly_matchups.week_start');
-            }
-            const id = matchups.length + 1;
-            matchups.push({
-              id,
-              week_start,
-              photo_a_id: args[1],
-              photo_b_id: args[2],
-              status: args[3],
-              created_at: '2026-06-03T12:00:00Z',
-            });
-            return { meta: { last_row_id: id, changes: 1 } };
-          }
-          if (sql.includes('UPDATE weekly_matchups')) {
-            const target = matchups.find((row) => Number(row.id) === Number(args[3]));
-            if (target) {
-              target.photo_a_id = args[0];
-              target.photo_b_id = args[1];
-              target.status = args[2];
-            }
-            return { meta: { changes: 1 } };
-          }
-          return { meta: { changes: 0 } };
-        },
+        run: makeRun(sql, args),
       }),
       first: async () => matchups.find((row) => row.status === 'active') ?? null,
+      run: makeRun(sql),
     })),
   };
 
@@ -383,6 +414,14 @@ describe('admin matchup APIs', () => {
 
 describe('public matchup read paths', () => {
   it('returns empty items when no active matchup photos resolve', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const url = String(input);
+      if (url.includes('/api/photos/list') || url.includes('/api/photos/get')) {
+        return Promise.resolve(jsonResponse({ ok: true, items: [], item: null }));
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${url}`));
+    });
+
     const db = {
       prepare: vi.fn((sql: string) => ({
         bind: () => ({

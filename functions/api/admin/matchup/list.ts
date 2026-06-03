@@ -25,45 +25,41 @@ export const onRequestGet = async (context: any): Promise<Response> => {
 
     const rows = await d1.db
       .prepare(
-        `SELECT id, week_start, photo_a_id, photo_b_id, status, created_at
-         FROM weekly_matchups
-         ORDER BY week_start DESC, id DESC
+        `SELECT
+           m.id,
+           m.week_start,
+           m.photo_a_id,
+           m.photo_b_id,
+           m.status,
+           m.created_at,
+           COALESCE(SUM(CASE WHEN v.choice = 'a' THEN 1 ELSE 0 END), 0) AS a,
+           COALESCE(SUM(CASE WHEN v.choice = 'b' THEN 1 ELSE 0 END), 0) AS b
+         FROM weekly_matchups m
+         LEFT JOIN weekly_votes v ON v.week_start = m.week_start
+         GROUP BY m.id
+         ORDER BY m.week_start DESC, m.id DESC
          LIMIT ?`,
       )
       .bind(limit)
       .all();
 
-    const matchups = rows?.results || [];
-    const items = [];
+    const items = (rows?.results || []).map((row: any) => {
+      const a = Number(row.a || 0);
+      const b = Number(row.b || 0);
+      const winner = a === b ? 'tie' : a > b ? 'a' : 'b';
 
-    for (const row of matchups) {
-      const week_start = String((row as any).week_start || "");
-      const totalsRow = await d1.db
-        .prepare(
-          `SELECT SUM(CASE WHEN choice='a' THEN 1 ELSE 0 END) AS a,
-                  SUM(CASE WHEN choice='b' THEN 1 ELSE 0 END) AS b
-           FROM weekly_votes
-           WHERE week_start = ?`,
-        )
-        .bind(week_start)
-        .first();
-
-      const a = Number((totalsRow as any)?.a || 0);
-      const b = Number((totalsRow as any)?.b || 0);
-      const winner = a === b ? "tie" : a > b ? "a" : "b";
-
-      items.push({
-        id: Number((row as any).id),
-        week_start,
-        photo_a_id: Number((row as any).photo_a_id),
-        photo_b_id: Number((row as any).photo_b_id),
-        status: String((row as any).status || ""),
-        created_at: String((row as any).created_at || ""),
+      return {
+        id: Number(row.id),
+        week_start: String(row.week_start || ''),
+        photo_a_id: Number(row.photo_a_id),
+        photo_b_id: Number(row.photo_b_id),
+        status: String(row.status || ''),
+        created_at: String(row.created_at || ''),
         votes: { a, b, total: a + b, winner },
-      });
-    }
+      };
+    });
 
-    const active = items.find((item) => item.status === "active") || null;
+    const active = items.find((item: { status: string }) => item.status === "active") || null;
 
     return jsonResponse({ ok: true, active, items }, 200);
   } catch (err: any) {
@@ -73,5 +69,17 @@ export const onRequestGet = async (context: any): Promise<Response> => {
 };
 
 export function isValidWeekStart(value: string): boolean {
-  return DATE_RE.test(value);
+  if (!DATE_RE.test(value)) return false;
+
+  const [year, month, day] = value.split('-').map(Number);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  if (
+    parsed.getUTCFullYear() !== year ||
+    parsed.getUTCMonth() !== month - 1 ||
+    parsed.getUTCDate() !== day
+  ) {
+    return false;
+  }
+
+  return parsed.getUTCDay() === 1;
 }

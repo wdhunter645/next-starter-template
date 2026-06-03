@@ -42,19 +42,28 @@ export const onRequestPost = async (context: any): Promise<Response> => {
       return jsonResponse({ ok: false, error: "photo_ids_must_differ" }, 400);
     }
 
-    if (status === "active") {
-      await d1.db.prepare("UPDATE weekly_matchups SET status='closed' WHERE status='active';").run();
-    }
-
     const out = await d1.db
       .prepare(
         `INSERT INTO weekly_matchups (week_start, photo_a_id, photo_b_id, status)
          VALUES (?, ?, ?, ?)`,
       )
-      .bind(week_start, photo_a_id, photo_b_id, status)
+      .bind(week_start, photo_a_id, photo_b_id, "closed")
       .run();
 
-    return jsonResponse({ ok: true, id: out?.meta?.last_row_id ?? null }, 200);
+    const newId = Number(out?.meta?.last_row_id || 0);
+    if (status === "active") {
+      if (!Number.isFinite(newId) || newId <= 0) {
+        return jsonResponse({ ok: false, error: "server_error", detail: "missing_insert_id" }, 500);
+      }
+
+      await d1.db
+        .prepare("UPDATE weekly_matchups SET status='closed' WHERE status='active' AND id != ?")
+        .bind(newId)
+        .run();
+      await d1.db.prepare("UPDATE weekly_matchups SET status='active' WHERE id = ?").bind(newId).run();
+    }
+
+    return jsonResponse({ ok: true, id: newId || null }, 200);
   } catch (err: any) {
     const message = String(err?.message || err);
     if (message.includes("UNIQUE")) {
