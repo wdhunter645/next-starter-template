@@ -106,7 +106,9 @@ Submission flow: member uploads a photo; admin approval/publishing workflow is i
 
 **Purpose:** Written content related to Lou Gehrig, including stories, context, and supporting material tied to fan club photos and memorabilia.
 
-**D1 source of truth:** `library_entries`
+**D1 source of truth:** `content_inventory` (published rows allowed in the library section)
+
+**Legacy note:** `library_entries` remains Day 1 written-content history. New member-library reads use `content_inventory`; any migration off `library_entries` must follow the backfill/fallback rules in the canonical production design authority.
 
 ## Page Layout
 
@@ -139,8 +141,9 @@ Tabular or list-based view for written content.
 
 - `GET /api/fanclub/library?q=keyword&page=N`
 - Permission: member session required
-- Backed by D1 table: `library_entries`
-- Tagging and photo-linkage are required parts of the design contract
+- Backed by D1 table: `content_inventory` (published library-section rows)
+- `library_entries` may still exist for legacy written-content history but is not the active member-library read source after the T45 redesign
+- Tagging and photo-linkage remain required parts of the design contract through `content_inventory` metadata and related `photos` linkage
 
 ---
 
