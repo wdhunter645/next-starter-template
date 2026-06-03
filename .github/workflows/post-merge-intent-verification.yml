@@ -11,6 +11,11 @@ on:
         description: Pull request number to verify
         required: false
         type: string
+      apply_maintainer_body:
+        description: Apply Cursor maintainer PR body for an open PR
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   actions: read
@@ -19,7 +24,33 @@ permissions:
   issues: write
 
 jobs:
+  apply-maintainer-body:
+    if: github.event_name == 'workflow_dispatch' && inputs.apply_maintainer_body == true
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+      issues: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Apply Cursor maintainer PR body
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          APPLY_MAINTAINER_PR_BODY: 'true'
+          PR_NUMBER: ${{ inputs.pr_number }}
+        run: node scripts/ci/post_merge_validator.mjs
+
   detect:
+    if: github.event_name != 'workflow_dispatch' || inputs.apply_maintainer_body != true
     runs-on: ubuntu-latest
 
     steps:
