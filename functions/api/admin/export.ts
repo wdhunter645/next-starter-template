@@ -10,6 +10,14 @@ export const onRequestGet = async (context: any): Promise<Response> => {
   const deny = requireAdmin(request, env);
   if (deny) return deny;
 
+  const db = env.DB as any;
+  if (!db?.prepare) {
+    return new Response(JSON.stringify({ ok: false, error: "D1 binding is not configured." }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const url = new URL(request.url);
   const table = (url.searchParams.get("table") || "join_requests").trim();
 
@@ -22,8 +30,6 @@ export const onRequestGet = async (context: any): Promise<Response> => {
   }
 
   try {
-    const db = env.DB as any;
-
     const limit = Math.min(Number(url.searchParams.get("limit") || "5000"), 5000);
     const rows = await db.prepare(`SELECT * FROM ${table} ORDER BY created_at DESC LIMIT ?1`).bind(limit).all();
 
