@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: CI migration implementation sequencing, orchestration task decomposition, Cursor execution phases
 Does Not Own: Final workflow implementation
 Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related Issues: #1058
-Last Reviewed: 2026-05-21
+Related Issues: #1199, #1058
+Last Reviewed: 2026-06-03
 ---
 
 # LGFC CI Implementation Plan
@@ -122,6 +122,19 @@ Goals:
 Canonical as-built reference:
 - `docs/reference/ci/ops-runtime-surface.md`
 - `scripts/ci/ops_runtime_surface.mjs`
+
+### Phase 7 — As-Built Documentation Reconciliation
+
+Goals:
+- compare intended CI design with merged workflow behavior
+- document variances, deferred items, and merged Task 003–005 truth separately
+- map monitoring ownership and escalation paths
+- refresh guardrails map and workflow inventory pointers without rewriting every historical row
+
+Deliverables:
+- `docs/reference/ci/lgfc-ci-as-built-reconciliation.md`
+- `docs/ops/ci-monitoring-ownership.md`
+- updates to `.github/CI_GUARDRAILS_MAP.md`, workflow inventory, and rollout closeout references
 
 ## Cursor Issue Model
 

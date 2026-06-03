@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Current workflow inventory, classification, overlap notes, deprecation candidates
 Does Not Own: Workflow implementation, branch protection settings, CI architecture rationale
 Canonical Reference: /docs/reference/ci/github-actions_MASTER.md
-Related Issues: #1058
-Last Reviewed: 2026-05-19
+Related Issues: #1199, #1058
+Last Reviewed: 2026-06-03
 ---
 
 # GitHub Actions Workflow Inventory
@@ -21,9 +21,31 @@ The inventory covers every `*.yml` workflow under `.github/workflows/` as of 202
 
 ## Current Known Truth
 
-There are 53 workflow files. The repository contains a mix of PR gates, warning-only PR checks, scheduled operations, manual operations, orchestrator workflows, post-merge workflows, and parked legacy no-op workflows. Some workflows duplicate responsibilities or use names that do not map cleanly to filenames.
+There are 54 workflow files on `main` as of 2026-06-03. The authoritative
+as-built reconciliation for the `#1075` CI redesign is
+`docs/reference/ci/lgfc-ci-as-built-reconciliation.md`.
 
-One workflow, `.github/workflows/post-merge-intent-verification.yml`, failed local YAML parsing during inventory. That is recorded as an operability risk for a later remediation PR, not fixed in this documentation-only phase.
+Merged redesign phases on `main`:
+
+- Task 001 PR hygiene advisories
+- Task 002 merge protection consolidation (`gate-zip-safety.yml` retired)
+- Task 003 reviewer lifecycle redesign (PR #1239)
+- Task 004 post-merge validation expansion (PR #1240)
+- Task 005 OPS runtime consolidation (PR #1242)
+
+Task 005 merged before Task 004 without file conflicts because the domains are
+disjoint. Use the as-built reconciliation doc and domain surface references for
+current merged truth:
+
+- `docs/reference/ci/merge-protection-surface.md`
+- `docs/reference/ci/pr-hygiene-foundation.md`
+- `docs/reference/ci/reviewer-lifecycle-surface.md`
+- `docs/reference/ci/post-merge-validation-surface.md`
+- `docs/reference/ci/ops-runtime-surface.md`
+
+Rows that remain materially stale until a full inventory rewrite include
+`gate-zip-safety.yml` (retired) and several historical OPS workflow descriptions
+in the table below.
 
 ## Intended Final State
 
