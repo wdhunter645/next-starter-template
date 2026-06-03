@@ -104,6 +104,14 @@ describe('orchestrator issue creation queue model', () => {
 			),
 		).toEqual(['status:blocked', 'type:ci']);
 	});
+
+	it('skips task issue creation for terminal task statuses', () => {
+		expect(createIssues.shouldCreateIssueForTask({ status: 'completed' })).toBe(false);
+		expect(createIssues.shouldCreateIssueForTask({ status: 'closed' })).toBe(false);
+		expect(createIssues.shouldCreateIssueForTask({ status: 'issues-created' })).toBe(false);
+		expect(createIssues.shouldCreateIssueForTask({ status: 'active' })).toBe(true);
+		expect(createIssues.shouldCreateIssueForTask({})).toBe(true);
+	});
 });
 
 describe('CI orchestration engine', () => {
