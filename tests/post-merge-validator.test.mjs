@@ -76,7 +76,16 @@ describe('post-merge metadata validation', () => {
 				resolution: { pr: '1188' },
 				metadata: failures,
 			}),
-		).toMatchObject({ status: 'fail', remediation_required: true });
+		).toMatchObject({ status: 'fail', remediation_required: true, sync_action: 'post_merge_failure' });
+	});
+
+	it('treats missing advisory sections as remediation without failing closeout validation', () => {
+		const bodyWithoutAdvisory = baseBody.replace('\n\n## REQUIRED PRE-REVIEW SELF-CHECK\n- Complete.', '');
+		const failures = metadataFailures(mergedPr({ body: bodyWithoutAdvisory }), () => true);
+		const result = buildResult({ pr: mergedPr({ body: bodyWithoutAdvisory }), resolution: { pr: '1188' }, metadata: failures });
+
+		expect(failures).toContainEqual(expect.objectContaining({ code: 'missing_advisory_section', severity: 'advisory' }));
+		expect(result).toMatchObject({ status: 'pass', remediation_required: true, sync_action: 'post_merge_remediation' });
 	});
 });
 
@@ -97,7 +106,7 @@ describe('post-merge reviewer audit classification', () => {
 		const result = buildResult({ pr: mergedPr(), resolution: { pr: '1188' }, findings });
 
 		expect(findings).toHaveLength(1);
-		expect(result).toMatchObject({ status: 'fail', late_findings: 1, remediation_required: true });
+		expect(result).toMatchObject({ status: 'fail', late_findings: 1, remediation_required: true, sync_action: 'post_merge_failure' });
 	});
 });
 
@@ -128,7 +137,7 @@ describe('post-merge workflow failure classification', () => {
 		const result = buildResult({ pr: mergedPr(), resolution: { pr: '1188' }, failures });
 
 		expect(failures[0]).toMatchObject({ required: true, classification: 'required-workflow-failure' });
-		expect(result).toMatchObject({ status: 'fail', remediation_required: true });
+		expect(result).toMatchObject({ status: 'fail', remediation_required: true, sync_action: 'post_merge_failure' });
 	});
 
 	it('requires remediation but does not fail the original PR for optional docs sync failure', () => {
@@ -149,7 +158,7 @@ describe('post-merge workflow failure classification', () => {
 		const result = buildResult({ pr: mergedPr(), resolution: { pr: '1188' }, failures });
 
 		expect(failures[0]).toMatchObject({ required: false, classification: 'secret-access/configuration' });
-		expect(result).toMatchObject({ status: 'pass', remediation_required: true });
+		expect(result).toMatchObject({ status: 'pass', remediation_required: true, sync_action: 'post_merge_remediation' });
 	});
 });
 
@@ -177,6 +186,7 @@ describe('post-merge structured output and remediation body', () => {
 			source_issue: '1122',
 			late_findings: 0,
 			remediation_required: true,
+			sync_action: 'post_merge_remediation',
 		});
 		expect(commentBody(result)).toContain('Workflow failures: 1');
 		expect(remediationTitle(result)).toBe('Post-merge remediation required for PR #1188');
