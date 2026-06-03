@@ -16,7 +16,12 @@ This document provides a complete map of all Continuous Integration (CI) and Con
 - How to fix failures
 - Gate enforcement policy
 
----
+As-built reconciliation for the `#1075` CI redesign is maintained in
+`docs/reference/ci/lgfc-ci-as-built-reconciliation.md`. This map remains the
+operational guardrails reference; when design intent and merged workflow behavior
+diverge, the reconciliation document is authoritative for variance tracking.
+
+**Last reconciliation review:** 2026-06-03
 
 ## Table of Contents
 
@@ -58,9 +63,8 @@ The table below is the canonical inventory of all GitHub Actions workflows in `.
 | `gate-drift.yml` | GATE — Drift Control | Effective | Blocks structural/design/process drift (including ZIP and intent governance checks). |
 | `gate-ensure-issue.yml` | gate-ensure-issue | Effective | Requires valid linked issue context on PRs before progression through review gates. |
 | `gate-intent-labeler.yml` | GATE — Intent Labeler | Effective | Validates/applies PR intent labeling against file-touch governance allowlists. |
-| `gate-quality.yml` | GATE — Quality Checks | Effective | Runs blocking quality checks (lint/test/build and related quality gates). |
-| `gate-zip-safety.yml` | GATE — ZIP Safety | Effective | Prevents ZIP artifacts from entering tree/history and enforces ZIP safety policy. |
-| `gitleaks.yml` | Secret Scan (gitleaks) | Effective | Scans commits and repository content for hardcoded secrets. |
+| `gate-quality.yml` | GATE — Quality Checks | Effective | Runs blocking lint/test/build, consolidated ZIP safety checks, and related quality gates. |
+| `gitleaks.yml` | GATE — Secret Scan | Effective | Scans commits and repository content for hardcoded secrets. |
 | `lgfc-d1-migrate.yml` | LGFC D1 Migrate (remote) | Effective | Executes remote D1 migration operations for LGFC environments. |
 | `lgfc-validate.yml` | Legacy LGFC-main Workflow (Parked) | Ineffective (Parked) | Historical validation flow retained for continuity and audit context. |
 | `opencode.yml` | OpenCode Maintenance | Effective | Repository maintenance/automation tasks for OpenCode operations. |
@@ -68,7 +72,7 @@ The table below is the canonical inventory of all GitHub Actions workflows in `.
 | `ops-cf-pages-retry.yml` | OPS — Cloudflare Pages Auto-Retry | Effective | Detects and retries eligible failed Cloudflare Pages deployments. |
 | `ops-design-compliance-audit.yml` | OPS — Design Compliance Audit | Effective | Performs scheduled/manual design compliance auditing and reporting. |
 | `ops-main-change-monitor.yml` | OPS — Main Change Monitor | Effective | Monitors `main` changes and triggers downstream operational oversight tasks. |
-| `ops-pr-issue-accounting.yml` | OPS — PR Issue Accounting | Effective | Audits PR-to-issue accounting links for operational traceability. |
+| `ops-pr-issue-accounting.yml` | GATE — PR Issue Accounting | Effective | Merge-protection PR-to-issue accounting audit for operational traceability. |
 | `post-recovery-425-verify.yml` | Post-Recovery Verification (PR #425) | Ineffective (One-off) | Legacy targeted verification workflow created for post-recovery hardening. |
 | `pr-triage-zip-taint.yml` | PR Triage - ZIP Taint Classification | Effective | Classifies PRs for ZIP-history taint and routes remediation triage. |
 | `preview-invariants.yml` | Preview Invariants (Cloudflare Pages) | Effective | Verifies Cloudflare preview deployments against required runtime/UI invariants. |
@@ -388,7 +392,9 @@ See `/.github/platform-intent-and-zip-governance.md` for intent governance and Z
 
 ## Security Workflows
 
-### 8. Gitleaks (`gitleaks.yml`)
+### 8. Secret Scan (`gitleaks.yml`)
+
+**Workflow name:** GATE — Secret Scan
 
 **Purpose:** Detect secrets and credentials in code  
 **Triggers:**
@@ -409,19 +415,25 @@ See `/.github/platform-intent-and-zip-governance.md` for intent governance and Z
 
 ---
 
-### 9. Block ZIP Artifacts (`block-zip-artifacts.yml`)
+### 9. ZIP Safety (consolidated in `gate-quality.yml`)
 
-**Purpose:** Prevent ZIP files from being committed  
-**Triggers:** `pull_request`
+**Purpose:** Prevent ZIP files from entering the repository tree or PR diffs  
+**Triggers:** `pull_request`, `push` (via `gate-quality.yml`)
 
 **What it validates:**
-- No `.zip` or `.ZIP` files in PR diff
-- Automated comment if ZIP detected
+- No tracked `.zip` files in the working tree
+- No ZIP additions in PR diffs
+- Build succeeds after ZIP safety checks pass
 
-**Enforcement:** ✅ **BLOCKING**  
-**Failure Action:** Remove ZIP files from commits
+**Enforcement:** ✅ **BLOCKING** (part of GATE — Quality Checks)  
+**Failure Action:** Remove ZIP files from commits; see `docs/reference/ci/merge-protection-surface.md`
 
----
+**Retired workflow:** `gate-zip-safety.yml` (Task 002 consolidation via PR #1229)
+
+**Related non-blocking workflows:**
+- `pr-triage-zip-taint.yml` — advisory ZIP taint classification
+- `zip-history-audit.yml` — scheduled history audit
+- `purge-zip-history.yml` — break-glass history purge (manual)
 
 ### 10. Purge ZIP History (`purge-zip-history.yml`)
 
@@ -735,11 +747,11 @@ When a mismatch is detected, it should be triaged as either:
 ### Blocking Gates (MUST PASS)
 
 PRs **CANNOT** merge if these fail:
-1. ✅ LGFC Validate (lint, test, build)
-2. ✅ Drift Gate (ZIP prohibition, invariants)
-3. ✅ Assessment Harness (routes, navigation, design)
-4. ✅ Gitleaks (secret scanning)
-5. ✅ Block ZIP Artifacts
+1. ✅ GATE — Quality Checks (lint, test, build, consolidated ZIP safety)
+2. ✅ GATE — Secret Scan
+3. ✅ GATE — PR Issue Accounting
+4. ✅ Drift Gate (structural/process drift; legacy ZIP checks still present)
+5. ✅ Assessment Harness (routes, navigation, design)
 6. ✅ Test workflows
 7. ✅ D1 Migrations (if migrations changed)
 
@@ -919,11 +931,11 @@ curl https://your-site.pages.dev/api/d1-test
 │  Pull Request   │
 └────────┬────────┘
          │
-         ├──> LGFC Validate (BLOCKING)
+         ├──> Quality Gate (lint/test/build + ZIP safety) (BLOCKING)
          ├──> Drift Gate (BLOCKING)
          ├──> Assessment (BLOCKING)
-         ├──> Gitleaks (BLOCKING)
-         ├──> Block ZIP (BLOCKING)
+         ├──> Secret Scan (BLOCKING)
+         ├──> PR Issue Accounting (BLOCKING)
          ├──> Design Compliance (WARN)
          └──> Intent Labeler (AUTO)
          │

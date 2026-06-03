@@ -11,7 +11,8 @@ Execution Mode: orchestrated
 Source Issue: 1075
 Related Program Issue: 1058
 Canonical Reference: /docs/how-to/ci/lgfc-ci-implementation-plan.md
-Last Reviewed: 2026-05-22
+Related Issues: #1058, #1199
+Last Reviewed: 2026-06-03
 ---
 
 # Issue 1075 CI Redesign Rollout Implementation Plan
@@ -198,3 +199,21 @@ Validation:
 - `./scripts/ci/docs_canonical_hashes_verify.sh .`
 Rollback:
 - Revert only final CI documentation reconciliation files.
+
+## Task 006 Closeout Notes
+
+Task 006 (#1199) is documentation-only reconciliation. It does not change workflow
+runtime behavior.
+
+Deliverables opened in the Task 006 PR:
+
+- `docs/reference/ci/lgfc-ci-as-built-reconciliation.md` — design vs as-built matrix
+- `docs/ops/ci-monitoring-ownership.md` — monitoring ownership and escalation paths
+- Guardrails map, workflow inventory, production design, implementation plan, and
+  monitoring coverage updates pointing at the reconciliation record
+
+Post-merge follow-up after PRs #1239, #1240, and #1242 land:
+
+- Reconcile the as-built matrix to mark Tasks 003–005 complete on `main`
+- Schedule a mechanical workflow inventory table rewrite (deferred from Task 006)
+- Confirm branch protection required checks match `merge-protection-surface.md`

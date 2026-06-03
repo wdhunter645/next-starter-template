@@ -5,7 +5,8 @@ Authority Level: Controlled
 Owns: CI lifecycle philosophy, production-grade CI design rationale, LGFC workflow domain model
 Does Not Own: Individual workflow implementation, branch protection configuration, runtime secrets
 Canonical Reference: /docs/reference/ci/lgfc-ci-ci-domain-reference.md
-Last Reviewed: 2026-05-21
+Related Issues: #1199, #1058
+Last Reviewed: 2026-06-03
 ---
 
 # LGFC Production CI Design
@@ -24,9 +25,19 @@ It does not define individual GitHub Actions implementation details or repositor
 
 ## Current Known Truth
 
-The current repository workflow inventory contains overlapping merge gates, asynchronous reviewer dependencies, duplicated governance enforcement, and timing-sensitive orchestration behavior.
+As of 2026-06-03 on `main`, Tasks 001 and 002 of the `#1075` CI redesign are
+merged. Task 003 through Task 005 remain in open implementation PRs. The
+authoritative reconciliation record is
+`docs/reference/ci/lgfc-ci-as-built-reconciliation.md`.
 
-The reviewer-response-completion workflow exposed the largest architectural weakness by coupling asynchronous reviewer timing to synchronous merge approval.
+Merged changes include PR hygiene advisories, consolidated merge protection
+(`gate-zip-safety.yml` retired), and canonical merge-protection documentation in
+`docs/reference/ci/merge-protection-surface.md`.
+
+Remaining architectural debt on `main` includes synchronous reviewer lifecycle
+blocking, placeholder DIATAXIS post-merge validation, legacy ZIP checks inside
+`gate-drift.yml`, and a workflow inventory table that still reflects the 2026-05-19
+baseline in several rows.
 
 ## Intended Final State
 
@@ -38,6 +49,9 @@ The repository will evolve toward four stable CI lifecycle domains:
 - OPS runtime monitoring and self-healing
 
 The final architecture will preserve governance rigor while reducing false-positive failures and reviewer deadlocks.
+
+As-built reconciliation and deferred items are tracked in
+`docs/reference/ci/lgfc-ci-as-built-reconciliation.md`.
 
 ## Core Principle
 
