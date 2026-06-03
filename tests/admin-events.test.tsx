@@ -424,6 +424,72 @@ describe('admin events APIs', () => {
       error: 'Database unavailable',
     });
   });
+
+  it('rejects invalid month filters instead of returning unrelated rows', async () => {
+    const { db } = makeEventsDb([
+      {
+        id: 1,
+        title: 'June Event',
+        start_date: '2026-06-12',
+        end_date: '2026-06-12',
+        status: 'posted',
+      },
+    ]);
+
+    const response = await eventsListGet({
+      request: adminGetRequest('/api/admin/events/list?month=not-a-month'),
+      env: { ADMIN_TOKEN: 'secret', DB: db },
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: 'invalid_month',
+    });
+  });
+
+  it('rejects unsafe external_url values on create', async () => {
+    const { db } = makeEventsDb();
+
+    const response = await eventsCreatePost({
+      request: adminPostRequest('/api/admin/events/create', {
+        title: 'Unsafe Link Event',
+        start_date: '2026-06-18',
+        external_url: 'javascript:alert(1)',
+      }),
+      env: { ADMIN_TOKEN: 'secret', DB: db },
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: 'invalid_external_url',
+    });
+  });
+
+  it('skips duplicate placeholder seeding when upcoming posted events already exist', async () => {
+    const { db } = makeEventsDb([
+      {
+        id: 1,
+        title: 'Existing Event',
+        start_date: '2026-06-18',
+        end_date: '2026-06-18',
+        status: 'posted',
+      },
+    ]);
+
+    const response = await eventsSeedPost({
+      request: adminPostRequest('/api/admin/events/seed-next10'),
+      env: { ADMIN_TOKEN: 'secret', DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      inserted: 0,
+      upcoming_posted: 1,
+    });
+  });
 });
 
 describe('public events read paths', () => {

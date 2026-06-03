@@ -5,7 +5,7 @@
 
 import { requireAdmin } from "../../../_lib/auth";
 import { requireD1, requireTables, jsonResponse } from "../../../_lib/d1";
-import { isValidEventDate } from "./list";
+import { isSafeExternalUrl, isValidEventDate } from "./list";
 
 const STATUS_VALUES = new Set(["posted", "hidden"]);
 
@@ -34,7 +34,10 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     const description = String(body?.description || "").trim();
     const external_url = String(body?.external_url || "").trim();
     const statusRaw = String(body?.status || "posted").trim().toLowerCase();
-    const status = STATUS_VALUES.has(statusRaw) ? statusRaw : "posted";
+    if (!STATUS_VALUES.has(statusRaw)) {
+      return jsonResponse({ ok: false, error: "invalid_status" }, 400);
+    }
+    const status = statusRaw;
 
     if (!Number.isFinite(id) || id <= 0) {
       return jsonResponse({ ok: false, error: "invalid_id" }, 400);
@@ -47,6 +50,9 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     }
     if (end_date && !isValidEventDate(end_date)) {
       return jsonResponse({ ok: false, error: "invalid_end_date" }, 400);
+    }
+    if (!isSafeExternalUrl(external_url)) {
+      return jsonResponse({ ok: false, error: "invalid_external_url" }, 400);
     }
 
     const sql = `UPDATE events

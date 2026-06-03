@@ -165,10 +165,10 @@ export default function AdminEventsPage() {
       return;
     }
 
-    setStatus('Event created.');
     resetCreateForm();
     setSaving(false);
     await load();
+    setStatus('Event created.');
   }, [draft, load, resetCreateForm]);
 
   const updateEvent = useCallback(async () => {
@@ -188,9 +188,9 @@ export default function AdminEventsPage() {
       return;
     }
 
-    setStatus(`Event ${selectedId} updated.`);
     setSaving(false);
     await load();
+    setStatus(`Event ${selectedId} updated.`);
   }, [draft, load, selectedId]);
 
   const seedNextTen = useCallback(async () => {

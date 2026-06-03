@@ -17,6 +17,23 @@ export const onRequestPost = async (context: any): Promise<Response> => {
   if (!tables.ok) return jsonResponse(tables.body, tables.status);
 
   try {
+    const existing = await d1.db
+      .prepare("SELECT COUNT(*) AS n FROM events WHERE status='posted' AND start_date >= date('now');")
+      .first();
+    const upcomingPosted = Number((existing as { n?: number })?.n || 0);
+
+    if (upcomingPosted > 0) {
+      return jsonResponse(
+        {
+          ok: true,
+          inserted: 0,
+          upcoming_posted: upcomingPosted,
+          note: "Upcoming posted events already exist; seed skipped to avoid duplicate placeholders.",
+        },
+        200,
+      );
+    }
+
     const sql = `
       INSERT INTO events (title, start_date, end_date, location, host, fees, description, external_url, status)
       VALUES

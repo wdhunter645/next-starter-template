@@ -5,7 +5,7 @@
 
 import { requireAdmin } from "../../../_lib/auth";
 import { requireD1, requireTables, jsonResponse } from "../../../_lib/d1";
-import { isValidEventDate } from "./list";
+import { isSafeExternalUrl, isValidEventDate } from "./list";
 
 const STATUS_VALUES = new Set(["posted", "hidden"]);
 
@@ -42,6 +42,9 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     }
     if (end_date && !isValidEventDate(end_date)) {
       return jsonResponse({ ok: false, error: "invalid_end_date" }, 400);
+    }
+    if (!isSafeExternalUrl(external_url)) {
+      return jsonResponse({ ok: false, error: "invalid_external_url" }, 400);
     }
 
     const sql = `INSERT INTO events (title, start_date, end_date, location, host, fees, description, external_url, status)

@@ -25,6 +25,10 @@ export const onRequestGet = async (context: any): Promise<Response> => {
     const limitRaw = Number(url.searchParams.get("limit") || "100");
     const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(limitRaw, 1), 500) : 100;
 
+    if (month && !MONTH_RE.test(month)) {
+      return jsonResponse({ ok: false, error: "invalid_month" }, 400);
+    }
+
     const db = d1.db;
 
     if (month && MONTH_RE.test(month)) {
@@ -55,4 +59,15 @@ export const onRequestGet = async (context: any): Promise<Response> => {
 
 export function isValidEventDate(value: string): boolean {
   return DATE_RE.test(value);
+}
+
+export function isSafeExternalUrl(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) return true;
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
 }
