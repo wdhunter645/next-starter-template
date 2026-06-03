@@ -21,7 +21,7 @@ on:
 permissions:
   actions: read
   contents: read
-  pull-requests: write
+  pull-requests: read
   issues: write
 
 jobs:
@@ -112,6 +112,7 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ steps.validate.outputs.pr_number }}
           SYNC_ACTION: ${{ steps.validate.outputs.sync_action }}
+          POST_MERGE_RESULT_PATH: post-merge-result.json
         run: node scripts/orchestrator/sync-pr-state.mjs
 
       - name: Run post-merge reviewer audit

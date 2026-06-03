@@ -16,7 +16,7 @@ export function acceptanceCriteriaFailures(body = '') {
 
 	const failures = [];
 	for (const line of section.split(/\r?\n/)) {
-		if (/^\s*-\s*\[\s\]\s+/.test(line)) {
+		if (/^\s*[-*]\s*\[\s\]\s+/.test(line)) {
 			failures.push({
 				code: 'unchecked_acceptance_criterion',
 				message: `Acceptance criterion left unchecked at merge: ${line.trim()}`,
@@ -31,14 +31,19 @@ export function verificationEvidenceFailures(body = '') {
 	if (!section) return [];
 
 	const failures = [];
-	if (/\bResult summary:\s*\n?\s*-\s*(FAIL|PENDING)\b/i.test(section) || /\bResult summary:\*\*\s*(FAIL|PENDING)\b/i.test(section)) {
+	if (/\bResult\s+summary\b[\s\S]*?:\s*(?:-\s*)?PASS\s*\/\s*FAIL\s*\/\s*PENDING\b/i.test(section)) {
+		failures.push({
+			code: 'verification_placeholder',
+			message: 'Merged PR body still contains the unchanged result-summary template placeholder.',
+		});
+	} else if (/\bResult\s+summary\b[^*:\n]*?(?:\*\*)?\s*:\s*(?:-\s*)?[\s\S]{0,40}\b(FAIL|PENDING)\b/i.test(section)) {
 		failures.push({
 			code: 'verification_not_pass',
 			message: 'Merged PR body still reports FAIL or PENDING verification evidence.',
 		});
 	}
 
-	if (/\bCommands run:\s*\n?\s*-\s*(?:Required:|none|TBD|TODO)\b/i.test(section)) {
+	if (/\bCommands\s+run\b[^*:\n]*?(?:\*\*)?\s*:\s*(?:-\s*)?[\s\S]{0,40}\b(Required:|none|TBD|TODO)\b/i.test(section)) {
 		failures.push({
 			code: 'missing_verification_commands',
 			message: 'Merged PR body does not record executed verification commands.',

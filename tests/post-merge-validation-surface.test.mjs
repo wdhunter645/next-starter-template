@@ -12,6 +12,11 @@ describe('post-merge validation surface inventory', () => {
 		expect(result.ok, result.errors.join('\n')).toBe(true);
 	});
 
+	it('respects a supplied validation root', () => {
+		const result = validatePostMergeValidationSurface({ root: process.cwd() });
+		expect(result.ok, result.errors.join('\n')).toBe(true);
+	});
+
 	it('documents the core post-merge workflows', () => {
 		expect(POST_MERGE_VALIDATION_WORKFLOWS.map((entry) => entry.file)).toEqual([
 			'post-merge-intent-verification.yml',

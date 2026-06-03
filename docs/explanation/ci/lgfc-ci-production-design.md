@@ -79,6 +79,8 @@ It should validate implementation completeness, design alignment, documentation 
 
 Its primary outputs are evidence reports, issues, corrective PRs, and rollback recommendations for severe failures.
 
+When post-merge validation succeeds for a merged implementation PR, automation closes the linked source issue with evidence-driven closeout comments, clears stale active-state labels, and applies `status:complete`. Failed post-merge validation or remediation-required results must not close the source issue; they create or preserve remediation state instead.
+
 ### 4. OPS Runtime: LGFC Production Operations
 
 This layer protects the live Cloudflare-hosted site.

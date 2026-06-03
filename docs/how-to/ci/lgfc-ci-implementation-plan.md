@@ -39,7 +39,7 @@ Use this procedure when turning the CI architecture into implementation work:
 4. Include the allowed files, rollback plan, acceptance criteria, and validation requirements in the issue.
 5. Assign the issue to Cursor for one implementation PR.
 6. Validate the implementation PR with the current merge-protection gates.
-7. After merge, run post-merge verification before creating the next issue.
+7. After merge, run post-merge verification before creating the next issue. When validation succeeds, auto-close the linked source issue with closeout evidence; when validation fails or remediation remains required, keep the source issue open.
 
 The orchestration layer must not create the next CI implementation issue until the current issue is merged, validated, and stable.
 

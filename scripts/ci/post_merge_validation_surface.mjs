@@ -32,8 +32,8 @@ export const POST_MERGE_VALIDATION_SCRIPTS = [
 	'scripts/ci/post_merge_reviewer_audit.mjs',
 ];
 
-function readWorkflow(relativePath) {
-	return fs.readFileSync(path.join(WORKFLOW_DIR, relativePath), 'utf8');
+function readWorkflow(relativePath, root = process.cwd()) {
+	return fs.readFileSync(path.join(root, WORKFLOW_DIR, relativePath), 'utf8');
 }
 
 function extractWorkflowName(contents) {
@@ -85,17 +85,23 @@ export function validatePostMergeValidationSurface(options = {}) {
 		}
 	}
 
-	const validatorContents = readWorkflow('post-merge-intent-verification.yml');
-	if (!validatorContents.includes('post_merge_validator.mjs')) {
-		errors.push('post-merge-intent-verification.yml must invoke post_merge_validator.mjs');
+	const validatorPath = path.join(root, WORKFLOW_DIR, 'post-merge-intent-verification.yml');
+	if (fs.existsSync(validatorPath)) {
+		const validatorContents = readWorkflow('post-merge-intent-verification.yml', root);
+		if (!validatorContents.includes('post_merge_validator.mjs')) {
+			errors.push('post-merge-intent-verification.yml must invoke post_merge_validator.mjs');
+		}
 	}
 
-	const remediationContents = readWorkflow('post-merge-remediation.yml');
-	if (!remediationContents.includes('post_merge_remediation_issue.mjs')) {
-		errors.push('post-merge-remediation.yml must invoke post_merge_remediation_issue.mjs');
-	}
-	if (!/workflow_run\.conclusion\s*==\s*'failure'/.test(remediationContents)) {
-		errors.push('post-merge-remediation.yml must run only when Post-Merge Detection fails');
+	const remediationPath = path.join(root, WORKFLOW_DIR, 'post-merge-remediation.yml');
+	if (fs.existsSync(remediationPath)) {
+		const remediationContents = readWorkflow('post-merge-remediation.yml', root);
+		if (!remediationContents.includes('post_merge_remediation_issue.mjs')) {
+			errors.push('post-merge-remediation.yml must invoke post_merge_remediation_issue.mjs');
+		}
+		if (!/workflow_run\.conclusion\s*==\s*'failure'/.test(remediationContents)) {
+			errors.push('post-merge-remediation.yml must run only when Post-Merge Detection fails');
+		}
 	}
 
 	return {

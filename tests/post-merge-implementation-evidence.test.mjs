@@ -47,6 +47,13 @@ describe('post-merge implementation evidence', () => {
 		]);
 	});
 
+	it('flags unchanged result summary template placeholder', () => {
+		const placeholderBody = body.replace('- Result summary:\n  - PASS', '- Result summary:\n  - PASS / FAIL / PENDING');
+		expect(verificationEvidenceFailures(placeholderBody)).toEqual([
+			expect.objectContaining({ code: 'verification_placeholder' }),
+		]);
+	});
+
 	it('aggregates implementation evidence failures', () => {
 		const failures = implementationEvidenceFailures({
 			body,

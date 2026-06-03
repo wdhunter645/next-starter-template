@@ -6,7 +6,8 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
+  issues: write
+  pull-requests: read
 
 jobs:
   validate:
@@ -39,7 +40,7 @@ jobs:
         continue-on-error: true
         env:
           DIATAXIS_CHANGED_FILES_FILE: diataxis_changed_files.txt
-        run: node scripts/ci/post_merge_diataxis_audit.mjs || true
+        run: node scripts/ci/post_merge_diataxis_audit.mjs
 
       - name: Upload DIATAXIS evidence
         if: always()
