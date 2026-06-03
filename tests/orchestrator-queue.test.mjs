@@ -395,6 +395,8 @@ describe('orchestrator queue advancement', () => {
 			prNumber: '42',
 			action: 'post_merge_success',
 			pr: { body: '**Issue:** #1', mergedAt: '2026-05-05T19:05:00Z', state: 'MERGED', url: 'https://example.test/pr/42' },
+			postMergeResult: { status: 'pass', remediation_required: false, merge_sha: 'abc123' },
+			getIssueMeta: () => ({ title: 'Task 1', labels: ['orchestrator', 'status:post-merge-verify'] }),
 			setStatusFn: (...args) => transitions.push(args),
 			run: vi.fn(),
 		});
@@ -403,12 +405,13 @@ describe('orchestrator queue advancement', () => {
 		expect(complete).toBe('complete');
 		expect(transitions.map((transition) => transition.slice(1, 3))).toEqual([
 			['status:review', 'status:post-merge-verify'],
+			['status:blocked', null],
+			['status:queued', null],
 			['status:failed', null],
 			['status:post-merge-verify', null],
 			['status:pr-draft', null],
 			['status:review', null],
 			['status:implementation', null],
-			['status:queued', null],
 			[null, 'status:complete'],
 		]);
 		expect(advanceQueue.queueAdvanceDecision(queryFor({ 'status:blocked': [blockedNewer, blockedOlder] }))).toMatchObject({
