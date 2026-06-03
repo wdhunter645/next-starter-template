@@ -31,10 +31,6 @@ export const MERGE_PROTECTION_SURFACE = [
 /** @type {string[]} */
 export const RETIRED_MERGE_PROTECTION_WORKFLOWS = ['gate-zip-safety.yml'];
 
-function readWorkflow(relativePath) {
-  return fs.readFileSync(path.join(WORKFLOW_DIR, relativePath), 'utf8');
-}
-
 function extractWorkflowName(contents) {
   const match = contents.match(/^name:\s*(.+)$/m);
   return match ? match[1].trim() : '';
@@ -86,14 +82,17 @@ export function validateMergeProtectionSurface(options = {}) {
     }
   }
 
-  const qualityContents = readWorkflow('gate-quality.yml');
-  for (const requiredStep of [
-    'npm run build',
-    'scripts/ci/check_no_tracked_zips.sh',
-    'scripts/ci/verify_zip_history_pr.sh',
-  ]) {
-    if (!qualityContents.includes(requiredStep)) {
-      errors.push(`gate-quality.yml must invoke ${requiredStep}`);
+  const qualityPath = path.join(root, WORKFLOW_DIR, 'gate-quality.yml');
+  if (fs.existsSync(qualityPath)) {
+    const qualityContents = fs.readFileSync(qualityPath, 'utf8');
+    for (const requiredStep of [
+      'npm run build',
+      'scripts/ci/check_no_tracked_zips.sh',
+      'scripts/ci/verify_zip_history_pr.sh',
+    ]) {
+      if (!qualityContents.includes(requiredStep)) {
+        errors.push(`gate-quality.yml must invoke ${requiredStep}`);
+      }
     }
   }
 
@@ -128,19 +127,15 @@ export function renderBranchProtectionChecklist() {
     'Non-merge-protection checks such as drift control, reviewer lifecycle, PR hygiene advisories, and OPS runtime workflows must not be treated as merge blockers unless explicitly reclassified.',
   );
 
-  return lines.join('\n');
+  return `${lines.join('\n')}\n`;
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const result = validateMergeProtectionSurface();
   if (!result.ok) {
-    for (const error of result.errors) {
-      console.error(`ERROR: ${error}`);
-    }
-    process.exit(1);
+    console.error(result.errors.join('\n'));
+    process.exitCode = 1;
+  } else {
+    console.log(renderBranchProtectionChecklist());
   }
-
-  console.log('OK: merge protection surface validated.');
-  console.log('');
-  console.log(renderBranchProtectionChecklist());
 }
