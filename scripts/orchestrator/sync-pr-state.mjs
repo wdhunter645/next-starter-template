@@ -78,7 +78,23 @@ export function syncPrState({ pr, prNumber, action, setStatusFn = setStatus, run
   }
 
   if (action === 'post_merge_success') {
-    setStatusFn(issueNumber, 'status:post-merge-verify', 'status:complete', `Post-merge verification passed for PR #${prNumber}: ${pr.url}`);
+    const lifecycleLabelsToClear = [
+      'status:failed',
+      'status:post-merge-verify',
+      'status:pr-draft',
+      'status:review',
+      'status:implementation',
+      'status:queued',
+    ];
+    for (const label of lifecycleLabelsToClear) {
+      setStatusFn(issueNumber, label, null, null);
+    }
+    setStatusFn(
+      issueNumber,
+      null,
+      'status:complete',
+      `Post-merge verification passed for PR #${prNumber}: ${pr.url}`,
+    );
     run(['issue', 'close', issueNumber, '--repo', repo, '--comment', `Task complete. PR #${prNumber} merged and post-merge verification passed.`]);
     return 'complete';
   }

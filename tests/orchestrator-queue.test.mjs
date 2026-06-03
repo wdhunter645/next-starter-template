@@ -403,7 +403,13 @@ describe('orchestrator queue advancement', () => {
 		expect(complete).toBe('complete');
 		expect(transitions.map((transition) => transition.slice(1, 3))).toEqual([
 			['status:review', 'status:post-merge-verify'],
-			['status:post-merge-verify', 'status:complete'],
+			['status:failed', null],
+			['status:post-merge-verify', null],
+			['status:pr-draft', null],
+			['status:review', null],
+			['status:implementation', null],
+			['status:queued', null],
+			[null, 'status:complete'],
 		]);
 		expect(advanceQueue.queueAdvanceDecision(queryFor({ 'status:blocked': [blockedNewer, blockedOlder] }))).toMatchObject({
 			action: 'advance',

@@ -1,0 +1,53 @@
+name: Post-Merge PR Body Closeout
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Merged PR number to close out
+        required: true
+        default: '1221'
+      body_file:
+        description: Repo-relative path to remediated PR body markdown
+        required: true
+        default: scripts/ci/post-merge-closeout/pr-1221-body.md
+      skip_body_apply:
+        description: Skip body patch (re-validate and sync only)
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  closeout:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Apply body, validate, and sync orchestrator state
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          BODY_FILE: ${{ inputs.body_file }}
+          SKIP_BODY_APPLY: ${{ inputs.skip_body_apply }}
+        run: node scripts/ci/run_post_merge_closeout.mjs
