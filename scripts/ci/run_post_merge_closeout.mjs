@@ -15,6 +15,7 @@ function runSync({ repository, prNumber, syncAction }) {
 			GITHUB_REPOSITORY: repository,
 			PR_NUMBER: String(prNumber),
 			SYNC_ACTION: syncAction,
+			POST_MERGE_RESULT_PATH: 'post-merge-result.json',
 			GH_TOKEN: process.env.GITHUB_TOKEN || process.env.GH_TOKEN,
 		},
 	});

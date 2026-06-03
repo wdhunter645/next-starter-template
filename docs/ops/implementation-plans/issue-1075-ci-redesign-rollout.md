@@ -138,6 +138,8 @@ Acceptance Criteria:
 - Post-merge checks report implementation evidence from merged code.
 - Failures create actionable remediation output.
 - Queue advancement remains blocked until validation succeeds.
+- Successful post-merge validation auto-closes the linked source issue with evidence (PR number, merge SHA, validator status, verification result, closeout reason) and clears stale active-state labels (`status:blocked`, `status:queued`, `status:failed`, `status:post-merge-verify`).
+- Failed post-merge validation or remediation-required results do not close the linked source issue.
 Validation:
 - `npm test`
 - `npm run typecheck`
