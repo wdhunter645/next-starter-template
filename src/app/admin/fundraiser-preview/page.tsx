@@ -160,7 +160,15 @@ export default function FundraiserPreviewPage() {
   }, []);
 
   const saveDraft = useCallback(async () => {
-    const persistedConfig = buildPersistedCampaignConfig(form);
+    let persistedConfig: CampaignSpotlightConfig;
+    try {
+      persistedConfig = buildPersistedCampaignConfig(form);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      setStatus(`Draft not saved. Fundraiser data error: ${message}`);
+      return;
+    }
+
     const persistedErrors = validateCampaignSpotlightConfig(persistedConfig);
     if (persistedErrors.length > 0) {
       setStatus('Draft not saved. Fix campaign validation errors first.');
@@ -199,7 +207,15 @@ export default function FundraiserPreviewPage() {
   }, [form, fundraiserError, load]);
 
   const publish = useCallback(async () => {
-    const persistedConfig = buildPersistedCampaignConfig(form);
+    let persistedConfig: CampaignSpotlightConfig;
+    try {
+      persistedConfig = buildPersistedCampaignConfig(form);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      setStatus(`Publish blocked. Fundraiser data error: ${message}`);
+      return;
+    }
+
     const persistedErrors = validateCampaignSpotlightConfig(persistedConfig);
     if (persistedErrors.length > 0) {
       setStatus('Publish blocked. Fix campaign validation errors first.');

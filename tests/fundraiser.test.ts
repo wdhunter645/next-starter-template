@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  fundraiserTeams,
+  getFundraiserTeams,
   normalizeFundraiserRecords,
   safeGetFundraiserTeams,
   sortFundraiserLeaderboard,
@@ -12,12 +12,12 @@ describe('fundraiser ingest layer', () => {
   it('returns a safe success wrapper for valid fundraiser source data', () => {
     expect(safeGetFundraiserTeams()).toMatchObject({
       ok: true,
-      teams: fundraiserTeams,
+      teams: getFundraiserTeams(),
     });
   });
 
   it('loads and normalizes the fundraiser JSON seed data', () => {
-    expect(fundraiserTeams).toEqual([
+    expect(getFundraiserTeams()).toEqual([
       {
         teamId: 'yankees',
         teamName: 'New York Yankees',

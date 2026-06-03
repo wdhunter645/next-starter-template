@@ -126,5 +126,3 @@ export function safeGetFundraiserTeams():
     return { ok: false, error: message };
   }
 }
-
-export const fundraiserTeams = getFundraiserTeams();
