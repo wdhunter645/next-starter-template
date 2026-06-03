@@ -100,7 +100,7 @@ function makeMatchupDb(matchups: Array<Record<string, unknown>> = [], votes: Rec
       bind: (...args: unknown[]) => ({
         all: async () => {
           if (sql.includes('sqlite_master')) {
-            return { results: [{ name: 'weekly_matchups' }, { name: 'weekly_votes' }] };
+            return { results: [{ name: 'weekly_matchups' }, { name: 'weekly_votes' }, { name: 'photos' }] };
           }
           if (sql.includes('LEFT JOIN weekly_votes')) {
             const limit = Number(args[0] ?? 50);
@@ -133,6 +133,10 @@ function makeMatchupDb(matchups: Array<Record<string, unknown>> = [], votes: Rec
           if (sql.includes('FROM weekly_matchups WHERE id')) {
             return matchups.find((row) => Number(row.id) === Number(args[0])) ?? null;
           }
+          if (sql.includes('FROM photos WHERE id')) {
+            const id = Number(args[0]);
+            return Number.isFinite(id) && id > 0 ? { id } : null;
+          }
           return null;
         },
         run: makeRun(sql, args),
@@ -140,6 +144,13 @@ function makeMatchupDb(matchups: Array<Record<string, unknown>> = [], votes: Rec
       first: async () => matchups.find((row) => row.status === 'active') ?? null,
       run: makeRun(sql),
     })),
+    batch: vi.fn(async (statements: Array<{ run: () => Promise<unknown> }>) => {
+      const results = [];
+      for (const statement of statements) {
+        results.push(await statement.run());
+      }
+      return results;
+    }),
   };
 
   return { db, matchups };
@@ -358,6 +369,35 @@ describe('admin matchup APIs', () => {
     });
 
     expect(duplicate.status).toBe(409);
+  });
+
+  it('rejects invalid status values and missing photo ids', async () => {
+    const { db } = makeMatchupDb();
+
+    const invalidStatus = await matchupCreatePost({
+      request: adminPostRequest('/api/admin/matchup/create', {
+        week_start: '2026-06-15',
+        photo_a_id: 3,
+        photo_b_id: 4,
+        status: 'actve',
+      }),
+      env: { ADMIN_TOKEN: 'secret', DB: db },
+    });
+
+    expect(invalidStatus.status).toBe(400);
+    await expect(invalidStatus.json()).resolves.toMatchObject({ ok: false, error: 'invalid_status' });
+
+    const missingPhoto = await matchupCreatePost({
+      request: adminPostRequest('/api/admin/matchup/create', {
+        week_start: '2026-06-15',
+        photo_a_id: 99999,
+        photo_b_id: 4,
+      }),
+      env: { ADMIN_TOKEN: 'secret', DB: db },
+    });
+
+    expect(missingPhoto.status).toBe(400);
+    await expect(missingPhoto.json()).resolves.toMatchObject({ ok: false, error: 'photo_a_not_found' });
   });
 
   it('activates one matchup and closes others', async () => {

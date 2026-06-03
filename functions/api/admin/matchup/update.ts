@@ -60,10 +60,21 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     }
 
     if (nextStatus === "active") {
-      await d1.db
-        .prepare("UPDATE weekly_matchups SET status='closed' WHERE status='active' AND id != ?")
-        .bind(id)
-        .run();
+      const batchResults = await d1.db.batch([
+        d1.db
+          .prepare("UPDATE weekly_matchups SET status='closed' WHERE status='active' AND id != ?")
+          .bind(id),
+        d1.db
+          .prepare(
+            `UPDATE weekly_matchups
+             SET photo_a_id=?, photo_b_id=?, status=?
+             WHERE id=?`,
+          )
+          .bind(nextPhotoA, nextPhotoB, nextStatus, id),
+      ]);
+
+      const changed = batchResults?.[1]?.meta?.changes || 0;
+      return jsonResponse({ ok: true, changed }, 200);
     }
 
     const out = await d1.db

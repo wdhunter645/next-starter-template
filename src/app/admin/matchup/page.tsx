@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PageShell from '@/components/PageShell';
 import AdminNav from '@/components/admin/AdminNav';
 import AdminTokenPanel from '@/components/admin/AdminTokenPanel';
@@ -94,6 +94,7 @@ export default function AdminMatchupPage() {
   const [publicCurrent, setPublicCurrent] = useState<PublicCurrentResponse | null>(null);
   const [publicResults, setPublicResults] = useState<PublicResultsResponse | null>(null);
   const [previewWeek, setPreviewWeek] = useState('');
+  const previewRequestRef = useRef(0);
 
   const selected = useMemo(
     () => items.find((item) => item.week_start === previewWeek) ?? active ?? items[0] ?? null,
@@ -101,9 +102,13 @@ export default function AdminMatchupPage() {
   );
 
   const loadPublicPreview = useCallback(async (weekStart?: string) => {
+    const requestId = ++previewRequestRef.current;
+
     try {
       const currentRes = await fetch('/api/matchup/current', { cache: 'no-store' });
       const currentData = (await currentRes.json().catch(() => ({}))) as PublicCurrentResponse;
+      if (requestId !== previewRequestRef.current) return;
+
       setPublicCurrent(currentData?.ok ? currentData : { ok: false, error: currentData?.error || `HTTP ${currentRes.status}` });
 
       const week = weekStart || currentData?.week_start || '';
@@ -116,12 +121,15 @@ export default function AdminMatchupPage() {
         cache: 'no-store',
       });
       const resultsData = (await resultsRes.json().catch(() => ({}))) as PublicResultsResponse;
+      if (requestId !== previewRequestRef.current) return;
+
       setPublicResults(
         resultsData?.ok
           ? resultsData
           : { ok: false, error: resultsData?.error || `HTTP ${resultsRes.status}` },
       );
     } catch {
+      if (requestId !== previewRequestRef.current) return;
       setPublicCurrent({ ok: false, error: 'Request failed.' });
       setPublicResults({ ok: false, error: 'Request failed.' });
     }

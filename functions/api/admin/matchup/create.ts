@@ -18,7 +18,7 @@ export const onRequestPost = async (context: any): Promise<Response> => {
   const d1 = requireD1(env);
   if (!d1.ok) return jsonResponse(d1.body, d1.status);
 
-  const tables = await requireTables(d1.db, ["weekly_matchups"]);
+  const tables = await requireTables(d1.db, ["weekly_matchups", "photos"]);
   if (!tables.ok) return jsonResponse(tables.body, tables.status);
 
   try {
@@ -26,7 +26,20 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     const week_start = String(body?.week_start || "").trim();
     const photo_a_id = Number(body?.photo_a_id);
     const photo_b_id = Number(body?.photo_b_id);
-    const statusRaw = String(body?.status || "closed").trim().toLowerCase();
+    const statusRaw =
+      body?.status === undefined || body?.status === null
+        ? "closed"
+        : String(body.status).trim().toLowerCase();
+
+    if (
+      body?.status !== undefined &&
+      body?.status !== null &&
+      String(body.status).trim() !== "" &&
+      !STATUS_VALUES.has(statusRaw)
+    ) {
+      return jsonResponse({ ok: false, error: "invalid_status" }, 400);
+    }
+
     const status = STATUS_VALUES.has(statusRaw) ? statusRaw : "closed";
 
     if (!isValidWeekStart(week_start)) {
@@ -40,6 +53,16 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     }
     if (photo_a_id === photo_b_id) {
       return jsonResponse({ ok: false, error: "photo_ids_must_differ" }, 400);
+    }
+
+    const photoA = await d1.db.prepare("SELECT id FROM photos WHERE id = ?").bind(photo_a_id).first();
+    if (!photoA) {
+      return jsonResponse({ ok: false, error: "photo_a_not_found" }, 400);
+    }
+
+    const photoB = await d1.db.prepare("SELECT id FROM photos WHERE id = ?").bind(photo_b_id).first();
+    if (!photoB) {
+      return jsonResponse({ ok: false, error: "photo_b_not_found" }, 400);
     }
 
     const out = await d1.db
@@ -56,11 +79,12 @@ export const onRequestPost = async (context: any): Promise<Response> => {
         return jsonResponse({ ok: false, error: "server_error", detail: "missing_insert_id" }, 500);
       }
 
-      await d1.db
-        .prepare("UPDATE weekly_matchups SET status='closed' WHERE status='active' AND id != ?")
-        .bind(newId)
-        .run();
-      await d1.db.prepare("UPDATE weekly_matchups SET status='active' WHERE id = ?").bind(newId).run();
+      await d1.db.batch([
+        d1.db
+          .prepare("UPDATE weekly_matchups SET status='closed' WHERE status='active' AND id != ?")
+          .bind(newId),
+        d1.db.prepare("UPDATE weekly_matchups SET status='active' WHERE id = ?").bind(newId),
+      ]);
     }
 
     return jsonResponse({ ok: true, id: newId || null }, 200);
