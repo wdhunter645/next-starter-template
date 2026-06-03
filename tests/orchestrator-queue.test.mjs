@@ -417,6 +417,26 @@ describe('orchestrator queue advancement', () => {
 		});
 	});
 
+	it('keeps source issue open when post-merge remediation remains required', () => {
+		const run = vi.fn();
+		const transitions = [];
+
+		const result = syncPrState.syncPrState({
+			prNumber: '42',
+			action: 'post_merge_remediation',
+			pr: { body: '**Issue:** #1', mergedAt: '2026-05-05T19:05:00Z', state: 'MERGED', url: 'https://example.test/pr/42' },
+			setStatusFn: (...args) => transitions.push(args),
+			run,
+		});
+
+		expect(result).toBe('remediation');
+		expect(transitions.map((transition) => transition.slice(1, 3))).toEqual([
+			['status:failed', null],
+			[null, 'status:post-merge-verify'],
+		]);
+		expect(run).not.toHaveBeenCalled();
+	});
+
 	it('advances the oldest blocked task only after the active pipeline completes', () => {
 		const queued = issue(1, 'status:queued', '2026-05-05T19:00:00Z');
 		const blockedOlder = issue(2, 'status:blocked', '2026-05-05T19:01:00Z');
@@ -499,6 +519,7 @@ describe('orchestrator workflow trigger compatibility', () => {
 		expect(queueWorkflow).toContain("github.event.label.name == 'status:failed'");
 		expect(enforcePrOnlyWorkflow).toContain('commits/${GITHUB_SHA}/pulls');
 		expect(postMergeWorkflow).toContain('node scripts/ci/post_merge_validator.mjs');
+		expect(postMergeWorkflow).not.toContain('branches: [main]');
 		expect(postMergeValidatorScript).toContain('/commits/${sha}/pulls');
 		expect(ciOrchestrationWorkflow).toContain("node-version: '22'");
 		expect(ciOrchestrationWorkflow).toContain('node scripts/orchestrator/ci-orchestration-engine.mjs');
