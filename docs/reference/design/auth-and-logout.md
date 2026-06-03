@@ -1,5 +1,5 @@
 ---
-Doc Type: Specification
+Doc Type: Reference
 Audience: Human + AI
 Authority Level: Canonical Design Specification
 Owns: Auth compatibility-route purpose and logout page contract
@@ -29,7 +29,7 @@ Canonical auth reference: /docs/reference/design/auth-model.md
 
 1. Canonical Join/Login entry is `/join`.
 2. `/login` redirects to `/`.
-3. `/auth` mirrors Join/Login behavior without becoming a separate entry surface.
+3. `/auth` redirects to `/join` as a legacy compatibility route and does not serve as a separate entry surface.
 4. Auth/session and redirect behavior are governed by `auth-model.md`.
 
 ## `/logout` — Logout Handler
