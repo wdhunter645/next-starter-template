@@ -3,6 +3,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { diataxisEvidenceFailures } from './post_merge_diataxis_audit.mjs';
+import { implementationEvidenceFailures } from './post_merge_implementation_evidence.mjs';
 
 import { linkedIssueNumber } from './issue_accounting.mjs';
 
@@ -24,16 +26,13 @@ const HIGH_SEVERITY_PATTERN =
 const RESOLVED_PATTERN = /addressed in|\bresolved\b|all checks passed|no warnings detected/i;
 const UNRESOLVED_PATTERN = /\bunresolved\b|\bnot\s+resolved\b|\bstill\s+open\b|\bstill\s+blocking\b/i;
 const OPTIONAL_WORKFLOWS = new Set(['Auto-Sync Documentation']);
-const REQUIRED_WORKFLOW_PATTERNS = [
-	/quality/i,
+const MERGE_PROTECTION_JOB_PATTERNS = [/^quality$/i, /^gitleaks$/i, /^pr-issue-accounting$/i];
+const MERGE_PROTECTION_WORKFLOW_PATTERNS = [
+	/quality checks/i,
 	/secret scan|gitleaks/i,
-	/zip/i,
 	/pr issue accounting/i,
-	/drift/i,
-	/intent/i,
-	/main change monitor/i,
-	/enforce pr only/i,
 ];
+const LEGACY_REQUIRED_WORKFLOW_PATTERNS = [/drift/i, /intent/i, /zip/i];
 
 export function linkedIssueNumber(body = '') {
 	const sourceMarker = body.match(/<!--\s*orchestrator-source-issue:\s*(\d+)\s*-->/i);
@@ -103,7 +102,7 @@ export function metadataFailures(pr, filesExist = () => true) {
 	}
 
 	for (const file of pr?.files || []) {
-		const filePath = typeof file === 'string' ? file : file.path;
+		const filePath = typeof file === 'string' ? file : (file.filename || file.path);
 		if (filePath && !filesExist(filePath)) {
 			failures.push({ code: 'missing_changed_file', message: `Merged PR file is absent from the checkout: ${filePath}` });
 		}
@@ -181,12 +180,23 @@ export function docsSyncRequiredByAcceptance(body = '') {
 	return /auto-sync documentation|docs sync|documentation sync/i.test(acceptance);
 }
 
+export function isRequiredMergeProtectionRun(run = {}) {
+	const name = run.workflowName || run.name || '';
+	const jobName = run.display_title || run.head_branch || '';
+	const jobCandidates = [jobName, name].filter(Boolean);
+	if (MERGE_PROTECTION_WORKFLOW_PATTERNS.some((pattern) => pattern.test(name))) return true;
+	if (MERGE_PROTECTION_JOB_PATTERNS.some((pattern) => jobCandidates.some((candidate) => pattern.test(candidate)))) {
+		return true;
+	}
+	return LEGACY_REQUIRED_WORKFLOW_PATTERNS.some((pattern) => pattern.test(name));
+}
+
 export function classifyWorkflowRun(run, prBody = '') {
 	const name = run.workflowName || run.name || '';
 	const conclusion = String(run.conclusion || '').toLowerCase();
 	const required = OPTIONAL_WORKFLOWS.has(name)
 		? docsSyncRequiredByAcceptance(prBody)
-		: REQUIRED_WORKFLOW_PATTERNS.some((pattern) => pattern.test(name));
+		: isRequiredMergeProtectionRun(run);
 	const classification =
 		/COPILOT_GITHUB_TOKEN|secret/i.test(run.failureText || '') || OPTIONAL_WORKFLOWS.has(name)
 			? 'secret-access/configuration'
@@ -213,7 +223,16 @@ export function workflowFailures({ runs = [], prBody = '', currentRunId = '' }) 
 		.map((run) => classifyWorkflowRun(run, prBody));
 }
 
-export function buildResult({ pr = null, resolution, metadata = [], findings = [], failures = [], mergeSha = '' }) {
+export function buildResult({
+	pr = null,
+	resolution,
+	metadata = [],
+	implementation = [],
+	diataxis = [],
+	findings = [],
+	failures = [],
+	mergeSha = '',
+} = {}) {
 	if (!resolution?.pr) {
 		return {
 			status: 'skipped',
@@ -222,6 +241,8 @@ export function buildResult({ pr = null, resolution, metadata = [], findings = [
 			source_issue: null,
 			late_findings: 0,
 			workflow_failures: [],
+			implementation_failures: [],
+			diataxis_failures: [],
 			remediation_required: false,
 			skip_reason: resolution?.skip_reason || 'no merged PR associated with commit',
 		};
@@ -229,8 +250,19 @@ export function buildResult({ pr = null, resolution, metadata = [], findings = [
 
 	const requiredWorkflowFailures = failures.filter((failure) => failure.required);
 	const blockingMetadata = blockingMetadataFailures(metadata);
-	const status = blockingMetadata.length === 0 && findings.length === 0 && requiredWorkflowFailures.length === 0 ? 'pass' : 'fail';
-	const remediationRequired = metadata.length > 0 || findings.length > 0 || failures.length > 0;
+	const blockingFailureCount =
+		blockingMetadata.length +
+		implementation.length +
+		diataxis.length +
+		findings.length +
+		requiredWorkflowFailures.length;
+	const status = blockingFailureCount === 0 ? 'pass' : 'fail';
+	const remediationRequired =
+		metadata.length > 0 ||
+		implementation.length > 0 ||
+		diataxis.length > 0 ||
+		findings.length > 0 ||
+		failures.length > 0;
 
 	return {
 		status,
@@ -239,30 +271,98 @@ export function buildResult({ pr = null, resolution, metadata = [], findings = [
 		source_issue: linkedIssueNumber(pr?.body || '') || null,
 		late_findings: findings.length,
 		workflow_failures: failures,
-		remediation_required: remediationRequired,
 		metadata_failures: metadata,
+		implementation_failures: implementation,
+		diataxis_failures: diataxis,
 		reviewer_findings: findings,
+		evidence_summary: {
+			metadata_failures: metadata.length,
+			implementation_failures: implementation.length,
+			diataxis_failures: diataxis.length,
+			late_reviewer_findings: findings.length,
+			workflow_failures: failures.length,
+			required_workflow_failures: requiredWorkflowFailures.length,
+		},
+		remediation_required: remediationRequired,
 		sync_action: status === 'fail' ? 'post_merge_failure' : remediationRequired ? 'post_merge_remediation' : 'post_merge_success',
 	};
 }
 
-export function commentBody(result) {
+export function renderPostMergeReport(result) {
 	const lines = [
 		`Post-merge validation result: ${result.status}`,
 		'',
+		'## Summary',
 		`- PR: ${result.pr ? `#${result.pr}` : 'none'}`,
 		`- Commit: ${result.merge_sha || 'unknown'}`,
 		`- Source issue: ${result.source_issue ? `#${result.source_issue}` : 'none'}`,
-		`- Late reviewer findings: ${result.late_findings}`,
-		`- Workflow failures: ${result.workflow_failures.length}`,
 		`- Remediation required: ${result.remediation_required ? 'yes' : 'no'}`,
 	];
 
-	for (const failure of result.workflow_failures) {
-		lines.push(`  - ${failure.workflow}: ${failure.classification}${failure.required ? ' (required)' : ' (optional)'}`);
+	if (result.evidence_summary) {
+		lines.push(
+			`- Metadata failures: ${result.evidence_summary.metadata_failures}`,
+			`- Implementation evidence failures: ${result.evidence_summary.implementation_failures}`,
+			`- DIATAXIS failures: ${result.evidence_summary.diataxis_failures}`,
+			`- Late reviewer findings: ${result.evidence_summary.late_reviewer_findings}`,
+			`- Workflow failures: ${result.evidence_summary.workflow_failures}`,
+		);
+	}
+
+	lines.push('', '## Metadata failures');
+	if (result.metadata_failures?.length) {
+		for (const failure of result.metadata_failures) {
+			lines.push(`- ${failure.code}: ${failure.message}`);
+		}
+	} else {
+		lines.push('- none');
+	}
+
+	lines.push('', '## Implementation evidence');
+	if (result.implementation_failures?.length) {
+		for (const failure of result.implementation_failures) {
+			lines.push(`- ${failure.code}: ${failure.message}`);
+		}
+	} else {
+		lines.push('- none');
+	}
+
+	lines.push('', '## DIATAXIS evidence');
+	if (result.diataxis_failures?.length) {
+		for (const failure of result.diataxis_failures) {
+			lines.push(`- ${failure.code}: ${failure.message}`);
+		}
+	} else {
+		lines.push('- none');
+	}
+
+	lines.push('', '## Late reviewer findings');
+	if (result.reviewer_findings?.length) {
+		for (const finding of result.reviewer_findings) {
+			lines.push(`- ${finding.url} by ${finding.reviewer}: ${finding.body}`);
+		}
+	} else {
+		lines.push('- none');
+	}
+
+	lines.push('', '## Workflow failures');
+	if (result.workflow_failures?.length) {
+		for (const failure of result.workflow_failures) {
+			lines.push(`  - ${failure.workflow}: ${failure.classification}${failure.required ? ' (required)' : ' (optional)'}`);
+		}
+	} else {
+		lines.push('- none');
+	}
+
+	if (result.status === 'fail') {
+		lines.push('', '## Orchestration impact', '- Queue advancement remains blocked until post-merge validation succeeds.');
 	}
 
 	return `${lines.join('\n')}\n`;
+}
+
+export function commentBody(result) {
+	return renderPostMergeReport(result);
 }
 
 function writeOutput(name, value) {
@@ -407,12 +507,29 @@ export async function runValidator({
 
 	const filesExist = (filePath) => fs.existsSync(path.join(workspace, filePath));
 	const metadata = metadataFailures(normalizedPr, filesExist);
+	const implementation = implementationEvidenceFailures({
+		body: normalizedPr.body,
+		files: normalizedPr.files,
+	});
+	const diataxis = diataxisEvidenceFailures({
+		files: normalizedPr.files,
+		root: workspace,
+	});
 	const findings = reviewerFindings({ pr: normalizedPr, issueComments, reviewComments, reviews });
 	const runs = latestRunsByWorkflow(uniqueRuns(mergeRunsResponse.workflow_runs, headRunsResponse.workflow_runs));
 	const enrichedRuns = await enrichFailedRuns({ token, repository, runs, currentRunId: runId });
 	const failures = workflowFailures({ runs: enrichedRuns, prBody: normalizedPr.body, currentRunId: runId });
 
-	return buildResult({ pr: normalizedPr, resolution, metadata, findings, failures, mergeSha: sha });
+	return buildResult({
+		pr: normalizedPr,
+		resolution,
+		metadata,
+		implementation,
+		diataxis,
+		findings,
+		failures,
+		mergeSha: sha,
+	});
 }
 
 export async function applyPullRequestBody({ token, repository, prNumber, body }) {

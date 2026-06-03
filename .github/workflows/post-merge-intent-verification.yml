@@ -95,6 +95,10 @@ jobs:
             post-merge-result.md
           if-no-files-found: warn
 
+      - name: Write step summary
+        if: always() && hashFiles('post-merge-result.md') != ''
+        run: cat post-merge-result.md >> "$GITHUB_STEP_SUMMARY"
+
       - name: Comment result
         if: always() && steps.validate.outputs.pr_number != ''
         env:
