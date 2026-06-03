@@ -20,14 +20,19 @@ export function parseRemediationIssue(issue) {
 	const sourceFromBody = body.match(/^- Source issue: #(\d+)$/m)?.[1] ?? null;
 	const source_issue = sourceFromBody ? Number(sourceFromBody) : null;
 
+	const group_key =
+		merge_sha === 'unknown'
+			? `unknown-${issue?.number ?? 'missing'}`
+			: `${pr || 'none'}|${merge_sha}`;
+
 	return {
-		number: issue.number,
-		html_url: issue.html_url,
-		created_at: issue.created_at,
+		number: issue?.number,
+		html_url: issue?.html_url,
+		created_at: issue?.created_at,
 		pr,
 		merge_sha,
 		source_issue,
-		group_key: `${pr || 'none'}|${merge_sha}`,
+		group_key,
 	};
 }
 
@@ -47,9 +52,11 @@ export function planDuplicateClosures(groups) {
 	for (const issues of groups.values()) {
 		if (issues.length <= 1) continue;
 
-		const sorted = [...issues].sort(
-			(a, b) => Date.parse(a.created_at || a.parsed.created_at) - Date.parse(b.created_at || b.parsed.created_at),
-		);
+		const sorted = [...issues].sort((a, b) => {
+			const timeA = Date.parse(a.created_at || a.parsed?.created_at) || 0;
+			const timeB = Date.parse(b.created_at || b.parsed?.created_at) || 0;
+			return timeA - timeB;
+		});
 		const canonical = sorted[0];
 		const protectedNumbers = new Set(
 			sorted.map((issue) => issue.parsed.source_issue).filter((value) => Number.isInteger(value)),
@@ -139,26 +146,30 @@ export async function closeDuplicateRemediationIssues({ token, repository, dryRu
 			continue;
 		}
 
-		await request({
-			token,
-			repository,
-			path: `/issues/${action.duplicate.number}/comments`,
-			method: 'POST',
-			body: { body: duplicateCloseComment(action) },
-		});
+		try {
+			await request({
+				token,
+				repository,
+				path: `/issues/${action.duplicate.number}/comments`,
+				method: 'POST',
+				body: { body: duplicateCloseComment(action) },
+			});
 
-		await request({
-			token,
-			repository,
-			path: `/issues/${action.duplicate.number}`,
-			method: 'PATCH',
-			body: { state: 'closed', state_reason: 'not_planned' },
-		});
+			await request({
+				token,
+				repository,
+				path: `/issues/${action.duplicate.number}`,
+				method: 'PATCH',
+				body: { state: 'closed', state_reason: 'not_planned' },
+			});
 
-		closed.push({
-			number: action.duplicate.number,
-			canonical: action.canonical.number,
-		});
+			closed.push({
+				number: action.duplicate.number,
+				canonical: action.canonical.number,
+			});
+		} catch (error) {
+			console.error(`Failed to close duplicate issue #${action.duplicate.number}:`, error);
+		}
 	}
 
 	return {

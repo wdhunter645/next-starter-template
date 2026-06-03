@@ -73,6 +73,16 @@ describe('close duplicate remediation issues', () => {
 		expect(actions).toEqual([]);
 	});
 
+	it('does not group issues with unknown merge SHAs', () => {
+		const issues = [
+			remediationIssue({ number: 1228, createdAt: '2026-06-01T10:00:00Z', mergeSha: 'unknown' }),
+			remediationIssue({ number: 1229, createdAt: '2026-06-01T11:00:00Z', mergeSha: 'unknown' }),
+		];
+		const actions = planDuplicateClosures(groupRemediationIssues(issues));
+
+		expect(actions).toEqual([]);
+	});
+
 	it('renders a duplicate close comment referencing the canonical issue', () => {
 		const canonical = remediationIssue({ number: 1228, createdAt: '2026-06-01T10:00:00Z' });
 		const duplicate = remediationIssue({ number: 1229, createdAt: '2026-06-01T11:00:00Z' });
