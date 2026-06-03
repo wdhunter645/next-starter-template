@@ -1,11 +1,11 @@
 ---
-Doc Type: Design Authority
+Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
 Owns: Canonical authentication and redirect behavior definitions
 Does Not Own: Join/Login UI composition; FanClub content layout; admin feature requirements
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Last Reviewed: 2026-04-22
+Last Reviewed: 2026-06-03
 ---
 
 # Authentication Model (Canonical Auth Source)
@@ -25,6 +25,8 @@ LGFC Day 1 member access uses a **cookie-backed server session model** with **Cl
 - Member identity and role source: D1 table `members`
 
 ### Behavior
+- Join/Login canonical page: `/join`
+- Login tab entry point: `/join?mode=login`
 - Login creates session + cookie, then redirects to `/fanclub`
 - Logout clears the cookie and invalidates the session, then redirects to `/`
 - Closing the browser does not immediately log the member out
@@ -40,6 +42,7 @@ LGFC Day 1 member access uses a **cookie-backed server session model** with **Cl
 2. Failed login/session validation → `/`
 3. `/logout` completion (or already logged out) → `/`
 4. `/login` legacy compatibility route → `/`
+5. `/auth` legacy compatibility route → `/join`
 
 ## Prohibited in Active Docs
 
@@ -47,7 +50,6 @@ LGFC Day 1 member access uses a **cookie-backed server session model** with **Cl
 - external auth providers
 - magic-link auth
 - ADMIN_EMAILS as the primary auth gate
-- magic-link auth
 - hybrid cookie + localStorage auth narratives
 
 ## Governance / Enforcement
