@@ -30,7 +30,7 @@ jobs:
       (github.event_name == 'workflow_dispatch' && inputs.apply_maintainer_body == true) ||
       (github.event_name == 'pull_request' &&
         github.event.pull_request.number == 1241 &&
-        !contains(github.event.pull_request.body, 'CURSOR_AGENT_PR_BODY_BEGIN'))
+        !contains(github.event.pull_request.body, 'review-comment:3349689698'))
     runs-on: ubuntu-latest
     permissions:
       actions: read
