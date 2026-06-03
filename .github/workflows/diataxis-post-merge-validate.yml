@@ -4,41 +4,59 @@ on:
   pull_request:
     types: [closed]
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
 jobs:
   validate:
-    if: >-
-      github.event.pull_request.merged == true &&
-      contains(github.event.pull_request.labels.*.name, 'DIATAXIS')
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout merged state
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
           fetch-depth: 0
 
-      - name: Log merged PR context
-        run: |
-          echo "PR_NUMBER=${{ github.event.pull_request.number }}"
-          echo "PR_TITLE=${{ github.event.pull_request.title }}"
-          echo "BASE_REF=${{ github.event.pull_request.base.ref }}"
-          echo "HEAD_REF=${{ github.event.pull_request.head.ref }}"
-          echo "MERGE_SHA=${{ github.event.pull_request.merge_commit_sha }}"
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
 
-      - name: Log changed files
+      - name: Collect merged DIATAXIS files
+        id: changed
         run: |
           git diff --name-only \
             "${{ github.event.pull_request.base.sha }}" \
-            "${{ github.event.pull_request.merge_commit_sha }}" | tee diataxis_changed_files.txt
+            "${{ github.event.pull_request.merge_commit_sha }}" \
+            | grep -E '^(docs/tutorials|docs/how-to|docs/reference|docs/explanation)/.*\.md$' \
+            | tee diataxis_changed_files.txt || true
 
-      - name: Placeholder - doc type validation
-        run: |
-          echo "TODO: validate tutorials/how-to/reference/explanation compliance"
+      - name: Audit merged DIATAXIS docs
+        id: audit
+        continue-on-error: true
+        env:
+          DIATAXIS_CHANGED_FILES_FILE: diataxis_changed_files.txt
+        run: node scripts/ci/post_merge_diataxis_audit.mjs
 
-      - name: Placeholder - contradiction detection
-        run: |
-          echo "TODO: detect duplicate authority and contradictions"
+      - name: Upload DIATAXIS evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-merge-diataxis-evidence
+          path: |
+            post-merge-diataxis.json
+            post-merge-diataxis.md
+            diataxis_changed_files.txt
+          if-no-files-found: warn
 
-      - name: Placeholder - result summary
+      - name: Comment DIATAXIS evidence
+        if: always() && hashFiles('post-merge-diataxis.md') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          echo "DIATAXIS post-merge validation skeleton executed"
+          gh pr comment "${{ github.event.pull_request.number }}" \
+            --body "$(printf '%s\n\n%s' '<!-- post-merge-diataxis-evidence -->' "$(cat post-merge-diataxis.md)")" || true

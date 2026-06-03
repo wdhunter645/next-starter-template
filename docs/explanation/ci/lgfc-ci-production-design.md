@@ -25,19 +25,23 @@ It does not define individual GitHub Actions implementation details or repositor
 
 ## Current Known Truth
 
-As of 2026-06-03 on `main`, Tasks 001 and 002 of the `#1075` CI redesign are
-merged. Task 003 through Task 005 remain in open implementation PRs. The
+As of 2026-06-03 on `main`, Tasks 001 through 005 of the `#1075` CI redesign are
+merged. Task 006 completes documentation reconciliation in PR #1244. The
 authoritative reconciliation record is
 `docs/reference/ci/lgfc-ci-as-built-reconciliation.md`.
 
-Merged changes include PR hygiene advisories, consolidated merge protection
-(`gate-zip-safety.yml` retired), and canonical merge-protection documentation in
-`docs/reference/ci/merge-protection-surface.md`.
+Merged changes include PR hygiene advisories, consolidated merge protection,
+reviewer lifecycle redesign, post-merge validation expansion, and OPS runtime
+consolidation. Domain surface references:
 
-Remaining architectural debt on `main` includes synchronous reviewer lifecycle
-blocking, placeholder DIATAXIS post-merge validation, legacy ZIP checks inside
-`gate-drift.yml`, and a workflow inventory table that still reflects the 2026-05-19
-baseline in several rows.
+- `docs/reference/ci/merge-protection-surface.md`
+- `docs/reference/ci/reviewer-lifecycle-surface.md`
+- `docs/reference/ci/post-merge-validation-surface.md`
+- `docs/reference/ci/ops-runtime-surface.md`
+
+Remaining architectural debt on `main` includes legacy ZIP checks inside
+`gate-drift.yml`, parked legacy workflow files, and a workflow inventory table
+that still reflects the 2026-05-19 baseline in several rows.
 
 ## Intended Final State
 
@@ -92,6 +96,8 @@ This layer inspects what actually landed on `main`.
 It should validate implementation completeness, design alignment, documentation completeness, reviewer audit results, route behavior, architectural drift, and omissions from accepted PR scope.
 
 Its primary outputs are evidence reports, issues, corrective PRs, and rollback recommendations for severe failures.
+
+When post-merge validation succeeds for a merged implementation PR, automation closes the linked source issue with evidence-driven closeout comments, clears stale active-state labels, and applies `status:complete`. Failed post-merge validation or remediation-required results must not close the source issue; they create or preserve remediation state instead.
 
 ### 4. OPS Runtime: LGFC Production Operations
 

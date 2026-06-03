@@ -2,6 +2,7 @@
 
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
+import { githubRepoRequest } from './github_issue_api.mjs';
 
 export function remediationTitle(result) {
 	const pr = result?.pr ? `PR #${result.pr}` : `merge ${String(result?.merge_sha || 'unknown').slice(0, 12)}`;
@@ -18,6 +19,16 @@ export function remediationBody(result) {
 		`- Validator status: ${result.status}`,
 		`- Remediation required: ${result.remediation_required ? 'yes' : 'no'}`,
 		'',
+		'## Required action',
+		'- Review each evidence section below.',
+		'- Open a corrective PR or update merged governance evidence as needed.',
+		'- Re-run post-merge validation after remediation.',
+		'',
+		'## Rollback recommendation',
+		result.status === 'fail'
+			? '- Consider reverting the merge commit if the merged change cannot be corrected quickly and production/orchestration risk remains.'
+			: '- No rollback recommendation recorded.',
+		'',
 		'## Workflow failures',
 	];
 
@@ -26,15 +37,6 @@ export function remediationBody(result) {
 			lines.push(
 				`- ${failure.workflow} — ${failure.classification} — ${failure.required ? 'required' : 'optional'} — ${failure.url || 'no run URL'}`,
 			);
-		}
-	} else {
-		lines.push('- none');
-	}
-
-	lines.push('', '## Reviewer findings');
-	if (result.reviewer_findings?.length) {
-		for (const finding of result.reviewer_findings) {
-			lines.push(`- ${finding.url} by ${finding.reviewer}: ${finding.body}`);
 		}
 	} else {
 		lines.push('- none');
@@ -49,32 +51,47 @@ export function remediationBody(result) {
 		lines.push('- none');
 	}
 
+	lines.push('', '## Implementation evidence failures');
+	if (result.implementation_failures?.length) {
+		for (const failure of result.implementation_failures) {
+			lines.push(`- ${failure.code}: ${failure.message}`);
+		}
+	} else {
+		lines.push('- none');
+	}
+
+	lines.push('', '## DIATAXIS failures');
+	if (result.diataxis_failures?.length) {
+		for (const failure of result.diataxis_failures) {
+			lines.push(`- ${failure.code}: ${failure.message}`);
+		}
+	} else {
+		lines.push('- none');
+	}
+
+	lines.push('', '## Reviewer findings');
+	if (result.reviewer_findings?.length) {
+		for (const finding of result.reviewer_findings) {
+			lines.push(`- ${finding.url} by ${finding.reviewer}: ${finding.body}`);
+		}
+	} else {
+		lines.push('- none');
+	}
+
 	return `${lines.join('\n')}\n`;
 }
 
-async function request({ token, repository, path, method = 'GET', body }) {
-	const response = await fetch(`https://api.github.com/repos/${repository}${path}`, {
-		method,
-		headers: {
-			Authorization: `Bearer ${token}`,
-			Accept: 'application/vnd.github+json',
-			'X-GitHub-Api-Version': '2022-11-28',
-			'User-Agent': 'lgfc-post-merge-remediation',
-			...(body ? { 'Content-Type': 'application/json' } : {}),
-		},
-		...(body ? { body: JSON.stringify(body) } : {}),
-	});
-
-	if (!response.ok) {
-		throw new Error(`${method} ${path} failed: ${response.status} ${await response.text()}`);
-	}
-
-	return response.status === 204 ? null : response.json();
+function request(args) {
+	return githubRepoRequest({ ...args, userAgent: 'lgfc-post-merge-remediation' });
 }
 
 export async function upsertRemediationIssue({ token, repository, result }) {
+	if (result.status !== 'fail') {
+		return { action: 'skipped', issue: null, reason: 'validation-passed-or-skipped' };
+	}
+
 	if (!result.remediation_required) {
-		return { action: 'skipped', issue: null };
+		return { action: 'skipped', issue: null, reason: 'no-remediation-required' };
 	}
 
 	const title = remediationTitle(result);

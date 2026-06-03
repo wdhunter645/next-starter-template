@@ -395,6 +395,8 @@ describe('orchestrator queue advancement', () => {
 			prNumber: '42',
 			action: 'post_merge_success',
 			pr: { body: '**Issue:** #1', mergedAt: '2026-05-05T19:05:00Z', state: 'MERGED', url: 'https://example.test/pr/42' },
+			postMergeResult: { status: 'pass', remediation_required: false, merge_sha: 'abc123' },
+			getIssueMeta: () => ({ title: 'Task 1', labels: ['orchestrator', 'status:post-merge-verify'] }),
 			setStatusFn: (...args) => transitions.push(args),
 			run: vi.fn(),
 		});
@@ -403,18 +405,38 @@ describe('orchestrator queue advancement', () => {
 		expect(complete).toBe('complete');
 		expect(transitions.map((transition) => transition.slice(1, 3))).toEqual([
 			['status:review', 'status:post-merge-verify'],
+			['status:blocked', null],
+			['status:queued', null],
 			['status:failed', null],
 			['status:post-merge-verify', null],
 			['status:pr-draft', null],
 			['status:review', null],
 			['status:implementation', null],
-			['status:queued', null],
 			[null, 'status:complete'],
 		]);
 		expect(advanceQueue.queueAdvanceDecision(queryFor({ 'status:blocked': [blockedNewer, blockedOlder] }))).toMatchObject({
 			action: 'advance',
 			issue: { number: 2 },
 		});
+	});
+
+	it('keeps source issue open when post-merge remediation remains required', () => {
+		const run = vi.fn();
+		const transitions = [];
+
+		const result = syncPrState.syncPrState({
+			prNumber: '42',
+			action: 'post_merge_remediation',
+			pr: { body: '**Issue:** #1', mergedAt: '2026-05-05T19:05:00Z', state: 'MERGED', url: 'https://example.test/pr/42' },
+			setStatusFn: (...args) => transitions.push(args),
+			run,
+		});
+
+		expect(result).toBe('remediation');
+		expect(transitions.map((transition) => transition.slice(1, 3))).toEqual([
+			['status:failed', 'status:post-merge-verify'],
+		]);
+		expect(run).not.toHaveBeenCalled();
 	});
 
 	it('advances the oldest blocked task only after the active pipeline completes', () => {
@@ -499,6 +521,7 @@ describe('orchestrator workflow trigger compatibility', () => {
 		expect(queueWorkflow).toContain("github.event.label.name == 'status:failed'");
 		expect(enforcePrOnlyWorkflow).toContain('commits/${GITHUB_SHA}/pulls');
 		expect(postMergeWorkflow).toContain('node scripts/ci/post_merge_validator.mjs');
+		expect(postMergeWorkflow).toContain('branches: [main]');
 		expect(postMergeValidatorScript).toContain('/commits/${sha}/pulls');
 		expect(ciOrchestrationWorkflow).toContain("node-version: '22'");
 		expect(ciOrchestrationWorkflow).toContain('node scripts/orchestrator/ci-orchestration-engine.mjs');

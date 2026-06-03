@@ -3,6 +3,9 @@ name: OPS — Design Compliance Audit
 # Purpose: Monitor and report misalignment between as-built production behavior
 # and documented design expectations.
 #
+# Post-merge implementation evidence and remediation are owned by
+# Post-Merge Detection and docs/reference/ci/post-merge-validation-surface.md.
+# This workflow remains OPS runtime observability only.
 # - Alert-only: always green ✅ regardless of audit results
 # - Non-blocking: NOT added to required PR checks
 # - Observability-only: no auto-fixing, no commits from CI

@@ -3,8 +3,10 @@ import { describe, expect, it } from 'vitest';
 import {
 	buildResult,
 	commentBody,
+	isRequiredMergeProtectionRun,
 	latestRunsByWorkflow,
 	metadataFailures,
+	renderPostMergeReport,
 	resolvePrNumber,
 	reviewerFindings,
 	workflowFailures,
@@ -76,7 +78,16 @@ describe('post-merge metadata validation', () => {
 				resolution: { pr: '1188' },
 				metadata: failures,
 			}),
-		).toMatchObject({ status: 'fail', remediation_required: true });
+		).toMatchObject({ status: 'fail', remediation_required: true, sync_action: 'post_merge_failure' });
+	});
+
+	it('treats missing advisory sections as remediation without failing closeout validation', () => {
+		const bodyWithoutAdvisory = baseBody.replace('\n\n## REQUIRED PRE-REVIEW SELF-CHECK\n- Complete.', '');
+		const failures = metadataFailures(mergedPr({ body: bodyWithoutAdvisory }), () => true);
+		const result = buildResult({ pr: mergedPr({ body: bodyWithoutAdvisory }), resolution: { pr: '1188' }, metadata: failures });
+
+		expect(failures).toContainEqual(expect.objectContaining({ code: 'missing_advisory_section', severity: 'advisory' }));
+		expect(result).toMatchObject({ status: 'pass', remediation_required: true, sync_action: 'post_merge_remediation' });
 	});
 });
 
@@ -97,7 +108,7 @@ describe('post-merge reviewer audit classification', () => {
 		const result = buildResult({ pr: mergedPr(), resolution: { pr: '1188' }, findings });
 
 		expect(findings).toHaveLength(1);
-		expect(result).toMatchObject({ status: 'fail', late_findings: 1, remediation_required: true });
+		expect(result).toMatchObject({ status: 'fail', late_findings: 1, remediation_required: true, sync_action: 'post_merge_failure' });
 	});
 });
 
@@ -128,7 +139,7 @@ describe('post-merge workflow failure classification', () => {
 		const result = buildResult({ pr: mergedPr(), resolution: { pr: '1188' }, failures });
 
 		expect(failures[0]).toMatchObject({ required: true, classification: 'required-workflow-failure' });
-		expect(result).toMatchObject({ status: 'fail', remediation_required: true });
+		expect(result).toMatchObject({ status: 'fail', remediation_required: true, sync_action: 'post_merge_failure' });
 	});
 
 	it('requires remediation but does not fail the original PR for optional docs sync failure', () => {
@@ -149,7 +160,7 @@ describe('post-merge workflow failure classification', () => {
 		const result = buildResult({ pr: mergedPr(), resolution: { pr: '1188' }, failures });
 
 		expect(failures[0]).toMatchObject({ required: false, classification: 'secret-access/configuration' });
-		expect(result).toMatchObject({ status: 'pass', remediation_required: true });
+		expect(result).toMatchObject({ status: 'pass', remediation_required: true, sync_action: 'post_merge_remediation' });
 	});
 });
 
@@ -177,9 +188,58 @@ describe('post-merge structured output and remediation body', () => {
 			source_issue: '1122',
 			late_findings: 0,
 			remediation_required: true,
+			evidence_summary: expect.objectContaining({
+				workflow_failures: 1,
+			}),
+			sync_action: 'post_merge_remediation',
 		});
-		expect(commentBody(result)).toContain('Workflow failures: 1');
+		expect(commentBody(result)).toContain('## Workflow failures');
+		expect(renderPostMergeReport(result)).toContain('Implementation evidence failures: 0');
 		expect(remediationTitle(result)).toBe('Post-merge remediation required for PR #1188');
 		expect(remediationBody(result)).toContain('Auto-Sync Documentation');
+	});
+
+	it('fails when merged implementation evidence is incomplete', () => {
+		const implementation = [{
+			code: 'allowlist_violation',
+			message: 'Merged changed file is outside declared allowlist: src/app/page.tsx',
+		}];
+
+		const result = buildResult({
+			pr: mergedPr(),
+			resolution: { pr: '1188' },
+			implementation,
+		});
+
+		expect(result).toMatchObject({
+			status: 'fail',
+			implementation_failures: implementation,
+			sync_action: 'post_merge_failure',
+		});
+	});
+
+	it('skips remediation issue creation when validation passed', () => {
+		const result = buildResult({
+			pr: mergedPr(),
+			resolution: { pr: '1188' },
+			failures: [{
+				workflow: 'Auto-Sync Documentation',
+				classification: 'secret-access/configuration',
+				required: false,
+				url: 'https://github.test/actions/2',
+				conclusion: 'failure',
+			}],
+		});
+
+		expect(result.status).toBe('pass');
+		expect(result.remediation_required).toBe(true);
+	});
+});
+
+describe('post-merge merge-protection workflow classification', () => {
+	it('treats consolidated merge-protection jobs as required', () => {
+		expect(isRequiredMergeProtectionRun({ name: 'quality' })).toBe(true);
+		expect(isRequiredMergeProtectionRun({ name: 'GATE — Quality Checks' })).toBe(true);
+		expect(isRequiredMergeProtectionRun({ name: 'Auto-Sync Documentation' })).toBe(false);
 	});
 });

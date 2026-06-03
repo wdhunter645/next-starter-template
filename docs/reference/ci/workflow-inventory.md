@@ -29,23 +29,23 @@ Merged redesign phases on `main`:
 
 - Task 001 PR hygiene advisories
 - Task 002 merge protection consolidation (`gate-zip-safety.yml` retired)
+- Task 003 reviewer lifecycle redesign (PR #1239)
+- Task 004 post-merge validation expansion (PR #1240)
+- Task 005 OPS runtime consolidation (PR #1242)
 
-In-flight redesign PRs at reconciliation time:
-
-- Task 003 reviewer lifecycle (`PR #1239`)
-- Task 004 post-merge validation expansion (`PR #1240`)
-- Task 005 OPS runtime consolidation (`PR #1242`)
-
-This inventory table below still reflects the 2026-05-19 baseline for historical
-planning context. Use the as-built reconciliation doc and domain surface references
-for current merged truth:
+Task 005 merged before Task 004 without file conflicts because the domains are
+disjoint. Use the as-built reconciliation doc and domain surface references for
+current merged truth:
 
 - `docs/reference/ci/merge-protection-surface.md`
 - `docs/reference/ci/pr-hygiene-foundation.md`
+- `docs/reference/ci/reviewer-lifecycle-surface.md`
+- `docs/reference/ci/post-merge-validation-surface.md`
+- `docs/reference/ci/ops-runtime-surface.md`
 
 Rows that remain materially stale until a full inventory rewrite include
-`gate-zip-safety.yml` (retired), `ops-pr-issue-accounting.yml` merge-protection
-classification, and several OPS workflow display names pending PR #1242.
+`gate-zip-safety.yml` (retired) and several historical OPS workflow descriptions
+in the table below.
 
 ## Intended Final State
 

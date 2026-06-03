@@ -23,7 +23,7 @@ reconciliation.
 |---|---|---|---|
 | Merge protection | Repository maintainers | Implementation agent on active PR | Yes |
 | PR hygiene | Repository maintainers | Implementation agent on active PR | No |
-| Reviewer lifecycle | Repository maintainers | Implementation agent on active PR | Yes on `main` today; narrowing in PR #1239 |
+| Reviewer lifecycle | Repository maintainers | Implementation agent on active PR | Yes on protected CI scope only |
 | Post-merge validation | CI orchestration maintainers | Merge closeout agent | No for PR merge; yes for queue advancement |
 | OPS runtime | Platform operations | Scheduled/manual ops responder | No |
 
@@ -43,7 +43,7 @@ reconciliation.
 ### Pre-merge
 
 1. Inspect failing required check logs.
-2. Determine whether failure is deterministic (quality, secret scan, issue accounting) or process/timing (reviewer lifecycle on current `main`).
+2. Determine whether failure is deterministic (quality, secret scan, issue accounting) or protected-scope reviewer evidence on CI workflow/script paths.
 3. Fix on the same PR and rerun checks.
 
 ### Post-merge
@@ -63,4 +63,7 @@ reconciliation.
 - As-built reconciliation: `docs/reference/ci/lgfc-ci-as-built-reconciliation.md`
 - Merge protection surface: `docs/reference/ci/merge-protection-surface.md`
 - PR hygiene foundation: `docs/reference/ci/pr-hygiene-foundation.md`
+- Reviewer lifecycle surface: `docs/reference/ci/reviewer-lifecycle-surface.md`
+- Post-merge validation surface: `docs/reference/ci/post-merge-validation-surface.md`
+- OPS runtime surface: `docs/reference/ci/ops-runtime-surface.md`
 - Monitoring coverage master: `docs/ops/monitoring-coverage_MASTER.md`

@@ -17,11 +17,16 @@ This document provides a complete map of all Continuous Integration (CI) and Con
 - Gate enforcement policy
 
 As-built reconciliation for the `#1075` CI redesign is maintained in
-`docs/reference/ci/lgfc-ci-as-built-reconciliation.md`. This map remains the
-operational guardrails reference; when design intent and merged workflow behavior
-diverge, the reconciliation document is authoritative for variance tracking.
+`docs/reference/ci/lgfc-ci-as-built-reconciliation.md`. Domain surface references:
 
-**Last reconciliation review:** 2026-06-03
+- `docs/reference/ci/merge-protection-surface.md`
+- `docs/reference/ci/reviewer-lifecycle-surface.md`
+- `docs/reference/ci/post-merge-validation-surface.md`
+- `docs/reference/ci/ops-runtime-surface.md`
+
+This map remains the operational guardrails reference; when design intent and merged workflow behavior diverge, the reconciliation document is authoritative for variance tracking.
+
+**Last reconciliation review:** 2026-06-03 (Tasks 001–005 merged)
 
 ## Table of Contents
 

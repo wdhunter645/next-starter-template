@@ -13,9 +13,8 @@ Last Reviewed: 2026-06-03
 
 ## Purpose
 
-This reference records the CI redesign as built on `main` as of 2026-06-03 and
-explicitly separates merged implementation, in-flight pull requests, and
-deferred follow-up work.
+This reference records the CI redesign as built on `main` as of 2026-06-03 after
+Tasks 001 through 005 merged and Task 006 completes documentation reconciliation.
 
 ## Reconciliation Baseline
 
@@ -34,10 +33,13 @@ Workflow file count on `main`: 54 files under `.github/workflows/`.
 |---|---|---|---|
 | Task 001 PR Hygiene Foundation | #1131 | Merged | PR #1189; `docs/reference/ci/pr-hygiene-foundation.md` |
 | Task 002 Merge Protection Consolidation | #1226 | Merged | PR #1229; `docs/reference/ci/merge-protection-surface.md` |
-| Task 003 Reviewer Lifecycle Redesign | #1196 | In flight | PR #1239 |
-| Task 004 Post-Merge Validation Expansion | #1197 | In flight | PR #1240 |
-| Task 005 OPS Runtime Consolidation | #1198 | In flight | PR #1242 |
+| Task 003 Reviewer Lifecycle Redesign | #1196 | Merged | PR #1239; `docs/reference/ci/reviewer-lifecycle-surface.md` |
+| Task 004 Post-Merge Validation Expansion | #1197 | Merged | PR #1240; `docs/reference/ci/post-merge-validation-surface.md` |
+| Task 005 OPS Runtime Consolidation | #1198 | Merged | PR #1242; `docs/reference/ci/ops-runtime-surface.md` |
 | Task 006 As-built Documentation Update | #1199 | This document | Documentation-only reconciliation |
+
+Task 005 merged before Task 004 out of planned order. No merge conflicts resulted,
+but rollout bookkeeping should treat both as complete on `main`.
 
 ## Domain Reconciliation
 
@@ -45,7 +47,7 @@ Workflow file count on `main`: 54 files under `.github/workflows/`.
 
 | Intended | As-built on `main` | Variance |
 |---|---|---|
-| Deterministic binary merge blockers only | Consolidated into `quality`, `gitleaks`, `pr-issue-accounting` | Partial |
+| Deterministic binary merge blockers only | Consolidated into `quality`, `gitleaks`, `ops-pr-issue-accounting` | Complete for Task 002 |
 | No duplicate ZIP blockers | `gate-zip-safety.yml` retired; ZIP checks in `gate-quality.yml` | Complete for Task 002 |
 | Branch protection docs match checks | Documented in `merge-protection-surface.md` | Complete for Task 002 |
 | Drift gate no longer duplicate ZIP enforcement | `gate-drift.yml` still runs legacy ZIP checks | Deferred beyond Task 002 |
@@ -65,42 +67,45 @@ Authoritative hygiene reference: `docs/reference/ci/pr-hygiene-foundation.md`.
 
 | Intended | As-built on `main` | Variance |
 |---|---|---|
-| Reviewer timing must not block merge | `reviewer-response-completion.yml` still enforces quiet-period and current-head reviewer artifacts synchronously | Not complete until PR #1239 |
-| Post-merge reviewer audit | `post_merge_validator.mjs` includes late reviewer findings; dedicated audit wiring expanded in PR #1239 | Partial |
+| Reviewer timing must not block merge | `reviewer-response-completion.yml` uses `reviewer_lifecycle_gate.mjs`; quiet-period PR-body rituals removed | Complete for Task 003 |
+| Protected-scope trusted review evidence | Current-head trusted review artifact required only on protected CI paths | Complete for Task 003 |
+| Trusted reviewer evidence model | Documented in `docs/reference/ci/trusted-reviewer-evidence-gate.md` (#1248/#1251) | Complete |
+| Post-merge reviewer audit | Late trusted reviewer findings audited via `post_merge_validator.mjs` | Complete for Task 003/004 |
 
-Deferred to PR #1239: protected-scope-only pre-merge blocking and advisory reviewer lifecycle gate.
+Authoritative reviewer reference: `docs/reference/ci/reviewer-lifecycle-surface.md`.
 
 ### Post-Merge Validation
 
 | Intended | As-built on `main` | Variance |
 |---|---|---|
-| Evidence-driven post-merge checks | `post-merge-intent-verification.yml` runs `post_merge_validator.mjs` | Partial |
-| Remediation issues on failure | `post-merge-remediation.yml` exists; failure-only triggering refined in PR #1240 | Partial |
-| DIATAXIS post-merge validation | `diataxis-post-merge-validate.yml` remains largely placeholder on `main` | Deferred to PR #1240 |
+| Evidence-driven post-merge checks | `post-merge-intent-verification.yml` aggregates metadata, implementation, DIATAXIS, reviewer, and workflow evidence | Complete for Task 004 |
+| Remediation issues on failure | `post-merge-remediation.yml` runs only when Post-Merge Detection fails | Complete for Task 004 |
+| DIATAXIS post-merge validation | `diataxis-post-merge-validate.yml` uploads merged DIATAXIS evidence | Complete for Task 004 |
+| Source issue closeout | `post_merge_source_issue_closeout.mjs` closes source issues after successful validation (#1249) | Complete |
 
-Deferred to PR #1240: implementation evidence, DIATAXIS audit integration, richer remediation bodies.
+Authoritative post-merge reference: `docs/reference/ci/post-merge-validation-surface.md`.
 
 ### OPS Runtime
 
 | Intended | As-built on `main` | Variance |
 |---|---|---|
 | OPS workflows separated from merge protection | OPS workflows do not use PR merge blockers | Complete |
-| Shared runtime escalation | Workflow-specific inline issue creation remains common on `main` | Deferred to PR #1242 |
-| Consolidated OPS naming | B2 and production audit workflows retain legacy display names on `main` | Deferred to PR #1242 |
+| Shared runtime escalation | `scripts/ci/ops_runtime_escalation.mjs` creates or updates ops issues with evidence | Complete for Task 005 |
+| Consolidated OPS naming | B2, snapshot, and production audit workflows use OPS display names per surface inventory | Complete for Task 005 |
 | Capped Cloudflare retry visibility | `ops-cf-pages-retry.yml` uses `MAX_RETRIES=2` and non-blocking exhaustion summary | Complete |
 
-Deferred to PR #1242: `ops_runtime_escalation.mjs`, `ops-runtime-surface.md`, OPS display-name alignment.
+Authoritative OPS reference: `docs/reference/ci/ops-runtime-surface.md`.
 
 ## Deferred and Out-of-Scope Items
 
 | Item | Reason deferred | Owner domain |
 |---|---|---|
-| Drift gate rebuild and ZIP deduplication inside `gate-drift.yml` | Outside Tasks 002–005 allowlists | Future CI task |
+| Drift gate rebuild and ZIP deduplication inside `gate-drift.yml` | Outside Tasks 001–005 allowlists | Future CI task |
 | Retire parked legacy workflows (`ci.yml`, `deploy*.yml`, `test*.yml`, etc.) | Requires separate cleanup PR with retirement evidence | OPS / CI maintenance |
 | Retire `assess-nightly.yml` after confirming `ops-assess.yml` coverage | Operational overlap only; not blocking redesign | OPS runtime |
 | Preview invariants Cloudflare integration | Preview URL resolution not production-configured | OPS runtime |
 | Branch protection UI reconciliation | Repository setting change outside workflow files | Human operator |
-| Full workflow inventory table rewrite | Large mechanical update deferred to post-redesign cleanup | Task 006 follow-up |
+| Full workflow inventory table rewrite | Large mechanical update deferred from Task 006 | CI maintenance follow-up |
 
 ## Monitoring Behavior and Operational Ownership
 
@@ -108,11 +113,11 @@ Deferred to PR #1242: `ops_runtime_escalation.mjs`, `ops-runtime-surface.md`, OP
 |---|---|---|---|---|
 | Merge protection (`gate-quality`, `gitleaks`, `ops-pr-issue-accounting`) | CI governance | PR / push | Required check failure on PR | Fix PR before merge |
 | PR hygiene advisories | CI governance | PR | Advisory comments | Agent/human correction pre-merge |
-| Reviewer lifecycle (`reviewer-response-completion`) | CI governance | PR target / review events | Required check failure on PR | PR #1239 redesign |
+| Reviewer lifecycle (`reviewer-response-completion`) | CI governance | PR target / review events | Required check failure on protected CI scope | Trusted review + thread resolution |
 | Post-merge detection / remediation | CI orchestration | `main` push / merged PR close | Workflow failure on `main`; orchestrator pause | Remediation issue + follow-up PR |
-| OPS assessment / production audit | Operations | schedule / manual / scan trigger | Workflow failure + GitHub issue | Ops issue triage |
+| OPS assessment / production audit | Operations | schedule / manual / scan trigger | Workflow failure + GitHub issue via `ops_runtime_escalation.mjs` | Ops issue triage |
 | OPS main change monitor | Operations | `main` push | Direct-push detection issue | Admin review |
-| Snapshot / B2 / D1 runtime jobs | Platform operations | schedule / manual | Workflow failure | Ops issue (expanded in PR #1242) |
+| Snapshot / B2 / D1 runtime jobs | Platform operations | schedule / manual | Workflow failure + ops issue | Ops issue triage |
 | Cloudflare Pages retry helper | Platform operations | manual | Step summary warning only | Manual re-run or ops follow-up |
 | CI orchestration engine | CI program | schedule / manual | Paused issue creation | `#1075` program tracking |
 
@@ -120,9 +125,10 @@ Detailed monitoring map: `docs/ops/ci-monitoring-ownership.md`.
 
 ## Lessons Learned
 
-- Separating merge protection from reviewer timing removed the largest false-positive source only after Task 002; Task 003 completes that separation on `main`.
-- Documentation-only reconciliation must distinguish merged truth from in-flight PR truth to avoid claiming unfinished workflow behavior as complete.
-- Surface inventory references (`merge-protection-surface.md`) should be treated as authoritative for merged phases even when the broader workflow inventory table remains historically stale.
+- Separating merge protection from reviewer timing removed the largest false-positive source after Task 002; Task 003 completed protected-scope-only blocking on `main`.
+- Task 005 merged before Task 004 without code conflict because domains are disjoint, but serial rollout bookkeeping must record actual merge order separately from dependency intent.
+- Documentation-only reconciliation must be refreshed after late merges so Task 006 does not describe in-flight PRs as pending once they land on `main`.
+- Surface inventory references should be treated as authoritative for merged phases even when the broader workflow inventory table remains historically stale.
 
 ## Rollback
 

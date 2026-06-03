@@ -39,7 +39,7 @@ Use this procedure when turning the CI architecture into implementation work:
 4. Include the allowed files, rollback plan, acceptance criteria, and validation requirements in the issue.
 5. Assign the issue to Cursor for one implementation PR.
 6. Validate the implementation PR with the current merge-protection gates.
-7. After merge, run post-merge verification before creating the next issue.
+7. After merge, run post-merge verification before creating the next issue. When validation succeeds, auto-close the linked source issue with closeout evidence; when validation fails or remediation remains required, keep the source issue open.
 
 The orchestration layer must not create the next CI implementation issue until the current issue is merged, validated, and stable.
 
@@ -94,6 +94,10 @@ Goals:
 - preserve protected review enforcement
 - support asynchronous reviewers safely
 
+Canonical as-built reference:
+- `docs/reference/ci/reviewer-lifecycle-surface.md`
+- `scripts/ci/reviewer_lifecycle_gate.mjs`
+
 ### Phase 5 — Post-Merge Validation
 
 Goals:
@@ -101,6 +105,10 @@ Goals:
 - implement design-audit workflows
 - implement remediation issue generation
 - implement architectural drift analysis
+
+Canonical as-built reference:
+- `docs/reference/ci/post-merge-validation-surface.md`
+- `scripts/ci/post_merge_validation_surface.mjs`
 
 ### Phase 6 — OPS Runtime Suite
 
@@ -111,11 +119,15 @@ Goals:
 - implement self-healing retry logic
 - preserve rollback evidence
 
+Canonical as-built reference:
+- `docs/reference/ci/ops-runtime-surface.md`
+- `scripts/ci/ops_runtime_surface.mjs`
+
 ### Phase 7 — As-Built Documentation Reconciliation
 
 Goals:
 - compare intended CI design with merged workflow behavior
-- document variances, deferred items, and in-flight PR truth separately
+- document variances, deferred items, and merged Task 003–005 truth separately
 - map monitoring ownership and escalation paths
 - refresh guardrails map and workflow inventory pointers without rewriting every historical row
 

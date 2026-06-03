@@ -1,7 +1,16 @@
 #!/usr/bin/env node
 
+import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
+
+import { linkedIssueNumber } from '../ci/issue_accounting.mjs';
+import {
+  STALE_SOURCE_ISSUE_LABELS,
+  buildSourceIssueCloseoutComment,
+  postMergeVerificationResult,
+  shouldCloseSourceIssue,
+} from '../ci/post_merge_source_issue_closeout.mjs';
 
 const repo = process.env.GITHUB_REPOSITORY;
 const prNumber = process.env.PR_NUMBER;
@@ -27,13 +36,25 @@ function issueLabelNames(issueNumber) {
   return new Set((issue.labels || []).map((label) => label.name));
 }
 
-function linkedIssueNumber(body) {
-  const sourceMarker = body.match(/<!--\s*orchestrator-source-issue:\s*(\d+)\s*-->/i);
-  if (sourceMarker) return sourceMarker[1];
-
-  const match = body.match(/(?:\*\*Issue:\*\*|Issue:)\s*(?:https?:\/\/github\.com\/[^/\s]+\/[^/\s]+\/issues\/|#)(\d+)/i);
-  return match ? match[1] : '';
+export function readPostMergeResult(resultPath = process.env.POST_MERGE_RESULT_PATH || 'post-merge-result.json') {
+  if (!resultPath || !fs.existsSync(resultPath)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(resultPath, 'utf8'));
+  } catch {
+    return null;
+  }
 }
+
+export function issueMeta(issueNumber, { run = runGh } = {}) {
+  const issueJson = run(['issue', 'view', issueNumber, '--repo', repo, '--json', 'title,labels']);
+  const issue = JSON.parse(issueJson);
+  return {
+    title: issue.title || '',
+    labels: (issue.labels || []).map((label) => label.name),
+  };
+}
+
+export { linkedIssueNumber };
 
 export function setStatus(
   issueNumber,
@@ -57,7 +78,16 @@ export function setStatus(
   if (comment) run(['issue', 'comment', issueNumber, '--repo', repo, '--body', comment]);
 }
 
-export function syncPrState({ pr, prNumber, action, setStatusFn = setStatus, run = runGh, log = console.log }) {
+export function syncPrState({
+  pr,
+  prNumber,
+  action,
+  setStatusFn = setStatus,
+  run = runGh,
+  log = console.log,
+  getIssueMeta = issueMeta,
+  postMergeResult = readPostMergeResult(),
+} = {}) {
   const issueNumber = linkedIssueNumber(pr.body || '');
   const isMerged = Boolean(pr.mergedAt) || pr.state === 'MERGED';
 
@@ -78,25 +108,58 @@ export function syncPrState({ pr, prNumber, action, setStatusFn = setStatus, run
   }
 
   if (action === 'post_merge_success') {
+    const meta = getIssueMeta(issueNumber, { run });
+    const closeDecision = shouldCloseSourceIssue({
+      action,
+      issueNumber,
+      isMerged,
+      issueMeta: meta,
+      postMergeResult,
+    });
+
+    if (!closeDecision.close) {
+      log(`Skipping source issue closeout for PR #${prNumber}: ${closeDecision.reason}.`);
+      return closeDecision.reason;
+    }
+
     const lifecycleLabelsToClear = [
-      'status:failed',
-      'status:post-merge-verify',
+      ...STALE_SOURCE_ISSUE_LABELS,
       'status:pr-draft',
       'status:review',
       'status:implementation',
-      'status:queued',
     ];
     for (const label of lifecycleLabelsToClear) {
       setStatusFn(issueNumber, label, null, null);
     }
+
+    const mergeSha = postMergeResult?.merge_sha || pr.mergeCommit?.oid || '';
+    const closeoutComment = buildSourceIssueCloseoutComment({
+      prNumber,
+      mergeSha,
+      validatorStatus: postMergeResult?.status || 'pass',
+      verificationResult: postMergeVerificationResult(postMergeResult),
+      closeoutReason: closeDecision.reason,
+    });
+
     setStatusFn(
       issueNumber,
       null,
       'status:complete',
       `Post-merge verification passed for PR #${prNumber}: ${pr.url}`,
     );
-    run(['issue', 'close', issueNumber, '--repo', repo, '--comment', `Task complete. PR #${prNumber} merged and post-merge verification passed.`]);
+    run(['issue', 'comment', issueNumber, '--repo', repo, '--body', closeoutComment]);
+    run(['issue', 'close', issueNumber, '--repo', repo, '--reason', 'completed']);
     return 'complete';
+  }
+
+  if (action === 'post_merge_remediation') {
+    setStatusFn(
+      issueNumber,
+      'status:failed',
+      'status:post-merge-verify',
+      `Post-merge validation passed for PR #${prNumber}, but remediation remains required. Source issue remains open: ${pr.url}`,
+    );
+    return 'remediation';
   }
 
   if (action === 'post_merge_failure') {
@@ -115,7 +178,7 @@ export function main() {
     process.exit(1);
   }
 
-  const prJson = runGh(['pr', 'view', prNumber, '--repo', repo, '--json', 'body,url,mergedAt,state']);
+  const prJson = runGh(['pr', 'view', prNumber, '--repo', repo, '--json', 'body,url,mergedAt,state,mergeCommit']);
   const pr = JSON.parse(prJson);
   syncPrState({ pr, prNumber, action });
 }

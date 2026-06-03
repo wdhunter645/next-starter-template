@@ -51,16 +51,18 @@ Workflow should be removed once replacement coverage exists.
 | gate-zip-safety.yml | ZIP blocker | Merge Protection | Assimilated | Absorbed into `gate-quality.yml` during Task 002 |
 | gate-drift.yml | Drift enforcement | Scope advisor + post-merge audit | Rebuild | Remove timing-sensitive merge blocking |
 | gate-intent-labeler.yml | Intent labeling | PR Hygiene | Rebuild | Corrective/advisory instead of blocking |
-| reviewer-response-completion.yml | Reviewer lifecycle enforcement | Reviewer audit | Rebuild | Remove brittle synchronous logic |
+| reviewer-response-completion.yml | Reviewer lifecycle enforcement | Reviewer audit + protected-scope gate | Rebuild | Task 003 removes timing/PR-body brittle blocking; protected CI scope only |
 | design-compliance-warn.yml | Advisory PR warnings | PR Hygiene + post-merge audit | Rebuild | Convert to corrective guidance |
 | docs-guardrails.yml | Docs governance | Merge Protection + PR Hygiene | Rebuild | Add deterministic auto-fix capability |
 | diataxis-folder-authority-check.yml | Docs placement validation | PR Hygiene | Assimilate | Fold into docs correction system |
 | diataxis-post-merge-validate.yml | Post-merge docs validation | Post-Merge Validation | Keep/Rebuild | Expand evidence reporting |
 | ops-pr-issue-accounting.yml | Source issue enforcement | Merge Protection | Keep/Rebuild | Use tolerant parser model |
 | ops-assess.yml | Site assessment | OPS Runtime | Keep | Current operational assessment base |
-| production-audit.yml | Production invariants | OPS Runtime + Post-Merge Validation | Rebuild | Consolidate operational reporting |
+| production-audit.yml | Production invariants | OPS Runtime | Rebuild | Task 005 consolidated naming and runtime escalation evidence |
+| b2-s3-smoke-test.yml | B2 smoke test | OPS Runtime | Assimilated | Task 005 OPS naming and shared escalation |
+| b2-d1-daily-sync.yml | B2/D1 sync | OPS Runtime | Assimilated | Task 005 OPS naming and shared escalation |
 | ops-design-compliance-audit.yml | Design audit | Post-Merge Validation | Keep/Rebuild | Expand implementation-verification role |
-| post-merge-intent-verification.yml | Post-merge metadata validation | Post-Merge Validation | Rebuild | Current YAML instability must be fixed |
+| post-merge-intent-verification.yml | Post-merge metadata validation | Post-Merge Validation | Rebuild | Expanded evidence reporting and remediation handoff in Task 004 |
 | post-merge-remediation.yml | Remediation workflow | Post-Merge Validation | Keep/Rebuild | Expand remediation issue generation |
 | ops-cf-pages-retry.yml | Deployment retry | OPS Runtime | Keep | Strong operational utility |
 | snapshot.yml | Snapshot/rollback evidence | OPS Runtime | Keep | Preserve rollback evidence |

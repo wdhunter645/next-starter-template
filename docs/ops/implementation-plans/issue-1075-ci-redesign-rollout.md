@@ -139,6 +139,8 @@ Acceptance Criteria:
 - Post-merge checks report implementation evidence from merged code.
 - Failures create actionable remediation output.
 - Queue advancement remains blocked until validation succeeds.
+- Successful post-merge validation auto-closes the linked source issue with evidence (PR number, merge SHA, validator status, verification result, closeout reason) and clears stale active-state labels (`status:blocked`, `status:queued`, `status:failed`, `status:post-merge-verify`).
+- Failed post-merge validation or remediation-required results do not close the linked source issue.
 Validation:
 - `npm test`
 - `npm run typecheck`
@@ -212,8 +214,8 @@ Deliverables opened in the Task 006 PR:
 - Guardrails map, workflow inventory, production design, implementation plan, and
   monitoring coverage updates pointing at the reconciliation record
 
-Post-merge follow-up after PRs #1239, #1240, and #1242 land:
+Post-merge follow-up after Task 006 merge:
 
-- Reconcile the as-built matrix to mark Tasks 003–005 complete on `main`
-- Schedule a mechanical workflow inventory table rewrite (deferred from Task 006)
 - Confirm branch protection required checks match `merge-protection-surface.md`
+- Schedule a mechanical workflow inventory table rewrite (deferred from Task 006)
+- Close source issues #1197 and #1198 if post-merge closeout automation has not already done so

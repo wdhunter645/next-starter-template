@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: Reviewer lifecycle redesign philosophy, async reviewer governance model, reviewer gate lifecycle placement
 Does Not Own: Specific workflow implementation
 Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related Issues: #1058
+Related Issues: #1196, #1058
 Last Reviewed: 2026-05-21
 ---
 
@@ -128,3 +128,23 @@ The repository gains:
 - better AI-agent usability
 - evidence-driven reviewer audits
 - stronger post-merge accountability
+
+## Current Known Truth
+
+Task 003 implementation issue #1196 establishes the redesigned surface documented
+in `docs/reference/ci/reviewer-lifecycle-surface.md`.
+
+The current model uses:
+
+- `.github/workflows/reviewer-response-completion.yml`
+- `.github/workflows/post-merge-intent-verification.yml`
+- `scripts/ci/reviewer_lifecycle_gate.mjs`
+- `scripts/ci/reviewer-gate-simulation.mjs`
+- `scripts/ci/post_merge_reviewer_audit.mjs`
+
+Pre-merge blocking is limited to protected CI scope with unresolved protected review
+threads or missing current-head trusted review artifacts. Reviewer timing, quiet
+periods, and PR-body response rituals are not merge blockers outside that scope.
+
+Post-merge validation and reviewer audit remain responsible for late findings and
+orchestration pause state.
