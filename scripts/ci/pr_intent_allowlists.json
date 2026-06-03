@@ -60,6 +60,7 @@
         "docs/governance/",
         "docs/ops/",
         "docs/how-to/ci/",
+        "docs/explanation/ci/",
         "docs/reference/ci/",
         "docs/reference/architecture/orchestration-model.md",
         "PROMPTS/",
