@@ -5,7 +5,7 @@ Authority Level: Canonical
 Owns: Production behavior, routing rules, navigation invariants
 Does Not Own: Implementation details inside components
 Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md
-Last Reviewed: 2026-03-27
+Last Reviewed: 2026-06-03
 ---
 
 # LGFC Production Design and Standards
@@ -41,8 +41,11 @@ Store
 
 # Canonical Routes
 
-Public:
-/, /about, /contact, /terms, /privacy, /search, /join, /login, /auth, /logout, /faq, /ask, /health
+Public active routes:
+/, /about, /contact, /terms, /privacy, /search, /join, /logout, /faq, /ask, /health
+
+Public legacy compatibility routes:
+/login, /auth
 
 FanClub (auth required):
 /fanclub, /fanclub/myprofile, /fanclub/photo, /fanclub/library, /fanclub/memorabilia
@@ -55,13 +58,13 @@ external Bonfire link (no /store route)
 
 ---
 
-
 # Canonical Redirect Policy
 
 - Protected FanClub routes (`/fanclub` and `/fanclub/**`) are auth-gated.
 - If a user is unauthenticated, redirect to `/` (public home).
 - If authentication/session validation fails, redirect to `/` (public home).
 - `/login` is a legacy compatibility route and must redirect to `/`.
+- `/auth` is a legacy compatibility route and must redirect to `/join`.
 
 ---
 
@@ -100,7 +103,7 @@ Mobile has no visible top menu. Mobile logged-in navigation is handled by the ha
 # Header Button Mapping
 
 Join → /join  
-Login → /join  
+Login → /join?mode=login  
 Club Home → /fanclub  
 Search → /search  
 Store → external Bonfire link  
@@ -132,7 +135,7 @@ Mobile public logged-out hamburger:
 1. Join → /join
 2. Search → /search
 3. Store → external Bonfire link
-4. Login → /join
+4. Login → /join?mode=login
 5. About → /about
 6. Contact → /contact
 
@@ -194,13 +197,17 @@ Canonical Day 1 data references:
 - `join_requests`
 - `photos`
 - `library_entries`
+- `content_inventory`
+- `submission_queue`
 - `membership_card_content`
 
 Canonical rules:
 
 - `photos` is the D1 table name and must be used consistently in design documentation when referring to the photo data store.
 - Memorabilia is **not** a standalone table. It is a tagged/filtered view of `photos`.
-- `library_entries` is the written content table and should support tagging plus linkage to related `photos`.
+- `content_inventory` is the active editorial archive and member-library content authority introduced by the T45 redesign.
+- `submission_queue` is the member-submission intake and review queue introduced by the T45 redesign.
+- `library_entries` is a legacy Day 1 written-content table and must not be silently orphaned; implementations that move reads to `content_inventory` must provide an explicit backfill, fallback, or documented migration path.
 - `/fanclub/myprofile` is a page per member in `members`.
 - The member row is created during the JOIN process.
 - Membership card is **not** a page. It is instructions text plus front/back card images shown on `/fanclub/myprofile`.
@@ -217,6 +224,8 @@ Day 1 auth/session and redirect behavior is defined in the canonical auth docume
 
 - `/join` remains the canonical Join/Login page.
 - `/login` is legacy compatibility and redirects to `/`.
+- `/auth` is legacy compatibility and redirects to `/join`.
+- Login tab access is `/join?mode=login`.
 - Day 1 auth uses the canonical cookie-backed session model (`lgfc_session` + D1 `member_sessions`).
 - Protected FanClub routes (`/fanclub` and `/fanclub/**`) enforce auth and redirect unauthenticated users to `/`.
 - Any failed auth/session validation path redirects to `/`.
@@ -250,10 +259,13 @@ Homepage sections are locked to this order:
 - UI Elements:
   - Two images labeled Photo A and Photo B
   - Buttons: "Vote A" and "Vote B"
+  - Current Voting anchor/label
+  - Results panel revealed after the current user votes
 - Behavior:
   - User selects one option
   - Vote submitted via API
-  - Results display is future enhancement
+  - Current-week totals display after the user has voted
+  - Last closed week totals and winner may display when available
   - Content rotates weekly (operational process)
 
 ---
