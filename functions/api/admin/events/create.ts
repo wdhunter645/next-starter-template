@@ -1,9 +1,13 @@
 // POST /api/admin/events/create
 // Admin-only. Creates an event row.
 //
-// Body: { title, date, time?, location?, description? }
+// Body: { title, start_date, end_date?, location?, host?, fees?, description?, external_url?, status? }
 
 import { requireAdmin } from "../../../_lib/auth";
+import { requireD1, requireTables, jsonResponse } from "../../../_lib/d1";
+import { isValidEventDate } from "./list";
+
+const STATUS_VALUES = new Set(["posted", "hidden"]);
 
 export const onRequestPost = async (context: any): Promise<Response> => {
   const { request, env } = context;
@@ -11,28 +15,46 @@ export const onRequestPost = async (context: any): Promise<Response> => {
   const deny = requireAdmin(request, env);
   if (deny) return deny;
 
+  const d1 = requireD1(env);
+  if (!d1.ok) return jsonResponse(d1.body, d1.status);
+
+  const tables = await requireTables(d1.db, ["events"]);
+  if (!tables.ok) return jsonResponse(tables.body, tables.status);
+
   try {
     const body = await request.json().catch(() => null);
     const title = String(body?.title || "").trim();
-    const date = String(body?.date || "").trim(); // YYYY-MM-DD expected
-    const time = String(body?.time || "").trim();
+    const start_date = String(body?.start_date || body?.date || "").trim();
+    const end_date = String(body?.end_date || start_date || "").trim();
     const location = String(body?.location || "").trim();
+    const host = String(body?.host || "").trim();
+    const fees = String(body?.fees || "").trim();
     const description = String(body?.description || "").trim();
+    const external_url = String(body?.external_url || "").trim();
+    const statusRaw = String(body?.status || "posted").trim().toLowerCase();
+    const status = STATUS_VALUES.has(statusRaw) ? statusRaw : "posted";
 
-    if (!title || !date) {
-      return Response.json({ ok: false, error: "title_and_date_required" }, { status: 400 });
+    if (!title || title.length < 3) {
+      return jsonResponse({ ok: false, error: "title_required" }, 400);
+    }
+    if (!isValidEventDate(start_date)) {
+      return jsonResponse({ ok: false, error: "invalid_start_date" }, 400);
+    }
+    if (end_date && !isValidEventDate(end_date)) {
+      return jsonResponse({ ok: false, error: "invalid_end_date" }, 400);
     }
 
-    if (!env?.DB) {
-      return Response.json({ ok: false, error: "missing_db_binding" }, { status: 500 });
-    }
+    const sql = `INSERT INTO events (title, start_date, end_date, location, host, fees, description, external_url, status)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-    const sql = `INSERT INTO events (title, date, time, location, description)
-                 VALUES (?, ?, ?, ?, ?)`;
+    const out = await d1.db
+      .prepare(sql)
+      .bind(title, start_date, end_date || start_date, location, host, fees, description, external_url, status)
+      .run();
 
-    await env.DB.prepare(sql).bind(title, date, time, location, description).run();
-    return Response.json({ ok: true });
+    return jsonResponse({ ok: true, id: out?.meta?.last_row_id ?? null }, 200);
   } catch (err: any) {
-    return Response.json({ ok: false, error: "server_error", detail: String(err?.message || err) }, { status: 500 });
+    console.error("admin events create error:", err);
+    return jsonResponse({ ok: false, error: "server_error", detail: String(err?.message || err) }, 500);
   }
 };
