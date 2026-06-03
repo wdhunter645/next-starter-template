@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { pathToFileURL } from 'node:url';
+import { githubRepoRequest } from './github_issue_api.mjs';
 
 const REMEDIATION_LABEL = 'post-merge-failure';
 const TITLE_PREFIX = 'Post-merge remediation required for ';
@@ -84,24 +85,8 @@ export function duplicateCloseComment({ canonical, duplicate }) {
 	].join('\n');
 }
 
-async function request({ token, repository, path, method = 'GET', body }) {
-	const response = await fetch(`https://api.github.com/repos/${repository}${path}`, {
-		method,
-		headers: {
-			Authorization: `Bearer ${token}`,
-			Accept: 'application/vnd.github+json',
-			'X-GitHub-Api-Version': '2022-11-28',
-			'User-Agent': 'lgfc-close-duplicate-remediation',
-			...(body ? { 'Content-Type': 'application/json' } : {}),
-		},
-		...(body ? { body: JSON.stringify(body) } : {}),
-	});
-
-	if (!response.ok) {
-		throw new Error(`${method} ${path} failed: ${response.status} ${await response.text()}`);
-	}
-
-	return response.status === 204 ? null : response.json();
+function request(args) {
+	return githubRepoRequest({ ...args, userAgent: 'lgfc-close-duplicate-remediation' });
 }
 
 async function paginateOpenRemediationIssues({ token, repository }) {
