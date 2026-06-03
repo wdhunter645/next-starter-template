@@ -111,6 +111,10 @@ Goals:
 - implement self-healing retry logic
 - preserve rollback evidence
 
+Canonical as-built reference:
+- `docs/reference/ci/ops-runtime-surface.md`
+- `scripts/ci/ops_runtime_surface.mjs`
+
 ## Cursor Issue Model
 
 Each implementation issue should contain:

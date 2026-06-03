@@ -1,4 +1,4 @@
-name: Production Audit (Playwright Invariants)
+name: OPS — Production Audit
 
 on:
   push:
@@ -86,6 +86,16 @@ jobs:
           else
             echo "tests_failed=true" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Write runtime step summary
+        if: always()
+        run: |
+          {
+            echo "## OPS — Production Audit"
+            echo "- Base URL: ${{ steps.base.outputs.base_url }}"
+            echo "- Tests failed: ${{ steps.failcheck.outputs.tests_failed }}"
+            echo "- Artifact: playwright-report-production"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Open/Update issue on failure (no auto-fix)
         if: steps.failcheck.outputs.tests_failed == 'true'
