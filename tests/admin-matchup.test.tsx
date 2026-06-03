@@ -135,7 +135,7 @@ function makeMatchupDb(matchups: Array<Record<string, unknown>> = [], votes: Rec
           }
           if (sql.includes('FROM photos WHERE id')) {
             const id = Number(args[0]);
-            return Number.isFinite(id) && id > 0 ? { id } : null;
+            return Number.isFinite(id) && id > 0 && id < 1000 ? { id } : null;
           }
           return null;
         },
