@@ -34,6 +34,11 @@ Hard reviewer enforcement applies only when changed files include:
 Docs-only, website-only, and other non-protected scopes remain advisory-first even
 when trusted reviewers have not finished asynchronous processing.
 
+Unresolved protected threads are evaluated by review thread and latest trusted
+review state, not by matching `commit_id` to the current PR head. A new commit
+cannot clear unresolved protected inline threads or stale `CHANGES_REQUESTED`
+reviews without an explicit resolution reply or a later approving review.
+
 ## Post-Merge Workflow
 
 | Workflow file | Responsibility |

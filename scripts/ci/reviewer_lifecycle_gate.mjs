@@ -60,37 +60,91 @@ export function computeCurrentHeadLinkedReview({ reviews = [], reviewComments = 
   return linkedReviews || linkedComments;
 }
 
+function resolveThreadRootId(comment, commentsById) {
+  let current = comment;
+  const visited = new Set();
+
+  while (current?.in_reply_to_id) {
+    if (visited.has(current.in_reply_to_id)) {
+      return current.in_reply_to_id;
+    }
+    visited.add(current.in_reply_to_id);
+
+    const parent = commentsById.get(current.in_reply_to_id);
+    if (!parent) {
+      return current.in_reply_to_id;
+    }
+    current = parent;
+  }
+
+  return current.id;
+}
+
+function sortCommentsChronologically(comments) {
+  return [...comments].sort((left, right) => {
+    const leftTime = Date.parse(left.created_at || '') || 0;
+    const rightTime = Date.parse(right.created_at || '') || 0;
+    if (leftTime !== rightTime) {
+      return leftTime - rightTime;
+    }
+    return (left.id || 0) - (right.id || 0);
+  });
+}
+
 export function countUnresolvedProtectedThreads({
   reviewComments = [],
   reviews = [],
-  headSha = '',
 } = {}) {
   let unresolved = 0;
+  const commentsById = new Map(
+    reviewComments.filter((comment) => comment.id != null).map((comment) => [comment.id, comment]),
+  );
+  const threads = new Map();
 
   for (const comment of reviewComments) {
-    const user = comment.user?.login || '';
-    const body = comment.body || '';
-    const path = comment.path || '';
+    const threadId = resolveThreadRootId(comment, commentsById);
+    if (!threads.has(threadId)) {
+      threads.set(threadId, []);
+    }
+    threads.get(threadId).push(comment);
+  }
+
+  for (const comments of threads.values()) {
+    const orderedComments = sortCommentsChronologically(comments);
+    const firstComment = orderedComments[0];
+    const latestComment = orderedComments[orderedComments.length - 1];
+    const user = firstComment.user?.login || '';
+    const path = firstComment.path || '';
 
     if (!isTrustedReviewer(user)) continue;
-    if (IGNORE_MARKER.test(body)) continue;
-    if (comment.commit_id && headSha && comment.commit_id !== headSha) continue;
     if (!isProtectedPath(path)) continue;
-    if (comment.line == null && comment.position == null) continue;
-    if (isResolvedReviewText(body)) continue;
+    if (firstComment.line == null && firstComment.position == null) continue;
+    if (orderedComments.some((comment) => IGNORE_MARKER.test(comment.body || ''))) continue;
+    if (isResolvedReviewText(latestComment.body || '')) continue;
 
     unresolved += 1;
   }
 
+  const latestReviews = new Map();
   for (const review of reviews) {
     const user = review.user?.login || '';
-    const body = review.body || '';
-
     if (!isTrustedReviewer(user)) continue;
-    if (review.commit_id && headSha && review.commit_id !== headSha) continue;
-    if (review.state !== 'CHANGES_REQUESTED') continue;
-    if (isResolvedReviewText(body)) continue;
 
+    const existing = latestReviews.get(user);
+    const reviewTime = Date.parse(review.submitted_at || '') || review.id || 0;
+    const existingTime = existing
+      ? Date.parse(existing.submitted_at || '') || existing.id || 0
+      : -1;
+
+    if (!existing || reviewTime >= existingTime) {
+      latestReviews.set(user, review);
+    }
+  }
+
+  for (const review of latestReviews.values()) {
+    if (review.state !== 'CHANGES_REQUESTED') continue;
+    if (IGNORE_MARKER.test(review.body || '')) continue;
+    if (isResolvedReviewText(review.body || '')) continue;
     unresolved += 1;
   }
 
@@ -120,7 +174,7 @@ export function countAdvisoryFindings({
   for (const review of reviews) {
     if (!isTrustedReviewer(review.user?.login || '')) continue;
     if (isResolvedReviewText(review.body || '')) continue;
-    if (review.state === 'APPROVED' || review.state === 'COMMENTED') findings += 1;
+    if (review.state === 'COMMENTED') findings += 1;
     if (review.state === 'CHANGES_REQUESTED') findings += 1;
   }
 
@@ -178,7 +232,7 @@ export function assessReviewerLifecycle({
 }) {
   const scope = classifyProtectedScope(files);
   const currentHeadLinkedReview = computeCurrentHeadLinkedReview({ reviews, reviewComments, headSha });
-  const unresolvedProtectedThreads = countUnresolvedProtectedThreads({ reviewComments, reviews, headSha });
+  const unresolvedProtectedThreads = countUnresolvedProtectedThreads({ reviewComments, reviews });
   const advisoryFindings = countAdvisoryFindings({ issueComments, reviewComments, reviews });
   const assessment = evaluateReviewerAccounting({
     eventName,
