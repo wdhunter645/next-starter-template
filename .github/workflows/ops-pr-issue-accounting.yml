@@ -1,4 +1,4 @@
-name: OPS — PR Issue Accounting
+name: GATE — PR Issue Accounting
 
 on:
   pull_request_target:

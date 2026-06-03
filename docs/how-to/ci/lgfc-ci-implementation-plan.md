@@ -82,6 +82,10 @@ Goals:
 - isolate catastrophic blockers
 - simplify branch protection configuration
 
+Canonical as-built reference:
+- `docs/reference/ci/merge-protection-surface.md`
+- `scripts/ci/merge_protection_surface.mjs`
+
 ### Phase 4 — Reviewer Gate Redesign
 
 Goals:

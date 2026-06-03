@@ -48,7 +48,7 @@ Workflow should be removed once replacement coverage exists.
 |---|---|---|---|---|
 | gate-quality.yml | Pre-merge blocker | Merge Protection | Keep | Core deterministic merge safety |
 | gitleaks.yml | Secret scan | Merge Protection | Keep | Remains hard blocker |
-| gate-zip-safety.yml | ZIP blocker | Merge Protection | Keep/Assimilate | Later absorb duplicate ZIP logic |
+| gate-zip-safety.yml | ZIP blocker | Merge Protection | Assimilated | Absorbed into `gate-quality.yml` during Task 002 |
 | gate-drift.yml | Drift enforcement | Scope advisor + post-merge audit | Rebuild | Remove timing-sensitive merge blocking |
 | gate-intent-labeler.yml | Intent labeling | PR Hygiene | Rebuild | Corrective/advisory instead of blocking |
 | reviewer-response-completion.yml | Reviewer lifecycle enforcement | Reviewer audit | Rebuild | Remove brittle synchronous logic |
