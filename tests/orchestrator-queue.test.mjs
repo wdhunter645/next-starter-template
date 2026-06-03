@@ -518,7 +518,7 @@ describe('orchestrator workflow trigger compatibility', () => {
 		expect(queueWorkflow).toContain("github.event.label.name == 'status:failed'");
 		expect(enforcePrOnlyWorkflow).toContain('commits/${GITHUB_SHA}/pulls');
 		expect(postMergeWorkflow).toContain('node scripts/ci/post_merge_validator.mjs');
-		expect(postMergeWorkflow).not.toContain('branches: [main]');
+		expect(postMergeWorkflow).toContain('branches: [main]');
 		expect(postMergeValidatorScript).toContain('/commits/${sha}/pulls');
 		expect(ciOrchestrationWorkflow).toContain("node-version: '22'");
 		expect(ciOrchestrationWorkflow).toContain('node scripts/orchestrator/ci-orchestration-engine.mjs');
