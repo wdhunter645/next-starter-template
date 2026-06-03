@@ -116,4 +116,15 @@ export function getFundraiserTeams(): FundraiserTeam[] {
   return normalizeFundraiserRecords(fundraiserSource);
 }
 
+export function safeGetFundraiserTeams():
+  | { ok: true; teams: FundraiserTeam[] }
+  | { ok: false; error: string } {
+  try {
+    return { ok: true, teams: getFundraiserTeams() };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    return { ok: false, error: message };
+  }
+}
+
 export const fundraiserTeams = getFundraiserTeams();

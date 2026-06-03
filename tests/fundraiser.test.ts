@@ -3,11 +3,19 @@ import { describe, expect, it } from 'vitest';
 import {
   fundraiserTeams,
   normalizeFundraiserRecords,
+  safeGetFundraiserTeams,
   sortFundraiserLeaderboard,
   type FundraiserTeam,
 } from '@/lib/fundraiser';
 
 describe('fundraiser ingest layer', () => {
+  it('returns a safe success wrapper for valid fundraiser source data', () => {
+    expect(safeGetFundraiserTeams()).toMatchObject({
+      ok: true,
+      teams: fundraiserTeams,
+    });
+  });
+
   it('loads and normalizes the fundraiser JSON seed data', () => {
     expect(fundraiserTeams).toEqual([
       {

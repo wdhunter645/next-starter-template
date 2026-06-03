@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import PageShell from '@/components/PageShell';
 import AdminNav from '@/components/admin/AdminNav';
+import AdminTokenPanel from '@/components/admin/AdminTokenPanel';
 import CampaignSpotlightCard from '@/components/home/CampaignSpotlightCard';
+import { adminJson } from '@/lib/adminClient';
 import {
   CAMPAIGN_SPOTLIGHT_KEY,
   CAMPAIGN_SPOTLIGHT_PAGE,
@@ -13,9 +15,11 @@ import {
   buildPersistedCampaignConfig,
   parseCampaignSpotlightConfig,
   serializeCampaignSpotlightConfig,
+  snapshotLeaderboardFromFundraiser,
   type CampaignSpotlightConfig,
   validateCampaignSpotlightConfig,
 } from '@/lib/campaignSpotlight';
+import { safeGetFundraiserTeams, type FundraiserTeam } from '@/lib/fundraiser';
 
 type Block = {
   key: string;
@@ -28,90 +32,151 @@ type Block = {
   updated_by: string;
 };
 
-function getToken(): string {
-  if (typeof window === 'undefined') return '';
-  return window.localStorage.getItem('lgfc_admin_token') || '';
+type CmsListResponse = {
+  ok: true;
+  blocks: Block[];
+};
+
+type CmsMutationResponse = {
+  ok: true;
+  version: number;
+};
+
+function fieldStyle(): React.CSSProperties {
+  return {
+    padding: '10px 12px',
+    borderRadius: 10,
+    border: '1px solid rgba(0,0,0,0.16)',
+    width: '100%',
+  };
 }
 
-function emptyBlock(): Block | null {
-  return null;
+function buttonStyle(primary = false, disabled = false): React.CSSProperties {
+  return {
+    padding: '10px 14px',
+    borderRadius: 10,
+    border: primary ? '1px solid #0033cc' : '1px solid rgba(0,0,0,0.18)',
+    background: disabled ? 'rgba(0,0,0,0.05)' : primary ? '#0033cc' : 'white',
+    color: primary && !disabled ? '#fff' : '#111',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    fontWeight: 700,
+  };
 }
 
 export default function FundraiserPreviewPage() {
-  const [token, setToken] = useState('');
-  const [status, setStatus] = useState('Idle');
-  const [block, setBlock] = useState<Block | null>(emptyBlock());
+  const [status, setStatus] = useState('Idle.');
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [block, setBlock] = useState<Block | null>(null);
   const [form, setForm] = useState<CampaignSpotlightConfig>(defaultCampaignSpotlightConfig);
+  const [fundraiserTeams, setFundraiserTeams] = useState<FundraiserTeam[]>([]);
+  const [fundraiserError, setFundraiserError] = useState('');
 
-  useEffect(() => {
-    setToken(getToken());
+  const refreshFundraiserData = useCallback(() => {
+    const result = safeGetFundraiserTeams();
+    if (!result.ok) {
+      setFundraiserTeams([]);
+      setFundraiserError(result.error);
+      return;
+    }
+
+    setFundraiserTeams(result.teams);
+    setFundraiserError('');
   }, []);
 
-  async function load() {
-    if (!token) {
-      setStatus('Missing admin token. Set the token from /admin first.');
+  const load = useCallback(async () => {
+    setLoading(true);
+    setStatus('Loading campaign spotlight block…');
+
+    const result = await adminJson<CmsListResponse>(
+      `/api/admin/cms/list?page=${encodeURIComponent(CAMPAIGN_SPOTLIGHT_PAGE)}`,
+    );
+
+    if (!result.ok) {
+      setBlock(null);
+      setForm(defaultCampaignSpotlightConfig);
+      setStatus(`Error: ${result.error}`);
+      setLoading(false);
       return;
     }
 
-    setStatus('Loading preview data...');
-    const res = await fetch(`/api/admin/cms/list?page=${encodeURIComponent(CAMPAIGN_SPOTLIGHT_PAGE)}`, {
-      headers: { 'x-admin-token': token },
-      cache: 'no-store',
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || data?.ok !== true) {
-      setStatus(data?.error ? `Error: ${data.error}` : `Error: HTTP ${res.status}`);
-      return;
-    }
-
-    const found = Array.isArray(data.blocks)
-      ? (data.blocks.find((item: Block) => item.key === CAMPAIGN_SPOTLIGHT_KEY) as Block | undefined)
-      : undefined;
+    const blocks = Array.isArray(result.data?.blocks) ? result.data.blocks : [];
+    const found = blocks.find((item) => item.key === CAMPAIGN_SPOTLIGHT_KEY);
 
     if (!found) {
       setBlock(null);
       setForm(defaultCampaignSpotlightConfig);
-      setStatus('No campaign spotlight block exists yet. Starter data loaded locally. Save Draft to create it.');
+      setStatus(
+        'No campaign spotlight block exists yet. Starter config loaded locally. Save Draft to create it.',
+      );
+      setLoading(false);
       return;
     }
 
     setBlock(found);
-    const parsed = parseCampaignSpotlightConfig(found.body_md) || defaultCampaignSpotlightConfig;
-    setForm(parsed);
-    setStatus('Loaded');
-  }
+    setForm(parseCampaignSpotlightConfig(found.body_md) || defaultCampaignSpotlightConfig);
+    setStatus('Campaign spotlight block loaded.');
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
-    if (token) {
-      void load();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+    refreshFundraiserData();
+    void load();
+  }, [load, refreshFundraiserData]);
 
   const validationErrors = useMemo(() => validateCampaignSpotlightConfig(form), [form]);
-  const publishedConfig = useMemo(() => parseCampaignSpotlightConfig(block?.published_body_md || null), [block?.published_body_md]);
-  const publishedErrors = useMemo(() => validateCampaignSpotlightConfig(publishedConfig), [publishedConfig]);
+  const publishedConfig = useMemo(
+    () => parseCampaignSpotlightConfig(block?.published_body_md || null),
+    [block?.published_body_md],
+  );
+  const publishedErrors = useMemo(
+    () => validateCampaignSpotlightConfig(publishedConfig),
+    [publishedConfig],
+  );
 
-  function updateField<K extends keyof CampaignSpotlightConfig>(key: K, value: CampaignSpotlightConfig[K]) {
-    setForm((current) => ({ ...current, [key]: value }));
-  }
+  const updateField = useCallback(
+    <K extends keyof CampaignSpotlightConfig>(key: K, value: CampaignSpotlightConfig[K]) => {
+      setForm((current) => ({ ...current, [key]: value }));
+    },
+    [],
+  );
 
-  async function saveDraft() {
-    if (!token) {
-      setStatus('Missing admin token.');
+  const syncLeaderboardFromFundraiser = useCallback(() => {
+    const result = safeGetFundraiserTeams();
+    if (!result.ok) {
+      setFundraiserError(result.error);
+      setStatus(`Fundraiser data error: ${result.error}`);
       return;
     }
+
+    setFundraiserTeams(result.teams);
+    setFundraiserError('');
+    setForm((current) => ({
+      ...current,
+      leaderboard: snapshotLeaderboardFromFundraiser(result.teams),
+    }));
+    setStatus(`Leaderboard snapshot refreshed from ${result.teams.length} fundraiser team record(s).`);
+  }, []);
+
+  const saveDraft = useCallback(async () => {
     const persistedConfig = buildPersistedCampaignConfig(form);
     const persistedErrors = validateCampaignSpotlightConfig(persistedConfig);
     if (persistedErrors.length > 0) {
-      setStatus('Draft not saved. Fix validation errors first.');
+      setStatus('Draft not saved. Fix campaign validation errors first.');
       return;
     }
 
-    setStatus('Saving draft...');
-    const res = await fetch('/api/admin/cms/save', {
+    if (fundraiserError) {
+      setStatus('Draft not saved. Fix fundraiser source data before publishing campaign content.');
+      return;
+    }
+
+    setSaving(true);
+    setStatus('Saving draft…');
+
+    const result = await adminJson<CmsMutationResponse>('/api/admin/cms/save', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
       body: JSON.stringify({
         key: CAMPAIGN_SPOTLIGHT_KEY,
         page: CAMPAIGN_SPOTLIGHT_PAGE,
@@ -122,25 +187,27 @@ export default function FundraiserPreviewPage() {
       }),
     });
 
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || data?.ok !== true) {
-      setStatus(data?.error ? `Error: ${data.error}` : `Error: HTTP ${res.status}`);
+    if (!result.ok) {
+      setStatus(`Draft save error: ${result.error}`);
+      setSaving(false);
       return;
     }
 
+    setSaving(false);
     await load();
-    setStatus(`Draft saved. Version ${data.version}.`);
-  }
+    setStatus(`Draft saved. Version ${result.data?.version ?? 'unknown'}.`);
+  }, [form, fundraiserError, load]);
 
-  async function publish() {
-    if (!token) {
-      setStatus('Missing admin token.');
-      return;
-    }
+  const publish = useCallback(async () => {
     const persistedConfig = buildPersistedCampaignConfig(form);
     const persistedErrors = validateCampaignSpotlightConfig(persistedConfig);
     if (persistedErrors.length > 0) {
-      setStatus('Publish blocked. Fix validation errors first.');
+      setStatus('Publish blocked. Fix campaign validation errors first.');
+      return;
+    }
+
+    if (fundraiserError) {
+      setStatus('Publish blocked. Fundraiser source data must be valid before public exposure.');
       return;
     }
 
@@ -149,66 +216,127 @@ export default function FundraiserPreviewPage() {
       return;
     }
 
-    setStatus('Publishing...');
-    const res = await fetch('/api/admin/cms/publish', {
+    setPublishing(true);
+    setStatus('Publishing…');
+
+    const result = await adminJson<CmsMutationResponse>('/api/admin/cms/publish', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
       body: JSON.stringify({ key: CAMPAIGN_SPOTLIGHT_KEY, updated_by: 'admin-fundraiser-preview' }),
     });
 
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || data?.ok !== true) {
-      setStatus(data?.error ? `Error: ${data.error}` : `Error: HTTP ${res.status}`);
+    if (!result.ok) {
+      setStatus(`Publish error: ${result.error}`);
+      setPublishing(false);
       return;
     }
 
+    setPublishing(false);
     await load();
-    setStatus(`Published successfully. Version ${data.version}.`);
-  }
+    setStatus(`Published successfully. Version ${result.data?.version ?? 'unknown'}.`);
+  }, [block?.body_md, form, fundraiserError, load]);
 
   return (
     <PageShell
-      title="Admin – Fundraiser Preview"
-      subtitle="Build and validate the temporary homepage campaign spotlight inside the gated admin area before enabling it publicly."
+      title="Fundraiser Preview"
+      subtitle="Validate campaign spotlight content and fundraiser leaderboard data before enabling public homepage exposure."
     >
       <AdminNav />
+      <AdminTokenPanel onSaved={() => void load()} />
 
-      <div style={{ display: 'grid', gap: 18 }}>
-        <section style={{ border: '1px solid #ddd', borderRadius: 16, padding: 18, background: '#fff' }}>
+      <div style={{ display: 'grid', gap: 18, marginTop: 16 }}>
+        <section style={{ border: '1px solid rgba(0,0,0,0.12)', borderRadius: 16, padding: 18, background: '#fff' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
             <div>
               <h2 style={{ margin: 0, fontSize: 22 }}>Campaign Spotlight Control</h2>
               <p style={{ margin: '8px 0 0 0', opacity: 0.85 }}>
-                Homepage placement is fixed between the Hero Banner and Weekly Matchup. When disabled, the homepage renders as if the section does not exist.
+                Homepage placement stays between the Hero Banner and Weekly Matchup. When disabled, the homepage omits this section entirely.
               </p>
             </div>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <button onClick={() => void load()} style={{ padding: '10px 14px', borderRadius: 10, border: '1px solid #222', cursor: 'pointer', background: '#fff' }}>Refresh</button>
-              <button onClick={() => void saveDraft()} style={{ padding: '10px 14px', borderRadius: 10, border: '1px solid #222', cursor: 'pointer', background: '#fff' }}>Save Draft</button>
-              <button onClick={() => void publish()} style={{ padding: '10px 14px', borderRadius: 10, border: '1px solid #0033cc', cursor: 'pointer', background: '#0033cc', color: '#fff' }}>Publish</button>
+              <button type="button" onClick={() => void load()} disabled={loading} style={buttonStyle(false, loading)}>
+                {loading ? 'Loading…' : 'Refresh'}
+              </button>
+              <button type="button" onClick={() => void saveDraft()} disabled={saving} style={buttonStyle(false, saving)}>
+                {saving ? 'Saving…' : 'Save Draft'}
+              </button>
+              <button type="button" onClick={() => void publish()} disabled={publishing} style={buttonStyle(true, publishing)}>
+                {publishing ? 'Publishing…' : 'Publish'}
+              </button>
             </div>
           </div>
 
-          <div style={{ marginTop: 14, fontSize: 14, fontWeight: 700 }}>{status}</div>
+          <p style={{ marginTop: 14, marginBottom: 0, fontWeight: 700 }}>{status}</p>
           <div style={{ marginTop: 12, fontSize: 14, lineHeight: 1.6 }}>
-            <div><strong>CMS key:</strong> <code>{CAMPAIGN_SPOTLIGHT_KEY}</code></div>
-            <div><strong>Enable flow:</strong> Save Draft → Publish → homepage section appears.</div>
-            <div><strong>Archive flow:</strong> set Enabled to off → Save Draft → Publish. Prior published states remain in <code>content_revisions</code>.</div>
-            <div><strong>Development route:</strong> <code>/admin/fundraiser-preview</code></div>
+            <div>
+              <strong>CMS key:</strong> <code>{CAMPAIGN_SPOTLIGHT_KEY}</code>
+            </div>
+            <div>
+              <strong>Enable flow:</strong> validate fundraiser data → Save Draft → Publish.
+            </div>
+            <div>
+              <strong>Archive flow:</strong> set Enabled off → Save Draft → Publish.
+            </div>
           </div>
         </section>
 
-        <section style={{ border: '1px solid #ddd', borderRadius: 16, padding: 18, background: '#fff' }}>
+        <section style={{ border: '1px solid rgba(0,0,0,0.12)', borderRadius: 16, padding: 18, background: '#fff' }}>
+          <h2 style={{ marginTop: 0, fontSize: 22 }}>Fundraiser Source Data</h2>
+          <p style={{ opacity: 0.85 }}>
+            Leaderboard snapshots for enabled campaigns are derived from <code>data/fundraiser.json</code>. Invalid source data blocks save/publish.
+          </p>
+
+          {fundraiserError ? (
+            <div style={{ marginTop: 12, padding: 14, borderRadius: 12, border: '1px solid #e7b8b8', background: '#fff7f7' }}>
+              <strong>Fundraiser validation failed:</strong> {fundraiserError}
+            </div>
+          ) : (
+            <div style={{ marginTop: 12, padding: 14, borderRadius: 12, border: '1px solid #cde4cf', background: '#f6fff6' }}>
+              <strong>Fundraiser source is valid.</strong> {fundraiserTeams.length} team record(s) loaded.
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
+            <button type="button" onClick={refreshFundraiserData} style={buttonStyle()}>
+              Revalidate fundraiser data
+            </button>
+            <button type="button" onClick={syncLeaderboardFromFundraiser} disabled={Boolean(fundraiserError)} style={buttonStyle(false, Boolean(fundraiserError))}>
+              Sync leaderboard snapshot
+            </button>
+          </div>
+
+          {fundraiserTeams.length > 0 ? (
+            <ul style={{ marginTop: 14, paddingLeft: 18 }}>
+              {fundraiserTeams.map((team) => (
+                <li key={team.teamId}>
+                  {team.teamName} — ${team.totalAmount} from {team.donorCount} donor(s) — {team.points} points
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </section>
+
+        <section style={{ border: '1px solid rgba(0,0,0,0.12)', borderRadius: 16, padding: 18, background: '#fff' }}>
           <h2 style={{ marginTop: 0, fontSize: 22 }}>Current Block Status</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
-            <div><strong>Draft version:</strong> {block?.version ?? '(new)'}</div>
-            <div><strong>Draft status:</strong> {block?.status ?? 'not created'}</div>
-            <div><strong>Updated at:</strong> {block?.updated_at ?? '(not yet saved)'}</div>
-            <div><strong>Published at:</strong> {block?.published_at ?? '(never)'}</div>
+            <div>
+              <strong>Draft version:</strong> {block?.version ?? '(new)'}
+            </div>
+            <div>
+              <strong>Draft status:</strong> {block?.status ?? 'not created'}
+            </div>
+            <div>
+              <strong>Updated at:</strong> {block?.updated_at ?? '(not yet saved)'}
+            </div>
+            <div>
+              <strong>Published at:</strong> {block?.published_at ?? '(never)'}
+            </div>
           </div>
           {publishedConfig && publishedErrors.length === 0 ? (
             <p style={{ marginTop: 12, marginBottom: 0, color: '#184d12', fontWeight: 700 }}>
-              Published snapshot is valid and currently {publishedConfig.enabled ? 'eligible to render on the homepage.' : 'hidden because Enabled is off.'}
+              Published snapshot is valid and currently{' '}
+              {publishedConfig.enabled
+                ? 'eligible to render on the homepage.'
+                : 'hidden because Enabled is off.'}
             </p>
           ) : (
             <p style={{ marginTop: 12, marginBottom: 0, color: '#7a4b00', fontWeight: 700 }}>
@@ -217,72 +345,72 @@ export default function FundraiserPreviewPage() {
           )}
         </section>
 
-        <section style={{ border: '1px solid #ddd', borderRadius: 16, padding: 18, background: '#fff' }}>
+        <section style={{ border: '1px solid rgba(0,0,0,0.12)', borderRadius: 16, padding: 18, background: '#fff' }}>
           <h2 style={{ marginTop: 0, fontSize: 22 }}>Editor</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 14 }}>
             <label style={{ display: 'grid', gap: 6 }}>
               <span>Eyebrow</span>
-              <input value={form.eyebrow} onChange={(e) => updateField('eyebrow', e.target.value)} style={{ padding: 10, borderRadius: 10, border: '1px solid #ccc' }} />
+              <input value={form.eyebrow} onChange={(e) => updateField('eyebrow', e.target.value)} style={fieldStyle()} />
             </label>
             <label style={{ display: 'grid', gap: 6 }}>
               <span>Badge</span>
-              <input value={form.badge} onChange={(e) => updateField('badge', e.target.value)} style={{ padding: 10, borderRadius: 10, border: '1px solid #ccc' }} />
+              <input value={form.badge} onChange={(e) => updateField('badge', e.target.value)} style={fieldStyle()} />
             </label>
             <label style={{ display: 'grid', gap: 6 }}>
               <span>Title</span>
-              <input value={form.title} onChange={(e) => updateField('title', e.target.value)} style={{ padding: 10, borderRadius: 10, border: '1px solid #ccc' }} />
+              <input value={form.title} onChange={(e) => updateField('title', e.target.value)} style={fieldStyle()} />
             </label>
             <label style={{ display: 'grid', gap: 6 }}>
               <span>Deadline label</span>
-              <input value={form.deadlineLabel} onChange={(e) => updateField('deadlineLabel', e.target.value)} style={{ padding: 10, borderRadius: 10, border: '1px solid #ccc' }} />
+              <input value={form.deadlineLabel} onChange={(e) => updateField('deadlineLabel', e.target.value)} style={fieldStyle()} />
             </label>
             <label style={{ display: 'grid', gap: 6 }}>
               <span>Primary CTA label</span>
-              <input value={form.primaryCtaLabel} onChange={(e) => updateField('primaryCtaLabel', e.target.value)} style={{ padding: 10, borderRadius: 10, border: '1px solid #ccc' }} />
+              <input value={form.primaryCtaLabel} onChange={(e) => updateField('primaryCtaLabel', e.target.value)} style={fieldStyle()} />
             </label>
             <label style={{ display: 'grid', gap: 6 }}>
               <span>Primary CTA href</span>
-              <input value={form.primaryCtaHref} onChange={(e) => updateField('primaryCtaHref', e.target.value)} style={{ padding: 10, borderRadius: 10, border: '1px solid #ccc' }} />
+              <input value={form.primaryCtaHref} onChange={(e) => updateField('primaryCtaHref', e.target.value)} style={fieldStyle()} />
             </label>
             <label style={{ display: 'grid', gap: 6 }}>
               <span>Secondary CTA label</span>
-              <input value={form.secondaryCtaLabel} onChange={(e) => updateField('secondaryCtaLabel', e.target.value)} style={{ padding: 10, borderRadius: 10, border: '1px solid #ccc' }} />
+              <input value={form.secondaryCtaLabel} onChange={(e) => updateField('secondaryCtaLabel', e.target.value)} style={fieldStyle()} />
             </label>
             <label style={{ display: 'grid', gap: 6 }}>
               <span>Secondary CTA href</span>
-              <input value={form.secondaryCtaHref} onChange={(e) => updateField('secondaryCtaHref', e.target.value)} style={{ padding: 10, borderRadius: 10, border: '1px solid #ccc' }} />
+              <input value={form.secondaryCtaHref} onChange={(e) => updateField('secondaryCtaHref', e.target.value)} style={fieldStyle()} />
             </label>
             <label style={{ display: 'grid', gap: 6 }}>
               <span>Progress label</span>
-              <input value={form.progressLabel} onChange={(e) => updateField('progressLabel', e.target.value)} style={{ padding: 10, borderRadius: 10, border: '1px solid #ccc' }} />
+              <input value={form.progressLabel} onChange={(e) => updateField('progressLabel', e.target.value)} style={fieldStyle()} />
             </label>
             <label style={{ display: 'grid', gap: 6 }}>
               <span>Goal amount</span>
-              <input value={form.goalAmount} onChange={(e) => updateField('goalAmount', e.target.value)} style={{ padding: 10, borderRadius: 10, border: '1px solid #ccc' }} />
+              <input value={form.goalAmount} onChange={(e) => updateField('goalAmount', e.target.value)} style={fieldStyle()} />
             </label>
             <label style={{ display: 'grid', gap: 6 }}>
               <span>Raised amount</span>
-              <input value={form.raisedAmount} onChange={(e) => updateField('raisedAmount', e.target.value)} style={{ padding: 10, borderRadius: 10, border: '1px solid #ccc' }} />
+              <input value={form.raisedAmount} onChange={(e) => updateField('raisedAmount', e.target.value)} style={fieldStyle()} />
             </label>
             <label style={{ display: 'grid', gap: 6 }}>
               <span>Supporter count</span>
-              <input value={form.supporterCount} onChange={(e) => updateField('supporterCount', e.target.value)} style={{ padding: 10, borderRadius: 10, border: '1px solid #ccc' }} />
+              <input value={form.supporterCount} onChange={(e) => updateField('supporterCount', e.target.value)} style={fieldStyle()} />
             </label>
           </div>
 
           <label style={{ display: 'grid', gap: 6, marginTop: 14 }}>
             <span>Description</span>
-            <textarea value={form.description} onChange={(e) => updateField('description', e.target.value)} rows={4} style={{ padding: 10, borderRadius: 10, border: '1px solid #ccc' }} />
+            <textarea value={form.description} onChange={(e) => updateField('description', e.target.value)} rows={4} style={fieldStyle()} />
           </label>
 
           <label style={{ display: 'grid', gap: 6, marginTop: 14 }}>
             <span>Note</span>
-            <textarea value={form.note} onChange={(e) => updateField('note', e.target.value)} rows={3} style={{ padding: 10, borderRadius: 10, border: '1px solid #ccc' }} />
+            <textarea value={form.note} onChange={(e) => updateField('note', e.target.value)} rows={3} style={fieldStyle()} />
           </label>
 
           <label style={{ display: 'grid', gap: 6, marginTop: 14 }}>
             <span>Archive label</span>
-            <textarea value={form.archiveLabel} onChange={(e) => updateField('archiveLabel', e.target.value)} rows={2} style={{ padding: 10, borderRadius: 10, border: '1px solid #ccc' }} />
+            <textarea value={form.archiveLabel} onChange={(e) => updateField('archiveLabel', e.target.value)} rows={2} style={fieldStyle()} />
           </label>
 
           <label style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 16, fontWeight: 700 }}>
@@ -292,9 +420,11 @@ export default function FundraiserPreviewPage() {
 
           {validationErrors.length > 0 ? (
             <div style={{ marginTop: 14, padding: 14, borderRadius: 12, border: '1px solid #e7b8b8', background: '#fff7f7' }}>
-              <div style={{ fontWeight: 800, marginBottom: 8 }}>Validation errors</div>
+              <div style={{ fontWeight: 800, marginBottom: 8 }}>Campaign validation errors</div>
               <ul style={{ margin: 0, paddingLeft: 18 }}>
-                {validationErrors.map((error) => <li key={error}>{error}</li>)}
+                {validationErrors.map((error) => (
+                  <li key={error}>{error}</li>
+                ))}
               </ul>
             </div>
           ) : (
@@ -313,7 +443,10 @@ export default function FundraiserPreviewPage() {
           {publishedConfig && publishedErrors.length === 0 ? (
             <div>
               <h2 style={{ marginTop: 0, marginBottom: 10, fontSize: 22 }}>Published Snapshot</h2>
-              <CampaignSpotlightCard config={publishedConfig} previewLabel={publishedConfig.enabled ? 'Homepage Eligible' : 'Published Hidden State'} />
+              <CampaignSpotlightCard
+                config={publishedConfig}
+                previewLabel={publishedConfig.enabled ? 'Homepage Eligible' : 'Published Hidden State'}
+              />
             </div>
           ) : null}
         </section>
