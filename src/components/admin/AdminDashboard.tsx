@@ -109,6 +109,11 @@ export default function AdminDashboard() {
           <div className={styles.cardBody}>Create, update, and seed events for the public calendar.</div>
         </a>
 
+        <a className={styles.card} href="/admin/matchup">
+          <div className={styles.cardTitle}>Weekly Matchup</div>
+          <div className={styles.cardBody}>Activate, close, and review weekly photo matchup vote totals.</div>
+        </a>
+
         <a className={styles.card} href="/admin/fundraiser-preview">
           <div className={styles.cardTitle}>Fundraiser Preview</div>
           <div className={styles.cardBody}>Build and validate the conditional homepage campaign spotlight in the gated admin area.</div>
