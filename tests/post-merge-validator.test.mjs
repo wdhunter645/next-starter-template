@@ -3,8 +3,10 @@ import { describe, expect, it } from 'vitest';
 import {
 	buildResult,
 	commentBody,
+	isRequiredMergeProtectionRun,
 	latestRunsByWorkflow,
 	metadataFailures,
+	renderPostMergeReport,
 	resolvePrNumber,
 	reviewerFindings,
 	workflowFailures,
@@ -177,9 +179,57 @@ describe('post-merge structured output and remediation body', () => {
 			source_issue: '1122',
 			late_findings: 0,
 			remediation_required: true,
+			evidence_summary: expect.objectContaining({
+				workflow_failures: 1,
+			}),
 		});
-		expect(commentBody(result)).toContain('Workflow failures: 1');
+		expect(commentBody(result)).toContain('## Workflow failures');
+		expect(renderPostMergeReport(result)).toContain('Implementation evidence failures: 0');
 		expect(remediationTitle(result)).toBe('Post-merge remediation required for PR #1188');
 		expect(remediationBody(result)).toContain('Auto-Sync Documentation');
+	});
+
+	it('fails when merged implementation evidence is incomplete', () => {
+		const implementation = [{
+			code: 'allowlist_violation',
+			message: 'Merged changed file is outside declared allowlist: src/app/page.tsx',
+		}];
+
+		const result = buildResult({
+			pr: mergedPr(),
+			resolution: { pr: '1188' },
+			implementation,
+		});
+
+		expect(result).toMatchObject({
+			status: 'fail',
+			implementation_failures: implementation,
+			sync_action: 'post_merge_failure',
+		});
+	});
+
+	it('skips remediation issue creation when validation passed', () => {
+		const result = buildResult({
+			pr: mergedPr(),
+			resolution: { pr: '1188' },
+			failures: [{
+				workflow: 'Auto-Sync Documentation',
+				classification: 'secret-access/configuration',
+				required: false,
+				url: 'https://github.test/actions/2',
+				conclusion: 'failure',
+			}],
+		});
+
+		expect(result.status).toBe('pass');
+		expect(result.remediation_required).toBe(true);
+	});
+});
+
+describe('post-merge merge-protection workflow classification', () => {
+	it('treats consolidated merge-protection jobs as required', () => {
+		expect(isRequiredMergeProtectionRun({ name: 'quality' })).toBe(true);
+		expect(isRequiredMergeProtectionRun({ name: 'GATE — Quality Checks' })).toBe(true);
+		expect(isRequiredMergeProtectionRun({ name: 'Auto-Sync Documentation' })).toBe(false);
 	});
 });

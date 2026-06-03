@@ -102,6 +102,10 @@ Goals:
 - implement remediation issue generation
 - implement architectural drift analysis
 
+Canonical as-built reference:
+- `docs/reference/ci/post-merge-validation-surface.md`
+- `scripts/ci/post_merge_validation_surface.mjs`
+
 ### Phase 6 — OPS Runtime Suite
 
 Goals:

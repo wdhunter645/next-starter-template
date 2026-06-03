@@ -15,7 +15,7 @@ on:
 permissions:
   actions: read
   contents: read
-  pull-requests: read
+  pull-requests: write
   issues: write
 
 jobs:
@@ -57,6 +57,10 @@ jobs:
             post-merge-result.md
           if-no-files-found: warn
 
+      - name: Write step summary
+        if: always() && hashFiles('post-merge-result.md') != ''
+        run: cat post-merge-result.md >> "$GITHUB_STEP_SUMMARY"
+
       - name: Comment result
         if: always() && steps.validate.outputs.pr_number != ''
         env:
@@ -71,6 +75,15 @@ jobs:
           PR_NUMBER: ${{ steps.validate.outputs.pr_number }}
           SYNC_ACTION: ${{ steps.validate.outputs.sync_action }}
         run: node scripts/orchestrator/sync-pr-state.mjs
+
+      - name: Run post-merge reviewer audit
+        if: always() && steps.validate.outputs.pr_number != '' && steps.validate.outputs.status == 'fail'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.validate.outputs.pr_number }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: node scripts/ci/post_merge_reviewer_audit.mjs
 
       - name: Fail if validation failed
         if: always() && steps.validate.outputs.status == 'fail'

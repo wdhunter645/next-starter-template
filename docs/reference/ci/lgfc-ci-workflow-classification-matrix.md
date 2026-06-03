@@ -60,7 +60,7 @@ Workflow should be removed once replacement coverage exists.
 | ops-assess.yml | Site assessment | OPS Runtime | Keep | Current operational assessment base |
 | production-audit.yml | Production invariants | OPS Runtime + Post-Merge Validation | Rebuild | Consolidate operational reporting |
 | ops-design-compliance-audit.yml | Design audit | Post-Merge Validation | Keep/Rebuild | Expand implementation-verification role |
-| post-merge-intent-verification.yml | Post-merge metadata validation | Post-Merge Validation | Rebuild | Current YAML instability must be fixed |
+| post-merge-intent-verification.yml | Post-merge metadata validation | Post-Merge Validation | Rebuild | Expanded evidence reporting and remediation handoff in Task 004 |
 | post-merge-remediation.yml | Remediation workflow | Post-Merge Validation | Keep/Rebuild | Expand remediation issue generation |
 | ops-cf-pages-retry.yml | Deployment retry | OPS Runtime | Keep | Strong operational utility |
 | snapshot.yml | Snapshot/rollback evidence | OPS Runtime | Keep | Preserve rollback evidence |
