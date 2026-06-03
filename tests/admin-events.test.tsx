@@ -51,72 +51,80 @@ function makeEventsDb(rows: Array<Record<string, unknown>> = []) {
   let lastInsert: Record<string, unknown> | null = null;
   let lastUpdate: Record<string, unknown> | null = null;
 
+  const upcomingPostedCount = () =>
+    rows.filter((row) => row.status === 'posted').length;
+
   const db = {
-    prepare: vi.fn((sql: string) => ({
-      bind: (...args: unknown[]) => ({
-        all: async () => {
-          if (sql.includes('sqlite_master')) {
-            return { results: [{ name: 'events' }] };
-          }
+    prepare: vi.fn((sql: string) => {
+      const countFirst = async () => ({ n: upcomingPostedCount() });
 
-          if (sql.includes('substr(start_date')) {
-            boundMonth = String(args[0]);
-            boundLimit = Number(args[1]);
-            return { results: rows.filter((row) => String(row.start_date).startsWith(boundMonth)) };
-          }
+      return {
+        first: sql.includes('COUNT(*)') ? countFirst : async () => null,
+        bind: (...args: unknown[]) => ({
+          all: async () => {
+            if (sql.includes('sqlite_master')) {
+              return { results: [{ name: 'events' }] };
+            }
 
-          if (sql.includes('FROM events') && sql.includes('ORDER BY start_date DESC')) {
-            boundLimit = Number(args[0]);
-            return { results: rows };
-          }
+            if (sql.includes('substr(start_date')) {
+              boundMonth = String(args[0]);
+              boundLimit = Number(args[1]);
+              return { results: rows.filter((row) => String(row.start_date).startsWith(boundMonth)) };
+            }
 
-          if (sql.includes("status='posted'")) {
-            return { results: [{ n: rows.filter((row) => row.status === 'posted').length }] };
-          }
+            if (sql.includes('FROM events') && sql.includes('ORDER BY start_date DESC')) {
+              boundLimit = Number(args[0]);
+              return { results: rows };
+            }
 
-          return { results: [] };
-        },
-        run: async () => {
-          if (sql.includes('INSERT INTO events')) {
-            lastInsert = {
-              title: args[0],
-              start_date: args[1],
-              end_date: args[2],
-              location: args[3],
-              host: args[4],
-              fees: args[5],
-              description: args[6],
-              external_url: args[7],
-              status: args[8],
-            };
-            return { meta: { last_row_id: 42, changes: 1 } };
-          }
+            if (sql.includes("status='posted'") && sql.includes('COUNT(*)')) {
+              return { results: [{ n: upcomingPostedCount() }] };
+            }
 
-          if (sql.includes('UPDATE events')) {
-            lastUpdate = {
-              title: args[0],
-              start_date: args[1],
-              end_date: args[2],
-              location: args[3],
-              host: args[4],
-              fees: args[5],
-              description: args[6],
-              external_url: args[7],
-              status: args[8],
-              id: args[9],
-            };
-            return { meta: { changes: 1 } };
-          }
+            return { results: [] };
+          },
+          run: async () => {
+            if (sql.includes('INSERT INTO events')) {
+              lastInsert = {
+                title: args[0],
+                start_date: args[1],
+                end_date: args[2],
+                location: args[3],
+                host: args[4],
+                fees: args[5],
+                description: args[6],
+                external_url: args[7],
+                status: args[8],
+              };
+              return { meta: { last_row_id: 42, changes: 1 } };
+            }
 
-          if (sql.includes('LGFC Placeholder Event 01')) {
-            return { meta: { changes: 10 } };
-          }
+            if (sql.includes('UPDATE events')) {
+              lastUpdate = {
+                title: args[0],
+                start_date: args[1],
+                end_date: args[2],
+                location: args[3],
+                host: args[4],
+                fees: args[5],
+                description: args[6],
+                external_url: args[7],
+                status: args[8],
+                id: args[9],
+              };
+              return { meta: { changes: 1 } };
+            }
 
-          return { meta: { changes: 0 } };
-        },
-        first: async () => ({ n: rows.filter((row) => row.status === 'posted').length }),
-      }),
-    })),
+            if (sql.includes('LGFC Placeholder Event 01')) {
+              return { meta: { changes: 10 } };
+            }
+
+            return { meta: { changes: 0 } };
+          },
+          first: countFirst,
+        }),
+      };
+    }),
   };
 
   return {
