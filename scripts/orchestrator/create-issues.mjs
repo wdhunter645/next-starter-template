@@ -22,10 +22,6 @@ function runGh(args) {
   return execFileSync('gh', args, { encoding: 'utf8' }).trim();
 }
 
-function runGit(args) {
-  return execFileSync('git', args, { encoding: 'utf8' }).trim();
-}
-
 export function missingRequiredLabels(existingLabels, requiredLabels) {
   const existing = new Set(existingLabels);
   return requiredLabels.filter((label) => !existing.has(label));
@@ -98,15 +94,6 @@ function isProductionReady(content) {
   return /Status:\s*production-ready/i.test(content);
 }
 
-function markIssuesCreated(filePath, content) {
-  const updated = content.replace(/Status:\s*production-ready/i, 'Status: issues-created');
-  if (updated !== content) {
-    fs.writeFileSync(filePath, updated);
-    return true;
-  }
-  return false;
-}
-
 function projectSlug(filePath) {
   return path.basename(filePath, path.extname(filePath));
 }
@@ -119,12 +106,14 @@ function parseTasks(content) {
     const block = content.slice(start, end).trim();
     const type = block.match(/^Type:\s*(.+)$/m)?.[1]?.trim();
     const agent = block.match(/^Agent:\s*(.+)$/m)?.[1]?.trim();
+    const status = block.match(/^Status:\s*(.+)$/m)?.[1]?.trim();
     return {
       id: `Task-${match[1]}`,
       number: match[1],
       title: match[2].trim(),
       type,
       agent,
+      status,
       block
     };
   });
@@ -196,6 +185,11 @@ export function labelsForTask(task, statusLabel = 'status:queued') {
   ];
 }
 
+export function shouldCreateIssueForTask(task) {
+  const terminalStatuses = new Set(['complete', 'completed', 'closed', 'issues-created']);
+  return !terminalStatuses.has((task.status || '').toLowerCase());
+}
+
 export function main() {
   ensureLabels();
 
@@ -203,7 +197,6 @@ export function main() {
     ? fs.readdirSync(planDir).filter((name) => name.endsWith('.md') && name !== 'README.md').sort()
     : [];
 
-  const updatedPlans = [];
   const queueAlreadyOpen = openOrchestratorIssueExists();
   let createdIssueCount = 0;
 
@@ -218,6 +211,11 @@ export function main() {
     const tasks = parseTasks(content);
 
     for (const task of tasks) {
+      if (!shouldCreateIssueForTask(task)) {
+        console.log(`SKIP ${task.id} with terminal status: ${task.status}`);
+        continue;
+      }
+
       const marker = `lgfc-task-id:${slug}:${task.id}`;
       if (issueExists(marker)) {
         console.log(`SKIP existing issue for ${marker}`);
@@ -262,18 +260,6 @@ export function main() {
       createdIssueCount += 1;
       console.log(`CREATED issue for ${marker}`);
     }
-
-    if (!dryRun && markIssuesCreated(filePath, content)) {
-      updatedPlans.push(filePath);
-    }
-  }
-
-  if (updatedPlans.length > 0) {
-    runGit(['config', 'user.name', 'github-actions[bot]']);
-    runGit(['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com']);
-    runGit(['add', ...updatedPlans]);
-    runGit(['commit', '-m', 'ops: mark implementation plans as issues-created']);
-    runGit(['push', 'origin', 'HEAD:main']);
   }
 }
 

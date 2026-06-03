@@ -4,25 +4,28 @@
 # - Fetches Pages project metadata, domains, and recent deployments
 # - Writes timestamped JSON files to snapshots/cloudflare/
 # - Appends run timestamp to _smoketest.txt
-# - Fails fast if required env vars/secrets are missing
+# - Skips cleanly if optional Cloudflare env vars/secrets are missing
 #
 
 set -euo pipefail
 
-# --- Required env vars check ---
-if [[ -z "${CF_ACCOUNT_ID:-}" ]]; then
-  echo "ERROR: CF_ACCOUNT_ID environment variable is not set" >&2
-  exit 1
-fi
+# --- Optional env vars check ---
+missing=""
+[[ -n "${CF_ACCOUNT_ID:-}" ]] || missing="${missing:+$missing, }CF_ACCOUNT_ID"
+[[ -n "${CF_PAGES_PROJECT:-}" ]] || missing="${missing:+$missing, }CF_PAGES_PROJECT"
+[[ -n "${CLOUDFLARE_API_TOKEN:-}" ]] || missing="${missing:+$missing, }CLOUDFLARE_API_TOKEN"
 
-if [[ -z "${CF_PAGES_PROJECT:-}" ]]; then
-  echo "ERROR: CF_PAGES_PROJECT environment variable is not set" >&2
-  exit 2
-fi
-
-if [[ -z "${CLOUDFLARE_API_TOKEN:-}" ]]; then
-  echo "ERROR: CLOUDFLARE_API_TOKEN secret is not set" >&2
-  exit 3
+if [[ -n "$missing" ]]; then
+  message="Cloudflare Pages snapshot skipped; missing configuration: $missing"
+  if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
+    echo "snapshot_created=false" >> "$GITHUB_OUTPUT"
+  fi
+  if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+    echo "::notice title=Cloudflare Pages snapshot skipped::$message"
+  else
+    echo "$message" >&2
+  fi
+  exit 0
 fi
 
 # --- Setup ---
@@ -185,3 +188,7 @@ echo "  - $DEPLOYMENTS_FILE"
 echo "  - $SMOKETEST_FILE (appended)"
 echo "  - $README_FILE (updated)"
 echo ""
+
+if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
+  echo "snapshot_created=true" >> "$GITHUB_OUTPUT"
+fi
