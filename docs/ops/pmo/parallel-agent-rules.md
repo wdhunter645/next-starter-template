@@ -135,7 +135,8 @@ Comments recording the exception: `#1335`, `#1339`.
 Before requesting Atlas review or opening a PR:
 
 - [ ] Changes match active task allowlist only
-- [ ] `./scripts/ci/docs_check_headers.sh .` passed
+- [ ] Changed files pass `./scripts/ci/docs_check_headers.sh <file>`
+- [ ] Repo-wide `./scripts/ci/docs_check_headers.sh .` passed, or pre-existing out-of-scope failures are disclosed in the PR body
 - [ ] `./scripts/ci/docs_canonical_hashes_verify.sh .` passed
 - [ ] No legacy issues closed or relabeled
 - [ ] No blocked task issues advanced
