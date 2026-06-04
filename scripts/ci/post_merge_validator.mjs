@@ -97,6 +97,8 @@ export function metadataFailures(pr, filesExist = () => true) {
 
 	for (const file of pr?.files || []) {
 		const filePath = typeof file === 'string' ? file : (file.filename || file.path);
+		const fileStatus = typeof file === 'object' ? file.status : '';
+		if (fileStatus === 'removed') continue;
 		if (filePath && !filesExist(filePath)) {
 			failures.push({ code: 'missing_changed_file', message: `Merged PR file is absent from the checkout: ${filePath}` });
 		}
