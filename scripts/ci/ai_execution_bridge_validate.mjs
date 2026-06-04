@@ -35,6 +35,19 @@ export const UNSAFE_PATH_RULES = [
     test: (value) => /secret|credential|private[_-]?key|api[_-]?key/i.test(value),
     message: 'Paths that may contain secrets are not allowed',
   },
+  {
+    id: 'traversal',
+    test: (value) => {
+      const segments = value.split(/[/\\]/);
+      return (
+        segments.includes('..') ||
+        value.startsWith('/') ||
+        value.startsWith('\\') ||
+        /^[a-zA-Z]:[/\\]/.test(value)
+      );
+    },
+    message: 'Path traversal and absolute paths are not allowed',
+  },
 ];
 
 export function parseSectionMap(body = '') {
@@ -76,8 +89,8 @@ export function extractAllowedFiles(body = '') {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('#')) continue;
 
-    const bulletMatch = /^[-*]\s+`?([^`]+)`?\s*$/.exec(trimmed);
-    const inlineMatch = /^`([^`]+)`$/.exec(trimmed);
+    const bulletMatch = /^[-*]\s+`?([^\s`]+)`?\s*$/.exec(trimmed);
+    const inlineMatch = /^`([^\s`]+)`$/.exec(trimmed);
     const plainMatch = /^[-*]?\s*([^\s#]+)\s*$/.exec(trimmed);
 
     const candidate = bulletMatch?.[1] || inlineMatch?.[1] || plainMatch?.[1];
@@ -182,6 +195,10 @@ export function assessAiBuildIssueEvent(event = {}) {
   const missingSections = findMissingRequiredSections(body);
   const allowed = assessAllowedFiles(body);
   const errors = [];
+
+  if (typeof issue.number !== 'number' || issue.number <= 0) {
+    errors.push('Issue number is missing or invalid');
+  }
 
   for (const heading of missingSections) {
     errors.push(`Missing required section: ${heading}`);

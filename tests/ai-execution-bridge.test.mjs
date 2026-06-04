@@ -107,6 +107,12 @@ describe('ai execution bridge validate', () => {
     expect(isUnsafeAllowedPath('**/*').unsafe).toBe(true);
   });
 
+  it('path traversal or absolute path fails', () => {
+    expect(isUnsafeAllowedPath('../etc/passwd').unsafe).toBe(true);
+    expect(isUnsafeAllowedPath('/absolute/path').unsafe).toBe(true);
+    expect(isUnsafeAllowedPath('C:\\Windows').unsafe).toBe(true);
+  });
+
   it('PR event masquerading as issue fails', () => {
     const event = labeledEvent();
     event.issue.pull_request = { url: 'https://github.com/example/repo/pull/1' };
@@ -227,11 +233,20 @@ describe('ai execution bridge prepare', () => {
     })).toContain('- docs/a.md');
   });
 
-  it('extractAllowedFiles parses bullet lists', () => {
+  it('extractAllowedFiles parses bullet lists and ignores checkboxes', () => {
     const files = extractAllowedFiles(validIssueBody({
-      allowedFiles: '- `docs/a.md`\n- docs/b.md',
+      allowedFiles: '- `docs/a.md`\n- docs/b.md\n- [ ] docs/c.md',
     }));
 
     expect(files).toEqual(['docs/a.md', 'docs/b.md']);
+  });
+
+  it('missing or invalid issue number fails validation', () => {
+    const event = labeledEvent();
+    delete event.issue.number;
+    const result = assessAiBuildIssueEvent(event);
+
+    expect(result.ok).toBe(false);
+    expect(result.errors.some((error) => error.includes('Issue number'))).toBe(true);
   });
 });
