@@ -3,6 +3,12 @@ name: AI Execution Bridge
 on:
   issues:
     types: [labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Issue number to validate as an ai-build task (smoke test / operator rerun)
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -10,17 +16,39 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: ai-execution-bridge-${{ github.event.issue.number }}
+  group: ai-execution-bridge-${{ github.event.issue.number || inputs.issue_number }}
   cancel-in-progress: false
 
 jobs:
   bridge:
-    if: github.event.label.name == 'ai-build'
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'ai-build'
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Build labeled event payload (workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+        run: |
+          gh issue view "$ISSUE_NUMBER" --repo "${{ github.repository }}"             --json number,title,body > issue-payload.json
+          node <<'NODE'
+          const fs = require('node:fs');
+          const issue = JSON.parse(fs.readFileSync('issue-payload.json', 'utf8'));
+          const event = {
+            action: 'labeled',
+            label: { name: 'ai-build' },
+            issue: {
+              number: issue.number,
+              title: issue.title,
+              body: issue.body,
+            },
+          };
+          fs.writeFileSync('dispatch-event.json', JSON.stringify(event));
+          NODE
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -30,7 +58,7 @@ jobs:
       - name: Validate approved issue
         id: validate
         env:
-          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_EVENT_PATH: ${{ github.event_name == 'workflow_dispatch' && 'dispatch-event.json' || github.event_path }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           AI_EXECUTION_BRIDGE_RESULT_PATH: ai-execution-bridge-result.json
         run: node scripts/ci/ai_execution_bridge_validate.mjs
@@ -54,7 +82,7 @@ jobs:
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
         run: |
           if [ ! -f ai-execution-bridge-result.json ]; then
             echo "No validation result artifact found."
