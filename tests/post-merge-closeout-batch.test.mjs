@@ -147,15 +147,18 @@ describe('post-merge closeout batch', () => {
 			closeDuplicateRemediationIssuesFn: vi.fn().mockResolvedValue({ closed: [] }),
 		});
 
-		expect(outcome.results).toEqual([
-			{ pr: '1', status: 'error', message: 'PR #1 closeout failed' },
-			{
-				pr: '2',
-				status: 'pass',
-				sync_action: 'post_merge_success',
-				source_issue: '2',
-				remediation_required: false,
-			},
-		]);
+		expect(outcome.results[0]).toMatchObject({
+			pr: '1',
+			status: 'error',
+			phase: 'closeout',
+			failure_reason: 'PR #1 closeout failed',
+		});
+		expect(outcome.results[1]).toMatchObject({
+			pr: '2',
+			status: 'pass',
+			sync_action: 'post_merge_success',
+			source_issue: '2',
+			remediation_required: false,
+		});
 	});
 });

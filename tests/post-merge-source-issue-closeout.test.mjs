@@ -96,7 +96,14 @@ describe('source issue closeout decision', () => {
 		const result = buildResult({
 			pr: { body: baseBody },
 			resolution: { pr: '1239' },
-			metadata: [{ code: 'missing_advisory_section', severity: 'advisory', message: 'advisory' }],
+			failures: [
+				{
+					workflow: 'Auto-Sync Documentation',
+					classification: 'secret-access/configuration',
+					required: false,
+					conclusion: 'failure',
+				},
+			],
 		});
 
 		expect(result).toMatchObject({ status: 'pass', sync_action: 'post_merge_remediation', remediation_required: true });
