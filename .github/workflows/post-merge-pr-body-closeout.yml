@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: Merged PR number to close out
-        required: true
-        default: '1221'
+        description: Merged PR number to close out (ignored when run_batch is true)
+        required: false
+        default: '1239'
       body_file:
         description: Repo-relative path to remediated PR body markdown
-        required: true
-        default: scripts/ci/post-merge-closeout/pr-1221-body.md
+        required: false
+        default: scripts/ci/post-merge-closeout/pr-1239-body.md
       skip_body_apply:
         description: Skip body patch (re-validate and sync only)
         required: false
@@ -19,12 +19,14 @@ on:
         options:
           - 'false'
           - 'true'
-  push:
-    branches: [main]
-    paths:
-      - .github/workflows/post-merge-pr-body-closeout.yml
-      - scripts/ci/post-merge-closeout/**
-
+      run_batch:
+        description: Run batch closeout for scripts/ci/post-merge-closeout/targets.json
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
 permissions:
   actions: read
   contents: read
@@ -44,13 +46,24 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Apply body, validate, and sync orchestrator state
+      - name: Batch closeout for merged PRs 1239 and 1243
+        if: github.event_name == 'workflow_dispatch' && inputs.run_batch == 'true'
         env:
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_RUN_ID: ${{ github.run_id }}
-          PR_NUMBER: ${{ github.event.inputs.pr_number || '1221' }}
-          BODY_FILE: ${{ github.event.inputs.body_file || 'scripts/ci/post-merge-closeout/pr-1221-body.md' }}
+          CLOSEOUT_MANIFEST: scripts/ci/post-merge-closeout/targets.json
+        run: node scripts/ci/run_batch_post_merge_closeout.mjs
+
+      - name: Apply body, validate, and sync orchestrator state
+        if: github.event_name == 'workflow_dispatch' && inputs.run_batch != 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          PR_NUMBER: ${{ github.event.inputs.pr_number || '1239' }}
+          BODY_FILE: ${{ github.event.inputs.body_file || 'scripts/ci/post-merge-closeout/pr-1239-body.md' }}
           SKIP_BODY_APPLY: ${{ github.event.inputs.skip_body_apply || 'false' }}
         run: node scripts/ci/run_post_merge_closeout.mjs
