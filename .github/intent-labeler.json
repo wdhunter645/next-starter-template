@@ -18,6 +18,8 @@
         "docs/governance/",
         "docs/governance/PR_GOVERNANCE.md",
         "docs/how-to/ci/",
+        "docs/how-to/ops/",
+        "docs/templates/",
         "docs/explanation/ci/",
         "docs/website-PR-process.md",
         "docs/OPERATING_MANUAL.md",

@@ -1,0 +1,131 @@
+name: AI Execution Bridge
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: ai-execution-bridge-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  bridge:
+    if: github.event.label.name == 'ai-build'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate approved issue
+        id: validate
+        env:
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          AI_EXECUTION_BRIDGE_RESULT_PATH: ai-execution-bridge-result.json
+        run: node scripts/ci/ai_execution_bridge_validate.mjs
+
+      - name: Prepare execution plan
+        if: steps.validate.outcome == 'success' && hashFiles('ai-execution-bridge-result.json') != ''
+        env:
+          AI_EXECUTION_BRIDGE_RESULT_PATH: ai-execution-bridge-result.json
+          AI_EXECUTION_BRIDGE_PLAN_PATH: ai-execution-bridge-plan.json
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          AI_EXECUTION_BRIDGE_BASE_BRANCH: main
+        run: |
+          STATUS="$(node -e "const r=require('./ai-execution-bridge-result.json'); process.stdout.write(r.status || '')")"
+          if [ "$STATUS" != "passed" ]; then
+            echo "Validation did not pass; skipping plan preparation."
+            exit 0
+          fi
+          node scripts/ci/ai_execution_bridge_prepare.mjs
+
+      - name: Comment validation or plan summary
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          if [ ! -f ai-execution-bridge-result.json ]; then
+            echo "No validation result artifact found."
+            exit 0
+          fi
+
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          const result = JSON.parse(fs.readFileSync('ai-execution-bridge-result.json', 'utf8'));
+          const issueNumber = process.env.ISSUE_NUMBER;
+          let body = '';
+
+          if (result.skipped) {
+            body = [
+              '## AI execution bridge',
+              '',
+              'No action taken: label event did not require bridge execution.',
+              '',
+              `- Reason: \`${result.reason}\``,
+            ].join('\n');
+          } else if (!result.ok) {
+            body = [
+              '## AI execution bridge — validation failed',
+              '',
+              'The issue body did not pass controlled execution validation. No branch or PR was prepared.',
+              '',
+              '### Errors',
+              ...(result.errors || []).map((error) => `- ${error}`),
+              '',
+              'Fix the issue body and re-apply the `ai-build` label after corrections.',
+            ].join('\n');
+          } else {
+            const plan = fs.existsSync('ai-execution-bridge-plan.json')
+              ? JSON.parse(fs.readFileSync('ai-execution-bridge-plan.json', 'utf8'))
+              : null;
+
+            if (!plan || plan.phase === 'skipped') {
+              body = [
+                '## AI execution bridge — validation passed',
+                '',
+                'Validation passed, but no execution plan artifact was produced.',
+              ].join('\n');
+            } else {
+              body = [
+                '## AI execution bridge — branch/PR plan ready',
+                '',
+                'Validation passed. Phase 1 prepares a deterministic branch/PR plan only; OpenAI execution remains disabled.',
+                '',
+                `- Planned branch: \`${plan.branchName}\``,
+                `- Planned PR title: ${plan.prTitle}`,
+                `- Base branch: \`${plan.baseBranch}\``,
+                `- Allowed files: ${(plan.allowedFiles || []).map((file) => `\`${file}\``).join(', ')}`,
+                '',
+                '### Future phase',
+                `- ${plan.futurePhase.note}`,
+                '',
+                '### Planned PR body preview',
+                '<details>',
+                '<summary>Show planned PR body</summary>',
+                '',
+                plan.prBody,
+                '',
+                '</details>',
+              ].join('\n');
+            }
+          }
+
+          fs.writeFileSync('ai-execution-bridge-comment.md', body, 'utf8');
+          NODE
+
+          gh issue comment "$ISSUE_NUMBER" \
+            --repo "${{ github.repository }}" \
+            --body-file ai-execution-bridge-comment.md
