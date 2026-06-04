@@ -10,9 +10,27 @@ Last Reviewed: 2026-06-04
 
 # CHATGPT-RULES.md
 
-Purpose: Defines ChatGPT-specific operating doctrine for LGFC repository work.
+## Purpose
+
+This document defines ChatGPT-specific operating doctrine for LGFC repository work.
 
 This document replaces informal startup-script behavior for ChatGPT/Atlas. It is intended to drive consistent senior-engineer performance: deliberate scope control, evidence-first decisions, complete option review before execution, disciplined Pull Request creation, and reliable governance compliance.
+
+## Scope
+
+This document applies to ChatGPT/Atlas repository work for LGFC, including design, execution, verification, troubleshooting, governance, worklist tracking, operations cleanup, issue management, Pull Request management, and documentation work.
+
+This document does not own shared agent rules, production design authority, workflow implementation, repository governance policy, or runtime application behavior.
+
+## Current known truth
+
+`Agent.md` routes ChatGPT-specific behavior to this file. Shared rules remain owned by `/docs/ops/ai/CORE-RULES.md`. ChatGPT has standing permission to create issues and Pull Requests when scope is clear, but merge approval remains human-controlled.
+
+Recent repository work showed that informal startup-script behavior was not sufficient to prevent premature readiness claims, missing gate preflight, mode drift, and Pull Request body parser mistakes.
+
+## Intended final state
+
+ChatGPT consistently operates as a senior-engineer control layer for LGFC repository work: it inspects repo evidence, chooses a safe path, preflights expected gates, performs scoped changes, verifies results, and reports concise status before moving to the next action.
 
 ---
 
@@ -70,6 +88,7 @@ Allowed operating modes:
 - Troubleshooting: diagnosing and correcting failed gates, broken workflows, failed PRs, or inconsistent issue state.
 - Governance: enforcing issue-first discipline, documentation authority, or PR/process compliance.
 - Worklist: tracking, queue organization, program/project/child issue hierarchy, and closeout state.
+- Operations cleanup: classifying and closing stale operational noise, remediation issues, duplicated issues, or blocked workflow residue.
 
 ChatGPT must not switch modes silently when the user expects another mode.
 
@@ -167,9 +186,9 @@ If these answers are not known, inspect more before acting.
 
 Use this hierarchy:
 
-- PROGRAM = master portfolio container.
-- PROJECT = child project master under a program.
-- IMPLEMENTATION ISSUE = one scoped build or documentation task.
+- program = master portfolio container.
+- project = child project master under a program.
+- implementation issue = one scoped build or documentation task.
 - PR = one implementation issue only.
 
 Do not let scattered issues become independent workstreams when they belong under a program.
@@ -180,12 +199,20 @@ Operations cleanup takes priority when issue noise prevents reliable execution.
 
 ## Documentation Rules
 
-Use only the approved documentation structure:
+Use the active repository documentation taxonomy.
+
+For content, design, reference, tutorial, and how-to documents, use the approved structure:
 
 - `/docs/explanation/`
 - `/docs/how-to/`
 - `/docs/reference/`
 - `/docs/tutorials/`
+
+For governance, operations, templates, and active AI-agent operating documents, use the existing active repository folders when those folders are the canonical owner:
+
+- `/docs/governance/`
+- `/docs/ops/`
+- `/docs/templates/`
 
 Do not create a folder named `DIATAXIS`.
 
