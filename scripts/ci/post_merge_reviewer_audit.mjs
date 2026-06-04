@@ -100,6 +100,19 @@ async function main() {
     return;
   }
 
+  if (BREAK_GLASS_MARKER.test(pr.body || '')) {
+    const breakGlassNote = [
+      'Post-merge reviewer audit: break-glass override was declared on this merged PR.',
+      'Marker: `<!-- reviewer-lifecycle-break-glass -->` with `recovery` intent label required pre-merge.',
+      `PR: ${prUrl}`,
+    ].join('\n');
+    console.log(breakGlassNote);
+    const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+    if (summaryPath) {
+      fs.appendFileSync(summaryPath, `\n### Reviewer lifecycle break-glass\n\n${breakGlassNote}\n`);
+    }
+  }
+
   const [issueComments, reviewComments, reviews] = await Promise.all([
     paginate(`/repos/${owner}/${repo}/issues/${prNumber}/comments`),
     paginate(`/repos/${owner}/${repo}/pulls/${prNumber}/comments`),

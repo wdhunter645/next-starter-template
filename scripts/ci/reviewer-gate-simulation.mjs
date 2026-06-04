@@ -125,6 +125,8 @@ export function evaluateReviewerAccounting({
   labels = [],
   files = [],
   currentHeadLinkedReview = false,
+  staleTrustedReviewOnly = false,
+  breakGlassOverride = false,
   unresolvedProtectedThreads = 0,
   advisoryFindings = 0,
 } = {}) {
@@ -142,11 +144,27 @@ export function evaluateReviewerAccounting({
     };
   }
 
+  if (
+    scope.hasProtectedScope &&
+    eventName === 'pull_request_target' &&
+    breakGlassOverride
+  ) {
+    return {
+      ok: true,
+      severity: 'break-glass',
+      reason: 'break-glass-override-for-protected-scope',
+      advisoryDowngraded,
+      scope,
+    };
+  }
+
   if (scope.hasProtectedScope && eventName === 'pull_request_target' && !currentHeadLinkedReview) {
     return {
       ok: false,
       severity: 'blocking',
-      reason: 'missing-current-head-review-for-protected-scope',
+      reason: staleTrustedReviewOnly
+        ? 'stale-trusted-review-for-protected-scope'
+        : 'missing-current-head-review-for-protected-scope',
       advisoryDowngraded,
       scope,
     };
@@ -179,6 +197,8 @@ export function simulateGovernanceCase(testCase, config = loadIntentConfig()) {
     labels,
     files,
     currentHeadLinkedReview: Boolean(testCase.currentHeadLinkedReview),
+    staleTrustedReviewOnly: Boolean(testCase.staleTrustedReviewOnly),
+    breakGlassOverride: Boolean(testCase.breakGlassOverride),
     unresolvedProtectedThreads: testCase.unresolvedProtectedThreads || 0,
     advisoryFindings: testCase.advisoryFindings || 0,
   });
