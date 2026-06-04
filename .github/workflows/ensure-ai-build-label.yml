@@ -1,0 +1,42 @@
+name: Ensure AI Build Label
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/ensure-ai-build-label.yml
+
+permissions:
+  issues: write
+
+jobs:
+  ensure-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create ai-build label when missing
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const name = 'ai-build';
+
+            try {
+              await github.rest.issues.getLabel({ owner, repo, name });
+              core.info(`Label ${name} already exists.`);
+            } catch (error) {
+              if (error.status !== 404) {
+                throw error;
+              }
+
+              await github.rest.issues.createLabel({
+                owner,
+                repo,
+                name,
+                description:
+                  'Trigger controlled AI execution bridge (phase 1: validate and plan only; no OpenAI execution).',
+                color: '1D76DB',
+              });
+              core.info(`Created label ${name}.`);
+            }

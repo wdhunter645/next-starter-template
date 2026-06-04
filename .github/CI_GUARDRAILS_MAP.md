@@ -48,6 +48,8 @@ The table below is the canonical inventory of all GitHub Actions workflows in `.
 | Workflow file | Workflow name | Effectiveness | Primary use |
 |---|---|---|---|
 | `ai_review.yml` | AI Code Review | Effective | Runs AI-assisted PR review comments/checks to improve code review coverage. |
+| `ai-execution-bridge.yml` | AI Execution Bridge | Effective | On `ai-build` issue label: validates approved issue body and allowed files, prepares deterministic branch/PR plan JSON, comments on issue (phase 1; no OpenAI execution). |
+| `ensure-ai-build-label.yml` | Ensure AI Build Label | Effective | Creates the `ai-build` label on `main` when missing (workflow_dispatch or push to this workflow file). |
 | `assess-nightly.yml` | Site Assessment (Nightly Drift Detection) | Effective | Nightly drift detection against expected site and route invariants. |
 | `b2-d1-daily-sync.yml` | B2 → D1 Daily Sync | Effective | Scheduled sync of Backblaze B2 inventory/data into D1. |
 | `b2-s3-smoke-test.yml` | B2 S3 Smoke Test | Effective | Validates S3-compatible B2 credentials/connectivity and basic object operations. |

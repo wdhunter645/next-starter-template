@@ -89,6 +89,7 @@ Design approval and merge approval remain human- or Atlas-controlled. The bridge
 
 ## Procedure
 
+0. Confirm the `ai-build` label exists (Settings → Labels, or run the **Ensure AI Build Label** workflow on `main`).
 1. Create or update a source issue using `docs/templates/ai-build-issue-template.md`.
 2. Fill every required section with exact paths and verification commands.
 3. Confirm the allowed-files list is narrow and safe.
