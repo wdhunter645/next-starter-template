@@ -102,3 +102,6 @@ Design approval and merge approval remain human- or Atlas-controlled. The bridge
 7. Open one PR against `main` using the planned PR governance body and exactly one source issue line: `- **Issue:** #<issue-number>`.
 8. Run the validation commands from the issue and record results in the PR body.
 9. Request human/Atlas review; do not merge until approval.
+## Automation note
+
+GitHub does not emit `issues:labeled` when the `ai-build` label is applied by `GITHUB_TOKEN` in Actions. In that case use **AI Execution Bridge** `workflow_dispatch` with the issue number, or apply the label manually in the GitHub UI.

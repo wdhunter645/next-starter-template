@@ -9,6 +9,7 @@ on:
 
 permissions:
   issues: write
+  actions: write
 
 jobs:
   closeout:
@@ -19,6 +20,15 @@ jobs:
         with:
           script: |
             const issueNumber = 1288;
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+            });
+            if (issue.state === 'closed') {
+              core.info('Issue #1288 already closed.');
+              return;
+            }
             const marker = '<!-- bridge-optional-closeout-1288 -->';
             const body = [
               marker,
@@ -131,6 +141,46 @@ jobs:
               labels: ['ai-build'],
             });
 
+            core.info(
+              'Note: labels applied by GITHUB_TOKEN do not fire issues:labeled; dispatching bridge workflow.',
+            );
+
+      - name: Dispatch AI Execution Bridge for live test issue
+        env:
+          LIVE_ISSUE_NUMBER: ${{ steps.live_test.outputs.number }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = process.env.LIVE_ISSUE_NUMBER;
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'ai-execution-bridge.yml',
+              ref: 'main',
+              inputs: { issue_number: String(issueNumber) },
+            });
+
+      - name: Dispatch bridge for orphaned live test #1316
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 1316,
+            });
+            if (issue.state !== 'open') {
+              core.info('Issue #1316 is not open; skipping orphan dispatch.');
+              return;
+            }
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'ai-execution-bridge.yml',
+              ref: 'main',
+              inputs: { issue_number: '1316' },
+            });
+
       - name: Wait for bridge workflow comment
         env:
           LIVE_ISSUE_NUMBER: ${{ steps.live_test.outputs.number }}
@@ -139,7 +189,7 @@ jobs:
           script: |
             const issueNumber = Number(process.env.LIVE_ISSUE_NUMBER);
             const marker = '## AI execution bridge';
-            const maxAttempts = 18;
+            const maxAttempts = 24;
             let found = false;
 
             for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
