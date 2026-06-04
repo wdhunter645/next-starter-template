@@ -141,7 +141,7 @@ ChatGPT must not open a Pull Request until all of the following are true:
 - Required template sections are present.
 - File-touch allowlist exactly matches the intended diff.
 - Documentation files have required authority headers.
-- `docs/how-to/**` files include `## Steps`.
+- `docs/how-to/**` files include `## Steps`, `## Procedure`, or `## Execution`.
 - The intent label is singular and correct.
 - No unverified READY FOR REVIEW claim is made.
 
