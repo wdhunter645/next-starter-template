@@ -35,6 +35,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Install dependencies
+        run: npm ci
+
       - name: Run unit tests
         run: npm test -- tests/ai-execution-bridge.test.mjs
 
