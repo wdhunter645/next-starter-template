@@ -16,7 +16,9 @@ This document makes LGFC repository work repeatable across ChatGPT, Codex, Curso
 
 ## Shared rules
 
-All agents must:
+All agents must follow [`docs/ops/ai/SHARED-AGENT-RULES.md`](../../docs/ops/ai/SHARED-AGENT-RULES.md) and the detailed rules in [`docs/ops/ai/CORE-RULES.md`](../../docs/ops/ai/CORE-RULES.md).
+
+In addition:
 
 1. Read `Agent.md` first.
 2. Use the relevant `.agents/skills/*/SKILL.md` file when the task matches a skill trigger.
@@ -25,6 +27,8 @@ All agents must:
 5. Keep diffs narrow and reviewable.
 6. Run applicable checks.
 7. Report limitations without guessing.
+
+Do not duplicate shared law in agent-specific files; cross-link instead.
 
 ## Role mapping
 

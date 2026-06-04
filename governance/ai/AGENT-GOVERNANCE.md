@@ -20,12 +20,13 @@ Agents must resolve conflicts in this order:
 
 1. Locked governance / design / platform documents.
 2. `Agent.md` navigation and skill routing.
-3. `docs/ops/ai/CORE-RULES.md` execution rules.
-4. Source issue scope.
-5. Task-specific implementation plan or queue issue.
-6. Repository skill files under `.agents/skills/`.
-7. Cross-agent operational guidance under `governance/` and `ops/`.
-8. Historical thread logs and tracker context.
+3. `docs/ops/ai/SHARED-AGENT-RULES.md` categorized shared agent law.
+4. `docs/ops/ai/CORE-RULES.md` detailed execution rules.
+5. Source issue scope.
+6. Task-specific implementation plan or queue issue.
+7. Repository skill files under `.agents/skills/`.
+8. Cross-agent operational guidance under `governance/` and `ops/`.
+9. Historical thread logs and tracker context.
 
 Tracker files are historical/status indexes. They may be read for verification when relevant, but they are not task authority for normal implementation work unless the source issue explicitly scopes tracker governance, tracker reconciliation, or status-index maintenance.
 

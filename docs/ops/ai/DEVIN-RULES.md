@@ -4,13 +4,15 @@ Audience: AI (Devin)
 Authority Level: Agent-Specific
 Owns: Devin execution behavior
 Does Not Own: Shared rules, design authority, governance
-Canonical Reference: /docs/ops/ai/CORE-RULES.md
-Last Reviewed: 2026-04-22
+Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
+Last Reviewed: 2026-06-04
 ---
 
 # DEVIN-RULES.md
 
 Purpose: Defines Devin-specific execution behavior.
+
+Shared agent law: [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md). Detailed shared execution: [`CORE-RULES.md`](./CORE-RULES.md).
 
 ---
 

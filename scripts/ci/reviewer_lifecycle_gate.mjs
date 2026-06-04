@@ -375,14 +375,19 @@ async function main() {
     enforceFailure,
   });
 
-  await upsertGateComment({
-    token,
-    owner,
-    repo,
-    prNumber: result.prNumber,
-    marker: result.marker,
-    body: result.report,
-  });
+  try {
+    await upsertGateComment({
+      token,
+      owner,
+      repo,
+      prNumber: result.prNumber,
+      marker: result.marker,
+      body: result.report,
+    });
+  } catch (error) {
+    console.warn(`Failed to upsert reviewer lifecycle gate comment: ${error.message}`);
+    console.warn('Continuing with gate result; merge blocking depends on assessment only.');
+  }
 
   const summaryPath = process.env.GITHUB_STEP_SUMMARY;
   if (summaryPath) {

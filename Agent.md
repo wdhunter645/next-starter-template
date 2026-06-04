@@ -4,8 +4,8 @@ Audience: Human + AI
 Authority Level: Navigation
 Owns: Read order, authority hierarchy, execution entry point
 Does Not Own: Execution rules, design authority, governance policies
-Canonical Reference: /docs/ops/ai/CORE-RULES.md
-Last Reviewed: 2026-06-02
+Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
+Last Reviewed: 2026-06-04
 ---
 
 # Agent.md
@@ -17,12 +17,14 @@ Purpose: Entry point and navigation file for all AI agents.
 ## REQUIRED READ ORDER
 
 1. /docs/reference/design/LGFC-Production-Design-and-Standards.md
-2. /docs/ops/ai/CORE-RULES.md
-3. Source GitHub issue for the assigned task
-4. Task-relevant design, architecture, governance, or implementation-plan files linked from the source issue
-5. Agent-specific rules:
+2. /docs/ops/ai/SHARED-AGENT-RULES.md
+3. /docs/ops/ai/CORE-RULES.md
+4. Source GitHub issue for the assigned task
+5. Task-relevant design, architecture, governance, or implementation-plan files linked from the source issue
+6. Agent-specific rules (tool behavior only):
    - /docs/ops/ai/CHATGPT-RULES.md
    - /docs/ops/ai/CURSOR-RULES.md
+   - /docs/ops/ai/CODEX-RULES.md
    - /docs/ops/ai/COPILOT-RULES.md
    - /docs/ops/ai/DEVIN-RULES.md
 
@@ -33,11 +35,12 @@ Tracker files are historical/status indexes. Agents may read tracker files for v
 ## AUTHORITY HIERARCHY (SINGLE SOURCE)
 
 1. Locked design / platform / governance documents
-2. /docs/ops/ai/CORE-RULES.md
-3. Source GitHub issue for task scope and acceptance criteria
-4. Task-specific implementation plan or queue issue
-5. Agent-specific rules
-6. Task prompt
+2. /docs/ops/ai/SHARED-AGENT-RULES.md
+3. /docs/ops/ai/CORE-RULES.md
+4. Source GitHub issue for task scope and acceptance criteria
+5. Task-specific implementation plan or queue issue
+6. Agent-specific rules
+7. Task prompt
 
 This entrypoint defines the active read order for current repository work. Older cross-agent or tracker documents remain supporting references unless the source issue explicitly scopes tracker governance, tracker reconciliation, or status-index maintenance.
 
@@ -80,7 +83,8 @@ Agent governance files are checked by:
 
 ## STOP CONDITIONS (REFERENCE)
 
-Full definitions: `/docs/ops/ai/CORE-RULES.md`
+Shared agent law (categorized): `/docs/ops/ai/SHARED-AGENT-RULES.md`  
+Detailed execution rules: `/docs/ops/ai/CORE-RULES.md`
 
 - Conflict with authority
 - Ambiguity
@@ -92,4 +96,5 @@ Full definitions: `/docs/ops/ai/CORE-RULES.md`
 ## FINAL
 
 This file is navigation only.
-All rules are defined in CORE-RULES.md.
+Shared agent law is defined in SHARED-AGENT-RULES.md and expanded in CORE-RULES.md.
+Tool-specific rules are defined in the agent-specific files listed above.
