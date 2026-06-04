@@ -89,8 +89,10 @@ parse markdown plans. Phase-2 execution is driven by the issue factory.
 - `#1058` remains the open CI normalization and maintenance umbrella.
 - One active orchestrator issue at a time.
 - Post-merge validation closes source issues when merge evidence passes.
-- Website work is tracked only through GitHub issues; project tracker documents
-  are not updated for completed website tasks (T25–T50).
+- Website sequencing under `#1053` is tracked through GitHub issues. Legacy ops
+  tracker documents under `docs/ops/trackers/**` are not updated for new website
+  work and may disagree with issue state; they are not retired or reconciled by
+  this CI program.
 
 ## Core Principle
 

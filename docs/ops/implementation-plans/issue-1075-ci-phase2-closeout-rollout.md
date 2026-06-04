@@ -17,6 +17,42 @@ Last Reviewed: 2026-06-03
 
 # Issue 1075 CI Phase 2 Closeout and Maintenance Rollout
 
+## Purpose
+
+This plan defines phase-2 work after CI redesign Tasks 001–006 merged on `main`.
+It closes the `#1075` program, creates orchestrator issues for CI maintenance under
+`#1058`, and tests issue-factory behavior against completed phase-1 tasks.
+
+## Scope
+
+This plan owns:
+
+- CI program closeout issue hygiene for `#1075` and stale redesign children
+- `#1058` maintenance tasks (branch protection documentation, drift gate, legacy
+  workflow retirement, workflow inventory rewrite)
+- issue-factory orchestration for new task markers under project slug
+  `issue-1075-ci-phase2-closeout-rollout`
+
+This plan does not own website product implementation, website design authority,
+website tracker reconciliation, or runtime changes outside each task allowlist.
+
+## Current Known Truth
+
+- CI redesign Tasks 001–006 are merged on `main` (PRs #1189, #1229, #1239, #1240,
+  #1242, #1244).
+- Phase-1 tasks in `issue-1075-ci-redesign-rollout.md` are marked `Status: completed`.
+- Open GitHub issues (#1196–#1199, #1226, #1011, #1009, #1116, #1247, `#1075`) remain
+  open despite merged implementation; closeout is still required.
+- Website work under `#1053` is outside this CI program. Ops tracker files under
+  `docs/ops/trackers/**` may be stale relative to GitHub issue state.
+
+## Intended Final State
+
+- `#1075` is closed with evidence pointing to `lgfc-ci-as-built-reconciliation.md`.
+- Superseded and stale CI redesign issues are closed with explicit rationale.
+- `#1058` remains open and owns maintenance Tasks 002–005 through orchestration.
+- Issue factory creates only phase-2 tasks; phase-1 tasks are skipped as terminal.
+
 This plan begins after CI redesign Tasks 001 through 006 merged on `main`
 (PRs #1189, #1229, #1239, #1240, #1242, #1244).
 

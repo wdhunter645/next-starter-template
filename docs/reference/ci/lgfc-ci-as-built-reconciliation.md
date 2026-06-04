@@ -143,8 +143,17 @@ Decision: **Do not create a new CI redesign project.** Close `#1075` after phase
 Task 001 and continue remaining work under `#1058` through
 `issue-1075-ci-phase2-closeout-rollout.md` Tasks 002–005.
 
-Website tasks T25–T50 are complete. The repository no longer updates project
-tracker documents for website delivery; GitHub issues remain the activity record.
+## Website Program Boundary (Out of Scope)
+
+Website implementation under `#1053` is not part of CI redesign Tasks 001–006. This
+CI reconciliation does **not** assert that website tasks T25–T50 are complete.
+
+Operational truth for website work must be verified from GitHub issues and merged
+PRs. Files such as `docs/ops/trackers/LGFC-WEBSITE-IMPLEMENTATION-QUEUE-NORMALIZATION.md`
+and `docs/reference/lgfc-implementation-coverage-map.md` remain **stale on `main`**
+(for example, they may still list T43 as active and T44–T50 as backlog) and must
+not be used as the sole ops reference until a dedicated website as-built
+reconciliation is produced.
 
 ## Lessons Learned
 
