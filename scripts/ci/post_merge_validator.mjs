@@ -251,12 +251,15 @@ export function buildResult({
 		findings.length +
 		requiredWorkflowFailures.length;
 	const status = blockingFailureCount === 0 ? 'pass' : 'fail';
+	const remediationWorkflowFailures = failures.filter(
+		(failure) => failure.required || failure.classification !== 'optional-remediation-failure',
+	);
 	const remediationRequired =
-		metadata.length > 0 ||
+		blockingMetadata.length > 0 ||
 		implementation.length > 0 ||
 		diataxis.length > 0 ||
 		findings.length > 0 ||
-		failures.length > 0;
+		remediationWorkflowFailures.length > 0;
 
 	return {
 		status,
