@@ -1,0 +1,182 @@
+name: Bridge Optional Closeout
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/bridge-optional-closeout.yml
+
+permissions:
+  issues: write
+
+jobs:
+  closeout:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close superseded manual smoke issue #1288
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = 1288;
+            const marker = '<!-- bridge-optional-closeout-1288 -->';
+            const body = [
+              marker,
+              '## Optional closeout',
+              '',
+              'Closing as superseded. **AI Execution Bridge Smoke Test** on `main` now covers automated validate/plan checks.',
+              'This issue was an early manual smoke attempt, not the operator path.',
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body,
+            });
+
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              state: 'closed',
+              state_reason: 'not_planned',
+            });
+
+      - name: Update delivered summary on source issue #1266
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = [
+              '## Delivered (PR #1267)',
+              '',
+              'Merged commit `b18a39a` added the controlled AI execution bridge **phase 1**:',
+              '',
+              '- `.github/workflows/ai-execution-bridge.yml` — validates `ai-build` issues and comments with a deterministic plan',
+              '- `scripts/ci/ai_execution_bridge_validate.mjs` and `ai_execution_bridge_prepare.mjs`',
+              '- `tests/ai-execution-bridge.test.mjs`, how-to, and issue template',
+              '- Infra intent allowlist extensions for `docs/how-to/ops/` and `docs/templates/`',
+              '',
+              'Follow-up on `main`: label bootstrap (#1286), `workflow_dispatch` (#1289), automated smoke CI (#1302–#1309).',
+              '',
+              'OpenAI execution and autonomous code generation remain **disabled** until a future approved phase.',
+              '',
+              '## Operator entry points',
+              '',
+              '- How-to: `docs/how-to/ops/controlled-ai-execution-bridge.md`',
+              '- Template: `docs/templates/ai-build-issue-template.md`',
+              '- Smoke: **AI Execution Bridge Smoke Test** (weekly + bridge path changes on `main`)',
+            ].join('\n');
+
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 1266,
+              body,
+            });
+
+            for (const label of ['status:post-merge-verify']) {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: 1266,
+                  name: label,
+                });
+              } catch (error) {
+                if (error.status !== 404) {
+                  core.info(`Could not remove label ${label}: ${error.message}`);
+                }
+              }
+            }
+
+      - name: Live ai-build label integration test
+        id: live_test
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runId = context.runId;
+            const body = [
+              '## Approved Task',
+              'Live integration test: confirm the AI Execution Bridge workflow comments when `ai-build` is applied.',
+              '',
+              '## Scope',
+              'Test only. No file changes.',
+              '',
+              '## Allowed Files',
+              '- docs/how-to/ops/controlled-ai-execution-bridge.md',
+              '',
+              '## Acceptance Criteria',
+              '- [ ] Bridge workflow comments on this issue after label apply.',
+              '',
+              '## Validation',
+              '- Inspect **AI Execution Bridge** workflow run and issue comment.',
+              '',
+              `<!-- bridge-live-test-run:${runId} -->`,
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[live-test] AI execution bridge ${runId}`,
+              body,
+            });
+
+            core.setOutput('number', String(issue.data.number));
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.data.number,
+              labels: ['ai-build'],
+            });
+
+      - name: Wait for bridge workflow comment
+        env:
+          LIVE_ISSUE_NUMBER: ${{ steps.live_test.outputs.number }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = Number(process.env.LIVE_ISSUE_NUMBER);
+            const marker = '## AI execution bridge';
+            const maxAttempts = 18;
+            let found = false;
+
+            for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                per_page: 100,
+              });
+
+              found = comments.some((comment) => (comment.body || '').includes(marker));
+              if (found) break;
+
+              core.info(`Waiting for bridge comment (attempt ${attempt}/${maxAttempts})...`);
+              await new Promise((resolve) => setTimeout(resolve, 10000));
+            }
+
+            if (!found) {
+              core.setFailed('Bridge workflow did not comment on the live test issue within the wait window.');
+              return;
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: [
+                '## Live test closeout',
+                '',
+                'Bridge comment detected. Closing this live integration test issue.',
+              ].join('\n'),
+            });
+
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              state: 'closed',
+              state_reason: 'completed',
+            });
