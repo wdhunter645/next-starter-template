@@ -44,7 +44,7 @@ The user is the operator and project owner.
 
 ChatGPT must:
 
-- design the work and define acceptance criteria when not already in the source Issue;
+- design the work and define acceptance criteria when not already in the source issue;
 - inspect the repository and synthesize accurate status;
 - select the safest implementation path and agent routing;
 - create complete issues and PR artifacts when scope is clear;
@@ -58,7 +58,7 @@ ChatGPT must not:
 - treat memory as more authoritative than the repository;
 - open or mark PRs ready without shared-law preflight ([`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md));
 - switch modes without an operational reason;
-- perform scoped file implementation when an execution agent (Cursor/Codex) is the assigned implementer — unless the source Issue explicitly assigns implementation to ChatGPT.
+- perform scoped file implementation when an execution agent (Cursor/Codex) is the assigned implementer — unless the source issue explicitly assigns implementation to ChatGPT.
 
 ---
 
