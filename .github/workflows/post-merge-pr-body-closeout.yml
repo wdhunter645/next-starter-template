@@ -3,6 +3,11 @@ name: Post-Merge PR Body Closeout
 on:
   pull_request_target:
     types: [closed]
+  push:
+    branches: [main]
+    paths:
+      - scripts/ci/post-merge-closeout/targets-ci-pending.json
+      - scripts/ci/post-merge-closeout/targets-remediation-backlog.json
   workflow_dispatch:
     inputs:
       pr_number:
@@ -54,7 +59,8 @@ jobs:
       (github.event_name == 'pull_request_target' &&
         github.event.pull_request.merged == true &&
         github.event.pull_request.base.ref == 'main') ||
-      github.event_name == 'workflow_dispatch'
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -69,7 +75,9 @@ jobs:
           node-version: '22'
 
       - name: Batch closeout for all pending CI manifests
-        if: github.event_name == 'workflow_dispatch' && inputs.run_all_pending == 'true'
+        if: |
+          (github.event_name == 'workflow_dispatch' && inputs.run_all_pending == 'true') ||
+          github.event_name == 'push'
         env:
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
@@ -88,7 +96,7 @@ jobs:
         run: node scripts/ci/run_batch_post_merge_closeout.mjs
 
       - name: Upload post-merge batch closeout report
-        if: always() && github.event_name == 'workflow_dispatch' && (inputs.run_batch == 'true' || inputs.run_all_pending == 'true')
+        if: always() && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.run_batch == 'true' || inputs.run_all_pending == 'true')))
         uses: actions/upload-artifact@v4
         with:
           name: post-merge-closeout-report
