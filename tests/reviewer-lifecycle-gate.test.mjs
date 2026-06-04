@@ -3,6 +3,8 @@ import {
   assessReviewerLifecycle,
   computeCurrentHeadLinkedReview,
   countUnresolvedProtectedThreads,
+  hasProtectedScopeBreakGlass,
+  hasStaleTrustedReviewOnly,
   isProtectedPath,
 } from '../scripts/ci/reviewer_lifecycle_gate.mjs';
 
@@ -56,6 +58,68 @@ describe('reviewer lifecycle gate assessment', () => {
     });
 
     expect(linked).toBe(true);
+  });
+
+  it('does not accept stale trusted review on an earlier commit for protected scope', () => {
+    const result = assessReviewerLifecycle({
+      eventName: 'pull_request_target',
+      labels: ['infra'],
+      files: ['.github/workflows/reviewer-response-completion.yml'],
+      enforceFailure: true,
+      headSha: 'new-sha',
+      reviews: [{
+        user: { login: 'copilot-pull-request-reviewer[bot]' },
+        commit_id: 'old-sha',
+        state: 'APPROVED',
+      }],
+      reviewComments: [],
+    });
+
+    expect(result.shouldFail).toBe(true);
+    expect(result.assessment.reason).toBe('stale-trusted-review-for-protected-scope');
+    expect(hasStaleTrustedReviewOnly({
+      headSha: 'new-sha',
+      reviews: [{
+        user: { login: 'copilot-pull-request-reviewer[bot]' },
+        commit_id: 'old-sha',
+        state: 'APPROVED',
+      }],
+    })).toBe(true);
+  });
+
+  it('allows protected scope break-glass with recovery label and explicit marker', () => {
+    const result = assessReviewerLifecycle({
+      eventName: 'pull_request_target',
+      labels: ['recovery'],
+      files: ['.github/workflows/reviewer-response-completion.yml'],
+      body: 'Emergency fix.\n<!-- reviewer-lifecycle-break-glass -->',
+      enforceFailure: true,
+      headSha: 'new-sha',
+      reviews: [],
+      reviewComments: [],
+    });
+
+    expect(result.shouldFail).toBe(false);
+    expect(result.breakGlassOverride).toBe(true);
+    expect(result.assessment.reason).toBe('break-glass-override-for-protected-scope');
+    expect(hasProtectedScopeBreakGlass({
+      labels: ['recovery'],
+      body: '<!-- reviewer-lifecycle-break-glass -->',
+    })).toBe(true);
+  });
+
+  it('does not allow break-glass marker without recovery label', () => {
+    const result = assessReviewerLifecycle({
+      eventName: 'pull_request_target',
+      labels: ['infra'],
+      files: ['.github/workflows/reviewer-response-completion.yml'],
+      body: '<!-- reviewer-lifecycle-break-glass -->',
+      enforceFailure: true,
+      headSha: 'new-sha',
+    });
+
+    expect(result.shouldFail).toBe(true);
+    expect(result.breakGlassOverride).toBe(false);
   });
 
   it('counts unresolved protected inline review threads', () => {

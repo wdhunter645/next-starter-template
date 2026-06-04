@@ -78,6 +78,33 @@ describe('reviewer-gate governance simulation', () => {
     expect(result.severity).toBe('advisory');
   });
 
+  it('blocks protected scope when only stale trusted review exists', () => {
+    const result = evaluateReviewerAccounting({
+      eventName: 'pull_request_target',
+      labels: ['infra'],
+      files: ['.github/workflows/reviewer-response-completion.yml'],
+      currentHeadLinkedReview: false,
+      staleTrustedReviewOnly: true,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe('stale-trusted-review-for-protected-scope');
+  });
+
+  it('allows protected scope break-glass override on pull_request_target', () => {
+    const result = evaluateReviewerAccounting({
+      eventName: 'pull_request_target',
+      labels: ['recovery'],
+      files: ['scripts/ci/reviewer_lifecycle_gate.mjs'],
+      currentHeadLinkedReview: false,
+      breakGlassOverride: true,
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.severity).toBe('break-glass');
+    expect(result.reason).toBe('break-glass-override-for-protected-scope');
+  });
+
   it('keeps protected workflow changes deterministically blocking without current review', () => {
     const result = evaluateReviewerAccounting({
       eventName: 'pull_request_target',

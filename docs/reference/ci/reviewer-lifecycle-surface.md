@@ -6,7 +6,7 @@ Owns: Reviewer lifecycle gate behavior, protected-scope blocking rules, post-mer
 Does Not Own: Branch protection settings UI, merge protection consolidation, website runtime behavior
 Canonical Reference: /docs/explanation/ci/lgfc-reviewer-lifecycle-redesign.md
 Related Issues: #1196, #1075, #1058
-Last Reviewed: 2026-06-03
+Last Reviewed: 2026-06-04
 ---
 
 # LGFC Reviewer Lifecycle Surface
@@ -21,7 +21,7 @@ except for deterministic protected CI scope conditions.
 
 | Workflow file | Display name | Enforcement |
 |---|---|---|
-| `reviewer-response-completion.yml` | `GATE — Reviewer Response Completion` | Blocking only on `pull_request_target` when protected CI scope has unresolved protected review threads or lacks a current-head trusted review artifact |
+| `reviewer-response-completion.yml` | `GATE — Reviewer Response Completion` | Blocking only on `pull_request_target` when protected CI scope has unresolved protected review threads or lacks a current-head trusted review artifact on the enforced head SHA |
 | `gate-reviewer-response.yml` | `GATE — Reviewer Response` | Retired manual-only stub; superseded by Task 003 redesign |
 
 ## Protected Scope
@@ -34,10 +34,24 @@ Hard reviewer enforcement applies only when changed files include:
 Docs-only, website-only, and other non-protected scopes remain advisory-first even
 when trusted reviewers have not finished asynchronous processing.
 
+Current-head protected review enforcement requires a trusted review or review
+comment whose `commit_id` exactly matches the current PR head SHA. Trusted reviews
+on earlier commits do not satisfy protected workflow/config scope.
+
 Unresolved protected threads are evaluated by review thread and latest trusted
-review state, not by matching `commit_id` to the current PR head. A new commit
-cannot clear unresolved protected inline threads or stale `CHANGES_REQUESTED`
-reviews without an explicit resolution reply or a later approving review.
+review state, not only by `commit_id` matching. A new commit cannot clear
+unresolved protected inline threads or stale `CHANGES_REQUESTED` reviews without
+an explicit resolution reply or a later approving review on the current head.
+
+### Break-glass override
+
+Emergency protected-scope merges may use a narrow break-glass path only when:
+
+- the PR has the `recovery` intent label, and
+- the PR body includes `<!-- reviewer-lifecycle-break-glass -->`.
+
+The reviewer lifecycle gate records break-glass use in its PR comment. Post-merge
+reviewer audit output also records break-glass when that workflow runs.
 
 ## Post-Merge Workflow
 

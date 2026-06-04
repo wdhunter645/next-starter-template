@@ -14,6 +14,36 @@
     }
   },
   {
+    "name": "protected-scope-stale-trusted-review-only",
+    "payload": "events/pull_request.synchronize.json",
+    "labels": ["infra"],
+    "changedFiles": [".github/workflows/reviewer-response-completion.yml"],
+    "body": "- **Issue:** #1069",
+    "openIssues": [1069],
+    "eventName": "pull_request_target",
+    "currentHeadLinkedReview": false,
+    "staleTrustedReviewOnly": true,
+    "expected": {
+      "mergeSafe": false,
+      "reviewerReason": "stale-trusted-review-for-protected-scope"
+    }
+  },
+  {
+    "name": "protected-scope-break-glass-override",
+    "payload": "events/pull_request.opened.json",
+    "labels": ["recovery"],
+    "changedFiles": [".github/workflows/reviewer-response-completion.yml"],
+    "body": "- **Issue:** #1069\n<!-- reviewer-lifecycle-break-glass -->",
+    "openIssues": [1069],
+    "eventName": "pull_request_target",
+    "currentHeadLinkedReview": false,
+    "breakGlassOverride": true,
+    "expected": {
+      "mergeSafe": true,
+      "reviewerReason": "break-glass-override-for-protected-scope"
+    }
+  },
+  {
     "name": "governance-pr-protected-scope-requires-current-review",
     "payload": "events/pull_request.opened.json",
     "labels": ["infra"],

@@ -28,8 +28,10 @@ export const TRUSTED_REVIEWERS = [
 
 const TRUSTED_USERS = new Set(TRUSTED_REVIEWERS.flatMap((reviewer) => reviewer.users));
 const IGNORE_MARKER = /<!--\s*reviewer-response-ignore\s*-->/i;
+export const BREAK_GLASS_MARKER = /<!--\s*reviewer-lifecycle-break-glass\s*-->/i;
 const RESOLVED_MARKER = /✅\s*Addressed|addressed in|\bresolved\b|all checks passed|no warnings detected/i;
 const UNRESOLVED_MARKER = /\bunresolved\b|\bnot\s+resolved\b|\bstill\s+open\b|\bstill\s+blocking\b/i;
+const LINKED_REVIEW_STATES = new Set(['APPROVED', 'COMMENTED']);
 
 export function isTrustedReviewer(login = '') {
   return TRUSTED_USERS.has(login);
@@ -43,19 +45,55 @@ export function isProtectedPath(filePath = '') {
   return filePath.startsWith('.github/workflows/') || filePath.startsWith('scripts/ci/');
 }
 
+function isTrustedReviewLinkedToHead(review, headSha) {
+  return (
+    isTrustedReviewer(review.user?.login || '') &&
+    Boolean(review.commit_id) &&
+    review.commit_id === headSha &&
+    review.state !== 'PENDING' &&
+    review.state !== 'DISMISSED' &&
+    LINKED_REVIEW_STATES.has(review.state)
+  );
+}
+
+function isTrustedCommentLinkedToHead(comment, headSha) {
+  return (
+    isTrustedReviewer(comment.user?.login || '') &&
+    Boolean(comment.commit_id) &&
+    comment.commit_id === headSha
+  );
+}
+
+export function hasProtectedScopeBreakGlass({ labels = [], body = '' } = {}) {
+  const names = labels.map((label) => (typeof label === 'string' ? label : label?.name)).filter(Boolean);
+  return names.includes('recovery') && BREAK_GLASS_MARKER.test(body || '');
+}
+
+export function hasStaleTrustedReviewOnly({ reviews = [], reviewComments = [], headSha = '' } = {}) {
+  if (!headSha) return false;
+  if (computeCurrentHeadLinkedReview({ reviews, reviewComments, headSha })) return false;
+
+  const staleReview = reviews.some((review) => (
+    isTrustedReviewer(review.user?.login || '') &&
+    Boolean(review.commit_id) &&
+    review.commit_id !== headSha &&
+    review.state !== 'PENDING' &&
+    review.state !== 'DISMISSED'
+  ));
+  const staleComment = reviewComments.some((comment) => (
+    isTrustedReviewer(comment.user?.login || '') &&
+    Boolean(comment.commit_id) &&
+    comment.commit_id !== headSha
+  ));
+
+  return staleReview || staleComment;
+}
+
 export function computeCurrentHeadLinkedReview({ reviews = [], reviewComments = [], headSha = '' } = {}) {
   if (!headSha) return false;
 
-  const linkedReviews = reviews.some((review) => (
-    isTrustedReviewer(review.user?.login || '') &&
-    review.commit_id === headSha &&
-    review.state !== 'PENDING'
-  ));
-
-  const linkedComments = reviewComments.some((comment) => (
-    isTrustedReviewer(comment.user?.login || '') &&
-    comment.commit_id === headSha
-  ));
+  const linkedReviews = reviews.some((review) => isTrustedReviewLinkedToHead(review, headSha));
+  const linkedComments = reviewComments.some((comment) => isTrustedCommentLinkedToHead(comment, headSha));
 
   return linkedReviews || linkedComments;
 }
@@ -187,6 +225,8 @@ export function buildReviewerLifecycleReport({
   headSha = '',
   enforceFailure = false,
   currentHeadLinkedReview = false,
+  staleTrustedReviewOnly = false,
+  breakGlassOverride = false,
   unresolvedProtectedThreads = 0,
   advisoryFindings = 0,
 }) {
@@ -198,12 +238,15 @@ export function buildReviewerLifecycleReport({
         : 'Reviewer lifecycle gate advisory refreshed.',
     '',
     'Task 003 model: reviewer timing and PR-body rituals are not synchronous merge blockers.',
-    'Protected CI scope may still require a current-head trusted review artifact.',
+    'Protected CI scope requires a current-head trusted review artifact on the enforced SHA.',
+    'Stale trusted reviews on earlier commits do not satisfy protected workflow/config scope.',
     'Late reviewer findings are audited post-merge and can pause orchestration.',
     '',
     `Current head SHA: ${headSha || 'unknown'}`,
     `Protected scope: ${scope.hasProtectedScope ? 'yes' : 'no'}`,
     `Current-head trusted review artifact: ${currentHeadLinkedReview ? 'yes' : 'no'}`,
+    `Stale trusted review only (earlier commit): ${staleTrustedReviewOnly ? 'yes' : 'no'}`,
+    `Break-glass override active: ${breakGlassOverride ? 'yes' : 'no'}`,
     `Unresolved protected review threads: ${unresolvedProtectedThreads}`,
     `Advisory reviewer findings: ${advisoryFindings}`,
     `Assessment severity: ${assessment.severity}`,
@@ -211,8 +254,17 @@ export function buildReviewerLifecycleReport({
     `Enforcing event: ${enforceFailure ? 'yes' : 'no'}`,
   ];
 
-  if (!assessment.ok && enforceFailure) {
-    lines.push('', 'Resolve the blocking reviewer condition or wait for trusted review on protected CI files.');
+  if (breakGlassOverride) {
+    lines.push(
+      '',
+      'Break-glass override: recovery label plus `<!-- reviewer-lifecycle-break-glass -->` in the PR body.',
+      'This merge path bypasses current-head protected review enforcement and is recorded for post-merge audit.',
+    );
+  } else if (!assessment.ok && enforceFailure) {
+    lines.push('', 'Resolve the blocking reviewer condition or wait for trusted review on the current head SHA for protected CI files.');
+    if (staleTrustedReviewOnly) {
+      lines.push('Trusted review exists on an earlier commit only; re-run trusted review on the current head SHA.');
+    }
   } else if (advisoryFindings > 0) {
     lines.push('', 'Advisory reviewer findings remain visible for PR readiness but do not block merge by timing alone.');
   }
@@ -227,11 +279,14 @@ export function assessReviewerLifecycle({
   reviews = [],
   reviewComments = [],
   issueComments = [],
+  body = '',
   headSha = '',
   enforceFailure = false,
 }) {
   const scope = classifyProtectedScope(files);
   const currentHeadLinkedReview = computeCurrentHeadLinkedReview({ reviews, reviewComments, headSha });
+  const staleTrustedReviewOnly = hasStaleTrustedReviewOnly({ reviews, reviewComments, headSha });
+  const breakGlassOverride = hasProtectedScopeBreakGlass({ labels, body });
   const unresolvedProtectedThreads = countUnresolvedProtectedThreads({ reviewComments, reviews });
   const advisoryFindings = countAdvisoryFindings({ issueComments, reviewComments, reviews });
   const assessment = evaluateReviewerAccounting({
@@ -239,6 +294,8 @@ export function assessReviewerLifecycle({
     labels,
     files,
     currentHeadLinkedReview,
+    staleTrustedReviewOnly,
+    breakGlassOverride,
     unresolvedProtectedThreads,
     advisoryFindings,
   });
@@ -247,6 +304,8 @@ export function assessReviewerLifecycle({
     scope,
     assessment,
     currentHeadLinkedReview,
+    staleTrustedReviewOnly,
+    breakGlassOverride,
     unresolvedProtectedThreads,
     advisoryFindings,
     enforceFailure,
@@ -256,6 +315,8 @@ export function assessReviewerLifecycle({
       headSha,
       enforceFailure,
       currentHeadLinkedReview,
+      staleTrustedReviewOnly,
+      breakGlassOverride,
       unresolvedProtectedThreads,
       advisoryFindings,
     }),
@@ -324,6 +385,7 @@ export async function runReviewerLifecycleGate({
     issueComments,
     reviewComments,
     reviews,
+    body: pull.body || '',
     headSha: pull.head?.sha || '',
     enforceFailure,
   });
