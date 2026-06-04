@@ -1,8 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
 import {
 	isManualBatchCloseout,
 	isManualSingleCloseout,
+	resolveCloseoutBodyApply,
 	shouldRunAutomaticCloseout,
 	shouldRunCloseoutJob,
 } from '../scripts/ci/post_merge_closeout_trigger.mjs';
@@ -62,6 +67,22 @@ describe('automatic post-merge closeout triggers', () => {
 });
 
 describe('automatic closeout runtime context', () => {
+	it('applies default pr-N-body.md during automatic closeout when present', () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-body-'));
+		const bodyDir = path.join(dir, 'scripts/ci/post-merge-closeout');
+		fs.mkdirSync(bodyDir, { recursive: true });
+		const bodyPath = path.join(bodyDir, 'pr-1282-body.md');
+		fs.writeFileSync(bodyPath, '- **Issue:** #1281\n');
+
+		const resolved = resolveCloseoutBodyApply({
+			prNumber: '1282',
+			automatic: true,
+			workspace: dir,
+		});
+
+		expect(resolved).toEqual({ bodyFile: bodyPath, skipBodyApply: false });
+	});
+
 	it('uses merged PR number and skips body apply on pull_request_target', () => {
 		const context = resolveCloseoutEventContext({
 			eventName: 'pull_request_target',
@@ -92,7 +113,7 @@ describe('automatic closeout runtime context', () => {
 		expect(context).toMatchObject({
 			automatic: false,
 			skipBodyApply: false,
-			bodyFile: 'scripts/ci/post-merge-closeout/pr-1239-body.md',
+			bodyFile: expect.stringContaining('scripts/ci/post-merge-closeout/pr-1239-body.md'),
 		});
 	});
 
