@@ -1,0 +1,22 @@
+{
+  "targets": [
+    {
+      "pr": 1229,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1229-body.md",
+      "merge_sha": "201a428a08ea495e1d95e89a4208cfde8c9266dc",
+      "source_issue": 1226
+    },
+    {
+      "pr": 1240,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1240-body.md",
+      "merge_sha": "89c0ebfc1bd40713629fe7161824bbc615365581",
+      "source_issue": 1197
+    },
+    {
+      "pr": 1242,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1242-body.md",
+      "merge_sha": "308012d8b4e2e8ae55fa04af621a16e08e01f3d6",
+      "source_issue": 1198
+    }
+  ]
+}
