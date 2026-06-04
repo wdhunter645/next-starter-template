@@ -2,7 +2,7 @@
 Doc Type: Implementation Plan
 Audience: Human + AI
 Authority Level: Operational Authority
-Owns: Issue #1075 CI redesign phase-2 closeout and CI maintenance task decomposition for issue-factory orchestration
+Owns: issue #1075 CI redesign phase-2 closeout and CI maintenance task decomposition for issue-factory orchestration
 Does Not Own: CI architecture source of truth, website product behavior, branch protection UI changes executed outside the repository
 Status: production-ready
 Project: issue-1075-ci-phase2-closeout-rollout
@@ -15,7 +15,7 @@ Related Issues: #1058, #1075
 Last Reviewed: 2026-06-03
 ---
 
-# Issue 1075 CI Phase 2 Closeout and Maintenance Rollout
+# issue 1075 CI Phase 2 Closeout and Maintenance Rollout
 
 ## Purpose
 
@@ -176,7 +176,9 @@ Allowed Files:
 - `.github/CI_GUARDRAILS_MAP.md`
 - `docs/reference/ci/lgfc-ci-as-built-reconciliation.md`
 Acceptance Criteria:
-- Workflow inventory table reflects all 54 current workflow files on `main`.
+- Workflow inventory table reflects every active workflow file under
+  `.github/workflows/` on `main` after Task 004 retirement (not the pre-retirement
+  file count).
 - Retired workflows are removed or marked inactive consistently across inventory and guardrails map.
 - Domain surface references remain authoritative for merge protection, reviewer lifecycle, post-merge validation, and OPS runtime.
 Validation:
@@ -191,7 +193,13 @@ Rollback:
 When this plan merges to `main`, the issue factory should:
 
 1. Skip all Tasks 001–006 in `issue-1075-ci-redesign-rollout.md` because they are terminal.
-2. Create exactly one queued issue for Task 001 in this plan if no `lgfc-task-id:issue-1075-ci-phase2-closeout-rollout:Task-001` marker exists.
-3. Create Task 002–005 issues with `status:blocked` unless an open orchestrator issue already exists.
+2. Create Task 001 in this plan if no `lgfc-task-id:issue-1075-ci-phase2-closeout-rollout:Task-001`
+   marker exists. `create-issues.mjs` labels the first created issue `status:queued` only when
+   **no** open orchestrator-labeled issue exists (`openOrchestratorIssueExists()`); otherwise
+   new issues receive `status:blocked` even for Task 001.
+3. Task 001 closeout must close stale phase-1 orchestrator task issues (#1196–#1199, #1226) so
+   phase-2 maintenance issues are not blocked behind abandoned redesign queue entries.
+4. Create Task 002–005 issues with `status:blocked` while any other orchestrator issue remains
+   open, per the same queue guard.
 
 The CI orchestration engine JSON state remains the phase-1 record; phase-2 execution is driven by this markdown plan through `orchestrator-issue-factory.yml`.

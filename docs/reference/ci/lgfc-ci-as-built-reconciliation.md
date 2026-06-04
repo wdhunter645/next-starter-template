@@ -126,13 +126,13 @@ Authoritative OPS reference: `docs/reference/ci/ops-runtime-surface.md`.
 
 Detailed monitoring map: `docs/ops/ci-monitoring-ownership.md`.
 
-## Open Issue Assessment and Program Decision
+## Open issue assessment and program decision
 
 Assessment date: 2026-06-03 after Tasks 001–006 merged on `main`.
 
-| Issue | Recommendation | Rationale |
+| issue | Recommendation | Rationale |
 |---|---|---|
-| `#1075` PROJECT: CI-ORCH-01 | Close in Phase 2 Task 001 | Redesign implementation complete; program umbrella should close with evidence |
+| `#1075` project: CI-ORCH-01 | Close in Phase 2 Task 001 | Redesign implementation complete; program umbrella should close with evidence |
 | `#1058` CI workflow normalization | Keep open | Owns deferred maintenance backlog (inventory rewrite, drift gate, legacy retirement, branch protection UI) |
 | `#1247` Trusted reviewer evidence gate design | Close in Phase 2 Task 001 | Docs merged via #1248/#1251; superseded as standalone open work |
 | `#1116` CI remediation issue generation | Close in Phase 2 Task 001 | Runtime merged via #1128/#1240; function absorbed into post-merge validation |
