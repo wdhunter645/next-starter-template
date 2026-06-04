@@ -4,11 +4,13 @@ Audience: Human + AI
 Authority Level: Operational
 Owns: PR lifecycle execution standard
 Does Not Own: Design authority
-Canonical Reference: /docs/ops/ai/CHATGPT-RULES.md
-Last Reviewed: 2026-03-26
+Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
+Last Reviewed: 2026-06-04
 ---
 
 # PR Lifecycle Standard
+
+ChatGPT-specific lifecycle ownership: [`CHATGPT-RULES.md`](./CHATGPT-RULES.md). Shared PR and gate law: [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md).
 
 ## Model
 

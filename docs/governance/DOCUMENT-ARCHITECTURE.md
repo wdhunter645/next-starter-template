@@ -51,9 +51,13 @@ Owns:
 - Thread discipline
 
 Canonical Files:
-- CURSOR-RULES.md
+- SHARED-AGENT-RULES.md
+- CORE-RULES.md
 - CHATGPT-RULES.md
-- AGENT-RULES.md
+- CURSOR-RULES.md
+- CODEX-RULES.md
+- COPILOT-RULES.md
+- DEVIN-RULES.md
 
 ---
 

@@ -4,15 +4,17 @@ Audience: All AI Agents
 Authority Level: Core
 Owns: Shared execution rules, enforcement model, PR discipline, stop conditions
 Does Not Own: Design authority, platform configuration, tracker content
-Canonical Reference: /Agent.md
-Last Reviewed: 2026-06-02
+Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
+Last Reviewed: 2026-06-04
 ---
 
 # CORE-RULES.md
 
 ## Purpose
 
-This document is the single source of truth for shared AI-agent execution rules, including PR discipline, verification behavior, drift prevention, PR gate-readiness troubleshooting, and mandatory stop conditions.
+This document is the **detailed expansion** of shared AI-agent execution rules, including PR discipline, verification behavior, drift prevention, PR gate-readiness troubleshooting, and mandatory stop conditions.
+
+For the categorized shared agent law index (evidence-first work, one issue per PR, parser-safe PR bodies, gates, documentation taxonomy, ZIP safety, secrets, and scope boundaries), read [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md) first. Keep both documents aligned; do not weaken restrictions in either file.
 
 ## Scope
 

@@ -1,5 +1,8 @@
 # CODEX RULES
 
+> **Canonical:** [`docs/ops/ai/CODEX-RULES.md`](../docs/ops/ai/CODEX-RULES.md) and [`docs/ops/ai/SHARED-AGENT-RULES.md`](../docs/ops/ai/SHARED-AGENT-RULES.md).  
+> This prompt file is a supporting summary only.
+
 ## CORE MODEL
 - PR = task
 - Codex = executor
