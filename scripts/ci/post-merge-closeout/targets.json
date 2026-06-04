@@ -1,4 +1,5 @@
 {
+  "description": "Legacy completed closeouts (PRs 1239 and 1243). Use targets-ci-pending.json and targets-remediation-backlog.json for open work.",
   "targets": [
     {
       "pr": 1239,

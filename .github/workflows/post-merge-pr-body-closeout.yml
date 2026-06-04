@@ -29,6 +29,18 @@ on:
         options:
           - 'true'
           - 'false'
+      run_all_pending:
+        description: Run CI pending + remediation backlog manifests (recommended backfill)
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      closeout_manifest:
+        description: Repo-relative manifest path when run_batch is true and run_all_pending is false
+        required: false
+        default: scripts/ci/post-merge-closeout/targets.json
 
 permissions:
   actions: read
@@ -56,18 +68,27 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Batch closeout for manual backfill manifest
-        if: github.event_name == 'workflow_dispatch' && inputs.run_batch == 'true'
+      - name: Batch closeout for all pending CI manifests
+        if: github.event_name == 'workflow_dispatch' && inputs.run_all_pending == 'true'
         env:
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_RUN_ID: ${{ github.run_id }}
-          CLOSEOUT_MANIFEST: scripts/ci/post-merge-closeout/targets.json
+        run: node scripts/ci/run_post_merge_closeout_all_manifests.mjs
+
+      - name: Batch closeout for manual backfill manifest
+        if: github.event_name == 'workflow_dispatch' && inputs.run_batch == 'true' && inputs.run_all_pending != 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          CLOSEOUT_MANIFEST: ${{ github.event.inputs.closeout_manifest || 'scripts/ci/post-merge-closeout/targets.json' }}
         run: node scripts/ci/run_batch_post_merge_closeout.mjs
 
       - name: Upload post-merge batch closeout report
-        if: always() && github.event_name == 'workflow_dispatch' && inputs.run_batch == 'true'
+        if: always() && github.event_name == 'workflow_dispatch' && (inputs.run_batch == 'true' || inputs.run_all_pending == 'true')
         uses: actions/upload-artifact@v4
         with:
           name: post-merge-closeout-report
@@ -102,7 +123,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Manual single-PR closeout
-        if: github.event_name == 'workflow_dispatch' && inputs.run_batch != 'true'
+        if: github.event_name == 'workflow_dispatch' && inputs.run_batch != 'true' && inputs.run_all_pending != 'true'
         env:
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
