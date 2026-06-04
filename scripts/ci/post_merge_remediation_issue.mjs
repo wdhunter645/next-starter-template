@@ -85,13 +85,14 @@ function request(args) {
 	return githubRepoRequest({ ...args, userAgent: 'lgfc-post-merge-remediation' });
 }
 
-export async function upsertRemediationIssue({ token, repository, result }) {
-	if (result.status !== 'fail') {
-		return { action: 'skipped', issue: null, reason: 'validation-passed-or-skipped' };
-	}
+export function shouldUpsertRemediationIssue(result = {}) {
+	if (result.status === 'skipped') return false;
+	return result.status === 'fail' || result.remediation_required === true;
+}
 
-	if (!result.remediation_required) {
-		return { action: 'skipped', issue: null, reason: 'no-remediation-required' };
+export async function upsertRemediationIssue({ token, repository, result }) {
+	if (!shouldUpsertRemediationIssue(result)) {
+		return { action: 'skipped', issue: null, reason: 'validation-passed-or-skipped' };
 	}
 
 	const title = remediationTitle(result);

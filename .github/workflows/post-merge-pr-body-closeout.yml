@@ -1,6 +1,8 @@
 name: Post-Merge PR Body Closeout
 
 on:
+  pull_request_target:
+    types: [closed]
   workflow_dispatch:
     inputs:
       pr_number:
@@ -8,7 +10,7 @@ on:
         required: false
         default: '1239'
       body_file:
-        description: Repo-relative path to remediated PR body markdown
+        description: Repo-relative path to remediated PR body markdown (manual single-PR mode)
         required: false
         default: scripts/ci/post-merge-closeout/pr-1239-body.md
       skip_body_apply:
@@ -20,13 +22,14 @@ on:
           - 'false'
           - 'true'
       run_batch:
-        description: Run batch closeout for scripts/ci/post-merge-closeout/targets.json
+        description: Run batch closeout manifest (manual backfill only)
         required: false
-        default: 'true'
+        default: 'false'
         type: choice
         options:
           - 'true'
           - 'false'
+
 permissions:
   actions: read
   contents: read
@@ -35,18 +38,25 @@ permissions:
 
 jobs:
   closeout:
+    if: |
+      (github.event_name == 'pull_request_target' &&
+        github.event.pull_request.merged == true &&
+        github.event.pull_request.base.ref == 'main') ||
+      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request_target' && 'main' || github.sha }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      - name: Batch closeout for merged PRs 1239 and 1243
+      - name: Batch closeout for manual backfill manifest
         if: github.event_name == 'workflow_dispatch' && inputs.run_batch == 'true'
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -56,7 +66,7 @@ jobs:
           CLOSEOUT_MANIFEST: scripts/ci/post-merge-closeout/targets.json
         run: node scripts/ci/run_batch_post_merge_closeout.mjs
 
-      - name: Upload post-merge closeout report
+      - name: Upload post-merge batch closeout report
         if: always() && github.event_name == 'workflow_dispatch' && inputs.run_batch == 'true'
         uses: actions/upload-artifact@v4
         with:
@@ -66,14 +76,50 @@ jobs:
             post-merge-result.json
           if-no-files-found: warn
 
-      - name: Apply body, validate, and sync orchestrator state
+      - name: Automatic post-merge closeout for merged PR
+        if: github.event_name == 'pull_request_target'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_EVENT_NAME: pull_request_target
+          GITHUB_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_PR_MERGED: ${{ github.event.pull_request.merged }}
+          EVENT_PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          SKIP_BODY_APPLY: 'true'
+        run: node scripts/ci/run_post_merge_closeout.mjs
+
+      - name: Upload automatic post-merge closeout report
+        if: always() && github.event_name == 'pull_request_target'
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-merge-closeout-report
+          path: |
+            post-merge-result.json
+            post-merge-result.md
+          if-no-files-found: warn
+
+      - name: Manual single-PR closeout
         if: github.event_name == 'workflow_dispatch' && inputs.run_batch != 'true'
         env:
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_EVENT_NAME: workflow_dispatch
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_RUN_ID: ${{ github.run_id }}
           PR_NUMBER: ${{ github.event.inputs.pr_number || '1239' }}
           BODY_FILE: ${{ github.event.inputs.body_file || 'scripts/ci/post-merge-closeout/pr-1239-body.md' }}
           SKIP_BODY_APPLY: ${{ github.event.inputs.skip_body_apply || 'false' }}
         run: node scripts/ci/run_post_merge_closeout.mjs
+
+      - name: Upload manual single-PR closeout report
+        if: always() && github.event_name == 'workflow_dispatch' && inputs.run_batch != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-merge-closeout-report
+          path: |
+            post-merge-result.json
+            post-merge-result.md
+          if-no-files-found: warn
