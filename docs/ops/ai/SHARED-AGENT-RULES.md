@@ -25,7 +25,7 @@ Do not duplicate long doctrine in agent-specific files. Link here instead.
 1. Locked design, platform, and governance documents (see [`Agent.md`](../../../Agent.md)).
 2. This document (categorized shared law).
 3. [`CORE-RULES.md`](./CORE-RULES.md) (detailed shared execution).
-4. Source GitHub Issue for task scope and acceptance criteria.
+4. Source GitHub issue for task scope and acceptance criteria.
 5. Agent-specific rules (see [Tool-specific rules](#tool-specific-rules)).
 6. Repository skills under `.agents/skills/` when the task matches a trigger.
 
@@ -39,8 +39,8 @@ Agents must not present assumptions as facts.
 
 Before any readiness, closeout, or governance claim:
 
-- Read the source Issue.
-- Read task-relevant design, architecture, governance, or implementation-plan files linked from the source Issue.
+- Read the source issue.
+- Read task-relevant design, architecture, governance, or implementation-plan files linked from the source issue.
 - Inspect the actual changed files and live PR state when the claim depends on PR status.
 
 Fact handling:
@@ -81,13 +81,13 @@ Expanded detail: [`CORE-RULES.md` — Operational truth hierarchy](./CORE-RULES.
 
 ## 3. One source issue per PR
 
-Normal repository work is Issue-first.
+Normal repository work is issue-first.
 
-- Create or identify exactly one open, same-repository, non-PR source Issue before opening a PR.
-- One task → one Issue → one PR.
-- No mixed intent in one PR unless the source Issue explicitly allows it.
+- Create or identify exactly one open, same-repository, non-PR source issue before opening a PR.
+- One task → one issue → one PR.
+- No mixed intent in one PR unless the source issue explicitly allows it.
 - PR-first work is an exception for documented operations troubleshooting only.
-- GitHub Issues and Pull Requests are the authoritative execution record; tracker files are historical indexes unless the source Issue explicitly authorizes tracker edits.
+- GitHub issues and pull requests are the authoritative execution record; tracker files are historical indexes unless the source issue explicitly authorizes tracker edits.
 
 Expanded detail: [`CORE-RULES.md` — Issue-first PR discipline](./CORE-RULES.md#issue-first-pr-discipline), [Execution discipline](./CORE-RULES.md#execution-discipline).
 
@@ -107,7 +107,7 @@ Before opening or marking a PR ready:
 - Include required template sections from `.github/pull_request_template.md`.
 - For `docs/**` changes: authority header, correct document type, and how-to procedure headings where required.
 
-If any parser requirement is uncertain, fix the source Issue or preflight documentation first. Do not open the PR.
+If any parser requirement is uncertain, fix the source issue or preflight documentation first. Do not open the PR.
 
 Skill reference: `.agents/skills/lgfc-pr-governance/SKILL.md`.
 
@@ -122,7 +122,7 @@ A gate failure is the agent's responsibility until repository evidence proves ot
 Before claiming merge-readiness or "ready for review":
 
 1. Inspect the live PR check panel.
-2. Confirm PR issue-accounting (exactly one primary source Issue).
+2. Confirm PR issue-accounting (exactly one primary source issue).
 3. Inspect PR body sections, allowlist, ZIP safety, and acceptance criteria.
 4. Inspect GitHub review-thread state; resolve addressed threads in PR review state.
 5. Inspect latest head workflow runs for every required gate.
@@ -154,7 +154,7 @@ Documentation PRs must:
 - Use the active DIATAXIS transition structure (see `.agents/skills/lgfc-docs-authority/SKILL.md`).
 - Include the required authority header on every active Markdown document.
 - Identify canonical reference, scope boundaries, validation method, and closeout criteria.
-- Stay within the source Issue file allowlist.
+- Stay within the source issue file allowlist.
 
 Do not route new agent-governance documentation to superseded paths.
 
@@ -174,7 +174,7 @@ Do not route new agent-governance documentation to superseded paths.
 Agents must not:
 
 - Commit secrets, tokens, API keys, or local-only credential files.
-- Add external service calls or undocumented integrations as part of agent work unless the source Issue explicitly authorizes implementation (not documentation-only tasks).
+- Add external service calls or undocumented integrations as part of agent work unless the source issue explicitly authorizes implementation (not documentation-only tasks).
 
 ---
 
@@ -186,10 +186,10 @@ Agents must not:
 - Perform opportunistic cleanup, unrelated fixes, or mixed-intent diffs.
 - Redesign routes, layout, or structure without explicit design authority.
 - Create duplicate governance files or alternate canonical versions.
-- Expand task scope; log discovered work in the source Issue instead.
-- Add routine tracker/status-index edits unless the source Issue explicitly authorizes them.
+- Expand task scope; log discovered work in the source issue instead.
+- Add routine tracker/status-index edits unless the source issue explicitly authorizes them.
 
-If additional work is discovered → record it in the source Issue. Do not execute it in the current PR.
+If additional work is discovered → record it in the source issue. Do not execute it in the current PR.
 
 Expanded detail: [`CORE-RULES.md` — Drift prevention](./CORE-RULES.md#drift-prevention), [Mandatory stop conditions](./CORE-RULES.md#mandatory-stop-conditions).
 
@@ -206,7 +206,7 @@ Shared law above applies to every agent. The following documents add **tool-spec
 | Codex | [`CODEX-RULES.md`](./CODEX-RULES.md) | PR-as-task execution via Codex GitHub integration |
 | Copilot | [`COPILOT-RULES.md`](./COPILOT-RULES.md) | Scoped PR-based implementation |
 | Devin | [`DEVIN-RULES.md`](./DEVIN-RULES.md) | Draft-PR boundary and constrained contributor behavior |
-| AI execution bridge | *Future phase* | Label-triggered bounded automation — not active unless explicitly implemented and documented in a source Issue |
+| AI execution bridge | *Future phase* | Label-triggered bounded automation — not active unless explicitly implemented and documented in a source issue |
 
 Cross-agent handoff and role mapping: [`ops/ai/CROSS-AGENT-OPERATING-RULES.md`](../../../ops/ai/CROSS-AGENT-OPERATING-RULES.md).
 
@@ -218,7 +218,7 @@ Long-form governance: [`governance/ai/AGENT-GOVERNANCE.md`](../../../governance/
 
 Merge authority remains human/operator only for all agents.
 
-Issue and PR creation permissions vary by agent; see agent-specific rules and [`CORE-RULES.md` — Capabilities](./CORE-RULES.md#capabilities).
+Issue and pull request creation permissions vary by agent; see agent-specific rules and [`CORE-RULES.md` — Capabilities](./CORE-RULES.md#capabilities).
 
 ---
 
