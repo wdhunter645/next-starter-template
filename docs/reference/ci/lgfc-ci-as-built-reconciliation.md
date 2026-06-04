@@ -36,10 +36,13 @@ Workflow file count on `main`: 54 files under `.github/workflows/`.
 | Task 003 Reviewer Lifecycle Redesign | #1196 | Merged | PR #1239; `docs/reference/ci/reviewer-lifecycle-surface.md` |
 | Task 004 Post-Merge Validation Expansion | #1197 | Merged | PR #1240; `docs/reference/ci/post-merge-validation-surface.md` |
 | Task 005 OPS Runtime Consolidation | #1198 | Merged | PR #1242; `docs/reference/ci/ops-runtime-surface.md` |
-| Task 006 As-built Documentation Update | #1199 | This document | Documentation-only reconciliation |
+| Task 006 As-built Documentation Update | #1199 | Merged | PR #1244; `docs/reference/ci/lgfc-ci-as-built-reconciliation.md` |
 
 Task 005 merged before Task 004 out of planned order. No merge conflicts resulted,
 but rollout bookkeeping should treat both as complete on `main`.
+
+Phase 2 closeout and maintenance tasks are defined in
+`docs/ops/implementation-plans/issue-1075-ci-phase2-closeout-rollout.md`.
 
 ## Domain Reconciliation
 
@@ -119,9 +122,29 @@ Authoritative OPS reference: `docs/reference/ci/ops-runtime-surface.md`.
 | OPS main change monitor | Operations | `main` push | Direct-push detection issue | Admin review |
 | Snapshot / B2 / D1 runtime jobs | Platform operations | schedule / manual | Workflow failure + ops issue | Ops issue triage |
 | Cloudflare Pages retry helper | Platform operations | manual | Step summary warning only | Manual re-run or ops follow-up |
-| CI orchestration engine | CI program | schedule / manual | Paused issue creation | `#1075` program tracking |
+| CI orchestration engine | CI program | schedule / manual | Paused issue creation | `#1058` maintenance tracking after `#1075` closeout |
 
 Detailed monitoring map: `docs/ops/ci-monitoring-ownership.md`.
+
+## Open Issue Assessment and Program Decision
+
+Assessment date: 2026-06-03 after Tasks 001–006 merged on `main`.
+
+| Issue | Recommendation | Rationale |
+|---|---|---|
+| `#1075` PROJECT: CI-ORCH-01 | Close in Phase 2 Task 001 | Redesign implementation complete; program umbrella should close with evidence |
+| `#1058` CI workflow normalization | Keep open | Owns deferred maintenance backlog (inventory rewrite, drift gate, legacy retirement, branch protection UI) |
+| `#1247` Trusted reviewer evidence gate design | Close in Phase 2 Task 001 | Docs merged via #1248/#1251; superseded as standalone open work |
+| `#1116` CI remediation issue generation | Close in Phase 2 Task 001 | Runtime merged via #1128/#1240; function absorbed into post-merge validation |
+| `#1011` Reviewer lifecycle transition tracking | Close in Phase 2 Task 001 | Superseded by Task 003 (#1239) |
+| `#1009` Post-merge reviewer audit parser verification | Close in Phase 2 Task 001 | Superseded by Task 003 simulation harness and lifecycle gate |
+
+Decision: **Do not create a new CI redesign project.** Close `#1075` after phase-2
+Task 001 and continue remaining work under `#1058` through
+`issue-1075-ci-phase2-closeout-rollout.md` Tasks 002–005.
+
+Website tasks T25–T50 are complete. The repository no longer updates project
+tracker documents for website delivery; GitHub issues remain the activity record.
 
 ## Lessons Learned
 

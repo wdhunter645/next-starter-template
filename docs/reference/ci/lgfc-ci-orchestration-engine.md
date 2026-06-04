@@ -6,7 +6,7 @@ Owns: As-built CI orchestration engine behavior, state model, pause contract, ge
 Does Not Own: Individual CI redesign phase implementation details, branch protection settings, production runtime behavior
 Canonical Reference: /docs/how-to/ci/lgfc-ci-orchestration-issue-model.md
 Related Issues: #1075, #1058
-Last Reviewed: 2026-05-22
+Last Reviewed: 2026-06-03
 ---
 
 # LGFC CI Orchestration Engine
@@ -30,6 +30,13 @@ The engine owns:
 The engine does not implement the full CI redesign, reviewer gate rebuild, merge protection consolidation, website behavior changes, or Cloudflare runtime changes.
 
 ## Current Known Truth
+
+Phase 1 redesign Tasks 001–006 are merged on `main`. The JSON state file still
+describes those six phases for monitoring and pause semantics.
+
+Phase 2 closeout and `#1058` maintenance tasks are defined in
+`docs/ops/implementation-plans/issue-1075-ci-phase2-closeout-rollout.md` and are
+created by `orchestrator-issue-factory.yml`, not by the JSON engine.
 
 The engine is implemented by:
 

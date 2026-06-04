@@ -70,6 +70,10 @@ Type: ci
 Agent: cursor
 Priority: 2
 Depends On: Task 001
+Status: completed
+Issue: #1226
+Implementation PR: #1229
+Merged: 2026-06-02
 Allowed Files:
 - `.github/workflows/gate-quality.yml`
 - `.github/workflows/gate-zip-safety.yml`
@@ -98,6 +102,10 @@ Type: ci
 Agent: cursor
 Priority: 3
 Depends On: Task 002
+Status: completed
+Issue: #1196
+Implementation PR: #1239
+Merged: 2026-06-03
 Allowed Files:
 - `.github/workflows/reviewer-response-completion.yml`
 - `.github/workflows/gate-reviewer-response.yml`
@@ -125,6 +133,10 @@ Type: ci
 Agent: cursor
 Priority: 4
 Depends On: Task 003
+Status: completed
+Issue: #1197
+Implementation PR: #1240
+Merged: 2026-06-03
 Allowed Files:
 - `.github/workflows/post-merge-intent-verification.yml`
 - `.github/workflows/post-merge-remediation.yml`
@@ -155,6 +167,10 @@ Type: ci
 Agent: cursor
 Priority: 5
 Depends On: Task 004
+Status: completed
+Issue: #1198
+Implementation PR: #1242
+Merged: 2026-06-03
 Allowed Files:
 - `.github/workflows/ops-assess.yml`
 - `.github/workflows/ops-cf-pages-retry.yml`
@@ -186,6 +202,10 @@ Type: ci
 Agent: cursor
 Priority: 6
 Depends On: Task 005
+Status: completed
+Issue: #1199
+Implementation PR: #1244
+Merged: 2026-06-03
 Allowed Files:
 - `docs/explanation/ci/**`
 - `docs/how-to/ci/**`
@@ -216,6 +236,7 @@ Deliverables opened in the Task 006 PR:
 
 Post-merge follow-up after Task 006 merge:
 
-- Confirm branch protection required checks match `merge-protection-surface.md`
-- Schedule a mechanical workflow inventory table rewrite (deferred from Task 006)
-- Close source issues #1197 and #1198 if post-merge closeout automation has not already done so
+- Phase 2 closeout and maintenance tasks are defined in
+  `docs/ops/implementation-plans/issue-1075-ci-phase2-closeout-rollout.md`.
+- Confirm branch protection required checks match `merge-protection-surface.md`.
+- Execute program closeout under `#1075` and continue normalization under `#1058`.

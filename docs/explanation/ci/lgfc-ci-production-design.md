@@ -25,23 +25,22 @@ It does not define individual GitHub Actions implementation details or repositor
 
 ## Current Known Truth
 
-As of 2026-06-03 on `main`, Tasks 001 through 005 of the `#1075` CI redesign are
-merged. Task 006 completes documentation reconciliation in PR #1244. The
+As of 2026-06-03 on `main`, CI redesign Tasks 001 through 006 are merged. The
 authoritative reconciliation record is
 `docs/reference/ci/lgfc-ci-as-built-reconciliation.md`.
 
-Merged changes include PR hygiene advisories, consolidated merge protection,
-reviewer lifecycle redesign, post-merge validation expansion, and OPS runtime
-consolidation. Domain surface references:
+Merged domains on `main`:
 
-- `docs/reference/ci/merge-protection-surface.md`
-- `docs/reference/ci/reviewer-lifecycle-surface.md`
-- `docs/reference/ci/post-merge-validation-surface.md`
-- `docs/reference/ci/ops-runtime-surface.md`
+- PR hygiene advisories (`docs/reference/ci/pr-hygiene-foundation.md`)
+- Merge protection consolidation (`docs/reference/ci/merge-protection-surface.md`)
+- Reviewer lifecycle redesign (`docs/reference/ci/reviewer-lifecycle-surface.md`)
+- Post-merge validation expansion (`docs/reference/ci/post-merge-validation-surface.md`)
+- OPS runtime consolidation (`docs/reference/ci/ops-runtime-surface.md`)
+- As-built documentation reconciliation (`docs/reference/ci/lgfc-ci-as-built-reconciliation.md`)
 
-Remaining architectural debt on `main` includes legacy ZIP checks inside
-`gate-drift.yml`, parked legacy workflow files, and a workflow inventory table
-that still reflects the 2026-05-19 baseline in several rows.
+Remaining architectural debt is tracked as **CI maintenance** under `#1058`,
+not as redesign rework: drift gate ZIP deduplication, legacy workflow retirement,
+full workflow inventory rewrite, and branch protection UI reconciliation.
 
 ## Intended Final State
 
@@ -56,6 +55,42 @@ The final architecture will preserve governance rigor while reducing false-posit
 
 As-built reconciliation and deferred items are tracked in
 `docs/reference/ci/lgfc-ci-as-built-reconciliation.md`.
+
+## Orchestration Final State
+
+The CI redesign program (`#1075`) delivered six implementation phases on `main`.
+Orchestration now operates in two layers:
+
+### Layer 1 — Issue factory (markdown plans)
+
+Trigger path: push to `main` under `docs/ops/implementation-plans/**` via
+`orchestrator-issue-factory.yml`.
+
+Behavior:
+
+- Plans with `Status: production-ready` are scanned for `## Task NNN —` sections.
+- Tasks marked `Status: completed`, `closed`, or `issues-created` are skipped.
+- Tasks with existing `lgfc-task-id:<plan-slug>:Task-NNN` markers are skipped.
+- The first net-new task receives `status:queued`; later tasks receive `status:blocked`.
+
+Phase 1 plan (`issue-1075-ci-redesign-rollout.md`) is complete. All Tasks 001–006
+are terminal. Phase 2 plan (`issue-1075-ci-phase2-closeout-rollout.md`) owns
+program closeout and `#1058` maintenance work.
+
+### Layer 2 — CI orchestration engine (JSON phases)
+
+`ci-orchestration-engine.yml` reads `/.github/ci-orchestration-state.json` for
+phase-1 monitoring, pause decisions, and legacy phase issue markers. It does not
+parse markdown plans. Phase-2 execution is driven by the issue factory.
+
+### Intended steady state after phase 2
+
+- `#1075` closed after program closeout task completes.
+- `#1058` remains the open CI normalization and maintenance umbrella.
+- One active orchestrator issue at a time.
+- Post-merge validation closes source issues when merge evidence passes.
+- Website work is tracked only through GitHub issues; project tracker documents
+  are not updated for completed website tasks (T25–T50).
 
 ## Core Principle
 

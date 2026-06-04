@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: CI migration implementation sequencing, orchestration task decomposition, Cursor execution phases
 Does Not Own: Final workflow implementation
 Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related Issues: #1199, #1058
+Related Issues: #1058, #1075
 Last Reviewed: 2026-06-03
 ---
 
@@ -135,6 +135,29 @@ Deliverables:
 - `docs/reference/ci/lgfc-ci-as-built-reconciliation.md`
 - `docs/ops/ci-monitoring-ownership.md`
 - updates to `.github/CI_GUARDRAILS_MAP.md`, workflow inventory, and rollout closeout references
+
+Status: merged on `main` via PR #1244.
+
+### Phase 8 — Program Closeout and Orchestration Verification
+
+Goals:
+- close the `#1075` redesign program with evidence
+- close superseded child issues (#1011, #1009, #1116, #1247, stale task issues)
+- verify issue factory skips completed phase-1 tasks and creates only phase-2 tasks
+
+Trigger plan:
+- `docs/ops/implementation-plans/issue-1075-ci-phase2-closeout-rollout.md`
+
+### Phase 9 — CI Maintenance under `#1058`
+
+Goals:
+- branch protection UI reconciliation documentation
+- drift gate ZIP deduplication
+- legacy workflow retirement
+- full workflow inventory rewrite
+
+Tasks 002–005 in the phase-2 closeout plan execute this maintenance backlog under
+the open `#1058` program issue.
 
 ## Cursor Issue Model
 
