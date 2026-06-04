@@ -13,7 +13,10 @@ import {
 } from './post_merge_remediation_issue.mjs';
 import { runValidator, WORKFLOW_RUN_SCOPE_MERGE_ONLY } from './post_merge_validator.mjs';
 import { githubRepoRequest } from './github_issue_api.mjs';
-import { shouldRunAutomaticCloseout } from './post_merge_closeout_trigger.mjs';
+import {
+	resolveCloseoutBodyApply,
+	shouldRunAutomaticCloseout,
+} from './post_merge_closeout_trigger.mjs';
 
 export const POST_MERGE_RESULT_PATH = 'post-merge-result.json';
 export const POST_MERGE_RESULT_MD_PATH = 'post-merge-result.md';
@@ -55,13 +58,20 @@ export function resolveCloseoutEventContext({
 		merged: eventPrMerged,
 		baseRef: eventPrBaseRef,
 	});
+	const prNumber = String(inputPrNumber || eventPrNumber || '');
+	const bodyApply = resolveCloseoutBodyApply({
+		prNumber,
+		automatic,
+		bodyFile,
+		skipBodyApply: skipBodyApply === 'true',
+	});
 
 	return {
 		eventName,
-		prNumber: String(inputPrNumber || eventPrNumber || ''),
+		prNumber,
 		automatic,
-		skipBodyApply: automatic ? true : skipBodyApply === 'true',
-		bodyFile: automatic ? '' : bodyFile,
+		skipBodyApply: bodyApply.skipBodyApply,
+		bodyFile: bodyApply.bodyFile,
 		eventPrMerged,
 		eventPrBaseRef,
 	};
