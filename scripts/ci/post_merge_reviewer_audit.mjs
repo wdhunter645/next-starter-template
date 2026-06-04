@@ -19,6 +19,8 @@ const trustedReviewerPattern = /chatgpt-codex-connector|gemini-code-assist|copil
 const highSeverityPattern = /(^|[^A-Za-z0-9])(P0|P1)([^A-Za-z0-9]|$)|high[- ]priority|request changes|requested changes|must fix|blocking/i;
 const resolvedPattern = /✅\s*Addressed|addressed in|\bresolved\b|all checks passed|no warnings detected/i;
 const unresolvedPattern = /\bunresolved\b|\bnot\s+resolved\b|\bstill\s+open\b|\bstill\s+blocking\b/i;
+// Must stay aligned with BREAK_GLASS_MARKER in scripts/ci/reviewer_lifecycle_gate.mjs
+const BREAK_GLASS_MARKER = /<!--\s*reviewer-lifecycle-break-glass\s*-->/i;
 
 async function request(path, options = {}) {
   const hasBody = Boolean(options.body);
