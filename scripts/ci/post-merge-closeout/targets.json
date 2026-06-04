@@ -1,0 +1,16 @@
+{
+  "targets": [
+    {
+      "pr": 1239,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1239-body.md",
+      "merge_sha": "63c4ca233035d7b021735dbd3e6eb673f90d9184",
+      "source_issue": 1196
+    },
+    {
+      "pr": 1243,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1243-body.md",
+      "merge_sha": "16a8819d2d34a618c2b0203f9075bd24ceef3016",
+      "source_issue": 1116
+    }
+  ]
+}
