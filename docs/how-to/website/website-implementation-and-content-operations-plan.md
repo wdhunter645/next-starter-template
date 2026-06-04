@@ -10,18 +10,50 @@ Last Reviewed: 2026-06-04
 
 # Website Implementation and Content Operations Plan
 
-## Source issue
-
-- Program: #1255 — PROGRAM: Website Implementation and Content Operations
-- Priority project: #1256 — PROJECT: Content Strategy / Editorial Inventory
-- Secondary project: #1258 — PROJECT: Website Operations Admin
-- Final validation project: #1259 — PROJECT: Website QA and Production Validation
-
 ## Purpose
 
-This document turns #1255 from a program design into an executable implementation plan.
+This document turns the website implementation and content operations program into an executable implementation plan.
 
-The program completes remaining LGFC website implementation work in a serial sequence. The sequence starts with the content strategy and editorial inventory system because that system supplies the structured content layer used to populate website surfaces dynamically.
+The program completes remaining LGFC website work in a serial sequence. The sequence starts with the content strategy and editorial inventory system because that system supplies the structured content layer used to populate website surfaces dynamically.
+
+## Scope
+
+This document owns the program execution path for:
+
+- content strategy and editorial inventory planning;
+- content inventory implementation;
+- website operations and admin planning;
+- website operations and admin implementation;
+- website QA and production validation;
+- child issue creation rules;
+- validation gates;
+- rollback and closeout rules;
+- operations handoff checklist.
+
+This document does not own final editorial judgment, final historical content approval, vendor account configuration, production secrets, or runtime implementation details beyond sequencing and acceptance criteria.
+
+## Current known truth
+
+The website program has one active program master and three child project masters.
+
+- program: #1255 — Website Implementation and Content Operations
+- priority project: #1256 — Content Strategy / Editorial Inventory
+- secondary project: #1258 — Website Operations Admin
+- final validation project: #1259 — Website QA and Production Validation
+
+The content strategy and editorial inventory project is the top overall website priority because it supplies the dynamic content layer for the site.
+
+## Intended final state
+
+The final state is a website operations program with documented content inventory, documented admin and operations workflows, verified production behavior, and a clear handoff package for long-term operations.
+
+Before the program closes:
+
+- content inventory docs exist in the approved structure;
+- content inventory implementation work is decomposed into child issues;
+- admin and operations work is decomposed into child issues;
+- production QA is complete or explicitly deferred with retained issues;
+- the program master links all final docs and outcomes.
 
 ## Operating rule
 
@@ -41,11 +73,11 @@ Objective: make the issue queue reliable before new implementation work begins.
 
 Deliverables:
 
-- Confirm #1255 remains the website program master.
-- Confirm #1256, #1258, and #1259 remain the child project masters.
+- Confirm the website program master remains the current program authority.
+- Confirm the three child project masters remain current.
 - Reconcile older related issues under the correct child project.
 - Add comments to older issues that are superseded, retained, or subordinated.
-- Close duplicate or obsolete issues only after the useful requirements are captured.
+- Close duplicate or obsolete issues only after useful requirements are captured.
 
 Child issue creation rules:
 
@@ -67,9 +99,9 @@ Rollback / closeout rules:
 
 Exit criteria:
 
-- #1255 has an updated active-project status comment.
-- #1256 is confirmed as active priority 1.
-- #1258 and #1259 remain queued.
+- The program master has an updated active-project status comment.
+- The content strategy project is confirmed as active priority one.
+- The operations/admin and QA projects remain queued.
 
 ### Phase 1 — Content Strategy / Editorial Inventory documentation package
 
@@ -91,6 +123,7 @@ File/document targets:
 - `docs/how-to/website/add-content-story.md`
 - `docs/how-to/website/add-content-media.md`
 - `docs/how-to/website/review-content-submission.md`
+- `docs/how-to/website/publish-update-content.md`
 - `docs/tutorials/website/editor-first-story.md`
 - `docs/ops/implementation-plans/website-content-strategy-editorial-inventory.md`
 
@@ -125,13 +158,13 @@ Rollback / closeout rules:
 
 - Documentation PRs may be reverted without touching runtime behavior.
 - If content model fields change before build starts, update reference docs first and then regenerate child issues.
-- Close #819, #824, and #1137 only after their useful requirements are captured under #1256 or linked as retained references.
+- Close older related content strategy issues only after their useful requirements are captured under the active content strategy project or linked as retained references.
 
 Exit criteria:
 
-- #1256 has final docs linked.
+- The content strategy project has final docs linked.
 - Implementation child issues exist and are ordered.
-- Program #1255 is updated to mark Phase 1 documentation complete.
+- The program master is updated to mark Phase 1 documentation complete.
 
 ### Phase 2 — Content Strategy / Editorial Inventory implementation
 
@@ -184,16 +217,16 @@ Exit criteria:
 
 - Dynamic content population works from approved inventory data.
 - Admin/editor workflow can add or update content using documented steps.
-- #1256 can be marked implemented or moved to final validation.
+- The content strategy project can be marked implemented or moved to final validation.
 
 ### Phase 3 — Website Operations Admin project planning
 
-Objective: prepare #1258 for implementation after the content system has a stable foundation.
+Objective: prepare the operations/admin project for implementation after the content system has a stable foundation.
 
 Deliverables:
 
 - Updated design and implementation plan for operations/admin workflows.
-- Reconciliation of #1053 and #1118 through #1127 under #1258.
+- Reconciliation of existing operations/admin issues under the operations/admin project.
 - Serial child build issues for admin, moderation, media, events, charity/fundraiser, matchup, and audit/reporting workflows.
 
 Child issue creation rules:
@@ -206,16 +239,16 @@ Validation gates:
 
 - Existing website behavior remains stable.
 - Admin/fanclub gating remains compliant.
-- No content model changes are introduced unless linked back to #1256.
+- No content model changes are introduced unless linked back to the content strategy project.
 
 Rollback / closeout rules:
 
 - Admin feature rollbacks must preserve existing data.
-- If an operational workflow depends on unfinished content work, pause #1258 and return to #1256.
+- If an operational workflow depends on unfinished content work, pause the operations/admin project and return to content strategy.
 
 Exit criteria:
 
-- #1258 has an approved implementation plan and ordered child issues.
+- The operations/admin project has an approved implementation plan and ordered child issues.
 
 ### Phase 4 — Website Operations Admin implementation
 
@@ -249,7 +282,7 @@ Rollback / closeout rules:
 
 Exit criteria:
 
-- #1258 children are closed or explicitly deferred.
+- Operations/admin child issues are closed or explicitly deferred.
 - Operations documentation is updated for handoff.
 
 ### Phase 5 — Website QA and Production Validation
@@ -289,27 +322,27 @@ Rollback / closeout rules:
 
 Exit criteria:
 
-- #1259 has a completed QA report.
-- #1255 has final as-built and operations handoff links.
+- The QA project has a completed QA report.
+- The program master has final as-built and operations handoff links.
 - Program can be closed or moved to post-launch operations.
 
 ## Handoff checklist
 
-Before #1255 can close:
+Before the program can close:
 
-- [ ] #1256 completed or explicitly transitioned to operations.
-- [ ] #1258 completed or explicitly deferred with retained issues.
-- [ ] #1259 completed.
+- [ ] Content strategy completed or explicitly transitioned to operations.
+- [ ] Operations/admin completed or explicitly deferred with retained issues.
+- [ ] QA and production validation completed.
 - [ ] Existing related issues are closed, subordinated, or retained with current next steps.
 - [ ] Final content inventory docs exist in the approved structure.
 - [ ] Final operations/admin docs exist in the approved structure.
 - [ ] Final QA report exists in the approved structure.
-- [ ] Program issue #1255 links all final docs and child project outcomes.
+- [ ] Program master links all final docs and child project outcomes.
 - [ ] Remaining post-launch issues are labeled and assigned to the correct future program.
 
 ## Closeout comment format
 
-Use this format when closing #1255:
+Use this format when closing the program master:
 
 ```text
 ## Program closeout
@@ -317,9 +350,9 @@ Use this format when closing #1255:
 Final status: complete / transitioned / partially deferred
 
 Completed child projects:
-- #1256 — result:
-- #1258 — result:
-- #1259 — result:
+- content strategy — result:
+- operations/admin — result:
+- QA and production validation — result:
 
 Final documentation:
 - Explanation:
@@ -329,9 +362,9 @@ Final documentation:
 - QA report:
 
 Remaining deferred work:
-- Issue:
-- Reason:
-- Next owner/project:
+- issue:
+- reason:
+- next owner/project:
 
 Operations handoff status:
 - Ready / Not ready
