@@ -58,10 +58,15 @@ jobs:
       - name: Validate approved issue
         id: validate
         env:
-          GITHUB_EVENT_PATH: ${{ github.event_name == 'workflow_dispatch' && 'dispatch-event.json' || github.event_path }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           AI_EXECUTION_BRIDGE_RESULT_PATH: ai-execution-bridge-result.json
-        run: node scripts/ci/ai_execution_bridge_validate.mjs
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            export GITHUB_EVENT_PATH="$GITHUB_WORKSPACE/dispatch-event.json"
+          else
+            export GITHUB_EVENT_PATH="${{ github.event_path }}"
+          fi
+          node scripts/ci/ai_execution_bridge_validate.mjs
 
       - name: Prepare execution plan
         if: steps.validate.outcome == 'success' && hashFiles('ai-execution-bridge-result.json') != ''
