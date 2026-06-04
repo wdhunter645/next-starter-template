@@ -5,7 +5,10 @@ import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 
 import { applyMergedPrBody } from './apply_merged_pr_body.mjs';
-import { runValidator } from './post_merge_validator.mjs';
+import { closeDuplicateRemediationIssues } from './close_duplicate_remediation_issues.mjs';
+import { closeRemediationIssuesForPr } from './close_remediation_issues_for_pr.mjs';
+import { runValidator, WORKFLOW_RUN_SCOPE_MERGE_ONLY } from './post_merge_validator.mjs';
+import { githubRepoRequest } from './github_issue_api.mjs';
 
 function runSync({ repository, prNumber, syncAction }) {
 	execFileSync('node', ['scripts/orchestrator/sync-pr-state.mjs'], {
@@ -21,6 +24,15 @@ function runSync({ repository, prNumber, syncAction }) {
 	});
 }
 
+async function fetchMergedPr({ token, repository, prNumber }) {
+	return githubRepoRequest({
+		token,
+		repository,
+		path: `/pulls/${prNumber}`,
+		userAgent: 'lgfc-post-merge-closeout',
+	});
+}
+
 export async function runPostMergeCloseout({
 	token,
 	repository,
@@ -29,7 +41,15 @@ export async function runPostMergeCloseout({
 	sha = '',
 	runId = '',
 	skipBodyApply = false,
+	workflowRunScope = WORKFLOW_RUN_SCOPE_MERGE_ONLY,
 }) {
+	const pr = await fetchMergedPr({ token, repository, prNumber });
+	if (!pr.merged_at) {
+		throw new Error(`PR #${prNumber} is not merged; refusing post-merge closeout.`);
+	}
+
+	const mergeSha = sha || pr.merge_commit_sha || '';
+
 	if (!skipBodyApply) {
 		await applyMergedPrBody({ token, repository, prNumber, bodyFile });
 	}
@@ -39,14 +59,26 @@ export async function runPostMergeCloseout({
 		repository,
 		eventName: 'workflow_dispatch',
 		inputPrNumber: String(prNumber),
-		sha,
+		sha: mergeSha,
 		runId,
+		workflowRunScope,
 	});
 
 	fs.writeFileSync('post-merge-result.json', `${JSON.stringify(result, null, 2)}\n`);
 
 	if (result.sync_action && result.sync_action !== 'skipped') {
 		runSync({ repository, prNumber, syncAction: result.sync_action });
+	}
+
+	if (result.sync_action === 'post_merge_success') {
+		await closeRemediationIssuesForPr({
+			token,
+			repository,
+			prNumber,
+			mergeSha: result.merge_sha || mergeSha,
+			sourceIssue: result.source_issue || '',
+		});
+		await closeDuplicateRemediationIssues({ token, repository, dryRun: false });
 	}
 
 	return result;

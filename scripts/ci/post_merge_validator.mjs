@@ -423,6 +423,20 @@ export function latestRunsByWorkflow(runs = []) {
 	return [...latest.values()];
 }
 
+export const WORKFLOW_RUN_SCOPE_MERGE_ONLY = 'merge_only';
+export const WORKFLOW_RUN_SCOPE_MERGE_AND_HEAD = 'merge_and_head';
+
+export function selectWorkflowRunsForValidation({
+	mergeRuns = [],
+	headRuns = [],
+	scope = WORKFLOW_RUN_SCOPE_MERGE_AND_HEAD,
+} = {}) {
+	if (scope === WORKFLOW_RUN_SCOPE_MERGE_ONLY) {
+		return latestRunsByWorkflow(mergeRuns);
+	}
+	return latestRunsByWorkflow(uniqueRuns(mergeRuns, headRuns));
+}
+
 function shouldInspectRun(run, currentRunId = '') {
 	return (
 		String(run.databaseId || run.id || '') !== String(currentRunId || '') &&
@@ -470,6 +484,7 @@ export async function runValidator({
 	sha,
 	runId,
 	workspace = process.cwd(),
+	workflowRunScope = process.env.POST_MERGE_WORKFLOW_RUN_SCOPE || WORKFLOW_RUN_SCOPE_MERGE_AND_HEAD,
 }) {
 	const pulls = eventName === 'push' ? await apiRequest({ token, repository, path: `/commits/${sha}/pulls` }) : [];
 	const resolution = resolvePrNumber({ eventName, inputPrNumber, eventPrNumber, eventPrMerged, eventPrBaseRef, associatedPulls: pulls });
@@ -510,7 +525,11 @@ export async function runValidator({
 		root: workspace,
 	});
 	const findings = reviewerFindings({ pr: normalizedPr, issueComments, reviewComments, reviews });
-	const runs = latestRunsByWorkflow(uniqueRuns(mergeRunsResponse.workflow_runs, headRunsResponse.workflow_runs));
+	const runs = selectWorkflowRunsForValidation({
+		mergeRuns: mergeRunsResponse.workflow_runs || [],
+		headRuns: headRunsResponse.workflow_runs || [],
+		scope: workflowRunScope,
+	});
 	const enrichedRuns = await enrichFailedRuns({ token, repository, runs, currentRunId: runId });
 	const failures = workflowFailures({ runs: enrichedRuns, prBody: normalizedPr.body, currentRunId: runId });
 
