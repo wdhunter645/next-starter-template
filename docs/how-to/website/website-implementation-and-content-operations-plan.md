@@ -43,6 +43,8 @@ The website program has one active program master and three child project master
 
 The content strategy and editorial inventory project is the top overall website priority because it supplies the dynamic content layer for the site.
 
+Existing editorial/archive implementation work exists from prior closed PR history. The content strategy project must reconcile that implementation before creating new build issues so the program does not duplicate already-implemented schema, API, or admin/editor work.
+
 ## Intended final state
 
 The final state is a website operations program with documented content inventory, documented admin and operations workflows, verified production behavior, and a clear handoff package for long-term operations.
@@ -166,37 +168,46 @@ Exit criteria:
 - Implementation child issues exist and are ordered.
 - The program master is updated to mark Phase 1 documentation complete.
 
-### Phase 2 — Content Strategy / Editorial Inventory implementation
+### Phase 2 — Content Strategy / Editorial Inventory implementation reconciliation
 
-Objective: build the content inventory system that dynamically populates website surfaces.
+Objective: verify the existing editorial/archive implementation, identify gaps against the approved content strategy design, and create implementation issues only for missing deltas.
+
+Current implementation baseline:
+
+- Prior editorial/archive work introduced a `content_inventory` authority table and `submission_queue` review queue.
+- Prior editorial/archive work added admin/editor list, review, and publish endpoints.
+- Prior editorial/archive work added fan club library reads from published inventory.
+- The next step is not to blindly rebuild those artifacts. The next step is to validate them against the final content strategy model and fill documented gaps.
 
 Deliverables:
 
-- D1 migration or schema artifact for approved content inventory tables.
-- Submission queue model.
-- Admin/editor workflow for content review and publication.
-- Media association workflow.
-- Public content query utilities.
-- Dynamic population of approved website surfaces.
+- Existing implementation inventory comparing current schema, APIs, admin UI, and public reads against the Phase 1 content strategy documents.
+- Gap table classifying each item as complete, needs documentation, needs migration, needs UI work, needs public rendering work, or needs operational validation.
+- D1 migration or schema correction only if current tables are missing approved fields or constraints.
+- Submission queue correction only if objective triage, review status, purge, or audit fields are incomplete.
+- Admin/editor workflow correction only if the current workflow does not support documented review and publication behavior.
+- Media association workflow only if not already covered by existing content inventory fields or admin tooling.
+- Public content query utilities or corrections only for missing dynamic population needs.
 - Seed or pilot content set sufficient for verification.
 
 Likely child build issue sequence:
 
-1. Content inventory schema and migration.
-2. Submission queue schema and objective triage fields.
-3. Admin/editor content management interface.
-4. Media association and credit/source handling.
-5. Public content query layer.
-6. Homepage and archive population wiring.
-7. Search and related-content indexing.
+1. Existing implementation inventory and gap analysis.
+2. Content inventory schema delta only if gaps exist.
+3. Submission queue schema delta only if gaps exist.
+4. Admin/editor workflow delta only if gaps exist.
+5. Media association and credit/source delta only if gaps exist.
+6. Public content query and homepage/archive population delta only if gaps exist.
+7. Search and related-content indexing delta only if gaps exist.
 8. Seed content and verification pack.
 
 File/document targets:
 
-- D1 migration files under the repository's existing database/migration structure.
+- Existing migration files and new forward-only migrations only as required by approved child issues.
 - Existing website route and component files only as required by approved child issues.
 - Existing admin/editor files only as required by approved child issues.
-- Reference and how-to docs updated only when implementation varies from design.
+- Reference and how-to docs updated when implementation varies from design.
+- Gap analysis documented before any schema or API change issue is opened.
 
 Validation gates:
 
@@ -206,18 +217,20 @@ Validation gates:
 - Manual route verification covers affected public and admin surfaces.
 - No unauthorized header, footer, auth, or navigation drift.
 - Seed content contains source and credit data.
+- Existing editorial/archive artifacts are not duplicated by new child issues.
 
 Rollback / closeout rules:
 
 - Schema changes must include a rollback or safe forward-correction plan.
 - Public rendering changes must be reversible without data loss.
 - Content seed failures must not block rollback of runtime code.
+- Gap-only issues may close without code if current implementation already satisfies the requirement.
 
 Exit criteria:
 
-- Dynamic content population works from approved inventory data.
-- Admin/editor workflow can add or update content using documented steps.
-- The content strategy project can be marked implemented or moved to final validation.
+- Dynamic content population works from approved inventory data or remaining gaps are explicitly assigned.
+- Admin/editor workflow can add or update content using documented steps or missing deltas are assigned.
+- The content strategy project can be marked implemented, partially implemented with retained deltas, or moved to final validation.
 
 ### Phase 3 — Website Operations Admin project planning
 
