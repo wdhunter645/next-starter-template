@@ -5,12 +5,25 @@ Authority Level: Operational Authority
 Owns: Implementation plan format for orchestrated GitHub execution
 Does Not Own: Product design, route behavior, visual design, or platform architecture
 Canonical Reference: /docs/reference/architecture/orchestration-model.md
-Last Reviewed: 2026-05-05
+Last Reviewed: 2026-06-04
 ---
 
 # Implementation Plans
 
 This directory stores production-ready implementation plans that can be converted into GitHub Issues by the LGFC orchestration tier.
+
+## PMO Registry
+
+Orchestrated work follows the PMO execution chain documented in `/docs/ops/pmo/program-registry.md`:
+
+```text
+Program → Child Project → Task → Issue → PR → Verification → Closeout
+```
+
+Related PMO documents:
+
+- `/docs/ops/pmo/critical-path.md` — serial queue and track rules
+- `/docs/ops/pmo/parallel-agent-rules.md` — read-only parallel vs one implementer per task
 
 ## Purpose
 
