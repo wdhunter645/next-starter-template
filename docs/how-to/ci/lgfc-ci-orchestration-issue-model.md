@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: CI implementation issue orchestration model
 Does Not Own: Workflow implementation logic
 Canonical Reference: /docs/how-to/ci/lgfc-ci-implementation-plan.md
-Related Issues: #1058
-Last Reviewed: 2026-05-21
+Related Issues: #1058, #1075
+Last Reviewed: 2026-06-03
 ---
 
 # LGFC CI Orchestration Issue Model
@@ -38,6 +38,12 @@ The orchestration layer should follow this execution sequence:
 5. Wait for the implementation PR to complete merge protection successfully.
 6. Validate post-merge stability.
 7. Create the next implementation issue only after verification succeeds.
+
+After CI redesign Tasks 001–006 merge, phase-2 work is defined in
+`docs/ops/implementation-plans/issue-1075-ci-phase2-closeout-rollout.md`. Completed
+phase-1 tasks remain marked `Status: completed` in
+`issue-1075-ci-redesign-rollout.md` so the issue factory skips them by terminal
+status and by existing `lgfc-task-id` markers.
 
 The orchestration layer must pause advancement automatically when:
 

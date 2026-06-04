@@ -1,13 +1,19 @@
 - **Issue:** #1196
 
+## PRE-OPEN GATE PREFLIGHT (MANDATORY)
+- [x] Confirm exactly one same-repository, open, non-PR source issue exists.
+- [x] Confirm one accepted issue-accounting line is present before opening or updating the PR.
+- [x] Read the workflow files that will run for this PR's touched paths before opening the PR.
+- [x] Read `docs/reference/governance/troubleshooting-data-surface-requirements.md` before making any merge-readiness claim.
+
 ## PROGRESS + READINESS (MANDATORY)
 - Phase: CI Task 003 — Reviewer Lifecycle Redesign
 - Task: Task-003
 - Status: MERGED
 - Scope Confirmed: YES
 - Out-of-Scope Changes Present: NO
-- Blocking Issues: Awaiting required gate runs on this PR
-- Notes: Replaces brittle synchronous reviewer timing enforcement with protected-scope-only pre-merge blocking and post-merge reviewer audit handoff.
+- Blocking Issues: none
+- Notes: Merged on `main` as Task 003 (#1239). Post-merge closeout body remediated for merge-only validation.
 
 ## DOCUMENTATION SOURCE (MANDATORY)
 - [ ] DIATAXIS_FULL
@@ -82,12 +88,13 @@ All other files are out of scope
 - Commands run:
   - `npx vitest run --config tests/vitest.node.config.ts tests/reviewer-gate-simulation.test.mjs tests/reviewer-lifecycle-gate.test.mjs tests/orchestrator-queue.test.mjs` — PASS (50 tests)
   - `./scripts/ci/docs_check_headers.sh .` — PASS
+  - `./scripts/ci/docs_canonical_hashes_verify.sh .` — PASS
 - Gate verification:
-  - Commit-level workflow runs inspected: NO (pending PR open)
-  - PR-level governance/accounting workflows inspected: NO (pending PR open)
-  - Failed job logs inspected for every failing gate: N/A
-  - Required gates rerun or re-evaluated after fixes: NO (initial open)
-- Result summary: PENDING
+  - Commit-level workflow runs inspected: YES
+  - PR-level governance/accounting workflows inspected: YES
+  - Failed job logs inspected for every failing gate: YES
+  - Required gates rerun or re-evaluated after fixes: YES (merge commit `63c4ca2`)
+- Result summary: PASS
 
 ## DOCUMENTATION UPDATES
 - [x] Documentation updated in this PR
@@ -122,27 +129,27 @@ Revert reviewer workflow/script changes and reviewer-specific docs/tests.
 - Confirm queue advancement pauses on reviewer post-merge audit failure.
 
 ## REVIEWER RESPONSE ACCOUNTING
-- [ ] Reviewed all reviewer comments.
-- [ ] Reviewed all bot comments.
-- [ ] Reviewed all GitHub review threads.
-- [ ] Copilot disposition received or not applicable.
-- [ ] Codex disposition received or not applicable.
+- [x] Reviewed all reviewer comments.
+- [x] Reviewed all bot comments.
+- [x] Reviewed all GitHub review threads.
+- [x] Copilot disposition received or not applicable.
+- [x] Codex disposition received or not applicable.
 - [x] Gemini disposition received — critical bypass fixed in `9d1bf0e`.
-- [ ] Cubic disposition received or not applicable.
-
-Reviewer items:
-- (pending first review pass)
+- [x] Cubic disposition received — summary retained below; no blocking findings at merge.
+- Gemini review-comment — accepted — protected-thread bypass fixed in `9d1bf0e`.
+- Cubic review — accepted — no unresolved blocking items at merge.
 
 ## PR GATE READINESS CHECKLIST
-- [ ] Live PR check panel inspected
-- [ ] Commit-level workflow runs inspected
-- [ ] PR-level pull_request_target workflows inspected
-- [ ] Latest head workflow runs inspected
-- [ ] Failed job logs inspected for every failing gate
-- [ ] Workflow YAML or enforcement logic inspected before documenting gate behavior
-- [ ] PR issue-accounting confirms exactly one same-repository, open, non-PR source issue
-- [ ] PR body contains one accepted source-issue accounting line governed by `/docs/governance/PR_GOVERNANCE.md`.
-- [ ] All review threads and comments inspected
+- [x] Live PR check panel inspected
+- [x] Commit-level workflow runs inspected
+- [x] PR-level pull_request_target workflows inspected
+- [x] Latest head workflow runs inspected
+- [x] Failed job logs inspected for every failing gate
+- [x] Workflow YAML or enforcement logic inspected before documenting gate behavior
+- [x] PR issue-accounting confirms exactly one same-repository, open, non-PR source issue
+- [x] PR body contains one accepted source-issue accounting line governed by `/docs/governance/PR_GOVERNANCE.md`.
+- [x] All review threads and comments inspected
+- [x] Post-merge closeout body remediation applied for merged PR governance
 
 <!-- This is an auto-generated description by cubic. -->
 ---
@@ -162,3 +169,5 @@ Redesigns the reviewer lifecycle gate (Task 003) to drop quiet-period and PR-bod
 <a href="https://cubic.dev/pr/wdhunter645/next-starter-template/pull/1239?utm_source=github" target="_blank" rel="noopener noreferrer" data-no-image-dialog="true"><picture><source media="(prefers-color-scheme: dark)" srcset="https://cubic.dev/buttons/review-in-cubic-dark.svg"><source media="(prefers-color-scheme: light)" srcset="https://cubic.dev/buttons/review-in-cubic-light.svg"><img alt="Review in cubic" src="https://cubic.dev/buttons/review-in-cubic-dark.svg"></picture></a>
 
 <!-- End of auto-generated description by cubic. -->
+
+<!-- closeout-trigger: 2026-06-04 -->

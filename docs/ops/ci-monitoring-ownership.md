@@ -13,9 +13,8 @@ Last Reviewed: 2026-06-03
 
 ## Purpose
 
-This operations reference documents who owns monitoring behavior for the LGFC
-CI redesign domains and how runtime failures escalate after Task 006
-reconciliation.
+This operations reference documents monitoring ownership after CI redesign
+Tasks 001–006 merged and phase-2 closeout begins.
 
 ## Ownership Model
 

@@ -56,6 +56,16 @@ jobs:
           CLOSEOUT_MANIFEST: scripts/ci/post-merge-closeout/targets.json
         run: node scripts/ci/run_batch_post_merge_closeout.mjs
 
+      - name: Upload post-merge closeout report
+        if: always() && github.event_name == 'workflow_dispatch' && inputs.run_batch == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-merge-closeout-report
+          path: |
+            post-merge-batch-closeout.json
+            post-merge-result.json
+          if-no-files-found: warn
+
       - name: Apply body, validate, and sync orchestrator state
         if: github.event_name == 'workflow_dispatch' && inputs.run_batch != 'true'
         env:
