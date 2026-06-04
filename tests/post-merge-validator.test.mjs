@@ -87,7 +87,33 @@ describe('post-merge metadata validation', () => {
 		const result = buildResult({ pr: mergedPr({ body: bodyWithoutAdvisory }), resolution: { pr: '1188' }, metadata: failures });
 
 		expect(failures).toContainEqual(expect.objectContaining({ code: 'missing_advisory_section', severity: 'advisory' }));
-		expect(result).toMatchObject({ status: 'pass', remediation_required: true, sync_action: 'post_merge_remediation' });
+		expect(result).toMatchObject({ status: 'pass', remediation_required: false, sync_action: 'post_merge_success' });
+	});
+
+	it('treats optional-remediation-failure workflow noise as non-blocking success', () => {
+		const failures = [
+			{
+				workflow: 'GATE — Reviewer Response Completion',
+				classification: 'optional-remediation-failure',
+				required: false,
+				conclusion: 'cancelled',
+			},
+			{
+				workflow: 'Post-Merge Remediation',
+				classification: 'optional-remediation-failure',
+				required: false,
+				conclusion: 'failure',
+			},
+		];
+
+		const result = buildResult({ pr: mergedPr(), resolution: { pr: '1239' }, failures });
+
+		expect(result).toMatchObject({
+			status: 'pass',
+			remediation_required: false,
+			sync_action: 'post_merge_success',
+		});
+		expect(result.workflow_failures).toHaveLength(2);
 	});
 });
 
