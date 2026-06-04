@@ -13,12 +13,12 @@ const DEFAULT_MANIFEST = 'scripts/ci/post-merge-closeout/targets.json';
 export function loadCloseoutTargets(manifestPath = DEFAULT_MANIFEST) {
 	const resolved = path.resolve(manifestPath);
 	const raw = JSON.parse(fs.readFileSync(resolved, 'utf8'));
-	const targets = Array.isArray(raw) ? raw : raw.targets;
+	const targets = Array.isArray(raw) ? raw : raw?.targets;
 	if (!Array.isArray(targets) || targets.length === 0) {
 		throw new Error(`Closeout manifest must include a non-empty targets array: ${resolved}`);
 	}
 	for (const target of targets) {
-		if (!target.pr || !target.body_file) {
+		if (!target?.pr || !target?.body_file) {
 			throw new Error(`Each closeout target requires pr and body_file: ${JSON.stringify(target)}`);
 		}
 	}
@@ -31,6 +31,8 @@ export async function runBatchPostMergeCloseout({
 	targets,
 	runId = '',
 	dryRun = false,
+	runPostMergeCloseoutFn = runPostMergeCloseout,
+	closeDuplicateRemediationIssuesFn = closeDuplicateRemediationIssues,
 }) {
 	const results = [];
 
@@ -46,29 +48,38 @@ export async function runBatchPostMergeCloseout({
 			continue;
 		}
 
-		const result = await runPostMergeCloseout({
-			token,
-			repository,
-			prNumber,
-			bodyFile,
-			sha: target.merge_sha || '',
-			runId,
-			skipBodyApply: false,
-			workflowRunScope: WORKFLOW_RUN_SCOPE_MERGE_ONLY,
-		});
+		try {
+			const result = await runPostMergeCloseoutFn({
+				token,
+				repository,
+				prNumber,
+				bodyFile,
+				sha: target.merge_sha || '',
+				runId,
+				skipBodyApply: false,
+				workflowRunScope: WORKFLOW_RUN_SCOPE_MERGE_ONLY,
+			});
 
-		results.push({
-			pr: prNumber,
-			status: result.status,
-			sync_action: result.sync_action,
-			source_issue: result.source_issue,
-			remediation_required: result.remediation_required,
-		});
+			results.push({
+				pr: prNumber,
+				status: result.status,
+				sync_action: result.sync_action,
+				source_issue: result.source_issue,
+				remediation_required: result.remediation_required,
+			});
+		} catch (error) {
+			console.error(`Post-merge closeout failed for PR #${prNumber}:`, error);
+			results.push({
+				pr: prNumber,
+				status: 'error',
+				message: error instanceof Error ? error.message : String(error),
+			});
+		}
 	}
 
 	let duplicateClose = { closed: [] };
 	if (!dryRun) {
-		duplicateClose = await closeDuplicateRemediationIssues({ token, repository, dryRun: false });
+		duplicateClose = await closeDuplicateRemediationIssuesFn({ token, repository, dryRun: false });
 	}
 
 	return { results, duplicateClose };
@@ -96,7 +107,7 @@ export async function main() {
 	fs.writeFileSync('post-merge-batch-closeout.json', `${JSON.stringify(outcome, null, 2)}\n`);
 	console.log(JSON.stringify(outcome, null, 2));
 
-	const failed = outcome.results.filter((entry) => entry.status === 'fail');
+	const failed = outcome.results.filter((entry) => entry.status === 'fail' || entry.status === 'error');
 	if (failed.length > 0) process.exitCode = 1;
 }
 

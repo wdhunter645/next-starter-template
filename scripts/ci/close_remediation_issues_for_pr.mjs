@@ -62,10 +62,15 @@ export async function closeRemediationIssuesForPr({
 	mergeSha = '',
 	sourceIssue = '',
 	dryRun = false,
+	listOpenIssues,
+	requestFn = request,
 }) {
-	const openIssues = await paginateOpenRemediationIssues({ token, repository });
+	const openIssues = listOpenIssues
+		? await listOpenIssues({ token, repository })
+		: await paginateOpenRemediationIssues({ token, repository });
 	const matches = remediationIssuesForPr(openIssues, prNumber);
 	const closed = [];
+	const failed = [];
 
 	for (const issue of matches) {
 		if (dryRun) {
@@ -73,28 +78,42 @@ export async function closeRemediationIssuesForPr({
 			continue;
 		}
 
-		await request({
-			token,
-			repository,
-			path: `/issues/${issue.number}/comments`,
-			method: 'POST',
-			body: {
-				body: remediationCloseComment({ prNumber, mergeSha, sourceIssue }),
-			},
-		});
+		try {
+			await requestFn({
+				token,
+				repository,
+				path: `/issues/${issue.number}/comments`,
+				method: 'POST',
+				body: {
+					body: remediationCloseComment({ prNumber, mergeSha, sourceIssue }),
+				},
+			});
 
-		await request({
-			token,
-			repository,
-			path: `/issues/${issue.number}`,
-			method: 'PATCH',
-			body: { state: 'closed', state_reason: 'completed' },
-		});
+			await requestFn({
+				token,
+				repository,
+				path: `/issues/${issue.number}`,
+				method: 'PATCH',
+				body: { state: 'closed', state_reason: 'completed' },
+			});
 
-		closed.push({ number: issue.number });
+			closed.push({ number: issue.number });
+		} catch (error) {
+			console.error(`Failed to close remediation issue #${issue.number} for PR #${prNumber}:`, error);
+			failed.push({
+				number: issue.number,
+				message: error instanceof Error ? error.message : String(error),
+			});
+		}
 	}
 
-	return { prNumber: String(prNumber), scanned: openIssues.length, matched: matches.length, closed };
+	return {
+		prNumber: String(prNumber),
+		scanned: openIssues.length,
+		matched: matches.length,
+		closed,
+		failed,
+	};
 }
 
 export async function main() {
