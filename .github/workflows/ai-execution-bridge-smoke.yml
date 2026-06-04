@@ -79,6 +79,7 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           AI_EXECUTION_BRIDGE_RESULT_PATH: ai-execution-bridge-result.json
           AI_EXECUTION_BRIDGE_PLAN_PATH: ai-execution-bridge-plan.json
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
 
@@ -118,8 +119,6 @@ jobs:
             }
             console.log('Smoke plan OK:', plan.branchName);
           "
-        env:
-          GH_TOKEN: ${{ github.token }}
 
       - name: Close smoke issue with result
         if: always()
