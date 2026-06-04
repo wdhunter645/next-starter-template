@@ -21,6 +21,7 @@ This reference documents the controlled AI execution bridge introduced in PR #12
 |---|---|---|
 | `ai-execution-bridge.yml` | AI Execution Bridge | Operational (issue label trigger) |
 | `ensure-ai-build-label.yml` | Ensure AI Build Label | Operational (creates `ai-build` label on `main` when missing) |
+| `ai-execution-bridge-smoke.yml` | AI Execution Bridge Smoke Test | Operational (weekly + path-filtered `main` push; synthetic issue validation) |
 
 ## Trigger
 
@@ -70,3 +71,13 @@ OpenAI API execution and autonomous code generation remain disabled until a sepa
 - How-to: `docs/how-to/ops/controlled-ai-execution-bridge.md`
 - Issue template: `docs/templates/ai-build-issue-template.md`
 - Tests: `tests/ai-execution-bridge.test.mjs`
+
+## Smoke Test Cadence
+
+| Trigger | Schedule |
+|---|---|
+| `push` to `main` (path-filtered) | Bridge workflow, smoke workflow, ensure-label workflow, bridge scripts, or bridge tests |
+| `schedule` | Mondays 09:00 UTC |
+| `workflow_dispatch` | Operator rerun |
+
+The smoke workflow runs unit tests and a synthetic labeled-issue validation/plan check. It does not run on every unrelated merge to `main`.

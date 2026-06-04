@@ -1,0 +1,165 @@
+name: AI Execution Bridge Smoke Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/ai-execution-bridge.yml
+      - .github/workflows/ai-execution-bridge-smoke.yml
+      - .github/workflows/ensure-ai-build-label.yml
+      - scripts/ci/ai_execution_bridge_validate.mjs
+      - scripts/ci/ai_execution_bridge_prepare.mjs
+      - tests/ai-execution-bridge.test.mjs
+  schedule:
+    # Weekly safety net: Monday 09:00 UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: ai-execution-bridge-smoke
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run unit tests
+        run: npm test -- tests/ai-execution-bridge.test.mjs
+
+      - name: Create smoke issue
+        id: smoke_issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runId = context.runId;
+            const body = [
+              '## Approved Task',
+              'Automated smoke test: validate bridge scripts against a synthetic ai-build issue.',
+              '',
+              '## Scope',
+              'Smoke test only. No repository file changes.',
+              '',
+              '## Allowed Files',
+              '- docs/how-to/ops/controlled-ai-execution-bridge.md',
+              '',
+              '## Acceptance Criteria',
+              '- [ ] Validator returns passed.',
+              '- [ ] Plan JSON is produced.',
+              '',
+              '## Validation',
+              '- AI Execution Bridge Smoke Test workflow',
+              '',
+              `<!-- ai-execution-bridge-smoke-run:${runId} -->`,
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[smoke] AI execution bridge ${runId}`,
+              body,
+            });
+
+            core.setOutput('number', String(issue.data.number));
+
+      - name: Validate and prepare (synthetic labeled event)
+        env:
+          SMOKE_ISSUE_NUMBER: ${{ steps.smoke_issue.outputs.number }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          AI_EXECUTION_BRIDGE_RESULT_PATH: ai-execution-bridge-result.json
+          AI_EXECUTION_BRIDGE_PLAN_PATH: ai-execution-bridge-plan.json
+        run: |
+          set -euo pipefail
+
+          gh issue view "$SMOKE_ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" \
+            --json number,title,body > smoke-issue.json
+
+          node <<'NODE'
+          const fs = require('node:fs');
+          const issue = JSON.parse(fs.readFileSync('smoke-issue.json', 'utf8'));
+          const event = {
+            action: 'labeled',
+            label: { name: 'ai-build' },
+            issue: {
+              number: issue.number,
+              title: issue.title,
+              body: issue.body,
+            },
+          };
+          fs.writeFileSync('smoke-event.json', JSON.stringify(event));
+          NODE
+
+          GITHUB_EVENT_PATH=smoke-event.json node scripts/ci/ai_execution_bridge_validate.mjs
+
+          STATUS="$(node -e "const r=require('./ai-execution-bridge-result.json'); process.stdout.write(r.status || '')")"
+          if [ "$STATUS" != "passed" ]; then
+            echo "Smoke validation failed with status: $STATUS"
+            cat ai-execution-bridge-result.json
+            exit 1
+          fi
+
+          node scripts/ci/ai_execution_bridge_prepare.mjs
+
+          node -e "
+            const plan = require('./ai-execution-bridge-plan.json');
+            if (!plan.branchName || !plan.prTitle || plan.phase !== 'plan-only') {
+              throw new Error('Smoke plan JSON missing required fields');
+            }
+            console.log('Smoke plan OK:', plan.branchName);
+          "
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Close smoke issue with result
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          SMOKE_ISSUE_NUMBER: ${{ steps.smoke_issue.outputs.number }}
+        with:
+          script: |
+            const issueNumber = Number(process.env.SMOKE_ISSUE_NUMBER);
+            if (!issueNumber) return;
+
+            const fs = require('node:fs');
+            let summary = 'Smoke test finished. See workflow run for details.';
+            if (fs.existsSync('ai-execution-bridge-result.json')) {
+              const result = JSON.parse(fs.readFileSync('ai-execution-bridge-result.json', 'utf8'));
+              summary = [
+                '## AI execution bridge smoke test',
+                '',
+                `- Workflow run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+                `- Validation status: \`${result.status}\``,
+                `- Result: ${result.ok ? 'PASS' : 'FAIL'}`,
+              ].join('\n');
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: summary,
+            });
+
+            if (fs.existsSync('ai-execution-bridge-result.json')) {
+              const result = JSON.parse(fs.readFileSync('ai-execution-bridge-result.json', 'utf8'));
+              if (result.ok) {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  state: 'closed',
+                  state_reason: 'completed',
+                });
+              }
+            }
