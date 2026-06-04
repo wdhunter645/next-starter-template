@@ -16,6 +16,8 @@ const requiredFiles = [
   '.github/workflows/agent-governance.yml',
   'governance/ai/AGENT-GOVERNANCE.md',
   'ops/ai/CROSS-AGENT-OPERATING-RULES.md',
+  'docs/ops/ai/SHARED-AGENT-RULES.md',
+  'docs/ops/ai/CODEX-RULES.md',
 ];
 
 const requiredAgentText = [
@@ -26,6 +28,8 @@ const requiredAgentText = [
   '.agents/skills/lgfc-verification-closeout/SKILL.md',
   'governance/ai/AGENT-GOVERNANCE.md',
   'ops/ai/CROSS-AGENT-OPERATING-RULES.md',
+  'docs/ops/ai/SHARED-AGENT-RULES.md',
+  'docs/ops/ai/CODEX-RULES.md',
   '.agents/checks/agent-governance-check.mjs',
   '.github/workflows/agent-governance.yml',
 ];

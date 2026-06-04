@@ -65,8 +65,10 @@ Notes:
 Status: COMPLETE
 Notes:
 - `/Agent.md` present as agent entry/control file.
-- `/docs/ops/ai/AGENT-RULES.md` present.
+- `/docs/ops/ai/SHARED-AGENT-RULES.md` present (shared agent law index; PR #1269).
+- `/docs/ops/ai/CORE-RULES.md` present (detailed shared execution rules).
+- `/docs/ops/ai/CODEX-RULES.md` present (Codex-specific rules; PR #1269).
 - `/docs/ops/ai/CURSOR-RULES.md` / cursor rules governance present in repo history and operational use.
-- `/docs/ops/ai/CHATGPT-RULES.md` present.
+- `/docs/ops/ai/CHATGPT-RULES.md` present (Atlas control-plane rules; PR #1263 / #1269).
 - Erroneous duplicate folder `docs/ops/AI/` was removed during cleanup.
 - Cursor YAML / review workflow update is being handled in PR #544.

@@ -11,7 +11,7 @@ on:
     types: [created, edited, deleted]
 
 permissions:
-  pull-requests: read
+  pull-requests: write
   issues: write
   contents: read
 
