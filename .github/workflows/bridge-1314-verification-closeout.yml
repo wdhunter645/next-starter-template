@@ -1,0 +1,220 @@
+name: Bridge 1314 Verification Closeout
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/bridge-1314-verification-closeout.yml
+
+permissions:
+  issues: write
+  actions: write
+
+jobs:
+  verify-and-close:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Record verification evidence
+        id: evidence
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const checks = {
+              issue1288Closed: false,
+              issue1266Updated: false,
+              livePlanComment: false,
+              liveIssueNumber: null,
+            };
+
+            const i1288 = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 1288,
+            });
+            checks.issue1288Closed = i1288.data.state === 'closed';
+
+            const i1266 = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 1266,
+            });
+            checks.issue1266Updated = (i1266.data.body || '').startsWith('## Delivered (PR #1267)');
+
+            for (const issueNumber of [1316, 1322]) {
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                per_page: 100,
+              });
+              const hasPlan = comments.some((c) =>
+                (c.body || '').includes('## AI execution bridge — branch/PR plan ready'),
+              );
+              if (hasPlan) {
+                checks.livePlanComment = true;
+                checks.liveIssueNumber = issueNumber;
+                break;
+              }
+            }
+
+            core.setOutput('evidence', JSON.stringify(checks));
+
+      - name: Dispatch bridge for open live test #1316
+        if: fromJSON(steps.evidence.outputs.evidence).livePlanComment == false
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 1316,
+            });
+            if (issue.state !== 'open') {
+              core.info('Issue #1316 is not open; skipping dispatch.');
+              return;
+            }
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'ai-execution-bridge.yml',
+              ref: 'main',
+              inputs: { issue_number: '1316' },
+            });
+
+      - name: Wait for plan comment on #1316
+        if: fromJSON(steps.evidence.outputs.evidence).livePlanComment == false
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = 1316;
+            const marker = '## AI execution bridge — branch/PR plan ready';
+            let found = false;
+
+            for (let attempt = 1; attempt <= 24; attempt += 1) {
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                per_page: 100,
+              });
+              found = comments.some((c) => (c.body || '').includes(marker));
+              if (found) break;
+              core.info(`Waiting for plan comment (${attempt}/24)...`);
+              await new Promise((r) => setTimeout(r, 10000));
+            }
+
+            if (!found) {
+              core.setFailed('Live test #1316 did not receive branch/PR plan comment.');
+            }
+
+      - name: Refresh verification evidence
+        id: evidence_final
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const checks = {
+              issue1288Closed: false,
+              issue1266Updated: false,
+              livePlanComment: false,
+              liveIssueNumber: null,
+            };
+
+            const i1288 = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 1288,
+            });
+            checks.issue1288Closed = i1288.data.state === 'closed';
+
+            const i1266 = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 1266,
+            });
+            checks.issue1266Updated = (i1266.data.body || '').startsWith('## Delivered (PR #1267)');
+
+            for (const issueNumber of [1316, 1322]) {
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                per_page: 100,
+              });
+              const hasPlan = comments.some((c) =>
+                (c.body || '').includes('## AI execution bridge — branch/PR plan ready'),
+              );
+              if (hasPlan) {
+                checks.livePlanComment = true;
+                checks.liveIssueNumber = issueNumber;
+                break;
+              }
+            }
+
+            core.setOutput('evidence', JSON.stringify(checks));
+
+      - name: Update and close source issue #1314
+        uses: actions/github-script@v7
+        env:
+          EVIDENCE_JSON: ${{ steps.evidence_final.outputs.evidence }}
+        with:
+          script: |
+            const checks = JSON.parse(process.env.EVIDENCE_JSON);
+            const allPass =
+              checks.issue1288Closed && checks.issue1266Updated && checks.livePlanComment;
+
+            const body = [
+              '## Approved Task',
+              'Run one-shot Actions closeout: close #1288, update #1266 body, live ai-build label test.',
+              '',
+              '## Verification (automated)',
+              '',
+              `- [${checks.issue1288Closed ? 'x' : ' '}] #1288 closed`,
+              `- [${checks.issue1266Updated ? 'x' : ' '}] #1266 body updated`,
+              `- [${checks.livePlanComment ? 'x' : ' '}] Live test issue received bridge plan comment${
+                checks.liveIssueNumber ? ` (#${checks.liveIssueNumber})` : ''
+              }`,
+              '',
+              '## Scope',
+              'Workflow only.',
+              '',
+              '## Validation',
+              `- Bridge 1314 Verification Closeout workflow run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              allPass ? '- Result: **PASS** — all acceptance criteria met.' : '- Result: **FAIL** — see unchecked items above.',
+            ].join('\n');
+
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 1314,
+              body,
+            });
+
+            try {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: 1314,
+                name: 'status:failed',
+              });
+            } catch (error) {
+              if (error.status !== 404) core.info(error.message);
+            }
+
+            if (allPass) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: 1314,
+                labels: ['status:complete'],
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: 1314,
+                state: 'closed',
+                state_reason: 'completed',
+              });
+            } else {
+              core.setFailed('Not all acceptance criteria passed; #1314 left open.');
+            }

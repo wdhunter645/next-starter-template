@@ -188,7 +188,7 @@ jobs:
         with:
           script: |
             const issueNumber = Number(process.env.LIVE_ISSUE_NUMBER);
-            const marker = '## AI execution bridge';
+            const marker = '## AI execution bridge — branch/PR plan ready';
             const maxAttempts = 24;
             let found = false;
 
