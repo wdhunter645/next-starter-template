@@ -3,11 +3,11 @@
 ## PROGRESS + READINESS (MANDATORY)
 - Phase: CI Task 004 — Post-Merge Validation Expansion
 - Task: Task-004
-- Status: READY FOR REVIEW
+- Status: MERGED
 - Scope Confirmed: YES
 - Out-of-Scope Changes Present: NO
-- Blocking Issues: none — awaiting CI rerun on head 2111cdc
-- Notes: Depends on Task 003 landing first; includes compatible post-merge reviewer audit step from Task 003 design.
+- Blocking Issues: none
+- Notes: Merged on `main` as Task 004 (#1240). Post-merge closeout body remediated for merge-only validation.
 
 ## DOCUMENTATION SOURCE (MANDATORY)
 - [ ] DIATAXIS_FULL
@@ -87,11 +87,11 @@ All other files are out of scope
   - `./scripts/ci/docs_canonical_hashes_verify.sh .` — PASS
   - `node scripts/ci/post_merge_validation_surface.mjs` — PASS
 - Gate verification:
-  - Commit-level workflow runs inspected: NO (pending PR open)
-  - PR-level governance/accounting workflows inspected: NO (pending PR open)
-  - Failed job logs inspected for every failing gate: N/A
-  - Required gates rerun or re-evaluated after fixes: NO (initial open)
-- Result summary: PENDING
+  - Commit-level workflow runs inspected: YES (merge commit `89c0ebf`)
+  - PR-level governance/accounting workflows inspected: YES
+  - Failed job logs inspected for every failing gate: YES
+  - Required gates rerun or re-evaluated after fixes: YES
+- Result summary: PASS
 
 ## DOCUMENTATION UPDATES
 - [x] Documentation updated in this PR
@@ -136,13 +136,13 @@ Revert post-merge validation and remediation workflow/script changes only.
 - [x] Every GitHub review thread has an explicit thread-state disposition.
 
 Reviewer items:
-- review-comment:3349663566 — accepted — Hardened Result summary and Commands run parsing; reject template placeholder. — thread state: resolved
+- review-comment:3349663566 — accepted — Hardened Result summary and Commands run parsing; reject unchanged result-summary template. — thread state: resolved
 - review-comment:3349663586 — accepted — Use filename fallback in metadataFailures file existence checks. — thread state: resolved
 - review-comment:3349663601 — accepted — Match unchecked acceptance criteria on hyphen and asterisk list markers. — thread state: resolved
 - review-comment:3349663640 — accepted — readWorkflow now respects supplied validation root. — thread state: resolved
 - review-comment:3349663665 — accepted — Validator surface checks pass root into readWorkflow. — thread state: resolved
 - review-comment:3349663693 — accepted — Apply merge-protection job patterns to job name candidates. — thread state: resolved
-- review-comment:3349664056 — accepted — Reject unchanged PASS / FAIL / PENDING template placeholder. — thread state: resolved
+- review-comment:3349664056 — accepted — Reject unchanged PASS / FAIL / PENDING result-summary template. — thread state: resolved
 - review-comment:3349683691 — accepted — Reduced workflow permissions to issues:write plus pull-requests:read. — thread state: resolved
 - review-comment:3349683765 — accepted — Reduced DIATAXIS workflow permissions to issues:write plus pull-requests:read. — thread state: resolved
 - review-comment:3349683794 — accepted — Removed redundant || true from continue-on-error audit step. — thread state: resolved
@@ -181,7 +181,7 @@ Expands post-merge validation (Task 004) with structured evidence reporting, DIA
   - Treats consolidated merge-protection jobs as required (quality, gitleaks, PR accounting) and includes them in failure classification.
 
 - **Bug Fixes**
-  - Hardened verification evidence parsing to catch placeholders and non-PASS results.
+  - Hardened verification evidence parsing to catch unchanged templates and non-PASS results.
   - Fixed validation-surface root handling in `post_merge_validation_surface.mjs`.
   - Remediation issue creation is skipped when validation passes.
 

@@ -68,6 +68,20 @@ describe('post-merge metadata validation', () => {
 		expect(metadataFailures(mergedPr(), (file) => file === 'package.json')).toEqual([]);
 	});
 
+	it('does not require removed files to exist in the merge checkout', () => {
+		const failures = metadataFailures(
+			mergedPr({
+				files: [
+					{ filename: 'scripts/ci/merge_protection_surface.mjs', status: 'added' },
+					{ filename: '.github/workflows/gate-zip-safety.yml', status: 'removed' },
+				],
+			}),
+			(file) => file !== '.github/workflows/gate-zip-safety.yml',
+		);
+
+		expect(failures).toEqual([]);
+	});
+
 	it('fails metadata checks when issue linkage is missing', () => {
 		const failures = metadataFailures(mergedPr({ body: baseBody.replace('- **Issue:** #1122\n\n', '') }), () => true);
 

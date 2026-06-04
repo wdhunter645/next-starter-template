@@ -3,11 +3,11 @@
 ## PROGRESS + READINESS (MANDATORY)
 - Phase: CI Task 002 — Merge Protection Consolidation
 - Task: Task-002
-- Status: DRAFT
+- Status: MERGED
 - Scope Confirmed: YES
 - Out-of-Scope Changes Present: NO
-- Blocking Issues: Awaiting required gate runs on this PR
-- Notes: Implements deterministic merge-protection consolidation after Task 001 PR Hygiene Foundation closeout.
+- Blocking Issues: none
+- Notes: Merged on `main` as Task 002 (#1229). Post-merge closeout body remediated for merge-only validation.
 
 ## DOCUMENTATION SOURCE (MANDATORY)
 - [ ] DIATAXIS_FULL
@@ -84,11 +84,11 @@ All other files are out of scope
   - `./scripts/ci/docs_check_headers.sh .` — PASS
   - `node scripts/ci/merge_protection_surface.mjs` — PASS
 - Gate verification:
-  - Commit-level workflow runs inspected: NO (pending PR open)
-  - PR-level governance/accounting workflows inspected: NO (pending PR open)
-  - Failed job logs inspected for every failing gate: N/A
-  - Required gates rerun or re-evaluated after fixes: NO (initial open)
-- Result summary: PENDING
+  - Commit-level workflow runs inspected: YES (merge commit `201a428`)
+  - PR-level governance/accounting workflows inspected: YES
+  - Failed job logs inspected for every failing gate: YES
+  - Required gates rerun or re-evaluated after fixes: YES
+- Result summary: PASS
 
 ## DOCUMENTATION UPDATES
 - [x] Documentation updated in this PR

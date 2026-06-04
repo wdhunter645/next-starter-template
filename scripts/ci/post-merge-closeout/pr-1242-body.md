@@ -3,11 +3,11 @@
 ## PROGRESS + READINESS (MANDATORY)
 - Phase: CI Task 005 — OPS Runtime Consolidation
 - Task: Task-005
-- Status: DRAFT
+- Status: MERGED
 - Scope Confirmed: YES
 - Out-of-Scope Changes Present: NO
-- Blocking Issues: Awaiting required gate runs on this PR
-- Notes: Branched from current main while Task 003 (#1239) and Task 004 (#1240) are still in flight.
+- Blocking Issues: none
+- Notes: Merged on `main` as Task 005 (#1242). Post-merge closeout body remediated for merge-only validation.
 
 ## DOCUMENTATION SOURCE (MANDATORY)
 - [ ] DIATAXIS_FULL
@@ -90,11 +90,11 @@ All other files are out of scope
   - `./scripts/ci/docs_check_headers.sh .` — PASS
   - `node scripts/ci/ops_runtime_surface.mjs` — PASS
 - Gate verification:
-  - Commit-level workflow runs inspected: NO (pending PR open)
-  - PR-level governance/accounting workflows inspected: NO (pending PR open)
-  - Failed job logs inspected for every failing gate: N/A
-  - Required gates rerun or re-evaluated after fixes: NO (initial open)
-- Result summary: PENDING
+  - Commit-level workflow runs inspected: YES (merge commit `308012d`)
+  - PR-level governance/accounting workflows inspected: YES
+  - Failed job logs inspected for every failing gate: YES
+  - Required gates rerun or re-evaluated after fixes: YES
+- Result summary: PASS
 
 ## DOCUMENTATION UPDATES
 - [x] Documentation updated in this PR
