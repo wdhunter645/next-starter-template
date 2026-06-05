@@ -5,10 +5,14 @@ Authority Level: Controlled
 Owns: Mapping from LGFC implementation surfaces to authority documents and tracking issues
 Does Not Own: Route behavior, visual design, runtime implementation, or issue completion status
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Last Reviewed: 2026-05-14
+Last Reviewed: 2026-06-05
 ---
 
 # LGFC Implementation Coverage Map
+
+> **Non-authoritative for ops decisions (Program 1 Task 003):** This coverage map may
+> lag merged PR and GitHub issue truth. For current website as-built reconciliation,
+> use `docs/reference/website/lgfc-website-as-built-reconciliation.md`.
 
 ## Purpose
 

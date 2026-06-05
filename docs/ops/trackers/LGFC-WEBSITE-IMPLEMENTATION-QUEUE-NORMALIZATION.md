@@ -5,10 +5,16 @@ Authority Level: Operational Authority
 Owns: Website implementation queue normalization, issue lifecycle map, implementation gap analysis
 Does Not Own: Runtime implementation, production UI, CI/orchestration systems, design authority
 Canonical Reference: /docs/ops/trackers/IMPLEMENTATION-WORKLIST_Master.md
-Last Reviewed: 2026-05-28
+Last Reviewed: 2026-06-05
 ---
 
 # LGFC Website Implementation Queue Normalization
+
+> **Non-authoritative for ops decisions (Program 1 Task 003):** This tracker is a
+> transitional normalization snapshot. For current website as-built truth, use
+> `docs/reference/website/lgfc-website-as-built-reconciliation.md` and GitHub issue
+> state. Do not treat queue-head rows here as implementation authority when they
+> conflict with merged PR evidence.
 
 ## Purpose
 

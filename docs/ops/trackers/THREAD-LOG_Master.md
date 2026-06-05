@@ -5,10 +5,14 @@ Authority Level: Operational Authority
 Owns: Thread closeout records, implementation history, execution log
 Does Not Own: Design authority, governance rules, product requirements
 Canonical Reference: /docs/ops/trackers/THREAD-LOG_Master.md
-Last Reviewed: 2026-05-05
+Last Reviewed: 2026-06-05
 ---
 
 # LGFC Thread Log (Master)
+
+> **Non-authoritative for ops decisions (Program 1 Task 003):** Append-only thread
+> closeout history. Not a queue authority. For website as-built truth, use
+> `docs/reference/website/lgfc-website-as-built-reconciliation.md`.
 
 ------------------------------------------------------------------------
 
