@@ -6,7 +6,7 @@ Owns: Portfolio-level worklist for active and blocked LGFC program work
 Does Not Own: Individual issue bodies, PR content, or launch-gate authorization
 Canonical Reference: /docs/reference/pmo/lgfc-program-portfolio-model.md
 Related Issues: #1335, #1351
-Last Reviewed: 2026-06-05
+Last Reviewed: 2026-06-06
 ---
 
 # Program Portfolio Worklist
@@ -30,9 +30,9 @@ As of PR #1372 merge (2026-06-05), Program 1 Tasks 002–005 are **complete**.
 | Task 003 | #1341 | Website as-built reconciliation | Cursor | complete |
 | Task 004 | #1342 | Docs/DIATAXIS transition status | Cursor | complete |
 | Task 005 | #1343 | OPS monitoring snapshot | Cursor | complete |
-| Task 006 | #1344 | Operational health review | Atlas | active — `#1340`–`#1343` complete |
-| Task 007 | #1345 | Automation backlog classification | Atlas | blocked until #1344 closes |
-| Task 008 | #1346 | Program 2 launch gate | Atlas | final Program 1 gate |
+| Task 006 | #1344 | Operational health review | Cursor (impl) / Atlas (review) | active — `#1340`–`#1343` complete |
+| Task 007 | #1345 | Automation backlog classification | Cursor (impl) / Atlas (review) | blocked until #1344 closes |
+| Task 008 | #1346 | Program 2 launch gate | Atlas (sign-off) | final Program 1 gate |
 
 Task 005 closeout completed via PR #1372; `#1343` is closed. Task 006 (`#1344`) is
 the next eligible task for queue promotion after label reconciliation on `#1344`.

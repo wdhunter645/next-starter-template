@@ -6,7 +6,7 @@ Owns: Safe parallel read-only exploration vs one-implementer-per-task PR rules f
 Does Not Own: Agent routing configuration, GitHub label automation, or legacy issue modifications
 Canonical Reference: /docs/ops/pmo/critical-path.md
 Related Issues: #1335, #1339
-Last Reviewed: 2026-06-04
+Last Reviewed: 2026-06-06
 ---
 
 # PMO Parallel Agent Rules
@@ -95,6 +95,13 @@ Multiple agents may work in parallel when all of the following are true:
 Task `#1339` lists `agent:atlas` in the orchestrator issue; the program owner
 directed Cursor for implementation and Atlas for review. Implementation PRs for
 this task still reference `#1339` as the source issue.
+
+Tasks **006–008** list `Agent: atlas` in
+`program-1-phase1-wrapup-rollout.md` for synthesis, classification, and launch-gate
+**ownership**. That plan label does **not** authorize Atlas to open implementation
+PRs. Cursor still produces allowlisted file changes and PR bodies; Atlas reviews,
+records closeout on the task issue, and signs governance outcomes. Void PR `#1373`
+(Atlas implementation overlap on `#1344`) is superseded by a Cursor-authored PR.
 
 ## Rule 4 — Legacy Backlog Is Not Active Work
 
