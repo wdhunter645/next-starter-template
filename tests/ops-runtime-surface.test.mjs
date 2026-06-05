@@ -23,9 +23,19 @@ describe('OPS runtime surface inventory', () => {
     ]);
   });
 
+  it('records trigger class and verdict metadata for every runtime workflow', () => {
+    for (const entry of OPS_RUNTIME_SURFACE) {
+      expect(entry.triggerClass?.length, entry.file).toBeGreaterThan(0);
+      expect(entry.prMergeVerdict, entry.file).toBe('advisory');
+      expect(['advisory', 'soft-fail', 'fail-closed'], entry.file).toContain(entry.runtimeVerdict);
+      expect(entry.escalation, entry.file).toBeTruthy();
+    }
+  });
+
   it('renders runtime checklist text', () => {
     const checklist = renderOpsRuntimeChecklist();
     expect(checklist).toContain('OPS — Site Assessment');
     expect(checklist).toContain('ops_runtime_escalation.mjs');
+    expect(checklist).toContain('program-1-ops-monitoring-snapshot.md');
   });
 });

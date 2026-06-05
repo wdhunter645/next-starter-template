@@ -3,12 +3,22 @@ import path from 'node:path';
 
 const WORKFLOW_DIR = '.github/workflows';
 
+export const OPS_RUNTIME_TRIGGER_CLASSES = [
+  'schedule',
+  'main-push',
+  'manual',
+  'post-merge',
+];
+
 export const OPS_RUNTIME_SURFACE = [
   {
     file: 'ops-assess.yml',
     workflowName: 'OPS — Site Assessment',
     jobIds: ['assess'],
     escalation: 'assessment-failure',
+    triggerClass: ['schedule', 'main-push', 'manual'],
+    prMergeVerdict: 'advisory',
+    runtimeVerdict: 'soft-fail',
     notes: 'Route and page-marker health via npm run assess:ci.',
   },
   {
@@ -16,6 +26,9 @@ export const OPS_RUNTIME_SURFACE = [
     workflowName: 'OPS — Cloudflare Pages Auto-Retry',
     jobIds: ['retry-on-internal-error'],
     escalation: 'optional-recovery',
+    triggerClass: ['manual'],
+    prMergeVerdict: 'advisory',
+    runtimeVerdict: 'advisory',
     retryCap: 2,
     notes: 'Capped Cloudflare Pages retry helper; exhaustion is non-blocking.',
   },
@@ -24,6 +37,9 @@ export const OPS_RUNTIME_SURFACE = [
     workflowName: 'OPS — Production Audit',
     jobIds: ['prod_audit'],
     escalation: 'change-ops',
+    triggerClass: ['schedule', 'main-push', 'manual'],
+    prMergeVerdict: 'advisory',
+    runtimeVerdict: 'fail-closed',
     notes: 'Playwright production invariants with artifact preservation.',
   },
   {
@@ -31,6 +47,9 @@ export const OPS_RUNTIME_SURFACE = [
     workflowName: 'OPS — Main Change Monitor',
     jobIds: ['monitor-main-changes'],
     escalation: 'unapproved-main-change',
+    triggerClass: ['main-push', 'manual'],
+    prMergeVerdict: 'advisory',
+    runtimeVerdict: 'fail-closed',
     notes: 'Detects direct pushes to main outside merged PR flow.',
   },
   {
@@ -38,6 +57,9 @@ export const OPS_RUNTIME_SURFACE = [
     workflowName: 'OPS — Snapshot Backup',
     jobIds: ['repo_snapshot', 'cloudflare_pages_snapshot'],
     escalation: 'ops-runtime-failure',
+    triggerClass: ['schedule', 'main-push', 'manual'],
+    prMergeVerdict: 'advisory',
+    runtimeVerdict: 'fail-closed',
     notes: 'Preserves repo and Cloudflare Pages rollback evidence.',
   },
   {
@@ -45,6 +67,9 @@ export const OPS_RUNTIME_SURFACE = [
     workflowName: 'OPS — B2 S3 Smoke Test',
     jobIds: ['smoke-test'],
     escalation: 'ops-runtime-failure',
+    triggerClass: ['schedule', 'manual'],
+    prMergeVerdict: 'advisory',
+    runtimeVerdict: 'fail-closed',
     notes: 'Daily B2 connectivity smoke test before D1 sync.',
   },
   {
@@ -52,6 +77,9 @@ export const OPS_RUNTIME_SURFACE = [
     workflowName: 'OPS — B2 D1 Daily Sync',
     jobIds: ['smoke-test', 'sync'],
     escalation: 'ops-runtime-failure',
+    triggerClass: ['schedule', 'manual'],
+    prMergeVerdict: 'advisory',
+    runtimeVerdict: 'fail-closed',
     notes: 'Incremental B2 to D1 sync with pre-sync smoke test.',
   },
 ];
@@ -132,10 +160,14 @@ export function renderOpsRuntimeChecklist() {
   ];
 
   for (const entry of OPS_RUNTIME_SURFACE) {
-    lines.push(`- \`${entry.file}\` (${entry.workflowName}) — ${entry.notes}`);
+    const triggers = (entry.triggerClass || []).join(', ');
+    lines.push(
+      `- \`${entry.file}\` (${entry.workflowName}) — triggers: ${triggers}; PR merge: ${entry.prMergeVerdict}; runtime: ${entry.runtimeVerdict} — ${entry.notes}`,
+    );
   }
 
   lines.push('', 'Shared escalation helper: `scripts/ci/ops_runtime_escalation.mjs`');
+  lines.push('', 'Snapshot reference: `docs/ops/reports/program-1-ops-monitoring-snapshot.md`');
   return lines.join('\n');
 }
 

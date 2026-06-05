@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: CI and OPS workflow monitoring ownership, trigger classes, escalation paths for the LGFC CI redesign
 Does Not Own: Workflow implementation code, branch protection settings, product UX behavior
 Canonical Reference: /docs/reference/ci/lgfc-ci-as-built-reconciliation.md
-Related Issues: #1199, #1075, #1058, #1335, #1340
-Last Reviewed: 2026-06-04
+Related Issues: #1199, #1075, #1058, #1335, #1340, #1343
+Last Reviewed: 2026-06-05
 ---
 
 # CI and OPS Monitoring Ownership
@@ -25,6 +25,10 @@ Tasks 001–006 merged and Program 1 Task 002 CI closeout evidence is recorded.
 | Reviewer lifecycle | Repository maintainers | Implementation agent on active PR | Yes on protected CI scope only |
 | Post-merge validation | CI orchestration maintainers | Merge closeout agent | No for PR merge; yes for queue advancement |
 | OPS runtime | Platform operations | Scheduled/manual ops responder | No |
+
+Program 1 Task 005 snapshot (`docs/ops/reports/program-1-ops-monitoring-snapshot.md`)
+documents trigger class, escalation path, and advisory vs fail-closed verdict for
+each workflow in `scripts/ci/ops_runtime_surface.mjs`.
 
 ## Monitoring Triggers
 
@@ -59,6 +63,7 @@ Tasks 001–006 merged and Program 1 Task 002 CI closeout evidence is recorded.
 
 ## Related References
 
+- **Program 1 OPS monitoring snapshot:** `docs/ops/reports/program-1-ops-monitoring-snapshot.md`
 - As-built reconciliation: `docs/reference/ci/lgfc-ci-as-built-reconciliation.md`
 - Merge protection surface: `docs/reference/ci/merge-protection-surface.md`
 - PR hygiene foundation: `docs/reference/ci/pr-hygiene-foundation.md`
