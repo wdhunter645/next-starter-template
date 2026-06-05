@@ -25,13 +25,14 @@ Tasks 001 through 005 merged and Task 006 completes documentation reconciliation
 | Workflow inventory | `docs/reference/ci/workflow-inventory.md` |
 | Guardrails map | `.github/CI_GUARDRAILS_MAP.md` |
 
-Workflow file count on `main`: 60 files under `.github/workflows/` as of 2026-06-04
-(inventory table in `workflow-inventory.md` remains stale; rewrite deferred to
-Program 2 phase-2 Task 005 under `#1058`).
+Workflow file count on `main`: 60 `.yml` workflow files under `.github/workflows/` as of
+2026-06-04 (excludes non-`.yml` files such as `update-docs.md`; inventory table in
+`workflow-inventory.md` remains stale; rewrite deferred to Program 2 phase-2 Task 005
+under `#1058`).
 
 ## Implementation Status by Task
 
-| Task | Issue | Status on `main` | Primary evidence |
+| Task | issue | Status on `main` | Primary evidence |
 |---|---|---|---|
 | Task 001 PR Hygiene Foundation | #1131 | Merged | PR #1189; `docs/reference/ci/pr-hygiene-foundation.md` |
 | Task 002 Merge Protection Consolidation | #1226 | Merged | PR #1229; `docs/reference/ci/merge-protection-surface.md` |
@@ -179,7 +180,7 @@ orchestrator issue for phase-2 Task 001 when this closeout evidence is on `main`
 
 ### Redesign merge evidence (Tasks 001–006)
 
-| Task | Issue | Merge PR |
+| Task | issue | Merge PR |
 |---|---|---|
 | 001 PR Hygiene | `#1131` | `#1189` |
 | 002 Merge Protection | `#1226` | `#1229` |
@@ -211,7 +212,7 @@ GitHub issues are **not** closed by this documentation task. Atlas applies comme
 from `program-1-task-002-ci-closeout-evidence.md` after Task 002 implementation PR
 merge and post-merge verification.
 
-| Priority | Issues needing Atlas closeout action |
+| Priority | issues needing Atlas closeout action |
 |---|---|
 | Open | `#1011`, `#1009`, `#1199` |
 | Verify comments | `#1075` (already closed), closed redesign tasks `#1196`–`#1198`, `#1226`, `#1116`, `#1247` |

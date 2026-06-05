@@ -12,7 +12,7 @@ Source Issue: 1075
 Related Program Issue: 1058
 Canonical Reference: /docs/reference/ci/lgfc-ci-as-built-reconciliation.md
 Related Issues: #1058, #1075
-Last Reviewed: 2026-06-03
+Last Reviewed: 2026-06-04
 ---
 
 # issue 1075 CI Phase 2 Closeout and Maintenance Rollout
@@ -75,7 +75,7 @@ Type: ci
 Agent: cursor
 Priority: 1
 Depends On: none
-Status: satisfied-by-program-1-task-002
+Status: completed
 Satisfied By: Program 1 Task 002 (`#1340`) in `program-1-phase1-wrapup-rollout.md`
 Supersedes Issues: #1011, #1009, #1116, #1247, #1196, #1197, #1198, #1199, #1226
 Allowed Files:
@@ -197,13 +197,9 @@ Rollback:
 When this plan merges to `main`, the issue factory should:
 
 1. Skip all Tasks 001–006 in `issue-1075-ci-redesign-rollout.md` because they are terminal.
-2. Create Task 001 in this plan if no `lgfc-task-id:issue-1075-ci-phase2-closeout-rollout:Task-001`
-   marker exists. `create-issues.mjs` labels the first created issue `status:queued` only when
-   **no** open orchestrator-labeled issue exists (`openOrchestratorIssueExists()`); otherwise
-   new issues receive `status:blocked` even for Task 001.
-3. Task 001 closeout must close stale phase-1 orchestrator task issues (#1196–#1199, #1226) so
-   phase-2 maintenance issues are not blocked behind abandoned redesign queue entries.
-4. Create Task 002–005 issues with `status:blocked` while any other orchestrator issue remains
+2. Skip Task 001 in this plan because `Status: completed` (satisfied by Program 1 Task 002
+   `#1340`); do not create `lgfc-task-id:issue-1075-ci-phase2-closeout-rollout:Task-001`.
+3. Create Task 002–005 issues with `status:blocked` while any other orchestrator issue remains
    open, per the same queue guard.
 
 The CI orchestration engine JSON state remains the phase-1 record; phase-2 execution is driven by this markdown plan through `orchestrator-issue-factory.yml`.

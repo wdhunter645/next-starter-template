@@ -27,7 +27,7 @@ Authoritative as-built reference: `/docs/reference/ci/lgfc-ci-as-built-reconcili
 
 Assessment date: **2026-06-04** (before Task 002 implementation PR merge).
 
-| Issue | Title (short) | GitHub state | Closeout action |
+| issue | Title (short) | GitHub state | Closeout action |
 | --- | --- | --- | --- |
 | `#1075` | CI-ORCH-01 program umbrella | **Closed** (2026-06-04) | Verify closure comment cites reconciliation doc; no reopen |
 | `#1058` | CI workflow normalization umbrella | **Open** | Keep open — Program 2 CI maintenance |
@@ -55,7 +55,7 @@ Program 2 CI maintenance continues under `#1058` via phase-2 plan **Tasks 002–
 
 ## Redesign Task Merge Evidence
 
-| Redesign task | Issue | Merge PR | Merge date (approx.) |
+| Redesign task | issue | Merge PR | Merge date (approx.) |
 | --- | --- | --- | --- |
 | Task 001 PR Hygiene | `#1131` | `#1189` | 2026-06-02 |
 | Task 002 Merge Protection | `#1226` | `#1229` | 2026-06-03 |
@@ -126,7 +126,7 @@ Superseded by CI redesign post-merge validation and trusted reviewer evidence do
 (PRs #1240, #1248/#1251). Program 1 Task 002 closeout recorded in lgfc-ci-as-built-reconciliation.md.
 ```
 
-## `#1058` — remain open
+### `#1058` — remain open
 
 Add comment when Task 002 PR merges:
 
