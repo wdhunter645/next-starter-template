@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: LGFC CI redesign as-built reconciliation, design-vs-as-built variances, deferred implementation items, monitoring ownership map
 Does Not Own: GitHub branch protection UI settings, workflow runtime code, secret configuration
 Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related Issues: #1199, #1075, #1058
-Last Reviewed: 2026-06-03
+Related Issues: #1199, #1075, #1058, #1335, #1340
+Last Reviewed: 2026-06-04
 ---
 
 # LGFC CI As-Built Reconciliation
@@ -25,7 +25,9 @@ Tasks 001 through 005 merged and Task 006 completes documentation reconciliation
 | Workflow inventory | `docs/reference/ci/workflow-inventory.md` |
 | Guardrails map | `.github/CI_GUARDRAILS_MAP.md` |
 
-Workflow file count on `main`: 54 files under `.github/workflows/`.
+Workflow file count on `main`: 60 files under `.github/workflows/` as of 2026-06-04
+(inventory table in `workflow-inventory.md` remains stale; rewrite deferred to
+Program 2 phase-2 Task 005 under `#1058`).
 
 ## Implementation Status by Task
 
@@ -128,20 +130,92 @@ Detailed monitoring map: `docs/ops/ci-monitoring-ownership.md`.
 
 ## Open issue assessment and program decision
 
-Assessment date: 2026-06-03 after Tasks 001–006 merged on `main`.
+Assessment date: 2026-06-04 (Program 1 Task 002 closeout documentation).
 
-| issue | Recommendation | Rationale |
+| issue | GitHub state (2026-06-04) | Closeout disposition | Rationale |
+|---|---|---|---|
+| `#1075` project: CI-ORCH-01 | Closed | Verify evidence comment | Redesign complete; closed 2026-06-04 |
+| `#1058` CI workflow normalization | Open | **Keep open** | Program 2 CI maintenance umbrella (phase-2 Tasks 002–005) |
+| `#1247` Trusted reviewer evidence gate design | Closed | Verify superseded-by | Docs merged via #1248/#1251 |
+| `#1116` CI remediation issue generation | Closed | Verify superseded-by | Absorbed into post-merge validation (#1240) |
+| `#1011` Reviewer lifecycle transition tracking | Open | Close after Atlas approval | Superseded by Task 003 (#1239) |
+| `#1009` Post-merge reviewer audit parser verification | Open | Close after Atlas approval | Superseded by Task 003 lifecycle gate |
+| `#1196`–`#1198`, `#1226` redesign tasks | Closed | Verify merge evidence | Merged PRs #1239, #1240, #1242, #1229 |
+| `#1199` Task 006 as-built docs | Open | Close after Atlas approval | Merged PR #1244 |
+
+Decision unchanged: **Do not create a new CI redesign project.** Continue remaining
+work under `#1058` through `issue-1075-ci-phase2-closeout-rollout.md` Tasks 002–005
+after Program 1 Task 008 launch gate.
+
+Recommended issue comments: `docs/ops/program-1-task-002-ci-closeout-evidence.md`
+
+## Program 1 Task 002 — CI As-Built Closeout
+
+| Field | Value |
+|---|---|
+| Program | Program 1 — Phase 1 Wrap-Up (`#1335`) |
+| Task issue | `#1340` — CI As-Built Closeout |
+| Closeout documentation date | 2026-06-04 |
+| Task 001 dependency | PMO registry merged PR `#1347` (merge `c5a4c3f763d9`) |
+| Task 002 implementation PR | Pending Atlas review (this deliverable) |
+
+### Closeout summary
+
+Program 1 Task 002 records CI redesign as-built closeout evidence only. No workflow
+YAML or runtime behavior changes are introduced in this task.
+
+This section satisfies the closeout intent of
+`issue-1075-ci-phase2-closeout-rollout.md` **Task 001**. Do not create a duplicate
+orchestrator issue for phase-2 Task 001 when this closeout evidence is on `main`.
+
+### Evidence references
+
+| Evidence | Location |
+|---|---|
+| As-built reconciliation (this document) | `docs/reference/ci/lgfc-ci-as-built-reconciliation.md` |
+| Closeout comments and issue ledger | `docs/ops/program-1-task-002-ci-closeout-evidence.md` |
+| PMO critical path | `docs/ops/pmo/critical-path.md` |
+| Phase-1 redesign rollout (completed) | `docs/ops/implementation-plans/issue-1075-ci-redesign-rollout.md` |
+
+### Redesign merge evidence (Tasks 001–006)
+
+| Task | Issue | Merge PR |
 |---|---|---|
-| `#1075` project: CI-ORCH-01 | Close in Phase 2 Task 001 | Redesign implementation complete; program umbrella should close with evidence |
-| `#1058` CI workflow normalization | Keep open | Owns deferred maintenance backlog (inventory rewrite, drift gate, legacy retirement, branch protection UI) |
-| `#1247` Trusted reviewer evidence gate design | Close in Phase 2 Task 001 | Docs merged via #1248/#1251; superseded as standalone open work |
-| `#1116` CI remediation issue generation | Close in Phase 2 Task 001 | Runtime merged via #1128/#1240; function absorbed into post-merge validation |
-| `#1011` Reviewer lifecycle transition tracking | Close in Phase 2 Task 001 | Superseded by Task 003 (#1239) |
-| `#1009` Post-merge reviewer audit parser verification | Close in Phase 2 Task 001 | Superseded by Task 003 simulation harness and lifecycle gate |
+| 001 PR Hygiene | `#1131` | `#1189` |
+| 002 Merge Protection | `#1226` | `#1229` |
+| 003 Reviewer Lifecycle | `#1196` | `#1239` |
+| 004 Post-Merge Validation | `#1197` | `#1240` |
+| 005 OPS Runtime | `#1198` | `#1242` |
+| 006 As-built Documentation | `#1199` | `#1244` |
 
-Decision: **Do not create a new CI redesign project.** Close `#1075` after phase-2
-Task 001 and continue remaining work under `#1058` through
-`issue-1075-ci-phase2-closeout-rollout.md` Tasks 002–005.
+Automatic post-merge closeout automation: PRs `#1282`, `#1298`. Batch remediation:
+`#1271`, `#1294`, `#1312`.
+
+### Program 2 handoff — `#1058` maintenance (not executed in Task 002)
+
+After Program 1 Task 008 launch gate, execute phase-2 plan Tasks **002–005** under
+`issue-1075-ci-phase2-closeout-rollout.md`:
+
+| Phase-2 task | Focus |
+|---|---|
+| Task 002 | Branch protection reconciliation |
+| Task 003 | Drift gate ZIP deduplication |
+| Task 004 | Legacy workflow retirement |
+| Task 005 | Workflow inventory table rewrite |
+
+Orchestrator issues `#1273`–`#1276` remain blocked until Program 2 authorization.
+
+### GitHub issue closeout status
+
+GitHub issues are **not** closed by this documentation task. Atlas applies comments
+from `program-1-task-002-ci-closeout-evidence.md` after Task 002 implementation PR
+merge and post-merge verification.
+
+| Priority | Issues needing Atlas closeout action |
+|---|---|
+| Open | `#1011`, `#1009`, `#1199` |
+| Verify comments | `#1075` (already closed), closed redesign tasks `#1196`–`#1198`, `#1226`, `#1116`, `#1247` |
+| Keep open | `#1058` |
 
 ## Website Program Boundary (Out of Scope)
 

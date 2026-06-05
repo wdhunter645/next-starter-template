@@ -41,15 +41,17 @@ website tracker reconciliation, or runtime changes outside each task allowlist.
 - CI redesign Tasks 001–006 are merged on `main` (PRs #1189, #1229, #1239, #1240,
   #1242, #1244).
 - Phase-1 tasks in `issue-1075-ci-redesign-rollout.md` are marked `Status: completed`.
-- Open GitHub issues (#1196–#1199, #1226, #1011, #1009, #1116, #1247, `#1075`) remain
-  open despite merged implementation; closeout is still required.
+- Open GitHub issues (#1199, #1011, #1009) may remain open until Program 1 Task 002
+  closeout comments are applied by Atlas. `#1075` closed 2026-06-04.
 - Website work under `#1053` is outside this CI program. Ops tracker files under
   `docs/ops/trackers/**` may be stale relative to GitHub issue state.
 
 ## Intended Final State
 
-- `#1075` is closed with evidence pointing to `lgfc-ci-as-built-reconciliation.md`.
-- Superseded and stale CI redesign issues are closed with explicit rationale.
+- `#1075` is closed with evidence pointing to `lgfc-ci-as-built-reconciliation.md`
+  (Program 1 Task 002 closeout section).
+- Superseded and stale CI redesign issues are closed with explicit rationale
+  (Atlas-approved comments from `docs/ops/program-1-task-002-ci-closeout-evidence.md`).
 - `#1058` remains open and owns maintenance Tasks 002–005 through orchestration.
 - Issue factory creates only phase-2 tasks; phase-1 tasks are skipped as terminal.
 
@@ -73,6 +75,8 @@ Type: ci
 Agent: cursor
 Priority: 1
 Depends On: none
+Status: satisfied-by-program-1-task-002
+Satisfied By: Program 1 Task 002 (`#1340`) in `program-1-phase1-wrapup-rollout.md`
 Supersedes Issues: #1011, #1009, #1116, #1247, #1196, #1197, #1198, #1199, #1226
 Allowed Files:
 - `docs/reference/ci/**`

@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: CI and OPS workflow monitoring ownership, trigger classes, escalation paths for the LGFC CI redesign
 Does Not Own: Workflow implementation code, branch protection settings, product UX behavior
 Canonical Reference: /docs/reference/ci/lgfc-ci-as-built-reconciliation.md
-Related Issues: #1199, #1075
-Last Reviewed: 2026-06-03
+Related Issues: #1199, #1075, #1058, #1335, #1340
+Last Reviewed: 2026-06-04
 ---
 
 # CI and OPS Monitoring Ownership
@@ -14,7 +14,7 @@ Last Reviewed: 2026-06-03
 ## Purpose
 
 This operations reference documents monitoring ownership after CI redesign
-Tasks 001–006 merged and phase-2 closeout begins.
+Tasks 001–006 merged and Program 1 Task 002 CI closeout evidence is recorded.
 
 ## Ownership Model
 
