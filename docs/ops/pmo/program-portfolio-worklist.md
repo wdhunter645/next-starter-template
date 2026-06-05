@@ -26,15 +26,14 @@ As of PR #1350 merge, Program 1 Task 002 (CI as-built closeout) is **complete**.
 |---|---|---|---|---|
 | Task 001 | #1339 | PMO registry and critical path | Atlas | complete |
 | Task 002 | #1340 | CI as-built closeout | Cursor | complete |
-| Task 003 | #1341 | Website as-built reconciliation | Cursor | blocked until #1340 closes |
+| Task 003 | #1341 | Website as-built reconciliation | Cursor | next eligible task |
 | Task 004 | #1342 | Docs/DIATAXIS transition status | Cursor | blocked until #1341 closes |
 | Task 005 | #1343 | OPS monitoring snapshot | Cursor | blocked until #1342 closes |
 | Task 006 | #1344 | Operational health review | Atlas | blocked until #1340-#1343 complete |
 | Task 007 | #1345 | Automation backlog classification | Cursor | blocked until #1344 closes |
 | Task 008 | #1346 | Program 2 launch gate | Atlas | final Program 1 gate |
 
-Task 003 becomes eligible for queue promotion after `#1340` closeout is verified.
-Task 002 closeout completed via PR #1350; `#1340` is closed.
+Task 002 closeout completed via PR #1350; `#1340` is closed. Task 003 (`#1341`) is the next eligible task for queue promotion.
 
 ## Read-Only Parallel Work
 
