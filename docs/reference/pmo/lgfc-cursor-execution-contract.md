@@ -90,6 +90,18 @@ After a PR exists, detailed review material belongs in the PR body, PR comments,
 
 Post-merge closeout evidence remains governed by `/docs/ops/pmo/github-issue-closeout-protocol.md`.
 
+## Bridge Reply Path Rule
+
+The default reply path for Atlas/Cursor handoffs is the same surface where the handoff was delivered.
+
+- If Atlas/Bill sends the Cursor prompt in chat, Cursor replies in chat.
+- If Atlas posts a bounded bridge handoff on a GitHub issue, Cursor replies on that issue using the required bridge reply format.
+- If the handoff occurs on a PR, Cursor replies on the PR.
+
+Cursor must not move a response to a different surface unless Atlas/Bill explicitly requests it.
+
+Issue comments remain opt-in for each handoff. The PMO Issue-Comment Bridge permits bounded issue comments, but does not make issue comments the default reply path for all Cursor work.
+
 ## Required Bridge Comment Format
 
 Atlas bridge comments should use this shape:
