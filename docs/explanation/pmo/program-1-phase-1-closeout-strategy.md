@@ -28,7 +28,7 @@ The goal is not to build new product features. The goal is to establish current 
 7. Automation backlog classification.
 8. Program 2 launch gate.
 
-## Issue Disposition Principle
+## issue disposition principle
 
 Open issues are evidence until classified. Each issue needs a clear rationale before any state change.
 

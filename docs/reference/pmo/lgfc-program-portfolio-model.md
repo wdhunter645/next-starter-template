@@ -28,9 +28,9 @@ Every work item must fit this chain.
 | Level | Owns | Example |
 |---|---|---|
 | Program | Outcome family and launch gates | Program 1 Phase 1 Wrap-Up |
-| Child Project | Bounded workstream | CI closeout, website reconciliation, OPS snapshot |
+| child project | Bounded workstream | CI closeout, website reconciliation, OPS snapshot |
 | Task | Single executable unit | #1340 CI As-Built Closeout |
-| Issue | GitHub execution contract | one source issue per task |
+| issue | GitHub execution contract | one source issue per task |
 | PR | File changes only | one implementation PR per task |
 | Verification | Checks and review evidence | CI, docs checks, Atlas review |
 | Closeout | Issue comments, closure, queue advancement | post-merge only |

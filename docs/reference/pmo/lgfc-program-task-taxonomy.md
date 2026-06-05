@@ -37,13 +37,13 @@ A valid task has:
 - explicit closeout rules;
 - no hidden child task sequence unless the source issue says it is an umbrella.
 
-## Singular Task vs Umbrella Issue
+## singular task vs umbrella issue
 
-| Issue shape | Creates child tasks? | Example |
+| issue shape | Creates child tasks? | Example |
 |---|---:|---|
-| Program umbrella | Yes, through approved plan | #1335 |
+| program umbrella issue | Yes, through approved plan | #1335 |
 | Task issue | No | #1339, #1340 |
-| Maintenance umbrella | Later, after launch gate | #1058 |
+| maintenance umbrella issue | Later, after launch gate | #1058 |
 | Legacy/stale issue | No; close or supersede with evidence | #1009, #1011 |
 
 ## Rule

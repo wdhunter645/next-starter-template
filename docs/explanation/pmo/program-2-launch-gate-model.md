@@ -21,7 +21,7 @@ Program 2 should start only after Program 1 records current truth across CI, Web
 
 Program 2 launch requires:
 
-- Task 002 CI closeout;
+- Task 002 CI closeout (complete via PR #1350; `#1058` remains Program 2 CI maintenance umbrella);
 - Task 003 website as-built reconciliation;
 - Task 004 DIATAXIS transition status;
 - Task 005 OPS monitoring snapshot;

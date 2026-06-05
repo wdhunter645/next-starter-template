@@ -13,23 +13,64 @@ Last Reviewed: 2026-06-05
 
 ## Preconditions
 
-- Atlas or Bill approved PR creation.
-- Local diff matches the reviewed packet.
+- Atlas or Bill approved PR creation, or Bill/Atlas provided an explicit PR-opening
+  instruction or approved PR template.
+- Local diff matches the reviewed packet (when a packet was required).
 - Changed files are inside the source issue allowlist.
 - Validation results are ready for PR body disclosure.
+- Cursor will not merge, close issues, or mutate issue state when opening the PR.
+
+## Steps
+
+1. Confirm the source issue number and file-touch allowlist match the local diff.
+2. Prepare the PR body from `/.github/pull_request_template.md`.
+3. Include all mandatory governance fields listed under **PR Body Requirements**.
+4. Allow the intent labeler to apply the repo-canonical intent for the changed
+   paths (for example `docs-only` when all files are under `docs/**`).
+5. Open the PR unassigned when authorized; do not merge.
+6. Report PR number, branch, head SHA, changed files, validation, and disclosures.
 
 ## PR Body Requirements
 
-Include:
+The PR body must explicitly include:
 
-- source issue number;
-- intent label;
-- scope statement;
-- changed-file allowlist;
-- validation results;
-- repo-wide failure disclosures, if any;
-- issue closeout timing;
-- statement that GitHub issue closeout occurs after merge unless specifically authorized.
+- **Source issue line** — for example `- **Issue:** #NNNN`
+- **Documentation source classification** — one of:
+  - `DIATAXIS_FULL`
+  - `DIATAXIS_ROUTED`
+  - `LEGACY_FALLBACK`
+- **Design source of truth** — canonical document path(s) used for the change
+- **File-touch allowlist** — exact paths expected in the diff
+- **Intent label** — the single intent label matching changed paths; for docs-only
+  PRs under `docs/**`, use `docs-only` (do not force `change-ops` for PMO semantics)
+- **Change summary** — what changed and why
+- **Build/test/verification** — commands run and results
+- **Documentation updates** — which docs changed and any tracker updates
+- **Acceptance criteria** — checklist mapped to the source issue
+- **Required pre-review self-check** — confirm allowlist, headers, and gates
+- **Scope disclosures** — docs-only, no workflow/runtime changes, known out-of-scope
+  validation failures, etc.
+- **Post-merge issue disposition** — when applicable: comment-only, close after
+  merge, or defer to Atlas; state that GitHub issue closeout occurs after merge
+  unless specifically authorized
+
+## Validation
+
+Before opening the PR, run the validation commands named in the source issue. When
+repo-wide checks fail only on known pre-existing out-of-scope files, disclose that
+in the PR body without fixing unrelated paths.
+
+## Stop Conditions
+
+Stop and report instead of opening a PR when:
+
+- no primary source issue exists or more than one source issue is claimed;
+- changed files fall outside the allowlist;
+- mandatory governance fields cannot be completed honestly;
+- validation fails on a touched file;
+- issue closure or relabeling is required before merge;
+- Atlas has not reviewed the packet and Bill/Atlas has not authorized direct PR
+  creation.
 
 ## After Opening
 
@@ -42,4 +83,5 @@ Head SHA:
 Changed files:
 Validation:
 Known disclosures:
+Intent label:
 ```
