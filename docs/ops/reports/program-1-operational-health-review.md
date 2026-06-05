@@ -6,7 +6,7 @@ Owns: Program 1 Task 006 operational health review, cross-track P0/P1/P2 finding
 Does Not Own: GitHub issue state changes, workflow behavior changes, or Program 2 launch authorization
 Canonical Reference: /docs/ops/implementation-plans/program-1-phase1-wrapup-rollout.md
 Related issues: #1344, #1335, #1058, #1132, #1255
-Last Reviewed: 2026-06-05
+Last Reviewed: 2026-06-06
 ---
 
 # Program 1 Operational Health Review
@@ -45,7 +45,7 @@ Live signal capture date: **2026-06-05** (post Task 005 merge `05784fa`).
 | Workflow file count | **60** `*.yml` files under `.github/workflows/` | `find .github/workflows -name '*.yml' \| wc -l` on `main` |
 | Workflow inventory doc | **54** workflows recorded | `docs/reference/ci/workflow-inventory.md` (stale as of 2026-06-03) |
 | Open post-merge-failure issues | **34** open | GitHub search `label:post-merge-failure is:open` |
-| Program 1 queue | Tasks 002–005 closed complete; `#1344` carries both `status:blocked` and `status:implementation` | Issue labels on `#1340`–`#1345` |
+| Program 1 queue | Tasks 002–005 closed complete; `#1344` carries both `status:blocked` and `status:implementation` | issue labels on `#1340`–`#1345` |
 | Open CI redesign closeout orphans | `#1011`, `#1009`, `#1199` still open per Task 002 evidence | `docs/ops/program-1-task-002-ci-closeout-evidence.md` |
 | DIATAXIS repo-wide header check | Fails on pre-existing template only | Task 004 disclosure; changed files pass per-file checks |
 | OPS runtime inventory | 7 workflows in `OPS_RUNTIME_SURFACE`; 5 audit gaps recorded | Task 005 snapshot gap register |
@@ -80,7 +80,7 @@ recommended follow-up issue slug for Program 2 or Program 3 disposition.
 
 | ID | Finding | Surface | Evidence | Recommended slug |
 |---|---|---|---|---|
-| H-004 | **Workflow inventory drift** — inventory doc claims 54 workflows; repository has 60 YAML workflows | CI | `workflow-inventory.md` vs live count; `lgfc-ci-as-built-reconciliation.md` deferral note | `#1276` — Phase 2 Task 005 workflow inventory table rewrite |
+| H-004 | **Workflow inventory drift** — inventory doc claims 54 workflows; repository has 60 YAML workflows | CI | `docs/reference/ci/workflow-inventory.md` vs live count; `docs/reference/ci/lgfc-ci-as-built-reconciliation.md` deferral note | `#1276` — Phase 2 Task 005 workflow inventory table rewrite |
 | H-005 | **Duplicate nightly assessment workflows** — `assess-nightly.yml` and `ops-assess.yml` overlap at 02:00 UTC | OPS | Task 005 gap register; both workflows on `main` | `#1275` — Phase 2 Task 004 legacy workflow retirement |
 | H-006 | **Website tracker vs GitHub lifecycle drift** — merged T-task evidence conflicts with stale queue snapshots and open legacy issues | Website | `lgfc-website-as-built-reconciliation.md` (T21–T23, #943–#1017 disposition); stale tracker banners | `#1255` — Website program umbrella (Phase 0 reconciliation batch) |
 | H-007 | **Post-merge closeout two-PR pattern** — body remediation lands via follow-on PR; automatic closeout validates wrong PR number | CI | Task 004/005 closeout chain `#1368`–`#1371`; `scripts/ci/post-merge-closeout/pr-*-body.md` pattern | `#1058` — CI Phase 2 post-merge redesign (same program as H-001) |
@@ -94,16 +94,16 @@ recommended follow-up issue slug for Program 2 or Program 3 disposition.
 | H-010 | **Manual-only Cloudflare Pages retry** — no automatic hook on deploy failure | OPS | Task 005 gap register; `ops-cf-pages-retry.yml` trigger class | `#1058` — OPS automation candidate (Task 007 input) |
 | H-011 | **Launch-readiness e2e not scheduled** — specs exist; no scheduled CI workflow | OPS / Website | Task 005 gap register; T50 queued under `#1112` | `#1112` — T50 launch readiness (Program 2 QA track) |
 | H-012 | **Design-compliance OPS audit absent from runtime surface validator** — inventory drift between ops docs and `ops_runtime_surface.mjs` | OPS | Task 005 gap register; `ops-design-compliance-audit.yml` | `#1058` — extend OPS runtime inventory or document exclusion |
-| H-013 | **PMO portfolio worklist lag** — worklist still listed Task 003 as next eligible after Tasks 002–005 merged | Governance | `docs/ops/pmo/program-portfolio-worklist.md` (pre–Task 006) | `#1335` — program umbrella maintenance (corrected in this task) |
-| H-014 | **Program 1 queue label conflict on `#1344`** — simultaneous `status:blocked` and `status:implementation` | Governance | GitHub issue `#1344` labels 2026-06-05 | `#1335` — queue advancement automation or maintainer reconcile |
+| H-013 | **PMO portfolio worklist lag** — worklist still listed Task 003 as next eligible after Tasks 002–005 merged | Governance | `docs/ops/pmo/program-portfolio-worklist.md` (pre–Task 006) | `#1345` — Task 007 automation backlog (PMO portfolio sync candidate) |
+| H-014 | **Program 1 queue label conflict on `#1344`** — simultaneous `status:blocked` and `status:implementation` | Governance | GitHub issue `#1344` issue labels 2026-06-05 | `#1058` — Program 2 orchestration maintenance (queue label reconciliation) |
 
 ## Program 2 vs Program 3 Routing Summary
 
 | Program | Primary findings | Count |
 |---|---|---|
-| **Program 2** (`#1058`, `#1255`, `#1273`–`#1276`, `#1112`) | H-001 through H-007, H-010 through H-012 | 10 |
+| **Program 2** (`#1058`, `#1255`, `#1273`–`#1276`, `#1112`, `#1345`) | H-001 through H-007, H-010 through H-014 | 12 |
 | **Program 3** (`#1132`) | H-008, H-009 | 2 |
-| **Program 1 governance** (`#1335`, `#1346`) | H-013, H-014; P0 waivers if any | 2 |
+| **Program 1 launch gate** (`#1346`) | P0 waivers only (H-001 through H-003) | — |
 
 Task 007 (`#1345`) should expand H-010, H-012, and automation opportunities into
 the formal automation backlog. Task 008 (`#1346`) must address P0 items or record
@@ -114,7 +114,10 @@ explicit waivers before Program 2 authorization.
 Task 006 validation (same as issue `#1344`):
 
 ```bash
-./scripts/ci/docs_check_headers.sh docs/ops/reports/program-1-operational-health-review.md docs/ops/pmo/program-portfolio-worklist.md
+./scripts/ci/docs_check_headers.sh \
+  docs/ops/reports/program-1-operational-health-review.md \
+  docs/ops/pmo/program-portfolio-worklist.md \
+  docs/ops/pmo/parallel-agent-rules.md
 ./scripts/ci/docs_canonical_hashes_verify.sh .
 ```
 

@@ -19,7 +19,9 @@ Provide a compact worklist for Cursor and Atlas so each task can reference durab
 
 As of PR #1372 merge (2026-06-05), Program 1 Tasks 002–005 are **complete**.
 `#1058` remains open as the Program 2 CI maintenance umbrella. Task 006
-(`#1344`) is the active synthesis task once queue labels reconcile.
+(`#1344`) implementation is **in review** on PR #1374; the source issue retains
+`status:blocked` and `status:implementation` until post-merge closeout reconciles
+queue labels.
 
 ## Active Program 1 Sequence
 
@@ -30,12 +32,13 @@ As of PR #1372 merge (2026-06-05), Program 1 Tasks 002–005 are **complete**.
 | Task 003 | #1341 | Website as-built reconciliation | Cursor | complete |
 | Task 004 | #1342 | Docs/DIATAXIS transition status | Cursor | complete |
 | Task 005 | #1343 | OPS monitoring snapshot | Cursor | complete |
-| Task 006 | #1344 | Operational health review | Cursor (impl) / Atlas (review) | active — `#1340`–`#1343` complete |
+| Task 006 | #1344 | Operational health review | Cursor (impl) / Atlas (review) | in review (PR #1374) — `#1344` `status:blocked` + `status:implementation` until closeout |
 | Task 007 | #1345 | Automation backlog classification | Cursor (impl) / Atlas (review) | blocked until #1344 closes |
 | Task 008 | #1346 | Program 2 launch gate | Atlas (sign-off) | final Program 1 gate |
 
-Task 005 closeout completed via PR #1372; `#1343` is closed. Task 006 (`#1344`) is
-the next eligible task for queue promotion after label reconciliation on `#1344`.
+Task 005 closeout completed via PR #1372; `#1343` is closed. Task 006 (`#1344`)
+implementation PR #1374 is open for Atlas review; queue labels on `#1344` reconcile
+after post-merge verification and issue closeout.
 
 ## Read-Only Parallel Work
 
