@@ -5,7 +5,8 @@ Authority Level: Operational Authority
 Owns: DIÁTAXIS transition scope, target structure, worklist, pre/post PR operating model
 Does Not Own: Canonical design authority; implementation specs; folder intent rules
 Canonical Reference: /docs/ops/OPERATING_MANUAL.md
-Last Reviewed: 2026-03-27
+Related Issues: #1342, #1132
+Last Reviewed: 2026-06-05
 ---
 
 # LGFC — DIÁTAXIS TRANSITION & GOVERNANCE MODEL
@@ -174,3 +175,24 @@ The transition is successful when:
 - DIÁTAXIS docs become the primary execution surface
 - merged-state validation catches contradictions quickly
 - folder purpose remains stable over time
+
+## 11. Program 1 Phase 1 Status (Task 004)
+
+Program 1 Task 004 (`#1342`) added a **status-only** transition report. It does
+**not** execute legacy moves or retirements.
+
+| Deliverable | Path |
+|---|---|
+| Transition status report | `docs/reports/program-1-diataxis-transition-status.md` |
+| Legacy root mapping table | `docs/reference/DIATAXIS-MAPPING.md` |
+| Legacy retirement policy | `docs/ops/pmo/diataxis-legacy-retirement-policy.md` |
+
+Known Phase 1 truth on `main`:
+
+- DIATAXIS skeleton enforced (~274 `.md` under `docs/`)
+- Legacy live roots remain: `ops/ai/`, `governance/ai/`, `PROMPTS/`
+- Split tracker authority routed to website as-built reconciliation and master worklist
+- Full migration execution deferred to Program 3 (`#1132`) unless promoted
+
+Agents must use DIATAXIS paths as current authority during transition. See the status
+report for recommended canonical targets when split agent paths conflict.

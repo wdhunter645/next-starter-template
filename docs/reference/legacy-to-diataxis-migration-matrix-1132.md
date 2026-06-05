@@ -5,8 +5,8 @@ Authority Level: supporting
 Owns: legacy-to-DIATAXIS migration planning for project #1132
 Does Not Own: implementation code or archival execution
 Canonical Reference: docs/reference/documentation-gap-analysis-1132.md
-Related issues: #1132, #1134
-Last Reviewed: 2026-05-29
+Related issues: #1132, #1134, #1342
+Last Reviewed: 2026-06-05
 ---
 
 # Legacy to DIATAXIS Migration Matrix
@@ -14,6 +14,11 @@ Last Reviewed: 2026-05-29
 ## Purpose
 
 Define how legacy documentation is evaluated and migrated into the repository documentation structure.
+
+Program 1 Task 004 (`#1342`) populated legacy root rows in
+`docs/reference/DIATAXIS-MAPPING.md` and recorded Phase 1 status in
+`docs/reports/program-1-diataxis-transition-status.md`. This matrix still owns
+evaluation rules; execution remains Program 3 unless promoted.
 
 | Legacy State | Action | Destination |
 |---|---|---|
@@ -37,3 +42,17 @@ Define how legacy documentation is evaluated and migrated into the repository do
 - No duplicate production definitions.
 - Legacy material preserved when historically valuable.
 - Migration decisions documented before execution.
+
+## Phase 1 status (Program 1 Task 004)
+
+Legacy roots audited for Phase 1 closeout:
+
+| Legacy root | Mapping status | Execution |
+|---|---|---|
+| `docs/ops/ai/` | Migrated | Retain canonical agent rules |
+| `ops/ai/` | Mapped | Deferred Program 3 — cross-agent file move |
+| `governance/ai/` | Mapped | Deferred Program 3 — governance standard rewrite |
+| `PROMPTS/` | Mapped | Deferred Program 3 — route to `docs/ops/ai/` and retire |
+| Split trackers | Mapped | Retain with routing to as-built reconciliation |
+
+Authoritative row-level table: `docs/reference/DIATAXIS-MAPPING.md`.
