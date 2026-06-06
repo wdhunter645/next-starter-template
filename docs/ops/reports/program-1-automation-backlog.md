@@ -50,8 +50,8 @@ This task is **classification only**.
 
 ## Backlog
 
-| ID | Title | Rationale | Effort | Target program | Proposed child project | Dependency notes |
-|---|---|---:|:---:|---:|---|---|
+| id | title | rationale | effort | target program | proposed child project | dependency notes |
+|---|---|---|---|---|---|---|
 | A-001 | OPS assess hardening | Task 005 and H-002 show `ops-assess.yml` can soft-fail because the assess step uses `continue-on-error`; scheduled health may look green while assessment failed. | M | 2 | OPS hardening | Requires Program 2 launch gate; choose fail-closed behavior or an explicit soft-fail reporting contract before workflow edits. |
 | A-002 | `assess-nightly` retirement | Task 005 and H-005 show `assess-nightly.yml` overlaps `ops-assess.yml` at 02:00 UTC and is outside the runtime surface inventory. | M | 2 | OPS hardening / CI maintenance | Depends on A-001 coverage proof and legacy workflow retirement sequencing under `#1058`; do not retire until `ops-assess` is canonical. |
 | A-003 | Cloudflare deploy health and retry automation | Task 005, H-010, and the CI as-built deferrals show Cloudflare Pages retry is manual-only and preview/deploy health is not fully automated. | M | 2 | OPS hardening | Requires a program-owner decision between automatic retry hook, deploy-health check, or accepted manual runbook; may need Cloudflare signal availability and secrets review. |
