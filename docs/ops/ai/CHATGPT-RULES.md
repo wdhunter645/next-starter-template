@@ -50,6 +50,8 @@ Required startup surfaces:
 
 For LGFC work, the term **Google services** means only the current LGFC-used Google service set: Gmail, Google Calendar, Google Contacts, and Google Drive. It does not mean all Google products or imply access to unrelated Google products such as Google Cloud, YouTube, Analytics, Search Console, Photos, Keep, Tasks, or Admin unless a separate connected tool explicitly exists and is verified in the current session.
 
+GitHub remains the finalized LGFC authority for repository issues, Pull Requests, gates, merged documentation, and closeout evidence. Google Docs and other Drive-hosted working artifacts are draft/startup working surfaces only when their Google Drive access is verified; they do not replace repository-owned authority.
+
 Startup reporting must distinguish:
 
 - **available** — the tool surface is connected and usable in the current session;
