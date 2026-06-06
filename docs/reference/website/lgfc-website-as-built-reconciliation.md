@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: LGFC website Phase 1 as-built reconciliation, design-vs-shipped variances, tracker non-authority guidance, and Program 2 website follow-up slugs
 Does Not Own: Runtime implementation code, GitHub issue state changes, or #1255 program execution
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Related Issues: #1341, #1255, #1053, #1335
-Last Reviewed: 2026-06-05
+Related Issues: #1341, #1255, #1053, #1335, #1394
+Last Reviewed: 2026-06-06
 ---
 
 # LGFC Website As-Built Reconciliation
@@ -54,6 +54,10 @@ sole ops reference.
 
 GitHub issue state and merged PR evidence supersede tracker queue status when they
 conflict.
+
+Program 2 Phase 0 queue reconciliation (2026-06-06):
+[`docs/ops/reports/program-2-website-phase0-reconciliation.md`](../../ops/reports/program-2-website-phase0-reconciliation.md)
+supersedes T43–T50 tracker queue snapshots for planning authority under `#1255`.
 
 ## Intended Final State
 
