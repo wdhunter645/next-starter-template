@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: Program 2 Website Phase 0 issue queue reconciliation for #1394 under #1255
 Does Not Own: GitHub issue closure, label mutation, runtime implementation, workflow changes, or Program 2 website build issue creation
 Canonical Reference: /docs/reference/website/lgfc-website-as-built-reconciliation.md
-Related Issues: #1394, #1255, #1256, #1258, #1259, #1053
+Related issues: #1394, #1255, #1256, #1258, #1259, #1053
 Last Reviewed: 2026-06-06
 ---
 
@@ -58,9 +58,9 @@ conflict. This task performs no GitHub mutations.
   / Editorial Inventory.
 - No new website build or implementation issues are created by this task.
 
-## Program and Child Project Status
+## Program and child project status
 
-| Issue | Current role | Observed state | Phase 0 disposition |
+| issue | Current role | Observed state | Phase 0 disposition |
 |---|---|---|---|
 | `#1255` | Website Implementation and Content Operations umbrella | Open; active website program | **Confirmed active website program master.** All retained website work routes under this umbrella. |
 | `#1256` | Content Strategy / Editorial Inventory | Open; active website child project | **Confirmed current and next child project to activate.** This is the default next Program 2 website project. |
@@ -86,9 +86,9 @@ Each old or stale issue is classified into one of these Phase 0 dispositions:
   still present, but any build issue must wait for the relevant child project plan and
   owner authorization.
 
-## Old Website Issue Reconciliation
+## Old Website issue reconciliation
 
-| Issue(s) | Program 1 as-built evidence | Current GitHub signal | Phase 0 classification | Disposition |
+| issue(s) | Program 1 as-built evidence | Current GitHub signal | Phase 0 classification | Disposition |
 |---|---|---|---|---|
 | `#943` T21 FAQ page, `#946` T22 Ask intake, `#947` T23-E Events page | Public route baseline includes `/faq` and `/ask`; stale legacy issues are called out for disposition rather than implementation authority | Open with `status:post-merge-verify` labels | **Duplicate/obsolete candidate for later owner-approved closeout** | Preserve any useful requirements, then comment or close only with owner approval. Event/admin deltas, if any, route through `#1258` rather than reviving `#947` as standalone authority. |
 | `#1013` T30 FanClub shell, `#1014` T31 profile/member card, `#1015` T32 library/memorabilia, `#1016` T33 social wall, `#1017` T34 homepage D1 wiring | As-built report marks T30-T34 as merged, with `#1017` tied to PR `#1101` tracker closeout | Open with `status:post-merge-verify` labels | **Already satisfied by merged evidence** | Treat as issue-lifecycle drift. Later closeout comments or label cleanup may be owner-approved, but this task does not bulk-close them. |
@@ -104,7 +104,7 @@ Each old or stale issue is classified into one of these Phase 0 dispositions:
 | `#1127` T49 audit/reporting systems | As-built report queued T49 under operations/admin backlog | Open with `status:failed` and stale draft/post-merge labels | **Unresolved implementation gap requiring future child issue** | Retain under `#1258`. Future work needs an owner-approved child issue with exact audit/reporting scope and validation. |
 | `#1112` T50 launch readiness QA and production validation suite | As-built report routes T50 to launch readiness and `#1259` QA | Closed with `status:complete` | **Superseded by existing Program 2 child project `#1259`** | Keep `#1259` as the QA / production validation master. Do not create a replacement T50 issue during Phase 0. |
 
-## Next Authorized Website Child Project
+## Next Authorized Website child project
 
 The next website child project to activate after Phase 0 is:
 
@@ -121,7 +121,7 @@ created.
 `#1258` Website Operations Admin and `#1259` Website QA / Production Validation remain
 queued until the program owner advances them under `#1255`.
 
-## No New Build Issues Created
+## No New Build issues created
 
 This Phase 0 task creates **no** website build, implementation, migration, workflow,
 public route, admin route, runtime configuration, credential, or QA execution issues.
