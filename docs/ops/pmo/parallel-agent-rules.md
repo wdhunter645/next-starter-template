@@ -33,8 +33,10 @@ This document does not own:
 
 ## Current Known Truth
 
-- Program 1 Task `#1339` is the only active implementation task (`status:pr-draft`).
-- Tasks `#1340`–`#1346` are `status:blocked`.
+- Program 1 Tasks `#1339`–`#1345` are **complete** on `main`.
+- Task `#1346` (Program 2 launch gate) is the active governance task; human sign-off
+  in `docs/ops/reports/program-2-launch-gate.md` is pending.
+- Tasks `#1340`–`#1346` require queue promotion before implementation PRs when blocked.
 - Legacy orchestrator issues remain open; agents must not treat them as active work
   authority.
 - Operating convention for this program: **Cursor implements**, **Atlas reviews**
@@ -54,7 +56,8 @@ This document does not own:
 | One primary agent named on the task issue | Splitting one task across agents without PMO exception |
 | File changes within the task allowlist only | Changes under blocked task allowlists |
 
-**Active task (Program 1):** `#1339` until merge and queue advancement.
+**Active task (Program 1):** `#1346` (Task 008 launch gate) until merge, post-merge
+verification, and human sign-off recorded.
 
 **Do not** open implementation PRs for `#1340`–`#1346` until each task is promoted
 to `status:queued` / `status:pr-draft`.

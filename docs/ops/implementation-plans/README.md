@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: Implementation plan format for orchestrated GitHub execution
 Does Not Own: Product design, route behavior, visual design, or platform architecture
 Canonical Reference: /docs/reference/architecture/orchestration-model.md
-Last Reviewed: 2026-06-04
+Last Reviewed: 2026-06-06
 ---
 
 # Implementation Plans
@@ -24,6 +24,8 @@ Related PMO documents:
 
 - `/docs/ops/pmo/critical-path.md` — serial queue and track rules
 - `/docs/ops/pmo/parallel-agent-rules.md` — read-only parallel vs one implementer per task
+
+Program 1 Task 008 launch gate (when signed): `/docs/ops/reports/program-2-launch-gate.md`
 
 ## Purpose
 

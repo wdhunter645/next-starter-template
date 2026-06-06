@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: Serial vs parallel critical-path rules for PMO-orchestrated work across CI, Website, Docs, and OPS tracks
 Does Not Own: Orchestrator queue implementation code, individual task acceptance criteria, or legacy issue closure actions
 Canonical Reference: /docs/ops/pmo/program-registry.md
-Related Issues: #1335, #1339
-Last Reviewed: 2026-06-04
+Related Issues: #1335, #1346
+Last Reviewed: 2026-06-06
 ---
 
 # PMO Critical Path
@@ -38,10 +38,11 @@ This document does not own:
   `status:blocked`.
 - A one-time **PMO bootstrap exception** promoted `#1339` to `status:queued` while
   legacy orchestrator issues remain open for evidence preservation.
-- Program 1 tasks `#1340`–`#1346` are blocked until upstream tasks complete and
-  queue advancement runs.
+- Program 1 Tasks `#1339`–`#1345` are **complete** on `main`.
+- Task `#1346` (launch gate) is the final Program 1 implementation slot; PR `#1382`
+  erroneously closed `#1346` after worklist hygiene only — reopened for Task 008.
 - Program 2 plans and tasks (including `#1273`–`#1276`) remain blocked until Task 008
-  launch-gate sign-off.
+  records **human program-owner sign-off** in `program-2-launch-gate.md`.
 
 ## Intended Final State
 

@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: PMO program registry, child-project mapping, and authoritative execution chain for LGFC orchestrated work
 Does Not Own: Implementation plan task definitions, orchestrator workflow code, product design, or legacy issue disposition actions
 Canonical Reference: /docs/reference/architecture/orchestration-model.md
-Related Issues: #1335, #1339, #1345
+Related Issues: #1335, #1339, #1346
 Last Reviewed: 2026-06-06
 ---
 
@@ -58,9 +58,10 @@ Critical-path and serial queue rules: `/docs/ops/pmo/critical-path.md`
 
 ## Current Known Truth
 
-- Program 1 umbrella issue `#1335` is open. Tasks `#1339`–`#1346` exist from
-  `program-1-phase1-wrapup-rollout.md`; Task `#1345` now owns the automation
-  backlog classification at `docs/ops/reports/program-1-automation-backlog.md`.
+- Program 1 umbrella issue `#1335` is open. Tasks `#1339`–`#1345` are **complete**.
+  Task `#1346` (Program 2 launch gate) is active for sign-off documentation;
+  PR `#1382` closed `#1346` prematurely after worklist-only hygiene — `#1346` was
+  reopened for Task 008 deliverable `docs/ops/reports/program-2-launch-gate.md`.
 - Task `#1339` (PMO registry) was promoted under a **one-time bootstrap exception**
   to establish governance before legacy backlog disposition.
 - Legacy orchestrator issues (website T-tasks, CI phase-2 blocked tasks `#1273`–`#1276`,
@@ -81,7 +82,7 @@ Critical-path and serial queue rules: `/docs/ops/pmo/critical-path.md`
 
 | Field | Value |
 | --- | --- |
-| Status | **Active** |
+| Status | **Active** — Task 008 launch gate in progress |
 | Owner | Atlas (governance), Cursor (implementation tasks) |
 | Umbrella issue | `#1335` |
 | Implementation plan | `docs/ops/implementation-plans/program-1-phase1-wrapup-rollout.md` |
@@ -118,7 +119,7 @@ authorize Program 2 only after launch-gate sign-off.
 | --- | --- |
 | Status | **Blocked** until Program 1 Task 008 sign-off |
 | Owner | Program owner (human sign-off) + Atlas (planning) |
-| Gate document | `docs/ops/reports/program-2-launch-gate.md` (created by Task 008) |
+| Gate document | `docs/ops/reports/program-2-launch-gate.md` (Task 008; sign-off pending human approval) |
 
 ### Purpose
 

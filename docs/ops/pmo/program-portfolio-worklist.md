@@ -17,17 +17,16 @@ Provide a compact worklist for Cursor and Atlas so each task can reference durab
 
 ## Current State Note
 
-As of PR #1375 merge (2026-06-06), Program 1 Tasks 001–007 are **complete**.
-`#1058` remains open as the Program 2 CI maintenance umbrella. Task 008
-(`#1346`) — Program 2 launch gate — is the **final Program 1 task** and remains
-`status:blocked` until queue advancement promotes it for Atlas sign-off work.
-
-Evidence on `main`:
+As of Task 008 implementation (2026-06-06), Program 1 Tasks 001–007 are **complete**.
+Task 008 (`#1346`) launch gate documentation is in progress on branch
+`docs/task-008-program-2-launch-gate`. PR `#1382` previously closed `#1346` after
+worklist-only hygiene; `#1346` was **reopened** for the full launch gate deliverable.
 
 | Task | Merge PR | Primary deliverable |
 |---|---|---|
 | 006 | `#1374` | `docs/ops/reports/program-1-operational-health-review.md` |
 | 007 | `#1375` | `docs/ops/reports/program-1-automation-backlog.md` |
+| 008 | (pending) | `docs/ops/reports/program-2-launch-gate.md` |
 
 ## Active Program 1 Sequence
 
@@ -40,11 +39,12 @@ Evidence on `main`:
 | Task 005 | #1343 | OPS monitoring snapshot | Cursor | complete |
 | Task 006 | #1344 | Operational health review | Cursor (impl) / Atlas (review) | complete — PR `#1374` |
 | Task 007 | #1345 | Automation backlog classification | Cursor (impl) / Atlas (review) | complete — PR `#1375` |
-| Task 008 | #1346 | Program 2 launch gate | Atlas (sign-off) | blocked — next eligible after `#1345` closeout |
+| Task 008 | #1346 | Program 2 launch gate | Atlas (sign-off) | in progress — launch gate doc; human sign-off pending |
 
-Task 007 closeout completed via PR #1375; `#1345` is closed. Task 008 (`#1346`)
-requires queue promotion before implementation PRs; launch gate deliverable:
-`docs/ops/reports/program-2-launch-gate.md`.
+Task 007 closeout completed via PR #1375; `#1345` is closed. Task 008 (`#1346`) was
+reopened after erroneous closeout from PR `#1382`; launch gate deliverable:
+`docs/ops/reports/program-2-launch-gate.md`. Human sign-off remains pending in that
+document before Program 2 activation is effective.
 
 ## Read-Only Parallel Work
 
