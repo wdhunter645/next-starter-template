@@ -128,7 +128,7 @@ is approved by **Bill**.
 **May `#1335` be closed after Task 008 completion?** **Yes**, after both conditions:
 
 1. This launch-gate PR merges and `#1385` closes complete with evidence.
-2. **Bill** replaces `PENDING` sign-off entries below with approver name and ISO date.
+2. **Bill** records sign-off below with approver name and ISO date.
 
 Do **not** close `#1335` in the Task 008 implementation PR; close only after merge and
 Bill sign-off.
