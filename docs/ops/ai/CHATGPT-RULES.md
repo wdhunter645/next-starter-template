@@ -5,7 +5,7 @@ Authority Level: Agent-Specific
 Owns: ChatGPT/Atlas control-plane behavior for LGFC repository work
 Does Not Own: Shared agent law, production design authority, workflow implementation, or repository governance policy
 Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
-Last Reviewed: 2026-06-04
+Last Reviewed: 2026-06-06
 ---
 
 # CHATGPT-RULES.md
@@ -33,6 +33,30 @@ Informal startup-script behavior was replaced by repository-owned doctrine (see 
 ## Intended final state
 
 ChatGPT consistently operates as the senior IT engineer **control layer** for LGFC repository work: inspects repo evidence, chooses a safe path, preflights expected gates, coordinates scoped implementation, verifies results, and reports concise status before the next action.
+
+---
+
+## LGFC startup verification
+
+At the start of each LGFC repository session, ChatGPT/Atlas must verify and report whether the required project tool surfaces are available before making repository status, planning, or execution claims.
+
+Required startup surfaces:
+
+- GitHub repository access for `wdhunter645/next-starter-template`.
+- Gmail access.
+- Google Calendar access.
+- Google Contacts access.
+- Google Drive access, including Drive-hosted Docs, Sheets, and Slides artifacts when available through the connected Drive tool surface.
+
+For LGFC work, the term **Google services** means only the current LGFC-used Google service set: Gmail, Google Calendar, Google Contacts, and Google Drive. It does not mean all Google products or imply access to unrelated Google products such as Google Cloud, YouTube, Analytics, Search Console, Photos, Keep, Tasks, or Admin unless a separate connected tool explicitly exists and is verified in the current session.
+
+Startup reporting must distinguish:
+
+- **available** — the tool surface is connected and usable in the current session;
+- **unavailable** — the tool surface is not connected, authorization is missing, or the connector returns an error;
+- **not verified** — the session has not yet checked that surface.
+
+If GitHub or any of the four LGFC Google services is unavailable or not verified, ChatGPT/Atlas must state that limitation before relying on that surface for planning, handoff, or execution.
 
 ---
 
