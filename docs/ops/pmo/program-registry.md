@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: PMO program registry, child-project mapping, and authoritative execution chain for LGFC orchestrated work
 Does Not Own: Implementation plan task definitions, orchestrator workflow code, product design, or legacy issue disposition actions
 Canonical Reference: /docs/reference/architecture/orchestration-model.md
-Related Issues: #1335, #1339, #1345
+Related Issues: #1335, #1339, #1345, #1346, #1385
 Last Reviewed: 2026-06-06
 ---
 
@@ -59,16 +59,18 @@ Critical-path and serial queue rules: `/docs/ops/pmo/critical-path.md`
 ## Current Known Truth
 
 - Program 1 umbrella issue `#1335` is open. Tasks `#1339`–`#1346` exist from
-  `program-1-phase1-wrapup-rollout.md`; Task `#1345` now owns the automation
-  backlog classification at `docs/ops/reports/program-1-automation-backlog.md`.
+  `program-1-phase1-wrapup-rollout.md`; Tasks 001-007 deliverables exist, and
+  Task 008 (`#1346` / source issue `#1385`) owns the pending Program 2 launch
+  gate at `docs/ops/reports/program-2-launch-gate.md`.
 - Task `#1339` (PMO registry) was promoted under a **one-time bootstrap exception**
   to establish governance before legacy backlog disposition.
 - Legacy orchestrator issues (website T-tasks, CI phase-2 blocked tasks `#1273`–`#1276`,
   failed `#1089`, and others) remain open for evidence preservation. Program 1
   Tasks 006–007 classify health findings and automation backlog disposition; they
   do not authorize bulk issue creation or closure.
-- Program 2 implementation plans must not move to `issues-created` until Program 1
-  Task 008 launch-gate sign-off.
+- Task 006 P0 findings H-001, H-002, and H-003 are adopted into Program 2
+  remediation and are not waived; Program 2 implementation plans must not move to
+  `issues-created` until Bill approves the launch gate and the report is merged.
 
 ## Intended Final State
 
@@ -81,7 +83,7 @@ Critical-path and serial queue rules: `/docs/ops/pmo/critical-path.md`
 
 | Field | Value |
 | --- | --- |
-| Status | **Active** |
+| Status | **Active - pending Task 008 launch-gate approval and merge** |
 | Owner | Atlas (governance), Cursor (implementation tasks) |
 | Umbrella issue | `#1335` |
 | Implementation plan | `docs/ops/implementation-plans/program-1-phase1-wrapup-rollout.md` |
@@ -116,29 +118,30 @@ authorize Program 2 only after launch-gate sign-off.
 
 | Field | Value |
 | --- | --- |
-| Status | **Blocked** until Program 1 Task 008 sign-off |
+| Status | **Blocked** until Program 1 Task 008 Bill approval and merge |
 | Owner | Program owner (human sign-off) + Atlas (planning) |
-| Gate document | `docs/ops/reports/program-2-launch-gate.md` (created by Task 008) |
+| Gate document | `docs/ops/reports/program-2-launch-gate.md` (pending Bill approval) |
 
 ### Purpose
 
 Execute Phase 2 build and hardening work across authorized child projects after
 Phase 1 evidence and PMO rules are in place.
 
-### Planned child projects (not yet authorized)
+### Authorized child projects (blocked until launch-gate approval)
 
 | Child project | Umbrella / plan | Preconditions |
 | --- | --- | --- |
-| CI maintenance | `#1058`, `issue-1075-ci-phase2-closeout-rollout.md` Tasks 002–005 | Program 1 Task 002 closeout complete; launch gate signed |
-| Website completion | `#1255` | Program 1 Task 003 reconciliation complete; launch gate signed |
-| Docs completion | Program 1 Task 004/007 outputs | Launch gate signed |
-| OPS hardening | Program 1 Task 005/007 outputs | Launch gate signed |
-| Automation / agent orchestration | Program 1 Task 007 backlog | Launch gate signed |
+| CI maintenance | `#1058`, `issue-1075-ci-phase2-closeout-rollout.md` Tasks 002–005 | Bill-approved launch gate merged; H-003 closeout hygiene sequenced immediate/early; H-001 stabilization scheduled before dependent CI work relies on post-merge closeout stability |
+| Website completion | `#1255` | Bill-approved launch gate merged; Program 1 Task 003 reconciliation remains the as-built reference |
+| Docs completion | Program 1 Task 004/007 outputs | Bill-approved launch gate merged; Program 3 `#1132` remediation remains deferred unless promoted |
+| OPS hardening | Program 1 Task 005/007 outputs | Bill-approved launch gate merged; H-002 hardening sequenced before OPS health signals are treated as reliable |
+| Automation / agent orchestration | Program 1 Task 007 backlog | Bill-approved launch gate merged; H-001 closeout-chain stabilization scheduled before dependent automation |
 
 ### Activation rule
 
 No Program 2 implementation plan may move to `issues-created` until
-`docs/ops/reports/program-2-launch-gate.md` records program owner approval.
+`docs/ops/reports/program-2-launch-gate.md` records Bill approval and the
+approved launch-gate report is merged.
 
 ## Program 3 — Deferred / Holding
 

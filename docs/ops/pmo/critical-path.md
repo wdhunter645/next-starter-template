@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: Serial vs parallel critical-path rules for PMO-orchestrated work across CI, Website, Docs, and OPS tracks
 Does Not Own: Orchestrator queue implementation code, individual task acceptance criteria, or legacy issue closure actions
 Canonical Reference: /docs/ops/pmo/program-registry.md
-Related Issues: #1335, #1339
-Last Reviewed: 2026-06-04
+Related Issues: #1335, #1339, #1346, #1385
+Last Reviewed: 2026-06-06
 ---
 
 # PMO Critical Path
@@ -38,10 +38,13 @@ This document does not own:
   `status:blocked`.
 - A one-time **PMO bootstrap exception** promoted `#1339` to `status:queued` while
   legacy orchestrator issues remain open for evidence preservation.
-- Program 1 tasks `#1340`–`#1346` are blocked until upstream tasks complete and
-  queue advancement runs.
-- Program 2 plans and tasks (including `#1273`–`#1276`) remain blocked until Task 008
-  launch-gate sign-off.
+- Program 1 Tasks 001-007 deliverables exist. Program 1 remains active until
+  Task 008 (`#1346` / source issue `#1385`) launch-gate approval is recorded by
+  Bill and merged.
+- Program 2 plans and tasks (including `#1273`–`#1276`) remain blocked until the
+  Task 008 launch gate is approved by Bill and merged.
+- Task 006 P0 findings H-001, H-002, and H-003 are adopted into Program 2
+  remediation and are not waived.
 
 ## Intended Final State
 
@@ -85,7 +88,25 @@ Task 001 (#1339) → Task 002 (#1340) → Task 003 (#1341) → Task 004 (#1342)
 | 005 OPS snapshot | OPS | 001 | Docs only |
 | 006 Health review | Cross-cutting | 002–005 | Synthesis report only |
 | 007 Automation backlog | Governance | 006 | Classification only; no implementation PRs |
-| 008 Launch gate | Governance | 007 | Sign-off record; authorizes Program 2 |
+| 008 Launch gate | Governance | 007 | Sign-off record; adopts P0 remediation sequencing before Program 2 implementation |
+
+## Program 2 Launch Sequencing
+
+Task 008 records Program 2 launch authority in
+`docs/ops/reports/program-2-launch-gate.md`. Program 2 implementation plans may
+move to `issues-created` only after Bill approves that launch gate and the report
+is merged.
+
+The adopted P0 findings define the first Program 2 sequencing constraints:
+
+| Finding | Required Program 2 sequence |
+| --- | --- |
+| H-003 - CI redesign closeout orphan issues `#1011`, `#1009`, `#1199` | Immediate/early CI closeout hygiene under `#1058` before broader CI maintenance treats redesign closeout as complete |
+| H-001 - post-merge remediation backlog / closeout-chain drift | Early CI/automation stabilization workstream before dependent implementation relies on post-merge closeout stability |
+| H-002 - OPS assess soft-fail masks runtime failures | Early OPS hardening task before OPS health signals are treated as reliable |
+
+No Program 2 implementation issues are created by this launch-gate documentation
+task unless Bill separately authorizes issue creation.
 
 ### Read-only parallel window (Tasks 002–005)
 
@@ -140,7 +161,7 @@ evidence until deliberate disposition.
 | --- | --- | --- |
 | PMO bootstrap (`#1339` queued while legacy issues open) | Program owner + documented comment on `#1335`, `#1339` | One-time; establishes this registry |
 | Program owner parallel authorization | Human program owner | Must be recorded on the program umbrella issue |
-| Program 2 activation | Task 008 sign-off | Unblocks Program 2 plans and `#1273`–`#1276` |
+| Program 2 activation | Task 008 Bill approval and merged launch-gate report | Unblocks Program 2 plans and `#1273`–`#1276` subject to adopted P0 sequencing |
 
 ## Related References
 
