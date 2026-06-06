@@ -48,6 +48,16 @@ Execution Mode: orchestrated
 
 Plans without `Status: production-ready` are drafts and must not trigger issue creation.
 
+## Program 2 Launch-Gate Hold
+
+Program 2 implementation plans must not move to `issues-created` until
+`docs/ops/reports/program-2-launch-gate.md` records Bill approval and the
+approved launch-gate report is merged.
+
+The launch gate adopts Task 006 P0 findings H-001, H-002, and H-003 into Program
+2 remediation. Those findings are not waived, and their sequencing constraints
+must be reflected before dependent Program 2 implementation issues are created.
+
 ## Required Task Format
 
 Each task must use this structure:
