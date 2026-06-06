@@ -6,7 +6,7 @@ Owns: Portfolio-level worklist for active and blocked LGFC program work
 Does Not Own: Individual issue bodies, PR content, or launch-gate authorization
 Canonical Reference: /docs/reference/pmo/lgfc-program-portfolio-model.md
 Related Issues: #1335, #1351
-Last Reviewed: 2026-06-05
+Last Reviewed: 2026-06-06
 ---
 
 # Program Portfolio Worklist
@@ -17,8 +17,11 @@ Provide a compact worklist for Cursor and Atlas so each task can reference durab
 
 ## Current State Note
 
-As of PR #1350 merge, Program 1 Task 002 (CI as-built closeout) is **complete**.
-`#1058` remains open as the Program 2 CI maintenance umbrella.
+As of PR #1372 merge (2026-06-05), Program 1 Tasks 002–005 are **complete**.
+`#1058` remains open as the Program 2 CI maintenance umbrella. Task 006
+(`#1344`) implementation is **in review** on PR #1374; the source issue retains
+`status:blocked` and `status:implementation` until post-merge closeout reconciles
+queue labels.
 
 ## Active Program 1 Sequence
 
@@ -26,14 +29,16 @@ As of PR #1350 merge, Program 1 Task 002 (CI as-built closeout) is **complete**.
 |---|---|---|---|---|
 | Task 001 | #1339 | PMO registry and critical path | Atlas | complete |
 | Task 002 | #1340 | CI as-built closeout | Cursor | complete |
-| Task 003 | #1341 | Website as-built reconciliation | Cursor | next eligible task |
-| Task 004 | #1342 | Docs/DIATAXIS transition status | Cursor | blocked until #1341 closes |
-| Task 005 | #1343 | OPS monitoring snapshot | Cursor | blocked until #1342 closes |
-| Task 006 | #1344 | Operational health review | Atlas | blocked until #1340-#1343 complete |
-| Task 007 | #1345 | Automation backlog classification | Cursor | blocked until #1344 closes |
-| Task 008 | #1346 | Program 2 launch gate | Atlas | final Program 1 gate |
+| Task 003 | #1341 | Website as-built reconciliation | Cursor | complete |
+| Task 004 | #1342 | Docs/DIATAXIS transition status | Cursor | complete |
+| Task 005 | #1343 | OPS monitoring snapshot | Cursor | complete |
+| Task 006 | #1344 | Operational health review | Cursor (impl) / Atlas (review) | in review (PR #1374) — `#1344` `status:blocked` + `status:implementation` until closeout |
+| Task 007 | #1345 | Automation backlog classification | Cursor (impl) / Atlas (review) | blocked until #1344 closes |
+| Task 008 | #1346 | Program 2 launch gate | Atlas (sign-off) | final Program 1 gate |
 
-Task 002 closeout completed via PR #1350; `#1340` is closed. Task 003 (`#1341`) is the next eligible task for queue promotion.
+Task 005 closeout completed via PR #1372; `#1343` is closed. Task 006 (`#1344`)
+implementation PR #1374 is open for Atlas review; queue labels on `#1344` reconcile
+after post-merge verification and issue closeout.
 
 ## Read-Only Parallel Work
 
