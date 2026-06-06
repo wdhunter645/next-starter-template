@@ -25,6 +25,9 @@ Related PMO documents:
 - `/docs/ops/pmo/critical-path.md` — serial queue and track rules
 - `/docs/ops/pmo/parallel-agent-rules.md` — read-only parallel vs one implementer per task
 
+Program 1 Task 008 launch gate (Bill approval required): `/docs/ops/reports/program-2-launch-gate.md`  
+Source issue: `#1385`. Task 006 P0 findings are **adopted**, not waived.
+
 ## Purpose
 
 An implementation plan is the handoff document created by Atlas after the project design is approved. It defines the exact execution steps required to complete a project safely through GitHub Issues, draft Pull Requests, AI agent implementation, automated review, and human approval.
