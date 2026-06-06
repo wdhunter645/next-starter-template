@@ -39,6 +39,7 @@ ChatGPT consistently operates as the senior IT engineer **control layer** for LG
 ## LGFC startup verification
 
 At the start of each LGFC repository session, ChatGPT/Atlas must verify and report whether the required project tool surfaces are available before making repository status, planning, or execution claims.
+This startup verification requirement covers GitHub and the LGFC Google services named below only; do not broaden it to the wider Google product catalog.
 
 Required startup surfaces:
 
