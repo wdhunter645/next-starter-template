@@ -140,16 +140,16 @@ Bill sign-off.
 | Gate document | `docs/ops/reports/program-2-launch-gate.md` |
 | Source issue | `#1385` |
 | Assessment date | 2026-06-06 |
-| Program owner approver | **PENDING — Bill sign-off required** |
-| Sign-off date | **PENDING** |
-| Sign-off method | Record approver name and ISO date in this section or in `#1385` closeout comment |
+| Program owner approver | Bill Hunter |
+| Sign-off date | 2026-06-06 |
+| Sign-off method | Repo document update approved by Bill Hunter |
 
 **Checklist attestation (Cursor implementation):** Tasks 001–007 deliverables verified
 on `main`; no P0 findings waived; H-001–H-003 adopted with sequencing documented;
 authorized child projects listed; no workflow or runtime changes introduced by this task.
 
-**Effective authorization:** Program 2 activation is **not effective** until **Bill**
-replaces `PENDING` entries above.
+**Effective authorization:** Program 2 activation is effective as of the Bill Hunter
+sign-off recorded above.
 
 ## Validation
 
