@@ -93,7 +93,7 @@ Task 007 required Program 3 coverage is represented as follows:
 - Full tutorial expansion: A-017
 - Broader DIATAXIS/documentation remediation deferrals: A-014, A-015, A-018
 
-## Issue Creation Guidance
+## issue creation guidance
 
 Do **not** create implementation issues from this report during Program 1 Task 007.
 Recommended next action is for the program owner to use Task 008 launch-gate
