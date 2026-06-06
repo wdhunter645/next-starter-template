@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: PMO program registry, child-project mapping, and authoritative execution chain for LGFC orchestrated work
 Does Not Own: Implementation plan task definitions, orchestrator workflow code, product design, or legacy issue disposition actions
 Canonical Reference: /docs/reference/architecture/orchestration-model.md
-Related Issues: #1335, #1339
-Last Reviewed: 2026-06-04
+Related Issues: #1335, #1339, #1345
+Last Reviewed: 2026-06-06
 ---
 
 # PMO Program Registry
@@ -59,12 +59,14 @@ Critical-path and serial queue rules: `/docs/ops/pmo/critical-path.md`
 ## Current Known Truth
 
 - Program 1 umbrella issue `#1335` is open. Tasks `#1339`–`#1346` exist from
-  `program-1-phase1-wrapup-rollout.md`.
+  `program-1-phase1-wrapup-rollout.md`; Task `#1345` now owns the automation
+  backlog classification at `docs/ops/reports/program-1-automation-backlog.md`.
 - Task `#1339` (PMO registry) was promoted under a **one-time bootstrap exception**
   to establish governance before legacy backlog disposition.
 - Legacy orchestrator issues (website T-tasks, CI phase-2 blocked tasks `#1273`–`#1276`,
-  failed `#1089`, and others) remain open for evidence preservation until Program 1
-  Tasks 006–007 define deliberate disposition.
+  failed `#1089`, and others) remain open for evidence preservation. Program 1
+  Tasks 006–007 classify health findings and automation backlog disposition; they
+  do not authorize bulk issue creation or closure.
 - Program 2 implementation plans must not move to `issues-created` until Program 1
   Task 008 launch-gate sign-off.
 
@@ -101,7 +103,7 @@ authorize Program 2 only after launch-gate sign-off.
 | Docs/DIATAXIS status | `#1342` | Transition status; not full migration |
 | OPS monitoring | `#1343` | Monitoring snapshot and gap record |
 | Operational health | `#1344` | Synthesized P0/P1/P2 findings |
-| Automation classification | `#1345` | Program 2 vs Program 3 backlog |
+| Automation classification | `#1345` | Program 2 vs Program 3 backlog report |
 | Program 2 launch gate | `#1346` | Sign-off before Program 2 activation |
 
 ### Out of scope for Program 1
@@ -161,8 +163,8 @@ program owner decision or Program 1 Task 007 classification.
 ## Legacy Backlog (Evidence Preservation)
 
 The following open orchestrator-related issues are **not** current PMO authority.
-Do not bulk-close them. Disposition is deferred until Program 1 Tasks 006–007
-and PMO closeout rules apply.
+Do not bulk-close them. Use Program 1 Task 006 health findings, Task 007 backlog
+classification, and PMO closeout rules before any owner-approved disposition.
 
 | Category | Examples | Disposition owner |
 | --- | --- | --- |
