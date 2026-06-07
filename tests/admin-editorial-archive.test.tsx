@@ -316,6 +316,36 @@ describe('editorial archive APIs', () => {
     expect(runs.some((run) => run.sql.includes("status = 'approved'"))).toBe(true);
   });
 
+  it('does not coerce blank event_year values to zero', async () => {
+    const { db, runs } = makeEditorialDb({
+      submissions: [
+        {
+          submission_id: 7,
+          submitted_by: 'Member <member@example.com>',
+          title: 'Submitted story',
+          description: 'Story text for editorial review.',
+          proposed_tag: 'submitted-story',
+          status: 'pending',
+        },
+      ],
+    });
+
+    const response = await editorialReviewPost({
+      request: adminPostRequest('/api/admin/editorial/review', {
+        submission_id: 7,
+        action: 'approve',
+        source_name: 'Member interview',
+        credit_line: 'Member <member@example.com>',
+        event_year: '   ',
+      }),
+      env: { ADMIN_TOKEN: 'secret', DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    const insertRun = runs.find((run) => run.sql.includes('INSERT INTO content_inventory'));
+    expect(insertRun?.args[15]).toBeNull();
+  });
+
   it('updates publication state for archive records', async () => {
     const { db, runs } = makeEditorialDb({
       inventory: [{ id: 4, status: 'draft', source_name: 'Archive', credit_line: 'LGFC Archive' }],

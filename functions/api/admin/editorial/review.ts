@@ -38,9 +38,17 @@ function asInt(value: unknown, fallback: number): number {
 }
 
 function asOptionalInt(value: unknown): number | null {
-  if (value === null || value === undefined || value === "") return null;
-  const n = typeof value === "number" ? value : Number(value);
-  return Number.isFinite(n) ? Math.trunc(n) : null;
+  if (value === null || value === undefined) return null;
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? Math.trunc(value) : null;
+  }
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const n = Number(trimmed);
+    return Number.isFinite(n) ? Math.trunc(n) : null;
+  }
+  return null;
 }
 
 function slugifyTag(value: string): string {

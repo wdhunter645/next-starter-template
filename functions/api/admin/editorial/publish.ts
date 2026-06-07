@@ -11,6 +11,10 @@ function asInt(value: unknown): number {
   return Number.isFinite(n) ? Math.trunc(n) : 0;
 }
 
+function hasRequiredFields(row: Record<string, unknown>, fields: string[]): boolean {
+  return fields.every((field) => String(row[field] || "").trim().length > 0);
+}
+
 export const onRequestPost = async (context: any): Promise<Response> => {
   const { request, env } = context;
 
@@ -43,8 +47,7 @@ export const onRequestPost = async (context: any): Promise<Response> => {
 
     if (
       status === "published" &&
-      (!String((existing as any).source_name || "").trim() ||
-        !String((existing as any).credit_line || "").trim())
+      !hasRequiredFields(existing as Record<string, unknown>, ["source_name", "credit_line"])
     ) {
       return jsonResponse(
         { ok: false, error: "Published content_inventory records require source_name and credit_line." },

@@ -54,24 +54,24 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       .first();
     const inventoryEligibleTotal = Number((inventoryEligibleRow as any)?.n ?? 0) || 0;
 
-    const countRow = await auth.db
-      .prepare(`SELECT COUNT(1) AS n FROM content_inventory ${inventoryWhereSql}`)
-      .bind(...inventoryArgs)
-      .first();
-    const total = Number((countRow as any)?.n ?? 0) || 0;
-
-    const rows = await auth.db
-      .prepare(
-        `SELECT id, title, text, summary, credit_line, source_name, event_date, event_year, updated_at
-         FROM content_inventory
-         ${inventoryWhereSql}
-         ORDER BY priority DESC, updated_at DESC, id DESC
-         LIMIT ? OFFSET ?`
-      )
-      .bind(...inventoryArgs, PAGE_SIZE, offset)
-      .all();
-
     if (inventoryEligibleTotal > 0) {
+      const countRow = await auth.db
+        .prepare(`SELECT COUNT(1) AS n FROM content_inventory ${inventoryWhereSql}`)
+        .bind(...inventoryArgs)
+        .first();
+      const total = Number((countRow as any)?.n ?? 0) || 0;
+
+      const rows = await auth.db
+        .prepare(
+          `SELECT id, title, text, summary, credit_line, source_name, event_date, event_year, updated_at
+           FROM content_inventory
+           ${inventoryWhereSql}
+           ORDER BY priority DESC, updated_at DESC, id DESC
+           LIMIT ? OFFSET ?`
+        )
+        .bind(...inventoryArgs, PAGE_SIZE, offset)
+        .all();
+
       const items = (rows.results || []).map((row: any) => ({
         id: row.id,
         year: row.event_year ?? (row.event_date ? Number(String(row.event_date).slice(0, 4)) || null : null),
