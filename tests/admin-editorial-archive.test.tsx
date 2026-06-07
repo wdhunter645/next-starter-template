@@ -70,10 +70,10 @@ function makeEditorialDb(options?: {
   function filterRows(sql: string, rows: Array<Record<string, unknown>>, args: unknown[]) {
     let filtered = rows;
     if (sql.includes("status = 'published'")) {
-      filtered = filtered.filter((row) => !row.status || row.status === 'published');
+      filtered = filtered.filter((row) => row.status === 'published');
     }
     if (sql.includes("LIKE '%library%'")) {
-      filtered = filtered.filter((row) => !row.allowed_sections || String(row.allowed_sections).includes('library'));
+      filtered = filtered.filter((row) => String(row.allowed_sections || '').includes('library'));
     }
 
     const likeArg = args.find((arg) => typeof arg === 'string' && arg.includes('%'));
@@ -419,6 +419,8 @@ describe('member submissions and library archive reads', () => {
               credit_line: 'LGFC Archive',
               event_date: '1939-07-04',
               event_year: 1939,
+              status: 'published',
+              allowed_sections: '["library"]',
               updated_at: '2026-06-02T12:00:00Z',
             },
           ],
@@ -435,6 +437,40 @@ describe('member submissions and library archive reads', () => {
           author: 'LGFC Archive',
           year: 1939,
           description: 'Published archive summary.',
+        },
+      ],
+    });
+  });
+
+  it('falls back to event_date year when event_year is blank', async () => {
+    const response = await fanclubLibraryGet({
+      request: memberRequest('/api/fanclub/library?page=1'),
+      env: {
+        DB: makeEditorialDb({
+          inventory: [
+            {
+              id: 5,
+              title: 'Published archive story',
+              text: 'A published archive story for members.',
+              credit_line: 'LGFC Archive',
+              event_date: '1939-07-04',
+              event_year: '   ',
+              status: 'published',
+              allowed_sections: '["library"]',
+              updated_at: '2026-06-02T12:00:00Z',
+            },
+          ],
+        }).db,
+      },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      items: [
+        {
+          title: 'Published archive story',
+          year: 1939,
         },
       ],
     });

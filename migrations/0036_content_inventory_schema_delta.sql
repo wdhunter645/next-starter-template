@@ -13,7 +13,7 @@ WHEN NEW.status = 'published'
     OR trim(COALESCE(NEW.credit_line, '')) = ''
   )
 BEGIN
-  SELECT RAISE(ABORT, 'published content_inventory records require source_name and credit_line');
+  SELECT RAISE(ABORT, 'Published content_inventory records require source_name and credit_line.');
 END;
 
 CREATE TRIGGER IF NOT EXISTS trg_content_inventory_publish_attribution_update
@@ -24,5 +24,5 @@ WHEN NEW.status = 'published'
     OR trim(COALESCE(NEW.credit_line, '')) = ''
   )
 BEGIN
-  SELECT RAISE(ABORT, 'published content_inventory records require source_name and credit_line');
+  SELECT RAISE(ABORT, 'Published content_inventory records require source_name and credit_line.');
 END;

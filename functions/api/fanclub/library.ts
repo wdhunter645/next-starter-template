@@ -8,6 +8,14 @@ function parsePage(raw: string | null): number {
   return Number.isFinite(n) && n > 0 ? Math.floor(n) : 1;
 }
 
+function parseInventoryYear(eventYear: unknown, eventDate: unknown): number | null {
+  if (eventYear !== null && eventYear !== undefined && String(eventYear).trim() !== '') {
+    const parsed = Number(eventYear);
+    if (Number.isFinite(parsed)) return Math.trunc(parsed);
+  }
+  return eventDate ? Number(String(eventDate).slice(0, 4)) || null : null;
+}
+
 async function tableExists(db: any, table: string): Promise<boolean> {
   const row = await db
     .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name = ? LIMIT 1")
@@ -74,7 +82,7 @@ export const onRequestGet = async (context: any): Promise<Response> => {
 
       const items = (rows.results || []).map((row: any) => ({
         id: row.id,
-        year: row.event_year ?? (row.event_date ? Number(String(row.event_date).slice(0, 4)) || null : null),
+        year: parseInventoryYear(row.event_year, row.event_date),
         author: row.credit_line || row.source_name || null,
         title: row.title || null,
         description: row.summary || (row.text ? String(row.text).slice(0, 100) : null),
