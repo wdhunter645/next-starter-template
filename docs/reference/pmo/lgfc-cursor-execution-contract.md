@@ -105,6 +105,40 @@ When a PR is ready for review, Cursor continues only far enough to:
 
 PR readiness is not merge authority.
 
+## Program 2 Child-Task Continuation
+
+For Program 2 `#1255`, Cursor may continue from one child task to another only
+when the next child issue contains the latest valid Atlas, Bill, or controller
+`@cursor` continuation authorization comment.
+
+Cursor must not treat labels, merge state, closed or completed prior issue
+state, queue order, open PR order, or branch availability as executable
+authority by themselves. Those signals may inform human/controller status
+review, but they do not authorize Cursor to start the next Program 2 child task.
+
+The continuation authorization must name exactly one next child issue. Cursor may
+execute only that named issue, must use the PR source issue line required by that
+authorization, and must stop at GitHub `READY FOR REVIEW` unless the active
+source issue explicitly says otherwise.
+
+Every executable Program 2 child issue must include or be paired with parent
+program reference `#1255`, parent project reference when applicable, dependency
+or prior-task criteria, blocking criteria, required source documents, exact
+scope, hard out-of-scope boundaries, expected file areas or a file-touch
+allowlist, validation expectations, exact PR source issue line requirement, no
+merge authority, and no issue close or relabel authority unless explicitly
+granted.
+
+Cursor must pause and report findings instead of implementing when blockers are
+unclear or when the next task would require creating child issues, mutating
+`#1255`, mutating `#1256`, touching Program 1 / `#1411`, changing workflow YAML,
+closing issues, relabeling issues, or merging without explicit authorization.
+
+When Cursor's GitHub token cannot reliably remove labels or post issue cleanup
+comments, Atlas or the GitHub connector handles that issue cleanup path. That
+token boundary does not authorize Cursor to infer continuation from issue state
+or queue signals.
+
 ## Stop Conditions
 
 Cursor must stop and report when:
