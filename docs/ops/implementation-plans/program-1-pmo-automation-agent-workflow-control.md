@@ -180,6 +180,41 @@ how the next cycle is planned, reviewed, and closed.
 - Each completed program cycle must create or update its successor-process lessons
   before being treated as fully closed.
 
+## Successor Program Cycle Reuse Rule
+
+This Program 1 buildout is also the template for redefining the next Program 2
+cycle after the current Program 2 execution lane completes or reaches a planned
+transition gate.
+
+The successor Program 2 cycle must not be launched by copying old Program 2 state
+forward. It must be redefined through the same PMO pattern used here:
+
+1. Review the prior active cycle's outcomes, failures, closeout evidence, and
+   unresolved blockers.
+2. Write a retrospective that captures what worked, what did not work, and which
+   PMO rules changed.
+3. Define the next cycle's who, what, where, and suggested when before Cursor
+   receives implementation work.
+4. Identify which source documents are authoritative and which are historical.
+5. Define non-interference boundaries with any active alternate lane.
+6. Decide whether the next Program 2 cycle is a continuation, reset, or new body
+   of work.
+7. Create child issues only after Atlas/Bill walkthrough and explicit launch
+   approval.
+
+Atlas owns the successor-cycle definition. Cursor owns implementation mechanics
+after the successor Program 2 source issue and bounded child issues exist.
+
+Minimum documentation required before the next Program 2 cycle launches:
+
+- current-cycle retrospective;
+- successor Program 2 purpose and scope;
+- project-area who/what/where/suggested-when matrix;
+- authoritative source list;
+- Program 1 non-interference statement;
+- closeout and label policy inherited from this Program 1 cycle;
+- child-issue readiness checklist.
+
 ---
 
 ## Program 1 Project Documentation Set
