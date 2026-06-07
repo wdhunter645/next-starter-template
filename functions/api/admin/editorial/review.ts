@@ -11,12 +11,15 @@ type ReviewBody = {
   source_name?: unknown;
   source_url?: unknown;
   credit_line?: unknown;
+  summary?: unknown;
   story_type?: unknown;
   allowed_sections?: unknown;
   priority?: unknown;
   canonical?: unknown;
+  perspective_label?: unknown;
   media?: unknown;
   event_date?: unknown;
+  event_year?: unknown;
   rotation_group?: unknown;
   feature_weight?: unknown;
   review_notes?: unknown;
@@ -32,6 +35,12 @@ function asString(value: unknown): string {
 function asInt(value: unknown, fallback: number): number {
   const n = typeof value === "number" ? value : Number(value);
   return Number.isFinite(n) ? Math.trunc(n) : fallback;
+}
+
+function asOptionalInt(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const n = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(n) ? Math.trunc(n) : null;
 }
 
 function slugifyTag(value: string): string {
@@ -122,14 +131,19 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     const sourceUrl = asString(body?.source_url) || String((submission as any).source_url || "").trim() || null;
     const sourceName = asString(body?.source_name) || "Member submission";
     const creditLine = asString(body?.credit_line) || String((submission as any).submitted_by || "").trim();
+    const summary = asString(body?.summary) || null;
     const allowedSections = jsonText(body?.allowed_sections, ["library"]);
     const media = jsonText(body?.media, (submission as any).media_url ? [{ url: (submission as any).media_url }] : []);
     const priority = asInt(body?.priority, 0);
     const canonical = body?.canonical === false || body?.canonical === 0 ? 0 : 1;
+    const perspectiveLabel = asString(body?.perspective_label) || null;
     const eventDate = asString(body?.event_date) || null;
+    const eventYear = asOptionalInt(body?.event_year);
     const rotationGroup = asString(body?.rotation_group) || null;
     const featureWeight = Math.max(1, asInt(body?.feature_weight, 1));
-    const searchText = [title, text, tag, sourceName, creditLine].filter(Boolean).join(" ");
+    const searchText = [title, summary, text, tag, perspectiveLabel, sourceName, creditLine, eventYear]
+      .filter((value) => value !== null && value !== undefined && value !== "")
+      .join(" ");
 
     if (!title || !text || !tag || !creditLine) {
       return jsonResponse({ ok: false, error: "Approved records require title, text, tag, and credit_line." }, 400);
@@ -138,25 +152,28 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     const insert = await d1.db
       .prepare(
         `INSERT INTO content_inventory
-          (tag, title, text, media, story_type, allowed_sections, priority, search_text, canonical,
-           source_name, source_url, credit_line, event_date, rotation_group, feature_weight,
+          (tag, title, text, summary, media, story_type, allowed_sections, priority, search_text, canonical,
+           perspective_label, source_name, source_url, credit_line, event_date, event_year, rotation_group, feature_weight,
            status, review_notes, submitted_by, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?, ?)`,
       )
       .bind(
         tag,
         title,
         text,
+        summary,
         media,
         storyType,
         allowedSections,
         priority,
         searchText,
         canonical,
+        perspectiveLabel,
         sourceName,
         sourceUrl,
         creditLine,
         eventDate,
+        eventYear,
         rotationGroup,
         featureWeight,
         reviewNotes,

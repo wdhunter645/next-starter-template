@@ -57,10 +57,12 @@ function memberRequest(path: string, body?: unknown): Request {
 function makeEditorialDb(options?: {
   submissions?: Array<Record<string, unknown>>;
   inventory?: Array<Record<string, unknown>>;
+  library?: Array<Record<string, unknown>>;
   sessionEmail?: string;
 }) {
   const submissions = options?.submissions ?? [];
   const inventory = options?.inventory ?? [];
+  const library = options?.library ?? [];
   const sessionEmail = options?.sessionEmail ?? 'member@example.com';
   const runs: Array<{ sql: string; args: unknown[] }> = [];
 
@@ -68,18 +70,22 @@ function makeEditorialDb(options?: {
     prepare: vi.fn((sql: string) => {
       const allFn = async () => {
         if (sql.includes('sqlite_master')) {
-          return { results: [{ name: 'submission_queue' }, { name: 'content_inventory' }] };
+          return { results: [{ name: 'submission_queue' }, { name: 'content_inventory' }, { name: 'library_entries' }] };
         }
         if (sql.includes('FROM submission_queue')) return { results: submissions };
         if (sql.includes('FROM content_inventory')) return { results: inventory };
+        if (sql.includes('FROM library_entries')) return { results: library };
         return { results: [] };
       };
 
       const firstFn = async () => {
         if (sql.includes('FROM member_sessions')) return { email: sessionEmail };
         if (sql.includes("SELECT datetime('now')")) return { now: '2026-06-02T12:00:00Z' };
+        if (sql.includes('COUNT(1) AS n FROM content_inventory')) return { n: inventory.length };
+        if (sql.includes('COUNT(1) AS n FROM library_entries')) return { n: library.length };
         if (sql.includes('FROM submission_queue')) return submissions[0] ?? null;
         if (sql.includes('FROM content_inventory')) return inventory[0] ?? null;
+        if (sql.includes('FROM library_entries')) return library[0] ?? null;
         return null;
       };
 
@@ -249,6 +255,9 @@ describe('editorial archive APIs', () => {
         submission_id: 7,
         action: 'approve',
         credit_line: 'Member <member@example.com>',
+        summary: 'Short approved summary.',
+        perspective_label: 'Member memory',
+        event_year: 1939,
       }),
       env: { ADMIN_TOKEN: 'secret', DB: db },
     });
@@ -259,13 +268,19 @@ describe('editorial archive APIs', () => {
       action: 'approve',
       inventory_id: 44,
     });
-    expect(runs.some((run) => run.sql.includes('INSERT INTO content_inventory'))).toBe(true);
+    const insertRun = runs.find((run) => run.sql.includes('INSERT INTO content_inventory'));
+    expect(insertRun?.sql).toContain('summary');
+    expect(insertRun?.sql).toContain('perspective_label');
+    expect(insertRun?.sql).toContain('event_year');
+    expect(insertRun?.args).toContain('Short approved summary.');
+    expect(insertRun?.args).toContain('Member memory');
+    expect(insertRun?.args).toContain(1939);
     expect(runs.some((run) => run.sql.includes("status = 'approved'"))).toBe(true);
   });
 
   it('updates publication state for archive records', async () => {
     const { db, runs } = makeEditorialDb({
-      inventory: [{ id: 4, status: 'draft' }],
+      inventory: [{ id: 4, status: 'draft', source_name: 'LGFC Archive', credit_line: 'LGFC Archive' }],
     });
 
     const response = await editorialPublishPost({
@@ -280,6 +295,24 @@ describe('editorial archive APIs', () => {
       status: 'published',
     });
     expect(runs.some((run) => run.sql.includes('UPDATE content_inventory'))).toBe(true);
+  });
+
+  it('requires source and credit before publishing archive records', async () => {
+    const { db, runs } = makeEditorialDb({
+      inventory: [{ id: 4, status: 'draft', source_name: '', credit_line: 'LGFC Archive' }],
+    });
+
+    const response = await editorialPublishPost({
+      request: adminPostRequest('/api/admin/editorial/publish', { id: 4, status: 'published' }),
+      env: { ADMIN_TOKEN: 'secret', DB: db },
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: 'Published content requires source_name and credit_line.',
+    });
+    expect(runs.some((run) => run.sql.includes('UPDATE content_inventory'))).toBe(false);
   });
 });
 
@@ -331,6 +364,41 @@ describe('member submissions and library archive reads', () => {
           title: 'Published archive story',
           author: 'LGFC Archive',
           year: 1939,
+        },
+      ],
+    });
+  });
+
+  it('falls back to legacy library_entries when inventory has no eligible rows', async () => {
+    const response = await fanclubLibraryGet({
+      request: memberRequest('/api/fanclub/library?page=1'),
+      env: {
+        DB: makeEditorialDb({
+          inventory: [],
+          library: [
+            {
+              id: 12,
+              name: 'Legacy Member',
+              title: 'Legacy library story',
+              content: 'A legacy library entry that predates content inventory.',
+              created_at: '2025-05-01T10:00:00Z',
+            },
+          ],
+        }).db,
+      },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      fallback: 'library_entries',
+      total: 1,
+      items: [
+        {
+          title: 'Legacy library story',
+          author: 'Legacy Member',
+          source: 'library_entries',
+          year: 2025,
         },
       ],
     });

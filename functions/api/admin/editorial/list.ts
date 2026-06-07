@@ -67,8 +67,8 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       inventoryStatus === "all"
         ? await d1.db
             .prepare(
-              `SELECT id, tag, title, text, media, story_type, allowed_sections, priority, canonical,
-                      source_name, source_url, credit_line, event_date, rotation_group, last_featured,
+              `SELECT id, tag, title, text, summary, media, story_type, allowed_sections, priority, canonical,
+                      perspective_label, source_name, source_url, credit_line, event_date, event_year, rotation_group, last_featured,
                       feature_weight, status, review_notes, submitted_by, updated_at, published_at
                  FROM content_inventory
                  ORDER BY updated_at DESC, id DESC
@@ -78,8 +78,8 @@ export const onRequestGet = async (context: any): Promise<Response> => {
             .all()
         : await d1.db
             .prepare(
-              `SELECT id, tag, title, text, media, story_type, allowed_sections, priority, canonical,
-                      source_name, source_url, credit_line, event_date, rotation_group, last_featured,
+              `SELECT id, tag, title, text, summary, media, story_type, allowed_sections, priority, canonical,
+                      perspective_label, source_name, source_url, credit_line, event_date, event_year, rotation_group, last_featured,
                       feature_weight, status, review_notes, submitted_by, updated_at, published_at
                  FROM content_inventory
                  WHERE status = ?
