@@ -67,6 +67,31 @@ The active order is:
 2. Website Operations Admin
 3. Website QA and Production Validation
 
+## Program 2 child-task continuation handoff
+
+For the remainder of Program 2 after the current Task 003 issue `#1401`
+handoff, Cursor continuation requires an explicit Atlas, Bill, or controller
+`@cursor` issue comment on the next child issue.
+
+Program 2 child-task continuation is not authorized by labels, merge state,
+closed or completed prior issue state, queue order, or open PR order alone.
+Atlas/Bill/controller remains responsible for selecting the next child task, and
+Cursor may execute only the issue explicitly named in the latest valid
+continuation comment.
+
+Each executable child issue must include or be paired with parent program and
+project references, dependency and blocking criteria, required source documents,
+exact scope, hard out-of-scope boundaries, expected file areas or a file-touch
+allowlist, validation expectations, the exact PR source issue line requirement,
+and the stop condition `GitHub READY FOR REVIEW`. Merge authority, issue
+closure, and issue relabeling are not granted unless explicitly stated in the
+active source issue.
+
+If blockers are unclear, Cursor must pause and report findings instead of
+implementing. The reusable continuation authorization and blocked-continuation
+templates live in
+[`docs/ops/implementation-plans/website-content-strategy-editorial-inventory.md`](../../ops/implementation-plans/website-content-strategy-editorial-inventory.md#program-2-child-task-continuation-handoff).
+
 ## Steps
 
 ### Phase 0 — Program baseline and issue reconciliation

@@ -113,6 +113,115 @@ The first implementation task must inventory current schema, APIs, UI, and publi
 reads against the approved docs. Build changes should target documented gaps
 only.
 
+## Program 2 Child-Task Continuation Handoff
+
+Program 2 child-task continuation for the remainder of `#1255`, including work
+after current Task 003 issue `#1401`, requires an explicit Atlas, Bill, or
+controller `@cursor` issue comment on the next child issue.
+
+Cursor must not infer executable authority from any of the following signals by
+themselves:
+
+- labels;
+- merge state;
+- closed or completed prior issue state;
+- queue order;
+- open PR order.
+
+Cursor may execute only the child issue explicitly named in the latest valid
+`@cursor` continuation comment. The controller remains responsible for choosing
+the next child task. Cursor remains limited to that single authorized issue and
+must stop at GitHub `READY FOR REVIEW` unless the controller explicitly grants a
+different stop condition.
+
+Cursor must not create additional child issues, close issues, relabel issues,
+mutate `#1255`, mutate `#1256`, touch Program 1 / `#1411`, mutate unrelated
+issues, change workflow YAML, or merge unless the active source issue explicitly
+authorizes that action. If dependency or blocking status is unclear, Cursor must
+pause and report findings instead of implementing.
+
+### Child Issue Readiness Requirements
+
+Every executable Program 2 child issue must include or be paired with:
+
+- parent program reference: `#1255`;
+- parent project reference when applicable: `#1256`;
+- dependency or prior-task criteria;
+- blocking criteria;
+- required source documents;
+- exact scope;
+- hard out-of-scope list;
+- expected file areas or file-touch allowlist;
+- validation expectations;
+- exact PR source issue line requirement;
+- stop condition: GitHub `READY FOR REVIEW`;
+- no merge authority;
+- no issue close or relabel authority unless explicitly granted.
+
+### Continuation Authorization Template
+
+Use this template on the next authorized child issue:
+
+```text
+@cursor
+
+Program 2 continuation authorization.
+
+Prior task complete:
+- <prior issue> is closed completed or otherwise explicitly accepted.
+- <prior PR> is merged.
+- Superseded PRs, if any, are closed unmerged.
+- Post-merge verification / label cleanup is complete or explicitly delegated.
+
+Blocking criteria cleared:
+- <dependency> is complete.
+- <parent project> remains active.
+- <parent program> remains active.
+- Program 1 / #1411 must not advance.
+
+Next authorized task:
+- <next issue> — <title>
+
+Proceed with <next issue> only.
+
+Use exactly one PR source issue line:
+- **Issue:** <next issue>
+
+Hard boundaries:
+- Do not touch Program 1 / #1411.
+- Do not mutate #1255 or #1256 state unless explicitly authorized.
+- Do not close or relabel issues unless explicitly authorized.
+- Do not create additional child issues.
+- Do not change workflow YAML unless explicitly authorized.
+- Do not merge.
+
+Validation:
+- Run and report exact commands/results in the PR body.
+
+Stop condition:
+- Stop at GitHub READY FOR REVIEW.
+```
+
+### Blocked-Continuation Template
+
+Use this template when the next child task is not yet executable:
+
+```text
+@cursor pause.
+
+Program 2 continuation is blocked.
+
+Do not implement the next child task.
+
+Blocking criteria not cleared:
+- <blocker list>
+
+Allowed action:
+- Investigate and report only, if explicitly requested.
+
+Stop after posting findings.
+```
+
 ---
 
 ## Task 001 — Existing Implementation Inventory and Gap Analysis
