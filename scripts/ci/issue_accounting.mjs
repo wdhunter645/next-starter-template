@@ -3,7 +3,7 @@
  */
 
 export function repositoryParts(repository = '') {
-	const repoStr = repository || process.env.GITHUB_REPOSITORY || '';
+	const repoStr = repository === null ? '' : repository || process.env.GITHUB_REPOSITORY || '';
 	const [owner = '', repo = ''] = String(repoStr).split('/');
 	return { owner, repo };
 }
@@ -125,5 +125,5 @@ export function linkedIssueNumber(body = '') {
 	const sourceMarker = body.match(/<!--\s*orchestrator-source-issue:\s*(\d+)\s*-->/i);
 	if (sourceMarker) return sourceMarker[1];
 
-	return sourceIssueAccounting(body).issueNumber;
+	return sourceIssueAccounting(body, { repository: null }).issueNumber;
 }
