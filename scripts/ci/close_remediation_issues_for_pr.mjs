@@ -3,6 +3,7 @@
 import { pathToFileURL } from 'node:url';
 import { githubRepoRequest } from './github_issue_api.mjs';
 import {
+	LEGACY_REMEDIATION_TITLE_PREFIX,
 	REMEDIATION_ISSUE_LABEL,
 	REMEDIATION_TITLE_PREFIX,
 } from './post_merge_source_issue_closeout.mjs';
@@ -25,7 +26,8 @@ async function paginateOpenRemediationIssues({ token, repository }) {
 		if (!Array.isArray(batch) || batch.length === 0) break;
 		for (const issue of batch) {
 			if (issue.pull_request) continue;
-			if (!String(issue.title || '').startsWith(REMEDIATION_TITLE_PREFIX)) continue;
+			const title = String(issue.title || '');
+			if (!title.startsWith(REMEDIATION_TITLE_PREFIX) && !title.startsWith(LEGACY_REMEDIATION_TITLE_PREFIX)) continue;
 			issues.push(issue);
 		}
 		if (batch.length < 100) break;

@@ -3,26 +3,73 @@
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { githubRepoRequest } from './github_issue_api.mjs';
+import { REMEDIATION_TITLE_PREFIX } from './post_merge_source_issue_closeout.mjs';
+
+function failureConditions(result = {}) {
+	return [
+		...(result.metadata_failures || []),
+		...(result.implementation_failures || []),
+		...(result.diataxis_failures || []),
+		...(result.reviewer_findings || []).map((finding) => ({
+			code: 'late_reviewer_finding',
+			message: `${finding.reviewer || 'reviewer'}: ${finding.body || finding.url || 'finding recorded'}`,
+		})),
+		...(result.workflow_failures || []).map((failure) => ({
+			code: 'workflow_failure',
+			message: `${failure.workflow || 'workflow'} ${failure.conclusion || ''} ${failure.classification || ''}`.trim(),
+		})),
+	];
+}
+
+function exceptionKey(result = {}) {
+	const source = result.source_issue ? `source #${result.source_issue}` : 'source none';
+	const condition = failureConditions(result)[0]?.code || 'closeout_exception';
+	return `${source} / ${condition}`;
+}
 
 export function remediationTitle(result) {
 	const pr = result?.pr ? `PR #${result.pr}` : `merge ${String(result?.merge_sha || 'unknown').slice(0, 12)}`;
-	return `Post-merge remediation required for ${pr}`;
+	return `${REMEDIATION_TITLE_PREFIX}${pr} / ${exceptionKey(result)}`;
 }
 
 export function remediationBody(result) {
+	const conditions = failureConditions(result);
 	const lines = [
-		'Post-merge validation detected follow-up work.',
+		'Post-merge closeout exception detected. CI refused deterministic source issue closeout.',
 		'',
 		`- PR: ${result.pr ? `#${result.pr}` : 'none'}`,
 		`- Merge SHA: ${result.merge_sha || 'unknown'}`,
 		`- Source issue: ${result.source_issue ? `#${result.source_issue}` : 'none'}`,
+		`- Source issue candidates: ${result.source_issue_candidates?.length ? result.source_issue_candidates.join(', ') : 'none'}`,
+		`- Source issue closeout mode: ${result.source_issue_closeout_mode || 'not evaluated'}`,
 		`- Validator status: ${result.status}`,
 		`- Remediation required: ${result.remediation_required ? 'yes' : 'no'}`,
+		`- Terminal label result: ${result.terminal_label_result?.summary || 'not evaluated'}`,
+		`- Queue advancement status: ${result.queue_advancement_status || 'stopped; Atlas/Bill review required'}`,
 		'',
-		'## Required action',
-		'- Review each evidence section below.',
-		'- Open a corrective PR or update merged governance evidence as needed.',
-		'- Re-run post-merge validation after remediation.',
+		'## Detected failure condition',
+	];
+
+	if (conditions.length) {
+		for (const failure of conditions) {
+			lines.push(`- ${failure.code}: ${failure.message}`);
+		}
+	} else {
+		lines.push('- closeout_exception: Closeout was ambiguous or unsafe.');
+	}
+
+	lines.push(
+		'',
+		'## Action CI refused to take',
+		'- CI did not close, relabel, or otherwise mutate the source issue.',
+		'- CI did not advance the queue, launch Program 1, mutate Program 2, or create child issues.',
+		'',
+		'## Required Atlas/Bill decision',
+		'- Decide whether the source issue may be closed, corrected, or kept open.',
+		'- Authorize any corrective PR or issue mutation through a bounded follow-up issue/PR.',
+		'- Queue advancement remains stopped until the exception is resolved.',
+		'',
+		'## Evidence collected by CI',
 		'',
 		'## Rollback recommendation',
 		result.status === 'fail'
@@ -30,7 +77,7 @@ export function remediationBody(result) {
 			: '- No rollback recommendation recorded.',
 		'',
 		'## Workflow failures',
-	];
+	);
 
 	if (result.workflow_failures?.length) {
 		for (const failure of result.workflow_failures) {

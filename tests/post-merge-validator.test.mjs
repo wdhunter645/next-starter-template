@@ -3,12 +3,14 @@ import { describe, expect, it } from 'vitest';
 import {
 	buildResult,
 	commentBody,
+	isPermittedClosedSourceIssueFollowup,
 	isRequiredMergeProtectionRun,
 	latestRunsByWorkflow,
 	metadataFailures,
 	renderPostMergeReport,
 	resolvePrNumber,
 	reviewerFindings,
+	sourceIssueAccounting,
 	workflowFailures,
 } from '../scripts/ci/post_merge_validator.mjs';
 import { remediationBody, remediationTitle } from '../scripts/ci/post_merge_remediation_issue.mjs';
@@ -95,6 +97,33 @@ describe('post-merge metadata validation', () => {
 		).toMatchObject({ status: 'fail', remediation_required: true, sync_action: 'post_merge_failure' });
 	});
 
+	it('does not treat external issue URLs as same-repository source issues in build results', () => {
+		const externalBody = baseBody.replace('#1122', 'https://github.com/other/repo/issues/1122');
+		const result = buildResult({
+			pr: mergedPr({ body: externalBody }),
+			resolution: { pr: '1188' },
+			repository: 'owner/repo',
+		});
+
+		expect(result.source_issue).toBeNull();
+		expect(result.source_issue_candidates).toEqual(['https://github.com/other/repo/issues/1122']);
+	});
+
+	it('uses GITHUB_REPOSITORY as source issue accounting repository context fallback', () => {
+		const previousRepository = process.env.GITHUB_REPOSITORY;
+		process.env.GITHUB_REPOSITORY = 'owner/repo';
+		try {
+			expect(sourceIssueAccounting('- **Issue:** https://github.com/owner/repo/issues/1122').issueNumber).toBe('1122');
+			expect(sourceIssueAccounting('- **Issue:** https://github.com/other/repo/issues/1122').issueNumber).toBe('');
+		} finally {
+			if (previousRepository === undefined) {
+				delete process.env.GITHUB_REPOSITORY;
+			} else {
+				process.env.GITHUB_REPOSITORY = previousRepository;
+			}
+		}
+	});
+
 	it('treats missing advisory sections as remediation without failing closeout validation', () => {
 		const bodyWithoutAdvisory = baseBody.replace('\n\n## REQUIRED PRE-REVIEW SELF-CHECK\n- Complete.', '');
 		const failures = metadataFailures(mergedPr({ body: bodyWithoutAdvisory }), () => true);
@@ -128,6 +157,37 @@ describe('post-merge metadata validation', () => {
 			sync_action: 'post_merge_success',
 		});
 		expect(result.workflow_failures).toHaveLength(2);
+	});
+
+	it('allows already-closed completed source issues only for remediation follow-up closeout', () => {
+		const followupBody = `${baseBody}\n\nRemediation follow-up for PR #1412.`;
+		const closedCompletedIssue = {
+			state: 'closed',
+			state_reason: 'completed',
+			labels: [{ name: 'status:post-merge-verify' }, { name: 'post-merge-failure' }],
+		};
+
+		expect(isPermittedClosedSourceIssueFollowup({ body: followupBody, sourceIssue: closedCompletedIssue })).toBe(true);
+		expect(
+			metadataFailures(
+				mergedPr({ body: followupBody }),
+				() => true,
+				{ sourceIssue: closedCompletedIssue, repoLabels: [{ name: 'status:complete' }] },
+			),
+		).toEqual([]);
+		expect(
+			metadataFailures(
+				mergedPr(),
+				() => true,
+				{ sourceIssue: closedCompletedIssue, repoLabels: [{ name: 'status:complete' }] },
+			),
+		).toContainEqual(expect.objectContaining({ code: 'source_issue_not_open' }));
+	});
+
+	it('refuses closeout when the source issue is the active alternate Program 2 lane', () => {
+		const failures = metadataFailures(mergedPr({ body: baseBody.replace('#1122', '#1255') }), () => true);
+
+		expect(failures).toContainEqual(expect.objectContaining({ code: 'active_alternate_program_lane' }));
 	});
 });
 
@@ -235,7 +295,8 @@ describe('post-merge structured output and remediation body', () => {
 		});
 		expect(commentBody(result)).toContain('## Workflow failures');
 		expect(renderPostMergeReport(result)).toContain('Implementation evidence failures: 0');
-		expect(remediationTitle(result)).toBe('Post-merge remediation required for PR #1188');
+		expect(remediationTitle(result)).toBe('Post-merge closeout exception for PR #1188 / source #1122 / workflow_failure');
+		expect(remediationBody(result)).toContain('Required Atlas/Bill decision');
 		expect(remediationBody(result)).toContain('Auto-Sync Documentation');
 	});
 

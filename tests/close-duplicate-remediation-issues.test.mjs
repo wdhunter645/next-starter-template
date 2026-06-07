@@ -33,7 +33,8 @@ describe('close duplicate remediation issues', () => {
 			pr: '1188',
 			merge_sha: 'abc123def456',
 			source_issue: 1122,
-			group_key: '1188|abc123def456',
+			failure_code: 'legacy-remediation',
+			group_key: '1188|abc123def456|1122|legacy-remediation',
 		});
 	});
 
@@ -67,6 +68,22 @@ describe('close duplicate remediation issues', () => {
 		const issues = [
 			remediationIssue({ number: 1228, createdAt: '2026-06-01T10:00:00Z', mergeSha: 'aaa111' }),
 			remediationIssue({ number: 1229, createdAt: '2026-06-01T11:00:00Z', mergeSha: 'bbb222' }),
+		];
+		const actions = planDuplicateClosures(groupRemediationIssues(issues));
+
+		expect(actions).toEqual([]);
+	});
+
+	it('does not group exception issues with different failure conditions', () => {
+		const issues = [
+			{
+				...remediationIssue({ number: 1228, createdAt: '2026-06-01T10:00:00Z' }),
+				body: '- PR: #1188\n- Merge SHA: abc123def456\n- Source issue: #1122\n\n## Detected failure condition\n- missing_source_issue: missing',
+			},
+			{
+				...remediationIssue({ number: 1229, createdAt: '2026-06-01T11:00:00Z' }),
+				body: '- PR: #1188\n- Merge SHA: abc123def456\n- Source issue: #1122\n\n## Detected failure condition\n- terminal_label_conflict: conflict',
+			},
 		];
 		const actions = planDuplicateClosures(groupRemediationIssues(issues));
 

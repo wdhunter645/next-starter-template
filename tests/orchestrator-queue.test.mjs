@@ -396,8 +396,10 @@ describe('orchestrator queue advancement', () => {
 			action: 'post_merge_success',
 			pr: { body: '**Issue:** #1', mergedAt: '2026-05-05T19:05:00Z', state: 'MERGED', url: 'https://example.test/pr/42' },
 			postMergeResult: { status: 'pass', remediation_required: false, merge_sha: 'abc123' },
-			getIssueMeta: () => ({ title: 'Task 1', labels: ['orchestrator', 'status:post-merge-verify'] }),
+			getIssueMeta: () => ({ title: 'Task 1', labels: ['orchestrator', 'status:post-merge-verify'], state: 'OPEN' }),
 			setStatusFn: (...args) => transitions.push(args),
+			reconcileTerminalLabelsFn: vi.fn(),
+			getRepoLabels: () => ['status:complete'],
 			run: vi.fn(),
 		});
 
@@ -405,14 +407,6 @@ describe('orchestrator queue advancement', () => {
 		expect(complete).toBe('complete');
 		expect(transitions.map((transition) => transition.slice(1, 3))).toEqual([
 			['status:review', 'status:post-merge-verify'],
-			['status:blocked', null],
-			['status:queued', null],
-			['status:failed', null],
-			['status:post-merge-verify', null],
-			['status:pr-draft', null],
-			['status:review', null],
-			['status:implementation', null],
-			[null, 'status:complete'],
 		]);
 		expect(advanceQueue.queueAdvanceDecision(queryFor({ 'status:blocked': [blockedNewer, blockedOlder] }))).toMatchObject({
 			action: 'advance',
@@ -432,10 +426,8 @@ describe('orchestrator queue advancement', () => {
 			run,
 		});
 
-		expect(result).toBe('remediation');
-		expect(transitions.map((transition) => transition.slice(1, 3))).toEqual([
-			['status:failed', 'status:post-merge-verify'],
-		]);
+		expect(result).toBe('exception');
+		expect(transitions).toEqual([]);
 		expect(run).not.toHaveBeenCalled();
 	});
 
@@ -477,10 +469,10 @@ describe('orchestrator queue advancement', () => {
 		expect(run).toHaveBeenNthCalledWith(2, ['issue', 'comment', '2', '--repo', 'owner/repo', '--body', 'Queue advance: blocked → queued']);
 	});
 
-	it('halts without advancing when a post-merge failure applies status:failed', () => {
+	it('halts without advancing when a post-merge exception leaves verification active', () => {
 		const blocked = issue(3, 'status:blocked', '2026-05-05T19:02:00Z');
-		const failed = issue(1, 'status:failed', '2026-05-05T19:00:00Z');
-		const query = queryFor({ 'status:failed': [failed], 'status:blocked': [blocked] });
+		const verifying = issue(1, 'status:post-merge-verify', '2026-05-05T19:00:00Z');
+		const query = queryFor({ 'status:post-merge-verify': [verifying], 'status:blocked': [blocked] });
 		const logs = [];
 		const transitions = [];
 
@@ -494,10 +486,10 @@ describe('orchestrator queue advancement', () => {
 		const decision = advanceQueue.queueAdvanceDecision(query);
 		advanceQueue.logDecision(decision, (message) => logs.push(message));
 
-		expect(failedTransition).toBe('failed');
-		expect(transitions[0].slice(1, 3)).toEqual(['status:post-merge-verify', 'status:failed']);
-		expect(decision).toEqual({ action: 'halt_failed' });
-		expect(logs).toEqual(['halt: failed']);
+		expect(failedTransition).toBe('exception');
+		expect(transitions).toEqual([]);
+		expect(decision).toEqual({ action: 'halt_active' });
+		expect(logs).toEqual(['halt: active']);
 	});
 });
 

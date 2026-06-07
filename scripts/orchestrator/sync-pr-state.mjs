@@ -4,10 +4,10 @@ import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 
-import { linkedIssueNumber } from '../ci/issue_accounting.mjs';
+import { linkedIssueNumber, sourceIssueAccounting } from '../ci/issue_accounting.mjs';
 import {
-  STALE_SOURCE_ISSUE_LABELS,
   buildSourceIssueCloseoutComment,
+  planTerminalLabelReconciliation,
   postMergeVerificationResult,
   shouldCloseSourceIssue,
 } from '../ci/post_merge_source_issue_closeout.mjs';
@@ -46,11 +46,12 @@ export function readPostMergeResult(resultPath = process.env.POST_MERGE_RESULT_P
 }
 
 export function issueMeta(issueNumber, { run = runGh } = {}) {
-  const issueJson = run(['issue', 'view', issueNumber, '--repo', repo, '--json', 'title,labels']);
+  const issueJson = run(['issue', 'view', issueNumber, '--repo', repo, '--json', 'title,labels,state']);
   const issue = JSON.parse(issueJson);
   return {
     title: issue.title || '',
     labels: (issue.labels || []).map((label) => label.name),
+    state: issue.state || '',
   };
 }
 
@@ -78,17 +79,40 @@ export function setStatus(
   if (comment) run(['issue', 'comment', issueNumber, '--repo', repo, '--body', comment]);
 }
 
+export function reconcileTerminalLabels(issueNumber, plan, { run = runGh } = {}) {
+  const args = ['issue', 'edit', issueNumber, '--repo', repo];
+  for (const label of plan.removeLabels || []) {
+    args.push('--remove-label', label);
+  }
+  if (plan.addLabel) args.push('--add-label', plan.addLabel);
+  if (args.length > 5) run(args);
+}
+
+function validationSummary(postMergeResult) {
+  const summary = postMergeResult?.evidence_summary;
+  if (!summary) return '';
+  return [
+    `metadata=${summary.metadata_failures ?? 0}`,
+    `implementation=${summary.implementation_failures ?? 0}`,
+    `diataxis=${summary.diataxis_failures ?? 0}`,
+    `late_review=${summary.late_reviewer_findings ?? 0}`,
+    `workflow=${summary.workflow_failures ?? 0}`,
+  ].join('; ');
+}
+
 export function syncPrState({
   pr,
   prNumber,
   action,
   setStatusFn = setStatus,
+  reconcileTerminalLabelsFn = reconcileTerminalLabels,
   run = runGh,
   log = console.log,
   getIssueMeta = issueMeta,
+  getRepoLabels = repoLabelNames,
   postMergeResult = readPostMergeResult(),
 } = {}) {
-  const issueNumber = linkedIssueNumber(pr.body || '');
+  const issueNumber = sourceIssueAccounting(pr.body || '', { repository: repo }).issueNumber;
   const isMerged = Boolean(pr.mergedAt) || pr.state === 'MERGED';
 
   if (!issueNumber) {
@@ -109,12 +133,17 @@ export function syncPrState({
 
   if (action === 'post_merge_success') {
     const meta = getIssueMeta(issueNumber, { run });
+    const terminalLabelResult = postMergeResult?.terminal_label_result || planTerminalLabelReconciliation({
+      issueLabels: meta.labels || [],
+      repoLabels: getRepoLabels(),
+    });
     const closeDecision = shouldCloseSourceIssue({
       action,
       issueNumber,
       isMerged,
       issueMeta: meta,
       postMergeResult,
+      terminalLabelResult,
     });
 
     if (!closeDecision.close) {
@@ -122,49 +151,37 @@ export function syncPrState({
       return closeDecision.reason;
     }
 
-    const lifecycleLabelsToClear = [
-      ...STALE_SOURCE_ISSUE_LABELS,
-      'status:pr-draft',
-      'status:review',
-      'status:implementation',
-    ];
-    for (const label of lifecycleLabelsToClear) {
-      setStatusFn(issueNumber, label, null, null);
-    }
+    reconcileTerminalLabelsFn(issueNumber, terminalLabelResult);
 
     const mergeSha = postMergeResult?.merge_sha || pr.mergeCommit?.oid || '';
     const closeoutComment = buildSourceIssueCloseoutComment({
       prNumber,
       mergeSha,
+      sourceIssueNumber: issueNumber,
       validatorStatus: postMergeResult?.status || 'pass',
       verificationResult: postMergeVerificationResult(postMergeResult),
       closeoutReason: closeDecision.reason,
+      validationSummary: validationSummary(postMergeResult),
+      terminalLabelResult: terminalLabelResult.summary,
+      sourceIssueCloseoutMode: postMergeResult?.source_issue_closeout_mode,
+      queueAdvancementStatus: postMergeResult?.queue_advancement_status,
     });
 
-    setStatusFn(
-      issueNumber,
-      null,
-      'status:complete',
-      `Post-merge verification passed for PR #${prNumber}: ${pr.url}`,
-    );
     run(['issue', 'comment', issueNumber, '--repo', repo, '--body', closeoutComment]);
-    run(['issue', 'close', issueNumber, '--repo', repo, '--reason', 'completed']);
+    if (String(meta.state || '').toUpperCase() !== 'CLOSED') {
+      run(['issue', 'close', issueNumber, '--repo', repo, '--reason', 'completed']);
+    }
     return 'complete';
   }
 
   if (action === 'post_merge_remediation') {
-    setStatusFn(
-      issueNumber,
-      'status:failed',
-      'status:post-merge-verify',
-      `Post-merge validation passed for PR #${prNumber}, but remediation remains required. Source issue remains open: ${pr.url}`,
-    );
-    return 'remediation';
+    log(`Post-merge closeout exception for PR #${prNumber}: remediation remains required; source issue was not relabeled.`);
+    return 'exception';
   }
 
   if (action === 'post_merge_failure') {
-    setStatusFn(issueNumber, 'status:post-merge-verify', 'status:failed', `Post-merge verification failed for PR #${prNumber}. Recovery issue/PR required: ${pr.url}`);
-    return 'failed';
+    log(`Post-merge closeout exception for PR #${prNumber}: validation failed; source issue was not relabeled.`);
+    return 'exception';
   }
 
   if (action === 'closed') return 'skipped';
