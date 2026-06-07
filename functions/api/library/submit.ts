@@ -34,8 +34,11 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     const name = String((body as any).name ?? "").trim();
     const title = String((body as any).title ?? "").trim();
     const content = String((body as any).content ?? "").trim();
+    const sourceName = String((body as any).source_name ?? "").trim() || null;
     const sourceUrl = String((body as any).source_url ?? "").trim() || null;
+    const creditLine = String((body as any).credit_line ?? "").trim() || null;
     const mediaUrl = String((body as any).media_url ?? "").trim() || null;
+    const mediaReference = String((body as any).media_reference ?? mediaUrl ?? "").trim() || null;
     const proposedTag = slugifyTag(String((body as any).proposed_tag ?? title).trim());
 
     // email is derived from the authenticated session — never trust client input
@@ -55,12 +58,36 @@ export const onRequestPost = async (context: any): Promise<Response> => {
       );
     }
 
+    const submittedBy = `${name} <${email}>`;
+    const payload = JSON.stringify({
+      submitted_by: submittedBy,
+      title,
+      description: content,
+      source_name: sourceName,
+      source_url: sourceUrl,
+      credit_line: creditLine,
+      proposed_tag: proposedTag || null,
+      media_reference: mediaReference,
+    });
+
     const result = await auth.db.prepare(
       `INSERT INTO submission_queue
-        (submitted_by, title, description, source_url, proposed_tag, media_url, status)
-       VALUES (?, ?, ?, ?, ?, ?, 'pending');`
+        (submitted_by, payload, title, description, source_name, source_url, credit_line,
+         proposed_tag, media_url, media_reference, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending');`
     )
-      .bind(`${name} <${email}>`, title, content, sourceUrl, proposedTag || null, mediaUrl)
+      .bind(
+        submittedBy,
+        payload,
+        title,
+        content,
+        sourceName,
+        sourceUrl,
+        creditLine,
+        proposedTag || null,
+        mediaUrl,
+        mediaReference,
+      )
       .run();
 
     const insertedId =

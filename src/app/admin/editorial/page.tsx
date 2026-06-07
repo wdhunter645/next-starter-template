@@ -9,15 +9,41 @@ import { adminJson } from '@/lib/adminClient';
 type Submission = {
   submission_id: number;
   submitted_by: string;
+  payload?: string | null;
   title: string;
   description: string;
+  source_name?: string | null;
   source_url?: string | null;
+  credit_line?: string | null;
   proposed_tag?: string | null;
   media_url?: string | null;
-  status: 'pending' | 'approved' | 'rejected_auto' | 'rejected_manual';
+  media_reference?: string | null;
+  status: SubmissionStatus;
+  triage_flags?: string | null;
+  duplicate_candidate?: string | null;
   review_notes?: string | null;
+  decision_by?: string | null;
+  decision_at?: string | null;
+  rejected_at?: string | null;
+  purge_eligible_at?: string | null;
+  retention_reason?: string | null;
   created_at?: string | null;
 };
+
+type SubmissionStatus = 'pending' | 'triaged' | 'under_review' | 'approved' | 'rejected' | 'merged' | 'purged';
+type SubmissionFilter = SubmissionStatus | 'all';
+type ReviewAction = 'triage' | 'start_review' | 'approve' | 'merge' | 'reject' | 'purge';
+
+const SUBMISSION_FILTERS: Array<{ value: SubmissionFilter; label: string }> = [
+  { value: 'pending', label: 'Pending' },
+  { value: 'triaged', label: 'Triaged' },
+  { value: 'under_review', label: 'Under review' },
+  { value: 'approved', label: 'Approved' },
+  { value: 'rejected', label: 'Rejected' },
+  { value: 'merged', label: 'Merged' },
+  { value: 'purged', label: 'Purged' },
+  { value: 'all', label: 'All submissions' },
+];
 
 type InventoryRecord = {
   id: number;
@@ -68,12 +94,15 @@ export default function AdminEditorialArchivePage() {
   const [loading, setLoading] = useState(false);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [inventory, setInventory] = useState<InventoryRecord[]>([]);
+  const [submissionFilter, setSubmissionFilter] = useState<SubmissionFilter>('pending');
 
   const load = useCallback(async () => {
     setLoading(true);
     setStatus('Loading editorial queue…');
 
-    const result = await adminJson<EditorialListResponse>('/api/admin/editorial/list?limit=100');
+    const result = await adminJson<EditorialListResponse>(
+      `/api/admin/editorial/list?limit=100&submission_status=${submissionFilter}`,
+    );
 
     if (!result.ok) {
       setSubmissions([]);
@@ -88,15 +117,24 @@ export default function AdminEditorialArchivePage() {
     setSubmissions(nextSubmissions);
     setInventory(nextInventory);
     setStatus(
-      `Loaded ${nextSubmissions.length} pending submission(s) and ${nextInventory.length} archive record(s).`,
+      `Loaded ${nextSubmissions.length} ${submissionFilter} submission(s) and ${nextInventory.length} archive record(s).`,
     );
     setLoading(false);
-  }, []);
+  }, [submissionFilter]);
 
   const reviewSubmission = useCallback(
-    async (submission: Submission, action: 'approve' | 'reject', form: HTMLFormElement) => {
+    async (
+      submission: Submission,
+      action: ReviewAction,
+      form: HTMLFormElement,
+      options: { retentionReason?: string } = {},
+    ) => {
       const formData = new FormData(form);
-      setStatus(action === 'approve' ? `Approving "${submission.title}"…` : `Rejecting "${submission.title}"…`);
+      setStatus(`Recording ${action.replace('_', ' ')} for "${submission.title}"…`);
+
+      const targetInventoryId = Number(formData.get('target_inventory_id') || 0);
+      const retentionReason = options.retentionReason ?? String(formData.get('retention_reason') || '');
+      const purgeEligibleAt = String(formData.get('purge_eligible_at') || '');
 
       const result = await adminJson<{ ok: true }>('/api/admin/editorial/review', {
         method: 'POST',
@@ -104,13 +142,18 @@ export default function AdminEditorialArchivePage() {
           submission_id: submission.submission_id,
           action,
           tag: String(formData.get('tag') || submission.proposed_tag || ''),
-          source_name: String(formData.get('source_name') || 'Member submission'),
+          source_name: String(formData.get('source_name') || submission.source_name || 'Member submission'),
           source_url: String(formData.get('source_url') || submission.source_url || ''),
-          credit_line: String(formData.get('credit_line') || submission.submitted_by || ''),
+          credit_line: String(formData.get('credit_line') || submission.credit_line || submission.submitted_by || ''),
           story_type: String(formData.get('story_type') || 'brief'),
           allowed_sections: ['library'],
           priority: Number(formData.get('priority') || 0),
           review_notes: String(formData.get('review_notes') || ''),
+          triage_flags: String(formData.get('triage_flags') || '[]'),
+          duplicate_candidate: String(formData.get('duplicate_candidate') || ''),
+          retention_reason: retentionReason,
+          purge_eligible_at: retentionReason ? '' : purgeEligibleAt,
+          target_inventory_id: Number.isFinite(targetInventoryId) ? targetInventoryId : 0,
         }),
       });
 
@@ -119,7 +162,7 @@ export default function AdminEditorialArchivePage() {
         return;
       }
 
-      setStatus(action === 'approve' ? 'Approved into content inventory draft.' : 'Rejected submission.');
+      setStatus(`Submission workflow action recorded: ${action.replace('_', ' ')}.`);
       await load();
     },
     [load],
@@ -162,17 +205,31 @@ export default function AdminEditorialArchivePage() {
           <button type="button" onClick={() => void load()} disabled={loading} style={buttonStyle(loading)}>
             {loading ? 'Loading…' : 'Refresh'}
           </button>
+          <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            Queue status
+            <select
+              value={submissionFilter}
+              onChange={(event) => setSubmissionFilter(event.target.value as SubmissionFilter)}
+              style={{ ...fieldStyle(), width: 'auto' }}
+            >
+              {SUBMISSION_FILTERS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
           <span style={{ opacity: 0.85 }}>{status}</span>
         </div>
 
         <section style={{ border: '1px solid rgba(0,0,0,0.12)', borderRadius: 14, padding: 14 }}>
           <h2 style={{ marginTop: 0 }}>Submission Review Queue</h2>
           <p style={{ opacity: 0.8 }}>
-            Pending member submissions stay here until a human approves or rejects them.
+            Member submissions stay here until a human triages, reviews, approves, merges, rejects, retains, or purges them.
           </p>
 
           {submissions.length === 0 ? (
-            <p>No pending submissions.</p>
+            <p>No {submissionFilter} submissions.</p>
           ) : (
             <div style={{ display: 'grid', gap: 14 }}>
               {submissions.map((submission) => (
@@ -249,9 +306,16 @@ export default function AdminEditorialArchivePage() {
 
 function SubmissionCard(props: {
   submission: Submission;
-  onReview: (submission: Submission, action: 'approve' | 'reject', form: HTMLFormElement) => Promise<void>;
+  onReview: (
+    submission: Submission,
+    action: ReviewAction,
+    form: HTMLFormElement,
+    options?: { retentionReason?: string },
+  ) => Promise<void>;
 }) {
   const { submission, onReview } = props;
+  const canPurge = submission.status === 'rejected' && !submission.retention_reason;
+  const retainedDefault = submission.retention_reason || 'Retained for editorial follow-up.';
 
   return (
     <form
@@ -261,11 +325,26 @@ function SubmissionCard(props: {
       <div>
         <h3 style={{ margin: 0 }}>{submission.title}</h3>
         <div style={{ opacity: 0.75, fontSize: 13 }}>
-          submitted by {submission.submitted_by} · {submission.created_at || 'date unavailable'}
+          submitted by {submission.submitted_by} · status: {submission.status} · {submission.created_at || 'date unavailable'}
         </div>
       </div>
 
       <p style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{submission.description}</p>
+      <div style={{ opacity: 0.78, fontSize: 13 }}>
+        source: {submission.source_name || '—'} · credit: {submission.credit_line || '—'} · media:{' '}
+        {submission.media_reference || submission.media_url || '—'}
+      </div>
+      {(submission.duplicate_candidate ||
+        submission.triage_flags ||
+        submission.decision_at ||
+        submission.purge_eligible_at ||
+        submission.retention_reason) && (
+        <div style={{ opacity: 0.78, fontSize: 13 }}>
+          duplicate: {submission.duplicate_candidate || '—'} · triage: {submission.triage_flags || '[]'} · decision:{' '}
+          {submission.decision_by || '—'} {submission.decision_at || ''} · purge eligible:{' '}
+          {submission.purge_eligible_at || '—'} · retention: {submission.retention_reason || '—'}
+        </div>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
         <label style={{ display: 'grid', gap: 6 }}>
@@ -274,7 +353,7 @@ function SubmissionCard(props: {
         </label>
         <label style={{ display: 'grid', gap: 6 }}>
           Source name
-          <input name="source_name" defaultValue="Member submission" style={fieldStyle()} />
+          <input name="source_name" defaultValue={submission.source_name || 'Member submission'} style={fieldStyle()} />
         </label>
         <label style={{ display: 'grid', gap: 6 }}>
           Source URL
@@ -282,7 +361,7 @@ function SubmissionCard(props: {
         </label>
         <label style={{ display: 'grid', gap: 6 }}>
           Credit line
-          <input name="credit_line" defaultValue={submission.submitted_by} style={fieldStyle()} />
+          <input name="credit_line" defaultValue={submission.credit_line || submission.submitted_by} style={fieldStyle()} />
         </label>
         <label style={{ display: 'grid', gap: 6 }}>
           Story type
@@ -296,14 +375,48 @@ function SubmissionCard(props: {
           Priority
           <input name="priority" type="number" defaultValue={0} style={fieldStyle()} />
         </label>
+        <label style={{ display: 'grid', gap: 6 }}>
+          Duplicate candidate / merge target note
+          <input name="duplicate_candidate" defaultValue={submission.duplicate_candidate || ''} style={fieldStyle()} />
+        </label>
+        <label style={{ display: 'grid', gap: 6 }}>
+          Target inventory ID for merge
+          <input name="target_inventory_id" type="number" min={1} style={fieldStyle()} />
+        </label>
+        <label style={{ display: 'grid', gap: 6 }}>
+          Purge eligible at
+          <input name="purge_eligible_at" placeholder="YYYY-MM-DD or ISO timestamp" style={fieldStyle()} />
+        </label>
       </div>
 
       <label style={{ display: 'grid', gap: 6 }}>
         Review notes
         <textarea name="review_notes" rows={3} style={fieldStyle()} />
       </label>
+      <label style={{ display: 'grid', gap: 6 }}>
+        Objective triage flags JSON
+        <textarea name="triage_flags" rows={2} defaultValue={submission.triage_flags || '[]'} style={fieldStyle()} />
+      </label>
+      <label style={{ display: 'grid', gap: 6 }}>
+        Retention reason
+        <textarea name="retention_reason" rows={2} defaultValue={submission.retention_reason || ''} style={fieldStyle()} />
+      </label>
 
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <button
+          type="button"
+          onClick={(event) => void onReview(submission, 'triage', event.currentTarget.form as HTMLFormElement)}
+          style={buttonStyle()}
+        >
+          Mark Triaged
+        </button>
+        <button
+          type="button"
+          onClick={(event) => void onReview(submission, 'start_review', event.currentTarget.form as HTMLFormElement)}
+          style={buttonStyle()}
+        >
+          Start Review
+        </button>
         <button
           type="button"
           onClick={(event) => void onReview(submission, 'approve', event.currentTarget.form as HTMLFormElement)}
@@ -313,10 +426,36 @@ function SubmissionCard(props: {
         </button>
         <button
           type="button"
+          onClick={(event) => void onReview(submission, 'merge', event.currentTarget.form as HTMLFormElement)}
+          style={buttonStyle()}
+        >
+          Mark Merged
+        </button>
+        <button
+          type="button"
           onClick={(event) => void onReview(submission, 'reject', event.currentTarget.form as HTMLFormElement)}
           style={buttonStyle()}
         >
-          Reject
+          Reject + Purge Eligible
+        </button>
+        <button
+          type="button"
+          onClick={(event) =>
+            void onReview(submission, 'reject', event.currentTarget.form as HTMLFormElement, {
+              retentionReason: retainedDefault,
+            })
+          }
+          style={buttonStyle()}
+        >
+          Retain Rejected
+        </button>
+        <button
+          type="button"
+          onClick={(event) => void onReview(submission, 'purge', event.currentTarget.form as HTMLFormElement)}
+          disabled={!canPurge}
+          style={buttonStyle(!canPurge)}
+        >
+          Mark Purged
         </button>
       </div>
     </form>
