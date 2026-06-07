@@ -140,7 +140,7 @@ issues, change workflow YAML, or merge unless the active source issue explicitly
 authorizes that action. If dependency or blocking status is unclear, Cursor must
 pause and report findings instead of implementing.
 
-### Child Issue Readiness Requirements
+### Child issue readiness requirements
 
 Every executable Program 2 child issue must include or be paired with:
 
