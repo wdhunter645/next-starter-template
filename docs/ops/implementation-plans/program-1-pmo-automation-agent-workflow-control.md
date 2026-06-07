@@ -95,6 +95,278 @@ When child issues are later created, each task must preserve one source issue,
 one bounded allowlist, exact validation, and a stop point that protects human
 review and merge authority.
 
+## Atlas / Cursor Planning Boundary
+
+Atlas owns the Program 1 planning documentation for:
+
+- who owns each project area;
+- what the project area covers;
+- where the authoritative documentation must live;
+- suggested sequencing and readiness gates.
+
+Cursor owns later execution planning for:
+
+- how the approved work is implemented;
+- exact technical approach;
+- implementation order within an authorized source issue;
+- validation details beyond the documented minimum;
+- safe stop/continue decisions inside the bounded task scope.
+
+Atlas documentation may suggest sequence and timing, but Cursor must convert that
+into implementation mechanics only after Bill/Atlas approves the relevant source
+issue and allowlist.
+
+---
+
+## Program 1 Project Documentation Set
+
+This section defines the production documentation target for each Program 1
+project area. Each project area must be understandable before implementation
+issue creation. The descriptions below are not implementation instructions;
+they define ownership, scope, authority location, and suggested sequencing.
+
+### Project 001 — PMO Perpetual Cycle Authority
+
+Who:
+- Owner: Atlas.
+- Decision authority: Bill.
+- Implementer after approval: Cursor only if a later docs issue authorizes edits.
+
+What:
+- Defines Program 1 and Program 2 as alternating execution lanes.
+- Defines Program 3 as portfolio intake, prioritization, and promotion staging.
+- Removes any implication that Program 1 or Program 2 are permanent subject
+  domains.
+- States that completed Program 1 cycles are historical evidence only, not parent
+  issues for later Program 1 cycles.
+
+Where:
+- `docs/ops/pmo/program-registry.md`
+- `docs/reference/pmo/lgfc-program-portfolio-model.md`
+- `docs/ops/pmo/critical-path.md`
+
+Suggested when:
+- First Program 1 project area to finalize.
+- Must be complete before any automation, queue, label, or promotion work is
+  implemented.
+
+Implementation-readiness criteria:
+- PMO lane definitions are explicit.
+- Historical vs active cycle linkage is unambiguous.
+- Active Program 2 non-interference is documented.
+
+### Project 002 — Workflow Automation Design Migration
+
+Who:
+- Owner: Atlas.
+- Source authority approver: Bill.
+- Implementer after approval: Cursor for docs migration only unless later code
+  issues are created.
+
+What:
+- Converts the Google Drive Workflow Automation concept into GitHub authority.
+- Preserves the purpose: controlled continuous implementation where Cursor can
+  work a sequenced queue while GitHub CI, repo policy, Atlas, and Bill preserve
+  readiness, merge, stop, and review control.
+- Explicitly states Drive and chat are planning surfaces, not implementation
+  authority until captured in repo docs.
+
+Where:
+- `docs/ops/pmo/workflow-automation.md`
+- `docs/ops/implementation-plans/program-1-pmo-automation-agent-workflow-control.md`
+- `docs/ops/pmo/program-registry.md`
+
+Suggested when:
+- Second Program 1 project area.
+- Should follow PMO cycle authority so the migrated design lands in the correct
+  Program 1/2/3 model.
+
+Implementation-readiness criteria:
+- GitHub authority exists for the design.
+- Protected domains and non-interference rules are explicit.
+- No runtime or workflow YAML work is implied by documentation migration.
+
+### Project 003 — Cursor Continuation and Queue Contract
+
+Who:
+- Owner: Atlas.
+- Operational reviewer: Bill.
+- Implementer after approval: Cursor for PR/issue behavior inside authorized
+  source issues; later controller automation only by separate issue.
+
+What:
+- Defines when Cursor may continue, when it must stop, and what evidence it must
+  leave.
+- Distinguishes PR implementation work from GitHub issue mutation.
+- Prevents Cursor from stealing the active lane when another program is only in
+  planning review.
+- Requires one active source issue and one bounded PR per task unless a later
+  wave model explicitly authorizes a bounded exception.
+
+Where:
+- `docs/reference/pmo/lgfc-cursor-execution-contract.md`
+- `docs/ops/pmo/parallel-agent-rules.md`
+- `docs/ops/pmo/critical-path.md`
+
+Suggested when:
+- Third Program 1 project area.
+- Should be completed before batch review or wave planning is allowed.
+
+Implementation-readiness criteria:
+- Continue/stop conditions are testable.
+- Cursor prohibitions are explicit.
+- Atlas/Bill review handoff is preserved.
+
+### Project 004 — PR Readiness and Batch Review Control
+
+Who:
+- Owner: Atlas.
+- Merge authority: Bill.
+- Reviewer/verification authority: Atlas and Bill.
+- Implementer after approval: Cursor may prepare PRs but not merge or declare
+  final closeout.
+
+What:
+- Defines `READY FOR REVIEW` as a handoff state, not merge authority.
+- Defines how multiple PRs may queue for review without unsafe dependency stacks.
+- Requires PR body evidence: source issue, allowlist, validation, bot/reviewer
+  disposition, status checks, and unresolved blockers.
+- Separates independent batch review from dependent stacked work.
+
+Where:
+- `docs/ops/pmo/parallel-agent-rules.md`
+- `docs/reference/pmo/lgfc-cursor-execution-contract.md`
+
+Suggested when:
+- Fourth Program 1 project area.
+- Should follow the Cursor continuation contract and precede any queue/wave label
+  design.
+
+Implementation-readiness criteria:
+- Independent vs dependent PR handling is clear.
+- Human merge authority is preserved.
+- Review evidence requirements are explicit.
+
+### Project 005 — Merge and Issue Mutation Policy
+
+Who:
+- Owner: Atlas.
+- Final authority: Bill for protected merges and destructive operations.
+- Implementation actor: Atlas or a later approved controller for issue-state
+  mutation; Cursor only when explicitly authorized.
+
+What:
+- Defines who may merge, close issues, relabel, advance queues, create child
+  issues, and mutate issue state.
+- Establishes that Cursor may comment, implement, and prepare PRs, but may not
+  mutate issue state unless a source issue explicitly authorizes it.
+- Separates evidence generation from final repository-state mutation.
+
+Where:
+- `docs/reference/pmo/lgfc-cursor-execution-contract.md`
+- `docs/ops/pmo/github-issue-closeout-protocol.md`
+- `docs/ops/pmo/parallel-agent-rules.md`
+
+Suggested when:
+- Fifth Program 1 project area.
+- Must precede terminal label automation or any controller issue-state changes.
+
+Implementation-readiness criteria:
+- Authority matrix is explicit.
+- Issue mutation is separately authorized from PR implementation.
+- Program 2 issue-state control remains protected.
+
+### Project 006 — Queue / Wave Model and Label Planning
+
+Who:
+- Owner: Atlas.
+- Approval authority: Bill.
+- Implementer after approval: Cursor or controller only through a later issue that
+  authorizes label taxonomy and workflow/controller changes.
+
+What:
+- Defines queue states, wave/run identifiers, active-task selection, and
+  stop/continue ownership as planning concepts.
+- Prevents premature label creation or application.
+- Requires future implementation issues to define label purpose, allowed values,
+  state transitions, rollback, and non-interference before any label mutation.
+
+Where:
+- `docs/ops/pmo/workflow-automation.md`
+- `docs/ops/pmo/critical-path.md`
+- `docs/reference/pmo/lgfc-cursor-execution-contract.md`
+
+Suggested when:
+- Sixth Program 1 project area.
+- Should only proceed after merge/issue mutation policy is accepted.
+
+Implementation-readiness criteria:
+- Label taxonomy is proposed but not applied.
+- State transitions are documented.
+- Future controller/workflow implementation boundaries are explicit.
+
+### Project 007 — Post-Merge Closeout Evidence Stabilization
+
+Who:
+- Owner: Atlas.
+- Closeout authority: Atlas or a later approved controller.
+- Human escalation authority: Bill.
+- Cursor role: provide PR evidence and stop; do not assume issue-close authority.
+
+What:
+- Fixes the `#1399` / `#1410` class of failure.
+- Defines required post-merge evidence: merged PR, merge commit, source issue,
+  validation results, issue-state action, queue decision, label reconciliation,
+  and unresolved blocker state.
+- Requires terminal issue-state and label cleanup before queue advancement.
+- Defines remediation issue handling when post-merge validation fails.
+
+Where:
+- `docs/ops/pmo/github-issue-closeout-protocol.md`
+- `docs/reference/pmo/lgfc-cursor-execution-contract.md`
+- `docs/ops/pmo/workflow-automation.md`
+
+Suggested when:
+- Seventh Program 1 project area.
+- Should be completed before queue automation, wave automation, or any automatic
+  next-task activation.
+
+Implementation-readiness criteria:
+- Terminal label policy is explicit.
+- Closeout evidence and closeout mutation are separated.
+- Queue advancement stops if terminal-state reconciliation fails.
+
+### Project 008 — Program 3 Promotion and Program 1 Launch Gate
+
+Who:
+- Owner: Atlas.
+- Promotion authority: Bill.
+- Implementer after approval: Cursor only for bounded docs/issue work created
+  after promotion is approved.
+
+What:
+- Defines how ideas move from Program 3 into future Program 1 or Program 2 cycles.
+- Requires owner approval, repo authority, scope definition, non-interference
+  review, implementation-plan readiness, and bounded issue creation before Cursor
+  work starts.
+- Defines when Program 1 is launch-ready and when child issues may be created.
+
+Where:
+- `docs/reference/pmo/lgfc-program-portfolio-model.md`
+- `docs/ops/pmo/program-registry.md`
+- `docs/ops/pmo/workflow-automation.md`
+- `docs/ops/implementation-plans/program-1-pmo-automation-agent-workflow-control.md`
+
+Suggested when:
+- Final Program 1 project area before launch decision.
+- Should be reviewed after the other seven areas so promotion and launch gates
+  reflect the finalized authority model.
+
+Implementation-readiness criteria:
+- Promotion criteria are auditable.
+- Launch gate is explicit.
+- Child issue creation remains blocked until Atlas/Bill walkthrough approval.
+
 ---
 
 ## Task 001 — PMO Perpetual Cycle Authority
