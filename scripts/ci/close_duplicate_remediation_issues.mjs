@@ -2,9 +2,12 @@
 
 import { pathToFileURL } from 'node:url';
 import { githubRepoRequest } from './github_issue_api.mjs';
+import {
+	LEGACY_REMEDIATION_TITLE_PREFIX,
+	REMEDIATION_TITLE_PREFIX,
+} from './post_merge_source_issue_closeout.mjs';
 
 const REMEDIATION_LABEL = 'post-merge-failure';
-const TITLE_PREFIX = 'Post-merge remediation required for ';
 
 export function parseRemediationIssue(issue) {
 	const body = String(issue?.body || '');
@@ -20,11 +23,12 @@ export function parseRemediationIssue(issue) {
 
 	const sourceFromBody = body.match(/^- Source issue: #(\d+)$/m)?.[1] ?? null;
 	const source_issue = sourceFromBody ? Number(sourceFromBody) : null;
+	const failure_code = body.match(/^## Detected failure condition\s*\n- ([^:\n]+):/m)?.[1] || 'legacy-remediation';
 
 	const group_key =
 		merge_sha === 'unknown'
 			? `unknown-${issue?.number ?? 'missing'}`
-			: `${pr || 'none'}|${merge_sha}`;
+			: `${pr || 'none'}|${merge_sha}|${source_issue || 'none'}|${failure_code}`;
 
 	return {
 		number: issue?.number,
@@ -33,6 +37,7 @@ export function parseRemediationIssue(issue) {
 		pr,
 		merge_sha,
 		source_issue,
+		failure_code,
 		group_key,
 	};
 }
@@ -104,7 +109,8 @@ async function paginateOpenRemediationIssues({ token, repository }) {
 
 		for (const issue of batch) {
 			if (issue.pull_request) continue;
-			if (!String(issue.title || '').startsWith(TITLE_PREFIX)) continue;
+			const title = String(issue.title || '');
+			if (!title.startsWith(REMEDIATION_TITLE_PREFIX) && !title.startsWith(LEGACY_REMEDIATION_TITLE_PREFIX)) continue;
 			issues.push(issue);
 		}
 

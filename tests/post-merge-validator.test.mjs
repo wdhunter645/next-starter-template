@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	buildResult,
 	commentBody,
+	isPermittedClosedSourceIssueFollowup,
 	isRequiredMergeProtectionRun,
 	latestRunsByWorkflow,
 	metadataFailures,
@@ -129,6 +130,37 @@ describe('post-merge metadata validation', () => {
 		});
 		expect(result.workflow_failures).toHaveLength(2);
 	});
+
+	it('allows already-closed completed source issues only for remediation follow-up closeout', () => {
+		const followupBody = `${baseBody}\n\nRemediation follow-up for PR #1412.`;
+		const closedCompletedIssue = {
+			state: 'closed',
+			state_reason: 'completed',
+			labels: [{ name: 'status:post-merge-verify' }, { name: 'post-merge-failure' }],
+		};
+
+		expect(isPermittedClosedSourceIssueFollowup({ body: followupBody, sourceIssue: closedCompletedIssue })).toBe(true);
+		expect(
+			metadataFailures(
+				mergedPr({ body: followupBody }),
+				() => true,
+				{ sourceIssue: closedCompletedIssue, repoLabels: [{ name: 'status:complete' }] },
+			),
+		).toEqual([]);
+		expect(
+			metadataFailures(
+				mergedPr(),
+				() => true,
+				{ sourceIssue: closedCompletedIssue, repoLabels: [{ name: 'status:complete' }] },
+			),
+		).toContainEqual(expect.objectContaining({ code: 'source_issue_not_open' }));
+	});
+
+	it('refuses closeout when the source issue is the active alternate Program 2 lane', () => {
+		const failures = metadataFailures(mergedPr({ body: baseBody.replace('#1122', '#1255') }), () => true);
+
+		expect(failures).toContainEqual(expect.objectContaining({ code: 'active_alternate_program_lane' }));
+	});
 });
 
 describe('post-merge reviewer audit classification', () => {
@@ -235,7 +267,8 @@ describe('post-merge structured output and remediation body', () => {
 		});
 		expect(commentBody(result)).toContain('## Workflow failures');
 		expect(renderPostMergeReport(result)).toContain('Implementation evidence failures: 0');
-		expect(remediationTitle(result)).toBe('Post-merge remediation required for PR #1188');
+		expect(remediationTitle(result)).toBe('Post-merge closeout exception for PR #1188 / source #1122 / workflow_failure');
+		expect(remediationBody(result)).toContain('Required Atlas/Bill decision');
 		expect(remediationBody(result)).toContain('Auto-Sync Documentation');
 	});
 

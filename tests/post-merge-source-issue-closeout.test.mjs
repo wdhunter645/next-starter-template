@@ -1,9 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { linkedIssueNumber } from '../scripts/ci/issue_accounting.mjs';
+import { linkedIssueNumber, sourceIssueAccounting } from '../scripts/ci/issue_accounting.mjs';
 import {
 	buildSourceIssueCloseoutComment,
 	isRemediationIssue,
+	planTerminalLabelReconciliation,
 	postMergeVerificationResult,
 	shouldCloseSourceIssue,
 	STALE_SOURCE_ISSUE_LABELS,
@@ -55,6 +56,17 @@ describe('issue accounting formats', () => {
 		expect(linkedIssueNumber('- **Issue:** #1196')).toBe('1196');
 		expect(linkedIssueNumber('Issue: https://github.com/org/repo/issues/1196')).toBe('1196');
 		expect(linkedIssueNumber('<!-- orchestrator-source-issue: 1196 -->')).toBe('1196');
+	});
+
+	it('rejects ambiguous and external post-merge source issue accounting', () => {
+		expect(sourceIssueAccounting('- **Issue:** #1196\n- Issue: #1197').failures).toContainEqual(
+			expect.objectContaining({ code: 'multiple_source_issues' }),
+		);
+		expect(
+			sourceIssueAccounting('- **Issue:** https://github.com/other/repo/issues/1196', {
+				repository: 'owner/repo',
+			}).failures,
+		).toContainEqual(expect.objectContaining({ code: 'invalid_source_issue_reference' }));
 	});
 });
 
@@ -142,6 +154,7 @@ describe('source issue closeout decision', () => {
 			}),
 		).toMatchObject({ close: false, reason: 'remediation_issue' });
 		expect(isRemediationIssue({ title: 'Post-merge remediation required for PR #1', labels: [] })).toBe(true);
+		expect(isRemediationIssue({ title: 'Post-merge closeout exception for PR #1 / source #2 / missing_source_issue', labels: [] })).toBe(true);
 	});
 });
 
@@ -150,15 +163,19 @@ describe('source issue closeout evidence', () => {
 		const comment = buildSourceIssueCloseoutComment({
 			prNumber: '1239',
 			mergeSha: 'abc123def456',
+			sourceIssueNumber: '1196',
 			validatorStatus: 'pass',
 			verificationResult: postMergeVerificationResult({ status: 'pass', remediation_required: false }),
 			closeoutReason: 'post_merge_validation_success',
+			terminalLabelResult: 'remove status:post-merge-verify; add status:complete',
 		});
 
 		expect(comment).toContain('PR: #1239');
 		expect(comment).toContain('Merge SHA: abc123def456');
+		expect(comment).toContain('Source issue: #1196');
 		expect(comment).toContain('Validator status: pass');
 		expect(comment).toContain('Post-merge verification result: pass');
+		expect(comment).toContain('Terminal label result: remove status:post-merge-verify; add status:complete');
 		expect(comment).toContain('Closeout reason: post_merge_validation_success');
 	});
 
@@ -166,9 +183,27 @@ describe('source issue closeout evidence', () => {
 		expect(STALE_SOURCE_ISSUE_LABELS).toEqual([
 			'status:blocked',
 			'status:queued',
+			'status:assigned',
 			'status:failed',
 			'status:post-merge-verify',
+			'status:pr-draft',
+			'status:review',
+			'status:implementation',
 		]);
+	});
+
+	it('plans terminal label reconciliation including stale failure labels', () => {
+		const plan = planTerminalLabelReconciliation({
+			issueLabels: ['orchestrator', 'status:post-merge-verify', 'post-merge-failure'],
+			repoLabels: ['status:complete'],
+		});
+
+		expect(plan).toMatchObject({
+			ok: true,
+			removeLabels: ['status:post-merge-verify', 'post-merge-failure'],
+			addLabel: 'status:complete',
+			terminalLabels: ['orchestrator', 'status:complete'],
+		});
 	});
 });
 
@@ -191,7 +226,7 @@ describe('sync-pr-state successful closeout', () => {
 		process.env.GITHUB_REPOSITORY = 'owner/repo';
 		const syncPrState = await import('../scripts/orchestrator/sync-pr-state.mjs');
 		const run = vi.fn();
-		const transitions = [];
+		const reconciliations = [];
 
 		const result = syncPrState.syncPrState({
 			prNumber: '1239',
@@ -209,16 +244,26 @@ describe('sync-pr-state successful closeout', () => {
 				merge_sha: 'abc123def456',
 				pr: 1239,
 				source_issue: '1196',
+				terminal_label_result: {
+					ok: true,
+					removeLabels: ['status:post-merge-verify', 'post-merge-failure'],
+					addLabel: 'status:complete',
+					summary: 'remove status:post-merge-verify, post-merge-failure; add status:complete',
+				},
 			},
-			getIssueMeta: () => ({ title: 'CI corrective task', labels: ['orchestrator', 'status:post-merge-verify'] }),
-			setStatusFn: (...args) => transitions.push(args),
+			getIssueMeta: () => ({ title: 'CI corrective task', labels: ['orchestrator', 'status:post-merge-verify'], state: 'OPEN' }),
+			reconcileTerminalLabelsFn: (...args) => reconciliations.push(args),
 			run,
 		});
 
 		expect(result).toBe('complete');
-		expect(transitions.map((transition) => transition[1]).filter(Boolean)).toEqual(
-			expect.arrayContaining(['status:blocked', 'status:queued', 'status:failed', 'status:post-merge-verify']),
-		);
+		expect(reconciliations).toEqual([[
+			'1196',
+			expect.objectContaining({
+				removeLabels: ['status:post-merge-verify', 'post-merge-failure'],
+				addLabel: 'status:complete',
+			}),
+		]]);
 		expect(run).toHaveBeenCalledWith(
 			expect.arrayContaining(['issue', 'comment', '1196', '--repo', 'owner/repo', '--body', expect.stringContaining('PR: #1239')]),
 		);
@@ -227,19 +272,60 @@ describe('sync-pr-state successful closeout', () => {
 		);
 	});
 
+	it('reconciles permitted already-closed remediation follow-ups without closing again', async () => {
+		process.env.GITHUB_REPOSITORY = 'owner/repo';
+		const syncPrState = await import('../scripts/orchestrator/sync-pr-state.mjs');
+		const run = vi.fn();
+		const reconciliations = [];
+
+		const result = syncPrState.syncPrState({
+			prNumber: '1413',
+			action: 'post_merge_success',
+			pr: {
+				body: '- **Issue:** #1410\n\nRemediation follow-up for PR #1412.',
+				mergedAt: '2026-06-07T17:21:10Z',
+				state: 'MERGED',
+				url: 'https://example.test/pr/1413',
+			},
+			postMergeResult: {
+				status: 'pass',
+				remediation_required: false,
+				source_issue_closeout_mode: 'closed_remediation_followup',
+				terminal_label_result: {
+					ok: true,
+					removeLabels: ['status:post-merge-verify', 'post-merge-failure'],
+					addLabel: 'status:complete',
+					summary: 'remove status:post-merge-verify, post-merge-failure; add status:complete',
+				},
+			},
+			getIssueMeta: () => ({ title: 'Remediation source', labels: ['status:post-merge-verify', 'post-merge-failure'], state: 'CLOSED' }),
+			reconcileTerminalLabelsFn: (...args) => reconciliations.push(args),
+			run,
+		});
+
+		expect(result).toBe('complete');
+		expect(reconciliations).toHaveLength(1);
+		expect(run).toHaveBeenCalledWith(
+			expect.arrayContaining(['issue', 'comment', '1410', '--repo', 'owner/repo', '--body', expect.stringContaining('closed_remediation_followup')]),
+		);
+		expect(run).not.toHaveBeenCalledWith(expect.arrayContaining(['issue', 'close', '1410']));
+	});
+
 	it('does not close when post-merge validation failed', async () => {
 		const syncPrState = await import('../scripts/orchestrator/sync-pr-state.mjs');
 		const run = vi.fn();
+		const setStatus = vi.fn();
 
 		const result = syncPrState.syncPrState({
 			prNumber: '1239',
 			action: 'post_merge_failure',
 			pr: { body: baseBody, mergedAt: '2026-06-02T17:21:10Z', state: 'MERGED', url: 'https://example.test/pr/1239' },
-			setStatusFn: vi.fn(),
+			setStatusFn: setStatus,
 			run,
 		});
 
-		expect(result).toBe('failed');
+		expect(result).toBe('exception');
+		expect(setStatus).not.toHaveBeenCalled();
 		expect(run).not.toHaveBeenCalled();
 	});
 });
