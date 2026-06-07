@@ -33,12 +33,23 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     }
 
     const existing = await d1.db
-      .prepare("SELECT id, status FROM content_inventory WHERE id = ?")
+      .prepare("SELECT id, status, source_name, credit_line FROM content_inventory WHERE id = ?")
       .bind(id)
       .first();
 
     if (!existing) {
       return jsonResponse({ ok: false, error: "Content record not found." }, 404);
+    }
+
+    if (
+      status === "published" &&
+      (!String((existing as any).source_name || "").trim() ||
+        !String((existing as any).credit_line || "").trim())
+    ) {
+      return jsonResponse(
+        { ok: false, error: "Published content_inventory records require source_name and credit_line." },
+        400,
+      );
     }
 
     const nowRow = await d1.db.prepare("SELECT datetime('now') AS now").first();

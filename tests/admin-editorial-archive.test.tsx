@@ -57,27 +57,67 @@ function memberRequest(path: string, body?: unknown): Request {
 function makeEditorialDb(options?: {
   submissions?: Array<Record<string, unknown>>;
   inventory?: Array<Record<string, unknown>>;
+  library?: Array<Record<string, unknown>>;
   sessionEmail?: string;
 }) {
   const submissions = options?.submissions ?? [];
   const inventory = options?.inventory ?? [];
+  const library = options?.library ?? [];
   const sessionEmail = options?.sessionEmail ?? 'member@example.com';
   const runs: Array<{ sql: string; args: unknown[] }> = [];
+  const tableNames = ['submission_queue', 'content_inventory', 'library_entries', 'member_sessions', 'members'];
+
+  function filterRows(sql: string, rows: Array<Record<string, unknown>>, args: unknown[]) {
+    let filtered = rows;
+    if (sql.includes("status = 'published'")) {
+      filtered = filtered.filter((row) => !row.status || row.status === 'published');
+    }
+    if (sql.includes("LIKE '%library%'")) {
+      filtered = filtered.filter((row) => !row.allowed_sections || String(row.allowed_sections).includes('library'));
+    }
+
+    const likeArg = args.find((arg) => typeof arg === 'string' && arg.includes('%'));
+    if (typeof likeArg === 'string') {
+      const needle = likeArg.replace(/%/g, '').toLowerCase();
+      if (needle) {
+        const fields = sql.includes('FROM library_entries')
+          ? ['title', 'content']
+          : ['title', 'text', 'summary', 'search_text', 'credit_line', 'source_name', 'perspective_label'];
+        filtered = filtered.filter((row) =>
+          fields.some((field) => String(row[field] || '').toLowerCase().includes(needle)),
+        );
+      }
+    }
+
+    return filtered;
+  }
 
   const db = {
     prepare: vi.fn((sql: string) => {
-      const allFn = async () => {
+      const allFn = async (args: unknown[] = []) => {
         if (sql.includes('sqlite_master')) {
-          return { results: [{ name: 'submission_queue' }, { name: 'content_inventory' }] };
+          const requested = args.length ? tableNames.filter((name) => args.includes(name)) : tableNames;
+          return { results: requested.map((name) => ({ name })) };
         }
         if (sql.includes('FROM submission_queue')) return { results: submissions };
-        if (sql.includes('FROM content_inventory')) return { results: inventory };
+        if (sql.includes('FROM content_inventory')) return { results: filterRows(sql, inventory, args) };
+        if (sql.includes('FROM library_entries')) return { results: filterRows(sql, library, args) };
         return { results: [] };
       };
 
-      const firstFn = async () => {
+      const firstFn = async (args: unknown[] = []) => {
+        if (sql.includes('sqlite_master')) {
+          const table = String(args[0] || '');
+          return tableNames.includes(table) ? { name: table } : null;
+        }
         if (sql.includes('FROM member_sessions')) return { email: sessionEmail };
         if (sql.includes("SELECT datetime('now')")) return { now: '2026-06-02T12:00:00Z' };
+        if (sql.includes('COUNT(1)') && sql.includes('FROM content_inventory')) {
+          return { n: filterRows(sql, inventory, args).length };
+        }
+        if (sql.includes('COUNT(1)') && sql.includes('FROM library_entries')) {
+          return { n: filterRows(sql, library, args).length };
+        }
         if (sql.includes('FROM submission_queue')) return submissions[0] ?? null;
         if (sql.includes('FROM content_inventory')) return inventory[0] ?? null;
         return null;
@@ -89,12 +129,12 @@ function makeEditorialDb(options?: {
       };
 
       return {
-        all: allFn,
-        first: firstFn,
+        all: () => allFn(),
+        first: () => firstFn(),
         run: () => runFn(),
         bind: (...args: unknown[]) => ({
-          all: allFn,
-          first: firstFn,
+          all: () => allFn(args),
+          first: () => firstFn(args),
           run: () => runFn(...args),
         }),
       };
@@ -248,7 +288,11 @@ describe('editorial archive APIs', () => {
       request: adminPostRequest('/api/admin/editorial/review', {
         submission_id: 7,
         action: 'approve',
+        summary: 'A concise summary for archives.',
+        perspective_label: 'Member perspective',
+        source_name: 'Member interview',
         credit_line: 'Member <member@example.com>',
+        event_year: 1939,
       }),
       env: { ADMIN_TOKEN: 'secret', DB: db },
     });
@@ -259,13 +303,22 @@ describe('editorial archive APIs', () => {
       action: 'approve',
       inventory_id: 44,
     });
-    expect(runs.some((run) => run.sql.includes('INSERT INTO content_inventory'))).toBe(true);
+    const insertRun = runs.find((run) => run.sql.includes('INSERT INTO content_inventory'));
+    expect(insertRun).toBeDefined();
+    expect(insertRun?.args).toEqual(
+      expect.arrayContaining([
+        'A concise summary for archives.',
+        'Member perspective',
+        'Member interview',
+        1939,
+      ]),
+    );
     expect(runs.some((run) => run.sql.includes("status = 'approved'"))).toBe(true);
   });
 
   it('updates publication state for archive records', async () => {
     const { db, runs } = makeEditorialDb({
-      inventory: [{ id: 4, status: 'draft' }],
+      inventory: [{ id: 4, status: 'draft', source_name: 'Archive', credit_line: 'LGFC Archive' }],
     });
 
     const response = await editorialPublishPost({
@@ -280,6 +333,24 @@ describe('editorial archive APIs', () => {
       status: 'published',
     });
     expect(runs.some((run) => run.sql.includes('UPDATE content_inventory'))).toBe(true);
+  });
+
+  it('rejects publishing content_inventory records without required attribution', async () => {
+    const { db, runs } = makeEditorialDb({
+      inventory: [{ id: 4, status: 'draft', source_name: '', credit_line: 'LGFC Archive' }],
+    });
+
+    const response = await editorialPublishPost({
+      request: adminPostRequest('/api/admin/editorial/publish', { id: 4, status: 'published' }),
+      env: { ADMIN_TOKEN: 'secret', DB: db },
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: 'Published content_inventory records require source_name and credit_line.',
+    });
+    expect(runs.some((run) => run.sql.includes('UPDATE content_inventory'))).toBe(false);
   });
 });
 
@@ -314,8 +385,10 @@ describe('member submissions and library archive reads', () => {
               id: 5,
               title: 'Published archive story',
               text: 'A published archive story for members.',
+              summary: 'Published archive summary.',
               credit_line: 'LGFC Archive',
               event_date: '1939-07-04',
+              event_year: 1939,
               updated_at: '2026-06-02T12:00:00Z',
             },
           ],
@@ -331,8 +404,76 @@ describe('member submissions and library archive reads', () => {
           title: 'Published archive story',
           author: 'LGFC Archive',
           year: 1939,
+          description: 'Published archive summary.',
         },
       ],
+    });
+  });
+
+  it('falls back to legacy library_entries when no eligible inventory rows exist', async () => {
+    const response = await fanclubLibraryGet({
+      request: memberRequest('/api/fanclub/library?page=1'),
+      env: {
+        DB: makeEditorialDb({
+          library: [
+            {
+              id: 12,
+              title: 'Legacy library story',
+              content: 'Legacy library content remains available.',
+              created_at: '2020-01-02T00:00:00Z',
+            },
+          ],
+        }).db,
+      },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      total: 1,
+      items: [
+        {
+          title: 'Legacy library story',
+          content: 'Legacy library content remains available.',
+          year: 2020,
+        },
+      ],
+    });
+  });
+
+  it('does not fall back to library_entries for an empty inventory search when inventory is eligible', async () => {
+    const response = await fanclubLibraryGet({
+      request: memberRequest('/api/fanclub/library?q=nomatch&page=1'),
+      env: {
+        DB: makeEditorialDb({
+          inventory: [
+            {
+              id: 5,
+              title: 'Published archive story',
+              text: 'A published archive story for members.',
+              credit_line: 'LGFC Archive',
+              status: 'published',
+              allowed_sections: '["library"]',
+              updated_at: '2026-06-02T12:00:00Z',
+            },
+          ],
+          library: [
+            {
+              id: 12,
+              title: 'Legacy library story',
+              content: 'Legacy library content remains available.',
+              created_at: '2020-01-02T00:00:00Z',
+            },
+          ],
+        }).db,
+      },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      total: 0,
+      items: [],
     });
   });
 });
