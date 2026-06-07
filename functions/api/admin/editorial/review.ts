@@ -1,5 +1,5 @@
 // POST /api/admin/editorial/review
-// Approves or rejects submission_queue rows. Approved submissions become draft content_inventory records.
+// Moves submission_queue rows through manual editorial review states.
 
 import { requireAdmin } from "../../../_lib/auth";
 import { jsonResponse, requireD1, requireTables } from "../../../_lib/d1";
@@ -24,9 +24,17 @@ type ReviewBody = {
   feature_weight?: unknown;
   review_notes?: unknown;
   reviewer?: unknown;
+  triage_flags?: unknown;
+  duplicate_candidate?: unknown;
+  retention_reason?: unknown;
+  purge_eligible_at?: unknown;
+  target_inventory_id?: unknown;
 };
 
 const STORY_TYPES = new Set(["primary", "secondary", "brief"]);
+const TRIAGE_STATUSES = new Set(["pending", "triaged"]);
+const REVIEWABLE_STATUSES = new Set(["pending", "triaged", "under_review"]);
+const ACTIONS = new Set(["triage", "start_review", "approve", "merge", "reject", "purge"]);
 
 function asString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
@@ -76,6 +84,23 @@ function jsonText(value: unknown, fallback: unknown): string {
   return JSON.stringify(fallback);
 }
 
+function normalizeOptionalDate(value: unknown): string | null {
+  const text = asString(value);
+  if (!text) return null;
+  const parsed = Date.parse(text);
+  return Number.isNaN(parsed) ? null : new Date(parsed).toISOString();
+}
+
+function appendText(existing: unknown, addition: string): string {
+  const current = String(existing || "").trim();
+  return [current, addition.trim()].filter(Boolean).join("\n\n");
+}
+
+function defaultCreditFromSubmitter(value: unknown): string {
+  const submittedBy = String(value || "").trim();
+  return submittedBy.includes("<") ? submittedBy.split("<")[0].trim() : submittedBy;
+}
+
 export const onRequestPost = async (context: any): Promise<Response> => {
   const { request, env } = context;
 
@@ -93,13 +118,15 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     const submissionId = asInt(body?.submission_id, 0);
     const action = asString(body?.action);
 
-    if (!submissionId || !["approve", "reject"].includes(action)) {
-      return jsonResponse({ ok: false, error: "submission_id and action are required." }, 400);
+    if (!submissionId || !ACTIONS.has(action)) {
+      return jsonResponse({ ok: false, error: "submission_id and valid action are required." }, 400);
     }
 
     const submission = await d1.db
       .prepare(
-        `SELECT submission_id, submitted_by, title, description, source_url, proposed_tag, media_url, status
+        `SELECT submission_id, submitted_by, payload, title, description, source_name, source_url,
+                credit_line, proposed_tag, media_url, media_reference, status, triage_flags,
+                duplicate_candidate, review_notes, retention_reason
            FROM submission_queue
           WHERE submission_id = ?`,
       )
@@ -110,26 +137,156 @@ export const onRequestPost = async (context: any): Promise<Response> => {
       return jsonResponse({ ok: false, error: "Submission not found." }, 404);
     }
 
-    if ((submission as any).status !== "pending") {
-      return jsonResponse({ ok: false, error: "Submission has already been reviewed." }, 409);
-    }
-
-    const nowRow = await d1.db.prepare("SELECT datetime('now') AS now").first();
+    const nowRow = await d1.db
+      .prepare("SELECT datetime('now') AS now, datetime('now', '+90 days') AS purge_eligible_at")
+      .first();
     const now = String((nowRow as any)?.now || new Date().toISOString());
+    const defaultPurgeEligibleAt = String((nowRow as any)?.purge_eligible_at || now);
     const reviewNotes = asString(body?.review_notes) || null;
     const reviewer = asString(body?.reviewer) || "admin-ui";
+    const duplicateCandidate = asString(body?.duplicate_candidate) || null;
+    const triageFlags = jsonText(body?.triage_flags, []);
+    const currentStatus = String((submission as any).status || "");
 
-    if (action === "reject") {
+    if (action === "triage") {
+      if (!TRIAGE_STATUSES.has(currentStatus)) {
+        return jsonResponse({ ok: false, error: "Only open submissions can be triaged." }, 409);
+      }
+
       await d1.db
         .prepare(
           `UPDATE submission_queue
-              SET status = 'rejected_manual', review_notes = ?, updated_at = ?, reviewed_at = ?, reviewer = ?
+              SET status = 'triaged', triage_flags = ?, duplicate_candidate = ?, review_notes = ?,
+                  updated_at = ?, reviewer = ?
             WHERE submission_id = ?`,
         )
-        .bind(reviewNotes, now, now, reviewer, submissionId)
+        .bind(triageFlags, duplicateCandidate, reviewNotes, now, reviewer, submissionId)
+        .run();
+
+      return jsonResponse({ ok: true, action: "triage", submission_id: submissionId }, 200);
+    }
+
+    if (action === "start_review") {
+      if (!REVIEWABLE_STATUSES.has(currentStatus)) {
+        return jsonResponse({ ok: false, error: "Only open submissions can enter review." }, 409);
+      }
+
+      await d1.db
+        .prepare(
+          `UPDATE submission_queue
+              SET status = 'under_review', review_notes = ?, updated_at = ?, reviewer = ?
+            WHERE submission_id = ?`,
+        )
+        .bind(reviewNotes, now, reviewer, submissionId)
+        .run();
+
+      return jsonResponse({ ok: true, action: "start_review", submission_id: submissionId }, 200);
+    }
+
+    if (action === "purge") {
+      if (currentStatus !== "rejected") {
+        return jsonResponse({ ok: false, error: "Only rejected submissions can be marked purged." }, 409);
+      }
+      if (String((submission as any).retention_reason || "").trim()) {
+        return jsonResponse({ ok: false, error: "Retained rejected submissions cannot be purged." }, 409);
+      }
+
+      await d1.db
+        .prepare(
+          `UPDATE submission_queue
+              SET status = 'purged', review_notes = ?, decision_by = ?, decision_at = ?,
+                  updated_at = ?, reviewed_at = ?, reviewer = ?, purge_flag = 0
+            WHERE submission_id = ?`,
+        )
+        .bind(reviewNotes, reviewer, now, now, now, reviewer, submissionId)
+        .run();
+
+      return jsonResponse({ ok: true, action: "purge", submission_id: submissionId }, 200);
+    }
+
+    if (!REVIEWABLE_STATUSES.has(currentStatus)) {
+      return jsonResponse({ ok: false, error: "Submission has already reached a terminal review state." }, 409);
+    }
+
+    if (action === "reject") {
+      const retentionReason = asString(body?.retention_reason) || null;
+      const purgeEligibleAt = retentionReason
+        ? null
+        : normalizeOptionalDate(body?.purge_eligible_at) || defaultPurgeEligibleAt;
+
+      await d1.db
+        .prepare(
+          `UPDATE submission_queue
+              SET status = 'rejected', review_notes = ?, duplicate_candidate = ?,
+                  retention_reason = ?, rejected_at = ?, purge_eligible_at = ?, purge_flag = ?,
+                  decision_by = ?, decision_at = ?, updated_at = ?, reviewed_at = ?, reviewer = ?
+            WHERE submission_id = ?`,
+        )
+        .bind(
+          reviewNotes,
+          duplicateCandidate,
+          retentionReason,
+          now,
+          purgeEligibleAt,
+          purgeEligibleAt ? 1 : 0,
+          reviewer,
+          now,
+          now,
+          now,
+          reviewer,
+          submissionId,
+        )
         .run();
 
       return jsonResponse({ ok: true, action: "reject", submission_id: submissionId }, 200);
+    }
+
+    if (action === "merge") {
+      const targetInventoryId = asInt(body?.target_inventory_id, 0);
+      if (!targetInventoryId) {
+        return jsonResponse({ ok: false, error: "target_inventory_id is required for merge." }, 400);
+      }
+
+      const target = await d1.db
+        .prepare("SELECT id, title, review_notes, search_text FROM content_inventory WHERE id = ?")
+        .bind(targetInventoryId)
+        .first();
+
+      if (!target) {
+        return jsonResponse({ ok: false, error: "Target content record not found." }, 404);
+      }
+
+      const title = String((submission as any).title || "").trim();
+      const text = String((submission as any).description || "").trim();
+      const mergeNote = appendText(
+        reviewNotes,
+        `Merged submission #${submissionId} (${title || "untitled"}) into content_inventory #${targetInventoryId} by ${reviewer}.`,
+      );
+      const nextNotes = appendText((target as any).review_notes, mergeNote);
+      const nextSearchText = [String((target as any).search_text || ""), title, text]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+
+      await d1.db
+        .prepare("UPDATE content_inventory SET review_notes = ?, search_text = ?, updated_at = ? WHERE id = ?")
+        .bind(nextNotes, nextSearchText, now, targetInventoryId)
+        .run();
+
+      await d1.db
+        .prepare(
+          `UPDATE submission_queue
+              SET status = 'merged', review_notes = ?, duplicate_candidate = ?, decision_by = ?,
+                  decision_at = ?, updated_at = ?, reviewed_at = ?, reviewer = ?, purge_flag = 0
+            WHERE submission_id = ?`,
+        )
+        .bind(mergeNote, duplicateCandidate || String(targetInventoryId), reviewer, now, now, now, reviewer, submissionId)
+        .run();
+
+      return jsonResponse(
+        { ok: true, action: "merge", submission_id: submissionId, inventory_id: targetInventoryId },
+        200,
+      );
     }
 
     const title = String((submission as any).title || "").trim();
@@ -139,10 +296,18 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     const perspectiveLabel = asString(body?.perspective_label) || null;
     const storyType = STORY_TYPES.has(asString(body?.story_type)) ? asString(body?.story_type) : "brief";
     const sourceUrl = asString(body?.source_url) || String((submission as any).source_url || "").trim() || null;
-    const sourceName = asString(body?.source_name) || "Member submission";
-    const creditLine = asString(body?.credit_line) || String((submission as any).submitted_by || "").trim();
+    const sourceName = asString(body?.source_name) || String((submission as any).source_name || "").trim() || "Member submission";
+    const creditLine =
+      asString(body?.credit_line) ||
+      String((submission as any).credit_line || "").trim() ||
+      defaultCreditFromSubmitter((submission as any).submitted_by);
     const allowedSections = jsonText(body?.allowed_sections, ["library"]);
-    const media = jsonText(body?.media, (submission as any).media_url ? [{ url: (submission as any).media_url }] : []);
+    const media = jsonText(
+      body?.media,
+      (submission as any).media_reference || (submission as any).media_url
+        ? [{ url: (submission as any).media_reference || (submission as any).media_url }]
+        : [],
+    );
     const priority = asInt(body?.priority, 0);
     const canonical = body?.canonical === false || body?.canonical === 0 ? 0 : 1;
     const eventDate = asString(body?.event_date) || null;
@@ -204,10 +369,11 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     await d1.db
       .prepare(
         `UPDATE submission_queue
-            SET status = 'approved', review_notes = ?, updated_at = ?, reviewed_at = ?, reviewer = ?
+            SET status = 'approved', review_notes = ?, duplicate_candidate = ?, decision_by = ?,
+                decision_at = ?, updated_at = ?, reviewed_at = ?, reviewer = ?, purge_flag = 0
           WHERE submission_id = ?`,
       )
-      .bind(reviewNotes, now, now, reviewer, submissionId)
+      .bind(reviewNotes, duplicateCandidate, reviewer, now, now, now, reviewer, submissionId)
       .run();
 
     const inventoryId = (insert as any)?.meta?.last_row_id ?? (insert as any)?.meta?.lastRowId ?? null;

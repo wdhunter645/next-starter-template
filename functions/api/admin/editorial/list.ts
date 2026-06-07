@@ -4,7 +4,16 @@
 import { requireAdmin } from "../../../_lib/auth";
 import { jsonResponse, requireD1, requireTables } from "../../../_lib/d1";
 
-const VALID_SUBMISSION_STATUSES = new Set(["pending", "approved", "rejected_auto", "rejected_manual", "all"]);
+const VALID_SUBMISSION_STATUSES = new Set([
+  "pending",
+  "triaged",
+  "under_review",
+  "approved",
+  "rejected",
+  "merged",
+  "purged",
+  "all",
+]);
 const VALID_INVENTORY_STATUSES = new Set(["draft", "published", "archived", "all"]);
 
 function parseLimit(raw: string | null): number {
@@ -43,8 +52,11 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       submissionStatus === "all"
         ? await d1.db
             .prepare(
-              `SELECT submission_id, submitted_by, title, description, source_url, proposed_tag, media_url,
-                      status, review_notes, purge_flag, created_at, updated_at, reviewed_at, reviewer
+              `SELECT submission_id, submitted_by, payload, title, description, source_name, source_url,
+                      credit_line, proposed_tag, media_url, media_reference, status, triage_flags,
+                      duplicate_candidate, review_notes, decision_by, decision_at, rejected_at,
+                      purge_eligible_at, retention_reason, purge_flag, created_at, updated_at,
+                      reviewed_at, reviewer
                  FROM submission_queue
                  ORDER BY created_at DESC, submission_id DESC
                  LIMIT ?`,
@@ -53,8 +65,11 @@ export const onRequestGet = async (context: any): Promise<Response> => {
             .all()
         : await d1.db
             .prepare(
-              `SELECT submission_id, submitted_by, title, description, source_url, proposed_tag, media_url,
-                      status, review_notes, purge_flag, created_at, updated_at, reviewed_at, reviewer
+              `SELECT submission_id, submitted_by, payload, title, description, source_name, source_url,
+                      credit_line, proposed_tag, media_url, media_reference, status, triage_flags,
+                      duplicate_candidate, review_notes, decision_by, decision_at, rejected_at,
+                      purge_eligible_at, retention_reason, purge_flag, created_at, updated_at,
+                      reviewed_at, reviewer
                  FROM submission_queue
                  ${submissionWhere}
                  ORDER BY created_at DESC, submission_id DESC

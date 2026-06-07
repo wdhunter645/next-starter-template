@@ -8,6 +8,7 @@ import { onRequestPost as editorialReviewPost } from '../functions/api/admin/edi
 import { onRequestPost as editorialPublishPost } from '../functions/api/admin/editorial/publish';
 import { onRequestPost as librarySubmitPost } from '../functions/api/library/submit';
 import { onRequestGet as fanclubLibraryGet } from '../functions/api/fanclub/library';
+import { onRequestGet as searchGet } from '../functions/api/search';
 
 const mockUsePathname = vi.hoisted(() => vi.fn(() => '/admin/editorial'));
 
@@ -92,6 +93,13 @@ function makeEditorialDb(options?: {
     return filtered;
   }
 
+  function filterSubmissions(sql: string, rows: Array<Record<string, unknown>>, args: unknown[]) {
+    if (sql.includes('WHERE status = ?') && typeof args[0] === 'string') {
+      return rows.filter((row) => row.status === args[0]);
+    }
+    return rows;
+  }
+
   const db = {
     prepare: vi.fn((sql: string) => {
       const allFn = async (args: unknown[] = []) => {
@@ -99,7 +107,7 @@ function makeEditorialDb(options?: {
           const requested = args.length ? tableNames.filter((name) => args.includes(name)) : tableNames;
           return { results: requested.map((name) => ({ name })) };
         }
-        if (sql.includes('FROM submission_queue')) return { results: submissions };
+        if (sql.includes('FROM submission_queue')) return { results: filterSubmissions(sql, submissions, args) };
         if (sql.includes('FROM content_inventory')) return { results: filterRows(sql, inventory, args) };
         if (sql.includes('FROM library_entries')) return { results: filterRows(sql, library, args) };
         return { results: [] };
@@ -111,14 +119,22 @@ function makeEditorialDb(options?: {
           return tableNames.includes(table) ? { name: table } : null;
         }
         if (sql.includes('FROM member_sessions')) return { email: sessionEmail };
-        if (sql.includes("SELECT datetime('now')")) return { now: '2026-06-02T12:00:00Z' };
+        if (sql.includes("SELECT datetime('now')")) {
+          return { now: '2026-06-02T12:00:00Z', purge_eligible_at: '2026-08-31T12:00:00Z' };
+        }
         if (sql.includes('COUNT(1)') && sql.includes('FROM content_inventory')) {
           return { n: filterRows(sql, inventory, args).length };
         }
         if (sql.includes('COUNT(1)') && sql.includes('FROM library_entries')) {
           return { n: filterRows(sql, library, args).length };
         }
+        if (sql.includes('FROM submission_queue') && sql.includes('WHERE submission_id = ?')) {
+          return submissions.find((row) => row.submission_id === args[0]) ?? null;
+        }
         if (sql.includes('FROM submission_queue')) return submissions[0] ?? null;
+        if (sql.includes('FROM content_inventory') && sql.includes('WHERE id = ?')) {
+          return inventory.find((row) => row.id === args[0]) ?? null;
+        }
         if (sql.includes('FROM content_inventory')) return inventory[0] ?? null;
         return null;
       };
@@ -191,7 +207,7 @@ describe('admin editorial archive page', () => {
     });
 
     expect(fetchMock).toHaveBeenCalledWith(
-      '/api/admin/editorial/list?limit=100',
+      '/api/admin/editorial/list?limit=100&submission_status=pending',
       expect.objectContaining({ cache: 'no-store' }),
     );
   });
@@ -235,6 +251,169 @@ describe('admin editorial archive page', () => {
         action: 'approve',
         tag: 'gehrig-memory',
         allowed_sections: ['library'],
+      });
+    });
+  });
+
+  it('loads queue records by selected submission status', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse({
+        ok: true,
+        submissions: [],
+        inventory: [],
+      }),
+    );
+
+    render(<AdminEditorialArchivePage />);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/admin/editorial/list?limit=100&submission_status=pending',
+        expect.objectContaining({ cache: 'no-store' }),
+      );
+    });
+
+    fireEvent.change(screen.getByLabelText('Queue status'), { target: { value: 'rejected' } });
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/admin/editorial/list?limit=100&submission_status=rejected',
+        expect.objectContaining({ cache: 'no-store' }),
+      );
+    });
+  });
+
+  it('uses submitter names without email addresses as default credit values', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse({
+        ok: true,
+        submissions: [
+          {
+            submission_id: 11,
+            submitted_by: 'Member Name <member@example.com>',
+            title: 'PII-safe credit',
+            description: 'A queue item with submitter email hidden from credit defaults.',
+            proposed_tag: 'pii-safe-credit',
+            status: 'pending',
+          },
+        ],
+        inventory: [],
+      }),
+    );
+
+    render(<AdminEditorialArchivePage />);
+
+    await screen.findByRole('heading', { name: 'PII-safe credit' });
+    expect(screen.getByDisplayValue('Member Name')).toBeInTheDocument();
+    expect(screen.queryByDisplayValue('Member Name <member@example.com>')).not.toBeInTheDocument();
+  });
+
+  it('preserves existing review notes in the queue form', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse({
+        ok: true,
+        submissions: [
+          {
+            submission_id: 12,
+            submitted_by: 'Member <member@example.com>',
+            title: 'Existing notes',
+            description: 'A queue item with notes.',
+            proposed_tag: 'existing-notes',
+            status: 'triaged',
+            review_notes: 'Existing editorial note.',
+          },
+        ],
+        inventory: [],
+      }),
+    );
+
+    render(<AdminEditorialArchivePage />);
+
+    await screen.findByRole('heading', { name: 'Existing notes' });
+    expect(screen.getByDisplayValue('Existing editorial note.')).toBeInTheDocument();
+  });
+
+  it('prefers custom retention reasons typed by editors', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
+      const path = String(input);
+      if (path.startsWith('/api/admin/editorial/list')) {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            submissions: [
+              {
+                submission_id: 13,
+                submitted_by: 'Member <member@example.com>',
+                title: 'Retain with custom reason',
+                description: 'A queue item that should be retained.',
+                proposed_tag: 'retain-custom',
+                status: 'pending',
+              },
+            ],
+            inventory: [],
+          }),
+        );
+      }
+      expect(path).toBe('/api/admin/editorial/review');
+      expect(init?.method).toBe('POST');
+      return Promise.resolve(jsonResponse({ ok: true }));
+    });
+
+    render(<AdminEditorialArchivePage />);
+
+    await screen.findByRole('heading', { name: 'Retain with custom reason' });
+    fireEvent.change(screen.getByLabelText('Retention reason'), {
+      target: { value: 'Custom legal hold.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Retain Rejected' }));
+
+    await waitFor(() => {
+      const reviewCall = fetchMock.mock.calls.find(([path]) => path === '/api/admin/editorial/review');
+      expect(JSON.parse(String(reviewCall?.[1]?.body))).toMatchObject({
+        action: 'reject',
+        retention_reason: 'Custom legal hold.',
+      });
+    });
+  });
+
+  it('records triage actions from the review queue', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
+      const path = String(input);
+      if (path.startsWith('/api/admin/editorial/list')) {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            submissions: [
+              {
+                submission_id: 10,
+                submitted_by: 'Member <member@example.com>',
+                title: 'Possible duplicate',
+                description: 'A queue item that needs objective triage.',
+                proposed_tag: 'possible-duplicate',
+                status: 'pending',
+              },
+            ],
+            inventory: [],
+          }),
+        );
+      }
+      expect(path).toBe('/api/admin/editorial/review');
+      expect(init?.method).toBe('POST');
+      return Promise.resolve(jsonResponse({ ok: true }));
+    });
+
+    render(<AdminEditorialArchivePage />);
+
+    await screen.findByRole('heading', { name: 'Possible duplicate' });
+    fireEvent.click(screen.getByRole('button', { name: 'Mark Triaged' }));
+
+    await waitFor(() => {
+      const reviewCall = fetchMock.mock.calls.find(([path]) => path === '/api/admin/editorial/review');
+      expect(reviewCall).toBeDefined();
+      expect(JSON.parse(String(reviewCall?.[1]?.body))).toMatchObject({
+        submission_id: 10,
+        action: 'triage',
+        triage_flags: '[]',
       });
     });
   });
@@ -316,6 +495,199 @@ describe('editorial archive APIs', () => {
     expect(runs.some((run) => run.sql.includes("status = 'approved'"))).toBe(true);
   });
 
+  it('triages pending submissions with objective flags without a factual decision', async () => {
+    const { db, runs } = makeEditorialDb({
+      submissions: [
+        {
+          submission_id: 7,
+          submitted_by: 'Member <member@example.com>',
+          title: 'Submitted story',
+          description: 'Story text for editorial review.',
+          proposed_tag: 'submitted-story',
+          status: 'pending',
+        },
+      ],
+    });
+
+    const response = await editorialReviewPost({
+      request: adminPostRequest('/api/admin/editorial/review', {
+        submission_id: 7,
+        action: 'triage',
+        triage_flags: ['missing_source'],
+        duplicate_candidate: 'submitted-story',
+        review_notes: 'Needs source follow-up.',
+      }),
+      env: { ADMIN_TOKEN: 'secret', DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      action: 'triage',
+    });
+    const updateRun = runs.find((run) => run.sql.includes("status = 'triaged'"));
+    expect(updateRun?.args).toEqual(
+      expect.arrayContaining(['["missing_source"]', 'submitted-story', 'Needs source follow-up.']),
+    );
+    expect(runs.some((run) => run.sql.includes('decision_at'))).toBe(false);
+  });
+
+  it('does not move under-review submissions backward to triaged', async () => {
+    const { db, runs } = makeEditorialDb({
+      submissions: [
+        {
+          submission_id: 7,
+          submitted_by: 'Member <member@example.com>',
+          title: 'Submitted story',
+          description: 'Story text for editorial review.',
+          proposed_tag: 'submitted-story',
+          status: 'under_review',
+        },
+      ],
+    });
+
+    const response = await editorialReviewPost({
+      request: adminPostRequest('/api/admin/editorial/review', {
+        submission_id: 7,
+        action: 'triage',
+      }),
+      env: { ADMIN_TOKEN: 'secret', DB: db },
+    });
+
+    expect(response.status).toBe(409);
+    expect(runs.some((run) => run.sql.includes("status = 'triaged'"))).toBe(false);
+  });
+
+  it('merges reviewed submissions into an existing content_inventory record', async () => {
+    const { db, runs } = makeEditorialDb({
+      submissions: [
+        {
+          submission_id: 8,
+          submitted_by: 'Member <member@example.com>',
+          title: 'Submitted merge detail',
+          description: 'Additional detail for the existing story.',
+          proposed_tag: 'existing-story',
+          status: 'under_review',
+        },
+      ],
+      inventory: [{ id: 22, title: 'Existing story', review_notes: 'Existing note', search_text: 'existing story' }],
+    });
+
+    const response = await editorialReviewPost({
+      request: adminPostRequest('/api/admin/editorial/review', {
+        submission_id: 8,
+        action: 'merge',
+        target_inventory_id: 22,
+        duplicate_candidate: 'existing-story',
+        review_notes: 'Merged useful source detail.',
+      }),
+      env: { ADMIN_TOKEN: 'secret', DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      action: 'merge',
+      inventory_id: 22,
+    });
+    expect(runs.some((run) => run.sql.includes('UPDATE content_inventory'))).toBe(true);
+    expect(runs.some((run) => run.sql.includes("status = 'merged'"))).toBe(true);
+  });
+
+  it('rejects submissions with purge eligibility metadata', async () => {
+    const { db, runs } = makeEditorialDb({
+      submissions: [
+        {
+          submission_id: 9,
+          submitted_by: 'Member <member@example.com>',
+          title: 'Rejected story',
+          description: 'Rejected text.',
+          proposed_tag: 'rejected-story',
+          status: 'triaged',
+        },
+      ],
+    });
+
+    const response = await editorialReviewPost({
+      request: adminPostRequest('/api/admin/editorial/review', {
+        submission_id: 9,
+        action: 'reject',
+        review_notes: 'Out of scope after human review.',
+      }),
+      env: { ADMIN_TOKEN: 'secret', DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      action: 'reject',
+    });
+    const updateRun = runs.find((run) => run.sql.includes("status = 'rejected'"));
+    expect(updateRun?.args[2]).toBeNull();
+    expect(updateRun?.args[4]).toBe('2026-08-31T12:00:00Z');
+    expect(updateRun?.args[5]).toBe(1);
+  });
+
+  it('retains rejected submissions without marking them purge eligible', async () => {
+    const { db, runs } = makeEditorialDb({
+      submissions: [
+        {
+          submission_id: 10,
+          submitted_by: 'Member <member@example.com>',
+          title: 'Retained story',
+          description: 'Rejected but retained text.',
+          status: 'under_review',
+        },
+      ],
+    });
+
+    const response = await editorialReviewPost({
+      request: adminPostRequest('/api/admin/editorial/review', {
+        submission_id: 10,
+        action: 'reject',
+        retention_reason: 'Retained for source follow-up.',
+      }),
+      env: { ADMIN_TOKEN: 'secret', DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    const updateRun = runs.find((run) => run.sql.includes("status = 'rejected'"));
+    expect(updateRun?.args[2]).toBe('Retained for source follow-up.');
+    expect(updateRun?.args[4]).toBeNull();
+    expect(updateRun?.args[5]).toBe(0);
+  });
+
+  it('marks eligible rejected submissions as purged without deleting the audit row', async () => {
+    const { db, runs } = makeEditorialDb({
+      submissions: [
+        {
+          submission_id: 11,
+          submitted_by: 'Member <member@example.com>',
+          title: 'Purge-ready story',
+          description: 'Purge-ready text.',
+          status: 'rejected',
+          retention_reason: '',
+        },
+      ],
+    });
+
+    const response = await editorialReviewPost({
+      request: adminPostRequest('/api/admin/editorial/review', {
+        submission_id: 11,
+        action: 'purge',
+        review_notes: 'Quarterly purge complete.',
+      }),
+      env: { ADMIN_TOKEN: 'secret', DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      action: 'purge',
+    });
+    expect(runs.some((run) => run.sql.includes("status = 'purged'"))).toBe(true);
+  });
+
   it('does not coerce blank event_year values to zero', async () => {
     const { db, runs } = makeEditorialDb({
       submissions: [
@@ -344,6 +716,35 @@ describe('editorial archive APIs', () => {
     expect(response.status).toBe(200);
     const insertRun = runs.find((run) => run.sql.includes('INSERT INTO content_inventory'));
     expect(insertRun?.args[15]).toBeNull();
+  });
+
+  it('uses submitter names without email addresses as server-side default credit lines', async () => {
+    const { db, runs } = makeEditorialDb({
+      submissions: [
+        {
+          submission_id: 7,
+          submitted_by: 'Member Name <member@example.com>',
+          title: 'Submitted story',
+          description: 'Story text for editorial review.',
+          proposed_tag: 'submitted-story',
+          status: 'pending',
+        },
+      ],
+    });
+
+    const response = await editorialReviewPost({
+      request: adminPostRequest('/api/admin/editorial/review', {
+        submission_id: 7,
+        action: 'approve',
+        source_name: 'Member interview',
+      }),
+      env: { ADMIN_TOKEN: 'secret', DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    const insertRun = runs.find((run) => run.sql.includes('INSERT INTO content_inventory'));
+    expect(insertRun?.args[9]).not.toContain('member@example.com');
+    expect(insertRun?.args[13]).toBe('Member Name');
   });
 
   it('updates publication state for archive records', async () => {
@@ -402,7 +803,9 @@ describe('member submissions and library archive reads', () => {
       ok: true,
       message: 'Submission queued for editorial review',
     });
-    expect(runs.some((run) => run.sql.includes('INSERT INTO submission_queue'))).toBe(true);
+    const insertRun = runs.find((run) => run.sql.includes('INSERT INTO submission_queue'));
+    expect(insertRun).toBeDefined();
+    expect(insertRun?.args[1]).toContain('"title":"A long submitted story"');
   });
 
   it('returns only published content_inventory records for member library reads', async () => {
@@ -541,5 +944,39 @@ describe('member submissions and library archive reads', () => {
       total: 0,
       items: [],
     });
+  });
+
+  it('does not expose queue records through member search results', async () => {
+    const { db } = makeEditorialDb({
+      submissions: [
+        {
+          submission_id: 12,
+          submitted_by: 'Member <member@example.com>',
+          title: 'Hidden queue record',
+          description: 'This under-review queue text must not appear in search.',
+          status: 'under_review',
+        },
+        {
+          submission_id: 13,
+          submitted_by: 'Member <member@example.com>',
+          title: 'Rejected queue record',
+          description: 'This rejected queue text must not appear in search.',
+          status: 'rejected',
+        },
+      ],
+    });
+
+    const response = await searchGet({
+      request: memberRequest('/api/search?q=queue'),
+      env: { DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      total: 0,
+      results: [],
+    });
+    expect(db.prepare).not.toHaveBeenCalledWith(expect.stringContaining('submission_queue'));
   });
 });
