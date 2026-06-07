@@ -2,152 +2,200 @@
 Doc Type: Operations
 Audience: Human + AI
 Authority Level: Operational Authority
-Owns: Serial vs parallel critical-path rules for PMO-orchestrated work across CI, Website, Docs, and OPS tracks
-Does Not Own: Orchestrator queue implementation code, individual task acceptance criteria, or legacy issue closure actions
+Owns: PMO critical-path rules, serial vs parallel execution boundaries, alternating Program 1/2 lane handoff, and queue/wave planning constraints
+Does Not Own: Orchestrator workflow code, individual task acceptance criteria, Program 2 issue mutation, or legacy issue closure actions
 Canonical Reference: /docs/ops/pmo/program-registry.md
-Related Issues: #1335, #1385
-Last Reviewed: 2026-06-06
+Related Issues: #1411, #1409, #1379, #1255, #1335
+Last Reviewed: 2026-06-07
 ---
 
 # PMO Critical Path
 
 ## Purpose
 
-Define how work advances through Program 1 and subsequent programs so that one
-implementation task is active at a time, evidence is preserved, and parallel effort
-does not create competing issue trees.
+Define how LGFC work advances through the PMO cycle so planning and execution
+can move forward without competing issue trees, unreviewed queue movement, or
+unauthorized issue mutation.
 
 ## Scope
 
 This document owns:
 
-- Default serial queue behavior for orchestrator-labeled implementation tasks
-- Track interaction rules across CI, Website, Docs, and OPS during Program 1
-- Bootstrap and launch-gate exceptions
+- default serial task behavior;
+- safe parallel planning and read-only work;
+- Program 1 / Program 2 alternating lane handoff;
+- Program 3 promotion dependency rules;
+- queue/wave planning constraints before workflow implementation.
 
 This document does not own:
 
-- Modifying GitHub issue labels or closing legacy issues (requires explicit task
-  authorization and PMO disposition rules)
-- Program 2 execution order after launch gate (defined in launch-gate report)
+- GitHub issue relabeling, closure, or queue mutation;
+- workflow YAML or orchestrator script implementation;
+- Program 2 website runtime work;
+- D1 migrations, production configuration, or secrets.
 
 ## Current Known Truth
 
-- Orchestrator issue factory creates the first new task as `status:queued` only when
-  no open `orchestrator`-labeled issue exists; otherwise new tasks start
-  `status:blocked`.
-- A one-time **PMO bootstrap exception** promoted `#1339` to `status:queued` while
-  legacy orchestrator issues remain open for evidence preservation.
-- Program 1 Tasks `#1339`–`#1345` are **complete** on `main`.
-- Task 008 launch gate is active under `#1385`; PR `#1382` was hygiene only and did
-  not complete Task 008. Program 1 is not fully closed until the launch gate merges
-  and **Bill** records approval.
-- Program 2 plans and tasks (including `#1273`–`#1276`) remain blocked until the
-  launch gate is approved. Adopted P0 findings H-001–H-003 must be remediated in the
-  sequencing order defined in `program-2-launch-gate.md` before dependent Program 2
-  implementation proceeds.
+- Program 1 and Program 2 are alternating execution lanes in a perpetual PMO
+  cycle, not permanent subject domains.
+- Program 1 `#1411` is the active planning cycle for PMO Automation and Agent
+  Workflow Control.
+- Program 2 `#1255` is the active Website Implementation and Content Operations
+  execution cycle and must not be blocked or mutated by Program 1 planning.
+- Program 3 `#1379` is portfolio intake and prioritization; it is not an
+  implementation execution lane.
+- Prior Program 1 `#1335` is completed historical evidence only and is not a
+  parent for the new Program 1 cycle.
+- Workflow Automation has been promoted from Program 3 into Program 1 planning,
+  but no workflow YAML, label, queue, or runtime implementation is authorized by
+  this planning PR.
 
 ## Intended Final State
 
-- All agents and maintainers use this document to decide what may run in parallel
-  vs what must wait.
-- Legacy backlog disposition follows Task 006–007 outputs and registry rules, not
-  ad-hoc bulk closure.
-- Program 2 critical path is recorded in `docs/ops/reports/program-2-launch-gate.md`.
+- Each active task has one source issue, one implementation PR, one verification
+  path, and one closeout path.
+- Program 1 planning can define the next body of work while Program 2 executes
+  current work, as long as Program 2 state is not mutated.
+- Program 3 candidates become executable only after owner promotion and
+  repository authority.
+- Future queue/wave automation follows documented stop/continue, evidence, and
+  authority rules before implementation.
 
 ## Default Rule — One Active Implementation Task
 
 ```text
-Program master issue → one active task issue → one implementation PR → verify → closeout → next task
+Program master issue → one active task issue → one PR → verify → closeout → next task
 ```
 
 | State | Meaning | Who may implement |
 | --- | --- | --- |
+| Planning / review-ready | Documentation or plan is ready for Atlas/Bill review | Assigned planning agent only |
 | `status:queued` / `status:pr-draft` / `status:implementation` / `status:review` | Active pipeline slot | One primary agent on the active task only |
-| `status:blocked` | Waiting for upstream task or queue slot | Read-only exploration only (see parallel-agent rules) |
-| `status:post-merge-verify` / `status:complete` | Terminal or verifying | No new implementation until queue advances |
+| `status:blocked` | Waiting for upstream task or queue slot | Read-only exploration only |
+| `status:post-merge-verify` / `status:complete` | Terminal or verifying | No next implementation until closeout/queue authority is clear |
 
-**Invariant:** At most one orchestrator implementation task may hold an active
-pipeline state (`queued` through `review`) per program unless the program owner
-documents an explicit PMO exception.
+At most one orchestrator implementation task may hold an active pipeline state
+per program unless the program owner documents an explicit PMO exception.
 
-## Program 1 Task Sequence
+## Program 1 / Program 2 Lane Handoff
 
-Mandatory serial order for **implementation** (merge) work:
+The perpetual cycle works as follows:
+
+1. Program 1 defines or executes a bounded body of work.
+2. Program 2 executes an authorized body of work.
+3. Program 1 may define the next cycle while Program 2 executes, if it does not
+   mutate Program 2 state.
+4. A future handoff requires explicit review, validation, launch-gate or
+   completion evidence, and owner approval.
+5. Completed cycles remain historical evidence and do not become implicit parents
+   for later cycles.
+
+For the current cycle:
+
+- Program 1 `#1411` defines PMO Automation and Agent Workflow Control.
+- Program 2 `#1255` continues Website Implementation and Content Operations.
+- Program 1 planning must not close, relabel, queue, or otherwise mutate Program
+  2 issues.
+
+## Active Program 1 Critical Path
+
+The Program 1 `#1411` planning path is:
 
 ```text
-Task 001 (#1339) → Task 002 (#1340) → Task 003 (#1341) → Task 004 (#1342)
-  → Task 005 (#1343) → Task 006 (#1344) → Task 007 (#1345) → Task 008 (#1346)
+PMO cycle authority → Workflow Automation authority → Cursor continuation
+  → PR readiness/batch review → mutation policy → wave model
+  → closeout evidence → Program 3 promotion gate
 ```
 
-| Task | Track | Depends on | Implementation gate |
-| --- | --- | --- | --- |
-| 001 PMO registry | Governance | none | Must merge before Tasks 002–005 implementation |
-| 002 CI as-built | CI | 001 | Docs/closeout only; no workflow changes |
-| 003 Website as-built | Website | 001 | Docs only; no application code |
-| 004 DIATAXIS status | Docs | 001 | Status report only |
-| 005 OPS snapshot | OPS | 001 | Docs only |
-| 006 Health review | Cross-cutting | 002–005 | Synthesis report only |
-| 007 Automation backlog | Governance | 006 | Classification only; no implementation PRs |
-| 008 Launch gate | Governance | 007 | Sign-off record; authorizes Program 2 |
-
-### Read-only parallel window (Tasks 002–005)
-
-After Task 001 merges, agents may perform **read-only** audit and research for
-Tasks 002–005 in parallel. Rules:
-
-- No implementation PRs for `#1340`–`#1345` until the queue advances to that task.
-- No file changes under another task's allowlist.
-- Findings feed the active or next task issue as comments, not new orchestrator issues.
-
-## Track Rules (CI, Website, Docs, OPS)
-
-During Program 1 wrap-up, tracks are **documentation and closeout surfaces**, not
-parallel implementation lanes.
-
-| Track | Program 1 task | Parallel with other tracks? |
+| Step | Owns | Gate |
 | --- | --- | --- |
-| CI | 002 | Read-only research only after 001 merges |
-| Website | 003 | Read-only research only after 001 merges |
-| Docs | 004 | Read-only research only after 001 merges |
-| OPS | 005 | Read-only research only after 001 merges |
+| PMO cycle authority | Program 1/2/3 lane model | Docs headers and registry consistency |
+| Workflow Automation authority | Drive/Program 3 design migration into GitHub docs | No workflow/runtime changes |
+| Cursor continuation | Safe continue/stop contract | READY FOR REVIEW handoff preserved |
+| PR readiness/batch review | Human review and merge authority | Atlas/Bill walkthrough |
+| Mutation policy | Merge/close/relabel/queue prohibitions | Explicit authorization required |
+| Queue/wave model | Planning labels and run identifiers | No label or workflow mutation |
+| Closeout evidence | Stable post-merge evidence packet | Closeout separated from mutation |
+| Program 3 promotion | Portfolio-to-program rule | Owner approval + repo authority |
 
-Cross-track synthesis happens in Task 006. Disposition and Program 2/3 routing
-happens in Task 007. Authorization happens in Task 008.
+## Program 2 Non-Interference Rule
+
+Program 2 `#1255` remains active. Program 1 `#1411` planning may reference
+Program 2 only to document non-interference and dependency boundaries.
+
+Program 1 planning must not:
+
+- edit Program 2 runtime/application files;
+- close, relabel, or mutate Program 2 issues;
+- change Program 2 child project priority;
+- create Program 2 implementation issues;
+- modify D1 migrations or production configuration;
+- block Program 2 validation or review.
+
+## Program 3 Promotion Gate
+
+Program 3 candidates do not enter implementation by being listed in the
+portfolio. Promotion requires:
+
+1. Bill/owner approval;
+2. finalized design or implementation plan;
+3. GitHub repository documentation authority;
+4. non-interference with active Program 1/2 work;
+5. scoped tasks, allowlists, validation, and rollback;
+6. bounded source issues before Cursor implementation.
+
+Workflow Automation is the current promoted candidate and is limited to Program
+1 documentation authority until later child issues are authorized.
 
 ## Queue Advancement
 
 After a task PR merges and post-merge verification completes:
 
-1. Close or reconcile the task source issue with evidence.
-2. Run queue advancement (automation or maintainer) to promote the next
-   `status:blocked` Program 1 task to `status:queued`.
-3. Do not skip tasks or open implementation PRs for later task issues.
+1. Verify the merged PR and merge commit.
+2. Verify the source issue and authorized closeout action.
+3. Record closeout evidence.
+4. Reconcile terminal labels for completed source issues when closure is
+   authorized: retain stable non-status labels plus `status:complete`, and
+   remove active or failure workflow status labels.
+5. Apply issue mutation only when explicitly authorized.
+6. Advance the next task only after source task closeout is clean and queue
+   authority is clear.
 
-Queue contract details: `/docs/reference/architecture/orchestration-model.md`
+Queue contract details remain in `/docs/reference/architecture/orchestration-model.md`.
 
-## Legacy Backlog — Do Not Bulk-Close
+## Queue/Wave Planning
 
-Open legacy orchestrator issues are **out of the active critical path** but remain
-evidence until deliberate disposition.
+Wave labels and run identifiers are planning/control concepts until a future
+implementation issue authorizes label or workflow changes.
 
-| Action | Allowed now? | When allowed |
-| --- | --- | --- |
-| Bulk-close website T-task issues | **No** | After Task 003 reconciliation + PMO disposition rules |
-| Close CI phase-2 tasks `#1273`–`#1276` | **No** | Program 2 after launch gate |
-| Close failed `#1089` without review | **No** | Task 006 health review recommendation |
-| Promote `#1339` under bootstrap exception | **Done** | Documented one-time exception |
+A future wave implementation must define:
+
+- wave/run identifier format;
+- included issues and PRs;
+- excluded issues and PRs;
+- stop/continue decision owner;
+- validation and closeout evidence required;
+- allowed issue-state actions;
+- rollback or halt path.
+
+This planning PR does not create labels, apply labels, edit workflow YAML, or
+advance queues.
 
 ## Exceptions
 
 | Exception | Authority | Notes |
 | --- | --- | --- |
-| PMO bootstrap (`#1339` queued while legacy issues open) | Program owner + documented comment on `#1335`, `#1339` | One-time; establishes this registry |
-| Program owner parallel authorization | Human program owner | Must be recorded on the program umbrella issue |
-| Program 2 activation | Task 008 sign-off | Unblocks Program 2 plans and `#1273`–`#1276` |
+| Program owner parallel authorization | Human program owner | Must be recorded on the active program issue |
+| Program 2 state mutation from Program 1 planning | Not allowed by default | Requires explicit active-source authorization |
+| Wave/run implementation | Future implementation issue | Must define labels, evidence, stop/continue, and rollback before code changes |
+| Merge or destructive issue action | Bill / authorized human path | Cursor does not own this authority |
 
 ## Related References
 
-- Program registry: `/docs/ops/pmo/program-registry.md`
-- Parallel agent rules: `/docs/ops/pmo/parallel-agent-rules.md`
-- Program 1 plan: `/docs/ops/implementation-plans/program-1-phase1-wrapup-rollout.md`
+- PMO program registry: `/docs/ops/pmo/program-registry.md`
+- PMO parallel agent rules: `/docs/ops/pmo/parallel-agent-rules.md`
+- Workflow Automation authority: `/docs/ops/pmo/workflow-automation.md`
+- Cursor execution contract:
+  `/docs/reference/pmo/lgfc-cursor-execution-contract.md`
+- GitHub issue closeout protocol:
+  `/docs/ops/pmo/github-issue-closeout-protocol.md`

@@ -2,11 +2,11 @@
 Doc Type: Operations
 Audience: Human + AI
 Authority Level: Operational Authority
-Owns: PMO program registry, child-project mapping, and authoritative execution chain for LGFC orchestrated work
-Does Not Own: Implementation plan task definitions, orchestrator workflow code, product design, or legacy issue disposition actions
-Canonical Reference: /docs/reference/architecture/orchestration-model.md
-Related Issues: #1335, #1339, #1385
-Last Reviewed: 2026-06-06
+Owns: PMO program registry, launch-state control, five-program lane model, child-project mapping, and authoritative execution chain for LGFC orchestrated work
+Does Not Own: Implementation plan task definitions, workflow code, runtime behavior, product design, or unauthorized GitHub issue mutation
+Canonical Reference: /docs/ops/pmo/program-registry.md
+Related Issues: #1411, #1409, #1379, #1255, #1335
+Last Reviewed: 2026-06-07
 ---
 
 # PMO Program Registry
@@ -14,173 +14,250 @@ Last Reviewed: 2026-06-06
 ## Purpose
 
 Record the authoritative Program Management Office (PMO) structure for LGFC
-orchestrated execution. This registry replaces ad-hoc issue trees with a single
-program master, one active task, blocked downstream tasks, and deliberate closeout
-before advancement.
+orchestrated execution. The registry defines the program lanes, blocked launch
+state, active cycles, portfolio intake, and execution chain used to convert
+approved planning into bounded GitHub issues, Pull Requests, verification, and
+closeout.
 
 ## Scope
 
 This document owns:
 
-- The PMO execution chain and where each link is defined
-- Program 1, Program 2, and Program 3 purpose, child projects, owners, and status
-- Links to active implementation plans and umbrella issues
+- Program 1, Program 2, Program 3, Program 4, and Program 5 definitions;
+- the current execution lane and blocked planning lane relationship;
+- the required blocked-first control statement for future planning programs;
+- completed-cycle historical evidence rules;
+- links to active implementation plans and PMO authority docs;
+- non-interference rules for planning work that runs while another lane executes.
 
 This document does not own:
 
-- Closing or modifying legacy orchestrator issues (see disposition rules in
-  `/docs/ops/pmo/critical-path.md` and Task 007 automation backlog)
-- Runtime orchestrator behavior (see `/docs/reference/architecture/orchestration-model.md`)
+- task-level implementation details inside implementation plans;
+- workflow YAML, orchestrator code, runtime code, D1 migrations, or production
+  configuration;
+- GitHub issue closure, relabeling, queue advancement, or merge actions unless
+  separately authorized by an active source issue.
+
+## Required First Statement for Planning Programs
+
+Every program planning package must begin with a launch-state control statement.
+
+Required language:
+
+> This program is BLOCKED from execution until the currently active program is
+> closed or reaches an Atlas/Bill-approved transition gate. Planning, review, and
+> documentation discussion may continue, but Cursor may not execute implementation
+> work from this program until Bill/Atlas explicitly launch it.
+
+Required implications:
+
+- A planning issue does not launch a program.
+- A planning PR does not launch a program.
+- A ready-for-review planning PR does not launch a program.
+- A merged planning PR does not automatically launch a program.
+- Launch requires an explicit Atlas/Bill launch comment or source issue update.
+- Cursor must treat pre-launch program issues as planning/reference only.
+- Child implementation issues must not be created or activated until launch
+  approval.
 
 ## PMO Execution Chain
 
-The authoritative chain for orchestrated work:
+The authoritative chain for orchestrated work remains:
 
 ```text
-Program → Child Project → Task → Issue → PR → Verification → Closeout
+Program → child project → task → issue → PR → verification → closeout
 ```
 
 | Link | Definition | Primary source |
 | --- | --- | --- |
-| Program | Multi-task initiative with umbrella issue and launch gate | This registry |
-| Child Project | Domain or workstream under a program (CI, Website, Docs, OPS) | Implementation plan + umbrella issue |
-| Task | Single executable unit in a production-ready plan | `/docs/ops/implementation-plans/` |
-| Issue | GitHub issue with `lgfc-task-id` marker and orchestrator labels | Issue factory |
-| PR | One implementation pull request per task issue | Assigned agent |
-| Verification | Required gates, reviewer disposition, post-merge validation | PR governance + CI gates |
-| Closeout | Source issue closure, evidence recorded, queue advancement | Post-merge closeout + PMO rules |
+| Program | Time-bounded execution or planning body with source issue and launch gate | This registry |
+| child project | Bounded workstream under a program | Implementation plan + source issue |
+| task | Single executable unit in a production-ready plan | `/docs/ops/implementation-plans/` |
+| issue | GitHub execution contract with stable task marker when generated | issue factory / source issue |
+| PR | One scoped pull request per task issue | Assigned agent |
+| verification | Required checks, review evidence, gate status, and PR body accounting | PR governance + CI gates |
+| closeout | Source issue reconciliation, evidence, and authorized queue advancement | PMO closeout rules |
 
-Orchestration mechanics (labels, queue contract, agents): `/docs/reference/architecture/orchestration-model.md`
+Related authority:
 
-Parallel agent constraints: `/docs/ops/pmo/parallel-agent-rules.md`
-
-Critical-path and serial queue rules: `/docs/ops/pmo/critical-path.md`
+- Workflow Automation authority: `/docs/ops/pmo/workflow-automation.md`
+- Cursor execution contract:
+  `/docs/reference/pmo/lgfc-cursor-execution-contract.md`
+- Parallel agent constraints: `/docs/ops/pmo/parallel-agent-rules.md`
+- Critical-path and queue rules: `/docs/ops/pmo/critical-path.md`
 
 ## Current Known Truth
 
-- Program 1 Tasks `#1339`–`#1345` are **complete** on `main`. Task 008 launch gate
-  is active under `#1385` (supersedes premature `#1346` closeout from PR `#1382`).
-  Program 1 is **not** fully closed until `program-2-launch-gate.md` merges and
-  **Bill** records approval.
-- Task `#1339` (PMO registry) was promoted under a **one-time bootstrap exception**
-  to establish governance before legacy backlog disposition.
-- Legacy orchestrator issues (website T-tasks, CI phase-2 blocked tasks `#1273`–`#1276`,
-  failed `#1089`, and others) remain open for evidence preservation. Program 1
-  Tasks 006–007 classify health findings and automation backlog disposition; they
-  do not authorize bulk issue creation or closure.
-- Program 2 implementation plans must not move to `issues-created` until
-  `program-2-launch-gate.md` merges and **Bill** records approval. Task 006 P0
-  findings H-001–H-003 are **adopted**, not waived, with sequencing defined in the
-  launch gate.
+- Program 1, Program 2, Program 3, and Program 4 are reusable execution/planning
+  lanes. They are not permanent subject domains.
+- Program 5 is the future-project and ideas portfolio aggregator. It is not an
+  implementation execution lane.
+- At steady state, three program records may be active in PMO control:
+  1. one execution lane actively being implemented;
+  2. one blocked planning lane being prepared as the next implementation cycle;
+  3. Program 5 as the always-available portfolio aggregator.
+- Program 2 is the current active execution lane: `#1255` — **Website
+  Implementation and Content Operations**.
+- Program 1 is the current blocked planning lane: `#1411` — **PMO Automation and
+  Agent Workflow Control**.
+- Program 3 and Program 4 are available future execution/planning lanes and must
+  not be activated unless Atlas/Bill explicitly open a source issue for them.
+- Program 5 portfolio authority is currently represented by the legacy portfolio
+  issue `#1379` until a dedicated Program 5 portfolio issue is created.
+- The prior Program 1 cycle `#1335` — **Phase 1 Wrap-Up** — is completed
+  historical evidence only. It is not a parent issue for the new Program 1 cycle.
+- Workflow Automation has been promoted from the portfolio (`#1379`) and Drive
+  draft context into the blocked Program 1 planning cycle through `#1411`.
+- Cursor may prepare scoped docs and PR evidence when authorized, but may not
+  merge, close, relabel, advance queues, create implementation child issues, or
+  mutate issue state unless the active source issue explicitly authorizes that
+  action.
 
 ## Intended Final State
 
-- All active work maps to a program and child project in this registry.
-- Legacy issues are closed or superseded only under documented PMO rules after
-  Program 1 wrap-up tasks complete.
-- Program 2 child projects launch with issue-per-task structure after launch-gate sign-off.
+- Active work maps to one current execution lane among Program 1 through Program
+  4, or remains in Program 5 as portfolio intake.
+- The next implementation cycle is planned in a different program number from the
+  currently active execution lane and from the prior completed program number.
+- GitHub repository docs are the authority for promoted workflow-automation design
+  before workflow implementation begins.
+- Blocked planning can proceed without interfering with the active execution
+  program.
+- Future transitions use explicit completion, review, launch-gate, and handoff
+  rules.
+- Completed programs remain linked as evidence without becoming implicit parents
+  for later cycles.
 
-## Program 1 — Phase 1 Wrap-Up
+## Five-Program Model
+
+Program numbers identify PMO cycle slots, not permanent subject domains.
+
+| Program | Role | Current state |
+| --- | --- | --- |
+| Program 1 | Execution/planning lane A | Blocked planning lane for PMO Automation and Agent Workflow Control (`#1411`) |
+| Program 2 | Execution/planning lane B | Active execution lane for Website Implementation and Content Operations (`#1255`) |
+| Program 3 | Execution/planning lane C | Available future lane; not active |
+| Program 4 | Execution/planning lane D | Available future lane; not active |
+| Program 5 | Future-project / ideas portfolio aggregator | Portfolio source currently represented by legacy `#1379` until dedicated Program 5 authority is created |
+
+The purpose of four reusable execution/planning lane numbers is nomenclature
+separation. While one program number is executing and another is blocked/planning,
+a recently completed program number can remain historical without overlapping the
+active or planning program numbers.
+
+## Active / Blocked / Portfolio Operating Pattern
+
+The steady-state PMO pattern is:
+
+1. One Program 1–4 lane is active implementation.
+2. One different Program 1–4 lane is blocked planning for the next implementation
+   cycle.
+3. Program 5 continuously aggregates future projects and ideas.
+4. Planning work may proceed in the blocked lane, but Cursor may not execute from
+   it until Atlas/Bill explicitly launch that program.
+5. The prior completed program remains historical evidence and should not share
+   the active or blocked/planning number when avoidable.
+6. When the active execution lane closes or reaches an approved transition gate,
+   Atlas/Bill may launch the blocked planning lane or choose a different Program
+   1–4 lane from Program 5 portfolio material.
+
+This model prevents drift from treating any program number as permanently
+"governance," "implementation," or "portfolio," except Program 5, which is the
+stable portfolio aggregator.
+
+## Current Program 1 — PMO Automation and Agent Workflow Control
 
 | Field | Value |
 | --- | --- |
-| Status | **Active** — Task 008 launch gate (`#1385`) pending Bill sign-off |
-| Owner | Atlas (governance), Cursor (implementation tasks) |
-| Umbrella issue | `#1335` |
-| Implementation plan | `docs/ops/implementation-plans/program-1-phase1-wrapup-rollout.md` |
-| Project slug | `program-1-phase1-wrapup-rollout` |
+| Status | **Blocked planning lane** — not executable until Program 2 closes or reaches an Atlas/Bill-approved transition gate |
+| Source issue | `#1411` |
+| Implementation plan | `docs/ops/implementation-plans/program-1-pmo-automation-agent-workflow-control.md` |
+| Workflow Automation authority | `docs/ops/pmo/workflow-automation.md` |
+| Project slug | `program-1-pmo-automation-agent-workflow-control` |
+| Non-interference context | Active Program 2 `#1255`; prior Program 1 `#1335` historical only |
 
-### Purpose
+### Program 1 project areas
 
-Draw the hard line under Phase 1 across CI, Website, Docs/DIATAXIS, and OPS.
-Preserve evidence, document as-built surfaces, classify automation backlog, and
-authorize Program 2 only after launch-gate sign-off.
+| Area | Registry decision |
+| --- | --- |
+| PMO five-program authority | Program 1–4 are reusable execution/planning lanes; Program 5 is the portfolio aggregator |
+| Workflow Automation design migration | Workflow Automation is promoted from portfolio / Drive context into GitHub authority |
+| Cursor continuation and queue contract | Cursor can validate and report, then stops at review handoff |
+| PR readiness and batch review control | Readiness preserves Atlas/Bill review and merge authority |
+| Merge and issue mutation policy | Cursor may not merge, close, relabel, queue, or mutate issues without explicit authorization |
+| Queue/wave model and labels | Wave labels and run identifiers are planning concepts before workflow code changes |
+| Post-merge closeout evidence stabilization | Closeout requires stable evidence and terminal completed-label reconciliation before mutation or queue advancement |
+| Program 5 promotion process | Portfolio items require owner promotion, repo authority, decomposition, and bounded handoff |
 
-### Child projects (within Program 1)
+### Out of scope for current Program 1 planning PR
 
-| Child project | Task issues | Focus |
-| --- | --- | --- |
-| PMO governance | `#1339` | Registry, critical path, parallel-agent rules |
-| CI as-built | `#1340` | Close `#1075`, stale redesign issues; evidence only |
-| Website as-built | `#1341` | Reconciliation doc; tracker retirement guidance |
-| Docs/DIATAXIS status | `#1342` | Transition status; not full migration |
-| OPS monitoring | `#1343` | Monitoring snapshot and gap record |
-| Operational health | `#1344` | Synthesized P0/P1/P2 findings |
-| Automation classification | `#1345` | Program 2 vs Program 3 backlog report |
-| Program 2 launch gate | `#1346` / `#1385` | Sign-off before Program 2 activation; `#1385` is current implementation authority |
+- Program 2 website/runtime implementation under `#1255`
+- Workflow YAML changes
+- D1 migrations
+- Production configuration or secrets
+- Closing, relabeling, or mutating Program 2 issues
+- Creating implementation child issues before Atlas/Bill launch approval
 
-### Out of scope for Program 1
-
-- Program 2 CI maintenance (phase-2 Tasks 002–005 under `#1058`)
-- Website feature implementation under `#1255`
-- Full `#1132` documentation remediation (Program 3 unless promoted)
-
-## Program 2 — Phase 2 Launch
+## Current Program 2 — Website Implementation and Content Operations
 
 | Field | Value |
 | --- | --- |
-| Status | **Blocked** until launch gate merged and Bill approves |
-| Owner | Bill (final launch authority); Atlas (governance review) |
-| Gate document | `docs/ops/reports/program-2-launch-gate.md` (Task 008 via `#1385`) |
-| P0 policy | H-001–H-003 **adopted**, not waived; sequencing in launch gate |
+| Status | **Active execution lane** |
+| Source issue | `#1255` |
+| Primary plan | `docs/how-to/website/website-implementation-and-content-operations-plan.md` |
+| Priority | Content Strategy / Editorial Inventory first |
 
-### Purpose
+Program 2 remains active while Program 1 defines the next PMO automation body of
+work. Program 1 planning must not modify Program 2 issue state, relabel Program 2
+issues, close Program 2 issues, or reinterpret Program 2 child project priority.
 
-Execute Phase 2 build and hardening work across authorized child projects after
-Phase 1 evidence and PMO rules are in place.
+## Program 3 and Program 4 — Available Future Lanes
 
-### Planned child projects (not yet authorized)
+Program 3 and Program 4 are available execution/planning lane numbers. They do
+not currently own active LGFC implementation work.
 
-| Child project | Umbrella / plan | Preconditions |
-| --- | --- | --- |
-| CI maintenance | `#1058`, `issue-1075-ci-phase2-closeout-rollout.md` Tasks 002–005 | Task 002 complete; launch gate signed; **H-003 then H-001** adopted P0 sequencing |
-| Website completion | `#1255` | Task 003 complete; launch gate signed; P0 phases 0–2 underway |
-| Docs completion | Program 1 Task 004/007 outputs | Launch gate signed |
-| OPS hardening | Program 1 Task 005/007 outputs | Launch gate signed; **H-002** early task required |
-| Automation / agent orchestration | Program 1 Task 007 backlog | Launch gate signed; H-001 stabilization progress |
+They may be used when Atlas/Bill need a new planning or execution cycle that
+should not reuse the prior completed number or conflict with the active execution
+and blocked planning lanes.
 
-### Activation rule
-
-No Program 2 implementation plan may move to `issues-created` until
-`docs/ops/reports/program-2-launch-gate.md` records **Bill's** approval. Adopted
-P0 remediation (H-003 → H-001 → H-002) must be sequenced before dependent
-Program 2 implementation proceeds.
-
-## Program 3 — Deferred / Holding
+## Program 5 — Future Projects and Ideas Portfolio
 
 | Field | Value |
 | --- | --- |
-| Status | **Deferred** |
-| Owner | Program owner |
-| Primary reference | `#1132` documentation remediation |
+| Status | **Portfolio intake and prioritization** |
+| Current source issue | legacy `#1379`, pending dedicated Program 5 portfolio authority if needed |
+| Role | Ideas, deferred work, candidate projects, and future opportunities |
 
-### Purpose
+Program 5 is not an implementation queue. Items in Program 5 require:
 
-Hold scope explicitly deferred from Program 1 and Program 2 until promoted by
-program owner decision or Program 1 Task 007 classification.
+1. owner approval for promotion;
+2. finalized design or plan;
+3. repository documentation authority;
+4. placement into the appropriate portfolio or implementation plan;
+5. scoped GitHub issue creation;
+6. bounded Cursor/agent implementation scope;
+7. explicit launch approval into one of Program 1–4.
 
-### Typical contents
+Workflow Automation is the current promoted example: it moved from portfolio
+candidate status into blocked Program 1 planning through `#1411`.
 
-- Full `#1132` legacy documentation migration execution
-- External alerting integrations
-- Tutorial expansion and non-critical doc curation
-- Items marked Program 3 in `docs/ops/reports/program-1-automation-backlog.md`
+## Historical Program Evidence
 
-## Legacy Backlog (Evidence Preservation)
-
-The following open orchestrator-related issues are **not** current PMO authority.
-Do not bulk-close them. Use Program 1 Task 006 health findings, Task 007 backlog
-classification, and PMO closeout rules before any owner-approved disposition.
-
-| Category | Examples | Disposition owner |
+| Cycle | Status | Current role |
 | --- | --- | --- |
-| Website T-task orchestrator issues | `#1108`–`#1127`, `#1014`–`#1017` | Task 003 reconciliation + Task 007 classification |
-| CI phase-2 blocked tasks | `#1273`–`#1276` | Remain blocked; Program 2 after launch gate |
-| Failed orchestration | `#1089` | Task 006 health review |
-| Stale CI redesign children | `#1195`, `#1199` | Task 002 closeout |
+| Program 1 — Phase 1 Wrap-Up (`#1335`) | Closed / historical | Evidence for prior PMO setup, not a parent issue for later Program 1 cycles |
+
+Completed program cycles remain audit evidence and may be cited for historical
+context. They do not automatically authorize new child issues, queue movement, or
+parent/child relationships for later cycles.
 
 ## Related References
 
-- Implementation plans: `/docs/ops/implementation-plans/README.md`
-- Orchestration model: `/docs/reference/architecture/orchestration-model.md`
-- Program 1 plan: `/docs/ops/implementation-plans/program-1-phase1-wrapup-rollout.md`
+- Program portfolio model:
+  `/docs/reference/pmo/lgfc-program-portfolio-model.md`
+- Cursor execution contract:
+  `/docs/reference/pmo/lgfc-cursor-execution-contract.md`
+- PMO critical path: `/docs/ops/pmo/critical-path.md`
+- PMO parallel agent rules: `/docs/ops/pmo/parallel-agent-rules.md`
+- GitHub issue closeout protocol:
+  `/docs/ops/pmo/github-issue-closeout-protocol.md`
