@@ -89,7 +89,7 @@ Populate the required fields:
 - `source_name`;
 - `source_url` when available;
 - `credit_line`;
-- `publication_status = draft` or `under_review`.
+- `status = draft`.
 
 Use `event_date` for exact anniversaries and `event_year` for year-only history.
 
@@ -101,7 +101,7 @@ For a first story, a conservative placement set is usually:
 
 - `archive`;
 - `search`;
-- `fanclub_library` when the story is appropriate for members;
+- `library` when the story is appropriate for members;
 - `homepage_milestones` only when the event date/year supports milestone use.
 
 Do not add new section keys during the tutorial.

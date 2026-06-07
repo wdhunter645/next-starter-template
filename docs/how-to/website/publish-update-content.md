@@ -69,7 +69,7 @@ Required for publication:
 - `priority`;
 - `source_name`;
 - `credit_line`;
-- `publication_status`;
+- `status`;
 - `search_text` or equivalent generated index text.
 
 Use `source_url` when an online source exists. Use `event_date` or `event_year`
@@ -118,7 +118,7 @@ already been updated.
 
 For new publication:
 
-- set `publication_status = published`;
+- set `status = published`;
 - set or verify `published_at`;
 - preserve `created_at` and `updated_at`;
 - convert the source queue item to `approved` or `merged` when applicable.
@@ -144,8 +144,8 @@ intended surfaces:
 - archive;
 - related content.
 
-Eligibility comes from `allowed_sections`, `publication_status`, source/credit
-completeness, editorial holds, and surface-specific rules.
+Eligibility comes from `allowed_sections`, `status`, source/credit completeness,
+editorial holds, and surface-specific rules.
 
 ### 8. Record notes
 

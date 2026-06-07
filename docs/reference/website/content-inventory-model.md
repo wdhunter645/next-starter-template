@@ -97,7 +97,7 @@ placement behavior from issue comments after this document is approved.
 | `rotation_group` | no | text | Editorial group used to diversify rotation. |
 | `last_featured` | no | timestamp text | Last public feature timestamp for repeat suppression. |
 | `feature_weight` | yes | integer | Editorial boost for rotation selection. |
-| `publication_status` | yes | enum-like text | Draft/review/published/archived/editorial hold state. |
+| `status` | yes | enum-like text | Current inventory publication state. |
 | `created_at` | yes | timestamp text | Inventory creation timestamp. |
 | `updated_at` | yes | timestamp text | Last editorial update timestamp. |
 | `published_at` | when published | timestamp text | Publication timestamp. |
@@ -119,17 +119,17 @@ Approved story type values:
 
 Additional values require a reference doc update before implementation.
 
-### `publication_status` values
+### `status` values
 
-Approved inventory status values:
+Current approved inventory status values:
 
 - `draft`
-- `under_review`
 - `published`
 - `archived`
-- `editorial_hold`
 
-Only `published` inventory is eligible for public dynamic population.
+Only `published` inventory is eligible for public dynamic population. Future
+child issues may add states such as under-review or editorial hold only through
+an approved compatibility migration and matching API updates.
 
 ## Source, URL, and Credit Requirements
 
@@ -194,7 +194,7 @@ these requirements:
 
 | Field | Required | Purpose |
 |---|---:|---|
-| `id` | yes | Queue record identifier. |
+| `submission_id` | yes | Queue record identifier. |
 | `submitted_by` | when known | Member/editor/source identifier. |
 | `payload` | yes | Raw submitted text and metadata snapshot. |
 | `title` | when supplied | Proposed title. |

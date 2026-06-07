@@ -111,7 +111,7 @@ Populate at least:
 - `priority`;
 - `source_name`;
 - `credit_line`;
-- `publication_status`.
+- `status`.
 
 Add `source_url` when available.
 
@@ -144,10 +144,10 @@ Do not publish media without credit/source review.
 
 ### 9. Save as draft or under review
 
-New manual story entries should remain `draft` or `under_review` until reviewed.
+New manual story entries should remain `draft` until reviewed.
 
-Do not set `publication_status = published` until the publish/update procedure
-has been completed.
+Do not set `status = published` until the publish/update procedure has been
+completed.
 
 ### 10. Submit for editorial review
 

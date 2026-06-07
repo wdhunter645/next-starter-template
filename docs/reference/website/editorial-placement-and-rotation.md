@@ -49,7 +49,7 @@ not by creating one boolean column per surface.
 
 | Invariant | Requirement |
 |---|---|
-| Published-only public reads | Public surfaces only select `publication_status = published`. |
+| Published-only public reads | Public surfaces only select `status = published`. |
 | No rejected queue leakage | `submission_queue` records never populate public surfaces directly. |
 | No per-section booleans | Section eligibility lives in `allowed_sections`. |
 | Priority is scoped | `priority` orders records within an eligible surface; it is not global truth. |
@@ -65,7 +65,7 @@ not by creating one boolean column per surface.
 | `homepage_spotlight` | Homepage spotlight slot | High-priority feature content when the slot is enabled. |
 | `homepage_discussions` | Homepage discussions section | Story prompts or context suitable for discussion. |
 | `homepage_milestones` | Homepage milestones section | Event/date/year-driven milestone content. |
-| `fanclub_library` | Fan Club library | Member-visible historical and archival stories. |
+| `library` | Fan Club library | Member-visible historical and archival stories. |
 | `search` | Public search | Published content eligible for public search indexing. |
 | `archive` | Public or member archive | Browsable historical inventory. |
 | `related_content` | Related story modules | Story cards linked by tag, date, source, media, or rotation group. |
@@ -167,7 +167,7 @@ Alternate rows must not silently replace the canonical row.
 
 Public search eligibility requires:
 
-- `publication_status = published`;
+- `status = published`;
 - `search` in `allowed_sections`;
 - populated `search_text` or equivalent indexable fields;
 - source and credit data sufficient for public display or retained metadata;
