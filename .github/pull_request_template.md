@@ -11,6 +11,8 @@ When new PR-gate troubleshooting information becomes available, maintainers and 
 ## PR LIFECYCLE REQUIREMENT (MANDATORY FOR ALL AGENTS)
 A PR is not complete when it is opened. The creating or working agent owns the PR through the full lifecycle until it is ready for human review and then through post-merge closeout once the PR is merged.
 
+This single template is the canonical lifecycle record for PR open, review readiness, merge approval readiness, and post-merge closeout. Do not split lifecycle evidence across separate PR templates; keep phase-specific evidence in the sections below so source issue, allowlist, verification, reviewer, and closeout accounting stay in one auditable place.
+
 Required lifecycle:
 1. Confirm or create exactly one same-repository, open, non-PR source issue.
 2. Insert one accepted source-issue accounting line consistent with `/docs/governance/PR_GOVERNANCE.md`. Preferred format: `- **Issue:** #123`.
@@ -174,6 +176,8 @@ Reviewer items:
 - [ ] Post-merge validation gates inspected when applicable
 
 ## ACCEPTANCE CRITERIA
+Post-merge validation fails if any acceptance criterion remains unchecked after merge. Post-merge-only criteria must be checked with evidence, marked not applicable with rationale by replacing the checkbox line, or delegated to a tracked remediation issue before closeout is claimed.
+
 - [ ] Required source issue exists, is open, is same-repository, and is not a PR.
 - [ ] PR issue-accounting gate passes.
 - [ ] Drift gate passes.
