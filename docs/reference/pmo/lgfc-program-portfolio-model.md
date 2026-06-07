@@ -56,7 +56,7 @@ This document does not own:
 ## Intended Final State
 
 - Every active work item has exactly one current authority path:
-  Program → Child Project → Task → Issue → PR → Verification → Closeout.
+  Program → child project → task → issue → PR → verification → closeout.
 - Program 3 items become executable only after owner promotion, repository
   authority placement, task decomposition, and bounded issue/PR handoff.
 - Program 1 planning and Program 2 execution can proceed concurrently only when
@@ -67,18 +67,18 @@ This document does not own:
 ## Portfolio Chain
 
 ```text
-Program → Child Project → Task → Issue → PR → Verification → Closeout
+Program → child project → task → issue → PR → verification → closeout
 ```
 
 | Level | Owns | Example in current cycle |
 | --- | --- | --- |
 | Program | Time-bounded body of planning or execution work | Program 1 `#1411`, Program 2 `#1255` |
-| Child Project | Bounded workstream under the active program | Workflow Automation design migration |
-| Task | Single executable unit in an implementation plan | Task 002 — Workflow Automation Design Migration |
-| Issue | GitHub source contract | One source issue per generated task |
+| child project | Bounded workstream under the active program | Workflow Automation design migration |
+| task | Single executable unit in an implementation plan | Task 002 — Workflow Automation Design Migration |
+| issue | GitHub source contract | One source issue per generated task |
 | PR | File changes and evidence | One PR per task issue |
-| Verification | Checks, gate evidence, and reviewer disposition | Docs header/canonical checks |
-| Closeout | Authorized issue reconciliation and queue handoff | Post-merge evidence packet |
+| verification | Checks, gate evidence, and reviewer disposition | Docs header/canonical checks |
+| closeout | Authorized issue reconciliation and queue handoff | Post-merge evidence packet |
 
 ## Program Lane Model
 

@@ -65,7 +65,8 @@ Cursor may:
 - edit files inside the active task allowlist;
 - run validation commands;
 - commit and push scoped changes when authorized by the task;
-- open or update a PR for the active task;
+- open or update a PR for the active task when the source issue or an explicit
+  workflow instruction authorizes it;
 - report validation results and unresolved blockers in the PR body or handoff
   response.
 

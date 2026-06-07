@@ -4,7 +4,7 @@ Audience: Human + AI
 Authority Level: Operational Authority
 Owns: PMO program registry, lane model, child-project mapping, and authoritative execution chain for LGFC orchestrated work
 Does Not Own: Implementation plan task definitions, workflow code, runtime behavior, product design, or unauthorized GitHub issue mutation
-Canonical Reference: /docs/reference/pmo/lgfc-program-portfolio-model.md
+Canonical Reference: /docs/ops/pmo/program-registry.md
 Related Issues: #1411, #1409, #1379, #1255, #1335
 Last Reviewed: 2026-06-07
 ---
@@ -16,7 +16,7 @@ Last Reviewed: 2026-06-07
 Record the authoritative Program Management Office (PMO) structure for LGFC
 orchestrated execution. The registry defines the program lanes, active cycles,
 portfolio intake, and execution chain used to convert approved planning into
-bounded GitHub Issues, Pull Requests, verification, and closeout.
+bounded GitHub issues, Pull Requests, verification, and closeout.
 
 ## Scope
 
@@ -41,18 +41,18 @@ This document does not own:
 The authoritative chain for orchestrated work remains:
 
 ```text
-Program → Child Project → Task → Issue → PR → Verification → Closeout
+Program → child project → task → issue → PR → verification → closeout
 ```
 
 | Link | Definition | Primary source |
 | --- | --- | --- |
 | Program | Time-bounded execution or planning body with source issue and launch gate | This registry |
-| Child Project | Bounded workstream under a program | Implementation plan + source issue |
-| Task | Single executable unit in a production-ready plan | `/docs/ops/implementation-plans/` |
-| Issue | GitHub execution contract with stable task marker when generated | Issue factory / source issue |
+| child project | Bounded workstream under a program | Implementation plan + source issue |
+| task | Single executable unit in a production-ready plan | `/docs/ops/implementation-plans/` |
+| issue | GitHub execution contract with stable task marker when generated | issue factory / source issue |
 | PR | One scoped pull request per task issue | Assigned agent |
-| Verification | Required checks, review evidence, gate status, and PR body accounting | PR governance + CI gates |
-| Closeout | Source issue reconciliation, evidence, and authorized queue advancement | PMO closeout rules |
+| verification | Required checks, review evidence, gate status, and PR body accounting | PR governance + CI gates |
+| closeout | Source issue reconciliation, evidence, and authorized queue advancement | PMO closeout rules |
 
 Related authority:
 

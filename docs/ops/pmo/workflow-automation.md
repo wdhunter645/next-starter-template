@@ -16,10 +16,10 @@ Last Reviewed: 2026-06-07
 Represent the LGFC Workflow Automation design in GitHub documentation authority
 for the new Program 1 cycle: **PMO Automation and Agent Workflow Control**.
 
-This document converts the Program 3 Workflow Automation candidate and accessible
-Google Drive draft summary into a bounded repository-owned planning source. It
-defines what the automation program may design before any workflow code, label
-mutation, issue mutation, or runtime implementation begins.
+This document converts the Program 3 Workflow Automation candidate and the
+Drive-draft summary preserved in GitHub issues into a bounded repository-owned
+planning source. It defines what the automation program may design before any
+workflow code, label mutation, issue mutation, or runtime implementation begins.
 
 ## Scope
 
@@ -45,9 +45,9 @@ This document does not own:
 
 ## Current Known Truth
 
-- Issue `#1411` promotes Workflow Automation from Program 3 into a new Program 1
+- issue `#1411` promotes Workflow Automation from Program 3 into a new Program 1
   planning cycle.
-- Issue `#1379` captured Workflow Automation as a Program 3 future candidate and
+- issue `#1379` captured Workflow Automation as a Program 3 future candidate and
   listed the available Drive-draft concepts.
 - The Google Drive draft is not directly readable from this environment without
   sign-in; the accessible authority for this PR is the text preserved in

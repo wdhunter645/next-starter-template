@@ -55,15 +55,15 @@ This plan does not own:
 
 ## Current Known Truth
 
-- Issue `#1411` is the active Program 1 source issue for this cycle.
-- Issue `#1409` corrected the PMO model: Program 1 and Program 2 are
+- issue `#1411` is the active Program 1 source issue for this cycle.
+- issue `#1409` corrected the PMO model: Program 1 and Program 2 are
   alternating execution lanes, not permanent subject domains.
-- Issue `#1379` is the Program 3 Ideas & Future Projects Portfolio and captured
+- issue `#1379` is the Program 3 Ideas & Future Projects Portfolio and captured
   Workflow Automation as a promoted candidate.
-- Issue `#1255` is the active Program 2 Website Implementation and Content
+- issue `#1255` is the active Program 2 Website Implementation and Content
   Operations execution lane and must not be blocked or modified by this planning
   PR.
-- Issue `#1335` is the completed prior Program 1 Phase 1 Wrap-Up cycle. It is
+- issue `#1335` is the completed prior Program 1 Phase 1 Wrap-Up cycle. It is
   historical evidence only and is not the parent of this Program 1 cycle.
 - The Google Drive draft for LGFC Workflow Automation is represented here only
   through the accessible design summary preserved in `#1379` and `#1411`.
@@ -115,7 +115,7 @@ Acceptance Criteria:
   issues for later Program 1 cycles.
 - Active Program 2 work under `#1255` is explicitly non-interference context.
 Validation:
-- `./scripts/ci/docs_check_headers.sh .`
+- `DOCS_HEADER_FILE_LIST=<task-allowed-files-list> ./scripts/ci/docs_check_headers.sh .`
 - `./scripts/ci/docs_canonical_hashes_verify.sh .`
 Rollback:
 - Revert only the PMO cycle authority documentation updates.
@@ -142,7 +142,7 @@ Acceptance Criteria:
 - The plan remains ready for later child issue creation after Atlas/Bill
   walkthrough.
 Validation:
-- `./scripts/ci/docs_check_headers.sh .`
+- `DOCS_HEADER_FILE_LIST=<task-allowed-files-list> ./scripts/ci/docs_check_headers.sh .`
 - `./scripts/ci/docs_canonical_hashes_verify.sh .`
 Rollback:
 - Revert Workflow Automation planning docs only.
@@ -168,7 +168,7 @@ Acceptance Criteria:
 - Queue continuation preserves one active source issue and one implementation PR
   per task.
 Validation:
-- `./scripts/ci/docs_check_headers.sh .`
+- `DOCS_HEADER_FILE_LIST=<task-allowed-files-list> ./scripts/ci/docs_check_headers.sh .`
 - `./scripts/ci/docs_canonical_hashes_verify.sh .`
 Rollback:
 - Revert Cursor contract and PMO queue documentation updates.
@@ -191,7 +191,7 @@ Acceptance Criteria:
   reviewer/bot disposition, and gate status.
 - Cursor stop conditions are explicit when reviewer or gate action remains.
 Validation:
-- `./scripts/ci/docs_check_headers.sh .`
+- `DOCS_HEADER_FILE_LIST=<task-allowed-files-list> ./scripts/ci/docs_check_headers.sh .`
 - `./scripts/ci/docs_canonical_hashes_verify.sh .`
 Rollback:
 - Revert PR readiness and batch-review documentation updates only.
@@ -216,7 +216,7 @@ Acceptance Criteria:
   separately authorized by an active source issue.
 - Human authority for protected merges and destructive actions is preserved.
 Validation:
-- `./scripts/ci/docs_check_headers.sh .`
+- `DOCS_HEADER_FILE_LIST=<task-allowed-files-list> ./scripts/ci/docs_check_headers.sh .`
 - `./scripts/ci/docs_canonical_hashes_verify.sh .`
 Rollback:
 - Revert mutation-policy documentation updates only.
@@ -241,7 +241,7 @@ Acceptance Criteria:
 - No labels are created, removed, or applied by this task.
 - Program 2 active work is not blocked by wave planning.
 Validation:
-- `./scripts/ci/docs_check_headers.sh .`
+- `DOCS_HEADER_FILE_LIST=<task-allowed-files-list> ./scripts/ci/docs_check_headers.sh .`
 - `./scripts/ci/docs_canonical_hashes_verify.sh .`
 Rollback:
 - Revert queue/wave planning documentation updates only.
@@ -265,7 +265,7 @@ Acceptance Criteria:
 - Batch closeout authorization remains bounded by explicit Bill/Atlas approval.
 - Post-merge closeout supports later automation without premature closure.
 Validation:
-- `./scripts/ci/docs_check_headers.sh .`
+- `DOCS_HEADER_FILE_LIST=<task-allowed-files-list> ./scripts/ci/docs_check_headers.sh .`
 - `./scripts/ci/docs_canonical_hashes_verify.sh .`
 Rollback:
 - Revert closeout evidence documentation updates only.
@@ -292,7 +292,7 @@ Acceptance Criteria:
 - The Program 1 plan can create child issues only after Atlas/Bill walkthrough
   and normal orchestration authority.
 Validation:
-- `./scripts/ci/docs_check_headers.sh .`
+- `DOCS_HEADER_FILE_LIST=<task-allowed-files-list> ./scripts/ci/docs_check_headers.sh .`
 - `./scripts/ci/docs_canonical_hashes_verify.sh .`
 Rollback:
 - Revert Program 3 promotion and launch-gate documentation updates only.
