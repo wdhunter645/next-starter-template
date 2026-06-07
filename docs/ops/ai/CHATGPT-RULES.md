@@ -46,9 +46,12 @@ Required startup surfaces:
 - GitHub repository access for `wdhunter645/next-starter-template`.
 - Gmail access.
 - Google Calendar access.
-- Google Drive access, including Drive-hosted Docs, Sheets, and Slides artifacts when available through the connected Drive tool surface.
+- Google Drive access.
+- Google Drive-hosted Google Workspace artifacts, including Docs, Sheets, and Slides when available through the connected Drive tool surface.
 
-For LGFC work, the term **Google services** means only the current LGFC-used Google service surfaces: Gmail, Google Calendar, and Google Drive, including Drive-hosted Docs, Sheets, and Slides artifacts. It does not mean all Google products or imply access to unrelated Google products such as Google Contacts, Google Cloud, YouTube, Analytics, Search Console, Photos, Keep, Tasks, or Admin unless a separate connected tool explicitly exists and is verified in the current session.
+LGFC Google startup verification covers four named Google service/artifact surfaces: Gmail, Google Calendar, Google Drive, and Google Drive-hosted Google Workspace artifacts, including Docs, Sheets, and Slides when available through the connected Drive tool surface.
+
+For LGFC work, the term **Google services** means only those four LGFC-used Google service/artifact surfaces. It does not mean all Google products or imply access to unrelated Google products such as Google Contacts, Google Cloud, YouTube, Analytics, Search Console, Photos, Keep, Tasks, or Admin unless a separate connected tool explicitly exists and is verified in the current session.
 
 Google Contacts is not an LGFC startup service and must not be checked, counted, or reported as part of the LGFC Google services startup set.
 
@@ -60,7 +63,7 @@ Startup reporting must distinguish:
 - **unavailable** — the tool surface is not connected, authorization is missing, or the connector returns an error;
 - **not verified** — the session has not yet checked that surface.
 
-If GitHub or any LGFC Google service surface is unavailable or not verified, ChatGPT/Atlas must state that limitation before relying on that surface for planning, handoff, or execution.
+If GitHub or any of the four LGFC Google service/artifact surfaces is unavailable or not verified, ChatGPT/Atlas must state that limitation before relying on that surface for planning, handoff, or execution.
 
 ---
 
