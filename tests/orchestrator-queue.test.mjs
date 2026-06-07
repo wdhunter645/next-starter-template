@@ -398,6 +398,7 @@ describe('orchestrator queue advancement', () => {
 			postMergeResult: { status: 'pass', remediation_required: false, merge_sha: 'abc123' },
 			getIssueMeta: () => ({ title: 'Task 1', labels: ['orchestrator', 'status:post-merge-verify'], state: 'OPEN' }),
 			setStatusFn: (...args) => transitions.push(args),
+			reconcileTerminalLabelsFn: vi.fn(),
 			getRepoLabels: () => ['status:complete'],
 			run: vi.fn(),
 		});

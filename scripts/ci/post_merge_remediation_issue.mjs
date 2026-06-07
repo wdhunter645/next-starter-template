@@ -77,7 +77,7 @@ export function remediationBody(result) {
 			: '- No rollback recommendation recorded.',
 		'',
 		'## Workflow failures',
-	];
+	);
 
 	if (result.workflow_failures?.length) {
 		for (const failure of result.workflow_failures) {
