@@ -105,6 +105,82 @@ When a PR is ready for review, Cursor continues only far enough to:
 
 PR readiness is not merge authority.
 
+## Program 2 Child-Task Continuation Rule
+
+For Program 2 `#1255` child-task execution, Cursor may begin the next child issue
+only after Atlas, Bill, or the controller posts an explicit `@cursor`
+continuation authorization comment on that child issue.
+
+Cursor must not infer executable authority from labels, merge state,
+closed/completed prior issue state, queue order, or an active parent/project
+issue alone. Cursor may execute only the issue explicitly named in the latest
+valid continuation comment, must stop at GitHub `READY FOR REVIEW` unless the
+comment says otherwise, and must not create child issues, close issues, relabel
+issues, mutate parent Program 2 issue `#1255`, mutate child project issue
+`#1256`, advance Program 1 / `#1411`, or mutate unrelated issues unless the
+active source issue explicitly grants that authority.
+
+If blockers are unclear, Cursor pauses and reports findings instead of
+implementing.
+
+Program 2 continuation comments should use this reusable authorization template:
+
+```text
+@cursor
+Program 2 continuation authorization.
+
+Prior task complete:
+- <prior issue> is closed completed or otherwise explicitly accepted.
+- <prior PR> is merged.
+- Superseded PRs, if any, are closed unmerged.
+- Post-merge verification / label cleanup is complete or explicitly delegated.
+
+Blocking criteria cleared:
+- <dependency> is complete.
+- <parent project> remains active.
+- <parent program> remains active.
+- Program 1 / #1411 must not advance.
+
+Next authorized task:
+- <next issue> - <title>
+
+Proceed with <next issue> only.
+
+Use exactly one PR source issue line:
+- **Issue:** <next issue>
+
+Hard boundaries:
+- Do not touch Program 1 / #1411.
+- Do not mutate #1255 or #1256 state unless explicitly authorized.
+- Do not close or relabel issues unless explicitly authorized.
+- Do not create additional child issues.
+- Do not change workflow YAML unless explicitly authorized.
+- Do not merge.
+
+Validation:
+- Run and report exact commands/results in the PR body.
+
+Stop condition:
+- Stop at GitHub READY FOR REVIEW.
+```
+
+Program 2 blocked-continuation comments should use this reusable pause template:
+
+```text
+@cursor pause.
+Program 2 continuation is blocked.
+
+Do not implement the next child task.
+
+Blocking criteria not cleared:
+- <blocker list>
+
+Allowed action:
+- Investigate and report only, if explicitly requested.
+
+Stop after posting findings.
+```
+
 ## Stop Conditions
 
 Cursor must stop and report when:

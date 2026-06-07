@@ -113,6 +113,58 @@ The first implementation task must inventory current schema, APIs, UI, and publi
 reads against the approved docs. Build changes should target documented gaps
 only.
 
+## Program 2 Child-Task Continuation Handoff
+
+Program 2 child-task continuation requires an explicit Atlas, Bill, or controller
+`@cursor` issue comment on the next child issue before Cursor begins. Cursor must
+not infer continuation from labels, merge state, closed/completed prior issue
+state, or queue order alone.
+
+This process applies to the remainder of Program 2 child-task execution after
+Task 003 (`#1401` / PR `#1431`). This documentation fix does not authorize
+Cursor to execute `#1401`, modify PR `#1431`, create child issues, close or
+relabel issues, mutate parent Program 2 issue `#1255`, mutate child project
+issue `#1256`, touch Program 1 / `#1411`, or perform runtime implementation.
+
+Required continuation rules:
+
+1. Cursor may execute only the issue explicitly named in the latest valid
+   `@cursor` continuation comment.
+2. Labels alone are not executable authority.
+3. Merge state alone is not executable authority.
+4. Closed or completed prior issue state alone is not executable authority.
+5. The controller must post a continuation authorization comment on the next
+   child issue before Cursor begins.
+6. Cursor must stop at GitHub `READY FOR REVIEW` unless explicitly told
+   otherwise.
+7. Cursor must not create additional child issues unless explicitly authorized.
+8. Cursor must not close or relabel issues unless explicitly authorized.
+9. Cursor must not mutate `#1255`, `#1256`, Program 1 / `#1411`, or unrelated
+   issues.
+10. If blockers are unclear, Cursor must pause and report findings instead of
+    implementing.
+
+Every executable Program 2 child issue must include, or be paired with, all of
+the following readiness material:
+
+- parent program reference: `#1255`;
+- parent project reference when applicable: `#1256`;
+- dependency or prior-task criteria;
+- blocking criteria;
+- required source documents;
+- exact scope;
+- hard out-of-scope list;
+- expected file areas or file-touch allowlist;
+- validation expectations;
+- exact PR source issue line requirement;
+- stop condition: GitHub `READY FOR REVIEW`;
+- no merge authority;
+- no issue close or relabel authority unless explicitly granted.
+
+Atlas, Bill, or the controller remains responsible for choosing the next Program
+2 child task. Cursor remains limited to the single authorized issue named in the
+latest valid continuation comment.
+
 ---
 
 ## Task 001 — Existing Implementation Inventory and Gap Analysis
