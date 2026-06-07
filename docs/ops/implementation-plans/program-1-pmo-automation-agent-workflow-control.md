@@ -116,6 +116,70 @@ Atlas documentation may suggest sequence and timing, but Cursor must convert tha
 into implementation mechanics only after Bill/Atlas approves the relevant source
 issue and allowlist.
 
+## Prior Program 1 Retrospective
+
+The previous Program 1 cycle, `#1335`, is historical evidence for PMO
+improvement. It is not the parent of this cycle, but its outcomes must improve
+how the next cycle is planned, reviewed, and closed.
+
+### What worked
+
+- Program-level grouping worked. A single Program 1 umbrella gave Atlas and Bill
+  enough structure to collect PMO, as-built, health, launch-gate, and automation
+  cleanup work without losing the larger objective.
+- Documentation-first sequencing worked. Stabilizing authority documents before
+  runtime implementation reduced drift and made later Program 2 work easier to
+  scope.
+- PR-as-ticket discipline worked when each task preserved a source issue, narrow
+  allowlist, validation evidence, and a clear stop point.
+- Human merge authority worked. Bill remained the final merge authority, which
+  protected the repo from automated or premature acceptance of governance changes.
+- External review and gate evidence worked when it was captured in the PR body and
+  reviewed before merge.
+- The historical record worked. Completed Program 1 material can now serve as
+  evidence for what was decided without becoming a permanent active parent.
+
+### What did not work
+
+- Program identity was too static. The earlier process allowed Program 1 to look
+  like a permanent subject domain instead of a reusable execution lane.
+- Launch and closeout boundaries were not explicit enough. Completed tasks did
+  not always produce a clean terminal state across PR, source issue, labels,
+  trackers, and next-task recommendation.
+- Issue-state mutation authority was underdefined. Cursor, Atlas, controller
+  automation, and Bill were not cleanly separated for comment, PR, merge, close,
+  relabel, and queue-advance actions.
+- Program-to-program lane control was weak. A planning issue could accidentally
+  become an execution lane while Program 2 was active.
+- Retrospective learning was implicit. The prior cycle captured outputs, but did
+  not force a formal lessons-learned update before launching the next Program 1
+  cycle.
+- Label policy was incomplete. Closed/completed work could still retain active or
+  failure-state labels, which made the repo state look inconsistent.
+- Queue continuation was under-specified. Cursor could prepare good work quickly,
+  but the process needed sharper rules for when it continues, stops, or reports a
+  blocker.
+
+### PMO process changes required for this cycle
+
+- Every Program 1 cycle must include a retrospective section that states what
+  worked, what failed, and what process rules changed as a result.
+- Program 1 and Program 2 must be documented as alternating execution lanes. Their
+  names do not create permanent parentage or subject ownership.
+- Program 3 promotion must be explicit before a planning concept becomes active
+  Program 1 or Program 2 work.
+- Planning discussion may continue while another program executes, but only one
+  active Cursor execution lane may exist unless Bill/Atlas authorizes a bounded
+  wave model.
+- Cursor may implement and prepare PRs, but merge authority, final closeout,
+  terminal labels, and queue advancement remain Atlas/Bill or approved-controller
+  actions.
+- Post-merge closeout must reconcile PR state, source issue state, remediation
+  issues, labels, validation evidence, and next-task recommendation before the
+  queue advances.
+- Each completed program cycle must create or update its successor-process lessons
+  before being treated as fully closed.
+
 ---
 
 ## Program 1 Project Documentation Set
