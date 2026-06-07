@@ -5,7 +5,7 @@ Authority Level: Program Implementation Plan
 Owns: Phased implementation sequence, deliverables, child issue rules, validation, rollback, closeout, and handoff checklist for #1255
 Does Not Own: Final editorial content decisions, production secrets, vendor account configuration, or runtime implementation code
 Canonical Reference: docs/how-to/website/website-implementation-and-content-operations-plan.md
-Last Reviewed: 2026-06-04
+Last Reviewed: 2026-06-06
 ---
 
 # Website Implementation and Content Operations Plan
@@ -72,6 +72,10 @@ The active order is:
 ### Phase 0 — Program baseline and issue reconciliation
 
 Objective: make the issue queue reliable before new implementation work begins.
+
+Phase 0 reconciliation report (Program 2, issue `#1394`):
+
+- [`docs/ops/reports/program-2-website-phase0-reconciliation.md`](../../ops/reports/program-2-website-phase0-reconciliation.md)
 
 Deliverables:
 
