@@ -36,7 +36,7 @@ This reference covers:
 
 The production design standard locks the homepage section order and identifies
 `content_inventory` as the active editorial archive and member-library content
-authority. Project `#1256` requires placement controls that avoid per-section
+authority. The project `#1256` requires placement controls that avoid per-section
 true/false columns and support editorial rotation from D1 inventory data.
 
 ## Intended Final State

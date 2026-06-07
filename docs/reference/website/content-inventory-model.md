@@ -91,7 +91,7 @@ placement behavior from issue comments after this document is approved.
 | `search_text` | yes | text | Normalized searchable text generated or maintained from approved fields. |
 | `source_name` | yes for publish | text | Publication, archive, contributor, collection, or source name. |
 | `source_url` | when available | text | URL or durable source reference. |
-| `credit_line` | yes for publish | text | Human-readable credit or attribution line. |
+| `credit_line` | yes | text | Human-readable credit or attribution line. |
 | `event_date` | no | ISO date text | Specific historical date for anniversary rotation. |
 | `event_year` | no | integer | Historical year when exact date is unknown or year browsing is needed. |
 | `rotation_group` | no | text | Editorial group used to diversify rotation. |
