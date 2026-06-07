@@ -3,7 +3,8 @@
  */
 
 export function repositoryParts(repository = '') {
-	const [owner = '', repo = ''] = String(repository || '').split('/');
+	const repoStr = repository || process.env.GITHUB_REPOSITORY || '';
+	const [owner = '', repo = ''] = String(repoStr).split('/');
 	return { owner, repo };
 }
 

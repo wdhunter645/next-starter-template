@@ -300,6 +300,7 @@ export function buildResult({
 	sourceIssueCandidates = [],
 	terminalLabelResult = null,
 	sourceIssueCloseoutMode = '',
+	repository = '',
 } = {}) {
 	if (!resolution?.pr) {
 		return {
@@ -343,8 +344,8 @@ export function buildResult({
 		status,
 		pr: Number(resolution.pr),
 		merge_sha: mergeSha || pr?.mergeCommit?.oid || pr?.merge_commit_sha || '',
-		source_issue: sourceIssueAccounting(pr?.body || '').issueNumber || null,
-		source_issue_candidates: sourceIssueCandidates.length ? sourceIssueCandidates : sourceIssueAccounting(pr?.body || '').sourceIssueCandidates,
+		source_issue: sourceIssueAccounting(pr?.body || '', { repository }).issueNumber || null,
+		source_issue_candidates: sourceIssueCandidates.length ? sourceIssueCandidates : sourceIssueAccounting(pr?.body || '', { repository }).sourceIssueCandidates,
 		source_issue_closeout_mode: sourceIssueCloseoutMode,
 		late_findings: findings.length,
 		workflow_failures: failures,
@@ -672,6 +673,7 @@ export async function runValidator({
 		sourceIssueCandidates: sourceAccounting.sourceIssueCandidates,
 		terminalLabelResult,
 		sourceIssueCloseoutMode,
+		repository,
 	});
 }
 

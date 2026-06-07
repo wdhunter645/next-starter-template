@@ -25,10 +25,14 @@ export function isRemediationIssue({ title = '', labels = [] } = {}) {
 
 export function planTerminalLabelReconciliation({ issueLabels = [], repoLabels = [] } = {}) {
 	const labels = new Set(
-		(issueLabels || []).map((label) => (typeof label === 'string' ? label : label?.name)).filter(Boolean),
+		Array.from(issueLabels || [])
+			.map((label) => (typeof label === 'string' ? label : label?.name))
+			.filter(Boolean),
 	);
 	const availableLabels = new Set(
-		(repoLabels || []).map((label) => (typeof label === 'string' ? label : label?.name)).filter(Boolean),
+		Array.from(repoLabels || [])
+			.map((label) => (typeof label === 'string' ? label : label?.name))
+			.filter(Boolean),
 	);
 
 	if (!availableLabels.has(TERMINAL_SOURCE_ISSUE_LABEL)) {

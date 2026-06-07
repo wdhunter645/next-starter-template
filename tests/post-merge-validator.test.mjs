@@ -10,6 +10,7 @@ import {
 	renderPostMergeReport,
 	resolvePrNumber,
 	reviewerFindings,
+	sourceIssueAccounting,
 	workflowFailures,
 } from '../scripts/ci/post_merge_validator.mjs';
 import { remediationBody, remediationTitle } from '../scripts/ci/post_merge_remediation_issue.mjs';
@@ -94,6 +95,33 @@ describe('post-merge metadata validation', () => {
 				metadata: failures,
 			}),
 		).toMatchObject({ status: 'fail', remediation_required: true, sync_action: 'post_merge_failure' });
+	});
+
+	it('does not treat external issue URLs as same-repository source issues in build results', () => {
+		const externalBody = baseBody.replace('#1122', 'https://github.com/other/repo/issues/1122');
+		const result = buildResult({
+			pr: mergedPr({ body: externalBody }),
+			resolution: { pr: '1188' },
+			repository: 'owner/repo',
+		});
+
+		expect(result.source_issue).toBeNull();
+		expect(result.source_issue_candidates).toEqual(['https://github.com/other/repo/issues/1122']);
+	});
+
+	it('uses GITHUB_REPOSITORY as source issue accounting repository context fallback', () => {
+		const previousRepository = process.env.GITHUB_REPOSITORY;
+		process.env.GITHUB_REPOSITORY = 'owner/repo';
+		try {
+			expect(sourceIssueAccounting('- **Issue:** https://github.com/owner/repo/issues/1122').issueNumber).toBe('1122');
+			expect(sourceIssueAccounting('- **Issue:** https://github.com/other/repo/issues/1122').issueNumber).toBe('');
+		} finally {
+			if (previousRepository === undefined) {
+				delete process.env.GITHUB_REPOSITORY;
+			} else {
+				process.env.GITHUB_REPOSITORY = previousRepository;
+			}
+		}
 	});
 
 	it('treats missing advisory sections as remediation without failing closeout validation', () => {

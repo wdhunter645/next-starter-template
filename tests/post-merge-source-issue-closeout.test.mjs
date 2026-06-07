@@ -205,6 +205,19 @@ describe('source issue closeout evidence', () => {
 			terminalLabels: ['orchestrator', 'status:complete'],
 		});
 	});
+
+	it('accepts Set inputs when planning terminal label reconciliation', () => {
+		const plan = planTerminalLabelReconciliation({
+			issueLabels: new Set(['status:post-merge-verify']),
+			repoLabels: new Set(['status:complete']),
+		});
+
+		expect(plan).toMatchObject({
+			ok: true,
+			removeLabels: ['status:post-merge-verify'],
+			addLabel: 'status:complete',
+		});
+	});
 });
 
 describe('duplicate remediation issue governance', () => {
