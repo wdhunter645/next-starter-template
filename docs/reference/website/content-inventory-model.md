@@ -67,7 +67,7 @@ placement behavior from issue comments after this document is approved.
 | One canonical row per tag | A tag may have multiple rows, but only one canonical row. |
 | Alternate perspectives retained | Non-canonical rows under the same tag preserve attributed variants. |
 | No per-section booleans | Placement uses `allowed_sections`, not columns such as `show_homepage` or `show_milestones`. |
-| Source and credit required for publish | Published rows must carry enough attribution for editorial review. |
+| Credit line required for every row | Every inventory row must carry `credit_line`; source name and source URL/reference requirements are stricter at publication. |
 | Queue before publish | New submissions enter `submission_queue` before inventory publication. |
 | Automation advisory only | Automation may triage objective fields but not decide facts or publish. |
 | Rejected queue isolation | Rejected submissions are excluded from public rendering and search. |
@@ -139,7 +139,7 @@ Published inventory must preserve attribution in structured fields.
 |---|---|
 | `source_name` | Required for publication; names the publication, archive, collection, contributor, or source body. |
 | `source_url` | Required when an online source exists; optional when the source is offline or private. |
-| `credit_line` | Required for publication; shown or retained as the editorial credit. |
+| `credit_line` | Required for every inventory row; shown or retained as the editorial credit. |
 
 If an item is historically useful but lacks a public URL, editors may publish it
 only when `source_name` and `credit_line` preserve a durable attribution trail.
