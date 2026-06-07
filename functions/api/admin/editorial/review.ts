@@ -8,6 +8,8 @@ type ReviewBody = {
   submission_id?: unknown;
   action?: unknown;
   tag?: unknown;
+  summary?: unknown;
+  perspective_label?: unknown;
   source_name?: unknown;
   source_url?: unknown;
   credit_line?: unknown;
@@ -17,6 +19,7 @@ type ReviewBody = {
   canonical?: unknown;
   media?: unknown;
   event_date?: unknown;
+  event_year?: unknown;
   rotation_group?: unknown;
   feature_weight?: unknown;
   review_notes?: unknown;
@@ -32,6 +35,20 @@ function asString(value: unknown): string {
 function asInt(value: unknown, fallback: number): number {
   const n = typeof value === "number" ? value : Number(value);
   return Number.isFinite(n) ? Math.trunc(n) : fallback;
+}
+
+function asOptionalInt(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? Math.trunc(value) : null;
+  }
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const n = Number(trimmed);
+    return Number.isFinite(n) ? Math.trunc(n) : null;
+  }
+  return null;
 }
 
 function slugifyTag(value: string): string {
@@ -118,6 +135,8 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     const title = String((submission as any).title || "").trim();
     const text = String((submission as any).description || "").trim();
     const tag = slugifyTag(asString(body?.tag) || String((submission as any).proposed_tag || "") || title);
+    const summary = asString(body?.summary) || null;
+    const perspectiveLabel = asString(body?.perspective_label) || null;
     const storyType = STORY_TYPES.has(asString(body?.story_type)) ? asString(body?.story_type) : "brief";
     const sourceUrl = asString(body?.source_url) || String((submission as any).source_url || "").trim() || null;
     const sourceName = asString(body?.source_name) || "Member submission";
@@ -127,9 +146,22 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     const priority = asInt(body?.priority, 0);
     const canonical = body?.canonical === false || body?.canonical === 0 ? 0 : 1;
     const eventDate = asString(body?.event_date) || null;
+    const eventYear = asOptionalInt(body?.event_year);
     const rotationGroup = asString(body?.rotation_group) || null;
     const featureWeight = Math.max(1, asInt(body?.feature_weight, 1));
-    const searchText = [title, text, tag, sourceName, creditLine].filter(Boolean).join(" ");
+    const searchText = [
+      title,
+      text,
+      summary,
+      tag,
+      perspectiveLabel,
+      sourceName,
+      creditLine,
+      eventDate,
+      eventYear,
+    ]
+      .filter(Boolean)
+      .join(" ");
 
     if (!title || !text || !tag || !creditLine) {
       return jsonResponse({ ok: false, error: "Approved records require title, text, tag, and credit_line." }, 400);
@@ -138,15 +170,18 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     const insert = await d1.db
       .prepare(
         `INSERT INTO content_inventory
-          (tag, title, text, media, story_type, allowed_sections, priority, search_text, canonical,
-           source_name, source_url, credit_line, event_date, rotation_group, feature_weight,
+          (tag, title, text, summary, perspective_label, media, story_type, allowed_sections, priority,
+           search_text, canonical, source_name, source_url, credit_line, event_date, event_year,
+           rotation_group, feature_weight,
            status, review_notes, submitted_by, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?, ?)`,
       )
       .bind(
         tag,
         title,
         text,
+        summary,
+        perspectiveLabel,
         media,
         storyType,
         allowedSections,
@@ -157,6 +192,7 @@ export const onRequestPost = async (context: any): Promise<Response> => {
         sourceUrl,
         creditLine,
         eventDate,
+        eventYear,
         rotationGroup,
         featureWeight,
         reviewNotes,
