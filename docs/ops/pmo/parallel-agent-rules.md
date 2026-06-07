@@ -2,155 +2,197 @@
 Doc Type: Operations
 Audience: Human + AI
 Authority Level: Operational Authority
-Owns: Safe parallel read-only exploration vs one-implementer-per-task PR rules for PMO-orchestrated agents
-Does Not Own: Agent routing configuration, GitHub label automation, or legacy issue modifications
+Owns: Safe parallel read-only exploration, one-implementer-per-task PR rules, PR readiness handoff, and batch review boundaries for PMO-orchestrated agents
+Does Not Own: Agent routing configuration, workflow implementation, GitHub label automation, legacy issue modifications, or merge authority
 Canonical Reference: /docs/ops/pmo/critical-path.md
-Related Issues: #1335, #1339
-Last Reviewed: 2026-06-06
+Related Issues: #1411, #1409, #1379, #1255, #1335
+Last Reviewed: 2026-06-07
 ---
 
 # PMO Parallel Agent Rules
 
 ## Purpose
 
-Prevent issue sprawl and conflicting implementation PRs when multiple AI agents
-and maintainers work in the same repository. Define what may run in parallel and
-what must remain serial.
+Prevent issue sprawl, conflicting implementation PRs, and unauthorized GitHub
+state mutation when multiple AI agents and maintainers work in the same
+repository.
 
 ## Scope
 
 This document owns:
 
-- Read-only parallel work (audit, research, review)
-- One-implementer-per-task PR rules
-- Agent role boundaries for Program 1 (Cursor implementation, Atlas repo review)
+- safe read-only parallel work;
+- one-implementer-per-task PR rules;
+- PR readiness and batch-review handoff rules;
+- Program 1 planning vs active Program 2 non-interference;
+- wave/run planning boundaries before workflow implementation.
 
 This document does not own:
 
-- Closing or relabeling legacy orchestrator issues
-- Creating PRs for blocked tasks `#1340`–`#1346`
-- Orchestrator routing defaults in `/.github/orchestrator-routing.json`
+- closing, relabeling, or mutating GitHub issues;
+- workflow YAML, orchestrator script, runtime, D1, production configuration, or
+  secret changes;
+- merge authority;
+- creation of implementation child issues before Atlas/Bill walkthrough.
 
 ## Current Known Truth
 
-- Program 1 Task `#1339` is the only active implementation task (`status:pr-draft`).
-- Tasks `#1340`–`#1346` are `status:blocked`.
-- Legacy orchestrator issues remain open; agents must not treat them as active work
-  authority.
-- Operating convention for this program: **Cursor implements**, **Atlas reviews**
-  repository governance and doc authority.
+- Program 1 `#1411` is the active planning cycle for PMO Automation and Agent
+  Workflow Control.
+- Program 2 `#1255` remains the active Website Implementation and Content
+  Operations execution lane.
+- Program 3 `#1379` remains portfolio intake; Workflow Automation has been
+  promoted from Program 3 into Program 1 planning.
+- Completed Program 1 cycle `#1335` is historical evidence only and is not the
+  parent issue for this Program 1 cycle.
+- Cursor may prepare a docs-only planning PR for `#1411`, but may not merge,
+  close, relabel, queue, mutate issue state, or create implementation child
+  issues from this PR.
 
 ## Intended Final State
 
-- All agents consult these rules before opening implementation PRs.
-- Parallel sessions produce comments and reports, not competing issue trees.
-- Legacy backlog disposition follows Task 006–007 outputs under PMO registry rules.
+- Parallel agents can gather evidence or review safely without creating
+  competing implementation PRs.
+- Each active task has one source issue, one primary implementer, and one PR
+  unless the program owner records an explicit exception.
+- PR readiness and batch review improve handoff quality while preserving
+  Atlas/Bill review and merge authority.
+- Wave labels and run identifiers are designed before any workflow or label
+  implementation changes.
 
 ## Rule 1 — One Implementation PR Per Active Task
 
 | Allowed | Not allowed |
 | --- | --- |
-| One open implementation PR for the active task issue | Multiple PRs for the same task without program owner approval |
-| One primary agent named on the task issue | Splitting one task across agents without PMO exception |
-| File changes within the task allowlist only | Changes under blocked task allowlists |
+| One open implementation or docs PR for the active task issue | Multiple competing PRs for the same task without program owner approval |
+| One primary agent named by the task or handoff | Splitting one task across agents without PMO exception |
+| File changes within the task allowlist only | Nearby cleanup outside the allowlist |
+| One accepted source issue line in the PR body | Multiple source issue lines or context issues treated as authority |
 
-**Active task (Program 1):** `#1339` until merge and queue advancement.
+For the current planning PR, the only source issue line is `#1411`. Context
+issues `#1409`, `#1379`, `#1255`, and `#1335` are not source issues for the PR.
 
-**Do not** open implementation PRs for `#1340`–`#1346` until each task is promoted
-to `status:queued` / `status:pr-draft`.
+## Rule 2 — Program 2 Non-Interference
 
-## Rule 2 — Parallel Read-Only Work
+Program 1 planning may proceed while Program 2 executes only when it does not
+mutate or block Program 2.
+
+Program 1 agents must not:
+
+- close Program 2 issues;
+- relabel Program 2 issues;
+- advance or halt Program 2 queues;
+- reinterpret Program 2 child project priority;
+- modify website runtime files or D1 state;
+- create Program 2 implementation issues unless an active Program 2 source issue
+  authorizes that work.
+
+## Rule 3 — Parallel Read-Only Work
 
 Multiple agents may work in parallel when all of the following are true:
 
-- The work is **read-only** (no commits, or local commits not pushed).
-- The work does not relabel, close, or comment-close GitHub issues unless explicitly
-  assigned that closeout task.
-- The work stays outside blocked task allowlists if it would anticipate implementation.
-- Output is delivered as issue comments, review notes, or draft findings for the
-  assigned implementer.
+- The work is read-only or limited to local review notes.
+- The work does not create commits or PRs for a blocked task.
+- The work does not close, relabel, merge, comment-close, or mutate issues unless
+  explicitly assigned that closeout task.
+- Output is delivered as review notes, issue comments when authorized, or draft
+  findings for the assigned implementer.
 
 ### Permitted parallel activities
 
-- Repository audit and evidence gathering for upcoming Program 1 tasks
-- Reviewing merged PRs and gate logs
-- Drafting doc outlines locally without pushing
-- Atlas governance review of Cursor-produced diffs before PR open
+- Repository audit and evidence gathering.
+- Reviewing merged PRs and gate logs.
+- Drafting doc outlines locally without pushing.
+- Atlas governance review of Cursor-produced diffs before PR open or before
+  `READY FOR REVIEW`.
 
 ### Prohibited parallel activities
 
-- Pushing implementation branches for blocked tasks
-- Bulk-closing legacy orchestrator issues
-- Creating new orchestrator-labeled issues outside the issue factory
-- Modifying workflow YAML or runtime behavior during docs-only tasks
+- Pushing implementation branches for the same task from multiple agents.
+- Bulk-closing or relabeling legacy issues.
+- Creating orchestrator-labeled child issues outside the approved issue factory
+  path.
+- Modifying workflow YAML or runtime behavior during docs-only planning tasks.
 
-## Rule 3 — Agent Roles (Program 1 Convention)
+## Rule 4 — PR Readiness Handoff
 
-| Role | Agent | Responsibility |
-| --- | --- | --- |
-| Implementation | Cursor | Produce file changes within task allowlist; run validation; prepare PR body |
-| Repo review | Atlas | Verify PMO chain compliance, header/canonical checks, scope, and governance |
-| Program authority | Human program owner | Bootstrap exceptions, launch-gate sign-off, waive P0 findings |
+`READY FOR REVIEW` means the PR has complete evidence for human review. It does
+not mean Cursor may merge or mutate issue state.
 
-Task `#1339` lists `agent:atlas` in the orchestrator issue; the program owner
-directed Cursor for implementation and Atlas for review. Implementation PRs for
-this task still reference `#1339` as the source issue.
+Before setting or reporting `READY FOR REVIEW`, Cursor must confirm:
 
-Tasks **006–008** list `Agent: atlas` in
-`program-1-phase1-wrapup-rollout.md` for synthesis, classification, and launch-gate
-**ownership**. That plan label does **not** authorize Atlas to open implementation
-PRs. Cursor still produces allowlisted file changes and PR bodies; Atlas reviews,
-records closeout on the task issue, and signs governance outcomes. Void PR `#1373`
-(Atlas implementation overlap on `#1344`) is superseded by a Cursor-authored PR.
+- the diff matches the active allowlist;
+- the PR body has exactly one source issue line;
+- required validation commands and outcomes are recorded;
+- docs-only or implementation-scope assertions match the diff;
+- reviewer, bot, and gate blockers are either absent or explicitly dispositioned;
+- no issue closure, relabeling, queue movement, or merge action has been taken.
 
-## Rule 4 — Legacy Backlog Is Not Active Work
+Atlas/Bill review remains required after Cursor handoff.
 
-Agents encountering open legacy issues (website T-tasks, `#1273`–`#1276`, `#1089`)
-must:
+## Rule 5 — Batch Review Control
 
-1. **Not** close, relabel, or merge PRs targeting those issues unless the active
-   task explicitly authorizes it.
-2. Record observations on the active Program 1 task issue or in Task 006/007
-   deliverables.
-3. Treat `/docs/ops/pmo/program-registry.md` as authority for program status, not
-   stale tracker files or old issue titles.
+Batch review may group related PRs or tasks for Atlas/Bill efficiency, but batch
+control must define:
 
-## Rule 5 — No Synthetic Issue Trees
+- included PRs/issues;
+- excluded PRs/issues;
+- validation required before review;
+- stop/continue rule;
+- merge authority;
+- issue mutation authority;
+- rollback or follow-up path for failed gates.
+
+Batch review does not authorize Cursor to merge, close, relabel, or create
+issues.
+
+## Rule 6 — Wave/Run Planning
+
+Wave labels and run identifiers are planning/control concepts until a later
+implementation issue authorizes workflow or label changes.
+
+Before any future implementation, the design must specify:
+
+- wave/run identifier format;
+- batch scope;
+- who decides stop vs continue;
+- how PR readiness is detected;
+- what evidence is required for queue advancement;
+- what issue-state actions are allowed;
+- how bad wave decisions are rolled back or halted.
+
+This planning PR defines the concept only. It does not create labels, apply
+labels, edit workflow YAML, or change queue automation.
+
+## Rule 7 — No Synthetic Issue Trees
 
 Do not create:
 
-- Umbrella issues duplicating `#1335`
-- Child issues for work already covered by `#1339`–`#1346`
-- Tracker issues to compensate for PR-first work
+- child issues from this Program 1 planning PR;
+- umbrella issues duplicating `#1411`;
+- Program 2 implementation issues from Program 1 planning work;
+- tracker issues to compensate for PR-first work.
 
-New orchestrated work enters through production-ready implementation plans and the
-issue factory.
+New orchestrated work enters through production-ready implementation plans,
+Atlas/Bill walkthrough, and the approved issue factory path.
 
-## Rule 6 — PMO Bootstrap Exception (Recorded)
+## Handoff Checklist
 
-A one-time promotion of `#1339` to `status:queued` occurred while legacy
-orchestrator issues remained open. This exception:
+Before requesting Atlas/Bill review:
 
-- Does **not** authorize parallel implementation on other tasks
-- Does **not** authorize bulk legacy closure
-- Establishes these PMO documents as the ongoing policy source
-
-Comments recording the exception: `#1335`, `#1339`.
-
-## Handoff Checklist (Implementer → Reviewer)
-
-Before requesting Atlas review or opening a PR:
-
-- [ ] Changes match active task allowlist only
-- [ ] Changed files pass `./scripts/ci/docs_check_headers.sh <file>`
-- [ ] Repo-wide `./scripts/ci/docs_check_headers.sh .` passed, or pre-existing out-of-scope failures are disclosed in the PR body
-- [ ] `./scripts/ci/docs_canonical_hashes_verify.sh .` passed
-- [ ] No legacy issues closed or relabeled
-- [ ] No blocked task issues advanced
-- [ ] PR body will cite exactly one source issue (`#1339` for Task 001)
+- [ ] Changes match the active task allowlist.
+- [ ] Changed active Markdown files have required headers.
+- [ ] Repo-wide `./scripts/ci/docs_check_headers.sh .` passed, or scoped
+      changed-file header validation and the repo-wide blocker are documented.
+- [ ] `./scripts/ci/docs_canonical_hashes_verify.sh .` passed.
+- [ ] No Program 2 issues were closed, relabeled, or mutated.
+- [ ] No implementation child issues were created.
+- [ ] PR body cites exactly one source issue.
 
 ## Related References
 
-- Critical path: `/docs/ops/pmo/critical-path.md`
+- PMO critical path: `/docs/ops/pmo/critical-path.md`
 - Program registry: `/docs/ops/pmo/program-registry.md`
-- Orchestration model: `/docs/reference/architecture/orchestration-model.md`
+- Cursor execution contract:
+  `/docs/reference/pmo/lgfc-cursor-execution-contract.md`
+- Workflow Automation authority: `/docs/ops/pmo/workflow-automation.md`
