@@ -333,6 +333,115 @@ describe('admin editorial archive page', () => {
     expect(screen.getByDisplayValue('Existing editorial note.')).toBeInTheDocument();
   });
 
+  it('treats whitespace-only retention reasons as purge eligible on reject', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
+      const path = String(input);
+      if (path.startsWith('/api/admin/editorial/list')) {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            submissions: [
+              {
+                submission_id: 14,
+                submitted_by: 'Member <member@example.com>',
+                title: 'Whitespace retention',
+                description: 'A queue item with blank retention input.',
+                proposed_tag: 'whitespace-retention',
+                status: 'pending',
+              },
+            ],
+            inventory: [],
+          }),
+        );
+      }
+      expect(path).toBe('/api/admin/editorial/review');
+      expect(init?.method).toBe('POST');
+      return Promise.resolve(jsonResponse({ ok: true }));
+    });
+
+    render(<AdminEditorialArchivePage />);
+
+    await screen.findByRole('heading', { name: 'Whitespace retention' });
+    fireEvent.change(screen.getByLabelText('Retention reason'), {
+      target: { value: '   ' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Reject + Purge Eligible' }));
+
+    await waitFor(() => {
+      const reviewCall = fetchMock.mock.calls.find(([path]) => path === '/api/admin/editorial/review');
+      expect(JSON.parse(String(reviewCall?.[1]?.body))).toMatchObject({
+        action: 'reject',
+        retention_reason: '',
+      });
+    });
+  });
+
+  it('uses the retained default when stored retention reason is whitespace only', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
+      const path = String(input);
+      if (path.startsWith('/api/admin/editorial/list')) {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            submissions: [
+              {
+                submission_id: 15,
+                submitted_by: 'Member <member@example.com>',
+                title: 'Whitespace stored retention',
+                description: 'A queue item with whitespace-only stored retention.',
+                proposed_tag: 'whitespace-stored',
+                status: 'triaged',
+                retention_reason: '   ',
+              },
+            ],
+            inventory: [],
+          }),
+        );
+      }
+      expect(path).toBe('/api/admin/editorial/review');
+      expect(init?.method).toBe('POST');
+      return Promise.resolve(jsonResponse({ ok: true }));
+    });
+
+    render(<AdminEditorialArchivePage />);
+
+    await screen.findByRole('heading', { name: 'Whitespace stored retention' });
+    fireEvent.click(screen.getByRole('button', { name: 'Retain Rejected' }));
+
+    await waitFor(() => {
+      const reviewCall = fetchMock.mock.calls.find(([path]) => path === '/api/admin/editorial/review');
+      expect(JSON.parse(String(reviewCall?.[1]?.body))).toMatchObject({
+        action: 'reject',
+        retention_reason: 'Retained for editorial follow-up.',
+      });
+    });
+  });
+
+  it('disables purge when stored retention reason is only whitespace after trimming', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse({
+        ok: true,
+        submissions: [
+          {
+            submission_id: 16,
+            submitted_by: 'Member <member@example.com>',
+            title: 'Whitespace purge guard',
+            description: 'Rejected item that should remain purge eligible.',
+            status: 'rejected',
+            retention_reason: '   ',
+          },
+        ],
+        inventory: [],
+      }),
+    );
+
+    render(<AdminEditorialArchivePage />);
+
+    fireEvent.change(screen.getByLabelText('Queue status'), { target: { value: 'rejected' } });
+    await screen.findByRole('heading', { name: 'Whitespace purge guard' });
+    expect(screen.getByRole('button', { name: 'Mark Purged' })).not.toBeDisabled();
+  });
+
   it('prefers custom retention reasons typed by editors', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
       const path = String(input);
@@ -592,6 +701,35 @@ describe('editorial archive APIs', () => {
     });
     expect(runs.some((run) => run.sql.includes('UPDATE content_inventory'))).toBe(true);
     expect(runs.some((run) => run.sql.includes("status = 'merged'"))).toBe(true);
+  });
+
+  it('falls back to the default purge eligibility date when purge_eligible_at is invalid', async () => {
+    const { db, runs } = makeEditorialDb({
+      submissions: [
+        {
+          submission_id: 9,
+          submitted_by: 'Member <member@example.com>',
+          title: 'Rejected story',
+          description: 'Rejected text.',
+          proposed_tag: 'rejected-story',
+          status: 'triaged',
+        },
+      ],
+    });
+
+    const response = await editorialReviewPost({
+      request: adminPostRequest('/api/admin/editorial/review', {
+        submission_id: 9,
+        action: 'reject',
+        purge_eligible_at: 'not-a-real-date',
+      }),
+      env: { ADMIN_TOKEN: 'secret', DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    const updateRun = runs.find((run) => run.sql.includes("status = 'rejected'"));
+    expect(updateRun?.args[4]).toBe('2026-08-31T12:00:00Z');
+    expect(updateRun?.args[5]).toBe(1);
   });
 
   it('rejects submissions with purge eligibility metadata', async () => {

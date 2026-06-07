@@ -137,7 +137,10 @@ export default function AdminEditorialArchivePage() {
       setStatus(`Recording ${action.replace('_', ' ')} for "${submission.title}"…`);
 
       const targetInventoryId = Number(formData.get('target_inventory_id') || 0);
-      const retentionReason = String(formData.get('retention_reason') || '').trim() || options.retentionReason || '';
+      const retentionReason =
+        String(formData.get('retention_reason') || '').trim() ||
+        String(options.retentionReason || '').trim() ||
+        '';
       const purgeEligibleAt = String(formData.get('purge_eligible_at') || '');
 
       const result = await adminJson<{ ok: true }>('/api/admin/editorial/review', {
@@ -324,7 +327,8 @@ function SubmissionCard(props: {
 }) {
   const { submission, onReview } = props;
   const canPurge = submission.status === 'rejected' && !String(submission.retention_reason || '').trim();
-  const retainedDefault = submission.retention_reason || 'Retained for editorial follow-up.';
+  const retainedDefault =
+    String(submission.retention_reason || '').trim() || 'Retained for editorial follow-up.';
 
   return (
     <form
