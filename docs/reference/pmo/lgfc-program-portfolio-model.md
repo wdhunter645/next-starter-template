@@ -2,7 +2,7 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Operational Authority
-Owns: LGFC program portfolio structure, perpetual Program 1/2 lane model, Program 3 intake model, and execution-chain reference
+Owns: LGFC five-program portfolio structure, Program 1–4 execution/planning lane model, Program 5 intake model, and execution-chain reference
 Does Not Own: Product design, workflow implementation, runtime behavior, GitHub issue mutation, or merge authority
 Canonical Reference: /docs/ops/pmo/program-registry.md
 Related Issues: #1411, #1409, #1379, #1255, #1335
@@ -25,8 +25,9 @@ PMO registry.
 
 This document owns:
 
-- the Program 1 / Program 2 alternating lane model;
-- Program 3 intake and promotion rules;
+- the Program 1 / Program 2 / Program 3 / Program 4 execution and planning lane
+  model;
+- Program 5 intake and promotion rules;
 - portfolio-level operating invariants for human and AI contributors;
 - the read order for agents entering PMO-governed work.
 
@@ -39,30 +40,57 @@ This document does not own:
 
 ## Current Known Truth
 
-- Program 1 and Program 2 are alternating execution lanes in a perpetual PMO
-  cycle. They are not permanent subject domains.
-- Program 3 is portfolio intake and prioritization. It collects ideas, deferred
+- Program 1 through Program 4 are reusable execution/planning lanes. They are not
+  permanent subject domains.
+- Program 5 is portfolio intake and prioritization. It collects ideas, deferred
   work, candidate projects, and future opportunities; it does not execute
   implementation work directly.
-- The active Program 1 planning cycle is `#1411`, PMO Automation and Agent
-  Workflow Control.
-- The active Program 2 execution cycle is `#1255`, Website Implementation and
-  Content Operations.
-- The prior Program 1 cycle `#1335` is closed historical evidence only and is
-  not a parent for the new Program 1 cycle.
-- Workflow Automation has been promoted from Program 3 (`#1379`) into the active
-  Program 1 planning cycle.
+- The current blocked Program 1 planning cycle is `#1411`, PMO Automation and
+  Agent Workflow Control.
+- The current active Program 2 execution cycle is `#1255`, Website Implementation
+  and Content Operations.
+- Program 3 and Program 4 are available future execution/planning lanes.
+- The current portfolio source is legacy `#1379`, which should be treated as
+  Program 5 portfolio authority until a dedicated Program 5 source issue exists.
+- The prior Program 1 cycle `#1335` is closed historical evidence only and is not
+  a parent for the new Program 1 cycle.
+- Workflow Automation has been promoted from portfolio intake (`#1379`) into the
+  blocked Program 1 planning cycle.
 
 ## Intended Final State
 
 - Every active work item has exactly one current authority path:
   Program → child project → task → issue → PR → verification → closeout.
-- Program 3 items become executable only after owner promotion, repository
-  authority placement, task decomposition, and bounded issue/PR handoff.
-- Program 1 planning and Program 2 execution can proceed concurrently only when
-  their scopes do not mutate or block one another.
+- Program 5 items become executable only after owner promotion, repository
+  authority placement, task decomposition, and bounded issue/PR handoff into one
+  of Program 1 through Program 4.
+- A blocked planning lane and an active execution lane can proceed concurrently
+  only when their scopes do not mutate or block one another.
 - Completed program cycles remain evidence, not implicit parents for later
   cycles.
+- A planning program starts blocked until Atlas/Bill explicitly launch it.
+
+## Required Blocked Launch State
+
+Every future Program 1–4 planning package must begin with this control statement:
+
+> This program is BLOCKED from execution until the currently active program is
+> closed or reaches an Atlas/Bill-approved transition gate. Planning, review, and
+> documentation discussion may continue, but Cursor may not execute implementation
+> work from this program until Bill/Atlas explicitly launch it.
+
+This blocked state prevents planning issues and planning PRs from becoming active
+execution by accident.
+
+The following do not launch a program:
+
+- creating a planning source issue;
+- posting a planning handoff;
+- opening a planning PR;
+- marking a planning PR ready for review;
+- merging a planning PR.
+
+Launch requires an explicit Atlas/Bill launch comment or source issue update.
 
 ## Portfolio Chain
 
@@ -80,23 +108,29 @@ Program → child project → task → issue → PR → verification → closeou
 | verification | Checks, gate evidence, and reviewer disposition | Docs header/canonical checks |
 | closeout | Authorized issue reconciliation and queue handoff | Post-merge evidence packet |
 
-## Program Lane Model
+## Five-Program Lane Model
 
-Program numbers identify PMO cycle position, not permanent subject domains.
+Program numbers identify reusable PMO slots, not permanent subject domains.
 
-| Lane | Role in perpetual cycle | Current example |
+| Program | Role | Current example |
 | --- | --- | --- |
-| Program 1 | Defines, governs, or executes the next body of work while preserving explicit launch gates | `#1411` PMO Automation and Agent Workflow Control |
-| Program 2 | Executes an authorized body of work while Program 1 may define the next cycle | `#1255` Website Implementation and Content Operations |
-| Program 3 | Collects and prioritizes future ideas, deferred work, and candidate projects | `#1379` Ideas & Future Projects Portfolio |
+| Program 1 | Execution/planning lane A | Blocked planning lane `#1411` |
+| Program 2 | Execution/planning lane B | Active execution lane `#1255` |
+| Program 3 | Execution/planning lane C | Available future lane |
+| Program 4 | Execution/planning lane D | Available future lane |
+| Program 5 | Future-project / ideas portfolio aggregator | Legacy portfolio issue `#1379` until dedicated Program 5 authority exists |
 
-The lane sequence repeats. A later Program 1 cycle is not a child of an earlier
-Program 1 cycle unless the current source issue explicitly creates that
-relationship.
+The purpose of Program 1–4 is nomenclature separation. At any given time, one
+Program 1–4 lane may be active execution and a different Program 1–4 lane may be
+blocked planning. Program 5 remains the portfolio aggregator.
 
-## Program 3 Promotion Rule
+A recently completed program number remains historical evidence and should not be
+used as the active or blocked-planning number when another available Program 1–4
+lane can avoid confusion.
 
-A Program 3 item may move toward implementation only after:
+## Program 5 Promotion Rule
+
+A Program 5 item may move toward implementation only after:
 
 1. Bill/owner approves promotion.
 2. The idea is converted into a finalized design or plan.
@@ -106,10 +140,11 @@ A Program 3 item may move toward implementation only after:
 5. Scope is decomposed into one or more bounded GitHub issues.
 6. Cursor or another agent receives a specific issue, file allowlist, validation
    requirement, and stop condition.
+7. Atlas/Bill explicitly launch the target Program 1–4 lane.
 
-Workflow Automation follows this path: it was captured in Program 3, then
-promoted into Program 1 through `#1411` for documentation authority and later
-child issue preparation.
+Workflow Automation follows this path: it was captured in the portfolio, then
+promoted into blocked Program 1 through `#1411` for documentation authority and
+later child issue preparation.
 
 ## Operating Invariants
 
@@ -121,10 +156,10 @@ child issue preparation.
   documentation authority.
 - Bill retains merge authority, protected action authority, launch-gate approval,
   destructive issue-action authority, and strategy decision authority.
-- Program 2 `#1255` remains active and is non-interference context for Program 1
-  `#1411`.
-- GitHub is the shared audit trail after planning content is promoted out of
-  chat or Drive.
+- Program 2 `#1255` remains active execution and is non-interference context for
+  blocked Program 1 `#1411`.
+- GitHub is the shared audit trail after planning content is promoted out of chat
+  or Drive.
 
 ## Cursor Read Order
 
@@ -134,7 +169,7 @@ For PMO-governed tasks, Cursor should read:
 2. `/docs/ops/pmo/program-registry.md`.
 3. `/docs/reference/pmo/lgfc-cursor-execution-contract.md`.
 4. `/docs/ops/pmo/workflow-automation.md` when workflow automation, queue
-   control, PR readiness, or Program 3 promotion is involved.
+   control, PR readiness, or Program 5 promotion is involved.
 5. The task-specific implementation plan and authority documents named in the
    source issue.
 
