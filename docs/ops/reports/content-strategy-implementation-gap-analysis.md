@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: Content Strategy / Editorial Inventory Task 001 implementation inventory, approved-docs comparison, and gap classification
 Does Not Own: Runtime implementation, D1 migrations, Pages Functions, route/component behavior, workflow YAML, issue creation or closure, labels, production configuration, or final editorial approval
 Canonical Reference: /docs/ops/implementation-plans/website-content-strategy-editorial-inventory.md
-Related Issues: #1399, #1397, #1256, #1255
+Related issues: #1399, #1397, #1256, #1255
 Last Reviewed: 2026-06-07
 ---
 
@@ -52,7 +52,7 @@ This report cites the repository sources required by `#1399`:
 | `Agent.md` | Read order, authority hierarchy, one-task/one-deliverable boundary. |
 | `docs/reference/design/LGFC-Production-Design-and-Standards.md` | D1 canonical table list, `photos` rule, memorabilia rule, and `library_entries` compatibility rule. |
 | `docs/ops/ai/SHARED-AGENT-RULES.md` | Evidence-first, one source issue, parser-safe PR, docs-only scope. |
-| `docs/ops/ai/CORE-RULES.md` | Issue-first discipline, documentation source tracking, verification discipline, drift prevention. |
+| `docs/ops/ai/CORE-RULES.md` | issue-first discipline, documentation source tracking, verification discipline, drift prevention. |
 | `docs/ops/implementation-plans/website-content-strategy-editorial-inventory.md` | Task 001 scope and recommended future task sequence. |
 | `docs/explanation/website/content-strategy.md` | Story-centric strategy, surfaces intended to be dynamically populated from inventory. |
 | `docs/reference/website/content-inventory-model.md` | Required `content_inventory`, `submission_queue`, media association, search, and compatibility model. |
