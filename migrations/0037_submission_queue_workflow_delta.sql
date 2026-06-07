@@ -75,7 +75,10 @@ SELECT
   END,
   review_notes,
   reviewer,
-  reviewed_at,
+  CASE
+    WHEN status IN ('approved', 'rejected_auto', 'rejected_manual') THEN COALESCE(reviewed_at, updated_at)
+    ELSE reviewed_at
+  END,
   CASE WHEN status IN ('rejected_auto', 'rejected_manual') THEN COALESCE(reviewed_at, updated_at) ELSE NULL END,
   CASE WHEN purge_flag = 1 THEN updated_at ELSE NULL END,
   purge_flag,

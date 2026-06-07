@@ -32,6 +32,7 @@ type ReviewBody = {
 };
 
 const STORY_TYPES = new Set(["primary", "secondary", "brief"]);
+const TRIAGE_STATUSES = new Set(["pending", "triaged"]);
 const REVIEWABLE_STATUSES = new Set(["pending", "triaged", "under_review"]);
 const ACTIONS = new Set(["triage", "start_review", "approve", "merge", "reject", "purge"]);
 
@@ -85,12 +86,19 @@ function jsonText(value: unknown, fallback: unknown): string {
 
 function normalizeOptionalDate(value: unknown): string | null {
   const text = asString(value);
-  return text || null;
+  if (!text) return null;
+  const parsed = Date.parse(text);
+  return Number.isNaN(parsed) ? null : new Date(parsed).toISOString();
 }
 
 function appendText(existing: unknown, addition: string): string {
   const current = String(existing || "").trim();
   return [current, addition.trim()].filter(Boolean).join("\n\n");
+}
+
+function defaultCreditFromSubmitter(value: unknown): string {
+  const submittedBy = String(value || "").trim();
+  return submittedBy.includes("<") ? submittedBy.split("<")[0].trim() : submittedBy;
 }
 
 export const onRequestPost = async (context: any): Promise<Response> => {
@@ -141,7 +149,7 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     const currentStatus = String((submission as any).status || "");
 
     if (action === "triage") {
-      if (!REVIEWABLE_STATUSES.has(currentStatus)) {
+      if (!TRIAGE_STATUSES.has(currentStatus)) {
         return jsonResponse({ ok: false, error: "Only open submissions can be triaged." }, 409);
       }
 
@@ -289,7 +297,10 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     const storyType = STORY_TYPES.has(asString(body?.story_type)) ? asString(body?.story_type) : "brief";
     const sourceUrl = asString(body?.source_url) || String((submission as any).source_url || "").trim() || null;
     const sourceName = asString(body?.source_name) || String((submission as any).source_name || "").trim() || "Member submission";
-    const creditLine = asString(body?.credit_line) || String((submission as any).credit_line || "").trim() || String((submission as any).submitted_by || "").trim();
+    const creditLine =
+      asString(body?.credit_line) ||
+      String((submission as any).credit_line || "").trim() ||
+      defaultCreditFromSubmitter((submission as any).submitted_by);
     const allowedSections = jsonText(body?.allowed_sections, ["library"]);
     const media = jsonText(
       body?.media,

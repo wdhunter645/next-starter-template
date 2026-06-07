@@ -89,6 +89,10 @@ function buttonStyle(disabled = false): React.CSSProperties {
   };
 }
 
+function defaultCreditFromSubmitter(value: string): string {
+  return value.includes('<') ? value.split('<')[0].trim() : value;
+}
+
 export default function AdminEditorialArchivePage() {
   const [status, setStatus] = useState('Idle.');
   const [loading, setLoading] = useState(false);
@@ -133,7 +137,7 @@ export default function AdminEditorialArchivePage() {
       setStatus(`Recording ${action.replace('_', ' ')} for "${submission.title}"…`);
 
       const targetInventoryId = Number(formData.get('target_inventory_id') || 0);
-      const retentionReason = options.retentionReason ?? String(formData.get('retention_reason') || '');
+      const retentionReason = String(formData.get('retention_reason') || '').trim() || options.retentionReason || '';
       const purgeEligibleAt = String(formData.get('purge_eligible_at') || '');
 
       const result = await adminJson<{ ok: true }>('/api/admin/editorial/review', {
@@ -144,7 +148,12 @@ export default function AdminEditorialArchivePage() {
           tag: String(formData.get('tag') || submission.proposed_tag || ''),
           source_name: String(formData.get('source_name') || submission.source_name || 'Member submission'),
           source_url: String(formData.get('source_url') || submission.source_url || ''),
-          credit_line: String(formData.get('credit_line') || submission.credit_line || submission.submitted_by || ''),
+          credit_line: String(
+            formData.get('credit_line') ||
+              submission.credit_line ||
+              defaultCreditFromSubmitter(submission.submitted_by) ||
+              '',
+          ),
           story_type: String(formData.get('story_type') || 'brief'),
           allowed_sections: ['library'],
           priority: Number(formData.get('priority') || 0),
@@ -314,7 +323,7 @@ function SubmissionCard(props: {
   ) => Promise<void>;
 }) {
   const { submission, onReview } = props;
-  const canPurge = submission.status === 'rejected' && !submission.retention_reason;
+  const canPurge = submission.status === 'rejected' && !String(submission.retention_reason || '').trim();
   const retainedDefault = submission.retention_reason || 'Retained for editorial follow-up.';
 
   return (
@@ -361,7 +370,11 @@ function SubmissionCard(props: {
         </label>
         <label style={{ display: 'grid', gap: 6 }}>
           Credit line
-          <input name="credit_line" defaultValue={submission.credit_line || submission.submitted_by} style={fieldStyle()} />
+          <input
+            name="credit_line"
+            defaultValue={submission.credit_line || defaultCreditFromSubmitter(submission.submitted_by)}
+            style={fieldStyle()}
+          />
         </label>
         <label style={{ display: 'grid', gap: 6 }}>
           Story type
@@ -391,7 +404,7 @@ function SubmissionCard(props: {
 
       <label style={{ display: 'grid', gap: 6 }}>
         Review notes
-        <textarea name="review_notes" rows={3} style={fieldStyle()} />
+        <textarea name="review_notes" rows={3} defaultValue={submission.review_notes || ''} style={fieldStyle()} />
       </label>
       <label style={{ display: 'grid', gap: 6 }}>
         Objective triage flags JSON
