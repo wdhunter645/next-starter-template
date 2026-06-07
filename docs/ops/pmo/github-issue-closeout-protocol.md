@@ -23,6 +23,7 @@ This document owns:
 - required post-merge closeout evidence;
 - separation between evidence preparation and issue mutation;
 - bounded batch closeout authorization;
+- terminal completed-issue label reconciliation;
 - Program 2 non-interference during Program 1 planning;
 - Cursor closeout recommendations and stop points.
 
@@ -49,6 +50,7 @@ This document does not own:
 - Every post-merge closeout action is supported by stable evidence.
 - Automation can later consume a clear closeout packet without guessing at merge,
   issue, or queue state.
+- Completed source issues do not retain stale active or failure workflow labels.
 - Batch closeout remains bounded by explicit Atlas/Bill authorization.
 - Cursor stops at evidence and recommendation unless mutation is separately
   authorized.
@@ -72,6 +74,7 @@ A closeout packet must identify:
 - changed-file scope;
 - reviewer, bot, and gate disposition status;
 - authorized issue action, if any;
+- terminal label reconciliation decision, if any;
 - queue advancement decision, if any;
 - unresolved blockers or follow-up items;
 - rollback or remediation path when applicable.
@@ -86,11 +89,46 @@ blocker reporting.
 3. Verify required checks and post-merge validation status.
 4. Verify the source issue and active authorization.
 5. Prepare the closeout evidence packet.
-6. Apply issue comments, closure, relabeling, or queue advancement only when the
+6. Reconcile terminal source-issue labels as part of the same authorized
+   closeout action when the source issue will be closed as completed.
+7. Apply issue comments, closure, relabeling, or queue advancement only when the
    active source issue and Atlas/Bill path explicitly authorize those actions.
-7. Keep umbrella or program issues open when the task says they remain active.
-8. Advance the next task only after source task closeout is clean and queue
+8. Keep umbrella or program issues open when the task says they remain active.
+9. Advance the next task only after source task closeout is clean and queue
    authority is clear.
+
+## Terminal Completed-Issue Label Policy
+
+LGFC uses a `status:complete` terminal label for completed source issues. A
+closed source issue with `state_reason: completed` must retain only stable
+non-status labels plus `status:complete`.
+
+A completed source issue must not retain active or failure-state labels,
+including:
+
+- `status:queued`
+- `status:assigned`
+- `status:pr-draft`
+- `status:implementation`
+- `status:review`
+- `status:post-merge-verify`
+- `status:failed`
+
+The controller or authorized Atlas closeout step applies this reconciliation
+after merge verification and before queue advancement. The closeout action must:
+
+1. read the source issue state and labels;
+2. compute the terminal label set as existing stable non-status labels plus
+   `status:complete`;
+3. remove all non-terminal workflow status labels listed above;
+4. close the source issue with `state_reason: completed` when closure is
+   authorized;
+5. verify the final issue state and label set before reporting closeout clean.
+
+Closure and terminal label cleanup must not be split into separate follow-up
+tasks. If the controller or Atlas closeout step cannot complete the label
+reconciliation, the source issue remains in closeout verification and the
+blocker is recorded instead of advancing the queue.
 
 ## Cursor Closeout Boundary
 
@@ -123,6 +161,7 @@ Each authorized closeout comment should include:
 - merged PR reference;
 - merge commit;
 - validation summary;
+- terminal label reconciliation result when the issue is closed as completed;
 - superseded-by or deferred-to reference when relevant;
 - statement of whether the issue remains open or is closed;
 - queue advancement result or explicit "no queue action" statement.
@@ -153,6 +192,7 @@ Future workflow automation may use this protocol as the design target for:
 
 - closeout evidence packet schemas;
 - post-merge verification gates;
+- terminal completed-issue label reconciliation;
 - batch closeout safety checks;
 - queue advancement preconditions;
 - issue mutation allowlists.

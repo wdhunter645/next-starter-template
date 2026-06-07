@@ -31,6 +31,7 @@ This document owns:
 - merge, close, relabel, and issue-mutation prohibitions for Cursor;
 - wave labels and run identifiers as planning/control concepts;
 - post-merge closeout evidence stabilization requirements;
+- terminal completed-issue label reconciliation requirements;
 - Program 3 promotion requirements for workflow automation candidates.
 
 This document does not own:
@@ -72,6 +73,9 @@ This document does not own:
 - Cursor can continue safely when a PR is ready for review by stopping at the
   correct handoff point, reporting validation, and preserving Atlas/Bill review
   and merge authority.
+- Completed source issues have reconciled terminal labels: stable non-status
+  labels plus `status:complete`, with stale active or failure status labels
+  removed during closeout.
 - Program 3 remains the portfolio intake lane for ideas not yet promoted into a
   Program 1 or Program 2 execution lane.
 
@@ -85,7 +89,7 @@ This document does not own:
 | PR readiness and batch review control | Ready-for-review rules that preserve Atlas/Bill review | No PR merge or review-state mutation by Cursor |
 | Merge and issue mutation policy | Explicit prohibition on Cursor merge, close, relabel, and issue-state changes without authorization | No destructive issue action |
 | Queue/wave model and labels | Planning definitions for wave/run identifiers and stop/continue gates | No label creation or relabeling |
-| Post-merge closeout evidence stabilization | Evidence requirements before issue closeout or queue advancement | No closeout automation change |
+| Post-merge closeout evidence stabilization | Evidence and terminal-label reconciliation requirements before issue closeout or queue advancement | No closeout automation change |
 | Program 3 promotion process | Criteria for moving portfolio ideas into Program 1/2 work | No child implementation issues from this PR |
 
 ## Workflow Automation Design Decisions
@@ -165,8 +169,18 @@ Future implementation must require a stable closeout packet that identifies:
 - source issue;
 - validation results;
 - exact issue-state action authorized;
+- terminal label reconciliation result;
 - queue advancement decision;
 - unresolved reviewer, gate, or post-merge blockers.
+
+The selected terminal behavior is: a closed completed source issue retains only
+stable non-status labels plus `status:complete`. The controller or authorized
+Atlas closeout step must remove active or failure-state labels such as
+`status:queued`, `status:assigned`, `status:pr-draft`,
+`status:implementation`, `status:review`, `status:post-merge-verify`, and
+`status:failed` as part of the same authorized closeout action that closes the
+issue with `state_reason: completed`. If that reconciliation cannot be verified,
+queue advancement stops and the blocker is reported.
 
 ## Program 3 Promotion Process
 

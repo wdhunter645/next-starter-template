@@ -268,3 +268,9 @@ One task issue maps to one PR unless Atlas explicitly authorizes a split.
 GitHub issue state changes happen after PR merge and post-merge verification,
 and only when explicitly authorized by the active source issue and Atlas/Bill
 review path.
+
+For completed source issues, the authorized closeout path must reconcile labels
+before queue advancement: stable non-status labels plus `status:complete` are
+retained, and active or failure workflow status labels are removed. Cursor may
+report this requirement or identify a mismatch, but may not apply the label
+changes unless the active source issue explicitly grants that mutation authority.

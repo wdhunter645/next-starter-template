@@ -154,8 +154,11 @@ After a task PR merges and post-merge verification completes:
 1. Verify the merged PR and merge commit.
 2. Verify the source issue and authorized closeout action.
 3. Record closeout evidence.
-4. Apply issue mutation only when explicitly authorized.
-5. Advance the next task only after source task closeout is clean and queue
+4. Reconcile terminal labels for completed source issues when closure is
+   authorized: retain stable non-status labels plus `status:complete`, and
+   remove active or failure workflow status labels.
+5. Apply issue mutation only when explicitly authorized.
+6. Advance the next task only after source task closeout is clean and queue
    authority is clear.
 
 Queue contract details remain in `/docs/reference/architecture/orchestration-model.md`.

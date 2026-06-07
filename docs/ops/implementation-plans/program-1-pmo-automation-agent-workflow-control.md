@@ -81,7 +81,8 @@ This plan does not own:
 - Wave labels and run identifiers are defined as planning/control concepts before
   workflow implementation.
 - Closeout evidence requirements are stable enough to support later automation
-  without premature issue mutation.
+  without premature issue mutation, including terminal completed-issue label
+  reconciliation.
 
 ## Operating Rule
 
@@ -262,6 +263,12 @@ Acceptance Criteria:
 - Closeout evidence requires merged PR, merge commit, source issue, validation
   results, authorized issue action, queue decision, and unresolved blocker state.
 - Closeout protocol separates evidence preparation from issue mutation.
+- Closed completed source issues retain only stable non-status labels plus
+  `status:complete`; active or failure-state workflow labels are removed during
+  the same authorized closeout step that closes the issue.
+- The controller or Atlas closeout step verifies final source-issue labels after
+  merge verification and stops instead of advancing the queue if terminal label
+  reconciliation fails.
 - Batch closeout authorization remains bounded by explicit Bill/Atlas approval.
 - Post-merge closeout supports later automation without premature closure.
 Validation:

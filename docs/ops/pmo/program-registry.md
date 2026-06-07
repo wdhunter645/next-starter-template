@@ -137,7 +137,7 @@ cycle position, not a fixed subject domain.
 | PR readiness and batch review control | Readiness preserves Atlas/Bill review and merge authority |
 | Merge and issue mutation policy | Cursor may not merge, close, relabel, queue, or mutate issues without explicit authorization |
 | Queue/wave model and labels | Wave labels and run identifiers are planning concepts before workflow code changes |
-| Post-merge closeout evidence stabilization | Closeout requires stable evidence before mutation or queue advancement |
+| Post-merge closeout evidence stabilization | Closeout requires stable evidence and terminal completed-label reconciliation before mutation or queue advancement |
 | Program 3 promotion process | Portfolio items require owner promotion, repo authority, decomposition, and bounded handoff |
 
 ### Out of scope for active Program 1 planning PR
