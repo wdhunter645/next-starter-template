@@ -66,26 +66,65 @@ function makeEditorialDb(options?: {
   const sessionEmail = options?.sessionEmail ?? 'member@example.com';
   const runs: Array<{ sql: string; args: unknown[] }> = [];
 
+  const filterByLike = (rows: Array<Record<string, unknown>>, args: unknown[], fields: string[]) => {
+    const like = args.find((arg) => typeof arg === 'string' && arg.startsWith('%') && arg.endsWith('%'));
+    if (!like) return rows;
+    const q = String(like).slice(1, -1).toLowerCase();
+    return rows.filter((row) =>
+      fields.some((field) => String(row[field] || '').toLowerCase().includes(q)),
+    );
+  };
+
   const db = {
     prepare: vi.fn((sql: string) => {
-      const allFn = async () => {
+      const allFn = async (args: unknown[] = []) => {
         if (sql.includes('sqlite_master')) {
           return { results: [{ name: 'submission_queue' }, { name: 'content_inventory' }, { name: 'library_entries' }] };
         }
         if (sql.includes('FROM submission_queue')) return { results: submissions };
-        if (sql.includes('FROM content_inventory')) return { results: inventory };
-        if (sql.includes('FROM library_entries')) return { results: library };
+        if (sql.includes('FROM content_inventory')) {
+          return {
+            results: filterByLike(inventory, args, [
+              'title',
+              'summary',
+              'text',
+              'search_text',
+              'tag',
+              'source_name',
+              'credit_line',
+            ]),
+          };
+        }
+        if (sql.includes('FROM library_entries')) {
+          return { results: filterByLike(library, args, ['title', 'content', 'name']) };
+        }
         return { results: [] };
       };
 
-      const firstFn = async () => {
+      const firstFn = async (args: unknown[] = []) => {
         if (sql.includes('FROM member_sessions')) return { email: sessionEmail };
         if (sql.includes("SELECT datetime('now')")) return { now: '2026-06-02T12:00:00Z' };
-        if (sql.includes('COUNT(1) AS n FROM content_inventory')) return { n: inventory.length };
-        if (sql.includes('COUNT(1) AS n FROM library_entries')) return { n: library.length };
+        if (sql.includes('COUNT(1) AS n') && sql.includes('FROM content_inventory')) {
+          return {
+            n: sql.includes('lower(COALESCE(title')
+              ? filterByLike(inventory, args, [
+                  'title',
+                  'summary',
+                  'text',
+                  'search_text',
+                  'tag',
+                  'source_name',
+                  'credit_line',
+                ]).length
+              : inventory.length,
+          };
+        }
+        if (sql.includes('COUNT(1) AS n') && sql.includes('FROM library_entries')) {
+          return { n: filterByLike(library, args, ['title', 'content', 'name']).length };
+        }
         if (sql.includes('FROM submission_queue')) return submissions[0] ?? null;
-        if (sql.includes('FROM content_inventory')) return inventory[0] ?? null;
-        if (sql.includes('FROM library_entries')) return library[0] ?? null;
+        if (sql.includes('FROM content_inventory')) return filterByLike(inventory, args, ['title', 'summary', 'text', 'search_text', 'tag', 'source_name', 'credit_line'])[0] ?? null;
+        if (sql.includes('FROM library_entries')) return filterByLike(library, args, ['title', 'content', 'name'])[0] ?? null;
         return null;
       };
 
@@ -95,12 +134,12 @@ function makeEditorialDb(options?: {
       };
 
       return {
-        all: allFn,
-        first: firstFn,
+        all: () => allFn(),
+        first: () => firstFn(),
         run: () => runFn(),
         bind: (...args: unknown[]) => ({
-          all: allFn,
-          first: firstFn,
+          all: () => allFn(args),
+          first: () => firstFn(args),
           run: () => runFn(...args),
         }),
       };
@@ -401,6 +440,43 @@ describe('member submissions and library archive reads', () => {
           year: 2025,
         },
       ],
+    });
+  });
+
+  it('does not use legacy fallback for empty searches when eligible inventory exists', async () => {
+    const response = await fanclubLibraryGet({
+      request: memberRequest('/api/fanclub/library?page=1&q=missing'),
+      env: {
+        DB: makeEditorialDb({
+          inventory: [
+            {
+              id: 5,
+              title: 'Published archive story',
+              text: 'A published archive story for members.',
+              credit_line: 'LGFC Archive',
+              allowed_sections: '["library"]',
+              status: 'published',
+              updated_at: '2026-06-02T12:00:00Z',
+            },
+          ],
+          library: [
+            {
+              id: 12,
+              name: 'Legacy Member',
+              title: 'Missing legacy story',
+              content: 'Legacy content should not replace empty inventory search results.',
+              created_at: '2025-05-01T10:00:00Z',
+            },
+          ],
+        }).db,
+      },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      total: 0,
+      items: [],
     });
   });
 });

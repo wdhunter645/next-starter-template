@@ -75,6 +75,16 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       .first();
     const total = Number((countRow as any)?.n ?? 0) || 0;
 
+    const eligibleInventoryRow = await auth.db
+      .prepare(
+        `SELECT COUNT(1) AS n
+         FROM content_inventory
+         WHERE status = 'published'
+           AND lower(COALESCE(allowed_sections,'')) LIKE '%library%'`
+      )
+      .first();
+    const eligibleInventoryTotal = Number((eligibleInventoryRow as any)?.n ?? 0) || 0;
+
     const rows = await auth.db
       .prepare(
         `SELECT id, title, text, summary, credit_line, source_name, event_date, event_year, updated_at
@@ -88,7 +98,7 @@ export const onRequestGet = async (context: any): Promise<Response> => {
 
     const inventoryItems = (rows.results || []).map(inventoryItem);
 
-    if (inventoryItems.length > 0 || total > 0) {
+    if (inventoryItems.length > 0 || total > 0 || eligibleInventoryTotal > 0) {
       return new Response(
         JSON.stringify({ ok: true, items: inventoryItems, page, page_size: PAGE_SIZE, total }, null, 2),
         { status: 200, headers: { 'Content-Type': 'application/json' } }
