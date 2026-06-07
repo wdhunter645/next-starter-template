@@ -5,7 +5,7 @@ Authority Level: Agent-Specific
 Owns: ChatGPT/Atlas control-plane behavior for LGFC repository work
 Does Not Own: Shared agent law, production design authority, workflow implementation, or repository governance policy
 Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
-Last Reviewed: 2026-06-06
+Last Reviewed: 2026-06-07
 ---
 
 # CHATGPT-RULES.md
@@ -46,10 +46,11 @@ Required startup surfaces:
 - GitHub repository access for `wdhunter645/next-starter-template`.
 - Gmail access.
 - Google Calendar access.
-- Google Contacts access.
 - Google Drive access, including Drive-hosted Docs, Sheets, and Slides artifacts when available through the connected Drive tool surface.
 
-For LGFC work, the term **Google services** means only the current LGFC-used Google service set: Gmail, Google Calendar, Google Contacts, and Google Drive. It does not mean all Google products or imply access to unrelated Google products such as Google Cloud, YouTube, Analytics, Search Console, Photos, Keep, Tasks, or Admin unless a separate connected tool explicitly exists and is verified in the current session.
+For LGFC work, the term **Google services** means only the current LGFC-used Google service surfaces: Gmail, Google Calendar, and Google Drive, including Drive-hosted Docs, Sheets, and Slides artifacts. It does not mean all Google products or imply access to unrelated Google products such as Google Contacts, Google Cloud, YouTube, Analytics, Search Console, Photos, Keep, Tasks, or Admin unless a separate connected tool explicitly exists and is verified in the current session.
+
+Google Contacts is not an LGFC startup service and must not be checked, counted, or reported as part of the LGFC Google services startup set.
 
 GitHub remains the finalized LGFC authority for repository issues, Pull Requests, gates, merged documentation, and closeout evidence. Google Docs and other Drive-hosted working artifacts are draft/startup working surfaces only when their Google Drive access is verified; they do not replace repository-owned authority.
 
@@ -59,7 +60,7 @@ Startup reporting must distinguish:
 - **unavailable** — the tool surface is not connected, authorization is missing, or the connector returns an error;
 - **not verified** — the session has not yet checked that surface.
 
-If GitHub or any of the four LGFC Google services is unavailable or not verified, ChatGPT/Atlas must state that limitation before relying on that surface for planning, handoff, or execution.
+If GitHub or any LGFC Google service surface is unavailable or not verified, ChatGPT/Atlas must state that limitation before relying on that surface for planning, handoff, or execution.
 
 ---
 
