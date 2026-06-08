@@ -2,6 +2,7 @@
 // Returns editorial submission queue and content_inventory records. Protected by ADMIN_TOKEN.
 
 import { requireAdmin } from "../../../_lib/auth";
+import { listStoryMediaAssociations } from "../../../_lib/content-inventory-media";
 import { jsonResponse, requireD1, requireTables } from "../../../_lib/d1";
 
 const VALID_SUBMISSION_STATUSES = new Set([
@@ -106,11 +107,25 @@ export const onRequestGet = async (context: any): Promise<Response> => {
             .bind(inventoryStatus, limit)
             .all();
 
+    const inventory = inventoryRows?.results || [];
+    const storyIds = inventory
+      .map((row: any) => Number(row?.id))
+      .filter((id: number) => Number.isFinite(id) && id > 0);
+    let mediaByStory = new Map<number, Array<Record<string, unknown>>>();
+    const mediaTables = await requireTables(d1.db, ["content_inventory_media", "photos"]);
+    if (mediaTables.ok) {
+      mediaByStory = await listStoryMediaAssociations(d1.db, storyIds);
+    }
+    const inventoryWithMedia = inventory.map((row: any) => ({
+      ...row,
+      media_associations: mediaByStory.get(Number(row.id)) || [],
+    }));
+
     return jsonResponse(
       {
         ok: true,
         submissions: submissionRows?.results || [],
-        inventory: inventoryRows?.results || [],
+        inventory: inventoryWithMedia,
       },
       200,
     );

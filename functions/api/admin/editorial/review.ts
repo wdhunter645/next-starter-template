@@ -2,6 +2,12 @@
 // Moves submission_queue rows through manual editorial review states.
 
 import { requireAdmin } from "../../../_lib/auth";
+import {
+  buildAssociationsFromSubmission,
+  insertStoryMediaAssociations,
+  loadPhotosByIds,
+  serializeLegacyMediaJson,
+} from "../../../_lib/content-inventory-media";
 import { jsonResponse, requireD1, requireTables } from "../../../_lib/d1";
 
 type ReviewBody = {
@@ -18,6 +24,7 @@ type ReviewBody = {
   priority?: unknown;
   canonical?: unknown;
   media?: unknown;
+  media_associations?: unknown;
   event_date?: unknown;
   event_year?: unknown;
   rotation_group?: unknown;
@@ -302,12 +309,6 @@ export const onRequestPost = async (context: any): Promise<Response> => {
       String((submission as any).credit_line || "").trim() ||
       defaultCreditFromSubmitter((submission as any).submitted_by);
     const allowedSections = jsonText(body?.allowed_sections, ["library"]);
-    const media = jsonText(
-      body?.media,
-      (submission as any).media_reference || (submission as any).media_url
-        ? [{ url: (submission as any).media_reference || (submission as any).media_url }]
-        : [],
-    );
     const priority = asInt(body?.priority, 0);
     const canonical = body?.canonical === false || body?.canonical === 0 ? 0 : 1;
     const eventDate = asString(body?.event_date) || null;
@@ -332,6 +333,22 @@ export const onRequestPost = async (context: any): Promise<Response> => {
       return jsonResponse({ ok: false, error: "Approved records require title, text, tag, and credit_line." }, 400);
     }
 
+    const associationsResult = await buildAssociationsFromSubmission(
+      d1.db,
+      submission as Record<string, unknown>,
+      body?.media_associations ?? body?.media,
+      { source_name: sourceName, source_url: sourceUrl, credit_line: creditLine },
+    );
+    if (!associationsResult.ok) {
+      return jsonResponse({ ok: false, error: associationsResult.error }, 400);
+    }
+
+    const mediaTables = await requireTables(d1.db, ["content_inventory_media", "photos"]);
+    if (!mediaTables.ok && associationsResult.value.length) {
+      return jsonResponse(mediaTables.body, mediaTables.status);
+    }
+
+    const initialMediaJson = "[]";
     const insert = await d1.db
       .prepare(
         `INSERT INTO content_inventory
@@ -347,7 +364,7 @@ export const onRequestPost = async (context: any): Promise<Response> => {
         text,
         summary,
         perspectiveLabel,
-        media,
+        initialMediaJson,
         storyType,
         allowedSections,
         priority,
@@ -378,8 +395,37 @@ export const onRequestPost = async (context: any): Promise<Response> => {
 
     const inventoryId = (insert as any)?.meta?.last_row_id ?? (insert as any)?.meta?.lastRowId ?? null;
 
+    if (inventoryId && associationsResult.value.length && mediaTables.ok) {
+      await insertStoryMediaAssociations(d1.db, inventoryId, associationsResult.value, now);
+      const photoRows = await loadPhotosByIds(
+        d1.db,
+        associationsResult.value.map((association) => association.media_id),
+      );
+      const mediaJson = serializeLegacyMediaJson(associationsResult.value, photoRows);
+      const mediaSearchText = associationsResult.value
+        .flatMap((association) => [association.caption, association.alt_text, association.credit_line])
+        .filter(Boolean)
+        .join(" ");
+
+      await d1.db
+        .prepare("UPDATE content_inventory SET media = ?, search_text = ?, updated_at = ? WHERE id = ?")
+        .bind(
+          mediaJson,
+          [searchText, mediaSearchText].filter(Boolean).join(" ").trim(),
+          now,
+          inventoryId,
+        )
+        .run();
+    }
+
     return jsonResponse(
-      { ok: true, action: "approve", submission_id: submissionId, inventory_id: inventoryId },
+      {
+        ok: true,
+        action: "approve",
+        submission_id: submissionId,
+        inventory_id: inventoryId,
+        media_associations: associationsResult.value,
+      },
       200,
     );
   } catch (err: any) {
