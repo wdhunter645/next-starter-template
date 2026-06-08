@@ -5,7 +5,8 @@ Authority Level: Operational
 Owns: Standard format for assigning scoped work to Cursor, Codex, Copilot, Devin, and future agents
 Does Not Own: Source issue scope, design authority, implementation decisions, or merge approval
 Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
-Last Reviewed: 2026-06-04
+Related Issues: #1449
+Last Reviewed: 2026-06-08
 ---
 
 # Agent Assignment Template
@@ -50,6 +51,7 @@ Every agent assignment must include all of the following. If any field is missin
 | Acceptance criteria | Checklist the agent can verify |
 | Verification method | Commands, checks, or review steps with reported results |
 | Handoff | Files changed, summary, verification, risks, scope confirmation |
+| Dependency fields | For launched-program queue tasks: predecessor, successor, stage-before-merge, halt/resume condition |
 
 These fields align with [`SHARED-AGENT-RULES.md`](../ops/ai/SHARED-AGENT-RULES.md) (one source issue per PR, scope boundaries, documentation taxonomy) and [`CORE-RULES.md`](../ops/ai/CORE-RULES.md) (execution discipline, allowlist, required verification).
 

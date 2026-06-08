@@ -11,8 +11,8 @@ Execution Mode: orchestrated-after-approval
 Source Issue: 1256
 Related Program Issue: 1255
 Canonical Reference: /docs/ops/implementation-plans/README.md
-Related Issues: #1256, #824, #819, #1137
-Last Reviewed: 2026-06-07
+Related Issues: #1449, #1448, #1256, #1402, #824, #819, #1137
+Last Reviewed: 2026-06-08
 ---
 
 # Website Content Strategy / Editorial Inventory Implementation Plan
@@ -113,11 +113,56 @@ The first implementation task must inventory current schema, APIs, UI, and publi
 reads against the approved docs. Build changes should target documented gaps
 only.
 
+## Program 2 Dependency Map and Rebaseline Pause
+
+Program 2 `#1255` child project `#1256` is preparing for launched-program queue
+mode. This section is the project-level dependency map draft. It is not approved
+for queue-mode execution until Atlas/Bill approve the plan and the rebaseline
+pause clears.
+
+**Rebaseline pause (active):** No Program 2 task beyond `#1402` may launch until
+`#1448` rebaseline is complete. Queue documentation from `#1449` must also be
+merged before the rebaseline gate may close. Atlas must publish a rebaseline
+comment before continuation resumes. See `#1448` for required rebaseline outcomes.
+
+| Checkpoint / Task | issue | Predecessor | Successor | Stage-before-merge | Halt condition | Resume condition |
+| --- | --- | --- | --- | --- | --- | --- |
+| Documentation correction | `#1446` / PR `#1447` | `#1401` | `#1448` | no | `#1449` open | `#1449` merged; map docs aligned |
+| Queue documentation | `#1449` | `#1401` | `#1448` | no | — | PR merged; docs aligned |
+| Rebaseline gate | `#1448` | `#1402`, `#1446`, `#1449` | Task 001+ | yes | Pause active | Rebaseline comment published; checkpoints confirmed |
+| Task 004 boundary | `#1402` | `#1401` | `#1448` | yes | `#1445` blockers | `#1401` closeout complete; PR `#1445` verified |
+| Task 001 — Inventory | (future) | `#1448` | Task 002 | yes | Prior checkpoint incomplete | `#1448` rebaseline complete |
+| Task 002 — Schema | (future) | Task 001 | Task 003 | yes | Task 001 incomplete | Task 001 merged and verified |
+| Task 003 — Submission queue | (future) | Task 001 | Task 004 | yes | Task 001 incomplete | Task 001 merged and verified |
+| Task 004 — Media | (future) | Task 001 | Task 005 | yes | Task 001 incomplete | Task 001 merged and verified |
+| Task 005 — Admin/editor | (future) | Tasks 002–004 | Task 006 | yes | Upstream deltas incomplete | Tasks 002–004 merged |
+| Task 006 — Public population | (future) | Task 005 | Task 007 | yes | Task 005 incomplete | Task 005 merged |
+| Task 007 — Search | (future) | Task 006 | Task 008 | yes | Task 006 incomplete | Task 006 merged |
+| Task 008 — Rotation | (future) | Task 007 | Task 009 | yes | Task 007 incomplete | Task 007 merged |
+| Task 009 — Seed/verify | (future) | Task 008 | terminal | yes | Task 008 incomplete | Task 008 merged |
+
+Checkpoints before tasks beyond `#1402` resume:
+
+1. Confirm `#1402` / PR `#1445` status after reviewer remediation.
+2. Confirm `#1446` / PR `#1447` documentation correction status.
+3. Confirm `#1449` queue documentation is merged.
+4. Complete `#1448` rebaseline and publish the next executable queue item.
+
+Canonical reference:
+`/docs/reference/pmo/lgfc-program-queue-and-dependency-map.md`
+
 ## Program 2 Child-Task Continuation Handoff
 
 Program 2 child-task continuation for the remainder of `#1255`, including work
 after current Task 003 issue `#1401`, requires an explicit Atlas, Bill, or
-controller `@cursor` issue comment on the next child issue.
+controller `@cursor` issue comment on the next child issue when the program is in
+one-task handoff mode or when the rebaseline pause is active.
+
+When launched-program queue mode is active and the rebaseline pause is cleared,
+Cursor may determine the next authorized task from this dependency map and the
+active issue's predecessor, successor, stage-before-merge, and halt/resume
+fields. Cursor must still stop at `READY FOR REVIEW` and must not merge, close,
+relabel, or advance queues.
 
 Cursor must not infer executable authority from any of the following signals by
 themselves:
@@ -146,6 +191,10 @@ Every executable Program 2 child issue must include or be paired with:
 
 - parent program reference: `#1255`;
 - parent project reference when applicable: `#1256`;
+- **Predecessor** — prior issue or task ID, or `none`;
+- **Successor** — next issue or task ID, or `terminal`;
+- **Stage-before-merge** — `yes` or `no`;
+- **Halt/resume condition** — what blocks or permits continuation;
 - dependency or prior-task criteria;
 - blocking criteria;
 - required source documents;

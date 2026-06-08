@@ -5,7 +5,8 @@ Authority Level: Program Implementation Plan
 Owns: Phased implementation sequence, deliverables, child issue rules, validation, rollback, closeout, and handoff checklist for #1255
 Does Not Own: Final editorial content decisions, production secrets, vendor account configuration, or runtime implementation code
 Canonical Reference: docs/how-to/website/website-implementation-and-content-operations-plan.md
-Last Reviewed: 2026-06-06
+Related Issues: #1449, #1448, #1255, #1256, #1402
+Last Reviewed: 2026-06-08
 ---
 
 # Website Implementation and Content Operations Plan
@@ -67,11 +68,32 @@ The active order is:
 2. Website Operations Admin
 3. Website QA and Production Validation
 
+## Program 2 dependency map and rebaseline pause
+
+Program 2 `#1255` is preparing for launched-program queue mode under child
+project `#1256`. The project-level dependency map draft and rebaseline pause
+are defined in
+[`website-content-strategy-editorial-inventory.md`](../../ops/implementation-plans/website-content-strategy-editorial-inventory.md#program-2-dependency-map-and-rebaseline-pause).
+Queue-mode execution is not authorized until Atlas/Bill approve the map and the
+rebaseline pause clears.
+
+No Program 2 task beyond `#1402` may launch until `#1448` rebaseline is
+complete. Checkpoints before tasks beyond `#1402` resume:
+
+1. Confirm `#1402` / PR `#1445` status.
+2. Confirm `#1446` / PR `#1447` documentation correction status.
+3. Confirm `#1449` queue documentation is merged.
+4. Complete `#1448` rebaseline.
+
+Canonical reference:
+`/docs/reference/pmo/lgfc-program-queue-and-dependency-map.md`
+
 ## Program 2 child-task continuation handoff
 
 For the remainder of Program 2 after the current Task 003 issue `#1401`
 handoff, Cursor continuation requires an explicit Atlas, Bill, or controller
-`@cursor` issue comment on the next child issue.
+`@cursor` issue comment on the next child issue when the program is in
+one-task handoff mode or when the rebaseline pause is active.
 
 Program 2 child-task continuation is not authorized by labels, merge state,
 closed or completed prior issue state, queue order, or open PR order alone.
@@ -80,7 +102,8 @@ Cursor may execute only the issue explicitly named in the latest valid
 continuation comment.
 
 Each executable child issue must include or be paired with parent program and
-project references, dependency and blocking criteria, required source documents,
+project references, predecessor, successor, stage-before-merge, halt/resume
+condition, dependency and blocking criteria, required source documents,
 exact scope, hard out-of-scope boundaries, expected file areas or a file-touch
 allowlist, validation expectations, the exact PR source issue line requirement,
 and the stop condition `GitHub READY FOR REVIEW`. Merge authority, issue

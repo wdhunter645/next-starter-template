@@ -5,7 +5,8 @@ Authority Level: Operational Authority
 Owns: Procedure for preparing an implementation plan for the LGFC orchestration tier
 Does Not Own: Orchestration state contracts; routing configuration; product design
 Canonical Reference: /docs/reference/architecture/orchestration-model.md
-Last Reviewed: 2026-05-05
+Related Issues: #1449
+Last Reviewed: 2026-06-08
 ---
 
 # Create an Orchestrated Implementation Plan
@@ -42,10 +43,15 @@ Last Reviewed: 2026-05-05
    - exact command or review requirement
    ```
 
-4. Keep each task to one objective and one primary agent.
-5. List every file the agent may touch in `Allowed Files`.
-6. Keep validation explicit enough for a reviewer or workflow to run without interpretation.
-7. Commit the plan to `main` only after it is ready for issue creation.
+4. Add a **Dependency Map** section before marking a launched program plan
+   `production-ready`. For each task or checkpoint, record predecessor,
+   successor, stage-before-merge (`yes` / `no`), halt condition, and resume
+   condition. See
+   `/docs/reference/pmo/lgfc-program-queue-and-dependency-map.md`.
+5. Keep each task to one objective and one primary agent.
+6. List every file the agent may touch in `Allowed Files`.
+7. Keep validation explicit enough for a reviewer or workflow to run without interpretation.
+8. Commit the plan to `main` only after it is ready for issue creation.
 
 ## Notes
 

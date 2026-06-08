@@ -5,7 +5,8 @@ Authority Level: Operational Authority
 Owns: Implementation plan format for orchestrated GitHub execution
 Does Not Own: Product design, route behavior, visual design, or platform architecture
 Canonical Reference: /docs/reference/architecture/orchestration-model.md
-Last Reviewed: 2026-06-06
+Related Issues: #1449, #1255, #1256
+Last Reviewed: 2026-06-08
 ---
 
 # Implementation Plans
@@ -57,6 +58,31 @@ approved launch-gate report is merged.
 The launch gate adopts Task 006 P0 findings H-001, H-002, and H-003 into Program
 2 remediation. Those findings are not waived, and their sequencing constraints
 must be reflected before dependent Program 2 implementation issues are created.
+
+## Dependency Map Requirement (Launched Programs)
+
+Implementation plans for launched programs must include a **Dependency Map**
+section before the plan may move to `production-ready` or authorize issue
+creation.
+
+The map must list, for each task or checkpoint:
+
+- Task ID
+- Predecessor
+- Successor
+- Stage-before-merge (`yes` / `no`)
+- Halt condition
+- Resume condition
+
+Atlas prepares the map. Bill approves it before launch. Until approved, the
+program remains in one-task handoff mode.
+
+Canonical reference:
+`/docs/reference/pmo/lgfc-program-queue-and-dependency-map.md`
+
+The CI dependency matrix
+(`/docs/reference/ci/lgfc-ci-implementation-dependency-matrix.md`) is an
+example of the required structure.
 
 ## Required Task Format
 

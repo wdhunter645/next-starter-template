@@ -53,6 +53,16 @@ Agents must not treat merge as complete closeout until the source issue is recon
 - [ ] OR any ZIP file that was present in the repo root was deleted before any other change
 - [ ] Final diff confirms no ZIP file is committed
 
+## QUEUE / DEPENDENCY MAP STATUS (REQUIRED FOR LAUNCHED-PROGRAM QUEUE TASKS)
+- Dependency-map result: pass / fail / not-applicable
+- Next queue item: <issue # and title> / halt — <reason> / not-applicable
+- Continue/halt decision: continue / halt / not-applicable — <one-sentence rationale>
+
+For one-off tasks or programs without an approved dependency map, set all three
+fields to `not-applicable` with a one-line rationale.
+
+Canonical reference: `/docs/reference/pmo/lgfc-program-queue-and-dependency-map.md`
+
 ## PROGRESS + READINESS (MANDATORY)
 - Phase:
 - Task:

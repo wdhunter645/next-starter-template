@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: LGFC program portfolio structure, perpetual Program 1/2 lane model, Program 3 intake model, and execution-chain reference
 Does Not Own: Product design, workflow implementation, runtime behavior, GitHub issue mutation, or merge authority
 Canonical Reference: /docs/ops/pmo/program-registry.md
-Related Issues: #1411, #1409, #1379, #1255, #1335
-Last Reviewed: 2026-06-07
+Related Issues: #1449, #1411, #1409, #1379, #1255, #1335
+Last Reviewed: 2026-06-08
 ---
 
 # LGFC Program Portfolio Model
@@ -132,10 +132,12 @@ For PMO-governed tasks, Cursor should read:
 
 1. The active source issue.
 2. `/docs/ops/pmo/program-registry.md`.
-3. `/docs/reference/pmo/lgfc-cursor-execution-contract.md`.
-4. `/docs/ops/pmo/workflow-automation.md` when workflow automation, queue
+3. `/docs/reference/pmo/lgfc-program-queue-and-dependency-map.md` when the
+   program uses launched-program queue mode.
+4. `/docs/reference/pmo/lgfc-cursor-execution-contract.md`.
+5. `/docs/ops/pmo/workflow-automation.md` when workflow automation, queue
    control, PR readiness, or Program 3 promotion is involved.
-5. The task-specific implementation plan and authority documents named in the
+6. The task-specific implementation plan and authority documents named in the
    source issue.
 
 Cursor should not reread unrelated historical program packages unless the active

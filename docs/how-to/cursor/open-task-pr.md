@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: Cursor procedure for opening a task PR after review approval
 Does Not Own: Merge authority or GitHub issue closeout
 Canonical Reference: /docs/how-to/cursor/prepare-review-packet.md
-Related Issues: #1351
-Last Reviewed: 2026-06-05
+Related Issues: #1449, #1351
+Last Reviewed: 2026-06-08
 ---
 
 # Open a Task PR
@@ -53,6 +53,12 @@ The PR body must explicitly include:
 - **Post-merge issue disposition** — when applicable: comment-only, close after
   merge, or defer to Atlas; state that GitHub issue closeout occurs after merge
   unless specifically authorized
+- **Queue / dependency-map status** (launched-program queue tasks) —
+  dependency-map result (`pass` / `fail` / `not-applicable`), next queue item
+  (issue number and title, `halt — <reason>`, or `not-applicable`), and
+  continue/halt decision (`continue` / `halt` / `not-applicable`); use
+  `not-applicable` for all three fields on one-off tasks or programs without an
+  approved dependency map
 
 ## Validation
 

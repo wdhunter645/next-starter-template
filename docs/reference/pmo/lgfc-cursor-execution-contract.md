@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: Cursor execution permissions, continuation rules, PR handoff behavior, and issue-mutation boundaries for LGFC program tasks
 Does Not Own: Cursor product configuration, local developer environment, workflow implementation, GitHub merge authority, or GitHub issue mutation authority
 Canonical Reference: /docs/reference/pmo/lgfc-program-portfolio-model.md
-Related Issues: #1411, #1409, #1379, #1255, #1335
-Last Reviewed: 2026-06-07
+Related Issues: #1449, #1448, #1411, #1409, #1379, #1255, #1335
+Last Reviewed: 2026-06-08
 ---
 
 # LGFC Cursor Execution Contract
@@ -84,6 +84,24 @@ Cursor may not, by default:
 - combine multiple source issues into one PR;
 - make broad cleanup changes because they are nearby.
 
+## Execution Modes
+
+LGFC uses two execution modes defined in
+`/docs/reference/pmo/lgfc-program-queue-and-dependency-map.md`:
+
+| Mode | When | Next-task authority |
+| --- | --- | --- |
+| One-task handoff | One-off tasks; programs without an approved dependency map | Explicit `@cursor` comment or new source issue per task |
+| Launched-program queue | Launched program with an approved dependency map | Approved map + issue predecessor/successor fields + halt/resume conditions |
+
+In both modes, one source issue maps to one PR. Queue mode governs which task is
+authorized next, not whether multiple tasks share one PR.
+
+Cursor must not apply universal one-task-only rules in a way that blocks
+launched prepared program queues. Cursor must not treat launched-program queue
+mode as permission to merge, close, relabel, or advance queues without explicit
+authorization.
+
 ## Continuation Rule
 
 Cursor may continue forward while all of the following are true:
@@ -93,12 +111,15 @@ Cursor may continue forward while all of the following are true:
 3. No explicit stop condition has been reached.
 4. Validation can be run or a concrete external blocker can be documented.
 5. No merge, close, relabel, queue, or issue-state mutation is required.
+6. For launched-program queue mode: the dependency map and active issue
+   predecessor, stage-before-merge, and halt/resume fields permit continuation.
 
 When a PR is ready for review, Cursor continues only far enough to:
 
 1. run required validation;
 2. inspect the final diff and file allowlist;
-3. update or create the PR body with exact evidence;
+3. update or create the PR body with exact evidence, including queue reporting
+   fields when the program uses launched-program queue mode;
 4. commit and push any final documentation-only fixes;
 5. set the PR handoff status to `READY FOR REVIEW`;
 6. stop for Atlas/Bill walkthrough.
@@ -128,6 +149,18 @@ scope, hard out-of-scope boundaries, expected file areas or a file-touch
 allowlist, validation expectations, exact PR source issue line requirement, no
 merge authority, and no issue close or relabel authority unless explicitly
 granted.
+
+For launched-program queue mode, every executable task issue must also include
+these dependency fields in the issue body:
+
+| Field | Requirement |
+| --- | --- |
+| Predecessor | Prior issue or task ID, or `none` |
+| Successor | Next issue or task ID, or `terminal` |
+| Stage-before-merge | `yes` or `no` |
+| Halt/resume condition | What blocks or permits continuation |
+
+Dependency or prior-task criteria alone do not replace these named fields.
 
 Cursor must pause and report findings instead of implementing when blockers are
 unclear or when the next task would require creating child issues, mutating
@@ -280,6 +313,14 @@ Validation:
 Out-of-scope files touched: yes/no
 PR opened: yes/no
 Recommended post-merge issue actions:
+```
+
+For launched-program queue mode, the PR body must also include:
+
+```text
+Dependency-map result: pass / fail / not-applicable
+Next queue item: <issue # and title> / halt — <reason> / not-applicable
+Continue/halt decision: continue / halt / not-applicable — <one-sentence rationale>
 ```
 
 Recommended post-merge issue actions are recommendations only. They do not grant
