@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: PMO critical-path rules, serial vs parallel execution boundaries, alternating Program 1/2 lane handoff, and queue/wave planning constraints
 Does Not Own: Orchestrator workflow code, individual task acceptance criteria, Program 2 issue mutation, or legacy issue closure actions
 Canonical Reference: /docs/ops/pmo/program-registry.md
-Related Issues: #1411, #1409, #1379, #1255, #1335
-Last Reviewed: 2026-06-07
+Related Issues: #1449, #1448, #1411, #1409, #1379, #1255, #1335
+Last Reviewed: 2026-06-08
 ---
 
 # PMO Critical Path
@@ -60,6 +60,21 @@ This document does not own:
   repository authority.
 - Future queue/wave automation follows documented stop/continue, evidence, and
   authority rules before implementation.
+
+## Execution Modes
+
+LGFC programs use one of two execution modes. See
+`/docs/reference/pmo/lgfc-program-queue-and-dependency-map.md` for the full
+definition.
+
+| Mode | Applies when |
+| --- | --- |
+| One-task handoff | One-off tasks; programs without an approved dependency map |
+| Launched-program queue | Launched program with an approved dependency map in repository docs |
+
+Both modes enforce one source issue per PR. Launched-program queue mode adds
+dependency-map gating for which task is authorized next. It does not grant
+Cursor merge, close, relabel, or queue-mutation authority.
 
 ## Default Rule — One Active Implementation Task
 
@@ -195,6 +210,8 @@ advance queues.
 - PMO program registry: `/docs/ops/pmo/program-registry.md`
 - PMO parallel agent rules: `/docs/ops/pmo/parallel-agent-rules.md`
 - Workflow Automation authority: `/docs/ops/pmo/workflow-automation.md`
+- Program queue and dependency map:
+  `/docs/reference/pmo/lgfc-program-queue-and-dependency-map.md`
 - Cursor execution contract:
   `/docs/reference/pmo/lgfc-cursor-execution-contract.md`
 - GitHub issue closeout protocol:

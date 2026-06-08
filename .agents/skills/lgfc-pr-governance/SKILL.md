@@ -34,6 +34,9 @@ The PR body must include:
 - Build/test/verification evidence.
 - Acceptance criteria.
 - Required pre-review self-check.
+- Queue / dependency-map status for launched-program queue tasks:
+  dependency-map result, next queue item, and continue/halt decision (or
+  `not-applicable` with rationale for one-off tasks).
 
 ## Stop conditions
 

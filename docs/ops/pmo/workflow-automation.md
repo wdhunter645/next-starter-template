@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: PMO workflow automation planning authority, Cursor queue-control boundaries, PR readiness rules, wave/run control concepts, and Program 3 promotion handoff for workflow automation
 Does Not Own: Workflow YAML implementation, runtime application behavior, D1 migrations, production secrets, GitHub issue mutation, or merge authority
 Canonical Reference: /docs/ops/implementation-plans/program-1-pmo-automation-agent-workflow-control.md
-Related Issues: #1411, #1409, #1379, #1255, #1335
-Last Reviewed: 2026-06-07
+Related Issues: #1449, #1411, #1409, #1379, #1255, #1335
+Last Reviewed: 2026-06-08
 ---
 
 # PMO Workflow Automation
@@ -106,6 +106,14 @@ prioritization for ideas, deferred work, candidate projects, and future
 opportunities. Program 3 items become executable only after owner promotion,
 GitHub authority placement, decomposition into scoped issues, and bounded
 Cursor/agent handoff.
+
+### Execution modes and queue control
+
+LGFC programs use one-task handoff mode or launched-program queue mode. See
+`/docs/reference/pmo/lgfc-program-queue-and-dependency-map.md`. Launched
+programs require an approved dependency map before issue creation. Queue mode
+governs which task is authorized next; it does not grant Cursor merge, close,
+relabel, or queue-mutation authority.
 
 ### Cursor continuation contract
 

@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: Standard task handoff template for LGFC program work
 Does Not Own: Task-specific acceptance criteria or validation commands
 Canonical Reference: /docs/reference/pmo/lgfc-cursor-execution-contract.md
-Related Issues: #1351
-Last Reviewed: 2026-06-05
+Related Issues: #1449, #1351
+Last Reviewed: 2026-06-08
 ---
 
 # Program Task Handoff Template
@@ -26,6 +26,12 @@ Read first:
 
 Scope:
 - <one sentence>
+
+Dependency fields (launched-program queue tasks):
+- Predecessor: <prior issue or task>
+- Successor: <next issue or task>
+- Stage-before-merge: yes / no
+- Halt/resume condition: <blocker or resume gate>
 
 Allowed files:
 - <paths from issue>
