@@ -23,7 +23,7 @@
 - Status: MERGED
 - Scope Confirmed: YES
 - Out-of-Scope Changes Present: NO
-- Blocking Issues: none (post-merge body remediation applied)
+- Blocking issues: none (post-merge body remediation applied)
 - Notes: Merged as PR #1453 (merge SHA `c1d7d8e8c9153e28060bdbbbdb8bd4a2119b42ca`). Post-merge body remediation applied for undispositioned Gemini review comments.
 
 ## DOCUMENTATION SOURCE (MANDATORY)
@@ -132,16 +132,16 @@ All other files are out of scope
 - [x] Every GitHub review thread has an explicit thread-state disposition: resolved, outdated, or intentionally left unresolved with rationale.
 - [x] Every outdated review thread has explicit PR-body disposition when applicable.
 - [x] Late reviewer comments arriving after READY FOR REVIEW are dispositioned in post-merge remediation body apply.
-- [x] Undispositioned reviewer findings are linked to a bounded follow-up issue when not fixed in this PR (deferred refinements acknowledged below).
+- [x] Undispositioned reviewer findings are linked to a bounded follow-up issue when not fixed in this PR (deferred refinements linked via follow-up-issue:#1455 below).
 
 Reviewer items:
-- review-comment:3370711512 — acknowledged — Late inline comments without valid disposition correctly block closeout per merged #1452 policy; optional `hasValidDisposition` guard before `lateFindings.push` deferred to follow-up refinement — thread state: unresolved-with-rationale
-- review-comment:3370711519 — acknowledged — Late review submissions without valid disposition correctly block closeout; disposition-aware late push deferred to follow-up refinement — thread state: unresolved-with-rationale
-- review-comment:3370711523 — acknowledged — Late top-level comments without valid disposition correctly block closeout; disposition-aware late push deferred to follow-up refinement — thread state: unresolved-with-rationale
+- review-comment:3370711512 — acknowledged — Late inline comments without valid disposition correctly block closeout per merged reviewer-disposition policy; optional `hasValidDisposition` guard before `lateFindings.push` deferred — follow-up-issue:#1455
+- review-comment:3370711519 — acknowledged — Late review submissions without valid disposition correctly block closeout; disposition-aware late push deferred — follow-up-issue:#1455
+- review-comment:3370711523 — acknowledged — Late top-level comments without valid disposition correctly block closeout; disposition-aware late push deferred — follow-up-issue:#1455
 - review-comment:3370711526 — acknowledged — Rationale parsing dangling em-dash improvement valid; not applied in merged `c1d7d8e8` — thread state: outdated
 - review-comment:3370711532 — acknowledged — Actionable-over-non-actionable precedence improvement valid; not applied in merged `c1d7d8e8` — thread state: outdated
 - review-comment:3370711534 — accepted — REST review-comment objects lack `is_resolved`; merged code relies on reply text and PR-body disposition as documented — thread state: resolved
-- review-comment:3370711536 — acknowledged — File-level review comments should remain in enforcement scope; line/position null skip retained in merged `c1d7d8e8` pending follow-up — thread state: unresolved-with-rationale
+- review-comment:3370711536 — acknowledged — File-level review comments should remain in enforcement scope; line/position null skip retained in merged `c1d7d8e8` pending follow-up — follow-up-issue:#1455
 - review-comment:3370711539 — acknowledged — Redundant ternary cleanup valid; not applied in merged `c1d7d8e8` — thread state: outdated
 
 ## PR GATE READINESS CHECKLIST
