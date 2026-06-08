@@ -40,8 +40,10 @@ This document does not own:
   `Program → Child Project → Task → Issue → PR → Verification → Closeout`.
 - Program 2 `#1255` is an active launched program with a prepared task queue under
   child project `#1256`.
-- Program 2 continuation is paused for rebaseline while `#1448` and `#1449`
-  remain open. No Program 2 task beyond `#1402` may launch during the pause.
+- Program 2 continuation is paused for rebaseline while `#1448` remains open.
+  No Program 2 task beyond `#1402` may launch until `#1448` rebaseline is
+  complete. Queue documentation from `#1449` must be merged before the
+  rebaseline gate may close.
 - Bill owns merge authority, launch gates, and destructive issue actions.
 - Atlas owns governance review, queue conformance, batch verification, and
   rebaseline authority.
@@ -162,8 +164,8 @@ Every PR for a launched-program queue task must report:
 | Field | Values |
 | --- | --- |
 | Dependency-map result | `pass` / `fail` / `not-applicable` |
-| Next queue item | Issue number and title, or `halt — <reason>` |
-| Continue/halt decision | `continue` / `halt` with one-sentence rationale |
+| Next queue item | issue number and title, `halt — <reason>`, or `not-applicable` |
+| Continue/halt decision | `continue` / `halt` / `not-applicable` with one-sentence rationale |
 
 See `/.github/pull_request_template.md` and
 `/docs/how-to/cursor/open-task-pr.md`.
@@ -173,8 +175,8 @@ See `/.github/pull_request_template.md` and
 Cursor may **continue** (prepare or update the current task PR) when:
 
 1. the active source issue is the authorized queue item;
-2. predecessor and stage-before-merge requirements in the map are satisfied or
-   honestly documented as not yet verifiable from available evidence;
+2. predecessor and stage-before-merge requirements in the map are satisfied and
+   verifiable from available evidence;
 3. changed files match the allowlist;
 4. no documented halt checkpoint applies;
 5. validation can run or a concrete blocker can be reported.

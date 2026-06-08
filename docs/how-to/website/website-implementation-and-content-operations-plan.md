@@ -70,12 +70,15 @@ The active order is:
 
 ## Program 2 dependency map and rebaseline pause
 
-Program 2 `#1255` uses launched-program queue mode under child project `#1256`.
-The project-level dependency map and rebaseline pause are defined in
+Program 2 `#1255` is preparing for launched-program queue mode under child
+project `#1256`. The project-level dependency map draft and rebaseline pause
+are defined in
 [`website-content-strategy-editorial-inventory.md`](../../ops/implementation-plans/website-content-strategy-editorial-inventory.md#program-2-dependency-map-and-rebaseline-pause).
+Queue-mode execution is not authorized until Atlas/Bill approve the map and the
+rebaseline pause clears.
 
-While `#1448` and `#1449` remain open, no Program 2 task beyond `#1402` may
-launch. Checkpoints before tasks beyond `#1402` resume:
+No Program 2 task beyond `#1402` may launch until `#1448` rebaseline is
+complete. Checkpoints before tasks beyond `#1402` resume:
 
 1. Confirm `#1402` / PR `#1445` status.
 2. Confirm `#1446` / PR `#1447` documentation correction status.

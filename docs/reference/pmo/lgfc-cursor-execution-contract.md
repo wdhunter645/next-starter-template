@@ -319,8 +319,8 @@ For launched-program queue mode, the PR body must also include:
 
 ```text
 Dependency-map result: pass / fail / not-applicable
-Next queue item: <issue # and title> or halt — <reason>
-Continue/halt decision: continue / halt — <one-sentence rationale>
+Next queue item: <issue # and title> / halt — <reason> / not-applicable
+Continue/halt decision: continue / halt / not-applicable — <one-sentence rationale>
 ```
 
 Recommended post-merge issue actions are recommendations only. They do not grant

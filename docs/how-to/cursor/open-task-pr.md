@@ -54,9 +54,11 @@ The PR body must explicitly include:
   merge, or defer to Atlas; state that GitHub issue closeout occurs after merge
   unless specifically authorized
 - **Queue / dependency-map status** (launched-program queue tasks) —
-  dependency-map result (`pass` / `fail` / `not-applicable`), next queue item,
-  and continue/halt decision; use `not-applicable` for one-off tasks or
-  programs without an approved dependency map
+  dependency-map result (`pass` / `fail` / `not-applicable`), next queue item
+  (issue number and title, `halt — <reason>`, or `not-applicable`), and
+  continue/halt decision (`continue` / `halt` / `not-applicable`); use
+  `not-applicable` for all three fields on one-off tasks or programs without an
+  approved dependency map
 
 ## Validation
 

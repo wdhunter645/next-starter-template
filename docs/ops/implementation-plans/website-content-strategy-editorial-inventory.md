@@ -115,20 +115,23 @@ only.
 
 ## Program 2 Dependency Map and Rebaseline Pause
 
-Program 2 `#1255` child project `#1256` uses launched-program queue mode. This
-section is the approved project-level dependency map.
+Program 2 `#1255` child project `#1256` is preparing for launched-program queue
+mode. This section is the project-level dependency map draft. It is not approved
+for queue-mode execution until Atlas/Bill approve the plan and the rebaseline
+pause clears.
 
-**Rebaseline pause (active):** While `#1448` and `#1449` remain open, no Program
-2 task beyond `#1402` may launch. Atlas must publish a rebaseline comment before
-continuation resumes. See `#1448` for required rebaseline outcomes.
+**Rebaseline pause (active):** No Program 2 task beyond `#1402` may launch until
+`#1448` rebaseline is complete. Queue documentation from `#1449` must also be
+merged before the rebaseline gate may close. Atlas must publish a rebaseline
+comment before continuation resumes. See `#1448` for required rebaseline outcomes.
 
-| Checkpoint / Task | Issue | Predecessor | Successor | Stage-before-merge | Halt condition | Resume condition |
+| Checkpoint / Task | issue | Predecessor | Successor | Stage-before-merge | Halt condition | Resume condition |
 | --- | --- | --- | --- | --- | --- | --- |
-| Documentation correction | `#1446` / PR `#1447` | `#1401` | `#1402` | no | `#1449` open | `#1449` merged; map docs aligned |
-| Queue documentation | `#1449` | `#1401` | `#1402` | no | — | PR merged; docs aligned |
-| Rebaseline gate | `#1448` | `#1402` | Task 001+ | yes | Pause active | Rebaseline comment published; checkpoints confirmed |
-| Task 004 boundary | `#1402` | `#1401` | Task 001 (`#1256` build) | yes | `#1448` open; `#1445` unresolved | `#1448` closed; `#1402` / PR `#1445` verified |
-| Task 001 — Inventory | (future) | `#1402` | Task 002 | yes | Prior checkpoint incomplete | `#1402` closeout complete |
+| Documentation correction | `#1446` / PR `#1447` | `#1401` | `#1448` | no | `#1449` open | `#1449` merged; map docs aligned |
+| Queue documentation | `#1449` | `#1401` | `#1448` | no | — | PR merged; docs aligned |
+| Rebaseline gate | `#1448` | `#1402`, `#1446`, `#1449` | Task 001+ | yes | Pause active | Rebaseline comment published; checkpoints confirmed |
+| Task 004 boundary | `#1402` | `#1401` | `#1448` | yes | `#1445` blockers | `#1401` closeout complete; PR `#1445` verified |
+| Task 001 — Inventory | (future) | `#1448` | Task 002 | yes | Prior checkpoint incomplete | `#1448` rebaseline complete |
 | Task 002 — Schema | (future) | Task 001 | Task 003 | yes | Task 001 incomplete | Task 001 merged and verified |
 | Task 003 — Submission queue | (future) | Task 001 | Task 004 | yes | Task 001 incomplete | Task 001 merged and verified |
 | Task 004 — Media | (future) | Task 001 | Task 005 | yes | Task 001 incomplete | Task 001 merged and verified |
