@@ -104,6 +104,24 @@ describe('source issue closeout decision', () => {
 		).toMatchObject({ close: false });
 	});
 
+	it('does not close when undispositioned reviewer findings remain', () => {
+		expect(
+			shouldCloseSourceIssue({
+				action: 'post_merge_success',
+				issueNumber: '1196',
+				isMerged: true,
+				postMergeResult: {
+					status: 'pass',
+					remediation_required: false,
+					reviewer_disposition_failures: [{
+						code: 'undispositioned_reviewer_comment',
+						message: 'Trusted reviewer comment 9001 lacks required PR-body disposition.',
+					}],
+				},
+			}),
+		).toMatchObject({ close: false, reason: 'undispositioned_reviewer_findings' });
+	});
+
 	it('does not close when remediation remains required', () => {
 		const result = buildResult({
 			pr: { body: baseBody },

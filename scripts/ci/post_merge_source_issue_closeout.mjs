@@ -134,6 +134,9 @@ export function shouldCloseSourceIssue({
 	if (postMergeResult?.remediation_required) {
 		return { close: false, reason: 'remediation_required' };
 	}
+	if ((postMergeResult?.reviewer_disposition_failures || []).length > 0) {
+		return { close: false, reason: 'undispositioned_reviewer_findings' };
+	}
 	if (issueMeta && isRemediationIssue(issueMeta) && !closedFollowupAllowed) {
 		return { close: false, reason: 'remediation_issue' };
 	}

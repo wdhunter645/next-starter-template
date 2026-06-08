@@ -130,6 +130,17 @@ allowlist. When a PR is ready for review, Cursor must:
 Cursor continuation must support safe progress without converting readiness into
 merge authority.
 
+### Reviewer disposition enforcement
+
+Reviewer comments are not satisfied by PR-body claims alone. Every actionable
+trusted reviewer comment must be resolved, explicitly dispositioned in the PR
+body with `review-comment:<id>`, or linked to a bounded follow-up issue.
+Outdated GitHub review threads still require explicit disposition evidence.
+
+Post-merge closeout must verify reviewer disposition before closing the source
+issue. Undispositioned reviewer findings create or preserve post-merge exception
+issues and stop program queue advancement until disposition is complete.
+
 ### PR readiness and batch review
 
 PR readiness means the implementation or documentation PR is complete enough for

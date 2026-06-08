@@ -59,8 +59,10 @@ Do not treat a PR as clean because the visible checklist is mostly green. A PR i
 
 7. Record reviewer-response accounting in the PR body.
    - State that all comments, bot comments, and review threads were reviewed.
-   - Record each actionable item as accepted, rejected with rationale, outdated, resolved, or intentionally left unresolved with rationale.
-   - Do not mark the PR ready if an actionable blocker remains unaddressed.
+   - Record each actionable item as `review-comment:<id> — accepted/rejected/acknowledged/not-applicable — <reason> — thread state: resolved/outdated/unresolved-with-rationale`.
+   - Outdated threads (`is_outdated: true` or stale commit SHA) require explicit disposition even when GitHub marks them outdated.
+   - Late comments arriving after `READY FOR REVIEW` must be dispositioned before merge.
+   - Do not mark the PR ready if an actionable blocker remains unaddressed or undispositioned.
 
 8. Re-run or re-evaluate gates after reviewer fixes.
    - A gate state from before reviewer-fix commits is not final.

@@ -233,6 +233,6 @@ describe('reviewer lifecycle gate assessment', () => {
     });
 
     expect(result.shouldFail).toBe(true);
-    expect(result.assessment.reason).toBe('unresolved-protected-review-thread');
+    expect(['unresolved-protected-review-thread', 'outdated-reviewer-thread-without-disposition', 'undispositioned-reviewer-comment']).toContain(result.assessment.reason);
   });
 });

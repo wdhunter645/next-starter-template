@@ -153,11 +153,21 @@ All other files are out of scope
 - [ ] Codex disposition received or not applicable.
 - [ ] Gemini disposition received or not applicable.
 - [ ] Cubic disposition received or not applicable.
-- [ ] Every actionable reviewer comment has a PR-body disposition.
+- [ ] Every actionable reviewer comment has a PR-body disposition with `review-comment:<id>`.
 - [ ] Every GitHub review thread has an explicit thread-state disposition: resolved, outdated, or intentionally left unresolved with rationale.
+- [ ] Every outdated review thread (`is_outdated: true` or stale commit SHA) has explicit PR-body disposition even when GitHub marks the thread outdated.
+- [ ] Late reviewer comments arriving after `READY FOR REVIEW` are dispositioned before merge.
+- [ ] Undispositioned reviewer findings are linked to a bounded follow-up issue when not fixed in this PR.
 
-Reviewer items:
-- review-comment:<id> — accepted/rejected/acknowledged — <specific resolution or reason> — thread state: resolved/outdated/unresolved-with-rationale
+Accepted disposition states (CI-enforced):
+- resolved by code/doc change and thread marked resolved, or
+- outdated with explicit PR-body disposition (`review-comment:<id>` + `thread state: outdated`), or
+- rejected / not applicable with rationale, or
+- linked follow-up issue (`follow-up-issue:#<number>`).
+
+Reviewer items (required format for gate parsing):
+- review-comment:<id> — accepted/rejected/acknowledged/not-applicable — <specific resolution or reason> — thread state: resolved/outdated/unresolved-with-rationale
+- review-comment:<id> — rejected — <rationale> — thread state: outdated — follow-up-issue:#<issue>
 
 ## PR GATE READINESS CHECKLIST
 - [ ] Live PR check panel inspected

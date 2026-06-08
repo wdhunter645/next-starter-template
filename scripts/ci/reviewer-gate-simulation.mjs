@@ -129,10 +129,43 @@ export function evaluateReviewerAccounting({
   breakGlassOverride = false,
   unresolvedProtectedThreads = 0,
   advisoryFindings = 0,
+  undispositionedReviewerComments = 0,
+  outdatedWithoutDisposition = 0,
+  lateReviewerFindings = 0,
 } = {}) {
   const scope = classifyProtectedScope(files);
   const remediation = hasRemediationLabel(labels);
   const advisoryDowngraded = remediation && advisoryFindings > 0;
+
+  if (eventName === 'pull_request_target' && undispositionedReviewerComments > 0) {
+    return {
+      ok: false,
+      severity: 'blocking',
+      reason: 'undispositioned-reviewer-comment',
+      advisoryDowngraded,
+      scope,
+    };
+  }
+
+  if (eventName === 'pull_request_target' && outdatedWithoutDisposition > 0) {
+    return {
+      ok: false,
+      severity: 'blocking',
+      reason: 'outdated-reviewer-thread-without-disposition',
+      advisoryDowngraded,
+      scope,
+    };
+  }
+
+  if (eventName === 'pull_request_target' && lateReviewerFindings > 0) {
+    return {
+      ok: false,
+      severity: 'blocking',
+      reason: 'late-reviewer-comment-requires-disposition',
+      advisoryDowngraded,
+      scope,
+    };
+  }
 
   if (scope.hasProtectedScope && unresolvedProtectedThreads > 0) {
     return {
@@ -201,6 +234,9 @@ export function simulateGovernanceCase(testCase, config = loadIntentConfig()) {
     breakGlassOverride: Boolean(testCase.breakGlassOverride),
     unresolvedProtectedThreads: testCase.unresolvedProtectedThreads || 0,
     advisoryFindings: testCase.advisoryFindings || 0,
+    undispositionedReviewerComments: testCase.undispositionedReviewerComments || 0,
+    outdatedWithoutDisposition: testCase.outdatedWithoutDisposition || 0,
+    lateReviewerFindings: testCase.lateReviewerFindings || 0,
   });
 
   return {
