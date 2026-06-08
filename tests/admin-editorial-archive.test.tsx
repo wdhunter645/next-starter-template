@@ -6,6 +6,7 @@ import AdminEditorialArchivePage from '@/app/admin/editorial/page';
 import { onRequestGet as editorialListGet } from '../functions/api/admin/editorial/list';
 import { onRequestPost as editorialReviewPost } from '../functions/api/admin/editorial/review';
 import { onRequestPost as editorialPublishPost } from '../functions/api/admin/editorial/publish';
+import { onRequestPost as editorialInventoryPost } from '../functions/api/admin/editorial/inventory';
 import { onRequestPost as librarySubmitPost } from '../functions/api/library/submit';
 import { onRequestGet as fanclubLibraryGet } from '../functions/api/fanclub/library';
 import { onRequestGet as searchGet } from '../functions/api/search';
@@ -920,6 +921,94 @@ describe('editorial archive APIs', () => {
       error: 'Published content_inventory records require source_name and credit_line.',
     });
     expect(runs.some((run) => run.sql.includes('UPDATE content_inventory'))).toBe(false);
+  });
+
+  it('creates a draft content_inventory record through the inventory endpoint', async () => {
+    const { db, runs } = makeEditorialDb();
+
+    const response = await editorialInventoryPost({
+      request: adminPostRequest('/api/admin/editorial/inventory', {
+        tag: 'editor-draft',
+        title: 'Editor draft story',
+        text: 'Draft body text',
+        credit_line: 'LGFC Editorial',
+        allowed_sections: ['library', 'search'],
+        canonical: true,
+        feature_weight: 2,
+      }),
+      env: { ADMIN_TOKEN: 'secret', DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      action: 'create',
+      id: 44,
+      status: 'draft',
+    });
+    const insertRun = runs.find((run) => run.sql.includes('INSERT INTO content_inventory'));
+    expect(insertRun?.args).toContain('["library","search"]');
+  });
+
+  it('updates an existing content_inventory record through the inventory endpoint', async () => {
+    const { db, runs } = makeEditorialDb({
+      inventory: [
+        {
+          id: 12,
+          tag: 'luckiest-man',
+          title: 'Luckiest Man',
+          text: 'Speech text',
+          credit_line: 'Archive',
+          status: 'draft',
+        },
+      ],
+    });
+
+    const response = await editorialInventoryPost({
+      request: adminPostRequest('/api/admin/editorial/inventory', {
+        id: 12,
+        tag: 'luckiest-man',
+        title: 'Luckiest Man Updated',
+        text: 'Updated speech text',
+        credit_line: 'Archive',
+        allowed_sections: ['library', 'archive'],
+        canonical: false,
+        perspective_label: 'Alternate account',
+        rotation_group: 'speech-day',
+      }),
+      env: { ADMIN_TOKEN: 'secret', DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      action: 'update',
+      id: 12,
+      status: 'draft',
+    });
+    const updateRun = runs.find((run) => run.sql.includes('UPDATE content_inventory'));
+    expect(updateRun?.args).toContain('Alternate account');
+    expect(updateRun?.args).toContain('["library","archive"]');
+  });
+
+  it('requires perspective_label for alternate-perspective inventory records', async () => {
+    const { db } = makeEditorialDb();
+
+    const response = await editorialInventoryPost({
+      request: adminPostRequest('/api/admin/editorial/inventory', {
+        title: 'Alternate story',
+        text: 'Body',
+        credit_line: 'Archive',
+        canonical: false,
+      }),
+      env: { ADMIN_TOKEN: 'secret', DB: db },
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: 'Alternate-perspective records require perspective_label.',
+    });
   });
 });
 

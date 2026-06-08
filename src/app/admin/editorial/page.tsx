@@ -6,6 +6,27 @@ import AdminNav from '@/components/admin/AdminNav';
 import AdminTokenPanel from '@/components/admin/AdminTokenPanel';
 import { adminJson } from '@/lib/adminClient';
 
+const ALLOWED_SECTION_OPTIONS = [
+  { key: 'homepage_spotlight', label: 'Homepage spotlight' },
+  { key: 'homepage_discussions', label: 'Homepage discussions' },
+  { key: 'homepage_milestones', label: 'Homepage milestones' },
+  { key: 'library', label: 'Fan Club library' },
+  { key: 'search', label: 'Public search' },
+  { key: 'archive', label: 'Archive' },
+  { key: 'related_content', label: 'Related content' },
+] as const;
+
+type MediaAssociation = {
+  media_id: number;
+  media_role: string;
+  display_order: number;
+  caption?: string | null;
+  alt_text?: string | null;
+  source_name?: string | null;
+  source_url?: string | null;
+  credit_line?: string | null;
+};
+
 type Submission = {
   submission_id: number;
   submitted_by: string;
@@ -50,6 +71,8 @@ type InventoryRecord = {
   tag: string;
   title: string;
   text: string;
+  summary?: string | null;
+  perspective_label?: string | null;
   story_type: string;
   allowed_sections: string;
   priority: number;
@@ -57,10 +80,15 @@ type InventoryRecord = {
   source_name?: string | null;
   source_url?: string | null;
   credit_line: string;
+  event_date?: string | null;
+  event_year?: number | null;
+  rotation_group?: string | null;
+  feature_weight?: number | null;
   status: 'draft' | 'published' | 'archived';
   review_notes?: string | null;
   updated_at?: string | null;
   published_at?: string | null;
+  media_associations?: MediaAssociation[];
 };
 
 type EditorialListResponse = {
@@ -91,6 +119,56 @@ function buttonStyle(disabled = false): React.CSSProperties {
 
 function defaultCreditFromSubmitter(value: string): string {
   return value.includes('<') ? value.split('<')[0].trim() : value;
+}
+
+function parseAllowedSectionsValue(raw: string | null | undefined): string[] {
+  if (!raw) return ['library'];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length ? parsed.map(String) : ['library'];
+  } catch {
+    return ['library'];
+  }
+}
+
+function readAllowedSectionsFromForm(form: HTMLFormElement): string[] {
+  const selected = ALLOWED_SECTION_OPTIONS.filter((option) => {
+    const input = form.elements.namedItem(`section_${option.key}`) as HTMLInputElement | null;
+    return Boolean(input?.checked);
+  }).map((option) => option.key);
+  return selected.length ? [...selected] : ['library'];
+}
+
+function readMetadataFromForm(form: HTMLFormElement) {
+  const canonicalInput = form.elements.namedItem('canonical') as HTMLInputElement | null;
+  const eventYearRaw = String(new FormData(form).get('event_year') || '').trim();
+  return {
+    tag: String(new FormData(form).get('tag') || '').trim(),
+    title: String(new FormData(form).get('title') || '').trim(),
+    text: String(new FormData(form).get('text') || '').trim(),
+    summary: String(new FormData(form).get('summary') || '').trim(),
+    perspective_label: String(new FormData(form).get('perspective_label') || '').trim(),
+    story_type: String(new FormData(form).get('story_type') || 'brief'),
+    source_name: String(new FormData(form).get('source_name') || '').trim(),
+    source_url: String(new FormData(form).get('source_url') || '').trim(),
+    credit_line: String(new FormData(form).get('credit_line') || '').trim(),
+    allowed_sections: readAllowedSectionsFromForm(form),
+    priority: Number(new FormData(form).get('priority') || 0),
+    canonical: canonicalInput?.checked !== false,
+    event_date: String(new FormData(form).get('event_date') || '').trim(),
+    event_year: eventYearRaw ? Number(eventYearRaw) : null,
+    rotation_group: String(new FormData(form).get('rotation_group') || '').trim(),
+    feature_weight: Number(new FormData(form).get('feature_weight') || 1),
+    review_notes: String(new FormData(form).get('review_notes') || '').trim(),
+  };
+}
+
+function parseMediaAssociationsJson(raw: string): MediaAssociation[] {
+  const trimmed = raw.trim();
+  if (!trimmed) return [];
+  const parsed = JSON.parse(trimmed) as unknown;
+  if (!Array.isArray(parsed)) return [];
+  return parsed as MediaAssociation[];
 }
 
 export default function AdminEditorialArchivePage() {
@@ -126,6 +204,26 @@ export default function AdminEditorialArchivePage() {
     setLoading(false);
   }, [submissionFilter]);
 
+  const saveInventory = useCallback(
+    async (payload: Record<string, unknown>, label: string) => {
+      setStatus(`${label}…`);
+      const result = await adminJson<{ ok: true; id: number; action: string }>('/api/admin/editorial/inventory', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+
+      if (!result.ok) {
+        setStatus(`Inventory save error: ${result.error}`);
+        return false;
+      }
+
+      setStatus(`Inventory ${result.data?.action || 'saved'} for record ${result.data?.id ?? 'unknown'}.`);
+      await load();
+      return true;
+    },
+    [load],
+  );
+
   const reviewSubmission = useCallback(
     async (
       submission: Submission,
@@ -133,39 +231,54 @@ export default function AdminEditorialArchivePage() {
       form: HTMLFormElement,
       options: { retentionReason?: string } = {},
     ) => {
-      const formData = new FormData(form);
+      const metadata = readMetadataFromForm(form);
       setStatus(`Recording ${action.replace('_', ' ')} for "${submission.title}"…`);
 
-      const targetInventoryId = Number(formData.get('target_inventory_id') || 0);
+      let mediaAssociations: MediaAssociation[] = [];
+      try {
+        mediaAssociations = parseMediaAssociationsJson(String(new FormData(form).get('media_associations_json') || '[]'));
+      } catch {
+        setStatus('Review error: media_associations_json must be valid JSON.');
+        return;
+      }
+
+      const targetInventoryId = Number(new FormData(form).get('target_inventory_id') || 0);
       const retentionReason =
-        String(formData.get('retention_reason') || '').trim() ||
+        String(new FormData(form).get('retention_reason') || '').trim() ||
         String(options.retentionReason || '').trim() ||
         '';
-      const purgeEligibleAt = String(formData.get('purge_eligible_at') || '');
+      const purgeEligibleAt = String(new FormData(form).get('purge_eligible_at') || '');
 
       const result = await adminJson<{ ok: true }>('/api/admin/editorial/review', {
         method: 'POST',
         body: JSON.stringify({
           submission_id: submission.submission_id,
           action,
-          tag: String(formData.get('tag') || submission.proposed_tag || ''),
-          source_name: String(formData.get('source_name') || submission.source_name || 'Member submission'),
-          source_url: String(formData.get('source_url') || submission.source_url || ''),
-          credit_line: String(
-            formData.get('credit_line') ||
-              submission.credit_line ||
-              defaultCreditFromSubmitter(submission.submitted_by) ||
-              '',
-          ),
-          story_type: String(formData.get('story_type') || 'brief'),
-          allowed_sections: ['library'],
-          priority: Number(formData.get('priority') || 0),
-          review_notes: String(formData.get('review_notes') || ''),
-          triage_flags: String(formData.get('triage_flags') || '[]'),
-          duplicate_candidate: String(formData.get('duplicate_candidate') || ''),
+          tag: metadata.tag || submission.proposed_tag || '',
+          summary: metadata.summary,
+          perspective_label: metadata.perspective_label,
+          source_name: metadata.source_name || submission.source_name || 'Member submission',
+          source_url: metadata.source_url || submission.source_url || '',
+          credit_line:
+            metadata.credit_line ||
+            submission.credit_line ||
+            defaultCreditFromSubmitter(submission.submitted_by) ||
+            '',
+          story_type: metadata.story_type,
+          allowed_sections: metadata.allowed_sections,
+          priority: metadata.priority,
+          canonical: metadata.canonical,
+          event_date: metadata.event_date,
+          event_year: metadata.event_year,
+          rotation_group: metadata.rotation_group,
+          feature_weight: metadata.feature_weight,
+          review_notes: metadata.review_notes,
+          triage_flags: String(new FormData(form).get('triage_flags') || '[]'),
+          duplicate_candidate: String(new FormData(form).get('duplicate_candidate') || ''),
           retention_reason: retentionReason,
           purge_eligible_at: retentionReason ? '' : purgeEligibleAt,
           target_inventory_id: Number.isFinite(targetInventoryId) ? targetInventoryId : 0,
+          media_associations: mediaAssociations,
         }),
       });
 
@@ -234,6 +347,8 @@ export default function AdminEditorialArchivePage() {
           <span style={{ opacity: 0.85 }}>{status}</span>
         </div>
 
+        <CreateStorySection onSave={saveInventory} />
+
         <section style={{ border: '1px solid rgba(0,0,0,0.12)', borderRadius: 14, padding: 14 }}>
           <h2 style={{ marginTop: 0 }}>Submission Review Queue</h2>
           <p style={{ opacity: 0.8 }}>
@@ -245,11 +360,7 @@ export default function AdminEditorialArchivePage() {
           ) : (
             <div style={{ display: 'grid', gap: 14 }}>
               {submissions.map((submission) => (
-                <SubmissionCard
-                  key={submission.submission_id}
-                  submission={submission}
-                  onReview={reviewSubmission}
-                />
+                <SubmissionCard key={submission.submission_id} submission={submission} onReview={reviewSubmission} />
               ))}
             </div>
           )}
@@ -266,53 +377,307 @@ export default function AdminEditorialArchivePage() {
           ) : (
             <div style={{ display: 'grid', gap: 12 }}>
               {inventory.map((record) => (
-                <article key={record.id} style={{ border: '1px solid rgba(0,0,0,0.1)', borderRadius: 12, padding: 12 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
-                    <div>
-                      <h3 style={{ margin: 0 }}>{record.title}</h3>
-                      <div style={{ opacity: 0.75, fontSize: 13 }}>
-                        tag: {record.tag} · status: {record.status} · credit: {record.credit_line}
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      <button
-                        type="button"
-                        onClick={() => void updatePublication(record.id, 'published')}
-                        disabled={record.status === 'published'}
-                        style={buttonStyle(record.status === 'published')}
-                      >
-                        Publish
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => void updatePublication(record.id, 'draft')}
-                        disabled={record.status === 'draft'}
-                        style={buttonStyle(record.status === 'draft')}
-                      >
-                        Return to Draft
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => void updatePublication(record.id, 'archived')}
-                        disabled={record.status === 'archived'}
-                        style={buttonStyle(record.status === 'archived')}
-                      >
-                        Archive
-                      </button>
-                    </div>
-                  </div>
-                  <p style={{ whiteSpace: 'pre-wrap' }}>{record.text}</p>
-                  <div style={{ opacity: 0.75, fontSize: 13 }}>
-                    sections: {record.allowed_sections} · updated: {record.updated_at || '—'} · published:{' '}
-                    {record.published_at || '—'}
-                  </div>
-                </article>
+                <InventoryRecordCard
+                  key={record.id}
+                  record={record}
+                  onSave={saveInventory}
+                  onPublish={updatePublication}
+                  onStatus={setStatus}
+                />
               ))}
             </div>
           )}
         </section>
       </div>
     </PageShell>
+  );
+}
+
+function SectionCheckboxes(props: { prefix: string; defaultSections?: string[] }) {
+  const defaults = new Set(props.defaultSections || ['library']);
+  return (
+    <fieldset style={{ border: '1px solid rgba(0,0,0,0.12)', borderRadius: 10, padding: 12 }}>
+      <legend>Allowed sections</legend>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 }}>
+        {ALLOWED_SECTION_OPTIONS.map((option) => (
+          <label key={`${props.prefix}-${option.key}`} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input
+              type="checkbox"
+              name={`section_${option.key}`}
+              defaultChecked={defaults.has(option.key)}
+            />
+            {option.label}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+function EditorialMetadataFields(props: {
+  prefix: string;
+  defaults?: Partial<InventoryRecord> & { text?: string };
+  includeBody?: boolean;
+}) {
+  const defaults = props.defaults || {};
+  const sections = parseAllowedSectionsValue(defaults.allowed_sections);
+
+  return (
+    <>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
+        <label style={{ display: 'grid', gap: 6 }}>
+          Tag
+          <input name="tag" defaultValue={defaults.tag || ''} style={fieldStyle()} />
+        </label>
+        <label style={{ display: 'grid', gap: 6 }}>
+          Title
+          <input name="title" defaultValue={defaults.title || ''} style={fieldStyle()} required />
+        </label>
+        <label style={{ display: 'grid', gap: 6 }}>
+          Source name
+          <input name="source_name" defaultValue={defaults.source_name || 'Editorial draft'} style={fieldStyle()} />
+        </label>
+        <label style={{ display: 'grid', gap: 6 }}>
+          Source URL
+          <input name="source_url" defaultValue={defaults.source_url || ''} style={fieldStyle()} />
+        </label>
+        <label style={{ display: 'grid', gap: 6 }}>
+          Credit line
+          <input name="credit_line" defaultValue={defaults.credit_line || ''} style={fieldStyle()} required />
+        </label>
+        <label style={{ display: 'grid', gap: 6 }}>
+          Story type
+          <select name="story_type" defaultValue={defaults.story_type || 'brief'} style={fieldStyle()}>
+            <option value="brief">brief</option>
+            <option value="secondary">secondary</option>
+            <option value="primary">primary</option>
+          </select>
+        </label>
+        <label style={{ display: 'grid', gap: 6 }}>
+          Priority
+          <input name="priority" type="number" defaultValue={defaults.priority ?? 0} style={fieldStyle()} />
+        </label>
+        <label style={{ display: 'grid', gap: 6 }}>
+          Event date
+          <input name="event_date" defaultValue={defaults.event_date || ''} placeholder="YYYY-MM-DD" style={fieldStyle()} />
+        </label>
+        <label style={{ display: 'grid', gap: 6 }}>
+          Event year
+          <input name="event_year" type="number" defaultValue={defaults.event_year ?? ''} style={fieldStyle()} />
+        </label>
+        <label style={{ display: 'grid', gap: 6 }}>
+          Rotation group
+          <input name="rotation_group" defaultValue={defaults.rotation_group || ''} style={fieldStyle()} />
+        </label>
+        <label style={{ display: 'grid', gap: 6 }}>
+          Feature weight
+          <input
+            name="feature_weight"
+            type="number"
+            min={1}
+            defaultValue={defaults.feature_weight ?? 1}
+            style={fieldStyle()}
+          />
+        </label>
+      </div>
+
+      <label style={{ display: 'grid', gap: 6 }}>
+        Summary
+        <textarea name="summary" rows={2} defaultValue={defaults.summary || ''} style={fieldStyle()} />
+      </label>
+
+      {props.includeBody !== false ? (
+        <label style={{ display: 'grid', gap: 6 }}>
+          Story text
+          <textarea name="text" rows={5} defaultValue={defaults.text || ''} style={fieldStyle()} required />
+        </label>
+      ) : null}
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 }}>
+        <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <input type="checkbox" name="canonical" defaultChecked={(defaults.canonical ?? 1) !== 0} />
+          Canonical story
+        </label>
+        <label style={{ display: 'grid', gap: 6 }}>
+          Alternate perspective label
+          <input
+            name="perspective_label"
+            defaultValue={defaults.perspective_label || ''}
+            placeholder="Required when not canonical"
+            style={fieldStyle()}
+          />
+        </label>
+      </div>
+
+      <SectionCheckboxes prefix={props.prefix} defaultSections={sections} />
+
+      <label style={{ display: 'grid', gap: 6 }}>
+        Review notes
+        <textarea name="review_notes" rows={2} defaultValue={defaults.review_notes || ''} style={fieldStyle()} />
+      </label>
+    </>
+  );
+}
+
+function CreateStorySection(props: {
+  onSave: (payload: Record<string, unknown>, label: string) => Promise<boolean>;
+}) {
+  return (
+    <section style={{ border: '1px solid rgba(0,0,0,0.12)', borderRadius: 14, padding: 14 }}>
+      <h2 style={{ marginTop: 0 }}>Create Story Draft</h2>
+      <p style={{ opacity: 0.8 }}>Create a content_inventory draft directly without a queue submission.</p>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          const form = event.currentTarget;
+          const metadata = readMetadataFromForm(form);
+          void props.onSave({ ...metadata, submitted_by: 'admin-ui' }, 'Creating story draft');
+        }}
+        style={{ display: 'grid', gap: 10 }}
+      >
+        <EditorialMetadataFields prefix="create" includeBody />
+        <button type="submit" style={buttonStyle()}>
+          Create Draft Story
+        </button>
+      </form>
+    </section>
+  );
+}
+
+function MediaAssociationsEditor(props: {
+  storyId: number;
+  initialAssociations?: MediaAssociation[];
+  onStatus: (message: string) => void;
+}) {
+  const initialJson = JSON.stringify(props.initialAssociations || [], null, 2);
+  const [jsonValue, setJsonValue] = useState(initialJson);
+
+  useEffect(() => {
+    setJsonValue(JSON.stringify(props.initialAssociations || [], null, 2));
+  }, [props.initialAssociations, props.storyId]);
+
+  const saveAssociations = async () => {
+    let mediaAssociations: MediaAssociation[] = [];
+    try {
+      mediaAssociations = parseMediaAssociationsJson(jsonValue);
+    } catch {
+      props.onStatus('Media association error: JSON must be valid.');
+      return;
+    }
+
+    props.onStatus(`Saving media associations for story ${props.storyId}…`);
+    const result = await adminJson<{ ok: true }>('/api/admin/editorial/media-associations', {
+      method: 'POST',
+      body: JSON.stringify({
+        story_id: props.storyId,
+        media_associations: mediaAssociations,
+      }),
+    });
+
+    if (!result.ok) {
+      props.onStatus(`Media association error: ${result.error}`);
+      return;
+    }
+
+    props.onStatus(`Media associations saved for story ${props.storyId}.`);
+  };
+
+  return (
+    <div style={{ display: 'grid', gap: 8 }}>
+      <label style={{ display: 'grid', gap: 6 }}>
+        Media associations JSON
+        <textarea
+          rows={6}
+          value={jsonValue}
+          onChange={(event) => setJsonValue(event.target.value)}
+          style={fieldStyle()}
+        />
+      </label>
+      <p style={{ opacity: 0.75, fontSize: 13, margin: 0 }}>
+        Example: [{'{'}&quot;media_id&quot;: 12, &quot;media_role&quot;: &quot;primary_image&quot;, &quot;display_order&quot;: 0,
+        &quot;alt_text&quot;: &quot;Caption&quot;{'}'}]
+      </p>
+      <button type="button" onClick={() => void saveAssociations()} style={buttonStyle()}>
+        Save Media Associations
+      </button>
+    </div>
+  );
+}
+
+function InventoryRecordCard(props: {
+  record: InventoryRecord;
+  onSave: (payload: Record<string, unknown>, label: string) => Promise<boolean>;
+  onPublish: (id: number, status: InventoryRecord['status']) => Promise<void>;
+  onStatus: (message: string) => void;
+}) {
+  const { record } = props;
+
+  return (
+    <article style={{ border: '1px solid rgba(0,0,0,0.1)', borderRadius: 12, padding: 12, display: 'grid', gap: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+        <div>
+          <h3 style={{ margin: 0 }}>{record.title}</h3>
+          <div style={{ opacity: 0.75, fontSize: 13 }}>
+            tag: {record.tag} · status: {record.status} · canonical: {record.canonical ? 'yes' : 'no'} · credit:{' '}
+            {record.credit_line}
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => void props.onPublish(record.id, 'published')}
+            disabled={record.status === 'published'}
+            style={buttonStyle(record.status === 'published')}
+          >
+            Publish
+          </button>
+          <button
+            type="button"
+            onClick={() => void props.onPublish(record.id, 'draft')}
+            disabled={record.status === 'draft'}
+            style={buttonStyle(record.status === 'draft')}
+          >
+            Return to Draft
+          </button>
+          <button
+            type="button"
+            onClick={() => void props.onPublish(record.id, 'archived')}
+            disabled={record.status === 'archived'}
+            style={buttonStyle(record.status === 'archived')}
+          >
+            Archive
+          </button>
+        </div>
+      </div>
+
+      <p style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{record.text}</p>
+      <div style={{ opacity: 0.75, fontSize: 13 }}>
+        sections: {record.allowed_sections} · event: {record.event_date || '—'} / {record.event_year ?? '—'} · rotation:{' '}
+        {record.rotation_group || '—'} · weight: {record.feature_weight ?? 1} · updated: {record.updated_at || '—'} ·
+        published: {record.published_at || '—'}
+      </div>
+
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          const metadata = readMetadataFromForm(event.currentTarget);
+          void props.onSave({ id: record.id, ...metadata }, `Saving inventory record ${record.id}`);
+        }}
+        style={{ display: 'grid', gap: 10 }}
+      >
+        <h4 style={{ margin: 0 }}>Edit Metadata</h4>
+        <EditorialMetadataFields prefix={`inventory-${record.id}`} defaults={record} />
+        <button type="submit" style={buttonStyle()}>
+          Save Metadata
+        </button>
+      </form>
+
+      <MediaAssociationsEditor
+        storyId={record.id}
+        initialAssociations={record.media_associations}
+        onStatus={props.onStatus}
+      />
+    </article>
   );
 }
 
@@ -347,51 +712,22 @@ function SubmissionCard(props: {
         source: {submission.source_name || '—'} · credit: {submission.credit_line || '—'} · media:{' '}
         {submission.media_reference || submission.media_url || '—'}
       </div>
-      {(submission.duplicate_candidate ||
-        submission.triage_flags ||
-        submission.decision_at ||
-        submission.purge_eligible_at ||
-        submission.retention_reason) && (
-        <div style={{ opacity: 0.78, fontSize: 13 }}>
-          duplicate: {submission.duplicate_candidate || '—'} · triage: {submission.triage_flags || '[]'} · decision:{' '}
-          {submission.decision_by || '—'} {submission.decision_at || ''} · purge eligible:{' '}
-          {submission.purge_eligible_at || '—'} · retention: {submission.retention_reason || '—'}
-        </div>
-      )}
+
+      <EditorialMetadataFields
+        prefix={`submission-${submission.submission_id}`}
+        defaults={{
+          tag: submission.proposed_tag || '',
+          title: submission.title,
+          text: submission.description,
+          source_name: submission.source_name || 'Member submission',
+          source_url: submission.source_url || '',
+          credit_line: submission.credit_line || defaultCreditFromSubmitter(submission.submitted_by),
+          review_notes: submission.review_notes || '',
+          allowed_sections: '["library"]',
+        }}
+      />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
-        <label style={{ display: 'grid', gap: 6 }}>
-          Tag
-          <input name="tag" defaultValue={submission.proposed_tag || ''} style={fieldStyle()} />
-        </label>
-        <label style={{ display: 'grid', gap: 6 }}>
-          Source name
-          <input name="source_name" defaultValue={submission.source_name || 'Member submission'} style={fieldStyle()} />
-        </label>
-        <label style={{ display: 'grid', gap: 6 }}>
-          Source URL
-          <input name="source_url" defaultValue={submission.source_url || ''} style={fieldStyle()} />
-        </label>
-        <label style={{ display: 'grid', gap: 6 }}>
-          Credit line
-          <input
-            name="credit_line"
-            defaultValue={submission.credit_line || defaultCreditFromSubmitter(submission.submitted_by)}
-            style={fieldStyle()}
-          />
-        </label>
-        <label style={{ display: 'grid', gap: 6 }}>
-          Story type
-          <select name="story_type" defaultValue="brief" style={fieldStyle()}>
-            <option value="brief">brief</option>
-            <option value="secondary">secondary</option>
-            <option value="primary">primary</option>
-          </select>
-        </label>
-        <label style={{ display: 'grid', gap: 6 }}>
-          Priority
-          <input name="priority" type="number" defaultValue={0} style={fieldStyle()} />
-        </label>
         <label style={{ display: 'grid', gap: 6 }}>
           Duplicate candidate / merge target note
           <input name="duplicate_candidate" defaultValue={submission.duplicate_candidate || ''} style={fieldStyle()} />
@@ -407,16 +743,21 @@ function SubmissionCard(props: {
       </div>
 
       <label style={{ display: 'grid', gap: 6 }}>
-        Review notes
-        <textarea name="review_notes" rows={3} defaultValue={submission.review_notes || ''} style={fieldStyle()} />
-      </label>
-      <label style={{ display: 'grid', gap: 6 }}>
         Objective triage flags JSON
         <textarea name="triage_flags" rows={2} defaultValue={submission.triage_flags || '[]'} style={fieldStyle()} />
       </label>
       <label style={{ display: 'grid', gap: 6 }}>
         Retention reason
         <textarea name="retention_reason" rows={2} defaultValue={submission.retention_reason || ''} style={fieldStyle()} />
+      </label>
+      <label style={{ display: 'grid', gap: 6 }}>
+        Media associations JSON (approve)
+        <textarea
+          name="media_associations_json"
+          rows={4}
+          defaultValue="[]"
+          style={fieldStyle()}
+        />
       </label>
 
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
