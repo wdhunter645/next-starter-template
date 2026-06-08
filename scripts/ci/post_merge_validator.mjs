@@ -8,6 +8,7 @@ import { implementationEvidenceFailures } from './post_merge_implementation_evid
 
 import { linkedIssueNumber, sourceIssueAccounting } from './issue_accounting.mjs';
 import { planTerminalLabelReconciliation } from './post_merge_source_issue_closeout.mjs';
+import { evaluateReviewerCommentDisposition } from './reviewer_comment_disposition.mjs';
 
 export { linkedIssueNumber, sourceIssueAccounting };
 
@@ -202,6 +203,32 @@ function findingLine(item, fallbackUrl) {
 	return { reviewer: login, url, body: body.slice(0, 240) };
 }
 
+export function reviewerDispositionFailures({
+	body = '',
+	issueComments = [],
+	reviewComments = [],
+	reviews = [],
+	headSha = '',
+	mergedAt = '',
+} = {}) {
+	const disposition = evaluateReviewerCommentDisposition({
+		body,
+		issueComments,
+		reviewComments,
+		reviews,
+		headSha,
+		mergedAt,
+		auditPhase: 'post_merge',
+	});
+
+	return disposition.failures.map((failure) => ({
+		code: failure.code,
+		message: failure.message,
+		commentId: failure.commentId,
+		reviewer: failure.reviewer,
+	}));
+}
+
 export function reviewerFindings({ pr, issueComments = [], reviewComments = [], reviews = [] }) {
 	const mergedAt = pr?.mergedAt || pr?.merged_at || '';
 	const prUrl = pr?.url || pr?.html_url || '';
@@ -295,6 +322,7 @@ export function buildResult({
 	implementation = [],
 	diataxis = [],
 	findings = [],
+	reviewerDispositionFailures = [],
 	failures = [],
 	mergeSha = '',
 	sourceIssueCandidates = [],
@@ -328,6 +356,7 @@ export function buildResult({
 		implementation.length +
 		diataxis.length +
 		findings.length +
+		reviewerDispositionFailures.length +
 		requiredWorkflowFailures.length;
 	const status = blockingFailureCount === 0 ? 'pass' : 'fail';
 	const remediationWorkflowFailures = failures.filter(
@@ -338,6 +367,7 @@ export function buildResult({
 		implementation.length > 0 ||
 		diataxis.length > 0 ||
 		findings.length > 0 ||
+		reviewerDispositionFailures.length > 0 ||
 		remediationWorkflowFailures.length > 0;
 
 	return {
@@ -353,18 +383,20 @@ export function buildResult({
 		implementation_failures: implementation,
 		diataxis_failures: diataxis,
 		reviewer_findings: findings,
+		reviewer_disposition_failures: reviewerDispositionFailures,
 		evidence_summary: {
 			metadata_failures: metadata.length,
 			implementation_failures: implementation.length,
 			diataxis_failures: diataxis.length,
 			late_reviewer_findings: findings.length,
+			reviewer_disposition_failures: reviewerDispositionFailures.length,
 			workflow_failures: failures.length,
 			required_workflow_failures: requiredWorkflowFailures.length,
 		},
 		remediation_required: remediationRequired,
 		terminal_label_result: terminalLabelResult,
-		queue_advancement_status: remediationRequired || status === 'fail'
-			? 'stopped; exception issue requires Atlas/Bill review'
+		queue_advancement_status: remediationRequired || status === 'fail' || reviewerDispositionFailures.length > 0
+			? 'stopped; reviewer exception or remediation issue requires Atlas/Bill review'
 			: 'no queue action; Program 1 launch, Program 2 mutation, and child issue creation remain stopped',
 		sync_action: status === 'fail' ? 'post_merge_failure' : remediationRequired ? 'post_merge_remediation' : 'post_merge_success',
 	};
@@ -426,6 +458,15 @@ export function renderPostMergeReport(result) {
 	if (result.reviewer_findings?.length) {
 		for (const finding of result.reviewer_findings) {
 			lines.push(`- ${finding.url} by ${finding.reviewer}: ${finding.body}`);
+		}
+	} else {
+		lines.push('- none');
+	}
+
+	lines.push('', '## Reviewer disposition failures');
+	if (result.reviewer_disposition_failures?.length) {
+		for (const failure of result.reviewer_disposition_failures) {
+			lines.push(`- ${failure.code}: ${failure.message}`);
 		}
 	} else {
 		lines.push('- none');
@@ -653,6 +694,14 @@ export async function runValidator({
 		root: workspace,
 	});
 	const findings = reviewerFindings({ pr: normalizedPr, issueComments, reviewComments, reviews });
+	const dispositionFailures = reviewerDispositionFailures({
+		body: normalizedPr.body,
+		issueComments,
+		reviewComments,
+		reviews,
+		headSha: normalizedPr.mergeCommit?.oid || sha,
+		mergedAt: normalizedPr.mergedAt,
+	});
 	const runs = selectWorkflowRunsForValidation({
 		mergeRuns: mergeRunsResponse.workflow_runs || [],
 		headRuns: headRunsResponse.workflow_runs || [],
@@ -668,6 +717,7 @@ export async function runValidator({
 		implementation,
 		diataxis,
 		findings,
+		reviewerDispositionFailures: dispositionFailures,
 		failures,
 		mergeSha: sha,
 		sourceIssueCandidates: sourceAccounting.sourceIssueCandidates,

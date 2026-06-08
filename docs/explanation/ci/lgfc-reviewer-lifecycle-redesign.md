@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Reviewer lifecycle redesign philosophy, async reviewer governance model, reviewer gate lifecycle placement
 Does Not Own: Specific workflow implementation
 Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related Issues: #1196, #1058
-Last Reviewed: 2026-05-21
+Related Issues: #1452, #1196, #1058
+Last Reviewed: 2026-06-08
 ---
 
 # LGFC Reviewer Lifecycle Redesign
@@ -65,17 +65,19 @@ Examples of non-meaningful reviewed-state change:
 
 ### Pre-Merge Reviewer Enforcement
 
-Pre-merge reviewer enforcement should remain intentionally narrow.
+Pre-merge reviewer enforcement now requires explicit disposition for every
+actionable trusted reviewer comment. Timing alone is not a substitute for
+accounting.
 
-Only catastrophic reviewer conditions should block merge approval.
+Blocking pre-merge conditions include:
 
-Examples:
-
+- undispositioned actionable trusted reviewer comments
+- outdated review threads without explicit PR-body disposition evidence
+- late reviewer comments arriving after `READY FOR REVIEW` that remain undispositioned
 - unresolved required protected-review findings
-- missing mandatory protected-file review
-- unresolved security review requirement
+- missing mandatory protected-file current-head review artifact
 
-Reviewer timing itself must never block merge approval.
+Outdated GitHub thread state does not clear disposition obligations.
 
 ## Post-Merge Reviewer Intelligence
 

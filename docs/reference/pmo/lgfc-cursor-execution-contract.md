@@ -193,7 +193,7 @@ For each PR, Cursor owns:
 - file-touch allowlist evidence;
 - docs-only or implementation-scope assertion;
 - exact validation commands and outcomes;
-- reviewer and bot disposition when present;
+- reviewer and bot disposition when present, including `review-comment:<id>` lines for every actionable trusted reviewer comment and explicit outdated-thread disposition;
 - clear blocker reporting.
 
 Atlas owns governance review, source-issue accounting, queue conformance, and

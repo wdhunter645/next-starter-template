@@ -6,6 +6,7 @@ import {
   classifyProtectedScope,
   evaluateReviewerAccounting,
 } from './reviewer-gate-simulation.mjs';
+import { evaluateReviewerCommentDisposition } from './reviewer_comment_disposition.mjs';
 
 export const TRUSTED_REVIEWERS = [
   {
@@ -219,6 +220,10 @@ export function countAdvisoryFindings({
   return findings;
 }
 
+function readyForReviewClaimed(body = '') {
+  return /Status:\s*READY FOR REVIEW/i.test(String(body || ''));
+}
+
 export function buildReviewerLifecycleReport({
   assessment,
   scope,
@@ -229,6 +234,7 @@ export function buildReviewerLifecycleReport({
   breakGlassOverride = false,
   unresolvedProtectedThreads = 0,
   advisoryFindings = 0,
+  reviewerDisposition = null,
 }) {
   const lines = [
     assessment.ok
@@ -237,10 +243,10 @@ export function buildReviewerLifecycleReport({
         ? 'Reviewer lifecycle gate failed.'
         : 'Reviewer lifecycle gate advisory refreshed.',
     '',
-    'Task 003 model: reviewer timing and PR-body rituals are not synchronous merge blockers.',
-    'Protected CI scope requires a current-head trusted review artifact on the enforced SHA.',
-    'Stale trusted reviews on earlier commits do not satisfy protected workflow/config scope.',
-    'Late reviewer findings are audited post-merge and can pause orchestration.',
+    'Every actionable trusted reviewer comment must be resolved, explicitly dispositioned in the PR body, or linked to a bounded follow-up issue.',
+    'Outdated review threads require explicit PR-body disposition with review-comment ID and thread state.',
+    'Protected CI scope additionally requires a current-head trusted review artifact on the enforced SHA.',
+    'Late reviewer findings arriving after READY FOR REVIEW must be dispositioned before merge.',
     '',
     `Current head SHA: ${headSha || 'unknown'}`,
     `Protected scope: ${scope.hasProtectedScope ? 'yes' : 'no'}`,
@@ -248,6 +254,9 @@ export function buildReviewerLifecycleReport({
     `Stale trusted review only (earlier commit): ${staleTrustedReviewOnly ? 'yes' : 'no'}`,
     `Break-glass override active: ${breakGlassOverride ? 'yes' : 'no'}`,
     `Unresolved protected review threads: ${unresolvedProtectedThreads}`,
+    `Undispositioned reviewer comments: ${reviewerDisposition?.undispositionedCount ?? 0}`,
+    `Outdated threads without disposition: ${reviewerDisposition?.outdatedWithoutDispositionCount ?? 0}`,
+    `Late pre-merge reviewer findings: ${reviewerDisposition?.lateFindingsCount ?? 0}`,
     `Advisory reviewer findings: ${advisoryFindings}`,
     `Assessment severity: ${assessment.severity}`,
     `Assessment reason: ${assessment.reason}`,
@@ -269,6 +278,13 @@ export function buildReviewerLifecycleReport({
     lines.push('', 'Advisory reviewer findings remain visible for PR readiness but do not block merge by timing alone.');
   }
 
+  if (reviewerDisposition?.failures?.length) {
+    lines.push('', '## Reviewer disposition failures');
+    for (const failure of reviewerDisposition.failures) {
+      lines.push(`- ${failure.code}: ${failure.message}`);
+    }
+  }
+
   return lines.join('\n');
 }
 
@@ -281,6 +297,7 @@ export function assessReviewerLifecycle({
   issueComments = [],
   body = '',
   headSha = '',
+  readyForReviewAt = '',
   enforceFailure = false,
 }) {
   const scope = classifyProtectedScope(files);
@@ -289,6 +306,15 @@ export function assessReviewerLifecycle({
   const breakGlassOverride = hasProtectedScopeBreakGlass({ labels, body });
   const unresolvedProtectedThreads = countUnresolvedProtectedThreads({ reviewComments, reviews });
   const advisoryFindings = countAdvisoryFindings({ issueComments, reviewComments, reviews });
+  const reviewerDisposition = evaluateReviewerCommentDisposition({
+    body,
+    issueComments,
+    reviewComments,
+    reviews,
+    headSha,
+    readyForReviewAt: readyForReviewAt || (readyForReviewClaimed(body) ? '' : ''),
+    auditPhase: 'pre_merge',
+  });
   const assessment = evaluateReviewerAccounting({
     eventName,
     labels,
@@ -298,6 +324,9 @@ export function assessReviewerLifecycle({
     breakGlassOverride,
     unresolvedProtectedThreads,
     advisoryFindings,
+    undispositionedReviewerComments: reviewerDisposition.undispositionedCount,
+    outdatedWithoutDisposition: reviewerDisposition.outdatedWithoutDispositionCount,
+    lateReviewerFindings: reviewerDisposition.lateFindingsCount,
   });
 
   return {
@@ -308,6 +337,7 @@ export function assessReviewerLifecycle({
     breakGlassOverride,
     unresolvedProtectedThreads,
     advisoryFindings,
+    reviewerDisposition,
     enforceFailure,
     report: buildReviewerLifecycleReport({
       assessment,
@@ -319,6 +349,7 @@ export function assessReviewerLifecycle({
       breakGlassOverride,
       unresolvedProtectedThreads,
       advisoryFindings,
+      reviewerDisposition,
     }),
     shouldFail: enforceFailure && !assessment.ok && assessment.severity === 'blocking',
   };
@@ -362,6 +393,20 @@ async function paginate(path, token) {
   return results;
 }
 
+async function resolveReadyForReviewAt({ owner, repo, prNumber, token, body = '' }) {
+  if (!readyForReviewClaimed(body)) return '';
+
+  try {
+    const events = await paginate(`/repos/${owner}/${repo}/issues/${prNumber}/timeline`, token);
+    const readyEvents = events
+      .filter((event) => event.event === 'ready_for_review' && event.created_at)
+      .sort((left, right) => Date.parse(right.created_at) - Date.parse(left.created_at));
+    return readyEvents[0]?.created_at || '';
+  } catch {
+    return '';
+  }
+}
+
 export async function runReviewerLifecycleGate({
   token,
   owner,
@@ -371,11 +416,12 @@ export async function runReviewerLifecycleGate({
   enforceFailure = eventName === 'pull_request_target',
 }) {
   const pull = await request(`/repos/${owner}/${repo}/pulls/${prNumber}`, token);
-  const [files, issueComments, reviewComments, reviews] = await Promise.all([
+  const [files, issueComments, reviewComments, reviews, readyForReviewAt] = await Promise.all([
     paginate(`/repos/${owner}/${repo}/pulls/${prNumber}/files`, token),
     paginate(`/repos/${owner}/${repo}/issues/${prNumber}/comments`, token),
     paginate(`/repos/${owner}/${repo}/pulls/${prNumber}/comments`, token),
     paginate(`/repos/${owner}/${repo}/pulls/${prNumber}/reviews`, token),
+    resolveReadyForReviewAt({ owner, repo, prNumber, token, body: pull.body || '' }),
   ]);
 
   const result = assessReviewerLifecycle({
@@ -387,6 +433,7 @@ export async function runReviewerLifecycleGate({
     reviews,
     body: pull.body || '',
     headSha: pull.head?.sha || '',
+    readyForReviewAt,
     enforceFailure,
   });
 
