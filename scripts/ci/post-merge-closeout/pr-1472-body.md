@@ -88,6 +88,10 @@ All other files are out of scope
 - [x] Reviewed all reviewer comments.
 - [x] Reviewed all bot comments.
 - [x] Reviewed all GitHub review threads.
+- [x] Copilot disposition received or not applicable.
+- [x] Codex disposition received or not applicable.
+- [x] Gemini disposition received or not applicable.
+- [x] Cubic disposition received or not applicable.
 - [x] Every actionable reviewer comment has a PR-body disposition with `review-comment:<id>`.
 - [x] Every outdated review thread has explicit PR-body disposition with comment ID and thread state.
 

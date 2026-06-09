@@ -102,6 +102,28 @@ All other files are out of scope
 - [x] Local checks executed and passed or exact blocker documented
 - [x] Post-merge closeout body remediation applied for merged PR governance
 
+## REVIEWER RESPONSE ACCOUNTING
+- [x] Reviewed all reviewer comments.
+- [x] Reviewed all bot comments.
+- [x] Reviewed all GitHub review threads.
+- [x] Copilot disposition received or not applicable.
+- [x] Codex disposition received or not applicable.
+- [x] Gemini disposition received or not applicable.
+- [x] Cubic disposition received or not applicable.
+- [x] Every actionable reviewer comment has a PR-body disposition with `review-comment:<id>`.
+- [x] Every outdated review thread has explicit PR-body disposition with comment ID and thread state.
+
+Reviewer items:
+- review-comment:3348836203 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3348836251 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3348836263 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3349136333 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3349164370 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3349164444 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3349228488 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3349228514 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:4419431893 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+
 ## ACCEPTANCE CRITERIA
 - [x] All public routes validated (Playwright + static export manifest)
 - [x] Fan Club routes validated (session-mocked Playwright)
@@ -118,3 +140,8 @@ Revert launch-readiness scripts, tests, and manifest changes only.
 ## POST-MERGE VERIFICATION REQUIREMENTS
 - Confirm `npm run launch-readiness` passes on `main` after T48 merge.
 - Attach `reports/launch-readiness/summary.md` for operational records when available.
+
+## POST-MERGE ISSUE DISPOSITION
+- Post-merge closeout reconciliation for prior PR #1221: post-merge closeout evidence recorded for prior PR #1221; source issue **#1112** already closed complete
+
+<!-- closeout-trigger: 2026-06-09 -->

@@ -27,6 +27,17 @@ export async function runAllPostMergeCloseoutManifests({
 
 	for (const manifestPath of manifestPaths) {
 		const { manifestPath: resolved, targets } = loadCloseoutTargets(manifestPath);
+		if (targets.length === 0) {
+			reports.push(
+				buildBatchCloseoutReport({
+					manifestPath: resolved,
+					targets: [],
+					results: [],
+					dryRun,
+				}),
+			);
+			continue;
+		}
 		const report = await runBatchPostMergeCloseout({
 			token,
 			repository,

@@ -89,6 +89,34 @@ All other files are out of scope
 - [x] Local checks executed and passed or exact blocker documented
 - [x] Post-merge closeout body remediation applied for merged PR governance
 
+## REVIEWER RESPONSE ACCOUNTING
+- [x] Reviewed all reviewer comments.
+- [x] Reviewed all bot comments.
+- [x] Reviewed all GitHub review threads.
+- [x] Copilot disposition received or not applicable.
+- [x] Codex disposition received or not applicable.
+- [x] Gemini disposition received or not applicable.
+- [x] Cubic disposition received or not applicable.
+- [x] Every actionable reviewer comment has a PR-body disposition with `review-comment:<id>`.
+- [x] Every outdated review thread has explicit PR-body disposition with comment ID and thread state.
+
+Reviewer items:
+- review-comment:4420742375 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3350318886 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3350318900 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3350318910 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3350318923 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3350318930 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3350318936 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3350321128 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3350334126 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3350334190 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3350334226 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3350334281 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3350344689 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3350344705 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3350344708 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+
 ## ACCEPTANCE CRITERIA
 - [x] Trusted reviewer evidence model is documented.
 - [x] Selected reviewer path accounting is documented.
@@ -98,3 +126,8 @@ All other files are out of scope
 
 ## ROLLBACK
 Revert the two added documentation files.
+
+## POST-MERGE ISSUE DISPOSITION
+- Post-merge closeout reconciliation for prior PR #1248: post-merge closeout evidence recorded for prior PR #1248; source issue **#1247** already closed complete
+
+<!-- closeout-trigger: 2026-06-09 -->
