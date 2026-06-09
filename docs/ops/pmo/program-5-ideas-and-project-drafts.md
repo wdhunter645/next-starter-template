@@ -41,6 +41,7 @@ Legacy `#1379` currently represents the prior ideas/future-projects source until
 | Item | Current classification | Suggested next action | Notes |
 | --- | --- | --- | --- |
 | Workflow Automation | Promoted from Program 5 to Program 1 | Keep in Program 1; remove from draft pool after Program 1 alignment | Current promoted example through `#1411`. |
+| Admin Page and Tools Design Readiness | Project draft | Complete inventory/readiness review before promotion | Existing access model exists, but complete admin product/tool design, token UX, active/diagnostic/retired tool status, and backend failure-state design need documentation. See `docs/ops/pmo/program-5-admin-page-and-tools-design-readiness.md`. |
 | Fundraiser / charity campaign operations | Project draft | Decide whether portfolio-ready for proposed Program 3 | Includes repeatable campaign setup, Givebutter process, auction handling, leaderboard/winner rules, and annual timeline. |
 | Lou Gehrig content collection strategy | Project draft | Confirm relationship to Program 2 content inventory and proposed Program 3 growth operations | Continuous collection, source/credit tracking, review, and publication pipeline. |
 | Adam Wilson Award / recognition system | Idea / project draft | Clarify purpose, content model, route needs, and ownership | Could become part of recognition/honor project group. |
