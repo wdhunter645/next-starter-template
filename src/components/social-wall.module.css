@@ -15,14 +15,6 @@
   color: var(--lgfc-blue);
 }
 
-.subtitle {
-  margin: 0 0 16px 0;
-  text-align: center;
-  font-size: 1rem;
-  line-height: 1.5;
-  color: #495067;
-}
-
 .embed {
   max-width: 1120px;
   margin: 0 auto 16px auto;

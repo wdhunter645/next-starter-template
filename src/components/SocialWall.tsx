@@ -66,7 +66,6 @@ export default function SocialWall() {
     <section id="social-wall" className={styles.section}>
       <div className={styles.container}>
         <h2 className={styles.sectionTitle}>Social Wall</h2>
-        <p className={styles.subtitle}>Live fan posts from Facebook.</p>
         <div className={styles.embed}>
           {status === 'loading' ? (
             <p className={styles.fallback}>Loading social wall content...</p>
