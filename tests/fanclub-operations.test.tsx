@@ -169,6 +169,9 @@ describe('Fan Club operational pages', () => {
     });
     expect(fetchMock).toHaveBeenCalledWith('/api/fanclub/library?page=1', { cache: 'no-store' });
     expect(screen.getByRole('link', { name: 'Submit an Article' })).toHaveAttribute('href', '/fanclub/submit');
+    expect(screen.getByText(/published editorial inventory stories/i)).toBeInTheDocument();
+    expect(screen.getByText(/source and credit attribution/i)).toBeInTheDocument();
+    expect(screen.getByText(/Credit: Lou Gehrig/)).toBeInTheDocument();
   });
 
   it('exposes the approved member submission path from Club Archives without changing header navigation', () => {

@@ -80,10 +80,10 @@ export default function LibraryPage() {
     <main style={styles.main}>
       <h1 style={styles.h1}>Library</h1>
       <p style={styles.lead}>
-        A read-only member view of library entries about Lou Gehrig and related history.
+        A read-only member view of published editorial inventory stories about Lou Gehrig and related history.
       </p>
       <p style={styles.p}>
-        Use search to quickly locate entries by title or body text, then jump to memorabilia or other Fan Club pages from the links below.
+        Stories display source and credit attribution when available. Use search to locate entries by title, summary, or body text, then jump to memorabilia or other Fan Club pages from the links below.
       </p>
 
       <div style={styles.grid}>
@@ -123,11 +123,11 @@ export default function LibraryPage() {
           ) : (
             filteredItems.map((it) => (
               <article key={it.id} style={{ marginBottom: 14 }}>
-                <h3 style={{ margin: '0 0 6px 0' }}>{it.title || 'Untitled library entry'}</h3>
+                <h3 style={{ margin: '0 0 6px 0' }}>{it.title || 'Untitled story'}</h3>
                 <div style={styles.meta}>
-                  {[it.author ? `By ${it.author}` : null, it.year ? String(it.year) : null, it.created_at ? new Date(it.created_at).toLocaleString() : null]
+                  {[it.author ? `Credit: ${it.author}` : null, it.year ? String(it.year) : null, it.created_at ? new Date(it.created_at).toLocaleString() : null]
                     .filter(Boolean)
-                    .join(' • ') || 'Member library entry'}
+                    .join(' • ') || 'Published inventory story'}
                 </div>
                 <p style={{ ...styles.p, marginTop: 8, whiteSpace: 'pre-wrap' }}>{it.content || it.description || 'No description available yet.'}</p>
                 <hr style={styles.hr} />
