@@ -157,7 +157,7 @@ A Program 5 item may feed a future Program 1-4 cycle only when:
 3. Repository documentation becomes the design source of truth.
 4. Non-interference with active program work is documented.
 5. Scope is decomposed into tasks with allowlisted files and validation.
-6. Issue creation is authorized after Atlas/Bill walkthrough.
+6. issue creation is authorized after Atlas/Bill walkthrough.
 7. Cursor receives a bounded source issue and PR scope.
 
 Workflow Automation satisfies early promotion requirements for planning through `#1411`; it does not yet authorize workflow implementation, label mutation, or child issue creation from this document.
