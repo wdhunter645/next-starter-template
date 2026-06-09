@@ -7,7 +7,12 @@ import { diataxisEvidenceFailures } from './post_merge_diataxis_audit.mjs';
 import { implementationEvidenceFailures } from './post_merge_implementation_evidence.mjs';
 
 import { linkedIssueNumber, sourceIssueAccounting } from './issue_accounting.mjs';
-import { planTerminalLabelReconciliation } from './post_merge_source_issue_closeout.mjs';
+import {
+	isPermittedClosedSourceIssueFollowup,
+	planTerminalLabelReconciliation,
+} from './post_merge_source_issue_closeout.mjs';
+
+export { isPermittedClosedSourceIssueFollowup };
 import { evaluateReviewerCommentDisposition } from './reviewer_comment_disposition.mjs';
 
 export { linkedIssueNumber, sourceIssueAccounting };
@@ -64,15 +69,6 @@ export function resolvePrNumber({
 	}
 
 	return { pr: '', method: 'commit-pulls-api', skip_reason: 'no merged PR associated with commit' };
-}
-
-const FOLLOWUP_CLOSEOUT_PATTERN = /\b(remediation|follow[- ]up|clarification|post[- ]merge evidence|closeout reconciliation)\b/i;
-const PRIOR_CLOSEOUT_REF_PATTERN = /\b(?:prior|previous|triggering|related|after|from)?\s*(?:PR|pull request|issue)\s+#\d+\b/i;
-
-export function isPermittedClosedSourceIssueFollowup({ body = '', sourceIssue = null } = {}) {
-	if (String(sourceIssue?.state || '').toLowerCase() !== 'closed') return false;
-	if (String(sourceIssue?.state_reason || '').toLowerCase() !== 'completed') return false;
-	return FOLLOWUP_CLOSEOUT_PATTERN.test(body) && PRIOR_CLOSEOUT_REF_PATTERN.test(body);
 }
 
 export function sourceIssueStateFailures({ body = '', sourceIssue = null, sourceIssueError = '', repoLabels = [] } = {}) {

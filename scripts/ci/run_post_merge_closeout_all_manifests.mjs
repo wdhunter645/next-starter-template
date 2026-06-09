@@ -11,6 +11,7 @@ import {
 } from './run_batch_post_merge_closeout.mjs';
 
 export const DEFAULT_MANIFESTS = [
+	'scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json',
 	'scripts/ci/post-merge-closeout/targets-ci-pending.json',
 	'scripts/ci/post-merge-closeout/targets-remediation-backlog.json',
 ];

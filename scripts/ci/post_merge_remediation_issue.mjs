@@ -5,20 +5,30 @@ import { pathToFileURL } from 'node:url';
 import { githubRepoRequest } from './github_issue_api.mjs';
 import { REMEDIATION_TITLE_PREFIX } from './post_merge_source_issue_closeout.mjs';
 
-function failureConditions(result = {}) {
+export function blockingCloseoutFailures(result = {}) {
+	const blockingMetadata = (result.metadata_failures || []).filter((failure) => failure.severity !== 'advisory');
+	const blockingWorkflows = (result.workflow_failures || []).filter(
+		(failure) => failure.required || failure.classification !== 'optional-remediation-failure',
+	);
+
 	return [
-		...(result.metadata_failures || []),
+		...blockingMetadata,
 		...(result.implementation_failures || []),
 		...(result.diataxis_failures || []),
 		...(result.reviewer_findings || []).map((finding) => ({
 			code: 'late_reviewer_finding',
 			message: `${finding.reviewer || 'reviewer'}: ${finding.body || finding.url || 'finding recorded'}`,
 		})),
-		...(result.workflow_failures || []).map((failure) => ({
+		...(result.reviewer_disposition_failures || []),
+		...blockingWorkflows.map((failure) => ({
 			code: 'workflow_failure',
 			message: `${failure.workflow || 'workflow'} ${failure.conclusion || ''} ${failure.classification || ''}`.trim(),
 		})),
 	];
+}
+
+function failureConditions(result = {}) {
+	return blockingCloseoutFailures(result);
 }
 
 function exceptionKey(result = {}) {
@@ -134,7 +144,7 @@ function request(args) {
 
 export function shouldUpsertRemediationIssue(result = {}) {
 	if (result.status === 'skipped') return false;
-	return result.status === 'fail' || result.remediation_required === true;
+	return blockingCloseoutFailures(result).length > 0;
 }
 
 export async function upsertRemediationIssue({ token, repository, result }) {

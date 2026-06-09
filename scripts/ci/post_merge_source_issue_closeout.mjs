@@ -14,6 +14,17 @@ export const REMEDIATION_TITLE_PREFIX = 'Post-merge closeout exception for ';
 export const LEGACY_REMEDIATION_TITLE_PREFIX = 'Post-merge remediation required for ';
 export const TERMINAL_SOURCE_ISSUE_LABEL = 'status:complete';
 
+const FOLLOWUP_CLOSEOUT_PATTERN =
+	/\b(remediation|follow[- ]up|clarification|post[- ]merge evidence|closeout reconciliation|post[- ]merge closeout)\b/i;
+const PRIOR_CLOSEOUT_REF_PATTERN =
+	/\b(?:prior|previous|triggering|related|after|from)?\s*(?:PR|pull request|issue)\s+#\d+\b/i;
+
+export function isPermittedClosedSourceIssueFollowup({ body = '', sourceIssue = null } = {}) {
+	if (String(sourceIssue?.state || '').toLowerCase() !== 'closed') return false;
+	if (String(sourceIssue?.state_reason || '').toLowerCase() !== 'completed') return false;
+	return FOLLOWUP_CLOSEOUT_PATTERN.test(body) && PRIOR_CLOSEOUT_REF_PATTERN.test(body);
+}
+
 export function isRemediationIssue({ title = '', labels = [] } = {}) {
 	const labelNames = new Set(
 		(labels || []).map((label) => (typeof label === 'string' ? label : label?.name)).filter(Boolean),
@@ -118,13 +129,18 @@ export function shouldCloseSourceIssue({
 	issueMeta = null,
 	postMergeResult = null,
 	terminalLabelResult = null,
-}) {
+	prBody = '',
+} = {}) {
 	if (!issueNumber) return { close: false, reason: 'missing_source_issue' };
 	if (!isMerged) return { close: false, reason: 'pr_not_merged' };
 	if (action !== 'post_merge_success') return { close: false, reason: `action_${action}` };
 	const closedFollowupAllowed =
 		String(issueMeta?.state || '').toUpperCase() === 'CLOSED' &&
-		postMergeResult?.source_issue_closeout_mode === 'closed_remediation_followup';
+		(postMergeResult?.source_issue_closeout_mode === 'closed_remediation_followup' ||
+			isPermittedClosedSourceIssueFollowup({
+				body: prBody,
+				sourceIssue: { state: 'closed', state_reason: 'completed' },
+			}));
 	if (issueMeta?.state && String(issueMeta.state).toUpperCase() !== 'OPEN' && !closedFollowupAllowed) {
 		return { close: false, reason: 'source_issue_not_open' };
 	}

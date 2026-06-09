@@ -98,6 +98,21 @@ describe('batch post-merge closeout reporting', () => {
 		expect(buildFailureReason(entry)).toBe('implementation:verification_not_pass');
 	});
 
+	it('records workflow failure reasons with workflow names', () => {
+		expect(
+			buildFailureReason({
+				status: 'fail',
+				workflow_failures: [
+					{
+						workflow: 'Docs Guardrails',
+						classification: 'optional-remediation-failure',
+						required: false,
+					},
+				],
+			}),
+		).toBe('workflow:Docs Guardrails');
+	});
+
 	it('writes batch report on setup failure', () => {
 		const report = buildBatchCloseoutReport({
 			error: new Error('GITHUB_REPOSITORY is required.'),

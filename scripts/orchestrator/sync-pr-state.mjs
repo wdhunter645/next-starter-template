@@ -144,6 +144,7 @@ export function syncPrState({
       issueMeta: meta,
       postMergeResult,
       terminalLabelResult,
+      prBody: pr.body || '',
     });
 
     if (!closeDecision.close) {

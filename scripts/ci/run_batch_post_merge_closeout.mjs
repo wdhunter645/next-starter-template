@@ -38,7 +38,11 @@ export function buildFailureReason(detail = {}) {
 	const parts = [];
 	for (const [label, failures] of buckets) {
 		for (const failure of failures || []) {
-			parts.push(`${label}:${failure.code}`);
+			const code =
+				label === 'workflow'
+					? failure.workflow || failure.code || 'unknown'
+					: failure.code || failure.reviewer || 'unknown';
+			parts.push(`${label}:${code}`);
 		}
 	}
 	if (parts.length === 0 && detail.status === 'fail') {
@@ -166,7 +170,7 @@ export async function runBatchPostMergeCloseout({
 				bodyFile,
 				sha: target.merge_sha || '',
 				runId,
-				skipBodyApply: false,
+				skipBodyApply: target.skip_body_apply === true,
 				workflowRunScope: WORKFLOW_RUN_SCOPE_MERGE_ONLY,
 			});
 			const detail = readPostMergeResultDetail();
