@@ -30,9 +30,9 @@ Existing PMO documents remain available as subordinate references until individu
 | Portfolio | The prioritized execution portfolio represented by Programs 1-4. |
 | Programs 1-4 | Rotating planning/execution lanes used to implement approved groups of prioritized portfolio projects. |
 | Program 5 | Ideas and project drafts that are not yet portfolio-ready. |
-| Project | A bounded body of work inside a Program 1-4 execution portfolio lane. |
+| project | A bounded body of work inside a Program 1-4 execution portfolio lane. |
 | Task | A single executable unit under a project, normally one source issue and one PR. |
-| Issue | GitHub source contract for a bounded task or controlled project decision. |
+| issue | GitHub source contract for a bounded task or controlled project decision. |
 | PR | One scoped change set tied to exactly one source issue unless an approved exception says otherwise. |
 | Launch gate | Explicit Atlas/Bill decision that a planned program or task sequence is allowed to execute. |
 | Promotion | Movement of a Program 5 idea/draft into the Programs 1-4 prioritized execution portfolio. |
