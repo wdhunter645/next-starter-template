@@ -18,9 +18,9 @@ describe('post-merge closeout all manifests', () => {
 		expect(targets.every((target) => target.skip_body_apply === true)).toBe(true);
 	});
 
-	it('loads backlog CI task targets for merged PRs 1478, 1473, 1458, 1229, 1240, and 1242', () => {
+	it('loads backlog CI task targets for merged PRs 1502, 1478, 1473, 1458, 1229, 1240, and 1242', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending.json');
-		expect(targets.map((target) => target.pr)).toEqual([1478, 1473, 1458, 1229, 1240, 1242]);
+		expect(targets.map((target) => target.pr)).toEqual([1502, 1478, 1473, 1458, 1229, 1240, 1242]);
 	});
 
 	it('loads remediation backlog targets', () => {
