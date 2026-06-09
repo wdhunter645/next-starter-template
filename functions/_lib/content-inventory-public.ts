@@ -63,15 +63,16 @@ export function mapLibraryInventoryItem(row: InventoryRow) {
     id: Number(row.id),
     year: parseInventoryYear(row.event_year, row.event_date),
     author:
-      (typeof row.credit_line === 'string' && row.credit_line) ||
-      (typeof row.source_name === 'string' && row.source_name) ||
+      (typeof row.credit_line === 'string' && row.credit_line.trim()) ||
+      (typeof row.source_name === 'string' && row.source_name.trim()) ||
       null,
     title: typeof row.title === 'string' ? row.title : null,
     description:
-      (typeof row.summary === 'string' && row.summary) ||
+      (typeof row.summary === 'string' && row.summary.trim()) ||
       (typeof row.text === 'string' && row.text ? row.text.slice(0, 100) : null),
     url: null,
     content: typeof row.text === 'string' ? row.text : null,
+    created_at: typeof row.updated_at === 'string' ? row.updated_at : null,
   };
 }
 

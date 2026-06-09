@@ -31,7 +31,9 @@ export const onRequestGet = async (context: any): Promise<Response> => {
     const tag = String(url.searchParams.get('tag') || '').trim();
     const rotationGroup = String(url.searchParams.get('rotation_group') || '').trim();
     const eventYear = parseEventYear(url.searchParams.get('event_year'));
-    const excludeId = Number(url.searchParams.get('exclude_id') || '');
+    const excludeIdRaw = url.searchParams.get('exclude_id');
+    const excludeId =
+      excludeIdRaw && Number.isFinite(Number(excludeIdRaw)) ? Number(excludeIdRaw) : undefined;
     const limit = parseLimit(url.searchParams.get('limit'));
 
     const resolved = await resolveRelatedStories(auth.db, {
@@ -39,7 +41,7 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       tag: tag || undefined,
       rotationGroup: rotationGroup || undefined,
       eventYear,
-      excludeId: Number.isFinite(excludeId) ? excludeId : undefined,
+      excludeId,
       limit,
     });
 

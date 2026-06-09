@@ -125,7 +125,7 @@ export default function LibraryPage() {
               <article key={it.id} style={{ marginBottom: 14 }}>
                 <h3 style={{ margin: '0 0 6px 0' }}>{it.title || 'Untitled story'}</h3>
                 <div style={styles.meta}>
-                  {[it.author ? `Credit: ${it.author}` : null, it.year ? String(it.year) : null, it.created_at ? new Date(it.created_at).toLocaleString() : null]
+                  {[it.author ? `Credit: ${it.author}` : null, it.year ? String(it.year) : null, it.created_at ? it.created_at.slice(0, 10) : null]
                     .filter(Boolean)
                     .join(' • ') || 'Published inventory story'}
                 </div>
