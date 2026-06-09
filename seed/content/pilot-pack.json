@@ -1,0 +1,238 @@
+{
+  "version": "1",
+  "marker": "lgfc-pilot-pack",
+  "tag_prefix": "lgfc-pilot-",
+  "description": "Program #1255 Task 009 pilot content and verification pack for content_inventory workflow validation.",
+  "inventory": [
+    {
+      "example_category": "canonical",
+      "record": {
+        "id": 9001,
+        "tag": "lgfc-pilot-iron-horse-streak",
+        "title": "The Iron Horse Consecutive Games Streak",
+        "text": "Lou Gehrig appeared in 2,130 consecutive regular-season games for the New York Yankees, a record that stood for decades and defined his durability.",
+        "summary": "Canonical pilot story for Gehrig's consecutive-games streak.",
+        "story_type": "primary",
+        "canonical": 1,
+        "perspective_label": null,
+        "allowed_sections": "[\"library\",\"search\",\"related_content\"]",
+        "priority": 90,
+        "search_text": "iron horse consecutive games streak lou gehrig yankees durability",
+        "source_name": "National Baseball Hall of Fame",
+        "source_url": "https://baseballhall.org/discover/inside-pitch/gehrig-consecutive-games",
+        "credit_line": "National Baseball Hall of Fame — Lou Gehrig player file summary.",
+        "event_date": "1939-06-01",
+        "event_year": 1939,
+        "rotation_group": "milestones",
+        "feature_weight": 5,
+        "status": "published",
+        "media": "[]",
+        "created_at": "2026-06-01T12:00:00.000Z",
+        "updated_at": "2026-06-01T12:00:00.000Z",
+        "published_at": "2026-06-01T12:00:00.000Z"
+      }
+    },
+    {
+      "example_category": "alternate",
+      "record": {
+        "id": 9002,
+        "tag": "lgfc-pilot-iron-horse-streak",
+        "title": "Press Coverage of Gehrig's Streak",
+        "text": "Contemporary newspaper accounts emphasized Gehrig's reliability and contrasted his everyday presence with the injuries that sidelined other stars.",
+        "summary": "Alternate perspective on the same tag as the canonical streak story.",
+        "story_type": "secondary",
+        "canonical": 0,
+        "perspective_label": "Contemporary press account",
+        "allowed_sections": "[\"library\",\"search\",\"related_content\"]",
+        "priority": 70,
+        "search_text": "press coverage gehrig streak contemporary newspaper reliability",
+        "source_name": "Library of Congress Chronicling America",
+        "source_url": "https://chroniclingamerica.loc.gov/",
+        "credit_line": "Library of Congress — historical newspaper collection.",
+        "event_date": null,
+        "event_year": 1938,
+        "rotation_group": "milestones",
+        "feature_weight": 3,
+        "status": "published",
+        "media": "[]",
+        "created_at": "2026-06-01T12:05:00.000Z",
+        "updated_at": "2026-06-01T12:05:00.000Z",
+        "published_at": "2026-06-01T12:05:00.000Z"
+      }
+    },
+    {
+      "example_category": "media_associated",
+      "record": {
+        "id": 9003,
+        "tag": "lgfc-pilot-yankee-stadium-portrait",
+        "title": "Gehrig at Yankee Stadium",
+        "text": "A portrait-era photograph captures Lou Gehrig in Yankees uniform during the late 1920s home schedule.",
+        "summary": "Pilot story with an approved photo association for media search and rendering checks.",
+        "story_type": "primary",
+        "canonical": 1,
+        "perspective_label": null,
+        "allowed_sections": "[\"library\",\"search\",\"related_content\"]",
+        "priority": 80,
+        "search_text": "gehrig yankee stadium portrait photograph uniform 1928",
+        "source_name": "Wikimedia Commons",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Lou_Gehrig_1925.jpg",
+        "credit_line": "Wikimedia Commons — public-domain historical photograph.",
+        "event_date": "1928-08-27",
+        "event_year": 1928,
+        "rotation_group": "photos",
+        "feature_weight": 4,
+        "status": "published",
+        "media": "[{\"url\":\"https://commons.wikimedia.org/wiki/Special:FilePath/Lou%20Gehrig%201925.jpg\"}]",
+        "created_at": "2026-06-01T12:10:00.000Z",
+        "updated_at": "2026-06-01T12:10:00.000Z",
+        "published_at": "2026-06-01T12:10:00.000Z"
+      }
+    },
+    {
+      "example_category": "event_year",
+      "record": {
+        "id": 9004,
+        "tag": "lgfc-pilot-farewell-1939",
+        "title": "Farewell Address at Yankee Stadium",
+        "text": "On July 4, 1939, Lou Gehrig delivered his farewell address at Yankee Stadium, thanking teammates, family, and fans while facing ALS.",
+        "summary": "Event-year pilot story for anniversary and year-browse verification.",
+        "story_type": "primary",
+        "canonical": 1,
+        "perspective_label": null,
+        "allowed_sections": "[\"library\",\"search\",\"related_content\",\"homepage_milestones\"]",
+        "priority": 95,
+        "search_text": "farewell address yankee stadium july 4 1939 als luckiest man",
+        "source_name": "Major League Baseball",
+        "source_url": "https://www.mlb.com/news/lou-gehrig-farewell-speech",
+        "credit_line": "Major League Baseball — historical event summary.",
+        "event_date": "1939-07-04",
+        "event_year": 1939,
+        "rotation_group": "farewell",
+        "feature_weight": 6,
+        "status": "published",
+        "media": "[]",
+        "created_at": "2026-06-01T12:15:00.000Z",
+        "updated_at": "2026-06-01T12:15:00.000Z",
+        "published_at": "2026-06-01T12:15:00.000Z"
+      }
+    },
+    {
+      "example_category": "workflow_verification",
+      "record": {
+        "id": 9005,
+        "tag": "lgfc-pilot-first-story-draft",
+        "title": "Draft First-Story Walkthrough",
+        "text": "This draft inventory row documents the editor first-story path before publication review.",
+        "summary": "Workflow verification draft that must remain excluded from public surfaces.",
+        "story_type": "brief",
+        "canonical": 1,
+        "perspective_label": null,
+        "allowed_sections": "[\"library\",\"search\"]",
+        "priority": 10,
+        "search_text": "draft first story walkthrough editor onboarding",
+        "source_name": "LGFC Editorial Desk",
+        "source_url": "https://www.lougehrigfanclub.com/fanclub/library",
+        "credit_line": "LGFC Editorial Desk — internal workflow verification draft.",
+        "event_date": null,
+        "event_year": null,
+        "rotation_group": "onboarding",
+        "feature_weight": 1,
+        "status": "draft",
+        "media": "[]",
+        "review_notes": "Pilot workflow verification row for editor-first-story onboarding.",
+        "submitted_by": "editor@example.com",
+        "created_at": "2026-06-01T12:20:00.000Z",
+        "updated_at": "2026-06-01T12:20:00.000Z",
+        "published_at": null
+      }
+    }
+  ],
+  "queue": [
+    {
+      "example_category": "workflow_verification",
+      "record": {
+        "submission_id": 9101,
+        "submitted_by": "member@example.com",
+        "payload": "{\"submitted_by\":\"member@example.com\",\"title\":\"Member Memory of Gehrig Day\",\"description\":\"A member-submitted memory tied to a sourced newspaper clipping.\",\"source_name\":\"LGFC Member Submission\",\"source_url\":\"https://www.lougehrigfanclub.com/fanclub/library\",\"proposed_tag\":\"lgfc-pilot-member-memory\"}",
+        "title": "Member Memory of Gehrig Day",
+        "description": "A member-submitted memory tied to a sourced newspaper clipping.",
+        "source_name": "LGFC Member Submission",
+        "source_url": "https://www.lougehrigfanclub.com/fanclub/library",
+        "credit_line": "Submitted by member@example.com — pending editorial review.",
+        "proposed_tag": "lgfc-pilot-member-memory",
+        "media_url": null,
+        "media_reference": null,
+        "status": "pending",
+        "triage_flags": "[\"missing_media\"]",
+        "duplicate_candidate": "lgfc-pilot-farewell-1939",
+        "review_notes": "Workflow verification queue item for first-story review path.",
+        "created_at": "2026-06-01T12:25:00.000Z",
+        "updated_at": "2026-06-01T12:25:00.000Z"
+      }
+    },
+    {
+      "example_category": "rejected_queue",
+      "record": {
+        "submission_id": 9102,
+        "submitted_by": "member@example.com",
+        "payload": "{\"submitted_by\":\"member@example.com\",\"title\":\"Unsourced Rumor About Contract Terms\",\"description\":\"A submission without durable source support.\",\"proposed_tag\":\"lgfc-pilot-rejected-rumor\"}",
+        "title": "Unsourced Rumor About Contract Terms",
+        "description": "A submission without durable source support.",
+        "source_name": null,
+        "source_url": null,
+        "credit_line": null,
+        "proposed_tag": "lgfc-pilot-rejected-rumor",
+        "media_url": null,
+        "media_reference": null,
+        "status": "rejected",
+        "triage_flags": "[\"missing_source\",\"unsupported_claim\"]",
+        "duplicate_candidate": null,
+        "review_notes": "Rejected during pilot verification — missing source_name and credit_line.",
+        "decision_by": "editor@example.com",
+        "decision_at": "2026-06-01T12:30:00.000Z",
+        "rejected_at": "2026-06-01T12:30:00.000Z",
+        "purge_eligible_at": "2026-09-01T12:30:00.000Z",
+        "purge_flag": 1,
+        "reviewer": "editor@example.com",
+        "reviewed_at": "2026-06-01T12:30:00.000Z",
+        "created_at": "2026-06-01T12:28:00.000Z",
+        "updated_at": "2026-06-01T12:30:00.000Z"
+      }
+    }
+  ],
+  "photos": [
+    {
+      "example_category": "media_associated",
+      "record": {
+        "id": 9201,
+        "photo_id": "lgfc-pilot-gehrig-1925",
+        "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Lou%20Gehrig%201925.jpg",
+        "title": "Lou Gehrig, 1925",
+        "description": "Lou Gehrig in Yankees uniform, pilot verification photo.",
+        "year": 1925,
+        "source": "Wikimedia Commons",
+        "is_memorabilia": 0,
+        "created_at": "2026-06-01T12:00:00.000Z"
+      }
+    }
+  ],
+  "media_associations": [
+    {
+      "example_category": "media_associated",
+      "record": {
+        "id": 9301,
+        "story_id": 9003,
+        "media_id": 9201,
+        "media_role": "primary_image",
+        "display_order": 0,
+        "caption": "Lou Gehrig in Yankees uniform.",
+        "alt_text": "Lou Gehrig wearing a Yankees uniform in a 1920s portrait photograph.",
+        "source_name": "Wikimedia Commons",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Lou_Gehrig_1925.jpg",
+        "credit_line": "Wikimedia Commons — public-domain historical photograph.",
+        "created_at": "2026-06-01T12:10:00.000Z",
+        "updated_at": "2026-06-01T12:10:00.000Z"
+      }
+    }
+  ]
+}

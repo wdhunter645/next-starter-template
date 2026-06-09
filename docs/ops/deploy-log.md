@@ -10,6 +10,33 @@ Last Reviewed: 2026-02-20
 
 # Deployment and Operations Log
 
+## 2026-06-09: Content inventory pilot seed and verification pack (Task 009 / #1407)
+
+**Context**: Program #1255 Task 009 adds deterministic pilot seed fixtures and verification helpers for `content_inventory`, `submission_queue`, `photos`, and `content_inventory_media` without changing workflow YAML or schema migrations.
+
+**Action**: Land pilot fixtures under `seed/content/pilot-pack.json` and helper functions in `functions/_lib/content-inventory-seed.ts` for seed apply, cleanup, and public inclusion/exclusion verification.
+
+**Pilot coverage**:
+- Canonical and alternate-perspective inventory examples on one shared tag
+- Media-associated story with `photos` and `content_inventory_media` linkage
+- Event-year story (`1939`) for search and related-content checks
+- Draft inventory workflow verification row excluded from public surfaces
+- Pending and rejected `submission_queue` workflow verification examples
+
+**Rollback / cleanup**:
+- Use `buildPilotCleanupStatements()` from `functions/_lib/content-inventory-seed.ts`
+- Deletes only fixed pilot ids (`9001`–`9005`, `9101`–`9102`, `9201`, `9301`) and rows tagged with prefix `lgfc-pilot-`
+- Safe to rerun; does not remove non-pilot production inventory or queue rows
+- Rejected pilot queue row `9102` should be purged only through the approved editorial queue workflow after verification
+
+**Evidence**:
+- `npm run test -- tests/content-inventory-seed.test.ts` — PASS
+- `npm run test -- tests/content-inventory-public.test.ts tests/content-inventory-search.test.ts` — PASS (regression)
+
+**Impact**: Seed/verification pack only. No runtime route or admin UI changes in this task.
+
+---
+
 ## 2026-06-09: Remove Social Wall subtitle from homepage (PR #1480)
 
 **Context**: Post-merge closeout for PR #1480 (source issue #1479). Removed the "Live fan posts from Facebook." subtitle under the Social Wall section title on the homepage.
