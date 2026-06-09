@@ -71,6 +71,7 @@ The table below is the canonical inventory of all GitHub Actions workflows in `.
 | `gate-drift.yml` | GATE — Drift Control | Effective | Blocks structural/design/process drift (including ZIP and intent governance checks). |
 | `gate-ensure-issue.yml` | gate-ensure-issue | Effective | Requires valid linked issue context on PRs before progression through review gates. |
 | `gate-intent-labeler.yml` | GATE — Intent Labeler | Effective | Validates/applies PR intent labeling against file-touch governance allowlists. |
+| `gate-branch-freshness.yml` | GATE — Branch Freshness | Effective | Fails when a PR branch or feature-branch push is behind `main`; does not auto-merge. |
 | `gate-quality.yml` | GATE — Quality Checks | Effective | Runs blocking lint/test/build, consolidated ZIP safety checks, and related quality gates. |
 | `gitleaks.yml` | GATE — Secret Scan | Effective | Scans commits and repository content for hardcoded secrets. |
 | `lgfc-d1-migrate.yml` | LGFC D1 Migrate (remote) | Effective | Executes remote D1 migration operations for LGFC environments. |
