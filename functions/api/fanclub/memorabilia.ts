@@ -1,5 +1,6 @@
 import { requireMember } from '../../_lib/session';
 import { normalizePhotoUrl } from '../../_lib/photo-url';
+import { resolveRelatedStories, toLegacyRelatedLibraryEntries } from '../../_lib/content-inventory-public';
 
 const PAGE_SIZE = 24;
 
@@ -60,7 +61,7 @@ export const onRequestGet = async (context: any): Promise<Response> => {
          FROM photos
          ${whereSql}
          ORDER BY id DESC
-         LIMIT ? OFFSET ?`
+         LIMIT ? OFFSET ?`,
       )
       .bind(...args, PAGE_SIZE, offset)
       .all();
@@ -74,32 +75,24 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       tags: row.tags || null,
     }));
 
-    // Schema-safe linkage: library_entries has no explicit photo foreign key yet.
-    const relatedLibraryRows = await auth.db
-      .prepare(
-        q
-          ? `SELECT id, title, content
-             FROM library_entries
-             WHERE lower(COALESCE(title,'')) LIKE ? OR lower(COALESCE(content,'')) LIKE ?
-             ORDER BY created_at DESC, id DESC
-             LIMIT 5`
-          : `SELECT id, title, content
-             FROM library_entries
-             ORDER BY created_at DESC, id DESC
-             LIMIT 5`
-      )
-      .bind(...(q ? [`%${q}%`, `%${q}%`] : []))
-      .all();
-
-    const related_library_entries = (relatedLibraryRows.results || []).map((row: any) => ({
-      id: row.id,
-      title: row.title || null,
-      excerpt: row.content ? String(row.content).slice(0, 160) : null,
-    }));
+    const related = await resolveRelatedStories(auth.db, { q, limit: 5 });
+    const related_library_entries = toLegacyRelatedLibraryEntries(related.items);
 
     return new Response(
-      JSON.stringify({ ok: true, items, related_library_entries, page, page_size: PAGE_SIZE, total }, null, 2),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
+      JSON.stringify(
+        {
+          ok: true,
+          items,
+          related_library_entries,
+          related_source: related.source,
+          page,
+          page_size: PAGE_SIZE,
+          total,
+        },
+        null,
+        2,
+      ),
+      { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   } catch (err: any) {
     return new Response(JSON.stringify({ ok: false, error: String(err?.message || err) }, null, 2), {
