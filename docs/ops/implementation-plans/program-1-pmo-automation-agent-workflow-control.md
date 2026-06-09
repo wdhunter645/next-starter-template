@@ -4,42 +4,53 @@ Audience: Human + AI
 Authority Level: Operational Authority
 Owns: Program 1 PMO Automation and Agent Workflow Control orchestration plan, task boundaries, child issue readiness, validation, and Atlas/Bill walkthrough gate
 Does Not Own: Program 2 website implementation, workflow YAML changes, runtime application behavior, D1 migrations, production configuration, GitHub issue mutation, or merge authority
-Status: production-ready
+Status: production-ready-pending-v2-issue-alignment
 Project: program-1-pmo-automation-agent-workflow-control
 Owner: Atlas
 Execution Mode: orchestrated
 Source Issue: 1411
 Related Program Issue: 1411
-Canonical Reference: /docs/ops/implementation-plans/README.md
-Related Issues: #1411, #1409, #1379, #1255, #1335
-Last Reviewed: 2026-06-07
+Canonical Reference: /docs/ops/pmo/PMO-V2-OPERATING-MODEL.md
+Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1335
+Last Reviewed: 2026-06-09
 ---
 
 # Program 1 — PMO Automation and Agent Workflow Control
 
+## Launch-state control statement
+
+This program is BLOCKED from execution until Atlas/Bill explicitly launch it. Planning, review, and documentation discussion may continue, but Cursor may not execute implementation work from this program until Bill/Atlas explicitly launch it.
+
 ## Purpose
 
-Define the next Program 1 body of work in the perpetual LGFC PMO cycle.
+Define the next Program 1 body of work under the PMO v2 model.
 
-This plan converts the promoted Workflow Automation concept and PMO
-perpetual-cycle correction into orchestrator-ready documentation and governance
-tasks. It prepares the repository for later child issue creation after
-Atlas/Bill walkthrough without changing runtime code, workflow YAML, D1 state,
-production configuration, or GitHub issue state in this PR.
+This Program 1 cycle converts promoted PMO Automation and Agent Workflow Control work into repository-owned documentation, governance, task boundaries, and launch readiness. It is primarily documentation/governance work, with validation and limited testing where existing scripts or policy checks are touched.
+
+## PMO v2 alignment
+
+PMO v2 changes the governing model:
+
+- Portfolio = Programs 1-4.
+- Programs 1-4 are rotating portfolio planning/execution lanes.
+- Program 5 = ideas and project drafts that are not yet portfolio-ready.
+- Program 5 items require documentation, readiness review, prioritization, and promotion before entering Programs 1-4.
+
+Legacy references that treated Program 3 as intake or Program 5 as the portfolio are superseded by `/docs/ops/pmo/PMO-V2-OPERATING-MODEL.md`.
 
 ## Scope
 
 This plan owns:
 
-- PMO perpetual cycle authority;
-- Workflow Automation design migration from Program 3 / Drive context into
-  GitHub documentation authority;
+- PMO v2 authority alignment;
+- Workflow Automation design migration from Program 5 idea/draft material into GitHub documentation authority;
 - Cursor continuation and queue contract;
 - PR readiness and batch-review control;
 - merge and issue mutation policy;
 - queue/wave model and label planning;
 - post-merge closeout evidence stabilization;
-- Program 3 promotion process.
+- Program 5 promotion process;
+- Program 1 launch gate readiness.
 
 This plan does not own:
 
@@ -49,665 +60,297 @@ This plan does not own:
 - application/runtime changes;
 - D1 migrations;
 - production configuration or secrets;
-- issue closure, relabeling, queue mutation, or child issue creation from this
-  PR;
+- issue closure, relabeling, queue mutation, or child issue creation unless separately authorized;
 - merge authority or PR readiness mutation by Cursor.
 
 ## Current Known Truth
 
-- issue `#1411` is the active Program 1 source issue for this cycle.
-- issue `#1409` corrected the PMO model: Program 1 and Program 2 are
-  alternating execution lanes, not permanent subject domains.
-- issue `#1379` is the Program 3 Ideas & Future Projects Portfolio and captured
-  Workflow Automation as a promoted candidate.
-- issue `#1255` is the active Program 2 Website Implementation and Content
-  Operations execution lane and must not be blocked or modified by this planning
-  PR.
-- issue `#1335` is the completed prior Program 1 Phase 1 Wrap-Up cycle. It is
-  historical evidence only and is not the parent of this Program 1 cycle.
-- The Google Drive draft for LGFC Workflow Automation is represented here only
-  through the accessible design summary preserved in `#1379` and `#1411`.
+- issue `#1411` is the Program 1 source issue for this cycle and is already closed complete from the first planning pass.
+- task issues `#1417` through `#1424` exist but contain stale Program 3 intake language and must be reviewed/aligned before Program 1 launch.
+- issue `#1379` currently functions as legacy Program 5 idea/project-draft intake until a dedicated Program 5 authority issue is created.
+- issue `#1255` is the active Program 2 Website Implementation and Content Operations execution lane.
+- issue `#1335` is the completed prior Program 1 Phase 1 Wrap-Up cycle and is historical evidence only.
 
 ## Intended Final State
 
-- Program 1 and Program 2 lane alternation is durable across PMO docs.
-- Program 3 promotion into Program 1/2 work is explicit and auditable.
-- Workflow Automation design authority lives in GitHub documentation before
-  implementation.
-- Cursor can safely continue through validation and PR body updates, then stop at
-  `READY FOR REVIEW` for Atlas/Bill walkthrough.
-- PR readiness, batch review, merge authority, and issue mutation remain under
-  Atlas/Bill control.
-- Wave labels and run identifiers are defined as planning/control concepts before
-  workflow implementation.
-- Closeout evidence requirements are stable enough to support later automation
-  without premature issue mutation, including terminal completed-issue label
-  reconciliation.
-
-## Operating Rule
-
-This plan is production-ready for later issue creation only after Atlas/Bill
-walkthrough. The PR that introduces this plan must remain docs-only and must not
-create implementation child issues, mutate Program 2 issues, or alter workflow
-code.
-
-When child issues are later created, each task must preserve one source issue,
-one bounded allowlist, exact validation, and a stop point that protects human
-review and merge authority.
-
-## Atlas / Cursor Planning Boundary
-
-Atlas owns the Program 1 planning documentation for:
-
-- who owns each project area;
-- what the project area covers;
-- where the authoritative documentation must live;
-- suggested sequencing and readiness gates.
-
-Cursor owns later execution planning for:
-
-- how the approved work is implemented;
-- exact technical approach;
-- implementation order within an authorized source issue;
-- validation details beyond the documented minimum;
-- safe stop/continue decisions inside the bounded task scope.
-
-Atlas documentation may suggest sequence and timing, but Cursor must convert that
-into implementation mechanics only after Bill/Atlas approves the relevant source
-issue and allowlist.
-
-## Prior Program 1 Retrospective
-
-The previous Program 1 cycle, `#1335`, is historical evidence for PMO
-improvement. It is not the parent of this cycle, but its outcomes must improve
-how the next cycle is planned, reviewed, and closed.
-
-### What worked
-
-- Program-level grouping worked. A single Program 1 umbrella gave Atlas and Bill
-  enough structure to collect PMO, as-built, health, launch-gate, and automation
-  cleanup work without losing the larger objective.
-- Documentation-first sequencing worked. Stabilizing authority documents before
-  runtime implementation reduced drift and made later Program 2 work easier to
-  scope.
-- PR-as-ticket discipline worked when each task preserved a source issue, narrow
-  allowlist, validation evidence, and a clear stop point.
-- Human merge authority worked. Bill remained the final merge authority, which
-  protected the repo from automated or premature acceptance of governance changes.
-- External review and gate evidence worked when it was captured in the PR body and
-  reviewed before merge.
-- The historical record worked. Completed Program 1 material can now serve as
-  evidence for what was decided without becoming a permanent active parent.
-
-### What did not work
-
-- Program identity was too static. The earlier process allowed Program 1 to look
-  like a permanent subject domain instead of a reusable execution lane.
-- Launch and closeout boundaries were not explicit enough. Completed tasks did
-  not always produce a clean terminal state across PR, source issue, labels,
-  trackers, and next-task recommendation.
-- Issue-state mutation authority was underdefined. Cursor, Atlas, controller
-  automation, and Bill were not cleanly separated for comment, PR, merge, close,
-  relabel, and queue-advance actions.
-- Program-to-program lane control was weak. A planning issue could accidentally
-  become an execution lane while Program 2 was active.
-- Retrospective learning was implicit. The prior cycle captured outputs, but did
-  not force a formal lessons-learned update before launching the next Program 1
-  cycle.
-- Label policy was incomplete. Closed/completed work could still retain active or
-  failure-state labels, which made the repo state look inconsistent.
-- Queue continuation was under-specified. Cursor could prepare good work quickly,
-  but the process needed sharper rules for when it continues, stops, or reports a
-  blocker.
-
-### PMO process changes required for this cycle
-
-- Every Program 1 cycle must include a retrospective section that states what
-  worked, what failed, and what process rules changed as a result.
-- Program 1 and Program 2 must be documented as alternating execution lanes. Their
-  names do not create permanent parentage or subject ownership.
-- Program 3 promotion must be explicit before a planning concept becomes active
-  Program 1 or Program 2 work.
-- Planning discussion may continue while another program executes, but only one
-  active Cursor execution lane may exist unless Bill/Atlas authorizes a bounded
-  wave model.
-- Cursor may implement and prepare PRs, but merge authority, final closeout,
-  terminal labels, and queue advancement remain Atlas/Bill or approved-controller
-  actions.
-- Post-merge closeout must reconcile PR state, source issue state, remediation
-  issues, labels, validation evidence, and next-task recommendation before the
-  queue advances.
-- Each completed program cycle must create or update its successor-process lessons
-  before being treated as fully closed.
-
-## Successor Program Cycle Reuse Rule
-
-This Program 1 buildout is also the template for redefining the next Program 2
-cycle after the current Program 2 execution lane completes or reaches a planned
-transition gate.
-
-The successor Program 2 cycle must not be launched by copying old Program 2 state
-forward. It must be redefined through the same PMO pattern used here:
-
-1. Review the prior active cycle's outcomes, failures, closeout evidence, and
-   unresolved blockers.
-2. Write a retrospective that captures what worked, what did not work, and which
-   PMO rules changed.
-3. Define the next cycle's who, what, where, and suggested when before Cursor
-   receives implementation work.
-4. Identify which source documents are authoritative and which are historical.
-5. Define non-interference boundaries with any active alternate lane.
-6. Decide whether the next Program 2 cycle is a continuation, reset, or new body
-   of work.
-7. Create child issues only after Atlas/Bill walkthrough and explicit launch
-   approval.
-
-Atlas owns the successor-cycle definition. Cursor owns implementation mechanics
-after the successor Program 2 source issue and bounded child issues exist.
-
-Minimum documentation required before the next Program 2 cycle launches:
-
-- current-cycle retrospective;
-- successor Program 2 purpose and scope;
-- project-area who/what/where/suggested-when matrix;
-- authoritative source list;
-- Program 1 non-interference statement;
-- closeout and label policy inherited from this Program 1 cycle;
-- child-issue readiness checklist.
-
----
-
-## Program 1 Project Documentation Set
-
-This section defines the production documentation target for each Program 1
-project area. Each project area must be understandable before implementation
-issue creation. The descriptions below are not implementation instructions;
-they define ownership, scope, authority location, and suggested sequencing.
-
-### Project 001 — PMO Perpetual Cycle Authority
-
-Who:
-- Owner: Atlas.
-- Decision authority: Bill.
-- Implementer after approval: Cursor only if a later docs issue authorizes edits.
-
-What:
-- Defines Program 1 and Program 2 as alternating execution lanes.
-- Defines Program 3 as portfolio intake, prioritization, and promotion staging.
-- Removes any implication that Program 1 or Program 2 are permanent subject
-  domains.
-- States that completed Program 1 cycles are historical evidence only, not parent
-  issues for later Program 1 cycles.
-
-Where:
-- `docs/ops/pmo/program-registry.md`
-- `docs/reference/pmo/lgfc-program-portfolio-model.md`
-- `docs/ops/pmo/critical-path.md`
-
-Suggested when:
-- First Program 1 project area to finalize.
-- Must be complete before any automation, queue, label, or promotion work is
-  implemented.
-
-Implementation-readiness criteria:
-- PMO lane definitions are explicit.
-- Historical vs active cycle linkage is unambiguous.
-- Active Program 2 non-interference is documented.
-
-### Project 002 — Workflow Automation Design Migration
-
-Who:
-- Owner: Atlas.
-- Source authority approver: Bill.
-- Implementer after approval: Cursor for docs migration only unless later code
-  issues are created.
-
-What:
-- Converts the Google Drive Workflow Automation concept into GitHub authority.
-- Preserves the purpose: controlled continuous implementation where Cursor can
-  work a sequenced queue while GitHub CI, repo policy, Atlas, and Bill preserve
-  readiness, merge, stop, and review control.
-- Explicitly states Drive and chat are planning surfaces, not implementation
-  authority until captured in repo docs.
-
-Where:
-- `docs/ops/pmo/workflow-automation.md`
-- `docs/ops/implementation-plans/program-1-pmo-automation-agent-workflow-control.md`
-- `docs/ops/pmo/program-registry.md`
-
-Suggested when:
-- Second Program 1 project area.
-- Should follow PMO cycle authority so the migrated design lands in the correct
-  Program 1/2/3 model.
-
-Implementation-readiness criteria:
-- GitHub authority exists for the design.
-- Protected domains and non-interference rules are explicit.
-- No runtime or workflow YAML work is implied by documentation migration.
-
-### Project 003 — Cursor Continuation and Queue Contract
-
-Who:
-- Owner: Atlas.
-- Operational reviewer: Bill.
-- Implementer after approval: Cursor for PR/issue behavior inside authorized
-  source issues; later controller automation only by separate issue.
-
-What:
-- Defines when Cursor may continue, when it must stop, and what evidence it must
-  leave.
-- Distinguishes PR implementation work from GitHub issue mutation.
-- Prevents Cursor from stealing the active lane when another program is only in
-  planning review.
-- Requires one active source issue and one bounded PR per task unless a later
-  wave model explicitly authorizes a bounded exception.
-
-Where:
-- `docs/reference/pmo/lgfc-cursor-execution-contract.md`
-- `docs/ops/pmo/parallel-agent-rules.md`
-- `docs/ops/pmo/critical-path.md`
-
-Suggested when:
-- Third Program 1 project area.
-- Should be completed before batch review or wave planning is allowed.
-
-Implementation-readiness criteria:
-- Continue/stop conditions are testable.
-- Cursor prohibitions are explicit.
-- Atlas/Bill review handoff is preserved.
-
-### Project 004 — PR Readiness and Batch Review Control
-
-Who:
-- Owner: Atlas.
-- Merge authority: Bill.
-- Reviewer/verification authority: Atlas and Bill.
-- Implementer after approval: Cursor may prepare PRs but not merge or declare
-  final closeout.
-
-What:
-- Defines `READY FOR REVIEW` as a handoff state, not merge authority.
-- Defines how multiple PRs may queue for review without unsafe dependency stacks.
-- Requires PR body evidence: source issue, allowlist, validation, bot/reviewer
-  disposition, status checks, and unresolved blockers.
-- Separates independent batch review from dependent stacked work.
-
-Where:
-- `docs/ops/pmo/parallel-agent-rules.md`
-- `docs/reference/pmo/lgfc-cursor-execution-contract.md`
-
-Suggested when:
-- Fourth Program 1 project area.
-- Should follow the Cursor continuation contract and precede any queue/wave label
-  design.
-
-Implementation-readiness criteria:
-- Independent vs dependent PR handling is clear.
-- Human merge authority is preserved.
-- Review evidence requirements are explicit.
-
-### Project 005 — Merge and Issue Mutation Policy
-
-Who:
-- Owner: Atlas.
-- Final authority: Bill for protected merges and destructive operations.
-- Implementation actor: Atlas or a later approved controller for issue-state
-  mutation; Cursor only when explicitly authorized.
-
-What:
-- Defines who may merge, close issues, relabel, advance queues, create child
-  issues, and mutate issue state.
-- Establishes that Cursor may comment, implement, and prepare PRs, but may not
-  mutate issue state unless a source issue explicitly authorizes it.
-- Separates evidence generation from final repository-state mutation.
-
-Where:
-- `docs/reference/pmo/lgfc-cursor-execution-contract.md`
-- `docs/ops/pmo/github-issue-closeout-protocol.md`
-- `docs/ops/pmo/parallel-agent-rules.md`
-
-Suggested when:
-- Fifth Program 1 project area.
-- Must precede terminal label automation or any controller issue-state changes.
-
-Implementation-readiness criteria:
-- Authority matrix is explicit.
-- Issue mutation is separately authorized from PR implementation.
-- Program 2 issue-state control remains protected.
-
-### Project 006 — Queue / Wave Model and Label Planning
-
-Who:
-- Owner: Atlas.
-- Approval authority: Bill.
-- Implementer after approval: Cursor or controller only through a later issue that
-  authorizes label taxonomy and workflow/controller changes.
-
-What:
-- Defines queue states, wave/run identifiers, active-task selection, and
-  stop/continue ownership as planning concepts.
-- Prevents premature label creation or application.
-- Requires future implementation issues to define label purpose, allowed values,
-  state transitions, rollback, and non-interference before any label mutation.
-
-Where:
-- `docs/ops/pmo/workflow-automation.md`
-- `docs/ops/pmo/critical-path.md`
-- `docs/reference/pmo/lgfc-cursor-execution-contract.md`
-
-Suggested when:
-- Sixth Program 1 project area.
-- Should only proceed after merge/issue mutation policy is accepted.
-
-Implementation-readiness criteria:
-- Label taxonomy is proposed but not applied.
-- State transitions are documented.
-- Future controller/workflow implementation boundaries are explicit.
-
-### Project 007 — Post-Merge Closeout Evidence Stabilization
-
-Who:
-- Owner: Atlas.
-- Closeout authority: Atlas or a later approved controller.
-- Human escalation authority: Bill.
-- Cursor role: provide PR evidence and stop; do not assume issue-close authority.
-
-What:
-- Fixes the `#1399` / `#1410` class of failure.
-- Defines required post-merge evidence: merged PR, merge commit, source issue,
-  validation results, issue-state action, queue decision, label reconciliation,
-  and unresolved blocker state.
-- Requires terminal issue-state and label cleanup before queue advancement.
-- Defines remediation issue handling when post-merge validation fails.
-
-Where:
-- `docs/ops/pmo/github-issue-closeout-protocol.md`
-- `docs/reference/pmo/lgfc-cursor-execution-contract.md`
-- `docs/ops/pmo/workflow-automation.md`
-
-Suggested when:
-- Seventh Program 1 project area.
-- Should be completed before queue automation, wave automation, or any automatic
-  next-task activation.
-
-Implementation-readiness criteria:
-- Terminal label policy is explicit.
-- Closeout evidence and closeout mutation are separated.
-- Queue advancement stops if terminal-state reconciliation fails.
-
-### Project 008 — Program 3 Promotion and Program 1 Launch Gate
-
-Who:
-- Owner: Atlas.
-- Promotion authority: Bill.
-- Implementer after approval: Cursor only for bounded docs/issue work created
-  after promotion is approved.
-
-What:
-- Defines how ideas move from Program 3 into future Program 1 or Program 2 cycles.
-- Requires owner approval, repo authority, scope definition, non-interference
-  review, implementation-plan readiness, and bounded issue creation before Cursor
-  work starts.
-- Defines when Program 1 is launch-ready and when child issues may be created.
-
-Where:
-- `docs/reference/pmo/lgfc-program-portfolio-model.md`
-- `docs/ops/pmo/program-registry.md`
-- `docs/ops/pmo/workflow-automation.md`
-- `docs/ops/implementation-plans/program-1-pmo-automation-agent-workflow-control.md`
-
-Suggested when:
-- Final Program 1 project area before launch decision.
-- Should be reviewed after the other seven areas so promotion and launch gates
-  reflect the finalized authority model.
-
-Implementation-readiness criteria:
-- Promotion criteria are auditable.
-- Launch gate is explicit.
-- Child issue creation remains blocked until Atlas/Bill walkthrough approval.
-
----
-
-## Task 001 — PMO Perpetual Cycle Authority
+- Program 1 conforms to PMO v2.
+- Programs 1-4 are consistently treated as the execution portfolio.
+- Program 5 is consistently treated as ideas and project drafts.
+- Workflow Automation design authority lives in GitHub documentation before implementation.
+- Cursor can safely continue through validation and PR body updates, then stop at `READY FOR REVIEW` for Atlas/Bill walkthrough.
+- PR readiness, batch review, merge authority, and issue mutation remain under Atlas/Bill control.
+- Closeout evidence requirements are stable enough to support later automation without premature issue mutation.
+
+## Program 1 staged status review
+
+| Item | Status | Required action |
+| --- | --- | --- |
+| Source issue `#1411` | Closed complete from prior planning pass | Treat as historical planning source unless reopened or superseded by new PMO v2 source issue |
+| Task issues `#1417`-`#1424` | Created, blocked, stale terminology present | Update or supersede issue bodies before launch |
+| Implementation plan | This document | Aligned to PMO v2 by this revision |
+| PMO top-level authority | `/docs/ops/pmo/PMO-V2-OPERATING-MODEL.md` | New controlling authority |
+| Program 1 launch status | Not launched | Launch only after Atlas/Bill confirm aligned task set |
+
+## Program 1 project areas under PMO v2
+
+| Task | Project area | PMO v2 correction |
+| --- | --- | --- |
+| Task 001 | PMO v2 authority | Replace Program 3 intake model with Programs 1-4 portfolio / Program 5 ideas-drafts model |
+| Task 002 | Workflow Automation Design Migration | Treat Workflow Automation as promoted from Program 5 idea/draft material |
+| Task 003 | Cursor Continuation and Queue Contract | Preserve source-issue and READY FOR REVIEW stop controls |
+| Task 004 | PR Readiness and Batch Review Control | Preserve Bill/Atlas review and merge authority |
+| Task 005 | Merge and Issue Mutation Policy | Separate evidence generation from mutation authority |
+| Task 006 | Queue/Wave Model and Label Planning | Keep labels/run IDs as planning concepts until explicit implementation |
+| Task 007 | Post-Merge Closeout Evidence Stabilization | Require stable evidence before source issue closeout or queue advancement |
+| Task 008 | Program 5 Promotion and Program 1 Launch Gate | Replace Program 3 promotion with Program 5 promotion and launch gate readiness |
+
+## Updated task definitions
+
+### Task 001 — PMO V2 Authority
 
 Type: governance
 Agent: atlas
 Priority: 1
 Depends On: none
 Allowed Files:
+
+- `docs/ops/pmo/PMO-V2-OPERATING-MODEL.md`
 - `docs/ops/pmo/program-registry.md`
 - `docs/reference/pmo/lgfc-program-portfolio-model.md`
 - `docs/ops/pmo/critical-path.md`
+
 Acceptance Criteria:
-- Program 1 and Program 2 are defined as alternating execution lanes in a
-  perpetual PMO cycle.
-- Program 3 is defined as portfolio intake and prioritization, not
-  implementation execution.
-- Completed Program 1 cycles are historical evidence only and are not parent
-  issues for later Program 1 cycles.
-- Active Program 2 work under `#1255` is explicitly non-interference context.
+
+- Portfolio is defined as Programs 1-4.
+- Programs 1-4 are rotating planning/execution lanes, not permanent subject domains.
+- Program 5 is defined as ideas and project drafts, not the portfolio and not an implementation queue.
+- Completed program cycles are historical evidence only.
+- Existing stale Program 3 intake references are removed or explicitly superseded.
+
 Validation:
+
 - `DOCS_HEADER_FILE_LIST=<task-allowed-files-list> ./scripts/ci/docs_check_headers.sh .`
 - `./scripts/ci/docs_canonical_hashes_verify.sh .`
+
 Rollback:
-- Revert only the PMO cycle authority documentation updates.
+
+- Revert only PMO authority documentation updates.
 
 ---
 
-## Task 002 — Workflow Automation Design Migration
+### Task 002 — Workflow Automation Design Migration
 
 Type: governance
 Agent: cursor
 Priority: 2
 Depends On: Task 001
 Allowed Files:
+
 - `docs/ops/pmo/workflow-automation.md`
 - `docs/ops/implementation-plans/program-1-pmo-automation-agent-workflow-control.md`
 - `docs/ops/pmo/program-registry.md`
+
 Acceptance Criteria:
-- Workflow Automation is promoted from Program 3 / Drive context into GitHub
-  documentation authority.
-- The document states that Drive/chat content is not sufficient implementation
-  authority until captured in repo docs.
-- Runtime implementation, workflow YAML, D1 migrations, and production
-  configuration remain out of scope.
-- The plan remains ready for later child issue creation after Atlas/Bill
-  walkthrough.
+
+- Workflow Automation is represented as promoted from Program 5 idea/draft material into Program 1 GitHub authority.
+- Drive/chat content is not sufficient implementation authority until captured in repo docs.
+- Runtime implementation, workflow YAML, D1 migrations, and production configuration remain out of scope.
+- The plan remains ready for aligned child issue creation after Atlas/Bill walkthrough.
+
 Validation:
+
 - `DOCS_HEADER_FILE_LIST=<task-allowed-files-list> ./scripts/ci/docs_check_headers.sh .`
 - `./scripts/ci/docs_canonical_hashes_verify.sh .`
+
 Rollback:
+
 - Revert Workflow Automation planning docs only.
 
 ---
 
-## Task 003 — Cursor Continuation and Queue Contract
+### Task 003 — Cursor Continuation and Queue Contract
 
 Type: governance
 Agent: cursor
 Priority: 3
 Depends On: Task 002
 Allowed Files:
+
 - `docs/reference/pmo/lgfc-cursor-execution-contract.md`
 - `docs/ops/pmo/parallel-agent-rules.md`
 - `docs/ops/pmo/critical-path.md`
+
 Acceptance Criteria:
+
 - Cursor continuation rules define when Cursor may continue, report, and stop.
-- A PR ready for review causes Cursor to complete validation and PR body
-  evidence, then stop for Atlas/Bill walkthrough.
-- Cursor is prohibited from merge, close, relabel, issue-state mutation, queue
-  advancement, and Program 2 issue mutation unless explicitly authorized.
-- Queue continuation preserves one active source issue and one implementation PR
-  per task.
+- A PR ready for review causes Cursor to complete validation and PR body evidence, then stop for Atlas/Bill walkthrough.
+- Cursor is prohibited from merge, close, relabel, issue-state mutation, queue advancement, and cross-program mutation unless explicitly authorized.
+- Queue continuation preserves one active source issue and one implementation PR per task unless a later approved wave model says otherwise.
+
 Validation:
+
 - `DOCS_HEADER_FILE_LIST=<task-allowed-files-list> ./scripts/ci/docs_check_headers.sh .`
 - `./scripts/ci/docs_canonical_hashes_verify.sh .`
+
 Rollback:
+
 - Revert Cursor contract and PMO queue documentation updates.
 
 ---
 
-## Task 004 — PR Readiness and Batch Review Control
+### Task 004 — PR Readiness and Batch Review Control
 
 Type: governance
 Agent: cursor
 Priority: 4
 Depends On: Task 003
 Allowed Files:
+
 - `docs/ops/pmo/parallel-agent-rules.md`
 - `docs/reference/pmo/lgfc-cursor-execution-contract.md`
+
 Acceptance Criteria:
+
 - PR readiness is defined as a handoff state, not merge authority.
 - Batch review preserves Bill merge authority and Atlas governance review.
-- The expected PR body evidence includes source issue, allowlist, validation,
-  reviewer/bot disposition, and gate status.
+- The expected PR body evidence includes source issue, allowlist, validation, reviewer/bot disposition, and gate status.
 - Cursor stop conditions are explicit when reviewer or gate action remains.
+
 Validation:
+
 - `DOCS_HEADER_FILE_LIST=<task-allowed-files-list> ./scripts/ci/docs_check_headers.sh .`
 - `./scripts/ci/docs_canonical_hashes_verify.sh .`
+
 Rollback:
+
 - Revert PR readiness and batch-review documentation updates only.
 
 ---
 
-## Task 005 — Merge and Issue Mutation Policy
+### Task 005 — Merge and Issue Mutation Policy
 
 Type: governance
 Agent: cursor
 Priority: 5
 Depends On: Task 004
 Allowed Files:
+
 - `docs/reference/pmo/lgfc-cursor-execution-contract.md`
 - `docs/ops/pmo/github-issue-closeout-protocol.md`
 - `docs/ops/pmo/parallel-agent-rules.md`
+
 Acceptance Criteria:
-- Cursor merge, close, relabel, issue-state mutation, queue mutation, and child
-  issue creation prohibitions are explicit.
+
+- Cursor merge, close, relabel, issue-state mutation, queue mutation, and child issue creation prohibitions are explicit.
 - Docs may recommend future issue structures but do not authorize mutation.
-- Program 2 issue closure, relabeling, and queue changes are out of scope unless
-  separately authorized by an active source issue.
+- Issue closure, relabeling, and queue changes are out of scope unless separately authorized by an active source issue.
 - Human authority for protected merges and destructive actions is preserved.
+
 Validation:
+
 - `DOCS_HEADER_FILE_LIST=<task-allowed-files-list> ./scripts/ci/docs_check_headers.sh .`
 - `./scripts/ci/docs_canonical_hashes_verify.sh .`
+
 Rollback:
+
 - Revert mutation-policy documentation updates only.
 
 ---
 
-## Task 006 — Queue/Wave Model and Label Planning
+### Task 006 — Queue/Wave Model and Label Planning
 
 Type: governance
 Agent: cursor
 Priority: 6
 Depends On: Task 005
 Allowed Files:
+
 - `docs/ops/pmo/workflow-automation.md`
 - `docs/ops/pmo/critical-path.md`
 - `docs/reference/pmo/lgfc-cursor-execution-contract.md`
+
 Acceptance Criteria:
-- Wave labels and run identifiers are defined as planning/control concepts before
-  workflow code changes.
-- A future implementation issue must define wave/run purpose, batch scope,
-  stop/continue owner, evidence requirements, and rollback before label changes.
+
+- Wave labels and run identifiers are defined as planning/control concepts before workflow code changes.
+- A future implementation issue must define wave/run purpose, batch scope, stop/continue owner, evidence requirements, and rollback before label changes.
 - No labels are created, removed, or applied by this task.
-- Program 2 active work is not blocked by wave planning.
+
 Validation:
+
 - `DOCS_HEADER_FILE_LIST=<task-allowed-files-list> ./scripts/ci/docs_check_headers.sh .`
 - `./scripts/ci/docs_canonical_hashes_verify.sh .`
+
 Rollback:
+
 - Revert queue/wave planning documentation updates only.
 
 ---
 
-## Task 007 — Post-Merge Closeout Evidence Stabilization
+### Task 007 — Post-Merge Closeout Evidence Stabilization
 
 Type: governance
 Agent: cursor
 Priority: 7
 Depends On: Task 006
 Allowed Files:
+
 - `docs/ops/pmo/github-issue-closeout-protocol.md`
 - `docs/reference/pmo/lgfc-cursor-execution-contract.md`
 - `docs/ops/pmo/workflow-automation.md`
+
 Acceptance Criteria:
-- Closeout evidence requires merged PR, merge commit, source issue, validation
-  results, authorized issue action, queue decision, and unresolved blocker state.
-- Closeout protocol separates evidence preparation from issue mutation.
-- Closed completed source issues retain only stable non-status labels plus
-  `status:complete`; active or failure-state workflow labels are removed during
-  the same authorized closeout step that closes the issue.
-- The controller or Atlas closeout step verifies final source-issue labels after
-  merge verification and stops instead of advancing the queue if terminal label
-  reconciliation fails.
-- Batch closeout authorization remains bounded by explicit Bill/Atlas approval.
-- Post-merge closeout supports later automation without premature closure.
+
+- Closeout evidence requires merged PR, merge commit, source issue, validation, reviewer disposition, issue-state action, queue decision, and label reconciliation.
+- Closeout evidence and closeout mutation are separated.
+- Queue advancement stops if terminal-state reconciliation fails.
+- Remediation issue handling is explicit.
+
 Validation:
+
 - `DOCS_HEADER_FILE_LIST=<task-allowed-files-list> ./scripts/ci/docs_check_headers.sh .`
 - `./scripts/ci/docs_canonical_hashes_verify.sh .`
+
 Rollback:
+
 - Revert closeout evidence documentation updates only.
 
 ---
 
-## Task 008 — Program 3 Promotion and Program 1 Launch Gate
+### Task 008 — Program 5 Promotion and Program 1 Launch Gate
 
 Type: governance
 Agent: atlas
 Priority: 8
 Depends On: Task 007
 Allowed Files:
+
+- `docs/ops/pmo/PMO-V2-OPERATING-MODEL.md`
 - `docs/reference/pmo/lgfc-program-portfolio-model.md`
 - `docs/ops/pmo/program-registry.md`
 - `docs/ops/pmo/workflow-automation.md`
 - `docs/ops/implementation-plans/program-1-pmo-automation-agent-workflow-control.md`
+- `docs/ops/pmo/program-3-proposed-project-list.md`
+- `docs/ops/pmo/program-5-ideas-and-project-drafts.md`
+
 Acceptance Criteria:
-- Program 3 promotion criteria are explicit: owner approval, repo authority,
-  non-interference, task decomposition, authorized issue creation, and bounded
-  Cursor handoff.
-- Workflow Automation promotion from Program 3 into Program 1 is recorded.
-- Future Program 1/2 transition gates are documented.
-- The Program 1 plan can create child issues only after Atlas/Bill walkthrough
-  and normal orchestration authority.
+
+- Program 5 promotion criteria are auditable.
+- Program 3 is treated as an available Program 1-4 portfolio lane, not intake.
+- Program 1 launch gate is explicit.
+- Child issue creation remains blocked until Atlas/Bill walkthrough approval.
+- Program 3 proposed project list and Program 5 discussion list are available for Bill review.
+
 Validation:
+
 - `DOCS_HEADER_FILE_LIST=<task-allowed-files-list> ./scripts/ci/docs_check_headers.sh .`
 - `./scripts/ci/docs_canonical_hashes_verify.sh .`
+
 Rollback:
-- Revert Program 3 promotion and launch-gate documentation updates only.
 
----
+- Revert promotion/launch-gate documentation updates only.
 
-## Orchestration Verification Expectations
+## Program 1 launch readiness conclusion
 
-When Atlas/Bill approve issue creation for this plan, the issue factory should:
+Program 1 is not yet formally launch-ready under PMO v2 until the already-created task issues `#1417`-`#1424` are either updated or superseded to match this plan.
 
-1. Create issues only from this plan and only after normal Program 1 authority is
-   confirmed.
-2. Include stable task markers using the project slug
-   `program-1-pmo-automation-agent-workflow-control`.
-3. Preserve serial queue behavior unless a later owner-approved wave model
-   explicitly authorizes a bounded exception.
-4. Keep Program 2 `#1255` work independent and unmutated.
-5. Stop Cursor-authored PRs at `READY FOR REVIEW` for Atlas/Bill walkthrough.
-
-## Program 2 Non-Interference Map
-
-| Active Program 2 surface | Program 1 rule |
-| --- | --- |
-| Website Implementation and Content Operations (`#1255`) | Context only; no closure, relabeling, queue mutation, or implementation changes |
-| Content Strategy / Editorial Inventory | No Program 1 child task may edit website runtime or content implementation files unless separately authorized |
-| Website Operations/Admin | No Program 1 automation planning may supersede child project authority |
-| Website Final QA / Launch Validation | No Program 1 wave planning may block Program 2 validation work |
-
-## Required PR Validation for This Planning PR
-
-The PR introducing this plan must report:
-
-```bash
-./scripts/ci/docs_check_headers.sh .
-./scripts/ci/docs_canonical_hashes_verify.sh .
-git diff --name-only origin/main...HEAD
-```
-
-If repo-wide header validation fails because of a pre-existing out-of-scope
-blocker, rerun scoped changed-file header validation and document both results.
+No new design gap is known. The remaining readiness work is alignment of issue/task language and explicit Atlas/Bill launch authorization.
