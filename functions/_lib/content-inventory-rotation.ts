@@ -23,6 +23,7 @@ export type RotationRow = {
   status?: string | null;
   source_name?: string | null;
   credit_line?: string | null;
+  updated_at?: string | null;
 };
 
 export type RotationContext = {
@@ -76,14 +77,24 @@ export function daysUntilAnniversary(eventDate: string, asOf: Date): number | nu
   return Math.round((candidate - asOfUtc) / 86_400_000);
 }
 
+export function parseRotationTimestamp(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  let dateStr = String(value).trim();
+  if (!dateStr) return null;
+  if (dateStr.length === 19 && !dateStr.includes('T')) {
+    dateStr = `${dateStr.replace(' ', 'T')}Z`;
+  }
+  const parsed = Date.parse(dateStr);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 export function computeRecentFeaturePenalty(
   row: RotationRow,
   asOf: Date,
   windowDays = DEFAULT_RECENT_FEATURE_WINDOW_DAYS,
 ): number {
-  if (!row.last_featured) return 0;
-  const featuredAt = Date.parse(String(row.last_featured));
-  if (!Number.isFinite(featuredAt)) return 0;
+  const featuredAt = parseRotationTimestamp(row.last_featured);
+  if (featuredAt === null) return 0;
 
   const daysSince = (asOf.getTime() - featuredAt) / 86_400_000;
   if (daysSince < 0 || daysSince >= windowDays) return 0;
@@ -155,8 +166,9 @@ export function compareRotationRows(a: RotationRow, b: RotationRow, context: Rot
   const weightDelta = Number(b.feature_weight ?? 1) - Number(a.feature_weight ?? 1);
   if (weightDelta !== 0) return weightDelta;
 
-  const titleDelta = normalizeTitle(a.title).localeCompare(normalizeTitle(b.title));
-  if (titleDelta !== 0) return titleDelta;
+  const titleA = normalizeTitle(a.title);
+  const titleB = normalizeTitle(b.title);
+  if (titleA !== titleB) return titleA < titleB ? -1 : 1;
 
   return Number(a.id ?? 0) - Number(b.id ?? 0);
 }
@@ -193,7 +205,8 @@ export async function fetchRotationEligibleRows(
   const rows = await db
     .prepare(
       `SELECT id, title, text, summary, credit_line, source_name, event_date, event_year,
-              rotation_group, last_featured, feature_weight, canonical, priority, allowed_sections, status
+              rotation_group, last_featured, feature_weight, canonical, priority, allowed_sections,
+              status, updated_at
        FROM content_inventory
        ${whereSql}`,
     )

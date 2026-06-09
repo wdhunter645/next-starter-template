@@ -10,6 +10,7 @@ import {
   fetchRotationRankedInventory,
   HOMEPAGE_SPOTLIGHT_SECTION,
   isRotationEligibleRow,
+  parseRotationTimestamp,
   recordRotationFeature,
   sortRotationRows,
 } from '../functions/_lib/content-inventory-rotation';
@@ -42,8 +43,12 @@ describe('content inventory rotation scoring', () => {
     expect(computeEventProximityBoost(near, AS_OF)).toBeGreaterThan(computeEventProximityBoost(far, AS_OF));
   });
 
+  it('parses sqlite datetime strings as UTC for deterministic scoring', () => {
+    expect(parseRotationTimestamp('2026-06-01 00:00:00')).toBe(Date.parse('2026-06-01T00:00:00Z'));
+  });
+
   it('applies recent-feature suppression from last_featured', () => {
-    const recent = baseRow({ id: 1, last_featured: '2026-06-01T00:00:00Z' });
+    const recent = baseRow({ id: 1, last_featured: '2026-06-01 00:00:00' });
     const stale = baseRow({ id: 2, last_featured: '2025-01-01T00:00:00Z' });
     expect(computeRecentFeaturePenalty(recent, AS_OF)).toBeGreaterThan(computeRecentFeaturePenalty(stale, AS_OF));
     expect(computeRotationScore(recent, { asOfDate: AS_OF })).toBeLessThan(
