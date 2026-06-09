@@ -91,12 +91,19 @@ export function mapLibraryInventoryItem(row: InventoryRow) {
   };
 }
 
+const tableExistsCache = new Map<string, boolean>();
+
 export async function tableExists(db: any, table: string): Promise<boolean> {
+  if (tableExistsCache.has(table)) {
+    return tableExistsCache.get(table)!;
+  }
   const row = await db
     .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name = ? LIMIT 1")
     .bind(table)
     .first();
-  return Boolean((row as { name?: string } | null)?.name);
+  const exists = Boolean((row as { name?: string } | null)?.name);
+  tableExistsCache.set(table, exists);
+  return exists;
 }
 
 export async function countPublishedInventoryForSection(db: any, sectionKey: string): Promise<number> {
@@ -304,21 +311,22 @@ function inventoryMediaSearchClause(cimAlias: string, photoAlias: string): strin
   )`;
 }
 
+function inventoryTextSearchPlaceholderCount(): number {
+  return INVENTORY_TEXT_SEARCH_FIELDS.length + 1;
+}
+
+function inventoryMediaSearchPlaceholderCount(): number {
+  return 4;
+}
+
 function pushInventoryLikeArgs(args: unknown[], like: string, includeMedia: boolean): void {
-  args.push(
-    like,
-    like,
-    like,
-    like,
-    like,
-    like,
-    like,
-    like,
-    like,
-    like,
-  );
+  for (let i = 0; i < inventoryTextSearchPlaceholderCount(); i += 1) {
+    args.push(like);
+  }
   if (includeMedia) {
-    args.push(like, like, like, like);
+    for (let i = 0; i < inventoryMediaSearchPlaceholderCount(); i += 1) {
+      args.push(like);
+    }
   }
 }
 

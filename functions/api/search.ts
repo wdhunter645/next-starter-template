@@ -203,7 +203,7 @@ export const onRequestGet = async (context: any): Promise<Response> => {
         results.push({
           type: 'Library',
           title: hit.title,
-          excerpt: excerpt(hit.excerpt || hit.body),
+          excerpt: excerpt(hit.excerpt),
           url: hit.url,
           score: scoreForMatch(hit.title, hit.body, q),
         });
