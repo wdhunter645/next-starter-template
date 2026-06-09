@@ -89,14 +89,31 @@ function closingIssueRefsFromLine(line, owner, repo) {
   return { refs, invalidRefs };
 }
 
+function isIgnoredIssueAccountingLine(line = '') {
+  if (/OPS\s+Tracker/i.test(line)) return true;
+  if (/Umbrella\s+Tracker/i.test(line)) return true;
+  return false;
+}
+
 function issueRefsFromBody(body, owner, repo) {
   const refs = [];
   const invalidRefs = [];
   const lines = (body || '').split('\n');
+  let inCubicBlock = false;
 
   for (const line of lines) {
-    if (/OPS\s+Tracker/i.test(line)) continue;
-    if (/Umbrella\s+Tracker/i.test(line)) continue;
+    if (/<!--\s*This is an auto-generated description by cubic\./i.test(line)) {
+      inCubicBlock = true;
+      continue;
+    }
+    if (inCubicBlock) {
+      if (/<!--\s*End of auto-generated description by cubic\./i.test(line)) {
+        inCubicBlock = false;
+      }
+      continue;
+    }
+
+    if (isIgnoredIssueAccountingLine(line)) continue;
 
     const semantic = semanticIssueRefsFromLine(line, owner, repo);
     refs.push(...semantic.refs);

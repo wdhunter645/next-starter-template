@@ -106,6 +106,21 @@ describe('PR issue-accounting parser', () => {
     ]);
   });
 
+  it('ignores cubic auto-generated PR description blocks for issue accounting', () => {
+    const body = [
+      '- **Issue:** #1483',
+      '',
+      '<!-- This is an auto-generated description by cubic. -->',
+      'Expected outcome on merge: close #1411 and #1488; resolve #1483, #1487, and #1490.',
+      '<!-- End of auto-generated description by cubic. -->',
+    ].join('\n');
+
+    expect(issueRefsFromTrustedSources(body, '', owner, repo)).toEqual({
+      invalidRefs: [],
+      refs: [{ issueNumber: 1483, source: 'primary-body-line' }],
+    });
+  });
+
   it('uses branch-name issue discovery only when body source refs are absent', () => {
     expect(
       issueRefsFromTrustedSources('- **Issue:** #1075', 'cursor/ci-orchestration-engine-1265', owner, repo)
