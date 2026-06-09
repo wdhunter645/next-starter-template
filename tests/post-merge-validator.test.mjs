@@ -260,7 +260,7 @@ describe('post-merge workflow failure classification', () => {
 		const result = buildResult({ pr: mergedPr(), resolution: { pr: '1188' }, failures });
 
 		expect(failures[0]).toMatchObject({ required: false, classification: 'secret-access/configuration' });
-		expect(result).toMatchObject({ status: 'pass', remediation_required: true, sync_action: 'post_merge_remediation' });
+		expect(result).toMatchObject({ status: 'pass', remediation_required: false, sync_action: 'post_merge_success' });
 	});
 });
 
@@ -271,9 +271,9 @@ describe('post-merge structured output and remediation body', () => {
 			resolution: { pr: '1188' },
 			failures: [
 				{
-					workflow: 'Auto-Sync Documentation',
-					classification: 'secret-access/configuration',
-					required: false,
+					workflow: 'GATE — Quality Checks',
+					classification: 'required-workflow-failure',
+					required: true,
 					url: 'https://github.test/actions/2',
 					conclusion: 'failure',
 				},
@@ -282,7 +282,7 @@ describe('post-merge structured output and remediation body', () => {
 		});
 
 		expect(result).toMatchObject({
-			status: 'pass',
+			status: 'fail',
 			pr: 1188,
 			merge_sha: 'abc123',
 			source_issue: '1122',
@@ -291,13 +291,13 @@ describe('post-merge structured output and remediation body', () => {
 			evidence_summary: expect.objectContaining({
 				workflow_failures: 1,
 			}),
-			sync_action: 'post_merge_remediation',
+			sync_action: 'post_merge_failure',
 		});
 		expect(commentBody(result)).toContain('## Workflow failures');
 		expect(renderPostMergeReport(result)).toContain('Implementation evidence failures: 0');
 		expect(remediationTitle(result)).toBe('Post-merge closeout exception for PR #1188 / source #1122 / workflow_failure');
 		expect(remediationBody(result)).toContain('Required Atlas/Bill decision');
-		expect(remediationBody(result)).toContain('Auto-Sync Documentation');
+		expect(remediationBody(result)).toContain('GATE — Quality Checks');
 	});
 
 	it('fails when merged implementation evidence is incomplete', () => {
@@ -333,7 +333,7 @@ describe('post-merge structured output and remediation body', () => {
 		});
 
 		expect(result.status).toBe('pass');
-		expect(result.remediation_required).toBe(true);
+		expect(result.remediation_required).toBe(false);
 	});
 });
 
