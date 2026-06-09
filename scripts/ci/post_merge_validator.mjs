@@ -355,9 +355,7 @@ export function buildResult({
 		reviewerDispositionFailures.length +
 		requiredWorkflowFailures.length;
 	const status = blockingFailureCount === 0 ? 'pass' : 'fail';
-	const remediationWorkflowFailures = failures.filter(
-		(failure) => failure.required || failure.classification !== 'optional-remediation-failure',
-	);
+	const remediationWorkflowFailures = failures.filter((failure) => failure.required);
 	const remediationRequired =
 		blockingMetadata.length > 0 ||
 		implementation.length > 0 ||

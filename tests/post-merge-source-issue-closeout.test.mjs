@@ -128,23 +128,23 @@ describe('source issue closeout decision', () => {
 			resolution: { pr: '1239' },
 			failures: [
 				{
-					workflow: 'Auto-Sync Documentation',
-					classification: 'secret-access/configuration',
-					required: false,
+					workflow: 'GATE — Reviewer Response Completion',
+					classification: 'optional-remediation-failure',
+					required: true,
 					conclusion: 'failure',
 				},
 			],
 		});
 
-		expect(result).toMatchObject({ status: 'pass', sync_action: 'post_merge_remediation', remediation_required: true });
+		expect(result).toMatchObject({ status: 'fail', sync_action: 'post_merge_failure', remediation_required: true });
 		expect(
 			shouldCloseSourceIssue({
-				action: 'post_merge_remediation',
+				action: 'post_merge_failure',
 				issueNumber: '1196',
 				isMerged: true,
 				postMergeResult: result,
 			}),
-		).toMatchObject({ close: false, reason: 'action_post_merge_remediation' });
+		).toMatchObject({ close: false, reason: 'action_post_merge_failure' });
 	});
 
 	it('does not close when the linked issue cannot be identified', () => {
