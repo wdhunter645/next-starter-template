@@ -5,15 +5,15 @@ Authority Level: Operational Authority
 Owns: Launched-program queue mode, dependency-map requirements, execution-mode selection, and continue/halt decision rules for PMO-governed programs
 Does Not Own: Workflow YAML implementation, GitHub merge authority, issue mutation authority, or orchestrator label automation
 Canonical Reference: /docs/reference/pmo/lgfc-program-portfolio-model.md
-Related Issues: #1449, #1448, #1411, #1255, #1256
-Last Reviewed: 2026-06-08
+Related Issues: #1449, #1448, #1411, #1255, #1256, #1501
+Last Reviewed: 2026-06-09
 ---
 
 # LGFC Program Queue and Dependency Map
 
 ## Purpose
 
-Define how LGFC programs advance through prepared task queues when an approved
+Define how LGFC program issues advance through prepared task queues when an approved
 dependency map exists, and how that model differs from one-task handoff mode for
 one-off work or programs without approved dependency maps.
 
@@ -36,14 +36,16 @@ This document does not own:
 
 ## Current Known Truth
 
-- Program 1 `#1411` and Program 2 `#1255` use the PMO execution chain:
-  `Program → Child Project → Task → Issue → PR → Verification → Closeout`.
-- Program 2 `#1255` is an active launched program with a prepared task queue under
-  child project `#1256`.
-- Program 2 continuation is paused for rebaseline while `#1448` remains open.
-  No Program 2 task beyond `#1402` may launch until `#1448` rebaseline is
+- Program #1411 and Program #1255 use the PMO execution chain:
+  `program issue → child project → task issue → PR → verification → closeout`.
+- Program #1255 is the active program issue with a prepared task queue under
+  child project `#1256` (historical label: Program 2).
+- Program #1255 continuation is paused for rebaseline while `#1448` remains open.
+  No Program #1255 task beyond `#1402` may launch until `#1448` rebaseline is
   complete. Queue documentation from `#1449` must be merged before the
   rebaseline gate may close.
+- Program #1411 is staged / blocked and may not launch until Program #1255 is
+  completed and signed off.
 - Bill owns merge authority, launch gates, and destructive issue actions.
 - Atlas owns governance review, queue conformance, batch verification, and
   rebaseline authority.
@@ -52,7 +54,7 @@ This document does not own:
 
 ## Intended Final State
 
-- Launched programs with approved dependency maps follow a documented queue where
+- Launched program issues with approved dependency maps follow a documented queue where
   Cursor can determine continue vs halt from the map and active issue fields.
 - One-off tasks and programs without approved dependency maps remain on
   one-task handoff mode.
@@ -63,7 +65,7 @@ This document does not own:
 
 ## Execution Modes
 
-LGFC recognizes two execution modes. Select the mode from program state and
+LGFC recognizes two execution modes. Select the mode from program issue state and
 dependency-map approval, not from agent preference.
 
 ### Mode A — One-Task Handoff
@@ -71,8 +73,8 @@ dependency-map approval, not from agent preference.
 Use when any of the following is true:
 
 - the work is a one-off task outside a launched program queue;
-- the program has no approved dependency map;
-- the program is in planning or review-ready state only;
+- the program issue has no approved dependency map;
+- the program issue is in planning or review-ready state only;
 - the active source issue does not reference an approved dependency map.
 
 Rules:
@@ -90,8 +92,8 @@ one source issue → one PR → READY FOR REVIEW → human review → closeout �
 
 Use when all of the following are true:
 
-- the program is launched and actively executing;
-- an approved dependency map exists in repository documentation;
+- the program issue is launched and actively executing;
+- an approved dependency map exists in repository documentation attached to or referenced by the program issue;
 - the active source issue references the approved map and its queue position;
 - no rebaseline pause or halt checkpoint blocks the active task.
 
@@ -104,7 +106,8 @@ approved dependency map → active task issue → one PR → READY FOR REVIEW �
 - Cursor still executes exactly one source issue per PR. Queue mode governs
   **which task is authorized next**, not whether multiple tasks share one PR.
 - Cursor may continue to the next queue item only when the dependency map,
-  predecessor completion, and halt/resume conditions all permit it.
+  predecessor completion, halt/resume conditions, and explicit continuation
+  authorization all permit it.
 - Cursor must halt when a rebaseline pause, open halt checkpoint, or unresolved
   blocker is documented in the map or active issue.
 
@@ -115,7 +118,7 @@ mutation, or issue-state authority.
 
 ### Plan-Level Map (Required Before Launch)
 
-Every implementation plan for a launched program must include a **Dependency Map**
+Every implementation plan for a launched program issue must include a **Dependency Map**
 section before the plan may move to `production-ready` or authorize issue
 creation.
 
@@ -134,14 +137,14 @@ Approval:
 
 - Atlas prepares the map in the implementation plan.
 - Bill approves the map before launch or issue creation.
-- Until approved, the program remains in one-task handoff mode.
+- Until approved, the program issue remains in one-task handoff mode.
 
-### Project-Level Map (Program 2 / `#1256`)
+### Project-Level Map (Program #1255 / `#1256`)
 
-Child project `#1256` must maintain a project-level dependency map that records
+Child project `#1256` under active program issue `#1255` must maintain a project-level dependency map that records
 checkpoints before tasks beyond `#1402` may resume. See
 `/docs/ops/implementation-plans/website-content-strategy-editorial-inventory.md`
-for the active Program 2 map and rebaseline pause.
+for the active Program #1255 map and rebaseline pause.
 
 ### Issue-Level Fields (Required for Queue Tasks)
 
@@ -179,7 +182,8 @@ Cursor may **continue** (prepare or update the current task PR) when:
    verifiable from available evidence;
 3. changed files match the allowlist;
 4. no documented halt checkpoint applies;
-5. validation can run or a concrete blocker can be reported.
+5. validation can run or a concrete blocker can be reported;
+6. explicit continuation authorization permits the next child task when required.
 
 Cursor must **halt** (stop at `READY FOR REVIEW` or report without
 implementing) when:
@@ -211,5 +215,5 @@ authority in either execution mode.
 - Cursor execution contract: `/docs/reference/pmo/lgfc-cursor-execution-contract.md`
 - PMO critical path: `/docs/ops/pmo/critical-path.md`
 - Implementation plan format: `/docs/ops/implementation-plans/README.md`
-- Program 2 `#1256` plan and map: `/docs/ops/implementation-plans/website-content-strategy-editorial-inventory.md`
+- Program #1255 `#1256` plan and map: `/docs/ops/implementation-plans/website-content-strategy-editorial-inventory.md`
 - CI dependency matrix pattern: `/docs/reference/ci/lgfc-ci-implementation-dependency-matrix.md`

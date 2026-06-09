@@ -2,59 +2,68 @@
 Doc Type: Implementation Plan
 Audience: Human + AI
 Authority Level: Operational Authority
-Owns: Program 1 PMO Automation and Agent Workflow Control orchestration plan, task boundaries, child issue readiness, validation, and Atlas/Bill walkthrough gate
-Does Not Own: Program 2 website implementation, workflow YAML changes, runtime application behavior, D1 migrations, production configuration, GitHub issue mutation, or merge authority
-Status: staged-pending-v2-issue-alignment
+Owns: Program #1411 PMO Automation and Agent Workflow Control orchestration plan, task boundaries, child issue readiness, validation, and Atlas/Bill walkthrough gate
+Does Not Own: Program #1255 website implementation, workflow YAML changes, runtime application behavior, D1 migrations, production configuration, GitHub issue mutation, or merge authority
+Status: staged-blocked-pending-v3-alignment
 Project: program-1-pmo-automation-agent-workflow-control
 Owner: Atlas
 Execution Mode: orchestrated
 Source Issue: 1411
 Related Program Issue: 1411
-Canonical Reference: /docs/ops/pmo/PMO-V2-OPERATING-MODEL.md
-Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1335
+Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
+Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1335, #1501
 Last Reviewed: 2026-06-09
 ---
 
-# Program 1 — PMO Automation and Agent Workflow Control
+# Program #1411 — PMO Automation and Agent Workflow Control
+
+| Field | Value |
+| --- | --- |
+| Historical label | Program 1 |
+| Status | Staged / blocked planning evidence |
+| Launch rule | Blocked until Program #1255 is completed and signed off, unless Bill/Atlas explicitly reopen/reactivate or launch Program #1411 |
 
 ## Launch-state control statement
 
-This program is BLOCKED from execution until Atlas/Bill explicitly launch it. Planning, review, and documentation discussion may continue, but Cursor may not execute implementation work from this program until Bill/Atlas explicitly launch it.
+This program is BLOCKED from execution until Program #1255 is completed and signed off, and until Atlas/Bill explicitly launch it. Planning, review, and documentation discussion may continue, but Cursor may not execute implementation work from this program until those gates are satisfied and Bill/Atlas explicitly launch it.
+
+This is not an active executable Program 1 plan. It is staged/blocked PMO Automation and Agent Workflow Control planning evidence, superseded in part by PMO v3 authority.
 
 ## Purpose
 
-Define the next Program 1 body of work under the PMO v2 model.
+Define the Program #1411 body of work under the PMO v3 model.
 
-This Program 1 cycle converts promoted PMO Automation and Agent Workflow Control work into repository-owned documentation, governance, task boundaries, and launch readiness. It is primarily documentation/governance work, with validation and limited testing where existing scripts or policy checks are touched.
+This Program #1411 cycle converts promoted PMO Automation and Agent Workflow Control work into repository-owned documentation, governance, task boundaries, and launch readiness. It is primarily documentation/governance work, with validation and limited testing where existing scripts or policy checks are touched.
 
-## PMO v2 alignment
+## PMO v3 alignment
 
-PMO v2 changes the governing model:
+PMO v3 changes the governing model:
 
-- Portfolio = Programs 1-4.
-- Programs 1-4 are rotating portfolio planning/execution lanes.
-- Program 5 = ideas and project drafts that are not yet portfolio-ready.
-- Program 5 items require documentation, readiness review, prioritization, and promotion before entering Programs 1-4.
+- A program is a GitHub program issue identified by issue number.
+- Program issue numbers are durable identifiers; there is no fixed Program 1–5 cap.
+- PMO Backlog = ideas, project drafts, and implementation-ready projects (documentation-owned).
+- PMO Backlog items require documentation, readiness review, prioritization, and promotion before becoming executable program or task issues.
+- Former Program 5 is now PMO Backlog (`/docs/ops/pmo/pmo-backlog.md`).
 
-Legacy references that treated Program 3 as intake or Program 5 as the portfolio are superseded by `/docs/ops/pmo/PMO-V2-OPERATING-MODEL.md`.
+Legacy references that treated Program 3 as intake, Program 5 as a program lane, or Programs 1–4 as a fixed five-lane cap are superseded by `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`.
 
 ## Scope
 
 This plan owns:
 
-- PMO v2 authority alignment;
-- Workflow Automation design migration from Program 5 idea/draft material into GitHub documentation authority;
+- PMO v3 authority alignment;
+- Workflow Automation design migration from PMO Backlog material into GitHub documentation authority;
 - Cursor continuation and queue contract;
 - PR readiness and batch-review control;
 - merge and issue mutation policy;
 - queue/wave model and label planning;
 - post-merge closeout evidence stabilization;
-- Program 5 promotion process;
-- Program 1 launch gate readiness.
+- PMO Backlog promotion process;
+- Program #1411 launch gate readiness.
 
 This plan does not own:
 
-- Program 2 website/content implementation under `#1255`;
+- Program #1255 website/content implementation;
 - workflow YAML changes;
 - orchestrator script changes;
 - application/runtime changes;
@@ -65,48 +74,49 @@ This plan does not own:
 
 ## Current Known Truth
 
-- issue `#1411` is the Program 1 source issue for this cycle and is already closed complete from the first planning pass.
-- task issues `#1417` through `#1424` exist but contain stale Program 3 intake language and must be reviewed/aligned before Program 1 launch.
-- issue `#1379` currently functions as legacy Program 5 idea/project-draft intake until a dedicated Program 5 authority issue is created.
-- issue `#1255` is the active Program 2 Website Implementation and Content Operations execution lane.
+- issue `#1411` is the Program #1411 source issue for this cycle and is already closed complete from the first planning pass.
+- task issues `#1417` through `#1424` exist but contain stale PMO v2 terminology and must be reviewed/aligned before Program #1411 launch.
+- issue `#1379` is historical ideas/future-projects source evidence, superseded by PMO Backlog documentation.
+- issue `#1255` is the active Program #1255 Website Implementation and Content Operations execution program (historical label: Program 2).
 - issue `#1335` is the completed prior Program 1 Phase 1 Wrap-Up cycle and is historical evidence only.
+- Program #1411 is not next automatically. It is blocked until Program #1255 completes and is signed off.
 
 ## Intended Final State
 
-- Program 1 conforms to PMO v2.
-- Programs 1-4 are consistently treated as the execution portfolio.
-- Program 5 is consistently treated as ideas and project drafts.
+- Program #1411 conforms to PMO v3 when launched.
+- Program issue numbers consistently identify programs.
+- PMO Backlog is consistently treated as ideas, project drafts, and implementation-ready projects.
 - Workflow Automation design authority lives in GitHub documentation before implementation.
 - Cursor can safely continue through validation and PR body updates, then stop at `READY FOR REVIEW` for Atlas/Bill walkthrough.
 - PR readiness, batch review, merge authority, and issue mutation remain under Atlas/Bill control.
 - Closeout evidence requirements are stable enough to support later automation without premature issue mutation.
 
-## Program 1 staged status review
+## Program #1411 staged status review
 
 | Item | Status | Required action |
 | --- | --- | --- |
-| Source issue `#1411` | Closed complete from prior planning pass | Treat as historical planning source unless reopened or superseded by new PMO v2 source issue |
+| Source issue `#1411` | Closed complete from prior planning pass | Treat as historical planning source unless reopened or superseded by new PMO v3 source issue |
 | Task issues `#1417`-`#1424` | Created, blocked, stale terminology present | Update or supersede issue bodies before launch |
-| Implementation plan | This document | Aligned to PMO v2 by this revision |
-| PMO top-level authority | `/docs/ops/pmo/PMO-V2-OPERATING-MODEL.md` | New controlling authority |
-| Program 1 launch status | Not launched | Launch only after Atlas/Bill confirm aligned task set |
+| Implementation plan | This document | Aligned to PMO v3 by this revision |
+| PMO top-level authority | `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` | Controlling authority |
+| Program #1411 launch status | Staged / blocked | Launch only after Program #1255 completion/signoff and Atlas/Bill confirm aligned task set |
 
-## Program 1 project areas under PMO v2
+## Program #1411 project areas under PMO v3
 
-| Task | Project area | PMO v2 correction |
+| Task | Project area | PMO v3 correction |
 | --- | --- | --- |
-| Task 001 | PMO v2 authority | Replace Program 3 intake model with Programs 1-4 portfolio / Program 5 ideas-drafts model |
-| Task 002 | Workflow Automation Design Migration | Treat Workflow Automation as promoted from Program 5 idea/draft material |
+| Task 001 | PMO v3 authority | Replace five-program lane model with program issue numbers and PMO Backlog |
+| Task 002 | Workflow Automation Design Migration | Treat Workflow Automation as promoted from PMO Backlog material |
 | Task 003 | Cursor Continuation and Queue Contract | Preserve source-issue and READY FOR REVIEW stop controls |
 | Task 004 | PR Readiness and Batch Review Control | Preserve Bill/Atlas review and merge authority |
 | Task 005 | Merge and Issue Mutation Policy | Separate evidence generation from mutation authority |
 | Task 006 | Queue/Wave Model and Label Planning | Keep labels/run IDs as planning concepts until explicit implementation |
 | Task 007 | Post-Merge Closeout Evidence Stabilization | Require stable evidence before source issue closeout or queue advancement |
-| Task 008 | Program 5 Promotion and Program 1 Launch Gate | Replace Program 3 promotion with Program 5 promotion and launch gate readiness |
+| Task 008 | PMO Backlog Promotion and Program #1411 Launch Gate | Replace Program 5 promotion with PMO Backlog promotion and launch gate readiness |
 
 ## Updated task definitions
 
-## Task 001 — PMO V2 Authority
+## Task 001 — PMO V3 Authority
 
 Type: governance
 Agent: atlas
@@ -114,18 +124,18 @@ Priority: 1
 Depends On: none
 Allowed Files:
 
-- `docs/ops/pmo/PMO-V2-OPERATING-MODEL.md`
+- `docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`
 - `docs/ops/pmo/program-registry.md`
 - `docs/reference/pmo/lgfc-program-portfolio-model.md`
 - `docs/ops/pmo/critical-path.md`
 
 Acceptance Criteria:
 
-- Portfolio is defined as Programs 1-4.
-- Programs 1-4 are rotating planning/execution lanes, not permanent subject domains.
-- Program 5 is defined as ideas and project drafts, not the portfolio and not an implementation queue.
+- Program issue numbers identify programs.
+- PMO Backlog is defined as ideas, project drafts, and implementation-ready projects.
+- Fixed Program 1–5 nomenclature is retired for future PMO operation.
 - Completed program cycles are historical evidence only.
-- Existing stale Program 3 intake references are removed or explicitly superseded.
+- Existing stale five-program lane references are removed or explicitly superseded.
 
 Validation:
 
@@ -152,10 +162,10 @@ Allowed Files:
 
 Acceptance Criteria:
 
-- Workflow Automation is represented as promoted from Program 5 idea/draft material into Program 1 GitHub authority.
+- Workflow Automation is represented as promoted from PMO Backlog material into Program #1411 GitHub authority.
 - Drive/chat content is not sufficient implementation authority until captured in repo docs.
 - Runtime implementation, workflow YAML, D1 migrations, and production configuration remain out of scope.
-- The plan remains ready for aligned child issue creation after Atlas/Bill walkthrough.
+- The plan remains ready for aligned child issue creation after Atlas/Bill walkthrough and launch authorization.
 
 Validation:
 
@@ -316,7 +326,7 @@ Rollback:
 
 ---
 
-## Task 008 — Program 5 Promotion and Program 1 Launch Gate
+## Task 008 — PMO Backlog Promotion and Program #1411 Launch Gate
 
 Type: governance
 Agent: atlas
@@ -324,21 +334,19 @@ Priority: 8
 Depends On: Task 007
 Allowed Files:
 
-- `docs/ops/pmo/PMO-V2-OPERATING-MODEL.md`
+- `docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`
 - `docs/reference/pmo/lgfc-program-portfolio-model.md`
 - `docs/ops/pmo/program-registry.md`
 - `docs/ops/pmo/workflow-automation.md`
 - `docs/ops/implementation-plans/program-1-pmo-automation-agent-workflow-control.md`
-- `docs/ops/pmo/program-3-proposed-project-list.md`
-- `docs/ops/pmo/program-5-ideas-and-project-drafts.md`
+- `docs/ops/pmo/pmo-backlog.md`
 
 Acceptance Criteria:
 
-- Program 5 promotion criteria are auditable.
-- Program 3 is treated as an available Program 1-4 portfolio lane, not intake.
-- Program 1 launch gate is explicit.
-- Child issue creation remains blocked until Atlas/Bill walkthrough approval.
-- Program 3 proposed project list and Program 5 discussion list are available for Bill review.
+- PMO Backlog promotion criteria are auditable.
+- Program #1411 launch gate is explicit and blocked until Program #1255 completion/signoff.
+- Child issue creation remains blocked until Atlas/Bill walkthrough approval and launch authorization.
+- PMO Backlog inventory is available for Bill review.
 
 Validation:
 
@@ -349,8 +357,12 @@ Rollback:
 
 - Revert promotion/launch-gate documentation updates only.
 
-## Program 1 launch readiness conclusion
+## Program #1411 launch readiness conclusion
 
-Program 1 is not yet formally launch-ready under PMO v2 until the already-created task issues `#1417`-`#1424` are either updated or superseded to match this plan.
+Program #1411 is not yet formally launch-ready under PMO v3. It is staged / blocked until:
 
-No new design gap is known. The remaining readiness work is alignment of issue/task language and explicit Atlas/Bill launch authorization.
+1. Program #1255 is completed and signed off.
+2. Task issues `#1417`-`#1424` are either updated or superseded to match this plan.
+3. Atlas/Bill explicitly authorize launch.
+
+No new design gap is known. The remaining readiness work is Program #1255 completion, alignment of issue/task language, and explicit Atlas/Bill launch authorization.
