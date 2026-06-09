@@ -88,7 +88,7 @@ describe('content inventory pilot seed pack', () => {
     const media = flattenPilotRecords(PILOT_CONTENT_PACK.media_associations);
     const photos = flattenPilotRecords(PILOT_CONTENT_PACK.photos);
 
-    const publicReads = await verifyPilotPublicReads(null, inventory, media, photos);
+    const publicReads = await verifyPilotPublicReads(inventory, media, photos);
     expect(publicReads.ok).toBe(true);
     expect(publicReads.checks.some((check) => check.name === 'public:search-event-year' && check.passed)).toBe(
       true,

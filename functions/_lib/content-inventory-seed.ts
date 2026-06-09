@@ -371,10 +371,10 @@ export function buildPilotSeedStatements(pack: PilotContentPack = PILOT_CONTENT_
 }
 
 export function buildPilotCleanupStatements(pack: PilotContentPack = PILOT_CONTENT_PACK): PilotSqlStatement[] {
-  const inventoryIds = pack.inventory.map((item) => Number(item.record.id)).join(', ');
-  const queueIds = pack.queue.map((item) => Number(item.record.submission_id)).join(', ');
-  const photoIds = pack.photos.map((item) => Number(item.record.id)).join(', ');
-  const associationIds = pack.media_associations.map((item) => Number(item.record.id)).join(', ');
+  const inventoryIds = pack.inventory.map((item) => Number(item.record.id)).join(', ') || 'NULL';
+  const queueIds = pack.queue.map((item) => Number(item.record.submission_id)).join(', ') || 'NULL';
+  const photoIds = pack.photos.map((item) => Number(item.record.id)).join(', ') || 'NULL';
+  const associationIds = pack.media_associations.map((item) => Number(item.record.id)).join(', ') || 'NULL';
   const tagLike = `${pack.tag_prefix.replace(/'/g, "''")}%`;
 
   return [
@@ -560,7 +560,6 @@ export function verifyPilotExclusionRules(
 }
 
 export async function verifyPilotPublicReads(
-  db: any,
   inventoryRows: Record<string, unknown>[],
   mediaRows: Record<string, unknown>[],
   photoRows: Record<string, unknown>[],
@@ -586,64 +585,64 @@ export async function verifyPilotPublicReads(
   };
 
   const allResult = async (sql: string, args: unknown[] = []) => {
-          let results = [...inventoryRows];
-          if (sql.includes("status = 'published'")) {
-            results = results.filter((row) => row.status === 'published');
-          }
-          if (sql.includes("LIKE '%library%'")) {
-            results = results.filter((row) => String(row.allowed_sections || '').includes('library'));
-          }
-          if (sql.includes("LIKE '%search%'")) {
-            results = results.filter((row) => String(row.allowed_sections || '').includes('search'));
-          }
-          if (sql.includes("LIKE '%related_content%'")) {
-            results = results.filter((row) => String(row.allowed_sections || '').includes('related_content'));
-          }
-          if (sql.includes('source_name') && sql.includes("!= ''")) {
-            results = results.filter((row) => String(row.source_name || '').trim());
-          }
-          if (sql.includes('credit_line') && sql.includes("!= ''")) {
-            results = results.filter((row) => String(row.credit_line || '').trim());
-          }
+    let results = [...inventoryRows];
+    if (sql.includes("status = 'published'")) {
+      results = results.filter((row) => row.status === 'published');
+    }
+    if (sql.includes("LIKE '%library%'")) {
+      results = results.filter((row) => String(row.allowed_sections || '').includes('library'));
+    }
+    if (sql.includes("LIKE '%search%'")) {
+      results = results.filter((row) => String(row.allowed_sections || '').includes('search'));
+    }
+    if (sql.includes("LIKE '%related_content%'")) {
+      results = results.filter((row) => String(row.allowed_sections || '').includes('related_content'));
+    }
+    if (sql.includes('source_name') && sql.includes("!= ''")) {
+      results = results.filter((row) => String(row.source_name || '').trim());
+    }
+    if (sql.includes('credit_line') && sql.includes("!= ''")) {
+      results = results.filter((row) => String(row.credit_line || '').trim());
+    }
 
-          const needleArg = args.find((arg) => typeof arg === 'string' && String(arg).includes('%'));
-          if (typeof needleArg === 'string') {
-            const needle = needleArg.replace(/%/g, '').toLowerCase();
-            results = results.filter((row) => {
-              const mediaText = mediaRows
-                .filter((association) => Number(association.story_id) === Number(row.id))
-                .map((association) => {
-                  const photo = photoRows.find((item) => Number(item.id) === Number(association.media_id));
-                  return [association.caption, association.alt_text, photo?.description, photo?.title]
-                    .map((part) => String(part ?? ''))
-                    .join(' ');
-                })
-                .join(' ');
-              const fields = [
-                row.title,
-                row.text,
-                row.summary,
-                row.search_text,
-                row.tag,
-                row.source_name,
-                row.credit_line,
-                row.perspective_label,
-                row.event_date,
-                row.event_year,
-                mediaText,
-              ];
-              return fields.some((field) => String(field ?? '').toLowerCase().includes(needle));
-            });
-          }
+    const needleArg = args.find((arg) => typeof arg === 'string' && String(arg).includes('%'));
+    if (typeof needleArg === 'string') {
+      const needle = needleArg.replace(/%/g, '').toLowerCase();
+      results = results.filter((row) => {
+        const mediaText = mediaRows
+          .filter((association) => Number(association.story_id) === Number(row.id))
+          .map((association) => {
+            const photo = photoRows.find((item) => Number(item.id) === Number(association.media_id));
+            return [association.caption, association.alt_text, photo?.description, photo?.title]
+              .map((part) => String(part ?? ''))
+              .join(' ');
+          })
+          .join(' ');
+        const fields = [
+          row.title,
+          row.text,
+          row.summary,
+          row.search_text,
+          row.tag,
+          row.source_name,
+          row.credit_line,
+          row.perspective_label,
+          row.event_date,
+          row.event_year,
+          mediaText,
+        ];
+        return fields.some((field) => String(field ?? '').toLowerCase().includes(needle));
+      });
+    }
 
-          if (sql.includes('event_year = ?')) {
-            const yearArg = args.find((arg) => typeof arg === 'number');
-            results = results.filter((row) => Number(row.event_year) === Number(yearArg));
-          }
+    if (sql.includes('event_year = ?')) {
+      const yearArg = args.find((arg) => typeof arg === 'number');
+      results = results.filter((row) => Number(row.event_year) === Number(yearArg));
+    }
 
-          if (sql.includes('ORDER BY canonical DESC')) {
-            results = [...results].sort((a, b) => Number(b.canonical ?? 0) - Number(a.canonical ?? 0));
-          }
+    if (sql.includes('ORDER BY canonical DESC')) {
+      results = [...results].sort((a, b) => Number(b.canonical ?? 0) - Number(a.canonical ?? 0));
+    }
 
     return { results };
   };
