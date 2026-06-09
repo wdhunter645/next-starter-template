@@ -32,7 +32,7 @@ Existing PMO documents remain available as subordinate references until individu
 | Program 5 | Ideas and project drafts that are not yet portfolio-ready. |
 | project | A bounded body of work inside a Program 1-4 execution portfolio lane. |
 | Task | A single executable unit under a project, normally one source issue and one PR. |
-| issue | GitHub source contract for a bounded task or controlled project decision. |
+| issue | GitHub source contract for a bounded task, planning pass, or controlled project decision. |
 | PR | One scoped change set tied to exactly one source issue unless an approved exception says otherwise. |
 | Launch gate | Explicit Atlas/Bill decision that a planned program or task sequence is allowed to execute. |
 | Promotion | Movement of a Program 5 idea/draft into the Programs 1-4 prioritized execution portfolio. |
@@ -134,6 +134,16 @@ Program 5 idea / project draft
 → promotion into Program 1-4
 ```
 
+## Workflow record model
+
+Issues and pull requests are workflow records. They capture a bounded moment in time: the authorization, scope, review evidence, validation evidence, and closeout state for one planning or implementation pass.
+
+Repository documentation is the durable authority. Planning conversations may evolve into production-ready documentation through one or more workflow records, but the final source of truth is the merged documentation, not the historical issue or PR.
+
+A planning issue may authorize documentation that reflects the current conversation. After merge, projects may be assigned to programs, promoted through the portfolio, and prioritized for implementation through later documentation updates and bounded implementation issues.
+
+Agents must not treat a closed historical planning issue as active durable authority. They may use it as workflow evidence only. If additional work is needed after a prior planning pass, the PR body must make the workflow-record role explicit or a new bounded source issue must be created.
+
 ## Authority boundaries
 
 | Actor | May do | May not do without explicit authorization |
@@ -146,7 +156,7 @@ Program 5 idea / project draft
 ## Source-of-truth hierarchy
 
 1. PMO v2 operating model: this file.
-2. Current active program source issue.
+2. Current active repository documentation governing the subject.
 3. Current program implementation plan.
 4. Task/source issue body.
 5. PR body, validation evidence, and review disposition.
