@@ -14,6 +14,12 @@
       "source_issue": 1484
     },
     {
+      "pr": 1489,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1489-body.md",
+      "merge_sha": "670d525c70d56f6654a02c77c7f4dc9178e72baf",
+      "source_issue": 1488
+    },
+    {
       "pr": 1478,
       "body_file": "scripts/ci/post-merge-closeout/pr-1478-body.md",
       "merge_sha": "dce32bc9b4393d2957b1396d698ba167a72afe39",
