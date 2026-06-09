@@ -75,6 +75,7 @@ export function summarizeTargetResult({ prNumber, result = {}, detail = {}, phas
 		implementation_failures: detail.implementation_failures || [],
 		diataxis_failures: detail.diataxis_failures || [],
 		reviewer_findings: detail.reviewer_findings || [],
+		reviewer_disposition_failures: detail.reviewer_disposition_failures || [],
 		workflow_failures: detail.workflow_failures || [],
 	};
 }
