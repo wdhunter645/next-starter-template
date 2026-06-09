@@ -105,6 +105,7 @@ Reviewer items:
 - [x] Post-merge closeout body remediation applied for merged PR governance
 
 ## POST-MERGE ISSUE DISPOSITION
+- Post-merge closeout reconciliation for prior PR #1486: apply terminal label reconciliation on **#1484** (remove `status:post-merge-verify`; retain `status:complete`)
 - Post-merge closeout reconciliation for source issue **#1484** (already closed complete from prior PR #1485 closeout); reconcile terminal labels only
 - Post-merge closeout reconciliation for remediation issue **#1487** when validator passes after body apply
 

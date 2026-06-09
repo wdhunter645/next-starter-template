@@ -91,9 +91,30 @@ All other files are out of scope
 - [x] Local checks executed and passed or exact blocker documented
 - [x] Post-merge closeout body remediation applied for merged PR governance
 
+## REVIEWER RESPONSE ACCOUNTING
+- [x] Reviewed all reviewer comments.
+- [x] Reviewed all bot comments.
+- [x] Reviewed all GitHub review threads.
+- [x] Copilot disposition received or not applicable.
+- [x] Codex disposition received or not applicable.
+- [x] Gemini disposition received or not applicable.
+- [x] Cubic disposition received or not applicable.
+- [x] Every actionable reviewer comment has a PR-body disposition with `review-comment:<id>`.
+- [x] Every outdated review thread has explicit PR-body disposition with comment ID and thread state.
+
+Reviewer items:
+- review-comment:3349494768 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3349494795 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3349494807 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+
 ## ACCEPTANCE CRITERIA
 - [x] Enables automated closeout for #1112 after merge
 - [x] Post-merge closeout workflow and scripts land on `main`
 
 ## ROLLBACK
 Revert post-merge closeout workflow and helper scripts only.
+
+## POST-MERGE ISSUE DISPOSITION
+- Post-merge closeout reconciliation for prior PR #1230: post-merge closeout evidence recorded for prior PR #1230; source issue **#1112** already closed complete
+
+<!-- closeout-trigger: 2026-06-09 -->
