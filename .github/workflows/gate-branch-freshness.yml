@@ -1,0 +1,35 @@
+name: GATE — Branch Freshness
+
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - main
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  branch-freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Capture PR base SHA
+        if: ${{ github.event_name == 'pull_request' }}
+        run: echo "GITHUB_BASE_SHA=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_ENV"
+
+      - name: Capture PR head SHA
+        if: ${{ github.event_name == 'pull_request' }}
+        run: echo "GITHUB_HEAD_SHA=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_ENV"
+
+      - name: Evaluate branch freshness
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: node scripts/ci/branch_freshness_gate.mjs
