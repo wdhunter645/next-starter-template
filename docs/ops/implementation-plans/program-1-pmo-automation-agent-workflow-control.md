@@ -4,7 +4,7 @@ Audience: Human + AI
 Authority Level: Operational Authority
 Owns: Program 1 PMO Automation and Agent Workflow Control orchestration plan, task boundaries, child issue readiness, validation, and Atlas/Bill walkthrough gate
 Does Not Own: Program 2 website implementation, workflow YAML changes, runtime application behavior, D1 migrations, production configuration, GitHub issue mutation, or merge authority
-Status: production-ready-pending-v2-issue-alignment
+Status: staged-pending-v2-issue-alignment
 Project: program-1-pmo-automation-agent-workflow-control
 Owner: Atlas
 Execution Mode: orchestrated

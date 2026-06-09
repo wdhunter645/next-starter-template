@@ -32,10 +32,10 @@ Known existing authority:
 - `docs/reference/architecture/access-model.md` defines the admin access architecture.
 - Admin UI pages are browser-reachable under `/admin/**`.
 - Admin API endpoints are token-gated under `/api/admin/**`.
-- Client pages store `lgfc_admin_token` in `sessionStorage`.
-- API calls send `x-admin-token`.
-- The API compares the submitted token to `env.ADMIN_TOKEN`.
-- Missing or mismatched token returns `403 Forbidden`.
+- Client pages store `lgfc_admin_token` in `localStorage` via `src/lib/adminClient.ts`; some legacy pages such as `/admin/d1-test` still use `sessionStorage`.
+- API calls send `x-admin-token` or `Authorization: Bearer <token>`.
+- The API compares the submitted token to `env.ADMIN_TOKEN` in `functions/_lib/auth.ts`.
+- Missing or mismatched token returns `401 Unauthorized`; unconfigured admin access returns `503`.
 
 This is an architecture/access basis. It is not a complete admin product/tool design.
 
@@ -73,7 +73,7 @@ Before promotion, this project needs answers to these questions:
 10. Should token storage remain `sessionStorage`, move to a shared admin shell, or follow another pattern?
 11. Which tools should be visible before token validation?
 12. Which tools should expose only a locked state before token validation?
-13. What is the expected UX for 403, 500, D1 binding missing, B2 missing, malformed response, and empty data?
+13. What is the expected UX for 401, 403, 500, 503, D1 binding missing, B2 missing, malformed response, and empty data?
 14. Which tools can be safely used in preview deployments?
 15. Which tools are production-only?
 
