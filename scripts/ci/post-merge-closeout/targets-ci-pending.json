@@ -1,6 +1,12 @@
 {
-  "triggered_at": "2026-06-08T18:40:00Z",
+  "triggered_at": "2026-06-09T14:45:00Z",
   "targets": [
+    {
+      "pr": 1473,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1473-body.md",
+      "merge_sha": "3b3499a221affd8bb44e29e717a3ea56cf317316",
+      "source_issue": 1404
+    },
     {
       "pr": 1458,
       "body_file": "scripts/ci/post-merge-closeout/pr-1458-body.md",
