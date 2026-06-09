@@ -105,6 +105,20 @@ describe('reviewer-gate governance simulation', () => {
     expect(result.reason).toBe('break-glass-override-for-protected-scope');
   });
 
+  it('allows break-glass to bypass unresolved protected review threads when dispositions are recorded', () => {
+    const result = evaluateReviewerAccounting({
+      eventName: 'pull_request_target',
+      labels: ['recovery'],
+      files: ['scripts/ci/post_merge_remediation_issue.mjs'],
+      currentHeadLinkedReview: true,
+      breakGlassOverride: true,
+      unresolvedProtectedThreads: 3,
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.reason).toBe('break-glass-override-for-protected-scope');
+  });
+
   it('keeps protected workflow changes deterministically blocking without current review', () => {
     const result = evaluateReviewerAccounting({
       eventName: 'pull_request_target',

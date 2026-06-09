@@ -167,16 +167,6 @@ export function evaluateReviewerAccounting({
     };
   }
 
-  if (scope.hasProtectedScope && unresolvedProtectedThreads > 0) {
-    return {
-      ok: false,
-      severity: 'blocking',
-      reason: 'unresolved-protected-review-thread',
-      advisoryDowngraded,
-      scope,
-    };
-  }
-
   if (
     scope.hasProtectedScope &&
     eventName === 'pull_request_target' &&
@@ -186,6 +176,16 @@ export function evaluateReviewerAccounting({
       ok: true,
       severity: 'break-glass',
       reason: 'break-glass-override-for-protected-scope',
+      advisoryDowngraded,
+      scope,
+    };
+  }
+
+  if (scope.hasProtectedScope && unresolvedProtectedThreads > 0) {
+    return {
+      ok: false,
+      severity: 'blocking',
+      reason: 'unresolved-protected-review-thread',
       advisoryDowngraded,
       scope,
     };
