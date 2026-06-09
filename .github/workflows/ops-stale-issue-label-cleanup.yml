@@ -1,0 +1,48 @@
+name: OPS — Stale Issue Label Cleanup
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Issue number to clean up
+        required: true
+        type: string
+      remove_label:
+        description: Label name to remove
+        required: true
+        type: string
+
+permissions:
+  issues: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove stale issue label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = Number('${{ inputs.issue_number }}');
+            const label = '${{ inputs.remove_label }}';
+
+            if (!issueNumber || !label) {
+              core.setFailed('issue_number and remove_label inputs are required.');
+              return;
+            }
+
+            try {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                name: label,
+              });
+              core.info(`Removed label "${label}" from issue #${issueNumber}.`);
+            } catch (error) {
+              if (error.status === 404) {
+                core.info(`Label "${label}" was not present on issue #${issueNumber}; nothing to do.`);
+                return;
+              }
+              throw error;
+            }
