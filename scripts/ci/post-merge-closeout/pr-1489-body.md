@@ -69,7 +69,14 @@ Allowed files:
 - [x] Codex disposition received or not applicable.
 - [x] Gemini disposition received or not applicable.
 - [x] Cubic disposition received or not applicable.
-- [x] No actionable undispositioned reviewer comments on merge head.
+- [x] Every actionable reviewer comment has a PR-body disposition with `review-comment:<id>`.
+- [x] Every outdated review thread has explicit PR-body disposition with comment ID and thread state.
+
+Reviewer items:
+- review-comment:3382025121 — accepted — Copilot inline CI gate feedback addressed in merged branch freshness gate — thread state: resolved
+- review-comment:3382025215 — accepted — Copilot inline CI gate feedback addressed in merged branch freshness gate — thread state: resolved
+- review-comment:3381990618 — accepted — Gemini inline CI gate feedback addressed in merged branch freshness gate — thread state: outdated
+- review-comment:3382004206 — accepted — Codex inline CI gate feedback addressed in merged branch freshness gate — thread state: outdated
 
 ## ACCEPTANCE CRITERIA
 - [x] Gate fails when HEAD does not contain required base commits
@@ -88,6 +95,7 @@ Allowed files:
 - [x] Post-merge closeout body remediation applied for merged PR governance
 
 ## POST-MERGE ISSUE DISPOSITION
+- Post-merge closeout reconciliation for prior PR #1489: close **#1488** after post-merge verification passes following body apply with `state_reason: completed` and terminal label reconciliation (`status:complete` only)
 - Post-merge closeout reconciliation for source issue **#1488** after post-merge verification passes following body apply
 - Post-merge closeout reconciliation for remediation issue **#1490** when validator passes after body apply
 

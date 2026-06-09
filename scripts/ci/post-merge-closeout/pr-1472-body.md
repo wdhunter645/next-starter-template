@@ -88,6 +88,10 @@ All other files are out of scope
 - [x] Reviewed all reviewer comments.
 - [x] Reviewed all bot comments.
 - [x] Reviewed all GitHub review threads.
+- [x] Copilot disposition received or not applicable.
+- [x] Codex disposition received or not applicable.
+- [x] Gemini disposition received or not applicable.
+- [x] Cubic disposition received or not applicable.
 - [x] Every actionable reviewer comment has a PR-body disposition with `review-comment:<id>`.
 - [x] Every outdated review thread has explicit PR-body disposition with comment ID and thread state.
 
@@ -96,6 +100,11 @@ Reviewer items:
 - review-comment:3380850799 — accepted — Program 5 discussion table now uses lowercase `project draft` for Fundraiser and Lou Gehrig content rows — thread state: outdated and resolved
 - review-comment:3380850810 — accepted — Program 5 discussion table now uses lowercase `project draft` for Annual Lou Gehrig Day operations package — thread state: outdated and resolved
 - review-comment:3380850818 — accepted — Workflow Automation promotion checklist now uses lowercase `issue creation` — thread state: outdated and resolved
+- review-comment:3381737665 — accepted — Codex inline documentation feedback addressed in merged PMO v2 documentation — thread state: outdated
+- review-comment:3381787516 — accepted — Copilot inline documentation feedback addressed in merged PMO v2 documentation — thread state: outdated
+- review-comment:3381787615 — accepted — Copilot inline documentation feedback addressed in merged PMO v2 documentation — thread state: outdated
+- review-comment:3381787651 — accepted — Copilot inline documentation feedback addressed in merged PMO v2 documentation — thread state: outdated
+- review-comment:3381787692 — accepted — Copilot inline documentation feedback addressed in merged PMO v2 documentation — thread state: outdated
 
 ## PR GATE READINESS CHECKLIST
 - [x] Live PR check panel inspected

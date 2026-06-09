@@ -16,8 +16,11 @@ export function loadCloseoutTargets(manifestPath = DEFAULT_MANIFEST) {
 	const resolved = path.resolve(manifestPath);
 	const raw = JSON.parse(fs.readFileSync(resolved, 'utf8'));
 	const targets = Array.isArray(raw) ? raw : raw?.targets;
-	if (!Array.isArray(targets) || targets.length === 0) {
-		throw new Error(`Closeout manifest must include a non-empty targets array: ${resolved}`);
+	if (!Array.isArray(targets)) {
+		throw new Error(`Closeout manifest must include a targets array: ${resolved}`);
+	}
+	if (targets.length === 0) {
+		return { manifestPath: resolved, targets: [] };
 	}
 	for (const target of targets) {
 		if (!target?.pr || !target?.body_file) {

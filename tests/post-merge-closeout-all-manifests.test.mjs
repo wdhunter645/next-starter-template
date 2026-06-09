@@ -12,18 +12,19 @@ describe('post-merge closeout all manifests', () => {
 		]);
 	});
 
-	it('loads rerun targets for merged PRs 1472, 1486, and 1489', () => {
+	it('loads rerun targets for merged PRs 1472, 1486, 1489, and 1473 with remediated bodies', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json');
-		expect(targets.map((target) => target.pr)).toEqual([1472, 1486, 1489]);
+		expect(targets.map((target) => target.pr)).toEqual([1472, 1486, 1489, 1473]);
+		expect(targets.every((target) => target.skip_body_apply !== true)).toBe(true);
 	});
 
-	it('loads backlog CI task targets for merged PRs 1502, 1478, 1473, 1458, 1229, 1240, and 1242', () => {
+	it('allows an empty CI pending manifest when backlog is fully cleared', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending.json');
-		expect(targets.map((target) => target.pr)).toEqual([1502, 1478, 1473, 1458, 1229, 1240, 1242]);
+		expect(targets).toEqual([]);
 	});
 
 	it('loads remediation backlog targets', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-remediation-backlog.json');
-		expect(targets.map((target) => target.pr)).toEqual([1221, 1230, 1233, 1248, 1252]);
+		expect(targets.map((target) => target.pr)).toEqual([1221, 1230, 1233, 1248]);
 	});
 });

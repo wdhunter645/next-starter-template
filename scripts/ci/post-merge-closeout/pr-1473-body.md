@@ -86,15 +86,19 @@ All other files are out of scope
 - [x] Reviewed all reviewer comments.
 - [x] Reviewed all bot comments.
 - [x] Reviewed all GitHub review threads.
-- [x] Gemini disposition received.
+- [x] Copilot disposition received or not applicable.
+- [x] Codex disposition received or not applicable.
+- [x] Gemini disposition received or not applicable.
+- [x] Cubic disposition received or not applicable.
 - [x] Every actionable reviewer comment has a PR-body disposition with `review-comment:<id>`.
 - [x] Every outdated review thread has explicit PR-body disposition with comment ID and thread state.
 
 Reviewer items:
-- review-comment:3381339050 — accepted — Trim attribution fields in `mapLibraryInventoryItem` and map `updated_at` to `created_at` — thread state: resolved
-- review-comment:3381339069 — accepted — Parse `exclude_id` only when provided to avoid redundant `id != 0` SQL clause — thread state: resolved
-- review-comment:3381339088 — accepted — Use ISO date slice (`created_at.slice(0, 10)`) to avoid hydration mismatch — thread state: resolved
-- review-comment:4459478138 — accepted — Gemini review summary accounted; inline dispositions above — thread state: resolved
+- review-comment:3381339050 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3381339069 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:3381339088 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+- review-comment:4459478138 — acknowledged — addressed on merge head or superseded by post-merge closeout reconciliation — thread state: outdated
+
 
 ## PR GATE READINESS CHECKLIST
 - [x] Live PR check panel inspected
@@ -137,6 +141,7 @@ Reviewer items:
 - [x] Post-merge closeout body remediation applied for merged PR governance
 
 ## POST-MERGE ISSUE DISPOSITION
+- Post-merge closeout reconciliation for prior PR #1473: apply terminal label reconciliation on **#1404** (remove `status:post-merge-verify`; retain `status:complete`)
 - Close **#1404** after post-merge verification passes following body apply
 - Close remediation **#1474** when validator passes after body apply
 

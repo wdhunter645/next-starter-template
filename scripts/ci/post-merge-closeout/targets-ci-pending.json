@@ -1,47 +1,4 @@
 {
-  "triggered_at": "2026-06-09T17:30:00Z",
-  "targets": [
-    {
-      "pr": 1502,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1502-body.md",
-      "merge_sha": "5c7128206261848464b9cbb2ff301713269fdf0d",
-      "source_issue": 1501
-    },
-    {
-      "pr": 1478,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1478-body.md",
-      "merge_sha": "dce32bc9b4393d2957b1396d698ba167a72afe39",
-      "source_issue": 1405
-    },
-    {
-      "pr": 1473,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1473-body.md",
-      "merge_sha": "3b3499a221affd8bb44e29e717a3ea56cf317316",
-      "source_issue": 1404
-    },
-    {
-      "pr": 1458,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1458-body.md",
-      "merge_sha": "47693785f533f26e02d4961c6a54a05eb69d8829",
-      "source_issue": 1403
-    },
-    {
-      "pr": 1229,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1229-body.md",
-      "merge_sha": "201a428a08ea495e1d95e89a4208cfde8c9266dc",
-      "source_issue": 1226
-    },
-    {
-      "pr": 1240,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1240-body.md",
-      "merge_sha": "89c0ebfc1bd40713629fe7161824bbc615365581",
-      "source_issue": 1197
-    },
-    {
-      "pr": 1242,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1242-body.md",
-      "merge_sha": "308012d8b4e2e8ae55fa04af621a16e08e01f3d6",
-      "source_issue": 1198
-    }
-  ]
+  "triggered_at": "2026-06-09T18:15:00Z",
+  "targets": []
 }
