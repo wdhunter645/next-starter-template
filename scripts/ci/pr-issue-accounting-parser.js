@@ -89,14 +89,42 @@ function closingIssueRefsFromLine(line, owner, repo) {
   return { refs, invalidRefs };
 }
 
+function isIgnoredIssueAccountingLine(line = '') {
+  if (/OPS\s+Tracker/i.test(line)) return true;
+  if (/Umbrella\s+Tracker/i.test(line)) return true;
+  return false;
+}
+
+function extractTrustedAccountingBody(body = '') {
+  const value = String(body || '');
+  const cursorMatch = value.match(
+    /<!--\s*CURSOR_AGENT_PR_BODY_BEGIN\s*-->([\s\S]*?)<!--\s*CURSOR_AGENT_PR_BODY_END\s*-->/i,
+  );
+  if (cursorMatch) {
+    return cursorMatch[1].trim();
+  }
+  return value;
+}
+
 function issueRefsFromBody(body, owner, repo) {
   const refs = [];
   const invalidRefs = [];
   const lines = (body || '').split('\n');
+  let inCubicBlock = false;
 
   for (const line of lines) {
-    if (/OPS\s+Tracker/i.test(line)) continue;
-    if (/Umbrella\s+Tracker/i.test(line)) continue;
+    if (/<!--\s*This is an auto-generated description by cubic\./i.test(line)) {
+      inCubicBlock = true;
+      continue;
+    }
+    if (inCubicBlock) {
+      if (/<!--\s*End of auto-generated description by cubic\./i.test(line)) {
+        inCubicBlock = false;
+      }
+      continue;
+    }
+
+    if (isIgnoredIssueAccountingLine(line)) continue;
 
     const semantic = semanticIssueRefsFromLine(line, owner, repo);
     refs.push(...semantic.refs);
@@ -128,7 +156,8 @@ function issueRefsFromBranch(ref) {
 }
 
 function issueRefsFromTrustedSources(body, branchRef, owner, repo) {
-  const bodyRefs = issueRefsFromBody(body, owner, repo);
+  const trustedBody = extractTrustedAccountingBody(body);
+  const bodyRefs = issueRefsFromBody(trustedBody, owner, repo);
   const branchRefs = bodyRefs.refs.length === 0 ? issueRefsFromBranch(branchRef) : [];
   return {
     refs: [...bodyRefs.refs, ...branchRefs],
@@ -164,6 +193,7 @@ function normalizeIssueLine(body, issueNumber) {
 
 module.exports = {
   canonicalIssueLine,
+  extractTrustedAccountingBody,
   issueNumberFromRef,
   issueRefsFromBody,
   issueRefsFromBranch,
