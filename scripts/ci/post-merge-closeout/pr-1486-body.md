@@ -70,7 +70,12 @@ All other files are out of scope
 - [x] Reviewed all reviewer comments.
 - [x] Reviewed all bot comments.
 - [x] Reviewed all GitHub review threads.
-- [x] No actionable inline reviewer findings requiring disposition.
+- [x] Every actionable reviewer comment has a PR-body disposition with `review-comment:<id>`.
+- [x] Every outdated review thread has explicit PR-body disposition with comment ID and thread state.
+
+Reviewer items:
+- review-comment:3381941155 — accepted — Copilot workflow feedback addressed in merged stale-label cleanup workflow — thread state: outdated
+- review-comment:3381941187 — accepted — Copilot workflow feedback addressed in merged stale-label cleanup workflow — thread state: outdated
 
 ## PR GATE READINESS CHECKLIST
 - [x] Live PR check panel inspected

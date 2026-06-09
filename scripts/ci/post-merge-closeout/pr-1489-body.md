@@ -69,7 +69,14 @@ Allowed files:
 - [x] Codex disposition received or not applicable.
 - [x] Gemini disposition received or not applicable.
 - [x] Cubic disposition received or not applicable.
-- [x] No actionable undispositioned reviewer comments on merge head.
+- [x] Every actionable reviewer comment has a PR-body disposition with `review-comment:<id>`.
+- [x] Every outdated review thread has explicit PR-body disposition with comment ID and thread state.
+
+Reviewer items:
+- review-comment:3382025121 — accepted — Copilot inline CI gate feedback addressed in merged branch freshness gate — thread state: resolved
+- review-comment:3382025215 — accepted — Copilot inline CI gate feedback addressed in merged branch freshness gate — thread state: resolved
+- review-comment:3381990618 — accepted — Gemini inline CI gate feedback addressed in merged branch freshness gate — thread state: outdated
+- review-comment:3382004206 — accepted — Codex inline CI gate feedback addressed in merged branch freshness gate — thread state: outdated
 
 ## ACCEPTANCE CRITERIA
 - [x] Gate fails when HEAD does not contain required base commits
