@@ -2,24 +2,22 @@
 Doc Type: Operations
 Audience: Human + AI
 Authority Level: Operational Authority
-Owns: PMO workflow automation planning authority, Cursor queue-control boundaries, PR readiness rules, wave/run control concepts, and Program 3 promotion handoff for workflow automation
+Owns: PMO workflow automation planning authority, Cursor queue-control boundaries, PR readiness rules, wave/run control concepts, and Program 5 promotion handoff for workflow automation
 Does Not Own: Workflow YAML implementation, runtime application behavior, D1 migrations, production secrets, GitHub issue mutation, or merge authority
-Canonical Reference: /docs/ops/implementation-plans/program-1-pmo-automation-agent-workflow-control.md
-Related Issues: #1449, #1411, #1409, #1379, #1255, #1335
-Last Reviewed: 2026-06-08
+Canonical Reference: /docs/ops/pmo/PMO-V2-OPERATING-MODEL.md
+Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255
+Last Reviewed: 2026-06-09
 ---
 
 # PMO Workflow Automation
 
 ## Purpose
 
-Represent the LGFC Workflow Automation design in GitHub documentation authority
-for the new Program 1 cycle: **PMO Automation and Agent Workflow Control**.
+Represent the LGFC Workflow Automation design in GitHub documentation authority for the current Program 1 cycle: **PMO Automation and Agent Workflow Control**.
 
-This document converts the Program 3 Workflow Automation candidate and the
-Drive-draft summary preserved in GitHub issues into a bounded repository-owned
-planning source. It defines what the automation program may design before any
-workflow code, label mutation, issue mutation, or runtime implementation begins.
+This document converts Workflow Automation from Program 5 ideas/project-draft material into bounded repository-owned planning authority. It defines what the automation program may design before any workflow code, label mutation, issue mutation, or runtime implementation begins.
+
+This document is subordinate to `/docs/ops/pmo/PMO-V2-OPERATING-MODEL.md`.
 
 ## Scope
 
@@ -32,7 +30,7 @@ This document owns:
 - wave labels and run identifiers as planning/control concepts;
 - post-merge closeout evidence stabilization requirements;
 - terminal completed-issue label reconciliation requirements;
-- Program 3 promotion requirements for workflow automation candidates.
+- Program 5 promotion requirements for workflow automation candidates.
 
 This document does not own:
 
@@ -42,132 +40,89 @@ This document does not own:
 - D1 migrations;
 - production configuration or secrets;
 - GitHub issue closure, relabeling, or queue mutation;
-- creation of implementation child issues before Atlas/Bill walkthrough.
+- creation of implementation child issues before Atlas/Bill launch approval.
 
 ## Current Known Truth
 
-- issue `#1411` promotes Workflow Automation from Program 3 into a new Program 1
-  planning cycle.
-- issue `#1379` captured Workflow Automation as a Program 3 future candidate and
-  listed the available Drive-draft concepts.
-- The Google Drive draft is not directly readable from this environment without
-  sign-in; the accessible authority for this PR is the text preserved in
-  `#1379`, `#1409`, and `#1411`.
-- Program 2 under `#1255` remains active and must not be blocked, relabeled,
-  closed, or otherwise mutated by this Program 1 planning work.
-- Completed Program 1 cycle `#1335` remains historical evidence only. It is not
-  the parent issue for this new Program 1 cycle.
-- Cursor may prepare docs-only PRs and run validation when authorized, but may
-  not merge PRs, close issues, relabel issues, mutate queue state, or create
-  implementation child issues unless the source issue explicitly authorizes that
-  action.
+- issue `#1411` promotes Workflow Automation from Program 5 ideas/project-draft material into a new Program 1 planning cycle.
+- legacy issue `#1379` captured Workflow Automation as future candidate material and listed available draft concepts.
+- Program 2 under `#1255` remains active and must not be blocked, relabeled, closed, or otherwise mutated by this Program 1 planning work.
+- Completed Program 1 cycle `#1335` remains historical evidence only. It is not the parent issue for this new Program 1 cycle.
+- Cursor may prepare docs-only PRs and run validation when authorized, but may not merge PRs, close issues, relabel issues, mutate queue state, or create implementation child issues unless the source issue explicitly authorizes that action.
 
 ## Intended Final State
 
-- GitHub documentation, not Google Drive or chat, is the canonical design source
-  for PMO Workflow Automation.
-- Program 1 produces production-ready child task definitions for later issue
-  creation after Atlas/Bill walkthrough.
-- Wave labels, run identifiers, merge policy labels, and queue-control behavior
-  are specified before workflow code changes begin.
-- Cursor can continue safely when a PR is ready for review by stopping at the
-  correct handoff point, reporting validation, and preserving Atlas/Bill review
-  and merge authority.
-- Completed source issues have reconciled terminal labels: stable non-status
-  labels plus `status:complete`, with stale active or failure status labels
-  removed during closeout.
-- Program 3 remains the portfolio intake lane for ideas not yet promoted into a
-  Program 1 or Program 2 execution lane.
+- GitHub documentation, not Google Drive or chat, is the canonical design source for PMO Workflow Automation.
+- Program 1 produces production-ready task definitions for later issue alignment after Atlas/Bill walkthrough.
+- Wave labels, run identifiers, merge policy labels, and queue-control behavior are specified before workflow code changes begin.
+- Cursor can continue safely when a PR is ready for review by stopping at the correct handoff point, reporting validation, and preserving Atlas/Bill review and merge authority.
+- Completed source issues have reconciled terminal labels: stable non-status labels plus `status:complete`, with stale active or failure status labels removed during closeout.
+- Program 5 remains the ideas/project-draft lane for work not yet promoted into Programs 1-4.
 
 ## Program 1 Project Areas
 
 | Area | Program 1 design output | Implementation boundary |
 | --- | --- | --- |
-| PMO perpetual cycle authority | Durable language that Program 1 and Program 2 are alternating execution lanes, while Program 3 is portfolio intake | No issue or label mutation |
-| Workflow Automation design migration | This GitHub authority page replaces Drive-only planning for workflow automation | No workflow YAML edits |
+| PMO v2 authority | Durable language that Programs 1-4 are rotating portfolio execution/planning lanes and Program 5 is ideas/project drafts | No issue or label mutation |
+| Workflow Automation design migration | This GitHub authority page replaces Drive/chat-only planning for workflow automation | No workflow YAML edits |
 | Cursor continuation and queue contract | Rules for when Cursor continues, stops, reports, and waits | No automated queue advancement in this PR |
 | PR readiness and batch review control | Ready-for-review rules that preserve Atlas/Bill review | No PR merge or review-state mutation by Cursor |
 | Merge and issue mutation policy | Explicit prohibition on Cursor merge, close, relabel, and issue-state changes without authorization | No destructive issue action |
 | Queue/wave model and labels | Planning definitions for wave/run identifiers and stop/continue gates | No label creation or relabeling |
 | Post-merge closeout evidence stabilization | Evidence and terminal-label reconciliation requirements before issue closeout or queue advancement | No closeout automation change |
-| Program 3 promotion process | Criteria for moving portfolio ideas into Program 1/2 work | No child implementation issues from this PR |
+| Program 5 promotion process | Criteria for moving ideas/project drafts into Programs 1-4 | No child implementation issues from this PR |
 
 ## Workflow Automation Design Decisions
 
 ### Program lanes
 
-Program 1 and Program 2 are alternating execution lanes in the LGFC perpetual PMO
-cycle. They are not permanent subject domains. A Program 1 cycle may define a
-body of work while Program 2 executes a previously authorized body of work; when
-the active execution cycle completes, the lanes can alternate again.
+Programs 1-4 are rotating execution/planning lanes in the LGFC prioritized execution portfolio. They are not permanent subject domains. Each Program 1-4 cycle implements a selected group of prioritized projects.
 
-Program 3 is not an implementation lane. It is portfolio intake and
-prioritization for ideas, deferred work, candidate projects, and future
-opportunities. Program 3 items become executable only after owner promotion,
-GitHub authority placement, decomposition into scoped issues, and bounded
-Cursor/agent handoff.
+Program 5 is not an implementation lane. It is the ideas and project-drafts lane for concepts that still need documentation, readiness review, prioritization, and promotion before they enter Programs 1-4.
 
 ### Execution modes and queue control
 
-LGFC programs use one-task handoff mode or launched-program queue mode. See
-`/docs/reference/pmo/lgfc-program-queue-and-dependency-map.md`. Launched
-programs require an approved dependency map before issue creation. Queue mode
-governs which task is authorized next; it does not grant Cursor merge, close,
-relabel, or queue-mutation authority.
+LGFC programs use one-task handoff mode or launched-program queue mode. See `/docs/reference/pmo/lgfc-program-queue-and-dependency-map.md`. Launched programs require an approved dependency map before issue creation. Queue mode governs which task is authorized next; it does not grant Cursor merge, close, relabel, or queue-mutation authority.
 
 ### Cursor continuation contract
 
-Cursor may continue forward only inside the active source issue and changed-file
-allowlist. When a PR is ready for review, Cursor must:
+Cursor may continue forward only inside the active source issue and changed-file allowlist. When a PR is ready for review, Cursor must:
 
 1. finish the requested local validation;
 2. update the PR body with exact validation results;
 3. preserve exactly one source issue line;
 4. stop at `READY FOR REVIEW` for Atlas/Bill walkthrough;
-5. avoid merge, close, relabel, queue, or issue-mutation actions unless the
-   active issue explicitly authorizes them.
+5. avoid merge, close, relabel, queue, or issue-mutation actions unless the active issue explicitly authorizes them.
 
-Cursor continuation must support safe progress without converting readiness into
-merge authority.
+Cursor continuation must support safe progress without converting readiness into merge authority.
 
 ### Reviewer disposition enforcement
 
-Reviewer comments are not satisfied by PR-body claims alone. Every actionable
-trusted reviewer comment must be resolved, explicitly dispositioned in the PR
-body with `review-comment:<id>`, or linked to a bounded follow-up issue.
+Reviewer comments are not satisfied by PR-body claims alone. Every actionable trusted reviewer comment must be resolved, explicitly dispositioned in the PR body with `review-comment:<id>`, or linked to a bounded follow-up issue.
+
 Outdated GitHub review threads still require explicit disposition evidence.
 
-Post-merge closeout must verify reviewer disposition before closing the source
-issue. Undispositioned reviewer findings create or preserve post-merge exception
-issues and stop program queue advancement until disposition is complete.
+Post-merge closeout must verify reviewer disposition before closing the source issue. Undispositioned reviewer findings create or preserve post-merge exception issues and stop program queue advancement until disposition is complete.
 
 ### PR readiness and batch review
 
-PR readiness means the implementation or documentation PR is complete enough for
-human review. It does not transfer merge authority to Cursor.
+PR readiness means the implementation or documentation PR is complete enough for human review. It does not transfer merge authority to Cursor.
 
 Batch review must preserve:
 
-- Bill authority for merges, protected actions, launch gates, destructive
-  actions, production-sensitive work, and strategy decisions;
-- Atlas authority for governance review, source-issue accounting, queue
-  conformance, and review disposition;
-- Cursor responsibility for scoped implementation, validation, PR-body evidence,
-  and stopping at the authorized handoff point.
+- Bill authority for merges, protected actions, launch gates, destructive actions, production-sensitive work, and strategy decisions;
+- Atlas authority for governance review, source-issue accounting, queue conformance, and review disposition;
+- Cursor responsibility for scoped implementation, validation, PR-body evidence, and stopping at the authorized handoff point.
 
 ### Merge and issue mutation policy
 
-Cursor may not merge PRs, close issues, relabel issues, mark issue state,
-advance queues, create child issues, or mutate Program 2 work unless the active
-source issue explicitly authorizes that action.
+Cursor may not merge PRs, close issues, relabel issues, mark issue state, advance queues, create child issues, or mutate other program work unless the active source issue explicitly authorizes that action.
 
-Docs may recommend future issue structure or label concepts. Recommendations are
-not permission to mutate GitHub state.
+Docs may recommend future issue structure or label concepts. Recommendations are not permission to mutate GitHub state.
 
 ### Queue/wave model and labels
 
-Wave labels and run identifiers are planning/control concepts until a later
-implementation issue authorizes workflow or label changes.
+Wave labels and run identifiers are planning/control concepts until a later implementation issue authorizes workflow or label changes.
 
 Required design fields before implementation:
 
@@ -181,8 +136,7 @@ Required design fields before implementation:
 
 ### Post-merge closeout evidence
 
-Closeout automation must not treat merge as sufficient evidence by itself.
-Future implementation must require a stable closeout packet that identifies:
+Closeout automation must not treat merge as sufficient evidence by itself. Future implementation must require a stable closeout packet that identifies:
 
 - merged PR and merge commit;
 - source issue;
@@ -192,40 +146,25 @@ Future implementation must require a stable closeout packet that identifies:
 - queue advancement decision;
 - unresolved reviewer, gate, or post-merge blockers.
 
-The selected terminal behavior is: a closed completed source issue retains only
-stable non-status labels plus `status:complete`. The controller or authorized
-Atlas closeout step must remove active or failure-state labels such as
-`status:queued`, `status:assigned`, `status:pr-draft`,
-`status:implementation`, `status:review`, `status:post-merge-verify`, and
-`status:failed` as part of the same authorized closeout action that closes the
-issue with `state_reason: completed`. If that reconciliation cannot be verified,
-queue advancement stops and the blocker is reported.
+The selected terminal behavior is: a closed completed source issue retains only stable non-status labels plus `status:complete`. The controller or authorized Atlas closeout step must remove active or failure-state labels such as `status:queued`, `status:assigned`, `status:pr-draft`, `status:implementation`, `status:review`, `status:post-merge-verify`, and `status:failed` as part of the same authorized closeout action that closes the issue with `state_reason: completed`. If that reconciliation cannot be verified, queue advancement stops and the blocker is reported.
 
-## Program 3 Promotion Process
+## Program 5 Promotion Process
 
-A Program 3 item may feed a future Program 1 or Program 2 cycle only when:
+A Program 5 item may feed a future Program 1-4 cycle only when:
 
-1. Bill/owner approves promotion.
+1. Bill/owner approves promotion review.
 2. The idea is converted into a finalized design or implementation plan.
 3. Repository documentation becomes the design source of truth.
-4. Non-interference with active Program 1/2 work is documented.
+4. Non-interference with active program work is documented.
 5. Scope is decomposed into tasks with allowlisted files and validation.
 6. Issue creation is authorized after Atlas/Bill walkthrough.
 7. Cursor receives a bounded source issue and PR scope.
 
-Workflow Automation satisfies steps 1-3 for planning through `#1411`; it does
-not yet authorize workflow implementation, label mutation, or child issue
-creation from this PR.
+Workflow Automation satisfies early promotion requirements for planning through `#1411`; it does not yet authorize workflow implementation, label mutation, or child issue creation from this document.
 
 ## Related References
 
-- Program 1 PMO Automation plan:
-  `/docs/ops/implementation-plans/program-1-pmo-automation-agent-workflow-control.md`
-- PMO program registry: `/docs/ops/pmo/program-registry.md`
-- Program portfolio model:
-  `/docs/reference/pmo/lgfc-program-portfolio-model.md`
-- Cursor execution contract:
-  `/docs/reference/pmo/lgfc-cursor-execution-contract.md`
-- PMO critical path: `/docs/ops/pmo/critical-path.md`
-- GitHub issue closeout protocol:
-  `/docs/ops/pmo/github-issue-closeout-protocol.md`
+- PMO v2 operating model: `/docs/ops/pmo/PMO-V2-OPERATING-MODEL.md`
+- Program registry: `/docs/ops/pmo/program-registry.md`
+- Program portfolio model: `/docs/reference/pmo/lgfc-program-portfolio-model.md`
+- Cursor execution contract: `/docs/reference/pmo/lgfc-cursor-execution-contract.md`
