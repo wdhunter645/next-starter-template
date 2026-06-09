@@ -106,7 +106,7 @@ This plan does not own:
 
 ## Updated task definitions
 
-### Task 001 — PMO V2 Authority
+## Task 001 — PMO V2 Authority
 
 Type: governance
 Agent: atlas
@@ -138,7 +138,7 @@ Rollback:
 
 ---
 
-### Task 002 — Workflow Automation Design Migration
+## Task 002 — Workflow Automation Design Migration
 
 Type: governance
 Agent: cursor
@@ -168,7 +168,7 @@ Rollback:
 
 ---
 
-### Task 003 — Cursor Continuation and Queue Contract
+## Task 003 — Cursor Continuation and Queue Contract
 
 Type: governance
 Agent: cursor
@@ -198,7 +198,7 @@ Rollback:
 
 ---
 
-### Task 004 — PR Readiness and Batch Review Control
+## Task 004 — PR Readiness and Batch Review Control
 
 Type: governance
 Agent: cursor
@@ -227,7 +227,7 @@ Rollback:
 
 ---
 
-### Task 005 — Merge and Issue Mutation Policy
+## Task 005 — Merge and Issue Mutation Policy
 
 Type: governance
 Agent: cursor
@@ -257,7 +257,7 @@ Rollback:
 
 ---
 
-### Task 006 — Queue/Wave Model and Label Planning
+## Task 006 — Queue/Wave Model and Label Planning
 
 Type: governance
 Agent: cursor
@@ -286,7 +286,7 @@ Rollback:
 
 ---
 
-### Task 007 — Post-Merge Closeout Evidence Stabilization
+## Task 007 — Post-Merge Closeout Evidence Stabilization
 
 Type: governance
 Agent: cursor
@@ -316,7 +316,7 @@ Rollback:
 
 ---
 
-### Task 008 — Program 5 Promotion and Program 1 Launch Gate
+## Task 008 — Program 5 Promotion and Program 1 Launch Gate
 
 Type: governance
 Agent: atlas
