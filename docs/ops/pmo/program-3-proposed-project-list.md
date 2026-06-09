@@ -50,12 +50,13 @@ Rationale:
 
 | Priority | Proposed project | Readiness | Notes |
 | --- | --- | --- | --- |
-| 1 | Fundraiser / charity operations system | Candidate | Could consolidate Live Like Lou fundraiser practices, campaign timelines, auction handling, winner publication, leaderboard rules, and repeatable annual campaign operations. |
-| 2 | Lou Gehrig content collection pipeline | Candidate | Continuous collection, review, source/credit tracking, and publication workflow for Lou Gehrig related material. This should build on Program 2 content inventory work. |
-| 3 | Community engagement and member growth | Draft candidate | Membership communications, join flow support, discussion prompts, fan club activity cadence, and public engagement operations. |
-| 4 | Recognition / honor pages | Draft candidate | Adam Wilson Award, donor/volunteer recognition, campaign winners, and historical recognition pages. |
-| 5 | External partner / friends-of-club operations | Draft candidate | Partner records, sponsorship/friend tiles, outreach workflows, and public presentation standards. |
-| 6 | Annual Lou Gehrig Day operations package | Draft candidate | Repeatable yearly operations checklist, homepage spotlight usage, content schedule, fundraising tie-ins, and validation. |
+| 1 | Club Home page design | Candidate design drafted | Authenticated newspaper-style club homepage layout, backend D1/B2/other source mapping, content rotation, and content reuse strategy. See `docs/ops/pmo/program-3-club-home-page-design.md`. |
+| 2 | Fundraiser / charity operations system | Candidate | Could consolidate Live Like Lou fundraiser practices, campaign timelines, auction handling, winner publication, leaderboard rules, and repeatable annual campaign operations. |
+| 3 | Lou Gehrig content collection pipeline | Candidate | Continuous collection, review, source/credit tracking, and publication workflow for Lou Gehrig related material. This should build on Program 2 content inventory work. |
+| 4 | Community engagement and member growth | Draft candidate | Membership communications, join flow support, discussion prompts, fan club activity cadence, and public engagement operations. |
+| 5 | Recognition / honor pages | Draft candidate | Adam Wilson Award, donor/volunteer recognition, campaign winners, and historical recognition pages. |
+| 6 | External partner / friends-of-club operations | Draft candidate | Partner records, sponsorship/friend tiles, outreach workflows, and public presentation standards. |
+| 7 | Annual Lou Gehrig Day operations package | Draft candidate | Repeatable yearly operations checklist, homepage spotlight usage, content schedule, fundraising tie-ins, and validation. |
 
 ## Program 3 exclusions
 
@@ -80,7 +81,7 @@ Before Program 3 can launch:
 
 ## Open questions for Bill
 
-1. Should Program 3 focus on community/fundraising/content growth operations, or a different project group?
+1. Should Program 3 focus on Club Home plus community/fundraising/content growth operations, or a different project group?
 2. Which proposed projects are already portfolio-ready?
 3. Which proposed projects should remain in Program 5 as drafts?
 4. Should Program 3 be documentation-first like Program 1, or implementation-heavy after Program 2 closes?
