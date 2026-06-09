@@ -311,7 +311,12 @@ describe('sync-pr-state successful closeout', () => {
 				isMerged: true,
 				prBody: 'Post-merge closeout reconciliation follow-up for prior PR #1472.',
 				postMergeResult: { status: 'pass', remediation_required: false },
-				issueMeta: { title: 'PMO task', labels: ['status:post-merge-verify'], state: 'CLOSED' },
+				issueMeta: {
+					title: 'PMO task',
+					labels: ['status:post-merge-verify'],
+					state: 'CLOSED',
+					state_reason: 'COMPLETED',
+				},
 				terminalLabelResult: {
 					ok: true,
 					removeLabels: ['status:post-merge-verify'],

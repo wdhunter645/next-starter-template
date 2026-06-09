@@ -6,9 +6,9 @@ import { githubRepoRequest } from './github_issue_api.mjs';
 import { REMEDIATION_TITLE_PREFIX } from './post_merge_source_issue_closeout.mjs';
 
 export function blockingCloseoutFailures(result = {}) {
-	const blockingMetadata = (result.metadata_failures || []).filter((failure) => failure.severity !== 'advisory');
+	const blockingMetadata = (result.metadata_failures || []).filter((failure) => failure?.severity !== 'advisory');
 	const blockingWorkflows = (result.workflow_failures || []).filter(
-		(failure) => failure.required || failure.classification !== 'optional-remediation-failure',
+		(failure) => failure?.required || failure?.classification !== 'optional-remediation-failure',
 	);
 
 	return [
@@ -17,12 +17,12 @@ export function blockingCloseoutFailures(result = {}) {
 		...(result.diataxis_failures || []),
 		...(result.reviewer_findings || []).map((finding) => ({
 			code: 'late_reviewer_finding',
-			message: `${finding.reviewer || 'reviewer'}: ${finding.body || finding.url || 'finding recorded'}`,
+			message: `${finding?.reviewer || 'reviewer'}: ${finding?.body || finding?.url || 'finding recorded'}`,
 		})),
 		...(result.reviewer_disposition_failures || []),
 		...blockingWorkflows.map((failure) => ({
 			code: 'workflow_failure',
-			message: `${failure.workflow || 'workflow'} ${failure.conclusion || ''} ${failure.classification || ''}`.trim(),
+			message: `${failure?.workflow || 'workflow'} ${failure?.conclusion || ''} ${failure?.classification || ''}`.trim(),
 		})),
 	];
 }

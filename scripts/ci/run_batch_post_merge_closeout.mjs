@@ -40,8 +40,8 @@ export function buildFailureReason(detail = {}) {
 		for (const failure of failures || []) {
 			const code =
 				label === 'workflow'
-					? failure.workflow || failure.code || 'unknown'
-					: failure.code || failure.reviewer || 'unknown';
+					? failure?.workflow || failure?.code || 'unknown'
+					: failure?.code || failure?.reviewer || 'unknown';
 			parts.push(`${label}:${code}`);
 		}
 	}

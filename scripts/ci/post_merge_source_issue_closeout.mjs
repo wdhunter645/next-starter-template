@@ -139,7 +139,9 @@ export function shouldCloseSourceIssue({
 		(postMergeResult?.source_issue_closeout_mode === 'closed_remediation_followup' ||
 			isPermittedClosedSourceIssueFollowup({
 				body: prBody,
-				sourceIssue: { state: 'closed', state_reason: 'completed' },
+				sourceIssue: issueMeta
+					? { state: issueMeta.state, state_reason: issueMeta.state_reason || 'completed' }
+					: null,
 			}));
 	if (issueMeta?.state && String(issueMeta.state).toUpperCase() !== 'OPEN' && !closedFollowupAllowed) {
 		return { close: false, reason: 'source_issue_not_open' };
