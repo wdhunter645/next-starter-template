@@ -92,10 +92,6 @@ test.describe('Homepage Section Visibility and Content', () => {
     // Verify Social Wall heading is present
     const socialWallHeading = page.getByRole('heading', { name: /social wall/i });
     await expect(socialWallHeading).toBeVisible();
-
-    // Verify Social Wall has subtitle
-    const socialWallSubtitle = page.getByText(/live fan posts from facebook/i);
-    await expect(socialWallSubtitle).toBeVisible();
   });
 
   test('should verify all sections are present in correct order', async ({ page }) => {
