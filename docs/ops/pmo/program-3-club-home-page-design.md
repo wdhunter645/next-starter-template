@@ -2,7 +2,7 @@
 Doc Type: Design Reference
 Audience: Human + AI
 Authority Level: Planning Draft
-Owns: Program 3 Club Home page design candidate, newspaper-style club homepage layout, section source mapping, backend source model, content rotation, and content reuse strategy
+Owns: Program 3 Club Home page design candidate, newspaper-style club homepage layout, Club Home feature links, section source mapping, backend source model, content rotation, and content reuse strategy
 Does Not Own: Runtime implementation, D1 migrations, B2 bucket configuration, production secrets, final Program 3 prioritization, issue creation, or launch approval
 Canonical Reference: /docs/ops/pmo/PMO-V2-OPERATING-MODEL.md
 Related Issues: #1255, #1379, #1411
@@ -24,6 +24,18 @@ This document is a Program 3 portfolio project candidate. It does not launch imp
 Program 3 is a rotating portfolio planning/execution lane. The Club Home page design belongs in Program 3 because it is an approved portfolio-style project candidate that can build on Program 2 website/content infrastructure and Program 1 PMO execution controls.
 
 This project should not be placed in Program 5 unless Bill/Atlas decide it is not yet portfolio-ready.
+
+## Existing production feature-link design authority
+
+The Club Home feature links point to existing Fan Club feature pages that already have production design coverage in `docs/reference/design/fanclub-subpages.md`.
+
+| Club Home feature link | Destination route | Existing design status | Existing source authority |
+| --- | --- | --- | --- |
+| Gallery | `/fanclub/photo` | Production destination-page design exists | `docs/reference/design/fanclub-subpages.md` |
+| Library | `/fanclub/library` | Production destination-page design exists | `docs/reference/design/fanclub-subpages.md` |
+| Memorabilia | `/fanclub/memorabilia` | Production destination-page design exists | `docs/reference/design/fanclub-subpages.md` |
+
+Program 3 does not need to redesign those destination pages before using them as Club Home feature links. Program 3 does need to define the Club Home card/link presentation, source logic, ordering, rotation, and empty-state behavior.
 
 ## Intended user experience
 
@@ -49,13 +61,24 @@ Recommended section order:
 | 1 | Masthead / Club Home hero | Establish authenticated Fan Club context and current editorial focus. |
 | 2 | Lead story | Primary current or historical feature selected from approved content inventory. |
 | 3 | Secondary story rail | Smaller supporting stories from the same content inventory. |
-| 4 | Photo / memorabilia feature | Rotating media item with source, credit, and context. |
-| 5 | Member prompt / discussion starter | Prompt members to participate, submit, or discuss. |
-| 6 | Archive spotlight | Surface older Lou Gehrig content by date, tag, anniversary, or editorial priority. |
-| 7 | Campaign / fundraiser module | Display only when an active campaign or charity operation is configured. |
-| 8 | Events / calendar callout | Show upcoming LGFC or Lou Gehrig related events. |
-| 9 | Recognition / partner tile | Optional module for honors, partner, donor, volunteer, or Friends of the Fan Club content. |
-| 10 | Submission CTA | Invite members to submit photos, stories, memorabilia, or leads. |
+| 4 | Feature link cards | Link members to Gallery, Library, and Memorabilia using existing production destination-page design authority. |
+| 5 | Photo / memorabilia feature | Rotating media item with source, credit, and context. |
+| 6 | Member prompt / discussion starter | Prompt members to participate, submit, or discuss. |
+| 7 | Archive spotlight | Surface older Lou Gehrig content by date, tag, anniversary, or editorial priority. |
+| 8 | Campaign / fundraiser module | Display only when an active campaign or charity operation is configured. |
+| 9 | Events / calendar callout | Show upcoming LGFC or Lou Gehrig related events. |
+| 10 | Recognition / partner tile | Optional module for honors, partner, donor, volunteer, or Friends of the Fan Club content. |
+| 11 | Submission CTA | Invite members to submit photos, stories, memorabilia, or leads. |
+
+## Club Home feature-link card model
+
+| Card | Link target | Card source | Content behavior |
+| --- | --- | --- | --- |
+| Gallery | `/fanclub/photo` | Static route target plus optional D1 `photos` count or latest approved image | Shows a short label, thumbnail or count when available, and links to the existing Photo Gallery page. |
+| Library | `/fanclub/library` | Static route target plus optional D1 `content_inventory` count or latest library story | Shows a short label, latest story title or count when available, and links to the existing Library page. |
+| Memorabilia | `/fanclub/memorabilia` | Static route target plus optional D1 `photos` memorabilia-tagged count or latest item | Shows a short label, memorabilia image or count when available, and links to the existing Memorabilia page. |
+
+Feature-link cards should degrade to static links if counts or thumbnails are unavailable. The feature-link section should not block Club Home rendering when D1/B2 data is missing.
 
 ## Backend source map
 
@@ -64,6 +87,7 @@ Recommended section order:
 | Masthead / hero | D1 `page_content` or static page config | D1 `content_inventory` | Hero copy should remain editorially controlled. |
 | Lead story | D1 `content_inventory` | B2 media referenced by content record | Must use published, approved inventory records only. |
 | Secondary story rail | D1 `content_inventory` | Search/index metadata | Should reuse same story model as public homepage/library. |
+| Feature link cards | Static route config | D1 `photos`, D1 `content_inventory`, B2 thumbnails | Links to existing production pages: `/fanclub/photo`, `/fanclub/library`, `/fanclub/memorabilia`. |
 | Photo / memorabilia feature | D1 `photos` or `content_inventory` media associations | B2 media assets | Should include source, credit, caption, and related story link where available. |
 | Member prompt | D1 `page_content` or discussion seed table if created | Manual admin content | Should be manually curated until discussion automation is explicitly designed. |
 | Archive spotlight | D1 `content_inventory` | D1 milestone/event metadata | Uses event date, year, tags, rotation group, and last featured metadata. |
@@ -159,6 +183,7 @@ Future implementation issues must define:
 - exact route/component files;
 - D1 query utilities;
 - B2 media mapping behavior;
+- feature-link card behavior and fallbacks;
 - fallback states;
 - section-level acceptance criteria;
 - tests for content selection and empty states;
@@ -169,6 +194,7 @@ Future implementation issues must define:
 | Area | Status |
 | --- | --- |
 | Newspaper layout concept | Drafted |
+| Club Home feature links | Drafted; destination pages already have production design authority |
 | Backend source map | Drafted |
 | D1/B2/other source strategy | Drafted |
 | Content rotation strategy | Drafted |
