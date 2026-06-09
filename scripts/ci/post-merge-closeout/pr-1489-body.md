@@ -88,7 +88,7 @@ Allowed files:
 - [x] Post-merge closeout body remediation applied for merged PR governance
 
 ## POST-MERGE ISSUE DISPOSITION
-- Close **#1488** after post-merge verification passes following body apply
-- Close remediation **#1490** when validator passes after body apply
+- Post-merge closeout reconciliation for source issue **#1488** after post-merge verification passes following body apply
+- Post-merge closeout reconciliation for remediation issue **#1490** when validator passes after body apply
 
 <!-- closeout-trigger: 2026-06-09 -->

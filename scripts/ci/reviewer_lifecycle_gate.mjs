@@ -6,7 +6,11 @@ import {
   classifyProtectedScope,
   evaluateReviewerAccounting,
 } from './reviewer-gate-simulation.mjs';
-import { evaluateReviewerCommentDisposition } from './reviewer_comment_disposition.mjs';
+import {
+  evaluateReviewerCommentDisposition,
+  hasValidDisposition,
+  parseReviewerDispositions,
+} from './reviewer_comment_disposition.mjs';
 
 export const TRUSTED_REVIEWERS = [
   {
@@ -133,36 +137,40 @@ function sortCommentsChronologically(comments) {
 export function countUnresolvedProtectedThreads({
   reviewComments = [],
   reviews = [],
+  body = '',
 } = {}) {
-  let unresolved = 0;
-  const commentsById = new Map(
-    reviewComments.filter((comment) => comment.id != null).map((comment) => [comment.id, comment]),
-  );
-  const threads = new Map();
+	let unresolved = 0;
+	const dispositions = parseReviewerDispositions(body);
+	const commentsById = new Map(
+		reviewComments.filter((comment) => comment.id != null).map((comment) => [comment.id, comment]),
+	);
+	const threads = new Map();
 
-  for (const comment of reviewComments) {
-    const threadId = resolveThreadRootId(comment, commentsById);
-    if (!threads.has(threadId)) {
-      threads.set(threadId, []);
-    }
-    threads.get(threadId).push(comment);
-  }
+	for (const comment of reviewComments) {
+		const threadId = resolveThreadRootId(comment, commentsById);
+		if (!threads.has(threadId)) {
+			threads.set(threadId, []);
+		}
+		threads.get(threadId).push(comment);
+	}
 
-  for (const comments of threads.values()) {
-    const orderedComments = sortCommentsChronologically(comments);
-    const firstComment = orderedComments[0];
-    const latestComment = orderedComments[orderedComments.length - 1];
-    const user = firstComment.user?.login || '';
-    const path = firstComment.path || '';
+	for (const comments of threads.values()) {
+		const orderedComments = sortCommentsChronologically(comments);
+		const firstComment = orderedComments[0];
+		const latestComment = orderedComments[orderedComments.length - 1];
+		const user = firstComment.user?.login || '';
+		const path = firstComment.path || '';
+		const threadId = String(resolveThreadRootId(firstComment, commentsById));
 
-    if (!isTrustedReviewer(user)) continue;
-    if (!isProtectedPath(path)) continue;
-    if (firstComment.line == null && firstComment.position == null) continue;
-    if (orderedComments.some((comment) => IGNORE_MARKER.test(comment.body || ''))) continue;
-    if (isResolvedReviewText(latestComment.body || '')) continue;
+		if (!isTrustedReviewer(user)) continue;
+		if (!isProtectedPath(path)) continue;
+		if (firstComment.line == null && firstComment.position == null) continue;
+		if (orderedComments.some((comment) => IGNORE_MARKER.test(comment.body || ''))) continue;
+		if (hasValidDisposition(dispositions.get(threadId))) continue;
+		if (isResolvedReviewText(latestComment.body || '')) continue;
 
-    unresolved += 1;
-  }
+		unresolved += 1;
+	}
 
   const latestReviews = new Map();
   for (const review of reviews) {
@@ -304,7 +312,7 @@ export function assessReviewerLifecycle({
   const currentHeadLinkedReview = computeCurrentHeadLinkedReview({ reviews, reviewComments, headSha });
   const staleTrustedReviewOnly = hasStaleTrustedReviewOnly({ reviews, reviewComments, headSha });
   const breakGlassOverride = hasProtectedScopeBreakGlass({ labels, body });
-  const unresolvedProtectedThreads = countUnresolvedProtectedThreads({ reviewComments, reviews });
+  const unresolvedProtectedThreads = countUnresolvedProtectedThreads({ reviewComments, reviews, body });
   const advisoryFindings = countAdvisoryFindings({ issueComments, reviewComments, reviews });
   const reviewerDisposition = evaluateReviewerCommentDisposition({
     body,

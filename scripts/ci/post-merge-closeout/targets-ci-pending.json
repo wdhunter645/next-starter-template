@@ -1,29 +1,11 @@
 {
-  "triggered_at": "2026-06-09T16:15:00Z",
+  "triggered_at": "2026-06-09T17:30:00Z",
   "targets": [
     {
       "pr": 1502,
       "body_file": "scripts/ci/post-merge-closeout/pr-1502-body.md",
       "merge_sha": "5c7128206261848464b9cbb2ff301713269fdf0d",
       "source_issue": 1501
-    },
-    {
-      "pr": 1472,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1472-body.md",
-      "merge_sha": "eab8244aab4aa8553d656264e9bb902efc60cbbf",
-      "source_issue": 1411
-    },
-    {
-      "pr": 1486,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1486-body.md",
-      "merge_sha": "837c2050d92ce785bab7f929cae2771b6926522d",
-      "source_issue": 1484
-    },
-    {
-      "pr": 1489,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1489-body.md",
-      "merge_sha": "670d525c70d56f6654a02c77c7f4dc9178e72baf",
-      "source_issue": 1488
     },
     {
       "pr": 1478,

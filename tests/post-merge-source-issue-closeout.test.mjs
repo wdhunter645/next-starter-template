@@ -303,6 +303,29 @@ describe('sync-pr-state successful closeout', () => {
 		);
 	});
 
+	it('allows closed-source reconciliation when PR body matches follow-up language even without closeout mode metadata', () => {
+		expect(
+			shouldCloseSourceIssue({
+				action: 'post_merge_success',
+				issueNumber: '1411',
+				isMerged: true,
+				prBody: 'Post-merge closeout reconciliation follow-up for prior PR #1472.',
+				postMergeResult: { status: 'pass', remediation_required: false },
+				issueMeta: {
+					title: 'PMO task',
+					labels: ['status:post-merge-verify'],
+					state: 'CLOSED',
+					state_reason: 'COMPLETED',
+				},
+				terminalLabelResult: {
+					ok: true,
+					removeLabels: ['status:post-merge-verify'],
+					addLabel: 'status:complete',
+				},
+			}),
+		).toEqual({ close: true, reason: 'post_merge_validation_success' });
+	});
+
 	it('reconciles permitted already-closed remediation follow-ups without closing again', async () => {
 		process.env.GITHUB_REPOSITORY = 'owner/repo';
 		const syncPrState = await import('../scripts/orchestrator/sync-pr-state.mjs');

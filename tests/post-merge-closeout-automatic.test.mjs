@@ -15,7 +15,10 @@ import {
 	buildCloseoutErrorResult,
 	resolveCloseoutEventContext,
 } from '../scripts/ci/run_post_merge_closeout.mjs';
-import { shouldUpsertRemediationIssue } from '../scripts/ci/post_merge_remediation_issue.mjs';
+import {
+	blockingCloseoutFailures,
+	shouldUpsertRemediationIssue,
+} from '../scripts/ci/post_merge_remediation_issue.mjs';
 import { resolvePrNumber } from '../scripts/ci/post_merge_validator.mjs';
 
 describe('automatic post-merge closeout triggers', () => {
@@ -139,10 +142,44 @@ describe('automatic closeout runtime context', () => {
 });
 
 describe('closeout fail-safe remediation evidence', () => {
-	it('upserts remediation issues for failed closeout and remediation-required passes', () => {
-		expect(shouldUpsertRemediationIssue({ status: 'fail', remediation_required: true })).toBe(true);
-		expect(shouldUpsertRemediationIssue({ status: 'pass', remediation_required: true })).toBe(true);
-		expect(shouldUpsertRemediationIssue({ status: 'pass', remediation_required: false })).toBe(false);
+	it('upserts remediation issues only for blocking closeout failures', () => {
+		expect(
+			shouldUpsertRemediationIssue({
+				status: 'fail',
+				remediation_required: true,
+				metadata_failures: [{ code: 'source_issue_not_open', message: 'closed' }],
+			}),
+		).toBe(true);
+		expect(
+			shouldUpsertRemediationIssue({
+				status: 'pass',
+				remediation_required: true,
+				workflow_failures: [
+					{
+						workflow: 'Auto-Sync Documentation',
+						classification: 'secret-access/configuration',
+						required: false,
+					},
+				],
+			}),
+		).toBe(true);
+		expect(
+			shouldUpsertRemediationIssue({
+				status: 'pass',
+				remediation_required: false,
+				workflow_failures: [
+					{
+						workflow: 'Docs Guardrails',
+						classification: 'optional-remediation-failure',
+						required: false,
+					},
+				],
+			}),
+		).toBe(false);
+		expect(blockingCloseoutFailures({
+			status: 'pass',
+			metadata_failures: [{ code: 'missing_advisory_section', severity: 'advisory', message: 'advisory' }],
+		})).toEqual([]);
 	});
 
 	it('builds a fail-closeout result with remediation_required set', () => {

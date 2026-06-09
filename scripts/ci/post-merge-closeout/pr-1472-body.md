@@ -138,7 +138,7 @@ Reviewer items:
 - [x] Post-merge closeout body remediation applied for merged PR governance
 
 ## POST-MERGE ISSUE DISPOSITION
-- Close **#1411** after post-merge verification passes following body apply with `state_reason: completed` and terminal label reconciliation (`status:complete` only)
-- Close remediation **#1483** when validator passes after body apply
+- Post-merge closeout reconciliation for source issue **#1411** (already closed complete from prior PR #1472 merge); reconcile terminal labels (`status:complete` only) and clear stale workflow labels
+- Post-merge closeout reconciliation for remediation issue **#1483** when validator passes after body apply
 
 <!-- closeout-trigger: 2026-06-09 -->

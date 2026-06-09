@@ -155,6 +155,27 @@ describe('reviewer lifecycle gate assessment', () => {
     expect(count).toBe(1);
   });
 
+  it('does not count protected threads dispositioned in the PR body', () => {
+    const count = countUnresolvedProtectedThreads({
+      body: [
+        '## REVIEWER RESPONSE ACCOUNTING',
+        'Reviewer items:',
+        '- review-comment:3382496983 — accepted — Added optional chaining — thread state: resolved',
+      ].join('\n'),
+      reviewComments: [{
+        id: 3382496983,
+        user: { login: 'gemini-code-assist[bot]' },
+        commit_id: 'abc123',
+        path: 'scripts/ci/post_merge_remediation_issue.mjs',
+        line: 12,
+        body: 'Add optional chaining.',
+      }],
+      reviews: [],
+    });
+
+    expect(count).toBe(0);
+  });
+
   it('does not count protected threads resolved by a later reply', () => {
     const count = countUnresolvedProtectedThreads({
       reviewComments: [

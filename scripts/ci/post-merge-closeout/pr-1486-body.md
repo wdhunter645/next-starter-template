@@ -100,7 +100,7 @@ All other files are out of scope
 - [x] Post-merge closeout body remediation applied for merged PR governance
 
 ## POST-MERGE ISSUE DISPOSITION
-- Source issue **#1484** already closed complete from prior PR #1485 closeout; no additional source issue mutation required
-- Close remediation **#1487** when validator passes after body apply
+- Post-merge closeout reconciliation for source issue **#1484** (already closed complete from prior PR #1485 closeout); reconcile terminal labels only
+- Post-merge closeout reconciliation for remediation issue **#1487** when validator passes after body apply
 
 <!-- closeout-trigger: 2026-06-09 -->

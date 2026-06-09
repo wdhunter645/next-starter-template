@@ -6,6 +6,7 @@ on:
   push:
     branches: [main]
     paths:
+      - scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json
       - scripts/ci/post-merge-closeout/targets-ci-pending.json
       - scripts/ci/post-merge-closeout/targets-remediation-backlog.json
   workflow_dispatch:
