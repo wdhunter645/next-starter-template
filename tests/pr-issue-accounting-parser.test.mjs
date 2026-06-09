@@ -106,6 +106,23 @@ describe('PR issue-accounting parser', () => {
     ]);
   });
 
+  it('uses only the Cursor agent PR body block when markers are present', () => {
+    const body = [
+      '<!-- CURSOR_AGENT_PR_BODY_BEGIN -->',
+      '- **Issue:** #1483',
+      '<!-- CURSOR_AGENT_PR_BODY_END -->',
+      '',
+      '<!-- This is an auto-generated description by cubic. -->',
+      'Expected outcome on merge: close #1411 and #1488; resolve #1483, #1487, and #1490.',
+      '<!-- End of auto-generated description by cubic. -->',
+    ].join('\n');
+
+    expect(issueRefsFromTrustedSources(body, '', owner, repo)).toEqual({
+      invalidRefs: [],
+      refs: [{ issueNumber: 1483, source: 'primary-body-line' }],
+    });
+  });
+
   it('ignores cubic auto-generated PR description blocks for issue accounting', () => {
     const body = [
       '- **Issue:** #1483',

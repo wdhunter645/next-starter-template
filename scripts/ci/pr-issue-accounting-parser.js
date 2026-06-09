@@ -95,6 +95,17 @@ function isIgnoredIssueAccountingLine(line = '') {
   return false;
 }
 
+function extractTrustedAccountingBody(body = '') {
+  const value = String(body || '');
+  const cursorMatch = value.match(
+    /<!--\s*CURSOR_AGENT_PR_BODY_BEGIN\s*-->([\s\S]*?)<!--\s*CURSOR_AGENT_PR_BODY_END\s*-->/i,
+  );
+  if (cursorMatch) {
+    return cursorMatch[1].trim();
+  }
+  return value;
+}
+
 function issueRefsFromBody(body, owner, repo) {
   const refs = [];
   const invalidRefs = [];
@@ -145,7 +156,8 @@ function issueRefsFromBranch(ref) {
 }
 
 function issueRefsFromTrustedSources(body, branchRef, owner, repo) {
-  const bodyRefs = issueRefsFromBody(body, owner, repo);
+  const trustedBody = extractTrustedAccountingBody(body);
+  const bodyRefs = issueRefsFromBody(trustedBody, owner, repo);
   const branchRefs = bodyRefs.refs.length === 0 ? issueRefsFromBranch(branchRef) : [];
   return {
     refs: [...bodyRefs.refs, ...branchRefs],
@@ -181,6 +193,7 @@ function normalizeIssueLine(body, issueNumber) {
 
 module.exports = {
   canonicalIssueLine,
+  extractTrustedAccountingBody,
   issueNumberFromRef,
   issueRefsFromBody,
   issueRefsFromBranch,
