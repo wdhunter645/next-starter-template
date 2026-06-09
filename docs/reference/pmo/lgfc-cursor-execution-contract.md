@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: Cursor execution permissions, continuation rules, PR handoff behavior, and issue-mutation boundaries for LGFC program tasks
 Does Not Own: Cursor product configuration, local developer environment, workflow implementation, GitHub merge authority, or GitHub issue mutation authority
 Canonical Reference: /docs/reference/pmo/lgfc-program-portfolio-model.md
-Related Issues: #1449, #1448, #1411, #1409, #1379, #1255, #1335
-Last Reviewed: 2026-06-08
+Related Issues: #1449, #1448, #1411, #1409, #1379, #1255, #1335, #1501
+Last Reviewed: 2026-06-09
 ---
 
 # LGFC Cursor Execution Contract
@@ -35,17 +35,21 @@ This document does not own:
 
 ## Current Known Truth
 
-- Program 1 `#1411` authorizes a docs-only planning PR for PMO Automation and
-  Agent Workflow Control.
-- Program 2 `#1255` remains active and must not be blocked, closed, relabeled,
-  or otherwise mutated by Program 1 planning work.
+- Program #1411 authorizes docs-only planning for PMO Automation and
+  Agent Workflow Control. It is staged / blocked and may not launch until
+  Program #1255 is completed and signed off.
+- Program #1255 remains active and must not be blocked, closed, relabeled,
+  or otherwise mutated by Program #1411 planning work.
 - Completed Program 1 cycle `#1335` is historical evidence only and is not a
-  parent issue for later Program 1 cycles.
+  parent issue for Program #1411.
 - Cursor may execute bounded repository work only through an active source issue,
   file allowlist, validation requirement, and PR handoff.
 - Cursor may not merge PRs, close issues, relabel issues, create child issues,
   advance queues, or mutate issue state unless the active source issue explicitly
   authorizes that action.
+- Program issue number and source issue body control execution authority.
+- Labels, merge state, closed predecessor issues, queue order, open PR order, or
+  branch availability alone do not authorize execution.
 
 ## Intended Final State
 
@@ -78,7 +82,7 @@ Cursor may not, by default:
 - create implementation child issues;
 - mark or mutate issue state;
 - advance queues;
-- mutate Program 2 issues while Program 1 planning is active;
+- mutate Program #1255 issues while Program #1411 planning is active;
 - modify workflow YAML, application/runtime code, D1 migrations, production
   configuration, or secrets outside the task scope;
 - combine multiple source issues into one PR;
@@ -126,29 +130,37 @@ When a PR is ready for review, Cursor continues only far enough to:
 
 PR readiness is not merge authority.
 
-## Program 2 Child-Task Continuation
+## Active Program Issue Child-Task Continuation
 
-For Program 2 `#1255`, Cursor may continue from one child task to another only
+### Program #1255 (current active program)
+
+For active Program #1255, Cursor may continue from one child task to another only
 when the next child issue contains the latest valid Atlas, Bill, or controller
 `@cursor` continuation authorization comment.
 
 Cursor must not treat labels, merge state, closed or completed prior issue
 state, queue order, open PR order, or branch availability as executable
 authority by themselves. Those signals may inform human/controller status
-review, but they do not authorize Cursor to start the next Program 2 child task.
+review, but they do not authorize Cursor to start the next Program #1255 child task.
 
 The continuation authorization must name exactly one next child issue. Cursor may
 execute only that named issue, must use the PR source issue line required by that
 authorization, and must stop at GitHub `READY FOR REVIEW` unless the active
 source issue explicitly says otherwise.
 
-Every executable Program 2 child issue must include or be paired with parent
+Every executable Program #1255 child issue must include or be paired with parent
 program reference `#1255`, parent project reference when applicable, dependency
 or prior-task criteria, blocking criteria, required source documents, exact
 scope, hard out-of-scope boundaries, expected file areas or a file-touch
 allowlist, validation expectations, exact PR source issue line requirement, no
 merge authority, and no issue close or relabel authority unless explicitly
 granted.
+
+### Future active program issues
+
+Future active program issues may use the same child-task continuation pattern when
+their program issue and dependency map authorize it. Program issue number and
+source issue body control whether continuation is permitted.
 
 For launched-program queue mode, every executable task issue must also include
 these dependency fields in the issue body:
@@ -164,7 +176,7 @@ Dependency or prior-task criteria alone do not replace these named fields.
 
 Cursor must pause and report findings instead of implementing when blockers are
 unclear or when the next task would require creating child issues, mutating
-`#1255`, mutating `#1256`, touching Program 1 / `#1411`, changing workflow YAML,
+`#1255`, mutating `#1256`, touching Program #1411, changing workflow YAML,
 closing issues, relabeling issues, or merging without explicit authorization.
 
 When Cursor's GitHub token cannot reliably remove labels or post issue cleanup
@@ -181,7 +193,7 @@ Cursor must stop and report when:
   secret changes not explicitly authorized;
 - issue closure, relabeling, queue advancement, child issue creation, or merge is
   needed;
-- Program 2 state would be mutated by Program 1 planning work;
+- Program #1255 state would be mutated by Program #1411 planning work;
 - validation fails and the root cause is outside the authorized scope;
 - more than one source issue would be needed for the PR body.
 
