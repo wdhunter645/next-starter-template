@@ -1,0 +1,50 @@
+name: OPS — Close Superseded PR #1492
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/ops-close-superseded-pr-1492.yml
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  close-superseded-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close PR #1492 superseded by merged PR #1491
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = 1492;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
+
+            if (pr.state === 'closed') {
+              core.info(`PR #${prNumber} is already closed.`);
+              return;
+            }
+
+            await github.rest.pulls.update({
+              owner,
+              repo,
+              pull_number: prNumber,
+              state: 'closed',
+            });
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: prNumber,
+              body: [
+                'Superseded by PR #1491 (merged 2026-06-09), which consolidated post-merge closeout remediation for PRs #1472, #1486, and #1489.',
+                '',
+                'Closed automatically by `ops-close-superseded-pr-1492.yml`.',
+              ].join('\n'),
+            });
+
+            core.info(`Closed superseded PR #${prNumber}.`);
