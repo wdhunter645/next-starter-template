@@ -1,5 +1,7 @@
 // Shared read helpers for published content_inventory public/member surfaces.
 
+import { fetchRotationRankedInventory } from './content-inventory-rotation';
+
 export const LIBRARY_SECTION = 'library';
 export const RELATED_CONTENT_SECTION = 'related_content';
 export const SEARCH_SECTION = 'search';
@@ -124,33 +126,15 @@ export async function fetchLibraryInventoryPage(
   options: FetchLibraryInventoryOptions,
 ): Promise<{ items: ReturnType<typeof mapLibraryInventoryItem>[]; total: number }> {
   const q = String(options.q || '').trim().toLowerCase();
-  const whereParts = [publishedInventoryWhere(LIBRARY_SECTION)];
-  const args: unknown[] = [];
+  const { items: rankedRows, total } = await fetchRotationRankedInventory(db, {
+    sectionKey: LIBRARY_SECTION,
+    q,
+    limit: options.limit,
+    offset: options.offset,
+    includeAlternates: true,
+  });
 
-  if (q) {
-    whereParts.push(
-      "(lower(COALESCE(title,'')) LIKE ? OR lower(COALESCE(text,'')) LIKE ? OR lower(COALESCE(summary,'')) LIKE ? OR lower(COALESCE(search_text,'')) LIKE ? OR lower(COALESCE(credit_line,'')) LIKE ? OR lower(COALESCE(source_name,'')) LIKE ? OR lower(COALESCE(perspective_label,'')) LIKE ?)",
-    );
-    const like = `%${q}%`;
-    args.push(like, like, like, like, like, like, like);
-  }
-
-  const whereSql = `WHERE ${whereParts.join(' AND ')}`;
-  const countRow = await db.prepare(`SELECT COUNT(1) AS n FROM content_inventory ${whereSql}`).bind(...args).first();
-  const total = Number((countRow as { n?: number } | null)?.n ?? 0) || 0;
-
-  const rows = await db
-    .prepare(
-      `SELECT id, title, text, summary, credit_line, source_name, event_date, event_year, updated_at
-       FROM content_inventory
-       ${whereSql}
-       ORDER BY priority DESC, updated_at DESC, id DESC
-       LIMIT ? OFFSET ?`,
-    )
-    .bind(...args, options.limit, options.offset)
-    .all();
-
-  const items = ((rows.results ?? []) as InventoryRow[]).map((row) => mapLibraryInventoryItem(row));
+  const items = rankedRows.map((row) => mapLibraryInventoryItem(row));
   return { items, total };
 }
 
