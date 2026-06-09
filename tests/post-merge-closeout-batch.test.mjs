@@ -26,12 +26,21 @@ describe('post-merge closeout batch', () => {
 		expect(targets[1].body_file).toContain('pr-1243-body.md');
 	});
 
-	it('rejects null or missing targets in the manifest without throwing parse errors', () => {
+	it('rejects null targets in the manifest without throwing parse errors', () => {
 		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-manifest-'));
 		const manifestPath = path.join(dir, 'targets.json');
 		fs.writeFileSync(manifestPath, JSON.stringify({ targets: null }));
 
-		expect(() => loadCloseoutTargets(manifestPath)).toThrow(/non-empty targets array/);
+		expect(() => loadCloseoutTargets(manifestPath)).toThrow(/targets array/);
+	});
+
+	it('allows an empty targets array for cleared backlog manifests', () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-manifest-'));
+		const manifestPath = path.join(dir, 'targets.json');
+		fs.writeFileSync(manifestPath, JSON.stringify({ targets: [] }));
+
+		const { targets } = loadCloseoutTargets(manifestPath);
+		expect(targets).toEqual([]);
 	});
 
 	it('uses merge-commit workflow runs only during closeout validation', () => {
