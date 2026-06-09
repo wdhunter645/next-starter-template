@@ -77,6 +77,9 @@ function makeEditorialDb(options?: {
     if (sql.includes("LIKE '%library%'")) {
       filtered = filtered.filter((row) => String(row.allowed_sections || '').includes('library'));
     }
+    if (sql.includes("LIKE '%search%'")) {
+      filtered = filtered.filter((row) => String(row.allowed_sections || '').includes('search'));
+    }
 
     const likeArg = args.find((arg) => typeof arg === 'string' && arg.includes('%'));
     if (typeof likeArg === 'string') {

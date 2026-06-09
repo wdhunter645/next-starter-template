@@ -2,6 +2,19 @@
 
 export const LIBRARY_SECTION = 'library';
 export const RELATED_CONTENT_SECTION = 'related_content';
+export const SEARCH_SECTION = 'search';
+
+const INVENTORY_TEXT_SEARCH_FIELDS = [
+  'title',
+  'text',
+  'summary',
+  'search_text',
+  'tag',
+  'source_name',
+  'credit_line',
+  'perspective_label',
+  'event_date',
+] as const;
 
 export type PublicInventoryStory = {
   id: number;
@@ -30,13 +43,15 @@ export function parseInventoryYear(eventYear: unknown, eventDate: unknown): numb
   return eventDate ? Number(String(eventDate).slice(0, 4)) || null : null;
 }
 
-export function sectionAllowedClause(sectionKey: string): string {
+export function sectionAllowedClause(sectionKey: string, alias?: string): string {
   const escaped = sectionKey.replace(/'/g, "''");
-  return `lower(COALESCE(allowed_sections,'')) LIKE '%${escaped}%'`;
+  const prefix = alias ? `${alias}.` : '';
+  return `lower(COALESCE(${prefix}allowed_sections,'')) LIKE '%${escaped}%'`;
 }
 
-export function publishedInventoryWhere(sectionKey: string): string {
-  return `status = 'published' AND ${sectionAllowedClause(sectionKey)} AND COALESCE(TRIM(source_name), '') != '' AND COALESCE(TRIM(credit_line), '') != ''`;
+export function publishedInventoryWhere(sectionKey: string, alias?: string): string {
+  const prefix = alias ? `${alias}.` : '';
+  return `${prefix}status = 'published' AND ${sectionAllowedClause(sectionKey, alias)} AND COALESCE(TRIM(${prefix}source_name), '') != '' AND COALESCE(TRIM(${prefix}credit_line), '') != ''`;
 }
 
 export function mapPublicInventoryStory(row: InventoryRow): PublicInventoryStory {
@@ -258,4 +273,232 @@ export function toLegacyRelatedLibraryEntries(items: PublicInventoryStory[]) {
     title: item.title,
     excerpt: item.excerpt,
   }));
+}
+
+export type SearchInventoryHit = {
+  id: number;
+  title: string;
+  body: string;
+  excerpt: string;
+  url: string;
+  canonical: boolean;
+  perspective_label: string | null;
+  year: number | null;
+  tag: string | null;
+};
+
+function inventoryTextSearchClause(alias: string): string {
+  const fieldClauses = INVENTORY_TEXT_SEARCH_FIELDS.map(
+    (field) => `lower(COALESCE(${alias}.${field},'')) LIKE ?`,
+  );
+  fieldClauses.push(`lower(COALESCE(CAST(${alias}.event_year AS TEXT),'')) LIKE ?`);
+  return `(${fieldClauses.join(' OR ')})`;
+}
+
+function inventoryMediaSearchClause(cimAlias: string, photoAlias: string): string {
+  return `(
+    lower(COALESCE(${cimAlias}.caption,'')) LIKE ?
+    OR lower(COALESCE(${cimAlias}.alt_text,'')) LIKE ?
+    OR lower(COALESCE(${photoAlias}.description,'')) LIKE ?
+    OR lower(COALESCE(${photoAlias}.title,'')) LIKE ?
+  )`;
+}
+
+function pushInventoryLikeArgs(args: unknown[], like: string, includeMedia: boolean): void {
+  args.push(
+    like,
+    like,
+    like,
+    like,
+    like,
+    like,
+    like,
+    like,
+    like,
+    like,
+  );
+  if (includeMedia) {
+    args.push(like, like, like, like);
+  }
+}
+
+export function formatSearchInventoryTitle(row: InventoryRow): string {
+  const baseTitle = typeof row.title === 'string' && row.title.trim() ? row.title.trim() : 'Archive story';
+  const perspective =
+    typeof row.perspective_label === 'string' && row.perspective_label.trim()
+      ? row.perspective_label.trim()
+      : null;
+  if (perspective) return `${baseTitle} (${perspective})`;
+  if (Number(row.canonical) !== 1) return `${baseTitle} (Alternate perspective)`;
+  return baseTitle;
+}
+
+export function buildInventorySearchBody(row: InventoryRow, mediaText = ''): string {
+  const parts = [
+    row.text,
+    row.summary,
+    row.search_text,
+    row.tag,
+    row.source_name,
+    row.credit_line,
+    row.perspective_label,
+    row.event_date,
+    row.event_year,
+    mediaText,
+  ];
+  return parts
+    .map((part) => String(part ?? '').trim())
+    .filter(Boolean)
+    .join(' ');
+}
+
+function mapSearchInventoryHit(row: InventoryRow, mediaText = ''): SearchInventoryHit {
+  const summary = typeof row.summary === 'string' ? row.summary.trim() : '';
+  const text = typeof row.text === 'string' ? row.text : '';
+  const body = buildInventorySearchBody(row, mediaText);
+  return {
+    id: Number(row.id),
+    title: formatSearchInventoryTitle(row),
+    body,
+    excerpt: summary || (text ? text.slice(0, 120) : body.slice(0, 120)),
+    url: '/fanclub/library',
+    canonical: Number(row.canonical) === 1,
+    perspective_label: typeof row.perspective_label === 'string' ? row.perspective_label : null,
+    year: parseInventoryYear(row.event_year, row.event_date),
+    tag: typeof row.tag === 'string' ? row.tag : null,
+  };
+}
+
+type FetchSearchInventoryOptions = {
+  sectionKey: string;
+  q: string;
+  limit?: number;
+};
+
+export async function fetchSearchInventoryResults(
+  db: any,
+  options: FetchSearchInventoryOptions,
+): Promise<SearchInventoryHit[]> {
+  const q = String(options.q || '').trim().toLowerCase();
+  if (!q) return [];
+
+  const limit = Math.max(1, Math.min(30, Number(options.limit ?? 30) || 30));
+  const like = `%${q}%`;
+  const whereParts = [publishedInventoryWhere(options.sectionKey, 'ci')];
+  const args: unknown[] = [];
+
+  const hasMediaTables =
+    (await tableExists(db, 'content_inventory_media')) && (await tableExists(db, 'photos'));
+
+  if (hasMediaTables) {
+    whereParts.push(
+      `(${inventoryTextSearchClause('ci')} OR ${inventoryMediaSearchClause('cim', 'p')})`,
+    );
+    pushInventoryLikeArgs(args, like, true);
+  } else {
+    whereParts.push(inventoryTextSearchClause('ci'));
+    pushInventoryLikeArgs(args, like, false);
+  }
+
+  const whereSql = `WHERE ${whereParts.join(' AND ')}`;
+  const fromSql = hasMediaTables
+    ? `FROM content_inventory ci
+       LEFT JOIN content_inventory_media cim ON cim.story_id = ci.id
+       LEFT JOIN photos p ON p.id = cim.media_id`
+    : 'FROM content_inventory ci';
+
+  const selectSql = hasMediaTables
+    ? `SELECT DISTINCT ci.id, ci.title, ci.text, ci.summary, ci.search_text, ci.tag,
+              ci.source_name, ci.credit_line, ci.event_date, ci.event_year,
+              ci.perspective_label, ci.canonical, ci.priority, ci.updated_at,
+              GROUP_CONCAT(
+                COALESCE(cim.caption, '') || ' ' ||
+                COALESCE(cim.alt_text, '') || ' ' ||
+                COALESCE(p.description, '') || ' ' ||
+                COALESCE(p.title, ''),
+                ' '
+              ) AS media_search_text`
+    : `SELECT ci.id, ci.title, ci.text, ci.summary, ci.search_text, ci.tag,
+              ci.source_name, ci.credit_line, ci.event_date, ci.event_year,
+              ci.perspective_label, ci.canonical, ci.priority, ci.updated_at`;
+
+  const groupBySql = hasMediaTables ? ' GROUP BY ci.id' : '';
+  const rows = await db
+    .prepare(
+      `${selectSql}
+       ${fromSql}
+       ${whereSql}
+       ${groupBySql}
+       ORDER BY ci.canonical DESC, ci.priority DESC, ci.updated_at DESC, ci.id DESC
+       LIMIT ?`,
+    )
+    .bind(...args, limit)
+    .all();
+
+  return ((rows.results ?? []) as InventoryRow[]).map((row) =>
+    mapSearchInventoryHit(row, typeof row.media_search_text === 'string' ? row.media_search_text : ''),
+  );
+}
+
+export type SearchLibraryResolution = {
+  items: SearchInventoryHit[];
+  source: 'content_inventory' | 'library_entries';
+};
+
+export async function resolveMemberLibrarySearchResults(
+  db: any,
+  options: { q: string; limit?: number },
+): Promise<SearchLibraryResolution> {
+  const q = String(options.q || '').trim().toLowerCase();
+  const limit = Math.max(1, Math.min(20, Number(options.limit ?? 20) || 20));
+
+  if (await tableExists(db, 'content_inventory')) {
+    const eligibleCount = await countPublishedInventoryForSection(db, LIBRARY_SECTION);
+    if (eligibleCount > 0) {
+      const items = await fetchSearchInventoryResults(db, {
+        sectionKey: LIBRARY_SECTION,
+        q,
+        limit,
+      });
+      return { items, source: 'content_inventory' };
+    }
+  }
+
+  if (!(await tableExists(db, 'library_entries'))) {
+    return { items: [], source: 'library_entries' };
+  }
+
+  const like = `%${q}%`;
+  const rows = await db
+    .prepare(
+      q
+        ? `SELECT id, title, content
+           FROM library_entries
+           WHERE lower(COALESCE(title,'')) LIKE ? OR lower(COALESCE(content,'')) LIKE ?
+           ORDER BY created_at DESC, id DESC
+           LIMIT ?`
+        : `SELECT id, title, content
+           FROM library_entries
+           ORDER BY created_at DESC, id DESC
+           LIMIT ?`,
+    )
+    .bind(...(q ? [like, like, limit] : [limit]))
+    .all();
+
+  const items = ((rows.results ?? []) as InventoryRow[]).map((row) => ({
+    id: Number(row.id),
+    title: typeof row.title === 'string' && row.title.trim() ? row.title.trim() : 'Library item',
+    body: typeof row.content === 'string' ? row.content : '',
+    excerpt:
+      typeof row.content === 'string' && row.content
+        ? row.content.slice(0, 120)
+        : '',
+    url: '/fanclub/library',
+    canonical: true,
+    perspective_label: null,
+    year: null,
+    tag: null,
+  }));
+
+  return { items, source: 'library_entries' };
 }

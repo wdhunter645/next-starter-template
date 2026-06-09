@@ -35,6 +35,7 @@ function makePublicInventoryDb(options?: {
     if (sql.includes("status = 'published'") && row.status !== 'published') return false;
     if (sql.includes("LIKE '%library%'") && !String(row.allowed_sections || '').includes('library')) return false;
     if (sql.includes("LIKE '%related_content%'") && !String(row.allowed_sections || '').includes('related_content')) return false;
+    if (sql.includes("LIKE '%search%'") && !String(row.allowed_sections || '').includes('search')) return false;
     if (sql.includes("COALESCE(TRIM(source_name), '') != ''") && !String(row.source_name || '').trim()) return false;
     if (sql.includes("COALESCE(TRIM(credit_line), '') != ''") && !String(row.credit_line || '').trim()) return false;
     if (sql.includes('id != ?')) return true;

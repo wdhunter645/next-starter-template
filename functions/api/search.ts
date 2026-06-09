@@ -1,5 +1,11 @@
 import { getSessionEmail, getSessionId } from '../_lib/session';
 import { requireD1 } from '../_lib/d1';
+import {
+  fetchSearchInventoryResults,
+  resolveMemberLibrarySearchResults,
+  SEARCH_SECTION,
+  tableExists,
+} from '../_lib/content-inventory-public';
 
 type SearchResult = {
   type: string;
@@ -152,6 +158,23 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       });
     }
 
+    if (await tableExists(d1.db, 'content_inventory')) {
+      const archiveHits = await fetchSearchInventoryResults(d1.db, {
+        sectionKey: SEARCH_SECTION,
+        q,
+        limit: 30,
+      });
+      for (const hit of archiveHits) {
+        results.push({
+          type: 'Archive',
+          title: hit.title,
+          excerpt: excerpt(hit.excerpt),
+          url: hit.url,
+          score: scoreForMatch(hit.title, hit.body, q),
+        });
+      }
+    }
+
     if (isMember) {
       const discussionRows = await runLikeQuery(
         d1.db,
@@ -175,24 +198,14 @@ export const onRequestGet = async (context: any): Promise<Response> => {
         });
       }
 
-      const libraryRows = await runLikeQuery(
-        d1.db,
-        `SELECT id, title, content
-         FROM library_entries
-         WHERE lower(COALESCE(title,'')) LIKE ?1 OR lower(COALESCE(content,'')) LIKE ?1
-         ORDER BY created_at DESC, id DESC
-         LIMIT 20`,
-        [like],
-      );
-      for (const row of libraryRows) {
-        const title = String(row.title || 'Library item');
-        const body = String(row.content || '');
+      const libraryResolution = await resolveMemberLibrarySearchResults(d1.db, { q, limit: 20 });
+      for (const hit of libraryResolution.items) {
         results.push({
           type: 'Library',
-          title,
-          excerpt: excerpt(body),
-          url: '/fanclub/library',
-          score: scoreForMatch(title, body, q),
+          title: hit.title,
+          excerpt: excerpt(hit.excerpt || hit.body),
+          url: hit.url,
+          score: scoreForMatch(hit.title, hit.body, q),
         });
       }
 
