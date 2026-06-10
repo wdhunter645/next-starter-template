@@ -15,7 +15,7 @@ Use this file only as an optional, human-readable snapshot.
 | Item | State | Notes |
 | --- | --- | --- |
 | `#1255` | `status:active` | Umbrella program — Website Implementation and Content Operations |
-| `#1258` | `status:active` | **Phase 4 Task 004** — admin shell / member ops (PR in review); Tasks 001–003 complete (PRs `#1531`, `#1533`, `#1536`; post-merge via `#1534`, `#1540`) |
+| `#1258` | `status:active` | **Phase 4 Task 005** — moderation / review workflow (next); Tasks 001–004 complete (PRs `#1531`, `#1533`, `#1536`, `#1542`; post-merge via `#1534`, `#1540`) |
 
 ## Queued — not started
 
@@ -33,7 +33,9 @@ Use this file only as an optional, human-readable snapshot.
 | `#1258` Phase 4 Task 001 | PR `#1531` merged — as-built gap analysis |
 | `#1258` Phase 4 Task 002 | PR `#1533` merged — admin access model documentation |
 | `#1258` Phase 4 Task 003 | PR `#1536` merged — Fan Club operational workflows verification |
+| `#1258` Phase 4 Task 004 | PR `#1542` merged — admin shell and member operations hardening |
 | `#1258` post-merge status | PR `#1534` merged — derived tasklist/plan refresh |
+| `#1258` post-merge remediation | PR `#1540` merged — #1538 Codex reviewer remediation |
 | `#1407`, `#1526`, `#1448` | closed complete |
 | issue `#1411` | completed planning artifact |
 
