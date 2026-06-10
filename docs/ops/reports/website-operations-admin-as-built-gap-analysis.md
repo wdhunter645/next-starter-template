@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: Program #1258 Task 001 as-built inventory and gap classification for Website Operations Admin
 Does Not Own: Application code changes, issue closure, child issue creation, or workflow YAML
 Canonical Reference: /docs/ops/implementation-plans/website-operations-admin.md
-Related Issues: #1255, #1258, #1053, #1118, #1119, #1120, #1121, #1122, #1123, #1124, #1125, #1126, #1127
+Related issues: #1255, #1258, #1053, #1118, #1119, #1120, #1121, #1122, #1123, #1124, #1125, #1126, #1127
 Last Reviewed: 2026-06-10
 ---
 
@@ -57,18 +57,19 @@ gating** (session role for UI + admin token for APIs).
 | `/admin/faq` | `src/app/admin/faq/page.tsx` | Yes | Yes | `tests/faq-moderation.test.ts` |
 | `/admin/content` | `src/app/admin/content/page.tsx` | Yes | Yes | `tests/admin-cms-content.test.tsx` |
 | `/admin/cms` | `src/app/admin/cms/page.tsx` | Yes | Yes | `tests/admin-cms-content.test.tsx` |
-| `/admin/editorial` | `src/app/admin/editorial/page.tsx` | Yes | No | `tests/admin-editorial-archive.test.tsx` |
-| `/admin/events` | `src/app/admin/events/page.tsx` | Yes | No | `tests/admin-events.test.tsx` |
-| `/admin/matchup` | `src/app/admin/matchup/page.tsx` | Yes | No | `tests/admin-matchup.test.tsx` |
-| `/admin/fundraiser-preview` | `src/app/admin/fundraiser-preview/page.tsx` | Yes | No | `tests/admin-fundraiser-preview.test.tsx` |
+| `/admin/editorial` | `src/app/admin/editorial/page.tsx` | Yes | Yes | `tests/admin-editorial-archive.test.tsx` |
+| `/admin/events` | `src/app/admin/events/page.tsx` | Yes | Yes | `tests/admin-events.test.tsx` |
+| `/admin/matchup` | `src/app/admin/matchup/page.tsx` | Yes | Yes | `tests/admin-matchup.test.tsx` |
+| `/admin/fundraiser-preview` | `src/app/admin/fundraiser-preview/page.tsx` | Yes | Yes | `tests/admin-fundraiser-preview.test.tsx` |
 | `/admin/join-requests` | `src/app/admin/join-requests/page.tsx` | Yes | Yes | `tests/admin-operations.test.tsx` |
-| `/admin/worklist` | `src/app/admin/worklist/page.tsx` | Yes | No | `tests/admin-operations.test.tsx` |
-| `/admin/member-operations` | `src/app/admin/member-operations/page.tsx` | Yes | No | `tests/admin-operations.test.tsx` |
-| `/admin/media-assets` | `src/app/admin/media-assets/page.tsx` | Yes | No | `tests/admin-media-assets.test.tsx` |
+| `/admin/worklist` | `src/app/admin/worklist/page.tsx` | Yes | Yes | `tests/admin-operations.test.tsx` |
+| `/admin/member-operations` | `src/app/admin/member-operations/page.tsx` | Yes | Yes | `tests/admin-operations.test.tsx` |
+| `/admin/media-assets` | `src/app/admin/media-assets/page.tsx` | Yes | Yes | `tests/admin-media-assets.test.tsx` |
 | `/admin/d1-test` | `src/app/admin/d1-test/page.tsx` | Yes | Yes | — |
 
-Shared components: `src/components/admin/AdminNav.tsx`, `AdminDashboard.tsx`,
-`AdminTokenPanel.tsx`, `AdminNav.module.css`, `AdminDashboard.module.css`.
+Shared components: `src/components/admin/AdminNav.tsx`, `AdminDashboard.tsx`
+(dashboard cards for all nav routes except `/admin` itself), `AdminTokenPanel.tsx`,
+`AdminNav.module.css`, `AdminDashboard.module.css`.
 
 ## Admin API inventory (`functions/api/admin/**`)
 
