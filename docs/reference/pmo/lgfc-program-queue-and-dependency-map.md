@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: Launched-program queue mode, dependency-map requirements, execution-mode selection, and continue/halt decision rules for PMO-governed programs
 Does Not Own: Workflow YAML implementation, GitHub merge authority, issue mutation authority, or orchestrator label automation
 Canonical Reference: /docs/reference/pmo/lgfc-program-portfolio-model.md
-Related Issues: #1449, #1448, #1411, #1255, #1256, #1501
-Last Reviewed: 2026-06-09
+Related Issues: #1449, #1448, #1411, #1255, #1256, #1407, #1526, #1501
+Last Reviewed: 2026-06-10
 ---
 
 # LGFC Program Queue and Dependency Map
@@ -38,14 +38,32 @@ This document does not own:
 
 - Program #1411 and Program #1255 use the PMO execution chain:
   `program issue → child project → task issue → PR → verification → closeout`.
-- Program #1255 is the active program issue with a prepared task queue under
-  child project `#1256` (historical label: Program 2).
-- Program #1255 continuation is paused for rebaseline while `#1448` remains open.
-  No Program #1255 task beyond `#1402` may launch until `#1448` rebaseline is
-  complete. Queue documentation from `#1449` must be merged before the
-  rebaseline gate may close.
-- Program #1411 is staged / blocked and may not launch until Program #1255 is
-  completed and signed off.
+- Program #1255 is the active umbrella program issue. Child project `#1256`
+  (Content Strategy / Editorial Inventory) is the active child project under
+  Program #1255 — not a peer program identifier.
+- Child project `#1256` reached terminal Task 009 (`#1407`). PR `#1520` merged on
+  `main` (`f40cd068`). Source issue `#1407` remains open with
+  `status:post-merge-verify` until post-merge closeout exception `#1526` is
+  remediated and closeout validation passes.
+- `#1256` is at terminal closeout, not a failed implementation project. The
+  `status:failed` label on `#1256` is stale orchestrator drift and should be
+  reconciled after `#1407` / `#1526` closeout.
+- `#1258` (Website Operations Admin) is the next queued child project after
+  `#1256` completes. `#1259` (Website QA / Production Validation) follows
+  `#1258`. Neither is authorized for implementation in the current cleanup pass.
+- Issue `#1500` is the next prioritized program after Program #1255 completes.
+  It is intentionally excluded from immediate execution and from this cleanup
+  scope.
+- `#1448` rebaseline/pause language is stale relative to execution history.
+  Tasks 003–009 merged while `#1448` remained open. `#1448` must be reconciled
+  and closed after `#1407` / `#1526` closeout — not treated as an active launch
+  blocker for already-merged work.
+- Issue `#1411` is a **completed planning/control artifact** (closed,
+  `status:complete`). It is not an open blocked program. Future execution work
+  from that planning body requires a current open source issue and explicit
+  launch authorization.
+- Program #1411 (PMO Automation) remains staged / blocked for **new execution**
+  until Program #1255 is completed and signed off.
 - Bill owns merge authority, launch gates, and destructive issue actions.
 - Atlas owns governance review, queue conformance, batch verification, and
   rebaseline authority.

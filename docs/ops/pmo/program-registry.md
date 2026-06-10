@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: PMO program issue registry, current program issue assignments, launch-state control, child-project mapping, and authoritative execution chain for LGFC orchestrated work
 Does Not Own: PMO v3 top-level policy, implementation plan task definitions, workflow code, runtime behavior, product design, or unauthorized GitHub issue mutation
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501
-Last Reviewed: 2026-06-09
+Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1256, #1407, #1526, #1501, #1500
+Last Reviewed: 2026-06-10
 ---
 
 # PMO Program Issue Registry
@@ -17,7 +17,35 @@ Record current PMO program issues and their status under PMO v3.
 
 This registry is subordinate to `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`. If this registry conflicts with the PMO v3 operating model, the PMO v3 operating model controls.
 
-Program issue numbers identify programs going forward. Future programs should use `Program #<issue-number> — <name>`. No future Program 3 / Program 4 / Program 5 labels should be introduced as PMO operating identifiers.
+## Scope
+
+This registry records current program issue assignments, launch-state control,
+child-project mapping, and the PMO execution chain. It does not own PMO v3
+top-level policy, task-level implementation detail, workflow code, or
+unauthorized GitHub issue mutation.
+
+## Current known truth
+
+- Program #1255 is the active execution program. Child project #1256 is at
+  terminal Task 009 closeout (`#1407` open; `#1526` remediation open).
+- Issue #1411 is closed complete — a completed planning/control artifact, not
+  an open blocked program.
+- Issue #1500 is the next prioritized program after Program #1255 completes. It
+  is excluded from immediate execution.
+- GitHub issue titles use `Program: <name>`. Documentation references use
+  `Program #<issue-number> — <name>`.
+
+## Intended final state
+
+- One authoritative row per active, staged, blocked, completed, or historical
+  program issue with non-contradictory status language.
+- Child projects under Program #1255 are clearly subordinate to the umbrella
+  program issue.
+
+Program issue numbers identify programs going forward. Future programs should use
+`Program #<issue-number> — <name>` in documentation. GitHub issue titles use
+`Program: <name>` when possible. No future Program 3 / Program 4 / Program 5
+labels should be introduced as PMO operating identifiers.
 
 ## Required First Statement for Planning Programs
 
@@ -49,13 +77,21 @@ PMO meeting issue → PMO Backlog review/update → program issue → project / 
 
 | Program issue | Name | Historical label | Status | Notes |
 | --- | --- | --- | --- | --- |
-| #1255 | Website Implementation and Content Operations | Program 2 | Active | Current active execution program. Do not disrupt as part of PMO v3 migration. |
+| #1255 | Website Implementation and Content Operations | Program 2 | Active — terminal child closeout | Current active execution program. Child project #1256 at Task 009 closeout (`#1407` / `#1526`). |
+
+### Program #1255 child projects
+
+| Child project | Status | Notes |
+| --- | --- | --- |
+| #1256 Content Strategy / Editorial Inventory | Terminal closeout | Tasks 001–009 merged; `#1407` / `#1526` block project completion |
+| #1258 Website Operations Admin | Queued | Next after #1256 completes — not started |
+| #1259 Website QA / Production Validation | Queued | Follows #1258 — not started |
 
 ## Staged / blocked program issues
 
 | Program issue | Name | Historical label | Status | Launch rule |
 | --- | --- | --- | --- | --- |
-| #1411 | PMO Automation and Agent Workflow Control | Program 1 | Staged / blocked | Blocked until Program #1255 is completed and signed off. |
+| #1411 | PMO Automation and Agent Workflow Control | Program 1 | Completed planning artifact (issue closed, `status:complete`) | Issue #1411 is not an open blocked program. New execution requires a current open source issue. PMO automation execution remains blocked until Program #1255 completes and Atlas/Bill explicitly launch the next cycle. |
 
 ## Historical program evidence
 
@@ -84,7 +120,7 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 
 | Field | Value |
 | --- | --- |
-| Status | **Staged / blocked** — not executable until Program #1255 is completed and signed off, and until Atlas/Bill explicitly launch it |
+| Status | **Completed planning artifact** (issue closed, `status:complete`) — not executable until Program #1255 is completed and signed off, a current open source issue exists, and Atlas/Bill explicitly launch the next cycle |
 | Source issue | `#1411` |
 | Implementation plan | `docs/ops/implementation-plans/program-1-pmo-automation-agent-workflow-control.md` |
 | PMO v3 authority | `docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` |
@@ -117,13 +153,15 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 
 | Field | Value |
 | --- | --- |
-| Status | **Active execution program** |
+| Status | **Active execution program** — child project #1256 at terminal Task 009 closeout |
 | Historical label | Program 2 |
 | Source issue | `#1255` |
+| Active child project | `#1256` — Content Strategy / Editorial Inventory |
 | Primary plan | `docs/how-to/website/website-implementation-and-content-operations-plan.md` |
-| Priority | Content Strategy / Editorial Inventory first |
+| Priority | Complete #1256 closeout (`#1407` / `#1526`); then #1258, then #1259 |
+| Next prioritized program (not active) | Issue `#1500` — excluded from immediate execution |
 
-Program #1255 remains active while Program #1411 is staged/blocked. Program #1411 planning must not modify Program #1255 issue state, relabel Program #1255 issues, close Program #1255 issues, or reinterpret Program #1255 child project priority.
+Program #1255 remains active while #1256 completes terminal closeout. Program #1411 planning artifacts must not modify Program #1255 issue state, relabel Program #1255 issues, close Program #1255 issues, or reinterpret Program #1255 child project priority without explicit authorization.
 
 ## Related References
 

@@ -11,8 +11,8 @@ Execution Mode: orchestrated-after-approval
 Source Issue: 1256
 Related Program Issue: 1255
 Canonical Reference: /docs/ops/implementation-plans/README.md
-Related Issues: #1449, #1448, #1256, #1402, #824, #819, #1137
-Last Reviewed: 2026-06-08
+Related Issues: #1449, #1448, #1256, #1407, #1526, #1402, #824, #819, #1137
+Last Reviewed: 2026-06-10
 ---
 
 # Website Content Strategy / Editorial Inventory Implementation Plan
@@ -113,17 +113,21 @@ The first implementation task must inventory current schema, APIs, UI, and publi
 reads against the approved docs. Build changes should target documented gaps
 only.
 
-## Program 2 Dependency Map and Rebaseline Pause
+## Program #1255 Dependency Map and Rebaseline Reconciliation
 
-Program 2 `#1255` child project `#1256` is preparing for launched-program queue
-mode. This section is the project-level dependency map draft. It is not approved
-for queue-mode execution until Atlas/Bill approve the plan and the rebaseline
-pause clears.
+Program #1255 child project `#1256` executed Tasks 001–009 under launched-program
+queue mode. This section records the dependency map and the rebaseline governance
+mismatch that must be closed before `#1448` may be completed.
 
-**Rebaseline pause (active):** No Program 2 task beyond `#1402` may launch until
-`#1448` rebaseline is complete. Queue documentation from `#1449` must also be
-merged before the rebaseline gate may close. Atlas must publish a rebaseline
-comment before continuation resumes. See `#1448` for required rebaseline outcomes.
+**Historical rebaseline pause (documented, superseded by execution):** The map
+originally stated that no Program #1255 task beyond `#1402` may launch until
+`#1448` rebaseline completed. In practice, Tasks 003–009 merged on `main` while
+`#1448` remained open. Do not treat that stale pause language as current truth.
+
+**Current closeout blocker (2026-06-10):** Terminal Task 009 (`#1407`) merged as
+PR `#1520` (`f40cd068`). Post-merge closeout exception `#1526` blocks source
+issue closure until the merged PR body remediation (`pr-1520-body.md`) passes
+validation. `#1256` completes only after `#1407` and `#1526` closeout.
 
 | Checkpoint / Task | issue | Predecessor | Successor | Stage-before-merge | Halt condition | Resume condition |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -139,14 +143,18 @@ comment before continuation resumes. See `#1448` for required rebaseline outcome
 | Task 006 — Public population | (future) | Task 005 | Task 007 | yes | Task 005 incomplete | Task 005 merged |
 | Task 007 — Search | (future) | Task 006 | Task 008 | yes | Task 006 incomplete | Task 006 merged |
 | Task 008 — Rotation | (future) | Task 007 | Task 009 | yes | Task 007 incomplete | Task 007 merged |
-| Task 009 — Seed/verify | (future) | Task 008 | terminal | yes | Task 008 incomplete | Task 008 merged |
+| Task 009 — Seed/verify | `#1407` / PR `#1520` | Task 008 | terminal | yes | `#1526` closeout open | `#1407` closeout complete; `#1526` closed |
 
-Checkpoints before tasks beyond `#1402` resume:
+Checkpoints before `#1256` project completion and `#1258` activation:
 
-1. Confirm `#1402` / PR `#1445` status after reviewer remediation.
-2. Confirm `#1446` / PR `#1447` documentation correction status.
-3. Confirm `#1449` queue documentation is merged.
-4. Complete `#1448` rebaseline and publish the next executable queue item.
+1. Remediate `#1526` and apply post-merge closeout body for PR `#1520`.
+2. Close `#1407` with `status:complete` after validator pass.
+3. Reconcile and close `#1448` with updated rebaseline comment reflecting Tasks
+   003–009 execution history.
+4. Reconcile `#1255` / `#1256` labels (`status:post-merge-verify`,
+   `status:failed`) per Atlas/Bill closeout instructions.
+5. Do not launch `#1258`, `#1259`, or Issue `#1500` until Program #1255
+   completion signoff is recorded.
 
 Canonical reference:
 `/docs/reference/pmo/lgfc-program-queue-and-dependency-map.md`

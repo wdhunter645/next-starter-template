@@ -6,7 +6,7 @@ Owns: Program 2 Website Phase 0 issue-queue reconciliation under #1255, issue-st
 Does Not Own: Website feature implementation, GitHub issue closure or label mutation, workflow YAML, application code, D1 migrations, or build-issue creation
 Canonical Reference: /docs/how-to/website/website-implementation-and-content-operations-plan.md
 Related Issues: #1394, #1255, #1256, #1258, #1259, #1053, #1341
-Last Reviewed: 2026-06-06
+Last Reviewed: 2026-06-10
 ---
 
 # Program 2 Website Phase 0 Reconciliation
@@ -233,6 +233,32 @@ program-owner pause.
   docs/how-to/website/website-implementation-and-content-operations-plan.md
 ./scripts/ci/docs_canonical_hashes_verify.sh .
 ```
+
+## 12. Program #1255 Closeout State Addendum (2026-06-10)
+
+This addendum records live GitHub state after child project `#1256` reached
+terminal Task 009. It does not mutate issues; it aligns documentation with
+execution history.
+
+| Item | Live state (2026-06-10) | Notes |
+| --- | --- | --- |
+| Program #1255 | Open — `status:active` + `status:post-merge-verify` | Umbrella program remains active until #1256 signoff |
+| Child project #1256 | Open — `status:active` + `status:failed` (stale) | At terminal closeout, not failed implementation |
+| Task 009 `#1407` | Open — `status:post-merge-verify` | PR `#1520` merged (`f40cd068`) |
+| Closeout exception `#1526` | Open — `post-merge-failure` | Unchecked acceptance criterion in merged PR body |
+| Rebaseline `#1448` | Open | Pause language stale — Tasks 003–009 merged while open |
+| Next child `#1258` | Open — `status:queued` | Not started |
+| Next child `#1259` | Open — `status:queued` | Not started |
+| Issue `#1500` | Next prioritized program | **Excluded** from immediate execution |
+
+**Governance mismatch (plain statement):** Documentation and `#1448` described a
+rebaseline pause blocking tasks beyond `#1402`. Execution advanced through Task
+009 anyway. Closeout now requires reconciling `#1448`, not re-imposing the stale
+pause on merged work.
+
+**Only active blocker for finishing #1256:** remediate `#1526`, apply
+`scripts/ci/post-merge-closeout/pr-1520-body.md`, pass post-merge validation,
+close `#1407`.
 
 ## Related References
 
