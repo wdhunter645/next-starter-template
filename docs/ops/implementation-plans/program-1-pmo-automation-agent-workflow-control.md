@@ -12,7 +12,7 @@ Source Issue: 1411
 Related Program Issue: 1411
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
 Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1335, #1501
-Last Reviewed: 2026-06-09
+Last Reviewed: 2026-06-10
 ---
 
 # Program #1411 — PMO Automation and Agent Workflow Control
@@ -20,8 +20,8 @@ Last Reviewed: 2026-06-09
 | Field | Value |
 | --- | --- |
 | Historical label | Program 1 |
-| Status | Staged / blocked planning evidence |
-| Launch rule | Blocked until Program #1255 is completed and signed off, unless Bill/Atlas explicitly reopen/reactivate or launch Program #1411 |
+| Status | Completed planning/control artifact (issue `#1411` closed, `status:complete`) |
+| Launch rule | issue #1411 is not an open blocked program. New execution requires a current open source issue. PMO automation execution remains blocked until Program #1255 is completed and signed off and Atlas/Bill explicitly launch the next cycle. |
 
 ## Launch-state control statement
 

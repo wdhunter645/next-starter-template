@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: PMO Backlog inventory for ideas, project drafts, implementation-ready projects, backlog review history, and promotion candidates
 Does Not Own: Program launch approval, final prioritization, implementation scope, issue creation, merge authority, or Cursor execution authorization
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-Related Issues: #1379, #1411, #1255, #1501
-Last Reviewed: 2026-06-09
+Related Issues: #1379, #1411, #1255, #1501, #1500
+Last Reviewed: 2026-06-10
 ---
 
 # PMO Backlog
@@ -14,6 +14,29 @@ Last Reviewed: 2026-06-09
 PMO Backlog = ideas, project drafts, and implementation-ready projects.
 
 This document is the durable inventory for PMO Backlog review. It does not launch work, create issues, authorize Cursor execution, or establish final priority. Work becomes executable only through a program issue or task source issue with explicit authorization.
+
+## Scope
+
+This document owns PMO Backlog inventory tables, promotion history, and meeting
+agenda integration. It does not own program launch approval, merge authority,
+issue creation, or Cursor execution authorization.
+
+## Current known truth
+
+- PMO Backlog is documentation-owned. Legacy `#1379` is historical source evidence
+  only.
+- Filenames that still contain `program-5` (for example
+  `docs/ops/pmo/program-5-admin-page-and-tools-design-readiness.md`) are **legacy
+  source material** from the retired PMO v2 five-lane model. They are not active
+  PMO v3 program authority and require PMO v3 conversion before promotion.
+- issue #1500 is the next prioritized program after Program #1255 completes. It is
+  excluded from immediate execution.
+
+## Intended final state
+
+- Backlog items are classified as ideas, project drafts, or implementation-ready
+  projects with explicit promotion history.
+- No backlog link can be mistaken for an active PMO v3 program lane.
 
 ## Current backlog status
 
@@ -27,7 +50,7 @@ No items are currently classified as implementation-ready. Items below marked as
 
 | Item | Suggested next action | Notes |
 | --- | --- | --- |
-| Admin Page and Tools Design Readiness | Complete inventory/readiness review before promotion | Existing access model exists, but complete admin product/tool design, token UX, active/diagnostic/retired tool status, and backend failure-state design need documentation. See `docs/ops/pmo/program-5-admin-page-and-tools-design-readiness.md`. |
+| Admin Page and Tools Design Readiness | Complete inventory/readiness review before promotion | Existing access model exists, but complete admin product/tool design, token UX, active/diagnostic/retired tool status, and backend failure-state design need documentation. **Legacy source (PMO v2):** `docs/ops/pmo/program-5-admin-page-and-tools-design-readiness.md` — requires PMO v3 conversion before promotion; not an active Program 5 lane. |
 | Fundraiser / charity campaign operations | Readiness review required | Includes repeatable campaign setup, Givebutter process, auction handling, leaderboard/winner rules, and annual timeline. Classify as project draft until readiness review confirms implementation-ready status. |
 | Lou Gehrig content collection strategy | Confirm relationship to active Program #1255 and later content/growth program work | Continuous collection, source/credit tracking, review, and publication pipeline. |
 | Annual Lou Gehrig Day operations package | Convert into repeatable operations checklist and website spotlight plan | Candidate for a future program when annual operations become a priority. |

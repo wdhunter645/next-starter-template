@@ -5,8 +5,8 @@ Authority Level: Canonical PMO Authority
 Owns: LGFC PMO v3 program issue model, PMO meeting issue model, PMO Backlog rules, launch gates, promotion rules, agent authority boundaries, and top-down PMO documentation replacement intent
 Does Not Own: Product-specific design, runtime implementation, workflow YAML, production configuration, secrets, or unauthorized GitHub issue mutation
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501
-Last Reviewed: 2026-06-09
+Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501, #1500
+Last Reviewed: 2026-06-10
 ---
 
 # PMO V3 Operating Model
@@ -18,6 +18,33 @@ This document is the top-level LGFC PMO v3 authority. It supersedes the PMO v2 f
 PMO v3 is issue-number based. A program is a GitHub program issue. Program issue numbers are the durable program identifiers. Programs are unlimited. Programs are not represented by fixed Program 1–5 lane names.
 
 The PMO v3 goal is one aligned operating model from PMO meeting review through backlog intake, program execution, issue creation, pull request review, verification, closeout, and promotion of future work.
+
+## Scope
+
+This document owns PMO v3 terminology, program-issue rules, PMO Backlog rules,
+promotion gates, authority boundaries, and documentation replacement order. It
+does not own task-level implementation plans, workflow YAML, runtime code, or
+unauthorized GitHub issue mutation.
+
+## Current known truth
+
+- Program #1255 is the active execution program (historical label: Program 2).
+- Child project #1256 is at terminal Task 009 closeout (`#1407` / `#1526`).
+- issue #1411 is completed — a planning/control artifact, not an open blocked
+  program. New execution from that body requires a current open source issue and
+  explicit launch authorization.
+- issue #1500 is the next prioritized program after Program #1255 completes. It
+  is out of scope for immediate execution.
+- GitHub issue titles use `Program: <name>` when possible. Documentation
+  references use `Program #<issue-number> — <name>`.
+
+## Intended final state
+
+- Program issue numbers are the durable identifiers in all PMO docs.
+- Active, staged, blocked, completed, and historical program states are explicit
+  and non-contradictory across registry, queue map, and implementation plans.
+- PMO Backlog remains documentation-owned and does not masquerade as an active
+  program lane.
 
 ## Replacement intent
 
@@ -34,7 +61,11 @@ This document becomes the controlling PMO authority for new planning and impleme
 - A program issue defines one approved, active, staged, blocked, completed, historical, or proposed body of work.
 - Programs are not represented by fixed Program 1–5 lane names.
 - Historical Program 1 and Program 2 labels may remain where needed for continuity, but they are not PMO v3 operating identifiers.
-- Future program identifiers must use issue-number format: `Program #<issue-number> — <program name>`.
+- Documentation references use issue-number format:
+  `Program #<issue-number> — <program name>`.
+- GitHub issue titles use `Program: <name>` when possible. The issue number is
+  already part of GitHub; do not duplicate it in the title unless Bill/Atlas
+  require a specific naming exception.
 
 ## Current program issues
 
@@ -51,8 +82,8 @@ This document becomes the controlling PMO authority for new planning and impleme
 | Field | Value |
 | --- | --- |
 | Historical label | Program 1 |
-| Status | Staged / blocked |
-| Launch rule | Blocked until Program #1255 is completed and signed off. |
+| Status | Completed planning/control artifact (`status:complete`, issue closed) |
+| Execution rule | issue #1411 is not an open blocked program. Any future execution work must be represented by a current open source issue before launch. New PMO automation execution remains blocked until Program #1255 is completed and signed off and Atlas/Bill explicitly launch the next cycle. |
 
 ### Legacy #1379
 
@@ -91,7 +122,8 @@ PMO meeting issue
 ## Program issue rules
 
 - Program issue number is the program identifier.
-- Program issue title should begin with `Program:` when possible.
+- **GitHub issue title format:** `Program: <name>` when possible.
+- **Documentation reference format:** `Program #<issue-number> — <name>`.
 - A program issue must define:
   - Purpose
   - Scope
