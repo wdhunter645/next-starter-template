@@ -5,6 +5,7 @@ Authority Level: Operational Plan
 Owns: Future build issue sequence and verification plan for Website Operations Admin after documentation approval
 Does Not Own: Runtime implementation, issue creation before approval, D1 migrations before child issues, or final operator policy decisions
 Status: ready-for-review
+Task 001 complete: docs/ops/reports/website-operations-admin-as-built-gap-analysis.md
 Project: website-operations-admin
 Owner: Atlas
 Execution Mode: orchestrated-after-approval
@@ -36,6 +37,7 @@ held until explicit implementation authorization after Phase 3 exit criteria pas
 | Legacy coordination tree | `#1053` — subordinated; historical T-task map only |
 | Phase 0 reconciliation | `docs/ops/reports/program-2-website-phase0-reconciliation.md` |
 | Legacy issue table | `docs/ops/reports/website-operations-admin-legacy-issue-reconciliation.md` |
+| Task 001 gap analysis | `docs/ops/reports/website-operations-admin-as-built-gap-analysis.md` |
 
 ## Scope
 

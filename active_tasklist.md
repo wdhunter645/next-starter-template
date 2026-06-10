@@ -15,7 +15,7 @@ Use this file only as an optional, human-readable snapshot.
 | Item | State | Notes |
 | --- | --- | --- |
 | `#1255` | `status:active` | Umbrella program — Website Implementation and Content Operations |
-| `#1258` | `status:active` | **Phase 3 planning** — Website Operations Admin (implementation plan PR in review) |
+| `#1258` | `status:active` | **Phase 4 Task 001** — as-built inventory / gap analysis (PR in review) |
 
 ## Queued — not started
 
@@ -29,11 +29,13 @@ Use this file only as an optional, human-readable snapshot.
 | Item | State |
 | --- | --- |
 | `#1256` Content Strategy / Editorial Inventory | **closed complete** — Tasks 001–009 |
+| `#1258` Phase 3 planning | PR `#1528` merged; closeout complete |
 | `#1407`, `#1526`, `#1448` | closed complete |
 | issue `#1411` | completed planning artifact |
 
 ## Out of scope (current pass)
 
-- `#1258` implementation (Phase 4) — not authorized until plan approved
 - `#1259` launch
 - `#1500` launch or implementation
+- Child issue creation
+- Application code / D1 / workflow YAML
