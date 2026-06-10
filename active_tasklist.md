@@ -15,7 +15,7 @@ Use this file only as an optional, human-readable snapshot.
 | Item | State | Notes |
 | --- | --- | --- |
 | `#1255` | `status:active` | Umbrella program — Website Implementation and Content Operations |
-| `#1258` | `status:active` | **Phase 4 Task 004** — admin shell / member ops (next); Tasks 001–003 complete (PRs `#1531`, `#1533`, `#1534`, `#1536`) |
+| `#1258` | `status:active` | **Phase 4 Task 004** — admin shell / member ops (next); Tasks 001–003 complete (PRs `#1531`, `#1533`, `#1536`; post-merge status via `#1534`) |
 
 ## Queued — not started
 

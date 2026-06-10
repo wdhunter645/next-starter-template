@@ -205,7 +205,8 @@ Summary disposition for `#1053` and `#1118`–`#1127`. Full evidence table:
 
 ## Proposed child task sequence
 
-**issue titles only.** Do not create issues until Phase 4 authorization.
+**issue titles only.** Phase 4 tasks execute as scoped PRs under `#1258`; child
+issues are not auto-created without explicit authorization.
 
 Operating rule: **inventory before delta.** Task 001 must complete before area
 tasks claim gaps. Area tasks may close as gap-only (docs/verification only) if
@@ -433,7 +434,9 @@ Manual admin smoke checklist per task (documented in child issue bodies).
 
 ## Approval and issue creation hold
 
-Status is `ready-for-review`, not `production-ready`.
+Plan status is `phase-4-active` (not `production-ready`).
 
-Child issues must not be opened until Atlas/Bill approve this plan and post
-explicit Phase 4 implementation authorization on Task 001.
+Phase 3 planning exit is **met** (see table above). Tasks 001–003 are **complete**.
+**Task 004+** require explicit per-task authorization before implementation PRs
+begin. Child GitHub issues remain held unless Atlas/Bill or existing automation
+explicitly authorizes creation.
