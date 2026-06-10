@@ -245,7 +245,7 @@ Task 001 classifies the lane as already satisfied.
 | --- | --- |
 | **Title** | Task 004 — Admin shell and member operations delta (`#1119` / T41) |
 | **Objective** | Harden dashboard, join-requests, member-operations, worklist, stats surfaces. |
-| **Allowed files/areas** | `src/app/admin/page.tsx`, `src/app/admin/join-requests/**`, `src/app/admin/member-operations/**`, `src/app/admin/worklist/**`, `src/components/admin/**`, `functions/api/admin/stats.ts`, `functions/api/admin/worklist.ts`, `functions/api/admin/join-requests/**` |
+| **Allowed files/areas** | `src/app/admin/page.tsx`, `src/app/admin/join-requests/**`, `src/app/admin/member-operations/**`, `src/app/admin/worklist/**`, `src/components/admin/**`, `functions/api/admin/stats.ts`, `functions/api/admin/worklist.ts`, `functions/api/admin/join-requests/**`, `functions/api/admin/welcome-email.ts`, `functions/api/admin/membership-card.ts` |
 | **Non-goals** | New admin modules; public route changes |
 | **Acceptance criteria** | Admin nav complete; empty/error states safe; join/member ops actionable |
 | **Verification** | `npm run typecheck`; manual admin smoke |

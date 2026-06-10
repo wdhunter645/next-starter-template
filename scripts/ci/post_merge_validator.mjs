@@ -9,7 +9,9 @@ import { implementationEvidenceFailures } from './post_merge_implementation_evid
 import { linkedIssueNumber, sourceIssueAccounting } from './issue_accounting.mjs';
 import {
 	isPermittedClosedSourceIssueFollowup,
+	planActiveSourceIssueRelabel,
 	planTerminalLabelReconciliation,
+	shouldKeepActiveSourceIssueOpen,
 } from './post_merge_source_issue_closeout.mjs';
 
 export { isPermittedClosedSourceIssueFollowup };
@@ -93,6 +95,19 @@ export function sourceIssueStateFailures({ body = '', sourceIssue = null, source
 			code: 'source_issue_not_open',
 			message: `Source issue is ${sourceIssue.state || 'unknown'} at closeout start; CI refused to relabel or close it.`,
 		});
+	}
+
+	if (shouldKeepActiveSourceIssueOpen(body)) {
+		const relabel = planActiveSourceIssueRelabel({
+			issueLabels: sourceIssue.labels || [],
+		});
+		if (!relabel.ok) {
+			failures.push({
+				code: relabel.reason || 'active_source_issue_relabel_failed',
+				message: relabel.summary || 'Active source issue relabel is not deterministic.',
+			});
+		}
+		return failures;
 	}
 
 	const terminalLabelResult = planTerminalLabelReconciliation({
@@ -655,10 +670,12 @@ export async function runValidator({
 			]);
 			sourceIssue = issue;
 			repoLabels = labels;
-			terminalLabelResult = planTerminalLabelReconciliation({
-				issueLabels: sourceIssue.labels || [],
-				repoLabels,
-			});
+			terminalLabelResult = shouldKeepActiveSourceIssueOpen(normalizedPr.body || '')
+				? planActiveSourceIssueRelabel({ issueLabels: sourceIssue.labels || [] })
+				: planTerminalLabelReconciliation({
+					issueLabels: sourceIssue.labels || [],
+					repoLabels,
+				});
 			sourceIssueCloseoutMode = isPermittedClosedSourceIssueFollowup({
 				body: normalizedPr.body,
 				sourceIssue,

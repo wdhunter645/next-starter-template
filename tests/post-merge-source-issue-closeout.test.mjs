@@ -4,9 +4,11 @@ import { linkedIssueNumber, sourceIssueAccounting } from '../scripts/ci/issue_ac
 import {
 	buildSourceIssueCloseoutComment,
 	isRemediationIssue,
+	planActiveSourceIssueRelabel,
 	planTerminalLabelReconciliation,
 	postMergeVerificationResult,
 	shouldCloseSourceIssue,
+	shouldKeepActiveSourceIssueOpen,
 	STALE_SOURCE_ISSUE_LABELS,
 } from '../scripts/ci/post_merge_source_issue_closeout.mjs';
 import { buildResult } from '../scripts/ci/post_merge_validator.mjs';
@@ -156,6 +158,39 @@ describe('source issue closeout decision', () => {
 				postMergeResult: { status: 'pass', remediation_required: false },
 			}),
 		).toMatchObject({ close: false, reason: 'missing_source_issue' });
+	});
+
+	it('keeps active child project issues open when disposition requires status:active', () => {
+		const body = [
+			baseBody,
+			'',
+			'## POST-MERGE ISSUE DISPOSITION',
+			'- Source issue **#1258** remains **open** with `status:active`; remove only `status:post-merge-verify`; **do not close** #1258',
+		].join('\n');
+
+		expect(shouldKeepActiveSourceIssueOpen(body)).toBe(true);
+		expect(
+			shouldCloseSourceIssue({
+				action: 'post_merge_success',
+				issueNumber: '1258',
+				isMerged: true,
+				postMergeResult: { status: 'pass', remediation_required: false },
+				issueMeta: {
+					title: 'PROJECT: Website Operations Admin',
+					labels: ['type:website', 'status:active', 'status:post-merge-verify', 'website'],
+				},
+				prBody: body,
+			}),
+		).toEqual({ close: false, reason: 'active_source_issue_remains_open' });
+		expect(
+			planActiveSourceIssueRelabel({
+				issueLabels: ['type:website', 'status:active', 'status:post-merge-verify', 'website'],
+			}),
+		).toMatchObject({
+			ok: true,
+			removeLabels: ['status:post-merge-verify'],
+			summary: expect.stringContaining('preserve status:active'),
+		});
 	});
 
 	it('does not close remediation issues mis-linked as source issues', () => {
