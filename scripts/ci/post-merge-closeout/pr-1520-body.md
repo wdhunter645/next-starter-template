@@ -166,4 +166,4 @@ Reviewer items:
 - Close remediation **#1526** when validator passes after body apply
 - Do not advance beyond #1256 terminal closeout in this remediation pass
 
-<!-- closeout-trigger: 2026-06-10 -->
+<!-- closeout-trigger: 2026-06-10-verified -->

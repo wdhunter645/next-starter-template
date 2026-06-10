@@ -21,7 +21,7 @@ Last Reviewed: 2026-06-10
 | --- | --- |
 | Historical label | Program 1 |
 | Status | Completed planning/control artifact (issue `#1411` closed, `status:complete`) |
-| Launch rule | Issue #1411 is not an open blocked program. New execution requires a current open source issue. PMO automation execution remains blocked until Program #1255 is completed and signed off and Atlas/Bill explicitly launch the next cycle. |
+| Launch rule | issue #1411 is not an open blocked program. New execution requires a current open source issue. PMO automation execution remains blocked until Program #1255 is completed and signed off and Atlas/Bill explicitly launch the next cycle. |
 
 ## Launch-state control statement
 

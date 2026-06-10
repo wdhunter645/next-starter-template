@@ -29,7 +29,7 @@ issue creation, or Cursor execution authorization.
   `docs/ops/pmo/program-5-admin-page-and-tools-design-readiness.md`) are **legacy
   source material** from the retired PMO v2 five-lane model. They are not active
   PMO v3 program authority and require PMO v3 conversion before promotion.
-- Issue #1500 is the next prioritized program after Program #1255 completes. It is
+- issue #1500 is the next prioritized program after Program #1255 completes. It is
   excluded from immediate execution.
 
 ## Intended final state
