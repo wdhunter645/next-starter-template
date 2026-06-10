@@ -15,7 +15,7 @@ Use this file only as an optional, human-readable snapshot.
 | Item | State | Notes |
 | --- | --- | --- |
 | `#1255` | `status:active` | Umbrella program — Website Implementation and Content Operations |
-| `#1258` | `status:active` | **Phase 4 Task 002** — admin access model docs (PR in review); Task 001 complete (PR `#1531`) |
+| `#1258` | `status:active` | **Phase 4 Task 003** — Fan Club ops verification (next); Tasks 001–002 complete (PRs `#1531`, `#1533`) |
 
 ## Queued — not started
 
@@ -31,6 +31,7 @@ Use this file only as an optional, human-readable snapshot.
 | `#1256` Content Strategy / Editorial Inventory | **closed complete** — Tasks 001–009 |
 | `#1258` Phase 3 planning | PR `#1528` merged; closeout complete |
 | `#1258` Phase 4 Task 001 | PR `#1531` merged — as-built gap analysis |
+| `#1258` Phase 4 Task 002 | PR `#1533` merged — admin access model documentation |
 | `#1407`, `#1526`, `#1448` | closed complete |
 | issue `#1411` | completed planning artifact |
 
