@@ -13,6 +13,7 @@ export const REMEDIATION_ISSUE_LABEL = 'post-merge-failure';
 export const REMEDIATION_TITLE_PREFIX = 'Post-merge closeout exception for ';
 export const LEGACY_REMEDIATION_TITLE_PREFIX = 'Post-merge remediation required for ';
 export const TERMINAL_SOURCE_ISSUE_LABEL = 'status:complete';
+export const ACTIVE_SOURCE_ISSUE_LABEL = 'status:active';
 
 const FOLLOWUP_CLOSEOUT_PATTERN =
 	/\b(remediation|follow[- ]up|clarification|post[- ]merge evidence|closeout reconciliation|post[- ]merge closeout)\b/i;
@@ -23,6 +24,34 @@ export function isPermittedClosedSourceIssueFollowup({ body = '', sourceIssue = 
 	if (String(sourceIssue?.state || '').toLowerCase() !== 'closed') return false;
 	if (String(sourceIssue?.state_reason || '').toLowerCase() !== 'completed') return false;
 	return FOLLOWUP_CLOSEOUT_PATTERN.test(body) && PRIOR_CLOSEOUT_REF_PATTERN.test(body);
+}
+
+export function shouldKeepActiveSourceIssueOpen(body = '') {
+	const match = String(body || '').match(/## POST-MERGE ISSUE DISPOSITION[\s\S]*?(?=\n## [A-Z]|\n<!--|$)/i);
+	const section = match ? match[0] : '';
+	return (
+		/\bremains?\b/i.test(section) &&
+		/\bopen\b/i.test(section) &&
+		/\bdo not close\b/i.test(section) &&
+		/\bstatus:active\b/i.test(section)
+	);
+}
+
+export function planActiveSourceIssueRelabel({ issueLabels = [] } = {}) {
+	const labels = new Set(
+		Array.from(issueLabels || [])
+			.map((label) => (typeof label === 'string' ? label : label?.name))
+			.filter(Boolean),
+	);
+	const removeLabels = STALE_SOURCE_ISSUE_LABELS.filter((label) => labels.has(label));
+
+	return {
+		ok: true,
+		reason: 'active_source_issue_relabel_ready',
+		removeLabels,
+		addLabel: '',
+		summary: `remove ${removeLabels.length ? removeLabels.join(', ') : 'none'}; preserve ${ACTIVE_SOURCE_ISSUE_LABEL}; source issue remains open`,
+	};
 }
 
 export function isRemediationIssue({ title = '', labels = [] } = {}) {
@@ -157,6 +186,9 @@ export function shouldCloseSourceIssue({
 	}
 	if (issueMeta && isRemediationIssue(issueMeta) && !closedFollowupAllowed) {
 		return { close: false, reason: 'remediation_issue' };
+	}
+	if (shouldKeepActiveSourceIssueOpen(prBody)) {
+		return { close: false, reason: 'active_source_issue_remains_open' };
 	}
 	if (terminalLabelResult && !terminalLabelResult.ok) {
 		return { close: false, reason: terminalLabelResult.reason || 'terminal_label_reconciliation_failed' };

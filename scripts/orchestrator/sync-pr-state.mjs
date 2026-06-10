@@ -7,9 +7,11 @@ import { pathToFileURL } from 'node:url';
 import { linkedIssueNumber, sourceIssueAccounting } from '../ci/issue_accounting.mjs';
 import {
   buildSourceIssueCloseoutComment,
+  planActiveSourceIssueRelabel,
   planTerminalLabelReconciliation,
   postMergeVerificationResult,
   shouldCloseSourceIssue,
+  shouldKeepActiveSourceIssueOpen,
 } from '../ci/post_merge_source_issue_closeout.mjs';
 
 const repo = process.env.GITHUB_REPOSITORY;
@@ -149,6 +151,29 @@ export function syncPrState({
     });
 
     if (!closeDecision.close) {
+      if (
+        closeDecision.reason === 'active_source_issue_remains_open' &&
+        shouldKeepActiveSourceIssueOpen(pr.body || '')
+      ) {
+        const relabelPlan = planActiveSourceIssueRelabel({ issueLabels: meta.labels || [] });
+        reconcileTerminalLabelsFn(issueNumber, relabelPlan);
+        const mergeSha = postMergeResult?.merge_sha || pr.mergeCommit?.oid || '';
+        const closeoutComment = buildSourceIssueCloseoutComment({
+          prNumber,
+          mergeSha,
+          sourceIssueNumber: issueNumber,
+          validatorStatus: postMergeResult?.status || 'pass',
+          verificationResult: postMergeVerificationResult(postMergeResult),
+          closeoutReason: closeDecision.reason,
+          validationSummary: validationSummary(postMergeResult),
+          terminalLabelResult: relabelPlan.summary,
+          sourceIssueCloseoutMode: postMergeResult?.source_issue_closeout_mode,
+          queueAdvancementStatus:
+            'no queue action; Phase 3 planning complete; source issue remains active pending Phase 4 approval',
+        });
+        run(['issue', 'comment', issueNumber, '--repo', repo, '--body', closeoutComment]);
+        return 'active_relabeled';
+      }
       log(`Skipping source issue closeout for PR #${prNumber}: ${closeDecision.reason}.`);
       return closeDecision.reason;
     }
