@@ -35,6 +35,7 @@ Use this file only as an optional, human-readable snapshot.
 | `#1258` Phase 4 Task 003 | PR `#1536` merged — Fan Club operational workflows verification |
 | `#1258` Phase 4 Task 004 | PR `#1542` merged — admin shell and member operations hardening |
 | `#1258` post-merge status | PR `#1534` merged — derived tasklist/plan refresh |
+| `#1258` post-merge remediation | PR `#1540` merged — #1538 Codex reviewer remediation |
 | `#1407`, `#1526`, `#1448` | closed complete |
 | issue `#1411` | completed planning artifact |
 
