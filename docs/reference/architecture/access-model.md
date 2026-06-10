@@ -5,298 +5,281 @@ Authority Level: Canonical Architecture Specification
 Owns: System architecture, data flows, access model, runtime dependencies
 Does Not Own: Operational runbooks; governance policies; UI/UX design specifics
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Last Reviewed: 2026-02-20
+Related issues: #1255, #1258
+Last Reviewed: 2026-06-10
 ---
 
-# LGFC Admin Access Model — ZIP 41 As-Built
+# LGFC Admin Access Model — As-Built
 
-**Version:** 2026-01-28  
-**Status:** Active (Post ZIP 41 / PR #457)
+**Version:** 2026-06-10  
+**Status:** Active (reconciled for Program `#1258` Task 002)
 
 ---
 
 ## Overview
 
-This document describes the **as-built** admin access model implemented in ZIP 41 (PR #457), which unblocked admin UI access while maintaining API security through token-based authentication.
+LGFC admin operations use **dual gating**:
 
-## Architecture Summary
+1. **Admin UI session gate** — `/admin/**` pages require an authenticated member session with `role: admin`.
+2. **Admin API token gate** — `/api/admin/**` endpoints require the configured `ADMIN_TOKEN` on every request.
 
-The admin access model follows a **two-tier approach**:
+A site operator must satisfy **both** layers to use admin tools end-to-end: sign in as an admin member to reach the UI, then save the admin API token in the browser to load data and perform mutations.
 
-1. **Admin UI Pages** (`/admin/**`): Browser-reachable, client-side rendered pages
-2. **Admin API Endpoints** (`/api/admin/**`): Token-gated server-side functions
-
-This separation allows:
-- **Frontend development** without requiring production secrets
-- **API security** through environment-variable-based token authentication
-- **Flexible deployment** with static UI and secure runtime APIs
+This document reflects the as-built implementation on `main` after T40–T49 admin work (PRs `#1171`–`#1216`) and Task 001 gap analysis (PR `#1531`).
 
 ---
 
-## Admin UI Pages
+## Architecture summary
 
-### Routes
+| Layer | Surface | Enforcement | Primary code |
+| --- | --- | --- | --- |
+| Member session | `/api/session/me` | Cookie-backed member session; returns `role: admin \| member \| guest` | `functions/api/session/me.ts`, `functions/_lib/session.ts` |
+| Admin UI gate | `/admin/**` | Client layout redirects non-admin or unauthenticated users to `/` | `src/app/admin/layout.tsx`, `src/hooks/useMemberSession.ts` |
+| Admin API gate | `/api/admin/**` | `x-admin-token` or `Authorization: Bearer` must match `env.ADMIN_TOKEN`; fail-closed if unset | `functions/_lib/auth.ts` (`requireAdmin`) |
+| Operator token UX | Admin dashboard and pages | Token entered in `AdminTokenPanel`; stored in browser `localStorage` | `src/components/admin/AdminTokenPanel.tsx`, `src/lib/adminClient.ts` |
 
-All admin UI routes are under `/admin/**`:
-
-- **`/admin`** — Main admin dashboard (CMS, content management, stats)
-- **`/admin/d1-test`** — D1 database diagnostic tool
-- **`/admin/cms`** — CMS content management interface
-- **`/admin/content`** — Page content editor
-
-### Access Model
-
-**Browser-Reachable:** Admin UI pages are **publicly accessible** via direct browser navigation.
-
-**Client-Side:** All admin UI pages are Next.js client components (`'use client'`) that run in the browser.
-
-**Token Management:**
-- Admin pages use `sessionStorage` to store an admin token (`lgfc_admin_token`)
-- Pages prompt for token input if not present
-- Token is sent as `x-admin-token` header in API requests
-
-**No Server-Side Gate:** Admin UI routes do **not** have server-side authentication. Access control is enforced at the API layer.
-
-### Purpose
-
-The admin UI serves as:
-- **Diagnostic tools** for D1 database inspection
-- **CMS interfaces** for content management
-- **Analytics dashboards** for member/join stats
-- **Configuration panels** for dynamic content (quotes, welcome email, worklist)
+**Security boundary:** The UI gate controls **who can see and navigate** admin pages. The API gate controls **who can read or mutate** privileged data. Either layer alone is insufficient for full admin operations.
 
 ---
 
-## Admin API Endpoints
+## Admin UI pages
 
 ### Routes
 
-All admin API endpoints are under `/api/admin/**`:
+All admin UI routes live under `/admin/**`. Current routes include dashboard, moderation, audit, FAQ, CMS, content, editorial, events, matchup, fundraiser preview, join requests, worklist, member operations, media assets, and D1 inspect. See Task 001 inventory: `docs/ops/reports/website-operations-admin-as-built-gap-analysis.md`.
 
-- **`/api/admin/stats`** — Database row counts
-- **`/api/admin/export`** — Data export (CSV)
-- **`/api/admin/d1-inspect`** — D1 table inspection
-- **`/api/admin/worklist`** — Team task management
-- **`/api/admin/footer-quotes`** — Footer quote rotation
-- **`/api/admin/membership-card`** — Membership card content
-- **`/api/admin/welcome-email`** — Welcome email template
-- **`/api/admin/cms/**` — CMS content operations
-- **`/api/admin/content/**` — Page content operations
+### Access model
 
-### Access Model
+**Session-gated (not public):** `src/app/admin/layout.tsx` wraps all admin pages and calls:
 
-**Token-Gated:** All `/api/admin/**` endpoints require the `ADMIN_TOKEN` environment variable.
+```typescript
+useMemberSession({ redirectTo: '/', requireAdmin: true })
+```
 
-**Authentication Check:**
+While loading, or when the session is missing or `role !== 'admin'`, the layout renders nothing and redirects to the public homepage.
+
+**Client-side only:** The gate runs in the browser after `/api/session/me` returns. There is no server-rendered admin auth in the static export.
+
+**What this protects:** Casual visitors and signed-in non-admin members cannot use admin navigation or page chrome.
+
+**What this does not protect:** Determined clients could still request static admin JS bundles directly. Sensitive operations remain blocked at the API layer.
+
+### Admin API token panel
+
+Most admin pages load data through `/api/admin/**`. The dashboard includes `AdminTokenPanel`, which:
+
+- Reads and writes `localStorage` key `lgfc_admin_token` (via `src/lib/adminClient.ts`)
+- Sends the saved value as header `x-admin-token` on admin API calls
+- Does **not** use `sessionStorage`
+
+Help text on the panel: *"Admin pages are session-gated; operational APIs also require the configured admin token."*
+
+---
+
+## Admin API endpoints
+
+### Routes
+
+Privileged operations are under `/api/admin/**`, including stats, export, worklist, CMS, content, editorial, FAQ, Ask, reports, events, matchup, media assets, join requests, welcome email, membership card, footer quotes, and D1 inspect. See Task 001 inventory for the full file list under `functions/api/admin/**`.
+
+### Access model
+
+**Token-gated:** Every admin API handler should call `requireAdmin(request, env)` before reading or writing data.
+
+**Token verification:**
+
+- Client sends `x-admin-token` (or `Authorization: Bearer <token>`)
+- Server compares against `env.ADMIN_TOKEN`
+- Missing `ADMIN_TOKEN` configuration → `503` with `{ ok: false, error: "Admin access is not configured." }`
+- Missing or wrong client token → `401` with `{ ok: false, error: "Unauthorized." }`
+
+**Environment variable:**
+
+| Field | Value |
+| --- | --- |
+| Name | `ADMIN_TOKEN` |
+| Set in | Cloudflare Pages project settings (Production and Preview as needed) |
+| Repository | Never committed |
+| Recommended format | 32+ character random string |
+
+### Example handler pattern
+
 ```typescript
 import { requireAdmin } from "../../_lib/auth";
 
 export const onRequestGet = async (context: any): Promise<Response> => {
   const { request, env } = context;
-  
+
   const deny = requireAdmin(request, env);
-  if (deny) return deny;  // Returns 403 if token invalid
-  
+  if (deny) return deny;
+
   // Proceed with admin operation
 };
 ```
 
-**Token Verification:**
-- Client sends token via `x-admin-token` request header
-- Server compares against `env.ADMIN_TOKEN`
-- Missing or mismatched token → `403 Forbidden`
+---
 
-**Environment Variable:**
-- **Variable Name:** `ADMIN_TOKEN`
-- **Set in:** Cloudflare Pages project settings (Environment Variables)
-- **NOT in repository** — never committed to git
-- **Format:** Any secure string (recommended: 32+ character random token)
+## Operator workflow (site operator)
 
-### Security Boundary
+Use this sequence when operating the live or preview site. No developer tooling is required beyond a browser and credentials supplied by the site maintainer.
 
-The API layer is the **hard security boundary**:
+### Prerequisites
 
-✅ **Protected:**
-- Database writes (CMS, content, worklist)
-- Database reads of sensitive data (join requests, members)
-- Data exports (CSV dumps)
-- Configuration changes (quotes, email templates)
+- Your member account is assigned **admin** role in the member database (maintainer action).
+- You have the **admin API token** value configured for the target environment (maintainer shares out-of-band; never post in chat or email threads).
 
-❌ **Not Protected:**
-- Admin UI page access (browser-reachable)
-- D1 test page UI (browser-reachable)
-- Public API endpoints (`/api/join`, `/api/login`, etc.)
+### Steps
+
+1. **Sign in as a member** using the normal site login flow (same as Fan Club / member areas).
+2. **Open an admin URL**, for example `/admin` or `/admin/moderation`.
+3. **Session check:** If you are not signed in or your account is not an admin, you are redirected to the homepage. Sign in with an admin account and try again.
+4. **Enter the admin API token:** On the admin dashboard (or any page showing the token panel), paste the admin API token and click **Save token**. The browser stores it in `localStorage` for this site origin.
+5. **Use admin tools:** Navigate via admin nav or dashboard cards. Lists, saves, exports, and publishes call `/api/admin/**` with your saved token.
+6. **If data does not load:** Confirm the token is saved, matches the environment’s `ADMIN_TOKEN`, and that you are on the correct preview or production URL. API errors surface in page status text (for example *"Error: Unauthorized."*).
+7. **Sign out / clear token:** Clear the token field and save to remove `localStorage` entry when finished on a shared machine.
+
+### Operator expectations
+
+| Situation | Expected behavior |
+| --- | --- |
+| Not signed in → visit `/admin` | Redirect to `/` |
+| Signed in as member (non-admin) → visit `/admin` | Redirect to `/` |
+| Signed in as admin, no API token saved | Admin UI visible; API-backed panels empty or show unauthorized errors |
+| Signed in as admin, valid token saved | Full read/write per page capabilities |
+| API called without token | `401 Unauthorized` JSON response |
 
 ---
 
-## D1 Diagnostic Tool
+## Security boundary
 
-### Route
+| Capability | UI session gate | API token gate |
+| --- | --- | --- |
+| View admin page chrome and navigation | Required | Not required |
+| Load D1-backed lists, stats, exports | Required (to reach UI) | Required (for data) |
+| CMS / content / editorial publish | Required | Required |
+| Moderation approve/deny/archive | Required | Required |
+| Join requests, worklist, member ops config | Required | Required |
+| Public member/Fan Club routes | Not applicable | Not applicable |
 
-**`/admin/d1-test`**
+**Protected by API gate (hard boundary):** database reads of sensitive data, all privileged writes, CSV exports, configuration changes.
 
-### Purpose
+**Not a substitute for API security:** UI session gate alone does not prevent direct API calls; `requireAdmin` is the enforcement point for mutations and sensitive reads.
 
-Browser-based diagnostic tool for D1 database inspection:
-- List all tables with row counts
-- View table schemas (column names, types)
-- Query table contents (SELECT * with row limit)
-- Verify D1 binding configuration
-- Troubleshoot migration/seeding issues
+---
 
-### Access Model
+## D1 diagnostic tool
 
-**Page Access:** Browser-reachable (no gate)
+**Route:** `/admin/d1-test`
 
-**API Access:** Uses `/api/admin/d1-inspect` (token-gated)
+**Purpose:** Browser tool for D1 table inspection (counts, schemas, sample rows).
 
-**Token Flow:**
-1. User navigates to `/admin/d1-test`
-2. Page prompts for admin token (stored in `sessionStorage`)
-3. User enters token
-4. Page calls `/api/admin/d1-inspect` with token header
-5. API validates token and returns D1 data
+**Access:**
 
-### Use Cases
+1. Operator passes admin **session** gate via `/admin` layout.
+2. Operator saves **admin API token** in the token panel.
+3. Page calls `/api/admin/d1-inspect` with `x-admin-token`.
 
-- **Development:** Verify local D1 setup and migrations
-- **Deployment:** Confirm production D1 binding is configured
-- **Troubleshooting:** Inspect table schemas and row counts
-- **Seeding Verification:** Check if `d1-seed-all.sh` populated tables correctly
+Same dual-gate pattern as other admin surfaces.
 
 ---
 
 ## Configuration
 
-### Cloudflare Pages Environment Variables
+### Cloudflare Pages environment variables
 
-**Production Environment:**
+1. Cloudflare Dashboard → Pages → Project → Settings → Environment Variables
+2. Add `ADMIN_TOKEN` for Production (and Preview when testing admin APIs)
+3. Redeploy after changes
 
-1. Go to Cloudflare Dashboard → Pages → Project → Settings → Environment Variables
-2. Add variable:
-   - **Name:** `ADMIN_TOKEN`
-   - **Value:** (secure random token, 32+ characters)
-   - **Scope:** Production (and Preview if testing admin features)
-3. Save and redeploy
-
-**Local Development:**
+### Local development
 
 Create `.env.local` (gitignored):
+
 ```
 ADMIN_TOKEN=your-local-dev-token-here
 ```
 
-Run local dev server:
+Run:
+
 ```bash
 npm run dev:cf
 ```
 
-Wrangler loads `.env.local` automatically for local Pages Functions.
-
 ### Verification
 
-**Check Token is Required:**
 ```bash
-# Should return 403 Forbidden
-curl -X GET https://your-site.pages.dev/api/admin/stats
+# Should return 401 Unauthorized (no token)
+curl -sS -o /dev/null -w "%{http_code}\n" https://your-site.pages.dev/api/admin/stats
 
-# Should return 200 OK with data
-curl -X GET https://your-site.pages.dev/api/admin/stats \
+# Should return 200 with data when token matches
+curl -sS https://your-site.pages.dev/api/admin/stats \
   -H "x-admin-token: YOUR_ADMIN_TOKEN"
 ```
 
-**Test D1 Diagnostic Tool:**
-1. Navigate to `/admin/d1-test`
-2. Enter admin token when prompted
-3. Click "Load Tables"
-4. Verify table list appears
+Browser check:
+
+1. Sign in as admin member
+2. Open `/admin/d1-test`
+3. Save admin token in panel
+4. Confirm table list loads
 
 ---
 
-## Security Considerations
+## Security considerations
 
-### What is Protected
+### Threat model
 
-✅ **API operations** that modify or read sensitive data  
-✅ **Database writes** via admin endpoints  
-✅ **Data exports** and reporting  
-✅ **Configuration changes** (quotes, email templates, etc.)
+- Admin UI static assets may be discoverable; session gate reduces casual access.
+- All sensitive operations must fail without a valid `ADMIN_TOKEN`.
+- Tokens in `localStorage` persist per browser origin; operators should clear tokens on shared devices.
 
-### What is NOT Protected
+### Best practices
 
-❌ **Admin UI pages** — Publicly accessible HTML/JS  
-❌ **Admin page source code** — Visible in static export  
-❌ **Client-side logic** — Runs in browser (no secrets)
-
-### Threat Model
-
-**Assumption:** Admin UI pages may be discovered by external users.
-
-**Mitigation:** All sensitive operations gated at API layer with `ADMIN_TOKEN`.
-
-**Risk:** Unauthorized users can:
-- View admin UI page structure
-- See client-side code and component organization
-- Attempt API calls (which will fail without token)
-
-**Acceptable because:**
-- No sensitive data exposed in UI pages (data fetched via API)
-- Token-gated APIs prevent unauthorized operations
-- Admin UI is intended for internal use; discovery is not a security breach
-
-### Best Practices
-
-1. **Use strong tokens:** Generate `ADMIN_TOKEN` with `openssl rand -hex 32` or similar
-2. **Rotate tokens:** Change `ADMIN_TOKEN` periodically
-3. **Limit distribution:** Share token only with authorized admins
-4. **Monitor API logs:** Review Cloudflare logs for unauthorized API attempts
-5. **Never commit tokens:** Ensure `.env.local` and secrets are in `.gitignore`
+1. Generate strong tokens (`openssl rand -hex 32` or equivalent)
+2. Rotate `ADMIN_TOKEN` periodically; update operator copies
+3. Limit token distribution to authorized operators
+4. Review Cloudflare request logs for repeated `401`/`503` on `/api/admin/**`
+5. Never commit tokens or store them in repository files
 
 ---
 
-## Migration from Prior Model
+## Historical context
 
-### Before ZIP 41
+### ZIP 41 (PR `#457`)
 
-Admin pages were **blocked** with an HTML gate (token prompt before page load).
+Early post–ZIP 41 documentation described admin UI pages as browser-reachable without a session gate, with `sessionStorage` token UX and API-only security. That matched an interim static-export compromise.
 
-**Issues:**
-- Static Next.js export could not server-render token checks
-- HTML gate was client-side only (easily bypassed)
-- Development friction (needed production-like setup for UI work)
+### Current as-built (2026-06)
 
-### After ZIP 41 (Current)
-
-Admin pages are **open** for UI access, APIs are token-gated.
-
-**Benefits:**
-- UI can be developed and previewed without secrets
-- Security enforcement is at the correct layer (API)
-- Diagnostic tools (D1 test) usable in local development
-- Clear separation of concerns (UI vs. API security)
+Admin UI now uses **session-backed `requireAdmin` layout gating** plus **`localStorage` admin token** for API calls. Documentation here supersedes ZIP 41–era claims of "publicly accessible" admin pages and `sessionStorage` token storage.
 
 ---
 
-## Future Enhancements
+## Follow-up gaps (explicit; no code in Task 002)
 
-**Phase 6+:** Role-backed admin authentication hardening
+| Gap | Notes | Suggested route |
+| --- | --- | --- |
+| Dedicated operator how-to under `docs/how-to/website/` | Task 002 captures workflow in this spec; a standalone how-to may help non-technical operators | Task 013 runbooks |
+| `footer-quotes` admin API without admin UI | Token-only config surface | Task 004 (deferred UI) |
+| Role/session hardening beyond `ADMIN_TOKEN` | OAuth, MFA, server-side UI gate | Future auth program; not `#1258` Task 002 |
+| PMO `production-ready` dependency-map fields | Plan promotion gate | Atlas/Bill before child issue creation |
 
-When advanced auth hardening is integrated:
-- **Admin UI pages** may add stronger role/session checks beyond token entry UX
-- **Admin APIs** may add layered role/session verification in addition to `ADMIN_TOKEN`
-- **D1 diagnostic tool** may require explicit admin role confirmation
-- **Migration path:** Token-based auth remains available as fallback/backup access method
+---
 
-See `/docs/admin/dashboard.md` for full admin feature roadmap.
+## Future enhancements
+
+Phase 6+ may add layered role verification on APIs, stronger server-side UI enforcement, and audit logging. Until then, operators and agents should treat **session UI gate + `ADMIN_TOKEN` API gate** as the canonical model.
 
 ---
 
 ## References
 
-- **PR #457:** ZIP 41 implementation (infra: unblock /admin UI and add D1 test page)
-- **Auth Library:** `functions/_lib/auth.ts` (requireAdmin function)
-- **Admin Pages:** `src/app/admin/**`
-- **Admin APIs:** `functions/api/admin/**`
-- **D1 Test Tool:** `src/app/admin/d1-test/page.tsx`
-- **Environment Setup:** `/docs/START_HERE.md`
-- **D1 Configuration:** `/docs/governance/PR_GOVERNANCE.md` (D1 Database Binding Requirements)
+- Task 001 inventory: `docs/ops/reports/website-operations-admin-as-built-gap-analysis.md`
+- Implementation plan: `docs/ops/implementation-plans/website-operations-admin.md`
+- Auth library: `functions/_lib/auth.ts`
+- Session API: `functions/api/session/me.ts`
+- Admin layout: `src/app/admin/layout.tsx`
+- Admin client: `src/lib/adminClient.ts`
+- Token panel: `src/components/admin/AdminTokenPanel.tsx`
+- Admin pages: `src/app/admin/**`
+- Admin APIs: `functions/api/admin/**`
