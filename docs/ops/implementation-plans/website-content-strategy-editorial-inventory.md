@@ -148,12 +148,12 @@ validation. `#1256` completes only after `#1407` and `#1526` closeout.
 Checkpoints before `#1256` project completion and `#1258` activation:
 
 1. Remediate `#1526` and apply post-merge closeout body for PR `#1520`.
-2. Close `#1407` with `status:complete` after validator pass.
-3. Reconcile and close `#1448` with updated rebaseline comment reflecting Tasks
-   003–009 execution history.
+2. Complete `#1407` with `status:complete` after validator pass.
+3. Reconcile `#1448` with updated rebaseline comment reflecting Tasks 003–009
+   execution history.
 4. Reconcile `#1255` / `#1256` labels (`status:post-merge-verify`,
    `status:failed`) per Atlas/Bill closeout instructions.
-5. Do not launch `#1258`, `#1259`, or Issue `#1500` until Program #1255
+5. Do not launch `#1258`, `#1259`, or issue `#1500` until Program #1255
    completion signoff is recorded.
 
 Canonical reference:

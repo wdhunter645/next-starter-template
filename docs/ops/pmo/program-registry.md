@@ -28,9 +28,9 @@ unauthorized GitHub issue mutation.
 
 - Program #1255 is the active execution program. Child project #1256 is at
   terminal Task 009 closeout (`#1407` open; `#1526` remediation open).
-- Issue #1411 is closed complete — a completed planning/control artifact, not
-  an open blocked program.
-- Issue #1500 is the next prioritized program after Program #1255 completes. It
+- issue #1411 is completed — a planning/control artifact, not an open blocked
+  program.
+- issue #1500 is the next prioritized program after Program #1255 completes. It
   is excluded from immediate execution.
 - GitHub issue titles use `Program: <name>`. Documentation references use
   `Program #<issue-number> — <name>`.
@@ -91,7 +91,7 @@ PMO meeting issue → PMO Backlog review/update → program issue → project / 
 
 | Program issue | Name | Historical label | Status | Launch rule |
 | --- | --- | --- | --- | --- |
-| #1411 | PMO Automation and Agent Workflow Control | Program 1 | Completed planning artifact (issue closed, `status:complete`) | Issue #1411 is not an open blocked program. New execution requires a current open source issue. PMO automation execution remains blocked until Program #1255 completes and Atlas/Bill explicitly launch the next cycle. |
+| #1411 | PMO Automation and Agent Workflow Control | Program 1 | Completed planning artifact (issue closed, status:complete) | issue #1411 is not an open blocked program. New execution requires a current open source issue. PMO automation execution remains blocked until Program #1255 completes and Atlas/Bill explicitly launch the next cycle. |
 
 ## Historical program evidence
 
@@ -159,7 +159,7 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 | Active child project | `#1256` — Content Strategy / Editorial Inventory |
 | Primary plan | `docs/how-to/website/website-implementation-and-content-operations-plan.md` |
 | Priority | Complete #1256 closeout (`#1407` / `#1526`); then #1258, then #1259 |
-| Next prioritized program (not active) | Issue `#1500` — excluded from immediate execution |
+| Next prioritized program (not active) | issue `#1500` — excluded from immediate execution |
 
 Program #1255 remains active while #1256 completes terminal closeout. Program #1411 planning artifacts must not modify Program #1255 issue state, relabel Program #1255 issues, close Program #1255 issues, or reinterpret Program #1255 child project priority without explicit authorization.
 

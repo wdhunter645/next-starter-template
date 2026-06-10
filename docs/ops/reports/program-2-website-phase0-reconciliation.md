@@ -249,7 +249,7 @@ execution history.
 | Rebaseline `#1448` | Open | Pause language stale — Tasks 003–009 merged while open |
 | Next child `#1258` | Open — `status:queued` | Not started |
 | Next child `#1259` | Open — `status:queued` | Not started |
-| Issue `#1500` | Next prioritized program | **Excluded** from immediate execution |
+| issue `#1500` | Next prioritized program | **Excluded** from immediate execution |
 
 **Governance mismatch (plain statement):** Documentation and `#1448` described a
 rebaseline pause blocking tasks beyond `#1402`. Execution advanced through Task

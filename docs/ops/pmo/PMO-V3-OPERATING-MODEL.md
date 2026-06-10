@@ -30,10 +30,10 @@ unauthorized GitHub issue mutation.
 
 - Program #1255 is the active execution program (historical label: Program 2).
 - Child project #1256 is at terminal Task 009 closeout (`#1407` / `#1526`).
-- Issue #1411 is closed complete — a completed planning/control artifact, not an
-  open blocked program. New execution from that body requires a current open
-  source issue and explicit launch authorization.
-- Issue #1500 is the next prioritized program after Program #1255 completes. It
+- issue #1411 is completed — a planning/control artifact, not an open blocked
+  program. New execution from that body requires a current open source issue and
+  explicit launch authorization.
+- issue #1500 is the next prioritized program after Program #1255 completes. It
   is out of scope for immediate execution.
 - GitHub issue titles use `Program: <name>` when possible. Documentation
   references use `Program #<issue-number> — <name>`.
@@ -83,7 +83,7 @@ This document becomes the controlling PMO authority for new planning and impleme
 | --- | --- |
 | Historical label | Program 1 |
 | Status | Completed planning/control artifact (`status:complete`, issue closed) |
-| Execution rule | Issue #1411 is not an open blocked program. Any future execution work must be represented by a current open source issue before launch. New PMO automation execution remains blocked until Program #1255 is completed and signed off and Atlas/Bill explicitly launch the next cycle. |
+| Execution rule | issue #1411 is not an open blocked program. Any future execution work must be represented by a current open source issue before launch. New PMO automation execution remains blocked until Program #1255 is completed and signed off and Atlas/Bill explicitly launch the next cycle. |
 
 ### Legacy #1379
 

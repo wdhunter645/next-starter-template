@@ -51,18 +51,18 @@ This document does not own:
 - `#1258` (Website Operations Admin) is the next queued child project after
   `#1256` completes. `#1259` (Website QA / Production Validation) follows
   `#1258`. Neither is authorized for implementation in the current cleanup pass.
-- Issue `#1500` is the next prioritized program after Program #1255 completes.
+- issue `#1500` is the next prioritized program after Program #1255 completes.
   It is intentionally excluded from immediate execution and from this cleanup
   scope.
 - `#1448` rebaseline/pause language is stale relative to execution history.
   Tasks 003–009 merged while `#1448` remained open. `#1448` must be reconciled
   and closed after `#1407` / `#1526` closeout — not treated as an active launch
   blocker for already-merged work.
-- Issue `#1411` is a **completed planning/control artifact** (closed,
-  `status:complete`). It is not an open blocked program. Future execution work
+- issue `#1411` is a **completed planning/control artifact** (completed,
+  status:complete). It is not an open blocked program. Future execution work
   from that planning body requires a current open source issue and explicit
   launch authorization.
-- Program #1411 (PMO Automation) remains staged / blocked for **new execution**
+- PMO automation **new execution** from the #1411 planning body remains blocked
   until Program #1255 is completed and signed off.
 - Bill owns merge authority, launch gates, and destructive issue actions.
 - Atlas owns governance review, queue conformance, batch verification, and
