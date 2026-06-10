@@ -7,7 +7,8 @@ Does Not Own: Runtime implementation, issue creation before approval, D1 migrati
 Status: phase-4-active
 Task 001 complete: docs/ops/reports/website-operations-admin-as-built-gap-analysis.md (PR `#1531`)
 Task 002 complete: docs/reference/architecture/access-model.md (PR `#1533`)
-Task 003 in progress: Fan Club operational workflows verification (`#1118` / T40)
+Task 003 complete: Fan Club operational workflows verification (`#1118` / T40; PR `#1536`)
+Next task: Task 004 — Admin shell and member operations delta (`#1119` / T41)
 Project: website-operations-admin
 Owner: Atlas
 Execution Mode: orchestrated-after-approval
@@ -22,9 +23,11 @@ Last Reviewed: 2026-06-10
 
 ## Status
 
-Phase 4 implementation for `#1258` is **active** on `main`. Tasks 001–002 are
-complete (PRs `#1531`, `#1533`). **Task 003** is next. Child issue creation
-remains held unless explicitly authorized by existing automation.
+Phase 4 implementation for `#1258` is **active** on `main`. Tasks 001–003 are
+complete (PRs `#1531`, `#1533`, `#1536`; post-merge status via `#1534`). **Task
+004** is next and awaits explicit authorization. Plan status remains
+`phase-4-active` (not `production-ready`). Child issue creation remains held
+unless explicitly authorized by existing automation.
 
 ## Source of truth
 
@@ -40,6 +43,7 @@ remains held unless explicitly authorized by existing automation.
 | Legacy issue table | `docs/ops/reports/website-operations-admin-legacy-issue-reconciliation.md` |
 | Task 001 gap analysis | `docs/ops/reports/website-operations-admin-as-built-gap-analysis.md` |
 | Task 002 access model | `docs/reference/architecture/access-model.md` |
+| Task 003 Fan Club verification | PR `#1536` — `tests/fanclub-operations.test.tsx` + `/fanclub/**` hardening |
 
 ## Scope
 
@@ -243,7 +247,7 @@ Task 001 classifies the lane as already satisfied.
 | **Acceptance criteria** | Scoped routes pass manual verification; gaps fixed or documented as `#1259` deferrals |
 | **Verification** | `npm run typecheck`; targeted tests if present; manual route checklist |
 | **Dependencies** | Tasks 001–002 complete (PRs `#1531`, `#1533`, `#1534`) |
-| **Status** | In review (Phase 4) |
+| **Status** | Complete (PR `#1536` merged) |
 | **Task 003 verification notes** | Session `credentials: 'include'` on Fan Club operational fetches; chat post errors surfaced; expanded `tests/fanclub-operations.test.tsx`; PDF upload pipeline deferred to `#1259` |
 
 ### Task 004 — Admin Shell and Member Operations Delta
@@ -256,7 +260,8 @@ Task 001 classifies the lane as already satisfied.
 | **Non-goals** | New admin modules; public route changes |
 | **Acceptance criteria** | Admin nav complete; empty/error states safe; join/member ops actionable |
 | **Verification** | `npm run typecheck`; manual admin smoke |
-| **Dependencies** | Task 002 |
+| **Dependencies** | Tasks 002–003 complete |
+| **Status** | Next (Phase 4; awaits authorization) |
 
 ### Task 005 — Moderation and Review Workflow Delta
 
@@ -368,18 +373,26 @@ Task 001 classifies the lane as already satisfied.
 
 ## Phase 3 exit criteria
 
-Implementation (Phase 4) may start only when Atlas/Bill confirm:
+Phase 3 planning exit is **met** for bounded Phase 4 execution. The plan remains
+`phase-4-active` until Atlas/Bill promote it to `production-ready` (full PMO
+dependency-map fields still required for that promotion).
 
-- [ ] This implementation plan approved (`ready-for-review` → `production-ready`)
-- [ ] Proposed child task sequence approved (Tasks 001–013 or revised list)
-- [ ] Per-task file allowlists approved
-- [ ] Access/security model confirmed (session UI + `ADMIN_TOKEN` API)
-- [ ] D1/B2/admin surface risks reviewed (see risk register)
-- [ ] `#1123` / `#1256` editorial scope boundary confirmed
-- [ ] `#1053` umbrella disposition decision recorded
-- [ ] `#1259` remains queued (not started)
-- [ ] `#1500` remains queued and out of scope
-- [ ] Explicit `@cursor` implementation authorization on Task 001
+| Criterion | State |
+| --- | --- |
+| Implementation plan approved for Phase 4 task execution | Met — `phase-4-active`; not `production-ready` |
+| Proposed child task sequence (Tasks 001–013) | Met — executing per-task under `#1258` |
+| Per-task file allowlists | Met — defined in this plan |
+| Access/security model (session UI + `ADMIN_TOKEN` API) | Met — Task 002 (`#1533`) |
+| D1/B2/admin surface risks reviewed | Met — risk register + Task 001 gap analysis |
+| `#1123` / `#1256` editorial boundary | Met — ops alignment only (Atlas decision) |
+| `#1053` umbrella disposition | Met — historical closeout preferred |
+| `#1259` queued | Met — not started |
+| `#1500` queued / out of scope | Met — not started |
+| Explicit Task 001 authorization | Met — PR `#1531` |
+
+**Authorization model:** Each Phase 4 task runs under explicit scope until Task
+004+ authorization is issued. Do not infer open-ended implementation from
+`phase-4-active` alone.
 
 ## Risk register
 
