@@ -8,7 +8,7 @@ Status: phase-4-active
 Task 001 complete: docs/ops/reports/website-operations-admin-as-built-gap-analysis.md (PR `#1531`)
 Task 002 complete: docs/reference/architecture/access-model.md (PR `#1533`)
 Task 003 complete: Fan Club operational workflows verification (`#1118` / T40; PR `#1536`)
-Task 004 in review: Admin shell and member operations delta (`#1119` / T41)
+Task 004 complete: Admin shell and member operations delta (`#1119` / T41; PR `#1542`)
 Next task: Task 005 — Moderation and review workflow delta (`#1120` / T42)
 Project: website-operations-admin
 Owner: Atlas
@@ -24,9 +24,9 @@ Last Reviewed: 2026-06-10
 
 ## Status
 
-Phase 4 implementation for `#1258` is **active** on `main`. Tasks 001–003 are
-complete (PRs `#1531`, `#1533`, `#1536`; post-merge via `#1534`, `#1540`). **Task
-004** is in review. Plan status remains
+Phase 4 implementation for `#1258` is **active** on `main`. Tasks 001–004 are
+complete (PRs `#1531`, `#1533`, `#1536`, `#1542`; post-merge via `#1534`,
+`#1540`). **Task 005** is next. Plan status remains
 `phase-4-active` (not `production-ready`). Child issue creation remains held
 unless explicitly authorized by existing automation.
 
@@ -45,6 +45,7 @@ unless explicitly authorized by existing automation.
 | Task 001 gap analysis | `docs/ops/reports/website-operations-admin-as-built-gap-analysis.md` |
 | Task 002 access model | `docs/reference/architecture/access-model.md` |
 | Task 003 Fan Club verification | PR `#1536` — `tests/fanclub-operations.test.tsx` + `/fanclub/**` hardening |
+| Task 004 admin shell verification | PR `#1542` — `AdminStatusText`, D1 inspect token UX, `tests/admin-operations.test.tsx` |
 
 ## Scope
 
@@ -263,8 +264,8 @@ Task 001 classifies the lane as already satisfied.
 | **Acceptance criteria** | Admin nav complete; empty/error states safe; join/member ops actionable |
 | **Verification** | `npm run typecheck`; manual admin smoke |
 | **Dependencies** | Tasks 002–003 complete |
-| **Status** | In review (Phase 4) |
-| **Task 004 notes** | Accessible error alerts on shell pages; D1 test token UX unified; `footer-quotes` UI still deferred |
+| **Status** | Complete (PR `#1542` merged) |
+| **Task 004 verification notes** | Accessible error alerts on shell pages via `AdminStatusText`; D1 test unified with `AdminTokenPanel` / `localStorage`; expanded `tests/admin-operations.test.tsx`; `footer-quotes` UI still deferred |
 
 ### Task 005 — Moderation and Review Workflow Delta
 
@@ -276,7 +277,7 @@ Task 001 classifies the lane as already satisfied.
 | **Non-goals** | Public FAQ/Ask behavior changes |
 | **Acceptance criteria** | Queues render; transitions auditable; admin-only enforced |
 | **Verification** | `npm run typecheck`; manual moderation checklist |
-| **Dependencies** | Task 004 |
+| **Dependencies** | Task 004 complete (PR `#1542`) |
 
 ### Task 006 — CMS and Page Content Admin Delta
 
@@ -394,7 +395,7 @@ dependency-map fields still required for that promotion).
 | Explicit Task 001 authorization | Met — PR `#1531` |
 
 **Authorization model:** Each Phase 4 task runs under explicit scope until Task
-004+ authorization is issued. Do not infer open-ended implementation from
+005+ authorization is issued. Do not infer open-ended implementation from
 `phase-4-active` alone.
 
 ## Risk register
@@ -438,7 +439,7 @@ Manual admin smoke checklist per task (documented in child issue bodies).
 
 Plan status is `phase-4-active` (not `production-ready`).
 
-Phase 3 planning exit is **met** (see table above). Tasks 001–003 are **complete**.
-**Task 004+** require explicit per-task authorization before implementation PRs
+Phase 3 planning exit is **met** (see table above). Tasks 001–004 are **complete**.
+**Task 005+** require explicit per-task authorization before implementation PRs
 begin. Child GitHub issues remain held unless Atlas/Bill or existing automation
 explicitly authorizes creation.
