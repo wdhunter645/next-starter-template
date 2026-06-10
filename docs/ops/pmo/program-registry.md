@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: PMO program issue registry, current program issue assignments, launch-state control, child-project mapping, and authoritative execution chain for LGFC orchestrated work
 Does Not Own: PMO v3 top-level policy, implementation plan task definitions, workflow code, runtime behavior, product design, or unauthorized GitHub issue mutation
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1256, #1407, #1526, #1501, #1500
+Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1256, #1258, #1259, #1501, #1500
 Last Reviewed: 2026-06-10
 ---
 
@@ -26,12 +26,15 @@ unauthorized GitHub issue mutation.
 
 ## Current known truth
 
-- Program #1255 is the active execution program. Child project #1256 is at
-  terminal Task 009 closeout (`#1407` open; `#1526` remediation open).
+- Program #1255 is the active execution program. Child project #1256 is
+  **closed complete** (Tasks 001–009).
+- Child project #1258 (Website Operations Admin) is **active for Phase 3
+  planning** — implementation not authorized until plan approval.
+- Child project #1259 remains queued after #1258.
 - issue #1411 is completed — a planning/control artifact, not an open blocked
   program.
 - issue #1500 is the next prioritized program after Program #1255 completes. It
-  is excluded from immediate execution.
+  is open, queued, and excluded from immediate execution.
 - GitHub issue titles use `Program: <name>`. Documentation references use
   `Program #<issue-number> — <name>`.
 
@@ -77,15 +80,15 @@ PMO meeting issue → PMO Backlog review/update → program issue → project / 
 
 | Program issue | Name | Historical label | Status | Notes |
 | --- | --- | --- | --- | --- |
-| #1255 | Website Implementation and Content Operations | Program 2 | Active — terminal child closeout | Current active execution program. Child project #1256 at Task 009 closeout (`#1407` / `#1526`). |
+| #1255 | Website Implementation and Content Operations | Program 2 | Active | Child #1256 complete; #1258 active planning; #1259 queued |
 
 ### Program #1255 child projects
 
 | Child project | Status | Notes |
 | --- | --- | --- |
-| #1256 Content Strategy / Editorial Inventory | Terminal closeout | Tasks 001–009 merged; `#1407` / `#1526` block project completion |
-| #1258 Website Operations Admin | Queued | Next after #1256 completes — not started |
-| #1259 Website QA / Production Validation | Queued | Follows #1258 — not started |
+| #1256 Content Strategy / Editorial Inventory | **Closed complete** | Tasks 001–009 merged and verified |
+| #1258 Website Operations Admin | **Active — Phase 3 planning** | Plan: `docs/ops/implementation-plans/website-operations-admin.md` |
+| #1259 Website QA / Production Validation | Queued | Follows #1258 implementation — not started |
 
 ## Staged / blocked program issues
 
@@ -153,15 +156,16 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 
 | Field | Value |
 | --- | --- |
-| Status | **Active execution program** — child project #1256 at terminal Task 009 closeout |
+| Status | **Active execution program** — #1256 complete; #1258 Phase 3 planning active |
 | Historical label | Program 2 |
 | Source issue | `#1255` |
-| Active child project | `#1256` — Content Strategy / Editorial Inventory |
+| Active child project | `#1258` — Website Operations Admin (planning) |
 | Primary plan | `docs/how-to/website/website-implementation-and-content-operations-plan.md` |
-| Priority | Complete #1256 closeout (`#1407` / `#1526`); then #1258, then #1259 |
-| Next prioritized program (not active) | issue `#1500` — excluded from immediate execution |
+| Ops admin plan | `docs/ops/implementation-plans/website-operations-admin.md` |
+| Priority | Complete #1258 planning → #1258 implementation (if approved) → #1259 |
+| Next prioritized program (not active) | issue `#1500` — queued; excluded from immediate execution |
 
-Program #1255 remains active while #1256 completes terminal closeout. Program #1411 planning artifacts must not modify Program #1255 issue state, relabel Program #1255 issues, close Program #1255 issues, or reinterpret Program #1255 child project priority without explicit authorization.
+Program #1255 remains active while #1258 and #1259 complete. Program #1411 planning artifacts must not modify Program #1255 issue state, relabel Program #1255 issues, close Program #1255 issues, or reinterpret Program #1255 child project priority without explicit authorization.
 
 ## Related References
 
