@@ -1,5 +1,5 @@
 ---
-Doc Type: Specification
+Doc Type: Reference
 Audience: Human + AI
 Authority Level: Canonical Architecture Specification
 Owns: System architecture, data flows, access model, runtime dependencies
@@ -36,7 +36,8 @@ This document reflects the as-built implementation on `main` after T40–T49 adm
 | Member session | `/api/session/me` | Cookie-backed member session; returns `role: admin \| member \| guest` | `functions/api/session/me.ts`, `functions/_lib/session.ts` |
 | Admin UI gate | `/admin/**` | Client layout redirects non-admin or unauthenticated users to `/` | `src/app/admin/layout.tsx`, `src/hooks/useMemberSession.ts` |
 | Admin API gate | `/api/admin/**` | `x-admin-token` or `Authorization: Bearer` must match `env.ADMIN_TOKEN`; fail-closed if unset | `functions/_lib/auth.ts` (`requireAdmin`) |
-| Operator token UX | Admin dashboard and pages | Token entered in `AdminTokenPanel`; stored in browser `localStorage` | `src/components/admin/AdminTokenPanel.tsx`, `src/lib/adminClient.ts` |
+| Operator token UX | Admin dashboard and most pages | Token entered in `AdminTokenPanel`; stored in browser `localStorage` | `src/components/admin/AdminTokenPanel.tsx`, `src/lib/adminClient.ts` |
+| D1 test token UX (exception) | `/admin/d1-test` only | Page-local token input; stored in `sessionStorage` (not shared with `adminClient`) | `src/app/admin/d1-test/page.tsx` |
 
 **Security boundary:** The UI gate controls **who can see and navigate** admin pages. The API gate controls **who can read or mutate** privileged data. Either layer alone is insufficient for full admin operations.
 
@@ -128,7 +129,7 @@ Use this sequence when operating the live or preview site. No developer tooling 
 - Your member account is assigned **admin** role in the member database (maintainer action).
 - You have the **admin API token** value configured for the target environment (maintainer shares out-of-band; never post in chat or email threads).
 
-### Steps
+### Operator sequence
 
 1. **Sign in as a member** using the normal site login flow (same as Fan Club / member areas).
 2. **Open an admin URL**, for example `/admin` or `/admin/moderation`.
@@ -175,11 +176,13 @@ Use this sequence when operating the live or preview site. No developer tooling 
 
 **Access:**
 
-1. Operator passes admin **session** gate via `/admin` layout.
-2. Operator saves **admin API token** in the token panel.
-3. Page calls `/api/admin/d1-inspect` with `x-admin-token`.
+| Layer | `/admin/d1-test` behavior |
+| --- | --- |
+| Session UI gate | Same as other `/admin/**` routes (`layout.tsx` + `useMemberSession`) |
+| API token | Page-local password input in `d1-test/page.tsx`; reads/writes `sessionStorage` key `lgfc_admin_token` — **not** `AdminTokenPanel` / `localStorage` |
+| API call | `/api/admin/d1-inspect` with `x-admin-token` from the page-local value |
 
-Same dual-gate pattern as other admin surfaces.
+Operators must enter the admin API token **on the D1 test page itself** even if they already saved a token on the dashboard panel. This is a known storage split documented as a follow-up gap below.
 
 ---
 
@@ -187,41 +190,23 @@ Same dual-gate pattern as other admin surfaces.
 
 ### Cloudflare Pages environment variables
 
-1. Cloudflare Dashboard → Pages → Project → Settings → Environment Variables
+1. Cloudflare Dashboard → Pages → project → Settings → Environment Variables
 2. Add `ADMIN_TOKEN` for Production (and Preview when testing admin APIs)
 3. Redeploy after changes
 
 ### Local development
 
-Create `.env.local` (gitignored):
+Create a gitignored `.env.local` with `ADMIN_TOKEN=your-local-dev-token-here`, then start the local Cloudflare Pages dev server (`npm run dev:cf` per `package.json`).
 
-```
-ADMIN_TOKEN=your-local-dev-token-here
-```
+### Verification signals
 
-Run:
+| Check | Expected result |
+| --- | --- |
+| `GET /api/admin/stats` without `x-admin-token` | `401 Unauthorized` JSON |
+| `GET /api/admin/stats` with valid `x-admin-token` | `200` with stats payload |
+| Browser: sign in as admin → open `/admin/d1-test` → enter token on that page | D1 table list loads |
 
-```bash
-npm run dev:cf
-```
-
-### Verification
-
-```bash
-# Should return 401 Unauthorized (no token)
-curl -sS -o /dev/null -w "%{http_code}\n" https://your-site.pages.dev/api/admin/stats
-
-# Should return 200 with data when token matches
-curl -sS https://your-site.pages.dev/api/admin/stats \
-  -H "x-admin-token: YOUR_ADMIN_TOKEN"
-```
-
-Browser check:
-
-1. Sign in as admin member
-2. Open `/admin/d1-test`
-3. Save admin token in panel
-4. Confirm table list loads
+Operator how-to with full click-path detail may move to `docs/how-to/website/` in Task 013.
 
 ---
 
@@ -251,7 +236,7 @@ Early post–ZIP 41 documentation described admin UI pages as browser-reachable 
 
 ### Current as-built (2026-06)
 
-Admin UI now uses **session-backed `requireAdmin` layout gating** plus **`localStorage` admin token** for API calls. Documentation here supersedes ZIP 41–era claims of "publicly accessible" admin pages and `sessionStorage` token storage.
+Admin UI now uses **session-backed layout gating** via `useMemberSession({ requireAdmin: true })` plus **`localStorage` admin token** (`adminClient.ts`) for most API calls. `/admin/d1-test` still uses page-local `sessionStorage` token UX. Documentation here supersedes ZIP 41–era claims of "publicly accessible" admin pages and universal `sessionStorage` token storage.
 
 ---
 
@@ -260,6 +245,7 @@ Admin UI now uses **session-backed `requireAdmin` layout gating** plus **`localS
 | Gap | Notes | Suggested route |
 | --- | --- | --- |
 | Dedicated operator how-to under `docs/how-to/website/` | Task 002 captures workflow in this spec; a standalone how-to may help non-technical operators | Task 013 runbooks |
+| D1 test `sessionStorage` vs dashboard `localStorage` | Operators must re-enter token on `/admin/d1-test`; not unified with `AdminTokenPanel` | Task 004 admin shell hardening |
 | `footer-quotes` admin API without admin UI | Token-only config surface | Task 004 (deferred UI) |
 | Role/session hardening beyond `ADMIN_TOKEN` | OAuth, MFA, server-side UI gate | Future auth program; not `#1258` Task 002 |
 | PMO `production-ready` dependency-map fields | Plan promotion gate | Atlas/Bill before child issue creation |
