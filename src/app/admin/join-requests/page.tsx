@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import PageShell from '@/components/PageShell';
 import AdminNav from '@/components/admin/AdminNav';
 import AdminTokenPanel from '@/components/admin/AdminTokenPanel';
+import AdminStatusText from '@/components/admin/AdminStatusText';
 import { adminJson, isRecord } from '@/lib/adminClient';
 import styles from '@/components/admin/AdminDashboard.module.css';
 
@@ -100,7 +101,13 @@ export default function AdminJoinRequestsPage() {
           Refresh
         </button>
 
-        {status ? <p className={styles.status}>{status}</p> : null}
+        {status ? (
+          status.startsWith('Error:') ? (
+            <AdminStatusText message={status} className={styles.status} />
+          ) : (
+            <p className={styles.status}>{status}</p>
+          )
+        ) : null}
 
         <div className={styles.list}>
           {items.map((j) => (

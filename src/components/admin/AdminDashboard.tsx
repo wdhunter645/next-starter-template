@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import styles from './AdminDashboard.module.css';
 import AdminTokenPanel from './AdminTokenPanel';
+import AdminStatusText from './AdminStatusText';
 import { adminJson, isRecord } from '@/lib/adminClient';
 
 type CountRow = { table: string; count: number };
@@ -133,7 +134,13 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        {status ? <p className={styles.status}>{status}</p> : null}
+        {status ? (
+          status.startsWith('Error:') ? (
+            <AdminStatusText message={status} className={styles.status} />
+          ) : (
+            <p className={styles.status}>{status}</p>
+          )
+        ) : null}
         {unavailable.length ? (
           <p className={styles.status}>Unavailable tables: {unavailable.join(', ')}</p>
         ) : null}
