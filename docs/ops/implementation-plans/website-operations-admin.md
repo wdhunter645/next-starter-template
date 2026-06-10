@@ -4,9 +4,10 @@ Audience: Atlas, Bill, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Operational Plan
 Owns: Future build issue sequence and verification plan for Website Operations Admin after documentation approval
 Does Not Own: Runtime implementation, issue creation before approval, D1 migrations before child issues, or final operator policy decisions
-Status: ready-for-review
+Status: phase-4-active
 Task 001 complete: docs/ops/reports/website-operations-admin-as-built-gap-analysis.md (PR `#1531`)
-Task 002 in progress: docs/reference/architecture/access-model.md reconciliation
+Task 002 complete: docs/reference/architecture/access-model.md (PR `#1533`)
+Next task: Task 003 — Fan Club operational workflows verification (`#1118` / T40)
 Project: website-operations-admin
 Owner: Atlas
 Execution Mode: orchestrated-after-approval
@@ -21,10 +22,9 @@ Last Reviewed: 2026-06-10
 
 ## Status
 
-Planning draft for `#1258`. **Not implementation-authorized.**
-
-This plan is complete enough for Atlas/Bill review. Child issue creation remains
-held until explicit implementation authorization after Phase 3 exit criteria pass.
+Phase 4 implementation for `#1258` is **active** on `main`. Tasks 001–002 are
+complete (PRs `#1531`, `#1533`). **Task 003** is next. Child issue creation
+remains held unless explicitly authorized by existing automation.
 
 ## Source of truth
 
@@ -96,11 +96,10 @@ Navigation source: `src/components/admin/AdminNav.tsx` (15 operational links).
 - **API gate:** `functions/_lib/auth.ts` `requireAdmin()` — `x-admin-token` or `Authorization: Bearer` must match `env.ADMIN_TOKEN`; fail-closed when unset.
 - **Client token panel:** Most admin pages use `AdminTokenPanel` + `src/lib/adminClient.ts` for API calls.
 
-**Documentation drift:** `docs/reference/architecture/access-model.md` (Last Reviewed
-2026-02-20) describes browser-reachable admin UI with `sessionStorage` token only.
-As-built uses **dual gating** (session role for UI + admin token for APIs). Task 002
-reconciles `docs/reference/architecture/access-model.md` with this model before area
-hardening PRs rely on stale ZIP 41 documentation.
+**Access model documentation:** `docs/reference/architecture/access-model.md` was
+reconciled in Task 002 (PR `#1533`) to dual gating (session UI + `ADMIN_TOKEN` API).
+Remaining nuance: `/admin/d1-test` still uses page-local `sessionStorage` token UX
+(documented as follow-up for Task 004).
 
 ### Admin API surface (`functions/api/admin/**`)
 
@@ -231,7 +230,7 @@ Task 001 classifies the lane as already satisfied.
 | **Acceptance criteria** | Access doc matches as-built; operator steps documented; security boundary explicit; follow-up gaps listed |
 | **Verification** | Manual: unauthenticated `/admin` redirect; API 401 without token; docs header check |
 | **Dependencies** | Task 001 (PR `#1531` merged) |
-| **Status** | In review (Phase 4) |
+| **Status** | Complete (PR `#1533` merged) |
 
 ### Task 003 — Fan Club Operational Workflows Verification Pack
 
@@ -243,7 +242,8 @@ Task 001 classifies the lane as already satisfied.
 | **Non-goals** | Public homepage changes; new Fan Club features |
 | **Acceptance criteria** | Scoped routes pass manual verification; gaps fixed or documented as `#1259` deferrals |
 | **Verification** | `npm run typecheck`; targeted tests if present; manual route checklist |
-| **Dependencies** | Task 001 |
+| **Dependencies** | Tasks 001–002 complete |
+| **Status** | Next (Phase 4; awaits authorization) |
 
 ### Task 004 — Admin Shell and Member Operations Delta
 
