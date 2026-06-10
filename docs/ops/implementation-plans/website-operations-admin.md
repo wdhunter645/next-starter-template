@@ -5,7 +5,8 @@ Authority Level: Operational Plan
 Owns: Future build issue sequence and verification plan for Website Operations Admin after documentation approval
 Does Not Own: Runtime implementation, issue creation before approval, D1 migrations before child issues, or final operator policy decisions
 Status: ready-for-review
-Task 001 complete: docs/ops/reports/website-operations-admin-as-built-gap-analysis.md
+Task 001 complete: docs/ops/reports/website-operations-admin-as-built-gap-analysis.md (PR `#1531`)
+Task 002 in progress: docs/reference/architecture/access-model.md reconciliation
 Project: website-operations-admin
 Owner: Atlas
 Execution Mode: orchestrated-after-approval
@@ -38,6 +39,7 @@ held until explicit implementation authorization after Phase 3 exit criteria pas
 | Phase 0 reconciliation | `docs/ops/reports/program-2-website-phase0-reconciliation.md` |
 | Legacy issue table | `docs/ops/reports/website-operations-admin-legacy-issue-reconciliation.md` |
 | Task 001 gap analysis | `docs/ops/reports/website-operations-admin-as-built-gap-analysis.md` |
+| Task 002 access model | `docs/reference/architecture/access-model.md` |
 
 ## Scope
 
@@ -97,7 +99,8 @@ Navigation source: `src/components/admin/AdminNav.tsx` (15 operational links).
 **Documentation drift:** `docs/reference/architecture/access-model.md` (Last Reviewed
 2026-02-20) describes browser-reachable admin UI with `sessionStorage` token only.
 As-built uses **dual gating** (session role for UI + admin token for APIs). Task 002
-must reconcile this before implementation PRs rely on the wrong model.
+reconciles `docs/reference/architecture/access-model.md` with this model before area
+hardening PRs rely on stale ZIP 41 documentation.
 
 ### Admin API surface (`functions/api/admin/**`)
 
@@ -223,11 +226,12 @@ Task 001 classifies the lane as already satisfied.
 | --- | --- |
 | **Title** | Task 002 — Admin access model documentation reconciliation |
 | **Objective** | Align `access-model.md` with session UI gate + `ADMIN_TOKEN` API gate; document operator login flow. |
-| **Allowed files/areas** | `docs/reference/architecture/access-model.md`, `docs/how-to/website/**` (operator auth how-to if needed), `src/hooks/useMemberSession.ts` and `functions/_lib/auth.ts` only if doc-driven correction required |
-| **Non-goals** | Broad auth redesign; OAuth/provider changes |
-| **Acceptance criteria** | Access doc matches as-built; operator steps documented; security boundary explicit |
+| **Allowed files/areas** | `docs/reference/architecture/access-model.md`, `docs/ops/implementation-plans/website-operations-admin.md`, `active_tasklist.md` |
+| **Non-goals** | Broad auth redesign; OAuth/provider changes; code or workflow YAML changes |
+| **Acceptance criteria** | Access doc matches as-built; operator steps documented; security boundary explicit; follow-up gaps listed |
 | **Verification** | Manual: unauthenticated `/admin` redirect; API 401 without token; docs header check |
-| **Dependencies** | Task 001 |
+| **Dependencies** | Task 001 (PR `#1531` merged) |
+| **Status** | In review (Phase 4) |
 
 ### Task 003 — Fan Club Operational Workflows Verification Pack
 
