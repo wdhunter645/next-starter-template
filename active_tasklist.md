@@ -15,7 +15,7 @@ Use this file only as an optional, human-readable snapshot.
 | Item | State | Notes |
 | --- | --- | --- |
 | `#1255` | `status:active` | Umbrella program — Website Implementation and Content Operations |
-| `#1258` | `status:active` | **Phase 4 Task 003** — Fan Club ops verification (next); Tasks 001–002 complete (PRs `#1531`, `#1533`) |
+| `#1258` | `status:active` | **Phase 4 Task 003** — Fan Club ops verification (PR in review); Tasks 001–002 complete (PRs `#1531`, `#1533`, `#1534`) |
 
 ## Queued — not started
 

@@ -30,7 +30,10 @@ export default function FanclubPhotoGalleryPage() {
     setLoading(true);
     setErr('');
     try {
-      const res = await fetch(buildFanclubPhotoListApiUrl({ limit: 60, q: submittedQuery, tags: submittedTags }), { cache: 'no-store' });
+      const res = await fetch(buildFanclubPhotoListApiUrl({ limit: 60, q: submittedQuery, tags: submittedTags }), {
+        credentials: 'include',
+        cache: 'no-store',
+      });
       const json = await res.json().catch(() => ({}));
       if (!res.ok || !json?.ok) throw new Error(json?.error || 'list_failed');
       setItems(json.items || []);

@@ -17,8 +17,9 @@ export default function FanclubSubmitPage() {
     try {
       const res = await fetch('/api/library/submit', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim(), email: email.trim(), title: title.trim(), content: content.trim() }),
+        body: JSON.stringify({ name: name.trim(), title: title.trim(), content: content.trim() }),
       });
       const json = await res.json();
       if (!json?.ok) throw new Error(json?.error || 'submit_failed');

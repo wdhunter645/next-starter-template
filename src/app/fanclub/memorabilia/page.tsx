@@ -32,7 +32,10 @@ export default function MemorabiliaPage() {
     setLoading(true);
     setMessage('');
     try {
-      const res = await fetch(buildFanclubPhotoListApiUrl({ limit, offset: nextOffset, memorabilia: true }));
+      const res = await fetch(buildFanclubPhotoListApiUrl({ limit, offset: nextOffset, memorabilia: true }), {
+        credentials: 'include',
+        cache: 'no-store',
+      });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data?.ok) {
         const incoming = Array.isArray(data.items) ? data.items : [];

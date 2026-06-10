@@ -1,13 +1,17 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import FanclubChatPage from '@/app/fanclub/chat/page';
 import FanclubPhotoGalleryPage from '@/app/fanclub/photo/page';
+import FanclubSubmitPage from '@/app/fanclub/submit/page';
 import LibraryPage from '@/app/fanclub/library/page';
+import MemorabiliaPage from '@/app/fanclub/memorabilia/page';
 import ArchivesTiles from '@/components/fanclub/ArchivesTiles';
 import RecentDiscussionsTeaser from '@/components/RecentDiscussionsTeaser';
 import { onRequestGet as listDiscussions } from '../functions/api/discussions/list';
 import { onRequestGet as listLibrary } from '../functions/api/library/list';
+import { onRequestPost as submitLibrary } from '../functions/api/library/submit';
 
 const mockUseMemberSession = vi.hoisted(() => vi.fn());
 const mockApiGet = vi.hoisted(() => vi.fn());
@@ -109,6 +113,27 @@ describe('Fan Club member-only APIs', () => {
       error: 'Not authenticated',
     });
   });
+
+  it('rejects unauthenticated library submissions', async () => {
+    const response = await submitLibrary({
+      env: { DB: createMemberDb() },
+      request: new Request('https://www.lougehrigfanclub.com/api/library/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: 'Member',
+          title: 'Story title',
+          content: 'A long enough submission body for review.',
+        }),
+      }),
+    });
+
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: 'Not authenticated',
+    });
+  });
 });
 
 describe('Fan Club operational pages', () => {
@@ -142,8 +167,24 @@ describe('Fan Club operational pages', () => {
 
     const image = await screen.findByRole('img', { name: 'Farewell address' });
     expect(image).toHaveAttribute('src', 'https://cdn.example.com/lgfc/photos/farewell.jpg');
-    expect(fetchMock).toHaveBeenCalledWith('/api/fanclub/photos', { cache: 'no-store' });
+    expect(fetchMock).toHaveBeenCalledWith('/api/fanclub/photos', { credentials: 'include', cache: 'no-store' });
     expect(screen.getByRole('link', { name: 'Submit a story or note' })).toHaveAttribute('href', '/fanclub/submit');
+  });
+
+  it('shows an empty-state message when the photo gallery has no items', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse({ ok: true, items: [] }) as never);
+
+    render(<FanclubPhotoGalleryPage />);
+
+    expect(await screen.findByText(/no photos match this view yet/i)).toBeInTheDocument();
+  });
+
+  it('shows a load error when the photo gallery API fails', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse({ ok: false, error: 'list_failed' }, 500) as never);
+
+    render(<FanclubPhotoGalleryPage />);
+
+    expect(await screen.findByText(/unable to load member photos right now/i)).toBeInTheDocument();
   });
 
   it('loads library entries through the member-gated Fan Club library API', async () => {
@@ -167,7 +208,7 @@ describe('Fan Club operational pages', () => {
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: 'Luckiest Man' })).toBeInTheDocument();
     });
-    expect(fetchMock).toHaveBeenCalledWith('/api/fanclub/library?page=1', { cache: 'no-store' });
+    expect(fetchMock).toHaveBeenCalledWith('/api/fanclub/library?page=1', { credentials: 'include', cache: 'no-store' });
     expect(screen.getByRole('link', { name: 'Submit an Article' })).toHaveAttribute('href', '/fanclub/submit');
     expect(screen.getByText(/published editorial inventory stories/i)).toBeInTheDocument();
     expect(screen.getByText(/source and credit attribution/i)).toBeInTheDocument();
@@ -178,6 +219,82 @@ describe('Fan Club operational pages', () => {
     render(<ArchivesTiles />);
 
     expect(screen.getByRole('link', { name: 'Submit to the Library' })).toHaveAttribute('href', '/fanclub/submit');
+  });
+
+  it('submits library articles with the member session cookie and surfaces API errors', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse({ ok: false, error: 'Not authenticated' }, 401) as never,
+    );
+
+    render(<FanclubSubmitPage />);
+
+    fireEvent.change(screen.getByPlaceholderText('Your name'), { target: { value: 'Casey Member' } });
+    fireEvent.change(screen.getByPlaceholderText('Article title'), { target: { value: 'Club memory' } });
+    fireEvent.change(screen.getByPlaceholderText('Paste your article text here…'), {
+      target: { value: 'This is a long enough member submission for review.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Submit' }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/error: not authenticated/i)).toBeInTheDocument();
+    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/library/submit',
+      expect.objectContaining({
+        method: 'POST',
+        credentials: 'include',
+      }),
+    );
+  });
+
+  it('renders chat empty and error states for member workflows', async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(jsonResponse({ ok: true, items: [] }) as never);
+
+    render(<FanclubChatPage />);
+
+    expect(await screen.findByText('No posts yet.')).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith('/api/discussions/list?limit=20', {
+      credentials: 'include',
+      cache: 'no-store',
+    });
+
+    fetchMock.mockResolvedValueOnce(jsonResponse({ ok: false, error: 'list_failed' }, 500) as never);
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
+
+    expect(await screen.findByText(/error: list_failed/i)).toBeInTheDocument();
+  });
+
+  it('surfaces chat post failures instead of failing silently', async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(jsonResponse({ ok: true, items: [] }) as never)
+      .mockResolvedValueOnce(jsonResponse({ ok: false, error: 'create_failed' }, 500) as never);
+
+    render(<FanclubChatPage />);
+    await screen.findByText('No posts yet.');
+
+    fireEvent.change(screen.getByPlaceholderText('Title'), { target: { value: 'Hello club' } });
+    fireEvent.change(screen.getByPlaceholderText('Write your message…'), { target: { value: 'Checking in today' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Post' }));
+
+    expect(await screen.findByText(/error: create_failed/i)).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      '/api/discussions/create',
+      expect.objectContaining({
+        method: 'POST',
+        credentials: 'include',
+      }),
+    );
+  });
+
+  it('shows memorabilia empty state when the archive returns no items', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse({ ok: true, items: [] }) as never);
+
+    render(<MemorabiliaPage />);
+
+    expect(await screen.findByText(/no memorabilia items found/i)).toBeInTheDocument();
   });
 });
 

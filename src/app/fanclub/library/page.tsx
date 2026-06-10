@@ -50,7 +50,7 @@ export default function LibraryPage() {
     setLoading(true);
     setMessage('');
     try {
-      const res = await fetch('/api/fanclub/library?page=1', { cache: 'no-store' });
+      const res = await fetch('/api/fanclub/library?page=1', { credentials: 'include', cache: 'no-store' });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data?.ok) {
         setItems(Array.isArray(data.items) ? data.items : []);

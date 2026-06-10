@@ -7,7 +7,7 @@ Does Not Own: Runtime implementation, issue creation before approval, D1 migrati
 Status: phase-4-active
 Task 001 complete: docs/ops/reports/website-operations-admin-as-built-gap-analysis.md (PR `#1531`)
 Task 002 complete: docs/reference/architecture/access-model.md (PR `#1533`)
-Next task: Task 003 — Fan Club operational workflows verification (`#1118` / T40)
+Task 003 in progress: Fan Club operational workflows verification (`#1118` / T40)
 Project: website-operations-admin
 Owner: Atlas
 Execution Mode: orchestrated-after-approval
@@ -242,8 +242,9 @@ Task 001 classifies the lane as already satisfied.
 | **Non-goals** | Public homepage changes; new Fan Club features |
 | **Acceptance criteria** | Scoped routes pass manual verification; gaps fixed or documented as `#1259` deferrals |
 | **Verification** | `npm run typecheck`; targeted tests if present; manual route checklist |
-| **Dependencies** | Tasks 001–002 complete |
-| **Status** | Next (Phase 4; awaits authorization) |
+| **Dependencies** | Tasks 001–002 complete (PRs `#1531`, `#1533`, `#1534`) |
+| **Status** | In review (Phase 4) |
+| **Task 003 verification notes** | Session `credentials: 'include'` on Fan Club operational fetches; chat post errors surfaced; expanded `tests/fanclub-operations.test.tsx`; PDF upload pipeline deferred to `#1259` |
 
 ### Task 004 — Admin Shell and Member Operations Delta
 

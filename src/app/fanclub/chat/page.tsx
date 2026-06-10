@@ -27,7 +27,7 @@ export default function FanclubChatPage() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/discussions/list?limit=20', { cache: 'no-store' });
+      const res = await fetch('/api/discussions/list?limit=20', { credentials: 'include', cache: 'no-store' });
       const json = await res.json();
       if (!json?.ok) throw new Error(json?.error || 'list_failed');
       setItems(json.items || []);
@@ -48,8 +48,9 @@ export default function FanclubChatPage() {
   async function submitPost(title: string, body: string) {
     const res = await fetch('/api/discussions/create', {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, body, author_email: email || 'member' }),
+      body: JSON.stringify({ title, body }),
     });
     const json = await res.json();
     if (!json?.ok) throw new Error(json?.error || 'create_failed');
@@ -100,15 +101,20 @@ function ChatComposer({ onSubmit, disabled }: { onSubmit: (title: string, body: 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
   const canSubmit = !disabled && title.trim().length >= 3 && body.trim().length >= 5 && !busy;
 
   async function go() {
     if (!canSubmit) return;
     setBusy(true);
+    setError('');
     try {
       await onSubmit(title.trim(), body.trim());
       setTitle('');
       setBody('');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg ? `Error: ${msg}` : 'Error: Post failed.');
     } finally {
       setBusy(false);
     }
@@ -138,6 +144,7 @@ function ChatComposer({ onSubmit, disabled }: { onSubmit: (title: string, body: 
         >
           {busy ? 'Posting…' : 'Post'}
         </button>
+        {error ? <p style={{ margin: 0, color: 'salmon' }}>{error}</p> : null}
       </div>
     </section>
   );
