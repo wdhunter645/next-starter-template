@@ -21,13 +21,13 @@ child project `#1258`. This report supports Phase 3 planning only.
 
 - No GitHub issues closed or relabeled in this document pass
 - No implementation child issues created
-- Merge evidence and file paths are primary; stale GitHub labels are not
+- Merge evidence and file paths on `main` are the primary source of truth; GitHub issue labels are not authoritative unless reconciled against repo docs and as-built evidence
 
 Assessment date: **2026-06-10**.
 
 ## Reconciliation table
 
-| Issue | Legacy title / intent | Current state | As-built evidence | Proposed #1258 disposition | Proposed child task | Notes / blocker |
+| issue | Legacy title / intent | Current state | As-built evidence | Proposed #1258 disposition | Proposed child task | Notes / blocker |
 | --- | --- | --- | --- | --- | --- | --- |
 | `#1053` | LGFC Website Implementation Coordination (T21–T50 serial map) | Open | Body lists outdated “current task” (T25); labels `status:active` + `status:post-merge-verify` | **Subordinated** — retain as historical index under `#1255`; planning authority is `#1258` | Task 013 (disposition docs) | **Atlas/Bill decision:** update body vs later closeout; do not use as implementation authority |
 | `#1118` | [T40] Fan Club operational workflows | Open | Labels `pr-draft`, `post-merge-verify` | **Satisfied on main** — verification/hardening only | Task 003 | PR `#1171` merged; `src/app/fanclub/**`, `functions/api/fanclub/**`, discussions/library/photos APIs |

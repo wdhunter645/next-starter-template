@@ -181,7 +181,7 @@ Explicitly excluded from this plan and from the planning PR:
 Summary disposition for `#1053` and `#1118`–`#1127`. Full evidence table:
 `docs/ops/reports/website-operations-admin-legacy-issue-reconciliation.md`.
 
-| Issue | Disposition |
+| issue | Disposition |
 | --- | --- |
 | `#1053` | **Subordinated** — retain as historical T-task index; planning authority is `#1255` / `#1258`. Atlas/Bill decision: body update vs later closeout. |
 | `#1118` T40 | **Satisfied on main** — verification/hardening under Task 003; issue label cleanup deferred. |
@@ -197,7 +197,7 @@ Summary disposition for `#1053` and `#1118`–`#1127`. Full evidence table:
 
 ## Proposed child task sequence
 
-**Issue titles only.** Do not create issues until Phase 4 authorization.
+**issue titles only.** Do not create issues until Phase 4 authorization.
 
 Operating rule: **inventory before delta.** Task 001 must complete before area
 tasks claim gaps. Area tasks may close as gap-only (docs/verification only) if
@@ -233,7 +233,7 @@ Task 001 classifies the lane as already satisfied.
 | --- | --- |
 | **Title** | Task 003 — Fan Club operational workflows verification (`#1118` / T40) |
 | **Objective** | Verify `/fanclub` operational paths (photo, submit, chat/discussions) for empty/error/auth states. |
-| **Allowed files/areas** | `src/app/fanclub/**`, `functions/api/fanclub/**`, `functions/api/discussions/**`, `functions/api/library/**`, `functions/api/photos/**`, related tests |
+| **Allowed files/areas** | `src/app/fanclub/**`, `functions/api/fanclub/**`, `functions/api/discussions/**`, `functions/api/library/**`, `functions/api/photos/**`, `tests/**` (scoped to touched surfaces only) |
 | **Non-goals** | Public homepage changes; new Fan Club features |
 | **Acceptance criteria** | Scoped routes pass manual verification; gaps fixed or documented as `#1259` deferrals |
 | **Verification** | `npm run typecheck`; targeted tests if present; manual route checklist |
@@ -245,7 +245,7 @@ Task 001 classifies the lane as already satisfied.
 | --- | --- |
 | **Title** | Task 004 — Admin shell and member operations delta (`#1119` / T41) |
 | **Objective** | Harden dashboard, join-requests, member-operations, worklist, stats surfaces. |
-| **Allowed files/areas** | `src/app/admin/page.tsx`, `join-requests/**`, `member-operations/**`, `worklist/**`, `src/components/admin/**`, `functions/api/admin/stats.ts`, `worklist.ts`, `join-requests/**` |
+| **Allowed files/areas** | `src/app/admin/page.tsx`, `src/app/admin/join-requests/**`, `src/app/admin/member-operations/**`, `src/app/admin/worklist/**`, `src/components/admin/**`, `functions/api/admin/stats.ts`, `functions/api/admin/worklist.ts`, `functions/api/admin/join-requests/**` |
 | **Non-goals** | New admin modules; public route changes |
 | **Acceptance criteria** | Admin nav complete; empty/error states safe; join/member ops actionable |
 | **Verification** | `npm run typecheck`; manual admin smoke |
@@ -257,7 +257,7 @@ Task 001 classifies the lane as already satisfied.
 | --- | --- |
 | **Title** | Task 005 — Moderation and review workflow delta (`#1120` / T42) |
 | **Objective** | Verify moderation, FAQ, Ask, and reports approve/reject/archive/close paths. |
-| **Allowed files/areas** | `src/app/admin/moderation/**`, `faq/**`, `functions/api/admin/faq/**`, `ask/**`, `functions/api/admin/ask/**`, `functions/api/admin/reports/**`, `functions/api/reports/**` |
+| **Allowed files/areas** | `src/app/admin/moderation/**`, `src/app/admin/faq/**`, `functions/api/admin/faq/**`, `functions/api/admin/ask/**`, `functions/api/admin/reports/**`, `functions/api/reports/**` |
 | **Non-goals** | Public FAQ/Ask behavior changes |
 | **Acceptance criteria** | Queues render; transitions auditable; admin-only enforced |
 | **Verification** | `npm run typecheck`; manual moderation checklist |
@@ -269,7 +269,7 @@ Task 001 classifies the lane as already satisfied.
 | --- | --- |
 | **Title** | Task 006 — CMS and page content admin delta (`#1121` / T43) |
 | **Objective** | Verify CMS/content list/save/publish; gap-only if already satisfied. |
-| **Allowed files/areas** | `src/app/admin/cms/**`, `content/**`, `functions/api/admin/cms/**`, `content/**` |
+| **Allowed files/areas** | `src/app/admin/cms/**`, `src/app/admin/content/**`, `functions/api/admin/cms/**`, `functions/api/admin/content/**` |
 | **Non-goals** | Duplicating `#1256` editorial inventory design |
 | **Acceptance criteria** | CMS/content workflows match design authority or gaps assigned |
 | **Verification** | `npm run typecheck`; manual CMS smoke |
@@ -317,7 +317,7 @@ Task 001 classifies the lane as already satisfied.
 | --- | --- |
 | **Title** | Task 010 — Fundraiser and campaign admin delta (`#1125` / T47) |
 | **Objective** | Verify fundraiser preview and campaign spotlight alignment. |
-| **Allowed files/areas** | `src/app/admin/fundraiser-preview/**`, related spotlight components/APIs as identified in Task 001 |
+| **Allowed files/areas** | `src/app/admin/fundraiser-preview/**`, `src/components/home/CampaignSpotlightSlot.tsx`, `src/components/home/CampaignSpotlightCard.tsx`, `src/lib/campaignSpotlight.ts` |
 | **Non-goals** | Payment/donation system |
 | **Acceptance criteria** | Preview fails closed; campaign data validated before public exposure |
 | **Verification** | `npm run typecheck`; manual preview smoke |
@@ -341,7 +341,7 @@ Task 001 classifies the lane as already satisfied.
 | --- | --- |
 | **Title** | Task 012 — Audit, reporting, and export delta (`#1127` / T49) |
 | **Objective** | Verify audit page, report list/close, export, and stats under empty/error conditions. |
-| **Allowed files/areas** | `src/app/admin/audit/**`, `functions/api/admin/export.ts`, `stats.ts`, `reports/**` |
+| **Allowed files/areas** | `src/app/admin/audit/**`, `functions/api/admin/export.ts`, `functions/api/admin/stats.ts`, `functions/api/admin/reports/**`, `functions/api/reports/**` |
 | **Non-goals** | CI/orchestration changes |
 | **Acceptance criteria** | Reports listable/closable; export/stats fail closed safely |
 | **Verification** | `npm run typecheck`; manual audit smoke |
