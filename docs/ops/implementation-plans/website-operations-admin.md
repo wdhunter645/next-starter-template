@@ -8,7 +8,7 @@ Status: phase-4-active
 Task 001 complete: docs/ops/reports/website-operations-admin-as-built-gap-analysis.md (PR `#1531`)
 Task 002 complete: docs/reference/architecture/access-model.md (PR `#1533`)
 Task 003 complete: Fan Club operational workflows verification (`#1118` / T40; PR `#1536`)
-Task 004 in progress: Admin shell and member operations delta (`#1119` / T41)
+Task 004 in review: Admin shell and member operations delta (`#1119` / T41)
 Next task: Task 005 — Moderation and review workflow delta (`#1120` / T42)
 Project: website-operations-admin
 Owner: Atlas

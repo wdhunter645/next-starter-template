@@ -117,6 +117,14 @@ export default function AdminD1TestPage() {
         <div className={styles.wrap}>
           <AdminTokenPanel
             onSaved={() => {
+              if (!getStoredAdminToken()) {
+                setTokenReady(false);
+                setTables([]);
+                setDetail(null);
+                setError('');
+                setStatus('');
+                return;
+              }
               if (tokenReady) {
                 void load();
               } else {

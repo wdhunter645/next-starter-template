@@ -1,8 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AdminLayout from '@/app/admin/layout';
+import AdminD1TestPage from '@/app/admin/d1-test/page';
 import AdminJoinRequestsPage from '@/app/admin/join-requests/page';
 import AdminMemberOperationsPage from '@/app/admin/member-operations/page';
 import AdminWorklistPage from '@/app/admin/worklist/page';
@@ -153,6 +155,63 @@ describe('admin operational pages', () => {
 
     const alert = await screen.findByRole('alert');
     expect(alert).toHaveTextContent(/error: unauthorized/i);
+  });
+});
+
+describe('admin d1 inspect page', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    window.localStorage.clear();
+    mockUsePathname.mockReturnValue('/admin/d1-test');
+  });
+
+  it('does not fetch D1 tables until a token is stored', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+
+    render(<AdminD1TestPage />);
+
+    expect(screen.getByText('Save an admin API token above to load D1 tables.')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+  });
+
+  it('loads D1 tables when a token is stored and announces API failures', async () => {
+    window.localStorage.setItem('lgfc_admin_token', 'secret');
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(jsonResponse({ ok: false, error: 'Unauthorized.' }, 401) as never);
+
+    render(<AdminD1TestPage />);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/admin/d1-inspect',
+        expect.objectContaining({ cache: 'no-store' }),
+      );
+    });
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/error: unauthorized/i);
+  });
+
+  it('restores token gating when the admin token is cleared', async () => {
+    window.localStorage.setItem('lgfc_admin_token', 'secret');
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(jsonResponse({ ok: true, tables: [] }) as never);
+
+    render(<AdminD1TestPage />);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalled();
+    });
+
+    const tokenInput = screen.getByLabelText('Admin token');
+    await userEvent.clear(tokenInput);
+    await userEvent.click(screen.getByRole('button', { name: 'Save token' }));
+
+    expect(screen.getByText('Save an admin API token above to load D1 tables.')).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
 
