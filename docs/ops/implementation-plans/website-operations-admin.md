@@ -8,7 +8,8 @@ Status: phase-4-active
 Task 001 complete: docs/ops/reports/website-operations-admin-as-built-gap-analysis.md (PR `#1531`)
 Task 002 complete: docs/reference/architecture/access-model.md (PR `#1533`)
 Task 003 complete: Fan Club operational workflows verification (`#1118` / T40; PR `#1536`)
-Next task: Task 004 — Admin shell and member operations delta (`#1119` / T41)
+Task 004 in progress: Admin shell and member operations delta (`#1119` / T41)
+Next task: Task 005 — Moderation and review workflow delta (`#1120` / T42)
 Project: website-operations-admin
 Owner: Atlas
 Execution Mode: orchestrated-after-approval
@@ -24,8 +25,8 @@ Last Reviewed: 2026-06-10
 ## Status
 
 Phase 4 implementation for `#1258` is **active** on `main`. Tasks 001–003 are
-complete (PRs `#1531`, `#1533`, `#1536`; post-merge status via `#1534`). **Task
-004** is next and awaits explicit authorization. Plan status remains
+complete (PRs `#1531`, `#1533`, `#1536`; post-merge via `#1534`, `#1540`). **Task
+004** is in review. Plan status remains
 `phase-4-active` (not `production-ready`). Child issue creation remains held
 unless explicitly authorized by existing automation.
 
@@ -102,8 +103,8 @@ Navigation source: `src/components/admin/AdminNav.tsx` (15 operational links).
 
 **Access model documentation:** `docs/reference/architecture/access-model.md` was
 reconciled in Task 002 (PR `#1533`) to dual gating (session UI + `ADMIN_TOKEN` API).
-Remaining nuance: `/admin/d1-test` still uses page-local `sessionStorage` token UX
-(documented as follow-up for Task 004).
+Task 004 unifies `/admin/d1-test` with `AdminTokenPanel` / `localStorage`
+(`adminClient.ts`). `footer-quotes` admin UI remains deferred.
 
 ### Admin API surface (`functions/api/admin/**`)
 
@@ -262,7 +263,8 @@ Task 001 classifies the lane as already satisfied.
 | **Acceptance criteria** | Admin nav complete; empty/error states safe; join/member ops actionable |
 | **Verification** | `npm run typecheck`; manual admin smoke |
 | **Dependencies** | Tasks 002–003 complete |
-| **Status** | Next (Phase 4; awaits authorization) |
+| **Status** | In review (Phase 4) |
+| **Task 004 notes** | Accessible error alerts on shell pages; D1 test token UX unified; `footer-quotes` UI still deferred |
 
 ### Task 005 — Moderation and Review Workflow Delta
 

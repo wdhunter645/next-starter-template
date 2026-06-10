@@ -6,6 +6,7 @@ import AdminLayout from '@/app/admin/layout';
 import AdminJoinRequestsPage from '@/app/admin/join-requests/page';
 import AdminMemberOperationsPage from '@/app/admin/member-operations/page';
 import AdminWorklistPage from '@/app/admin/worklist/page';
+import AdminDashboard from '@/components/admin/AdminDashboard';
 import AdminNav from '@/components/admin/AdminNav';
 import { onRequestGet as statsGet } from '../functions/api/admin/stats';
 import { onRequestGet as worklistGet } from '../functions/api/admin/worklist';
@@ -125,6 +126,33 @@ describe('admin operational pages', () => {
 
     expect(await screen.findAllByText('No welcome email content is published yet.')).not.toHaveLength(0);
     expect(await screen.findAllByText('No membership card instructions are published yet.')).not.toHaveLength(0);
+  });
+
+  it('announces join-request API failures to assistive technology', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse({ ok: false, error: 'Unauthorized.' }, 401) as never);
+
+    render(<AdminJoinRequestsPage />);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/error: unauthorized/i);
+  });
+
+  it('announces worklist API failures to assistive technology', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse({ ok: false, error: 'Unauthorized.' }, 401) as never);
+
+    render(<AdminWorklistPage />);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/error: unauthorized/i);
+  });
+
+  it('announces dashboard stats failures to assistive technology', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse({ ok: false, error: 'Unauthorized.' }, 401) as never);
+
+    render(<AdminDashboard />);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/error: unauthorized/i);
   });
 });
 
