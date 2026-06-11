@@ -322,6 +322,54 @@ describe('admin content page', () => {
     });
   });
 
+  it('loads the current slug once when a token is first saved', async () => {
+    window.localStorage.removeItem('lgfc_admin_token');
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const path = String(input);
+      if (path.startsWith('/api/admin/content/list')) {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            slugs: ['/about'],
+            grouped: {
+              '/about': {
+                intro: {
+                  live: {
+                    slug: '/about',
+                    section: 'intro',
+                    status: 'live',
+                    content: 'About copy',
+                    asset_url: null,
+                    updated_at: '2026-06-01T00:00:00Z',
+                  },
+                },
+              },
+            },
+          }),
+        );
+      }
+      return Promise.resolve(jsonResponse({ ok: true }));
+    });
+
+    render(<AdminContentPage />);
+
+    fireEvent.change(screen.getByPlaceholderText('/'), { target: { value: '/about' } });
+
+    const tokenInput = screen.getByLabelText('Admin token');
+    await userEvent.type(tokenInput, 'secret');
+    await userEvent.click(screen.getByRole('button', { name: 'Save token' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('intro')).toBeInTheDocument();
+    });
+
+    const listCalls = fetchMock.mock.calls.filter(([path]) =>
+      String(path).startsWith('/api/admin/content/list'),
+    );
+    expect(listCalls).toHaveLength(1);
+    expect(String(listCalls[0][0])).toBe('/api/admin/content/list?slug=%2Fabout');
+  });
+
   it('does not fetch page content until a token is stored', async () => {
     window.localStorage.removeItem('lgfc_admin_token');
     const fetchMock = vi.spyOn(globalThis, 'fetch');

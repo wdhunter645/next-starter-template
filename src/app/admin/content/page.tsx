@@ -129,7 +129,7 @@ export default function AdminContentPage() {
 
   useEffect(() => {
     if (tokenReady) {
-      void load('/');
+      void load(slug || '/');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokenReady]);
@@ -139,13 +139,16 @@ export default function AdminContentPage() {
       <AdminNav />
       <AdminTokenPanel
         onSaved={() => {
-          const hasToken = Boolean(getStoredAdminToken());
-          setTokenReady(hasToken);
-          if (hasToken) {
-            void load(slug || '/');
-          } else {
+          if (!getStoredAdminToken()) {
+            setTokenReady(false);
             setSections([]);
             setStatus('Save an admin API token above to load page content.');
+            return;
+          }
+          if (tokenReady) {
+            void load(slug || '/');
+          } else {
+            setTokenReady(true);
           }
         }}
       />

@@ -151,11 +151,8 @@ export default function AdminCMS() {
       <AdminNav />
       <AdminTokenPanel
         onSaved={() => {
-          const hasToken = Boolean(getStoredAdminToken());
-          setTokenReady(hasToken);
-          if (hasToken) {
-            void load(page || undefined);
-          } else {
+          if (!getStoredAdminToken()) {
+            setTokenReady(false);
             setPages([]);
             setBlocks([]);
             setPage('');
@@ -166,6 +163,12 @@ export default function AdminCMS() {
             setEditTitle('');
             setEditBody('');
             setStatus('Save an admin API token above to load CMS blocks.');
+            return;
+          }
+          if (tokenReady) {
+            void load(page || undefined);
+          } else {
+            setTokenReady(true);
           }
         }}
       />
