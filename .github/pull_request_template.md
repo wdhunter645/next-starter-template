@@ -32,6 +32,21 @@ Required lifecycle:
 Agents must not hand a PR to a human approver while any gate, review comment, or review thread still requires agent action.
 Agents must not treat merge as complete closeout until the source issue is reconciled and any explicitly required tracker/status-index work is complete or delegated.
 
+## Agent Completion / Ready-for-Review Checklist
+
+An implementation agent is not complete when code is pushed or a PR is opened.
+
+Before marking this PR ready for human review, the agent confirms:
+
+- [ ] PR body matches final diff, source issue, allowlist, verification evidence, and reviewer-response accounting.
+- [ ] All reviewer comments, bot comments, and review threads have been inspected.
+- [ ] Every actionable reviewer item is fixed, rejected with rationale, marked not applicable, or linked to a bounded follow-up issue.
+- [ ] All required gates pass on the latest PR head after final code and PR-body updates.
+- [ ] PR is changed from DRAFT/BLOCKED to READY FOR REVIEW, or the exact blocker is documented.
+- [ ] Final report includes current head SHA, checks run, gate status, reviewer disposition status, and ready-for-review status.
+
+A PR must not be handed to Atlas/Bill while any required gate, reviewer comment, bot comment, review thread, PR-body section, or source-issue accounting item still requires agent action.
+
 - **Issue:** #____
 <!-- Required: replace #____ with exactly one same-repository, open, non-PR issue number before opening/updating the PR. Preferred final syntax: `- **Issue:** #123`. Other accepted source-issue formats are governed by `/docs/governance/PR_GOVERNANCE.md`. Do not use a PR number, an external issue, or a closed issue as the source issue. -->
 

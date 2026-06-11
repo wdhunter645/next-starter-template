@@ -241,6 +241,23 @@ Defaults:
 
 ---
 
+# AGENT COMPLETION DEFINITION
+
+An implementation agent is not complete when code is pushed or a PR is opened.
+
+The agent's task is complete only when all of the following are true:
+
+1. The PR body is updated to match the final diff, source issue, allowlist, verification evidence, and reviewer-response accounting.
+2. All reviewer comments, bot comments, and review threads have been inspected.
+3. Every actionable reviewer item has either been fixed, rejected with rationale, marked not applicable, or linked to a bounded follow-up issue using the required PR-body disposition format.
+4. All required gates have passed on the latest PR head after the final code and PR-body updates.
+5. The PR status is changed from DRAFT/BLOCKED to READY FOR REVIEW, or the agent explicitly reports the exact blocker preventing readiness.
+6. The agent's final report includes the current head SHA, exact checks run, gate status, reviewer disposition status, and whether the PR is READY FOR REVIEW.
+
+A PR must not be handed to Atlas/Bill for review while any required gate, reviewer comment, bot comment, review thread, PR-body section, or source-issue accounting item still requires agent action.
+
+---
+
 # CAPABILITIES
 
 - ChatGPT owns Issue and PR creation under standing operator permission.
