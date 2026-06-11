@@ -1,0 +1,76 @@
+name: Post-Merge Detection
+
+on:
+  pull_request_target:
+    types: [closed]
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  detect:
+    if: |
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run automatic post-merge closeout
+        id: closeout
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_EVENT_NAME: pull_request_target
+          GITHUB_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_PR_MERGED: ${{ github.event.pull_request.merged }}
+          EVENT_PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: node scripts/ci/run_post_merge_closeout.mjs
+
+      - name: Upload validation result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-merge-validation-result
+          path: |
+            post-merge-result.json
+            post-merge-result.md
+          if-no-files-found: warn
+
+      - name: Write step summary
+        if: always() && hashFiles('post-merge-result.md') != ''
+        run: cat post-merge-result.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment result
+        if: always() && steps.closeout.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr comment "${{ steps.closeout.outputs.pr_number }}" --body-file post-merge-result.md || true
+
+      - name: Run post-merge reviewer audit
+        if: always() && steps.closeout.outputs.pr_number != '' && steps.closeout.outputs.status == 'fail'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.closeout.outputs.pr_number }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: node scripts/ci/post_merge_reviewer_audit.mjs
+
+      - name: Fail if validation failed
+        if: always() && steps.closeout.outputs.status == 'fail'
+        run: exit 1

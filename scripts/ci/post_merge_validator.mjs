@@ -359,7 +359,7 @@ export function workflowFailures({ runs = [], prBody = '', currentRunId = '' }) 
 		.filter((run) => String(run.databaseId || run.id || '') !== String(currentRunId || ''))
 		.filter((run) => String(run.status || '').toLowerCase() === 'completed')
 		.filter((run) => ['failure', 'timed_out', 'cancelled', 'action_required'].includes(String(run.conclusion || '').toLowerCase()))
-		.filter((run) => !/post-merge detection|post-merge-intent-verification/i.test(run.workflowName || run.name || ''))
+		.filter((run) => !/post-merge detection|post-merge-intent-verification|post-merge-closeout/i.test(run.workflowName || run.name || ''))
 		.map((run) => classifyWorkflowRun(run, prBody));
 }
 

@@ -21,6 +21,11 @@ import {
 export const POST_MERGE_RESULT_PATH = 'post-merge-result.json';
 export const POST_MERGE_RESULT_MD_PATH = 'post-merge-result.md';
 
+function writeCloseoutOutput(name, value) {
+	const outputPath = process.env.GITHUB_OUTPUT;
+	if (outputPath) fs.appendFileSync(outputPath, `${name}=${value}\n`);
+}
+
 function runSync({ repository, prNumber, syncAction }) {
 	execFileSync('node', ['scripts/orchestrator/sync-pr-state.mjs'], {
 		stdio: 'inherit',
@@ -212,9 +217,18 @@ export async function main() {
 		});
 		await writePostMergeResultArtifactsAsync(result);
 		await ensureCloseoutRemediationEvidence({ token, repository, result });
+		writeCloseoutOutput('status', result.status);
+		writeCloseoutOutput('pr_number', result.pr || context.prNumber || '');
+		writeCloseoutOutput('sync_action', result.sync_action || 'post_merge_failure');
+		writeCloseoutOutput('remediation_required', 'true');
 		process.exitCode = 1;
 		return;
 	}
+
+	writeCloseoutOutput('status', result.status || 'fail');
+	writeCloseoutOutput('pr_number', result.pr || context.prNumber || '');
+	writeCloseoutOutput('sync_action', result.sync_action || 'skipped');
+	writeCloseoutOutput('remediation_required', result.remediation_required ? 'true' : 'false');
 
 	console.log(JSON.stringify(result, null, 2));
 	if (result.status === 'fail') process.exitCode = 1;
