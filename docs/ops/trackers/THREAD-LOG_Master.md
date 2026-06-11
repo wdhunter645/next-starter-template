@@ -16,6 +16,71 @@ Last Reviewed: 2026-06-11
 
 ------------------------------------------------------------------------
 
+## THREAD CLOSEOUT RECORD --- 2026-06-11 --- Program #1500 / #1544 Task 001 sign-off
+
+### Starting State
+PR `#1552` (Task 001 — pre-merge post-merge-readiness gate) merged to `main` via merge
+commit `90754605b1da7135c8bfdad2b422484d0ce59990`. Source issue `#1544` closed with
+`status:complete` after Post-Merge Detection passed. Program queue still required
+Atlas/Bill human sign-off on the child issue before treating Task 001 as fully accepted.
+
+### Objective
+Record Bill (wdhunter645) sign-off acceptance for Program #1500 Task 001 on child issue
+`#1544` and document predecessor completion for Task 002 (`#1545`) without authorizing
+Task 002 implementation from this sign-off alone.
+
+### Task 001 sign-off accepted
+
+**Scope:**
+- Program #1500 — CI Post-Merge Closeout Reliability
+- Child issue #1544 — Add pre-merge post-merge-readiness gate
+- PR #1552
+
+**Evidence:**
+- PR #1552 merged to `main` (merge SHA `90754605b1da7135c8bfdad2b422484d0ce59990`).
+- Post-Merge Detection closeout passed; `#1544` closed with `status:complete`.
+- `gate-post-merge-readiness.yml` and `post_merge_readiness_gate.mjs` on `main`.
+- Operator follow-up remains: add `post-merge-readiness` to `main` branch-protection required checks.
+
+**Disposition:**
+- Task 001 is complete and sign-off accepted (Bill / wdhunter645).
+- `#1544` predecessor requirement for `#1545` is satisfied.
+- Task 002 (`#1545`) was not started from this sign-off; explicit assignment on `#1545` still required.
+
+### GitHub issue comment mirror (#1544)
+
+Post on https://github.com/wdhunter645/next-starter-template/issues/1544 when signed in as owner:
+
+```markdown
+## Atlas/Bill sign-off — Task 001 accepted
+
+Sign-off accepted for Program #1500 Task 001 (`#1544`).
+
+**Scope:** Pre-merge post-merge-readiness gate (PR #1552)
+
+**Evidence:**
+- PR #1552 merged to `main` (`90754605b1da7135c8bfdad2b422484d0ce59990`)
+- Post-merge closeout passed; this issue closed with `status:complete`
+- Acceptance criteria met for Task 001 allowlist and verification scope
+
+**Disposition:**
+- Task 001 complete — sign-off accepted
+- Task 002 (`#1545`) predecessor satisfied; assign Codex only on explicit authorization on `#1545`
+
+— Bill (wdhunter645)
+```
+
+### Work Performed
+- Appended this sign-off record to THREAD-LOG.
+
+### Result
+Task 001 human sign-off recorded in repository ops history.
+
+### Next Action
+Post the mirror comment on `#1544` from owner account if issue-thread visibility is required. Await explicit assignment on `#1545` before Task 002 implementation.
+
+------------------------------------------------------------------------
+
 ## THREAD CLOSEOUT RECORD --- 2026-06-11 --- Program #1255 / #1258 Task 005 sign-off
 
 ### Starting State
