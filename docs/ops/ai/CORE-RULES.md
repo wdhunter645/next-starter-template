@@ -16,6 +16,20 @@ This document is the **detailed expansion** of shared AI-agent execution rules, 
 
 For the categorized shared agent law index (evidence-first work, one issue per PR, parser-safe PR bodies, gates, documentation taxonomy, ZIP safety, secrets, and scope boundaries), read [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md) first. Keep both documents aligned; do not weaken restrictions in either file.
 
+## Mandatory documentation chain
+
+Before any repo work, every agent must follow the chain defined in [`Agent.md`](../../../Agent.md):
+
+[`Agent.md`](../../../Agent.md) → [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md) → this document → applicable agent-specific rule file → applicable repo governance/procedure docs → applicable `.agents/skills/*/SKILL.md` files.
+
+Rules:
+
+- Start at `Agent.md`; do not skip shared or core rules.
+- Agent-specific rules are additive; they never replace shared law or repo governance.
+- For PR, issue, review, remediation, and implementation work, read `.agents/skills/lgfc-pr-governance/SKILL.md` and `.github/pull_request_template.md` before opening or updating a PR.
+- Task prompts and subagent instructions do not override this chain.
+- If a required source issue is missing, stop before PR creation.
+
 ## Scope
 
 This document applies to all AI agents working in this repository. It governs agent behavior, not product design, runtime architecture, platform configuration, or final merge authority.

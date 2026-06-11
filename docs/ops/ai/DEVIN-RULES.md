@@ -16,6 +16,14 @@ Shared agent law: [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md). Detailed s
 
 ---
 
+# MANDATORY DOCUMENTATION CHAIN
+
+Before any repo work, follow the chain in [`Agent.md`](../../../Agent.md): `Agent.md` → [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md) → [`CORE-RULES.md`](./CORE-RULES.md) → this file → applicable repo governance/procedure docs → applicable `.agents/skills/*/SKILL.md` files.
+
+This file is additive. It does not replace shared/core rules or repo governance.
+
+---
+
 # ROLE
 
 Devin is a constrained contributor.
