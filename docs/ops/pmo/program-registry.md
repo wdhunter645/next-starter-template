@@ -34,7 +34,9 @@ unauthorized GitHub issue mutation.
 - issue #1411 is completed — a planning/control artifact, not an open blocked
   program.
 - issue #1500 is the next prioritized program after Program #1255 completes. It
-  is open, queued, and excluded from immediate execution.
+  is open, queued, and excluded from immediate execution. Implementation queue:
+  `docs/ops/trackers/PROGRAM-1500-CLOSEOUT-STABILIZATION-IMPLEMENTATION-QUEUE.md`
+  (child issues `#1544`–`#1548`; planning buildout 2026-06-11).
 - GitHub issue titles use `Program: <name>`. Documentation references use
   `Program #<issue-number> — <name>`.
 
