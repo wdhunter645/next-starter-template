@@ -20,6 +20,14 @@ Failures create remediation output and pause orchestration advancement. Program
 #1500 Task 001 adds a pre-merge readiness gate that reuses validator exports to
 catch closeout metadata failures before merge.
 
+## Trusted-Code Execution Model
+
+`gate-post-merge-readiness.yml` runs on `pull_request_target` with base-repository
+token context. Gate enforcement scripts are checked out from the trusted
+base/default ref. PR body, changed files, issue comments, review comments, and
+reviews are fetched through the GitHub API and passed to the gate runner.
+Mutable PR-head gate code must not execute as trusted enforcement logic.
+
 ## Workflows
 
 | Workflow file | Display name | Role |
@@ -67,7 +75,7 @@ Duplicate remediation issue cleanup remains unchanged. Canonical remediation iss
 | Script | Role |
 |---|---|
 | `scripts/ci/post_merge_validator.mjs` | Aggregates post-merge evidence, exports shared readiness contract checks, and writes result artifacts |
-| `scripts/ci/post_merge_readiness_gate.mjs` | Runs the pre-merge post-merge-readiness gate against PR head metadata |
+| `scripts/ci/post_merge_readiness_gate.mjs` | Runs the pre-merge post-merge-readiness gate against PR metadata collected via the GitHub API; workflow executes trusted base-ref gate code only |
 | `scripts/ci/post_merge_implementation_evidence.mjs` | Allowlist, acceptance, and verification evidence checks |
 | `scripts/ci/post_merge_diataxis_audit.mjs` | DIATAXIS post-merge audit helpers |
 | `scripts/ci/post_merge_remediation_issue.mjs` | Remediation issue generation on validation failure |

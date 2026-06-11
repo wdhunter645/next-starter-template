@@ -413,6 +413,11 @@ post-merge closeout validation.
 **Triggers:** `pull_request_target`, trusted-review/comment events, and manual
 `workflow_dispatch` for a PR number.
 
+**Trusted-code execution model:** On `pull_request_target`, the workflow checks
+out gate scripts from the trusted base/default ref only. PR metadata (body,
+changed files, comments, reviews) is collected via the GitHub API. Mutable
+PR-head gate code must never run as trusted enforcement logic.
+
 **Blocking job id:** `post-merge-readiness`
 
 **What it validates:**

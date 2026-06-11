@@ -26,7 +26,7 @@ pull request.
 | `gate-quality.yml` | `GATE — Quality Checks` | `quality` | Structure guard, backend guard, tracked-ZIP block, PR-range ZIP taint block, typecheck, lint, unit tests, production build |
 | `gitleaks.yml` | `GATE — Secret Scan` | `gitleaks` | Secret exposure scan |
 | `ops-pr-issue-accounting.yml` | `GATE — PR Issue Accounting` | `pr-issue-accounting` | Exactly one same-repository source Issue |
-| `gate-post-merge-readiness.yml` | `GATE — Post-Merge Readiness` | `post-merge-readiness` | PR body sections, declared allowlist, forbidden placeholders, and trusted-reviewer dispositions required for post-merge closeout |
+| `gate-post-merge-readiness.yml` | `GATE — Post-Merge Readiness` | `post-merge-readiness` | PR body sections, declared allowlist, forbidden placeholders, and trusted-reviewer dispositions required for post-merge closeout; executes trusted base-ref gate code on `pull_request_target` |
 
 ## Retired Duplicate Blockers
 

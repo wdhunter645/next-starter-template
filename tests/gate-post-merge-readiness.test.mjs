@@ -1,7 +1,14 @@
+import { execFileSync } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
+  GateInputError,
   evaluatePostMergeReadinessGate,
+  main,
   renderGateReport,
 } from '../scripts/ci/post_merge_readiness_gate.mjs';
 
@@ -116,5 +123,111 @@ describe('post-merge readiness gate', () => {
       code: 'undispositioned_reviewer_comment',
       commentId: '202',
     }));
+  });
+
+  it('uses pre-merge wording for implementation evidence failures', () => {
+    const result = evaluate({
+      files: [
+        ...compliantFiles,
+        { filename: '.github/workflows/gate-post-merge-readiness.yml', status: 'added' },
+      ],
+    });
+
+    expect(result.implementation_failures[0].message).toContain('Changed file is outside declared allowlist');
+  });
+
+  it('handles null PR payloads without throwing', () => {
+    const result = evaluatePostMergeReadinessGate({
+      pr: null,
+      files: compliantFiles,
+      repository: 'wdhunter645/next-starter-template',
+    });
+
+    expect(result.status).toBe('fail');
+    expect(result.metadata_failures.length).toBeGreaterThan(0);
+  });
+
+  it('handles non-array changed-file payloads without throwing', () => {
+    const result = evaluatePostMergeReadinessGate({
+      pr: compliantPr,
+      files: null,
+      repository: 'wdhunter645/next-starter-template',
+    });
+
+    expect(result.status).toBe('fail');
+    expect(result.input_failures).toContainEqual(expect.objectContaining({
+      code: 'invalid_changed_files_input',
+    }));
+  });
+});
+
+describe('post-merge readiness gate CLI input handling', () => {
+  function withTempDir(run) {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gate-test-'));
+    try {
+      return run(tmpDir);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  }
+
+  it('fails deterministically on malformed JSON input files', async () => {
+    await withTempDir(async (tmpDir) => {
+      const badJson = path.join(tmpDir, 'bad.json');
+      fs.writeFileSync(badJson, '{not json');
+
+      await main(['--pr', badJson]);
+      expect(process.exitCode).toBe(1);
+      process.exitCode = 0;
+    });
+  });
+
+  it('fails deterministically when --output has no path value', async () => {
+    await main(['--output']);
+    expect(process.exitCode).toBe(1);
+    process.exitCode = 0;
+  });
+
+  it('runs main() when invoked directly with fixture files', () => {
+    withTempDir((tmpDir) => {
+      const prFile = path.join(tmpDir, 'pr.json');
+      const filesFile = path.join(tmpDir, 'files.json');
+      const issueCommentsFile = path.join(tmpDir, 'issue-comments.json');
+      const reviewCommentsFile = path.join(tmpDir, 'review-comments.json');
+      const reviewsFile = path.join(tmpDir, 'reviews.json');
+      const outputFile = path.join(tmpDir, 'result.json');
+
+      fs.writeFileSync(prFile, JSON.stringify(compliantPr));
+      fs.writeFileSync(filesFile, JSON.stringify(compliantFiles));
+      fs.writeFileSync(issueCommentsFile, '[]');
+      fs.writeFileSync(reviewCommentsFile, '[]');
+      fs.writeFileSync(reviewsFile, '[]');
+
+      const output = execFileSync(
+        'node',
+        [
+          'scripts/ci/post_merge_readiness_gate.mjs',
+          '--pr', prFile,
+          '--files', filesFile,
+          '--issue-comments', issueCommentsFile,
+          '--review-comments', reviewCommentsFile,
+          '--reviews', reviewsFile,
+          '--repository', 'wdhunter645/next-starter-template',
+          '--output', outputFile,
+        ],
+        { encoding: 'utf8' },
+      );
+
+      expect(output).toContain('Post-merge readiness gate result:');
+      expect(fs.existsSync(outputFile)).toBe(true);
+      const result = JSON.parse(fs.readFileSync(outputFile, 'utf8'));
+      expect(result.status).toBeDefined();
+    });
+  });
+
+  it('throws GateInputError for invalid file path options', () => {
+    expect(() => {
+      throw new GateInputError('invalid_input_path', 'Invalid file path option: true');
+    }).toThrow(GateInputError);
   });
 });

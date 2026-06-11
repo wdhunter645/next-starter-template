@@ -226,6 +226,9 @@ function findingLine(item, fallbackUrl) {
 }
 
 function normalizeReviewerDispositionFailures(disposition) {
+	if (!disposition || !Array.isArray(disposition.failures)) {
+		return [];
+	}
 	return disposition.failures.map((failure) => ({
 		code: failure.code,
 		message: failure.message,
