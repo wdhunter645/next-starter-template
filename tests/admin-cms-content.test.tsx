@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -156,7 +157,7 @@ describe('admin CMS page', () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/admin/cms/list',
-      expect.objectContaining({ headers: expect.anything() }),
+      expect.objectContaining({ cache: 'no-store' }),
     );
   });
 
@@ -172,15 +173,78 @@ describe('admin CMS page', () => {
     });
   });
 
-  it('stays idle without loading when no token is stored', () => {
+  it('does not fetch CMS blocks until a token is stored', async () => {
     window.localStorage.removeItem('lgfc_admin_token');
     const fetchMock = vi.spyOn(globalThis, 'fetch');
 
     render(<AdminCMSPage />);
 
-    // Page renders without crashing; no fetch issued when token is absent
-    expect(screen.getByText('No blocks found.')).toBeInTheDocument();
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(screen.getByText('Save an admin API token above to load CMS blocks.')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+  });
+
+  it('announces CMS list API failures to assistive technology', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse({ ok: false, error: 'Unauthorized.' }, 401) as never,
+    );
+
+    render(<AdminCMSPage />);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/error: unauthorized/i);
+  });
+
+  it('clears CMS editor fields when the admin token is removed', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const path = String(input);
+      if (path.startsWith('/api/admin/cms/list')) {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            page: null,
+            pages: ['home'],
+            blocks: [
+              {
+                key: 'home.hero.main',
+                page: 'home',
+                section: 'hero',
+                title: 'Hero Block',
+                body_md: '# Welcome',
+                status: 'draft',
+                published_body_md: null,
+                version: 1,
+                updated_at: '2026-06-01T00:00:00Z',
+                published_at: null,
+                updated_by: 'admin',
+              },
+            ],
+          }),
+        );
+      }
+      return Promise.resolve(jsonResponse({ ok: true }));
+    });
+
+    render(<AdminCMSPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Hero Block')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Hero Block'));
+
+    const keyInput = screen.getByLabelText('Key');
+    expect(keyInput).toHaveValue('home.hero.main');
+
+    const tokenInput = screen.getByLabelText('Admin token');
+    await userEvent.clear(tokenInput);
+    await userEvent.click(screen.getByRole('button', { name: 'Save token' }));
+
+    expect(screen.getAllByText('Save an admin API token above to load CMS blocks.').length).toBeGreaterThan(0);
+    expect(keyInput).toHaveValue('');
+    expect(screen.getByLabelText('Title')).toHaveValue('');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -258,16 +322,215 @@ describe('admin content page', () => {
     });
   });
 
-  it('shows error state when list API returns an error', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      jsonResponse({ ok: false, error: 'DB unavailable' }, 500),
+  it('loads the current slug once when a token is first saved', async () => {
+    window.localStorage.removeItem('lgfc_admin_token');
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const path = String(input);
+      if (path.startsWith('/api/admin/content/list')) {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            slugs: ['/about'],
+            grouped: {
+              '/about': {
+                intro: {
+                  live: {
+                    slug: '/about',
+                    section: 'intro',
+                    status: 'live',
+                    content: 'About copy',
+                    asset_url: null,
+                    updated_at: '2026-06-01T00:00:00Z',
+                  },
+                },
+              },
+            },
+          }),
+        );
+      }
+      return Promise.resolve(jsonResponse({ ok: true }));
+    });
+
+    render(<AdminContentPage />);
+
+    fireEvent.change(screen.getByPlaceholderText('/'), { target: { value: '/about' } });
+
+    const tokenInput = screen.getByLabelText('Admin token');
+    await userEvent.type(tokenInput, 'secret');
+    await userEvent.click(screen.getByRole('button', { name: 'Save token' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('intro')).toBeInTheDocument();
+    });
+
+    const listCalls = fetchMock.mock.calls.filter(([path]) =>
+      String(path).startsWith('/api/admin/content/list'),
     );
+    expect(listCalls).toHaveLength(1);
+    expect(String(listCalls[0][0])).toBe('/api/admin/content/list?slug=%2Fabout');
+    expect(screen.getByPlaceholderText('/')).toHaveValue('/about');
+  });
+
+  it('ignores a late root response after loading a different slug', async () => {
+    let resolveRoot!: (value: Response) => void;
+    let resolveAbout!: (value: Response) => void;
+    const rootPromise = new Promise<Response>((resolve) => {
+      resolveRoot = resolve;
+    });
+    const aboutPromise = new Promise<Response>((resolve) => {
+      resolveAbout = resolve;
+    });
+
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const path = String(input);
+      if (path.includes('slug=%2Fabout')) {
+        return aboutPromise;
+      }
+      if (path.startsWith('/api/admin/content/list')) {
+        return rootPromise;
+      }
+      return Promise.resolve(jsonResponse({ ok: true }));
+    });
 
     render(<AdminContentPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Error:/)).toBeInTheDocument();
+      expect(fetchMock).toHaveBeenCalledWith('/api/admin/content/list?slug=%2F', expect.anything());
     });
+
+    fireEvent.change(screen.getByPlaceholderText('/'), { target: { value: '/about' } });
+    await userEvent.click(screen.getByRole('button', { name: 'Save token' }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith('/api/admin/content/list?slug=%2Fabout', expect.anything());
+    });
+
+    resolveAbout!(
+      jsonResponse({
+        ok: true,
+        slugs: ['/about'],
+        grouped: {
+          '/about': {
+            intro: {
+              live: {
+                slug: '/about',
+                section: 'intro',
+                status: 'live',
+                content: 'About copy',
+                asset_url: null,
+                updated_at: '2026-06-01T00:00:00Z',
+              },
+            },
+          },
+        },
+      }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('intro')).toBeInTheDocument();
+    });
+
+    resolveRoot!(
+      jsonResponse({
+        ok: true,
+        slugs: ['/'],
+        grouped: {
+          '/': {
+            hero: {
+              live: {
+                slug: '/',
+                section: 'hero',
+                status: 'live',
+                content: 'Root copy',
+                asset_url: null,
+                updated_at: '2026-06-01T00:00:00Z',
+              },
+            },
+          },
+        },
+      }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('intro')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('hero')).not.toBeInTheDocument();
+    expect(screen.getByPlaceholderText('/')).toHaveValue('/about');
+    expect(screen.getByRole('button', { name: 'Save Draft' })).toBeEnabled();
+  });
+
+  it('disables save and publish while displayed sections belong to a different slug', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const path = String(input);
+      if (path.includes('slug=%2Fabout')) {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            slugs: ['/about'],
+            grouped: {
+              '/about': {
+                intro: {
+                  live: {
+                    slug: '/about',
+                    section: 'intro',
+                    status: 'live',
+                    content: 'About copy',
+                    asset_url: null,
+                    updated_at: '2026-06-01T00:00:00Z',
+                  },
+                },
+              },
+            },
+          }),
+        );
+      }
+      if (path.startsWith('/api/admin/content/list')) {
+        return Promise.resolve(jsonResponse({ ok: true, slugs: [], grouped: {} }));
+      }
+      return Promise.resolve(jsonResponse({ ok: true }));
+    });
+
+    render(<AdminContentPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/No sections returned/)).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText('/'), { target: { value: '/about' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Load' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('intro')).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText('/'), { target: { value: '/contact' } });
+
+    expect(screen.getByRole('button', { name: 'Save Draft' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
+    expect(screen.getByText(/Loaded content is for "\/about"/)).toBeInTheDocument();
+  });
+
+  it('does not fetch page content until a token is stored', async () => {
+    window.localStorage.removeItem('lgfc_admin_token');
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+
+    render(<AdminContentPage />);
+
+    expect(screen.getByText('Save an admin API token above to load page content.')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+  });
+
+  it('announces content list API failures to assistive technology', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse({ ok: false, error: 'Unauthorized.' }, 401) as never,
+    );
+
+    render(<AdminContentPage />);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/error: unauthorized/i);
   });
 
   it('sends save draft request to /api/admin/content/save with admin token', async () => {

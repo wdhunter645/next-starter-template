@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PageShell from '@/components/PageShell';
 import AdminNav from '@/components/admin/AdminNav';
+import AdminStatusText from '@/components/admin/AdminStatusText';
 import AdminTokenPanel from '@/components/admin/AdminTokenPanel';
-import { adminJson } from '@/lib/adminClient';
+import { adminJson, getStoredAdminToken } from '@/lib/adminClient';
 
 type ContentBlock = {
   slug: string;
@@ -35,9 +36,24 @@ export default function AdminContentPage() {
   const [status, setStatus] = useState<string>('Idle.');
   const [loading, setLoading] = useState<boolean>(false);
   const [sections, setSections] = useState<SectionBundle[]>([]);
+  const [sectionsSlug, setSectionsSlug] = useState<string | null>(null);
+  const [tokenReady, setTokenReady] = useState(false);
+  const loadRequestRef = useRef(0);
+
+  const normalizedSlug = slug.trim() || '/';
+  const sectionsMatchSlug = sectionsSlug === normalizedSlug;
 
   const load = useCallback(async (nextSlug?: string) => {
+    if (!getStoredAdminToken()) {
+      setSections([]);
+      setSectionsSlug(null);
+      setStatus('Save an admin API token above to load page content.');
+      setLoading(false);
+      return;
+    }
+
     const target = (nextSlug ?? slug).trim() || '/';
+    const requestId = ++loadRequestRef.current;
     setLoading(true);
     setStatus(`Loading sections for "${target}"...`);
 
@@ -45,8 +61,13 @@ export default function AdminContentPage() {
       `/api/admin/content/list?slug=${encodeURIComponent(target)}`,
     );
 
+    if (requestId !== loadRequestRef.current) {
+      return;
+    }
+
     if (!result.ok) {
       setSections([]);
+      setSectionsSlug(null);
       setStatus(`Error: ${result.error}`);
       setLoading(false);
       return;
@@ -61,6 +82,7 @@ export default function AdminContentPage() {
     }));
 
     setSections(bundles);
+    setSectionsSlug(target);
     setStatus(`Loaded ${bundles.length} section(s) for "${target}".`);
     setLoading(false);
   }, [slug]);
@@ -113,14 +135,34 @@ export default function AdminContentPage() {
   );
 
   useEffect(() => {
-    void load('/');
+    if (getStoredAdminToken()) {
+      setTokenReady(true);
+      void load('/');
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <PageShell title="Admin Content" subtitle="Edit site sections backed by D1 (when configured).">
       <AdminNav />
-      <AdminTokenPanel onSaved={() => void load(slug || '/')} />
+      <AdminTokenPanel
+        onSaved={() => {
+          if (!getStoredAdminToken()) {
+            loadRequestRef.current += 1;
+            setTokenReady(false);
+            setSections([]);
+            setSectionsSlug(null);
+            setStatus('Save an admin API token above to load page content.');
+            return;
+          }
+          setTokenReady(true);
+          void load();
+        }}
+      />
+
+      {!tokenReady ? (
+        <p style={{ marginTop: 16, opacity: 0.85 }}>Save an admin API token above to load page content.</p>
+      ) : null}
 
       <div style={{ display: 'grid', gap: 14, marginTop: 16 }}>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -155,10 +197,19 @@ export default function AdminContentPage() {
             {loading ? 'Loading…' : 'Load'}
           </button>
 
-          <span style={{ opacity: 0.85, alignSelf: 'flex-end', paddingBottom: 4 }}>{status}</span>
+          <div style={{ opacity: 0.85, alignSelf: 'flex-end', paddingBottom: 4 }}>
+            <AdminStatusText message={status} />
+          </div>
         </div>
 
         <hr style={{ margin: '4px 0' }} />
+
+        {!sectionsMatchSlug && sections.length > 0 ? (
+          <p style={{ opacity: 0.85 }}>
+            Loaded content is for &quot;{sectionsSlug}&quot; but the slug field is &quot;{normalizedSlug}&quot;.
+            Click Load or wait for the current slug request to finish before saving or publishing.
+          </p>
+        ) : null}
 
         {sections.length === 0 ? (
           <p style={{ opacity: 0.8 }}>No sections returned. (API may be unavailable or slug has no rows.)</p>
@@ -171,6 +222,7 @@ export default function AdminContentPage() {
                 section={section}
                 live={live}
                 draft={draft}
+                actionsDisabled={loading || !sectionsMatchSlug}
                 onSaveDraft={saveDraft}
                 onPublishSection={() => void publish(section)}
               />
@@ -187,10 +239,11 @@ function SectionEditor(props: {
   section: string;
   live?: ContentBlock;
   draft?: ContentDraft;
+  actionsDisabled?: boolean;
   onSaveDraft: (section: string, content: string | null, asset_url: string | null) => Promise<void>;
   onPublishSection: () => void;
 }) {
-  const { section, live, draft, onSaveDraft, onPublishSection } = props;
+  const { section, live, draft, actionsDisabled = false, onSaveDraft, onPublishSection } = props;
 
   const [content, setContent] = useState<string>(draft?.content ?? live?.content ?? '');
   const [assetUrl, setAssetUrl] = useState<string>(draft?.asset_url ?? live?.asset_url ?? '');
@@ -232,13 +285,13 @@ function SectionEditor(props: {
           <button
             type="button"
             onClick={() => void save()}
-            disabled={saving}
+            disabled={saving || actionsDisabled}
             style={{
               padding: '10px 12px',
               borderRadius: 10,
               border: '1px solid rgba(0,0,0,0.15)',
-              background: saving ? 'rgba(0,0,0,0.05)' : 'white',
-              cursor: saving ? 'not-allowed' : 'pointer',
+              background: saving || actionsDisabled ? 'rgba(0,0,0,0.05)' : 'white',
+              cursor: saving || actionsDisabled ? 'not-allowed' : 'pointer',
             }}
           >
             {saving ? 'Saving…' : 'Save Draft'}
@@ -247,12 +300,13 @@ function SectionEditor(props: {
           <button
             type="button"
             onClick={onPublishSection}
+            disabled={actionsDisabled}
             style={{
               padding: '10px 12px',
               borderRadius: 10,
               border: '1px solid rgba(0,0,0,0.15)',
-              background: 'white',
-              cursor: 'pointer',
+              background: actionsDisabled ? 'rgba(0,0,0,0.05)' : 'white',
+              cursor: actionsDisabled ? 'not-allowed' : 'pointer',
             }}
           >
             Publish
