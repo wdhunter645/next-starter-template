@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PageShell from '@/components/PageShell';
 import AdminNav from '@/components/admin/AdminNav';
+import AdminStatusText from '@/components/admin/AdminStatusText';
 import AdminTokenPanel from '@/components/admin/AdminTokenPanel';
-import { adminJson } from '@/lib/adminClient';
+import { adminJson, getStoredAdminToken } from '@/lib/adminClient';
 
 const ALLOWED_SECTION_OPTIONS = [
   { key: 'homepage_spotlight', label: 'Homepage spotlight' },
@@ -66,6 +67,15 @@ const SUBMISSION_FILTERS: Array<{ value: SubmissionFilter; label: string }> = [
   { value: 'all', label: 'All submissions' },
 ];
 
+type InventoryFilter = 'all' | 'draft' | 'published' | 'archived';
+
+const INVENTORY_FILTERS: Array<{ value: InventoryFilter; label: string }> = [
+  { value: 'all', label: 'All inventory' },
+  { value: 'draft', label: 'Draft' },
+  { value: 'published', label: 'Published' },
+  { value: 'archived', label: 'Archived' },
+];
+
 type InventoryRecord = {
   id: number;
   tag: string;
@@ -86,6 +96,8 @@ type InventoryRecord = {
   feature_weight?: number | null;
   status: 'draft' | 'published' | 'archived';
   review_notes?: string | null;
+  last_featured?: string | null;
+  created_at?: string | null;
   updated_at?: string | null;
   published_at?: string | null;
   media_associations?: MediaAssociation[];
@@ -177,14 +189,38 @@ export default function AdminEditorialArchivePage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [inventory, setInventory] = useState<InventoryRecord[]>([]);
   const [submissionFilter, setSubmissionFilter] = useState<SubmissionFilter>('pending');
+  const [inventoryFilter, setInventoryFilter] = useState<InventoryFilter>('all');
+  const [tokenReady, setTokenReady] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return Boolean(getStoredAdminToken());
+  });
+  const loadRequestRef = useRef(0);
 
   const load = useCallback(async () => {
+    if (!getStoredAdminToken()) {
+      setSubmissions([]);
+      setInventory([]);
+      setStatus('Save an admin API token above to load editorial records.');
+      setLoading(false);
+      return;
+    }
+
+    const requestId = ++loadRequestRef.current;
     setLoading(true);
     setStatus('Loading editorial queue…');
 
     const result = await adminJson<EditorialListResponse>(
-      `/api/admin/editorial/list?limit=100&submission_status=${submissionFilter}`,
+      `/api/admin/editorial/list?limit=100&submission_status=${submissionFilter}&inventory_status=${inventoryFilter}`,
     );
+
+    if (requestId !== loadRequestRef.current) {
+      return;
+    }
+
+    if (!getStoredAdminToken()) {
+      setLoading(false);
+      return;
+    }
 
     if (!result.ok) {
       setSubmissions([]);
@@ -199,13 +235,18 @@ export default function AdminEditorialArchivePage() {
     setSubmissions(nextSubmissions);
     setInventory(nextInventory);
     setStatus(
-      `Loaded ${nextSubmissions.length} ${submissionFilter} submission(s) and ${nextInventory.length} archive record(s).`,
+      `Loaded ${nextSubmissions.length} ${submissionFilter} submission(s) and ${nextInventory.length} ${inventoryFilter} archive record(s).`,
     );
     setLoading(false);
-  }, [submissionFilter]);
+  }, [submissionFilter, inventoryFilter]);
 
   const saveInventory = useCallback(
     async (payload: Record<string, unknown>, label: string) => {
+      if (!getStoredAdminToken()) {
+        setStatus('Error: Save an admin API token above before saving inventory records.');
+        return false;
+      }
+
       setStatus(`${label}…`);
       const result = await adminJson<{ ok: true; id: number; action: string }>('/api/admin/editorial/inventory', {
         method: 'POST',
@@ -213,7 +254,7 @@ export default function AdminEditorialArchivePage() {
       });
 
       if (!result.ok) {
-        setStatus(`Inventory save error: ${result.error}`);
+        setStatus(`Error: ${result.error}`);
         return false;
       }
 
@@ -231,6 +272,11 @@ export default function AdminEditorialArchivePage() {
       form: HTMLFormElement,
       options: { retentionReason?: string } = {},
     ) => {
+      if (!getStoredAdminToken()) {
+        setStatus('Error: Save an admin API token above before reviewing submissions.');
+        return;
+      }
+
       const metadata = readMetadataFromForm(form);
       setStatus(`Recording ${action.replace('_', ' ')} for "${submission.title}"…`);
 
@@ -238,7 +284,7 @@ export default function AdminEditorialArchivePage() {
       try {
         mediaAssociations = parseMediaAssociationsJson(String(new FormData(form).get('media_associations_json') || '[]'));
       } catch {
-        setStatus('Review error: media_associations_json must be valid JSON.');
+        setStatus('Error: media_associations_json must be valid JSON.');
         return;
       }
 
@@ -283,7 +329,7 @@ export default function AdminEditorialArchivePage() {
       });
 
       if (!result.ok) {
-        setStatus(`Review error: ${result.error}`);
+        setStatus(`Error: ${result.error}`);
         return;
       }
 
@@ -295,6 +341,11 @@ export default function AdminEditorialArchivePage() {
 
   const updatePublication = useCallback(
     async (id: number, nextStatus: InventoryRecord['status']) => {
+      if (!getStoredAdminToken()) {
+        setStatus('Error: Save an admin API token above before updating publication state.');
+        return;
+      }
+
       setStatus(`Updating archive record ${id} to ${nextStatus}…`);
 
       const result = await adminJson<{ ok: true }>('/api/admin/editorial/publish', {
@@ -303,7 +354,7 @@ export default function AdminEditorialArchivePage() {
       });
 
       if (!result.ok) {
-        setStatus(`Publication error: ${result.error}`);
+        setStatus(`Error: ${result.error}`);
         return;
       }
 
@@ -314,7 +365,10 @@ export default function AdminEditorialArchivePage() {
   );
 
   useEffect(() => {
-    void load();
+    if (getStoredAdminToken()) {
+      setTokenReady(true);
+      void load();
+    }
   }, [load]);
 
   return (
@@ -323,11 +377,34 @@ export default function AdminEditorialArchivePage() {
       subtitle="Review member submissions and publish approved records through content_inventory."
     >
       <AdminNav />
-      <AdminTokenPanel onSaved={() => void load()} />
+      <AdminTokenPanel
+        onSaved={() => {
+          if (!getStoredAdminToken()) {
+            loadRequestRef.current += 1;
+            setTokenReady(false);
+            setLoading(false);
+            setSubmissions([]);
+            setInventory([]);
+            setStatus('Save an admin API token above to load editorial records.');
+            return;
+          }
+          setTokenReady(true);
+          void load();
+        }}
+      />
+
+      {!tokenReady ? (
+        <p style={{ marginTop: 16, opacity: 0.85 }}>Save an admin API token above to load editorial records.</p>
+      ) : null}
 
       <div style={{ display: 'grid', gap: 18, marginTop: 16 }}>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          <button type="button" onClick={() => void load()} disabled={loading} style={buttonStyle(loading)}>
+          <button
+            type="button"
+            onClick={() => void load()}
+            disabled={loading || !tokenReady}
+            style={buttonStyle(loading || !tokenReady)}
+          >
             {loading ? 'Loading…' : 'Refresh'}
           </button>
           <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -335,6 +412,7 @@ export default function AdminEditorialArchivePage() {
             <select
               value={submissionFilter}
               onChange={(event) => setSubmissionFilter(event.target.value as SubmissionFilter)}
+              disabled={!tokenReady}
               style={{ ...fieldStyle(), width: 'auto' }}
             >
               {SUBMISSION_FILTERS.map((option) => (
@@ -344,10 +422,31 @@ export default function AdminEditorialArchivePage() {
               ))}
             </select>
           </label>
-          <span style={{ opacity: 0.85 }}>{status}</span>
+          <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            Inventory status
+            <select
+              value={inventoryFilter}
+              onChange={(event) => setInventoryFilter(event.target.value as InventoryFilter)}
+              disabled={!tokenReady}
+              style={{ ...fieldStyle(), width: 'auto' }}
+            >
+              {INVENTORY_FILTERS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          {status.startsWith('Error:') ? (
+            <div style={{ opacity: 0.85 }}>
+              <AdminStatusText message={status} />
+            </div>
+          ) : (
+            <span style={{ opacity: 0.85 }}>{status}</span>
+          )}
         </div>
 
-        <CreateStorySection onSave={saveInventory} />
+        <CreateStorySection onSave={saveInventory} actionsEnabled={tokenReady} />
 
         <section style={{ border: '1px solid rgba(0,0,0,0.12)', borderRadius: 14, padding: 14 }}>
           <h2 style={{ marginTop: 0 }}>Submission Review Queue</h2>
@@ -360,7 +459,12 @@ export default function AdminEditorialArchivePage() {
           ) : (
             <div style={{ display: 'grid', gap: 14 }}>
               {submissions.map((submission) => (
-                <SubmissionCard key={submission.submission_id} submission={submission} onReview={reviewSubmission} />
+                <SubmissionCard
+                  key={submission.submission_id}
+                  submission={submission}
+                  onReview={reviewSubmission}
+                  actionsEnabled={tokenReady}
+                />
               ))}
             </div>
           )}
@@ -383,6 +487,7 @@ export default function AdminEditorialArchivePage() {
                   onSave={saveInventory}
                   onPublish={updatePublication}
                   onStatus={setStatus}
+                  actionsEnabled={tokenReady}
                 />
               ))}
             </div>
@@ -521,6 +626,7 @@ function EditorialMetadataFields(props: {
 
 function CreateStorySection(props: {
   onSave: (payload: Record<string, unknown>, label: string) => Promise<boolean>;
+  actionsEnabled: boolean;
 }) {
   return (
     <section style={{ border: '1px solid rgba(0,0,0,0.12)', borderRadius: 14, padding: 14 }}>
@@ -536,7 +642,7 @@ function CreateStorySection(props: {
         style={{ display: 'grid', gap: 10 }}
       >
         <EditorialMetadataFields prefix="create" includeBody />
-        <button type="submit" style={buttonStyle()}>
+        <button type="submit" disabled={!props.actionsEnabled} style={buttonStyle(!props.actionsEnabled)}>
           Create Draft Story
         </button>
       </form>
@@ -548,6 +654,7 @@ function MediaAssociationsEditor(props: {
   storyId: number;
   initialAssociations?: MediaAssociation[];
   onStatus: (message: string) => void;
+  actionsEnabled: boolean;
 }) {
   const initialJson = JSON.stringify(props.initialAssociations || [], null, 2);
   const [jsonValue, setJsonValue] = useState(initialJson);
@@ -557,11 +664,16 @@ function MediaAssociationsEditor(props: {
   }, [props.initialAssociations, props.storyId]);
 
   const saveAssociations = async () => {
+    if (!getStoredAdminToken()) {
+      props.onStatus('Error: Save an admin API token above before saving media associations.');
+      return;
+    }
+
     let mediaAssociations: MediaAssociation[] = [];
     try {
       mediaAssociations = parseMediaAssociationsJson(jsonValue);
     } catch {
-      props.onStatus('Media association error: JSON must be valid.');
+      props.onStatus('Error: Media association JSON must be valid.');
       return;
     }
 
@@ -575,7 +687,7 @@ function MediaAssociationsEditor(props: {
     });
 
     if (!result.ok) {
-      props.onStatus(`Media association error: ${result.error}`);
+      props.onStatus(`Error: ${result.error}`);
       return;
     }
 
@@ -590,6 +702,7 @@ function MediaAssociationsEditor(props: {
           rows={6}
           value={jsonValue}
           onChange={(event) => setJsonValue(event.target.value)}
+          disabled={!props.actionsEnabled}
           style={fieldStyle()}
         />
       </label>
@@ -597,7 +710,12 @@ function MediaAssociationsEditor(props: {
         Example: [{'{'}&quot;media_id&quot;: 12, &quot;media_role&quot;: &quot;primary_image&quot;, &quot;display_order&quot;: 0,
         &quot;alt_text&quot;: &quot;Caption&quot;{'}'}]
       </p>
-      <button type="button" onClick={() => void saveAssociations()} style={buttonStyle()}>
+      <button
+        type="button"
+        onClick={() => void saveAssociations()}
+        disabled={!props.actionsEnabled}
+        style={buttonStyle(!props.actionsEnabled)}
+      >
         Save Media Associations
       </button>
     </div>
@@ -609,6 +727,7 @@ function InventoryRecordCard(props: {
   onSave: (payload: Record<string, unknown>, label: string) => Promise<boolean>;
   onPublish: (id: number, status: InventoryRecord['status']) => Promise<void>;
   onStatus: (message: string) => void;
+  actionsEnabled: boolean;
 }) {
   const { record } = props;
 
@@ -626,24 +745,24 @@ function InventoryRecordCard(props: {
           <button
             type="button"
             onClick={() => void props.onPublish(record.id, 'published')}
-            disabled={record.status === 'published'}
-            style={buttonStyle(record.status === 'published')}
+            disabled={!props.actionsEnabled || record.status === 'published'}
+            style={buttonStyle(!props.actionsEnabled || record.status === 'published')}
           >
             Publish
           </button>
           <button
             type="button"
             onClick={() => void props.onPublish(record.id, 'draft')}
-            disabled={record.status === 'draft'}
-            style={buttonStyle(record.status === 'draft')}
+            disabled={!props.actionsEnabled || record.status === 'draft'}
+            style={buttonStyle(!props.actionsEnabled || record.status === 'draft')}
           >
             Return to Draft
           </button>
           <button
             type="button"
             onClick={() => void props.onPublish(record.id, 'archived')}
-            disabled={record.status === 'archived'}
-            style={buttonStyle(record.status === 'archived')}
+            disabled={!props.actionsEnabled || record.status === 'archived'}
+            style={buttonStyle(!props.actionsEnabled || record.status === 'archived')}
           >
             Archive
           </button>
@@ -653,7 +772,8 @@ function InventoryRecordCard(props: {
       <p style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{record.text}</p>
       <div style={{ opacity: 0.75, fontSize: 13 }}>
         sections: {record.allowed_sections} · event: {record.event_date || '—'} / {record.event_year ?? '—'} · rotation:{' '}
-        {record.rotation_group || '—'} · weight: {record.feature_weight ?? 1} · updated: {record.updated_at || '—'} ·
+        {record.rotation_group || '—'} · weight: {record.feature_weight ?? 1} · last featured:{' '}
+        {record.last_featured || '—'} · created: {record.created_at || '—'} · updated: {record.updated_at || '—'} ·
         published: {record.published_at || '—'}
       </div>
 
@@ -667,7 +787,7 @@ function InventoryRecordCard(props: {
       >
         <h4 style={{ margin: 0 }}>Edit Metadata</h4>
         <EditorialMetadataFields prefix={`inventory-${record.id}`} defaults={record} />
-        <button type="submit" style={buttonStyle()}>
+        <button type="submit" disabled={!props.actionsEnabled} style={buttonStyle(!props.actionsEnabled)}>
           Save Metadata
         </button>
       </form>
@@ -676,6 +796,7 @@ function InventoryRecordCard(props: {
         storyId={record.id}
         initialAssociations={record.media_associations}
         onStatus={props.onStatus}
+        actionsEnabled={props.actionsEnabled}
       />
     </article>
   );
@@ -689,6 +810,7 @@ function SubmissionCard(props: {
     form: HTMLFormElement,
     options?: { retentionReason?: string },
   ) => Promise<void>;
+  actionsEnabled: boolean;
 }) {
   const { submission, onReview } = props;
   const canPurge = submission.status === 'rejected' && !String(submission.retention_reason || '').trim();
@@ -704,6 +826,9 @@ function SubmissionCard(props: {
         <h3 style={{ margin: 0 }}>{submission.title}</h3>
         <div style={{ opacity: 0.75, fontSize: 13 }}>
           submitted by {submission.submitted_by} · status: {submission.status} · {submission.created_at || 'date unavailable'}
+          {submission.decision_by ? ` · decided by ${submission.decision_by}` : ''}
+          {submission.decision_at ? ` · decided at ${submission.decision_at}` : ''}
+          {submission.rejected_at ? ` · rejected at ${submission.rejected_at}` : ''}
         </div>
       </div>
 
@@ -764,35 +889,40 @@ function SubmissionCard(props: {
         <button
           type="button"
           onClick={(event) => void onReview(submission, 'triage', event.currentTarget.form as HTMLFormElement)}
-          style={buttonStyle()}
+          disabled={!props.actionsEnabled}
+          style={buttonStyle(!props.actionsEnabled)}
         >
           Mark Triaged
         </button>
         <button
           type="button"
           onClick={(event) => void onReview(submission, 'start_review', event.currentTarget.form as HTMLFormElement)}
-          style={buttonStyle()}
+          disabled={!props.actionsEnabled}
+          style={buttonStyle(!props.actionsEnabled)}
         >
           Start Review
         </button>
         <button
           type="button"
           onClick={(event) => void onReview(submission, 'approve', event.currentTarget.form as HTMLFormElement)}
-          style={buttonStyle()}
+          disabled={!props.actionsEnabled}
+          style={buttonStyle(!props.actionsEnabled)}
         >
           Approve as Draft
         </button>
         <button
           type="button"
           onClick={(event) => void onReview(submission, 'merge', event.currentTarget.form as HTMLFormElement)}
-          style={buttonStyle()}
+          disabled={!props.actionsEnabled}
+          style={buttonStyle(!props.actionsEnabled)}
         >
           Mark Merged
         </button>
         <button
           type="button"
           onClick={(event) => void onReview(submission, 'reject', event.currentTarget.form as HTMLFormElement)}
-          style={buttonStyle()}
+          disabled={!props.actionsEnabled}
+          style={buttonStyle(!props.actionsEnabled)}
         >
           Reject + Purge Eligible
         </button>
@@ -803,15 +933,16 @@ function SubmissionCard(props: {
               retentionReason: retainedDefault,
             })
           }
-          style={buttonStyle()}
+          disabled={!props.actionsEnabled}
+          style={buttonStyle(!props.actionsEnabled)}
         >
           Retain Rejected
         </button>
         <button
           type="button"
           onClick={(event) => void onReview(submission, 'purge', event.currentTarget.form as HTMLFormElement)}
-          disabled={!canPurge}
-          style={buttonStyle(!canPurge)}
+          disabled={!props.actionsEnabled || !canPurge}
+          style={buttonStyle(!props.actionsEnabled || !canPurge)}
         >
           Mark Purged
         </button>
