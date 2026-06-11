@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import AdminFaqPage from '@/app/admin/faq/page';
 import AdminModerationPage from '@/app/admin/moderation/page';
 import { onRequestPost as approveFaq } from '../functions/api/admin/faq/approve';
 import { onRequestPost as closeReport } from '../functions/api/reports/close';
@@ -249,6 +250,52 @@ describe('admin moderation review hub', () => {
       id: 11,
       answer: 'Draft answer',
     });
+  });
+
+  it('announces moderation queue API failures to assistive technology', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse({ ok: false, error: 'Unauthorized.' }, 401) as never);
+
+    render(<AdminModerationPage />);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/error: unauthorized/i);
+  });
+});
+
+describe('admin FAQ moderation page', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    window.localStorage.clear();
+    mockUsePathname.mockReturnValue('/admin/faq');
+  });
+
+  it('does not fetch ask inbox until a token is stored', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+
+    render(<AdminFaqPage />);
+
+    expect(screen.getByText('Save an admin API token above to load ask inbox.')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+  });
+
+  it('loads ask inbox when a token is stored and announces API failures', async () => {
+    window.localStorage.setItem('lgfc_admin_token', 'secret');
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(jsonResponse({ ok: false, error: 'Unauthorized.' }, 401) as never);
+
+    render(<AdminFaqPage />);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/admin/ask/list?status=pending',
+        expect.objectContaining({ cache: 'no-store' }),
+      );
+    });
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/error: unauthorized/i);
   });
 });
 

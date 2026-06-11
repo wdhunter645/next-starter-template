@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import PageShell from '@/components/PageShell';
 import AdminNav from '@/components/admin/AdminNav';
+import AdminStatusText from '@/components/admin/AdminStatusText';
 import AdminTokenPanel from '@/components/admin/AdminTokenPanel';
 import styles from '@/components/admin/AdminDashboard.module.css';
 import { adminJson } from '@/lib/adminClient';
@@ -81,7 +82,7 @@ export default function AdminModerationPage() {
       `/api/admin/reports/list?status=${reportFilter}&limit=200`,
     );
     setReports(result.ok && result.data?.items ? result.data.items : []);
-    if (!result.ok) setMessage(`Reports error: ${result.error}`);
+    if (!result.ok) setMessage(`Error: ${result.error}`);
     setSectionLoading('reports', false);
   }, [reportFilter]);
 
@@ -89,7 +90,7 @@ export default function AdminModerationPage() {
     setSectionLoading('ask', true);
     const result = await adminJson<ItemsResponse<AskItem>>(`/api/admin/ask/list?status=${askFilter}`);
     setAskItems(result.ok && result.data?.items ? result.data.items : []);
-    if (!result.ok) setMessage(`Ask queue error: ${result.error}`);
+    if (!result.ok) setMessage(`Error: ${result.error}`);
     setSectionLoading('ask', false);
   }, [askFilter]);
 
@@ -98,7 +99,7 @@ export default function AdminModerationPage() {
     const query = faqFilter === 'all' ? '' : `?status=${faqFilter}`;
     const result = await adminJson<ItemsResponse<FaqItem>>(`/api/admin/faq/list${query}`);
     setFaqItems(result.ok && result.data?.items ? result.data.items : []);
-    if (!result.ok) setMessage(`FAQ queue error: ${result.error}`);
+    if (!result.ok) setMessage(`Error: ${result.error}`);
     setSectionLoading('faq', false);
   }, [faqFilter]);
 
@@ -118,7 +119,7 @@ export default function AdminModerationPage() {
     });
 
     if (!result.ok) {
-      setMessage(`Report close error: ${result.error}`);
+      setMessage(`Error: ${result.error}`);
       return;
     }
 
@@ -135,7 +136,7 @@ export default function AdminModerationPage() {
     });
 
     if (!result.ok) {
-      setMessage(`Ask action error: ${result.error}`);
+      setMessage(`Error: ${result.error}`);
       return;
     }
 
@@ -155,7 +156,7 @@ export default function AdminModerationPage() {
     });
 
     if (!result.ok) {
-      setMessage(`FAQ action error: ${result.error}`);
+      setMessage(`Error: ${result.error}`);
       return;
     }
 
@@ -170,7 +171,13 @@ export default function AdminModerationPage() {
       <div className={styles.wrap}>
         <AdminTokenPanel onSaved={() => void loadAll()} />
 
-        {message ? <p className={styles.status}>{message}</p> : null}
+        {message ? (
+          message.startsWith('Error:') ? (
+            <AdminStatusText message={message} className={styles.status} />
+          ) : (
+            <p className={styles.status}>{message}</p>
+          )
+        ) : null}
 
         <section className={styles.panel} aria-label="Reports review queue">
           <div className={styles.panelHeader}>

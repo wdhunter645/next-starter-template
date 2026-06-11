@@ -9,7 +9,8 @@ Task 001 complete: docs/ops/reports/website-operations-admin-as-built-gap-analys
 Task 002 complete: docs/reference/architecture/access-model.md (PR `#1533`)
 Task 003 complete: Fan Club operational workflows verification (`#1118` / T40; PR `#1536`)
 Task 004 complete: Admin shell and member operations delta (`#1119` / T41; PR `#1542`)
-Next task: Task 005 — Moderation and review workflow delta (`#1120` / T42)
+Task 005 complete: Moderation and review workflow delta (`#1120` / T42; PR `#1551` merged `3509bbb`)
+Next task: Task 006 — CMS and page content admin delta (`#1121` / T43; not authorized)
 Project: website-operations-admin
 Owner: Atlas
 Execution Mode: orchestrated-after-approval
@@ -17,16 +18,17 @@ Source Issue: 1258
 Related Program Issue: 1255
 Canonical Reference: /docs/ops/implementation-plans/README.md
 Related Issues: #1255, #1256, #1258, #1259, #1053, #1118, #1119, #1120, #1121, #1122, #1123, #1124, #1125, #1126, #1127, #1500
-Last Reviewed: 2026-06-10
+Last Reviewed: 2026-06-11
 ---
 
 # Website Operations Admin Implementation Plan
 
 ## Status
 
-Phase 4 implementation for `#1258` is **active** on `main`. Tasks 001–004 are
-complete (PRs `#1531`, `#1533`, `#1536`, `#1542`; post-merge via `#1534`,
-`#1540`). **Task 005** is next. Plan status remains
+Phase 4 implementation for `#1258` is **active** on `main`. Tasks 001–005 are
+**complete** (PRs `#1531`, `#1533`, `#1536`, `#1542`, `#1551`; post-merge via
+`#1534`, `#1540`). **Task 006** is next and requires explicit authorization before
+implementation. Plan status remains
 `phase-4-active` (not `production-ready`). Child issue creation remains held
 unless explicitly authorized by existing automation.
 
@@ -46,6 +48,7 @@ unless explicitly authorized by existing automation.
 | Task 002 access model | `docs/reference/architecture/access-model.md` |
 | Task 003 Fan Club verification | PR `#1536` — `tests/fanclub-operations.test.tsx` + `/fanclub/**` hardening |
 | Task 004 admin shell verification | PR `#1542` — `AdminStatusText`, D1 inspect token UX, `tests/admin-operations.test.tsx` |
+| Task 005 moderation verification | PR `#1551` — merge `3509bbb`; `AdminStatusText` on moderation hub; FAQ `AdminTokenPanel` / `adminJson`; `tests/admin-moderation.test.tsx` |
 
 ## Scope
 
@@ -278,6 +281,8 @@ Task 001 classifies the lane as already satisfied.
 | **Acceptance criteria** | Queues render; transitions auditable; admin-only enforced |
 | **Verification** | `npm run typecheck`; manual moderation checklist |
 | **Dependencies** | Task 004 complete (PR `#1542`) |
+| **Status** | Complete (PR `#1551` merged; closeout 2026-06-11) |
+| **Task 005 verification notes** | Accessible error alerts via `AdminStatusText` on moderation hub; FAQ page unified with `AdminTokenPanel` / `adminJson`; expanded `tests/admin-moderation.test.tsx` for queue failure and FAQ token gating; reviewer lifecycle and design allowlist gates passed on PR `#1551` |
 
 ### Task 006 — CMS and Page Content Admin Delta
 
