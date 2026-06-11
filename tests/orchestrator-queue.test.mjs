@@ -498,7 +498,8 @@ describe('orchestrator workflow trigger compatibility', () => {
 		const draftWorkflow = fs.readFileSync('.github/workflows/orchestrator-draft-pr.yml', 'utf8');
 		const queueWorkflow = fs.readFileSync('.github/workflows/orchestrator-queue-advance.yml', 'utf8');
 		const enforcePrOnlyWorkflow = fs.readFileSync('.github/workflows/enforce-pr-only.yml', 'utf8');
-		const postMergeWorkflow = fs.readFileSync('.github/workflows/post-merge-intent-verification.yml', 'utf8');
+		const postMergeWorkflow = fs.readFileSync('.github/workflows/post-merge-closeout.yml', 'utf8');
+		const maintainerBodyWorkflow = fs.readFileSync('.github/workflows/post-merge-intent-verification.yml', 'utf8');
 		const postMergeValidatorScript = fs.readFileSync('scripts/ci/post_merge_validator.mjs', 'utf8');
 		const ciOrchestrationWorkflow = fs.readFileSync('.github/workflows/ci-orchestration-engine.yml', 'utf8');
 		const createIssuesScript = fs.readFileSync('scripts/orchestrator/create-issues.mjs', 'utf8');
@@ -512,8 +513,9 @@ describe('orchestrator workflow trigger compatibility', () => {
 		expect(queueWorkflow).toContain("github.event.label.name == 'status:complete'");
 		expect(queueWorkflow).toContain("github.event.label.name == 'status:failed'");
 		expect(enforcePrOnlyWorkflow).toContain('commits/${GITHUB_SHA}/pulls');
-		expect(postMergeWorkflow).toContain('node scripts/ci/post_merge_validator.mjs');
-		expect(postMergeWorkflow).toContain('branches: [main]');
+		expect(postMergeWorkflow).toContain('node scripts/ci/run_post_merge_closeout.mjs');
+		expect(postMergeWorkflow).not.toContain('sync-pr-state.mjs');
+		expect(maintainerBodyWorkflow).toContain('branches: [main]');
 		expect(postMergeValidatorScript).toContain('/commits/${sha}/pulls');
 		expect(ciOrchestrationWorkflow).toContain("node-version: '22'");
 		expect(ciOrchestrationWorkflow).toContain('node scripts/orchestrator/ci-orchestration-engine.mjs');

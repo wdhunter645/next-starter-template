@@ -1,11 +1,9 @@
-name: Post-Merge Detection
+name: Post-Merge Maintainer Body Apply
 
 on:
   pull_request:
     types: [synchronize]
     branches: [main]
-  pull_request_target:
-    types: [closed]
   workflow_dispatch:
     inputs:
       pr_number:
@@ -55,75 +53,3 @@ jobs:
           APPLY_MAINTAINER_PR_BODY: 'true'
           PR_NUMBER: ${{ github.event_name == 'pull_request' && github.event.pull_request.number || inputs.pr_number }}
         run: node scripts/ci/post_merge_validator.mjs
-
-  detect:
-    if: github.event_name == 'pull_request_target'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Validate merged PR
-        id: validate
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-          GITHUB_SHA: ${{ github.sha }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
-          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
-          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
-          EVENT_PR_MERGED: ${{ github.event.pull_request.merged }}
-          EVENT_PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
-        run: node scripts/ci/post_merge_validator.mjs
-
-      - name: Upload validation result
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: post-merge-validation-result
-          path: |
-            post-merge-result.json
-            post-merge-result.md
-          if-no-files-found: warn
-
-      - name: Write step summary
-        if: always() && hashFiles('post-merge-result.md') != ''
-        run: cat post-merge-result.md >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Comment result
-        if: always() && steps.validate.outputs.pr_number != ''
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh pr comment "${{ steps.validate.outputs.pr_number }}" --body-file post-merge-result.md || true
-
-      - name: Sync orchestrator post-merge state
-        if: always() && steps.validate.outputs.pr_number != ''
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          PR_NUMBER: ${{ steps.validate.outputs.pr_number }}
-          SYNC_ACTION: ${{ steps.validate.outputs.sync_action }}
-          POST_MERGE_RESULT_PATH: post-merge-result.json
-        run: node scripts/orchestrator/sync-pr-state.mjs
-
-      - name: Run post-merge reviewer audit
-        if: always() && steps.validate.outputs.pr_number != '' && steps.validate.outputs.status == 'fail'
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          PR_NUMBER: ${{ steps.validate.outputs.pr_number }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
-        run: node scripts/ci/post_merge_reviewer_audit.mjs
-
-      - name: Fail if validation failed
-        if: always() && steps.validate.outputs.status == 'fail'
-        run: exit 1

@@ -33,7 +33,9 @@ Mutable PR-head gate code must not execute as trusted enforcement logic.
 | Workflow file | Display name | Role |
 |---|---|---|
 | `gate-post-merge-readiness.yml` | GATE — Post-Merge Readiness | Pre-merge blocker for PR body metadata, allowlist evidence, placeholders, and reviewer dispositions that would fail closeout |
-| `post-merge-intent-verification.yml` | Post-Merge Detection | Primary validator, PR comment, orchestrator sync, reviewer audit on failure |
+| `post-merge-closeout.yml` | Post-Merge Detection | Single automatic closeout owner per merge: body apply when configured, validate, one orchestrator sync, PR comment, reviewer audit on failure |
+| `post-merge-pr-body-closeout.yml` | Post-Merge PR Body Closeout | Manual single-PR closeout, batch manifests, and push-triggered backfill only (no automatic merge trigger) |
+| `post-merge-intent-verification.yml` | Post-Merge Maintainer Body Apply | Dispatch-only maintainer PR body apply for legacy open PRs |
 | `post-merge-remediation.yml` | Post-Merge Remediation | Opens remediation issues only when Post-Merge Detection fails |
 | `diataxis-post-merge-validate.yml` | DIATAXIS Post-Merge Validation | Uploads DIATAXIS evidence for merged documentation changes |
 | `ops-design-compliance-audit.yml` | OPS — Design Compliance Audit | OPS observability only; not post-merge validation authority |

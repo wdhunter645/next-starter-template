@@ -1,5 +1,8 @@
 /**
- * Determines when Post-Merge PR Body Closeout should run.
+ * Determines when automatic and manual post-merge closeout should run.
+ * Automatic merge closeout is owned by `.github/workflows/post-merge-closeout.yml`
+ * (`Post-Merge Detection`). Manual and batch backfill remain on
+ * `post-merge-pr-body-closeout.yml`.
  */
 
 import fs from 'node:fs';

@@ -1,8 +1,6 @@
 name: Post-Merge PR Body Closeout
 
 on:
-  pull_request_target:
-    types: [closed]
   push:
     branches: [main]
     paths:
@@ -56,19 +54,14 @@ permissions:
 
 jobs:
   closeout:
-    if: |
-      (github.event_name == 'pull_request_target' &&
-        github.event.pull_request.merged == true &&
-        github.event.pull_request.base.ref == 'main') ||
-      github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'push'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'pull_request_target' && 'main' || github.sha }}
+          ref: ${{ github.sha }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -104,31 +97,6 @@ jobs:
           path: |
             post-merge-batch-closeout.json
             post-merge-result.json
-          if-no-files-found: warn
-
-      - name: Automatic post-merge closeout for merged PR
-        if: github.event_name == 'pull_request_target'
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_EVENT_NAME: pull_request_target
-          GITHUB_SHA: ${{ github.event.pull_request.merge_commit_sha }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
-          EVENT_PR_MERGED: ${{ github.event.pull_request.merged }}
-          EVENT_PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
-          SKIP_BODY_APPLY: 'true'
-        run: node scripts/ci/run_post_merge_closeout.mjs
-
-      - name: Upload automatic post-merge closeout report
-        if: always() && github.event_name == 'pull_request_target'
-        uses: actions/upload-artifact@v4
-        with:
-          name: post-merge-closeout-report
-          path: |
-            post-merge-result.json
-            post-merge-result.md
           if-no-files-found: warn
 
       - name: Manual single-PR closeout

@@ -5,10 +5,10 @@ const WORKFLOW_DIR = '.github/workflows';
 
 export const POST_MERGE_VALIDATION_WORKFLOWS = [
 	{
-		file: 'post-merge-intent-verification.yml',
+		file: 'post-merge-closeout.yml',
 		workflowName: 'Post-Merge Detection',
 		jobIds: ['detect'],
-		notes: 'Primary post-merge validator and orchestrator sync gate.',
+		notes: 'Single automatic post-merge closeout owner: validate, sync, and remediation handoff.',
 	},
 	{
 		file: 'post-merge-remediation.yml',
@@ -85,11 +85,14 @@ export function validatePostMergeValidationSurface(options = {}) {
 		}
 	}
 
-	const validatorPath = path.join(root, WORKFLOW_DIR, 'post-merge-intent-verification.yml');
-	if (fs.existsSync(validatorPath)) {
-		const validatorContents = readWorkflow('post-merge-intent-verification.yml', root);
-		if (!validatorContents.includes('post_merge_validator.mjs')) {
-			errors.push('post-merge-intent-verification.yml must invoke post_merge_validator.mjs');
+	const closeoutPath = path.join(root, WORKFLOW_DIR, 'post-merge-closeout.yml');
+	if (fs.existsSync(closeoutPath)) {
+		const closeoutContents = readWorkflow('post-merge-closeout.yml', root);
+		if (!closeoutContents.includes('run_post_merge_closeout.mjs')) {
+			errors.push('post-merge-closeout.yml must invoke run_post_merge_closeout.mjs');
+		}
+		if (closeoutContents.includes('sync-pr-state.mjs')) {
+			errors.push('post-merge-closeout.yml must not invoke sync-pr-state.mjs directly; use run_post_merge_closeout.mjs');
 		}
 	}
 

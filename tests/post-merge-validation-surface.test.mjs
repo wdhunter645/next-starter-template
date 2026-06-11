@@ -19,7 +19,7 @@ describe('post-merge validation surface inventory', () => {
 
 	it('documents the core post-merge workflows', () => {
 		expect(POST_MERGE_VALIDATION_WORKFLOWS.map((entry) => entry.file)).toEqual([
-			'post-merge-intent-verification.yml',
+			'post-merge-closeout.yml',
 			'post-merge-remediation.yml',
 			'diataxis-post-merge-validate.yml',
 		]);

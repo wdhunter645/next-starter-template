@@ -141,6 +141,27 @@ describe('automatic closeout runtime context', () => {
 	});
 });
 
+describe('consolidated automatic closeout ownership', () => {
+	it('routes merged PRs through one automatic workflow without duplicate sync wiring', () => {
+		const closeoutWorkflow = fs.readFileSync('.github/workflows/post-merge-closeout.yml', 'utf8');
+		const intentWorkflow = fs.readFileSync('.github/workflows/post-merge-intent-verification.yml', 'utf8');
+		const bodyCloseoutWorkflow = fs.readFileSync('.github/workflows/post-merge-pr-body-closeout.yml', 'utf8');
+		const closeoutScript = fs.readFileSync('scripts/ci/run_post_merge_closeout.mjs', 'utf8');
+
+		expect(closeoutWorkflow).toContain('name: Post-Merge Detection');
+		expect(closeoutWorkflow).toContain('pull_request_target');
+		expect(closeoutWorkflow).toContain('run_post_merge_closeout.mjs');
+		expect(closeoutWorkflow).not.toContain('sync-pr-state.mjs');
+		expect(intentWorkflow).not.toContain('pull_request_target');
+		expect(intentWorkflow).not.toContain('sync-pr-state.mjs');
+		expect(bodyCloseoutWorkflow).not.toContain('pull_request_target');
+		expect(
+			(closeoutScript.match(/execFileSync\('node', \['scripts\/orchestrator\/sync-pr-state\.mjs'\]/g) || [])
+				.length,
+		).toBe(1);
+	});
+});
+
 describe('closeout fail-safe remediation evidence', () => {
 	it('upserts remediation issues only for blocking closeout failures', () => {
 		expect(
