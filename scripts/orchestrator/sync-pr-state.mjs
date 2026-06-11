@@ -6,8 +6,10 @@ import { pathToFileURL } from 'node:url';
 
 import { linkedIssueNumber, sourceIssueAccounting } from '../ci/issue_accounting.mjs';
 import {
+  buildFailureCloseoutComment,
   buildSourceIssueCloseoutComment,
   planActiveSourceIssueRelabel,
+  planFailureSourceIssueRelabel,
   planTerminalLabelReconciliation,
   postMergeVerificationResult,
   shouldCloseSourceIssue,
@@ -201,14 +203,33 @@ export function syncPrState({
     return 'complete';
   }
 
-  if (action === 'post_merge_remediation') {
-    log(`Post-merge closeout exception for PR #${prNumber}: remediation remains required; source issue was not relabeled.`);
-    return 'exception';
-  }
+  if (action === 'post_merge_remediation' || action === 'post_merge_failure') {
+    const meta = getIssueMeta(issueNumber, { run });
+    const failureLabelResult = planFailureSourceIssueRelabel({
+      issueLabels: meta.labels || [],
+      repoLabels: getRepoLabels(),
+    });
+    reconcileTerminalLabelsFn(issueNumber, failureLabelResult);
 
-  if (action === 'post_merge_failure') {
-    log(`Post-merge closeout exception for PR #${prNumber}: validation failed; source issue was not relabeled.`);
-    return 'exception';
+    const mergeSha = postMergeResult?.merge_sha || pr.mergeCommit?.oid || '';
+    const failureComment = buildFailureCloseoutComment({
+      prNumber,
+      mergeSha,
+      sourceIssueNumber: issueNumber,
+      syncAction: action,
+      validatorStatus: postMergeResult?.status || 'unknown',
+      verificationResult: postMergeVerificationResult(postMergeResult),
+      validationSummary: validationSummary(postMergeResult),
+      terminalLabelResult: failureLabelResult.summary,
+    });
+    run(['issue', 'comment', issueNumber, '--repo', repo, '--body', failureComment]);
+
+    const reason =
+      action === 'post_merge_remediation'
+        ? 'remediation remains required'
+        : 'validation failed';
+    log(`Post-merge closeout exception for PR #${prNumber}: ${reason}; source issue relabeled without closure.`);
+    return action === 'post_merge_remediation' ? 'remediation_relabeled' : 'failure_relabeled';
   }
 
   if (action === 'closed') return 'skipped';

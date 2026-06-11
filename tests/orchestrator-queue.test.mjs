@@ -414,21 +414,26 @@ describe('orchestrator queue advancement', () => {
 		});
 	});
 
-	it('keeps source issue open when post-merge remediation remains required', () => {
+	it('relabels source issue without closing when post-merge remediation remains required', () => {
 		const run = vi.fn();
-		const transitions = [];
+		const reconciliations = [];
 
 		const result = syncPrState.syncPrState({
 			prNumber: '42',
 			action: 'post_merge_remediation',
 			pr: { body: '**Issue:** #1', mergedAt: '2026-05-05T19:05:00Z', state: 'MERGED', url: 'https://example.test/pr/42' },
-			setStatusFn: (...args) => transitions.push(args),
+			reconcileTerminalLabelsFn: (...args) => reconciliations.push(args),
+			getIssueMeta: () => ({ labels: ['status:post-merge-verify'], state: 'OPEN' }),
+			getRepoLabels: () => ['status:failed', 'status:complete'],
 			run,
 		});
 
-		expect(result).toBe('exception');
-		expect(transitions).toEqual([]);
-		expect(run).not.toHaveBeenCalled();
+		expect(result).toBe('remediation_relabeled');
+		expect(reconciliations[0][1]).toMatchObject({
+			removeLabels: ['status:post-merge-verify'],
+			addLabel: 'status:failed',
+		});
+		expect(run).toHaveBeenCalledWith(expect.arrayContaining(['issue', 'comment', '1']));
 	});
 
 	it('advances the oldest blocked task only after the active pipeline completes', () => {
@@ -469,27 +474,35 @@ describe('orchestrator queue advancement', () => {
 		expect(run).toHaveBeenNthCalledWith(2, ['issue', 'comment', '2', '--repo', 'owner/repo', '--body', 'Queue advance: blocked → queued']);
 	});
 
-	it('halts without advancing when a post-merge exception leaves verification active', () => {
+	it('relabels failed post-merge source issues and halts queue advancement on status:failed', () => {
 		const blocked = issue(3, 'status:blocked', '2026-05-05T19:02:00Z');
-		const verifying = issue(1, 'status:post-merge-verify', '2026-05-05T19:00:00Z');
-		const query = queryFor({ 'status:post-merge-verify': [verifying], 'status:blocked': [blocked] });
+		const failed = issue(1, 'status:failed', '2026-05-05T19:00:00Z');
+		const query = queryFor({ 'status:failed': [failed], 'status:blocked': [blocked] });
 		const logs = [];
-		const transitions = [];
+		const reconciliations = [];
+		const run = vi.fn();
 
 		const failedTransition = syncPrState.syncPrState({
 			prNumber: '42',
 			action: 'post_merge_failure',
 			pr: { body: '**Issue:** #1', mergedAt: '2026-05-05T19:05:00Z', state: 'MERGED', url: 'https://example.test/pr/42' },
-			setStatusFn: (...args) => transitions.push(args),
+			reconcileTerminalLabelsFn: (...args) => reconciliations.push(args),
+			getIssueMeta: () => ({ labels: ['status:post-merge-verify'], state: 'OPEN' }),
+			getRepoLabels: () => ['status:failed', 'status:complete'],
+			run,
 		});
 
 		const decision = advanceQueue.queueAdvanceDecision(query);
 		advanceQueue.logDecision(decision, (message) => logs.push(message));
 
-		expect(failedTransition).toBe('exception');
-		expect(transitions).toEqual([]);
-		expect(decision).toEqual({ action: 'halt_active' });
-		expect(logs).toEqual(['halt: active']);
+		expect(failedTransition).toBe('failure_relabeled');
+		expect(reconciliations[0][1]).toMatchObject({
+			removeLabels: ['status:post-merge-verify'],
+			addLabel: 'status:failed',
+		});
+		expect(run).toHaveBeenCalledWith(expect.arrayContaining(['issue', 'comment', '1']));
+		expect(decision).toEqual({ action: 'halt_failed' });
+		expect(logs).toEqual(['halt: failed']);
 	});
 });
 
