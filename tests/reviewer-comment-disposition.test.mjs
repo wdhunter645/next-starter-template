@@ -128,6 +128,130 @@ describe('reviewer comment disposition enforcement', () => {
 });
 
 describe('reviewer response gate integration', () => {
+  it('does not block pull_request_target when late findings are dispositioned (PR #1566)', () => {
+    const prBody = [
+      'Status: READY FOR REVIEW',
+      '## REVIEWER RESPONSE ACCOUNTING',
+      'Reviewer items:',
+      '- review-comment:3396937120 — accepted — Removed tokenReady effect load path — thread state: resolved',
+      '- review-comment:3396953330 — accepted — tokenReady effect removed; stale responses guarded — thread state: resolved',
+      '- review-comment:3396953405 — accepted — Publish button disabled when selected block absent — thread state: resolved',
+    ].join('\n');
+
+    const disposition = evaluateReviewerCommentDisposition({
+      body: prBody,
+      reviewComments: [
+        {
+          id: 3396937120,
+          user: { login: 'chatgpt-codex-connector[bot]' },
+          commit_id: 'bad2cd41eaa8d68a4fc9ade698c014e42a68f70b',
+          path: 'src/app/admin/content/page.tsx',
+          line: 141,
+          body: 'Please fix duplicate slug loads.',
+          created_at: '2026-06-11T14:56:39Z',
+        },
+        {
+          id: 3396953330,
+          user: { login: 'copilot-pull-request-reviewer[bot]' },
+          commit_id: 'e69e5e9820e048338908d394f9ae47db36a0a088',
+          path: 'src/app/admin/content/page.tsx',
+          line: 12,
+          body: 'P2: tokenReady effect causes duplicate loads.',
+          created_at: '2026-06-11T14:58:53Z',
+        },
+        {
+          id: 3396953405,
+          user: { login: 'copilot-pull-request-reviewer[bot]' },
+          commit_id: 'bad2cd41eaa8d68a4fc9ade698c014e42a68f70b',
+          path: 'src/app/admin/cms/page.tsx',
+          line: 332,
+          body: 'Publish should be disabled when selected block is absent.',
+          created_at: '2026-06-11T14:58:54Z',
+        },
+      ],
+      headSha: 'bad2cd41eaa8d68a4fc9ade698c014e42a68f70b',
+      readyForReviewAt: '2026-06-11T14:54:33Z',
+      auditPhase: 'pre_merge',
+    });
+
+    expect(disposition.ok).toBe(true);
+    expect(disposition.lateFindingsCount).toBe(3);
+    expect(disposition.lateUndispositionedCount).toBe(0);
+    expect(disposition.undispositionedCount).toBe(0);
+
+    const accounting = evaluateReviewerAccounting({
+      eventName: 'pull_request_target',
+      labels: ['infra'],
+      files: ['src/app/admin/cms/page.tsx'],
+      currentHeadLinkedReview: true,
+      lateUndispositionedReviewerComments: disposition.lateUndispositionedCount,
+    });
+
+    expect(accounting.ok).toBe(true);
+    expect(accounting.reason).toBe('reviewer-accounting-ok');
+
+    const lifecycle = assessReviewerLifecycle({
+      eventName: 'pull_request_target',
+      labels: ['infra'],
+      files: ['src/app/admin/cms/page.tsx', 'src/app/admin/content/page.tsx'],
+      enforceFailure: true,
+      headSha: 'bad2cd41eaa8d68a4fc9ade698c014e42a68f70b',
+      body: prBody,
+      readyForReviewAt: '2026-06-11T14:54:33Z',
+      reviewComments: [
+        {
+          id: 3396937120,
+          user: { login: 'chatgpt-codex-connector[bot]' },
+          commit_id: 'bad2cd41eaa8d68a4fc9ade698c014e42a68f70b',
+          path: 'src/app/admin/content/page.tsx',
+          line: 141,
+          body: 'Please fix duplicate slug loads.',
+          created_at: '2026-06-11T14:56:39Z',
+        },
+        {
+          id: 3396953330,
+          user: { login: 'copilot-pull-request-reviewer[bot]' },
+          commit_id: 'e69e5e9820e048338908d394f9ae47db36a0a088',
+          path: 'src/app/admin/content/page.tsx',
+          line: 12,
+          body: 'P2: tokenReady effect causes duplicate loads.',
+          created_at: '2026-06-11T14:58:53Z',
+        },
+        {
+          id: 3396953405,
+          user: { login: 'copilot-pull-request-reviewer[bot]' },
+          commit_id: 'bad2cd41eaa8d68a4fc9ade698c014e42a68f70b',
+          path: 'src/app/admin/cms/page.tsx',
+          line: 332,
+          body: 'Publish should be disabled when selected block is absent.',
+          created_at: '2026-06-11T14:58:54Z',
+        },
+      ],
+      reviews: [{
+        user: { login: 'copilot-pull-request-reviewer[bot]' },
+        commit_id: 'bad2cd41eaa8d68a4fc9ade698c014e42a68f70b',
+        state: 'COMMENTED',
+      }],
+    });
+
+    expect(lifecycle.shouldFail).toBe(false);
+    expect(lifecycle.assessment.reason).toBe('reviewer-accounting-ok');
+  });
+
+  it('blocks pull_request_target when late findings remain undispositioned', () => {
+    const accounting = evaluateReviewerAccounting({
+      eventName: 'pull_request_target',
+      labels: ['infra'],
+      files: ['src/app/admin/cms/page.tsx'],
+      currentHeadLinkedReview: true,
+      undispositionedReviewerComments: 1,
+      lateUndispositionedReviewerComments: 1,
+    });
+
+    expect(accounting.ok).toBe(false);
+    expect(accounting.reason).toBe('undispositioned-reviewer-comment');
+  });
+
   it('blocks pull_request_target when undispositioned reviewer comments exist', () => {
     const accounting = evaluateReviewerAccounting({
       eventName: 'pull_request_target',

@@ -348,11 +348,14 @@ export function evaluateReviewerCommentDisposition({
     });
   }
 
+  const lateUndispositionedCount = undispositioned.filter((item) => item.late).length;
+
   return {
     ok: failures.length === 0,
     undispositionedCount: undispositioned.length,
     outdatedWithoutDispositionCount: outdatedWithoutDisposition.length,
     lateFindingsCount: lateFindings.length,
+    lateUndispositionedCount,
     failures,
     undispositioned,
     outdatedWithoutDisposition,

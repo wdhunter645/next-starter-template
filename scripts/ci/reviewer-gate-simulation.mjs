@@ -131,7 +131,7 @@ export function evaluateReviewerAccounting({
   advisoryFindings = 0,
   undispositionedReviewerComments = 0,
   outdatedWithoutDisposition = 0,
-  lateReviewerFindings = 0,
+  lateUndispositionedReviewerComments = 0,
 } = {}) {
   const scope = classifyProtectedScope(files);
   const remediation = hasRemediationLabel(labels);
@@ -157,7 +157,7 @@ export function evaluateReviewerAccounting({
     };
   }
 
-  if (eventName === 'pull_request_target' && lateReviewerFindings > 0) {
+  if (eventName === 'pull_request_target' && lateUndispositionedReviewerComments > 0) {
     return {
       ok: false,
       severity: 'blocking',
@@ -236,7 +236,7 @@ export function simulateGovernanceCase(testCase, config = loadIntentConfig()) {
     advisoryFindings: testCase.advisoryFindings || 0,
     undispositionedReviewerComments: testCase.undispositionedReviewerComments || 0,
     outdatedWithoutDisposition: testCase.outdatedWithoutDisposition || 0,
-    lateReviewerFindings: testCase.lateReviewerFindings || 0,
+    lateUndispositionedReviewerComments: testCase.lateUndispositionedReviewerComments || 0,
   });
 
   return {
