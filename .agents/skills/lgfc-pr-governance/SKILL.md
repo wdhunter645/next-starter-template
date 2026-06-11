@@ -6,7 +6,7 @@ Use this skill for PR creation, PR updates, source Issue linkage, scope control,
 
 Before any PR, issue, review, remediation, or implementation work, complete the mandatory chain in [`Agent.md`](../../../Agent.md):
 
-`Agent.md` → `docs/ops/ai/SHARED-AGENT-RULES.md` → `docs/ops/ai/CORE-RULES.md` → applicable agent-specific rules → this skill and [`.github/pull_request_template.md`](../../../.github/pull_request_template.md) → other applicable governance docs.
+`/Agent.md` → `/docs/ops/ai/SHARED-AGENT-RULES.md` → `/docs/ops/ai/CORE-RULES.md` → applicable agent-specific rules under `/docs/ops/ai/` → `/.agents/skills/lgfc-pr-governance/SKILL.md` and `/.github/pull_request_template.md` → other applicable governance docs under `/docs/governance/`.
 
 Do not open or update a PR until this skill and the PR template have been read for the current task.
 
