@@ -23,7 +23,7 @@ This document owns PMO Backlog inventory, promotion history, weekly project revi
 
 - **PMO Backlog is documentation-owned.** Backlog placement does not authorize Cursor or Codex implementation.
 - **Legacy `#1379`** is historical source evidence only. It is superseded by this document.
-- **Issue `#1411` is closed** and served its planning/control purpose as a completed planning artifact (`status:complete`). It is not an open or automatically queued program.
+- **issue `#1411` is closed** and served its planning/control purpose as a completed planning artifact (`status:complete`). It is not an open or automatically queued program.
 - **Former `#1411` work areas** now belong in this backlog inventory as governance/ops backlog items unless later relaunched through a current open PMO v3 program or source issue.
 - **Program `#1255`** remains the active website implementation program.
 - **Program `#1500`** is the current operational stabilization candidate and preparation track for CI/orchestration closeout stabilization. It may be assigned to Codex for implementation. It is not authorized by this backlog document.
@@ -40,7 +40,7 @@ This document owns PMO Backlog inventory, promotion history, weekly project revi
 
 Items are sorted **top-down by current priority need** as of the Bill/Atlas PMO v3 review (2026-06-11). Priority guides discussion and preparation order; **production-ready documentation remains the gate for execution.**
 
-| Rank | Project / idea name | Classification | Brief description | Suggested next action | Related references | Duplicate / version note | Production doc readiness |
+| Rank | project / idea name | Classification | Brief description | Suggested next action | Related references | Duplicate / version note | Production doc readiness |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Website Completion / Fan Club Product Buildout** | project draft | High-priority future program candidate: complete authenticated Fan Club experience, backend services, content operations, and design alignment after Program `#1255` / `#1500`. Requires production-ready documentation before launch. | Draft program scope, child projects, and production-ready docs in weekly PMO project review; do not launch until authorized. | `#1255`, `#1258`, `#1259`; `docs/how-to/website/website-implementation-and-content-operations-plan.md` | Bill/Atlas agree this is likely the first major program after `#1255` / `#1500`. | partial |
 | 1a | Fan Club page design | project draft (child) | Finalize authenticated Fan Club page design and member-facing flows. | Complete design/readiness review against LGFC production design standards. | `#1255`, `#1258`; `docs/ops/pmo/program-3-club-home-page-design.md` (legacy filename — PMO v2 artifact) | Legacy `program-3-*` filename is not PMO v3 program authority. | partial |
@@ -59,7 +59,7 @@ Items are sorted **top-down by current priority need** as of the Bill/Atlas PMO 
 | 4 | Workflow Automation Design Migration (former `#1411` area) | governance/ops backlog | Migrate Workflow Automation design from backlog/Drive/chat into GitHub documentation authority. | Review `docs/ops/pmo/workflow-automation.md` for gaps; authorize implementation only through a current open source issue. | `#1411`, `docs/ops/pmo/workflow-automation.md` | Promoted from backlog into `#1411` planning; now inventory again. | partial |
 | 5 | Cursor Continuation and Queue Contract (former `#1411` area) | governance/ops backlog | Rules for when Cursor continues, stops, reports validation, and waits at review handoff. | Align with `docs/reference/pmo/lgfc-cursor-execution-contract.md` during authorized governance work only. | `#1411`, `#1417`–`#1424` (stale task issues) | Task issues `#1417`–`#1424` contain stale PMO v2 terminology — flag for review, do not delete. | partial |
 | 6 | PR Readiness and Batch Review Control (former `#1411` area) | governance/ops backlog | Ready-for-review rules that preserve Atlas/Bill review and merge authority. | Document gaps in PR governance during authorized review cycles only. | `#1411`, `docs/governance/PR_GOVERNANCE.md` | None identified. | partial |
-| 7 | Merge and Issue Mutation Policy (former `#1411` area) | governance/ops backlog | Explicit prohibition on Cursor merge, close, relabel, and issue-state changes without authorization. | Retain policy reference; no implementation from backlog placement alone. | `#1411`, `docs/reference/pmo/lgfc-cursor-execution-contract.md` | None identified. | partial |
+| 7 | Merge and issue mutation policy (former `#1411` area) | governance/ops backlog | Explicit prohibition on Cursor merge, close, relabel, and issue-state changes without authorization. | Retain policy reference; no implementation from backlog placement alone. | `#1411`, `docs/reference/pmo/lgfc-cursor-execution-contract.md` | None identified. | partial |
 | 8 | Queue/Wave Model and Label Planning (former `#1411` area) | governance/ops backlog | Wave labels and run identifiers as planning concepts before workflow code changes. | Review against `#1500` scope after `#1500` completes. | `#1411`, `#1500` | `#1500` may partially satisfy queue/orchestration planning — needs review after `#1500` completes. | partial |
 | 9 | Post-Merge Closeout Evidence Stabilization (former `#1411` area) | governance/ops backlog | Closeout requires stable evidence and terminal completed-label reconciliation before mutation or queue advancement. | Review overlap with `#1500` CI/orchestration closeout stabilization after `#1500` completes. | `#1411`, `#1500` | **`#1500` may supersede or partially satisfy this item** — explicit review required after `#1500` completes. | partial |
 | 10 | PMO Backlog Promotion and Program `#1411` Launch Gate (former `#1411` area) | governance/ops backlog | Backlog items require owner promotion, repo authority, decomposition, and bounded handoff before becoming executable. | Use promotion checklist below in weekly PMO project review. | `#1411`, this document | `#1411` launch gate is historical; promotion rules live here and in PMO v3 operating model. | partial |
@@ -163,6 +163,6 @@ Before an item leaves the PMO Backlog for execution:
 4. Dependencies and non-interference risks are documented (especially vs. `#1255` and `#1500`).
 5. The item is prioritized against current program issues.
 6. A program issue is created or updated if the work becomes a program.
-7. Project/task issues are created if executable.
+7. project/task issues are created if executable.
 8. A source issue and implementation plan are created or authorized.
 9. Cursor or Codex receives only bounded issue-level implementation instructions.
