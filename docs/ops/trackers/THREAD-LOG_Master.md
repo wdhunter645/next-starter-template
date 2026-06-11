@@ -24,14 +24,14 @@ via merge commit `3509bbb5952864f55a3000910e3cdb6c2c5121b7`. Tracker docs still
 showed Task 005 in review.
 
 ### Objective
-Record Task 005 closeout under PMO v3 Program `#1255` / Project `#1258` without
+Record Task 005 closeout under PMO v3 Program `#1255` / project `#1258` without
 starting Task 006 or closing `#1258` / `#1255`.
 
 ### Task 005 sign-off accepted
 
 **Scope:**
 - PMO v3 Program #1255
-- Project #1258 — Website Operations Admin
+- project #1258 — Website Operations Admin
 - Task 005 — moderation and review workflow hardening
 - PR #1551
 
