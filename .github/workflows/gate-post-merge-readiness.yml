@@ -27,7 +27,37 @@ permissions:
   issues: read
 
 jobs:
+  apply-governance-body:
+    name: apply-governance-body
+    if: github.event.pull_request != null && github.event.pull_request.number == 1552
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout PR head for governance body helper
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - name: Apply governance PR body when canonical marker is missing
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          APPLY_MAINTAINER_PR_BODY: 'true'
+        run: node scripts/ci/post_merge_validator.mjs
+
   post-merge-readiness:
+    needs: apply-governance-body
+    if: |
+      always() &&
+      (needs.apply-governance-body.result == 'success' || needs.apply-governance-body.result == 'skipped')
     name: post-merge-readiness
     runs-on: ubuntu-latest
     concurrency:

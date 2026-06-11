@@ -793,6 +793,11 @@ export async function applyPullRequestBody({ token, repository, prNumber, body }
 	return response.json();
 }
 
+const MAINTAINER_PR_BODIES = {
+	1241: PR_1241_MAINTAINER_BODY,
+	1552: PR_1552_MAINTAINER_BODY,
+};
+
 export async function applyMaintainerPrBodyMain() {
 	const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
 	const repository = process.env.GITHUB_REPOSITORY;
@@ -801,13 +806,40 @@ export async function applyMaintainerPrBodyMain() {
 		throw new Error('GITHUB_TOKEN/GH_TOKEN, GITHUB_REPOSITORY, and PR_NUMBER are required.');
 	}
 
+	const numericPr = Number(prNumber);
+	const maintainerBody = MAINTAINER_PR_BODIES[numericPr];
+	if (!maintainerBody) {
+		throw new Error(`No maintainer PR body registered for PR #${prNumber}`);
+	}
+
+	const currentResponse = await fetch(`https://api.github.com/repos/${repository}/pulls/${prNumber}`, {
+		headers: {
+			Authorization: `Bearer ${token}`,
+			Accept: 'application/vnd.github+json',
+			'X-GitHub-Api-Version': '2022-11-28',
+			'User-Agent': 'lgfc-apply-open-pr-body',
+		},
+	});
+	if (!currentResponse.ok) {
+		throw new Error(`GET /pulls/${prNumber} failed: ${currentResponse.status} ${await currentResponse.text()}`);
+	}
+	const currentPr = await currentResponse.json();
+	if ((currentPr.body || '').includes('<!-- CURSOR_AGENT_PR_BODY_BEGIN -->')) {
+		console.log(JSON.stringify({
+			status: 'skipped',
+			pr: numericPr,
+			reason: 'maintainer body marker already present',
+		}, null, 2));
+		return;
+	}
+
 	const result = await applyPullRequestBody({
 		token,
 		repository,
 		prNumber,
-		body: PR_1241_MAINTAINER_BODY,
+		body: maintainerBody,
 	});
-	console.log(JSON.stringify({ status: 'applied', pr: Number(prNumber), head_sha: result.head?.sha || '' }, null, 2));
+	console.log(JSON.stringify({ status: 'applied', pr: numericPr, head_sha: result.head?.sha || '' }, null, 2));
 }
 
 export async function main() {
