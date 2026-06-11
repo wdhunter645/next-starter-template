@@ -368,6 +368,146 @@ describe('admin content page', () => {
     );
     expect(listCalls).toHaveLength(1);
     expect(String(listCalls[0][0])).toBe('/api/admin/content/list?slug=%2Fabout');
+    expect(screen.getByPlaceholderText('/')).toHaveValue('/about');
+  });
+
+  it('ignores a late root response after loading a different slug', async () => {
+    let resolveRoot!: (value: Response) => void;
+    let resolveAbout!: (value: Response) => void;
+    const rootPromise = new Promise<Response>((resolve) => {
+      resolveRoot = resolve;
+    });
+    const aboutPromise = new Promise<Response>((resolve) => {
+      resolveAbout = resolve;
+    });
+
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const path = String(input);
+      if (path.includes('slug=%2Fabout')) {
+        return aboutPromise;
+      }
+      if (path.startsWith('/api/admin/content/list')) {
+        return rootPromise;
+      }
+      return Promise.resolve(jsonResponse({ ok: true }));
+    });
+
+    render(<AdminContentPage />);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith('/api/admin/content/list?slug=%2F', expect.anything());
+    });
+
+    fireEvent.change(screen.getByPlaceholderText('/'), { target: { value: '/about' } });
+    await userEvent.click(screen.getByRole('button', { name: 'Save token' }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith('/api/admin/content/list?slug=%2Fabout', expect.anything());
+    });
+
+    resolveAbout!(
+      jsonResponse({
+        ok: true,
+        slugs: ['/about'],
+        grouped: {
+          '/about': {
+            intro: {
+              live: {
+                slug: '/about',
+                section: 'intro',
+                status: 'live',
+                content: 'About copy',
+                asset_url: null,
+                updated_at: '2026-06-01T00:00:00Z',
+              },
+            },
+          },
+        },
+      }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('intro')).toBeInTheDocument();
+    });
+
+    resolveRoot!(
+      jsonResponse({
+        ok: true,
+        slugs: ['/'],
+        grouped: {
+          '/': {
+            hero: {
+              live: {
+                slug: '/',
+                section: 'hero',
+                status: 'live',
+                content: 'Root copy',
+                asset_url: null,
+                updated_at: '2026-06-01T00:00:00Z',
+              },
+            },
+          },
+        },
+      }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('intro')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('hero')).not.toBeInTheDocument();
+    expect(screen.getByPlaceholderText('/')).toHaveValue('/about');
+    expect(screen.getByRole('button', { name: 'Save Draft' })).toBeEnabled();
+  });
+
+  it('disables save and publish while displayed sections belong to a different slug', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const path = String(input);
+      if (path.includes('slug=%2Fabout')) {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            slugs: ['/about'],
+            grouped: {
+              '/about': {
+                intro: {
+                  live: {
+                    slug: '/about',
+                    section: 'intro',
+                    status: 'live',
+                    content: 'About copy',
+                    asset_url: null,
+                    updated_at: '2026-06-01T00:00:00Z',
+                  },
+                },
+              },
+            },
+          }),
+        );
+      }
+      if (path.startsWith('/api/admin/content/list')) {
+        return Promise.resolve(jsonResponse({ ok: true, slugs: [], grouped: {} }));
+      }
+      return Promise.resolve(jsonResponse({ ok: true }));
+    });
+
+    render(<AdminContentPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/No sections returned/)).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText('/'), { target: { value: '/about' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Load' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('intro')).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText('/'), { target: { value: '/contact' } });
+
+    expect(screen.getByRole('button', { name: 'Save Draft' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
+    expect(screen.getByText(/Loaded content is for "\/about"/)).toBeInTheDocument();
   });
 
   it('does not fetch page content until a token is stored', async () => {
