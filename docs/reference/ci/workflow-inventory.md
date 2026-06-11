@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Current workflow inventory, classification, overlap notes, deprecation candidates
 Does Not Own: Workflow implementation, branch protection settings, CI architecture rationale
 Canonical Reference: /docs/reference/ci/github-actions_MASTER.md
-Related Issues: #1199, #1058
-Last Reviewed: 2026-06-03
+Related Issues: #1199, #1058, #1545
+Last Reviewed: 2026-06-11
 ---
 
 # GitHub Actions Workflow Inventory
@@ -34,7 +34,16 @@ Merged redesign phases on `main`:
 - Task 005 OPS runtime consolidation (PR #1242)
 
 Task 005 merged before Task 004 without file conflicts because the domains are
-disjoint. Use the as-built reconciliation doc and domain surface references for
+disjoint.
+
+Program #1500 closeout stabilization (partial on `main` as of 2026-06-11):
+
+- Task 001 merged (pre-merge post-merge-readiness gate)
+- Task 002 merged (post-merge closeout consolidation, PR #1567 / #1545)
+
+Program #1500 is not fully complete; only Tasks 001–002 are merged on `main`.
+
+Use the as-built reconciliation doc and domain surface references for
 current merged truth:
 
 - `docs/reference/ci/merge-protection-surface.md`
@@ -45,7 +54,9 @@ current merged truth:
 
 Rows that remain materially stale until a full inventory rewrite include
 `gate-zip-safety.yml` (retired) and several historical OPS workflow descriptions
-in the table below.
+in the table below. Post-merge closeout ownership rows were refreshed on
+2026-06-11 after PR #1567; the full workflow count and remaining rows are still
+deferred to Program 2 phase-2 Task 005.
 
 ## Intended Final State
 
@@ -106,8 +117,10 @@ Each workflow should have a clear owner, visible name, filename, trigger class, 
 | `orchestrator-issue-factory.yml` | Orchestrator - Issue Factory | Create implementation issues from project plan. | `push` | Support | Orchestration | npm, Node orchestrator script | No | Medium | Part of orchestrator suite. | No |
 | `orchestrator-pr-state-sync.yml` | Orchestrator - PR State Sync | Sync PR state back to orchestration labels/issues. | `pull_request` | Support | Orchestration | checkout, Node orchestrator script | No | Medium | Related to post-merge remediation. | No |
 | `orchestrator-queue-advance.yml` | Orchestrator - Queue Advance | Advance orchestrator queue from issue events. | `issues` | Support | Orchestration | checkout, Node orchestrator script | No | Medium | Part of orchestrator suite. | No |
-| `post-merge-intent-verification.yml` | Post-Merge Detection | Detect merged PRs and run post-merge metadata/reviewer audit. | `push`, `pull_request_target`, `workflow_dispatch` | Operational | Post-merge verification | checkout, gh, jq, `post_merge_reviewer_audit.mjs` | Yes, via fetched PR body | High | Overlaps with post-merge remediation and orchestrator state sync. | Fix/redesign candidate |
-| `post-merge-remediation.yml` | Post-Merge Remediation | Respond to post-merge detection workflow completion. | `workflow_run` | Operational | Post-merge remediation | checkout | No | Medium | Depends on `Post-Merge Detection` workflow name. | Review after detection fix |
+| `post-merge-closeout.yml` | Post-Merge Detection | Sole automatic post-merge closeout owner for merged PRs to `main`: validate, single sync path, remediation handoff. | `pull_request_target` closed (merged to `main`) | Operational | Post-merge closeout | checkout, Node, `run_post_merge_closeout.mjs`, gh, `post_merge_reviewer_audit.mjs` | Yes, via closed PR event | Medium | Duplicate automatic closeout race resolved by PR #1567 (Program #1500 Task 002 / #1545); `post-merge-remediation.yml` depends on this workflow name. | No |
+| `post-merge-intent-verification.yml` | Post-Merge Maintainer Body Apply | Maintainer PR body apply and manual workflow support. No longer owns automatic post-merge closeout. | `pull_request` synchronize (`main`), `workflow_dispatch` | Operational | Maintainer body apply | checkout, Node, `post_merge_validator.mjs` | Yes (dispatch/PR body) | Low | Former duplicate automatic closeout owner; `pull_request_target: closed` path removed in PR #1567. | No |
+| `post-merge-pr-body-closeout.yml` | Post-Merge PR Body Closeout | Manual single-PR closeout, batch manifests, and push-triggered backfill only. | `push` (manifest paths), `workflow_dispatch` | Operational | Manual/batch post-merge closeout backfill | checkout, Node, `run_post_merge_closeout.mjs`, batch manifest scripts | Yes (manual modes) | Medium | Former duplicate automatic closeout owner; automatic `pull_request_target: closed` removed in PR #1567. Complements `post-merge-closeout.yml`. | No |
+| `post-merge-remediation.yml` | Post-Merge Remediation | Opens remediation issues when Post-Merge Detection fails. | `workflow_run` (`Post-Merge Detection` completed) | Operational | Post-merge remediation | checkout, Node, `post_merge_remediation_issue.mjs` | No | Medium | Depends on `Post-Merge Detection` workflow name preserved by `post-merge-closeout.yml`. | No |
 | `post-recovery-425-verify.yml` | Post-Recovery Verification (PR #425) | Legacy recovery verification. | `pull_request`, `workflow_dispatch` | Blocking | PR #425 recovery assumptions | checkout, Node | No | High | Stale PR-specific workflow. | Yes |
 | `pr-triage-zip-taint.yml` | PR Triage - ZIP Taint Classification | Manual ZIP taint triage. | `workflow_dispatch` | Operational | ZIP history diagnosis | checkout, Node, artifact | No | Low | Related to ZIP safety and zip history audit. | Possible consolidation |
 | `preview-invariants.yml` | Preview Invariants (Cloudflare Pages) | Manual preview URL invariant validation. | `workflow_dispatch` | Operational | Cloudflare preview validation | checkout, Node, artifact | No | Medium | Related to production audit and gate quality. | No |
@@ -126,7 +139,7 @@ Each workflow should have a clear owner, visible name, filename, trigger class, 
 - `reviewer-response-completion.yml` can block PRs on stale reviewer state, quiet periods, or missing current-head trusted reviewer artifacts. This is the primary Phase 3 redesign target.
 - `ops-pr-issue-accounting.yml` currently normalizes PR bodies to `- **Issue:** #123`; Phase 1 observed that this exact emitted form is not accepted by its own parser on a later edit, causing duplicate issue lines while still passing from branch-name fallback.
 - `design-compliance-warn.yml` is intended to be advisory, but it overlaps with hard-gate concepts such as allowlists and ZIP safety. Later phases should keep it advisory or move deterministic checks to the owning hard gate.
-- `post-merge-intent-verification.yml` failed local YAML parsing during inventory and depends on post-merge PR metadata parsing. It should be remediated in a dedicated PR before relying on it for completion state.
+- Automatic post-merge closeout previously raced across `post-merge-intent-verification.yml`, `post-merge-pr-body-closeout.yml`, and related paths. PR #1567 consolidated ownership into `post-merge-closeout.yml` (`Post-Merge Detection`); manual and backfill paths remain on `post-merge-pr-body-closeout.yml` and `post-merge-intent-verification.yml`.
 - `post-recovery-425-verify.yml` appears PR-specific and stale, which can create unrelated PR noise.
 
 ## Duplicate Governance Logic
@@ -136,6 +149,7 @@ Each workflow should have a clear owner, visible name, filename, trigger class, 
 - Main-branch change controls appear in `enforce-pr-only.yml` and `ops-main-change-monitor.yml`.
 - Production/site health checks appear in `assess-nightly.yml`, `ops-assess.yml`, `production-audit.yml`, and `ops-design-compliance-audit.yml`.
 - Reviewer response governance appears in disabled `gate-reviewer-response.yml` and active `reviewer-response-completion.yml`.
+- Post-merge closeout previously duplicated automatic `pull_request_target: closed` handlers. PR #1567 retired that race; `post-merge-closeout.yml` is the sole automatic owner, with manual/batch support on `post-merge-pr-body-closeout.yml` and maintainer body apply on `post-merge-intent-verification.yml`.
 
 ## Naming Mismatches
 
@@ -145,7 +159,8 @@ Visible names and filenames that should be aligned or retired in Phase 2:
 - `ci.yml`, `deploy.yml`, `deploy-dev.yml`, `deploy-prod.yml`, `lgfc-validate.yml`, `test-homepage.yml`, and `test.yml` all share `Legacy LGFC-main Workflow (Parked)`
 - `gate-close-work-issue.yml` vs `gate-close-work-issue`
 - `gate-ensure-issue.yml` vs `gate-ensure-issue`
-- `post-merge-intent-verification.yml` vs `Post-Merge Detection`
+- `post-merge-intent-verification.yml` vs `Post-Merge Maintainer Body Apply`
+- `post-merge-closeout.yml` vs `Post-Merge Detection` (intentional: preserves remediation chain workflow name)
 - `post-recovery-425-verify.yml` vs `Post-Recovery Verification (PR #425)`
 - `zip-history-audit.yml` vs `ZIP History Audit (Full History)`
 
