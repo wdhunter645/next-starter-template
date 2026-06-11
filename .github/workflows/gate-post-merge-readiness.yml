@@ -7,6 +7,9 @@ name: GATE — Post-Merge Readiness
 # - Mutable PR-head gate code must never be executed as trusted enforcement logic.
 
 on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [main]
   pull_request_target:
     types: [opened, reopened, edited, synchronize, ready_for_review]
   pull_request_review:
@@ -29,7 +32,10 @@ permissions:
 jobs:
   apply-governance-body:
     name: apply-governance-body
-    if: github.event.pull_request != null && github.event.pull_request.number == 1552
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.pull_request != null &&
+      github.event.pull_request.number == 1552
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -56,6 +62,7 @@ jobs:
   post-merge-readiness:
     needs: apply-governance-body
     if: |
+      github.event_name != 'pull_request' &&
       always() &&
       (needs.apply-governance-body.result == 'success' || needs.apply-governance-body.result == 'skipped')
     name: post-merge-readiness
