@@ -156,7 +156,7 @@ describe('admin CMS page', () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/admin/cms/list',
-      expect.objectContaining({ headers: expect.anything() }),
+      expect.objectContaining({ cache: 'no-store' }),
     );
   });
 
@@ -172,15 +172,27 @@ describe('admin CMS page', () => {
     });
   });
 
-  it('stays idle without loading when no token is stored', () => {
+  it('does not fetch CMS blocks until a token is stored', async () => {
     window.localStorage.removeItem('lgfc_admin_token');
     const fetchMock = vi.spyOn(globalThis, 'fetch');
 
     render(<AdminCMSPage />);
 
-    // Page renders without crashing; no fetch issued when token is absent
-    expect(screen.getByText('No blocks found.')).toBeInTheDocument();
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(screen.getByText('Save an admin API token above to load CMS blocks.')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+  });
+
+  it('announces CMS list API failures to assistive technology', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse({ ok: false, error: 'Unauthorized.' }, 401) as never,
+    );
+
+    render(<AdminCMSPage />);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/error: unauthorized/i);
   });
 });
 
@@ -258,16 +270,27 @@ describe('admin content page', () => {
     });
   });
 
-  it('shows error state when list API returns an error', async () => {
+  it('does not fetch page content until a token is stored', async () => {
+    window.localStorage.removeItem('lgfc_admin_token');
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+
+    render(<AdminContentPage />);
+
+    expect(screen.getByText('Save an admin API token above to load page content.')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+  });
+
+  it('announces content list API failures to assistive technology', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      jsonResponse({ ok: false, error: 'DB unavailable' }, 500),
+      jsonResponse({ ok: false, error: 'Unauthorized.' }, 401) as never,
     );
 
     render(<AdminContentPage />);
 
-    await waitFor(() => {
-      expect(screen.getByText(/Error:/)).toBeInTheDocument();
-    });
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/error: unauthorized/i);
   });
 
   it('sends save draft request to /api/admin/content/save with admin token', async () => {

@@ -3,8 +3,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import PageShell from '@/components/PageShell';
 import AdminNav from '@/components/admin/AdminNav';
+import AdminStatusText from '@/components/admin/AdminStatusText';
 import AdminTokenPanel from '@/components/admin/AdminTokenPanel';
-import { adminJson } from '@/lib/adminClient';
+import { adminJson, getStoredAdminToken } from '@/lib/adminClient';
 
 type ContentBlock = {
   slug: string;
@@ -35,8 +36,22 @@ export default function AdminContentPage() {
   const [status, setStatus] = useState<string>('Idle.');
   const [loading, setLoading] = useState<boolean>(false);
   const [sections, setSections] = useState<SectionBundle[]>([]);
+  const [tokenReady, setTokenReady] = useState(false);
+
+  useEffect(() => {
+    if (getStoredAdminToken()) {
+      setTokenReady(true);
+    }
+  }, []);
 
   const load = useCallback(async (nextSlug?: string) => {
+    if (!getStoredAdminToken()) {
+      setSections([]);
+      setStatus('Save an admin API token above to load page content.');
+      setLoading(false);
+      return;
+    }
+
     const target = (nextSlug ?? slug).trim() || '/';
     setLoading(true);
     setStatus(`Loading sections for "${target}"...`);
@@ -113,14 +128,31 @@ export default function AdminContentPage() {
   );
 
   useEffect(() => {
-    void load('/');
+    if (tokenReady) {
+      void load('/');
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [tokenReady]);
 
   return (
     <PageShell title="Admin Content" subtitle="Edit site sections backed by D1 (when configured).">
       <AdminNav />
-      <AdminTokenPanel onSaved={() => void load(slug || '/')} />
+      <AdminTokenPanel
+        onSaved={() => {
+          const hasToken = Boolean(getStoredAdminToken());
+          setTokenReady(hasToken);
+          if (hasToken) {
+            void load(slug || '/');
+          } else {
+            setSections([]);
+            setStatus('Save an admin API token above to load page content.');
+          }
+        }}
+      />
+
+      {!tokenReady ? (
+        <p style={{ marginTop: 16, opacity: 0.85 }}>Save an admin API token above to load page content.</p>
+      ) : null}
 
       <div style={{ display: 'grid', gap: 14, marginTop: 16 }}>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -155,7 +187,9 @@ export default function AdminContentPage() {
             {loading ? 'Loading…' : 'Load'}
           </button>
 
-          <span style={{ opacity: 0.85, alignSelf: 'flex-end', paddingBottom: 4 }}>{status}</span>
+          <span style={{ opacity: 0.85, alignSelf: 'flex-end', paddingBottom: 4 }}>
+            <AdminStatusText message={status} />
+          </span>
         </div>
 
         <hr style={{ margin: '4px 0' }} />
