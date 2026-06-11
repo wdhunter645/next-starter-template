@@ -6,7 +6,7 @@ Owns: PMO program issue registry, current program issue assignments, launch-stat
 Does Not Own: PMO v3 top-level policy, implementation plan task definitions, workflow code, runtime behavior, product design, or unauthorized GitHub issue mutation
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
 Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1256, #1258, #1259, #1501, #1500
-Last Reviewed: 2026-06-10
+Last Reviewed: 2026-06-11
 ---
 
 # PMO Program Issue Registry
@@ -131,6 +131,11 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 | Project slug | `program-1-pmo-automation-agent-workflow-control` |
 
 ### Program #1411 project areas
+
+**Inventory authority:** These areas are no longer an active or automatically
+queued program. They live as governance/ops backlog inventory in
+`/docs/ops/pmo/pmo-backlog.md` (ranks 3–10). `#1411` remains closed; execution
+requires a current open source issue and explicit launch authorization.
 
 | Area | Registry decision |
 | --- | --- |
