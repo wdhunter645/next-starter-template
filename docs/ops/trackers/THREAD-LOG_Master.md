@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: Thread closeout records, implementation history, execution log
 Does Not Own: Design authority, governance rules, product requirements
 Canonical Reference: /docs/ops/trackers/THREAD-LOG_Master.md
-Last Reviewed: 2026-06-05
+Last Reviewed: 2026-06-11
 ---
 
 # LGFC Thread Log (Master)
@@ -13,6 +13,54 @@ Last Reviewed: 2026-06-05
 > **Non-authoritative for ops decisions (Program 1 Task 003):** Append-only thread
 > closeout history. Not a queue authority. For website as-built truth, use
 > `docs/reference/website/lgfc-website-as-built-reconciliation.md`.
+
+------------------------------------------------------------------------
+
+## THREAD CLOSEOUT RECORD --- 2026-06-11 --- Program #1255 / #1258 Task 005 sign-off
+
+### Starting State
+PR `#1551` (Task 005 — moderation and review workflow hardening) merged to `main`
+via merge commit `3509bbb5952864f55a3000910e3cdb6c2c5121b7`. Tracker docs still
+showed Task 005 in review.
+
+### Objective
+Record Task 005 closeout under PMO v3 Program `#1255` / Project `#1258` without
+starting Task 006 or closing `#1258` / `#1255`.
+
+### Task 005 sign-off accepted
+
+**Scope:**
+- PMO v3 Program #1255
+- Project #1258 — Website Operations Admin
+- Task 005 — moderation and review workflow hardening
+- PR #1551
+
+**Evidence:**
+- PR #1551 merged to main via merge commit `3509bbb5952864f55a3000910e3cdb6c2c5121b7`.
+- Post-merge verification passed:
+  - `npx vitest run tests/admin-moderation.test.tsx`
+  - `npm test`
+  - `npm run lint`
+  - `npm run build`
+- Reviewer lifecycle gate passed.
+- Design compliance / file allowlist passed.
+- Task 006 was not started.
+
+**Disposition:**
+- Task 005 is complete.
+- `#1258` remains open as the active Website Operations Admin project.
+- Authorization is required before starting Task 006.
+
+### Work Performed
+- Updated `active_tasklist.md` — Task 005 merged; Task 006 queued, not authorized.
+- Updated `docs/ops/implementation-plans/website-operations-admin.md` — Task 005 complete with PR `#1551` evidence.
+- Appended this closeout record.
+
+### Result
+Task 005 closeout documented. `#1258` remains `status:active`. Program `#1255` unchanged.
+
+### Next Action
+Await explicit authorization before Task 006 (CMS and page content admin delta, `#1121` / T43).
 
 ------------------------------------------------------------------------
 
