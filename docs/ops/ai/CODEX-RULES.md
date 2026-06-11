@@ -20,6 +20,14 @@ Historical prompt summary: [`PROMPTS/Codex-Rules.md`](../../../PROMPTS/Codex-Rul
 
 ---
 
+## Mandatory documentation chain
+
+Before any repo work, follow the chain in [`Agent.md`](../../../Agent.md): `Agent.md` → [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md) → [`CORE-RULES.md`](./CORE-RULES.md) → this file → applicable repo governance/procedure docs → applicable `.agents/skills/*/SKILL.md` files.
+
+This file is additive. It does not replace shared/core rules or repo governance.
+
+---
+
 ## Role
 
 Codex is an **implementation agent**, not the control plane.
@@ -67,6 +75,14 @@ Codex must confirm:
 - PR body allowlist and change summary match the diff;
 - task-relevant local checks were run when required by the source Issue;
 - handoff includes files changed, verification commands, and blockers.
+
+Codex must not claim completion from local-only state.
+
+For PR remediation work, before claiming complete Codex must verify:
+
+- local branch SHA equals live PR head SHA;
+- live PR body matches the intended final state;
+- live checks and live review-thread/comment state after remediation.
 
 Skill references: `.agents/skills/lgfc-pr-governance/SKILL.md`, `.agents/skills/lgfc-verification-closeout/SKILL.md`.
 

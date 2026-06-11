@@ -22,12 +22,16 @@ Do not duplicate long doctrine in agent-specific files. Link here instead.
 
 ## Authority and reading order
 
-1. Locked design, platform, and governance documents (see [`Agent.md`](../../../Agent.md)).
-2. This document (categorized shared law).
-3. [`CORE-RULES.md`](./CORE-RULES.md) (detailed shared execution).
-4. Source GitHub issue for task scope and acceptance criteria.
-5. Agent-specific rules (see [Tool-specific rules](#tool-specific-rules)).
-6. Repository skills under `.agents/skills/` when the task matches a trigger.
+All agents must start at [`Agent.md`](../../../Agent.md) and follow the **mandatory documentation chain** before any repo work:
+
+1. [`Agent.md`](../../../Agent.md) — mandatory entry point and routing authority
+2. This document (categorized shared law)
+3. [`CORE-RULES.md`](./CORE-RULES.md) (detailed shared execution)
+4. Applicable agent-specific rule file (see [Tool-specific rules](#tool-specific-rules); additive only)
+5. Applicable repo governance and procedure docs — source GitHub issue, task-linked authority files, and for PR/issue/review/remediation/implementation work: `.agents/skills/lgfc-pr-governance/SKILL.md`, `.github/pull_request_template.md`, and linked governance docs
+6. Applicable repository skills under `.agents/skills/` when the task matches a trigger
+
+Agent-specific docs do not replace shared/core rules or repo governance. Task prompts do not override this chain.
 
 When sources conflict, follow the higher authority and stop until the conflict is resolved.
 

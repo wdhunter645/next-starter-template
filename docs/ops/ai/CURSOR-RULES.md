@@ -17,6 +17,20 @@ Detailed shared execution: [`CORE-RULES.md`](./CORE-RULES.md).
 
 ---
 
+# MANDATORY DOCUMENTATION CHAIN
+
+Before any repo work, follow the chain in [`Agent.md`](../../../Agent.md): `Agent.md` → [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md) → [`CORE-RULES.md`](./CORE-RULES.md) → this file → applicable repo governance/procedure docs → applicable `.agents/skills/*/SKILL.md` files.
+
+This file is additive. It does not replace shared/core rules or repo governance.
+
+Cursor must route subagents through repo governance docs before code edits.
+
+Cursor must not allow task prompts to replace repo documentation.
+
+For issue, PR, and remediation work, Cursor must require PR governance preflight per `.agents/skills/lgfc-pr-governance/SKILL.md` and `.github/pull_request_template.md` before implementation.
+
+---
+
 # THREAD DISCIPLINE
 
 - One task → one Cursor thread  
