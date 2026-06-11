@@ -98,6 +98,7 @@ export default function AdminMediaAssetsPage() {
     }
 
     if (!getStoredAdminToken()) {
+      setLoading(false);
       return;
     }
 
@@ -148,8 +149,7 @@ export default function AdminMediaAssetsPage() {
       setTokenReady(true);
       void load();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [load]);
 
   return (
     <PageShell title="Media Assets" subtitle="D1 inventory of ingested media (B2 keys, size, etag)">
@@ -159,6 +159,7 @@ export default function AdminMediaAssetsPage() {
           if (!getStoredAdminToken()) {
             loadRequestRef.current += 1;
             setTokenReady(false);
+            setLoading(false);
             setItems([]);
             setSyncStatus('');
             setStatus('Save an admin API token above to load media assets.');
@@ -209,13 +210,17 @@ export default function AdminMediaAssetsPage() {
         </div>
 
         {status.startsWith('Error:') ? (
-          <AdminStatusText message={status} />
+          <div style={{ marginTop: 10, opacity: 0.85 }}>
+            <AdminStatusText message={status} />
+          </div>
         ) : status ? (
           <p style={{ marginTop: 10, opacity: 0.85 }}>{status}</p>
         ) : null}
 
         {syncStatus.startsWith('Error:') ? (
-          <AdminStatusText message={syncStatus} />
+          <div style={{ marginTop: 0, opacity: 0.85 }}>
+            <AdminStatusText message={syncStatus} />
+          </div>
         ) : syncStatus ? (
           <p style={{ marginTop: 0, opacity: 0.85 }}>{syncStatus}</p>
         ) : null}
