@@ -242,8 +242,8 @@ Program #1500 is complete when **all** of the following are true:
 
 | Seq | Child issue | Parent | Dependency | Agent | Status | Handoff target | P2 conflict | Codex risk | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 001 | `#1544` — Add pre-merge post-merge-readiness gate | `#1500` | none | Codex | Draft | `#1545` | Low | Medium | Ready after buildout merge + explicit assignment |
-| 002 | `#1545` — Consolidate duplicate post-merge closeout workflows | `#1500` | `#1544` | Codex | Blocked | `#1546` | Low | High | Confirm overlapping workflows before edit |
+| 001 | `#1544` — Add pre-merge post-merge-readiness gate | `#1500` | none | Codex | Merged | `#1545` | Low | Medium | Bill sign-off 2026-06-11; PR #1552 merged + closeout verified |
+| 002 | `#1545` — Consolidate duplicate post-merge closeout workflows | `#1500` | `#1544` | Codex | Ready | `#1546` | Low | High | PR #1567 open; assign on `#1545` before implementation |
 | 003 | `#1546` — Fix failure-path label hygiene | `#1500` | `#1545` | Codex | Blocked | `#1547` | Low | Medium | Label state machine tests required |
 | 004 | `#1547` — Automate remediation manifest cleanup | `#1500` | `#1546` | Codex | Blocked | `#1548` | Low | Medium | Safe prune semantics — no destructive manifest wipe |
 | 005 | `#1548` — Reconcile CI/orchestration docs and deprecated workflows | `#1500` | `#1544`–`#1547` | Either | Blocked | terminal | Low | Low | Docs after behavior stable |
