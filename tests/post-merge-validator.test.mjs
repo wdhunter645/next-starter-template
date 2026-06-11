@@ -7,6 +7,8 @@ import {
 	isRequiredMergeProtectionRun,
 	latestRunsByWorkflow,
 	metadataFailures,
+	preMergeReadinessBodyFailures,
+	preMergeReviewerDispositionFailures,
 	renderPostMergeReport,
 	resolvePrNumber,
 	reviewerFindings,
@@ -68,6 +70,35 @@ describe('post-merge PR resolution', () => {
 describe('post-merge metadata validation', () => {
 	it('passes metadata checks for a merged PR with source issue and required sections', () => {
 		expect(metadataFailures(mergedPr(), (file) => file === 'package.json')).toEqual([]);
+	});
+
+
+	it('shares pre-merge body contract checks with the readiness gate', () => {
+		const failures = preMergeReadinessBodyFailures(baseBody.replace('## CHANGE SUMMARY', '## SUMMARY'));
+
+		expect(failures).toContainEqual(expect.objectContaining({
+			code: 'missing_required_section',
+			message: expect.stringContaining('## CHANGE SUMMARY'),
+		}));
+	});
+
+	it('exports pre-merge reviewer disposition checks for the readiness gate', () => {
+		const failures = preMergeReviewerDispositionFailures({
+			body: baseBody,
+			issueComments: [{
+				id: 303,
+				user: { login: 'gemini-code-assist' },
+				body: 'P1 blocking: required governance section is missing.',
+				created_at: '2026-06-11T10:00:00Z',
+			}],
+			headSha: 'abc123',
+			readyForReviewAt: '2026-06-11T12:00:00Z',
+		});
+
+		expect(failures).toContainEqual(expect.objectContaining({
+			code: 'undispositioned_reviewer_comment',
+			commentId: '303',
+		}));
 	});
 
 	it('does not require removed files to exist in the merge checkout', () => {
