@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PageShell from '@/components/PageShell';
 import AdminNav from '@/components/admin/AdminNav';
+import AdminStatusText from '@/components/admin/AdminStatusText';
 import AdminTokenPanel from '@/components/admin/AdminTokenPanel';
-import { adminJson } from '@/lib/adminClient';
+import { adminJson, getStoredAdminToken } from '@/lib/adminClient';
 
 type MediaAsset = {
   id: number;
@@ -75,11 +76,31 @@ export default function AdminMediaAssetsPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [syncing, setSyncing] = useState<boolean>(false);
   const [items, setItems] = useState<MediaAsset[]>([]);
+  const [tokenReady, setTokenReady] = useState(false);
+  const loadRequestRef = useRef(0);
 
   const load = useCallback(async () => {
+    if (!getStoredAdminToken()) {
+      setItems([]);
+      setStatus('Save an admin API token above to load media assets.');
+      setLoading(false);
+      return;
+    }
+
+    const requestId = ++loadRequestRef.current;
     setLoading(true);
     setStatus('Loading…');
+
     const result = await adminJson<MediaListResponse>('/api/admin/media-assets/list?limit=100');
+
+    if (requestId !== loadRequestRef.current) {
+      return;
+    }
+
+    if (!getStoredAdminToken()) {
+      setLoading(false);
+      return;
+    }
 
     if (!result.ok) {
       setStatus(`Error: ${result.error}`);
@@ -97,6 +118,11 @@ export default function AdminMediaAssetsPage() {
   }, []);
 
   const syncFromB2 = useCallback(async () => {
+    if (!getStoredAdminToken()) {
+      setSyncStatus('Error: Save an admin API token above before syncing from B2.');
+      return;
+    }
+
     setSyncing(true);
     setSyncStatus('Syncing from B2…');
 
@@ -105,7 +131,7 @@ export default function AdminMediaAssetsPage() {
     });
 
     if (!result.ok) {
-      setSyncStatus(`Sync error: ${result.error}`);
+      setSyncStatus(`Error: ${result.error}`);
       setSyncing(false);
       return;
     }
@@ -119,27 +145,48 @@ export default function AdminMediaAssetsPage() {
   }, [load]);
 
   useEffect(() => {
-    void load();
+    if (getStoredAdminToken()) {
+      setTokenReady(true);
+      void load();
+    }
   }, [load]);
 
   return (
     <PageShell title="Media Assets" subtitle="D1 inventory of ingested media (B2 keys, size, etag)">
       <AdminNav />
-      <AdminTokenPanel onSaved={() => void load()} />
+      <AdminTokenPanel
+        onSaved={() => {
+          if (!getStoredAdminToken()) {
+            loadRequestRef.current += 1;
+            setTokenReady(false);
+            setLoading(false);
+            setItems([]);
+            setSyncStatus('');
+            setStatus('Save an admin API token above to load media assets.');
+            return;
+          }
+          setTokenReady(true);
+          void load();
+        }}
+      />
+
+      {!tokenReady ? (
+        <p style={{ marginTop: 16, opacity: 0.85 }}>Save an admin API token above to load media assets.</p>
+      ) : null}
 
       <div style={{ display: 'grid', gap: 14, marginTop: 16 }}>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           <button
             type="button"
             onClick={() => void load()}
-            disabled={loading}
+            disabled={loading || !tokenReady}
             style={{
               border: '1px solid #ddd',
               borderRadius: 10,
               padding: '10px 12px',
               fontWeight: 700,
-              cursor: loading ? 'not-allowed' : 'pointer',
-              background: loading ? 'rgba(0,0,0,0.05)' : 'white',
+              cursor: loading || !tokenReady ? 'not-allowed' : 'pointer',
+              background: loading || !tokenReady ? 'rgba(0,0,0,0.05)' : 'white',
             }}
           >
             {loading ? 'Loading…' : 'Refresh'}
@@ -148,22 +195,35 @@ export default function AdminMediaAssetsPage() {
           <button
             type="button"
             onClick={() => void syncFromB2()}
-            disabled={syncing}
+            disabled={syncing || !tokenReady}
             style={{
               border: '1px solid #ddd',
               borderRadius: 10,
               padding: '10px 12px',
               fontWeight: 700,
-              cursor: syncing ? 'not-allowed' : 'pointer',
-              background: syncing ? 'rgba(0,0,0,0.05)' : 'white',
+              cursor: syncing || !tokenReady ? 'not-allowed' : 'pointer',
+              background: syncing || !tokenReady ? 'rgba(0,0,0,0.05)' : 'white',
             }}
           >
             {syncing ? 'Syncing…' : 'Sync from B2'}
           </button>
         </div>
 
-        {status ? <p style={{ marginTop: 10, opacity: 0.85 }}>{status}</p> : null}
-        {syncStatus ? <p style={{ marginTop: 0, opacity: 0.85 }}>{syncStatus}</p> : null}
+        {status.startsWith('Error:') ? (
+          <div style={{ marginTop: 10, opacity: 0.85 }}>
+            <AdminStatusText message={status} />
+          </div>
+        ) : status ? (
+          <p style={{ marginTop: 10, opacity: 0.85 }}>{status}</p>
+        ) : null}
+
+        {syncStatus.startsWith('Error:') ? (
+          <div style={{ marginTop: 0, opacity: 0.85 }}>
+            <AdminStatusText message={syncStatus} />
+          </div>
+        ) : syncStatus ? (
+          <p style={{ marginTop: 0, opacity: 0.85 }}>{syncStatus}</p>
+        ) : null}
 
         <div style={{ display: 'grid', gap: 10 }}>
           {items.map((m) => (

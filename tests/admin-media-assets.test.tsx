@@ -1,10 +1,13 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AdminMediaAssetsPage from '@/app/admin/media-assets/page';
 import { onRequestGet as mediaListGet } from '../functions/api/admin/media-assets/list';
 import { onRequestPost as mediaSyncPost } from '../functions/api/admin/media-assets/sync-from-b2';
+import { onRequestGet as photosGet } from '../functions/api/photos/get';
+import { onRequestGet as photosListGet } from '../functions/api/photos/list';
 
 const mockUsePathname = vi.hoisted(() => vi.fn(() => '/admin/media-assets'));
 
@@ -124,6 +127,54 @@ describe('admin media assets page', () => {
     );
   });
 
+  it('does not fetch media inventory until a token is stored', async () => {
+    window.localStorage.removeItem('lgfc_admin_token');
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+
+    render(<AdminMediaAssetsPage />);
+
+    expect(screen.getByText('Save an admin API token above to load media assets.')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+  });
+
+  it('announces inventory list API failures to assistive technology', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse({ ok: false, error: 'Database unavailable' }, 503) as never,
+    );
+
+    render(<AdminMediaAssetsPage />);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/error: database unavailable/i);
+  });
+
+  it('clears inventory when the admin token is removed', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse({
+        ok: true,
+        items: [{ id: 7, media_uid: 'b2_abc', b2_key: 'photos/lou.jpg', size: 42 }],
+      }),
+    );
+
+    render(<AdminMediaAssetsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('photos/lou.jpg')).toBeInTheDocument();
+    });
+
+    const tokenInput = screen.getByLabelText('Admin token');
+    await userEvent.clear(tokenInput);
+    await userEvent.click(screen.getByRole('button', { name: 'Save token' }));
+
+    await waitFor(() => {
+      expect(window.localStorage.getItem('lgfc_admin_token')).toBeNull();
+      expect(screen.queryByText('photos/lou.jpg')).not.toBeInTheDocument();
+    });
+    expect(screen.getAllByText('Save an admin API token above to load media assets.').length).toBeGreaterThan(0);
+  });
+
   it('posts B2 sync, reports changes, and refreshes inventory', async () => {
     let listCalls = 0;
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
@@ -185,9 +236,8 @@ describe('admin media assets page', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Sync from B2' }));
 
-    await waitFor(() => {
-      expect(screen.getByText('Sync error: B2 secrets missing for this Pages environment')).toBeInTheDocument();
-    });
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/error: b2 secrets missing for this pages environment/i);
   });
 });
 
@@ -281,6 +331,89 @@ describe('media assets admin API', () => {
     await expect(response.json()).resolves.toMatchObject({
       ok: false,
       error: 'B2 secrets missing for this Pages environment',
+    });
+  });
+});
+
+describe('public photos read contract', () => {
+  function makePhotosDb(rows: Array<Record<string, unknown>> = []) {
+    return {
+      prepare: vi.fn((sql: string) => ({
+        bind: (...args: unknown[]) => ({
+          all: async () => {
+            if (sql.includes('LIMIT ? OFFSET ?')) {
+              const limit = Number(args[0]);
+              const offset = Number(args[1]);
+              return { results: rows.slice(offset, offset + limit) };
+            }
+            return { results: rows };
+          },
+          first: async () => rows.find((row) => Number(row.id) === Number(args[0])) ?? null,
+        }),
+      })),
+    };
+  }
+
+  it('returns normalized photo URLs from the list endpoint', async () => {
+    const response = await photosListGet({
+      request: new Request('https://www.lougehrigfanclub.com/api/photos/list?limit=10'),
+      env: {
+        DB: makePhotosDb([
+          {
+            id: 1,
+            url: 'photos/lou.jpg',
+            is_memorabilia: 0,
+            description: 'Lou',
+            created_at: '2026-06-01T00:00:00Z',
+          },
+        ]),
+        PUBLIC_B2_BASE_URL: 'https://cdn.example.com/lgfc',
+      },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      items: [{ id: 1, url: 'https://cdn.example.com/lgfc/photos/lou.jpg' }],
+    });
+  });
+
+  it('returns 404 from the get endpoint when the photo is missing', async () => {
+    const response = await photosGet({
+      request: new Request('https://www.lougehrigfanclub.com/api/photos/get?id=404'),
+      env: { DB: makePhotosDb() },
+      params: { id: '404' },
+    });
+
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: 'Not found',
+    });
+  });
+
+  it('returns a normalized photo from the get endpoint', async () => {
+    const response = await photosGet({
+      request: new Request('https://www.lougehrigfanclub.com/api/photos/get?id=2'),
+      env: {
+        DB: makePhotosDb([
+          {
+            id: 2,
+            url: 'photos/eleanor.jpg',
+            is_memorabilia: 1,
+            description: 'Eleanor',
+            created_at: '2026-06-01T00:00:00Z',
+          },
+        ]),
+        PUBLIC_B2_BASE_URL: 'https://cdn.example.com/lgfc',
+      },
+      params: { id: '2' },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      item: { id: 2, url: 'https://cdn.example.com/lgfc/photos/eleanor.jpg' },
     });
   });
 });
