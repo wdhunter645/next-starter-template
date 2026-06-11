@@ -78,7 +78,7 @@ Codex must confirm:
 
 Codex must not claim completion from local-only state.
 
-For PR remediation work, before claiming complete Codex must verify:
+For PR remediation work, before claiming completion, Codex must verify:
 
 - local branch SHA equals live PR head SHA;
 - live PR body matches the intended final state;
