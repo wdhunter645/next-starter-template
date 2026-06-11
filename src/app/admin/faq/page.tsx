@@ -110,8 +110,12 @@ export default function AdminFaqPage() {
   useEffect(() => {
     if (!tokenReady) return;
     if (tab === 'ask') void loadAsk();
-    else void loadFaq();
-  }, [tab, tokenReady, loadAsk, loadFaq]);
+  }, [tab, tokenReady, loadAsk]);
+
+  useEffect(() => {
+    if (!tokenReady) return;
+    if (tab === 'faq') void loadFaq();
+  }, [tab, tokenReady, loadFaq]);
 
   async function askAction(path: string, id: number, body: Record<string, unknown>) {
     setStatus('Saving…');
@@ -124,7 +128,6 @@ export default function AdminFaqPage() {
       return;
     }
     await loadAsk();
-    setStatus('');
   }
 
   async function saveFaq(row: FaqRow) {
@@ -144,7 +147,6 @@ export default function AdminFaqPage() {
       return;
     }
     await loadFaq();
-    setStatus('');
   }
 
   async function createFaq() {
