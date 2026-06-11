@@ -18,9 +18,12 @@ describe('post-merge closeout all manifests', () => {
 		expect(targets.every((target) => target.skip_body_apply !== true)).toBe(true);
 	});
 
-	it('allows an empty CI pending manifest when backlog is fully cleared', () => {
+	it('loads CI pending manifest targets when closeout backlog items remain', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending.json');
-		expect(targets).toEqual([]);
+		expect(targets.map((target) => target.pr)).toEqual([1577]);
+		expect(targets.every((target) => target.body_file && target.merge_sha && target.source_issue)).toBe(
+			true,
+		);
 	});
 
 	it('loads remediation backlog targets', () => {
