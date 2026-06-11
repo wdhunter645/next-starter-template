@@ -190,10 +190,7 @@ export default function AdminEditorialArchivePage() {
   const [inventory, setInventory] = useState<InventoryRecord[]>([]);
   const [submissionFilter, setSubmissionFilter] = useState<SubmissionFilter>('pending');
   const [inventoryFilter, setInventoryFilter] = useState<InventoryFilter>('all');
-  const [tokenReady, setTokenReady] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return Boolean(getStoredAdminToken());
-  });
+  const [tokenReady, setTokenReady] = useState(false);
   const loadRequestRef = useRef(0);
 
   const load = useCallback(async () => {
@@ -437,14 +434,15 @@ export default function AdminEditorialArchivePage() {
               ))}
             </select>
           </label>
-          {status.startsWith('Error:') ? (
-            <div style={{ opacity: 0.85 }}>
-              <AdminStatusText message={status} />
-            </div>
-          ) : (
-            <span style={{ opacity: 0.85 }}>{status}</span>
-          )}
         </div>
+
+        {status.startsWith('Error:') ? (
+          <div style={{ opacity: 0.85 }}>
+            <AdminStatusText message={status} />
+          </div>
+        ) : status ? (
+          <p style={{ margin: 0, opacity: 0.85 }}>{status}</p>
+        ) : null}
 
         <CreateStorySection onSave={saveInventory} actionsEnabled={tokenReady} />
 
