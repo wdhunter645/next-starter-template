@@ -50,7 +50,9 @@ export function planFailureSourceIssueRelabel({ issueLabels = [], repoLabels = [
 			.filter(Boolean),
 	);
 
-	const removeLabels = STALE_SOURCE_ISSUE_LABELS.filter((label) => labels.has(label));
+	const removeLabels = STALE_SOURCE_ISSUE_LABELS.filter(
+		(label) => label !== FAILURE_SOURCE_ISSUE_LABEL && labels.has(label),
+	);
 	const addLabel =
 		availableLabels.has(FAILURE_SOURCE_ISSUE_LABEL) && !labels.has(FAILURE_SOURCE_ISSUE_LABEL)
 			? FAILURE_SOURCE_ISSUE_LABEL

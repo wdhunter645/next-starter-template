@@ -26,13 +26,13 @@ function writeCloseoutOutput(name, value) {
 	if (outputPath) fs.appendFileSync(outputPath, `${name}=${value}\n`);
 }
 
-export function toSyncPr({ pr }) {
+export function toSyncPr({ pr } = {}) {
 	return {
-		body: pr.body || '',
-		url: pr.html_url || pr.url || '',
-		mergedAt: pr.merged_at || pr.mergedAt || '',
-		state: pr.merged_at || pr.mergedAt ? 'MERGED' : pr.state || '',
-		mergeCommit: { oid: pr.merge_commit_sha || pr.mergeCommit?.oid || '' },
+		body: pr?.body || '',
+		url: pr?.html_url || pr?.url || '',
+		mergedAt: pr?.merged_at || pr?.mergedAt || '',
+		state: pr?.merged_at || pr?.mergedAt ? 'MERGED' : pr?.state || '',
+		mergeCommit: { oid: pr?.merge_commit_sha || pr?.mergeCommit?.oid || '' },
 	};
 }
 

@@ -159,7 +159,7 @@ export function syncPrState({
       ) {
         const relabelPlan = planActiveSourceIssueRelabel({ issueLabels: meta.labels || [] });
         reconcileTerminalLabelsFn(issueNumber, relabelPlan);
-        const mergeSha = postMergeResult?.merge_sha || pr.mergeCommit?.oid || '';
+        const mergeSha = postMergeResult?.merge_sha || pr?.mergeCommit?.oid || '';
         const closeoutComment = buildSourceIssueCloseoutComment({
           prNumber,
           mergeSha,
@@ -182,7 +182,7 @@ export function syncPrState({
 
     reconcileTerminalLabelsFn(issueNumber, terminalLabelResult);
 
-    const mergeSha = postMergeResult?.merge_sha || pr.mergeCommit?.oid || '';
+    const mergeSha = postMergeResult?.merge_sha || pr?.mergeCommit?.oid || '';
     const closeoutComment = buildSourceIssueCloseoutComment({
       prNumber,
       mergeSha,
@@ -211,7 +211,7 @@ export function syncPrState({
     });
     reconcileTerminalLabelsFn(issueNumber, failureLabelResult);
 
-    const mergeSha = postMergeResult?.merge_sha || pr.mergeCommit?.oid || '';
+    const mergeSha = postMergeResult?.merge_sha || pr?.mergeCommit?.oid || '';
     const failureComment = buildFailureCloseoutComment({
       prNumber,
       mergeSha,

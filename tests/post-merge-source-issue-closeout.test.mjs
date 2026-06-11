@@ -247,6 +247,19 @@ describe('source issue closeout evidence', () => {
 		});
 	});
 
+	it('preserves status:failed when already present on the source issue', () => {
+		const plan = planFailureSourceIssueRelabel({
+			issueLabels: ['orchestrator', 'status:post-merge-verify', 'status:failed'],
+			repoLabels: ['status:failed', 'status:complete'],
+		});
+
+		expect(plan).toMatchObject({
+			ok: true,
+			removeLabels: ['status:post-merge-verify'],
+			addLabel: '',
+		});
+	});
+
 	it('renders failure closeout evidence without claiming success', () => {
 		const comment = buildFailureCloseoutComment({
 			prNumber: '1567',
