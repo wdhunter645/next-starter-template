@@ -327,7 +327,7 @@ export default function AdminCMS() {
                 <button
                   type="button"
                   onClick={() => void publish()}
-                  disabled={!selectedKey}
+                  disabled={!selected}
                   style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid #ccc', cursor: 'pointer' }}
                 >
                   Publish
