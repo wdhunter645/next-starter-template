@@ -6,7 +6,7 @@ Owns: LGFC merge-protection required check surface, consolidated deterministic b
 Does Not Own: GitHub branch protection settings UI, reviewer lifecycle gates, PR hygiene advisories, OPS runtime workflows
 Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
 Related Issues: #1226, #1195, #1075, #1058
-Last Reviewed: 2026-06-03
+Last Reviewed: 2026-06-11
 ---
 
 # LGFC Merge Protection Surface
@@ -14,8 +14,10 @@ Last Reviewed: 2026-06-03
 ## Purpose
 
 This reference documents the deterministic pre-merge blockers consolidated in
-CI Task 002. Merge protection should block only machine-provable merge-safety
-failures that are locally attributable to the pull request.
+CI Task 002, with Program #1500 Task 001 adding the pre-merge
+post-merge-readiness blocker. Merge protection should block only
+machine-provable merge-safety failures that are locally attributable to the
+pull request.
 
 ## Consolidated Workflows
 
@@ -24,6 +26,7 @@ failures that are locally attributable to the pull request.
 | `gate-quality.yml` | `GATE — Quality Checks` | `quality` | Structure guard, backend guard, tracked-ZIP block, PR-range ZIP taint block, typecheck, lint, unit tests, production build |
 | `gitleaks.yml` | `GATE — Secret Scan` | `gitleaks` | Secret exposure scan |
 | `ops-pr-issue-accounting.yml` | `GATE — PR Issue Accounting` | `pr-issue-accounting` | Exactly one same-repository source Issue |
+| `gate-post-merge-readiness.yml` | `GATE — Post-Merge Readiness` | `post-merge-readiness` | PR body sections, declared allowlist, forbidden placeholders, and trusted-reviewer dispositions required for post-merge closeout |
 
 ## Retired Duplicate Blockers
 
@@ -47,13 +50,16 @@ Configure `main` branch protection required status checks using these job ids:
 - `quality`
 - `gitleaks`
 - `pr-issue-accounting`
+- `post-merge-readiness`
 
 Remove retired checks if they are still listed:
 
 - `check-no-zip-files`
 
 Do not add OPS runtime, PR hygiene advisory, or reviewer lifecycle workflows to
-required status checks unless they are explicitly reclassified.
+required status checks unless they are explicitly reclassified. Operator action
+required after Program #1500 Task 001 merge: add `post-merge-readiness` to the
+`main` branch-protection required status checks.
 
 ## Validation
 

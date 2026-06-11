@@ -6,7 +6,7 @@ Owns: Cursor procedure for opening a task PR after review approval
 Does Not Own: Merge authority or GitHub issue closeout
 Canonical Reference: /docs/how-to/cursor/prepare-review-packet.md
 Related Issues: #1449, #1351
-Last Reviewed: 2026-06-08
+Last Reviewed: 2026-06-11
 ---
 
 # Open a Task PR
@@ -59,12 +59,20 @@ The PR body must explicitly include:
   continue/halt decision (`continue` / `halt` / `not-applicable`); use
   `not-applicable` for all three fields on one-off tasks or programs without an
   approved dependency map
+- **Post-merge readiness contract** — before marking a PR ready for review, make
+  sure the body contains the required post-merge closeout sections, exact
+  file-touch allowlist, no `TODO`/`TBD`/`placeholder` tokens, and explicit
+  trusted-reviewer dispositions in the `review-comment:<id>` format when the
+  reviewer-response surface requires them
 
 ## Validation
 
 Before opening the PR, run the validation commands named in the source issue. When
 repo-wide checks fail only on known pre-existing out-of-scope files, disclose that
-in the PR body without fixing unrelated paths.
+in the PR body without fixing unrelated paths. After the PR opens, the
+`post-merge-readiness` job is expected to block merge until the PR body, changed
+files, and trusted-reviewer disposition evidence satisfy the post-merge closeout
+contract.
 
 ## Stop Conditions
 

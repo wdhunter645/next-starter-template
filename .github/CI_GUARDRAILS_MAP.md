@@ -26,7 +26,7 @@ As-built reconciliation for the `#1075` CI redesign is maintained in
 
 This map remains the operational guardrails reference; when design intent and merged workflow behavior diverge, the reconciliation document is authoritative for variance tracking.
 
-**Last reconciliation review:** 2026-06-03 (Tasks 001–005 merged)
+**Last reconciliation review:** 2026-06-11 (Program #1500 Task 001 gate added)
 
 ## Table of Contents
 
@@ -73,6 +73,7 @@ The table below is the canonical inventory of all GitHub Actions workflows in `.
 | `gate-intent-labeler.yml` | GATE — Intent Labeler | Effective | Validates/applies PR intent labeling against file-touch governance allowlists. |
 | `gate-branch-freshness.yml` | GATE — Branch Freshness | Effective | Fails when a PR branch or feature-branch push is behind `main`; does not auto-merge. |
 | `gate-quality.yml` | GATE — Quality Checks | Effective | Runs blocking lint/test/build, consolidated ZIP safety checks, and related quality gates. |
+| `gate-post-merge-readiness.yml` | GATE — Post-Merge Readiness | Effective | Blocks PRs whose current body/files/reviewer dispositions would fail post-merge closeout metadata checks. |
 | `gitleaks.yml` | GATE — Secret Scan | Effective | Scans commits and repository content for hardcoded secrets. |
 | `lgfc-d1-migrate.yml` | LGFC D1 Migrate (remote) | Effective | Executes remote D1 migration operations for LGFC environments. |
 | `lgfc-validate.yml` | Legacy LGFC-main Workflow (Parked) | Ineffective (Parked) | Historical validation flow retained for continuity and audit context. |
@@ -401,7 +402,32 @@ See `/.github/platform-intent-and-zip-governance.md` for intent governance and Z
 
 ## Security Workflows
 
-### 8. Secret Scan (`gitleaks.yml`)
+### 8. Post-Merge Readiness (`gate-post-merge-readiness.yml`)
+
+**Workflow name:** GATE — Post-Merge Readiness
+
+**Purpose:** Fail PRs before merge when their current PR body, file-touch allowlist,
+forbidden placeholder tokens, or trusted-reviewer dispositions would fail
+post-merge closeout validation.
+
+**Triggers:** `pull_request_target`, trusted-review/comment events, and manual
+`workflow_dispatch` for a PR number.
+
+**Blocking job id:** `post-merge-readiness`
+
+**What it validates:**
+- Required post-merge closeout PR body sections are present.
+- The declared file-touch allowlist covers the changed files.
+- Forbidden placeholder tokens are not left in the PR body.
+- Trusted reviewer findings and outdated threads have required PR-body
+  disposition entries.
+
+**Enforcement:** ✅ **BLOCKING** - Add `post-merge-readiness` to branch
+protection after the workflow lands.
+
+---
+
+### 9. Secret Scan (`gitleaks.yml`)
 
 **Workflow name:** GATE — Secret Scan
 
@@ -424,7 +450,7 @@ See `/.github/platform-intent-and-zip-governance.md` for intent governance and Z
 
 ---
 
-### 9. ZIP Safety (consolidated in `gate-quality.yml`)
+### 10. ZIP Safety (consolidated in `gate-quality.yml`)
 
 **Purpose:** Prevent ZIP files from entering the repository tree or PR diffs  
 **Triggers:** `pull_request`, `push` (via `gate-quality.yml`)

@@ -1,0 +1,115 @@
+name: GATE — Post-Merge Readiness
+
+on:
+  pull_request_target:
+    types: [opened, reopened, edited, synchronize, ready_for_review]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  pull_request_review_comment:
+    types: [created, edited, deleted]
+  issue_comment:
+    types: [created, edited, deleted]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to evaluate
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+
+jobs:
+  post-merge-readiness:
+    name: post-merge-readiness
+    runs-on: ubuntu-latest
+    concurrency:
+      group: post-merge-readiness-${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
+      cancel-in-progress: true
+    steps:
+      - name: Resolve pull request number
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const pr = context.payload.pull_request;
+            const inputPr = core.getInput('pr_number');
+
+            if (context.eventName === 'issue_comment' && !issue?.pull_request?.url) {
+              core.info('Issue comment is not associated with a pull request; skipping post-merge readiness gate.');
+              core.setOutput('skip', 'true');
+              return;
+            }
+
+            const prNumber = pr?.number || (issue?.pull_request ? issue.number : null) || inputPr;
+            if (!prNumber) {
+              core.info('No pull request context; skipping post-merge readiness gate.');
+              core.setOutput('skip', 'true');
+              return;
+            }
+
+            core.setOutput('skip', 'false');
+            core.setOutput('number', String(prNumber));
+
+      - name: Checkout gate implementation
+        if: steps.pr.outputs.skip != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup Node
+        if: steps.pr.outputs.skip != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - name: Collect pull request readiness inputs
+        if: steps.pr.outputs.skip != 'true'
+        uses: actions/github-script@v7
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        with:
+          script: |
+            const fs = require('node:fs');
+            const path = require('node:path');
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pull_number = Number(process.env.PR_NUMBER);
+            const outDir = '.post-merge-readiness-gate';
+            fs.mkdirSync(outDir, { recursive: true });
+
+            const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number });
+            const files = await github.paginate(github.rest.pulls.listFiles, { owner, repo, pull_number, per_page: 100 });
+            const issueComments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number: pull_number, per_page: 100 });
+            const reviewComments = await github.paginate(github.rest.pulls.listReviewComments, { owner, repo, pull_number, per_page: 100 });
+            const reviews = await github.paginate(github.rest.pulls.listReviews, { owner, repo, pull_number, per_page: 100 });
+
+            const normalizedPr = {
+              number: pr.number,
+              body: pr.body || '',
+              draft: pr.draft,
+              base: pr.base,
+              head: pr.head,
+              created_at: pr.created_at,
+              updated_at: pr.updated_at,
+            };
+
+            fs.writeFileSync(path.join(outDir, 'pr.json'), JSON.stringify(normalizedPr, null, 2));
+            fs.writeFileSync(path.join(outDir, 'files.json'), JSON.stringify(files, null, 2));
+            fs.writeFileSync(path.join(outDir, 'issue-comments.json'), JSON.stringify(issueComments, null, 2));
+            fs.writeFileSync(path.join(outDir, 'review-comments.json'), JSON.stringify(reviewComments, null, 2));
+            fs.writeFileSync(path.join(outDir, 'reviews.json'), JSON.stringify(reviews, null, 2));
+
+      - name: Run post-merge readiness gate
+        if: steps.pr.outputs.skip != 'true'
+        run: >-
+          node scripts/ci/post_merge_readiness_gate.mjs
+          --pr .post-merge-readiness-gate/pr.json
+          --files .post-merge-readiness-gate/files.json
+          --issue-comments .post-merge-readiness-gate/issue-comments.json
+          --review-comments .post-merge-readiness-gate/review-comments.json
+          --reviews .post-merge-readiness-gate/reviews.json
+          --repository "${GITHUB_REPOSITORY}"
+          --output .post-merge-readiness-gate/result.json
