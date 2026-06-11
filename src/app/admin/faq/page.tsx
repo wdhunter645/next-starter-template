@@ -3,6 +3,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import PageShell from '@/components/PageShell';
 import AdminNav from '@/components/admin/AdminNav';
+import AdminStatusText from '@/components/admin/AdminStatusText';
+import AdminTokenPanel from '@/components/admin/AdminTokenPanel';
+import { adminJson, getStoredAdminToken, isRecord } from '@/lib/adminClient';
+import styles from '@/components/admin/AdminDashboard.module.css';
 
 type FaqRow = {
   id: number;
@@ -28,36 +32,15 @@ type AskRow = {
   created_at?: string;
 };
 
-function getToken(): string {
-  if (typeof window === 'undefined') return '';
-  return window.localStorage.getItem('lgfc_admin_token') || '';
-}
-
-function persistToken(value: string) {
-  if (typeof window === 'undefined') return;
-  window.localStorage.setItem('lgfc_admin_token', value);
-}
-
-function isRecord(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null;
-}
-
-async function adminFetch(path: string, token: string, init?: RequestInit) {
-  return fetch(path, {
-    ...init,
-    headers: {
-      ...(init?.headers || {}),
-      'x-admin-token': token,
-      ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
-    },
-    cache: 'no-store',
-  });
-}
+type ItemsResponse<T> = {
+  ok: true;
+  items?: T[];
+};
 
 export default function AdminFaqPage() {
-  const [token, setToken] = useState('');
   const [status, setStatus] = useState('');
   const [tab, setTab] = useState<'ask' | 'faq'>('ask');
+  const [tokenReady, setTokenReady] = useState(false);
 
   const [askFilter, setAskFilter] = useState<'pending' | 'approved' | 'rejected' | 'archived'>('pending');
   const [askItems, setAskItems] = useState<AskRow[]>([]);
@@ -72,45 +55,43 @@ export default function AdminFaqPage() {
   const [draftPinned, setDraftPinned] = useState(false);
 
   useEffect(() => {
-    setToken(getToken());
+    if (getStoredAdminToken()) {
+      setTokenReady(true);
+    }
   }, []);
 
   const loadAsk = useCallback(async () => {
-    if (!token) {
-      setStatus('Enter ADMIN_TOKEN to load ask inbox.');
+    if (!getStoredAdminToken()) {
+      setStatus('Save an admin API token above to load ask inbox.');
       return;
     }
     setStatus('Loading ask inbox…');
-    const res = await adminFetch(`/api/admin/ask/list?status=${askFilter}`, token);
-    const data: unknown = await res.json().catch(() => null);
-    if (!isRecord(data) || data.ok !== true) {
-      const err = isRecord(data) && typeof data.error === 'string' ? data.error : `HTTP ${res.status}`;
-      setStatus(`Ask inbox error: ${err}`);
+    const result = await adminJson<ItemsResponse<AskRow>>(`/api/admin/ask/list?status=${askFilter}`);
+    if (!result.ok || !result.data) {
+      setStatus(`Error: ${result.error}`);
       setAskItems([]);
       return;
     }
-    const rows = Array.isArray(data.items) ? (data.items as AskRow[]) : [];
+    const rows = Array.isArray(result.data.items) ? result.data.items : [];
     setAskItems(rows);
     setStatus('');
-  }, [askFilter, token]);
+  }, [askFilter]);
 
   const loadFaq = useCallback(async () => {
-    if (!token) {
-      setStatus('Enter ADMIN_TOKEN to load FAQs.');
+    if (!getStoredAdminToken()) {
+      setStatus('Save an admin API token above to load FAQs.');
       return;
     }
     setStatus('Loading FAQs…');
     const query = faqFilter === 'all' ? '' : `?status=${faqFilter}`;
-    const res = await adminFetch(`/api/admin/faq/list${query}`, token);
-    const data: unknown = await res.json().catch(() => null);
-    if (!isRecord(data) || data.ok !== true) {
-      const err = isRecord(data) && typeof data.error === 'string' ? data.error : `HTTP ${res.status}`;
-      setStatus(`FAQ error: ${err}`);
+    const result = await adminJson<ItemsResponse<Record<string, unknown>>>(`/api/admin/faq/list${query}`);
+    if (!result.ok || !result.data) {
+      setStatus(`Error: ${result.error}`);
       setFaqItems([]);
       return;
     }
-    const rows = (Array.isArray(data.items) ? data.items : []).map((raw) => {
-      const row = raw as Record<string, unknown>;
+    const rows = (Array.isArray(result.data.items) ? result.data.items : []).map((raw) => {
+      const row = isRecord(raw) ? raw : {};
       return {
         id: Number(row.id),
         question: String(row.question ?? ''),
@@ -124,36 +105,34 @@ export default function AdminFaqPage() {
     });
     setFaqItems(rows.filter((row) => Number.isFinite(row.id)));
     setStatus('');
-  }, [faqFilter, token]);
+  }, [faqFilter]);
 
   useEffect(() => {
-    if (!token) return;
+    if (!tokenReady) return;
     if (tab === 'ask') void loadAsk();
-    else void loadFaq();
-    // Load on tab change only; use Refresh after updating ADMIN_TOKEN to avoid partial-token 401s.
-  }, [tab, loadAsk, loadFaq]);
+  }, [tab, tokenReady, loadAsk]);
+
+  useEffect(() => {
+    if (!tokenReady) return;
+    if (tab === 'faq') void loadFaq();
+  }, [tab, tokenReady, loadFaq]);
 
   async function askAction(path: string, id: number, body: Record<string, unknown>) {
-    if (!token) return;
     setStatus('Saving…');
-    const res = await adminFetch(path, token, {
+    const result = await adminJson<{ ok: true }>(path, {
       method: 'POST',
       body: JSON.stringify({ id, ...body }),
     });
-    const data: unknown = await res.json().catch(() => null);
-    if (!isRecord(data) || data.ok !== true) {
-      const err = isRecord(data) && typeof data.error === 'string' ? data.error : `HTTP ${res.status}`;
-      setStatus(`Error: ${err}`);
+    if (!result.ok) {
+      setStatus(`Error: ${result.error}`);
       return;
     }
     await loadAsk();
-    setStatus('');
   }
 
   async function saveFaq(row: FaqRow) {
-    if (!token) return;
     setStatus('Saving FAQ…');
-    const res = await adminFetch('/api/admin/faq/update', token, {
+    const result = await adminJson<{ ok: true }>('/api/admin/faq/update', {
       method: 'POST',
       body: JSON.stringify({
         id: row.id,
@@ -163,20 +142,16 @@ export default function AdminFaqPage() {
         pinned: row.pinned ? 1 : 0,
       }),
     });
-    const data: unknown = await res.json().catch(() => null);
-    if (!isRecord(data) || data.ok !== true) {
-      const err = isRecord(data) && typeof data.error === 'string' ? data.error : `HTTP ${res.status}`;
-      setStatus(`Error: ${err}`);
+    if (!result.ok) {
+      setStatus(`Error: ${result.error}`);
       return;
     }
     await loadFaq();
-    setStatus('');
   }
 
   async function createFaq() {
-    if (!token) return;
     setStatus('Creating FAQ…');
-    const res = await adminFetch('/api/admin/faq/create', token, {
+    const result = await adminJson<{ ok: true }>('/api/admin/faq/create', {
       method: 'POST',
       body: JSON.stringify({
         question: draftQuestion,
@@ -185,10 +160,8 @@ export default function AdminFaqPage() {
         pinned: draftPinned ? 1 : 0,
       }),
     });
-    const data: unknown = await res.json().catch(() => null);
-    if (!isRecord(data) || data.ok !== true) {
-      const err = isRecord(data) && typeof data.error === 'string' ? data.error : `HTTP ${res.status}`;
-      setStatus(`Error: ${err}`);
+    if (!result.ok) {
+      setStatus(`Error: ${result.error}`);
       return;
     }
     setDraftQuestion('');
@@ -200,16 +173,14 @@ export default function AdminFaqPage() {
   }
 
   async function deleteFaq(id: number) {
-    if (!token || !window.confirm('Mark this FAQ as denied (removed from public)?')) return;
+    if (!window.confirm('Mark this FAQ as denied (removed from public)?')) return;
     setStatus('Deleting…');
-    const res = await adminFetch('/api/admin/faq/delete', token, {
+    const result = await adminJson<{ ok: true }>('/api/admin/faq/delete', {
       method: 'POST',
       body: JSON.stringify({ id }),
     });
-    const data: unknown = await res.json().catch(() => null);
-    if (!isRecord(data) || data.ok !== true) {
-      const err = isRecord(data) && typeof data.error === 'string' ? data.error : `HTTP ${res.status}`;
-      setStatus(`Error: ${err}`);
+    if (!result.ok) {
+      setStatus(`Error: ${result.error}`);
       return;
     }
     await loadFaq();
@@ -218,33 +189,45 @@ export default function AdminFaqPage() {
 
   const askCountLabel = useMemo(() => `${askItems.length} item(s)`, [askItems.length]);
 
+  function handleTokenSaved() {
+    if (!getStoredAdminToken()) {
+      setTokenReady(false);
+      setAskItems([]);
+      setFaqItems([]);
+      setStatus('');
+      return;
+    }
+    if (tokenReady) {
+      if (tab === 'ask') void loadAsk();
+      else void loadFaq();
+    } else {
+      setTokenReady(true);
+    }
+  }
+
   return (
     <PageShell title="Admin • FAQ Moderation" subtitle="Ask inbox triage and FAQ publishing">
       <AdminNav />
 
-      <div style={{ display: 'grid', gap: 12, maxWidth: 1040 }}>
-        <label style={{ display: 'grid', gap: 6 }}>
-          <span style={{ fontWeight: 600 }}>ADMIN_TOKEN</span>
-          <input
-            value={token}
-            onChange={(e) => {
-              setToken(e.target.value);
-              persistToken(e.target.value);
-            }}
-            placeholder="Paste ADMIN_TOKEN"
-            style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
-          />
-        </label>
+      <div className={styles.wrap}>
+        <AdminTokenPanel onSaved={handleTokenSaved} />
 
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
           <button type="button" onClick={() => setTab('ask')} style={{ fontWeight: tab === 'ask' ? 700 : 400 }}>
             Ask Inbox
           </button>
           <button type="button" onClick={() => setTab('faq')} style={{ fontWeight: tab === 'faq' ? 700 : 400 }}>
             FAQ CMS
           </button>
-          {status ? <span style={{ opacity: 0.85 }}>{status}</span> : null}
         </div>
+
+        {status ? (
+          status.startsWith('Error:') ? (
+            <AdminStatusText message={status} className={styles.status} />
+          ) : (
+            <p className={styles.status}>{status}</p>
+          )
+        ) : null}
 
         {tab === 'ask' ? (
           <>
@@ -259,7 +242,7 @@ export default function AdminFaqPage() {
                   {value}
                 </button>
               ))}
-              <button type="button" onClick={() => void loadAsk()}>
+              <button type="button" onClick={() => void loadAsk()} disabled={!tokenReady}>
                 Refresh
               </button>
               <span style={{ opacity: 0.75 }}>{askCountLabel}</span>
@@ -356,7 +339,11 @@ export default function AdminFaqPage() {
                   )}
                 </div>
               ))}
-              {askItems.length === 0 ? <p className="sub">No ask inbox entries in this queue.</p> : null}
+              {!tokenReady ? (
+                <p className="sub">Save an admin API token above to load ask inbox.</p>
+              ) : askItems.length === 0 ? (
+                <p className="sub">No ask inbox entries in this queue.</p>
+              ) : null}
             </div>
           </>
         ) : (
@@ -396,7 +383,7 @@ export default function AdminFaqPage() {
                 />
                 Pin on publish
               </label>
-              <button type="button" style={{ marginTop: 12 }} onClick={() => void createFaq()}>
+              <button type="button" style={{ marginTop: 12 }} onClick={() => void createFaq()} disabled={!tokenReady}>
                 Create FAQ
               </button>
             </div>
@@ -412,7 +399,7 @@ export default function AdminFaqPage() {
                   {value}
                 </button>
               ))}
-              <button type="button" onClick={() => void loadFaq()}>
+              <button type="button" onClick={() => void loadFaq()} disabled={!tokenReady}>
                 Refresh
               </button>
             </div>
@@ -432,7 +419,11 @@ export default function AdminFaqPage() {
                   onDelete={() => void deleteFaq(item.id)}
                 />
               ))}
-              {faqItems.length === 0 ? <p className="sub">No FAQ entries in this filter.</p> : null}
+              {!tokenReady ? (
+                <p className="sub">Save an admin API token above to load FAQs.</p>
+              ) : faqItems.length === 0 ? (
+                <p className="sub">No FAQ entries in this filter.</p>
+              ) : null}
             </div>
           </>
         )}
