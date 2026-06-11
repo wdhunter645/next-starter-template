@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: Program #1500 serial implementation queue, child-task specifications, continuous work process rules, and agent assignment guidance for CI/orchestration closeout stabilization
 Does Not Own: Workflow implementation, merge authority, GitHub issue mutation during normal task execution, or Program #1255 website implementation scope
 Canonical Reference: /docs/ops/pmo/program-registry.md
-Related Issues: #1500, #1255, #1058, #1075
+Related issues: #1500, #1255, #1058, #1075
 Last Reviewed: 2026-06-11
 ---
 
@@ -25,7 +25,7 @@ Last Reviewed: 2026-06-11
 | **Source issue** | `#1500` |
 | **Program purpose** | Restore deterministic post-merge closeout: shift-left PR-body contract enforcement, eliminate duplicate closeout races, reconcile failure-path labels, automate remediation manifest cleanup, and reconcile CI/orchestration documentation with as-built behavior |
 | **Execution mode** | Launched-program queue — **serial only** |
-| **Project slug** | `program-1500-closeout-stabilization` |
+| **project slug** | `program-1500-closeout-stabilization` |
 | **Predecessor programs** | CI redesign Tasks 001–006 (`#1075`), post-merge hardening (`#1238` / PR `#1241`) |
 | **PMO registry** | `docs/ops/pmo/program-registry.md` |
 | **Orchestration model** | `docs/how-to/ci/lgfc-ci-orchestration-issue-model.md` |
