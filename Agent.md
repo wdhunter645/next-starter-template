@@ -10,23 +10,42 @@ Last Reviewed: 2026-06-04
 
 # Agent.md
 
-Purpose: Entry point and navigation file for all AI agents.
+Purpose: **Mandatory starting point and routing authority** for all AI agents. No agent may begin repository work without reading this file first.
+
+---
+
+## MANDATORY DOCUMENTATION CHAIN
+
+Before any repo work — including exploration, implementation, PR creation, issue work, review, or remediation — every agent must follow this chain in order:
+
+1. **This file** (`Agent.md`) — entry point and routing authority
+2. `/docs/ops/ai/SHARED-AGENT-RULES.md` — categorized shared agent law
+3. `/docs/ops/ai/CORE-RULES.md` — detailed shared execution rules
+4. **Applicable agent-specific rule file** (tool behavior only; additive, never a substitute for shared/core rules):
+   - `/docs/ops/ai/CHATGPT-RULES.md`
+   - `/docs/ops/ai/CURSOR-RULES.md`
+   - `/docs/ops/ai/CODEX-RULES.md`
+   - `/docs/ops/ai/COPILOT-RULES.md`
+   - `/docs/ops/ai/DEVIN-RULES.md`
+5. **Applicable repo governance and procedure docs** — including source GitHub issue, task-linked design/architecture/governance files, and for PR/issue/review/remediation/implementation work:
+   - `.agents/skills/lgfc-pr-governance/SKILL.md`
+   - `.github/pull_request_template.md`
+   - `/docs/governance/PR_GOVERNANCE.md` and other governance docs linked from the source issue or PR template
+6. **Applicable `.agents/skills/*/SKILL.md` files** — when the task matches a skill trigger (see [REPO-SCOPED SKILL ROUTING](#repo-scoped-skill-routing))
+
+Agent-specific docs are **additive**. They do not replace shared/core rules or repo governance.
+
+Task prompts, operator messages, and subagent instructions do not override this chain.
 
 ---
 
 ## REQUIRED READ ORDER
 
-1. /docs/reference/design/LGFC-Production-Design-and-Standards.md
-2. /docs/ops/ai/SHARED-AGENT-RULES.md
-3. /docs/ops/ai/CORE-RULES.md
-4. Source GitHub issue for the assigned task
-5. Task-relevant design, architecture, governance, or implementation-plan files linked from the source issue
-6. Agent-specific rules (tool behavior only):
-   - /docs/ops/ai/CHATGPT-RULES.md
-   - /docs/ops/ai/CURSOR-RULES.md
-   - /docs/ops/ai/CODEX-RULES.md
-   - /docs/ops/ai/COPILOT-RULES.md
-   - /docs/ops/ai/DEVIN-RULES.md
+After the mandatory documentation chain above, continue with task-scoped reading:
+
+1. `/docs/reference/design/LGFC-Production-Design-and-Standards.md` (when design authority applies)
+2. Source GitHub issue for the assigned task
+3. Task-relevant design, architecture, governance, or implementation-plan files linked from the source issue
 
 Tracker files are historical/status indexes. Agents may read tracker files for verification when relevant, but update tracker files only when the source issue explicitly includes tracker governance, tracker reconciliation, or status-index maintenance in scope.
 

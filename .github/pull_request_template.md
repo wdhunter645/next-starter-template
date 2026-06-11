@@ -4,6 +4,9 @@
 Refer to `/.github/pull_request_template.md` for required structure and change conventions.
 
 #### Governance Reference
+Before opening or updating any PR, agents must complete the mandatory documentation chain in `/Agent.md`:
+`/Agent.md` → `/docs/ops/ai/SHARED-AGENT-RULES.md` → `/docs/ops/ai/CORE-RULES.md` → applicable agent-specific rules under `/docs/ops/ai/` → `/.agents/skills/lgfc-pr-governance/SKILL.md` → `/.github/pull_request_template.md` → applicable governance docs under `/docs/governance/`.
+
 Follow operational, rollback, and testing standards in `/docs/governance/PR_GOVERNANCE.md`.
 Use `docs/reference/governance/troubleshooting-data-surface-requirements.md` as the canonical PR-gate troubleshooting reference.
 When new PR-gate troubleshooting information becomes available, maintainers and agents must update both `.github/pull_request_template.md` and `docs/reference/governance/troubleshooting-data-surface-requirements.md`.

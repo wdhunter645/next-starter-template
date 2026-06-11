@@ -6,7 +6,7 @@ Owns: LGFC post-merge validation surface, evidence reporting model, remediation 
 Does Not Own: Pre-merge merge protection gates, OPS runtime monitoring behavior, website product behavior
 Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
 Related Issues: #1197, #1249, #1075, #1058
-Last Reviewed: 2026-06-03
+Last Reviewed: 2026-06-11
 ---
 
 # LGFC Post-Merge Validation Surface
@@ -16,12 +16,23 @@ Last Reviewed: 2026-06-03
 This reference documents Task 004 post-merge validation expansion and the
 source-issue closeout behavior added after Task 003. Post-merge validation
 inspects merged code and PR governance evidence after landings on `main`.
-Failures create remediation output and pause orchestration advancement.
+Failures create remediation output and pause orchestration advancement. Program
+#1500 Task 001 adds a pre-merge readiness gate that reuses validator exports to
+catch closeout metadata failures before merge.
+
+## Trusted-Code Execution Model
+
+`gate-post-merge-readiness.yml` runs on `pull_request_target` with base-repository
+token context. Gate enforcement scripts are checked out from the trusted
+base/default ref. PR body, changed files, issue comments, review comments, and
+reviews are fetched through the GitHub API and passed to the gate runner.
+Mutable PR-head gate code must not execute as trusted enforcement logic.
 
 ## Workflows
 
 | Workflow file | Display name | Role |
 |---|---|---|
+| `gate-post-merge-readiness.yml` | GATE — Post-Merge Readiness | Pre-merge blocker for PR body metadata, allowlist evidence, placeholders, and reviewer dispositions that would fail closeout |
 | `post-merge-intent-verification.yml` | Post-Merge Detection | Primary validator, PR comment, orchestrator sync, reviewer audit on failure |
 | `post-merge-remediation.yml` | Post-Merge Remediation | Opens remediation issues only when Post-Merge Detection fails |
 | `diataxis-post-merge-validate.yml` | DIATAXIS Post-Merge Validation | Uploads DIATAXIS evidence for merged documentation changes |
@@ -29,7 +40,7 @@ Failures create remediation output and pause orchestration advancement.
 
 ## Evidence Domains
 
-Post-Merge Detection reports evidence from:
+Post-Merge Detection reports evidence from after merge; the pre-merge gate checks the overlapping PR-body and reviewer-disposition subset before merge:
 
 - PR metadata completeness and source issue linkage
 - merged implementation evidence against declared allowlist and acceptance criteria
@@ -63,7 +74,8 @@ Duplicate remediation issue cleanup remains unchanged. Canonical remediation iss
 
 | Script | Role |
 |---|---|
-| `scripts/ci/post_merge_validator.mjs` | Aggregates post-merge evidence and writes result artifacts |
+| `scripts/ci/post_merge_validator.mjs` | Aggregates post-merge evidence, exports shared readiness contract checks, and writes result artifacts |
+| `scripts/ci/post_merge_readiness_gate.mjs` | Runs the pre-merge post-merge-readiness gate against PR metadata collected via the GitHub API; workflow executes trusted base-ref gate code only |
 | `scripts/ci/post_merge_implementation_evidence.mjs` | Allowlist, acceptance, and verification evidence checks |
 | `scripts/ci/post_merge_diataxis_audit.mjs` | DIATAXIS post-merge audit helpers |
 | `scripts/ci/post_merge_remediation_issue.mjs` | Remediation issue generation on validation failure |
@@ -75,5 +87,7 @@ Duplicate remediation issue cleanup remains unchanged. Canonical remediation iss
 
 ## Rollback
 
-Revert post-merge validation and remediation workflow/script changes and this
-reference documentation only.
+Revert `gate-post-merge-readiness.yml`, `post_merge_readiness_gate.mjs`, shared
+validator export wiring, and this reference documentation for Task 001 rollback.
+Revert later post-merge validation and remediation workflow/script changes only
+when those later tasks are in scope.

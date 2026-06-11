@@ -18,6 +18,12 @@ This document defines **ChatGPT/Atlas-specific** operating doctrine: control-pla
 
 Do not duplicate shared law here. Apply it through the operating cycle below.
 
+## Mandatory documentation chain
+
+Before any repo work, follow the chain in [`Agent.md`](../../../Agent.md): `Agent.md` → [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md) → [`CORE-RULES.md`](./CORE-RULES.md) → this file → applicable repo governance/procedure docs → applicable `.agents/skills/*/SKILL.md` files.
+
+This file is additive. It does not replace shared/core rules or repo governance.
+
 ## Scope
 
 This document applies to ChatGPT/Atlas repository work for LGFC, including design, execution coordination, verification, troubleshooting, governance, worklist tracking, operations cleanup, issue management, Pull Request management, and documentation work.
