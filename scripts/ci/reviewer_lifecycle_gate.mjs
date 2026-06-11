@@ -265,6 +265,7 @@ export function buildReviewerLifecycleReport({
     `Undispositioned reviewer comments: ${reviewerDisposition?.undispositionedCount ?? 0}`,
     `Outdated threads without disposition: ${reviewerDisposition?.outdatedWithoutDispositionCount ?? 0}`,
     `Late pre-merge reviewer findings: ${reviewerDisposition?.lateFindingsCount ?? 0}`,
+    `Late undispositioned reviewer findings: ${reviewerDisposition?.lateUndispositionedCount ?? 0}`,
     `Advisory reviewer findings: ${advisoryFindings}`,
     `Assessment severity: ${assessment.severity}`,
     `Assessment reason: ${assessment.reason}`,
@@ -334,7 +335,7 @@ export function assessReviewerLifecycle({
     advisoryFindings,
     undispositionedReviewerComments: reviewerDisposition.undispositionedCount,
     outdatedWithoutDisposition: reviewerDisposition.outdatedWithoutDispositionCount,
-    lateReviewerFindings: reviewerDisposition.lateFindingsCount,
+    lateUndispositionedReviewerComments: reviewerDisposition.lateUndispositionedCount,
   });
 
   return {

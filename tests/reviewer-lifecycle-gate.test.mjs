@@ -231,6 +231,90 @@ describe('reviewer lifecycle gate assessment', () => {
     expect(count).toBe(0);
   });
 
+  it('does not block website-only PR when late findings are dispositioned', () => {
+    const body = [
+      'Status: READY FOR REVIEW',
+      '## REVIEWER RESPONSE ACCOUNTING',
+      '- review-comment:9001 — accepted — Fixed in latest commit — thread state: resolved',
+    ].join('\n');
+
+    const result = assessReviewerLifecycle({
+      eventName: 'pull_request_target',
+      labels: ['infra'],
+      files: ['src/app/admin/cms/page.tsx'],
+      enforceFailure: true,
+      headSha: 'current-head',
+      body,
+      readyForReviewAt: '2026-06-11T10:00:00Z',
+      reviewComments: [{
+        id: 9001,
+        user: { login: 'copilot-pull-request-reviewer[bot]' },
+        commit_id: 'current-head',
+        path: 'src/app/admin/cms/page.tsx',
+        line: 10,
+        body: 'Please fix this after ready.',
+        created_at: '2026-06-11T12:00:00Z',
+      }],
+      reviews: [{
+        user: { login: 'copilot-pull-request-reviewer[bot]' },
+        commit_id: 'current-head',
+        state: 'COMMENTED',
+      }],
+    });
+
+    expect(result.shouldFail).toBe(false);
+    expect(result.reviewerDisposition.lateFindingsCount).toBe(1);
+    expect(result.reviewerDisposition.lateUndispositionedCount).toBe(0);
+  });
+
+  it('blocks current-head undispositioned inline findings on website scope', () => {
+    const result = assessReviewerLifecycle({
+      eventName: 'pull_request_target',
+      labels: ['infra'],
+      files: ['src/app/admin/cms/page.tsx'],
+      enforceFailure: true,
+      headSha: 'current-head',
+      body: '## REVIEWER RESPONSE ACCOUNTING\n- reviewed',
+      reviewComments: [{
+        id: 9002,
+        user: { login: 'copilot-pull-request-reviewer[bot]' },
+        commit_id: 'current-head',
+        path: 'src/app/admin/cms/page.tsx',
+        line: 10,
+        body: 'Please fix this blocking issue.',
+        created_at: '2026-06-01T00:00:00Z',
+      }],
+    });
+
+    expect(result.shouldFail).toBe(true);
+    expect(result.assessment.reason).toBe('undispositioned-reviewer-comment');
+  });
+
+  it('does not block outdated prior-head findings with explicit disposition', () => {
+    const result = assessReviewerLifecycle({
+      eventName: 'pull_request_target',
+      labels: ['infra'],
+      files: ['src/app/admin/cms/page.tsx'],
+      enforceFailure: true,
+      headSha: 'new-sha',
+      body: [
+        '## REVIEWER RESPONSE ACCOUNTING',
+        '- review-comment:9003 — acknowledged — Superseded by refactor — thread state: outdated',
+      ].join('\n'),
+      reviewComments: [{
+        id: 9003,
+        user: { login: 'gemini-code-assist[bot]' },
+        commit_id: 'old-sha',
+        path: 'src/app/admin/cms/page.tsx',
+        line: 12,
+        body: 'Outdated finding on prior commit.',
+        created_at: '2026-06-01T00:00:00Z',
+      }],
+    });
+
+    expect(result.shouldFail).toBe(false);
+  });
+
   it('blocks protected scope when unresolved threads survive a new commit', () => {
     const result = assessReviewerLifecycle({
       eventName: 'pull_request_target',

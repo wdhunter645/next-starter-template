@@ -22,7 +22,7 @@ not satisfy enforcement by themselves.
 
 | Workflow file | Display name | Enforcement |
 |---|---|---|
-| `reviewer-response-completion.yml` | `GATE — Reviewer Response Completion` | Blocking on `pull_request_target` when any actionable trusted reviewer comment lacks PR-body disposition, when outdated threads lack explicit disposition, when late pre-merge comments remain undispositioned, or when protected CI scope has unresolved protected review threads or lacks a current-head trusted review artifact on the enforced head SHA |
+| `reviewer-response-completion.yml` | `GATE — Reviewer Response Completion` | Blocking on `pull_request_target` when any actionable trusted reviewer comment lacks PR-body disposition, when outdated threads lack explicit disposition, when late pre-merge comments remain undispositioned (dispositioned late findings are informational only), or when protected CI scope has unresolved protected review threads or lacks a current-head trusted review artifact on the enforced head SHA |
 | `gate-reviewer-response.yml` | `GATE — Reviewer Response` | Retired manual-only stub; superseded by Task 003 redesign |
 
 ## Protected Scope
