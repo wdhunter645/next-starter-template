@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import PageShell from '@/components/PageShell';
 import AdminNav from '@/components/admin/AdminNav';
 import AdminStatusText from '@/components/admin/AdminStatusText';
@@ -157,7 +158,13 @@ export default function AdminCMS() {
           } else {
             setPages([]);
             setBlocks([]);
+            setPage('');
             setSelectedKey('');
+            setEditKey('');
+            setEditPage('');
+            setEditSection('');
+            setEditTitle('');
+            setEditBody('');
             setStatus('Save an admin API token above to load CMS blocks.');
           }
         }}
@@ -172,9 +179,9 @@ export default function AdminCMS() {
             </p>
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <a href="/admin" style={{ textDecoration: 'none' }}>
+            <Link href="/admin" style={{ textDecoration: 'none' }}>
               ← Admin Home
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -236,11 +243,11 @@ export default function AdminCMS() {
                     background: b.key === selectedKey ? '#f7f7f7' : 'white',
                   }}
                 >
-                  <div style={{ fontWeight: 700 }}>{b.title}</div>
-                  <div style={{ fontSize: 12, opacity: 0.8 }}>{b.key}</div>
-                  <div style={{ fontSize: 12, opacity: 0.75, marginTop: 4 }}>
+                  <span style={{ display: 'block', fontWeight: 700 }}>{b.title}</span>
+                  <span style={{ display: 'block', fontSize: 12, opacity: 0.8 }}>{b.key}</span>
+                  <span style={{ display: 'block', fontSize: 12, opacity: 0.75, marginTop: 4 }}>
                     {b.page} / {b.section} • {b.status} • v{b.version}
-                  </div>
+                  </span>
                 </button>
               ))}
               {blocks.length === 0 && <div style={{ padding: 12, opacity: 0.8 }}>No blocks found.</div>}

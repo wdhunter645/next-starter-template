@@ -187,9 +187,9 @@ export default function AdminContentPage() {
             {loading ? 'Loading…' : 'Load'}
           </button>
 
-          <span style={{ opacity: 0.85, alignSelf: 'flex-end', paddingBottom: 4 }}>
+          <div style={{ opacity: 0.85, alignSelf: 'flex-end', paddingBottom: 4 }}>
             <AdminStatusText message={status} />
-          </span>
+          </div>
         </div>
 
         <hr style={{ margin: '4px 0' }} />

@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -193,6 +194,57 @@ describe('admin CMS page', () => {
 
     const alert = await screen.findByRole('alert');
     expect(alert).toHaveTextContent(/error: unauthorized/i);
+  });
+
+  it('clears CMS editor fields when the admin token is removed', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const path = String(input);
+      if (path.startsWith('/api/admin/cms/list')) {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            page: null,
+            pages: ['home'],
+            blocks: [
+              {
+                key: 'home.hero.main',
+                page: 'home',
+                section: 'hero',
+                title: 'Hero Block',
+                body_md: '# Welcome',
+                status: 'draft',
+                published_body_md: null,
+                version: 1,
+                updated_at: '2026-06-01T00:00:00Z',
+                published_at: null,
+                updated_by: 'admin',
+              },
+            ],
+          }),
+        );
+      }
+      return Promise.resolve(jsonResponse({ ok: true }));
+    });
+
+    render(<AdminCMSPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Hero Block')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Hero Block'));
+
+    const keyInput = screen.getByLabelText('Key');
+    expect(keyInput).toHaveValue('home.hero.main');
+
+    const tokenInput = screen.getByLabelText('Admin token');
+    await userEvent.clear(tokenInput);
+    await userEvent.click(screen.getByRole('button', { name: 'Save token' }));
+
+    expect(screen.getAllByText('Save an admin API token above to load CMS blocks.').length).toBeGreaterThan(0);
+    expect(keyInput).toHaveValue('');
+    expect(screen.getByLabelText('Title')).toHaveValue('');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
 
