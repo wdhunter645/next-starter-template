@@ -7,6 +7,7 @@ import {
 	closeRemediationIssuesForPr,
 	remediationCloseComment,
 	remediationIssuesForPr,
+	searchOpenRemediationIssues,
 } from '../scripts/ci/close_remediation_issues_for_pr.mjs';
 import {
 	loadCloseoutTargets,
@@ -94,6 +95,31 @@ describe('post-merge closeout batch', () => {
 		expect(remediationCloseComment({ prNumber: '1239', mergeSha: 'abc', sourceIssue: '1196' })).toContain(
 			'Source issue: #1196',
 		);
+	});
+
+	it('searches remediation issues by title without paginating all open issues', async () => {
+		const fetchMock = vi.fn().mockResolvedValue({
+			ok: true,
+			json: async () => ({
+				items: [
+					{
+						number: 1601,
+						title: 'Post-merge closeout exception for PR #1583 / source #1578 / late_undispositioned_reviewer_comment',
+						body: '- PR: #1583',
+						labels: [{ name: 'status:complete' }],
+					},
+				],
+			}),
+		});
+
+		const issues = await searchOpenRemediationIssues({
+			token: 'token',
+			repository: 'owner/repo',
+			fetchFn: fetchMock,
+		});
+
+		expect(issues.map((issue) => issue.number)).toEqual([1601]);
+		expect(fetchMock).toHaveBeenCalled();
 	});
 
 	it('closes relabeled remediation exceptions that lost post-merge-failure label (#1601)', async () => {

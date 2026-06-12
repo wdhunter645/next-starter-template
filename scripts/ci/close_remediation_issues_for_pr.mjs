@@ -27,6 +27,47 @@ function addRemediationIssues(issuesByNumber, batch) {
 	}
 }
 
+export const REMEDIATION_TITLE_SEARCH_QUERIES = [
+	'Post-merge closeout exception',
+	'Post-merge remediation required',
+];
+
+export async function searchOpenRemediationIssues({
+	token,
+	repository,
+	searchQueries = REMEDIATION_TITLE_SEARCH_QUERIES,
+	fetchFn = fetch,
+}) {
+	const issuesByNumber = new Map();
+
+	for (const titleFragment of searchQueries) {
+		const q = `repo:${repository} is:issue is:open in:title "${titleFragment}"`;
+		try {
+			const response = await fetchFn(
+				`https://api.github.com/search/issues?q=${encodeURIComponent(q)}&per_page=100`,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+						Accept: 'application/vnd.github+json',
+						'X-GitHub-Api-Version': '2022-11-28',
+						'User-Agent': 'lgfc-close-remediation-for-pr',
+					},
+				},
+			);
+			if (!response.ok) {
+				console.error(`Remediation issue search failed (${response.status}): ${q}`);
+				continue;
+			}
+			const data = await response.json();
+			addRemediationIssues(issuesByNumber, data.items);
+		} catch (error) {
+			console.error(`Remediation issue search error for ${q}:`, error);
+		}
+	}
+
+	return [...issuesByNumber.values()];
+}
+
 async function paginateOpenRemediationIssues({ token, repository }) {
 	const issuesByNumber = new Map();
 	let page = 1;
@@ -44,17 +85,8 @@ async function paginateOpenRemediationIssues({ token, repository }) {
 	}
 
 	// Relabeled remediation exceptions can lose post-merge-failure while staying open (#1601).
-	page = 1;
-	while (true) {
-		const batch = await request({
-			token,
-			repository,
-			path: `/issues?state=open&per_page=100&page=${page}`,
-		});
-		if (!Array.isArray(batch) || batch.length === 0) break;
-		addRemediationIssues(issuesByNumber, batch);
-		if (batch.length < 100) break;
-		page += 1;
+	for (const issue of await searchOpenRemediationIssues({ token, repository })) {
+		issuesByNumber.set(issue.number, issue);
 	}
 
 	return [...issuesByNumber.values()];
