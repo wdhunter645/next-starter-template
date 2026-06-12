@@ -20,7 +20,7 @@ describe('post-merge closeout all manifests', () => {
 
 	it('loads CI pending manifest targets when closeout backlog items remain', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending.json');
-		expect(targets.map((target) => target.pr)).toEqual([1572, 1577]);
+		expect(targets.map((target) => target.pr)).toEqual([1572, 1577, 1583]);
 		expect(targets.every((target) => target.body_file && target.merge_sha && target.source_issue)).toBe(
 			true,
 		);
