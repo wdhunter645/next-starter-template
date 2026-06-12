@@ -69,7 +69,8 @@ function exists(root, relativePath) {
 }
 
 function read(root, relativePath) {
-  return fs.readFileSync(filePath(root, relativePath), 'utf8');
+  const content = fs.readFileSync(filePath(root, relativePath), 'utf8');
+  return content.startsWith('\uFEFF') ? content.slice(1) : content;
 }
 
 function parseFrontmatter(content) {

@@ -1,7 +1,10 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 import {
   BOOTSTRAP_RULE_FILES,
   MAX_BOOTSTRAP_RULE_LINES,
@@ -80,7 +83,7 @@ function minimalBootstrapFixture(overrides = {}) {
 
 describe('agent governance bootstrap validation', () => {
   it('passes on the live repository', () => {
-    expect(runAgentGovernanceCheck(process.cwd())).toEqual([]);
+    expect(runAgentGovernanceCheck(repoRoot)).toEqual([]);
   });
 
   it('reports missing bootstrap files', () => {
