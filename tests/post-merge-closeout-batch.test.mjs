@@ -96,6 +96,31 @@ describe('post-merge closeout batch', () => {
 		);
 	});
 
+	it('closes relabeled remediation exceptions that lost post-merge-failure label (#1601)', async () => {
+		const request = vi.fn().mockResolvedValue(null);
+		const issues = [
+			{
+				number: 1601,
+				title: 'Post-merge closeout exception for PR #1583 / source #1578 / late_undispositioned_reviewer_comment',
+				body: '- PR: #1583\n- Merge SHA: a1ca83d4e77efb6b0b73266c02d5dd7219bfbb1d\n- Source issue: #1578',
+				labels: [{ name: 'status:complete' }, { name: 'status:post-merge-verify' }],
+			},
+		];
+
+		const outcome = await closeRemediationIssuesForPr({
+			token: 'token',
+			repository: 'owner/repo',
+			prNumber: '1583',
+			mergeSha: 'a1ca83d4e77efb6b0b73266c02d5dd7219bfbb1d',
+			sourceIssue: '1578',
+			listOpenIssues: async () => issues,
+			requestFn: request,
+		});
+
+		expect(outcome.closed).toEqual([{ number: 1601 }]);
+		expect(request).toHaveBeenCalledTimes(2);
+	});
+
 	it('closes a linked remediation source issue when it is not already matched by PR number', async () => {
 		const request = vi.fn().mockResolvedValue(null);
 		const issues = [

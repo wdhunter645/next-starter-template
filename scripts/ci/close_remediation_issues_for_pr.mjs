@@ -14,8 +14,21 @@ function request(args) {
 	return githubRepoRequest({ ...args, userAgent: 'lgfc-close-remediation-for-pr' });
 }
 
+export function isOpenRemediationIssue(issue) {
+	if (issue?.pull_request) return false;
+	return isRemediationIssue({ title: issue?.title, labels: issue?.labels });
+}
+
+function addRemediationIssues(issuesByNumber, batch) {
+	if (!Array.isArray(batch)) return;
+	for (const issue of batch) {
+		if (!isOpenRemediationIssue(issue)) continue;
+		issuesByNumber.set(issue.number, issue);
+	}
+}
+
 async function paginateOpenRemediationIssues({ token, repository }) {
-	const issues = [];
+	const issuesByNumber = new Map();
 	let page = 1;
 
 	while (true) {
@@ -25,17 +38,26 @@ async function paginateOpenRemediationIssues({ token, repository }) {
 			path: `/issues?state=open&labels=${encodeURIComponent(REMEDIATION_ISSUE_LABEL)}&per_page=100&page=${page}`,
 		});
 		if (!Array.isArray(batch) || batch.length === 0) break;
-		for (const issue of batch) {
-			if (issue.pull_request) continue;
-			const title = String(issue.title || '');
-			if (!title.startsWith(REMEDIATION_TITLE_PREFIX) && !title.startsWith(LEGACY_REMEDIATION_TITLE_PREFIX)) continue;
-			issues.push(issue);
-		}
+		addRemediationIssues(issuesByNumber, batch);
 		if (batch.length < 100) break;
 		page += 1;
 	}
 
-	return issues;
+	// Relabeled remediation exceptions can lose post-merge-failure while staying open (#1601).
+	page = 1;
+	while (true) {
+		const batch = await request({
+			token,
+			repository,
+			path: `/issues?state=open&per_page=100&page=${page}`,
+		});
+		if (!Array.isArray(batch) || batch.length === 0) break;
+		addRemediationIssues(issuesByNumber, batch);
+		if (batch.length < 100) break;
+		page += 1;
+	}
+
+	return [...issuesByNumber.values()];
 }
 
 export function remediationIssuesForPr(issues, prNumber) {
