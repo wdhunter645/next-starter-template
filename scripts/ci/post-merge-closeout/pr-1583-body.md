@@ -80,6 +80,16 @@ Reviewer items:
 - review-comment:3404141971 — accepted — Fail-closed failure-path relabel when `status:failed` unavailable in repository — thread state: resolved
 - review-comment:4486590023 — acknowledged — Copilot PR overview; single inline finding addressed via #3404141971 — thread state: resolved
 
+## REQUIRED PRE-REVIEW SELF-CHECK
+- [x] PR body contains all required sections with exact headings
+- [x] PR body contains one accepted source-issue accounting line
+- [x] Allowed files section matches final diff exactly
+- [x] No files outside allowlist
+- [x] ZIP safety confirmed
+- [x] Local checks executed and passed
+- [x] All reviewer feedback has both textual disposition and GitHub thread-state disposition
+- [x] Post-merge closeout body remediation applied for merged PR governance
+
 ## POST-MERGE ISSUE DISPOSITION
 - Reconcile label hygiene on closed source **#1578** after body apply
 
