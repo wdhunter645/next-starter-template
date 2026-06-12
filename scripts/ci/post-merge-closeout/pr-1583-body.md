@@ -94,6 +94,7 @@ Reviewer items:
 
 ## POST-MERGE ISSUE DISPOSITION
 - Reconcile label hygiene on closed source **#1578** after body apply
+- Close stale remediation exception **#1601** after successful PR #1583 replay
 
 <!-- closeout-trigger: 2026-06-12 -->
 <!-- CURSOR_AGENT_PR_BODY_END -->
