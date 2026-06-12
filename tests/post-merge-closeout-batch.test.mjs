@@ -7,6 +7,7 @@ import {
 	closeRemediationIssuesForPr,
 	remediationCloseComment,
 	remediationIssuesForPr,
+	searchOpenRemediationIssues,
 } from '../scripts/ci/close_remediation_issues_for_pr.mjs';
 import {
 	loadCloseoutTargets,
@@ -94,6 +95,56 @@ describe('post-merge closeout batch', () => {
 		expect(remediationCloseComment({ prNumber: '1239', mergeSha: 'abc', sourceIssue: '1196' })).toContain(
 			'Source issue: #1196',
 		);
+	});
+
+	it('searches remediation issues by title without paginating all open issues', async () => {
+		const fetchMock = vi.fn().mockResolvedValue({
+			ok: true,
+			json: async () => ({
+				items: [
+					{
+						number: 1601,
+						title: 'Post-merge closeout exception for PR #1583 / source #1578 / late_undispositioned_reviewer_comment',
+						body: '- PR: #1583',
+						labels: [{ name: 'status:complete' }],
+					},
+				],
+			}),
+		});
+
+		const issues = await searchOpenRemediationIssues({
+			token: 'token',
+			repository: 'owner/repo',
+			fetchFn: fetchMock,
+		});
+
+		expect(issues.map((issue) => issue.number)).toEqual([1601]);
+		expect(fetchMock).toHaveBeenCalled();
+	});
+
+	it('closes relabeled remediation exceptions that lost post-merge-failure label (#1601)', async () => {
+		const request = vi.fn().mockResolvedValue(null);
+		const issues = [
+			{
+				number: 1601,
+				title: 'Post-merge closeout exception for PR #1583 / source #1578 / late_undispositioned_reviewer_comment',
+				body: '- PR: #1583\n- Merge SHA: a1ca83d4e77efb6b0b73266c02d5dd7219bfbb1d\n- Source issue: #1578',
+				labels: [{ name: 'status:complete' }, { name: 'status:post-merge-verify' }],
+			},
+		];
+
+		const outcome = await closeRemediationIssuesForPr({
+			token: 'token',
+			repository: 'owner/repo',
+			prNumber: '1583',
+			mergeSha: 'a1ca83d4e77efb6b0b73266c02d5dd7219bfbb1d',
+			sourceIssue: '1578',
+			listOpenIssues: async () => issues,
+			requestFn: request,
+		});
+
+		expect(outcome.closed).toEqual([{ number: 1601 }]);
+		expect(request).toHaveBeenCalledTimes(2);
 	});
 
 	it('closes a linked remediation source issue when it is not already matched by PR number', async () => {

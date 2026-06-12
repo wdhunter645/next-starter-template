@@ -14,8 +14,62 @@ function request(args) {
 	return githubRepoRequest({ ...args, userAgent: 'lgfc-close-remediation-for-pr' });
 }
 
+export function isOpenRemediationIssue(issue) {
+	if (issue?.pull_request) return false;
+	return isRemediationIssue({ title: issue?.title, labels: issue?.labels });
+}
+
+function addRemediationIssues(issuesByNumber, batch) {
+	if (!Array.isArray(batch)) return;
+	for (const issue of batch) {
+		if (!isOpenRemediationIssue(issue)) continue;
+		issuesByNumber.set(issue.number, issue);
+	}
+}
+
+export const REMEDIATION_TITLE_SEARCH_QUERIES = [
+	'Post-merge closeout exception',
+	'Post-merge remediation required',
+];
+
+export async function searchOpenRemediationIssues({
+	token,
+	repository,
+	searchQueries = REMEDIATION_TITLE_SEARCH_QUERIES,
+	fetchFn = fetch,
+}) {
+	const issuesByNumber = new Map();
+
+	for (const titleFragment of searchQueries) {
+		const q = `repo:${repository} is:issue is:open in:title "${titleFragment}"`;
+		try {
+			const response = await fetchFn(
+				`https://api.github.com/search/issues?q=${encodeURIComponent(q)}&per_page=100`,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+						Accept: 'application/vnd.github+json',
+						'X-GitHub-Api-Version': '2022-11-28',
+						'User-Agent': 'lgfc-close-remediation-for-pr',
+					},
+				},
+			);
+			if (!response.ok) {
+				console.error(`Remediation issue search failed (${response.status}): ${q}`);
+				continue;
+			}
+			const data = await response.json();
+			addRemediationIssues(issuesByNumber, data.items);
+		} catch (error) {
+			console.error(`Remediation issue search error for ${q}:`, error);
+		}
+	}
+
+	return [...issuesByNumber.values()];
+}
+
 async function paginateOpenRemediationIssues({ token, repository }) {
-	const issues = [];
+	const issuesByNumber = new Map();
 	let page = 1;
 
 	while (true) {
@@ -25,17 +79,17 @@ async function paginateOpenRemediationIssues({ token, repository }) {
 			path: `/issues?state=open&labels=${encodeURIComponent(REMEDIATION_ISSUE_LABEL)}&per_page=100&page=${page}`,
 		});
 		if (!Array.isArray(batch) || batch.length === 0) break;
-		for (const issue of batch) {
-			if (issue.pull_request) continue;
-			const title = String(issue.title || '');
-			if (!title.startsWith(REMEDIATION_TITLE_PREFIX) && !title.startsWith(LEGACY_REMEDIATION_TITLE_PREFIX)) continue;
-			issues.push(issue);
-		}
+		addRemediationIssues(issuesByNumber, batch);
 		if (batch.length < 100) break;
 		page += 1;
 	}
 
-	return issues;
+	// Relabeled remediation exceptions can lose post-merge-failure while staying open (#1601).
+	for (const issue of await searchOpenRemediationIssues({ token, repository })) {
+		issuesByNumber.set(issue.number, issue);
+	}
+
+	return [...issuesByNumber.values()];
 }
 
 export function remediationIssuesForPr(issues, prNumber) {
