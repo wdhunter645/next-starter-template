@@ -13,6 +13,7 @@ import {
 } from '../scripts/ci/post_merge_closeout_trigger.mjs';
 import {
 	buildCloseoutErrorResult,
+	isFailureRelabelHalted,
 	isSuccessfulSourceIssueCloseout,
 	resolveCloseoutEventContext,
 	toSyncPr,
@@ -185,8 +186,15 @@ describe('post-merge closeout sync propagation', () => {
 	it('treats only completed source issue closeout sync results as successful', () => {
 		expect(isSuccessfulSourceIssueCloseout('complete')).toBe(true);
 		expect(isSuccessfulSourceIssueCloseout('active_relabeled')).toBe(true);
+		expect(isSuccessfulSourceIssueCloseout('remediation_issue')).toBe(true);
 		expect(isSuccessfulSourceIssueCloseout('failure_relabeled')).toBe(false);
 		expect(isSuccessfulSourceIssueCloseout('validator_not_pass')).toBe(false);
+	});
+
+	it('detects halted failure-path relabel sync results', () => {
+		expect(isFailureRelabelHalted('failure_relabel_halted')).toBe(true);
+		expect(isFailureRelabelHalted('failure_relabeled')).toBe(false);
+		expect(isFailureRelabelHalted('complete')).toBe(false);
 	});
 
 	it('exports direct sync wiring instead of spawning a child process', () => {
@@ -194,7 +202,9 @@ describe('post-merge closeout sync propagation', () => {
 
 		expect(closeoutScript).toContain('export function runSync');
 		expect(closeoutScript).toContain('isSuccessfulSourceIssueCloseout');
+		expect(closeoutScript).toContain('isFailureRelabelHalted');
 		expect(closeoutScript).toContain("source_issue_closeout_skipped");
+		expect(closeoutScript).toContain("failure_relabel_halted");
 	});
 });
 

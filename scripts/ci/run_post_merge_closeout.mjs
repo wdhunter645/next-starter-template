@@ -37,7 +37,15 @@ export function toSyncPr({ pr } = {}) {
 }
 
 export function isSuccessfulSourceIssueCloseout(syncResult) {
-	return syncResult === 'complete' || syncResult === 'active_relabeled';
+	return (
+		syncResult === 'complete' ||
+		syncResult === 'active_relabeled' ||
+		syncResult === 'remediation_issue'
+	);
+}
+
+export function isFailureRelabelHalted(syncResult) {
+	return syncResult === 'failure_relabel_halted';
 }
 
 export function runSync({ repository, prNumber, syncAction, pr, resultPath = POST_MERGE_RESULT_PATH }) {
@@ -185,6 +193,22 @@ export async function runPostMergeCloseout({
 		];
 		await writePostMergeResultArtifactsAsync(result);
 		syncResult = runSync({ repository, prNumber, syncAction: 'post_merge_failure', pr });
+	}
+
+	if (
+		(result.sync_action === 'post_merge_remediation' || result.sync_action === 'post_merge_failure') &&
+		isFailureRelabelHalted(syncResult)
+	) {
+		result.status = 'fail';
+		result.remediation_required = true;
+		result.metadata_failures = [
+			...(result.metadata_failures || []),
+			{
+				code: 'failure_relabel_halted',
+				message: `Failure-path source issue relabel halted (${syncResult}); stale labels preserved.`,
+			},
+		];
+		await writePostMergeResultArtifactsAsync(result);
 	}
 
 	if (result.sync_action === 'post_merge_success') {

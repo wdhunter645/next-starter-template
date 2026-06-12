@@ -176,6 +176,33 @@ export function syncPrState({
         run(['issue', 'comment', issueNumber, '--repo', repo, '--body', closeoutComment]);
         return 'active_relabeled';
       }
+      if (closeDecision.reason === 'remediation_issue') {
+        const relabelPlan = terminalLabelResult?.ok
+          ? terminalLabelResult
+          : planTerminalLabelReconciliation({
+              issueLabels: meta.labels || [],
+              repoLabels: getRepoLabels(),
+            });
+        if (relabelPlan.ok) {
+          reconcileTerminalLabelsFn(issueNumber, relabelPlan);
+        }
+        const mergeSha = postMergeResult?.merge_sha || pr?.mergeCommit?.oid || '';
+        const closeoutComment = buildSourceIssueCloseoutComment({
+          prNumber,
+          mergeSha,
+          sourceIssueNumber: issueNumber,
+          validatorStatus: postMergeResult?.status || 'pass',
+          verificationResult: postMergeVerificationResult(postMergeResult),
+          closeoutReason: closeDecision.reason,
+          validationSummary: validationSummary(postMergeResult),
+          terminalLabelResult: relabelPlan.summary,
+          sourceIssueCloseoutMode: postMergeResult?.source_issue_closeout_mode,
+          queueAdvancementStatus:
+            'remediation source issue closeout deferred; remediation issues for merged PR will be closed separately',
+        });
+        run(['issue', 'comment', issueNumber, '--repo', repo, '--body', closeoutComment]);
+        return 'remediation_issue';
+      }
       log(`Skipping source issue closeout for PR #${prNumber}: ${closeDecision.reason}.`);
       return closeDecision.reason;
     }
