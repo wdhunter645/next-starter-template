@@ -2,9 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { linkedIssueNumber, sourceIssueAccounting } from '../scripts/ci/issue_accounting.mjs';
 import {
+	buildFailureCloseoutComment,
 	buildSourceIssueCloseoutComment,
 	isRemediationIssue,
 	planActiveSourceIssueRelabel,
+	planFailureSourceIssueRelabel,
 	planTerminalLabelReconciliation,
 	postMergeVerificationResult,
 	shouldCloseSourceIssue,
@@ -232,6 +234,52 @@ describe('source issue closeout evidence', () => {
 		expect(comment).toContain('Closeout reason: post_merge_validation_success');
 	});
 
+	it('plans failure-path relabel without closing the source issue', () => {
+		const plan = planFailureSourceIssueRelabel({
+			issueLabels: ['orchestrator', 'status:post-merge-verify'],
+			repoLabels: ['status:failed', 'status:complete'],
+		});
+
+		expect(plan).toMatchObject({
+			ok: true,
+			removeLabels: ['status:post-merge-verify'],
+			addLabel: 'status:failed',
+		});
+	});
+
+	it('preserves status:failed when already present on the source issue', () => {
+		const plan = planFailureSourceIssueRelabel({
+			issueLabels: ['orchestrator', 'status:post-merge-verify', 'status:failed'],
+			repoLabels: ['status:failed', 'status:complete'],
+		});
+
+		expect(plan).toMatchObject({
+			ok: true,
+			removeLabels: ['status:post-merge-verify'],
+			addLabel: '',
+		});
+	});
+
+	it('renders failure closeout evidence without claiming success', () => {
+		const comment = buildFailureCloseoutComment({
+			prNumber: '1567',
+			mergeSha: '314c236c986c',
+			sourceIssueNumber: '1545',
+			syncAction: 'post_merge_failure',
+			validatorStatus: 'fail',
+			verificationResult: 'fail',
+			validationSummary: 'implementation=1; reviewer_disposition=1',
+			terminalLabelResult: 'remove status:post-merge-verify; add status:failed',
+			remediationIssueUrl: 'https://github.test/repo/issues/1575',
+		});
+
+		expect(comment).toContain('did not complete');
+		expect(comment).toContain('PR: #1567');
+		expect(comment).toContain('Source issue: #1545');
+		expect(comment).toContain('Sync action: post_merge_failure');
+		expect(comment).toContain('Remediation issue: https://github.test/repo/issues/1575');
+	});
+
 	it('lists stale active-state labels cleared on successful closeout', () => {
 		expect(STALE_SOURCE_ISSUE_LABELS).toEqual([
 			'status:blocked',
@@ -400,21 +448,26 @@ describe('sync-pr-state successful closeout', () => {
 		expect(run).not.toHaveBeenCalledWith(expect.arrayContaining(['issue', 'close', '1410']));
 	});
 
-	it('does not close when post-merge validation failed', async () => {
+	it('relabels without closing when post-merge validation failed', async () => {
 		const syncPrState = await import('../scripts/orchestrator/sync-pr-state.mjs');
 		const run = vi.fn();
-		const setStatus = vi.fn();
+		const reconciliations = [];
 
 		const result = syncPrState.syncPrState({
 			prNumber: '1239',
 			action: 'post_merge_failure',
 			pr: { body: baseBody, mergedAt: '2026-06-02T17:21:10Z', state: 'MERGED', url: 'https://example.test/pr/1239' },
-			setStatusFn: setStatus,
+			reconcileTerminalLabelsFn: (...args) => reconciliations.push(args),
+			getIssueMeta: () => ({ labels: ['status:post-merge-verify'], state: 'OPEN' }),
+			getRepoLabels: () => ['status:failed', 'status:complete'],
 			run,
 		});
 
-		expect(result).toBe('exception');
-		expect(setStatus).not.toHaveBeenCalled();
-		expect(run).not.toHaveBeenCalled();
+		expect(result).toBe('failure_relabeled');
+		expect(reconciliations[0][1]).toMatchObject({
+			removeLabels: ['status:post-merge-verify'],
+			addLabel: 'status:failed',
+		});
+		expect(run).toHaveBeenCalledWith(expect.arrayContaining(['issue', 'comment', '1196']));
 	});
 });

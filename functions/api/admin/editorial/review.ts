@@ -333,6 +333,13 @@ export const onRequestPost = async (context: any): Promise<Response> => {
       return jsonResponse({ ok: false, error: "Approved records require title, text, tag, and credit_line." }, 400);
     }
 
+    if (canonical === 0 && !perspectiveLabel) {
+      return jsonResponse(
+        { ok: false, error: "Alternate-perspective records require perspective_label." },
+        400,
+      );
+    }
+
     const associationsResult = await buildAssociationsFromSubmission(
       d1.db,
       submission as Record<string, unknown>,

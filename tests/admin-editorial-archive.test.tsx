@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -112,7 +113,13 @@ function makeEditorialDb(options?: {
           return { results: requested.map((name) => ({ name })) };
         }
         if (sql.includes('FROM submission_queue')) return { results: filterSubmissions(sql, submissions, args) };
-        if (sql.includes('FROM content_inventory')) return { results: filterRows(sql, inventory, args) };
+        if (sql.includes('FROM content_inventory')) {
+          let filtered = inventory;
+          if (sql.includes('WHERE status = ?') && typeof args[0] === 'string') {
+            filtered = filtered.filter((row) => row.status === args[0]);
+          }
+          return { results: filterRows(sql, filtered, args) };
+        }
         if (sql.includes('FROM library_entries')) return { results: filterRows(sql, library, args) };
         return { results: [] };
       };
@@ -211,7 +218,7 @@ describe('admin editorial archive page', () => {
     });
 
     expect(fetchMock).toHaveBeenCalledWith(
-      '/api/admin/editorial/list?limit=100&submission_status=pending',
+      '/api/admin/editorial/list?limit=100&submission_status=pending&inventory_status=all',
       expect.objectContaining({ cache: 'no-store' }),
     );
   });
@@ -272,7 +279,7 @@ describe('admin editorial archive page', () => {
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(
-        '/api/admin/editorial/list?limit=100&submission_status=pending',
+        '/api/admin/editorial/list?limit=100&submission_status=pending&inventory_status=all',
         expect.objectContaining({ cache: 'no-store' }),
       );
     });
@@ -281,7 +288,91 @@ describe('admin editorial archive page', () => {
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(
-        '/api/admin/editorial/list?limit=100&submission_status=rejected',
+        '/api/admin/editorial/list?limit=100&submission_status=rejected&inventory_status=all',
+        expect.objectContaining({ cache: 'no-store' }),
+      );
+    });
+  });
+
+  it('does not fetch editorial records until a token is stored', async () => {
+    window.localStorage.removeItem('lgfc_admin_token');
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+
+    render(<AdminEditorialArchivePage />);
+
+    expect(screen.getByText('Save an admin API token above to load editorial records.')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+  });
+
+  it('announces editorial list API failures to assistive technology', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse({ ok: false, error: 'Database unavailable' }, 503) as never,
+    );
+
+    render(<AdminEditorialArchivePage />);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/error: database unavailable/i);
+  });
+
+  it('clears editorial state when the admin token is removed', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse({
+        ok: true,
+        submissions: [
+          {
+            submission_id: 9,
+            submitted_by: 'Member',
+            title: 'Gehrig memory',
+            description: 'A submitted memory for review.',
+            status: 'pending',
+          },
+        ],
+        inventory: [],
+      }),
+    );
+
+    render(<AdminEditorialArchivePage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Gehrig memory' })).toBeInTheDocument();
+    });
+
+    const tokenInput = screen.getByLabelText('Admin token');
+    await userEvent.clear(tokenInput);
+    await userEvent.click(screen.getByRole('button', { name: 'Save token' }));
+
+    await waitFor(() => {
+      expect(window.localStorage.getItem('lgfc_admin_token')).toBeNull();
+      expect(screen.queryByRole('heading', { name: 'Gehrig memory' })).not.toBeInTheDocument();
+    });
+  });
+
+  it('loads inventory records by selected publication status', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse({
+        ok: true,
+        submissions: [],
+        inventory: [],
+      }),
+    );
+
+    render(<AdminEditorialArchivePage />);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/admin/editorial/list?limit=100&submission_status=pending&inventory_status=all',
+        expect.objectContaining({ cache: 'no-store' }),
+      );
+    });
+
+    fireEvent.change(screen.getByLabelText('Inventory status'), { target: { value: 'published' } });
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/admin/editorial/list?limit=100&submission_status=pending&inventory_status=published',
         expect.objectContaining({ cache: 'no-store' }),
       );
     });
@@ -422,22 +513,28 @@ describe('admin editorial archive page', () => {
   });
 
   it('disables purge when stored retention reason is only whitespace after trimming', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      jsonResponse({
-        ok: true,
-        submissions: [
-          {
-            submission_id: 16,
-            submitted_by: 'Member <member@example.com>',
-            title: 'Whitespace purge guard',
-            description: 'Rejected item that should remain purge eligible.',
-            status: 'rejected',
-            retention_reason: '   ',
-          },
-        ],
-        inventory: [],
-      }),
-    );
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const path = String(input);
+      if (path.includes('submission_status=rejected')) {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            submissions: [
+              {
+                submission_id: 16,
+                submitted_by: 'Member <member@example.com>',
+                title: 'Whitespace purge guard',
+                description: 'Rejected item that should remain purge eligible.',
+                status: 'rejected',
+                retention_reason: '   ',
+              },
+            ],
+            inventory: [],
+          }),
+        );
+      }
+      return Promise.resolve(jsonResponse({ ok: true, submissions: [], inventory: [] }));
+    });
 
     render(<AdminEditorialArchivePage />);
 
@@ -559,6 +656,27 @@ describe('editorial archive APIs', () => {
       ok: true,
       submissions: [{ title: 'Pending story' }],
       inventory: [{ title: 'Draft story' }],
+    });
+  });
+
+  it('filters inventory records by inventory_status', async () => {
+    const response = await editorialListGet({
+      request: adminGetRequest('/api/admin/editorial/list?inventory_status=published'),
+      env: {
+        ADMIN_TOKEN: 'secret',
+        DB: makeEditorialDb({
+          inventory: [
+            { id: 2, title: 'Draft story', status: 'draft' },
+            { id: 3, title: 'Published story', status: 'published' },
+          ],
+        }).db,
+      },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      inventory: [{ id: 3, title: 'Published story' }],
     });
   });
 
@@ -1001,6 +1119,40 @@ describe('editorial archive APIs', () => {
       request: adminPostRequest('/api/admin/editorial/inventory', {
         title: 'Alternate story',
         text: 'Body',
+        credit_line: 'Archive',
+        canonical: false,
+      }),
+      env: { ADMIN_TOKEN: 'secret', DB: db },
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: 'Alternate-perspective records require perspective_label.',
+    });
+  });
+
+  it('requires perspective_label when approving alternate-perspective submissions', async () => {
+    const { db } = makeEditorialDb({
+      submissions: [
+        {
+          submission_id: 7,
+          submitted_by: 'Member <member@example.com>',
+          title: 'Alternate submission',
+          description: 'Story text for editorial review.',
+          proposed_tag: 'alternate-story',
+          status: 'pending',
+        },
+      ],
+    });
+
+    const response = await editorialReviewPost({
+      request: adminPostRequest('/api/admin/editorial/review', {
+        submission_id: 7,
+        action: 'approve',
+        tag: 'alternate-story',
+        title: 'Alternate submission',
+        text: 'Story text for editorial review.',
         credit_line: 'Archive',
         canonical: false,
       }),

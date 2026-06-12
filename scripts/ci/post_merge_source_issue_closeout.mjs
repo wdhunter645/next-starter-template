@@ -13,6 +13,7 @@ export const REMEDIATION_ISSUE_LABEL = 'post-merge-failure';
 export const REMEDIATION_TITLE_PREFIX = 'Post-merge closeout exception for ';
 export const LEGACY_REMEDIATION_TITLE_PREFIX = 'Post-merge remediation required for ';
 export const TERMINAL_SOURCE_ISSUE_LABEL = 'status:complete';
+export const FAILURE_SOURCE_ISSUE_LABEL = 'status:failed';
 export const ACTIVE_SOURCE_ISSUE_LABEL = 'status:active';
 
 const FOLLOWUP_CLOSEOUT_PATTERN =
@@ -35,6 +36,35 @@ export function shouldKeepActiveSourceIssueOpen(body = '') {
 		/\bdo not close\b/i.test(section) &&
 		/\bstatus:active\b/i.test(section)
 	);
+}
+
+export function planFailureSourceIssueRelabel({ issueLabels = [], repoLabels = [] } = {}) {
+	const labels = new Set(
+		Array.from(issueLabels || [])
+			.map((label) => (typeof label === 'string' ? label : label?.name))
+			.filter(Boolean),
+	);
+	const availableLabels = new Set(
+		Array.from(repoLabels || [])
+			.map((label) => (typeof label === 'string' ? label : label?.name))
+			.filter(Boolean),
+	);
+
+	const removeLabels = STALE_SOURCE_ISSUE_LABELS.filter(
+		(label) => label !== FAILURE_SOURCE_ISSUE_LABEL && labels.has(label),
+	);
+	const addLabel =
+		availableLabels.has(FAILURE_SOURCE_ISSUE_LABEL) && !labels.has(FAILURE_SOURCE_ISSUE_LABEL)
+			? FAILURE_SOURCE_ISSUE_LABEL
+			: '';
+
+	return {
+		ok: true,
+		reason: 'failure_source_issue_relabel_ready',
+		removeLabels,
+		addLabel,
+		summary: `remove ${removeLabels.length ? removeLabels.join(', ') : 'none'}; add ${addLabel || 'none'}; preserve open source issue`,
+	};
 }
 
 export function planActiveSourceIssueRelabel({ issueLabels = [] } = {}) {
@@ -113,6 +143,33 @@ export function planTerminalLabelReconciliation({ issueLabels = [], repoLabels =
 		terminalLabels,
 		summary: `remove ${removeLabels.length ? removeLabels.join(', ') : 'none'}; add ${addLabel || 'none'}; terminal ${TERMINAL_SOURCE_ISSUE_LABEL}`,
 	};
+}
+
+export function buildFailureCloseoutComment({
+	prNumber,
+	mergeSha,
+	sourceIssueNumber,
+	syncAction,
+	validatorStatus,
+	verificationResult,
+	validationSummary = '',
+	terminalLabelResult = '',
+	remediationIssueUrl = '',
+}) {
+	return [
+		'Post-merge source issue closeout did not complete.',
+		'',
+		`- PR: #${prNumber}`,
+		`- Merge SHA: ${mergeSha || 'unknown'}`,
+		`- Source issue: ${sourceIssueNumber ? `#${sourceIssueNumber}` : 'unknown'}`,
+		`- Sync action: ${syncAction}`,
+		`- Validator status: ${validatorStatus}`,
+		`- Post-merge verification result: ${verificationResult}`,
+		`- Validation summary: ${validationSummary || 'no validation summary recorded'}`,
+		`- Terminal label result: ${terminalLabelResult || 'failure labels applied; source issue remains open'}`,
+		`- Remediation issue: ${remediationIssueUrl || 'see post-merge remediation workflow output'}`,
+		'- Source issue was not closed; queue advancement remains stopped until remediation resolves.',
+	].join('\n');
 }
 
 export function buildSourceIssueCloseoutComment({
