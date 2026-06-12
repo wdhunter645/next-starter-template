@@ -1,3 +1,13 @@
+---
+Doc Type: Template
+Audience: Human + AI
+Authority Level: Operational
+Owns: Copy-ready GitHub issue body for controlled AI execution bridge (`ai-build`) tasks
+Does Not Own: Bridge validation logic, workflow behavior, or merge approval
+Canonical Reference: /docs/how-to/ops/controlled-ai-execution-bridge.md
+Last Reviewed: 2026-06-12
+---
+
 # AI Build Issue Template
 
 Copy the body below into a new GitHub issue. Replace placeholder text before applying the `ai-build` label.
