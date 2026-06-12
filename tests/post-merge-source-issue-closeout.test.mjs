@@ -448,6 +448,49 @@ describe('sync-pr-state successful closeout', () => {
 		expect(run).not.toHaveBeenCalledWith(expect.arrayContaining(['issue', 'close', '1410']));
 	});
 
+	it('reconciles terminal labels without closing open remediation source issues on success', async () => {
+		process.env.GITHUB_REPOSITORY = 'owner/repo';
+		const syncPrState = await import('../scripts/orchestrator/sync-pr-state.mjs');
+		const run = vi.fn();
+		const reconciliations = [];
+
+		const result = syncPrState.syncPrState({
+			prNumber: '1586',
+			action: 'post_merge_success',
+			pr: {
+				body: '- **Issue:** #1576\n\nRemediation follow-up for PR #1572.',
+				mergedAt: '2026-06-11T17:21:10Z',
+				state: 'MERGED',
+				url: 'https://example.test/pr/1586',
+			},
+			postMergeResult: {
+				status: 'pass',
+				remediation_required: false,
+				source_issue_closeout_mode: 'open_source_issue',
+				terminal_label_result: {
+					ok: true,
+					removeLabels: ['status:post-merge-verify', 'post-merge-failure', 'status:failed'],
+					addLabel: 'status:complete',
+					summary: 'remove stale labels; add status:complete',
+				},
+			},
+			getIssueMeta: () => ({
+				title: 'Post-merge closeout exception for PR #1572 / source #1558 / workflow_failure',
+				labels: ['post-merge-failure', 'status:post-merge-verify', 'status:failed'],
+				state: 'OPEN',
+			}),
+			reconcileTerminalLabelsFn: (...args) => reconciliations.push(args),
+			run,
+		});
+
+		expect(result).toBe('remediation_issue');
+		expect(reconciliations).toHaveLength(1);
+		expect(run).toHaveBeenCalledWith(
+			expect.arrayContaining(['issue', 'comment', '1576', '--repo', 'owner/repo', '--body', expect.stringContaining('remediation_issue')]),
+		);
+		expect(run).not.toHaveBeenCalledWith(expect.arrayContaining(['issue', 'close', '1576']));
+	});
+
 	it('relabels without closing when post-merge validation failed', async () => {
 		const syncPrState = await import('../scripts/orchestrator/sync-pr-state.mjs');
 		const run = vi.fn();
