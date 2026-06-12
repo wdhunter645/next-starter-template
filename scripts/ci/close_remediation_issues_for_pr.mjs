@@ -3,6 +3,7 @@
 import { pathToFileURL } from 'node:url';
 import { githubRepoRequest } from './github_issue_api.mjs';
 import {
+	isRemediationIssue,
 	LEGACY_REMEDIATION_TITLE_PREFIX,
 	REMEDIATION_ISSUE_LABEL,
 	REMEDIATION_TITLE_PREFIX,
@@ -73,6 +74,7 @@ export async function closeRemediationIssuesForPr({
 	const matches = remediationIssuesForPr(openIssues, prNumber);
 	const closed = [];
 	const failed = [];
+	const closedNumbers = new Set();
 
 	for (const issue of matches) {
 		if (dryRun) {
@@ -100,12 +102,54 @@ export async function closeRemediationIssuesForPr({
 			});
 
 			closed.push({ number: issue.number });
+			closedNumbers.add(issue.number);
 		} catch (error) {
 			console.error(`Failed to close remediation issue #${issue.number} for PR #${prNumber}:`, error);
 			failed.push({
 				number: issue.number,
 				message: error instanceof Error ? error.message : String(error),
 			});
+		}
+	}
+
+	const sourceIssueNumber = Number(sourceIssue);
+	if (
+		Number.isInteger(sourceIssueNumber) &&
+		!closedNumbers.has(sourceIssueNumber) &&
+		!dryRun
+	) {
+		const linkedRemediationSource = openIssues.find((issue) => issue.number === sourceIssueNumber);
+		if (linkedRemediationSource && isRemediationIssue(linkedRemediationSource)) {
+			try {
+				await requestFn({
+					token,
+					repository,
+					path: `/issues/${sourceIssueNumber}/comments`,
+					method: 'POST',
+					body: {
+						body: remediationCloseComment({ prNumber, mergeSha, sourceIssue }),
+					},
+				});
+
+				await requestFn({
+					token,
+					repository,
+					path: `/issues/${sourceIssueNumber}`,
+					method: 'PATCH',
+					body: { state: 'closed', state_reason: 'completed' },
+				});
+
+				closed.push({ number: sourceIssueNumber, linked_source: true });
+			} catch (error) {
+				console.error(
+					`Failed to close linked remediation source issue #${sourceIssueNumber} for PR #${prNumber}:`,
+					error,
+				);
+				failed.push({
+					number: sourceIssueNumber,
+					message: error instanceof Error ? error.message : String(error),
+				});
+			}
 		}
 	}
 

@@ -185,6 +185,7 @@ describe('post-merge closeout sync propagation', () => {
 	it('treats only completed source issue closeout sync results as successful', () => {
 		expect(isSuccessfulSourceIssueCloseout('complete')).toBe(true);
 		expect(isSuccessfulSourceIssueCloseout('active_relabeled')).toBe(true);
+		expect(isSuccessfulSourceIssueCloseout('remediation_issue')).toBe(true);
 		expect(isSuccessfulSourceIssueCloseout('failure_relabeled')).toBe(false);
 		expect(isSuccessfulSourceIssueCloseout('validator_not_pass')).toBe(false);
 	});

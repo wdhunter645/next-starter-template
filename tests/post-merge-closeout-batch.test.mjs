@@ -96,6 +96,36 @@ describe('post-merge closeout batch', () => {
 		);
 	});
 
+	it('closes a linked remediation source issue when it is not already matched by PR number', async () => {
+		const request = vi.fn().mockResolvedValue(null);
+		const issues = [
+			{
+				number: 1576,
+				title: 'Post-merge closeout exception for PR #1572 / source #1558 / workflow_failure',
+				body: '- PR: #1572\n- Merge SHA: abc\n- Source issue: #1558',
+				labels: [{ name: 'post-merge-failure' }],
+			},
+			{
+				number: 1590,
+				title: 'Post-merge closeout exception for PR #1586 / source #1576 / source_issue_closeout_skipped',
+				body: '- PR: #1586\n- Merge SHA: def\n- Source issue: #1576',
+				labels: [{ name: 'post-merge-failure' }],
+			},
+		];
+
+		const outcome = await closeRemediationIssuesForPr({
+			token: 'token',
+			repository: 'owner/repo',
+			prNumber: '1586',
+			sourceIssue: '1576',
+			listOpenIssues: async () => issues,
+			requestFn: request,
+		});
+
+		expect(outcome.closed.map((entry) => entry.number).sort((a, b) => a - b)).toEqual([1576, 1590]);
+		expect(request).toHaveBeenCalledTimes(4);
+	});
+
 	it('continues closing other remediation issues when one closure fails', async () => {
 		const request = vi
 			.fn()

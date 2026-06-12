@@ -37,7 +37,11 @@ export function toSyncPr({ pr } = {}) {
 }
 
 export function isSuccessfulSourceIssueCloseout(syncResult) {
-	return syncResult === 'complete' || syncResult === 'active_relabeled';
+	return (
+		syncResult === 'complete' ||
+		syncResult === 'active_relabeled' ||
+		syncResult === 'remediation_issue'
+	);
 }
 
 export function runSync({ repository, prNumber, syncAction, pr, resultPath = POST_MERGE_RESULT_PATH }) {
