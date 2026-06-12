@@ -13,6 +13,7 @@ import {
 } from '../scripts/ci/post_merge_closeout_trigger.mjs';
 import {
 	buildCloseoutErrorResult,
+	isFailureRelabelHalted,
 	isSuccessfulSourceIssueCloseout,
 	resolveCloseoutEventContext,
 	toSyncPr,
@@ -190,12 +191,20 @@ describe('post-merge closeout sync propagation', () => {
 		expect(isSuccessfulSourceIssueCloseout('validator_not_pass')).toBe(false);
 	});
 
+	it('detects halted failure-path relabel sync results', () => {
+		expect(isFailureRelabelHalted('failure_relabel_halted')).toBe(true);
+		expect(isFailureRelabelHalted('failure_relabeled')).toBe(false);
+		expect(isFailureRelabelHalted('complete')).toBe(false);
+	});
+
 	it('exports direct sync wiring instead of spawning a child process', () => {
 		const closeoutScript = fs.readFileSync('scripts/ci/run_post_merge_closeout.mjs', 'utf8');
 
 		expect(closeoutScript).toContain('export function runSync');
 		expect(closeoutScript).toContain('isSuccessfulSourceIssueCloseout');
+		expect(closeoutScript).toContain('isFailureRelabelHalted');
 		expect(closeoutScript).toContain("source_issue_closeout_skipped");
+		expect(closeoutScript).toContain("failure_relabel_halted");
 	});
 });
 

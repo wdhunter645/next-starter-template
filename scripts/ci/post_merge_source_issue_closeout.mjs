@@ -50,13 +50,25 @@ export function planFailureSourceIssueRelabel({ issueLabels = [], repoLabels = [
 			.filter(Boolean),
 	);
 
+	const hasFailureLabel = labels.has(FAILURE_SOURCE_ISSUE_LABEL);
+	const canApplyFailureLabel = availableLabels.has(FAILURE_SOURCE_ISSUE_LABEL);
+
+	if (!hasFailureLabel && !canApplyFailureLabel) {
+		return {
+			ok: false,
+			reason: 'failure_label_unavailable',
+			removeLabels: [],
+			addLabel: '',
+			summary:
+				'halt — stale status labels preserved; status:failed label unavailable in repository',
+		};
+	}
+
 	const removeLabels = STALE_SOURCE_ISSUE_LABELS.filter(
 		(label) => label !== FAILURE_SOURCE_ISSUE_LABEL && labels.has(label),
 	);
 	const addLabel =
-		availableLabels.has(FAILURE_SOURCE_ISSUE_LABEL) && !labels.has(FAILURE_SOURCE_ISSUE_LABEL)
-			? FAILURE_SOURCE_ISSUE_LABEL
-			: '';
+		canApplyFailureLabel && !hasFailureLabel ? FAILURE_SOURCE_ISSUE_LABEL : '';
 
 	return {
 		ok: true,

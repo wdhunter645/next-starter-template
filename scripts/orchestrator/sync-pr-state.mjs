@@ -236,6 +236,12 @@ export function syncPrState({
       issueLabels: meta.labels || [],
       repoLabels: getRepoLabels(),
     });
+    if (!failureLabelResult.ok) {
+      log(
+        `Post-merge closeout exception for PR #${prNumber}: failure-path relabel halted (${failureLabelResult.reason}); source issue labels unchanged.`,
+      );
+      return 'failure_relabel_halted';
+    }
     reconcileTerminalLabelsFn(issueNumber, failureLabelResult);
 
     const mergeSha = postMergeResult?.merge_sha || pr?.mergeCommit?.oid || '';

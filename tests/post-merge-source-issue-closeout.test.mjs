@@ -260,6 +260,20 @@ describe('source issue closeout evidence', () => {
 		});
 	});
 
+	it('halts failure-path relabel when status:failed is unavailable in the repository', () => {
+		const plan = planFailureSourceIssueRelabel({
+			issueLabels: ['orchestrator', 'status:post-merge-verify'],
+			repoLabels: ['status:complete'],
+		});
+
+		expect(plan).toMatchObject({
+			ok: false,
+			reason: 'failure_label_unavailable',
+			removeLabels: [],
+			addLabel: '',
+		});
+	});
+
 	it('renders failure closeout evidence without claiming success', () => {
 		const comment = buildFailureCloseoutComment({
 			prNumber: '1567',
@@ -512,5 +526,25 @@ describe('sync-pr-state successful closeout', () => {
 			addLabel: 'status:failed',
 		});
 		expect(run).toHaveBeenCalledWith(expect.arrayContaining(['issue', 'comment', '1196']));
+	});
+
+	it('halts failure-path sync when status:failed is unavailable in the repository', async () => {
+		const syncPrState = await import('../scripts/orchestrator/sync-pr-state.mjs');
+		const run = vi.fn();
+		const reconciliations = [];
+
+		const result = syncPrState.syncPrState({
+			prNumber: '1583',
+			action: 'post_merge_remediation',
+			pr: { body: baseBody, mergedAt: '2026-06-12T14:00:00Z', state: 'MERGED', url: 'https://example.test/pr/1583' },
+			reconcileTerminalLabelsFn: (...args) => reconciliations.push(args),
+			getIssueMeta: () => ({ labels: ['status:post-merge-verify'], state: 'OPEN' }),
+			getRepoLabels: () => ['status:complete'],
+			run,
+		});
+
+		expect(result).toBe('failure_relabel_halted');
+		expect(reconciliations).toHaveLength(0);
+		expect(run).not.toHaveBeenCalled();
 	});
 });
