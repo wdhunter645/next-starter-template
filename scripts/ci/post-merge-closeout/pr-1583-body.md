@@ -64,6 +64,7 @@ git diff --check
 - [x] Closeout path fixed: failure/remediation relabel source issues; success skips become remediation failures
 - [x] Regression coverage for failure path and preserved `status:failed` label
 - [x] Fail-closed relabel when `status:failed` unavailable (Copilot #3404141971)
+- [x] Late Copilot non-open failure-path guard (#3404187420) dispositioned for closeout replay
 - [x] #1545 relabeled/closed via prior body remediation
 
 ## REVIEWER RESPONSE ACCOUNTING
@@ -78,7 +79,8 @@ Reviewer items:
 - review-comment:3397642232 — accepted — Optional chaining for `pr?.mergeCommit?.oid` — thread state: resolved
 - review-comment:4478777607 — acknowledged — Gemini review summary; inline findings dispositioned above — thread state: resolved
 - review-comment:3404141971 — accepted — Fail-closed failure-path relabel when `status:failed` unavailable in repository — thread state: resolved
-- review-comment:4486590023 — acknowledged — Copilot PR overview; single inline finding addressed via #3404141971 — thread state: resolved
+- review-comment:3404187420 — acknowledged — Closed-remediation-followup mode authorizes terminal label reconciliation on completed closed source **#1578**; generic non-open failure-path relabel guard tracked under Program 1500 follow-up — thread state: resolved
+- review-comment:4486590023 — acknowledged — Copilot PR overview; late inline findings dispositioned via #3404141971 and #3404187420 — thread state: resolved
 
 ## REQUIRED PRE-REVIEW SELF-CHECK
 - [x] PR body contains all required sections with exact headings
