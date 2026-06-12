@@ -14,6 +14,17 @@ Purpose: **Mandatory starting point and routing authority** for all AI agents. N
 
 ---
 
+## CURSOR SESSION BOOTSTRAP
+
+Cursor injects thin bootstrap routers that point here and to canonical governance. They do **not** replace this file or shared/core rules.
+
+- **Local Composer/Agent sessions:** `.cursor/rules/*.mdc` (`alwaysApply: true`)
+- **Cloud Agent sessions:** root `AGENTS.md`
+
+See `docs/how-to/cursor/agent-session-bootstrap.md` for verification.
+
+---
+
 ## MANDATORY DOCUMENTATION CHAIN
 
 Before any repo work — including exploration, implementation, PR creation, issue work, review, or remediation — every agent must follow this chain in order:

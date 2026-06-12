@@ -1,0 +1,25 @@
+---
+description: Hard stop conditions for Cursor agents
+alwaysApply: true
+---
+
+# Stop conditions
+
+Stop and report instead of continuing when:
+
+- No source issue
+- No file-touch allowlist
+- Unclear scope
+- Authority conflict with canonical docs
+- Unverified PR or live gate state for readiness claims
+- Mixed intent in one PR
+- Edits outside the approved allowlist
+
+## Boundaries
+
+- Do not expand scope; record discovered work in the source issue
+- Do not merge pull requests unless explicitly authorized
+- Do not close or relabel GitHub issues unless explicitly authorized
+- When cloud workflow instructs branch creation, use `cursor/<descriptive-name>-2e48`
+
+Full stop conditions and execution law live in `docs/ops/ai/CORE-RULES.md` and `docs/ops/ai/SHARED-AGENT-RULES.md`.
