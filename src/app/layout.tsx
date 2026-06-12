@@ -4,6 +4,7 @@ import "./globals.css";
 import "./../styles/variables.css";
 import SiteHeader from "../components/SiteHeader";
 import Footer from "@/components/Footer";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 export const metadata: Metadata = {
 	title: "Lou Gehrig Fan Club",
@@ -18,6 +19,7 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body className="antialiased">
+				<GoogleAnalytics />
 				{/* Header: visitor vs member */}
 				<SiteHeader />
 				{/* Offset for sticky controls */}

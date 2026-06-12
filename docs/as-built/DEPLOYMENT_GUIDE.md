@@ -202,6 +202,7 @@ Environment variables should be configured in the Cloudflare Pages dashboard und
 Available environment variables:
 - `NEXT_PUBLIC_SITE_NAME` - Site name (default: "Lou Gehrig Fan Club")
 - `NEXT_PUBLIC_APP_VERSION` - Application version (default: "1.0.0")
+- `NEXT_PUBLIC_GA_ID` - Google Analytics 4 measurement ID (e.g. `G-XXXXXXXXXX`). When unset, the site builds and runs without loading any GA scripts. Configure this in **Cloudflare Pages → Settings → Environment variables** so the value is present at build time for production deploys.
 
 ### Local Development
 
