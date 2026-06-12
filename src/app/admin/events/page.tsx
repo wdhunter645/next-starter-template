@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PageShell from '@/components/PageShell';
 import AdminNav from '@/components/admin/AdminNav';
+import AdminStatusText from '@/components/admin/AdminStatusText';
 import AdminTokenPanel from '@/components/admin/AdminTokenPanel';
-import { adminJson } from '@/lib/adminClient';
+import { adminJson, getStoredAdminToken } from '@/lib/adminClient';
 
 type EventRecord = {
   id: number;
@@ -105,7 +106,7 @@ function draftFromRecord(record: EventRecord): EventDraft {
 
 export default function AdminEventsPage() {
   const [month, setMonth] = useState(monthKeyFromDate());
-  const [status, setStatus] = useState('Idle.');
+  const [status, setStatus] = useState('Save an admin API token above to load events.');
   const [seedStatus, setSeedStatus] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -113,6 +114,8 @@ export default function AdminEventsPage() {
   const [items, setItems] = useState<EventRecord[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [draft, setDraft] = useState<EventDraft>(EMPTY_DRAFT);
+  const [tokenReady, setTokenReady] = useState(false);
+  const loadRequestRef = useRef(0);
 
   const selected = useMemo(
     () => (selectedId === null ? null : items.find((item) => item.id === selectedId) ?? null),
@@ -120,12 +123,29 @@ export default function AdminEventsPage() {
   );
 
   const load = useCallback(async () => {
+    if (!getStoredAdminToken()) {
+      setItems([]);
+      setStatus('Save an admin API token above to load events.');
+      setLoading(false);
+      return;
+    }
+
+    const requestId = ++loadRequestRef.current;
     setLoading(true);
     setStatus(`Loading events for ${month}…`);
 
     const result = await adminJson<EventListResponse>(
       `/api/admin/events/list?month=${encodeURIComponent(month)}&limit=100`,
     );
+
+    if (requestId !== loadRequestRef.current) {
+      return;
+    }
+
+    if (!getStoredAdminToken()) {
+      setLoading(false);
+      return;
+    }
 
     if (!result.ok) {
       setItems([]);
@@ -151,6 +171,11 @@ export default function AdminEventsPage() {
   }, []);
 
   const createEvent = useCallback(async () => {
+    if (!getStoredAdminToken()) {
+      setStatus('Error: Save an admin API token above before creating events.');
+      return;
+    }
+
     setSaving(true);
     setStatus('Creating event…');
 
@@ -174,6 +199,11 @@ export default function AdminEventsPage() {
   const updateEvent = useCallback(async () => {
     if (selectedId === null) return;
 
+    if (!getStoredAdminToken()) {
+      setStatus('Error: Save an admin API token above before updating events.');
+      return;
+    }
+
     setSaving(true);
     setStatus(`Updating event ${selectedId}…`);
 
@@ -194,6 +224,11 @@ export default function AdminEventsPage() {
   }, [draft, load, selectedId]);
 
   const seedNextTen = useCallback(async () => {
+    if (!getStoredAdminToken()) {
+      setSeedStatus('Error: Save an admin API token above before seeding events.');
+      return;
+    }
+
     setSeeding(true);
     setSeedStatus('Seeding placeholder events…');
 
@@ -216,7 +251,10 @@ export default function AdminEventsPage() {
   }, [load]);
 
   useEffect(() => {
-    void load();
+    if (getStoredAdminToken()) {
+      setTokenReady(true);
+      void load();
+    }
   }, [load]);
 
   return (
@@ -225,36 +263,71 @@ export default function AdminEventsPage() {
       subtitle="Create, update, and seed events that feed the public /events page and homepage calendar."
     >
       <AdminNav />
-      <AdminTokenPanel onSaved={() => void load()} />
+      <AdminTokenPanel
+        onSaved={() => {
+          if (!getStoredAdminToken()) {
+            loadRequestRef.current += 1;
+            setTokenReady(false);
+            setLoading(false);
+            setSaving(false);
+            setSeeding(false);
+            setItems([]);
+            setSelectedId(null);
+            setDraft(EMPTY_DRAFT);
+            setSeedStatus('');
+            setStatus('Save an admin API token above to load events.');
+            return;
+          }
+          setTokenReady(true);
+          void load();
+        }}
+      />
+
+      {!tokenReady ? (
+        <p style={{ marginTop: 16, opacity: 0.85 }}>Save an admin API token above to load events.</p>
+      ) : null}
 
       <div style={{ display: 'grid', gap: 18, marginTop: 16 }}>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          <label style={{ display: 'grid', gap: 6 }}>
-            Month
-            <input
-              type="month"
-              value={month}
-              onChange={(event) => setMonth(event.target.value)}
-              style={fieldStyle()}
-            />
-          </label>
+        <div style={{ display: 'grid', gap: 10 }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+            <label style={{ display: 'grid', gap: 6 }}>
+              Month
+              <input
+                type="month"
+                value={month}
+                onChange={(event) => setMonth(event.target.value)}
+                disabled={!tokenReady}
+                style={fieldStyle()}
+              />
+            </label>
 
-          <button type="button" onClick={() => void load()} disabled={loading} style={buttonStyle(loading)}>
-            {loading ? 'Loading…' : 'Refresh'}
-          </button>
+            <button
+              type="button"
+              onClick={() => void load()}
+              disabled={loading || !tokenReady}
+              style={buttonStyle(loading || !tokenReady)}
+            >
+              {loading ? 'Loading…' : 'Refresh'}
+            </button>
 
-          <button type="button" onClick={() => void seedNextTen()} disabled={seeding} style={buttonStyle(seeding)}>
-            {seeding ? 'Seeding…' : 'Seed next 10 placeholders'}
-          </button>
+            <button
+              type="button"
+              onClick={() => void seedNextTen()}
+              disabled={seeding || !tokenReady}
+              style={buttonStyle(seeding || !tokenReady)}
+            >
+              {seeding ? 'Seeding…' : 'Seed next 10 placeholders'}
+            </button>
 
-          <button type="button" onClick={resetCreateForm} style={buttonStyle()}>
-            New event
-          </button>
+            <button type="button" onClick={resetCreateForm} disabled={!tokenReady} style={buttonStyle(!tokenReady)}>
+              New event
+            </button>
+          </div>
 
-          <span style={{ opacity: 0.85 }}>{status}</span>
+          <AdminStatusText message={status} />
         </div>
 
-        {seedStatus ? <p style={{ margin: 0, opacity: 0.85 }}>{seedStatus}</p> : null}
+        {seedStatus ? <AdminStatusText message={seedStatus} /> : null}
 
         <section style={{ border: '1px solid rgba(0,0,0,0.12)', borderRadius: 14, padding: 14 }}>
           <h2 style={{ marginTop: 0 }}>{selected ? `Edit event #${selected.id}` : 'Create event'}</h2>
@@ -370,11 +443,11 @@ export default function AdminEventsPage() {
             </label>
 
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <button type="submit" disabled={saving} style={buttonStyle(saving)}>
+              <button type="submit" disabled={saving || !tokenReady} style={buttonStyle(saving || !tokenReady)}>
                 {saving ? 'Saving…' : selected ? 'Save changes' : 'Create event'}
               </button>
               {selected ? (
-                <button type="button" onClick={resetCreateForm} style={buttonStyle()}>
+                <button type="button" onClick={resetCreateForm} disabled={!tokenReady} style={buttonStyle(!tokenReady)}>
                   Cancel edit
                 </button>
               ) : null}
@@ -404,7 +477,12 @@ export default function AdminEventsPage() {
                         status: {record.status}
                       </div>
                     </div>
-                    <button type="button" onClick={() => startEdit(record)} style={buttonStyle()}>
+                    <button
+                      type="button"
+                      onClick={() => startEdit(record)}
+                      disabled={!tokenReady}
+                      style={buttonStyle(!tokenReady)}
+                    >
                       Edit
                     </button>
                   </div>
