@@ -57,11 +57,11 @@ npm run build
 - [x] Gemini and Copilot dispositions received.
 
 Reviewer items:
-- review-comment:3404222935 — deferred — Duplicate token prompt `<p>` retained for explicit pre-token UX; `AdminStatusText` handles API errors — thread state: resolved
-- review-comment:3404222944 — deferred — `getAllByText` retained to assert duplicate prompt surfaces during token-clear reset — thread state: resolved
-- review-comment:3404222960 — deferred — `getAllByText` retained to assert duplicate prompt surfaces during token-clear reset — thread state: resolved
-- review-comment:3404238429 — deferred — Create/update errors use `Create error:` / `Update error:` prefixes; list/auth errors use `Error:` prefix with `role="alert"` — thread state: resolved
-- review-comment:3404238455 — deferred — Seed auth guard uses `Error:` prefix; operational seed failures use `Seed error:` without alert semantics by design — thread state: resolved
+- review-comment:3404222935 — acknowledged — Duplicate token prompt `<p>` retained for explicit pre-token UX; `AdminStatusText` handles API errors — thread state: outdated
+- review-comment:3404222944 — acknowledged — `getAllByText` retained to assert duplicate prompt surfaces during token-clear reset — thread state: outdated
+- review-comment:3404222960 — acknowledged — `getAllByText` retained to assert duplicate prompt surfaces during token-clear reset — thread state: outdated
+- review-comment:3404238429 — acknowledged — Create/update errors use `Create error:` / `Update error:` prefixes; list/auth errors use `Error:` prefix with `role="alert"` — thread state: outdated
+- review-comment:3404238455 — acknowledged — Seed auth guard uses `Error:` prefix; operational seed failures use `Seed error:` without alert semantics by design — thread state: outdated
 
 ## ACCEPTANCE CRITERIA
 - [x] Admin event CRUD safe under empty/error/auth conditions
