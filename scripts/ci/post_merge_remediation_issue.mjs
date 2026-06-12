@@ -54,6 +54,7 @@ export function remediationBody(result) {
 		`- Source issue closeout mode: ${result.source_issue_closeout_mode || 'not evaluated'}`,
 		`- Validator status: ${result.status}`,
 		`- Remediation required: ${result.remediation_required ? 'yes' : 'no'}`,
+		`- Workflow run URL: ${result.workflow_run_url || 'not recorded'}`,
 		`- Terminal label result: ${result.terminal_label_result?.summary || 'not evaluated'}`,
 		`- Queue advancement status: ${result.queue_advancement_status || 'stopped; Atlas/Bill review required'}`,
 		'',

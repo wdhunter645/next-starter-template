@@ -13,7 +13,9 @@ import {
 } from '../scripts/ci/post_merge_closeout_trigger.mjs';
 import {
 	buildCloseoutErrorResult,
+	isSuccessfulSourceIssueCloseout,
 	resolveCloseoutEventContext,
+	toSyncPr,
 } from '../scripts/ci/run_post_merge_closeout.mjs';
 import {
 	blockingCloseoutFailures,
@@ -155,10 +157,44 @@ describe('consolidated automatic closeout ownership', () => {
 		expect(intentWorkflow).not.toContain('pull_request_target');
 		expect(intentWorkflow).not.toContain('sync-pr-state.mjs');
 		expect(bodyCloseoutWorkflow).not.toContain('pull_request_target');
+		expect(closeoutScript).toContain("from '../orchestrator/sync-pr-state.mjs'");
+		expect(closeoutScript).toContain('runSync({');
+		expect(closeoutScript).not.toContain("execFileSync('node', ['scripts/orchestrator/sync-pr-state.mjs']");
+	});
+});
+
+describe('post-merge closeout sync propagation', () => {
+	it('maps merged PR payloads into orchestrator sync input', () => {
 		expect(
-			(closeoutScript.match(/execFileSync\('node', \['scripts\/orchestrator\/sync-pr-state\.mjs'\]/g) || [])
-				.length,
-		).toBe(1);
+			toSyncPr({
+				pr: {
+					body: '- **Issue:** #1545',
+					html_url: 'https://github.test/repo/pull/1567',
+					merged_at: '2026-06-11T16:18:08Z',
+					merge_commit_sha: '314c236c986c',
+				},
+			}),
+		).toMatchObject({
+			body: '- **Issue:** #1545',
+			url: 'https://github.test/repo/pull/1567',
+			state: 'MERGED',
+			mergeCommit: { oid: '314c236c986c' },
+		});
+	});
+
+	it('treats only completed source issue closeout sync results as successful', () => {
+		expect(isSuccessfulSourceIssueCloseout('complete')).toBe(true);
+		expect(isSuccessfulSourceIssueCloseout('active_relabeled')).toBe(true);
+		expect(isSuccessfulSourceIssueCloseout('failure_relabeled')).toBe(false);
+		expect(isSuccessfulSourceIssueCloseout('validator_not_pass')).toBe(false);
+	});
+
+	it('exports direct sync wiring instead of spawning a child process', () => {
+		const closeoutScript = fs.readFileSync('scripts/ci/run_post_merge_closeout.mjs', 'utf8');
+
+		expect(closeoutScript).toContain('export function runSync');
+		expect(closeoutScript).toContain('isSuccessfulSourceIssueCloseout');
+		expect(closeoutScript).toContain("source_issue_closeout_skipped");
 	});
 });
 

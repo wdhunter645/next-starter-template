@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 import fs from 'node:fs';
-import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 
 import { applyMergedPrBody } from './apply_merged_pr_body.mjs';
+import { readPostMergeResult, syncPrState } from '../orchestrator/sync-pr-state.mjs';
 import { closeDuplicateRemediationIssues } from './close_duplicate_remediation_issues.mjs';
 import { closeRemediationIssuesForPr } from './close_remediation_issues_for_pr.mjs';
 import {
@@ -26,17 +26,26 @@ function writeCloseoutOutput(name, value) {
 	if (outputPath) fs.appendFileSync(outputPath, `${name}=${value}\n`);
 }
 
-function runSync({ repository, prNumber, syncAction }) {
-	execFileSync('node', ['scripts/orchestrator/sync-pr-state.mjs'], {
-		stdio: 'inherit',
-		env: {
-			...process.env,
-			GITHUB_REPOSITORY: repository,
-			PR_NUMBER: String(prNumber),
-			SYNC_ACTION: syncAction,
-			POST_MERGE_RESULT_PATH,
-			GH_TOKEN: process.env.GITHUB_TOKEN || process.env.GH_TOKEN,
-		},
+export function toSyncPr({ pr } = {}) {
+	return {
+		body: pr?.body || '',
+		url: pr?.html_url || pr?.url || '',
+		mergedAt: pr?.merged_at || pr?.mergedAt || '',
+		state: pr?.merged_at || pr?.mergedAt ? 'MERGED' : pr?.state || '',
+		mergeCommit: { oid: pr?.merge_commit_sha || pr?.mergeCommit?.oid || '' },
+	};
+}
+
+export function isSuccessfulSourceIssueCloseout(syncResult) {
+	return syncResult === 'complete' || syncResult === 'active_relabeled';
+}
+
+export function runSync({ repository, prNumber, syncAction, pr, resultPath = POST_MERGE_RESULT_PATH }) {
+	return syncPrState({
+		pr: toSyncPr({ pr }),
+		prNumber: String(prNumber),
+		action: syncAction,
+		postMergeResult: readPostMergeResult(resultPath),
 	});
 }
 
@@ -152,10 +161,30 @@ export async function runPostMergeCloseout({
 		workflowRunScope,
 	});
 
+	if (runId) {
+		result.workflow_run_url = `https://github.com/${repository}/actions/runs/${runId}`;
+	}
+
 	await writePostMergeResultArtifactsAsync(result);
 
+	let syncResult = null;
 	if (result.sync_action && result.sync_action !== 'skipped') {
-		runSync({ repository, prNumber, syncAction: result.sync_action });
+		syncResult = runSync({ repository, prNumber, syncAction: result.sync_action, pr });
+	}
+
+	if (result.sync_action === 'post_merge_success' && !isSuccessfulSourceIssueCloseout(syncResult)) {
+		result.status = 'fail';
+		result.remediation_required = true;
+		result.sync_action = 'post_merge_failure';
+		result.metadata_failures = [
+			...(result.metadata_failures || []),
+			{
+				code: 'source_issue_closeout_skipped',
+				message: `Post-merge validation passed but source issue closeout was skipped: ${syncResult || 'unknown'}.`,
+			},
+		];
+		await writePostMergeResultArtifactsAsync(result);
+		syncResult = runSync({ repository, prNumber, syncAction: 'post_merge_failure', pr });
 	}
 
 	if (result.sync_action === 'post_merge_success') {
