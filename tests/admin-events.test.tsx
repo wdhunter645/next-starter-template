@@ -157,6 +157,71 @@ describe('admin events page', () => {
     });
   });
 
+  it('does not load events until an admin token is saved', async () => {
+    window.localStorage.removeItem('lgfc_admin_token');
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+
+    render(<AdminEventsPage />);
+
+    expect(screen.getAllByText(/Save an admin API token above to load events/i).length).toBeGreaterThan(0);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('clears event state when the admin token is removed', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const path = String(input);
+      if (path.startsWith('/api/admin/events/list')) {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            items: [
+              {
+                id: 1,
+                title: 'Fan Club Meetup',
+                start_date: '2026-06-15',
+                end_date: '2026-06-15',
+                status: 'posted',
+              },
+            ],
+          }),
+        );
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${path}`));
+    });
+
+    render(<AdminEventsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Fan Club Meetup')).toBeInTheDocument();
+    });
+
+    window.localStorage.removeItem('lgfc_admin_token');
+    fireEvent.change(screen.getByLabelText('Admin token'), { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save token' }));
+
+    await waitFor(() => {
+      expect(screen.queryByText('Fan Club Meetup')).not.toBeInTheDocument();
+      expect(screen.getAllByText(/Save an admin API token above to load events/i).length).toBeGreaterThan(0);
+    });
+
+    expect(fetchMock.mock.calls.filter(([path]) => String(path).startsWith('/api/admin/events/list'))).toHaveLength(1);
+  });
+
+  it('announces list errors via AdminStatusText alert', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      if (String(input).startsWith('/api/admin/events/list')) {
+        return Promise.resolve(jsonResponse({ ok: false, error: 'Database unavailable' }, 503));
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${String(input)}`));
+    });
+
+    render(<AdminEventsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('Error: Database unavailable');
+    });
+  });
+
   it('loads events with the stored admin token', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
       const headers = init?.headers instanceof Headers ? init.headers : new Headers(init?.headers);
