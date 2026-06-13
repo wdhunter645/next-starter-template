@@ -27,8 +27,11 @@ jobs:
     if: |
       (github.event_name == 'workflow_dispatch' && inputs.apply_maintainer_body == true) ||
       (github.event_name == 'pull_request' &&
-        github.event.pull_request.number == 1241 &&
-        !contains(github.event.pull_request.body, 'review-comment:3349689698'))
+        (
+          github.event.pull_request.number == 1241 &&
+          !contains(github.event.pull_request.body, 'review-comment:3349689698')
+        ) ||
+        github.event.pull_request.number == 1618)
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -51,5 +54,6 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           APPLY_MAINTAINER_PR_BODY: 'true'
+          FORCE_APPLY_OPEN_PR_BODY: ${{ github.event.pull_request.number == 1618 && 'true' || '' }}
           PR_NUMBER: ${{ github.event_name == 'pull_request' && github.event.pull_request.number || inputs.pr_number }}
         run: node scripts/ci/post_merge_validator.mjs
