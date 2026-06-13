@@ -1,20 +1,39 @@
 # Cursor Cloud Agent bootstrap
 
-Cloud Agent sessions must follow the mandatory documentation chain before any repo work.
+When a Cloud Agent session loads this file, the bootstrap is not complete until the agent has read the canonical chain below.
 
-## Read first
+Do not merely report that these files are required. Read them before making any repo-work, readiness, implementation, or PR-governance claim:
 
-1. `Agent.md` — mandatory entry point (do not skip)
+1. `Agent.md`
 2. `docs/ops/ai/SHARED-AGENT-RULES.md`
 3. `docs/ops/ai/CORE-RULES.md`
 4. `docs/ops/ai/CURSOR-RULES.md`
-5. Applicable `.agents/skills/*/SKILL.md` files for the task
-6. Source GitHub issue and task-linked authority files
 
-For PR or issue work, also read:
+For PR, issue, review, remediation, or implementation work, also read:
 
-- `.agents/skills/lgfc-pr-governance/SKILL.md`
-- `.github/pull_request_template.md`
+5. `.agents/skills/lgfc-pr-governance/SKILL.md`
+6. `.github/pull_request_template.md`
+7. `docs/how-to/cursor/open-task-pr.md`
+
+A bootstrap report that says these files are "required but not yet read" is noncompliant.
+
+After the canonical chain, read applicable `.agents/skills/*/SKILL.md` files for the task and the source GitHub issue with task-linked authority files.
+
+## First bootstrap report
+
+Before any other repo-work response, report each file as **read**:
+
+- AGENTS.md: read
+- Agent.md: read
+- SHARED-AGENT-RULES.md: read
+- CORE-RULES.md: read
+- CURSOR-RULES.md: read
+
+For PR work, also report:
+
+- lgfc-pr-governance/SKILL.md: read
+- .github/pull_request_template.md: read
+- docs/how-to/cursor/open-task-pr.md: read
 
 ## Stop before implementation when
 

@@ -22,6 +22,29 @@ export const BOOTSTRAP_REQUIRED_PATH_REFERENCES = [
   'docs/ops/ai/CURSOR-RULES.md',
   '.agents/skills/lgfc-pr-governance/SKILL.md',
   '.github/pull_request_template.md',
+  'docs/how-to/cursor/open-task-pr.md',
+];
+
+export const AGENTS_MD_CLOUD_BOOTSTRAP_REQUIRED_PHRASES = [
+  'bootstrap is not complete until the agent has read the canonical chain',
+  'Do not merely report that these files are required',
+  'repo-work, readiness, implementation, or PR-governance claim',
+  'required but not yet read',
+  'docs/how-to/cursor/open-task-pr.md',
+];
+
+export const AGENTS_MD_BOOTSTRAP_REPORT_REQUIRED = [
+  'AGENTS.md: read',
+  'Agent.md: read',
+  'SHARED-AGENT-RULES.md: read',
+  'CORE-RULES.md: read',
+  'CURSOR-RULES.md: read',
+];
+
+export const AGENTS_MD_PR_BOOTSTRAP_REPORT_REQUIRED = [
+  'lgfc-pr-governance/SKILL.md: read',
+  '.github/pull_request_template.md: read',
+  'docs/how-to/cursor/open-task-pr.md: read',
 ];
 
 export const BOOTSTRAP_FORBIDDEN_MCP_PATHS = [
@@ -178,8 +201,26 @@ export function validateBootstrap(root) {
     }
   }
 
+  let agentsMd = '';
+
   if (exists(root, 'AGENTS.md')) {
-    bootstrapContents.push(read(root, 'AGENTS.md'));
+    agentsMd = read(root, 'AGENTS.md');
+    bootstrapContents.push(agentsMd);
+
+    for (const phrase of AGENTS_MD_CLOUD_BOOTSTRAP_REQUIRED_PHRASES) {
+      if (!agentsMd.includes(phrase)) {
+        failures.push(`AGENTS.md must include Cloud bootstrap hardening phrase: ${phrase}`);
+      }
+    }
+
+    for (const reportLine of [
+      ...AGENTS_MD_BOOTSTRAP_REPORT_REQUIRED,
+      ...AGENTS_MD_PR_BOOTSTRAP_REPORT_REQUIRED,
+    ]) {
+      if (!agentsMd.includes(reportLine)) {
+        failures.push(`AGENTS.md must define bootstrap report contract line: ${reportLine}`);
+      }
+    }
   }
 
   const combinedBootstrap = bootstrapContents.join('\n');
