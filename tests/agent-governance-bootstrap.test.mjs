@@ -6,6 +6,9 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 import {
+  AGENTS_MD_BOOTSTRAP_REPORT_REQUIRED,
+  AGENTS_MD_CLOUD_BOOTSTRAP_REQUIRED_PHRASES,
+  AGENTS_MD_PR_BOOTSTRAP_REPORT_REQUIRED,
   BOOTSTRAP_RULE_FILES,
   MAX_BOOTSTRAP_RULE_LINES,
   runAgentGovernanceCheck,
@@ -43,17 +46,36 @@ alwaysApply: true
 
 Read Agent.md, docs/ops/ai/SHARED-AGENT-RULES.md, docs/ops/ai/CORE-RULES.md,
 docs/ops/ai/CURSOR-RULES.md, .agents/skills/lgfc-pr-governance/SKILL.md,
-.github/pull_request_template.md.
+.github/pull_request_template.md, docs/how-to/cursor/open-task-pr.md.
 ${extra}
 `;
 }
 
 function minimalAgentsMd() {
+  const reportLines = [
+    ...AGENTS_MD_BOOTSTRAP_REPORT_REQUIRED,
+    ...AGENTS_MD_PR_BOOTSTRAP_REPORT_REQUIRED,
+  ].join('\n- ');
+
   return `# AGENTS.md
 
-Read Agent.md, docs/ops/ai/SHARED-AGENT-RULES.md, docs/ops/ai/CORE-RULES.md,
-docs/ops/ai/CURSOR-RULES.md, .agents/skills/lgfc-pr-governance/SKILL.md,
-.github/pull_request_template.md.
+When a Cloud Agent session loads this file, the bootstrap is not complete until the agent has read the canonical chain below.
+
+Do not merely report that these files are required. Read them before making any repo-work, readiness, implementation, or PR-governance claim:
+
+1. Agent.md
+2. docs/ops/ai/SHARED-AGENT-RULES.md
+3. docs/ops/ai/CORE-RULES.md
+4. docs/ops/ai/CURSOR-RULES.md
+5. .agents/skills/lgfc-pr-governance/SKILL.md
+6. .github/pull_request_template.md
+7. docs/how-to/cursor/open-task-pr.md
+
+A bootstrap report that says these files are "required but not yet read" is noncompliant.
+
+## First bootstrap report
+
+- ${reportLines}
 `;
 }
 
@@ -65,6 +87,7 @@ function minimalCanonicalFiles() {
     'docs/ops/ai/CURSOR-RULES.md': '# cursor\n',
     '.agents/skills/lgfc-pr-governance/SKILL.md': '# pr governance\n',
     '.github/pull_request_template.md': '# template\n',
+    'docs/how-to/cursor/open-task-pr.md': '# open task pr\n',
   };
 }
 
@@ -166,6 +189,28 @@ Read Agent.md only.
 
     const failures = validateBootstrap(root);
     expect(failures.some((failure) => failure.includes('forbidden MCP config path'))).toBe(true);
+  });
+
+  it('reports missing Cloud bootstrap hardening phrases in AGENTS.md', () => {
+    const root = makeTempRepo(minimalBootstrapFixture({
+      'AGENTS.md': '# AGENTS.md\n\nRead Agent.md only.\n',
+    }));
+
+    const failures = validateBootstrap(root);
+    expect(failures.some((failure) => failure.includes('Cloud bootstrap hardening phrase'))).toBe(true);
+    expect(failures.some((failure) => failure.includes('bootstrap report contract line'))).toBe(true);
+  });
+
+  it('reports missing bootstrap report contract lines in AGENTS.md', () => {
+    const root = makeTempRepo(minimalBootstrapFixture({
+      'AGENTS.md': `# AGENTS.md
+
+${AGENTS_MD_CLOUD_BOOTSTRAP_REQUIRED_PHRASES.join('\n')}
+`,
+    }));
+
+    const failures = validateBootstrap(root);
+    expect(failures.some((failure) => failure.includes('bootstrap report contract line'))).toBe(true);
   });
 
   it('passes a minimal valid bootstrap fixture', () => {

@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: Cursor local and Cloud Agent session bootstrap verification
 Does Not Own: Canonical governance doctrine or merge authority
 Canonical Reference: /Agent.md
-Related Issues: #1609
+Related Issues: #1609, #1614
 Last Reviewed: 2026-06-12
 ---
 
@@ -42,9 +42,21 @@ MCP servers are **not** part of session bootstrap. MCP connects external tools; 
 ### Verify Cloud Agent bootstrap
 
 1. Start a **new** Cloud Agent session from a branch containing this bootstrap work.
-2. Confirm the agent can cite `AGENTS.md` and `Agent.md` as mandatory entry points.
-3. Confirm the agent stops when no source issue or allowlist is provided.
-4. If Cloud verification is unavailable, document the limitation and open a follow-up issue.
+2. Ask the agent to report which bootstrap rules or `AGENTS.md` instructions it loaded **before doing anything else**.
+3. Confirm the first bootstrap report marks each canonical file as **read** (not "required but not yet read"):
+   - AGENTS.md: read
+   - Agent.md: read
+   - SHARED-AGENT-RULES.md: read
+   - CORE-RULES.md: read
+   - CURSOR-RULES.md: read
+4. For PR work, confirm the first bootstrap report also marks:
+   - lgfc-pr-governance/SKILL.md: read
+   - .github/pull_request_template.md: read
+   - docs/how-to/cursor/open-task-pr.md: read
+5. Confirm the agent stops when no source issue or allowlist is provided.
+6. If Cloud verification is unavailable, document the limitation and open a follow-up issue.
+
+A Cloud Agent bootstrap test **fails** when the first response lists canonical files as required but not yet read.
 
 ### Verify CI guardrails
 
