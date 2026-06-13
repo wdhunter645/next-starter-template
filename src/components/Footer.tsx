@@ -95,7 +95,6 @@ export default function Footer() {
             display: 'grid',
             gridTemplateColumns: 'auto auto',
             justifyContent: 'end',
-            justifyItems: 'end',
             columnGap: 14,
             rowGap: 8,
             fontSize: 12,
@@ -103,7 +102,7 @@ export default function Footer() {
         >
           <Link href="/privacy">Privacy</Link>
           <Link href="/terms">Terms</Link>
-          <Link href="/contact" style={{ gridColumn: '1 / -1' }}>
+          <Link href="/contact" style={{ gridColumn: '1 / -1', textAlign: 'right' }}>
             Contact
           </Link>
         </nav>
