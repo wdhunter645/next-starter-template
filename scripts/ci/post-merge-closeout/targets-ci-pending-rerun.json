@@ -31,6 +31,12 @@
       "body_file": "scripts/ci/post-merge-closeout/pr-1473-body.md",
       "merge_sha": "3b3499a221affd8bb44e29e717a3ea56cf317316",
       "source_issue": 1404
+    },
+    {
+      "pr": 1615,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1615-body.md",
+      "merge_sha": "a29bf59beeb2284aa81f2cf05fea7f0ba96d1994",
+      "source_issue": 1614
     }
   ]
 }
