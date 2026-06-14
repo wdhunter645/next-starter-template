@@ -17,6 +17,7 @@ import {
 
 export { isPermittedClosedSourceIssueFollowup };
 import { evaluateReviewerCommentDisposition } from './reviewer_comment_disposition.mjs';
+import { defaultCloseoutBodyPath } from './post_merge_closeout_trigger.mjs';
 
 export { linkedIssueNumber, sourceIssueAccounting };
 
@@ -800,6 +801,21 @@ const MAINTAINER_PR_BODIES = {
 	1552: PR_1552_MAINTAINER_BODY,
 };
 
+export function resolveMaintainerPrBody(prNumber, workspace = process.cwd()) {
+	const numericPr = Number(prNumber);
+	const inlineBody = MAINTAINER_PR_BODIES[numericPr];
+	if (inlineBody) {
+		return inlineBody;
+	}
+
+	const bodyFile = path.resolve(workspace, defaultCloseoutBodyPath(numericPr));
+	if (fs.existsSync(bodyFile)) {
+		return fs.readFileSync(bodyFile, 'utf8');
+	}
+
+	return null;
+}
+
 export async function applyMaintainerPrBodyMain() {
 	const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
 	const repository = process.env.GITHUB_REPOSITORY;
@@ -809,7 +825,7 @@ export async function applyMaintainerPrBodyMain() {
 	}
 
 	const numericPr = Number(prNumber);
-	const maintainerBody = MAINTAINER_PR_BODIES[numericPr];
+	const maintainerBody = resolveMaintainerPrBody(numericPr);
 	if (!maintainerBody) {
 		throw new Error(`No maintainer PR body registered for PR #${prNumber}`);
 	}
@@ -826,11 +842,13 @@ export async function applyMaintainerPrBodyMain() {
 		throw new Error(`GET /pulls/${prNumber} failed: ${currentResponse.status} ${await currentResponse.text()}`);
 	}
 	const currentPr = await currentResponse.json();
-	if ((currentPr.body || '').includes('<!-- CURSOR_AGENT_PR_BODY_BEGIN -->')) {
+	const forceApply = process.env.FORCE_APPLY_OPEN_PR_BODY === 'true';
+	const markerPresent = (currentPr.body || '').includes('<!-- CURSOR_AGENT_PR_BODY_BEGIN -->');
+	if (markerPresent && !forceApply && (currentPr.body || '').trim() === maintainerBody.trim()) {
 		console.log(JSON.stringify({
 			status: 'skipped',
 			pr: numericPr,
-			reason: 'maintainer body marker already present',
+			reason: 'maintainer body already matches file',
 		}, null, 2));
 		return;
 	}
