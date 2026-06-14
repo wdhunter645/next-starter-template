@@ -41,6 +41,7 @@ Before any repo work — including exploration, implementation, PR creation, iss
 5. **Applicable repo governance and procedure docs** — including source GitHub issue, task-linked design/architecture/governance files, and for PR/issue/review/remediation/implementation work:
    - `.agents/skills/lgfc-pr-governance/SKILL.md`
    - `.github/pull_request_template.md`
+   - `/docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`
    - `/docs/governance/PR_GOVERNANCE.md` and other governance docs linked from the source issue or PR template
 6. **Applicable `.agents/skills/*/SKILL.md` files** — when the task matches a skill trigger (see [REPO-SCOPED SKILL ROUTING](#repo-scoped-skill-routing))
 
@@ -85,6 +86,7 @@ If conflict exists → follow highest authority.
 - No mixed intent
 - No scope expansion
 - No routine tracker-update PRs for normal implementation work
+- PR lifecycle states must follow `/docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`
 
 **Agent assignments (PMO model):** All future agent assignments should use [`docs/templates/agent-assignment-template.md`](docs/templates/agent-assignment-template.md). That template is mandatory for Cursor, Codex, Copilot, and Devin task prompts when work is assigned through the PMO model (including Program 1 — Phase 1 Wrap-Up).
 
@@ -94,7 +96,7 @@ If conflict exists → follow highest authority.
 
 Use these repository skills when the task matches the trigger:
 
-- PR creation, PR updates, issue linkage, scope control, labels, or acceptance criteria: `.agents/skills/lgfc-pr-governance/SKILL.md`
+- PR creation, PR updates, issue linkage, scope control, labels, acceptance criteria, lifecycle state transitions, or pre-merge closeout prediction: `.agents/skills/lgfc-pr-governance/SKILL.md`
 - Homepage, navigation, footer, Join/Login, FanClub, member, admin, Store, route, or visual/layout changes: `.agents/skills/lgfc-design-compliance/SKILL.md`
 - Documentation creation, documentation moves, documentation edits, authority hierarchy, DIATAXIS routing, or documentation checks: `.agents/skills/lgfc-docs-authority/SKILL.md`
 - Packaging scoped work for execution agents (Cursor, Codex, Copilot, Devin): `docs/templates/agent-assignment-template.md`
