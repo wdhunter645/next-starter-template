@@ -95,6 +95,80 @@ describe('admin fundraiser preview page', () => {
     });
   });
 
+  it('does not load campaign spotlight until an admin token is saved', async () => {
+    window.localStorage.removeItem('lgfc_admin_token');
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+
+    render(<FundraiserPreviewPage />);
+
+    expect(
+      screen.getAllByText(/Save an admin API token above to load campaign spotlight/i).length,
+    ).toBeGreaterThan(0);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('clears campaign spotlight state when the admin token is removed', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const path = String(input);
+
+      if (path.startsWith('/api/admin/cms/list')) {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            blocks: [
+              {
+                key: CAMPAIGN_SPOTLIGHT_KEY,
+                body_md: validCampaignBody(),
+                published_body_md: null,
+                version: 1,
+                status: 'draft',
+                updated_at: '2026-06-03T12:00:00Z',
+                published_at: null,
+                updated_by: 'admin-fundraiser-preview',
+              },
+            ],
+          }),
+        );
+      }
+
+      return Promise.reject(new Error(`Unexpected fetch: ${path}`));
+    });
+
+    render(<FundraiserPreviewPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Campaign spotlight block loaded.')).toBeInTheDocument();
+    });
+
+    window.localStorage.removeItem('lgfc_admin_token');
+    fireEvent.change(screen.getByLabelText('Admin token'), { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save token' }));
+
+    await waitFor(() => {
+      expect(screen.queryByText('Campaign spotlight block loaded.')).not.toBeInTheDocument();
+      expect(
+        screen.getAllByText(/Save an admin API token above to load campaign spotlight/i).length,
+      ).toBeGreaterThan(0);
+    });
+
+    expect(fetchMock.mock.calls.filter(([path]) => String(path).startsWith('/api/admin/cms/list'))).toHaveLength(1);
+  });
+
+  it('announces CMS list errors via AdminStatusText alert', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      if (String(input).startsWith('/api/admin/cms/list')) {
+        return Promise.resolve(jsonResponse({ ok: false, error: 'Database unavailable' }, 503));
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${String(input)}`));
+    });
+
+    render(<FundraiserPreviewPage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('Error: Database unavailable');
+    });
+  });
+
   it('loads campaign spotlight CMS data with the stored admin token', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
       const headers = init?.headers instanceof Headers ? init.headers : new Headers(init?.headers);
