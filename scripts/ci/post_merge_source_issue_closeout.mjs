@@ -27,15 +27,27 @@ export function isPermittedClosedSourceIssueFollowup({ body = '', sourceIssue = 
 	return FOLLOWUP_CLOSEOUT_PATTERN.test(body) && PRIOR_CLOSEOUT_REF_PATTERN.test(body);
 }
 
-export function shouldKeepActiveSourceIssueOpen(body = '') {
+export function postMergeIssueDispositionSection(body = '') {
 	const match = String(body || '').match(/## POST-MERGE ISSUE DISPOSITION[\s\S]*?(?=\n## [A-Z]|\n<!--|$)/i);
-	const section = match ? match[0] : '';
+	return match ? match[0] : '';
+}
+
+function shouldKeepActiveSourceIssueOpenFromSection(section = '') {
 	return (
 		/\bremains?\b/i.test(section) &&
 		/\bopen\b/i.test(section) &&
-		/\bdo not close\b/i.test(section) &&
+		/\bdo not (?:close|apply terminal close)\b/i.test(section) &&
 		/\bstatus:active\b/i.test(section)
 	);
+}
+
+export function shouldKeepActiveSourceIssueOpen(body = '') {
+	return shouldKeepActiveSourceIssueOpenFromSection(postMergeIssueDispositionSection(body));
+}
+
+export function shouldReopenActiveSourceIssue(body = '') {
+	const section = postMergeIssueDispositionSection(body);
+	return shouldKeepActiveSourceIssueOpenFromSection(section) && /\breopen\b/i.test(section);
 }
 
 export function planFailureSourceIssueRelabel({ issueLabels = [], repoLabels = [] } = {}) {
@@ -125,7 +137,11 @@ export function planTerminalLabelReconciliation({ issueLabels = [], repoLabels =
 		};
 	}
 
-	const knownTerminalStatusLabels = new Set([...STALE_SOURCE_ISSUE_LABELS, TERMINAL_SOURCE_ISSUE_LABEL]);
+	const knownTerminalStatusLabels = new Set([
+		...STALE_SOURCE_ISSUE_LABELS,
+		TERMINAL_SOURCE_ISSUE_LABEL,
+		ACTIVE_SOURCE_ISSUE_LABEL,
+	]);
 	const unknownStatusLabels = [...labels].filter(
 		(label) => label.startsWith('status:') && !knownTerminalStatusLabels.has(label),
 	);
@@ -232,6 +248,9 @@ export function shouldCloseSourceIssue({
 	if (!issueNumber) return { close: false, reason: 'missing_source_issue' };
 	if (!isMerged) return { close: false, reason: 'pr_not_merged' };
 	if (action !== 'post_merge_success') return { close: false, reason: `action_${action}` };
+	if (shouldKeepActiveSourceIssueOpen(prBody)) {
+		return { close: false, reason: 'active_source_issue_remains_open' };
+	}
 	const closedFollowupAllowed =
 		String(issueMeta?.state || '').toUpperCase() === 'CLOSED' &&
 		(postMergeResult?.source_issue_closeout_mode === 'closed_remediation_followup' ||
@@ -255,9 +274,6 @@ export function shouldCloseSourceIssue({
 	}
 	if (issueMeta && isRemediationIssue(issueMeta) && !closedFollowupAllowed) {
 		return { close: false, reason: 'remediation_issue' };
-	}
-	if (shouldKeepActiveSourceIssueOpen(prBody)) {
-		return { close: false, reason: 'active_source_issue_remains_open' };
 	}
 	if (terminalLabelResult && !terminalLabelResult.ok) {
 		return { close: false, reason: terminalLabelResult.reason || 'terminal_label_reconciliation_failed' };

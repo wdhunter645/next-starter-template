@@ -12,13 +12,18 @@ describe('post-merge closeout all manifests', () => {
 		]);
 	});
 
-	it('loads rerun target for PR #1536 workflow-failure remediation (#1629)', () => {
+	it('loads rerun targets for PR #1536 (#1258 reopen) and PR #1635 (#1634 closeout)', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json');
-		expect(targets.map((target) => target.pr)).toEqual([1536]);
+		expect(targets.map((target) => target.pr)).toEqual([1536, 1635]);
 		expect(targets[0]).toMatchObject({
 			body_file: 'scripts/ci/post-merge-closeout/pr-1536-body.md',
 			merge_sha: '62ca227c5939f9a852bd8268d2bcdf406a35d1ba',
 			source_issue: 1258,
+		});
+		expect(targets[1]).toMatchObject({
+			body_file: 'scripts/ci/post-merge-closeout/pr-1635-body.md',
+			merge_sha: '0e2e2fbada6e2fb74bed22eac10993eeb7744707',
+			source_issue: 1634,
 		});
 	});
 

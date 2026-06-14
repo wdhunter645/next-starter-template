@@ -11,9 +11,10 @@ import {
 	postMergeVerificationResult,
 	shouldCloseSourceIssue,
 	shouldKeepActiveSourceIssueOpen,
+	shouldReopenActiveSourceIssue,
 	STALE_SOURCE_ISSUE_LABELS,
 } from '../scripts/ci/post_merge_source_issue_closeout.mjs';
-import { buildResult } from '../scripts/ci/post_merge_validator.mjs';
+import { metadataFailures, blockingMetadataFailures, buildResult } from '../scripts/ci/post_merge_validator.mjs';
 import {
 	duplicateCloseComment,
 	groupRemediationIssues,
@@ -192,6 +193,56 @@ describe('source issue closeout decision', () => {
 			ok: true,
 			removeLabels: ['status:post-merge-verify'],
 			summary: expect.stringContaining('preserve status:active'),
+		});
+	});
+
+	it('recognizes active-source disposition with do-not-apply-terminal-close phrasing', () => {
+		const body = [
+			baseBody,
+			'',
+			'## POST-MERGE ISSUE DISPOSITION',
+			'- Source issue **#1258** remains **open** with `status:active`; **reopen #1258** if incorrectly closed; **do not apply terminal close**',
+		].join('\n');
+
+		expect(shouldKeepActiveSourceIssueOpen(body)).toBe(true);
+		expect(shouldReopenActiveSourceIssue(body)).toBe(true);
+	});
+
+	it('allows closed active child project issues during closeout metadata validation', () => {
+		const body = [
+			baseBody,
+			'',
+			'## POST-MERGE ISSUE DISPOSITION',
+			'- Source issue **#1258** remains **open** with `status:active`; **reopen #1258** if incorrectly closed; **do not close** #1258',
+		].join('\n');
+		const failures = blockingMetadataFailures(
+			metadataFailures(
+				{ body, mergedAt: '2026-06-01T00:00:00Z', baseRefName: 'main', isDraft: false, files: [] },
+				() => true,
+				{
+					repository: 'owner/repo',
+					sourceIssue: {
+						state: 'CLOSED',
+						state_reason: 'completed',
+						labels: [{ name: 'status:active' }, { name: 'status:failed' }],
+					},
+					repoLabels: ['status:complete', 'status:active', 'status:failed'],
+				},
+			),
+		);
+
+		expect(failures).toEqual([]);
+	});
+
+	it('treats status:active as a known terminal label during reconciliation', () => {
+		expect(
+			planTerminalLabelReconciliation({
+				issueLabels: ['type:website', 'status:active', 'status:failed', 'website'],
+				repoLabels: ['status:complete', 'status:active', 'status:failed'],
+			}),
+		).toMatchObject({
+			ok: true,
+			removeLabels: expect.arrayContaining(['status:failed']),
 		});
 	});
 
@@ -460,6 +511,56 @@ describe('sync-pr-state successful closeout', () => {
 			expect.arrayContaining(['issue', 'comment', '1410', '--repo', 'owner/repo', '--body', expect.stringContaining('closed_remediation_followup')]),
 		);
 		expect(run).not.toHaveBeenCalledWith(expect.arrayContaining(['issue', 'close', '1410']));
+	});
+
+	it('reopens incorrectly closed active child project issues during active closeout', async () => {
+		process.env.GITHUB_REPOSITORY = 'owner/repo';
+		const syncPrState = await import('../scripts/orchestrator/sync-pr-state.mjs');
+		const run = vi.fn();
+		const reconciliations = [];
+		let metaReads = 0;
+
+		const result = syncPrState.syncPrState({
+			prNumber: '1536',
+			action: 'post_merge_success',
+			pr: {
+				body: [
+					'- **Issue:** #1258',
+					'## POST-MERGE ISSUE DISPOSITION',
+					'- Source issue **#1258** remains **open** with `status:active`; **reopen #1258** if incorrectly closed; **do not close** #1258',
+				].join('\n'),
+				mergedAt: '2026-06-10T14:15:36Z',
+				state: 'MERGED',
+				url: 'https://example.test/pr/1536',
+				mergeCommit: { oid: '62ca227c5939f9a852bd8268d2bcdf406a35d1ba' },
+			},
+			postMergeResult: {
+				status: 'pass',
+				remediation_required: false,
+				merge_sha: '62ca227c5939f9a852bd8268d2bcdf406a35d1ba',
+				source_issue: '1258',
+				source_issue_closeout_mode: 'open_source_issue',
+				terminal_label_result: {
+					ok: true,
+					removeLabels: ['status:failed'],
+					addLabel: '',
+					summary: 'remove status:failed; preserve status:active',
+				},
+			},
+			getRepoLabels: () => new Set(['status:active', 'status:failed', 'status:complete']),
+			getIssueMeta: () => {
+				metaReads += 1;
+				return metaReads === 1
+					? { title: 'PROJECT: Website Operations Admin', labels: ['status:active', 'status:failed'], state: 'CLOSED' }
+					: { title: 'PROJECT: Website Operations Admin', labels: ['status:active'], state: 'OPEN' };
+			},
+			reconcileTerminalLabelsFn: (...args) => reconciliations.push(args),
+			run,
+		});
+
+		expect(result).toBe('active_relabeled');
+		expect(run).toHaveBeenCalledWith(['issue', 'reopen', '1258', '--repo', 'owner/repo']);
+		expect(run).not.toHaveBeenCalledWith(expect.arrayContaining(['issue', 'close', '1258']));
 	});
 
 	it('reconciles terminal labels without closing open remediation source issues on success', async () => {

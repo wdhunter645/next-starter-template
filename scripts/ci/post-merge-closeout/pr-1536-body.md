@@ -110,8 +110,8 @@ Reviewer items:
 - [x] Post-merge closeout body remediation applied for merged PR governance
 
 ## POST-MERGE ISSUE DISPOSITION
-- Source issue **#1258** remains **open** with `status:active`; remove only `status:post-merge-verify` and other stale workflow labels; **reopen #1258** if incorrectly closed during prior batch replay; **do not** apply terminal close
-- Close remediation issue **#1629** when validator passes after body apply
+- Source issue **#1258** remains **open** with `status:active`; remove only `status:post-merge-verify`, `status:failed`, and other stale workflow labels; **reopen #1258** if incorrectly closed during prior batch replay; **do not close** #1258
+- Close remediation issues **#1629** and **#1636** when validator passes after body apply
 
-<!-- closeout-trigger: 2026-06-14T12:30:00Z -->
+<!-- closeout-trigger: 2026-06-14T15:00:00Z -->
 <!-- CURSOR_AGENT_PR_BODY_END -->

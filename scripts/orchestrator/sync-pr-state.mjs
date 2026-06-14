@@ -14,6 +14,7 @@ import {
   postMergeVerificationResult,
   shouldCloseSourceIssue,
   shouldKeepActiveSourceIssueOpen,
+  shouldReopenActiveSourceIssue,
 } from '../ci/post_merge_source_issue_closeout.mjs';
 
 const repo = process.env.GITHUB_REPOSITORY;
@@ -137,7 +138,7 @@ export function syncPrState({
   }
 
   if (action === 'post_merge_success') {
-    const meta = getIssueMeta(issueNumber, { run });
+    let meta = getIssueMeta(issueNumber, { run });
     const terminalLabelResult = postMergeResult?.terminal_label_result || planTerminalLabelReconciliation({
       issueLabels: meta.labels || [],
       repoLabels: getRepoLabels(),
@@ -157,6 +158,13 @@ export function syncPrState({
         closeDecision.reason === 'active_source_issue_remains_open' &&
         shouldKeepActiveSourceIssueOpen(pr.body || '')
       ) {
+        if (
+          String(meta.state || '').toUpperCase() === 'CLOSED' &&
+          shouldReopenActiveSourceIssue(pr.body || '')
+        ) {
+          run(['issue', 'reopen', issueNumber, '--repo', repo]);
+          meta = getIssueMeta(issueNumber, { run });
+        }
         const relabelPlan = planActiveSourceIssueRelabel({ issueLabels: meta.labels || [] });
         reconcileTerminalLabelsFn(issueNumber, relabelPlan);
         const mergeSha = postMergeResult?.merge_sha || pr?.mergeCommit?.oid || '';
