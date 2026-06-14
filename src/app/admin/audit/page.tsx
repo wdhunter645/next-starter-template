@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PageShell from '@/components/PageShell';
 import AdminNav from '@/components/admin/AdminNav';
+import AdminStatusText from '@/components/admin/AdminStatusText';
 import AdminTokenPanel from '@/components/admin/AdminTokenPanel';
 import styles from '@/components/admin/AdminDashboard.module.css';
-import { adminDownload, adminJson } from '@/lib/adminClient';
+import { adminDownload, adminJson, getStoredAdminToken } from '@/lib/adminClient';
 
 type ReportItem = {
   id: number;
@@ -77,7 +78,7 @@ function buttonStyle(disabled = false): React.CSSProperties {
 }
 
 export default function AdminAuditPage() {
-  const [status, setStatus] = useState('Idle.');
+  const [status, setStatus] = useState('Save an admin API token above to load audit surfaces.');
   const [reportFilter, setReportFilter] = useState<(typeof REPORT_FILTERS)[number]>('open');
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [reportNotes, setReportNotes] = useState<Record<number, string>>({});
@@ -85,8 +86,12 @@ export default function AdminAuditPage() {
   const [loadingStats, setLoadingStats] = useState(false);
   const [exportTable, setExportTable] = useState<(typeof EXPORT_TABLES)[number]['value']>('join_requests');
   const [exporting, setExporting] = useState(false);
+  const [closing, setClosing] = useState(false);
   const [statsRows, setStatsRows] = useState<Array<{ table: string; count: number }>>([]);
   const [unavailableTables, setUnavailableTables] = useState<string[]>([]);
+  const [tokenReady, setTokenReady] = useState(false);
+  const loadRequestRef = useRef(0);
+  const actionBusy = loadingReports || loadingStats || exporting || closing;
 
   const operationalCounts = useMemo(() => {
     const reportsOpen = statsRows.find((row) => row.table === 'reports')?.count;
@@ -100,13 +105,25 @@ export default function AdminAuditPage() {
   }, [statsRows]);
 
   const loadStats = useCallback(async () => {
+    if (!getStoredAdminToken()) {
+      setStatsRows([]);
+      setUnavailableTables([]);
+      setLoadingStats(false);
+      return;
+    }
+
     setLoadingStats(true);
     const result = await adminJson<StatsResponse>('/api/admin/stats');
+
+    if (!getStoredAdminToken()) {
+      setLoadingStats(false);
+      return;
+    }
 
     if (!result.ok || !result.data) {
       setStatsRows([]);
       setUnavailableTables([]);
-      setStatus(`Stats error: ${result.error}`);
+      setStatus(`Error: Stats failed — ${result.error}`);
       setLoadingStats(false);
       return;
     }
@@ -128,43 +145,95 @@ export default function AdminAuditPage() {
   }, []);
 
   const loadReports = useCallback(async () => {
+    if (!getStoredAdminToken()) {
+      setReports([]);
+      setLoadingReports(false);
+      return;
+    }
+
     setLoadingReports(true);
     const result = await adminJson<ItemsResponse<ReportItem>>(
       `/api/admin/reports/list?status=${reportFilter}&limit=200`,
     );
+
+    if (!getStoredAdminToken()) {
+      setLoadingReports(false);
+      return;
+    }
+
     setReports(result.ok && result.data?.items ? result.data.items : []);
-    if (!result.ok) setStatus(`Reports error: ${result.error}`);
+    if (!result.ok) setStatus(`Error: Reports failed — ${result.error}`);
     setLoadingReports(false);
   }, [reportFilter]);
 
   const refreshAll = useCallback(async () => {
-    setStatus('Refreshing audit surfaces…');
-    await Promise.all([loadStats(), loadReports()]);
-    setStatus((current) => (current === 'Refreshing audit surfaces…' ? '' : current));
-  }, [loadReports, loadStats]);
-
-  useEffect(() => {
-    void refreshAll();
-  }, [refreshAll]);
-
-  async function closeReport(id: number) {
-    setStatus('Closing report…');
-    const result = await adminJson<ReportCloseResponse>('/api/admin/reports/close', {
-      method: 'POST',
-      body: JSON.stringify({ id, admin_note: reportNotes[id] ?? '' }),
-    });
-
-    if (!result.ok) {
-      setStatus(`Close failed: ${result.error}`);
+    if (!getStoredAdminToken()) {
+      setReports([]);
+      setStatsRows([]);
+      setUnavailableTables([]);
+      setStatus('Save an admin API token above to load audit surfaces.');
+      setLoadingReports(false);
+      setLoadingStats(false);
       return;
     }
 
-    setStatus(`Report #${id} closed.`);
-    await loadReports();
-    await loadStats();
-  }
+    const requestId = ++loadRequestRef.current;
+    setStatus('Refreshing audit surfaces…');
+    await Promise.all([loadStats(), loadReports()]);
 
-  async function downloadExport() {
+    if (requestId !== loadRequestRef.current) {
+      return;
+    }
+
+    if (!getStoredAdminToken()) {
+      return;
+    }
+
+    setStatus((current) => (current === 'Refreshing audit surfaces…' ? 'Audit surfaces loaded.' : current));
+  }, [loadReports, loadStats]);
+
+  useEffect(() => {
+    if (getStoredAdminToken()) {
+      setTokenReady(true);
+      void refreshAll();
+    }
+  }, [refreshAll]);
+
+  const closeReport = useCallback(
+    async (id: number) => {
+      if (!getStoredAdminToken()) {
+        setStatus('Error: Save an admin API token above before closing reports.');
+        return;
+      }
+
+      setClosing(true);
+      setStatus('Closing report…');
+
+      const result = await adminJson<ReportCloseResponse>('/api/admin/reports/close', {
+        method: 'POST',
+        body: JSON.stringify({ id, admin_note: reportNotes[id] ?? '' }),
+      });
+
+      if (!result.ok) {
+        setStatus(`Error: Close failed — ${result.error}`);
+        setClosing(false);
+        return;
+      }
+
+      setClosing(false);
+      setStatus(`Report #${id} closed.`);
+      await loadReports();
+      await loadStats();
+    },
+    [loadReports, loadStats, reportNotes],
+  );
+
+  const downloadExport = useCallback(async () => {
+    if (!getStoredAdminToken()) {
+      setStatus('Error: Save an admin API token above before exporting data.');
+      return;
+    }
+
     setExporting(true);
     setStatus(`Exporting ${exportTable}…`);
 
@@ -173,7 +242,7 @@ export default function AdminAuditPage() {
     );
 
     if (!result.ok || !result.blob) {
-      setStatus(`Export failed: ${result.error}`);
+      setStatus(`Error: Export failed — ${result.error}`);
       setExporting(false);
       return;
     }
@@ -186,7 +255,7 @@ export default function AdminAuditPage() {
     URL.revokeObjectURL(url);
     setStatus(`Exported ${result.filename}.`);
     setExporting(false);
-  }
+  }, [exportTable]);
 
   return (
     <PageShell
@@ -195,16 +264,43 @@ export default function AdminAuditPage() {
     >
       <AdminNav />
       <div style={{ display: 'grid', gap: 16, marginTop: 16 }}>
-        <AdminTokenPanel onSaved={() => void refreshAll()} />
+        <AdminTokenPanel
+          onSaved={() => {
+            if (!getStoredAdminToken()) {
+              loadRequestRef.current += 1;
+              setTokenReady(false);
+              setLoadingReports(false);
+              setLoadingStats(false);
+              setExporting(false);
+              setClosing(false);
+              setReports([]);
+              setStatsRows([]);
+              setUnavailableTables([]);
+              setReportNotes({});
+              setStatus('Save an admin API token above to load audit surfaces.');
+              return;
+            }
+            setTokenReady(true);
+            void refreshAll();
+          }}
+        />
+
+        {!tokenReady ? (
+          <p style={{ opacity: 0.85 }}>Save an admin API token above to load audit surfaces.</p>
+        ) : null}
 
         <div className={styles.panel}>
           <div className={styles.panelHeader}>
             <div className={styles.panelTitle}>Operational snapshot</div>
-            <button className={styles.btn} onClick={() => void refreshAll()} disabled={loadingStats}>
+            <button
+              className={styles.btn}
+              onClick={() => void refreshAll()}
+              disabled={actionBusy || !tokenReady}
+            >
               Refresh
             </button>
           </div>
-          {status ? <p className={styles.status}>{status}</p> : null}
+          {status ? <AdminStatusText message={status} className={styles.status} /> : null}
           {loadingStats ? <p className={styles.status}>Loading D1 counts…</p> : null}
           {unavailableTables.length ? (
             <p className={styles.status}>Unavailable tables: {unavailableTables.join(', ')}</p>
@@ -255,6 +351,7 @@ export default function AdminAuditPage() {
                 onChange={(event) =>
                   setExportTable(event.target.value as (typeof EXPORT_TABLES)[number]['value'])
                 }
+                disabled={!tokenReady || actionBusy}
                 style={fieldStyle()}
               >
                 {EXPORT_TABLES.map((option) => (
@@ -266,8 +363,8 @@ export default function AdminAuditPage() {
             </label>
             <button
               type="button"
-              style={{ ...buttonStyle(exporting), alignSelf: 'end' }}
-              disabled={exporting}
+              style={{ ...buttonStyle(exporting || !tokenReady || actionBusy), alignSelf: 'end' }}
+              disabled={exporting || !tokenReady || actionBusy}
               onClick={() => void downloadExport()}
             >
               Download CSV
@@ -278,7 +375,11 @@ export default function AdminAuditPage() {
         <div className={styles.panel}>
           <div className={styles.panelHeader}>
             <div className={styles.panelTitle}>Report audit queue</div>
-            <button className={styles.btn} onClick={() => void loadReports()} disabled={loadingReports}>
+            <button
+              className={styles.btn}
+              onClick={() => void loadReports()}
+              disabled={loadingReports || !tokenReady || actionBusy}
+            >
               Refresh reports
             </button>
           </div>
@@ -291,7 +392,8 @@ export default function AdminAuditPage() {
               <button
                 key={filter}
                 type="button"
-                style={buttonStyle(reportFilter === filter)}
+                style={buttonStyle(reportFilter === filter || !tokenReady || actionBusy)}
+                disabled={!tokenReady || actionBusy}
                 onClick={() => setReportFilter(filter)}
               >
                 {filter}
@@ -335,11 +437,13 @@ export default function AdminAuditPage() {
                       }
                       placeholder="Admin note for closeout"
                       rows={2}
+                      disabled={!tokenReady || actionBusy}
                       style={fieldStyle()}
                     />
                     <button
                       type="button"
-                      style={buttonStyle()}
+                      style={buttonStyle(!tokenReady || actionBusy)}
+                      disabled={!tokenReady || actionBusy}
                       onClick={() => void closeReport(report.id)}
                     >
                       Close report

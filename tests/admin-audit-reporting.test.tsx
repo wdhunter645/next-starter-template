@@ -132,6 +132,90 @@ describe('admin audit reporting page', () => {
     expect(headers.get('x-admin-token')).toBe('secret');
   });
 
+  it('does not load audit surfaces until an admin token is saved', async () => {
+    window.localStorage.removeItem('lgfc_admin_token');
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+
+    render(<AdminAuditPage />);
+
+    expect(
+      screen.getAllByText(/Save an admin API token above to load audit surfaces/i).length,
+    ).toBeGreaterThan(0);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('clears audit state when the admin token is removed', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const path = String(input);
+
+      if (path.startsWith('/api/admin/stats')) {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            counts: { reports: 3, join_requests: 12 },
+          }),
+        );
+      }
+
+      if (path.startsWith('/api/admin/reports/list')) {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            items: [
+              {
+                id: 4,
+                kind: 'discussion',
+                target_id: 99,
+                reporter_email: 'reader@example.com',
+                reason: 'Spam link',
+                status: 'open',
+                created_at: '2026-06-02T10:00:00Z',
+              },
+            ],
+          }),
+        );
+      }
+
+      return Promise.reject(new Error(`Unexpected fetch: ${path}`));
+    });
+
+    render(<AdminAuditPage />);
+
+    expect(await screen.findByText('Reporter: r***@example.com')).toBeInTheDocument();
+
+    window.localStorage.removeItem('lgfc_admin_token');
+    fireEvent.change(screen.getByLabelText('Admin token'), { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save token' }));
+
+    await waitFor(() => {
+      expect(screen.queryByText('Reporter: r***@example.com')).not.toBeInTheDocument();
+      expect(
+        screen.getAllByText(/Save an admin API token above to load audit surfaces/i).length,
+      ).toBeGreaterThan(0);
+    });
+
+    expect(fetchMock.mock.calls.filter(([path]) => String(path).startsWith('/api/admin/stats'))).toHaveLength(1);
+  });
+
+  it('announces stats errors via AdminStatusText alert', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const path = String(input);
+      if (path.startsWith('/api/admin/stats')) {
+        return Promise.resolve(jsonResponse({ ok: false, error: 'Database unavailable' }, 503));
+      }
+      if (path.startsWith('/api/admin/reports/list')) {
+        return Promise.resolve(jsonResponse({ ok: true, items: [] }));
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${path}`));
+    });
+
+    render(<AdminAuditPage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('Error: Stats failed — Database unavailable');
+    });
+  });
+
   it('closes a report and downloads CSV exports with the admin token', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
       const path = String(input);
@@ -219,7 +303,7 @@ describe('admin audit reporting page', () => {
 
     render(<AdminAuditPage />);
 
-    expect(await screen.findByText('Stats error: unauthorized')).toBeInTheDocument();
+    expect(await screen.findByText('Error: Stats failed — unauthorized')).toBeInTheDocument();
     expect(await screen.findByText('No open reports in this queue.')).toBeInTheDocument();
   });
 });
