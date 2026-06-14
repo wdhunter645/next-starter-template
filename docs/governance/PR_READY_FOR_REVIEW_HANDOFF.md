@@ -3,6 +3,7 @@ Doc Type: Governance / Process
 Audience: Human + AI Agents
 Authority Level: Governance
 Owns: Ready-for-review handoff requirements for pull requests
+Does Not Own: General PR lifecycle state-machine rules, CI implementation, merge authority, or post-merge automation behavior
 Canonical Reference: /docs/governance/PR_LIFECYCLE_STATE_MACHINE.md
 Last Reviewed: 2026-06-14
 ---
