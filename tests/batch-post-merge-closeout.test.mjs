@@ -13,14 +13,26 @@ import {
 	summarizeTargetResult,
 	writeBatchCloseoutReport,
 } from '../scripts/ci/run_batch_post_merge_closeout.mjs';
+import {
+	pruneCloseoutManifestContent,
+	successfulCloseoutPrs,
+} from '../scripts/ci/prune_closeout_manifest.mjs';
 import { implementationEvidenceFailures } from '../scripts/ci/post_merge_implementation_evidence.mjs';
 
 const tempFiles = [];
+const tempDirs = [];
 
 afterEach(() => {
 	for (const file of tempFiles) {
 		try {
 			fs.unlinkSync(file);
+		} catch {
+			// ignore cleanup errors
+		}
+	}
+	for (const dir of tempDirs) {
+		try {
+			fs.rmSync(dir, { recursive: true, force: true });
 		} catch {
 			// ignore cleanup errors
 		}
@@ -156,13 +168,98 @@ describe('batch post-merge closeout reporting', () => {
 		const body = fs.readFileSync('scripts/ci/post-merge-closeout/pr-1239-body.md', 'utf8');
 		expect(implementationEvidenceFailures({ body, files: [] })).toEqual([]);
 	});
+
+	it('prunes processed manifest entries only after a successful batch closeout', async () => {
+		const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'batch-closeout-prune-'));
+		tempDirs.push(tempDir);
+		const manifestPath = path.join(tempDir, 'targets.json');
+		const bodyFile = path.join(tempDir, 'pr-1-body.md');
+		fs.writeFileSync(bodyFile, 'body\n');
+		fs.writeFileSync(
+			manifestPath,
+			`${JSON.stringify({ targets: [{ pr: 1, body_file: bodyFile }] }, null, 2)}\n`,
+		);
+
+		const report = await runBatchPostMergeCloseout({
+			token: 'token',
+			repository: 'org/repo',
+			manifestPath,
+			targets: [{ pr: 1, body_file: bodyFile }],
+			runPostMergeCloseoutFn: vi.fn(async () => ({
+				status: 'pass',
+				sync_action: 'post_merge_success',
+				source_issue: '1547',
+				remediation_required: false,
+			})),
+			closeDuplicateRemediationIssuesFn: async () => ({ closed: [] }),
+		});
+
+		expect(report.status).toBe('success');
+		expect(report.manifestPrune).toMatchObject({ pruned: 1, remaining: 0 });
+		expect(JSON.parse(fs.readFileSync(manifestPath, 'utf8')).targets).toEqual([]);
+	});
+
+	it('does not prune manifest entries when any batch target fails', async () => {
+		const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'batch-closeout-no-prune-'));
+		tempDirs.push(tempDir);
+		const manifestPath = path.join(tempDir, 'targets.json');
+		const bodyFile = path.join(tempDir, 'pr-1-body.md');
+		fs.writeFileSync(bodyFile, 'body\n');
+		fs.writeFileSync(
+			manifestPath,
+			`${JSON.stringify({ targets: [{ pr: 1, body_file: bodyFile }] }, null, 2)}\n`,
+		);
+
+		const report = await runBatchPostMergeCloseout({
+			token: 'token',
+			repository: 'org/repo',
+			manifestPath,
+			targets: [{ pr: 1, body_file: bodyFile }],
+			runPostMergeCloseoutFn: vi.fn(async () => ({
+				status: 'fail',
+				sync_action: 'post_merge_failure',
+				source_issue: '1547',
+				remediation_required: true,
+			})),
+			closeDuplicateRemediationIssuesFn: async () => ({ closed: [] }),
+		});
+
+		expect(report.status).toBe('failure');
+		expect(report.manifestPrune).toBeNull();
+		expect(JSON.parse(fs.readFileSync(manifestPath, 'utf8')).targets).toHaveLength(1);
+	});
+});
+
+describe('closeout manifest pruning helpers', () => {
+	it('identifies only post_merge_success PRs as prune-eligible', () => {
+		const prs = successfulCloseoutPrs({
+			results: [
+				{ pr: 1, status: 'pass', sync_action: 'post_merge_success' },
+				{ pr: 2, status: 'pass', sync_action: 'post_merge_remediation' },
+				{ pr: 3, status: 'fail', sync_action: 'post_merge_failure' },
+			],
+		});
+
+		expect([...prs]).toEqual(['1']);
+	});
+
+	it('keeps an empty manifest valid after pruning', () => {
+		const result = pruneCloseoutManifestContent(
+			`${JSON.stringify({ triggered_at: '2026-06-14T00:00:00Z', targets: [{ pr: 1 }] })}\n`,
+			new Set(['1']),
+		);
+
+		expect(result.pruned).toBe(1);
+		expect(JSON.parse(result.content)).toEqual({ triggered_at: '2026-06-14T00:00:00Z', targets: [] });
+	});
 });
 
 describe('batch closeout manifest fixture', () => {
 	it('writes diagnostic report to a temp path', () => {
 		const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'batch-closeout-'));
+		tempFiles.push(path.join(tempDir, 'targets.json'));
+		tempDirs.push(tempDir);
 		const manifestPath = path.join(tempDir, 'targets.json');
-		tempFiles.push(manifestPath);
 		fs.writeFileSync(
 			manifestPath,
 			`${JSON.stringify({ targets: [{ pr: 1, body_file: 'missing.md' }] })}\n`,
