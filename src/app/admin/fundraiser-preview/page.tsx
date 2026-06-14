@@ -158,6 +158,7 @@ export default function FundraiserPreviewPage() {
     () => validateCampaignSpotlightConfig(publishedConfig),
     [publishedConfig],
   );
+  const actionBusy = loading || saving || publishing;
 
   const updateField = useCallback(
     <K extends keyof CampaignSpotlightConfig>(key: K, value: CampaignSpotlightConfig[K]) => {
@@ -328,24 +329,24 @@ export default function FundraiserPreviewPage() {
               <button
                 type="button"
                 onClick={() => void load()}
-                disabled={loading || !tokenReady}
-                style={buttonStyle(false, loading || !tokenReady)}
+                disabled={actionBusy || !tokenReady}
+                style={buttonStyle(false, actionBusy || !tokenReady)}
               >
                 {loading ? 'Loading…' : 'Refresh'}
               </button>
               <button
                 type="button"
                 onClick={() => void saveDraft()}
-                disabled={saving || !tokenReady}
-                style={buttonStyle(false, saving || !tokenReady)}
+                disabled={actionBusy || !tokenReady}
+                style={buttonStyle(false, actionBusy || !tokenReady)}
               >
                 {saving ? 'Saving…' : 'Save Draft'}
               </button>
               <button
                 type="button"
                 onClick={() => void publish()}
-                disabled={publishing || !tokenReady}
-                style={buttonStyle(true, publishing || !tokenReady)}
+                disabled={actionBusy || !tokenReady}
+                style={buttonStyle(true, actionBusy || !tokenReady)}
               >
                 {publishing ? 'Publishing…' : 'Publish'}
               </button>
@@ -389,8 +390,8 @@ export default function FundraiserPreviewPage() {
             <button
               type="button"
               onClick={syncLeaderboardFromFundraiser}
-              disabled={Boolean(fundraiserError) || !tokenReady}
-              style={buttonStyle(false, Boolean(fundraiserError) || !tokenReady)}
+              disabled={Boolean(fundraiserError) || actionBusy || !tokenReady}
+              style={buttonStyle(false, Boolean(fundraiserError) || actionBusy || !tokenReady)}
             >
               Sync leaderboard snapshot
             </button>
