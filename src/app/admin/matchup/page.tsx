@@ -204,7 +204,7 @@ export default function AdminMatchupPage() {
       photo_b_id <= 0 ||
       photo_a_id === photo_b_id
     ) {
-      setStatus('Create blocked. Week start and two distinct positive photo IDs are required.');
+      setStatus('Error: Create blocked. Week start and two distinct positive photo IDs are required.');
       return;
     }
 
