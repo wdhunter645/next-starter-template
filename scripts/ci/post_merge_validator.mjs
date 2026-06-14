@@ -95,14 +95,6 @@ export function sourceIssueStateFailures({ body = '', sourceIssue = null, source
 			message: 'Accepted source issue reference points to a pull request, not an issue.',
 		});
 	}
-	const closedFollowupAllowed = isPermittedClosedSourceIssueFollowup({ body, sourceIssue });
-	if (String(sourceIssue.state || '').toLowerCase() !== 'open' && !closedFollowupAllowed) {
-		failures.push({
-			code: 'source_issue_not_open',
-			message: `Source issue is ${sourceIssue.state || 'unknown'} at closeout start; CI refused to relabel or close it.`,
-		});
-	}
-
 	if (shouldKeepActiveSourceIssueOpen(body)) {
 		const relabel = planActiveSourceIssueRelabel({
 			issueLabels: sourceIssue.labels || [],
@@ -114,6 +106,14 @@ export function sourceIssueStateFailures({ body = '', sourceIssue = null, source
 			});
 		}
 		return failures;
+	}
+
+	const closedFollowupAllowed = isPermittedClosedSourceIssueFollowup({ body, sourceIssue });
+	if (String(sourceIssue.state || '').toLowerCase() !== 'open' && !closedFollowupAllowed) {
+		failures.push({
+			code: 'source_issue_not_open',
+			message: `Source issue is ${sourceIssue.state || 'unknown'} at closeout start; CI refused to relabel or close it.`,
+		});
 	}
 
 	const terminalLabelResult = planTerminalLabelReconciliation({
