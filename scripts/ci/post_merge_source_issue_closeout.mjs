@@ -32,19 +32,22 @@ export function postMergeIssueDispositionSection(body = '') {
 	return match ? match[0] : '';
 }
 
-export function shouldKeepActiveSourceIssueOpen(body = '') {
-	const section = postMergeIssueDispositionSection(body);
+function shouldKeepActiveSourceIssueOpenFromSection(section = '') {
 	return (
 		/\bremains?\b/i.test(section) &&
 		/\bopen\b/i.test(section) &&
-		(/\bdo not close\b/i.test(section) || /\bdo not apply terminal close\b/i.test(section)) &&
+		/\bdo not (?:close|apply terminal close)\b/i.test(section) &&
 		/\bstatus:active\b/i.test(section)
 	);
 }
 
+export function shouldKeepActiveSourceIssueOpen(body = '') {
+	return shouldKeepActiveSourceIssueOpenFromSection(postMergeIssueDispositionSection(body));
+}
+
 export function shouldReopenActiveSourceIssue(body = '') {
 	const section = postMergeIssueDispositionSection(body);
-	return shouldKeepActiveSourceIssueOpen(body) && /\breopen\b/i.test(section);
+	return shouldKeepActiveSourceIssueOpenFromSection(section) && /\breopen\b/i.test(section);
 }
 
 export function planFailureSourceIssueRelabel({ issueLabels = [], repoLabels = [] } = {}) {
