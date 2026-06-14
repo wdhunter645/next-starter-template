@@ -28,7 +28,7 @@ All agents must start at [`Agent.md`](../../../Agent.md) and follow the **mandat
 2. This document (categorized shared law)
 3. [`CORE-RULES.md`](./CORE-RULES.md) (detailed shared execution)
 4. Applicable agent-specific rule file (see [Tool-specific rules](#tool-specific-rules); additive only)
-5. Applicable repo governance and procedure docs — source GitHub issue, task-linked authority files, and for PR/issue/review/remediation/implementation work: `.agents/skills/lgfc-pr-governance/SKILL.md`, `.github/pull_request_template.md`, and linked governance docs
+5. Applicable repo governance and procedure docs — source GitHub issue, task-linked authority files, and for PR/issue/review/remediation/implementation work: `.agents/skills/lgfc-pr-governance/SKILL.md`, `.github/pull_request_template.md`, `docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`, and linked governance docs
 6. Applicable repository skills under `.agents/skills/` when the task matches a trigger
 
 Agent-specific docs do not replace shared/core rules or repo governance. Task prompts do not override this chain.
@@ -109,6 +109,7 @@ Before opening or marking a PR ready:
 - Keep the file-touch allowlist aligned with the final diff.
 - Use exactly one intent label.
 - Include required template sections from `.github/pull_request_template.md`.
+- Apply the PR lifecycle state machine in `docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`.
 - For `docs/**` changes: authority header, correct document type, and how-to procedure headings where required.
 
 If any parser requirement is uncertain, fix the source issue or preflight documentation first. Do not open the PR.
@@ -131,6 +132,7 @@ Before claiming merge-readiness or "ready for review":
 4. Inspect GitHub review-thread state; resolve addressed threads in PR review state.
 5. Inspect latest head workflow runs for every required gate.
 6. Read failing job logs and relevant workflow or enforcement scripts before documenting gate behavior.
+7. For merge-readiness claims, record or verify the pre-merge closeout prediction required by `docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`.
 
 A green reviewer gate alone does not mean the PR is ready for merge approval.
 
@@ -145,7 +147,7 @@ Canonical governance: `docs/governance/standards/governance-enforcement-standard
 - Inspect GitHub review-thread state before readiness claims.
 - Resolve or explicitly address threads required by gate logs.
 - Add maintainer acknowledgments when high-severity review findings require them per gate logs.
-- Reconcile reviewer-accounting, thread-resolution state, issue-accounting, and required checks together.
+- Reconcile reviewer-accounting, thread-resolution state, issue-accounting, pre-merge closeout prediction, review-level acknowledgments, and required checks together.
 
 Expanded detail: [`CORE-RULES.md` — PR gate readiness troubleshooting](./CORE-RULES.md#pr-gate-readiness-troubleshooting).
 
