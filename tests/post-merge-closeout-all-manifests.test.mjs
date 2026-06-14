@@ -12,13 +12,13 @@ describe('post-merge closeout all manifests', () => {
 		]);
 	});
 
-	it('loads rerun targets for merged PRs 1583, 1472, 1486, 1489, 1473, and 1615 with remediated bodies', () => {
+	it('loads rerun targets for #1258 post-merge remediation batch with remediated bodies', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json');
-		expect(targets.map((target) => target.pr)).toEqual([1583, 1472, 1486, 1489, 1473, 1615]);
-		expect(targets.find((target) => target.pr === 1583)?.skip_body_apply).toBe(true);
-		expect(targets.filter((target) => target.pr !== 1583).every((target) => target.skip_body_apply !== true)).toBe(
-			true,
-		);
+		expect(targets.map((target) => target.pr)).toEqual([
+			1531, 1534, 1536, 1538, 1540, 1551, 1556, 1582, 1619,
+		]);
+		expect(targets.every((target) => target.body_file && target.merge_sha && target.source_issue)).toBe(true);
+		expect(targets.every((target) => target.skip_body_apply !== true)).toBe(true);
 	});
 
 	it('loads CI pending manifest targets when closeout backlog items remain', () => {
