@@ -27,7 +27,7 @@ Cursor must route subagents through repo governance docs before code edits.
 
 Cursor must not allow task prompts to replace repo documentation.
 
-For issue, PR, and remediation work, Cursor must require PR governance preflight per `.agents/skills/lgfc-pr-governance/SKILL.md` and `.github/pull_request_template.md` before implementation.
+For issue, PR, and remediation work, Cursor must require PR governance preflight per `.agents/skills/lgfc-pr-governance/SKILL.md`, `.github/pull_request_template.md`, and `docs/governance/PR_LIFECYCLE_STATE_MACHINE.md` before implementation.
 
 ---
 
@@ -88,6 +88,7 @@ When push/PR creation is explicitly instructed:
 
 - use the branch name and base branch specified in the Issue;
 - follow [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md) for PR body and gate preflight;
+- apply `docs/governance/PR_LIFECYCLE_STATE_MACHINE.md` before marking ready or requesting human merge decision;
 - stop after PR creation unless the Issue instructs further work.
 
 ---
@@ -125,7 +126,8 @@ Before completion, Cursor must confirm:
 - only approved files changed  
 - no scope expansion occurred  
 - no duplicate files created  
-- shared law preflight satisfied when a PR was created or updated  
+- shared law preflight satisfied when a PR was created or updated
+- PR lifecycle state and next transition are documented when a PR was created or updated
 
 ---
 
@@ -138,6 +140,7 @@ Stop if:
 - file allowlist missing  
 - instructions conflict with [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md)  
 - push, merge, or PR creation requested without explicit authorization  
+- PR lifecycle state is unclear before readiness or merge-decision claims
 
 ---
 
