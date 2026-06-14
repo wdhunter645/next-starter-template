@@ -113,5 +113,5 @@ Reviewer items:
 - Source issue **#1258** remains **open** with `status:active`; remove only `status:post-merge-verify`, `status:failed`, and other stale workflow labels; **reopen #1258** if incorrectly closed during prior batch replay; **do not close** #1258
 - Close remediation issues **#1629** and **#1636** when validator passes after body apply
 
-<!-- closeout-trigger: 2026-06-14T15:00:00Z -->
+<!-- closeout-trigger: 2026-06-14T16:00:00Z -->
 <!-- CURSOR_AGENT_PR_BODY_END -->

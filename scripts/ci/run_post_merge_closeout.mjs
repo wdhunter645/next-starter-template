@@ -57,6 +57,21 @@ export function runSync({ repository, prNumber, syncAction, pr, resultPath = POS
 	});
 }
 
+export async function resolveCloseoutSyncPr({
+	token,
+	repository,
+	prNumber,
+	pr,
+	bodyFile,
+	skipBodyApply = false,
+	fetchMergedPrFn = fetchMergedPr,
+}) {
+	if (!skipBodyApply && bodyFile) {
+		return fetchMergedPrFn({ token, repository, prNumber });
+	}
+	return pr;
+}
+
 async function fetchMergedPr({ token, repository, prNumber }) {
 	return githubRepoRequest({
 		token,
@@ -175,9 +190,18 @@ export async function runPostMergeCloseout({
 
 	await writePostMergeResultArtifactsAsync(result);
 
+	const syncPr = await resolveCloseoutSyncPr({
+		token,
+		repository,
+		prNumber,
+		pr,
+		bodyFile,
+		skipBodyApply,
+	});
+
 	let syncResult = null;
 	if (result.sync_action && result.sync_action !== 'skipped') {
-		syncResult = runSync({ repository, prNumber, syncAction: result.sync_action, pr });
+		syncResult = runSync({ repository, prNumber, syncAction: result.sync_action, pr: syncPr });
 	}
 
 	if (result.sync_action === 'post_merge_success' && !isSuccessfulSourceIssueCloseout(syncResult)) {
@@ -192,7 +216,7 @@ export async function runPostMergeCloseout({
 			},
 		];
 		await writePostMergeResultArtifactsAsync(result);
-		syncResult = runSync({ repository, prNumber, syncAction: 'post_merge_failure', pr });
+		syncResult = runSync({ repository, prNumber, syncAction: 'post_merge_failure', pr: syncPr });
 	}
 
 	if (
