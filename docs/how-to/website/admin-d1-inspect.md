@@ -5,7 +5,7 @@ Authority Level: Operational Procedure
 Owns: D1 inspect diagnostic procedure for operators
 Does Not Own: D1 migrations, production data repair, or schema design
 Canonical Reference: /docs/reference/architecture/access-model.md
-Related Issues: #1258, #1565, #1119
+Related issues: #1258, #1565, #1119
 Last Reviewed: 2026-06-14
 ---
 

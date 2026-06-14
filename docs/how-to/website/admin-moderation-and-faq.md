@@ -5,7 +5,7 @@ Authority Level: Operational Procedure
 Owns: Moderation hub and FAQ queue operator procedures
 Does Not Own: Public FAQ/Ask UX, report creation policy, or automated moderation
 Canonical Reference: /docs/reference/architecture/access-model.md
-Related Issues: #1258, #1565, #1120
+Related issues: #1258, #1565, #1120
 Last Reviewed: 2026-06-14
 ---
 

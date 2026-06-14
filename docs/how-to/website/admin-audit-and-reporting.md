@@ -5,7 +5,7 @@ Authority Level: Operational Procedure
 Owns: Audit snapshot, protected CSV export, and report closeout procedures
 Does Not Own: CI reporting, secret rotation, or bulk PII export policy
 Canonical Reference: /docs/reference/architecture/access-model.md
-Related Issues: #1258, #1565, #1127
+Related issues: #1258, #1565, #1127
 Last Reviewed: 2026-06-14
 ---
 

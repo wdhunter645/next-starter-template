@@ -5,7 +5,7 @@ Authority Level: Operational Procedure
 Owns: Dashboard, join requests, worklist, and member-operations admin procedures
 Does Not Own: Member auth provisioning, D1 schema changes, or join approval policy
 Canonical Reference: /docs/reference/architecture/access-model.md
-Related Issues: #1258, #1565, #1119
+Related issues: #1258, #1565, #1119
 Last Reviewed: 2026-06-14
 ---
 

@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: Recommended GitHub disposition comments for legacy Website Operations Admin issues under #1258 Task 013
 Does Not Own: GitHub issue mutation, label changes, or bulk closure execution
 Canonical Reference: /docs/ops/reports/website-operations-admin-legacy-issue-reconciliation.md
-Related Issues: #1255, #1258, #1565, #1053, #1118, #1119, #1120, #1121, #1122, #1123, #1124, #1125, #1126, #1127
+Related issues: #1255, #1258, #1565, #1053, #1118, #1119, #1120, #1121, #1122, #1123, #1124, #1125, #1126, #1127
 Last Reviewed: 2026-06-14
 ---
 
@@ -31,22 +31,22 @@ Per-surface runbooks published under `docs/how-to/website/`:
 
 | Legacy lane | Runbook |
 | --- | --- |
-| Overview | [admin-operations-overview.md](../how-to/website/admin-operations-overview.md) |
-| `#1118` T40 Fan Club | [fanclub-operational-workflows.md](../how-to/website/fanclub-operational-workflows.md) |
-| `#1119` T41 Admin shell | [admin-dashboard-and-member-operations.md](../how-to/website/admin-dashboard-and-member-operations.md) |
-| `#1120` T42 Moderation | [admin-moderation-and-faq.md](../how-to/website/admin-moderation-and-faq.md) |
-| `#1121` T43 CMS/content | [admin-cms-and-page-content.md](../how-to/website/admin-cms-and-page-content.md) |
-| `#1123` T45 Editorial | [admin-editorial-archive-operations.md](../how-to/website/admin-editorial-archive-operations.md) |
-| `#1122` T44 Media | [admin-media-assets.md](../how-to/website/admin-media-assets.md) |
-| `#1124` T46 Events | [admin-events-calendar.md](../how-to/website/admin-events-calendar.md) |
-| `#1125` T47 Fundraiser | [admin-fundraiser-preview.md](../how-to/website/admin-fundraiser-preview.md) |
-| `#1126` T48 Matchup | [admin-matchup.md](../how-to/website/admin-matchup.md) |
-| `#1127` T49 Audit | [admin-audit-and-reporting.md](../how-to/website/admin-audit-and-reporting.md) |
-| D1 diagnostic | [admin-d1-inspect.md](../how-to/website/admin-d1-inspect.md) |
+| Overview | [admin-operations-overview.md](../../how-to/website/admin-operations-overview.md) |
+| `#1118` T40 Fan Club | [fanclub-operational-workflows.md](../../how-to/website/fanclub-operational-workflows.md) |
+| `#1119` T41 Admin shell | [admin-dashboard-and-member-operations.md](../../how-to/website/admin-dashboard-and-member-operations.md) |
+| `#1120` T42 Moderation | [admin-moderation-and-faq.md](../../how-to/website/admin-moderation-and-faq.md) |
+| `#1121` T43 CMS/content | [admin-cms-and-page-content.md](../../how-to/website/admin-cms-and-page-content.md) |
+| `#1123` T45 Editorial | [admin-editorial-archive-operations.md](../../how-to/website/admin-editorial-archive-operations.md) |
+| `#1122` T44 Media | [admin-media-assets.md](../../how-to/website/admin-media-assets.md) |
+| `#1124` T46 Events | [admin-events-calendar.md](../../how-to/website/admin-events-calendar.md) |
+| `#1125` T47 Fundraiser | [admin-fundraiser-preview.md](../../how-to/website/admin-fundraiser-preview.md) |
+| `#1126` T48 Matchup | [admin-matchup.md](../../how-to/website/admin-matchup.md) |
+| `#1127` T49 Audit | [admin-audit-and-reporting.md](../../how-to/website/admin-audit-and-reporting.md) |
+| D1 diagnostic | [admin-d1-inspect.md](../../how-to/website/admin-d1-inspect.md) |
 
 ## Disposition summary
 
-| Issue | Disposition | Original merge | Phase 4 verification | Recommended issue action |
+| issue | Disposition | Original merge | Phase 4 verification | Recommended issue action |
 | --- | --- | --- | --- | --- |
 | `#1053` | Subordinated historical index | N/A (coordination) | Task 013 docs | Body update + pointer to `#1258`; closeout deferred to Atlas |
 | `#1118` | Satisfied on main | PR `#1171` | Task 003 PR `#1536` | Comment + optional `status:complete` label normalization |

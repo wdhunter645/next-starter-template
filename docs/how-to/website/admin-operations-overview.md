@@ -5,7 +5,7 @@ Authority Level: Operational Procedure
 Owns: Entry-point operator workflow for Website Operations Admin surfaces under Program #1258
 Does Not Own: GitHub issue closure, runtime deployment, schema migration, or auth policy changes
 Canonical Reference: /docs/reference/architecture/access-model.md
-Related Issues: #1255, #1258, #1565
+Related issues: #1255, #1258, #1565
 Last Reviewed: 2026-06-14
 ---
 

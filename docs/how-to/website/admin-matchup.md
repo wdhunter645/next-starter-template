@@ -5,7 +5,7 @@ Authority Level: Operational Procedure
 Owns: Weekly matchup create/update/close and public read-path checks
 Does Not Own: Voting model redesign or matchup product policy
 Canonical Reference: /docs/reference/architecture/access-model.md
-Related Issues: #1258, #1565, #1126
+Related issues: #1258, #1565, #1126
 Last Reviewed: 2026-06-14
 ---
 

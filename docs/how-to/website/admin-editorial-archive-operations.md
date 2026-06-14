@@ -5,7 +5,7 @@ Authority Level: Operational Procedure
 Owns: `/admin/editorial` operator alignment with approved content inventory
 Does Not Own: Content strategy, seed design, or `#1256` program scope
 Canonical Reference: /docs/reference/website/content-inventory-model.md
-Related Issues: #1258, #1565, #1123, #1256
+Related issues: #1258, #1565, #1123, #1256
 Last Reviewed: 2026-06-14
 ---
 

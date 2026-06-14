@@ -5,7 +5,7 @@ Authority Level: Operational Procedure
 Owns: CMS blocks and page content admin procedures
 Does Not Own: Editorial inventory strategy (#1256) or public page layout design
 Canonical Reference: /docs/reference/website/content-inventory-model.md
-Related Issues: #1258, #1565, #1121, #1256
+Related issues: #1258, #1565, #1121, #1256
 Last Reviewed: 2026-06-14
 ---
 

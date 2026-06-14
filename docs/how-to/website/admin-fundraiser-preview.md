@@ -5,7 +5,7 @@ Authority Level: Operational Procedure
 Owns: Fundraiser preview and campaign spotlight alignment checks
 Does Not Own: Payment processing, donation flows, or product fundraising strategy
 Canonical Reference: /docs/reference/architecture/access-model.md
-Related Issues: #1258, #1565, #1125
+Related issues: #1258, #1565, #1125
 Last Reviewed: 2026-06-14
 ---
 

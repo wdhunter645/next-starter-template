@@ -5,7 +5,7 @@ Authority Level: Operational Procedure
 Owns: Fan Club member operational path verification for operators
 Does Not Own: Member onboarding policy, chat moderation rules, or admin surfaces
 Canonical Reference: /docs/reference/architecture/access-model.md
-Related Issues: #1258, #1565, #1118
+Related issues: #1258, #1565, #1118
 Last Reviewed: 2026-06-14
 ---
 
