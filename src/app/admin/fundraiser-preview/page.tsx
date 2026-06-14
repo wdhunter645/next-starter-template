@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PageShell from '@/components/PageShell';
 import AdminNav from '@/components/admin/AdminNav';
+import AdminStatusText from '@/components/admin/AdminStatusText';
 import AdminTokenPanel from '@/components/admin/AdminTokenPanel';
 import CampaignSpotlightCard from '@/components/home/CampaignSpotlightCard';
-import { adminJson } from '@/lib/adminClient';
+import { adminJson, getStoredAdminToken } from '@/lib/adminClient';
 import {
   CAMPAIGN_SPOTLIGHT_KEY,
   CAMPAIGN_SPOTLIGHT_PAGE,
@@ -64,7 +65,7 @@ function buttonStyle(primary = false, disabled = false): React.CSSProperties {
 }
 
 export default function FundraiserPreviewPage() {
-  const [status, setStatus] = useState('Idle.');
+  const [status, setStatus] = useState('Save an admin API token above to load campaign spotlight.');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
@@ -72,6 +73,8 @@ export default function FundraiserPreviewPage() {
   const [form, setForm] = useState<CampaignSpotlightConfig>(defaultCampaignSpotlightConfig);
   const [fundraiserTeams, setFundraiserTeams] = useState<FundraiserTeam[]>([]);
   const [fundraiserError, setFundraiserError] = useState('');
+  const [tokenReady, setTokenReady] = useState(false);
+  const loadRequestRef = useRef(0);
 
   const refreshFundraiserData = useCallback(() => {
     const result = safeGetFundraiserTeams();
@@ -86,12 +89,30 @@ export default function FundraiserPreviewPage() {
   }, []);
 
   const load = useCallback(async () => {
+    if (!getStoredAdminToken()) {
+      setBlock(null);
+      setForm(defaultCampaignSpotlightConfig);
+      setStatus('Save an admin API token above to load campaign spotlight.');
+      setLoading(false);
+      return;
+    }
+
+    const requestId = ++loadRequestRef.current;
     setLoading(true);
     setStatus('Loading campaign spotlight block…');
 
     const result = await adminJson<CmsListResponse>(
       `/api/admin/cms/list?page=${encodeURIComponent(CAMPAIGN_SPOTLIGHT_PAGE)}`,
     );
+
+    if (requestId !== loadRequestRef.current) {
+      return;
+    }
+
+    if (!getStoredAdminToken()) {
+      setLoading(false);
+      return;
+    }
 
     if (!result.ok) {
       setBlock(null);
@@ -122,7 +143,10 @@ export default function FundraiserPreviewPage() {
 
   useEffect(() => {
     refreshFundraiserData();
-    void load();
+    if (getStoredAdminToken()) {
+      setTokenReady(true);
+      void load();
+    }
   }, [load, refreshFundraiserData]);
 
   const validationErrors = useMemo(() => validateCampaignSpotlightConfig(form), [form]);
@@ -160,6 +184,11 @@ export default function FundraiserPreviewPage() {
   }, []);
 
   const saveDraft = useCallback(async () => {
+    if (!getStoredAdminToken()) {
+      setStatus('Error: Save an admin API token above before saving campaign drafts.');
+      return;
+    }
+
     let persistedConfig: CampaignSpotlightConfig;
     try {
       persistedConfig = buildPersistedCampaignConfig(form);
@@ -207,6 +236,11 @@ export default function FundraiserPreviewPage() {
   }, [form, fundraiserError, load]);
 
   const publish = useCallback(async () => {
+    if (!getStoredAdminToken()) {
+      setStatus('Error: Save an admin API token above before publishing campaign content.');
+      return;
+    }
+
     let persistedConfig: CampaignSpotlightConfig;
     try {
       persistedConfig = buildPersistedCampaignConfig(form);
@@ -257,7 +291,29 @@ export default function FundraiserPreviewPage() {
       subtitle="Validate campaign spotlight content and fundraiser leaderboard data before enabling public homepage exposure."
     >
       <AdminNav />
-      <AdminTokenPanel onSaved={() => void load()} />
+      <AdminTokenPanel
+        onSaved={() => {
+          if (!getStoredAdminToken()) {
+            loadRequestRef.current += 1;
+            setTokenReady(false);
+            setLoading(false);
+            setSaving(false);
+            setPublishing(false);
+            setBlock(null);
+            setForm(defaultCampaignSpotlightConfig);
+            setStatus('Save an admin API token above to load campaign spotlight.');
+            return;
+          }
+          setTokenReady(true);
+          void load();
+        }}
+      />
+
+      {!tokenReady ? (
+        <p style={{ marginTop: 16, opacity: 0.85 }}>
+          Save an admin API token above to load campaign spotlight.
+        </p>
+      ) : null}
 
       <div style={{ display: 'grid', gap: 18, marginTop: 16 }}>
         <section style={{ border: '1px solid rgba(0,0,0,0.12)', borderRadius: 16, padding: 18, background: '#fff' }}>
@@ -269,19 +325,34 @@ export default function FundraiserPreviewPage() {
               </p>
             </div>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <button type="button" onClick={() => void load()} disabled={loading} style={buttonStyle(false, loading)}>
+              <button
+                type="button"
+                onClick={() => void load()}
+                disabled={loading || !tokenReady}
+                style={buttonStyle(false, loading || !tokenReady)}
+              >
                 {loading ? 'Loading…' : 'Refresh'}
               </button>
-              <button type="button" onClick={() => void saveDraft()} disabled={saving} style={buttonStyle(false, saving)}>
+              <button
+                type="button"
+                onClick={() => void saveDraft()}
+                disabled={saving || !tokenReady}
+                style={buttonStyle(false, saving || !tokenReady)}
+              >
                 {saving ? 'Saving…' : 'Save Draft'}
               </button>
-              <button type="button" onClick={() => void publish()} disabled={publishing} style={buttonStyle(true, publishing)}>
+              <button
+                type="button"
+                onClick={() => void publish()}
+                disabled={publishing || !tokenReady}
+                style={buttonStyle(true, publishing || !tokenReady)}
+              >
                 {publishing ? 'Publishing…' : 'Publish'}
               </button>
             </div>
           </div>
 
-          <p style={{ marginTop: 14, marginBottom: 0, fontWeight: 700 }}>{status}</p>
+          <AdminStatusText message={status} />
           <div style={{ marginTop: 12, fontSize: 14, lineHeight: 1.6 }}>
             <div>
               <strong>CMS key:</strong> <code>{CAMPAIGN_SPOTLIGHT_KEY}</code>
@@ -315,7 +386,12 @@ export default function FundraiserPreviewPage() {
             <button type="button" onClick={refreshFundraiserData} style={buttonStyle()}>
               Revalidate fundraiser data
             </button>
-            <button type="button" onClick={syncLeaderboardFromFundraiser} disabled={Boolean(fundraiserError)} style={buttonStyle(false, Boolean(fundraiserError))}>
+            <button
+              type="button"
+              onClick={syncLeaderboardFromFundraiser}
+              disabled={Boolean(fundraiserError) || !tokenReady}
+              style={buttonStyle(false, Boolean(fundraiserError) || !tokenReady)}
+            >
               Sync leaderboard snapshot
             </button>
           </div>
