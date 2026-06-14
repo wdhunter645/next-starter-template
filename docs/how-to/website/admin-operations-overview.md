@@ -80,6 +80,9 @@ Without a saved token, hardened pages fail closed: no stats, lists, exports, or 
 
 Fan Club member operational paths (T40 / `#1118`): [Fan Club operational workflows](./fanclub-operational-workflows.md).
 
+Legacy issue disposition copy-paste package (Atlas batch; no GitHub mutations in-repo):
+`docs/ops/reports/website-operations-admin-legacy-disposition-package.md`
+
 ### 4. Shared fail-closed signals
 
 After Tasks 004–012 hardening, expect:

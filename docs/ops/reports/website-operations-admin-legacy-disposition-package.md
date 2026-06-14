@@ -93,7 +93,7 @@ this issue as an implementation queue head. Closeout timing is an Atlas/Bill dec
 Fan Club operational paths are implemented and verification-hardened under Program #1258 Task 003.
 
 **Original delivery:** PR `#1171`
-**Phase 4 verification:** PR `#1536` (issue `#1557` area / Task 003)
+**Phase 4 verification:** PR `#1536`
 **Operator runbook:** `docs/how-to/website/fanclub-operational-workflows.md`
 
 Remaining production PDF/upload edge cases may defer to #1259. No greenfield rebuild required.
