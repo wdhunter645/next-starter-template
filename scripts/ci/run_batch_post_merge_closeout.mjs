@@ -7,6 +7,7 @@ import { pathToFileURL } from 'node:url';
 import { closeDuplicateRemediationIssues } from './close_duplicate_remediation_issues.mjs';
 import { runPostMergeCloseout } from './run_post_merge_closeout.mjs';
 import { WORKFLOW_RUN_SCOPE_MERGE_ONLY } from './post_merge_validator.mjs';
+import { pruneCloseoutManifestFromReport } from './prune_closeout_manifest.mjs';
 
 export const BATCH_CLOSEOUT_REPORT_PATH = 'post-merge-batch-closeout.json';
 const DEFAULT_MANIFEST = 'scripts/ci/post-merge-closeout/targets.json';
@@ -88,6 +89,7 @@ export function buildBatchCloseoutReport({
 	targets = [],
 	results = [],
 	duplicateClose = {},
+	manifestPrune = null,
 	dryRun = false,
 	error = null,
 	failedPhase = null,
@@ -112,6 +114,7 @@ export function buildBatchCloseoutReport({
 		target_count: targets.length,
 		results,
 		duplicateClose,
+		manifestPrune,
 	};
 }
 
@@ -137,6 +140,7 @@ export async function runBatchPostMergeCloseout({
 	dryRun = false,
 	runPostMergeCloseoutFn = runPostMergeCloseout,
 	closeDuplicateRemediationIssuesFn = closeDuplicateRemediationIssues,
+	pruneCloseoutManifestFromReportFn = pruneCloseoutManifestFromReport,
 }) {
 	const results = [];
 
@@ -203,13 +207,21 @@ export async function runBatchPostMergeCloseout({
 		duplicateClose = await closeDuplicateRemediationIssuesFn({ token, repository, dryRun: false });
 	}
 
-	return buildBatchCloseoutReport({
+	let report = buildBatchCloseoutReport({
 		manifestPath,
 		targets,
 		results,
 		duplicateClose,
 		dryRun,
 	});
+
+	let manifestPrune = null;
+	if (!dryRun && report.status === 'success') {
+		manifestPrune = pruneCloseoutManifestFromReportFn({ manifestPath, report, dryRun: false });
+		report = { ...report, manifestPrune };
+	}
+
+	return report;
 }
 
 export async function main() {
