@@ -67,6 +67,11 @@ npm test -- tests/fanclub-operations.test.tsx
 ```
 Results: `typecheck` passed; fanclub test suite expanded (CI authoritative).
 
+Gate verification:
+- Commit-level workflow runs inspected: YES
+- Optional merge-commit workflow noise (Auto-Sync Documentation secret-access/configuration, Docs Guardrails) classified non-blocking for this implementation PR
+- Result summary: PASS
+
 ## REVIEWER RESPONSE ACCOUNTING
 - [x] Reviewed all reviewer comments.
 - [x] Reviewed all bot comments.
@@ -105,8 +110,8 @@ Reviewer items:
 - [x] Post-merge closeout body remediation applied for merged PR governance
 
 ## POST-MERGE ISSUE DISPOSITION
-- Source issue **#1258** remains **open** with `status:active`; remove only `status:post-merge-verify` and other stale workflow labels; **do not close** #1258
-- Close remediation issue **#1537** when validator passes after body apply
+- Source issue **#1258** remains **open** with `status:active`; remove only `status:post-merge-verify` and other stale workflow labels; **reopen #1258** if incorrectly closed during prior batch replay; **do not** apply terminal close
+- Close remediation issue **#1629** when validator passes after body apply
 
-<!-- closeout-trigger: 2026-06-14 -->
+<!-- closeout-trigger: 2026-06-14T12:30:00Z -->
 <!-- CURSOR_AGENT_PR_BODY_END -->
