@@ -222,7 +222,7 @@ export default function AdminMatchupPage() {
     });
 
     if (!result.ok) {
-      setStatus(`Create error: ${result.error}`);
+      setStatus(`Error: Create failed — ${result.error}`);
       setSaving(false);
       return;
     }
@@ -248,7 +248,7 @@ export default function AdminMatchupPage() {
       });
 
       if (!result.ok) {
-        setStatus(`Activate error: ${result.error}`);
+        setStatus(`Error: Activate failed — ${result.error}`);
         setActivating(false);
         return;
       }
@@ -275,7 +275,7 @@ export default function AdminMatchupPage() {
     );
 
     if (!result.ok) {
-      setStatus(`Close error: ${result.error}`);
+      setStatus(`Error: Close failed — ${result.error}`);
       setClosing(false);
       return;
     }
