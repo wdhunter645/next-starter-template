@@ -7,9 +7,7 @@ import { REMEDIATION_TITLE_PREFIX } from './post_merge_source_issue_closeout.mjs
 
 export function blockingCloseoutFailures(result = {}) {
 	const blockingMetadata = (result.metadata_failures || []).filter((failure) => failure?.severity !== 'advisory');
-	const blockingWorkflows = (result.workflow_failures || []).filter(
-		(failure) => failure?.required || failure?.classification !== 'optional-remediation-failure',
-	);
+	const blockingWorkflows = (result.workflow_failures || []).filter((failure) => failure?.required === true);
 
 	return [
 		...blockingMetadata,

@@ -229,6 +229,19 @@ describe('closeout fail-safe remediation evidence', () => {
 					},
 				],
 			}),
+		).toBe(false);
+		expect(
+			shouldUpsertRemediationIssue({
+				status: 'pass',
+				remediation_required: true,
+				workflow_failures: [
+					{
+						workflow: 'GATE — Quality Checks',
+						classification: 'required-workflow-failure',
+						required: true,
+					},
+				],
+			}),
 		).toBe(true);
 		expect(
 			shouldUpsertRemediationIssue({

@@ -1,59 +1,11 @@
 {
-  "triggered_at": "2026-06-14T12:00:00Z",
+  "triggered_at": "2026-06-14T12:30:00Z",
   "targets": [
-    {
-      "pr": 1531,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1531-body.md",
-      "merge_sha": "fca85cf10e8d6f0f3f6f67e3d1eaec98a78098ca",
-      "source_issue": 1258
-    },
-    {
-      "pr": 1534,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1534-body.md",
-      "merge_sha": "54b883e66cb4dd0d8c75d5168e1c58997ce037e7",
-      "source_issue": 1258
-    },
     {
       "pr": 1536,
       "body_file": "scripts/ci/post-merge-closeout/pr-1536-body.md",
       "merge_sha": "62ca227c5939f9a852bd8268d2bcdf406a35d1ba",
       "source_issue": 1258
-    },
-    {
-      "pr": 1538,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1538-body.md",
-      "merge_sha": "76fd22356c34474365cb886ec9425ba330f5f1f7",
-      "source_issue": 1258
-    },
-    {
-      "pr": 1540,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1540-body.md",
-      "merge_sha": "8c01d9601529d723e00144b6c54a54031f57c643",
-      "source_issue": 1258
-    },
-    {
-      "pr": 1551,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1551-body.md",
-      "merge_sha": "3509bbb5952864f55a3000910e3cdb6c2c5121b7",
-      "source_issue": 1258
-    },
-    {
-      "pr": 1556,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1556-body.md",
-      "merge_sha": "e7405698fc01fe8352827b93a2a40f59130b1698",
-      "source_issue": 1258
-    },
-    {
-      "pr": 1582,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1582-body.md",
-      "merge_sha": "738456ac502d6d58adc4ac40650f131261db9dfd",
-      "source_issue": 1560
-    },
-    {
-      "pr": 1619,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1619-body.md",
-      "merge_sha": "98394ec9a8ed2e1eb8aa63d724822bddaac13110",
-      "source_issue": 1617
     }
   ]
 }
