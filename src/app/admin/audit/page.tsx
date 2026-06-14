@@ -91,6 +91,11 @@ export default function AdminAuditPage() {
   const [unavailableTables, setUnavailableTables] = useState<string[]>([]);
   const [tokenReady, setTokenReady] = useState(false);
   const loadRequestRef = useRef(0);
+  const reportRequestIdRef = useRef(0);
+  const statsRequestIdRef = useRef(0);
+  const filterRef = useRef(reportFilter);
+  const skipFilterEffectRef = useRef(true);
+  filterRef.current = reportFilter;
   const actionBusy = loadingReports || loadingStats || exporting || closing;
 
   const operationalCounts = useMemo(() => {
@@ -112,8 +117,13 @@ export default function AdminAuditPage() {
       return;
     }
 
+    const requestId = ++statsRequestIdRef.current;
     setLoadingStats(true);
     const result = await adminJson<StatsResponse>('/api/admin/stats');
+
+    if (requestId !== statsRequestIdRef.current) {
+      return;
+    }
 
     if (!getStoredAdminToken()) {
       setLoadingStats(false);
@@ -151,10 +161,16 @@ export default function AdminAuditPage() {
       return;
     }
 
+    const currentFilter = filterRef.current;
+    const requestId = ++reportRequestIdRef.current;
     setLoadingReports(true);
     const result = await adminJson<ItemsResponse<ReportItem>>(
-      `/api/admin/reports/list?status=${reportFilter}&limit=200`,
+      `/api/admin/reports/list?status=${currentFilter}&limit=200`,
     );
+
+    if (requestId !== reportRequestIdRef.current) {
+      return;
+    }
 
     if (!getStoredAdminToken()) {
       setLoadingReports(false);
@@ -164,7 +180,7 @@ export default function AdminAuditPage() {
     setReports(result.ok && result.data?.items ? result.data.items : []);
     if (!result.ok) setStatus(`Error: Reports failed — ${result.error}`);
     setLoadingReports(false);
-  }, [reportFilter]);
+  }, []);
 
   const refreshAll = useCallback(async () => {
     if (!getStoredAdminToken()) {
@@ -198,6 +214,19 @@ export default function AdminAuditPage() {
       void refreshAll();
     }
   }, [refreshAll]);
+
+  useEffect(() => {
+    if (!getStoredAdminToken()) {
+      return;
+    }
+
+    if (skipFilterEffectRef.current) {
+      skipFilterEffectRef.current = false;
+      return;
+    }
+
+    void loadReports();
+  }, [reportFilter, loadReports]);
 
   const closeReport = useCallback(
     async (id: number) => {
@@ -268,6 +297,8 @@ export default function AdminAuditPage() {
           onSaved={() => {
             if (!getStoredAdminToken()) {
               loadRequestRef.current += 1;
+              reportRequestIdRef.current += 1;
+              statsRequestIdRef.current += 1;
               setTokenReady(false);
               setLoadingReports(false);
               setLoadingStats(false);
@@ -392,8 +423,8 @@ export default function AdminAuditPage() {
               <button
                 key={filter}
                 type="button"
-                style={buttonStyle(reportFilter === filter || !tokenReady || actionBusy)}
-                disabled={!tokenReady || actionBusy}
+                style={buttonStyle(!tokenReady || actionBusy)}
+                disabled={!tokenReady || actionBusy || reportFilter === filter}
                 onClick={() => setReportFilter(filter)}
               >
                 {filter}
