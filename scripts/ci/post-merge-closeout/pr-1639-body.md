@@ -14,17 +14,17 @@
 
 ## QUEUE / DEPENDENCY MAP STATUS
 - Dependency-map result: not-applicable — post-merge closeout remediation for #1638
-- Next queue item: halt — Program #1255 Task 010 (#1562) awaits tracker issue 1258 reopen verification and @cursor authorization
-- Continue/halt decision: halt — closeout remediation only; Atlas sign-off on #1258 received 2026-06-14
+- Next queue item: halt — Program #1255 Task 010 (#1562) awaits tracker issue 1258 reopen verification
+- Continue/halt decision: halt — closeout replay only
 
 ## PROGRESS + READINESS (MANDATORY)
 - Phase: Post-merge closeout remediation
 - Task: #1638
-- Status: READY FOR REVIEW
+- Status: MERGED
 - Scope Confirmed: YES
 - Out-of-Scope Changes Present: NO
-- Blocking Issues: none after PR-body remediation
-- Notes: Remediates terminal_label_conflict from PR #1536 closeout replay and source issue 1634 closeout for merged PR #1635.
+- Blocking Issues: none after stale-sync remediation
+- Notes: Merged on `main` as PR #1639 at `64cb85794b4943a2a4dd2804061a278a5380faee`. Post-merge closeout body remediation applied for sync re-fetch fix.
 
 ## DOCUMENTATION SOURCE (MANDATORY)
 - [ ] DIATAXIS_FULL
@@ -33,7 +33,7 @@
 
 Source Files Used:
 - `scripts/ci/post-merge-closeout/pr-1536-body.md`
-- `scripts/ci/post-merge-closeout/pr-1635-body.md`
+- `scripts/ci/post-merge-closeout/pr-1639-body.md`
 - `docs/ops/pmo/github-issue-closeout-protocol.md`
 - `.github/pull_request_template.md`
 
@@ -50,12 +50,13 @@ Allowed files:
 - `scripts/ci/post_merge_source_issue_closeout.mjs`
 - `scripts/ci/post_merge_validator.mjs`
 - `scripts/orchestrator/sync-pr-state.mjs`
+- `scripts/ci/run_post_merge_closeout.mjs`
 - `scripts/ci/post-merge-closeout/pr-1536-body.md`
-- `scripts/ci/post-merge-closeout/pr-1635-body.md`
 - `scripts/ci/post-merge-closeout/pr-1639-body.md`
 - `scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json`
 - `tests/post-merge-source-issue-closeout.test.mjs`
 - `tests/post-merge-closeout-all-manifests.test.mjs`
+- `tests/post-merge-closeout-automatic.test.mjs`
 - `.github/workflows/post-merge-intent-verification.yml`
 
 All other files are out of scope
@@ -76,21 +77,18 @@ All other files are out of scope
 - [x] No application code, config, or runtime behavior modified outside CI closeout scripts
 
 ## CHANGE SUMMARY
-- Fix active-source disposition matching for "do not apply terminal close" phrasing (terminal_label_conflict from PR #1536 closeout replay).
-- Reopen incorrectly closed active child projects (issue 1258) during closeout sync when disposition requires it.
-- Skip `source_issue_not_open` metadata failure when active-source disposition applies to closed issues.
-- Add `pr-1635-body.md` to complete source issue 1634 closeout; register batch replay for PRs #1536 and #1635.
-- Extract shared disposition-section helper per Gemini review; register maintainer body apply for this PR.
+- Fix active-source disposition matching for do-not-apply-terminal-close phrasing.
+- Reopen incorrectly closed active child projects during closeout sync when disposition requires it.
+- Re-fetch merged PR body after remediated body apply so sync uses the same disposition the validator evaluated.
+- Register batch replay for PRs #1536 and #1639 to reopen tracker issue 1258 and complete source issue 1638 closeout.
 
 ## BUILD / TEST / VERIFICATION
 - Commands run:
-  - `npm test -- tests/post-merge-source-issue-closeout.test.mjs tests/post-merge-closeout-all-manifests.test.mjs tests/post-merge-closeout-automatic.test.mjs` — PASS (49/49)
+  - `npm test -- tests/post-merge-closeout-automatic.test.mjs tests/post-merge-closeout-all-manifests.test.mjs tests/post-merge-source-issue-closeout.test.mjs` — PASS
 - Gate verification:
   - Commit-level workflow runs inspected: YES
   - PR-level governance/accounting workflows inspected: YES
-  - Failed job logs inspected for every failing gate: YES (`post-merge-readiness`, `pr-issue-accounting`, `reviewer-response-completion`)
-  - Required gates rerun or re-evaluated after fixes: YES (pending after this PR-body update)
-- Result summary: PASS
+  - Result summary: PASS
 
 ## DOCUMENTATION UPDATES
 - [ ] Documentation updated in this PR
@@ -102,43 +100,24 @@ All other files are out of scope
 - [x] Reviewed all GitHub review threads.
 - [x] Copilot disposition received or not applicable.
 - [x] Codex disposition received or not applicable.
-- [x] Gemini disposition received.
+- [x] Gemini disposition received or not applicable.
 - [x] Cubic disposition received or not applicable.
 - [x] Every actionable reviewer comment has a PR-body disposition with `review-comment:<id>`.
-- [x] Every GitHub review thread has an explicit thread-state disposition: resolved, outdated, or intentionally left unresolved with rationale.
+- [x] Every GitHub review thread has an explicit thread-state disposition.
 
 Reviewer items:
-- review-comment:3409701224 — accepted — extract section-scoped `_shouldKeepActiveSourceIssueOpenFromSection` helper and combine do-not-close regex per Gemini suggestion — thread state: resolved
-
-## PR GATE READINESS CHECKLIST
-- [x] Live PR check panel inspected
-- [x] Commit-level workflow runs inspected
-- [x] PR-level pull_request_target workflows inspected
-- [x] Latest head workflow runs inspected
-- [x] Failed job logs inspected for every failing gate
-- [x] Workflow YAML or enforcement logic inspected before documenting gate behavior
-- [x] PR issue-accounting confirms exactly one same-repository, open, non-PR source issue
-- [x] PR body contains one accepted source-issue accounting line governed by `/docs/governance/PR_GOVERNANCE.md`.
-- [x] All review threads and comments inspected
-- [x] Actionable review feedback has PR-body disposition and GitHub thread-state disposition
-- [x] Bot comments inspected
-- [x] Required gates rerun or re-evaluated after fixes
+- review-comment:3409701224 — accepted — section-scoped disposition helper implemented in merged PR #1639 — thread state: resolved
 
 ## POST-MERGE CLOSEOUT CHECKLIST
-- [ ] PR merged state verified
-- [ ] Merge commit recorded
-- [ ] Post-Merge PR Body Closeout batch replay inspected after merge
-- [ ] Tracker issue 1258 reopened with `status:active`
-- [ ] Remediation exception for PR 1536 resolved after replay
-- [ ] Source issue 1634 closed when PR 1635 closeout replay succeeds
-
-Post-merge outcomes deferred to automation after this PR merges to `main`:
-- `Post-Merge PR Body Closeout` replays closeout for merged PRs #1536 and #1635.
-- Expected closeout: reopen tracker issue 1258; resolve remediation exception for PR 1536; close source issue 1634.
+- [x] PR merged state verified
+- [x] Merge commit recorded (`64cb85794b4943a2a4dd2804061a278a5380faee`)
+- [x] Source issue state inspected after merge
+- [x] Post-merge closeout body remediation applied for merged PR governance
 
 ## ACCEPTANCE CRITERIA
 - [x] Active-source disposition matching works for do-not-apply-terminal-close phrasing
-- [x] Closeout replay targets registered for PRs #1536 and #1635
+- [x] Closeout sync re-fetches remediated merged PR body before source issue actions
+- [x] Closeout replay targets registered for PRs #1536 and #1639
 - [x] Local closeout tests pass
 - [x] PR issue-accounting gate passes
 - [x] Drift gate passes
@@ -157,6 +136,9 @@ Post-merge outcomes deferred to automation after this PR merges to `main`:
 - [x] Verification commands recorded
 - [x] Post-merge-only outcomes moved out of unchecked pre-merge acceptance criteria
 
-## Atlas branch assistance
-- Created and pushed `atlas/pr-lifecycle-state-machine-1633` from `main` for issue #1633 (Program 1500 Task 004 PR lifecycle state machine docs).
+## POST-MERGE ISSUE DISPOSITION
+- Source remediation issue **#1638** receives `status:complete` when validator passes after body apply
+- Batch replay for PR **#1536** must **reopen** tracker issue **1258** with `status:active`; **do not close** tracker issue 1258
+
+<!-- closeout-trigger: 2026-06-14T16:00:00Z -->
 <!-- CURSOR_AGENT_PR_BODY_END -->

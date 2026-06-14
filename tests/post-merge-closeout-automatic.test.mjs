@@ -16,6 +16,7 @@ import {
 	isFailureRelabelHalted,
 	isSuccessfulSourceIssueCloseout,
 	resolveCloseoutEventContext,
+	resolveCloseoutSyncPr,
 	toSyncPr,
 } from '../scripts/ci/run_post_merge_closeout.mjs';
 import {
@@ -201,10 +202,45 @@ describe('post-merge closeout sync propagation', () => {
 		const closeoutScript = fs.readFileSync('scripts/ci/run_post_merge_closeout.mjs', 'utf8');
 
 		expect(closeoutScript).toContain('export function runSync');
+		expect(closeoutScript).toContain('export async function resolveCloseoutSyncPr');
 		expect(closeoutScript).toContain('isSuccessfulSourceIssueCloseout');
 		expect(closeoutScript).toContain('isFailureRelabelHalted');
 		expect(closeoutScript).toContain("source_issue_closeout_skipped");
 		expect(closeoutScript).toContain("failure_relabel_halted");
+	});
+
+	it('re-fetches merged PR state for sync after remediated body apply', async () => {
+		const stalePr = { body: 'stale body', merge_commit_sha: 'abc123' };
+		const refreshedPr = { body: 'remediated body', merge_commit_sha: 'abc123' };
+		const fetchMergedPrFn = vi.fn(async () => refreshedPr);
+
+		await expect(
+			resolveCloseoutSyncPr({
+				token: 'token',
+				repository: 'owner/repo',
+				prNumber: '1536',
+				pr: stalePr,
+				bodyFile: 'scripts/ci/post-merge-closeout/pr-1536-body.md',
+				fetchMergedPrFn,
+			}),
+		).resolves.toBe(refreshedPr);
+		expect(fetchMergedPrFn).toHaveBeenCalledWith({
+			token: 'token',
+			repository: 'owner/repo',
+			prNumber: '1536',
+		});
+
+		await expect(
+			resolveCloseoutSyncPr({
+				token: 'token',
+				repository: 'owner/repo',
+				prNumber: '1536',
+				pr: stalePr,
+				bodyFile: '',
+				skipBodyApply: true,
+				fetchMergedPrFn,
+			}),
+		).resolves.toBe(stalePr);
 	});
 });
 

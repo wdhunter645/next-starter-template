@@ -1,5 +1,5 @@
 {
-  "triggered_at": "2026-06-14T15:00:00Z",
+  "triggered_at": "2026-06-14T16:00:00Z",
   "targets": [
     {
       "pr": 1536,
@@ -8,10 +8,10 @@
       "source_issue": 1258
     },
     {
-      "pr": 1635,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1635-body.md",
-      "merge_sha": "0e2e2fbada6e2fb74bed22eac10993eeb7744707",
-      "source_issue": 1634
+      "pr": 1639,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1639-body.md",
+      "merge_sha": "64cb85794b4943a2a4dd2804061a278a5380faee",
+      "source_issue": 1638
     }
   ]
 }
