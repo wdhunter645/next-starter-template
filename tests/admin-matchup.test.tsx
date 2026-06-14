@@ -228,6 +228,104 @@ describe('admin matchup page', () => {
     });
   });
 
+  it('does not load matchups until an admin token is saved', async () => {
+    window.localStorage.removeItem('lgfc_admin_token');
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+
+    render(<AdminMatchupPage />);
+
+    expect(screen.getAllByText(/Save an admin API token above to load matchups/i).length).toBeGreaterThan(0);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('clears matchup state when the admin token is removed', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const path = String(input);
+
+      if (path.startsWith('/api/admin/matchup/list')) {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            active: {
+              id: 2,
+              week_start: '2026-06-01',
+              photo_a_id: 10,
+              photo_b_id: 11,
+              status: 'active',
+              created_at: '2026-06-01T12:00:00Z',
+              votes: { a: 3, b: 5, total: 8, winner: 'b' },
+            },
+            items: [
+              {
+                id: 2,
+                week_start: '2026-06-01',
+                photo_a_id: 10,
+                photo_b_id: 11,
+                status: 'active',
+                created_at: '2026-06-01T12:00:00Z',
+                votes: { a: 3, b: 5, total: 8, winner: 'b' },
+              },
+            ],
+          }),
+        );
+      }
+
+      if (path === '/api/matchup/current') {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            week_start: '2026-06-01',
+            matchup_id: 2,
+            items: [
+              { id: 10, url: '/photos/10.jpg' },
+              { id: 11, url: '/photos/11.jpg' },
+            ],
+          }),
+        );
+      }
+
+      if (path.startsWith('/api/matchup/results')) {
+        return Promise.resolve(
+          jsonResponse({ ok: true, week_start: '2026-06-01', totals: { a: 3, b: 5 }, last_week: null }),
+        );
+      }
+
+      return Promise.reject(new Error(`Unexpected fetch: ${path}`));
+    });
+
+    render(<AdminMatchupPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Active matchup: week 2026-06-01/i)).toBeInTheDocument();
+    });
+
+    window.localStorage.removeItem('lgfc_admin_token');
+    fireEvent.change(screen.getByLabelText('Admin token'), { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save token' }));
+
+    await waitFor(() => {
+      expect(screen.queryByText(/Active matchup: week 2026-06-01/i)).not.toBeInTheDocument();
+      expect(screen.getAllByText(/Save an admin API token above to load matchups/i).length).toBeGreaterThan(0);
+    });
+
+    expect(fetchMock.mock.calls.filter(([path]) => String(path).startsWith('/api/admin/matchup/list'))).toHaveLength(1);
+  });
+
+  it('announces list errors via AdminStatusText alert', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      if (String(input).startsWith('/api/admin/matchup/list')) {
+        return Promise.resolve(jsonResponse({ ok: false, error: 'Database unavailable' }, 503));
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${String(input)}`));
+    });
+
+    render(<AdminMatchupPage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('Error: Database unavailable');
+    });
+  });
+
   it('shows fail-closed public preview when current matchup is unavailable', async () => {
     vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
       const path = String(input);
