@@ -5,8 +5,9 @@ Authority Level: Operational Plan
 Owns: Future build issue sequence and verification plan for Website QA / Production Validation after documentation approval
 Does Not Own: Runtime implementation before child issues, unauthorized GitHub issue mutation, workflow YAML unless explicitly scoped, or final launch authorization
 Status: phase-4-active
-Task 001 complete: docs/ops/reports/website-qa-production-validation-as-built-gap-analysis.md (PR `#1657` merged `da02c01`)
-Task 002 in progress: docs/ops/reports/website-qa-production-validation-route-nav-validation.md (PR pending)
+Task 001 complete: docs/ops/reports/website-qa-production-validation-as-built-gap-analysis.md (PR `#1657` merged `da02c01`; issue `#1659` closed)
+Task 002 complete: docs/ops/reports/website-qa-production-validation-route-nav-validation.md (PR `#1662` merged `2e811a6`; issue `#1661` closed)
+Task 003 next: auth-state validation — authorized; not yet on main
 Project: website-qa-production-validation
 Owner: Atlas
 Execution Mode: orchestrated-after-approval
@@ -27,10 +28,11 @@ Program #1255 child project `#1259` (Website QA / Production Validation).
 ## Status
 
 Phase 3 planning for `#1259` is **complete** (planning PR `#1656` merged `b0cc0da`).
-Phase 4 Task 001 gap analysis is **complete** (PR `#1657` merged `da02c01`). Task 002
-route/nav validation is **in progress** in this branch. Predecessor `#1258` is
-**closed complete** (terminal PR `#1652`). Tasks 003+ require explicit per-task
-Atlas/Bill authorization.
+Phase 4 Task 001 gap analysis is **complete** (PR `#1657` merged `da02c01`; issue `#1659`
+closed). Task 002 route/nav validation is **complete** (PR `#1662` merged `2e811a6`;
+issue `#1661` closed). Task 003 auth-state validation is **authorized** and next on
+the queue. Predecessor `#1258` is **closed complete** (terminal PR `#1652`). Tasks
+004+ require explicit per-task Atlas/Bill authorization.
 
 Plan status: `phase-4-active` (not `production-ready`). Child issue creation
 remains held unless explicitly authorized.
@@ -47,7 +49,8 @@ remains held unless explicitly authorized.
 | Phase 0 reconciliation | `docs/ops/reports/program-2-website-phase0-reconciliation.md` |
 | Legacy QA issue table | `docs/ops/reports/website-qa-production-validation-legacy-issue-reconciliation.md` |
 | Task 001 gap analysis | `docs/ops/reports/website-qa-production-validation-as-built-gap-analysis.md` |
-| Task 002 route/nav validation | `docs/ops/reports/website-qa-production-validation-route-nav-validation.md` |
+| Task 002 route/nav validation | `docs/ops/reports/website-qa-production-validation-route-nav-validation.md` (PR `#1662`) |
+| Task 003 auth-state validation | (pending — authorized; deliverable not yet on `main`) |
 | Ops admin handoff | `docs/how-to/website/admin-operations-overview.md` |
 | Content inventory authority | `#1256` / `docs/reference/website/content-inventory-model.md` |
 
@@ -258,7 +261,7 @@ validation tasks claim gaps.
 
 | Criterion | State |
 | --- | --- |
-| Implementation plan approved for Phase 4 task execution | Met — planning PR `#1656` merged; per-task authorization required for Tasks 002+ |
+| Implementation plan approved for Phase 4 task execution | Met — planning PR `#1656` merged; Tasks 001–002 complete; per-task authorization for Tasks 003+ |
 | Proposed child task sequence (Tasks 001–009) | Met in this plan |
 | Per-task file allowlists | Met in this plan |
 | Legacy `#1112` / T21–T34 disposition documented | Met in reconciliation report |
@@ -306,8 +309,8 @@ Manual production smoke checklist per task (documented in child issue bodies).
 
 Plan status is `phase-4-active` (not `production-ready`).
 
-Phase 3 planning exit is **complete** (planning PR `#1656` merged `b0cc0da`). Task 001
-gap analysis is **complete** (PR `#1657` merged `da02c01`; issue `#1659` closed).
-Task 002 route/nav validation is **in progress** in this branch. Tasks 003–009 require
+Phase 3 planning exit is **complete** (planning PR `#1656` merged `b0cc0da`). Tasks 001
+and 002 are **complete** (PRs `#1657` / `#1662`; issues `#1659` / `#1661` closed).
+Task 003 auth-state validation is **authorized** and next. Tasks 004–009 require
 explicit per-task Atlas/Bill authorization. Child GitHub issues remain held unless
 explicitly authorized.
