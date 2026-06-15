@@ -75,12 +75,16 @@ After a merged implementation PR passes post-merge validation with no blocking r
 
 1. Resolve the linked source issue from accepted accounting formats (`- **Issue:** #NNNN`, orchestrator marker, or existing URL forms).
 2. Skip closeout when the linked issue is a remediation issue (`post-merge-failure` label or remediation title prefix).
-3. Skip closeout when the linked issue is an umbrella, master, program, parent, queue, roadmap, or tracking issue unless explicit closeout authorization names that issue.
-4. Remove stale active-state labels: `status:blocked`, `status:queued`, `status:failed`, `status:post-merge-verify`.
-5. Add a closeout evidence comment containing PR number, merge SHA, validator status, verification result, and closeout reason.
-6. Apply `status:complete` and close the source issue.
+3. Remove stale active-state labels: `status:blocked`, `status:queued`, `status:failed`, `status:post-merge-verify`.
+4. Add a closeout evidence comment containing PR number, merge SHA, validator status, verification result, and closeout reason.
+5. Apply `status:complete` and close the source issue.
 
-Closeout does not run when validation status is `fail`, remediation remains required, required workflow failures exist, the source issue cannot be confidently identified, the PR did not merge into `main`, or the only referenced issue is an umbrella/program issue without explicit closeout authority.
+Umbrella, master, program, parent, queue, roadmap, and tracking issue boundaries
+are PR-body and operator-governance policy unless and until runtime closeout logic
+implements an explicit classification check. Do not document that automation
+skips those issue types as an as-built guarantee.
+
+Closeout does not run when validation status is `fail`, remediation remains required, required workflow failures exist, the source issue cannot be confidently identified, or the PR did not merge into `main`.
 
 ## Remediation Preservation
 
