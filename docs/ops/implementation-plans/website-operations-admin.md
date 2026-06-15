@@ -2,15 +2,23 @@
 Doc Type: Implementation Plan
 Audience: Atlas, Bill, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Operational Plan
-Owns: Future build issue sequence and verification plan for Website Operations Admin after documentation approval
+Owns: Completed build issue sequence and verification record for Website Operations Admin under #1258
 Does Not Own: Runtime implementation, issue creation before approval, D1 migrations before child issues, or final operator policy decisions
-Status: phase-4-active
+Status: complete
 Task 001 complete: docs/ops/reports/website-operations-admin-as-built-gap-analysis.md (PR `#1531`)
 Task 002 complete: docs/reference/architecture/access-model.md (PR `#1533`)
 Task 003 complete: Fan Club operational workflows verification (`#1118` / T40; PR `#1536`)
 Task 004 complete: Admin shell and member operations delta (`#1119` / T41; PR `#1542`)
 Task 005 complete: Moderation and review workflow delta (`#1120` / T42; PR `#1551` merged `3509bbb`)
-Next task: Task 006 — CMS and page content admin delta (`#1121` / T43; not authorized)
+Task 006 complete: CMS and page content admin delta (`#1121` / T43; PR `#1572`)
+Task 007 complete: Media assets and B2 sync operations (`#1122` / T44; PR `#1571`)
+Task 008 complete: Editorial archive admin operations alignment (`#1123` / T45; PR `#1582`)
+Task 009 complete: Events calendar administration delta (`#1124` / T46; PR `#1596`)
+Task 010 complete: Fundraiser and campaign admin delta (`#1125` / T47; PR `#1646`)
+Task 011 complete: Matchup administration delta (`#1126` / T48; PR `#1648`)
+Task 012 complete: Audit, reporting, and export delta (`#1127` / T49; PR `#1651`)
+Task 013 complete: Operator runbooks and legacy disposition documentation (PR `#1652` merged `1aa9d3d`)
+Next task: none — project closed complete; successor `#1259`
 Project: website-operations-admin
 Owner: Atlas
 Execution Mode: orchestrated-after-approval
@@ -23,14 +31,17 @@ Last Reviewed: 2026-06-11
 
 # Website Operations Admin Implementation Plan
 
+## Purpose
+
+Define the completed Phase 4 task sequence, verification evidence, and handoff
+status for Program #1255 child project `#1258` (Website Operations Admin).
+
 ## Status
 
-Phase 4 implementation for `#1258` is **active** on `main`. Tasks 001–005 are
-**complete** (PRs `#1531`, `#1533`, `#1536`, `#1542`, `#1551`; post-merge via
-`#1534`, `#1540`). **Task 006** is next and requires explicit authorization before
-implementation. Plan status remains
-`phase-4-active` (not `production-ready`). Child issue creation remains held
-unless explicitly authorized by existing automation.
+Phase 4 implementation for `#1258` is **complete** on `main`. Tasks 001–013 merged
+(PRs `#1531` through `#1652`). Operator runbooks and legacy disposition package
+published in Task 013. project status: **closed complete**. Successor:
+`#1259` — Website QA / Production Validation (Phase 3 planning active).
 
 ## Source of truth
 
@@ -39,7 +50,7 @@ unless explicitly authorized by existing automation.
 | Parent program | `#1255` — Website Implementation and Content Operations |
 | Source issue | `#1258` — Website Operations Admin |
 | Predecessor project | `#1256` — Content Strategy / Editorial Inventory (**closed complete**) |
-| Follow-on project | `#1259` — Website QA / Production Validation (**queued**) |
+| Follow-on project | `#1259` — Website QA / Production Validation (**Phase 3 planning active**) |
 | Out of scope | `#1500` — CI Post-Merge Closeout Reliability (**queued**; not current execution) |
 | Legacy coordination tree | `#1053` — subordinated; historical T-task map only |
 | Phase 0 reconciliation | `docs/ops/reports/program-2-website-phase0-reconciliation.md` |

@@ -1,6 +1,6 @@
 # active_tasklist.md — Read-Only Snapshot (Derived from GitHub Issues)
 
-Date: 2026-06-11
+Date: 2026-06-15
 
 This file is **not** the system of record.
 
@@ -15,13 +15,12 @@ Use this file only as an optional, human-readable snapshot.
 | Item | State | Notes |
 | --- | --- | --- |
 | `#1255` | `status:active` | Umbrella program — Website Implementation and Content Operations |
-| `#1258` | `status:active` | **Phase 4 Task 006** — CMS / page content admin (next; not authorized); Tasks 001–005 complete (PRs `#1531`, `#1533`, `#1536`, `#1542`, `#1551`) |
+| `#1259` | `status:active` | **Phase 3 planning** — Website QA / Production Validation (next); planning PR pending |
 
 ## Queued — not started
 
 | Item | State |
 | --- | --- |
-| `#1259` Website QA / Production Validation | `status:queued` |
 | `#1500` CI Post-Merge Closeout Reliability | `status:queued` — after Program #1255 completes |
 
 ## Completed (reference)
@@ -29,20 +28,15 @@ Use this file only as an optional, human-readable snapshot.
 | Item | State |
 | --- | --- |
 | `#1256` Content Strategy / Editorial Inventory | **closed complete** — Tasks 001–009 |
-| `#1258` Phase 3 planning | PR `#1528` merged; closeout complete |
-| `#1258` Phase 4 Task 001 | PR `#1531` merged — as-built gap analysis |
-| `#1258` Phase 4 Task 002 | PR `#1533` merged — admin access model documentation |
-| `#1258` Phase 4 Task 003 | PR `#1536` merged — Fan Club operational workflows verification |
-| `#1258` Phase 4 Task 004 | PR `#1542` merged — admin shell and member operations hardening |
-| `#1258` Phase 4 Task 005 | PR `#1551` merged — moderation and review workflow hardening (`3509bbb`) |
-| `#1258` post-merge status | PR `#1534` merged — derived tasklist/plan refresh |
-| `#1258` post-merge remediation | PR `#1540` merged — #1538 Codex reviewer remediation |
+| `#1258` Website Operations Admin | **closed complete** — Phase 4 Tasks 001–013; terminal PR `#1652` |
+| `#1258` Phase 3 planning | PR `#1528` merged |
+| `#1258` Phase 4 Tasks 001–013 | PRs `#1531`, `#1533`, `#1536`, `#1542`, `#1551`, `#1572`, `#1571`, `#1582`, `#1596`, `#1646`, `#1648`, `#1651`, `#1652` |
 | `#1407`, `#1526`, `#1448` | closed complete |
 | issue `#1411` | completed planning artifact |
 
 ## Out of scope (current pass)
 
-- `#1259` launch
+- `#1259` Phase 4 implementation (not authorized until plan approved)
 - `#1500` launch or implementation
-- Child issue creation
-- Application code / D1 / workflow YAML
+- Child issue creation for `#1259`
+- Application code / D1 / workflow YAML in planning PR
