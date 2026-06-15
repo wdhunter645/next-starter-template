@@ -53,11 +53,10 @@ current merged truth:
 - `docs/reference/ci/post-merge-validation-surface.md`
 - `docs/reference/ci/ops-runtime-surface.md`
 
-Rows that remain materially stale until a full inventory rewrite include
-`gate-zip-safety.yml` (retired) and several historical OPS workflow descriptions
-in the table below. Post-merge closeout ownership rows were refreshed on
-2026-06-15 for Program #1500 Task 005. The full workflow count and remaining rows
-remain deferred to the broader inventory rewrite.
+This Task 005 reconciliation refreshes only the closeout-related rows needed to
+remove effective/ineffective closeout ownership conflicts. Historical full-
+inventory rows are intentionally outside this table until a separate mechanical
+workflow-inventory rewrite updates the entire workflow surface.
 
 ## Intended Final State
 
