@@ -102,6 +102,9 @@ No Task 002 code fixes required.
 ```bash
 npm test -- tests/public-route-navigation-validation.test.ts tests/launch-readiness-manifest.test.ts
 
-DOCS_HEADER_FILE_LIST="docs/ops/reports/website-qa-production-validation-route-nav-validation.md docs/ops/implementation-plans/website-qa-production-validation.md" \
-  ./scripts/ci/docs_check_headers.sh .
+printf '%s\n' \
+  docs/ops/reports/website-qa-production-validation-route-nav-validation.md \
+  docs/ops/implementation-plans/website-qa-production-validation.md \
+  > /tmp/task002-docs-header-list.txt
+DOCS_HEADER_FILE_LIST=/tmp/task002-docs-header-list.txt ./scripts/ci/docs_check_headers.sh .
 ```
