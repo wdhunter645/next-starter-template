@@ -13,7 +13,7 @@ Last Reviewed: 2026-06-15
 
 ## Purpose
 
-This inventory records the current GitHub Actions workflow surface for Issue #1058 Phase 1. It is an as-observed reference used to plan later narrow PRs for naming alignment, reviewer-gate redesign, consolidation, and blocker/advisory normalization.
+This inventory records the current GitHub Actions workflow surface for issue #1058 Phase 1. It is an as-observed reference used to plan later narrow PRs for naming alignment, reviewer-gate redesign, consolidation, and blocker/advisory normalization.
 
 ## Scope
 
@@ -77,7 +77,7 @@ Each workflow should have a clear owner, visible name, filename, trigger class, 
 |---|---|---|---|---|---|---|---|---|---|---|
 | `gate-close-work-issue.yml` | gate-close-work-issue | Parked no-op legacy issue closer; performs no issue mutation. | `pull_request_target` closed | Parked | None | none | No | Low | Replaced by `post-merge-closeout.yml` for post-merge source issue closeout and by `ops-pr-issue-accounting.yml` for pre-merge issue accounting. | Yes |
 | `post-merge-closeout.yml` | Post-Merge Detection | Sole automatic post-merge source-issue closeout owner for merged PRs to `main`: validate, single sync path, remediation handoff, and close source issue only when authorized evidence passes. | `pull_request_target` closed (merged to `main`) | Operational | Post-merge closeout | checkout, Node, `run_post_merge_closeout.mjs`, gh, `post_merge_reviewer_audit.mjs` | Yes, via closed PR event | Medium | Owns automatic source issue closeout; must not race parked legacy closeout gates. | No |
-| `ops-pr-issue-accounting.yml` | OPS - PR Issue Accounting | Normalize and verify one source Issue per PR before merge. | `pull_request_target` | Blocking | Issue-first PR accounting | GitHub Script | Yes | Medium | Owns pre-merge issue accounting only; does not close source issues. | Redesign candidate |
+| `ops-pr-issue-accounting.yml` | OPS - PR Issue Accounting | Normalize and verify one source issue per PR before merge. | `pull_request_target` | Blocking | issue-first PR accounting | GitHub Script | Yes | Medium | Owns pre-merge issue accounting only; does not close source issues. | Redesign candidate |
 
 ## Inventory Rewrite Boundary
 
