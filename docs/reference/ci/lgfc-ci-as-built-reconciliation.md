@@ -53,10 +53,11 @@ owned by `.github/workflows/ops-pr-issue-accounting.yml`.
 
 ## Umbrella issue boundary
 
-Program, umbrella, master, parent, roadmap, queue, and tracking issues are not
-closed by child task PR closeout. Child task closeout may close only the single
-source issue unless the operator explicitly authorizes a bounded umbrella or
-batch closeout action.
+The current as-built automation resolves and closes the single accepted source
+issue when validation succeeds. Program, umbrella, master, parent, roadmap,
+queue, and tracking issue boundaries are operator and PR-body governance policy
+for selecting the source issue. Runtime umbrella/program classification remains a
+deferred implementation item unless a later task adds that explicit check.
 
 ## Deferred and Out-of-Scope Items
 
@@ -66,6 +67,7 @@ batch closeout action.
 | Branch protection UI reconciliation | Repository setting change outside workflow files | Human operator |
 | Retire parked legacy workflows | Requires separate cleanup PR with retirement evidence | OPS / CI maintenance |
 | Runtime workflow logic changes | Task 005 is documentation/comment-only | Future implementation task |
+| Runtime umbrella/program closeout classification | Policy exists, but the current automation does not classify umbrella/program issue types before source issue closeout | Future implementation task |
 
 ## Monitoring Behavior and Operational Ownership
 
