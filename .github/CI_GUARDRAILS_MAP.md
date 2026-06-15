@@ -1,7 +1,7 @@
 # CI Guardrails Map
 
 **Status:** AUTHORITATIVE  
-**Effective Date:** 2026-01-25  
+**Effective Date:** 2026-06-15  
 **Purpose:** Comprehensive reference for current CI/CD guardrails, closeout ownership, and automated validation
 
 ---
@@ -52,10 +52,10 @@ Pre-merge issue accounting remains separate and is owned by
 
 ## Umbrella issue rule
 
-Program, umbrella, master, parent, roadmap, queue, and tracking issues are not
-closed by child task PR closeout. A child task PR may close only its single
-source issue unless operator-approved bounded batch or umbrella closeout
-authority explicitly names the umbrella issue.
+Program, umbrella, master, parent, roadmap, queue, and tracking issue boundaries
+are operator and PR-body governance policy for selecting the source issue.
+Runtime umbrella/program classification remains a deferred implementation item
+unless a later task adds that explicit check.
 
 ## Gate Enforcement Policy
 
