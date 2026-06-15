@@ -17,6 +17,11 @@ Last Reviewed: 2026-06-15
 
 # Website QA and Production Validation Implementation Plan
 
+## Purpose
+
+Define the Phase 3 planning package and proposed Phase 4 task sequence for
+Program #1255 child project `#1259` (Website QA / Production Validation).
+
 ## Status
 
 Phase 3 planning for `#1259` is **in progress**. Predecessor `#1258` (Website
@@ -277,9 +282,8 @@ Do not infer open-ended implementation from `phase-3-planning` alone.
 ```bash
 git status --short
 git diff --check
-./scripts/ci/docs_check_headers.sh \
-  docs/ops/implementation-plans/website-qa-production-validation.md \
-  docs/ops/reports/website-qa-production-validation-legacy-issue-reconciliation.md
+DOCS_HEADER_FILE_LIST="docs/ops/implementation-plans/website-qa-production-validation.md docs/ops/reports/website-qa-production-validation-legacy-issue-reconciliation.md" \
+  ./scripts/ci/docs_check_headers.sh .
 ```
 
 ### Future implementation PRs (representative)

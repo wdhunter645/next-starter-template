@@ -19,7 +19,7 @@ child issues against current `main` as-built state for Program #1255 child proje
 
 ## Boundary
 
-- No GitHub issues closed or relabeled in this document pass
+- No GitHub issues closed or relabeled in this planning pass
 - No implementation child issues created
 - Merge evidence and file paths on `main` are the primary source of truth; GitHub
   issue labels are not authoritative unless reconciled against repo docs and
