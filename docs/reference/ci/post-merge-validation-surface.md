@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: LGFC post-merge validation surface, evidence reporting model, remediation and orchestration pause behavior, source-issue closeout behavior
 Does Not Own: Pre-merge merge protection gates, OPS runtime monitoring behavior, website product behavior
 Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related Issues: #1197, #1249, #1075, #1058
-Last Reviewed: 2026-06-11
+Related Issues: #1197, #1249, #1075, #1058, #1548
+Last Reviewed: 2026-06-15
 ---
 
 # LGFC Post-Merge Validation Surface
@@ -33,12 +33,25 @@ Mutable PR-head gate code must not execute as trusted enforcement logic.
 | Workflow file | Display name | Role |
 |---|---|---|
 | `gate-post-merge-readiness.yml` | GATE — Post-Merge Readiness | Pre-merge blocker for PR body metadata, allowlist evidence, placeholders, and reviewer dispositions that would fail closeout |
-| `post-merge-closeout.yml` | Post-Merge Detection | Single automatic closeout owner per merge: body apply when configured, validate, one orchestrator sync, PR comment, reviewer audit on failure |
+| `post-merge-closeout.yml` | Post-Merge Detection | Sole automatic post-merge source-issue closeout owner per merge: body apply when configured, validate, one orchestrator sync, PR comment, reviewer audit on failure |
 | `post-merge-pr-body-closeout.yml` | Post-Merge PR Body Closeout | Manual single-PR closeout, batch manifests, and push-triggered backfill only (no automatic merge trigger) |
 | `post-merge-intent-verification.yml` | Post-Merge Maintainer Body Apply | Dispatch-only maintainer PR body apply for legacy open PRs |
 | `post-merge-remediation.yml` | Post-Merge Remediation | Opens remediation issues only when Post-Merge Detection fails |
+| `gate-close-work-issue.yml` | gate-close-work-issue | Parked no-op legacy issue closer; performs no issue mutation and is not an effective closeout owner |
 | `diataxis-post-merge-validate.yml` | DIATAXIS Post-Merge Validation | Uploads DIATAXIS evidence for merged documentation changes |
 | `ops-design-compliance-audit.yml` | OPS — Design Compliance Audit | OPS observability only; not post-merge validation authority |
+
+## Effective Closeout Ownership
+
+Automatic source-issue closeout has a single effective owner:
+`.github/workflows/post-merge-closeout.yml`.
+
+The parked `gate-close-work-issue.yml` workflow exists only as a legacy no-op
+placeholder for traceability. It must not be treated as a competing closeout path
+in docs, queue logic, or status reporting.
+
+Pre-merge PR-to-issue accounting remains separate and is owned by
+`.github/workflows/ops-pr-issue-accounting.yml`.
 
 ## Evidence Domains
 
@@ -62,11 +75,12 @@ After a merged implementation PR passes post-merge validation with no blocking r
 
 1. Resolve the linked source issue from accepted accounting formats (`- **Issue:** #NNNN`, orchestrator marker, or existing URL forms).
 2. Skip closeout when the linked issue is a remediation issue (`post-merge-failure` label or remediation title prefix).
-3. Remove stale active-state labels: `status:blocked`, `status:queued`, `status:failed`, `status:post-merge-verify`.
-4. Add a closeout evidence comment containing PR number, merge SHA, validator status, verification result, and closeout reason.
-5. Apply `status:complete` and close the source issue.
+3. Skip closeout when the linked issue is an umbrella, master, program, parent, queue, roadmap, or tracking issue unless explicit closeout authorization names that issue.
+4. Remove stale active-state labels: `status:blocked`, `status:queued`, `status:failed`, `status:post-merge-verify`.
+5. Add a closeout evidence comment containing PR number, merge SHA, validator status, verification result, and closeout reason.
+6. Apply `status:complete` and close the source issue.
 
-Closeout does not run when validation status is `fail`, remediation remains required, required workflow failures exist, the source issue cannot be confidently identified, or the PR did not merge into `main`.
+Closeout does not run when validation status is `fail`, remediation remains required, required workflow failures exist, the source issue cannot be confidently identified, the PR did not merge into `main`, or the only referenced issue is an umbrella/program issue without explicit closeout authority.
 
 ## Remediation Preservation
 
