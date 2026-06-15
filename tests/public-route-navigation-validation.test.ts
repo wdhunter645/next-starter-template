@@ -29,9 +29,9 @@ const PLAYWRIGHT_EXCLUDED_PUBLIC_ROUTES: Record<string, string> = {
 };
 
 function routePagePath(route: string): string {
-  if (route === '/') return join('src', 'app', 'page.tsx');
-  const segments = route.replace(/^\//, '').split('/');
-  return join('src', 'app', ...segments, 'page.tsx');
+  const segments = route === '/' ? [] : route.replace(/^\//, '').split('/');
+  const basePath = join('src', 'app', ...segments, 'page');
+  return existsSync(`${basePath}.ts`) ? `${basePath}.ts` : `${basePath}.tsx`;
 }
 
 describe('public route contract (#1259 Task 002)', () => {
@@ -69,12 +69,16 @@ describe('public route contract (#1259 Task 002)', () => {
   });
 
   it('renders health probe marker for /health', () => {
-    const source = readFileSync(routePagePath('/health'), 'utf8');
+    const path = routePagePath('/health');
+    expect(existsSync(path), `Missing page file: ${path}`).toBe(true);
+    const source = readFileSync(path, 'utf8');
     expect(source).toContain('OK: health');
   });
 
   it('keeps legacy /login redirect wired to post-logout home route', () => {
-    const source = readFileSync(routePagePath('/login'), 'utf8');
+    const path = routePagePath('/login');
+    expect(existsSync(path), `Missing page file: ${path}`).toBe(true);
+    const source = readFileSync(path, 'utf8');
     expect(source).toContain('POST_LOGOUT_ROUTE');
     expect(source).toContain('window.location.replace');
   });

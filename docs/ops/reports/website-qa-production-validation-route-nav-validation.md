@@ -29,13 +29,11 @@ Assessment date: **2026-06-15** (`main` after Task 001 PR `#1657` merge `da02c01
 ## Executive summary
 
 Route and navigation validation **passes** with three documented pass-with-note
-items. All 14 public-core routes map to `src/app/**/page.tsx` files. Launch
-manifest, footer contract, and Playwright exclusion rules align with as-built
-behavior. No code gaps require fixes in this task.
+items across 25 checklist rows (22 pass, 3 pass-with-note, 0 fail).
 
 | Result | Count |
 | --- | --- |
-| Pass | 18 |
+| Pass | 22 |
 | Pass with note | 3 |
 | Fail | 0 |
 
