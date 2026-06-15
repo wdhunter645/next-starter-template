@@ -50,7 +50,7 @@ decision that identifies it as an active closer is stale.
 Pre-merge issue accounting remains separate and is owned by
 `.github/workflows/ops-pr-issue-accounting.yml`.
 
-## Umbrella Issue Rule
+## Umbrella issue rule
 
 Program, umbrella, master, parent, roadmap, queue, and tracking issues are not
 closed by child task PR closeout. A child task PR may close only its single
@@ -73,4 +73,4 @@ authority explicitly names the umbrella issue.
 | `docs/reference/ci/post-merge-validation-surface.md` | Authoritative post-merge validation and closeout ownership surface |
 | `docs/reference/ci/workflow-inventory.md` | Closeout-related workflow inventory rows and broader inventory boundary |
 | `docs/reference/ci/lgfc-ci-as-built-reconciliation.md` | As-built reconciliation and deferred-item tracking |
-| `docs/ops/pmo/github-issue-closeout-protocol.md` | Issue closeout protocol, terminal label reconciliation, and umbrella exclusion policy |
+| `docs/ops/pmo/github-issue-closeout-protocol.md` | issue closeout protocol, terminal label reconciliation, and umbrella exclusion policy |
