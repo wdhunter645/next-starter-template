@@ -2,15 +2,15 @@
 
 **Status:** AUTHORITATIVE  
 **Effective Date:** 2026-06-15  
-**Purpose:** Comprehensive reference for current CI/CD guardrails, closeout ownership, and automated validation
+**Purpose:** Reference for current CI/CD guardrails, closeout ownership, and validation surfaces
 
 ---
 
 ## Overview
 
-This document maps current LGFC CI/CD guardrails relevant to Program #1500 Task
-005 closeout reconciliation. It records the current effective/parked state for
-closeout-related workflows and points to the authoritative domain surfaces.
+This document maps the CI/CD guardrails relevant to Program #1500 Task 005
+closeout reconciliation. It records effective, parked, manual, targeted, and
+backfill workflow roles for the closeout surface.
 
 As-built reconciliation for the `#1075` CI redesign is maintained in
 `docs/reference/ci/lgfc-ci-as-built-reconciliation.md`. Domain surface references:
@@ -20,50 +20,46 @@ As-built reconciliation for the `#1075` CI redesign is maintained in
 - `docs/reference/ci/post-merge-validation-surface.md`
 - `docs/reference/ci/ops-runtime-surface.md`
 
-This map remains the operational guardrails reference for closeout ownership.
-When a broader workflow inventory rewrite is required, perform it under a
-separate issue and PR.
-
 **Last reconciliation review:** 2026-06-15 (Program #1500 Task 005 closeout ownership reconciliation)
 
 ## Action Workflow Inventory — Closeout Surface
 
 | Workflow file | Workflow name | Effectiveness | Primary use |
 |---|---|---|---|
-| `gate-post-merge-readiness.yml` | GATE — Post-Merge Readiness | Effective | Blocks PRs whose current body/files/reviewer dispositions would fail post-merge closeout metadata checks. |
-| `post-merge-closeout.yml` | Post-Merge Detection | Effective | Sole automatic post-merge source-issue closeout owner for merged PRs to `main`; validates, syncs once, comments, remediates on failure, and closes the source issue only when evidence passes. |
-| `post-merge-pr-body-closeout.yml` | Post-Merge PR Body Closeout | Effective (Manual / Backfill) | Manual single-PR closeout, batch manifests, and push-triggered backfill only; not an automatic merge-triggered closeout owner. |
-| `post-merge-intent-verification.yml` | Post-Merge Maintainer Body Apply | Effective (Dispatch-only) | Maintainer-dispatched PR body apply for legacy open PRs. |
-| `post-merge-remediation.yml` | Post-Merge Remediation | Effective | Opens remediation issues only when Post-Merge Detection fails. |
-| `ops-pr-issue-accounting.yml` | GATE — PR Issue Accounting | Effective | Pre-merge PR-to-issue accounting audit; does not close source issues. |
-| `gate-close-work-issue.yml` | gate-close-work-issue | Ineffective (Parked no-op) | Legacy issue closer retained for traceability only; performs no issue mutation and is not a closeout owner. |
+| `gate-post-merge-readiness.yml` | GATE — Post-Merge Readiness | Effective | Pre-merge readiness check for PR metadata, allowlist evidence, and reviewer disposition. |
+| `post-merge-closeout.yml` | Post-Merge Detection | Effective | Primary automatic post-merge reconciliation workflow for merged PRs to `main`. |
+| `post-merge-pr-body-closeout.yml` | Post-Merge PR Body Closeout | Effective (Manual / Backfill) | Manual single-PR reconciliation, batch manifests, and push-triggered backfill. |
+| `post-merge-intent-verification.yml` | Post-Merge Maintainer Body Apply | Effective (Targeted automatic / dispatch) | Maintainer PR-body updates for explicitly targeted PR synchronize events and maintainer-dispatched legacy PRs. |
+| `post-merge-remediation.yml` | Post-Merge Remediation | Effective | Remediation workflow for failed post-merge validation. |
+| `ops-pr-issue-accounting.yml` | GATE — PR Issue Accounting | Effective | Pre-merge PR-to-ticket accounting audit. |
+| `gate-close-work-issue.yml` | gate-close-work-issue | Ineffective (Parked no-op) | Legacy parked workflow retained for traceability only. |
 
 ## Closeout Ownership Rule
 
-Automatic source-issue closeout has one effective owner:
+Automatic post-merge reconciliation has one effective owner:
 `.github/workflows/post-merge-closeout.yml`.
 
 `gate-close-work-issue.yml` is parked and must not be listed or treated as an
-effective closeout workflow. Any status report, workflow inventory, or queue
-decision that identifies it as an active closer is stale.
+effective workflow. Any status report, workflow inventory, or queue decision that
+identifies it as active is stale.
 
-Pre-merge issue accounting remains separate and is owned by
+Pre-merge accounting remains separate and is owned by
 `.github/workflows/ops-pr-issue-accounting.yml`.
 
 ## Umbrella issue rule
 
-Program, umbrella, master, parent, roadmap, queue, and tracking issue boundaries
-are operator and PR-body governance policy for selecting the source issue.
-Runtime umbrella/program classification remains a deferred implementation item
-unless a later task adds that explicit check.
+Program, umbrella, master, parent, roadmap, queue, and tracking boundaries are
+operator and PR-body governance policy for selecting the accepted source ticket.
+Runtime classification remains a deferred implementation item unless a later task
+adds that explicit check.
 
 ## Gate Enforcement Policy
 
-- Pre-merge gates validate PR scope, source issue accounting, metadata, reviewer
-  disposition, and closeout-readiness evidence.
-- Post-merge detection verifies the merged PR and handles source issue closeout
-  only after successful validation.
-- Parked workflows are traceability artifacts, not enforcement or mutation paths.
+- Pre-merge gates validate PR scope, accounting, metadata, reviewer disposition,
+  and readiness evidence.
+- Post-merge detection verifies the merged PR and handles reconciliation only
+  after successful validation.
+- Parked workflows are traceability artifacts, not enforcement paths.
 - Documentation-only reconciliation PRs must not change workflow runtime logic.
 
 ## Related References
