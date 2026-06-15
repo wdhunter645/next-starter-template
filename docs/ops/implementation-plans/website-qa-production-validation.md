@@ -5,7 +5,8 @@ Authority Level: Operational Plan
 Owns: Future build issue sequence and verification plan for Website QA / Production Validation after documentation approval
 Does Not Own: Runtime implementation before child issues, unauthorized GitHub issue mutation, workflow YAML unless explicitly scoped, or final launch authorization
 Status: phase-4-active
-Task 001 complete: docs/ops/reports/website-qa-production-validation-as-built-gap-analysis.md (PR pending)
+Task 001 complete: docs/ops/reports/website-qa-production-validation-as-built-gap-analysis.md (PR `#1657` merged `da02c01`)
+Task 002 in progress: docs/ops/reports/website-qa-production-validation-route-nav-validation.md (PR pending)
 Project: website-qa-production-validation
 Owner: Atlas
 Execution Mode: orchestrated-after-approval
@@ -26,10 +27,10 @@ Program #1255 child project `#1259` (Website QA / Production Validation).
 ## Status
 
 Phase 3 planning for `#1259` is **complete** (planning PR `#1656` merged `b0cc0da`).
-Phase 4 Task 001 gap analysis is **complete** in this branch. Predecessor `#1258`
-(Website Operations Admin) is **closed complete** on `main` (terminal PR `#1652`).
-Further Phase 4 QA execution (Task 002+) is **not authorized** until Atlas/Bill
-approve each task.
+Phase 4 Task 001 gap analysis is **complete** (PR `#1657` merged `da02c01`). Task 002
+route/nav validation is **in progress** in this branch. Predecessor `#1258` is
+**closed complete** (terminal PR `#1652`). Tasks 003+ require explicit per-task
+Atlas/Bill authorization.
 
 Plan status: `phase-4-active` (not `production-ready`). Child issue creation
 remains held unless explicitly authorized.
@@ -46,6 +47,7 @@ remains held unless explicitly authorized.
 | Phase 0 reconciliation | `docs/ops/reports/program-2-website-phase0-reconciliation.md` |
 | Legacy QA issue table | `docs/ops/reports/website-qa-production-validation-legacy-issue-reconciliation.md` |
 | Task 001 gap analysis | `docs/ops/reports/website-qa-production-validation-as-built-gap-analysis.md` |
+| Task 002 route/nav validation | `docs/ops/reports/website-qa-production-validation-route-nav-validation.md` |
 | Ops admin handoff | `docs/how-to/website/admin-operations-overview.md` |
 | Content inventory authority | `#1256` / `docs/reference/website/content-inventory-model.md` |
 
@@ -305,5 +307,7 @@ Manual production smoke checklist per task (documented in child issue bodies).
 Plan status is `phase-4-active` (not `production-ready`).
 
 Phase 3 planning exit is **complete** (planning PR `#1656` merged `b0cc0da`). Task 001
-gap analysis is in flight (PR `#1657`). Tasks 002–009 require explicit per-task
-Atlas/Bill authorization. Child GitHub issues remain held unless explicitly authorized.
+gap analysis is **complete** (PR `#1657` merged `da02c01`; issue `#1659` closed).
+Task 002 route/nav validation is **in progress** in this branch. Tasks 003–009 require
+explicit per-task Atlas/Bill authorization. Child GitHub issues remain held unless
+explicitly authorized.
