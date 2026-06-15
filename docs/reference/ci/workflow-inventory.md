@@ -2,22 +2,26 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: Current workflow inventory, classification, overlap notes, deprecation candidates
-Does Not Own: Workflow implementation, branch protection settings, CI architecture rationale
+Owns: Program #1500 closeout workflow inventory excerpt, classification, overlap notes, deprecation candidates
+Does Not Own: Complete workflow inventory, workflow implementation, branch protection settings, CI architecture rationale
 Canonical Reference: /docs/reference/ci/github-actions_MASTER.md
 Related Issues: #1199, #1058, #1545, #1548
 Last Reviewed: 2026-06-15
 ---
 
-# GitHub Actions Workflow Inventory
+# GitHub Actions Closeout Workflow Inventory Excerpt
 
 ## Purpose
 
-This inventory records the current GitHub Actions workflow surface for issue #1058 Phase 1. It is an as-observed reference used to plan later narrow PRs for naming alignment, reviewer-gate redesign, consolidation, and blocker/advisory normalization.
+This reference records the closeout-related GitHub Actions workflow surface for
+Program #1500 Task 005. It is a closeout ownership excerpt, not the complete
+repository workflow inventory.
 
 ## Scope
 
-The inventory covers every `*.yml` workflow under `.github/workflows/` as of 2026-05-19. It does not change workflow behavior and does not define branch protection requirements.
+This excerpt covers closeout-related workflows under `.github/workflows/`. It
+does not claim to enumerate every workflow file in the repository, change
+workflow behavior, or define branch protection requirements.
 
 ## Current Known Truth
 
@@ -85,7 +89,7 @@ Each workflow should have a clear owner, visible name, filename, trigger class, 
 
 ## Inventory Rewrite Boundary
 
-This Task 005 reconciliation intentionally narrows the table to closeout-related
-rows needed to remove effective/ineffective conflicts. A full mechanical workflow
-inventory rewrite remains separate work and must not be inferred from this
-narrow closeout ownership reconciliation.
+This Task 005 reconciliation updates the closeout-related rows needed to remove
+effective/ineffective conflicts. A full mechanical workflow inventory rewrite
+remains separate work and must not be inferred from this closeout ownership
+excerpt.
