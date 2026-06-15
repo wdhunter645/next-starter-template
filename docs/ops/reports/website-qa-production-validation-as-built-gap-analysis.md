@@ -45,7 +45,7 @@ authority. Do not claim new build gaps without contradicting evidence here.
 | D1/B2 public reads (T29) | Fail-closed tests + public APIs | Task 005 production smoke evidence |
 | Content inventory public (T34 + `#1256`) | Helpers + rotation/search tests | Task 006 published-record surface validation |
 | Launch readiness (T50 / `#1112`) | Manual `launch-readiness:*` scripts | **H-011 open** — not scheduled in CI (Task 007) |
-| Legacy GitHub hygiene | Issues open with stale labels | Task 008 disposition batch only |
+| Legacy GitHub hygiene | issues open with stale labels | Task 008 disposition batch only |
 
 ## Auth and route protection model (as-built)
 
