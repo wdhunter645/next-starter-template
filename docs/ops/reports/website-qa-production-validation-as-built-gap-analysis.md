@@ -56,7 +56,7 @@ authority. Do not claim new build gaps without contradicting evidence here.
 | Legacy redirects | `/login` → `/`; `/auth` → `/join` | `src/app/login/page.tsx`, `src/app/auth/page.tsx` |
 | FanClub gate | `src/app/fanclub/layout.tsx` | `useMemberSession({ redirectTo: '/' })`; unauth → `/` |
 | Admin gate | `src/app/admin/layout.tsx` | `useMemberSession({ redirectTo: '/', requireAdmin: true })` |
-| Session API | `functions/api/session/me.ts` | `requireMember`; roles `admin` \| `member` \| `guest` |
+| Session API | `functions/api/session/me.ts` | Authenticated: `admin` \| `member` via `getMemberRole`; unauthenticated requests return non-ok (guest is a UI/header state only) |
 | Join/login | `src/app/join/page.tsx` → `AuthClient` | POST `/api/join`, `/api/login`; authed → `/fanclub` |
 | API middleware | `functions/api/_middleware.ts` | Rate limit + D1 env on sensitive paths; not page-route gating |
 
@@ -130,6 +130,7 @@ cases) remain for Task 009.
 | `GET /api/matchup/current` | `functions/api/matchup/current.ts` | public | `tests/admin-matchup.test.tsx` (public read block) |
 | `GET /api/matchup/results` | `functions/api/matchup/results.ts` | public | — |
 | `GET /api/photos/list` | `functions/api/photos/list.ts` | public | `tests/admin-media-assets.test.tsx` |
+| `GET /api/photos/get` | `functions/api/photos/get.ts` | public | `tests/admin-media-assets.test.tsx` (detail read) |
 | `GET /api/search` | `functions/api/search.ts` | public (+ member extras) | `tests/content-inventory-search.test.ts` |
 
 Fail-closed D1/B2 behavior: `tests/d1-b2-fail-closed.test.ts`.

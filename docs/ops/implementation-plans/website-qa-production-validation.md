@@ -256,7 +256,7 @@ validation tasks claim gaps.
 
 | Criterion | State |
 | --- | --- |
-| Implementation plan approved for Phase 4 task execution | Met — `phase-4-active`; Task 001 complete |
+| Implementation plan approved for Phase 4 task execution | Met — planning PR `#1656` merged; per-task authorization required for Tasks 002+ |
 | Proposed child task sequence (Tasks 001–009) | Met in this plan |
 | Per-task file allowlists | Met in this plan |
 | Legacy `#1112` / T21–T34 disposition documented | Met in reconciliation report |
@@ -265,7 +265,7 @@ validation tasks claim gaps.
 | `#1500` queued / out of scope | Met — not started |
 
 **Authorization model:** Phase 4 tasks require explicit per-task authorization.
-Do not infer open-ended implementation from `phase-3-planning` alone.
+Do not infer open-ended implementation from `phase-4-active` alone.
 
 ## Risk register
 
@@ -302,7 +302,8 @@ Manual production smoke checklist per task (documented in child issue bodies).
 
 ## Approval and issue creation hold
 
-Plan status is `phase-3-planning` (not `production-ready`).
+Plan status is `phase-4-active` (not `production-ready`).
 
-Phase 3 planning exit is **pending** merge of this planning PR. Child GitHub issues
-remain held unless Atlas/Bill or existing automation explicitly authorizes creation.
+Phase 3 planning exit is **complete** (planning PR `#1656` merged `b0cc0da`). Task 001
+gap analysis is in flight (PR `#1657`). Tasks 002–009 require explicit per-task
+Atlas/Bill authorization. Child GitHub issues remain held unless explicitly authorized.
