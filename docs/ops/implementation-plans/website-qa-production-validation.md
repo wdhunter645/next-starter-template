@@ -4,7 +4,8 @@ Audience: Atlas, Bill, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Operational Plan
 Owns: Future build issue sequence and verification plan for Website QA / Production Validation after documentation approval
 Does Not Own: Runtime implementation before child issues, unauthorized GitHub issue mutation, workflow YAML unless explicitly scoped, or final launch authorization
-Status: phase-3-planning
+Status: phase-4-active
+Task 001 complete: docs/ops/reports/website-qa-production-validation-as-built-gap-analysis.md (PR pending)
 Project: website-qa-production-validation
 Owner: Atlas
 Execution Mode: orchestrated-after-approval
@@ -24,12 +25,13 @@ Program #1255 child project `#1259` (Website QA / Production Validation).
 
 ## Status
 
-Phase 3 planning for `#1259` is **in progress**. Predecessor `#1258` (Website
-Operations Admin) is **complete** on `main` (Phase 4 Tasks 001–013; terminal PR
-`#1652`). Phase 4 QA execution is **not authorized** until Atlas/Bill approve
-this plan.
+Phase 3 planning for `#1259` is **complete** (planning PR `#1656` merged `b0cc0da`).
+Phase 4 Task 001 gap analysis is **complete** in this branch. Predecessor `#1258`
+(Website Operations Admin) is **closed complete** on `main` (terminal PR `#1652`).
+Further Phase 4 QA execution (Task 002+) is **not authorized** until Atlas/Bill
+approve each task.
 
-Plan status: `phase-3-planning` (not `production-ready`). Child issue creation
+Plan status: `phase-4-active` (not `production-ready`). Child issue creation
 remains held unless explicitly authorized.
 
 ## Source of truth
@@ -43,6 +45,7 @@ remains held unless explicitly authorized.
 | Legacy coordination tree | `#1053` — historical T-task index only |
 | Phase 0 reconciliation | `docs/ops/reports/program-2-website-phase0-reconciliation.md` |
 | Legacy QA issue table | `docs/ops/reports/website-qa-production-validation-legacy-issue-reconciliation.md` |
+| Task 001 gap analysis | `docs/ops/reports/website-qa-production-validation-as-built-gap-analysis.md` |
 | Ops admin handoff | `docs/how-to/website/admin-operations-overview.md` |
 | Content inventory authority | `#1256` / `docs/reference/website/content-inventory-model.md` |
 
@@ -253,7 +256,7 @@ validation tasks claim gaps.
 
 | Criterion | State |
 | --- | --- |
-| Implementation plan approved for Phase 4 task execution | Pending — this planning PR |
+| Implementation plan approved for Phase 4 task execution | Met — planning PR `#1656` merged; per-task authorization required for Tasks 002+ |
 | Proposed child task sequence (Tasks 001–009) | Met in this plan |
 | Per-task file allowlists | Met in this plan |
 | Legacy `#1112` / T21–T34 disposition documented | Met in reconciliation report |
@@ -262,7 +265,7 @@ validation tasks claim gaps.
 | `#1500` queued / out of scope | Met — not started |
 
 **Authorization model:** Phase 4 tasks require explicit per-task authorization.
-Do not infer open-ended implementation from `phase-3-planning` alone.
+Do not infer open-ended implementation from `phase-4-active` alone.
 
 ## Risk register
 
@@ -299,7 +302,8 @@ Manual production smoke checklist per task (documented in child issue bodies).
 
 ## Approval and issue creation hold
 
-Plan status is `phase-3-planning` (not `production-ready`).
+Plan status is `phase-4-active` (not `production-ready`).
 
-Phase 3 planning exit is **pending** merge of this planning PR. Child GitHub issues
-remain held unless Atlas/Bill or existing automation explicitly authorizes creation.
+Phase 3 planning exit is **complete** (planning PR `#1656` merged `b0cc0da`). Task 001
+gap analysis is in flight (PR `#1657`). Tasks 002–009 require explicit per-task
+Atlas/Bill authorization. Child GitHub issues remain held unless explicitly authorized.
