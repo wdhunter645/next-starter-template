@@ -26,11 +26,11 @@ current authoritative documents for CI closeout ownership.
 | Workflow inventory | `docs/reference/ci/workflow-inventory.md` |
 | Guardrails map | `.github/CI_GUARDRAILS_MAP.md` |
 | Post-merge validation surface | `docs/reference/ci/post-merge-validation-surface.md` |
-| Issue closeout protocol | `docs/ops/pmo/github-issue-closeout-protocol.md` |
+| issue closeout protocol | `docs/ops/pmo/github-issue-closeout-protocol.md` |
 
 ## Program #1500 Closeout Stabilization
 
-| Task | Issue | Status | Primary evidence |
+| Task | issue | Status | Primary evidence |
 |---|---|---|---|
 | Task 001 | #1544 | Merged | Pre-merge post-merge-readiness gate |
 | Task 002 | #1545 | Merged | Post-merge closeout consolidation, PR #1567 |
@@ -51,7 +51,7 @@ reports.
 Pre-merge PR-to-issue accounting is separate from source issue closeout and is
 owned by `.github/workflows/ops-pr-issue-accounting.yml`.
 
-## Umbrella Issue Boundary
+## Umbrella issue boundary
 
 Program, umbrella, master, parent, roadmap, queue, and tracking issues are not
 closed by child task PR closeout. Child task closeout may close only the single
@@ -79,9 +79,9 @@ batch closeout action.
 
 Detailed monitoring map: `docs/ops/ci-monitoring-ownership.md`.
 
-## Website Program Boundary (Out of Scope)
+## Website Program Boundary
 
-Website implementation under `#1053` is not part of this CI/orchestration
-reconciliation. This document does not assert that website tasks are complete.
+Website implementation under `#1053` is outside this CI/orchestration
+reconciliation. This document does not declare website tasks complete.
 Operational truth for website work must be verified from GitHub issues and
 merged PRs.
