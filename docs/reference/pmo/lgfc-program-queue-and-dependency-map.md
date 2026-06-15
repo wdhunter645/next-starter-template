@@ -41,11 +41,11 @@ This document does not own:
 - Program #1255 is the active umbrella program issue.
 - Child project `#1256` (Content Strategy / Editorial Inventory) is **closed
   complete** (Tasks 001–009 merged and verified).
-- Child project `#1258` (Website Operations Admin) is **active for Phase 3
+- Child project `#1258` (Website Operations Admin) is **closed complete** (terminal
+  PR `#1652`).
+- Child project `#1259` (Website QA / Production Validation) is **active for Phase 3
   planning**. Implementation plan:
-  `docs/ops/implementation-plans/website-operations-admin.md`. Phase 4 build
-  work is not authorized until Atlas/Bill approve the plan.
-- `#1259` (Website QA / Production Validation) remains **queued** after `#1258`.
+  `docs/ops/implementation-plans/website-qa-production-validation.md`.
 - issue `#1500` (CI Post-Merge Closeout Reliability) is **open and queued** as
   the next prioritized program after Program #1255 completes. It is excluded from
   immediate execution.
@@ -154,8 +154,8 @@ Approval:
 | Child project | Plan path | Status |
 | --- | --- | --- |
 | `#1256` Content Strategy / Editorial Inventory | `docs/ops/implementation-plans/website-content-strategy-editorial-inventory.md` | Closed complete |
-| `#1258` Website Operations Admin | `docs/ops/implementation-plans/website-operations-admin.md` | Phase 3 planning (ready-for-review) |
-| `#1259` Website QA / Production Validation | TBD after `#1258` | Queued |
+| `#1258` Website Operations Admin | `docs/ops/implementation-plans/website-operations-admin.md` | Closed complete |
+| `#1259` Website QA / Production Validation | `docs/ops/implementation-plans/website-qa-production-validation.md` | Phase 3 planning |
 
 ### Issue-Level Fields (Required for Queue Tasks)
 
