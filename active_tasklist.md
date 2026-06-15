@@ -15,7 +15,7 @@ Use this file only as an optional, human-readable snapshot.
 | Item | State | Notes |
 | --- | --- | --- |
 | `#1255` | `status:active` | Umbrella program — Website Implementation and Content Operations |
-| `#1259` | `status:active` | **Phase 4 active** — Task 001 gap analysis PR pending; Tasks 002+ held |
+| `#1259` | `status:active` | **Phase 4 active** — Task 003 auth-state validation authorized (next); Tasks 004+ held |
 
 ## Queued — not started
 
@@ -32,12 +32,12 @@ Use this file only as an optional, human-readable snapshot.
 | `#1258` Phase 3 planning | PR `#1528` merged |
 | `#1258` Phase 4 Tasks 001–013 | PRs `#1531`, `#1533`, `#1536`, `#1542`, `#1551`, `#1572`, `#1571`, `#1582`, `#1596`, `#1646`, `#1648`, `#1651`, `#1652` |
 | `#1259` Phase 3 planning | PR `#1656` merged (`b0cc0da`) |
-| `#1259` Phase 4 Task 001 | gap analysis PR pending |
+| `#1259` Phase 4 Task 001 | PR `#1657` merged (`da02c01`); issue `#1659` closed complete |
+| `#1259` Phase 4 Task 002 | PR `#1662` merged (`2e811a6`); issue `#1661` closed complete |
 | issue `#1411` | completed planning artifact |
 
 ## Out of scope (current pass)
 
-- `#1259` Phase 4 Tasks 002–009 (not authorized until Task 001 merged and per-task approval)
+- `#1259` Phase 4 Tasks 004–009 (not authorized until Task 003 merged and per-task approval)
 - `#1500` launch or implementation
-- Child issue creation for `#1259`
-- Application code / D1 / workflow YAML in planning PR
+- Application code outside Task 003 auth-state scoped deliverables
