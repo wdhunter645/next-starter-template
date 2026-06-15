@@ -39,9 +39,9 @@ disjoint.
 Program #1500 closeout stabilization on `main`:
 
 - Task 001 merged (pre-merge post-merge-readiness gate)
-- Task 002 merged (post-merge closeout consolidation, PR #1567 / #1545)
-- Task 003 merged (post-merge closeout metadata/check hardening)
-- Task 004 merged and closed out (manifest pruning / batch closeout stabilization)
+- Task 002 merged (post-merge consolidation, PR #1567 / #1545)
+- Task 003 merged (metadata/check hardening)
+- Task 004 merged and reconciled (manifest pruning / batch stabilization)
 - Task 005 active under #1548 (CI/orchestration documentation reconciliation)
 
 Use the as-built reconciliation doc and domain surface references for
@@ -53,10 +53,11 @@ current merged truth:
 - `docs/reference/ci/post-merge-validation-surface.md`
 - `docs/reference/ci/ops-runtime-surface.md`
 
-This Task 005 reconciliation refreshes only the closeout-related rows needed to
-remove effective/ineffective closeout ownership conflicts. Historical full-
-inventory rows are intentionally outside this table until a separate mechanical
-workflow-inventory rewrite updates the entire workflow surface.
+This Task 005 reconciliation refreshes selected closeout-related rows only. The
+complete closeout surface table remains in
+`docs/reference/ci/post-merge-validation-surface.md`; use that reference for
+readiness, manual/backfill, body-apply, remediation, and parked legacy workflow
+coverage.
 
 ## Intended Final State
 
@@ -74,9 +75,9 @@ Each workflow should have a clear owner, visible name, filename, trigger class, 
 
 | YAML filename | Visible workflow name | Purpose | Triggers | Class | Protected scope | Dependencies | PR body parsing | False-positive risk | Overlap / redundancy | Deprecation candidate |
 |---|---|---|---|---|---|---|---|---|---|---|
-| `gate-close-work-issue.yml` | gate-close-work-issue | Parked no-op legacy issue closer; performs no issue mutation. | `pull_request_target` closed | Parked | None | none | No | Low | Replaced by `post-merge-closeout.yml` for post-merge source issue closeout and by `ops-pr-issue-accounting.yml` for pre-merge issue accounting. | Yes |
-| `post-merge-closeout.yml` | Post-Merge Detection | Sole automatic post-merge source-issue closeout owner for merged PRs to `main`: validate, single sync path, remediation handoff, and close source issue only when authorized evidence passes. | `pull_request_target` closed (merged to `main`) | Operational | Post-merge closeout | checkout, Node, `run_post_merge_closeout.mjs`, gh, `post_merge_reviewer_audit.mjs` | Yes, via closed PR event | Medium | Owns automatic source issue closeout; must not race parked legacy closeout gates. | No |
-| `ops-pr-issue-accounting.yml` | OPS - PR Issue Accounting | Normalize and verify one source issue per PR before merge. | `pull_request_target` | Blocking | issue-first PR accounting | GitHub Script | Yes | Medium | Owns pre-merge issue accounting only; does not close source issues. | Redesign candidate |
+| `gate-close-work-issue.yml` | gate-close-work-issue | Parked no-op legacy workflow. | `pull_request_target` closed | Parked | None | none | No | Low | Replaced by the current post-merge and pre-merge accounting surfaces. | Yes |
+| `post-merge-closeout.yml` | Post-Merge Detection | Primary automatic post-merge reconciliation workflow for merged PRs to `main`. | `pull_request_target` closed (merged to `main`) | Operational | Post-merge reconciliation | checkout, Node, closeout runner, gh, reviewer audit helper | Yes | Medium | Owns the automatic post-merge reconciliation path. | No |
+| `ops-pr-issue-accounting.yml` | OPS - PR Issue Accounting | Normalize and verify one linked ticket per PR before merge. | `pull_request_target` | Blocking | ticket-first PR accounting | GitHub Script | Yes | Medium | Owns pre-merge accounting only. | Redesign candidate |
 
 ## Inventory Rewrite Boundary
 
