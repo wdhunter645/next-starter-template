@@ -11,8 +11,10 @@ jobs:
   noop:
     runs-on: ubuntu-latest
     steps:
-      - name: Deprecated — Issue accounting moved to Tier B (OPS)
+      - name: Deprecated — parked no-op issue close gate
         run: |
-          echo "Deprecated: PR-close→Issue-close is handled by Tier B (OPS) support-only."
-          echo "See docs/governance/tier-a-tier-b-overwatch-model_MASTER.md"
-          echo "See .github/workflows/ops-pr-issue-accounting.yml"
+          echo "Deprecated: this workflow is intentionally parked and performs no issue mutation."
+          echo "Post-merge source issue closeout is owned by .github/workflows/post-merge-closeout.yml."
+          echo "Pre-merge issue accounting is owned by .github/workflows/ops-pr-issue-accounting.yml."
+          echo "See docs/reference/ci/post-merge-validation-surface.md"
+          echo "See docs/ops/pmo/github-issue-closeout-protocol.md"
