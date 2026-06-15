@@ -109,7 +109,7 @@ blocker reporting.
 9. Advance the next task only after source task closeout is clean and queue
    authority is clear.
 
-## Umbrella Issue Closeout Exclusion Policy
+## Umbrella issue closeout exclusion policy
 
 Umbrella, master, program, parent, and tracking issues are excluded from automatic
 child task closeout. A task PR may close only its single source issue unless the
