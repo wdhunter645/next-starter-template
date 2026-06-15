@@ -9,7 +9,7 @@ Related Issues: #1255, #1256, #1258, #1259, #1053, #1112, #943, #946, #947, #101
 Last Reviewed: 2026-06-15
 ---
 
-# Website QA / Production Validation — Legacy Issue Reconciliation
+# Website QA / Production Validation — Legacy issue reconciliation
 
 ## Purpose
 

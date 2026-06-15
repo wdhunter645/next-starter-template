@@ -35,7 +35,7 @@ Last Reviewed: 2026-06-11
 
 Phase 4 implementation for `#1258` is **complete** on `main`. Tasks 001–013 merged
 (PRs `#1531` through `#1652`). Operator runbooks and legacy disposition package
-published in Task 013. Project status: **closed complete**. Successor:
+published in Task 013. project status: **closed complete**. Successor:
 `#1259` — Website QA / Production Validation (Phase 3 planning active).
 
 ## Source of truth

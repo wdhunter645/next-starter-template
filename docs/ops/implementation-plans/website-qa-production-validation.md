@@ -72,7 +72,7 @@ Assessment date: **2026-06-15** (`main` after `#1258` terminal merge `#1652`).
 
 ### Predecessor completion evidence
 
-| Project | Terminal PR | Notes |
+| project | Terminal PR | Notes |
 | --- | --- | --- |
 | `#1256` Content Strategy | `#1520` area / `#1407` | Editorial inventory and public population complete |
 | `#1258` Ops Admin | `#1652` | Operator runbooks + legacy disposition package published |
@@ -108,7 +108,7 @@ Before `#1255` program closeout may proceed:
 
 Full table: `docs/ops/reports/website-qa-production-validation-legacy-issue-reconciliation.md`.
 
-| Issue | Disposition |
+| issue | Disposition |
 | --- | --- |
 | `#1112` T50 | **Partially satisfied** — PR `#1221` merged; H-011 CI scheduling gap remains |
 | `#943`–`#947`, `#1013`–`#1017`, `#1108`–`#1111` | **Satisfied on main** — disposition/closeout batch deferred to Task 008 |
@@ -116,7 +116,7 @@ Full table: `docs/ops/reports/website-qa-production-validation-legacy-issue-reco
 
 ## Proposed child task sequence
 
-**Issue titles only.** Phase 4 tasks execute as scoped PRs under `#1259`; child
+**issue titles only.** Phase 4 tasks execute as scoped PRs under `#1259`; child
 issues are not auto-created without explicit authorization.
 
 Operating rule: **inventory before delta.** Task 001 must complete before area
