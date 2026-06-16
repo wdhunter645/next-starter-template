@@ -8,7 +8,7 @@ Status: phase-4-active
 Task 001 complete: docs/ops/reports/website-qa-production-validation-as-built-gap-analysis.md (PR `#1657` merged `da02c01`; issue `#1659` closed)
 Task 002 complete: docs/ops/reports/website-qa-production-validation-route-nav-validation.md (PR `#1662` merged `2e811a6`; issue `#1661` closed)
 Task 003 complete: docs/ops/reports/website-qa-production-validation-auth-state-validation.md (PR `#1667` merged `0347b27`; issue `#1666` closed)
-Task 004 in progress: docs/ops/reports/website-qa-production-validation-mobile-responsive-validation.md (PR pending)
+Task 004 in progress: docs/ops/reports/website-qa-production-validation-mobile-responsive-validation.md (PR `#1672`)
 Project: website-qa-production-validation
 Owner: Atlas
 Execution Mode: orchestrated-after-approval
@@ -271,7 +271,7 @@ validation tasks claim gaps.
 | Legacy `#1112` / T21–T34 disposition documented | Met in reconciliation report |
 | `#1258` predecessor complete | Met — PR `#1652` merged |
 | H-011 explicitly addressed in plan | Met — Task 007 |
-| `#1500` queued / out of scope | Met — not started |
+| `#1500` out of scope / parallel program closed | Met — `#1500` closed complete; `#1259` tasks do not implement `#1500` scope |
 
 **Authorization model:** Phase 4 tasks require explicit per-task authorization.
 Do not infer open-ended implementation from `phase-4-active` alone.
@@ -317,5 +317,15 @@ Phase 3 planning exit is **complete** (planning PR `#1656` merged `b0cc0da`). Ta
 and 002 are **complete** (PRs `#1657` / `#1662`; issues `#1659` / `#1661` closed).
 Task 003 is **complete** (PR `#1667` / `0347b27`; issue `#1666` closed). `#1259` is
 **reopened** for Phase 4 tracking. Task 004 mobile/responsive validation is
-**in progress** in this branch. Tasks 005–009 require explicit per-task Atlas/Bill
+**in progress** (PR `#1672`). Tasks 005–009 require explicit per-task Atlas/Bill
 authorization. Child GitHub issues remain held unless explicitly authorized.
+
+## Issue hygiene (operator)
+
+After Task 003 merge, GitHub drift remains on project/task issues. Cursor cannot
+mutate issue labels from the cloud agent token.
+
+| Issue | Action |
+| --- | --- |
+| `#1666` | Close as complete — Task 003 satisfied by PR `#1667` (reopened in error) |
+| `#1259` | Keep open; remove `status:complete`, `status:failed`, `status:post-merge-verify`; add `status:active` |
