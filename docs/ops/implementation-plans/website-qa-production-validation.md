@@ -325,10 +325,10 @@ Atlas/Bill authorization. Child GitHub issues remain held unless explicitly auth
 
 ## Issue hygiene (operator — approved 2026-06-16)
 
-Post-merge automation closed `#1259` again after PR `#1672` (source issue). Operator
-approved reopen. Apply on GitHub:
+Post-merge automation closed `#1259` after PR `#1672`; operator **reopened** `#1259`
+2026-06-16. Remaining label hygiene:
 
 | Issue | Action |
 | --- | --- |
-| `#1259` | **Reopen**; remove `status:complete`; add `status:active` |
-| `#1666` | **Close** as complete — Task 003 satisfied by PR `#1667` |
+| `#1259` | Remove `status:complete`; add `status:active` |
+| `#1666` | Close as complete — Task 003 satisfied by PR `#1667` |

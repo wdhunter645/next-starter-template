@@ -15,7 +15,7 @@ Use this file only as an optional, human-readable snapshot.
 | Item | State | Notes |
 | --- | --- | --- |
 | `#1255` | `status:active` | Umbrella program — Website Implementation and Content Operations (Cursor) |
-| `#1259` | `status:active` (target) | **Phase 4 active** — child project must stay **open** through Task 009; GitHub may show closed until operator reopen (see hygiene below) |
+| `#1259` | `status:active` (open) | **Phase 4 active** — reopened 2026-06-16; Tasks 001–004 complete; Task 005 next (held) |
 
 ## Portfolio note (2026-06-16)
 
@@ -23,18 +23,12 @@ Program `#1500` was originally queued after `#1255`. Both programs executed in
 parallel when ChatGPT became capable of `#1500` implementation. `#1500` is now
 **closed complete**. `#1255` remains the active Cursor lane.
 
-## Operator issue hygiene (approved 2026-06-16 — pending GitHub apply)
+## Operator issue hygiene (remaining)
 
-| Issue | Approved action | Live GitHub drift (2026-06-16) |
+| Issue | Status | Action if needed |
 | --- | --- | --- |
-| `#1259` | **Reopen**; labels → `status:active` only (remove `status:complete`) | CLOSED + `status:complete` after PR `#1672` merge |
-| `#1666` | **Close** as complete (Task 003 satisfied by PR `#1667`) | OPEN + `status:complete` |
-
-```bash
-gh issue reopen 1259
-gh issue edit 1259 --remove-label "status:complete" --add-label "status:active"
-gh issue close 1666 --comment "Task 003 complete via PR #1667. Close per operator approval 2026-06-16."
-```
+| `#1259` | **OPEN** (reopened 2026-06-16) | Swap `status:complete` → `status:active` |
+| `#1666` | OPEN (drift) | Close as complete — Task 003 satisfied by PR `#1667` |
 
 ## Completed (reference)
 
