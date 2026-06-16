@@ -8,7 +8,8 @@ Status: phase-4-active
 Task 001 complete: docs/ops/reports/website-qa-production-validation-as-built-gap-analysis.md (PR `#1657` merged `da02c01`; issue `#1659` closed)
 Task 002 complete: docs/ops/reports/website-qa-production-validation-route-nav-validation.md (PR `#1662` merged `2e811a6`; issue `#1661` closed)
 Task 003 complete: docs/ops/reports/website-qa-production-validation-auth-state-validation.md (PR `#1667` merged `0347b27`; issue `#1666` closed)
-Task 004 in progress: docs/ops/reports/website-qa-production-validation-mobile-responsive-validation.md (PR `#1672`)
+Task 004 complete: docs/ops/reports/website-qa-production-validation-mobile-responsive-validation.md (PR `#1672` merged `5e10f72`)
+Task 005 next: D1/B2 public read-path verification — held pending authorization
 Project: website-qa-production-validation
 Owner: Atlas
 Execution Mode: orchestrated-after-approval
@@ -32,10 +33,12 @@ Phase 3 planning for `#1259` is **complete** (planning PR `#1656` merged `b0cc0d
 Phase 4 Task 001 gap analysis is **complete** (PR `#1657` merged `da02c01`; issue `#1659`
 closed). Task 002 route/nav validation is **complete** (PR `#1662` merged `2e811a6`;
 issue `#1661` closed). Task 003 auth-state validation is **complete** (PR `#1667`
-merged `0347b27`; issue `#1666` closed). `#1259` is **reopened** for Phase 4 task
-tracking. Task 004 mobile/responsive validation is **in progress** in this branch.
-Predecessor `#1258` is **closed complete** (terminal PR `#1652`). Tasks 005+
-require explicit per-task Atlas/Bill authorization.
+merged `0347b27`; issue `#1666` closed). Task 004 mobile/responsive validation is
+**complete** (PR `#1672` merged `5e10f72`). Child project `#1259` must remain **open**
+through Phase 4 (operator-approved reopen 2026-06-16; GitHub may show closed until
+applied). Task 005 D1/B2 public read-path verification is **next** (held pending
+authorization). Predecessor `#1258` is **closed complete** (terminal PR `#1652`).
+Tasks 006–009 require explicit per-task Atlas/Bill authorization.
 
 Plan status: `phase-4-active` (not `production-ready`). Child issue creation
 remains held unless explicitly authorized.
@@ -315,17 +318,17 @@ Plan status is `phase-4-active` (not `production-ready`).
 
 Phase 3 planning exit is **complete** (planning PR `#1656` merged `b0cc0da`). Tasks 001
 and 002 are **complete** (PRs `#1657` / `#1662`; issues `#1659` / `#1661` closed).
-Task 003 is **complete** (PR `#1667` / `0347b27`; issue `#1666` closed). `#1259` is
-**reopened** for Phase 4 tracking. Task 004 mobile/responsive validation is
-**in progress** (PR `#1672`). Tasks 005–009 require explicit per-task Atlas/Bill
-authorization. Child GitHub issues remain held unless explicitly authorized.
+Task 004 is **complete** (PR `#1672` merged `5e10f72`). Child project `#1259` must
+remain **open** through Phase 4 (operator-approved reopen 2026-06-16). Task 005 is
+**next** (held pending authorization). Tasks 006–009 require explicit per-task
+Atlas/Bill authorization. Child GitHub issues remain held unless explicitly authorized.
 
-## Issue hygiene (operator)
+## Issue hygiene (operator — approved 2026-06-16)
 
-After Task 003 merge, GitHub drift remains on project/task issues. Cursor cannot
-mutate issue labels from the cloud agent token.
+Post-merge automation closed `#1259` after PR `#1672`; operator **reopened** `#1259`
+2026-06-16. Remaining label hygiene:
 
 | Issue | Action |
 | --- | --- |
-| `#1666` | Close as complete — Task 003 satisfied by PR `#1667` (reopened in error) |
-| `#1259` | Keep open; remove `status:complete`, `status:failed`, `status:post-merge-verify`; add `status:active` |
+| `#1259` | Remove `status:complete`; add `status:active` |
+| `#1666` | Close as complete — Task 003 satisfied by PR `#1667` |
