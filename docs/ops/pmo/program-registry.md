@@ -6,7 +6,7 @@ Owns: PMO program issue registry, current program issue assignments, launch-stat
 Does Not Own: PMO v3 top-level policy, implementation plan task definitions, workflow code, runtime behavior, product design, or unauthorized GitHub issue mutation
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
 Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1256, #1258, #1259, #1501, #1500
-Last Reviewed: 2026-06-15
+Last Reviewed: 2026-06-16
 ---
 
 # PMO Program Issue Registry
@@ -30,14 +30,17 @@ unauthorized GitHub issue mutation.
   **closed complete** (Tasks 001–009).
 - Child project #1258 (Website Operations Admin) is **closed complete** (terminal
   PR `#1652`).
-- Child project #1259 (Website QA / Production Validation) is **active for Phase 3
-  planning** — implementation not authorized until plan approval.
+- Child project #1259 (Website QA / Production Validation) is **open and active for
+  Phase 4 execution** — reopened 2026-06-16 after premature planning closeout (PR
+  `#1656`); Tasks 001–003 complete; Task 004 in progress (PR `#1672`); Tasks 005+
+  held pending per-task authorization. Plan:
+  `docs/ops/implementation-plans/website-qa-production-validation.md`
 - issue #1411 is completed — a planning/control artifact, not an open blocked
   program.
-- issue #1500 is the next prioritized program after Program #1255 completes. It
-  is open, queued, and excluded from immediate execution. Implementation queue:
+- issue #1500 (CI Post-Merge Closeout Reliability) is **closed complete** (Tasks
+  001–005 merged). Originally queued after Program #1255; executed in parallel
+  when ChatGPT became capable of implementation (2026-06). Queue record:
   `docs/ops/trackers/PROGRAM-1500-CLOSEOUT-STABILIZATION-IMPLEMENTATION-QUEUE.md`
-  (child issues `#1544`–`#1548`; planning buildout 2026-06-11).
 - GitHub issue titles use `Program: <name>`. Documentation references use
   `Program #<issue-number> — <name>`.
 
@@ -83,7 +86,7 @@ PMO meeting issue → PMO Backlog review/update → program issue → project / 
 
 | Program issue | Name | Historical label | Status | Notes |
 | --- | --- | --- | --- | --- |
-| #1255 | Website Implementation and Content Operations | Program 2 | Active | Child #1256 complete; #1258 complete; #1259 active planning |
+| #1255 | Website Implementation and Content Operations | Program 2 | Active | Child #1256 complete; #1258 complete; #1259 Phase 4 active |
 
 ### Program #1255 child projects
 
@@ -91,7 +94,7 @@ PMO meeting issue → PMO Backlog review/update → program issue → project / 
 | --- | --- | --- |
 | #1256 Content Strategy / Editorial Inventory | **Closed complete** | Tasks 001–009 merged and verified |
 | #1258 Website Operations Admin | **Closed complete** | Phase 4 Tasks 001–013; terminal PR `#1652` |
-| #1259 Website QA / Production Validation | **Active — Phase 3 planning** | Plan: `docs/ops/implementation-plans/website-qa-production-validation.md` |
+| #1259 Website QA / Production Validation | **Active — Phase 4** | Reopened 2026-06-16; Tasks 001–003 complete; Task 004 in progress |
 
 ## Staged / blocked program issues
 
@@ -164,15 +167,15 @@ requires a current open source issue and explicit launch authorization.
 
 | Field | Value |
 | --- | --- |
-| Status | **Active execution program** — #1256 complete; #1258 complete; #1259 active planning |
+| Status | **Active execution program** — #1256 complete; #1258 complete; #1259 Phase 4 active |
 | Historical label | Program 2 |
 | Source issue | `#1255` |
-| Active child project | `#1259` — Website QA / Production Validation (Phase 3 planning) |
+| Active child project | `#1259` — Website QA / Production Validation (Phase 4; reopened 2026-06-16) |
 | Primary plan | `docs/how-to/website/website-implementation-and-content-operations-plan.md` |
 | Ops admin plan | `docs/ops/implementation-plans/website-operations-admin.md` |
 | QA plan | `docs/ops/implementation-plans/website-qa-production-validation.md` |
-| Priority | Complete #1259 planning → #1259 implementation (if approved) |
-| Next prioritized program (not active) | issue `#1500` — queued; excluded from immediate execution |
+| Priority | Complete `#1259` Phase 4 Tasks 004–009 (per-task authorization) → program closeout |
+| Parallel program note | `#1500` closed complete — ran in parallel with `#1255`; not a `#1259` task dependency |
 
 Program #1255 remains active while #1258 and #1259 complete. Program #1411 planning artifacts must not modify Program #1255 issue state, relabel Program #1255 issues, close Program #1255 issues, or reinterpret Program #1255 child project priority without explicit authorization.
 
