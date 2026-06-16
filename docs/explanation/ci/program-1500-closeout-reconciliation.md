@@ -17,6 +17,26 @@ This explanation records how Program #1500's intended design aligns with the CI 
 
 Program #1500 was created to restore reliable post-merge closeout by shifting closeout contract checks before merge, consolidating closeout ownership, improving failure-path label hygiene, stabilizing remediation backlog handling, and reconciling drifted CI documentation.
 
+## Scope
+
+This document explains the design reconciliation for Program #1500 after the five planned child tasks. It covers closeout rationale, intended-versus-as-built alignment, intentional boundaries, and post-program ownership.
+
+It does not authorize runtime workflow changes, branch protection changes, website implementation work, or issue closeout beyond the active source issue for this documentation task.
+
+## Current Known Truth
+
+Program #1500's five planned implementation tasks are closed. The as-built closeout model is documented across the guardrails map, post-merge validation surface, closeout workflow inventory excerpt, as-built reconciliation reference, and issue closeout protocol.
+
+The remaining CI items are deferred maintenance boundaries unless a later source issue explicitly reopens them.
+
+## Intended Final State
+
+Program #1500 documentation should let a human or agent understand three things without reconstructing the whole issue thread:
+
+1. what the program intended to fix;
+2. how the repository now implements or documents that design;
+3. which remaining items are deferred CI maintenance rather than incomplete Program #1500 scope.
+
 ## Intended design summary
 
 The Program #1500 charter identified five intended outcomes:
