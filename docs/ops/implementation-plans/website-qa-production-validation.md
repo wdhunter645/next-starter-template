@@ -323,12 +323,7 @@ remain **open** through Phase 4 (operator-approved reopen 2026-06-16). Task 005 
 **next** (held pending authorization). Tasks 006–009 require explicit per-task
 Atlas/Bill authorization. Child GitHub issues remain held unless explicitly authorized.
 
-## Issue hygiene (operator — approved 2026-06-16)
+## Issue hygiene (complete 2026-06-16)
 
-Post-merge automation closed `#1259` after PR `#1672`; operator **reopened** `#1259`
-2026-06-16. Remaining label hygiene:
-
-| Issue | Action |
-| --- | --- |
-| `#1259` | Remove `status:complete`; add `status:active` |
-| `#1666` | Close as complete — Task 003 satisfied by PR `#1667` |
+Operator applied GitHub cleanup: `#1259` **open** with `status:active`; `#1666`
+**closed** complete (Task 003 via PR `#1667`).
