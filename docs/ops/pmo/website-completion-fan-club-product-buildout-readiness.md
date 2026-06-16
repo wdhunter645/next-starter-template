@@ -72,7 +72,7 @@ The intended final state before implementation launch is:
 
 ## Child-project readiness inventory
 
-| Priority item | Project name | Current state | Design authority | Implementation plan state | Readiness decision |
+| Priority item | project name | Current state | Design authority | Implementation plan state | Readiness decision |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Website Completion / Fan Club Product Buildout | PMO v3 program candidate | This readiness doc plus production design authority | `website-completion-fan-club-product-buildout.md` | Ready for Bill/Atlas launch review |
 | 1a | Fan Club page design | Legacy planning draft with strong design content | `program-3-club-home-page-design.md`, `fanclub-subpages.md`, production design standards | Covered by Tasks 001, 003, 007, 009 | Ready for implementation planning after launch |
