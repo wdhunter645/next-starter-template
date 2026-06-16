@@ -32,9 +32,9 @@ unauthorized GitHub issue mutation.
   PR `#1652`).
 - Child project #1259 (Website QA / Production Validation) is **open and active for
   Phase 4 execution** — reopened 2026-06-16 after premature planning closeout (PR
-  `#1656`); Tasks 001–003 complete; Task 004 in progress (PR `#1672`); Tasks 005+
-  held pending per-task authorization. Plan:
-  `docs/ops/implementation-plans/website-qa-production-validation.md`
+  `#1656`); Tasks 001–004 complete; Task 005+ held pending per-task authorization.
+  Operator approved `#1259` reopen 2026-06-16 (GitHub may show closed until applied).
+  Plan: `docs/ops/implementation-plans/website-qa-production-validation.md`
 - issue #1411 is completed — a planning/control artifact, not an open blocked
   program.
 - issue #1500 (CI Post-Merge Closeout Reliability) is **closed complete** (Tasks
@@ -94,7 +94,7 @@ PMO meeting issue → PMO Backlog review/update → program issue → project / 
 | --- | --- | --- |
 | #1256 Content Strategy / Editorial Inventory | **Closed complete** | Tasks 001–009 merged and verified |
 | #1258 Website Operations Admin | **Closed complete** | Phase 4 Tasks 001–013; terminal PR `#1652` |
-| #1259 Website QA / Production Validation | **Active — Phase 4** | Reopened 2026-06-16; Tasks 001–003 complete; Task 004 in progress |
+| #1259 Website QA / Production Validation | **Active — Phase 4** | Tasks 001–004 complete; Task 005 next; keep issue open |
 
 ## Staged / blocked program issues
 
@@ -174,7 +174,7 @@ requires a current open source issue and explicit launch authorization.
 | Primary plan | `docs/how-to/website/website-implementation-and-content-operations-plan.md` |
 | Ops admin plan | `docs/ops/implementation-plans/website-operations-admin.md` |
 | QA plan | `docs/ops/implementation-plans/website-qa-production-validation.md` |
-| Priority | Complete `#1259` Phase 4 Tasks 004–009 (per-task authorization) → program closeout |
+| Priority | Complete `#1259` Phase 4 Tasks 005–009 (per-task authorization) → program closeout |
 | Parallel program note | `#1500` closed complete — ran in parallel with `#1255`; not a `#1259` task dependency |
 
 Program #1255 remains active while #1258 and #1259 complete. Program #1411 planning artifacts must not modify Program #1255 issue state, relabel Program #1255 issues, close Program #1255 issues, or reinterpret Program #1255 child project priority without explicit authorization.
