@@ -23,12 +23,19 @@ Program `#1500` was originally queued after `#1255`. Both programs executed in
 parallel when ChatGPT became capable of `#1500` implementation. `#1500` is now
 **closed complete**. `#1255` remains the active Cursor lane.
 
-## Operator issue hygiene (remaining)
+## Operator issue hygiene
 
-| Issue | Status | Action if needed |
-| --- | --- | --- |
-| `#1259` | **OPEN** (reopened 2026-06-16) | Swap `status:complete` → `status:active` |
-| `#1666` | OPEN (drift) | Close as complete — Task 003 satisfied by PR `#1667` |
+Apply on GitHub (cloud agent cannot mutate issues):
+
+```bash
+gh issue edit 1259 --remove-label "status:complete" --add-label "status:active"
+gh issue close 1666 --comment "Task 003 complete via PR #1667. Cleanup 2026-06-16."
+```
+
+| Issue | Target after cleanup |
+| --- | --- |
+| `#1259` | OPEN + `status:active` only |
+| `#1666` | CLOSED + `status:complete` |
 
 ## Completed (reference)
 
