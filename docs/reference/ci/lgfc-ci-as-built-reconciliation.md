@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: LGFC CI redesign as-built reconciliation, design-vs-as-built variances, deferred implementation items, monitoring ownership map
 Does Not Own: GitHub branch protection UI settings, workflow runtime code, secret configuration
 Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related Issues: #1199, #1075, #1058, #1335, #1340, #1548
-Last Reviewed: 2026-06-15
+Related Issues: #1199, #1075, #1058, #1335, #1340, #1548, #1674
+Last Reviewed: 2026-06-16
 ---
 
 # LGFC CI As-Built Reconciliation
@@ -22,6 +22,8 @@ current authoritative documents for CI closeout ownership.
 | Source | Role |
 |---|---|
 | Intended design | `docs/explanation/ci/lgfc-ci-production-design.md` |
+| Program #1500 closeout explanation | `docs/explanation/ci/program-1500-closeout-reconciliation.md` |
+| Program #1500 alignment matrix | `docs/reference/ci/program-1500-as-built-alignment.md` |
 | Rollout plan | `docs/ops/implementation-plans/issue-1075-ci-redesign-rollout.md` |
 | Workflow inventory | `docs/reference/ci/workflow-inventory.md` |
 | Guardrails map | `.github/CI_GUARDRAILS_MAP.md` |
@@ -32,11 +34,11 @@ current authoritative documents for CI closeout ownership.
 
 | Task | issue | Status | Primary evidence |
 |---|---|---|---|
-| Task 001 | #1544 | Merged | Pre-merge post-merge-readiness gate |
-| Task 002 | #1545 | Merged | Post-merge closeout consolidation, PR #1567 |
-| Task 003 | #1546 | Merged | Closeout metadata/check hardening |
+| Task 001 | #1544 | Merged and closed out | Pre-merge post-merge-readiness gate |
+| Task 002 | #1545 | Merged and closed out | Post-merge closeout consolidation, PR #1567 |
+| Task 003 | #1546 | Merged and closed out | Closeout metadata/check hardening |
 | Task 004 | #1547 | Merged and closed out | Manifest pruning / batch closeout stabilization, PR #1647 |
-| Task 005 | #1548 | Active | CI/orchestration documentation reconciliation |
+| Task 005 | #1548 | Merged and closed out | CI/orchestration documentation reconciliation, PR #1660 |
 
 ## Closeout Ownership Reconciliation
 
@@ -63,10 +65,10 @@ deferred implementation item unless a later task adds that explicit check.
 
 | Item | Reason deferred | Owner domain |
 |---|---|---|
-| Full workflow inventory rewrite | Large mechanical update outside Program #1500 Task 005 closeout-only scope | CI maintenance follow-up |
+| Full workflow inventory rewrite | Large mechanical update outside Program #1500 closeout-only scope | CI maintenance follow-up |
 | Branch protection UI reconciliation | Repository setting change outside workflow files | Human operator |
 | Retire parked legacy workflows | Requires separate cleanup PR with retirement evidence | OPS / CI maintenance |
-| Runtime workflow logic changes | Task 005 is documentation/comment-only | Future implementation task |
+| Runtime workflow logic changes | Task 005 was documentation/comment-only | Future implementation task |
 | Runtime umbrella/program closeout classification | Policy exists, but the current automation does not classify umbrella/program issue types before source issue closeout | Future implementation task |
 
 ## Monitoring Behavior and Operational Ownership

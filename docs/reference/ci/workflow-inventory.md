@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Program #1500 closeout workflow inventory excerpt, classification, overlap notes, deprecation candidates
 Does Not Own: Complete workflow inventory, workflow implementation, branch protection settings, CI architecture rationale
 Canonical Reference: /docs/reference/ci/github-actions_MASTER.md
-Related Issues: #1199, #1058, #1545, #1548
-Last Reviewed: 2026-06-15
+Related Issues: #1199, #1058, #1545, #1548, #1674
+Last Reviewed: 2026-06-16
 ---
 
 # GitHub Actions Closeout Workflow Inventory Excerpt
@@ -14,8 +14,8 @@ Last Reviewed: 2026-06-15
 ## Purpose
 
 This reference records the closeout-related GitHub Actions workflow surface for
-Program #1500 Task 005. It is a closeout ownership excerpt, not the complete
-repository workflow inventory.
+Program #1500. It is a closeout ownership excerpt, not the complete repository
+workflow inventory.
 
 ## Scope
 
@@ -42,23 +42,23 @@ disjoint.
 
 Program #1500 closeout stabilization on `main`:
 
-- Task 001 merged (pre-merge post-merge-readiness gate)
-- Task 002 merged (post-merge consolidation, PR #1567 / #1545)
-- Task 003 merged (metadata/check hardening)
-- Task 004 merged and reconciled (manifest pruning / batch stabilization)
-- Task 005 active under #1548 (CI/orchestration documentation reconciliation)
+- Task 001 merged and closed out (pre-merge post-merge-readiness gate)
+- Task 002 merged and closed out (post-merge consolidation, PR #1567 / #1545)
+- Task 003 merged and closed out (metadata/check hardening)
+- Task 004 merged and closed out (manifest pruning / batch stabilization)
+- Task 005 merged and closed out (CI/orchestration documentation reconciliation, PR #1660 / #1548)
 
-Use the as-built reconciliation doc and domain surface references for
-current merged truth:
+Use the as-built reconciliation doc and domain surface references for current
+merged truth:
 
 - `docs/reference/ci/merge-protection-surface.md`
 - `docs/reference/ci/pr-hygiene-foundation.md`
 - `docs/reference/ci/reviewer-lifecycle-surface.md`
 - `docs/reference/ci/post-merge-validation-surface.md`
 - `docs/reference/ci/ops-runtime-surface.md`
+- `docs/reference/ci/program-1500-as-built-alignment.md`
 
-This Task 005 reconciliation refreshes selected closeout-related rows only. The
-complete closeout surface table remains in
+The complete closeout surface table remains in
 `docs/reference/ci/post-merge-validation-surface.md`; use that reference for
 readiness, manual/backfill, body-apply, remediation, and parked legacy workflow
 coverage.
@@ -89,7 +89,7 @@ Each workflow should have a clear owner, visible name, filename, trigger class, 
 
 ## Inventory Rewrite Boundary
 
-This Task 005 reconciliation updates the closeout-related rows needed to remove
-effective/ineffective conflicts. A full mechanical workflow inventory rewrite
-remains separate work and must not be inferred from this closeout ownership
-excerpt.
+This Program #1500 reconciliation updates the closeout-related rows needed to
+remove effective/ineffective conflicts and to record final Program #1500 status.
+A full mechanical workflow inventory rewrite remains separate work and must not
+be inferred from this closeout ownership excerpt.
