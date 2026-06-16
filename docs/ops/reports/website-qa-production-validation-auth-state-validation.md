@@ -32,7 +32,7 @@ current public/member/admin route boundaries.
 
 | Result | Count |
 | --- | --- |
-| Pass | 8 |
+| Pass | 9 |
 | Pass with note | 1 |
 | Fail | 0 |
 
@@ -42,7 +42,7 @@ Automated evidence: `tests/public-auth-state-validation.test.tsx`.
 
 | Area | Guest | Member | Admin | Result | Evidence |
 | --- | --- | --- | --- | --- | --- |
-| Public header | Sees Join/Login entry points | Sees Join/Login entry points until dynamic member header is implemented | Sees Join/Login entry points until dynamic admin header is implemented | Pass with note | `src/components/Header.tsx`, `LOGIN_TAB_ROUTE` |
+| Public header | Sees Join/Login entry points | Logged-in state switches to Club Home/Logout | Logged-in state switches to Club Home/Logout; no separate admin header variant | Pass with note | `src/components/Header.tsx`, `LOGIN_TAB_ROUTE` |
 | `/fanclub/**` layout | Hidden shell; redirects to `/` | Allowed after session validation | Allowed after session validation | Pass | `src/app/fanclub/layout.tsx`, `useMemberSession({ redirectTo: '/' })` |
 | `/admin/**` layout | Hidden shell; redirects to `/` | Hidden shell; redirects to `/` | Allowed after session validation | Pass | `src/app/admin/layout.tsx`, `requireAdmin: true` |
 | Session role mapping | `guest` when session is absent or invalid | `member` when session is valid and not admin | `admin` only when API role is `admin` | Pass | `src/hooks/useMemberSession.ts` |
@@ -59,12 +59,15 @@ Automated evidence: `tests/public-auth-state-validation.test.tsx`.
 | 6 | Admin layout suppresses children for non-admin members | Pass | `role !== 'admin'` branch returns `null` |
 | 7 | Admin layout requests admin-only validation | Pass | `requireAdmin: true` |
 | 8 | Session hook treats invalid session responses as guest | Pass | role normalization fallback to `guest` |
-| 9 | Public header keeps canonical join/login entry points | Pass | `/join`, `LOGIN_TAB_ROUTE` |
+| 9 | Guest header keeps canonical join/login entry points | Pass | `/join`, `LOGIN_TAB_ROUTE` |
+| 10 | Logged-in header switches away from join/login CTAs | Pass with note | `src/components/Header.tsx` uses session state for Club Home/Logout; role-specific member/admin header variants are out of scope |
 
 ## Notes
 
-- Current header behavior is public/static. Dynamic role-aware header variants are
-  not implemented in this task and should not be inferred as a blocker for Task 003.
+- Current header behavior is auth-aware for guest versus logged-in state: guest
+  users see Join/Login, while logged-in users see Club Home/Logout.
+- Role-specific member versus admin header variants are not implemented in this
+  task and should not be inferred as a blocker for Task 003.
 - The current member/admin route boundaries use fail-closed rendering: protected
   children are not rendered while session state is unresolved or unauthorized.
 - Manual production validation should confirm the same matrix against deployed
@@ -74,7 +77,8 @@ Automated evidence: `tests/public-auth-state-validation.test.tsx`.
 
 ```bash
 npx vitest run tests/public-auth-state-validation.test.tsx
-./scripts/ci/docs_check_headers.sh docs/ops/reports/website-qa-production-validation-auth-state-validation.md docs/ops/implementation-plans/website-qa-production-validation.md
+DOCS_HEADER_FILE_LIST="docs/ops/reports/website-qa-production-validation-auth-state-validation.md docs/ops/implementation-plans/website-qa-production-validation.md" \
+  ./scripts/ci/docs_check_headers.sh .
 git diff --check
 ```
 
