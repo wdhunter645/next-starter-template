@@ -6,7 +6,7 @@ Owns: Launched-program queue mode, dependency-map requirements, execution-mode s
 Does Not Own: Workflow YAML implementation, GitHub merge authority, issue mutation authority, or orchestrator label automation
 Canonical Reference: /docs/reference/pmo/lgfc-program-portfolio-model.md
 Related Issues: #1449, #1448, #1411, #1255, #1256, #1258, #1259, #1501, #1500
-Last Reviewed: 2026-06-10
+Last Reviewed: 2026-06-16
 ---
 
 # LGFC Program Queue and Dependency Map
@@ -43,12 +43,13 @@ This document does not own:
   complete** (Tasks 001–009 merged and verified).
 - Child project `#1258` (Website Operations Admin) is **closed complete** (terminal
   PR `#1652`).
-- Child project `#1259` (Website QA / Production Validation) is **active for Phase 3
-  planning**. Implementation plan:
+- Child project `#1259` (Website QA / Production Validation) is **open and active
+  for Phase 4 execution** — reopened 2026-06-16; Tasks 001–003 complete; Task 004
+  in progress (PR `#1672`). Implementation plan:
   `docs/ops/implementation-plans/website-qa-production-validation.md`.
-- issue `#1500` (CI Post-Merge Closeout Reliability) is **open and queued** as
-  the next prioritized program after Program #1255 completes. It is excluded from
-  immediate execution.
+- issue `#1500` (CI Post-Merge Closeout Reliability) is **closed complete** (Tasks
+  001–005). Originally queued after Program #1255; executed in parallel when
+  ChatGPT became capable of implementation.
 - `#1448` rebaseline is **closed complete**.
 - issue `#1411` is a **completed planning/control artifact** (completed,
   status:complete). It is not an open blocked program. Future execution work
