@@ -15,6 +15,20 @@ Last Reviewed: 2026-06-16
 
 This reference maps Program #1500's intended design outcomes to the current as-built repository state after Tasks 001 through 005.
 
+## Scope
+
+This document is a reference matrix for Program #1500 closeout alignment. It records task status, intended-design alignment, authoritative documents, and deferred items.
+
+It does not change workflow behavior, branch protection, issue state, or website implementation scope.
+
+## Current Known Truth
+
+Program #1500's five planned implementation tasks are closed. The current as-built closeout surface has one automatic post-merge closeout owner, one pre-merge readiness gate for closeout metadata, bounded manual/backfill support paths, and documented parked legacy workflows.
+
+## Intended Final State
+
+This reference should remain a compact lookup table for Program #1500 closeout status. Future CI maintenance tasks may add new documents or runtime behavior, but should not rewrite this program status unless they explicitly reopen Program #1500 closeout scope.
+
 ## Program task status
 
 | Task | issue | Intended outcome | As-built status | Primary evidence |
