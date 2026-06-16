@@ -35,7 +35,8 @@ describe('mobile responsive contract (#1259 Task 004)', () => {
   it('covers priority public and fanclub routes in mobile playwright', () => {
     const e2e = readFileSync('tests/e2e/mobile-navigation.spec.ts', 'utf8');
     for (const route of MOBILE_E2E_PRIORITY_ROUTES) {
-      expect(e2e).toContain(`goto('${route}'`);
+      const pattern = new RegExp(`goto\\(\\s*['"\`]${route}['"\`]`);
+      expect(e2e).toMatch(pattern);
     }
   });
 
