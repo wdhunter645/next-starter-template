@@ -38,7 +38,7 @@ hamburger variants align with session state. No code fixes required in this task
 | Pass with note | 2 |
 | Fail | 0 |
 
-Automated evidence: `tests/public-auth-state-validation.test.tsx` (12 cases),
+Automated evidence: `tests/public-auth-state-validation.test.tsx` (9 cases),
 `tests/use-member-session.test.tsx` (5 cases), plus existing
 `tests/join-login-auth.test.tsx` and `tests/admin-operations.test.tsx`.
 
@@ -63,8 +63,8 @@ layout files. Brief `null` render may occur before redirect on gated routes.
 | 4 | Admin layout blocks guests | **Pass** | same |
 | 5 | Admin layout blocks non-admin members | **Pass** | same |
 | 6 | Admin layout allows admins | **Pass** | same + `admin-operations.test.tsx` |
-| 7 | Fanclub layout uses `redirectTo: '/'` without `requireAdmin` | **Pass** | source contract test |
-| 8 | Admin layout uses `requireAdmin: true` + role check | **Pass** | source contract test |
+| 7 | Fanclub layout uses member session gate (behavioral) | **Pass** | layout gate tests |
+| 8 | Admin layout uses admin-only gate (behavioral) | **Pass** | layout gate tests |
 | 9 | `useMemberSession` redirects guests | **Pass** | `use-member-session.test.tsx` |
 | 10 | `useMemberSession` allows members on fanclub gate | **Pass** | same |
 | 11 | `useMemberSession` redirects members from admin gate | **Pass** | same |
@@ -72,7 +72,7 @@ layout files. Brief `null` render may occur before redirect on gated routes.
 | 13 | `useMemberSession` redirects on fetch failure | **Pass** | same |
 | 14 | Public header guest controls (Join/Login) | **Pass** | `public-auth-state-validation.test.tsx` |
 | 15 | Public header member controls (Club Home/Logout) | **Pass** | same |
-| 16 | Logout posts to `/api/logout` and returns home | **Pass** | logout source contract |
+| 16 | Logout posts to `/api/logout` and returns home | **Pass** | logout behavior test |
 | 17 | Fanclub e2e uses mocked session | **Pass with note** | `launch-readiness-fanclub-routes.spec.ts` — not true unauth redirect |
 | 18 | Client-side gate flash before redirect | **Pass with note** | Documented; no `middleware.ts` |
 

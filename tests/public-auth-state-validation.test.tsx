@@ -1,9 +1,9 @@
-import { readFileSync } from 'node:fs';
 import { render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AdminLayout from '@/app/admin/layout';
+import LogoutPage from '@/app/logout/page';
 import MemberLayout from '@/app/fanclub/layout';
 import Header from '@/components/Header';
 
@@ -149,30 +149,6 @@ describe('admin layout auth gate (#1259 Task 003)', () => {
   });
 });
 
-describe('layout auth source contracts (#1259 Task 003)', () => {
-  it('wires fanclub layout to member session redirect', () => {
-    const source = readFileSync('src/app/fanclub/layout.tsx', 'utf8');
-    expect(source).toContain('useMemberSession');
-    expect(source).toContain("redirectTo: '/'");
-    expect(source).not.toContain('requireAdmin');
-  });
-
-  it('wires admin layout to admin-only session redirect', () => {
-    const source = readFileSync('src/app/admin/layout.tsx', 'utf8');
-    expect(source).toContain('useMemberSession');
-    expect(source).toContain("redirectTo: '/'");
-    expect(source).toContain('requireAdmin: true');
-    expect(source).toContain("role !== 'admin'");
-  });
-
-  it('documents client-side gate flash behavior in layout files', () => {
-    const fanclub = readFileSync('src/app/fanclub/layout.tsx', 'utf8');
-    const admin = readFileSync('src/app/admin/layout.tsx', 'utf8');
-    expect(fanclub).toContain('return null');
-    expect(admin).toContain('return null');
-  });
-});
-
 describe('public header auth variants (#1259 Task 003)', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -207,11 +183,29 @@ describe('public header auth variants (#1259 Task 003)', () => {
   });
 });
 
-describe('logout flow contract (#1259 Task 003)', () => {
-  it('posts to /api/logout and returns home', () => {
-    const source = readFileSync('src/app/logout/page.tsx', 'utf8');
-    expect(source).toContain("fetch('/api/logout'");
-    expect(source).toContain("method: 'POST'");
-    expect(source).toContain("window.location.href = '/'");
+describe('logout flow behavior (#1259 Task 003)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('posts to /api/logout, clears local storage, and returns home', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', mockFetch);
+
+    const mockLocation = { href: '' };
+    vi.stubGlobal('location', mockLocation);
+    const removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem');
+
+    render(<LogoutPage />);
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith('/api/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      expect(removeItemSpy).toHaveBeenCalledWith('lgfc_member_email');
+      expect(mockLocation.href).toBe('/');
+    });
   });
 });
