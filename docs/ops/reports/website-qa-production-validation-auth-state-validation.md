@@ -85,5 +85,5 @@ git diff --check
 ## Disposition
 
 Task 003 acceptance is satisfied when the scoped test passes and this report is
-merged with #1666 linked as the source issue. This report was refreshed after
-reviewer feedback to align header-state expectations and docs-header verification.
+merged with #1666 linked as the source issue. Reviewer feedback was applied to
+align header-state expectations and docs-header verification.
