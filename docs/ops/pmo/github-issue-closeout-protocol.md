@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: GitHub issue closeout protocol, post-merge evidence requirements, bounded batch closeout, and issue-mutation separation for LGFC program tasks
 Does Not Own: Merge authority, branch protection, workflow implementation, or issue mutation outside approved scope
 Canonical Reference: /docs/reference/pmo/lgfc-cursor-execution-contract.md
-Related Issues: #1411, #1409, #1379, #1255, #1335
-Last Reviewed: 2026-06-07
+Related Issues: #1411, #1409, #1379, #1255, #1335, #1548
+Last Reviewed: 2026-06-15
 ---
 
 # GitHub Issue Closeout Protocol
@@ -24,6 +24,7 @@ This document owns:
 - separation between evidence preparation and issue mutation;
 - bounded batch closeout authorization;
 - terminal completed-issue label reconciliation;
+- umbrella issue closeout exclusion policy;
 - Program 2 non-interference during Program 1 planning;
 - Cursor closeout recommendations and stop points.
 
@@ -44,6 +45,15 @@ This document does not own:
   parent for the new Program 1 cycle.
 - Workflow Automation planning may define closeout evidence requirements before
   any workflow implementation begins.
+- Program, umbrella, master, and tracking issues are not closed by child task PR
+  closeout unless the PR source issue and operator instruction explicitly name
+  that umbrella issue for closure.
+- `gate-close-work-issue.yml` is a parked no-op workflow. It is not an effective
+  source-issue closeout owner.
+- Automatic post-merge source issue closeout is owned by
+  `.github/workflows/post-merge-closeout.yml` and the closeout scripts it invokes.
+- Pre-merge PR-to-issue accounting is owned by
+  `.github/workflows/ops-pr-issue-accounting.yml`.
 
 ## Intended Final State
 
@@ -54,6 +64,8 @@ This document does not own:
 - Batch closeout remains bounded by explicit Atlas/Bill authorization.
 - Cursor stops at evidence and recommendation unless mutation is separately
   authorized.
+- Umbrella and program issues remain open until their own explicit closeout
+  authority exists.
 
 ## Default Rule
 
@@ -96,6 +108,35 @@ blocker reporting.
 8. Keep umbrella or program issues open when the task says they remain active.
 9. Advance the next task only after source task closeout is clean and queue
    authority is clear.
+
+## Umbrella issue closeout exclusion policy
+
+Umbrella, master, program, parent, and tracking issues are excluded from automatic
+child task closeout. A task PR may close only its single source issue unless the
+operator explicitly authorizes a bounded batch or umbrella closeout action.
+
+The exclusion applies even when a PR body references an umbrella issue for
+context. References such as `Related Issues`, `Program`, `Parent`, `Umbrella`,
+`Part of`, or narrative links are not closeout authority.
+
+Automation and agents must treat these as non-closeout references by default:
+
+- Program umbrella issues, including Program #1500 parent tracking issues;
+- master planning issues;
+- queue or roadmap issues;
+- issues that remain active after a child task completes;
+- remediation issues unless duplicate-remediation cleanup is explicitly in scope.
+
+An umbrella issue may be closed only when all of the following are true:
+
+1. the closeout packet names the umbrella issue as a closure target;
+2. all child tasks are complete or intentionally canceled;
+3. the operator authorizes umbrella closure in the active instruction path;
+4. the closeout comment states that no active child or queue item remains;
+5. terminal label reconciliation is applied in the same closeout action.
+
+If any condition is missing, the umbrella issue remains open and the child task
+closeout proceeds only for the child source issue.
 
 ## Terminal Completed-Issue Label Policy
 
@@ -195,6 +236,7 @@ Future workflow automation may use this protocol as the design target for:
 - terminal completed-issue label reconciliation;
 - batch closeout safety checks;
 - queue advancement preconditions;
+- umbrella issue exclusion checks;
 - issue mutation allowlists.
 
 No workflow implementation is authorized by this protocol update alone.
