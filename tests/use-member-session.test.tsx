@@ -3,10 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useMemberSession } from '@/hooks/useMemberSession';
 
-const mockRouterReplace = vi.hoisted(() => vi.fn());
+const mockRouter = vi.hoisted(() => ({ replace: vi.fn() }));
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ replace: mockRouterReplace }),
+  useRouter: () => mockRouter,
 }));
 
 function mockSessionFetch(payload: unknown) {
@@ -20,7 +20,7 @@ function mockSessionFetch(payload: unknown) {
 
 describe('useMemberSession fail-closed redirects (#1259 Task 003)', () => {
   beforeEach(() => {
-    mockRouterReplace.mockReset();
+    mockRouter.replace.mockReset();
   });
 
   afterEach(() => {
@@ -33,7 +33,7 @@ describe('useMemberSession fail-closed redirects (#1259 Task 003)', () => {
     renderHook(() => useMemberSession({ redirectTo: '/' }));
 
     await waitFor(() => {
-      expect(mockRouterReplace).toHaveBeenCalledWith('/');
+      expect(mockRouter.replace).toHaveBeenCalledWith('/');
     });
   });
 
@@ -48,7 +48,7 @@ describe('useMemberSession fail-closed redirects (#1259 Task 003)', () => {
 
     expect(result.current.isAuthenticated).toBe(true);
     expect(result.current.role).toBe('member');
-    expect(mockRouterReplace).not.toHaveBeenCalled();
+    expect(mockRouter.replace).not.toHaveBeenCalled();
   });
 
   it('redirects authenticated members when admin is required', async () => {
@@ -57,7 +57,7 @@ describe('useMemberSession fail-closed redirects (#1259 Task 003)', () => {
     renderHook(() => useMemberSession({ redirectTo: '/', requireAdmin: true }));
 
     await waitFor(() => {
-      expect(mockRouterReplace).toHaveBeenCalledWith('/');
+      expect(mockRouter.replace).toHaveBeenCalledWith('/');
     });
   });
 
@@ -71,7 +71,7 @@ describe('useMemberSession fail-closed redirects (#1259 Task 003)', () => {
     });
 
     expect(result.current.role).toBe('admin');
-    expect(mockRouterReplace).not.toHaveBeenCalled();
+    expect(mockRouter.replace).not.toHaveBeenCalled();
   });
 
   it('redirects on session fetch failure', async () => {
@@ -80,7 +80,7 @@ describe('useMemberSession fail-closed redirects (#1259 Task 003)', () => {
     renderHook(() => useMemberSession({ redirectTo: '/' }));
 
     await waitFor(() => {
-      expect(mockRouterReplace).toHaveBeenCalledWith('/');
+      expect(mockRouter.replace).toHaveBeenCalledWith('/');
     });
   });
 });
