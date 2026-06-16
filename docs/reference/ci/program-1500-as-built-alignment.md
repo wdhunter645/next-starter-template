@@ -17,7 +17,7 @@ This reference maps Program #1500's intended design outcomes to the current as-b
 
 ## Program task status
 
-| Task | Issue | Intended outcome | As-built status | Primary evidence |
+| Task | issue | Intended outcome | As-built status | Primary evidence |
 |---|---:|---|---|---|
 | Task 001 | #1544 | Add pre-merge closeout-readiness validation | Complete | `gate-post-merge-readiness.yml`; `scripts/ci/post_merge_readiness_gate.mjs`; post-merge validator exports |
 | Task 002 | #1545 | Consolidate duplicate automatic closeout ownership | Complete | `post-merge-closeout.yml` is documented as the single automatic owner; support workflows have bounded roles |
@@ -57,7 +57,7 @@ This reference maps Program #1500's intended design outcomes to the current as-b
 | Branch protection UI reconciliation | Repository setting validation is not owned by documentation-only closeout | Human/operator + CI maintenance |
 | Retire parked legacy workflows | Requires a separate cleanup PR with retirement evidence | OPS / CI maintenance |
 | Runtime umbrella/program issue classification | Governance policy exists; runtime classifier was not implemented by Program #1500 | Future CI hardening task |
-| Legacy tracker cleanup | GitHub Issues are the source of truth; tracker files may lag unless a source issue authorizes cleanup | PMO/documentation maintenance |
+| Legacy tracker cleanup | GitHub issues are the source of truth; tracker files may lag unless a source issue authorizes cleanup | PMO/documentation maintenance |
 
 ## Closeout conclusion
 
