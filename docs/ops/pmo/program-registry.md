@@ -92,7 +92,7 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 
 ### Priority #1 candidate child projects
 
-| Child project | PMO decision | Implementation-plan coverage | Issue |
+| Child project | PMO decision | Implementation-plan coverage | issue |
 | --- | --- | --- | --- |
 | Fan Club page design | Included in Priority #1 | Tasks 001, 003, 007, 009 | #1686, #1688, #1692, #1694 |
 | Website backend services | Included in Priority #1; reconcile before building | Tasks 001, 002, 005, 006 | #1686, #1687, #1690, #1691 |
@@ -102,7 +102,7 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 
 ### Priority #2 candidate child projects
 
-| Child project | PMO decision | Implementation-plan coverage | Issue |
+| Child project | PMO decision | Implementation-plan coverage | issue |
 | --- | --- | --- | --- |
 | Fundraiser operations playbook | Included in Priority #2 | Tasks 001, 007, 008 | #1701 |
 | Givebutter integration model | Included in Priority #2; external/vendor configuration remains out of scope | Tasks 002, 004, 006, 007 | #1702 |
@@ -115,7 +115,7 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 
 ### Priority #3 candidate child projects
 
-| Child project | PMO decision | Implementation-plan coverage | Issue |
+| Child project | PMO decision | Implementation-plan coverage | issue |
 | --- | --- | --- | --- |
 | PMO v3 authority and stale issue reconciliation | Included in Priority #3 | Task 001 | #1720 |
 | Workflow automation design migration and gap inventory | Included in Priority #3 | Task 002 | #1721 |
