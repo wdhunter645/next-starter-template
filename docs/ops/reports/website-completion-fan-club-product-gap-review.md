@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: Task 001 as-built gap table for Website Completion / Fan Club Product Buildout
 Does Not Own: Application code changes, runtime architecture decisions, D1 migrations, issue closure, labels, or merge approval
 Canonical Reference: /docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md
-Related Issues: #1686, #1685
+Related issues: #1686, #1685
 Last Reviewed: 2026-06-17
 ---
 
