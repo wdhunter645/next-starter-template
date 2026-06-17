@@ -4,13 +4,16 @@ Audience: Atlas, Bill, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Operational Plan
 Owns: Future build issue sequence and verification plan for Website QA / Production Validation after documentation approval
 Does Not Own: Runtime implementation before child issues, unauthorized GitHub issue mutation, workflow YAML unless explicitly scoped, or final launch authorization
-Status: phase-4-active
+Status: phase-4-complete
 Task 001 complete: docs/ops/reports/website-qa-production-validation-as-built-gap-analysis.md (PR `#1657` merged `da02c01`; issue `#1659` closed)
 Task 002 complete: docs/ops/reports/website-qa-production-validation-route-nav-validation.md (PR `#1662` merged `2e811a6`; issue `#1661` closed)
 Task 003 complete: docs/ops/reports/website-qa-production-validation-auth-state-validation.md (PR `#1667` merged `0347b27`; issue `#1666` closed)
 Task 004 complete: docs/ops/reports/website-qa-production-validation-mobile-responsive-validation.md (PR `#1672` merged `5e10f72`)
 Task 005 complete: docs/ops/reports/website-qa-production-validation-d1-b2-read-path-validation.md (PR `#1684` merged `8893591`)
-Task 006 next: Content inventory public surface validation — held pending authorization
+Task 006 complete: docs/ops/reports/website-qa-production-validation-content-inventory-public-surface-validation.md (PR `#1728` merged `c170d3c`)
+Task 007 complete: docs/ops/reports/website-qa-production-validation-launch-readiness-h011-disposition.md (PR `#1737` merged `552fb8f`)
+Task 008 complete: docs/ops/reports/website-qa-production-validation-legacy-disposition-package.md (PR `#1753` merged `678699e`)
+Task 009 complete: docs/ops/reports/website-qa-production-validation-final-qa-handoff.md (PR `#1751` merged `fd17af2`)
 Project: website-qa-production-validation
 Owner: Atlas
 Execution Mode: orchestrated-after-approval
@@ -18,7 +21,7 @@ Source Issue: 1259
 Related Program Issue: 1255
 Canonical Reference: /docs/ops/implementation-plans/README.md
 Related Issues: #1255, #1256, #1258, #1259, #1053, #1112, #943, #946, #947, #1013, #1014, #1015, #1016, #1017, #1108, #1109, #1110, #1111, #1500
-Last Reviewed: 2026-06-16
+Last Reviewed: 2026-06-17
 ---
 
 # Website QA and Production Validation Implementation Plan
@@ -36,13 +39,17 @@ closed). Task 002 route/nav validation is **complete** (PR `#1662` merged `2e811
 issue `#1661` closed). Task 003 auth-state validation is **complete** (PR `#1667`
 merged `0347b27`; issue `#1666` closed). Task 004 mobile/responsive validation is
 **complete** (PR `#1672` merged `5e10f72`). Task 005 D1/B2 public read-path
-verification is **complete** (PR `#1684` merged `8893591`). Child project `#1259` must remain **open**
-through Phase 4 (operator-approved reopen 2026-06-17 after post-merge closeout miss; CI fix PR `#1699`
-merged `58508f6`). Task 006 content inventory public surface validation is **next** (held
-pending authorization). Predecessor `#1258` is **closed complete** (terminal PR `#1652`).
-Tasks 007–009 require explicit per-task Atlas/Bill authorization.
+verification is **complete** (PR `#1684` merged `8893591`). Task 006 content inventory public surface
+validation is **complete** (PR `#1728` merged `c170d3c`; gate-unblock PR `#1729` merged
+`0232254`). Task 007 launch-readiness / H-011 disposition is **complete** (PR
+`#1737` merged `552fb8f`). Task 008 legacy disposition package is **complete** (PR
+`#1753` merged `678699e`). Task 009 final QA handoff is **complete** (PR `#1751`
+merged `fd17af2`). **Phase 4 Tasks 001–009 are complete on `main`.** Child project
+`#1259` must remain **open** pending Program `#1255` terminal closeout (operator-approved
+reopen 2026-06-17 after post-merge closeout miss; CI fix PR `#1699` merged `58508f6`).
+Predecessor `#1258` is **closed complete** (terminal PR `#1652`).
 
-Plan status: `phase-4-active` (not `production-ready`). Child issue creation
+Plan status: `phase-4-complete` (not `production-ready`; `#1255` program closeout not authorized). Child issue creation
 remains held unless explicitly authorized.
 
 ## Source of truth
@@ -61,6 +68,10 @@ remains held unless explicitly authorized.
 | Task 003 auth-state validation | `docs/ops/reports/website-qa-production-validation-auth-state-validation.md` (PR `#1667` / `0347b27`) |
 | Task 004 mobile/responsive validation | `docs/ops/reports/website-qa-production-validation-mobile-responsive-validation.md` (PR `#1672`) |
 | Task 005 D1/B2 read-path validation | `docs/ops/reports/website-qa-production-validation-d1-b2-read-path-validation.md` (PR `#1684` / `8893591`) |
+| Task 006 content inventory public surface validation | `docs/ops/reports/website-qa-production-validation-content-inventory-public-surface-validation.md` (PR `#1728` / `c170d3c`) |
+| Task 007 launch-readiness H-011 disposition | `docs/ops/reports/website-qa-production-validation-launch-readiness-h011-disposition.md` (PR `#1737` / `552fb8f`) |
+| Task 008 legacy disposition package | `docs/ops/reports/website-qa-production-validation-legacy-disposition-package.md` (PR `#1753` / `678699e`) |
+| Task 009 final QA handoff | `docs/ops/reports/website-qa-production-validation-final-qa-handoff.md` (PR `#1751` / `fd17af2`) |
 | Ops admin handoff | `docs/how-to/website/admin-operations-overview.md` |
 | Content inventory authority | `#1256` / `docs/reference/website/content-inventory-model.md` |
 
@@ -134,7 +145,7 @@ Full table: `docs/ops/reports/website-qa-production-validation-legacy-issue-reco
 | issue | Disposition |
 | --- | --- |
 | `#1112` T50 | **Partially satisfied** — PR `#1221` merged; H-011 CI scheduling gap remains |
-| `#943`–`#947`, `#1013`–`#1017`, `#1108`–`#1111` | **Satisfied on main** — disposition/closeout batch deferred to Task 008 |
+| `#943`–`#947`, `#1013`–`#1017`, `#1108`–`#1111` | **Satisfied on main** — disposition package published (Task 008 PR `#1753`) |
 | `#1053` | **Subordinated** — historical index; `#1255` child projects are planning authority |
 
 ## Proposed child task sequence
@@ -280,7 +291,7 @@ validation tasks claim gaps.
 | `#1500` out of scope / parallel program closed | Met — `#1500` closed complete; `#1259` tasks do not implement `#1500` scope |
 
 **Authorization model:** Phase 4 tasks require explicit per-task authorization.
-Do not infer open-ended implementation from `phase-4-active` alone.
+Do not infer open-ended implementation from `phase-4-complete` alone.
 
 ## Risk register
 
@@ -317,18 +328,27 @@ Manual production smoke checklist per task (documented in child issue bodies).
 
 ## Approval and issue creation hold
 
-Plan status is `phase-4-active` (not `production-ready`).
+Plan status is `phase-4-complete` (not `production-ready`).
 
 Phase 3 planning exit is **complete** (planning PR `#1656` merged `b0cc0da`). Tasks 001
-and 002 are **complete** (PRs `#1657` / `#1662`; issues `#1659` / `#1661` closed).
-Task 004 is **complete** (PR `#1672` merged `5e10f72`). Task 005 is **complete**
-(PR `#1684` merged `8893591`). Child project `#1259` must remain **open** through Phase 4
-(operator-approved reopen 2026-06-17; umbrella closeout fix PR `#1699` merged `58508f6`). Task 006 is **next** (held pending
-authorization). Tasks 007–009 require explicit per-task Atlas/Bill authorization.
+through 009 are **complete** on `main` (terminal Task 009 PR `#1751` merged `fd17af2`;
+Task 008 PR `#1753` merged `678699e`). Child project `#1259` must remain **open**
+pending Program `#1255` terminal closeout (operator-approved reopen 2026-06-17;
+umbrella closeout fix PR `#1699` merged `58508f6`).
 
 ## issue hygiene (complete 2026-06-17)
 
 Operator applied GitHub cleanup: `#1259` **open** with `status:active`; `#1666`
 **closed** complete (Task 003 via PR `#1667`). After Task 005 PR `#1684` merge,
 post-merge automation incorrectly closed `#1259`; operator reopened 2026-06-17.
-Umbrella closeout guard shipped in PR `#1699` (`58508f6`).
+Umbrella closeout guard shipped in PR `#1699` (`58508f6`). Task 006 deliverable merged
+PR `#1728` (`c170d3c`); post-merge-readiness gate unblock merged PR `#1729` (`0232254`).
+Operator merged `#1728` before `#1729` (number order); final `main` state is correct.
+Task 007 authorized after Task 006 tracker sync and `#1259` sign-off. Task 007 deliverable
+merged PR `#1737` (`552fb8f`); H-011 bounded deferral with operator sign-off recorded.
+Task 008 authorized 2026-06-17; deliverable merged PR `#1753` (`678699e`). Task 009
+deliverable merged PR `#1751` (`fd17af2`) before Task 008 (operator-authorized out-of-order
+execution; both deliverables on `main` before Phase 4 closeout). Post-merge closeout on
+`#1751` and `#1753` reported `closeout_blocker_declared` from CI auto-repair scaffold
+(`Status: BLOCKED`); erroneous `status:failed` on `#1259` is workflow noise — remove stale
+labels; keep `status:active`; **do not close** `#1259`.
