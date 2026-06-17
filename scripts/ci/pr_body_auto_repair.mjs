@@ -95,7 +95,7 @@ function reviewerSkeletonLines({ body = '', disposition = null } = {}) {
     if (!commentId || seen.has(commentId) || existing.has(commentId)) continue;
     seen.add(commentId);
     const threadState = item.outdated ? 'outdated' : 'unresolved-with-rationale';
-    lines.push(`- review-comment:${commentId} — acknowledged — auto-generated disposition placeholder; agent must replace with final fix/rationale before READY FOR REVIEW — thread state: ${threadState}`);
+    lines.push(`- review-comment:${commentId} — acknowledged — auto-generated disposition pending agent completion; agent must replace with final fix/rationale before READY FOR REVIEW — thread state: ${threadState}`);
   }
 
   if (!lines.length) return '- none detected by auto-repair at generation time';
@@ -183,7 +183,7 @@ export function buildAutoRepairBlock({
     '- Canonical troubleshooting reference: `/docs/reference/governance/troubleshooting-data-surface-requirements.md`',
     '- Canonical design reference: `/docs/reference/design/LGFC-Production-Design-and-Standards.md`',
     '- Additional design/reference docs used for this PR:',
-    '  - auto-repair placeholder — agent must list exact applicable paths',
+    '  - auto-repair pending agent completion — agent must list exact applicable paths',
     '',
     '## FILE-TOUCH ALLOWLIST (MANDATORY)',
     'Allowed files:',
@@ -207,7 +207,7 @@ export function buildAutoRepairBlock({
     `- [${docsOnly ? 'x' : ' '}] No application code, config, or runtime behavior modified`,
     '',
     '## CHANGE SUMMARY',
-    '- auto-repair placeholder — agent must replace with exact change summary',
+    '- auto-repair pending agent completion — agent must replace with exact change summary',
     '',
     '## BUILD / TEST / VERIFICATION',
     '- Commands run:',
@@ -296,7 +296,7 @@ export function repairPullRequestBody(options = {}) {
       'PR body auto-repair evaluated.',
       `Managed block updated: ${nextBody !== body ? 'yes' : 'no'}`,
       `Missing canonical headings before repair: ${missingHeadings.length}`,
-      `Reviewer disposition placeholders generated: ${reviewerPlaceholderCount}`,
+      `Reviewer disposition pending entries generated: ${reviewerPlaceholderCount}`,
     ].join('\n'),
   };
 }
