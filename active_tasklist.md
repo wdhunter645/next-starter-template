@@ -15,7 +15,7 @@ Use this file only as an optional, human-readable snapshot.
 | Item | State | Notes |
 | --- | --- | --- |
 | `#1255` | `status:active` | Umbrella program — Website Implementation and Content Operations (Cursor) |
-| `#1259` | `status:active` (open) | **Phase 4 active** — Tasks 001–006 complete; Task 007 next (authorized) |
+| `#1259` | `status:active` (open) | **Phase 4 active** — Tasks 001–007 complete; Task 008 next (held) |
 
 ## Portfolio note (2026-06-16)
 
@@ -36,6 +36,7 @@ parallel when ChatGPT became capable of `#1500` implementation. `#1500` is now
 | `#1259` Phase 4 Task 004 | PR `#1672` merged (`5e10f72`); mobile/responsive validation report on `main` |
 | `#1259` Phase 4 Task 005 | PR `#1684` merged (`8893591`); D1/B2 read-path validation report on `main` |
 | `#1259` Phase 4 Task 006 | PR `#1728` merged (`c170d3c`); content inventory public surface validation report on `main` |
+| `#1259` Phase 4 Task 007 | PR `#1737` merged (`552fb8f`); H-011 launch-readiness disposition report on `main` |
 | `#1500` CI Post-Merge Closeout Reliability | **closed complete** — Tasks 001–005 (`#1544`–`#1548`) |
 | issue `#1411` | completed planning artifact |
 
