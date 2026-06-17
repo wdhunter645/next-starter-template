@@ -3,7 +3,7 @@ Doc Type: Implementation Plan
 Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Operational Plan
 Owns: Cursor task sequence, child-project boundaries, validation model, file-area expectations, and closeout rules for Fundraiser / Charity Campaign Operations Buildout
-Does Not Own: Runtime implementation before task issues, issue creation before launch authorization, merge authority, vendor configuration, payment processing, legal raffle administration, fundraiser launch execution
+Does Not Own: Runtime implementation before task issues, issue creation before launch authorization, merge authority, vendor configuration, donation processing, campaign compliance administration, fundraiser launch execution
 Status: planning-ready
 Project: fundraiser-charity-campaign-operations-buildout
 Owner: Atlas
@@ -38,14 +38,14 @@ This plan covers:
 - pre-launch testing and closeout evidence;
 - final operator handoff.
 
-This plan does not authorize this documentation PR to change application code, workflows, migrations, route files, package files, issue labels, issue states, Givebutter account configuration, Cloudflare configuration, payment processing, raffle/legal administration, or implementation child issues.
+This plan does not authorize this documentation PR to change application code, workflows, migrations, route files, package files, issue labels, issue states, Givebutter account configuration, Cloudflare configuration, donation processing administration, campaign compliance administration, or implementation child issues.
 
 ## Current known truth
 
 - PMO Backlog Priority #2 is a high-priority future program candidate.
 - Program #1255 and child #1259 remain ahead of this program unless Bill/Atlas explicitly reprioritize.
 - Priority #1 Website Completion / Fan Club Product Buildout is parked as #1685 with child issues #1686 through #1694.
-- Givebutter is treated as the likely external campaign platform boundary, not as an internal payment system to rebuild.
+- Givebutter is treated as the likely external campaign platform boundary, not as an internal donation system to rebuild.
 - Donor/sponsor recognition must not expose public PII by default.
 - Campaign spotlight behavior must fail closed when missing, disabled, invalid, stale, or unpublished.
 - Cursor is the intended implementation agent after Bill/Atlas launch authorization.
@@ -55,7 +55,7 @@ This plan does not authorize this documentation PR to change application code, w
 At the end of this program:
 
 1. LGFC has a repeatable fundraiser operations playbook covering setup, preview, launch, closeout, winner publication, and archive.
-2. Givebutter ownership boundaries are explicit: external campaign/payment/auction operations remain outside LGFC runtime implementation.
+2. Givebutter ownership boundaries are explicit: external campaign/donation/campaign operations remain outside LGFC runtime implementation.
 3. Website campaign surfaces display only approved public campaign state and fail closed when data is unavailable or disabled.
 4. Leaderboard and winner behavior is deterministic, snapshot-based, and privacy-safe.
 5. Sponsor/donor recognition uses approved display fields only and exposes no public PII.
@@ -86,7 +86,7 @@ Cursor must reconcile before building. Existing website campaign surfaces, CMS/c
 | Task | Title | Objective | Primary project | Allowed files / areas | Verification | Predecessor | Successor |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 001 | Fundraiser operations playbook and launch-state model | Define repeatable setup, preview, launch, pause, closeout, winner publication, and archive operations. | Fundraiser operations playbook | `docs/how-to/website/**`, `docs/reference/website/**`, `docs/ops/reports/**` | Docs/how-to checks; operations checklist review | Launch authorization | 002 |
-| 002 | Givebutter integration boundary and data ownership model | Document external campaign/payment/auction ownership versus LGFC website/config/display ownership. | Givebutter integration model | `docs/reference/website/**`, `docs/reference/platform/**`, `docs/ops/reports/**` | Docs check; boundary checklist | 001 | 003 |
+| 002 | Givebutter integration boundary and data ownership model | Document external campaign ownership versus LGFC website/config/display ownership. | Givebutter integration model | `docs/reference/website/**`, `docs/reference/platform/**`, `docs/ops/reports/**` | Docs check; boundary checklist | 001 | 003 |
 | 003 | Leaderboard and winner rule specification | Define scoring, snapshot cadence, deterministic winner calculation, tiebreakers, and privacy-safe publication. | Leaderboard / winner system | `docs/reference/website/**`, `docs/how-to/website/**`, `docs/ops/reports/**` | Docs check; deterministic rule review | 001 and 002 | 004 |
 | 004 | Homepage spotlight and campaign surface design reconciliation | Reconcile homepage campaign spotlight, campaign status, public link/embed behavior, preview/review gates, and fail-closed state. | Homepage spotlight / campaign surface | `docs/reference/design/**`, `docs/reference/website/**`, `docs/ops/reports/**`; read-only `src/**`, `tests/**` | Docs check; source-document cross-check; read-only implementation inventory | 001 and 002 | 005 |
 | 005 | Sponsor and donor recognition privacy model | Define recognition display rules, consent boundaries, public fields, tier/logo handling, anonymous display, and prohibited PII. | Sponsor / donor recognition | `docs/reference/website/**`, `docs/how-to/website/**`, `docs/ops/reports/**` | Docs/how-to checks; privacy checklist | 001 through 004 | 006 |
@@ -101,8 +101,8 @@ Cursor must reconcile before building. Existing website campaign surfaces, CMS/c
 | 001 | launch authorization | 002 | yes | Launch not authorized | Bill/Atlas launch source issue exists |
 | 002 | 001 | 003 | yes | Operations model missing | Task 001 merged |
 | 003 | 001 and 002 | 004 | yes | External/internal data boundary unresolved | Task 002 merged |
-| 004 | 001 and 002 | 005 | yes | Campaign surface ownership unresolved | Task 004 docs merged |
-| 005 | 001 through 004 | 006 | yes | Donor/sponsor privacy model unresolved | Task 005 merged |
+| 004 | 001 and 002 | 005 | yes | Campaign surface ownership unresolved | Task 002 merged |
+| 005 | 001 through 004 | 006 | yes | Donor/sponsor privacy model unresolved | Task 004 merged |
 | 006 | 002 through 005 | 007 | yes | Accepted implementation deltas undefined | Tasks 002–005 merged and deltas accepted |
 | 007 | 006 | 008 | yes | Website-side campaign behavior unverified | Task 006 merged |
 | 008 | 001 through 007 | terminal | yes | Evidence package incomplete | Tasks 001–007 merged or explicitly deferred |
