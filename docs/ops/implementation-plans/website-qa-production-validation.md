@@ -352,3 +352,9 @@ execution; both deliverables on `main` before Phase 4 closeout). Post-merge clos
 `#1751` and `#1753` reported `closeout_blocker_declared` from CI auto-repair scaffold
 (`Status: BLOCKED`); erroneous `status:failed` on `#1259` is workflow noise — remove stale
 labels; keep `status:active`; **do not close** `#1259`.
+
+## Closeout prep (2026-06-17)
+
+Program `#1255` closeout readiness packet:
+`docs/ops/reports/program-1255-closeout-readiness.md`. Operator hygiene pending:
+`#1123` remove `status:pr-draft`; `#1258` close as complete (PR `#1652`).
