@@ -18,6 +18,12 @@
       "body_file": "scripts/ci/post-merge-closeout/pr-1639-body.md",
       "merge_sha": "64cb85794b4943a2a4dd2804061a278a5380faee",
       "source_issue": 1638
+    },
+    {
+      "pr": 1747,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1747-body.md",
+      "merge_sha": "86d98c6bc746a762a646c35f118d762f4fbfad51",
+      "source_issue": 1736
     }
   ]
 }
