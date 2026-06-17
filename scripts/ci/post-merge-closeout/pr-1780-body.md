@@ -64,7 +64,9 @@ All other files are out of scope
 - [x] Cubic disposition received or not applicable.
 
 Reviewer items:
-- No inline reviewer comments — not-applicable — thread state: resolved
+- review-comment:3432081339 — rejected — terminal label guidance is N/A for PROGRAM umbrella kept open by disposition — thread state: outdated
+- review-comment:3432081345 — rejected — terminal label guidance is N/A for PROGRAM umbrella kept open by disposition — thread state: outdated
+- review-comment:3432081974 — acknowledged — bare numeric Source Issue matches existing implementation-plan front-matter convention — thread state: resolved
 
 ## POST-MERGE ISSUE DISPOSITION
 - Source issue **#1738** is a PROGRAM umbrella and must remain **open** with `status:active`; **reopen #1738** if incorrectly closed on merge; remove `status:failed` and `status:post-merge-verify`; **do not close** #1738
