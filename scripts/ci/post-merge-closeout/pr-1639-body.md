@@ -52,6 +52,7 @@ Allowed files:
 - `scripts/orchestrator/sync-pr-state.mjs`
 - `scripts/ci/run_post_merge_closeout.mjs`
 - `scripts/ci/post-merge-closeout/pr-1536-body.md`
+- `scripts/ci/post-merge-closeout/pr-1635-body.md`
 - `scripts/ci/post-merge-closeout/pr-1639-body.md`
 - `scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json`
 - `tests/post-merge-source-issue-closeout.test.mjs`
@@ -107,6 +108,9 @@ All other files are out of scope
 
 Reviewer items:
 - review-comment:3409701224 — accepted — section-scoped disposition helper implemented in merged PR #1639 — thread state: resolved
+- review-comment:3409703941 — accepted — reopen-before-accept logic implemented in merged closeout scripts — thread state: resolved
+- review-comment:3409705189 — accepted — disposition matcher updated for bold-markdown `**do not** apply terminal close` phrasing — thread state: outdated
+- review-comment:3409705195 — accepted — test fixture aligned with real PR #1536 body phrasing in merged tests — thread state: outdated
 
 ## POST-MERGE CLOSEOUT CHECKLIST
 - [x] PR merged state verified

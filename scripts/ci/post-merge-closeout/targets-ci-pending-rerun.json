@@ -1,29 +1,11 @@
 {
-  "triggered_at": "2026-06-17T20:15:00Z",
+  "triggered_at": "2026-06-17T21:00:00Z",
   "targets": [
-    {
-      "pr": 1764,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1764-body.md",
-      "merge_sha": "dbb23abafda4b12b483de34443729e833ca56582",
-      "source_issue": 1755
-    },
-    {
-      "pr": 1536,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1536-body.md",
-      "merge_sha": "62ca227c5939f9a852bd8268d2bcdf406a35d1ba",
-      "source_issue": 1258
-    },
     {
       "pr": 1639,
       "body_file": "scripts/ci/post-merge-closeout/pr-1639-body.md",
       "merge_sha": "64cb85794b4943a2a4dd2804061a278a5380faee",
       "source_issue": 1638
-    },
-    {
-      "pr": 1747,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1747-body.md",
-      "merge_sha": "86d98c6bc746a762a646c35f118d762f4fbfad51",
-      "source_issue": 1736
     }
   ]
 }
