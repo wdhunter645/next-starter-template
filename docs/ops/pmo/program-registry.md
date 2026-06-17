@@ -27,7 +27,7 @@ unauthorized GitHub issue changes.
 ## Current known truth
 
 - Program #1255 is the active execution program. Cursor owns completion of its remaining work.
-- Child project #1259 is open and active for Phase 4 execution; Tasks 001–007 are complete; Task 008 next (held pending authorization); Task 009 held pending per-task authorization.
+- Child project #1259 is open; Phase 4 Tasks 001–009 are complete on `main`; issue remains open pending Program #1255 terminal closeout.
 - issue #1500 (CI Post-Merge Closeout Reliability) is **closed complete**.
 - Priority #1 Website Completion / Fan Club Product Buildout is parked as program issue #1685 with child issues #1686 through #1694; it remains blocked until Atlas/Bill explicitly launch or reprioritize it.
 - Priority #2 Fundraiser / Charity Campaign Operations Buildout has program issue #1700 with child task issues #1701 through #1708. Task 001 assignment guidance is posted on #1701. The program remains queued behind Program #1255/#1259 and parked Priority #1 unless Bill/Atlas explicitly reprioritize.
@@ -87,7 +87,7 @@ PMO meeting issue → PMO Backlog review/update → program issue → project / 
 | --- | --- | --- |
 | #1256 Content Strategy / Editorial Inventory | **Closed complete** | Tasks 001–009 merged and verified |
 | #1258 Website Operations Admin | **Closed complete** | Phase 4 Tasks 001–013; terminal PR `#1652` |
-| #1259 Website QA / Production Validation | **Active — Phase 4** | Tasks 001–007 complete; Task 008 next (held); keep issue open |
+| #1259 Website QA / Production Validation | **Active — Phase 4 complete** | Tasks 001–009 complete; keep issue open for `#1255` closeout |
 
 ## Proposed / future program issues
 
