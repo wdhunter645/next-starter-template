@@ -10,7 +10,8 @@ Task 002 complete: docs/ops/reports/website-qa-production-validation-route-nav-v
 Task 003 complete: docs/ops/reports/website-qa-production-validation-auth-state-validation.md (PR `#1667` merged `0347b27`; issue `#1666` closed)
 Task 004 complete: docs/ops/reports/website-qa-production-validation-mobile-responsive-validation.md (PR `#1672` merged `5e10f72`)
 Task 005 complete: docs/ops/reports/website-qa-production-validation-d1-b2-read-path-validation.md (PR `#1684` merged `8893591`)
-Task 006 next: Content inventory public surface validation — held pending authorization
+Task 006 complete: docs/ops/reports/website-qa-production-validation-content-inventory-public-surface-validation.md (PR `#1728` merged `c170d3c`)
+Task 007 next: Launch-readiness / scheduled e2e gap (H-011) — authorized
 Project: website-qa-production-validation
 Owner: Atlas
 Execution Mode: orchestrated-after-approval
@@ -18,7 +19,7 @@ Source Issue: 1259
 Related Program Issue: 1255
 Canonical Reference: /docs/ops/implementation-plans/README.md
 Related Issues: #1255, #1256, #1258, #1259, #1053, #1112, #943, #946, #947, #1013, #1014, #1015, #1016, #1017, #1108, #1109, #1110, #1111, #1500
-Last Reviewed: 2026-06-16
+Last Reviewed: 2026-06-17
 ---
 
 # Website QA and Production Validation Implementation Plan
@@ -36,11 +37,13 @@ closed). Task 002 route/nav validation is **complete** (PR `#1662` merged `2e811
 issue `#1661` closed). Task 003 auth-state validation is **complete** (PR `#1667`
 merged `0347b27`; issue `#1666` closed). Task 004 mobile/responsive validation is
 **complete** (PR `#1672` merged `5e10f72`). Task 005 D1/B2 public read-path
-verification is **complete** (PR `#1684` merged `8893591`). Child project `#1259` must remain **open**
-through Phase 4 (operator-approved reopen 2026-06-17 after post-merge closeout miss; CI fix PR `#1699`
-merged `58508f6`). Task 006 content inventory public surface validation is **next** (held
-pending authorization). Predecessor `#1258` is **closed complete** (terminal PR `#1652`).
-Tasks 007–009 require explicit per-task Atlas/Bill authorization.
+verification is **complete** (PR `#1684` merged `8893591`). Task 006 content inventory public surface
+validation is **complete** (PR `#1728` merged `c170d3c`; gate-unblock PR `#1729` merged
+`0232254`). Child project `#1259` must remain **open** through Phase 4 (operator-approved
+reopen 2026-06-17 after post-merge closeout miss; CI fix PR `#1699` merged `58508f6`).
+Task 007 launch-readiness / scheduled e2e gap (H-011) is **next** (authorized 2026-06-17).
+Predecessor `#1258` is **closed complete** (terminal PR `#1652`). Tasks 008–009 require
+explicit per-task Atlas/Bill authorization.
 
 Plan status: `phase-4-active` (not `production-ready`). Child issue creation
 remains held unless explicitly authorized.
@@ -61,6 +64,7 @@ remains held unless explicitly authorized.
 | Task 003 auth-state validation | `docs/ops/reports/website-qa-production-validation-auth-state-validation.md` (PR `#1667` / `0347b27`) |
 | Task 004 mobile/responsive validation | `docs/ops/reports/website-qa-production-validation-mobile-responsive-validation.md` (PR `#1672`) |
 | Task 005 D1/B2 read-path validation | `docs/ops/reports/website-qa-production-validation-d1-b2-read-path-validation.md` (PR `#1684` / `8893591`) |
+| Task 006 content inventory public surface validation | `docs/ops/reports/website-qa-production-validation-content-inventory-public-surface-validation.md` (PR `#1728` / `c170d3c`) |
 | Ops admin handoff | `docs/how-to/website/admin-operations-overview.md` |
 | Content inventory authority | `#1256` / `docs/reference/website/content-inventory-model.md` |
 
@@ -322,13 +326,17 @@ Plan status is `phase-4-active` (not `production-ready`).
 Phase 3 planning exit is **complete** (planning PR `#1656` merged `b0cc0da`). Tasks 001
 and 002 are **complete** (PRs `#1657` / `#1662`; issues `#1659` / `#1661` closed).
 Task 004 is **complete** (PR `#1672` merged `5e10f72`). Task 005 is **complete**
-(PR `#1684` merged `8893591`). Child project `#1259` must remain **open** through Phase 4
-(operator-approved reopen 2026-06-17; umbrella closeout fix PR `#1699` merged `58508f6`). Task 006 is **next** (held pending
-authorization). Tasks 007–009 require explicit per-task Atlas/Bill authorization.
+(PR `#1684` merged `8893591`). Task 006 is **complete** (PR `#1728` merged `c170d3c`).
+Child project `#1259` must remain **open** through Phase 4 (operator-approved reopen
+2026-06-17; umbrella closeout fix PR `#1699` merged `58508f6`). Task 007 is **next**
+(authorized 2026-06-17). Tasks 008–009 require explicit per-task Atlas/Bill authorization.
 
 ## issue hygiene (complete 2026-06-17)
 
 Operator applied GitHub cleanup: `#1259` **open** with `status:active`; `#1666`
 **closed** complete (Task 003 via PR `#1667`). After Task 005 PR `#1684` merge,
 post-merge automation incorrectly closed `#1259`; operator reopened 2026-06-17.
-Umbrella closeout guard shipped in PR `#1699` (`58508f6`).
+Umbrella closeout guard shipped in PR `#1699` (`58508f6`). Task 006 deliverable merged
+PR `#1728` (`c170d3c`); post-merge-readiness gate unblock merged PR `#1729` (`0232254`).
+Operator merged `#1728` before `#1729` (number order); final `main` state is correct.
+Task 007 authorized after Task 006 tracker sync and `#1259` sign-off.
