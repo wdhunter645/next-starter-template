@@ -117,7 +117,7 @@ npm run launch-readiness
 **Scheduled CI complements today:** `gate-quality.yml` (PR/push), `assess-nightly.yml`
 (static assess), `production-audit.yml` (live URL Playwright).
 
-### Issue hygiene
+### issue hygiene
 
 - **Do not close `#1259`** until Program `#1255` terminal closeout is authorized.
 - Remove stale workflow labels (`status:failed`, `status:post-merge-verify`) when
