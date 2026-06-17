@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 
+import { onRequestGet as getCmsGet } from '../functions/api/cms/get';
 import { onRequestGet as getContent } from '../functions/api/content/get';
 import { onRequestGet as getEventsMonth } from '../functions/api/events/month';
 import { onRequestGet as getEventsNext } from '../functions/api/events/next';
@@ -8,7 +9,10 @@ import { onRequestGet as getFaqList } from '../functions/api/faq/list';
 import { onRequestGet as getFooterQuote } from '../functions/api/footer-quote';
 import { onRequestGet as getFriends } from '../functions/api/friends/list';
 import { onRequestGet as getHealth } from '../functions/api/health';
+import { onRequestGet as getMatchupCurrent } from '../functions/api/matchup/current';
+import { onRequestGet as getMatchupResults } from '../functions/api/matchup/results';
 import { onRequestGet as getMilestones } from '../functions/api/milestones/list';
+import { onRequestGet as getPhotosGet } from '../functions/api/photos/get';
 import { onRequestGet as getPhotosList } from '../functions/api/photos/list';
 import { onRequestGet as getSearch } from '../functions/api/search';
 
@@ -139,9 +143,13 @@ describe('D1/B2 public read-path fail-closed behavior (#1259 Task 005)', () => {
 
   it('does not silently succeed legacy D1 reads when the binding is missing', async () => {
     const cases = [
+      { name: 'cms/get', run: () => getCmsGet(createContext('/api/cms/get?page=home')) },
       { name: 'events/next', run: () => getEventsNext(createContext('/api/events/next')) },
       { name: 'events/month', run: () => getEventsMonth(createContext('/api/events/month')) },
       { name: 'faq/list', run: () => getFaqList(createContext('/api/faq/list')) },
+      { name: 'matchup/current', run: () => getMatchupCurrent(createContext('/api/matchup/current')) },
+      { name: 'matchup/results', run: () => getMatchupResults(createContext('/api/matchup/results')) },
+      { name: 'photos/get', run: () => getPhotosGet(createContext('/api/photos/get?id=1')) },
       { name: 'photos/list', run: () => getPhotosList(createContext('/api/photos/list')) },
       { name: 'footer-quote', run: () => getFooterQuote(createContext('/api/footer-quote')) },
     ] as const;

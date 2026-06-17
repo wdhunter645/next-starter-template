@@ -35,8 +35,10 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       },
     });
 
-    // Write to edge cache as "last known good" (fire-and-forget)
-    context.waitUntil(cache.put(cacheKey, response.clone()));
+    // Write to edge cache as "last known good" when the Cache API is available
+    if (cache) {
+      context.waitUntil(cache.put(cacheKey, response.clone()));
+    }
 
     return response;
   } catch (err: any) {
