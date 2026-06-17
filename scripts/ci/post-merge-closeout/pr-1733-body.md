@@ -62,6 +62,10 @@ Source Files Used:
 Allowed files:
 - `docs/ops/pmo/pmo-backlog.md`
 - `docs/ops/pmo/program-registry.md`
+- `docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md`
+- `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md`
+- `scripts/ci/post-merge-closeout/pr-1733-body.md`
+- `.github/workflows/post-merge-intent-verification.yml`
 
 All other files are out of scope
 
@@ -88,6 +92,7 @@ All other files are out of scope
 - Preserve Priority #1 and Priority #2 as queued/blocked pending explicit launch authorization.
 - Normalize child-table headers to lowercase `issue` per reviewer feedback.
 - Replace dangling rank 1d/2e backlog references with Priority #1/#2 issue identifiers.
+- Align Priority #3 readiness and implementation-plan authority with launch-control issue #1719.
 
 ## BUILD / TEST / VERIFICATION
 - Commands run:
@@ -109,6 +114,8 @@ All other files are out of scope
 - Files:
   - `docs/ops/pmo/pmo-backlog.md`
   - `docs/ops/pmo/program-registry.md`
+  - `docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md`
+  - `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md`
 
 ## REVIEWER RESPONSE ACCOUNTING
 - [x] Reviewed all reviewer comments.
@@ -130,6 +137,7 @@ Reviewer items (required format for gate parsing):
 - review-comment:3428701614 — accepted — rewrote dangling rank 1d/2e backlog cross-references to Priority #1/#2 issue identifiers after child-row collapse — thread state: outdated
 - review-comment:3428706370 — accepted — updated rank 12 duplicate note to reference Priority #1 content management subordination (#1690) instead of rank 1d — thread state: outdated
 - review-comment:3428706439 — accepted — updated backlog history entry to describe Priority #1 content-collection subordination without rank 1d — thread state: outdated
+- review-comment:3431048459 — accepted — aligned Priority #3 readiness and implementation-plan authority with launch-control issue #1719 and child chain #1720–#1727 — thread state: resolved
 
 ## PR GATE READINESS CHECKLIST
 - [x] Live PR check panel inspected
