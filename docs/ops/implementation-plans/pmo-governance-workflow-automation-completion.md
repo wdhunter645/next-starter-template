@@ -4,14 +4,14 @@ Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and revi
 Authority Level: Operational Plan
 Owns: Cursor task sequence, child-project boundaries, validation model, file-area expectations, and closeout rules for PMO Governance / Workflow Automation Completion
 Does Not Own: Runtime implementation before task issues, workflow code before explicit task authorization, CI script changes before explicit task authorization, issue creation before launch authorization, merge authority, unauthorized issue mutation
-Status: planning-ready
+Status: launch-control-ready
 project: pmo-governance-workflow-automation-completion
 Owner: Atlas
 Execution Mode: cursor-after-launch-authorization
-Source Issue: 1713
-Related Program Issue: pending-program-issue-after-launch
+Source Issue: 1719
+Related Program Issue: 1719
 Canonical Reference: /docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md
-Related Issues: #1713, #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1500, #1255, #1259, #1685, #1700
+Related Issues: #1719, #1720, #1721, #1722, #1723, #1724, #1725, #1726, #1727, #1713, #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1500, #1255, #1259, #1685, #1700
 Last Reviewed: 2026-06-17
 ---
 
@@ -154,6 +154,6 @@ Default stop condition: GitHub `READY FOR REVIEW`.
 
 This implementation plan is sufficient for future Cursor task issue creation after explicit launch authorization.
 
-Status: `planning-ready`.
+Status: `launch-control-ready`.
 
-Execution: blocked until Bill/Atlas launch the program.
+Execution: blocked until Bill/Atlas explicitly authorize Cursor to begin #1720.
