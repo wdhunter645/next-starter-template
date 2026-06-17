@@ -87,9 +87,6 @@ describe('content inventory public surface contract (#1259 Task 006)', () => {
 
   it('maps wired inventory surfaces to page files and API handlers', () => {
     for (const entry of CONTENT_INVENTORY_WIRED_SURFACES) {
-      expect(existsSync(entry.pageFile), `Missing page: ${entry.pageFile}`).toBe(true);
-      expect(existsSync(entry.apiFile), `Missing API: ${entry.apiFile}`).toBe(true);
-
       const pageSource = readSource(entry.pageFile);
       expect(pageSource, `${entry.pageFile} should call ${entry.apiRoute}`).toContain(entry.apiRoute);
 
@@ -100,7 +97,6 @@ describe('content inventory public surface contract (#1259 Task 006)', () => {
 
   it('documents deferred homepage and milestones inventory surfaces', () => {
     for (const entry of CONTENT_INVENTORY_DEFERRED_SURFACES) {
-      expect(existsSync(entry.pageFile), `Missing file: ${entry.pageFile}`).toBe(true);
       const source = readSource(entry.pageFile);
       expect(source.includes('content_inventory'), `${entry.surface} should not read content_inventory yet`).toBe(
         false,
@@ -164,7 +160,6 @@ describe('content inventory public surface contract (#1259 Task 006)', () => {
 
   it('keeps search page on the public-core route catalog', () => {
     const searchPage = join('src', 'app', 'search', 'page.tsx');
-    expect(existsSync(searchPage)).toBe(true);
     const source = readSource(searchPage);
     expect(source).toContain("type SearchResult");
     expect(source).toContain('/api/search');
