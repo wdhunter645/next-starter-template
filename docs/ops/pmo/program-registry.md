@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: PMO program issue registry, current program issue assignments, launch-state control, child-project mapping, and authoritative execution chain for LGFC orchestrated work
 Does Not Own: PMO v3 top-level policy, implementation plan task definitions, workflow code, runtime behavior, product design, or unauthorized GitHub issue changes
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-Related Issues: #1411, #1379, #1255, #1259, #1500, #1678, #1685, #1696, #1700, #1713
+Related Issues: #1411, #1379, #1255, #1259, #1500, #1678, #1685, #1696, #1700, #1713, #1719, #1736, #1738, #1739, #1740, #1741, #1742, #1743, #1744, #1745, #1746
 Last Reviewed: 2026-06-17
 ---
 
@@ -31,8 +31,11 @@ unauthorized GitHub issue changes.
 - issue #1500 (CI Post-Merge Closeout Reliability) is **closed complete**.
 - Priority #1 Website Completion / Fan Club Product Buildout is parked as program issue #1685 with child issues #1686 through #1694; it remains blocked until Atlas/Bill explicitly launch or reprioritize it.
 - Priority #2 Fundraiser / Charity Campaign Operations Buildout has program issue #1700 with child task issues #1701 through #1708. Task 001 assignment guidance is posted on #1701. The program remains queued behind Program #1255/#1259 and parked Priority #1 unless Bill/Atlas explicitly reprioritize.
-- Priority #3 PMO Governance / Workflow Automation Completion has planning source issue #1713 and documentation package paths `docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md` and `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md`. It remains blocked from execution until launch-control issues are explicitly authorized.
+- Priority #3 PMO Governance / Workflow Automation Completion has program issue #1719 with child issues #1720 through #1727. PMO sync PR #1733 is currently draft/blocked and must not be treated as ready until review/CI are clean.
+- Priority #4 Lou Gehrig Content Collection / Research Pipeline Expansion has program issue #1738 with child issues #1739 through #1746. It remains blocked from execution until explicit queue authorization.
 - issue #1696 completed the Priority #2 documentation package and is historical source evidence after merge of #1697.
+- issue #1713 completed the Priority #3 planning documentation.
+- issue #1736 is the Priority #4 planning/source issue.
 - issue #1411 is completed — a planning/control artifact, not an open blocked program.
 - GitHub issue titles use `Program: <name>`. Documentation references use `Program #<issue-number> — <name>`.
 
@@ -43,6 +46,7 @@ unauthorized GitHub issue changes.
 - Priority #1 can be launched as a PMO v3 program when Bill/Atlas explicitly authorize it and update the parked program issue state.
 - Priority #2 is ready for launch review because the master program issue, child task issues, predecessor/successor chain, and Task 001 assignment guidance exist.
 - Priority #3 can become launch-control ready after its planning package is merged and Bill/Atlas explicitly authorize master/child issue creation.
+- Priority #4 can become launch-control ready after its planning package merges and Bill/Atlas explicitly authorize queue continuation.
 
 Program issue numbers identify programs going forward. Future programs should use
 `Program #<issue-number> — <name>` in documentation. GitHub issue titles use
@@ -97,7 +101,8 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 | --- | ---: | --- | --- | --- | --- |
 | Website Completion / Fan Club Product Buildout | 1 | Parked; implementation-ready after launch authorization | Blocked until Atlas/Bill explicitly launch or reprioritize the parked program issue #1685 | `docs/ops/pmo/website-completion-fan-club-product-buildout-readiness.md` | `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md` |
 | Fundraiser / Charity Campaign Operations Buildout | 2 | Launch-control ready; queued behind active/parked higher-priority programs | Blocked until Atlas/Bill explicitly authorize Cursor to begin #1701 | `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md` | `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md` |
-| PMO Governance / Workflow Automation Completion | 3 | Planning-ready; blocked from execution | Blocked until planning package is merged and Atlas/Bill explicitly authorize launch-control issue creation | `docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md` | `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md` |
+| PMO Governance / Workflow Automation Completion | 3 | Launch-control issues created; docs sync pending in draft #1733 | Blocked until docs sync is clean and Atlas/Bill authorize Cursor to begin #1720 | `docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md` | `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md` |
+| Lou Gehrig Content Collection / Research Pipeline Expansion | 4 | Launch-control ready / queued after this package merges | Blocked until Atlas/Bill authorize Cursor to begin #1739 | `docs/ops/pmo/lou-gehrig-content-collection-expansion-readiness.md` | `docs/ops/implementation-plans/lou-gehrig-content-collection-expansion.md` |
 
 ### Priority #1 candidate child projects
 
@@ -135,6 +140,25 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 | Post-Merge Closeout Evidence Stabilization | Included in Priority #3 only for remaining gaps after #1500 | Tasks 006, 007, 008 |
 | PMO Backlog Promotion and Program #1411 Launch Gate | Included in Priority #3 | Tasks 001, 007, 008 |
 
+### Priority #4 child issue chain
+
+| Task | Issue | Title | Predecessor | Successor |
+| ---: | ---: | --- | --- | --- |
+| 001 | #1739 | Source discovery and intake inventory | #1738 launch authorization | #1740 |
+| 002 | #1740 | Research queue and triage workflow | #1739 | #1741 |
+| 003 | #1741 | Source credit and provenance model | #1739 and #1740 | #1742 |
+| 004 | #1742 | Rights copyright privacy and publication review model | #1741 | #1743 |
+| 005 | #1743 | Editorial conversion and website-ready content workflow | #1740 through #1742 | #1744 |
+| 006 | #1744 | Admin and data-surface boundary review | #1739 through #1743 | #1745 |
+| 007 | #1745 | AI-assisted research guardrails and automation candidate review | #1739 through #1744 | #1746 |
+| 008 | #1746 | Program validation and operator handoff | #1739 through #1745 | terminal |
+
+## Project 11 — Admin Page and Tools Design Readiness
+
+Project 11 is an admin/tools review and design-readiness audit. It should inventory the existing admin page and tools, reconcile what Program #1255/#1258 already built, classify active/diagnostic/retired tools, identify token UX and failure-state gaps, and produce a PMO v3 readiness package before any admin implementation work.
+
+Project 11 remains ahead of Priority #4 in backlog order, but Priority #4 may be launch-control ready while still blocked behind higher-priority queue decisions.
+
 ## Staged / blocked program issues
 
 | Program issue | Name | Historical label | Status | Launch rule |
@@ -144,6 +168,8 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 | #1696 | Fundraiser / Charity Campaign Operations Buildout documentation package | none | Completed planning source issue | Planning documentation completed by #1697; does not itself launch implementation. |
 | #1700 | Fundraiser / Charity Campaign Operations Buildout | none | Launch-control ready | Child issues #1701–#1708 exist; Task 001 assignment guidance is posted on #1701; execution waits for explicit queue authorization. |
 | #1713 | PMO Governance / Workflow Automation Completion documentation package | none | Planning package source issue | Planning documentation only; does not launch implementation or create child issues. |
+| #1719 | PMO Governance / Workflow Automation Completion | none | Launch-control issues created; docs sync pending | Child issues #1720–#1727 exist; execution waits for docs sync and explicit queue authorization. |
+| #1738 | Lou Gehrig Content Collection / Research Pipeline Expansion | none | Launch-control ready / queued after this package merges | Child issues #1739–#1746 exist; execution waits for explicit queue authorization. |
 
 ## Historical program evidence
 
@@ -164,7 +190,7 @@ Completed program cycles remain audit evidence and may be cited for historical c
 | Is a program issue | No |
 | Executable by itself | No |
 | Review cadence | Reviewed as a primary agenda item during PMO meetings |
-| Current top candidate | Website Completion / Fan Club Product Buildout remains parked; Fundraiser / Charity Campaign Operations Buildout is launch-control ready as #1700–#1708; PMO Governance / Workflow Automation Completion is planning-ready under #1713 |
+| Current top candidate | Website Completion / Fan Club Product Buildout remains parked; Fundraiser / Charity Campaign Operations Buildout is launch-control ready as #1700–#1708; PMO Governance / Workflow Automation Completion is launch-control ready as #1719–#1727; Lou Gehrig Content Collection / Research Pipeline Expansion is launch-control ready as #1738–#1746 after this package merges |
 
 ## Program #1411 — PMO Automation and Agent Workflow Control
 
@@ -211,10 +237,10 @@ Completed program cycles remain audit evidence and may be cited for historical c
 | Primary plan | `docs/how-to/website/website-implementation-and-content-operations-plan.md` |
 | Ops admin plan | `docs/ops/implementation-plans/website-operations-admin.md` |
 | QA plan | `docs/ops/implementation-plans/website-qa-production-validation.md` |
-| Priority | Complete `#1259` Phase 4 Tasks 008–009 (per-task authorization) → program closeout |
+| Priority | Program #1255 terminal closeout after `#1259` Phase 4 completion |
 | Parallel program note | `#1500` closed complete — ran in parallel with `#1255`; not a `#1259` task dependency |
 
-Program #1255 remains controlled by its own active source issues and Cursor execution path. Priority #1, Priority #2, and Priority #3 planning documentation must not change Program #1255 issue state, labels, or active assignment without explicit authorization.
+Program #1255 remains controlled by its own active source issues and Cursor execution path. Priority #1, Priority #2, Priority #3, and Priority #4 planning documentation must not change Program #1255 issue state, labels, or active assignment without explicit authorization.
 
 ## Related References
 
@@ -228,6 +254,12 @@ Program #1255 remains controlled by its own active source issues and Cursor exec
 - Priority #2 task issues: `#1701` through `#1708`
 - Priority #3 readiness: `/docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md`
 - Priority #3 implementation plan: `/docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md`
+- Priority #3 program: `#1719`
+- Priority #3 task issues: `#1720` through `#1727`
+- Priority #4 readiness: `/docs/ops/pmo/lou-gehrig-content-collection-expansion-readiness.md`
+- Priority #4 implementation plan: `/docs/ops/implementation-plans/lou-gehrig-content-collection-expansion.md`
+- Priority #4 program: `#1738`
+- Priority #4 task issues: `#1739` through `#1746`
 - Cursor execution contract: `/docs/reference/pmo/lgfc-cursor-execution-contract.md`
 - PMO critical path: `/docs/ops/pmo/critical-path.md`
 - Workflow Automation authority: `/docs/ops/pmo/workflow-automation.md`
