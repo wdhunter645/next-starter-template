@@ -347,7 +347,8 @@ Operator merged `#1728` before `#1729` (number order); final `main` state is cor
 Task 007 authorized after Task 006 tracker sync and `#1259` sign-off. Task 007 deliverable
 merged PR `#1737` (`552fb8f`); H-011 bounded deferral with operator sign-off recorded.
 Task 008 authorized 2026-06-17; deliverable merged PR `#1753` (`678699e`). Task 009
-deliverable merged PR `#1751` (`fd17af2`) before Task 008 merge (queue order preserved on
-`main`). Post-merge closeout on `#1751` and `#1753` reported `closeout_blocker_declared`
-from CI auto-repair scaffold (`Status: BLOCKED`); erroneous `status:failed` on `#1259` is
-workflow noise — remove stale labels; keep `status:active`; **do not close** `#1259`.
+deliverable merged PR `#1751` (`fd17af2`) before Task 008 (operator-authorized out-of-order
+execution; both deliverables on `main` before Phase 4 closeout). Post-merge closeout on
+`#1751` and `#1753` reported `closeout_blocker_declared` from CI auto-repair scaffold
+(`Status: BLOCKED`); erroneous `status:failed` on `#1259` is workflow noise — remove stale
+labels; keep `status:active`; **do not close** `#1259`.
