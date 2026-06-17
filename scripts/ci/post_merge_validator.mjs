@@ -18,6 +18,7 @@ import {
 export { isPermittedClosedSourceIssueFollowup };
 import { evaluateReviewerCommentDisposition } from './reviewer_comment_disposition.mjs';
 import { defaultCloseoutBodyPath } from './post_merge_closeout_trigger.mjs';
+import { AUTO_REPAIR_END, AUTO_REPAIR_START } from './pr_body_auto_repair.mjs';
 
 export { linkedIssueNumber, sourceIssueAccounting };
 
@@ -36,6 +37,15 @@ export const ADVISORY_BODY_SECTIONS = [
 ];
 
 const FORBIDDEN_PLACEHOLDER_PATTERN = /\b(TODO|TBD|placeholder)\b/i;
+
+function escapeRegExp(value) {
+	return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+export function stripAutoRepairBlock(body = '') {
+	const blockPattern = new RegExp(`${escapeRegExp(AUTO_REPAIR_START)}[\\s\\S]*?${escapeRegExp(AUTO_REPAIR_END)}`, 'm');
+	return String(body || '').replace(blockPattern, '');
+}
 
 const TRUSTED_REVIEWER_PATTERN = /chatgpt-codex-connector|gemini-code-assist|copilot-pull-request-reviewer|cubic-dev-ai/i;
 const HIGH_SEVERITY_PATTERN =
@@ -150,8 +160,9 @@ export function alternateProgramLaneFailures(sourceAccounting = {}) {
 
 export function preMergeReadinessBodyFailures(body = '') {
 	const failures = [];
+	const bodyWithoutAutoRepair = stripAutoRepairBlock(body);
 
-	if (FORBIDDEN_PLACEHOLDER_PATTERN.test(body)) {
+	if (FORBIDDEN_PLACEHOLDER_PATTERN.test(bodyWithoutAutoRepair)) {
 		failures.push({ code: 'forbidden_placeholder_token', message: 'PR body contains a forbidden placeholder token.' });
 	}
 

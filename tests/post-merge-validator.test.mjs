@@ -13,6 +13,7 @@ import {
 	resolvePrNumber,
 	reviewerFindings,
 	sourceIssueAccounting,
+	stripAutoRepairBlock,
 	workflowFailures,
 } from '../scripts/ci/post_merge_validator.mjs';
 import { remediationBody, remediationTitle } from '../scripts/ci/post_merge_remediation_issue.mjs';
@@ -79,6 +80,21 @@ describe('post-merge metadata validation', () => {
 		expect(failures).toContainEqual(expect.objectContaining({
 			code: 'missing_required_section',
 			message: expect.stringContaining('## CHANGE SUMMARY'),
+		}));
+	});
+
+	it('ignores forbidden placeholder tokens inside the CI auto-repair evidence block', () => {
+		const body = [
+			baseBody,
+			'',
+			'<!-- pr-body-auto-repair:start -->',
+			'- auto-repair placeholder — agent must replace with exact change summary',
+			'<!-- pr-body-auto-repair:end -->',
+		].join('\n');
+
+		expect(stripAutoRepairBlock(body)).not.toMatch(/auto-repair:start/);
+		expect(preMergeReadinessBodyFailures(body)).not.toContainEqual(expect.objectContaining({
+			code: 'forbidden_placeholder_token',
 		}));
 	});
 
