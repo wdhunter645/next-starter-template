@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: PMO program issue registry, current program issue assignments, launch-state control, child-project mapping, and authoritative execution chain for LGFC orchestrated work
 Does Not Own: PMO v3 top-level policy, implementation plan task definitions, workflow code, runtime behavior, product design, or unauthorized GitHub issue mutation
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1256, #1258, #1259, #1501, #1500, #1678
-Last Reviewed: 2026-06-16
+Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1256, #1258, #1259, #1501, #1500, #1678, #1685, #1696
+Last Reviewed: 2026-06-17
 ---
 
 # PMO Program Issue Registry
@@ -29,7 +29,8 @@ unauthorized GitHub issue mutation.
 - Program #1255 is the active execution program. Cursor owns completion of its remaining work.
 - Child project #1259 is open and active for Phase 4 execution; Tasks 001–004 are complete; Task 005+ is held pending per-task authorization.
 - issue #1500 (CI Post-Merge Closeout Reliability) is **closed complete**.
-- Priority #1 Website Completion / Fan Club Product Buildout is documented as the next-program candidate for Cursor assignment after explicit launch authorization. Planning package: `docs/ops/pmo/website-completion-fan-club-product-buildout-readiness.md`. Implementation plan: `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md`.
+- Priority #1 Website Completion / Fan Club Product Buildout is parked as program issue #1685 with child issues #1686 through #1694; it remains blocked until Atlas/Bill explicitly launch or reprioritize it.
+- Priority #2 Fundraiser / Charity Campaign Operations Buildout now has a planning-ready documentation package: `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md`. Implementation plan: `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md`. It remains blocked from execution.
 - issue #1411 is completed — a planning/control artifact, not an open blocked program.
 - GitHub issue titles use `Program: <name>`. Documentation references use `Program #<issue-number> — <name>`.
 
@@ -39,7 +40,8 @@ unauthorized GitHub issue mutation.
   program issue with non-contradictory status language.
 - Child projects under each program are clearly subordinate to their umbrella
   program issue.
-- Priority #1 can be launched as a PMO v3 program when Bill/Atlas explicitly authorize it and create or update the relevant program issue.
+- Priority #1 can be launched as a PMO v3 program when Bill/Atlas explicitly authorize it and update the parked program issue state.
+- Priority #2 can become a PMO v3 program after Bill/Atlas explicitly authorize launch and create or update the relevant program issue.
 
 Program issue numbers identify programs going forward. Future programs should use
 `Program #<issue-number> — <name>` in documentation. GitHub issue titles use
@@ -92,8 +94,8 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 
 | Candidate | Backlog rank | Status | Launch rule | Planning package | Implementation plan |
 | --- | ---: | --- | --- | --- | --- |
-| Website Completion / Fan Club Product Buildout | 1 | Implementation-ready after launch authorization | Blocked until Atlas/Bill explicitly launch it and create/update the program issue | `docs/ops/pmo/website-completion-fan-club-product-buildout-readiness.md` | `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md` |
-| Fundraiser / Charity Campaign Operations Buildout | 2 | Project draft | Blocked until production-ready documentation and explicit launch authorization exist | pending | pending |
+| Website Completion / Fan Club Product Buildout | 1 | Parked; implementation-ready after launch authorization | Blocked until Atlas/Bill explicitly launch or reprioritize the parked program issue #1685 | `docs/ops/pmo/website-completion-fan-club-product-buildout-readiness.md` | `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md` |
+| Fundraiser / Charity Campaign Operations Buildout | 2 | Planning-ready; blocked from execution | Blocked until production-ready launch authorization exists and child implementation issues are explicitly created | `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md` | `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md` |
 
 ### Priority #1 candidate child projects
 
@@ -105,11 +107,24 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 | Content collection strategy | Subordinated to content management as intake/source-credit workflow | Tasks 004, 005, 008 |
 | Website design review / as-built versus LGFC vision | First guardrail task | Tasks 001 and 009 |
 
+### Priority #2 candidate child projects
+
+| Child project | PMO decision | Implementation-plan coverage |
+| --- | --- | --- |
+| Fundraiser operations playbook | Included in Priority #2 | Tasks 001, 007, 008 |
+| Givebutter integration model | Included in Priority #2; external/vendor configuration remains out of scope | Tasks 002, 004, 006, 007 |
+| Leaderboard / winner system | Included in Priority #2; deterministic and privacy-safe | Tasks 003, 006, 007 |
+| Homepage spotlight / campaign surface | Included in Priority #2; must fail closed | Tasks 004, 006, 007 |
+| Sponsor / donor recognition | Included in Priority #2; merges rank 15 duplicate/version scope for fundraiser context | Tasks 005, 006, 007 |
+| Testing package | Required before launch | Tasks 007 and 008 |
+
 ## Staged / blocked program issues
 
 | Program issue | Name | Historical label | Status | Launch rule |
 | --- | --- | --- | --- | --- |
 | #1411 | PMO Automation and Agent Workflow Control | Program 1 | Completed planning artifact (issue closed, status:complete) | issue #1411 is not an open blocked program. New execution requires a current open source issue. PMO automation execution remains blocked until Atlas/Bill explicitly launch a new cycle. |
+| #1685 | Website Completion / Fan Club Product Buildout | none | Parked future program issue | Remains blocked until Atlas/Bill explicitly authorize launch or reprioritization. |
+| #1696 | Fundraiser / Charity Campaign Operations Buildout documentation package | none | Planning package source issue | Planning/documentation only; does not launch implementation or child issues. |
 
 ## Historical program evidence
 
@@ -130,7 +145,7 @@ Completed program cycles remain audit evidence and may be cited for historical c
 | Is a program issue | No |
 | Executable by itself | No |
 | Review cadence | Reviewed as a primary agenda item during PMO meetings |
-| Current top candidate | Website Completion / Fan Club Product Buildout |
+| Current top candidate | Website Completion / Fan Club Product Buildout remains parked; Fundraiser / Charity Campaign Operations Buildout is documented as the next prepared package after active queue resolution |
 
 ## Program #1411 — PMO Automation and Agent Workflow Control
 
@@ -183,7 +198,7 @@ requires a current open source issue and explicit launch authorization.
 | Priority | Complete `#1259` Phase 4 Tasks 005–009 (per-task authorization) → program closeout |
 | Parallel program note | `#1500` closed complete — ran in parallel with `#1255`; not a `#1259` task dependency |
 
-Program #1255 remains controlled by its own active source issues and Cursor execution path. Priority #1 planning documentation must not mutate Program #1255 issues, relabel Program #1255 issues, close Program #1255 issues, or reinterpret Cursor's active assignment without explicit authorization.
+Program #1255 remains controlled by its own active source issues and Cursor execution path. Priority #1 and Priority #2 planning documentation must not mutate Program #1255 issues, relabel Program #1255 issues, close Program #1255 issues, or reinterpret Cursor's active assignment without explicit authorization.
 
 ## Related References
 
@@ -191,6 +206,8 @@ Program #1255 remains controlled by its own active source issues and Cursor exec
 - PMO Backlog: `/docs/ops/pmo/pmo-backlog.md`
 - Priority #1 readiness: `/docs/ops/pmo/website-completion-fan-club-product-buildout-readiness.md`
 - Priority #1 implementation plan: `/docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md`
+- Priority #2 readiness: `/docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md`
+- Priority #2 implementation plan: `/docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md`
 - Cursor execution contract: `/docs/reference/pmo/lgfc-cursor-execution-contract.md`
 - PMO critical path: `/docs/ops/pmo/critical-path.md`
 - Workflow Automation authority: `/docs/ops/pmo/workflow-automation.md`
