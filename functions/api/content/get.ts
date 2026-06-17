@@ -35,13 +35,15 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       },
     });
 
-    // Write to edge cache as "last known good" (fire-and-forget)
-    context.waitUntil(cache.put(cacheKey, response.clone()));
+    // Write to edge cache as "last known good" when the Cache API is available
+    if (cache) {
+      context.waitUntil(cache.put(cacheKey, response.clone()));
+    }
 
     return response;
   } catch (err: any) {
-    // D1 failed - try edge cache fallback
-    const cached = await cache.match(cacheKey);
+    // D1 failed - try edge cache fallback when the Cache API is available
+    const cached = cache ? await cache.match(cacheKey) : null;
     if (cached) {
       // Return cached "last known good" response with source header
       const cachedClone = cached.clone();
