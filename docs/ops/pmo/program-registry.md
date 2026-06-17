@@ -27,7 +27,7 @@ unauthorized GitHub issue mutation.
 ## Current known truth
 
 - Program #1255 is the active execution program. Cursor owns completion of its remaining work.
-- Child project #1259 is open and active for Phase 4 execution; Tasks 001–004 are complete; Task 005+ is held pending per-task authorization.
+- Child project #1259 is open and active for Phase 4 execution; Tasks 001–005 are complete; Task 006+ is held pending per-task authorization.
 - issue #1500 (CI Post-Merge Closeout Reliability) is **closed complete**.
 - Priority #1 Website Completion / Fan Club Product Buildout is parked as program issue #1685 with child issues #1686 through #1694; it remains blocked until Atlas/Bill explicitly launch or reprioritize it.
 - Priority #2 Fundraiser / Charity Campaign Operations Buildout now has a planning-ready documentation package: `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md`. Implementation plan: `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md`. It remains blocked from execution.
@@ -86,7 +86,7 @@ PMO meeting issue → PMO Backlog review/update → program issue → project / 
 | --- | --- | --- |
 | #1256 Content Strategy / Editorial Inventory | **Closed complete** | Tasks 001–009 merged and verified |
 | #1258 Website Operations Admin | **Closed complete** | Phase 4 Tasks 001–013; terminal PR `#1652` |
-| #1259 Website QA / Production Validation | **Active — Phase 4** | Tasks 001–004 complete; Task 005 next; keep issue open |
+| #1259 Website QA / Production Validation | **Active — Phase 4** | Tasks 001–005 complete; Task 006 next; keep issue open |
 
 ## Proposed / future program issues
 
@@ -195,7 +195,7 @@ requires a current open source issue and explicit launch authorization.
 | Primary plan | `docs/how-to/website/website-implementation-and-content-operations-plan.md` |
 | Ops admin plan | `docs/ops/implementation-plans/website-operations-admin.md` |
 | QA plan | `docs/ops/implementation-plans/website-qa-production-validation.md` |
-| Priority | Complete `#1259` Phase 4 Tasks 005–009 (per-task authorization) → program closeout |
+| Priority | Complete `#1259` Phase 4 Tasks 006–009 (per-task authorization) → program closeout |
 | Parallel program note | `#1500` closed complete — ran in parallel with `#1255`; not a `#1259` task dependency |
 
 Program #1255 remains controlled by its own active source issues and Cursor execution path. Priority #1 and Priority #2 planning documentation must not mutate Program #1255 issues, relabel Program #1255 issues, close Program #1255 issues, or reinterpret Cursor's active assignment without explicit authorization.

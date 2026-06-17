@@ -9,7 +9,7 @@ Task 001 complete: docs/ops/reports/website-qa-production-validation-as-built-ga
 Task 002 complete: docs/ops/reports/website-qa-production-validation-route-nav-validation.md (PR `#1662` merged `2e811a6`; issue `#1661` closed)
 Task 003 complete: docs/ops/reports/website-qa-production-validation-auth-state-validation.md (PR `#1667` merged `0347b27`; issue `#1666` closed)
 Task 004 complete: docs/ops/reports/website-qa-production-validation-mobile-responsive-validation.md (PR `#1672` merged `5e10f72`)
-Task 005 complete: docs/ops/reports/website-qa-production-validation-d1-b2-read-path-validation.md (PR pending)
+Task 005 complete: docs/ops/reports/website-qa-production-validation-d1-b2-read-path-validation.md (PR `#1684` merged `8893591`)
 Task 006 next: Content inventory public surface validation — held pending authorization
 Project: website-qa-production-validation
 Owner: Atlas
@@ -36,9 +36,9 @@ closed). Task 002 route/nav validation is **complete** (PR `#1662` merged `2e811
 issue `#1661` closed). Task 003 auth-state validation is **complete** (PR `#1667`
 merged `0347b27`; issue `#1666` closed). Task 004 mobile/responsive validation is
 **complete** (PR `#1672` merged `5e10f72`). Task 005 D1/B2 public read-path
-verification is **complete** (PR pending). Child project `#1259` must remain **open**
-through Phase 4 (operator-approved reopen 2026-06-16; GitHub may show closed until
-applied). Task 006 content inventory public surface validation is **next** (held
+verification is **complete** (PR `#1684` merged `8893591`). Child project `#1259` must remain **open**
+through Phase 4 (operator-approved reopen 2026-06-17 after post-merge closeout miss; CI fix PR `#1699`
+merged `58508f6`). Task 006 content inventory public surface validation is **next** (held
 pending authorization). Predecessor `#1258` is **closed complete** (terminal PR `#1652`).
 Tasks 007–009 require explicit per-task Atlas/Bill authorization.
 
@@ -60,7 +60,7 @@ remains held unless explicitly authorized.
 | Task 002 route/nav validation | `docs/ops/reports/website-qa-production-validation-route-nav-validation.md` (PR `#1662`) |
 | Task 003 auth-state validation | `docs/ops/reports/website-qa-production-validation-auth-state-validation.md` (PR `#1667` / `0347b27`) |
 | Task 004 mobile/responsive validation | `docs/ops/reports/website-qa-production-validation-mobile-responsive-validation.md` (PR `#1672`) |
-| Task 005 D1/B2 read-path validation | `docs/ops/reports/website-qa-production-validation-d1-b2-read-path-validation.md` (PR pending) |
+| Task 005 D1/B2 read-path validation | `docs/ops/reports/website-qa-production-validation-d1-b2-read-path-validation.md` (PR `#1684` / `8893591`) |
 | Ops admin handoff | `docs/how-to/website/admin-operations-overview.md` |
 | Content inventory authority | `#1256` / `docs/reference/website/content-inventory-model.md` |
 
@@ -322,11 +322,13 @@ Plan status is `phase-4-active` (not `production-ready`).
 Phase 3 planning exit is **complete** (planning PR `#1656` merged `b0cc0da`). Tasks 001
 and 002 are **complete** (PRs `#1657` / `#1662`; issues `#1659` / `#1661` closed).
 Task 004 is **complete** (PR `#1672` merged `5e10f72`). Task 005 is **complete**
-(PR pending). Child project `#1259` must remain **open** through Phase 4
-(operator-approved reopen 2026-06-16). Task 006 is **next** (held pending
+(PR `#1684` merged `8893591`). Child project `#1259` must remain **open** through Phase 4
+(operator-approved reopen 2026-06-17; umbrella closeout fix PR `#1699` merged `58508f6`). Task 006 is **next** (held pending
 authorization). Tasks 007–009 require explicit per-task Atlas/Bill authorization.
 
-## Issue hygiene (complete 2026-06-16)
+## Issue hygiene (complete 2026-06-17)
 
 Operator applied GitHub cleanup: `#1259` **open** with `status:active`; `#1666`
-**closed** complete (Task 003 via PR `#1667`).
+**closed** complete (Task 003 via PR `#1667`). After Task 005 PR `#1684` merge,
+post-merge automation incorrectly closed `#1259`; operator reopened 2026-06-17.
+Umbrella closeout guard shipped in PR `#1699` (`58508f6`).
