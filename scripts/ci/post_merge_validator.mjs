@@ -42,9 +42,10 @@ function escapeRegExp(value) {
 	return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+const AUTO_REPAIR_BLOCK_PATTERN = new RegExp(`${escapeRegExp(AUTO_REPAIR_START)}[\\s\\S]*?${escapeRegExp(AUTO_REPAIR_END)}`);
+
 export function stripAutoRepairBlock(body = '') {
-	const blockPattern = new RegExp(`${escapeRegExp(AUTO_REPAIR_START)}[\\s\\S]*?${escapeRegExp(AUTO_REPAIR_END)}`, 'm');
-	return String(body || '').replace(blockPattern, '');
+	return String(body || '').replace(AUTO_REPAIR_BLOCK_PATTERN, '');
 }
 
 const TRUSTED_REVIEWER_PATTERN = /chatgpt-codex-connector|gemini-code-assist|copilot-pull-request-reviewer|cubic-dev-ai/i;
