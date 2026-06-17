@@ -44,9 +44,9 @@ This document does not own:
 - Child project `#1258` (Website Operations Admin) is **closed complete** (terminal
   PR `#1652`).
 - Child project `#1259` (Website QA / Production Validation) is **open and active
-  for Phase 4 execution** — Tasks 001–004 complete; Task 005+ held pending per-task
+  for Phase 4 execution** — Tasks 001–005 complete; Task 006+ held pending per-task
   authorization. Child project `#1259` must remain open through Phase 4
-  (operator-approved reopen 2026-06-16). Implementation plan:
+  (operator-approved reopen 2026-06-17; umbrella closeout fix PR `#1699`). Implementation plan:
   `docs/ops/implementation-plans/website-qa-production-validation.md`.
 - issue `#1500` (CI Post-Merge Closeout Reliability) is **closed complete** (Tasks
   001–005). Originally queued after Program #1255; executed in parallel when
@@ -157,7 +157,7 @@ Approval:
 | --- | --- | --- |
 | `#1256` Content Strategy / Editorial Inventory | `docs/ops/implementation-plans/website-content-strategy-editorial-inventory.md` | Closed complete |
 | `#1258` Website Operations Admin | `docs/ops/implementation-plans/website-operations-admin.md` | Closed complete |
-| `#1259` Website QA / Production Validation | `docs/ops/implementation-plans/website-qa-production-validation.md` | Phase 4 active — Tasks 001–004 complete |
+| `#1259` Website QA / Production Validation | `docs/ops/implementation-plans/website-qa-production-validation.md` | Phase 4 active — Tasks 001–005 complete |
 
 ### Issue-Level Fields (Required for Queue Tasks)
 
