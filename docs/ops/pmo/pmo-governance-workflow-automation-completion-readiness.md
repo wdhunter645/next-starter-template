@@ -66,9 +66,9 @@ The intended final state before implementation launch is:
 | --- | --- |
 | Candidate program name | PMO Governance / Workflow Automation Completion |
 | PMO source | PMO Backlog ranks 3–10 |
-| Source issue | #1713 |
+| Source issue | #1719 |
 | Execution agent after launch | Cursor, with human/trusted reviewer gates where protected governance/CI files are touched |
-| Current readiness | Planning-ready; blocked from implementation until Atlas/Bill launch |
+| Current readiness | Launch-control ready; queued behind Program #1255/#1259, parked Priority #1, and Priority #2 |
 | Primary implementation plan | `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md` |
 | Primary governance authority | `docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` |
 | Product surface | PMO governance, workflow automation design, queue/closeout controls, PR readiness, and execution contracts |
@@ -134,6 +134,6 @@ Before Cursor receives implementation assignment for this program:
 
 ## Readiness conclusion
 
-Priority #3 is now documented as a future PMO v3 program candidate.
+Priority #3 is documented as a launch-control-ready PMO v3 program candidate with master issue #1719 and child task issues #1720 through #1727.
 
-It is **planning-ready**, not executable. It becomes launch-control ready only after Bill/Atlas explicitly launch it and authorize child task issue creation from `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md`.
+It is **launch-control ready**, not executable. Cursor may begin only after Bill/Atlas explicitly authorize Task 001 on #1720.
