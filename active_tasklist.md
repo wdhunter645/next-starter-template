@@ -15,7 +15,7 @@ Use this file only as an optional, human-readable snapshot.
 | Item | State | Notes |
 | --- | --- | --- |
 | `#1255` | `status:active` | Umbrella program — Website Implementation and Content Operations (Cursor) |
-| `#1259` | `status:active` (open) | **Phase 4 active** — Tasks 001–007 complete; Task 008 next (held) |
+| `#1259` | `status:active` (open) | **Phase 4 complete** — Tasks 001–009 merged; `#1259` open pending `#1255` closeout |
 
 ## Portfolio note (2026-06-16)
 
