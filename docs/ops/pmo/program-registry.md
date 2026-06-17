@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: PMO program issue registry, current program issue assignments, launch-state control, child-project mapping, and authoritative execution chain for LGFC orchestrated work
 Does Not Own: PMO v3 top-level policy, implementation plan task definitions, workflow code, runtime behavior, product design, or unauthorized GitHub issue mutation
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1256, #1258, #1259, #1501, #1500
+Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1256, #1258, #1259, #1501, #1500, #1678
 Last Reviewed: 2026-06-16
 ---
 
@@ -26,30 +26,20 @@ unauthorized GitHub issue mutation.
 
 ## Current known truth
 
-- Program #1255 is the active execution program. Child project #1256 is
-  **closed complete** (Tasks 001–009).
-- Child project #1258 (Website Operations Admin) is **closed complete** (terminal
-  PR `#1652`).
-- Child project #1259 (Website QA / Production Validation) is **open and active for
-  Phase 4 execution** — reopened 2026-06-16 after premature planning closeout (PR
-  `#1656`); Tasks 001–004 complete; Task 005+ held pending per-task authorization.
-  Operator approved `#1259` reopen 2026-06-16 (GitHub may show closed until applied).
-  Plan: `docs/ops/implementation-plans/website-qa-production-validation.md`
-- issue #1411 is completed — a planning/control artifact, not an open blocked
-  program.
-- issue #1500 (CI Post-Merge Closeout Reliability) is **closed complete** (Tasks
-  001–005 merged). Originally queued after Program #1255; executed in parallel
-  when ChatGPT became capable of implementation (2026-06). Queue record:
-  `docs/ops/trackers/PROGRAM-1500-CLOSEOUT-STABILIZATION-IMPLEMENTATION-QUEUE.md`
-- GitHub issue titles use `Program: <name>`. Documentation references use
-  `Program #<issue-number> — <name>`.
+- Program #1255 is the active execution program. Cursor owns completion of its remaining work.
+- Child project #1259 is open and active for Phase 4 execution; Tasks 001–004 are complete; Task 005+ is held pending per-task authorization.
+- issue #1500 (CI Post-Merge Closeout Reliability) is **closed complete**.
+- Priority #1 Website Completion / Fan Club Product Buildout is documented as the next-program candidate for Cursor assignment after explicit launch authorization. Planning package: `docs/ops/pmo/website-completion-fan-club-product-buildout-readiness.md`. Implementation plan: `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md`.
+- issue #1411 is completed — a planning/control artifact, not an open blocked program.
+- GitHub issue titles use `Program: <name>`. Documentation references use `Program #<issue-number> — <name>`.
 
 ## Intended final state
 
 - One authoritative row per active, staged, blocked, completed, or historical
   program issue with non-contradictory status language.
-- Child projects under Program #1255 are clearly subordinate to the umbrella
+- Child projects under each program are clearly subordinate to their umbrella
   program issue.
+- Priority #1 can be launched as a PMO v3 program when Bill/Atlas explicitly authorize it and create or update the relevant program issue.
 
 Program issue numbers identify programs going forward. Future programs should use
 `Program #<issue-number> — <name>` in documentation. GitHub issue titles use
@@ -86,7 +76,7 @@ PMO meeting issue → PMO Backlog review/update → program issue → project / 
 
 | Program issue | Name | Historical label | Status | Notes |
 | --- | --- | --- | --- | --- |
-| #1255 | Website Implementation and Content Operations | Program 2 | Active | Child #1256 complete; #1258 complete; #1259 Phase 4 active |
+| #1255 | Website Implementation and Content Operations | Program 2 | Active | Cursor owns completion of remaining work |
 
 ### Program #1255 child projects
 
@@ -96,11 +86,30 @@ PMO meeting issue → PMO Backlog review/update → program issue → project / 
 | #1258 Website Operations Admin | **Closed complete** | Phase 4 Tasks 001–013; terminal PR `#1652` |
 | #1259 Website QA / Production Validation | **Active — Phase 4** | Tasks 001–004 complete; Task 005 next; keep issue open |
 
+## Proposed / future program issues
+
+Future programs are created as GitHub program issues when Atlas/Bill approve a new body of work. Each receives a program issue number as its durable identifier. There is no fixed program count or lane cap.
+
+| Candidate | Backlog rank | Status | Launch rule | Planning package | Implementation plan |
+| --- | ---: | --- | --- | --- | --- |
+| Website Completion / Fan Club Product Buildout | 1 | Implementation-ready after launch authorization | Blocked until Atlas/Bill explicitly launch it and create/update the program issue | `docs/ops/pmo/website-completion-fan-club-product-buildout-readiness.md` | `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md` |
+| Fundraiser / Charity Campaign Operations Buildout | 2 | Project draft | Blocked until production-ready documentation and explicit launch authorization exist | pending | pending |
+
+### Priority #1 candidate child projects
+
+| Child project | PMO decision | Implementation-plan coverage |
+| --- | --- | --- |
+| Fan Club page design | Included in Priority #1 | Tasks 001, 003, 007, 009 |
+| Website backend services | Included in Priority #1; reconcile before building | Tasks 001, 002, 005, 006 |
+| Content management strategy | Included in Priority #1 | Tasks 004, 005, 008, 009 |
+| Content collection strategy | Subordinated to content management as intake/source-credit workflow | Tasks 004, 005, 008 |
+| Website design review / as-built versus LGFC vision | First guardrail task | Tasks 001 and 009 |
+
 ## Staged / blocked program issues
 
 | Program issue | Name | Historical label | Status | Launch rule |
 | --- | --- | --- | --- | --- |
-| #1411 | PMO Automation and Agent Workflow Control | Program 1 | Completed planning artifact (issue closed, status:complete) | issue #1411 is not an open blocked program. New execution requires a current open source issue. PMO automation execution remains blocked until Program #1255 completes and Atlas/Bill explicitly launch the next cycle. |
+| #1411 | PMO Automation and Agent Workflow Control | Program 1 | Completed planning artifact (issue closed, status:complete) | issue #1411 is not an open blocked program. New execution requires a current open source issue. PMO automation execution remains blocked until Atlas/Bill explicitly launch a new cycle. |
 
 ## Historical program evidence
 
@@ -108,12 +117,9 @@ PMO meeting issue → PMO Backlog review/update → program issue → project / 
 | --- | --- | --- | --- |
 | #1335 | Phase 1 Wrap-Up | Historical | Prior Program 1 cycle; closed historical evidence only. Not a parent issue for Program #1411. |
 | #1379 | Ideas / future-projects source | Historical | Superseded by PMO Backlog documentation (`/docs/ops/pmo/pmo-backlog.md`). No standing PMO Backlog issue is required. |
+| #1500 | CI Post-Merge Closeout Reliability | Closed complete | Completed implementation cycle. Future CI maintenance requires a new source issue. |
 
 Completed program cycles remain audit evidence and may be cited for historical context. They do not automatically authorize new child issues, queue movement, or parent/child relationships for later cycles.
-
-## Proposed / future program issues
-
-Future programs are created as GitHub program issues when Atlas/Bill approve a new body of work. Each receives a program issue number as its durable identifier. There is no fixed program count or lane cap.
 
 ## PMO Backlog
 
@@ -124,12 +130,13 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 | Is a program issue | No |
 | Executable by itself | No |
 | Review cadence | Reviewed as a primary agenda item during PMO meetings |
+| Current top candidate | Website Completion / Fan Club Product Buildout |
 
 ## Program #1411 — PMO Automation and Agent Workflow Control
 
 | Field | Value |
 | --- | --- |
-| Status | **Completed planning artifact** (issue closed, `status:complete`) — not executable until Program #1255 is completed and signed off, a current open source issue exists, and Atlas/Bill explicitly launch the next cycle |
+| Status | **Completed planning artifact** (issue closed, `status:complete`) — not executable until a current open source issue exists and Atlas/Bill explicitly launch the next cycle |
 | Source issue | `#1411` |
 | Implementation plan | `docs/ops/implementation-plans/program-1-pmo-automation-agent-workflow-control.md` |
 | PMO v3 authority | `docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` |
@@ -167,22 +174,23 @@ requires a current open source issue and explicit launch authorization.
 
 | Field | Value |
 | --- | --- |
-| Status | **Active execution program** — #1256 complete; #1258 complete; #1259 Phase 4 active |
+| Status | **Active execution program** — Cursor owns completion of remaining work |
 | Historical label | Program 2 |
 | Source issue | `#1255` |
-| Active child project | `#1259` — Website QA / Production Validation (Phase 4; reopened 2026-06-16) |
 | Primary plan | `docs/how-to/website/website-implementation-and-content-operations-plan.md` |
 | Ops admin plan | `docs/ops/implementation-plans/website-operations-admin.md` |
 | QA plan | `docs/ops/implementation-plans/website-qa-production-validation.md` |
 | Priority | Complete `#1259` Phase 4 Tasks 005–009 (per-task authorization) → program closeout |
 | Parallel program note | `#1500` closed complete — ran in parallel with `#1255`; not a `#1259` task dependency |
 
-Program #1255 remains active while #1258 and #1259 complete. Program #1411 planning artifacts must not modify Program #1255 issue state, relabel Program #1255 issues, close Program #1255 issues, or reinterpret Program #1255 child project priority without explicit authorization.
+Program #1255 remains controlled by its own active source issues and Cursor execution path. Priority #1 planning documentation must not mutate Program #1255 issues, relabel Program #1255 issues, close Program #1255 issues, or reinterpret Cursor's active assignment without explicit authorization.
 
 ## Related References
 
 - PMO v3 operating model: `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`
 - PMO Backlog: `/docs/ops/pmo/pmo-backlog.md`
+- Priority #1 readiness: `/docs/ops/pmo/website-completion-fan-club-product-buildout-readiness.md`
+- Priority #1 implementation plan: `/docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md`
 - Cursor execution contract: `/docs/reference/pmo/lgfc-cursor-execution-contract.md`
 - PMO critical path: `/docs/ops/pmo/critical-path.md`
 - Workflow Automation authority: `/docs/ops/pmo/workflow-automation.md`
