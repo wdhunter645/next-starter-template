@@ -75,7 +75,7 @@ The intended final state before implementation launch is:
 
 ## Child-project readiness inventory
 
-| Priority item | Project name | Current state | Design authority | Implementation plan state | Readiness decision |
+| Priority item | project name | Current state | Design authority | Implementation plan state | Readiness decision |
 | --- | --- | --- | --- | --- | --- |
 | 2 | Fundraiser / Charity Campaign Operations Buildout | PMO v3 program candidate | This readiness doc plus PMO backlog row | `fundraiser-charity-campaign-operations-buildout.md` | Ready for Bill/Atlas planning review; blocked from launch |
 | 2a | Fundraiser operations playbook | Draft concept | This readiness doc; future Task 001 output | Covered by Tasks 001, 007, 008 | Needs documentation before build |
