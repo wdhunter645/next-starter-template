@@ -30,6 +30,45 @@ jobs:
         with:
           node-version-file: .node-version
 
+      - name: Auto-repair trusted PR body evidence
+        uses: actions/github-script@v7
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const pr = context.payload.pull_request;
+            const eventName = context.eventName;
+
+            if (eventName === 'issue_comment' && !issue?.pull_request?.url) {
+              core.info('Issue comment is not associated with a pull request; skipping PR body auto-repair.');
+              return;
+            }
+
+            const prNumber = pr?.number || (issue?.pull_request ? issue.number : null);
+            if (!prNumber) {
+              core.info('No pull request context; skipping PR body auto-repair.');
+              return;
+            }
+
+            core.info(`Running PR body auto-repair for PR #${prNumber}.`);
+
+            const { execFileSync } = require('node:child_process');
+            execFileSync(
+              'node',
+              ['scripts/ci/run_pr_body_auto_repair.mjs'],
+              {
+                env: {
+                  ...process.env,
+                  GITHUB_TOKEN: process.env.GITHUB_TOKEN,
+                  GITHUB_REPOSITORY: `${context.repo.owner}/${context.repo.repo}`,
+                  PR_NUMBER: String(prNumber),
+                  GITHUB_EVENT_NAME: eventName,
+                },
+                stdio: 'inherit',
+              }
+            );
+
       - name: Evaluate reviewer lifecycle gate
         uses: actions/github-script@v7
         env:
