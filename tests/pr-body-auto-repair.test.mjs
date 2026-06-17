@@ -118,6 +118,6 @@ describe('PR body auto-repair generation', () => {
     });
 
     expect(result.body).toContain('review-comment:3427000000');
-    expect(result.body).toContain('auto-generated disposition placeholder');
+    expect(result.body).toContain('auto-generated disposition pending agent completion');
   });
 });
