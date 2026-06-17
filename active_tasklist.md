@@ -15,20 +15,13 @@ Use this file only as an optional, human-readable snapshot.
 | Item | State | Notes |
 | --- | --- | --- |
 | `#1255` | `status:active` | Umbrella program — Website Implementation and Content Operations (Cursor) |
-| `#1259` | `status:active` (open) | **Phase 4 active** — reopened 2026-06-16; Tasks 001–004 complete; Task 005 next (held) |
+| `#1259` | `status:active` (open) | **Phase 4 active** — Tasks 001–004 complete; Task 005 next (held) |
 
 ## Portfolio note (2026-06-16)
 
 Program `#1500` was originally queued after `#1255`. Both programs executed in
 parallel when ChatGPT became capable of `#1500` implementation. `#1500` is now
 **closed complete**. `#1255` remains the active Cursor lane.
-
-## Operator issue hygiene (remaining)
-
-| Issue | Status | Action if needed |
-| --- | --- | --- |
-| `#1259` | **OPEN** (reopened 2026-06-16) | Swap `status:complete` → `status:active` |
-| `#1666` | OPEN (drift) | Close as complete — Task 003 satisfied by PR `#1667` |
 
 ## Completed (reference)
 
