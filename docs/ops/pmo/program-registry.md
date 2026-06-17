@@ -3,9 +3,9 @@ Doc Type: Operations
 Audience: Human + AI
 Authority Level: Operational Authority
 Owns: PMO program issue registry, current program issue assignments, launch-state control, child-project mapping, and authoritative execution chain for LGFC orchestrated work
-Does Not Own: PMO v3 top-level policy, implementation plan task definitions, workflow code, runtime behavior, product design, or unauthorized GitHub issue mutation
+Does Not Own: PMO v3 top-level policy, implementation plan task definitions, workflow code, runtime behavior, product design, or unauthorized GitHub issue changes
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1256, #1258, #1259, #1501, #1500, #1678, #1685, #1696, #1700, #1701, #1702, #1703, #1704, #1705, #1706, #1707, #1708
+Related Issues: #1411, #1379, #1255, #1259, #1500, #1678, #1685, #1696, #1700, #1713
 Last Reviewed: 2026-06-17
 ---
 
@@ -22,7 +22,7 @@ This registry is subordinate to `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`. If th
 This registry records current program issue assignments, launch-state control,
 child-project mapping, and the PMO execution chain. It does not own PMO v3
 top-level policy, task-level implementation detail, workflow code, or
-unauthorized GitHub issue mutation.
+unauthorized GitHub issue changes.
 
 ## Current known truth
 
@@ -31,18 +31,18 @@ unauthorized GitHub issue mutation.
 - issue #1500 (CI Post-Merge Closeout Reliability) is **closed complete**.
 - Priority #1 Website Completion / Fan Club Product Buildout is parked as program issue #1685 with child issues #1686 through #1694; it remains blocked until Atlas/Bill explicitly launch or reprioritize it.
 - Priority #2 Fundraiser / Charity Campaign Operations Buildout has program issue #1700 with child task issues #1701 through #1708. Task 001 assignment guidance is posted on #1701. The program remains queued behind Program #1255/#1259 and parked Priority #1 unless Bill/Atlas explicitly reprioritize.
+- Priority #3 PMO Governance / Workflow Automation Completion has planning source issue #1713 and documentation package paths `docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md` and `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md`. It remains blocked from execution until launch-control issues are explicitly authorized.
 - issue #1696 completed the Priority #2 documentation package and is historical source evidence after merge of #1697.
 - issue #1411 is completed — a planning/control artifact, not an open blocked program.
 - GitHub issue titles use `Program: <name>`. Documentation references use `Program #<issue-number> — <name>`.
 
 ## Intended final state
 
-- One authoritative row per active, staged, blocked, completed, or historical
-  program issue with non-contradictory status language.
-- Child projects under each program are clearly subordinate to their umbrella
-  program issue.
+- One authoritative row per active, staged, blocked, completed, or historical program issue with non-contradictory status language.
+- Child projects under each program are clearly subordinate to their umbrella program issue.
 - Priority #1 can be launched as a PMO v3 program when Bill/Atlas explicitly authorize it and update the parked program issue state.
 - Priority #2 is ready for launch review because the master program issue, child task issues, predecessor/successor chain, and Task 001 assignment guidance exist.
+- Priority #3 can become launch-control ready after its planning package is merged and Bill/Atlas explicitly authorize master/child issue creation.
 
 Program issue numbers identify programs going forward. Future programs should use
 `Program #<issue-number> — <name>` in documentation. GitHub issue titles use
@@ -97,6 +97,7 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 | --- | ---: | --- | --- | --- | --- |
 | Website Completion / Fan Club Product Buildout | 1 | Parked; implementation-ready after launch authorization | Blocked until Atlas/Bill explicitly launch or reprioritize the parked program issue #1685 | `docs/ops/pmo/website-completion-fan-club-product-buildout-readiness.md` | `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md` |
 | Fundraiser / Charity Campaign Operations Buildout | 2 | Launch-control ready; queued behind active/parked higher-priority programs | Blocked until Atlas/Bill explicitly authorize Cursor to begin #1701 | `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md` | `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md` |
+| PMO Governance / Workflow Automation Completion | 3 | Planning-ready; blocked from execution | Blocked until planning package is merged and Atlas/Bill explicitly authorize launch-control issue creation | `docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md` | `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md` |
 
 ### Priority #1 candidate child projects
 
@@ -121,6 +122,19 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 | Testing package | Required before launch | Tasks 007 and 008 | #1707 |
 | Program closeout and operator handoff | Terminal closeout | Task 008 | #1708 |
 
+### Priority #3 candidate child projects
+
+| Child project | PMO decision | Implementation-plan coverage |
+| --- | --- | --- |
+| PMO v3 authority | Included in Priority #3 | Tasks 001 and 008 |
+| Workflow Automation Design Migration | Included in Priority #3 | Tasks 002, 007, 008 |
+| Cursor Continuation and Queue Contract | Included in Priority #3 | Tasks 003, 007, 008 |
+| PR Readiness and Batch Review Control | Included in Priority #3 | Tasks 004, 007, 008 |
+| Merge and issue change policy | Included in Priority #3 | Tasks 004, 005, 007, 008 |
+| Queue/Wave Model and Label Planning | Included in Priority #3; reconcile against #1500 first | Tasks 006, 007, 008 |
+| Post-Merge Closeout Evidence Stabilization | Included in Priority #3 only for remaining gaps after #1500 | Tasks 006, 007, 008 |
+| PMO Backlog Promotion and Program #1411 Launch Gate | Included in Priority #3 | Tasks 001, 007, 008 |
+
 ## Staged / blocked program issues
 
 | Program issue | Name | Historical label | Status | Launch rule |
@@ -129,6 +143,7 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 | #1685 | Website Completion / Fan Club Product Buildout | none | Parked future program issue | Remains blocked until Atlas/Bill explicitly authorize launch or reprioritization. |
 | #1696 | Fundraiser / Charity Campaign Operations Buildout documentation package | none | Completed planning source issue | Planning documentation completed by #1697; does not itself launch implementation. |
 | #1700 | Fundraiser / Charity Campaign Operations Buildout | none | Launch-control ready | Child issues #1701–#1708 exist; Task 001 assignment guidance is posted on #1701; execution waits for explicit queue authorization. |
+| #1713 | PMO Governance / Workflow Automation Completion documentation package | none | Planning package source issue | Planning documentation only; does not launch implementation or create child issues. |
 
 ## Historical program evidence
 
@@ -149,7 +164,7 @@ Completed program cycles remain audit evidence and may be cited for historical c
 | Is a program issue | No |
 | Executable by itself | No |
 | Review cadence | Reviewed as a primary agenda item during PMO meetings |
-| Current top candidate | Website Completion / Fan Club Product Buildout remains parked; Fundraiser / Charity Campaign Operations Buildout is launch-control ready as #1700–#1708 after active queue resolution or explicit reprioritization |
+| Current top candidate | Website Completion / Fan Club Product Buildout remains parked; Fundraiser / Charity Campaign Operations Buildout is launch-control ready as #1700–#1708; PMO Governance / Workflow Automation Completion is planning-ready under #1713 |
 
 ## Program #1411 — PMO Automation and Agent Workflow Control
 
@@ -164,21 +179,18 @@ Completed program cycles remain audit evidence and may be cited for historical c
 
 ### Program #1411 project areas
 
-**Inventory authority:** These areas are no longer an active or automatically
-queued program. They live as governance/ops backlog inventory in
-`/docs/ops/pmo/pmo-backlog.md` (ranks 3–10). `#1411` remains closed; execution
-requires a current open source issue and explicit launch authorization.
+**Inventory authority:** These areas are no longer an active or automatically queued program. They live as governance/ops backlog inventory in `/docs/ops/pmo/pmo-backlog.md` and are now grouped as the Priority #3 planning package under #1713. `#1411` remains closed; execution requires a current open source issue and explicit launch authorization.
 
 | Area | Registry decision |
 | --- | --- |
-| PMO v3 authority | Program issue numbers identify programs; PMO Backlog holds ideas/project drafts |
-| Workflow Automation design migration | Workflow Automation promoted from PMO Backlog into Program #1411 |
-| Cursor continuation and queue contract | Cursor can validate and report, then stops at review handoff |
-| PR readiness and batch review control | Readiness preserves Atlas/Bill review and merge authority |
-| Merge and issue mutation policy | Cursor may not merge, close, relabel, queue, or mutate issues without explicit authorization |
-| Queue/wave model and labels | Wave labels and run identifiers are planning concepts before workflow code changes |
-| Post-merge closeout evidence stabilization | Closeout requires stable evidence and terminal completed-label reconciliation before mutation or queue advancement |
-| PMO Backlog promotion and Program #1411 launch gate | Backlog items require owner promotion, repo authority, decomposition, and bounded handoff before becoming executable |
+| PMO v3 authority | Included in Priority #3 |
+| Workflow Automation design migration | Included in Priority #3 |
+| Cursor continuation and queue contract | Included in Priority #3 |
+| PR readiness and batch review control | Included in Priority #3 |
+| Merge and issue change policy | Included in Priority #3 |
+| Queue/wave model and labels | Included in Priority #3, subject to #1500 reconciliation |
+| Post-merge closeout evidence stabilization | Included in Priority #3 only for remaining gaps after #1500 |
+| PMO Backlog promotion and Program #1411 launch gate | Included in Priority #3 |
 
 ### Out of scope for Program #1411 planning
 
@@ -186,7 +198,7 @@ requires a current open source issue and explicit launch authorization.
 - Workflow YAML changes
 - D1 migrations
 - Production configuration or secrets
-- Unauthorized issue closure, relabeling, or mutation
+- Unauthorized issue state changes
 - Creating implementation child issues before Atlas/Bill launch approval
 
 ## Program #1255 — Website Implementation and Content Operations
@@ -202,7 +214,7 @@ requires a current open source issue and explicit launch authorization.
 | Priority | Complete `#1259` Phase 4 Tasks 006–009 (per-task authorization) → program closeout |
 | Parallel program note | `#1500` closed complete — ran in parallel with `#1255`; not a `#1259` task dependency |
 
-Program #1255 remains controlled by its own active source issues and Cursor execution path. Priority #1 and Priority #2 planning documentation must not mutate Program #1255 issues, relabel Program #1255 issues, close Program #1255 issues, or reinterpret Cursor's active assignment without explicit authorization.
+Program #1255 remains controlled by its own active source issues and Cursor execution path. Priority #1, Priority #2, and Priority #3 planning documentation must not change Program #1255 issue state, labels, or active assignment without explicit authorization.
 
 ## Related References
 
@@ -214,6 +226,8 @@ Program #1255 remains controlled by its own active source issues and Cursor exec
 - Priority #2 implementation plan: `/docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md`
 - Priority #2 program: `#1700`
 - Priority #2 task issues: `#1701` through `#1708`
+- Priority #3 readiness: `/docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md`
+- Priority #3 implementation plan: `/docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md`
 - Cursor execution contract: `/docs/reference/pmo/lgfc-cursor-execution-contract.md`
 - PMO critical path: `/docs/ops/pmo/critical-path.md`
 - Workflow Automation authority: `/docs/ops/pmo/workflow-automation.md`
