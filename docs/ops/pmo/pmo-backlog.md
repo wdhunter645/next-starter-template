@@ -5,15 +5,15 @@ Authority Level: Operational Authority
 Owns: PMO Backlog inventory for ideas, project drafts, implementation-ready projects, backlog review history, and promotion candidates
 Does Not Own: Program launch approval, final prioritization, implementation scope, issue creation, merge authority, or Cursor execution authorization
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-Related Issues: #1379, #1411, #1255, #1500, #1501, #1678
-Last Reviewed: 2026-06-16
+Related Issues: #1379, #1411, #1255, #1500, #1501, #1678, #1685, #1696
+Last Reviewed: 2026-06-17
 ---
 
 # PMO Backlog
 
 PMO Backlog = ideas, project drafts, governance/ops backlog items, and implementation-ready projects.
 
-This document is the durable, **prioritized working inventory** for PMO backlog review. It does not launch work, create issues, authorize Cursor or Codex execution, or establish final execution authorization by itself. Work becomes executable only through a **current open program issue or task/source issue** with explicit launch/assignment authorization.
+This document is the durable, **prioritized working inventory** for PMO backlog review. It does not launch work, create issues, authorize Cursor or Codex execution, or establish final execution authorization by itself. Work becomes executable only through a **current open program or task/source issue** with explicit launch/assignment authorization.
 
 ## Scope
 
@@ -27,7 +27,8 @@ This document owns PMO Backlog inventory, promotion history, weekly project revi
 - **Former `#1411` work areas** now belong in this backlog inventory as governance/ops backlog items unless later relaunched through a current open PMO v3 program or source issue.
 - **Program `#1255`** remains the active website implementation program owned by Cursor for completion.
 - **Program `#1500` is closed complete.** It may supersede or partially satisfy post-merge closeout stabilization backlog items, but it does not launch additional governance work by itself.
-- **Priority #1 Website Completion / Fan Club Product Buildout** now has a PMO readiness package and implementation plan: `docs/ops/pmo/website-completion-fan-club-product-buildout-readiness.md` and `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md`.
+- **Priority #1 Website Completion / Fan Club Product Buildout** has a parked program issue and task chain (#1685 through #1694). It remains blocked from implementation until Bill/Atlas explicitly launch or reprioritize it.
+- **Priority #2 Fundraiser / Charity Campaign Operations Buildout** now has a planning-ready documentation package: `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md` and `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md`. It remains blocked from implementation until Bill/Atlas explicitly launch it.
 - **The backlog does not authorize implementation by itself.** Production-ready documentation remains the execution gate: projects with production-ready docs can move first once explicitly authorized.
 - Filenames that still contain `program-5` (for example `docs/ops/pmo/program-5-admin-page-and-tools-design-readiness.md`) are **legacy source material** from the retired PMO v2 five-lane model. They are not active PMO v3 program authority and require PMO v3 conversion before promotion.
 
@@ -36,27 +37,28 @@ This document owns PMO Backlog inventory, promotion history, weekly project revi
 - Backlog items are classified, prioritized top-down by current need, and tracked with production-documentation readiness.
 - No backlog link can be mistaken for an active PMO v3 program lane or automatic execution queue.
 - Weekly PMO project review keeps the backlog current rather than static.
-- Priority #1 remains the next-program candidate for Cursor assignment after Bill/Atlas launch authorization.
+- Priority #1 remains parked until Bill/Atlas explicitly launch or reprioritize it.
+- Priority #2 is documented for later launch review once the active queue permits it.
 
 ## Prioritized working backlog inventory
 
-Items are sorted **top-down by current priority need** as of the Bill/Atlas PMO v3 review and subsequent Priority #1 readiness update. Priority guides discussion and preparation order; **production-ready documentation plus explicit launch authorization remain the gates for execution.**
+Items are sorted **top-down by current priority need** as of the Bill/Atlas PMO v3 review and subsequent Priority #1 and Priority #2 readiness updates. Priority guides discussion and preparation order; **production-ready documentation plus explicit launch authorization remain the gates for execution.**
 
 | Rank | project / idea name | Classification | Brief description | Suggested next action | Related references | Duplicate / version note | Production doc readiness |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Website Completion / Fan Club Product Buildout** | next-program candidate | Complete authenticated Fan Club experience, backend services, content operations, content collection workflow, and design alignment. | Create/launch PMO v3 program issue when Bill/Atlas authorize; assign bounded tasks to Cursor from implementation plan. | `#1678`; `docs/ops/pmo/website-completion-fan-club-product-buildout-readiness.md`; `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md` | Priority #1 group is documented as the next program candidate; execution remains blocked until launch authorization. | implementation-ready after launch authorization |
+| 1 | **Website Completion / Fan Club Product Buildout** | parked next-program candidate | Complete authenticated Fan Club experience, backend services, content operations, content collection workflow, and design alignment. | Keep parked behind Program #1255/#1259 unless Bill/Atlas explicitly launch or reprioritize. | `#1678`; `#1685`; `#1686`–`#1694`; `docs/ops/pmo/website-completion-fan-club-product-buildout-readiness.md`; `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md` | Priority #1 group is documented and has a parked issue chain; execution remains blocked until launch authorization. | implementation-ready after launch authorization |
 | 1a | Fan Club page design | child project | Finalize authenticated Fan Club page design and member-facing flows. | Execute via Priority #1 Tasks 001, 003, 007, and 009 after launch authorization. | `docs/ops/pmo/program-3-club-home-page-design.md`; `docs/reference/design/fanclub-subpages.md`; `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md` | Legacy `program-3-*` file is planning evidence now routed through the Priority #1 readiness package. | implementation-ready after launch authorization |
 | 1b | Website backend services | child project | D1, B2, email, admin APIs/functions, media handling, join/member data, and operational failure states needed by the product buildout. | Execute gap-first via Priority #1 Tasks 002, 005, and 006. | `docs/ops/implementation-plans/website-operations-admin.md`; `docs/reference/design/LGFC-Production-Design-and-Standards.md`; `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md` | Existing admin/content work must be reconciled first; no greenfield rebuild. | implementation-ready after launch authorization |
 | 1c | Content management strategy | child project | Define how website content is posted, updated, reviewed, and managed without developer intervention. | Execute via Priority #1 Tasks 004, 005, 008, and 009. | `#1256`; `docs/ops/implementation-plans/website-content-strategy-editorial-inventory.md`; `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md` | Includes upstream content collection handoff. | implementation-ready after launch authorization |
 | 1d | Content collection strategy | child project merged into 1c | Define how Lou Gehrig content is discovered, retained, credited, reviewed, and converted into site-ready content. | Implement as upstream intake/source-credit layer within content management tasks, not as a standalone program peer. | `docs/ops/pmo/website-completion-fan-club-product-buildout-readiness.md`; `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md` | Duplicate/version candidate with rank 12 resolved for Priority #1: subordinate to content management. | implementation-ready after launch authorization |
 | 1e | Website design review / as-built versus LGFC vision | child project | Compare current implementation against approved LGFC design vision and identify gaps. | Execute as Priority #1 Task 001 and validate again in Task 009. | `docs/reference/design/LGFC-Production-Design-and-Standards.md`; `docs/reference/design/fanclub-subpages.md`; `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md` | None identified. | implementation-ready after launch authorization |
-| 2 | **Fundraiser / Charity Campaign Operations Buildout** | project draft | High-priority future program candidate: repeatable fundraiser operations, Givebutter integration, leaderboard/winner rules, homepage promotion, donor recognition without PII exposure, and launch testing. Requires production-ready documentation before launch. | Draft program scope and production-ready ops documentation in weekly PMO project review; do not launch until authorized. | `#1379` (historical ideas source) | Bill/Atlas agree this is likely the second major program after Priority #1. Prior backlog row "Fundraiser / charity campaign operations" merged here. | partial |
-| 2a | Fundraiser operations playbook | project draft (child) | Repeatable annual setup, launch, closeout, winner publication, and post-campaign archive. | Write annual operations checklist and ownership model. | `#1379` (historical) | None identified. | none |
-| 2b | Givebutter integration model | project draft (child) | Campaign, auction, live feed, external-link, and data-boundary rules. | Document integration boundaries and external vs. internal data ownership. | — | None identified. | none |
-| 2c | Leaderboard / winner system | project draft (child) | Scoring, snapshots, deterministic winner calculation, and no-PII policy. | Define scoring rules, snapshot cadence, and winner publication workflow. | — | None identified. | none |
-| 2d | Homepage spotlight / campaign surface | project draft (child) | Controlled fundraiser promotion and review/preview flows. | Define homepage promotion rules and preview/review gates. | `#1255` | None identified. | none |
-| 2e | Sponsor / donor recognition | project draft (child) | Recognition rules that avoid exposing donor PII. | Document display rules and privacy boundaries. | — | Overlaps rank 15 Sponsor/donor recognition operations — review for merge. | none |
-| 2f | Testing package | project draft (child) | End-to-end fundraiser readiness checklist before public launch. | Draft pre-launch verification checklist aligned with LGFC closeout practice. | — | None identified. | none |
+| 2 | **Fundraiser / Charity Campaign Operations Buildout** | future-program candidate | Repeatable fundraiser operations, Givebutter integration boundary, leaderboard/winner rules, homepage promotion, donor recognition without PII exposure, and launch testing. | Keep as planning-ready package until Bill/Atlas explicitly launch after active queue resolution. | `#1696`; `#1379` (historical ideas source); `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md`; `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md` | Bill/Atlas identified this as the Priority #2 group. Prior backlog row "Fundraiser / charity campaign operations" merged here. | planning-ready; blocked until launch authorization |
+| 2a | Fundraiser operations playbook | child project | Repeatable annual setup, preview, launch, closeout, winner publication, and post-campaign archive. | Execute via Priority #2 Tasks 001, 007, and 008 after launch authorization. | `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md`; `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md` | None identified. | planning-ready |
+| 2b | Givebutter integration model | child project | Campaign, auction, live feed, external-link, and data-boundary rules. | Execute via Priority #2 Tasks 002, 004, 006, and 007 after launch authorization. | `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md`; `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md` | External campaign/payment/auction ownership remains outside LGFC runtime implementation. | planning-ready |
+| 2c | Leaderboard / winner system | child project | Scoring, snapshots, deterministic winner calculation, tiebreakers, and no-PII publication policy. | Execute via Priority #2 Tasks 003, 006, and 007 after launch authorization. | `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md`; `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md` | Must not depend on raw public donor PII. | planning-ready |
+| 2d | Homepage spotlight / campaign surface | child project | Controlled fundraiser promotion, campaign status, approved links/embed behavior, and preview/review flows. | Execute via Priority #2 Tasks 004, 006, and 007 after launch authorization. | `#1255`; `docs/reference/design/LGFC-Production-Design-and-Standards.md`; `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md` | Campaign surfaces must fail closed when disabled, missing, invalid, stale, or unpublished. | planning-ready |
+| 2e | Sponsor / donor recognition | child project | Recognition rules that avoid exposing donor PII. | Execute via Priority #2 Tasks 005, 006, and 007 after launch authorization. | `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md`; `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md` | Overlaps rank 15 Sponsor/donor recognition operations — merged for fundraiser context; non-fundraiser recognition may remain future scope. | planning-ready |
+| 2f | Testing package | child project | End-to-end fundraiser readiness checklist before public launch. | Execute via Priority #2 Tasks 007 and 008 after launch authorization. | `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md`; `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md` | None identified. | planning-ready |
 | 3 | PMO v3 authority (former `#1411` area) | governance/ops backlog | Durable PMO v3 language: program issue numbers identify programs; PMO Backlog holds ideas/project drafts. | Retain as reference; implement only if a current open source issue authorizes and scope does not conflict with active website work. | `#1411`, `docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`, `docs/ops/implementation-plans/program-1-pmo-automation-agent-workflow-control.md` | Former Program `#1411` project area — not automatically executable. | partial |
 | 4 | Workflow Automation Design Migration (former `#1411` area) | governance/ops backlog | Migrate Workflow Automation design from backlog/Drive/chat into GitHub documentation authority. | Review `docs/ops/pmo/workflow-automation.md` for gaps; authorize implementation only through a current open source issue. | `#1411`, `docs/ops/pmo/workflow-automation.md` | Promoted from backlog into `#1411` planning; now inventory again. | partial |
 | 5 | Cursor Continuation and Queue Contract (former `#1411` area) | governance/ops backlog | Rules for when Cursor continues, stops, reports validation, and waits at review handoff. | Align with `docs/reference/pmo/lgfc-cursor-execution-contract.md` during authorized governance work only. | `#1411`, `#1417`–`#1424` (stale task issues) | Task issues `#1417`–`#1424` contain stale PMO v2 terminology — flag for review, do not delete. | partial |
@@ -69,7 +71,7 @@ Items are sorted **top-down by current priority need** as of the Bill/Atlas PMO 
 | 12 | Lou Gehrig content collection strategy | project draft | Continuous collection, source/credit tracking, review, and publication pipeline for Lou Gehrig content. | Retain as future expansion beyond Priority #1 if external monitoring, AI-assisted research, or large-scale ingestion is desired. | `#1255`, `#1256`, Priority #1 readiness package | **Partially absorbed into rank 1d** for normal editorial intake/source-credit workflow. Large-scale external collection remains future scope. | partial |
 | 13 | Annual Lou Gehrig Day operations package | project draft | Repeatable annual operations checklist and website spotlight plan for Lou Gehrig Day. | Convert into ops checklist when annual operations become a priority. | `#1379` (historical) | None identified. | none |
 | 14 | Media/archive acquisition workflow | project draft | Clarify relation to B2/D1 media assets, member submissions, and editorial review. | Define acquisition layer if future content work needs it. | `#1255` | None identified. | none |
-| 15 | Sponsor/donor recognition operations | project draft | Donor privacy, display rules, and campaign integration outside fundraiser-specific scope. | Clarify scope vs. rank 2e; merge if redundant. | — | **Duplicate/version candidate** with rank 2e — review for merge. | none |
+| 15 | Sponsor/donor recognition operations | project draft | Donor privacy, display rules, and campaign integration outside fundraiser-specific scope. | Clarify remaining non-fundraiser scope after Priority #2 rank 2e merger. | — | **Duplicate/version candidate** with rank 2e — fundraiser-specific recognition merged into Priority #2. | none |
 | 16 | Adam Wilson Award / recognition system | idea | Purpose, content model, route needs, and ownership for an Adam Wilson Award or similar recognition surface. | Clarify purpose and ownership in PMO review. | `#1379` (historical) | None identified. | none |
 | 17 | Community engagement cadence | idea | Desired operating rhythm and website/community surfaces for member engagement. | Define cadence and surfaces in PMO review. | `#1379` (historical) | None identified. | none |
 | 18 | Partner / Friends of the Fan Club operations | idea | Data ownership, public display rules, and outreach workflow for Friends of the Fan Club. | Define ops model; may connect to existing homepage section. | `#1255` | None identified. | none |
@@ -88,9 +90,11 @@ Items are sorted **top-down by current priority need** as of the Bill/Atlas PMO 
 - They may be implemented while Website/Fundraiser projects are being prepared **only if** a current open source issue explicitly authorizes the work and the scope does **not** conflict with active website work.
 - **Program `#1500` may supersede or partially satisfy** the post-merge closeout stabilization item (rank 9) and may overlap queue/wave planning (rank 8). Review required only when a later source issue authorizes governance maintenance.
 
-### Implementation-ready projects
+### Planning-ready projects
 
-Priority #1 is now classified as **implementation-ready after launch authorization** because its readiness package and implementation plan exist in repository documentation.
+Priority #1 is classified as **implementation-ready after launch authorization** because its readiness package, implementation plan, and parked issue chain exist in repository documentation.
+
+Priority #2 is classified as **planning-ready** because its readiness package and implementation plan exist in repository documentation, but it remains blocked from implementation until Atlas/Bill explicitly launch it and create child implementation issues.
 
 No backlog item may execute from this classification alone. Cursor execution still requires a current program/task/source issue and explicit Bill/Atlas launch or assignment authorization.
 
@@ -109,6 +113,7 @@ A **weekly PMO project review** is the mechanism to review backlog items, define
 
 - **Priority order guides discussion**, but **production-ready documentation remains the execution gate.**
 - Items with `implementation-ready` readiness may move first **only after** explicit Atlas/Bill authorization through a current open program or source issue.
+- Items with `planning-ready` readiness may be reviewed for launch sequencing but may not execute until a current launch source issue authorizes them.
 - This backlog is reviewed and updated regularly — it is **not** a static archive.
 
 ### Meeting outputs
@@ -116,7 +121,7 @@ A **weekly PMO project review** is the mechanism to review backlog items, define
 Each weekly review should record:
 
 - backlog items discussed and rank adjustments;
-- classification changes (idea → project draft → governance/ops backlog → implementation-ready);
+- classification changes (idea → project draft → governance/ops backlog → planning-ready → implementation-ready);
 - promotion decisions and deferrals;
 - required documentation PRs;
 - duplicate/version artifacts identified for merge, archive, or retention;
@@ -136,7 +141,7 @@ Future PMO review should identify:
 | Historical evidence to keep | `#1379`, `#1411` planning artifacts, `program-3-*` / `program-5-*` legacy filenames, task issues `#1417`–`#1424` |
 | Obsolete references to archive | Stale PMO v2 Program 1–5 lane labels in child task issues (review only — do not mutate issues from backlog doc updates) |
 | Items superseded by `#1500` | Post-merge closeout evidence stabilization (rank 9); queue/wave model (rank 8) only to the extent documented by Program #1500 closeout evidence |
-| Items promoted into future programs | Website Completion (rank 1) is now ready for launch review; Fundraiser Buildout (rank 2) remains a future project draft |
+| Items promoted into future programs | Website Completion (rank 1) is parked and implementation-ready-after-launch; Fundraiser Buildout (rank 2) is planning-ready and blocked from execution |
 
 ## PMO v3 execution rule (non-negotiable)
 
@@ -151,13 +156,15 @@ Future PMO review should identify:
 | 2026-06-09 | PMO v3 migration: former Program 5 replaced by PMO Backlog. Fixed Program 1–5 nomenclature retired for future PMO operation. Program issue numbers become program identifiers. Backlog remains documentation-owned and does not require a standing issue. Former Program 1 is now Program `#1411`. Program `#1255` remains active and retains historical Program 2 continuity. |
 | 2026-06-11 | Bill/Atlas PMO v3 priority review: `#1411` closed — former project areas moved to governance/ops backlog inventory. Backlog converted to prioritized working list. Website Completion / Fan Club Product Buildout and Fundraiser / Charity Campaign Operations Buildout documented as high-priority future program draft candidates. Weekly PMO project review added. Program `#1500` noted as current stabilization preparation track. |
 | 2026-06-16 | Priority #1 readiness package created under #1678. Website Completion / Fan Club Product Buildout is documented as the next-program candidate for Cursor assignment after explicit Bill/Atlas launch authorization. Content collection rank 1d is subordinated to content management strategy for normal editorial intake/source-credit workflow. |
+| 2026-06-17 | Priority #2 readiness package created under #1696. Fundraiser / Charity Campaign Operations Buildout is documented as planning-ready for later launch review, with Givebutter boundary rules, donor privacy controls, campaign-surface fail-closed expectations, and pre-launch testing requirements. |
 
 ## Recently promoted (historical)
 
 | Item | Promotion target | Notes |
 | --- | --- | --- |
 | Workflow Automation | Program `#1411` — PMO Automation and Agent Workflow Control | Promoted through `#1411` planning cycle. `#1411` is now closed; workflow automation areas return to backlog inventory (rank 4) unless relaunched through a current open source issue. |
-| Website Completion / Fan Club Product Buildout | Priority #1 next-program candidate | Promoted from project draft to implementation-ready-after-launch documentation package by #1678. |
+| Website Completion / Fan Club Product Buildout | Priority #1 next-program candidate | Promoted from project draft to implementation-ready-after-launch documentation package by #1678; parked as #1685/#1686–#1694 pending launch authorization. |
+| Fundraiser / Charity Campaign Operations Buildout | Priority #2 future-program candidate | Promoted from project draft to planning-ready documentation package by #1696; remains blocked from implementation until Bill/Atlas launch authorization. |
 
 ## Promotion checklist
 
