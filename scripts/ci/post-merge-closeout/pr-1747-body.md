@@ -118,8 +118,13 @@ All other files are out of scope
 - [x] Every GitHub review thread has an explicit thread-state disposition: resolved, outdated, or intentionally left unresolved with rationale.
 
 Reviewer items:
-- Gemini review (no inline comments) — not-applicable — general review acknowledged; no actionable inline items — thread state: resolved
-- Copilot review (allowlist/scope notes) — acknowledged — merged diff includes intentional closeout remediation artifacts; reconciled in remediated body — thread state: resolved
+- review-comment:3431037760 — acknowledged — workflow hook and closeout body artifact included in reconciled 6-file allowlist — thread state: resolved
+- review-comment:3431061883 — acknowledged — intent relabeled to `infra`; workflow change is intentional closeout remediation artifact — thread state: resolved
+- review-comment:3431061923 — acknowledged — maintainer-body workflow registration required when agent token lacked PR-write access — thread state: resolved
+- review-comment:3431061953 — acknowledged — closeout body artifact included in reconciled 6-file allowlist — thread state: resolved
+- review-comment:3431061982 — rejected — PMO backlog uses established PMO authority-header format; Purpose/Scope content is embedded in section structure per PMO-V3 model — thread state: resolved
+- review-comment:3431062000 — acknowledged — program issue #1738 created as part of launch-control package; front-matter sync tracked on master program issue — thread state: outdated — follow-up-issue:#1738
+- review-comment:3431062029 — rejected — cosmetic punctuation change out of scope for closeout remediation — thread state: resolved
 
 ## PR GATE READINESS CHECKLIST
 - [x] Live PR check panel inspected
