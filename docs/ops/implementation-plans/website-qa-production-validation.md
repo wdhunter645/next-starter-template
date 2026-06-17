@@ -326,7 +326,7 @@ Task 004 is **complete** (PR `#1672` merged `5e10f72`). Task 005 is **complete**
 (operator-approved reopen 2026-06-17; umbrella closeout fix PR `#1699` merged `58508f6`). Task 006 is **next** (held pending
 authorization). Tasks 007–009 require explicit per-task Atlas/Bill authorization.
 
-## Issue hygiene (complete 2026-06-17)
+## issue hygiene (complete 2026-06-17)
 
 Operator applied GitHub cleanup: `#1259` **open** with `status:active`; `#1666`
 **closed** complete (Task 003 via PR `#1667`). After Task 005 PR `#1684` merge,
