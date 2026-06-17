@@ -15,7 +15,7 @@ Use this file only as an optional, human-readable snapshot.
 | Item | State | Notes |
 | --- | --- | --- |
 | `#1255` | `status:active` | Umbrella program — Website Implementation and Content Operations (Cursor) |
-| `#1259` | `status:active` (open) | **Phase 4 active** — Tasks 001–005 complete; Task 006 next (held) |
+| `#1259` | `status:active` (open) | **Phase 4 active** — Tasks 001–006 complete; Task 007 next (authorized) |
 
 ## Portfolio note (2026-06-16)
 
@@ -35,10 +35,11 @@ parallel when ChatGPT became capable of `#1500` implementation. `#1500` is now
 | `#1259` Phase 4 Task 003 | PR `#1667` merged (`0347b27`); issue `#1666` closed complete |
 | `#1259` Phase 4 Task 004 | PR `#1672` merged (`5e10f72`); mobile/responsive validation report on `main` |
 | `#1259` Phase 4 Task 005 | PR `#1684` merged (`8893591`); D1/B2 read-path validation report on `main` |
+| `#1259` Phase 4 Task 006 | PR `#1728` merged (`c170d3c`); content inventory public surface validation report on `main` |
 | `#1500` CI Post-Merge Closeout Reliability | **closed complete** — Tasks 001–005 (`#1544`–`#1548`) |
 | issue `#1411` | completed planning artifact |
 
 ## Out of scope (current pass)
 
-- `#1259` Phase 4 Tasks 006–009 (not authorized until per-task Atlas/Bill approval)
+- `#1259` Phase 4 Tasks 008–009 (not authorized until per-task Atlas/Bill approval)
 - Application code outside the next authorized `#1259` task scope
