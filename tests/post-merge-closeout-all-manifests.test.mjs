@@ -12,13 +12,13 @@ describe('post-merge closeout all manifests', () => {
 		]);
 	});
 
-	it('loads rerun targets for PR #1639 (#1638) after successful closeout pruning', () => {
+	it('loads rerun targets for PR #1780 (#1738) after manifest hygiene', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json');
-		expect(targets.map((target) => target.pr)).toEqual([1639]);
+		expect(targets.map((target) => target.pr)).toEqual([1780]);
 		expect(targets[0]).toMatchObject({
-			body_file: 'scripts/ci/post-merge-closeout/pr-1639-body.md',
-			merge_sha: '64cb85794b4943a2a4dd2804061a278a5380faee',
-			source_issue: 1638,
+			body_file: 'scripts/ci/post-merge-closeout/pr-1780-body.md',
+			merge_sha: 'd3019beee16bc9099e3dcc48cc8f18a35325d829',
+			source_issue: 1738,
 		});
 	});
 
