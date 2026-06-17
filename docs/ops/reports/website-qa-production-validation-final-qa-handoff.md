@@ -85,7 +85,7 @@ Supporting planning artifact: `docs/ops/reports/website-qa-production-validation
 | ID | Blocker | Severity | Status | Owner route |
 | --- | --- | --- | --- | --- |
 | `h011-ci-schedule` | Scheduled static-export Playwright `launch-readiness:e2e` not in CI | Medium | **Bounded deferral** (Task 007) | Optional post-`#1259` workflow PR |
-| `legacy-label-hygiene-residual` | `#1123` retains stale `status:pr-draft` on closed issue | Low | **Operator pending** | `program-1255-closeout-readiness.md` |
+| `legacy-label-hygiene-residual` | `#1123` stale `status:pr-draft` on closed issue | Low | **Complete** (operator 2026-06-17) | — |
 | `cloudflare-preview-drift` | Preview vs production confidence not consolidated | Medium | **Documented deferral** | Operator production smoke / audit cadence |
 | `fanclub-pdf-upload-ops` | PDF/upload pipeline edge cases deferred from `#1258` | Low | **Documented deferral** | Ops runbook follow-up |
 | `homepage-inventory-consumer` | `homepage_*` inventory sections not wired to public renderers | Low | **Pass-with-note** (Task 006) | Future delta if authorized |
@@ -100,7 +100,7 @@ items are hygiene, CI scheduling, or explicitly deferred operational validation.
 | Item | Status |
 | --- | --- |
 | Child project `#1256` Content Strategy | **Closed complete** |
-| Child project `#1258` Website Operations Admin | **Closed complete on `main`** (PR `#1652`); **GitHub issue OPEN** — operator close pending |
+| Child project `#1258` Website Operations Admin | **Closed complete** (PR `#1652`; issue closed 2026-06-17) |
 | Child project `#1259` Website QA / Production Validation | **Phase 4 complete** (Tasks 001–009); **issue remains OPEN** |
 | Program terminal closeout | **Inspection pending** — requires Atlas/Bill authorization |
 
@@ -123,8 +123,8 @@ npm run launch-readiness
 - **Do not close `#1259`** until Program `#1255` terminal closeout is authorized.
 - Remove stale workflow labels (`status:failed`, `status:post-merge-verify`) when
   present; keep `status:active`.
-- Operator closeout prep: `#1123` label cleanup; `#1258` issue close — see
-  `docs/ops/reports/program-1255-closeout-readiness.md`.
+- Operator closeout prep **complete** (2026-06-17): `#1123` label removed; `#1258`
+  closed complete. See `docs/ops/reports/program-1255-closeout-readiness.md`.
 - Do **not** bulk-close legacy T21–T34 issues without Atlas authorization; current
   GitHub state shows lanes closed with Task 008 disposition package on `main`.
 

@@ -41,9 +41,8 @@ This document does not own:
 - Program #1255 is the active umbrella program issue.
 - Child project `#1256` (Content Strategy / Editorial Inventory) is **closed
   complete** (Tasks 001–009 merged and verified).
-- Child project `#1258` (Website Operations Admin) deliverables are **complete** on
-  `main` (terminal PR `#1652`); GitHub issue `#1258` remains **OPEN** pending
-  operator closeout hygiene before final inspection (see closeout readiness packet).
+- Child project `#1258` (Website Operations Admin) is **closed complete** (terminal
+  PR `#1652`).
 - Child project `#1259` (Website QA / Production Validation) is **open** — Phase 4 Tasks
   001–009 **complete on `main`** (Task 008 PR `#1753` / `678699e`; Task 009 PR `#1751` /
   `fd17af2`). Child project `#1259` must remain open pending Program `#1255` terminal

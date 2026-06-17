@@ -41,14 +41,14 @@ before final inspection.
 | Phase 4 QA evidence | **Yes** — Tasks 001–009 merged |
 | P0 launch blockers | **None** in Phase 4 evidence |
 | Terminal closeout authorized | **No** — awaits Atlas/Bill inspection |
-| Operator hygiene remaining | **Minor** — `#1123` label; `#1258` issue close |
+| Operator hygiene remaining | **Complete** (2026-06-17) — `#1123` label; `#1258` close |
 
 ## Child project completion matrix
 
 | Child | GitHub (2026-06-17) | Deliverables | Closeout note |
 | --- | --- | --- | --- |
 | `#1256` Content Strategy | **CLOSED** `status:complete` | Tasks 001–009 | Done |
-| `#1258` Ops Admin | **OPEN** `status:active` | Tasks 001–013; terminal PR `#1652` | **Operator: close as complete** |
+| `#1258` Ops Admin | **CLOSED** `status:complete` | Tasks 001–013; terminal PR `#1652` | Done (operator 2026-06-17) |
 | `#1259` Website QA | **OPEN** `status:active` | Phase 4 Tasks 001–009 | **Keep open** until `#1255` sign-off |
 
 Primary evidence:
@@ -97,12 +97,15 @@ gh issue view 1259 --json state,labels
 
 Expected after operator hygiene:
 
-| Issue | Expected state |
+| issue | Expected state |
 | --- | --- |
 | `#1123` | CLOSED; `status:complete` only (no `status:pr-draft`) |
 | `#1258` | CLOSED; `status:complete` |
 | `#1259` | OPEN; `status:active` |
 | `#1255` | OPEN; `status:active` |
+
+Operator hygiene **complete** (2026-06-17): Atlas applied `#1123` label removal and
+`#1258` closeout; `#1255` and `#1259` verified OPEN with `status:active`.
 
 ## Atlas/Bill final inspection checklist
 

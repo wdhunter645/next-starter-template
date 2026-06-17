@@ -18,13 +18,12 @@ describe('Program #1255 closeout readiness packet', () => {
     expect(source).toContain('Atlas/Bill final inspection checklist');
   });
 
-  it('documents operator hygiene for residual legacy items', () => {
+  it('documents operator hygiene targets and completion status', () => {
     const source = readFileSync(CLOSEOUT_READINESS_PATH, 'utf8');
     for (const issue of OPERATOR_HYGIENE_ISSUES) {
       expect(source).toContain(`#${issue}`);
     }
-    expect(source).toContain('status:pr-draft');
-    expect(source).toContain('PR #1652');
+    expect(source).toContain('Operator hygiene **complete**');
   });
 
   it('documents do-not-close guidance for umbrella and QA project', () => {

@@ -356,5 +356,5 @@ labels; keep `status:active`; **do not close** `#1259`.
 ## Closeout prep (2026-06-17)
 
 Program `#1255` closeout readiness packet:
-`docs/ops/reports/program-1255-closeout-readiness.md`. Operator hygiene pending:
-`#1123` remove `status:pr-draft`; `#1258` close as complete (PR `#1652`).
+`docs/ops/reports/program-1255-closeout-readiness.md`. Operator hygiene for `#1123`
+and `#1258` **complete** (2026-06-17).

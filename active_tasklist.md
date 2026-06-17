@@ -14,18 +14,8 @@ Use this file only as an optional, human-readable snapshot.
 
 | Item | State | Notes |
 | --- | --- | --- |
-| `#1255` | `status:active` (open) | Umbrella — **closeout inspection pending** Atlas/Bill authorization |
-| `#1259` | `status:active` (open) | Phase 4 complete (Tasks 001–009); open pending `#1255` terminal closeout |
-
-## Closeout prep (operator — pending final inspection)
-
-| Item | Action |
-| --- | --- |
-| `#1123` | Remove stale `status:pr-draft` label (issue already CLOSED) |
-| `#1258` | Close as complete — deliverables satisfied by PR `#1652` |
-| `#1259` / `#1255` | **Do not close** until terminal closeout authorized |
-
-Packet: `docs/ops/reports/program-1255-closeout-readiness.md`
+| `#1255` | `status:active` | Umbrella program — Website Implementation and Content Operations (Cursor) |
+| `#1259` | `status:active` (open) | **Phase 4 complete** — Tasks 001–009 merged; `#1259` open pending `#1255` closeout |
 
 ## Portfolio note (2026-06-16)
 
@@ -47,12 +37,10 @@ parallel when ChatGPT became capable of `#1500` implementation. `#1500` is now
 | `#1259` Phase 4 Task 005 | PR `#1684` merged (`8893591`); D1/B2 read-path validation report on `main` |
 | `#1259` Phase 4 Task 006 | PR `#1728` merged (`c170d3c`); content inventory public surface validation report on `main` |
 | `#1259` Phase 4 Task 007 | PR `#1737` merged (`552fb8f`); H-011 launch-readiness disposition report on `main` |
-| `#1259` Phase 4 Task 008 | PR `#1753` merged (`678699e`); legacy disposition package on `main` |
-| `#1259` Phase 4 Task 009 | PR `#1751` merged (`fd17af2`); final QA handoff report on `main` |
 | `#1500` CI Post-Merge Closeout Reliability | **closed complete** — Tasks 001–005 (`#1544`–`#1548`) |
 | issue `#1411` | completed planning artifact |
 
 ## Out of scope (current pass)
 
-- Program `#1255` terminal closeout (requires Atlas/Bill authorization after inspection)
-- Priority #1 / #2 / #3 program execution (parked launch-control programs)
+- `#1259` Phase 4 Tasks 008–009 (not authorized until per-task Atlas/Bill approval)
+- Application code outside the next authorized `#1259` task scope
