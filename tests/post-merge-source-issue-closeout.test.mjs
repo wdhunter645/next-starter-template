@@ -5,13 +5,17 @@ import {
 	buildFailureCloseoutComment,
 	buildSourceIssueCloseoutComment,
 	isRemediationIssue,
+	isUmbrellaSourceIssue,
 	planActiveSourceIssueRelabel,
 	planFailureSourceIssueRelabel,
 	planTerminalLabelReconciliation,
 	postMergeVerificationResult,
+	requestsSourceIssueTerminalClose,
 	shouldCloseSourceIssue,
 	shouldKeepActiveSourceIssueOpen,
+	shouldPreserveSourceIssueOpen,
 	shouldReopenActiveSourceIssue,
+	shouldReopenUmbrellaSourceIssue,
 	STALE_SOURCE_ISSUE_LABELS,
 } from '../scripts/ci/post_merge_source_issue_closeout.mjs';
 import { metadataFailures, blockingMetadataFailures, buildResult } from '../scripts/ci/post_merge_validator.mjs';
@@ -244,6 +248,80 @@ describe('source issue closeout decision', () => {
 			ok: true,
 			removeLabels: expect.arrayContaining(['status:failed']),
 		});
+	});
+
+	it('recognizes keep-open language in POST-MERGE CLOSEOUT CHECKLIST', () => {
+		const body = [
+			baseBody,
+			'',
+			'## POST-MERGE CLOSEOUT CHECKLIST',
+			'- [ ] Source issue `#1259` state inspected after merge — **must remain OPEN** (child project through Phase 4)',
+			'- [ ] **Do NOT close `#1259`** — task PR; post-merge automation must not close the project issue',
+		].join('\n');
+
+		expect(shouldKeepActiveSourceIssueOpen(body)).toBe(true);
+		expect(
+			shouldCloseSourceIssue({
+				action: 'post_merge_success',
+				issueNumber: '1259',
+				isMerged: true,
+				postMergeResult: { status: 'pass', remediation_required: false },
+				issueMeta: {
+					title: 'PROJECT: Website QA and Production Validation',
+					labels: ['type:website', 'status:active', 'status:post-merge-verify', 'website'],
+				},
+				prBody: body,
+			}),
+		).toEqual({ close: false, reason: 'active_source_issue_remains_open' });
+	});
+
+	it('keeps PROJECT and PROGRAM umbrella source issues open without explicit terminal close', () => {
+		expect(isUmbrellaSourceIssue({ title: 'PROJECT: Website QA and Production Validation' })).toBe(true);
+		expect(isUmbrellaSourceIssue({ title: 'PROGRAM: Website Implementation and Content Operations' })).toBe(true);
+		expect(isUmbrellaSourceIssue({ title: 'Task 005 fan club work' })).toBe(false);
+
+		expect(
+			shouldCloseSourceIssue({
+				action: 'post_merge_success',
+				issueNumber: '1259',
+				isMerged: true,
+				postMergeResult: { status: 'pass', remediation_required: false },
+				issueMeta: {
+					title: 'PROJECT: Website QA and Production Validation',
+					labels: ['type:website', 'status:active', 'website'],
+				},
+				prBody: baseBody,
+			}),
+		).toEqual({ close: false, reason: 'umbrella_source_issue_remains_open' });
+		expect(shouldReopenUmbrellaSourceIssue({
+			issueMeta: { title: 'PROJECT: Website QA and Production Validation' },
+			prBody: baseBody,
+			issueNumber: '1259',
+		})).toBe(true);
+	});
+
+	it('allows umbrella terminal close only when POST-MERGE ISSUE DISPOSITION authorizes it', () => {
+		const body = [
+			baseBody,
+			'',
+			'## POST-MERGE ISSUE DISPOSITION',
+			'- Close source issue #1259 after final Phase 4 task; apply terminal close',
+		].join('\n');
+
+		expect(requestsSourceIssueTerminalClose(body, '1259')).toBe(true);
+		expect(
+			shouldCloseSourceIssue({
+				action: 'post_merge_success',
+				issueNumber: '1259',
+				isMerged: true,
+				postMergeResult: { status: 'pass', remediation_required: false },
+				issueMeta: {
+					title: 'PROJECT: Website QA and Production Validation',
+					labels: ['type:website', 'status:active', 'website'],
+				},
+				prBody: body,
+			}),
+		).toEqual({ close: true, reason: 'post_merge_validation_success' });
 	});
 
 	it('does not close remediation issues mis-linked as source issues', () => {

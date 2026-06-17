@@ -32,22 +32,81 @@ export function postMergeIssueDispositionSection(body = '') {
 	return match ? match[0] : '';
 }
 
+export function postMergeCloseoutChecklistSection(body = '') {
+	const match = String(body || '').match(/## POST-MERGE CLOSEOUT CHECKLIST[\s\S]*?(?=\n## [A-Z]|\n<!--|$)/i);
+	return match ? match[0] : '';
+}
+
+export function postMergeKeepOpenSections(body = '') {
+	return [postMergeIssueDispositionSection(body), postMergeCloseoutChecklistSection(body)]
+		.filter(Boolean)
+		.join('\n');
+}
+
 function shouldKeepActiveSourceIssueOpenFromSection(section = '') {
-	return (
+	if (
 		/\bremains?\b/i.test(section) &&
 		/\bopen\b/i.test(section) &&
 		/\bdo not (?:close|apply terminal close)\b/i.test(section) &&
 		/\bstatus:active\b/i.test(section)
+	) {
+		return true;
+	}
+
+	return (
+		/\bdo not close\b/i.test(section) &&
+		(/\bremains?\b/i.test(section) || /\bmust remain\b/i.test(section)) &&
+		/\bopen\b/i.test(section)
 	);
 }
 
 export function shouldKeepActiveSourceIssueOpen(body = '') {
-	return shouldKeepActiveSourceIssueOpenFromSection(postMergeIssueDispositionSection(body));
+	return shouldKeepActiveSourceIssueOpenFromSection(postMergeKeepOpenSections(body));
+}
+
+export function isUmbrellaSourceIssue(issueMeta = null) {
+	const title = String(issueMeta?.title || '').trim();
+	return /^(PROJECT|PROGRAM):/i.test(title);
+}
+
+export function requestsSourceIssueTerminalClose(body = '', issueNumber = '') {
+	const disposition = postMergeIssueDispositionSection(body);
+	if (!disposition) return false;
+	if (/\bdo not (?:close|apply terminal close)\b/i.test(disposition)) return false;
+
+	const normalizedIssueNumber = String(issueNumber || '').replace(/^#/, '');
+	const issueRef = normalizedIssueNumber ? `#${normalizedIssueNumber}` : '';
+
+	if (/\b(?:close|apply terminal close to) source issue\b/i.test(disposition)) {
+		return !issueRef || disposition.includes(issueRef);
+	}
+
+	if (issueRef) {
+		return new RegExp(`\\bclose\\s+#?${normalizedIssueNumber}\\b`, 'i').test(disposition);
+	}
+
+	return false;
+}
+
+export function shouldKeepUmbrellaSourceIssueOpen({ issueMeta = null, prBody = '', issueNumber = '' } = {}) {
+	if (!isUmbrellaSourceIssue(issueMeta)) return false;
+	return !requestsSourceIssueTerminalClose(prBody, issueNumber);
+}
+
+export function shouldPreserveSourceIssueOpen({ body = '', issueMeta = null, issueNumber = '' } = {}) {
+	return (
+		shouldKeepActiveSourceIssueOpen(body) ||
+		shouldKeepUmbrellaSourceIssueOpen({ issueMeta, prBody: body, issueNumber })
+	);
 }
 
 export function shouldReopenActiveSourceIssue(body = '') {
-	const section = postMergeIssueDispositionSection(body);
+	const section = postMergeKeepOpenSections(body);
 	return shouldKeepActiveSourceIssueOpenFromSection(section) && /\breopen\b/i.test(section);
+}
+
+export function shouldReopenUmbrellaSourceIssue({ issueMeta = null, prBody = '', issueNumber = '' } = {}) {
+	return shouldKeepUmbrellaSourceIssueOpen({ issueMeta, prBody, issueNumber });
 }
 
 export function planFailureSourceIssueRelabel({ issueLabels = [], repoLabels = [] } = {}) {
@@ -250,6 +309,9 @@ export function shouldCloseSourceIssue({
 	if (action !== 'post_merge_success') return { close: false, reason: `action_${action}` };
 	if (shouldKeepActiveSourceIssueOpen(prBody)) {
 		return { close: false, reason: 'active_source_issue_remains_open' };
+	}
+	if (shouldKeepUmbrellaSourceIssueOpen({ issueMeta, prBody, issueNumber })) {
+		return { close: false, reason: 'umbrella_source_issue_remains_open' };
 	}
 	const closedFollowupAllowed =
 		String(issueMeta?.state || '').toUpperCase() === 'CLOSED' &&

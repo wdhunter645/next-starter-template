@@ -213,6 +213,12 @@ Reviewer items (required format for gate parsing):
 - [ ] Explicitly required tracker/status-index follow-up is complete or delegated when the source issue authorizes that work
 - [ ] Post-merge validation gates inspected when applicable
 
+## POST-MERGE ISSUE DISPOSITION (REQUIRED FOR CHILD PROJECT / UMBRELLA SOURCE ISSUES)
+Use this section when the source issue is a `PROJECT:` or `PROGRAM:` umbrella that must remain open after the task PR merges. Post-merge automation parses **only this section** (plus checklist keep-open phrases) for do-not-close decisions.
+
+- Source issue **#____** remains **open** with `status:active`; remove only `status:post-merge-verify` and other stale workflow labels; **do not close** #____
+- For one-off task issues that should close on merge, omit this section or replace with explicit terminal-close authorization.
+
 ## ACCEPTANCE CRITERIA
 Post-merge validation fails if any acceptance criterion remains unchecked after merge. Post-merge-only criteria must be checked with evidence, marked not applicable with rationale by replacing the checkbox line, or delegated to a tracked remediation issue before closeout is claimed.
 

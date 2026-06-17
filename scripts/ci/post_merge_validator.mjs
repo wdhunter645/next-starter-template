@@ -12,7 +12,7 @@ import {
 	isPermittedClosedSourceIssueFollowup,
 	planActiveSourceIssueRelabel,
 	planTerminalLabelReconciliation,
-	shouldKeepActiveSourceIssueOpen,
+	shouldPreserveSourceIssueOpen,
 } from './post_merge_source_issue_closeout.mjs';
 
 export { isPermittedClosedSourceIssueFollowup };
@@ -95,7 +95,7 @@ export function sourceIssueStateFailures({ body = '', sourceIssue = null, source
 			message: 'Accepted source issue reference points to a pull request, not an issue.',
 		});
 	}
-	if (shouldKeepActiveSourceIssueOpen(body)) {
+	if (shouldPreserveSourceIssueOpen({ body, issueMeta: sourceIssue, issueNumber: linkedIssueNumber(body) })) {
 		const relabel = planActiveSourceIssueRelabel({
 			issueLabels: sourceIssue.labels || [],
 		});
@@ -708,7 +708,12 @@ export async function runValidator({
 			]);
 			sourceIssue = issue;
 			repoLabels = labels;
-			terminalLabelResult = shouldKeepActiveSourceIssueOpen(normalizedPr.body || '')
+			const preserveSourceIssueOpen = shouldPreserveSourceIssueOpen({
+				body: normalizedPr.body || '',
+				issueMeta: sourceIssue,
+				issueNumber: sourceAccounting.issueNumber,
+			});
+			terminalLabelResult = preserveSourceIssueOpen
 				? planActiveSourceIssueRelabel({ issueLabels: sourceIssue.labels || [] })
 				: planTerminalLabelReconciliation({
 					issueLabels: sourceIssue.labels || [],
@@ -719,9 +724,11 @@ export async function runValidator({
 				sourceIssue,
 			})
 				? 'closed_remediation_followup'
-				: String(sourceIssue.state || '').toLowerCase() === 'open'
-					? 'open_source_issue'
-					: 'exception_required';
+				: preserveSourceIssueOpen
+					? 'source_issue_preserved_open'
+					: String(sourceIssue.state || '').toLowerCase() === 'open'
+						? 'source_issue_open_at_validation'
+						: 'exception_required';
 		} catch (error) {
 			sourceIssueError = error instanceof Error ? error.message : String(error);
 		}
