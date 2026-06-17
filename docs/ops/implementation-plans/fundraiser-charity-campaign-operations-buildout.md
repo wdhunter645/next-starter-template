@@ -124,6 +124,25 @@ Expected validation categories:
 - one source issue line in the PR body;
 - exact file-touch allowlist alignment.
 
+## Fundraiser pre-launch testing checklist
+
+Before any public campaign launch, the responsible implementation task must produce a completed checklist that verifies:
+
+| Check area | Required verification |
+| --- | --- |
+| Campaign state | Draft, preview, active, paused, ended, and archived states are represented or explicitly deferred. |
+| Approved public links | Givebutter or other external campaign URLs are operator-approved and do not expose private admin URLs. |
+| Fail-closed behavior | Campaign spotlight and campaign routes render disabled/empty-safe states when config is missing, invalid, stale, disabled, or unpublished. |
+| Homepage spotlight | Homepage campaign module does not block core homepage navigation, header, footer, auth, or existing public content when no active campaign exists. |
+| Leaderboard snapshot | Leaderboard display uses approved snapshot/import state and does not depend on raw live donor data. |
+| Winner rule | Winner calculation, tiebreaker, publication timing, and operator approval are documented before display. |
+| Recognition privacy | Sponsor/donor recognition uses approved public fields only and does not expose email, phone, address, payment details, raw transaction IDs, or private notes. |
+| Accessibility and viewport | Campaign surfaces are checked for keyboard access, readable labels, mobile viewport behavior, and non-blocking fallbacks. |
+| Archive behavior | Ended campaigns can be hidden, archived, or summarized without stale live-state claims. |
+| Operator handoff | Human operator can identify what to configure externally, what to update in LGFC docs/admin surfaces, and what evidence is required before launch. |
+
+Task 007 must convert this checklist into the final pre-launch verification artifact and Task 008 must cite that artifact during program closeout.
+
 ## Launch gate
 
 This plan becomes executable only when Bill/Atlas create or update a program issue with explicit launch authorization.
