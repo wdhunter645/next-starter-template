@@ -2,102 +2,89 @@
 Doc Type: Operational Rules
 Audience: AI (Codex)
 Authority Level: Agent-Specific
-Owns: Codex implementation-agent behavior for LGFC repository work
-Does Not Own: Shared agent law, design authority, ChatGPT control-plane coordination, or merge approval
-Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
-Last Reviewed: 2026-06-04
+Owns: Codex inactive-status declaration and historical reference boundaries
+Does Not Own: Shared agent law, design authority, LGFC implementation routing, or merge approval
+Canonical Reference: /docs/ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md
+Last Reviewed: 2026-06-17
 ---
 
 # CODEX-RULES.md
 
 ## Purpose
 
-This document defines **Codex-specific** execution behavior when Codex is the assigned implementation agent.
+This document defines **Codex status** for LGFC repository work.
+
+**Codex is inactive/out for LGFC implementation** unless Bill explicitly reauthorizes it in a future governance update.
+
+Canonical team roles and workflow: [`LGFC-AI-TEAM-OPERATING-MODEL.md`](./LGFC-AI-TEAM-OPERATING-MODEL.md).
 
 Shared agent law: [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md).  
 Detailed shared execution: [`CORE-RULES.md`](./CORE-RULES.md).  
-Historical prompt summary: [`PROMPTS/Codex-Rules.md`](../../../PROMPTS/Codex-Rules.md) (supporting reference; this file wins on conflict).
+Active implementation authority: [`CURSOR-RULES.md`](./CURSOR-RULES.md).
+
+Historical prompt summary: [`PROMPTS/Codex-Rules.md`](../../../PROMPTS/Codex-Rules.md) (supporting reference only; this file and the operating model win on conflict).
 
 ---
 
 ## Mandatory documentation chain
 
-Before any repo work, follow the chain in [`Agent.md`](../../../Agent.md): `Agent.md` → [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md) → [`CORE-RULES.md`](./CORE-RULES.md) → this file → applicable repo governance/procedure docs → applicable `.agents/skills/*/SKILL.md` files.
+Before any repo work, follow the chain in [`Agent.md`](../../../Agent.md): `Agent.md` → [`LGFC-AI-TEAM-OPERATING-MODEL.md`](./LGFC-AI-TEAM-OPERATING-MODEL.md) → [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md) → [`CORE-RULES.md`](./CORE-RULES.md) → this file → applicable repo governance/procedure docs → applicable `.agents/skills/*/SKILL.md` files.
 
 This file is additive. It does not replace shared/core rules or repo governance.
 
 ---
 
-## Role
+## Current status: inactive / out
 
-Codex is an **implementation agent**, not the control plane.
+As of 2026-06-17 (issue #1754):
 
-Codex performs scoped code and documentation changes within an existing PR or approved task scope.
+- **Do not assign LGFC implementation work to Codex.**
+- **Do not route new product or repository implementation tasks to Codex.**
+- **Do not create Codex implementation child issues** for LGFC programs unless Bill explicitly reauthorizes Codex in a future governance update.
+- **Cursor is the sole LGFC implementation executor.**
+
+Prior documentation that described Codex as a primary or secondary implementation agent is superseded for LGFC work.
+
+---
+
+## Role (historical reference only)
+
+When Codex was active, it operated as an implementation agent — not the control plane — under Atlas coordination and Bill approval.
+
+That execution path is **closed** for LGFC unless reauthorized.
 
 Codex does not:
 
 - define scope or acceptance criteria;
-- create new Pull Requests unless the source Issue explicitly instructs it;
+- author program or child issues;
+- replace Atlas design/launch-control authority;
 - merge Pull Requests;
-- override ChatGPT/operator coordination.
-
-Agent routing priority: [`CORE-RULES.md` — Agent routing priority](./CORE-RULES.md#agent-routing-priority).
+- override Bill gate authorization.
 
 ---
 
-## Execution model
+## If Codex receives an LGFC implementation assignment
 
-- **PR-as-task** — read the full PR and source Issue before acting.
-- **One deliverable** — one task, one branch (when branch creation is in scope), one PR.
-- **Allowlist boundary** — modify only files in the approved allowlist.
-- **Default stop** — after updating an existing draft PR, stop unless the source Issue instructs further commits.
+**Stop immediately** and report:
 
-Apply all sections of [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md) before claiming completion.
+```text
+Codex is inactive/out for LGFC implementation per LGFC-AI-TEAM-OPERATING-MODEL.md and issue #1754.
+Route implementation to Cursor.
+Do not proceed without Bill-approved governance reauthorization.
+```
 
----
-
-## GitHub and git behavior (Codex-specific)
-
-- Use **Codex GitHub integration** to commit and update the **existing** PR when that is the assigned workflow.
-- **Do not** use ad-hoc `git push` when integration is required by the task.
-- **Do not** create a new branch or new PR when the task assigns work to an existing PR.
-- **Do not** leave work only in a sandbox — commits must appear on the PR branch the gate evaluates.
-
-If the source Issue explicitly instructs standard git branch/PR workflow (for example repository automation issues), follow that Issue instruction and [`CURSOR-RULES.md`](./CURSOR-RULES.md) branch rules where applicable.
+Do not edit files. Do not open PRs. Do not commit.
 
 ---
 
-## Validation before handoff
+## Reactivation (future only)
 
-Codex must confirm:
+Codex may return as an LGFC implementation path only when:
 
-- only allowlisted files changed;
-- PR body allowlist and change summary match the diff;
-- task-relevant local checks were run when required by the source Issue;
-- handoff includes files changed, verification commands, and blockers.
+1. Bill explicitly approves a governance update; and
+2. [`LGFC-AI-TEAM-OPERATING-MODEL.md`](./LGFC-AI-TEAM-OPERATING-MODEL.md), [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md), and this file are updated together in a docs/governance PR with a new source issue.
 
-Codex must not claim completion from local-only state.
-
-For PR remediation work, before claiming completion, Codex must verify:
-
-- local branch SHA equals live PR head SHA;
-- live PR body matches the intended final state;
-- live checks and live review-thread/comment state after remediation.
-
-Skill references: `.agents/skills/lgfc-pr-governance/SKILL.md`, `.agents/skills/lgfc-verification-closeout/SKILL.md`.
-
----
-
-## Failure conditions
-
-Stop and report when:
-
-- PR or allowlist is unclear;
-- scope conflicts with shared law or design authority;
-- Codex cannot update the assigned PR through the required integration path;
-- extra files would be required outside the allowlist.
-
-Treat **no PR update**, **new PR created against instruction**, **extra files**, or **no commit on the target branch** as execution failure.
+Until then, treat all Codex LGFC implementation instructions as invalid routing.
 
 ---
 
@@ -105,12 +92,12 @@ Treat **no PR update**, **new PR created against instruction**, **extra files**,
 
 Stop if:
 
-- no primary source Issue exists for the work;
-- instructions conflict with [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md);
-- merge or push is requested without explicit source Issue authorization.
+- any LGFC implementation task is assigned to Codex;
+- instructions conflict with inactive status or the operating model;
+- an operator or agent requests Codex as primary/secondary LGFC implementer without reauthorization documentation.
 
 ---
 
 ## Final
 
-Codex executes within approved scope on an existing orchestrated PR. Shared law and gate discipline are mandatory; control-plane coordination remains with ChatGPT/operator unless the source Issue assigns otherwise.
+Codex is **not** an active LGFC implementation agent. Shared law still applies if Codex touches repository surfaces for non-implementation work in the future, but **LGFC implementation belongs to Cursor only** until Bill explicitly reauthorizes Codex in governance.

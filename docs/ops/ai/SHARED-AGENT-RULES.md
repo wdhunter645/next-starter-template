@@ -5,14 +5,16 @@ Authority Level: Core
 Owns: Categorized shared agent law for all LGFC repository agents
 Does Not Own: Tool-specific execution behavior, ChatGPT control-plane doctrine, design authority, workflow implementation, or merge approval
 Canonical Reference: /Agent.md
-Last Reviewed: 2026-06-04
+Last Reviewed: 2026-06-17
 ---
 
 # SHARED-AGENT-RULES.md
 
 ## Purpose
 
-This document is the single categorized index for **shared agent law** — rules that apply to ChatGPT/Atlas, Cursor, Codex, Copilot, Devin, and future repository agents.
+This document is the single categorized index for **shared agent law** — rules that apply to Bill (human operator), ChatGPT/Atlas, Cursor, Codex (inactive), Copilot, Devin, and future repository agents.
+
+Canonical LGFC AI team roles, modes, and workflow: [`LGFC-AI-TEAM-OPERATING-MODEL.md`](./LGFC-AI-TEAM-OPERATING-MODEL.md).
 
 Detailed execution rules, gate-troubleshooting sequences, and routing priority live in [`CORE-RULES.md`](./CORE-RULES.md). Tool-specific behavior lives in the agent-specific files listed under [Tool-specific rules](#tool-specific-rules).
 
@@ -25,11 +27,12 @@ Do not duplicate long doctrine in agent-specific files. Link here instead.
 All agents must start at [`Agent.md`](../../../Agent.md) and follow the **mandatory documentation chain** before any repo work:
 
 1. [`Agent.md`](../../../Agent.md) — mandatory entry point and routing authority
-2. This document (categorized shared law)
-3. [`CORE-RULES.md`](./CORE-RULES.md) (detailed shared execution)
-4. Applicable agent-specific rule file (see [Tool-specific rules](#tool-specific-rules); additive only)
-5. Applicable repo governance and procedure docs — source GitHub issue, task-linked authority files, and for PR/issue/review/remediation/implementation work: `.agents/skills/lgfc-pr-governance/SKILL.md`, `.github/pull_request_template.md`, `docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`, and linked governance docs
-6. Applicable repository skills under `.agents/skills/` when the task matches a trigger
+2. [`LGFC-AI-TEAM-OPERATING-MODEL.md`](./LGFC-AI-TEAM-OPERATING-MODEL.md) — canonical team roles, modes, and workflow
+3. This document (categorized shared law)
+4. [`CORE-RULES.md`](./CORE-RULES.md) (detailed shared execution)
+5. Applicable agent-specific rule file (see [Tool-specific rules](#tool-specific-rules); additive only)
+6. Applicable repo governance and procedure docs — source GitHub issue, task-linked authority files, and for PR/issue/review/remediation/implementation work: `.agents/skills/lgfc-pr-governance/SKILL.md`, `.github/pull_request_template.md`, `docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`, and linked governance docs
+7. Applicable repository skills under `.agents/skills/` when the task matches a trigger
 
 Agent-specific docs do not replace shared/core rules or repo governance. Task prompts do not override this chain.
 
@@ -205,16 +208,21 @@ Expanded detail: [`CORE-RULES.md` — Drift prevention](./CORE-RULES.md#drift-pr
 
 Shared law above applies to every agent. The following documents add **tool-specific behavior only** — they must not weaken shared law.
 
+**LGFC implementation routing:** Cursor is the **sole** active LGFC implementation executor. Codex is **inactive/out** unless Bill explicitly reauthorizes it in a future governance update. Do not assign LGFC implementation work to Codex.
+
 | Agent / surface | Document | Owns |
 | --- | --- | --- |
-| ChatGPT / Atlas | [`CHATGPT-RULES.md`](./CHATGPT-RULES.md) | Control-plane role, repo status synthesis, PR readiness verification, issue/PR coordination |
-| Cursor | [`CURSOR-RULES.md`](./CURSOR-RULES.md) | Local implementation execution, thread discipline, analysis-first workflow, no merge/push unless repo workflow instructs |
-| Codex | [`CODEX-RULES.md`](./CODEX-RULES.md) | PR-as-task execution via Codex GitHub integration |
-| Copilot | [`COPILOT-RULES.md`](./COPILOT-RULES.md) | Scoped PR-based implementation |
-| Devin | [`DEVIN-RULES.md`](./DEVIN-RULES.md) | Draft-PR boundary and constrained contributor behavior |
+| Bill (human) | — | Project owner, final authority, PR approval, gate authorization |
+| ChatGPT / Atlas | [`CHATGPT-RULES.md`](./CHATGPT-RULES.md) | Design authority, documentation PR/package authority, program and child issue authorship, launch-control packages, gate review partnership with Bill |
+| Cursor | [`CURSOR-RULES.md`](./CURSOR-RULES.md) | **Sole** LGFC implementation execution, pre-implementation package review, continuous execution within scope |
+| Codex | [`CODEX-RULES.md`](./CODEX-RULES.md) | **Inactive/out** — no LGFC implementation assignments unless future Bill-approved reauthorization |
+| Copilot | [`COPILOT-RULES.md`](./COPILOT-RULES.md) | Scoped PR-based implementation (not default LGFC routing) |
+| Devin | [`DEVIN-RULES.md`](./DEVIN-RULES.md) | Draft-PR boundary and constrained contributor behavior (not default LGFC routing) |
 | AI execution bridge | *Future phase* | Label-triggered bounded automation — not active unless explicitly implemented and documented in a source issue |
 
-Cross-agent handoff and role mapping: [`ops/ai/CROSS-AGENT-OPERATING-RULES.md`](../../../ops/ai/CROSS-AGENT-OPERATING-RULES.md).
+Canonical operating model: [`LGFC-AI-TEAM-OPERATING-MODEL.md`](./LGFC-AI-TEAM-OPERATING-MODEL.md).
+
+Cross-agent handoff and role mapping: [`ops/ai/CROSS-AGENT-OPERATING-RULES.md`](../../../ops/ai/CROSS-AGENT-OPERATING-RULES.md) (supporting reference; operating model wins on team-role conflict).
 
 Long-form governance: [`governance/ai/AGENT-GOVERNANCE.md`](../../../governance/ai/AGENT-GOVERNANCE.md).
 
