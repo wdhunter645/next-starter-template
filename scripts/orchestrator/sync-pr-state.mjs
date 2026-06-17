@@ -8,13 +8,16 @@ import { linkedIssueNumber, sourceIssueAccounting } from '../ci/issue_accounting
 import {
   buildFailureCloseoutComment,
   buildSourceIssueCloseoutComment,
+  isUmbrellaSourceIssue,
   planActiveSourceIssueRelabel,
   planFailureSourceIssueRelabel,
   planTerminalLabelReconciliation,
   postMergeVerificationResult,
   shouldCloseSourceIssue,
   shouldKeepActiveSourceIssueOpen,
+  shouldPreserveSourceIssueOpen,
   shouldReopenActiveSourceIssue,
+  shouldReopenUmbrellaSourceIssue,
 } from '../ci/post_merge_source_issue_closeout.mjs';
 
 const repo = process.env.GITHUB_REPOSITORY;
@@ -155,19 +158,35 @@ export function syncPrState({
 
     if (!closeDecision.close) {
       if (
-        closeDecision.reason === 'active_source_issue_remains_open' &&
-        shouldKeepActiveSourceIssueOpen(pr.body || '')
+        (closeDecision.reason === 'active_source_issue_remains_open' &&
+          shouldKeepActiveSourceIssueOpen(pr.body || '')) ||
+        (closeDecision.reason === 'umbrella_source_issue_remains_open' &&
+          shouldPreserveSourceIssueOpen({
+            body: pr.body || '',
+            issueMeta: meta,
+            issueNumber,
+          }))
       ) {
-        if (
-          String(meta.state || '').toUpperCase() === 'CLOSED' &&
-          shouldReopenActiveSourceIssue(pr.body || '')
-        ) {
+        const shouldReopen =
+          (closeDecision.reason === 'active_source_issue_remains_open' &&
+            shouldReopenActiveSourceIssue(pr.body || '')) ||
+          (closeDecision.reason === 'umbrella_source_issue_remains_open' &&
+            shouldReopenUmbrellaSourceIssue({
+              issueMeta: meta,
+              prBody: pr.body || '',
+              issueNumber,
+            }));
+        if (String(meta.state || '').toUpperCase() === 'CLOSED' && shouldReopen) {
           run(['issue', 'reopen', issueNumber, '--repo', repo]);
           meta = getIssueMeta(issueNumber, { run });
         }
         const relabelPlan = planActiveSourceIssueRelabel({ issueLabels: meta.labels || [] });
         reconcileTerminalLabelsFn(issueNumber, relabelPlan);
         const mergeSha = postMergeResult?.merge_sha || pr?.mergeCommit?.oid || '';
+        const queueAdvancementStatus =
+          closeDecision.reason === 'umbrella_source_issue_remains_open'
+            ? 'no queue action; umbrella/child project source issue remains open pending explicit terminal closeout'
+            : 'no queue action; Phase 3 planning complete; source issue remains active pending Phase 4 approval';
         const closeoutComment = buildSourceIssueCloseoutComment({
           prNumber,
           mergeSha,
@@ -178,8 +197,7 @@ export function syncPrState({
           validationSummary: validationSummary(postMergeResult),
           terminalLabelResult: relabelPlan.summary,
           sourceIssueCloseoutMode: postMergeResult?.source_issue_closeout_mode,
-          queueAdvancementStatus:
-            'no queue action; Phase 3 planning complete; source issue remains active pending Phase 4 approval',
+          queueAdvancementStatus,
         });
         run(['issue', 'comment', issueNumber, '--repo', repo, '--body', closeoutComment]);
         return 'active_relabeled';

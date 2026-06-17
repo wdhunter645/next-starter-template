@@ -126,6 +126,17 @@ Automation and agents must treat these as non-closeout references by default:
 - queue or roadmap issues;
 - issues that remain active after a child task completes;
 - remediation issues unless duplicate-remediation cleanup is explicitly in scope.
+- `PROJECT:` and `PROGRAM:` titled source issues linked by task PRs, unless
+  `## POST-MERGE ISSUE DISPOSITION` explicitly authorizes terminal close.
+
+Post-merge closeout automation enforces this structurally:
+
+1. `PROJECT:` / `PROGRAM:` source issues remain open after task PR merge unless
+   disposition explicitly authorizes terminal close.
+2. Keep-open language in `## POST-MERGE ISSUE DISPOSITION` or
+   `## POST-MERGE CLOSEOUT CHECKLIST` prevents automatic source-issue closure.
+3. Incorrect umbrella closure on a prior merge is auto-reopened on the next
+   successful closeout sync when the umbrella guard applies.
 
 An umbrella issue may be closed only when all of the following are true:
 
