@@ -12,13 +12,13 @@ describe('post-merge closeout all manifests', () => {
 		]);
 	});
 
-	it('loads bounded closeout remediation batch #1791 plus PR #1772 rerun target', () => {
+	it('loads bounded closeout remediation batch #1791 plus PR #1786 (#1777) and PR #1772 (#1794) rerun', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json');
 		expect(targets).toHaveLength(25);
 		expect(targets.map((target) => target.pr)).toEqual([
 			1699, 1778, 1531, 1534, 1536, 1538, 1540, 1551, 1556, 1582, 1619,
 			1669, 1677, 1681, 1728, 1729, 1734, 1737, 1749, 1751, 1753, 1762,
-			1765, 1780, 1772,
+			1765, 1786, 1772,
 		]);
 		expect(targets.every((target) => target.body_file && target.merge_sha && target.source_issue)).toBe(
 			true,
@@ -34,9 +34,9 @@ describe('post-merge closeout all manifests', () => {
 			source_issue: 1754,
 		});
 		expect(targets[23]).toMatchObject({
-			body_file: 'scripts/ci/post-merge-closeout/pr-1780-body.md',
-			merge_sha: 'd3019beee16bc9099e3dcc48cc8f18a35325d829',
-			source_issue: 1738,
+			body_file: 'scripts/ci/post-merge-closeout/pr-1786-body.md',
+			merge_sha: '98b426d25259029dd08178cc3ac4c88589830b3a',
+			source_issue: 1777,
 		});
 		expect(targets[24]).toMatchObject({
 			body_file: 'scripts/ci/post-merge-closeout/pr-1772-body.md',
