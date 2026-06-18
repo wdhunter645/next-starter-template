@@ -9,9 +9,9 @@ Project: lou-gehrig-content-collection-expansion
 Owner: Atlas
 Execution Mode: cursor-after-launch-authorization
 Source Issue: 1736
-Related Program Issue: pending-program-issue-after-launch
+Related Program Issue: #1738
 Canonical Reference: /docs/ops/pmo/lou-gehrig-content-collection-expansion-readiness.md
-Related Issues: #1736, #1255, #1256, #1685, #1690, #1693, #1379
+Related Issues: #1736, #1738, #1255, #1256, #1685, #1690, #1693, #1379
 Last Reviewed: 2026-06-17
 ---
 

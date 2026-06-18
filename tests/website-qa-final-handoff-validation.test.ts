@@ -62,10 +62,10 @@ export const FINAL_QA_REPORT_PATH =
 export const LEGACY_RECONCILIATION_PATH =
   'docs/ops/reports/website-qa-production-validation-legacy-issue-reconciliation.md';
 
-/** Open blockers classified in Task 009 handoff (not closed on main). */
+/** Accepted deferrals and residual hygiene documented in final handoff / closeout prep. */
 export const OPEN_BLOCKER_IDS = [
   'h011-ci-schedule',
-  'task-008-legacy-disposition',
+  'legacy-label-hygiene-residual',
   'cloudflare-preview-drift',
   'fanclub-pdf-upload-ops',
   'homepage-inventory-consumer',
@@ -104,14 +104,16 @@ describe('website QA final handoff contract (#1259 Task 009)', () => {
     }
   });
 
-  it('records explicit handoff and do-not-close guidance for umbrella #1259', () => {
+  it('records Task 008 complete and closeout readiness guidance', () => {
     const report = readSource(FINAL_QA_REPORT_PATH);
     expect(report).toMatch(/do not close.*#1259/i);
     expect(report).toContain('#1255');
-    expect(report).toContain('Task 008');
+    expect(report).toContain('678699e');
+    expect(report).toContain('program-1255-closeout-readiness.md');
+    expect(report).toContain('legacy-label-hygiene-residual');
   });
 
-  it('retains legacy reconciliation as interim authority when Task 008 is pending', () => {
+  it('retains legacy reconciliation as supporting authority', () => {
     readSource(LEGACY_RECONCILIATION_PATH);
     const report = readSource(FINAL_QA_REPORT_PATH);
     expect(report).toContain(LEGACY_RECONCILIATION_PATH);
