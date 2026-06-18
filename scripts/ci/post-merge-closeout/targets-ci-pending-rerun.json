@@ -1,6 +1,6 @@
 {
-  "triggered_at": "2026-06-18T00:00:00Z",
-  "description": "Bounded closeout remediation batch #1791 — Tranche A (#1255), Tranche B (#1626/#1258), Tranche C (#1259)",
+  "triggered_at": "2026-06-18T12:30:00Z",
+  "description": "Bounded closeout remediation batch #1791 plus pending #1765/#1780 reruns",
   "targets": [
     {
       "pr": 1699,
@@ -133,6 +133,18 @@
       "body_file": "scripts/ci/post-merge-closeout/pr-1762-body.md",
       "merge_sha": "fa29216924856e6f6e375cd4dbca6ff441aad031",
       "source_issue": 1259
+    },
+    {
+      "pr": 1765,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1765-body.md",
+      "merge_sha": "9d6530b87abfb5a2615f70045d2530f6bd124bcc",
+      "source_issue": 1754
+    },
+    {
+      "pr": 1780,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1780-body.md",
+      "merge_sha": "d3019beee16bc9099e3dcc48cc8f18a35325d829",
+      "source_issue": 1738
     }
   ]
 }
