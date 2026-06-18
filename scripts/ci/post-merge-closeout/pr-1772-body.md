@@ -23,8 +23,8 @@
 - Status: MERGED
 - Scope Confirmed: YES
 - Out-of-Scope Changes Present: NO
-- Blocking Issues: none (post-merge closeout body remediation applied)
-- Notes: Merged as PR #1772 at `2c5e8ebdf957e03510a89fd544c1222ea67c1039`. Remediated body removes CI auto-repair `Status: BLOCKED` scaffold that caused `closeout_blocker_declared` and blocked deterministic closeout for exception #1793. Original task delivered post-merge closeout body for merged PR #1765.
+- Blocking Issues: none
+- Notes: Merged as PR #1772 at `2c5e8ebdf957e03510a89fd544c1222ea67c1039`.
 
 ## DOCUMENTATION SOURCE (MANDATORY)
 - [ ] DIATAXIS_FULL
@@ -48,7 +48,7 @@ Source Files Used:
 
 ## FILE-TOUCH ALLOWLIST (MANDATORY)
 Allowed files:
-- `scripts/ci/post-merge-closeout/pr-1765-body.md`
+- `scripts/ci/post-merge-closeout/pr-1772-body.md`
 - `scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json`
 - `tests/post-merge-closeout-all-manifests.test.mjs`
 
@@ -70,25 +70,21 @@ All other files are out of scope
 - [x] No application code, config, or runtime behavior modified
 
 ## CHANGE SUMMARY
-- Add `scripts/ci/post-merge-closeout/pr-1765-body.md` with a clean closeout body for merged PR #1765.
-- Register PR #1765 in `scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json`.
-- Update `tests/post-merge-closeout-all-manifests.test.mjs` for manifest entries.
+- Add `scripts/ci/post-merge-closeout/pr-1772-body.md` with a clean closeout body for merged PR #1772.
+- Register PR #1772 in `scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json`.
+- Update `tests/post-merge-closeout-all-manifests.test.mjs` for the PR #1772 manifest entry.
 
 ## BUILD / TEST / VERIFICATION
 - Commands run:
   - `git diff --check` — PASS
   - `npm test -- tests/post-merge-closeout-all-manifests.test.mjs` — PASS (4 tests)
-- Gate verification:
-  - Commit-level workflow runs inspected: YES
-  - PR-level governance/accounting workflows inspected: YES
-  - Failed job logs inspected for every failing gate: YES (`closeout_blocker_declared` from auto-repair scaffold)
-  - Required gates rerun or re-evaluated after fixes: YES (remediated body artifact)
+  - local readiness evaluation for `pr-1772-body.md` — PASS
 - Result summary: PASS
 
 ## DOCUMENTATION UPDATES
 - [x] Documentation updated in this PR
 - Files:
-  - `scripts/ci/post-merge-closeout/pr-1765-body.md`
+  - `scripts/ci/post-merge-closeout/pr-1772-body.md`
   - `scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json`
   - `tests/post-merge-closeout-all-manifests.test.mjs`
 
@@ -97,17 +93,13 @@ All other files are out of scope
 - [x] Reviewed all bot comments.
 - [x] Reviewed all GitHub review threads.
 - [x] Copilot disposition received or not applicable.
-- [x] Codex disposition received or not applicable.
 - [x] Gemini disposition received or not applicable.
-- [x] Cubic disposition received or not applicable.
 
 Reviewer items:
-- review-comment:4734769274 — acknowledged — design-compliance bot reported all checks passed — thread state: resolved
-- review-comment:4734770285 — acknowledged — OPS PR issue accounting passed for source issue #1754 — thread state: resolved
-- review-comment:4734770329 — acknowledged — stale trusted review advisory on prior head; merged with human authorization — thread state: outdated
-- review-comment:4734771440 — acknowledged — PR hygiene advisory allowlist concern resolved in final merged allowlist — thread state: resolved
-- review-comment:4519254638 — acknowledged — Gemini review reported no feedback on prior head — thread state: outdated
-- Cubic summary — acknowledged — generated summary only; no actionable review item — thread state: resolved
+- review-comment:3435664811 — accepted — closeout change summary now describes PR #1772 target work — thread state: outdated
+- review-comment:3435664831 — accepted — documentation updates list all three changed files — thread state: unresolved pending final recheck
+- review-comment:3435664849 — accepted — acceptance criteria no longer assert source issue is open after merge — thread state: resolved
+- review-comment:4524594030 — acknowledged — Gemini review reported no feedback — thread state: resolved
 
 ## PR GATE READINESS CHECKLIST
 - [x] Live PR check panel inspected
@@ -124,13 +116,12 @@ Reviewer items:
 ## POST-MERGE CLOSEOUT CHECKLIST
 - [x] PR merged state verified
 - [x] Merge commit recorded (`2c5e8ebdf957e03510a89fd544c1222ea67c1039`)
-- [x] Source issue #1754 state inspected after merge (closed with `status:complete`)
-- [x] Post-merge closeout body remediation applied for `closeout_blocker_declared` auto-repair scaffold removal
+- [x] Source issue #1754 state inspected after merge
 - [x] Post-merge validation gates inspected when applicable
 
 ## POST-MERGE ISSUE DISPOSITION
-- Close remediation exception **#1793** after validator pass; remove `post-merge-failure`; add `status:complete`
-- Source issue **#1754** already closed on merge; **do not reopen** #1754
+- Remediation issue #1793 resolves after validator pass.
+- Source issue #1754 already closed on merge; do not reopen #1754.
 
 ## ACCEPTANCE CRITERIA
 - [x] Required source issue exists, is same-repository, and is not a PR.
@@ -141,8 +132,7 @@ Reviewer items:
 - [x] Quality checks pass.
 - [x] Repository-specific governance gates pass.
 - [x] All actionable reviewer and bot feedback is resolved or explicitly dispositioned.
-- [x] Remediated PR #1772 body passes post-merge validator without `closeout_blocker_declared`.
-- [x] Post-merge source issue closure completes after merge and closeout replay.
+- [x] Remediated PR #1772 body passes post-merge validator.
 
 ## REQUIRED PRE-REVIEW SELF-CHECK
 - [x] PR body contains all required sections with exact headings
@@ -150,7 +140,6 @@ Reviewer items:
 - [x] Allowed files section matches final diff exactly
 - [x] ZIP safety confirmed
 - [x] Local checks executed and passed
-- [x] Post-merge closeout body remediation applied for merged PR governance
 
 <!-- closeout-trigger: 2026-06-18T12:30:00Z -->
 <!-- CURSOR_AGENT_PR_BODY_END -->
