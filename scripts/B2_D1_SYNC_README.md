@@ -55,14 +55,16 @@ bash scripts/b2_d1_incremental_sync.sh
 | `B2_BUCKET` | B2 bucket name |
 | `B2_KEY_ID` | B2 application key ID |
 | `B2_APP_KEY` | B2 application key |
-| `D1_DATABASE_ID` | D1 database ID or name |
-| `CLOUDFLARE_API_TOKEN` | Cloudflare API token with D1 access |
+| `D1_DATABASE_NAME` | D1 database name for wrangler (defaults to `lgfc_lite`; `D1_DATABASE_ID` accepted as alias) |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API token with **Account → D1 → Edit** and **User → User Details → Read** |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID (`CF_ACCOUNT_ID` accepted as alias) |
 
 ## Optional Environment Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID | (from wrangler config) |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID | required |
+| `CF_API_TOKEN` / `CF_ACCOUNT_ID` | Aliases for Cloudflare credentials | optional |
 | `PUBLIC_B2_BASE_URL` | Base URL for public access | `B2_ENDPOINT` |
 | `DRY_RUN` | Generate SQL but don't execute (1=yes, 0=no) | `0` |
 
@@ -135,6 +137,18 @@ Tests verify:
 To disable:
 1. Delete or disable `.github/workflows/b2-d1-daily-sync.yml`
 2. No data rollback needed (additive only)
+
+## GitHub Actions secrets
+
+The `OPS — B2 D1 Daily Sync` workflow requires:
+
+- `CLOUDFLARE_API_TOKEN` with **Account → D1 → Edit** and **User → User Details → Read**
+- `CLOUDFLARE_ACCOUNT_ID` (or `CF_ACCOUNT_ID`)
+- `D1_DATABASE_NAME` (optional; defaults to `lgfc_lite` from `wrangler.toml`)
+- B2 secrets: `B2_ENDPOINT`, `B2_BUCKET`, `B2_KEY_ID`, `B2_APP_KEY`
+
+The workflow runs `scripts/ci/verify_cloudflare_d1_auth.mjs` before sync. If you see
+`Authentication error [code: 10000]`, rotate the API token with the permissions above.
 
 ## Troubleshooting
 

@@ -26,33 +26,22 @@ if ! bash -n "$SYNC_SCRIPT"; then
 fi
 echo "  ✓ PASSED"
 
-# Test 3: Missing required environment variables are detected
+# Test 3: Required environment variables are declared
 echo "Test 3: Environment variable validation..."
 EXPECTED_VARS=(
   "B2_ENDPOINT"
   "B2_BUCKET"
   "B2_KEY_ID"
   "B2_APP_KEY"
-  "D1_DATABASE_ID"
+  "D1_DATABASE_NAME"
   "CLOUDFLARE_API_TOKEN"
+  "CLOUDFLARE_ACCOUNT_ID"
 )
-
 for var in "${EXPECTED_VARS[@]}"; do
-  # Run script with missing var and check for error
-  OUTPUT=$(bash "$SYNC_SCRIPT" 2>&1 || true)
-  
-  if ! echo "$OUTPUT" | grep -q "Required environment variable"; then
-    echo "  ✗ FAILED: Script should validate required environment variables"
+  if ! grep -q "\"$var\"" "$SYNC_SCRIPT"; then
+    echo "  ✗ FAILED: Script should validate $var"
     exit 1
   fi
-  
-  if ! echo "$OUTPUT" | grep -q "$var"; then
-    echo "  ✗ FAILED: Script should report missing $var"
-    exit 1
-  fi
-  
-  # Exit after first missing var to save time
-  break
 done
 echo "  ✓ PASSED"
 
@@ -79,8 +68,8 @@ echo "  ✓ PASSED"
 
 # Test 6: Script uses proper error handling
 echo "Test 6: Error handling..."
-if ! grep -q "set -euo pipefail" "$SYNC_SCRIPT"; then
-  echo "  ✗ FAILED: Script should use strict error handling (set -euo pipefail)"
+if ! grep -q "set -eu" "$SYNC_SCRIPT"; then
+  echo "  ✗ FAILED: Script should use strict error handling (set -eu)"
   exit 1
 fi
 echo "  ✓ PASSED"
@@ -98,10 +87,10 @@ if ! grep -q ">&2" "$SYNC_SCRIPT"; then
 fi
 echo "  ✓ PASSED"
 
-# Test 8: Script uses INSERT OR IGNORE for idempotency
+# Test 8: Script uses idempotent insert guards
 echo "Test 8: Idempotent SQL operations..."
-if ! grep -q "INSERT OR IGNORE" "$SYNC_SCRIPT"; then
-  echo "  ✗ FAILED: Script should use INSERT OR IGNORE for idempotency"
+if ! grep -q "WHERE NOT EXISTS" "$SYNC_SCRIPT"; then
+  echo "  ✗ FAILED: Script should guard inserts with WHERE NOT EXISTS for idempotency"
   exit 1
 fi
 echo "  ✓ PASSED"

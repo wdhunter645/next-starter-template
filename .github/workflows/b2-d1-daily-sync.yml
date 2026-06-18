@@ -51,6 +51,9 @@ jobs:
         with:
           node-version-file: .node-version
 
+      - name: Install dependencies
+        run: npm ci
+
       - name: Install jq
         run: |
           sudo apt-get update
@@ -58,6 +61,15 @@ jobs:
 
       - name: Install AWS CLI v2
         run: bash scripts/ci/install_aws_cli_v2.sh
+
+      - name: Verify Cloudflare D1 credentials
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          D1_DATABASE_NAME: ${{ secrets.D1_DATABASE_NAME }}
+          D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID }}
+        run: node scripts/ci/verify_cloudflare_d1_auth.mjs
 
       - name: Run B2 → D1 incremental sync
         id: sync
@@ -73,6 +85,7 @@ jobs:
           D1_DATABASE_NAME: ${{ secrets.D1_DATABASE_NAME }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: bash scripts/b2_d1_incremental_sync.sh
 
       - name: Write runtime step summary
