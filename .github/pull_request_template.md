@@ -12,7 +12,7 @@ Use `docs/reference/governance/troubleshooting-data-surface-requirements.md` as 
 When new PR-gate troubleshooting information becomes available, maintainers and agents must update both `.github/pull_request_template.md` and `docs/reference/governance/troubleshooting-data-surface-requirements.md`.
 
 ## PR LIFECYCLE REQUIREMENT (MANDATORY FOR ALL AGENTS)
-A PR is not complete when it is opened. The creating or working agent owns the PR through the full lifecycle until it is ready for human review and then through post-merge closeout once the PR is merged.
+A PR is not complete when it is opened. The creating or working agent owns the PR through the full lifecycle until it is ready for human merge decision and then through post-merge closeout once the PR is merged.
 
 This single template is the canonical lifecycle record for PR open, review readiness, merge approval readiness, and post-merge closeout. Do not split lifecycle evidence across separate PR templates; keep phase-specific evidence in the sections below so source issue, allowlist, verification, reviewer, and closeout accounting stay in one auditable place.
 
@@ -26,24 +26,24 @@ Required lifecycle:
 7. Inspect reviewer comments, bot comments, and review threads.
 8. Resolve or explicitly disposition every actionable reviewer item in the PR body.
 9. Rerun or wait for all required gates after fixes.
-10. Mark or claim `READY FOR REVIEW` only after all required gates are green and no actionable reviewer item remains unresolved.
+10. Mark or claim `READY FOR MERGE` only after all required gates are green, the PR page shows the green merge-ready state, and no actionable reviewer item remains unresolved.
 11. After merge, verify the merge commit, verify the source issue state, close the source issue when automation did not, and record tracker/documentation follow-up only when explicitly required by the source issue.
 
 Agents must not hand a PR to a human approver while any gate, review comment, or review thread still requires agent action.
 Agents must not treat merge as complete closeout until the source issue is reconciled and any explicitly required tracker/status-index work is complete or delegated.
 
-## Agent Completion / Ready-for-Review Checklist
+## Agent Completion / Ready-for-Merge Checklist
 
 An implementation agent is not complete when code is pushed or a PR is opened.
 
-Before marking this PR ready for human review, the agent confirms:
+Before handing this PR to Atlas/Bill as ready for merge, the agent confirms:
 
 - [ ] PR body matches final diff, source issue, allowlist, verification evidence, and reviewer-response accounting.
 - [ ] All reviewer comments, bot comments, and review threads have been inspected.
 - [ ] Every actionable reviewer item is fixed, rejected with rationale, marked not applicable, or linked to a bounded follow-up issue.
 - [ ] All required gates pass on the latest PR head after final code and PR-body updates.
-- [ ] PR is changed from DRAFT/BLOCKED to READY FOR REVIEW, or the exact blocker is documented.
-- [ ] Final report includes current head SHA, checks run, gate status, reviewer disposition status, and ready-for-review status.
+- [ ] PR is changed from DRAFT/BLOCKED to READY FOR MERGE, or the exact blocker is documented.
+- [ ] Final report includes current head SHA, checks run, gate status, reviewer disposition status, and ready-for-merge status.
 
 A PR must not be handed to Atlas/Bill while any required gate, reviewer comment, bot comment, review thread, PR-body section, or source-issue accounting item still requires agent action.
 
@@ -84,7 +84,7 @@ Canonical reference: `/docs/reference/pmo/lgfc-program-queue-and-dependency-map.
 ## PROGRESS + READINESS (MANDATORY)
 - Phase:
 - Task:
-- Status: DRAFT / BLOCKED / READY FOR REVIEW
+- Status: DRAFT / BLOCKED / READY FOR MERGE
 - Scope Confirmed: YES / NO
 - Out-of-Scope Changes Present: YES / NO
 - Blocking Issues:
@@ -93,7 +93,7 @@ Canonical reference: `/docs/reference/pmo/lgfc-program-queue-and-dependency-map.
 Status rules:
 - `DRAFT`: Implementation, PR body, tests, or review response is incomplete.
 - `BLOCKED`: A specific external dependency or unresolved gate prevents agent completion.
-- `READY FOR REVIEW`: All required gates are green, reviewer/bot comments are addressed, review threads are resolved or explicitly dispositioned, and the final PR panel has been inspected.
+- `READY FOR MERGE`: All required gates are green, reviewer/bot comments are addressed, review threads are resolved or explicitly dispositioned, the PR body is complete, and the final GitHub PR panel shows the green merge-ready state. Human/operator merge approval is still required.
 
 ## DOCUMENTATION SOURCE (MANDATORY)
 - [ ] DIATAXIS_FULL
@@ -174,7 +174,7 @@ All other files are out of scope
 - [ ] Every actionable reviewer comment has a PR-body disposition with `review-comment:<id>`.
 - [ ] Every GitHub review thread has an explicit thread-state disposition: resolved, outdated, or intentionally left unresolved with rationale.
 - [ ] Every outdated review thread (`is_outdated: true` or stale commit SHA) has explicit PR-body disposition even when GitHub marks the thread outdated.
-- [ ] Late reviewer comments arriving after `READY FOR REVIEW` are dispositioned before merge.
+- [ ] Late reviewer comments arriving after `READY FOR MERGE` are dispositioned before merge.
 - [ ] Undispositioned reviewer findings are linked to a bounded follow-up issue when not fixed in this PR.
 
 Accepted disposition states (CI-enforced):
@@ -235,7 +235,7 @@ Post-merge validation fails if any acceptance criterion remains unchecked after 
 - [ ] All canonical references point to files that exist in the same PR branch.
 - [ ] No out-of-scope file changes.
 - [ ] All actionable reviewer and bot feedback is resolved or explicitly dispositioned.
-- [ ] PR is ready for human review.
+- [ ] PR is ready for merge decision.
 - [ ] Post-merge source issue closure is complete; tracker/status-index follow-up is complete only when explicitly authorized by the source issue.
 
 ## REQUIRED PRE-REVIEW SELF-CHECK
@@ -252,4 +252,4 @@ Post-merge validation fails if any acceptance criterion remains unchecked after 
 - [ ] All canonical references point to existing repository files in the same branch before the PR opens
 - [ ] All reviewer feedback has both textual disposition and GitHub thread-state disposition
 - [ ] No merge-readiness claim made before all gate surfaces inspected
-- [ ] Status is set to READY FOR REVIEW only after all required gates and reviewer-response obligations are complete
+- [ ] Status is set to READY FOR MERGE only after all required gates and reviewer-response obligations are complete
