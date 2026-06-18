@@ -5,7 +5,7 @@ Authority Level: Governance
 Owns: Pull request lifecycle states, transition gates, pre-merge closeout prediction, and post-merge closeout evidence requirements
 Does Not Own: Product design authority, runtime architecture, or final human merge approval
 Canonical Reference: /docs/governance/PR_GOVERNANCE.md
-Last Reviewed: 2026-06-14
+Last Reviewed: 2026-06-18
 ---
 
 # PR Lifecycle State Machine
@@ -14,7 +14,7 @@ Last Reviewed: 2026-06-14
 
 This document defines the mandatory pull request lifecycle state machine for LGFC repository work.
 
-It compresses the distributed PR rules in `Agent.md`, shared/core agent rules, the PR governance skill, and the PR template into one executable lifecycle model. Agents must use this document when opening, updating, marking ready, handing off, merging, or closing out PRs.
+It compresses the distributed PR rules in `Agent.md`, shared/core agent rules, the PR governance skill, and the PR template into one executable lifecycle model. Agents must use this document when opening, updating, preparing, handing off, merging, or closing out PRs.
 
 ## Scope
 
@@ -45,10 +45,12 @@ Agents and CI should evaluate the same lifecycle contract before merge and after
 ## Lifecycle states
 
 ```text
-NO PR -> DRAFT -> READY FOR REVIEW -> HUMAN MERGE DECISION -> MERGED -> CLOSEOUT VERIFIED
+NO PR -> DRAFT -> READY FOR MERGE -> HUMAN MERGE DECISION -> MERGED -> CLOSEOUT VERIFIED
 ```
 
 Agents must not skip states. The human/operator remains the only merge authority.
+
+`READY FOR MERGE` is the required agent handoff target. It means the PR is prepared so GitHub shows the green merge-ready state: required gates are passing, PR body/accounting is complete, reviewer and bot feedback is resolved or explicitly dispositioned, and no agent-action blocker remains. It does not authorize the agent to merge.
 
 ---
 
@@ -81,17 +83,18 @@ Stop before PR creation if the source issue is missing, closed, ambiguous, exter
 
 ### Entry condition
 
-A PR exists but implementation, verification, reviewer response, or PR body evidence is incomplete.
+A PR exists but implementation, verification, reviewer response, PR body evidence, or gate readiness is incomplete.
 
-### Required transition to READY FOR REVIEW
+### Required transition to READY FOR MERGE
 
-Before marking or claiming `READY FOR REVIEW`, the agent must confirm:
+Before marking or claiming `READY FOR MERGE`, the agent must confirm:
 
 - final diff matches the file-touch allowlist exactly;
 - no mixed intent or opportunistic cleanup exists;
 - PR body matches final diff, source issue, label, evidence, and acceptance criteria;
 - all local/task-relevant checks are run or exact blockers are recorded;
 - live PR check panel and latest head workflow runs are inspected;
+- all required checks are green or exact non-green blockers are documented;
 - all reviewer comments, bot comments, and GitHub review threads are inspected;
 - every actionable reviewer item has a parser-safe disposition;
 - every required thread has a state: `resolved`, `outdated`, or `unresolved-with-rationale`;
@@ -110,11 +113,11 @@ Do not mark ready if any gate, reviewer item, bot comment, review thread, source
 
 ---
 
-## State 2: READY FOR REVIEW
+## State 2: READY FOR MERGE
 
 ### Entry condition
 
-The implementation agent has completed its work and the PR is ready for human review.
+The implementation agent has completed its work and the PR is prepared for the human/operator merge decision. The top of the GitHub PR page should show the green merge-ready state unless an explicitly accepted human/operator exception is recorded.
 
 ### Required transition to HUMAN MERGE DECISION
 
@@ -225,7 +228,7 @@ The PR lifecycle is complete. Program queue work may advance only after this sta
 Every agent status report about a PR must include:
 
 ```text
-PR lifecycle state: NO PR / DRAFT / READY FOR REVIEW / HUMAN MERGE DECISION / MERGED / CLOSEOUT VERIFIED
+PR lifecycle state: NO PR / DRAFT / READY FOR MERGE / HUMAN MERGE DECISION / MERGED / CLOSEOUT VERIFIED
 Current head SHA: <sha or not-applicable>
 Source issue: #<issue>
 Gate status: pass / fail / pending / not-applicable
@@ -240,7 +243,7 @@ Do not claim readiness, merge safety, or closeout success without repository evi
 
 ## CI alignment requirement
 
-Pre-merge CI should enforce the `READY FOR REVIEW -> HUMAN MERGE DECISION` transition. The pre-merge gate must reject PRs that would predictably fail post-merge closeout due to missing source issue, closed source issue without approved exception, missing reviewer disposition, unresolved required review thread, stale acceptance criteria, or missing queue/dependency-map decision.
+Pre-merge CI should enforce the `READY FOR MERGE -> HUMAN MERGE DECISION` transition. The pre-merge gate must reject PRs that would predictably fail post-merge closeout due to missing source issue, closed source issue without approved exception, missing reviewer disposition, unresolved required review thread, stale acceptance criteria, or missing queue/dependency-map decision.
 
 Post-merge CI should enforce the `MERGED -> CLOSEOUT VERIFIED` transition. Any post-merge failure should create or update a bounded remediation issue and halt queue advancement until resolved.
 
