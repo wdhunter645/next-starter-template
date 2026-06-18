@@ -1,6 +1,6 @@
 {
   "triggered_at": "2026-06-18T15:00:00Z",
-  "description": "Bounded closeout remediation batch #1791 plus PR #1786 (#1777) rerun",
+  "description": "Bounded closeout remediation batch #1791 plus PR #1786 (#1777) and PR #1772 (#1794) rerun",
   "targets": [
     {
       "pr": 1699,
@@ -145,6 +145,12 @@
       "body_file": "scripts/ci/post-merge-closeout/pr-1786-body.md",
       "merge_sha": "98b426d25259029dd08178cc3ac4c88589830b3a",
       "source_issue": 1777
+    },
+    {
+      "pr": 1772,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1772-body.md",
+      "merge_sha": "2c5e8ebdf957e03510a89fd544c1222ea67c1039",
+      "source_issue": 1754
     }
   ]
 }
