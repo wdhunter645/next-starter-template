@@ -5,7 +5,7 @@ Authority Level: Agent-Specific
 Owns: Cursor implementation authority, pre-implementation package review, continuous execution behavior
 Does Not Own: Shared agent law, design authority, governance authorship, gate authorization, or merge approval
 Canonical Reference: /docs/ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md
-Last Reviewed: 2026-06-17
+Last Reviewed: 2026-06-18
 ---
 
 # CURSOR-RULES.md
@@ -42,7 +42,7 @@ Cursor owns:
 - scoped code, configuration, and assigned documentation file changes within the approved allowlist;
 - continuous execution within one authorized package (multiple commits/PR updates between stop points);
 - pre-implementation review and comment on newly authored launch-control issue packages;
-- stopping at verification gates and reporting evidence before requesting Bill/Atlas authorization to continue.
+- preparing authorized PRs to `READY FOR MERGE` before handoff.
 
 Cursor does **not** own:
 
@@ -137,9 +137,11 @@ Cursor executes **continuously** within an authorized package but must **stop** 
 - scope ambiguity or allowlist conflict;
 - end of an implementation tranche pending verification;
 - failing required gates on the PR head;
-- unresolved review threads blocking readiness;
+- unresolved review threads blocking `READY FOR MERGE`;
 - explicit Bill/Atlas hold or revise instruction;
 - any mandatory stop condition in shared/core rules.
+
+When continuous execution is authorized across multiple issues, Cursor may proceed to the next authorized issue after the current issue PR is prepared to `READY FOR MERGE` or the exact blocker is documented.
 
 After each stop point, Cursor reports evidence (files changed, commands run, gate status, blockers) and waits for Bill/Atlas authorization before continuing beyond the current gate.
 
@@ -158,7 +160,7 @@ When push/PR creation is explicitly instructed:
 
 - use the branch name and base branch specified in the Issue;
 - follow [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md) for PR body and gate preflight;
-- apply `docs/governance/PR_LIFECYCLE_STATE_MACHINE.md` before marking ready or requesting human merge decision;
+- apply `docs/governance/PR_LIFECYCLE_STATE_MACHINE.md` before claiming `READY FOR MERGE` or requesting human merge decision;
 - stop after PR creation unless the Issue instructs further work.
 
 ---
@@ -199,7 +201,7 @@ Before completion, Cursor must confirm:
 - no duplicate files created
 - pre-implementation review checkpoint recorded when required
 - shared law preflight satisfied when a PR was created or updated
-- PR lifecycle state and next transition are documented when a PR was created or updated
+- PR lifecycle state is `READY FOR MERGE`, or the exact blocker preventing that state is documented
 
 ---
 
@@ -214,10 +216,10 @@ Stop if:
 - file allowlist missing
 - instructions conflict with [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md) or the operating model
 - push, merge, or PR creation requested without explicit authorization
-- PR lifecycle state is unclear before readiness or merge-decision claims
+- PR lifecycle state is unclear before `READY FOR MERGE` or merge-decision claims
 
 ---
 
 # FINAL
 
-Cursor is the **sole LGFC implementation engine**. It operates only within approved scope, completes mandatory pre-implementation package review, executes continuously between authorized stop points, respects shared agent law, and stops at verification gates until Bill/Atlas authorize continue, hold, or revise.
+Cursor is the **sole LGFC implementation engine**. It operates only within approved scope, completes mandatory pre-implementation package review, executes continuously between authorized stop points, respects shared agent law, prepares authorized PRs to `READY FOR MERGE`, and stops at verification gates until Bill/Atlas authorize continue, hold, or revise.
