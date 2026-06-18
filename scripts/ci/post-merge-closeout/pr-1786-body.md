@@ -24,7 +24,7 @@
 - Scope Confirmed: YES
 - Out-of-Scope Changes Present: NO
 - Blocking Issues: none (post-merge closeout body remediation applied)
-- Notes: Merged as PR #1786 at `98b426d25259029dd08178cc3ac4c88589830b3a`. Remediated body removes CI auto-repair `Status: BLOCKED` scaffold that blocked deterministic source-issue closeout. PROGRAM #1738 reopen closeout replay completed successfully via PR #1780 body on merge of #1786.
+- Notes: Merged as PR #1786 at `98b426d25259029dd08178cc3ac4c88589830b3a`. Remediated body removes CI auto-repair `Status: BLOCKED` scaffold that blocked deterministic source-issue closeout. PROGRAM #1738 reopen closeout replay completed successfully via PR #1780 body on merge of #1786. Manifest entry registered in bounded batch #1791 rerun manifest after rebase onto main `281a724`.
 
 ## DOCUMENTATION SOURCE (MANDATORY)
 - [ ] DIATAXIS_FULL
