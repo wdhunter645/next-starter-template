@@ -23,19 +23,19 @@ publish explicit operations handoff status for Atlas/Bill program review.
 - No application code changes unless a future gap-only fix is explicitly authorized
 - **Do not close `#1259`** in this task — umbrella remains open until Program
   `#1255` terminal closeout is authorized
-- Task 008 legacy disposition package **authorized but not yet delivered** —
-  interim authority remains `website-qa-production-validation-legacy-issue-reconciliation.md`
+- Task 008 legacy disposition package **merged** PR `#1753` / `678699e`
 
-Assessment date: **2026-06-17** (`main` after Task 007 tracker sync PR `#1749`
-merge `870ff83`; operator authorized Task 009 on `#1259`).
+Assessment date: **2026-06-17** (`main` after Task 009 merge PR `#1751`
+merge `fd17af2`; Task 008 PR `#1753` merge `678699e`; closeout prep packet
+`program-1255-closeout-readiness.md`).
 
 ## Executive summary
 
-Phase 4 public QA validation for `#1259` is **substantially complete on `main`**.
-Tasks 001–007 published validation reports with **zero hard failures** across
-documented checklists (pass-with-note items only). Public routes, auth states,
-responsive contracts, D1/B2 read paths, wired content-inventory surfaces, and
-H-011 launch-readiness disposition are evidenced.
+Phase 4 public QA validation for `#1259` is **complete on `main`**. Tasks 001–009
+published validation reports with **zero hard failures** across documented
+checklists (pass-with-note items only). Public routes, auth states, responsive
+contracts, D1/B2 read paths, wired content-inventory surfaces, H-011 launch-readiness
+disposition, legacy disposition package, and this final handoff are evidenced.
 
 | Theme | Phase 4 result | Primary report |
 | --- | --- | --- |
@@ -46,10 +46,11 @@ H-011 launch-readiness disposition are evidenced.
 | D1/B2 read paths | 16 pass, 3 pass-with-note | Task 005 |
 | Content inventory surfaces | 14 pass, 3 pass-with-note | Task 006 |
 | H-011 / T50 disposition | Bounded deferral | Task 007 |
-| Legacy GitHub disposition | **Pending** (Task 008 authorized) | Legacy reconciliation (interim) |
+| Legacy GitHub disposition | **Complete** (Task 008) | `website-qa-production-validation-legacy-disposition-package.md` |
+| Program closeout readiness | **Published** | `program-1255-closeout-readiness.md` |
 
-**Handoff status:** Ready for Atlas/Bill **program review** — not terminal
-`#1255` closeout. `#1259` remains **open**.
+**Handoff status:** Ready for Atlas/Bill **final inspection and terminal closeout
+authorization**. `#1259` remains **open** until sign-off.
 
 ## Phase 4 deliverable index
 
@@ -62,7 +63,7 @@ H-011 launch-readiness disposition are evidenced.
 | 005 | D1/B2 public read-path verification | `docs/ops/reports/website-qa-production-validation-d1-b2-read-path-validation.md` | PR `#1684` / `8893591` |
 | 006 | Content inventory public surface validation | `docs/ops/reports/website-qa-production-validation-content-inventory-public-surface-validation.md` | PR `#1728` / `c170d3c` |
 | 007 | Launch-readiness H-011 disposition | `docs/ops/reports/website-qa-production-validation-launch-readiness-h011-disposition.md` | PR `#1737` / `552fb8f` |
-| 008 | Legacy disposition package | *Authorized — deliverable pending* | See legacy reconciliation |
+| 008 | Legacy disposition package | `docs/ops/reports/website-qa-production-validation-legacy-disposition-package.md` | PR `#1753` / `678699e` |
 | 009 | Final QA handoff (this report) | `docs/ops/reports/website-qa-production-validation-final-qa-handoff.md` | This PR |
 
 Supporting planning artifact: `docs/ops/reports/website-qa-production-validation-legacy-issue-reconciliation.md` (Phase 3).
@@ -77,14 +78,14 @@ Supporting planning artifact: `docs/ops/reports/website-qa-production-validation
 | D1/B2 fail-closed (T29) | **Pass with note** | `content/get` gap-only fix in Task 005; production curl optional |
 | Content inventory public (T32, T34 + `#1256`) | **Pass with note** | Search/library wired; homepage/milestones deferred consumers |
 | Launch readiness (T50 / `#1112`) | **Partially satisfied** | Manual tooling on `main`; H-011 CI schedule bounded deferral (Task 007) |
-| Legacy GitHub hygiene | **Open** | Task 008 authorized; no bulk close executed |
+| Legacy GitHub hygiene | **Pass with note** | Task 008 merged; `#1123` residual label cleanup only |
 
 ## Open blocker classification
 
 | ID | Blocker | Severity | Status | Owner route |
 | --- | --- | --- | --- | --- |
 | `h011-ci-schedule` | Scheduled static-export Playwright `launch-readiness:e2e` not in CI | Medium | **Bounded deferral** (Task 007) | Optional post-`#1259` workflow PR |
-| `task-008-legacy-disposition` | Copy-paste disposition comments for `#943`–`#1112` not published | Medium | **Authorized, pending** | Task 008 deliverable or Atlas batch |
+| `legacy-label-hygiene-residual` | `#1123` stale `status:pr-draft` on closed issue | Low | **Complete** (operator 2026-06-17) | — |
 | `cloudflare-preview-drift` | Preview vs production confidence not consolidated | Medium | **Documented deferral** | Operator production smoke / audit cadence |
 | `fanclub-pdf-upload-ops` | PDF/upload pipeline edge cases deferred from `#1258` | Low | **Documented deferral** | Ops runbook follow-up |
 | `homepage-inventory-consumer` | `homepage_*` inventory sections not wired to public renderers | Low | **Pass-with-note** (Task 006) | Future delta if authorized |
@@ -99,9 +100,9 @@ items are hygiene, CI scheduling, or explicitly deferred operational validation.
 | Item | Status |
 | --- | --- |
 | Child project `#1256` Content Strategy | **Closed complete** |
-| Child project `#1258` Website Operations Admin | **Closed complete** (PR `#1652`) |
-| Child project `#1259` Website QA / Production Validation | **Phase 4 validation complete** (Tasks 001–007); **issue remains OPEN** |
-| Program terminal closeout | **Not authorized in Task 009** — requires Atlas/Bill sign-off |
+| Child project `#1258` Website Operations Admin | **Closed complete** (PR `#1652`; issue closed 2026-06-17) |
+| Child project `#1259` Website QA / Production Validation | **Phase 4 complete** (Tasks 001–009); **issue remains OPEN** |
+| Program terminal closeout | **Inspection pending** — requires Atlas/Bill authorization |
 
 ### For operators
 
@@ -122,25 +123,26 @@ npm run launch-readiness
 - **Do not close `#1259`** until Program `#1255` terminal closeout is authorized.
 - Remove stale workflow labels (`status:failed`, `status:post-merge-verify`) when
   present; keep `status:active`.
-- Do **not** bulk-close legacy T21–T34 issues without Task 008 disposition package
-  or explicit Atlas authorization.
+- Operator closeout prep **complete** (2026-06-17): `#1123` label removed; `#1258`
+  closed complete. See `docs/ops/reports/program-1255-closeout-readiness.md`.
+- Do **not** bulk-close legacy T21–T34 issues without Atlas authorization; current
+  GitHub state shows lanes closed with Task 008 disposition package on `main`.
 
-## Task 008 gap (accepted for handoff)
+## Closeout readiness (post Task 009)
 
-Task 008 — public-core legacy disposition documentation — is **authorized on
-`#1259`** but **not yet merged**. This final report uses Task 001 legacy
-reconciliation and per-task validation reports as interim authority. Completing
-Task 008 remains recommended before Atlas batch GitHub disposition.
+Task 008 legacy disposition package merged PR `#1753` / `678699e`. Program `#1255`
+closeout readiness packet published at `docs/ops/reports/program-1255-closeout-readiness.md`
+for Atlas/Bill final inspection.
 
 ## Downstream actions (outside Task 009 scope)
 
 | Action | Owner | When |
 | --- | --- | --- |
-| Merge Task 008 disposition package | Cursor / Atlas | When authorized execution resumes |
-| Atlas batch review of legacy issue comments | Atlas / Bill | After Task 008 or explicit waiver |
-| Program `#1255` terminal closeout | Atlas / Bill | After `#1259` acceptance |
-| Optional H-011 CI workflow PR | Cursor / Atlas | Post-`#1259` if desired |
-| Close `#1259` | Atlas / Bill only | **Not in this task** |
+| Operator hygiene (`#1123`, `#1258`) | Operator | Before final inspection |
+| Atlas batch review of legacy issue comments | Atlas / Bill | Optional |
+| Program `#1255` terminal closeout authorization | Atlas / Bill | After inspection |
+| Close `#1259` then `#1255` | Atlas / Bill only | After authorization |
+| Optional H-011 CI workflow PR | Cursor / Atlas | Post-closeout if desired |
 
 ## Validation commands
 
