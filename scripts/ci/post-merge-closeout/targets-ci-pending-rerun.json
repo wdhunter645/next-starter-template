@@ -1,5 +1,5 @@
 {
-  "triggered_at": "2026-06-18T12:00:00Z",
+  "triggered_at": "2026-06-18T12:30:00Z",
   "targets": [
     {
       "pr": 1765,
@@ -12,6 +12,12 @@
       "body_file": "scripts/ci/post-merge-closeout/pr-1780-body.md",
       "merge_sha": "d3019beee16bc9099e3dcc48cc8f18a35325d829",
       "source_issue": 1738
+    },
+    {
+      "pr": 1772,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1772-body.md",
+      "merge_sha": "2c5e8ebdf957e03510a89fd544c1222ea67c1039",
+      "source_issue": 1754
     }
   ]
 }
