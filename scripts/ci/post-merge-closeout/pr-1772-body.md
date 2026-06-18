@@ -73,7 +73,6 @@ All other files are out of scope
 - Add `scripts/ci/post-merge-closeout/pr-1765-body.md` with a clean closeout body for merged PR #1765.
 - Register PR #1765 in `scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json`.
 - Update `tests/post-merge-closeout-all-manifests.test.mjs` for manifest entries.
-- Apply remediated merged PR body for #1772 without CI auto-repair blocker scaffold.
 
 ## BUILD / TEST / VERIFICATION
 - Commands run:
@@ -90,6 +89,8 @@ All other files are out of scope
 - [x] Documentation updated in this PR
 - Files:
   - `scripts/ci/post-merge-closeout/pr-1765-body.md`
+  - `scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json`
+  - `tests/post-merge-closeout-all-manifests.test.mjs`
 
 ## REVIEWER RESPONSE ACCOUNTING
 - [x] Reviewed all reviewer comments.
@@ -132,7 +133,7 @@ Reviewer items:
 - Source issue **#1754** already closed on merge; **do not reopen** #1754
 
 ## ACCEPTANCE CRITERIA
-- [x] Required source issue exists, is open, is same-repository, and is not a PR.
+- [x] Required source issue exists, is same-repository, and is not a PR.
 - [x] PR issue-accounting gate passes.
 - [x] Drift gate passes.
 - [x] Intent gate passes.
