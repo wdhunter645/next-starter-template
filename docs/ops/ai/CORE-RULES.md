@@ -5,7 +5,7 @@ Authority Level: Core
 Owns: Shared execution rules, enforcement model, PR discipline, stop conditions
 Does Not Own: Design authority, platform configuration, tracker content
 Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
-Last Reviewed: 2026-06-04
+Last Reviewed: 2026-06-19
 ---
 
 # CORE-RULES.md
