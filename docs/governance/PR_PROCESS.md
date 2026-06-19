@@ -248,13 +248,11 @@ When design standards change (rare, locked changes only):
   - `assess-summary-md` (30-day retention)
   - `routes-found` (30-day retention)
 
-#### Nightly Drift Detection (`.github/workflows/assess-nightly.yml`)
-- Runs nightly at 2:00 AM UTC
-- Detects drift from dependencies or unintended changes
-- On failure:
-  - Creates a GitHub issue with label `assessment-failure`
-  - Uploads artifacts with 90-day retention
-  - Marks workflow as failed
+#### Nightly Site Assessment (`ops-assess.yml`)
+- Runs nightly at 2:00 AM UTC (and on `docs/ops/scan-trigger.md` push to `main`)
+- Uses `npm run assess:ci` for drift and route/navigation validation
+- On scheduled/push failure: creates or updates a GitHub issue with label `assessment-failure`
+- Uploads artifacts with 90-day retention
 - Can be manually triggered via workflow dispatch
 
 ### Troubleshooting Assessment Failures

@@ -70,7 +70,7 @@ Workflow should be removed once replacement coverage exists.
 | lgfc-d1-migrate.yml | Manual migration execution | OPS Runtime | Assimilate | Fold into unified D1 model |
 | enforce-pr-only.yml | Main branch protection | Merge Protection | Assimilate | Merge with main-monitor logic |
 | ops-main-change-monitor.yml | Main branch monitoring | OPS Runtime | Assimilate | Combine with branch-protection monitoring |
-| assess-nightly.yml | Legacy assessment | OPS Runtime | Retire | Superseded by ops-assess |
+| assess-nightly.yml | Legacy assessment | OPS Runtime | Retired | Removed; superseded by `ops-assess.yml` (#1058) |
 | gate-reviewer-response.yml | Disabled reviewer gate | None | Retire | Superseded by redesign |
 | post-recovery-425-verify.yml | Legacy PR-specific recovery | None | Retire | Stale historical workflow |
 | ci.yml | Legacy parked workflow | None | Retire | Remove after cleanup |
