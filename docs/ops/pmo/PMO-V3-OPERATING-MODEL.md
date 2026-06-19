@@ -5,8 +5,8 @@ Authority Level: Canonical PMO Authority
 Owns: LGFC PMO v3 program issue model, PMO meeting issue model, PMO Backlog rules, launch gates, promotion rules, agent authority boundaries, and top-down PMO documentation replacement intent
 Does Not Own: Product-specific design, runtime implementation, workflow YAML, production configuration, secrets, or unauthorized GitHub issue mutation
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501, #1500
-Last Reviewed: 2026-06-10
+Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501, #1500, #1719, #1725
+Last Reviewed: 2026-06-19
 ---
 
 # PMO V3 Operating Model
@@ -33,8 +33,10 @@ unauthorized GitHub issue mutation.
 - issue #1411 is completed — a planning/control artifact, not an open blocked
   program. New execution from that body requires a current open source issue and
   explicit launch authorization.
-- issue #1500 is the next prioritized program after Program #1255 completes. It
-  is out of scope for immediate execution.
+- issue #1500 (CI Post-Merge Closeout Reliability) is **closed complete**. It
+  is historical closeout evidence, not an active or queued program. Priority #3
+  queue/wave and closeout follow-on work belongs to #1719 and child issues
+  #1720–#1727 (reconciliation: #1725).
 - GitHub issue titles use `Program: <name>` when possible. Documentation
   references use `Program #<issue-number> — <name>`.
 

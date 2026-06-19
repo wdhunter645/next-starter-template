@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: Priority #3 PMO readiness decision, governance/workflow automation program candidate scope, child-project boundaries, design/readiness state, Cursor launch preconditions
 Does Not Own: Runtime implementation, workflow code, CI script changes, issue creation, merge authority, production secrets, vendor configuration, unauthorized GitHub issue mutation
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-Related Issues: #1713, #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1500, #1255, #1259, #1685, #1700
-Last Reviewed: 2026-06-17
+Related Issues: #1713, #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1500, #1255, #1259, #1685, #1700, #1719, #1725
+Last Reviewed: 2026-06-19
 ---
 
 # PMO Governance / Workflow Automation Completion Readiness
@@ -83,19 +83,22 @@ The intended final state before implementation launch is:
 | 5 | Cursor Continuation and Queue Contract | Partial contract exists | `lgfc-cursor-execution-contract.md`, current PR process | Covered by Tasks 003, 007, 008 | Needs authoritative continuation/stop matrix |
 | 6 | PR Readiness and Batch Review Control | Partial process exists | `PR_PROCESS.md`, `PR_GOVERNANCE.md` | Covered by Tasks 004, 007, 008 | Needs batch/readiness alignment |
 | 7 | Merge and issue mutation policy | Partial policy exists | `PR_GOVERNANCE.md`, closeout protocol, Cursor contract | Covered by Tasks 004, 005, 007, 008 | Needs mutation-permission matrix |
-| 8 | Queue/Wave Model and Label Planning | Partial planning exists | PMO backlog, queue/dependency docs, Program #1500 evidence | Covered by Tasks 006, 007, 008 | Needs Program #1500 reconciliation before build |
-| 9 | Post-Merge Closeout Evidence Stabilization | Partially satisfied by #1500 and #1699/#1712 follow-up context | closeout protocol, Program #1500 evidence | Covered by Tasks 006, 007, 008 | Avoid rebuilding completed work; document remaining gaps only |
+| 8 | Queue/Wave Model and Label Planning | Partial planning exists; **#1500 overlap reconciled by Task #1725** | PMO backlog, queue/dependency docs, `docs/ops/reports/program-1500-queue-wave-reconciliation.md` | Covered by Tasks 006, 007, 008 | Wave labels remain planning concepts; implementation candidates scoped in Task 007 |
+| 9 | Post-Merge Closeout Evidence Stabilization | **Baseline satisfied by closed #1500**; remaining gaps documented only | closeout protocol, Program #1500 evidence, Task #1725 reconciliation report | Covered by Tasks 006, 007, 008 | Do not rebuild #1500; deferred items route to future CI source issues |
 | 10 | PMO Backlog Promotion and Program #1411 Launch Gate | Partial backlog/promotion rules exist | PMO backlog, PMO v3 operating model, registry | Covered by Tasks 001, 007, 008 | Needs promotion gate checklist and issue-chain standardization |
 
 ## Program #1500 overlap reconciliation
 
-| Area | Program #1500 effect | Priority #3 handling |
+> **Status (Task #1725):** Reconciled 2026-06-19. Program #1500 remains **closed
+> complete**. Full tables: `docs/ops/reports/program-1500-queue-wave-reconciliation.md`.
+
+| Area | Program #1500 effect | Priority #3 handling (post-#1725) |
 | --- | --- | --- |
-| Post-merge closeout reliability | Closed complete; may satisfy stabilization baseline | Task 006 must inventory evidence before proposing changes |
-| Queue/wave model | May partially satisfy closeout sequencing and run-state expectations | Task 006 documents remaining gaps only |
-| Issue mutation guardrails | Related but not necessarily complete across all PMO program types | Task 005 verifies policy coverage before implementation |
-| PR readiness gates | Related to closeout, but batch review/readiness may remain distinct | Task 004 reconciles with current PR process |
-| Workflow YAML / CI scripts | Protected/sensitive surface | This readiness package does not authorize workflow/script changes |
+| Post-merge closeout reliability | Closed complete; satisfies stabilization baseline for ranks 8–9 | **No rebuild.** Task #1726 may scope only remaining implementation candidates |
+| Queue/wave model | Partially satisfies closeout sequencing and execution-mode documentation | Task #1725 recorded lane status; wave labels remain planning concepts until Task #1727+ |
+| Issue mutation guardrails | Related but not complete across all PMO program types | Task #005 (#1724) owns mutation-permission matrix; not reopened by #1725 |
+| PR readiness gates | Related to closeout; batch review remains distinct | Task #004 (#1723) owns PR readiness reconciliation |
+| Workflow YAML / CI scripts | Protected/sensitive surface | Out of scope for #1725; Task #1726 read-only inventory only unless later authorized |
 
 ## Stale issue review note
 
@@ -114,8 +117,8 @@ A later launched Priority #3 program may:
 | --- | --- | --- |
 | Whether Priority #3 uses docs-only tasks first or includes workflow/script tasks | Launch issue creation | Docs-first; protected files require explicit later authorization |
 | Whether #1417–#1424 are reused, superseded, or left historical | Task 001 / Task 008 | Treat as historical evidence only |
-| Whether Program #1500 fully satisfies rank 9 | Task 006 | Inventory before implementation; avoid rebuilding completed work |
-| Whether queue/wave labels become real labels or planning concepts only | Task 006 | Planning concepts only until authorized |
+| Whether Program #1500 fully satisfies rank 9 | Task 006 (#1725) | **Resolved:** baseline satisfied; deferred register items are CI maintenance, not incomplete #1500 scope |
+| Whether queue/wave labels become real labels or planning concepts only | Task 006 (#1725) | **Resolved for planning:** concepts only until Task #1727+ explicitly authorizes implementation |
 | Whether Cursor may mutate issues during closeout | Task 005 | No mutation unless current source issue explicitly grants it |
 | Whether workflow automation changes touch `.github/workflows/**` or `scripts/ci/**` | Task 007 | Out of scope until explicit implementation authorization and trusted review |
 

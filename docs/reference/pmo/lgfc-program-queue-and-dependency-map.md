@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: Launched-program queue mode, dependency-map requirements, execution-mode selection, and continue/halt decision rules for PMO-governed programs
 Does Not Own: Workflow YAML implementation, GitHub merge authority, issue mutation authority, or orchestrator label automation
 Canonical Reference: /docs/reference/pmo/lgfc-program-portfolio-model.md
-Related Issues: #1449, #1448, #1411, #1255, #1256, #1258, #1259, #1501, #1500
-Last Reviewed: 2026-06-16
+Related Issues: #1449, #1448, #1411, #1255, #1256, #1258, #1259, #1501, #1500, #1719, #1725
+Last Reviewed: 2026-06-19
 ---
 
 # LGFC Program Queue and Dependency Map
@@ -50,7 +50,13 @@ This document does not own:
   Implementation plan: `docs/ops/implementation-plans/website-qa-production-validation.md`.
 - issue `#1500` (CI Post-Merge Closeout Reliability) is **closed complete** (Tasks
   001–005). Originally queued after Program #1255; executed in parallel when
-  ChatGPT became capable of implementation.
+  ChatGPT became capable of implementation. **Do not reopen #1500.** Reconciliation
+  evidence for Priority #3 queue/wave and closeout planning is recorded in
+  `docs/ops/reports/program-1500-queue-wave-reconciliation.md` (Task #1725).
+- Priority #3 program #1719 (PMO Governance / Workflow Automation Completion)
+  has child tasks #1720–#1727. Task #1725 reconciles Program #1500 against
+  queue/wave planning; remaining Priority #3 work belongs to #1719 and later
+  scoped child issues, not to Program #1500.
 - `#1448` rebaseline is **closed complete**.
 - issue `#1411` is a **completed planning/control artifact** (completed,
   status:complete). It is not an open blocked program. Future execution work
@@ -158,6 +164,18 @@ Approval:
 | `#1256` Content Strategy / Editorial Inventory | `docs/ops/implementation-plans/website-content-strategy-editorial-inventory.md` | Closed complete |
 | `#1258` Website Operations Admin | `docs/ops/implementation-plans/website-operations-admin.md` | Closed complete |
 | `#1259` Website QA / Production Validation | `docs/ops/implementation-plans/website-qa-production-validation.md` | Phase 4 complete — Tasks 001–009 merged; `#1259` open |
+
+### Project-Level Maps (Priority #3 — Program #1719)
+
+| Child task | Plan path | Status |
+| --- | --- | --- |
+| Tasks 001–005 | `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md` | Open — serial predecessors; halt until each task PR merges |
+| Task 006 `#1725` | Same plan; reconciliation report `docs/ops/reports/program-1500-queue-wave-reconciliation.md` | Active reconciliation — Program #1500 closeout vs queue/wave model |
+| Tasks 007–008 | Same plan | Blocked — Task 007 halts until #1725 merges; Task 008 is terminal closeout |
+
+Program #1500 closeout is **not** an active queue lane. It is closed complete
+historical evidence consumed by Task #1725. Cursor must not rebuild #1500
+workflow or closeout work without a new CI source issue.
 
 ### Issue-Level Fields (Required for Queue Tasks)
 
