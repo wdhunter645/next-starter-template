@@ -24,6 +24,16 @@ describe('post-merge closeout all manifests', () => {
 			merge_sha: '58508f6b01a2e8a91e9997f1c1c7e8b82735fd81',
 			source_issue: 1255,
 		});
+		expect(targets[1]).toMatchObject({
+			body_file: 'scripts/ci/post-merge-closeout/pr-1778-body.md',
+			merge_sha: '17a85b2f3fbb624e38cc19b887900742a66667e8',
+			source_issue: 1255,
+		});
+		expect(targets[2]).toMatchObject({
+			body_file: 'scripts/ci/post-merge-closeout/pr-1681-body.md',
+			merge_sha: '11b2027d610a02e517212691a753134ab9691312',
+			source_issue: 1259,
+		});
 		expect(targets[3]).toMatchObject({
 			body_file: 'scripts/ci/post-merge-closeout/pr-1765-body.md',
 			merge_sha: '9d6530b87abfb5a2615f70045d2530f6bd124bcc',
