@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eu
+set -euo pipefail
 
 # ============================================================================
 # B2 → D1 Incremental Sync (Idempotent Daily Sync)
@@ -15,11 +15,12 @@ set -eu
 #   B2_BUCKET             - bucket name
 #   B2_KEY_ID             - applicationKeyId (S3 access key id)
 #   B2_APP_KEY            - applicationKey (S3 secret)
-#   D1_DATABASE_NAME      - D1 database binding/name for wrangler
-#   CLOUDFLARE_API_TOKEN  - token with D1 access
+#   D1_DATABASE_NAME      - D1 database binding/name for wrangler (or D1_DATABASE_ID)
+#   CLOUDFLARE_API_TOKEN  - token with D1 Edit + User Details Read
+#   CLOUDFLARE_ACCOUNT_ID - Cloudflare account id (or CF_ACCOUNT_ID)
 #
 # Optional env vars:
-#   CLOUDFLARE_ACCOUNT_ID - account id (some setups require it)
+#   CF_API_TOKEN / CF_ACCOUNT_ID - aliases for Cloudflare credentials
 #   PUBLIC_B2_BASE_URL    - base URL for public access (default: https://<endpoint>/<bucket>)
 #   DRY_RUN=1             - don't execute, just print SQL
 #   D1_BATCH_SIZE=250     - statements per batch wrangler execute (default 250)
@@ -51,6 +52,20 @@ require_cmd npx
 # ----------------------------------------------------------------------------
 # Validate env
 # ----------------------------------------------------------------------------
+if [[ -z "${CLOUDFLARE_API_TOKEN:-}" && -n "${CF_API_TOKEN:-}" ]]; then
+  export CLOUDFLARE_API_TOKEN="$CF_API_TOKEN"
+fi
+if [[ -z "${CLOUDFLARE_ACCOUNT_ID:-}" && -n "${CF_ACCOUNT_ID:-}" ]]; then
+  export CLOUDFLARE_ACCOUNT_ID="$CF_ACCOUNT_ID"
+fi
+if [[ -z "${D1_DATABASE_NAME:-}" ]]; then
+  if [[ -n "${D1_DATABASE_ID:-}" ]]; then
+    export D1_DATABASE_NAME="$D1_DATABASE_ID"
+  else
+    export D1_DATABASE_NAME="lgfc_lite"
+  fi
+fi
+
 REQUIRED_VARS=(
   "B2_ENDPOINT"
   "B2_BUCKET"
@@ -58,6 +73,7 @@ REQUIRED_VARS=(
   "B2_APP_KEY"
   "D1_DATABASE_NAME"
   "CLOUDFLARE_API_TOKEN"
+  "CLOUDFLARE_ACCOUNT_ID"
 )
 for var in "${REQUIRED_VARS[@]}"; do
   if [[ -z "${!var:-}" ]]; then
@@ -101,10 +117,20 @@ export AWS_EC2_METADATA_DISABLED=true
 
 # Cloudflare creds
 export CLOUDFLARE_API_TOKEN
-if [[ -n "${CLOUDFLARE_ACCOUNT_ID:-}" ]]; then
-  export CLOUDFLARE_ACCOUNT_ID
+export CLOUDFLARE_ACCOUNT_ID
+
+if [[ -x "./node_modules/.bin/wrangler" ]]; then
+  WRANGLER_CMD=(./node_modules/.bin/wrangler)
+elif command -v wrangler >/dev/null 2>&1; then
+  WRANGLER_CMD=(wrangler)
+else
+  WRANGLER_CMD=(npx --no-install wrangler)
 fi
 
+d1_auth_hint() {
+  log "HINT: Cloudflare D1 auth failed. Ensure CLOUDFLARE_API_TOKEN includes Account → D1 → Edit and User → User Details → Read."
+  log "HINT: Verify CLOUDFLARE_ACCOUNT_ID matches the account that owns database \"$DB_REF\"."
+}
 
 WORKDIR="$(mktemp -d)"
 trap 'rm -rf "$WORKDIR"' EXIT
@@ -125,13 +151,13 @@ mkdir -p "$SQL_DIR"
 wrangler_exec() {
   local mode="$1" payload="$2"
   if [[ "$mode" == "command" ]]; then
-    npx --yes wrangler d1 execute "$DB_REF" --remote --command "$payload" --json 2>&1 || \
-      npx --yes wrangler d1 execute "$DB_REF" --remote --command "$payload" 2>&1
+    "${WRANGLER_CMD[@]}" d1 execute "$DB_REF" --remote --command "$payload" --json 2>&1 || \
+      "${WRANGLER_CMD[@]}" d1 execute "$DB_REF" --remote --command "$payload" 2>&1
     return $?
   fi
   if [[ "$mode" == "file" ]]; then
-    npx --yes wrangler d1 execute "$DB_REF" --remote --file "$payload" --json 2>&1 || \
-      npx --yes wrangler d1 execute "$DB_REF" --remote --file "$payload" 2>&1
+    "${WRANGLER_CMD[@]}" d1 execute "$DB_REF" --remote --file "$payload" --json 2>&1 || \
+      "${WRANGLER_CMD[@]}" d1 execute "$DB_REF" --remote --file "$payload" 2>&1
     return $?
   fi
   log "ERROR: internal: invalid wrangler_exec mode: $mode"
@@ -145,6 +171,7 @@ log "Reading D1 photos schema (PRAGMA table_info)..."
 SCHEMA_OUT="$(wrangler_exec command "PRAGMA table_info(photos);")" || {
   log "ERROR: Failed PRAGMA table_info(photos)"
   log "$SCHEMA_OUT"
+  d1_auth_hint
   exit 3
 }
 
