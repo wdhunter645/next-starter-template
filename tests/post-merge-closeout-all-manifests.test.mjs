@@ -12,10 +12,10 @@ describe('post-merge closeout all manifests', () => {
 		]);
 	});
 
-	it('loads residual closeout rerun targets after batch #1791 prune (#1812) plus PR #1786 (#1787) remediation and PR #1795 (#1823)', () => {
+	it('loads residual closeout rerun targets after batch #1791 prune (#1812) plus PR #1786 (#1787) remediation, PR #1795 (#1823), and PR #1807 (#1725)', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json');
-		expect(targets).toHaveLength(7);
-		expect(targets.map((target) => target.pr)).toEqual([1699, 1778, 1681, 1765, 1786, 1772, 1795]);
+		expect(targets).toHaveLength(8);
+		expect(targets.map((target) => target.pr)).toEqual([1699, 1778, 1681, 1765, 1786, 1772, 1795, 1807]);
 		expect(targets.every((target) => target.body_file && target.merge_sha && target.source_issue)).toBe(
 			true,
 		);
@@ -53,6 +53,11 @@ describe('post-merge closeout all manifests', () => {
 			body_file: 'scripts/ci/post-merge-closeout/pr-1795-body.md',
 			merge_sha: '87f60099cb3aff4de93b9b90a12138728f173fe2',
 			source_issue: 1794,
+		});
+		expect(targets[7]).toMatchObject({
+			body_file: 'scripts/ci/post-merge-closeout/pr-1807-body.md',
+			merge_sha: 'e1a2540019abce87eaa70209fd9602f8a6176932',
+			source_issue: 1725,
 		});
 	});
 
