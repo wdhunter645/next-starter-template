@@ -12,7 +12,6 @@ export const T50_DISPOSITION = 'partially-satisfied-bounded-deferral' as const;
 
 /** Workflows that provide complementary scheduled validation (not launch-readiness e2e). */
 export const COMPLEMENTARY_CI_WORKFLOWS = [
-  'assess-nightly.yml',
   'ops-assess.yml',
   'production-audit.yml',
   'gate-quality.yml',
@@ -90,9 +89,9 @@ describe('launch readiness H-011 disposition (#1259 Task 007)', () => {
     expect(quality).toContain('npm test');
     expect(quality).not.toMatch(/launch-readiness/i);
 
-    const nightly = readSource('.github/workflows/assess-nightly.yml');
-    expect(nightly).toContain('assess:ci');
-    expect(nightly).not.toMatch(/launch-readiness/i);
+    const opsAssess = readSource('.github/workflows/ops-assess.yml');
+    expect(opsAssess).toContain('assess:ci');
+    expect(opsAssess).not.toMatch(/launch-readiness/i);
 
     const prodAudit = readSource('.github/workflows/production-audit.yml');
     expect(prodAudit).toContain('playwright');
