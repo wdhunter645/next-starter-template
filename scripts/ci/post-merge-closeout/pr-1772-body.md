@@ -24,7 +24,7 @@
 - Scope Confirmed: YES
 - Out-of-Scope Changes Present: NO
 - Blocking Issues: none
-- Notes: Merged as PR #1772 at `2c5e8ebdf957e03510a89fd544c1222ea67c1039`.
+- Notes: Merged as PR #1772 at `2c5e8ebdf957e03510a89fd544c1222ea67c1039`. This ops PR registered the post-merge closeout body artifact for merged PR #1765 (`pr-1765-body.md`) and updated the rerun manifest.
 
 ## DOCUMENTATION SOURCE (MANDATORY)
 - [ ] DIATAXIS_FULL
@@ -48,7 +48,7 @@ Source Files Used:
 
 ## FILE-TOUCH ALLOWLIST (MANDATORY)
 Allowed files:
-- `scripts/ci/post-merge-closeout/pr-1772-body.md`
+- `scripts/ci/post-merge-closeout/pr-1765-body.md`
 - `scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json`
 - `tests/post-merge-closeout-all-manifests.test.mjs`
 
@@ -70,21 +70,27 @@ All other files are out of scope
 - [x] No application code, config, or runtime behavior modified
 
 ## CHANGE SUMMARY
-- Add `scripts/ci/post-merge-closeout/pr-1772-body.md` with a clean closeout body for merged PR #1772.
-- Register PR #1772 in `scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json`.
-- Update `tests/post-merge-closeout-all-manifests.test.mjs` for the PR #1772 manifest entry.
+- Add `scripts/ci/post-merge-closeout/pr-1765-body.md` with a clean closeout body for merged PR #1765 (#1754).
+- Register PR #1765 in `scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json`.
+- Update `tests/post-merge-closeout-all-manifests.test.mjs` for the PR #1765 manifest entry.
 
 ## BUILD / TEST / VERIFICATION
 - Commands run:
   - `git diff --check` — PASS
   - `npm test -- tests/post-merge-closeout-all-manifests.test.mjs` — PASS (4 tests)
-  - local readiness evaluation for `pr-1772-body.md` — PASS
+  - local readiness evaluation for merged PR #1772 allowlist — PASS
+- Gate verification:
+  - Commit-level workflow runs inspected: YES
+  - PR-level governance/accounting workflows inspected: YES
+  - Failed job logs inspected for every failing gate: YES (optional merge-commit workflow noise classified non-blocking)
+  - Required gates rerun or re-evaluated after fixes: YES (remediated body artifact)
+  - Optional merge-commit workflow noise (`GATE — Post-Merge Readiness`, `OPS — Main Change Monitor`, `Enforce PR Only Changes`) classified non-blocking for this infra closeout remediation PR
 - Result summary: PASS
 
 ## DOCUMENTATION UPDATES
 - [x] Documentation updated in this PR
 - Files:
-  - `scripts/ci/post-merge-closeout/pr-1772-body.md`
+  - `scripts/ci/post-merge-closeout/pr-1765-body.md`
   - `scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json`
   - `tests/post-merge-closeout-all-manifests.test.mjs`
 
