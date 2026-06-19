@@ -12,7 +12,7 @@ describe('post-merge closeout all manifests', () => {
 		]);
 	});
 
-	it('loads residual closeout rerun targets after batch #1791 prune (#1812) including PR #1795', () => {
+	it('loads residual closeout rerun targets after batch #1791 prune (#1812) plus PR #1786 (#1787) remediation and PR #1795 (#1823)', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json');
 		expect(targets).toHaveLength(7);
 		expect(targets.map((target) => target.pr)).toEqual([1699, 1778, 1681, 1765, 1786, 1772, 1795]);

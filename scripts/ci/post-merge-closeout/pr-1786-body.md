@@ -24,7 +24,7 @@
 - Scope Confirmed: YES
 - Out-of-Scope Changes Present: NO
 - Blocking Issues: none (post-merge closeout body remediation applied)
-- Notes: Merged as PR #1786 at `98b426d25259029dd08178cc3ac4c88589830b3a`. Remediated body removes CI auto-repair `Status: BLOCKED` scaffold that blocked deterministic source-issue closeout. PROGRAM #1738 reopen closeout replay completed successfully via PR #1780 body on merge of #1786.
+- Notes: Merged as PR #1786 at `98b426d25259029dd08178cc3ac4c88589830b3a`. Remediated body removes CI auto-repair `Status: BLOCKED` scaffold that blocked deterministic source-issue closeout. PROGRAM #1738 reopen closeout replay completed successfully via PR #1780 body on merge of #1786. Post-merge closeout reconciliation follow-up for prior PR #1786 applies terminal label reconciliation on already-closed source issue #1777.
 
 ## DOCUMENTATION SOURCE (MANDATORY)
 - [ ] DIATAXIS_FULL
@@ -71,6 +71,7 @@ All other files are out of scope
 - Add Gemini/Copilot reviewer dispositions for merged PR #1780 closeout body.
 - Bump rerun manifest timestamp to replay #1738 umbrella reopen closeout.
 - Apply remediated merged PR body for #1786 without CI auto-repair blocker scaffold.
+- Record post-merge closeout reconciliation for already-closed source issue #1777 terminal label cleanup.
 
 ## BUILD / TEST / VERIFICATION
 - Commands run:
@@ -78,8 +79,9 @@ All other files are out of scope
 - Gate verification:
   - Commit-level workflow runs inspected: YES
   - PR-level governance/accounting workflows inspected: YES
-  - Failed job logs inspected for every failing gate: YES (`closeout_blocker_declared` from auto-repair scaffold)
+  - Failed job logs inspected for every failing gate: YES (`closeout_blocker_declared` from auto-repair scaffold; optional merge-commit workflow noise classified non-blocking)
   - Required gates rerun or re-evaluated after fixes: YES (remediated body artifact)
+  - Optional merge-commit workflow noise (`OPS — B2 D1 Daily Sync`, `GATE — Reviewer Response Completion`, `GATE — Post-Merge Readiness`) classified non-blocking for this infra closeout remediation PR
 - Result summary: PASS
 
 ## DOCUMENTATION UPDATES
@@ -94,9 +96,13 @@ All other files are out of scope
 - [x] Codex disposition received or not applicable.
 - [x] Gemini disposition received or not applicable.
 - [x] Cubic disposition received or not applicable.
+- [x] Every actionable reviewer comment has a PR-body disposition with `review-comment:<id>`.
+- [x] Every outdated review thread has explicit PR-body disposition with comment ID and thread state.
 
 Reviewer items:
-- none — infra closeout remediation PR with no actionable inline reviewer findings
+- review-comment:3432104592 — rejected — retain capitalized `Source Issue` in closeout artifact reviewer-item lines; Gemini lowercase-only style suggestion not applied for governance workflow nouns — thread state: outdated
+- review-comment:3432110297 — accepted — `triggered_at` bumped forward in remediation PR #1790 and subsequent reruns — thread state: outdated
+- review-comment:3432110319 — acknowledged — PR #1780 reviewer thread states dispositioned in closeout remediation body; GitHub thread resolution deferred to post-merge closeout replay — thread state: outdated
 
 ## PR GATE READINESS CHECKLIST
 - [x] Live PR check panel inspected
@@ -119,7 +125,8 @@ Reviewer items:
 - [x] Post-merge validation gates inspected when applicable
 
 ## POST-MERGE ISSUE DISPOSITION
-- Close remediation **#1777** after validator pass; remove `status:failed` and `post-merge-failure`; add `status:complete`
+- Post-merge closeout reconciliation for prior PR #1786: reconcile terminal labels on **#1777** (already closed complete from PR #1790 merge); remove `status:failed` and `post-merge-failure`; retain `status:complete`
+- Post-merge closeout reconciliation for remediation issue **#1787** when validator passes after body apply
 - PROGRAM issue **#1738** must remain **open**; child issues **#1739–#1746** remain open
 
 ## ACCEPTANCE CRITERIA
@@ -127,6 +134,7 @@ Reviewer items:
 - [x] PROGRAM #1738 reopened and remains open after closeout replay.
 - [x] Remediated PR #1786 body passes post-merge validator without `closeout_blocker_declared`.
 - [x] Post-merge source issue closure completes after merge and closeout replay.
+- [x] All PR #1786 trusted reviewer comments dispositioned with comment ID and thread state.
 
 ## REQUIRED PRE-REVIEW SELF-CHECK
 - [x] PR body contains all required sections with exact headings
@@ -135,6 +143,7 @@ Reviewer items:
 - [x] ZIP safety confirmed
 - [x] Local checks executed and passed
 - [x] Post-merge closeout body remediation applied for merged PR governance
+- [x] All reviewer feedback has both textual disposition and GitHub thread-state disposition
 
-<!-- closeout-trigger: 2026-06-18T12:00:00Z -->
+<!-- closeout-trigger: 2026-06-18T18:00:00Z -->
 <!-- CURSOR_AGENT_PR_BODY_END -->
