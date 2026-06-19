@@ -1,6 +1,6 @@
 {
-  "triggered_at": "2026-06-18T15:00:00Z",
-  "description": "Bounded closeout remediation batch #1791 plus PR #1786 (#1777) and PR #1772 (#1794) rerun",
+  "triggered_at": "2026-06-19T12:00:00Z",
+  "description": "Residual closeout rerun failures after batch #1791 prune (#1812): Tranche A (#1255), #1681, #1765, #1786, #1772",
   "targets": [
     {
       "pr": 1699,
@@ -15,123 +15,9 @@
       "source_issue": 1255
     },
     {
-      "pr": 1531,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1531-body.md",
-      "merge_sha": "fca85cf10e8d6f0f3f6f67e3d1eaec98a78098ca",
-      "source_issue": 1258
-    },
-    {
-      "pr": 1534,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1534-body.md",
-      "merge_sha": "54b883e66cb4dd0d8c75d5168e1c58997ce037e7",
-      "source_issue": 1258
-    },
-    {
-      "pr": 1536,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1536-body.md",
-      "merge_sha": "62ca227c5939f9a852bd8268d2bcdf406a35d1ba",
-      "source_issue": 1258
-    },
-    {
-      "pr": 1538,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1538-body.md",
-      "merge_sha": "76fd22356c34474365cb886ec9425ba330f5f1f7",
-      "source_issue": 1258
-    },
-    {
-      "pr": 1540,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1540-body.md",
-      "merge_sha": "8c01d9601529d723e00144b6c54a54031f57c643",
-      "source_issue": 1258
-    },
-    {
-      "pr": 1551,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1551-body.md",
-      "merge_sha": "3509bbb5952864f55a3000910e3cdb6c2c5121b7",
-      "source_issue": 1258
-    },
-    {
-      "pr": 1556,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1556-body.md",
-      "merge_sha": "e7405698fc01fe8352827b93a2a40f59130b1698",
-      "source_issue": 1258
-    },
-    {
-      "pr": 1582,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1582-body.md",
-      "merge_sha": "738456ac502d6d58adc4ac40650f131261db9dfd",
-      "source_issue": 1560
-    },
-    {
-      "pr": 1619,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1619-body.md",
-      "merge_sha": "98394ec9a8ed2e1eb8aa63d724822bddaac13110",
-      "source_issue": 1617
-    },
-    {
-      "pr": 1669,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1669-body.md",
-      "merge_sha": "56a9394ff66be172f5a43cf17e25aaa2c21f6f0a",
-      "source_issue": 1259
-    },
-    {
-      "pr": 1677,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1677-body.md",
-      "merge_sha": "e16f216d1b6c3ec42a19855a0ce2af4813b9414e",
-      "source_issue": 1259
-    },
-    {
       "pr": 1681,
       "body_file": "scripts/ci/post-merge-closeout/pr-1681-body.md",
       "merge_sha": "11b2027d610a02e517212691a753134ab9691312",
-      "source_issue": 1259
-    },
-    {
-      "pr": 1728,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1728-body.md",
-      "merge_sha": "c170d3c68dfbff47d4195a924eb3e04c3a727411",
-      "source_issue": 1259
-    },
-    {
-      "pr": 1729,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1729-body.md",
-      "merge_sha": "0232254ce32d90d3f8e5cbd64369a1c07665ac17",
-      "source_issue": 1259
-    },
-    {
-      "pr": 1734,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1734-body.md",
-      "merge_sha": "9d0448959323a28f12b6f3e12f0ce31e79c69f51",
-      "source_issue": 1259
-    },
-    {
-      "pr": 1737,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1737-body.md",
-      "merge_sha": "552fb8f5bd2facba10c217e7d59f55ca06ccfd08",
-      "source_issue": 1259
-    },
-    {
-      "pr": 1749,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1749-body.md",
-      "merge_sha": "870ff83d85cdb772f35cb18d41b4ce4c31d08740",
-      "source_issue": 1259
-    },
-    {
-      "pr": 1751,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1751-body.md",
-      "merge_sha": "fd17af227ec4a9c6c3a16325f3715946b533fec6",
-      "source_issue": 1259
-    },
-    {
-      "pr": 1753,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1753-body.md",
-      "merge_sha": "678699e346bc04f3f80f69e2888700d736ebcc91",
-      "source_issue": 1259
-    },
-    {
-      "pr": 1762,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1762-body.md",
-      "merge_sha": "fa29216924856e6f6e375cd4dbca6ff441aad031",
       "source_issue": 1259
     },
     {
