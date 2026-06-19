@@ -332,7 +332,6 @@ The following workflows have been **removed** as part of this redesign:
 
 The following workflows are **not part of this redesign** and remain as-is:
 - `ai_review.yml`
-- `assess-nightly.yml`
 - `b2-d1-daily-sync.yml`
 - `b2-s3-smoke-test.yml`
 - `ci.yml`

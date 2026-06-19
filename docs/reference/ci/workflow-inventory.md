@@ -6,7 +6,7 @@ Owns: Program #1500 closeout workflow inventory excerpt, classification, overlap
 Does Not Own: Complete workflow inventory, workflow implementation, branch protection settings, CI architecture rationale
 Canonical Reference: /docs/reference/ci/github-actions_MASTER.md
 Related Issues: #1199, #1058, #1545, #1548, #1674
-Last Reviewed: 2026-06-16
+Last Reviewed: 2026-06-19
 ---
 
 # GitHub Actions Closeout Workflow Inventory Excerpt
@@ -25,7 +25,7 @@ workflow behavior, or define branch protection requirements.
 
 ## Current Known Truth
 
-There are 54 workflow files on `main` as of 2026-06-03. The authoritative
+There are 64 workflow files on `main` as of 2026-06-19 (`assess-nightly.yml` retired; superseded by `ops-assess.yml`). The authoritative
 as-built reconciliation for the `#1075` CI redesign is
 `docs/reference/ci/lgfc-ci-as-built-reconciliation.md`.
 
