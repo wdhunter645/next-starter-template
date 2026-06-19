@@ -346,11 +346,8 @@ while IFS= read -r new_key; do
     [[ "$HAS_DESC" -eq 1 ]] && { col_list+=",description"; val_list+=",''"; }
     [[ "$HAS_CREATED_AT" -eq 1 ]] && { col_list+=",created_at"; val_list+=",'$esc_uploaded'"; }
 
-    cat >> "$SQL_FILE" <<SQL_INS
-INSERT INTO photos ($col_list)
-SELECT $val_list
-WHERE NOT EXISTS (SELECT 1 FROM photos WHERE "$KEY_COL" = '$esc_id');
-SQL_INS
+    printf 'INSERT INTO photos (%s) SELECT %s WHERE NOT EXISTS (SELECT 1 FROM photos WHERE "%s" = '\''%s'\'');\n' \
+      "$col_list" "$val_list" "$KEY_COL" "$esc_id" >> "$SQL_FILE"
   else
     url="$new_key"
     obj="$(jq --arg u "$url" -c '.objects[] | select(.public_url == $u)' "$OBJECTS_FILE")" || true
@@ -367,11 +364,8 @@ SQL_INS
     [[ "$HAS_DESC" -eq 1 ]] && { col_list+=",description"; val_list+=",''"; }
     [[ "$HAS_CREATED_AT" -eq 1 ]] && { col_list+=",created_at"; val_list+=",'$esc_uploaded'"; }
 
-    cat >> "$SQL_FILE" <<SQL_INS
-INSERT INTO photos ($col_list)
-SELECT $val_list
-WHERE NOT EXISTS (SELECT 1 FROM photos WHERE "$URL_COL" = '$esc_url');
-SQL_INS
+    printf 'INSERT INTO photos (%s) SELECT %s WHERE NOT EXISTS (SELECT 1 FROM photos WHERE "%s" = '\''%s'\'');\n' \
+      "$col_list" "$val_list" "$URL_COL" "$esc_url" >> "$SQL_FILE"
   fi
 done < "$NEW_KEYS_FILE"
 
@@ -394,7 +388,8 @@ FIRST_INS_LINE="$(grep -n -m1 -E '^INSERT[[:space:]]+INTO[[:space:]]+photos' "$S
 head -n $((FIRST_INS_LINE - 1)) "$SQL_FILE" > "$HEADER_FILE"
 tail -n +"$FIRST_INS_LINE" "$SQL_FILE" > "$BODY_FILE"
 
-LINES_PER_STMT=2
+# One INSERT per line so split(1) never cuts mid-statement.
+LINES_PER_STMT=1
 LINES_PER_BATCH=$((D1_BATCH_SIZE * LINES_PER_STMT))
 split -d -a 4 -l "$LINES_PER_BATCH" "$BODY_FILE" "$SQL_DIR/batch_"
 
