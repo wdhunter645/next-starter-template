@@ -1,6 +1,6 @@
 {
   "triggered_at": "2026-06-19T12:00:00Z",
-  "description": "Residual closeout rerun failures after batch #1791 prune (#1812): Tranche A (#1255), #1681, #1765, #1786, #1772",
+  "description": "Residual closeout rerun failures after batch #1791 prune (#1812): Tranche A (#1255), #1681, #1765, #1786, #1772, #1795",
   "targets": [
     {
       "pr": 1699,
@@ -37,6 +37,12 @@
       "body_file": "scripts/ci/post-merge-closeout/pr-1772-body.md",
       "merge_sha": "2c5e8ebdf957e03510a89fd544c1222ea67c1039",
       "source_issue": 1754
+    },
+    {
+      "pr": 1795,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1795-body.md",
+      "merge_sha": "87f60099cb3aff4de93b9b90a12138728f173fe2",
+      "source_issue": 1794
     }
   ]
 }
