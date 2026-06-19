@@ -6,7 +6,7 @@ Owns: PMO program issue registry, current program issue assignments, launch-stat
 Does Not Own: PMO v3 top-level policy, implementation plan task definitions, workflow code, runtime behavior, product design, or unauthorized GitHub issue changes
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
 Related Issues: #1411, #1379, #1255, #1259, #1500, #1678, #1685, #1696, #1700, #1713, #1719, #1720, #1721, #1722, #1723, #1724, #1725, #1726, #1727
-Last Reviewed: 2026-06-17
+Last Reviewed: 2026-06-19
 ---
 
 # PMO Program Issue Registry
@@ -29,7 +29,7 @@ This registry records current program issue assignments, launch-state control, c
 - Priority #1 Website Completion / Fan Club Product Buildout is parked as program issue #1685 with child issues #1686 through #1694; it remains blocked until Atlas/Bill explicitly launch or reprioritize it.
 - Priority #2 Fundraiser / Charity Campaign Operations Buildout has program issue #1700 with child task issues #1701 through #1708. Task 001 assignment guidance is posted on #1701. The program remains queued behind Program #1255/#1259 and parked Priority #1 unless Bill/Atlas explicitly reprioritize.
 - Priority #3 PMO Governance / Workflow Automation Completion has program issue #1719 with child task issues #1720 through #1727. Task 001 assignment guidance is posted on #1720. The program remains queued behind Program #1255/#1259, parked Priority #1, and Priority #2 unless Bill/Atlas explicitly reprioritize.
-- issue #1500 (CI Post-Merge Closeout Reliability) is **closed complete** and remains reconciliation evidence for Priority #3.
+- issue #1500 (CI Post-Merge Closeout Reliability) is **closed complete** and remains reconciliation evidence for Priority #3. Task #1725 reconciliation report: `docs/ops/reports/program-1500-queue-wave-reconciliation.md`.
 - issue #1411 is completed — a planning/control artifact, not an open blocked program.
 - GitHub issue titles use `Program: <name>`. Documentation references use `Program #<issue-number> — <name>`.
 
@@ -123,7 +123,7 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 | Cursor continuation and queue contract hardening | Included in Priority #3 | Task 003 | #1722 |
 | PR readiness and merge authority control | Included in Priority #3 | Task 004 | #1723 |
 | Issue mutation and closeout permission policy | Included in Priority #3 | Task 005 | #1724 |
-| Queue/wave model and Program #1500 closeout reconciliation | Included in Priority #3 | Task 006 | #1725 |
+| Queue/wave model and Program #1500 closeout reconciliation | Included in Priority #3; reconciliation report published | Task 006 | #1725 |
 | Workflow/CI implementation candidate scoping | Included in Priority #3 | Task 007 | #1726 |
 | Program closeout and launch-control package | Terminal closeout | Task 008 | #1727 |
 
@@ -181,8 +181,8 @@ Completed program cycles remain audit evidence and may be cited for historical c
 | Cursor continuation and queue contract | Included in Priority #3 #1722 |
 | PR readiness and batch review control | Included in Priority #3 #1723 |
 | Merge and issue change policy | Included in Priority #3 #1724 |
-| Queue/wave model and labels | Included in Priority #3 #1725, subject to #1500 reconciliation |
-| Post-merge closeout evidence stabilization | Included in Priority #3 #1725 only for remaining gaps after #1500 |
+| Queue/wave model and labels | Included in Priority #3 #1725 — reconciled; see `docs/ops/reports/program-1500-queue-wave-reconciliation.md` |
+| Post-merge closeout evidence stabilization | Included in Priority #3 #1725 — baseline satisfied by closed #1500; gaps for #1726+ only |
 | PMO Backlog promotion and Program #1411 launch gate | Included in Priority #3 #1720 and #1727 |
 
 ### Out of scope for Program #1411 planning
