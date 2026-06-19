@@ -63,7 +63,6 @@ bash scripts/b2_d1_incremental_sync.sh
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID | required |
 | `CF_API_TOKEN` / `CF_ACCOUNT_ID` | Aliases for Cloudflare credentials | optional |
 | `PUBLIC_B2_BASE_URL` | Base URL for public access | `B2_ENDPOINT` |
 | `DRY_RUN` | Generate SQL but don't execute (1=yes, 0=no) | `0` |
@@ -96,13 +95,13 @@ The script inserts into the `photos` table with the following mapping:
 2. **Normalize** to standard format (external_id, filename, public_url, size, uploaded_at)
 3. **Query D1** for existing `photo_id` values
 4. **Calculate delta** (new objects = B2 objects - D1 records)
-5. **Generate SQL** INSERT OR IGNORE statements for new objects only
+5. **Generate SQL** `INSERT ... WHERE NOT EXISTS` statements for new objects only
 6. **Execute SQL** via `wrangler d1 execute`
 7. **Log summary** (counts only, no secrets)
 
 ## Idempotency Guarantees
 
-- Uses `INSERT OR IGNORE` to prevent duplicate inserts
+- Uses `INSERT ... WHERE NOT EXISTS` guards to prevent duplicate inserts
 - Compares B2 keys against existing `photo_id` values before inserting
 - Safe to run multiple times per day
 - No updates or deletes, only inserts

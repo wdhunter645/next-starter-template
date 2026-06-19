@@ -68,8 +68,8 @@ echo "  ✓ PASSED"
 
 # Test 6: Script uses proper error handling
 echo "Test 6: Error handling..."
-if ! grep -q "set -eu" "$SYNC_SCRIPT"; then
-  echo "  ✗ FAILED: Script should use strict error handling (set -eu)"
+if ! grep -q "set -euo pipefail" "$SYNC_SCRIPT"; then
+  echo "  ✗ FAILED: Script should use strict error handling (set -euo pipefail)"
   exit 1
 fi
 echo "  ✓ PASSED"

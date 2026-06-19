@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eu
+set -euo pipefail
 
 # ============================================================================
 # B2 → D1 Incremental Sync (Idempotent Daily Sync)

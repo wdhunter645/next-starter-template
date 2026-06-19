@@ -49,6 +49,11 @@ function runWrangler(args) {
   });
 }
 
+function failWranglerExecution(step, result) {
+  console.error(`ERROR: Failed to execute wrangler for ${step}:`, result.error?.message || 'unknown execution error');
+  process.exit(1);
+}
+
 function printRecoveryHints() {
   console.error('');
   console.error('Cloudflare API token must include:');
@@ -63,6 +68,9 @@ function printRecoveryHints() {
 }
 
 const whoami = runWrangler(['whoami']);
+if (whoami.error) {
+  failWranglerExecution('whoami', whoami);
+}
 if (whoami.status !== 0) {
   console.error('ERROR: wrangler whoami failed. The Cloudflare API token is invalid or lacks User Details Read.');
   console.error((whoami.stderr || whoami.stdout || '').trim());
@@ -71,6 +79,9 @@ if (whoami.status !== 0) {
 }
 
 const probe = runWrangler(['d1', 'execute', databaseName, '--remote', '--command', 'SELECT 1 AS ok;']);
+if (probe.error) {
+  failWranglerExecution('D1 probe', probe);
+}
 if (probe.status !== 0) {
   console.error(`ERROR: Remote D1 probe failed for database "${databaseName}".`);
   console.error((probe.stderr || probe.stdout || '').trim());
