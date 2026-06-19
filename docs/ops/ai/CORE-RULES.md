@@ -5,7 +5,7 @@ Authority Level: Core
 Owns: Shared execution rules, enforcement model, PR discipline, stop conditions
 Does Not Own: Design authority, platform configuration, tracker content
 Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
-Last Reviewed: 2026-06-04
+Last Reviewed: 2026-06-19
 ---
 
 # CORE-RULES.md
@@ -270,17 +270,16 @@ A PR must not be handed to Atlas/Bill for review while any required gate, review
 
 # AGENT ROUTING PRIORITY
 
-Website implementation tasks:
+LGFC implementation routing is defined in [`LGFC-AI-TEAM-OPERATING-MODEL.md`](./LGFC-AI-TEAM-OPERATING-MODEL.md) (issue #1754).
 
-1. Cursor = primary implementation agent.
-2. Codex = secondary implementation agent when Cursor is unavailable, usage-limited, or unsuitable for the specific task.
-3. All other agents = tertiary/support agents only by explicit routing need.
+All LGFC implementation tasks (website, repository, ops, CI, and docs implementation):
 
-Repository implementation tasks:
+1. **Cursor** = sole LGFC implementation executor.
+2. **Atlas (ChatGPT)** = design and launch-control authority; does not perform routine scoped file implementation.
+3. **Codex** = inactive/out for LGFC implementation unless Bill explicitly reauthorizes it in a future governance update. See [`CODEX-RULES.md`](./CODEX-RULES.md).
+4. All other agents = tertiary/support agents only by explicit routing need.
 
-1. Codex = primary implementation agent.
-2. Cursor = secondary implementation agent when Codex is unavailable, usage-limited, or unsuitable for the specific task.
-3. All other agents = tertiary/support agents only by explicit routing need.
+Prior documentation that listed Codex as a primary or secondary implementation agent is superseded for LGFC work.
 
 Routing priority controls assignment preference only. It does not override design authority, scope limits, PR discipline, or merge approval.
 
