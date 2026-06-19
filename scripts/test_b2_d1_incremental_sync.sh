@@ -116,6 +116,49 @@ if ! grep -q "sql_escape" "$SYNC_SCRIPT"; then
 fi
 echo "  ✓ PASSED"
 
+# Test 11: INSERT statements are single-line (batch split safety)
+echo "Test 11: Single-line INSERT statements for batch splitting..."
+if ! grep -q "LINES_PER_STMT=1" "$SYNC_SCRIPT"; then
+  echo "  ✗ FAILED: Script should use LINES_PER_STMT=1 for one INSERT per line"
+  exit 1
+fi
+
+if ! grep -q "printf 'INSERT INTO photos" "$SYNC_SCRIPT"; then
+  echo "  ✗ FAILED: Script should emit single-line INSERT statements"
+  exit 1
+fi
+echo "  ✓ PASSED"
+
+# Test 12: Batch split never produces orphaned SQL fragments
+echo "Test 12: Batch split integrity..."
+BATCH_TEST_DIR="$(mktemp -d)"
+trap 'rm -rf "$BATCH_TEST_DIR"' EXIT
+BATCH_BODY="$BATCH_TEST_DIR/body.sql"
+BATCH_DIR="$BATCH_TEST_DIR/batches"
+mkdir -p "$BATCH_DIR"
+for i in $(seq 1 7); do
+  printf "INSERT INTO photos (\"photo_id\",\"url\") SELECT 'id-%s','https://example.com/%s' WHERE NOT EXISTS (SELECT 1 FROM photos WHERE \"photo_id\" = 'id-%s');\n" \
+    "$i" "$i" "$i" >> "$BATCH_BODY"
+done
+D1_BATCH_SIZE=3
+LINES_PER_STMT=1
+LINES_PER_BATCH=$((D1_BATCH_SIZE * LINES_PER_STMT))
+split -d -a 4 -l "$LINES_PER_BATCH" "$BATCH_BODY" "$BATCH_DIR/batch_"
+for part in "$BATCH_DIR"/batch_*; do
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    if [[ "$line" =~ ^WHERE ]]; then
+      echo "  ✗ FAILED: Batch $(basename "$part") contains orphaned WHERE fragment"
+      exit 1
+    fi
+    if ! [[ "$line" =~ ^INSERT[[:space:]]+INTO[[:space:]]+photos ]]; then
+      echo "  ✗ FAILED: Batch $(basename "$part") contains non-INSERT line: $line"
+      exit 1
+    fi
+  done < "$part"
+done
+echo "  ✓ PASSED"
+
 echo ""
 echo "============================================"
 echo "All tests PASSED ✓"
