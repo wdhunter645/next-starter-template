@@ -31,8 +31,17 @@ describe('post-merge closeout all manifests', () => {
 		expect(targets).toEqual([]);
 	});
 
-	it('loads cleared remediation backlog manifest when empty', () => {
+	it('loads PR #1860 remediation backlog target after #1848 closeout blocker remediation', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-remediation-backlog.json');
-		expect(targets).toEqual([]);
+		expect(targets).toHaveLength(1);
+		expect(targets.map((target) => target.pr)).toEqual([1860]);
+		expect(targets.every((target) => target.body_file && target.merge_sha && target.source_issue)).toBe(
+			true,
+		);
+		expect(targets[0]).toMatchObject({
+			body_file: 'scripts/ci/post-merge-closeout/pr-1860-body.md',
+			merge_sha: '492f2cb8e88679c30e89e46914ded83385a0394b',
+			source_issue: 1848,
+		});
 	});
 });

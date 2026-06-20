@@ -1,5 +1,12 @@
 {
-  "triggered_at": "2026-06-20T18:00:00Z",
-  "description": "Cleared after batch closeout run 27872268704 — remediation backlog (#1221, #1230, #1233, #1248) passed",
-  "targets": []
+  "triggered_at": "2026-06-20T15:51:00Z",
+  "description": "Post-merge closeout replay for merged PR #1860 / source #1848 / remediation #1863",
+  "targets": [
+    {
+      "pr": 1860,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1860-body.md",
+      "merge_sha": "492f2cb8e88679c30e89e46914ded83385a0394b",
+      "source_issue": 1848
+    }
+  ]
 }
