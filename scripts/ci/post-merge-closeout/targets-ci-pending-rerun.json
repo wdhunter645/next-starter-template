@@ -1,25 +1,7 @@
 {
-  "triggered_at": "2026-06-19T19:00:00Z",
-  "description": "Final residual closeout replay targets after #1830 remediation: #1681, #1772, #1795, #1807",
+  "triggered_at": "2026-06-20T13:15:00Z",
+  "description": "Final residual closeout replay target after #1830 pass and #1807 disposition remediation: #1807 only",
   "targets": [
-    {
-      "pr": 1681,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1681-body.md",
-      "merge_sha": "11b2027d610a02e517212691a753134ab9691312",
-      "source_issue": 1259
-    },
-    {
-      "pr": 1772,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1772-body.md",
-      "merge_sha": "2c5e8ebdf957e03510a89fd544c1222ea67c1039",
-      "source_issue": 1754
-    },
-    {
-      "pr": 1795,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1795-body.md",
-      "merge_sha": "87f60099cb3aff4de93b9b90a12138728f173fe2",
-      "source_issue": 1794
-    },
     {
       "pr": 1807,
       "body_file": "scripts/ci/post-merge-closeout/pr-1807-body.md",

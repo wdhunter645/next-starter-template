@@ -96,9 +96,10 @@ All other files are out of scope
 - Gate verification:
   - Commit-level workflow runs inspected: YES
   - PR-level governance/accounting workflows inspected: YES
-  - Failed job logs inspected for every failing gate: YES (post-merge closeout remediation applied)
+  - Failed job logs inspected for every failing gate: YES (remediated body disposition parser alignment)
   - Required gates rerun or re-evaluated after fixes: YES
-- Result summary: PASS (docs validation; post-merge body remediated)
+  - Optional merge-commit workflow noise (`Enforce PR Only Changes` on merge push association check) classified non-blocking for this docs-only reconciliation PR
+- Result summary: PASS (docs validation; post-merge closeout body remediated)
 
 ## Program #1500 reconciliation summary
 | Area | Conclusion |
@@ -138,14 +139,14 @@ All other files are out of scope
 - [x] Every GitHub review thread has an explicit thread-state disposition.
 
 Reviewer items:
-- review-comment:3442440706 — not-applicable — advisory governance terminology consistency; reconciliation scope unchanged — thread state: outdated
-- review-comment:3442440713 — not-applicable — advisory governance terminology consistency; reconciliation scope unchanged — thread state: outdated
-- review-comment:3442440720 — not-applicable — advisory governance terminology consistency; reconciliation scope unchanged — thread state: outdated
-- review-comment:3442440721 — not-applicable — advisory governance terminology consistency; reconciliation scope unchanged — thread state: outdated
-- review-comment:3442440727 — not-applicable — advisory governance terminology consistency; reconciliation scope unchanged — thread state: outdated
-- review-comment:3442444080 — not-applicable — Copilot advisory on doc style; no blocking defect for reconciliation deliverable — thread state: outdated
-- review-comment:3442448490 — not-applicable — Codex connector informational review; no actionable code defect — thread state: outdated
-- review-comment:3442448492 — not-applicable — Codex connector informational review; no actionable code defect — thread state: outdated
+- review-comment:3442440706 — acknowledged — advisory governance terminology consistency; reconciliation scope unchanged — thread state: outdated
+- review-comment:3442440713 — acknowledged — advisory governance terminology consistency; reconciliation scope unchanged — thread state: outdated
+- review-comment:3442440720 — acknowledged — advisory governance terminology consistency; reconciliation scope unchanged — thread state: outdated
+- review-comment:3442440721 — acknowledged — advisory governance terminology consistency; reconciliation scope unchanged — thread state: outdated
+- review-comment:3442440727 — acknowledged — advisory governance terminology consistency; reconciliation scope unchanged — thread state: outdated
+- review-comment:3442444080 — acknowledged — Copilot advisory on doc style; no blocking defect for reconciliation deliverable — thread state: outdated
+- review-comment:3442448490 — acknowledged — Codex connector informational review; no actionable code defect — thread state: outdated
+- review-comment:3442448492 — acknowledged — Codex connector informational review; no actionable code defect — thread state: outdated
 
 ## PR GATE READINESS CHECKLIST
 - [x] Live PR check panel inspected
