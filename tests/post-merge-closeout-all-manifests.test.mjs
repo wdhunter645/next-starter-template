@@ -12,7 +12,7 @@ describe('post-merge closeout all manifests', () => {
 		]);
 	});
 
-	it('loads yesterday exception batch closeout rerun targets', () => {
+	it('loads yesterday exception batch closeout rerun targets after remediation', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json');
 		expect(targets).toHaveLength(8);
 		expect(targets.map((target) => target.pr)).toEqual([
