@@ -221,13 +221,6 @@ export async function executeEscalationAction(action, { token, repository, dryRu
 			method: 'PATCH',
 			body: { body: action.body },
 		});
-		await request({
-			token,
-			repository,
-			path: `/issues/${action.existing_issue_number}/comments`,
-			method: 'POST',
-			body: { body: action.update_comment },
-		});
 		return {
 			...action,
 			status: 'updated',
@@ -260,11 +253,19 @@ export async function escalateFromDetectionReport(report = {}, options = {}) {
 	const outcomes = [];
 
 	for (const action of actions) {
-		outcomes.push(await executeEscalationAction(action, {
-			token: options.token,
-			repository: options.repository,
-			dryRun,
-		}));
+		try {
+			outcomes.push(await executeEscalationAction(action, {
+				token: options.token,
+				repository: options.repository,
+				dryRun,
+			}));
+		} catch (error) {
+			outcomes.push({
+				...action,
+				status: 'failed',
+				error: error instanceof Error ? error.message : String(error),
+			});
+		}
 	}
 
 	return {
@@ -275,6 +276,7 @@ export async function escalateFromDetectionReport(report = {}, options = {}) {
 			planned: outcomes.filter((entry) => entry.status === 'planned').length,
 			created: outcomes.filter((entry) => entry.status === 'created').length,
 			updated: outcomes.filter((entry) => entry.status === 'updated').length,
+			failed: outcomes.filter((entry) => entry.status === 'failed').length,
 		},
 	};
 }
