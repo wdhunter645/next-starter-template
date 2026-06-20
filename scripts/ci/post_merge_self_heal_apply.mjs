@@ -19,7 +19,7 @@ import {
 	FINDING_TYPES,
 	SAFETY_CATEGORIES,
 } from './post_merge_self_heal_classify.mjs';
-import { RECOMMENDED_ACTIONS } from './post_merge_self_heal_detect.mjs';
+import { RECOMMENDED_ACTIONS, loadManifestSnapshots, DEFAULT_MANIFESTS } from './post_merge_self_heal_detect.mjs';
 import {
 	normalizeCloseoutPr,
 	pruneCloseoutManifest,
@@ -56,14 +56,36 @@ export function collectSuccessfulPrsFromReports(closeoutReports = []) {
 	return successful;
 }
 
-export function planManifestPruneActions(findings = [], { closeoutReports = [] } = {}) {
+export function buildManifestPathIndex(manifests = []) {
+	const index = new Map();
+	for (const manifest of manifests || []) {
+		for (const target of manifest.targets || []) {
+			const pr = normalizeCloseoutPr(target?.pr);
+			if (pr) {
+				index.set(pr, manifest.manifest_path);
+			}
+		}
+	}
+	return index;
+}
+
+export function manifestPathForFinding(finding = {}, manifestIndex = new Map()) {
+	if (finding.manifest_path) {
+		return finding.manifest_path;
+	}
+	const pr = normalizeCloseoutPr(finding.pr_number);
+	return pr ? manifestIndex.get(pr) || null : null;
+}
+
+export function planManifestPruneActions(findings = [], { closeoutReports = [], manifests = [] } = {}) {
 	const successfulPrs = collectSuccessfulPrsFromReports(closeoutReports);
+	const manifestIndex = buildManifestPathIndex(manifests);
 	const actions = [];
 	const seen = new Set();
 
 	for (const finding of findings) {
 		if (finding.kind !== FINDING_TYPES.STALE_MANIFEST_ENTRY) continue;
-		const manifestPath = finding.manifest_path;
+		const manifestPath = manifestPathForFinding(finding, manifestIndex);
 		const prNumber = normalizeCloseoutPr(finding.pr_number);
 		if (!manifestPath || !prNumber) continue;
 
@@ -269,7 +291,15 @@ export function applySafeAutoFixActions(plan = {}, { dryRun = true, rootDir = pr
 
 export function applyFromDetectionReport(report = {}, options = {}) {
 	const dryRun = options.dryRun !== false;
-	const plan = planSafeAutoFixActions(report, options);
+	const plan = planSafeAutoFixActions(report, {
+		...options,
+		closeoutReports: options.closeoutReports ?? report.closeoutReports ?? [],
+		manifests: options.manifests
+			?? report.manifests
+			?? loadManifestSnapshots(options.manifestPaths ?? DEFAULT_MANIFESTS, { rootDir: options.rootDir }),
+		remediationIssues: options.remediationIssues ?? report.remediationIssues ?? [],
+		issueEvidenceByNumber: options.issueEvidenceByNumber ?? report.issueEvidenceByNumber ?? {},
+	});
 	const outcome = applySafeAutoFixActions(plan, { dryRun, rootDir: options.rootDir });
 	return {
 		status: outcome.summary.skipped_unsafe > 0 && outcome.summary.safe_findings === 0
