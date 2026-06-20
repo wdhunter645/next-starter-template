@@ -56,12 +56,17 @@ export function loadManifestSnapshots(manifestPaths = DEFAULT_MANIFESTS, { rootD
 
 function collectSuccessfulCloseoutPrs(reports = []) {
 	const successful = new Set();
-	for (const report of reports) {
+	for (const report of reports || []) {
+		if (!report) continue;
 		for (const pr of successfulCloseoutPrs(report)) {
 			successful.add(String(pr));
 		}
 		for (const result of report?.results || []) {
-			if (result?.status === 'pass' && result?.pr) {
+			if (
+				result?.status === 'pass'
+				&& result?.pr
+				&& result?.sync_action === 'post_merge_success'
+			) {
 				successful.add(String(result.pr));
 			}
 		}
@@ -74,6 +79,7 @@ export function detectStaleManifestEntries({ manifests = [], closeoutReports = [
 	const findings = [];
 
 	for (const manifest of manifests) {
+		if (!manifest) continue;
 		for (const target of manifest.targets || []) {
 			const prNumber = String(target?.pr ?? '').trim();
 			if (!prNumber) continue;
@@ -99,10 +105,13 @@ export function detectStaleManifestEntries({ manifests = [], closeoutReports = [
 }
 
 export function detectEmptyCleanState({ manifests = [], closeoutReports = [], exceptionIssues = [] } = {}) {
-	const allEmpty = manifests.every((manifest) => (manifest.targets || []).length === 0);
-	const openExceptions = (exceptionIssues || []).filter((issue) => String(issue?.state || '').toLowerCase() === 'open');
+	const allEmpty = manifests.every((manifest) => (manifest?.targets || []).length === 0);
+	const openExceptions = (exceptionIssues || []).filter(
+		(issue) => issue && String(issue?.state || '').toLowerCase() === 'open',
+	);
 	const failedReports = (closeoutReports || []).filter((report) => {
-		const status = String(report?.status || '').toLowerCase();
+		if (!report) return false;
+		const status = String(report.status || '').toLowerCase();
 		return status === 'failure' || status === 'partial_failure' || status === 'fail';
 	});
 
@@ -114,7 +123,7 @@ export function detectEmptyCleanState({ manifests = [], closeoutReports = [], ex
 		kind: FINDING_TYPES.CLEAN_STATE,
 		code: 'clean_state',
 		message: 'All closeout manifests are empty and no open exception issues were supplied.',
-		evidence: manifests.map((manifest) => ({
+		evidence: manifests.filter(Boolean).map((manifest) => ({
 			type: 'manifest',
 			path: manifest.manifest_path,
 			target_count: (manifest.targets || []).length,
@@ -155,7 +164,8 @@ export function detectDuplicateRemediationIssues({ issues = [] } = {}) {
 	const groups = new Map();
 	const findings = [];
 	for (const issue of issues || []) {
-		if (String(issue?.state || '').toLowerCase() !== 'open') continue;
+		if (!issue) continue;
+		if (String(issue.state || '').toLowerCase() !== 'open') continue;
 		const key = issueReferenceKey(issue);
 		if (!key) {
 			findings.push({
@@ -174,7 +184,21 @@ export function detectDuplicateRemediationIssues({ issues = [] } = {}) {
 
 	for (const grouped of groups.values()) {
 		if (grouped.length < 2) continue;
-		const canonical = grouped.find((issue) => issue?.canonical) || grouped[grouped.length - 1];
+		const explicitCanonical = grouped.find((issue) => issue?.canonical === true);
+		if (!explicitCanonical) {
+			for (const issue of grouped) {
+				findings.push({
+					kind: FINDING_TYPES.INCOMPLETE_REPORT_PAYLOAD,
+					code: 'ambiguous_duplicate_remediation_metadata',
+					issue_number: issue.number,
+					message: `Issue #${issue.number} is part of a duplicate remediation group without explicit canonical evidence.`,
+					evidence: [{ type: 'issue', number: issue.number, ambiguous_duplicate: true }],
+					recommended_action: RECOMMENDED_ACTIONS.CURSOR_REMEDIATION,
+				});
+			}
+			continue;
+		}
+		const canonical = explicitCanonical;
 		for (const duplicate of grouped) {
 			if (duplicate === canonical) continue;
 			findings.push({
@@ -258,9 +282,11 @@ export function detectCloseoutReportFindings({ closeoutReports = [] } = {}) {
 	const findings = [];
 
 	for (const report of closeoutReports || []) {
+		if (!report) continue;
 		for (const result of report?.results || []) {
+			if (!result) continue;
 			for (const failure of flattenValidationFailures(result)) {
-				const code = failure.code || failure.workflow || `${failure.bucket}_failure`;
+				const code = failure.classification || failure.code || failure.workflow || `${failure.bucket}_failure`;
 				const workflowClassification = String(failure.classification || failure.failure_type || '').trim();
 				findings.push({
 					kind: null,
@@ -322,7 +348,7 @@ export function detectPostMergeFindings(input = {}) {
 	const actionable = classified.filter((finding) => finding.classification !== SAFETY_CATEGORIES.NO_ACTION);
 
 	let status = 'success';
-	if (input.errors?.length) {
+	if (errors.length) {
 		status = 'partial_failure';
 	} else if (actionable.length > 0) {
 		status = 'findings';

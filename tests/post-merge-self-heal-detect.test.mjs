@@ -119,6 +119,32 @@ describe('post-merge self-healing detector', () => {
 		expect(findings[0].issue_number).toBe(1871);
 	});
 
+	it('escalates duplicate remediation groups without explicit canonical evidence', () => {
+		const findings = detectDuplicateRemediationIssues({
+			issues: [
+				{ number: 1863, state: 'open', linked_pr: 1860, linked_source_issue: 1848, failure_code: 'closeout_blocker_declared' },
+				{ number: 1871, state: 'open', linked_pr: 1860, linked_source_issue: 1848, failure_code: 'closeout_blocker_declared' },
+			],
+		});
+
+		expect(findings.every((finding) => finding.code === 'ambiguous_duplicate_remediation_metadata')).toBe(true);
+	});
+
+	it('does not treat remediation passes as stale manifest entries', () => {
+		const findings = detectStaleManifestEntries({
+			manifests: [{
+				manifest_path: 'targets-remediation-backlog.json',
+				targets: [{ pr: 1860, source_issue: 1848 }],
+			}],
+			closeoutReports: [{
+				status: 'success',
+				results: [{ pr: 1860, status: 'pass', sync_action: 'post_merge_remediation' }],
+			}],
+		});
+
+		expect(findings).toEqual([]);
+	});
+
 	it('classifies ambiguous closeout metadata failures for cursor remediation', () => {
 		const report = detectPostMergeFindings({
 			manifests: [{ manifest_path: 'targets-remediation-backlog.json', targets: [{ pr: 1860, source_issue: 1848 }] }],
