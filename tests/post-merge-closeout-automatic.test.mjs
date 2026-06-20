@@ -145,6 +145,29 @@ describe('automatic closeout runtime context', () => {
 	});
 });
 
+describe('post-merge-pr-body-closeout workflow artifact guards', () => {
+	it('uploads batch and manual closeout reports with distinct artifact names and non-overlapping conditions', () => {
+		const workflow = fs.readFileSync('.github/workflows/post-merge-pr-body-closeout.yml', 'utf8');
+
+		expect(workflow).toContain('name: post-merge-batch-closeout-report');
+		expect(workflow).toContain('name: post-merge-single-closeout-report');
+		expect(workflow).not.toMatch(/name: post-merge-closeout-report\b/);
+
+		const manualUploadIf = workflow.match(
+			/name: Upload manual single-PR closeout report[\s\S]*?if: ([^\n]+)/,
+		)?.[1];
+		expect(manualUploadIf).toContain("inputs.run_batch != 'true'");
+		expect(manualUploadIf).toContain("inputs.run_all_pending != 'true'");
+
+		const manualCloseoutIf = workflow.match(
+			/name: Manual single-PR closeout[\s\S]*?if: ([^\n]+)/,
+		)?.[1];
+		expect(manualCloseoutIf).toContain("inputs.run_batch != 'true'");
+		expect(manualCloseoutIf).toContain("inputs.run_all_pending != 'true'");
+		expect(manualUploadIf).toContain(manualCloseoutIf);
+	});
+});
+
 describe('consolidated automatic closeout ownership', () => {
 	it('routes merged PRs through one automatic workflow without duplicate sync wiring', () => {
 		const closeoutWorkflow = fs.readFileSync('.github/workflows/post-merge-closeout.yml', 'utf8');

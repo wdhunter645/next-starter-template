@@ -93,7 +93,7 @@ jobs:
         if: always() && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.run_batch == 'true' || inputs.run_all_pending == 'true')))
         uses: actions/upload-artifact@v4
         with:
-          name: post-merge-closeout-report
+          name: post-merge-batch-closeout-report
           path: |
             post-merge-batch-closeout.json
             post-merge-result.json
@@ -113,10 +113,10 @@ jobs:
         run: node scripts/ci/run_post_merge_closeout.mjs
 
       - name: Upload manual single-PR closeout report
-        if: always() && github.event_name == 'workflow_dispatch' && inputs.run_batch != 'true'
+        if: always() && github.event_name == 'workflow_dispatch' && inputs.run_batch != 'true' && inputs.run_all_pending != 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: post-merge-closeout-report
+          name: post-merge-single-closeout-report
           path: |
             post-merge-result.json
             post-merge-result.md
