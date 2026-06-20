@@ -1,0 +1,40 @@
+{
+  "input": {
+    "manifests": [
+      {
+        "manifest_path": "scripts/ci/post-merge-closeout/targets-remediation-backlog.json",
+        "targets": [
+          {
+            "pr": 1860,
+            "source_issue": 1848
+          }
+        ]
+      }
+    ],
+    "closeoutReports": [
+      {
+        "status": "partial_failure",
+        "results": [
+          {
+            "pr": 1860,
+            "status": "fail",
+            "source_issue": 1848,
+            "metadata_failures": [
+              {
+                "code": "closeout_blocker_declared",
+                "message": "PR body contains ambiguous closeout blocker evidence."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "exceptionIssues": [
+      {
+        "number": 1863,
+        "state": "open"
+      }
+    ],
+    "remediationIssues": []
+  }
+}

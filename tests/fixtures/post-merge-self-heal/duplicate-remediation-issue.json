@@ -1,0 +1,29 @@
+{
+  "input": {
+    "manifests": [
+      {
+        "manifest_path": "scripts/ci/post-merge-closeout/targets-remediation-backlog.json",
+        "targets": []
+      }
+    ],
+    "closeoutReports": [],
+    "exceptionIssues": [],
+    "remediationIssues": [
+      {
+        "number": 1863,
+        "state": "open",
+        "linked_pr": 1860,
+        "linked_source_issue": 1848,
+        "failure_code": "closeout_blocker_declared",
+        "canonical": true
+      },
+      {
+        "number": 1871,
+        "state": "open",
+        "linked_pr": 1860,
+        "linked_source_issue": 1848,
+        "failure_code": "closeout_blocker_declared"
+      }
+    ]
+  }
+}
