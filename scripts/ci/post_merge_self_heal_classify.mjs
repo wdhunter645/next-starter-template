@@ -146,7 +146,21 @@ export function classifyFinding(finding = {}, context = {}) {
 	) {
 		// Preserve contract precedence for unsafe escalation signals.
 	} else if (safeFinding.deferred === true || type === FINDING_TYPES.INTENTIONALLY_DEFERRED) {
-		classification = SAFETY_CATEGORIES.INTENTIONALLY_DEFERRED;
+		if (
+			classification === SAFETY_CATEGORIES.SAFE_AUTO_FIX
+			|| classification === SAFETY_CATEGORIES.NO_ACTION
+			|| type === FINDING_TYPES.INTENTIONALLY_DEFERRED
+		) {
+			classification = SAFETY_CATEGORIES.INTENTIONALLY_DEFERRED;
+		}
+	}
+
+	if (
+		type === FINDING_TYPES.DUPLICATE_REMEDIATION_ISSUE
+		&& classification === SAFETY_CATEGORIES.SAFE_AUTO_FIX
+		&& !(Array.isArray(safeFinding.evidence) && safeFinding.evidence.some((entry) => entry?.canonical === true || entry?.canonical_issue))
+	) {
+		classification = SAFETY_CATEGORIES.CURSOR_REMEDIATION_REQUIRED;
 	}
 
 	return {
@@ -220,9 +234,16 @@ export function isCleanReport(report = {}) {
 	const status = String(report.status || '').toLowerCase();
 	const findings = Array.isArray(report.findings) ? report.findings : [];
 
-	if ((status === 'pass' || status === 'success') && findings.length === 0) {
+	if (status === 'partial_failure') {
+		return false;
+	}
+
+	if (findings.length === 0 && (status === 'pass' || status === 'success')) {
 		return true;
 	}
 
-	return false;
+	return findings.length > 0 && findings.every((finding) =>
+		finding.classification === SAFETY_CATEGORIES.NO_ACTION
+		|| finding.kind === FINDING_TYPES.CLEAN_STATE,
+	);
 }

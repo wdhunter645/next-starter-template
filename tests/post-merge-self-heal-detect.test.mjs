@@ -4,14 +4,17 @@ import {
 	classifyFinding,
 	FINDING_TYPES,
 	SAFETY_CATEGORIES,
+	isCleanReport,
 } from '../scripts/ci/post_merge_self_heal_classify.mjs';
 import {
 	buildDetectionReport,
 	detectDuplicateRemediationIssues,
+	detectDeferredFindings,
 	detectEmptyCleanState,
 	detectFailedCloseoutReports,
 	detectPostMergeFindings,
 	detectStaleManifestEntries,
+	issuePrNumber,
 	RECOMMENDED_ACTIONS,
 } from '../scripts/ci/post_merge_self_heal_detect.mjs';
 
@@ -186,5 +189,30 @@ describe('post-merge self-healing detector', () => {
 
 		expect(report.status).toBe('findings');
 		expect(report.findings.some((finding) => finding.metadata?.code === 'incomplete_report_payload')).toBe(true);
+	});
+
+	it('reads issue pr numbers from linked_pr, pr_number, or pr fields', () => {
+		expect(issuePrNumber({ linked_pr: 1860 })).toBe('1860');
+		expect(issuePrNumber({ pr: 1860 })).toBe('1860');
+		expect(issuePrNumber({ pr_number: 1860 })).toBe('1860');
+	});
+
+	it('detects deferred issues when labels are GitHub label objects', () => {
+		const findings = detectDeferredFindings({
+			issues: [{ number: 42, labels: [{ name: 'intentionally-deferred' }] }],
+		});
+
+		expect(findings).toHaveLength(1);
+		expect(findings[0].issue_number).toBe(42);
+	});
+
+	it('treats clean_state-only reports as clean', () => {
+		const report = buildDetectionReport({
+			manifests: [{ manifest_path: 'targets-ci-pending.json', targets: [] }],
+			closeoutReports: [{ status: 'success', results: [] }],
+			exceptionIssues: [],
+		});
+
+		expect(isCleanReport(report)).toBe(true);
 	});
 });

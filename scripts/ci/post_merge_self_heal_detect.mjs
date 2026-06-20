@@ -8,7 +8,6 @@ import { successfulCloseoutPrs } from './prune_closeout_manifest.mjs';
 import { loadCloseoutTargets } from './run_batch_post_merge_closeout.mjs';
 import { DEFAULT_MANIFESTS } from './run_post_merge_closeout_all_manifests.mjs';
 import {
-	classifyFinding,
 	classifyFindings,
 	FINDING_TYPES,
 	SAFETY_CATEGORIES,
@@ -124,14 +123,32 @@ export function detectEmptyCleanState({ manifests = [], closeoutReports = [], ex
 	}];
 }
 
+export function issuePrNumber(issue = {}) {
+	const pr = issue?.linked_pr ?? issue?.pr_number ?? issue?.pr ?? issue?.metadata?.pr ?? null;
+	if (pr === null || pr === undefined || pr === '') {
+		return null;
+	}
+	return String(pr).trim();
+}
+
 function issueReferenceKey(issue = {}) {
-	const pr = String(issue?.linked_pr ?? issue?.pr_number ?? issue?.metadata?.pr ?? '').trim();
+	const pr = issuePrNumber(issue);
 	const source = String(issue?.linked_source_issue ?? issue?.source_issue ?? issue?.metadata?.source_issue ?? '').trim();
 	const code = String(issue?.failure_code ?? issue?.code ?? '').trim();
 	if (!pr || !source || !code) {
 		return null;
 	}
 	return `${pr}:${source}:${code}`.toLowerCase();
+}
+
+function issueHasDeferredLabel(issue = {}) {
+	if (issue?.deferred === true) {
+		return true;
+	}
+	return (issue?.labels || []).some((label) => {
+		const name = typeof label === 'string' ? label : label?.name;
+		return String(name || '').trim() === 'intentionally-deferred';
+	});
 }
 
 export function detectDuplicateRemediationIssues({ issues = [] } = {}) {
@@ -165,10 +182,15 @@ export function detectDuplicateRemediationIssues({ issues = [] } = {}) {
 				code: 'duplicate_remediation_issue',
 				issue_number: duplicate.number,
 				source_issue: duplicate.source_issue ?? duplicate.linked_source_issue ?? null,
-				pr_number: duplicate.linked_pr ?? duplicate.pr_number ?? null,
+				pr_number: issuePrNumber(duplicate),
 				message: `Issue #${duplicate.number} duplicates canonical remediation issue #${canonical.number}.`,
 				evidence: [
-					{ type: 'duplicate_issue', issue: duplicate.number, canonical_issue: canonical.number },
+					{
+						type: 'duplicate_issue',
+						issue: duplicate.number,
+						canonical_issue: canonical.number,
+						canonical: true,
+					},
 				],
 				recommended_action: RECOMMENDED_ACTIONS.CLOSE_DUPLICATE_ISSUE,
 			});
@@ -180,7 +202,7 @@ export function detectDuplicateRemediationIssues({ issues = [] } = {}) {
 
 export function detectDeferredFindings({ issues = [] } = {}) {
 	return (issues || [])
-		.filter((issue) => issue?.deferred === true || (issue?.labels || []).includes('intentionally-deferred'))
+		.filter((issue) => issueHasDeferredLabel(issue))
 		.map((issue) => ({
 			kind: FINDING_TYPES.INTENTIONALLY_DEFERRED,
 			code: 'intentionally_deferred',
@@ -239,14 +261,16 @@ export function detectCloseoutReportFindings({ closeoutReports = [] } = {}) {
 		for (const result of report?.results || []) {
 			for (const failure of flattenValidationFailures(result)) {
 				const code = failure.code || failure.workflow || `${failure.bucket}_failure`;
+				const workflowClassification = String(failure.classification || failure.failure_type || '').trim();
 				findings.push({
 					kind: null,
 					code,
 					pr_number: result.pr ?? null,
 					source_issue: result.source_issue ?? null,
 					message: failure.message || `Post-merge ${failure.bucket} failure for PR #${result.pr}.`,
-					evidence: [{ type: 'closeout_result', pr: result.pr, bucket: failure.bucket, code }],
+					evidence: [{ type: 'closeout_result', pr: result.pr, bucket: failure.bucket, code, workflow_classification: workflowClassification || null }],
 					recommended_action: null,
+					...(workflowClassification ? { metadata: { workflow_classification: workflowClassification } } : {}),
 				});
 			}
 
@@ -267,8 +291,19 @@ export function detectCloseoutReportFindings({ closeoutReports = [] } = {}) {
 	return findings;
 }
 
+function loadManifestSnapshotsSafely(manifestPaths, { rootDir = process.cwd(), errors = [] } = {}) {
+	try {
+		return loadManifestSnapshots(manifestPaths, { rootDir });
+	} catch (error) {
+		errors.push(error instanceof Error ? error.message : String(error));
+		return [];
+	}
+}
+
 export function detectPostMergeFindings(input = {}) {
-	const manifests = input.manifests ?? loadManifestSnapshots(input.manifestPaths, { rootDir: input.rootDir });
+	const errors = [...(input.errors || [])];
+	const manifests = input.manifests
+		?? loadManifestSnapshotsSafely(input.manifestPaths, { rootDir: input.rootDir, errors });
 	const closeoutReports = input.closeoutReports ?? [];
 	const exceptionIssues = input.exceptionIssues ?? [];
 	const remediationIssues = input.remediationIssues ?? [];
@@ -297,7 +332,7 @@ export function detectPostMergeFindings(input = {}) {
 		status,
 		findings: classified,
 		summary: summarizeClassifications(classified),
-		errors: input.errors || [],
+		errors,
 	};
 }
 
