@@ -12,49 +12,29 @@ describe('post-merge closeout all manifests', () => {
 		]);
 	});
 
-	it('loads residual closeout rerun targets after batch #1791 prune (#1812) plus PR #1786 (#1787) remediation, PR #1795 (#1823), and PR #1807 (#1725)', () => {
+	it('loads final residual closeout rerun targets after #1830 remediation', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json');
-		expect(targets).toHaveLength(8);
-		expect(targets.map((target) => target.pr)).toEqual([1699, 1778, 1681, 1765, 1786, 1772, 1795, 1807]);
+		expect(targets).toHaveLength(4);
+		expect(targets.map((target) => target.pr)).toEqual([1681, 1772, 1795, 1807]);
 		expect(targets.every((target) => target.body_file && target.merge_sha && target.source_issue)).toBe(
 			true,
 		);
 		expect(targets[0]).toMatchObject({
-			body_file: 'scripts/ci/post-merge-closeout/pr-1699-body.md',
-			merge_sha: '58508f6b01a2e8a91e9997f1c1c7e8b82735fd81',
-			source_issue: 1255,
-		});
-		expect(targets[1]).toMatchObject({
-			body_file: 'scripts/ci/post-merge-closeout/pr-1778-body.md',
-			merge_sha: '17a85b2f3fbb624e38cc19b887900742a66667e8',
-			source_issue: 1255,
-		});
-		expect(targets[2]).toMatchObject({
 			body_file: 'scripts/ci/post-merge-closeout/pr-1681-body.md',
 			merge_sha: '11b2027d610a02e517212691a753134ab9691312',
 			source_issue: 1259,
 		});
-		expect(targets[3]).toMatchObject({
-			body_file: 'scripts/ci/post-merge-closeout/pr-1765-body.md',
-			merge_sha: '9d6530b87abfb5a2615f70045d2530f6bd124bcc',
-			source_issue: 1754,
-		});
-		expect(targets[4]).toMatchObject({
-			body_file: 'scripts/ci/post-merge-closeout/pr-1786-body.md',
-			merge_sha: '98b426d25259029dd08178cc3ac4c88589830b3a',
-			source_issue: 1777,
-		});
-		expect(targets[5]).toMatchObject({
+		expect(targets[1]).toMatchObject({
 			body_file: 'scripts/ci/post-merge-closeout/pr-1772-body.md',
 			merge_sha: '2c5e8ebdf957e03510a89fd544c1222ea67c1039',
 			source_issue: 1754,
 		});
-		expect(targets[6]).toMatchObject({
+		expect(targets[2]).toMatchObject({
 			body_file: 'scripts/ci/post-merge-closeout/pr-1795-body.md',
 			merge_sha: '87f60099cb3aff4de93b9b90a12138728f173fe2',
 			source_issue: 1794,
 		});
-		expect(targets[7]).toMatchObject({
+		expect(targets[3]).toMatchObject({
 			body_file: 'scripts/ci/post-merge-closeout/pr-1807-body.md',
 			merge_sha: 'e1a2540019abce87eaa70209fd9602f8a6176932',
 			source_issue: 1725,

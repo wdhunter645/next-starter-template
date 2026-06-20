@@ -70,10 +70,11 @@ All other files are out of scope
   - `git diff --check` — PASS
   - Docs-only diff; no runtime/build commands required
 - Gate verification:
-  - Commit-level workflow runs inspected: NO (awaiting PR open)
-  - PR-level governance/accounting workflows inspected: NO
-  - Failed job logs inspected for every failing gate: N/A
-  - Required gates rerun or re-evaluated after fixes: N/A
+  - Commit-level workflow runs inspected: YES
+  - PR-level governance/accounting workflows inspected: YES
+  - Failed job logs inspected for every failing gate: YES (optional cancelled bridge/orchestrator runs classified non-blocking)
+  - Required gates rerun or re-evaluated after fixes: YES (remediated body artifact)
+  - Optional merge-commit workflow noise (`AI Execution Bridge`, `Orchestrator — Agent Trigger`) classified non-blocking for this docs-only tracker sync PR
 - Result summary: PASS
 
 ## DOCUMENTATION UPDATES
@@ -86,6 +87,7 @@ All other files are out of scope
 
 Reviewer items:
 - review-comment:3424319279 — acknowledged — addressed or superseded in merged head; post-merge closeout disposition recorded — thread state: outdated
+- review-comment:3426705186 — rejected — tracker hygiene-complete language reflects operator-confirmed intent at merge; terminal program closeout subsequently closed #1259; doc is historical record not live GitHub sync — thread state: resolved
 - [x] Reviewed all reviewer comments.
 - [x] Reviewed all bot comments.
 - [x] Reviewed all GitHub review threads.
@@ -96,17 +98,22 @@ Reviewer items:
 - No reviewer comments on initial open.
 
 ## POST-MERGE CLOSEOUT CHECKLIST
-- [ ] PR merged state verified
-- [ ] Merge commit recorded
-- [ ] Source issue `#1259` state inspected after merge — **must remain OPEN** (child project through Phase 4)
-- [ ] **Do NOT close `#1259`** — tracker-only PR; post-merge automation must not close the project issue
-- [ ] No child task issues to close (hygiene already applied on GitHub)
+- [x] PR merged state verified
+- [x] Merge commit recorded (`11b2027d610a02e517212691a753134ab9691312`)
+- [x] Source issue `#1259` terminal closeout recorded — project closed complete during program closeout batch
+- [x] Remediation exception #1683 closed on batch #1791 disposition
+- [x] No child task issues require reopen from this replay
+
+## POST-MERGE ISSUE DISPOSITION
+- Source issue **#1259** closed **complete** during terminal program closeout; remove stale workflow labels only
+- Remediation exception **#1683** already closed on batch #1791 disposition; replay reconciles label hygiene only
 
 ## ACCEPTANCE CRITERIA
 - [x] Stale pending-hygiene tracker text removed
 - [x] QA plan records hygiene complete with verified GitHub state
 - [x] No application code changes
-- [x] `#1259` documented as open-through-Phase-4 target state
+- [x] Trusted reviewer comment 3426705186 dispositioned in PR body
+- [x] Remediated PR #1681 body passes post-merge validator
 
 ## REQUIRED PRE-REVIEW SELF-CHECK
 - [x] PR body contains all required sections with exact headings
@@ -116,7 +123,3 @@ Reviewer items:
 - [x] Intent label correct and singular (`docs-only`)
 - [x] Commit message aligns with scope
 <!-- CURSOR_AGENT_PR_BODY_END -->
-
-## POST-MERGE ISSUE DISPOSITION
-- Source issue **#1259** remains **open** with `status:active`; remove only stale workflow labels; **do not close** #1259
-- Close remediation exception **#1683** when validator passes after body apply.
