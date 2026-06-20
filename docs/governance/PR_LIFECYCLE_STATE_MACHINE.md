@@ -16,6 +16,11 @@ This document defines the mandatory pull request lifecycle state machine for LGF
 
 It compresses the distributed PR rules in `Agent.md`, shared/core agent rules, the PR governance skill, and the PR template into one executable lifecycle model. Agents must use this document when opening, updating, marking ready, handing off, merging, or closing out PRs.
 
+PMO **program** lifecycle status nomenclature (Launch Ready, Implementation
+Active, Post-Implementation Verification, Complete / Closed) is defined in
+`/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`. Do not conflate PR lifecycle states
+with PMO program lifecycle reporting terms.
+
 ## Scope
 
 This document applies to:

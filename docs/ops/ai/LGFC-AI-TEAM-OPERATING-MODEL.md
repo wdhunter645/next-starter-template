@@ -38,6 +38,11 @@ Prior routing that listed Codex as a primary or secondary implementation agent i
 
 Every LGFC task follows one predictable path: Bill defines requirements → Atlas and Bill finalize design → Atlas publishes a documentation package → Bill approves → Atlas creates program and child issues → Cursor reviews the launch-control package → Bill/Atlas authorize execution → Cursor implements within scope with verification stop points → Atlas and Bill review gates → Bill authorizes continue, hold, or revise.
 
+PMO program lifecycle status reporting terms (**Launch Ready**, **Implementation
+Active**, **Post-Implementation Verification**, **Complete / Closed**) are
+defined in `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`. Launch Ready means ready
+to start implementation, not production complete.
+
 ---
 
 ## Team roles
