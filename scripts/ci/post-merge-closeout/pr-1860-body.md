@@ -1,3 +1,4 @@
+<!-- CURSOR_AGENT_PR_BODY_BEGIN -->
 - **Issue:** #1848
 
 ## PRE-OPEN GATE PREFLIGHT (MANDATORY)
@@ -210,3 +211,4 @@ Reviewer items (required format for gate parsing):
 - [x] All reviewer feedback has both textual disposition and GitHub thread-state disposition
 - [x] No merge-readiness claim made before all gate surfaces inspected
 - [x] Status was set to READY FOR MERGE only after required gates, reviewer-response obligations, source issue accounting, and pre-merge closeout prediction were complete.
+<!-- CURSOR_AGENT_PR_BODY_END -->
