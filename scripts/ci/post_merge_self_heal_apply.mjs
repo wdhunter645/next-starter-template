@@ -12,14 +12,13 @@ import { pathToFileURL } from 'node:url';
 import {
 	duplicateCloseComment,
 	groupRemediationIssues,
-	parseRemediationIssue,
 	planDuplicateClosures,
 } from './close_duplicate_remediation_issues.mjs';
 import {
 	FINDING_TYPES,
 	SAFETY_CATEGORIES,
 } from './post_merge_self_heal_classify.mjs';
-import { RECOMMENDED_ACTIONS, loadManifestSnapshots, DEFAULT_MANIFESTS } from './post_merge_self_heal_detect.mjs';
+import { loadManifestSnapshots, DEFAULT_MANIFESTS } from './post_merge_self_heal_detect.mjs';
 import {
 	normalizeCloseoutPr,
 	pruneCloseoutManifest,
@@ -255,7 +254,11 @@ export function applySafeAutoFixActions(plan = {}, { dryRun = true, rootDir = pr
 		if (action.action === APPLY_ACTIONS.PRUNE_MANIFEST) {
 			const outcome = applyManifestPruneAction(action, { dryRun, rootDir });
 			if (dryRun) {
-				planned.push({ ...outcome, status: 'planned' });
+				planned.push(
+					outcome.status === 'skipped' || outcome.status === 'no_change'
+						? outcome
+						: { ...outcome, status: 'planned' },
+				);
 			} else {
 				applied.push(outcome);
 			}
