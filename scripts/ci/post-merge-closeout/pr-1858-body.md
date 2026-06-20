@@ -17,7 +17,7 @@
 
 ## PRE-MERGE CLOSEOUT PREDICTION (REQUIRED BEFORE READY FOR MERGE)
 - Pre-merge closeout prediction: pass
-- Source issue state before merge: closed
+- Source issue state before merge: open
 - Expected post-merge source issue action: terminal label reconciliation on closed source issue #1855
 - Reviewer disposition parseability: pass
 - Queue continuation after closeout: not-applicable
