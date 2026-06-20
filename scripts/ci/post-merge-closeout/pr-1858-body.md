@@ -47,7 +47,7 @@ Source Files Used:
 
 ## FILE-TOUCH ALLOWLIST (MANDATORY)
 Allowed files:
-- `scripts/ci/post-merge-closeout/pr-1858-body.md`
+- `scripts/ci/post-merge-closeout/pr-1846-body.md`
 - `scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json`
 - `tests/post-merge-closeout-all-manifests.test.mjs`
 
@@ -118,7 +118,7 @@ Reviewer items:
 
 ## POST-MERGE ISSUE DISPOSITION
 - Source issue **#1855** receives terminal label reconciliation on successful replay (already closed; remove stale failure labels)
-- Remediation exception **#1859** closes on successful post-merge validator replay
+- Remediation exceptions **#1859** and **#1871** close on successful post-merge validator replay
 
 ## ACCEPTANCE CRITERIA
 - [x] Remediated PR #1858 body passes post-merge validator without `closeout_blocker_declared`.
