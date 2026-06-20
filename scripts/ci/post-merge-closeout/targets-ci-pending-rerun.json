@@ -1,6 +1,6 @@
 {
-  "triggered_at": "2026-06-20T20:00:00Z",
-  "description": "Post-merge closeout replay for merged PR #1858 / source #1855 / remediation #1859",
+  "triggered_at": "2026-06-20T21:00:00Z",
+  "description": "Replay PR #1858 closeout after allowlist fix for source #1855 / exceptions #1859 #1871",
   "targets": [
     {
       "pr": 1858,
