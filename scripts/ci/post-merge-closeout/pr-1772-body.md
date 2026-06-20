@@ -103,7 +103,7 @@ All other files are out of scope
 
 Reviewer items:
 - review-comment:3435664811 — accepted — closeout change summary now describes PR #1772 target work — thread state: outdated
-- review-comment:3435664831 — accepted — documentation updates list all three changed files — thread state: unresolved pending final recheck
+- review-comment:3435664831 — accepted — documentation updates list merged PR #1772 changed files (`pr-1765-body.md`, manifest, tests) — thread state: resolved
 - review-comment:3435664849 — accepted — acceptance criteria no longer assert source issue is open after merge — thread state: resolved
 - review-comment:4524594030 — acknowledged — Gemini review reported no feedback — thread state: resolved
 
