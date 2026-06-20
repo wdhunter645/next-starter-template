@@ -1,29 +1,5 @@
 {
-  "triggered_at": "2026-06-09T18:15:00Z",
-  "targets": [
-    {
-      "pr": 1221,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1221-body.md",
-      "merge_sha": "10dfae3ddaae4dbee98298132a485eeee9f7e907",
-      "source_issue": 1112
-    },
-    {
-      "pr": 1230,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1230-body.md",
-      "merge_sha": "febe507a997b17f534f4f5d9989e78fdd6901fcc",
-      "source_issue": 1112
-    },
-    {
-      "pr": 1233,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1233-body.md",
-      "merge_sha": "10198e14e31630ea4c45efb96b5048edc1c14dd2",
-      "source_issue": 1112
-    },
-    {
-      "pr": 1248,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1248-body.md",
-      "merge_sha": "c88fbcc2237506b554725d89e987b2485cc7ca3e",
-      "source_issue": 1247
-    }
-  ]
+  "triggered_at": "2026-06-20T18:00:00Z",
+  "description": "Cleared after batch closeout run 27872268704 — remediation backlog (#1221, #1230, #1233, #1248) passed",
+  "targets": []
 }

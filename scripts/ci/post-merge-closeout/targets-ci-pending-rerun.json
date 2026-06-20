@@ -1,12 +1,5 @@
 {
-  "triggered_at": "2026-06-20T13:15:00Z",
-  "description": "Final residual closeout replay target after #1830 pass and #1807 disposition remediation: #1807 only",
-  "targets": [
-    {
-      "pr": 1807,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1807-body.md",
-      "merge_sha": "e1a2540019abce87eaa70209fd9602f8a6176932",
-      "source_issue": 1725
-    }
-  ]
+  "triggered_at": "2026-06-20T18:00:00Z",
+  "description": "Cleared after batch closeout run 27872268704 — all rerun targets passed (#1807)",
+  "targets": []
 }
