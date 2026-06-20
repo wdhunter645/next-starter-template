@@ -30,12 +30,15 @@ Do not open, update, mark ready, request merge, or claim closeout for a PR until
 7. Apply `/docs/governance/PR_LIFECYCLE_STATE_MACHINE.md` for every transition:
    - `NO PR -> DRAFT`
    - `DRAFT -> READY FOR REVIEW`
-   - `READY FOR REVIEW -> HUMAN MERGE DECISION`
+   - `READY FOR REVIEW -> READY FOR MERGE`
+   - `READY FOR MERGE -> HUMAN MERGE DECISION`
    - `HUMAN MERGE DECISION -> MERGED`
    - `MERGED -> CLOSEOUT VERIFIED`
-8. Do not create synthetic tracker Issues to compensate for PR-first work.
-9. Do not change runtime behavior in docs-only or ops-only PRs.
-10. Include exact verification commands and results in the handoff.
+8. Treat `READY FOR REVIEW` and `READY FOR MERGE` as distinct states. Review-ready does not equal merge-ready.
+9. Do not claim `READY FOR MERGE` until all required governance checks, reviewer-response accounting, source issue accounting, and pre-merge closeout prediction are complete.
+10. Do not create synthetic tracker Issues to compensate for PR-first work.
+11. Do not change runtime behavior in docs-only or ops-only PRs.
+12. Include exact verification commands and results in the handoff.
 
 ## Required PR body fields
 
@@ -51,6 +54,7 @@ The PR body must include:
 - Required pre-review self-check.
 - PR lifecycle state.
 - Pre-merge closeout prediction before human merge decision.
+- Explicit `READY FOR REVIEW` vs `READY FOR MERGE` status when reporting PR readiness.
 - Queue / dependency-map status for launched-program queue tasks:
   dependency-map result, next queue item, and continue/halt decision (or
   `not-applicable` with rationale for one-off tasks).
@@ -66,3 +70,5 @@ Stop and request correction when:
 - The file allowlist does not match the intended diff.
 - The PR lifecycle state is unclear.
 - The PR would predictably fail post-merge closeout and the failure can be corrected before merge.
+- An agent claims `READY FOR MERGE` while reviewer-response accounting, source issue accounting, or required governance gates remain incomplete.
+- An agent treats `READY FOR REVIEW` as merge-ready or equivalent to `READY FOR MERGE`.
