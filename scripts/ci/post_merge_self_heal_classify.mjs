@@ -110,7 +110,7 @@ function normalizeFindingType(finding = {}) {
 	if (code.includes('reviewer') && code.includes('disposition')) {
 		return FINDING_TYPES.MISSING_REVIEWER_DISPOSITION;
 	}
-	if (code.includes('allowlist') || code === 'missing_changed_file') {
+	if (code.includes('allowlist')) {
 		return FINDING_TYPES.ALLOWLIST_VIOLATION;
 	}
 	if (code.includes('source_issue')) {
@@ -132,15 +132,21 @@ export function resolveFindingType(finding = {}) {
 }
 
 export function classifyFinding(finding = {}, context = {}) {
-	const type = resolveFindingType(finding);
+	const safeFinding = finding ?? {};
+	const type = resolveFindingType(safeFinding);
 	let classification = FINDING_TYPE_TO_CATEGORY[type] ?? SAFETY_CATEGORIES.CURSOR_REMEDIATION_REQUIRED;
 
-	if (finding.deferred === true || type === FINDING_TYPES.INTENTIONALLY_DEFERRED) {
-		classification = SAFETY_CATEGORIES.INTENTIONALLY_DEFERRED;
-	} else if (isDeterministicPostMergeBodyMutation(finding)) {
-		classification = SAFETY_CATEGORIES.SAFE_AUTO_FIX;
-	} else if (finding.operator_authorization_required === true) {
+	if (safeFinding.operator_authorization_required === true) {
 		classification = SAFETY_CATEGORIES.OPERATOR_AUTHORIZATION_REQUIRED;
+	} else if (isDeterministicPostMergeBodyMutation(safeFinding)) {
+		classification = SAFETY_CATEGORIES.SAFE_AUTO_FIX;
+	} else if (
+		classification === SAFETY_CATEGORIES.OPERATOR_AUTHORIZATION_REQUIRED
+		|| classification === SAFETY_CATEGORIES.CURSOR_REMEDIATION_REQUIRED
+	) {
+		// Preserve contract precedence for unsafe escalation signals.
+	} else if (safeFinding.deferred === true || type === FINDING_TYPES.INTENTIONALLY_DEFERRED) {
+		classification = SAFETY_CATEGORIES.INTENTIONALLY_DEFERRED;
 	}
 
 	return {
@@ -150,14 +156,14 @@ export function classifyFinding(finding = {}, context = {}) {
 		requires_cursor_remediation: classification === SAFETY_CATEGORIES.CURSOR_REMEDIATION_REQUIRED,
 		requires_operator_authorization: classification === SAFETY_CATEGORIES.OPERATOR_AUTHORIZATION_REQUIRED,
 		intentionally_deferred: classification === SAFETY_CATEGORIES.INTENTIONALLY_DEFERRED,
-		message: finding.message || finding.summary || '',
-		evidence: Array.isArray(finding.evidence) ? finding.evidence : [],
-		pr_number: finding.pr_number ?? finding.pr ?? null,
-		source_issue: finding.source_issue ?? finding.issue_number ?? null,
-		recommended_action: finding.recommended_action || null,
+		message: safeFinding.message || safeFinding.summary || '',
+		evidence: Array.isArray(safeFinding.evidence) ? safeFinding.evidence : [],
+		pr_number: safeFinding.pr_number ?? safeFinding.pr ?? null,
+		source_issue: safeFinding.source_issue ?? safeFinding.issue_number ?? null,
+		recommended_action: safeFinding.recommended_action || null,
 		metadata: {
-			code: finding.code || null,
-			...(finding.metadata && typeof finding.metadata === 'object' ? finding.metadata : {}),
+			code: safeFinding.code || null,
+			...(safeFinding.metadata && typeof safeFinding.metadata === 'object' ? safeFinding.metadata : {}),
 		},
 	};
 }

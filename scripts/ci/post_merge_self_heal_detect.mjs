@@ -125,22 +125,36 @@ export function detectEmptyCleanState({ manifests = [], closeoutReports = [], ex
 }
 
 function issueReferenceKey(issue = {}) {
-	const pr = issue?.linked_pr ?? issue?.pr_number ?? issue?.metadata?.pr ?? '';
-	const source = issue?.linked_source_issue ?? issue?.source_issue ?? issue?.metadata?.source_issue ?? '';
-	const code = issue?.failure_code ?? issue?.code ?? '';
+	const pr = String(issue?.linked_pr ?? issue?.pr_number ?? issue?.metadata?.pr ?? '').trim();
+	const source = String(issue?.linked_source_issue ?? issue?.source_issue ?? issue?.metadata?.source_issue ?? '').trim();
+	const code = String(issue?.failure_code ?? issue?.code ?? '').trim();
+	if (!pr || !source || !code) {
+		return null;
+	}
 	return `${pr}:${source}:${code}`.toLowerCase();
 }
 
 export function detectDuplicateRemediationIssues({ issues = [] } = {}) {
 	const groups = new Map();
+	const findings = [];
 	for (const issue of issues || []) {
 		if (String(issue?.state || '').toLowerCase() !== 'open') continue;
 		const key = issueReferenceKey(issue);
+		if (!key) {
+			findings.push({
+				kind: FINDING_TYPES.INCOMPLETE_REPORT_PAYLOAD,
+				code: 'incomplete_remediation_metadata',
+				issue_number: issue.number,
+				message: `Issue #${issue.number} lacks complete PR/source/failure metadata for duplicate detection.`,
+				evidence: [{ type: 'issue', number: issue.number, incomplete_metadata: true }],
+				recommended_action: RECOMMENDED_ACTIONS.CURSOR_REMEDIATION,
+			});
+			continue;
+		}
 		if (!groups.has(key)) groups.set(key, []);
 		groups.get(key).push(issue);
 	}
 
-	const findings = [];
 	for (const grouped of groups.values()) {
 		if (grouped.length < 2) continue;
 		const canonical = grouped.find((issue) => issue?.canonical) || grouped[grouped.length - 1];
@@ -197,6 +211,27 @@ function flattenValidationFailures(result = {}) {
 	return flattened;
 }
 
+export function detectFailedCloseoutReports({ closeoutReports = [] } = {}) {
+	const findings = [];
+
+	for (const report of closeoutReports || []) {
+		const status = String(report?.status || '').toLowerCase();
+		const results = Array.isArray(report?.results) ? report.results : [];
+		if (!['failure', 'partial_failure', 'fail'].includes(status)) continue;
+		if (results.length > 0) continue;
+
+		findings.push({
+			kind: FINDING_TYPES.INCOMPLETE_REPORT_PAYLOAD,
+			code: 'incomplete_report_payload',
+			message: report?.error || `Closeout report status is ${status} with no result entries.`,
+			evidence: [{ type: 'closeout_report', status, error: report?.error || null }],
+			recommended_action: RECOMMENDED_ACTIONS.CURSOR_REMEDIATION,
+		});
+	}
+
+	return findings;
+}
+
 export function detectCloseoutReportFindings({ closeoutReports = [] } = {}) {
 	const findings = [];
 
@@ -241,6 +276,7 @@ export function detectPostMergeFindings(input = {}) {
 
 	const rawFindings = [
 		...detectEmptyCleanState({ manifests, closeoutReports, exceptionIssues }),
+		...detectFailedCloseoutReports({ closeoutReports }),
 		...detectStaleManifestEntries({ manifests, closeoutReports }),
 		...detectDuplicateRemediationIssues({ issues: [...exceptionIssues, ...remediationIssues] }),
 		...detectDeferredFindings({ issues: deferredIssues }),
@@ -320,7 +356,7 @@ export function detectFromPaths({
 
 function parseArgs(argv = []) {
 	const options = {
-		manifestPaths: [...DEFAULT_MANIFESTS],
+		manifestPaths: [],
 		closeoutReportPaths: [],
 		singleResultPaths: [],
 		issueMetadataPath: null,
@@ -356,6 +392,9 @@ function parseArgs(argv = []) {
 
 export async function main(argv = process.argv.slice(2)) {
 	const options = parseArgs(argv);
+	if (options.manifestPaths.length === 0) {
+		options.manifestPaths = [...DEFAULT_MANIFESTS];
+	}
 	const report = detectFromPaths(options);
 	const serialized = `${JSON.stringify(report, null, 2)}\n`;
 

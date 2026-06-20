@@ -9,6 +9,7 @@ import {
 	buildDetectionReport,
 	detectDuplicateRemediationIssues,
 	detectEmptyCleanState,
+	detectFailedCloseoutReports,
 	detectPostMergeFindings,
 	detectStaleManifestEntries,
 	RECOMMENDED_ACTIONS,
@@ -51,6 +52,21 @@ describe('post-merge self-healing classifier', () => {
 
 		expect(result.classification).toBe(SAFETY_CATEGORIES.INTENTIONALLY_DEFERRED);
 	});
+
+	it('preserves operator escalation over deferred metadata', () => {
+		const result = classifyFinding({
+			kind: FINDING_TYPES.ACTIVE_ALTERNATE_PROGRAM_LANE,
+			deferred: true,
+			message: 'Program lane requires operator authority.',
+		});
+
+		expect(result.classification).toBe(SAFETY_CATEGORIES.OPERATOR_AUTHORIZATION_REQUIRED);
+	});
+
+	it('handles null finding input safely', () => {
+		const result = classifyFinding(null);
+		expect(result.classification).toBe(SAFETY_CATEGORIES.CURSOR_REMEDIATION_REQUIRED);
+	});
 });
 
 describe('post-merge self-healing detector', () => {
@@ -91,8 +107,8 @@ describe('post-merge self-healing detector', () => {
 	it('detects duplicate remediation issues', () => {
 		const findings = detectDuplicateRemediationIssues({
 			issues: [
-				{ number: 1863, state: 'open', linked_pr: 1860, linked_source_issue: 1848, canonical: true },
-				{ number: 1871, state: 'open', linked_pr: 1860, linked_source_issue: 1848 },
+				{ number: 1863, state: 'open', linked_pr: 1860, linked_source_issue: 1848, failure_code: 'closeout_blocker_declared', canonical: true },
+				{ number: 1871, state: 'open', linked_pr: 1860, linked_source_issue: 1848, failure_code: 'closeout_blocker_declared' },
 			],
 		});
 
@@ -140,5 +156,35 @@ describe('post-merge self-healing detector', () => {
 		});
 
 		expect(findings).toEqual([]);
+	});
+
+	it('detects failed batch reports without result entries', () => {
+		const findings = detectFailedCloseoutReports({
+			closeoutReports: [{ status: 'failure', error: 'manifest load failed', results: [] }],
+		});
+
+		expect(findings).toHaveLength(1);
+		expect(findings[0].code).toBe('incomplete_report_payload');
+	});
+
+	it('escalates duplicate detection when remediation metadata is incomplete', () => {
+		const findings = detectDuplicateRemediationIssues({
+			issues: [
+				{ number: 100, state: 'open' },
+				{ number: 101, state: 'open' },
+			],
+		});
+
+		expect(findings.every((finding) => finding.code === 'incomplete_remediation_metadata')).toBe(true);
+	});
+
+	it('reports findings for top-level failed closeout reports', () => {
+		const report = detectPostMergeFindings({
+			manifests: [],
+			closeoutReports: [{ status: 'failure', error: 'setup failed', results: [] }],
+		});
+
+		expect(report.status).toBe('findings');
+		expect(report.findings.some((finding) => finding.metadata?.code === 'incomplete_report_payload')).toBe(true);
 	});
 });
