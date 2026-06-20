@@ -12,9 +12,18 @@ describe('post-merge closeout all manifests', () => {
 		]);
 	});
 
-	it('loads cleared rerun manifest when empty', () => {
+	it('loads PR #1846 closeout rerun target after #1804 governance merge remediation', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json');
-		expect(targets).toEqual([]);
+		expect(targets).toHaveLength(1);
+		expect(targets.map((target) => target.pr)).toEqual([1846]);
+		expect(targets.every((target) => target.body_file && target.merge_sha && target.source_issue)).toBe(
+			true,
+		);
+		expect(targets[0]).toMatchObject({
+			body_file: 'scripts/ci/post-merge-closeout/pr-1846-body.md',
+			merge_sha: '1b6591f7158ea3b60017255cb47b061de4368a65',
+			source_issue: 1804,
+		});
 	});
 
 	it('loads cleared CI pending manifest when empty', () => {
