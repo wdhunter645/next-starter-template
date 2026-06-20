@@ -36,7 +36,7 @@ Do not open, update, mark ready, request merge, or claim closeout for a PR until
    - `MERGED -> CLOSEOUT VERIFIED`
 8. Treat `READY FOR REVIEW` and `READY FOR MERGE` as distinct states. Review-ready does not equal merge-ready.
 9. Do not claim `READY FOR MERGE` until all required governance checks, reviewer-response accounting, source issue accounting, and pre-merge closeout prediction are complete.
-10. Do not create synthetic tracker Issues to compensate for PR-first work.
+10. Do not create synthetic tracker issues to compensate for PR-first work.
 11. Do not change runtime behavior in docs-only or ops-only PRs.
 12. Include exact verification commands and results in the handoff.
 

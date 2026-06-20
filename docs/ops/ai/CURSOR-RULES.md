@@ -43,7 +43,7 @@ Cursor owns:
 - continuous execution within one authorized package (multiple commits/PR updates between stop points);
 - pre-implementation review and comment on newly authored launch-control issue packages;
 - stopping at verification gates and reporting evidence before requesting Bill/Atlas authorization to continue;
-- preparing authorized PRs toward `READY FOR MERGE` only after `READY FOR REVIEW` requirements are satisfied and all merge-readiness gates are complete.
+- preparing authorized PRs toward `READY FOR MERGE` only after `READY FOR REVIEW` requirements are satisfied and all required gates are green, reviewer-response accounting is complete, source issue accounting is complete, and pre-merge closeout prediction is recorded.
 
 Cursor does **not** own:
 

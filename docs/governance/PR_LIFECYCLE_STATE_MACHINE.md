@@ -96,9 +96,6 @@ Before marking or claiming `READY FOR REVIEW`, the agent must confirm:
 - PR body matches final diff, source issue, label, evidence, and acceptance criteria;
 - all local/task-relevant checks are run or exact blockers are recorded;
 - live PR check panel and latest head workflow runs are inspected;
-- all reviewer comments, bot comments, and GitHub review threads are inspected;
-- every actionable reviewer item has a parser-safe disposition or an explicit blocker is recorded;
-- every required thread has a state: `resolved`, `outdated`, or `unresolved-with-rationale`;
 - acceptance criteria are checked, marked not applicable with rationale, or explicitly blocked;
 - no `TODO`, `TBD`, placeholder, or stale evidence remains in required PR-body fields.
 
@@ -118,18 +115,21 @@ The implementation agent has completed its work and the PR is ready for reviewer
 
 Before marking or claiming `READY FOR MERGE`, the agent must confirm:
 
-- all required gates are green or exact non-green blockers are documented;
+- all required gates are green;
 - reviewer-response accounting is complete;
 - source issue accounting is complete;
 - pre-merge closeout prediction is recorded;
+- all reviewer comments, bot comments, and GitHub review threads are inspected;
 - every actionable reviewer item has a parser-safe disposition;
-- every required thread has a state: `resolved`, `outdated`, or `unresolved-with-rationale`;
+- every required thread has a parser-safe state: `resolved`, `outdated`, or `unresolved` with rationale recorded in the disposition text;
 - the final PR panel confirms merge-readiness.
+
+If any required gate is failing or pending, remain in `BLOCKED` or `READY FOR REVIEW`; do not claim `READY FOR MERGE`.
 
 ### Required reviewer disposition format
 
 ```text
-review-comment:<id> — accepted/rejected/acknowledged/not-applicable — <specific resolution or reason> — thread state: resolved/outdated/unresolved-with-rationale
+review-comment:<id> — accepted/rejected/acknowledged/not-applicable — <specific resolution or reason> — thread state: resolved/outdated/unresolved
 ```
 
 ### Stop condition

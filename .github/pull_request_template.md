@@ -25,12 +25,13 @@ Required lifecycle:
 4. Confirm the changed-file allowlist matches the actual final diff.
 5. Inspect all gate checks after every PR body update or commit.
 6. Troubleshoot every failing gate using `docs/reference/governance/troubleshooting-data-surface-requirements.md`.
-7. Inspect reviewer comments, bot comments, and review threads.
-8. Resolve or explicitly disposition every actionable reviewer item in the PR body.
-9. Rerun or wait for all required gates after fixes.
-10. Mark or claim `READY FOR REVIEW` only after implementation, PR body evidence, and initial gate inspection are complete and the PR is ready for reviewer/human inspection.
-11. Mark or claim `READY FOR MERGE` only after all required gates are green, reviewer-response accounting is complete, source issue accounting is complete, pre-merge closeout prediction is recorded, and no actionable reviewer item remains unresolved.
-12. After merge, verify the merge commit, verify the source issue state, close the source issue when automation did not, and record tracker/documentation follow-up only when explicitly required by the source issue.
+7. Mark or claim `READY FOR REVIEW` only after implementation, PR body evidence, and initial gate inspection are complete and the PR is ready for reviewer/human inspection.
+8. After the PR is review-ready, inspect reviewer comments, bot comments, and review threads.
+9. Resolve or explicitly disposition every actionable reviewer item in the PR body.
+10. Rerun or wait for all required gates after fixes.
+11. Record the pre-merge closeout prediction fields in this PR body before claiming merge readiness.
+12. Mark or claim `READY FOR MERGE` only after all required gates are green, reviewer-response accounting is complete, source issue accounting is complete, pre-merge closeout prediction is recorded, and no actionable reviewer item remains unresolved.
+13. After merge, verify the merge commit, verify the source issue state, close the source issue when automation did not, and record tracker/documentation follow-up only when explicitly required by the source issue.
 
 Agents must not hand a PR to a human approver for final merge action while any gate, review comment, or review thread still requires agent action.
 Agents must not treat `READY FOR REVIEW` as authorization to merge or as equivalent to `READY FOR MERGE`.
@@ -84,6 +85,13 @@ For one-off tasks or programs without an approved dependency map, set all three
 fields to `not-applicable` with a one-line rationale.
 
 Canonical reference: `/docs/reference/pmo/lgfc-program-queue-and-dependency-map.md`
+
+## PRE-MERGE CLOSEOUT PREDICTION (REQUIRED BEFORE READY FOR MERGE)
+- Pre-merge closeout prediction: pass / fail / blocked
+- Source issue state before merge: open / closed / other
+- Expected post-merge source issue action: auto-close / manual close / no-op / remediation follow-up
+- Reviewer disposition parseability: pass / fail / not-applicable
+- Queue continuation after closeout: continue / halt / not-applicable
 
 ## PROGRESS + READINESS (MANDATORY)
 - Phase:
@@ -189,7 +197,7 @@ Accepted disposition states (CI-enforced):
 - linked follow-up issue (`follow-up-issue:#<number>`).
 
 Reviewer items (required format for gate parsing):
-- review-comment:<id> — accepted/rejected/acknowledged/not-applicable — <specific resolution or reason> — thread state: resolved/outdated/unresolved-with-rationale
+- review-comment:<id> — accepted/rejected/acknowledged/not-applicable — <specific resolution or reason> — thread state: resolved/outdated/unresolved
 - review-comment:<id> — rejected — <rationale> — thread state: outdated — follow-up-issue:#<issue>
 
 ## PR GATE READINESS CHECKLIST
