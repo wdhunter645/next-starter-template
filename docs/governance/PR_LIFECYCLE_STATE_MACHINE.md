@@ -5,7 +5,7 @@ Authority Level: Governance
 Owns: Pull request lifecycle states, transition gates, pre-merge closeout prediction, and post-merge closeout evidence requirements
 Does Not Own: Product design authority, runtime architecture, or final human merge approval
 Canonical Reference: /docs/governance/PR_GOVERNANCE.md
-Last Reviewed: 2026-06-14
+Last Reviewed: 2026-06-20
 ---
 
 # PR Lifecycle State Machine
@@ -45,10 +45,14 @@ Agents and CI should evaluate the same lifecycle contract before merge and after
 ## Lifecycle states
 
 ```text
-NO PR -> DRAFT -> READY FOR REVIEW -> HUMAN MERGE DECISION -> MERGED -> CLOSEOUT VERIFIED
+NO PR -> DRAFT -> READY FOR REVIEW -> READY FOR MERGE -> HUMAN MERGE DECISION -> MERGED -> CLOSEOUT VERIFIED
 ```
 
 Agents must not skip states. The human/operator remains the only merge authority.
+
+`READY FOR REVIEW` means the PR is ready for reviewer/human inspection. It does not authorize merge and must not be treated as merge-ready.
+
+`READY FOR MERGE` is the required agent handoff target for final pre-merge authorization. It means all required checks, reviewer-response accounting, source issue accounting, and governance gates are satisfied and the PR is ready for final merge authorization. It does not authorize the agent to merge.
 
 ---
 
@@ -92,21 +96,12 @@ Before marking or claiming `READY FOR REVIEW`, the agent must confirm:
 - PR body matches final diff, source issue, label, evidence, and acceptance criteria;
 - all local/task-relevant checks are run or exact blockers are recorded;
 - live PR check panel and latest head workflow runs are inspected;
-- all reviewer comments, bot comments, and GitHub review threads are inspected;
-- every actionable reviewer item has a parser-safe disposition;
-- every required thread has a state: `resolved`, `outdated`, or `unresolved-with-rationale`;
 - acceptance criteria are checked, marked not applicable with rationale, or explicitly blocked;
 - no `TODO`, `TBD`, placeholder, or stale evidence remains in required PR-body fields.
 
-### Required reviewer disposition format
-
-```text
-review-comment:<id> — accepted/rejected/acknowledged/not-applicable — <specific resolution or reason> — thread state: resolved/outdated/unresolved-with-rationale
-```
-
 ### Stop condition
 
-Do not mark ready if any gate, reviewer item, bot comment, review thread, source issue accounting item, or PR body section still requires agent action.
+Do not mark review-ready if implementation, PR body evidence, or required inspection still requires agent action.
 
 ---
 
@@ -114,7 +109,40 @@ Do not mark ready if any gate, reviewer item, bot comment, review thread, source
 
 ### Entry condition
 
-The implementation agent has completed its work and the PR is ready for human review.
+The implementation agent has completed its work and the PR is ready for reviewer/human inspection.
+
+### Required transition to READY FOR MERGE
+
+Before marking or claiming `READY FOR MERGE`, the agent must confirm:
+
+- all required gates are green;
+- reviewer-response accounting is complete;
+- source issue accounting is complete;
+- pre-merge closeout prediction is recorded;
+- all reviewer comments, bot comments, and GitHub review threads are inspected;
+- every actionable reviewer item has a parser-safe disposition;
+- every required thread has a parser-safe state: `resolved`, `outdated`, or `unresolved` with rationale recorded in the disposition text;
+- the final PR panel confirms merge-readiness.
+
+If any required gate is failing or pending, remain in `BLOCKED` or `READY FOR REVIEW`; do not claim `READY FOR MERGE`.
+
+### Required reviewer disposition format
+
+```text
+review-comment:<id> — accepted/rejected/acknowledged/not-applicable — <specific resolution or reason> — thread state: resolved/outdated/unresolved
+```
+
+### Stop condition
+
+Do not mark merge-ready if any gate, reviewer item, bot comment, review thread, source issue accounting item, or PR body section still requires agent action. Do not treat review-ready as merge-ready.
+
+---
+
+## State 3: READY FOR MERGE
+
+### Entry condition
+
+All required checks, reviewer-response accounting, source issue accounting, and governance gates are satisfied. The PR is ready for final merge authorization by the human/operator.
 
 ### Required transition to HUMAN MERGE DECISION
 
@@ -149,7 +177,7 @@ Do not request merge while the prediction is `fail` or `blocked`.
 
 ---
 
-## State 3: HUMAN MERGE DECISION
+## State 4: HUMAN MERGE DECISION
 
 ### Entry condition
 
@@ -173,7 +201,7 @@ If a predictable post-merge closeout failure exists, return the PR to DRAFT/BLOC
 
 ---
 
-## State 4: MERGED
+## State 5: MERGED
 
 ### Entry condition
 
@@ -198,7 +226,7 @@ If post-merge verification fails, the source issue or remediation issue must sho
 
 ---
 
-## State 5: CLOSEOUT VERIFIED
+## State 6: CLOSEOUT VERIFIED
 
 ### Entry condition
 
@@ -225,7 +253,7 @@ The PR lifecycle is complete. Program queue work may advance only after this sta
 Every agent status report about a PR must include:
 
 ```text
-PR lifecycle state: NO PR / DRAFT / READY FOR REVIEW / HUMAN MERGE DECISION / MERGED / CLOSEOUT VERIFIED
+PR lifecycle state: NO PR / DRAFT / READY FOR REVIEW / READY FOR MERGE / HUMAN MERGE DECISION / MERGED / CLOSEOUT VERIFIED
 Current head SHA: <sha or not-applicable>
 Source issue: #<issue>
 Gate status: pass / fail / pending / not-applicable
@@ -240,7 +268,7 @@ Do not claim readiness, merge safety, or closeout success without repository evi
 
 ## CI alignment requirement
 
-Pre-merge CI should enforce the `READY FOR REVIEW -> HUMAN MERGE DECISION` transition. The pre-merge gate must reject PRs that would predictably fail post-merge closeout due to missing source issue, closed source issue without approved exception, missing reviewer disposition, unresolved required review thread, stale acceptance criteria, or missing queue/dependency-map decision.
+Pre-merge CI should enforce the `READY FOR REVIEW -> READY FOR MERGE -> HUMAN MERGE DECISION` transitions. The pre-merge gate must reject PRs that would predictably fail post-merge closeout due to missing source issue, closed source issue without approved exception, missing reviewer disposition, unresolved required review thread, stale acceptance criteria, or missing queue/dependency-map decision.
 
 Post-merge CI should enforce the `MERGED -> CLOSEOUT VERIFIED` transition. Any post-merge failure should create or update a bounded remediation issue and halt queue advancement until resolved.
 
