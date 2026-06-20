@@ -1,6 +1,6 @@
 # active_tasklist.md — Read-Only Snapshot (Derived from GitHub Issues)
 
-Date: 2026-06-17
+Date: 2026-06-20
 
 This file is **not** the system of record.
 
@@ -10,23 +10,27 @@ Use this file only as an optional, human-readable snapshot.
 
 ---
 
-## Active — Program #1255
+## Active programs
+
+No active Program `#1255` execution remains. The umbrella program is **closed
+complete** (GitHub issue closed `2026-06-18`; Atlas terminal closeout recorded).
 
 | Item | State | Notes |
 | --- | --- | --- |
-| `#1255` | `status:active` | Umbrella program — Website Implementation and Content Operations (Cursor) |
-| `#1259` | `status:active` (open) | **Phase 4 complete** — Tasks 001–009 merged; `#1259` open pending `#1255` closeout |
+| `#1259` | open (`status:complete`) | Website QA — Phase 4 Tasks 001–007 merged on `main`; issue open for terminal closeout only; Tasks 008–009 not authorized |
 
-## Portfolio note (2026-06-16)
+## Portfolio note (2026-06-20)
 
-Program `#1500` was originally queued after `#1255`. Both programs executed in
-parallel when ChatGPT became capable of `#1500` implementation. `#1500` is now
-**closed complete**. `#1255` remains the active Cursor lane.
+Program `#1255` and `#1500` are **closed complete**. Program `#1255` child
+projects `#1256`, `#1258`, and `#1259` Phase 4 execution are complete on
+`main`. No further work is authorized under Program `#1255`; new work requires
+new scoped issues outside that program.
 
 ## Completed (reference)
 
 | Item | State |
 | --- | --- |
+| `#1255` Website Implementation and Content Operations | **closed complete** — umbrella program; terminal closeout `2026-06-18` (Atlas); child projects `#1256`, `#1258`, `#1259` dispositioned |
 | `#1256` Content Strategy / Editorial Inventory | **closed complete** — Tasks 001–009 |
 | `#1258` Website Operations Admin | **closed complete** — Phase 4 Tasks 001–013; terminal PR `#1652` |
 | `#1259` Phase 3 planning | PR `#1656` merged (`b0cc0da`) |
@@ -42,5 +46,6 @@ parallel when ChatGPT became capable of `#1500` implementation. `#1500` is now
 
 ## Out of scope (current pass)
 
+- Program `#1255` — no further remediation or child execution authorized
 - `#1259` Phase 4 Tasks 008–009 (not authorized until per-task Atlas/Bill approval)
-- Application code outside the next authorized `#1259` task scope
+- Application code outside explicitly authorized new issues
