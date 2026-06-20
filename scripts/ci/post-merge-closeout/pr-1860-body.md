@@ -15,16 +15,16 @@
 - [x] Final diff confirms no ZIP file is committed
 
 ## QUEUE / DEPENDENCY MAP STATUS (REQUIRED FOR LAUNCHED-PROGRAM QUEUE TASKS)
-- Dependency-map result: halt — this PR is only Task 001 for source Issue 1848.
-- Next queue item: halt — Task 002 / Issue 1849 is not authorized until Issue 1848 lands and is post-merge verified.
-- Continue/halt decision: halt — explicit operator instruction says not to proceed to Task 002 until Issue 1848 is post-merge verified.
+- Dependency-map result: halt — this PR is only Task 001 for source issue 1848.
+- Next queue item: halt — Task 002 / issue 1849 is not authorized until issue 1848 lands and is post-merge verified.
+- Continue/halt decision: halt — explicit operator instruction says not to proceed to Task 002 until issue 1848 is post-merge verified.
 
 ## PRE-MERGE CLOSEOUT PREDICTION (REQUIRED BEFORE READY FOR MERGE)
 - Pre-merge closeout prediction: pass
 - Source issue state before merge: open
 - Expected post-merge source issue action: auto-close or manual close after post-merge verification
 - Reviewer disposition parseability: pass
-- Queue continuation after closeout: halt until Issue 1848 lands and is post-merge verified
+- Queue continuation after closeout: halt until issue 1848 lands and is post-merge verified
 
 ## PROGRESS + READINESS (MANDATORY)
 - Phase: MERGED
