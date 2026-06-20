@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: Post-merge self-healing classifier outcomes, evidence inputs, safety rules, and documented example fixtures
 Does Not Own: Workflow implementation, detector ingestion, auto-fix action execution, issue mutation, merge approval, runtime app-code remediation
 Canonical Reference: /docs/reference/ci/post-merge-validation-surface.md
-Related Issues: #1847, #1848
+Related issues: #1847, #1848
 Last Reviewed: 2026-06-20
 ---
 
