@@ -5,8 +5,8 @@ Authority Level: Canonical PMO Authority
 Owns: LGFC PMO v3 program issue model, PMO meeting issue model, PMO Backlog rules, launch gates, promotion rules, agent authority boundaries, and top-down PMO documentation replacement intent
 Does Not Own: Product-specific design, runtime implementation, workflow YAML, production configuration, secrets, or unauthorized GitHub issue mutation
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501, #1500, #1719, #1725
-Last Reviewed: 2026-06-19
+Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501, #1500, #1719, #1725, #1856
+Last Reviewed: 2026-06-20
 ---
 
 # PMO V3 Operating Model
@@ -108,6 +108,51 @@ This document becomes the controlling PMO authority for new planning and impleme
 | PR | One scoped change set tied to exactly one source issue unless an approved exception says otherwise. |
 | Launch gate | Explicit Bill/Atlas/controller authorization that a program or task sequence may execute. |
 | Closeout | Post-merge verification and authorized source issue disposition. |
+
+## Program lifecycle status nomenclature
+
+Use these PMO program lifecycle status terms for reporting, implementation plans,
+and Cursor handoff. They are distinct from PR lifecycle states in
+`/docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`.
+
+**Principle:** Do not use "launch ready" to mean production complete. Launch
+ready means ready to start implementation.
+
+### Launch Ready
+
+Meaning:
+
+- Scope, issue chain, acceptance criteria, and execution order are documented
+  well enough for Cursor implementation to begin.
+- Launch Ready does **not** mean production complete.
+- Launch Ready does **not** mean all child PRs are merged.
+
+### Implementation Active
+
+Meaning:
+
+- Cursor is executing the approved issue/PR chain.
+- One PR per issue unless explicitly authorized otherwise.
+- Stop conditions still apply.
+
+### Post-Implementation Verification
+
+Meaning:
+
+- Implementation PRs are merged or ready for final verification.
+- Validation, cleanup, closeout, post-merge checks, and remediation checks are
+  running.
+- Follow-up cleanup may still exist.
+
+### Complete / Closed
+
+Meaning:
+
+- Production/governance validation passed.
+- Cleanup items are resolved.
+- Source and child issues are closed or explicitly deferred with documented
+  rationale.
+- No unresolved remediation remains.
 
 ## PMO v3 hierarchy
 
