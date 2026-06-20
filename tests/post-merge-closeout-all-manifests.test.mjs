@@ -12,17 +12,17 @@ describe('post-merge closeout all manifests', () => {
 		]);
 	});
 
-	it('loads cleared rerun manifest after batch closeout run 27872268704', () => {
+	it('loads cleared rerun manifest when empty', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json');
 		expect(targets).toEqual([]);
 	});
 
-	it('loads cleared CI pending manifest after batch closeout run 27872268704', () => {
+	it('loads cleared CI pending manifest when empty', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending.json');
 		expect(targets).toEqual([]);
 	});
 
-	it('loads cleared remediation backlog manifest after batch closeout run 27872268704', () => {
+	it('loads cleared remediation backlog manifest when empty', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-remediation-backlog.json');
 		expect(targets).toEqual([]);
 	});
