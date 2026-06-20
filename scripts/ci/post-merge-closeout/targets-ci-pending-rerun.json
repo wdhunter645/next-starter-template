@@ -1,12 +1,54 @@
 {
-  "triggered_at": "2026-06-20T19:00:00Z",
-  "description": "Post-merge closeout replay for merged PR #1846 / source #1804 / remediation #1855",
+  "triggered_at": "2026-06-20T20:00:00Z",
+  "description": "Yesterday exception batch remediation replay: #1811, #1814, #1809, #1828, #1825, #1834, #1832, #1844",
   "targets": [
     {
-      "pr": 1846,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1846-body.md",
-      "merge_sha": "1b6591f7158ea3b60017255cb47b061de4368a65",
-      "source_issue": 1804
+      "pr": 1811,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1811-body.md",
+      "merge_sha": "050853ec0d92d6f96ddbb9b44b6755db0dcaa5c4",
+      "source_issue": 1810
+    },
+    {
+      "pr": 1814,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1814-body.md",
+      "merge_sha": "bb99890e4b3b93ab2cff2fc3b96063c98e238a01",
+      "source_issue": 1812
+    },
+    {
+      "pr": 1809,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1809-body.md",
+      "merge_sha": "8984c73af5391c4f157713b61a39e53a0b6136aa",
+      "source_issue": 1787
+    },
+    {
+      "pr": 1828,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1828-body.md",
+      "merge_sha": "3a844ae4b4d765c9d5f7dff3472f069d589e7008",
+      "source_issue": 1725
+    },
+    {
+      "pr": 1825,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1825-body.md",
+      "merge_sha": "bfe8daaa573cf4b2be7ce132e68c433bf0c36c40",
+      "source_issue": 1823
+    },
+    {
+      "pr": 1834,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1834-body.md",
+      "merge_sha": "b06586ea2cd4433a40833354493ecfdea64cec5b",
+      "source_issue": 1725
+    },
+    {
+      "pr": 1832,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1832-body.md",
+      "merge_sha": "81304362ba3d165fbf418a496a245ff56ba21b95",
+      "source_issue": 1830
+    },
+    {
+      "pr": 1844,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1844-body.md",
+      "merge_sha": "da663158ff69c3229a4e2cd31a406889257beb94",
+      "source_issue": 1830
     }
   ]
 }

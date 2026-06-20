@@ -12,17 +12,19 @@ describe('post-merge closeout all manifests', () => {
 		]);
 	});
 
-	it('loads PR #1846 closeout rerun target after #1804 governance merge remediation', () => {
+	it('loads yesterday exception batch closeout rerun targets', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json');
-		expect(targets).toHaveLength(1);
-		expect(targets.map((target) => target.pr)).toEqual([1846]);
+		expect(targets).toHaveLength(8);
+		expect(targets.map((target) => target.pr)).toEqual([
+			1811, 1814, 1809, 1828, 1825, 1834, 1832, 1844,
+		]);
 		expect(targets.every((target) => target.body_file && target.merge_sha && target.source_issue)).toBe(
 			true,
 		);
 		expect(targets[0]).toMatchObject({
-			body_file: 'scripts/ci/post-merge-closeout/pr-1846-body.md',
-			merge_sha: '1b6591f7158ea3b60017255cb47b061de4368a65',
-			source_issue: 1804,
+			body_file: 'scripts/ci/post-merge-closeout/pr-1811-body.md',
+			merge_sha: '050853ec0d92d6f96ddbb9b44b6755db0dcaa5c4',
+			source_issue: 1810,
 		});
 	});
 
