@@ -1,47 +1,5 @@
 {
-  "triggered_at": "2026-06-12T17:00:00Z",
-  "targets": [
-    {
-      "pr": 1572,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1572-body.md",
-      "merge_sha": "12214f3762362b0ed4b07490a86e23814b8fecc6",
-      "source_issue": 1558
-    },
-    {
-      "pr": 1577,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1577-body.md",
-      "merge_sha": "2a01176fabd0cb6d0f903d1c3c20a5d379ffb654",
-      "source_issue": 1545
-    },
-    {
-      "pr": 1582,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1582-body.md",
-      "merge_sha": "738456ac502d6d58adc4ac40650f131261db9dfd",
-      "source_issue": 1560
-    },
-    {
-      "pr": 1583,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1583-body.md",
-      "merge_sha": "a1ca83d4e77efb6b0b73266c02d5dd7219bfbb1d",
-      "source_issue": 1578
-    },
-    {
-      "pr": 1586,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1586-body.md",
-      "merge_sha": "5a3f893fa656eebf7906e78f38f2aad74032e8ab",
-      "source_issue": 1576
-    },
-    {
-      "pr": 1594,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1594-body.md",
-      "merge_sha": "93ea9a259b75c99dc1f6020633d33ed6d22ff78e",
-      "source_issue": 1590
-    },
-    {
-      "pr": 1596,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1596-body.md",
-      "merge_sha": "2562444483bd91288916049644eb9c7c7212be8f",
-      "source_issue": 1561
-    }
-  ]
+  "triggered_at": "2026-06-20T18:00:00Z",
+  "description": "Cleared after batch closeout run 27872268704 — CI pending backlog (#1572–#1596) passed",
+  "targets": []
 }
