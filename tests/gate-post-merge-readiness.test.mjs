@@ -108,6 +108,29 @@ describe('post-merge readiness gate', () => {
     }));
   });
 
+  it('fails PR bodies that declare blocked closeout status before merge', () => {
+    const result = evaluate({
+      pr: { body: compliantBody.replace('- Result summary: PASS', '- Result summary: PASS\n- Status: BLOCKED') },
+    });
+
+    expect(result.status).toBe('fail');
+    expect(result.metadata_failures).toContainEqual(expect.objectContaining({
+      code: 'closeout_blocker_declared',
+      message: expect.stringContaining('blocker or exception state'),
+    }));
+  });
+
+  it('fails PR bodies that declare a closeout exception before merge', () => {
+    const result = evaluate({
+      pr: { body: `${compliantBody}\n\nCloseout exception required until Atlas reviews.` },
+    });
+
+    expect(result.status).toBe('fail');
+    expect(result.metadata_failures).toContainEqual(expect.objectContaining({
+      code: 'closeout_blocker_declared',
+    }));
+  });
+
   it('fails undispositioned trusted reviewer findings', () => {
     const result = evaluate({
       issueComments: [{

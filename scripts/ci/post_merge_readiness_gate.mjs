@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 import {
+  blockerDeclarationFailures,
   blockingMetadataFailures,
   implementationEvidenceFailures,
   preMergeReviewerDispositionFailures,
@@ -115,7 +116,10 @@ export function evaluatePostMergeReadinessGate({
     });
   }
   const normalizedFiles = Array.isArray(files) ? normalizeFiles(files) : [];
-  const metadata = preMergeReadinessBodyFailures(body);
+  const metadata = [
+    ...preMergeReadinessBodyFailures(body),
+    ...blockerDeclarationFailures(body),
+  ];
   const blockingMetadata = blockingMetadataFailures(metadata);
   const implementation = implementationEvidenceFailures({
     body,
