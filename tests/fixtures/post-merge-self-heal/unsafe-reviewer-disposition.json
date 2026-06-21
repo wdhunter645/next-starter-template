@@ -1,0 +1,35 @@
+{
+  "input": {
+    "manifests": [
+      {
+        "manifest_path": "scripts/ci/post-merge-closeout/targets-remediation-backlog.json",
+        "targets": [
+          {
+            "pr": 1860,
+            "source_issue": 1848
+          }
+        ]
+      }
+    ],
+    "closeoutReports": [
+      {
+        "status": "partial_failure",
+        "results": [
+          {
+            "pr": 1860,
+            "status": "fail",
+            "source_issue": 1848,
+            "reviewer_disposition_failures": [
+              {
+                "code": "missing_reviewer_disposition",
+                "message": "Trusted reviewer comment lacks PR-body disposition."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "exceptionIssues": [],
+    "remediationIssues": []
+  }
+}

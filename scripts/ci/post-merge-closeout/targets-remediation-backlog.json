@@ -1,5 +1,48 @@
 {
-  "triggered_at": "2026-06-20T18:00:00Z",
-  "description": "Cleared after batch closeout run 27872268704 — remediation backlog (#1221, #1230, #1233, #1248) passed",
-  "targets": []
+  "triggered_at": "2026-06-20T22:30:00Z",
+  "description": "Post-merge closeout replay for Program #1847 merged PRs #1887-#1892 and outstanding #1860 / #1848 remediation",
+  "targets": [
+    {
+      "pr": 1860,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1860-body.md",
+      "merge_sha": "492f2cb8e88679c30e89e46914ded83385a0394b",
+      "source_issue": 1848
+    },
+    {
+      "pr": 1887,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1887-body.md",
+      "merge_sha": "be5c9e38320bbbb587081cd066d384d2a63490aa",
+      "source_issue": 1849
+    },
+    {
+      "pr": 1892,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1892-body.md",
+      "merge_sha": "d8e094576ff74b395cdfac7025b8e3f759845efd",
+      "source_issue": 1850
+    },
+    {
+      "pr": 1888,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1888-body.md",
+      "merge_sha": "3f129de684a6cdaf3c883f5ff72139f7782ec0d1",
+      "source_issue": 1851
+    },
+    {
+      "pr": 1890,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1890-body.md",
+      "merge_sha": "79c7f5749e7ab1ba45f34c628119e24f96fb6e5e",
+      "source_issue": 1852
+    },
+    {
+      "pr": 1889,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1889-body.md",
+      "merge_sha": "810db3262b4e21dd1b9373b629bda7b69599f45f",
+      "source_issue": 1853
+    },
+    {
+      "pr": 1891,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1891-body.md",
+      "merge_sha": "db58bf229ef3a8a7d03cfca6d609e3a6df6b3756",
+      "source_issue": 1854
+    }
+  ]
 }

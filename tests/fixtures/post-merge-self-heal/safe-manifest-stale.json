@@ -1,0 +1,31 @@
+{
+  "input": {
+    "manifests": [
+      {
+        "manifest_path": "scripts/ci/post-merge-closeout/targets-remediation-backlog.json",
+        "targets": [
+          {
+            "pr": 1860,
+            "source_issue": 1848,
+            "body_file": "scripts/ci/post-merge-closeout/pr-1860-body.md"
+          }
+        ]
+      }
+    ],
+    "closeoutReports": [
+      {
+        "status": "success",
+        "results": [
+          {
+            "pr": 1860,
+            "status": "pass",
+            "sync_action": "post_merge_success",
+            "source_issue": 1848
+          }
+        ]
+      }
+    ],
+    "exceptionIssues": [],
+    "remediationIssues": []
+  }
+}

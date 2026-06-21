@@ -1,7 +1,13 @@
 {
-  "triggered_at": "2026-06-20T20:00:00Z",
-  "description": "Yesterday exception batch remediation replay: #1811, #1814, #1809, #1828, #1825, #1834, #1832, #1844",
+  "triggered_at": "2026-06-21T10:45:00Z",
+  "description": "Pending closeout reruns: PR #1858 (#1855) and yesterday exception batch #1813 (#1811, #1814, #1809, #1828, #1825, #1834, #1832, #1844)",
   "targets": [
+    {
+      "pr": 1858,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1858-body.md",
+      "merge_sha": "6f5952b4b92dcf99368e57bfa31d6a59d97ca63c",
+      "source_issue": 1855
+    },
     {
       "pr": 1811,
       "body_file": "scripts/ci/post-merge-closeout/pr-1811-body.md",

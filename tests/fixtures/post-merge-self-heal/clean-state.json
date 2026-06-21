@@ -1,0 +1,25 @@
+{
+  "input": {
+    "manifests": [
+      {
+        "manifest_path": "scripts/ci/post-merge-closeout/targets-ci-pending.json",
+        "targets": []
+      },
+      {
+        "manifest_path": "scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json",
+        "targets": []
+      },
+      {
+        "manifest_path": "scripts/ci/post-merge-closeout/targets-remediation-backlog.json",
+        "targets": []
+      }
+    ],
+    "closeoutReports": [
+      {
+        "status": "success",
+        "results": []
+      }
+    ],
+    "exceptionIssues": []
+  }
+}
