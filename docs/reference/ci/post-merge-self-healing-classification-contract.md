@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Post-merge self-healing classifier outcomes, evidence inputs, safety rules, and documented example fixtures
 Does Not Own: Workflow implementation, detector ingestion, auto-fix action execution, issue mutation, merge approval, runtime app-code remediation
 Canonical Reference: /docs/reference/ci/post-merge-validation-surface.md
-Related issues: #1847, #1848
-Last Reviewed: 2026-06-20
+Related issues: #1847, #1848, #1914
+Last Reviewed: 2026-06-21
 ---
 
 # Post-Merge Self-Healing Classification Contract
@@ -32,8 +32,8 @@ fixtures for each outcome.
 
 This document does not implement detector or report ingestion, auto-fix actions,
 remediation issue creation, workflow orchestration, issue closure, label mutation,
-or runtime app-code changes. Those behaviors require later source issues and
-their own file allowlists.
+or runtime app-code changes. #1914 separately authorizes bounded backlog and
+issue-event safe-close implementation using this contract.
 
 ## Current Known Truth
 
@@ -108,13 +108,13 @@ Allowed safe classifications:
 
 - stale manifest entries after a post-merge closeout report proves pass;
 - emptying closeout manifests after all entries have passed;
-- duplicate exception or remediation issues superseded by newer repository
-  evidence;
+- duplicate exception or remediation issues superseded by newer canonical
+  repository evidence;
 - stale exception issues where the PR passed, the source issue is closed, and no
   blocker remains.
 
-The safe classification only permits a later authorized action to make the
-bounded hygiene repair. It does not authorize broad cleanup, runtime edits, issue
+The safe classification only permits an authorized action to make the bounded
+hygiene repair. It does not authorize broad cleanup, runtime edits, issue
 mutation outside the proven target, queue advancement, or merge approval.
 
 ## Escalation Boundary

@@ -21,7 +21,9 @@ import {
 } from '../scripts/ci/run_post_merge_closeout.mjs';
 import {
 	blockingCloseoutFailures,
+	findCanonicalRemediationIssue,
 	shouldUpsertRemediationIssue,
+	selfHealingCanResolve,
 } from '../scripts/ci/post_merge_remediation_issue.mjs';
 import { resolvePrNumber } from '../scripts/ci/post_merge_validator.mjs';
 
@@ -319,6 +321,46 @@ describe('closeout fail-safe remediation evidence', () => {
 			status: 'pass',
 			metadata_failures: [{ code: 'missing_advisory_section', severity: 'advisory', message: 'advisory' }],
 		})).toEqual([]);
+	});
+
+	it('skips remediation issue creation when self-healing proves a safe resolution', () => {
+		const result = {
+			status: 'fail',
+			remediation_required: true,
+			metadata_failures: [{ code: 'source_issue_not_open', message: 'closed' }],
+			self_healing: { classification: 'safe_auto_fix', safe_to_close: true },
+		};
+
+		expect(selfHealingCanResolve(result)).toBe(true);
+		expect(shouldUpsertRemediationIssue(result)).toBe(false);
+	});
+
+	it('finds an existing canonical remediation issue for the same PR/source/failure group', () => {
+		const result = {
+			status: 'fail',
+			pr: 1888,
+			merge_sha: 'abc123',
+			source_issue: 1851,
+			metadata_failures: [{ code: 'closeout_blocker_declared', message: 'blocked scaffold' }],
+		};
+		const existing = {
+			number: 1901,
+			state: 'open',
+			title: 'Post-merge closeout exception for PR #1888 / source #1851 / closeout_blocker_declared',
+			body: [
+				'Post-merge closeout exception detected. CI refused deterministic source issue closeout.',
+				'',
+				'- PR: #1888',
+				'- Merge SHA: abc123',
+				'- Source issue: #1851',
+				'',
+				'## Detected failure condition',
+				'- closeout_blocker_declared: previous evidence',
+			].join('\n'),
+			created_at: '2026-06-20T00:00:00Z',
+		};
+
+		expect(findCanonicalRemediationIssue(result, [existing])?.number).toBe(1901);
 	});
 
 	it('builds a fail-closeout result with remediation_required set', () => {

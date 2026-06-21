@@ -27,12 +27,23 @@ on:
         options:
           - 'true'
           - 'false'
+      backlog_scope:
+        description: Scan all open backlog issues or only the supplied issue event
+        required: false
+        default: 'backlog'
+        type: choice
+        options:
+          - backlog
+          - event_issue
   schedule:
     - cron: '0 6 * * *'
+  issues:
+    types: [opened, reopened, edited, labeled]
   push:
     branches: [main]
     paths:
       - scripts/ci/post_merge_self_heal_*.mjs
+      - scripts/ci/post_merge_remediation_issue.mjs
       - scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json
       - scripts/ci/post-merge-closeout/targets-ci-pending.json
       - scripts/ci/post-merge-closeout/targets-remediation-backlog.json
@@ -46,15 +57,22 @@ on:
 
 permissions:
   actions: read
-  contents: write
+  contents: read
   issues: write
-  pull-requests: write
 
 jobs:
   self-heal:
     if: |
-      github.event_name != 'workflow_run' ||
-      github.event.workflow_run.conclusion != 'cancelled'
+      (
+        github.event_name != 'workflow_run' ||
+        github.event.workflow_run.conclusion != 'cancelled'
+      ) && (
+        github.event_name != 'issues' ||
+        startsWith(github.event.issue.title, 'Post-merge closeout exception') ||
+        contains(github.event.issue.body, 'Post-merge closeout exception detected. CI refused deterministic source issue closeout.') ||
+        contains(join(github.event.issue.labels.*.name, ','), 'post-merge-failure') ||
+        contains(join(github.event.issue.labels.*.name, ','), 'post-merge-self-healing')
+      )
     runs-on: ubuntu-latest
 
     steps:
@@ -76,16 +94,51 @@ jobs:
             echo "dry_run=${{ inputs.dry_run }}" >> "$GITHUB_OUTPUT"
             echo "apply_safe_fixes=${{ inputs.apply_safe_fixes }}" >> "$GITHUB_OUTPUT"
             echo "open_escalation_issues=${{ inputs.open_escalation_issues }}" >> "$GITHUB_OUTPUT"
+            echo "backlog_scope=${{ inputs.backlog_scope }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "issues" ]; then
+            echo "dry_run=false" >> "$GITHUB_OUTPUT"
+            echo "apply_safe_fixes=true" >> "$GITHUB_OUTPUT"
+            echo "open_escalation_issues=false" >> "$GITHUB_OUTPUT"
+            echo "backlog_scope=event_issue" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "workflow_run" ]; then
+            echo "dry_run=false" >> "$GITHUB_OUTPUT"
+            echo "apply_safe_fixes=true" >> "$GITHUB_OUTPUT"
+            echo "open_escalation_issues=false" >> "$GITHUB_OUTPUT"
+            echo "backlog_scope=backlog" >> "$GITHUB_OUTPUT"
           else
             echo "dry_run=true" >> "$GITHUB_OUTPUT"
             echo "apply_safe_fixes=false" >> "$GITHUB_OUTPUT"
             echo "open_escalation_issues=false" >> "$GITHUB_OUTPUT"
+            echo "backlog_scope=backlog" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Capture issue event payload
+        if: github.event_name == 'issues'
+        env:
+          ISSUE_PAYLOAD: ${{ toJson(github.event.issue) }}
+        run: |
+          printf '%s\n' "$ISSUE_PAYLOAD" > post-merge-self-heal-event-issue.json
+
+      - name: Scan post-merge exception backlog
+        id: backlog
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          BACKLOG_ARGS=(--output post-merge-self-heal-backlog.json)
+          if [ "${{ steps.mode.outputs.backlog_scope }}" = "event_issue" ]; then
+            BACKLOG_ARGS+=(--event-issue post-merge-self-heal-event-issue.json)
+          fi
+          if [ "${{ steps.mode.outputs.dry_run }}" != "true" ] && [ "${{ steps.mode.outputs.apply_safe_fixes }}" = "true" ]; then
+            BACKLOG_ARGS+=(--apply)
+          fi
+          node scripts/ci/post_merge_self_heal_backlog.mjs "${BACKLOG_ARGS[@]}"
 
       - name: Detect post-merge self-healing findings
         id: detect
         run: |
           node scripts/ci/post_merge_self_heal_detect.mjs \
+            --issues post-merge-self-heal-backlog.json \
             --output post-merge-self-heal-detection.json
 
       - name: Apply safe auto-fix actions
@@ -120,6 +173,7 @@ jobs:
         with:
           name: post-merge-self-healing-report
           path: |
+            post-merge-self-heal-backlog.json
             post-merge-self-heal-detection.json
             post-merge-self-heal-apply.json
             post-merge-self-heal-escalation.json
@@ -134,7 +188,12 @@ jobs:
             echo "- dry_run: \`${{ steps.mode.outputs.dry_run }}\`"
             echo "- apply_safe_fixes: \`${{ steps.mode.outputs.apply_safe_fixes }}\`"
             echo "- open_escalation_issues: \`${{ steps.mode.outputs.open_escalation_issues }}\`"
+            echo "- backlog_scope: \`${{ steps.mode.outputs.backlog_scope }}\`"
             echo ''
+            if [ -f post-merge-self-heal-backlog.json ]; then
+              echo '### Backlog burn-down summary'
+              node -e "const r=require('./post-merge-self-heal-backlog.json'); const s=r.summary||{}; console.log('- total scanned:', s.total_scanned||0); console.log('- auto-closed:', s.auto_closed||0); console.log('- auto-close planned:', s.auto_close_planned||0); console.log('- duplicate closures:', s.duplicate_closures||0); console.log('- duplicate closures planned:', s.duplicate_closures_planned||0); console.log('- preserved active-source issues:', s.preserved_active_source_issues||0); console.log('- preserved ambiguous issues:', s.preserved_ambiguous_issues||0); console.log('- unsafe/escalated issues:', s.unsafe_escalated_issues||0); console.log('- before open post-merge issue count:', s.before_open_post_merge_issue_count||0); console.log('- after open post-merge issue count:', s.after_open_post_merge_issue_count||0);"
+            fi
             if [ -f post-merge-self-heal-detection.json ]; then
               echo '### Detection summary'
               node -e "const r=require('./post-merge-self-heal-detection.json'); console.log('- status:', r.status); console.log('- findings:', (r.findings||[]).length); console.log('- summary:', JSON.stringify(r.summary||{}));"
