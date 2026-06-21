@@ -83,6 +83,28 @@ describe('post-merge metadata validation', () => {
 		}));
 	});
 
+	it('shares blocked closeout declaration checks with the readiness gate', () => {
+		const failures = preMergeReadinessBodyFailures(`${baseBody}\n\n- Status: BLOCKED`);
+
+		expect(failures).toContainEqual(expect.objectContaining({
+			code: 'closeout_blocker_declared',
+		}));
+	});
+
+	it('fails unresolved CI auto-repair scaffolds in the shared body contract', () => {
+		const body = [
+			baseBody,
+			'',
+			'<!-- pr-body-auto-repair:start -->',
+			'- review-comment:3427000000 — acknowledged — auto-generated disposition pending agent completion; agent must replace with final fix/rationale before READY FOR REVIEW — thread state: unresolved-with-rationale',
+			'<!-- pr-body-auto-repair:end -->',
+		].join('\n');
+
+		expect(preMergeReadinessBodyFailures(body)).toContainEqual(expect.objectContaining({
+			code: 'unresolved_auto_repair_scaffold',
+		}));
+	});
+
 	it('ignores forbidden placeholder tokens inside the CI auto-repair evidence block', () => {
 		const body = [
 			baseBody,

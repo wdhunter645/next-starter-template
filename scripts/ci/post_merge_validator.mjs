@@ -145,7 +145,7 @@ export function blockerDeclarationFailures(body = '') {
 	if (/^\s*-?\s*Status\s*:\s*BLOCKED\b/im.test(body) || /\b(exception required|closeout exception required|blocked closeout)\b/i.test(body)) {
 		return [{
 			code: 'closeout_blocker_declared',
-			message: 'Merged PR body declares a blocker or exception state; CI refused deterministic source issue closeout.',
+			message: 'PR body declares a blocker or exception state; CI refused deterministic source issue closeout.',
 		}];
 	}
 	return [];
@@ -161,7 +161,24 @@ export function alternateProgramLaneFailures(sourceAccounting = {}) {
 
 export function preMergeReadinessBodyFailures(body = '') {
 	const failures = [];
-	const bodyWithoutAutoRepair = stripAutoRepairBlock(body);
+	const bodyText = String(body || '');
+	const bodyWithoutAutoRepair = stripAutoRepairBlock(bodyText);
+
+	failures.push(...blockerDeclarationFailures(bodyText));
+
+	if (AUTO_REPAIR_BLOCK_PATTERN.test(bodyText)) {
+		failures.push({
+			code: 'unresolved_auto_repair_scaffold',
+			message: 'PR body still contains the CI auto-repair scaffold; replace it with final governance evidence before merge.',
+		});
+	}
+
+	if (/auto-generated disposition pending agent completion/i.test(bodyWithoutAutoRepair)) {
+		failures.push({
+			code: 'unresolved_auto_repair_scaffold',
+			message: 'PR body still contains auto-generated pending agent-completion disposition text.',
+		});
+	}
 
 	if (FORBIDDEN_PLACEHOLDER_PATTERN.test(bodyWithoutAutoRepair)) {
 		failures.push({ code: 'forbidden_placeholder_token', message: 'PR body contains a forbidden placeholder token.' });

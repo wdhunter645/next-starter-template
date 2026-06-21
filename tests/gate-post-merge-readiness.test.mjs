@@ -82,6 +82,51 @@ describe('post-merge readiness gate', () => {
     }));
   });
 
+  it('fails when source issue accounting is missing before merge', () => {
+    const result = evaluate({
+      pr: { body: compliantBody.replace('- **Issue:** #1544\n\n', '') },
+    });
+
+    expect(result.status).toBe('fail');
+    expect(result.source_issue_failures).toContainEqual(expect.objectContaining({
+      code: 'missing_source_issue',
+      message: expect.stringContaining('PR body does not contain a primary source issue line'),
+    }));
+    expect(result.failures).toContainEqual(expect.objectContaining({
+      code: 'missing_source_issue',
+    }));
+  });
+
+  it('fails stale blocked status declarations before merge', () => {
+    const result = evaluate({
+      pr: { body: compliantBody.replace('## CHANGE SUMMARY', '## CHANGE SUMMARY\n- Status: BLOCKED\n') },
+    });
+
+    expect(result.status).toBe('fail');
+    expect(result.metadata_failures).toContainEqual(expect.objectContaining({
+      code: 'closeout_blocker_declared',
+    }));
+  });
+
+  it('fails unresolved auto-repair scaffold text before merge', () => {
+    const result = evaluate({
+      pr: {
+        body: [
+          compliantBody,
+          '',
+          '<!-- pr-body-auto-repair:start -->',
+          '- review-comment:3427000000 — acknowledged — auto-generated disposition pending agent completion; agent must replace with final fix/rationale before READY FOR REVIEW — thread state: unresolved-with-rationale',
+          '<!-- pr-body-auto-repair:end -->',
+        ].join('\n'),
+      },
+    });
+
+    expect(result.status).toBe('fail');
+    expect(result.metadata_failures).toContainEqual(expect.objectContaining({
+      code: 'unresolved_auto_repair_scaffold',
+    }));
+  });
+
   it('fails when changed files are absent from the declared allowlist', () => {
     const result = evaluate({
       files: [
@@ -95,6 +140,59 @@ describe('post-merge readiness gate', () => {
       code: 'allowlist_violation',
       message: expect.stringContaining('.github/workflows/gate-post-merge-readiness.yml'),
     }));
+  });
+
+  it('fails when the PR body omits allowlist evidence', () => {
+    const result = evaluate({
+      pr: {
+        body: compliantBody.replace(
+          [
+            '## FILE-TOUCH ALLOWLIST (MANDATORY)',
+            'Allowed files:',
+            '- scripts/ci/post_merge_readiness_gate.mjs',
+            '',
+            'All other files are out of scope',
+            '',
+          ].join('\n'),
+          '',
+        ),
+      },
+    });
+
+    expect(result.status).toBe('fail');
+    expect(result.implementation_failures).toContainEqual(expect.objectContaining({
+      code: 'missing_allowlist',
+    }));
+  });
+
+  it('fails unchecked required acceptance criteria before merge', () => {
+    const result = evaluate({
+      pr: { body: compliantBody.replace('- [x] Gate passes compliant PR bodies.', '- [ ] Gate passes compliant PR bodies.') },
+    });
+
+    expect(result.status).toBe('fail');
+    expect(result.implementation_failures).toContainEqual(expect.objectContaining({
+      code: 'unchecked_acceptance_criterion',
+    }));
+  });
+
+  it('fails verification result placeholders before merge', () => {
+    const result = evaluate({
+      pr: { body: compliantBody.replace('- Result summary: PASS', '- Result summary: PASS / FAIL / PENDING') },
+    });
+
+    expect(result.status).toBe('fail');
+    expect(result.implementation_failures).toContainEqual(expect.objectContaining({
+      code: 'verification_placeholder',
+    }));
+  });
+
+  it('passes explicit remediation follow-up wording allowed by closeout governance', () => {
+    const result = evaluate({
+      pr: { body: `${compliantBody}\n\nRemediation follow-up for PR #1412.` },
+    });
+
+    expect(result.status).toBe('pass');
   });
 
   it('fails forbidden placeholder tokens before merge', () => {
