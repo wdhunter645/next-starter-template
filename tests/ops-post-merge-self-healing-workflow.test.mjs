@@ -58,4 +58,13 @@ describe('OPS — Post-Merge Self-Healing workflow', () => {
 		expect(workflow).toContain("contains(join(github.event.issue.labels.*.name, ','), 'post-merge-failure')");
 		expect(workflow).toMatch(/elif \[ "\$\{\{ github\.event_name \}\}" = "issues" \]; then[\s\S]*echo "backlog_scope=event_issue"/);
 	});
+
+	it('uses least-privilege permissions for issue-event self-healing', () => {
+		const workflow = fs.readFileSync('.github/workflows/ops-post-merge-self-healing.yml', 'utf8');
+
+		expect(workflow).toContain('contents: read');
+		expect(workflow).toContain('issues: write');
+		expect(workflow).not.toContain('contents: write');
+		expect(workflow).not.toContain('pull-requests: write');
+	});
 });

@@ -65,7 +65,19 @@ describe('post-merge self-healing backlog matching', () => {
 describe('post-merge self-healing backlog classification', () => {
 	it('reports required burn-down counts for safe stale and duplicate issues', () => {
 		const issues = [
-			exceptionIssue({ number: 1900, created_at: '2026-06-20T00:00:00Z' }),
+			exceptionIssue({
+				number: 1900,
+				created_at: '2026-06-20T00:00:00Z',
+				body: [
+					POST_MERGE_EXCEPTION_SIGNATURE,
+					'',
+					'- PR: #1888',
+					'- Source issue: #1851',
+					'- Validator status: pass',
+					'- Remediation required: no',
+					'Newer canonical issue: #1901',
+				].join('\n'),
+			}),
 			exceptionIssue({ number: 1901, created_at: '2026-06-21T00:00:00Z' }),
 			exceptionIssue({
 				number: 1902,
@@ -99,6 +111,45 @@ describe('post-merge self-healing backlog classification', () => {
 		});
 		expect(report.classifications.find((entry) => entry.issue_number === 1900).disposition)
 			.toBe(BACKLOG_DISPOSITIONS.DUPLICATE_OF_CANONICAL_REMEDIATION);
+	});
+
+	it('does not close duplicate groups without explicit canonical evidence', () => {
+		const report = buildBacklogReport({
+			issues: [
+				exceptionIssue({ number: 1900, created_at: '2026-06-20T00:00:00Z' }),
+				exceptionIssue({ number: 1901, created_at: '2026-06-21T00:00:00Z' }),
+			],
+			sourceIssuesByNumber: {
+				1851: { number: 1851, state: 'open', labels: [{ name: 'status:active' }] },
+			},
+			dryRun: true,
+		});
+
+		expect(report.summary.duplicate_closures_planned).toBe(0);
+		expect(report.classifications.every((entry) =>
+			entry.disposition !== BACKLOG_DISPOSITIONS.DUPLICATE_OF_CANONICAL_REMEDIATION,
+		)).toBe(true);
+	});
+
+	it('emits parsed issue metadata for detector ingestion', () => {
+		const report = buildBacklogReport({
+			issues: [exceptionIssue()],
+			sourceIssuesByNumber: {},
+			dryRun: true,
+		});
+
+		expect(report.exceptionIssues[0]).toMatchObject({
+			linked_pr: 1888,
+			pr_number: 1888,
+			linked_source_issue: 1851,
+			source_issue: 1851,
+			failure_code: 'closeout_exception',
+			metadata: {
+				pr: 1888,
+				source_issue: 1851,
+				failure_code: 'closeout_exception',
+			},
+		});
 	});
 
 	it('preserves ambiguous reviewer/source/verification evidence', () => {
@@ -141,7 +192,19 @@ describe('post-merge self-healing backlog execution', () => {
 	it('closes only deterministic stale/duplicate issues and comments on preserved issues', async () => {
 		const report = buildBacklogReport({
 			issues: [
-				exceptionIssue({ number: 1900, created_at: '2026-06-20T00:00:00Z' }),
+				exceptionIssue({
+					number: 1900,
+					created_at: '2026-06-20T00:00:00Z',
+					body: [
+						POST_MERGE_EXCEPTION_SIGNATURE,
+						'',
+						'- PR: #1888',
+						'- Source issue: #1851',
+						'- Validator status: pass',
+						'- Remediation required: no',
+						'Newer canonical issue: #1901',
+					].join('\n'),
+				}),
 				exceptionIssue({ number: 1901, created_at: '2026-06-21T00:00:00Z' }),
 				exceptionIssue({
 					number: 1902,

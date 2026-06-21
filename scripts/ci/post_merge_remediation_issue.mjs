@@ -142,6 +142,23 @@ function request(args) {
 	return githubRepoRequest({ ...args, userAgent: 'lgfc-post-merge-remediation' });
 }
 
+async function paginateOpenIssues({ token, repository }) {
+	const issues = [];
+	let page = 1;
+	while (true) {
+		const batch = await request({
+			token,
+			repository,
+			path: `/issues?state=open&per_page=100&page=${page}`,
+		});
+		if (!Array.isArray(batch) || batch.length === 0) break;
+		issues.push(...batch);
+		if (batch.length < 100) break;
+		page += 1;
+	}
+	return issues;
+}
+
 export function shouldUpsertRemediationIssue(result = {}) {
 	if (selfHealingCanResolve(result)) return false;
 	if (result.status === 'skipped') return false;
@@ -187,11 +204,7 @@ export async function upsertRemediationIssue({ token, repository, result }) {
 
 	const title = remediationTitle(result);
 	const body = remediationBody(result);
-	const search = await request({
-		token,
-		repository,
-		path: `/issues?state=open&per_page=100`,
-	});
+	const search = await paginateOpenIssues({ token, repository });
 	const existing = Array.isArray(search)
 		? search.find((issue) => issue.title === title && !issue.pull_request)
 			|| findCanonicalRemediationIssue(result, search)

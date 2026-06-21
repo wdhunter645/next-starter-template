@@ -57,9 +57,8 @@ on:
 
 permissions:
   actions: read
-  contents: write
+  contents: read
   issues: write
-  pull-requests: write
 
 jobs:
   self-heal:

@@ -136,10 +136,12 @@ function issueKey(parsed = {}) {
 }
 
 function issueStateReason(issue = {}) {
+	if (!issue) return '';
 	return String(issue?.state_reason || issue?.stateReason || '').toLowerCase();
 }
 
 function isClosedComplete(issue = {}) {
+	if (!issue) return false;
 	const state = String(issue?.state || '').toLowerCase();
 	const labels = new Set(labelNames(issue?.labels));
 	return state === 'closed' && (
@@ -150,6 +152,7 @@ function isClosedComplete(issue = {}) {
 }
 
 function isOpenActive(issue = {}) {
+	if (!issue) return false;
 	const state = String(issue?.state || '').toLowerCase();
 	const labels = new Set(labelNames(issue?.labels));
 	return state === 'open' && (
@@ -204,7 +207,11 @@ function canonicalDuplicateMap(parsedIssues = []) {
 			return timeB - timeA;
 		});
 		const explicitCanonical = sorted.find((issue) => issue.canonical_issue === issue.number);
-		const canonical = explicitCanonical || sorted[0];
+		const referencedCanonical = sorted.find((issue) =>
+			issue.canonical_issue && sorted.some((candidate) => candidate.number === issue.canonical_issue)
+		);
+		const canonical = explicitCanonical
+			|| sorted.find((issue) => issue.number === referencedCanonical?.canonical_issue);
 		if (!canonical?.number) continue;
 		for (const duplicate of sorted) {
 			if (duplicate.number === canonical.number) continue;
@@ -212,6 +219,25 @@ function canonicalDuplicateMap(parsedIssues = []) {
 		}
 	}
 	return duplicates;
+}
+
+function detectorIssueMetadata(issue = {}, parsed = {}) {
+	return {
+		...issue,
+		linked_pr: parsed.pr_number ?? null,
+		pr_number: parsed.pr_number ?? null,
+		linked_source_issue: parsed.source_issue ?? null,
+		source_issue: parsed.source_issue ?? null,
+		failure_code: parsed.failure_code || null,
+		canonical_issue: parsed.canonical_issue ?? null,
+		canonical: parsed.canonical_issue === parsed.number,
+		metadata: {
+			...(issue.metadata && typeof issue.metadata === 'object' ? issue.metadata : {}),
+			pr: parsed.pr_number ?? null,
+			source_issue: parsed.source_issue ?? null,
+			failure_code: parsed.failure_code || null,
+		},
+	};
 }
 
 export function classifyBacklogIssue(parsed = {}, context = {}) {
@@ -313,6 +339,9 @@ export function buildBacklogReport({
 		String(issue?.state || '').toLowerCase() === 'open' && isPostMergeExceptionIssue(issue)
 	);
 	const parsedIssues = openPostMergeIssues.map(parsePostMergeExceptionIssue);
+	const detectorIssues = openPostMergeIssues.map((issue, index) =>
+		detectorIssueMetadata(issue, parsedIssues[index])
+	);
 	const duplicatesByIssueNumber = canonicalDuplicateMap(parsedIssues);
 	const classifications = parsedIssues.map((parsed) => ({
 		issue: parsed,
@@ -336,9 +365,9 @@ export function buildBacklogReport({
 	return {
 		status: 'classified',
 		dry_run: dryRun,
-		exceptionIssues: openPostMergeIssues,
-		remediationIssues: openPostMergeIssues,
-		deferredIssues: openPostMergeIssues.filter((issue) => hasLabel(issue, new Set(['intentionally-deferred']))),
+		exceptionIssues: detectorIssues,
+		remediationIssues: detectorIssues,
+		deferredIssues: detectorIssues.filter((issue) => hasLabel(issue, new Set(['intentionally-deferred']))),
 		classifications,
 		summary: {
 			total_scanned: openPostMergeIssues.length,
