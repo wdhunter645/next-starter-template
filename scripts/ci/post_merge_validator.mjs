@@ -161,12 +161,12 @@ export function alternateProgramLaneFailures(sourceAccounting = {}) {
 
 export function preMergeReadinessBodyFailures(body = '') {
 	const failures = [];
-	const bodyText = String(body || '');
-	const bodyWithoutAutoRepair = stripAutoRepairBlock(bodyText);
+	body = String(body || '');
+	const bodyWithoutAutoRepair = stripAutoRepairBlock(body);
 
-	failures.push(...blockerDeclarationFailures(bodyText));
+	failures.push(...blockerDeclarationFailures(body));
 
-	if (AUTO_REPAIR_BLOCK_PATTERN.test(bodyText)) {
+	if (AUTO_REPAIR_BLOCK_PATTERN.test(body)) {
 		failures.push({
 			code: 'unresolved_auto_repair_scaffold',
 			message: 'PR body still contains the CI auto-repair scaffold; replace it with final governance evidence before merge.',

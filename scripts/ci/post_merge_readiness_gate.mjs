@@ -138,7 +138,7 @@ export function evaluatePostMergeReadinessGate({
   const sourceIssue = sourceIssueAccounting(body, { repository });
   const sourceIssueFailures = (sourceIssue.failures || []).map((failure) => ({
     ...failure,
-    message: failure.message
+    message: (failure?.message || '')
       .replaceAll('Merged PR body', 'PR body')
       .replaceAll('closeout requires', 'pre-merge readiness requires'),
   }));
