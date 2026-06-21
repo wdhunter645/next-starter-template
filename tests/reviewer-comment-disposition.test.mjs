@@ -108,6 +108,33 @@ describe('reviewer comment disposition enforcement', () => {
     });
   });
 
+  it('fails late resolved trusted inline threads without explicit PR-body disposition before merge', () => {
+    const result = evaluateReviewerCommentDisposition({
+      body: '## REVIEWER RESPONSE ACCOUNTING\n- reviewed',
+      reviewComments: [{
+        id: 2007,
+        user: { login: 'gemini-code-assist[bot]' },
+        commit_id: 'head-sha',
+        path: 'scripts/ci/example.mjs',
+        line: 18,
+        body: 'Late finding resolved in GitHub but missing PR-body accounting.',
+        created_at: '2026-06-01T01:00:00Z',
+        is_resolved: true,
+      }],
+      headSha: 'head-sha',
+      readyForReviewAt: '2026-06-01T00:00:00Z',
+      auditPhase: 'pre_merge',
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.lateFindingsCount).toBe(1);
+    expect(result.lateUndispositionedCount).toBe(1);
+    expect(result.failures[0]).toMatchObject({
+      code: 'late_undispositioned_reviewer_comment',
+      commentId: '2007',
+    });
+  });
+
   it('passes resolved trusted inline threads with explicit PR-body disposition before merge', () => {
     const result = evaluateReviewerCommentDisposition({
       body: [

@@ -204,7 +204,7 @@ export function evaluateReviewerCommentDisposition({
         outdated,
         message: `Late trusted reviewer inline comment ${threadId} requires disposition before ${auditPhase === 'post_merge' ? 'closeout' : 'merge'}.`,
       });
-      if (!hasValidDisposition(disposition) && !resolved) {
+      if (!hasValidDisposition(disposition)) {
         undispositioned.push({
           commentId: String(threadId),
           reviewer: user,
