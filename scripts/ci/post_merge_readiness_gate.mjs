@@ -119,7 +119,12 @@ export function evaluatePostMergeReadinessGate({
   const metadata = [
     ...preMergeReadinessBodyFailures(body),
     ...blockerDeclarationFailures(body),
-  ];
+  ].map((failure) => ({
+    ...failure,
+    message: failure.message
+      .replaceAll('Merged PR body', 'PR body')
+      .replaceAll('CI refused deterministic source issue closeout', 'merge is blocked'),
+  }));
   const blockingMetadata = blockingMetadataFailures(metadata);
   const implementation = implementationEvidenceFailures({
     body,
