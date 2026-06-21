@@ -79,14 +79,20 @@ function semanticLineContainsIssueNumber(line, issueNumber) {
 }
 
 function closingIssueRefsFromLine(line, owner, repo) {
-  const refs = [];
   const invalidRefs = [];
   const closingPattern = /\b(?:closes|close|closed|fixes|fix|fixed|resolves|resolve|resolved)\s+(#\d+|https:\/\/github\.com\/[^\s)]+\/[^\s)]+\/issues\/\d+\/?)/gi;
   let closing;
   while ((closing = closingPattern.exec(line || '')) !== null) {
-    pushIssueRef(refs, invalidRefs, closing[1], 'closing-keyword-body-line', owner, repo);
+    const issueNumber = issueNumberFromRef(closing[1], owner, repo);
+    invalidRefs.push({
+      ref: closing[1],
+      source: 'closing-keyword-body-line',
+      reason: issueNumber
+        ? 'closing_keyword_would_auto_close_source_issue'
+        : 'invalid_issue_reference',
+    });
   }
-  return { refs, invalidRefs };
+  return { refs: [], invalidRefs };
 }
 
 function isIgnoredIssueAccountingLine(line = '') {
