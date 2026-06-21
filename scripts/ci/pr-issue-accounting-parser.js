@@ -80,7 +80,7 @@ function semanticLineContainsIssueNumber(line, issueNumber) {
 
 function closingIssueRefsFromLine(line, owner, repo) {
   const invalidRefs = [];
-  const closingPattern = /\b(?:closes|close|closed|fixes|fix|fixed|resolves|resolve|resolved)\s+(#\d+|https:\/\/github\.com\/[^\s)]+\/[^\s)]+\/issues\/\d+\/?)/gi;
+  const closingPattern = /\b(?:closes|close|closed|fixes|fix|fixed|resolves|resolve|resolved):?\s+(#\d+|https:\/\/github\.com\/[^\s)]+\/[^\s)]+\/issues\/\d+\/?)/gi;
   let closing;
   while ((closing = closingPattern.exec(line || '')) !== null) {
     const issueNumber = issueNumberFromRef(closing[1], owner, repo);
@@ -135,7 +135,6 @@ function issueRefsFromBody(body, owner, repo) {
     const semantic = semanticIssueRefsFromLine(line, owner, repo);
     refs.push(...semantic.refs);
     invalidRefs.push(...semantic.invalidRefs);
-    if (semantic.matched) continue;
 
     const closing = closingIssueRefsFromLine(line, owner, repo);
     refs.push(...closing.refs);

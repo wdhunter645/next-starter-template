@@ -72,11 +72,32 @@ describe('PR issue-accounting parser', () => {
       source: 'closing-keyword-body-line',
       reason: 'closing_keyword_would_auto_close_source_issue',
     }]);
+
+    const resultWithColon = bodyRefs('Closes: #1053');
+    expect(resultWithColon.refs).toEqual([]);
+    expect(resultWithColon.invalidRefs).toEqual([{
+      ref: '#1053',
+      source: 'closing-keyword-body-line',
+      reason: 'closing_keyword_would_auto_close_source_issue',
+    }]);
   });
 
   it('rejects closing keyword references even when a canonical source issue line exists', () => {
     const result = bodyRefs(['- **Issue:** #1053', 'Fixes #1053'].join('\n'));
     expect(result.refs).toEqual([{ issueNumber: 1053, source: 'primary-body-line' }]);
+    expect(result.invalidRefs).toEqual([{
+      ref: '#1053',
+      source: 'closing-keyword-body-line',
+      reason: 'closing_keyword_would_auto_close_source_issue',
+    }]);
+  });
+
+  it('rejects closing keyword references on the same line as semantic issue accounting', () => {
+    const result = bodyRefs('- **Issue:** #1053, Resolves #1053');
+    expect(result.refs).toEqual([
+      { issueNumber: 1053, source: 'primary-body-line' },
+      { issueNumber: 1053, source: 'primary-body-line' },
+    ]);
     expect(result.invalidRefs).toEqual([{
       ref: '#1053',
       source: 'closing-keyword-body-line',
