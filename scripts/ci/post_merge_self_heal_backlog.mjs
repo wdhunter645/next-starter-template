@@ -136,7 +136,7 @@ function issueKey(parsed = {}) {
 }
 
 function issueStateReason(issue = {}) {
-	return String(issue.state_reason || issue.stateReason || '').toLowerCase();
+	return String(issue?.state_reason || issue?.stateReason || '').toLowerCase();
 }
 
 function isClosedComplete(issue = {}) {
@@ -476,24 +476,25 @@ async function fetchIssueByNumber({ token, repository, number }) {
 }
 
 async function fetchSourceIssues({ token, repository, parsedIssues = [] }) {
-	const sourceIssuesByNumber = {};
 	const numbers = new Set();
 	for (const parsed of parsedIssues) {
 		if (parsed.source_issue) numbers.add(parsed.source_issue);
 		if (parsed.program_issue) numbers.add(parsed.program_issue);
 	}
-	for (const number of numbers) {
+
+	const entries = await Promise.all([...numbers].map(async (number) => {
 		try {
-			sourceIssuesByNumber[number] = await fetchIssueByNumber({ token, repository, number });
+			return [number, await fetchIssueByNumber({ token, repository, number })];
 		} catch (error) {
-			sourceIssuesByNumber[number] = {
+			return [number, {
 				number,
 				state: 'unknown',
 				fetch_error: error instanceof Error ? error.message : String(error),
-			};
+			}];
 		}
-	}
-	return sourceIssuesByNumber;
+	}));
+
+	return Object.fromEntries(entries);
 }
 
 function parseArgs(argv = []) {

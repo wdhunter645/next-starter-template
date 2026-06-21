@@ -123,6 +123,18 @@ describe('post-merge self-healing backlog classification', () => {
 			.toBe(BACKLOG_DISPOSITIONS.PRESERVE_AMBIGUOUS_EVIDENCE);
 		expect(report.summary.preserved_ambiguous_issues).toBe(1);
 	});
+
+	it('does not throw when fetched source issue metadata is null', () => {
+		const report = buildBacklogReport({
+			issues: [exceptionIssue()],
+			sourceIssuesByNumber: { 1851: null },
+			dryRun: true,
+		});
+
+		expect(report.summary.total_scanned).toBe(1);
+		expect(report.classifications[0].disposition)
+			.toBe(BACKLOG_DISPOSITIONS.PRESERVE_AMBIGUOUS_EVIDENCE);
+	});
 });
 
 describe('post-merge self-healing backlog execution', () => {
