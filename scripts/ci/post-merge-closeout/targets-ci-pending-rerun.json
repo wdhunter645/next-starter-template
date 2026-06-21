@@ -1,12 +1,60 @@
 {
-  "triggered_at": "2026-06-20T21:00:00Z",
-  "description": "Replay PR #1858 closeout after allowlist fix for source #1855 / exceptions #1859 #1871",
+  "triggered_at": "2026-06-21T10:45:00Z",
+  "description": "Pending closeout reruns: PR #1858 (#1855) and yesterday exception batch #1813 (#1811, #1814, #1809, #1828, #1825, #1834, #1832, #1844)",
   "targets": [
     {
       "pr": 1858,
       "body_file": "scripts/ci/post-merge-closeout/pr-1858-body.md",
       "merge_sha": "6f5952b4b92dcf99368e57bfa31d6a59d97ca63c",
       "source_issue": 1855
+    },
+    {
+      "pr": 1811,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1811-body.md",
+      "merge_sha": "050853ec0d92d6f96ddbb9b44b6755db0dcaa5c4",
+      "source_issue": 1810
+    },
+    {
+      "pr": 1814,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1814-body.md",
+      "merge_sha": "bb99890e4b3b93ab2cff2fc3b96063c98e238a01",
+      "source_issue": 1812
+    },
+    {
+      "pr": 1809,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1809-body.md",
+      "merge_sha": "8984c73af5391c4f157713b61a39e53a0b6136aa",
+      "source_issue": 1787
+    },
+    {
+      "pr": 1828,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1828-body.md",
+      "merge_sha": "3a844ae4b4d765c9d5f7dff3472f069d589e7008",
+      "source_issue": 1725
+    },
+    {
+      "pr": 1825,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1825-body.md",
+      "merge_sha": "bfe8daaa573cf4b2be7ce132e68c433bf0c36c40",
+      "source_issue": 1823
+    },
+    {
+      "pr": 1834,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1834-body.md",
+      "merge_sha": "b06586ea2cd4433a40833354493ecfdea64cec5b",
+      "source_issue": 1725
+    },
+    {
+      "pr": 1832,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1832-body.md",
+      "merge_sha": "81304362ba3d165fbf418a496a245ff56ba21b95",
+      "source_issue": 1830
+    },
+    {
+      "pr": 1844,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1844-body.md",
+      "merge_sha": "da663158ff69c3229a4e2cd31a406889257beb94",
+      "source_issue": 1830
     }
   ]
 }

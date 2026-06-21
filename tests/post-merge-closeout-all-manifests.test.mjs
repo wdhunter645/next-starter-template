@@ -14,12 +14,31 @@ describe('post-merge closeout all manifests', () => {
 
 	it('loads PR #1858 closeout rerun target after #1855 remediation merge closeout', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json');
-		expect(targets).toHaveLength(1);
-		expect(targets[0]).toMatchObject({
-			pr: 1858,
-			body_file: 'scripts/ci/post-merge-closeout/pr-1858-body.md',
-			merge_sha: '6f5952b4b92dcf99368e57bfa31d6a59d97ca63c',
-			source_issue: 1855,
+		expect(targets).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					pr: 1858,
+					body_file: 'scripts/ci/post-merge-closeout/pr-1858-body.md',
+					merge_sha: '6f5952b4b92dcf99368e57bfa31d6a59d97ca63c',
+					source_issue: 1855,
+				}),
+			]),
+		);
+	});
+
+	it('loads yesterday exception batch closeout rerun targets after #1813 remediation', () => {
+		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json');
+		expect(targets).toHaveLength(9);
+		expect(targets.map((target) => target.pr)).toEqual([
+			1858, 1811, 1814, 1809, 1828, 1825, 1834, 1832, 1844,
+		]);
+		expect(targets.every((target) => target.body_file && target.merge_sha && target.source_issue)).toBe(
+			true,
+		);
+		expect(targets[1]).toMatchObject({
+			body_file: 'scripts/ci/post-merge-closeout/pr-1811-body.md',
+			merge_sha: '050853ec0d92d6f96ddbb9b44b6755db0dcaa5c4',
+			source_issue: 1810,
 		});
 	});
 
