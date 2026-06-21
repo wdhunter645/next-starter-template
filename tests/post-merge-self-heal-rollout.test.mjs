@@ -23,7 +23,7 @@ import ambiguousFixture from './fixtures/post-merge-self-heal/ambiguous-evidence
 describe('post-merge self-healing rollout checkpoints', () => {
 	it('clean repo state produces no mutations', async () => {
 		const report = buildDetectionReport(cleanStateFixture.input);
-		const applyOutcome = applyFromDetectionReport(report, { dryRun: true });
+		const applyOutcome = await applyFromDetectionReport(report, { dryRun: true });
 		const escalateOutcome = await escalateFromDetectionReport(report, { dryRun: true });
 
 		expect(report.status).toBe('success');
@@ -32,7 +32,7 @@ describe('post-merge self-healing rollout checkpoints', () => {
 		expect(escalateOutcome.summary.planned).toBe(0);
 	});
 
-	it('safe manifest fixture proposes manifest pruning only', () => {
+	it('safe manifest fixture proposes manifest pruning only', async () => {
 		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'self-heal-rollout-'));
 		const manifestPath = path.join(dir, 'targets-remediation-backlog.json');
 		fs.writeFileSync(manifestPath, JSON.stringify({
@@ -51,7 +51,7 @@ describe('post-merge self-healing rollout checkpoints', () => {
 			closeoutReports: input.closeoutReports,
 			manifests: input.manifests,
 		});
-		const applyOutcome = applyFromDetectionReport({
+		const applyOutcome = await applyFromDetectionReport({
 			...report,
 			closeoutReports: input.closeoutReports,
 			manifests: input.manifests,
@@ -66,7 +66,7 @@ describe('post-merge self-healing rollout checkpoints', () => {
 
 	it('unsafe reviewer fixture escalates without auto-fix', async () => {
 		const report = buildDetectionReport(unsafeReviewerFixture.input);
-		const applyOutcome = applyFromDetectionReport(report, { dryRun: true });
+		const applyOutcome = await applyFromDetectionReport(report, { dryRun: true });
 		const escalateOutcome = await escalateFromDetectionReport(report, { dryRun: true });
 
 		expect(report.findings.some((finding) => finding.classification === SAFETY_CATEGORIES.CURSOR_REMEDIATION_REQUIRED)).toBe(true);
@@ -78,7 +78,7 @@ describe('post-merge self-healing rollout checkpoints', () => {
 
 	it('duplicate issue fixture plans duplicate closure without creating issues', async () => {
 		const report = buildDetectionReport(duplicateFixture.input);
-		const applyOutcome = applyFromDetectionReport(report, { dryRun: true });
+		const applyOutcome = await applyFromDetectionReport(report, { dryRun: true });
 		const escalateOutcome = await escalateFromDetectionReport(report, { dryRun: true });
 
 		expect(report.findings.some((finding) => finding.classification === SAFETY_CATEGORIES.SAFE_AUTO_FIX)).toBe(true);
@@ -88,7 +88,7 @@ describe('post-merge self-healing rollout checkpoints', () => {
 
 	it('ambiguous evidence fixture escalates with operator or cursor classification and no mutation', async () => {
 		const report = buildDetectionReport(ambiguousFixture.input);
-		const applyOutcome = applyFromDetectionReport(report, { dryRun: true });
+		const applyOutcome = await applyFromDetectionReport(report, { dryRun: true });
 		const escalateOutcome = await escalateFromDetectionReport(report, { dryRun: true });
 
 		expect(report.findings.some((finding) =>

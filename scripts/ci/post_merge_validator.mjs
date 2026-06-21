@@ -13,6 +13,7 @@ import {
 	planActiveSourceIssueRelabel,
 	planTerminalLabelReconciliation,
 	shouldPreserveSourceIssueOpen,
+	terminalSourceIssueLabelIntegrityFailures,
 } from './post_merge_source_issue_closeout.mjs';
 
 export { isPermittedClosedSourceIssueFollowup };
@@ -62,6 +63,63 @@ const MERGE_PROTECTION_WORKFLOW_PATTERNS = [
 	/pr issue accounting/i,
 ];
 const LEGACY_REQUIRED_WORKFLOW_PATTERNS = [/drift/i, /intent/i, /zip/i];
+
+export function resolveCanonicalMergeSha({
+	prMergeCommitSha = '',
+	evidenceMergeSha = '',
+} = {}) {
+	const canonical = String(prMergeCommitSha || '').trim();
+	if (canonical) return canonical;
+	return String(evidenceMergeSha || '').trim();
+}
+
+export function closeoutEvidenceIntegrityFailures({
+	prNumber = '',
+	prMergeCommitSha = '',
+	evidenceMergeSha = '',
+	evidenceShaAssociatedPr = null,
+} = {}) {
+	const failures = [];
+	const canonical = String(prMergeCommitSha || '').trim().toLowerCase();
+	const evidence = String(evidenceMergeSha || '').trim().toLowerCase();
+
+	if (!canonical) {
+		failures.push({
+			code: 'missing_merge_commit_sha',
+			message: `PR #${prNumber || 'unknown'} does not expose merge_commit_sha; closeout evidence cannot be trusted.`,
+		});
+		return failures;
+	}
+
+	if (!evidence) {
+		failures.push({
+			code: 'missing_closeout_evidence_merge_sha',
+			message: 'Closeout evidence merge SHA is missing.',
+		});
+		return failures;
+	}
+
+	if (evidence !== canonical) {
+		failures.push({
+			code: 'stale_closeout_evidence_merge_sha',
+			message: `Closeout evidence merge SHA ${evidenceMergeSha} does not match PR #${prNumber} merge commit ${prMergeCommitSha}.`,
+		});
+	}
+
+	if (
+		evidenceShaAssociatedPr
+		&& String(evidenceShaAssociatedPr.number || '') !== String(prNumber || '')
+	) {
+		failures.push({
+			code: 'merge_sha_belongs_to_other_pr',
+			message: `Closeout evidence merge SHA ${evidenceMergeSha} belongs to PR #${evidenceShaAssociatedPr.number}, not PR #${prNumber}.`,
+		});
+	}
+
+	return failures;
+}
+
+export { terminalSourceIssueLabelIntegrityFailures };
 
 export function resolvePrNumber({
 	eventName,
@@ -755,13 +813,33 @@ export async function runValidator({
 		}
 	}
 
+	let evidenceShaAssociatedPr = null;
+	if (sha && String(sha).toLowerCase() !== String(pr.merge_commit_sha || '').toLowerCase()) {
+		try {
+			const evidenceShaPulls = await apiRequest({ token, repository, path: `/commits/${sha}/pulls` });
+			evidenceShaAssociatedPr = (evidenceShaPulls || []).find(
+				(pull) => pull?.merged_at && pull?.base?.ref === 'main',
+			) || null;
+		} catch {
+			evidenceShaAssociatedPr = null;
+		}
+	}
+
 	const filesExist = (filePath) => fs.existsSync(path.join(workspace, filePath));
-	const metadata = metadataFailures(normalizedPr, filesExist, {
-		repository,
-		sourceIssue,
-		sourceIssueError,
-		repoLabels,
-	});
+	const metadata = [
+		...metadataFailures(normalizedPr, filesExist, {
+			repository,
+			sourceIssue,
+			sourceIssueError,
+			repoLabels,
+		}),
+		...closeoutEvidenceIntegrityFailures({
+			prNumber: resolution.pr,
+			prMergeCommitSha: pr.merge_commit_sha,
+			evidenceMergeSha: sha,
+			evidenceShaAssociatedPr,
+		}),
+	];
 	const implementation = implementationEvidenceFailures({
 		body: normalizedPr.body,
 		files: normalizedPr.files,
@@ -787,6 +865,11 @@ export async function runValidator({
 	const enrichedRuns = await enrichFailedRuns({ token, repository, runs, currentRunId: runId });
 	const failures = workflowFailures({ runs: enrichedRuns, prBody: normalizedPr.body, currentRunId: runId });
 
+	const canonicalMergeSha = resolveCanonicalMergeSha({
+		prMergeCommitSha: pr.merge_commit_sha,
+		evidenceMergeSha: sha,
+	});
+
 	return buildResult({
 		pr: normalizedPr,
 		resolution,
@@ -796,7 +879,7 @@ export async function runValidator({
 		findings,
 		reviewerDispositionFailures: dispositionFailures,
 		failures,
-		mergeSha: sha,
+		mergeSha: canonicalMergeSha,
 		sourceIssueCandidates: sourceAccounting.sourceIssueCandidates,
 		terminalLabelResult,
 		sourceIssueCloseoutMode,

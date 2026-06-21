@@ -18,6 +18,11 @@ import {
 	FINDING_TYPES,
 	SAFETY_CATEGORIES,
 } from './post_merge_self_heal_classify.mjs';
+import {
+	applyTerminalLabelReconciliation,
+	planActiveSourceIssueRelabel,
+	planTerminalLabelReconciliation,
+} from './post_merge_source_issue_closeout.mjs';
 import { loadManifestSnapshots, DEFAULT_MANIFESTS } from './post_merge_self_heal_detect.mjs';
 import {
 	normalizeCloseoutPr,
@@ -30,6 +35,7 @@ export const APPLY_ACTIONS = Object.freeze({
 	PRUNE_MANIFEST: 'prune_manifest',
 	PLAN_DUPLICATE_CLOSURE: 'plan_duplicate_closure',
 	STALE_ISSUE_CLOSEOUT_CANDIDATE: 'stale_issue_closeout_candidate',
+	REPAIR_TERMINAL_SOURCE_LABELS: 'repair_terminal_source_labels',
 	SKIPPED_UNSAFE: 'skipped_unsafe',
 	SKIPPED_NO_ACTION: 'skipped_no_action',
 });
@@ -202,6 +208,35 @@ export function planSkippedFindings(findings = []) {
 		}));
 }
 
+export function planTerminalLabelRepairActions(findings = [], { closeoutReports = [] } = {}) {
+	const actions = [];
+	const seen = new Set();
+
+	for (const finding of findings) {
+		if (finding.kind !== FINDING_TYPES.STALE_TERMINAL_SOURCE_ISSUE_LABELS) continue;
+		const sourceIssue = finding.source_issue ?? finding.metadata?.source_issue ?? null;
+		if (!sourceIssue || seen.has(String(sourceIssue))) continue;
+		seen.add(String(sourceIssue));
+
+		const closeoutResult = (closeoutReports || [])
+			.flatMap((report) => report?.results || [])
+			.find((result) => String(result?.source_issue || '') === String(sourceIssue));
+
+		const preserveOpen = closeoutResult?.source_issue_closeout_mode === 'source_issue_preserved_open'
+			|| closeoutResult?.terminal_label_integrity?.closeout_mode === 'preserve_open';
+
+		actions.push({
+			action: APPLY_ACTIONS.REPAIR_TERMINAL_SOURCE_LABELS,
+			finding,
+			source_issue: Number(sourceIssue),
+			preserve_open: preserveOpen,
+			applies_changes: true,
+		});
+	}
+
+	return actions;
+}
+
 export function planSafeAutoFixActions(report = {}, options = {}) {
 	const findings = Array.isArray(report.findings) ? report.findings : [];
 	const safeFindings = filterSafeAutoFixFindings(findings);
@@ -212,9 +247,73 @@ export function planSafeAutoFixActions(report = {}, options = {}) {
 			...planManifestPruneActions(safeFindings, options),
 			...planDuplicateIssueActions(safeFindings, options),
 			...planStaleIssueCloseoutCandidates(safeFindings, options),
+			...planTerminalLabelRepairActions(safeFindings, options),
 		],
 		skipped: planSkippedFindings(findings),
 	};
+}
+
+export async function applyTerminalLabelRepairAction(action, {
+	dryRun = true,
+	token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN,
+	repository = process.env.GITHUB_REPOSITORY,
+	fetchIssueFn,
+	fetchLabelsFn,
+} = {}) {
+	if (!action?.source_issue) {
+		return { ...action, status: 'skipped', reason: 'missing_source_issue', dry_run: dryRun };
+	}
+
+	const fetchIssue = fetchIssueFn || (async () => {
+		const { githubRepoRequest } = await import('./github_issue_api.mjs');
+		return githubRepoRequest({
+			token,
+			repository,
+			path: `/issues/${action.source_issue}`,
+			userAgent: 'lgfc-post-merge-self-heal-apply',
+		});
+	});
+	const fetchLabels = fetchLabelsFn || (async () => {
+		const { githubRepoRequest } = await import('./github_issue_api.mjs');
+		const labels = [];
+		let page = 1;
+		while (true) {
+			const batch = await githubRepoRequest({
+				token,
+				repository,
+				path: `/labels?per_page=100&page=${page}`,
+				userAgent: 'lgfc-post-merge-self-heal-apply',
+			});
+			if (!Array.isArray(batch) || batch.length === 0) break;
+			labels.push(...batch);
+			if (batch.length < 100) break;
+			page += 1;
+		}
+		return labels;
+	});
+
+	const issueMeta = await fetchIssue();
+	const repoLabels = await fetchLabels();
+	const plan = action.preserve_open
+		? planActiveSourceIssueRelabel({ issueLabels: issueMeta.labels || [] })
+		: planTerminalLabelReconciliation({ issueLabels: issueMeta.labels || [], repoLabels });
+
+	if (!plan.ok) {
+		return { ...action, status: 'skipped', reason: plan.reason || 'terminal_label_plan_failed', dry_run: dryRun };
+	}
+
+	if (dryRun) {
+		return { ...action, status: 'planned', plan, dry_run: true };
+	}
+
+	await applyTerminalLabelReconciliation({
+		token,
+		repository,
+		issueNumber: action.source_issue,
+		plan,
+	});
+
+	return { ...action, status: 'applied', plan, dry_run: false };
 }
 
 export function applyManifestPruneAction(action, { dryRun = true, rootDir = process.cwd() } = {}) {
@@ -246,7 +345,7 @@ export function applyManifestPruneAction(action, { dryRun = true, rootDir = proc
 	};
 }
 
-export function applySafeAutoFixActions(plan = {}, { dryRun = true, rootDir = process.cwd() } = {}) {
+export async function applySafeAutoFixActions(plan = {}, { dryRun = true, rootDir = process.cwd() } = {}) {
 	const applied = [];
 	const planned = [];
 
@@ -265,6 +364,16 @@ export function applySafeAutoFixActions(plan = {}, { dryRun = true, rootDir = pr
 			continue;
 		}
 
+		if (action.action === APPLY_ACTIONS.REPAIR_TERMINAL_SOURCE_LABELS) {
+			const outcome = await applyTerminalLabelRepairAction(action, { dryRun });
+			if (dryRun) {
+				planned.push(outcome);
+			} else {
+				applied.push(outcome);
+			}
+			continue;
+		}
+
 		planned.push({
 			...action,
 			status: 'planned',
@@ -275,6 +384,8 @@ export function applySafeAutoFixActions(plan = {}, { dryRun = true, rootDir = pr
 	const manifestPruned = [...applied, ...planned]
 		.filter((entry) => entry.action === APPLY_ACTIONS.PRUNE_MANIFEST)
 		.reduce((sum, entry) => sum + (entry.pruned || 0), 0);
+	const terminalLabelRepairs = [...applied, ...planned]
+		.filter((entry) => entry.action === APPLY_ACTIONS.REPAIR_TERMINAL_SOURCE_LABELS);
 
 	return {
 		dry_run: dryRun,
@@ -287,12 +398,18 @@ export function applySafeAutoFixActions(plan = {}, { dryRun = true, rootDir = pr
 			manifest_prunes_planned: dryRun ? manifestPruned : 0,
 			duplicate_plans: planned.filter((entry) => entry.action === APPLY_ACTIONS.PLAN_DUPLICATE_CLOSURE).length,
 			stale_closeout_candidates: planned.filter((entry) => entry.action === APPLY_ACTIONS.STALE_ISSUE_CLOSEOUT_CANDIDATE).length,
+			terminal_label_repairs_applied: dryRun
+				? 0
+				: terminalLabelRepairs.filter((entry) => entry.status === 'applied').length,
+			terminal_label_repairs_planned: dryRun
+				? terminalLabelRepairs.filter((entry) => entry.status === 'planned').length
+				: 0,
 			skipped_unsafe: (plan.skipped || []).filter((entry) => entry.action === APPLY_ACTIONS.SKIPPED_UNSAFE).length,
 		},
 	};
 }
 
-export function applyFromDetectionReport(report = {}, options = {}) {
+export async function applyFromDetectionReport(report = {}, options = {}) {
 	const dryRun = options.dryRun !== false;
 	const plan = planSafeAutoFixActions(report, {
 		...options,
@@ -303,7 +420,7 @@ export function applyFromDetectionReport(report = {}, options = {}) {
 		remediationIssues: options.remediationIssues ?? report.remediationIssues ?? [],
 		issueEvidenceByNumber: options.issueEvidenceByNumber ?? report.issueEvidenceByNumber ?? {},
 	});
-	const outcome = applySafeAutoFixActions(plan, { dryRun, rootDir: options.rootDir });
+	const outcome = await applySafeAutoFixActions(plan, { dryRun, rootDir: options.rootDir });
 	return {
 		status: outcome.summary.skipped_unsafe > 0 && outcome.summary.safe_findings === 0
 			? 'skipped_unsafe_only'
@@ -352,7 +469,7 @@ export async function main(argv = process.argv.slice(2)) {
 	}
 
 	const report = JSON.parse(fs.readFileSync(path.resolve(options.detectionReportPath), 'utf8'));
-	const outcome = applyFromDetectionReport(report, {
+	const outcome = await applyFromDetectionReport(report, {
 		dryRun: options.dryRun,
 		rootDir: options.rootDir,
 		closeoutReports: report.closeoutReports || [],

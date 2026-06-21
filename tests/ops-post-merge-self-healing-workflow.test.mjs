@@ -67,4 +67,13 @@ describe('OPS — Post-Merge Self-Healing workflow', () => {
 		expect(workflow).not.toContain('contents: write');
 		expect(workflow).not.toContain('pull-requests: write');
 	});
+
+	it('includes Post-Merge Detection as a workflow_run trigger for per-merge closeout self-healing', () => {
+		const workflow = fs.readFileSync('.github/workflows/ops-post-merge-self-healing.yml', 'utf8');
+
+		expect(workflow).toContain('- Post-Merge Detection');
+		expect(workflow).toContain('post-merge-validation-result');
+		expect(workflow).toContain('post-merge-closeout-artifact/post-merge-result.json');
+		expect(workflow).toContain('--result post-merge-closeout-artifact/post-merge-result.json');
+	});
 });

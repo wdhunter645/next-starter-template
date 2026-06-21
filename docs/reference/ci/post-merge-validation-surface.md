@@ -77,7 +77,8 @@ After a merged implementation PR passes post-merge validation with no blocking r
 2. Skip closeout when the linked issue is a remediation issue (`post-merge-failure` label or remediation title prefix).
 3. Remove stale active-state labels: `status:blocked`, `status:queued`, `status:failed`, `status:post-merge-verify`.
 4. Add a closeout evidence comment containing PR number, merge SHA, validator status, verification result, and closeout reason.
-5. Apply `status:complete` and close the source issue.
+5. Validate closeout evidence integrity: recorded merge SHA must equal the merged PR `merge_commit_sha` and must not belong to another PR.
+6. Apply `status:complete`, remove stale workflow labels, close the source issue, then re-fetch the issue and assert terminal label integrity (`status:complete` present; `status:post-merge-verify` and other stale labels absent). Retry deterministic label cleanup once before failing validation.
 
 Umbrella, master, program, parent, queue, roadmap, and tracking issue boundaries
 are PR-body and operator-governance policy unless and until runtime closeout logic

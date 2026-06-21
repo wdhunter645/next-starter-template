@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	buildResult,
+	closeoutEvidenceIntegrityFailures,
 	commentBody,
 	isPermittedClosedSourceIssueFollowup,
 	isRequiredMergeProtectionRun,
@@ -286,6 +287,26 @@ describe('post-merge metadata validation', () => {
 		const failures = metadataFailures(mergedPr({ body: baseBody.replace('#1122', '#1255') }), () => true);
 
 		expect(failures).toContainEqual(expect.objectContaining({ code: 'active_alternate_program_lane' }));
+	});
+
+	it('fails closeout evidence integrity when merge SHA is stale', () => {
+		const failures = closeoutEvidenceIntegrityFailures({
+			prNumber: '1915',
+			prMergeCommitSha: '0b749f82deadbeef',
+			evidenceMergeSha: 'a5e1ecd94a0f023de1558763fb37eb1ee56d1756',
+			evidenceShaAssociatedPr: { number: 1909, merged_at: '2026-06-20T00:00:00Z' },
+		});
+
+		expect(failures).toContainEqual(expect.objectContaining({ code: 'stale_closeout_evidence_merge_sha' }));
+		expect(failures).toContainEqual(expect.objectContaining({ code: 'merge_sha_belongs_to_other_pr' }));
+	});
+
+	it('passes closeout evidence integrity when merge SHA matches the merged PR', () => {
+		expect(closeoutEvidenceIntegrityFailures({
+			prNumber: '1915',
+			prMergeCommitSha: '0b749f82deadbeef',
+			evidenceMergeSha: '0b749f82deadbeef',
+		})).toEqual([]);
 	});
 });
 
