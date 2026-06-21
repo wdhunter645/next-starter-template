@@ -164,7 +164,7 @@ export function preMergeReadinessBodyFailures(body = '') {
 	body = String(body || '');
 	const bodyWithoutAutoRepair = stripAutoRepairBlock(body);
 
-	failures.push(...blockerDeclarationFailures(body));
+	failures.push(...blockerDeclarationFailures(bodyWithoutAutoRepair));
 
 	if (/auto-generated disposition pending agent completion/i.test(bodyWithoutAutoRepair)) {
 		failures.push({

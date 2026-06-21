@@ -115,6 +115,9 @@ describe('post-merge readiness gate', () => {
           compliantBody,
           '',
           '<!-- pr-body-auto-repair:start -->',
+          '## PROGRESS + READINESS (MANDATORY)',
+          '- Status: BLOCKED',
+          '- Blocking Issues: auto-repair evidence requires agent verification before READY FOR REVIEW',
           '- review-comment:3427000000 — acknowledged — auto-generated disposition pending agent completion; agent must replace with final fix/rationale before READY FOR REVIEW — thread state: unresolved-with-rationale',
           '<!-- pr-body-auto-repair:end -->',
         ].join('\n'),
@@ -133,6 +136,7 @@ describe('post-merge readiness gate', () => {
         body: [
           compliantBody,
           '',
+          '- Status: BLOCKED',
           '- review-comment:3427000000 — acknowledged — auto-generated disposition pending agent completion; agent must replace with final fix/rationale before READY FOR REVIEW — thread state: unresolved',
         ].join('\n'),
       },
