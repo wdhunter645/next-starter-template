@@ -2,6 +2,7 @@
 
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
+import { parseRemediationIssue } from './close_duplicate_remediation_issues.mjs';
 import { githubRepoRequest } from './github_issue_api.mjs';
 import { REMEDIATION_TITLE_PREFIX } from './post_merge_source_issue_closeout.mjs';
 
@@ -142,13 +143,46 @@ function request(args) {
 }
 
 export function shouldUpsertRemediationIssue(result = {}) {
+	if (selfHealingCanResolve(result)) return false;
 	if (result.status === 'skipped') return false;
 	return blockingCloseoutFailures(result).length > 0;
 }
 
+export function selfHealingCanResolve(result = {}) {
+	const selfHealing = result.self_healing || result.selfHealing || {};
+	return Boolean(result.self_healing_safe === true)
+		|| (
+			String(selfHealing.classification || '').toLowerCase() === 'safe_auto_fix'
+			&& selfHealing.safe_to_close !== false
+			&& selfHealing.ambiguous !== true
+		);
+}
+
+export function findCanonicalRemediationIssue(result = {}, openIssues = []) {
+	const candidate = parseRemediationIssue({
+		number: 0,
+		title: remediationTitle(result),
+		body: remediationBody(result),
+		created_at: new Date().toISOString(),
+	});
+
+	return (Array.isArray(openIssues) ? openIssues : [])
+		.filter((issue) => !issue.pull_request && String(issue.state || 'open').toLowerCase() === 'open')
+		.find((issue) => {
+			const parsed = parseRemediationIssue(issue);
+			return parsed.group_key === candidate.group_key;
+		}) || null;
+}
+
 export async function upsertRemediationIssue({ token, repository, result }) {
 	if (!shouldUpsertRemediationIssue(result)) {
-		return { action: 'skipped', issue: null, reason: 'validation-passed-or-skipped' };
+		return {
+			action: 'skipped',
+			issue: null,
+			reason: selfHealingCanResolve(result)
+				? 'self-healing-safe-resolution'
+				: 'validation-passed-or-skipped',
+		};
 	}
 
 	const title = remediationTitle(result);
@@ -158,7 +192,10 @@ export async function upsertRemediationIssue({ token, repository, result }) {
 		repository,
 		path: `/issues?state=open&per_page=100`,
 	});
-	const existing = Array.isArray(search) ? search.find((issue) => issue.title === title && !issue.pull_request) : undefined;
+	const existing = Array.isArray(search)
+		? search.find((issue) => issue.title === title && !issue.pull_request)
+			|| findCanonicalRemediationIssue(result, search)
+		: undefined;
 
 	if (existing) {
 		await request({

@@ -5,8 +5,8 @@ Authority Level: Operational
 Owns: Operator procedure for OPS — Post-Merge Self-Healing workflow dispatch, artifact review, and Cursor escalation handling
 Does Not Own: Classifier contract, detector implementation, auto-fix execution code, escalation script implementation, merge approval
 Canonical Reference: /docs/reference/ci/post-merge-self-healing-classification-contract.md
-Related issues: #1847, #1853
-Last Reviewed: 2026-06-20
+Related issues: #1847, #1853, #1914
+Last Reviewed: 2026-06-21
 ---
 
 # Post-Merge Self-Healing Operator Runbook
@@ -26,9 +26,11 @@ Bill/Atlas merge authorization.
 
 The workflow orchestrates three repository scripts in order:
 
-1. **Detect** — `scripts/ci/post_merge_self_heal_detect.mjs`
-2. **Apply** — `scripts/ci/post_merge_self_heal_apply.mjs`
-3. **Escalate** — `scripts/ci/post_merge_self_heal_escalate.mjs`
+1. **Backlog / issue-event scan** —
+   `scripts/ci/post_merge_self_heal_backlog.mjs`
+2. **Detect** — `scripts/ci/post_merge_self_heal_detect.mjs`
+3. **Apply** — `scripts/ci/post_merge_self_heal_apply.mjs`
+4. **Escalate** — `scripts/ci/post_merge_self_heal_escalate.mjs`
 
 Detection consumes closeout manifests, closeout reports, and optional issue
 metadata fixtures. The classifier maps each finding to exactly one outcome:
@@ -47,7 +49,8 @@ The workflow and its scripts must not:
 - merge PRs or push directly to `main` except for explicitly authorized manifest hygiene when `apply_safe_fixes=true`;
 - edit runtime application code;
 - fabricate reviewer dispositions or PR-body reviewer accounting;
-- close, reopen, relabel, or advance issues without explicit repository authority;
+- close, reopen, relabel, or advance issues outside the deterministic #1914
+  safe-close rules and explicit repository authority;
 - mutate secrets, production configuration, or active program-lane queue state;
 - open duplicate escalation storms when deduplication keys match an existing open issue.
 
@@ -65,8 +68,10 @@ file-touch allowlist recorded in a generated escalation issue.
 5. Set `open_escalation_issues=false` until safe-fix output has been reviewed.
 6. Run the workflow and download the `post-merge-self-healing-report` artifact.
 
-Default manual dispatch is dry-run. Scheduled and post-closeout triggers also
-default to dry-run mode.
+Default manual dispatch is dry-run. Scheduled runs also default to dry-run mode.
+Post-closeout `workflow_run` triggers and matching `issues` events may apply
+safe deterministic closes and comments because #1914 authorizes that bounded
+self-healing path.
 
 ### Interpret artifacts
 
@@ -74,6 +79,7 @@ The workflow uploads three JSON files:
 
 | Artifact file | Meaning |
 |---|---|
+| `post-merge-self-heal-backlog.json` | Backlog or issue-event classifications, issue-disposition actions, and before/after open exception counts |
 | `post-merge-self-heal-detection.json` | Raw classified findings and summary counts |
 | `post-merge-self-heal-apply.json` | Planned or applied safe auto-fix actions |
 | `post-merge-self-heal-escalation.json` | Planned or executed escalation issue actions |
@@ -87,8 +93,20 @@ Review detection status first:
 Apply artifact fields to inspect:
 
 - `dry_run=true` → manifest changes are planned only.
-- `planned` duplicate and stale-issue entries are always dry-run candidates.
+- Backlog duplicate and stale-issue entries close only when the backlog scanner
+  has deterministic safe-close evidence and the run is not dry-run.
 - `applied` manifest prunes indicate repo files changed on the runner checkout only; commit via authorized PR if not auto-committed by workflow policy.
+
+Every run reports:
+
+- total scanned;
+- auto-closed;
+- manifest fixes applied or planned;
+- duplicate closures;
+- preserved active-source issues;
+- preserved ambiguous issues;
+- unsafe/escalated issues;
+- before and after open post-merge issue counts.
 
 ### Enable safe auto-fixes
 
@@ -106,6 +124,20 @@ Dispatch with:
 - `open_escalation_issues=false`
 
 Re-run in dry-run mode afterward to confirm the stale manifest finding cleared.
+
+### Issue-created self-healing
+
+The workflow also runs on `issues` events (`opened`, `reopened`, `edited`, and
+`labeled`) when the issue matches post-merge exception evidence:
+
+- title starts with `Post-merge closeout exception`;
+- body contains the post-merge exception signature;
+- labels include `post-merge-failure` or `post-merge-self-healing`.
+
+For matching issue events, the workflow classifies only that issue and applies
+deterministic safe-close/comment actions immediately. Ambiguous reviewer,
+source, or verification evidence remains open with a self-healing disposition
+comment.
 
 ### Enable escalation issues
 
@@ -152,8 +184,11 @@ implements any issue or queue mutation.
 Dry-run is the default for:
 
 - manual dispatch unless explicitly disabled;
-- nightly schedule;
-- post-closeout `workflow_run` triggers.
+- nightly schedule.
+
+Post-closeout `workflow_run` triggers use the authorized #1914 apply path for
+deterministic safe fixes while keeping escalation issue creation disabled by
+default.
 
 Dry-run guarantees:
 
@@ -171,9 +206,10 @@ Escalation dedupe keys use:
 - source issue number;
 - failure class / finding code.
 
-Duplicate remediation issue handling in the apply layer remains dry-run only.
-Live duplicate closure continues to use the dedicated remediation hygiene scripts
-when explicitly authorized elsewhere.
+Duplicate remediation issue handling in the apply layer remains dry-run for
+manifest-action planning. Live duplicate exception closure is handled by the
+backlog scanner when a newer canonical post-merge issue or explicit canonical
+evidence makes the duplicate deterministic.
 
 ## Bill/Atlas authorization required
 
