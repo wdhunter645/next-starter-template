@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: Plan actions without mutating manifests or opening issues
+        description: Plan safe auto-fix actions without writing manifest files
         required: false
         default: 'true'
         type: choice
@@ -20,7 +20,15 @@ on:
           - 'true'
           - 'false'
       open_escalation_issues:
-        description: Open or update escalation issues when dry_run is false
+        description: Open or update all escalation issue types when dry_run is false
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      open_visible_escalations:
+        description: Open or update cursor_remediation_required escalation issues (safe automatic path)
         required: false
         default: 'false'
         type: choice
@@ -73,19 +81,43 @@ jobs:
         id: mode
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "dry_run=${{ inputs.dry_run }}" >> "$GITHUB_OUTPUT"
-            echo "apply_safe_fixes=${{ inputs.apply_safe_fixes }}" >> "$GITHUB_OUTPUT"
-            echo "open_escalation_issues=${{ inputs.open_escalation_issues }}" >> "$GITHUB_OUTPUT"
+            DRY_RUN="${{ inputs.dry_run }}"
+            APPLY_SAFE="${{ inputs.apply_safe_fixes }}"
+            OPEN_ALL="${{ inputs.open_escalation_issues }}"
+            OPEN_VISIBLE="${{ inputs.open_visible_escalations }}"
           else
-            echo "dry_run=true" >> "$GITHUB_OUTPUT"
-            echo "apply_safe_fixes=false" >> "$GITHUB_OUTPUT"
-            echo "open_escalation_issues=false" >> "$GITHUB_OUTPUT"
+            DRY_RUN="true"
+            APPLY_SAFE="false"
+            OPEN_ALL="false"
+            OPEN_VISIBLE="true"
           fi
+          echo "dry_run=${DRY_RUN}" >> "$GITHUB_OUTPUT"
+          echo "apply_safe_fixes=${APPLY_SAFE}" >> "$GITHUB_OUTPUT"
+          echo "open_escalation_issues=${OPEN_ALL}" >> "$GITHUB_OUTPUT"
+          echo "open_visible_escalations=${OPEN_VISIBLE}" >> "$GITHUB_OUTPUT"
+          node -e "const fs=require('node:fs'); fs.writeFileSync('post-merge-self-heal-mode.json', JSON.stringify({dry_run:process.env.DRY_RUN,apply_safe_fixes:process.env.APPLY_SAFE,open_escalation_issues:process.env.OPEN_ALL,open_visible_escalations:process.env.OPEN_VISIBLE}, null, 2)+'\n');" \
+            DRY_RUN="$DRY_RUN" APPLY_SAFE="$APPLY_SAFE" OPEN_ALL="$OPEN_ALL" OPEN_VISIBLE="$OPEN_VISIBLE"
+
+      - name: Collect live post-merge evidence
+        id: collect
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          SELF_HEAL_TRIGGER_RUN_ID: ${{ github.event.workflow_run.id || '' }}
+          SELF_HEAL_TRIGGER_WORKFLOW_NAME: ${{ github.event.workflow_run.name || '' }}
+          SELF_HEAL_TRIGGER_RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion || '' }}
+        run: |
+          COLLECT_ARGS=(--output post-merge-self-heal-evidence.json)
+          if [ -n "${SELF_HEAL_TRIGGER_RUN_ID}" ]; then
+            COLLECT_ARGS+=(--workflow-run-id "$SELF_HEAL_TRIGGER_RUN_ID")
+          fi
+          node scripts/ci/post_merge_self_heal_collect_evidence.mjs "${COLLECT_ARGS[@]}"
 
       - name: Detect post-merge self-healing findings
         id: detect
         run: |
           node scripts/ci/post_merge_self_heal_detect.mjs \
+            --evidence post-merge-self-heal-evidence.json \
             --output post-merge-self-heal-detection.json
 
       - name: Apply safe auto-fix actions
@@ -109,8 +141,10 @@ jobs:
           GITHUB_JOB: ${{ github.job }}
         run: |
           ESCALATE_ARGS=(--report post-merge-self-heal-detection.json --output post-merge-self-heal-escalation.json)
-          if [ "${{ steps.mode.outputs.dry_run }}" != "true" ] && [ "${{ steps.mode.outputs.open_escalation_issues }}" = "true" ]; then
-            ESCALATE_ARGS+=(--apply)
+          if [ "${{ steps.mode.outputs.open_escalation_issues }}" = "true" ] && [ "${{ steps.mode.outputs.dry_run }}" != "true" ]; then
+            ESCALATE_ARGS+=(--apply --scope all)
+          elif [ "${{ steps.mode.outputs.open_visible_escalations }}" = "true" ]; then
+            ESCALATE_ARGS+=(--apply-visible-escalations)
           fi
           node scripts/ci/post_merge_self_heal_escalate.mjs "${ESCALATE_ARGS[@]}"
 
@@ -120,36 +154,28 @@ jobs:
         with:
           name: post-merge-self-healing-report
           path: |
+            post-merge-self-heal-mode.json
+            post-merge-self-heal-evidence.json
             post-merge-self-heal-detection.json
             post-merge-self-heal-apply.json
             post-merge-self-heal-escalation.json
+            post-merge-self-heal-operator-summary.md
           if-no-files-found: warn
 
-      - name: Write step summary
+      - name: Write operator summary
         if: always()
+        env:
+          GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          {
-            echo '## OPS — Post-Merge Self-Healing'
-            echo ''
-            echo "- dry_run: \`${{ steps.mode.outputs.dry_run }}\`"
-            echo "- apply_safe_fixes: \`${{ steps.mode.outputs.apply_safe_fixes }}\`"
-            echo "- open_escalation_issues: \`${{ steps.mode.outputs.open_escalation_issues }}\`"
-            echo ''
-            if [ -f post-merge-self-heal-detection.json ]; then
-              echo '### Detection summary'
-              node -e "const r=require('./post-merge-self-heal-detection.json'); console.log('- status:', r.status); console.log('- findings:', (r.findings||[]).length); console.log('- summary:', JSON.stringify(r.summary||{}));"
-            fi
-            if [ -f post-merge-self-heal-apply.json ]; then
-              echo ''
-              echo '### Apply summary'
-              node -e "const r=require('./post-merge-self-heal-apply.json'); console.log('- status:', r.status); console.log('- summary:', JSON.stringify(r.summary||{}));"
-            fi
-            if [ -f post-merge-self-heal-escalation.json ]; then
-              echo ''
-              echo '### Escalation summary'
-              node -e "const r=require('./post-merge-self-heal-escalation.json'); console.log('- status:', r.status); console.log('- summary:', JSON.stringify(r.summary||{}));"
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
+          node scripts/ci/post_merge_self_heal_operator_summary.mjs \
+            --mode post-merge-self-heal-mode.json \
+            --evidence post-merge-self-heal-evidence.json \
+            --detection post-merge-self-heal-detection.json \
+            --apply post-merge-self-heal-apply.json \
+            --escalation post-merge-self-heal-escalation.json \
+            --workflow-run-url "$GITHUB_RUN_URL" \
+            --output post-merge-self-heal-operator-summary.md
+          cat post-merge-self-heal-operator-summary.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Fail on partial detection ingestion errors
         if: always() && hashFiles('post-merge-self-heal-detection.json') != ''

@@ -147,11 +147,16 @@ export function escalationUpdateComment(finding = {}, context = {}) {
 	].join('\n');
 }
 
-export function filterEscalationFindings(findings = []) {
-	return (Array.isArray(findings) ? findings : []).filter((finding) =>
-		finding?.classification === SAFETY_CATEGORIES.CURSOR_REMEDIATION_REQUIRED
-		|| finding?.classification === SAFETY_CATEGORIES.OPERATOR_AUTHORIZATION_REQUIRED,
-	);
+export function filterEscalationFindings(findings = [], { escalationScope = 'all' } = {}) {
+	return (Array.isArray(findings) ? findings : []).filter((finding) => {
+		if (finding?.classification === SAFETY_CATEGORIES.CURSOR_REMEDIATION_REQUIRED) {
+			return escalationScope === 'all' || escalationScope === 'cursor_remediation_only';
+		}
+		if (finding?.classification === SAFETY_CATEGORIES.OPERATOR_AUTHORIZATION_REQUIRED) {
+			return escalationScope === 'all';
+		}
+		return false;
+	});
 }
 
 export function indexExistingEscalationIssues(issues = []) {
@@ -173,8 +178,8 @@ export function indexExistingEscalationIssues(issues = []) {
 	return index;
 }
 
-export function planEscalationActions(findings = [], { existingIssues = [] } = {}) {
-	const escalationFindings = filterEscalationFindings(findings);
+export function planEscalationActions(findings = [], { existingIssues = [], escalationScope = 'all' } = {}) {
+	const escalationFindings = filterEscalationFindings(findings, { escalationScope });
 	const existingByKey = indexExistingEscalationIssues(existingIssues);
 	const actions = [];
 
@@ -249,7 +254,11 @@ export async function executeEscalationAction(action, { token, repository, dryRu
 
 export async function escalateFromDetectionReport(report = {}, options = {}) {
 	const dryRun = options.dryRun !== false;
-	const actions = planEscalationActions(report.findings || [], options);
+	const escalationScope = options.escalationScope || 'all';
+	const actions = planEscalationActions(report.findings || [], {
+		existingIssues: options.existingIssues || report.existingEscalationIssues || [],
+		escalationScope,
+	});
 	const outcomes = [];
 
 	for (const action of actions) {
@@ -271,12 +280,16 @@ export async function escalateFromDetectionReport(report = {}, options = {}) {
 	return {
 		status: dryRun ? 'dry_run' : 'executed',
 		dry_run: dryRun,
+		escalation_scope: escalationScope,
 		actions: outcomes,
 		summary: {
 			planned: outcomes.filter((entry) => entry.status === 'planned').length,
 			created: outcomes.filter((entry) => entry.status === 'created').length,
 			updated: outcomes.filter((entry) => entry.status === 'updated').length,
 			failed: outcomes.filter((entry) => entry.status === 'failed').length,
+			skipped_operator_authorization: escalationScope === 'cursor_remediation_only'
+				? (report.findings || []).filter((finding) => finding.classification === SAFETY_CATEGORIES.OPERATOR_AUTHORIZATION_REQUIRED).length
+				: 0,
 		},
 	};
 }
@@ -286,6 +299,7 @@ function parseArgs(argv = []) {
 		detectionReportPath: null,
 		outputPath: null,
 		dryRun: true,
+		escalationScope: 'all',
 	};
 
 	for (let index = 0; index < argv.length; index += 1) {
@@ -296,8 +310,14 @@ function parseArgs(argv = []) {
 		} else if (arg === '--output' && argv[index + 1]) {
 			options.outputPath = argv[index + 1];
 			index += 1;
+		} else if (arg === '--scope' && argv[index + 1]) {
+			options.escalationScope = argv[index + 1];
+			index += 1;
 		} else if (arg === '--apply') {
 			options.dryRun = false;
+		} else if (arg === '--apply-visible-escalations') {
+			options.dryRun = false;
+			options.escalationScope = 'cursor_remediation_only';
 		}
 	}
 
@@ -316,6 +336,7 @@ export async function main(argv = process.argv.slice(2)) {
 	const report = JSON.parse(fs.readFileSync(path.resolve(options.detectionReportPath), 'utf8'));
 	const outcome = await escalateFromDetectionReport(report, {
 		dryRun: options.dryRun,
+		escalationScope: options.escalationScope,
 		token,
 		repository,
 		existingIssues: report.existingEscalationIssues || [],

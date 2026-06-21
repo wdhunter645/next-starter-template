@@ -74,6 +74,55 @@ function collectSuccessfulCloseoutPrs(reports = []) {
 	return successful;
 }
 
+export function collectCloseoutReportPrStatus(closeoutReports = []) {
+	const byPr = new Map();
+	for (const report of closeoutReports || []) {
+		for (const result of report?.results || []) {
+			if (!result?.pr) continue;
+			const key = String(result.pr);
+			const existing = byPr.get(key);
+			const status = String(result.status || '').toLowerCase();
+			if (!existing || status === 'pass') {
+				byPr.set(key, status);
+			}
+		}
+	}
+	return byPr;
+}
+
+export function detectPendingManifestTargets({ manifests = [], closeoutReports = [] } = {}) {
+	const reportStatusByPr = collectCloseoutReportPrStatus(closeoutReports);
+	const findings = [];
+
+	for (const manifest of manifests) {
+		if (!manifest) continue;
+		for (const target of manifest.targets || []) {
+			const prNumber = String(target?.pr ?? '').trim();
+			if (!prNumber) continue;
+			const reportStatus = reportStatusByPr.get(prNumber);
+			if (reportStatus) continue;
+
+			findings.push({
+				kind: FINDING_TYPES.PENDING_CLOSEOUT_REPLAY,
+				code: 'pending_closeout_replay',
+				pr_number: Number(prNumber),
+				source_issue: target?.source_issue ?? null,
+				manifest_path: manifest.manifest_path,
+				message: reportStatus
+					? `PR #${prNumber} remains in ${manifest.manifest_path} with closeout status ${reportStatus}.`
+					: `PR #${prNumber} remains in ${manifest.manifest_path} without a proven closeout pass report.`,
+				evidence: [
+					{ type: 'manifest_target', pr: Number(prNumber), source_issue: target?.source_issue ?? null },
+					{ type: 'closeout_report', status: reportStatus || 'missing' },
+				],
+				recommended_action: RECOMMENDED_ACTIONS.CURSOR_REMEDIATION,
+			});
+		}
+	}
+
+	return findings;
+}
+
 export function detectStaleManifestEntries({ manifests = [], closeoutReports = [] } = {}) {
 	const successfulPrs = collectSuccessfulCloseoutPrs(closeoutReports);
 	const findings = [];
@@ -338,6 +387,7 @@ export function detectPostMergeFindings(input = {}) {
 	const rawFindings = [
 		...detectEmptyCleanState({ manifests, closeoutReports, exceptionIssues }),
 		...detectFailedCloseoutReports({ closeoutReports }),
+		...detectPendingManifestTargets({ manifests, closeoutReports }),
 		...detectStaleManifestEntries({ manifests, closeoutReports }),
 		...detectDuplicateRemediationIssues({ issues: [...exceptionIssues, ...remediationIssues] }),
 		...detectDeferredFindings({ issues: deferredIssues }),
@@ -359,6 +409,12 @@ export function detectPostMergeFindings(input = {}) {
 		findings: classified,
 		summary: summarizeClassifications(classified),
 		errors,
+		evidenceSources: input.evidenceSources ?? null,
+		closeoutReports,
+		manifests,
+		remediationIssues,
+		exceptionIssues,
+		existingEscalationIssues: input.existingEscalationIssues ?? [],
 	};
 }
 
@@ -415,19 +471,39 @@ export function detectFromPaths({
 	});
 }
 
+export function detectFromEvidenceBundle(bundle = {}, options = {}) {
+	return detectPostMergeFindings({
+		rootDir: options.rootDir ?? process.cwd(),
+		manifestPaths: bundle.manifestPaths,
+		manifests: bundle.manifests,
+		closeoutReports: bundle.closeoutReports ?? [],
+		exceptionIssues: bundle.exceptionIssues ?? [],
+		remediationIssues: bundle.remediationIssues ?? [],
+		deferredIssues: bundle.deferredIssues ?? [],
+		evidenceSources: bundle.evidenceSources ?? null,
+		errors: bundle.errors ?? [],
+		context: options.context || {},
+		existingEscalationIssues: bundle.existingEscalationIssues ?? [],
+	});
+}
+
 function parseArgs(argv = []) {
 	const options = {
 		manifestPaths: [],
 		closeoutReportPaths: [],
 		singleResultPaths: [],
 		issueMetadataPath: null,
+		evidenceBundlePath: null,
 		outputPath: null,
 		rootDir: process.cwd(),
 	};
 
 	for (let index = 0; index < argv.length; index += 1) {
 		const arg = argv[index];
-		if (arg === '--manifest' && argv[index + 1]) {
+		if (arg === '--evidence' && argv[index + 1]) {
+			options.evidenceBundlePath = argv[index + 1];
+			index += 1;
+		} else if (arg === '--manifest' && argv[index + 1]) {
 			options.manifestPaths.push(argv[index + 1]);
 			index += 1;
 		} else if (arg === '--batch-report' && argv[index + 1]) {
@@ -453,10 +529,16 @@ function parseArgs(argv = []) {
 
 export async function main(argv = process.argv.slice(2)) {
 	const options = parseArgs(argv);
-	if (options.manifestPaths.length === 0) {
-		options.manifestPaths = [...DEFAULT_MANIFESTS];
+	let report;
+	if (options.evidenceBundlePath) {
+		const bundle = readJsonFile(path.resolve(options.evidenceBundlePath));
+		report = detectFromEvidenceBundle(bundle, { rootDir: options.rootDir });
+	} else {
+		if (options.manifestPaths.length === 0) {
+			options.manifestPaths = [...DEFAULT_MANIFESTS];
+		}
+		report = detectFromPaths(options);
 	}
-	const report = detectFromPaths(options);
 	const serialized = `${JSON.stringify(report, null, 2)}\n`;
 
 	if (options.outputPath) {
