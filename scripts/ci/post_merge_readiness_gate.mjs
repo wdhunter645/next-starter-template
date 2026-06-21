@@ -136,8 +136,15 @@ export function evaluatePostMergeReadinessGate({
     readyForReviewAt: normalizedPr.readyForReviewAt,
   });
   const sourceIssue = sourceIssueAccounting(body, { repository });
+  const sourceIssueFailures = (sourceIssue.failures || []).map((failure) => ({
+    ...failure,
+    message: (failure?.message || '')
+      .replaceAll('Merged PR body', 'PR body')
+      .replaceAll('closeout requires', 'pre-merge readiness requires'),
+  }));
   const failures = [
     ...inputFailures,
+    ...sourceIssueFailures,
     ...blockingMetadata,
     ...implementation,
     ...reviewerDispositionFailures,
@@ -150,10 +157,12 @@ export function evaluatePostMergeReadinessGate({
     counts: {
       metadata_failures: metadata.length,
       blocking_metadata_failures: blockingMetadata.length,
+      source_issue_failures: sourceIssueFailures.length,
       implementation_failures: implementation.length,
       reviewer_disposition_failures: reviewerDispositionFailures.length,
     },
     metadata_failures: metadata,
+    source_issue_failures: sourceIssueFailures,
     implementation_failures: implementation,
     reviewer_disposition_failures: reviewerDispositionFailures,
     input_failures: inputFailures,
@@ -169,11 +178,13 @@ export function renderGateReport(result) {
     `- PR: ${result.pr ? `#${result.pr}` : 'unknown'}`,
     `- Source issue: ${result.source_issue ? `#${result.source_issue}` : 'none'}`,
     `- Metadata failures: ${result.counts?.metadata_failures ?? 0}`,
+    `- Source issue failures: ${result.counts?.source_issue_failures ?? 0}`,
     `- Implementation evidence failures: ${result.counts?.implementation_failures ?? 0}`,
     `- Reviewer disposition failures: ${result.counts?.reviewer_disposition_failures ?? 0}`,
   ];
 
   for (const [heading, failures] of [
+    ['Source issue failures', result.source_issue_failures || []],
     ['Metadata failures', result.metadata_failures || []],
     ['Implementation evidence failures', result.implementation_failures || []],
     ['Reviewer disposition failures', result.reviewer_disposition_failures || []],
@@ -246,10 +257,12 @@ export async function main(argv = process.argv.slice(2)) {
       counts: {
         metadata_failures: 0,
         blocking_metadata_failures: 0,
+        source_issue_failures: 0,
         implementation_failures: 0,
         reviewer_disposition_failures: 0,
       },
       metadata_failures: [],
+      source_issue_failures: [],
       implementation_failures: [],
       reviewer_disposition_failures: [],
       input_failures: inputFailures,

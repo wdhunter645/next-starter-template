@@ -145,7 +145,7 @@ export function blockerDeclarationFailures(body = '') {
 	if (/^\s*-?\s*Status\s*:\s*BLOCKED\b/im.test(body) || /\b(exception required|closeout exception required|blocked closeout)\b/i.test(body)) {
 		return [{
 			code: 'closeout_blocker_declared',
-			message: 'Merged PR body declares a blocker or exception state; CI refused deterministic source issue closeout.',
+			message: 'PR body declares an exception state; deterministic source issue closeout would not be safe.',
 		}];
 	}
 	return [];
@@ -161,7 +161,17 @@ export function alternateProgramLaneFailures(sourceAccounting = {}) {
 
 export function preMergeReadinessBodyFailures(body = '') {
 	const failures = [];
+	body = String(body || '');
 	const bodyWithoutAutoRepair = stripAutoRepairBlock(body);
+
+	failures.push(...blockerDeclarationFailures(bodyWithoutAutoRepair));
+
+	if (/auto-generated disposition pending agent completion/i.test(bodyWithoutAutoRepair)) {
+		failures.push({
+			code: 'unresolved_auto_repair_scaffold',
+			message: 'PR body still contains auto-generated pending agent-completion disposition text.',
+		});
+	}
 
 	if (FORBIDDEN_PLACEHOLDER_PATTERN.test(bodyWithoutAutoRepair)) {
 		failures.push({ code: 'forbidden_placeholder_token', message: 'PR body contains a forbidden placeholder token.' });
@@ -198,7 +208,6 @@ export function metadataFailures(pr, filesExist = () => true, { repository = '',
 	failures.push(...sourceAccounting.failures);
 	failures.push(...alternateProgramLaneFailures(sourceAccounting));
 	failures.push(...sourceIssueStateFailures({ body, sourceIssue, sourceIssueError, repoLabels }));
-	failures.push(...blockerDeclarationFailures(body));
 
 	failures.push(...preMergeReadinessBodyFailures(body));
 
