@@ -76,12 +76,18 @@ exception issue is resolved.
 
 ## Disposition Evidence (Required)
 
-Every actionable trusted reviewer comment must end in one of these states:
+Every actionable trusted reviewer comment must have one parser-safe PR-body
+disposition with one of these states:
 
-1. resolved by code/doc change and thread marked resolved;
+1. accepted with code/doc change and `thread state: resolved`;
 2. outdated with explicit PR-body disposition using `review-comment:<id>` and `thread state: outdated`;
 3. rejected / not applicable with rationale;
 4. linked to a bounded follow-up issue via `follow-up-issue:#<number>`.
+
+GitHub thread resolution alone is not sufficient for trusted inline review
+threads. A resolved trusted inline thread still needs PR-body accounting so the
+post-merge validator can parse the disposition after merge, when PR-head review
+comments may appear outdated relative to the merge commit.
 
 `is_outdated: true` without PR-body disposition is a failure. `is_resolved: false`
 with no disposition is a failure.

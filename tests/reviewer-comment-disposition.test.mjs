@@ -83,6 +83,54 @@ describe('reviewer comment disposition enforcement', () => {
     expect(result.failures[0].code).toBe('outdated_reviewer_thread_without_disposition');
   });
 
+  it('fails resolved trusted inline threads without explicit PR-body disposition before merge', () => {
+    const result = evaluateReviewerCommentDisposition({
+      body: '## REVIEWER RESPONSE ACCOUNTING\n- reviewed',
+      reviewComments: [{
+        id: 2005,
+        user: { login: 'gemini-code-assist[bot]' },
+        commit_id: 'head-sha',
+        path: 'scripts/ci/example.mjs',
+        line: 18,
+        body: 'Finding resolved in GitHub but missing PR-body accounting.',
+        created_at: '2026-06-01T00:00:00Z',
+        is_resolved: true,
+      }],
+      headSha: 'head-sha',
+      auditPhase: 'pre_merge',
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.undispositionedCount).toBe(1);
+    expect(result.failures[0]).toMatchObject({
+      code: 'undispositioned_reviewer_comment',
+      commentId: '2005',
+    });
+  });
+
+  it('passes resolved trusted inline threads with explicit PR-body disposition before merge', () => {
+    const result = evaluateReviewerCommentDisposition({
+      body: [
+        '## REVIEWER RESPONSE ACCOUNTING',
+        '- review-comment:2006 — accepted — Fixed in the current head — thread state: resolved',
+      ].join('\n'),
+      reviewComments: [{
+        id: 2006,
+        user: { login: 'gemini-code-assist[bot]' },
+        commit_id: 'head-sha',
+        path: 'scripts/ci/example.mjs',
+        line: 18,
+        body: 'Finding resolved and accounted for.',
+        created_at: '2026-06-01T00:00:00Z',
+        is_resolved: true,
+      }],
+      headSha: 'head-sha',
+      auditPhase: 'pre_merge',
+    });
+
+    expect(result.ok).toBe(true);
+  });
+
   it('passes outdated threads with explicit disposition in the PR body', () => {
     const result = evaluateReviewerCommentDisposition({
       body: [

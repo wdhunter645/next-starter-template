@@ -216,7 +216,18 @@ export function evaluateReviewerCommentDisposition({
       continue;
     }
 
-    if (resolved && !outdated) continue;
+    if (resolved && !outdated) {
+      if (!hasValidDisposition(disposition)) {
+        undispositioned.push({
+          commentId: String(threadId),
+          reviewer: user,
+          kind: 'inline-thread',
+          outdated: false,
+          resolved: true,
+        });
+      }
+      continue;
+    }
 
     if (outdated) {
       if (!hasValidDisposition(disposition)) {
