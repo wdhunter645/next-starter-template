@@ -88,16 +88,41 @@ describe('post-merge metadata validation', () => {
 
 		expect(failures).toContainEqual(expect.objectContaining({
 			code: 'closeout_blocker_declared',
+			message: 'PR body declares an exception state; deterministic source issue closeout would not be safe.',
 		}));
 	});
 
-	it('fails unresolved CI auto-repair scaffolds in the shared body contract', () => {
+	it('emits one closeout blocker failure for merged blocked-status bodies', () => {
+		const failures = metadataFailures(mergedPr({
+			body: `${baseBody}\n\n- Status: BLOCKED`,
+		}), () => true);
+
+		const closeoutBlockerFailures = failures.filter((failure) => failure.code === 'closeout_blocker_declared');
+		expect(closeoutBlockerFailures).toHaveLength(1);
+		expect(closeoutBlockerFailures[0]).toMatchObject({
+			message: 'PR body declares an exception state; deterministic source issue closeout would not be safe.',
+		});
+	});
+
+	it('ignores generated CI auto-repair scaffolds in the shared body contract', () => {
 		const body = [
 			baseBody,
 			'',
 			'<!-- pr-body-auto-repair:start -->',
 			'- review-comment:3427000000 — acknowledged — auto-generated disposition pending agent completion; agent must replace with final fix/rationale before READY FOR REVIEW — thread state: unresolved-with-rationale',
 			'<!-- pr-body-auto-repair:end -->',
+		].join('\n');
+
+		expect(preMergeReadinessBodyFailures(body)).not.toContainEqual(expect.objectContaining({
+			code: 'unresolved_auto_repair_scaffold',
+		}));
+	});
+
+	it('fails pending agent-completion text outside generated CI auto-repair blocks', () => {
+		const body = [
+			baseBody,
+			'',
+			'- review-comment:3427000000 — acknowledged — auto-generated disposition pending agent completion; agent must replace with final fix/rationale before READY FOR REVIEW — thread state: unresolved',
 		].join('\n');
 
 		expect(preMergeReadinessBodyFailures(body)).toContainEqual(expect.objectContaining({

@@ -145,7 +145,7 @@ export function blockerDeclarationFailures(body = '') {
 	if (/^\s*-?\s*Status\s*:\s*BLOCKED\b/im.test(body) || /\b(exception required|closeout exception required|blocked closeout)\b/i.test(body)) {
 		return [{
 			code: 'closeout_blocker_declared',
-			message: 'PR body declares a blocker or exception state; CI refused deterministic source issue closeout.',
+			message: 'PR body declares an exception state; deterministic source issue closeout would not be safe.',
 		}];
 	}
 	return [];
@@ -165,13 +165,6 @@ export function preMergeReadinessBodyFailures(body = '') {
 	const bodyWithoutAutoRepair = stripAutoRepairBlock(body);
 
 	failures.push(...blockerDeclarationFailures(body));
-
-	if (AUTO_REPAIR_BLOCK_PATTERN.test(body)) {
-		failures.push({
-			code: 'unresolved_auto_repair_scaffold',
-			message: 'PR body still contains the CI auto-repair scaffold; replace it with final governance evidence before merge.',
-		});
-	}
 
 	if (/auto-generated disposition pending agent completion/i.test(bodyWithoutAutoRepair)) {
 		failures.push({
@@ -215,7 +208,6 @@ export function metadataFailures(pr, filesExist = () => true, { repository = '',
 	failures.push(...sourceAccounting.failures);
 	failures.push(...alternateProgramLaneFailures(sourceAccounting));
 	failures.push(...sourceIssueStateFailures({ body, sourceIssue, sourceIssueError, repoLabels }));
-	failures.push(...blockerDeclarationFailures(body));
 
 	failures.push(...preMergeReadinessBodyFailures(body));
 

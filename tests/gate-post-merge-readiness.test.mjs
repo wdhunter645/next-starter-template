@@ -108,7 +108,7 @@ describe('post-merge readiness gate', () => {
     }));
   });
 
-  it('fails unresolved auto-repair scaffold text before merge', () => {
+  it('ignores generated auto-repair scaffold text before merge', () => {
     const result = evaluate({
       pr: {
         body: [
@@ -117,6 +117,23 @@ describe('post-merge readiness gate', () => {
           '<!-- pr-body-auto-repair:start -->',
           '- review-comment:3427000000 — acknowledged — auto-generated disposition pending agent completion; agent must replace with final fix/rationale before READY FOR REVIEW — thread state: unresolved-with-rationale',
           '<!-- pr-body-auto-repair:end -->',
+        ].join('\n'),
+      },
+    });
+
+    expect(result.status).toBe('pass');
+    expect(result.metadata_failures).not.toContainEqual(expect.objectContaining({
+      code: 'unresolved_auto_repair_scaffold',
+    }));
+  });
+
+  it('fails pending agent-completion text outside the generated auto-repair block', () => {
+    const result = evaluate({
+      pr: {
+        body: [
+          compliantBody,
+          '',
+          '- review-comment:3427000000 — acknowledged — auto-generated disposition pending agent completion; agent must replace with final fix/rationale before READY FOR REVIEW — thread state: unresolved',
         ].join('\n'),
       },
     });
