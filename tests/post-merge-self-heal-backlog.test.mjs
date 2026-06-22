@@ -9,6 +9,7 @@ import {
 	isBacklogScanCandidate,
 	isPostMergeExceptionIssue,
 	OPS_PR_ESCALATION_LABEL,
+	opsEscalationLabelsToApply,
 	parsePostMergeExceptionIssue,
 	POST_MERGE_EXCEPTION_SIGNATURE,
 } from '../scripts/ci/post_merge_self_heal_backlog.mjs';
@@ -51,6 +52,14 @@ describe('post-merge self-healing backlog matching', () => {
 		expect(hasOpsPrEscalationLabel(escalated)).toBe(true);
 		expect(isBacklogScanCandidate(escalated)).toBe(false);
 		expect(isBacklogScanCandidate(exceptionIssue())).toBe(true);
+	});
+
+	it('adds post-merge-failure when applying ops-pr-escalation without it', () => {
+		expect(opsEscalationLabelsToApply(['post-merge-self-healing'])).toEqual([
+			'post-merge-failure',
+			OPS_PR_ESCALATION_LABEL,
+		]);
+		expect(opsEscalationLabelsToApply(['post-merge-failure'])).toEqual([OPS_PR_ESCALATION_LABEL]);
 	});
 
 	it('parses PR, source, failure, and canonical evidence from issue bodies', () => {

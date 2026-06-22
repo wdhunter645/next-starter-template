@@ -55,6 +55,16 @@ export function hasOpsPrEscalationLabel(issue = {}) {
 	return labelNames(issue?.labels).includes(OPS_PR_ESCALATION_LABEL);
 }
 
+/** Labels applied when handing an exception to Ops; ensures queue search discoverability. */
+export function opsEscalationLabelsToApply(existingLabels = []) {
+	const names = new Set(labelNames(existingLabels));
+	const labels = [OPS_PR_ESCALATION_LABEL];
+	if (!names.has(REMEDIATION_ISSUE_LABEL)) {
+		labels.unshift(REMEDIATION_ISSUE_LABEL);
+	}
+	return labels;
+}
+
 export function isBacklogScanCandidate(issue = {}) {
 	return (
 		String(issue?.state || '').toLowerCase() === 'open'
@@ -495,12 +505,13 @@ export async function executeBacklogDisposition(entry = {}, {
 	});
 
 	if (!entry.safe_to_close) {
+		const existingLabels = entry.issue?.labels || entry.labels || [];
 		await requestFn({
 			token,
 			repository,
 			path: `/issues/${issueNumber}/labels`,
 			method: 'POST',
-			body: { labels: [OPS_PR_ESCALATION_LABEL] },
+			body: { labels: opsEscalationLabelsToApply(existingLabels) },
 		});
 		return { ...entry, status: 'ops_escalated', dry_run: false };
 	}
