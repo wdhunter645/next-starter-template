@@ -52,14 +52,25 @@ describe('ops burn-down wave 1 closeout bodies', () => {
 		).not.toContainEqual(expect.objectContaining({ code: 'source_issue_not_open' }));
 	});
 
+	function inlineReviewComment(id) {
+		return {
+			id,
+			body: 'inline review',
+			user: { login: 'gemini-code-assist[bot]' },
+			created_at: '2026-06-20T00:00:00Z',
+			line: 10,
+			position: 1,
+		};
+	}
+
 	it('records reviewer dispositions for remediated PR #1889 body', () => {
 		const body = fs.readFileSync('scripts/ci/post-merge-closeout/pr-1889-body.md', 'utf8');
 		const reviewComments = [
-			{ id: 3447589045, body: 'high', user: { login: 'gemini-code-assist[bot]' }, created_at: '2026-06-20T00:00:00Z' },
-			{ id: 3447589051, body: 'high', user: { login: 'gemini-code-assist[bot]' }, created_at: '2026-06-20T00:00:00Z' },
-			{ id: 3447589054, body: 'medium', user: { login: 'gemini-code-assist[bot]' }, created_at: '2026-06-20T00:00:00Z' },
-			{ id: 3447589057, body: 'medium', user: { login: 'gemini-code-assist[bot]' }, created_at: '2026-06-20T00:00:00Z' },
-			{ id: 3447589066, body: 'medium', user: { login: 'gemini-code-assist[bot]' }, created_at: '2026-06-20T00:00:00Z' },
+			inlineReviewComment(3447589045),
+			inlineReviewComment(3447589051),
+			inlineReviewComment(3447589054),
+			inlineReviewComment(3447589057),
+			inlineReviewComment(3447589066),
 		];
 
 		expect(
@@ -67,23 +78,39 @@ describe('ops burn-down wave 1 closeout bodies', () => {
 				body,
 				reviewComments,
 				issueComments: [],
-				reviews: [],
+				reviews: [{ id: 1, state: 'COMMENTED', user: { login: 'gemini-code-assist[bot]' } }],
 				mergedAt: '2026-06-20T00:00:00Z',
 			}),
 		).toEqual([]);
+
+		expect(
+			reviewerDispositionFailures({
+				body: body.replace(/review-comment:3447589045[^\n]+\n/, ''),
+				reviewComments,
+				issueComments: [],
+				reviews: [{ id: 1, state: 'COMMENTED', user: { login: 'gemini-code-assist[bot]' } }],
+				mergedAt: '2026-06-20T00:00:00Z',
+			}).length,
+		).toBeGreaterThan(0);
 	});
 
 	it('records reviewer dispositions for remediated PR #1891 body', () => {
 		const body = fs.readFileSync('scripts/ci/post-merge-closeout/pr-1891-body.md', 'utf8');
 		const reviewComments = [
-			{ id: 3447589332, body: 'high', user: { login: 'gemini-code-assist[bot]' }, created_at: '2026-06-20T00:00:00Z' },
-			{ id: 3447589336, body: 'high', user: { login: 'gemini-code-assist[bot]' }, created_at: '2026-06-20T00:00:00Z' },
-			{ id: 3447589337, body: 'medium', user: { login: 'gemini-code-assist[bot]' }, created_at: '2026-06-20T00:00:00Z' },
-			{ id: 3447589338, body: 'medium', user: { login: 'gemini-code-assist[bot]' }, created_at: '2026-06-20T00:00:00Z' },
-			{ id: 3447589339, body: 'medium', user: { login: 'gemini-code-assist[bot]' }, created_at: '2026-06-20T00:00:00Z' },
+			inlineReviewComment(3447589332),
+			inlineReviewComment(3447589336),
+			inlineReviewComment(3447589337),
+			inlineReviewComment(3447589338),
+			inlineReviewComment(3447589339),
 		];
 		const reviews = [
-			{ id: 4538902245, body: 'Code Review', user: { login: 'gemini-code-assist[bot]' }, submitted_at: '2026-06-20T00:00:00Z' },
+			{
+				id: 4538902245,
+				state: 'COMMENTED',
+				body: 'Code Review',
+				user: { login: 'gemini-code-assist[bot]' },
+				submitted_at: '2026-06-20T00:00:00Z',
+			},
 		];
 
 		expect(
