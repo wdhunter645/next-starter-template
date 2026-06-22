@@ -137,6 +137,29 @@ these signals:
   explicit authority;
 - any action that would bypass PR governance or Bill/Atlas merge authorization.
 
+## Backlog disposition and `ops-pr-escalation`
+
+The backlog scanner (`post_merge_self_heal_backlog.mjs`) maps each open
+post-merge exception issue to a backlog disposition. Execution outcomes:
+
+| Disposition | `safe_to_close` | Execution action |
+|---|---|---|
+| `safe_stale_exception` | yes | Close issue + disposition comment |
+| `duplicate_of_canonical_remediation` | yes | Close issue + disposition comment |
+| `preserve_active_source_issue` | no | Comment + add `ops-pr-escalation` |
+| `preserve_ambiguous_evidence` | no | Comment + add `ops-pr-escalation` |
+| `unsafe_operator_review_required` | no | Comment + add `ops-pr-escalation` |
+
+Issues already labeled `ops-pr-escalation` are excluded from backlog scans.
+Applying the label does not re-trigger `OPS — Post-Merge Self-Healing`.
+
+Ops queue search:
+
+`is:issue is:open label:post-merge-failure label:ops-pr-escalation`
+
+Remove `ops-pr-escalation` only when an operator intentionally requests
+re-triage after new evidence lands.
+
 ## Governance Invariant
 
 Self-healing is a post-merge hygiene and escalation layer. It cannot:

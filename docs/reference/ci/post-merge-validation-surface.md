@@ -91,6 +91,8 @@ Closeout does not run when validation status is `fail`, remediation remains requ
 
 Duplicate remediation issue cleanup remains unchanged. Canonical remediation issues stay open; duplicate remediation issues close. Failed validation continues to open or update remediation issues through `post_merge_remediation_issue.mjs`.
 
+`Post-Merge Remediation` runs self-healing (backlog scan + detect + apply) before opening or updating exception issues. When self-healing cannot auto-close an exception, it comments on the same issue and adds the `ops-pr-escalation` label instead of opening child escalation issues. See `docs/explanation/ci/post-merge-self-healing-architecture.md`.
+
 ## Core Scripts
 
 | Script | Role |
@@ -104,6 +106,7 @@ Duplicate remediation issue cleanup remains unchanged. Canonical remediation iss
 | `scripts/ci/post_merge_source_issue_closeout.mjs` | Closeout decision helpers and evidence comment format |
 | `scripts/ci/post_merge_validation_surface.mjs` | Surface inventory validator |
 | `scripts/ci/close_duplicate_remediation_issues.mjs` | Closes duplicate remediation issues only |
+| `scripts/ci/post_merge_self_heal_backlog.mjs` | Backlog scan, safe-close, and `ops-pr-escalation` handoff for open exception issues |
 | `scripts/orchestrator/sync-pr-state.mjs` | Applies orchestrator labels and source-issue closeout |
 
 ## Rollback

@@ -37,7 +37,7 @@ Bill/Atlas merge authorization.
 1. **Prevent before merge when possible** — pre-merge gates (`GATE — Post-Merge Readiness`, PR issue accounting, reviewer lifecycle gates) should block deterministic defects before landings on `main`.
 2. **Repair deterministically after merge when safe** — bounded repo and issue hygiene may be repaired automatically when repository evidence is complete and unambiguous.
 3. **Escalate only unsafe findings** — ambiguous reviewer intent, allowlist conflicts, secrets/config failures, runtime app-code defects, and operator-authority decisions become scoped remediation issues instead of silent mutation.
-4. **Avoid issue noise** — do not open remediation issues when self-healing can prove a safe resolution, when a canonical issue already exists, or when backlog burn-down can close stale duplicates immediately.
+4. **Avoid issue noise** — do not open child escalation issues when self-healing can prove a safe resolution; disposition preserved exceptions on the **same** issue with the `ops-pr-escalation` label instead.
 
 ## Architectural layers
 
@@ -91,7 +91,9 @@ flowchart TB
 | `push` to self-healing scripts on `main` | dry-run | Regression signal only |
 
 Matching issue events are limited to titles, bodies, or labels that identify
-post-merge closeout exceptions. Unrelated issue activity does not invoke the workflow.
+post-merge closeout exceptions. Issues already labeled `ops-pr-escalation` are
+excluded from repeat scans. Applying the `ops-pr-escalation` label does not
+re-trigger the workflow.
 
 ## Processing pipeline
 
@@ -110,6 +112,25 @@ The backlog scanner classifies each open exception issue into one disposition:
 - preserve because source issue remains active
 - preserve because evidence is ambiguous
 - unsafe / operator review required
+
+When CI cannot auto-close, it comments once on the **same** exception issue and
+applies the `ops-pr-escalation` label. That label is the Operations handoff
+signal and prevents daily re-scan churn.
+
+## Ops PR escalation label (`ops-pr-escalation`)
+
+| Outcome | Issue action |
+|---|---|
+| `safe_to_close` | Close exception issue with disposition comment |
+| Not safe to auto-close | Disposition comment + add `ops-pr-escalation` |
+| Already has `ops-pr-escalation` | Skip scan (no new comment, no workflow re-entry) |
+
+Ops queue search:
+
+`is:issue is:open label:post-merge-failure label:ops-pr-escalation`
+
+Remove `ops-pr-escalation` only when an operator intentionally wants CI to
+re-triage an issue after new evidence lands.
 
 The classifier contract in
 `docs/reference/ci/post-merge-self-healing-classification-contract.md`
@@ -142,7 +163,14 @@ merges PRs, or advances program queues without explicit authority.
 
 ## Escalation boundary
 
-CI escalates to Cursor or operator review when evidence is ambiguous or protected:
+CI routes non-auto-fixable post-merge exceptions to Operations on the **original
+exception issue** using `ops-pr-escalation`. It does not open child escalation
+issues during normal schedule, workflow_run, or issue-event paths.
+
+Manual dispatch may still enable separate escalation issue creation when an
+operator explicitly sets `open_escalation_issues=true`.
+
+CI preserves issues for operator review when evidence is ambiguous or protected:
 
 - missing or undispositioned reviewer comments;
 - source issue or allowlist ambiguity;
@@ -150,8 +178,9 @@ CI escalates to Cursor or operator review when evidence is ambiguous or protecte
 - required workflow failures without a deterministic hygiene repair;
 - active alternate program-lane or queue decisions.
 
-Escalation issues use deduplication keys `(PR, source issue, failure class)` and update
-an existing open issue when the key matches.
+Optional manual escalation issues use deduplication keys
+`(PR, source issue, failure class)` and update an existing open issue when the
+key matches.
 
 ## Relationship to Program #1906
 
@@ -186,7 +215,7 @@ Self-healing cannot:
 - satisfy reviewer-response accounting by guessing reviewer intent;
 - broaden a PR file-touch allowlist;
 - modify secrets or production configuration;
-- close, reopen, relabel, or advance issues outside deterministic safe-close rules;
+- close, reopen, relabel, or advance issues outside deterministic safe-close rules and the `ops-pr-escalation` handoff label;
 - override Bill/Atlas gate, queue, launch, or merge decisions.
 
 ## Related references

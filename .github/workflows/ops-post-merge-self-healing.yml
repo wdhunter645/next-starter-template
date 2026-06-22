@@ -69,10 +69,16 @@ jobs:
         github.event.workflow_run.conclusion != 'cancelled'
       ) && (
         github.event_name != 'issues' ||
-        startsWith(github.event.issue.title, 'Post-merge closeout exception') ||
-        contains(github.event.issue.body, 'Post-merge closeout exception detected. CI refused deterministic source issue closeout.') ||
-        contains(join(github.event.issue.labels.*.name, ','), 'post-merge-failure') ||
-        contains(join(github.event.issue.labels.*.name, ','), 'post-merge-self-healing')
+        (
+          (
+            startsWith(github.event.issue.title, 'Post-merge closeout exception') ||
+            contains(github.event.issue.body, 'Post-merge closeout exception detected. CI refused deterministic source issue closeout.') ||
+            contains(join(github.event.issue.labels.*.name, ','), 'post-merge-failure') ||
+            contains(join(github.event.issue.labels.*.name, ','), 'post-merge-self-healing')
+          ) &&
+          !contains(join(github.event.issue.labels.*.name, ','), 'ops-pr-escalation') &&
+          !(github.event.action == 'labeled' && github.event.label.name == 'ops-pr-escalation')
+        )
       )
     runs-on: ubuntu-latest
 
@@ -212,7 +218,7 @@ jobs:
             echo ''
             if [ -f post-merge-self-heal-backlog.json ]; then
               echo '### Backlog burn-down summary'
-              node -e "const r=require('./post-merge-self-heal-backlog.json'); const s=r.summary||{}; console.log('- total scanned:', s.total_scanned||0); console.log('- auto-closed:', s.auto_closed||0); console.log('- auto-close planned:', s.auto_close_planned||0); console.log('- duplicate closures:', s.duplicate_closures||0); console.log('- duplicate closures planned:', s.duplicate_closures_planned||0); console.log('- preserved active-source issues:', s.preserved_active_source_issues||0); console.log('- preserved ambiguous issues:', s.preserved_ambiguous_issues||0); console.log('- unsafe/escalated issues:', s.unsafe_escalated_issues||0); console.log('- before open post-merge issue count:', s.before_open_post_merge_issue_count||0); console.log('- after open post-merge issue count:', s.after_open_post_merge_issue_count||0);"
+              node -e "const r=require('./post-merge-self-heal-backlog.json'); const s=r.summary||{}; console.log('- total open post-merge exceptions:', s.total_open_post_merge_exception_issues||0); console.log('- skipped already escalated (ops-pr-escalation):', s.skipped_already_escalated||0); console.log('- total scanned:', s.total_scanned||0); console.log('- auto-closed:', s.auto_closed||0); console.log('- auto-close planned:', s.auto_close_planned||0); console.log('- ops-pr-escalation labeled:', s.ops_pr_escalation_labeled||0); console.log('- ops-pr-escalation planned:', s.ops_pr_escalation_planned||0); console.log('- duplicate closures:', s.duplicate_closures||0); console.log('- duplicate closures planned:', s.duplicate_closures_planned||0); console.log('- preserved active-source issues:', s.preserved_active_source_issues||0); console.log('- preserved ambiguous issues:', s.preserved_ambiguous_issues||0); console.log('- unsafe/escalated issues:', s.unsafe_escalated_issues||0); console.log('- before open post-merge issue count:', s.before_open_post_merge_issue_count||0); console.log('- after open post-merge issue count:', s.after_open_post_merge_issue_count||0);"
             fi
             if [ -f post-merge-self-heal-detection.json ]; then
               echo '### Detection summary'
