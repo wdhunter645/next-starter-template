@@ -14,6 +14,14 @@ import {
 import { runValidator, WORKFLOW_RUN_SCOPE_MERGE_ONLY } from './post_merge_validator.mjs';
 import { githubRepoRequest } from './github_issue_api.mjs';
 import {
+	applyTerminalLabelReconciliation,
+	canDeterministicallyRepairTerminalLabels,
+	planActiveSourceIssueRelabel,
+	planTerminalLabelReconciliation,
+	terminalSourceIssueCloseoutModeFromSync,
+	terminalSourceIssueLabelIntegrityFailures,
+} from './post_merge_source_issue_closeout.mjs';
+import {
 	resolveCloseoutBodyApply,
 	shouldRunAutomaticCloseout,
 } from './post_merge_closeout_trigger.mjs';
@@ -137,6 +145,92 @@ export function buildCloseoutErrorResult({ prNumber, mergeSha = '', message = ''
 	};
 }
 
+export async function fetchSourceIssueMeta({ token, repository, issueNumber }) {
+	return githubRepoRequest({
+		token,
+		repository,
+		path: `/issues/${issueNumber}`,
+		userAgent: 'lgfc-post-merge-closeout',
+	});
+}
+
+export async function fetchRepoLabels({ token, repository }) {
+	const labels = [];
+	let page = 1;
+	while (true) {
+		const batch = await githubRepoRequest({
+			token,
+			repository,
+			path: `/labels?per_page=100&page=${page}`,
+			userAgent: 'lgfc-post-merge-closeout',
+		});
+		if (!Array.isArray(batch) || batch.length === 0) break;
+		labels.push(...batch);
+		if (batch.length < 100) break;
+		page += 1;
+	}
+	return labels;
+}
+
+export async function verifyTerminalLabelIntegrityAfterCloseout({
+	token,
+	repository,
+	sourceIssueNumber,
+	syncResult,
+	applyRepair = true,
+	fetchIssueFn = fetchSourceIssueMeta,
+	fetchLabelsFn = fetchRepoLabels,
+	applyRepairFn = applyTerminalLabelReconciliation,
+} = {}) {
+	if (!sourceIssueNumber || !isSuccessfulSourceIssueCloseout(syncResult)) {
+		return { ok: true, failures: [], repaired: false, closeout_mode: 'not_evaluated' };
+	}
+
+	const closeoutMode = terminalSourceIssueCloseoutModeFromSync(syncResult);
+	let issueMeta = await fetchIssueFn({ token, repository, issueNumber: sourceIssueNumber });
+	let failures = terminalSourceIssueLabelIntegrityFailures({ issueMeta, closeoutMode });
+
+	if (failures.length === 0) {
+		return { ok: true, failures: [], repaired: false, closeout_mode: closeoutMode };
+	}
+
+	if (!issueMeta) {
+		return {
+			ok: false,
+			failures,
+			repaired: false,
+			closeout_mode: closeoutMode,
+			terminal_label_plan: { ok: false, reason: 'source_issue_unreadable' },
+		};
+	}
+
+	const repoLabels = await fetchLabelsFn({ token, repository });
+	const plan = closeoutMode === 'preserve_open'
+		? planActiveSourceIssueRelabel({ issueLabels: issueMeta.labels || [] })
+		: planTerminalLabelReconciliation({ issueLabels: issueMeta.labels || [], repoLabels });
+
+	let repaired = false;
+	if (applyRepair && canDeterministicallyRepairTerminalLabels({ failures, plan })) {
+		await applyRepairFn({
+			token,
+			repository,
+			issueNumber: sourceIssueNumber,
+			plan,
+		});
+		repaired = true;
+		issueMeta = await fetchIssueFn({ token, repository, issueNumber: sourceIssueNumber });
+		failures = terminalSourceIssueLabelIntegrityFailures({ issueMeta, closeoutMode });
+	}
+
+	return {
+		ok: failures.length === 0,
+		failures,
+		repaired,
+		closeout_mode: closeoutMode,
+		terminal_label_plan: plan,
+	};
+}
+
 export async function ensureCloseoutRemediationEvidence({ token, repository, result }) {
 	if (!shouldUpsertRemediationIssue(result)) {
 		return { action: 'skipped', issue: null, reason: 'no-remediation-required' };
@@ -244,6 +338,44 @@ export async function runPostMergeCloseout({
 			sourceIssue: result.source_issue || '',
 		});
 		await closeDuplicateRemediationIssues({ token, repository, dryRun: false });
+	}
+
+	if (result.source_issue && syncResult) {
+		const terminalIntegrity = await verifyTerminalLabelIntegrityAfterCloseout({
+			token,
+			repository,
+			sourceIssueNumber: result.source_issue,
+			syncResult,
+		});
+		result.terminal_label_integrity = terminalIntegrity;
+		if (!terminalIntegrity.ok) {
+			result.status = 'fail';
+			result.remediation_required = true;
+			result.sync_action = 'post_merge_failure';
+			result.metadata_failures = [
+				...(result.metadata_failures || []),
+				...terminalIntegrity.failures,
+			];
+			result.self_healing = {
+				classification: canDeterministicallyRepairTerminalLabels({
+					failures: terminalIntegrity.failures,
+					plan: terminalIntegrity.terminal_label_plan,
+				}) ? 'safe_auto_fix' : 'cursor_remediation_required',
+				safe_to_close: false,
+				ambiguous: !canDeterministicallyRepairTerminalLabels({
+					failures: terminalIntegrity.failures,
+					plan: terminalIntegrity.terminal_label_plan,
+				}),
+			};
+			result.self_healing_safe = canDeterministicallyRepairTerminalLabels({
+				failures: terminalIntegrity.failures,
+				plan: terminalIntegrity.terminal_label_plan,
+			});
+			await writePostMergeResultArtifactsAsync(result);
+			if (result.sync_action === 'post_merge_failure' && syncResult !== 'complete') {
+				syncResult = runSync({ repository, prNumber, syncAction: 'post_merge_failure', pr: syncPr });
+			}
+		}
 	}
 
 	await ensureCloseoutRemediationEvidence({ token, repository, result });

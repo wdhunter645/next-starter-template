@@ -288,8 +288,14 @@ export function detectCloseoutReportFindings({ closeoutReports = [] } = {}) {
 			for (const failure of flattenValidationFailures(result)) {
 				const code = failure.classification || failure.code || failure.workflow || `${failure.bucket}_failure`;
 				const workflowClassification = String(failure.classification || failure.failure_type || '').trim();
+				const terminalLabelCodes = new Set([
+					'stale_terminal_source_issue_labels',
+					'missing_terminal_complete_label',
+				]);
 				findings.push({
-					kind: null,
+					kind: terminalLabelCodes.has(code)
+						? FINDING_TYPES.STALE_TERMINAL_SOURCE_ISSUE_LABELS
+						: null,
 					code,
 					pr_number: result.pr ?? null,
 					source_issue: result.source_issue ?? null,

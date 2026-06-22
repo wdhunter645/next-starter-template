@@ -177,14 +177,14 @@ describe('post-merge self-healing apply executor', () => {
 		expect(JSON.parse(fs.readFileSync(manifestPath, 'utf8')).targets).toEqual([]);
 	});
 
-	it('returns dry_run outcome without writing manifest files', () => {
+	it('returns dry_run outcome without writing manifest files', async () => {
 		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'self-heal-apply-'));
 		const manifestPath = path.join(dir, 'targets.json');
 		fs.writeFileSync(manifestPath, JSON.stringify({
 			targets: [{ pr: 1860, source_issue: 1848 }],
 		}, null, 2));
 
-		const outcome = applyFromDetectionReport({
+		const outcome = await applyFromDetectionReport({
 			findings: [staleManifestFinding({ manifest: manifestPath })],
 			closeoutReports: [{
 				status: 'success',
@@ -198,8 +198,8 @@ describe('post-merge self-healing apply executor', () => {
 		expect(JSON.parse(fs.readFileSync(manifestPath, 'utf8')).targets).toHaveLength(1);
 	});
 
-	it('does not auto-fix unsafe reviewer disposition findings', () => {
-		const outcome = applySafeAutoFixActions(
+	it('does not auto-fix unsafe reviewer disposition findings', async () => {
+		const outcome = await applySafeAutoFixActions(
 			planSafeAutoFixActions({ findings: [reviewerFinding()] }),
 			{ dryRun: false },
 		);

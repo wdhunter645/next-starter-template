@@ -5,7 +5,7 @@ Authority Level: Operational
 Owns: Operator procedure for OPS — Post-Merge Self-Healing workflow dispatch, artifact review, and Cursor escalation handling
 Does Not Own: Classifier contract, detector implementation, auto-fix execution code, escalation script implementation, merge approval
 Canonical Reference: /docs/reference/ci/post-merge-self-healing-classification-contract.md
-Related issues: #1847, #1853, #1914
+Related issues: #1847, #1853, #1906, #1914
 Last Reviewed: 2026-06-21
 ---
 
@@ -69,9 +69,26 @@ file-touch allowlist recorded in a generated escalation issue.
 6. Run the workflow and download the `post-merge-self-healing-report` artifact.
 
 Default manual dispatch is dry-run. Scheduled runs also default to dry-run mode.
-Post-closeout `workflow_run` triggers and matching `issues` events may apply
-safe deterministic closes and comments because #1914 authorizes that bounded
-self-healing path.
+Post-closeout `workflow_run` triggers from **Post-Merge Detection** (the automatic
+per-merge closeout owner), **Post-Merge PR Body Closeout**, **Post-Merge
+Remediation**, and **GATE — Post-Merge Readiness** may apply safe deterministic
+closes, terminal-label repairs, and comments because #1914/#1906 authorize that
+bounded self-healing path.
+
+### Trigger modes (do not conflate)
+
+| Trigger | Purpose |
+|---|---|
+| Manual `workflow_dispatch` | Operator inspection; defaults to dry-run |
+| Nightly `schedule` | Scheduled dry-run hygiene scan |
+| `issues` events | Classify one matching post-merge exception issue and apply bounded safe closes |
+| `workflow_run` after **Post-Merge Detection** | Per-merge post-closeout self-healing using the uploaded `post-merge-validation-result` artifact |
+| `workflow_run` after manual/batch closeout workflows | Backlog burn-down and manifest hygiene after operator replay |
+| `push` to self-healing scripts on `main` | Regression guard for self-healing implementation changes |
+
+Normal PR merges invoke self-healing automatically after the real post-merge
+closeout cycle completes. Operators do not need manual dispatch for per-merge
+residue when Post-Merge Detection finishes.
 
 ### Interpret artifacts
 
@@ -186,9 +203,12 @@ Dry-run is the default for:
 - manual dispatch unless explicitly disabled;
 - nightly schedule.
 
-Post-closeout `workflow_run` triggers use the authorized #1914 apply path for
+Post-closeout `workflow_run` triggers use the authorized #1914/#1906 apply path for
 deterministic safe fixes while keeping escalation issue creation disabled by
-default.
+default. When Post-Merge Detection uploads `post-merge-result.json`, self-healing
+detect ingests that artifact to repair deterministic terminal-label residue or
+route ambiguous merge-SHA / label integrity failures into remediation without
+opening duplicate issues when `self_healing_safe` is recorded.
 
 Dry-run guarantees:
 

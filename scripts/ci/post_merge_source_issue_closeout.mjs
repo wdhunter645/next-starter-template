@@ -16,6 +16,113 @@ export const TERMINAL_SOURCE_ISSUE_LABEL = 'status:complete';
 export const FAILURE_SOURCE_ISSUE_LABEL = 'status:failed';
 export const ACTIVE_SOURCE_ISSUE_LABEL = 'status:active';
 
+export function issueLabelNameList(issueMeta = {}) {
+	return (issueMeta?.labels || [])
+		.map((label) => (typeof label === 'string' ? label : label?.name))
+		.filter(Boolean);
+}
+
+export function terminalSourceIssueCloseoutModeFromSync(syncResult = '') {
+	if (syncResult === 'complete') return 'terminal_close';
+	if (syncResult === 'active_relabeled' || syncResult === 'remediation_issue') return 'preserve_open';
+	return 'not_evaluated';
+}
+
+export function terminalSourceIssueLabelIntegrityFailures({
+	issueMeta = null,
+	closeoutMode = 'terminal_close',
+} = {}) {
+	if (!issueMeta) {
+		return [{
+			code: 'source_issue_unreadable',
+			message: 'Source issue could not be re-fetched for terminal label integrity validation.',
+			repairable: false,
+		}];
+	}
+
+	const labels = new Set(issueLabelNameList(issueMeta));
+	const state = String(issueMeta.state || '').toLowerCase();
+	const failures = [];
+	const stalePresent = STALE_SOURCE_ISSUE_LABELS.filter((label) => labels.has(label));
+
+	if (stalePresent.length > 0) {
+		failures.push({
+			code: 'stale_terminal_source_issue_labels',
+			message: `Source issue retains stale workflow labels after closeout: ${stalePresent.join(', ')}.`,
+			stale_labels: stalePresent,
+			repairable: true,
+		});
+	}
+
+	if (closeoutMode === 'terminal_close' && state === 'closed' && !labels.has(TERMINAL_SOURCE_ISSUE_LABEL)) {
+		failures.push({
+			code: 'missing_terminal_complete_label',
+			message: 'Closed source issue is missing status:complete after closeout.',
+			repairable: true,
+		});
+	}
+
+	return failures;
+}
+
+export function canDeterministicallyRepairTerminalLabels({
+	failures = [],
+	plan = null,
+} = {}) {
+	if (!failures.length) return false;
+	if (!plan?.ok) return false;
+	return failures.every((failure) => failure.repairable !== false);
+}
+
+export async function applyTerminalLabelReconciliation({
+	token,
+	repository,
+	issueNumber,
+	plan,
+	requestFn,
+} = {}) {
+	if (!token || !repository || !issueNumber || !plan?.ok) {
+		throw new Error('token, repository, issueNumber, and a valid terminal label plan are required.');
+	}
+
+	const request = requestFn || (async (args) => {
+		const { githubRepoRequest } = await import('./github_issue_api.mjs');
+		return githubRepoRequest({ ...args, userAgent: 'lgfc-terminal-label-reconciliation' });
+	});
+
+	const issue = await request({
+		token,
+		repository,
+		path: `/issues/${issueNumber}`,
+	});
+
+	const currentLabels = new Set(issueLabelNameList(issue));
+	const nextLabels = [...currentLabels];
+	for (const label of plan.removeLabels || []) {
+		const index = nextLabels.indexOf(label);
+		if (index >= 0) nextLabels.splice(index, 1);
+	}
+	if (plan.addLabel && !nextLabels.includes(plan.addLabel)) {
+		nextLabels.push(plan.addLabel);
+	}
+
+	await request({
+		token,
+		repository,
+		path: `/issues/${issueNumber}`,
+		method: 'PATCH',
+		body: { labels: nextLabels },
+	});
+
+	return {
+		ok: true,
+		issue_number: issueNumber,
+		removeLabels: plan.removeLabels || [],
+		addLabel: plan.addLabel || '',
+		summary: plan.summary || '',
+	};
+}
+
 const FOLLOWUP_CLOSEOUT_PATTERN =
 	/\b(remediation|follow[- ]up|clarification|post[- ]merge evidence|closeout reconciliation|post[- ]merge closeout)\b/i;
 const PRIOR_CLOSEOUT_REF_PATTERN =

@@ -50,6 +50,7 @@ on:
       - .github/workflows/ops-post-merge-self-healing.yml
   workflow_run:
     workflows:
+      - Post-Merge Detection
       - Post-Merge PR Body Closeout
       - Post-Merge Remediation
       - GATE — Post-Merge Readiness
@@ -119,6 +120,16 @@ jobs:
         run: |
           printf '%s\n' "$ISSUE_PAYLOAD" > post-merge-self-heal-event-issue.json
 
+      - name: Download post-merge closeout artifact
+        if: github.event_name == 'workflow_run' && github.event.workflow_run.name == 'Post-Merge Detection'
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ github.event.workflow_run.id }}
+          name: post-merge-validation-result
+          path: post-merge-closeout-artifact
+
       - name: Scan post-merge exception backlog
         id: backlog
         env:
@@ -137,13 +148,17 @@ jobs:
       - name: Detect post-merge self-healing findings
         id: detect
         run: |
-          node scripts/ci/post_merge_self_heal_detect.mjs \
-            --issues post-merge-self-heal-backlog.json \
-            --output post-merge-self-heal-detection.json
+          DETECT_ARGS=(--issues post-merge-self-heal-backlog.json --output post-merge-self-heal-detection.json)
+          if [ -f post-merge-closeout-artifact/post-merge-result.json ]; then
+            DETECT_ARGS+=(--result post-merge-closeout-artifact/post-merge-result.json)
+          fi
+          node scripts/ci/post_merge_self_heal_detect.mjs "${DETECT_ARGS[@]}"
 
       - name: Apply safe auto-fix actions
         id: apply
         env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_SHA: ${{ github.sha }}
         run: |
           APPLY_ARGS=(--report post-merge-self-heal-detection.json --output post-merge-self-heal-apply.json)
