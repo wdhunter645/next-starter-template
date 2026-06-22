@@ -39,12 +39,13 @@ describe('OPS — Post-Merge Self-Healing workflow', () => {
 		expect(workflow).toContain('post-merge-self-heal-escalation.json');
 	});
 
-	it('keeps scheduled invocations dry-run while workflow_run can apply safe fixes', () => {
+	it('enables scheduled daily backlog apply while manual dispatch defaults to dry-run', () => {
 		const workflow = fs.readFileSync('.github/workflows/ops-post-merge-self-healing.yml', 'utf8');
 
 		expect(workflow).toContain('workflow_run:');
 		expect(workflow).toContain('schedule:');
 		expect(workflow).toMatch(/elif \[ "\$\{\{ github\.event_name \}\}" = "workflow_run" \]; then[\s\S]*echo "dry_run=false"[\s\S]*echo "apply_safe_fixes=true"/);
+		expect(workflow).toMatch(/elif \[ "\$\{\{ github\.event_name \}\}" = "schedule" \]; then[\s\S]*echo "dry_run=false"[\s\S]*echo "apply_safe_fixes=true"/);
 		expect(workflow).toMatch(/else[\s\S]*echo "dry_run=true"[\s\S]*echo "apply_safe_fixes=false"/);
 		expect(workflow).toMatch(/echo "open_escalation_issues=false"/);
 	});

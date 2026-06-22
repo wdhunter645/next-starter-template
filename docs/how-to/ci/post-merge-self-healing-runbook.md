@@ -6,7 +6,7 @@ Owns: Operator procedure for OPS — Post-Merge Self-Healing workflow dispatch, 
 Does Not Own: Classifier contract, detector implementation, auto-fix execution code, escalation script implementation, merge approval
 Canonical Reference: /docs/reference/ci/post-merge-self-healing-classification-contract.md
 Related issues: #1847, #1853, #1906, #1914
-Last Reviewed: 2026-06-21
+Last Reviewed: 2026-06-22
 ---
 
 # Post-Merge Self-Healing Operator Runbook
@@ -68,23 +68,21 @@ file-touch allowlist recorded in a generated escalation issue.
 5. Set `open_escalation_issues=false` until safe-fix output has been reviewed.
 6. Run the workflow and download the `post-merge-self-healing-report` artifact.
 
-Default manual dispatch is dry-run. Scheduled runs also default to dry-run mode.
-Post-closeout `workflow_run` triggers from **Post-Merge Detection** (the automatic
-per-merge closeout owner), **Post-Merge PR Body Closeout**, **Post-Merge
-Remediation**, and **GATE — Post-Merge Readiness** may apply safe deterministic
-closes, terminal-label repairs, and comments because #1914/#1906 authorize that
-bounded self-healing path.
+Default manual dispatch is dry-run. The daily `schedule`, matching `issues`
+events, and post-closeout `workflow_run` triggers apply bounded safe fixes
+automatically. `Post-Merge Remediation` also runs self-healing before opening
+exception issues.
 
 ### Trigger modes (do not conflate)
 
 | Trigger | Purpose |
 |---|---|
 | Manual `workflow_dispatch` | Operator inspection; defaults to dry-run |
-| Nightly `schedule` | Scheduled dry-run hygiene scan |
+| Daily `schedule` | Repository-wide backlog burn-down and safe auto-fix apply |
 | `issues` events | Classify one matching post-merge exception issue and apply bounded safe closes |
 | `workflow_run` after **Post-Merge Detection** | Per-merge post-closeout self-healing using the uploaded `post-merge-validation-result` artifact |
 | `workflow_run` after manual/batch closeout workflows | Backlog burn-down and manifest hygiene after operator replay |
-| `push` to self-healing scripts on `main` | Regression guard for self-healing implementation changes |
+| `push` to self-healing scripts on `main` | Regression guard; dry-run only |
 
 Normal PR merges invoke self-healing automatically after the real post-merge
 closeout cycle completes. Operators do not need manual dispatch for per-merge
@@ -201,10 +199,19 @@ implements any issue or queue mutation.
 Dry-run is the default for:
 
 - manual dispatch unless explicitly disabled;
-- nightly schedule.
+- `push` triggers on `main` that touch self-healing scripts.
 
-Post-closeout `workflow_run` triggers use the authorized #1914/#1906 apply path for
-deterministic safe fixes while keeping escalation issue creation disabled by
+Authorized apply mode runs for:
+
+- daily `schedule` (repository-wide backlog burn-down and safe auto-fix);
+- post-closeout `workflow_run` triggers;
+- matching post-merge `issues` events.
+
+`Post-Merge Remediation` also runs backlog scan + detect/apply before opening or
+updating remediation issues so deterministic repairs happen before new exception
+noise is created.
+
+Post-closeout `workflow_run` triggers keep escalation issue creation disabled by
 default. When Post-Merge Detection uploads `post-merge-result.json`, self-healing
 detect ingests that artifact to repair deterministic terminal-label residue or
 route ambiguous merge-SHA / label integrity failures into remediation without
@@ -244,9 +251,11 @@ Stop and request operator authorization when classification is
 
 ## Related references
 
+- Architecture: `docs/explanation/ci/post-merge-self-healing-architecture.md`
 - Classification contract: `docs/reference/ci/post-merge-self-healing-classification-contract.md`
 - Post-merge validation surface: `docs/reference/ci/post-merge-validation-surface.md`
 - Workflow file: `.github/workflows/ops-post-merge-self-healing.yml`
+- Remediation workflow: `.github/workflows/post-merge-remediation.yml`
 
 ## Execution
 
