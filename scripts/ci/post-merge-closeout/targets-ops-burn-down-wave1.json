@@ -1,0 +1,24 @@
+{
+  "triggered_at": "2026-06-22T20:00:00Z",
+  "description": "OPS #1923 Wave 1 — duplicate-PR cluster (#1889, #1891) and source_issue_not_open (#1239) post-merge closeout replay",
+  "targets": [
+    {
+      "pr": 1889,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1889-body.md",
+      "merge_sha": "810db3262b4e21dd1b9373b629bda7b69599f45f",
+      "source_issue": 1853
+    },
+    {
+      "pr": 1891,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1891-body.md",
+      "merge_sha": "db58bf229ef3a8a7d03cfca6d609e3a6df6b3756",
+      "source_issue": 1854
+    },
+    {
+      "pr": 1239,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1239-body.md",
+      "merge_sha": "63c4ca233035d7b021735dbd3e6eb673f90d9184",
+      "source_issue": 1196
+    }
+  ]
+}

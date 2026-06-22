@@ -9,6 +9,7 @@ describe('post-merge closeout all manifests', () => {
 			'scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json',
 			'scripts/ci/post-merge-closeout/targets-ci-pending.json',
 			'scripts/ci/post-merge-closeout/targets-remediation-backlog.json',
+			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave1.json',
 		]);
 	});
 
