@@ -32,6 +32,25 @@ jobs:
           name: post-merge-validation-result
           path: post-merge-validation-result
 
+      - name: Run deterministic self-healing before remediation issue creation
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          node scripts/ci/post_merge_self_heal_backlog.mjs \
+            --output post-merge-self-heal-backlog.json \
+            --apply
+          DETECT_ARGS=(
+            --issues post-merge-self-heal-backlog.json
+            --result post-merge-validation-result/post-merge-result.json
+            --output post-merge-self-heal-detection.json
+          )
+          node scripts/ci/post_merge_self_heal_detect.mjs "${DETECT_ARGS[@]}"
+          node scripts/ci/post_merge_self_heal_apply.mjs \
+            --report post-merge-self-heal-detection.json \
+            --output post-merge-self-heal-apply.json \
+            --apply
+
       - name: Create or update remediation issue
         env:
           GITHUB_TOKEN: ${{ github.token }}

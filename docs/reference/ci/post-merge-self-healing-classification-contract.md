@@ -6,7 +6,7 @@ Owns: Post-merge self-healing classifier outcomes, evidence inputs, safety rules
 Does Not Own: Workflow implementation, detector ingestion, auto-fix action execution, issue mutation, merge approval, runtime app-code remediation
 Canonical Reference: /docs/reference/ci/post-merge-validation-surface.md
 Related issues: #1847, #1848, #1914
-Last Reviewed: 2026-06-21
+Last Reviewed: 2026-06-22
 ---
 
 # Post-Merge Self-Healing Classification Contract
@@ -15,6 +15,9 @@ Last Reviewed: 2026-06-21
 
 This reference defines the Task 001 classification contract and safety model for
 bounded post-merge self-healing CI.
+
+For the full trigger model, layer diagram, and operational design rationale, see
+`docs/explanation/ci/post-merge-self-healing-architecture.md`.
 
 The classifier converts a detected post-merge finding into exactly one outcome:
 
