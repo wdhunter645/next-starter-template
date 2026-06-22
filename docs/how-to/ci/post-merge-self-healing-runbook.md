@@ -5,7 +5,7 @@ Authority Level: Operational
 Owns: Operator procedure for OPS — Post-Merge Self-Healing workflow dispatch, artifact review, and Cursor escalation handling
 Does Not Own: Classifier contract, detector implementation, auto-fix execution code, escalation script implementation, merge approval
 Canonical Reference: /docs/reference/ci/post-merge-self-healing-classification-contract.md
-Related issues: #1847, #1853, #1906, #1914
+Related issues: #1847, #1853, #1906, #1914, #1921
 Last Reviewed: 2026-06-22
 ---
 
@@ -156,7 +156,7 @@ The workflow also runs on `issues` events (`opened`, `reopened`, `edited`, and
 For matching issue events, the workflow classifies only that issue and applies
 deterministic safe-close actions immediately. When CI cannot auto-close, it adds
 a disposition comment and the `ops-pr-escalation` label on the **same** issue.
-Any issues with `ops-pr-escalation` are excluded from repeat daily scans.
+Any issues with the `ops-pr-escalation` label are excluded from repeat daily scans.
 
 ### Ops PR escalation queue (`ops-pr-escalation`)
 

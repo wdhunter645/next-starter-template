@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: Post-merge self-healing architecture, trigger model, prevention vs remediation layering, and operational design rationale for Programs #1847 and #1914
 Does Not Own: Classifier outcome tables, workflow YAML implementation, individual script APIs, merge approval, runtime app behavior
 Canonical Reference: /docs/reference/ci/post-merge-self-healing-classification-contract.md
-Related issues: #1847, #1914, #1906
+Related issues: #1847, #1914, #1906, #1921
 Last Reviewed: 2026-06-22
 ---
 

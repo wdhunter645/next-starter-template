@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: Post-merge self-healing classifier outcomes, evidence inputs, safety rules, and documented example fixtures
 Does Not Own: Workflow implementation, detector ingestion, auto-fix action execution, issue mutation, merge approval, runtime app-code remediation
 Canonical Reference: /docs/reference/ci/post-merge-validation-surface.md
-Related issues: #1847, #1848, #1914
+Related issues: #1847, #1848, #1914, #1921
 Last Reviewed: 2026-06-22
 ---
 
@@ -193,7 +193,8 @@ repository evidence listed in this contract.
 
 ## Task Boundary
 
-This Task 001 contract is intentionally design-only. Task 002 may consume this
-contract when implementing detector and report ingestion, but no ingestion,
-auto-fix, escalation issue creation, or workflow orchestration behavior is
-implemented by this document.
+This contract governs classifier outcomes for detect, apply, backlog disposition,
+and optional escalation paths. Backlog disposition execution and the
+`ops-pr-escalation` handoff label are implemented in
+`scripts/ci/post_merge_self_heal_backlog.mjs` and
+`.github/workflows/ops-post-merge-self-healing.yml`.
