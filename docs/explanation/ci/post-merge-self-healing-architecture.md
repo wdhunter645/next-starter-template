@@ -37,7 +37,7 @@ Bill/Atlas merge authorization.
 1. **Prevent before merge when possible** — pre-merge gates (`GATE — Post-Merge Readiness`, PR issue accounting, reviewer lifecycle gates) should block deterministic defects before landings on `main`.
 2. **Repair deterministically after merge when safe** — bounded repo and issue hygiene may be repaired automatically when repository evidence is complete and unambiguous.
 3. **Escalate only unsafe findings** — ambiguous reviewer intent, allowlist conflicts, secrets/config failures, runtime app-code defects, and operator-authority decisions become scoped remediation issues instead of silent mutation.
-4. **Avoid issue noise** — do not open child escalation issues when self-healing can prove a safe resolution; disposition preserved exceptions on the **same** issue with the `ops-pr-escalation` label instead.
+4. **Avoid issue noise** — do not open child escalation issues when self-healing can prove a safe resolution; add a disposition comment on the **same** issue and apply the `ops-pr-escalation` label instead.
 
 ## Architectural layers
 
@@ -91,7 +91,7 @@ flowchart TB
 | `push` to self-healing scripts on `main` | dry-run | Regression signal only |
 
 Matching issue events are limited to titles, bodies, or labels that identify
-post-merge closeout exceptions. Issues already labeled `ops-pr-escalation` are
+post-merge closeout exceptions. Any issues already labeled `ops-pr-escalation` are
 excluded from repeat scans. Applying the `ops-pr-escalation` label does not
 re-trigger the workflow.
 

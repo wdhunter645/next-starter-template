@@ -144,13 +144,13 @@ post-merge exception issue to a backlog disposition. Execution outcomes:
 
 | Disposition | `safe_to_close` | Execution action |
 |---|---|---|
-| `safe_stale_exception` | yes | Close issue + disposition comment |
+| `safe_to_close` | yes | Close issue + disposition comment |
 | `duplicate_of_canonical_remediation` | yes | Close issue + disposition comment |
-| `preserve_active_source_issue` | no | Comment + add `ops-pr-escalation` |
+| `preserve_active_source` | no | Comment + add `ops-pr-escalation` |
 | `preserve_ambiguous_evidence` | no | Comment + add `ops-pr-escalation` |
 | `unsafe_operator_review_required` | no | Comment + add `ops-pr-escalation` |
 
-Issues already labeled `ops-pr-escalation` are excluded from backlog scans.
+Any issues already labeled `ops-pr-escalation` are excluded from backlog scans.
 Applying the label does not re-trigger `OPS — Post-Merge Self-Healing`.
 
 Ops queue search:

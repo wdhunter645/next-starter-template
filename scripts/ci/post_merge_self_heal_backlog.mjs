@@ -52,7 +52,7 @@ function hasLabel(issue = {}, labels = POST_MERGE_EXCEPTION_LABELS) {
 }
 
 export function hasOpsPrEscalationLabel(issue = {}) {
-	return labelNames(issue.labels).includes(OPS_PR_ESCALATION_LABEL);
+	return labelNames(issue?.labels).includes(OPS_PR_ESCALATION_LABEL);
 }
 
 export function isBacklogScanCandidate(issue = {}) {
@@ -353,8 +353,8 @@ export function buildBacklogReport({
 	const allOpenPostMergeIssues = (issues || []).filter((issue) =>
 		String(issue?.state || '').toLowerCase() === 'open' && isPostMergeExceptionIssue(issue)
 	);
-	const skippedAlreadyEscalated = allOpenPostMergeIssues.filter((issue) => hasOpsPrEscalationLabel(issue));
-	const openPostMergeIssues = allOpenPostMergeIssues.filter((issue) => !hasOpsPrEscalationLabel(issue));
+	const skippedAlreadyEscalated = allOpenPostMergeIssues.filter(hasOpsPrEscalationLabel);
+	const openPostMergeIssues = (issues || []).filter(isBacklogScanCandidate);
 	const parsedIssues = openPostMergeIssues.map(parsePostMergeExceptionIssue);
 	const detectorIssues = openPostMergeIssues.map((issue, index) =>
 		detectorIssueMetadata(issue, parsedIssues[index])
@@ -462,7 +462,7 @@ export async function ensureOpsPrEscalationLabel({
 		});
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
-		if (!/already_exists|422/.test(message)) {
+		if (!/already_exists/i.test(message)) {
 			throw error;
 		}
 	}

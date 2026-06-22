@@ -156,7 +156,7 @@ The workflow also runs on `issues` events (`opened`, `reopened`, `edited`, and
 For matching issue events, the workflow classifies only that issue and applies
 deterministic safe-close actions immediately. When CI cannot auto-close, it adds
 a disposition comment and the `ops-pr-escalation` label on the **same** issue.
-Issues with `ops-pr-escalation` are excluded from repeat daily scans.
+Any issues with `ops-pr-escalation` are excluded from repeat daily scans.
 
 ### Ops PR escalation queue (`ops-pr-escalation`)
 

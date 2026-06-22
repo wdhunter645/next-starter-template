@@ -70,6 +70,7 @@ jobs:
       ) && (
         github.event_name != 'issues' ||
         (
+          github.event.issue.state == 'open' &&
           (
             startsWith(github.event.issue.title, 'Post-merge closeout exception') ||
             contains(github.event.issue.body, 'Post-merge closeout exception detected. CI refused deterministic source issue closeout.') ||
