@@ -16,6 +16,7 @@ import {
 } from '../scripts/ci/run_post_merge_closeout.mjs';
 import {
 	planTerminalLabelRepairActions,
+	applyTerminalLabelRepairAction,
 } from '../scripts/ci/post_merge_self_heal_apply.mjs';
 import { SAFETY_CATEGORIES } from '../scripts/ci/post_merge_self_heal_classify.mjs';
 import { buildDetectionReport } from '../scripts/ci/post_merge_self_heal_detect.mjs';
@@ -116,6 +117,29 @@ describe('terminal source issue label integrity', () => {
 
 		expect(applyRepairFn).toHaveBeenCalledTimes(1);
 		expect(outcome).toMatchObject({ ok: true, repaired: true, closeout_mode: 'terminal_close' });
+	});
+
+	it('fails cleanly when source issue metadata is unreadable without throwing TypeError', async () => {
+		const fetchLabelsFn = vi.fn(async () => [{ name: 'status:complete' }]);
+
+		const outcome = await verifyTerminalLabelIntegrityAfterCloseout({
+			token: 'token',
+			repository: 'owner/repo',
+			sourceIssueNumber: 1914,
+			syncResult: 'complete',
+			fetchIssueFn: async () => null,
+			fetchLabelsFn,
+		});
+
+		expect(fetchLabelsFn).not.toHaveBeenCalled();
+		expect(outcome).toMatchObject({
+			ok: false,
+			closeout_mode: 'terminal_close',
+			terminal_label_plan: { ok: false, reason: 'source_issue_unreadable' },
+		});
+		expect(outcome.failures).toContainEqual(expect.objectContaining({
+			code: 'source_issue_unreadable',
+		}));
 	});
 
 	it('fails post-merge validation when terminal labels remain after one repair retry', async () => {
@@ -225,5 +249,86 @@ describe('post-merge self-healing closeout routing', () => {
 			path: '/issues/1914',
 			body: { labels: ['status:complete'] },
 		}));
+	});
+
+	it('returns structured failed result when terminal-label repair API calls fail', async () => {
+		const outcome = await applyTerminalLabelRepairAction({
+			action: 'repair_terminal_source_labels',
+			source_issue: 1914,
+			preserve_open: false,
+		}, {
+			dryRun: false,
+			token: 'token',
+			repository: 'owner/repo',
+			fetchIssueFn: async () => {
+				throw new Error('rate limit exceeded');
+			},
+		});
+
+		expect(outcome).toMatchObject({
+			status: 'failed',
+			reason: 'api_error',
+			error: 'rate limit exceeded',
+		});
+	});
+
+	it('passes explicit args objects to fetchIssueFn and fetchLabelsFn overrides', async () => {
+		const fetchIssueFn = vi.fn(async () => ({
+			labels: [{ name: 'status:post-merge-verify' }],
+		}));
+		const fetchLabelsFn = vi.fn(async () => [{ name: 'status:complete' }]);
+
+		await applyTerminalLabelRepairAction({
+			action: 'repair_terminal_source_labels',
+			source_issue: 1914,
+			preserve_open: false,
+		}, {
+			dryRun: true,
+			token: 'token',
+			repository: 'owner/repo',
+			fetchIssueFn,
+			fetchLabelsFn,
+		});
+
+		expect(fetchIssueFn).toHaveBeenCalledWith({
+			token: 'token',
+			repository: 'owner/repo',
+			issueNumber: 1914,
+		});
+		expect(fetchLabelsFn).toHaveBeenCalledWith({
+			token: 'token',
+			repository: 'owner/repo',
+		});
+	});
+
+	it('continues processing when one terminal-label repair action fails', async () => {
+		const [failed, planned] = await Promise.all([
+			applyTerminalLabelRepairAction({
+				action: 'repair_terminal_source_labels',
+				source_issue: 1914,
+				preserve_open: false,
+			}, {
+				dryRun: false,
+				token: 'token',
+				repository: 'owner/repo',
+				fetchIssueFn: async () => {
+					throw new Error('rate limit exceeded');
+				},
+			}),
+			applyTerminalLabelRepairAction({
+				action: 'repair_terminal_source_labels',
+				source_issue: 1915,
+				preserve_open: false,
+			}, {
+				dryRun: true,
+				token: 'token',
+				repository: 'owner/repo',
+				fetchIssueFn: async () => ({ labels: [{ name: 'status:post-merge-verify' }] }),
+				fetchLabelsFn: async () => [{ name: 'status:complete' }],
+			}),
+		]);
+
+		expect(failed).toMatchObject({ status: 'failed', reason: 'api_error' });
+		expect(planned).toMatchObject({ status: 'planned' });
 	});
 });

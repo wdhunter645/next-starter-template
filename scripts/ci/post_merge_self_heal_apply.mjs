@@ -211,6 +211,7 @@ export function planSkippedFindings(findings = []) {
 export function planTerminalLabelRepairActions(findings = [], { closeoutReports = [] } = {}) {
 	const actions = [];
 	const seen = new Set();
+	const closeoutResults = (closeoutReports || []).flatMap((report) => report?.results || []);
 
 	for (const finding of findings) {
 		if (finding.kind !== FINDING_TYPES.STALE_TERMINAL_SOURCE_ISSUE_LABELS) continue;
@@ -218,9 +219,9 @@ export function planTerminalLabelRepairActions(findings = [], { closeoutReports 
 		if (!sourceIssue || seen.has(String(sourceIssue))) continue;
 		seen.add(String(sourceIssue));
 
-		const closeoutResult = (closeoutReports || [])
-			.flatMap((report) => report?.results || [])
-			.find((result) => String(result?.source_issue || '') === String(sourceIssue));
+		const closeoutResult = closeoutResults.find(
+			(result) => String(result?.source_issue || '') === String(sourceIssue),
+		);
 
 		const preserveOpen = closeoutResult?.source_issue_closeout_mode === 'source_issue_preserved_open'
 			|| closeoutResult?.terminal_label_integrity?.closeout_mode === 'preserve_open';
@@ -264,23 +265,26 @@ export async function applyTerminalLabelRepairAction(action, {
 		return { ...action, status: 'skipped', reason: 'missing_source_issue', dry_run: dryRun };
 	}
 
-	const fetchIssue = fetchIssueFn || (async () => {
+	const issueFetchArgs = { token, repository, issueNumber: action.source_issue };
+	const labelFetchArgs = { token, repository };
+
+	const defaultFetchIssue = async ({ token: issueToken, repository: issueRepository, issueNumber }) => {
 		const { githubRepoRequest } = await import('./github_issue_api.mjs');
 		return githubRepoRequest({
-			token,
-			repository,
-			path: `/issues/${action.source_issue}`,
+			token: issueToken,
+			repository: issueRepository,
+			path: `/issues/${issueNumber}`,
 			userAgent: 'lgfc-post-merge-self-heal-apply',
 		});
-	});
-	const fetchLabels = fetchLabelsFn || (async () => {
+	};
+	const defaultFetchLabels = async ({ token: labelToken, repository: labelRepository }) => {
 		const { githubRepoRequest } = await import('./github_issue_api.mjs');
 		const labels = [];
 		let page = 1;
 		while (true) {
 			const batch = await githubRepoRequest({
-				token,
-				repository,
+				token: labelToken,
+				repository: labelRepository,
 				path: `/labels?per_page=100&page=${page}`,
 				userAgent: 'lgfc-post-merge-self-heal-apply',
 			});
@@ -290,30 +294,48 @@ export async function applyTerminalLabelRepairAction(action, {
 			page += 1;
 		}
 		return labels;
-	});
+	};
 
-	const issueMeta = await fetchIssue();
-	const repoLabels = await fetchLabels();
-	const plan = action.preserve_open
-		? planActiveSourceIssueRelabel({ issueLabels: issueMeta.labels || [] })
-		: planTerminalLabelReconciliation({ issueLabels: issueMeta.labels || [], repoLabels });
+	try {
+		const issueMeta = fetchIssueFn
+			? await fetchIssueFn(issueFetchArgs)
+			: await defaultFetchIssue(issueFetchArgs);
+		if (!issueMeta) {
+			return { ...action, status: 'skipped', reason: 'source_issue_unreadable', dry_run: dryRun };
+		}
 
-	if (!plan.ok) {
-		return { ...action, status: 'skipped', reason: plan.reason || 'terminal_label_plan_failed', dry_run: dryRun };
+		const repoLabels = fetchLabelsFn
+			? await fetchLabelsFn(labelFetchArgs)
+			: await defaultFetchLabels(labelFetchArgs);
+		const plan = action.preserve_open
+			? planActiveSourceIssueRelabel({ issueLabels: issueMeta.labels || [] })
+			: planTerminalLabelReconciliation({ issueLabels: issueMeta.labels || [], repoLabels });
+
+		if (!plan.ok) {
+			return { ...action, status: 'skipped', reason: plan.reason || 'terminal_label_plan_failed', dry_run: dryRun };
+		}
+
+		if (dryRun) {
+			return { ...action, status: 'planned', plan, dry_run: true };
+		}
+
+		await applyTerminalLabelReconciliation({
+			token,
+			repository,
+			issueNumber: action.source_issue,
+			plan,
+		});
+
+		return { ...action, status: 'applied', plan, dry_run: false };
+	} catch (error) {
+		return {
+			...action,
+			status: 'failed',
+			reason: 'api_error',
+			error: error instanceof Error ? error.message : String(error),
+			dry_run: dryRun,
+		};
 	}
-
-	if (dryRun) {
-		return { ...action, status: 'planned', plan, dry_run: true };
-	}
-
-	await applyTerminalLabelReconciliation({
-		token,
-		repository,
-		issueNumber: action.source_issue,
-		plan,
-	});
-
-	return { ...action, status: 'applied', plan, dry_run: false };
 }
 
 export function applyManifestPruneAction(action, { dryRun = true, rootDir = process.cwd() } = {}) {

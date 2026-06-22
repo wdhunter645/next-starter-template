@@ -194,6 +194,16 @@ export async function verifyTerminalLabelIntegrityAfterCloseout({
 		return { ok: true, failures: [], repaired: false, closeout_mode: closeoutMode };
 	}
 
+	if (!issueMeta) {
+		return {
+			ok: false,
+			failures,
+			repaired: false,
+			closeout_mode: closeoutMode,
+			terminal_label_plan: { ok: false, reason: 'source_issue_unreadable' },
+		};
+	}
+
 	const repoLabels = await fetchLabelsFn({ token, repository });
 	const plan = closeoutMode === 'preserve_open'
 		? planActiveSourceIssueRelabel({ issueLabels: issueMeta.labels || [] })

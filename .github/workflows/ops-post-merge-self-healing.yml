@@ -157,6 +157,8 @@ jobs:
       - name: Apply safe auto-fix actions
         id: apply
         env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_SHA: ${{ github.sha }}
         run: |
           APPLY_ARGS=(--report post-merge-self-heal-detection.json --output post-merge-self-heal-apply.json)
