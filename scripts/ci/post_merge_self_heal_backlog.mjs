@@ -21,6 +21,9 @@ export const POST_MERGE_EXCEPTION_SIGNATURE =
 
 export const SELF_HEAL_BACKLOG_MARKER = '<!-- post-merge-self-healing-backlog-disposition -->';
 
+/** Marks exception issues CI scanned but cannot auto-close; excluded from repeat backlog scans. */
+export const OPS_PR_ESCALATION_LABEL = 'ops-pr-escalation';
+
 export const BACKLOG_DISPOSITIONS = Object.freeze({
 	SAFE_TO_CLOSE: 'safe_to_close',
 	SAFE_MANIFEST_OR_METADATA_REPAIR: 'safe_manifest_or_metadata_repair',
@@ -46,6 +49,28 @@ function labelNames(labels = []) {
 
 function hasLabel(issue = {}, labels = POST_MERGE_EXCEPTION_LABELS) {
 	return labelNames(issue.labels).some((name) => labels.has(name));
+}
+
+export function hasOpsPrEscalationLabel(issue = {}) {
+	return labelNames(issue?.labels).includes(OPS_PR_ESCALATION_LABEL);
+}
+
+/** Labels applied when handing an exception to Ops; ensures queue search discoverability. */
+export function opsEscalationLabelsToApply(existingLabels = []) {
+	const names = new Set(labelNames(existingLabels));
+	const labels = [OPS_PR_ESCALATION_LABEL];
+	if (!names.has(REMEDIATION_ISSUE_LABEL)) {
+		labels.unshift(REMEDIATION_ISSUE_LABEL);
+	}
+	return labels;
+}
+
+export function isBacklogScanCandidate(issue = {}) {
+	return (
+		String(issue?.state || '').toLowerCase() === 'open'
+		&& isPostMergeExceptionIssue(issue)
+		&& !hasOpsPrEscalationLabel(issue)
+	);
 }
 
 export function isPostMergeExceptionIssue(issue = {}) {
@@ -335,9 +360,11 @@ export function buildBacklogReport({
 	manifestSummary = {},
 	dryRun = true,
 } = {}) {
-	const openPostMergeIssues = (issues || []).filter((issue) =>
+	const allOpenPostMergeIssues = (issues || []).filter((issue) =>
 		String(issue?.state || '').toLowerCase() === 'open' && isPostMergeExceptionIssue(issue)
 	);
+	const skippedAlreadyEscalated = allOpenPostMergeIssues.filter(hasOpsPrEscalationLabel);
+	const openPostMergeIssues = (issues || []).filter(isBacklogScanCandidate);
 	const parsedIssues = openPostMergeIssues.map(parsePostMergeExceptionIssue);
 	const detectorIssues = openPostMergeIssues.map((issue, index) =>
 		detectorIssueMetadata(issue, parsedIssues[index])
@@ -370,9 +397,15 @@ export function buildBacklogReport({
 		deferredIssues: detectorIssues.filter((issue) => hasLabel(issue, new Set(['intentionally-deferred']))),
 		classifications,
 		summary: {
+			total_open_post_merge_exception_issues: allOpenPostMergeIssues.length,
+			skipped_already_escalated: skippedAlreadyEscalated.length,
 			total_scanned: openPostMergeIssues.length,
 			auto_closed: dryRun ? 0 : safeClosures.length,
 			auto_close_planned: dryRun ? safeClosures.length : 0,
+			ops_pr_escalation_labeled: 0,
+			ops_pr_escalation_planned: dryRun
+				? classifications.filter((entry) => !entry.safe_to_close).length
+				: 0,
 			manifest_fixes_applied: manifestSummary.manifest_prunes_applied || 0,
 			manifest_fixes_planned: manifestSummary.manifest_prunes_planned || 0,
 			duplicate_closures: dryRun ? 0 : duplicateClosures.length,
@@ -380,10 +413,10 @@ export function buildBacklogReport({
 			preserved_active_source_issues: preservedActive.length,
 			preserved_ambiguous_issues: preservedAmbiguous.length,
 			unsafe_escalated_issues: unsafe.length,
-			before_open_post_merge_issue_count: openPostMergeIssues.length,
+			before_open_post_merge_issue_count: allOpenPostMergeIssues.length,
 			after_open_post_merge_issue_count: dryRun
-				? openPostMergeIssues.length
-				: Math.max(0, openPostMergeIssues.length - safeClosures.length),
+				? allOpenPostMergeIssues.length
+				: Math.max(0, allOpenPostMergeIssues.length - safeClosures.length),
 		},
 	};
 }
@@ -402,7 +435,11 @@ export function dispositionComment(entry = {}) {
 		'',
 		entry.safe_to_close
 			? 'CI is applying a deterministic safe close for this post-merge exception.'
-			: 'CI is preserving this issue for Atlas/Bill/Cursor review.',
+			: [
+				'CI is preserving this issue for Operations review and applied the `ops-pr-escalation` label.',
+				'Ops should remediate via a bounded follow-up PR using the source issue evidence above.',
+				'This issue will not be rescanned by daily self-healing while `ops-pr-escalation` remains.',
+			].join(' '),
 	].filter(Boolean).join('\n');
 }
 
@@ -414,6 +451,31 @@ function closeStateReason(entry = {}) {
 
 function request(args) {
 	return githubRepoRequest({ ...args, userAgent: 'lgfc-post-merge-self-heal-backlog' });
+}
+
+export async function ensureOpsPrEscalationLabel({
+	token,
+	repository,
+	requestFn = request,
+} = {}) {
+	try {
+		await requestFn({
+			token,
+			repository,
+			path: '/labels',
+			method: 'POST',
+			body: {
+				name: OPS_PR_ESCALATION_LABEL,
+				color: 'B60205',
+				description: 'Post-merge self-healing scanned this exception and requires Ops PR remediation.',
+			},
+		});
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		if (!/already_exists/i.test(message)) {
+			throw error;
+		}
+	}
 }
 
 export async function executeBacklogDisposition(entry = {}, {
@@ -428,7 +490,10 @@ export async function executeBacklogDisposition(entry = {}, {
 	}
 
 	if (dryRun) {
-		return { ...entry, status: entry.safe_to_close ? 'planned_close' : 'planned_comment', dry_run: true };
+		if (entry.safe_to_close) {
+			return { ...entry, status: 'planned_close', dry_run: true };
+		}
+		return { ...entry, status: 'planned_ops_escalation', dry_run: true };
 	}
 
 	await requestFn({
@@ -440,7 +505,15 @@ export async function executeBacklogDisposition(entry = {}, {
 	});
 
 	if (!entry.safe_to_close) {
-		return { ...entry, status: 'commented', dry_run: false };
+		const existingLabels = entry.issue?.labels || entry.labels || [];
+		await requestFn({
+			token,
+			repository,
+			path: `/issues/${issueNumber}/labels`,
+			method: 'POST',
+			body: { labels: opsEscalationLabelsToApply(existingLabels) },
+		});
+		return { ...entry, status: 'ops_escalated', dry_run: false };
 	}
 
 	await requestFn({
@@ -455,6 +528,10 @@ export async function executeBacklogDisposition(entry = {}, {
 }
 
 export async function executeBacklogReport(report = {}, options = {}) {
+	if (options.dryRun === false && options.token && options.repository) {
+		await ensureOpsPrEscalationLabel(options);
+	}
+
 	const outcomes = [];
 	for (const entry of report.classifications || []) {
 		try {
@@ -475,9 +552,9 @@ export async function executeBacklogReport(report = {}, options = {}) {
 		outcomes,
 		summary: {
 			closed: outcomes.filter((entry) => entry.status === 'closed').length,
-			commented: outcomes.filter((entry) => entry.status === 'commented').length,
+			ops_escalated: outcomes.filter((entry) => entry.status === 'ops_escalated').length,
 			planned_close: outcomes.filter((entry) => entry.status === 'planned_close').length,
-			planned_comment: outcomes.filter((entry) => entry.status === 'planned_comment').length,
+			planned_ops_escalation: outcomes.filter((entry) => entry.status === 'planned_ops_escalation').length,
 			failed: outcomes.filter((entry) => entry.status === 'failed').length,
 		},
 	};
@@ -577,6 +654,8 @@ export async function main(argv = process.argv.slice(2)) {
 			...report.summary,
 			auto_closed: execution.summary.closed,
 			auto_close_planned: 0,
+			ops_pr_escalation_labeled: execution.summary.ops_escalated,
+			ops_pr_escalation_planned: 0,
 			duplicate_closures: execution.outcomes.filter((entry) =>
 				entry.status === 'closed'
 				&& entry.disposition === BACKLOG_DISPOSITIONS.DUPLICATE_OF_CANONICAL_REMEDIATION

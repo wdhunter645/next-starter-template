@@ -5,7 +5,11 @@ import {
 	buildBacklogReport,
 	dispositionComment,
 	executeBacklogReport,
+	hasOpsPrEscalationLabel,
+	isBacklogScanCandidate,
 	isPostMergeExceptionIssue,
+	OPS_PR_ESCALATION_LABEL,
+	opsEscalationLabelsToApply,
 	parsePostMergeExceptionIssue,
 	POST_MERGE_EXCEPTION_SIGNATURE,
 } from '../scripts/ci/post_merge_self_heal_backlog.mjs';
@@ -39,6 +43,23 @@ describe('post-merge self-healing backlog matching', () => {
 			labels: [{ name: 'post-merge-failure' }],
 		}))).toBe(true);
 		expect(isPostMergeExceptionIssue({ title: 'Unrelated issue', body: '', labels: [] })).toBe(false);
+	});
+
+	it('excludes ops-pr-escalation issues from backlog scan candidates', () => {
+		const escalated = exceptionIssue({
+			labels: [{ name: 'post-merge-failure' }, { name: OPS_PR_ESCALATION_LABEL }],
+		});
+		expect(hasOpsPrEscalationLabel(escalated)).toBe(true);
+		expect(isBacklogScanCandidate(escalated)).toBe(false);
+		expect(isBacklogScanCandidate(exceptionIssue())).toBe(true);
+	});
+
+	it('adds post-merge-failure when applying ops-pr-escalation without it', () => {
+		expect(opsEscalationLabelsToApply(['post-merge-self-healing'])).toEqual([
+			'post-merge-failure',
+			OPS_PR_ESCALATION_LABEL,
+		]);
+		expect(opsEscalationLabelsToApply(['post-merge-failure'])).toEqual([OPS_PR_ESCALATION_LABEL]);
 	});
 
 	it('parses PR, source, failure, and canonical evidence from issue bodies', () => {
@@ -175,6 +196,26 @@ describe('post-merge self-healing backlog classification', () => {
 		expect(report.summary.preserved_ambiguous_issues).toBe(1);
 	});
 
+	it('skips issues already labeled ops-pr-escalation during backlog scans', () => {
+		const report = buildBacklogReport({
+			issues: [
+				exceptionIssue({ number: 1900 }),
+				exceptionIssue({
+					number: 1901,
+					labels: [{ name: 'post-merge-failure' }, { name: OPS_PR_ESCALATION_LABEL }],
+				}),
+			],
+			sourceIssuesByNumber: { 1851: null },
+			dryRun: true,
+		});
+
+		expect(report.summary).toMatchObject({
+			total_open_post_merge_exception_issues: 2,
+			skipped_already_escalated: 1,
+			total_scanned: 1,
+		});
+	});
+
 	it('does not throw when fetched source issue metadata is null', () => {
 		const report = buildBacklogReport({
 			issues: [exceptionIssue()],
@@ -236,11 +277,17 @@ describe('post-merge self-healing backlog execution', () => {
 
 		const patches = calls.filter((call) => call.method === 'PATCH');
 		const comments = calls.filter((call) => call.path.endsWith('/comments'));
+		const repoLabelCreates = calls.filter((call) => call.path === '/labels' && call.method === 'POST');
+		const issueLabelAdds = calls.filter((call) => /^\/issues\/\d+\/labels$/.test(call.path) && call.method === 'POST');
 
 		expect(outcome.summary.closed).toBe(2);
-		expect(outcome.summary.commented).toBe(1);
+		expect(outcome.summary.ops_escalated).toBe(1);
 		expect(patches.map((call) => call.path)).toEqual(['/issues/1900', '/issues/1901']);
 		expect(comments).toHaveLength(3);
-		expect(dispositionComment(report.classifications[2])).toContain('preserving this issue');
+		expect(repoLabelCreates).toHaveLength(1);
+		expect(issueLabelAdds).toHaveLength(1);
+		expect(issueLabelAdds[0].path).toBe('/issues/1902/labels');
+		expect(issueLabelAdds[0].body).toEqual({ labels: [OPS_PR_ESCALATION_LABEL] });
+		expect(dispositionComment(report.classifications[2])).toContain('ops-pr-escalation');
 	});
 });

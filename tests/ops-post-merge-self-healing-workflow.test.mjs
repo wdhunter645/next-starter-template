@@ -57,6 +57,9 @@ describe('OPS — Post-Merge Self-Healing workflow', () => {
 		expect(workflow).toContain('types: [opened, reopened, edited, labeled]');
 		expect(workflow).toContain("startsWith(github.event.issue.title, 'Post-merge closeout exception')");
 		expect(workflow).toContain("contains(join(github.event.issue.labels.*.name, ','), 'post-merge-failure')");
+		expect(workflow).toContain("contains(join(github.event.issue.labels.*.name, ','), 'ops-pr-escalation')");
+		expect(workflow).toContain("github.event.issue.state == 'open'");
+		expect(workflow).toContain("github.event.label.name == 'ops-pr-escalation'");
 		expect(workflow).toMatch(/elif \[ "\$\{\{ github\.event_name \}\}" = "issues" \]; then[\s\S]*echo "backlog_scope=event_issue"/);
 	});
 

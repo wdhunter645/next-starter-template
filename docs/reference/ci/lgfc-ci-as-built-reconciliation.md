@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: LGFC CI redesign as-built reconciliation, design-vs-as-built variances, deferred implementation items, monitoring ownership map
 Does Not Own: GitHub branch protection UI settings, workflow runtime code, secret configuration
 Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related Issues: #1199, #1075, #1058, #1335, #1340, #1548, #1674
-Last Reviewed: 2026-06-16
+Related Issues: #1199, #1075, #1058, #1335, #1340, #1548, #1674, #1847, #1914, #1921
+Last Reviewed: 2026-06-22
 ---
 
 # LGFC CI As-Built Reconciliation
@@ -53,6 +53,13 @@ reports.
 Pre-merge PR-to-issue accounting is separate from source issue closeout and is
 owned by `.github/workflows/ops-pr-issue-accounting.yml`.
 
+Post-merge self-healing hygiene (`OPS — Post-Merge Self-Healing`) is a separate
+downstream layer owned by `.github/workflows/ops-post-merge-self-healing.yml`.
+It burns down open post-merge exception backlog, applies bounded safe repairs,
+and labels non-auto-fixable exceptions `ops-pr-escalation` on the same issue
+instead of opening child escalation issues by default. Architecture:
+`docs/explanation/ci/post-merge-self-healing-architecture.md`.
+
 ## Umbrella issue boundary
 
 The current as-built automation resolves and closes the single accepted source
@@ -79,6 +86,7 @@ deferred implementation item unless a later task adds that explicit check.
 | PR hygiene advisories | CI governance | PR | Advisory comments | Agent/human correction pre-merge |
 | Reviewer lifecycle (`reviewer-response-completion`) | CI governance | PR target / review events | Required check failure on protected CI scope | Trusted review + thread resolution |
 | Post-merge detection / remediation | CI orchestration | merged PR close / `main` push | Workflow failure on `main`; orchestrator pause | Remediation issue + follow-up PR |
+| Post-merge self-healing (`ops-post-merge-self-healing`) | CI orchestration | schedule / issues / workflow_run / manual | Backlog artifact reports preserved exceptions; `ops-pr-escalation` queue | Ops queue: `label:ops-pr-escalation` + bounded remediation PR |
 | OPS assessment / production audit | Operations | schedule / manual / scan trigger | Workflow failure + GitHub issue via `ops_runtime_escalation.mjs` | Ops issue triage |
 
 Detailed monitoring map: `docs/ops/ci-monitoring-ownership.md`.

@@ -5,7 +5,7 @@ Authority Level: Operational
 Owns: Operator procedure for OPS — Post-Merge Self-Healing workflow dispatch, artifact review, and Cursor escalation handling
 Does Not Own: Classifier contract, detector implementation, auto-fix execution code, escalation script implementation, merge approval
 Canonical Reference: /docs/reference/ci/post-merge-self-healing-classification-contract.md
-Related issues: #1847, #1853, #1906, #1914
+Related issues: #1847, #1853, #1906, #1914, #1921
 Last Reviewed: 2026-06-22
 ---
 
@@ -114,8 +114,11 @@ Apply artifact fields to inspect:
 
 Every run reports:
 
+- total open post-merge exceptions;
+- skipped already escalated (`ops-pr-escalation`);
 - total scanned;
 - auto-closed;
+- ops-pr-escalation labeled or planned;
 - manifest fixes applied or planned;
 - duplicate closures;
 - preserved active-source issues;
@@ -147,14 +150,39 @@ The workflow also runs on `issues` events (`opened`, `reopened`, `edited`, and
 
 - title starts with `Post-merge closeout exception`;
 - body contains the post-merge exception signature;
-- labels include `post-merge-failure` or `post-merge-self-healing`.
+- labels include `post-merge-failure` or `post-merge-self-healing`;
+- the issue does **not** already include `ops-pr-escalation`.
 
 For matching issue events, the workflow classifies only that issue and applies
-deterministic safe-close/comment actions immediately. Ambiguous reviewer,
-source, or verification evidence remains open with a self-healing disposition
-comment.
+deterministic safe-close actions immediately. When CI cannot auto-close, it adds
+a disposition comment and the `ops-pr-escalation` label on the **same** issue.
+Any issues with the `ops-pr-escalation` label are excluded from repeat daily scans.
 
-### Enable escalation issues
+### Ops PR escalation queue (`ops-pr-escalation`)
+
+When backlog classification cannot auto-close an exception issue, CI:
+
+1. Posts one disposition comment (`<!-- post-merge-self-healing-backlog-disposition -->`).
+2. Adds the `ops-pr-escalation` label.
+3. Skips that issue on future backlog scans until an operator removes the label.
+
+Ops research queue:
+
+`is:issue is:open label:post-merge-failure label:ops-pr-escalation`
+
+After remediation merges and closeout passes, either CI auto-closes the
+exception on a later scan (if label was removed) or Ops closes it manually.
+
+Initial historical backlog burn-down:
+
+1. Dry-run manual dispatch → review `auto_close_planned` vs `ops_pr_escalation_planned`.
+2. Apply manual dispatch → auto-close safe bucket; label the rest `ops-pr-escalation`.
+3. Work the `ops-pr-escalation` queue via bounded remediation PRs.
+
+### Enable escalation issues (manual dispatch only; not default)
+
+Use separate escalation issue creation only when an operator explicitly accepts
+additional issue noise:
 
 Use escalation issue creation when:
 

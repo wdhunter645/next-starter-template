@@ -20,7 +20,7 @@ As-built reconciliation for the `#1075` CI redesign is maintained in
 - `docs/reference/ci/post-merge-validation-surface.md`
 - `docs/reference/ci/ops-runtime-surface.md`
 
-**Last reconciliation review:** 2026-06-15 (Program #1500 Task 005 closeout ownership reconciliation)
+**Last reconciliation review:** 2026-06-22 (Programs #1847/#1914 self-healing activation and `ops-pr-escalation` handoff)
 
 ## Action Workflow Inventory — Closeout Surface
 
@@ -30,7 +30,8 @@ As-built reconciliation for the `#1075` CI redesign is maintained in
 | `post-merge-closeout.yml` | Post-Merge Detection | Effective | Primary automatic post-merge reconciliation workflow for merged PRs to `main`. |
 | `post-merge-pr-body-closeout.yml` | Post-Merge PR Body Closeout | Effective (Manual / Backfill) | Manual single-PR reconciliation, batch manifests, and push-triggered backfill. |
 | `post-merge-intent-verification.yml` | Post-Merge Maintainer Body Apply | Effective (Targeted automatic / dispatch) | Maintainer PR-body updates for explicitly targeted PR synchronize events and maintainer-dispatched legacy PRs. |
-| `post-merge-remediation.yml` | Post-Merge Remediation | Effective | Remediation workflow for failed post-merge validation. |
+| `post-merge-remediation.yml` | Post-Merge Remediation | Effective | Remediation workflow for failed post-merge validation; runs self-healing before opening exception issues. |
+| `ops-post-merge-self-healing.yml` | OPS — Post-Merge Self-Healing | Effective | Post-merge backlog burn-down, safe auto-fix apply, and `ops-pr-escalation` Ops handoff on the same exception issue. |
 | `ops-pr-issue-accounting.yml` | GATE — PR Issue Accounting | Effective | Pre-merge PR-to-ticket accounting audit. |
 | `gate-close-work-issue.yml` | gate-close-work-issue | Ineffective (Parked no-op) | Legacy parked workflow retained for traceability only. |
 

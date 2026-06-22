@@ -6,7 +6,7 @@ Owns: Program #1500 closeout workflow inventory excerpt, classification, overlap
 Does Not Own: Complete workflow inventory, workflow implementation, branch protection settings, CI architecture rationale
 Canonical Reference: /docs/reference/ci/github-actions_MASTER.md
 Related Issues: #1199, #1058, #1545, #1548, #1674
-Last Reviewed: 2026-06-19
+Last Reviewed: 2026-06-22
 ---
 
 # GitHub Actions Closeout Workflow Inventory Excerpt
@@ -83,7 +83,8 @@ Each workflow should have a clear owner, visible name, filename, trigger class, 
 | `post-merge-closeout.yml` | Post-Merge Detection | Primary automatic post-merge reconciliation workflow for merged PRs to `main`. | `pull_request_target` closed (merged to `main`) | Operational | post-merge reconciliation | checkout, Node, reconciliation runner, gh, reviewer audit helper | Yes | Medium | Owns the automatic post-merge reconciliation path. | No |
 | `post-merge-pr-body-closeout.yml` | Post-Merge PR Body Closeout | Manual and backfill reconciliation. | workflow dispatch / push backfill | Operational | manual/backfill reconciliation | Node, batch manifest, helper scripts | Yes | Medium | Supports manual and batch reconciliation only. | No |
 | `post-merge-intent-verification.yml` | Post-Merge Maintainer Body Apply | Targeted automatic and dispatch maintainer support path. | targeted PR synchronize / workflow dispatch | Support | targeted maintainer support | Node, validator helper | Yes | Medium | Targeted legacy support path; not broad ownership. | Redesign candidate |
-| `post-merge-remediation.yml` | Post-Merge Remediation | Remediation workflow after failed post-merge validation. | post-merge detection handoff | Operational | remediation | Node, remediation helper | Yes | Medium | Runs after failed validation only. | No |
+| `post-merge-remediation.yml` | Post-Merge Remediation | Remediation workflow after failed post-merge validation; pre-heals via self-healing before exception issue upsert. | post-merge detection handoff | Operational | remediation | Node, remediation helper, self-healing scripts | Yes | Medium | Runs after failed validation only. | No |
+| `ops-post-merge-self-healing.yml` | OPS — Post-Merge Self-Healing | Post-merge backlog scan, safe auto-fix apply, and `ops-pr-escalation` label handoff on the same exception issue. | schedule / issues / workflow_run / manual dispatch | Operational | post-merge hygiene | Node, backlog/detect/apply/escalate scripts | Yes | Medium | Downstream hygiene layer after closeout; does not replace pre-merge gates. | No |
 | `gate-close-work-issue.yml` | gate-close-work-issue | Parked no-op legacy workflow. | `pull_request_target` closed | Parked | None | none | No | Low | Replaced by the current post-merge and pre-merge accounting surfaces. | Yes |
 | `ops-pr-issue-accounting.yml` | OPS - PR Issue Accounting | Normalize and verify one linked ticket per PR before merge. | `pull_request_target` | Blocking | ticket-first PR accounting | GitHub Script | Yes | Medium | Owns pre-merge accounting only. | Redesign candidate |
 
