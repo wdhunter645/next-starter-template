@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 import { useMemberSession } from '@/hooks/useMemberSession';
 
 type LibraryItem = {
@@ -28,29 +29,32 @@ const styles: Record<string, React.CSSProperties> = {
   hr: { margin: '18px 0', opacity: 0.25 },
 };
 
+function buildLibraryApiUrl(page: number, q: string): string {
+  const params = new URLSearchParams({ page: String(page) });
+  const needle = q.trim();
+  if (needle) params.set('q', needle);
+  return `/api/fanclub/library?${params.toString()}`;
+}
+
 export default function LibraryPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const activeQuery = searchParams.get('q') || '';
   const { isLoading, isAuthenticated } = useMemberSession({ redirectTo: '/' });
   const [items, setItems] = useState<LibraryItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [query, setQuery] = useState('');
+  const [draftQuery, setDraftQuery] = useState(activeQuery);
 
-  const filteredItems = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    if (!needle) return items;
-    return items.filter((it) => {
-      const title = it.title || '';
-      const content = it.content || it.description || '';
-      const author = it.author || '';
-      return title.toLowerCase().includes(needle) || content.toLowerCase().includes(needle) || author.toLowerCase().includes(needle);
-    });
-  }, [items, query]);
+  useEffect(() => {
+    setDraftQuery(activeQuery);
+  }, [activeQuery]);
 
-  async function load() {
+  async function load(q: string) {
     setLoading(true);
     setMessage('');
     try {
-      const res = await fetch('/api/fanclub/library?page=1', { credentials: 'include', cache: 'no-store' });
+      const res = await fetch(buildLibraryApiUrl(1, q), { credentials: 'include', cache: 'no-store' });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data?.ok) {
         setItems(Array.isArray(data.items) ? data.items : []);
@@ -68,9 +72,9 @@ export default function LibraryPage() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      load();
+      load(activeQuery);
     }
-  }, [isLoading, isAuthenticated]);
+  }, [isLoading, isAuthenticated, activeQuery]);
 
   if (isLoading || !isAuthenticated) {
     return null;
@@ -78,7 +82,7 @@ export default function LibraryPage() {
 
   return (
     <main style={styles.main}>
-      <h1 style={styles.h1}>Library</h1>
+      <h1 style={styles.h1}>Gehrig Library</h1>
       <p style={styles.lead}>
         A read-only member view of published editorial inventory stories about Lou Gehrig and related history.
       </p>
@@ -90,26 +94,40 @@ export default function LibraryPage() {
         <section style={styles.card}>
           <h2 style={{ margin: 0 }}>Browse entries</h2>
           <hr style={styles.hr} />
-          <label style={styles.label}>
-            Search
-            <input
-              style={styles.input}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search titles or entry text"
-            />
-          </label>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
-            <Link href="/fanclub/submit" style={styles.btn}>
-              Submit an Article
-            </Link>
-            <Link href="/fanclub/memorabilia" style={styles.btn}>
-              View Memorabilia
-            </Link>
-            <Link href="/fanclub" style={styles.btn}>
-              Back to Fan Club Home
-            </Link>
-          </div>
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              const next = draftQuery.trim();
+              const params = new URLSearchParams();
+              if (next) params.set('q', next);
+              const suffix = params.toString();
+              router.replace(suffix ? `/fanclub/library?${suffix}` : '/fanclub/library');
+            }}
+          >
+            <label style={styles.label}>
+              Search
+              <input
+                style={styles.input}
+                value={draftQuery}
+                onChange={(e) => setDraftQuery(e.target.value)}
+                placeholder="Search library…"
+              />
+            </label>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
+              <button type="submit" style={styles.btn}>
+                Search library
+              </button>
+              <Link href="/fanclub/submit" style={styles.btn}>
+                Submit an Article
+              </Link>
+              <Link href="/fanclub/memorabilia" style={styles.btn}>
+                View Memorabilia
+              </Link>
+              <Link href="/fanclub" style={styles.btn}>
+                Back to Fan Club Home
+              </Link>
+            </div>
+          </form>
           {message ? <p style={{ ...styles.p, marginTop: 12 }}>{message}</p> : null}
         </section>
 
@@ -118,10 +136,10 @@ export default function LibraryPage() {
           <hr style={styles.hr} />
           {loading ? (
             <p style={styles.p}>Loading…</p>
-          ) : filteredItems.length === 0 ? (
-            <p style={styles.p}>No entries yet.</p>
+          ) : items.length === 0 ? (
+            <p style={styles.p}>{activeQuery.trim() ? 'No library entries match your search.' : 'No entries yet.'}</p>
           ) : (
-            filteredItems.map((it) => (
+            items.map((it) => (
               <article key={it.id} style={{ marginBottom: 14 }}>
                 <h3 style={{ margin: '0 0 6px 0' }}>{it.title || 'Untitled story'}</h3>
                 <div style={styles.meta}>
