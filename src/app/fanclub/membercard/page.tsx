@@ -13,5 +13,9 @@ export default function MemberCardRedirectPage() {
     router.replace('/fanclub/myprofile#membership-card');
   }, [isLoading, isAuthenticated, router]);
 
-  return null;
+  return (
+    <main style={{ padding: '40px 16px', maxWidth: 720, margin: '0 auto' }}>
+      <p>Redirecting to your membership card…</p>
+    </main>
+  );
 }
