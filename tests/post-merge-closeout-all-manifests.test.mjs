@@ -127,6 +127,7 @@ describe('post-merge closeout all manifests', () => {
 			...loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ops-burn-down-wave2.json').targets,
 			...loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json').targets,
 			...loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3a.json').targets,
+			...loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3a-remediation.json').targets,
 		];
 		const wave3b = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3b.json').targets;
 		const priorPrs = new Set(prior.map((target) => target.pr));
