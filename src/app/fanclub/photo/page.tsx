@@ -123,6 +123,7 @@ export default function FanclubPhotoGalleryPage() {
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <button
               type="button"
+              aria-pressed={selectedTags.length === 0}
               style={selectedTags.length === 0 ? pillActive : pillBase}
               onClick={() => setSelectedTags([])}
             >
@@ -134,6 +135,7 @@ export default function FanclubPhotoGalleryPage() {
                 <button
                   key={tag}
                   type="button"
+                  aria-pressed={active}
                   style={active ? pillActive : pillBase}
                   onClick={() => {
                     setSelectedTags((current) =>
