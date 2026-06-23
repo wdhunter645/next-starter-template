@@ -78,11 +78,8 @@ expanding file-touch allowlists or bypassing PR governance.
 - Photo detail modal or dedicated detail route (design allows either).
 - Production B2 base URL or vendor configuration changes.
 
-## Verification Commands (typical UI task)
+## Verification Pointers
 
-```bash
-npm run typecheck
-npx vitest run tests/fanclub-operations.test.tsx tests/fanclub-home-shell.test.tsx tests/fanclub-home-dynamic.test.tsx tests/mobile-navigation.test.tsx
-```
-
-Document exact results in the PR body; do not claim merge-readiness without live gate inspection.
+Run typecheck and targeted Fan Club tests documented in the operator runbook
+(`docs/how-to/website/club-home-content-operations-runbook.md`) and record exact
+results in the PR body. Do not claim merge-readiness without live gate inspection.

@@ -92,3 +92,9 @@ Use [Fan Club operational workflows](./fanclub-operational-workflows.md) for ses
 - Editorial policy questions: use review workflow and `#1689` evidence.
 - API or fail-closed defects: open a bounded follow-up against backend reconciliation report `docs/ops/reports/website-completion-fan-club-backend-reconciliation.md`.
 - Program closeout: Task #1694 consolidates Tasks 001–008 evidence.
+
+### Verification (operator / Cursor)
+
+1. Run `npm run typecheck`.
+2. Run targeted Vitest suites: `tests/fanclub-operations.test.tsx`, `tests/fanclub-home-shell.test.tsx`, `tests/fanclub-home-dynamic.test.tsx`, `tests/mobile-navigation.test.tsx`.
+3. Record pass/fail outcomes in the PR body when making member-surface changes.
