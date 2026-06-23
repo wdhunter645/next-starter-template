@@ -93,7 +93,7 @@ Current Day 1 auth uses:
 - Login tab entry point: `/join?mode=login`.
 - FanClub route protection for `/fanclub` and `/fanclub/**`.
 
-Do not reintroduce localStorage, external auth providers, magic-link auth, `ADMIN_EMAILS` as the primary auth gate, or hybrid cookie/localStorage auth narratives in active docs or implementation.
+Do not reintroduce localStorage as the member auth source of truth, external auth providers, magic-link auth, `ADMIN_EMAILS` as the primary member auth gate, or hybrid cookie/localStorage member-auth narratives in active docs or implementation. This does not prohibit documented admin-token browser storage flows that are governed separately by the access-model documentation.
 
 ## Repository Layout
 
