@@ -3,6 +3,7 @@
 import { fetchRotationRankedInventory } from './content-inventory-rotation';
 
 export const LIBRARY_SECTION = 'library';
+export const CLUB_HOME_SECTION = 'club_home';
 export const RELATED_CONTENT_SECTION = 'related_content';
 export const SEARCH_SECTION = 'search';
 

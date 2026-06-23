@@ -14,12 +14,14 @@ import ClubHomeSubmissionCta from '@/components/fanclub/ClubHomeSubmissionCta';
 import DiscussionFeed from '@/components/fanclub/DiscussionFeed';
 import GehrigTimeline from '@/components/fanclub/GehrigTimeline';
 import PostCreation from '@/components/fanclub/PostCreation';
+import { useClubHomeContent } from '@/components/fanclub/useClubHomeContent';
 import { clubHomePageStack } from '@/components/fanclub/clubHomeStyles';
 import { useMemberSession } from '@/hooks/useMemberSession';
 
 export default function MemberHomePage() {
   const { isLoading, isAuthenticated, email, role } = useMemberSession({ redirectTo: '/' });
   const [feedRefresh, setFeedRefresh] = useState(0);
+  const clubHome = useClubHomeContent();
 
   if (isLoading || !isAuthenticated) {
     return null;
@@ -36,16 +38,18 @@ export default function MemberHomePage() {
         <ClubHomeStaticStory
           ariaLabel="Lead story"
           title="Lead Story"
-          headline="Lou Gehrig: The Iron Horse"
-          summary="Club historians are curating the lead story for this section. Check back soon for featured Lou Gehrig coverage from the archive."
+          headline={clubHome.leadHeadline}
+          summary={clubHome.leadSummary}
+          credit={clubHome.leadCredit}
+          sourceName={clubHome.leadSourceName}
         />
 
-        <ClubHomeStoryRail />
+        <ClubHomeStoryRail stories={clubHome.railStories} />
         <ArchivesTiles />
-        <ClubHomeMediaFeature />
+        <ClubHomeMediaFeature media={clubHome.mediaFeature} />
         <PostCreation email={memberEmail} onPostCreated={() => setFeedRefresh((n) => n + 1)} />
         <DiscussionFeed refreshTrigger={feedRefresh} />
-        <ClubHomeArchiveSpotlight />
+        <ClubHomeArchiveSpotlight story={clubHome.archiveSpotlight} />
         <ClubHomeDeferredModule
           ariaLabel="Campaign module"
           title="Campaign & Fundraiser"

@@ -1,6 +1,7 @@
 import ClubHomeStaticStory from './ClubHomeStaticStory';
+import type { ClubHomeStory } from '@/lib/clubHomeApi';
 
-const RAIL_ITEMS = [
+const STATIC_RAIL_ITEMS = [
   {
     headline: 'Lou Gehrig in the clubhouse',
     summary:
@@ -12,7 +13,22 @@ const RAIL_ITEMS = [
   },
 ] as const;
 
-export default function ClubHomeStoryRail() {
+type ClubHomeStoryRailProps = {
+  stories?: ClubHomeStory[];
+};
+
+export default function ClubHomeStoryRail({ stories }: ClubHomeStoryRailProps) {
+  const dynamicStories = (stories || []).filter((story) => story.headline || story.summary);
+  const items =
+    dynamicStories.length > 0
+      ? dynamicStories.map((story) => ({
+          headline: story.headline || story.title || 'Club story',
+          summary: story.summary || '',
+          credit: story.credit,
+          sourceName: story.source_name,
+        }))
+      : STATIC_RAIL_ITEMS.map((item) => ({ ...item, credit: null, sourceName: null }));
+
   return (
     <section aria-label="Secondary story rail">
       <h2 style={{ margin: '0 0 12px 0', fontSize: 22, color: 'var(--lgfc-blue, #003366)' }}>More Stories</h2>
@@ -23,13 +39,15 @@ export default function ClubHomeStoryRail() {
           gap: 12,
         }}
       >
-        {RAIL_ITEMS.map((item) => (
+        {items.map((item) => (
           <ClubHomeStaticStory
             key={item.headline}
             ariaLabel={`Secondary story: ${item.headline}`}
             title="Story"
             headline={item.headline}
             summary={item.summary}
+            credit={item.credit}
+            sourceName={item.sourceName}
             compact
           />
         ))}
