@@ -11,6 +11,7 @@ describe('post-merge closeout all manifests', () => {
 			'scripts/ci/post-merge-closeout/targets-remediation-backlog.json',
 			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave1.json',
 			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave2.json',
+			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3a.json',
 		]);
 	});
 
@@ -102,6 +103,19 @@ describe('post-merge closeout all manifests', () => {
 		const wave2 = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ops-burn-down-wave2.json').targets;
 		const rerunPrs = new Set(rerun.map((target) => target.pr));
 		const overlap = wave2.filter((target) => rerunPrs.has(target.pr));
+		expect(overlap).toEqual([]);
+	});
+
+	it('does not duplicate PR targets across prior manifests and Wave 3a manifest', () => {
+		const prior = [
+			...loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-remediation-backlog.json').targets,
+			...loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ops-burn-down-wave1.json').targets,
+			...loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ops-burn-down-wave2.json').targets,
+			...loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json').targets,
+		];
+		const wave3a = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3a.json').targets;
+		const priorPrs = new Set(prior.map((target) => target.pr));
+		const overlap = wave3a.filter((target) => priorPrs.has(target.pr));
 		expect(overlap).toEqual([]);
 	});
 });
