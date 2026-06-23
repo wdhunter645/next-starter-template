@@ -64,6 +64,26 @@ export default function MemberProfilePage() {
     };
   }, [isLoading, isAuthenticated]);
 
+  useEffect(() => {
+    if (isLoading || !isAuthenticated) return;
+    if (typeof window === 'undefined' || window.location.hash !== '#membership-card') return;
+
+    const scrollToMembershipCard = () => {
+      const target = document.getElementById('membership-card');
+      if (!target) return false;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return true;
+    };
+
+    if (scrollToMembershipCard()) return;
+
+    const observer = new MutationObserver(() => {
+      if (scrollToMembershipCard()) observer.disconnect();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [isLoading, isAuthenticated]);
+
   async function saveProfile() {
     setSaving(true);
     setMessage('');
