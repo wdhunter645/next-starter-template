@@ -45,7 +45,7 @@ All other files are out of scope
 - Result summary: PASS
 
 ## ACCEPTANCE CRITERIA
-- [x] Required source issue exists, is open, is same-repository, and is not a PR.
+- [x] Required source issue exists, is same-repository, and closed-source follow-up closeout evidence is recorded.
 - [x] PR issue-accounting gate passes.
 - [x] Drift gate passes.
 - [x] Intent gate passes.

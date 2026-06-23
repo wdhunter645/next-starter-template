@@ -6,6 +6,7 @@ import {
 	generateCloseoutBody,
 	resolveAllowlist,
 	sanitizeMergedPrBody,
+	validateGeneratedBody,
 } from '../scripts/ci/post_merge_closeout_body_generate.mjs';
 import { isPermittedClosedSourceIssueFollowup } from '../scripts/ci/post_merge_validator.mjs';
 
@@ -16,11 +17,14 @@ describe('post_merge_closeout_body_generate', () => {
 placeholder
 <!-- pr-body-auto-repair:end -->
 ## CHANGE SUMMARY
-- real change`;
+- real change
+<!-- CURSOR_AGENT_PR_BODY_END -->
+<div><a href="https://cursor.com/agents/example">Open in Web</a></div>`;
 		const sanitized = sanitizeMergedPrBody(body);
 		expect(sanitized).not.toContain('pr-body-auto-repair');
 		expect(sanitized).toContain('Status: MERGED');
 		expect(sanitized).toContain('real change');
+		expect(sanitized).not.toContain('cursor.com');
 	});
 
 	it('builds reviewer disposition lines for trusted inline threads', () => {
@@ -70,8 +74,8 @@ placeholder
 		expect(body).toContain('## BUILD / TEST / VERIFICATION');
 		expect(body).toContain('Result summary: PASS');
 		expect(body).toContain('## ACCEPTANCE CRITERIA');
-		expect(body).toContain('- [x] All actionable reviewer and bot feedback is resolved or explicitly dispositioned.');
-		expect(body).toContain('Remediation follow-up for closed source issue #1196');
+		expect(body).toContain('closed-source follow-up closeout evidence is recorded');
+		expect(body).not.toContain('source issue exists, is open');
 		expect(resolveAllowlist({ mergedBody: body, changedFiles: [{ filename: 'src/app/page.tsx' }] })).toContain(
 			'src/app/page.tsx',
 		);
@@ -86,5 +90,29 @@ placeholder
 	it('maps failure codes to remediation notes', () => {
 		expect(failureRemediationNote('closeout_blocker_declared')).toMatch(/BLOCKED/);
 		expect(failureRemediationNote('undispositioned_reviewer_comment')).toMatch(/review-comment/);
+	});
+
+	it('fails validation when generated body still contains blocked status', async () => {
+		const body = generateCloseoutBody({
+			prNumber: 1201,
+			mergeSha: 'abc123',
+			sourceIssueNumber: 1196,
+			mergedBody: 'Status: BLOCKED',
+			changedFiles: [],
+			reviewComments: [],
+			reviews: [],
+			sourceIssueState: 'open',
+		}).replace('Result summary: PASS', 'Result summary: FAIL');
+		const result = await validateGeneratedBody({
+			body,
+			mergeSha: 'abc123',
+			mergedAt: '2026-01-01T00:00:00Z',
+			reviewComments: [],
+			reviews: [],
+			sourceIssue: { number: 1196, state: 'open', labels: [] },
+			repoLabels: [{ name: 'status:complete' }],
+		});
+		expect(result.status).toBe('fail');
+		expect(result.failures.length).toBeGreaterThan(0);
 	});
 });

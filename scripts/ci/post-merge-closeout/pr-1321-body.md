@@ -26,8 +26,6 @@ All other files are out of scope
 - Dispatch **AI Execution Bridge** via `workflow_dispatch` after live test label apply (GITHUB_TOKEN does not fire `issues:labeled`).
 - Retry bridge dispatch for open orphaned live test #1316.
 - Make #1288 close idempotent; document automation note in how-to.
-- <!-- CURSOR_AGENT_PR_BODY_END -->
-- <div><a href="https://cursor.com/agents/bc-40ffceb1-ebbf-468e-ba0e-d227d532f541"><picture><source media="(prefers-color-scheme: dark)" srcset="https://cursor.com/assets/images/open-in-web-dark.png"><source media="(prefers-color-scheme: light)" srcset="https://cursor.com/assets/images/open-in-web-light.png"><img alt="Open in Web" width="114" height="28" src="https://cursor.com/assets/images/open-in-web-dark.png"></picture></a>&nbsp;<a href="https://cursor.com/background-agent?bcId=bc-40ffceb1-ebbf-468e-ba0e-d227d532f541"><picture><source media="(prefers-color-scheme: dark)" srcset="https://cursor.com/assets/images/open-in-cursor-dark.png"><source media="(prefers-color-scheme: light)" srcset="https://cursor.com/assets/images/open-in-cursor-light.png"><img alt="Open in Cursor" width="131" height="28" src="https://cursor.com/assets/images/open-in-cursor-dark.png"></picture></a>&nbsp;</div>
 
 ## BUILD / TEST / VERIFICATION
 - Commands run:
@@ -40,7 +38,7 @@ All other files are out of scope
 - Result summary: PASS
 
 ## ACCEPTANCE CRITERIA
-- [x] Required source issue exists, is open, is same-repository, and is not a PR.
+- [x] Required source issue exists, is same-repository, and closed-source follow-up closeout evidence is recorded.
 - [x] PR issue-accounting gate passes.
 - [x] Drift gate passes.
 - [x] Intent gate passes.

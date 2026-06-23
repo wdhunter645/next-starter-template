@@ -1,5 +1,5 @@
 {
-  "triggered_at": "2026-06-23T11:34:50.133Z",
+  "triggered_at": "2026-06-23T11:48:45.949Z",
   "description": "OPS #1923 Wave 3a — first batch of batch-generated closeout bodies",
   "targets": [
     {
@@ -55,12 +55,6 @@
       "body_file": "scripts/ci/post-merge-closeout/pr-1284-body.md",
       "merge_sha": "e896b90d17bdd0b78b2e9bd766c98d3896820a36",
       "source_issue": 1283
-    },
-    {
-      "pr": 1289,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1289-body.md",
-      "merge_sha": "6ceff99a1f45260d2a6f3677634a11b079a9211d",
-      "source_issue": 1288
     },
     {
       "pr": 1292,
@@ -120,6 +114,12 @@
       "pr": 1321,
       "body_file": "scripts/ci/post-merge-closeout/pr-1321-body.md",
       "merge_sha": "ad1d7d210d86150741b13e434faf1c2265d06ba6",
+      "source_issue": 1314
+    },
+    {
+      "pr": 1324,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1324-body.md",
+      "merge_sha": "dfa52543831e5c36fe2d111959fbaecefbadac53",
       "source_issue": 1314
     }
   ]

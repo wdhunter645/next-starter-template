@@ -30,6 +30,10 @@ function parseArgs(argv = process.argv.slice(2)) {
 			options.validate = false;
 			continue;
 		}
+		if (arg === '--validate') {
+			options.validate = true;
+			continue;
+		}
 		if (arg === '--list-only') {
 			options.listOnly = true;
 			continue;

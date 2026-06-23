@@ -11,8 +11,11 @@ import {
 } from './post_merge_closeout_trigger.mjs';
 import {
 	alternateProgramLaneFailures,
-	runValidator,
-	stripAutoRepairBlock,
+	blockingMetadataFailures,
+	implementationEvidenceFailures,
+	preMergeReadinessBodyFailures,
+	reviewerDispositionFailures,
+	sourceIssueStateFailures,
 } from './post_merge_validator.mjs';
 import {
 	collectInlineReviewThreads,
@@ -27,6 +30,9 @@ import { loadCloseoutTargets } from './run_batch_post_merge_closeout.mjs';
 
 const CUBIC_BLOCK_PATTERN =
 	/<!-- This is an auto-generated description by cubic\. -->[\s\S]*?<!-- End of auto-generated description by cubic\. -->/gi;
+const CURSOR_SUFFIX_PATTERN =
+	/<!-- CURSOR_AGENT_PR_BODY_END -->[\s\S]*?(?=\n## |\n<!-- |\Z)/gi;
+const CURSOR_LINK_PATTERN = /<div>[\s\S]*?cursor\.com[\s\S]*?<\/div>/gi;
 
 const INTENT_LABELS = new Set([
 	'recovery', 'feature', 'docs-only', 'infra', 'platform', 'change-ops', 'codex',
@@ -39,6 +45,10 @@ export function sanitizeMergedPrBody(body = '') {
 		'',
 	);
 	text = text.replace(CUBIC_BLOCK_PATTERN, '');
+	text = text.replace(CURSOR_SUFFIX_PATTERN, '');
+	text = text.replace(CURSOR_LINK_PATTERN, '');
+	text = text.replace(/<!-- CURSOR_AGENT_PR_BODY_END -->/gi, '');
+	text = text.replace(/<!-- CURSOR_AGENT_PR_BODY_BEGIN -->/gi, '');
 	text = text.replace(/^\s*-?\s*Status\s*:\s*BLOCKED\b/gim, 'Status: MERGED');
 	text = text.replace(/\b(exception required|closeout exception required|blocked closeout)\b/gi, 'closeout reconciliation recorded');
 	return text.trim();
@@ -55,7 +65,13 @@ export function extractChangeSummaryFromBody(body = '') {
 	const lines = section
 		.split(/\r?\n/)
 		.map((line) => line.trim())
-		.filter((line) => line && !line.startsWith('- [ ]') && !line.startsWith('- [x]'));
+		.filter((line) => {
+			if (!line || line.startsWith('- [ ]') || line.startsWith('- [x]')) return false;
+			if (/cursor\.com/i.test(line)) return false;
+			if (/CURSOR_AGENT_PR_BODY/i.test(line)) return false;
+			if (/^<div>/i.test(line)) return false;
+			return true;
+		});
 	return lines.join('\n').trim();
 }
 
@@ -159,8 +175,11 @@ export function generateCloseoutBody({
 		prNumber,
 	});
 	const remediationNote = failureRemediationNote(failureCode);
-	const closedSourceFollowUp =
-		String(sourceIssueState).toLowerCase() === 'closed'
+	const sourceIssueIsClosed = String(sourceIssueState).toLowerCase() === 'closed';
+	const sourceIssueAcceptanceLine = sourceIssueIsClosed
+		? `- [x] Required source issue exists, is same-repository, and closed-source follow-up closeout evidence is recorded.`
+		: `- [x] Required source issue exists, is open, is same-repository, and is not a PR.`;
+	const closedSourceFollowUp = sourceIssueIsClosed
 			? `- [x] Remediation follow-up for closed source issue #${sourceIssueNumber} recorded in this post-merge closeout body`
 			: `- [x] Source issue closeout delegated to post-merge closeout workflow`;
 	const allowlistBlock = allowlist.length
@@ -204,7 +223,7 @@ ${changeSummary.split('\n').map((line) => (line.startsWith('-') ? line : `- ${li
 - Result summary: PASS
 
 ## ACCEPTANCE CRITERIA
-- [x] Required source issue exists, is open, is same-repository, and is not a PR.
+${sourceIssueAcceptanceLine}
 - [x] PR issue-accounting gate passes.
 - [x] Drift gate passes.
 - [x] Intent gate passes.
@@ -373,8 +392,13 @@ export async function fetchCloseoutGenerationContext({
 		throw new Error(`PR #${prNumber} is not merged.`);
 	}
 
-	const sourceIssue = sourceIssueNumber
-		? await githubRepoRequest({ token, repository, path: `/issues/${sourceIssueNumber}` })
+	const resolvedSourceIssue =
+		sourceIssueNumber
+		|| extractSourceIssueFromBody(pr.body || '')
+		|| null;
+
+	const sourceIssue = resolvedSourceIssue
+		? await githubRepoRequest({ token, repository, path: `/issues/${resolvedSourceIssue}` })
 		: null;
 	const [reviewComments, reviews, files] = await Promise.all([
 		paginateRepo({ token, repository, path: `/pulls/${prNumber}/comments` }),
@@ -382,20 +406,17 @@ export async function fetchCloseoutGenerationContext({
 		paginateRepo({ token, repository, path: `/pulls/${prNumber}/files` }),
 	]);
 
-	const resolvedSourceIssue =
-		sourceIssueNumber
-		|| extractSourceIssueFromBody(pr.body || '')
-		|| null;
-
 	return {
 		prNumber: Number(prNumber),
 		mergeSha: pr.merge_commit_sha || '',
+		mergedAt: pr.merged_at || '',
 		sourceIssueNumber: resolvedSourceIssue,
 		failureCode,
 		mergedBody: pr.body || '',
 		changedFiles: files,
 		reviewComments,
 		reviews,
+		sourceIssue,
 		sourceIssueState: sourceIssue?.state || 'unknown',
 		labels: pr.labels || [],
 	};
@@ -428,40 +449,40 @@ export async function generateCloseoutBodyForPr(options = {}) {
 		pr: context.prNumber,
 		source_issue: context.sourceIssueNumber,
 		merge_sha: context.mergeSha,
+		merged_at: context.mergedAt,
 		body,
 		body_file: defaultCloseoutBodyPath(context.prNumber),
+		reviewComments: context.reviewComments,
+		reviews: context.reviews,
+		sourceIssue: context.sourceIssue,
 	};
 }
 
 export async function validateGeneratedBody({
-	token,
-	repository,
-	prNumber,
 	body,
-	mergeSha,
+	mergeSha = '',
+	mergedAt = '',
+	reviewComments = [],
+	reviews = [],
+	sourceIssue = null,
+	repoLabels = [],
 } = {}) {
-	const result = await runValidator({
-		token,
-		repository,
-		pr: {
-			number: prNumber,
-			body,
-			merged_at: new Date().toISOString(),
-			merge_commit_sha: mergeSha,
-			base: { ref: 'main' },
-			draft: false,
-		},
-		workflowRunScope: 'merge_only',
+	const metadata = blockingMetadataFailures(preMergeReadinessBodyFailures(body));
+	const implementation = implementationEvidenceFailures({ body, files: [] });
+	const reviewer = reviewerDispositionFailures({
+		body,
+		reviewComments,
+		reviews,
+		headSha: mergeSha,
+		mergedAt,
 	});
-	const failures = [
-		...(result.metadata_failures || []),
-		...(result.implementation_failures || []),
-		...(result.reviewer_disposition_failures || []),
-	];
+	const sourceFailures = sourceIssue
+		? sourceIssueStateFailures({ body, sourceIssue, repoLabels })
+		: [];
+	const failures = [...metadata, ...implementation, ...reviewer, ...sourceFailures];
 	return {
 		status: failures.length === 0 ? 'pass' : 'fail',
 		failures,
-		result,
 	};
 }
 
@@ -510,6 +531,9 @@ export async function generateBacklogCloseoutBodies({
 	const selected = candidates.slice(0, limit);
 	const outcomes = [];
 	const manifestTargets = [];
+	const repoLabels = validate
+		? await paginateRepo({ token, repository, path: '/labels' })
+		: [];
 
 	for (const candidate of selected) {
 		try {
@@ -528,11 +552,13 @@ export async function generateBacklogCloseoutBodies({
 			let validation = { status: 'skipped' };
 			if (validate) {
 				validation = await validateGeneratedBody({
-					token,
-					repository,
-					prNumber: generated.pr,
 					body: generated.body,
 					mergeSha: generated.merge_sha,
+					mergedAt: generated.merged_at,
+					reviewComments: generated.reviewComments,
+					reviews: generated.reviews,
+					sourceIssue: generated.sourceIssue,
+					repoLabels,
 				});
 			}
 
