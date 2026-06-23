@@ -108,11 +108,11 @@ describe('content inventory public surface contract (#1259 Task 006)', () => {
         expect(pageSource, `${entry.pageFile} should call ${entry.apiRoute}`).toContain(entry.apiRoute);
       }
 
-      const apiSource = readSource(entry.apiFile);
       if (entry.surface === 'club_home') {
         const libSource = readSource('functions/_lib/content-inventory-club-home.ts');
         expect(libSource, 'club home lib should define club_home section').toContain(entry.section);
       } else {
+        const apiSource = readSource(entry.apiFile);
         expect(apiSource, `${entry.apiFile} should filter section ${entry.section}`).toContain(entry.section);
       }
     }

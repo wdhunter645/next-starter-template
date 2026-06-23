@@ -57,7 +57,7 @@ async function readMemberProfile(db: any, email: string) {
         (joinRow as any).first_name,
         (joinRow as any).last_name,
         (joinRow as any).screen_name || null,
-        (joinRow as any).email_opt_in == null ? 1 : Number((joinRow as any).email_opt_in) ? 1 : 0,
+        Number((joinRow as any).email_opt_in ?? 1) ? 1 : 0,
         email,
       )
       .run();
