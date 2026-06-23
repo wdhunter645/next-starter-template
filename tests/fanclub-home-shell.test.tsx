@@ -29,6 +29,24 @@ vi.mock('@/components/fanclub/AdminLink', () => ({
   default: () => null,
 }));
 
+const mockFetch = vi.fn();
+
+beforeEach(() => {
+  mockFetch.mockReset();
+  mockFetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      ok: true,
+      source: 'static',
+      lead_story: null,
+      rail_stories: [],
+      archive_spotlight: null,
+      media_feature: null,
+    }),
+  });
+  vi.stubGlobal('fetch', mockFetch);
+});
+
 describe('Fan Club home newspaper shell (#1688 Task 003)', () => {
   beforeEach(() => {
     mockUseMemberSession.mockReturnValue({
