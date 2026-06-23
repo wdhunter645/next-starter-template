@@ -14,12 +14,12 @@ export function normalizeRepoPath(entry = '') {
 }
 
 export function manifestHasTargets(manifestPath, workspace = process.cwd()) {
-	try {
-		const { targets } = loadCloseoutTargets(path.resolve(workspace, manifestPath));
-		return targets.length > 0;
-	} catch {
+	const resolved = path.resolve(workspace, manifestPath);
+	if (!fs.existsSync(resolved)) {
 		return false;
 	}
+	const { targets } = loadCloseoutTargets(resolved);
+	return targets.length > 0;
 }
 
 /**
@@ -34,6 +34,7 @@ export function resolveCloseoutManifestsFromPush({
 } = {}) {
 	const changed = new Set(changedPaths.map(normalizeRepoPath));
 	const resolved = [];
+	const normalizedRerun = normalizeRepoPath(RERUN_MANIFEST);
 
 	for (const manifestPath of knownManifests) {
 		if (changed.has(normalizeRepoPath(manifestPath))) {
@@ -43,7 +44,7 @@ export function resolveCloseoutManifestsFromPush({
 
 	if (
 		includeRerunWhenPopulated &&
-		!resolved.includes(RERUN_MANIFEST) &&
+		!resolved.some((entry) => normalizeRepoPath(entry) === normalizedRerun) &&
 		manifestHasTargets(RERUN_MANIFEST, workspace)
 	) {
 		resolved.unshift(RERUN_MANIFEST);

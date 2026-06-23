@@ -29,18 +29,22 @@ describe('resolve_closeout_manifests_from_push', () => {
 
 	it('includes rerun manifest when populated and not already selected', () => {
 		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-resolve-'));
-		const repoRerun = path.join(dir, RERUN_MANIFEST);
-		fs.mkdirSync(path.dirname(repoRerun), { recursive: true });
-		fs.writeFileSync(
-			repoRerun,
-			JSON.stringify({ targets: [{ pr: 1, body_file: 'scripts/ci/post-merge-closeout/pr-1-body.md' }] }),
-		);
-		const wave3b = 'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3b.json';
-		const resolved = resolveCloseoutManifestsFromPush({
-			changedPaths: [wave3b],
-			workspace: dir,
-		});
-		expect(resolved).toEqual([RERUN_MANIFEST, wave3b]);
+		try {
+			const repoRerun = path.join(dir, RERUN_MANIFEST);
+			fs.mkdirSync(path.dirname(repoRerun), { recursive: true });
+			fs.writeFileSync(
+				repoRerun,
+				JSON.stringify({ targets: [{ pr: 1, body_file: 'scripts/ci/post-merge-closeout/pr-1-body.md' }] }),
+			);
+			const wave3b = 'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3b.json';
+			const resolved = resolveCloseoutManifestsFromPush({
+				changedPaths: [wave3b],
+				workspace: dir,
+			});
+			expect(resolved).toEqual([RERUN_MANIFEST, wave3b]);
+		} finally {
+			fs.rmSync(dir, { recursive: true, force: true });
+		}
 	});
 
 	it('formats and parses manifest lists for CLOSEOUT_MANIFESTS', () => {
