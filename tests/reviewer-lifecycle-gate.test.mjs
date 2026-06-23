@@ -38,16 +38,32 @@ describe('reviewer lifecycle gate assessment', () => {
     expect(result.assessment.reason).toBe('missing-current-head-review-for-protected-scope');
   });
 
-  it('does not enforce failure on non-target events', () => {
+  it('enforces failure on pull_request_review events with undispositioned comments', () => {
     const result = assessReviewerLifecycle({
       eventName: 'pull_request_review',
       labels: ['infra'],
       files: ['.github/workflows/reviewer-response-completion.yml'],
-      enforceFailure: false,
-      currentHeadLinkedReview: false,
+      enforceFailure: true,
+      headSha: 'abc123',
+      body: '## REVIEWER RESPONSE ACCOUNTING\n- reviewed',
+      reviewComments: [{
+        id: 4001,
+        user: { login: 'copilot-pull-request-reviewer[bot]' },
+        commit_id: 'abc123',
+        path: 'src/app/page.tsx',
+        line: 10,
+        body: 'P1: Please fix this issue.',
+        created_at: '2026-06-01T00:00:00Z',
+      }],
+      reviews: [{
+        user: { login: 'copilot-pull-request-reviewer[bot]' },
+        commit_id: 'abc123',
+        state: 'COMMENTED',
+      }],
     });
 
-    expect(result.shouldFail).toBe(false);
+    expect(result.shouldFail).toBe(true);
+    expect(result.assessment.severity).toBe('blocking');
   });
 
   it('detects current-head linked trusted review artifacts', () => {

@@ -5,12 +5,15 @@ import { pathToFileURL } from 'node:url';
 import {
   classifyProtectedScope,
   evaluateReviewerAccounting,
+  isEnforcingReviewerLifecycleEvent,
 } from './reviewer-gate-simulation.mjs';
 import {
   evaluateReviewerCommentDisposition,
   hasValidDisposition,
   parseReviewerDispositions,
 } from './reviewer_comment_disposition.mjs';
+
+export { isEnforcingReviewerLifecycleEvent } from './reviewer-gate-simulation.mjs';
 
 export const TRUSTED_REVIEWERS = [
   {
@@ -283,7 +286,7 @@ export function buildReviewerLifecycleReport({
     if (staleTrustedReviewOnly) {
       lines.push('Trusted review exists on an earlier commit only; re-run trusted review on the current head SHA.');
     }
-  } else if (advisoryFindings > 0) {
+  } else if (advisoryFindings > 0 && !enforceFailure) {
     lines.push('', 'Advisory reviewer findings remain visible for PR readiness but do not block merge by timing alone.');
   }
 
@@ -422,7 +425,7 @@ export async function runReviewerLifecycleGate({
   repo,
   prNumber,
   eventName = 'pull_request_target',
-  enforceFailure = eventName === 'pull_request_target',
+  enforceFailure = isEnforcingReviewerLifecycleEvent(eventName),
 }) {
   const pull = await request(`/repos/${owner}/${repo}/pulls/${prNumber}`, token);
   const [files, issueComments, reviewComments, reviews, readyForReviewAt] = await Promise.all([
@@ -477,7 +480,7 @@ async function main() {
   const repository = process.env.GITHUB_REPOSITORY;
   const prNumber = process.env.PR_NUMBER;
   const eventName = process.env.GITHUB_EVENT_NAME || 'pull_request_target';
-  const enforceFailure = (process.env.ENFORCE_FAILURE || (eventName === 'pull_request_target' ? 'true' : 'false')) === 'true';
+  const enforceFailure = (process.env.ENFORCE_FAILURE || (isEnforcingReviewerLifecycleEvent(eventName) ? 'true' : 'false')) === 'true';
 
   if (!token || !repository || !prNumber) {
     throw new Error('GITHUB_TOKEN/GH_TOKEN, GITHUB_REPOSITORY, and PR_NUMBER are required.');
