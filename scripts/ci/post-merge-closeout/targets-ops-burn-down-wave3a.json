@@ -1,0 +1,126 @@
+{
+  "triggered_at": "2026-06-23T11:48:45.949Z",
+  "description": "OPS #1923 Wave 3a — first batch of batch-generated closeout bodies",
+  "targets": [
+    {
+      "pr": 1201,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1201-body.md",
+      "merge_sha": "2f8cc1a9ef4ad0475f6a479543ddf26966952ead",
+      "source_issue": 1054
+    },
+    {
+      "pr": 1205,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1205-body.md",
+      "merge_sha": "a4af6300d5c5828e8ee9a397c56b071945d99997",
+      "source_issue": 1124
+    },
+    {
+      "pr": 1211,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1211-body.md",
+      "merge_sha": "b02c8ecc8a4384b4f918a8768879754f5ed71a1b",
+      "source_issue": 1125
+    },
+    {
+      "pr": 1216,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1216-body.md",
+      "merge_sha": "f2344ba687ed1bbef878d82a3a5d4929f7459fa9",
+      "source_issue": 1127
+    },
+    {
+      "pr": 1265,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1265-body.md",
+      "merge_sha": "ccece1dbbd236caa940ff0d154c3b283d1e09c0c",
+      "source_issue": 1075
+    },
+    {
+      "pr": 1269,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1269-body.md",
+      "merge_sha": "05cd0f639b6d46837bd28c04f792082a52465232",
+      "source_issue": 1268
+    },
+    {
+      "pr": 1271,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1271-body.md",
+      "merge_sha": "6f89502757ec74d7e83888fd0a75f0f437b5c297",
+      "source_issue": 1270
+    },
+    {
+      "pr": 1278,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1278-body.md",
+      "merge_sha": "3927b6dafbb53c8729e3b6aee047cf526e589abb",
+      "source_issue": 1270
+    },
+    {
+      "pr": 1284,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1284-body.md",
+      "merge_sha": "e896b90d17bdd0b78b2e9bd766c98d3896820a36",
+      "source_issue": 1283
+    },
+    {
+      "pr": 1292,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1292-body.md",
+      "merge_sha": "331e60300cb221125498a17e0efb2d1e90ea4296",
+      "source_issue": 1283
+    },
+    {
+      "pr": 1295,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1295-body.md",
+      "merge_sha": "ef59e3a03b345fe6acca1a0c2602efe4524d758d",
+      "source_issue": 1281
+    },
+    {
+      "pr": 1298,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1298-body.md",
+      "merge_sha": "86f78abe33371fe2dfdc5669c1d9b6854c24b0a1",
+      "source_issue": 1281
+    },
+    {
+      "pr": 1303,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1303-body.md",
+      "merge_sha": "84c4f87c81844639f965eed082873bac7b615068",
+      "source_issue": 1272
+    },
+    {
+      "pr": 1307,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1307-body.md",
+      "merge_sha": "3c9c51ca4b1cd3096147f677830dc95a534e8a98",
+      "source_issue": 1301
+    },
+    {
+      "pr": 1309,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1309-body.md",
+      "merge_sha": "fd28493d670abe121c38065b6e8e571cb55e9192",
+      "source_issue": 1301
+    },
+    {
+      "pr": 1312,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1312-body.md",
+      "merge_sha": "8805bdb8a3f321eab254f4c7d2e86fe9fa11d731",
+      "source_issue": 1272
+    },
+    {
+      "pr": 1315,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1315-body.md",
+      "merge_sha": "c9ef8af0d9abdceac9fdc2a937441eaa7924895f",
+      "source_issue": 1314
+    },
+    {
+      "pr": 1319,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1319-body.md",
+      "merge_sha": "974f848b06bd3f02145c3a7163dbaccbc5bc7ce7",
+      "source_issue": 1320
+    },
+    {
+      "pr": 1321,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1321-body.md",
+      "merge_sha": "ad1d7d210d86150741b13e434faf1c2265d06ba6",
+      "source_issue": 1314
+    },
+    {
+      "pr": 1324,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1324-body.md",
+      "merge_sha": "dfa52543831e5c36fe2d111959fbaecefbadac53",
+      "source_issue": 1314
+    }
+  ]
+}

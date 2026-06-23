@@ -16,6 +16,7 @@ export const DEFAULT_MANIFESTS = [
 	'scripts/ci/post-merge-closeout/targets-remediation-backlog.json',
 	'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave1.json',
 	'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave2.json',
+	'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3a.json',
 ];
 
 export async function runAllPostMergeCloseoutManifests({

@@ -9,6 +9,7 @@ on:
       - scripts/ci/post-merge-closeout/targets-remediation-backlog.json
       - scripts/ci/post-merge-closeout/targets-ops-burn-down-wave1.json
       - scripts/ci/post-merge-closeout/targets-ops-burn-down-wave2.json
+      - scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3a.json
   workflow_dispatch:
     inputs:
       pr_number:
