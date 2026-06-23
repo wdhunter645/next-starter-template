@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: Content strategy rationale, editorial model, source reconciliation, and architecture decisions for the website content inventory
 Does Not Own: D1 migrations, runtime implementation, route behavior, or final factual editorial approval
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Related Issues: #1256, #824, #819, #1137, #1689, #1685
+Related issues: #1256, #824, #819, #1137, #1689, #1685
 Last Reviewed: 2026-06-23
 ---
 

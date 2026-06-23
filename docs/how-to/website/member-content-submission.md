@@ -5,7 +5,7 @@ Authority Level: Operational Procedure
 Owns: Member content submission path from `/fanclub/submit` through `submission_queue` intake
 Does Not Own: Editorial approval decisions, binary media upload implementation, or publication into `content_inventory`
 Canonical Reference: /docs/reference/website/unified-content-workflow.md
-Related Issues: #1689, #1685, #1256
+Related issues: #1689, #1685, #1256
 Last Reviewed: 2026-06-23
 ---
 

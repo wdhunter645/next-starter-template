@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: Editorial placement fields, allowed section values, rotation rules, and dynamic population invariants for content inventory
 Does Not Own: Runtime query implementation, visual layout, component behavior, or editorial content approval
 Canonical Reference: /docs/reference/website/content-inventory-model.md
-Related Issues: #1256, #824, #819, #1137, #1689, #1685
+Related issues: #1256, #824, #819, #1137, #1689, #1685
 Last Reviewed: 2026-06-23
 ---
 

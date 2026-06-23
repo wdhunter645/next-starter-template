@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: Unified editorial workflow from member intake through publication and surface placement for Priority #1
 Does Not Own: Runtime implementation, D1 migrations, B2 configuration, route behavior, or issue closure
 Canonical Reference: /docs/explanation/website/content-strategy.md
-Related Issues: #1689, #1685, #1256, #1686, #1687
+Related issues: #1689, #1685, #1256, #1686, #1687
 Last Reviewed: 2026-06-23
 ---
 
@@ -79,7 +79,7 @@ eligibility is met per editorial policy.
 
 | Actor | May write | May not write |
 | --- | --- | --- |
-| Member (authenticated) | `submission_queue` via `library/submit`; discussions per discussion policy | `content_inventory`, `photos`, admin editorial tables |
+| Member (authenticated) | `submission_queue` via `POST /api/library/submit`; discussions per discussion policy | `content_inventory`, `photos`, admin editorial tables |
 | Editor / admin | `submission_queue`, `content_inventory`, media associations, placement fields | Autonomous publish without review on member submissions |
 | Runtime (public/member APIs) | none | any editorial table |
 
@@ -117,7 +117,7 @@ Use this table before opening the wrong admin surface.
 
 ### New member-contributed visual content
 
-- Text intake is available today through `/fanclub/submit` → `library/submit`.
+- Text intake is available today through `/fanclub/submit` → `POST /api/library/submit`.
 - Binary photo or PDF upload to B2 is **deferred** until a later implementation
   task authorizes media intake (Task 004 disposition: document only).
 - When binary intake is implemented, the path remains queue → editorial review →

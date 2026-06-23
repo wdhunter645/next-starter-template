@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: Task 004 reconciliation report for content management and collection workflow unification
 Does Not Own: Application code, migrations, issue closure, labels, or merge approval
 Canonical Reference: /docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md
-Related Issues: #1689, #1685, #1686, #1687
+Related issues: #1689, #1685, #1686, #1687
 Last Reviewed: 2026-06-23
 ---
 

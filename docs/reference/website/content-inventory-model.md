@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: Content inventory model, field definitions, submission queue requirements, media association requirements, and schema invariants for project #1256
 Does Not Own: D1 migration files, runtime API implementation, UI copy, or editorial fact approval
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Related Issues: #1256, #824, #819, #1137, #1689, #1685
+Related issues: #1256, #824, #819, #1137, #1689, #1685
 Last Reviewed: 2026-06-23
 ---
 

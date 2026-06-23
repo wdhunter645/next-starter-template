@@ -5,7 +5,7 @@ Authority Level: Guided Tutorial
 Owns: First-story onboarding walkthrough for the content inventory workflow
 Does Not Own: Runtime UI implementation, D1 migrations, final editorial policy, or production deployment
 Canonical Reference: /docs/how-to/website/add-content-story.md
-Related Issues: #1256, #824, #819, #1137, #1689
+Related issues: #1256, #824, #819, #1137, #1689
 Last Reviewed: 2026-06-23
 ---
 
@@ -36,7 +36,7 @@ At the end of this walkthrough, the editor has one draft or under-review
 When a member submits through `/fanclub/submit`, the story enters
 `submission_queue` instead of `content_inventory`. Editors should:
 
-1. Open the pending queue item per [Review a content submission](../how-to/website/review-content-submission.md).
+1. Open the pending queue item per [Review a content submission](../../how-to/website/review-content-submission.md).
 2. Verify source/credit fields captured at intake.
 3. Convert an approved submission into a new or updated inventory record.
 4. Set `allowed_sections` (including `club_home` when appropriate) before publish.

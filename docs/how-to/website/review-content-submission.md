@@ -5,7 +5,7 @@ Authority Level: Operational Procedure
 Owns: Submission queue review procedure, manual decision boundaries, and rejected-submission purge preparation
 Does Not Own: Runtime moderation UI, D1 migrations, legal policy, or autonomous factual decisions
 Canonical Reference: /docs/reference/website/content-inventory-model.md
-Related Issues: #1256, #824, #819, #1137, #1689
+Related issues: #1256, #824, #819, #1137, #1689
 Last Reviewed: 2026-06-23
 ---
 
