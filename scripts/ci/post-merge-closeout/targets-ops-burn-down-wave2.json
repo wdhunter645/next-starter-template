@@ -45,18 +45,6 @@
       "source_issue": 1634
     },
     {
-      "pr": 1699,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1699-body.md",
-      "merge_sha": "58508f6b01a2e8a91e9997f1c1c7e8b82735fd81",
-      "source_issue": 1255
-    },
-    {
-      "pr": 1778,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1778-body.md",
-      "merge_sha": "17a85b2f3fbb624e38cc19b887900742a66667e8",
-      "source_issue": 1255
-    },
-    {
       "pr": 1828,
       "body_file": "scripts/ci/post-merge-closeout/pr-1828-body.md",
       "merge_sha": "3a844ae4b4d765c9d5f7dff3472f069d589e7008",

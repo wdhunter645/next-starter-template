@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { loadCloseoutTargets } from '../scripts/ci/run_batch_post_merge_closeout.mjs';
 import {
+	alternateProgramLaneFailures,
 	isPermittedClosedSourceIssueFollowup,
 	metadataFailures,
 } from '../scripts/ci/post_merge_validator.mjs';
@@ -29,11 +30,11 @@ function closedCompletedIssue(number) {
 }
 
 describe('ops burn-down wave 2 closeout bodies', () => {
-	it('loads Wave 2 manifest with all ready backlog PR targets', () => {
+	it('loads Wave 2 manifest with ready backlog PR targets', () => {
 		const { targets } = loadCloseoutTargets(WAVE2_MANIFEST);
-		expect(targets).toHaveLength(11);
+		expect(targets).toHaveLength(9);
 		expect(targets.map((target) => target.pr)).toEqual([
-			1229, 1240, 1242, 1361, 1458, 1473, 1635, 1699, 1778, 1828, 1860,
+			1229, 1240, 1242, 1361, 1458, 1473, 1635, 1828, 1860,
 		]);
 		expect(targets.every((target) => target.body_file && target.merge_sha && target.source_issue)).toBe(
 			true,
@@ -58,5 +59,13 @@ describe('ops burn-down wave 2 closeout bodies', () => {
 		expect(targets.map((target) => target.pr)).toEqual(
 			expect.arrayContaining([1458, 1635, 1828, 1860]),
 		);
+	});
+
+	it('does not contain targets with active alternate program lane issues', () => {
+		const { targets } = loadCloseoutTargets(WAVE2_MANIFEST);
+		for (const target of targets) {
+			const failures = alternateProgramLaneFailures({ issueNumbers: [target.source_issue] });
+			expect(failures).toEqual([]);
+		}
 	});
 });
