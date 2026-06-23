@@ -35,7 +35,7 @@
 - Scope Confirmed: YES
 - Out-of-Scope Changes Present: NO
 - Blocking Issues: none (post-merge closeout body remediation applied)
-- Notes: Merged as PR #1926 at `06889653a627976fd3ebf5c96cf5179e8a8e501b`. Remediated body removes CI auto-repair placeholder dispositions and records final trusted-reviewer accounting for exception #1927.
+- Notes: Merged as PR #1926 at `06889653a627976fd3ebf5c96cf5179e8a8e501b`. Remediated body removes CI auto-repair scaffold dispositions and records final trusted-reviewer accounting for exception #1927.
 
 ## DOCUMENTATION SOURCE (MANDATORY)
 - [x] DIATAXIS_ROUTED
@@ -98,7 +98,7 @@ All other files are out of scope
 - Gate verification:
   - Commit-level workflow runs inspected: YES
   - PR-level governance/accounting workflows inspected: YES
-  - Failed job logs inspected for every failing gate: YES (auto-repair placeholder dispositions caused post-merge closeout fail)
+  - Failed job logs inspected for every failing gate: YES (auto-repair scaffold dispositions caused post-merge closeout fail)
   - Required gates rerun or re-evaluated after fixes: YES (remediated body artifact)
 - Result summary: PASS
 
