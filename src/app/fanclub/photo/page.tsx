@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMemberSession } from '@/hooks/useMemberSession';
 import { buildFanclubPhotoListApiUrl } from '@/lib/fanclubApi';
 
@@ -15,16 +15,45 @@ type PhotoItem = {
   uploaded_by?: string | null;
 };
 
+const pillBase: React.CSSProperties = {
+  padding: '6px 12px',
+  borderRadius: 999,
+  border: '1px solid rgba(255,255,255,0.18)',
+  background: 'rgba(255,255,255,0.06)',
+  cursor: 'pointer',
+  fontSize: 13,
+};
+
+const pillActive: React.CSSProperties = {
+  ...pillBase,
+  background: '#1e3a8a',
+  borderColor: '#1e3a8a',
+  color: '#fff',
+};
+
 export default function FanclubPhotoGalleryPage() {
   const [items, setItems] = useState<PhotoItem[]>([]);
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
   const [query, setQuery] = useState('');
-  const [tagFilter, setTagFilter] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [submittedQuery, setSubmittedQuery] = useState('');
   const [submittedTags, setSubmittedTags] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
   const { isLoading, isAuthenticated } = useMemberSession({ redirectTo: '/' });
+
+  const loadTags = useCallback(async () => {
+    try {
+      const res = await fetch('/api/fanclub/photos/tags', { credentials: 'include', cache: 'no-store' });
+      const json = await res.json().catch(() => ({}));
+      if (res.ok && json?.ok && Array.isArray(json.tags)) {
+        setAvailableTags(json.tags.filter((tag: unknown) => typeof tag === 'string' && tag.trim()));
+      }
+    } catch {
+      setAvailableTags([]);
+    }
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -47,9 +76,17 @@ export default function FanclubPhotoGalleryPage() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
+      loadTags();
+    }
+  }, [isLoading, isAuthenticated, loadTags]);
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
       load();
     }
   }, [isLoading, isAuthenticated, load, refreshKey]);
+
+  const tagCsv = useMemo(() => selectedTags.join(','), [selectedTags]);
 
   if (isLoading || !isAuthenticated) {
     return null;
@@ -66,42 +103,58 @@ export default function FanclubPhotoGalleryPage() {
         onSubmit={(event) => {
           event.preventDefault();
           setSubmittedQuery(query);
-          setSubmittedTags(tagFilter);
+          setSubmittedTags(tagCsv);
           setRefreshKey((value) => value + 1);
         }}
         style={{ marginTop: 14, padding: 14, borderRadius: 16, border: '1px solid rgba(255,255,255,0.14)' }}
       >
-        <div style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', alignItems: 'end' }}>
-          <label style={{ display: 'grid', gap: 6 }}>
-            Search
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Title, description, or tags"
-              style={{ padding: 10, borderRadius: 10, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(0,0,0,0.2)' }}
-            />
-          </label>
-          <label style={{ display: 'grid', gap: 6 }}>
-            Tags
-            <input
-              value={tagFilter}
-              onChange={(event) => setTagFilter(event.target.value)}
-              placeholder="comma-separated tags"
-              style={{ padding: 10, borderRadius: 10, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(0,0,0,0.2)' }}
-            />
-          </label>
+        <label style={{ display: 'grid', gap: 6 }}>
+          Search
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search photos…"
+            style={{ padding: 10, borderRadius: 10, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(0,0,0,0.2)' }}
+          />
+        </label>
+
+        <div style={{ marginTop: 12 }}>
+          <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 8 }}>Tag filters</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              style={selectedTags.length === 0 ? pillActive : pillBase}
+              onClick={() => setSelectedTags([])}
+            >
+              All
+            </button>
+            {availableTags.map((tag) => {
+              const active = selectedTags.includes(tag);
+              return (
+                <button
+                  key={tag}
+                  type="button"
+                  style={active ? pillActive : pillBase}
+                  onClick={() => {
+                    setSelectedTags((current) =>
+                      current.includes(tag) ? current.filter((value) => value !== tag) : [...current, tag],
+                    );
+                  }}
+                >
+                  {tag}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 12 }}>
           <button
             type="submit"
             style={{ padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.08)', cursor: 'pointer' }}
           >
             Apply filters
           </button>
-          <Link
-            href="/fanclub/submit"
-            style={{ padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.18)', color: 'inherit', textDecoration: 'none', textAlign: 'center' }}
-          >
-            Submit a story or note
-          </Link>
         </div>
       </form>
 
@@ -109,7 +162,15 @@ export default function FanclubPhotoGalleryPage() {
       {err && <p style={{ color: 'salmon' }}>Unable to load member photos right now. {err}</p>}
 
       {!loading && !err && (
-        <div style={{ marginTop: 14, display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
+        <div
+          style={{
+            marginTop: 14,
+            display: 'grid',
+            gap: 12,
+            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+          }}
+          className="fanclub-photo-grid"
+        >
           {items.map((p) => {
             const photoUrl = p.thumbnail_url || p.url;
             const title = p.title || p.description || `Photo #${p.id}`;
@@ -128,18 +189,24 @@ export default function FanclubPhotoGalleryPage() {
                   {p.description && p.description !== title ? <p style={{ margin: '8px 0 0', opacity: 0.85 }}>{p.description}</p> : null}
                   {p.tags ? <div style={{ marginTop: 8, opacity: 0.72, fontSize: 12 }}>Tags: {p.tags}</div> : null}
                   {p.uploaded_by ? <div style={{ marginTop: 6, opacity: 0.72, fontSize: 12 }}>Source: {p.uploaded_by}</div> : null}
-                  <div style={{ marginTop: 10, opacity: 0.72, fontSize: 12 }}>Reporting workflow will be handled by the moderation queue.</div>
                 </div>
               </div>
             );
           })}
           {items.length === 0 && (
             <div style={{ gridColumn: '1 / -1', padding: 14, borderRadius: 14, border: '1px solid rgba(255,255,255,0.12)', opacity: 0.85 }}>
-              No photos match this view yet. Try clearing filters or submit a story for review.
+              No photos match your search.
             </div>
           )}
         </div>
       )}
+
+      <p style={{ marginTop: 18, opacity: 0.9 }}>
+        Have a photo to share?{' '}
+        <Link href="/fanclub/submit" style={{ fontWeight: 600 }}>
+          Submit a Photo →
+        </Link>
+      </p>
     </main>
   );
 }

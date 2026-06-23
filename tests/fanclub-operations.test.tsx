@@ -32,6 +32,16 @@ vi.mock('next/link', () => ({
   ),
 }));
 
+const mockReplace = vi.hoisted(() => vi.fn());
+const mockSearchParams = vi.hoisted(() => ({
+  get: vi.fn<(key: string) => string | null>(() => null),
+}));
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ replace: mockReplace }),
+  useSearchParams: () => mockSearchParams,
+}));
+
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -139,6 +149,8 @@ describe('Fan Club member-only APIs', () => {
 describe('Fan Club operational pages', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    mockSearchParams.get.mockReturnValue(null);
+    mockReplace.mockReset();
     mockUseMemberSession.mockReturnValue({
       isLoading: false,
       isAuthenticated: true,
@@ -148,8 +160,12 @@ describe('Fan Club operational pages', () => {
   });
 
   it('renders member photos from thumbnail_url values returned by the Fan Club API', async () => {
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      jsonResponse({
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.includes('/api/fanclub/photos/tags')) {
+        return jsonResponse({ ok: true, tags: ['history'] }) as never;
+      }
+      return jsonResponse({
         ok: true,
         items: [
           {
@@ -160,27 +176,40 @@ describe('Fan Club operational pages', () => {
             uploaded_by: 'archive',
           },
         ],
-      }) as never,
-    );
+      }) as never;
+    });
 
     render(<FanclubPhotoGalleryPage />);
 
     const image = await screen.findByRole('img', { name: 'Farewell address' });
     expect(image).toHaveAttribute('src', 'https://cdn.example.com/lgfc/photos/farewell.jpg');
     expect(fetchMock).toHaveBeenCalledWith('/api/fanclub/photos', { credentials: 'include', cache: 'no-store' });
-    expect(screen.getByRole('link', { name: 'Submit a story or note' })).toHaveAttribute('href', '/fanclub/submit');
+    expect(screen.getByRole('link', { name: /Submit a Photo/ })).toHaveAttribute('href', '/fanclub/submit');
+    expect(screen.getByRole('button', { name: 'history' })).toBeInTheDocument();
   });
 
   it('shows an empty-state message when the photo gallery has no items', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse({ ok: true, items: [] }) as never);
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.includes('/api/fanclub/photos/tags')) {
+        return jsonResponse({ ok: true, tags: [] }) as never;
+      }
+      return jsonResponse({ ok: true, items: [] }) as never;
+    });
 
     render(<FanclubPhotoGalleryPage />);
 
-    expect(await screen.findByText(/no photos match this view yet/i)).toBeInTheDocument();
+    expect(await screen.findByText(/no photos match your search/i)).toBeInTheDocument();
   });
 
   it('shows a load error when the photo gallery API fails', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse({ ok: false, error: 'list_failed' }, 500) as never);
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.includes('/api/fanclub/photos/tags')) {
+        return jsonResponse({ ok: true, tags: [] }) as never;
+      }
+      return jsonResponse({ ok: false, error: 'list_failed' }, 500) as never;
+    });
 
     render(<FanclubPhotoGalleryPage />);
 
@@ -209,6 +238,7 @@ describe('Fan Club operational pages', () => {
       expect(screen.getByRole('heading', { name: 'Luckiest Man' })).toBeInTheDocument();
     });
     expect(fetchMock).toHaveBeenCalledWith('/api/fanclub/library?page=1', { credentials: 'include', cache: 'no-store' });
+    expect(screen.getByRole('heading', { level: 1, name: 'Gehrig Library' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Submit an Article' })).toHaveAttribute('href', '/fanclub/submit');
     expect(screen.getByText(/published editorial inventory stories/i)).toBeInTheDocument();
     expect(screen.getByText(/source and credit attribution/i)).toBeInTheDocument();
@@ -290,11 +320,42 @@ describe('Fan Club operational pages', () => {
   });
 
   it('shows memorabilia empty state when the archive returns no items', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse({ ok: true, items: [] }) as never);
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse({ ok: true, items: [], related_library_entries: [] }) as never);
 
     render(<MemorabiliaPage />);
 
+    expect(await screen.findByRole('heading', { level: 1, name: 'Memorabilia Archive' })).toBeInTheDocument();
     expect(await screen.findByText(/no memorabilia items found/i)).toBeInTheDocument();
+  });
+
+  it('passes library search queries to the member-gated Fan Club library API', async () => {
+    mockSearchParams.get.mockImplementation((key: string) => (key === 'q' ? 'luckiest' : null));
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse({ ok: true, items: [] }) as never);
+
+    render(<LibraryPage />);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith('/api/fanclub/library?page=1&q=luckiest', {
+        credentials: 'include',
+        cache: 'no-store',
+      });
+    });
+  });
+
+  it('renders related library stories returned by the memorabilia API', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse({
+        ok: true,
+        items: [{ id: 1, title: 'Signed bat', thumbnail_url: null }],
+        related_library_entries: [{ id: 9, title: 'Yankee Stadium farewell', author: 'Club archive', summary: 'Context for the item.' }],
+      }) as never,
+    );
+
+    render(<MemorabiliaPage />);
+
+    expect(await screen.findByText('Related stories')).toBeInTheDocument();
+    expect(screen.getByText('Yankee Stadium farewell')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open Gehrig Library' })).toHaveAttribute('href', '/fanclub/library');
   });
 });
 
