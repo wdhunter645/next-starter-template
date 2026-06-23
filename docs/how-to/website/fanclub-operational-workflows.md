@@ -5,8 +5,8 @@ Authority Level: Operational Procedure
 Owns: Fan Club member operational path verification for operators
 Does Not Own: Member onboarding policy, chat moderation rules, or admin surfaces
 Canonical Reference: /docs/reference/architecture/access-model.md
-Related issues: #1258, #1565, #1118
-Last Reviewed: 2026-06-14
+Related issues: #1258, #1565, #1118, #1689
+Last Reviewed: 2026-06-23
 ---
 
 # Fan Club Operational Workflows
@@ -22,7 +22,7 @@ Member routes (require member session, not admin):
 | Route | Purpose |
 | --- | --- |
 | `/fanclub/photo` | Member photo interactions |
-| `/fanclub/submit` | Library submission |
+| `/fanclub/submit` | Member editorial intake (story/note → `submission_queue`) |
 | `/fanclub/chat` | Discussions/chat |
 | `/fanclub/library` | Library browsing |
 | `/fanclub/memorabilia` | Memorabilia browsing |
@@ -54,8 +54,12 @@ from operational paths.
 ### Submit lane
 
 1. Open `/fanclub/submit`.
-2. Exercise submission form with test content per policy.
+2. Exercise submission form with test content per policy (text fields; source/credit when available).
 3. Confirm validation errors and success messaging.
+4. Confirm the item is **not** published to library or Club Home until editorial review.
+5. Follow [Member content submission](./member-content-submission.md) and the unified workflow reference at `docs/reference/website/unified-content-workflow.md`.
+
+Binary photo/PDF upload is not available on this path; defer media intake gaps to Task 005+ unless a new issue authorizes implementation.
 
 ### Chat / discussions
 

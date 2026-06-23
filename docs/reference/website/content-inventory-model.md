@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Content inventory model, field definitions, submission queue requirements, media association requirements, and schema invariants for project #1256
 Does Not Own: D1 migration files, runtime API implementation, UI copy, or editorial fact approval
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Related Issues: #1256, #824, #819, #1137
-Last Reviewed: 2026-06-07
+Related Issues: #1256, #824, #819, #1137, #1689, #1685
+Last Reviewed: 2026-06-23
 ---
 
 # Content Inventory Model
@@ -232,6 +232,21 @@ Approved queue status values:
 means useful content was merged into an existing inventory record. `purged`
 means the rejected queue record has been removed or reduced according to the
 approved purge model while preserving any required audit trail.
+
+## Workflow Integration (Priority #1)
+
+End-to-end intake, review, publication, and placement for Fan Club and public
+surfaces are documented in
+`docs/reference/website/unified-content-workflow.md`.
+
+Member intake uses `POST /api/library/submit` (text fields and optional media
+reference strings). Binary photo upload is deferred; see Task 004 reconciliation
+report `docs/ops/reports/website-content-workflow-reconciliation.md`.
+
+Legacy `photos` catalog rows remain operator-managed approved content without a
+`photos.status` column. New visual content should flow through
+`submission_queue` → editorial publish → inventory and optional
+`content_inventory_media` associations.
 
 ## Automation Triage Fields
 

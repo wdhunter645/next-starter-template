@@ -5,8 +5,8 @@ Authority Level: Operational Procedure
 Owns: Submission queue review procedure, manual decision boundaries, and rejected-submission purge preparation
 Does Not Own: Runtime moderation UI, D1 migrations, legal policy, or autonomous factual decisions
 Canonical Reference: /docs/reference/website/content-inventory-model.md
-Related Issues: #1256, #824, #819, #1137
-Last Reviewed: 2026-06-07
+Related Issues: #1256, #824, #819, #1137, #1689
+Last Reviewed: 2026-06-23
 ---
 
 # Review a Content Submission
@@ -29,6 +29,9 @@ This how-to covers:
 - canonical, alternate, merge, and rejection decisions;
 - media/source review;
 - quarterly rejected-submission purge preparation.
+
+Member intake path: see [Member content submission](./member-content-submission.md).
+Unified workflow reference: `docs/reference/website/unified-content-workflow.md`.
 
 ## Steps
 
