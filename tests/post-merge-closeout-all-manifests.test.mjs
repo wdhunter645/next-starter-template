@@ -10,6 +10,7 @@ describe('post-merge closeout all manifests', () => {
 			'scripts/ci/post-merge-closeout/targets-ci-pending.json',
 			'scripts/ci/post-merge-closeout/targets-remediation-backlog.json',
 			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave1.json',
+			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave2.json',
 		]);
 	});
 
@@ -50,18 +51,12 @@ describe('post-merge closeout all manifests', () => {
 
 	it('loads Program #1847 remediation backlog targets after merged PR closeout replay registration', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-remediation-backlog.json');
-		expect(targets).toHaveLength(5);
-		expect(targets.map((target) => target.pr)).toEqual([1860, 1887, 1892, 1888, 1890]);
+		expect(targets).toHaveLength(4);
+		expect(targets.map((target) => target.pr)).toEqual([1887, 1892, 1888, 1890]);
 		expect(targets.every((target) => target.body_file && target.merge_sha && target.source_issue)).toBe(
 			true,
 		);
 		expect(targets[0]).toMatchObject({
-			pr: 1860,
-			body_file: 'scripts/ci/post-merge-closeout/pr-1860-body.md',
-			merge_sha: '492f2cb8e88679c30e89e46914ded83385a0394b',
-			source_issue: 1848,
-		});
-		expect(targets[1]).toMatchObject({
 			pr: 1887,
 			body_file: 'scripts/ci/post-merge-closeout/pr-1887-body.md',
 			merge_sha: 'be5c9e38320bbbb587081cd066d384d2a63490aa',
@@ -74,6 +69,17 @@ describe('post-merge closeout all manifests', () => {
 		const wave1 = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ops-burn-down-wave1.json').targets;
 		const remediationPrs = new Set(remediation.map((target) => target.pr));
 		const overlap = wave1.filter((target) => remediationPrs.has(target.pr));
+		expect(overlap).toEqual([]);
+	});
+
+	it('does not duplicate PR targets across prior manifests and Wave 2 manifest', () => {
+		const prior = [
+			...loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-remediation-backlog.json').targets,
+			...loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ops-burn-down-wave1.json').targets,
+		];
+		const wave2 = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ops-burn-down-wave2.json').targets;
+		const priorPrs = new Set(prior.map((target) => target.pr));
+		const overlap = wave2.filter((target) => priorPrs.has(target.pr));
 		expect(overlap).toEqual([]);
 	});
 });
