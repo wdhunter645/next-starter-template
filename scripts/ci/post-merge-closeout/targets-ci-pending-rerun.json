@@ -1,7 +1,13 @@
 {
-  "triggered_at": "2026-06-21T10:45:00Z",
-  "description": "Pending closeout reruns: PR #1858 (#1855) and yesterday exception batch #1813 (#1811, #1814, #1809, #1828, #1825, #1834, #1832, #1844)",
+  "triggered_at": "2026-06-23T12:00:00Z",
+  "description": "Pending closeout reruns: PR #1926 (#1687) plus PR #1858 (#1855) and yesterday exception batch #1813 (#1811, #1814, #1809, #1828, #1825, #1834, #1832, #1844)",
   "targets": [
+    {
+      "pr": 1926,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1926-body.md",
+      "merge_sha": "06889653a627976fd3ebf5c96cf5179e8a8e501b",
+      "source_issue": 1687
+    },
     {
       "pr": 1858,
       "body_file": "scripts/ci/post-merge-closeout/pr-1858-body.md",
