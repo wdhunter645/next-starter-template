@@ -31,18 +31,6 @@
       "body_file": "scripts/ci/post-merge-closeout/pr-1890-body.md",
       "merge_sha": "79c7f5749e7ab1ba45f34c628119e24f96fb6e5e",
       "source_issue": 1852
-    },
-    {
-      "pr": 1889,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1889-body.md",
-      "merge_sha": "810db3262b4e21dd1b9373b629bda7b69599f45f",
-      "source_issue": 1853
-    },
-    {
-      "pr": 1891,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1891-body.md",
-      "merge_sha": "db58bf229ef3a8a7d03cfca6d609e3a6df6b3756",
-      "source_issue": 1854
     }
   ]
 }

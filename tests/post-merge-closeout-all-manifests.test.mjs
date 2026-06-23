@@ -9,6 +9,7 @@ describe('post-merge closeout all manifests', () => {
 			'scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json',
 			'scripts/ci/post-merge-closeout/targets-ci-pending.json',
 			'scripts/ci/post-merge-closeout/targets-remediation-backlog.json',
+			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave1.json',
 		]);
 	});
 
@@ -49,8 +50,8 @@ describe('post-merge closeout all manifests', () => {
 
 	it('loads Program #1847 remediation backlog targets after merged PR closeout replay registration', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-remediation-backlog.json');
-		expect(targets).toHaveLength(7);
-		expect(targets.map((target) => target.pr)).toEqual([1860, 1887, 1892, 1888, 1890, 1889, 1891]);
+		expect(targets).toHaveLength(5);
+		expect(targets.map((target) => target.pr)).toEqual([1860, 1887, 1892, 1888, 1890]);
 		expect(targets.every((target) => target.body_file && target.merge_sha && target.source_issue)).toBe(
 			true,
 		);
@@ -66,11 +67,13 @@ describe('post-merge closeout all manifests', () => {
 			merge_sha: 'be5c9e38320bbbb587081cd066d384d2a63490aa',
 			source_issue: 1849,
 		});
-		expect(targets[6]).toMatchObject({
-			pr: 1891,
-			body_file: 'scripts/ci/post-merge-closeout/pr-1891-body.md',
-			merge_sha: 'db58bf229ef3a8a7d03cfca6d609e3a6df6b3756',
-			source_issue: 1854,
-		});
+	});
+
+	it('does not duplicate PR targets across remediation backlog and Wave 1 manifest', () => {
+		const remediation = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-remediation-backlog.json').targets;
+		const wave1 = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ops-burn-down-wave1.json').targets;
+		const remediationPrs = new Set(remediation.map((target) => target.pr));
+		const overlap = wave1.filter((target) => remediationPrs.has(target.pr));
+		expect(overlap).toEqual([]);
 	});
 });
