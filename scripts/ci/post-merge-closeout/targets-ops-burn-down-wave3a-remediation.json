@@ -1,0 +1,48 @@
+{
+  "triggered_at": "2026-06-23T14:36:26.827Z",
+  "description": "OPS #1923 Wave 3a remediation — regenerate bodies for late_reviewer/workflow failures",
+  "targets": [
+    {
+      "pr": 1269,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1269-body.md",
+      "merge_sha": "05cd0f639b6d46837bd28c04f792082a52465232",
+      "source_issue": 1268
+    },
+    {
+      "pr": 1271,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1271-body.md",
+      "merge_sha": "6f89502757ec74d7e83888fd0a75f0f437b5c297",
+      "source_issue": 1270
+    },
+    {
+      "pr": 1278,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1278-body.md",
+      "merge_sha": "3927b6dafbb53c8729e3b6aee047cf526e589abb",
+      "source_issue": 1270
+    },
+    {
+      "pr": 1284,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1284-body.md",
+      "merge_sha": "e896b90d17bdd0b78b2e9bd766c98d3896820a36",
+      "source_issue": 1283
+    },
+    {
+      "pr": 1295,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1295-body.md",
+      "merge_sha": "ef59e3a03b345fe6acca1a0c2602efe4524d758d",
+      "source_issue": 1281
+    },
+    {
+      "pr": 1298,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1298-body.md",
+      "merge_sha": "86f78abe33371fe2dfdc5669c1d9b6854c24b0a1",
+      "source_issue": 1281
+    },
+    {
+      "pr": 1315,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1315-body.md",
+      "merge_sha": "c9ef8af0d9abdceac9fdc2a937441eaa7924895f",
+      "source_issue": 1314
+    }
+  ]
+}
