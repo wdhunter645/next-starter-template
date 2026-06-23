@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+  CLUB_HOME_SECTION,
   LIBRARY_SECTION,
   RELATED_CONTENT_SECTION,
   SEARCH_SECTION,
@@ -20,6 +21,7 @@ export const CONTENT_INVENTORY_ALLOWED_SECTIONS = [
   'homepage_discussions',
   'homepage_milestones',
   'library',
+  'club_home',
   'search',
   'archive',
   'related_content',
@@ -43,6 +45,15 @@ export const CONTENT_INVENTORY_WIRED_SURFACES = [
     apiRoute: '/api/fanclub/library',
     apiFile: 'functions/api/fanclub/library.ts',
     section: LIBRARY_SECTION,
+    auth: 'member',
+  },
+  {
+    surface: 'club_home',
+    route: '/fanclub',
+    pageFile: 'src/app/fanclub/page.tsx',
+    apiRoute: '/api/fanclub/home',
+    apiFile: 'functions/api/fanclub/home.ts',
+    section: CLUB_HOME_SECTION,
     auth: 'member',
   },
 ] as const;
@@ -79,19 +90,31 @@ function readSource(path: string): string {
 
 describe('content inventory public surface contract (#1259 Task 006)', () => {
   it('ships admin-declared allowed_sections keys on disk', () => {
-    const source = readSource('src/app/admin/editorial/page.tsx');
+    const uiSource = readSource('src/app/admin/editorial/page.tsx');
+    const apiSource = readSource('functions/api/admin/editorial/inventory.ts');
     for (const key of CONTENT_INVENTORY_ALLOWED_SECTIONS) {
-      expect(source, `Missing allowed_sections key: ${key}`).toContain(`'${key}'`);
+      const present = uiSource.includes(`'${key}'`) || apiSource.includes(`"${key}"`);
+      expect(present, `Missing allowed_sections key: ${key}`).toBe(true);
     }
   });
 
   it('maps wired inventory surfaces to page files and API handlers', () => {
     for (const entry of CONTENT_INVENTORY_WIRED_SURFACES) {
-      const pageSource = readSource(entry.pageFile);
-      expect(pageSource, `${entry.pageFile} should call ${entry.apiRoute}`).toContain(entry.apiRoute);
+      if (entry.surface === 'club_home') {
+        const clientSource = readSource('src/lib/clubHomeApi.ts');
+        expect(clientSource, 'clubHomeApi should call /api/fanclub/home').toContain(entry.apiRoute);
+      } else {
+        const pageSource = readSource(entry.pageFile);
+        expect(pageSource, `${entry.pageFile} should call ${entry.apiRoute}`).toContain(entry.apiRoute);
+      }
 
-      const apiSource = readSource(entry.apiFile);
-      expect(apiSource, `${entry.apiFile} should filter section ${entry.section}`).toContain(entry.section);
+      if (entry.surface === 'club_home') {
+        const libSource = readSource('functions/_lib/content-inventory-club-home.ts');
+        expect(libSource, 'club home lib should define club_home section').toContain(entry.section);
+      } else {
+        const apiSource = readSource(entry.apiFile);
+        expect(apiSource, `${entry.apiFile} should filter section ${entry.section}`).toContain(entry.section);
+      }
     }
   });
 

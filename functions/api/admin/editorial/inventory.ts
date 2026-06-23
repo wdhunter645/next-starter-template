@@ -10,6 +10,7 @@ const ALLOWED_SECTION_KEYS = new Set([
   "homepage_discussions",
   "homepage_milestones",
   "library",
+  "club_home",
   "search",
   "archive",
   "related_content",
