@@ -11,7 +11,8 @@ describe('post-merge closeout all manifests', () => {
 			'scripts/ci/post-merge-closeout/targets-remediation-backlog.json',
 			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave1.json',
 			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave2.json',
-			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3a.json',
+			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3a-remediation.json',
+			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3b.json',
 		]);
 	});
 
@@ -117,5 +118,27 @@ describe('post-merge closeout all manifests', () => {
 		const priorPrs = new Set(prior.map((target) => target.pr));
 		const overlap = wave3a.filter((target) => priorPrs.has(target.pr));
 		expect(overlap).toEqual([]);
+	});
+
+	it('does not duplicate PR targets across prior manifests and Wave 3b manifest', () => {
+		const prior = [
+			...loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-remediation-backlog.json').targets,
+			...loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ops-burn-down-wave1.json').targets,
+			...loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ops-burn-down-wave2.json').targets,
+			...loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json').targets,
+			...loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3a.json').targets,
+		];
+		const wave3b = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3b.json').targets;
+		const priorPrs = new Set(prior.map((target) => target.pr));
+		const overlap = wave3b.filter((target) => priorPrs.has(target.pr));
+		expect(overlap).toEqual([]);
+	});
+
+	it('limits Wave 3a remediation manifest to failed replay targets only', () => {
+		const { targets } = loadCloseoutTargets(
+			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3a-remediation.json',
+		);
+		expect(targets).toHaveLength(7);
+		expect(targets.map((target) => target.pr)).toEqual([1269, 1271, 1278, 1284, 1295, 1298, 1315]);
 	});
 });
