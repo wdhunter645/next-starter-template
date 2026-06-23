@@ -94,6 +94,35 @@ describe('ops burn-down wave 1 closeout bodies', () => {
 		).toBeGreaterThan(0);
 	});
 
+	it('records reviewer dispositions for remediated PR #1239 body', () => {
+		const body = fs.readFileSync('scripts/ci/post-merge-closeout/pr-1239-body.md', 'utf8');
+		const reviewComments = [
+			3349596405, 3349596432, 3349602117, 3349602122,
+			3349630601, 3349630689, 3349630721, 3349630749,
+			3349694721, 3349694733, 3349694741, 3349694751, 3349694761, 3349850123,
+		].map((id) => inlineReviewComment(id));
+
+		expect(
+			reviewerDispositionFailures({
+				body,
+				reviewComments,
+				issueComments: [],
+				reviews: [{ id: 1, state: 'COMMENTED', user: { login: 'gemini-code-assist[bot]' } }],
+				mergedAt: '2026-06-20T00:00:00Z',
+			}),
+		).toEqual([]);
+
+		expect(
+			reviewerDispositionFailures({
+				body: body.replace(/review-comment:3349630601[^\n]+\n/, ''),
+				reviewComments,
+				issueComments: [],
+				reviews: [{ id: 1, state: 'COMMENTED', user: { login: 'gemini-code-assist[bot]' } }],
+				mergedAt: '2026-06-20T00:00:00Z',
+			}).length,
+		).toBeGreaterThan(0);
+	});
+
 	it('records reviewer dispositions for remediated PR #1891 body', () => {
 		const body = fs.readFileSync('scripts/ci/post-merge-closeout/pr-1891-body.md', 'utf8');
 		const reviewComments = [
@@ -122,5 +151,15 @@ describe('ops burn-down wave 1 closeout bodies', () => {
 				mergedAt: '2026-06-20T00:00:00Z',
 			}),
 		).toEqual([]);
+
+		expect(
+			reviewerDispositionFailures({
+				body: body.replace(/review-comment:3447589332[^\n]+\n/, ''),
+				reviewComments,
+				issueComments: [],
+				reviews,
+				mergedAt: '2026-06-20T00:00:00Z',
+			}).length,
+		).toBeGreaterThan(0);
 	});
 });

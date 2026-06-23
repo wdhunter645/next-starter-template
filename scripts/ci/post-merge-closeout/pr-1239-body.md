@@ -136,6 +136,17 @@ Revert reviewer workflow/script changes and reviewer-specific docs/tests.
 - review-comment:3349596405 — accepted — thread-root resolution fixed in merged head — thread state: outdated
 - review-comment:3349596432 — accepted — protected CI scope enforcement fixed in merged head — thread state: outdated
 - review-comment:3349602117 — accepted — advisory finding handling fixed in merged head — thread state: outdated
+- review-comment:3349602122 — accepted — post-merge reviewer audit wiring fixed in merged head — thread state: outdated
+- review-comment:3349630601 — accepted — reviewer lifecycle gate spawn path fixed in merged head — thread state: outdated
+- review-comment:3349630689 — accepted — advisory findings scope fixed in merged head — thread state: outdated
+- review-comment:3349630721 — accepted — ignore-marker handling fixed in merged head — thread state: outdated
+- review-comment:3349630749 — accepted — inline ignore-marker handling fixed in merged head — thread state: outdated
+- review-comment:3349694721 — accepted — cubic review findings addressed in merged head — thread state: outdated
+- review-comment:3349694733 — accepted — cubic review findings addressed in merged head — thread state: outdated
+- review-comment:3349694741 — accepted — cubic review findings addressed in merged head — thread state: outdated
+- review-comment:3349694751 — accepted — cubic review findings addressed in merged head — thread state: outdated
+- review-comment:3349694761 — accepted — cubic review findings addressed in merged head — thread state: outdated
+- review-comment:3349850123 — accepted — cubic follow-up findings addressed in merged head — thread state: outdated
 
 ## POST-MERGE CLOSEOUT CHECKLIST
 - [x] PR merged state verified
