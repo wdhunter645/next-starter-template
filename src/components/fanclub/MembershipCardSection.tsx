@@ -31,6 +31,10 @@ export default function MembershipCardSection() {
           return;
         }
         setContent(data.content || null);
+      } catch {
+        if (cancelled) return;
+        setMessage('Unable to load membership card content.');
+        setContent(null);
       } finally {
         if (!cancelled) setLoading(false);
       }
