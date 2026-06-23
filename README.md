@@ -31,34 +31,38 @@ This is not a pure static-only site. Static pages are exported by Next.js, but a
 
 ## Start Here
 
-Read these files before making repository changes:
+For orientation, read:
 
 1. `Agent.md` — mandatory entrypoint and authority-routing file for all AI and agent work.
-2. `docs/ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md` — current AI team roles, execution modes, and workflow boundaries.
-3. `docs/ops/ai/SHARED-AGENT-RULES.md` — shared agent law.
-4. `docs/ops/ai/CORE-RULES.md` — detailed execution rules.
-5. `.github/pull_request_template.md` — required PR lifecycle, issue accounting, verification, and closeout evidence.
+2. `context.md` — high-level repository purpose, stack, route summary, and design-source links.
+3. `docs/reference/design/LGFC-Production-Design-and-Standards.md` — canonical production behavior, route/navigation rules, data model references, and homepage order.
+4. `docs/reference/design/auth-model.md` — canonical authentication/session/redirect model.
 
-For human orientation, also read:
+For any repository work, do not stop at this README. Follow the full mandatory chain in `Agent.md`, including:
 
-- `context.md` — high-level repository purpose, stack, route summary, and design-source links.
-- `docs/reference/design/LGFC-Production-Design-and-Standards.md` — canonical production behavior, route/navigation rules, data model references, and homepage order.
-- `docs/reference/design/auth-model.md` — canonical authentication/session/redirect model.
+- `docs/ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md`.
+- `docs/ops/ai/SHARED-AGENT-RULES.md`.
+- `docs/ops/ai/CORE-RULES.md`.
+- The applicable agent-specific rule file under `docs/ops/ai/`.
+- The source GitHub issue and task-linked design, architecture, governance, or implementation-plan files.
+- `.agents/skills/lgfc-pr-governance/SKILL.md` when PR, issue, label, lifecycle, review, or merge-readiness work is involved.
+- `.github/pull_request_template.md`.
+- Applicable governance docs under `docs/governance/`.
+- Applicable `.agents/skills/*/SKILL.md` files for the task.
 
 ## Authority Model
 
 This README is an orientation document only. It does not define product behavior, routes, navigation, authentication, implementation scope, PR acceptance, or deployment policy.
 
-When documents conflict, use the higher-authority source:
+Document precedence is defined by `docs/governance/standards/document-authority-hierarchy_MASTER.md`:
 
-1. Locked design, platform, and governance documents.
-2. `docs/ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md`.
-3. `docs/ops/ai/SHARED-AGENT-RULES.md`.
-4. `docs/ops/ai/CORE-RULES.md`.
-5. Source GitHub issue for task scope and acceptance criteria.
-6. Task-specific implementation plan or queue issue.
-7. Agent-specific rules.
-8. Task prompt.
+1. Governance.
+2. Standards.
+3. Operations As-Built (`_MASTER`).
+4. Project Reference (`_INCOMPLETE`).
+5. Project Intent (`_DRAFT`).
+
+If documents disagree, governance and `_MASTER` documents override lower-authority materials. Within that framework, use `Agent.md` as the active routing entrypoint for repository work and follow the full task-specific authority chain it defines.
 
 For active repository work, GitHub issues and PRs are the operational source of truth. Historical tracker/status files may exist, but they are not the normal source of truth unless a source issue explicitly scopes tracker governance, tracker reconciliation, or status-index maintenance.
 
