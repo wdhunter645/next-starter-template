@@ -1,6 +1,6 @@
 {
   "triggered_at": "2026-06-20T22:30:00Z",
-  "description": "Post-merge closeout replay for Program #1847 merged PRs #1887-#1892 and outstanding #1860 / #1848 remediation",
+  "description": "Post-merge closeout replay for Program #1847 merged PRs #1887-#1892",
   "targets": [
     {
       "pr": 1887,
