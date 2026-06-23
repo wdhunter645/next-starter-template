@@ -172,7 +172,8 @@ Reviewer items (required format for gate parsing):
 - [x] Merge commit recorded: `492f2cb8e88679c30e89e46914ded83385a0394b`
 - [x] Source issue state inspected after merge
 - [x] Post-merge validation gates inspected
-- [x] Source issue closeout delegated to post-merge closeout workflow
+- [x] Post-merge closeout reconciliation for prior PR #1860 delegated to closeout workflow
+- [x] Remediation follow-up for closed source issue #1848 recorded in this post-merge closeout body
 
 ## ACCEPTANCE CRITERIA
 - [x] Required source issue exists, is open, is same-repository, and is not a PR.

@@ -1,13 +1,7 @@
 {
   "triggered_at": "2026-06-20T22:30:00Z",
-  "description": "Post-merge closeout replay for Program #1847 merged PRs #1887-#1892 and outstanding #1860 / #1848 remediation",
+  "description": "Post-merge closeout replay for Program #1847 merged PRs #1887-#1892",
   "targets": [
-    {
-      "pr": 1860,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1860-body.md",
-      "merge_sha": "492f2cb8e88679c30e89e46914ded83385a0394b",
-      "source_issue": 1848
-    },
     {
       "pr": 1887,
       "body_file": "scripts/ci/post-merge-closeout/pr-1887-body.md",
