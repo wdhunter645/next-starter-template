@@ -7,7 +7,7 @@ import FanclubPhotoGalleryPage from '@/app/fanclub/photo/page';
 import FanclubSubmitPage from '@/app/fanclub/submit/page';
 import LibraryPage from '@/app/fanclub/library/page';
 import MemorabiliaPage from '@/app/fanclub/memorabilia/page';
-import ArchivesTiles from '@/components/fanclub/ArchivesTiles';
+import ClubHomeSubmissionCta from '@/components/fanclub/ClubHomeSubmissionCta';
 import RecentDiscussionsTeaser from '@/components/RecentDiscussionsTeaser';
 import { onRequestGet as listDiscussions } from '../functions/api/discussions/list';
 import { onRequestGet as listLibrary } from '../functions/api/library/list';
@@ -215,10 +215,10 @@ describe('Fan Club operational pages', () => {
     expect(screen.getByText(/Credit: Lou Gehrig/)).toBeInTheDocument();
   });
 
-  it('exposes the approved member submission path from Club Archives without changing header navigation', () => {
-    render(<ArchivesTiles />);
+  it('exposes the approved member submission path from Club Home CTA without changing header navigation', () => {
+    render(<ClubHomeSubmissionCta />);
 
-    expect(screen.getByRole('link', { name: 'Submit to the Library' })).toHaveAttribute('href', '/fanclub/submit');
+    expect(screen.getByRole('link', { name: 'Submit a story or note' })).toHaveAttribute('href', '/fanclub/submit');
   });
 
   it('submits library articles with the member session cookie and surfaces API errors', async () => {

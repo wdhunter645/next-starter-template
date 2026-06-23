@@ -4,20 +4,18 @@ import { useState } from 'react';
 import FloatingLogo from '@/components/FloatingLogo';
 import AdminLink from '@/components/fanclub/AdminLink';
 import ArchivesTiles from '@/components/fanclub/ArchivesTiles';
+import ClubHomeArchiveSpotlight from '@/components/fanclub/ClubHomeArchiveSpotlight';
+import ClubHomeDeferredModule from '@/components/fanclub/ClubHomeDeferredModule';
+import ClubHomeMasthead from '@/components/fanclub/ClubHomeMasthead';
+import ClubHomeMediaFeature from '@/components/fanclub/ClubHomeMediaFeature';
+import ClubHomeStaticStory from '@/components/fanclub/ClubHomeStaticStory';
+import ClubHomeStoryRail from '@/components/fanclub/ClubHomeStoryRail';
+import ClubHomeSubmissionCta from '@/components/fanclub/ClubHomeSubmissionCta';
 import DiscussionFeed from '@/components/fanclub/DiscussionFeed';
 import GehrigTimeline from '@/components/fanclub/GehrigTimeline';
 import PostCreation from '@/components/fanclub/PostCreation';
-import WelcomeSection from '@/components/fanclub/WelcomeSection';
+import { clubHomePageStack } from '@/components/fanclub/clubHomeStyles';
 import { useMemberSession } from '@/hooks/useMemberSession';
-
-const sectionStackStyle = {
-  maxWidth: 1100,
-  margin: '0 auto',
-  padding: '0 20px 40px',
-  display: 'flex',
-  flexDirection: 'column' as const,
-  gap: 20,
-};
 
 export default function MemberHomePage() {
   const { isLoading, isAuthenticated, email, role } = useMemberSession({ redirectTo: '/' });
@@ -32,23 +30,38 @@ export default function MemberHomePage() {
   return (
     <main>
       <FloatingLogo />
-      <h1
-        style={{
-          fontSize: 32,
-          fontWeight: 700,
-          textAlign: 'center',
-          margin: '40px 20px 24px',
-          color: 'var(--lgfc-blue)',
-        }}
-      >
-        WELCOME LOU GEHRIG FAN CLUB MEMBERS
-      </h1>
+      <div style={clubHomePageStack} aria-label="FanClubHomeSections">
+        <ClubHomeMasthead email={memberEmail} />
 
-      <div style={sectionStackStyle} aria-label="FanClubHomeSections">
-        <WelcomeSection email={memberEmail} />
+        <ClubHomeStaticStory
+          ariaLabel="Lead story"
+          title="Lead Story"
+          headline="Lou Gehrig: The Iron Horse"
+          summary="Static editorial placeholder. The lead story will load from approved content inventory in Task 005 when dynamic Club Home integration is authorized."
+        />
+
+        <ClubHomeStoryRail />
         <ArchivesTiles />
+        <ClubHomeMediaFeature />
         <PostCreation email={memberEmail} onPostCreated={() => setFeedRefresh((n) => n + 1)} />
         <DiscussionFeed refreshTrigger={feedRefresh} />
+        <ClubHomeArchiveSpotlight />
+        <ClubHomeDeferredModule
+          ariaLabel="Campaign module"
+          title="Campaign & Fundraiser"
+          reason="No active campaign module is configured. Fundraiser operations remain a separate program; this slot fails closed until explicitly scoped."
+        />
+        <ClubHomeDeferredModule
+          ariaLabel="Events callout"
+          title="Events & Calendar"
+          reason="Static fallback: upcoming Lou Gehrig Fan Club events will appear here when event data is wired in a later task."
+        />
+        <ClubHomeDeferredModule
+          ariaLabel="Recognition tile"
+          title="Recognition & Partners"
+          reason="Static fallback: partner and recognition highlights require display rules before automation. No recognition records are rendered in Task 003."
+        />
+        <ClubHomeSubmissionCta />
         <GehrigTimeline />
         <AdminLink isAdmin={role === 'admin'} />
       </div>

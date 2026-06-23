@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
+import MembershipCardSection from '@/components/fanclub/MembershipCardSection';
 import { useMemberSession } from '@/hooks/useMemberSession';
 
 type Profile = {
@@ -105,7 +106,7 @@ export default function MemberProfilePage() {
   return (
     <main style={{ padding: '40px 16px', maxWidth: 980, margin: '0 auto' }}>
       <h1 style={{ fontSize: 34, margin: '0 0 12px 0' }}>My Profile</h1>
-      <p style={{ opacity: 0.85, marginTop: 0 }}>Manage your member profile details.</p>
+      <p style={{ opacity: 0.85, marginTop: 0 }}>Manage your member profile details and membership card.</p>
 
       <section style={{ marginTop: 18, padding: 16, borderRadius: 14, border: '1px solid rgba(0,0,0,0.12)' }}>
         <h2 style={{ marginTop: 0 }}>Profile</h2>
@@ -163,41 +164,13 @@ export default function MemberProfilePage() {
         )}
       </section>
 
-      <section
-        style={{
-          marginTop: 24,
-          display: 'flex',
-          gap: 12,
-          flexWrap: 'wrap',
-        }}
-      >
-        <Link href="/fanclub/membercard" style={{ textDecoration: 'none' }}>
-          <span
-            style={{
-              display: 'inline-flex',
-              padding: '10px 14px',
-              borderRadius: 10,
-              border: '1px solid rgba(0,0,0,0.2)',
-              color: 'inherit',
-              fontWeight: 700,
-            }}
-          >
-            View Membership Card
-          </span>
-        </Link>
-        <Link href="/fanclub" style={{ textDecoration: 'none' }}>
-          <span
-            style={{
-              display: 'inline-flex',
-              padding: '10px 14px',
-              borderRadius: 10,
-              border: '1px solid rgba(0,0,0,0.2)',
-              color: 'inherit',
-              fontWeight: 700,
-            }}
-          >
-            Back to Fan Club Home
-          </span>
+      <div style={{ marginTop: 24 }}>
+        <MembershipCardSection />
+      </div>
+
+      <section style={{ marginTop: 24 }}>
+        <Link href="/fanclub" style={{ textDecoration: 'none', fontWeight: 700 }}>
+          Back to Fan Club Home
         </Link>
       </section>
     </main>
