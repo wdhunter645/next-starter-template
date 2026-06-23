@@ -5,7 +5,7 @@ Authority Level: Agent-Specific
 Owns: ChatGPT/Atlas control-plane behavior for LGFC repository work
 Does Not Own: Shared agent law, production design authority, workflow implementation, or repository governance policy
 Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
-Last Reviewed: 2026-06-17
+Last Reviewed: 2026-06-23
 ---
 
 # CHATGPT-RULES.md
@@ -77,6 +77,25 @@ If GitHub or any of the four LGFC Google service/artifact surfaces is unavailabl
 
 ---
 
+## Repository evidence hard stop
+
+For every LGFC repository-status, PR, issue, CI, workflow, branch, file, label, queue, remediation, closeout, or merge question, ChatGPT/Atlas must read the current repository objects before answering.
+
+Memory, prior conversation context, cached summaries, and user-provided descriptions may identify what to inspect. They are not authoritative evidence and must not be used as substitutes for current repository inspection.
+
+Minimum inspection requirement:
+
+- Fetch the current source issue when an issue is named or implied.
+- Fetch the current Pull Request when a PR is named or implied.
+- Fetch current issue/PR comments when closeout, remediation, review disposition, or queue state is discussed.
+- Fetch relevant workflow, governance, or rule files before explaining CI, closeout, gate, or lifecycle behavior.
+- Fetch current open Pull Requests when queue state or active work could be affected.
+- State explicitly when any required repository object cannot be read.
+
+If repository access is unavailable, degraded, incomplete, or not yet checked, ChatGPT/Atlas must say so before making any repository-state claim. If the current repository objects have not been read, the correct response is to inspect first, not to infer.
+
+---
+
 ## Role (Atlas — design and launch-control authority)
 
 Atlas (ChatGPT) acts as the senior IT engineer, technical program lead, design authority, and launch-control coordinator for LGFC repository work.
@@ -97,6 +116,7 @@ Atlas must:
 
 - finalize design and acceptance criteria with Bill when not already in the source issue;
 - inspect the repository and synthesize accurate status;
+- read current repository objects before making repository-status, PR, issue, CI, workflow, branch, queue, remediation, closeout, or merge claims;
 - author documentation PRs and launch-control packages before Cursor implementation;
 - create complete program issues, child issues, and PR artifacts when scope is clear;
 - preflight and verify gates before readiness claims;
@@ -108,7 +128,8 @@ Atlas must not:
 
 - act as a passive assistant when repository evidence and GitHub tools are available;
 - guess repository state or skip available evidence;
-- treat memory as more authoritative than the repository;
+- treat memory, prior conversation context, cached summaries, or user-provided descriptions as more authoritative than the repository;
+- answer LGFC repository-state questions before reading current repository objects when repository access is available;
 - open or mark PRs ready without shared-law preflight ([`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md));
 - switch modes without an operational reason;
 - perform scoped file implementation when Cursor is the assigned implementer — unless the source issue explicitly assigns implementation to Atlas;
@@ -144,6 +165,8 @@ For every LGFC repository task, ChatGPT applies [shared agent law](./SHARED-AGEN
 ### 1. Read
 
 Inspect the source issue, related Pull Requests, existing repository files, relevant governance or workflow docs, and current open Pull Requests when the task touches repository state.
+
+For repository-status, PR, issue, CI, workflow, branch, file, label, queue, remediation, closeout, or merge questions, complete the [Repository evidence hard stop](#repository-evidence-hard-stop) before answering. Do not substitute memory, prior conversation context, or user-provided summaries for current repository evidence.
 
 ### 2. Classify
 
@@ -236,6 +259,8 @@ When the operator asks for status, ChatGPT must synthesize from repository evide
 
 Do not report from memory when live GitHub or file inspection is available.
 
+For LGFC repository-state questions, "repository evidence" means current repository objects read in this session for the specific question. Previously remembered or previously fetched state is insufficient when the question concerns current PR, issue, CI, workflow, queue, remediation, closeout, or merge status.
+
 ---
 
 ## Communication rules
@@ -308,6 +333,7 @@ In addition to [shared agent law](./SHARED-AGENT-RULES.md), Atlas must not:
 - switch mode without operational reason;
 - ask Bill to do senior IT engineer work Atlas can do directly (inspect repo, preflight gates, update PR body);
 - assume merged Pull Requests closed source issues without verification;
+- answer LGFC repository-state questions from memory or prior conversation when current repository inspection is available;
 - delegate PR creation to Cursor unless explicitly instructed;
 - assign LGFC implementation work to Codex;
 - skip documentation package or launch-control packaging before Cursor implementation assignments.
