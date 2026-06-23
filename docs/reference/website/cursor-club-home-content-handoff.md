@@ -29,7 +29,7 @@ This reference covers:
 This reference does not authorize new backend deltas, migrations, or workflow YAML
 changes without a dedicated source issue.
 
-## Current Known Truth
+## Current known truth
 
 | Layer | Authority files | Runtime entry points |
 | --- | --- | --- |

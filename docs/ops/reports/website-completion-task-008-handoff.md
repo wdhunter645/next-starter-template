@@ -21,6 +21,12 @@ completed task evidence from Tasks 004–007.
 This report lists documentation added in Task 008 and cross-references
 implementation evidence—it does not re-implement runtime behavior.
 
+## Current known truth
+
+- Program #1685 Tasks 004–007 delivered unified workflow docs, Club Home dynamic integration, backend deltas, and member subpage alignment.
+- Task 008 adds operator and Cursor handoff documents only; no application code changes.
+- Program closeout remains Task #1694 with parent issue #1685 open pending Bill/Atlas acceptance.
+
 ## Task 008 Deliverables
 
 | Document | Role |
@@ -31,7 +37,7 @@ implementation evidence—it does not re-implement runtime behavior.
 
 ## Cross-Reference Matrix (Tasks 004–007)
 
-| Task | Issue | Evidence consumed by handoff |
+| Task | issue | Evidence consumed by handoff |
 | --- | --- | --- |
 | 004 | #1689 | `docs/reference/website/unified-content-workflow.md`, `docs/how-to/website/member-content-submission.md` |
 | 005 | #1690 | `GET /api/fanclub/home`, Club Home components, `tests/fanclub-home-dynamic.test.tsx` |

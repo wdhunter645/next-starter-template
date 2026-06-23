@@ -32,6 +32,12 @@ Out of scope:
 - binary member photo upload (deferred);
 - GitHub issue closure or PR merge actions.
 
+## Current known truth
+
+- Tasks 004–007 merged implementation evidence exists in `docs/reference/website/unified-content-workflow.md`, Club Home APIs/UI, and Fan Club subpages.
+- Operators publish Club Home content through admin editorial inventory with `club_home` in `allowed_sections`.
+- Member surfaces use server-side search and fail-closed empty states as implemented in Task 007.
+
 ## Steps
 
 1. Confirm the story or media item has complete source/credit metadata.
