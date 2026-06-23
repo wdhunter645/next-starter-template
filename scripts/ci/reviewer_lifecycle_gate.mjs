@@ -286,7 +286,7 @@ export function buildReviewerLifecycleReport({
     if (staleTrustedReviewOnly) {
       lines.push('Trusted review exists on an earlier commit only; re-run trusted review on the current head SHA.');
     }
-  } else if (advisoryFindings > 0 && !enforceFailure) {
+  } else if (advisoryFindings > 0) {
     lines.push('', 'Advisory reviewer findings remain visible for PR readiness but do not block merge by timing alone.');
   }
 
