@@ -17,6 +17,56 @@ async function ensureMemberRecord(db: any, email: string) {
     .run();
 }
 
+async function readMemberProfile(db: any, email: string) {
+  const memberRow = await db
+    .prepare(
+      `SELECT first_name, last_name, screen_name, email_opt_in
+         FROM members
+        WHERE lower(email) = lower(?1)
+        LIMIT 1`,
+    )
+    .bind(email)
+    .first();
+
+  if (memberRow && (memberRow as any).first_name && (memberRow as any).last_name) {
+    return memberRow;
+  }
+
+  const joinRow = await db
+    .prepare(
+      `SELECT first_name, last_name, screen_name, email_opt_in
+         FROM join_requests
+        WHERE lower(email) = lower(?1)
+        LIMIT 1`,
+    )
+    .bind(email)
+    .first();
+
+  if (joinRow && (joinRow as any).first_name && (joinRow as any).last_name) {
+    await db
+      .prepare(
+        `UPDATE members
+            SET first_name = ?1,
+                last_name = ?2,
+                screen_name = ?3,
+                email_opt_in = ?4,
+                updated_at = datetime('now')
+          WHERE lower(email) = lower(?5)`,
+      )
+      .bind(
+        (joinRow as any).first_name,
+        (joinRow as any).last_name,
+        (joinRow as any).screen_name || null,
+        (joinRow as any).email_opt_in == null ? 1 : Number((joinRow as any).email_opt_in) ? 1 : 0,
+        email,
+      )
+      .run();
+    return joinRow;
+  }
+
+  return memberRow || joinRow;
+}
+
 export const onRequestGet = async (context: any): Promise<Response> => {
   const auth = await requireMember(context);
   if (!auth.ok) {
@@ -28,16 +78,7 @@ export const onRequestGet = async (context: any): Promise<Response> => {
 
   try {
     await ensureMemberRecord(auth.db, auth.email);
-
-    const row = await auth.db
-      .prepare(
-        `SELECT first_name, last_name, screen_name, email_opt_in
-         FROM join_requests
-         WHERE lower(email) = lower(?1)
-         LIMIT 1`
-      )
-      .bind(auth.email)
-      .first();
+    const row = await readMemberProfile(auth.db, auth.email);
 
     return new Response(JSON.stringify({ ok: true, profile: profileFromRow(row, auth.email) }, null, 2), {
       status: 200,
@@ -85,6 +126,19 @@ export const onRequestPost = async (context: any): Promise<Response> => {
 
     await ensureMemberRecord(auth.db, auth.email);
 
+    await auth.db
+      .prepare(
+        `UPDATE members
+            SET first_name = ?1,
+                last_name = ?2,
+                screen_name = ?3,
+                email_opt_in = ?4,
+                updated_at = datetime('now')
+          WHERE lower(email) = lower(?5)`,
+      )
+      .bind(firstName, lastName, screenName || null, emailOptIn ? 1 : 0, auth.email)
+      .run();
+
     const upsert = await auth.db
       .prepare(
         `UPDATE join_requests
@@ -93,7 +147,7 @@ export const onRequestPost = async (context: any): Promise<Response> => {
              last_name = ?3,
              screen_name = ?4,
              email_opt_in = ?5
-         WHERE lower(email) = lower(?6)`
+         WHERE lower(email) = lower(?6)`,
       )
       .bind(name, firstName, lastName, screenName || null, emailOptIn ? 1 : 0, auth.email)
       .run();
@@ -102,21 +156,13 @@ export const onRequestPost = async (context: any): Promise<Response> => {
       await auth.db
         .prepare(
           `INSERT INTO join_requests (name, email, first_name, last_name, screen_name, email_opt_in, created_at)
-           VALUES (?1, ?2, ?3, ?4, ?5, ?6, datetime('now'))`
+           VALUES (?1, ?2, ?3, ?4, ?5, ?6, datetime('now'))`,
         )
         .bind(name, auth.email, firstName, lastName, screenName || null, emailOptIn ? 1 : 0)
         .run();
     }
 
-    const row = await auth.db
-      .prepare(
-        `SELECT first_name, last_name, screen_name, email_opt_in
-         FROM join_requests
-         WHERE lower(email) = lower(?1)
-         LIMIT 1`
-      )
-      .bind(auth.email)
-      .first();
+    const row = await readMemberProfile(auth.db, auth.email);
 
     return new Response(JSON.stringify({ ok: true, profile: profileFromRow(row, auth.email) }, null, 2), {
       status: 200,
