@@ -2,7 +2,8 @@ name: GATE — Reviewer Response
 
 # Superseded by Task 003 reviewer lifecycle redesign.
 # Active enforcement lives in reviewer-response-completion.yml, which uses
-# scripts/ci/reviewer_lifecycle_gate.mjs for protected-scope blocking only.
+# scripts/ci/reviewer_lifecycle_gate.mjs for blocking on pull_request_target,
+# pull_request_review, pull_request_review_comment, and PR issue_comment events.
 
 on:
   workflow_dispatch:

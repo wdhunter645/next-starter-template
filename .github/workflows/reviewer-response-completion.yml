@@ -90,8 +90,13 @@ jobs:
               return;
             }
 
-            const enforceFailure = eventName === 'pull_request_target';
-            core.info(`Running reviewer lifecycle gate for PR #${prNumber} (enforceFailure=${enforceFailure}).`);
+            const enforceFailure = [
+              'pull_request_target',
+              'pull_request_review',
+              'pull_request_review_comment',
+              'issue_comment',
+            ].includes(eventName);
+            core.info(`Running reviewer lifecycle gate for PR #${prNumber} (event=${eventName}, enforceFailure=${enforceFailure}, head context via API).`);
 
             const { execFileSync } = require('node:child_process');
             execFileSync(

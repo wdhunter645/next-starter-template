@@ -12,7 +12,17 @@ const [parsedOwner, parsedRepo] = (process.env.GITHUB_REPOSITORY || '').split('/
 const DEFAULT_OWNER = parsedOwner || 'owner';
 const DEFAULT_REPO = parsedRepo || 'repo';
 const REMEDIATION_LABELS = new Set(['governance', 'ci', 'remediation', 'hotfix-governance']);
+export const ENFORCING_REVIEWER_LIFECYCLE_EVENTS = new Set([
+  'pull_request_target',
+  'pull_request_review',
+  'pull_request_review_comment',
+  'issue_comment',
+]);
 const INTENT_CONFIG_PATH = path.resolve('scripts/ci/pr_intent_allowlists.json');
+
+export function isEnforcingReviewerLifecycleEvent(eventName = '') {
+  return ENFORCING_REVIEWER_LIFECYCLE_EVENTS.has(eventName);
+}
 
 export function loadIntentConfig(configPath = INTENT_CONFIG_PATH) {
   return JSON.parse(fs.readFileSync(configPath, 'utf8'));
@@ -137,7 +147,9 @@ export function evaluateReviewerAccounting({
   const remediation = hasRemediationLabel(labels);
   const advisoryDowngraded = remediation && advisoryFindings > 0;
 
-  if (eventName === 'pull_request_target' && undispositionedReviewerComments > 0) {
+  const enforcingEvent = isEnforcingReviewerLifecycleEvent(eventName);
+
+  if (enforcingEvent && undispositionedReviewerComments > 0) {
     return {
       ok: false,
       severity: 'blocking',
@@ -147,7 +159,7 @@ export function evaluateReviewerAccounting({
     };
   }
 
-  if (eventName === 'pull_request_target' && outdatedWithoutDisposition > 0) {
+  if (enforcingEvent && outdatedWithoutDisposition > 0) {
     return {
       ok: false,
       severity: 'blocking',
@@ -157,7 +169,7 @@ export function evaluateReviewerAccounting({
     };
   }
 
-  if (eventName === 'pull_request_target' && lateUndispositionedReviewerComments > 0) {
+  if (enforcingEvent && lateUndispositionedReviewerComments > 0) {
     return {
       ok: false,
       severity: 'blocking',
@@ -169,7 +181,7 @@ export function evaluateReviewerAccounting({
 
   if (
     scope.hasProtectedScope &&
-    eventName === 'pull_request_target' &&
+    enforcingEvent &&
     breakGlassOverride
   ) {
     return {
@@ -191,7 +203,7 @@ export function evaluateReviewerAccounting({
     };
   }
 
-  if (scope.hasProtectedScope && eventName === 'pull_request_target' && !currentHeadLinkedReview) {
+  if (scope.hasProtectedScope && enforcingEvent && !currentHeadLinkedReview) {
     return {
       ok: false,
       severity: 'blocking',
