@@ -32,9 +32,9 @@ function closedCompletedIssue(number) {
 describe('ops burn-down wave 2 closeout bodies', () => {
 	it('loads Wave 2 manifest with ready backlog PR targets', () => {
 		const { targets } = loadCloseoutTargets(WAVE2_MANIFEST);
-		expect(targets).toHaveLength(9);
+		expect(targets).toHaveLength(8);
 		expect(targets.map((target) => target.pr)).toEqual([
-			1229, 1240, 1242, 1361, 1458, 1473, 1635, 1828, 1860,
+			1229, 1240, 1242, 1361, 1458, 1473, 1635, 1860,
 		]);
 		expect(targets.every((target) => target.body_file && target.merge_sha && target.source_issue)).toBe(
 			true,
@@ -57,7 +57,7 @@ describe('ops burn-down wave 2 closeout bodies', () => {
 	it('includes duplicate-cluster PRs in Wave 2 manifest', () => {
 		const { targets } = loadCloseoutTargets(WAVE2_MANIFEST);
 		expect(targets.map((target) => target.pr)).toEqual(
-			expect.arrayContaining([1458, 1635, 1828, 1860]),
+			expect.arrayContaining([1458, 1635, 1860]),
 		);
 	});
 

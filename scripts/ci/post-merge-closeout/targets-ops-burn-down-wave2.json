@@ -45,12 +45,6 @@
       "source_issue": 1634
     },
     {
-      "pr": 1828,
-      "body_file": "scripts/ci/post-merge-closeout/pr-1828-body.md",
-      "merge_sha": "3a844ae4b4d765c9d5f7dff3472f069d589e7008",
-      "source_issue": 1725
-    },
-    {
       "pr": 1860,
       "body_file": "scripts/ci/post-merge-closeout/pr-1860-body.md",
       "merge_sha": "492f2cb8e88679c30e89e46914ded83385a0394b",

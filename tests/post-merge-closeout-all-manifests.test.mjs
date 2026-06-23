@@ -82,4 +82,12 @@ describe('post-merge closeout all manifests', () => {
 		const overlap = wave2.filter((target) => priorPrs.has(target.pr));
 		expect(overlap).toEqual([]);
 	});
+
+	it('does not duplicate PR targets across ci-pending-rerun and Wave 2 manifest', () => {
+		const rerun = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json').targets;
+		const wave2 = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ops-burn-down-wave2.json').targets;
+		const rerunPrs = new Set(rerun.map((target) => target.pr));
+		const overlap = wave2.filter((target) => rerunPrs.has(target.pr));
+		expect(overlap).toEqual([]);
+	});
 });
