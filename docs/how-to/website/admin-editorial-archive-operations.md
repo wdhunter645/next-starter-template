@@ -5,8 +5,8 @@ Authority Level: Operational Procedure
 Owns: `/admin/editorial` operator alignment with approved content inventory
 Does Not Own: Content strategy, seed design, or `#1256` program scope
 Canonical Reference: /docs/reference/website/content-inventory-model.md
-Related issues: #1258, #1565, #1123, #1256
-Last Reviewed: 2026-06-14
+Related issues: #1258, #1565, #1123, #1256, #1689
+Last Reviewed: 2026-06-23
 ---
 
 # Admin Editorial Archive Operations
@@ -29,6 +29,7 @@ Related editorial how-tos (submission → review → publish):
 - [Review content submission](./review-content-submission.md)
 - [Publish or update content](./publish-update-content.md)
 - [Add content media](./add-content-media.md)
+- [Member content submission](./member-content-submission.md) (member intake → this queue)
 
 ## Steps
 
@@ -51,6 +52,17 @@ Related editorial how-tos (submission → review → publish):
 Follow the editorial how-to chain for human approval, canonical checks, media
 associations, and placement fields. The admin UI implements `#1256` inventory
 fields — do not bypass required review steps.
+
+### Member submission queue entry
+
+1. Member submissions from `/fanclub/submit` arrive as `submission_queue` rows with
+   `status = pending`.
+2. Process them with [Review content submission](./review-content-submission.md).
+3. Do not publish directly from the queue; convert approved items to
+   `content_inventory` per publish how-to.
+4. Legacy `photos` catalog rows remain separate operator-managed content; promoting
+   queue submissions into `photos` requires explicit editorial action in a later
+   implementation task.
 
 ### Ops alignment checks
 

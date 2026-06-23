@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Content strategy rationale, editorial model, source reconciliation, and architecture decisions for the website content inventory
 Does Not Own: D1 migrations, runtime implementation, route behavior, or final factual editorial approval
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Related Issues: #1256, #824, #819, #1137
-Last Reviewed: 2026-06-07
+Related issues: #1256, #824, #819, #1137, #1689, #1685
+Last Reviewed: 2026-06-23
 ---
 
 # Content Strategy / Editorial Inventory
@@ -195,6 +195,30 @@ or become alternate-perspective rows. Rejected submissions remain excluded from
 public rendering and search until the quarterly purge process removes eligible
 rejected queue records.
 
+### Content collection as intake layer (Priority #1)
+
+For the Website Completion / Fan Club Product Buildout program (`#1685`), content
+collection is **not** a separate workflow. It is the upstream intake and
+source/credit capture layer inside this content management strategy.
+
+| Layer | Responsibility |
+| --- | --- |
+| Content collection (intake) | Member `/fanclub/submit` and editor capture into `submission_queue` with source/credit fields |
+| Content management (editorial) | Review, approval, publication into `content_inventory`, placement, and rotation |
+
+Canonical workflow reference:
+`docs/reference/website/unified-content-workflow.md`.
+
+Member procedure:
+`docs/how-to/website/member-content-submission.md`.
+
+Task 004 reconciliation report:
+`docs/ops/reports/website-content-workflow-reconciliation.md`.
+
+Large-scale external or AI-assisted ingestion remains the separate Priority #4
+Lou Gehrig Content Collection Expansion program and must not be conflated with
+normal member/editorial intake.
+
 ### Automation boundaries
 
 Automation may help with objective triage and suggestions, including:
@@ -227,6 +251,7 @@ The approved inventory can populate these website surfaces after implementation:
 | Search | Index published canonical and alternate-perspective text, tags, source names, and media captions. |
 | Archive | Browse approved historical inventory by tag, year, source, and story type. |
 | Fan Club library | Present member-visible published inventory while preserving attribution. |
+| Club Home (`club_home`) | Feature published stories and modules eligible for authenticated Club Home placement. |
 | Related content | Link stories by shared tag, source, event year, rotation group, or media association. |
 
 No public surface should read rejected submissions. Draft, under-review, or

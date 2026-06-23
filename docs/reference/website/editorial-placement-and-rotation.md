@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Editorial placement fields, allowed section values, rotation rules, and dynamic population invariants for content inventory
 Does Not Own: Runtime query implementation, visual layout, component behavior, or editorial content approval
 Canonical Reference: /docs/reference/website/content-inventory-model.md
-Related Issues: #1256, #824, #819, #1137
-Last Reviewed: 2026-06-07
+Related issues: #1256, #824, #819, #1137, #1689, #1685
+Last Reviewed: 2026-06-23
 ---
 
 # Editorial Placement and Rotation
@@ -68,9 +68,30 @@ not by creating one boolean column per surface.
 | `library` | Fan Club library | Member-visible historical and archival stories. |
 | `search` | Public search | Published content eligible for public search indexing. |
 | `archive` | Public or member archive | Browsable historical inventory. |
+| `club_home` | Authenticated Club Home (`/fanclub`) | Lead story, secondary rail, archive spotlight, and other Club Home modules fed from published inventory. |
 | `related_content` | Related story modules | Story cards linked by tag, date, source, media, or rotation group. |
 
 Additional values require a reference update before implementation.
+
+## Club Home Slot Map (Task 005 handoff)
+
+When `allowed_sections` includes `club_home`, editors may target these Club Home
+module slots. Runtime selection rules are implementation-owned; this table defines
+editorial placement intent only.
+
+| Club Home module | Primary data authority | Placement notes |
+| --- | --- | --- |
+| Masthead / static copy | `page_content` (slug sections) | Operator copy; not a substitute for lead story inventory |
+| Lead story | `content_inventory` | `story_type = primary`; high `priority` within `club_home` |
+| Secondary story rail | `content_inventory` | `story_type = secondary` or `brief` |
+| Photo / memorabilia feature | `photos` + `content_inventory_media` | Catalog or inventory-linked feature; static fallback when empty |
+| Archive spotlight | `content_inventory` | Tag/anniversary-driven; `club_home` + optional `archive` |
+| Feature links (Gallery / Library / Memorabilia) | routes + counts optional | Navigation cards; not inventory rows |
+| Campaign / events / recognition | `page_content`, `events`, future config | Fail-closed until display rules exist |
+| Submission CTA | route `/fanclub/submit` | Intake only; see unified workflow reference |
+
+See `docs/reference/website/unified-content-workflow.md` for lane boundaries between
+`page_content`, `content_inventory`, and `photos`.
 
 ## Priority Rules
 
