@@ -37,7 +37,7 @@ export default function MemberHomePage() {
           ariaLabel="Lead story"
           title="Lead Story"
           headline="Lou Gehrig: The Iron Horse"
-          summary="Static editorial placeholder. The lead story will load from approved content inventory in Task 005 when dynamic Club Home integration is authorized."
+          summary="Club historians are curating the lead story for this section. Check back soon for featured Lou Gehrig coverage from the archive."
         />
 
         <ClubHomeStoryRail />
@@ -54,12 +54,12 @@ export default function MemberHomePage() {
         <ClubHomeDeferredModule
           ariaLabel="Events callout"
           title="Events & Calendar"
-          reason="Static fallback: upcoming Lou Gehrig Fan Club events will appear here when event data is wired in a later task."
+          reason="Upcoming Lou Gehrig Fan Club events will appear here when the calendar is connected."
         />
         <ClubHomeDeferredModule
           ariaLabel="Recognition tile"
           title="Recognition & Partners"
-          reason="Static fallback: partner and recognition highlights require display rules before automation. No recognition records are rendered in Task 003."
+          reason="Partner and recognition highlights will appear here when new display features are enabled."
         />
         <ClubHomeSubmissionCta />
         <GehrigTimeline />

@@ -4,11 +4,11 @@ const RAIL_ITEMS = [
   {
     headline: 'Lou Gehrig in the clubhouse',
     summary:
-      'Static editorial placeholder. Approved secondary stories will appear here after Task 005 dynamic integration.',
+      'More clubhouse stories from the archive will appear here as new Club Home features roll out.',
   },
   {
     headline: 'Yankee Stadium memories',
-    summary: 'Static editorial placeholder. Supporting archive stories rotate from published content inventory.',
+    summary: 'Supporting stories from the Gehrig library will rotate through this section.',
   },
 ] as const;
 

@@ -6,8 +6,8 @@ export default function ClubHomeArchiveSpotlight() {
     <section aria-label="Archive spotlight" style={clubHomeSectionCard}>
       <h2 style={clubHomeSectionTitle}>Archive Spotlight</h2>
       <p style={{ ...clubHomeMutedText, marginBottom: 12 }}>
-        Static fallback: anniversary and tag-driven archive highlights will surface here from approved editorial
-        inventory. No dynamic records are loaded on Club Home in Task 003.
+        Anniversary and tag-driven highlights from the Gehrig archive will appear here. Browse the library for current
+        stories.
       </p>
       <Link href="/fanclub/library" style={{ fontWeight: 600 }}>
         Explore the Gehrig Library
