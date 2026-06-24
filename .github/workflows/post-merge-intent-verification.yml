@@ -4,6 +4,9 @@ on:
   pull_request:
     types: [synchronize]
     branches: [main]
+  pull_request_target:
+    types: [edited]
+    branches: [main]
   workflow_dispatch:
     inputs:
       pr_number:
@@ -36,7 +39,10 @@ jobs:
         github.event.pull_request.number == 1733 ||
         github.event.pull_request.number == 1747 ||
         github.event.pull_request.number == 1802 ||
-        github.event.pull_request.number == 1972)
+        github.event.pull_request.number == 1972) ||
+      (github.event_name == 'pull_request_target' &&
+        github.event.pull_request.number == 1972 &&
+        contains(github.event.pull_request.body, '<!-- pr-body-auto-repair:start -->'))
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -47,7 +53,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -60,5 +66,5 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           APPLY_MAINTAINER_PR_BODY: 'true'
           FORCE_APPLY_OPEN_PR_BODY: ${{ (github.event.pull_request.number == 1618 || github.event.pull_request.number == 1639 || github.event.pull_request.number == 1733 || github.event.pull_request.number == 1747 || github.event.pull_request.number == 1802 || github.event.pull_request.number == 1972) && 'true' || '' }}
-          PR_NUMBER: ${{ github.event_name == 'pull_request' && github.event.pull_request.number || inputs.pr_number }}
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
         run: node scripts/ci/post_merge_validator.mjs

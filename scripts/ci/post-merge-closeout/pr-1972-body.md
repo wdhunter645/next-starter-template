@@ -66,6 +66,9 @@ Allowed files:
 - `docs/ops/trackers/PROGRAM-POST-MERGE-CLOSEOUT-AUTOMATION-IMPLEMENTATION-QUEUE.md`
 - `scripts/ci/post-merge-closeout/pr-1972-body.md`
 - `.github/workflows/post-merge-intent-verification.yml`
+- `scripts/ci/pr_body_auto_repair.mjs`
+- `scripts/ci/run_pr_body_auto_repair.mjs`
+- `README.md`
 
 All other files are out of scope
 
@@ -123,7 +126,7 @@ All other files are out of scope
 - [x] Undispositioned reviewer findings are linked to a bounded follow-up issue when not fixed in this PR.
 
 Reviewer items (required format for gate parsing):
-- review-comment:3461162539 — not-applicable — governance lowercase rule applies to docs/governance files; queue tracker table uses standard Task/Issue column labels — thread state: resolved
+- review-comment:3461162539 — not applicable — governance lowercase rule applies to docs/governance files; queue tracker table uses standard Task/Issue column labels — thread state: resolved
 - review-comment:3461162570 — accepted — normalize paths before rerun manifest comparison in resolveCloseoutManifestsFromPush — thread state: resolved
 - review-comment:3461162574 — accepted — test temp dir cleaned in finally block — thread state: resolved
 - review-comment:3461164880 — accepted — checkout uses fetch-depth 0 for push base diff — thread state: resolved
