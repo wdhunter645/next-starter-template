@@ -13,7 +13,7 @@ Last Reviewed: 2026-06-23
 
 ## Launch-state control
 
-> **Launched 2026-06-23** by operator authorization. Cursor may execute child tasks serially, one PR per task, merging when gates pass.
+> **Launched 2026-06-23** by operator authorization. Cursor may execute child tasks serially, one PR per task, and hand off each PR at `READY FOR MERGE` for human merge authorization. Merge authority remains with Bill/the human operator per `Agent.md` and `docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`.
 
 ## Program metadata
 
