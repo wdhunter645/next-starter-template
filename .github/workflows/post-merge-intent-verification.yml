@@ -4,9 +4,6 @@ on:
   pull_request:
     types: [synchronize]
     branches: [main]
-  pull_request_target:
-    types: [edited]
-    branches: [main]
   workflow_dispatch:
     inputs:
       pr_number:
@@ -39,10 +36,7 @@ jobs:
         github.event.pull_request.number == 1733 ||
         github.event.pull_request.number == 1747 ||
         github.event.pull_request.number == 1802 ||
-        github.event.pull_request.number == 1972) ||
-      (github.event_name == 'pull_request_target' &&
-        github.event.pull_request.number == 1972 &&
-        contains(github.event.pull_request.body, '<!-- pr-body-auto-repair:start -->'))
+        github.event.pull_request.number == 1972)
     runs-on: ubuntu-latest
     permissions:
       actions: read
