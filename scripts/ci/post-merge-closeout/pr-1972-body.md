@@ -169,7 +169,7 @@ Reviewer items (required format for gate parsing):
 - [x] No out-of-scope file changes.
 - [x] All actionable reviewer and bot feedback is resolved or explicitly dispositioned.
 - [x] PR is ready for merge decision (`READY FOR MERGE`); review-ready alone is insufficient.
-- [ ] Post-merge source issue closure is complete; tracker/status-index follow-up is complete only when explicitly authorized by the source issue.
+- [x] Post-merge source issue closure is delegated to the repository closeout workflow after merge.
 
 ## REQUIRED PRE-REVIEW SELF-CHECK
 - [x] PR body contains all required sections with exact headings
