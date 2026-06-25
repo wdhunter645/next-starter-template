@@ -64,10 +64,26 @@ async function buildSnapshot(context: {
       payload.clubHome = clubHome;
       payload.headlines = {
         lead: clubHome.lead_story?.headline ?? clubHome.lead_story?.title ?? null,
-        rail: (clubHome.rail_stories ?? []).map((story) => story.headline ?? story.title ?? null),
+        rail: (clubHome.rail_stories ?? []).map((story) => story?.headline ?? story?.title ?? null),
         archiveSpotlight:
           clubHome.archive_spotlight?.headline ?? clubHome.archive_spotlight?.title ?? null,
       };
+
+      const discussionRows = await d1.db
+        .prepare(
+          `SELECT id, title, body, created_at
+             FROM discussions
+            WHERE status='posted'
+            ORDER BY created_at DESC, id DESC
+            LIMIT 5`,
+        )
+        .all();
+      payload.discussions = (discussionRows.results ?? []).map((row: Record<string, unknown>) => ({
+        id: Number(row.id),
+        title: typeof row.title === 'string' ? row.title : '',
+        body: typeof row.body === 'string' ? row.body : '',
+        created_at: typeof row.created_at === 'string' ? row.created_at : '',
+      }));
     } catch {
       payload.contentSources = contentSourcesForClubHome('static');
       payload.clubHome = {

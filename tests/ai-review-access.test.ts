@@ -1,12 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-  onRequestDelete,
-  onRequestGet,
-  onRequestPatch,
-  onRequestPost,
-  onRequestPut,
-} from '../functions/api/_ai-review/page-snapshot';
+import { onRequestDelete, onRequestGet, onRequestPatch, onRequestPost, onRequestPut } from '../functions/api/_ai-review/page-snapshot';
+import { onRequest as onAiReviewRouteRequest } from '../functions/_ai-review/[[path]]';
 import {
   AI_REVIEW_FANCLUB_SECTIONS,
   readAiReviewEnv,
@@ -124,5 +119,22 @@ describe('AI review page-snapshot endpoint (#1973)', () => {
     const payload = await allowed.json();
     expect(payload.adminReview).toBe(true);
     expect(payload.readOnly).toBe(true);
+  });
+
+  it('blocks _ai-review HTML routes at the edge without a valid token', async () => {
+    const denied = await onAiReviewRouteRequest({
+      request: new Request('https://www.lougehrigfanclub.com/_ai-review/fanclub/'),
+      env: createEnv(),
+      next: async () => new Response('should-not-reach', { status: 200 }),
+    });
+    expect(denied.status).toBe(403);
+
+    const allowed = await onAiReviewRouteRequest({
+      request: new Request(`https://www.lougehrigfanclub.com/_ai-review/fanclub/?token=${REVIEW_TOKEN}`),
+      env: createEnv(),
+      next: async () => new Response('ok', { status: 200 }),
+    });
+    expect(allowed.status).toBe(200);
+    expect(await allowed.text()).toBe('ok');
   });
 });

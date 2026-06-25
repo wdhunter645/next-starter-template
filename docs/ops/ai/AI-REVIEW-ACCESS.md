@@ -42,11 +42,18 @@ Source pages live under `src/app/ai-review/` and are exported to `/_ai-review/` 
 
 ## Security constraints
 
-1. Missing/invalid token → **404** (disabled) or **403** (enabled but unauthorized).
+1. Missing/invalid token → **404** (disabled) or **403** (enabled but unauthorized) from both the Cloudflare Pages `/_ai-review/*` edge guard and the snapshot API.
 2. Token must **not** appear in HTML, JSON responses, logs, telemetry, or test snapshots.
-3. No mutation endpoints, D1 dumps, impersonation, or environment/secret dumps through review mode.
-4. Admin review surfaces are read-only summaries; publish/delete/export controls are not active.
-5. Normal member login and `/fanclub` / `/admin` cookie auth are unchanged.
+3. Review URLs pass the token in the `?token=` query parameter per issue #1973; operators should treat preview access as short-lived and rotate the token after review.
+4. No mutation endpoints, D1 dumps, impersonation, or environment/secret dumps through review mode.
+5. Admin review surfaces are read-only summaries; publish/delete/export controls are not active.
+6. Normal member login and `/fanclub` / `/admin` cookie auth are unchanged.
+
+## Runtime model
+
+- **Edge guard:** `functions/_ai-review/[[path]].ts` validates the token before static HTML is served.
+- **Client gate:** review pages call `/api/_ai-review/page-snapshot` to hydrate read-only content; unauthorized clients render empty output.
+- **Export path:** source pages live in `src/app/ai-review/` and postbuild renames `out/ai-review` to `out/_ai-review`.
 
 ## Operator usage (preview-first)
 
@@ -69,6 +76,7 @@ Optionally unset or rotate `AI_REVIEW_TOKEN`. Redeploy or update the Cloudflare 
 | Surface | Location |
 | --- | --- |
 | Shared guard | `src/lib/aiReviewAccess.ts` |
+| Edge route guard | `functions/_ai-review/[[path]].ts` |
 | Snapshot API | `functions/api/_ai-review/page-snapshot.ts` |
 | Live review pages | `src/app/ai-review/{home,fanclub,admin}/page.tsx` |
 | Tests | `tests/ai-review-access.test.ts` |

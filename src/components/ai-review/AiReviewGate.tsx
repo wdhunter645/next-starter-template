@@ -14,6 +14,12 @@ export type AiReviewSnapshot = {
     fallback: string;
   };
   clubHome?: ClubHomeApiResponse;
+  discussions?: Array<{
+    id: number;
+    title: string;
+    body: string;
+    created_at: string;
+  }>;
   readOnly?: boolean;
 };
 

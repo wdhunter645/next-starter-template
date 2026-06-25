@@ -54,7 +54,7 @@ export default function AiReviewFanclubContent({ snapshot }: Props) {
         <ArchivesTiles />
         <ClubHomeMediaFeature media={clubHome?.ok ? clubHome.media_feature || null : null} />
         <AiReviewPostCreationPreview />
-        <AiReviewDiscussionPreview />
+        <AiReviewDiscussionPreview discussions={snapshot.discussions} />
         <ClubHomeArchiveSpotlight
           story={(clubHome?.ok ? clubHome.archive_spotlight || null : null) as ClubHomeStory | null}
         />

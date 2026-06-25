@@ -1,9 +1,7 @@
 'use client';
 
-import type { CSSProperties } from 'react';
 import styles from '@/app/page.module.css';
 import FloatingLogo from '@/components/FloatingLogo';
-import WeeklyMatchup from '@/components/WeeklyMatchup';
 import CampaignSpotlightSlot from '@/components/home/CampaignSpotlightSlot';
 import FAQSection from '@/components/FAQSection';
 import MilestonesSection from '@/components/MilestonesSection';
@@ -13,11 +11,7 @@ import JoinCTA from '@/components/JoinCTA';
 import RecentDiscussionsTeaser from '@/components/RecentDiscussionsTeaser';
 import SocialWall from '@/components/SocialWall';
 import AiReviewBanner from '@/components/ai-review/AiReviewBanner';
-
-const readOnlyJoinStyle: CSSProperties = {
-  pointerEvents: 'none',
-  opacity: 0.85,
-};
+import AiReviewWeeklyMatchupPreview from '@/components/ai-review/AiReviewWeeklyMatchupPreview';
 
 export default function AiReviewHomeContent() {
   return (
@@ -34,12 +28,12 @@ export default function AiReviewHomeContent() {
       </header>
 
       <CampaignSpotlightSlot />
-      <section id="weekly" className="section-gap">
+      <section id="weekly" className="section-gap" inert aria-label="Weekly photo matchup (read-only)">
         <div className="container">
-          <WeeklyMatchup />
+          <AiReviewWeeklyMatchupPreview />
         </div>
       </section>
-      <section id="join-cta" className="container section-gap" style={readOnlyJoinStyle} aria-label="Membership CTA (read-only)">
+      <section id="join-cta" className="container section-gap" inert aria-label="Membership CTA (read-only)">
         <JoinCTA />
       </section>
       <section id="about-lou-gehrig" className="container section-gap">
