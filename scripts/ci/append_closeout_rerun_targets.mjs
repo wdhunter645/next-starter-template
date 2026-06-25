@@ -24,7 +24,13 @@ export function normalizeCloseoutTarget(target = {}) {
 		body_file: bodyFile,
 	};
 	if (target.merge_sha) normalized.merge_sha = String(target.merge_sha);
-	if (target.source_issue) normalized.source_issue = Number(target.source_issue);
+	if (target.source_issue !== undefined && target.source_issue !== null) {
+		const sourceIssue = Number(String(target.source_issue).replace(/^#/, ''));
+		if (!Number.isFinite(sourceIssue) || sourceIssue <= 0) {
+			throw new Error(`Closeout rerun target requires a numeric source_issue: ${JSON.stringify(target)}`);
+		}
+		normalized.source_issue = sourceIssue;
+	}
 	if (target.skip_body_apply === true) normalized.skip_body_apply = true;
 	return normalized;
 }
@@ -53,7 +59,12 @@ export function readRerunManifest(manifestPath = RERUN_MANIFEST, workspace = pro
 		return { manifestPath: resolved, payload: { targets: [] }, targets: [] };
 	}
 
-	const payload = JSON.parse(fs.readFileSync(resolved, 'utf8'));
+	const raw = fs.readFileSync(resolved, 'utf8').trim();
+	if (!raw) {
+		return { manifestPath: resolved, payload: { targets: [] }, targets: [] };
+	}
+
+	const payload = JSON.parse(raw);
 	const targets = Array.isArray(payload) ? payload : payload?.targets;
 	if (!Array.isArray(targets)) {
 		throw new Error(`Closeout rerun manifest must include a targets array: ${resolved}`);
@@ -131,7 +142,7 @@ export function toRerunTargetFromBatchTarget(target = {}, repositoryRoot = proce
 async function main() {
 	const args = process.argv.slice(2);
 	const manifestIndex = args.indexOf('--manifest');
-	const manifestPath = manifestIndex >= 0 ? args[manifestIndex + 1] : RERUN_MANIFEST;
+	const manifestPath = manifestIndex >= 0 && args[manifestIndex + 1] ? args[manifestIndex + 1] : RERUN_MANIFEST;
 	const stdinMode = args.includes('--stdin-targets');
 	const dryRun = args.includes('--dry-run');
 

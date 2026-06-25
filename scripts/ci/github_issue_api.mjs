@@ -20,8 +20,8 @@ export function isGitHubRateLimitError(error) {
 	return error instanceof GitHubRateLimitError;
 }
 
-export function computeBackoffDelayMs(attempt, initialBackoffMs = 1000) {
-	return initialBackoffMs * 2 ** Math.max(attempt - 1, 0);
+export function computeBackoffDelayMs(attempt, initialBackoffMs = 1000, maxBackoffMs = 30000) {
+	return Math.min(initialBackoffMs * 2 ** Math.max(attempt - 1, 0), maxBackoffMs);
 }
 
 export async function sleep(ms) {

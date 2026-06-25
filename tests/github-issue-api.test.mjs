@@ -19,6 +19,11 @@ describe('github rate limit helpers', () => {
 		expect(computeBackoffDelayMs(2, 1000)).toBe(2000);
 		expect(computeBackoffDelayMs(3, 500)).toBe(2000);
 	});
+
+	it('caps exponential backoff at the configured maximum', () => {
+		expect(computeBackoffDelayMs(10, 1000, 30000)).toBe(30000);
+		expect(computeBackoffDelayMs(3, 1000, 1500)).toBe(1500);
+	});
 });
 
 describe('githubRepoRequest', () => {

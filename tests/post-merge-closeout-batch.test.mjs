@@ -6,6 +6,8 @@ import { describe, expect, it, vi } from 'vitest';
 import {
 	appendCloseoutRerunTargets,
 	mergeRerunTargets,
+	normalizeCloseoutTarget,
+	readRerunManifest,
 } from '../scripts/ci/append_closeout_rerun_targets.mjs';
 import { GitHubRateLimitError } from '../scripts/ci/github_issue_api.mjs';
 import {
@@ -254,6 +256,40 @@ describe('post-merge closeout batch', () => {
 			sync_action: 'post_merge_success',
 			source_issue: '2',
 			remediation_required: false,
+		});
+	});
+
+	it('normalizes source_issue values and rejects invalid numbers', () => {
+		expect(
+			normalizeCloseoutTarget({
+				pr: 1,
+				body_file: 'scripts/ci/post-merge-closeout/pr-1-body.md',
+				source_issue: '#1965',
+			}),
+		).toEqual({
+			pr: 1,
+			body_file: 'scripts/ci/post-merge-closeout/pr-1-body.md',
+			source_issue: 1965,
+		});
+
+		expect(() =>
+			normalizeCloseoutTarget({
+				pr: 1,
+				body_file: 'scripts/ci/post-merge-closeout/pr-1-body.md',
+				source_issue: 'not-a-number',
+			}),
+		).toThrow(/numeric source_issue/);
+	});
+
+	it('treats an empty rerun manifest file as an empty target list', () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-rerun-empty-'));
+		const manifestPath = path.join(dir, 'targets-ci-pending-rerun.json');
+		fs.writeFileSync(manifestPath, '');
+
+		expect(readRerunManifest(manifestPath, dir)).toEqual({
+			manifestPath,
+			payload: { targets: [] },
+			targets: [],
 		});
 	});
 
