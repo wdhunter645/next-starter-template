@@ -1,19 +1,34 @@
 import { describe, expect, it } from 'vitest';
 
-import { DEFAULT_MANIFESTS } from '../scripts/ci/run_post_merge_closeout_all_manifests.mjs';
+import {
+	ACTIVE_MANIFEST_REGISTRY,
+	DEFAULT_MANIFESTS,
+	loadActiveManifestRegistry,
+} from '../scripts/ci/run_post_merge_closeout_all_manifests.mjs';
 import { loadCloseoutTargets } from '../scripts/ci/run_batch_post_merge_closeout.mjs';
 
+const COMPLETED_WAVE_MANIFESTS = [
+	'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave1.json',
+	'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave2.json',
+	'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3a.json',
+	'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3a-remediation.json',
+];
+
 describe('post-merge closeout all manifests', () => {
-	it('defines rerun, CI pending, and remediation backlog manifests', () => {
-		expect(DEFAULT_MANIFESTS).toEqual([
+	it('loads DEFAULT_MANIFESTS from the active registry without completed waves', () => {
+		const { manifests, archivedManifests } = loadActiveManifestRegistry();
+		expect(manifests).toEqual(DEFAULT_MANIFESTS);
+		expect(manifests).toEqual([
 			'scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json',
 			'scripts/ci/post-merge-closeout/targets-ci-pending.json',
 			'scripts/ci/post-merge-closeout/targets-remediation-backlog.json',
-			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave1.json',
-			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave2.json',
-			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3a-remediation.json',
 			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3b.json',
 		]);
+		for (const manifestPath of COMPLETED_WAVE_MANIFESTS) {
+			expect(manifests).not.toContain(manifestPath);
+		}
+		expect(archivedManifests).toEqual(COMPLETED_WAVE_MANIFESTS);
+		expect(ACTIVE_MANIFEST_REGISTRY).toBe('scripts/ci/post-merge-closeout/targets-active.json');
 	});
 
 	it('loads PR #1858 closeout rerun target after #1855 remediation merge closeout', () => {
