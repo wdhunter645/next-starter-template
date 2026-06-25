@@ -49,6 +49,15 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
+function resolveFetchUrl(input: RequestInfo | URL): string {
+  if (typeof input === 'string') return input;
+  if (input instanceof URL) return input.toString();
+  if (typeof input === 'object' && input !== null && 'url' in input) {
+    return (input as Request).url;
+  }
+  return String(input);
+}
+
 function createRequest(path: string, cookie?: string): Request {
   return new Request(`https://www.lougehrigfanclub.com${path}`, {
     headers: cookie ? { Cookie: cookie } : undefined,
@@ -161,7 +170,7 @@ describe('Fan Club operational pages', () => {
 
   it('renders member photos from thumbnail_url values returned by the Fan Club API', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
-      const url = String(input);
+      const url = resolveFetchUrl(input);
       if (url.includes('/api/fanclub/photos/tags')) {
         return jsonResponse({ ok: true, tags: ['history'] }) as never;
       }
@@ -190,7 +199,7 @@ describe('Fan Club operational pages', () => {
 
   it('shows an empty-state message when the photo gallery has no items', async () => {
     vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
-      const url = String(input);
+      const url = resolveFetchUrl(input);
       if (url.includes('/api/fanclub/photos/tags')) {
         return jsonResponse({ ok: true, tags: [] }) as never;
       }
@@ -204,7 +213,7 @@ describe('Fan Club operational pages', () => {
 
   it('shows a load error when the photo gallery API fails', async () => {
     vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
-      const url = String(input);
+      const url = resolveFetchUrl(input);
       if (url.includes('/api/fanclub/photos/tags')) {
         return jsonResponse({ ok: true, tags: [] }) as never;
       }
