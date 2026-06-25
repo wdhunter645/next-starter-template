@@ -4,7 +4,8 @@
     "scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json",
     "scripts/ci/post-merge-closeout/targets-ci-pending.json",
     "scripts/ci/post-merge-closeout/targets-remediation-backlog.json",
-    "scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3b.json"
+    "scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3b.json",
+    "scripts/ci/post-merge-closeout/targets-website-completion-1685-closeout.json"
   ],
   "archived_manifests": [
     "scripts/ci/post-merge-closeout/targets-ops-burn-down-wave1.json",

@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import FloatingLogo from '@/components/FloatingLogo';
 import AdminLink from '@/components/fanclub/AdminLink';
 import ArchivesTiles from '@/components/fanclub/ArchivesTiles';
@@ -8,32 +7,27 @@ import ClubHomeArchiveSpotlight from '@/components/fanclub/ClubHomeArchiveSpotli
 import ClubHomeDeferredModule from '@/components/fanclub/ClubHomeDeferredModule';
 import ClubHomeMasthead from '@/components/fanclub/ClubHomeMasthead';
 import ClubHomeMediaFeature from '@/components/fanclub/ClubHomeMediaFeature';
+import ClubHomeMemberPrompt from '@/components/fanclub/ClubHomeMemberPrompt';
 import ClubHomeStaticStory from '@/components/fanclub/ClubHomeStaticStory';
 import ClubHomeStoryRail from '@/components/fanclub/ClubHomeStoryRail';
 import ClubHomeSubmissionCta from '@/components/fanclub/ClubHomeSubmissionCta';
-import DiscussionFeed from '@/components/fanclub/DiscussionFeed';
-import GehrigTimeline from '@/components/fanclub/GehrigTimeline';
-import PostCreation from '@/components/fanclub/PostCreation';
 import { useClubHomeContent } from '@/components/fanclub/useClubHomeContent';
 import { clubHomePageStack } from '@/components/fanclub/clubHomeStyles';
 import { useMemberSession } from '@/hooks/useMemberSession';
 
 export default function MemberHomePage() {
   const { isLoading, isAuthenticated, email, role } = useMemberSession({ redirectTo: '/' });
-  const [feedRefresh, setFeedRefresh] = useState(0);
   const clubHome = useClubHomeContent();
 
   if (isLoading || !isAuthenticated) {
     return null;
   }
 
-  const memberEmail = email || '';
-
   return (
     <main>
       <FloatingLogo />
       <div style={clubHomePageStack} aria-label="FanClubHomeSections">
-        <ClubHomeMasthead email={memberEmail} />
+        <ClubHomeMasthead email={email || ''} />
 
         <ClubHomeStaticStory
           ariaLabel="Lead story"
@@ -47,8 +41,7 @@ export default function MemberHomePage() {
         <ClubHomeStoryRail stories={clubHome.railStories} />
         <ArchivesTiles />
         <ClubHomeMediaFeature media={clubHome.mediaFeature} />
-        <PostCreation email={memberEmail} onPostCreated={() => setFeedRefresh((n) => n + 1)} />
-        <DiscussionFeed refreshTrigger={feedRefresh} />
+        <ClubHomeMemberPrompt />
         <ClubHomeArchiveSpotlight story={clubHome.archiveSpotlight} />
         <ClubHomeDeferredModule
           ariaLabel="Campaign module"
@@ -66,7 +59,6 @@ export default function MemberHomePage() {
           reason="Partner and recognition highlights will appear here when new display features are enabled."
         />
         <ClubHomeSubmissionCta />
-        <GehrigTimeline />
         <AdminLink isAdmin={role === 'admin'} />
       </div>
     </main>

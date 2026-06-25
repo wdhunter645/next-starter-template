@@ -47,6 +47,15 @@ describe('resolve_closeout_manifests_from_push', () => {
 		}
 	});
 
+	it('replays Program #1685 closeout manifest when changed on push', () => {
+		const manifest = 'scripts/ci/post-merge-closeout/targets-website-completion-1685-closeout.json';
+		const resolved = resolveCloseoutManifestsFromPush({
+			changedPaths: [manifest],
+			includeRerunWhenPopulated: false,
+		});
+		expect(resolved).toEqual([manifest]);
+	});
+
 	it('formats and parses manifest lists for CLOSEOUT_MANIFESTS', () => {
 		const list = ['scripts/ci/a.json', 'scripts/ci/b.json'];
 		expect(parseManifestList(formatManifestList(list))).toEqual(list);

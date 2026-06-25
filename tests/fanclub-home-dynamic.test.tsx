@@ -13,18 +13,6 @@ vi.mock('@/components/FloatingLogo', () => ({
   default: () => <div data-testid="floating-logo" />,
 }));
 
-vi.mock('@/components/fanclub/PostCreation', () => ({
-  default: () => <section aria-label="Member prompt">Member prompt</section>,
-}));
-
-vi.mock('@/components/fanclub/DiscussionFeed', () => ({
-  default: () => <section aria-label="Discussion feed">Discussion feed</section>,
-}));
-
-vi.mock('@/components/fanclub/GehrigTimeline', () => ({
-  default: () => <section aria-label="Gehrig timeline">Timeline</section>,
-}));
-
 vi.mock('@/components/fanclub/AdminLink', () => ({
   default: () => null,
 }));
