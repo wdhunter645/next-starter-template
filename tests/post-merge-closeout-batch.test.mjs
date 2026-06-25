@@ -27,11 +27,10 @@ import {
 } from '../scripts/ci/post_merge_validator.mjs';
 
 describe('post-merge closeout batch', () => {
-	it('loads legacy completed closeout targets for merged PRs 1239 and 1243', () => {
+	it('loads legacy completed closeout targets from targets.json', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets.json');
-		expect(targets.map((target) => target.pr)).toEqual([1239, 1243]);
+		expect(targets.map((target) => target.pr)).toEqual([1239]);
 		expect(targets[0].body_file).toContain('pr-1239-body.md');
-		expect(targets[1].body_file).toContain('pr-1243-body.md');
 	});
 
 	it('rejects null targets in the manifest without throwing parse errors', () => {
@@ -388,5 +387,64 @@ describe('post-merge closeout batch', () => {
 				expect.objectContaining({ pr: '3', status: 'queued', phase: 'rate_limit_rerun' }),
 			]),
 		);
+	});
+
+	it('prunes passing targets from the manifest after a partial_failure batch', async () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-batch-partial-prune-'));
+		const manifestPath = path.join(dir, 'targets.json');
+		const bodyPass = path.join(dir, 'pass.md');
+		const bodyFail = path.join(dir, 'fail.md');
+		for (const bodyPath of [bodyPass, bodyFail]) {
+			fs.writeFileSync(
+				bodyPath,
+				'- **Issue:** #1\n\n## CHANGE SUMMARY\nx\n\n## BUILD / TEST / VERIFICATION\nx\n\n## ACCEPTANCE CRITERIA\nx\n',
+			);
+		}
+		fs.writeFileSync(
+			manifestPath,
+			`${JSON.stringify(
+				{
+					targets: [
+						{ pr: 1, body_file: bodyPass },
+						{ pr: 2, body_file: bodyFail },
+					],
+				},
+				null,
+				2,
+			)}\n`,
+		);
+
+		const runPostMergeCloseout = vi
+			.fn()
+			.mockResolvedValueOnce({
+				status: 'pass',
+				sync_action: 'post_merge_success',
+				source_issue: '1',
+				remediation_required: false,
+			})
+			.mockResolvedValueOnce({
+				status: 'fail',
+				sync_action: 'post_merge_failure',
+				source_issue: '2',
+				remediation_required: true,
+			});
+
+		const outcome = await runBatchPostMergeCloseout({
+			token: 'token',
+			repository: 'owner/repo',
+			manifestPath,
+			targets: [
+				{ pr: 1, body_file: bodyPass },
+				{ pr: 2, body_file: bodyFail },
+			],
+			runPostMergeCloseoutFn: runPostMergeCloseout,
+			closeDuplicateRemediationIssuesFn: vi.fn().mockResolvedValue({ closed: [] }),
+		});
+
+		expect(outcome.status).toBe('partial_failure');
+		expect(outcome.manifestPrune).toMatchObject({ pruned: 1, remaining: 1 });
+		expect(JSON.parse(fs.readFileSync(manifestPath, 'utf8')).targets).toEqual([
+			{ pr: 2, body_file: bodyFail },
+		]);
 	});
 });

@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
 import { closeDuplicateRemediationIssues } from './close_duplicate_remediation_issues.mjs';
 import { runPostMergeCloseout } from './run_post_merge_closeout.mjs';
 import { WORKFLOW_RUN_SCOPE_MERGE_ONLY } from './post_merge_validator.mjs';
-import { pruneCloseoutManifestFromReport } from './prune_closeout_manifest.mjs';
+import { pruneCloseoutManifestFromReport, isPruneEligibleReportStatus } from './prune_closeout_manifest.mjs';
 import { isGitHubRateLimitError } from './github_issue_api.mjs';
 import {
 	appendCloseoutRerunTargets,
@@ -247,7 +247,7 @@ export async function runBatchPostMergeCloseout({
 	});
 
 	let manifestPrune = null;
-	if (!dryRun && report.status === 'success') {
+	if (!dryRun && isPruneEligibleReportStatus(report.status)) {
 		manifestPrune = pruneCloseoutManifestFromReportFn({ manifestPath, report, dryRun: false });
 		report = { ...report, manifestPrune };
 	}
