@@ -556,10 +556,10 @@ describe('sync-pr-state issueMeta REST lookup', () => {
 
 		syncPrState.issueMeta(789, { run });
 
-		for (const call of run.mock.calls) {
-			expect(call).not.toEqual(expect.arrayContaining(['issue', 'view']));
-			expect(call.join(' ')).not.toContain('stateReason');
-		}
+		const invokedArgVectors = run.mock.calls.map(([args]) => args);
+
+		expect(invokedArgVectors).not.toContainEqual(expect.arrayContaining(['issue', 'view']));
+		expect(invokedArgVectors.flat()).not.toContain('stateReason');
 	});
 
 	it('preserves post_merge_success closeout when issueMeta returns state_reason', () => {
