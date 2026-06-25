@@ -214,7 +214,7 @@ Per `/.github/pull_request_template.md` and `docs/governance/PR_GOVERNANCE.md`:
 - **Manual Testing:**
   - Navigate to `/fanclub` without login → Redirected to `/` (or login flow)
   - Navigate to `/fanclub` with login → FanClub sections visible
-  - Post creation → Submits to D1 and refreshes feed
+  - Discussion CTA → Links from Club Home to `/fanclub/chat`; post creation occurs on the dedicated chat route
   - Events display → Shows next 30 days from D1
   - Admin user → Sees Admin Tools section and authorized admin UI
   - Non-admin → Does not see admin-specific elements

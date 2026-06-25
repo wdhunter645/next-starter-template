@@ -330,7 +330,7 @@ describe('Fan Club operational pages', () => {
 
   it('shows memorabilia empty state when the archive returns no items', async () => {
     vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
-      const url = String(input);
+      const url = resolveFetchUrl(input);
       if (url.includes('/api/fanclub/memorabilia/tags')) {
         return jsonResponse({ ok: true, tags: [] }) as never;
       }
@@ -359,7 +359,7 @@ describe('Fan Club operational pages', () => {
 
   it('renders related library stories returned by the memorabilia API', async () => {
     vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
-      const url = String(input);
+      const url = resolveFetchUrl(input);
       if (url.includes('/api/fanclub/memorabilia/tags')) {
         return jsonResponse({ ok: true, tags: ['signed'] }) as never;
       }
