@@ -2,7 +2,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import {
 	BATCH_CLOSEOUT_REPORT_PATH,
@@ -12,11 +12,13 @@ import {
 	buildBatchCloseoutReport,
 } from './run_batch_post_merge_closeout.mjs';
 
+const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+
 export const ACTIVE_MANIFEST_REGISTRY = 'scripts/ci/post-merge-closeout/targets-active.json';
 
 export function loadActiveManifestRegistry(
 	registryPath = ACTIVE_MANIFEST_REGISTRY,
-	workspace = process.cwd(),
+	workspace = REPOSITORY_ROOT,
 ) {
 	const resolved = path.resolve(workspace, registryPath);
 	const payload = JSON.parse(fs.readFileSync(resolved, 'utf8'));
