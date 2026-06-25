@@ -19,6 +19,7 @@ import {
 import {
 	loadCloseoutTargets,
 	runBatchPostMergeCloseout,
+	shouldPruneBatchManifest,
 } from '../scripts/ci/run_batch_post_merge_closeout.mjs';
 import {
 	selectWorkflowRunsForValidation,
@@ -390,62 +391,74 @@ describe('post-merge closeout batch', () => {
 		);
 	});
 
+	it('skips default manifest pruning during vitest runs', () => {
+		expect(
+			shouldPruneBatchManifest('scripts/ci/post-merge-closeout/targets.json', false),
+		).toBe(false);
+		expect(shouldPruneBatchManifest('/tmp/custom-targets.json', false)).toBe(true);
+		expect(shouldPruneBatchManifest('/tmp/custom-targets.json', true)).toBe(false);
+	});
+
 	it('prunes passing targets from the manifest after a partial_failure batch', async () => {
 		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-batch-partial-prune-'));
-		const manifestPath = path.join(dir, 'targets.json');
-		const bodyPass = path.join(dir, 'pass.md');
-		const bodyFail = path.join(dir, 'fail.md');
-		for (const bodyPath of [bodyPass, bodyFail]) {
+		try {
+			const manifestPath = path.join(dir, 'targets.json');
+			const bodyPass = path.join(dir, 'pass.md');
+			const bodyFail = path.join(dir, 'fail.md');
+			for (const bodyPath of [bodyPass, bodyFail]) {
+				fs.writeFileSync(
+					bodyPath,
+					'- **Issue:** #1\n\n## CHANGE SUMMARY\nx\n\n## BUILD / TEST / VERIFICATION\nx\n\n## ACCEPTANCE CRITERIA\nx\n',
+				);
+			}
 			fs.writeFileSync(
-				bodyPath,
-				'- **Issue:** #1\n\n## CHANGE SUMMARY\nx\n\n## BUILD / TEST / VERIFICATION\nx\n\n## ACCEPTANCE CRITERIA\nx\n',
+				manifestPath,
+				`${JSON.stringify(
+					{
+						targets: [
+							{ pr: 1, body_file: bodyPass },
+							{ pr: 2, body_file: bodyFail },
+						],
+					},
+					null,
+					2,
+				)}\n`,
 			);
-		}
-		fs.writeFileSync(
-			manifestPath,
-			`${JSON.stringify(
-				{
-					targets: [
-						{ pr: 1, body_file: bodyPass },
-						{ pr: 2, body_file: bodyFail },
-					],
-				},
-				null,
-				2,
-			)}\n`,
-		);
 
-		const runPostMergeCloseout = vi
-			.fn()
-			.mockResolvedValueOnce({
-				status: 'pass',
-				sync_action: 'post_merge_success',
-				source_issue: '1',
-				remediation_required: false,
-			})
-			.mockResolvedValueOnce({
-				status: 'fail',
-				sync_action: 'post_merge_failure',
-				source_issue: '2',
-				remediation_required: true,
+			const runPostMergeCloseout = vi
+				.fn()
+				.mockResolvedValueOnce({
+					status: 'pass',
+					sync_action: 'post_merge_success',
+					source_issue: '1',
+					remediation_required: false,
+				})
+				.mockResolvedValueOnce({
+					status: 'fail',
+					sync_action: 'post_merge_failure',
+					source_issue: '2',
+					remediation_required: true,
+				});
+
+			const outcome = await runBatchPostMergeCloseout({
+				token: 'token',
+				repository: 'owner/repo',
+				manifestPath,
+				targets: [
+					{ pr: 1, body_file: bodyPass },
+					{ pr: 2, body_file: bodyFail },
+				],
+				runPostMergeCloseoutFn: runPostMergeCloseout,
+				closeDuplicateRemediationIssuesFn: vi.fn().mockResolvedValue({ closed: [] }),
 			});
 
-		const outcome = await runBatchPostMergeCloseout({
-			token: 'token',
-			repository: 'owner/repo',
-			manifestPath,
-			targets: [
-				{ pr: 1, body_file: bodyPass },
+			expect(outcome.status).toBe('partial_failure');
+			expect(outcome.manifestPrune).toMatchObject({ pruned: 1, remaining: 1 });
+			expect(JSON.parse(fs.readFileSync(manifestPath, 'utf8')).targets).toEqual([
 				{ pr: 2, body_file: bodyFail },
-			],
-			runPostMergeCloseoutFn: runPostMergeCloseout,
-			closeDuplicateRemediationIssuesFn: vi.fn().mockResolvedValue({ closed: [] }),
-		});
-
-		expect(outcome.status).toBe('partial_failure');
-		expect(outcome.manifestPrune).toMatchObject({ pruned: 1, remaining: 1 });
-		expect(JSON.parse(fs.readFileSync(manifestPath, 'utf8')).targets).toEqual([
-			{ pr: 2, body_file: bodyFail },
-		]);
+			]);
+		} finally {
+			fs.rmSync(dir, { recursive: true, force: true });
+		}
 	});
 });

@@ -47,24 +47,6 @@ afterEach(() => {
 
 describe('batch post-merge closeout reporting', () => {
 	it('records missing body file failures without aborting other targets', async () => {
-		const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'batch-closeout-partial-'));
-		tempDirs.push(tempDir);
-		const manifestPath = path.join(tempDir, 'targets.json');
-		const passingBody = 'scripts/ci/post-merge-closeout/pr-1243-body.md';
-		fs.writeFileSync(
-			manifestPath,
-			`${JSON.stringify(
-				{
-					targets: [
-						{ pr: 1239, body_file: 'scripts/ci/post-merge-closeout/does-not-exist.md' },
-						{ pr: 1243, body_file: passingBody },
-					],
-				},
-				null,
-				2,
-			)}\n`,
-		);
-
 		const runPostMergeCloseoutFn = vi.fn(async () => ({
 			status: 'pass',
 			sync_action: 'post_merge_success',
@@ -75,10 +57,9 @@ describe('batch post-merge closeout reporting', () => {
 		const report = await runBatchPostMergeCloseout({
 			token: 'token',
 			repository: 'org/repo',
-			manifestPath,
 			targets: [
 				{ pr: 1239, body_file: 'scripts/ci/post-merge-closeout/does-not-exist.md' },
-				{ pr: 1243, body_file: passingBody },
+				{ pr: 1243, body_file: 'scripts/ci/post-merge-closeout/pr-1243-body.md' },
 			],
 			runPostMergeCloseoutFn,
 			closeDuplicateRemediationIssuesFn: async () => ({ closed: [] }),
@@ -94,10 +75,6 @@ describe('batch post-merge closeout reporting', () => {
 		});
 		expect(report.results[1]).toMatchObject({ pr: '1243', status: 'pass' });
 		expect(report.status).toBe('partial_failure');
-		expect(report.manifestPrune).toMatchObject({ pruned: 1, remaining: 1 });
-		expect(JSON.parse(fs.readFileSync(manifestPath, 'utf8')).targets).toEqual([
-			{ pr: 1239, body_file: 'scripts/ci/post-merge-closeout/does-not-exist.md' },
-		]);
 	});
 
 	it('records per-target validation failures with diagnostic detail', async () => {

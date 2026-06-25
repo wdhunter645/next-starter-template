@@ -18,6 +18,14 @@ export const BATCH_CLOSEOUT_REPORT_PATH = 'post-merge-batch-closeout.json';
 const DEFAULT_MANIFEST = 'scripts/ci/post-merge-closeout/targets.json';
 const POST_MERGE_RESULT_PATH = 'post-merge-result.json';
 
+export function shouldPruneBatchManifest(manifestPath = DEFAULT_MANIFEST, dryRun = false) {
+	if (dryRun) return false;
+	if (process.env.VITEST === 'true' && path.resolve(manifestPath) === path.resolve(DEFAULT_MANIFEST)) {
+		return false;
+	}
+	return true;
+}
+
 export function loadCloseoutTargets(manifestPath = DEFAULT_MANIFEST) {
 	const resolved = path.resolve(manifestPath);
 	const raw = JSON.parse(fs.readFileSync(resolved, 'utf8'));
@@ -247,7 +255,7 @@ export async function runBatchPostMergeCloseout({
 	});
 
 	let manifestPrune = null;
-	if (!dryRun && isPruneEligibleReportStatus(report.status)) {
+	if (shouldPruneBatchManifest(manifestPath, dryRun) && isPruneEligibleReportStatus(report.status)) {
 		manifestPrune = pruneCloseoutManifestFromReportFn({ manifestPath, report, dryRun: false });
 		report = { ...report, manifestPrune };
 	}
