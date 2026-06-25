@@ -53,61 +53,62 @@ FanClub area uses a dedicated layout with:
   - Checks admin role via `members` identity/role resolution
   - Shows/hides admin-specific UI based on role
 
-#### Page Sections (`src/appfanclub/page.tsx`)
+#### Page Sections (`src/app/fanclub/page.tsx`)
 
-Sections are rendered in **exact spec order**:
+Sections are rendered in editorial-driven order (see `docs/reference/design/fanclub-home.md`):
 
 1. **Header** (via layout.tsx)
    - FanClub-specific navigation
    - Logout functionality
    - Conditional admin access
 
-2. **Welcome Section** (`WelcomeSection.tsx`)
-   - Personalized greeting using email-based display name
-   - Profile link to `/fanclub/myprofile`
-   - 30-day events summary
-   - **D1 Connectivity:** Fetches events from `events` table for current and next month, filters to 30-day window
+2. **Masthead** (`ClubHomeMasthead.tsx`)
+   - Personalized greeting using member email
 
-3. **Archives Tiles** (`ArchivesTiles.tsx`)
+3. **Lead story** (`ClubHomeStaticStory.tsx`)
+   - Editorial lead headline, summary, and credit from club-home content API
+
+4. **Story rail** (`ClubHomeStoryRail.tsx`)
+   - Secondary editorial stories
+
+5. **Archives Tiles** (`ArchivesTiles.tsx`)
    - Three clickable tiles in responsive grid:
      1. **Photo Gallery** → `/fanclub/photo`
      2. **Memorabilia Archive** → `/fanclub/memorabilia`
      3. **Library** → `/fanclub/library`
-   - Hover effects for visual feedback
    - Public routes `/memorabilia`, `/photos`, `/photo`, and `/library` must not exist
 
-4. **Post Creation / Work Area** (`PostCreation.tsx`)
-   - "Share with the Club" text area
-   - Post visibility notice (members-only)
-   - Submit button
-   - **D1 Connectivity:** POSTs to `/api/discussions/create` endpoint
-   - **Future Enhancement:** Photo/video attachments (noted in UI)
+6. **Media feature** (`ClubHomeMediaFeature.tsx`)
+   - Featured media slot from editorial content
 
-5. **FanClub Discussion Feed** (`DiscussionFeed.tsx`)
-   - Reverse chronological feed of member posts
-   - Shows: author name, timestamp, title, body
-   - **D1 Connectivity:** Fetches from `discussions` table (status='posted', limit 20)
-   - **Future Enhancements:** Replies, reactions (like/dislike), report buttons (UI placeholders present)
+7. **Member prompt** (`ClubHomeMemberPrompt.tsx`)
+   - CTA linking members to `/fanclub/chat` for club discussion (replaces inline post/feed widgets on Club Home)
 
-6. **Gehrig Timeline** (`GehrigTimeline.tsx`)
-   - FanClub-focused timeline with 8 major life events
-   - Events: Birth (1903), Yankees Debut (1923), The Streak Begins (1925), Murderers' Row (1927), Triple Crown (1934), Farewell Speech (1939), Passing (1941), MLB's Greatest First Baseman (1969)
-   - Visual timeline with vertical line and event markers
+8. **Archive spotlight** (`ClubHomeArchiveSpotlight.tsx`)
+   - Highlighted archive story
 
-7. **Admin Dashboard Link** (`AdminLink.tsx`)
+9. **Deferred modules** (`ClubHomeDeferredModule.tsx`)
+   - Campaign & fundraiser, events/calendar, and recognition/partners slots fail closed until explicitly configured
+
+10. **Admin Dashboard Link** (`AdminLink.tsx`)
    - **Conditional:** Only visible to admin users
    - "Admin Tools" section with dashboard link
-   - **Authorization:** Uses role check from `/apifanclub/role`
+   - **Authorization:** Uses role check from `/api/fanclub/role`
+
+**Removed from Club Home (audit #1962):** Inline `PostCreation`, `DiscussionFeed`, and `GehrigTimeline` modules are no longer rendered on `/fanclub`; discussion is routed via `/fanclub/chat`.
 
 ### Components
 
-All member-specific components are in `src/componentsfanclub/`:
+All member-specific components are in `src/components/fanclub/`:
 
-- `WelcomeSection.tsx` - Welcome message and upcoming events
-- `PostCreation.tsx` - Post creation form
-- `DiscussionFeed.tsx` - Display member discussions
+- `ClubHomeMasthead.tsx` - Personalized masthead
+- `ClubHomeStaticStory.tsx` - Lead story block
+- `ClubHomeStoryRail.tsx` - Story rail
 - `ArchivesTiles.tsx` - Archive navigation tiles
-- `GehrigTimeline.tsx` - Lou Gehrig timeline
+- `ClubHomeMediaFeature.tsx` - Featured media
+- `ClubHomeMemberPrompt.tsx` - Chat/discussion CTA
+- `ClubHomeArchiveSpotlight.tsx` - Archive highlight
+- `ClubHomeDeferredModule.tsx` - Placeholder modules for unconfigured features
 - `AdminLink.tsx` - Conditional admin dashboard link
 
 ### D1 Database Integration
