@@ -1,5 +1,30 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { githubRepoRequest } from '../scripts/ci/github_issue_api.mjs';
+import {
+	GitHubRateLimitError,
+	computeBackoffDelayMs,
+	githubRepoRequest,
+	isGitHubRateLimitResponse,
+} from '../scripts/ci/github_issue_api.mjs';
+
+describe('github rate limit helpers', () => {
+	it('detects 429 and rate-limited 403 responses', () => {
+		expect(isGitHubRateLimitResponse(429, '')).toBe(true);
+		expect(isGitHubRateLimitResponse(403, 'API rate limit exceeded')).toBe(true);
+		expect(isGitHubRateLimitResponse(403, 'secondary rate limit')).toBe(true);
+		expect(isGitHubRateLimitResponse(403, 'forbidden')).toBe(false);
+	});
+
+	it('computes exponential backoff delays', () => {
+		expect(computeBackoffDelayMs(1, 1000)).toBe(1000);
+		expect(computeBackoffDelayMs(2, 1000)).toBe(2000);
+		expect(computeBackoffDelayMs(3, 500)).toBe(2000);
+	});
+
+	it('caps exponential backoff at the configured maximum', () => {
+		expect(computeBackoffDelayMs(10, 1000, 30000)).toBe(30000);
+		expect(computeBackoffDelayMs(3, 1000, 1500)).toBe(1500);
+	});
+});
 
 describe('githubRepoRequest', () => {
 	afterEach(() => {
@@ -75,5 +100,63 @@ describe('githubRepoRequest', () => {
 				body: { title: 'test' },
 			}),
 		).rejects.toThrow('POST /issues failed: 403 forbidden');
+	});
+
+	it('retries rate-limit responses with bounded exponential backoff', async () => {
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce({
+				ok: false,
+				status: 429,
+				text: async () => 'rate limit',
+			})
+			.mockResolvedValueOnce({
+				ok: false,
+				status: 403,
+				text: async () => 'secondary rate limit',
+			})
+			.mockResolvedValueOnce({
+				ok: true,
+				status: 200,
+				json: async () => ({ ok: true }),
+			});
+		const sleepFn = vi.fn(async () => {});
+
+		const result = await githubRepoRequest({
+			token: 'test-token',
+			repository: 'owner/repo',
+			path: '/issues/1',
+			maxRetries: 3,
+			initialBackoffMs: 10,
+			sleepFn,
+			fetchFn: fetchMock,
+		});
+
+		expect(result).toEqual({ ok: true });
+		expect(fetchMock).toHaveBeenCalledTimes(3);
+		expect(sleepFn).toHaveBeenCalledTimes(2);
+		expect(sleepFn.mock.calls.map(([delay]) => delay)).toEqual([10, 20]);
+	});
+
+	it('throws GitHubRateLimitError after retry budget is exhausted', async () => {
+		const fetchMock = vi.fn(async () => ({
+			ok: false,
+			status: 429,
+			text: async () => 'rate limit',
+		}));
+
+		await expect(
+			githubRepoRequest({
+				token: 'test-token',
+				repository: 'owner/repo',
+				path: '/issues/1',
+				maxRetries: 2,
+				initialBackoffMs: 1,
+				sleepFn: async () => {},
+				fetchFn: fetchMock,
+			}),
+		).rejects.toBeInstanceOf(GitHubRateLimitError);
+
+		expect(fetchMock).toHaveBeenCalledTimes(3);
 	});
 });
