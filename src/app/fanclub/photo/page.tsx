@@ -4,6 +4,7 @@ import Link from 'next/link';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMemberSession } from '@/hooks/useMemberSession';
 import { buildFanclubPhotoListApiUrl } from '@/lib/fanclubApi';
+import { fanclubThreeColumnGrid } from '@/components/fanclub/fanclubGridStyles';
 
 type PhotoItem = {
   id: number;
@@ -164,15 +165,7 @@ export default function FanclubPhotoGalleryPage() {
       {err && <p style={{ color: 'salmon' }}>Unable to load member photos right now. {err}</p>}
 
       {!loading && !err && (
-        <div
-          style={{
-            marginTop: 14,
-            display: 'grid',
-            gap: 12,
-            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-          }}
-          className="fanclub-photo-grid"
-        >
+        <div style={{ ...fanclubThreeColumnGrid, marginTop: 14 }}>
           {items.map((p) => {
             const photoUrl = p.thumbnail_url || p.url;
             const title = p.title || p.description || `Photo #${p.id}`;

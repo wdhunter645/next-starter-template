@@ -320,7 +320,13 @@ describe('Fan Club operational pages', () => {
   });
 
   it('shows memorabilia empty state when the archive returns no items', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse({ ok: true, items: [], related_library_entries: [] }) as never);
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.includes('/api/fanclub/memorabilia/tags')) {
+        return jsonResponse({ ok: true, tags: [] }) as never;
+      }
+      return jsonResponse({ ok: true, items: [], related_library_entries: [] }) as never;
+    });
 
     render(<MemorabiliaPage />);
 
@@ -343,15 +349,21 @@ describe('Fan Club operational pages', () => {
   });
 
   it('renders related library stories returned by the memorabilia API', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      jsonResponse({
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.includes('/api/fanclub/memorabilia/tags')) {
+        return jsonResponse({ ok: true, tags: ['signed'] }) as never;
+      }
+      return jsonResponse({
         ok: true,
         items: [{ id: 1, title: 'Signed bat', thumbnail_url: null }],
         related_library_entries: [{ id: 9, title: 'Yankee Stadium farewell', author: 'Club archive', summary: 'Context for the item.' }],
-      }) as never,
-    );
+      }) as never;
+    });
 
     render(<MemorabiliaPage />);
+
+    expect(await screen.findByRole('button', { name: 'signed' })).toBeInTheDocument();
 
     expect(await screen.findByText('Related stories')).toBeInTheDocument();
     expect(screen.getByText('Yankee Stadium farewell')).toBeInTheDocument();

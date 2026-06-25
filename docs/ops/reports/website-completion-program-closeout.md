@@ -5,7 +5,7 @@ Authority Level: Operational Evidence
 Owns: Program #1685 final validation and implementation-ready closeout for Tasks 001–008
 Does Not Own: Parent issue #1685 closure (requires Bill/Atlas acceptance), production configuration, or merge authority
 Canonical Reference: /docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md
-Related issues: #1694, #1685, #1686, #1687, #1688, #1689, #1690, #1691, #1692, #1693
+Related issues: #1694, #1685, #1686, #1687, #1688, #1689, #1690, #1691, #1692, #1693, #1962
 Last Reviewed: 2026-06-23
 ---
 
@@ -28,8 +28,8 @@ reopening deferred work without a new source issue.
 - Authenticated Club Home (`/fanclub`) renders dynamic `club_home` inventory with static fallback.
 - Unified editorial workflow is documented and operator handoff exists (Task 008).
 - Accepted backend deltas from Task 006 are on `main` (profile fields, photo tags API, `club_home` inventory key).
-- Member subpages align to `docs/reference/design/fanclub-subpages.md` after Task 007.
-- Post-merge closeout automation may leave task issues open until closeout PRs land; operators should verify issue state against merge commits.
+- Member subpages align to `docs/reference/design/fanclub-subpages.md` after Task 007 and Audit #1962 remediation.
+- Post-merge closeout automation may leave task issues open until closeout PRs land; Audit #1962 added remediated bodies for PRs #1950, #1955, #1958, #1960.
 
 ## Intended final state
 
@@ -66,9 +66,9 @@ whether to close #1685 or open bounded follow-up issues for deferred gaps.
 | --- | --- | --- | --- |
 | Homepage `homepage_*` inventory surfaces | deferred | Documented in surface validation tests | New issue if homepage inventory is prioritized |
 | Member binary photo upload | deferred | Text-only submit path | Media intake program |
-| Admin UI `club_home` checkbox sync | blocked → verify | API accepts key; confirm admin UI option on deploy | Bounded ops issue if UI missing |
+| Admin UI `club_home` checkbox sync | complete (Audit #1962) | `club_home` option added to admin editorial UI | — |
 | Photo detail modal/route | deferred | Design allows implementation choice | Fan Club UX follow-up |
-| Post-merge issue auto-close | operational | Several task issues may remain open pending closeout automation | Ops closeout queue (#1923) |
+| Post-merge issue auto-close | operational | Closeout bodies remediated in Audit #1962; replay pending merge | `targets-website-completion-1685-closeout.json` |
 
 ## Next-Program Handoff State
 
@@ -90,7 +90,7 @@ Recommended operator actions:
 - Gap review: `docs/ops/reports/website-completion-fan-club-product-gap-review.md`
 - Backend reconciliation: `docs/ops/reports/website-completion-fan-club-backend-reconciliation.md`
 - Workflow reconciliation: `docs/ops/reports/website-content-workflow-reconciliation.md`
-- Task 008 handoff: `docs/ops/reports/website-completion-task-008-handoff.md`
+- Audit register: `docs/ops/reports/website-completion-program-1685-audit-register.md`
 
 ## Closeout Checklist (Task 009)
 
