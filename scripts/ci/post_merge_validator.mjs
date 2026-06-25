@@ -17,7 +17,7 @@ import {
 } from './post_merge_source_issue_closeout.mjs';
 
 export { isPermittedClosedSourceIssueFollowup };
-import { evaluateReviewerCommentDisposition } from './reviewer_comment_disposition.mjs';
+import { evaluateReviewerCommentDisposition, hasValidDisposition, parseReviewerDispositions } from './reviewer_comment_disposition.mjs';
 import { defaultCloseoutBodyPath } from './post_merge_closeout_trigger.mjs';
 import { AUTO_REPAIR_END, AUTO_REPAIR_START } from './pr_body_auto_repair.mjs';
 
@@ -298,6 +298,15 @@ export function isAfterMerge(value, mergedAt) {
 	return new Date(value).getTime() > new Date(mergedAt).getTime();
 }
 
+function reviewerItemId(item) {
+	return String(item.id || item.databaseId || item.database_id || '').trim();
+}
+
+function hasDispositionForReviewerItem(item, dispositions) {
+	const itemId = reviewerItemId(item);
+	return itemId && hasValidDisposition(dispositions.get(itemId));
+}
+
 function findingLine(item, fallbackUrl) {
 	const login = item.user?.login || 'unknown-reviewer';
 	const url = item.html_url || item.url || item._links?.html?.href || fallbackUrl || 'unknown-url';
@@ -360,13 +369,15 @@ export function reviewerDispositionFailures({
 export function reviewerFindings({ pr, issueComments = [], reviewComments = [], reviews = [] }) {
 	const mergedAt = pr?.mergedAt || pr?.merged_at || '';
 	const prUrl = pr?.url || pr?.html_url || '';
+	const dispositions = parseReviewerDispositions(pr?.body || '');
 	const findings = [];
 
 	for (const comment of issueComments) {
 		if (
 			TRUSTED_REVIEWER_PATTERN.test(comment.user?.login || '') &&
 			isAfterMerge(comment.created_at, mergedAt) &&
-			isHighSeverityFinding(comment.body || '')
+			isHighSeverityFinding(comment.body || '') &&
+			!hasDispositionForReviewerItem(comment, dispositions)
 		) {
 			findings.push(findingLine(comment, prUrl));
 		}
@@ -376,7 +387,8 @@ export function reviewerFindings({ pr, issueComments = [], reviewComments = [], 
 		if (
 			TRUSTED_REVIEWER_PATTERN.test(comment.user?.login || '') &&
 			isAfterMerge(comment.created_at, mergedAt) &&
-			isHighSeverityFinding(comment.body || '')
+			isHighSeverityFinding(comment.body || '') &&
+			!hasDispositionForReviewerItem(comment, dispositions)
 		) {
 			findings.push(findingLine(comment, prUrl));
 		}
@@ -386,7 +398,8 @@ export function reviewerFindings({ pr, issueComments = [], reviewComments = [], 
 		if (
 			TRUSTED_REVIEWER_PATTERN.test(review.user?.login || '') &&
 			isAfterMerge(review.submitted_at, mergedAt) &&
-			isHighSeverityFinding(review.body || '', review.state || '')
+			isHighSeverityFinding(review.body || '', review.state || '') &&
+			!hasDispositionForReviewerItem(review, dispositions)
 		) {
 			findings.push(findingLine(review, prUrl));
 		}
