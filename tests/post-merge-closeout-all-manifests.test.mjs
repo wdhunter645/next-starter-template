@@ -13,6 +13,7 @@ describe('post-merge closeout all manifests', () => {
 			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave2.json',
 			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3a-remediation.json',
 			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3b.json',
+			'scripts/ci/post-merge-closeout/targets-website-completion-1685-closeout.json',
 		]);
 	});
 
