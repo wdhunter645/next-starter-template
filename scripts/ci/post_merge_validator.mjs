@@ -299,7 +299,7 @@ export function isAfterMerge(value, mergedAt) {
 }
 
 function reviewerItemId(item) {
-	return String(item.id || item.databaseId || item.database_id || '').trim();
+	return String(item?.id || item?.databaseId || item?.database_id || '').trim();
 }
 
 function hasDispositionForReviewerItem(item, dispositions) {
