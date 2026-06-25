@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
 import { closeDuplicateRemediationIssues } from './close_duplicate_remediation_issues.mjs';
 import { runPostMergeCloseout } from './run_post_merge_closeout.mjs';
 import { WORKFLOW_RUN_SCOPE_MERGE_ONLY } from './post_merge_validator.mjs';
-import { pruneCloseoutManifestFromReport } from './prune_closeout_manifest.mjs';
+import { pruneCloseoutManifestFromReport, isPruneEligibleReportStatus } from './prune_closeout_manifest.mjs';
 import { isGitHubRateLimitError } from './github_issue_api.mjs';
 import {
 	appendCloseoutRerunTargets,
@@ -17,6 +17,14 @@ import {
 export const BATCH_CLOSEOUT_REPORT_PATH = 'post-merge-batch-closeout.json';
 const DEFAULT_MANIFEST = 'scripts/ci/post-merge-closeout/targets.json';
 const POST_MERGE_RESULT_PATH = 'post-merge-result.json';
+
+export function shouldPruneBatchManifest(manifestPath = DEFAULT_MANIFEST, dryRun = false) {
+	if (dryRun) return false;
+	if (process.env.VITEST === 'true' && path.resolve(manifestPath) === path.resolve(DEFAULT_MANIFEST)) {
+		return false;
+	}
+	return true;
+}
 
 export function loadCloseoutTargets(manifestPath = DEFAULT_MANIFEST) {
 	const resolved = path.resolve(manifestPath);
@@ -247,7 +255,7 @@ export async function runBatchPostMergeCloseout({
 	});
 
 	let manifestPrune = null;
-	if (!dryRun && report.status === 'success') {
+	if (shouldPruneBatchManifest(manifestPath, dryRun) && isPruneEligibleReportStatus(report.status)) {
 		manifestPrune = pruneCloseoutManifestFromReportFn({ manifestPath, report, dryRun: false });
 		report = { ...report, manifestPrune };
 	}

@@ -75,4 +75,5 @@ Task 001 (path-scoped manifest replay on push)
 | Task | Issue | Status | Merge evidence |
 | --- | --- | --- | --- |
 | 001 | #1964 | complete | PR #1972 @ `82517eb0280dbdaa337a2080dadf51e64d46d651` |
-| 002 | #1965 | in progress | — |
+| 002 | #1965 | complete | PR #1976 @ `21abad7eb3b0682108e4c29c2f9372eb58160b62` |
+| 003 | #1966 | in progress | — |
