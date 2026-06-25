@@ -69,3 +69,10 @@ Task 001 (path-scoped manifest replay on push)
 | 006 | #1969 | Closeout workflow partial_failure and job sharding |
 | 007 | #1970 | Backlog metrics and batch report taxonomy |
 | 008 | #1971 | Program rollout checkpoint and runbook updates |
+
+## Task status
+
+| Task | Issue | Status | Merge evidence |
+| --- | --- | --- | --- |
+| 001 | #1964 | complete | PR #1972 @ `82517eb0280dbdaa337a2080dadf51e64d46d651` |
+| 002 | #1965 | in progress | — |
