@@ -46,10 +46,14 @@ export function pruneCloseoutManifest(manifestPath, successfulPrs = new Set(), {
 	return { manifestPath: resolved, ...result };
 }
 
+export function isPruneEligibleReportStatus(status = '') {
+	return status === 'success' || status === 'partial_failure';
+}
+
 export function pruneCloseoutManifestFromReport({ manifestPath, report, dryRun = false } = {}) {
 	const resolved = path.resolve(manifestPath);
-	if (report?.status !== 'success') {
-		return { manifestPath: resolved, pruned: 0, remaining: null, skipped: 'report_not_success' };
+	if (!isPruneEligibleReportStatus(report?.status)) {
+		return { manifestPath: resolved, pruned: 0, remaining: null, skipped: 'report_not_prune_eligible' };
 	}
 	const successfulPrs = successfulCloseoutPrs(report);
 	if (successfulPrs.size === 0) {

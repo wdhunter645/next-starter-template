@@ -4,6 +4,13 @@ import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+	appendCloseoutRerunTargets,
+	mergeRerunTargets,
+	normalizeCloseoutTarget,
+	readRerunManifest,
+} from '../scripts/ci/append_closeout_rerun_targets.mjs';
+import { GitHubRateLimitError } from '../scripts/ci/github_issue_api.mjs';
+import {
 	closeRemediationIssuesForPr,
 	remediationCloseComment,
 	remediationIssuesForPr,
@@ -12,6 +19,7 @@ import {
 import {
 	loadCloseoutTargets,
 	runBatchPostMergeCloseout,
+	shouldPruneBatchManifest,
 } from '../scripts/ci/run_batch_post_merge_closeout.mjs';
 import {
 	selectWorkflowRunsForValidation,
@@ -250,5 +258,207 @@ describe('post-merge closeout batch', () => {
 			source_issue: '2',
 			remediation_required: false,
 		});
+	});
+
+	it('normalizes source_issue values and rejects invalid numbers', () => {
+		expect(
+			normalizeCloseoutTarget({
+				pr: 1,
+				body_file: 'scripts/ci/post-merge-closeout/pr-1-body.md',
+				source_issue: '#1965',
+			}),
+		).toEqual({
+			pr: 1,
+			body_file: 'scripts/ci/post-merge-closeout/pr-1-body.md',
+			source_issue: 1965,
+		});
+
+		expect(() =>
+			normalizeCloseoutTarget({
+				pr: 1,
+				body_file: 'scripts/ci/post-merge-closeout/pr-1-body.md',
+				source_issue: 'not-a-number',
+			}),
+		).toThrow(/numeric source_issue/);
+	});
+
+	it('treats an empty rerun manifest file as an empty target list', () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-rerun-empty-'));
+		const manifestPath = path.join(dir, 'targets-ci-pending-rerun.json');
+		fs.writeFileSync(manifestPath, '');
+
+		expect(readRerunManifest(manifestPath, dir)).toEqual({
+			manifestPath,
+			payload: { targets: [] },
+			targets: [],
+		});
+	});
+
+	it('merges rerun targets idempotently by PR number', () => {
+		const merged = mergeRerunTargets(
+			[{ pr: 10, body_file: 'scripts/ci/post-merge-closeout/pr-10-body.md', merge_sha: 'abc' }],
+			[
+				{ pr: 10, body_file: 'scripts/ci/post-merge-closeout/pr-10-body.md', merge_sha: 'def' },
+				{ pr: 11, body_file: 'scripts/ci/post-merge-closeout/pr-11-body.md' },
+			],
+		);
+
+		expect(merged).toEqual([
+			{ pr: 10, body_file: 'scripts/ci/post-merge-closeout/pr-10-body.md', merge_sha: 'def' },
+			{ pr: 11, body_file: 'scripts/ci/post-merge-closeout/pr-11-body.md' },
+		]);
+	});
+
+	it('appends rate-limited batch targets to the rerun manifest without duplicating PRs', () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-rerun-'));
+		const manifestPath = path.join(dir, 'targets-ci-pending-rerun.json');
+		fs.writeFileSync(
+			manifestPath,
+			`${JSON.stringify(
+				{
+					triggered_at: '2026-06-01T00:00:00Z',
+					targets: [{ pr: 10, body_file: 'scripts/ci/post-merge-closeout/pr-10-body.md' }],
+				},
+				null,
+				2,
+			)}\n`,
+		);
+
+		const first = appendCloseoutRerunTargets({
+			manifestPath,
+			targets: [
+				{ pr: 10, body_file: 'scripts/ci/post-merge-closeout/pr-10-body.md', merge_sha: 'new-sha' },
+				{ pr: 11, body_file: 'scripts/ci/post-merge-closeout/pr-11-body.md' },
+			],
+			triggeredAt: '2026-06-25T00:00:00Z',
+		});
+		const second = appendCloseoutRerunTargets({
+			manifestPath,
+			targets: [{ pr: 11, body_file: 'scripts/ci/post-merge-closeout/pr-11-body.md' }],
+			triggeredAt: '2026-06-25T00:01:00Z',
+		});
+
+		expect(first.added).toEqual(['11']);
+		expect(first.targets.map((target) => target.pr)).toEqual([10, 11]);
+		expect(second.added).toEqual([]);
+		expect(second.targets).toHaveLength(2);
+	});
+
+	it('queues remaining batch targets when closeout hits a GitHub rate limit', async () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-batch-rate-limit-'));
+		const manifestPath = path.join(dir, 'targets-ci-pending-rerun.json');
+		const bodyOne = path.join(dir, 'one.md');
+		const bodyTwo = path.join(dir, 'two.md');
+		const bodyThree = path.join(dir, 'three.md');
+		for (const bodyPath of [bodyOne, bodyTwo, bodyThree]) {
+			fs.writeFileSync(
+				bodyPath,
+				'- **Issue:** #1\n\n## CHANGE SUMMARY\nx\n\n## BUILD / TEST / VERIFICATION\nx\n\n## ACCEPTANCE CRITERIA\nx\n',
+			);
+		}
+
+		const runPostMergeCloseout = vi
+			.fn()
+			.mockResolvedValueOnce({
+				status: 'pass',
+				sync_action: 'post_merge_success',
+				source_issue: '1',
+				remediation_required: false,
+			})
+			.mockRejectedValueOnce(new GitHubRateLimitError('GET', '/pulls/2', 403, 'rate limit'));
+
+		const outcome = await runBatchPostMergeCloseout({
+			token: 'token',
+			repository: 'owner/repo',
+			targets: [
+				{ pr: 1, body_file: bodyOne },
+				{ pr: 2, body_file: bodyTwo },
+				{ pr: 3, body_file: bodyThree },
+			],
+			closeDuplicateRemediationIssuesFn: vi.fn().mockResolvedValue({ closed: [] }),
+			runPostMergeCloseoutFn: runPostMergeCloseout,
+			appendCloseoutRerunTargetsFn: (options) =>
+				appendCloseoutRerunTargets({ ...options, manifestPath }),
+		});
+
+		expect(runPostMergeCloseout).toHaveBeenCalledTimes(2);
+		expect(outcome.rerunAppend?.targets.map((target) => target.pr)).toEqual([2, 3]);
+		expect(outcome.results).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ pr: '2', status: 'error', phase: 'rate_limit' }),
+				expect.objectContaining({ pr: '3', status: 'queued', phase: 'rate_limit_rerun' }),
+			]),
+		);
+	});
+
+	it('skips default manifest pruning during vitest runs', () => {
+		expect(
+			shouldPruneBatchManifest('scripts/ci/post-merge-closeout/targets.json', false),
+		).toBe(false);
+		expect(shouldPruneBatchManifest('/tmp/custom-targets.json', false)).toBe(true);
+		expect(shouldPruneBatchManifest('/tmp/custom-targets.json', true)).toBe(false);
+	});
+
+	it('prunes passing targets from the manifest after a partial_failure batch', async () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-batch-partial-prune-'));
+		try {
+			const manifestPath = path.join(dir, 'targets.json');
+			const bodyPass = path.join(dir, 'pass.md');
+			const bodyFail = path.join(dir, 'fail.md');
+			for (const bodyPath of [bodyPass, bodyFail]) {
+				fs.writeFileSync(
+					bodyPath,
+					'- **Issue:** #1\n\n## CHANGE SUMMARY\nx\n\n## BUILD / TEST / VERIFICATION\nx\n\n## ACCEPTANCE CRITERIA\nx\n',
+				);
+			}
+			fs.writeFileSync(
+				manifestPath,
+				`${JSON.stringify(
+					{
+						targets: [
+							{ pr: 1, body_file: bodyPass },
+							{ pr: 2, body_file: bodyFail },
+						],
+					},
+					null,
+					2,
+				)}\n`,
+			);
+
+			const runPostMergeCloseout = vi
+				.fn()
+				.mockResolvedValueOnce({
+					status: 'pass',
+					sync_action: 'post_merge_success',
+					source_issue: '1',
+					remediation_required: false,
+				})
+				.mockResolvedValueOnce({
+					status: 'fail',
+					sync_action: 'post_merge_failure',
+					source_issue: '2',
+					remediation_required: true,
+				});
+
+			const outcome = await runBatchPostMergeCloseout({
+				token: 'token',
+				repository: 'owner/repo',
+				manifestPath,
+				targets: [
+					{ pr: 1, body_file: bodyPass },
+					{ pr: 2, body_file: bodyFail },
+				],
+				runPostMergeCloseoutFn: runPostMergeCloseout,
+				closeDuplicateRemediationIssuesFn: vi.fn().mockResolvedValue({ closed: [] }),
+			});
+
+			expect(outcome.status).toBe('partial_failure');
+			expect(outcome.manifestPrune).toMatchObject({ pruned: 1, remaining: 1 });
+			expect(JSON.parse(fs.readFileSync(manifestPath, 'utf8')).targets).toEqual([
+				{ pr: 2, body_file: bodyFail },
+			]);
+		} finally {
+			fs.rmSync(dir, { recursive: true, force: true });
+		}
 	});
 });

@@ -2,6 +2,7 @@ import { evaluateReviewerCommentDisposition, parseReviewerDispositions } from '.
 
 export const AUTO_REPAIR_START = '<!-- pr-body-auto-repair:start -->';
 export const AUTO_REPAIR_END = '<!-- pr-body-auto-repair:end -->';
+export const CURSOR_AGENT_PR_BODY_BEGIN = '<!-- CURSOR_AGENT_PR_BODY_BEGIN -->';
 
 const REQUIRED_HEADINGS = [
   '## PRE-OPEN GATE PREFLIGHT (MANDATORY)',
@@ -45,9 +46,10 @@ export function isSameRepositoryPullRequest(pull = {}) {
   return Boolean(baseRepo && headRepo && baseRepo === headRepo && pull.head?.repo?.fork !== true);
 }
 
-export function canAutoRepairPullRequest({ pull = {}, eventName = '' } = {}) {
+export function canAutoRepairPullRequest({ pull = {}, eventName = '', body = '' } = {}) {
   if (!isSameRepositoryPullRequest(pull)) return false;
   if (pull.state && pull.state !== 'open') return false;
+  if (String(body || pull.body || '').includes(CURSOR_AGENT_PR_BODY_BEGIN)) return false;
   if (eventName === 'pull_request_target' || eventName === 'issue_comment' || eventName === 'pull_request_review' || eventName === 'pull_request_review_comment') {
     return true;
   }

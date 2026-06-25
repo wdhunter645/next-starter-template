@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import {
   canAutoRepairPullRequest,
   repairPullRequestBody,
+  CURSOR_AGENT_PR_BODY_BEGIN,
 } from './pr_body_auto_repair.mjs';
 
 async function request(path, token, options = {}) {
@@ -57,11 +58,13 @@ export async function runPrBodyAutoRepair({
   }
 
   const pull = await request(`/repos/${owner}/${repo}/pulls/${prNumber}`, token);
-  if (!canAutoRepairPullRequest({ pull, eventName })) {
+  if (!canAutoRepairPullRequest({ pull, eventName, body: pull.body || '' })) {
     return {
       changed: false,
       skipped: true,
-      report: 'PR body auto-repair skipped: PR is not an open trusted same-repository pull request.',
+      report: pull.body?.includes(CURSOR_AGENT_PR_BODY_BEGIN)
+        ? 'PR body auto-repair skipped: maintainer PR body marker present.'
+        : 'PR body auto-repair skipped: PR is not an open trusted same-repository pull request.',
     };
   }
 

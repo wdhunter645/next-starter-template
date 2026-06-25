@@ -66,11 +66,26 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+
+      - name: Resolve closeout manifests from push
+        if: github.event_name == 'push'
+        id: push_manifests
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          if [ -z "${BEFORE_SHA}" ] || [ "${BEFORE_SHA}" = "0000000000000000000000000000000000000000" ]; then
+            CHANGED_PATHS="$(git show --name-only --pretty=format: "${GITHUB_SHA}")"
+          else
+            CHANGED_PATHS="$(git diff --name-only "${BEFORE_SHA}" "${GITHUB_SHA}")"
+          fi
+          printf '%s\n' "${CHANGED_PATHS}" | node scripts/ci/resolve_closeout_manifests_from_push.mjs --stdin-paths
 
       - name: Batch closeout for all pending CI manifests
         if: |
@@ -81,6 +96,7 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_RUN_ID: ${{ github.run_id }}
+          CLOSEOUT_MANIFESTS: ${{ github.event_name == 'push' && steps.push_manifests.outputs.closeout_manifests || '' }}
         run: node scripts/ci/run_post_merge_closeout_all_manifests.mjs
 
       - name: Batch closeout for manual backfill manifest
