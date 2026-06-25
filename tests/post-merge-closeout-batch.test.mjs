@@ -27,10 +27,11 @@ import {
 } from '../scripts/ci/post_merge_validator.mjs';
 
 describe('post-merge closeout batch', () => {
-	it('loads legacy completed closeout targets from targets.json', () => {
+	it('loads legacy completed closeout targets for merged PRs 1239 and 1243', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets.json');
-		expect(targets.map((target) => target.pr)).toEqual([1239]);
+		expect(targets.map((target) => target.pr)).toEqual([1239, 1243]);
 		expect(targets[0].body_file).toContain('pr-1239-body.md');
+		expect(targets[1].body_file).toContain('pr-1243-body.md');
 	});
 
 	it('rejects null targets in the manifest without throwing parse errors', () => {
