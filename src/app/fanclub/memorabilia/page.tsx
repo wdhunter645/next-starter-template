@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { fanclubThreeColumnGrid } from '@/components/fanclub/fanclubGridStyles';
+import { fanclubThreeColumnGridClassName } from '@/components/fanclub/fanclubGridStyles';
 import { useMemberSession } from '@/hooks/useMemberSession';
 import { buildFanclubPhotoListApiUrl } from '@/lib/fanclubApi';
 
@@ -62,7 +62,8 @@ export default function MemorabiliaPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeQuery = searchParams.get('q') || '';
-  const activeTags = useMemo(() => parseTagsParam(searchParams.get('tags')), [searchParams]);
+  const tagsParam = searchParams.get('tags');
+  const activeTags = useMemo(() => parseTagsParam(tagsParam), [tagsParam]);
   const { isLoading, isAuthenticated } = useMemberSession({ redirectTo: '/' });
   const [items, setItems] = useState<MemorabiliaItem[]>([]);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
@@ -209,7 +210,7 @@ export default function MemorabiliaPage() {
       </form>
       {message ? <p style={{ opacity: 0.85 }}>{message}</p> : null}
 
-      <div style={fanclubThreeColumnGrid}>
+      <div className={fanclubThreeColumnGridClassName}>
         {items.map((p) => (
           <div key={p.id} style={{ ...styles.card }}>
             {p.thumbnail_url ? (

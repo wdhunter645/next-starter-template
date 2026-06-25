@@ -1,8 +1,4 @@
-import type React from 'react';
+import styles from './fanclubGridStyles.module.css';
 
-/** Three-column desktop grid per fanclub-subpages.md gallery/memorabilia contracts. */
-export const fanclubThreeColumnGrid: React.CSSProperties = {
-  display: 'grid',
-  gap: 12,
-  gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-};
+/** Responsive gallery grid: 1 column mobile, 3 columns desktop per fanclub-subpages.md. */
+export const fanclubThreeColumnGridClassName = styles.threeColumnGrid;
