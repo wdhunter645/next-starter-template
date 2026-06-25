@@ -34,7 +34,7 @@ Mutable PR-head gate code must not execute as trusted enforcement logic.
 |---|---|---|
 | `gate-post-merge-readiness.yml` | GATE — Post-Merge Readiness | Pre-merge blocker for PR body metadata, allowlist evidence, placeholders, and reviewer dispositions that would fail closeout |
 | `post-merge-closeout.yml` | Post-Merge Detection | Sole automatic post-merge source-issue closeout owner per merge: body apply when configured, validate, one orchestrator sync, PR comment, reviewer audit on failure |
-| `post-merge-pr-body-closeout.yml` | Post-Merge PR Body Closeout | Manual single-PR closeout, batch manifests, and push-triggered backfill only (no automatic merge trigger) |
+| `post-merge-pr-body-closeout.yml` | Post-Merge PR Body Closeout | Manual single-PR closeout, batch manifests, and push-triggered backfill only (no automatic merge trigger). Push paths include `targets-active.json` and active manifest files; completed wave manifests replay only via explicit `workflow_dispatch`. |
 | `post-merge-intent-verification.yml` | Post-Merge Maintainer Body Apply | Targeted PR synchronize and workflow-dispatch maintainer PR body apply path for legacy open PRs |
 | `post-merge-remediation.yml` | Post-Merge Remediation | Opens remediation issues only when Post-Merge Detection fails |
 | `gate-close-work-issue.yml` | gate-close-work-issue | Parked no-op legacy issue closer; performs no issue mutation and is not an effective closeout owner |
@@ -107,6 +107,7 @@ Duplicate remediation issue cleanup remains unchanged. Canonical remediation iss
 | `scripts/ci/post_merge_validation_surface.mjs` | Surface inventory validator |
 | `scripts/ci/close_duplicate_remediation_issues.mjs` | Closes duplicate remediation issues only |
 | `scripts/ci/post_merge_self_heal_backlog.mjs` | Backlog scan, safe-close, and `ops-pr-escalation` handoff for open exception issues |
+| `scripts/ci/run_post_merge_closeout_all_manifests.mjs` | Loads active manifest registry (`targets-active.json`) and runs batch closeout across active manifests |
 | `scripts/orchestrator/sync-pr-state.mjs` | Applies orchestrator labels and source-issue closeout |
 
 ## Rollback

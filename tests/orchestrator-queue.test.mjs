@@ -506,6 +506,114 @@ describe('orchestrator queue advancement', () => {
 	});
 });
 
+describe('sync-pr-state issueMeta REST lookup', () => {
+	it('calls gh api repos/{repo}/issues/{number} via injected run', () => {
+		process.env.GITHUB_REPOSITORY = 'owner/repo';
+		const run = vi.fn(() =>
+			JSON.stringify({
+				title: 'Source task',
+				labels: [{ name: 'orchestrator' }, { name: 'status:post-merge-verify' }],
+				state: 'open',
+				state_reason: 'completed',
+			}),
+		);
+
+		syncPrState.issueMeta(123, { run });
+
+		expect(run).toHaveBeenCalledTimes(1);
+		expect(run).toHaveBeenCalledWith(['api', 'repos/owner/repo/issues/123']);
+		expect(run).not.toHaveBeenCalledWith(expect.arrayContaining(['issue', 'view']));
+	});
+
+	it('maps REST issue fields into the internal issueMeta shape', () => {
+		process.env.GITHUB_REPOSITORY = 'owner/repo';
+		const run = vi.fn(() =>
+			JSON.stringify({
+				title: 'Fan Club task',
+				labels: [{ name: 'feature' }, { name: 'status:review' }],
+				state: 'closed',
+				state_reason: 'not_planned',
+			}),
+		);
+
+		expect(syncPrState.issueMeta(456, { run })).toEqual({
+			title: 'Fan Club task',
+			labels: ['feature', 'status:review'],
+			state: 'closed',
+			state_reason: 'not_planned',
+		});
+	});
+
+	it('does not request gh issue view or stateReason JSON fields', () => {
+		process.env.GITHUB_REPOSITORY = 'owner/repo';
+		const run = vi.fn(() =>
+			JSON.stringify({
+				title: '',
+				labels: [],
+				state: 'open',
+			}),
+		);
+
+		syncPrState.issueMeta(789, { run });
+
+		const invokedArgVectors = run.mock.calls.map(([args]) => args);
+
+		expect(invokedArgVectors).not.toContainEqual(expect.arrayContaining(['issue', 'view']));
+		expect(invokedArgVectors.flat()).not.toContain('stateReason');
+	});
+
+	it('preserves post_merge_success closeout when issueMeta returns state_reason', () => {
+		process.env.GITHUB_REPOSITORY = 'owner/repo';
+		const run = vi.fn();
+		const reconciliations = [];
+
+		const result = syncPrState.syncPrState({
+			prNumber: '1239',
+			action: 'post_merge_success',
+			pr: {
+				body: '- **Issue:** #1196\n\nTask body.',
+				mergedAt: '2026-06-02T17:21:10Z',
+				state: 'MERGED',
+				url: 'https://example.test/pr/1239',
+				mergeCommit: { oid: 'abc123def456' },
+			},
+			postMergeResult: {
+				status: 'pass',
+				remediation_required: false,
+				merge_sha: 'abc123def456',
+				pr: 1239,
+				source_issue: '1196',
+				terminal_label_result: {
+					ok: true,
+					removeLabels: ['status:post-merge-verify', 'post-merge-failure'],
+					addLabel: 'status:complete',
+					summary: 'remove status:post-merge-verify, post-merge-failure; add status:complete',
+				},
+			},
+			getIssueMeta: () => ({
+				title: 'CI corrective task',
+				labels: ['orchestrator', 'status:post-merge-verify'],
+				state: 'OPEN',
+				state_reason: 'completed',
+			}),
+			reconcileTerminalLabelsFn: (...args) => reconciliations.push(args),
+			run,
+		});
+
+		expect(result).toBe('complete');
+		expect(reconciliations).toEqual([[
+			'1196',
+			expect.objectContaining({
+				removeLabels: ['status:post-merge-verify', 'post-merge-failure'],
+				addLabel: 'status:complete',
+			}),
+		]]);
+		expect(run).toHaveBeenCalledWith(
+			expect.arrayContaining(['issue', 'close', '1196', '--repo', 'owner/repo', '--reason', 'completed']),
+		);
+	});
+});
+
 describe('orchestrator workflow trigger compatibility', () => {
 	it('uses status:queued labels for issue handoff and label changes for queue advancement', () => {
 		const draftWorkflow = fs.readFileSync('.github/workflows/orchestrator-draft-pr.yml', 'utf8');

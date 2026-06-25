@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
-import { pathToFileURL } from 'node:url';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import {
 	BATCH_CLOSEOUT_REPORT_PATH,
@@ -10,16 +12,31 @@ import {
 	buildBatchCloseoutReport,
 } from './run_batch_post_merge_closeout.mjs';
 
-export const DEFAULT_MANIFESTS = [
-	'scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json',
-	'scripts/ci/post-merge-closeout/targets-ci-pending.json',
-	'scripts/ci/post-merge-closeout/targets-remediation-backlog.json',
-	'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave1.json',
-	'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave2.json',
-	'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3a-remediation.json',
-	'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3b.json',
-	'scripts/ci/post-merge-closeout/targets-website-completion-1685-closeout.json',
-];
+const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+
+export const ACTIVE_MANIFEST_REGISTRY = 'scripts/ci/post-merge-closeout/targets-active.json';
+
+export function loadActiveManifestRegistry(
+	registryPath = ACTIVE_MANIFEST_REGISTRY,
+	workspace = REPOSITORY_ROOT,
+) {
+	const resolved = path.resolve(workspace, registryPath);
+	const payload = JSON.parse(fs.readFileSync(resolved, 'utf8'));
+	const manifests = Array.isArray(payload) ? payload : payload?.manifests;
+	if (!Array.isArray(manifests)) {
+		throw new Error(`Active manifest registry must include a manifests array: ${resolved}`);
+	}
+
+	return {
+		registryPath: resolved,
+		manifests: manifests.map((entry) => String(entry).replace(/\\/g, '/').replace(/^\.\//, '')),
+		archivedManifests: Array.isArray(payload?.archived_manifests)
+			? payload.archived_manifests.map((entry) => String(entry).replace(/\\/g, '/').replace(/^\.\//, ''))
+			: [],
+	};
+}
+
+export const DEFAULT_MANIFESTS = loadActiveManifestRegistry().manifests;
 
 export async function runAllPostMergeCloseoutManifests({
 	token,

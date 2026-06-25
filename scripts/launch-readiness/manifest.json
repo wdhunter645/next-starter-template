@@ -37,7 +37,13 @@
     "/admin/media-assets",
     "/admin/member-operations",
     "/admin/moderation",
-    "/admin/worklist"
+    "/admin/worklist",
+    "/ai-review/admin",
+    "/ai-review/fanclub",
+    "/ai-review/home",
+    "/_ai-review/admin",
+    "/_ai-review/fanclub",
+    "/_ai-review/home"
   ],
   "conditionalRoutes": [
     "/admin/matchup"

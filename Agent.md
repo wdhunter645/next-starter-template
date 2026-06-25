@@ -118,6 +118,7 @@ Use these repository skills when the task matches the trigger:
 - Tracker/status-index updates: `.agents/skills/lgfc-docs-authority/SKILL.md` only when the source issue explicitly authorizes tracker governance, tracker reconciliation, or status-index maintenance
 - Next.js build, API, route handler, middleware, Cloudflare Pages, D1, static export, or deployment compatibility changes: `.agents/skills/lgfc-cloudflare-static-export/SKILL.md`
 - Final PR handoff, closeout, verification evidence, or post-merge readiness: `.agents/skills/lgfc-verification-closeout/SKILL.md`
+- Tokenized AI review access (preview-only live inspection): `docs/ops/ai/AI-REVIEW-ACCESS.md`
 
 Long-form cross-agent instructions live in:
 

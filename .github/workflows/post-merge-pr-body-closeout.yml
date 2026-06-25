@@ -4,12 +4,10 @@ on:
   push:
     branches: [main]
     paths:
+      - scripts/ci/post-merge-closeout/targets-active.json
       - scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json
       - scripts/ci/post-merge-closeout/targets-ci-pending.json
       - scripts/ci/post-merge-closeout/targets-remediation-backlog.json
-      - scripts/ci/post-merge-closeout/targets-ops-burn-down-wave1.json
-      - scripts/ci/post-merge-closeout/targets-ops-burn-down-wave2.json
-      - scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3a-remediation.json
       - scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3b.json
       - scripts/ci/post-merge-closeout/targets-website-completion-1685-closeout.json
   workflow_dispatch:
@@ -86,7 +84,12 @@ jobs:
           else
             CHANGED_PATHS="$(git diff --name-only "${BEFORE_SHA}" "${GITHUB_SHA}")"
           fi
-          printf '%s\n' "${CHANGED_PATHS}" | node scripts/ci/resolve_closeout_manifests_from_push.mjs --stdin-paths
+          if echo "${CHANGED_PATHS}" | grep -qx 'scripts/ci/post-merge-closeout/targets-active.json'; then
+            echo "Active manifest registry changed; replaying full active manifest set from registry"
+            echo "closeout_manifests=" >> "${GITHUB_OUTPUT}"
+          else
+            printf '%s\n' "${CHANGED_PATHS}" | node scripts/ci/resolve_closeout_manifests_from_push.mjs --stdin-paths
+          fi
 
       - name: Batch closeout for all pending CI manifests
         if: |
