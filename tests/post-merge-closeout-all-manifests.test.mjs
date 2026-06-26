@@ -151,6 +151,23 @@ describe('post-merge closeout all manifests', () => {
 		expect(overlap).toEqual([]);
 	});
 
+	it('loads Program #1685 audit PR #1981 closeout replay target with remediation exception #2031', () => {
+		const { targets } = loadCloseoutTargets(
+			'scripts/ci/post-merge-closeout/targets-website-completion-1685-closeout.json',
+		);
+		expect(targets).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					pr: 1981,
+					body_file: 'scripts/ci/post-merge-closeout/pr-1981-body.md',
+					merge_sha: '4589576566653f2d9a8ba5d8da6bd3a74c631c06',
+					source_issue: 1962,
+					remediation_exception: 2031,
+				}),
+			]),
+		);
+	});
+
 	it('limits Wave 3a remediation manifest to failed replay targets only', () => {
 		const { targets } = loadCloseoutTargets(
 			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3a-remediation.json',
