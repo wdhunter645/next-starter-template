@@ -26,6 +26,8 @@ Allowed files:
 - `scripts/ci/post_merge_remediation_issue.mjs`
 - `scripts/ci/post_merge_source_issue_closeout.mjs`
 - `scripts/ci/post_merge_validator.mjs`
+- `scripts/ci/reviewer-gate-simulation.mjs`
+- `scripts/ci/reviewer_lifecycle_gate.mjs`
 - `scripts/ci/run_batch_post_merge_closeout.mjs`
 - `scripts/ci/run_post_merge_closeout_all_manifests.mjs`
 - `scripts/orchestrator/sync-pr-state.mjs`
@@ -33,6 +35,8 @@ Allowed files:
 - `tests/post-merge-closeout-all-manifests.test.mjs`
 - `tests/post-merge-closeout-automatic.test.mjs`
 - `tests/post-merge-source-issue-closeout.test.mjs`
+- `tests/reviewer-gate-simulation.test.mjs`
+- `tests/reviewer-lifecycle-gate.test.mjs`
 
 All other files are out of scope
 

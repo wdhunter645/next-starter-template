@@ -329,6 +329,34 @@ describe('post-merge reviewer audit classification', () => {
 		expect(findings).toHaveLength(1);
 		expect(result).toMatchObject({ status: 'fail', late_findings: 1, remediation_required: true, sync_action: 'post_merge_failure' });
 	});
+
+	it('does not fail a late high-severity finding with a valid PR-body disposition', () => {
+		const findings = reviewerFindings({
+			pr: mergedPr({
+				body: [
+					baseBody,
+					'',
+					'## REVIEWER RESPONSE ACCOUNTING',
+					'- review-comment:4443329728 — accepted — Post-merge closeout remediation records the resolved reviewer finding — thread state: resolved',
+				].join('\n'),
+			}),
+			reviews: [
+				{
+					id: 4443329728,
+					submitted_at: '2026-06-02T17:25:00Z',
+					state: 'COMMENTED',
+					body: 'P1 blocking: must fix this regression.',
+					html_url: 'https://github.test/review/4443329728',
+					user: { login: 'copilot-pull-request-reviewer[bot]' },
+				},
+			],
+		});
+
+		const result = buildResult({ pr: mergedPr(), resolution: { pr: '1188' }, findings });
+
+		expect(findings).toEqual([]);
+		expect(result).toMatchObject({ status: 'pass', late_findings: 0, remediation_required: false, sync_action: 'post_merge_success' });
+	});
 });
 
 describe('post-merge workflow failure classification', () => {
