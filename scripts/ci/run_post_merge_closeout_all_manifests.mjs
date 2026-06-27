@@ -10,7 +10,9 @@ import {
 	runBatchPostMergeCloseout,
 	writeBatchCloseoutReport,
 	buildBatchCloseoutReport,
+	buildCircuitBreakerSkippedResult,
 } from './run_batch_post_merge_closeout.mjs';
+import { BatchCircuitBreakerState } from './post_merge_remediation_issue.mjs';
 
 const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -44,11 +46,32 @@ export async function runAllPostMergeCloseoutManifests({
 	manifestPaths = DEFAULT_MANIFESTS,
 	runId = '',
 	dryRun = false,
-}) {
+	batchCircuitBreaker = new BatchCircuitBreakerState(),
+	runBatchPostMergeCloseoutFn = runBatchPostMergeCloseout,
+} = {}) {
 	const reports = [];
 
 	for (const manifestPath of manifestPaths) {
 		const { manifestPath: resolved, targets } = loadCloseoutTargets(manifestPath);
+		if (batchCircuitBreaker.tripped) {
+			reports.push(
+				buildBatchCloseoutReport({
+					manifestPath: resolved,
+					targets,
+					results: targets.map((target) => buildCircuitBreakerSkippedResult({
+						prNumber: target.pr,
+						signature: batchCircuitBreaker.tripDetails?.signature,
+					})),
+					circuitBreakerTripped: {
+						tripped: true,
+						signature: batchCircuitBreaker.tripDetails?.signature,
+						suppressed_targets: targets.map((target) => String(target.pr)),
+					},
+					dryRun,
+				}),
+			);
+			continue;
+		}
 		if (targets.length === 0) {
 			reports.push(
 				buildBatchCloseoutReport({
@@ -60,13 +83,14 @@ export async function runAllPostMergeCloseoutManifests({
 			);
 			continue;
 		}
-		const report = await runBatchPostMergeCloseout({
+		const report = await runBatchPostMergeCloseoutFn({
 			token,
 			repository,
 			targets,
 			manifestPath: resolved,
 			runId,
 			dryRun,
+			batchCircuitBreaker,
 		});
 		reports.push(report);
 	}

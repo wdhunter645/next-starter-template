@@ -251,18 +251,26 @@ export async function runBatchPostMergeCloseout({
 	pruneCloseoutManifestFromReportFn = pruneCloseoutManifestFromReport,
 	appendCloseoutRerunTargetsFn = appendCloseoutRerunTargets,
 	upsertCircuitBreakerIncidentFn = upsertCircuitBreakerIncident,
-}) {
+	batchCircuitBreaker = null,
+} = {}) {
 	const results = [];
 	let rerunAppend = null;
-	const batchCircuitBreaker = new BatchCircuitBreakerState();
-	let circuitBreakerTripped = null;
+	const sharedBatchCircuitBreaker = batchCircuitBreaker || new BatchCircuitBreakerState();
+	let circuitBreakerTripped = sharedBatchCircuitBreaker.tripped
+		? {
+			tripped: true,
+			signature: sharedBatchCircuitBreaker.tripDetails?.signature,
+			consecutive_count: sharedBatchCircuitBreaker.tripDetails?.consecutive_count,
+			suppressed_targets: [],
+		}
+		: null;
 	const affectedRuntimePrs = [];
 
 	for (let index = 0; index < targets.length; index += 1) {
 		const target = targets[index];
 		const prNumber = String(target.pr);
 
-		if (circuitBreakerTripped?.tripped) {
+		if (sharedBatchCircuitBreaker.tripped || circuitBreakerTripped?.tripped) {
 			results.push(buildCircuitBreakerSkippedResult({
 				prNumber,
 				signature: circuitBreakerTripped?.signature,
@@ -274,7 +282,7 @@ export async function runBatchPostMergeCloseout({
 		const bodyFile = path.resolve(target.body_file);
 
 		if (!fs.existsSync(bodyFile)) {
-			batchCircuitBreaker.onSuccess();
+			sharedBatchCircuitBreaker.onSuccess();
 			affectedRuntimePrs.length = 0;
 			results.push(
 				summarizeTargetResult({
@@ -307,7 +315,7 @@ export async function runBatchPostMergeCloseout({
 				runId,
 				skipBodyApply: target.skip_body_apply === true,
 				workflowRunScope: WORKFLOW_RUN_SCOPE_MERGE_ONLY,
-				batchCircuitBreaker,
+				batchCircuitBreaker: sharedBatchCircuitBreaker,
 			});
 			const detail = readPostMergeResultDetail();
 			const summarized = summarizeTargetResult({
@@ -319,20 +327,20 @@ export async function runBatchPostMergeCloseout({
 			results.push(summarized);
 
 			if (result.status === 'pass') {
-				batchCircuitBreaker.onSuccess();
+				sharedBatchCircuitBreaker.onSuccess();
 				affectedRuntimePrs.length = 0;
 			} else {
 				const runtimeFailure = extractCloseoutRuntimeFailure({ result, detail });
 				if (runtimeFailure) {
 					const signature = buildRuntimeFailureSignature(runtimeFailure);
 					trackAffectedRuntimePr({
-						batchCircuitBreaker,
+						batchCircuitBreaker: sharedBatchCircuitBreaker,
 						affectedRuntimePrs,
 						prNumber,
 						signature,
 					});
 					const tripReport = await maybeTripBatchCircuitBreaker({
-						batchCircuitBreaker,
+						batchCircuitBreaker: sharedBatchCircuitBreaker,
 						token,
 						repository,
 						manifestPath,
@@ -354,7 +362,7 @@ export async function runBatchPostMergeCloseout({
 						break;
 					}
 				} else {
-					batchCircuitBreaker.onSuccess();
+					sharedBatchCircuitBreaker.onSuccess();
 					affectedRuntimePrs.length = 0;
 				}
 			}
@@ -391,14 +399,14 @@ export async function runBatchPostMergeCloseout({
 			if (runtimeFailure) {
 				const signature = buildRuntimeFailureSignature(runtimeFailure);
 				trackAffectedRuntimePr({
-					batchCircuitBreaker,
+					batchCircuitBreaker: sharedBatchCircuitBreaker,
 					affectedRuntimePrs,
 					prNumber,
 					signature,
 				});
 			}
 			const tripReport = await maybeTripBatchCircuitBreaker({
-				batchCircuitBreaker,
+				batchCircuitBreaker: sharedBatchCircuitBreaker,
 				token,
 				repository,
 				manifestPath,
