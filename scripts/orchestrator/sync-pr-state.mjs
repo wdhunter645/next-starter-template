@@ -54,13 +54,13 @@ export function readPostMergeResult(resultPath = process.env.POST_MERGE_RESULT_P
 }
 
 export function issueMeta(issueNumber, { run = runGh } = {}) {
-  const issueJson = run(['issue', 'view', issueNumber, '--repo', repo, '--json', 'title,labels,state,stateReason']);
+  const issueJson = run(['api', `repos/${repo}/issues/${issueNumber}`]);
   const issue = JSON.parse(issueJson);
   return {
     title: issue.title || '',
     labels: (issue.labels || []).map((label) => label.name),
     state: issue.state || '',
-    state_reason: issue.stateReason || '',
+    state_reason: issue.state_reason || '',
   };
 }
 

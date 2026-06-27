@@ -23,6 +23,7 @@ describe('post-merge closeout all manifests', () => {
 			'scripts/ci/post-merge-closeout/targets-ci-pending.json',
 			'scripts/ci/post-merge-closeout/targets-remediation-backlog.json',
 			'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3b.json',
+			'scripts/ci/post-merge-closeout/targets-website-completion-1685-closeout.json',
 		]);
 		for (const manifestPath of COMPLETED_WAVE_MANIFESTS) {
 			expect(manifests).not.toContain(manifestPath);

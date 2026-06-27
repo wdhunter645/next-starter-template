@@ -1,0 +1,34 @@
+{
+  "triggered_at": "2026-06-23T12:10:00Z",
+  "description": "Post-merge closeout replay for Program #1685 Tasks 005–009 merged PRs",
+  "targets": [
+    {
+      "pr": 1950,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1950-body.md",
+      "merge_sha": "47a5d2cc1aa117198f8bbffb642252114ec84c5a",
+      "source_issue": 1690,
+      "remediation_exception": 1951
+    },
+    {
+      "pr": 1955,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1955-body.md",
+      "merge_sha": "620c3be35403d726ce36f743a22b82763c8d227e",
+      "source_issue": 1692,
+      "remediation_exception": 1957
+    },
+    {
+      "pr": 1958,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1958-body.md",
+      "merge_sha": "961108e5df03280f633e93648511ce4fb93f3277",
+      "source_issue": 1693,
+      "remediation_exception": 1959
+    },
+    {
+      "pr": 1960,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1960-body.md",
+      "merge_sha": "9e75404128d29cd15dc16ffce2ecfc391962e705",
+      "source_issue": 1694,
+      "remediation_exception": 1961
+    }
+  ]
+}

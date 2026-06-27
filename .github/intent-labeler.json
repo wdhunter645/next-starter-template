@@ -77,11 +77,14 @@
         "scripts/d1-",
         "scripts/b2-",
         "scripts/ci/",
+        "tests/",
+        ".github/intent-labeler.json",
+        ".github/workflows/post-merge-pr-body-closeout.yml",
         "data/",
         "wrangler.toml"
       ],
       "deny_prefixes": [
-        ".github/workflows/"
+        ".github/workflows/gate-"
       ]
     },
     "codex": {

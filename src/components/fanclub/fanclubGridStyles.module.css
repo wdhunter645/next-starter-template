@@ -1,0 +1,11 @@
+.threeColumnGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 900px) {
+  .threeColumnGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

@@ -8,6 +8,7 @@ import AdminTokenPanel from '@/components/admin/AdminTokenPanel';
 import { adminJson, getStoredAdminToken } from '@/lib/adminClient';
 
 const ALLOWED_SECTION_OPTIONS = [
+  { key: 'club_home', label: 'Club Home' },
   { key: 'homepage_spotlight', label: 'Homepage spotlight' },
   { key: 'homepage_discussions', label: 'Homepage discussions' },
   { key: 'homepage_milestones', label: 'Homepage milestones' },
