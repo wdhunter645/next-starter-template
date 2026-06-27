@@ -62,9 +62,9 @@ describe('post-merge closeout all manifests', () => {
 
 	it('loads yesterday exception batch closeout rerun targets after #1813 remediation', () => {
 		const { targets } = loadCloseoutTargets('scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json');
-		expect(targets).toHaveLength(10);
+		expect(targets).toHaveLength(11);
 		expect(targets.map((target) => target.pr)).toEqual([
-			1926, 1858, 1811, 1814, 1809, 1828, 1825, 1834, 1832, 1844,
+			1926, 1858, 1811, 1814, 1809, 1828, 1825, 1834, 1832, 1844, 1981,
 		]);
 		expect(targets.every((target) => target.body_file && target.merge_sha && target.source_issue)).toBe(
 			true,
