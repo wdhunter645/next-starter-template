@@ -165,4 +165,6 @@ All other files are out of scope
 - [x] All reviewer feedback has disposition and thread-state
 - [x] Status is set to MERGED for post-merge closeout replay
 
+<!-- CURSOR_AGENT_PR_BODY_END -->
+
 **MERGED — post-merge closeout remediation applied (Audit #1962 / exception #2031)**
