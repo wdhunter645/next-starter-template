@@ -1,6 +1,6 @@
 {
-  "triggered_at": "2026-06-23T12:10:00Z",
-  "description": "Post-merge closeout replay for Program #1685 Tasks 005–009 merged PRs",
+  "triggered_at": "2026-06-26T14:05:00Z",
+  "description": "Post-merge closeout replay for Program #1685 Tasks 005–009 and audit PR #1981",
   "targets": [
     {
       "pr": 1950,
@@ -29,6 +29,13 @@
       "merge_sha": "9e75404128d29cd15dc16ffce2ecfc391962e705",
       "source_issue": 1694,
       "remediation_exception": 1961
+    },
+    {
+      "pr": 1981,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1981-body.md",
+      "merge_sha": "4589576566653f2d9a8ba5d8da6bd3a74c631c06",
+      "source_issue": 1962,
+      "remediation_exception": 2031
     }
   ]
 }
