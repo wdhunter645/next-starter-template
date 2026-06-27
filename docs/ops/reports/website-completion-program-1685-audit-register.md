@@ -55,6 +55,7 @@ Record as-built verification outcomes for Program **#1685 — Website Completion
 | Closeout exception #1959 (PR #1958) | Remediated PR body | `scripts/ci/post-merge-closeout/pr-1958-body.md` |
 | Closeout exception #1961 (PR #1960) | Remediated PR body | `scripts/ci/post-merge-closeout/pr-1960-body.md` |
 | Closeout replay manifest | Created | `scripts/ci/post-merge-closeout/targets-website-completion-1685-closeout.json` |
+| Closeout exception #2031 (PR #1981) | Remediated | `scripts/ci/post-merge-closeout/pr-1981-body.md` registered in manifest |
 
 ## Verification
 
@@ -67,10 +68,11 @@ Record as-built verification outcomes for Program **#1685 — Website Completion
 
 ## Remaining before #1685 acceptance
 
-1. Merge audit remediation PR (#1962).
-2. Closeout replay closes #1951, #1957, #1959, #1961 and reconciles #1690–#1694.
-3. Production/preview smoke with member session.
-4. Bill/Atlas sign-off on deferred items.
+1. Merge audit closeout replay remediation for PR #1981 / exception #2031.
+2. Closeout replay closes #2031 and reconciles #1962 post-merge state.
+3. Closeout replay closes #1951, #1957, #1959, #1961 and reconciles #1690–#1694.
+4. Production/preview smoke with member session.
+5. Bill/Atlas sign-off on deferred items.
 
 ## Day-2 documentation updated
 
