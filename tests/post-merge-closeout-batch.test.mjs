@@ -653,6 +653,48 @@ describe('post-merge closeout batch', () => {
 		fs.rmSync(dir, { recursive: true, force: true });
 	});
 
+	it('resets the runtime streak after a preflight body-file miss', async () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-batch-preflight-reset-'));
+		const bodyPass = path.join(dir, 'pr-1.md');
+		const bodyMissing = path.join(dir, 'missing.md');
+		fs.writeFileSync(
+			bodyPass,
+			'- **Issue:** #1\n\n## CHANGE SUMMARY\nx\n\n## BUILD / TEST / VERIFICATION\nx\n\n## ACCEPTANCE CRITERIA\nx\n',
+		);
+
+		const runPostMergeCloseout = vi
+			.fn()
+			.mockRejectedValueOnce(new Error(RUNTIME_STORM_MESSAGE))
+			.mockRejectedValueOnce(new Error(RUNTIME_STORM_MESSAGE))
+			.mockRejectedValueOnce(new Error(RUNTIME_STORM_MESSAGE));
+		const upsertCircuitBreakerIncident = vi.fn().mockResolvedValue({
+			action: 'created',
+			issue: '#9001',
+			dedupe_key: `batch_circuit_breaker:${RUNTIME_SIGNATURE}`,
+		});
+
+		const outcome = await runBatchPostMergeCloseout({
+			token: 'token',
+			repository: 'owner/repo',
+			manifestPath: path.join(dir, 'targets.json'),
+			targets: [
+				{ pr: 1, body_file: bodyPass },
+				{ pr: 2, body_file: bodyPass },
+				{ pr: 3, body_file: bodyMissing },
+				{ pr: 4, body_file: bodyPass },
+			],
+			runPostMergeCloseoutFn: runPostMergeCloseout,
+			closeDuplicateRemediationIssuesFn: vi.fn().mockResolvedValue({ closed: [] }),
+			upsertCircuitBreakerIncidentFn: upsertCircuitBreakerIncident,
+		});
+
+		expect(runPostMergeCloseout).toHaveBeenCalledTimes(3);
+		expect(upsertCircuitBreakerIncident).not.toHaveBeenCalled();
+		expect(outcome.circuit_breaker_tripped).toBeNull();
+
+		fs.rmSync(dir, { recursive: true, force: true });
+	});
+
 	it('trips the batch circuit breaker after three identical runtime errors and suppresses fan-out', async () => {
 		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-batch-circuit-breaker-'));
 		const bodyPaths = [];

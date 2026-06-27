@@ -274,6 +274,8 @@ export async function runBatchPostMergeCloseout({
 		const bodyFile = path.resolve(target.body_file);
 
 		if (!fs.existsSync(bodyFile)) {
+			batchCircuitBreaker.onSuccess();
+			affectedRuntimePrs.length = 0;
 			results.push(
 				summarizeTargetResult({
 					prNumber,
