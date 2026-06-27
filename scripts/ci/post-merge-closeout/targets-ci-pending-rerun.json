@@ -61,6 +61,13 @@
       "body_file": "scripts/ci/post-merge-closeout/pr-1844-body.md",
       "merge_sha": "da663158ff69c3229a4e2cd31a406889257beb94",
       "source_issue": 1830
+    },
+    {
+      "pr": 1981,
+      "body_file": "scripts/ci/post-merge-closeout/pr-1981-body.md",
+      "merge_sha": "4589576566653f2d9a8ba5d8da6bd3a74c631c06",
+      "source_issue": 1962,
+      "remediation_exception": 2031
     }
   ]
 }
