@@ -1,11 +1,16 @@
-import { describe, expect, it } from 'vitest';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
 	ACTIVE_MANIFEST_REGISTRY,
 	DEFAULT_MANIFESTS,
 	loadActiveManifestRegistry,
+	runAllPostMergeCloseoutManifests,
 } from '../scripts/ci/run_post_merge_closeout_all_manifests.mjs';
 import { loadCloseoutTargets } from '../scripts/ci/run_batch_post_merge_closeout.mjs';
+import { buildRuntimeFailureSignature } from '../scripts/ci/post_merge_remediation_issue.mjs';
 
 const COMPLETED_WAVE_MANIFESTS = [
 	'scripts/ci/post-merge-closeout/targets-ops-burn-down-wave1.json',
@@ -174,5 +179,51 @@ describe('post-merge closeout all manifests', () => {
 		);
 		expect(targets).toHaveLength(7);
 		expect(targets.map((target) => target.pr)).toEqual([1269, 1271, 1278, 1284, 1295, 1298, 1315]);
+	});
+
+	it('shares the batch circuit breaker across active manifests', async () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-all-manifests-breaker-'));
+		const bodyFile = path.join(dir, 'body.md');
+		fs.writeFileSync(bodyFile, '- **Issue:** #1\n\n## CHANGE SUMMARY\nx\n');
+		const manifestA = path.join(dir, 'manifest-a.json');
+		const manifestB = path.join(dir, 'manifest-b.json');
+		fs.writeFileSync(manifestA, JSON.stringify({ targets: [{ pr: 1, body_file: bodyFile }] }));
+		fs.writeFileSync(manifestB, JSON.stringify({ targets: [{ pr: 2, body_file: bodyFile }] }));
+
+		const runtimeSignature = buildRuntimeFailureSignature({
+			failureCode: 'closeout_runtime_error',
+			message: 'Unknown JSON field: "stateReason"',
+		});
+		let callCount = 0;
+		const runBatchPostMergeCloseout = vi.fn(async ({ batchCircuitBreaker }) => {
+			callCount += 1;
+			batchCircuitBreaker.record(runtimeSignature);
+			batchCircuitBreaker.record(runtimeSignature);
+			batchCircuitBreaker.record(runtimeSignature);
+			return {
+				status: 'partial_failure',
+				results: [{ pr: '1', status: 'fail' }],
+				circuit_breaker_tripped: {
+					tripped: true,
+					signature: runtimeSignature,
+					suppressed_targets: [],
+				},
+			};
+		});
+
+		const outcome = await runAllPostMergeCloseoutManifests({
+			token: 'token',
+			repository: 'owner/repo',
+			manifestPaths: [manifestA, manifestB],
+			runBatchPostMergeCloseoutFn: runBatchPostMergeCloseout,
+		});
+
+		expect(callCount).toBe(1);
+		expect(outcome.reports).toHaveLength(2);
+		expect(outcome.reports[1].results).toEqual([
+			expect.objectContaining({ pr: '2', phase: 'circuit_breaker', status: 'skipped' }),
+		]);
+
+		fs.rmSync(dir, { recursive: true, force: true });
 	});
 });

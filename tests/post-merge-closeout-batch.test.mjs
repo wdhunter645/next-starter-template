@@ -20,12 +20,28 @@ import {
 	loadCloseoutTargets,
 	runBatchPostMergeCloseout,
 	shouldPruneBatchManifest,
+	buildBatchCloseoutReport,
+	trackAffectedRuntimePr,
 } from '../scripts/ci/run_batch_post_merge_closeout.mjs';
+import {
+	BatchCircuitBreakerState,
+	buildRuntimeFailureSignature,
+	findCircuitBreakerIncident,
+	formatAffectedPrs,
+	normalizeRuntimeErrorMessage,
+	shouldSuppressRemediationForCircuitBreaker,
+} from '../scripts/ci/post_merge_remediation_issue.mjs';
 import {
 	selectWorkflowRunsForValidation,
 	WORKFLOW_RUN_SCOPE_MERGE_ONLY,
 	WORKFLOW_RUN_SCOPE_MERGE_AND_HEAD,
 } from '../scripts/ci/post_merge_validator.mjs';
+
+const RUNTIME_STORM_MESSAGE = 'Unknown JSON field: "stateReason"';
+const RUNTIME_SIGNATURE = buildRuntimeFailureSignature({
+	failureCode: 'closeout_runtime_error',
+	message: RUNTIME_STORM_MESSAGE,
+});
 
 describe('post-merge closeout batch', () => {
 	it('loads legacy completed closeout targets for merged PRs 1239 and 1243', () => {
@@ -460,5 +476,271 @@ describe('post-merge closeout batch', () => {
 		} finally {
 			fs.rmSync(dir, { recursive: true, force: true });
 		}
+	});
+
+	it('normalizes runtime error messages for stable circuit-breaker signatures', () => {
+		expect(normalizeRuntimeErrorMessage(' Unknown   JSON field: "stateReason" ')).toBe(
+			'unknown json field: "statereason"',
+		);
+		expect(
+			buildRuntimeFailureSignature({
+				failureCode: 'closeout_runtime_error',
+				message: RUNTIME_STORM_MESSAGE,
+			}),
+		).toBe(RUNTIME_SIGNATURE);
+	});
+
+	it('suppresses per-target remediation once the circuit-breaker threshold is reached', () => {
+		const batchCircuitBreaker = new BatchCircuitBreakerState(3);
+		batchCircuitBreaker.record(RUNTIME_SIGNATURE);
+		batchCircuitBreaker.record(RUNTIME_SIGNATURE);
+
+		expect(
+			shouldSuppressRemediationForCircuitBreaker({
+				batchCircuitBreaker,
+				error: new Error(RUNTIME_STORM_MESSAGE),
+			}),
+		).toBe(true);
+	});
+
+	it('matches circuit-breaker incidents by exact signature marker only', () => {
+		const otherSignature = buildRuntimeFailureSignature({
+			failureCode: 'closeout_runtime_error',
+			message: 'different runtime failure',
+		});
+		const issues = [
+			{
+				number: 9000,
+				state: 'open',
+				title: 'Post-merge closeout batch circuit breaker — closeout_runtime_error — abc123',
+				body: `<!-- batch_circuit_breaker:${otherSignature} -->`,
+			},
+		];
+
+		expect(findCircuitBreakerIncident(issues, RUNTIME_SIGNATURE)).toBeNull();
+		expect(findCircuitBreakerIncident(issues, otherSignature)?.number).toBe(9000);
+	});
+
+	it('formats nullable affected PR lists defensively', () => {
+		expect(formatAffectedPrs(null)).toBe('none recorded');
+		expect(formatAffectedPrs(['1', 2])).toBe('#1, #2');
+	});
+
+	it('tracks affected PRs only for the active runtime-failure streak', () => {
+		const batchCircuitBreaker = new BatchCircuitBreakerState(3);
+		const affectedRuntimePrs = [];
+		const otherSignature = buildRuntimeFailureSignature({
+			failureCode: 'closeout_runtime_error',
+			message: 'different runtime failure',
+		});
+
+		batchCircuitBreaker.record(RUNTIME_SIGNATURE);
+		trackAffectedRuntimePr({
+			batchCircuitBreaker,
+			affectedRuntimePrs,
+			prNumber: '1',
+			signature: RUNTIME_SIGNATURE,
+		});
+		trackAffectedRuntimePr({
+			batchCircuitBreaker,
+			affectedRuntimePrs,
+			prNumber: '2',
+			signature: RUNTIME_SIGNATURE,
+		});
+		expect(affectedRuntimePrs).toEqual(['1', '2']);
+
+		trackAffectedRuntimePr({
+			batchCircuitBreaker,
+			affectedRuntimePrs,
+			prNumber: '3',
+			signature: otherSignature,
+		});
+		expect(affectedRuntimePrs).toEqual(['3']);
+
+		batchCircuitBreaker.onSuccess();
+		affectedRuntimePrs.length = 0;
+		trackAffectedRuntimePr({
+			batchCircuitBreaker,
+			affectedRuntimePrs,
+			prNumber: '4',
+			signature: RUNTIME_SIGNATURE,
+		});
+		expect(affectedRuntimePrs).toEqual(['4']);
+	});
+
+	it('still trips the batch circuit breaker when incident upsert fails', async () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-batch-circuit-breaker-upsert-fail-'));
+		const bodyPaths = [];
+		for (let pr = 1; pr <= 4; pr += 1) {
+			const bodyPath = path.join(dir, `pr-${pr}.md`);
+			fs.writeFileSync(
+				bodyPath,
+				'- **Issue:** #1\n\n## CHANGE SUMMARY\nx\n\n## BUILD / TEST / VERIFICATION\nx\n\n## ACCEPTANCE CRITERIA\nx\n',
+			);
+			bodyPaths.push(bodyPath);
+		}
+
+		const runPostMergeCloseout = vi
+			.fn()
+			.mockRejectedValue(new Error(RUNTIME_STORM_MESSAGE));
+		const upsertCircuitBreakerIncident = vi
+			.fn()
+			.mockRejectedValue(new Error('GitHub API unavailable'));
+
+		const outcome = await runBatchPostMergeCloseout({
+			token: 'token',
+			repository: 'owner/repo',
+			manifestPath: path.join(dir, 'targets.json'),
+			targets: bodyPaths.map((bodyFile, index) => ({ pr: index + 1, body_file: bodyFile })),
+			runPostMergeCloseoutFn: runPostMergeCloseout,
+			closeDuplicateRemediationIssuesFn: vi.fn().mockResolvedValue({ closed: [] }),
+			upsertCircuitBreakerIncidentFn: upsertCircuitBreakerIncident,
+		});
+
+		expect(outcome.circuit_breaker_tripped).toMatchObject({
+			tripped: true,
+			signature: RUNTIME_SIGNATURE,
+			incident_action: 'failed',
+			suppressed_targets: ['4'],
+		});
+		expect(runPostMergeCloseout).toHaveBeenCalledTimes(3);
+
+		fs.rmSync(dir, { recursive: true, force: true });
+	});
+
+	it('resets the runtime streak after a non-runtime closeout failure', async () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-batch-non-runtime-reset-'));
+		const bodyPaths = [];
+		for (let pr = 1; pr <= 4; pr += 1) {
+			const bodyPath = path.join(dir, `pr-${pr}.md`);
+			fs.writeFileSync(
+				bodyPath,
+				'- **Issue:** #1\n\n## CHANGE SUMMARY\nx\n\n## BUILD / TEST / VERIFICATION\nx\n\n## ACCEPTANCE CRITERIA\nx\n',
+			);
+			bodyPaths.push(bodyPath);
+		}
+
+		const runPostMergeCloseout = vi
+			.fn()
+			.mockRejectedValueOnce(new Error(RUNTIME_STORM_MESSAGE))
+			.mockRejectedValueOnce(new Error(RUNTIME_STORM_MESSAGE))
+			.mockResolvedValueOnce({
+				status: 'fail',
+				sync_action: 'post_merge_failure',
+				metadata_failures: [{ code: 'workflow_failure', message: 'quality failed' }],
+			})
+			.mockRejectedValueOnce(new Error(RUNTIME_STORM_MESSAGE));
+		const upsertCircuitBreakerIncident = vi.fn().mockResolvedValue({
+			action: 'created',
+			issue: '#9001',
+			dedupe_key: `batch_circuit_breaker:${RUNTIME_SIGNATURE}`,
+		});
+
+		const outcome = await runBatchPostMergeCloseout({
+			token: 'token',
+			repository: 'owner/repo',
+			manifestPath: path.join(dir, 'targets.json'),
+			targets: bodyPaths.map((bodyFile, index) => ({ pr: index + 1, body_file: bodyFile })),
+			runPostMergeCloseoutFn: runPostMergeCloseout,
+			closeDuplicateRemediationIssuesFn: vi.fn().mockResolvedValue({ closed: [] }),
+			upsertCircuitBreakerIncidentFn: upsertCircuitBreakerIncident,
+		});
+
+		expect(runPostMergeCloseout).toHaveBeenCalledTimes(4);
+		expect(upsertCircuitBreakerIncident).not.toHaveBeenCalled();
+		expect(outcome.circuit_breaker_tripped).toBeNull();
+
+		fs.rmSync(dir, { recursive: true, force: true });
+	});
+
+	it('resets the runtime streak after a preflight body-file miss', async () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-batch-preflight-reset-'));
+		const bodyPass = path.join(dir, 'pr-1.md');
+		const bodyMissing = path.join(dir, 'missing.md');
+		fs.writeFileSync(
+			bodyPass,
+			'- **Issue:** #1\n\n## CHANGE SUMMARY\nx\n\n## BUILD / TEST / VERIFICATION\nx\n\n## ACCEPTANCE CRITERIA\nx\n',
+		);
+
+		const runPostMergeCloseout = vi
+			.fn()
+			.mockRejectedValueOnce(new Error(RUNTIME_STORM_MESSAGE))
+			.mockRejectedValueOnce(new Error(RUNTIME_STORM_MESSAGE))
+			.mockRejectedValueOnce(new Error(RUNTIME_STORM_MESSAGE));
+		const upsertCircuitBreakerIncident = vi.fn().mockResolvedValue({
+			action: 'created',
+			issue: '#9001',
+			dedupe_key: `batch_circuit_breaker:${RUNTIME_SIGNATURE}`,
+		});
+
+		const outcome = await runBatchPostMergeCloseout({
+			token: 'token',
+			repository: 'owner/repo',
+			manifestPath: path.join(dir, 'targets.json'),
+			targets: [
+				{ pr: 1, body_file: bodyPass },
+				{ pr: 2, body_file: bodyPass },
+				{ pr: 3, body_file: bodyMissing },
+				{ pr: 4, body_file: bodyPass },
+			],
+			runPostMergeCloseoutFn: runPostMergeCloseout,
+			closeDuplicateRemediationIssuesFn: vi.fn().mockResolvedValue({ closed: [] }),
+			upsertCircuitBreakerIncidentFn: upsertCircuitBreakerIncident,
+		});
+
+		expect(runPostMergeCloseout).toHaveBeenCalledTimes(3);
+		expect(upsertCircuitBreakerIncident).not.toHaveBeenCalled();
+		expect(outcome.circuit_breaker_tripped).toBeNull();
+
+		fs.rmSync(dir, { recursive: true, force: true });
+	});
+
+	it('trips the batch circuit breaker after three identical runtime errors and suppresses fan-out', async () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-batch-circuit-breaker-'));
+		const bodyPaths = [];
+		for (let pr = 1; pr <= 5; pr += 1) {
+			const bodyPath = path.join(dir, `pr-${pr}.md`);
+			fs.writeFileSync(
+				bodyPath,
+				'- **Issue:** #1\n\n## CHANGE SUMMARY\nx\n\n## BUILD / TEST / VERIFICATION\nx\n\n## ACCEPTANCE CRITERIA\nx\n',
+			);
+			bodyPaths.push(bodyPath);
+		}
+
+		const runPostMergeCloseout = vi
+			.fn()
+			.mockRejectedValue(new Error(RUNTIME_STORM_MESSAGE));
+		const upsertCircuitBreakerIncident = vi.fn().mockResolvedValue({
+			action: 'created',
+			issue: '#9001',
+			dedupe_key: `batch_circuit_breaker:${RUNTIME_SIGNATURE}`,
+		});
+
+		const outcome = await runBatchPostMergeCloseout({
+			token: 'token',
+			repository: 'owner/repo',
+			manifestPath: path.join(dir, 'targets.json'),
+			targets: bodyPaths.map((bodyFile, index) => ({ pr: index + 1, body_file: bodyFile })),
+			runPostMergeCloseoutFn: runPostMergeCloseout,
+			closeDuplicateRemediationIssuesFn: vi.fn().mockResolvedValue({ closed: [] }),
+			upsertCircuitBreakerIncidentFn: upsertCircuitBreakerIncident,
+		});
+
+		expect(runPostMergeCloseout).toHaveBeenCalledTimes(3);
+		expect(upsertCircuitBreakerIncident).toHaveBeenCalledTimes(1);
+		expect(outcome.circuit_breaker_tripped).toMatchObject({
+			tripped: true,
+			signature: RUNTIME_SIGNATURE,
+			consecutive_count: 3,
+			incident_issue: '#9001',
+			suppressed_targets: ['4', '5'],
+		});
+		expect(outcome.results.filter((entry) => entry.phase === 'circuit_breaker')).toHaveLength(2);
+		expect(
+			buildBatchCloseoutReport({
+				results: outcome.results,
+				circuitBreakerTripped: outcome.circuit_breaker_tripped,
+			}).circuit_breaker_tripped?.tripped,
+		).toBe(true);
 	});
 });
