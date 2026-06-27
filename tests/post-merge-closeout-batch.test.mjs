@@ -21,10 +21,13 @@ import {
 	runBatchPostMergeCloseout,
 	shouldPruneBatchManifest,
 	buildBatchCloseoutReport,
+	trackAffectedRuntimePr,
 } from '../scripts/ci/run_batch_post_merge_closeout.mjs';
 import {
 	BatchCircuitBreakerState,
 	buildRuntimeFailureSignature,
+	findCircuitBreakerIncident,
+	formatAffectedPrs,
 	normalizeRuntimeErrorMessage,
 	shouldSuppressRemediationForCircuitBreaker,
 } from '../scripts/ci/post_merge_remediation_issue.mjs';
@@ -498,6 +501,111 @@ describe('post-merge closeout batch', () => {
 				error: new Error(RUNTIME_STORM_MESSAGE),
 			}),
 		).toBe(true);
+	});
+
+	it('matches circuit-breaker incidents by exact signature marker only', () => {
+		const otherSignature = buildRuntimeFailureSignature({
+			failureCode: 'closeout_runtime_error',
+			message: 'different runtime failure',
+		});
+		const issues = [
+			{
+				number: 9000,
+				state: 'open',
+				title: 'Post-merge closeout batch circuit breaker — closeout_runtime_error — abc123',
+				body: `<!-- batch_circuit_breaker:${otherSignature} -->`,
+			},
+		];
+
+		expect(findCircuitBreakerIncident(issues, RUNTIME_SIGNATURE)).toBeNull();
+		expect(findCircuitBreakerIncident(issues, otherSignature)?.number).toBe(9000);
+	});
+
+	it('formats nullable affected PR lists defensively', () => {
+		expect(formatAffectedPrs(null)).toBe('none recorded');
+		expect(formatAffectedPrs(['1', 2])).toBe('#1, #2');
+	});
+
+	it('tracks affected PRs only for the active runtime-failure streak', () => {
+		const batchCircuitBreaker = new BatchCircuitBreakerState(3);
+		const affectedRuntimePrs = [];
+		const otherSignature = buildRuntimeFailureSignature({
+			failureCode: 'closeout_runtime_error',
+			message: 'different runtime failure',
+		});
+
+		batchCircuitBreaker.record(RUNTIME_SIGNATURE);
+		trackAffectedRuntimePr({
+			batchCircuitBreaker,
+			affectedRuntimePrs,
+			prNumber: '1',
+			signature: RUNTIME_SIGNATURE,
+		});
+		trackAffectedRuntimePr({
+			batchCircuitBreaker,
+			affectedRuntimePrs,
+			prNumber: '2',
+			signature: RUNTIME_SIGNATURE,
+		});
+		expect(affectedRuntimePrs).toEqual(['1', '2']);
+
+		trackAffectedRuntimePr({
+			batchCircuitBreaker,
+			affectedRuntimePrs,
+			prNumber: '3',
+			signature: otherSignature,
+		});
+		expect(affectedRuntimePrs).toEqual(['3']);
+
+		batchCircuitBreaker.onSuccess();
+		affectedRuntimePrs.length = 0;
+		trackAffectedRuntimePr({
+			batchCircuitBreaker,
+			affectedRuntimePrs,
+			prNumber: '4',
+			signature: RUNTIME_SIGNATURE,
+		});
+		expect(affectedRuntimePrs).toEqual(['4']);
+	});
+
+	it('still trips the batch circuit breaker when incident upsert fails', async () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-batch-circuit-breaker-upsert-fail-'));
+		const bodyPaths = [];
+		for (let pr = 1; pr <= 4; pr += 1) {
+			const bodyPath = path.join(dir, `pr-${pr}.md`);
+			fs.writeFileSync(
+				bodyPath,
+				'- **Issue:** #1\n\n## CHANGE SUMMARY\nx\n\n## BUILD / TEST / VERIFICATION\nx\n\n## ACCEPTANCE CRITERIA\nx\n',
+			);
+			bodyPaths.push(bodyPath);
+		}
+
+		const runPostMergeCloseout = vi
+			.fn()
+			.mockRejectedValue(new Error(RUNTIME_STORM_MESSAGE));
+		const upsertCircuitBreakerIncident = vi
+			.fn()
+			.mockRejectedValue(new Error('GitHub API unavailable'));
+
+		const outcome = await runBatchPostMergeCloseout({
+			token: 'token',
+			repository: 'owner/repo',
+			manifestPath: path.join(dir, 'targets.json'),
+			targets: bodyPaths.map((bodyFile, index) => ({ pr: index + 1, body_file: bodyFile })),
+			runPostMergeCloseoutFn: runPostMergeCloseout,
+			closeDuplicateRemediationIssuesFn: vi.fn().mockResolvedValue({ closed: [] }),
+			upsertCircuitBreakerIncidentFn: upsertCircuitBreakerIncident,
+		});
+
+		expect(outcome.circuit_breaker_tripped).toMatchObject({
+			tripped: true,
+			signature: RUNTIME_SIGNATURE,
+			incident_action: 'failed',
+			suppressed_targets: ['4'],
+		});
+		expect(runPostMergeCloseout).toHaveBeenCalledTimes(3);
+
+		fs.rmSync(dir, { recursive: true, force: true });
 	});
 
 	it('trips the batch circuit breaker after three identical runtime errors and suppresses fan-out', async () => {

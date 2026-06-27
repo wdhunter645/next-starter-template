@@ -10,7 +10,7 @@ import { REMEDIATION_TITLE_PREFIX } from './post_merge_source_issue_closeout.mjs
 export const CLOSEOUT_RUNTIME_ERROR_CODE = 'closeout_runtime_error';
 export const BATCH_CIRCUIT_BREAKER_THRESHOLD = 3;
 export const BATCH_CIRCUIT_BREAKER_TITLE_PREFIX = 'Post-merge closeout batch circuit breaker';
-export const BATCH_CIRCUIT_BREAKER_MARKER_PREFIX = 'batch-circuit-breaker:';
+export const BATCH_CIRCUIT_BREAKER_MARKER_PREFIX = 'batch_circuit_breaker:';
 
 export function normalizeRuntimeErrorMessage(message = '') {
 	return String(message || '')
@@ -123,6 +123,11 @@ export class BatchCircuitBreakerState {
 	}
 }
 
+export function formatAffectedPrs(affectedPrs = []) {
+	const prs = Array.isArray(affectedPrs) ? affectedPrs : [];
+	return prs.length ? prs.map((pr) => `#${pr}`).join(', ') : 'none recorded';
+}
+
 export function circuitBreakerIncidentTitle({ signature, failureCode = CLOSEOUT_RUNTIME_ERROR_CODE } = {}) {
 	const shortHash = String(signature || '').split(':').slice(1).join(':') || 'unknown';
 	return `${BATCH_CIRCUIT_BREAKER_TITLE_PREFIX} — ${failureCode} — ${shortHash}`;
@@ -149,7 +154,7 @@ export function circuitBreakerIncidentBody({
 		`- Consecutive identical runtime errors: ${consecutiveCount}`,
 		`- Manifest path: ${manifestPath || 'not recorded'}`,
 		`- Workflow run: ${workflowRunUrl || (runId && repository ? `https://github.com/${repository}/actions/runs/${runId}` : 'not recorded')}`,
-		`- Affected PRs in batch: ${affectedPrs.length ? affectedPrs.map((pr) => `#${pr}`).join(', ') : 'none recorded'}`,
+		`- Affected PRs in batch: ${formatAffectedPrs(affectedPrs)}`,
 		'',
 		'## Normalized runtime error',
 		'',
@@ -172,10 +177,7 @@ export function findCircuitBreakerIncident(issues = [], signature) {
 		(issue) =>
 			!issue.pull_request
 			&& String(issue.state || 'open').toLowerCase() === 'open'
-			&& (
-				String(issue.body || '').includes(marker)
-				|| String(issue.title || '').startsWith(BATCH_CIRCUIT_BREAKER_TITLE_PREFIX)
-			),
+			&& String(issue.body || '').includes(marker),
 	) || null;
 }
 
@@ -227,7 +229,7 @@ export async function upsertCircuitBreakerIncident({
 					'Batch closeout circuit breaker observed another identical runtime failure burst.',
 					'',
 					`- Consecutive identical runtime errors: ${consecutiveCount}`,
-					`- Affected PRs in batch: ${affectedPrs.length ? affectedPrs.map((pr) => `#${pr}`).join(', ') : 'none recorded'}`,
+					`- Affected PRs in batch: ${formatAffectedPrs(affectedPrs)}`,
 					`- Manifest path: ${manifestPath || 'not recorded'}`,
 				].join('\n'),
 			},

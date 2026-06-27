@@ -11,6 +11,8 @@ import { pruneCloseoutManifestFromReport, isPruneEligibleReportStatus } from './
 import { isGitHubRateLimitError } from './github_issue_api.mjs';
 import {
 	BatchCircuitBreakerState,
+	batchCircuitBreakerDedupeKey,
+	buildRuntimeFailureSignature,
 	extractCloseoutRuntimeFailure,
 	runtimeFailureSignatureFromObservation,
 	upsertCircuitBreakerIncident,
@@ -151,6 +153,19 @@ export function buildCircuitBreakerSkippedResult({ prNumber, signature }) {
 	};
 }
 
+export function trackAffectedRuntimePr({
+	batchCircuitBreaker,
+	affectedRuntimePrs,
+	prNumber,
+	signature,
+}) {
+	if (!signature) return;
+	if (batchCircuitBreaker.signature && batchCircuitBreaker.signature !== signature) {
+		affectedRuntimePrs.length = 0;
+	}
+	affectedRuntimePrs.push(prNumber);
+}
+
 export async function maybeTripBatchCircuitBreaker({
 	batchCircuitBreaker,
 	token,
@@ -173,17 +188,30 @@ export async function maybeTripBatchCircuitBreaker({
 	if (!trip.tripped) return null;
 
 	const runtimeFailure = extractCloseoutRuntimeFailure(observation);
-	const incident = await upsertCircuitBreakerIncidentFn({
-		token,
-		repository,
-		signature,
-		failureCode: runtimeFailure?.failureCode,
-		message: runtimeFailure?.message,
-		manifestPath,
-		runId,
-		affectedPrs,
-		consecutiveCount: trip.count,
-	});
+	let incident = {
+		action: 'failed',
+		issue: null,
+		dedupe_key: batchCircuitBreakerDedupeKey(signature),
+	};
+	try {
+		incident = await upsertCircuitBreakerIncidentFn({
+			token,
+			repository,
+			signature,
+			failureCode: runtimeFailure?.failureCode,
+			message: runtimeFailure?.message,
+			manifestPath,
+			runId,
+			affectedPrs,
+			consecutiveCount: trip.count,
+		});
+	} catch (error) {
+		console.error('Circuit breaker incident upsert failed:', error);
+		incident = {
+			...incident,
+			error: error instanceof Error ? error.message : String(error),
+		};
+	}
 
 	return {
 		tripped: true,
@@ -234,7 +262,7 @@ export async function runBatchPostMergeCloseout({
 		const target = targets[index];
 		const prNumber = String(target.pr);
 
-		if (batchCircuitBreaker.tripped) {
+		if (circuitBreakerTripped?.tripped) {
 			results.push(buildCircuitBreakerSkippedResult({
 				prNumber,
 				signature: circuitBreakerTripped?.signature,
@@ -277,7 +305,6 @@ export async function runBatchPostMergeCloseout({
 				runId,
 				skipBodyApply: target.skip_body_apply === true,
 				workflowRunScope: WORKFLOW_RUN_SCOPE_MERGE_ONLY,
-				suppressRemediationIssues: batchCircuitBreaker.tripped,
 				batchCircuitBreaker,
 			});
 			const detail = readPostMergeResultDetail();
@@ -291,10 +318,17 @@ export async function runBatchPostMergeCloseout({
 
 			if (result.status === 'pass') {
 				batchCircuitBreaker.onSuccess();
+				affectedRuntimePrs.length = 0;
 			} else {
 				const runtimeFailure = extractCloseoutRuntimeFailure({ result, detail });
 				if (runtimeFailure) {
-					affectedRuntimePrs.push(prNumber);
+					const signature = buildRuntimeFailureSignature(runtimeFailure);
+					trackAffectedRuntimePr({
+						batchCircuitBreaker,
+						affectedRuntimePrs,
+						prNumber,
+						signature,
+					});
 					const tripReport = await maybeTripBatchCircuitBreaker({
 						batchCircuitBreaker,
 						token,
@@ -348,7 +382,16 @@ export async function runBatchPostMergeCloseout({
 				break;
 			}
 
-			affectedRuntimePrs.push(prNumber);
+			const runtimeFailure = extractCloseoutRuntimeFailure({ error });
+			if (runtimeFailure) {
+				const signature = buildRuntimeFailureSignature(runtimeFailure);
+				trackAffectedRuntimePr({
+					batchCircuitBreaker,
+					affectedRuntimePrs,
+					prNumber,
+					signature,
+				});
+			}
 			const tripReport = await maybeTripBatchCircuitBreaker({
 				batchCircuitBreaker,
 				token,
