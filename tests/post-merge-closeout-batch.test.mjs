@@ -608,6 +608,51 @@ describe('post-merge closeout batch', () => {
 		fs.rmSync(dir, { recursive: true, force: true });
 	});
 
+	it('resets the runtime streak after a non-runtime closeout failure', async () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-batch-non-runtime-reset-'));
+		const bodyPaths = [];
+		for (let pr = 1; pr <= 4; pr += 1) {
+			const bodyPath = path.join(dir, `pr-${pr}.md`);
+			fs.writeFileSync(
+				bodyPath,
+				'- **Issue:** #1\n\n## CHANGE SUMMARY\nx\n\n## BUILD / TEST / VERIFICATION\nx\n\n## ACCEPTANCE CRITERIA\nx\n',
+			);
+			bodyPaths.push(bodyPath);
+		}
+
+		const runPostMergeCloseout = vi
+			.fn()
+			.mockRejectedValueOnce(new Error(RUNTIME_STORM_MESSAGE))
+			.mockRejectedValueOnce(new Error(RUNTIME_STORM_MESSAGE))
+			.mockResolvedValueOnce({
+				status: 'fail',
+				sync_action: 'post_merge_failure',
+				metadata_failures: [{ code: 'workflow_failure', message: 'quality failed' }],
+			})
+			.mockRejectedValueOnce(new Error(RUNTIME_STORM_MESSAGE));
+		const upsertCircuitBreakerIncident = vi.fn().mockResolvedValue({
+			action: 'created',
+			issue: '#9001',
+			dedupe_key: `batch_circuit_breaker:${RUNTIME_SIGNATURE}`,
+		});
+
+		const outcome = await runBatchPostMergeCloseout({
+			token: 'token',
+			repository: 'owner/repo',
+			manifestPath: path.join(dir, 'targets.json'),
+			targets: bodyPaths.map((bodyFile, index) => ({ pr: index + 1, body_file: bodyFile })),
+			runPostMergeCloseoutFn: runPostMergeCloseout,
+			closeDuplicateRemediationIssuesFn: vi.fn().mockResolvedValue({ closed: [] }),
+			upsertCircuitBreakerIncidentFn: upsertCircuitBreakerIncident,
+		});
+
+		expect(runPostMergeCloseout).toHaveBeenCalledTimes(4);
+		expect(upsertCircuitBreakerIncident).not.toHaveBeenCalled();
+		expect(outcome.circuit_breaker_tripped).toBeNull();
+
+		fs.rmSync(dir, { recursive: true, force: true });
+	});
+
 	it('trips the batch circuit breaker after three identical runtime errors and suppresses fan-out', async () => {
 		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-batch-circuit-breaker-'));
 		const bodyPaths = [];

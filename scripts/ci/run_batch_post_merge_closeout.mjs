@@ -351,6 +351,9 @@ export async function runBatchPostMergeCloseout({
 						}
 						break;
 					}
+				} else {
+					batchCircuitBreaker.onSuccess();
+					affectedRuntimePrs.length = 0;
 				}
 			}
 		} catch (error) {
