@@ -9,6 +9,7 @@ import { closeDuplicateRemediationIssues } from './close_duplicate_remediation_i
 import { closeRemediationIssuesForPr } from './close_remediation_issues_for_pr.mjs';
 import {
 	shouldUpsertRemediationIssue,
+	shouldSuppressRemediationForCircuitBreaker,
 	upsertRemediationIssue,
 } from './post_merge_remediation_issue.mjs';
 import { runValidator, WORKFLOW_RUN_SCOPE_MERGE_ONLY } from './post_merge_validator.mjs';
@@ -231,7 +232,28 @@ export async function verifyTerminalLabelIntegrityAfterCloseout({
 	};
 }
 
-export async function ensureCloseoutRemediationEvidence({ token, repository, result }) {
+export async function ensureCloseoutRemediationEvidence({
+	token,
+	repository,
+	result,
+	suppressRemediationIssues = false,
+	batchCircuitBreaker = null,
+	error = null,
+}) {
+	if (
+		shouldSuppressRemediationForCircuitBreaker({
+			suppressRemediationIssues,
+			batchCircuitBreaker,
+			result,
+			error,
+		})
+	) {
+		return {
+			action: 'skipped',
+			issue: null,
+			reason: batchCircuitBreaker?.tripped ? 'circuit-breaker-open' : 'circuit-breaker-threshold',
+		};
+	}
 	if (!shouldUpsertRemediationIssue(result)) {
 		return { action: 'skipped', issue: null, reason: 'no-remediation-required' };
 	}
@@ -250,6 +272,8 @@ export async function runPostMergeCloseout({
 	eventName = 'workflow_dispatch',
 	eventPrMerged = '',
 	eventPrBaseRef = '',
+	suppressRemediationIssues = false,
+	batchCircuitBreaker = null,
 } = {}) {
 	const pr = await fetchMergedPr({ token, repository, prNumber });
 	if (!pr.merged_at) {
@@ -378,7 +402,13 @@ export async function runPostMergeCloseout({
 		}
 	}
 
-	await ensureCloseoutRemediationEvidence({ token, repository, result });
+	await ensureCloseoutRemediationEvidence({
+		token,
+		repository,
+		result,
+		suppressRemediationIssues,
+		batchCircuitBreaker,
+	});
 
 	return result;
 }
@@ -425,7 +455,12 @@ export async function main() {
 			message: error instanceof Error ? error.message : String(error),
 		});
 		await writePostMergeResultArtifactsAsync(result);
-		await ensureCloseoutRemediationEvidence({ token, repository, result });
+		await ensureCloseoutRemediationEvidence({
+			token,
+			repository,
+			result,
+			error,
+		});
 		writeCloseoutOutput('status', result.status);
 		writeCloseoutOutput('pr_number', result.pr || context.prNumber || '');
 		writeCloseoutOutput('sync_action', result.sync_action || 'post_merge_failure');

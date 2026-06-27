@@ -10,6 +10,12 @@ import { WORKFLOW_RUN_SCOPE_MERGE_ONLY } from './post_merge_validator.mjs';
 import { pruneCloseoutManifestFromReport, isPruneEligibleReportStatus } from './prune_closeout_manifest.mjs';
 import { isGitHubRateLimitError } from './github_issue_api.mjs';
 import {
+	BatchCircuitBreakerState,
+	extractCloseoutRuntimeFailure,
+	runtimeFailureSignatureFromObservation,
+	upsertCircuitBreakerIncident,
+} from './post_merge_remediation_issue.mjs';
+import {
 	appendCloseoutRerunTargets,
 	toRerunTargetFromBatchTarget,
 } from './append_closeout_rerun_targets.mjs';
@@ -104,6 +110,7 @@ export function buildBatchCloseoutReport({
 	duplicateClose = {},
 	manifestPrune = null,
 	rerunAppend = null,
+	circuitBreakerTripped = null,
 	dryRun = false,
 	error = null,
 	failedPhase = null,
@@ -111,6 +118,7 @@ export function buildBatchCloseoutReport({
 	const failed = results.filter((entry) => entry.status === 'fail' || entry.status === 'error');
 	let status = 'success';
 	if (error) status = 'failure';
+	else if (circuitBreakerTripped?.tripped) status = 'partial_failure';
 	else if (failed.length > 0) status = failed.length === results.length ? 'failure' : 'partial_failure';
 
 	return {
@@ -130,6 +138,63 @@ export function buildBatchCloseoutReport({
 		duplicateClose,
 		manifestPrune,
 		rerunAppend,
+		circuit_breaker_tripped: circuitBreakerTripped,
+	};
+}
+
+export function buildCircuitBreakerSkippedResult({ prNumber, signature }) {
+	return {
+		pr: String(prNumber),
+		status: 'skipped',
+		phase: 'circuit_breaker',
+		failure_reason: signature ? `circuit_breaker_open:${signature}` : 'circuit_breaker_open',
+	};
+}
+
+export async function maybeTripBatchCircuitBreaker({
+	batchCircuitBreaker,
+	token,
+	repository,
+	manifestPath,
+	runId,
+	affectedPrs = [],
+	observation = {},
+	upsertCircuitBreakerIncidentFn = upsertCircuitBreakerIncident,
+} = {}) {
+	const signature = runtimeFailureSignatureFromObservation(observation);
+	if (!signature) {
+		if (observation.result?.status === 'pass') {
+			batchCircuitBreaker.onSuccess();
+		}
+		return null;
+	}
+
+	const trip = batchCircuitBreaker.record(signature);
+	if (!trip.tripped) return null;
+
+	const runtimeFailure = extractCloseoutRuntimeFailure(observation);
+	const incident = await upsertCircuitBreakerIncidentFn({
+		token,
+		repository,
+		signature,
+		failureCode: runtimeFailure?.failureCode,
+		message: runtimeFailure?.message,
+		manifestPath,
+		runId,
+		affectedPrs,
+		consecutiveCount: trip.count,
+	});
+
+	return {
+		tripped: true,
+		signature,
+		consecutive_count: trip.count,
+		failure_code: runtimeFailure?.failureCode,
+		message: runtimeFailure?.message,
+		incident_issue: incident.issue,
+		incident_action: incident.action,
+		dedupe_key: incident.dedupe_key,
+		suppressed_targets: [],
 	};
 }
 
@@ -157,13 +222,27 @@ export async function runBatchPostMergeCloseout({
 	closeDuplicateRemediationIssuesFn = closeDuplicateRemediationIssues,
 	pruneCloseoutManifestFromReportFn = pruneCloseoutManifestFromReport,
 	appendCloseoutRerunTargetsFn = appendCloseoutRerunTargets,
+	upsertCircuitBreakerIncidentFn = upsertCircuitBreakerIncident,
 }) {
 	const results = [];
 	let rerunAppend = null;
+	const batchCircuitBreaker = new BatchCircuitBreakerState();
+	let circuitBreakerTripped = null;
+	const affectedRuntimePrs = [];
 
 	for (let index = 0; index < targets.length; index += 1) {
 		const target = targets[index];
 		const prNumber = String(target.pr);
+
+		if (batchCircuitBreaker.tripped) {
+			results.push(buildCircuitBreakerSkippedResult({
+				prNumber,
+				signature: circuitBreakerTripped?.signature,
+			}));
+			circuitBreakerTripped.suppressed_targets.push(prNumber);
+			continue;
+		}
+
 		const bodyFile = path.resolve(target.body_file);
 
 		if (!fs.existsSync(bodyFile)) {
@@ -198,25 +277,56 @@ export async function runBatchPostMergeCloseout({
 				runId,
 				skipBodyApply: target.skip_body_apply === true,
 				workflowRunScope: WORKFLOW_RUN_SCOPE_MERGE_ONLY,
+				suppressRemediationIssues: batchCircuitBreaker.tripped,
+				batchCircuitBreaker,
 			});
 			const detail = readPostMergeResultDetail();
-			results.push(
-				summarizeTargetResult({
-					prNumber,
-					result,
-					detail,
-					phase: 'closeout',
-				}),
-			);
+			const summarized = summarizeTargetResult({
+				prNumber,
+				result,
+				detail,
+				phase: 'closeout',
+			});
+			results.push(summarized);
+
+			if (result.status === 'pass') {
+				batchCircuitBreaker.onSuccess();
+			} else {
+				const runtimeFailure = extractCloseoutRuntimeFailure({ result, detail });
+				if (runtimeFailure) {
+					affectedRuntimePrs.push(prNumber);
+					const tripReport = await maybeTripBatchCircuitBreaker({
+						batchCircuitBreaker,
+						token,
+						repository,
+						manifestPath,
+						runId,
+						affectedPrs: affectedRuntimePrs,
+						observation: { result, detail },
+						upsertCircuitBreakerIncidentFn,
+					});
+					if (tripReport) {
+						circuitBreakerTripped = tripReport;
+						for (let skipIndex = index + 1; skipIndex < targets.length; skipIndex += 1) {
+							const skippedPr = String(targets[skipIndex].pr);
+							results.push(buildCircuitBreakerSkippedResult({
+								prNumber: skippedPr,
+								signature: tripReport.signature,
+							}));
+							circuitBreakerTripped.suppressed_targets.push(skippedPr);
+						}
+						break;
+					}
+				}
+			}
 		} catch (error) {
 			console.error(`Post-merge closeout failed for PR #${prNumber}:`, error);
-			results.push(
-				summarizeTargetResult({
-					prNumber,
-					phase: isGitHubRateLimitError(error) ? 'rate_limit' : 'closeout',
-					error,
-				}),
-			);
+			const summarized = summarizeTargetResult({
+				prNumber,
+				phase: isGitHubRateLimitError(error) ? 'rate_limit' : 'closeout',
+				error,
+			});
+			results.push(summarized);
 
 			if (isGitHubRateLimitError(error)) {
 				const remainingTargets = targets.slice(index).map((entry) =>
@@ -237,6 +347,30 @@ export async function runBatchPostMergeCloseout({
 				}
 				break;
 			}
+
+			affectedRuntimePrs.push(prNumber);
+			const tripReport = await maybeTripBatchCircuitBreaker({
+				batchCircuitBreaker,
+				token,
+				repository,
+				manifestPath,
+				runId,
+				affectedPrs: affectedRuntimePrs,
+				observation: { error },
+				upsertCircuitBreakerIncidentFn,
+			});
+			if (tripReport) {
+				circuitBreakerTripped = tripReport;
+				for (let skipIndex = index + 1; skipIndex < targets.length; skipIndex += 1) {
+					const skippedPr = String(targets[skipIndex].pr);
+					results.push(buildCircuitBreakerSkippedResult({
+						prNumber: skippedPr,
+						signature: tripReport.signature,
+					}));
+					circuitBreakerTripped.suppressed_targets.push(skippedPr);
+				}
+				break;
+			}
 		}
 	}
 
@@ -251,11 +385,16 @@ export async function runBatchPostMergeCloseout({
 		results,
 		duplicateClose,
 		rerunAppend,
+		circuitBreakerTripped,
 		dryRun,
 	});
 
 	let manifestPrune = null;
-	if (shouldPruneBatchManifest(manifestPath, dryRun) && isPruneEligibleReportStatus(report.status)) {
+	if (
+		shouldPruneBatchManifest(manifestPath, dryRun)
+		&& isPruneEligibleReportStatus(report.status)
+		&& !circuitBreakerTripped?.tripped
+	) {
 		manifestPrune = pruneCloseoutManifestFromReportFn({ manifestPath, report, dryRun: false });
 		report = { ...report, manifestPrune };
 	}

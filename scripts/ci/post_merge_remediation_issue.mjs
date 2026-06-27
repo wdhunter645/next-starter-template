@@ -1,10 +1,262 @@
 #!/usr/bin/env node
 
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { parseRemediationIssue } from './close_duplicate_remediation_issues.mjs';
 import { githubRepoRequest } from './github_issue_api.mjs';
 import { REMEDIATION_TITLE_PREFIX } from './post_merge_source_issue_closeout.mjs';
+
+export const CLOSEOUT_RUNTIME_ERROR_CODE = 'closeout_runtime_error';
+export const BATCH_CIRCUIT_BREAKER_THRESHOLD = 3;
+export const BATCH_CIRCUIT_BREAKER_TITLE_PREFIX = 'Post-merge closeout batch circuit breaker';
+export const BATCH_CIRCUIT_BREAKER_MARKER_PREFIX = 'batch-circuit-breaker:';
+
+export function normalizeRuntimeErrorMessage(message = '') {
+	return String(message || '')
+		.trim()
+		.toLowerCase()
+		.replace(/\s+/g, ' ');
+}
+
+export function hashNormalizedRuntimeErrorMessage(message = '') {
+	return crypto
+		.createHash('sha256')
+		.update(normalizeRuntimeErrorMessage(message))
+		.digest('hex')
+		.slice(0, 12);
+}
+
+export function buildRuntimeFailureSignature({ failureCode = CLOSEOUT_RUNTIME_ERROR_CODE, message = '' } = {}) {
+	const code = String(failureCode || CLOSEOUT_RUNTIME_ERROR_CODE).trim() || CLOSEOUT_RUNTIME_ERROR_CODE;
+	return `${code}:${hashNormalizedRuntimeErrorMessage(message)}`;
+}
+
+export function batchCircuitBreakerDedupeKey(signature) {
+	return `${BATCH_CIRCUIT_BREAKER_MARKER_PREFIX}${signature}`;
+}
+
+export function batchCircuitBreakerMarker(signature) {
+	return `<!-- ${batchCircuitBreakerDedupeKey(signature)} -->`;
+}
+
+export function extractCloseoutRuntimeFailure({ error = null, result = null, detail = null } = {}) {
+	if (error) {
+		return {
+			failureCode: CLOSEOUT_RUNTIME_ERROR_CODE,
+			message: error instanceof Error ? error.message : String(error),
+		};
+	}
+
+	const metadataFailures = [
+		...(result?.metadata_failures || []),
+		...(detail?.metadata_failures || []),
+	];
+	const runtimeFailure = metadataFailures.find(
+		(failure) => failure?.code === CLOSEOUT_RUNTIME_ERROR_CODE,
+	);
+	if (runtimeFailure) {
+		return {
+			failureCode: CLOSEOUT_RUNTIME_ERROR_CODE,
+			message: runtimeFailure.message || 'Post-merge closeout failed.',
+		};
+	}
+
+	if (result?.status === 'error' && result?.failure_reason) {
+		return {
+			failureCode: CLOSEOUT_RUNTIME_ERROR_CODE,
+			message: result.failure_reason,
+		};
+	}
+
+	return null;
+}
+
+export function runtimeFailureSignatureFromObservation(observation = {}) {
+	const extracted = extractCloseoutRuntimeFailure(observation);
+	if (!extracted) return null;
+	return buildRuntimeFailureSignature(extracted);
+}
+
+export class BatchCircuitBreakerState {
+	constructor(threshold = BATCH_CIRCUIT_BREAKER_THRESHOLD) {
+		this.threshold = threshold;
+		this.signature = null;
+		this.count = 0;
+		this.tripped = false;
+		this.tripDetails = null;
+	}
+
+	reset() {
+		this.signature = null;
+		this.count = 0;
+	}
+
+	previewSuppress(signature) {
+		if (!signature || this.tripped) return Boolean(this.tripped);
+		const nextCount = signature === this.signature ? this.count + 1 : 1;
+		return nextCount >= this.threshold;
+	}
+
+	record(signature) {
+		if (!signature) return { tripped: false, count: this.count };
+		if (signature === this.signature) {
+			this.count += 1;
+		} else {
+			this.signature = signature;
+			this.count = 1;
+		}
+		if (this.count >= this.threshold) {
+			this.tripped = true;
+			this.tripDetails = {
+				signature,
+				consecutive_count: this.count,
+				failure_code: signature.split(':')[0] || CLOSEOUT_RUNTIME_ERROR_CODE,
+			};
+			return { tripped: true, count: this.count };
+		}
+		return { tripped: false, count: this.count };
+	}
+
+	onSuccess() {
+		this.reset();
+	}
+}
+
+export function circuitBreakerIncidentTitle({ signature, failureCode = CLOSEOUT_RUNTIME_ERROR_CODE } = {}) {
+	const shortHash = String(signature || '').split(':').slice(1).join(':') || 'unknown';
+	return `${BATCH_CIRCUIT_BREAKER_TITLE_PREFIX} — ${failureCode} — ${shortHash}`;
+}
+
+export function circuitBreakerIncidentBody({
+	signature,
+	failureCode = CLOSEOUT_RUNTIME_ERROR_CODE,
+	message = '',
+	manifestPath = '',
+	runId = '',
+	repository = '',
+	affectedPrs = [],
+	consecutiveCount = BATCH_CIRCUIT_BREAKER_THRESHOLD,
+	workflowRunUrl = '',
+} = {}) {
+	const lines = [
+		batchCircuitBreakerMarker(signature),
+		'Post-merge batch closeout circuit breaker tripped after repeated identical runtime failures.',
+		'',
+		`- Dedupe key: \`${batchCircuitBreakerDedupeKey(signature)}\``,
+		`- Failure signature: \`${signature}\``,
+		`- Failure code: ${failureCode}`,
+		`- Consecutive identical runtime errors: ${consecutiveCount}`,
+		`- Manifest path: ${manifestPath || 'not recorded'}`,
+		`- Workflow run: ${workflowRunUrl || (runId && repository ? `https://github.com/${repository}/actions/runs/${runId}` : 'not recorded')}`,
+		`- Affected PRs in batch: ${affectedPrs.length ? affectedPrs.map((pr) => `#${pr}`).join(', ') : 'none recorded'}`,
+		'',
+		'## Normalized runtime error',
+		'',
+		'```text',
+		normalizeRuntimeErrorMessage(message) || 'not recorded',
+		'```',
+		'',
+		'## Operator action',
+		'- Stop batch closeout replay until the shared runtime defect is fixed.',
+		'- Per-target post-merge exception issues are suppressed while this circuit is open.',
+		'- Resolve the root cause, then re-dispatch path-scoped manifests in small batches.',
+	];
+
+	return `${lines.join('\n')}\n`;
+}
+
+export function findCircuitBreakerIncident(issues = [], signature) {
+	const marker = batchCircuitBreakerMarker(signature);
+	return (Array.isArray(issues) ? issues : []).find(
+		(issue) =>
+			!issue.pull_request
+			&& String(issue.state || 'open').toLowerCase() === 'open'
+			&& (
+				String(issue.body || '').includes(marker)
+				|| String(issue.title || '').startsWith(BATCH_CIRCUIT_BREAKER_TITLE_PREFIX)
+			),
+	) || null;
+}
+
+export async function upsertCircuitBreakerIncident({
+	token,
+	repository,
+	signature,
+	failureCode = CLOSEOUT_RUNTIME_ERROR_CODE,
+	message = '',
+	manifestPath = '',
+	runId = '',
+	affectedPrs = [],
+	consecutiveCount = BATCH_CIRCUIT_BREAKER_THRESHOLD,
+	listOpenIssuesFn = paginateOpenIssues,
+	requestFn = request,
+} = {}) {
+	const title = circuitBreakerIncidentTitle({ signature, failureCode });
+	const body = circuitBreakerIncidentBody({
+		signature,
+		failureCode,
+		message,
+		manifestPath,
+		runId,
+		repository,
+		affectedPrs,
+		consecutiveCount,
+	});
+	const search = await listOpenIssuesFn({ token, repository });
+	const existing = findCircuitBreakerIncident(search, signature)
+		|| (Array.isArray(search)
+			? search.find((issue) => issue.title === title && !issue.pull_request)
+			: undefined);
+
+	if (existing) {
+		await requestFn({
+			token,
+			repository,
+			path: `/issues/${existing.number}`,
+			method: 'PATCH',
+			body: { body },
+		});
+		await requestFn({
+			token,
+			repository,
+			path: `/issues/${existing.number}/comments`,
+			method: 'POST',
+			body: {
+				body: [
+					'Batch closeout circuit breaker observed another identical runtime failure burst.',
+					'',
+					`- Consecutive identical runtime errors: ${consecutiveCount}`,
+					`- Affected PRs in batch: ${affectedPrs.length ? affectedPrs.map((pr) => `#${pr}`).join(', ') : 'none recorded'}`,
+					`- Manifest path: ${manifestPath || 'not recorded'}`,
+				].join('\n'),
+			},
+		});
+		return {
+			action: 'updated',
+			issue: existing.html_url || `#${existing.number}`,
+			dedupe_key: batchCircuitBreakerDedupeKey(signature),
+		};
+	}
+
+	const created = await requestFn({
+		token,
+		repository,
+		path: '/issues',
+		method: 'POST',
+		body: {
+			title,
+			body,
+			labels: ['post-merge-failure', 'infra'],
+		},
+	});
+
+	return {
+		action: 'created',
+		issue: created.html_url || `#${created.number}`,
+		dedupe_key: batchCircuitBreakerDedupeKey(signature),
+	};
+}
 
 export function blockingCloseoutFailures(result = {}) {
 	const blockingMetadata = (result.metadata_failures || []).filter((failure) => failure?.severity !== 'advisory');
@@ -189,6 +441,19 @@ export function findCanonicalRemediationIssue(result = {}, openIssues = []) {
 			const parsed = parseRemediationIssue(issue);
 			return parsed.group_key === candidate.group_key;
 		}) || null;
+}
+
+export function shouldSuppressRemediationForCircuitBreaker({
+	suppressRemediationIssues = false,
+	batchCircuitBreaker = null,
+	result = null,
+	error = null,
+} = {}) {
+	if (suppressRemediationIssues) return true;
+	if (!batchCircuitBreaker) return false;
+	const signature = runtimeFailureSignatureFromObservation({ result, error });
+	if (!signature) return false;
+	return batchCircuitBreaker.previewSuppress(signature);
 }
 
 export async function upsertRemediationIssue({ token, repository, result }) {
