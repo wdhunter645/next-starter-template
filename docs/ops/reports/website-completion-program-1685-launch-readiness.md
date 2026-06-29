@@ -46,7 +46,7 @@ This report covers Program #1685 structural baseline verification only. It does 
 | `npm run launch-readiness:unit` | pass | 5 files, 47 tests |
 | `npm run assess:ci` | pass | verified on PR head `f05c1ea` with assess harness alias fix |
 
-CI on `main` after merge: `gate-quality.yml` success on merge SHA `5b72198`.
+CI on `main` after merge: `gate-quality.yml` success on merge SHA `5b7219828aa70098c7ef323895c878dd9d0cec52`.
 
 ## Structural scope completion
 
