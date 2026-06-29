@@ -5,8 +5,8 @@ Authority Level: Operational
 Owns: Operator procedure for OPS — Post-Merge Self-Healing workflow dispatch, artifact review, and Cursor escalation handling
 Does Not Own: Classifier contract, detector implementation, auto-fix execution code, escalation script implementation, merge approval
 Canonical Reference: /docs/reference/ci/post-merge-self-healing-classification-contract.md
-Related issues: #1847, #1853, #1906, #1914, #1921
-Last Reviewed: 2026-06-22
+Related issues: #1847, #1853, #1906, #1914, #1921, #1963
+Last Reviewed: 2026-06-29
 ---
 
 # Post-Merge Self-Healing Operator Runbook
@@ -221,6 +221,88 @@ When Cursor receives a generated self-healing escalation issue:
 
 Operator-authorization findings require Bill/Atlas approval before Cursor
 implements any issue or queue mutation.
+
+## Post-Merge PR Body Closeout batch workflow (Program #1963)
+
+Program **#1963** hardened `Post-Merge PR Body Closeout`
+(`.github/workflows/post-merge-pr-body-closeout.yml`) for operator replay,
+push-triggered backfill, and manifest hygiene. Self-healing still runs after
+closeout artifacts land; this section documents the closeout batch layer only.
+
+### Path-scoped manifest replay on push
+
+Push triggers are limited to `scripts/ci/post-merge-closeout/targets-active.json`
+and active manifest paths listed in the workflow `paths` filter.
+
+| Push change | Replay behavior |
+|---|---|
+| `targets-active.json` only | Full active manifest set from registry |
+| One or more listed manifest files | Only manifests whose paths changed (`resolve_closeout_manifests_from_push.mjs`) |
+| Registry plus manifest files | Full active set (registry change wins) |
+
+Completed Program #1923 wave manifests remain in-repo for manual
+`workflow_dispatch` but are excluded from automatic push replay.
+
+### Active manifest registry
+
+Automatic replay reads `scripts/ci/post-merge-closeout/targets-active.json`
+through `run_post_merge_closeout_all_manifests.mjs`. Archived wave manifests
+are documented in
+`docs/ops/trackers/PROGRAM-POST-MERGE-CLOSEOUT-AUTOMATION-IMPLEMENTATION-QUEUE.md`.
+
+### Rate-limit rerun queue
+
+When batch closeout hits GitHub App installation rate limits, targets are
+appended to `scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json`.
+The aggregate job persists the queue and may commit manifest updates with
+`[skip ci]`. Resumable `partial_failure` (rate-limit only, rerun persisted)
+exits workflow success so the next push or dispatch continues the tail.
+
+### Per-target manifest prune on partial_failure
+
+`prune_closeout_manifest.mjs` removes only targets that **passed** closeout.
+Failed or queued targets remain on the manifest for rerun. Operators should
+inspect `manifestPrune` in `post-merge-batch-closeout.json` after
+`partial_failure` runs.
+
+### Matrix sharding and aggregate partial_failure
+
+Push and `run_all_pending` dispatch use matrix mode:
+
+1. `resolve` — path-scoped or full active manifest list
+2. `closeout-shard` — one manifest per shard (`fail-fast: false`)
+3. `aggregate-closeout` — merge shard reports, persist rerun queue, upload batch artifact
+
+Manual `workflow_dispatch` with `run_batch` or single-PR inputs uses `closeout-legacy`
+(`mode != matrix`) instead of the shard/aggregate path.
+
+Aggregate status uses report-level `partial_failure` and
+`resolveCloseoutWorkflowExitCode` so rate-limit tails do not require manual
+workflow failure when the rerun queue is durable.
+
+### Backlog metrics and failure taxonomy
+
+After aggregate or single-manifest batch closeout, the workflow runs
+`scripts/ci/emit_closeout_backlog_metrics.mjs`. It writes GitHub Actions step
+summary with authoritative open/closed `ops-pr-escalation` counts (GraphQL
+`totalCount`) and rolls up `summary.by_code` from
+`post-merge-batch-closeout.json`.
+
+Use step summary counts instead of paginated `gh issue list` when auditing
+ops escalation backlog size.
+
+### Operator inspection checklist
+
+1. Download `post-merge-batch-closeout-report` when batch closeout runs.
+2. Read `status`, `summary.by_code`, and per-target `results`.
+3. Confirm `targets-ci-pending-rerun.json` only changed when rate limits queued reruns.
+4. Read workflow step summary for GraphQL `ops-pr-escalation` counts.
+5. Re-dispatch `run_all_pending` or wait for the next push if `partial_failure`
+   is resumable and targets remain queued.
+
+Remediation PRs that fix closeout accounting must still carry full PR-body
+reviewer dispositions (`review-comment:<id>`) or closeout will open nested
+exception issues.
 
 ## Dry-run mode
 
