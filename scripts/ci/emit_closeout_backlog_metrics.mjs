@@ -48,10 +48,10 @@ export async function fetchOpsEscalationIssueCounts({
 	const query = `
 		query($owner: String!, $name: String!) {
 			repository(owner: $owner, name: $name) {
-				open: issues(states: OPEN, labels: ["${OPS_ESCALATION_LABEL}"], first: 0) {
+				open: issues(states: OPEN, labels: ["${OPS_ESCALATION_LABEL}"], first: 1) {
 					totalCount
 				}
-				closed: issues(states: CLOSED, labels: ["${OPS_ESCALATION_LABEL}"], first: 0) {
+				closed: issues(states: CLOSED, labels: ["${OPS_ESCALATION_LABEL}"], first: 1) {
 					totalCount
 				}
 			}
@@ -68,10 +68,17 @@ export async function fetchOpsEscalationIssueCounts({
 		body: JSON.stringify({ query, variables: { owner, name } }),
 	});
 
-	const payload = await response.json();
 	if (!response.ok) {
-		throw new Error(`GraphQL request failed: ${response.status} ${JSON.stringify(payload)}`);
+		let text = '';
+		try {
+			text = await response.text();
+		} catch {
+			// ignore secondary read failures
+		}
+		throw new Error(`GraphQL request failed: ${response.status} ${text}`);
 	}
+
+	const payload = await response.json();
 	if (payload.errors?.length) {
 		throw new Error(payload.errors.map((error) => error.message).join('; '));
 	}

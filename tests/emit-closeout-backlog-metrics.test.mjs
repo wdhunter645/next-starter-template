@@ -103,6 +103,20 @@ describe('emit_closeout_backlog_metrics', () => {
 
 		fs.rmSync(dir, { recursive: true, force: true });
 	});
+
+	it('surfaces HTTP failures before parsing GraphQL JSON', async () => {
+		await expect(
+			fetchOpsEscalationIssueCounts({
+				token: 'token',
+				repository: 'owner/repo',
+				fetchFn: async () => ({
+					ok: false,
+					status: 502,
+					text: async () => 'Bad Gateway',
+				}),
+			}),
+		).rejects.toThrow('GraphQL request failed: 502 Bad Gateway');
+	});
 });
 
 describe('batch failure code rollup', () => {

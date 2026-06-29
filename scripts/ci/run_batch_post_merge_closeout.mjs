@@ -101,12 +101,12 @@ export function rollupFailureCodesByCode(results = []) {
 			...(entry.reviewer_findings || []),
 			...(entry.reviewer_disposition_failures || []),
 			...(entry.workflow_failures || []).map((failure) => ({
-				code: failure.code || failure.workflow || 'workflow_failure',
+				code: failure?.code || failure?.workflow || 'workflow_failure',
 			})),
 		];
 
 		if (failureBuckets.length > 0) {
-			for (const failure of failureBuckets) bump(failure.code);
+			for (const failure of failureBuckets) bump(failure?.code);
 			continue;
 		}
 

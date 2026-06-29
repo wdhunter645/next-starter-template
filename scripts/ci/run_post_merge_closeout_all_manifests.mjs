@@ -45,8 +45,9 @@ export const DEFAULT_MANIFESTS = loadActiveManifestRegistry().manifests;
 export function mergeFailureCodeRollups(reports = []) {
 	const byCode = {};
 	for (const report of reports) {
+		if (!report) continue;
 		const rollup = report.summary?.by_code || rollupFailureCodesByCode(report.results || []);
-		for (const [code, count] of Object.entries(rollup)) {
+		for (const [code, count] of Object.entries(rollup || {})) {
 			byCode[code] = (byCode[code] || 0) + count;
 		}
 	}
