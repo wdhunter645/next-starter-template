@@ -11,7 +11,7 @@ Execution Mode: cursor-after-launch-authorization
 Source Issue: 2040
 Related Program Issue: 2040
 Canonical Reference: /docs/ops/pmo/website-automatic-content-publication-capability.md
-Related Issues: #1738, #2039, #2040, #2049, #2050, #2051, #2052, #2053, #2054, #2055, #2056
+Related Issues: #1738, #2039, #2040, #2043, #2049, #2050, #2051, #2052, #2053, #2054, #2055, #2056
 Last Reviewed: 2026-06-29
 ---
 
@@ -40,6 +40,28 @@ This plan covers:
 
 This plan does not authorize this documentation PR to change application code, workflows, migrations, route files, package files, issue labels, issue states, or implementation child issues.
 
+## Current known truth
+
+- Program #1738 owns Lou Gehrig content collection, source discovery, provenance, rights, and editorial conversion.
+- Program #2039 owns the first admin-only visual staging route at `/admin/clubstaging`.
+- Program #2040 depends on Program #1738 manual workflow evidence before implementation.
+- Program #2040 also depends on #2043 for the first club staging route surface.
+- Human approval remains mandatory before public publication.
+- Public route exposure must be tied to explicit publication states and review evidence.
+
+## Intended final state
+
+At the end of Program #2040:
+
+1. Website content has explicit operational states.
+2. Authority to move content between states is documented and enforced by implementation slices.
+3. Staged content can be reviewed before public route exposure.
+4. Rotation and scheduled publication behavior are controlled and operator-visible.
+5. Public publication requires approval-state evidence.
+6. Missing source, credit, rights, or approval metadata fails closed.
+7. Publish, unpublish, rollback, and evidence-retention behavior are documented.
+8. CI/ops checks verify public exposure boundaries where feasible.
+
 ## Execution model
 
 | Rule | Requirement |
@@ -53,7 +75,7 @@ This plan does not authorize this documentation PR to change application code, w
 
 ## Task sequence
 
-| Task | Issue | Title | Predecessor | Successor |
+| Task | issue | Title | Predecessor | Successor |
 | ---: | ---: | --- | --- | --- |
 | 001 | #2049 | Manual workflow evidence review and publication candidate inventory | #1738 handoff evidence | #2050 |
 | 002 | #2050 | Publication state model and approval authority design | #2049 | #2051 |
