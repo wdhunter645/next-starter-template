@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: Program #2040 readiness decision, content publication support boundaries, child-task sequence, approval-state requirements, and launch preconditions
 Does Not Own: Program #1738 source collection rules, Program #2039 club staging implementation, merge authority, production secrets, or public content approval decisions
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-Related Issues: #1738, #2039, #2040, #2049, #2050, #2051, #2052, #2053, #2054, #2055, #2056
+Related Issues: #1738, #2039, #2040, #2043, #2049, #2050, #2051, #2052, #2053, #2054, #2055, #2056
 Last Reviewed: 2026-06-29
 ---
 
@@ -70,7 +70,7 @@ At the end of Program #2040:
 
 ## Child-task readiness inventory
 
-| Task | Issue | Readiness purpose | Decision |
+| Task | issue | Readiness purpose | Decision |
 | ---: | ---: | --- | --- |
 | 001 | #2049 | Manual workflow evidence review and publication candidate inventory | Required first task after #1738 handoff evidence |
 | 002 | #2050 | Publication state model and approval authority design | Ready after Task 001 |
