@@ -92,10 +92,11 @@ Task #2041 inventories public route, navigation, footer, media, donation/fundrai
 
 Expected output:
 
-- documented launch gap inventory;
+- documented launch gap inventory at `docs/ops/reports/website-public-launch-gap-inventory.md`;
 - implementation recommendations;
 - proposed file-touch boundaries for downstream tasks;
-- explicit escalation list for Bill decisions.
+- explicit escalation list for Bill decisions;
+- Task 002 readiness decision.
 
 ## Task 002 — Public content polish
 
