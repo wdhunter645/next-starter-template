@@ -272,7 +272,9 @@ Push and `run_all_pending` dispatch use matrix mode:
 1. `resolve` — path-scoped or full active manifest list
 2. `closeout-shard` — one manifest per shard (`fail-fast: false`)
 3. `aggregate-closeout` — merge shard reports, persist rerun queue, upload batch artifact
-4. `closeout-legacy` — single-manifest or single-PR manual dispatch
+
+Manual `workflow_dispatch` with `run_batch` or single-PR inputs uses `closeout-legacy`
+(`mode != matrix`) instead of the shard/aggregate path.
 
 Aggregate status uses report-level `partial_failure` and
 `resolveCloseoutWorkflowExitCode` so rate-limit tails do not require manual
