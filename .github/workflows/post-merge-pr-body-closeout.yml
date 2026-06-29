@@ -248,7 +248,7 @@ jobs:
         run: node scripts/ci/run_batch_post_merge_closeout.mjs
 
       - name: Manual single-PR closeout
-        if: needs.resolve.outputs.mode == 'single_pr'
+        if: needs.resolve.outputs.mode == 'single_pr' && inputs.run_batch != 'true' && inputs.run_all_pending != 'true'
         env:
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
@@ -271,7 +271,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Upload manual single-PR closeout report
-        if: always() && needs.resolve.outputs.mode == 'single_pr'
+        if: always() && needs.resolve.outputs.mode == 'single_pr' && inputs.run_batch != 'true' && inputs.run_all_pending != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: post-merge-single-closeout-report
