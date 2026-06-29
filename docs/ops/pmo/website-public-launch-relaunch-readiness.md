@@ -43,6 +43,7 @@ This program does **not** build the controlled publication capability owned by P
 - `/admin/homestaging` is reserved as a possible future route but is not required for this program.
 - Program #1738 owns Lou Gehrig content collection and research pipeline expansion.
 - Program #2040 owns controlled content publication capability after manual workflow evidence exists.
+- PMO backlog and program-registry entries are discovery surfaces only; they do not authorize Program #2039 implementation without explicit Bill/Atlas task assignment.
 
 ## Intended final state
 
