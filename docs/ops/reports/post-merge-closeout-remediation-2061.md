@@ -27,7 +27,7 @@ This report covers only the closeout/accounting remediation for #2061 after PR #
 | Merged PR | #2057 |
 | Merge SHA | `ac02263c0e7e82516d830ecb11958e031b0afe9f` |
 | Source program issue | #2039 |
-| Exception category | stale reviewer-thread disposition evidence |
+| Exception category | outdated_reviewer_thread_without_disposition |
 
 ## Current known truth
 
