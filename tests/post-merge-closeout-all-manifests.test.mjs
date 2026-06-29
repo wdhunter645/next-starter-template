@@ -7,8 +7,10 @@ import {
 	ACTIVE_MANIFEST_REGISTRY,
 	DEFAULT_MANIFESTS,
 	aggregateManifestReports,
+	collectShardRerunTargets,
 	isResumablePartialFailure,
 	loadActiveManifestRegistry,
+	persistAggregateRerunTargets,
 	resolveCloseoutWorkflowExitCode,
 	runAllPostMergeCloseoutManifests,
 } from '../scripts/ci/run_post_merge_closeout_all_manifests.mjs';
@@ -246,15 +248,34 @@ describe('post-merge closeout all manifests', () => {
 	});
 
 	it('treats rate-limit partial_failure with rerun queue as workflow-success', () => {
-		const combined = aggregateManifestReports([
+		const reports = [
 			{
 				status: 'partial_failure',
 				results: [{ pr: '1', status: 'fail', phase: 'rate_limit' }, { pr: '2', status: 'queued', phase: 'rate_limit_rerun' }],
 				rerunAppend: { targets: [{ pr: 2, body_file: 'scripts/ci/post-merge-closeout/pr-2-body.md' }] },
 			},
-		]);
+		];
+		const combined = {
+			...aggregateManifestReports(reports),
+			rerun_persisted: true,
+		};
 		expect(isResumablePartialFailure(combined)).toBe(true);
 		expect(resolveCloseoutWorkflowExitCode(combined)).toBe(0);
+	});
+
+	it('fails resumable partial_failure when rerun queue was not persisted', () => {
+		const combined = {
+			...aggregateManifestReports([
+				{
+					status: 'partial_failure',
+					results: [{ pr: '1', status: 'fail', phase: 'rate_limit' }],
+					rerunAppend: { targets: [{ pr: 1, body_file: 'scripts/ci/post-merge-closeout/pr-1-body.md' }] },
+				},
+			]),
+			rerun_persisted: false,
+		};
+		expect(isResumablePartialFailure(combined)).toBe(false);
+		expect(resolveCloseoutWorkflowExitCode(combined)).toBe(1);
 	});
 
 	it('keeps validator partial_failure and circuit breaker trips as workflow-failure', () => {
@@ -292,18 +313,57 @@ describe('post-merge closeout all manifests', () => {
 		expect(resolveCloseoutWorkflowExitCode(combined)).toBe(1);
 	});
 
+	it('persists aggregate rerun targets into the rerun manifest', () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-aggregate-rerun-'));
+		const manifestPath = path.join(dir, 'scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json');
+		fs.mkdirSync(path.dirname(manifestPath), { recursive: true });
+		fs.writeFileSync(manifestPath, JSON.stringify({ targets: [] }, null, 2));
+
+		const result = persistAggregateRerunTargets([
+			{
+				status: 'partial_failure',
+				results: [{ pr: '42', status: 'fail', phase: 'rate_limit' }],
+				rerunAppend: {
+					targets: [{
+						pr: 42,
+						body_file: 'scripts/ci/post-merge-closeout/pr-42-body.md',
+						merge_sha: 'abc',
+						source_issue: 41,
+					}],
+				},
+			},
+		], { workspace: dir });
+
+		expect(result.changed).toBe(true);
+		expect(collectShardRerunTargets([
+			{
+				results: [{ pr: '42', status: 'fail', phase: 'rate_limit' }],
+				rerunAppend: { targets: [{ pr: 42, body_file: 'scripts/ci/post-merge-closeout/pr-42-body.md' }] },
+			},
+		])).toHaveLength(1);
+		const persisted = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+		expect(persisted.targets).toEqual(
+			expect.arrayContaining([expect.objectContaining({ pr: 42 })]),
+		);
+
+		fs.rmSync(dir, { recursive: true, force: true });
+	});
+
 	it('does not treat mixed rate-limit and validator partial_failure as resumable', () => {
-		const combined = aggregateManifestReports([
-			{
-				status: 'partial_failure',
-				results: [{ pr: '1', status: 'fail', phase: 'rate_limit' }, { pr: '2', status: 'queued', phase: 'rate_limit_rerun' }],
-				rerunAppend: { targets: [{ pr: 2, body_file: 'scripts/ci/post-merge-closeout/pr-2-body.md' }] },
-			},
-			{
-				status: 'partial_failure',
-				results: [{ pr: '3', status: 'fail', phase: 'validation' }, { pr: '4', status: 'pass' }],
-			},
-		]);
+		const combined = {
+			...aggregateManifestReports([
+				{
+					status: 'partial_failure',
+					results: [{ pr: '1', status: 'fail', phase: 'rate_limit' }, { pr: '2', status: 'queued', phase: 'rate_limit_rerun' }],
+					rerunAppend: { targets: [{ pr: 2, body_file: 'scripts/ci/post-merge-closeout/pr-2-body.md' }] },
+				},
+				{
+					status: 'partial_failure',
+					results: [{ pr: '3', status: 'fail', phase: 'validation' }, { pr: '4', status: 'pass' }],
+				},
+			]),
+			rerun_persisted: true,
+		};
 		expect(isResumablePartialFailure(combined)).toBe(false);
 		expect(resolveCloseoutWorkflowExitCode(combined)).toBe(1);
 	});

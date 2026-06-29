@@ -12,6 +12,7 @@ import {
 	buildBatchCloseoutReport,
 	buildCircuitBreakerSkippedResult,
 } from './run_batch_post_merge_closeout.mjs';
+import { appendCloseoutRerunTargets } from './append_closeout_rerun_targets.mjs';
 import { BatchCircuitBreakerState } from './post_merge_remediation_issue.mjs';
 
 const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -68,12 +69,53 @@ export function aggregateManifestReports(reports = []) {
 	};
 }
 
+export function collectShardRerunTargets(reports = []) {
+	const targets = [];
+	for (const report of reports) {
+		const append = report.rerunAppend;
+		if (!append?.targets?.length) continue;
+		const hasRateLimitSignal = (report.results || []).some((entry) =>
+			entry.phase === 'rate_limit'
+			|| entry.phase === 'rate_limit_rerun'
+			|| entry.status === 'queued',
+		);
+		if (!hasRateLimitSignal) continue;
+		if (Array.isArray(append.added) && append.added.length > 0) {
+			const added = new Set(append.added.map(String));
+			targets.push(...append.targets.filter((target) => added.has(String(target.pr))));
+			continue;
+		}
+		targets.push(...append.targets);
+	}
+	return targets;
+}
+
+export function persistAggregateRerunTargets(reports = [], {
+	workspace = REPOSITORY_ROOT,
+	dryRun = false,
+} = {}) {
+	const incoming = collectShardRerunTargets(reports);
+	if (!incoming.length) {
+		return { persisted: true, changed: false, targets: [], added: [] };
+	}
+	const result = appendCloseoutRerunTargets({ targets: incoming, workspace, dryRun });
+	return {
+		persisted: true,
+		changed: Boolean(result.changed),
+		targets: result.targets,
+		added: result.added,
+		manifest_path: result.manifestPath,
+	};
+}
+
 export function isResumablePartialFailure(combined = {}) {
 	if (combined.status !== 'partial_failure') return false;
 	if (combined.error || combined.failed_phase === 'setup' || combined.failed_phase === 'shard') return false;
 	const reportList = combined.reports || [];
 	if (reportList.some((report) => report.circuit_breaker_tripped?.tripped)) return false;
 	if (reportList.some((report) => report.status === 'failure')) return false;
+	const needsRerunPersist = collectShardRerunTargets(reportList).length > 0;
+	if (needsRerunPersist && combined.rerun_persisted !== true) return false;
 	if (!reportList.some((report) => (report.rerunAppend?.targets || []).length > 0)) return false;
 
 	const nonRateLimitFailures = (combined.results || []).filter((entry) =>
@@ -191,10 +233,20 @@ export async function runAllPostMergeCloseoutManifests({
 export async function main() {
 	const aggregateDir = process.env.CLOSEOUT_AGGREGATE_DIR || '';
 	if (aggregateDir) {
+		const dryRun = ['1', 'true', 'yes'].includes(String(process.env.DRY_RUN || '').toLowerCase());
 		const reports = loadAggregateShardReports(aggregateDir);
-		const combined = aggregateManifestReports(reports);
+		const rerunPersist = persistAggregateRerunTargets(reports, { dryRun });
+		const combined = {
+			...aggregateManifestReports(reports),
+			rerun_persisted: rerunPersist.persisted,
+			rerun_manifest_changed: rerunPersist.changed,
+			rerun_persist: rerunPersist,
+		};
 		writeBatchCloseoutReport(combined, BATCH_CLOSEOUT_REPORT_PATH);
 		console.log(JSON.stringify(combined, null, 2));
+		if (process.env.GITHUB_OUTPUT && rerunPersist.changed) {
+			fs.appendFileSync(process.env.GITHUB_OUTPUT, 'rerun_manifest_changed=true\n');
+		}
 		process.exitCode = resolveCloseoutWorkflowExitCode(combined);
 		return;
 	}

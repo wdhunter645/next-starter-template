@@ -187,6 +187,10 @@ jobs:
     needs: [resolve, closeout-shard]
     if: always() && needs.resolve.outputs.mode == 'matrix' && needs.resolve.outputs.manifests_json != '[]'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -210,6 +214,16 @@ jobs:
         env:
           CLOSEOUT_AGGREGATE_DIR: closeout-shards
         run: node scripts/ci/run_post_merge_closeout_all_manifests.mjs
+
+      - name: Commit rate-limit rerun manifest updates
+        if: steps.aggregate.outputs.rerun_manifest_changed == 'true'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json
+          git commit -m "chore(ci): queue rate-limited closeout targets for rerun [skip ci]"
+          git push
 
       - name: Upload aggregated post-merge batch closeout report
         if: always()
