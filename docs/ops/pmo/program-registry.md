@@ -26,7 +26,7 @@ This registry records current program issue assignments, launch-state control, c
 - Program #1255 is the active execution program. Cursor owns completion of its remaining work.
 - Child project #1259 is open; Phase 4 Tasks 001–009 are complete on `main`; issue remains open pending Program #1255 terminal closeout authorization.
 - Program #1255 closeout readiness packet published at `docs/ops/reports/program-1255-closeout-readiness.md`; operator hygiene for `#1123` and `#1258` **complete** (2026-06-17).
-- Priority #1 Website Completion / Fan Club Product Buildout is parked as program issue #1685 with child issues #1686 through #1694; it remains blocked until Atlas/Bill explicitly launch or reprioritize it.
+- Priority #1 Website Completion / Fan Club Product Buildout (#1685) child tasks #1686–#1694 are complete; structural baseline is ready for Bill/Atlas launch review after CI Program #1963 closeout.
 - Website Public Launch / Relaunch Readiness has program issue #2039 with child task issues #2041 through #2048. It follows Program #1685 structural baseline closeout and requires explicit Bill/Atlas child-task assignment before Cursor implementation.
 - Website Automatic Content Publication Capability has program issue #2040 with child task issues #2049 through #2056. It is the publication authority for work excluded from #2039 and remains blocked until explicit Bill/Atlas authorization.
 - Priority #2 Fundraiser / Charity Campaign Operations Buildout has program issue #1700 with child task issues #1701 through #1708. Task 001 assignment guidance is posted on #1701. The program remains queued behind Program #1255/#1259 and parked Priority #1 unless Bill/Atlas explicitly reprioritize.
@@ -90,7 +90,7 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 
 | Candidate | Backlog rank | Status | Launch rule | Planning package | Implementation plan |
 | --- | ---: | --- | --- | --- | --- |
-| Website Completion / Fan Club Product Buildout | 1 | Launch-control ready; parked | Blocked until Atlas/Bill explicitly authorize Cursor to begin #1686 or reprioritize #1685 | `docs/ops/pmo/website-completion-fan-club-product-buildout-readiness.md` | `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md` |
+| Website Completion / Fan Club Product Buildout | 1 | Structural baseline complete | Ready for Bill/Atlas launch review; closeout evidence in `docs/ops/reports/website-completion-program-1685-launch-readiness.md` | `docs/ops/pmo/website-completion-fan-club-product-buildout-readiness.md` | `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md` |
 | Website Public Launch / Relaunch Readiness | 1 successor | Launch-control ready; follows #1685 closeout | Blocked until #1685 closeout and Atlas/Bill explicitly authorize Cursor to begin #2041 | `docs/ops/pmo/website-public-launch-relaunch-readiness.md` | `docs/ops/implementation-plans/website-public-launch-relaunch-readiness.md` |
 | Website Automatic Content Publication Capability | 1 publication | Planning-ready publication authority | Blocked until #1738 manual workflow evidence and Atlas/Bill explicitly authorize Cursor to begin #2049 | `docs/ops/pmo/website-automatic-content-publication-capability.md` | `docs/ops/implementation-plans/website-automatic-content-publication-capability.md` |
 | Fundraiser / Charity Campaign Operations Buildout | 2 | Launch-control ready; queued | Blocked until Atlas/Bill explicitly authorize Cursor to begin #1701 | `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md` | `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md` |
@@ -163,7 +163,7 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 | Program issue | Name | Historical label | Status | Launch rule |
 | --- | --- | --- | --- | --- |
 | #1411 | PMO Automation and Agent Workflow Control | Program 1 | Completed planning artifact (issue closed, status:complete) | issue #1411 is not an open blocked program. New execution requires a current open source issue. PMO automation execution remains blocked until Atlas/Bill explicitly launch a new cycle. |
-| #1685 | Website Completion / Fan Club Product Buildout | none | Launch-control ready / parked | Child issues #1686–#1694 exist; execution waits for explicit queue authorization. |
+| #1685 | Website Completion / Fan Club Product Buildout | none | Structural baseline complete / launch review | Child issues #1686–#1694 closed; launch evidence at `docs/ops/reports/website-completion-program-1685-launch-readiness.md`; parent #1685 open pending Bill/Atlas acceptance. |
 | #2039 | Website Public Launch / Relaunch Readiness | none | Launch-control ready / successor | Child issues #2041–#2048 exist; execution waits for #1685 closeout and explicit queue authorization. |
 | #2040 | Website Automatic Content Publication Capability | none | Planning-ready publication authority | Child issues #2049–#2056 exist; execution waits for manual workflow evidence and explicit queue authorization. |
 | #1700 | Fundraiser / Charity Campaign Operations Buildout | none | Launch-control ready / queued | Child issues #1701–#1708 exist; Task 001 assignment guidance is posted on #1701; execution waits for explicit queue authorization. |
@@ -191,7 +191,7 @@ Completed program cycles remain audit evidence and may be cited for historical c
 | Is a program issue | No |
 | Executable by itself | No |
 | Review cadence | Reviewed as a primary agenda item during PMO meetings |
-| Current top candidate | Website Completion / Fan Club Product Buildout remains parked; Website Public Launch / Relaunch Readiness follows #1685 closeout; Website Automatic Content Publication Capability is registered as separate publication authority; Fundraiser / Charity Campaign Operations Buildout and PMO Governance / Workflow Automation Completion are launch-control ready and queued behind active work |
+| Current top candidate | Website Completion / Fan Club Product Buildout (#1685) ready for Bill/Atlas launch review; Website Public Launch / Relaunch Readiness (#2039) follows #1685 closeout |
 
 ## Program #1411 — PMO Automation and Agent Workflow Control
 

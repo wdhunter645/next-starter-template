@@ -91,6 +91,7 @@ Recommended operator actions:
 - Backend reconciliation: `docs/ops/reports/website-completion-fan-club-backend-reconciliation.md`
 - Workflow reconciliation: `docs/ops/reports/website-content-workflow-reconciliation.md`
 - Audit register: `docs/ops/reports/website-completion-program-1685-audit-register.md`
+- Launch readiness: `docs/ops/reports/website-completion-program-1685-launch-readiness.md`
 
 ## Closeout Checklist (Task 009)
 
