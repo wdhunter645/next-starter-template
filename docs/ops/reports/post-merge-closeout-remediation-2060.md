@@ -5,7 +5,7 @@ Authority Level: Operational Evidence
 Owns: Post-merge closeout decision record for remediation issue #2060
 Does Not Own: Program #2040 implementation launch, source issue closure, publication workflow implementation, or runtime behavior
 Canonical Reference: /docs/ops/pmo/website-automatic-content-publication-capability.md
-Related Issues: #2040, #2058, #2060
+Related issues: #2040, #2058, #2060
 Last Reviewed: 2026-06-29
 ---
 
@@ -14,6 +14,10 @@ Last Reviewed: 2026-06-29
 ## Purpose
 
 Record the Atlas/Bill remediation decision for post-merge closeout exception #2060.
+
+## Scope
+
+This report covers only the closeout/accounting remediation for #2060 after PR #2058 merged. It does not launch Program #2040, close Program #2040, implement publication workflow behavior, change runtime code, or authorize queue advancement.
 
 ## Source exception
 
