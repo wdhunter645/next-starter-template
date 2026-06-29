@@ -249,13 +249,13 @@ Routes below were verified from `src/app/**/page.tsx` on `main` at 2026-06-29.
 
 **Current state:**
 
-- No launch checklist, smoke-test, rollback, or evidence-template docs exist under `docs/ops/how-to/` or `docs/ops/reports/` for #2039.
+- No launch checklist, smoke-test, rollback, or evidence-template docs exist under `docs/how-to/website/` or `docs/ops/reports/` for #2039.
 
 **Required docs (Task 007):**
 
-- `docs/ops/how-to/website-public-launch-checklist.md`
-- `docs/ops/how-to/website-production-smoke-test.md`
-- `docs/ops/how-to/website-production-rollback.md`
+- `docs/how-to/website/website-public-launch-checklist.md`
+- `docs/how-to/website/website-production-smoke-test.md`
+- `docs/how-to/website/website-production-rollback.md`
 - `docs/ops/reports/website-public-launch-evidence-template.md`
 
 **Smoke areas to cover:**
