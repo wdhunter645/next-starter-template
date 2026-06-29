@@ -3,12 +3,12 @@ Doc Type: Report
 Audience: Human + AI
 Authority Level: Program Evidence
 Status: Draft until #2041 PR merge
-Source Issue: #2041
+source issue: #2041
 Parent Program: #2039
 Owns: Website public launch gap inventory and routing of gaps to #2039 child tasks
 Does Not Own: Runtime implementation, production launch, campaign launch, content automation
 Canonical Reference: /docs/ops/pmo/website-public-launch-relaunch-readiness.md
-Related Issues: #1685, #2039, #2041, #2042, #2043, #2044, #2045, #2046, #2047, #2048
+related issues: #1685, #2039, #2041, #2042, #2043, #2044, #2045, #2046, #2047, #2048
 Last Reviewed: 2026-06-29
 ---
 
@@ -269,7 +269,7 @@ Task 002 should begin with the public copy/content gaps listed above. Tasks #204
 
 ## Downstream task sequence reminder
 
-| Order | Issue | Depends on |
+| Order | issue | Depends on |
 | ---: | ---: | --- |
 | 1 | #2041 | #1685 closeout |
 | 2 | #2042 | #2041 |
