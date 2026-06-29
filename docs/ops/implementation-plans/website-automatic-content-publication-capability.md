@@ -73,9 +73,9 @@ At the end of Program #2040:
 | Merge authority | Bill/Atlas after required review and checks |
 | Public publication | Requires recorded approval state |
 
-## Task sequence
+## Dependency Map
 
-| Task | issue | Title | Predecessor | Stage before merge | Halt condition | Resume condition | Successor |
+| Task | issue | Title | Predecessor | Stage-before-merge | Halt condition | Resume condition | Successor |
 | ---: | ---: | --- | --- | --- | --- | --- | --- |
 | 001 | #2049 | Manual workflow evidence review and publication candidate inventory | #1738 handoff evidence | yes | #1738 evidence missing or incomplete | Bill/Atlas confirm evidence or rebaseline scope | #2050 |
 | 002 | #2050 | Publication state model and approval authority design | #2049 | yes | State or approval authority unclear | Bill/Atlas confirm authority model | #2051 |
