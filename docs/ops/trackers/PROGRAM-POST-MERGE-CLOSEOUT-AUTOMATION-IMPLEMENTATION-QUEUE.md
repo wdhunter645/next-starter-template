@@ -81,12 +81,11 @@ Task 001 (path-scoped manifest replay on push)
 | 005 | #1968 | complete | PR #2038 @ merged |
 | 006 | #1969 | complete | PR #2059 @ merged |
 | 007 | #1970 | complete | PR #2062 @ `e48ba35` |
-| 008 | #1971 | in progress | — |
+| 008 | #1971 | complete | PR #2067 @ pending merge |
 
 ## Program rollout checkpoint (2026-06-29)
 
-Program **#1963** implementation queue is complete pending Task 008 documentation
-merge. Rollout evidence:
+Program **#1963** implementation queue is **complete** after Task 008 documentation merge.
 
 | Failure mode | Task | Resolution |
 | --- | --- | --- |
@@ -98,7 +97,7 @@ merge. Rollout evidence:
 | F6 — `partial_failure` fails workflow | #1969 | Resumable model + matrix sharding (PR #2059) |
 | F7 — backlog metrics not emitted | #1970 | GraphQL metrics + `summary.by_code` (PR #2062) |
 
-Terminal documentation and registry updates: Task #1971 (PR pending).
+Terminal documentation and registry updates: Task #1971 (PR #2067).
 
 ## Master program acceptance criteria (#1963)
 
@@ -109,7 +108,7 @@ Terminal documentation and registry updates: Task #1971 (PR pending).
 - [x] Closeout body generator late-reviewer-finding alignment (Task 005 / #1968)
 - [x] Closeout workflow `partial_failure` model and manifest job sharding (Task 006 / #1969)
 - [x] Backlog metrics and batch report failure taxonomy (Task 007 / #1970)
-- [ ] Runbook, validation surface, architecture, and program registry updated (Task 008 / #1971)
+- [x] Runbook, validation surface, architecture, and program registry updated (Task 008 / #1971)
 
 ## Archived closeout manifests (Task 004)
 

@@ -32,7 +32,7 @@ This registry records current program issue assignments, launch-state control, c
 - Priority #2 Fundraiser / Charity Campaign Operations Buildout has program issue #1700 with child task issues #1701 through #1708. Task 001 assignment guidance is posted on #1701. The program remains queued behind Program #1255/#1259 and parked Priority #1 unless Bill/Atlas explicitly reprioritize.
 - Priority #3 PMO Governance / Workflow Automation Completion has program issue #1719 with child task issues #1720 through #1727. Task 001 assignment guidance is posted on #1720. The program remains queued behind Program #1255/#1259, parked Priority #1, and Priority #2 unless Bill/Atlas explicitly reprioritize.
 - issue #1500 (CI Post-Merge Closeout Reliability) is **closed complete** and remains reconciliation evidence for Priority #3. Task #1725 reconciliation report: `docs/ops/reports/program-1500-queue-wave-reconciliation.md`.
-- issue #1963 (CI Post-Merge Closeout Automation Hardening) is **closed complete** pending Task #1971 documentation merge; implementation queue `docs/ops/trackers/PROGRAM-POST-MERGE-CLOSEOUT-AUTOMATION-IMPLEMENTATION-QUEUE.md`.
+- issue #1963 (CI Post-Merge Closeout Automation Hardening) is **closed complete**; implementation queue `docs/ops/trackers/PROGRAM-POST-MERGE-CLOSEOUT-AUTOMATION-IMPLEMENTATION-QUEUE.md`.
 - issue #1411 is completed — a planning/control artifact, not an open blocked program.
 - GitHub issue titles use `Program: <name>`. Documentation references use `Program #<issue-number> — <name>`.
 
@@ -176,7 +176,7 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 | #1335 | Phase 1 Wrap-Up | Historical | Prior Program 1 cycle; closed historical evidence only. Not a parent issue for Program #1411. |
 | #1379 | Ideas / future-projects source | Historical | Superseded by PMO Backlog documentation (`/docs/ops/pmo/pmo-backlog.md`). No standing PMO Backlog issue is required. |
 | #1500 | CI Post-Merge Closeout Reliability | Closed complete | Completed implementation cycle. Future CI maintenance requires a new source issue. |
-| #1963 | CI Post-Merge Closeout Automation Hardening | Closed complete (pending #1971 docs merge) | Serial Tasks #1964–#1971; queue tracker `docs/ops/trackers/PROGRAM-POST-MERGE-CLOSEOUT-AUTOMATION-IMPLEMENTATION-QUEUE.md`; successor to #1500 closeout stabilization for batch replay, rate-limit rerun, sharding, and metrics. |
+| #1963 | CI Post-Merge Closeout Automation Hardening | Closed complete | Serial Tasks #1964–#1971; terminal PR #2067; queue tracker `docs/ops/trackers/PROGRAM-POST-MERGE-CLOSEOUT-AUTOMATION-IMPLEMENTATION-QUEUE.md`. |
 | #1696 | Fundraiser / Charity Campaign Operations Buildout documentation package | Closed complete | Planning documentation source issue completed by #1697. |
 | #1713 | PMO Governance / Workflow Automation Completion documentation package | Closed complete | Planning documentation source issue completed by #1714. |
 
