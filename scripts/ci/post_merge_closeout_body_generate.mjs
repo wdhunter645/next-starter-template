@@ -23,8 +23,9 @@ import {
 import {
 	collectInlineReviewThreads,
 	isActionableReviewSubmission,
+	isActionableTopLevelComment,
 } from './reviewer_comment_disposition.mjs';
-import { isTrustedReviewer } from './reviewer_lifecycle_gate.mjs';
+import { isTrustedReviewer, isResolvedReviewText } from './reviewer_lifecycle_gate.mjs';
 import {
 	parsePostMergeExceptionIssue,
 } from './post_merge_self_heal_backlog.mjs';
@@ -164,6 +165,21 @@ export function buildReviewerDispositionLines({
 		seen.add(id);
 		lines.push(
 			`- review-comment:${id} — accepted — post-merge closeout remediation for prior PR #${prNumber} — thread state: outdated`,
+		);
+	}
+
+	for (const comment of issueComments) {
+		if (!comment) continue;
+		const user = comment.user?.login || '';
+		if (!isTrustedReviewer(user)) continue;
+		if (!isActionableTopLevelComment(comment.body || '')) continue;
+		if (isResolvedReviewText(comment.body || '')) continue;
+		const id = String(comment.id);
+		if (seen.has(id)) continue;
+		seen.add(id);
+		const threadState = isAfterMerge(comment.created_at, mergedAt) ? 'resolved' : 'outdated';
+		lines.push(
+			`- review-comment:${id} — accepted — post-merge closeout remediation for prior PR #${prNumber} — thread state: ${threadState}`,
 		);
 	}
 

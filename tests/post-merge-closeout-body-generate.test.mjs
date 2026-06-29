@@ -56,6 +56,31 @@ placeholder
 		]);
 	});
 
+	it('builds reviewer disposition lines for actionable top-level issue comments', () => {
+		const lines = buildReviewerDispositionLines({
+			prNumber: 1201,
+			mergedAt: '2026-06-02T17:00:00Z',
+			issueComments: [
+				{
+					id: 8001,
+					created_at: '2026-06-01T12:00:00Z',
+					body: 'Please address this blocking concern before closeout.',
+					user: { login: 'gemini-code-assist[bot]' },
+				},
+				{
+					id: 8002,
+					created_at: '2026-06-02T17:30:00Z',
+					body: 'P1 blocking: must fix this regression.',
+					user: { login: 'copilot-pull-request-reviewer[bot]' },
+				},
+			],
+		});
+		expect(lines).toEqual([
+			'- review-comment:8001 — accepted — post-merge closeout remediation for prior PR #1201 — thread state: outdated',
+			'- review-comment:8002 — accepted — post-merge closeout remediation for prior PR #1201 — thread state: resolved',
+		]);
+	});
+
 	it('builds reviewer disposition lines for late post-merge trusted findings', () => {
 		const lines = buildReviewerDispositionLines({
 			prNumber: 1188,
