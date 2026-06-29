@@ -72,7 +72,7 @@ At the end of Program #2039:
 
 ## Child-task readiness inventory
 
-| Task | Issue | Readiness purpose | Decision |
+| Task | issue | Readiness purpose | Decision |
 | ---: | ---: | --- | --- |
 | 001 | #2041 | Launch gap inventory and public page readiness review | Required first task |
 | 002 | #2042 | Public content polish and launch copy reconciliation | Ready after Task 001 |
@@ -97,7 +97,7 @@ Cursor implementation may begin only when:
 
 `/admin/clubstaging` is a protected admin-only visual preview surface.
 
-It may display staged/sample club content, production-like visual cards, and rotation previews. It must not expose staged content on public routes and must not implement full publication workflow.
+It may display staged/sample club content, production-like visual cards, and rotation previews. It must not expose staged content on public routes and must not implement Program #2040 workflow.
 
 ## Closeout requirement
 
