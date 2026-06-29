@@ -113,13 +113,13 @@ function collectLateReviewerItems({
 	};
 
 	for (const comment of issueComments) {
-		consider(comment, comment.created_at, comment.body || '');
+		if (comment) consider(comment, comment.created_at, comment.body || '');
 	}
 	for (const comment of reviewComments) {
-		consider(comment, comment.created_at, comment.body || '');
+		if (comment) consider(comment, comment.created_at, comment.body || '');
 	}
 	for (const review of reviews) {
-		consider(review, review.submitted_at, review.body || '', review.state || '');
+		if (review) consider(review, review.submitted_at, review.body || '', review.state || '');
 	}
 
 	return items;
