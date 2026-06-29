@@ -42,14 +42,29 @@ export const DEFAULT_MANIFESTS = loadActiveManifestRegistry().manifests;
 
 export function aggregateManifestReports(reports = []) {
 	const combinedResults = reports.flatMap((report) => report.results || []);
-	const failed = combinedResults.filter((entry) => entry.status === 'fail' || entry.status === 'error');
-	const status = failed.length === 0 ? 'success' : failed.length === combinedResults.length ? 'failure' : 'partial_failure';
+	const reportStatuses = reports.map((report) => report.status || 'success');
+	let status = 'success';
+
+	if (reportStatuses.includes('partial_failure')) {
+		status = 'partial_failure';
+	} else if (reportStatuses.includes('failure')) {
+		status = reportStatuses.includes('success') ? 'partial_failure' : 'failure';
+	} else {
+		const failed = combinedResults.filter((entry) => entry.status === 'fail' || entry.status === 'error');
+		if (failed.length > 0) {
+			status = failed.length === combinedResults.length ? 'failure' : 'partial_failure';
+		}
+	}
+
+	const firstErrorReport = reports.find((report) => report.error || report.failed_phase);
 
 	return {
 		status,
 		manifest_count: reports.length,
 		reports,
 		results: combinedResults,
+		error: firstErrorReport?.error || null,
+		failed_phase: firstErrorReport?.failed_phase || null,
 	};
 }
 
@@ -68,12 +83,37 @@ export function resolveCloseoutWorkflowExitCode(combined = {}) {
 }
 
 export function loadAggregateShardReports(directory, workspace = REPOSITORY_ROOT) {
+	if (!directory) return [];
 	const resolved = path.resolve(workspace, directory);
 	if (!fs.existsSync(resolved)) return [];
 	return fs.readdirSync(resolved)
 		.filter((name) => name.endsWith('.json'))
 		.sort()
-		.map((name) => JSON.parse(fs.readFileSync(path.join(resolved, name), 'utf8')));
+		.map((name) => {
+			const filePath = path.join(resolved, name);
+			try {
+				const content = fs.readFileSync(filePath, 'utf8').trim();
+				if (!content) {
+					return {
+						status: 'failure',
+						failed_phase: 'shard',
+						results: [],
+						error: { phase: 'shard', message: `empty shard report: ${name}` },
+					};
+				}
+				return JSON.parse(content);
+			} catch (error) {
+				return {
+					status: 'failure',
+					failed_phase: 'shard',
+					results: [],
+					error: {
+						phase: 'shard',
+						message: error instanceof Error ? error.message : String(error),
+					},
+				};
+			}
+		});
 }
 
 export function parseManifestList(value = '') {

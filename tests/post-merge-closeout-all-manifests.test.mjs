@@ -273,4 +273,22 @@ describe('post-merge closeout all manifests', () => {
 		]);
 		expect(resolveCloseoutWorkflowExitCode(breakerPartial)).toBe(1);
 	});
+
+	it('fails aggregation when a shard report fails without per-target results', () => {
+		const combined = aggregateManifestReports([
+			{ status: 'success', results: [{ pr: '1', status: 'pass' }] },
+			{
+				status: 'failure',
+				failed_phase: 'shard',
+				results: [],
+				error: { phase: 'shard', message: 'missing shard report' },
+			},
+		]);
+		expect(combined).toMatchObject({
+			status: 'partial_failure',
+			failed_phase: 'shard',
+			error: { phase: 'shard', message: 'missing shard report' },
+		});
+		expect(resolveCloseoutWorkflowExitCode(combined)).toBe(1);
+	});
 });
