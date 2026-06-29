@@ -40,6 +40,28 @@ This plan covers:
 
 This plan does not authorize this documentation PR to change application code, workflows, migrations, route files, package files, issue labels, issue states, or implementation child issues.
 
+## Current known truth
+
+- Program #1685 owns the structural website baseline and Fan Club product buildout.
+- Program #2039 follows #1685 closeout and should not delay the structural baseline launch.
+- `/admin/clubstaging` belongs to Program #2039, not Program #1685.
+- `/admin/homestaging` is reserved for possible future use and is not required here.
+- Program #1738 owns Lou Gehrig content collection.
+- Program #2040 owns controlled content publication support after manual workflow evidence exists.
+
+## Intended final state
+
+At the end of Program #2039:
+
+1. Public launch gaps are inventoried and either resolved, deferred, or escalated.
+2. Public copy and route behavior are ready for relaunch review.
+3. `/admin/clubstaging` exists as an admin-only preview and rotation surface.
+4. Media/social presentation degrades cleanly if third-party embeds fail.
+5. Donation/fundraiser route behavior is launch-safe.
+6. SEO, analytics, sitemap, metadata, and social-card behavior are verified or explicitly excepted.
+7. Launch checklist, smoke tests, rollback path, and evidence model are documented.
+8. Program #2039 has terminal validation evidence for Bill/Atlas acceptance.
+
 ## Execution model
 
 | Rule | Requirement |
@@ -53,7 +75,7 @@ This plan does not authorize this documentation PR to change application code, w
 
 ## Task sequence
 
-| Task | Issue | Title | Predecessor | Successor |
+| Task | issue | Title | Predecessor | Successor |
 | ---: | ---: | --- | --- | --- |
 | 001 | #2041 | Launch gap inventory and public page readiness review | #1685 closeout | #2042 |
 | 002 | #2042 | Public content polish and launch copy reconciliation | #2041 | #2043 |
