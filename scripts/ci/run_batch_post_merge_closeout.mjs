@@ -76,6 +76,66 @@ export function buildFailureReason(detail = {}) {
 	return parts.join('; ') || null;
 }
 
+export function rollupFailureCodesByCode(results = []) {
+	const byCode = {};
+	const bump = (code) => {
+		const key = String(code || 'unknown').trim() || 'unknown';
+		byCode[key] = (byCode[key] || 0) + 1;
+	};
+
+	for (const entry of results) {
+		if (entry.status === 'pass') continue;
+		if (entry.phase === 'rate_limit_rerun' || entry.status === 'queued') {
+			bump('rate_limit_queue');
+			continue;
+		}
+		if (entry.phase === 'circuit_breaker' || entry.status === 'skipped') {
+			bump('circuit_breaker_skipped');
+			continue;
+		}
+
+		const failureBuckets = [
+			...(entry.metadata_failures || []),
+			...(entry.implementation_failures || []),
+			...(entry.diataxis_failures || []),
+			...(entry.reviewer_findings || []),
+			...(entry.reviewer_disposition_failures || []),
+			...(entry.workflow_failures || []).map((failure) => ({
+				code: failure.code || failure.workflow || 'workflow_failure',
+			})),
+		];
+
+		if (failureBuckets.length > 0) {
+			for (const failure of failureBuckets) bump(failure.code);
+			continue;
+		}
+
+		if (entry.failure_reason) {
+			for (const part of String(entry.failure_reason).split(';').map((value) => value.trim()).filter(Boolean)) {
+				bump(part.includes(':') ? part.split(':').slice(1).join(':') : part);
+			}
+			continue;
+		}
+
+		if (entry.phase === 'rate_limit') bump('rate_limit');
+		else if (entry.status === 'error') bump('closeout_runtime_error');
+		else if (entry.status === 'fail') bump('post_merge_validation_failed');
+	}
+
+	return byCode;
+}
+
+export function buildBatchSummary(results = []) {
+	const failed = results.filter((entry) => entry.status === 'fail' || entry.status === 'error');
+	return {
+		target_count: results.length,
+		pass_count: results.filter((entry) => entry.status === 'pass').length,
+		fail_count: failed.length,
+		queued_count: results.filter((entry) => entry.status === 'queued').length,
+		by_code: rollupFailureCodesByCode(results),
+	};
+}
+
 export function summarizeTargetResult({ prNumber, result = {}, detail = {}, phase = 'closeout', error = null } = {}) {
 	if (error) {
 		return {
@@ -141,6 +201,7 @@ export function buildBatchCloseoutReport({
 		manifestPrune,
 		rerunAppend,
 		circuit_breaker_tripped: circuitBreakerTripped,
+		summary: buildBatchSummary(results),
 	};
 }
 

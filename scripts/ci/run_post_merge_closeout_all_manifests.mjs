@@ -11,6 +11,7 @@ import {
 	writeBatchCloseoutReport,
 	buildBatchCloseoutReport,
 	buildCircuitBreakerSkippedResult,
+	rollupFailureCodesByCode,
 } from './run_batch_post_merge_closeout.mjs';
 import { appendCloseoutRerunTargets } from './append_closeout_rerun_targets.mjs';
 import { BatchCircuitBreakerState } from './post_merge_remediation_issue.mjs';
@@ -41,6 +42,17 @@ export function loadActiveManifestRegistry(
 
 export const DEFAULT_MANIFESTS = loadActiveManifestRegistry().manifests;
 
+export function mergeFailureCodeRollups(reports = []) {
+	const byCode = {};
+	for (const report of reports) {
+		const rollup = report.summary?.by_code || rollupFailureCodesByCode(report.results || []);
+		for (const [code, count] of Object.entries(rollup)) {
+			byCode[code] = (byCode[code] || 0) + count;
+		}
+	}
+	return byCode;
+}
+
 export function aggregateManifestReports(reports = []) {
 	const combinedResults = reports.flatMap((report) => report.results || []);
 	const reportStatuses = reports.map((report) => report.status || 'success');
@@ -66,6 +78,9 @@ export function aggregateManifestReports(reports = []) {
 		results: combinedResults,
 		error: firstErrorReport?.error || null,
 		failed_phase: firstErrorReport?.failed_phase || null,
+		summary: {
+			by_code: mergeFailureCodeRollups(reports),
+		},
 	};
 }
 
