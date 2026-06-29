@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: Priority #1 PMO readiness decision, next-program candidate scope, child-project boundaries, design/readiness state, Cursor launch preconditions
 Does Not Own: Runtime implementation, issue creation, merge authority, production secrets, vendor configuration, fundraiser program scope
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-Related Issues: #1678, #1255, #1256, #1258, #1259, #1379, #1685, #1963
+Related issues: #1678, #1255, #1256, #1258, #1259, #1379, #1685, #1963
 Last Reviewed: 2026-06-29
 ---
 

@@ -182,6 +182,9 @@ async function runBuild() {
  * Postbuild renames out/ai-review to out/_ai-review; resolve app routes for static export checks.
  */
 function staticExportRouteCandidates(route) {
+  if (typeof route !== 'string' || route.length === 0) {
+    return [];
+  }
   if (route.startsWith('/ai-review/')) {
     return [route, route.replace('/ai-review/', '/_ai-review/')];
   }
@@ -206,9 +209,11 @@ async function checkRequiredRoutes(routes) {
     // Try all possible file paths (including postbuild ai-review → _ai-review alias)
     let found = false;
     let foundPath = '';
+    const attemptedPaths = [];
 
     for (const routeCandidate of staticExportRouteCandidates(route)) {
       const filePaths = routeToFilePath(routeCandidate, OUTPUT_DIR);
+      attemptedPaths.push(...filePaths);
 
       for (const filePath of filePaths) {
         if (existsSync(filePath)) {
@@ -227,7 +232,7 @@ async function checkRequiredRoutes(routes) {
     } else {
       result.details.missing.push(route);
       result.passed = false;
-      console.log(`   ❌ ${route} → ${filePaths.join(' or ')} (NOT FOUND)`);
+      console.log(`   ❌ ${route} → ${attemptedPaths.join(' or ')} (NOT FOUND)`);
     }
   }
 
