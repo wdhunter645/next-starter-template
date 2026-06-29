@@ -40,6 +40,49 @@ export function loadActiveManifestRegistry(
 
 export const DEFAULT_MANIFESTS = loadActiveManifestRegistry().manifests;
 
+export function aggregateManifestReports(reports = []) {
+	const combinedResults = reports.flatMap((report) => report.results || []);
+	const failed = combinedResults.filter((entry) => entry.status === 'fail' || entry.status === 'error');
+	const status = failed.length === 0 ? 'success' : failed.length === combinedResults.length ? 'failure' : 'partial_failure';
+
+	return {
+		status,
+		manifest_count: reports.length,
+		reports,
+		results: combinedResults,
+	};
+}
+
+export function isResumablePartialFailure(combined = {}) {
+	if (combined.status !== 'partial_failure') return false;
+	if (combined.error || combined.failed_phase === 'setup') return false;
+	const reportList = combined.reports || [];
+	if (reportList.some((report) => report.circuit_breaker_tripped?.tripped)) return false;
+	return reportList.some((report) => (report.rerunAppend?.targets || []).length > 0);
+}
+
+export function resolveCloseoutWorkflowExitCode(combined = {}) {
+	if (combined.status === 'success') return 0;
+	if (isResumablePartialFailure(combined)) return 0;
+	return 1;
+}
+
+export function loadAggregateShardReports(directory, workspace = REPOSITORY_ROOT) {
+	const resolved = path.resolve(workspace, directory);
+	if (!fs.existsSync(resolved)) return [];
+	return fs.readdirSync(resolved)
+		.filter((name) => name.endsWith('.json'))
+		.sort()
+		.map((name) => JSON.parse(fs.readFileSync(path.join(resolved, name), 'utf8')));
+}
+
+export function parseManifestList(value = '') {
+	return String(value || '')
+		.split(',')
+		.map((entry) => entry.trim())
+		.filter(Boolean);
+}
+
 export async function runAllPostMergeCloseoutManifests({
 	token,
 	repository,
@@ -95,26 +138,24 @@ export async function runAllPostMergeCloseoutManifests({
 		reports.push(report);
 	}
 
-	const combinedResults = reports.flatMap((report) => report.results || []);
-	const failed = combinedResults.filter((entry) => entry.status === 'fail' || entry.status === 'error');
-	const status = failed.length === 0 ? 'success' : failed.length === combinedResults.length ? 'failure' : 'partial_failure';
-
-	return {
-		status,
-		manifest_count: manifestPaths.length,
-		reports,
-		results: combinedResults,
-	};
+	return aggregateManifestReports(reports);
 }
 
 export async function main() {
+	const aggregateDir = process.env.CLOSEOUT_AGGREGATE_DIR || '';
+	if (aggregateDir) {
+		const reports = loadAggregateShardReports(aggregateDir);
+		const combined = aggregateManifestReports(reports);
+		writeBatchCloseoutReport(combined, BATCH_CLOSEOUT_REPORT_PATH);
+		console.log(JSON.stringify(combined, null, 2));
+		process.exitCode = resolveCloseoutWorkflowExitCode(combined);
+		return;
+	}
+
 	const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
 	const repository = process.env.GITHUB_REPOSITORY;
 	const dryRun = ['1', 'true', 'yes'].includes(String(process.env.DRY_RUN || '').toLowerCase());
-	const manifestList = (process.env.CLOSEOUT_MANIFESTS || '')
-		.split(',')
-		.map((entry) => entry.trim())
-		.filter(Boolean);
+	const manifestList = parseManifestList(process.env.CLOSEOUT_MANIFESTS || '');
 	const manifestPaths = manifestList.length > 0 ? manifestList : DEFAULT_MANIFESTS;
 
 	let combined = buildBatchCloseoutReport({ manifestPath: manifestPaths.join(','), dryRun });
@@ -144,9 +185,7 @@ export async function main() {
 		console.log(JSON.stringify(combined, null, 2));
 	}
 
-	if (combined.status !== 'success') {
-		process.exitCode = 1;
-	}
+	process.exitCode = resolveCloseoutWorkflowExitCode(combined);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

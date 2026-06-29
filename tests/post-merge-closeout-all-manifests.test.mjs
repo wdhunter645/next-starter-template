@@ -6,7 +6,10 @@ import { describe, expect, it, vi } from 'vitest';
 import {
 	ACTIVE_MANIFEST_REGISTRY,
 	DEFAULT_MANIFESTS,
+	aggregateManifestReports,
+	isResumablePartialFailure,
 	loadActiveManifestRegistry,
+	resolveCloseoutWorkflowExitCode,
 	runAllPostMergeCloseoutManifests,
 } from '../scripts/ci/run_post_merge_closeout_all_manifests.mjs';
 import { loadCloseoutTargets } from '../scripts/ci/run_batch_post_merge_closeout.mjs';
@@ -225,5 +228,49 @@ describe('post-merge closeout all manifests', () => {
 		]);
 
 		fs.rmSync(dir, { recursive: true, force: true });
+	});
+
+	it('aggregates shard reports into combined status', () => {
+		const combined = aggregateManifestReports([
+			{ status: 'success', results: [{ pr: '1', status: 'pass' }] },
+			{ status: 'partial_failure', results: [{ pr: '2', status: 'fail' }, { pr: '3', status: 'pass' }] },
+		]);
+		expect(combined).toMatchObject({
+			status: 'partial_failure',
+			manifest_count: 2,
+			results: expect.arrayContaining([
+				expect.objectContaining({ pr: '1', status: 'pass' }),
+				expect.objectContaining({ pr: '2', status: 'fail' }),
+			]),
+		});
+	});
+
+	it('treats rate-limit partial_failure with rerun queue as workflow-success', () => {
+		const combined = aggregateManifestReports([
+			{
+				status: 'partial_failure',
+				results: [{ pr: '1', status: 'fail' }, { pr: '2', status: 'queued', phase: 'rate_limit_rerun' }],
+				rerunAppend: { targets: [{ pr: 2, body_file: 'scripts/ci/post-merge-closeout/pr-2-body.md' }] },
+			},
+		]);
+		expect(isResumablePartialFailure(combined)).toBe(true);
+		expect(resolveCloseoutWorkflowExitCode(combined)).toBe(0);
+	});
+
+	it('keeps validator partial_failure and circuit breaker trips as workflow-failure', () => {
+		const validatorPartial = aggregateManifestReports([
+			{ status: 'partial_failure', results: [{ pr: '1', status: 'fail' }, { pr: '2', status: 'pass' }] },
+		]);
+		expect(isResumablePartialFailure(validatorPartial)).toBe(false);
+		expect(resolveCloseoutWorkflowExitCode(validatorPartial)).toBe(1);
+
+		const breakerPartial = aggregateManifestReports([
+			{
+				status: 'partial_failure',
+				results: [{ pr: '1', status: 'fail' }],
+				circuit_breaker_tripped: { tripped: true, signature: 'runtime' },
+			},
+		]);
+		expect(resolveCloseoutWorkflowExitCode(breakerPartial)).toBe(1);
 	});
 });
