@@ -56,10 +56,12 @@ permissions:
   issues: write
 
 jobs:
-  closeout:
+  resolve:
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     runs-on: ubuntu-latest
-
+    outputs:
+      mode: ${{ steps.mode.outputs.mode }}
+      manifests_json: ${{ steps.manifests.outputs.manifests_json }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -91,30 +93,140 @@ jobs:
             printf '%s\n' "${CHANGED_PATHS}" | node scripts/ci/resolve_closeout_manifests_from_push.mjs --stdin-paths
           fi
 
-      - name: Batch closeout for all pending CI manifests
-        if: |
-          (github.event_name == 'workflow_dispatch' && inputs.run_all_pending == 'true') ||
-          github.event_name == 'push'
+      - name: Determine closeout execution mode
+        id: mode
         env:
-          GITHUB_TOKEN: ${{ github.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_SHA: ${{ github.sha }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
-          CLOSEOUT_MANIFESTS: ${{ github.event_name == 'push' && steps.push_manifests.outputs.closeout_manifests || '' }}
-        run: node scripts/ci/run_post_merge_closeout_all_manifests.mjs
+          EVENT_NAME: ${{ github.event_name }}
+          RUN_ALL_PENDING: ${{ github.event_name == 'workflow_dispatch' && inputs.run_all_pending || 'false' }}
+          RUN_BATCH: ${{ github.event_name == 'workflow_dispatch' && inputs.run_batch || 'false' }}
+        run: |
+          set -euo pipefail
+          if [ "${EVENT_NAME}" = "push" ] || [ "${RUN_ALL_PENDING}" = "true" ]; then
+            echo "mode=matrix" >> "${GITHUB_OUTPUT}"
+          elif [ "${RUN_BATCH}" = "true" ]; then
+            echo "mode=single_manifest" >> "${GITHUB_OUTPUT}"
+          else
+            echo "mode=single_pr" >> "${GITHUB_OUTPUT}"
+          fi
 
-      - name: Batch closeout for manual backfill manifest
-        if: github.event_name == 'workflow_dispatch' && inputs.run_batch == 'true' && inputs.run_all_pending != 'true'
+      - name: Format manifests for matrix
+        id: manifests
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PUSH_MANIFESTS: ${{ github.event_name == 'push' && steps.push_manifests.outputs.closeout_manifests || '' }}
+          RUN_ALL_PENDING: ${{ github.event_name == 'workflow_dispatch' && inputs.run_all_pending || 'false' }}
+          MODE: ${{ steps.mode.outputs.mode }}
+        run: |
+          set -euo pipefail
+          if [ "${MODE}" != "matrix" ]; then
+            echo 'manifests_json=[]' >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          if [ "${EVENT_NAME}" = "push" ] && [ -n "${PUSH_MANIFESTS}" ]; then
+            MANIFESTS_JSON="$(node --input-type=module -e "
+              const list = process.env.PUSH_MANIFESTS.split(',').map((entry) => entry.trim()).filter(Boolean);
+              console.log(JSON.stringify(list));
+            ")"
+          else
+            MANIFESTS_JSON="$(node --input-type=module -e "
+              import { DEFAULT_MANIFESTS } from './scripts/ci/run_post_merge_closeout_all_manifests.mjs';
+              console.log(JSON.stringify(DEFAULT_MANIFESTS));
+            ")"
+          fi
+          echo "manifests_json=${MANIFESTS_JSON}" >> "${GITHUB_OUTPUT}"
+
+  closeout-shard:
+    needs: resolve
+    if: needs.resolve.outputs.mode == 'matrix' && needs.resolve.outputs.manifests_json != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        manifest: ${{ fromJson(needs.resolve.outputs.manifests_json) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run closeout manifest shard
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_RUN_ID: ${{ github.run_id }}
-          CLOSEOUT_MANIFEST: ${{ github.event.inputs.closeout_manifest || 'scripts/ci/post-merge-closeout/targets.json' }}
+          CLOSEOUT_MANIFEST: ${{ matrix.manifest }}
         run: node scripts/ci/run_batch_post_merge_closeout.mjs
 
-      - name: Upload post-merge batch closeout report
-        if: always() && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.run_batch == 'true' || inputs.run_all_pending == 'true')))
+      - name: Stage shard report
+        if: always()
+        run: |
+          set -euo pipefail
+          SHARD_FILE="closeout-shard-${{ strategy.job-index }}.json"
+          if [ -f post-merge-batch-closeout.json ]; then
+            cp post-merge-batch-closeout.json "${SHARD_FILE}"
+          else
+            printf '%s\n' '{"status":"failure","failed_phase":"shard","results":[],"error":{"phase":"shard","message":"missing shard report"}}' > "${SHARD_FILE}"
+          fi
+
+      - name: Upload manifest shard report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: closeout-shard-${{ strategy.job-index }}
+          path: closeout-shard-${{ strategy.job-index }}.json
+          if-no-files-found: warn
+
+  aggregate-closeout:
+    needs: [resolve, closeout-shard]
+    if: always() && needs.resolve.outputs.mode == 'matrix' && needs.resolve.outputs.manifests_json != '[]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Download manifest shard reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: closeout-shard-*
+          path: closeout-shards
+          merge-multiple: true
+
+      - name: Aggregate closeout shard reports
+        id: aggregate
+        env:
+          CLOSEOUT_AGGREGATE_DIR: closeout-shards
+        run: node scripts/ci/run_post_merge_closeout_all_manifests.mjs
+
+      - name: Commit rate-limit rerun manifest updates
+        if: steps.aggregate.outputs.rerun_manifest_changed == 'true'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json
+          git commit -m "chore(ci): queue rate-limited closeout targets for rerun [skip ci]"
+          git push
+
+      - name: Upload aggregated post-merge batch closeout report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: post-merge-batch-closeout-report
@@ -123,8 +235,34 @@ jobs:
             post-merge-result.json
           if-no-files-found: warn
 
+  closeout-legacy:
+    needs: resolve
+    if: needs.resolve.outputs.mode != 'matrix'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Batch closeout for manual backfill manifest
+        if: needs.resolve.outputs.mode == 'single_manifest'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          CLOSEOUT_MANIFEST: ${{ github.event.inputs.closeout_manifest || 'scripts/ci/post-merge-closeout/targets.json' }}
+        run: node scripts/ci/run_batch_post_merge_closeout.mjs
+
       - name: Manual single-PR closeout
-        if: github.event_name == 'workflow_dispatch' && inputs.run_batch != 'true' && inputs.run_all_pending != 'true'
+        if: needs.resolve.outputs.mode == 'single_pr' && inputs.run_batch != 'true' && inputs.run_all_pending != 'true'
         env:
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
@@ -136,8 +274,18 @@ jobs:
           SKIP_BODY_APPLY: ${{ github.event.inputs.skip_body_apply || 'false' }}
         run: node scripts/ci/run_post_merge_closeout.mjs
 
+      - name: Upload post-merge batch closeout report
+        if: always() && needs.resolve.outputs.mode == 'single_manifest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-merge-batch-closeout-report
+          path: |
+            post-merge-batch-closeout.json
+            post-merge-result.json
+          if-no-files-found: warn
+
       - name: Upload manual single-PR closeout report
-        if: always() && github.event_name == 'workflow_dispatch' && inputs.run_batch != 'true' && inputs.run_all_pending != 'true'
+        if: always() && needs.resolve.outputs.mode == 'single_pr' && inputs.run_batch != 'true' && inputs.run_all_pending != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: post-merge-single-closeout-report

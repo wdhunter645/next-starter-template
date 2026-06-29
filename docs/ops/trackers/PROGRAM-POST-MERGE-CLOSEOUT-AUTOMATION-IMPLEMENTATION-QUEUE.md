@@ -78,7 +78,8 @@ Task 001 (path-scoped manifest replay on push)
 | 002 | #1965 | complete | PR #1976 @ `21abad7eb3b0682108e4c29c2f9372eb58160b62` |
 | 003 | #1966 | complete | PR #1977 @ `30cbf066ebffef574207f194e91ab47d13697748` |
 | 004 | #1967 | complete | PR #1978 @ merged |
-| 005 | #1968 | in progress | — |
+| 005 | #1968 | complete | PR #2038 @ merged |
+| 006 | #1969 | in progress | — |
 
 ## Archived closeout manifests (Task 004)
 
