@@ -30,7 +30,11 @@ This report covers Program #1685 structural baseline verification only. It does 
 
 ## Verification (2026-06-29)
 
-Base commit: `b703b26f674441b602762be58e5ac0c61ab7837c` (`origin/main`)
+| Context | SHA |
+| --- | --- |
+| Pre-merge `origin/main` base | `b703b26f674441b602762be58e5ac0c61ab7837c` |
+| PR #2068 verification head (includes assess alias fix) | `f05c1ea027fa89e3acabe586fd82b60e54a6c31e` |
+| Merge commit (PR #2068 on `main`) | `5b7219828aa70098c7ef323895c878dd9d0cec52` |
 
 | Command | Result | Notes |
 | --- | --- | --- |
@@ -40,9 +44,9 @@ Base commit: `b703b26f674441b602762be58e5ac0c61ab7837c` (`origin/main`)
 | `npm run build` | pass | 41 static routes exported to `out/` |
 | `npm run verify:invariants` | pass | nav/auth surfaces |
 | `npm run launch-readiness:unit` | pass | 5 files, 47 tests |
-| `npm run assess:ci` | pass (after alias fix) | ai-review postbuild rename resolved in assess harness |
+| `npm run assess:ci` | pass | verified on PR head `f05c1ea` with assess harness alias fix |
 
-CI on `main`: `gate-quality.yml` success on head SHA `b703b26`.
+CI on `main` after merge: `gate-quality.yml` success on merge SHA `5b72198`.
 
 ## Structural scope completion
 
