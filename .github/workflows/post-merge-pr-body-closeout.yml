@@ -215,6 +215,13 @@ jobs:
           CLOSEOUT_AGGREGATE_DIR: closeout-shards
         run: node scripts/ci/run_post_merge_closeout_all_manifests.mjs
 
+      - name: Emit closeout backlog metrics
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node scripts/ci/emit_closeout_backlog_metrics.mjs
+
       - name: Commit rate-limit rerun manifest updates
         if: steps.aggregate.outputs.rerun_manifest_changed == 'true'
         run: |
@@ -260,6 +267,13 @@ jobs:
           GITHUB_RUN_ID: ${{ github.run_id }}
           CLOSEOUT_MANIFEST: ${{ github.event.inputs.closeout_manifest || 'scripts/ci/post-merge-closeout/targets.json' }}
         run: node scripts/ci/run_batch_post_merge_closeout.mjs
+
+      - name: Emit closeout backlog metrics
+        if: always() && needs.resolve.outputs.mode == 'single_manifest'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node scripts/ci/emit_closeout_backlog_metrics.mjs
 
       - name: Manual single-PR closeout
         if: needs.resolve.outputs.mode == 'single_pr' && inputs.run_batch != 'true' && inputs.run_all_pending != 'true'
