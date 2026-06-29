@@ -17,7 +17,7 @@ Last Reviewed: 2026-06-29
 
 # Website Automatic Content Publication Capability Implementation Plan
 
-> Program #2040 is controlled by GitHub Issues. Cursor may execute only the assigned child task issue and must stop at `READY FOR REVIEW`.
+> Program #2040 is controlled by GitHub issues. Cursor may execute only the assigned child task issue and must stop at `READY FOR REVIEW`.
 
 ## Purpose
 
