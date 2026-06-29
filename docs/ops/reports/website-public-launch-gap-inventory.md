@@ -20,6 +20,23 @@ This report inventories the remaining gaps between the #1685 structural website 
 
 It converts live repository inspection into bounded implementation recommendations and routes each gap to the correct #2039 child task.
 
+## Scope
+
+This report covers public and member-facing route inventory, navigation/footer review, and gap routing for Program #2039 Tasks #2042–#2048 after Program #1685 closeout.
+
+It does not implement runtime changes, authorize production launch, or define Program #2040 publication automation.
+
+## Current known truth
+
+- Program #1685 structural baseline is closed complete on `main`.
+- Program #2039 child tasks #2041–#2048 exist; Task #2041 is the authorized docs-only inventory task.
+- `/admin/clubstaging` does not exist; social wall depends on Elfsight; sitemap/robots artifacts are absent; most core public pages are client components.
+- Fail-closed campaign and fundraiser placeholders are present on homepage and Fan Club surfaces.
+
+## Intended final state
+
+After Task #2041 merge, Program #2039 has a single authoritative gap inventory that routes each launch-readiness gap to the correct downstream child task with recommended file-touch boundaries, escalations, and a Task #2042 readiness decision.
+
 ## Launch boundary
 
 This report does **not** authorize production launch, runtime changes, or Program #2040 publication automation. It routes discovered work into the #2039 child task chain only.
@@ -198,6 +215,7 @@ Routes below were verified from `src/app/**/page.tsx` on `main` at 2026-06-29.
 
 - Root `src/app/layout.tsx` defines site-wide title and description only.
 - No per-route `metadata` or `generateMetadata` exports were found under `src/app/**`.
+- Most core public pages (`/`, `/about`, `/faq`, `/ask`, `/events`, `/search`) are client components (`'use client'`), so per-route metadata must be implemented via server layouts/wrappers rather than page exports alone.
 - No `src/app/sitemap.ts`, `src/app/robots.ts`, `public/sitemap.xml`, or `public/robots.txt` found.
 - `functions/[[path]].ts` pass-through expects `/robots.txt` and `/sitemap.xml`, but artifacts are absent.
 - `GoogleAnalytics` loads only when `NEXT_PUBLIC_GA_ID` is set; no hardcoded secrets observed.
@@ -215,7 +233,13 @@ Routes below were verified from `src/app/**/page.tsx` on `main` at 2026-06-29.
 - `src/app/layout.tsx`
 - `src/app/sitemap.ts` and/or `src/app/robots.ts` (if added)
 - `public/**` static SEO assets (if added)
-- `src/app/**/page.tsx` metadata exports for core public routes
+- Route-level server layouts or wrappers for client pages, for example:
+  - `src/app/about/layout.tsx`
+  - `src/app/faq/layout.tsx`
+  - `src/app/ask/layout.tsx`
+  - `src/app/events/layout.tsx`
+  - `src/app/search/layout.tsx`
+  - additional route `layout.tsx` files as needed for homepage/metadata boundaries
 - `docs/ops/pmo/website-public-launch-relaunch-readiness.md`
 - `docs/ops/reports/website-public-launch-seo-analytics-readiness.md` (new report expected)
 
@@ -236,7 +260,9 @@ Routes below were verified from `src/app/**/page.tsx` on `main` at 2026-06-29.
 
 **Smoke areas to cover:**
 
-- Public routes (`/`, `/about`, `/contact`, `/faq`, `/ask`, `/search`, `/join`)
+- Public routes (`/`, `/about`, `/contact`, `/faq`, `/ask`, `/search`, `/join`, `/events`)
+- Legal pages (`/privacy`, `/terms`)
+- Legacy/auth compatibility routes (`/login`, `/auth`, `/logout`)
 - Auth boundary (`/fanclub/**` redirect for guests)
 - Admin routes including future `/admin/clubstaging`
 - Donation/campaign fail-closed behavior
