@@ -5,13 +5,13 @@ Authority Level: Operational Authority
 Owns: Priority #1 PMO readiness decision, next-program candidate scope, child-project boundaries, design/readiness state, Cursor launch preconditions
 Does Not Own: Runtime implementation, issue creation, merge authority, production secrets, vendor configuration, fundraiser program scope
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-Related Issues: #1678, #1255, #1256, #1258, #1259, #1379
-Last Reviewed: 2026-06-16
+Related issues: #1678, #1255, #1256, #1258, #1259, #1379, #1685, #1963
+Last Reviewed: 2026-06-29
 ---
 
 # Website Completion / Fan Club Product Buildout Readiness
 
-> This program is BLOCKED from execution until Atlas/Bill explicitly launch it. Planning, review, and documentation discussion may continue, but Cursor may not execute implementation work from this program until Bill/Atlas explicitly launch it.
+> Program #1685 structural baseline is **ready for Bill/Atlas launch review** after CI Program #1963 closeout. Cursor may not execute Program #2039 work from this package.
 
 ## Purpose
 
@@ -64,7 +64,7 @@ The intended final state before implementation launch is:
 | Candidate program name | Website Completion / Fan Club Product Buildout |
 | PMO source | PMO Backlog Priority #1 |
 | Execution agent after launch | Cursor |
-| Current readiness | Planning-ready; blocked from implementation until Atlas/Bill launch |
+| Current readiness | Structural baseline complete; ready for Bill/Atlas launch review after CI #1963 closeout |
 | Primary implementation plan | `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md` |
 | Primary design authority | `docs/reference/design/LGFC-Production-Design-and-Standards.md` |
 | Product surface | Authenticated Fan Club experience and supporting backend/content operations |
@@ -156,4 +156,4 @@ Readiness state after this package:
 - portfolio readiness: ready;
 - design readiness: sufficient for launch review;
 - implementation-plan readiness: sufficient for Cursor task issue creation after launch;
-- execution readiness: blocked until Atlas/Bill explicitly launch the program and authorize the first Cursor task.
+- execution readiness: structural baseline complete on `main`; ready for Bill/Atlas launch review (see `docs/ops/reports/website-completion-program-1685-launch-readiness.md`).
