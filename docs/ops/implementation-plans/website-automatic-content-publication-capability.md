@@ -75,16 +75,16 @@ At the end of Program #2040:
 
 ## Task sequence
 
-| Task | issue | Title | Stage before merge | Halt condition | Resume condition | Successor |
-| ---: | ---: | --- | --- | --- | --- | --- |
-| 001 | #2049 | Manual workflow evidence review and publication candidate inventory | #1738 handoff evidence reviewed | #1738 evidence missing or incomplete | Bill/Atlas confirm evidence or rebaseline scope | #2050 |
-| 002 | #2050 | Publication state model and approval authority design | #2049 merged or accepted | State or approval authority unclear | Bill/Atlas confirm authority model | #2051 |
-| 003 | #2051 | Admin staged-content review and rotation control surface design | #2050 and #2043 merged or accepted | Staging surface or review boundary unclear | Admin staging boundary confirmed | #2052 |
-| 004 | #2052 | Scheduled publication and controlled rotation implementation plan | #2050 and #2051 merged or accepted | Schedule or rotation control cannot be bounded | Bill/Atlas confirm schedule/rotation boundary | #2053 |
-| 005 | #2053 | Audit trail rollback unpublish and evidence retention design | #2050 merged or accepted | Recovery or retention rules unclear | Bill/Atlas confirm evidence requirements | #2054 |
-| 006 | #2054 | Publication safety CI ops checks and fail-closed rules | #2050 through #2053 merged or accepted | Safety checks cannot be made deterministic | Checks converted to follow-up scope or accepted exception | #2055 |
-| 007 | #2055 | Implementation of approved publication support slices | #2049 through #2054 merged or accepted | Approved implementation slices are not bounded | Bill/Atlas approve narrowed implementation slice | #2056 |
-| 008 | #2056 | Program validation and operator handoff report | #2049 through #2055 merged or accepted | Open blocker lacks follow-up owner | Blocker converted to follow-up issue or accepted exception | terminal |
+| Task | issue | Title | Predecessor | Stage before merge | Halt condition | Resume condition | Successor |
+| ---: | ---: | --- | --- | --- | --- | --- | --- |
+| 001 | #2049 | Manual workflow evidence review and publication candidate inventory | #1738 handoff evidence | yes | #1738 evidence missing or incomplete | Bill/Atlas confirm evidence or rebaseline scope | #2050 |
+| 002 | #2050 | Publication state model and approval authority design | #2049 | yes | State or approval authority unclear | Bill/Atlas confirm authority model | #2051 |
+| 003 | #2051 | Admin staged-content review and rotation control surface design | #2050 and #2043 | yes | Staging surface or review boundary unclear | Admin staging boundary confirmed | #2052 |
+| 004 | #2052 | Scheduled publication and controlled rotation implementation plan | #2050 and #2051 | yes | Schedule or rotation control cannot be bounded | Bill/Atlas confirm schedule/rotation boundary | #2053 |
+| 005 | #2053 | Audit trail rollback unpublish and evidence retention design | #2050 | yes | Recovery or retention rules unclear | Bill/Atlas confirm evidence requirements | #2054 |
+| 006 | #2054 | Publication safety CI ops checks and fail-closed rules | #2050 through #2053 | yes | Safety checks cannot be made deterministic | Checks converted to follow-up scope or accepted exception | #2055 |
+| 007 | #2055 | Implementation of approved publication support slices | #2049 through #2054 | yes | Approved implementation slices are not bounded | Bill/Atlas approve narrowed implementation slice | #2056 |
+| 008 | #2056 | Program validation and operator handoff report | #2049 through #2055 | yes | Open blocker lacks follow-up owner | Blocker converted to follow-up issue or accepted exception | terminal |
 
 ## Task 001 — Manual workflow evidence review
 
