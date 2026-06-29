@@ -13,8 +13,11 @@ import {
 	alternateProgramLaneFailures,
 	blockingMetadataFailures,
 	implementationEvidenceFailures,
+	isAfterMerge,
+	isHighSeverityFinding,
 	preMergeReadinessBodyFailures,
 	reviewerDispositionFailures,
+	reviewerFindings,
 	sourceIssueStateFailures,
 } from './post_merge_validator.mjs';
 import {
@@ -90,10 +93,44 @@ export function resolveIntentLabel(labels = []) {
 	return names.find((name) => INTENT_LABELS.has(name)) || 'infra';
 }
 
+function reviewerItemId(item) {
+	return String(item?.id || item?.databaseId || item?.database_id || '').trim();
+}
+
+function collectLateReviewerItems({
+	mergedAt = '',
+	issueComments = [],
+	reviewComments = [],
+	reviews = [],
+} = {}) {
+	const items = [];
+	const consider = (item, timestamp, body, state = '') => {
+		if (!isTrustedReviewer(item.user?.login || '')) return;
+		if (!isAfterMerge(timestamp, mergedAt)) return;
+		if (!isHighSeverityFinding(body, state)) return;
+		const id = reviewerItemId(item);
+		if (id) items.push({ id, item });
+	};
+
+	for (const comment of issueComments) {
+		consider(comment, comment.created_at, comment.body || '');
+	}
+	for (const comment of reviewComments) {
+		consider(comment, comment.created_at, comment.body || '');
+	}
+	for (const review of reviews) {
+		consider(review, review.submitted_at, review.body || '', review.state || '');
+	}
+
+	return items;
+}
+
 export function buildReviewerDispositionLines({
+	issueComments = [],
 	reviewComments = [],
 	reviews = [],
 	prNumber,
+	mergedAt = '',
 } = {}) {
 	const lines = [];
 	const seen = new Set();
@@ -130,6 +167,19 @@ export function buildReviewerDispositionLines({
 		);
 	}
 
+	for (const { id } of collectLateReviewerItems({
+		mergedAt,
+		issueComments,
+		reviewComments,
+		reviews,
+	})) {
+		if (seen.has(id)) continue;
+		seen.add(id);
+		lines.push(
+			`- review-comment:${id} — accepted — post-merge closeout remediation for prior PR #${prNumber} — thread state: resolved`,
+		);
+	}
+
 	return lines;
 }
 
@@ -140,6 +190,9 @@ export function failureRemediationNote(failureCode = '') {
 	}
 	if (code.includes('source_issue_not_open')) {
 		return 'Records permitted closed-source follow-up closeout evidence for completed source issue.';
+	}
+	if (code.includes('late_reviewer')) {
+		return 'Adds explicit `review-comment:` dispositions for late post-merge trusted reviewer findings.';
 	}
 	if (code.includes('undispositioned') || code.includes('reviewer')) {
 		return 'Adds explicit `review-comment:` dispositions for all trusted reviewer threads on the merged PR.';
@@ -162,6 +215,8 @@ export function generateCloseoutBody({
 	changedFiles = [],
 	reviewComments = [],
 	reviews = [],
+	issueComments = [],
+	mergedAt = '',
 	sourceIssueState = 'open',
 } = {}) {
 	const sanitized = sanitizeMergedPrBody(mergedBody);
@@ -170,9 +225,11 @@ export function generateCloseoutBody({
 		extractChangeSummaryFromBody(sanitized)
 		|| `Post-merge closeout body remediation for merged PR #${prNumber} / source #${sourceIssueNumber}.`;
 	const dispositionLines = buildReviewerDispositionLines({
+		issueComments,
 		reviewComments,
 		reviews,
 		prNumber,
+		mergedAt,
 	});
 	const remediationNote = failureRemediationNote(failureCode);
 	const sourceIssueIsClosed = String(sourceIssueState).toLowerCase() === 'closed';
@@ -400,7 +457,8 @@ export async function fetchCloseoutGenerationContext({
 	const sourceIssue = resolvedSourceIssue
 		? await githubRepoRequest({ token, repository, path: `/issues/${resolvedSourceIssue}` })
 		: null;
-	const [reviewComments, reviews, files] = await Promise.all([
+	const [issueComments, reviewComments, reviews, files] = await Promise.all([
+		paginateRepo({ token, repository, path: `/issues/${prNumber}/comments` }),
 		paginateRepo({ token, repository, path: `/pulls/${prNumber}/comments` }),
 		paginateRepo({ token, repository, path: `/pulls/${prNumber}/reviews` }),
 		paginateRepo({ token, repository, path: `/pulls/${prNumber}/files` }),
@@ -414,6 +472,7 @@ export async function fetchCloseoutGenerationContext({
 		failureCode,
 		mergedBody: pr.body || '',
 		changedFiles: files,
+		issueComments,
 		reviewComments,
 		reviews,
 		sourceIssue,
@@ -439,8 +498,10 @@ export async function generateCloseoutBodyForPr(options = {}) {
 		failureCode: context.failureCode || options.failureCode || '',
 		mergedBody: context.mergedBody,
 		changedFiles: context.changedFiles,
+		issueComments: context.issueComments,
 		reviewComments: context.reviewComments,
 		reviews: context.reviews,
+		mergedAt: context.mergedAt,
 		sourceIssueState: context.sourceIssueState,
 	});
 
@@ -452,6 +513,7 @@ export async function generateCloseoutBodyForPr(options = {}) {
 		merged_at: context.mergedAt,
 		body,
 		body_file: defaultCloseoutBodyPath(context.prNumber),
+		issueComments: context.issueComments,
 		reviewComments: context.reviewComments,
 		reviews: context.reviews,
 		sourceIssue: context.sourceIssue,
@@ -462,6 +524,7 @@ export async function validateGeneratedBody({
 	body,
 	mergeSha = '',
 	mergedAt = '',
+	issueComments = [],
 	reviewComments = [],
 	reviews = [],
 	sourceIssue = null,
@@ -471,15 +534,26 @@ export async function validateGeneratedBody({
 	const implementation = implementationEvidenceFailures({ body, files: [] });
 	const reviewer = reviewerDispositionFailures({
 		body,
+		issueComments,
 		reviewComments,
 		reviews,
 		headSha: mergeSha,
 		mergedAt,
 	});
+	const lateFindings = reviewerFindings({
+		pr: { body, mergedAt, merged_at: mergedAt },
+		issueComments,
+		reviewComments,
+		reviews,
+	});
+	const lateFindingFailures = lateFindings.map((finding) => ({
+		code: 'late_reviewer_finding',
+		message: `${finding.reviewer}: ${finding.body || finding.url || 'finding recorded'}`,
+	}));
 	const sourceFailures = sourceIssue
 		? sourceIssueStateFailures({ body, sourceIssue, repoLabels })
 		: [];
-	const failures = [...metadata, ...implementation, ...reviewer, ...sourceFailures];
+	const failures = [...metadata, ...implementation, ...reviewer, ...lateFindingFailures, ...sourceFailures];
 	return {
 		status: failures.length === 0 ? 'pass' : 'fail',
 		failures,
@@ -555,6 +629,7 @@ export async function generateBacklogCloseoutBodies({
 					body: generated.body,
 					mergeSha: generated.merge_sha,
 					mergedAt: generated.merged_at,
+					issueComments: generated.issueComments,
 					reviewComments: generated.reviewComments,
 					reviews: generated.reviews,
 					sourceIssue: generated.sourceIssue,

@@ -56,6 +56,68 @@ placeholder
 		]);
 	});
 
+	it('builds reviewer disposition lines for late post-merge trusted findings', () => {
+		const lines = buildReviewerDispositionLines({
+			prNumber: 1188,
+			mergedAt: '2026-06-02T17:00:00Z',
+			issueComments: [
+				{
+					id: 9001,
+					created_at: '2026-06-02T17:25:00Z',
+					body: 'P1 blocking: must fix this regression.',
+					user: { login: 'gemini-code-assist[bot]' },
+				},
+			],
+		});
+		expect(lines).toEqual([
+			'- review-comment:9001 — accepted — post-merge closeout remediation for prior PR #1188 — thread state: resolved',
+		]);
+	});
+
+	it('validates generated bodies against late reviewer findings using mergedAt', async () => {
+		const mergedAt = '2026-06-02T17:00:00Z';
+		const lateReview = {
+			id: 4443329728,
+			submitted_at: '2026-06-02T17:25:00Z',
+			state: 'COMMENTED',
+			body: 'P1 blocking: must fix this regression.',
+			user: { login: 'copilot-pull-request-reviewer[bot]' },
+		};
+		const bodyWithoutDisposition = generateCloseoutBody({
+			prNumber: 1188,
+			mergeSha: 'abc123',
+			sourceIssueNumber: 1180,
+			mergedAt,
+		});
+		const failResult = await validateGeneratedBody({
+			body: bodyWithoutDisposition,
+			mergeSha: 'abc123',
+			mergedAt,
+			reviews: [lateReview],
+			sourceIssue: { number: 1180, state: 'open', labels: [] },
+			repoLabels: [{ name: 'status:complete' }],
+		});
+		expect(failResult.status).toBe('fail');
+		expect(failResult.failures).toContainEqual(expect.objectContaining({ code: 'late_reviewer_finding' }));
+
+		const bodyWithDisposition = generateCloseoutBody({
+			prNumber: 1188,
+			mergeSha: 'abc123',
+			sourceIssueNumber: 1180,
+			mergedAt,
+			reviews: [lateReview],
+		});
+		const passResult = await validateGeneratedBody({
+			body: bodyWithDisposition,
+			mergeSha: 'abc123',
+			mergedAt,
+			reviews: [lateReview],
+			sourceIssue: { number: 1180, state: 'open', labels: [] },
+			repoLabels: [{ name: 'status:complete' }],
+		});
+		expect(passResult.failures.filter((failure) => failure.code === 'late_reviewer_finding')).toEqual([]);
+	});
+
 	it('generates a closeout body with required sections and PASS verification', () => {
 		const body = generateCloseoutBody({
 			prNumber: 1201,
@@ -89,6 +151,7 @@ placeholder
 
 	it('maps failure codes to remediation notes', () => {
 		expect(failureRemediationNote('closeout_blocker_declared')).toMatch(/BLOCKED/);
+		expect(failureRemediationNote('late_reviewer_finding')).toMatch(/late post-merge/);
 		expect(failureRemediationNote('undispositioned_reviewer_comment')).toMatch(/review-comment/);
 	});
 
