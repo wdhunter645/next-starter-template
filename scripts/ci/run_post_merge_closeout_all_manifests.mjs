@@ -70,10 +70,17 @@ export function aggregateManifestReports(reports = []) {
 
 export function isResumablePartialFailure(combined = {}) {
 	if (combined.status !== 'partial_failure') return false;
-	if (combined.error || combined.failed_phase === 'setup') return false;
+	if (combined.error || combined.failed_phase === 'setup' || combined.failed_phase === 'shard') return false;
 	const reportList = combined.reports || [];
 	if (reportList.some((report) => report.circuit_breaker_tripped?.tripped)) return false;
-	return reportList.some((report) => (report.rerunAppend?.targets || []).length > 0);
+	if (reportList.some((report) => report.status === 'failure')) return false;
+	if (!reportList.some((report) => (report.rerunAppend?.targets || []).length > 0)) return false;
+
+	const nonRateLimitFailures = (combined.results || []).filter((entry) =>
+		(entry.status === 'fail' || entry.status === 'error')
+		&& !['rate_limit', 'rate_limit_rerun'].includes(entry.phase),
+	);
+	return nonRateLimitFailures.length === 0;
 }
 
 export function resolveCloseoutWorkflowExitCode(combined = {}) {

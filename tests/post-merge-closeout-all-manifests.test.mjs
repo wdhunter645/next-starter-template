@@ -249,7 +249,7 @@ describe('post-merge closeout all manifests', () => {
 		const combined = aggregateManifestReports([
 			{
 				status: 'partial_failure',
-				results: [{ pr: '1', status: 'fail' }, { pr: '2', status: 'queued', phase: 'rate_limit_rerun' }],
+				results: [{ pr: '1', status: 'fail', phase: 'rate_limit' }, { pr: '2', status: 'queued', phase: 'rate_limit_rerun' }],
 				rerunAppend: { targets: [{ pr: 2, body_file: 'scripts/ci/post-merge-closeout/pr-2-body.md' }] },
 			},
 		]);
@@ -289,6 +289,22 @@ describe('post-merge closeout all manifests', () => {
 			failed_phase: 'shard',
 			error: { phase: 'shard', message: 'missing shard report' },
 		});
+		expect(resolveCloseoutWorkflowExitCode(combined)).toBe(1);
+	});
+
+	it('does not treat mixed rate-limit and validator partial_failure as resumable', () => {
+		const combined = aggregateManifestReports([
+			{
+				status: 'partial_failure',
+				results: [{ pr: '1', status: 'fail', phase: 'rate_limit' }, { pr: '2', status: 'queued', phase: 'rate_limit_rerun' }],
+				rerunAppend: { targets: [{ pr: 2, body_file: 'scripts/ci/post-merge-closeout/pr-2-body.md' }] },
+			},
+			{
+				status: 'partial_failure',
+				results: [{ pr: '3', status: 'fail', phase: 'validation' }, { pr: '4', status: 'pass' }],
+			},
+		]);
+		expect(isResumablePartialFailure(combined)).toBe(false);
 		expect(resolveCloseoutWorkflowExitCode(combined)).toBe(1);
 	});
 });
