@@ -80,7 +80,36 @@ Task 001 (path-scoped manifest replay on push)
 | 004 | #1967 | complete | PR #1978 @ merged |
 | 005 | #1968 | complete | PR #2038 @ merged |
 | 006 | #1969 | complete | PR #2059 @ merged |
-| 007 | #1970 | in progress | — |
+| 007 | #1970 | complete | PR #2062 @ `e48ba35` |
+| 008 | #1971 | in progress | — |
+
+## Program rollout checkpoint (2026-06-29)
+
+Program **#1963** implementation queue is complete pending Task 008 documentation
+merge. Rollout evidence:
+
+| Failure mode | Task | Resolution |
+| --- | --- | --- |
+| F1 — push replays entire default manifest stack | #1964 | Path-scoped push replay via `resolve_closeout_manifests_from_push.mjs` |
+| F2 — rate limits abort batch tail | #1965 | Retry/backoff + `targets-ci-pending-rerun.json` queue |
+| F3 — prune skipped on `partial_failure` | #1966 | Per-target pass-only prune |
+| F4 — completed waves in default replay | #1967 | `targets-active.json` registry + archived waves |
+| F5 — generator validate vs replay `late_reviewer_finding` gap | #1968 | Generator/replay alignment (PR #2038) |
+| F6 — `partial_failure` fails workflow | #1969 | Resumable model + matrix sharding (PR #2059) |
+| F7 — backlog metrics not emitted | #1970 | GraphQL metrics + `summary.by_code` (PR #2062) |
+
+Terminal documentation and registry updates: Task #1971 (PR pending).
+
+## Master program acceptance criteria (#1963)
+
+- [x] Path-scoped closeout manifest replay on push (Task 001 / #1964)
+- [x] GitHub API resilience and rate-limit rerun queue (Task 002 / #1965)
+- [x] Per-target manifest pruning on `partial_failure` (Task 003 / #1966)
+- [x] Active manifest registry and completed-wave retirement (Task 004 / #1967)
+- [x] Closeout body generator late-reviewer-finding alignment (Task 005 / #1968)
+- [x] Closeout workflow `partial_failure` model and manifest job sharding (Task 006 / #1969)
+- [x] Backlog metrics and batch report failure taxonomy (Task 007 / #1970)
+- [ ] Runbook, validation surface, architecture, and program registry updated (Task 008 / #1971)
 
 ## Archived closeout manifests (Task 004)
 

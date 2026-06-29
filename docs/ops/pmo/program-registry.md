@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: PMO program issue registry, current program issue assignments, launch-state control, child-project mapping, and authoritative execution chain for LGFC orchestrated work
 Does Not Own: PMO v3 top-level policy, implementation plan task definitions, workflow code, runtime behavior, product design, or unauthorized GitHub issue changes
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-Related Issues: #1411, #1379, #1255, #1259, #1500, #1678, #1685, #1696, #1700, #1713, #1719, #1720, #1721, #1722, #1723, #1724, #1725, #1726, #1727, #2039, #2040, #2041, #2042, #2043, #2044, #2045, #2046, #2047, #2048, #2049, #2050, #2051, #2052, #2053, #2054, #2055, #2056
+Related Issues: #1411, #1379, #1255, #1259, #1500, #1678, #1685, #1696, #1700, #1713, #1719, #1720, #1721, #1722, #1723, #1724, #1725, #1726, #1727, #1963, #2039, #2040, #2041, #2042, #2043, #2044, #2045, #2046, #2047, #2048, #2049, #2050, #2051, #2052, #2053, #2054, #2055, #2056
 Last Reviewed: 2026-06-29
 ---
 
@@ -32,6 +32,7 @@ This registry records current program issue assignments, launch-state control, c
 - Priority #2 Fundraiser / Charity Campaign Operations Buildout has program issue #1700 with child task issues #1701 through #1708. Task 001 assignment guidance is posted on #1701. The program remains queued behind Program #1255/#1259 and parked Priority #1 unless Bill/Atlas explicitly reprioritize.
 - Priority #3 PMO Governance / Workflow Automation Completion has program issue #1719 with child task issues #1720 through #1727. Task 001 assignment guidance is posted on #1720. The program remains queued behind Program #1255/#1259, parked Priority #1, and Priority #2 unless Bill/Atlas explicitly reprioritize.
 - issue #1500 (CI Post-Merge Closeout Reliability) is **closed complete** and remains reconciliation evidence for Priority #3. Task #1725 reconciliation report: `docs/ops/reports/program-1500-queue-wave-reconciliation.md`.
+- issue #1963 (CI Post-Merge Closeout Automation Hardening) is **closed complete** pending Task #1971 documentation merge; implementation queue `docs/ops/trackers/PROGRAM-POST-MERGE-CLOSEOUT-AUTOMATION-IMPLEMENTATION-QUEUE.md`.
 - issue #1411 is completed — a planning/control artifact, not an open blocked program.
 - GitHub issue titles use `Program: <name>`. Documentation references use `Program #<issue-number> — <name>`.
 
@@ -175,6 +176,7 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 | #1335 | Phase 1 Wrap-Up | Historical | Prior Program 1 cycle; closed historical evidence only. Not a parent issue for Program #1411. |
 | #1379 | Ideas / future-projects source | Historical | Superseded by PMO Backlog documentation (`/docs/ops/pmo/pmo-backlog.md`). No standing PMO Backlog issue is required. |
 | #1500 | CI Post-Merge Closeout Reliability | Closed complete | Completed implementation cycle. Future CI maintenance requires a new source issue. |
+| #1963 | CI Post-Merge Closeout Automation Hardening | Closed complete (pending #1971 docs merge) | Serial Tasks #1964–#1971; queue tracker `docs/ops/trackers/PROGRAM-POST-MERGE-CLOSEOUT-AUTOMATION-IMPLEMENTATION-QUEUE.md`; successor to #1500 closeout stabilization for batch replay, rate-limit rerun, sharding, and metrics. |
 | #1696 | Fundraiser / Charity Campaign Operations Buildout documentation package | Closed complete | Planning documentation source issue completed by #1697. |
 | #1713 | PMO Governance / Workflow Automation Completion documentation package | Closed complete | Planning documentation source issue completed by #1714. |
 
@@ -214,7 +216,7 @@ Completed program cycles remain audit evidence and may be cited for historical c
 | PR readiness and batch review control | Included in Priority #3 #1723 |
 | Merge and issue change policy | Included in Priority #3 #1724 |
 | Queue/wave model and labels | Included in Priority #3 #1725 — reconciled; see `docs/ops/reports/program-1500-queue-wave-reconciliation.md` |
-| Post-merge closeout evidence stabilization | Included in Priority #3 #1725 — baseline satisfied by closed #1500; gaps for #1726+ only |
+| Post-merge closeout evidence stabilization | Included in Priority #3 #1725 — baseline satisfied by closed #1500 and #1963; gaps for #1726+ only |
 | PMO Backlog promotion and Program #1411 launch gate | Included in Priority #3 #1720 and #1727 |
 
 ### Out of scope for Program #1411 planning
@@ -264,6 +266,7 @@ Program #1255 remains controlled by its own active source issues and Cursor exec
 - Priority #3 implementation plan: `/docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md`
 - Priority #3 program: `#1719`
 - Priority #3 task issues: `#1720` through `#1727`
+- Program #1963 closeout automation queue: `docs/ops/trackers/PROGRAM-POST-MERGE-CLOSEOUT-AUTOMATION-IMPLEMENTATION-QUEUE.md`
 - Cursor execution contract: `/docs/reference/pmo/lgfc-cursor-execution-contract.md`
 - PMO critical path: `/docs/ops/pmo/critical-path.md`
 - Workflow Automation authority: `/docs/ops/pmo/workflow-automation.md`

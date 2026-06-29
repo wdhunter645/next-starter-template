@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Post-merge self-healing architecture, trigger model, prevention vs remediation layering, and operational design rationale for Programs #1847 and #1914
 Does Not Own: Classifier outcome tables, workflow YAML implementation, individual script APIs, merge approval, runtime app behavior
 Canonical Reference: /docs/reference/ci/post-merge-self-healing-classification-contract.md
-Related issues: #1847, #1914, #1906, #1921
-Last Reviewed: 2026-06-22
+Related issues: #1847, #1914, #1906, #1921, #1963
+Last Reviewed: 2026-06-29
 ---
 
 # Post-Merge Self-Healing Architecture
@@ -188,11 +188,40 @@ Program **#1906** owns upstream CI parity: mapping post-merge exception classes 
 pre-merge blockers and closing the gap where merges pass pre-gates but fail closeout.
 
 Programs **#1847** and **#1914** own downstream cleanup and ongoing hygiene.
+Program **#1963** hardened the batch closeout replay path (path-scoped push replay,
+active manifest registry, rate-limit rerun queue, matrix sharding, resumable
+`partial_failure`, and authoritative backlog metrics) documented in
+`docs/how-to/ci/post-merge-self-healing-runbook.md` and
+`docs/reference/ci/post-merge-validation-surface.md`.
+
 All three layers are required:
 
 - **#1906** reduces new exception creation at the source.
 - **#1847** provides the classifier, detector, apply, and escalation framework.
 - **#1914** activates backlog burn-down, issue-event interception, and scheduled hygiene.
+- **#1963** reduces closeout replay churn, rate-limit tail failures, generator/replay
+  gaps, and ops backlog metric confusion on the batch closeout workflow.
+
+## Batch closeout automation (Program #1963)
+
+```mermaid
+flowchart LR
+  push[Push to active manifest paths] --> resolve[resolve job]
+  resolve --> shard[closeout-shard matrix]
+  shard --> aggregate[aggregate-closeout]
+  aggregate --> metrics[emit_closeout_backlog_metrics]
+  aggregate --> rerun[targets-ci-pending-rerun.json commit]
+  dispatch[workflow_dispatch] --> legacy[closeout-legacy or matrix]
+```
+
+| Component | Role |
+|---|---|
+| `targets-active.json` | Authoritative automatic replay manifest registry |
+| `resolve_closeout_manifests_from_push.mjs` | Path-scoped replay on push |
+| Matrix shards | Isolate manifest failures; `fail-fast: false` |
+| Aggregate job | Merge reports, `summary.by_code`, persist rerun queue |
+| `emit_closeout_backlog_metrics.mjs` | GraphQL `ops-pr-escalation` counts + step summary |
+| Resumable `partial_failure` | Rate-limit-only tails exit success when rerun persisted |
 
 ## Operational artifacts
 
