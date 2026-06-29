@@ -5,7 +5,7 @@ Authority Level: Operational Evidence
 Owns: Post-merge closeout decision record for remediation issue #2061
 Does Not Own: Program #2039 implementation launch, source issue closure, public launch execution, or runtime behavior
 Canonical Reference: /docs/ops/pmo/website-public-launch-relaunch-readiness.md
-Related Issues: #2039, #2057, #2061
+Related issues: #2039, #2057, #2061
 Last Reviewed: 2026-06-29
 ---
 
@@ -14,6 +14,10 @@ Last Reviewed: 2026-06-29
 ## Purpose
 
 Record the Atlas/Bill remediation decision for post-merge closeout exception #2061.
+
+## Scope
+
+This report covers only the closeout/accounting remediation for #2061 after PR #2057 merged. It does not launch Program #2039, close Program #2039, execute public launch readiness work, change runtime code, or authorize queue advancement.
 
 ## Source exception
 
