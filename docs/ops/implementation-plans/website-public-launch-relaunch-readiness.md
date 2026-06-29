@@ -17,7 +17,7 @@ Last Reviewed: 2026-06-29
 
 # Website Public Launch / Relaunch Readiness Implementation Plan
 
-> Program #2039 is controlled by GitHub Issues. Cursor may execute only the assigned child task issue and must stop at `READY FOR REVIEW`.
+> Program #2039 is controlled by GitHub issues. Cursor may execute only the assigned child task issue and must stop at `READY FOR REVIEW`.
 
 ## Purpose
 
