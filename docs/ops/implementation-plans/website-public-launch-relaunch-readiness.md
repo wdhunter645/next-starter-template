@@ -185,6 +185,7 @@ Each implementation PR must record relevant validation:
 - route/auth/navigation tests for admin or public route changes;
 - manual viewport checklist for layout/navigation changes;
 - production design invariant review;
+- as-built Cloudflare frontend documentation update or explicit exception when public or admin page behavior changes;
 - one source issue line in the PR body;
 - exact file-touch allowlist alignment.
 
