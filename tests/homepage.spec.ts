@@ -3,7 +3,8 @@ import { test, expect } from '@playwright/test';
 // V6 Design tokens for verification
 const LGFC_BLUE_RGB = 'rgb(0, 51, 204)';
 const WEEKLY_TITLE_TEXT = 'Weekly Photo Matchup. Vote for your favorite!';
-const JOIN_BANNER_TEXT = 'Become a member. Get access to the Gehrig library, media archive, memorabilia archive, group discussions, and more.';
+const JOIN_BANNER_TEXT =
+  'Join the Fan Club for member archives, discussions, and club-only content. Public visitors can browse Lou Gehrig history, vote in the Weekly Photo Matchup, and read approved FAQs before the 2027 public relaunch.';
 
 test.describe('Homepage V6 Token Compliance', () => {
   test('should display exact Weekly title text with correct styling', async ({ page }) => {

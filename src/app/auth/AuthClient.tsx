@@ -206,7 +206,11 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
 
   return (
     <main style={{ maxWidth: 560, margin: '40px auto', padding: 20 }}>
-      <h1 style={{ textAlign: 'center', marginBottom: 16 }}>Join / Login</h1>
+      <h1 style={{ textAlign: 'center', marginBottom: 8 }}>Join / Login</h1>
+      <p style={{ textAlign: 'center', margin: '0 0 16px 0', lineHeight: 1.55, color: 'rgba(0,0,0,0.72)' }}>
+        The public Lou Gehrig Fan Club site is open to everyone. Join or log in to access the member Fan Club area with archives,
+        discussions, and club-only content.
+      </p>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }} role="tablist" aria-label="Join or Login">
         <button

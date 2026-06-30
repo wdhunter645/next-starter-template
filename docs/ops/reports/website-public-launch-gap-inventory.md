@@ -2,7 +2,7 @@
 Doc Type: Report
 Audience: Human + AI
 Authority Level: Program Evidence
-Status: Draft until #2041 PR merge
+Status: Task #2042 copy reconciliation in progress
 source issue: #2041
 Parent Program: #2039
 Owns: Website public launch gap inventory and routing of gaps to #2039 child tasks

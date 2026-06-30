@@ -23,6 +23,7 @@ export default function HomePage() {
           <h1 className={styles.title}>Welcome to the Lou Gehrig Fan Club</h1>
           <p className={styles.subtitle}>
             Celebrating the Iron Horse — his record-setting career, his character, and the stories that keep his legacy alive.
+            Explore public history, vote in the Weekly Photo Matchup, and join the Fan Club as we prepare for our 2027 public relaunch.
           </p>
         </div>
       </header>
