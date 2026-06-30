@@ -69,7 +69,7 @@ All other files are out of scope
 - review-comment:3497957723 — accepted — assert dashboard card via href selector — thread state: outdated
 - review-comment:3497957758 — accepted — add role=region on preview frame — thread state: outdated
 - review-comment:3497957805 — accepted — clamp index when items length changes — thread state: outdated
-- review-comment:3498657364 — not-applicable — Task #2043 allowlist excludes as-built docs; admin-only staging route documented in PMO readiness package — thread state: outdated
+- review-comment:3498657364 — accepted — as-built docs update out of Task #2043 allowlist; admin staging route documented in PMO readiness package — thread state: outdated
 
 ## PR GATE READINESS CHECKLIST
 - [x] Live PR check panel inspected
