@@ -33,6 +33,7 @@
     "/admin/events",
     "/admin/faq",
     "/admin/fundraiser-preview",
+    "/admin/clubstaging",
     "/admin/join-requests",
     "/admin/media-assets",
     "/admin/member-operations",

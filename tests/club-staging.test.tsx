@@ -30,6 +30,7 @@ vi.mock('next/link', () => ({
 
 describe('admin club staging (#2043)', () => {
   beforeEach(() => {
+    vi.restoreAllMocks();
     mockUsePathname.mockReturnValue('/admin/clubstaging');
     mockUseMemberSession.mockReturnValue({ isLoading: false, isAuthenticated: true, role: 'admin' });
   });
@@ -54,7 +55,15 @@ describe('admin club staging (#2043)', () => {
     expect(screen.getByRole('heading', { name: /Club Staging/i })).toBeInTheDocument();
   });
 
-  it('exposes Club Staging in admin navigation and dashboard without public nav leakage', async () => {
+  it('exposes Club Staging in admin navigation without public nav leakage', () => {
+    render(<AdminNav />);
+
+    expect(screen.getByRole('link', { name: 'Club Staging' })).toHaveAttribute('href', '/admin/clubstaging');
+    expect(screen.queryByRole('link', { name: 'Join' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Store' })).not.toBeInTheDocument();
+  });
+
+  it('exposes Club Staging on the admin dashboard card grid', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(JSON.stringify({ ok: true, counts: {} }), {
         status: 200,
@@ -62,14 +71,12 @@ describe('admin club staging (#2043)', () => {
       }) as never,
     );
 
-    render(<AdminNav />);
+    const { container } = render(<AdminDashboard />);
 
-    expect(screen.getByRole('link', { name: 'Club Staging' })).toHaveAttribute('href', '/admin/clubstaging');
-    expect(screen.queryByRole('link', { name: 'Join' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Store' })).not.toBeInTheDocument();
-
-    render(<AdminDashboard />);
-    expect(screen.getAllByRole('link', { name: 'Club Staging' }).length).toBeGreaterThan(0);
+    const dashboardLink = container.querySelector('a[href="/admin/clubstaging"]');
+    expect(dashboardLink).not.toBeNull();
+    expect(dashboardLink).toHaveTextContent(/Club Staging/i);
+    expect(dashboardLink).toHaveTextContent(/Preview staged club content/i);
   });
 
   it('labels staged content as non-public and includes rotation preview controls', async () => {

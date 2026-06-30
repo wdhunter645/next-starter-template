@@ -46,7 +46,7 @@ export default function AdminClubStagingPage() {
         {CLUB_STAGING_BOUNDARY_COPY}
       </p>
 
-      <div style={previewFrameStyle} aria-label="Club staging production-like preview">
+      <div style={previewFrameStyle} role="region" aria-label="Club staging production-like preview">
         <ClubHomeMasthead email="staging.preview@lougehrigfanclub.com" />
         <ClubStagingRotationPreview items={CLUB_STAGING_ROTATION_ITEMS} />
         <ClubHomeStoryRail stories={CLUB_STAGING_RAIL_STORIES} />
