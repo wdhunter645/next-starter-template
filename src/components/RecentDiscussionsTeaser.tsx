@@ -101,7 +101,7 @@ export default function RecentDiscussionsTeaser() {
     <section id="recent-club-discussions" className="container section-gap">
       <h2 className="section-title">Recent Club discussions</h2>
       <p className="sub" style={{ textAlign: 'center' }}>
-        {isMember ? 'Latest member discussions from the Fan Club.' : 'Member discussions are private. Join or log in to read recent club posts.'}
+        {isMember ? 'Latest member discussions from the Fan Club.' : 'Recent club posts are visible to Fan Club members.'}
       </p>
 
       {loading ? (

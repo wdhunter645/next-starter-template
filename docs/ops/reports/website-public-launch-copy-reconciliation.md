@@ -2,7 +2,7 @@
 Doc Type: Report
 Audience: Human + AI
 Authority Level: Program Evidence
-Status: Draft until #2042 PR merge
+Status: Draft — post-merge remediation in progress (#2097)
 source issue: #2042
 Parent Program: #2039
 Owns: Task 002 public launch copy reconciliation evidence and unresolved Bill/Atlas content decisions
@@ -76,6 +76,19 @@ Public-facing copy clearly distinguishes public preview content from member Fan 
 | `/privacy` and `/terms` legal review | No attorney-reviewed rewrite performed in #2042 | Bill/Atlas legal/content review |
 | CMS-managed Contact page body | `/contact` may be overridden by published CMS content when present | Bill/Atlas content ops review |
 | Live fundraiser / Givebutter public messaging | Fail-closed placeholders remain; full boundary doc is #2045 | #2045 |
+
+## Post-merge remediation (#2097)
+
+After PR #2096 merge, closeout exception #2097 required follow-up copy fixes:
+
+| Surface | Remediation |
+| --- | --- |
+| Recent discussions teaser | Non-member subtitle no longer duplicates join CTA body |
+| Search idle helper | Copy aligned to indexed datasets (FAQs, events, milestones, friends) |
+| Ask page | Discloses first-time email welcome/membership behavior |
+| Contact CMS seed | `migrations/0040_contact_launch_copy.sql` updates legacy `/contact` CMS rows |
+
+Post-merge closeout body `scripts/ci/post-merge-closeout/pr-2096-body.md` records reviewer dispositions and CI gate evidence for replay.
 
 ## Task 003 readiness
 
