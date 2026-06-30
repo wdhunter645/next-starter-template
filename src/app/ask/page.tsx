@@ -69,7 +69,7 @@ export default function AskPage() {
     <main className="container" style={{ padding: '40px 16px', maxWidth: 900, margin: '0 auto' }}>
       <h1 style={{ fontSize: 34, margin: '0 0 10px 0' }}>Ask a Question</h1>
       <p className="sub" style={{ marginTop: 0 }}>
-        Submit a question for moderator review. Approved answers may be added to the public FAQ. Joining the Fan Club is optional and available on{' '}
+        Submit a question for moderator review. Approved answers may be added to the public FAQ. First-time email addresses may also receive a Fan Club welcome message. You can also join separately on{' '}
         <Link href="/join">Join / Login</Link>.
       </p>
 
