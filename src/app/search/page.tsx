@@ -80,7 +80,7 @@ function SearchPageContent() {
 
   const statusLine = useMemo(() => {
     const q = queryFromUrl.trim();
-    if (!q) return 'Enter a keyword to search the fan club.';
+    if (!q) return 'Search public pages, approved FAQs, and member-visible content where available.';
     if (loading) return `Searching for "${q}"…`;
     if (error) return error;
     if (!data) return '';

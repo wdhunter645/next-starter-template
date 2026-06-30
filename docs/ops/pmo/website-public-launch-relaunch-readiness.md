@@ -76,7 +76,7 @@ At the end of Program #2039:
 | Task | issue | Readiness purpose | Decision |
 | ---: | ---: | --- | --- |
 | 001 | #2041 | Launch gap inventory and public page readiness review | In progress — see `docs/ops/reports/website-public-launch-gap-inventory.md` |
-| 002 | #2042 | Public content polish and launch copy reconciliation | Ready after Task 001 |
+| 002 | #2042 | Public content polish and launch copy reconciliation | In progress — see `docs/ops/reports/website-public-launch-copy-reconciliation.md` |
 | 003 | #2043 | Admin Club Staging page at `/admin/clubstaging` | Ready after Task 001 |
 | 004 | #2044 | Media/social reliability and fallback implementation | Ready after Tasks 001 and 003 |
 | 005 | #2045 | Donation/fundraiser route readiness and campaign boundary review | Ready after Task 001 |

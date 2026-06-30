@@ -33,10 +33,10 @@ export default async function Page() {
       ) : (
         <>
           <p style={styles.lead}>
-            The club is fan-run. Email is the fastest way to reach us for questions, contributions, corrections, or partnerships.
+            The Lou Gehrig Fan Club is fan-run. Email is the fastest way to reach us for questions, source corrections, contributions, or partnerships.
           </p>
           <p style={styles.p}>
-            If you’re not sure which address to use, email Support and we’ll route it.
+            Use Support for general help. Use Admin for operational or governance questions. If you are unsure, email Support and we will route your note.
           </p>
         </>
       )}
@@ -48,8 +48,8 @@ export default async function Page() {
           <h2 style={styles.h2}>Good reasons to email</h2>
           <ul style={styles.ul}>
             <li style={styles.li}>You found an error and can provide a source to correct it.</li>
-            <li style={styles.li}>You want to contribute photos, clippings, memorabilia, or a story.</li>
-            <li style={styles.li}>You’re coordinating an ALS fundraiser or Lou Gehrig Day-related activity.</li>
+            <li style={styles.li}>You want to contribute photos, clippings, memorabilia, or a sourced story for club review.</li>
+            <li style={styles.li}>You are coordinating ALS awareness or Lou Gehrig Day community activity. This is not a live LGFC website fundraiser campaign.</li>
             <li style={styles.li}>You want to suggest a charity, event, or community partner.</li>
           </ul>
 

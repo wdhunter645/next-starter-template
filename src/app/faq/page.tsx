@@ -118,7 +118,7 @@ function FAQContent() {
     <>
       <h1 style={{ fontSize: 34, margin: '0 0 10px 0' }}>FAQ – Frequently Asked Questions</h1>
       <p className="sub" style={{ marginTop: 0 }}>
-        Browse approved FAQ entries, search by keyword, or ask a new question.
+        Browse club-reviewed FAQ entries, search by keyword, or submit a new question for moderator review.
       </p>
 
       <section style={{ marginTop: 28 }}>

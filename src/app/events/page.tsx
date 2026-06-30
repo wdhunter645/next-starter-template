@@ -6,7 +6,7 @@ import EventsNextTen from '@/components/calendar/EventsNextTen';
 
 export default function EventsPage() {
   return (
-    <PageShell title="Upcoming Events" subtitle="Fan Club events and activities">
+    <PageShell title="Upcoming Events" subtitle="Lou Gehrig Fan Club events and calendar previews while launch content is finalized">
       <EventsMonth />
       <EventsNextTen />
     </PageShell>

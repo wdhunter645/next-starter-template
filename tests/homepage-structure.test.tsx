@@ -53,7 +53,7 @@ describe('Homepage Structure - V6 Specification Enforcement', () => {
     render(<HomePage />);
     
     // Join CTA should be present with member-related content
-    const joinSection = screen.getByText(/become a member.*get access/i);
+    const joinSection = screen.getByText(/join the fan club for member archives/i);
     expect(joinSection).toBeInTheDocument();
   });
 

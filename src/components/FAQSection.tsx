@@ -111,7 +111,7 @@ export default function FAQSection() {
     <div>
       <h2 className="section-title">FAQ – Frequently Asked Questions</h2>
       <p className="sub" style={{ textAlign: "center", maxWidth: "40rem", marginLeft: "auto", marginRight: "auto" }}>
-        Search our FAQ or browse the top questions below.
+        Search approved club FAQ entries or browse featured questions below.
       </p>
 
       <div className="faq">

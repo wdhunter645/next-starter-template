@@ -6,7 +6,10 @@ export default function JoinCTA() {
     <div className="joinBanner section-gap">
       <h2 className="section-title">Join the Lou Gehrig Fan Club</h2>
       <div className="join-banner__container">
-        <p className="join-banner__text">Become a member. Get access to the Gehrig library, media archive, memorabilia archive, group discussions, and more.</p>
+        <p className="join-banner__text">
+          Join the Fan Club for member archives, discussions, and club-only content. Public visitors can browse Lou Gehrig history,
+          vote in the Weekly Photo Matchup, and read approved FAQs before the 2027 public relaunch.
+        </p>
         <div className="join-banner__actions">
           <Link className="join-banner__btn" href="/join">Join</Link>
           <Link className="join-banner__btn" href={LOGIN_TAB_ROUTE}>Login</Link>

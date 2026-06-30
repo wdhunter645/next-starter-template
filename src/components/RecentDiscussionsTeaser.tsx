@@ -101,7 +101,7 @@ export default function RecentDiscussionsTeaser() {
     <section id="recent-club-discussions" className="container section-gap">
       <h2 className="section-title">Recent Club discussions</h2>
       <p className="sub" style={{ textAlign: 'center' }}>
-        {isMember ? 'Pulled live from D1 discussions table (latest 5 posts).' : 'Member-only club posts are available after login.'}
+        {isMember ? 'Latest member discussions from the Fan Club.' : 'Member discussions are private. Join or log in to read recent club posts.'}
       </p>
 
       {loading ? (
@@ -113,7 +113,7 @@ export default function RecentDiscussionsTeaser() {
       ) : error ? (
         <p className="sub" style={{ textAlign: 'center' }}>{error}</p>
       ) : items.length === 0 ? (
-        <p className="sub" style={{ textAlign: 'center' }}>No posts yet (D1 table is empty).</p>
+        <p className="sub" style={{ textAlign: 'center' }}>No club posts are visible yet.</p>
       ) : (
         <div className="grid">
           {items.map((p) => (
