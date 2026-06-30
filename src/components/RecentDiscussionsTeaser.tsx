@@ -100,9 +100,11 @@ export default function RecentDiscussionsTeaser() {
   return (
     <section id="recent-club-discussions" className="container section-gap">
       <h2 className="section-title">Recent Club discussions</h2>
-      <p className="sub" style={{ textAlign: 'center' }}>
-        {isMember ? 'Latest member discussions from the Fan Club.' : 'Recent club posts are visible to Fan Club members.'}
-      </p>
+      {isMember ? (
+        <p className="sub" style={{ textAlign: 'center' }}>
+          Latest member discussions from the Fan Club.
+        </p>
+      ) : null}
 
       {loading ? (
         <p className="sub" style={{ textAlign: 'center' }}>Loading…</p>
