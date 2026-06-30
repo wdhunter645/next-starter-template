@@ -15,6 +15,7 @@ const items: Array<{ href: string; label: string }> = [
   { href: '/admin/events', label: 'Events' },
   { href: '/admin/matchup', label: 'Matchup' },
   { href: '/admin/fundraiser-preview', label: 'Fundraiser Preview' },
+  { href: '/admin/clubstaging', label: 'Club Staging' },
   { href: '/admin/join-requests', label: 'Join Requests' },
   { href: '/admin/worklist', label: 'Worklist' },
   { href: '/admin/member-operations', label: 'Member Operations' },
