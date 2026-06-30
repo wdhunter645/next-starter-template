@@ -120,6 +120,11 @@ export default function AdminDashboard() {
           <div className={styles.cardBody}>Build and validate the conditional homepage campaign spotlight in the gated admin area.</div>
         </a>
 
+        <a className={styles.card} href="/admin/clubstaging">
+          <div className={styles.cardTitle}>Club Staging</div>
+          <div className={styles.cardBody}>Preview staged club content, rotation samples, and production-like member cards without public exposure.</div>
+        </a>
+
         <a className={styles.card} href="/admin/d1-test">
           <div className={styles.cardTitle}>D1 Inspect</div>
           <div className={styles.cardBody}>Connectivity checks and diagnostics.</div>
