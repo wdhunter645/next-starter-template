@@ -25,7 +25,7 @@ async function fetchIssues(state) {
     return fixture.filter((issue) => !issue.pull_request && (state === 'all' || issue.state === state));
   }
   const all = [];
-  for (let page = 1; page <= 10; page += 1) {
+  for (let page = 1; ; page += 1) {
     const batch = await github(`/repos/${OWNER}/${REPO}/issues?state=${state}&per_page=100&page=${page}`);
     const issues = batch.filter((issue) => !issue.pull_request);
     all.push(...issues);
@@ -41,7 +41,7 @@ function field(body, name) {
 }
 
 function labels(issue) { return (issue.labels || []).map((label) => typeof label === 'string' ? label : label.name); }
-function titleType(title) { return title.startsWith('PROGRAM:') ? 'program' : title.startsWith('PROJECT:') ? 'project' : null; }
+function titleType(title) { return title?.startsWith('PROGRAM:') ? 'program' : title?.startsWith('PROJECT:') ? 'project' : null; }
 function cleanName(title) { return title.replace(/^(PROGRAM|PROJECT):\s*/i, '').trim(); }
 
 function taskNumbers(issue) {
@@ -80,8 +80,13 @@ function description(issue) {
   return field(issue.body, 'Program Description') || field(issue.body, 'Project Description') || field(issue.body, 'Purpose') || (issue.body || '').split('\n').find((line) => line.trim() && !line.trim().startsWith('#'))?.trim() || '';
 }
 
+function priorityValue(priority) {
+  const parsed = Number(priority);
+  return Number.isNaN(parsed) ? 9999 : parsed;
+}
+
 async function main() {
-  const issues = [...await fetchIssues('open'), ...await fetchIssues('closed')];
+  const issues = await fetchIssues('all');
   const byNumber = new Map(issues.map((issue) => [issue.number, issue]));
   const rows = { activePrograms: [], pmoPipeline: [], completedPrograms: [] };
   for (const issue of issues.filter((i) => titleType(i.title))) {
@@ -107,7 +112,7 @@ async function main() {
     };
     rows[lifecycleToView[life]].push(row);
   }
-  for (const key of Object.keys(rows)) rows[key].sort((a, b) => (Number(a.priority) || 9999) - (Number(b.priority) || 9999) || a.name.localeCompare(b.name));
+  for (const key of Object.keys(rows)) rows[key].sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.name.localeCompare(b.name));
   const data = { generatedAt: new Date().toISOString(), source: 'github-issues', repository: `${OWNER}/${REPO}`, views: rows };
   await mkdir(path.join(OUT_DIR, 'assets'), { recursive: true });
   await writeFile(path.join(OUT_DIR, 'dashboard-data.json'), `${JSON.stringify(data, null, 2)}\n`);
