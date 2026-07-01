@@ -15,6 +15,13 @@ Last Reviewed: 2026-07-01
 
 Executable smoke coverage for public relaunch verification.
 
+## Steps
+
+1. Load each public route listed below and confirm HTTP 200 with expected content.
+2. Verify guest and admin boundary behavior.
+3. Verify launch-readiness surfaces (social fallback, campaign boundary, SEO artifacts).
+4. Record pass/fail in the launch evidence template.
+
 ## Public routes
 
 - [ ] `/`, `/about/`, `/contact/`, `/faq/`, `/ask/`, `/search/`, `/join/`, `/events/`
