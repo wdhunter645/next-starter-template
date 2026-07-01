@@ -1,6 +1,6 @@
 {
   "triggered_at": "2026-06-30T10:00:00Z",
-  "description": "Post-merge closeout replay for Program #2039 Tasks 002-003 PRs #2096 and #2099",
+  "description": "Post-merge closeout replay for Program #2039 Tasks 002-005",
   "targets": [
     {
       "pr": 2096,
@@ -15,6 +15,13 @@
       "merge_sha": "ac2cba8487a7224e73fadd6793dc37cae6cca557",
       "source_issue": 2043,
       "remediation_exception": 2102
+    },
+    {
+      "pr": 2110,
+      "body_file": "scripts/ci/post-merge-closeout/pr-2110-body.md",
+      "merge_sha": "d7ed2770256d73e0ab35c453c298b7cf22642c5a",
+      "source_issue": 2045,
+      "remediation_exception": 2111
     }
   ]
 }
