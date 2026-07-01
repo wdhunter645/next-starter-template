@@ -26,7 +26,7 @@ describe('SocialWall (#2044)', () => {
       vi.advanceTimersByTime(8000);
     });
 
-    expect(screen.getByRole('status')).toHaveTextContent(/Follow the Lou Gehrig Fan Club/i);
+    expect(screen.getByRole('region', { name: /Follow the Lou Gehrig Fan Club/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Facebook/i })).toHaveAttribute('href', 'https://www.facebook.com/');
     expect(screen.getByRole('link', { name: /Instagram/i })).toHaveAttribute('href', 'https://www.instagram.com/');
     expect(screen.getByRole('link', { name: /X \(Twitter\)/i })).toHaveAttribute('href', 'https://x.com/');

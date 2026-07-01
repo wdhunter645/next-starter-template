@@ -7,7 +7,7 @@ export type SocialFallbackPlatform = {
 
 export const SOCIAL_WALL_WIDGET_ID = 'elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8';
 
-export const SOCIAL_FALLBACK_PLATFORMS: SocialFallbackPlatform[] = [
+const SOCIAL_FALLBACK_PLATFORMS: readonly SocialFallbackPlatform[] = [
   {
     id: 'facebook',
     label: 'Facebook',
@@ -39,4 +39,10 @@ export const SOCIAL_FALLBACK_HEADLINE =
 
 export function getSocialFallbackPlatforms(): SocialFallbackPlatform[] {
   return SOCIAL_FALLBACK_PLATFORMS.map((platform) => ({ ...platform }));
+}
+
+export function hasRenderedSocialWidget(root: ParentNode = document): boolean {
+  const widget = root.querySelector(`.${SOCIAL_WALL_WIDGET_ID}`);
+  if (!widget) return false;
+  return Boolean(widget.querySelector('iframe') || widget.childElementCount > 0);
 }

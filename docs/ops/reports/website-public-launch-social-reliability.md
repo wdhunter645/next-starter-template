@@ -18,6 +18,10 @@ Last Reviewed: 2026-06-30
 
 Record Task #2044 fallback behavior for the homepage Elfsight social wall.
 
+## Scope
+
+This report covers homepage `SocialWall` timeout/error fallback behavior and platform-origin link degradation for Facebook, Instagram, X/Twitter, and Pinterest. It does not authorize vendor replacement, scraping, or new paid social integrations.
+
 ## Current known truth
 
 - Homepage `SocialWall` still uses the existing Elfsight widget (`elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8`).
@@ -32,6 +36,10 @@ Record Task #2044 fallback behavior for the homepage Elfsight social wall.
 | Instagram | Elfsight feed + CSP image hosts | Direct platform link + reliability note |
 | X/Twitter | Elfsight feed | Direct platform link + reliability note |
 | Pinterest | Optional in widget feed | Direct platform link + reliability note |
+
+## Intended final state
+
+Homepage visitors always see either a working Elfsight social wall or a repo-owned fallback panel with platform-origin links. Widget script failures, load timeouts, and empty post-render widget shells degrade to fallback without breaking the homepage section.
 
 ## Out of scope
 
