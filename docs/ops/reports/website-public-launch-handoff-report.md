@@ -24,7 +24,7 @@ Consolidates Tasks #2041–#2047 deliverables. Does not authorize production pro
 
 ## Current known truth
 
-| Task | Issue | Deliverable | Status |
+| Task | issue | Deliverable | Status |
 | ---: | ---: | --- | --- |
 | 001 | #2041 | Gap inventory report | Complete |
 | 002 | #2042 | Copy reconciliation report | Complete |
@@ -57,9 +57,9 @@ Repo implementation and documentation for Program #2039 Tasks #2041–#2047 are 
 
 - Bill/Atlas production promotion authorization required
 - Preview and production smoke tests must be executed and recorded
-- `NEXT_PUBLIC_GA_ID` only when analytics launch is authorized
+- Analytics public environment ID only when analytics launch is authorized
 - No live fundraiser campaign without separate authorization
-- Post-merge closeout replay for PR #2118 may require one additional ops remediation if GitHub API rate limits interrupt automation
+- PR #2118 post-merge closeout exception was resolved manually after automation was interrupted by GitHub API rate limits
 
 ## Evidence index
 
