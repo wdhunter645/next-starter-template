@@ -3,12 +3,12 @@ Doc Type: Report
 Audience: Human + AI
 Authority Level: Program Evidence
 Status: Template
-source issue: #2047
+Source issue: #2047
 Parent Program: #2039
 Owns: Release evidence capture template for public relaunch
 Does Not Own: Merge approval or production secret values
 Canonical Reference: /docs/how-to/website/website-public-launch-checklist.md
-related issues: #2039, #2047, #2048
+Related issues: #2039, #2047, #2048
 Last Reviewed: 2026-07-01
 ---
 

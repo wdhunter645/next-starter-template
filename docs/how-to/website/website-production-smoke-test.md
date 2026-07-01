@@ -4,7 +4,7 @@ Audience: Human + AI
 Authority Level: Operational
 Owns: Program #2039 production smoke-test procedure
 Does Not Own: Automated CI replacement for operator sign-off
-Canonical Reference: /docs/ops/reports/website-public-launch-gap-inventory.md
+Canonical Reference: /docs/how-to/website/website-public-launch-checklist.md
 Related issues: #2039, #2047
 Last Reviewed: 2026-07-01
 ---
