@@ -49,4 +49,10 @@ Allowed files:
 
 ## PROGRESS + READINESS (MANDATORY)
 - Status: MERGED
+
+## REQUIRED PRE-REVIEW SELF-CHECK
+- [x] PR body contains all required sections with exact headings
+- [x] PR body contains one accepted source-issue accounting line
+- [x] Allowed files section matches final diff exactly
+- [x] All reviewer feedback has explicit disposition where required
 <!-- CURSOR_AGENT_PR_BODY_END -->
