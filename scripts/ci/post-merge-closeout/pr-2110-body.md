@@ -29,7 +29,8 @@ Allowed files:
 
 ## REVIEWER RESPONSE ACCOUNTING
 - [x] Reviewed all reviewer comments, bot comments, and review threads.
-- none on merged PR #2110
+- review-comment:3506852377 — accepted — docs-only fundraiser boundary report; no runtime changes required — thread state: resolved
+- review-comment:3506858473 — accepted — PMO task status update only — thread state: resolved
 
 ## PR GATE READINESS CHECKLIST
 - [x] Live PR check panel inspected

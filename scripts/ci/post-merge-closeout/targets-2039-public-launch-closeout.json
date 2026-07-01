@@ -22,6 +22,13 @@
       "merge_sha": "d7ed2770256d73e0ab35c453c298b7cf22642c5a",
       "source_issue": 2045,
       "remediation_exception": 2111
+    },
+    {
+      "pr": 2112,
+      "body_file": "scripts/ci/post-merge-closeout/pr-2112-body.md",
+      "merge_sha": "2f5b6ec718c931a053e524fac378453eec6c42bb",
+      "source_issue": 2046,
+      "remediation_exception": 2113
     }
   ]
 }
