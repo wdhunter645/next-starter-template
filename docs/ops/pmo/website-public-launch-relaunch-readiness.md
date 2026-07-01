@@ -79,9 +79,9 @@ At the end of Program #2039:
 | 002 | #2042 | Public content polish and launch copy reconciliation | Complete — `docs/ops/reports/website-public-launch-copy-reconciliation.md` |
 | 003 | #2043 | Admin Club Staging page at `/admin/clubstaging` | Complete — PR #2099 |
 | 004 | #2044 | Media/social reliability and fallback implementation | Complete — PR #2108 |
-| 005 | #2045 | Donation/fundraiser route readiness and campaign boundary review | In progress — PR pending review |
-| 006 | #2046 | SEO analytics sitemap and social-card readiness | Ready after Task 002 |
-| 007 | #2047 | Production launch checklist smoke tests rollback and evidence model | Ready after Tasks 001-006 |
+| 005 | #2045 | Donation/fundraiser route readiness and campaign boundary review | Complete — PR #2110 |
+| 006 | #2046 | SEO analytics sitemap and social-card readiness | Complete — PR #2112 |
+| 007 | #2047 | Production launch checklist smoke tests rollback and evidence model | In progress — PR pending review |
 | 008 | #2048 | Program validation and public-launch handoff report | Terminal validation task |
 
 ## Launch preconditions
