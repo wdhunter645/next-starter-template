@@ -1,0 +1,53 @@
+name: PMO dashboard CI build
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"
+  push:
+    paths:
+      - ".github/workflows/pmo-dashboard-ci-build.yml"
+      - "scripts/pmo-dashboard/**"
+      - "site/pmo-dashboard/**"
+      - "docs/how-to/pmo/pmo-dashboard.md"
+
+permissions:
+  contents: read
+  issues: read
+
+env:
+  PMO_DASHBOARD_OUT_DIR: site/pmo-dashboard
+
+jobs:
+  build:
+    name: Build PMO dashboard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Generate dashboard
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/pmo-dashboard/build-dashboard.mjs
+
+      - name: Validate dashboard
+        run: node scripts/pmo-dashboard/validate-dashboard.mjs site/pmo-dashboard
+
+      - name: Upload dashboard artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmo-dashboard
+          path: site/pmo-dashboard
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Write build summary
+        run: |
+          echo "## PMO dashboard CI build" >> "$GITHUB_STEP_SUMMARY"
+          echo "Validated generated output at \`site/pmo-dashboard/\`." >> "$GITHUB_STEP_SUMMARY"

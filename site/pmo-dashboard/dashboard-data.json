@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-06-30T14:14:13.656Z",
+  "source": "github-issues",
+  "repository": "wdhunter645/next-starter-template",
+  "views": {
+    "activePrograms": [
+      {
+        "type": "program",
+        "name": "PMO dashboard GitHub Pages CI build/deploy",
+        "issueNumber": 2101,
+        "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/2101",
+        "priority": "1",
+        "status": "implementation",
+        "percentComplete": null,
+        "taskCount": 0,
+        "tasksCompleted": 0,
+        "ownerAgent": "Cursor",
+        "description": "Create the generated PMO dashboard GitHub Pages CI build and deploy system.",
+        "anticipatedCompletionDate": "TBD"
+      }
+    ],
+    "pmoPipeline": [],
+    "completedPrograms": []
+  }
+}
