@@ -208,6 +208,33 @@ Before completion, Cursor must confirm:
 
 ---
 
+# GITHUB API BUDGET DISCIPLINE
+
+Cursor must not crawl GitHub broadly.
+
+Cursor must use the local repository for file discovery, code inspection, and documentation review.
+
+Cursor may use GitHub API calls only for targeted issue, pull request, check-run, review-thread, label, and workflow queries directly required by the assigned task.
+
+Before repeated GitHub API access, Cursor must check REST and GraphQL rate-limit status.
+
+Cursor must stop and report if GitHub returns:
+
+- primary rate limit exhaustion;
+- secondary rate limit throttling;
+- abuse detection throttling;
+- authentication failure causing unauthenticated API access.
+
+The report must include:
+
+1. authenticated GitHub user;
+2. REST remaining/reset time;
+3. GraphQL remaining/reset time;
+4. exact command/API operation that triggered the limit;
+5. whether the limit was primary, secondary, abuse, or unauthenticated access.
+
+---
+
 # STOP CONDITIONS (CURSOR-SPECIFIC)
 
 Stop if:

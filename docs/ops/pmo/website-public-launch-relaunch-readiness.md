@@ -6,12 +6,12 @@ Owns: Program #2039 readiness decision, public launch readiness scope, club stag
 Does Not Own: Runtime implementation, merge authority, production secrets, vendor configuration, or Program #2040 publication scope
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
 Related Issues: #1685, #2039, #2041, #2042, #2043, #2044, #2045, #2046, #2047, #2048
-Last Reviewed: 2026-06-29
+Last Reviewed: 2026-07-01
 ---
 
 # Website Public Launch / Relaunch Readiness
 
-> Program #2039 moves the structural website baseline into public-launch-ready condition after Program #1685 closeout. Cursor may execute only the assigned child task issue and must stop at `READY FOR REVIEW`.
+> Program #2039 is **CLOSED** as completed after Atlas/operator sign-off. This document records the completed readiness package and child-task evidence.
 
 ## Purpose
 
@@ -66,7 +66,7 @@ At the end of Program #2039:
 | Program name | Website Public Launch / Relaunch Readiness |
 | Predecessor | #1685 — Website Completion / Fan Club Product Buildout |
 | Execution agent | Cursor |
-| Current readiness | Ready for controlled launch after #1685 structural baseline closeout |
+| Current readiness | Program completed — Atlas/operator sign-off recorded; repo baseline stable for next website program |
 | Primary implementation plan | `docs/ops/implementation-plans/website-public-launch-relaunch-readiness.md` |
 | Required staging route | `/admin/clubstaging` |
 | Explicit non-goal | Controlled content publication capability |
@@ -82,7 +82,7 @@ At the end of Program #2039:
 | 005 | #2045 | Donation/fundraiser route readiness and campaign boundary review | Complete — PR #2110 |
 | 006 | #2046 | SEO analytics sitemap and social-card readiness | Complete — PR #2112 |
 | 007 | #2047 | Production launch checklist smoke tests rollback and evidence model | Complete — PR #2118 |
-| 008 | #2048 | Program validation and public-launch handoff report | In progress — PR pending review |
+| 008 | #2048 | Program validation and public-launch handoff report | Complete — PR #2129 |
 
 ## Launch preconditions
 

@@ -14,6 +14,7 @@ Stop and report instead of continuing when:
 - Unverified PR or live gate state for readiness claims
 - Mixed intent in one PR
 - Edits outside the approved allowlist
+- GitHub primary rate limit, secondary rate limit, abuse throttling, or suspected unauthenticated GitHub API access
 
 ## Boundaries
 
