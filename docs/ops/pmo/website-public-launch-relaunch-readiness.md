@@ -81,8 +81,8 @@ At the end of Program #2039:
 | 004 | #2044 | Media/social reliability and fallback implementation | Complete — PR #2108 |
 | 005 | #2045 | Donation/fundraiser route readiness and campaign boundary review | Complete — PR #2110 |
 | 006 | #2046 | SEO analytics sitemap and social-card readiness | Complete — PR #2112 |
-| 007 | #2047 | Production launch checklist smoke tests rollback and evidence model | In progress — PR pending review |
-| 008 | #2048 | Program validation and public-launch handoff report | Terminal validation task |
+| 007 | #2047 | Production launch checklist smoke tests rollback and evidence model | Complete — PR #2118 |
+| 008 | #2048 | Program validation and public-launch handoff report | In progress — PR pending review |
 
 ## Launch preconditions
 
