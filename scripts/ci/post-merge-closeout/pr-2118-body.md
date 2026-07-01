@@ -49,6 +49,8 @@ Allowed files:
 - review-comment:3506976342 — accepted — DIATAXIS Steps sections added — thread state: outdated
 - review-comment:3506976348 — accepted — evidence template header keys aligned — thread state: outdated
 - review-comment:4610278045 — accepted — final Codex review issues addressed before merge — thread state: resolved
+- review-comment:3507064745 — accepted — smoke test route list covers launch-critical public paths — thread state: resolved
+- review-comment:3507064754 — accepted — rollback how-to references checklist and evidence template — thread state: resolved
 
 ## PR GATE READINESS CHECKLIST
 - [x] Live PR check panel inspected
