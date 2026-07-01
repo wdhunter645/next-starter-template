@@ -1,14 +1,11 @@
 name: PMO dashboard CI deploy
 
 on:
-  workflow_run:
-    workflows: ["PMO dashboard CI build"]
-    types: [completed]
   workflow_dispatch:
 
 permissions:
-  actions: read
   contents: read
+  issues: read
   pages: write
   id-token: write
 
@@ -17,12 +14,11 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  ARTIFACT_NAME: pmo-dashboard
+  PMO_DASHBOARD_OUT_DIR: site/pmo-dashboard
 
 jobs:
   deploy:
     name: Deploy PMO dashboard to GitHub Pages
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -31,17 +27,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download validated dashboard artifact
-        if: github.event_name == 'workflow_run'
-        uses: actions/download-artifact@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}
-          path: site/pmo-dashboard
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ github.event.workflow_run.id }}
+          node-version: 22
 
       - name: Generate dashboard for manual deploy
-        if: github.event_name == 'workflow_dispatch'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/pmo-dashboard/build-dashboard.mjs
