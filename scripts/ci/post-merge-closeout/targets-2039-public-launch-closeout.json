@@ -1,5 +1,5 @@
 {
-  "triggered_at": "2026-07-01T15:16:00Z",
+  "triggered_at": "2026-07-01T17:10:00Z",
   "description": "Post-merge closeout replay for Program #2039 Tasks 002-007",
   "targets": [
     {
@@ -36,6 +36,20 @@
       "merge_sha": "e122030c504dbdba9c2fead469b97bbb330ffab4",
       "source_issue": 2047,
       "remediation_exception": 2123
+    },
+    {
+      "pr": 2124,
+      "body_file": "scripts/ci/post-merge-closeout/pr-2124-body.md",
+      "merge_sha": "f5891b791fe376baf548571a7d3d76df344e44b3",
+      "source_issue": 2123,
+      "remediation_exception": 2125
+    },
+    {
+      "pr": 2127,
+      "body_file": "scripts/ci/post-merge-closeout/pr-2127-body.md",
+      "merge_sha": "f0e31d83400d69565610ce455f57b735e9ee04c3",
+      "source_issue": 2123,
+      "remediation_exception": 2128
     }
   ]
 }
