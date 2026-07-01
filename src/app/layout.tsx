@@ -1,15 +1,12 @@
-import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 import "./../styles/variables.css";
 import SiteHeader from "../components/SiteHeader";
 import Footer from "@/components/Footer";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import { DEFAULT_SITE_METADATA } from "@/lib/publicSiteMetadata";
 
-export const metadata: Metadata = {
-	title: "Lou Gehrig Fan Club",
-	description: "Official Lou Gehrig Fan Club website with fan stories, historical archives, events, and member access.",
-};
+export const metadata = DEFAULT_SITE_METADATA;
 
 export default function RootLayout({
 	children,
