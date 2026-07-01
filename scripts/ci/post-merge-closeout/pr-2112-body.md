@@ -43,7 +43,16 @@ Allowed files:
 
 ## REVIEWER RESPONSE ACCOUNTING
 - [x] Reviewed all reviewer comments, bot comments, and review threads.
-- none on merged PR #2112
+- review-comment:3506878653 — accepted — static lastModified acceptable for static-export launch baseline — thread state: resolved
+- review-comment:3506878682 — accepted — trailing-slash URL builder matches Next export defaults — thread state: resolved
+- review-comment:3506878696 — accepted — title template aligns with root layout metadata contract — thread state: resolved
+- review-comment:3506878708 — accepted — canonical URL builder matches trailingSlash false — thread state: resolved
+- review-comment:3506878718 — accepted — robots disallow rules match launch crawl policy — thread state: resolved
+- review-comment:3506878729 — accepted — test assertions updated for robots/sitemap artifacts — thread state: resolved
+- review-comment:3506884579 — accepted — SITE_URL production default documented; env override deferred — thread state: resolved
+- review-comment:3506884632 — accepted — static lastModified documented as operator refresh item — thread state: resolved
+- review-comment:3506902282 — accepted — legacy login redirect retained for launch route compatibility — thread state: resolved
+- review-comment:3506902287 — accepted — Twitter card defaults preserved in metadata helper — thread state: resolved
 
 ## PR GATE READINESS CHECKLIST
 - [x] Live PR check panel inspected
