@@ -5,7 +5,7 @@ Authority Level: Historical Record
 Owns: Legacy documentation retirement ledger (old path to DIATAXIS authority mapping)
 Does Not Own: Active operational authority; legacy retirement policy rules
 Canonical Reference: /docs/ops/pmo/diataxis-legacy-retirement-policy.md
-Related Issues: #1353, #1076, #1134, #2140
+Related issues: #1353, #1076, #1134, #2140
 Last Reviewed: 2026-07-02
 ---
 
@@ -24,7 +24,7 @@ This manifest is **historical traceability only**. It does not grant implementat
 | Field | Required | Description |
 | --- | --- | --- |
 | legacy path | yes | Former live repository path |
-| archive path or deleted | yes | archive destination or `deleted` |
+| archive path or deleted | yes | archive destination permitted by the legacy retirement policy, or `deleted` |
 | replacement DIATAXIS path | yes | Current authoritative document |
 | status | yes | `planned`, `in-progress`, `retired`, or `deleted` |
 | rationale | yes | Why the legacy path was retired |
@@ -36,4 +36,5 @@ Rows are append-only. Do not delete historical rows; append corrections with a n
 
 | legacy path | archive path or deleted | replacement DIATAXIS path | status | rationale | date |
 | --- | --- | --- | --- | --- | --- |
+| *(none yet)* | — | — | — | Placeholder manifest created before portfolio work | 2026-06-05 |
 | docs/reference/orchestration/startup-governance.md | docs/archive/reference/orchestration/startup-governance.md | docs/ops/ai/CHATGPT-RULES.md | retired | Superseded by Agent.md startup routing and the ChatGPT/Atlas startup contract; retained as historical startup governance evidence. | 2026-07-02 |
