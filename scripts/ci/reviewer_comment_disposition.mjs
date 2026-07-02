@@ -8,8 +8,8 @@ export { TRUSTED_REVIEWERS };
 
 export const IGNORE_MARKER = /<!--\s*reviewer-response-ignore\s*-->/i;
 const DISPOSITION_LINE_PATTERN =
-  /^[\s\-*]*review-comment:(\d+)\s*[—\-]\s*(.+)$/gim;
-const THREAD_STATE_PATTERN = /thread state:\s*([^\s—\-]+)/i;
+  /^[\s\-*]*(?:review-comment|bot-comment):(\d+)\s*[—\-]\s*(.+)$/gim;
+const THREAD_STATE_PATTERN = /thread state:\s*([A-Za-z0-9-]+)/i;
 const FOLLOW_UP_ISSUE_PATTERN = /follow-up-issue:#(\d+)/i;
 const ACTIONABLE_TOP_LEVEL_PATTERN =
   /(^|[^A-Za-z0-9])(P0|P1|P2|P3)([^A-Za-z0-9]|$)|high[- ]priority|request changes|requested changes|must fix|blocking|action required|please (fix|update|change|address)|security|bug\b/i;
@@ -69,7 +69,7 @@ export function parseReviewerDispositions(body = '') {
   for (const match of section.matchAll(pattern)) {
     const commentId = String(match[1]);
     const remainder = String(match[2] || '').trim();
-    const parts = remainder.split(/\s*[—\-]\s*/).map((part) => part.trim()).filter(Boolean);
+    const parts = remainder.split(/\s+(?:—|-)\s+/).map((part) => part.trim()).filter(Boolean);
     const verb = String(parts[0] || '').toLowerCase();
     const rationale = parts.slice(1).join(' — ').replace(THREAD_STATE_PATTERN, '').replace(FOLLOW_UP_ISSUE_PATTERN, '').trim();
     const threadStateMatch = remainder.match(THREAD_STATE_PATTERN);
