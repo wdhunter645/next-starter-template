@@ -20,7 +20,7 @@ Validate Program #2039 implementation and documentation evidence, state public-l
 
 ## Scope
 
-Consolidates Tasks #2041–#2048 deliverables. Does not authorize production promotion or live fundraiser launch.
+Consolidates Tasks #2041–#2047 deliverables and records Task #2048 validation/handoff. Does not authorize production promotion or live fundraiser launch.
 
 ## Current known truth
 
@@ -79,7 +79,7 @@ Repo implementation and documentation for Program #2039 Tasks #2041–#2048 are 
 - [ ] Execute preview smoke test per production smoke-test how-to
 - [ ] Authorize or defer production promotion
 - [ ] Record launch evidence in evidence template
-- [x] Close Program #2039 when operator sign-off is complete
+- [x] Record Program #2039 repository closeout evidence after Bill/Atlas acceptance
 
 ## Handoff notes
 
