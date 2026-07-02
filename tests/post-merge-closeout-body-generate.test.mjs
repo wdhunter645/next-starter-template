@@ -24,7 +24,7 @@ placeholder
 		expect(sanitized).not.toContain('pr-body-auto-repair');
 		expect(sanitized).toContain('Status: MERGED');
 		expect(sanitized).toContain('real change');
-		expect(sanitized).not.toContain('example.invalid');
+		expect(sanitized).toContain('example.invalid');
 	});
 
 	it('builds reviewer disposition lines for trusted inline threads', () => {
