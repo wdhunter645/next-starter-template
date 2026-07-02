@@ -299,7 +299,7 @@ Reviewer items (required format for gate parsing):
 - [ ] Explicitly required tracker/status-index follow-up is complete or delegated when the source issue authorizes that work
 - [ ] Post-merge validation gates inspected when applicable
 
-## POST-MERGE ISSUE DISPOSITION (REQUIRED FOR CHILD PROJECT / UMBRELLA SOURCE ISSUE)
+## POST-MERGE ISSUE DISPOSITION (REQUIRED FOR CHILD PROJECT / UMBRELLA SOURCE ISSUES)
 Use only when the source issue is a child project, umbrella issue, or controller issue that should remain open after merge.
 
 - Source issue **#____** remains **open** with `status:active`; remove only `status:post-merge-verify` and other stale workflow labels; **do not close** #____
@@ -336,10 +336,10 @@ Post-merge validation fails if any acceptance criterion remains unchecked after 
 - [ ] Local checks executed and passed or exact blocker documented
 - [ ] Commit message aligns with scope
 - [ ] No prohibited artifacts introduced
-- [ ] Docs-only/runtime classification is completed
-- [ ] Queue/dependency applicability is completed
-- [ ] Acceptance criteria status is completed
-- [ ] PR body auto-repair status is completed
+- [ ] Docs-only/runtime classification completed
+- [ ] Queue/dependency applicability completed
+- [ ] Acceptance criteria status completed
+- [ ] PR body auto-repair status completed
 - [ ] Final merge-readiness section exists and remains `BLOCKED`, `WAIT FOR REVIEW`, or `WAIT FOR BILL` until final gates are complete
 - [ ] All new governance/reference docs satisfy `/docs/governance/standards/document-status-and-naming_MASTER.md` minimum content requirements: Purpose, Scope, Current known truth, and Intended final state if evolving
 - [ ] All canonical references point to existing repository files in the same branch before the PR opens
