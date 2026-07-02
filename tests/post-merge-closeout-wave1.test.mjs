@@ -56,7 +56,7 @@ describe('ops burn-down wave 1 closeout bodies', () => {
 		return {
 			id,
 			body: 'inline review',
-			user: { login: 'gemini-code-assist[bot]' },
+			user: { login: 'cubic-dev-ai[bot]' },
 			created_at: '2026-06-20T00:00:00Z',
 			line: 10,
 			position: 1,
@@ -78,7 +78,7 @@ describe('ops burn-down wave 1 closeout bodies', () => {
 				body,
 				reviewComments,
 				issueComments: [],
-				reviews: [{ id: 1, state: 'COMMENTED', user: { login: 'gemini-code-assist[bot]' } }],
+				reviews: [{ id: 1, state: 'COMMENTED', user: { login: 'cubic-dev-ai[bot]' } }],
 				mergedAt: '2026-06-20T00:00:00Z',
 			}),
 		).toEqual([]);
@@ -88,7 +88,7 @@ describe('ops burn-down wave 1 closeout bodies', () => {
 				body: body.replace(/review-comment:3447589045[^\n]+\n/, ''),
 				reviewComments,
 				issueComments: [],
-				reviews: [{ id: 1, state: 'COMMENTED', user: { login: 'gemini-code-assist[bot]' } }],
+				reviews: [{ id: 1, state: 'COMMENTED', user: { login: 'cubic-dev-ai[bot]' } }],
 				mergedAt: '2026-06-20T00:00:00Z',
 			}).length,
 		).toBeGreaterThan(0);
@@ -107,7 +107,7 @@ describe('ops burn-down wave 1 closeout bodies', () => {
 				body,
 				reviewComments,
 				issueComments: [],
-				reviews: [{ id: 1, state: 'COMMENTED', user: { login: 'gemini-code-assist[bot]' } }],
+				reviews: [{ id: 1, state: 'COMMENTED', user: { login: 'cubic-dev-ai[bot]' } }],
 				mergedAt: '2026-06-20T00:00:00Z',
 			}),
 		).toEqual([]);
@@ -117,7 +117,7 @@ describe('ops burn-down wave 1 closeout bodies', () => {
 				body: body.replace(/review-comment:3349630601[^\n]+\n/, ''),
 				reviewComments,
 				issueComments: [],
-				reviews: [{ id: 1, state: 'COMMENTED', user: { login: 'gemini-code-assist[bot]' } }],
+				reviews: [{ id: 1, state: 'COMMENTED', user: { login: 'cubic-dev-ai[bot]' } }],
 				mergedAt: '2026-06-20T00:00:00Z',
 			}).length,
 		).toBeGreaterThan(0);
@@ -137,7 +137,7 @@ describe('ops burn-down wave 1 closeout bodies', () => {
 				id: 4538902245,
 				state: 'COMMENTED',
 				body: 'Code Review',
-				user: { login: 'gemini-code-assist[bot]' },
+				user: { login: 'cubic-dev-ai[bot]' },
 				submitted_at: '2026-06-20T00:00:00Z',
 			},
 		];
