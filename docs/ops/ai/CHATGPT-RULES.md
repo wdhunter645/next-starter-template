@@ -70,7 +70,7 @@ Bill remains project owner, final product authority, PR approval authority, merg
 
 Startup must use [`Agent.md`](../../../Agent.md) as the repository entry point and follow the mandatory documentation chain defined there.
 
-Do not duplicate the full repository read chain in this file. This file defines only ChatGPT/Atlas-specific startup behavior.
+Do not re-state the full repository read chain in this section; defer to `Agent.md` and the mandatory documentation chain defined earlier in this file. This section defines only ChatGPT/Atlas-specific startup behavior.
 
 ### Default startup command
 
