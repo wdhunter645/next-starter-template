@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: DIATAXIS legacy retirement rules, archive non-authority policy, and migration manifest requirements for PMO portfolio work
 Does Not Own: Individual legacy file moves, deletions, or portfolio task implementation sequencing
 Canonical Reference: /docs/governance/standards/DIATAXIS-AUTHORITY-RESOLUTION.md
-Related Issues: #1353, #1076, #1134
-Last Reviewed: 2026-06-05
+Related issues: #1353, #1076, #1134, #2140
+Last Reviewed: 2026-07-02
 ---
 
 # DIATAXIS Legacy Retirement Policy
@@ -56,7 +56,8 @@ Requirements:
 - Each retirement must record provenance in `/docs/archive/MIGRATION-MANIFEST.md`
   before or in the same PR that removes the live legacy path.
 - Retired legacy docs must either:
-  - move to `docs/archive/superseded/**` with a manifest entry, or
+  - move to `docs/archive/superseded/**` with a manifest entry;
+  - move to a DIATAXIS-preserving path under `docs/archive/**` when the source issue explicitly authorizes preservation of the former DIATAXIS folder shape; or
   - be deleted from the live path only when the manifest records replacement or
     deletion rationale.
 
@@ -74,7 +75,7 @@ happens one doc set at a time in later task PRs.
 
 ## Migration Manifest Rule
 
-Every retired legacy doc requires an old path → new authority mapping in
+Every retired legacy doc requires an old path to new authority mapping in
 `/docs/archive/MIGRATION-MANIFEST.md`.
 
 Required manifest row fields:
@@ -82,7 +83,7 @@ Required manifest row fields:
 | Field | Description |
 | --- | --- |
 | legacy path | Former live path before retirement |
-| archive path or deleted | Destination under `docs/archive/superseded/**`, or `deleted` |
+| archive path or deleted | Archive destination permitted by this policy, or `deleted` |
 | replacement DIATAXIS path | Current authoritative DIATAXIS document |
 | status | For example `planned`, `in-progress`, `retired`, `deleted` |
 | rationale | Why the legacy path was retired or deleted |
