@@ -227,7 +227,7 @@ Cursor must stop and report if GitHub returns:
 
 The report must include:
 
-1. authenticated GitHub user;
+1. authenticated GitHub user when available, or the attempted credential identity / unauthenticated state when authentication failed;
 2. REST remaining/reset time;
 3. GraphQL remaining/reset time;
 4. exact command/API operation that triggered the limit;
