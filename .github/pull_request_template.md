@@ -88,7 +88,7 @@ Before handing this PR to Atlas/Bill as ready for final merge authorization, the
 - [ ] PR status is `READY FOR MERGE`, or the exact blocker preventing that state is documented.
 - [ ] Final report includes current head SHA, checks run, gate status, reviewer disposition status, acceptance-criteria status, auto-repair status, and ready-for-merge status.
 
-A PR must not be handed to Atlas/Bill for merge while any required gate, reviewer comment, bot comment, review thread, PR-body section, acceptance criterion, auto-repair scaffold, or source-issue accounting item still requires agent action.
+A PR must not be handed to Atlas/Bill for merge while any required gate, reviewer comment, review thread, PR-body section, acceptance criterion, auto-repair scaffold, or source-issue accounting item still requires agent action.
 
 - **Issue:** #____
 <!-- Required: replace #____ with exactly one same-repository, open, non-PR issue number before opening/updating the PR. Preferred final syntax: `- **Issue:** #123`. Other accepted source-issue formats are governed by `/docs/governance/PR_GOVERNANCE.md`. Do not use a PR number, an external issue, or a closed issue as the source issue. -->
@@ -242,8 +242,8 @@ Each source-issue acceptance criterion must be checked, marked not applicable wi
 - [ ] Copilot disposition received or not applicable.
 - [ ] Cubic disposition received or not applicable.
 - [ ] Every actionable reviewer comment has a PR-body disposition with `review-comment:<id>`.
-- [ ] Every actionable bot comment has a PR-body disposition with `bot-comment:<id>` or equivalent durable reference.
-- [ ] Every GitHub review thread has an explicit thread-state disposition: resolved, outdated, or intentionally left unresolved with rationale.
+- [ ] Every actionable trusted bot or reviewer comment has a PR-body disposition with `review-comment:<id>`.
+- [ ] Every GitHub review thread has an explicit thread-state disposition: resolved, outdated, unresolved-with-rationale, or follow-up.
 - [ ] Every outdated review thread (`is_outdated: true` or stale commit SHA) has explicit PR-body disposition even when GitHub marks the thread outdated.
 - [ ] Late reviewer comments arriving after `READY FOR REVIEW` or `READY FOR MERGE` are dispositioned before merge.
 - [ ] Undispositioned reviewer findings are linked to a bounded follow-up issue when not fixed in this PR.
@@ -251,13 +251,13 @@ Each source-issue acceptance criterion must be checked, marked not applicable wi
 Accepted disposition states:
 - resolved by code/doc change and thread marked resolved, or
 - outdated with explicit PR-body disposition (`review-comment:<id>` + `thread state: outdated`), or
-- rejected / not applicable with rationale, or
-- linked follow-up issue (`follow-up-issue:#<number>`).
+- rejected / not applicable with rationale and `thread state: unresolved-with-rationale`, or
+- linked follow-up issue (`follow-up-issue:#<number>` + `thread state: follow-up`).
 
 Reviewer items (required format for gate parsing):
-- review-comment:<id> — accepted/rejected/acknowledged/not-applicable — <specific resolution or reason> — thread state: resolved/outdated/unresolved
-- bot-comment:<id> — accepted/rejected/acknowledged/not-applicable — <specific resolution or reason> — thread state: not-applicable/resolved/outdated/unresolved
-- review-comment:<id> — rejected — <rationale> — thread state: outdated — follow-up-issue:#<issue>
+- review-comment:<id> — accepted/rejected/acknowledged/not-applicable — <specific resolution or reason> — thread state: resolved/outdated/unresolved-with-rationale/follow-up
+- review-comment:<id> — acknowledged — <bot or reviewer finding disposition> — thread state: resolved/outdated/unresolved-with-rationale/follow-up
+- review-comment:<id> — rejected — <rationale> — thread state: follow-up — follow-up-issue:#<issue>
 
 ## FINAL MERGE READINESS DECISION (REQUIRED BEFORE READY FOR MERGE)
 - Latest head SHA:
