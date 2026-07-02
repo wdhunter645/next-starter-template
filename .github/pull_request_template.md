@@ -181,8 +181,6 @@ All other files are out of scope
 - [ ] Reviewed all bot comments.
 - [ ] Reviewed all GitHub review threads.
 - [ ] Copilot disposition received or not applicable.
-- [ ] Codex disposition received or not applicable.
-- [ ] Gemini disposition received or not applicable.
 - [ ] Cubic disposition received or not applicable.
 - [ ] Every actionable reviewer comment has a PR-body disposition with `review-comment:<id>`.
 - [ ] Every GitHub review thread has an explicit thread-state disposition: resolved, outdated, or intentionally left unresolved with rationale.
