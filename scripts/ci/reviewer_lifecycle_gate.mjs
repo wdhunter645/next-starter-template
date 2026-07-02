@@ -124,12 +124,11 @@ function sortCommentsChronologically(comments) {
 export function countUnresolvedProtectedThreads({ reviewComments = [], reviews = [], body = '' } = {}) {
   let unresolved = 0;
   const dispositions = parseReviewerDispositions(body);
-  const commentsById = new Map(
-    reviewComments.filter((comment) => comment.id != null).map((comment) => [comment.id, comment]),
-  );
+  const validComments = reviewComments.filter((comment) => comment?.id != null);
+  const commentsById = new Map(validComments.map((comment) => [comment.id, comment]));
   const threads = new Map();
 
-  for (const comment of reviewComments) {
+  for (const comment of validComments) {
     const threadId = resolveThreadRootId(comment, commentsById);
     if (!threads.has(threadId)) threads.set(threadId, []);
     threads.get(threadId).push(comment);
