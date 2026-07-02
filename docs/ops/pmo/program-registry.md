@@ -6,7 +6,7 @@ Owns: PMO program issue registry, current program issue assignments, launch-stat
 Does Not Own: PMO v3 top-level policy, implementation plan task definitions, workflow code, runtime behavior, product design, or unauthorized GitHub issue changes
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
 Related issues: #1411, #1379, #1255, #1259, #1500, #1678, #1685, #1696, #1700, #1713, #1719, #1720, #1721, #1722, #1723, #1724, #1725, #1726, #1727, #1963, #2039, #2040, #2041, #2042, #2043, #2044, #2045, #2046, #2047, #2048, #2049, #2050, #2051, #2052, #2053, #2054, #2055, #2056
-Last Reviewed: 2026-06-29
+Last Reviewed: 2026-07-02
 ---
 
 # PMO Program Issue Registry
@@ -27,7 +27,7 @@ This registry records current program issue assignments, launch-state control, c
 - Child project #1259 is open; Phase 4 Tasks 001–009 are complete on `main`; issue remains open pending Program #1255 terminal closeout authorization.
 - Program #1255 closeout readiness packet published at `docs/ops/reports/program-1255-closeout-readiness.md`; operator hygiene for `#1123` and `#1258` **complete** (2026-06-17).
 - Priority #1 Website Completion / Fan Club Product Buildout (#1685) is **closed complete**; child tasks #1686–#1694 are complete and structural baseline closeout evidence is on `main`.
-- Website Public Launch / Relaunch Readiness has program issue #2039 with child task issues #2041 through #2048. Task #2041 is authorized for Cursor execution; downstream tasks remain blocked until separately assigned.
+- Website Public Launch / Relaunch Readiness (#2039) is **closed complete** for repository work; child task issues #2041 through #2048 are complete, and public launch remains blocked only by operator promotion/smoke-test exceptions.
 - Website Automatic Content Publication Capability has program issue #2040 with child task issues #2049 through #2056. It is the publication authority for work excluded from #2039 and remains blocked until explicit Bill/Atlas authorization.
 - Priority #2 Fundraiser / Charity Campaign Operations Buildout has program issue #1700 with child task issues #1701 through #1708. Task 001 assignment guidance is posted on #1701. The program remains queued behind Program #1255/#1259 and parked Priority #1 unless Bill/Atlas explicitly reprioritize.
 - Priority #3 PMO Governance / Workflow Automation Completion has program issue #1719 with child task issues #1720 through #1727. Task 001 assignment guidance is posted on #1720. The program remains queued behind Program #1255/#1259, parked Priority #1, and Priority #2 unless Bill/Atlas explicitly reprioritize.
@@ -91,7 +91,7 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 | Candidate | Backlog rank | Status | Launch rule | Planning package | Implementation plan |
 | --- | ---: | --- | --- | --- | --- |
 | Website Completion / Fan Club Product Buildout | 1 | Structural baseline complete | Ready for Bill/Atlas launch review; closeout evidence in `docs/ops/reports/website-completion-program-1685-launch-readiness.md` | `docs/ops/pmo/website-completion-fan-club-product-buildout-readiness.md` | `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md` |
-| Website Public Launch / Relaunch Readiness | 1 successor | Task #2041 in progress | #1685 closeout complete; Task #2041 authorized; Tasks #2042–#2048 await separate assignment | `docs/ops/pmo/website-public-launch-relaunch-readiness.md` | `docs/ops/implementation-plans/website-public-launch-relaunch-readiness.md` |
+| Website Public Launch / Relaunch Readiness | 1 successor | Closed complete | Repo tasks complete; public launch remains operator-controlled by launch checklist, smoke-test, production promotion, and evidence requirements | `docs/ops/pmo/website-public-launch-relaunch-readiness.md` | `docs/ops/implementation-plans/website-public-launch-relaunch-readiness.md` |
 | Website Automatic Content Publication Capability | 1 publication | Planning-ready publication authority | Blocked until #1738 manual workflow evidence and Atlas/Bill explicitly authorize Cursor to begin #2049 | `docs/ops/pmo/website-automatic-content-publication-capability.md` | `docs/ops/implementation-plans/website-automatic-content-publication-capability.md` |
 | Fundraiser / Charity Campaign Operations Buildout | 2 | Launch-control ready; queued | Blocked until Atlas/Bill explicitly authorize Cursor to begin #1701 | `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md` | `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md` |
 | PMO Governance / Workflow Automation Completion | 3 | Launch-control ready; queued | Blocked until Atlas/Bill explicitly authorize Cursor to begin #1720 | `docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md` | `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md` |
@@ -110,14 +110,14 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 
 | Child task | PMO decision | Implementation-plan coverage | issue |
 | --- | --- | --- | --- |
-| Launch gap inventory and public page readiness review | Required first task after #1685 closeout | Task 001 | #2041 |
-| Public content polish and launch copy reconciliation | Included in #2039 | Task 002 | #2042 |
-| Admin Club Staging page at `/admin/clubstaging` | Included in #2039 | Task 003 | #2043 |
-| Media/social reliability and fallback implementation | Included in #2039 | Task 004 | #2044 |
-| Donation/fundraiser route readiness and campaign boundary review | Included in #2039 | Task 005 | #2045 |
-| SEO analytics sitemap and social-card readiness | Included in #2039 | Task 006 | #2046 |
-| Production launch checklist smoke tests rollback and evidence model | Included in #2039 | Task 007 | #2047 |
-| Program validation and public-launch handoff report | Terminal closeout | Task 008 | #2048 |
+| Launch gap inventory and public page readiness review | Complete | Task 001 | #2041 |
+| Public content polish and launch copy reconciliation | Complete | Task 002 | #2042 |
+| Admin Club Staging page at `/admin/clubstaging` | Complete | Task 003 | #2043 |
+| Media/social reliability and fallback implementation | Complete | Task 004 | #2044 |
+| Donation/fundraiser route readiness and campaign boundary review | Complete | Task 005 | #2045 |
+| SEO analytics sitemap and social-card readiness | Complete | Task 006 | #2046 |
+| Production launch checklist smoke tests rollback and evidence model | Complete | Task 007 | #2047 |
+| Program validation and public-launch handoff report | Complete terminal closeout | Task 008 | #2048 |
 
 ### Website Automatic Content Publication Capability child tasks
 
@@ -164,7 +164,7 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 | --- | --- | --- | --- | --- |
 | #1411 | PMO Automation and Agent Workflow Control | Program 1 | Completed planning artifact (issue closed, status:complete) | issue #1411 is not an open blocked program. New execution requires a current open source issue. PMO automation execution remains blocked until Atlas/Bill explicitly launch a new cycle. |
 | #1685 | Website Completion / Fan Club Product Buildout | none | Closed complete | Child issues #1686–#1694 closed; closeout evidence at `docs/ops/reports/website-completion-program-closeout.md`. |
-| #2039 | Website Public Launch / Relaunch Readiness | none | Task #2041 in progress | Child issues #2041–#2048 exist; Task #2041 authorized; gap inventory at `docs/ops/reports/website-public-launch-gap-inventory.md`. |
+| #2039 | Website Public Launch / Relaunch Readiness | none | Closed complete | Child issues #2041–#2048 complete; public launch remains operator-controlled by checklist, smoke-test, production promotion, and evidence requirements. |
 | #2040 | Website Automatic Content Publication Capability | none | Planning-ready publication authority | Child issues #2049–#2056 exist; execution waits for manual workflow evidence and explicit queue authorization. |
 | #1700 | Fundraiser / Charity Campaign Operations Buildout | none | Launch-control ready / queued | Child issues #1701–#1708 exist; Task 001 assignment guidance is posted on #1701; execution waits for explicit queue authorization. |
 | #1719 | PMO Governance / Workflow Automation Completion | none | Launch-control ready / queued | Child issues #1720–#1727 exist; Task 001 assignment guidance is posted on #1720; execution waits for explicit queue authorization. |
@@ -191,7 +191,7 @@ Completed program cycles remain audit evidence and may be cited for historical c
 | Is a program issue | No |
 | Executable by itself | No |
 | Review cadence | Reviewed as a primary agenda item during PMO meetings |
-| Current top candidate | Website Completion / Fan Club Product Buildout (#1685) ready for Bill/Atlas launch review; Website Public Launch / Relaunch Readiness (#2039) follows #1685 closeout |
+| Current top candidate | Website Completion / Fan Club Product Buildout (#1685) structural baseline complete; Website Public Launch / Relaunch Readiness (#2039) repo tasks complete; Website Automatic Content Publication Capability (#2040) remains blocked until explicit authorization |
 
 ## Program #1411 — PMO Automation and Agent Workflow Control
 
