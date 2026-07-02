@@ -1,14 +1,18 @@
 ---
-Doc Type: Reference
+Doc Type: Archived Reference
 Audience: LGFC maintainers, orchestration operators, AI builders
-Authority Level: Canonical
-Owns: Startup governance doctrine and run-startup operational initialization rules
-Does Not Own: Full DIATAXIS taxonomy, builder implementation details, or repository workflow implementation
-Canonical Reference: docs/reference/orchestration/startup-governance.md
-Last Reviewed: 2026-05-16
+Authority Level: Historical
+Owns: Historical startup governance record only
+Does Not Own: Current ChatGPT/Atlas startup behavior, full DIATAXIS taxonomy, builder implementation details, or repository workflow implementation
+Canonical Reference: /docs/ops/ai/CHATGPT-RULES.md
+Archived From: /docs/reference/orchestration/startup-governance.md
+Archived Reason: Superseded by Agent.md startup routing and ChatGPT/Atlas startup contract
+Last Reviewed: 2026-07-02
 ---
 
 # LGFC Startup Governance v1
+
+> Archived. Superseded by `Agent.md` and `docs/ops/ai/CHATGPT-RULES.md` startup contract. This file is retained as historical evidence for the prior zip-era startup process and must not be used as current startup authority.
 
 ## Purpose
 
