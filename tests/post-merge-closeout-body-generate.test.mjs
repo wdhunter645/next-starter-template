@@ -19,12 +19,12 @@ placeholder
 ## CHANGE SUMMARY
 - real change
 <!-- CURSOR_AGENT_PR_BODY_END -->
-<div><a href="https://cursor.com/agents/example">Open in Web</a></div>`;
+<div><a href="https://example.invalid/agent">Open in Web</a></div>`;
 		const sanitized = sanitizeMergedPrBody(body);
 		expect(sanitized).not.toContain('pr-body-auto-repair');
 		expect(sanitized).toContain('Status: MERGED');
 		expect(sanitized).toContain('real change');
-		expect(sanitized).not.toContain('cursor.com');
+		expect(sanitized).not.toContain('example.invalid');
 	});
 
 	it('builds reviewer disposition lines for trusted inline threads', () => {
@@ -45,7 +45,7 @@ placeholder
 					id: 200,
 					state: 'COMMENTED',
 					body: 'request changes',
-					user: { login: 'chatgpt-codex-connector[bot]' },
+					user: { login: 'cubic-dev-ai[bot]' },
 					submitted_at: '2026-01-01T00:00:00Z',
 				},
 			],
@@ -65,7 +65,7 @@ placeholder
 					id: 8001,
 					created_at: '2026-06-01T12:00:00Z',
 					body: 'Please address this blocking concern before closeout.',
-					user: { login: 'gemini-code-assist[bot]' },
+					user: { login: 'cubic-dev-ai[bot]' },
 				},
 				{
 					id: 8002,
@@ -90,7 +90,7 @@ placeholder
 					id: 9001,
 					created_at: '2026-06-02T17:25:00Z',
 					body: 'P1 blocking: must fix this regression.',
-					user: { login: 'gemini-code-assist[bot]' },
+					user: { login: 'cubic-dev-ai[bot]' },
 				},
 			],
 		});
