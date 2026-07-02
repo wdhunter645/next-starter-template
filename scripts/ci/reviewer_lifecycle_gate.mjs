@@ -24,14 +24,6 @@ export const TRUSTED_REVIEWERS = [
     name: 'Cubic',
     users: ['cubic-dev-ai[bot]', 'cubic-dev-ai'],
   },
-  {
-    name: 'Gemini',
-    users: ['gemini-code-assist[bot]', 'gemini-code-assist'],
-  },
-  {
-    name: 'Codex',
-    users: ['chatgpt-codex-connector[bot]', 'chatgpt-codex-connector'],
-  },
 ];
 
 const TRUSTED_USERS = new Set(TRUSTED_REVIEWERS.flatMap((reviewer) => reviewer.users));
@@ -99,11 +91,10 @@ export function hasStaleTrustedReviewOnly({ reviews = [], reviewComments = [], h
 
 export function computeCurrentHeadLinkedReview({ reviews = [], reviewComments = [], headSha = '' } = {}) {
   if (!headSha) return false;
-
-  const linkedReviews = reviews.some((review) => isTrustedReviewLinkedToHead(review, headSha));
-  const linkedComments = reviewComments.some((comment) => isTrustedCommentLinkedToHead(comment, headSha));
-
-  return linkedReviews || linkedComments;
+  return (
+    reviews.some((review) => isTrustedReviewLinkedToHead(review, headSha)) ||
+    reviewComments.some((comment) => isTrustedCommentLinkedToHead(comment, headSha))
+  );
 }
 
 function resolveThreadRootId(comment, commentsById) {
@@ -111,15 +102,10 @@ function resolveThreadRootId(comment, commentsById) {
   const visited = new Set();
 
   while (current?.in_reply_to_id) {
-    if (visited.has(current.in_reply_to_id)) {
-      return current.in_reply_to_id;
-    }
+    if (visited.has(current.in_reply_to_id)) return current.in_reply_to_id;
     visited.add(current.in_reply_to_id);
-
     const parent = commentsById.get(current.in_reply_to_id);
-    if (!parent) {
-      return current.in_reply_to_id;
-    }
+    if (!parent) return current.in_reply_to_id;
     current = parent;
   }
 
@@ -130,65 +116,50 @@ function sortCommentsChronologically(comments) {
   return [...comments].sort((left, right) => {
     const leftTime = Date.parse(left.created_at || '') || 0;
     const rightTime = Date.parse(right.created_at || '') || 0;
-    if (leftTime !== rightTime) {
-      return leftTime - rightTime;
-    }
+    if (leftTime !== rightTime) return leftTime - rightTime;
     return (left.id || 0) - (right.id || 0);
   });
 }
 
-export function countUnresolvedProtectedThreads({
-  reviewComments = [],
-  reviews = [],
-  body = '',
-} = {}) {
-	let unresolved = 0;
-	const dispositions = parseReviewerDispositions(body);
-	const commentsById = new Map(
-		reviewComments.filter((comment) => comment.id != null).map((comment) => [comment.id, comment]),
-	);
-	const threads = new Map();
+export function countUnresolvedProtectedThreads({ reviewComments = [], reviews = [], body = '' } = {}) {
+  let unresolved = 0;
+  const dispositions = parseReviewerDispositions(body);
+  const commentsById = new Map(
+    reviewComments.filter((comment) => comment.id != null).map((comment) => [comment.id, comment]),
+  );
+  const threads = new Map();
 
-	for (const comment of reviewComments) {
-		const threadId = resolveThreadRootId(comment, commentsById);
-		if (!threads.has(threadId)) {
-			threads.set(threadId, []);
-		}
-		threads.get(threadId).push(comment);
-	}
+  for (const comment of reviewComments) {
+    const threadId = resolveThreadRootId(comment, commentsById);
+    if (!threads.has(threadId)) threads.set(threadId, []);
+    threads.get(threadId).push(comment);
+  }
 
-	for (const comments of threads.values()) {
-		const orderedComments = sortCommentsChronologically(comments);
-		const firstComment = orderedComments[0];
-		const latestComment = orderedComments[orderedComments.length - 1];
-		const user = firstComment.user?.login || '';
-		const path = firstComment.path || '';
-		const threadId = String(resolveThreadRootId(firstComment, commentsById));
+  for (const comments of threads.values()) {
+    const orderedComments = sortCommentsChronologically(comments);
+    const firstComment = orderedComments[0];
+    const latestComment = orderedComments[orderedComments.length - 1];
+    const user = firstComment.user?.login || '';
+    const path = firstComment.path || '';
+    const threadId = String(resolveThreadRootId(firstComment, commentsById));
 
-		if (!isTrustedReviewer(user)) continue;
-		if (!isProtectedPath(path)) continue;
-		if (firstComment.line == null && firstComment.position == null) continue;
-		if (orderedComments.some((comment) => IGNORE_MARKER.test(comment.body || ''))) continue;
-		if (hasValidDisposition(dispositions.get(threadId))) continue;
-		if (isResolvedReviewText(latestComment.body || '')) continue;
-
-		unresolved += 1;
-	}
+    if (!isTrustedReviewer(user)) continue;
+    if (!isProtectedPath(path)) continue;
+    if (firstComment.line == null && firstComment.position == null) continue;
+    if (orderedComments.some((comment) => IGNORE_MARKER.test(comment.body || ''))) continue;
+    if (hasValidDisposition(dispositions.get(threadId))) continue;
+    if (isResolvedReviewText(latestComment.body || '')) continue;
+    unresolved += 1;
+  }
 
   const latestReviews = new Map();
   for (const review of reviews) {
     const user = review.user?.login || '';
     if (!isTrustedReviewer(user)) continue;
-
     const existing = latestReviews.get(user);
     const reviewTime = Date.parse(review.submitted_at || '') || review.id || 0;
-    const existingTime = existing
-      ? Date.parse(existing.submitted_at || '') || existing.id || 0
-      : -1;
-
-    if (!existing || reviewTime >= existingTime) {
-      latestReviews.set(user, review);
-    }
+    const existingTime = existing ? Date.parse(existing.submitted_at || '') || existing.id || 0 : -1;
+    if (!existing || reviewTime >= existingTime) latestReviews.set(user, review);
   }
 
   for (const review of latestReviews.values()) {
@@ -201,11 +172,7 @@ export function countUnresolvedProtectedThreads({
   return unresolved;
 }
 
-export function countAdvisoryFindings({
-  issueComments = [],
-  reviewComments = [],
-  reviews = [],
-} = {}) {
+export function countAdvisoryFindings({ issueComments = [], reviewComments = [], reviews = [] } = {}) {
   let findings = 0;
 
   for (const comment of issueComments) {
@@ -311,7 +278,7 @@ export function assessReviewerLifecycle({
   headSha = '',
   readyForReviewAt = '',
   enforceFailure = false,
-}) {
+} = {}) {
   const scope = classifyProtectedScope(files);
   const currentHeadLinkedReview = computeCurrentHeadLinkedReview({ reviews, reviewComments, headSha });
   const staleTrustedReviewOnly = hasStaleTrustedReviewOnly({ reviews, reviewComments, headSha });
