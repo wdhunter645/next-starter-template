@@ -11,7 +11,7 @@ Last Reviewed: 2026-07-01
 
 # Website Public Launch / Relaunch Readiness
 
-> Program #2039 is **CLOSED** as completed after Atlas/operator sign-off. This document records the completed readiness package and child-task evidence.
+> Program #2039 is **CLOSED** as completed after Bill/Atlas acceptance. This document records the completed readiness package and retains remaining execution-boundary sections as historical reference.
 
 ## Purpose
 
@@ -66,7 +66,7 @@ At the end of Program #2039:
 | Program name | Website Public Launch / Relaunch Readiness |
 | Predecessor | #1685 — Website Completion / Fan Club Product Buildout |
 | Execution agent | Cursor |
-| Current readiness | Program completed — Atlas/operator sign-off recorded; repo baseline stable for next website program |
+| Current readiness | Program completed after Bill/Atlas acceptance; repo baseline stable for next website program |
 | Primary implementation plan | `docs/ops/implementation-plans/website-public-launch-relaunch-readiness.md` |
 | Required staging route | `/admin/clubstaging` |
 | Explicit non-goal | Controlled content publication capability |
@@ -93,6 +93,8 @@ Cursor implementation may begin only when:
 3. The assigned task identifies its own file-touch boundary.
 4. The PR body cites exactly one source issue.
 5. The task stops at `READY FOR REVIEW`.
+
+These launch preconditions are retained as historical execution-boundary evidence for the closed program.
 
 ## Staging route rule
 
