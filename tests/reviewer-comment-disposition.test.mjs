@@ -68,7 +68,7 @@ describe('reviewer comment disposition enforcement', () => {
       body: '## REVIEWER RESPONSE ACCOUNTING\n- reviewed',
       reviewComments: [{
         id: 2002,
-        user: { login: 'gemini-code-assist[bot]' },
+        user: { login: 'cubic-dev-ai[bot]' },
         commit_id: 'old-sha',
         path: 'scripts/ci/example.mjs',
         line: 12,
@@ -91,7 +91,7 @@ describe('reviewer comment disposition enforcement', () => {
       ].join('\n'),
       reviewComments: [{
         id: 2003,
-        user: { login: 'chatgpt-codex-connector[bot]' },
+        user: { login: 'cubic-dev-ai[bot]' },
         commit_id: 'old-sha',
         path: 'scripts/ci/example.mjs',
         line: 14,
@@ -128,47 +128,49 @@ describe('reviewer comment disposition enforcement', () => {
 });
 
 describe('reviewer response gate integration', () => {
-  it('does not block pull_request_target when late findings are dispositioned (PR #1566)', () => {
+  it('does not block pull_request_target when late findings are dispositioned', () => {
     const prBody = [
       'Status: READY FOR REVIEW',
       '## REVIEWER RESPONSE ACCOUNTING',
       'Reviewer items:',
-      '- review-comment:3396937120 — accepted — Removed tokenReady effect load path — thread state: resolved',
-      '- review-comment:3396953330 — accepted — tokenReady effect removed; stale responses guarded — thread state: resolved',
+      '- review-comment:3396937120 — accepted — Removed duplicate load path — thread state: resolved',
+      '- review-comment:3396953330 — accepted — duplicate-load guard added — thread state: resolved',
       '- review-comment:3396953405 — accepted — Publish button disabled when selected block absent — thread state: resolved',
     ].join('\n');
 
+    const reviewComments = [
+      {
+        id: 3396937120,
+        user: { login: 'cubic-dev-ai[bot]' },
+        commit_id: 'bad2cd41eaa8d68a4fc9ade698c014e42a68f70b',
+        path: 'src/app/admin/content/page.tsx',
+        line: 141,
+        body: 'Please fix duplicate loads.',
+        created_at: '2026-06-11T14:56:39Z',
+      },
+      {
+        id: 3396953330,
+        user: { login: 'copilot-pull-request-reviewer[bot]' },
+        commit_id: 'e69e5e9820e048338908d394f9ae47db36a0a088',
+        path: 'src/app/admin/content/page.tsx',
+        line: 12,
+        body: 'P2: duplicate loads.',
+        created_at: '2026-06-11T14:58:53Z',
+      },
+      {
+        id: 3396953405,
+        user: { login: 'copilot-pull-request-reviewer[bot]' },
+        commit_id: 'bad2cd41eaa8d68a4fc9ade698c014e42a68f70b',
+        path: 'src/app/admin/cms/page.tsx',
+        line: 332,
+        body: 'Publish should be disabled when selected block is absent.',
+        created_at: '2026-06-11T14:58:54Z',
+      },
+    ];
+
     const disposition = evaluateReviewerCommentDisposition({
       body: prBody,
-      reviewComments: [
-        {
-          id: 3396937120,
-          user: { login: 'chatgpt-codex-connector[bot]' },
-          commit_id: 'bad2cd41eaa8d68a4fc9ade698c014e42a68f70b',
-          path: 'src/app/admin/content/page.tsx',
-          line: 141,
-          body: 'Please fix duplicate slug loads.',
-          created_at: '2026-06-11T14:56:39Z',
-        },
-        {
-          id: 3396953330,
-          user: { login: 'copilot-pull-request-reviewer[bot]' },
-          commit_id: 'e69e5e9820e048338908d394f9ae47db36a0a088',
-          path: 'src/app/admin/content/page.tsx',
-          line: 12,
-          body: 'P2: tokenReady effect causes duplicate loads.',
-          created_at: '2026-06-11T14:58:53Z',
-        },
-        {
-          id: 3396953405,
-          user: { login: 'copilot-pull-request-reviewer[bot]' },
-          commit_id: 'bad2cd41eaa8d68a4fc9ade698c014e42a68f70b',
-          path: 'src/app/admin/cms/page.tsx',
-          line: 332,
-          body: 'Publish should be disabled when selected block is absent.',
-          created_at: '2026-06-11T14:58:54Z',
-        },
-      ],
+      reviewComments,
       headSha: 'bad2cd41eaa8d68a4fc9ade698c014e42a68f70b',
       readyForReviewAt: '2026-06-11T14:54:33Z',
       auditPhase: 'pre_merge',
@@ -198,35 +200,7 @@ describe('reviewer response gate integration', () => {
       headSha: 'bad2cd41eaa8d68a4fc9ade698c014e42a68f70b',
       body: prBody,
       readyForReviewAt: '2026-06-11T14:54:33Z',
-      reviewComments: [
-        {
-          id: 3396937120,
-          user: { login: 'chatgpt-codex-connector[bot]' },
-          commit_id: 'bad2cd41eaa8d68a4fc9ade698c014e42a68f70b',
-          path: 'src/app/admin/content/page.tsx',
-          line: 141,
-          body: 'Please fix duplicate slug loads.',
-          created_at: '2026-06-11T14:56:39Z',
-        },
-        {
-          id: 3396953330,
-          user: { login: 'copilot-pull-request-reviewer[bot]' },
-          commit_id: 'e69e5e9820e048338908d394f9ae47db36a0a088',
-          path: 'src/app/admin/content/page.tsx',
-          line: 12,
-          body: 'P2: tokenReady effect causes duplicate loads.',
-          created_at: '2026-06-11T14:58:53Z',
-        },
-        {
-          id: 3396953405,
-          user: { login: 'copilot-pull-request-reviewer[bot]' },
-          commit_id: 'bad2cd41eaa8d68a4fc9ade698c014e42a68f70b',
-          path: 'src/app/admin/cms/page.tsx',
-          line: 332,
-          body: 'Publish should be disabled when selected block is absent.',
-          created_at: '2026-06-11T14:58:54Z',
-        },
-      ],
+      reviewComments,
       reviews: [{
         user: { login: 'copilot-pull-request-reviewer[bot]' },
         commit_id: 'bad2cd41eaa8d68a4fc9ade698c014e42a68f70b',
@@ -364,7 +338,7 @@ describe('post-merge closeout reviewer disposition', () => {
       body: '## REVIEWER RESPONSE ACCOUNTING\n- reviewed',
       reviewComments: [{
         id: 5001,
-        user: { login: 'gemini-code-assist[bot]' },
+        user: { login: 'cubic-dev-ai[bot]' },
         commit_id: 'merge-sha',
         path: 'scripts/ci/example.mjs',
         line: 20,

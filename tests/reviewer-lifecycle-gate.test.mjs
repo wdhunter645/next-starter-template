@@ -180,7 +180,7 @@ describe('reviewer lifecycle gate assessment', () => {
       ].join('\n'),
       reviewComments: [{
         id: 3382496983,
-        user: { login: 'gemini-code-assist[bot]' },
+        user: { login: 'cubic-dev-ai[bot]' },
         commit_id: 'abc123',
         path: 'scripts/ci/post_merge_remediation_issue.mjs',
         line: 12,
@@ -319,7 +319,7 @@ describe('reviewer lifecycle gate assessment', () => {
       ].join('\n'),
       reviewComments: [{
         id: 9003,
-        user: { login: 'gemini-code-assist[bot]' },
+        user: { login: 'cubic-dev-ai[bot]' },
         commit_id: 'old-sha',
         path: 'src/app/admin/cms/page.tsx',
         line: 12,

@@ -15,7 +15,7 @@ if (!token || !repository || !prNumber) {
 
 const [owner, repo] = repository.split('/');
 const apiBase = 'https://api.github.com';
-const trustedReviewerPattern = /chatgpt-codex-connector|gemini-code-assist|copilot-pull-request-reviewer|cubic-dev-ai/i;
+const trustedReviewerPattern = /copilot-pull-request-reviewer|cubic-dev-ai/i;
 const highSeverityPattern = /(^|[^A-Za-z0-9])(P0|P1)([^A-Za-z0-9]|$)|high[- ]priority|request changes|requested changes|must fix|blocking/i;
 const resolvedPattern = /✅\s*Addressed|addressed in|\bresolved\b|all checks passed|no warnings detected/i;
 const unresolvedPattern = /\bunresolved\b|\bnot\s+resolved\b|\bstill\s+open\b|\bstill\s+blocking\b/i;
@@ -171,7 +171,7 @@ async function main() {
     } else {
       const created = await request(`/repos/${owner}/${repo}/issues`, {
         method: 'POST',
-        body: JSON.stringify({ title, body, labels: ['codex'] }),
+        body: JSON.stringify({ title, body, labels: ['change-ops'] }),
       });
       auditIssue = created.html_url || `#${created.number}`;
     }

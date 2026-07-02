@@ -231,7 +231,7 @@ describe('post-merge readiness gate', () => {
     const result = evaluate({
       issueComments: [{
         id: 202,
-        user: { login: 'gemini-code-assist' },
+        user: { login: 'cubic-dev-ai[bot]' },
         body: 'P1 blocking: please fix the gate before merge.',
         created_at: '2026-06-11T11:00:00Z',
       }],

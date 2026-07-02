@@ -107,7 +107,7 @@ describe('PR body auto-repair generation', () => {
       files: [{ filename: 'scripts/ci/pr_body_auto_repair.mjs' }],
       reviewComments: [{
         id: 3427000000,
-        user: { login: 'gemini-code-assist[bot]' },
+        user: { login: 'cubic-dev-ai[bot]' },
         commit_id: 'abc123',
         path: 'scripts/ci/pr_body_auto_repair.mjs',
         line: 42,

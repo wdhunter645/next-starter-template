@@ -240,8 +240,6 @@ Each source-issue acceptance criterion must be checked, marked not applicable wi
 - [ ] Reviewed all bot comments.
 - [ ] Reviewed all GitHub review threads.
 - [ ] Copilot disposition received or not applicable.
-- [ ] Codex disposition received or not applicable.
-- [ ] Gemini disposition received or not applicable.
 - [ ] Cubic disposition received or not applicable.
 - [ ] Every actionable reviewer comment has a PR-body disposition with `review-comment:<id>`.
 - [ ] Every actionable bot comment has a PR-body disposition with `bot-comment:<id>` or equivalent durable reference.

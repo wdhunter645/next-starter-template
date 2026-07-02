@@ -72,7 +72,7 @@ describe('reviewer response gate enforcement by event', () => {
       body: '## REVIEWER RESPONSE ACCOUNTING\n- reviewed',
       reviews: [{
         id: 8001,
-        user: { login: 'gemini-code-assist[bot]' },
+        user: { login: 'cubic-dev-ai[bot]' },
         commit_id: 'head-sha',
         state: 'CHANGES_REQUESTED',
         body: 'P1: Request changes before merge.',
@@ -165,7 +165,7 @@ describe('reviewer response gate enforcement by event', () => {
       ].join('\n'),
       reviewComments: [{
         id: 9004,
-        user: { login: 'gemini-code-assist[bot]' },
+        user: { login: 'cubic-dev-ai[bot]' },
         commit_id: 'old-sha',
         path: 'src/app/page.tsx',
         line: 12,

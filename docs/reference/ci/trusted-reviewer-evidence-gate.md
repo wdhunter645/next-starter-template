@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Trusted reviewer evidence gate contract, reviewer registry model, selected reviewer accounting rules
 Does Not Own: Individual third-party reviewer service availability, branch protection settings, reviewer bot implementation details
 Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related Issues: #1247, #1196, #1075, #1058
-Last Reviewed: 2026-06-03
+Related Issues: #1247, #1196, #1075, #1058, #2145
+Last Reviewed: 2026-07-02
 ---
 
 # Trusted Reviewer Evidence Gate
@@ -23,12 +23,10 @@ It must not make any individual reviewer service a permanent single point of fai
 
 Trusted reviewers are configured through a registry.
 
-The registry may include:
+The active trusted reviewer registry is limited to:
 
 - Cubic
 - Copilot
-- Gemini while available
-- future approved review agents
 
 Adding or removing a reviewer must be a registry/configuration change, not a workflow redesign.
 
@@ -70,9 +68,9 @@ The gate should not require accounting for comments outside the selected reviewe
 
 ## Post-Merge Audit
 
-Post-merge reviewer audit remains responsible for late, additional, or non-selected reviewer findings.
+Post-merge reviewer audit remains responsible for late, additional, or non-selected reviewer findings from the active trusted reviewer registry.
 
-Late or unaccounted serious reviewer findings should create remediation evidence, pause queue advancement when appropriate, and avoid silently closing source issues.
+Late or unaccounted serious reviewer findings should create remediation evidence and pause queue advancement when appropriate.
 
 ## Service Retirement Rule
 

@@ -5,7 +5,7 @@
     "state": "commented",
     "commit_id": "3333333333333333333333333333333333333333",
     "user": {
-      "login": "gemini-code-assist[bot]"
+      "login": "copilot-pull-request-reviewer[bot]"
     }
   },
   "pull_request": {
