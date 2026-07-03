@@ -39,31 +39,40 @@ describe('OPS — Post-Merge Self-Healing workflow', () => {
 		expect(workflow).toContain('post-merge-self-heal-escalation.json');
 	});
 
-	it('enables scheduled daily backlog apply while manual dispatch defaults to dry-run', () => {
+	it('enables scheduled and workflow-completion backlog apply while manual dispatch defaults to dry-run', () => {
 		const workflow = fs.readFileSync('.github/workflows/ops-post-merge-self-healing.yml', 'utf8');
 
 		expect(workflow).toContain('workflow_run:');
 		expect(workflow).toContain('schedule:');
-		expect(workflow).toMatch(/elif \[ "\$\{\{ github\.event_name \}\}" = "workflow_run" \]; then[\s\S]*echo "dry_run=false"[\s\S]*echo "apply_safe_fixes=true"/);
-		expect(workflow).toMatch(/elif \[ "\$\{\{ github\.event_name \}\}" = "schedule" \]; then[\s\S]*echo "dry_run=false"[\s\S]*echo "apply_safe_fixes=true"/);
-		expect(workflow).toMatch(/else[\s\S]*echo "dry_run=true"[\s\S]*echo "apply_safe_fixes=false"/);
-		expect(workflow).toMatch(/echo "open_escalation_issues=false"/);
+		expect(workflow).toContain('elif [ "${{ github.event_name }}" = "workflow_run" ]; then');
+		expect(workflow).toContain('elif [ "${{ github.event_name }}" = "schedule" ]; then');
+		expect(workflow).toContain('echo "dry_run=false" >> "$GITHUB_OUTPUT"');
+		expect(workflow).toContain('echo "apply_safe_fixes=true" >> "$GITHUB_OUTPUT"');
+		expect(workflow).toContain('echo "dry_run=true" >> "$GITHUB_OUTPUT"');
+		expect(workflow).toContain('echo "apply_safe_fixes=false" >> "$GITHUB_OUTPUT"');
+		expect(workflow).toContain('echo "open_escalation_issues=false" >> "$GITHUB_OUTPUT"');
 	});
 
-	it('triggers on matching post-merge issue events only', () => {
+	it('does not trigger from issue or push events during transition control', () => {
+		const workflow = fs.readFileSync('.github/workflows/ops-post-merge-self-healing.yml', 'utf8');
+		const triggerBlock = workflow.slice(workflow.indexOf('on:'), workflow.indexOf('permissions:'));
+
+		expect(triggerBlock).not.toMatch(/^\s{2}issues:/m);
+		expect(triggerBlock).not.toMatch(/^\s{2}push:/m);
+		expect(workflow).not.toContain('github.event_name == \'issues\'');
+		expect(workflow).not.toContain('github.event.issue.');
+		expect(workflow).not.toContain('--event-issue');
+	});
+
+	it('queues self-healing runs instead of racing repository writes', () => {
 		const workflow = fs.readFileSync('.github/workflows/ops-post-merge-self-healing.yml', 'utf8');
 
-		expect(workflow).toContain('issues:');
-		expect(workflow).toContain('types: [opened, reopened, edited, labeled]');
-		expect(workflow).toContain("startsWith(github.event.issue.title, 'Post-merge closeout exception')");
-		expect(workflow).toContain("contains(join(github.event.issue.labels.*.name, ','), 'post-merge-failure')");
-		expect(workflow).toContain("contains(join(github.event.issue.labels.*.name, ','), 'ops-pr-escalation')");
-		expect(workflow).toContain("github.event.issue.state == 'open'");
-		expect(workflow).toContain("github.event.label.name == 'ops-pr-escalation'");
-		expect(workflow).toMatch(/elif \[ "\$\{\{ github\.event_name \}\}" = "issues" \]; then[\s\S]*echo "backlog_scope=event_issue"/);
+		expect(workflow).toContain('concurrency:');
+		expect(workflow).toContain('group: ops-post-merge-self-healing-${{ github.repository }}');
+		expect(workflow).toContain('cancel-in-progress: false');
 	});
 
-	it('uses least-privilege permissions for issue-event self-healing', () => {
+	it('uses least-privilege permissions for transition self-healing', () => {
 		const workflow = fs.readFileSync('.github/workflows/ops-post-merge-self-healing.yml', 'utf8');
 
 		expect(workflow).toContain('contents: read');

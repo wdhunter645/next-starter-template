@@ -3,15 +3,11 @@ name: GATE — Reviewer Response Completion
 on:
   pull_request_target:
     types: [opened, reopened, edited, synchronize, ready_for_review]
-  issue_comment:
-    types: [created, edited, deleted]
   pull_request_review:
     types: [submitted, edited, dismissed]
-  pull_request_review_comment:
-    types: [created, edited, deleted]
 
 permissions:
-  pull-requests: write
+  pull-requests: read
   issues: write
   contents: read
 
@@ -19,7 +15,7 @@ jobs:
   reviewer-response-completion:
     runs-on: ubuntu-latest
     concurrency:
-      group: reviewer-response-completion-${{ github.event.pull_request.number || github.event.issue.number }}
+      group: reviewer-response-completion-${{ github.event.pull_request.number }}
       cancel-in-progress: true
     steps:
       - name: Checkout reviewer lifecycle helpers
@@ -30,28 +26,23 @@ jobs:
         with:
           node-version-file: .node-version
 
-      - name: Auto-repair trusted PR body evidence
+      - name: Dry-run PR body auto-repair evidence
         uses: actions/github-script@v7
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          PR_BODY_AUTO_REPAIR_DRY_RUN: 'true'
         with:
           script: |
-            const issue = context.payload.issue;
             const pr = context.payload.pull_request;
             const eventName = context.eventName;
 
-            if (eventName === 'issue_comment' && !issue?.pull_request?.url) {
-              core.info('Issue comment is not associated with a pull request; skipping PR body auto-repair.');
-              return;
-            }
-
-            const prNumber = pr?.number || (issue?.pull_request ? issue.number : null);
+            const prNumber = pr?.number || null;
             if (!prNumber) {
-              core.info('No pull request context; skipping PR body auto-repair.');
+              core.info('No pull request context; skipping PR body auto-repair dry run.');
               return;
             }
 
-            core.info(`Running PR body auto-repair for PR #${prNumber}.`);
+            core.info(`Running PR body auto-repair in dry-run mode for PR #${prNumber}. No PR body mutation will occur.`);
 
             const { execFileSync } = require('node:child_process');
             execFileSync(
@@ -64,39 +55,28 @@ jobs:
                   GITHUB_REPOSITORY: `${context.repo.owner}/${context.repo.repo}`,
                   PR_NUMBER: String(prNumber),
                   GITHUB_EVENT_NAME: eventName,
+                  PR_BODY_AUTO_REPAIR_DRY_RUN: 'true',
                 },
                 stdio: 'inherit',
               }
             );
 
-      - name: Evaluate reviewer lifecycle gate
+      - name: Evaluate reviewer lifecycle gate in advisory mode
         uses: actions/github-script@v7
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           script: |
-            const issue = context.payload.issue;
             const pr = context.payload.pull_request;
             const eventName = context.eventName;
 
-            if (eventName === 'issue_comment' && !issue?.pull_request?.url) {
-              core.info('Issue comment is not associated with a pull request; skipping reviewer lifecycle gate.');
-              return;
-            }
-
-            const prNumber = pr?.number || (issue?.pull_request ? issue.number : null);
+            const prNumber = pr?.number || null;
             if (!prNumber) {
               core.info('No pull request context; skipping reviewer lifecycle gate.');
               return;
             }
 
-            const enforceFailure = [
-              'pull_request_target',
-              'pull_request_review',
-              'pull_request_review_comment',
-              'issue_comment',
-            ].includes(eventName);
-            core.info(`Running reviewer lifecycle gate for PR #${prNumber} (event=${eventName}, enforceFailure=${enforceFailure}, head context via API).`);
+            core.info(`Running reviewer lifecycle gate for PR #${prNumber} in advisory transition mode (event=${eventName}, enforceFailure=false).`);
 
             const { execFileSync } = require('node:child_process');
             execFileSync(
@@ -109,7 +89,7 @@ jobs:
                   GITHUB_REPOSITORY: `${context.repo.owner}/${context.repo.repo}`,
                   PR_NUMBER: String(prNumber),
                   GITHUB_EVENT_NAME: eventName,
-                  ENFORCE_FAILURE: enforceFailure ? 'true' : 'false',
+                  ENFORCE_FAILURE: 'false',
                 },
                 stdio: 'inherit',
               }

@@ -28,26 +28,14 @@ on:
           - 'true'
           - 'false'
       backlog_scope:
-        description: Scan all open backlog issues or only the supplied issue event
+        description: Scan all open backlog issues
         required: false
         default: 'backlog'
         type: choice
         options:
           - backlog
-          - event_issue
   schedule:
     - cron: '0 6 * * *'
-  issues:
-    types: [opened, reopened, edited, labeled]
-  push:
-    branches: [main]
-    paths:
-      - scripts/ci/post_merge_self_heal_*.mjs
-      - scripts/ci/post_merge_remediation_issue.mjs
-      - scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json
-      - scripts/ci/post-merge-closeout/targets-ci-pending.json
-      - scripts/ci/post-merge-closeout/targets-remediation-backlog.json
-      - .github/workflows/ops-post-merge-self-healing.yml
   workflow_run:
     workflows:
       - Post-Merge Detection
@@ -61,26 +49,15 @@ permissions:
   contents: read
   issues: write
 
+concurrency:
+  group: ops-post-merge-self-healing-${{ github.repository }}
+  cancel-in-progress: false
+
 jobs:
   self-heal:
     if: |
-      (
-        github.event_name != 'workflow_run' ||
-        github.event.workflow_run.conclusion != 'cancelled'
-      ) && (
-        github.event_name != 'issues' ||
-        (
-          github.event.issue.state == 'open' &&
-          (
-            startsWith(github.event.issue.title, 'Post-merge closeout exception') ||
-            contains(github.event.issue.body, 'Post-merge closeout exception detected. CI refused deterministic source issue closeout.') ||
-            contains(join(github.event.issue.labels.*.name, ','), 'post-merge-failure') ||
-            contains(join(github.event.issue.labels.*.name, ','), 'post-merge-self-healing')
-          ) &&
-          !contains(join(github.event.issue.labels.*.name, ','), 'ops-pr-escalation') &&
-          !(github.event.action == 'labeled' && github.event.label.name == 'ops-pr-escalation')
-        )
-      )
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion != 'cancelled'
     runs-on: ubuntu-latest
 
     steps:
@@ -102,12 +79,7 @@ jobs:
             echo "dry_run=${{ inputs.dry_run }}" >> "$GITHUB_OUTPUT"
             echo "apply_safe_fixes=${{ inputs.apply_safe_fixes }}" >> "$GITHUB_OUTPUT"
             echo "open_escalation_issues=${{ inputs.open_escalation_issues }}" >> "$GITHUB_OUTPUT"
-            echo "backlog_scope=${{ inputs.backlog_scope }}" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event_name }}" = "issues" ]; then
-            echo "dry_run=false" >> "$GITHUB_OUTPUT"
-            echo "apply_safe_fixes=true" >> "$GITHUB_OUTPUT"
-            echo "open_escalation_issues=false" >> "$GITHUB_OUTPUT"
-            echo "backlog_scope=event_issue" >> "$GITHUB_OUTPUT"
+            echo "backlog_scope=backlog" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event_name }}" = "workflow_run" ]; then
             echo "dry_run=false" >> "$GITHUB_OUTPUT"
             echo "apply_safe_fixes=true" >> "$GITHUB_OUTPUT"
@@ -124,13 +96,6 @@ jobs:
             echo "open_escalation_issues=false" >> "$GITHUB_OUTPUT"
             echo "backlog_scope=backlog" >> "$GITHUB_OUTPUT"
           fi
-
-      - name: Capture issue event payload
-        if: github.event_name == 'issues'
-        env:
-          ISSUE_PAYLOAD: ${{ toJson(github.event.issue) }}
-        run: |
-          printf '%s\n' "$ISSUE_PAYLOAD" > post-merge-self-heal-event-issue.json
 
       - name: Download post-merge closeout artifact
         if: github.event_name == 'workflow_run' && github.event.workflow_run.name == 'Post-Merge Detection'
@@ -149,9 +114,6 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           BACKLOG_ARGS=(--output post-merge-self-heal-backlog.json)
-          if [ "${{ steps.mode.outputs.backlog_scope }}" = "event_issue" ]; then
-            BACKLOG_ARGS+=(--event-issue post-merge-self-heal-event-issue.json)
-          fi
           if [ "${{ steps.mode.outputs.dry_run }}" != "true" ] && [ "${{ steps.mode.outputs.apply_safe_fixes }}" = "true" ]; then
             BACKLOG_ARGS+=(--apply)
           fi
