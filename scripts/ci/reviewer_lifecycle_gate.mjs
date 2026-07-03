@@ -4,266 +4,147 @@ import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import {
   classifyProtectedScope,
-  evaluateReviewerAccounting,
   isEnforcingReviewerLifecycleEvent,
 } from './reviewer-gate-simulation.mjs';
-import {
-  evaluateReviewerCommentDisposition,
-  hasValidDisposition,
-  parseReviewerDispositions,
-} from './reviewer_comment_disposition.mjs';
 
 export { isEnforcingReviewerLifecycleEvent } from './reviewer-gate-simulation.mjs';
 
-export const TRUSTED_REVIEWERS = [
-  {
-    name: 'Copilot',
-    users: ['copilot-pull-request-reviewer[bot]', 'copilot-pull-request-reviewer', 'Copilot'],
-  },
-  {
-    name: 'Cubic',
-    users: ['cubic-dev-ai[bot]', 'cubic-dev-ai'],
-  },
+export const DEFAULT_TRUSTED_BOT_LOGINS = [
+  'copilot-pull-request-reviewer[bot]',
+  'copilot-pull-request-reviewer',
+  'cubic-dev-ai[bot]',
+  'cubic-dev-ai',
+  'chatgpt-codex-connector[bot]',
+  'chatgpt-codex-connector',
 ];
 
-const TRUSTED_USERS = new Set(TRUSTED_REVIEWERS.flatMap((reviewer) => reviewer.users));
-const IGNORE_MARKER = /<!--\s*reviewer-response-ignore\s*-->/i;
-export const BREAK_GLASS_MARKER = /<!--\s*reviewer-lifecycle-break-glass\s*-->/i;
-const RESOLVED_MARKER = /✅\s*Addressed|addressed in|\bresolved\b|all checks passed|no warnings detected/i;
-const UNRESOLVED_MARKER = /\bunresolved\b|\bnot\s+resolved\b|\bstill\s+open\b|\bstill\s+blocking\b/i;
-const LINKED_REVIEW_STATES = new Set(['APPROVED', 'COMMENTED']);
+export const DEFAULT_EXCEPTION_LABEL = 'reviewer-lifecycle-exception';
 
-export function isTrustedReviewer(login = '') {
-  return TRUSTED_USERS.has(login);
+function normalizeLogin(login = '') {
+  return String(login || '').trim().toLowerCase();
 }
 
-export function isResolvedReviewText(body = '') {
-  return RESOLVED_MARKER.test(body || '') && !UNRESOLVED_MARKER.test(body || '');
+export function trustedBotSet(logins = DEFAULT_TRUSTED_BOT_LOGINS) {
+  return new Set(logins.map(normalizeLogin).filter(Boolean));
+}
+
+export function parseTrustedBotLogins(value = '') {
+  if (!value) return DEFAULT_TRUSTED_BOT_LOGINS;
+  return value.split(',').map((entry) => entry.trim()).filter(Boolean);
+}
+
+export function isTrustedReviewer(login = '', trustedBots = trustedBotSet()) {
+  return trustedBots.has(normalizeLogin(login));
 }
 
 export function isProtectedPath(filePath = '') {
   return filePath.startsWith('.github/workflows/') || filePath.startsWith('scripts/ci/');
 }
 
-function isTrustedReviewLinkedToHead(review, headSha) {
-  return (
-    isTrustedReviewer(review.user?.login || '') &&
-    Boolean(review.commit_id) &&
-    review.commit_id === headSha &&
-    review.state !== 'PENDING' &&
-    review.state !== 'DISMISSED' &&
-    LINKED_REVIEW_STATES.has(review.state)
-  );
+function timestamp(value = '') {
+  return Date.parse(value || '') || 0;
 }
 
-function isTrustedCommentLinkedToHead(comment, headSha) {
-  return (
-    isTrustedReviewer(comment.user?.login || '') &&
-    Boolean(comment.commit_id) &&
-    comment.commit_id === headSha
-  );
-}
-
-export function hasProtectedScopeBreakGlass({ labels = [], body = '' } = {}) {
-  const names = labels.map((label) => (typeof label === 'string' ? label : label?.name)).filter(Boolean);
-  return names.includes('recovery') && BREAK_GLASS_MARKER.test(body || '');
-}
-
-export function hasStaleTrustedReviewOnly({ reviews = [], reviewComments = [], headSha = '' } = {}) {
-  if (!headSha) return false;
-  if (computeCurrentHeadLinkedReview({ reviews, reviewComments, headSha })) return false;
-
-  const staleReview = reviews.some((review) => (
-    isTrustedReviewer(review.user?.login || '') &&
-    Boolean(review.commit_id) &&
-    review.commit_id !== headSha &&
-    review.state !== 'PENDING' &&
-    review.state !== 'DISMISSED'
-  ));
-  const staleComment = reviewComments.some((comment) => (
-    isTrustedReviewer(comment.user?.login || '') &&
-    Boolean(comment.commit_id) &&
-    comment.commit_id !== headSha
-  ));
-
-  return staleReview || staleComment;
-}
-
-export function computeCurrentHeadLinkedReview({ reviews = [], reviewComments = [], headSha = '' } = {}) {
-  if (!headSha) return false;
-  return (
-    reviews.some((review) => isTrustedReviewLinkedToHead(review, headSha)) ||
-    reviewComments.some((comment) => isTrustedCommentLinkedToHead(comment, headSha))
-  );
-}
-
-function resolveThreadRootId(comment, commentsById) {
-  let current = comment;
-  const visited = new Set();
-
-  while (current?.in_reply_to_id) {
-    if (visited.has(current.in_reply_to_id)) return current.in_reply_to_id;
-    visited.add(current.in_reply_to_id);
-    const parent = commentsById.get(current.in_reply_to_id);
-    if (!parent) return current.in_reply_to_id;
-    current = parent;
-  }
-
-  return current.id;
-}
-
-function sortCommentsChronologically(comments) {
-  return [...comments].sort((left, right) => {
-    const leftTime = Date.parse(left.created_at || '') || 0;
-    const rightTime = Date.parse(right.created_at || '') || 0;
-    if (leftTime !== rightTime) return leftTime - rightTime;
-    return (left.id || 0) - (right.id || 0);
-  });
-}
-
-export function countUnresolvedProtectedThreads({ reviewComments = [], reviews = [], body = '' } = {}) {
-  let unresolved = 0;
-  const dispositions = parseReviewerDispositions(body);
-  const validComments = reviewComments.filter((comment) => comment?.id != null);
-  const commentsById = new Map(validComments.map((comment) => [comment.id, comment]));
-  const threads = new Map();
-
-  for (const comment of validComments) {
-    const threadId = resolveThreadRootId(comment, commentsById);
-    if (!threads.has(threadId)) threads.set(threadId, []);
-    threads.get(threadId).push(comment);
-  }
-
-  for (const comments of threads.values()) {
-    const orderedComments = sortCommentsChronologically(comments);
-    const firstComment = orderedComments[0];
-    const latestComment = orderedComments[orderedComments.length - 1];
-    const user = firstComment.user?.login || '';
-    const path = firstComment.path || '';
-    const threadId = String(resolveThreadRootId(firstComment, commentsById));
-
-    if (!isTrustedReviewer(user)) continue;
-    if (!isProtectedPath(path)) continue;
-    if (firstComment.line == null && firstComment.position == null) continue;
-    if (orderedComments.some((comment) => IGNORE_MARKER.test(comment.body || ''))) continue;
-    if (hasValidDisposition(dispositions.get(threadId))) continue;
-    if (isResolvedReviewText(latestComment.body || '')) continue;
-    unresolved += 1;
-  }
-
-  const latestReviews = new Map();
+export function latestReviewByAuthor(reviews = []) {
+  const latest = new Map();
   for (const review of reviews) {
-    const user = review.user?.login || '';
-    if (!isTrustedReviewer(user)) continue;
-    const existing = latestReviews.get(user);
-    const reviewTime = Date.parse(review.submitted_at || '') || review.id || 0;
-    const existingTime = existing ? Date.parse(existing.submitted_at || '') || existing.id || 0 : -1;
-    if (!existing || reviewTime >= existingTime) latestReviews.set(user, review);
-  }
-
-  for (const review of latestReviews.values()) {
-    if (review.state !== 'CHANGES_REQUESTED') continue;
-    if (IGNORE_MARKER.test(review.body || '')) continue;
-    if (isResolvedReviewText(review.body || '')) continue;
-    unresolved += 1;
-  }
-
-  return unresolved;
-}
-
-export function countAdvisoryFindings({ issueComments = [], reviewComments = [], reviews = [] } = {}) {
-  let findings = 0;
-
-  for (const comment of issueComments) {
-    if (!isTrustedReviewer(comment.user?.login || '')) continue;
-    if (IGNORE_MARKER.test(comment.body || '')) continue;
-    findings += 1;
-  }
-
-  for (const comment of reviewComments) {
-    if (!isTrustedReviewer(comment.user?.login || '')) continue;
-    if (IGNORE_MARKER.test(comment.body || '')) continue;
-    if (isResolvedReviewText(comment.body || '')) continue;
-    findings += 1;
-  }
-
-  for (const review of reviews) {
-    if (!isTrustedReviewer(review.user?.login || '')) continue;
-    if (isResolvedReviewText(review.body || '')) continue;
-    if (review.state === 'COMMENTED') findings += 1;
-    if (review.state === 'CHANGES_REQUESTED') findings += 1;
-  }
-
-  return findings;
-}
-
-function readyForReviewClaimed(body = '') {
-  return /Status:\s*READY FOR REVIEW/i.test(String(body || ''));
-}
-
-export function buildReviewerLifecycleReport({
-  assessment,
-  scope,
-  headSha = '',
-  enforceFailure = false,
-  currentHeadLinkedReview = false,
-  staleTrustedReviewOnly = false,
-  breakGlassOverride = false,
-  unresolvedProtectedThreads = 0,
-  advisoryFindings = 0,
-  reviewerDisposition = null,
-}) {
-  const lines = [
-    assessment.ok
-      ? 'Reviewer lifecycle gate passed.'
-      : enforceFailure
-        ? 'Reviewer lifecycle gate failed.'
-        : 'Reviewer lifecycle gate advisory refreshed.',
-    '',
-    'Every actionable trusted reviewer comment must be resolved, explicitly dispositioned in the PR body, or linked to a bounded follow-up issue.',
-    'Outdated review threads require explicit PR-body disposition with review-comment ID and thread state.',
-    'Protected CI scope additionally requires a current-head trusted review artifact on the enforced SHA.',
-    'Late reviewer findings arriving after READY FOR REVIEW must be dispositioned before merge.',
-    '',
-    `Current head SHA: ${headSha || 'unknown'}`,
-    `Protected scope: ${scope.hasProtectedScope ? 'yes' : 'no'}`,
-    `Current-head trusted review artifact: ${currentHeadLinkedReview ? 'yes' : 'no'}`,
-    `Stale trusted review only (earlier commit): ${staleTrustedReviewOnly ? 'yes' : 'no'}`,
-    `Break-glass override active: ${breakGlassOverride ? 'yes' : 'no'}`,
-    `Unresolved protected review threads: ${unresolvedProtectedThreads}`,
-    `Undispositioned reviewer comments: ${reviewerDisposition?.undispositionedCount ?? 0}`,
-    `Outdated threads without disposition: ${reviewerDisposition?.outdatedWithoutDispositionCount ?? 0}`,
-    `Late pre-merge reviewer findings: ${reviewerDisposition?.lateFindingsCount ?? 0}`,
-    `Late undispositioned reviewer findings: ${reviewerDisposition?.lateUndispositionedCount ?? 0}`,
-    `Advisory reviewer findings: ${advisoryFindings}`,
-    `Assessment severity: ${assessment.severity}`,
-    `Assessment reason: ${assessment.reason}`,
-    `Enforcing event: ${enforceFailure ? 'yes' : 'no'}`,
-  ];
-
-  if (breakGlassOverride) {
-    lines.push(
-      '',
-      'Break-glass override: recovery label plus `<!-- reviewer-lifecycle-break-glass -->` in the PR body.',
-      'This merge path bypasses current-head protected review enforcement and is recorded for post-merge audit.',
-    );
-  } else if (!assessment.ok && enforceFailure) {
-    lines.push('', 'Resolve the blocking reviewer condition or wait for trusted review on the current head SHA for protected CI files.');
-    if (staleTrustedReviewOnly) {
-      lines.push('Trusted review exists on an earlier commit only; re-run trusted review on the current head SHA.');
-    }
-  } else if (advisoryFindings > 0) {
-    lines.push('', 'Advisory reviewer findings remain visible for PR readiness but do not block merge by timing alone.');
-  }
-
-  if (reviewerDisposition?.failures?.length) {
-    lines.push('', '## Reviewer disposition failures');
-    for (const failure of reviewerDisposition.failures) {
-      lines.push(`- ${failure.code}: ${failure.message}`);
+    const author = review.author?.login || review.user?.login || '';
+    if (!author) continue;
+    const submittedAt = review.submittedAt || review.submitted_at || review.created_at || '';
+    const current = latest.get(author);
+    if (!current || timestamp(submittedAt) >= timestamp(current.submittedAt || current.submitted_at || current.created_at || '')) {
+      latest.set(author, review);
     }
   }
+  return latest;
+}
 
-  return lines.join('\n');
+export function humanChangesRequested(reviews = [], trustedBots = trustedBotSet()) {
+  const blockers = [];
+  for (const [author, review] of latestReviewByAuthor(reviews)) {
+    if (isTrustedReviewer(author, trustedBots)) continue;
+    if (String(review.state || '').toUpperCase() !== 'CHANGES_REQUESTED') continue;
+    blockers.push({
+      author,
+      submittedAt: review.submittedAt || review.submitted_at || review.created_at || '',
+      state: review.state,
+    });
+  }
+  return blockers;
+}
+
+function firstThreadComment(thread = {}) {
+  if (thread.firstComment) return thread.firstComment;
+  const comments = thread.comments?.nodes || thread.comments || [];
+  return Array.isArray(comments) ? comments[0] || {} : {};
+}
+
+function threadAuthor(thread = {}) {
+  const first = firstThreadComment(thread);
+  return first.author?.login || first.user?.login || '';
+}
+
+function threadExcerpt(thread = {}) {
+  const first = firstThreadComment(thread);
+  return String(first.body || '').replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160);
+}
+
+export function hasExceptionLabel(labels = [], exceptionLabel = DEFAULT_EXCEPTION_LABEL) {
+  const target = String(exceptionLabel || '').toLowerCase();
+  return labels
+    .map((label) => (typeof label === 'string' ? label : label?.name || ''))
+    .map((label) => label.toLowerCase())
+    .includes(target);
+}
+
+export function unresolvedReviewThreads(reviewThreads = [], { trustedBots = trustedBotSet(), labels = [], exceptionLabel = DEFAULT_EXCEPTION_LABEL } = {}) {
+  const exceptionActive = hasExceptionLabel(labels, exceptionLabel);
+  const blocking = [];
+  const advisory = [];
+  const outdated = [];
+  const resolved = [];
+
+  for (const thread of reviewThreads) {
+    const author = threadAuthor(thread);
+    const trusted = isTrustedReviewer(author, trustedBots);
+    const detail = {
+      id: thread.id || '',
+      author,
+      trusted,
+      isResolved: Boolean(thread.isResolved),
+      isOutdated: Boolean(thread.isOutdated),
+      path: thread.path || firstThreadComment(thread).path || '',
+      excerpt: threadExcerpt(thread),
+    };
+
+    if (detail.isResolved) {
+      resolved.push(detail);
+      continue;
+    }
+
+    if (detail.isOutdated) {
+      outdated.push(detail);
+      continue;
+    }
+
+    if (trusted && exceptionActive) {
+      advisory.push({ ...detail, exceptionActive: true });
+      continue;
+    }
+
+    if (trusted) {
+      advisory.push(detail);
+      continue;
+    }
+
+    blocking.push(detail);
+  }
+
+  return { blocking, advisory, outdated, resolved };
+}
+
+export function pageInfoFailure(pageInfo = {}, label = 'result') {
+  return pageInfo?.hasNextPage ? `${label} pagination not supported; refusing to make an incomplete reviewer lifecycle decision.` : '';
 }
 
 export function assessReviewerLifecycle({
@@ -271,66 +152,87 @@ export function assessReviewerLifecycle({
   labels = [],
   files = [],
   reviews = [],
-  reviewComments = [],
-  issueComments = [],
-  body = '',
-  headSha = '',
-  readyForReviewAt = '',
-  enforceFailure = false,
+  reviewThreads = [],
+  trustedBotLogins = DEFAULT_TRUSTED_BOT_LOGINS,
+  exceptionLabel = DEFAULT_EXCEPTION_LABEL,
+  enforceFailure = isEnforcingReviewerLifecycleEvent(eventName),
+  paginationFailures = [],
 } = {}) {
+  const trustedBots = trustedBotSet(trustedBotLogins);
   const scope = classifyProtectedScope(files);
-  const currentHeadLinkedReview = computeCurrentHeadLinkedReview({ reviews, reviewComments, headSha });
-  const staleTrustedReviewOnly = hasStaleTrustedReviewOnly({ reviews, reviewComments, headSha });
-  const breakGlassOverride = hasProtectedScopeBreakGlass({ labels, body });
-  const unresolvedProtectedThreads = countUnresolvedProtectedThreads({ reviewComments, reviews, body });
-  const advisoryFindings = countAdvisoryFindings({ issueComments, reviewComments, reviews });
-  const reviewerDisposition = evaluateReviewerCommentDisposition({
-    body,
-    issueComments,
-    reviewComments,
-    reviews,
-    headSha,
-    readyForReviewAt: readyForReviewAt || (readyForReviewClaimed(body) ? '' : ''),
-    auditPhase: 'pre_merge',
-  });
-  const assessment = evaluateReviewerAccounting({
-    eventName,
+  const humanReviewBlockers = humanChangesRequested(reviews, trustedBots);
+  const threadState = unresolvedReviewThreads(reviewThreads, {
+    trustedBots,
     labels,
-    files,
-    currentHeadLinkedReview,
-    staleTrustedReviewOnly,
-    breakGlassOverride,
-    unresolvedProtectedThreads,
-    advisoryFindings,
-    undispositionedReviewerComments: reviewerDisposition.undispositionedCount,
-    outdatedWithoutDisposition: reviewerDisposition.outdatedWithoutDispositionCount,
-    lateUndispositionedReviewerComments: reviewerDisposition.lateUndispositionedCount,
+    exceptionLabel,
   });
+  const blockingReasons = [
+    ...paginationFailures.filter(Boolean).map((message) => ({ code: 'pagination-incomplete', message })),
+    ...humanReviewBlockers.map((review) => ({ code: 'human-changes-requested', message: `${review.author} latest review is CHANGES_REQUESTED.` })),
+    ...threadState.blocking.map((thread) => ({ code: 'unresolved-human-review-thread', message: `${thread.author || 'unknown'} unresolved thread${thread.path ? ` on ${thread.path}` : ''}: ${thread.excerpt}` })),
+  ];
+
+  const ok = blockingReasons.length === 0;
 
   return {
     scope,
-    assessment,
-    currentHeadLinkedReview,
-    staleTrustedReviewOnly,
-    breakGlassOverride,
-    unresolvedProtectedThreads,
-    advisoryFindings,
-    reviewerDisposition,
+    labels,
+    trustedBotLogins: [...trustedBots],
+    exceptionLabel,
+    exceptionActive: hasExceptionLabel(labels, exceptionLabel),
+    humanChangesRequested: humanReviewBlockers,
+    reviewThreads: threadState,
+    blockingReasons,
+    advisoryFindings: threadState.advisory.length,
     enforceFailure,
-    report: buildReviewerLifecycleReport({
-      assessment,
-      scope,
-      headSha,
-      enforceFailure,
-      currentHeadLinkedReview,
-      staleTrustedReviewOnly,
-      breakGlassOverride,
-      unresolvedProtectedThreads,
-      advisoryFindings,
-      reviewerDisposition,
-    }),
-    shouldFail: enforceFailure && !assessment.ok && assessment.severity === 'blocking',
+    assessment: {
+      ok,
+      severity: ok ? (threadState.advisory.length > 0 ? 'advisory' : 'none') : 'blocking',
+      reason: ok ? 'github-native-review-state-ok' : blockingReasons[0].code,
+    },
+    shouldFail: enforceFailure && !ok,
   };
+}
+
+export function buildReviewerLifecycleReport(result) {
+  const lines = [
+    result.assessment.ok
+      ? 'Reviewer lifecycle gate passed.'
+      : result.enforceFailure
+        ? 'Reviewer lifecycle gate failed.'
+        : 'Reviewer lifecycle gate advisory refreshed.',
+    '',
+    'Reviewer lifecycle is evaluated from GitHub-native review state and review-thread state.',
+    'The PR body is not used as a reviewer comment ledger.',
+    '',
+    `Protected scope: ${result.scope.hasProtectedScope ? 'yes' : 'no'}`,
+    `Human latest CHANGES_REQUESTED reviews: ${result.humanChangesRequested.length}`,
+    `Unresolved human review threads: ${result.reviewThreads.blocking.length}`,
+    `Trusted/advisory review threads: ${result.reviewThreads.advisory.length}`,
+    `Outdated review threads: ${result.reviewThreads.outdated.length}`,
+    `Resolved review threads: ${result.reviewThreads.resolved.length}`,
+    `Trusted-bot exception label: ${result.exceptionLabel}`,
+    `Trusted-bot exception active: ${result.exceptionActive ? 'yes' : 'no'}`,
+    `Assessment severity: ${result.assessment.severity}`,
+    `Assessment reason: ${result.assessment.reason}`,
+    `Enforcing event: ${result.enforceFailure ? 'yes' : 'no'}`,
+  ];
+
+  if (result.blockingReasons.length) {
+    lines.push('', '## Blocking reviewer lifecycle findings');
+    for (const finding of result.blockingReasons) {
+      lines.push(`- ${finding.code}: ${finding.message}`);
+    }
+  }
+
+  if (result.reviewThreads.advisory.length) {
+    lines.push('', '## Advisory trusted-bot review threads');
+    for (const thread of result.reviewThreads.advisory.slice(0, 20)) {
+      lines.push(`- ${thread.author || 'unknown'}${thread.path ? ` on ${thread.path}` : ''}: ${thread.excerpt || 'no excerpt'}`);
+    }
+  }
+
+  return lines.join('\n');
 }
 
 async function request(path, token, options = {}) {
@@ -371,18 +273,61 @@ async function paginate(path, token) {
   return results;
 }
 
-async function resolveReadyForReviewAt({ owner, repo, prNumber, token, body = '' }) {
-  if (!readyForReviewClaimed(body)) return '';
+async function graphql(query, variables, token) {
+  const response = await fetch('https://api.github.com/graphql', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'User-Agent': 'lgfc-reviewer-lifecycle-gate',
+    },
+    body: JSON.stringify({ query, variables }),
+  });
 
-  try {
-    const events = await paginate(`/repos/${owner}/${repo}/issues/${prNumber}/timeline`, token);
-    const readyEvents = events
-      .filter((event) => event.event === 'ready_for_review' && event.created_at)
-      .sort((left, right) => Date.parse(right.created_at) - Date.parse(left.created_at));
-    return readyEvents[0]?.created_at || '';
-  } catch {
-    return '';
+  const data = await response.json();
+  if (!response.ok || data.errors?.length) {
+    throw new Error(`GraphQL request failed: ${response.status} ${JSON.stringify(data.errors || data)}`);
   }
+  return data.data;
+}
+
+export async function fetchNativeReviewState({ owner, repo, prNumber, token }) {
+  const query = `
+    query ReviewerLifecycle($owner: String!, $repo: String!, $number: Int!) {
+      repository(owner: $owner, name: $repo) {
+        pullRequest(number: $number) {
+          labels(first: 100) { nodes { name } pageInfo { hasNextPage } }
+          reviews(first: 100) { nodes { author { login } state submittedAt } pageInfo { hasNextPage } }
+          reviewThreads(first: 100) {
+            nodes {
+              id
+              isResolved
+              isOutdated
+              path
+              comments(first: 1) { nodes { author { login } body path } }
+            }
+            pageInfo { hasNextPage }
+          }
+        }
+      }
+    }
+  `;
+  const data = await graphql(query, { owner, repo, number: Number(prNumber) }, token);
+  const pr = data.repository?.pullRequest;
+  if (!pr) throw new Error(`PR #${prNumber} not found.`);
+
+  const paginationFailures = [
+    pageInfoFailure(pr.labels?.pageInfo, 'label'),
+    pageInfoFailure(pr.reviews?.pageInfo, 'review'),
+    pageInfoFailure(pr.reviewThreads?.pageInfo, 'review thread'),
+  ].filter(Boolean);
+
+  return {
+    labels: (pr.labels?.nodes || []).map((label) => label.name),
+    reviews: pr.reviews?.nodes || [],
+    reviewThreads: pr.reviewThreads?.nodes || [],
+    paginationFailures,
+  };
 }
 
 export async function runReviewerLifecycleGate({
@@ -392,33 +337,33 @@ export async function runReviewerLifecycleGate({
   prNumber,
   eventName = 'pull_request_target',
   enforceFailure = isEnforcingReviewerLifecycleEvent(eventName),
+  trustedBotLogins = DEFAULT_TRUSTED_BOT_LOGINS,
+  exceptionLabel = DEFAULT_EXCEPTION_LABEL,
 }) {
   const pull = await request(`/repos/${owner}/${repo}/pulls/${prNumber}`, token);
-  const [files, issueComments, reviewComments, reviews, readyForReviewAt] = await Promise.all([
+  const [files, nativeState] = await Promise.all([
     paginate(`/repos/${owner}/${repo}/pulls/${prNumber}/files`, token),
-    paginate(`/repos/${owner}/${repo}/issues/${prNumber}/comments`, token),
-    paginate(`/repos/${owner}/${repo}/pulls/${prNumber}/comments`, token),
-    paginate(`/repos/${owner}/${repo}/pulls/${prNumber}/reviews`, token),
-    resolveReadyForReviewAt({ owner, repo, prNumber, token, body: pull.body || '' }),
+    fetchNativeReviewState({ owner, repo, prNumber, token }),
   ]);
 
   const result = assessReviewerLifecycle({
     eventName,
-    labels: (pull.labels || []).map((label) => label.name),
+    labels: nativeState.labels,
     files: files.map((file) => file.filename),
-    issueComments,
-    reviewComments,
-    reviews,
-    body: pull.body || '',
-    headSha: pull.head?.sha || '',
-    readyForReviewAt,
+    reviews: nativeState.reviews,
+    reviewThreads: nativeState.reviewThreads,
+    trustedBotLogins,
+    exceptionLabel,
     enforceFailure,
+    paginationFailures: nativeState.paginationFailures,
   });
 
   return {
     ...result,
     prNumber,
+    headSha: pull.head?.sha || '',
     marker: '<!-- reviewer-lifecycle-gate -->',
+    report: buildReviewerLifecycleReport(result),
   };
 }
 
@@ -447,6 +392,8 @@ async function main() {
   const prNumber = process.env.PR_NUMBER;
   const eventName = process.env.GITHUB_EVENT_NAME || 'pull_request_target';
   const enforceFailure = (process.env.ENFORCE_FAILURE || (isEnforcingReviewerLifecycleEvent(eventName) ? 'true' : 'false')) === 'true';
+  const trustedBotLogins = parseTrustedBotLogins(process.env.TRUSTED_BOT_LOGINS || '');
+  const exceptionLabel = process.env.EXCEPTION_LABEL || DEFAULT_EXCEPTION_LABEL;
 
   if (!token || !repository || !prNumber) {
     throw new Error('GITHUB_TOKEN/GH_TOKEN, GITHUB_REPOSITORY, and PR_NUMBER are required.');
@@ -460,6 +407,8 @@ async function main() {
     prNumber,
     eventName,
     enforceFailure,
+    trustedBotLogins,
+    exceptionLabel,
   });
 
   try {
