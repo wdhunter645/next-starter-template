@@ -59,7 +59,7 @@ The deploy workflow publishes after a successful PMO dashboard CI build and can 
 
 GitHub Pages must be enabled for this repository with GitHub Actions as the Pages source. This dashboard is a separate GitHub Pages reporting target and does not replace or modify the Cloudflare Pages production deployment.
 
-The published URL must be recorded on the controlling PMO dashboard issue before final closeout.
+The published GitHub Pages URL must be recorded on the controlling PMO dashboard issue before final closeout.
 
 ## Display safety notes
 
