@@ -38,7 +38,7 @@ jobs:
         run: node scripts/pmo-dashboard/build-dashboard.mjs
 
       - name: Validate deploy artifact
-        run: node scripts/pmo-dashboard/validate-dashboard.mjs site/pmo-dashboard
+        run: node scripts/pmo-dashboard/validate-dashboard.mjs "$PMO_DASHBOARD_OUT_DIR"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -46,7 +46,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site/pmo-dashboard
+          path: ${{ env.PMO_DASHBOARD_OUT_DIR }}
 
       - name: Deploy to GitHub Pages
         id: deployment
