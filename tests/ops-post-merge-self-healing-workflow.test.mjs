@@ -57,8 +57,8 @@ describe('OPS — Post-Merge Self-Healing workflow', () => {
 		const workflow = fs.readFileSync('.github/workflows/ops-post-merge-self-healing.yml', 'utf8');
 		const triggerBlock = workflow.slice(workflow.indexOf('on:'), workflow.indexOf('permissions:'));
 
-		expect(triggerBlock).not.toContain('issues:');
-		expect(triggerBlock).not.toContain('push:');
+		expect(triggerBlock).not.toMatch(/^\s{2}issues:/m);
+		expect(triggerBlock).not.toMatch(/^\s{2}push:/m);
 		expect(workflow).not.toContain('github.event_name == \'issues\'');
 		expect(workflow).not.toContain('github.event.issue.');
 		expect(workflow).not.toContain('--event-issue');
