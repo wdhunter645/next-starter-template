@@ -6,7 +6,7 @@ Owns: PMO dashboard generation, refresh, validation, and GitHub Pages limitation
 Does Not Own: PMO lifecycle definitions, GitHub issues source records, or Cloudflare production deployment
 Canonical Reference: /docs/ops/pmo/workflow-automation.md
 Related Issues: #2101
-Last Reviewed: 2026-07-01
+Last Reviewed: 2026-07-03
 ---
 
 # PMO Dashboard
@@ -38,15 +38,16 @@ The generator reads public repository GitHub issues with titles beginning with `
 - `Program Description:` or `Project Description:`
 - `Task Chain:` followed by child issue references
 
-Task totals are derived from explicit child issue references in the source issue body task chain. The dashboard does not use docs-only registry tables or loose comment references as live task-count truth.
+Task totals are derived only from explicit child issue references inside a `Task Chain`, `Child Tasks`, `Implementation Tasks`, or `Task List` block. The parser returns zero tasks when no explicit task block exists. The parser stops at the next markdown heading and does not use docs-only registry tables, related-issue references, source links, comments, or loose issue references as live task-count truth.
 
 ## Procedure
 
 1. Update the controlling `PROGRAM:` or standalone `PROJECT:` issue body with dashboard fields when PMO wants a row to appear with normalized values.
-2. Run or wait for **PMO dashboard CI build**.
-3. Confirm generation and validation of `site/pmo-dashboard/dashboard-data.json` and static assets.
-4. Use **PMO dashboard CI deploy** only by manual dispatch during initial rollout.
-5. Treat the dashboard as a reporting aid, not an authoritative tracker.
+2. Add child tasks only inside an explicit `Task Chain:` block.
+3. Run or wait for **PMO dashboard CI build**.
+4. Confirm generation and validation of `site/pmo-dashboard/dashboard-data.json` and static assets.
+5. Use **PMO dashboard CI deploy** only by manual dispatch during initial rollout.
+6. Treat the dashboard as a reporting aid, not an authoritative tracker.
 
 ## Refresh and validation
 
