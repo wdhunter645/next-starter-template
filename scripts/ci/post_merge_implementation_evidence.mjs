@@ -1,17 +1,19 @@
-import { findUnlistedChangedFiles, parseAllowedFiles } from './pr_hygiene_audit.mjs';
+import { findUnlistedChangedFiles, parseAllowedFiles, extractMarkdownSection } from './pr_hygiene_audit.mjs';
 
 export function extractSection(body = '', heading = '') {
-	const marker = `## ${heading}`;
-	const start = body.indexOf(marker);
-	if (start === -1) return '';
+	return extractMarkdownSection(body, heading);
+}
 
-	const rest = body.slice(start + marker.length);
-	const next = rest.search(/\n##\s+/);
-	return (next === -1 ? rest : rest.slice(0, next)).trim();
+function firstAvailableSection(body = '', headings = []) {
+	for (const heading of headings) {
+		const section = extractSection(body, heading);
+		if (section) return section;
+	}
+	return '';
 }
 
 export function acceptanceCriteriaFailures(body = '') {
-	const section = extractSection(body, 'ACCEPTANCE CRITERIA');
+	const section = firstAvailableSection(body, ['Acceptance Criteria', 'ACCEPTANCE CRITERIA', 'ACCEPTANCE CRITERIA STATUS (MANDATORY)']);
 	if (!section) return [];
 
 	const failures = [];
@@ -27,7 +29,7 @@ export function acceptanceCriteriaFailures(body = '') {
 }
 
 export function verificationEvidenceFailures(body = '') {
-	const section = extractSection(body, 'BUILD / TEST / VERIFICATION');
+	const section = firstAvailableSection(body, ['Verification', 'BUILD / TEST / VERIFICATION']);
 	if (!section) return [];
 
 	const failures = [];
@@ -47,6 +49,13 @@ export function verificationEvidenceFailures(body = '') {
 		failures.push({
 			code: 'missing_verification_commands',
 			message: 'Merged PR body does not record executed verification commands.',
+		});
+	}
+
+	if (/\bLocal verification:\b/i.test(section) && /\bResult:\s*(FAIL|PENDING)\b/i.test(section)) {
+		failures.push({
+			code: 'verification_not_pass',
+			message: 'Merged PR body still reports FAIL or PENDING local verification evidence.',
 		});
 	}
 
