@@ -1,3 +1,14 @@
+---
+Doc Type: Reference
+Audience: Human + AI
+Authority Level: Controlled
+Owns: PR process redesign transition-control inventory for retired and mutating CI behavior
+Does Not Own: Final PR template, final reviewer lifecycle gate, branch protection settings, or full repository CI inventory
+Canonical Reference: /docs/reference/ci/pr-workflow-ci-inventory.md
+Related issues: #2175, #2176
+Last Reviewed: 2026-07-03
+---
+
 # PR Process Redesign Transition-Control Inventory
 
 Parent issue: #2175
