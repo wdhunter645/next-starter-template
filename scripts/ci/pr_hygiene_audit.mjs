@@ -3,12 +3,28 @@
 import fs from 'node:fs';
 
 export const REQUIRED_TEMPLATE_SECTIONS = [
-  'MANDATORY FIRST STEP (ZIP SAFETY)',
-  'DESIGN SOURCE OF TRUTH (NON-NEGOTIABLE)',
-  'FILE-TOUCH ALLOWLIST (MANDATORY)',
-  'VISUAL / UX INVARIANTS (MANDATORY)',
-  'REQUIRED PRE-REVIEW SELF-CHECK',
+  'PR Summary',
+  'Scope',
+  'Change Summary',
+  'Verification',
+  'Acceptance Criteria',
+  'Reviewer / Bot Review Attestation',
 ];
+
+export const VALID_PR_CLASSES = [
+  'docs-governance',
+  'docs-content',
+  'code',
+  'config',
+  'ci',
+  'release',
+  'ops',
+  'mixed-approved',
+];
+
+export function normalizeHeading(value = '') {
+  return String(value).trim().replace(/\s+/g, ' ').toLowerCase();
+}
 
 export function findIssueReferences(body) {
   const text = body || '';
@@ -16,12 +32,12 @@ export function findIssueReferences(body) {
 }
 
 export function hasRequiredIssueLine(body) {
-  return /^- \*\*Issue:\*\* #\d+\s*$/m.test(body || '');
+  return /^\s*-\s*\*\*Issue:\*\*\s+#\d+\s*$/m.test(body || '');
 }
 
 export function findCanonicalIssueLine(body) {
   const text = body || '';
-  return text.split(/\r?\n/).find((line) => /^- \*\*Issue:\*\* #\d+\s*$/.test(line.trim())) || '';
+  return text.split(/\r?\n/).find((line) => /^\s*-\s*\*\*Issue:\*\*\s+#\d+\s*$/.test(line.trim())) || '';
 }
 
 export function suggestCanonicalIssueLine(body) {
@@ -37,24 +53,72 @@ export function hasZipSafetyStatement(body) {
     || /Any ZIP file present in the repo root was deleted before any other change/i.test(text);
 }
 
+export function extractMarkdownSection(body = '', heading = '') {
+  const lines = String(body || '').split(/\r?\n/);
+  const target = normalizeHeading(heading);
+  let startIndex = -1;
+  let startLevel = 0;
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const match = lines[index].match(/^\s*(#{1,6})\s+(.+?)\s*#*\s*$/);
+    if (!match) continue;
+    const title = normalizeHeading(match[2]);
+    if (title === target) {
+      startIndex = index;
+      startLevel = match[1].length;
+      break;
+    }
+  }
+
+  if (startIndex === -1) return '';
+
+  const sectionLines = [];
+  for (const line of lines.slice(startIndex + 1)) {
+    const match = line.match(/^\s*(#{1,6})\s+(.+?)\s*#*\s*$/);
+    if (match && match[1].length <= startLevel) break;
+    sectionLines.push(line);
+  }
+
+  return sectionLines.join('\n').trim();
+}
+
+export function hasSection(body = '', heading = '') {
+  return extractMarkdownSection(body, heading).length > 0;
+}
+
+function cleanListValue(value = '') {
+  return value.trim().replace(/^`|`$/g, '').trim();
+}
+
+function isPlaceholderPath(value = '') {
+  return !value
+    || /^path\/to\//i.test(value)
+    || /^<.+>$/.test(value)
+    || value.includes('____')
+    || value.toLowerCase() === 'not-applicable';
+}
+
 export function parseAllowedFiles(body) {
   const lines = (body || '').split(/\r?\n/);
-  const allowedIndex = lines.findIndex((line) => /^Allowed files:\s*$/i.test(line.trim()));
+  const allowedIndex = lines.findIndex((line) => /^(Allowed paths|Allowed files):\s*$/i.test(line.trim()));
   if (allowedIndex === -1) return [];
 
   const files = [];
   for (const line of lines.slice(allowedIndex + 1)) {
-    if (/^##\s+/.test(line)) break;
-    const match = line.match(/^\s*-\s+`?([^`\n]+?)`?\s*$/);
-    if (match) files.push(match[1].trim());
+    if (/^\s*#{1,6}\s+/.test(line)) break;
+    if (/^\s*[^-\s].+?:\s*/.test(line) && line.trim() !== 'All other files are out of scope') break;
     if (line.trim() === 'All other files are out of scope') break;
+
+    const match = line.match(/^\s*[-*]\s+`?([^`\n]+?)`?\s*$/);
+    if (!match) continue;
+    const value = cleanListValue(match[1]);
+    if (!isPlaceholderPath(value)) files.push(value);
   }
   return files;
 }
 
 export function missingTemplateSections(body) {
-  const text = body || '';
-  return REQUIRED_TEMPLATE_SECTIONS.filter((section) => !text.includes(`## ${section}`));
+  return REQUIRED_TEMPLATE_SECTIONS.filter((section) => !hasSection(body, section));
 }
 
 function allowedFileMatches(changedFile, allowedPattern) {
@@ -68,6 +132,73 @@ export function findUnlistedChangedFiles(changedFiles, allowedFiles) {
   return changedFiles.filter((changedFile) => !allowedFiles.some((allowedFile) => allowedFileMatches(changedFile, allowedFile)));
 }
 
+function extractPrSummaryLine(body = '', label = '') {
+  const section = extractMarkdownSection(body, 'PR Summary') || body;
+  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = new RegExp(`^\\s*-\\s*${escaped}:\\s*(.+?)\\s*$`, 'im');
+  const match = section.match(pattern);
+  return match ? match[1].trim() : '';
+}
+
+function stripHtmlComments(value = '') {
+  return value.replace(/<!--([\s\S]*?)-->/g, '').trim();
+}
+
+function isMissingStableValue(value = '') {
+  const cleaned = stripHtmlComments(value).trim();
+  return !cleaned
+    || cleaned.includes('____')
+    || cleaned.includes('<')
+    || cleaned.includes('>')
+    || cleaned === '#____'
+    || /^not-applicable$/i.test(cleaned);
+}
+
+export function parseIntentLabel(body = '') {
+  return extractPrSummaryLine(body, 'Intent label');
+}
+
+export function parsePrClass(body = '') {
+  return extractPrSummaryLine(body, 'PR class');
+}
+
+export function hasRequiredIntentLabel(body = '') {
+  return !isMissingStableValue(parseIntentLabel(body));
+}
+
+export function hasRequiredPrClass(body = '') {
+  const value = stripHtmlComments(parsePrClass(body)).trim();
+  return VALID_PR_CLASSES.includes(value);
+}
+
+export function sectionHasSubstantiveText(body = '', heading = '') {
+  const section = stripHtmlComments(extractMarkdownSection(body, heading));
+  return section
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .some((line) => !line.startsWith('- [ ]') && !/^Required:|^<!--|^PASS \/ FAIL|^YES \/ NO/i.test(line));
+}
+
+export function hasVerificationEvidence(body = '') {
+  const section = extractMarkdownSection(body, 'Verification');
+  return /Local verification:/i.test(section)
+    && /CI verification:/i.test(section)
+    && /Result:\s*(PASS|FAIL|NOT RUN)/i.test(section);
+}
+
+export function hasAcceptanceCriteriaEvidence(body = '') {
+  const section = extractMarkdownSection(body, 'Acceptance Criteria');
+  return /Source issue acceptance criteria reviewed/i.test(section)
+    && /Follow-up issue required:/i.test(section);
+}
+
+export function hasReviewerAttestation(body = '') {
+  const section = extractMarkdownSection(body, 'Reviewer / Bot Review Attestation');
+  return /read all human review threads/i.test(section)
+    && /read all bot\/advisory findings/i.test(section);
+}
+
 export function buildPrHygieneReport({ body = '', changedFiles = [] } = {}) {
   const allowedFiles = parseAllowedFiles(body);
   const missingSections = missingTemplateSections(body);
@@ -75,18 +206,31 @@ export function buildPrHygieneReport({ body = '', changedFiles = [] } = {}) {
   const issueReferences = [...new Set(findIssueReferences(body))];
   const canonicalIssueLine = findCanonicalIssueLine(body);
   const suggestedIssueLine = hasRequiredIssueLine(body) ? canonicalIssueLine : suggestCanonicalIssueLine(body);
+  const intentLabel = parseIntentLabel(body);
+  const prClass = parsePrClass(body);
+
+  const checks = {
+    hasRequiredIssueLine: hasRequiredIssueLine(body),
+    hasRequiredIntentLabel: hasRequiredIntentLabel(body),
+    hasRequiredPrClass: hasRequiredPrClass(body),
+    hasAllowedFiles: allowedFiles.length > 0,
+    hasChangeSummary: sectionHasSubstantiveText(body, 'Change Summary'),
+    hasVerificationEvidence: hasVerificationEvidence(body),
+    hasAcceptanceCriteriaEvidence: hasAcceptanceCriteriaEvidence(body),
+    hasReviewerAttestation: hasReviewerAttestation(body),
+  };
 
   return {
-    hasRequiredIssueLine: hasRequiredIssueLine(body),
+    ...checks,
     issueReferences,
     canonicalIssueLine,
     suggestedIssueLine,
-    hasZipSafetyStatement: hasZipSafetyStatement(body),
-    missingSections,
+    intentLabel,
+    prClass,
     allowedFiles,
+    missingSections,
     unlistedChangedFiles,
-    isClean: hasRequiredIssueLine(body)
-      && hasZipSafetyStatement(body)
+    isClean: Object.values(checks).every(Boolean)
       && missingSections.length === 0
       && unlistedChangedFiles.length === 0,
   };
@@ -110,23 +254,43 @@ export function renderPrHygieneReport(report) {
     }
   }
 
-  if (!report.hasZipSafetyStatement) {
-    lines.push('- Missing ZIP safety statement under `MANDATORY FIRST STEP (ZIP SAFETY)`.');
+  if (!report.hasRequiredIntentLabel) {
+    lines.push('- Missing stable `Intent label:` value in `# PR Summary`.');
+  }
+
+  if (!report.hasRequiredPrClass) {
+    lines.push(`- Missing or invalid stable \`PR class:\` value in \`# PR Summary\`. Valid classes: ${VALID_PR_CLASSES.join(', ')}.`);
   }
 
   for (const section of report.missingSections) {
-    lines.push(`- Missing required PR template section: \`${section}\`.`);
+    lines.push(`- Missing required stable PR template section: \`${section}\`.`);
+  }
+
+  if (!report.hasAllowedFiles) {
+    lines.push('- Missing or empty `Allowed paths:` list under `## Scope`.');
   }
 
   if (report.unlistedChangedFiles.length > 0) {
-    lines.push('- Changed files not covered by `Allowed files:`:');
+    lines.push('- Changed files not covered by `Allowed paths:`:');
     for (const file of report.unlistedChangedFiles) {
       lines.push(`  - \`${file}\``);
     }
   }
 
-  if (report.allowedFiles.length === 0) {
-    lines.push('- Missing or empty `Allowed files:` list under `FILE-TOUCH ALLOWLIST (MANDATORY)`.');
+  if (!report.hasChangeSummary) {
+    lines.push('- Missing substantive `## Change Summary` evidence.');
+  }
+
+  if (!report.hasVerificationEvidence) {
+    lines.push('- Missing stable `## Verification` evidence with local and CI verification fields.');
+  }
+
+  if (!report.hasAcceptanceCriteriaEvidence) {
+    lines.push('- Missing stable `## Acceptance Criteria` evidence.');
+  }
+
+  if (!report.hasReviewerAttestation) {
+    lines.push('- Missing `## Reviewer / Bot Review Attestation` checkboxes.');
   }
 
   return lines.join('\n');
