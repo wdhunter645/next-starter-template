@@ -47,7 +47,8 @@ Task totals are derived only from explicit child issue references inside `Task C
 3. Run or wait for **PMO dashboard CI build**.
 4. Confirm generation and validation of `site/pmo-dashboard/dashboard-data.json` and static assets.
 5. Confirm **PMO dashboard CI deploy** publishes the validated dashboard and records the Pages URL.
-6. Treat the dashboard as a reporting aid, not an authoritative tracker.
+6. Record the published GitHub Pages URL on the controlling PMO dashboard issue before closeout.
+7. Treat the dashboard as a reporting aid, not an authoritative tracker.
 
 ## Refresh and validation
 
