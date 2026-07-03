@@ -28,156 +28,117 @@ describe('reviewer lifecycle enforcing events', () => {
   });
 });
 
-describe('reviewer response gate enforcement by event', () => {
-  it('passes initial pull_request_target with no reviewer comments', () => {
+describe('reviewer lifecycle native enforcement by event', () => {
+  it('passes initial pull_request_target with no review blockers', () => {
     const lifecycle = assessReviewerLifecycle({
       eventName: 'pull_request_target',
       labels: ['infra'],
       files: ['src/app/page.tsx'],
       enforceFailure: true,
-      headSha: 'head-sha',
-      body: '## REVIEWER RESPONSE ACCOUNTING\n- reviewed',
-      reviewComments: [],
+      reviewThreads: [],
       reviews: [],
-      issueComments: [],
     });
 
     expect(lifecycle.shouldFail).toBe(false);
     expect(lifecycle.assessment.ok).toBe(true);
   });
 
-  it('fails pull_request_review_comment when trusted inline comment is undispositioned', () => {
+  it('blocks pull_request_review_comment when a human review thread is unresolved', () => {
     const lifecycle = assessReviewerLifecycle({
       eventName: 'pull_request_review_comment',
       labels: ['infra'],
       files: ['src/app/page.tsx'],
       enforceFailure: true,
-      headSha: 'head-sha',
-      body: '## REVIEWER RESPONSE ACCOUNTING\n- reviewed',
-      reviewComments: [trustedInlineComment],
-    });
-
-    expect(lifecycle.shouldFail).toBe(true);
-    expect(lifecycle.assessment.severity).toBe('blocking');
-    expect(lifecycle.assessment.reason).toBe('undispositioned-reviewer-comment');
-  });
-
-  it('fails pull_request_review when trusted review submission is undispositioned', () => {
-    const lifecycle = assessReviewerLifecycle({
-      eventName: 'pull_request_review',
-      labels: ['infra'],
-      files: ['src/app/page.tsx'],
-      enforceFailure: true,
-      headSha: 'head-sha',
-      body: '## REVIEWER RESPONSE ACCOUNTING\n- reviewed',
-      reviews: [{
-        id: 8001,
-        user: { login: 'cubic-dev-ai[bot]' },
-        commit_id: 'head-sha',
-        state: 'CHANGES_REQUESTED',
-        body: 'P1: Request changes before merge.',
-        submitted_at: '2026-06-01T00:00:00Z',
+      reviewThreads: [{
+        id: 'thread-7001',
+        isResolved: false,
+        isOutdated: false,
+        path: 'src/app/page.tsx',
+        comments: { nodes: [{ author: { login: 'human-reviewer' }, body: 'Please fix this blocking issue.' }] },
       }],
     });
 
     expect(lifecycle.shouldFail).toBe(true);
     expect(lifecycle.assessment.severity).toBe('blocking');
-    expect(lifecycle.assessment.reason).toBe('undispositioned-reviewer-comment');
+    expect(lifecycle.assessment.reason).toBe('unresolved-human-review-thread');
   });
 
-  it('passes issue_comment event after PR body records valid disposition', () => {
+  it('blocks pull_request_review when latest human review requests changes', () => {
+    const lifecycle = assessReviewerLifecycle({
+      eventName: 'pull_request_review',
+      labels: ['infra'],
+      files: ['src/app/page.tsx'],
+      enforceFailure: true,
+      reviews: [{
+        author: { login: 'human-reviewer' },
+        state: 'CHANGES_REQUESTED',
+        submittedAt: '2026-06-01T00:00:00Z',
+      }],
+    });
+
+    expect(lifecycle.shouldFail).toBe(true);
+    expect(lifecycle.assessment.severity).toBe('blocking');
+    expect(lifecycle.assessment.reason).toBe('human-changes-requested');
+  });
+
+  it('does not require PR-body disposition after GitHub thread is resolved', () => {
     const lifecycle = assessReviewerLifecycle({
       eventName: 'issue_comment',
       labels: ['infra'],
       files: ['src/app/page.tsx'],
       enforceFailure: true,
-      headSha: 'head-sha',
-      body: dispositionBody,
-      reviewComments: [trustedInlineComment],
+      reviewThreads: [{
+        id: 'thread-7001',
+        isResolved: true,
+        isOutdated: false,
+        path: 'src/app/page.tsx',
+        comments: { nodes: [{ author: { login: 'human-reviewer' }, body: 'Resolved finding.' }] },
+      }],
     });
 
     expect(lifecycle.shouldFail).toBe(false);
     expect(lifecycle.assessment.ok).toBe(true);
   });
 
-  it('does not block on untrusted general comments', () => {
+  it('keeps trusted bot inline findings advisory by default', () => {
     const lifecycle = assessReviewerLifecycle({
       eventName: 'pull_request_review_comment',
       labels: ['infra'],
       files: ['src/app/page.tsx'],
       enforceFailure: true,
-      headSha: 'head-sha',
-      body: '## REVIEWER RESPONSE ACCOUNTING\n- reviewed',
-      reviewComments: [{
-        id: 9001,
-        user: { login: 'random-contributor' },
-        commit_id: 'head-sha',
+      reviewThreads: [{
+        id: 'bot-thread',
+        isResolved: false,
+        isOutdated: false,
         path: 'src/app/page.tsx',
-        line: 4,
-        body: 'P1: Please fix this.',
-        created_at: '2026-06-01T00:00:00Z',
-      }],
-      issueComments: [{
-        id: 9002,
-        user: { login: 'maintainer' },
-        body: 'Thanks for the review.',
-        created_at: '2026-06-01T01:00:00Z',
+        comments: { nodes: [{ author: { login: 'copilot-pull-request-reviewer[bot]' }, body: 'P1: Please fix this.' }] },
       }],
     });
 
     expect(lifecycle.shouldFail).toBe(false);
-    expect(lifecycle.reviewerDisposition.undispositionedCount).toBe(0);
+    expect(lifecycle.assessment.severity).toBe('advisory');
   });
 
-  it('blocks outdated comments without explicit accepted disposition', () => {
+  it('does not block outdated GitHub review threads', () => {
     const lifecycle = assessReviewerLifecycle({
       eventName: 'pull_request_review',
       labels: ['infra'],
       files: ['src/app/page.tsx'],
       enforceFailure: true,
-      headSha: 'new-sha',
-      body: '## REVIEWER RESPONSE ACCOUNTING\n- reviewed',
-      reviewComments: [{
-        id: 9003,
-        user: { login: 'copilot-pull-request-reviewer[bot]' },
-        commit_id: 'old-sha',
+      reviewThreads: [{
+        id: 'thread-9003',
+        isResolved: false,
+        isOutdated: true,
         path: 'src/app/page.tsx',
-        line: 12,
-        body: 'P2: Outdated finding on prior commit.',
-        created_at: '2026-06-01T00:00:00Z',
-      }],
-    });
-
-    expect(lifecycle.shouldFail).toBe(true);
-    expect(lifecycle.assessment.reason).toBe('outdated-reviewer-thread-without-disposition');
-  });
-
-  it('passes outdated comments with explicit accepted exclusion disposition', () => {
-    const lifecycle = assessReviewerLifecycle({
-      eventName: 'pull_request_review',
-      labels: ['infra'],
-      files: ['src/app/page.tsx'],
-      enforceFailure: true,
-      headSha: 'new-sha',
-      body: [
-        '## REVIEWER RESPONSE ACCOUNTING',
-        '- review-comment:9004 — acknowledged — Superseded by refactor — thread state: outdated',
-      ].join('\n'),
-      reviewComments: [{
-        id: 9004,
-        user: { login: 'cubic-dev-ai[bot]' },
-        commit_id: 'old-sha',
-        path: 'src/app/page.tsx',
-        line: 12,
-        body: 'P2: Outdated finding on prior commit.',
-        created_at: '2026-06-01T00:00:00Z',
+        comments: { nodes: [{ author: { login: 'human-reviewer' }, body: 'Outdated finding on prior commit.' }] },
       }],
     });
 
     expect(lifecycle.shouldFail).toBe(false);
+    expect(lifecycle.reviewThreads.outdated).toHaveLength(1);
   });
 
-  it('reports blocking severity through assessReviewerResponseGate when enforcing', () => {
+  it('reports blocking severity through legacy response gate until retired', () => {
     const gate = assessReviewerResponseGate({
       enforceFailure: true,
       body: '## REVIEWER RESPONSE ACCOUNTING\n- reviewed',
@@ -190,7 +151,18 @@ describe('reviewer response gate enforcement by event', () => {
     expect(gate.report).toContain('Enforcing event: yes');
   });
 
-  it('blocks via evaluateReviewerAccounting on review events with undispositioned comments', () => {
+  it('legacy response gate passes when body disposition is present until retired', () => {
+    const gate = assessReviewerResponseGate({
+      enforceFailure: true,
+      body: dispositionBody,
+      reviewComments: [trustedInlineComment],
+      headSha: 'head-sha',
+    });
+
+    expect(gate.shouldFail).toBe(false);
+  });
+
+  it('legacy accounting helper still blocks when explicitly given undispositioned comments', () => {
     const accounting = evaluateReviewerAccounting({
       eventName: 'pull_request_review',
       labels: ['infra'],
