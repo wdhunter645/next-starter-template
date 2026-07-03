@@ -46,32 +46,42 @@ function labels(issue) { return (issue.labels || []).map((label) => typeof label
 function titleType(title) { return title?.startsWith('PROGRAM:') ? 'program' : title?.startsWith('PROJECT:') ? 'project' : null; }
 function cleanName(title) { return title.replace(/^(PROGRAM|PROJECT):\s*/i, '').trim(); }
 
-function explicitTaskBlock(body) {
+function explicitTaskBlocks(body) {
   const lines = (body || '').split(/\r?\n/);
-  const startIndex = lines.findIndex((line) => taskBlockHeadingPattern.test(line));
-  if (startIndex === -1) return null;
+  const blocks = [];
+  let currentBlock = null;
 
-  const [, , inlineContent = ''] = lines[startIndex].match(taskBlockHeadingPattern) || [];
-  const blockLines = [];
-  if (inlineContent.trim()) blockLines.push(inlineContent.trim());
+  for (const line of lines) {
+    const headingMatch = line.match(taskBlockHeadingPattern);
+    if (headingMatch) {
+      currentBlock = [];
+      const inlineContent = headingMatch[2] || '';
+      if (inlineContent.trim()) currentBlock.push(inlineContent.trim());
+      blocks.push(currentBlock);
+      continue;
+    }
 
-  for (const line of lines.slice(startIndex + 1)) {
-    if (nextSectionPattern.test(line)) break;
-    blockLines.push(line);
+    if (currentBlock && nextSectionPattern.test(line)) {
+      currentBlock = null;
+      continue;
+    }
+
+    if (currentBlock) currentBlock.push(line);
   }
 
-  return blockLines.join('\n').trim();
+  return blocks.map((block) => block.join('\n').trim()).filter(Boolean);
 }
 
 function taskNumbers(issue) {
   const own = issue.number;
   const nums = new Set();
-  const taskSection = explicitTaskBlock(issue.body);
-  if (!taskSection) return [];
+  const taskSections = explicitTaskBlocks(issue.body);
 
-  for (const match of taskSection.matchAll(/(?:#|issues\/)(\d{1,6})\b/g)) {
-    const n = Number(match[1]);
-    if (n && n !== own) nums.add(n);
+  for (const taskSection of taskSections) {
+    for (const match of taskSection.matchAll(/(?:#|issues\/)(\d{1,6})\b/g)) {
+      const n = Number(match[1]);
+      if (n && n !== own) nums.add(n);
+    }
   }
   return [...nums];
 }

@@ -17,15 +17,15 @@ The PMO dashboard is a generated static GitHub Pages reporting surface for PMO-m
 
 ## Scope
 
-This how-to covers dashboard source fields, local generation, CI build validation, manual GitHub Pages deployment, and operational limits. It does not define the PMO lifecycle, replace GitHub issues as source records, or modify the Cloudflare production deployment.
+This how-to covers dashboard source fields, local generation, CI build validation, manual or automatic GitHub Pages deployment, and operational limits. It does not define the PMO lifecycle, replace GitHub issues as source records, or modify the Cloudflare production deployment.
 
 ## Current known truth
 
 - GitHub issues are the live source for dashboard data.
 - The generated dashboard is reporting-only.
 - The build workflow generates, validates, and uploads dashboard artifacts.
-- The deploy workflow is manual-only during initial rollout.
-- Automatic deployment from successful builds requires later Bill and Atlas approval.
+- The deploy workflow publishes after a successful PMO dashboard CI build and can also be run manually during controlled rollout.
+- Automatic deployment from successful builds is approved for the PMO dashboard closeout path.
 
 ## Source data
 
@@ -36,24 +36,24 @@ The generator reads public repository GitHub issues with titles beginning with `
 - `Owner / Agent: approved owner or Pending Assignment`
 - `Anticipated Completion Date: YYYY-MM-DD or TBD`
 - `Program Description:` or `Project Description:`
-- Task child issue references inside an explicit `Task Chain`, `Child Tasks`, `Implementation Tasks`, or `Task List` block
+- Task child issue references inside one or more explicit `Task Chain`, `Child Tasks`, `Implementation Tasks`, or `Task List` blocks
 
-Task totals are derived only from explicit child issue references inside a `Task Chain`, `Child Tasks`, `Implementation Tasks`, or `Task List` block. The parser returns zero tasks when no explicit task block exists. The parser stops at the next markdown heading and does not use docs-only registry tables, related-issue references, source links, comments, or loose issue references as live task-count truth.
+Task totals are derived only from explicit child issue references inside `Task Chain`, `Child Tasks`, `Implementation Tasks`, or `Task List` blocks. The parser returns zero tasks when no explicit task block exists. The parser stops each task block at the next markdown heading and does not use docs-only registry tables, related-issue references, source links, comments, or loose issue references as live task-count truth.
 
 ## Procedure
 
 1. Update the controlling `PROGRAM:` or standalone `PROJECT:` issue body with dashboard fields when PMO wants a row to appear with normalized values.
-2. Add child tasks only inside an explicit `Task Chain`, `Child Tasks`, `Implementation Tasks`, or `Task List` block.
+2. Add child tasks only inside one or more explicit `Task Chain`, `Child Tasks`, `Implementation Tasks`, or `Task List` blocks.
 3. Run or wait for **PMO dashboard CI build**.
 4. Confirm generation and validation of `site/pmo-dashboard/dashboard-data.json` and static assets.
-5. Use **PMO dashboard CI deploy** only by manual dispatch during initial rollout.
+5. Confirm **PMO dashboard CI deploy** publishes the validated dashboard and records the Pages URL.
 6. Treat the dashboard as a reporting aid, not an authoritative tracker.
 
 ## Refresh and validation
 
 The build workflow runs every six hours and can also be started manually. It fails when dashboard JSON is missing, required views are absent, row fields are invalid, completed task counts exceed total task counts, static files are missing, or issue links are invalid.
 
-The deploy workflow is manual-only for initial rollout. Manual dispatch regenerates and validates the dashboard before publishing so stale output is not intentionally deployed.
+The deploy workflow publishes after a successful PMO dashboard CI build and can also be started manually during controlled rollout. Deploy regenerates and validates the dashboard before publishing so stale output is not intentionally deployed.
 
 ## GitHub Pages setup notes
 
