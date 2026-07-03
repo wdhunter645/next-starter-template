@@ -10,6 +10,8 @@ const API = process.env.GITHUB_API_URL || 'https://api.github.com';
 
 const lifecycleToView = { active: 'activePrograms', pipeline: 'pmoPipeline', completed: 'completedPrograms' };
 const statusByLifecycle = { active: 'Active', pipeline: 'PMO Intake', completed: 'Completed' };
+const taskBlockHeadingPattern = /^\s*(?:#{1,6}\s*)?(Task Chain|Child Tasks?|Implementation Tasks?|Task List)\s*:?\s*(.*)$/i;
+const nextSectionPattern = /^\s*#{1,6}\s+\S/;
 
 async function github(pathname) {
   const headers = { Accept: 'application/vnd.github+json', 'User-Agent': 'pmo-dashboard-generator' };
@@ -44,11 +46,29 @@ function labels(issue) { return (issue.labels || []).map((label) => typeof label
 function titleType(title) { return title?.startsWith('PROGRAM:') ? 'program' : title?.startsWith('PROJECT:') ? 'project' : null; }
 function cleanName(title) { return title.replace(/^(PROGRAM|PROJECT):\s*/i, '').trim(); }
 
+function explicitTaskBlock(body) {
+  const lines = (body || '').split(/\r?\n/);
+  const startIndex = lines.findIndex((line) => taskBlockHeadingPattern.test(line));
+  if (startIndex === -1) return null;
+
+  const [, , inlineContent = ''] = lines[startIndex].match(taskBlockHeadingPattern) || [];
+  const blockLines = [];
+  if (inlineContent.trim()) blockLines.push(inlineContent.trim());
+
+  for (const line of lines.slice(startIndex + 1)) {
+    if (nextSectionPattern.test(line)) break;
+    blockLines.push(line);
+  }
+
+  return blockLines.join('\n').trim();
+}
+
 function taskNumbers(issue) {
   const own = issue.number;
   const nums = new Set();
-  const body = issue.body || '';
-  const taskSection = body.match(/(?:task chain|child tasks?|implementation tasks?|task list)[\s\S]*/i)?.[0] || body;
+  const taskSection = explicitTaskBlock(issue.body);
+  if (!taskSection) return [];
+
   for (const match of taskSection.matchAll(/(?:#|issues\/)(\d{1,6})\b/g)) {
     const n = Number(match[1]);
     if (n && n !== own) nums.add(n);
