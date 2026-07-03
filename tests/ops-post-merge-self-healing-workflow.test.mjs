@@ -50,20 +50,25 @@ describe('OPS — Post-Merge Self-Healing workflow', () => {
 		expect(workflow).toMatch(/echo "open_escalation_issues=false"/);
 	});
 
-	it('triggers on matching post-merge issue events only', () => {
+	it('does not trigger from issue or push events during transition control', () => {
 		const workflow = fs.readFileSync('.github/workflows/ops-post-merge-self-healing.yml', 'utf8');
+		const triggerBlock = workflow.slice(workflow.indexOf('on:'), workflow.indexOf('permissions:'));
 
-		expect(workflow).toContain('issues:');
-		expect(workflow).toContain('types: [opened, reopened, edited, labeled]');
-		expect(workflow).toContain("startsWith(github.event.issue.title, 'Post-merge closeout exception')");
-		expect(workflow).toContain("contains(join(github.event.issue.labels.*.name, ','), 'post-merge-failure')");
-		expect(workflow).toContain("contains(join(github.event.issue.labels.*.name, ','), 'ops-pr-escalation')");
-		expect(workflow).toContain("github.event.issue.state == 'open'");
-		expect(workflow).toContain("github.event.label.name == 'ops-pr-escalation'");
-		expect(workflow).toMatch(/elif \[ "\$\{\{ github\.event_name \}\}" = "issues" \]; then[\s\S]*echo "backlog_scope=event_issue"/);
+		expect(triggerBlock).not.toContain('issues:');
+		expect(triggerBlock).not.toContain('push:');
+		expect(workflow).not.toContain("elif [ \"${{ github.event_name }}\" = \"issues\" ]; then");
+		expect(workflow).not.toContain('--event-issue');
 	});
 
-	it('uses least-privilege permissions for issue-event self-healing', () => {
+	it('queues self-healing runs instead of racing repository writes', () => {
+		const workflow = fs.readFileSync('.github/workflows/ops-post-merge-self-healing.yml', 'utf8');
+
+		expect(workflow).toContain('concurrency:');
+		expect(workflow).toContain('group: ops-post-merge-self-healing-${{ github.repository }}');
+		expect(workflow).toContain('cancel-in-progress: false');
+	});
+
+	it('uses least-privilege permissions for transition self-healing', () => {
 		const workflow = fs.readFileSync('.github/workflows/ops-post-merge-self-healing.yml', 'utf8');
 
 		expect(workflow).toContain('contents: read');
