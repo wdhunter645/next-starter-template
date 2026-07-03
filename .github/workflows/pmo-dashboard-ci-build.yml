@@ -37,17 +37,17 @@ jobs:
         run: node scripts/pmo-dashboard/build-dashboard.mjs
 
       - name: Validate dashboard
-        run: node scripts/pmo-dashboard/validate-dashboard.mjs site/pmo-dashboard
+        run: node scripts/pmo-dashboard/validate-dashboard.mjs "$PMO_DASHBOARD_OUT_DIR"
 
       - name: Upload dashboard artifact
         uses: actions/upload-artifact@v4
         with:
           name: pmo-dashboard
-          path: site/pmo-dashboard
+          path: ${{ env.PMO_DASHBOARD_OUT_DIR }}
           if-no-files-found: error
           retention-days: 7
 
       - name: Write build summary
         run: |
           echo "## PMO dashboard CI build" >> "$GITHUB_STEP_SUMMARY"
-          echo "Validated generated output at \`site/pmo-dashboard/\`." >> "$GITHUB_STEP_SUMMARY"
+          echo "Validated generated output at \`$PMO_DASHBOARD_OUT_DIR/\`." >> "$GITHUB_STEP_SUMMARY"
