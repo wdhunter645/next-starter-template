@@ -39,29 +39,18 @@ describe('OPS — Post-Merge Self-Healing workflow', () => {
 		expect(workflow).toContain('post-merge-self-heal-escalation.json');
 	});
 
-	it('enables scheduled and workflow-completion backlog apply while manual dispatch defaults to dry-run', () => {
-		const workflow = fs.readFileSync('.github/workflows/ops-post-merge-self-healing.yml', 'utf8');
-
-		expect(workflow).toContain('workflow_run:');
-		expect(workflow).toContain('schedule:');
-		expect(workflow).toContain('elif [ "${{ github.event_name }}" = "workflow_run" ]; then');
-		expect(workflow).toContain('elif [ "${{ github.event_name }}" = "schedule" ]; then');
-		expect(workflow).toContain('echo "dry_run=false" >> "$GITHUB_OUTPUT"');
-		expect(workflow).toContain('echo "apply_safe_fixes=true" >> "$GITHUB_OUTPUT"');
-		expect(workflow).toContain('echo "dry_run=true" >> "$GITHUB_OUTPUT"');
-		expect(workflow).toContain('echo "apply_safe_fixes=false" >> "$GITHUB_OUTPUT"');
-		expect(workflow).toContain('echo "open_escalation_issues=false" >> "$GITHUB_OUTPUT"');
-	});
-
-	it('does not trigger from issue or push events during transition control', () => {
+	it('runs only manually or on the scheduled backlog lane', () => {
 		const workflow = fs.readFileSync('.github/workflows/ops-post-merge-self-healing.yml', 'utf8');
 		const triggerBlock = workflow.slice(workflow.indexOf('on:'), workflow.indexOf('permissions:'));
 
-		expect(triggerBlock).not.toMatch(/^\s{2}issues:/m);
-		expect(triggerBlock).not.toMatch(/^\s{2}push:/m);
-		expect(workflow).not.toContain('github.event_name == \'issues\'');
-		expect(workflow).not.toContain('github.event.issue.');
-		expect(workflow).not.toContain('--event-issue');
+		expect(triggerBlock).toContain('workflow_dispatch:');
+		expect(triggerBlock).toContain('schedule:');
+		expect(triggerBlock).not.toContain('workflow_run:');
+		expect(triggerBlock).not.toContain('issues:');
+		expect(triggerBlock).not.toContain('push:');
+		expect(workflow).not.toContain('github.event.workflow_run');
+		expect(workflow).not.toContain('post-merge-closeout-artifact');
+		expect(workflow).not.toContain('Download post-merge closeout artifact');
 	});
 
 	it('queues self-healing runs instead of racing repository writes', () => {
@@ -79,15 +68,6 @@ describe('OPS — Post-Merge Self-Healing workflow', () => {
 		expect(workflow).toContain('issues: write');
 		expect(workflow).not.toContain('contents: write');
 		expect(workflow).not.toContain('pull-requests: write');
-	});
-
-	it('includes Post-Merge Detection as a workflow_run trigger for per-merge closeout self-healing', () => {
-		const workflow = fs.readFileSync('.github/workflows/ops-post-merge-self-healing.yml', 'utf8');
-
-		expect(workflow).toContain('- Post-Merge Detection');
-		expect(workflow).toContain('post-merge-validation-result');
-		expect(workflow).toContain('post-merge-closeout-artifact/post-merge-result.json');
-		expect(workflow).toContain('--result post-merge-closeout-artifact/post-merge-result.json');
 	});
 
 	it('exports GitHub auth env to the apply safe auto-fix step', () => {
