@@ -5,8 +5,8 @@ Authority Level: Canonical PMO Authority
 Owns: LGFC PMO v3 program issue model, PMO meeting issue model, PMO Backlog rules, launch gates, promotion rules, agent authority boundaries, and top-down PMO documentation replacement intent
 Does Not Own: Product-specific design, runtime implementation, workflow YAML, production configuration, secrets, or unauthorized GitHub issue mutation
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501, #1500, #1719, #1725, #1856
-Last Reviewed: 2026-06-20
+Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501, #1500, #1719, #1725, #1856, #2240
+Last Reviewed: 2026-07-04
 ---
 
 # PMO V3 Operating Model
@@ -189,6 +189,7 @@ PMO meeting issue
 ## PMO meeting issue rules
 
 - A PMO meeting issue is a meeting record, not a program.
+- At meeting startup, Atlas/ChatGPT should fetch the canonical PMO dashboard JSON documented in `/docs/how-to/pmo/pmo-dashboard.md` before reviewing individual issues.
 - A PMO meeting issue should include:
   1. Review current program status.
   2. Review PMO Backlog.

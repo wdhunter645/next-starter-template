@@ -5,8 +5,8 @@ Authority Level: Operational Guidance
 Owns: PMO dashboard generation, refresh, validation, and GitHub Pages limitations
 Does Not Own: PMO lifecycle definitions, GitHub issues source records, or Cloudflare production deployment
 Canonical Reference: /docs/ops/pmo/workflow-automation.md
-Related Issues: #2101
-Last Reviewed: 2026-07-03
+Related Issues: #2101, #2240
+Last Reviewed: 2026-07-04
 ---
 
 # PMO Dashboard
@@ -26,6 +26,91 @@ This how-to covers dashboard source fields, local generation, CI build validatio
 - The build workflow generates, validates, and uploads dashboard artifacts.
 - The deploy workflow publishes after a successful PMO dashboard CI build and can also be run manually during controlled rollout.
 - Automatic deployment from successful builds is approved for the PMO dashboard closeout path.
+- The dashboard is live on GitHub Pages and the JSON endpoint is publicly readable without authentication.
+
+## Published URLs
+
+Use these canonical public URLs:
+
+| Surface | URL |
+|---|---|
+| Dashboard page | https://wdhunter645.github.io/next-starter-template/pmo-dashboard/ |
+| Dashboard JSON | https://wdhunter645.github.io/next-starter-template/pmo-dashboard/dashboard-data.json |
+
+The JSON URL is the canonical machine-readable input for Atlas/ChatGPT PMO meeting startup and status review. The HTML page is the human-readable reporting surface for the same normalized data.
+
+## PMO meeting startup for Atlas/ChatGPT
+
+At PMO meeting startup, Atlas/ChatGPT should fetch the dashboard JSON URL first.
+
+Recommended startup sequence:
+
+1. Fetch `https://wdhunter645.github.io/next-starter-template/pmo-dashboard/dashboard-data.json`.
+2. Confirm the response is HTTP 200 JSON with:
+   - `generatedAt`
+   - `source: "github-issues"`
+   - `views.activePrograms`
+   - `views.pmoPipeline`
+   - `views.completedPrograms`
+3. Use the three views as the normalized PMO workload snapshot for meeting status review.
+4. Use each row's `issueNumber` and `issueUrl` to drill into controlling `PROGRAM:` or `PROJECT:` issues when deeper issue-body detail is required.
+5. Treat GitHub Issues as executable work truth when a row field conflicts with issue-body detail or when child-task detail is needed beyond aggregate counts.
+
+Atlas/ChatGPT should use the dashboard JSON URL as the default PMO meeting startup input. Do not scrape the HTML page when JSON fetch succeeds.
+
+## JSON schema summary
+
+Top-level fields:
+
+- `generatedAt` — ISO timestamp when the dashboard was generated
+- `source` — must be `github-issues`
+- `repository` — source repository (`owner/repo`)
+- `views.activePrograms` — launched or actively executing program/project rows
+- `views.pmoPipeline` — queued, planned, or not-yet-launched rows
+- `views.completedPrograms` — completed or terminal-closeout rows
+
+Each row includes:
+
+- `type` — `program` or `project`
+- `name` — normalized program/project name
+- `issueNumber` — master controlling issue number
+- `issueUrl` — master controlling issue URL
+- `priority`, `status`, `percentComplete`, `taskCount`, `tasksCompleted`, `ownerAgent`, `description`, `anticipatedCompletionDate`
+
+## Fallback rule
+
+If the dashboard JSON cannot be fetched, is not valid JSON, is missing required top-level fields, or appears stale relative to the meeting context:
+
+1. Fall back to GitHub Issues directly.
+2. Query open and recently closed issues titled `PROGRAM:` or `PROJECT:`.
+3. Read explicit dashboard fields and task-chain blocks from issue bodies.
+4. Record in the meeting issue that dashboard JSON was unavailable and issue-level inspection was used instead.
+
+Do not treat a failed JSON fetch as proof that PMO workload is empty.
+
+## External access verification
+
+The JSON endpoint is suitable for external agent read access when these checks pass:
+
+```bash
+curl -I https://wdhunter645.github.io/next-starter-template/pmo-dashboard/dashboard-data.json
+curl -sL https://wdhunter645.github.io/next-starter-template/pmo-dashboard/dashboard-data.json
+```
+
+Expected results:
+
+- HTTP 200
+- `content-type: application/json`
+- `access-control-allow-origin: *`
+- no authentication required
+- no redirect required for the canonical URL
+- body includes `generatedAt`, `source`, and all three `views.*` arrays
+
+The dashboard page should also return HTTP 200 at:
+
+```bash
+curl -I https://wdhunter645.github.io/next-starter-template/pmo-dashboard/
+```
 
 ## Source data
 
