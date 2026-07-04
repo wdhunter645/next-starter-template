@@ -11,7 +11,7 @@ Last Reviewed: 2026-07-04
 
 # PR Process Current State
 
-This reference records the **temporary current state** of the PR-process rebuild. It supports, but does not replace, `/docs/governance/PR_PROCESS.md`.
+This reference records the **temporary current state** of the PR-process rebuild. It supports, but does not replace, `/docs/governance/PR_PROCESS.md` (canonical policy established in #2218).
 
 **Operator rule:** Until #2175 and #2208 are closed, PR-process CI stays in safe-mode unless a later small PR intentionally changes one workflow after advisory evidence.
 

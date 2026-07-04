@@ -27,7 +27,9 @@ The following retained materials are evidence only and must not be used as curre
 - old PR gate success patterns that require PR-body reviewer ledgers;
 - old file-touch allowlist rituals;
 - old website-specific PR prompt language;
-- legacy PR-body auto-repair scaffolding references.
+- legacy PR-body auto-repair scaffolding references;
+- Task 1 transition-control inventory at `docs/reference/ci/pr-process-redesign-transition-control.md` (Authority Level: Historical);
+- pre-#2218 PR gate success how-to patterns requiring PR-body reviewer ledgers (superseded by `/docs/how-to/ci/pr-gate-success-workflow.md` as of 2026-07-04).
 
 ## Operating rule
 

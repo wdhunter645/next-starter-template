@@ -36,6 +36,7 @@ A PR that changes only this file should verify that:
 - #2213 paused `GATE — PR Issue Accounting`.
 - #2214 validated that `GATE — PR Issue Accounting` no longer commented on newly opened PRs.
 - Cursor takeover probe (TASK 1, 2026-07-04): validates current-state doc refresh plus post-#2203/#2204 cleanup baseline. Record outcome in PR checks and #2208.
+- #2219 (open): Cursor operator reference expansion + #2218 follow-up doc cleanup. See #2208 for recorded probe results.
 
 ## Validation checklist (each probe PR)
 

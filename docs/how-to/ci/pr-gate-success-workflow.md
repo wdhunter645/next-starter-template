@@ -2,153 +2,127 @@
 Doc Type: How-To
 Audience: Human + AI
 Authority Level: Operational
-Owns: Repeatable PR gate-clean execution workflow for Cursor, Codex, and ChatGPT/Atlas
-Does Not Own: Canonical PR governance policy; repository design authority; CI implementation design
-Canonical Reference: /docs/governance/PR_PROCESS.md; /docs/governance/PR_GOVERNANCE.md; /docs/reference/governance/troubleshooting-data-surface-requirements.md
-Last Reviewed: 2026-06-03
+Owns: Repeatable PR gate-clean execution workflow for Cursor and Atlas
+Does Not Own: Canonical PR-process policy or CI implementation design
+Canonical Reference: /docs/governance/PR_PROCESS.md
+Supporting References:
+  - /docs/reference/ci/pr-process-current-state.md
+  - /docs/reference/ci/pr-process-skeleton-validation.md
+  - /docs/reference/ci/merge-protection-surface.md
+  - /.agents/skills/lgfc-pr-governance/SKILL.md
+Related issues: #2175, #2208
+Last Reviewed: 2026-07-04
 ---
 
 # PR Gate Success Workflow
 
-This document records the repeatable workflow demonstrated by PR #1200 so Cursor, Codex, and ChatGPT/Atlas can move future PRs to a clean gate state using the same operating pattern.
+This how-to describes how to move a PR to a clean, merge-safe state under the **stable-facts PR body** model defined in `/docs/governance/PR_PROCESS.md`.
 
-## Execution
+During the #2175 / #2208 rebuild, many PR-process gates are in safe-mode. This workflow separates **what must always be true** from **what is temporarily paused or advisory**.
 
-Use this workflow for every implementation, CI, governance, or website PR before claiming the PR is ready for review or ready to merge.
+## What changed from legacy practice
 
-Do not treat a PR as clean because the visible checklist is mostly green. A PR is clean only when the PR body, changed-file allowlist, local checks, remote checks, reviewer accounting, and source-issue accounting all agree.
+Do **not** use the PR body as a lifecycle database. The following legacy patterns are retired:
+
+- PR-body reviewer comment ID ledgers (`review-comment:<id>`)
+- review-thread state text stored in the PR body
+- `READY FOR MERGE` status fields in the PR body
+- generated auto-repair lifecycle blocks
+- treating the PR issue-accounting bot comment as the source of truth
+
+Reviewer lifecycle state lives in **GitHub reviews and review threads**. Merge readiness lives in **required checks, labels, and operator decision**.
 
 ## Required execution sequence
 
-1. Confirm source issue accounting first.
-   - Confirm exactly one same-repository, open, non-PR source issue.
-   - Put the accepted issue line near the top of the PR body.
-   - Confirm the PR issue-accounting gate comments that it passed.
+### 1. Confirm source issue
 
-2. Build the PR body as the control ledger.
-   - Keep all required repository sections present.
-   - Keep the `FILE-TOUCH ALLOWLIST` exact.
-   - Keep the intended intent label explicit and singular.
-   - Record the source docs and workflow files inspected.
-   - Update the body after every material fix, not only at PR creation.
+- Exactly one same-repository, open, non-PR source issue.
+- PR body includes: `- **Issue:** #NNN` near the top.
+- During safe-mode, `GATE — PR Issue Accounting` is manual-only; do not wait for an accounting bot comment.
 
-3. Make the allowlist match the final diff exactly.
-   - Every touched file must appear in the `Allowed files:` list.
-   - No file outside the list may remain in the diff.
-   - If the diff changes, update the allowlist before claiming readiness.
+### 2. Build the PR body as stable facts only
 
-4. Run local checks before relying on remote gates.
-   - Run the targeted tests for the changed files.
-   - Run formatting checks for changed workflow/script/test files.
-   - Run typecheck when TypeScript, workflow scripts, or app behavior is touched.
-   - Run the broad test suite when CI behavior or shared behavior is touched.
-   - Run ZIP safety / diff checks before pushing final commits.
+Use `.github/pull_request_template.md`. Include:
 
-5. Inspect remote checks at both PR and commit level.
-   - Inspect PR-level governance/accounting comments.
-   - Inspect commit-level workflow runs on the latest head SHA.
-   - Treat historical failed or cancelled runs as superseded only when a newer equivalent run passed on the current head.
-   - Inspect failed job logs before deciding whether a failure is real, stale, or superseded.
+- source issue, intent label, PR class;
+- allowed paths and out-of-scope declaration;
+- change summary, verification, acceptance criteria;
+- follow-up issue declaration;
+- reviewer/bot review attestation checkboxes.
 
-6. Iterate on reviewer findings until every actionable item is handled.
-   - Read bot and human comments.
-   - Read inline review threads.
-   - Apply valid findings.
-   - If a finding is not applied, record the rationale.
-   - Keep reviewer comment IDs or thread references in the PR body when required.
+Do **not** paste check status, comment IDs, thread state, or merge-readiness ledgers into the body.
 
-7. Record reviewer-response accounting in the PR body.
-   - State that all comments, bot comments, and review threads were reviewed.
-   - Record each actionable item as `review-comment:<id> — accepted/rejected/acknowledged/not-applicable — <reason> — thread state: resolved/outdated/unresolved-with-rationale`.
-   - Outdated threads (`is_outdated: true` or stale commit SHA) require explicit disposition even when GitHub marks them outdated.
-   - Late comments arriving after `READY FOR REVIEW` must be dispositioned before merge.
-   - Do not mark the PR ready if an actionable blocker remains unaddressed or undispositioned.
+### 3. Match the allowlist to the final diff
 
-8. Re-run or re-evaluate gates after reviewer fixes.
-   - A gate state from before reviewer-fix commits is not final.
-   - Re-check latest head workflows after every fix push.
-   - Re-check PR comments after every body update that affects governance parsing.
+- Every changed file must appear under `Allowed paths:`.
+- No file outside the list may remain in the diff.
+- Update the body when the diff changes.
 
-9. Only then mark ready.
-   - A draft PR stays draft until a permitted actor intentionally marks it ready.
-   - The readiness claim must cite current live gate state, not stale prior runs.
-   - Merge must wait until source issue, reviewer accounting, and remote gates are clean.
+During safe-mode, `GATE — Diff Scope` is manual-only; local allowlist discipline still applies.
 
-## PR #1200 pattern to reproduce
+### 4. Run local checks before relying on remote gates
 
-PR #1200 reached clean gate state by doing all of the following:
+Record exact commands and PASS / FAIL / NOT RUN in the PR body verification section.
 
-- source issue line present: `- **Issue:** #1086`
-- exact file allowlist for the six changed files
-- explicit intent label: `change-ops`
-- local targeted tests passed
-- local full tests passed
-- Prettier check passed for touched workflow/script/test files
-- TypeScript check passed
-- ZIP/diff safety check passed
-- workflow files inspected before readiness claim
-- PR-level governance/accounting checks inspected
-- commit-level workflow runs inspected on latest head SHA
-- failed gate/job logs inspected before final classification
-- required gates rerun or re-evaluated after reviewer fixes
-- reviewer comment IDs recorded with accepted dispositions
-- unresolved threads explicitly marked `unresolved-with-rationale` when code was changed and platform/human thread resolution remained pending
-
-## Required PR body checklist text
-
-Use this checklist language in PR bodies when preparing a PR for review:
-
-```markdown
-## PR GATE READINESS CHECKLIST
-- [ ] Live PR check panel inspected
-- [ ] Commit-level workflow runs inspected on latest head SHA
-- [ ] PR-level governance/accounting workflows inspected
-- [ ] Failed job logs inspected for every failing gate before classification
-- [ ] Workflow YAML or enforcement logic inspected before documenting gate behavior
-- [ ] PR issue-accounting confirms exactly one same-repository, open, non-PR source issue
-- [ ] PR body contains one accepted source-issue accounting line
-- [ ] Allowed files section matches final diff exactly
-- [ ] All review threads and comments inspected
-- [ ] Actionable review feedback has PR-body disposition and GitHub thread-state disposition
-- [ ] Bot comments inspected
-- [ ] Reviewer-response accounting includes required reviewer comment IDs when required by gate logs
-- [ ] Required gates rerun or re-evaluated after fixes
-- [ ] Final PR panel confirms current gate cleanliness
-```
-
-## Required commands pattern
-
-Use the repository's current package scripts and task-specific tests. When documenting commands in the PR body, record exact commands and PASS/FAIL status.
-
-Minimum command classes:
+Minimum classes when applicable:
 
 ```bash
-npm test -- <targeted-test-files>
 npm run typecheck
-npm test
-npx prettier --check <changed-workflow-script-test-files>
+npm test -- <targeted-test-files>
+npm run build   # when code/runtime touched and not deferred by class
 git diff --check
-if ls *.zip >/dev/null 2>&1; then echo "Root ZIP file present"; false; else echo "No root ZIP files present"; fi
 ```
 
-For workflow validators or GitHub-state scripts, run the validator locally with explicit environment variables when safe and token scope is available. Record the exact command in the PR body.
+### 5. Inspect remote checks on the latest head
+
+Inspect the **live PR check panel** on the current head SHA.
+
+During safe-mode, expect:
+
+- marker PR-process workflows to pass quickly;
+- `gitleaks` and other safety checks to run for real;
+- Intent Labeler, Diff Scope, and PR Issue Accounting **not** to auto-run.
+
+Treat `GATE — Post-Merge Readiness` and other legacy overlap gates as **non-authoritative** unless branch protection lists them as required.
+
+### 6. Handle reviewer findings in GitHub-native state
+
+- Read human review threads and bot/advisory findings.
+- Fix actionable items or record rationale in the review thread / review comment.
+- Check the attestation boxes when you have read human and bot findings.
+- Do **not** mirror thread state into the PR body unless summarizing stable implementation facts.
+
+### 7. Re-run or re-evaluate after fixes
+
+After every fix push or material PR body update, re-check the latest head workflow runs and review threads.
+
+### 8. Mark ready only when clean
+
+A PR is ready for human review when:
+
+- stable-facts body matches the final diff;
+- local verification recorded;
+- latest head required checks are green (per `/docs/reference/ci/merge-protection-surface.md`);
+- actionable review threads are addressed in GitHub review state;
+- no undocumented scope expansion.
+
+Merge authorization remains human/operator only.
+
+## Safe-mode validation probes
+
+When changing PR-process CI, open a small probe PR and record results per `/docs/reference/ci/pr-process-skeleton-validation.md`. Post summary evidence to #2208.
 
 ## Stop conditions
 
 Stop and report instead of claiming readiness when:
 
-- source issue state cannot be verified
-- allowed-file list does not match the diff
-- latest head workflow state cannot be verified
-- any required gate is failing on the latest head
-- failed job logs have not been inspected
-- actionable reviewer findings remain undispositioned
-- review-thread state is unknown
-- PR body still says draft/blocked while the PR is being presented as ready
-- post-merge closeout checklist is being treated as complete before merge state and source issue state are verified
+- source issue state cannot be verified;
+- allowlist does not match the diff;
+- latest head workflow state cannot be verified;
+- a **required** gate is failing on the latest head;
+- actionable reviewer findings remain unaddressed in GitHub review state;
+- PR-process repair would reintroduce PR-body mutation or auto-repair loops.
 
-## Responsibility split
+## Historical note
 
-Cursor may create and iterate draft PRs for website/configuration work when that is the active workflow.
-
-Codex and ChatGPT/Atlas must follow the same gate-clean procedure when they create, review, or update PRs. They must not merely report a green check summary; they must verify and document the same surfaces Cursor documented in PR #1200.
+Older versions of this how-to documented PR #1200 patterns that required PR-body reviewer ledgers and issue-accounting bot comments. Those patterns are archived as historical evidence only. See `/docs/archive/pr-process/README.md`.
