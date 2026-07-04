@@ -1,6 +1,7 @@
 {
   "description": "Canonical active closeout manifest registry for automatic replay. Completed Program #1923 wave manifests are archived and replay only via explicit workflow_dispatch.",
   "manifests": [
+    "scripts/ci/post-merge-closeout/targets-2101-closeout.json",
     "scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json",
     "scripts/ci/post-merge-closeout/targets-ci-pending.json",
     "scripts/ci/post-merge-closeout/targets-remediation-backlog.json",
