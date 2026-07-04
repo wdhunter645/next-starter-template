@@ -23,6 +23,7 @@ describe('PR class quality plan', () => {
       expect(plan.prClass).toBe(prClass);
       expect(plan.typecheck).toBe(true);
       expect(plan.lint).toBe(true);
+      expect(plan.test).toBe(true);
       expect(plan.build).toBe(true);
     }
   });
@@ -34,6 +35,13 @@ describe('PR class quality plan', () => {
       expect(plan.typecheck).toBe(true);
       expect(plan.lint).toBe(true);
       expect(plan.build).toBe(false);
+    }
+  });
+
+  it('skips unit tests for docs-only and ops classes', () => {
+    for (const prClass of ['docs-governance', 'docs-content', 'ops', 'config']) {
+      const plan = determineQualityPlan({ body: bodyFor(prClass) });
+      expect(plan.test).toBe(false);
     }
   });
 

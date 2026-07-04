@@ -1,6 +1,11 @@
 import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { buildDiffScopeReport, renderDiffScopeReport, writeDiffScopeArtifacts } from '../scripts/ci/diff_scope_gate.mjs';
+import {
+  buildDiffScopeReport,
+  renderDiffScopeReport,
+  runCli,
+  writeDiffScopeArtifacts,
+} from '../scripts/ci/diff_scope_gate.mjs';
 
 const body = `# PR Summary
 
@@ -27,6 +32,7 @@ describe('diff scope gate', () => {
     expect(report.ok).toBe(true);
     expect(report.gate).toBe('diff-scope');
     expect(report.schemaVersion).toBe(1);
+    expect(report.advisory).toBe(true);
     expect(report.unlistedChangedFiles).toEqual([]);
   });
 
@@ -83,6 +89,31 @@ describe('diff scope gate', () => {
       expect(fs.readFileSync(mdPath, 'utf8')).toContain('Diff Scope Gate');
     } finally {
       for (const file of [jsonPath, mdPath]) {
+        if (fs.existsSync(file)) fs.unlinkSync(file);
+      }
+    }
+  });
+
+  it('returns advisory exit code zero when enforcement is disabled', () => {
+    const bodyPath = 'diff-scope-body.test.md';
+    const changedPath = 'diff-scope-changed.test.txt';
+    fs.writeFileSync(bodyPath, body);
+    fs.writeFileSync(changedPath, 'src/app/page.tsx\n');
+
+    try {
+      expect(runCli({
+        DIFF_SCOPE_BODY_FILE: bodyPath,
+        DIFF_SCOPE_CHANGED_FILES_FILE: changedPath,
+        DIFF_SCOPE_ENFORCE_FAILURE: 'false',
+      })).toBe(0);
+
+      expect(runCli({
+        DIFF_SCOPE_BODY_FILE: bodyPath,
+        DIFF_SCOPE_CHANGED_FILES_FILE: changedPath,
+        DIFF_SCOPE_ENFORCE_FAILURE: 'true',
+      })).toBe(1);
+    } finally {
+      for (const file of [bodyPath, changedPath]) {
         if (fs.existsSync(file)) fs.unlinkSync(file);
       }
     }

@@ -13,44 +13,22 @@ import {
 
 export { isEnforcingReviewerLifecycleEvent } from './reviewer-gate-simulation.mjs';
 
-export const DEFAULT_TRUSTED_BOT_LOGINS = [
-  'copilot-pull-request-reviewer[bot]',
-  'copilot-pull-request-reviewer',
-  'cubic-dev-ai[bot]',
-  'cubic-dev-ai',
-  'chatgpt-codex-connector[bot]',
-  'chatgpt-codex-connector',
-];
+import {
+  DEFAULT_TRUSTED_BOT_LOGINS,
+  isResolvedReviewText,
+  isTrustedReviewer,
+  parseTrustedBotLogins,
+  trustedBotSet,
+} from './reviewer_trusted_bots.mjs';
+
+export { DEFAULT_TRUSTED_BOT_LOGINS, parseTrustedBotLogins, trustedBotSet } from './reviewer_trusted_bots.mjs';
 
 export const DEFAULT_EXCEPTION_LABEL = 'reviewer-lifecycle-exception';
 export const BREAK_GLASS_MARKER = /<!--\s*reviewer-lifecycle-break-glass\s*-->/i;
-const RESOLVED_MARKER = /✅\s*Addressed|addressed in|\bresolved\b|all checks passed|no warnings detected/i;
-const UNRESOLVED_MARKER = /\bunresolved\b|\bnot\s+resolved\b|\bstill\s+open\b|\bstill\s+blocking\b/i;
 const LINKED_REVIEW_STATES = new Set(['APPROVED', 'COMMENTED']);
-
-function normalizeLogin(login = '') {
-  return String(login || '').trim().toLowerCase();
-}
-
-export function trustedBotSet(logins = DEFAULT_TRUSTED_BOT_LOGINS) {
-  return new Set(logins.map(normalizeLogin).filter(Boolean));
-}
-
-export function parseTrustedBotLogins(value = '') {
-  if (!value) return DEFAULT_TRUSTED_BOT_LOGINS;
-  return value.split(',').map((entry) => entry.trim()).filter(Boolean);
-}
-
-export function isTrustedReviewer(login = '', trustedBots = trustedBotSet()) {
-  return trustedBots.has(normalizeLogin(login));
-}
 
 export function isProtectedPath(filePath = '') {
   return filePath.startsWith('.github/workflows/') || filePath.startsWith('scripts/ci/');
-}
-
-export function isResolvedReviewText(body = '') {
-  return RESOLVED_MARKER.test(body || '') && !UNRESOLVED_MARKER.test(body || '');
 }
 
 function timestamp(value = '') {
@@ -311,6 +289,40 @@ export function assessReviewerLifecycle({
   };
 }
 
+export function buildReviewerLifecycleArtifact(result) {
+  return {
+    gate: 'reviewer-lifecycle',
+    schemaVersion: 1,
+    advisory: !result.enforceFailure,
+    ok: result.assessment.ok,
+    severity: result.assessment.severity,
+    reason: result.assessment.reason,
+    enforceFailure: result.enforceFailure,
+    humanChangesRequested: result.humanChangesRequested.length,
+    unresolvedHumanThreads: result.reviewThreads.blocking.length,
+    advisoryThreads: result.reviewThreads.advisory.length,
+    outdatedThreads: result.reviewThreads.outdated.length,
+    resolvedThreads: result.reviewThreads.resolved.length,
+    blockingReasons: result.blockingReasons,
+    headSha: result.headSha || '',
+  };
+}
+
+export function writeReviewerLifecycleArtifacts(result, env = process.env) {
+  const artifact = buildReviewerLifecycleArtifact(result);
+  const jsonPath = env.REVIEWER_LIFECYCLE_RESULT_JSON || env.PR_VALIDATION_RESULT_JSON;
+  const markdownPath = env.REVIEWER_LIFECYCLE_RESULT_MD;
+
+  if (jsonPath) {
+    fs.writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
+  }
+  if (markdownPath) {
+    fs.writeFileSync(markdownPath, `${result.report}\n`);
+  }
+
+  return artifact;
+}
+
 export function buildReviewerLifecycleReport(result) {
   const lines = [
     result.assessment.ok
@@ -527,6 +539,8 @@ async function main() {
     trustedBotLogins,
     exceptionLabel,
   });
+
+  writeReviewerLifecycleArtifacts(result, process.env);
 
   try {
     await upsertGateComment({

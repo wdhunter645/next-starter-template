@@ -39,10 +39,12 @@ The broader repository workflow inventory supports more than the PR process and 
 
 The current reduced deterministic pre-merge blocker reference is maintained in `/docs/reference/ci/merge-protection-surface.md`.
 
-The following PR-process workflows are currently safe-mode/manual-only and are not final design:
+The following PR-process workflows are rebuilt advisory or required gates:
 
-- marker/safe-mode: `gate-quality.yml`, `gate-drift.yml`, `gate-branch-freshness.yml`, `docs-guardrails.yml`, `design-compliance-warn.yml`, `reviewer-response-completion.yml`;
-- manual-only: `gate-intent-labeler.yml`, `gate-diff-scope.yml`, `ops-pr-issue-accounting.yml`.
+- required: `gate-quality.yml`, `gitleaks.yml`;
+- advisory: `gate-pr-hygiene.yml`, `gate-diff-scope.yml`, `reviewer-response-completion.yml`;
+- manual-only marker: `gate-intent-labeler.yml`, `ops-pr-issue-accounting.yml`;
+- marker no-op pending disposition: `gate-drift.yml`, `gate-branch-freshness.yml`, `docs-guardrails.yml`, `design-compliance-warn.yml`.
 
 ## Intended final state
 
@@ -76,17 +78,18 @@ Legacy PR CI must either be adopted into the current CI design or decommissioned
 
 | Workflow file | Visible check / workflow | PR phase | Classification | Current transition status | Notes |
 |---|---|---:|---|---|---|
-| `.github/workflows/gate-quality.yml` | `GATE — Quality Checks` / `quality` | Pre-merge | Pre-merge required gate candidate | Marker/safe-mode | Must be rebuilt as class-aware deterministic quality routing before final promotion. |
+| `.github/workflows/gate-quality.yml` | `GATE — Quality Checks` / `quality` | Pre-merge | Pre-merge required gate | Active class-aware deterministic routing | Owns structure/ZIP/typecheck/lint/tests/build routing by PR class. |
 | `.github/workflows/gitleaks.yml` | `GATE — Secret Scan` / `gitleaks` | Pre-merge | Pre-merge required gate | Active deterministic safety | Owns secret exposure detection. |
-| `.github/workflows/ops-pr-issue-accounting.yml` | `GATE — PR Issue Accounting` / `pr-issue-accounting` | Pre-merge | Pre-merge advisory/required candidate | Manual-only | Must not be required while manual-only. Rebuild advisory-first. |
-| `.github/workflows/reviewer-response-completion.yml` | `GATE — Reviewer Response Completion` | Pre-merge | Reviewer lifecycle candidate | Marker/safe-mode | Must be rebuilt around GitHub-native review/thread state. |
-| `.github/workflows/docs-guardrails.yml` | `Docs Guardrails` | Pre-merge | Docs advisory/check hybrid | Marker/safe-mode | Rebuild only if it has one clear owner and no PR-body lifecycle mutation. |
-| `.github/workflows/design-compliance-warn.yml` | `Design Compliance (Warn)` | Pre-merge | Design/process advisory | Marker/safe-mode | Old PR-body required-section model is superseded. |
-| `.github/workflows/gate-branch-freshness.yml` | `GATE — Branch Freshness` | Pre-merge | Branch freshness candidate | Marker/safe-mode | Rebuild only if deterministic and low-noise. |
-| `.github/workflows/gate-intent-labeler.yml` | `GATE — Intent Labeler` | Pre-merge | Label classification support | Manual-only | Rebuild advisory-first; avoid label mutation loops. |
-| `.github/workflows/gate-diff-scope.yml` | `GATE — Diff Scope` | Pre-merge | Diff-scope advisory candidate | Manual-only | Rebuild as artifact/report first; no PR body mutation. |
-| `.github/workflows/gate-pr-hygiene.yml` | `GATE — PR Hygiene` / `pr-hygiene` | Pre-merge | PR hygiene advisory | Active advisory | Validates stable PR-body facts; non-blocking; artifact + upsert comment. |
-| `.github/workflows/gate-drift.yml` | `GATE — Drift Control` | Pre-merge | Governance drift candidate | Marker/safe-mode | Rebuild only after overlap with other gates is removed. |
+| `.github/workflows/gate-pr-hygiene.yml` | `GATE — PR Hygiene` / `pr-hygiene` | Pre-merge | Pre-merge advisory check | Active advisory | Stable PR-body validation with artifact + upsert comment. |
+| `.github/workflows/gate-diff-scope.yml` | `GATE — Diff Scope` / `diff-scope` | Pre-merge | Pre-merge advisory check | Active advisory | Allowed-path diff validation with artifact + upsert comment. |
+| `.github/workflows/reviewer-response-completion.yml` | `GATE — Reviewer Response Completion` / `reviewer-response-completion` | Pre-merge | Pre-merge advisory check | Active advisory | GitHub-native reviewer lifecycle with artifact + upsert comment. |
+| `.github/workflows/ops-pr-issue-accounting.yml` | `GATE — PR Issue Accounting` / `pr-issue-accounting` | Pre-merge | Pre-merge advisory/required candidate | Manual-only | Must not be required while manual-only. |
+| `.github/workflows/docs-guardrails.yml` | `Docs Guardrails` | Pre-merge | Docs advisory/check hybrid | Marker/safe-mode | Final disposition pending. |
+| `.github/workflows/design-compliance-warn.yml` | `Design Compliance (Warn)` | Pre-merge | Design/process advisory | Marker/safe-mode | Final disposition pending. |
+| `.github/workflows/gate-branch-freshness.yml` | `GATE — Branch Freshness` | Pre-merge | Branch freshness candidate | Marker/safe-mode | Final disposition pending. |
+| `.github/workflows/gate-intent-labeler.yml` | `GATE — Intent Labeler` | Pre-merge | Label classification support | Manual-only | Avoid label mutation loops. |
+| `.github/workflows/gate-drift.yml` | `GATE — Drift Control` | Pre-merge | Governance drift candidate | Marker/safe-mode | Final disposition pending. |
+| `.github/workflows/ops-pr-process-metrics.yml` | `OPS — PR Process Metrics` | Post-merge | Post-merge PR lifecycle monitor | Active metrics collection | Records first-pass/second-pass PR-process metrics on merge. |
 | `.github/workflows/design-authority-check.yml` | `Design Authority Check` | Pre-merge | Pre-merge advisory/check hybrid | Active where wired | Not a post-merge closeout owner. |
 | `.github/workflows/diataxis-folder-authority-check.yml` | `DIATAXIS Folder Authority Check` | Pre-merge | Pre-merge advisory/check hybrid | Active where wired | Supports DIATAXIS folder authority. |
 | `.github/workflows/cursor-review.yml` | `Cursor PR Review` | Pre-merge | Reviewer/advisory support | Active where wired | Should not be treated as merge approval. |

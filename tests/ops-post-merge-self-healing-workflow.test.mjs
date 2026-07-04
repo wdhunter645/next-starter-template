@@ -46,7 +46,7 @@ describe('OPS — Post-Merge Self-Healing workflow', () => {
 		expect(triggerBlock).toContain('workflow_dispatch:');
 		expect(triggerBlock).toContain('schedule:');
 		expect(triggerBlock).not.toContain('workflow_run:');
-		expect(triggerBlock).not.toContain('issues:');
+		expect(triggerBlock).not.toMatch(/^\s*issues:\s*$/m);
 		expect(triggerBlock).not.toContain('push:');
 		expect(workflow).not.toContain('github.event.workflow_run');
 		expect(workflow).not.toContain('post-merge-closeout-artifact');

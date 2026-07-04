@@ -11,53 +11,55 @@ Last Reviewed: 2026-07-04
 
 # LGFC Merge Protection Surface
 
-This controlled reference supports `/docs/governance/PR_PROCESS.md` by documenting the expected required-check surface for `main` during the PR-process redesign.
+This controlled reference supports `/docs/governance/PR_PROCESS.md` by documenting the expected required-check surface for `main` after the PR-process rebuild (tasks 4–10).
 
-## Purpose
+## Required checks
 
-This reference documents the required status-check surface for `main` during the PR Process Redesign. The current priority is deterministic merge safety with low false-positive risk.
+Configure branch protection for `main` with these deterministic checks only:
 
-## Required checks during PR-process repair
+| Job id | Workflow | Notes |
+|---|---|---|
+| `quality` | `GATE — Quality Checks` | Class-aware structure, ZIP, typecheck, lint, targeted tests, conditional build |
+| `gitleaks` | `GATE — Secret Scan` | Secret exposure blocker |
 
-Use deterministic required checks only. The current reduced reference surface is:
+`GATE — PR Issue Accounting` remains **manual-only** during #2208 and must not be required while paused.
 
-- `quality` (`GATE — Quality Checks`)
-- `gitleaks` (`GATE — Secret Scan`)
+## Advisory checks (active, non-blocking)
 
-`GATE — PR Issue Accounting` has been paused/manual-only during #2208 and should not be required while it is manual-only.
+| Job id | Workflow | Notes |
+|---|---|---|
+| `pr-hygiene` | `GATE — PR Hygiene` | Stable PR-body validation; artifact + upsert comment |
+| `diff-scope` | `GATE — Diff Scope` | Allowed-path diff validation; artifact + upsert comment |
+| `reviewer-response-completion` | `GATE — Reviewer Response Completion` | GitHub-native reviewer lifecycle; artifact + upsert comment |
 
-## Advisory or safe-mode checks during transition
+## Marker / paused checks (not final design)
 
-These checks may run but should remain advisory, marker-only, or manual-only until a follow-up issue promotes them after validation:
+| Workflow | Status |
+|---|---|
+| `GATE — Drift Control` | Marker no-op |
+| `GATE — Branch Freshness` | Marker no-op |
+| `Docs Guardrails` | Marker no-op |
+| `Design Compliance (Warn)` | Marker no-op |
+| `GATE — Intent Labeler` | Manual-only |
+| `GATE — PR Issue Accounting` | Manual-only |
 
-| Workflow file | Display name | Job id | Current transition status |
-|---|---|---|---|
-| `gate-diff-scope.yml` | `GATE — Diff Scope` | `diff-scope` | Manual-only |
-| `gate-intent-labeler.yml` | `GATE — Intent Labeler` | `label-intent` | Manual-only |
-| `ops-pr-issue-accounting.yml` | `GATE — PR Issue Accounting` | `pr-issue-accounting` | Manual-only |
-| `reviewer-response-completion.yml` | `GATE — Reviewer Response Completion` | `reviewer-response-completion` | Marker/safe-mode |
-| `gate-drift.yml` | `GATE — Drift Control` | `drift` | Marker/safe-mode |
-| `gate-branch-freshness.yml` | `GATE — Branch Freshness` | `branch-freshness` | Marker/safe-mode |
-| `docs-guardrails.yml` | `Docs Guardrails` | varies | Marker/safe-mode |
-| `design-compliance-warn.yml` | `Design Compliance (Warn)` | varies | Marker/safe-mode |
+## Retired from required checks
 
-## Retired or non-blocking during repair
-
-Remove these from required status checks if present:
+Remove these from branch protection if still listed:
 
 - `check-no-zip-files`
 - `post-merge-readiness`
-- `reviewer-response-completion`
+- `pr-issue-accounting` (while manual-only)
 - `drift`
-- `diff-scope`
-- `label-intent`
-- `pr-issue-accounting` while manual-only
+- `diff-scope` (until promoted after advisory evidence)
+- `reviewer-response-completion` (until promoted after advisory evidence)
+- `pr-hygiene` (until promoted after advisory evidence)
 
-OPS runtime and post-merge workflows are not merge-protection checks.
+OPS runtime, post-merge closeout, and metrics workflows are not merge-protection checks.
 
-## Rationale
+## Live GitHub verification (operator)
 
-The repository had too many overlapping status surfaces. During the redesign, required checks should answer only deterministic merge-safety questions. Review lifecycle state belongs in GitHub reviews and review threads. Diff-scope, reviewer lifecycle, issue accounting, and PR hygiene can be promoted later after advisory observation.
+Bill/Atlas must confirm live branch protection on `main` matches this reference. Repo-owned docs cannot mutate GitHub settings.
 
 ## Validation
 
@@ -65,4 +67,4 @@ The validator lives at `scripts/ci/merge_protection_surface.mjs`.
 
 ## Rollback
 
-Rollback this reference and `scripts/ci/merge_protection_surface.mjs` to a broader required-check list only through a specific Ops issue and after confirming the checks are active, deterministic, and low-noise.
+Rollback through a specific Ops issue only after confirming replacement checks are active, deterministic, and low-noise.
