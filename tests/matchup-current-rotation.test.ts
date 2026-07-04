@@ -1,0 +1,358 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { onRequestGet as publicMatchupCurrentGet, selectTwoPhotoIds } from '../functions/api/matchup/current';
+
+function jsonResponse(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+type MatchupRow = {
+  id: number;
+  week_start: string;
+  photo_a_id: number;
+  photo_b_id: number;
+  status: string;
+  created_at?: string;
+};
+
+type PhotoRow = {
+  id: number;
+  url: string;
+  is_memorabilia: number;
+  description?: string;
+  title?: string;
+};
+
+function makeRotationDb(options: {
+  weekStart?: string;
+  matchups?: MatchupRow[];
+  photos?: PhotoRow[];
+  simulateInsertRace?: boolean;
+}) {
+  const weekStart = options.weekStart ?? '2026-06-30';
+  const matchups = [...(options.matchups ?? [])];
+  const photos = [...(options.photos ?? [])];
+
+  const db = {
+    prepare: vi.fn((sql: string) => ({
+      bind: (...args: unknown[]) => ({
+        first: async () => runFirst(sql, args),
+        all: async () => runAll(sql, args),
+        run: async () => runWrite(sql, args),
+      }),
+      first: async () => runFirst(sql, []),
+      all: async () => runAll(sql, []),
+      run: async () => runWrite(sql, []),
+    })),
+  };
+
+  function runFirst(sql: string, args: unknown[]) {
+    if (sql.includes("date('now'")) {
+      return { week_start: weekStart };
+    }
+
+    if (sql.includes("status = 'active'") && sql.includes('week_start = ?')) {
+      const targetWeek = String(args[0]);
+      return matchups.find((row) => row.week_start === targetWeek && row.status === 'active') ?? null;
+    }
+
+    if (sql.includes('FROM weekly_matchups WHERE week_start = ?') && sql.includes('LIMIT 1')) {
+      const targetWeek = String(args[0]);
+      return matchups.find((row) => row.week_start === targetWeek) ?? null;
+    }
+
+    return null;
+  }
+
+  function runAll(sql: string, args: unknown[]) {
+    if (sql.includes('FROM weekly_matchups ORDER BY week_start DESC')) {
+      const limit = Number(args[0] ?? 8);
+      return {
+        results: [...matchups]
+          .sort((a, b) => b.week_start.localeCompare(a.week_start))
+          .slice(0, limit)
+          .map((row) => ({ photo_a_id: row.photo_a_id, photo_b_id: row.photo_b_id })),
+      };
+    }
+
+    if (sql.includes('FROM photos WHERE url IS NOT NULL')) {
+      return { results: photos };
+    }
+
+    return { results: [] };
+  }
+
+  function runWrite(sql: string, args: unknown[]) {
+    if (sql.includes("SET status='closed' WHERE status='active' AND week_start != ?")) {
+      const keepWeek = String(args[0]);
+      matchups.forEach((row) => {
+        if (row.status === 'active' && row.week_start !== keepWeek) {
+          row.status = 'closed';
+        }
+      });
+      return { meta: { changes: 1 } };
+    }
+
+    if (sql.includes('UPDATE weekly_matchups SET photo_a_id')) {
+      const target = matchups.find((row) => Number(row.id) === Number(args[2]));
+      if (target) {
+        target.photo_a_id = Number(args[0]);
+        target.photo_b_id = Number(args[1]);
+        target.status = 'active';
+      }
+      return { meta: { changes: 1 } };
+    }
+
+    if (sql.includes('INSERT INTO weekly_matchups')) {
+      const nextWeek = String(args[0]);
+      if (options.simulateInsertRace) {
+        if (!matchups.some((row) => row.week_start === nextWeek)) {
+          matchups.push({
+            id: 99,
+            week_start: nextWeek,
+            photo_a_id: Number(args[1]),
+            photo_b_id: Number(args[2]),
+            status: 'active',
+          });
+        }
+        throw new Error('UNIQUE constraint failed: weekly_matchups.week_start');
+      }
+      if (matchups.some((row) => row.week_start === nextWeek)) {
+        throw new Error('UNIQUE constraint failed: weekly_matchups.week_start');
+      }
+      const id = matchups.length + 1;
+      matchups.push({
+        id,
+        week_start: nextWeek,
+        photo_a_id: Number(args[1]),
+        photo_b_id: Number(args[2]),
+        status: 'active',
+        created_at: '2026-06-30T12:00:00Z',
+      });
+      return { meta: { last_row_id: id, changes: 1 } };
+    }
+
+    return { meta: { changes: 0 } };
+  }
+
+  return { db, matchups, photos, weekStart };
+}
+
+function mockPhotoFetch(photoMap: Record<number, { url: string; description?: string; title?: string }>) {
+  return vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+    const url = String(input);
+    const getMatch = url.match(/\/api\/photos\/get\?id=(\d+)/);
+    if (getMatch) {
+      const id = Number(getMatch[1]);
+      const photo = photoMap[id];
+      if (!photo) {
+        return Promise.resolve(jsonResponse({ ok: false, item: null }, 404));
+      }
+      return Promise.resolve(jsonResponse({ ok: true, item: { id, ...photo } }));
+    }
+    return Promise.reject(new Error(`Unexpected fetch: ${url}`));
+  });
+}
+
+describe('selectTwoPhotoIds', () => {
+  it('excludes recent photo IDs when enough alternatives exist', () => {
+    const photos: PhotoRow[] = [
+      { id: 1, url: '/photos/1.jpg', is_memorabilia: 0 },
+      { id: 2, url: '/photos/2.jpg', is_memorabilia: 0 },
+      { id: 3, url: '/photos/3.jpg', is_memorabilia: 0 },
+      { id: 4, url: '/photos/4.jpg', is_memorabilia: 0 },
+    ];
+    const recentIds = new Set([1, 2]);
+
+    const picked = selectTwoPhotoIds(photos, recentIds);
+    expect(picked).not.toBeNull();
+    expect(recentIds.has(picked![0])).toBe(false);
+    expect(recentIds.has(picked![1])).toBe(false);
+  });
+
+  it('retries without recent-use exclusion when exclusion leaves fewer than two photos', () => {
+    const photos: PhotoRow[] = [
+      { id: 10, url: '/photos/10.jpg', is_memorabilia: 0 },
+      { id: 11, url: '/photos/11.jpg', is_memorabilia: 0 },
+    ];
+    const recentIds = new Set([10, 11]);
+
+    const picked = selectTwoPhotoIds(photos, recentIds);
+    expect(picked).toEqual(expect.arrayContaining([10, 11]));
+    expect(picked).toHaveLength(2);
+  });
+});
+
+describe('public matchup current rotation', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('returns the existing current-week active matchup when present', async () => {
+    const currentWeek = '2026-06-30';
+    const { db, weekStart } = makeRotationDb({
+      weekStart: currentWeek,
+      matchups: [
+        {
+          id: 7,
+          week_start: currentWeek,
+          photo_a_id: 101,
+          photo_b_id: 102,
+          status: 'active',
+        },
+      ],
+    });
+
+    mockPhotoFetch({
+      101: { url: '/photos/101.jpg', title: 'Photo A' },
+      102: { url: '/photos/102.jpg', title: 'Photo B' },
+    });
+
+    const response = await publicMatchupCurrentGet({
+      request: new Request('https://www.lougehrigfanclub.com/api/matchup/current'),
+      env: { DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      week_start: weekStart,
+      matchup_id: 7,
+      items: [
+        { id: 101, url: '/photos/101.jpg' },
+        { id: 102, url: '/photos/102.jpg' },
+      ],
+    });
+  });
+
+  it('closes stale active matchups and creates a new current-week matchup', async () => {
+    const { db, matchups, weekStart } = makeRotationDb({
+      matchups: [
+        {
+          id: 1,
+          week_start: '2026-06-23',
+          photo_a_id: 1,
+          photo_b_id: 2,
+          status: 'active',
+        },
+      ],
+      photos: [
+        { id: 21, url: '/photos/21.jpg', is_memorabilia: 0 },
+        { id: 22, url: '/photos/22.jpg', is_memorabilia: 0 },
+        { id: 23, url: '/photos/23.jpg', is_memorabilia: 0 },
+      ],
+    });
+
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    mockPhotoFetch({
+      21: { url: '/photos/21.jpg' },
+      22: { url: '/photos/22.jpg' },
+      23: { url: '/photos/23.jpg' },
+    });
+
+    const response = await publicMatchupCurrentGet({
+      request: new Request('https://www.lougehrigfanclub.com/api/matchup/current'),
+      env: { DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    expect(matchups.find((row) => row.id === 1)?.status).toBe('closed');
+    expect(matchups.some((row) => row.week_start === weekStart && row.status === 'active')).toBe(true);
+
+    const body = await response.json();
+    expect(body.ok).toBe(true);
+    expect(body.week_start).toBe(weekStart);
+    expect(body.items).toHaveLength(2);
+    expect(body.items.every((item: { url: string }) => item.url.startsWith('/photos/'))).toBe(true);
+  });
+
+  it('re-reads the existing matchup when a duplicate week_start insert race occurs', async () => {
+    const { db, matchups, weekStart } = makeRotationDb({
+      simulateInsertRace: true,
+      photos: [
+        { id: 31, url: '/photos/31.jpg', is_memorabilia: 0 },
+        { id: 32, url: '/photos/32.jpg', is_memorabilia: 0 },
+        { id: 33, url: '/photos/33.jpg', is_memorabilia: 0 },
+      ],
+    });
+
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    mockPhotoFetch({
+      31: { url: '/photos/31.jpg' },
+      32: { url: '/photos/32.jpg' },
+      33: { url: '/photos/33.jpg' },
+    });
+
+    const response = await publicMatchupCurrentGet({
+      request: new Request('https://www.lougehrigfanclub.com/api/matchup/current'),
+      env: { DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    const raced = matchups.find((row) => row.id === 99);
+    expect(body).toMatchObject({
+      ok: true,
+      week_start: weekStart,
+      matchup_id: 99,
+    });
+    expect(body.items).toHaveLength(2);
+    expect(body.items.map((item: { id: number }) => item.id).sort()).toEqual(
+      [Number(raced?.photo_a_id), Number(raced?.photo_b_id)].sort(),
+    );
+  });
+
+  it('returns ok:true with empty items when fewer than two eligible photos exist', async () => {
+    const { db, weekStart } = makeRotationDb({
+      photos: [{ id: 50, url: '/photos/50.jpg', is_memorabilia: 0 }],
+    });
+
+    mockPhotoFetch({
+      50: { url: '/photos/50.jpg' },
+    });
+
+    const response = await publicMatchupCurrentGet({
+      request: new Request('https://www.lougehrigfanclub.com/api/matchup/current'),
+      env: { DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      week_start: weekStart,
+      matchup_id: null,
+      items: [],
+    });
+  });
+
+  it('returns exactly two normalized photo URLs when a new matchup is created', async () => {
+    const { db, weekStart } = makeRotationDb({
+      photos: [
+        { id: 61, url: '/photos/61.jpg', is_memorabilia: 0 },
+        { id: 62, url: '/photos/62.jpg', is_memorabilia: 0 },
+      ],
+    });
+
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    mockPhotoFetch({
+      61: { url: 'https://cdn.example.com/photos/61.jpg', title: 'A' },
+      62: { url: 'https://cdn.example.com/photos/62.jpg', title: 'B' },
+    });
+
+    const response = await publicMatchupCurrentGet({
+      request: new Request('https://www.lougehrigfanclub.com/api/matchup/current'),
+      env: { DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.ok).toBe(true);
+    expect(body.week_start).toBe(weekStart);
+    expect(body.items).toHaveLength(2);
+    expect(body.items[0].url).toMatch(/^https:\/\//);
+    expect(body.items[1].url).toMatch(/^https:\/\//);
+  });
+});

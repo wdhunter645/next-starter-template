@@ -565,11 +565,14 @@ describe('public matchup read paths', () => {
         bind: () => ({
           first: async () => null,
           all: async () => ({ results: [] }),
+          run: async () => ({ meta: { changes: 0 } }),
         }),
         first: async () => {
           if (sql.includes("date('now'")) return { week_start: '2026-06-01' };
           return null;
         },
+        all: async () => ({ results: [] }),
+        run: async () => ({ meta: { changes: 0 } }),
       })),
     };
 
