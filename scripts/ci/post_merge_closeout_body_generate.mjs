@@ -25,7 +25,7 @@ import {
 	isActionableReviewSubmission,
 	isActionableTopLevelComment,
 } from './reviewer_comment_disposition.mjs';
-import { isTrustedReviewer, isResolvedReviewText } from './reviewer_lifecycle_gate.mjs';
+import { isTrustedReviewer, isResolvedReviewText } from './reviewer_trusted_bots.mjs';
 import {
 	parsePostMergeExceptionIssue,
 } from './post_merge_self_heal_backlog.mjs';

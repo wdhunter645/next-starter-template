@@ -1,0 +1,69 @@
+{
+  "triggered_at": "2026-07-04T19:21:56.322Z",
+  "description": "Post-merge closeout replay for source #2101 PMO dashboard program",
+  "targets": [
+    {
+      "pr": 2109,
+      "body_file": "scripts/ci/post-merge-closeout/pr-2109-body.md",
+      "merge_sha": "39d951836a80a75a5c36b7f35b9e1adb977151bf",
+      "source_issue": 2101,
+      "remediation_exception": 2130
+    },
+    {
+      "pr": 2158,
+      "body_file": "scripts/ci/post-merge-closeout/pr-2158-body.md",
+      "merge_sha": "80ba8700acf466e0932e39a8f0f18fa8954259f8",
+      "source_issue": 2101,
+      "remediation_exception": 2159
+    },
+    {
+      "pr": 2160,
+      "body_file": "scripts/ci/post-merge-closeout/pr-2160-body.md",
+      "merge_sha": "03ba63e3dabe5b9c5a2181997919eeab97395020",
+      "source_issue": 2159,
+      "remediation_exception": 2161
+    },
+    {
+      "pr": 2162,
+      "body_file": "scripts/ci/post-merge-closeout/pr-2162-body.md",
+      "merge_sha": "b730f43e056ea226e3c74aceb7b676f0f1545d04",
+      "source_issue": 2101,
+      "remediation_exception": 2163
+    },
+    {
+      "pr": 2164,
+      "body_file": "scripts/ci/post-merge-closeout/pr-2164-body.md",
+      "merge_sha": "17ea9d56b9bcf43ef52feb2059f8c8b3e7dee2ff",
+      "source_issue": 2101,
+      "remediation_exception": 2165
+    },
+    {
+      "pr": 2168,
+      "body_file": "scripts/ci/post-merge-closeout/pr-2168-body.md",
+      "merge_sha": "66f4cfe33f8612f73b4779dddc3aa12f1afdb6f4",
+      "source_issue": 2101,
+      "remediation_exception": 2169
+    },
+    {
+      "pr": 2171,
+      "body_file": "scripts/ci/post-merge-closeout/pr-2171-body.md",
+      "merge_sha": "5f86463cf672d4520a26d170c69b3c455075106b",
+      "source_issue": 2101,
+      "remediation_exception": 2172
+    },
+    {
+      "pr": 2173,
+      "body_file": "scripts/ci/post-merge-closeout/pr-2173-body.md",
+      "merge_sha": "0c86cf9727b9ec0ee13b635133d2f724d578c91a",
+      "source_issue": 2101,
+      "remediation_exception": 2174
+    },
+    {
+      "pr": 2237,
+      "body_file": "scripts/ci/post-merge-closeout/pr-2237-body.md",
+      "merge_sha": "3d4a558b23ba0322acdc14a98fc4fd3e6cae5af0",
+      "source_issue": 2101,
+      "remediation_exception": 2238
+    }
+  ]
+}
