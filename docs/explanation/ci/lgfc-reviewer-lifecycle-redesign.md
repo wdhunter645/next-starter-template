@@ -2,45 +2,46 @@
 Doc Type: Explanation
 Audience: Human + AI
 Authority Level: Controlled
-Owns: Reviewer lifecycle redesign philosophy, async reviewer governance model, reviewer gate lifecycle placement
-Does Not Own: Specific workflow implementation
-Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related Issues: #1452, #1196, #1058
-Last Reviewed: 2026-06-08
+Owns: Reviewer lifecycle redesign rationale and conceptual model
+Does Not Own: Canonical PR-process policy or specific workflow implementation
+Canonical Reference: /docs/governance/PR_PROCESS.md
+Related issues: #2175, #2179, #2208
+Last Reviewed: 2026-07-04
 ---
 
 # LGFC Reviewer Lifecycle Redesign
 
+This explanation supports `/docs/governance/PR_PROCESS.md`. It explains why reviewer lifecycle state must move out of the PR body and into GitHub-native review/thread state.
+
 ## Purpose
 
-This document explains the redesign direction for reviewer governance in the LGFC repository.
-
-The previous reviewer gate model attempted to enforce asynchronous reviewer behavior synchronously during merge approval. This created brittle logic, false-positive failures, rerun instability, and PR deadlocks.
+The previous reviewer gate model attempted to enforce asynchronous reviewer behavior synchronously during merge approval. That created brittle logic, false-positive failures, rerun instability, and PR deadlocks.
 
 The redesigned model preserves governance accountability while moving reviewer intelligence to the correct lifecycle domain.
 
-## Root Architectural Defect
+## Root architectural defect
 
-The previous reviewer-response-completion gate assumed:
+The retired reviewer-response model assumed:
 
-- reviewer artifacts appear immediately
-- reviewer systems behave synchronously
-- every head SHA change requires a fresh reviewer artifact
-- reruns invalidate prior valid review state
+- reviewer artifacts appear immediately;
+- reviewer systems behave synchronously;
+- every head SHA change requires a fresh reviewer artifact;
+- PR-body response/disposition ledgers are reliable lifecycle authority;
+- reruns invalidate prior valid review state.
 
 These assumptions are operationally incorrect.
 
-Reviewer systems such as Copilot, Gemini, Cubic, and future AI reviewers operate asynchronously.
+Reviewer systems such as Copilot, Gemini, Cubic, Cursor, and future AI reviewers operate asynchronously.
 
 The repository therefore experienced:
 
-- timing races
-- stale reviewer-state invalidation
-- false failures after unrelated reruns
-- deadlocks during active review processing
-- PR approval instability
+- timing races;
+- stale reviewer-state invalidation;
+- false failures after unrelated reruns;
+- deadlocks during active review processing;
+- PR approval instability.
 
-## Correct Governance Principle
+## Correct governance principle
 
 The repository should not require a new reviewer artifact simply because a SHA changed.
 
@@ -48,105 +49,95 @@ The repository should require renewed review only when meaningful reviewed-state
 
 Examples of meaningful reviewed-state change:
 
-- protected files changed after review
-- reviewed lines materially changed
-- unresolved reviewer findings remain
-- requested changes remain unresolved
-- implementation scope expanded materially
+- protected files changed after review;
+- reviewed lines materially changed;
+- unresolved reviewer findings remain;
+- requested changes remain unresolved;
+- implementation scope expanded materially.
 
 Examples of non-meaningful reviewed-state change:
 
-- rerunning CI after flaky checks
-- rerunning after label timing failures
-- metadata-only changes
-- resolved reviewer comments with no new review findings
+- rerunning CI after flaky checks;
+- rerunning after label timing failures;
+- metadata-only changes;
+- resolved reviewer comments with no new review findings.
 
-## Final Lifecycle Placement
+## Final lifecycle placement
 
-### Pre-Merge Reviewer Enforcement
+### Pre-merge reviewer enforcement
 
-Pre-merge reviewer enforcement now requires explicit disposition for every
-actionable trusted reviewer comment. Timing alone is not a substitute for
-accounting.
+Pre-merge reviewer checks must use GitHub-native reviews and review threads as the authoritative source.
 
-Blocking pre-merge conditions include:
+The PR body must not be used for:
 
-- undispositioned actionable trusted reviewer comments
-- outdated review threads without explicit PR-body disposition evidence
-- late reviewer comments arriving after `READY FOR REVIEW` that remain undispositioned
-- unresolved required protected-review findings
-- missing mandatory protected-file current-head review artifact
+- review-comment ID ledgers;
+- thread-state ledgers;
+- reviewer response rituals;
+- `READY FOR MERGE` state.
 
-Outdated GitHub thread state does not clear disposition obligations.
+Potential blocking conditions, once intentionally promoted, may include:
 
-## Post-Merge Reviewer Intelligence
+- latest human `CHANGES_REQUESTED` review remains active;
+- unresolved non-outdated human review threads remain;
+- required protected-file review evidence is absent;
+- GitHub API state is incomplete and enforcement is enabled.
 
-The majority of reviewer governance belongs post-merge.
+Bot and external tool findings remain advisory unless explicitly promoted by governance decision.
+
+### Post-merge reviewer intelligence
+
+Much reviewer governance belongs post-merge.
 
 Post-merge reviewer validation should:
 
-- audit reviewer outcomes
-- compare merged behavior to reviewer findings
-- verify remediation completeness
-- detect omitted reviewer implementations
-- create remediation issues or PRs
+- audit reviewer outcomes;
+- compare merged behavior to reviewer findings;
+- verify remediation completeness;
+- detect omitted reviewer implementations;
+- create remediation issues or PRs when required.
 
 This creates a fact-driven governance model rather than a timing-driven model.
 
-## Reviewer-State Persistence
+## Reviewer-state persistence
 
 The redesigned system should support reviewer-state persistence.
 
 A valid reviewer state should remain valid unless meaningful reviewed-state changes invalidate it.
 
-The system should track:
+The system may track:
 
-- reviewer timestamp
-- reviewed file scope
-- reviewed diff scope
-- protected-file state
-- unresolved reviewer findings
-- implementation deltas after review
+- reviewer timestamp;
+- reviewed file scope;
+- reviewed diff scope;
+- protected-file state;
+- unresolved reviewer findings;
+- implementation deltas after review.
 
-## Rerun Awareness
+Such tracking belongs in generated artifacts or GitHub-native state, not in mutable PR-body ledgers.
+
+## Rerun awareness
 
 The redesigned system must understand rerun context.
 
 If a rerun occurs for unrelated reasons:
 
-- reviewer validity should remain intact
-- review artifacts should not be invalidated automatically
-- reviewer deadlocks should not occur
+- reviewer validity should remain intact;
+- review artifacts should not be invalidated automatically;
+- reviewer deadlocks should not occur.
 
-## Final Governance Outcome
+## Final governance outcome
 
 The redesigned reviewer lifecycle model preserves governance discipline while eliminating brittle timing dependencies.
 
 The repository gains:
 
-- stable rerun behavior
-- reduced PR deadlocks
-- asynchronous reviewer compatibility
-- better AI-agent usability
-- evidence-driven reviewer audits
-- stronger post-merge accountability
+- stable rerun behavior;
+- reduced PR deadlocks;
+- asynchronous reviewer compatibility;
+- better AI-agent usability;
+- evidence-driven reviewer audits;
+- stronger post-merge accountability.
 
-## Current Known Truth
+## Current known truth
 
-Task 003 implementation issue #1196 establishes the redesigned surface documented
-in `docs/reference/ci/reviewer-lifecycle-surface.md`.
-
-The current model uses:
-
-- `.github/workflows/reviewer-response-completion.yml`
-- `.github/workflows/post-merge-intent-verification.yml`
-- `scripts/ci/reviewer_lifecycle_gate.mjs`
-- `scripts/ci/reviewer-gate-simulation.mjs`
-- `scripts/ci/post_merge_reviewer_audit.mjs`
-
-Pre-merge blocking is limited to protected CI scope with unresolved protected review
-threads or missing current-head trusted review artifacts. Reviewer timing, quiet
-periods, and PR-body response rituals are not merge blockers outside that scope.
-
-Post-merge validation and reviewer audit remain responsible for late findings and
-orchestration pause state.
+During #2175 / #2208 rebuild, reviewer-response enforcement is not final. The final implementation must be rebuilt advisory-first, validated, and only then considered for required-check promotion.
