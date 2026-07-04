@@ -22,19 +22,25 @@ type PhotoRow = {
   id: number;
   url: string;
   is_memorabilia: number;
+  is_matchup_eligible: number;
   description?: string;
   title?: string;
 };
 
+type PhotoInput = Omit<PhotoRow, 'is_matchup_eligible'> & { is_matchup_eligible?: number };
+
 function makeRotationDb(options: {
   weekStart?: string;
   matchups?: MatchupRow[];
-  photos?: PhotoRow[];
+  photos?: PhotoInput[];
   simulateInsertRace?: boolean;
 }) {
   const weekStart = options.weekStart ?? '2026-06-30';
   const matchups = [...(options.matchups ?? [])];
-  const photos = [...(options.photos ?? [])];
+  const photos: PhotoRow[] = [...(options.photos ?? [])].map((row) => ({
+    ...row,
+    is_matchup_eligible: row.is_matchup_eligible ?? 0,
+  }));
 
   const db = {
     prepare: vi.fn((sql: string) => ({
@@ -59,6 +65,11 @@ function makeRotationDb(options: {
       return matchups.find((row) => row.week_start === targetWeek && row.status === 'active') ?? null;
     }
 
+    if (sql.includes('FROM photos WHERE id = ?') && sql.includes('is_matchup_eligible')) {
+      const photo = photos.find((row) => Number(row.id) === Number(args[0]));
+      return { is_matchup_eligible: photo?.is_matchup_eligible ?? 0 };
+    }
+
     if (sql.includes('FROM weekly_matchups WHERE week_start = ?') && sql.includes('LIMIT 1')) {
       const targetWeek = String(args[0]);
       return matchups.find((row) => row.week_start === targetWeek) ?? null;
@@ -79,7 +90,9 @@ function makeRotationDb(options: {
     }
 
     if (sql.includes('FROM photos WHERE url IS NOT NULL')) {
-      return { results: photos };
+      return {
+        results: photos.filter((row) => row.is_matchup_eligible >= 0),
+      };
     }
 
     return { results: [] };
@@ -159,7 +172,7 @@ function mockPhotoFetch(photoMap: Record<number, { url: string; description?: st
 
 describe('selectTwoPhotoIds', () => {
   it('excludes recent photo IDs when enough alternatives exist', () => {
-    const photos: PhotoRow[] = [
+    const photos: PhotoInput[] = [
       { id: 1, url: '/photos/1.jpg', is_memorabilia: 0 },
       { id: 2, url: '/photos/2.jpg', is_memorabilia: 0 },
       { id: 3, url: '/photos/3.jpg', is_memorabilia: 0 },
@@ -167,20 +180,26 @@ describe('selectTwoPhotoIds', () => {
     ];
     const recentIds = new Set([1, 2]);
 
-    const picked = selectTwoPhotoIds(photos, recentIds);
+    const picked = selectTwoPhotoIds(
+      photos.map((row) => ({ ...row, is_matchup_eligible: row.is_matchup_eligible ?? 0 })),
+      recentIds,
+    );
     expect(picked).not.toBeNull();
     expect(recentIds.has(picked![0])).toBe(false);
     expect(recentIds.has(picked![1])).toBe(false);
   });
 
   it('retries without recent-use exclusion when exclusion leaves fewer than two photos', () => {
-    const photos: PhotoRow[] = [
+    const photos: PhotoInput[] = [
       { id: 10, url: '/photos/10.jpg', is_memorabilia: 0 },
       { id: 11, url: '/photos/11.jpg', is_memorabilia: 0 },
     ];
     const recentIds = new Set([10, 11]);
 
-    const picked = selectTwoPhotoIds(photos, recentIds);
+    const picked = selectTwoPhotoIds(
+      photos.map((row) => ({ ...row, is_matchup_eligible: row.is_matchup_eligible ?? 0 })),
+      recentIds,
+    );
     expect(picked).toEqual(expect.arrayContaining([10, 11]));
     expect(picked).toHaveLength(2);
   });
@@ -354,5 +373,48 @@ describe('public matchup current rotation', () => {
     expect(body.items).toHaveLength(2);
     expect(body.items[0].url).toMatch(/^https:\/\//);
     expect(body.items[1].url).toMatch(/^https:\/\//);
+  });
+
+  it('replaces an active matchup photo when it is flagged ineligible in D1', async () => {
+    const currentWeek = '2026-06-29';
+    const { db, matchups, weekStart } = makeRotationDb({
+      weekStart: currentWeek,
+      matchups: [
+        {
+          id: 3,
+          week_start: currentWeek,
+          photo_a_id: 254,
+          photo_b_id: 348,
+          status: 'active',
+        },
+      ],
+      photos: [
+        { id: 254, url: '/photos/254.jpg', is_memorabilia: 0, is_matchup_eligible: 0 },
+        { id: 348, url: '/photos/IMG_4026.jpeg', is_memorabilia: 0, is_matchup_eligible: -1 },
+        { id: 347, url: '/photos/347.jpg', is_memorabilia: 0, is_matchup_eligible: 0 },
+        { id: 346, url: '/photos/346.jpg', is_memorabilia: 0, is_matchup_eligible: 0 },
+      ],
+    });
+
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    mockPhotoFetch({
+      254: { url: '/photos/254.jpg' },
+      347: { url: '/photos/347.jpg' },
+      346: { url: '/photos/346.jpg' },
+      348: { url: '/photos/IMG_4026.jpeg' },
+    });
+
+    const response = await publicMatchupCurrentGet({
+      request: new Request('https://www.lougehrigfanclub.com/api/matchup/current'),
+      env: { DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.ok).toBe(true);
+    expect(body.week_start).toBe(weekStart);
+    expect(body.items).toHaveLength(2);
+    expect(body.items.map((item: { id: number }) => item.id)).not.toContain(348);
+    expect(matchups.find((row) => row.id === 3)?.photo_b_id).not.toBe(348);
   });
 });
