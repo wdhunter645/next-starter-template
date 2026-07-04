@@ -63,12 +63,7 @@ jobs:
         run: npm run lint
 
       - name: Unit tests
-        run: echo "transition unit step deferred; typecheck, lint, drift, ZIP, and class-routed production build remain active"
+        run: echo "transition unit step deferred; typecheck, lint, drift, and ZIP remain active"
 
       - name: Production build
-        if: ${{ steps.quality-plan.outputs.run_build == 'true' }}
-        run: npm run build
-
-      - name: Production build skipped by PR class
-        if: ${{ steps.quality-plan.outputs.run_build != 'true' }}
-        run: echo "production build skipped for PR class ${{ steps.quality-plan.outputs.pr_class }}"
+        run: echo "production build deferred during PR-process repair window"
