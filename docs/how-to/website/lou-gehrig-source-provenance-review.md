@@ -20,7 +20,20 @@ credit, factual accuracy, and privacy before it becomes public-copy material.
 
 Every candidate must be reviewed before it becomes public-copy material.
 
-## Provenance checks
+## Steps
+
+1. Open the candidate record and confirm minimum metadata is present.
+2. Run provenance checks.
+3. Run rights and credit checks.
+4. Run factual checks.
+5. Run privacy checks.
+6. Assign or update `review_status` and `credit_line`.
+7. Record `reviewer`, `reviewed_at`, and notes.
+8. Escalate ambiguous cases; do not publish until resolved.
+
+## Procedure
+
+### Provenance checks
 
 - Can the source be identified?
 - Is the owner/publisher known?
@@ -28,7 +41,7 @@ Every candidate must be reviewed before it becomes public-copy material.
 - Is the content traceable without relying on AI output?
 - Is the source likely durable enough to cite?
 
-## Rights and credit checks
+### Rights and credit checks
 
 - Is the material owned by LGFC?
 - Is it public-domain-candidate only, or confirmed public domain?
@@ -37,14 +50,14 @@ Every candidate must be reviewed before it becomes public-copy material.
 - Is the content safer as link-only/reference-only?
 - What credit line is required?
 
-## Factual checks
+### Factual checks
 
 - Is the fact supported by a reliable source?
 - Does another reliable source corroborate it?
 - Is the item interpretive rather than factual?
 - Is uncertainty stated clearly?
 
-## Privacy checks
+### Privacy checks
 
 - Does the content name or show living people?
 - Does it involve donors, members, minors, or private submissions?
