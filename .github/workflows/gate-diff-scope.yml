@@ -41,3 +41,15 @@ jobs:
         env:
           DIFF_SCOPE_BODY_FILE: pr-body.md
           DIFF_SCOPE_CHANGED_FILES_FILE: changed-files.txt
+          DIFF_SCOPE_RESULT_JSON: pr-validation-diff-scope.json
+          DIFF_SCOPE_RESULT_MD: pr-validation-diff-scope.md
+
+      - name: Upload diff scope validation artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-validation-diff-scope
+          path: |
+            pr-validation-diff-scope.json
+            pr-validation-diff-scope.md
+          if-no-files-found: warn
