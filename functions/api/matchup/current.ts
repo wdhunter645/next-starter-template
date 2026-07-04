@@ -5,8 +5,36 @@ type PhotoItem = {
   title?: string;
 };
 
+type EligiblePhoto = {
+  id: number;
+  url: string;
+  is_memorabilia: number;
+  description?: string;
+  title?: string;
+};
+
+type MatchupRow = {
+  id: number;
+  week_start: string;
+  photo_a_id: number;
+  photo_b_id: number;
+  status: string;
+};
+
 function isUsablePhoto(item: any): item is PhotoItem {
   return !!item && typeof item.id === "number" && typeof item.url === "string" && item.url.trim().length > 0;
+}
+
+function jsonResponse(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body, null, 2), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+async function computeWeekStart(db: any): Promise<string | null> {
+  const wsRow = await db.prepare("SELECT date('now','weekday 1','-7 days') AS week_start;").first();
+  return wsRow?.week_start ? String(wsRow.week_start) : null;
 }
 
 async function readPhotoById(request: Request, id: number): Promise<PhotoItem | null> {
@@ -18,98 +46,221 @@ async function readPhotoById(request: Request, id: number): Promise<PhotoItem | 
   return isUsablePhoto(item) ? item : null;
 }
 
-async function readPhotoList(request: Request, limit: number): Promise<PhotoItem[]> {
-  const endpoint = new URL(`/api/photos/list?limit=${limit}&offset=0`, request.url);
-  const resp = await fetch(endpoint.toString(), { method: "GET" });
-  if (!resp.ok) return [];
-  const json = await resp.json().catch(() => null);
-  const rawItems = Array.isArray(json?.items) ? json.items : [];
-  return rawItems.filter(isUsablePhoto);
+async function resolveMatchupPhotos(request: Request, photoAId: number, photoBId: number): Promise<PhotoItem[]> {
+  const a = await readPhotoById(request, photoAId);
+  const b = await readPhotoById(request, photoBId);
+  return [a, b].filter(isUsablePhoto);
+}
+
+async function getRecentMatchupPhotoIds(db: any, limit = 8): Promise<Set<number>> {
+  const rows = await db
+    .prepare(
+      "SELECT photo_a_id, photo_b_id FROM weekly_matchups ORDER BY week_start DESC LIMIT ?;",
+    )
+    .bind(limit)
+    .all();
+
+  const ids = new Set<number>();
+  for (const row of rows?.results ?? []) {
+    ids.add(Number(row.photo_a_id));
+    ids.add(Number(row.photo_b_id));
+  }
+  return ids;
+}
+
+async function fetchEligiblePhotos(db: any): Promise<EligiblePhoto[]> {
+  const rows = await db
+    .prepare(
+      "SELECT id, url, is_memorabilia, description, title FROM photos WHERE url IS NOT NULL AND TRIM(url) != '';",
+    )
+    .all();
+
+  return (rows?.results ?? []).filter(
+    (row: any) => row && Number(row.id) > 0 && typeof row.url === "string" && row.url.trim().length > 0,
+  );
+}
+
+function shuffleInPlace<T>(items: T[]): T[] {
+  for (let i = items.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items;
+}
+
+function pickTwoDistinctIds(photos: EligiblePhoto[], excludeIds: Set<number>): [number, number] | null {
+  const candidates = photos.filter((photo) => !excludeIds.has(Number(photo.id)));
+  if (candidates.length < 2) return null;
+
+  const shuffled = shuffleInPlace([...candidates]);
+  const first = Number(shuffled[0].id);
+  const second = Number(shuffled[1].id);
+  if (first === second) return null;
+  return [first, second];
+}
+
+export function selectTwoPhotoIds(photos: EligiblePhoto[], recentIds: Set<number>): [number, number] | null {
+  const nonMemorabilia = photos.filter((photo) => Number(photo.is_memorabilia) === 0);
+
+  const attempts: Array<[EligiblePhoto[], Set<number>]> = [
+    [nonMemorabilia, recentIds],
+    [nonMemorabilia, new Set<number>()],
+    [photos, recentIds],
+    [photos, new Set<number>()],
+  ];
+
+  for (const [pool, excludeIds] of attempts) {
+    const picked = pickTwoDistinctIds(pool, excludeIds);
+    if (picked) return picked;
+  }
+
+  return null;
+}
+
+async function findActiveCurrentWeekMatchup(db: any, weekStart: string): Promise<MatchupRow | null> {
+  const row = await db
+    .prepare(
+      "SELECT id, week_start, photo_a_id, photo_b_id, status FROM weekly_matchups WHERE week_start = ? AND status = 'active' LIMIT 1;",
+    )
+    .bind(weekStart)
+    .first();
+
+  if (!row) return null;
+  return {
+    id: Number(row.id),
+    week_start: String(row.week_start),
+    photo_a_id: Number(row.photo_a_id),
+    photo_b_id: Number(row.photo_b_id),
+    status: String(row.status),
+  };
+}
+
+async function findCurrentWeekMatchup(db: any, weekStart: string): Promise<MatchupRow | null> {
+  const row = await db
+    .prepare(
+      "SELECT id, week_start, photo_a_id, photo_b_id, status FROM weekly_matchups WHERE week_start = ? LIMIT 1;",
+    )
+    .bind(weekStart)
+    .first();
+
+  if (!row) return null;
+  return {
+    id: Number(row.id),
+    week_start: String(row.week_start),
+    photo_a_id: Number(row.photo_a_id),
+    photo_b_id: Number(row.photo_b_id),
+    status: String(row.status),
+  };
+}
+
+async function closeStaleActiveMatchups(db: any, weekStart: string): Promise<void> {
+  await db
+    .prepare("UPDATE weekly_matchups SET status='closed' WHERE status='active' AND week_start != ?;")
+    .bind(weekStart)
+    .run();
+}
+
+async function upsertCurrentWeekMatchup(
+  db: any,
+  weekStart: string,
+  photoAId: number,
+  photoBId: number,
+): Promise<number> {
+  const existing = await findCurrentWeekMatchup(db, weekStart);
+  if (existing) {
+    await db
+      .prepare(
+        "UPDATE weekly_matchups SET photo_a_id = ?, photo_b_id = ?, status = 'active' WHERE id = ?;",
+      )
+      .bind(photoAId, photoBId, existing.id)
+      .run();
+    return existing.id;
+  }
+
+  try {
+    const out = await db
+      .prepare(
+        "INSERT INTO weekly_matchups (week_start, photo_a_id, photo_b_id, status) VALUES (?, ?, ?, 'active');",
+      )
+      .bind(weekStart, photoAId, photoBId)
+      .run();
+    return Number(out?.meta?.last_row_id || 0);
+  } catch (err: any) {
+    const message = String(err?.message || err);
+    if (!message.includes("UNIQUE")) throw err;
+
+    const raced = await findCurrentWeekMatchup(db, weekStart);
+    if (!raced) throw err;
+    return raced.id;
+  }
+}
+
+async function buildSuccessResponse(
+  request: Request,
+  weekStart: string,
+  matchupId: number,
+  photoAId: number,
+  photoBId: number,
+): Promise<Response> {
+  const items = await resolveMatchupPhotos(request, photoAId, photoBId);
+  if (items.length < 2) {
+    return jsonResponse({ ok: true, week_start: weekStart, matchup_id: null, items: [] });
+  }
+
+  return jsonResponse({
+    ok: true,
+    week_start: weekStart,
+    matchup_id: matchupId,
+    items: items.slice(0, 2),
+  });
 }
 
 export const onRequestGet = async (context: any): Promise<Response> => {
   const { env, request } = context;
 
   try {
-    // 1) Prefer an active weekly_matchups row (authoritative)
-    try {
-      const m = await env.DB.prepare(
-        "SELECT id, week_start, photo_a_id, photo_b_id, status, created_at FROM weekly_matchups WHERE status = 'active' ORDER BY week_start DESC LIMIT 1;"
-      ).first();
-
-      if (m && m.photo_a_id && m.photo_b_id) {
-        const a = await readPhotoById(request, Number(m.photo_a_id));
-        const b = await readPhotoById(request, Number(m.photo_b_id));
-        const items = [a, b].filter(isUsablePhoto).slice(0, 2);
-
-        if (items.length >= 2) {
-          return new Response(
-            JSON.stringify(
-              {
-                ok: true,
-                week_start: m.week_start,
-                matchup_id: m.id,
-                items,
-              },
-              null,
-              2
-            ),
-            {
-              status: 200,
-              headers: { "Content-Type": "application/json" },
-            }
-          );
-        }
-
-        // If active matchup entries are unusable, top up from MEDIA-02 list read path.
-        const fillers = await readPhotoList(request, 20);
-        const dedup = new Set(items.map((it) => it.id));
-        for (const f of fillers) {
-          if (!dedup.has(f.id)) {
-            items.push(f);
-            dedup.add(f.id);
-          }
-          if (items.length >= 2) break;
-        }
-
-        if (items.length >= 2) {
-          return new Response(
-            JSON.stringify(
-              {
-                ok: true,
-                week_start: m.week_start,
-                matchup_id: m.id,
-                items: items.slice(0, 2),
-              },
-              null,
-              2
-            ),
-            {
-              status: 200,
-              headers: { "Content-Type": "application/json" },
-            }
-          );
-        }
-      }
-    } catch {
-      // fall through to MEDIA-02 list fallback
+    const weekStart = await computeWeekStart(env.DB);
+    if (!weekStart) {
+      return jsonResponse({ ok: true, week_start: null, matchup_id: null, items: [] });
     }
 
-    // 2) Fallback: read directly from the MEDIA-02 photo read path
-    const items = (await readPhotoList(request, 2)).slice(0, 2);
+    const activeCurrentWeek = await findActiveCurrentWeekMatchup(env.DB, weekStart);
+    if (activeCurrentWeek) {
+      const items = await resolveMatchupPhotos(
+        request,
+        activeCurrentWeek.photo_a_id,
+        activeCurrentWeek.photo_b_id,
+      );
+      if (items.length >= 2) {
+        return jsonResponse({
+          ok: true,
+          week_start: weekStart,
+          matchup_id: activeCurrentWeek.id,
+          items: items.slice(0, 2),
+        });
+      }
+    }
 
-    // Provide a stable week_start even in fallback mode so voting can work
-    const wsRow = await env.DB.prepare("SELECT date('now','weekday 1','-7 days') AS week_start;").first();
-    const week_start = wsRow && wsRow.week_start ? String(wsRow.week_start) : null;
+    await closeStaleActiveMatchups(env.DB, weekStart);
 
-    return new Response(JSON.stringify({ ok: true, week_start, matchup_id: null, items }, null, 2), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    const eligiblePhotos = await fetchEligiblePhotos(env.DB);
+    const recentIds = await getRecentMatchupPhotoIds(env.DB);
+    const selected = selectTwoPhotoIds(eligiblePhotos, recentIds);
+
+    if (!selected) {
+      return jsonResponse({ ok: true, week_start: weekStart, matchup_id: null, items: [] });
+    }
+
+    const [photoAId, photoBId] = selected;
+    const matchupId = await upsertCurrentWeekMatchup(env.DB, weekStart, photoAId, photoBId);
+
+    const resolved = await findCurrentWeekMatchup(env.DB, weekStart);
+    if (!resolved) {
+      return jsonResponse({ ok: true, week_start: weekStart, matchup_id: null, items: [] });
+    }
+
+    return buildSuccessResponse(request, weekStart, matchupId || resolved.id, resolved.photo_a_id, resolved.photo_b_id);
   } catch (err: any) {
-    return new Response(JSON.stringify({ ok: false, error: String(err?.message ?? err) }, null, 2), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse({ ok: false, error: String(err?.message ?? err) }, 500);
   }
 };
