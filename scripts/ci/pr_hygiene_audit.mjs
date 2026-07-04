@@ -199,6 +199,50 @@ export function hasReviewerAttestation(body = '') {
     && /read all bot\/advisory findings/i.test(section);
 }
 
+export const PR_HYGIENE_MARKER = '<!-- pr-hygiene-advisory -->';
+
+export function buildPrHygieneArtifact(report) {
+  return {
+    gate: 'pr-hygiene',
+    schemaVersion: 1,
+    advisory: true,
+    isClean: report.isClean,
+    checks: {
+      hasRequiredIssueLine: report.hasRequiredIssueLine,
+      hasRequiredIntentLabel: report.hasRequiredIntentLabel,
+      hasRequiredPrClass: report.hasRequiredPrClass,
+      hasAllowedFiles: report.hasAllowedFiles,
+      hasChangeSummary: report.hasChangeSummary,
+      hasVerificationEvidence: report.hasVerificationEvidence,
+      hasAcceptanceCriteriaEvidence: report.hasAcceptanceCriteriaEvidence,
+      hasReviewerAttestation: report.hasReviewerAttestation,
+    },
+    issueReferences: report.issueReferences,
+    canonicalIssueLine: report.canonicalIssueLine,
+    suggestedIssueLine: report.suggestedIssueLine,
+    intentLabel: report.intentLabel,
+    prClass: report.prClass,
+    allowedFiles: report.allowedFiles,
+    missingSections: report.missingSections,
+    unlistedChangedFiles: report.unlistedChangedFiles,
+  };
+}
+
+export function writePrHygieneArtifacts(report, env = process.env) {
+  const artifact = buildPrHygieneArtifact(report);
+  const jsonPath = env.PR_HYGIENE_RESULT_JSON || env.PR_VALIDATION_RESULT_JSON;
+  const markdownPath = env.PR_HYGIENE_RESULT_MD || env.PR_VALIDATION_RESULT_MD;
+
+  if (jsonPath) {
+    fs.writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
+  }
+  if (markdownPath) {
+    fs.writeFileSync(markdownPath, `${renderPrHygieneReport(report)}\n`);
+  }
+
+  return artifact;
+}
+
 export function buildPrHygieneReport({ body = '', changedFiles = [] } = {}) {
   const allowedFiles = parseAllowedFiles(body);
   const missingSections = missingTemplateSections(body);
@@ -313,9 +357,12 @@ export function runCli(env = process.env) {
   const body = fs.readFileSync(bodyPath, 'utf8');
   const changedFiles = readListFile(changedFilesPath);
   const report = buildPrHygieneReport({ body, changedFiles });
+  writePrHygieneArtifacts(report, env);
   console.log(renderPrHygieneReport(report));
 
-  return report.isClean ? 0 : 1;
+  const enforceFailure = (env.PR_HYGIENE_ENFORCE_FAILURE || 'false') === 'true';
+  if (report.isClean) return 0;
+  return enforceFailure ? 1 : 0;
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

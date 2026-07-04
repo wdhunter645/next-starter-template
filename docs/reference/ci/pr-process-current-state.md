@@ -93,6 +93,16 @@ Validated: #2212, #2214 confirmed Intent Labeler, Diff Scope, and PR Issue Accou
 
 ---
 
+## Rebuilt advisory checks
+
+| Workflow | Job id | Behavior |
+|---|---|---|
+| `gate-pr-hygiene.yml` | `pr-hygiene` | Validates stable PR-body facts via `pr_hygiene_audit.mjs`; advisory/non-blocking; one upsert marker comment; machine-readable artifact; **no PR body mutation** |
+
+Task 3 rebuild PR must validate this gate on a probe PR before Task 4 (diff-scope advisory).
+
+---
+
 ## External and repo-owned automation
 
 ### Codex (external — disabled)
@@ -138,7 +148,7 @@ Execute in order. One concern per PR. Advisory before required. No PR-body mutat
 
 | Step | Task | Deliverable | Gate mode |
 |---|---|---|---|
-| 3 | PR hygiene | `pr_hygiene_audit.mjs` wired advisory; stable-facts validation only; artifact or single upsert comment | Advisory |
+| 3 | PR hygiene | `pr_hygiene_audit.mjs` wired advisory via `gate-pr-hygiene.yml` | **In progress** — advisory |
 | 4 | Diff scope | `diff_scope_gate.mjs` wired advisory; machine-readable artifact; no body mutation | Advisory |
 | 5 | Reviewer lifecycle | `reviewer_lifecycle_gate.mjs` GitHub-native only; no PR-body ledger; remove disposition compat when safe | Advisory first |
 | 6 | Class-aware quality | `pr_class_quality_plan.mjs` routes checks by PR class; no long build for docs-only | Advisory first |
