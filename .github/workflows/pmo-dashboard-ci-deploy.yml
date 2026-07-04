@@ -58,10 +58,15 @@ jobs:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
+      - name: Prepare Pages artifact for /pmo-dashboard/ path
+        run: |
+          mkdir -p pages-artifact/pmo-dashboard
+          cp -R "$PMO_DASHBOARD_OUT_DIR"/. pages-artifact/pmo-dashboard/
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ${{ env.PMO_DASHBOARD_OUT_DIR }}
+          path: pages-artifact
 
       - name: Deploy to GitHub Pages
         id: deployment
@@ -70,4 +75,6 @@ jobs:
       - name: Write deploy summary
         run: |
           echo "## PMO dashboard CI deploy" >> "$GITHUB_STEP_SUMMARY"
-          echo "Published dashboard URL: ${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Published site root: ${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Published dashboard URL: ${{ steps.deployment.outputs.page_url }}pmo-dashboard/" >> "$GITHUB_STEP_SUMMARY"
+          echo "Published dashboard JSON: ${{ steps.deployment.outputs.page_url }}pmo-dashboard/dashboard-data.json" >> "$GITHUB_STEP_SUMMARY"
