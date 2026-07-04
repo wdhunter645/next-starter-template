@@ -93,7 +93,8 @@ Canonical values (Atlas model):
 Rules:
 
 - B2 → D1 sync sets `is_matchup_eligible = 0` for newly ingested rows unless metadata overrides it.
-- Admins promote suitable club photos to `1` and demote unsuitable rows to `-1`.
+- Admins promote suitable club photos to `1` and demote unsuitable rows to `-1` via `/admin/d1-test/` (curation editing deferred to an upcoming PMO program; inspect-only today).
+- New rows are never blank: the column is `INTEGER NOT NULL DEFAULT 0`.
 - Weekly Photo Matchup selection must use only rows where `is_matchup_eligible = 1` once curation is complete.
 - After D1 recovery, rows whose URL/filename no longer match pre-failure records reset to `0` until re-reviewed (see recovery doctrine in ops docs).
 - URL text in D1 must stay aligned with the B2 object key/path for migrations and eligibility rules to reapply correctly.

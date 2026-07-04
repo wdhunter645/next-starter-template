@@ -179,10 +179,10 @@ Use this sequence when operating the live or preview site. No developer tooling 
 | Layer | `/admin/d1-test` behavior |
 | --- | --- |
 | Session UI gate | Same as other `/admin/**` routes (`layout.tsx` + `useMemberSession`) |
-| API token | Page-local password input in `d1-test/page.tsx`; reads/writes `sessionStorage` key `lgfc_admin_token` — **not** `AdminTokenPanel` / `localStorage` |
-| API call | `/api/admin/d1-inspect` with `x-admin-token` from the page-local value |
+| API token | `AdminTokenPanel` / `localStorage` key `lgfc_admin_token` (same as other admin pages) |
+| API call | `/api/admin/d1-inspect` with `x-admin-token` from stored admin client token |
 
-Operators must enter the admin API token **on the D1 test page itself** even if they already saved a token on the dashboard panel. This is a known storage split documented as a follow-up gap below.
+Planned PMO program will add `photos.is_matchup_eligible` curation on this route; today it is inspect-only.
 
 ---
 
@@ -204,7 +204,7 @@ Create a gitignored `.env.local` with `ADMIN_TOKEN=your-local-dev-token-here`, t
 | --- | --- |
 | `GET /api/admin/stats` without `x-admin-token` | `401 Unauthorized` JSON |
 | `GET /api/admin/stats` with valid `x-admin-token` | `200` with stats payload |
-| Browser: sign in as admin → open `/admin/d1-test` → enter token on that page | D1 table list loads |
+| Browser: sign in as admin → open `/admin/d1-test` → save token via `AdminTokenPanel` | D1 table list loads |
 
 Operator how-to with full click-path detail may move to `docs/how-to/website/` in Task 013.
 
@@ -236,7 +236,7 @@ Early post–ZIP 41 documentation described admin UI pages as browser-reachable 
 
 ### Current as-built (2026-06)
 
-Admin UI now uses **session-backed layout gating** via `useMemberSession({ requireAdmin: true })` plus **`localStorage` admin token** (`adminClient.ts`) for most API calls. `/admin/d1-test` still uses page-local `sessionStorage` token UX. Documentation here supersedes ZIP 41–era claims of "publicly accessible" admin pages and universal `sessionStorage` token storage.
+Admin UI now uses **session-backed layout gating** via `useMemberSession({ requireAdmin: true })` plus **`localStorage` admin token** (`adminClient.ts` / `AdminTokenPanel`) for admin API calls, including `/admin/d1-test`. Documentation here supersedes ZIP 41–era claims of "publicly accessible" admin pages.
 
 ---
 
@@ -245,7 +245,7 @@ Admin UI now uses **session-backed layout gating** via `useMemberSession({ requi
 | Gap | Notes | Suggested route |
 | --- | --- | --- |
 | Dedicated operator how-to under `docs/how-to/website/` | Task 002 captures workflow in this spec; a standalone how-to may help non-technical operators | Task 013 runbooks |
-| D1 test `sessionStorage` vs dashboard `localStorage` | Operators must re-enter token on `/admin/d1-test`; not unified with `AdminTokenPanel` | Task 004 admin shell hardening |
+| D1 test photo curation UI | `/admin/d1-test` is inspect-only; `photos.is_matchup_eligible` editing deferred to PMO program | PMO admin tools program |
 | `footer-quotes` admin API without admin UI | Token-only config surface | Task 004 (deferred UI) |
 | Role/session hardening beyond `ADMIN_TOKEN` | OAuth, MFA, server-side UI gate | Future auth program; not `#1258` Task 002 |
 | PMO `production-ready` dependency-map fields | Plan promotion gate | Atlas/Bill before child issue creation |

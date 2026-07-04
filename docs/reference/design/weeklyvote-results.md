@@ -5,7 +5,7 @@ Authority Level: Canonical Design Specification
 Owns: Weekly vote results route intent, visibility, and expected result presentation
 Does Not Own: Voting algorithm internals; moderation policy; image storage details
 Canonical Reference: /docs/reference/design/fanclub.md
-Last Reviewed: 2026-03-27
+Last Reviewed: 2026-07-04
 ---
 
 # `/weeklyvote` — Weekly Vote Results Specification
@@ -26,6 +26,10 @@ Define the hidden weekly vote results experience shown after a user casts a vote
 ## Data Dependencies
 - Weekly matchup result payload for current cycle (winner, total votes, percentages).
 - Optional user-vote context used to show confirmation state.
+
+## As-built note (2026-07-04)
+
+Results are currently revealed **inline on the homepage** in `WeeklyMatchup.tsx` after a vote (`GET /api/matchup/results`). Vote rows live in D1 `weekly_votes`; winner is computed at read time (no persisted winner column). The standalone `/weeklyvote` route below remains planned extraction, not required for the live voting flow.
 
 ## Auth / Access Expectations
 - Public-accessible route.
