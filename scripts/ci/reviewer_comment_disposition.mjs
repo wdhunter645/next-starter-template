@@ -1,8 +1,11 @@
 import {
+  DEFAULT_TRUSTED_BOT_LOGINS,
   isResolvedReviewText,
   isTrustedReviewer,
+  parseTrustedBotLogins,
   TRUSTED_REVIEWERS,
-} from './reviewer_lifecycle_gate.mjs';
+  trustedBotSet,
+} from './reviewer_trusted_bots.mjs';
 
 export { TRUSTED_REVIEWERS };
 

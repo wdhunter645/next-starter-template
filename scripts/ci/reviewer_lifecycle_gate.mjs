@@ -13,44 +13,22 @@ import {
 
 export { isEnforcingReviewerLifecycleEvent } from './reviewer-gate-simulation.mjs';
 
-export const DEFAULT_TRUSTED_BOT_LOGINS = [
-  'copilot-pull-request-reviewer[bot]',
-  'copilot-pull-request-reviewer',
-  'cubic-dev-ai[bot]',
-  'cubic-dev-ai',
-  'chatgpt-codex-connector[bot]',
-  'chatgpt-codex-connector',
-];
+import {
+  DEFAULT_TRUSTED_BOT_LOGINS,
+  isResolvedReviewText,
+  isTrustedReviewer,
+  parseTrustedBotLogins,
+  trustedBotSet,
+} from './reviewer_trusted_bots.mjs';
+
+export { DEFAULT_TRUSTED_BOT_LOGINS, parseTrustedBotLogins, trustedBotSet } from './reviewer_trusted_bots.mjs';
 
 export const DEFAULT_EXCEPTION_LABEL = 'reviewer-lifecycle-exception';
 export const BREAK_GLASS_MARKER = /<!--\s*reviewer-lifecycle-break-glass\s*-->/i;
-const RESOLVED_MARKER = /✅\s*Addressed|addressed in|\bresolved\b|all checks passed|no warnings detected/i;
-const UNRESOLVED_MARKER = /\bunresolved\b|\bnot\s+resolved\b|\bstill\s+open\b|\bstill\s+blocking\b/i;
 const LINKED_REVIEW_STATES = new Set(['APPROVED', 'COMMENTED']);
-
-function normalizeLogin(login = '') {
-  return String(login || '').trim().toLowerCase();
-}
-
-export function trustedBotSet(logins = DEFAULT_TRUSTED_BOT_LOGINS) {
-  return new Set(logins.map(normalizeLogin).filter(Boolean));
-}
-
-export function parseTrustedBotLogins(value = '') {
-  if (!value) return DEFAULT_TRUSTED_BOT_LOGINS;
-  return value.split(',').map((entry) => entry.trim()).filter(Boolean);
-}
-
-export function isTrustedReviewer(login = '', trustedBots = trustedBotSet()) {
-  return trustedBots.has(normalizeLogin(login));
-}
 
 export function isProtectedPath(filePath = '') {
   return filePath.startsWith('.github/workflows/') || filePath.startsWith('scripts/ci/');
-}
-
-export function isResolvedReviewText(body = '') {
-  return RESOLVED_MARKER.test(body || '') && !UNRESOLVED_MARKER.test(body || '');
 }
 
 function timestamp(value = '') {
