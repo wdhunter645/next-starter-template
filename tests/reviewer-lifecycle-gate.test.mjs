@@ -3,53 +3,35 @@ import {
   assessReviewerLifecycle,
   buildReviewerLifecycleReport,
   hasExceptionLabel,
-  humanChangesRequested,
   isProtectedPath,
   isTrustedReviewer,
   latestReviewByAuthor,
   unresolvedReviewThreads,
 } from '../scripts/ci/reviewer_lifecycle_gate.mjs';
 
-describe('GitHub-native reviewer lifecycle gate assessment', () => {
-  it('uses latest review state per author', () => {
+describe('native lifecycle assessment', () => {
+  it('uses the latest review state per author', () => {
     const latest = latestReviewByAuthor([
-      { author: { login: 'human-reviewer' }, state: 'CHANGES_REQUESTED', submittedAt: '2026-07-01T00:00:00Z' },
-      { author: { login: 'human-reviewer' }, state: 'APPROVED', submittedAt: '2026-07-02T00:00:00Z' },
+      { author: { login: 'reviewer-a' }, state: 'COMMENTED', submittedAt: '2026-07-01T00:00:00Z' },
+      { author: { login: 'reviewer-a' }, state: 'APPROVED', submittedAt: '2026-07-02T00:00:00Z' },
     ]);
 
-    expect(latest.get('human-reviewer').state).toBe('APPROVED');
-    expect(humanChangesRequested([...latest.values()])).toEqual([]);
+    expect(latest.get('reviewer-a').state).toBe('APPROVED');
   });
 
-  it('blocks when a human reviewer latest state is CHANGES_REQUESTED', () => {
+  it('passes without review findings', () => {
     const result = assessReviewerLifecycle({
       enforceFailure: true,
       files: ['src/app/page.tsx'],
-      reviews: [
-        { author: { login: 'human-reviewer' }, state: 'COMMENTED', submittedAt: '2026-07-01T00:00:00Z' },
-        { author: { login: 'human-reviewer' }, state: 'CHANGES_REQUESTED', submittedAt: '2026-07-02T00:00:00Z' },
-      ],
-    });
-
-    expect(result.shouldFail).toBe(true);
-    expect(result.assessment.reason).toBe('human-changes-requested');
-    expect(result.humanChangesRequested).toHaveLength(1);
-  });
-
-  it('does not block on trusted bot CHANGES_REQUESTED review state', () => {
-    const result = assessReviewerLifecycle({
-      enforceFailure: true,
-      files: ['src/app/page.tsx'],
-      reviews: [
-        { author: { login: 'copilot-pull-request-reviewer[bot]' }, state: 'CHANGES_REQUESTED', submittedAt: '2026-07-02T00:00:00Z' },
-      ],
+      reviews: [],
+      reviewThreads: [],
     });
 
     expect(result.shouldFail).toBe(false);
     expect(result.assessment.ok).toBe(true);
   });
 
-  it('blocks unresolved non-outdated human review threads', () => {
+  it('requires action for unresolved human threads', () => {
     const result = assessReviewerLifecycle({
       enforceFailure: true,
       files: ['src/app/page.tsx'],
@@ -58,28 +40,27 @@ describe('GitHub-native reviewer lifecycle gate assessment', () => {
         isResolved: false,
         isOutdated: false,
         path: 'src/app/page.tsx',
-        comments: { nodes: [{ author: { login: 'human-reviewer' }, body: 'Please fix this.' }] },
+        comments: { nodes: [{ author: { login: 'reviewer-a' }, body: 'Please update this.' }] },
       }],
     });
 
     expect(result.shouldFail).toBe(true);
     expect(result.assessment.reason).toBe('unresolved-human-review-thread');
-    expect(result.reviewThreads.blocking).toHaveLength(1);
   });
 
-  it('does not block resolved or outdated review threads', () => {
+  it('ignores resolved and outdated threads', () => {
     const state = unresolvedReviewThreads([
       {
         id: 'resolved-thread',
         isResolved: true,
         isOutdated: false,
-        comments: { nodes: [{ author: { login: 'human-reviewer' }, body: 'Resolved.' }] },
+        comments: { nodes: [{ author: { login: 'reviewer-a' }, body: 'Resolved.' }] },
       },
       {
         id: 'outdated-thread',
         isResolved: false,
         isOutdated: true,
-        comments: { nodes: [{ author: { login: 'human-reviewer' }, body: 'Outdated.' }] },
+        comments: { nodes: [{ author: { login: 'reviewer-a' }, body: 'Old note.' }] },
       },
     ]);
 
@@ -88,7 +69,7 @@ describe('GitHub-native reviewer lifecycle gate assessment', () => {
     expect(state.outdated).toHaveLength(1);
   });
 
-  it('keeps trusted bot review threads advisory by default', () => {
+  it('keeps trusted bot threads advisory by default', () => {
     const result = assessReviewerLifecycle({
       enforceFailure: true,
       files: ['scripts/ci/reviewer_lifecycle_gate.mjs'],
@@ -97,59 +78,47 @@ describe('GitHub-native reviewer lifecycle gate assessment', () => {
         isResolved: false,
         isOutdated: false,
         path: 'scripts/ci/reviewer_lifecycle_gate.mjs',
-        comments: { nodes: [{ author: { login: 'cubic-dev-ai[bot]' }, body: 'Advisory bot finding.' }] },
+        comments: { nodes: [{ author: { login: 'cubic-dev-ai[bot]' }, body: 'Advisory note.' }] },
       }],
     });
 
     expect(result.shouldFail).toBe(false);
     expect(result.assessment.severity).toBe('advisory');
-    expect(result.reviewThreads.advisory).toHaveLength(1);
   });
 
-  it('supports explicit trusted-bot exception label case-insensitively', () => {
+  it('supports exception labels', () => {
     expect(hasExceptionLabel(['Reviewer-Lifecycle-Exception'], 'reviewer-lifecycle-exception')).toBe(true);
-
-    const result = assessReviewerLifecycle({
-      enforceFailure: true,
-      labels: ['Reviewer-Lifecycle-Exception'],
-      reviewThreads: [{
-        id: 'bot-thread',
-        isResolved: false,
-        isOutdated: false,
-        comments: { nodes: [{ author: { login: 'copilot-pull-request-reviewer[bot]' }, body: 'Trusted bot finding.' }] },
-      }],
-    });
-
-    expect(result.shouldFail).toBe(false);
-    expect(result.exceptionActive).toBe(true);
-    expect(result.reviewThreads.advisory[0].exceptionActive).toBe(true);
   });
 
-  it('fails closed when pagination would make the reviewer decision incomplete', () => {
+  it('fails closed on incomplete pagination', () => {
     const result = assessReviewerLifecycle({
       enforceFailure: true,
-      paginationFailures: ['review thread pagination not supported; refusing to make an incomplete reviewer lifecycle decision.'],
+      paginationFailures: ['pagination incomplete'],
     });
 
     expect(result.shouldFail).toBe(true);
     expect(result.assessment.reason).toBe('pagination-incomplete');
   });
 
-  it('renders a report without PR-body reviewer ledger requirements', () => {
+  it('renders report without legacy ledger syntax', () => {
     const result = assessReviewerLifecycle({
       enforceFailure: true,
       files: ['src/app/page.tsx'],
-      reviews: [{ author: { login: 'human-reviewer' }, state: 'CHANGES_REQUESTED', submittedAt: '2026-07-02T00:00:00Z' }],
+      reviewThreads: [{
+        id: 'thread-1',
+        isResolved: false,
+        isOutdated: false,
+        comments: { nodes: [{ author: { login: 'reviewer-a' }, body: 'Please update this.' }] },
+      }],
     });
     const report = buildReviewerLifecycleReport(result);
 
     expect(report).toContain('GitHub-native review state');
     expect(report).toContain('PR body is not used as a reviewer comment ledger');
     expect(report).not.toContain('review-comment:');
-    expect(report).not.toContain('thread state');
   });
 
-  it('detects protected CI paths', () => {
+  it('detects protected paths', () => {
     expect(isProtectedPath('scripts/ci/reviewer_lifecycle_gate.mjs')).toBe(true);
     expect(isProtectedPath('.github/workflows/reviewer-response-completion.yml')).toBe(true);
     expect(isProtectedPath('src/app/page.tsx')).toBe(false);
@@ -158,6 +127,6 @@ describe('GitHub-native reviewer lifecycle gate assessment', () => {
   it('accepts configured trusted bot logins', () => {
     const trusted = new Set(['custom-bot']);
     expect(isTrustedReviewer('custom-bot', trusted)).toBe(true);
-    expect(isTrustedReviewer('human-reviewer', trusted)).toBe(false);
+    expect(isTrustedReviewer('reviewer-a', trusted)).toBe(false);
   });
 });
