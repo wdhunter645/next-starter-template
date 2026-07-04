@@ -9,9 +9,12 @@ type EligiblePhoto = {
   id: number;
   url: string;
   is_memorabilia: number;
+  is_matchup_eligible: number;
   description?: string;
   title?: string;
 };
+
+export const MATCHUP_EXCLUDED_ELIGIBILITY = -1;
 
 type MatchupRow = {
   id: number;
@@ -71,13 +74,24 @@ async function getRecentMatchupPhotoIds(db: any, limit = 8): Promise<Set<number>
 async function fetchEligiblePhotos(db: any): Promise<EligiblePhoto[]> {
   const rows = await db
     .prepare(
-      "SELECT id, url, is_memorabilia, description, title FROM photos WHERE url IS NOT NULL AND TRIM(url) != '';",
+      "SELECT id, url, is_memorabilia, is_matchup_eligible, description, title FROM photos WHERE url IS NOT NULL AND TRIM(url) != '' AND is_matchup_eligible >= 0;",
     )
     .all();
 
   return (rows?.results ?? []).filter(
-    (row: any) => row && Number(row.id) > 0 && typeof row.url === "string" && row.url.trim().length > 0,
+    (row: any) =>
+      row &&
+      Number(row.id) > 0 &&
+      typeof row.url === "string" &&
+      row.url.trim().length > 0 &&
+      Number(row.is_matchup_eligible) >= 0,
   );
+}
+
+async function isPhotoMatchupEligible(db: any, photoId: number): Promise<boolean> {
+  const row = await db.prepare("SELECT is_matchup_eligible FROM photos WHERE id = ? LIMIT 1;").bind(photoId).first();
+  if (!row) return false;
+  return Number(row.is_matchup_eligible) >= 0;
 }
 
 function shuffleInPlace<T>(items: T[]): T[] {
@@ -226,12 +240,14 @@ export const onRequestGet = async (context: any): Promise<Response> => {
 
     const activeCurrentWeek = await findActiveCurrentWeekMatchup(env.DB, weekStart);
     if (activeCurrentWeek) {
+      const photoAEligible = await isPhotoMatchupEligible(env.DB, activeCurrentWeek.photo_a_id);
+      const photoBEligible = await isPhotoMatchupEligible(env.DB, activeCurrentWeek.photo_b_id);
       const items = await resolveMatchupPhotos(
         request,
         activeCurrentWeek.photo_a_id,
         activeCurrentWeek.photo_b_id,
       );
-      if (items.length >= 2) {
+      if (items.length >= 2 && photoAEligible && photoBEligible) {
         return jsonResponse({
           ok: true,
           week_start: weekStart,
