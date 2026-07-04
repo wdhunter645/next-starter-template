@@ -65,6 +65,8 @@ jobs:
         uses: actions/github-script@v7
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          TRUSTED_BOT_LOGINS: copilot-pull-request-reviewer[bot],copilot-pull-request-reviewer,cubic-dev-ai[bot],cubic-dev-ai,chatgpt-codex-connector[bot],chatgpt-codex-connector
+          EXCEPTION_LABEL: reviewer-lifecycle-exception
         with:
           script: |
             const pr = context.payload.pull_request;
@@ -76,7 +78,7 @@ jobs:
               return;
             }
 
-            core.info(`Running reviewer lifecycle gate for PR #${prNumber} in advisory transition mode (event=${eventName}, enforceFailure=false).`);
+            core.info(`Running GitHub-native reviewer lifecycle gate for PR #${prNumber} in advisory transition mode (event=${eventName}, enforceFailure=false).`);
 
             const { execFileSync } = require('node:child_process');
             execFileSync(
@@ -90,6 +92,8 @@ jobs:
                   PR_NUMBER: String(prNumber),
                   GITHUB_EVENT_NAME: eventName,
                   ENFORCE_FAILURE: 'false',
+                  TRUSTED_BOT_LOGINS: process.env.TRUSTED_BOT_LOGINS,
+                  EXCEPTION_LABEL: process.env.EXCEPTION_LABEL,
                 },
                 stdio: 'inherit',
               }
