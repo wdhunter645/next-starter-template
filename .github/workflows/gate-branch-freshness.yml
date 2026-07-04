@@ -1,12 +1,13 @@
 name: GATE — Branch Freshness
 
+# Manual-only: rebuild as advisory gate in a follow-up issue. Do not restore as auto-trigger marker.
+
 on:
-  pull_request:
   workflow_dispatch: {}
 
 jobs:
   branch-freshness:
     runs-on: ubuntu-latest
     steps:
-      - name: Status
-        run: pwd
+      - name: Manual-only marker
+        run: echo "Branch freshness is manual-only pending rebuild; not a merge blocker."

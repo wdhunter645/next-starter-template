@@ -17,7 +17,7 @@ This archive index identifies PR-process materials that are historical evidence 
 
 Use `/docs/governance/PR_PROCESS.md` for current PR-process policy.
 
-Use `/docs/reference/ci/pr-process-current-state.md` for the temporary safe-mode state during #2175 / #2208.
+Use `/docs/reference/ci/pr-process-current-state.md` for the operational PR-process state after #2228 closeout.
 
 ## Historical evidence
 

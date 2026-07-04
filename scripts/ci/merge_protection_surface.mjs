@@ -41,17 +41,51 @@ export const ADVISORY_PR_PROCESS_WORKFLOWS = [
     jobIds: ['reviewer-response-completion'],
     notes: 'Advisory GitHub-native reviewer lifecycle validation.',
   },
+];
+
+/** @type {Array<{ file: string; workflowName: string; jobIds: string[]; notes?: string }>} */
+export const MANUAL_ONLY_PR_PROCESS_WORKFLOWS = [
   {
-    file: 'gate-drift.yml',
-    workflowName: 'GATE — Drift Control',
-    jobIds: ['drift-gate'],
-    notes: 'Marker/advisory until reclassified or rebuilt.',
+    file: 'gate-intent-labeler.yml',
+    workflowName: 'GATE — Intent Labeler',
+    jobIds: ['label-intent'],
+    notes: 'Manual-only; avoid label mutation loops until rebuilt advisory-first.',
   },
   {
     file: 'ops-pr-issue-accounting.yml',
     workflowName: 'GATE — PR Issue Accounting',
     jobIds: ['pr-issue-accounting'],
     notes: 'Manual-only while paused during #2208.',
+  },
+  {
+    file: 'gate-drift.yml',
+    workflowName: 'GATE — Drift Control',
+    jobIds: ['drift-gate'],
+    notes: 'Manual-only pending rebuild; do not restore auto-trigger marker.',
+  },
+  {
+    file: 'gate-branch-freshness.yml',
+    workflowName: 'GATE — Branch Freshness',
+    jobIds: ['branch-freshness'],
+    notes: 'Manual-only pending rebuild; do not restore auto-trigger marker.',
+  },
+  {
+    file: 'docs-guardrails.yml',
+    workflowName: 'Docs Guardrails',
+    jobIds: ['docs_guardrails'],
+    notes: 'Manual-only pending rebuild; do not restore auto-trigger marker.',
+  },
+  {
+    file: 'design-compliance-warn.yml',
+    workflowName: 'Design Compliance (Warn)',
+    jobIds: ['design_compliance_warn'],
+    notes: 'Manual-only pending rebuild; do not restore auto-trigger marker.',
+  },
+  {
+    file: 'gate-post-merge-readiness.yml',
+    workflowName: 'GATE — Post-Merge Readiness',
+    jobIds: ['post-merge-readiness'],
+    notes: 'Retired pre-merge auto-trigger; manual backfill only.',
   },
 ];
 
@@ -131,6 +165,32 @@ export function validateMergeProtectionSurface(options = {}) {
     }
   }
 
+  for (const entry of MANUAL_ONLY_PR_PROCESS_WORKFLOWS) {
+    const workflowPath = path.join(root, WORKFLOW_DIR, entry.file);
+    if (!fs.existsSync(workflowPath)) {
+      errors.push(`Missing manual-only PR-process workflow: ${entry.file}`);
+      continue;
+    }
+
+    const contents = fs.readFileSync(workflowPath, 'utf8');
+    const workflowName = extractWorkflowName(contents);
+    const jobIds = extractJobIds(contents);
+
+    if (workflowName !== entry.workflowName) {
+      errors.push(`${entry.file} workflow name must be "${entry.workflowName}" (found "${workflowName}")`);
+    }
+
+    for (const jobId of entry.jobIds) {
+      if (!jobIds.includes(jobId)) {
+        errors.push(`${entry.file} must define job id "${jobId}"`);
+      }
+    }
+
+    if (!/^on:\s*\n\s*workflow_dispatch:/m.test(contents)) {
+      errors.push(`${entry.file} must be manual-only (workflow_dispatch trigger only)`);
+    }
+  }
+
   const qualityPath = path.join(root, WORKFLOW_DIR, 'gate-quality.yml');
   if (fs.existsSync(qualityPath)) {
     const qualityContents = fs.readFileSync(qualityPath, 'utf8');
@@ -143,6 +203,9 @@ export function validateMergeProtectionSurface(options = {}) {
         errors.push(`gate-quality.yml must invoke ${requiredStep}`);
       }
     }
+    if (!qualityContents.includes('scripts/ci/backend_reference_guard.sh')) {
+      errors.push('gate-quality.yml must invoke scripts/ci/backend_reference_guard.sh');
+    }
   }
 
   return {
@@ -150,6 +213,7 @@ export function validateMergeProtectionSurface(options = {}) {
     errors,
     surface: MERGE_PROTECTION_SURFACE,
     advisory: ADVISORY_PR_PROCESS_WORKFLOWS,
+    manualOnly: MANUAL_ONLY_PR_PROCESS_WORKFLOWS,
     retired: RETIRED_MERGE_PROTECTION_WORKFLOWS,
   };
 }
@@ -170,6 +234,13 @@ export function renderBranchProtectionChecklist() {
 
   lines.push('', 'Advisory PR-process checks. Do not require these until promoted by a follow-up Ops issue:', '');
   for (const entry of ADVISORY_PR_PROCESS_WORKFLOWS) {
+    for (const jobId of entry.jobIds) {
+      lines.push(`- \`${jobId}\` (${entry.workflowName}) — ${entry.notes}`);
+    }
+  }
+
+  lines.push('', 'Manual-only / paused PR-process workflows (not merge blockers):', '');
+  for (const entry of MANUAL_ONLY_PR_PROCESS_WORKFLOWS) {
     for (const jobId of entry.jobIds) {
       lines.push(`- \`${jobId}\` (${entry.workflowName}) — ${entry.notes}`);
     }

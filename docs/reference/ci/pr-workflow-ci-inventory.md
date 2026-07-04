@@ -33,18 +33,19 @@ This inventory covers CI workflows/checks used by the PR workflow:
 
 This inventory does not cover the full repository CI surface, production runtime monitoring, scheduled site audits, Cloudflare deployment management, data sync workflows, AI orchestration workflows, or manually dispatched maintenance jobs unless they participate directly in the PR lifecycle.
 
-## Current known truth during #2175 / #2208
+## Current known truth after #2228 closeout
 
 The broader repository workflow inventory supports more than the PR process and must not be treated as a complete PR-workflow classification.
 
 The current reduced deterministic pre-merge blocker reference is maintained in `/docs/reference/ci/merge-protection-surface.md`.
 
-The following PR-process workflows are rebuilt advisory or required gates:
-
-- required: `gate-quality.yml`, `gitleaks.yml`;
-- advisory: `gate-pr-hygiene.yml`, `gate-diff-scope.yml`, `reviewer-response-completion.yml`;
-- manual-only marker: `gate-intent-labeler.yml`, `ops-pr-issue-accounting.yml`;
-- marker no-op pending disposition: `gate-drift.yml`, `gate-branch-freshness.yml`, `docs-guardrails.yml`, `design-compliance-warn.yml`.
+| Disposition | Workflows |
+|---|---|
+| Required | `gate-quality.yml`, `gitleaks.yml` |
+| Advisory | `gate-pr-hygiene.yml`, `gate-diff-scope.yml`, `reviewer-response-completion.yml` |
+| Manual-only / rebuild later | `gate-intent-labeler.yml`, `ops-pr-issue-accounting.yml`, `gate-drift.yml`, `gate-branch-freshness.yml`, `docs-guardrails.yml`, `design-compliance-warn.yml`, `gate-post-merge-readiness.yml` |
+| Post-merge metrics | `ops-pr-process-metrics.yml` |
+| Post-merge closeout owner | `post-merge-closeout.yml` |
 
 ## Intended final state
 
@@ -83,12 +84,13 @@ Legacy PR CI must either be adopted into the current CI design or decommissioned
 | `.github/workflows/gate-pr-hygiene.yml` | `GATE — PR Hygiene` / `pr-hygiene` | Pre-merge | Pre-merge advisory check | Active advisory | Stable PR-body validation with artifact + upsert comment. |
 | `.github/workflows/gate-diff-scope.yml` | `GATE — Diff Scope` / `diff-scope` | Pre-merge | Pre-merge advisory check | Active advisory | Allowed-path diff validation with artifact + upsert comment. |
 | `.github/workflows/reviewer-response-completion.yml` | `GATE — Reviewer Response Completion` / `reviewer-response-completion` | Pre-merge | Pre-merge advisory check | Active advisory | GitHub-native reviewer lifecycle with artifact + upsert comment. |
-| `.github/workflows/ops-pr-issue-accounting.yml` | `GATE — PR Issue Accounting` / `pr-issue-accounting` | Pre-merge | Pre-merge advisory/required candidate | Manual-only | Must not be required while manual-only. |
-| `.github/workflows/docs-guardrails.yml` | `Docs Guardrails` | Pre-merge | Docs advisory/check hybrid | Marker/safe-mode | Final disposition pending. |
-| `.github/workflows/design-compliance-warn.yml` | `Design Compliance (Warn)` | Pre-merge | Design/process advisory | Marker/safe-mode | Final disposition pending. |
-| `.github/workflows/gate-branch-freshness.yml` | `GATE — Branch Freshness` | Pre-merge | Branch freshness candidate | Marker/safe-mode | Final disposition pending. |
-| `.github/workflows/gate-intent-labeler.yml` | `GATE — Intent Labeler` | Pre-merge | Label classification support | Manual-only | Avoid label mutation loops. |
-| `.github/workflows/gate-drift.yml` | `GATE — Drift Control` | Pre-merge | Governance drift candidate | Marker/safe-mode | Final disposition pending. |
+| `.github/workflows/ops-pr-issue-accounting.yml` | `GATE — PR Issue Accounting` / `pr-issue-accounting` | Pre-merge | Manual-only | Manual-only | Must not be required while manual-only. |
+| `.github/workflows/docs-guardrails.yml` | `Docs Guardrails` | Pre-merge | Manual-only | Manual-only | Rebuild as advisory in follow-up issue if needed. |
+| `.github/workflows/design-compliance-warn.yml` | `Design Compliance (Warn)` | Pre-merge | Manual-only | Manual-only | Rebuild as advisory in follow-up issue if needed. |
+| `.github/workflows/gate-branch-freshness.yml` | `GATE — Branch Freshness` | Pre-merge | Manual-only | Manual-only | Rebuild as advisory in follow-up issue if needed. |
+| `.github/workflows/gate-intent-labeler.yml` | `GATE — Intent Labeler` | Pre-merge | Manual-only | Manual-only | Avoid label mutation loops. |
+| `.github/workflows/gate-drift.yml` | `GATE — Drift Control` | Pre-merge | Manual-only | Manual-only | Rebuild as advisory in follow-up issue if needed. |
+| `.github/workflows/gate-post-merge-readiness.yml` | `GATE — Post-Merge Readiness` / `post-merge-readiness` | Pre-merge (retired) | Manual-only backfill | Manual-only | Retired auto-trigger; superseded by stable-facts + advisory gates. |
 | `.github/workflows/ops-pr-process-metrics.yml` | `OPS — PR Process Metrics` | Post-merge | Post-merge PR lifecycle monitor | Active metrics collection | Records first-pass/second-pass PR-process metrics on merge. |
 | `.github/workflows/design-authority-check.yml` | `Design Authority Check` | Pre-merge | Pre-merge advisory/check hybrid | Active where wired | Not a post-merge closeout owner. |
 | `.github/workflows/diataxis-folder-authority-check.yml` | `DIATAXIS Folder Authority Check` | Pre-merge | Pre-merge advisory/check hybrid | Active where wired | Supports DIATAXIS folder authority. |

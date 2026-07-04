@@ -1,14 +1,13 @@
 name: Docs Guardrails
 
+# Manual-only: rebuild as advisory gate in a follow-up issue. Do not restore as auto-trigger marker.
+
 on:
-  pull_request:
-  push:
-    branches: ["main"]
   workflow_dispatch: {}
 
 jobs:
   docs_guardrails:
     runs-on: ubuntu-latest
     steps:
-      - name: Status
-        run: pwd
+      - name: Manual-only marker
+        run: echo "Docs guardrails is manual-only pending rebuild; not a merge blocker."

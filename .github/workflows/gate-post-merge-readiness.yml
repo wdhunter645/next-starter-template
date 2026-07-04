@@ -1,22 +1,10 @@
 name: GATE — Post-Merge Readiness
 
-# Trusted-code execution model (pull_request_target):
-# - This workflow runs with base-repository token context on pull_request_target.
-# - Gate enforcement scripts are checked out from the trusted base/default ref only.
-# - PR metadata (body, changed files, comments, reviews) is collected via the GitHub API.
-# - Mutable PR-head gate code must never be executed as trusted enforcement logic.
-# - Do not add a pull_request trigger here: a skipped pull_request run can create a
-#   false-green required-check surface while the trusted pull_request_target gate fails.
+# Retired as a pre-merge auto-trigger gate. Manual dispatch only for operator backfill.
+# Stable-facts PR bodies and rebuilt advisory gates supersede PR-body lifecycle enforcement.
+# Do not re-add pull_request_target or other PR auto-triggers without a dedicated rebuild issue.
 
 on:
-  pull_request_target:
-    types: [opened, reopened, edited, synchronize, ready_for_review]
-  pull_request_review:
-    types: [submitted, edited, dismissed]
-  pull_request_review_comment:
-    types: [created, edited, deleted]
-  issue_comment:
-    types: [created, edited, deleted]
   workflow_dispatch:
     inputs:
       pr_number:
@@ -32,49 +20,30 @@ jobs:
   post-merge-readiness:
     name: post-merge-readiness
     runs-on: ubuntu-latest
-    concurrency:
-      group: post-merge-readiness-${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
-      cancel-in-progress: true
     steps:
       - name: Resolve pull request number
         id: pr
         uses: actions/github-script@v7
         with:
           script: |
-            const issue = context.payload.issue;
-            const pr = context.payload.pull_request;
-            const inputPr = core.getInput('pr_number');
-
-            if (context.eventName === 'issue_comment' && !issue?.pull_request?.url) {
-              core.info('Issue comment is not associated with a pull request; skipping post-merge readiness gate.');
-              core.setOutput('skip', 'true');
-              return;
-            }
-
-            const prNumber = pr?.number || (issue?.pull_request ? issue.number : null) || inputPr;
+            const prNumber = Number('${{ inputs.pr_number }}');
             if (!prNumber) {
-              core.info('No pull request context; skipping post-merge readiness gate.');
-              core.setOutput('skip', 'true');
+              core.setFailure('PR number is required.');
               return;
             }
-
-            core.setOutput('skip', 'false');
             core.setOutput('number', String(prNumber));
 
-      - name: Checkout trusted gate implementation from base ref
-        if: steps.pr.outputs.skip != 'true'
+      - name: Checkout trusted gate implementation from default branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.base.ref || github.event.repository.default_branch || 'main' }}
+          ref: ${{ github.event.repository.default_branch || 'main' }}
 
       - name: Setup Node
-        if: steps.pr.outputs.skip != 'true'
         uses: actions/setup-node@v4
         with:
           node-version-file: .node-version
 
       - name: Collect pull request readiness inputs
-        if: steps.pr.outputs.skip != 'true'
         uses: actions/github-script@v7
         env:
           PR_NUMBER: ${{ steps.pr.outputs.number }}
@@ -111,7 +80,6 @@ jobs:
             fs.writeFileSync(path.join(outDir, 'reviews.json'), JSON.stringify(reviews, null, 2));
 
       - name: Run post-merge readiness gate
-        if: steps.pr.outputs.skip != 'true'
         run: >-
           node scripts/ci/post_merge_readiness_gate.mjs
           --pr .post-merge-readiness-gate/pr.json
