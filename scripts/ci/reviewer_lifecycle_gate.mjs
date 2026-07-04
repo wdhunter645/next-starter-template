@@ -6,6 +6,10 @@ import {
   classifyProtectedScope,
   isEnforcingReviewerLifecycleEvent,
 } from './reviewer-gate-simulation.mjs';
+import {
+  hasValidDisposition,
+  parseReviewerDispositions,
+} from './reviewer_comment_disposition.mjs';
 
 export { isEnforcingReviewerLifecycleEvent } from './reviewer-gate-simulation.mjs';
 
@@ -19,6 +23,10 @@ export const DEFAULT_TRUSTED_BOT_LOGINS = [
 ];
 
 export const DEFAULT_EXCEPTION_LABEL = 'reviewer-lifecycle-exception';
+export const BREAK_GLASS_MARKER = /<!--\s*reviewer-lifecycle-break-glass\s*-->/i;
+const RESOLVED_MARKER = /✅\s*Addressed|addressed in|\bresolved\b|all checks passed|no warnings detected/i;
+const UNRESOLVED_MARKER = /\bunresolved\b|\bnot\s+resolved\b|\bstill\s+open\b|\bstill\s+blocking\b/i;
+const LINKED_REVIEW_STATES = new Set(['APPROVED', 'COMMENTED']);
 
 function normalizeLogin(login = '') {
   return String(login || '').trim().toLowerCase();
@@ -39,6 +47,10 @@ export function isTrustedReviewer(login = '', trustedBots = trustedBotSet()) {
 
 export function isProtectedPath(filePath = '') {
   return filePath.startsWith('.github/workflows/') || filePath.startsWith('scripts/ci/');
+}
+
+export function isResolvedReviewText(body = '') {
+  return RESOLVED_MARKER.test(body || '') && !UNRESOLVED_MARKER.test(body || '');
 }
 
 function timestamp(value = '') {
@@ -95,6 +107,111 @@ export function hasExceptionLabel(labels = [], exceptionLabel = DEFAULT_EXCEPTIO
     .map((label) => (typeof label === 'string' ? label : label?.name || ''))
     .map((label) => label.toLowerCase())
     .includes(target);
+}
+
+export function hasProtectedScopeBreakGlass({ labels = [], body = '' } = {}) {
+  const names = labels.map((label) => (typeof label === 'string' ? label : label?.name)).filter(Boolean);
+  return names.includes('recovery') && BREAK_GLASS_MARKER.test(body || '');
+}
+
+function isTrustedReviewLinkedToHead(review, headSha, trustedBots = trustedBotSet()) {
+  const login = review.user?.login || review.author?.login || '';
+  return isTrustedReviewer(login, trustedBots)
+    && Boolean(review.commit_id)
+    && review.commit_id === headSha
+    && review.state !== 'PENDING'
+    && review.state !== 'DISMISSED'
+    && LINKED_REVIEW_STATES.has(review.state);
+}
+
+function isTrustedCommentLinkedToHead(comment, headSha, trustedBots = trustedBotSet()) {
+  return isTrustedReviewer(comment.user?.login || comment.author?.login || '', trustedBots)
+    && Boolean(comment.commit_id)
+    && comment.commit_id === headSha;
+}
+
+export function computeCurrentHeadLinkedReview({ reviews = [], reviewComments = [], headSha = '' } = {}) {
+  if (!headSha) return false;
+  const trustedBots = trustedBotSet();
+  return reviews.some((review) => isTrustedReviewLinkedToHead(review, headSha, trustedBots))
+    || reviewComments.some((comment) => isTrustedCommentLinkedToHead(comment, headSha, trustedBots));
+}
+
+export function hasStaleTrustedReviewOnly({ reviews = [], reviewComments = [], headSha = '' } = {}) {
+  if (!headSha) return false;
+  if (computeCurrentHeadLinkedReview({ reviews, reviewComments, headSha })) return false;
+  const trustedBots = trustedBotSet();
+  return reviews.some((review) => isTrustedReviewer(review.user?.login || review.author?.login || '', trustedBots) && review.commit_id && review.commit_id !== headSha)
+    || reviewComments.some((comment) => isTrustedReviewer(comment.user?.login || comment.author?.login || '', trustedBots) && comment.commit_id && comment.commit_id !== headSha);
+}
+
+function resolveThreadRootId(comment, commentsById) {
+  let current = comment;
+  const visited = new Set();
+  while (current?.in_reply_to_id) {
+    if (visited.has(current.in_reply_to_id)) return current.in_reply_to_id;
+    visited.add(current.in_reply_to_id);
+    const parent = commentsById.get(current.in_reply_to_id);
+    if (!parent) return current.in_reply_to_id;
+    current = parent;
+  }
+  return current.id;
+}
+
+function sortCommentsChronologically(comments) {
+  return [...comments].sort((left, right) => {
+    const leftTime = timestamp(left.created_at || '');
+    const rightTime = timestamp(right.created_at || '');
+    if (leftTime !== rightTime) return leftTime - rightTime;
+    return (left.id || 0) - (right.id || 0);
+  });
+}
+
+export function countUnresolvedProtectedThreads({ reviewComments = [], reviews = [], body = '' } = {}) {
+  let unresolved = 0;
+  const trustedBots = trustedBotSet();
+  const dispositions = parseReviewerDispositions(body);
+  const validComments = reviewComments.filter((comment) => comment?.id != null);
+  const commentsById = new Map(validComments.map((comment) => [comment.id, comment]));
+  const threads = new Map();
+
+  for (const comment of validComments) {
+    const threadId = resolveThreadRootId(comment, commentsById);
+    if (!threads.has(threadId)) threads.set(threadId, []);
+    threads.get(threadId).push(comment);
+  }
+
+  for (const comments of threads.values()) {
+    const orderedComments = sortCommentsChronologically(comments);
+    const firstComment = orderedComments[0];
+    const latestComment = orderedComments[orderedComments.length - 1];
+    const user = firstComment.user?.login || '';
+    const path = firstComment.path || '';
+    const threadId = String(resolveThreadRootId(firstComment, commentsById));
+    if (!isTrustedReviewer(user, trustedBots)) continue;
+    if (!isProtectedPath(path)) continue;
+    if (firstComment.line == null && firstComment.position == null) continue;
+    if (hasValidDisposition(dispositions.get(threadId))) continue;
+    if (isResolvedReviewText(latestComment.body || '')) continue;
+    unresolved += 1;
+  }
+
+  for (const review of latestReviewByAuthor(reviews).values()) {
+    if (!isTrustedReviewer(review.user?.login || review.author?.login || '', trustedBots)) continue;
+    if (review.state !== 'CHANGES_REQUESTED') continue;
+    if (isResolvedReviewText(review.body || '')) continue;
+    unresolved += 1;
+  }
+
+  return unresolved;
+}
+
+export function countAdvisoryFindings({ issueComments = [], reviewComments = [], reviews = [] } = {}) {
+  const trustedBots = trustedBotSet();
+  return [...issueComments, ...reviewComments, ...reviews]
+    .filter((item) => isTrustedReviewer(item.user?.login || item.author?.login || '', trustedBots))
+    .filter((item) => !isResolvedReviewText(item.body || ''))
+    .length;
 }
 
 export function unresolvedReviewThreads(reviewThreads = [], { trustedBots = trustedBotSet(), labels = [], exceptionLabel = DEFAULT_EXCEPTION_LABEL } = {}) {
