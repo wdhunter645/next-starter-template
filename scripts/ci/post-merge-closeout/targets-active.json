@@ -7,7 +7,8 @@
     "scripts/ci/post-merge-closeout/targets-remediation-backlog.json",
     "scripts/ci/post-merge-closeout/targets-ops-burn-down-wave3b.json",
     "scripts/ci/post-merge-closeout/targets-website-completion-1685-closeout.json",
-    "scripts/ci/post-merge-closeout/targets-2039-public-launch-closeout.json"
+    "scripts/ci/post-merge-closeout/targets-2039-public-launch-closeout.json",
+    "scripts/ci/post-merge-closeout/targets-1738-closeout.json"
   ],
   "archived_manifests": [
     "scripts/ci/post-merge-closeout/targets-ops-burn-down-wave1.json",
