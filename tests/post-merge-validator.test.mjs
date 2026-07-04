@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	buildResult,
+	blockingMetadataFailures,
 	closeoutEvidenceIntegrityFailures,
 	commentBody,
 	isPermittedClosedSourceIssueFollowup,
@@ -17,7 +18,6 @@ import {
 	stripAutoRepairBlock,
 	workflowFailures,
 } from '../scripts/ci/post_merge_validator.mjs';
-import { remediationBody, remediationTitle } from '../scripts/ci/post_merge_remediation_issue.mjs';
 
 const baseBody = [
 	'- **Issue:** #1122',
@@ -33,6 +33,31 @@ const baseBody = [
 	'',
 	'## REQUIRED PRE-REVIEW SELF-CHECK',
 	'- Complete.',
+].join('\n');
+
+const stableTemplateBody = [
+	'# PR Summary',
+	'',
+	'- **Issue:** #2228',
+	'- Intent label: intent:ci',
+	'- PR class: ci',
+	'',
+	'## Scope',
+	'',
+	'Allowed paths:',
+	'- `docs/reference/ci/pr-process-metrics.md`',
+	'',
+	'## Change Summary',
+	'',
+	'Document dedupe rule for PR-process metrics collection (latest completed check run wins).',
+	'',
+	'## Verification',
+	'',
+	'Local verification: doc-only change.',
+	'',
+	'## Acceptance Criteria',
+	'',
+	'- [x] Source issue acceptance criteria reviewed',
 ].join('\n');
 
 function mergedPr(overrides = {}) {
@@ -82,6 +107,24 @@ describe('post-merge metadata validation', () => {
 			code: 'missing_required_section',
 			message: expect.stringContaining('## CHANGE SUMMARY'),
 		}));
+	});
+
+	it('accepts stable PR template headings used after the PR-process redesign', () => {
+		const failures = preMergeReadinessBodyFailures(stableTemplateBody);
+		expect(failures.filter((failure) => failure.severity !== 'advisory')).toEqual([]);
+		expect(blockingMetadataFailures(metadataFailures(mergedPr({ body: stableTemplateBody }), () => true))).toEqual([]);
+	});
+
+	it('passes post-merge metadata checks for PR #2234-style stable template bodies', () => {
+		const failures = metadataFailures(mergedPr({ body: stableTemplateBody }), () => true);
+		const result = buildResult({ pr: mergedPr({ body: stableTemplateBody }), resolution: { pr: '2234' }, metadata: failures });
+
+		expect(failures.filter((failure) => failure.code === 'missing_required_section')).toEqual([]);
+		expect(result).toMatchObject({ status: 'pass', sync_action: 'post_merge_success' });
+	});
+
+	it('accepts legacy uppercase headings alongside stable template variants', () => {
+		expect(preMergeReadinessBodyFailures(baseBody)).toEqual([]);
 	});
 
 	it('shares blocked closeout declaration checks with the readiness gate', () => {
@@ -224,11 +267,15 @@ describe('post-merge metadata validation', () => {
 	});
 
 	it('treats missing advisory sections as remediation without failing closeout validation', () => {
-		const bodyWithoutAdvisory = baseBody.replace('\n\n## REQUIRED PRE-REVIEW SELF-CHECK\n- Complete.', '');
+		const bodyWithoutAdvisory = stableTemplateBody;
 		const failures = metadataFailures(mergedPr({ body: bodyWithoutAdvisory }), () => true);
 		const result = buildResult({ pr: mergedPr({ body: bodyWithoutAdvisory }), resolution: { pr: '1188' }, metadata: failures });
 
-		expect(failures).toContainEqual(expect.objectContaining({ code: 'missing_advisory_section', severity: 'advisory' }));
+		expect(failures).toContainEqual(expect.objectContaining({
+			code: 'missing_advisory_section',
+			severity: 'advisory',
+			message: expect.stringContaining('Reviewer / Bot Review Attestation'),
+		}));
 		expect(result).toMatchObject({ status: 'pass', remediation_required: false, sync_action: 'post_merge_success' });
 	});
 

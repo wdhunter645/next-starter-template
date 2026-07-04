@@ -72,13 +72,13 @@ describe('post-merge readiness gate', () => {
 
   it('fails when a required post-merge body section is missing', () => {
     const result = evaluate({
-      pr: { body: compliantBody.replace('## BUILD / TEST / VERIFICATION', '## VERIFICATION') },
+      pr: { body: compliantBody.replace('## BUILD / TEST / VERIFICATION', '## SUMMARY ONLY') },
     });
 
     expect(result.status).toBe('fail');
     expect(result.metadata_failures).toContainEqual(expect.objectContaining({
       code: 'missing_required_section',
-      message: expect.stringContaining('## BUILD / TEST / VERIFICATION'),
+      message: expect.stringContaining('BUILD / TEST / VERIFICATION'),
     }));
   });
 

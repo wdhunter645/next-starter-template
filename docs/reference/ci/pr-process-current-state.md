@@ -25,6 +25,7 @@ This reference records the **current operational state** after the PR-process re
 - class-aware required quality routing;
 - single-owner post-merge closeout;
 - lightweight PR-process metrics on merge;
+- post-merge validator accepts stable PR template headings (legacy uppercase headings remain supported);
 - legacy marker workflows paused as manual-only pending rebuild.
 
 **Remaining operator actions before closing #2175 / #2208:**
