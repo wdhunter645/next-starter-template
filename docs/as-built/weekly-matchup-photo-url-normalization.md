@@ -17,6 +17,8 @@ Records the runtime behavior added to normalize `photos.url` values before Weekl
 This note covers read-path behavior only.
 It does not change homepage layout, voting flow, matchup selection, or component contract.
 
+Photo club-use curation (`photos.is_matchup_eligible`: `0` unreviewed, `1` approved, `-1` excluded) is defined in `/docs/reference/platform/Backblaze_B2.md`.
+
 ## Files
 - `functions/_lib/photo-url.ts`
 - `functions/api/photos/get.ts`
