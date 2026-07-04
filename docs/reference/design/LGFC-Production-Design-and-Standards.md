@@ -266,7 +266,7 @@ Homepage sections are locked to this order:
   - Vote submitted via API
   - Current-week totals display after the user has voted
   - Last closed week totals and winner may display after the user has voted when last-week data is available
-  - Content rotates weekly (operational process)
+  - Content rotates weekly via D1 auto-rotation on first public read each week (`/docs/as-built/weekly-matchup-auto-rotation.md`)
 
 ---
 
