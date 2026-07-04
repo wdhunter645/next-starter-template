@@ -1,0 +1,92 @@
+name: OPS — PR Process Metrics
+
+on:
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to record metrics for
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+
+jobs:
+  record-metrics:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Collect PR process metrics
+        id: metrics
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request?.number || Number('${{ inputs.pr_number }}');
+            if (!prNumber) {
+              core.setFailure('PR number is required.');
+              return;
+            }
+
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+            });
+
+            const { data: checkRuns } = await github.rest.checks.listForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: pr.head.sha,
+              per_page: 100,
+            });
+
+            const requiredNames = new Set(['quality', 'gitleaks']);
+            const tracked = new Set(['pr-hygiene', 'diff-scope', 'reviewer-response-completion', 'quality', 'gitleaks']);
+            const checks = (checkRuns.check_runs || [])
+              .filter((run) => tracked.has(run.name))
+              .map((run) => ({
+                name: run.name,
+                conclusion: run.conclusion,
+                detailsUrl: run.html_url,
+                required: requiredNames.has(run.name),
+              }));
+
+            const attempts = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              event: 'pull_request',
+              per_page: 20,
+            });
+
+            const runAttempt = Math.max(1, attempts.filter((run) => String(run.head_sha) === pr.head.sha).length || 1);
+
+            const payload = {
+              prNumber,
+              headSha: pr.head.sha,
+              runAttempt,
+              checks,
+            };
+
+            core.setOutput('payload', JSON.stringify(payload));
+
+      - name: Write metrics artifact
+        env:
+          PR_PROCESS_METRICS_JSON: ${{ steps.metrics.outputs.payload }}
+          PR_PROCESS_METRICS_RESULT_JSON: pr-process-metrics.json
+          PR_PROCESS_METRICS_RESULT_MD: pr-process-metrics.md
+        run: node scripts/ci/pr_process_metrics.mjs
+
+      - name: Upload PR process metrics
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-process-metrics-${{ github.event.pull_request.number || inputs.pr_number }}
+          path: |
+            pr-process-metrics.json
+            pr-process-metrics.md
+          if-no-files-found: warn

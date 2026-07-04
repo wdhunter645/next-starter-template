@@ -311,6 +311,40 @@ export function assessReviewerLifecycle({
   };
 }
 
+export function buildReviewerLifecycleArtifact(result) {
+  return {
+    gate: 'reviewer-lifecycle',
+    schemaVersion: 1,
+    advisory: !result.enforceFailure,
+    ok: result.assessment.ok,
+    severity: result.assessment.severity,
+    reason: result.assessment.reason,
+    enforceFailure: result.enforceFailure,
+    humanChangesRequested: result.humanChangesRequested.length,
+    unresolvedHumanThreads: result.reviewThreads.blocking.length,
+    advisoryThreads: result.reviewThreads.advisory.length,
+    outdatedThreads: result.reviewThreads.outdated.length,
+    resolvedThreads: result.reviewThreads.resolved.length,
+    blockingReasons: result.blockingReasons,
+    headSha: result.headSha || '',
+  };
+}
+
+export function writeReviewerLifecycleArtifacts(result, env = process.env) {
+  const artifact = buildReviewerLifecycleArtifact(result);
+  const jsonPath = env.REVIEWER_LIFECYCLE_RESULT_JSON || env.PR_VALIDATION_RESULT_JSON;
+  const markdownPath = env.REVIEWER_LIFECYCLE_RESULT_MD;
+
+  if (jsonPath) {
+    fs.writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
+  }
+  if (markdownPath) {
+    fs.writeFileSync(markdownPath, `${result.report}\n`);
+  }
+
+  return artifact;
+}
+
 export function buildReviewerLifecycleReport(result) {
   const lines = [
     result.assessment.ok
@@ -527,6 +561,8 @@ async function main() {
     trustedBotLogins,
     exceptionLabel,
   });
+
+  writeReviewerLifecycleArtifacts(result, process.env);
 
   try {
     await upsertGateComment({

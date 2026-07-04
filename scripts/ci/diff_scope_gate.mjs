@@ -3,6 +3,8 @@
 import fs from 'node:fs';
 import { findUnlistedChangedFiles, parseAllowedFiles } from './pr_hygiene_audit.mjs';
 
+export const DIFF_SCOPE_MARKER = '<!-- diff-scope-advisory -->';
+
 export function buildDiffScopeReport({ body = '', changedFiles = [] } = {}) {
   const allowedFiles = parseAllowedFiles(body);
   const unlistedChangedFiles = findUnlistedChangedFiles(changedFiles, allowedFiles);
@@ -10,6 +12,7 @@ export function buildDiffScopeReport({ body = '', changedFiles = [] } = {}) {
   return {
     gate: 'diff-scope',
     schemaVersion: 1,
+    advisory: true,
     allowedFiles,
     changedFiles,
     unlistedChangedFiles,
@@ -72,7 +75,9 @@ export function runCli(env = process.env) {
   writeDiffScopeArtifacts(report, env);
   console.log(renderDiffScopeReport(report));
 
-  return report.ok ? 0 : 1;
+  const enforceFailure = (env.DIFF_SCOPE_ENFORCE_FAILURE || 'false') === 'true';
+  if (report.ok) return 0;
+  return enforceFailure ? 1 : 0;
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

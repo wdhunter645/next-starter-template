@@ -8,6 +8,90 @@ on:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - name: Status
-        run: echo ok
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Write PR body for class-aware routing
+        if: github.event_name == 'pull_request'
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: printf '%s\n' "$PR_BODY" > "$RUNNER_TEMP/pr_body.md"
+
+      - name: Determine class-aware quality plan
+        id: quality_plan
+        env:
+          PR_CLASS_BODY_FILE: ${{ runner.temp }}/pr_body.md
+        run: node scripts/ci/pr_class_quality_plan.mjs
+
+      - name: Install
+        run: npm ci
+
+      - name: Check repo structure
+        run: npm run check:structure
+
+      - name: Enforce backend reference guard
+        run: bash scripts/ci/no_"supa""base"_guard.sh
+
+      - name: Block tracked ZIP files
+        run: bash scripts/ci/check_no_tracked_zips.sh
+
+      - name: Block ZIP taint in PR history
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: bash scripts/ci/verify_zip_history_pr.sh
+
+      - name: Typecheck
+        if: steps.quality_plan.outputs.run_typecheck == 'true'
+        run: npm run typecheck
+
+      - name: Lint
+        if: steps.quality_plan.outputs.run_lint == 'true'
+        run: npm run lint
+
+      - name: Unit tests
+        if: steps.quality_plan.outputs.run_test == 'true'
+        run: npm test
+
+      - name: Production build
+        if: steps.quality_plan.outputs.run_build == 'true'
+        run: npm run build
+
+      - name: Write quality routing artifact
+        if: always() && github.event_name == 'pull_request'
+        env:
+          QUALITY_RESULT_JSON: ${{ runner.temp }}/quality_result.json
+        run: |
+          node --input-type=module -e "
+          import fs from 'node:fs';
+          const record = {
+            gate: 'quality',
+            schemaVersion: 1,
+            prClass: '${{ steps.quality_plan.outputs.pr_class }}',
+            runTypecheck: '${{ steps.quality_plan.outputs.run_typecheck }}' === 'true',
+            runLint: '${{ steps.quality_plan.outputs.run_lint }}' === 'true',
+            runTest: '${{ steps.quality_plan.outputs.run_test }}' === 'true',
+            runBuild: '${{ steps.quality_plan.outputs.run_build }}' === 'true',
+          };
+          fs.writeFileSync(process.env.QUALITY_RESULT_JSON, JSON.stringify(record, null, 2) + '\n');
+          "
+
+      - name: Upload quality routing artifact
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-result-${{ github.event.pull_request.number || github.run_id }}
+          path: ${{ runner.temp }}/quality_result.json
+          if-no-files-found: ignore

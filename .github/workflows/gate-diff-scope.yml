@@ -1,11 +1,110 @@
 name: GATE — Diff Scope
 
 on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
   workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
 
 jobs:
   diff-scope:
     runs-on: ubuntu-latest
     steps:
-      - name: Status
-        run: pwd
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve changed files
+        id: changed_files
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            if (!pr) {
+              core.setOutput('files', '');
+              return;
+            }
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              per_page: 100,
+            });
+
+            core.setOutput('files', files.map((file) => file.filename).join('\n'));
+
+      - name: Write diff-scope inputs
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          CHANGED_FILES: ${{ steps.changed_files.outputs.files }}
+        run: |
+          printf '%s\n' "$PR_BODY" > "$RUNNER_TEMP/pr_body.md"
+          printf '%s\n' "$CHANGED_FILES" > "$RUNNER_TEMP/pr_changed_files.txt"
+
+      - name: Diff scope advisory audit
+        id: diff_scope_audit
+        env:
+          DIFF_SCOPE_BODY_FILE: ${{ runner.temp }}/pr_body.md
+          DIFF_SCOPE_CHANGED_FILES_FILE: ${{ runner.temp }}/pr_changed_files.txt
+          DIFF_SCOPE_RESULT_JSON: ${{ runner.temp }}/diff_scope_result.json
+          DIFF_SCOPE_RESULT_MD: ${{ runner.temp }}/diff_scope_result.md
+          DIFF_SCOPE_ENFORCE_FAILURE: 'false'
+        run: node scripts/ci/diff_scope_gate.mjs
+
+      - name: Upload diff-scope artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diff-scope-result-${{ github.event.pull_request.number || github.run_id }}
+          path: |
+            ${{ runner.temp }}/diff_scope_result.json
+            ${{ runner.temp }}/diff_scope_result.md
+          if-no-files-found: ignore
+
+      - name: Upsert diff-scope advisory comment
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        env:
+          REMEDIATION_MARKER: '<!-- diff-scope-advisory -->'
+          REPORT_FILE: ${{ runner.temp }}/diff_scope_result.md
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = process.env.REMEDIATION_MARKER;
+            const report = fs.existsSync(process.env.REPORT_FILE)
+              ? fs.readFileSync(process.env.REPORT_FILE, 'utf8').trim()
+              : 'Diff scope audit did not produce a report.';
+            const body = `${marker}\n${report}\n\nThis check is advisory and non-blocking during the #2175 / #2208 PR-process rebuild.`;
+            const issue_number = context.payload.pull_request.number;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number,
+              per_page: 100,
+            });
+
+            const existing = comments.find((comment) => comment.body && comment.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number,
+                body,
+              });
+            }
+
+      - name: Advisory gate passed
+        run: echo "Diff scope advisory check complete (non-blocking)."

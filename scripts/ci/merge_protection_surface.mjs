@@ -19,34 +19,39 @@ export const MERGE_PROTECTION_SURFACE = [
     required: true,
     notes: 'Deterministic secret exposure blocker.',
   },
-  {
-    file: 'ops-pr-issue-accounting.yml',
-    workflowName: 'GATE — PR Issue Accounting',
-    jobIds: ['pr-issue-accounting'],
-    required: true,
-    notes: 'Deterministic Issue-first source accounting.',
-  },
 ];
 
 /** @type {Array<{ file: string; workflowName: string; jobIds: string[]; notes?: string }>} */
 export const ADVISORY_PR_PROCESS_WORKFLOWS = [
   {
+    file: 'gate-pr-hygiene.yml',
+    workflowName: 'GATE — PR Hygiene',
+    jobIds: ['pr-hygiene'],
+    notes: 'Advisory stable PR-body validation.',
+  },
+  {
     file: 'gate-diff-scope.yml',
     workflowName: 'GATE — Diff Scope',
     jobIds: ['diff-scope'],
-    notes: 'Advisory until low false-positive rate is proven.',
+    notes: 'Advisory allowed-path diff validation.',
   },
   {
     file: 'reviewer-response-completion.yml',
     workflowName: 'GATE — Reviewer Response Completion',
     jobIds: ['reviewer-response-completion'],
-    notes: 'Advisory during GitHub-native reviewer lifecycle transition.',
+    notes: 'Advisory GitHub-native reviewer lifecycle validation.',
   },
   {
     file: 'gate-drift.yml',
     workflowName: 'GATE — Drift Control',
-    jobIds: ['drift'],
-    notes: 'Advisory/diagnostic during PR-process repair unless reclassified.',
+    jobIds: ['drift-gate'],
+    notes: 'Marker/advisory until reclassified or rebuilt.',
+  },
+  {
+    file: 'ops-pr-issue-accounting.yml',
+    workflowName: 'GATE — PR Issue Accounting',
+    jobIds: ['pr-issue-accounting'],
+    notes: 'Manual-only while paused during #2208.',
   },
 ];
 
@@ -104,11 +109,33 @@ export function validateMergeProtectionSurface(options = {}) {
     }
   }
 
+  for (const entry of ADVISORY_PR_PROCESS_WORKFLOWS) {
+    const workflowPath = path.join(root, WORKFLOW_DIR, entry.file);
+    if (!fs.existsSync(workflowPath)) {
+      errors.push(`Missing advisory PR-process workflow: ${entry.file}`);
+      continue;
+    }
+
+    const contents = fs.readFileSync(workflowPath, 'utf8');
+    const workflowName = extractWorkflowName(contents);
+    const jobIds = extractJobIds(contents);
+
+    if (workflowName !== entry.workflowName) {
+      errors.push(`${entry.file} workflow name must be "${entry.workflowName}" (found "${workflowName}")`);
+    }
+
+    for (const jobId of entry.jobIds) {
+      if (!jobIds.includes(jobId)) {
+        errors.push(`${entry.file} must define job id "${jobId}"`);
+      }
+    }
+  }
+
   const qualityPath = path.join(root, WORKFLOW_DIR, 'gate-quality.yml');
   if (fs.existsSync(qualityPath)) {
     const qualityContents = fs.readFileSync(qualityPath, 'utf8');
     for (const requiredStep of [
-      'npm run build',
+      'scripts/ci/pr_class_quality_plan.mjs',
       'scripts/ci/check_no_tracked_zips.sh',
       'scripts/ci/verify_zip_history_pr.sh',
     ]) {
@@ -131,7 +158,7 @@ export function renderBranchProtectionChecklist() {
   const lines = [
     '## LGFC Merge Protection Required Checks',
     '',
-    'Configure branch protection for `main` with these deterministic checks only during PR-process repair:',
+    'Configure branch protection for `main` with these deterministic checks only:',
     '',
   ];
 
@@ -153,9 +180,9 @@ export function renderBranchProtectionChecklist() {
     'Retired checks (remove from branch protection if still listed):',
     '',
     '- `check-no-zip-files` (`GATE — ZIP Safety`) — assimilated into `quality`',
-    '- `post-merge-readiness` — retired as a pre-merge blocker during stable-body/GitHub-native-state transition',
-    '- `reviewer-response-completion` — advisory until native reviewer lifecycle data is proven stable',
-    '- `drift` — advisory during PR-process repair unless explicitly reclassified',
+    '- `post-merge-readiness` — retired as a pre-merge blocker',
+    '- `pr-issue-accounting` — manual-only during #2208; do not require while paused',
+    '- `drift` — advisory/marker unless explicitly reclassified',
     '',
     'OPS runtime and post-merge workflows must not be required status checks.',
   );

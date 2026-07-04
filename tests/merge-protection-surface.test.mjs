@@ -39,7 +39,6 @@ describe('merge protection surface inventory', () => {
     expect(files).toEqual([
       'gate-quality.yml',
       'gitleaks.yml',
-      'ops-pr-issue-accounting.yml',
     ]);
   });
 
@@ -50,7 +49,7 @@ describe('merge protection surface inventory', () => {
       'jobs:',
       '  quality:',
       '    steps:',
-      '      - run: npm run build',
+      '      - run: node scripts/ci/pr_class_quality_plan.mjs',
       '      - run: bash scripts/ci/check_no_tracked_zips.sh',
       '      - run: bash scripts/ci/verify_zip_history_pr.sh',
     ].join('\n'));
@@ -59,11 +58,19 @@ describe('merge protection surface inventory', () => {
       'jobs:',
       '  gitleaks:',
     ].join('\n'));
-    fs.writeFileSync(path.join(root, '.github/workflows/ops-pr-issue-accounting.yml'), [
-      'name: GATE — PR Issue Accounting',
-      'jobs:',
-      '  pr-issue-accounting:',
-    ].join('\n'));
+    for (const [file, name, jobId] of [
+      ['gate-pr-hygiene.yml', 'GATE — PR Hygiene', 'pr-hygiene'],
+      ['gate-diff-scope.yml', 'GATE — Diff Scope', 'diff-scope'],
+      ['reviewer-response-completion.yml', 'GATE — Reviewer Response Completion', 'reviewer-response-completion'],
+      ['gate-drift.yml', 'GATE — Drift Control', 'drift-gate'],
+      ['ops-pr-issue-accounting.yml', 'GATE — PR Issue Accounting', 'pr-issue-accounting'],
+    ]) {
+      fs.writeFileSync(path.join(root, `.github/workflows/${file}`), [
+        `name: ${name}`,
+        'jobs:',
+        `  ${jobId}:`,
+      ].join('\n'));
+    }
 
     const result = validateMergeProtectionSurface({ root });
     expect(result.ok, result.errors.join('\n')).toBe(true);
@@ -76,11 +83,19 @@ describe('merge protection surface inventory', () => {
       'jobs:',
       '  gitleaks:',
     ].join('\n'));
-    fs.writeFileSync(path.join(root, '.github/workflows/ops-pr-issue-accounting.yml'), [
-      'name: GATE — PR Issue Accounting',
-      'jobs:',
-      '  pr-issue-accounting:',
-    ].join('\n'));
+    for (const [file, name, jobId] of [
+      ['gate-pr-hygiene.yml', 'GATE — PR Hygiene', 'pr-hygiene'],
+      ['gate-diff-scope.yml', 'GATE — Diff Scope', 'diff-scope'],
+      ['reviewer-response-completion.yml', 'GATE — Reviewer Response Completion', 'reviewer-response-completion'],
+      ['gate-drift.yml', 'GATE — Drift Control', 'drift-gate'],
+      ['ops-pr-issue-accounting.yml', 'GATE — PR Issue Accounting', 'pr-issue-accounting'],
+    ]) {
+      fs.writeFileSync(path.join(root, `.github/workflows/${file}`), [
+        `name: ${name}`,
+        'jobs:',
+        `  ${jobId}:`,
+      ].join('\n'));
+    }
 
     const result = validateMergeProtectionSurface({ root });
     expect(result.ok).toBe(false);
@@ -91,7 +106,8 @@ describe('merge protection surface inventory', () => {
     const checklist = renderBranchProtectionChecklist();
     expect(checklist).toContain('quality');
     expect(checklist).toContain('gitleaks');
-    expect(checklist).toContain('pr-issue-accounting');
+    expect(checklist).toContain('pr-hygiene');
+    expect(checklist).toContain('diff-scope');
     expect(checklist).toContain('check-no-zip-files');
   });
 });
