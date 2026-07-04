@@ -8,6 +8,8 @@ export function buildDiffScopeReport({ body = '', changedFiles = [] } = {}) {
   const unlistedChangedFiles = findUnlistedChangedFiles(changedFiles, allowedFiles);
 
   return {
+    gate: 'diff-scope',
+    schemaVersion: 1,
     allowedFiles,
     changedFiles,
     unlistedChangedFiles,
@@ -38,6 +40,18 @@ export function renderDiffScopeReport(report) {
   return lines.join('\n');
 }
 
+export function writeDiffScopeArtifacts(report, env = process.env) {
+  const jsonPath = env.DIFF_SCOPE_RESULT_JSON || env.PR_VALIDATION_RESULT_JSON;
+  const markdownPath = env.DIFF_SCOPE_RESULT_MD || env.PR_VALIDATION_RESULT_MD;
+
+  if (jsonPath) {
+    fs.writeFileSync(jsonPath, `${JSON.stringify(report, null, 2)}\n`);
+  }
+  if (markdownPath) {
+    fs.writeFileSync(markdownPath, `${renderDiffScopeReport(report)}\n`);
+  }
+}
+
 function readListFile(path) {
   if (!path || !fs.existsSync(path)) return [];
   return fs.readFileSync(path, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
@@ -55,6 +69,7 @@ export function runCli(env = process.env) {
   const body = fs.readFileSync(bodyPath, 'utf8');
   const changedFiles = readListFile(changedFilesPath);
   const report = buildDiffScopeReport({ body, changedFiles });
+  writeDiffScopeArtifacts(report, env);
   console.log(renderDiffScopeReport(report));
 
   return report.ok ? 0 : 1;
