@@ -14,6 +14,7 @@ export default defineConfig({
       '**/dist/**',
       '**/tests/**/*.spec.ts',
       '**/tests/reviewer-*.test.mjs',
+      '**/tests/post-merge-*.test.mjs',
     ],
   },
   resolve: {
