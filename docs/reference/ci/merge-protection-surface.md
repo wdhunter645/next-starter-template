@@ -5,70 +5,53 @@ Authority Level: Controlled
 Owns: LGFC merge-protection required check surface, consolidated deterministic blockers, branch-protection naming alignment
 Does Not Own: GitHub branch protection settings UI, reviewer lifecycle gates, PR hygiene advisories, OPS runtime workflows
 Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related Issues: #1226, #1195, #1075, #1058
-Last Reviewed: 2026-06-11
+Related Issues: #2175, #2184
+Last Reviewed: 2026-07-04
 ---
 
 # LGFC Merge Protection Surface
 
 ## Purpose
 
-This reference documents the deterministic pre-merge blockers consolidated in
-CI Task 002, with Program #1500 Task 001 adding the pre-merge
-post-merge-readiness blocker. Merge protection should block only
-machine-provable merge-safety failures that are locally attributable to the
-pull request.
+This reference documents the required status-check surface for `main` during the PR Process Redesign. The current priority is deterministic merge safety with low false-positive risk.
 
-## Consolidated Workflows
+## Required Checks During PR-Process Repair
 
-| Workflow file | Display name | Job id | Responsibility |
+Use these required job ids for `main` branch protection:
+
+- `quality` (`GATE — Quality Checks`)
+- `gitleaks` (`GATE — Secret Scan`)
+- `pr-issue-accounting` (`GATE — PR Issue Accounting`)
+
+## Advisory Checks During Transition
+
+These checks may run but should remain advisory until a follow-up Ops issue promotes them:
+
+| Workflow file | Display name | Job id | Status |
 |---|---|---|---|
-| `gate-quality.yml` | `GATE — Quality Checks` | `quality` | Structure guard, backend guard, tracked-ZIP block, PR-range ZIP taint block, typecheck, lint, unit tests, production build |
-| `gitleaks.yml` | `GATE — Secret Scan` | `gitleaks` | Secret exposure scan |
-| `ops-pr-issue-accounting.yml` | `GATE — PR Issue Accounting` | `pr-issue-accounting` | Exactly one same-repository source Issue |
-| `gate-post-merge-readiness.yml` | `GATE — Post-Merge Readiness` | `post-merge-readiness` | PR body sections, declared allowlist, forbidden placeholders, and trusted-reviewer dispositions required for post-merge closeout; executes trusted base-ref gate code on `pull_request_target` |
+| `gate-diff-scope.yml` | `GATE — Diff Scope` | `diff-scope` | Advisory |
+| `reviewer-response-completion.yml` | `GATE — Reviewer Response Completion` | `reviewer-response-completion` | Advisory |
+| `gate-drift.yml` | `GATE — Drift Control` | `drift` | Advisory |
 
-## Retired Duplicate Blockers
+## Retired Or Non-Blocking During Repair
 
-| Retired workflow | Reason |
-|---|---|
-| `gate-zip-safety.yml` (`check-no-zip-files`) | Tracked-ZIP enforcement assimilated into `gate-quality.yml` |
-
-ZIP enforcement remains deterministic, but the duplicate standalone workflow is
-removed so branch protection has one quality surface instead of overlapping ZIP
-and quality jobs.
-
-`gate-drift.yml` still contains legacy ZIP checks today. Those remain outside
-Task 002 scope and are scheduled for drift-gate rebuild in later CI phases.
-Task 002 removes the standalone duplicate blocker without waiting for drift
-rebuild.
-
-## Branch Protection Checklist
-
-Configure `main` branch protection required status checks using these job ids:
-
-- `quality`
-- `gitleaks`
-- `pr-issue-accounting`
-- `post-merge-readiness`
-
-Remove retired checks if they are still listed:
+Remove these from required status checks if present:
 
 - `check-no-zip-files`
+- `post-merge-readiness`
+- `reviewer-response-completion`
+- `drift`
 
-Do not add OPS runtime, PR hygiene advisory, or reviewer lifecycle workflows to
-required status checks unless they are explicitly reclassified. Operator action
-required after Program #1500 Task 001 merge: add `post-merge-readiness` to the
-`main` branch-protection required status checks.
+OPS runtime and post-merge workflows are not merge-protection checks.
+
+## Rationale
+
+The repository had too many overlapping status surfaces. During the redesign, required checks should answer only deterministic merge-safety questions. Review lifecycle state belongs in GitHub reviews and review threads. Diff-scope and reviewer lifecycle can be promoted later after observation.
 
 ## Validation
 
-The repository inventory validator lives at
-`scripts/ci/merge_protection_surface.mjs`. Run it from the repository root
-during CI Task 002 verification and post-merge closeout.
+The validator lives at `scripts/ci/merge_protection_surface.mjs`.
 
 ## Rollback
 
-Restore the previous merge-protection workflow files and this reference
-documentation only. Re-enable `gate-zip-safety.yml` and revert `gate-quality.yml`
-ZIP/build consolidation if rollback is required.
+Rollback this reference and `scripts/ci/merge_protection_surface.mjs` to the prior required-check list only through a specific Ops issue.
