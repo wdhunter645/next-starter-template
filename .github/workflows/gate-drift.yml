@@ -1,12 +1,13 @@
 name: GATE — Drift Control
 
+# Manual-only: rebuild as advisory gate in a follow-up issue. Do not restore as auto-trigger marker.
+
 on:
-  pull_request:
   workflow_dispatch: {}
 
 jobs:
   drift-gate:
     runs-on: ubuntu-latest
     steps:
-      - name: Status
-        run: pwd
+      - name: Manual-only marker
+        run: echo "Drift control is manual-only pending rebuild; not a merge blocker."

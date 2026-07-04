@@ -50,6 +50,7 @@ describe('merge protection surface inventory', () => {
       '  quality:',
       '    steps:',
       '      - run: node scripts/ci/pr_class_quality_plan.mjs',
+      '      - run: bash scripts/ci/backend_reference_guard.sh',
       '      - run: bash scripts/ci/check_no_tracked_zips.sh',
       '      - run: bash scripts/ci/verify_zip_history_pr.sh',
     ].join('\n'));
@@ -63,10 +64,17 @@ describe('merge protection surface inventory', () => {
       ['gate-diff-scope.yml', 'GATE — Diff Scope', 'diff-scope'],
       ['reviewer-response-completion.yml', 'GATE — Reviewer Response Completion', 'reviewer-response-completion'],
       ['gate-drift.yml', 'GATE — Drift Control', 'drift-gate'],
+      ['gate-branch-freshness.yml', 'GATE — Branch Freshness', 'branch-freshness'],
+      ['docs-guardrails.yml', 'Docs Guardrails', 'docs_guardrails'],
+      ['design-compliance-warn.yml', 'Design Compliance (Warn)', 'design_compliance_warn'],
+      ['gate-intent-labeler.yml', 'GATE — Intent Labeler', 'label-intent'],
       ['ops-pr-issue-accounting.yml', 'GATE — PR Issue Accounting', 'pr-issue-accounting'],
+      ['gate-post-merge-readiness.yml', 'GATE — Post-Merge Readiness', 'post-merge-readiness'],
     ]) {
       fs.writeFileSync(path.join(root, `.github/workflows/${file}`), [
         `name: ${name}`,
+        'on:',
+        '  workflow_dispatch: {}',
         'jobs:',
         `  ${jobId}:`,
       ].join('\n'));
@@ -88,10 +96,17 @@ describe('merge protection surface inventory', () => {
       ['gate-diff-scope.yml', 'GATE — Diff Scope', 'diff-scope'],
       ['reviewer-response-completion.yml', 'GATE — Reviewer Response Completion', 'reviewer-response-completion'],
       ['gate-drift.yml', 'GATE — Drift Control', 'drift-gate'],
+      ['gate-branch-freshness.yml', 'GATE — Branch Freshness', 'branch-freshness'],
+      ['docs-guardrails.yml', 'Docs Guardrails', 'docs_guardrails'],
+      ['design-compliance-warn.yml', 'Design Compliance (Warn)', 'design_compliance_warn'],
+      ['gate-intent-labeler.yml', 'GATE — Intent Labeler', 'label-intent'],
       ['ops-pr-issue-accounting.yml', 'GATE — PR Issue Accounting', 'pr-issue-accounting'],
+      ['gate-post-merge-readiness.yml', 'GATE — Post-Merge Readiness', 'post-merge-readiness'],
     ]) {
       fs.writeFileSync(path.join(root, `.github/workflows/${file}`), [
         `name: ${name}`,
+        'on:',
+        '  workflow_dispatch: {}',
         'jobs:',
         `  ${jobId}:`,
       ].join('\n'));
