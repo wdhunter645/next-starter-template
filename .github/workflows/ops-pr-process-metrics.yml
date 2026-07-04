@@ -48,14 +48,28 @@ jobs:
 
             const requiredNames = new Set(['quality', 'gitleaks']);
             const tracked = new Set(['pr-hygiene', 'diff-scope', 'reviewer-response-completion', 'quality', 'gitleaks']);
-            const checks = (checkRuns.check_runs || [])
-              .filter((run) => tracked.has(run.name))
-              .map((run) => ({
-                name: run.name,
-                conclusion: run.conclusion,
-                detailsUrl: run.html_url,
-                required: requiredNames.has(run.name),
-              }));
+
+            const completedRuns = (checkRuns.check_runs || []).filter(
+              (run) => tracked.has(run.name) && run.status === 'completed',
+            );
+
+            const latestByName = new Map();
+            for (const run of completedRuns) {
+              const existing = latestByName.get(run.name);
+              const existingTime = existing?.completed_at ? Date.parse(existing.completed_at) : 0;
+              const runTime = run.completed_at ? Date.parse(run.completed_at) : 0;
+              if (!existing || runTime >= existingTime) {
+                latestByName.set(run.name, run);
+              }
+            }
+
+            const checks = [...latestByName.values()].map((run) => ({
+              name: run.name,
+              conclusion: run.conclusion,
+              detailsUrl: run.html_url,
+              required: requiredNames.has(run.name),
+              completedAt: run.completed_at || '',
+            }));
 
             const attempts = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
               owner: context.repo.owner,

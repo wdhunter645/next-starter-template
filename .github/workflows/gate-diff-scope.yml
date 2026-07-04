@@ -3,7 +3,11 @@ name: GATE — Diff Scope
 on:
   pull_request:
     types: [opened, synchronize, reopened, edited]
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to audit
+        required: true
 
 permissions:
   contents: read
@@ -17,30 +21,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Resolve changed files
-        id: changed_files
+      - name: Resolve diff-scope context
+        id: diff_context
         uses: actions/github-script@v7
         with:
           script: |
-            const pr = context.payload.pull_request;
-            if (!pr) {
-              core.setOutput('files', '');
+            const prNumber = context.payload.pull_request?.number || Number('${{ inputs.pr_number }}');
+            if (!prNumber) {
+              core.setFailure('PR number is required.');
               return;
             }
+
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+            });
 
             const files = await github.paginate(github.rest.pulls.listFiles, {
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: pr.number,
+              pull_number: prNumber,
               per_page: 100,
             });
 
+            core.setOutput('pr_number', String(prNumber));
+            core.setOutput('body', pr.body || '');
             core.setOutput('files', files.map((file) => file.filename).join('\n'));
 
       - name: Write diff-scope inputs
         env:
-          PR_BODY: ${{ github.event.pull_request.body }}
-          CHANGED_FILES: ${{ steps.changed_files.outputs.files }}
+          PR_BODY: ${{ steps.diff_context.outputs.body }}
+          CHANGED_FILES: ${{ steps.diff_context.outputs.files }}
         run: |
           printf '%s\n' "$PR_BODY" > "$RUNNER_TEMP/pr_body.md"
           printf '%s\n' "$CHANGED_FILES" > "$RUNNER_TEMP/pr_changed_files.txt"
@@ -59,14 +71,14 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: diff-scope-result-${{ github.event.pull_request.number || github.run_id }}
+          name: diff-scope-result-${{ steps.diff_context.outputs.pr_number || github.run_id }}
           path: |
             ${{ runner.temp }}/diff_scope_result.json
             ${{ runner.temp }}/diff_scope_result.md
           if-no-files-found: ignore
 
       - name: Upsert diff-scope advisory comment
-        if: github.event_name == 'pull_request'
+        if: steps.diff_context.outputs.pr_number != ''
         continue-on-error: true
         uses: actions/github-script@v7
         env:
@@ -80,7 +92,7 @@ jobs:
               ? fs.readFileSync(process.env.REPORT_FILE, 'utf8').trim()
               : 'Diff scope audit did not produce a report.';
             const body = `${marker}\n${report}\n\nThis check is advisory and non-blocking during the #2175 / #2208 PR-process rebuild.`;
-            const issue_number = context.payload.pull_request.number;
+            const issue_number = Number('${{ steps.diff_context.outputs.pr_number }}');
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,

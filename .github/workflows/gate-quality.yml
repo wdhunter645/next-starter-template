@@ -41,7 +41,7 @@ jobs:
         run: npm run check:structure
 
       - name: Enforce backend reference guard
-        run: bash scripts/ci/no_"supa""base"_guard.sh
+        run: bash scripts/ci/no_supabase_guard.sh
 
       - name: Block tracked ZIP files
         run: bash scripts/ci/check_no_tracked_zips.sh
