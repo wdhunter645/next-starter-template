@@ -1,33 +1,32 @@
 ---
 Doc Type: Governance
 Audience: Human + AI
-Authority Level: Canonical
-Owns: Governance rules, PR process, enforcement, AI guardrails
-Does Not Own: Design/architecture/platform specifications; step-by-step ops procedures
-Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md
-Last Reviewed: 2026-03-27
+Authority Level: Controlled
+Owns: Supporting PR governance guidance, UI/layout PR references, documentation header compliance
+Does Not Own: Canonical PR-process policy, PR body authority, PR-process CI promotion policy
+Canonical Reference: /docs/governance/PR_PROCESS.md
+Last Reviewed: 2026-07-04
 ---
 
 # Website Pull Request Governance
 
+This document is a supporting governance reference. The canonical pull request process is `/docs/governance/PR_PROCESS.md`.
+
 ## Required PR framing
-1. Reference `/docs/governance/PR_PROCESS.md`.
-2. Summarize exact edits with file paths (and line-level context when relevant).
-3. Link back to this governance file and the canonical design authority.
 
-## Source Issue Accounting
-The PR issue-accounting gate validates semantic issue linkage rather than a single exact Markdown spelling.
+1. Follow `/docs/governance/PR_PROCESS.md`.
+2. Use `.github/pull_request_template.md`.
+3. Summarize exact edits with file paths.
+4. Link source issue and any required follow-up issue.
 
-Accepted primary source Issue examples include:
-- `- **Issue:** #123`
-- `- **Issue**: #123`
-- `Issue: #123`
-- `Issue #123`
-- `Related Issue: #123`
+## Source issue accounting
 
-The gate must still enforce exactly one source Issue, same-repository issue URLs, open-Issue validation while the PR is open, and rejection of pull request references used as source Issues.
+Source issue accounting is governed by `/docs/governance/PR_PROCESS.md`.
+
+During #2175 / #2208 rebuild, `GATE — PR Issue Accounting` is manual-only. Do not treat older issue-accounting workflow comments or PR-body normalization behavior as current authority.
 
 ## Canonical references for UI/layout work
+
 - `/docs/reference/design/LGFC-Production-Design-and-Standards.md`
 - `/docs/reference/design/home.md`
 - `/docs/reference/design/fanclub.md`
@@ -37,6 +36,7 @@ Do not use archived `.html` snapshots as active source-of-truth references.
 ---
 
 ## Runtime & Platform Policy
+
 - Cloudflare Pages + Next.js deployment model is the active platform baseline.
 - Do not perform framework/runtime migrations in unrelated PRs.
 - Keep CSS/layout approach aligned to current repository standards.
@@ -44,6 +44,7 @@ Do not use archived `.html` snapshots as active source-of-truth references.
 ---
 
 ## Drift Control
+
 - Structural edits must align with canonical MD specifications under `docs/reference/design/**`.
 - If required canonical documentation is missing/outdated, open or update the relevant spec first.
 - Archived materials under `docs/archive/**` are historical context only.
@@ -51,14 +52,17 @@ Do not use archived `.html` snapshots as active source-of-truth references.
 ---
 
 ## As-Built Documentation Requirement
+
 Any PR that changes Cloudflare-rendered page behavior must update `/docs/as-built/cloudflare-frontend.md` in the same PR.
 
 ---
 
 ## Footer Design Enforcement
+
 Footer behavior must remain aligned with `/docs/reference/design/LGFC-Production-Design-and-Standards.md` and `/docs/reference/design/home.md`.
 
 Required invariants:
+
 - Left: rotating quote + dynamic-year copyright.
 - Center: logo used as scroll-to-top affordance.
 - Right links: Privacy (`/privacy`), Terms (`/terms`), Contact (`/contact`).
@@ -67,7 +71,9 @@ Required invariants:
 ---
 
 ## Social Wall Change Control
+
 For Social Wall changes:
+
 1. Validate against active design docs.
 2. Update implementation docs when behavior changes.
 3. Verify rendered behavior in preview/production.
@@ -75,8 +81,10 @@ For Social Wall changes:
 
 ---
 
-## Documentation Header Compliance (Required)
+## Documentation Header Compliance
+
 For any PR touching active docs (`docs/reference`, `docs/governance`, `docs/how-to`, `docs/explanation`, `docs/ops`, `docs/templates`):
+
 - Each touched markdown file must include the canonical header from `/docs/templates/markdown-header-template.md`.
-- Run `./scripts/ci/docs_check_headers.sh .` locally before opening/updating the PR.
+- Run `./scripts/ci/docs_check_headers.sh .` locally before opening/updating the PR when local tools are available.
 - If the guardrail fails, use the file-specific remediation output and apply the exact template fields.

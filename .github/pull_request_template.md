@@ -1,6 +1,8 @@
 <!--
 LGFC PR Template — stable facts only
 
+Canonical PR-process authority: docs/governance/PR_PROCESS.md
+
 Design principle: this body holds only facts that are stable at PR-open time
 and concise human-readable implementation evidence. It does not hold dynamic
 GitHub lifecycle state such as review comment IDs, review-thread status, check
@@ -58,7 +60,7 @@ Follow-up issue if required: #____ / not-applicable
 Do not paste comment IDs, review-thread state, generated auto-repair blocks,
 check status, or merge-readiness status here.
 
-Resolve actionable threads directly in GitHub. The reviewer lifecycle gate must
+Resolve actionable threads directly in GitHub. Reviewer lifecycle automation must
 read GitHub-native review state and review-thread state via API; it must not use
 this PR body as a lifecycle database.
 -->

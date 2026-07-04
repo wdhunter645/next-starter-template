@@ -3,13 +3,15 @@ Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
 Owns: Current PR process baseline during P1 rebuild
-Does Not Own: Final branch protection settings or GitHub App installation settings
-Canonical Reference: /docs/reference/ci/merge-protection-surface.md
+Does Not Own: Canonical PR-process policy, final branch protection settings, GitHub App installation settings
+Canonical Reference: /docs/governance/PR_PROCESS.md
 Related issues: #2175, #2208
 Last Reviewed: 2026-07-04
 ---
 
 # PR Process Current State
+
+This reference records the temporary current state of the PR-process rebuild. It supports, but does not replace, `/docs/governance/PR_PROCESS.md`.
 
 ## Status
 
@@ -21,11 +23,11 @@ The current process is intentionally safe-mode, not the final design. Legacy PR-
 
 1. Work starts from a GitHub issue.
 2. PR body uses the stable-facts template.
-3. PR body should include source issue, intent label, PR class, allowed paths, change summary, verification, acceptance criteria, and reviewer/bot review attestation.
+3. PR body should include source issue, intent label, PR class, allowed paths, out-of-scope declaration, change summary, verification, acceptance criteria, follow-up issue declaration, and reviewer/bot review attestation.
 4. Dynamic lifecycle state must not be stored in the PR body.
 5. PR-process CI is held in safe-mode during the P1 rebuild.
 6. Marker and manual workflows preserve workflow names while the final checks are rebuilt.
-7. Post-merge closeout ownership is consolidated and no longer intentionally loops through self-healing workflow cascades.
+7. Post-merge closeout ownership is consolidated and should avoid self-healing workflow cascades.
 
 ## Temporarily simplified PR-process checks
 
@@ -42,12 +44,13 @@ The following workflows are temporarily manual-only marker workflows:
 
 - `GATE — Intent Labeler`
 - `GATE — Diff Scope`
+- `GATE — PR Issue Accounting`
 
 These are not final-state checks. Each must later be deleted, kept manual/advisory, or rebuilt as deterministic validation.
 
 ## Still active safety checks
 
-The following remain active because they are not PR-process design gates or are still needed as safety controls:
+The following remain active because they are not legacy PR-process design gates or are still needed as safety controls:
 
 - Secret scan
 - ZIP history audit
@@ -55,9 +58,9 @@ The following remain active because they are not PR-process design gates or are 
 - Design authority / DIATAXIS checks where still wired
 - Cursor PR Review where still wired
 
-## New design target
+## Final design target
 
-The final PR process should have these properties:
+The final PR process is governed by `/docs/governance/PR_PROCESS.md` and should have these properties:
 
 - Stable PR body only.
 - No PR-body lifecycle ledgers.
@@ -72,13 +75,12 @@ The final PR process should have these properties:
 
 ## Known gaps
 
-1. Disable Codex automatic PR review outside repo code and verify ChatGPT connector access still works.
-2. Verify live branch-protection settings against the reduced required-check reference.
-3. Decide final disposition for each marker/manual PR-process workflow.
-4. Remove or justify remaining reviewer-disposition compatibility code.
-5. Decide whether more redesigned gates emit machine-readable artifacts.
-6. Establish first-pass / second-pass PR success metrics.
-7. Publish the final operator-facing PR process doc before closing #2175.
+1. Verify live branch-protection settings against the reduced required-check reference.
+2. Decide final disposition for each marker/manual PR-process workflow.
+3. Remove or justify remaining reviewer-disposition compatibility code.
+4. Decide whether more redesigned gates emit machine-readable artifacts.
+5. Establish first-pass / second-pass PR success metrics.
+6. Finish operator-facing PR-process documentation alignment before closing #2175.
 
 ## Current operating rule
 

@@ -3,13 +3,15 @@ Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
 Owns: PR process rebuild retired asset inventory
-Does Not Own: Final PR process design or branch protection settings
-Canonical Reference: /docs/reference/ci/merge-protection-surface.md
-Related issues: #2175, #2185
+Does Not Own: Canonical PR-process policy or branch protection settings
+Canonical Reference: /docs/governance/PR_PROCESS.md
+Related issues: #2175, #2185, #2208
 Last Reviewed: 2026-07-04
 ---
 
 # PR Process Rebuild Retired Asset Inventory
+
+This controlled reference supports `/docs/governance/PR_PROCESS.md` by recording which PR-process assets are removed, retained, simplified, or manual-only during the rebuild.
 
 ## Purpose
 
@@ -24,7 +26,7 @@ These assets implemented the retired PR-body reviewer-response ledger model. Rev
 
 ## Temporarily simplified before #2185
 
-The following workflows were simplified to passing marker checks in the emergency relief PR so they stop blocking PR-process repair work while the new process is rebuilt:
+The following workflows were simplified to passing marker checks so they stop blocking PR-process repair work while the new process is rebuilt:
 
 - `.github/workflows/gate-quality.yml`
 - `.github/workflows/gate-drift.yml`
@@ -35,20 +37,26 @@ The following workflows were simplified to passing marker checks in the emergenc
 
 These workflow names remain present so branch-protection check wiring does not deadlock merges while the rebuild is underway.
 
-## Kept for now
+## Manual-only during rebuild
 
 - `.github/workflows/gate-intent-labeler.yml`
 - `.github/workflows/gate-diff-scope.yml`
+- `.github/workflows/ops-pr-issue-accounting.yml`
+
+These must not be promoted back to automatic or required until advisory behavior is implemented and verified.
+
+## Kept compatibility assets
+
 - `scripts/ci/reviewer_lifecycle_gate.mjs`
 - `scripts/ci/reviewer_comment_disposition.mjs`
 - `tests/reviewer-lifecycle-gate.test.mjs`
 - `tests/reviewer-comment-disposition.test.mjs`
 
-`gate-intent-labeler.yml` and `gate-diff-scope.yml` remain because the GitHub tool layer blocked safe mutation in the emergency relief pass. `reviewer_comment_disposition.mjs` remains because the current native lifecycle script still imports compatibility helpers from it. Remove it only after those compatibility exports are removed from `reviewer_lifecycle_gate.mjs`.
+`reviewer_comment_disposition.mjs` remains because the current native lifecycle script still imports compatibility helpers from it. Remove it only after those compatibility exports are removed from `reviewer_lifecycle_gate.mjs`.
 
 ## Required-check position
 
-The repo-owned merge-protection reference identifies the reduced required surface as deterministic blockers only. PR-process rebuild work must not promote redesigned checks back to required until advisory evidence proves they are stable.
+The merge-protection reference identifies the reduced required surface as deterministic blockers only. PR-process rebuild work must not promote redesigned checks back to required until advisory evidence proves they are stable.
 
 ## Next cleanup criteria
 
