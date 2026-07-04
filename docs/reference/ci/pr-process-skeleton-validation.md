@@ -30,3 +30,7 @@ A PR that changes only this file should verify that:
 ## Result recording
 
 Record the observed PR number and outcome in #2208 after merge.
+
+## Post-accounting probe
+
+After #2213, a follow-up PR should verify that `GATE — PR Issue Accounting` no longer comments on newly opened PRs.
