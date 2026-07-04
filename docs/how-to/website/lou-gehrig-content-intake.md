@@ -21,6 +21,20 @@ or publication occurs.
 Capture leads and metadata. Do not copy wholesale copyrighted works into the
 repository. Do not publish intake material directly to public routes.
 
+## Steps
+
+1. Discover source lead through an approved intake channel.
+2. Create candidate record with `candidate_id`.
+3. Capture source title, URL/citation, owner, access date, and acquisition method.
+4. Classify content type and source category.
+5. Assign rights status and privacy flag.
+6. Assign provenance and factual confidence.
+7. Assign review status (`candidate` default).
+8. Route to research queue for triage.
+9. Complete provenance and rights review.
+10. Decide one of: reject; defer; approve for reference; approve for public-copy drafting.
+11. Retain evidence for #2040 automation review.
+
 ## Manual workflow stages
 
 1. **Source discovered** — lead identified through approved channel.
@@ -31,24 +45,6 @@ repository. Do not publish intake material directly to public routes.
 6. **Staging decision recorded** — club staging or editorial draft state.
 7. **Publication candidate or rejection recorded** — final disposition.
 8. **Evidence retained** — for #2040 automation review.
-
-## Detailed steps
-
-1. Discover source lead.
-2. Create candidate record with `candidate_id`.
-3. Capture source title, URL/citation, owner, access date, and acquisition method.
-4. Classify content type and source category.
-5. Assign rights status and privacy flag.
-6. Assign provenance and factual confidence.
-7. Assign review status (`candidate` default).
-8. Route to research queue for triage.
-9. Complete provenance and rights review.
-10. Decide one of:
-    - reject;
-    - defer;
-    approve for reference;
-    - approve for public-copy drafting.
-11. Retain evidence for #2040 automation review.
 
 ## Staging and editorial handoff
 
