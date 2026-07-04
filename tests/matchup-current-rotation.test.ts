@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { onRequestGet as publicMatchupCurrentGet, selectTwoPhotoIds } from '../functions/api/matchup/current';
+import {
+  onRequestGet as publicMatchupCurrentGet,
+  selectTwoPhotoIds,
+  MATCHUP_WEEK_START_SQL,
+  computeWeekStart,
+} from '../functions/api/matchup/current';
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -29,6 +34,61 @@ type PhotoRow = {
 
 type PhotoInput = Omit<PhotoRow, 'is_matchup_eligible'> & { is_matchup_eligible?: number };
 
+/** Mirrors SQLite date(ymd, '-6 days', 'weekday 1') for focused week-start tests. */
+function weekStartFromCalendarDate(ymd: string): string {
+  const addDays = (base: string, days: number): string => {
+    const d = new Date(`${base}T12:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + days);
+    return d.toISOString().slice(0, 10);
+  };
+  const sqliteWeekday1 = (base: string): string => {
+    const d = new Date(`${base}T12:00:00Z`);
+    const dow = d.getUTCDay();
+    if (dow === 1) return base;
+    const daysUntil = dow === 0 ? 1 : 8 - dow;
+    d.setUTCDate(d.getUTCDate() + daysUntil);
+    return d.toISOString().slice(0, 10);
+  };
+  return sqliteWeekday1(addDays(ymd, -6));
+}
+
+function sqliteMasterResults() {
+  return { results: [{ name: 'weekly_matchups' }, { name: 'photos' }] };
+}
+
+function makeWeekStartDb(nowYmd: string) {
+  const expected = weekStartFromCalendarDate(nowYmd);
+  const db = {
+    prepare: vi.fn((sql: string) => ({
+      bind: (...args: unknown[]) => ({
+        first: async () => runFirst(sql, args),
+        all: async () => runAll(sql, args),
+      }),
+      first: async () => runFirst(sql, []),
+      all: async () => runAll(sql, []),
+    })),
+  };
+
+  function runFirst(sql: string, _args: unknown[]) {
+    if (sql === MATCHUP_WEEK_START_SQL || sql.includes("date('now'")) {
+      return { week_start: expected };
+    }
+    if (sql.includes('sqlite_master')) {
+      return null;
+    }
+    return null;
+  }
+
+  function runAll(sql: string, _args: unknown[]) {
+    if (sql.includes('sqlite_master')) {
+      return sqliteMasterResults();
+    }
+    return { results: [] };
+  }
+
+  return { db, expected };
+}
+
 function makeRotationDb(options: {
   weekStart?: string;
   matchups?: MatchupRow[];
@@ -56,8 +116,12 @@ function makeRotationDb(options: {
   };
 
   function runFirst(sql: string, args: unknown[]) {
-    if (sql.includes("date('now'")) {
+    if (sql === MATCHUP_WEEK_START_SQL || sql.includes("date('now'")) {
       return { week_start: weekStart };
+    }
+
+    if (sql.includes('sqlite_master')) {
+      return null;
     }
 
     if (sql.includes("status = 'active'") && sql.includes('week_start = ?')) {
@@ -79,6 +143,10 @@ function makeRotationDb(options: {
   }
 
   function runAll(sql: string, args: unknown[]) {
+    if (sql.includes('sqlite_master')) {
+      return sqliteMasterResults();
+    }
+
     if (sql.includes('FROM weekly_matchups ORDER BY week_start DESC')) {
       const limit = Number(args[0] ?? 8);
       return {
@@ -169,6 +237,23 @@ function mockPhotoFetch(photoMap: Record<number, { url: string; description?: st
     return Promise.reject(new Error(`Unexpected fetch: ${url}`));
   });
 }
+
+describe('computeWeekStart', () => {
+  it('uses Monday-inclusive SQL (not previous-Monday on Monday)', () => {
+    expect(MATCHUP_WEEK_START_SQL).toContain("-6 days','weekday 1");
+    expect(MATCHUP_WEEK_START_SQL).not.toContain('-7 days');
+  });
+
+  it.each([
+    ['Monday', '2026-07-06', '2026-07-06'],
+    ['Tuesday', '2026-07-07', '2026-07-06'],
+    ['Sunday', '2026-07-05', '2026-06-29'],
+  ])('resolves %s (%s) to week_start %s', async (_label, nowYmd, expectedWeekStart) => {
+    const { db, expected } = makeWeekStartDb(nowYmd);
+    expect(expected).toBe(expectedWeekStart);
+    await expect(computeWeekStart(db)).resolves.toBe(expectedWeekStart);
+  });
+});
 
 describe('selectTwoPhotoIds', () => {
   it('excludes recent photo IDs when enough alternatives exist', () => {
@@ -416,5 +501,67 @@ describe('public matchup current rotation', () => {
     expect(body.items).toHaveLength(2);
     expect(body.items.map((item: { id: number }) => item.id)).not.toContain(348);
     expect(matchups.find((row) => row.id === 3)?.photo_b_id).not.toBe(348);
+  });
+
+  it('returns structured 503 when D1 binding is missing', async () => {
+    const response = await publicMatchupCurrentGet({
+      request: new Request('https://www.lougehrigfanclub.com/api/matchup/current'),
+      env: {},
+    });
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: 'Database unavailable',
+    });
+  });
+
+  it('fetches Photo A and Photo B in parallel', async () => {
+    const currentWeek = '2026-06-30';
+    const { db } = makeRotationDb({
+      weekStart: currentWeek,
+      matchups: [
+        {
+          id: 7,
+          week_start: currentWeek,
+          photo_a_id: 101,
+          photo_b_id: 102,
+          status: 'active',
+        },
+      ],
+    });
+
+    let inFlight = 0;
+    let maxInFlight = 0;
+
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const url = String(input);
+      const getMatch = url.match(/\/api\/photos\/get\?id=(\d+)/);
+      if (!getMatch) {
+        return Promise.reject(new Error(`Unexpected fetch: ${url}`));
+      }
+      inFlight += 1;
+      maxInFlight = Math.max(maxInFlight, inFlight);
+      const id = Number(getMatch[1]);
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          inFlight -= 1;
+          resolve(
+            jsonResponse({
+              ok: true,
+              item: { id, url: `/photos/${id}.jpg` },
+            }),
+          );
+        }, 20);
+      });
+    });
+
+    const response = await publicMatchupCurrentGet({
+      request: new Request('https://www.lougehrigfanclub.com/api/matchup/current'),
+      env: { DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    expect(maxInFlight).toBe(2);
   });
 });

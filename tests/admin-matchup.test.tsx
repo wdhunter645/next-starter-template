@@ -564,14 +564,24 @@ describe('public matchup read paths', () => {
       prepare: vi.fn((sql: string) => ({
         bind: () => ({
           first: async () => null,
-          all: async () => ({ results: [] }),
+          all: async () => {
+            if (sql.includes('sqlite_master')) {
+              return { results: [{ name: 'weekly_matchups' }, { name: 'photos' }] };
+            }
+            return { results: [] };
+          },
           run: async () => ({ meta: { changes: 0 } }),
         }),
         first: async () => {
           if (sql.includes("date('now'")) return { week_start: '2026-06-01' };
           return null;
         },
-        all: async () => ({ results: [] }),
+        all: async () => {
+          if (sql.includes('sqlite_master')) {
+            return { results: [{ name: 'weekly_matchups' }, { name: 'photos' }] };
+          }
+          return { results: [] };
+        },
         run: async () => ({ meta: { changes: 0 } }),
       })),
     };

@@ -5,7 +5,7 @@ Authority Level: Supporting
 Owns: Runtime behavior for D1-backed weekly photo matchup auto-rotation
 Does Not Own: Component design, voting policy, photo curation UI
 Canonical Reference: /docs/as-built/weekly-matchup-auto-rotation.md
-Related issues: #2157
+Related issues: #2157, #2230
 Last Reviewed: 2026-07-04
 ---
 
@@ -26,7 +26,7 @@ Records how `GET /api/matchup/current` resolves the homepage Weekly Photo Matchu
 
 On each request, the API:
 
-1. Computes the current Monday `week_start` (`YYYY-MM-DD`).
+1. Computes the current Monday `week_start` (`YYYY-MM-DD`) with a Monday-inclusive expression: `date('now','-6 days','weekday 1')`.
 2. Returns an existing **active** `weekly_matchups` row for that week when both photos resolve and remain eligible.
 3. Otherwise:
    - closes stale active rows from prior weeks;
