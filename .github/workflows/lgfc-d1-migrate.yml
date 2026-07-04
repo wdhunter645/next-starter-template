@@ -2,6 +2,12 @@ name: LGFC D1 Migrate (remote)
 
 on:
   workflow_dispatch:
+    inputs:
+      migration_file:
+        description: Migration SQL file path (under migrations/)
+        required: true
+        default: migrations/0041_exclude_logo_matchup_photo.sql
+        type: string
 
 jobs:
   migrate:
@@ -17,18 +23,28 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Run remote D1 migrations + verify
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run remote D1 migration
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -euo pipefail
-          echo "Wrangler:"
-          npx --yes wrangler --version
+          FILE="${{ inputs.migration_file }}"
+          if [ ! -f "$FILE" ]; then
+            echo "Migration file not found: $FILE"
+            exit 1
+          fi
+          echo "Applying $FILE to PRODUCTION D1 (lgfc_lite)"
+          npx wrangler d1 execute lgfc_lite --remote --yes --file "$FILE"
 
-          echo "Apply migrations to PRODUCTION D1 (lgfc_lite)"
-          npx --yes wrangler d1 execute lgfc_lite --remote --yes --file migrations/0029_member_sessions.sql
-          npx --yes wrangler d1 execute lgfc_lite --remote --yes --file migrations/0030_reports.sql
-
-          echo "Verify tables exist in PRODUCTION"
-          npx --yes wrangler d1 execute lgfc_lite --remote --command "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('member_sessions','reports');"
+      - name: Verify logo exclusion when applying 0041
+        if: contains(inputs.migration_file, '0041_exclude_logo_matchup_photo.sql')
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx wrangler d1 execute lgfc_lite --remote --command \
+            "SELECT id, url, is_matchup_eligible FROM photos WHERE url LIKE '%IMG_4026.jpeg%' LIMIT 1;"
