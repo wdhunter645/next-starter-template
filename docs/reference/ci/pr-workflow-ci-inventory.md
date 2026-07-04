@@ -85,6 +85,7 @@ Legacy PR CI must either be adopted into the current CI design or decommissioned
 | `.github/workflows/gate-branch-freshness.yml` | `GATE — Branch Freshness` | Pre-merge | Branch freshness candidate | Marker/safe-mode | Rebuild only if deterministic and low-noise. |
 | `.github/workflows/gate-intent-labeler.yml` | `GATE — Intent Labeler` | Pre-merge | Label classification support | Manual-only | Rebuild advisory-first; avoid label mutation loops. |
 | `.github/workflows/gate-diff-scope.yml` | `GATE — Diff Scope` | Pre-merge | Diff-scope advisory candidate | Manual-only | Rebuild as artifact/report first; no PR body mutation. |
+| `.github/workflows/gate-pr-hygiene.yml` | `GATE — PR Hygiene` / `pr-hygiene` | Pre-merge | PR hygiene advisory | Active advisory | Validates stable PR-body facts; non-blocking; artifact + upsert comment. |
 | `.github/workflows/gate-drift.yml` | `GATE — Drift Control` | Pre-merge | Governance drift candidate | Marker/safe-mode | Rebuild only after overlap with other gates is removed. |
 | `.github/workflows/design-authority-check.yml` | `Design Authority Check` | Pre-merge | Pre-merge advisory/check hybrid | Active where wired | Not a post-merge closeout owner. |
 | `.github/workflows/diataxis-folder-authority-check.yml` | `DIATAXIS Folder Authority Check` | Pre-merge | Pre-merge advisory/check hybrid | Active where wired | Supports DIATAXIS folder authority. |

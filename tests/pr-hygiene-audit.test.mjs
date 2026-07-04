@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import {
+  buildPrHygieneArtifact,
   buildPrHygieneReport,
   extractMarkdownSection,
   findIssueReferences,
@@ -8,7 +12,9 @@ import {
   parseIntentLabel,
   parsePrClass,
   renderPrHygieneReport,
+  runCli,
   suggestCanonicalIssueLine,
+  writePrHygieneArtifacts,
 } from '../scripts/ci/pr_hygiene_audit.mjs';
 
 const stableBody = `# PR Summary
@@ -146,5 +152,51 @@ describe('PR hygiene audit foundation', () => {
     expect(rendered).toContain('Suggested correction');
     expect(rendered).toContain('Missing stable `Intent label:`');
     expect(rendered).toContain('Changed files not covered');
+  });
+
+  it('writes machine-readable PR hygiene artifacts', () => {
+    const report = buildPrHygieneReport({
+      body: stableBody,
+      changedFiles: ['scripts/ci/pr_hygiene_audit.mjs'],
+    });
+    const artifact = buildPrHygieneArtifact(report);
+
+    expect(artifact.gate).toBe('pr-hygiene');
+    expect(artifact.schemaVersion).toBe(1);
+    expect(artifact.advisory).toBe(true);
+    expect(artifact.isClean).toBe(true);
+
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pr-hygiene-'));
+    const jsonPath = path.join(tempDir, 'result.json');
+    const mdPath = path.join(tempDir, 'result.md');
+
+    writePrHygieneArtifacts(report, {
+      PR_HYGIENE_RESULT_JSON: jsonPath,
+      PR_HYGIENE_RESULT_MD: mdPath,
+    });
+
+    expect(JSON.parse(fs.readFileSync(jsonPath, 'utf8')).isClean).toBe(true);
+    expect(fs.readFileSync(mdPath, 'utf8')).toContain('No PR hygiene defects detected.');
+  });
+
+  it('returns advisory exit code zero when enforcement is disabled', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pr-hygiene-cli-'));
+    const bodyPath = path.join(tempDir, 'body.md');
+    const changedPath = path.join(tempDir, 'changed.txt');
+
+    fs.writeFileSync(bodyPath, 'Closes #1131');
+    fs.writeFileSync(changedPath, 'scripts/ci/pr_hygiene_audit.mjs\n');
+
+    expect(runCli({
+      PR_HYGIENE_BODY_FILE: bodyPath,
+      PR_HYGIENE_CHANGED_FILES_FILE: changedPath,
+      PR_HYGIENE_ENFORCE_FAILURE: 'false',
+    })).toBe(0);
+
+    expect(runCli({
+      PR_HYGIENE_BODY_FILE: bodyPath,
+      PR_HYGIENE_CHANGED_FILES_FILE: changedPath,
+      PR_HYGIENE_ENFORCE_FAILURE: 'true',
+    })).toBe(1);
   });
 });
