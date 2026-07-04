@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: PR-process success metrics schema and collection workflow
 Does Not Own: Branch protection settings or merge approval
 Canonical Reference: /docs/governance/PR_PROCESS.md
-Related issues: #2175, #2208
+Related issues: #2175, #2208, #2228
 Last Reviewed: 2026-07-04
 ---
 
@@ -35,6 +35,8 @@ Lightweight measurement for PR-process rebuild validation. Metrics are recorded 
 
 1. Automatic: `ops-pr-process-metrics.yml` on merged PR close events.
 2. Manual: workflow dispatch with a PR number for probe validation.
+
+Check runs are deduplicated by name before metrics are recorded. When multiple completed runs exist for the same tracked check, the latest completed attempt wins. Stale failed attempts cannot override a later successful attempt. The metrics script applies the same dedupe defensively if duplicates are passed.
 
 Artifacts: `pr-process-metrics.json` and `pr-process-metrics.md`.
 
