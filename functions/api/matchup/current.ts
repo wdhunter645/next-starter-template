@@ -1,3 +1,9 @@
+import { requireD1, requireTables } from "../../_lib/d1";
+
+/** Monday-inclusive week anchor for weekly_matchups.week_start (YYYY-MM-DD). */
+export const MATCHUP_WEEK_START_SQL =
+  "SELECT date('now','-6 days','weekday 1') AS week_start;";
+
 type PhotoItem = {
   id: number;
   url: string;
@@ -42,8 +48,8 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
-async function computeWeekStart(db: any): Promise<string | null> {
-  const wsRow = await db.prepare("SELECT date('now','weekday 1','-7 days') AS week_start;").first();
+export async function computeWeekStart(db: any): Promise<string | null> {
+  const wsRow = await db.prepare(MATCHUP_WEEK_START_SQL).first();
   return wsRow?.week_start ? String(wsRow.week_start) : null;
 }
 
@@ -57,8 +63,10 @@ async function readPhotoById(request: Request, id: number): Promise<PhotoItem | 
 }
 
 async function resolveMatchupPhotos(request: Request, photoAId: number, photoBId: number): Promise<PhotoItem[]> {
-  const a = await readPhotoById(request, photoAId);
-  const b = await readPhotoById(request, photoBId);
+  const [a, b] = await Promise.all([
+    readPhotoById(request, photoAId),
+    readPhotoById(request, photoBId),
+  ]);
   return [a, b].filter(isUsablePhoto);
 }
 
@@ -242,15 +250,27 @@ export const onRequestGet = async (context: any): Promise<Response> => {
   const { env, request } = context;
 
   try {
-    const weekStart = await computeWeekStart(env.DB);
+    const d1Check = requireD1(env);
+    if (!d1Check.ok) {
+      return jsonResponse(d1Check.body, d1Check.status);
+    }
+
+    const tablesCheck = await requireTables(d1Check.db, ["weekly_matchups", "photos"]);
+    if (!tablesCheck.ok) {
+      return jsonResponse(tablesCheck.body, tablesCheck.status);
+    }
+
+    const db = d1Check.db;
+
+    const weekStart = await computeWeekStart(db);
     if (!weekStart) {
       return jsonResponse({ ok: true, week_start: null, matchup_id: null, items: [] });
     }
 
-    const activeCurrentWeek = await findActiveCurrentWeekMatchup(env.DB, weekStart);
+    const activeCurrentWeek = await findActiveCurrentWeekMatchup(db, weekStart);
     if (activeCurrentWeek) {
-      const photoAEligible = await isPhotoMatchupEligible(env.DB, activeCurrentWeek.photo_a_id);
-      const photoBEligible = await isPhotoMatchupEligible(env.DB, activeCurrentWeek.photo_b_id);
+      const photoAEligible = await isPhotoMatchupEligible(db, activeCurrentWeek.photo_a_id);
+      const photoBEligible = await isPhotoMatchupEligible(db, activeCurrentWeek.photo_b_id);
       const items = await resolveMatchupPhotos(
         request,
         activeCurrentWeek.photo_a_id,
@@ -266,10 +286,10 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       }
     }
 
-    await closeStaleActiveMatchups(env.DB, weekStart);
+    await closeStaleActiveMatchups(db, weekStart);
 
-    const eligiblePhotos = await fetchEligiblePhotos(env.DB);
-    const recentIds = await getRecentMatchupPhotoIds(env.DB);
+    const eligiblePhotos = await fetchEligiblePhotos(db);
+    const recentIds = await getRecentMatchupPhotoIds(db);
     const selected = selectTwoPhotoIds(eligiblePhotos, recentIds);
 
     if (!selected) {
@@ -277,9 +297,9 @@ export const onRequestGet = async (context: any): Promise<Response> => {
     }
 
     const [photoAId, photoBId] = selected;
-    const matchupId = await upsertCurrentWeekMatchup(env.DB, weekStart, photoAId, photoBId);
+    const matchupId = await upsertCurrentWeekMatchup(db, weekStart, photoAId, photoBId);
 
-    const resolved = await findCurrentWeekMatchup(env.DB, weekStart);
+    const resolved = await findCurrentWeekMatchup(db, weekStart);
     if (!resolved) {
       return jsonResponse({ ok: true, week_start: weekStart, matchup_id: null, items: [] });
     }
