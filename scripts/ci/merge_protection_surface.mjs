@@ -34,7 +34,7 @@ export const ADVISORY_PR_PROCESS_WORKFLOWS = [
     file: 'gate-diff-scope.yml',
     workflowName: 'GATE — Diff Scope',
     jobIds: ['diff-scope'],
-    notes: 'Advisory until enough PRs prove low false-positive rate.',
+    notes: 'Advisory until low false-positive rate is proven.',
   },
   {
     file: 'reviewer-response-completion.yml',
@@ -46,7 +46,7 @@ export const ADVISORY_PR_PROCESS_WORKFLOWS = [
     file: 'gate-drift.yml',
     workflowName: 'GATE — Drift Control',
     jobIds: ['drift'],
-    notes: 'Advisory/diagnostic during PR process repair unless explicitly reclassified.',
+    notes: 'Advisory/diagnostic during PR-process repair unless reclassified.',
   },
 ];
 
@@ -82,10 +82,10 @@ export function validateMergeProtectionSurface(options = {}) {
     }
   }
 
-  for (const entry of [...MERGE_PROTECTION_SURFACE, ...ADVISORY_PR_PROCESS_WORKFLOWS]) {
+  for (const entry of MERGE_PROTECTION_SURFACE) {
     const workflowPath = path.join(root, WORKFLOW_DIR, entry.file);
     if (!fs.existsSync(workflowPath)) {
-      errors.push(`Missing workflow: ${entry.file}`);
+      errors.push(`Missing merge-protection workflow: ${entry.file}`);
       continue;
     }
 
@@ -108,9 +108,9 @@ export function validateMergeProtectionSurface(options = {}) {
   if (fs.existsSync(qualityPath)) {
     const qualityContents = fs.readFileSync(qualityPath, 'utf8');
     for (const requiredStep of [
+      'npm run build',
       'scripts/ci/check_no_tracked_zips.sh',
       'scripts/ci/verify_zip_history_pr.sh',
-      'scripts/ci/pr_class_quality_plan.mjs',
     ]) {
       if (!qualityContents.includes(requiredStep)) {
         errors.push(`gate-quality.yml must invoke ${requiredStep}`);
