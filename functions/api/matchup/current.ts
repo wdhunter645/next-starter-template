@@ -16,6 +16,13 @@ type EligiblePhoto = {
 
 export const MATCHUP_EXCLUDED_ELIGIBILITY = -1;
 
+/** Atlas curation model — see Backblaze_B2.md § B2 inventory vs club-use curation */
+export const MATCHUP_ELIGIBILITY = {
+  UNREVIEWED: 0,
+  APPROVED: 1,
+  EXCLUDED: -1,
+} as const;
+
 type MatchupRow = {
   id: number;
   week_start: string;
@@ -72,6 +79,8 @@ async function getRecentMatchupPhotoIds(db: any, limit = 8): Promise<Set<number>
 }
 
 async function fetchEligiblePhotos(db: any): Promise<EligiblePhoto[]> {
+  // Interim: allow 0 (unreviewed) until admin curation marks club photos as 1.
+  // Target: MATCHUP_ELIGIBILITY.APPROVED only — see docs/reference/platform/Backblaze_B2.md
   const rows = await db
     .prepare(
       "SELECT id, url, is_memorabilia, is_matchup_eligible, description, title FROM photos WHERE url IS NOT NULL AND TRIM(url) != '' AND is_matchup_eligible >= 0;",

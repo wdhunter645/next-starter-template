@@ -78,6 +78,28 @@ Primary table(s) involved (as implemented by sync tooling):
 
 Other media tables may exist depending on phase (catalog + metadata), but the current automated sync tooling is explicitly photo-focused.
 
+### B2 inventory vs club-use curation (`photos.is_matchup_eligible`)
+
+The B2 bucket may contain objects that are not approved for public club surfaces. D1 indexes every synced object; **club-use eligibility is a separate curation flag** on the `photos` row.
+
+Canonical values (Atlas model):
+
+| Value | Meaning | Matchup / homepage use |
+| --- | --- | --- |
+| `0` | Default / unreviewed | **Do not use** until an admin marks the row reviewed |
+| `1` | Approved for club use | **Eligible** for Weekly Photo Matchup rotation and other approved public surfaces |
+| `-1` | Explicitly excluded | **Never use** (e.g. logo images that clip badly in the matchup frame) |
+
+Rules:
+
+- B2 → D1 sync sets `is_matchup_eligible = 0` for newly ingested rows unless metadata overrides it.
+- Admins promote suitable club photos to `1` and demote unsuitable rows to `-1`.
+- Weekly Photo Matchup selection must use only rows where `is_matchup_eligible = 1` once curation is complete.
+- After D1 recovery, rows whose URL/filename no longer match pre-failure records reset to `0` until re-reviewed (see recovery doctrine in ops docs).
+- URL text in D1 must stay aligned with the B2 object key/path for migrations and eligibility rules to reapply correctly.
+
+Current implementation note: matchup rotation may temporarily treat `0` as eligible while the photo catalog is being curated. Tighten to `= 1` only after admin curation marks approved club photos.
+
 ---
 
 ## Repo Tooling (B2 ↔ D1)
