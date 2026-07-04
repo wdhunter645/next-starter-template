@@ -3,13 +3,15 @@ Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
 Owns: Codex automatic PR-review disablement policy for LGFC
-Does Not Own: ChatGPT/Codex GitHub App installation settings
-Canonical Reference: /docs/reference/ci/pr-process-current-state.md
+Does Not Own: ChatGPT/Codex GitHub App installation settings or general AI-agent assignment policy
+Canonical Reference: /docs/governance/PR_PROCESS.md
 Related issues: #2175, #2208
 Last Reviewed: 2026-07-04
 ---
 
 # Codex PR Review Disablement
+
+This controlled reference supports `/docs/governance/PR_PROCESS.md`.
 
 ## Decision
 
@@ -29,11 +31,11 @@ Codex may still be used deliberately when Bill/Atlas assigns a specific task, bu
 
 Do not uninstall or disable the repository-level ChatGPT/Codex GitHub App connection unless a replacement ChatGPT GitHub access path exists.
 
-The app connection appears to provide repository access for ChatGPT administrative actions as well as Codex. The desired change is to disable automatic Codex PR review behavior, not revoke all OpenAI-side GitHub access.
+The desired change is to disable automatic Codex PR review behavior, not revoke all OpenAI-side GitHub access.
 
 ## Disablement path
 
-Because no repository workflow or file currently appears to request Codex PR reviews directly, the active switch is presumed to be outside normal repo code, likely in GitHub App / integration configuration.
+No repository workflow or file currently appears to request Codex PR reviews directly. The active switch is therefore treated as external integration configuration.
 
 Operator action:
 
@@ -47,7 +49,7 @@ Operator action:
 
 Repository documentation and process design must treat Codex PR review as disabled. Future PR-process rebuild work must not reintroduce automatic Codex reviewer requests.
 
-## Verification evidence to add before closing #2208
+## Verification evidence before closing #2208
 
 - A PR opened after disablement did not automatically request Codex review.
 - No Codex automatic PR review comment was posted.
