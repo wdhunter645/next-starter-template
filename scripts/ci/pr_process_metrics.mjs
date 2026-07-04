@@ -19,13 +19,43 @@ export function normalizeCheckConclusion(conclusion = '') {
   return value || 'unknown';
 }
 
+export function checkTimestamp(check = {}) {
+  const value = check.completedAt || check.completed_at || check.startedAt || check.started_at || '';
+  const parsed = Date.parse(String(value));
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+export function dedupeTrackedChecks(checks = []) {
+  const byName = new Map();
+
+  for (const check of checks) {
+    const name = String(check.name || '').trim();
+    if (!PR_PROCESS_GATE_IDS.includes(name)) continue;
+
+    const existing = byName.get(name);
+    if (!existing) {
+      byName.set(name, check);
+      continue;
+    }
+
+    const existingTs = checkTimestamp(existing);
+    const checkTs = checkTimestamp(check);
+
+    if (checkTs > existingTs || (checkTs === existingTs && checkTs === 0)) {
+      byName.set(name, check);
+    }
+  }
+
+  return [...byName.values()];
+}
+
 export function buildPrProcessMetricsRecord({
   prNumber = '',
   headSha = '',
   checks = [],
   runAttempt = 1,
 } = {}) {
-  const gateChecks = checks.filter((check) => PR_PROCESS_GATE_IDS.includes(String(check.name || '').trim()));
+  const gateChecks = dedupeTrackedChecks(checks);
   const requiredChecks = gateChecks.filter((check) => check.required !== false);
   const advisoryChecks = gateChecks.filter((check) => check.required === false);
 
