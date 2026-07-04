@@ -10,7 +10,7 @@ export const MERGE_PROTECTION_SURFACE = [
     workflowName: 'GATE — Quality Checks',
     jobIds: ['quality'],
     required: true,
-    notes: 'Consolidated lint, typecheck, test, build, and tracked-ZIP checks.',
+    notes: 'Class-aware structure, ZIP, typecheck, lint, targeted test, and build routing.',
   },
   {
     file: 'gitleaks.yml',
@@ -25,6 +25,28 @@ export const MERGE_PROTECTION_SURFACE = [
     jobIds: ['pr-issue-accounting'],
     required: true,
     notes: 'Deterministic Issue-first source accounting.',
+  },
+];
+
+/** @type {Array<{ file: string; workflowName: string; jobIds: string[]; notes?: string }>} */
+export const ADVISORY_PR_PROCESS_WORKFLOWS = [
+  {
+    file: 'gate-diff-scope.yml',
+    workflowName: 'GATE — Diff Scope',
+    jobIds: ['diff-scope'],
+    notes: 'Advisory until enough PRs prove low false-positive rate.',
+  },
+  {
+    file: 'reviewer-response-completion.yml',
+    workflowName: 'GATE — Reviewer Response Completion',
+    jobIds: ['reviewer-response-completion'],
+    notes: 'Advisory during GitHub-native reviewer lifecycle transition.',
+  },
+  {
+    file: 'gate-drift.yml',
+    workflowName: 'GATE — Drift Control',
+    jobIds: ['drift'],
+    notes: 'Advisory/diagnostic during PR process repair unless explicitly reclassified.',
   },
 ];
 
@@ -60,10 +82,10 @@ export function validateMergeProtectionSurface(options = {}) {
     }
   }
 
-  for (const entry of MERGE_PROTECTION_SURFACE) {
+  for (const entry of [...MERGE_PROTECTION_SURFACE, ...ADVISORY_PR_PROCESS_WORKFLOWS]) {
     const workflowPath = path.join(root, WORKFLOW_DIR, entry.file);
     if (!fs.existsSync(workflowPath)) {
-      errors.push(`Missing merge-protection workflow: ${entry.file}`);
+      errors.push(`Missing workflow: ${entry.file}`);
       continue;
     }
 
@@ -86,9 +108,9 @@ export function validateMergeProtectionSurface(options = {}) {
   if (fs.existsSync(qualityPath)) {
     const qualityContents = fs.readFileSync(qualityPath, 'utf8');
     for (const requiredStep of [
-      'npm run build',
       'scripts/ci/check_no_tracked_zips.sh',
       'scripts/ci/verify_zip_history_pr.sh',
+      'scripts/ci/pr_class_quality_plan.mjs',
     ]) {
       if (!qualityContents.includes(requiredStep)) {
         errors.push(`gate-quality.yml must invoke ${requiredStep}`);
@@ -100,6 +122,7 @@ export function validateMergeProtectionSurface(options = {}) {
     ok: errors.length === 0,
     errors,
     surface: MERGE_PROTECTION_SURFACE,
+    advisory: ADVISORY_PR_PROCESS_WORKFLOWS,
     retired: RETIRED_MERGE_PROTECTION_WORKFLOWS,
   };
 }
@@ -108,7 +131,7 @@ export function renderBranchProtectionChecklist() {
   const lines = [
     '## LGFC Merge Protection Required Checks',
     '',
-    'Configure branch protection for `main` with these deterministic checks only:',
+    'Configure branch protection for `main` with these deterministic checks only during PR-process repair:',
     '',
   ];
 
@@ -118,13 +141,23 @@ export function renderBranchProtectionChecklist() {
     }
   }
 
+  lines.push('', 'Advisory PR-process checks. Do not require these until promoted by a follow-up Ops issue:', '');
+  for (const entry of ADVISORY_PR_PROCESS_WORKFLOWS) {
+    for (const jobId of entry.jobIds) {
+      lines.push(`- \`${jobId}\` (${entry.workflowName}) — ${entry.notes}`);
+    }
+  }
+
   lines.push(
     '',
     'Retired checks (remove from branch protection if still listed):',
     '',
     '- `check-no-zip-files` (`GATE — ZIP Safety`) — assimilated into `quality`',
+    '- `post-merge-readiness` — retired as a pre-merge blocker during stable-body/GitHub-native-state transition',
+    '- `reviewer-response-completion` — advisory until native reviewer lifecycle data is proven stable',
+    '- `drift` — advisory during PR-process repair unless explicitly reclassified',
     '',
-    'Non-merge-protection checks such as drift control, reviewer lifecycle, PR hygiene advisories, and OPS runtime workflows must not be treated as merge blockers unless explicitly reclassified.',
+    'OPS runtime and post-merge workflows must not be required status checks.',
   );
 
   return `${lines.join('\n')}\n`;
