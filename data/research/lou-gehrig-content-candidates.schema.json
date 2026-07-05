@@ -1,0 +1,301 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.lougehrigfanclub.com/schemas/lou-gehrig-content-candidates.schema.json",
+  "title": "LGFC Lou Gehrig Content Candidate Registry",
+  "description": "Seed/fixture/transitional candidate registry for Program #2273. Not operational source of truth.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "registry_class", "candidates"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1"
+    },
+    "registry_class": {
+      "type": "string",
+      "enum": ["seed_transitional", "fixture", "operator_export"],
+      "description": "seed_transitional = pilot registry; not durable operational storage"
+    },
+    "description": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "candidates": {
+      "type": "array",
+      "minItems": 0,
+      "items": { "$ref": "#/$defs/candidate" }
+    }
+  },
+  "$defs": {
+    "input_stream": {
+      "type": "string",
+      "enum": [
+        "public_research",
+        "member_submission",
+        "admin_seed",
+        "scheduled_discovery"
+      ]
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "archive",
+        "museum",
+        "newspaper",
+        "library",
+        "member",
+        "social",
+        "auction",
+        "institution",
+        "operator",
+        "other"
+      ]
+    },
+    "content_type": {
+      "type": "string",
+      "enum": [
+        "photo",
+        "article",
+        "record",
+        "story",
+        "video",
+        "audio",
+        "artifact",
+        "quote",
+        "timeline_fact",
+        "biography_note",
+        "source_lead",
+        "correction",
+        "identification",
+        "other"
+      ]
+    },
+    "rights_status": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "public_domain_candidate",
+        "permission_needed",
+        "permission_requested",
+        "permission_granted",
+        "copyright_restricted",
+        "blocked"
+      ]
+    },
+    "source_trust_status": {
+      "type": "string",
+      "enum": ["pending", "trusted", "questionable", "blocked", "deleted"]
+    },
+    "relevance_status": {
+      "type": "string",
+      "enum": ["pending", "relevant", "not_relevant", "uncertain"]
+    },
+    "review_status": {
+      "type": "string",
+      "enum": [
+        "pending_review",
+        "approved_internal_reference",
+        "approved_public_candidate",
+        "approved_citation_reference_only",
+        "deferred_source_verification",
+        "deferred_rights_review",
+        "deferred_privacy_review",
+        "rejected",
+        "private_internal_only"
+      ]
+    },
+    "publication_status": {
+      "type": "string",
+      "enum": [
+        "not_ready",
+        "draft_candidate",
+        "staged",
+        "approved_for_publish",
+        "published",
+        "unpublished",
+        "archived"
+      ]
+    },
+    "privacy_flag": {
+      "type": "string",
+      "enum": ["none", "living_person", "donor_member", "minors", "sensitive", "other"]
+    },
+    "privacy_review_status": {
+      "type": "string",
+      "enum": ["not_applicable", "pending_review", "approved", "restricted", "blocked"]
+    },
+    "review_priority": {
+      "type": "string",
+      "enum": ["low", "normal", "high"]
+    },
+    "submission_type": {
+      "type": "string",
+      "enum": [
+        "story",
+        "photo",
+        "memorabilia",
+        "correction",
+        "identification",
+        "source_lead",
+        "historical_note"
+      ]
+    },
+    "credit_preference": {
+      "type": "string",
+      "enum": ["public_credit", "anonymous", "private", "custom"]
+    },
+    "consent_status": {
+      "type": "string",
+      "enum": ["pending", "granted", "restricted", "denied"]
+    },
+    "publication_target": {
+      "type": "string",
+      "enum": [
+        "biography",
+        "timeline",
+        "gallery",
+        "library",
+        "memorabilia",
+        "article",
+        "homepage_feature",
+        "lou_gehrig_day",
+        "newsletter",
+        "social",
+        "internal_reference_only"
+      ]
+    },
+    "source_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source_record_id": { "type": "string" },
+        "date_accessed": { "type": "string", "format": "date" },
+        "source_citation": { "type": "string" }
+      }
+    },
+    "member_submission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "submitter_name",
+        "submitter_contact",
+        "submission_type",
+        "ownership_statement",
+        "permission_statement",
+        "credit_preference",
+        "consent_status",
+        "admin_followup_required"
+      ],
+      "properties": {
+        "submitter_id": { "type": "string" },
+        "submitter_name": { "type": "string", "minLength": 1 },
+        "submitter_contact": { "type": "string", "minLength": 1 },
+        "submission_type": { "$ref": "#/$defs/submission_type" },
+        "ownership_statement": { "type": "string", "minLength": 1 },
+        "permission_statement": { "type": "string", "minLength": 1 },
+        "credit_preference": { "$ref": "#/$defs/credit_preference" },
+        "privacy_notes": { "type": "string" },
+        "uploaded_media_reference": { "type": "string" },
+        "related_candidate_id": { "type": "string" },
+        "consent_status": { "$ref": "#/$defs/consent_status" },
+        "admin_followup_required": { "type": "boolean" }
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "input_stream",
+        "title",
+        "source_name",
+        "source_type",
+        "content_type",
+        "summary",
+        "rights_status",
+        "source_trust_status",
+        "relevance_status",
+        "review_status",
+        "publication_status",
+        "privacy_flag",
+        "privacy_review_status",
+        "review_priority",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "candidate_id": {
+          "type": "string",
+          "pattern": "^lgfc-gehrig-[0-9]{4}-[0-9]{3,}$"
+        },
+        "input_stream": { "$ref": "#/$defs/input_stream" },
+        "title": { "type": "string", "minLength": 1 },
+        "source_url": { "type": "string", "format": "uri" },
+        "source_name": { "type": "string", "minLength": 1 },
+        "source_owner": { "type": "string" },
+        "source_domain": { "type": "string" },
+        "source_type": { "$ref": "#/$defs/source_type" },
+        "content_type": { "$ref": "#/$defs/content_type" },
+        "summary": { "type": "string", "minLength": 1 },
+        "date_or_period": { "type": "string" },
+        "people_tags": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "topic_tags": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "location_tags": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "provenance_notes": { "type": "string" },
+        "rights_status": { "$ref": "#/$defs/rights_status" },
+        "source_trust_status": { "$ref": "#/$defs/source_trust_status" },
+        "relevance_status": { "$ref": "#/$defs/relevance_status" },
+        "review_status": { "$ref": "#/$defs/review_status" },
+        "publication_status": { "$ref": "#/$defs/publication_status" },
+        "publication_target": { "$ref": "#/$defs/publication_target" },
+        "privacy_flag": { "$ref": "#/$defs/privacy_flag" },
+        "privacy_review_status": { "$ref": "#/$defs/privacy_review_status" },
+        "credit_line": { "type": "string" },
+        "media_asset_id": { "type": "string" },
+        "duplicate_of": { "type": "string" },
+        "review_priority": { "$ref": "#/$defs/review_priority" },
+        "admin_notes": { "type": "string" },
+        "source_metadata": { "$ref": "#/$defs/source_metadata" },
+        "member_submission": { "$ref": "#/$defs/member_submission" },
+        "submission_queue_id": { "type": "integer", "minimum": 1 },
+        "content_inventory_id": { "type": "integer", "minimum": 1 },
+        "last_event_at": { "type": "string", "format": "date-time" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "input_stream": { "const": "member_submission" } },
+            "required": ["input_stream"]
+          },
+          "then": { "required": ["member_submission"] }
+        },
+        {
+          "if": {
+            "properties": {
+              "publication_status": { "const": "approved_for_publish" }
+            },
+            "required": ["publication_status"]
+          },
+          "then": { "required": ["credit_line", "publication_target"] }
+        }
+      ]
+    }
+  }
+}
