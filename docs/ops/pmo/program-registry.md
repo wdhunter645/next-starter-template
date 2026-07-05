@@ -14,9 +14,9 @@ Last Reviewed: 2026-07-05
 
 ## Purpose
 
-Record current PMO program issues and their status under PMO v3.
+This registry is the PMO program index. During the #2100 authority transition, `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` remains current PMO authority until PR #2282 merges. After PR #2282 merges, `/docs/ops/pmo/PMO-V4-OPERATING-MODEL.md` controls PMO authority and this registry routes readers to PMO V4.
 
-**Authority transition:** Until issue #2100 merges, this registry is subordinate to `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`. After #2100 merges, this registry is subordinate to `/docs/ops/pmo/PMO-V4-OPERATING-MODEL.md`. If this registry conflicts with the active PMO operating model, the operating model controls.
+If this registry conflicts with the active PMO operating model, the operating model controls.
 
 ## Scope
 

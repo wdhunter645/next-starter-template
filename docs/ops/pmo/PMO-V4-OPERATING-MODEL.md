@@ -17,11 +17,31 @@ This document is the top-level LGFC PMO v4 authority. It supersedes `/docs/ops/p
 
 PMO v4 preserves the issue-number-based program model from PMO v3. A program is a GitHub program issue. Program issue numbers are the durable program identifiers.
 
+## Current known truth
+
+Until PR #2282 for issue #2100 merges, `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` remains the current repository PMO authority.
+
+This PMO V4 document is staged authority while PR #2282 is open. It is proposed repository authority, not controlling repository authority, until the PR merges.
+
+Google Drive PMO V4 material and the embedded PMO V4 source comments in issue #2100 are planning inputs. They inform this promotion, but they do not become repository authority by themselves.
+
+`program-registry.md` and `pmo-backlog.md` remain subordinate PMO routing and inventory surfaces. They must not override the controlling PMO operating model.
+
+## Intended final state
+
+After PR #2282 merges, this document becomes the controlling LGFC PMO authority for new PMO planning and implementation decisions.
+
+After PR #2282 merges, `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` becomes historical reference unless a later source issue explicitly restores or updates it.
+
+After PR #2282 merges, `program-registry.md` and `pmo-backlog.md` route readers to PMO V4 for current PMO authority while continuing to serve their narrower registry and backlog functions.
+
+Future PMO V4 refinements still require the normal GitHub Issue / PR path before they become repository authority.
+
 ## Transition from PMO V3
 
-**Until issue #2100 merges:** `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` remains the current repository PMO authority. This file is staged authority only.
+Authority timing is defined in [Current known truth](#current-known-truth) and [Intended final state](#intended-final-state).
 
-**After issue #2100 merges:** this file becomes the controlling PMO authority. `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` becomes historical reference. Where older PMO documents conflict with this file, this file controls for new work.
+After PR #2282 merges, where older PMO documents conflict with this file, this file controls for new work.
 
 Subordinate PMO docs (`program-registry.md`, `pmo-backlog.md`, implementation plans, and task issues) must be reconciled to conform after promotion. This promotion PR reconciles only the minimum index/backlog routing references in `program-registry.md` and `pmo-backlog.md`.
 
