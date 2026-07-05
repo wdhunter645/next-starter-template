@@ -19,6 +19,16 @@
     "description": {
       "type": "string"
     },
+    "registry_purpose": {
+      "type": "string",
+      "enum": ["workflow_fixture", "operator_export", "pilot_seed"],
+      "description": "workflow_fixture = synthetic demo records for validation only"
+    },
+    "content_evidence_level": {
+      "type": "string",
+      "enum": ["synthetic_demo_only", "operator_verified", "mixed"],
+      "description": "synthetic_demo_only = not validated Lou Gehrig content"
+    },
     "updated_at": {
       "type": "string",
       "format": "date-time"

@@ -26,8 +26,15 @@ Predecessor: `#2275` canonical model and JSON Schema.
 | File | `data/research/lou-gehrig-content-candidates.json` |
 | Schema | `data/research/lou-gehrig-content-candidates.schema.json` |
 | Class | `seed_transitional` |
+| Purpose | `workflow_fixture` |
+| Content evidence | `synthetic_demo_only` — **not validated Lou Gehrig content** |
 | Operational authority | **No** — D1 remains source of truth for published content |
 | Public publication implied | **No** — inclusion does not publish |
+
+**Important:** The 30 registry rows are synthetic workflow fixtures for schema
+state coverage and duplicate-detection testing. Titles are prefixed `[FIXTURE]`.
+They are not collected content evidence and must be replaced by operator-verified
+records during a real manual seed pilot.
 
 ## Trusted source categories (pilot)
 
@@ -62,14 +69,27 @@ copy ingestion, binary download without rights.
 | Metric | Value |
 | --- | --- |
 | Total candidates | 30 |
-| Target range | 25–50 |
+| Target range | 25–50 (fixture count meets pilot planning threshold) |
+| Evidence level | `synthetic_demo_only` — fixture/demo, not real approved content |
 | `public_research` | 28 |
 | `admin_seed` | 1 |
 | `member_submission` (shaped example) | 1 |
 | `scheduled_discovery` | 0 |
 | Duplicate example | 1 (`duplicate_of` set) |
-| Review states represented | pending, internal reference, deferred rights, rejected, public candidate |
-| Rights states represented | unknown, public_domain_candidate, permission_needed, permission_granted |
+| Review states represented | pending, deferred, internal reference, citation-only, public candidate, rejected, private |
+| Rights states represented | unknown, public_domain_candidate, permission_needed, permission_granted, blocked |
+| Publication states | `not_ready`, `draft_candidate`, `approved_for_publish` (only with consistent rights/review) |
+
+### State consistency rule (fixtures)
+
+No fixture row combines incompatible states. In particular:
+
+- `approved_for_publish` requires `review_status = approved_public_candidate` and
+  `rights_status` in (`permission_granted`, `public_domain_candidate`) plus
+  `credit_line` and `publication_target`.
+- `permission_needed` never appears with `approved_for_publish`.
+- `rejected` and `deferred_*` review states use `publication_status = not_ready`
+  (or `draft_candidate` at most).
 
 ## Duplicate detection expectations
 

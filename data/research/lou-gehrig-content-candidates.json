@@ -1,21 +1,23 @@
 {
   "schema_version": "1",
   "registry_class": "seed_transitional",
-  "description": "Program #2273 Task-003 manual seed pilot registry. Transitional only — not operational source of truth.",
-  "updated_at": "2026-07-05T12:00:00.000Z",
+  "description": "FIXTURE/DEMO seed registry for Program #2273 workflow validation only. Not validated Lou Gehrig content, not operational source of truth, and not approved for publication.",
+  "registry_purpose": "workflow_fixture",
+  "content_evidence_level": "synthetic_demo_only",
+  "updated_at": "2026-07-05T16:00:00.000Z",
   "candidates": [
     {
       "candidate_id": "lgfc-gehrig-2026-001",
       "input_stream": "public_research",
-      "title": "Gehrig photo lead 1 — National",
+      "title": "[FIXTURE] photo workflow sample 1",
       "source_url": "https://baseballhall.org/discover-more/stories/lou-gehrig",
       "source_name": "National Baseball Hall of Fame",
       "source_owner": "National Baseball Hall of Fame",
       "source_domain": "baseballhall.org",
       "source_type": "museum",
       "content_type": "photo",
-      "summary": "Manual research candidate 1 from National Baseball Hall of Fame; conservative rights and review defaults.",
-      "date_or_period": "1923",
+      "summary": "Synthetic pilot fixture 1 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -25,35 +27,35 @@
       "location_tags": [
         "Cooperstown"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
       "rights_status": "unknown",
-      "source_trust_status": "questionable",
+      "source_trust_status": "pending",
       "relevance_status": "relevant",
       "review_status": "pending_review",
       "publication_status": "not_ready",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
       "review_priority": "high",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "National Baseball Hall of Fame catalog/search reference"
+        "source_citation": "National Baseball Hall of Fame — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-002",
       "input_stream": "public_research",
-      "title": "Gehrig article lead 2 — Library",
-      "source_url": "https://www.loc.gov/search/?q=lou+gehrig",
+      "title": "[FIXTURE] article workflow sample 2",
+      "source_url": "https://www.loc.gov/item/2018645306/",
       "source_name": "Library of Congress",
       "source_owner": "Library of Congress",
       "source_domain": "loc.gov",
       "source_type": "library",
       "content_type": "article",
-      "summary": "Manual research candidate 2 from Library of Congress; conservative rights and review defaults.",
-      "date_or_period": "1924",
+      "summary": "Synthetic pilot fixture 2 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -64,36 +66,35 @@
       "location_tags": [
         "New York"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "public_domain_candidate",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "unknown",
       "source_trust_status": "trusted",
       "relevance_status": "relevant",
-      "review_status": "approved_internal_reference",
-      "publication_status": "draft_candidate",
+      "review_status": "pending_review",
+      "publication_status": "not_ready",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
-      "credit_line": "Library of Congress — research citation pending final review.",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "Library of Congress catalog/search reference"
+        "source_citation": "Library of Congress — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-003",
       "input_stream": "public_research",
-      "title": "Gehrig quote lead 3 — New",
-      "source_url": "https://www.nytimes.com/search?query=lou%20gehrig",
+      "title": "[FIXTURE] quote workflow sample 3",
+      "source_url": "https://archive.nytimes.com/www.nytimes.com/learning/general/onthisday/bday/0620.html",
       "source_name": "New York Times Archive",
       "source_owner": "New York Times Archive",
       "source_domain": "nytimes.com",
       "source_type": "newspaper",
       "content_type": "quote",
-      "summary": "Manual research candidate 3 from New York Times Archive; conservative rights and review defaults.",
-      "date_or_period": "1925",
+      "summary": "Synthetic pilot fixture 3 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -103,36 +104,35 @@
       "location_tags": [
         "Cooperstown"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "permission_needed",
-      "source_trust_status": "trusted",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "unknown",
+      "source_trust_status": "questionable",
       "relevance_status": "relevant",
-      "review_status": "deferred_rights_review",
-      "publication_status": "approved_for_publish",
+      "review_status": "deferred_source_verification",
+      "publication_status": "not_ready",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
-      "credit_line": "New York Times Archive — research citation pending final review.",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "New York Times Archive catalog/search reference"
+        "source_citation": "New York Times Archive — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-004",
       "input_stream": "public_research",
-      "title": "Gehrig timeline fact lead 4 — Columbia",
-      "source_url": "https://library.columbia.edu/locations/rbml.html",
+      "title": "[FIXTURE] timeline fact workflow sample 4",
+      "source_url": "https://library.columbia.edu/libraries/rbml.html",
       "source_name": "Columbia University Archives",
       "source_owner": "Columbia University Archives",
       "source_domain": "library.columbia.edu",
       "source_type": "archive",
       "content_type": "timeline_fact",
-      "summary": "Manual research candidate 4 from Columbia University Archives; conservative rights and review defaults.",
-      "date_or_period": "1926",
+      "summary": "Synthetic pilot fixture 4 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -142,36 +142,35 @@
       "location_tags": [
         "New York"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "permission_granted",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "permission_needed",
       "source_trust_status": "trusted",
       "relevance_status": "relevant",
-      "review_status": "rejected",
+      "review_status": "deferred_rights_review",
       "publication_status": "not_ready",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
-      "credit_line": "Columbia University Archives — research citation pending final review.",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "Columbia University Archives catalog/search reference"
+        "source_citation": "Columbia University Archives — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-005",
       "input_stream": "public_research",
-      "title": "Gehrig biography note lead 5 — Yankees",
+      "title": "[FIXTURE] biography note workflow sample 5",
       "source_url": "https://www.mlb.com/yankees/history",
       "source_name": "Yankees Official History",
       "source_owner": "Yankees Official History",
       "source_domain": "mlb.com",
       "source_type": "institution",
       "content_type": "biography_note",
-      "summary": "Manual research candidate 5 from Yankees Official History; conservative rights and review defaults.",
-      "date_or_period": "1927",
+      "summary": "Synthetic pilot fixture 5 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -181,35 +180,35 @@
       "location_tags": [
         "Cooperstown"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
       "rights_status": "unknown",
       "source_trust_status": "trusted",
       "relevance_status": "relevant",
-      "review_status": "approved_public_candidate",
-      "publication_status": "draft_candidate",
-      "privacy_flag": "none",
-      "privacy_review_status": "not_applicable",
+      "review_status": "deferred_privacy_review",
+      "publication_status": "not_ready",
+      "privacy_flag": "living_person",
+      "privacy_review_status": "pending_review",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "Yankees Official History catalog/search reference"
+        "source_citation": "Yankees Official History — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-006",
       "input_stream": "public_research",
-      "title": "Gehrig record lead 6 — National",
+      "title": "[FIXTURE] record workflow sample 6",
       "source_url": "https://baseballhall.org/discover-more/stories/lou-gehrig",
       "source_name": "National Baseball Hall of Fame",
       "source_owner": "National Baseball Hall of Fame",
       "source_domain": "baseballhall.org",
       "source_type": "museum",
       "content_type": "record",
-      "summary": "Manual research candidate 6 from National Baseball Hall of Fame; conservative rights and review defaults.",
-      "date_or_period": "1928",
+      "summary": "Synthetic pilot fixture 6 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -219,36 +218,35 @@
       "location_tags": [
         "New York"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "public_domain_candidate",
-      "source_trust_status": "questionable",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "unknown",
+      "source_trust_status": "trusted",
       "relevance_status": "relevant",
-      "review_status": "pending_review",
-      "publication_status": "approved_for_publish",
+      "review_status": "approved_internal_reference",
+      "publication_status": "not_ready",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
-      "credit_line": "National Baseball Hall of Fame — research citation pending final review.",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "National Baseball Hall of Fame catalog/search reference"
+        "source_citation": "National Baseball Hall of Fame — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-007",
       "input_stream": "public_research",
-      "title": "Gehrig artifact lead 7 — Library",
-      "source_url": "https://www.loc.gov/search/?q=lou+gehrig",
+      "title": "[FIXTURE] artifact workflow sample 7",
+      "source_url": "https://www.loc.gov/item/2018645306/",
       "source_name": "Library of Congress",
       "source_owner": "Library of Congress",
       "source_domain": "loc.gov",
       "source_type": "library",
       "content_type": "artifact",
-      "summary": "Manual research candidate 7 from Library of Congress; conservative rights and review defaults.",
-      "date_or_period": "1929",
+      "summary": "Synthetic pilot fixture 7 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -258,7 +256,7 @@
       "location_tags": [
         "Cooperstown"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
       "rights_status": "permission_needed",
       "source_trust_status": "trusted",
       "relevance_status": "relevant",
@@ -266,28 +264,27 @@
       "publication_status": "not_ready",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
-      "credit_line": "Library of Congress — research citation pending final review.",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "Library of Congress catalog/search reference"
+        "source_citation": "Library of Congress — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-008",
       "input_stream": "public_research",
-      "title": "Gehrig source lead lead 8 — New",
-      "source_url": "https://www.nytimes.com/search?query=lou%20gehrig",
+      "title": "[FIXTURE] source lead workflow sample 8",
+      "source_url": "https://archive.nytimes.com/www.nytimes.com/learning/general/onthisday/bday/0620.html",
       "source_name": "New York Times Archive",
       "source_owner": "New York Times Archive",
       "source_domain": "nytimes.com",
       "source_type": "newspaper",
       "content_type": "source_lead",
-      "summary": "Manual research candidate 8 from New York Times Archive; conservative rights and review defaults.",
-      "date_or_period": "1930",
+      "summary": "Synthetic pilot fixture 8 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -298,36 +295,35 @@
       "location_tags": [
         "New York"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "permission_granted",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "copyright_restricted",
       "source_trust_status": "trusted",
       "relevance_status": "relevant",
-      "review_status": "deferred_rights_review",
-      "publication_status": "draft_candidate",
+      "review_status": "approved_citation_reference_only",
+      "publication_status": "not_ready",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
-      "credit_line": "New York Times Archive — research citation pending final review.",
       "review_priority": "high",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "New York Times Archive catalog/search reference"
+        "source_citation": "New York Times Archive — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-009",
       "input_stream": "public_research",
-      "title": "Gehrig photo lead 9 — Columbia",
-      "source_url": "https://library.columbia.edu/locations/rbml.html",
+      "title": "[FIXTURE] photo workflow sample 9",
+      "source_url": "https://library.columbia.edu/libraries/rbml.html",
       "source_name": "Columbia University Archives",
       "source_owner": "Columbia University Archives",
       "source_domain": "library.columbia.edu",
       "source_type": "archive",
       "content_type": "photo",
-      "summary": "Manual research candidate 9 from Columbia University Archives; conservative rights and review defaults.",
-      "date_or_period": "1931",
+      "summary": "Synthetic pilot fixture 9 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -337,35 +333,35 @@
       "location_tags": [
         "Cooperstown"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "unknown",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "public_domain_candidate",
       "source_trust_status": "trusted",
       "relevance_status": "relevant",
-      "review_status": "rejected",
-      "publication_status": "approved_for_publish",
+      "review_status": "approved_public_candidate",
+      "publication_status": "draft_candidate",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "Columbia University Archives catalog/search reference"
+        "source_citation": "Columbia University Archives — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-010",
       "input_stream": "public_research",
-      "title": "Gehrig article lead 10 — Yankees",
+      "title": "[FIXTURE] article workflow sample 10",
       "source_url": "https://www.mlb.com/yankees/history",
       "source_name": "Yankees Official History",
       "source_owner": "Yankees Official History",
       "source_domain": "mlb.com",
       "source_type": "institution",
       "content_type": "article",
-      "summary": "Manual research candidate 10 from Yankees Official History; conservative rights and review defaults.",
-      "date_or_period": "1932",
+      "summary": "Synthetic pilot fixture 10 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -375,36 +371,36 @@
       "location_tags": [
         "New York"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "public_domain_candidate",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "permission_granted",
       "source_trust_status": "trusted",
       "relevance_status": "relevant",
       "review_status": "approved_public_candidate",
-      "publication_status": "not_ready",
+      "publication_status": "draft_candidate",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
-      "credit_line": "Yankees Official History — research citation pending final review.",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "Yankees Official History catalog/search reference"
+        "source_citation": "Yankees Official History — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z",
+      "credit_line": "Yankees Official History — fixture credit line (not for public display)."
     },
     {
       "candidate_id": "lgfc-gehrig-2026-011",
       "input_stream": "public_research",
-      "title": "Gehrig quote lead 11 — National",
+      "title": "[FIXTURE] quote workflow sample 11",
       "source_url": "https://baseballhall.org/discover-more/stories/lou-gehrig",
       "source_name": "National Baseball Hall of Fame",
       "source_owner": "National Baseball Hall of Fame",
       "source_domain": "baseballhall.org",
       "source_type": "museum",
       "content_type": "quote",
-      "summary": "Manual research candidate 11 from National Baseball Hall of Fame; conservative rights and review defaults.",
-      "date_or_period": "1933",
+      "summary": "Synthetic pilot fixture 11 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -414,36 +410,37 @@
       "location_tags": [
         "Cooperstown"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "permission_needed",
-      "source_trust_status": "questionable",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "permission_granted",
+      "source_trust_status": "trusted",
       "relevance_status": "relevant",
-      "review_status": "pending_review",
-      "publication_status": "draft_candidate",
+      "review_status": "approved_public_candidate",
+      "publication_status": "approved_for_publish",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
-      "credit_line": "National Baseball Hall of Fame — research citation pending final review.",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "National Baseball Hall of Fame catalog/search reference"
+        "source_citation": "National Baseball Hall of Fame — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z",
+      "credit_line": "National Baseball Hall of Fame — fixture credit line (not for public display).",
+      "publication_target": "library"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-012",
       "input_stream": "public_research",
-      "title": "Gehrig timeline fact lead 12 — Library",
-      "source_url": "https://www.loc.gov/search/?q=lou+gehrig",
+      "title": "[FIXTURE] timeline fact workflow sample 12",
+      "source_url": "https://www.loc.gov/item/2018645306/",
       "source_name": "Library of Congress",
       "source_owner": "Library of Congress",
       "source_domain": "loc.gov",
       "source_type": "library",
       "content_type": "timeline_fact",
-      "summary": "Manual research candidate 12 from Library of Congress; conservative rights and review defaults.",
-      "date_or_period": "1934",
+      "summary": "Synthetic pilot fixture 12 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -453,36 +450,37 @@
       "location_tags": [
         "New York"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "permission_granted",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "public_domain_candidate",
       "source_trust_status": "trusted",
       "relevance_status": "relevant",
-      "review_status": "approved_internal_reference",
+      "review_status": "approved_public_candidate",
       "publication_status": "approved_for_publish",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
-      "credit_line": "Library of Congress — research citation pending final review.",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "Library of Congress catalog/search reference"
+        "source_citation": "Library of Congress — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z",
+      "credit_line": "Library of Congress — fixture credit line (not for public display).",
+      "publication_target": "timeline"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-013",
       "input_stream": "public_research",
-      "title": "Gehrig biography note lead 13 — New",
-      "source_url": "https://www.nytimes.com/search?query=lou%20gehrig",
+      "title": "[FIXTURE] biography note workflow sample 13",
+      "source_url": "https://archive.nytimes.com/www.nytimes.com/learning/general/onthisday/bday/0620.html",
       "source_name": "New York Times Archive",
       "source_owner": "New York Times Archive",
       "source_domain": "nytimes.com",
       "source_type": "newspaper",
       "content_type": "biography_note",
-      "summary": "Manual research candidate 13 from New York Times Archive; conservative rights and review defaults.",
-      "date_or_period": "1935",
+      "summary": "Synthetic pilot fixture 13 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -492,35 +490,35 @@
       "location_tags": [
         "Cooperstown"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "unknown",
-      "source_trust_status": "trusted",
-      "relevance_status": "relevant",
-      "review_status": "deferred_rights_review",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "blocked",
+      "source_trust_status": "blocked",
+      "relevance_status": "not_relevant",
+      "review_status": "rejected",
       "publication_status": "not_ready",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "New York Times Archive catalog/search reference"
+        "source_citation": "New York Times Archive — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-014",
       "input_stream": "public_research",
-      "title": "Gehrig record lead 14 — Columbia",
-      "source_url": "https://library.columbia.edu/locations/rbml.html",
+      "title": "[FIXTURE] record workflow sample 14",
+      "source_url": "https://library.columbia.edu/libraries/rbml.html",
       "source_name": "Columbia University Archives",
       "source_owner": "Columbia University Archives",
       "source_domain": "library.columbia.edu",
       "source_type": "archive",
       "content_type": "record",
-      "summary": "Manual research candidate 14 from Columbia University Archives; conservative rights and review defaults.",
-      "date_or_period": "1936",
+      "summary": "Synthetic pilot fixture 14 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -531,36 +529,35 @@
       "location_tags": [
         "New York"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "public_domain_candidate",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "unknown",
       "source_trust_status": "trusted",
       "relevance_status": "relevant",
-      "review_status": "rejected",
-      "publication_status": "draft_candidate",
+      "review_status": "private_internal_only",
+      "publication_status": "not_ready",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
-      "credit_line": "Columbia University Archives — research citation pending final review.",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "Columbia University Archives catalog/search reference"
+        "source_citation": "Columbia University Archives — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-015",
       "input_stream": "public_research",
-      "title": "Gehrig artifact lead 15 — Yankees",
+      "title": "[FIXTURE] artifact workflow sample 15",
       "source_url": "https://www.mlb.com/yankees/history",
       "source_name": "Yankees Official History",
       "source_owner": "Yankees Official History",
       "source_domain": "mlb.com",
       "source_type": "institution",
       "content_type": "artifact",
-      "summary": "Manual research candidate 15 from Yankees Official History; conservative rights and review defaults.",
-      "date_or_period": "1937",
+      "summary": "Synthetic pilot fixture 15 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -570,36 +567,35 @@
       "location_tags": [
         "Cooperstown"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "permission_needed",
-      "source_trust_status": "trusted",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "unknown",
+      "source_trust_status": "pending",
       "relevance_status": "relevant",
-      "review_status": "approved_public_candidate",
-      "publication_status": "approved_for_publish",
+      "review_status": "pending_review",
+      "publication_status": "not_ready",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
-      "credit_line": "Yankees Official History — research citation pending final review.",
       "review_priority": "high",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "Yankees Official History catalog/search reference"
+        "source_citation": "Yankees Official History — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-016",
       "input_stream": "public_research",
-      "title": "Gehrig source lead lead 16 — National",
+      "title": "[FIXTURE] source lead workflow sample 16",
       "source_url": "https://baseballhall.org/discover-more/stories/lou-gehrig",
       "source_name": "National Baseball Hall of Fame",
       "source_owner": "National Baseball Hall of Fame",
       "source_domain": "baseballhall.org",
       "source_type": "museum",
       "content_type": "source_lead",
-      "summary": "Manual research candidate 16 from National Baseball Hall of Fame; conservative rights and review defaults.",
-      "date_or_period": "1938",
+      "summary": "Synthetic pilot fixture 16 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -609,36 +605,35 @@
       "location_tags": [
         "New York"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "permission_granted",
-      "source_trust_status": "questionable",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "unknown",
+      "source_trust_status": "trusted",
       "relevance_status": "relevant",
       "review_status": "pending_review",
       "publication_status": "not_ready",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
-      "credit_line": "National Baseball Hall of Fame — research citation pending final review.",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "National Baseball Hall of Fame catalog/search reference"
+        "source_citation": "National Baseball Hall of Fame — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-017",
       "input_stream": "public_research",
-      "title": "Gehrig photo lead 17 — Library",
-      "source_url": "https://www.loc.gov/search/?q=lou+gehrig",
+      "title": "[FIXTURE] photo workflow sample 17",
+      "source_url": "https://www.loc.gov/item/2018645306/",
       "source_name": "Library of Congress",
       "source_owner": "Library of Congress",
       "source_domain": "loc.gov",
       "source_type": "library",
       "content_type": "photo",
-      "summary": "Manual research candidate 17 from Library of Congress; conservative rights and review defaults.",
-      "date_or_period": "1923",
+      "summary": "Synthetic pilot fixture 17 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -648,35 +643,35 @@
       "location_tags": [
         "Cooperstown"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
       "rights_status": "unknown",
-      "source_trust_status": "trusted",
+      "source_trust_status": "questionable",
       "relevance_status": "relevant",
-      "review_status": "approved_internal_reference",
-      "publication_status": "draft_candidate",
+      "review_status": "deferred_source_verification",
+      "publication_status": "not_ready",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "Library of Congress catalog/search reference"
+        "source_citation": "Library of Congress — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-018",
       "input_stream": "public_research",
-      "title": "Gehrig article lead 18 — New",
-      "source_url": "https://www.nytimes.com/search?query=lou%20gehrig",
+      "title": "[FIXTURE] article workflow sample 18",
+      "source_url": "https://archive.nytimes.com/www.nytimes.com/learning/general/onthisday/bday/0620.html",
       "source_name": "New York Times Archive",
       "source_owner": "New York Times Archive",
       "source_domain": "nytimes.com",
       "source_type": "newspaper",
       "content_type": "article",
-      "summary": "Manual research candidate 18 from New York Times Archive; conservative rights and review defaults.",
-      "date_or_period": "1924",
+      "summary": "Synthetic pilot fixture 18 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -686,36 +681,35 @@
       "location_tags": [
         "New York"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "public_domain_candidate",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "permission_needed",
       "source_trust_status": "trusted",
       "relevance_status": "relevant",
       "review_status": "deferred_rights_review",
-      "publication_status": "approved_for_publish",
+      "publication_status": "not_ready",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
-      "credit_line": "New York Times Archive — research citation pending final review.",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "New York Times Archive catalog/search reference"
+        "source_citation": "New York Times Archive — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-019",
       "input_stream": "public_research",
-      "title": "Gehrig quote lead 19 — Columbia",
-      "source_url": "https://library.columbia.edu/locations/rbml.html",
+      "title": "[FIXTURE] quote workflow sample 19",
+      "source_url": "https://library.columbia.edu/libraries/rbml.html",
       "source_name": "Columbia University Archives",
       "source_owner": "Columbia University Archives",
       "source_domain": "library.columbia.edu",
       "source_type": "archive",
       "content_type": "quote",
-      "summary": "Manual research candidate 19 from Columbia University Archives; conservative rights and review defaults.",
-      "date_or_period": "1925",
+      "summary": "Synthetic pilot fixture 19 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -725,36 +719,35 @@
       "location_tags": [
         "Cooperstown"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "permission_needed",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "unknown",
       "source_trust_status": "trusted",
       "relevance_status": "relevant",
-      "review_status": "rejected",
+      "review_status": "deferred_privacy_review",
       "publication_status": "not_ready",
-      "privacy_flag": "none",
-      "privacy_review_status": "not_applicable",
-      "credit_line": "Columbia University Archives — research citation pending final review.",
+      "privacy_flag": "living_person",
+      "privacy_review_status": "pending_review",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "Columbia University Archives catalog/search reference"
+        "source_citation": "Columbia University Archives — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-020",
       "input_stream": "public_research",
-      "title": "Gehrig timeline fact lead 20 — Yankees",
+      "title": "[FIXTURE] timeline fact workflow sample 20",
       "source_url": "https://www.mlb.com/yankees/history",
       "source_name": "Yankees Official History",
       "source_owner": "Yankees Official History",
       "source_domain": "mlb.com",
       "source_type": "institution",
       "content_type": "timeline_fact",
-      "summary": "Manual research candidate 20 from Yankees Official History; conservative rights and review defaults.",
-      "date_or_period": "1926",
+      "summary": "Synthetic pilot fixture 20 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -765,36 +758,35 @@
       "location_tags": [
         "New York"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "permission_granted",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "unknown",
       "source_trust_status": "trusted",
       "relevance_status": "relevant",
-      "review_status": "approved_public_candidate",
-      "publication_status": "draft_candidate",
+      "review_status": "approved_internal_reference",
+      "publication_status": "not_ready",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
-      "credit_line": "Yankees Official History — research citation pending final review.",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "Yankees Official History catalog/search reference"
+        "source_citation": "Yankees Official History — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-021",
       "input_stream": "public_research",
-      "title": "Gehrig biography note lead 21 — National",
+      "title": "[FIXTURE] biography note workflow sample 21",
       "source_url": "https://baseballhall.org/discover-more/stories/lou-gehrig",
       "source_name": "National Baseball Hall of Fame",
       "source_owner": "National Baseball Hall of Fame",
       "source_domain": "baseballhall.org",
       "source_type": "museum",
       "content_type": "biography_note",
-      "summary": "Manual research candidate 21 from National Baseball Hall of Fame; conservative rights and review defaults.",
-      "date_or_period": "1927",
+      "summary": "Synthetic pilot fixture 21 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -804,35 +796,35 @@
       "location_tags": [
         "Cooperstown"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "unknown",
-      "source_trust_status": "questionable",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "permission_needed",
+      "source_trust_status": "trusted",
       "relevance_status": "relevant",
-      "review_status": "pending_review",
-      "publication_status": "approved_for_publish",
+      "review_status": "approved_internal_reference",
+      "publication_status": "not_ready",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "National Baseball Hall of Fame catalog/search reference"
+        "source_citation": "National Baseball Hall of Fame — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-022",
       "input_stream": "public_research",
-      "title": "Gehrig record lead 22 — Library",
-      "source_url": "https://www.loc.gov/search/?q=lou+gehrig",
+      "title": "[FIXTURE] record workflow sample 22",
+      "source_url": "https://www.loc.gov/item/2018645306/",
       "source_name": "Library of Congress",
       "source_owner": "Library of Congress",
       "source_domain": "loc.gov",
       "source_type": "library",
       "content_type": "record",
-      "summary": "Manual research candidate 22 from Library of Congress; conservative rights and review defaults.",
-      "date_or_period": "1928",
+      "summary": "Synthetic pilot fixture 22 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -842,36 +834,35 @@
       "location_tags": [
         "New York"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "public_domain_candidate",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "copyright_restricted",
       "source_trust_status": "trusted",
       "relevance_status": "relevant",
-      "review_status": "approved_internal_reference",
+      "review_status": "approved_citation_reference_only",
       "publication_status": "not_ready",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
-      "credit_line": "Library of Congress — research citation pending final review.",
       "review_priority": "high",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "Library of Congress catalog/search reference"
+        "source_citation": "Library of Congress — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-023",
       "input_stream": "public_research",
-      "title": "Gehrig artifact lead 23 — New",
-      "source_url": "https://www.nytimes.com/search?query=lou%20gehrig",
+      "title": "[FIXTURE] artifact workflow sample 23",
+      "source_url": "https://archive.nytimes.com/www.nytimes.com/learning/general/onthisday/bday/0620.html",
       "source_name": "New York Times Archive",
       "source_owner": "New York Times Archive",
       "source_domain": "nytimes.com",
       "source_type": "newspaper",
       "content_type": "artifact",
-      "summary": "Manual research candidate 23 from New York Times Archive; conservative rights and review defaults.",
-      "date_or_period": "1929",
+      "summary": "Synthetic pilot fixture 23 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -881,36 +872,35 @@
       "location_tags": [
         "Cooperstown"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "permission_needed",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "public_domain_candidate",
       "source_trust_status": "trusted",
       "relevance_status": "relevant",
-      "review_status": "deferred_rights_review",
+      "review_status": "approved_public_candidate",
       "publication_status": "draft_candidate",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
-      "credit_line": "New York Times Archive — research citation pending final review.",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "New York Times Archive catalog/search reference"
+        "source_citation": "New York Times Archive — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-024",
       "input_stream": "public_research",
-      "title": "Gehrig source lead lead 24 — Columbia",
-      "source_url": "https://library.columbia.edu/locations/rbml.html",
+      "title": "[FIXTURE] source lead workflow sample 24",
+      "source_url": "https://library.columbia.edu/libraries/rbml.html",
       "source_name": "Columbia University Archives",
       "source_owner": "Columbia University Archives",
       "source_domain": "library.columbia.edu",
       "source_type": "archive",
       "content_type": "source_lead",
-      "summary": "Manual research candidate 24 from Columbia University Archives; conservative rights and review defaults.",
-      "date_or_period": "1930",
+      "summary": "Synthetic pilot fixture 24 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -920,36 +910,36 @@
       "location_tags": [
         "New York"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
       "rights_status": "permission_granted",
       "source_trust_status": "trusted",
       "relevance_status": "relevant",
-      "review_status": "rejected",
-      "publication_status": "approved_for_publish",
+      "review_status": "approved_public_candidate",
+      "publication_status": "draft_candidate",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
-      "credit_line": "Columbia University Archives — research citation pending final review.",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "Columbia University Archives catalog/search reference"
+        "source_citation": "Columbia University Archives — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z",
+      "credit_line": "Columbia University Archives — fixture credit line (not for public display)."
     },
     {
       "candidate_id": "lgfc-gehrig-2026-025",
       "input_stream": "public_research",
-      "title": "Gehrig photo lead 25 — Yankees",
+      "title": "[FIXTURE] photo workflow sample 25",
       "source_url": "https://www.mlb.com/yankees/history",
       "source_name": "Yankees Official History",
       "source_owner": "Yankees Official History",
       "source_domain": "mlb.com",
       "source_type": "institution",
       "content_type": "photo",
-      "summary": "Manual research candidate 25 from Yankees Official History; conservative rights and review defaults.",
-      "date_or_period": "1931",
+      "summary": "Synthetic pilot fixture 25 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -959,35 +949,37 @@
       "location_tags": [
         "Cooperstown"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "unknown",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "permission_granted",
       "source_trust_status": "trusted",
       "relevance_status": "relevant",
       "review_status": "approved_public_candidate",
-      "publication_status": "not_ready",
+      "publication_status": "approved_for_publish",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "Yankees Official History catalog/search reference"
+        "source_citation": "Yankees Official History — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z",
+      "credit_line": "Yankees Official History — fixture credit line (not for public display).",
+      "publication_target": "library"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-026",
       "input_stream": "public_research",
-      "title": "Gehrig article lead 26 — National",
+      "title": "[FIXTURE] article workflow sample 26",
       "source_url": "https://baseballhall.org/discover-more/stories/lou-gehrig",
       "source_name": "National Baseball Hall of Fame",
       "source_owner": "National Baseball Hall of Fame",
       "source_domain": "baseballhall.org",
       "source_type": "museum",
       "content_type": "article",
-      "summary": "Manual research candidate 26 from National Baseball Hall of Fame; conservative rights and review defaults.",
-      "date_or_period": "1932",
+      "summary": "Synthetic pilot fixture 26 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -998,36 +990,37 @@
       "location_tags": [
         "New York"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
       "rights_status": "public_domain_candidate",
-      "source_trust_status": "questionable",
+      "source_trust_status": "trusted",
       "relevance_status": "relevant",
-      "review_status": "pending_review",
-      "publication_status": "draft_candidate",
+      "review_status": "approved_public_candidate",
+      "publication_status": "approved_for_publish",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
-      "credit_line": "National Baseball Hall of Fame — research citation pending final review.",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "National Baseball Hall of Fame catalog/search reference"
+        "source_citation": "National Baseball Hall of Fame — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z",
+      "credit_line": "National Baseball Hall of Fame — fixture credit line (not for public display).",
+      "publication_target": "timeline"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-027",
       "input_stream": "public_research",
-      "title": "Gehrig quote lead 27 — Library",
-      "source_url": "https://www.loc.gov/search/?q=lou+gehrig",
+      "title": "[FIXTURE] quote workflow sample 27",
+      "source_url": "https://www.loc.gov/item/2018645306/",
       "source_name": "Library of Congress",
       "source_owner": "Library of Congress",
       "source_domain": "loc.gov",
       "source_type": "library",
       "content_type": "quote",
-      "summary": "Manual research candidate 27 from Library of Congress; conservative rights and review defaults.",
-      "date_or_period": "1933",
+      "summary": "Synthetic pilot fixture 27 for schema/workflow validation only — not validated Lou Gehrig content.",
+      "date_or_period": "1930s (fixture placeholder)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -1037,33 +1030,32 @@
       "location_tags": [
         "Cooperstown"
       ],
-      "provenance_notes": "Manual URL intake only; no crawler.",
-      "rights_status": "permission_needed",
-      "source_trust_status": "trusted",
-      "relevance_status": "relevant",
-      "review_status": "approved_internal_reference",
-      "publication_status": "approved_for_publish",
+      "provenance_notes": "FIXTURE: manual intake placeholder; replace with operator-verified source record.",
+      "rights_status": "blocked",
+      "source_trust_status": "blocked",
+      "relevance_status": "not_relevant",
+      "review_status": "rejected",
+      "publication_status": "not_ready",
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
-      "credit_line": "Library of Congress — research citation pending final review.",
       "review_priority": "normal",
-      "admin_notes": "Seed pilot record; not published.",
+      "admin_notes": "FIXTURE/DEMO seed record — not approved content; for workflow state coverage only.",
       "source_metadata": {
         "date_accessed": "2026-07-05",
-        "source_citation": "Library of Congress catalog/search reference"
+        "source_citation": "Library of Congress — fixture citation placeholder"
       },
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-028",
       "input_stream": "admin_seed",
-      "title": "Operator seed: Gehrig 2,130 consecutive games milestone",
-      "source_name": "LGFC operator research",
+      "title": "[FIXTURE] Admin seed: consecutive games milestone sample",
+      "source_name": "LGFC operator research (fixture)",
       "source_type": "operator",
       "content_type": "timeline_fact",
-      "summary": "Admin-seeded milestone fact for pilot duplicate and review testing.",
-      "date_or_period": "1939",
+      "summary": "Synthetic admin_seed fixture for input-stream coverage.",
+      "date_or_period": "1939 (fixture)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -1079,20 +1071,20 @@
       "privacy_flag": "none",
       "privacy_review_status": "not_applicable",
       "review_priority": "normal",
-      "admin_notes": "Admin seed stream example.",
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "admin_notes": "FIXTURE admin_seed example.",
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-029",
       "input_stream": "public_research",
-      "title": "Duplicate of Hall of Fame Gehrig story index",
+      "title": "[FIXTURE] Duplicate detection sample",
       "source_url": "https://baseballhall.org/discover-more/stories/lou-gehrig",
       "source_name": "National Baseball Hall of Fame",
       "source_domain": "baseballhall.org",
       "source_type": "museum",
       "content_type": "article",
-      "summary": "Exact URL duplicate for pilot duplicate detection.",
+      "summary": "Fixture duplicate_of lgfc-gehrig-2026-001 for exact-match testing.",
       "rights_status": "unknown",
       "source_trust_status": "trusted",
       "relevance_status": "relevant",
@@ -1102,19 +1094,19 @@
       "privacy_review_status": "not_applicable",
       "duplicate_of": "lgfc-gehrig-2026-001",
       "review_priority": "low",
-      "admin_notes": "Flagged duplicate of lgfc-gehrig-2026-001",
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "admin_notes": "FIXTURE duplicate example.",
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     },
     {
       "candidate_id": "lgfc-gehrig-2026-030",
       "input_stream": "member_submission",
-      "title": "Family memory: grandfather saw Gehrig at Yankee Stadium",
-      "source_name": "Member submission",
+      "title": "[FIXTURE] Member story: family memory sample",
+      "source_name": "Member submission (fixture)",
       "source_type": "member",
       "content_type": "story",
-      "summary": "Member-submitted personal memory; private until reviewed.",
-      "date_or_period": "1937",
+      "summary": "Synthetic member_submission fixture; private until reviewed.",
+      "date_or_period": "1937 (fixture)",
       "people_tags": [
         "Lou Gehrig"
       ],
@@ -1134,19 +1126,19 @@
       "privacy_review_status": "pending_review",
       "review_priority": "normal",
       "member_submission": {
-        "submitter_name": "Pilot Member Example",
-        "submitter_contact": "member@example.lgfc.test",
+        "submitter_name": "Fixture Member Example",
+        "submitter_contact": "fixture.member@lgfc.test",
         "submission_type": "story",
-        "ownership_statement": "Original family account; submitter owns narrative.",
-        "permission_statement": "Grant LGFC non-exclusive web use if approved.",
+        "ownership_statement": "FIXTURE: synthetic ownership statement.",
+        "permission_statement": "FIXTURE: permission pending operator review.",
         "credit_preference": "public_credit",
-        "privacy_notes": "May reference living family member; review required.",
+        "privacy_notes": "FIXTURE: may reference living family; review required.",
         "consent_status": "pending",
         "admin_followup_required": true
       },
-      "admin_notes": "Member-shaped pilot record; no runtime upload.",
-      "created_at": "2026-07-05T12:00:00.000Z",
-      "updated_at": "2026-07-05T12:00:00.000Z"
+      "admin_notes": "FIXTURE member_submission shape — not a real member upload.",
+      "created_at": "2026-07-05T16:00:00.000Z",
+      "updated_at": "2026-07-05T16:00:00.000Z"
     }
   ]
 }
