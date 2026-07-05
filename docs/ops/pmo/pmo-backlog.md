@@ -5,13 +5,16 @@ Authority Level: Operational Authority
 Owns: PMO Backlog inventory for ideas, project drafts, implementation-ready projects, backlog review history, and promotion candidates
 Does Not Own: Program launch approval, final prioritization, implementation scope, issue creation, merge authority, or Cursor execution authorization
 Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-Related Issues: #1379, #1411, #1255, #1500, #1501, #1678, #1685, #1696, #1700, #1701, #1702, #1703, #1704, #1705, #1706, #1707, #1708, #1713, #1719, #1720, #1721, #1722, #1723, #1724, #1725, #1726, #1727, #2039, #2040, #2041, #2042, #2043, #2044, #2045, #2046, #2047, #2048
-Last Reviewed: 2026-06-29
+PMO V4 promotion: /docs/ops/pmo/PMO-V4-OPERATING-MODEL.md (becomes canonical after #2100 merges)
+Related Issues: #1379, #1411, #1255, #1500, #1501, #1678, #1685, #1696, #1700, #1701, #1702, #1703, #1704, #1705, #1706, #1707, #1708, #1713, #1719, #1720, #1721, #1722, #1723, #1724, #1725, #1726, #1727, #2039, #2040, #2041, #2042, #2043, #2044, #2045, #2046, #2047, #2048, #2100
+Last Reviewed: 2026-07-05
 ---
 
 # PMO Backlog
 
 PMO Backlog = ideas, project drafts, governance/ops backlog items, implementation-ready projects, and launch-control-ready program groups.
+
+**Authority transition:** Until issue #2100 merges, PMO backlog rules follow `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`. After #2100 merges, backlog categories and inventory rules follow `/docs/ops/pmo/PMO-V4-OPERATING-MODEL.md`. Drive notebook rows remain planning inputs until promoted by issue/PR.
 
 This document is the durable, **prioritized working inventory** for PMO backlog review. It does not launch work, create issues, authorize Cursor or Codex execution, or establish final execution authorization by itself. Work becomes executable only through a **current open program or task/source issue** with explicit launch/assignment authorization.
 
