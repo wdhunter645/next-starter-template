@@ -100,17 +100,20 @@ Rules:
 
 The PMO workload inventory lists all known open master program records unless Bill requests a subset.
 
-### Current workload (as of Drive draft 2026-06-29)
+### Current workload (reconciled with `program-registry.md`, 2026-07-05)
 
-Five open master records:
+Four open master records:
 
 | Program | Name | PMO status | Notes |
 | ---: | --- | --- | --- |
-| #1685 | Website Completion / Fan Club Product Buildout | Implementation active (launch-gated) | Children #1686–#1694 |
 | #1700 | Fundraiser / Charity Campaign Operations Buildout | Queued (launch-gated) | Children #1701–#1708 |
 | #1719 | PMO Governance / Workflow Automation Completion | Blocked (launch-gated) | Children #1720–#1727 |
 | #1738 | Gehrig Content Collection Phase 1 | Blocked (launch-gated) | Children #1739–#1746; foundation for content collection strategy |
-| #1847 | OPS Post-Merge Self-Healing CI Program | Implementation active | Children #1848–#1854; active repository need that may temporarily precede #1685 until Bill authorizes transition back to website build-out |
+| #1847 | OPS Post-Merge Self-Healing CI Program | Implementation active | Children #1848–#1854; active repository need that may temporarily precede website build-out programs until Bill authorizes transition |
+
+Program #1685 (Website Completion / Fan Club Product Buildout) is **closed complete** per `program-registry.md`. It is not current workload; see [Completed and historical program archive](#completed-and-historical-program-archive).
+
+The Drive-draft workload snapshot (2026-06-29) listed #1685 as implementation active. That row is historical planning input only and was superseded by registry closeout evidence before this promotion.
 
 Workload inventory rules:
 
@@ -419,6 +422,7 @@ Historical and completed records are retained for continuity and audit evidence.
 
 | Record | Role | Status |
 | --- | --- | --- |
+| Program #1685 | Website Completion / Fan Club Product Buildout | Closed complete; children #1686–#1694 closed; closeout evidence at `docs/ops/reports/website-completion-program-closeout.md` |
 | Program #1411 | PMO Automation and Agent Workflow Control | Complete planning/control artifact (historical Program 1) |
 | Program #1255 | Website Implementation and Content Operations | Complete (historical Program 2) |
 | Program #1500 | CI Post-Merge Closeout Reliability | Complete |
