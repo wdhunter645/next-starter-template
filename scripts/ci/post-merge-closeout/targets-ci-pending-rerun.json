@@ -1,6 +1,6 @@
 {
-  "triggered_at": "2026-06-23T12:00:00Z",
-  "description": "Pending closeout reruns: PR #1926 (#1687) plus PR #1858 (#1855) and yesterday exception batch #1813 (#1811, #1814, #1809, #1828, #1825, #1834, #1832, #1844); PR #2282 (#2100) post-merge body remediation",
+  "triggered_at": "2026-07-05T15:21:00Z",
+  "description": "Pending closeout reruns: PR #1926 (#1687) plus PR #1858 (#1855) and prior exception batch #1813 (#1811, #1814, #1809, #1828, #1825, #1834, #1832, #1844); PR #2282 (#2100) post-merge body remediation",
   "targets": [
     {
       "pr": 1926,
