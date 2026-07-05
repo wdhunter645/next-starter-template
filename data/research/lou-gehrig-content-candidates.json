@@ -1,0 +1,1152 @@
+{
+  "schema_version": "1",
+  "registry_class": "seed_transitional",
+  "description": "Program #2273 Task-003 manual seed pilot registry. Transitional only — not operational source of truth.",
+  "updated_at": "2026-07-05T12:00:00.000Z",
+  "candidates": [
+    {
+      "candidate_id": "lgfc-gehrig-2026-001",
+      "input_stream": "public_research",
+      "title": "Gehrig photo lead 1 — National",
+      "source_url": "https://baseballhall.org/discover-more/stories/lou-gehrig",
+      "source_name": "National Baseball Hall of Fame",
+      "source_owner": "National Baseball Hall of Fame",
+      "source_domain": "baseballhall.org",
+      "source_type": "museum",
+      "content_type": "photo",
+      "summary": "Manual research candidate 1 from National Baseball Hall of Fame; conservative rights and review defaults.",
+      "date_or_period": "1923",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Lou Gehrig"
+      ],
+      "location_tags": [
+        "Cooperstown"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "unknown",
+      "source_trust_status": "questionable",
+      "relevance_status": "relevant",
+      "review_status": "pending_review",
+      "publication_status": "not_ready",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "review_priority": "high",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "National Baseball Hall of Fame catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-002",
+      "input_stream": "public_research",
+      "title": "Gehrig article lead 2 — Library",
+      "source_url": "https://www.loc.gov/search/?q=lou+gehrig",
+      "source_name": "Library of Congress",
+      "source_owner": "Library of Congress",
+      "source_domain": "loc.gov",
+      "source_type": "library",
+      "content_type": "article",
+      "summary": "Manual research candidate 2 from Library of Congress; conservative rights and review defaults.",
+      "date_or_period": "1924",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Yankees",
+        "ALS"
+      ],
+      "location_tags": [
+        "New York"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "public_domain_candidate",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "approved_internal_reference",
+      "publication_status": "draft_candidate",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "credit_line": "Library of Congress — research citation pending final review.",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "Library of Congress catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-003",
+      "input_stream": "public_research",
+      "title": "Gehrig quote lead 3 — New",
+      "source_url": "https://www.nytimes.com/search?query=lou%20gehrig",
+      "source_name": "New York Times Archive",
+      "source_owner": "New York Times Archive",
+      "source_domain": "nytimes.com",
+      "source_type": "newspaper",
+      "content_type": "quote",
+      "summary": "Manual research candidate 3 from New York Times Archive; conservative rights and review defaults.",
+      "date_or_period": "1925",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Farewell Speech"
+      ],
+      "location_tags": [
+        "Cooperstown"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "permission_needed",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "deferred_rights_review",
+      "publication_status": "approved_for_publish",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "credit_line": "New York Times Archive — research citation pending final review.",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "New York Times Archive catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-004",
+      "input_stream": "public_research",
+      "title": "Gehrig timeline fact lead 4 — Columbia",
+      "source_url": "https://library.columbia.edu/locations/rbml.html",
+      "source_name": "Columbia University Archives",
+      "source_owner": "Columbia University Archives",
+      "source_domain": "library.columbia.edu",
+      "source_type": "archive",
+      "content_type": "timeline_fact",
+      "summary": "Manual research candidate 4 from Columbia University Archives; conservative rights and review defaults.",
+      "date_or_period": "1926",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Columbia"
+      ],
+      "location_tags": [
+        "New York"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "permission_granted",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "rejected",
+      "publication_status": "not_ready",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "credit_line": "Columbia University Archives — research citation pending final review.",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "Columbia University Archives catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-005",
+      "input_stream": "public_research",
+      "title": "Gehrig biography note lead 5 — Yankees",
+      "source_url": "https://www.mlb.com/yankees/history",
+      "source_name": "Yankees Official History",
+      "source_owner": "Yankees Official History",
+      "source_domain": "mlb.com",
+      "source_type": "institution",
+      "content_type": "biography_note",
+      "summary": "Manual research candidate 5 from Yankees Official History; conservative rights and review defaults.",
+      "date_or_period": "1927",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Iron Horse"
+      ],
+      "location_tags": [
+        "Cooperstown"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "unknown",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "approved_public_candidate",
+      "publication_status": "draft_candidate",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "Yankees Official History catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-006",
+      "input_stream": "public_research",
+      "title": "Gehrig record lead 6 — National",
+      "source_url": "https://baseballhall.org/discover-more/stories/lou-gehrig",
+      "source_name": "National Baseball Hall of Fame",
+      "source_owner": "National Baseball Hall of Fame",
+      "source_domain": "baseballhall.org",
+      "source_type": "museum",
+      "content_type": "record",
+      "summary": "Manual research candidate 6 from National Baseball Hall of Fame; conservative rights and review defaults.",
+      "date_or_period": "1928",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Eleanor Gehrig"
+      ],
+      "location_tags": [
+        "New York"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "public_domain_candidate",
+      "source_trust_status": "questionable",
+      "relevance_status": "relevant",
+      "review_status": "pending_review",
+      "publication_status": "approved_for_publish",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "credit_line": "National Baseball Hall of Fame — research citation pending final review.",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "National Baseball Hall of Fame catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-007",
+      "input_stream": "public_research",
+      "title": "Gehrig artifact lead 7 — Library",
+      "source_url": "https://www.loc.gov/search/?q=lou+gehrig",
+      "source_name": "Library of Congress",
+      "source_owner": "Library of Congress",
+      "source_domain": "loc.gov",
+      "source_type": "library",
+      "content_type": "artifact",
+      "summary": "Manual research candidate 7 from Library of Congress; conservative rights and review defaults.",
+      "date_or_period": "1929",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Lou Gehrig"
+      ],
+      "location_tags": [
+        "Cooperstown"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "permission_needed",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "approved_internal_reference",
+      "publication_status": "not_ready",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "credit_line": "Library of Congress — research citation pending final review.",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "Library of Congress catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-008",
+      "input_stream": "public_research",
+      "title": "Gehrig source lead lead 8 — New",
+      "source_url": "https://www.nytimes.com/search?query=lou%20gehrig",
+      "source_name": "New York Times Archive",
+      "source_owner": "New York Times Archive",
+      "source_domain": "nytimes.com",
+      "source_type": "newspaper",
+      "content_type": "source_lead",
+      "summary": "Manual research candidate 8 from New York Times Archive; conservative rights and review defaults.",
+      "date_or_period": "1930",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Yankees",
+        "ALS"
+      ],
+      "location_tags": [
+        "New York"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "permission_granted",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "deferred_rights_review",
+      "publication_status": "draft_candidate",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "credit_line": "New York Times Archive — research citation pending final review.",
+      "review_priority": "high",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "New York Times Archive catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-009",
+      "input_stream": "public_research",
+      "title": "Gehrig photo lead 9 — Columbia",
+      "source_url": "https://library.columbia.edu/locations/rbml.html",
+      "source_name": "Columbia University Archives",
+      "source_owner": "Columbia University Archives",
+      "source_domain": "library.columbia.edu",
+      "source_type": "archive",
+      "content_type": "photo",
+      "summary": "Manual research candidate 9 from Columbia University Archives; conservative rights and review defaults.",
+      "date_or_period": "1931",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Farewell Speech"
+      ],
+      "location_tags": [
+        "Cooperstown"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "unknown",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "rejected",
+      "publication_status": "approved_for_publish",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "Columbia University Archives catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-010",
+      "input_stream": "public_research",
+      "title": "Gehrig article lead 10 — Yankees",
+      "source_url": "https://www.mlb.com/yankees/history",
+      "source_name": "Yankees Official History",
+      "source_owner": "Yankees Official History",
+      "source_domain": "mlb.com",
+      "source_type": "institution",
+      "content_type": "article",
+      "summary": "Manual research candidate 10 from Yankees Official History; conservative rights and review defaults.",
+      "date_or_period": "1932",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Columbia"
+      ],
+      "location_tags": [
+        "New York"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "public_domain_candidate",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "approved_public_candidate",
+      "publication_status": "not_ready",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "credit_line": "Yankees Official History — research citation pending final review.",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "Yankees Official History catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-011",
+      "input_stream": "public_research",
+      "title": "Gehrig quote lead 11 — National",
+      "source_url": "https://baseballhall.org/discover-more/stories/lou-gehrig",
+      "source_name": "National Baseball Hall of Fame",
+      "source_owner": "National Baseball Hall of Fame",
+      "source_domain": "baseballhall.org",
+      "source_type": "museum",
+      "content_type": "quote",
+      "summary": "Manual research candidate 11 from National Baseball Hall of Fame; conservative rights and review defaults.",
+      "date_or_period": "1933",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Iron Horse"
+      ],
+      "location_tags": [
+        "Cooperstown"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "permission_needed",
+      "source_trust_status": "questionable",
+      "relevance_status": "relevant",
+      "review_status": "pending_review",
+      "publication_status": "draft_candidate",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "credit_line": "National Baseball Hall of Fame — research citation pending final review.",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "National Baseball Hall of Fame catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-012",
+      "input_stream": "public_research",
+      "title": "Gehrig timeline fact lead 12 — Library",
+      "source_url": "https://www.loc.gov/search/?q=lou+gehrig",
+      "source_name": "Library of Congress",
+      "source_owner": "Library of Congress",
+      "source_domain": "loc.gov",
+      "source_type": "library",
+      "content_type": "timeline_fact",
+      "summary": "Manual research candidate 12 from Library of Congress; conservative rights and review defaults.",
+      "date_or_period": "1934",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Eleanor Gehrig"
+      ],
+      "location_tags": [
+        "New York"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "permission_granted",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "approved_internal_reference",
+      "publication_status": "approved_for_publish",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "credit_line": "Library of Congress — research citation pending final review.",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "Library of Congress catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-013",
+      "input_stream": "public_research",
+      "title": "Gehrig biography note lead 13 — New",
+      "source_url": "https://www.nytimes.com/search?query=lou%20gehrig",
+      "source_name": "New York Times Archive",
+      "source_owner": "New York Times Archive",
+      "source_domain": "nytimes.com",
+      "source_type": "newspaper",
+      "content_type": "biography_note",
+      "summary": "Manual research candidate 13 from New York Times Archive; conservative rights and review defaults.",
+      "date_or_period": "1935",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Lou Gehrig"
+      ],
+      "location_tags": [
+        "Cooperstown"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "unknown",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "deferred_rights_review",
+      "publication_status": "not_ready",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "New York Times Archive catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-014",
+      "input_stream": "public_research",
+      "title": "Gehrig record lead 14 — Columbia",
+      "source_url": "https://library.columbia.edu/locations/rbml.html",
+      "source_name": "Columbia University Archives",
+      "source_owner": "Columbia University Archives",
+      "source_domain": "library.columbia.edu",
+      "source_type": "archive",
+      "content_type": "record",
+      "summary": "Manual research candidate 14 from Columbia University Archives; conservative rights and review defaults.",
+      "date_or_period": "1936",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Yankees",
+        "ALS"
+      ],
+      "location_tags": [
+        "New York"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "public_domain_candidate",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "rejected",
+      "publication_status": "draft_candidate",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "credit_line": "Columbia University Archives — research citation pending final review.",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "Columbia University Archives catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-015",
+      "input_stream": "public_research",
+      "title": "Gehrig artifact lead 15 — Yankees",
+      "source_url": "https://www.mlb.com/yankees/history",
+      "source_name": "Yankees Official History",
+      "source_owner": "Yankees Official History",
+      "source_domain": "mlb.com",
+      "source_type": "institution",
+      "content_type": "artifact",
+      "summary": "Manual research candidate 15 from Yankees Official History; conservative rights and review defaults.",
+      "date_or_period": "1937",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Farewell Speech"
+      ],
+      "location_tags": [
+        "Cooperstown"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "permission_needed",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "approved_public_candidate",
+      "publication_status": "approved_for_publish",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "credit_line": "Yankees Official History — research citation pending final review.",
+      "review_priority": "high",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "Yankees Official History catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-016",
+      "input_stream": "public_research",
+      "title": "Gehrig source lead lead 16 — National",
+      "source_url": "https://baseballhall.org/discover-more/stories/lou-gehrig",
+      "source_name": "National Baseball Hall of Fame",
+      "source_owner": "National Baseball Hall of Fame",
+      "source_domain": "baseballhall.org",
+      "source_type": "museum",
+      "content_type": "source_lead",
+      "summary": "Manual research candidate 16 from National Baseball Hall of Fame; conservative rights and review defaults.",
+      "date_or_period": "1938",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Columbia"
+      ],
+      "location_tags": [
+        "New York"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "permission_granted",
+      "source_trust_status": "questionable",
+      "relevance_status": "relevant",
+      "review_status": "pending_review",
+      "publication_status": "not_ready",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "credit_line": "National Baseball Hall of Fame — research citation pending final review.",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "National Baseball Hall of Fame catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-017",
+      "input_stream": "public_research",
+      "title": "Gehrig photo lead 17 — Library",
+      "source_url": "https://www.loc.gov/search/?q=lou+gehrig",
+      "source_name": "Library of Congress",
+      "source_owner": "Library of Congress",
+      "source_domain": "loc.gov",
+      "source_type": "library",
+      "content_type": "photo",
+      "summary": "Manual research candidate 17 from Library of Congress; conservative rights and review defaults.",
+      "date_or_period": "1923",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Iron Horse"
+      ],
+      "location_tags": [
+        "Cooperstown"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "unknown",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "approved_internal_reference",
+      "publication_status": "draft_candidate",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "Library of Congress catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-018",
+      "input_stream": "public_research",
+      "title": "Gehrig article lead 18 — New",
+      "source_url": "https://www.nytimes.com/search?query=lou%20gehrig",
+      "source_name": "New York Times Archive",
+      "source_owner": "New York Times Archive",
+      "source_domain": "nytimes.com",
+      "source_type": "newspaper",
+      "content_type": "article",
+      "summary": "Manual research candidate 18 from New York Times Archive; conservative rights and review defaults.",
+      "date_or_period": "1924",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Eleanor Gehrig"
+      ],
+      "location_tags": [
+        "New York"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "public_domain_candidate",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "deferred_rights_review",
+      "publication_status": "approved_for_publish",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "credit_line": "New York Times Archive — research citation pending final review.",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "New York Times Archive catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-019",
+      "input_stream": "public_research",
+      "title": "Gehrig quote lead 19 — Columbia",
+      "source_url": "https://library.columbia.edu/locations/rbml.html",
+      "source_name": "Columbia University Archives",
+      "source_owner": "Columbia University Archives",
+      "source_domain": "library.columbia.edu",
+      "source_type": "archive",
+      "content_type": "quote",
+      "summary": "Manual research candidate 19 from Columbia University Archives; conservative rights and review defaults.",
+      "date_or_period": "1925",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Lou Gehrig"
+      ],
+      "location_tags": [
+        "Cooperstown"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "permission_needed",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "rejected",
+      "publication_status": "not_ready",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "credit_line": "Columbia University Archives — research citation pending final review.",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "Columbia University Archives catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-020",
+      "input_stream": "public_research",
+      "title": "Gehrig timeline fact lead 20 — Yankees",
+      "source_url": "https://www.mlb.com/yankees/history",
+      "source_name": "Yankees Official History",
+      "source_owner": "Yankees Official History",
+      "source_domain": "mlb.com",
+      "source_type": "institution",
+      "content_type": "timeline_fact",
+      "summary": "Manual research candidate 20 from Yankees Official History; conservative rights and review defaults.",
+      "date_or_period": "1926",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Yankees",
+        "ALS"
+      ],
+      "location_tags": [
+        "New York"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "permission_granted",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "approved_public_candidate",
+      "publication_status": "draft_candidate",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "credit_line": "Yankees Official History — research citation pending final review.",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "Yankees Official History catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-021",
+      "input_stream": "public_research",
+      "title": "Gehrig biography note lead 21 — National",
+      "source_url": "https://baseballhall.org/discover-more/stories/lou-gehrig",
+      "source_name": "National Baseball Hall of Fame",
+      "source_owner": "National Baseball Hall of Fame",
+      "source_domain": "baseballhall.org",
+      "source_type": "museum",
+      "content_type": "biography_note",
+      "summary": "Manual research candidate 21 from National Baseball Hall of Fame; conservative rights and review defaults.",
+      "date_or_period": "1927",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Farewell Speech"
+      ],
+      "location_tags": [
+        "Cooperstown"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "unknown",
+      "source_trust_status": "questionable",
+      "relevance_status": "relevant",
+      "review_status": "pending_review",
+      "publication_status": "approved_for_publish",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "National Baseball Hall of Fame catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-022",
+      "input_stream": "public_research",
+      "title": "Gehrig record lead 22 — Library",
+      "source_url": "https://www.loc.gov/search/?q=lou+gehrig",
+      "source_name": "Library of Congress",
+      "source_owner": "Library of Congress",
+      "source_domain": "loc.gov",
+      "source_type": "library",
+      "content_type": "record",
+      "summary": "Manual research candidate 22 from Library of Congress; conservative rights and review defaults.",
+      "date_or_period": "1928",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Columbia"
+      ],
+      "location_tags": [
+        "New York"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "public_domain_candidate",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "approved_internal_reference",
+      "publication_status": "not_ready",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "credit_line": "Library of Congress — research citation pending final review.",
+      "review_priority": "high",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "Library of Congress catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-023",
+      "input_stream": "public_research",
+      "title": "Gehrig artifact lead 23 — New",
+      "source_url": "https://www.nytimes.com/search?query=lou%20gehrig",
+      "source_name": "New York Times Archive",
+      "source_owner": "New York Times Archive",
+      "source_domain": "nytimes.com",
+      "source_type": "newspaper",
+      "content_type": "artifact",
+      "summary": "Manual research candidate 23 from New York Times Archive; conservative rights and review defaults.",
+      "date_or_period": "1929",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Iron Horse"
+      ],
+      "location_tags": [
+        "Cooperstown"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "permission_needed",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "deferred_rights_review",
+      "publication_status": "draft_candidate",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "credit_line": "New York Times Archive — research citation pending final review.",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "New York Times Archive catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-024",
+      "input_stream": "public_research",
+      "title": "Gehrig source lead lead 24 — Columbia",
+      "source_url": "https://library.columbia.edu/locations/rbml.html",
+      "source_name": "Columbia University Archives",
+      "source_owner": "Columbia University Archives",
+      "source_domain": "library.columbia.edu",
+      "source_type": "archive",
+      "content_type": "source_lead",
+      "summary": "Manual research candidate 24 from Columbia University Archives; conservative rights and review defaults.",
+      "date_or_period": "1930",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Eleanor Gehrig"
+      ],
+      "location_tags": [
+        "New York"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "permission_granted",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "rejected",
+      "publication_status": "approved_for_publish",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "credit_line": "Columbia University Archives — research citation pending final review.",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "Columbia University Archives catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-025",
+      "input_stream": "public_research",
+      "title": "Gehrig photo lead 25 — Yankees",
+      "source_url": "https://www.mlb.com/yankees/history",
+      "source_name": "Yankees Official History",
+      "source_owner": "Yankees Official History",
+      "source_domain": "mlb.com",
+      "source_type": "institution",
+      "content_type": "photo",
+      "summary": "Manual research candidate 25 from Yankees Official History; conservative rights and review defaults.",
+      "date_or_period": "1931",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Lou Gehrig"
+      ],
+      "location_tags": [
+        "Cooperstown"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "unknown",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "approved_public_candidate",
+      "publication_status": "not_ready",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "Yankees Official History catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-026",
+      "input_stream": "public_research",
+      "title": "Gehrig article lead 26 — National",
+      "source_url": "https://baseballhall.org/discover-more/stories/lou-gehrig",
+      "source_name": "National Baseball Hall of Fame",
+      "source_owner": "National Baseball Hall of Fame",
+      "source_domain": "baseballhall.org",
+      "source_type": "museum",
+      "content_type": "article",
+      "summary": "Manual research candidate 26 from National Baseball Hall of Fame; conservative rights and review defaults.",
+      "date_or_period": "1932",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Yankees",
+        "ALS"
+      ],
+      "location_tags": [
+        "New York"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "public_domain_candidate",
+      "source_trust_status": "questionable",
+      "relevance_status": "relevant",
+      "review_status": "pending_review",
+      "publication_status": "draft_candidate",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "credit_line": "National Baseball Hall of Fame — research citation pending final review.",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "National Baseball Hall of Fame catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-027",
+      "input_stream": "public_research",
+      "title": "Gehrig quote lead 27 — Library",
+      "source_url": "https://www.loc.gov/search/?q=lou+gehrig",
+      "source_name": "Library of Congress",
+      "source_owner": "Library of Congress",
+      "source_domain": "loc.gov",
+      "source_type": "library",
+      "content_type": "quote",
+      "summary": "Manual research candidate 27 from Library of Congress; conservative rights and review defaults.",
+      "date_or_period": "1933",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Farewell Speech"
+      ],
+      "location_tags": [
+        "Cooperstown"
+      ],
+      "provenance_notes": "Manual URL intake only; no crawler.",
+      "rights_status": "permission_needed",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "approved_internal_reference",
+      "publication_status": "approved_for_publish",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "credit_line": "Library of Congress — research citation pending final review.",
+      "review_priority": "normal",
+      "admin_notes": "Seed pilot record; not published.",
+      "source_metadata": {
+        "date_accessed": "2026-07-05",
+        "source_citation": "Library of Congress catalog/search reference"
+      },
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-028",
+      "input_stream": "admin_seed",
+      "title": "Operator seed: Gehrig 2,130 consecutive games milestone",
+      "source_name": "LGFC operator research",
+      "source_type": "operator",
+      "content_type": "timeline_fact",
+      "summary": "Admin-seeded milestone fact for pilot duplicate and review testing.",
+      "date_or_period": "1939",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Iron Horse",
+        "Yankees"
+      ],
+      "rights_status": "unknown",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "approved_internal_reference",
+      "publication_status": "not_ready",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "review_priority": "normal",
+      "admin_notes": "Admin seed stream example.",
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-029",
+      "input_stream": "public_research",
+      "title": "Duplicate of Hall of Fame Gehrig story index",
+      "source_url": "https://baseballhall.org/discover-more/stories/lou-gehrig",
+      "source_name": "National Baseball Hall of Fame",
+      "source_domain": "baseballhall.org",
+      "source_type": "museum",
+      "content_type": "article",
+      "summary": "Exact URL duplicate for pilot duplicate detection.",
+      "rights_status": "unknown",
+      "source_trust_status": "trusted",
+      "relevance_status": "relevant",
+      "review_status": "pending_review",
+      "publication_status": "not_ready",
+      "privacy_flag": "none",
+      "privacy_review_status": "not_applicable",
+      "duplicate_of": "lgfc-gehrig-2026-001",
+      "review_priority": "low",
+      "admin_notes": "Flagged duplicate of lgfc-gehrig-2026-001",
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    },
+    {
+      "candidate_id": "lgfc-gehrig-2026-030",
+      "input_stream": "member_submission",
+      "title": "Family memory: grandfather saw Gehrig at Yankee Stadium",
+      "source_name": "Member submission",
+      "source_type": "member",
+      "content_type": "story",
+      "summary": "Member-submitted personal memory; private until reviewed.",
+      "date_or_period": "1937",
+      "people_tags": [
+        "Lou Gehrig"
+      ],
+      "topic_tags": [
+        "Yankees",
+        "family"
+      ],
+      "location_tags": [
+        "Yankee Stadium"
+      ],
+      "rights_status": "permission_needed",
+      "source_trust_status": "pending",
+      "relevance_status": "pending",
+      "review_status": "pending_review",
+      "publication_status": "not_ready",
+      "privacy_flag": "donor_member",
+      "privacy_review_status": "pending_review",
+      "review_priority": "normal",
+      "member_submission": {
+        "submitter_name": "Pilot Member Example",
+        "submitter_contact": "member@example.lgfc.test",
+        "submission_type": "story",
+        "ownership_statement": "Original family account; submitter owns narrative.",
+        "permission_statement": "Grant LGFC non-exclusive web use if approved.",
+        "credit_preference": "public_credit",
+        "privacy_notes": "May reference living family member; review required.",
+        "consent_status": "pending",
+        "admin_followup_required": true
+      },
+      "admin_notes": "Member-shaped pilot record; no runtime upload.",
+      "created_at": "2026-07-05T12:00:00.000Z",
+      "updated_at": "2026-07-05T12:00:00.000Z"
+    }
+  ]
+}
