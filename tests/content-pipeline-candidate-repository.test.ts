@@ -54,7 +54,7 @@ function applyRepoMigrations(db: DatabaseSync) {
 
 function wrapSqliteAsD1(sqlite: DatabaseSync) {
   return {
-    exec(sql: string) {
+    async exec(sql: string) {
       sqlite.exec(sql);
     },
     async batch(statements: Array<{ run: () => Promise<unknown> }>) {

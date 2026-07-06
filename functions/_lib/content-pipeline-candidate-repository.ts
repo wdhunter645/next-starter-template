@@ -156,14 +156,14 @@ async function runD1Batch(db: any, statements: D1PreparedStatement[]) {
   }
 
   if (typeof db.exec === 'function') {
-    db.exec('BEGIN');
+    await db.exec('BEGIN');
     try {
       for (const statement of statements) {
         await statement.run();
       }
-      db.exec('COMMIT');
+      await db.exec('COMMIT');
     } catch (error) {
-      db.exec('ROLLBACK');
+      await db.exec('ROLLBACK');
       throw error;
     }
     return;
