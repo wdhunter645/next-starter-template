@@ -34,7 +34,7 @@
     "title": "PROJECT: Standalone pipeline project",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9004",
-    "body": "Dashboard Lifecycle: pipeline\nPriority #: 5\nStatus: Planning\nOwner / Agent: Atlas\nProject Description: Standalone pipeline row without parent nesting.",
+    "body": "Dashboard Lifecycle: pipeline\nPriority #: 5\nStatus: PMO Intake\nOwner / Agent: Atlas\nProject Description: Standalone pipeline row without parent nesting.",
     "labels": [{ "name": "pmo" }],
     "assignees": [],
     "updated_at": "2026-07-04T12:00:00Z"

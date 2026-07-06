@@ -52,6 +52,17 @@ async function main() {
     assert(completed[0].issueNumber === 9006, 'completed section should sort newest closed first');
     assert(completed[1].issueNumber === 9007, 'older completed program should sort second');
 
+    const standardStatuses = new Set([
+      'Active', 'Implementation Ready', 'Planning', 'Strategy Defined',
+      'Strategy Development', 'Idea', 'Completed'
+    ]);
+    const allRows = [...active, ...pipeline, ...completed, ...(active[0].children || [])];
+    for (const row of allRows) {
+      assert(standardStatuses.has(row.status), `row #${row.issueNumber} has non-standard status: ${row.status}`);
+    }
+    assert(pipeline.find((row) => row.issueNumber === 9004)?.status === 'Implementation Ready', 'PMO Intake should normalize to Implementation Ready');
+    assert(active[0].children.every((child) => Number.isInteger(child.childSequence) && child.childSequence > 0), 'nested children must carry positive integer childSequence');
+
     console.log('PMO label-driven fixture test passed');
   } finally {
     await rm(outDir, { recursive: true, force: true });

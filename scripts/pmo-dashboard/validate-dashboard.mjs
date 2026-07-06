@@ -8,6 +8,15 @@ const outDir = process.argv[2] || process.env.PMO_DASHBOARD_OUT_DIR || 'site/pmo
 const requiredViews = ['activePrograms', 'pmoPipeline', 'completedPrograms'];
 const lifecycleToView = { active: 'activePrograms', pipeline: 'pmoPipeline', completed: 'completedPrograms' };
 const validLifecycles = new Set(Object.keys(lifecycleToView));
+const standardDisplayStatuses = new Set([
+  'Active',
+  'Implementation Ready',
+  'Planning',
+  'Strategy Defined',
+  'Strategy Development',
+  'Idea',
+  'Completed'
+]);
 const errors = [];
 
 async function readJson(file) {
@@ -28,6 +37,9 @@ function isNumericPriority(value) {
 function validateRow(row, label, rowByNumber, rowDataByNumber, errors) {
   if (!row.name) errors.push(`${label} is missing Program / Project Name`);
   if (!row.status) errors.push(`${label} is missing Status`);
+  if (row.status && !standardDisplayStatuses.has(row.status)) {
+    errors.push(`${label} status must use standardized dashboard vocabulary, got ${JSON.stringify(row.status)}`);
+  }
   if (Number.isNaN(row.percentComplete)) errors.push(`${label} percentComplete is NaN`);
   if (row.percentComplete !== null && (typeof row.percentComplete !== 'number' || row.percentComplete < 0 || row.percentComplete > 100)) errors.push(`${label} percentComplete must be null or 0-100`);
   if (!Number.isInteger(row.taskCount) || row.taskCount < 0) errors.push(`${label} taskCount must be a non-negative integer`);
@@ -46,6 +58,9 @@ function validateRow(row, label, rowByNumber, rowDataByNumber, errors) {
     }
     if (child.parentProgramIssue && child.parentProgramIssue !== row.issueNumber) {
       errors.push(`${label}.children[${childIndex}] parentProgramIssue does not match parent row issueNumber`);
+    }
+    if (!Number.isInteger(child.childSequence) || child.childSequence <= 0) {
+      errors.push(`${label}.children[${childIndex}] childSequence must be a positive integer`);
     }
   }
 }
@@ -115,8 +130,8 @@ if (data) {
         errors.push(`tracked issue #${item.issueNumber} is missing from dashboard output`);
         continue;
       }
-      const view = typeof viewLabel === 'string' && viewLabel.includes('[') ? viewLabel.split('[')[0] : viewLabel;
-      if (view !== expectedView && !viewLabel.includes('.children[')) {
+      const topLevelView = viewLabel.split('[')[0];
+      if (topLevelView !== expectedView) {
         errors.push(`tracked issue #${item.issueNumber} expected in ${expectedView}, found in ${viewLabel}`);
       }
       if (item.expectedPriority !== undefined) {

@@ -23,6 +23,32 @@ const CHILD_PROJECT_PATTERN = /^PROJECT:\s*(\d+):(\d+)\s*\|\s*(.+)$/i;
 const lifecycleToView = { active: 'activePrograms', pipeline: 'pmoPipeline', completed: 'completedPrograms' };
 const statusByLifecycle = { active: 'Active', pipeline: 'Implementation Ready', completed: 'Completed' };
 
+const STANDARD_DISPLAY_STATUSES = new Set([
+  'Active',
+  'Implementation Ready',
+  'Planning',
+  'Strategy Defined',
+  'Strategy Development',
+  'Idea',
+  'Completed'
+]);
+
+const STATUS_ALIASES = new Map([
+  ['active', 'Active'],
+  ['completed', 'Completed'],
+  ['implementation ready', 'Implementation Ready'],
+  ['planning', 'Planning'],
+  ['planning complete', 'Planning'],
+  ['strategy defined', 'Strategy Defined'],
+  ['strategy development', 'Strategy Development'],
+  ['strategy review', 'Strategy Development'],
+  ['idea', 'Idea'],
+  ['pmo intake', 'Implementation Ready'],
+  ['paused', 'Planning'],
+  ['paused (launch-gated)', 'Planning'],
+  ['decision capture', 'Idea']
+]);
+
 const PIPELINE_STATUS_VALUES = new Set([
   'implementation ready',
   'planning',
@@ -216,8 +242,20 @@ function lifecycle(issue) {
   return 'pipeline';
 }
 
+function normalizeDisplayStatus(issue, life) {
+  const raw = field(issue.body, 'Status') || field(issue.body, 'Dashboard Status');
+  if (raw) {
+    const normalized = raw.trim().toLowerCase();
+    if (STATUS_ALIASES.has(normalized)) return STATUS_ALIASES.get(normalized);
+    for (const [alias, display] of STATUS_ALIASES) {
+      if (normalized.startsWith(alias)) return display;
+    }
+  }
+  return statusByLifecycle[life];
+}
+
 function status(issue, life) {
-  return field(issue.body, 'Status') || field(issue.body, 'Dashboard Status') || statusByLifecycle[life];
+  return normalizeDisplayStatus(issue, life);
 }
 
 function owner(issue) {
@@ -307,7 +345,7 @@ function buildRow(issue, byNumber) {
   };
 }
 
-function assembleViews(entries, byNumber) {
+function assembleViews(entries) {
   const activeParentNumbers = new Set(
     entries.filter((e) => e.life === 'active' && e.row.type === 'program').map((e) => e.row.issueNumber)
   );
@@ -386,7 +424,7 @@ async function main() {
   }
 
   const entries = built.map((item) => item.entry);
-  const rows = assembleViews(entries, byNumber);
+  const rows = assembleViews(entries);
   taskAccounting.sort((a, b) => a.parentIssueNumber - b.parentIssueNumber);
 
   const topLevelCount = Object.values(rows).reduce((sum, view) => sum + view.length, 0);
