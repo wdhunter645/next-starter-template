@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-06T14:54:47.946Z",
+  "generatedAt": "2026-07-06T16:03:05.579Z",
   "source": "github-issues",
   "repository": "wdhunter645/next-starter-template",
   "views": {
@@ -11,9 +11,9 @@
         "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/2286",
         "priority": "1",
         "status": "Active",
-        "percentComplete": null,
-        "taskCount": 0,
-        "tasksCompleted": 0,
+        "percentComplete": 50,
+        "taskCount": 2,
+        "tasksCompleted": 1,
         "ownerAgent": "Atlas + Cursor",
         "description": "Runtime implementation for LGFC content pipeline candidate metadata, admin review APIs, member submission persistence, and publication-prep helpers.",
         "anticipatedCompletionDate": "TBD"
@@ -44,6 +44,20 @@
         "tasksCompleted": 0,
         "ownerAgent": "Atlas + Cursor",
         "description": "Repair PMO dashboard tracking so all tracked PMO programs, projects, ideas, planning items, active work, pipeline work, and completed work appear in the correct dashboard view with explicit numeric priority.",
+        "anticipatedCompletionDate": "TBD"
+      },
+      {
+        "type": "project",
+        "name": "PMO Dashboard Task Accounting Reconciliation",
+        "issueNumber": 2304,
+        "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/2304",
+        "priority": "4",
+        "status": "Ready for implementation",
+        "percentComplete": null,
+        "taskCount": 0,
+        "tasksCompleted": 0,
+        "ownerAgent": "GitHub Copilot",
+        "description": "Repair PMO dashboard task accounting so declared child task chains are counted consistently across PMO programs and projects, without counting loose issue references.",
         "anticipatedCompletionDate": "TBD"
       }
     ],
@@ -97,9 +111,9 @@
         "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/2040",
         "priority": "4",
         "status": "READY FOR IMPLEMENTATION PLANNING; IMPLEMENTATION WAITS FOR #1738 MANUAL WORKFLOW EVIDENCE.",
-        "percentComplete": null,
-        "taskCount": 0,
-        "tasksCompleted": 0,
+        "percentComplete": 50,
+        "taskCount": 2,
+        "tasksCompleted": 1,
         "ownerAgent": "Atlas",
         "description": "Controlled content-publication automation after manual/staged content workflow is proven.",
         "anticipatedCompletionDate": "TBD"
@@ -321,9 +335,9 @@
         "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/1738",
         "priority": "20",
         "status": "Paused (launch-gated)",
-        "percentComplete": null,
-        "taskCount": 0,
-        "tasksCompleted": 0,
+        "percentComplete": 100,
+        "taskCount": 8,
+        "tasksCompleted": 8,
         "ownerAgent": "Atlas",
         "description": "Lou Gehrig content collection and research pipeline expansion Phase 1; paused pending Bill authorization.",
         "anticipatedCompletionDate": "TBD"
@@ -407,9 +421,9 @@
         "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/2039",
         "priority": "3",
         "status": "READY TO LAUNCH AFTER #1685 STRUCTURAL BASELINE CLOSEOUT.",
-        "percentComplete": null,
-        "taskCount": 0,
-        "tasksCompleted": 0,
+        "percentComplete": 100,
+        "taskCount": 1,
+        "tasksCompleted": 1,
         "ownerAgent": "Atlas",
         "description": "Website public launch and relaunch readiness program.",
         "anticipatedCompletionDate": "TBD"
@@ -449,9 +463,9 @@
         "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/1963",
         "priority": "TBD",
         "status": "failed",
-        "percentComplete": null,
-        "taskCount": 0,
-        "tasksCompleted": 0,
+        "percentComplete": 100,
+        "taskCount": 8,
+        "tasksCompleted": 8,
         "ownerAgent": "Pending Assignment",
         "description": "Harden CI post-merge closeout automation (Program #1963).",
         "anticipatedCompletionDate": "TBD"
@@ -527,5 +541,374 @@
         "anticipatedCompletionDate": "TBD"
       }
     ]
-  }
+  },
+  "taskAccounting": [
+    {
+      "parentIssueNumber": 1053,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 1132,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 1254,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 1255,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 1256,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 1258,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 1259,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 1264,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 1500,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 1685,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 1700,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 1719,
+      "declaredTaskIssueNumbers": [
+        1720,
+        1721,
+        1722,
+        1723,
+        1724,
+        1725,
+        1500,
+        1726,
+        1727
+      ],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [
+        1725,
+        1500
+      ],
+      "taskCount": 9,
+      "tasksCompleted": 2
+    },
+    {
+      "parentIssueNumber": 1738,
+      "declaredTaskIssueNumbers": [
+        1739,
+        1740,
+        1741,
+        1742,
+        1743,
+        1744,
+        1745,
+        1746
+      ],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [
+        1739,
+        1740,
+        1741,
+        1742,
+        1743,
+        1744,
+        1745,
+        1746
+      ],
+      "taskCount": 8,
+      "tasksCompleted": 8
+    },
+    {
+      "parentIssueNumber": 1963,
+      "declaredTaskIssueNumbers": [
+        1964,
+        1965,
+        1966,
+        1967,
+        1968,
+        1969,
+        1970,
+        1971
+      ],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [
+        1964,
+        1965,
+        1966,
+        1967,
+        1968,
+        1969,
+        1970,
+        1971
+      ],
+      "taskCount": 8,
+      "tasksCompleted": 8
+    },
+    {
+      "parentIssueNumber": 2039,
+      "declaredTaskIssueNumbers": [
+        1685
+      ],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [
+        1685
+      ],
+      "taskCount": 1,
+      "tasksCompleted": 1
+    },
+    {
+      "parentIssueNumber": 2040,
+      "declaredTaskIssueNumbers": [
+        1738,
+        2039
+      ],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [
+        2039
+      ],
+      "taskCount": 2,
+      "tasksCompleted": 1
+    },
+    {
+      "parentIssueNumber": 2073,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 2074,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 2075,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 2076,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 2077,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 2078,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 2079,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 2081,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 2082,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 2083,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 2084,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 2085,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 2093,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 2100,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 2270,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 2273,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 2286,
+      "declaredTaskIssueNumbers": [
+        2288,
+        2305
+      ],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [
+        2288
+      ],
+      "taskCount": 2,
+      "tasksCompleted": 1
+    },
+    {
+      "parentIssueNumber": 2291,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 2292,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 2294,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 2299,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    },
+    {
+      "parentIssueNumber": 2304,
+      "declaredTaskIssueNumbers": [],
+      "missingTaskIssueNumbers": [],
+      "completedTaskIssueNumbers": [],
+      "taskCount": 0,
+      "tasksCompleted": 0
+    }
+  ]
 }

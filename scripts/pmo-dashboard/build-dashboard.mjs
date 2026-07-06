@@ -20,7 +20,26 @@ const TITLE_PREFIXES = [
 
 const lifecycleToView = { active: 'activePrograms', pipeline: 'pmoPipeline', completed: 'completedPrograms' };
 const statusByLifecycle = { active: 'Active', pipeline: 'PMO Intake', completed: 'Completed' };
-const taskBlockHeadingPattern = /^\s*(?:#{1,6}\s*)?(Task Chain|Child Tasks?|Implementation Tasks?|Task List)\s*:?\s*(.*)$/i;
+// Keep an explicit allowlist of accepted child-task section headings to avoid counting loose issue references.
+const taskBlockHeadings = [
+  'Task Chain',
+  'Child Task Chain',
+  'Child Tasks',
+  'Child Issue Chain',
+  'Child Issues',
+  'Expected Child Issue Chain',
+  'Expected Child Task Chain',
+  'Required Child Issue Chain',
+  'Required Child Task Chain',
+  'Implementation Tasks',
+  'Implementation Task Chain',
+  'Implementation Issue Chain',
+  'Task List',
+  'Issue Chain'
+];
+const escapedTaskBlockHeadings = taskBlockHeadings.map((heading) => escapeRegex(heading));
+const taskBlockHeadingAlternation = escapedTaskBlockHeadings.join('|');
+const taskBlockHeadingPattern = new RegExp(`^\\s*(?:#{1,6}\\s*)?(${taskBlockHeadingAlternation})\\s*:?\\s*(.*)$`, 'i');
 const nextSectionPattern = /^\s*#{1,6}\s+\S/;
 
 async function github(pathname) {
@@ -83,9 +102,22 @@ function titleType(title) {
 
 function cleanName(title) {
   for (const { pattern } of TITLE_PREFIXES) {
-    if (pattern.test(title)) return title.replace(pattern, '').trim();
+    if (pattern.test(title)) return decodeBasicHtmlEntities(title.replace(pattern, '').trim());
   }
-  return title.trim();
+  return decodeBasicHtmlEntities(title.trim());
+}
+
+function decodeBasicHtmlEntities(value) {
+  return value
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
+function escapeRegex(value) {
+  return value.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
 }
 
 function explicitTaskBlocks(body) {
@@ -184,12 +216,15 @@ async function main() {
   const issues = await fetchIssues('all');
   const byNumber = new Map(issues.map((issue) => [issue.number, issue]));
   const rows = { activePrograms: [], pmoPipeline: [], completedPrograms: [] };
+  const taskAccounting = [];
   for (const issue of issues.filter((i) => titleType(i.title) && !excluded.has(i.number))) {
     const type = titleType(issue.title);
     const life = lifecycle(issue);
-    const tasks = taskNumbers(issue).map((n) => byNumber.get(n)).filter(Boolean);
-    const taskCount = tasks.length;
-    const tasksCompleted = tasks.filter(isComplete).length;
+    const declaredTaskIssueNumbers = taskNumbers(issue);
+    const missingTaskIssueNumbers = declaredTaskIssueNumbers.filter((n) => !byNumber.has(n));
+    const completedTaskIssueNumbers = declaredTaskIssueNumbers.filter((n) => isComplete(byNumber.get(n)));
+    const taskCount = declaredTaskIssueNumbers.length;
+    const tasksCompleted = completedTaskIssueNumbers.length;
     const percentComplete = taskCount > 0 ? Math.round((tasksCompleted / taskCount) * 100) : null;
     const row = {
       type,
@@ -206,9 +241,18 @@ async function main() {
       anticipatedCompletionDate: field(issue.body, 'Anticipated Completion Date') || 'TBD'
     };
     rows[lifecycleToView[life]].push(row);
+    taskAccounting.push({
+      parentIssueNumber: issue.number,
+      declaredTaskIssueNumbers,
+      missingTaskIssueNumbers,
+      completedTaskIssueNumbers,
+      taskCount,
+      tasksCompleted
+    });
   }
   for (const key of Object.keys(rows)) rows[key].sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.name.localeCompare(b.name));
-  const data = { generatedAt: new Date().toISOString(), source: 'github-issues', repository: `${OWNER}/${REPO}`, views: rows };
+  taskAccounting.sort((a, b) => a.parentIssueNumber - b.parentIssueNumber);
+  const data = { generatedAt: new Date().toISOString(), source: 'github-issues', repository: `${OWNER}/${REPO}`, views: rows, taskAccounting };
   await mkdir(path.join(OUT_DIR, 'assets'), { recursive: true });
   await writeFile(path.join(OUT_DIR, 'dashboard-data.json'), `${JSON.stringify(data, null, 2)}\n`);
   await cp(path.join(__dirname, 'static/index.html'), path.join(OUT_DIR, 'index.html'));

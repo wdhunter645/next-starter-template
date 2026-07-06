@@ -46,14 +46,22 @@ Included issues should provide these explicit dashboard fields:
 - `Owner / Agent: approved owner or Pending Assignment`
 - `Anticipated Completion Date: YYYY-MM-DD or TBD`
 - `Program Description:` or `Project Description:`
-- Task child issue references inside one or more explicit `Task Chain`, `Child Tasks`, `Implementation Tasks`, or `Task List` blocks
+- Task child issue references inside one or more explicit task-chain blocks with these headings (case-insensitive): `Task Chain`, `Child Task Chain`, `Child Tasks`, `Child Issue Chain`, `Child Issues`, `Expected Child Issue Chain`, `Expected Child Task Chain`, `Required Child Issue Chain`, `Required Child Task Chain`, `Implementation Tasks`, `Implementation Task Chain`, `Implementation Issue Chain`, `Task List`, or `Issue Chain`
 
-Task totals are derived only from explicit child issue references inside `Task Chain`, `Child Tasks`, `Implementation Tasks`, or `Task List` blocks. The parser returns zero tasks when no explicit task block exists. The parser stops each task block at the next markdown heading and does not use docs-only registry tables, related-issue references, source links, comments, or loose issue references as live task-count truth.
+Task-accounting rules:
+
+- Task totals are derived only from declared child issue references inside explicit task-chain blocks.
+- Loose issue references outside those sections are intentionally ignored.
+- Each recognized task block ends at the next markdown heading.
+- Docs-only registry tables, related-issue references, source links, and comments are not used as live task-count truth.
+- `taskCount` equals the number of declared unique child issue references found in recognized task-chain sections, including declared refs that are missing from fetched issue data.
+- `tasksCompleted` counts only declared child refs that resolve to issues that are closed or carry `status:complete`.
+- Missing/unfetched declared child refs remain counted in `taskCount` but are not counted as completed tasks.
 
 ## Procedure
 
 1. Update the controlling PMO issue body with dashboard fields when PMO wants a row to appear with normalized values.
-2. Add child tasks only inside one or more explicit `Task Chain`, `Child Tasks`, `Implementation Tasks`, or `Task List` blocks.
+2. Add child tasks only inside one or more recognized task-chain blocks (`Task Chain`, `Child Task Chain`, `Child Tasks`, `Child Issue Chain`, `Child Issues`, `Expected Child Issue Chain`, `Expected Child Task Chain`, `Required Child Issue Chain`, `Required Child Task Chain`, `Implementation Tasks`, `Implementation Task Chain`, `Implementation Issue Chain`, `Task List`, or `Issue Chain`).
 3. Run or wait for **PMO dashboard CI build**.
 4. Confirm generation and validation of `site/pmo-dashboard/dashboard-data.json` and static assets.
 5. Confirm **PMO dashboard CI deploy** publishes the validated dashboard and records the Pages URL.

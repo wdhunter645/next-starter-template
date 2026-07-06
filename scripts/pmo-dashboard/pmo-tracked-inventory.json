@@ -2,8 +2,8 @@
   "version": 1,
   "sourceIssue": 2299,
   "included": [
-    { "issueNumber": 2286, "expectedLifecycle": "active", "expectedPriority": 1 },
-    { "issueNumber": 1719, "expectedLifecycle": "active", "expectedPriority": 2 },
+    { "issueNumber": 2286, "expectedLifecycle": "active", "expectedPriority": 1, "requiresTaskAccounting": true, "expectedMinimumTaskCount": 1 },
+    { "issueNumber": 1719, "expectedLifecycle": "active", "expectedPriority": 2, "requiresTaskAccounting": true, "expectedMinimumTaskCount": 1 },
     { "issueNumber": 2299, "expectedLifecycle": "active", "expectedPriority": 3 },
     { "issueNumber": 2294, "expectedLifecycle": "pipeline", "expectedPriority": 1 },
     { "issueNumber": 2292, "expectedLifecycle": "pipeline", "expectedPriority": 2 },
