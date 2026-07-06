@@ -5,8 +5,8 @@ Authority Level: Operational Guidance
 Owns: PMO dashboard generation, refresh, validation, and GitHub Pages limitations
 Does Not Own: PMO lifecycle definitions, GitHub issues source records, or Cloudflare production deployment
 Canonical Reference: /docs/ops/pmo/workflow-automation.md
-Related Issues: #2101
-Last Reviewed: 2026-07-03
+Related Issues: #2101, #2299
+Last Reviewed: 2026-07-06
 ---
 
 # PMO Dashboard
@@ -29,7 +29,17 @@ This how-to covers dashboard source fields, local generation, CI build validatio
 
 ## Source data
 
-The generator reads public repository GitHub issues with titles beginning with `PROGRAM:` or `PROJECT:`. Program and project issues may provide these explicit dashboard fields:
+The generator reads public repository GitHub issues with PMO dashboard title prefixes:
+
+- `PROGRAM:`
+- `PROJECT:`
+- `PROGRAM CANDIDATE:`
+- `STRATEGY:`
+- `STRATEGY REVIEW:`
+
+Issues outside these prefixes (for example `DESIGN:`, `TASK:`, or `OPS` titles) are excluded from dashboard rows unless renamed or explicitly tracked with documented exclusion rationale in `scripts/pmo-dashboard/pmo-tracked-inventory.json`.
+
+Included issues should provide these explicit dashboard fields:
 
 - `Dashboard Lifecycle: active | pipeline | completed`
 - `Priority #: number or TBD`
@@ -42,7 +52,7 @@ Task totals are derived only from explicit child issue references inside `Task C
 
 ## Procedure
 
-1. Update the controlling `PROGRAM:` or standalone `PROJECT:` issue body with dashboard fields when PMO wants a row to appear with normalized values.
+1. Update the controlling PMO issue body with dashboard fields when PMO wants a row to appear with normalized values.
 2. Add child tasks only inside one or more explicit `Task Chain`, `Child Tasks`, `Implementation Tasks`, or `Task List` blocks.
 3. Run or wait for **PMO dashboard CI build**.
 4. Confirm generation and validation of `site/pmo-dashboard/dashboard-data.json` and static assets.
@@ -52,7 +62,11 @@ Task totals are derived only from explicit child issue references inside `Task C
 
 ## Refresh and validation
 
-The build workflow runs every six hours and can also be started manually. It fails when dashboard JSON is missing, required views are absent, row fields are invalid, completed task counts exceed total task counts, static files are missing, or issue links are invalid.
+The build workflow runs every six hours and can also be started manually. It fails when dashboard JSON is missing, required views are absent, row fields are invalid, tracked inventory issues are missing or in the wrong lifecycle view, tracked inventory rows in active or pipeline views lack numeric `Priority #` values, excluded inventory issues appear in dashboard output, completed task counts exceed total task counts, static files are missing, or issue links are invalid.
+
+Tracked PMO inventory expectations live in `scripts/pmo-dashboard/pmo-tracked-inventory.json`. Validation fails when a tracked issue disappears from dashboard output, lands in the wrong lifecycle view, or when an explicitly excluded issue appears as a dashboard row. Only tracked inventory rows in active or pipeline views are required to have numeric priorities; other title-prefix matches outside the inventory may retain `TBD` until excluded or metadata-tagged.
+
+Reconciliation audit evidence: `docs/ops/pmo/pmo-dashboard-tracking-audit-2299.md`.
 
 The deploy workflow publishes after a successful PMO dashboard CI build and can also be started manually during controlled rollout. Deploy regenerates and validates the dashboard before publishing so stale output is not intentionally deployed.
 

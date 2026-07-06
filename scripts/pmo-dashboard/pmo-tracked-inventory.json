@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "sourceIssue": 2299,
+  "included": [
+    { "issueNumber": 2286, "expectedLifecycle": "active", "expectedPriority": 1 },
+    { "issueNumber": 1719, "expectedLifecycle": "active", "expectedPriority": 2 },
+    { "issueNumber": 2299, "expectedLifecycle": "active", "expectedPriority": 3 },
+    { "issueNumber": 2294, "expectedLifecycle": "pipeline", "expectedPriority": 1 },
+    { "issueNumber": 2292, "expectedLifecycle": "pipeline", "expectedPriority": 2 },
+    { "issueNumber": 2291, "expectedLifecycle": "pipeline", "expectedPriority": 3 },
+    { "issueNumber": 2040, "expectedLifecycle": "pipeline", "expectedPriority": 4 },
+    { "issueNumber": 2073, "expectedLifecycle": "pipeline", "expectedPriority": 5 },
+    { "issueNumber": 2085, "expectedLifecycle": "pipeline", "expectedPriority": 6 },
+    { "issueNumber": 2075, "expectedLifecycle": "pipeline", "expectedPriority": 7 },
+    { "issueNumber": 2074, "expectedLifecycle": "pipeline", "expectedPriority": 8 },
+    { "issueNumber": 2084, "expectedLifecycle": "pipeline", "expectedPriority": 9 },
+    { "issueNumber": 2093, "expectedLifecycle": "pipeline", "expectedPriority": 10 },
+    { "issueNumber": 2081, "expectedLifecycle": "pipeline", "expectedPriority": 11 },
+    { "issueNumber": 2082, "expectedLifecycle": "pipeline", "expectedPriority": 12 },
+    { "issueNumber": 2083, "expectedLifecycle": "pipeline", "expectedPriority": 13 },
+    { "issueNumber": 2079, "expectedLifecycle": "pipeline", "expectedPriority": 14 },
+    { "issueNumber": 2078, "expectedLifecycle": "pipeline", "expectedPriority": 15 },
+    { "issueNumber": 2077, "expectedLifecycle": "pipeline", "expectedPriority": 16 },
+    { "issueNumber": 2076, "expectedLifecycle": "pipeline", "expectedPriority": 17 },
+    { "issueNumber": 2273, "expectedLifecycle": "pipeline", "expectedPriority": 18 },
+    { "issueNumber": 2270, "expectedLifecycle": "pipeline", "expectedPriority": 19 },
+    { "issueNumber": 1738, "expectedLifecycle": "pipeline", "expectedPriority": 20 },
+    { "issueNumber": 1700, "expectedLifecycle": "pipeline", "expectedPriority": 21 },
+    { "issueNumber": 1685, "expectedLifecycle": "completed" },
+    { "issueNumber": 2100, "expectedLifecycle": "completed" },
+    { "issueNumber": 2039, "expectedLifecycle": "completed" }
+  ],
+  "excluded": [
+    {
+      "issueNumber": 2101,
+      "rationale": "DESIGN: title prefix is outside PMO dashboard inclusion taxonomy; closed design/pre-build record. Runtime CI build/deploy is operational evidence, not a dashboard program row."
+    },
+    {
+      "issueNumber": 1847,
+      "rationale": "OPS-prefixed closed operations program; not a PROGRAM:/PROJECT:/candidate/strategy PMO inventory row."
+    },
+    {
+      "issueNumber": 2288,
+      "rationale": "TASK issue under #2286 runtime program; child tasks are not standalone PMO dashboard rows per #2299 scope."
+    },
+    {
+      "issueNumber": 1075,
+      "rationale": "Historical CI orchestration project; outside #2299 PMO tracked inventory. Retained as GitHub evidence only."
+    },
+    {
+      "issueNumber": 1039,
+      "rationale": "Historical DIATAXIS governance project; outside #2299 PMO tracked inventory."
+    },
+    {
+      "issueNumber": 1076,
+      "rationale": "Historical DIATAXIS migration project; outside #2299 PMO tracked inventory."
+    },
+    {
+      "issueNumber": 1054,
+      "rationale": "Historical repository governance project; outside #2299 PMO tracked inventory."
+    },
+    {
+      "issueNumber": 1335,
+      "rationale": "Historical Phase 1 wrap-up program; PMO V4 archive evidence, not current workload."
+    }
+  ],
+  "decisionsResolved": [
+    {
+      "issueNumber": 1685,
+      "decision": "Keep Dashboard Lifecycle: completed. Do not close GitHub issue in #2299 PR; closure is a separate Bill/Atlas closeout decision."
+    },
+    {
+      "issueNumber": 1738,
+      "decision": "Pipeline Priority #20, status Paused (launch-gated). Matches current control state."
+    },
+    {
+      "issueNumber": 2273,
+      "decision": "Pipeline with status Planning complete (successor #2286 active). Do not close or archive in #2299 PR."
+    },
+    {
+      "issueNumber": 2286,
+      "decision": "Active Priority #1 — core acceptance condition."
+    }
+  ]
+}
