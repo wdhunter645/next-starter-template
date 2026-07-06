@@ -3,9 +3,11 @@
 
 import {
   parseCandidateReviewRequest,
-  serializeCandidateForAdmin,
+  serializeAdminMediaReferences,
+  serializeCandidateForAdminReview,
 } from '../../../../_lib/content-pipeline-candidate-admin';
 import {
+  getUploadedMediaReferenceForCandidate,
   requireContentPipelineCandidateTables,
   updateCandidateReviewState,
 } from '../../../../_lib/content-pipeline-candidate-repository';
@@ -37,10 +39,14 @@ export const onRequestPost = async (context: any): Promise<Response> => {
       return jsonResponse({ ok: false, error: 'Candidate not found.' }, 404);
     }
 
+    const uploadedMediaReference = await getUploadedMediaReferenceForCandidate(d1.db, updated.id);
     return jsonResponse(
       {
         ok: true,
-        candidate: serializeCandidateForAdmin(updated as unknown as Record<string, unknown>),
+        candidate: serializeCandidateForAdminReview(
+          updated as unknown as Record<string, unknown>,
+          serializeAdminMediaReferences(updated as unknown as Record<string, unknown>, uploadedMediaReference),
+        ),
       },
       200,
     );

@@ -17,6 +17,7 @@ import {
   type MemberSubmissionExtension,
 } from './content-pipeline-candidate-import';
 import { requireTables } from './d1';
+import { validateOptionalContentPipelineMediaReference } from './content-pipeline-media-reference';
 
 export const MEMBER_SUBMISSION_INTAKE_TABLES = [
   'content_items',
@@ -188,6 +189,17 @@ export function parseMemberSubmissionIntakeBody(body: unknown): ParseMemberSubmi
   const relatedCandidateId = asTrimmedString(body.related_candidate_id);
   if (relatedCandidateId && !CANDIDATE_ID_PATTERN.test(relatedCandidateId)) {
     errors.push('related_candidate_id must match lgfc-gehrig-YYYY-NNN with at least 3 trailing digits.');
+  }
+
+  const uploadedMediaReference = asTrimmedString(body.uploaded_media_reference);
+  if (uploadedMediaReference) {
+    const validatedReference = validateOptionalContentPipelineMediaReference(
+      uploadedMediaReference,
+      'uploaded_media_reference',
+    );
+    if (!validatedReference.ok) {
+      errors.push(validatedReference.error);
+    }
   }
 
   if (errors.length > 0) {

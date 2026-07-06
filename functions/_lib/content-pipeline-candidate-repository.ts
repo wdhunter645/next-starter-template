@@ -579,3 +579,125 @@ export function groupTagsByCategory(
   }
   return tags;
 }
+
+export type CandidateMediaReferenceUpdate = {
+  media_asset_id?: string | null;
+  uploaded_media_reference?: string | null;
+};
+
+export async function getUploadedMediaReferenceForCandidate(
+  db: any,
+  contentItemId: number,
+): Promise<string | null> {
+  const row = await db
+    .prepare(
+      `SELECT uploaded_media_reference
+       FROM member_submissions
+       WHERE content_item_id = ?
+       LIMIT 1`,
+    )
+    .bind(contentItemId)
+    .first();
+
+  if (!row) {
+    return null;
+  }
+
+  const value = String((row as { uploaded_media_reference?: string | null }).uploaded_media_reference ?? '').trim();
+  return value || null;
+}
+
+export async function updateCandidateMediaReferences(
+  db: any,
+  candidateId: string,
+  update: CandidateMediaReferenceUpdate,
+  options: { actor?: string; notes?: string } = {},
+): Promise<StoredCandidate | null> {
+  const existing = await getCandidateByCandidateId(db, candidateId);
+  if (!existing) {
+    return null;
+  }
+
+  const statements: D1PreparedStatement[] = [];
+  const mediaChanges: Record<string, { from: unknown; to: unknown }> = {};
+
+  if (update.media_asset_id !== undefined) {
+    const nextValue = update.media_asset_id;
+    const currentValue = existing.media_asset_id ?? null;
+    if (nextValue !== currentValue) {
+      statements.push(
+        db
+          .prepare(
+            `UPDATE content_items
+             SET media_asset_id = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+             WHERE candidate_id = ?
+               AND deleted_at IS NULL`,
+          )
+          .bind(nextValue, candidateId),
+      );
+      mediaChanges.media_asset_id = { from: currentValue, to: nextValue };
+    }
+  }
+
+  if (update.uploaded_media_reference !== undefined) {
+    const memberRow = await db
+      .prepare(
+        `SELECT id, uploaded_media_reference
+         FROM member_submissions
+         WHERE content_item_id = ?
+         LIMIT 1`,
+      )
+      .bind(existing.id)
+      .first();
+
+    if (!memberRow) {
+      throw new Error('Candidate has no member_submissions row for uploaded_media_reference update.');
+    }
+
+    const currentValue =
+      (memberRow as { uploaded_media_reference?: string | null }).uploaded_media_reference ?? null;
+    const nextValue = update.uploaded_media_reference;
+    if (nextValue !== currentValue) {
+      statements.push(
+        db
+          .prepare(
+            `UPDATE member_submissions
+             SET uploaded_media_reference = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+             WHERE content_item_id = ?`,
+          )
+          .bind(nextValue, existing.id),
+      );
+      mediaChanges.uploaded_media_reference = { from: currentValue, to: nextValue };
+    }
+  }
+
+  if (statements.length === 0) {
+    return existing;
+  }
+
+  if (Object.keys(mediaChanges).length > 0) {
+    statements.push(
+      db
+        .prepare(
+          `INSERT INTO moderation_events (
+            content_item_id, event_type, actor, from_state, to_state, notes
+          ) VALUES (?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(
+          existing.id,
+          'rights_update',
+          options.actor ?? null,
+          JSON.stringify(
+            Object.fromEntries(Object.entries(mediaChanges).map(([key, value]) => [key, value.from])),
+          ),
+          JSON.stringify(
+            Object.fromEntries(Object.entries(mediaChanges).map(([key, value]) => [key, value.to])),
+          ),
+          options.notes ?? 'media reference update',
+        ),
+    );
+  }
+
+  await runD1Batch(db, statements);
+  return getCandidateByCandidateId(db, candidateId);
+}

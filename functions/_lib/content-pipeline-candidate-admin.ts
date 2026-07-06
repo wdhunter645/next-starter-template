@@ -15,8 +15,13 @@ import {
   SOURCE_TRUST_STATUSES,
 } from './content-pipeline-candidate-constants';
 import type { CandidateListFilter, CandidateReviewStateUpdate } from './content-pipeline-candidate-repository';
+import {
+  serializeAdminMediaReferences,
+  serializeCandidateForAdminReview,
+} from './content-pipeline-media-reference';
 
 export { CANDIDATE_ID_PATTERN, CANDIDATE_ID_VALIDATION_MESSAGE };
+export { serializeAdminMediaReferences, serializeCandidateForAdminReview };
 
 const REVIEW_FIELD_VALIDATORS: Record<keyof CandidateReviewStateUpdate, Set<string> | null> = {
   review_status: REVIEW_STATUSES,
@@ -154,13 +159,5 @@ export function parseCandidateReviewRequest(
       actor,
       notes,
     },
-  };
-}
-
-export function serializeCandidateForAdmin(candidate: Record<string, unknown>) {
-  const { tags, ...rest } = candidate;
-  return {
-    ...rest,
-    tags: tags ?? { people: [], topics: [], places: [] },
   };
 }
