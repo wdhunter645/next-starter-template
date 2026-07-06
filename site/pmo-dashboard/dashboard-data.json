@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-06T14:18:35.411Z",
+  "generatedAt": "2026-07-06T14:45:48.336Z",
   "source": "github-issues",
   "repository": "wdhunter645/next-starter-template",
   "views": {
@@ -43,7 +43,7 @@
         "taskCount": 0,
         "tasksCompleted": 0,
         "ownerAgent": "Atlas + Cursor",
-        "description": "<short description>",
+        "description": "Repair PMO dashboard tracking so all tracked PMO programs, projects, ideas, planning items, active work, pipeline work, and completed work appear in the correct dashboard view with explicit numeric priority.",
         "anticipatedCompletionDate": "TBD"
       }
     ],
@@ -340,76 +340,6 @@
         "tasksCompleted": 0,
         "ownerAgent": "Atlas",
         "description": "Fundraiser and charity campaign operations buildout; queued launch-gated program.",
-        "anticipatedCompletionDate": "TBD"
-      },
-      {
-        "type": "project",
-        "name": "CI-ORCH-01 — Implement LGFC CI orchestration engine",
-        "issueNumber": 1075,
-        "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/1075",
-        "priority": "TBD",
-        "status": "active",
-        "percentComplete": null,
-        "taskCount": 0,
-        "tasksCompleted": 0,
-        "ownerAgent": "Pending Assignment",
-        "description": "Implement the LGFC CI orchestration engine that turns the merged CI redesign documentation into a controlled one-issue-at-a-time implementation workflow.",
-        "anticipatedCompletionDate": "TBD"
-      },
-      {
-        "type": "project",
-        "name": "DIATAXIS Continuous Curation & Documentation Governance Program",
-        "issueNumber": 1039,
-        "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/1039",
-        "priority": "TBD",
-        "status": "PMO Intake",
-        "percentComplete": null,
-        "taskCount": 0,
-        "tasksCompleted": 0,
-        "ownerAgent": "Pending Assignment",
-        "description": "Establish a continuous documentation curation and governance program for the DIATAXIS framework across LGFC and future projects.",
-        "anticipatedCompletionDate": "TBD"
-      },
-      {
-        "type": "project",
-        "name": "DIATAXIS legacy migration and authority transition program",
-        "issueNumber": 1076,
-        "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/1076",
-        "priority": "TBD",
-        "status": "active",
-        "percentComplete": null,
-        "taskCount": 0,
-        "tasksCompleted": 0,
-        "ownerAgent": "Pending Assignment",
-        "description": "Define and execute the migration of legacy repository documentation into the canonical DIATAXIS architecture.",
-        "anticipatedCompletionDate": "TBD"
-      },
-      {
-        "type": "project",
-        "name": "LGFC Repository Governance & DIATAXIS Coordination",
-        "issueNumber": 1054,
-        "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/1054",
-        "priority": "TBD",
-        "status": "PMO Intake",
-        "percentComplete": null,
-        "taskCount": 0,
-        "tasksCompleted": 0,
-        "ownerAgent": "Pending Assignment",
-        "description": "Master coordination issue for Codex-driven repository governance, documentation, CI, and DIATAXIS operations.",
-        "anticipatedCompletionDate": "TBD"
-      },
-      {
-        "type": "program",
-        "name": "Phase 1 Wrap-Up — PMO, as-built, health, launch gate",
-        "issueNumber": 1335,
-        "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/1335",
-        "priority": "TBD",
-        "status": "active",
-        "percentComplete": null,
-        "taskCount": 0,
-        "tasksCompleted": 0,
-        "ownerAgent": "Pending Assignment",
-        "description": "Umbrella source issue for **Program 1 — Phase 1 Wrap-Up**: draw the hard line under Phase 1 across CI, Website, Docs/DIATAXIS, and OPS before Program 2 build work begins.",
         "anticipatedCompletionDate": "TBD"
       }
     ],

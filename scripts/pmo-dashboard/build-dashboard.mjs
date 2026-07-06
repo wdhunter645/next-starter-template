@@ -31,28 +31,38 @@ async function github(pathname) {
   return { data: await res.json(), headers: res.headers };
 }
 
+function nextLinkPath(linkHeader) {
+  const match = linkHeader?.match(/<([^>]+)>;\s*rel="next"/);
+  if (!match) return null;
+  const next = new URL(match[1]);
+  return `${next.pathname}${next.search}`;
+}
+
+async function fetchIssuesForState(issueState) {
+  const all = [];
+  let pathname = `/repos/${OWNER}/${REPO}/issues?state=${issueState}&per_page=100`;
+  for (;;) {
+    const { data: batch, headers } = await github(pathname);
+    const issues = batch.filter((issue) => !issue.pull_request);
+    all.push(...issues);
+    const nextPath = nextLinkPath(headers.get('link'));
+    if (!nextPath) break;
+    pathname = nextPath;
+  }
+  return all;
+}
+
 async function fetchIssues(state) {
   if (process.env.PMO_DASHBOARD_ISSUES_FIXTURE) {
     const fixture = JSON.parse(await readFile(process.env.PMO_DASHBOARD_ISSUES_FIXTURE, 'utf8'));
     return fixture.filter((issue) => !issue.pull_request && (state === 'all' || issue.state === state));
   }
-  const states = state === 'all' ? ['open', 'closed'] : [state];
-  const all = [];
-  for (const issueState of states) {
-    let after = null;
-    for (;;) {
-      const params = new URLSearchParams({ state: issueState, per_page: '100' });
-      if (after) params.set('after', after);
-      const { data: batch, headers } = await github(`/repos/${OWNER}/${REPO}/issues?${params.toString()}`);
-      const issues = batch.filter((issue) => !issue.pull_request);
-      all.push(...issues);
-      const link = headers.get('link');
-      const nextAfter = link?.match(/<[^>]*[?&]after=([^>&]+)[^>]*>;\s*rel="next"/)?.[1];
-      if (!nextAfter) break;
-      after = decodeURIComponent(nextAfter);
-    }
+  if (state === 'all') {
+    const open = await fetchIssuesForState('open');
+    const closed = await fetchIssuesForState('closed');
+    return [...open, ...closed];
   }
-  return all;
+  return fetchIssuesForState(state);
 }
 
 function field(body, name) {
@@ -138,8 +148,21 @@ function owner(issue) {
   return field(issue.body, 'Owner / Agent') || labels(issue).find((l) => l.startsWith('owner:'))?.replace('owner:', '') || issue.assignees?.map((a) => a.login).join(', ') || 'Pending Assignment';
 }
 
+function isPlaceholderDescription(value) {
+  if (!value) return true;
+  const trimmed = value.trim();
+  return /^<[^>]+>$/.test(trimmed) || /^tbd$/i.test(trimmed);
+}
+
 function description(issue) {
-  return field(issue.body, 'Program Description') || field(issue.body, 'Project Description') || field(issue.body, 'Purpose') || (issue.body || '').split('\n').find((line) => line.trim() && !line.trim().startsWith('#'))?.trim() || '';
+  for (const name of ['Program Description', 'Project Description']) {
+    const value = field(issue.body, name);
+    if (value && !isPlaceholderDescription(value)) return value;
+  }
+  const purpose = field(issue.body, 'Purpose');
+  if (purpose && !isPlaceholderDescription(purpose)) return purpose;
+  const line = (issue.body || '').split('\n').find((entry) => entry.trim() && !entry.trim().startsWith('#'));
+  return line?.trim() && !isPlaceholderDescription(line.trim()) ? line.trim() : '';
 }
 
 function priorityValue(priority) {
@@ -147,11 +170,21 @@ function priorityValue(priority) {
   return Number.isNaN(parsed) ? 9999 : parsed;
 }
 
+async function loadExcludedIssueNumbers() {
+  try {
+    const inventory = JSON.parse(await readFile(path.join(__dirname, 'pmo-tracked-inventory.json'), 'utf8'));
+    return new Set((inventory.excluded || []).map((item) => item.issueNumber));
+  } catch {
+    return new Set();
+  }
+}
+
 async function main() {
+  const excluded = await loadExcludedIssueNumbers();
   const issues = await fetchIssues('all');
   const byNumber = new Map(issues.map((issue) => [issue.number, issue]));
   const rows = { activePrograms: [], pmoPipeline: [], completedPrograms: [] };
-  for (const issue of issues.filter((i) => titleType(i.title))) {
+  for (const issue of issues.filter((i) => titleType(i.title) && !excluded.has(i.number))) {
     const type = titleType(issue.title);
     const life = lifecycle(issue);
     const tasks = taskNumbers(issue).map((n) => byNumber.get(n)).filter(Boolean);

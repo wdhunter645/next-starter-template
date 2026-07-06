@@ -74,12 +74,19 @@ Machine-readable inventory and validation guardrails: `scripts/pmo-dashboard/pmo
 | #2101 | `DESIGN:` title prefix outside dashboard taxonomy; closed design/pre-build record. CI implementation evidence exists elsewhere. |
 | #1847 | `OPS` title prefix; closed operations program, not PMO dashboard inventory row. |
 | #2288 | `TASK:` child issue under #2286; not a standalone PMO dashboard row per #2299 scope boundary. |
+| #1075 | Historical CI orchestration project; outside #2299 tracked inventory. |
+| #1039 | Historical DIATAXIS governance project; outside tracked inventory. |
+| #1076 | Historical DIATAXIS migration project; outside tracked inventory. |
+| #1054 | Historical repository governance project; outside tracked inventory. |
+| #1335 | Historical Phase 1 wrap-up program; PMO V4 archive evidence. |
 
-## Bill / Atlas decisions required
+## Atlas decisions (resolved)
 
-1. **#1685** — GitHub issue remains OPEN with `status:complete` while PMO treats the program as closed complete. Close on GitHub or retain explicit `Dashboard Lifecycle: completed` only?
-2. **#1738** — Confirm paused pipeline priority #20 and `Paused (launch-gated)` dashboard status until Bill authorizes Phase 1 relaunch.
-3. **#2273** — Confirm pipeline disposition (planning complete; successor #2286 active) rather than completed archive.
+1. **#1685** — Keep `Dashboard Lifecycle: completed`. Do not close GitHub issue in this PR.
+2. **#1738** — Pipeline Priority #20, `Paused (launch-gated)`.
+3. **#2273** — Pipeline, `Planning complete (successor #2286 active)`. Do not close or archive in this PR.
+4. **#2286** — Active Priority #1 (core acceptance condition).
+5. **Legacy rows (#1075, #1039, #1076, #1054, #1335)** — Explicitly excluded from dashboard output via tracked inventory.
 
 ## Priority rule applied
 
@@ -94,18 +101,4 @@ node scripts/pmo-dashboard/build-dashboard.mjs
 node scripts/pmo-dashboard/validate-dashboard.mjs site/pmo-dashboard
 ```
 
-Validation enforces numeric priorities on active/pipeline rows and checks tracked inventory presence and lifecycle placement.
-
-## Additional title-prefix rows (not in tracked inventory)
-
-The generator also surfaces older `PROGRAM:` / `PROJECT:` issues that match title prefixes but are outside the #2299 tracked inventory. These rows may retain `TBD` priority until Atlas adds dashboard metadata or documents explicit exclusion:
-
-| Issue | Title |
-| ---: | --- |
-| #1075 | PROJECT: CI-ORCH-01 — Implement LGFC CI orchestration engine |
-| #1039 | PROJECT: DIATAXIS Continuous Curation & Documentation Governance Program |
-| #1076 | PROJECT: DIATAXIS legacy migration and authority transition program |
-| #1054 | PROJECT: LGFC Repository Governance & DIATAXIS Coordination |
-| #1335 | PROGRAM: Phase 1 Wrap-Up — PMO, as-built, health, launch gate |
-
-Follow-up: add explicit exclusion rationale or completed/pipeline metadata per PMO V4 historical archive treatment.
+Validation enforces numeric priorities on tracked inventory rows in active/pipeline views, checks tracked inventory presence and lifecycle placement, and fails when excluded inventory issues appear in dashboard output.

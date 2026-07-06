@@ -7,6 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const outDir = process.argv[2] || process.env.PMO_DASHBOARD_OUT_DIR || 'site/pmo-dashboard';
 const requiredViews = ['activePrograms', 'pmoPipeline', 'completedPrograms'];
 const lifecycleToView = { active: 'activePrograms', pipeline: 'pmoPipeline', completed: 'completedPrograms' };
+const validLifecycles = new Set(Object.keys(lifecycleToView));
 const errors = [];
 
 async function readJson(file) {
@@ -59,13 +60,17 @@ if (data) {
       }
     }
     for (const item of inventory.included) {
+      if (!validLifecycles.has(item.expectedLifecycle)) {
+        errors.push(`tracked inventory #${item.issueNumber} has invalid expectedLifecycle: ${JSON.stringify(item.expectedLifecycle)}`);
+        continue;
+      }
+      const expectedView = lifecycleToView[item.expectedLifecycle];
       const view = rowByNumber.get(item.issueNumber);
       if (!view) {
         errors.push(`tracked issue #${item.issueNumber} is missing from dashboard output`);
         continue;
       }
-      const expectedView = lifecycleToView[item.expectedLifecycle];
-      if (expectedView && view !== expectedView) {
+      if (view !== expectedView) {
         errors.push(`tracked issue #${item.issueNumber} expected in ${expectedView}, found in ${view}`);
       }
       if (item.expectedPriority !== undefined) {
@@ -74,6 +79,13 @@ if (data) {
           errors.push(`tracked issue #${item.issueNumber} expected priority ${item.expectedPriority}, found ${row.priority}`);
         }
       }
+    }
+  }
+
+  if (inventory?.excluded) {
+    for (const item of inventory.excluded) {
+      const view = rowByNumber.get(item.issueNumber);
+      if (view) errors.push(`excluded issue #${item.issueNumber} must not appear in dashboard output (found in ${view})`);
     }
   }
 }
