@@ -9,20 +9,47 @@
  */
 
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import {
   buildCandidateImportPlan,
+  buildImportSqlBatch,
   validateCandidateRegistry,
 } from '../../functions/_lib/content-pipeline-candidate-import.ts';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, '../..');
+const MIN_NODE_MAJOR = 22;
+const MIN_NODE_MINOR_FOR_STRIP_TYPES = 6;
 
 function printUsage() {
   console.log(`Usage: node --experimental-strip-types ${path.relative(process.cwd(), fileURLToPath(import.meta.url))} \\
   --file <registry.json> [--database lgfc_lite] [--local|--remote] [--dry-run]`);
+}
+
+function assertNodeRuntime() {
+  const [majorRaw, minorRaw] = process.versions.node.split('.');
+  const major = Number(majorRaw);
+  const minor = Number(minorRaw ?? 0);
+
+  if (!Number.isFinite(major) || major !== MIN_NODE_MAJOR || minor < MIN_NODE_MINOR_FOR_STRIP_TYPES) {
+    console.error(
+      `Node ${process.versions.node} is unsupported for this script. ` +
+        `Use Node ${MIN_NODE_MAJOR}.${MIN_NODE_MINOR_FOR_STRIP_TYPES}+ with --experimental-strip-types ` +
+        `(see package.json engines).`,
+    );
+    process.exit(1);
+  }
+}
+
+function readFlagValue(argv, index, flagName) {
+  const value = argv[index + 1];
+  if (!value || value.startsWith('--')) {
+    throw new Error(`Missing value for ${flagName}`);
+  }
+  return value;
 }
 
 function parseArgs(argv) {
@@ -36,12 +63,12 @@ function parseArgs(argv) {
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === '--file') {
-      options.file = argv[index + 1];
+      options.file = readFlagValue(argv, index, '--file');
       index += 1;
       continue;
     }
     if (arg === '--database') {
-      options.database = argv[index + 1];
+      options.database = readFlagValue(argv, index, '--database');
       index += 1;
       continue;
     }
@@ -68,19 +95,23 @@ function parseArgs(argv) {
 }
 
 function loadRegistry(filePath) {
+  if (!filePath) {
+    throw new Error('Registry file path is required');
+  }
+
   const absolutePath = path.isAbsolute(filePath) ? filePath : path.join(repoRoot, filePath);
   const raw = fs.readFileSync(absolutePath, 'utf8');
   return JSON.parse(raw);
 }
 
-function executeSql(database, target, sql) {
+function executeSqlFile(database, target, sqlFile) {
   const args = ['wrangler', 'd1', 'execute', database];
   if (target === 'local') {
     args.push('--local');
   } else {
     args.push('--remote');
   }
-  args.push('--command', sql);
+  args.push('--file', sqlFile);
 
   execFileSync('npx', args, {
     cwd: repoRoot,
@@ -90,6 +121,7 @@ function executeSql(database, target, sql) {
 }
 
 function main() {
+  assertNodeRuntime();
   const options = parseArgs(process.argv.slice(2));
   const registry = loadRegistry(options.file);
   const validation = validateCandidateRegistry(registry);
@@ -103,8 +135,9 @@ function main() {
   }
 
   const plan = buildCandidateImportPlan(registry);
+  const sqlBatch = buildImportSqlBatch(plan);
   console.log(
-    `Validated ${plan.candidateCount} candidate(s); prepared ${plan.statements.length} SQL statement(s).`,
+    `Validated ${plan.candidateCount} candidate(s); prepared ${plan.statements.length} SQL statement(s) in one transaction batch.`,
   );
 
   if (options.dryRun) {
@@ -119,8 +152,20 @@ function main() {
     return;
   }
 
-  for (const statement of plan.statements) {
-    executeSql(options.database, options.target, statement.sql);
+  const tempFile = path.join(
+    os.tmpdir(),
+    `lgfc-content-pipeline-import-${process.pid}-${Date.now()}.sql`,
+  );
+
+  try {
+    fs.writeFileSync(tempFile, sqlBatch, 'utf8');
+    executeSqlFile(options.database, options.target, tempFile);
+  } finally {
+    try {
+      fs.unlinkSync(tempFile);
+    } catch {
+      // ignore cleanup errors
+    }
   }
 
   console.log('Import complete.');

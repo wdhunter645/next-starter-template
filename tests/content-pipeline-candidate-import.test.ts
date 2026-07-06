@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import fixtureRegistry from '../data/research/lou-gehrig-content-candidates.json';
 import {
   buildCandidateImportPlan,
+  buildImportSqlBatch,
   CONTENT_PIPELINE_CORE_TABLES,
   validateCandidateRegistry,
   type CandidateRecord,
@@ -74,10 +75,24 @@ describe('content pipeline candidate import (#2288)', () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
 
-    expect(result.errors.some((error) => error.includes('candidate_id must match'))).toBe(true);
+    expect(result.errors.some((error) => error.includes('lgfc-gehrig-YYYY-NNNN+'))).toBe(true);
     expect(result.errors.some((error) => error.includes('member_submission object is required'))).toBe(
       true,
     );
+  });
+
+  it('rejects non-string required scalar fields before SQL generation', () => {
+    const registry = minimalRegistry([
+      {
+        ...minimalCandidate(),
+        title: 42,
+      } as unknown as CandidateRecord,
+    ]);
+
+    const result = validateCandidateRegistry(registry);
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.errors.some((error) => error.includes('title must be a non-empty string'))).toBe(true);
   });
 
   it('builds idempotent upsert SQL on candidate_id', () => {
@@ -86,10 +101,17 @@ describe('content pipeline candidate import (#2288)', () => {
 
     expect(plan.candidateCount).toBe(1);
     expect(plan.statements.some((statement) => statement.table === 'content_items')).toBe(true);
+    expect(plan.statements.some((statement) => statement.sql.includes('DELETE FROM content_item_tags'))).toBe(
+      true,
+    );
 
     const upsert = plan.statements.find((statement) => statement.table === 'content_items');
     expect(upsert?.sql).toContain('ON CONFLICT(candidate_id) DO UPDATE SET');
     expect(upsert?.sql).toContain("'lgfc-gehrig-2026-999'");
+
+    const batch = buildImportSqlBatch(plan);
+    expect(batch.startsWith('BEGIN;')).toBe(true);
+    expect(batch.endsWith('COMMIT;')).toBe(true);
   });
 
   it('produces stable statement counts for repeated import plan builds', () => {
@@ -129,6 +151,9 @@ describe('content pipeline candidate import (#2288)', () => {
     expect(plan.statements.some((statement) => statement.table === 'publication_candidates')).toBe(
       true,
     );
+    expect(
+      plan.statements.some((statement) => statement.sql.includes('ON CONFLICT(content_item_id, publication_target)')),
+    ).toBe(true);
   });
 });
 

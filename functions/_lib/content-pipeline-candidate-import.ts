@@ -234,6 +234,26 @@ const REQUIRED_CANDIDATE_FIELDS = [
   'updated_at',
 ] as const;
 
+const REQUIRED_NON_EMPTY_STRING_FIELDS = [
+  'candidate_id',
+  'input_stream',
+  'title',
+  'source_name',
+  'source_type',
+  'content_type',
+  'summary',
+  'rights_status',
+  'source_trust_status',
+  'relevance_status',
+  'review_status',
+  'publication_status',
+  'privacy_flag',
+  'privacy_review_status',
+  'review_priority',
+  'created_at',
+  'updated_at',
+] as const;
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -279,6 +299,12 @@ function validateMemberSubmission(
     }
   }
 
+  for (const field of ['submitter_name', 'submitter_contact', 'ownership_statement', 'permission_statement'] as const) {
+    if (!isNonEmptyString(memberSubmission[field])) {
+      errors.push(`${candidateId}: member_submission.${field} must be a non-empty string`);
+    }
+  }
+
   pushEnumError(errors, `${candidateId}.member_submission.submission_type`, memberSubmission.submission_type, SUBMISSION_TYPES);
   pushEnumError(errors, `${candidateId}.member_submission.credit_preference`, memberSubmission.credit_preference, CREDIT_PREFERENCES);
   pushEnumError(errors, `${candidateId}.member_submission.consent_status`, memberSubmission.consent_status, CONSENT_STATUSES);
@@ -307,8 +333,14 @@ function validateCandidate(candidate: unknown, index: number): string[] {
     }
   }
 
+  for (const field of REQUIRED_NON_EMPTY_STRING_FIELDS) {
+    if (candidate[field] !== undefined && candidate[field] !== null && !isNonEmptyString(candidate[field])) {
+      errors.push(`${label}: ${field} must be a non-empty string`);
+    }
+  }
+
   if (typeof candidate.candidate_id === 'string' && !CANDIDATE_ID_PATTERN.test(candidate.candidate_id)) {
-    errors.push(`${label}: candidate_id must match lgfc-gehrig-YYYY-NNN pattern`);
+    errors.push(`${label}: candidate_id must match lgfc-gehrig-YYYY-NNNN+ pattern (3 or more sequence digits)`);
   }
 
   pushEnumError(errors, `${label}.input_stream`, candidate.input_stream, INPUT_STREAMS);
@@ -414,14 +446,7 @@ function sqlBooleanAsInteger(value: boolean): string {
 }
 
 function buildContentItemUpsert(candidate: CandidateRecord): ImportSqlStatement {
-  const sourceMetadata = {
-    ...(candidate.source_metadata ?? {}),
-    ...(candidate.source_metadata?.source_record_id
-      ? {}
-      : candidate.source_metadata?.source_citation || candidate.source_metadata?.date_accessed
-        ? {}
-        : {}),
-  };
+  const sourceMetadata = candidate.source_metadata ?? {};
 
   const columns = [
     'candidate_id',
@@ -518,7 +543,16 @@ function buildTagStatements(candidate: CandidateRecord): ImportSqlStatement[] {
     { category: 'places', tags: candidate.location_tags },
   ];
 
-  const statements: ImportSqlStatement[] = [];
+  const statements: ImportSqlStatement[] = [
+    {
+      table: 'content_item_tags',
+      sql: `DELETE FROM content_item_tags
+WHERE content_item_id = (
+  SELECT id FROM content_items WHERE candidate_id = ${sqlString(candidate.candidate_id)}
+);`,
+      description: `Clear tag links for ${candidate.candidate_id} before registry sync`,
+    },
+  ];
 
   for (const group of tagGroups) {
     for (const tagName of group.tags ?? []) {
@@ -581,8 +615,14 @@ function buildMemberSubmissionUpsert(candidate: CandidateRecord): ImportSqlState
   }
 
   const submitterJoin = member.submitter_id
-    ? `LEFT JOIN submitters s ON s.member_submitter_id = ${sqlString(member.submitter_id)}`
-    : `LEFT JOIN submitters s ON s.submitter_name = ${sqlString(member.submitter_name)} AND s.submitter_contact = ${sqlString(member.submitter_contact)}`;
+    ? `LEFT JOIN submitters s ON s.id = (
+  SELECT MIN(id) FROM submitters WHERE member_submitter_id = ${sqlString(member.submitter_id)}
+)`
+    : `LEFT JOIN submitters s ON s.id = (
+  SELECT MIN(id) FROM submitters
+  WHERE submitter_name = ${sqlString(member.submitter_name)}
+    AND submitter_contact = ${sqlString(member.submitter_contact)}
+)`;
 
   const sql = `INSERT INTO member_submissions (
   content_item_id,
@@ -653,12 +693,9 @@ SELECT
   'staging'
 FROM content_items ci
 WHERE ci.candidate_id = ${sqlString(candidate.candidate_id)}
-  AND NOT EXISTS (
-    SELECT 1
-    FROM publication_candidates pc
-    WHERE pc.content_item_id = ci.id
-      AND pc.publication_target = ${sqlString(candidate.publication_target)}
-  );`;
+ON CONFLICT(content_item_id, publication_target) DO UPDATE SET
+  credit_line = excluded.credit_line,
+  updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now');`;
 
   return {
     table: 'publication_candidates',
@@ -700,6 +737,11 @@ export function buildCandidateImportPlan(registry: CandidateRegistry): ImportPla
     candidateCount: registry.candidates.length,
     statements,
   };
+}
+
+export function buildImportSqlBatch(plan: ImportPlan): string {
+  const body = plan.statements.map((statement) => statement.sql).join('\n');
+  return `BEGIN;\n${body}\nCOMMIT;`;
 }
 
 export function countUpsertsByCandidate(plan: ImportPlan): Map<string, number> {

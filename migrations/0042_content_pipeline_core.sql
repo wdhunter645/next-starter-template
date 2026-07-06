@@ -107,13 +107,17 @@ CREATE TABLE IF NOT EXISTS content_items (
   deleted_at TEXT,
   retention_reason TEXT,
   purge_eligible_at TEXT,
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
   FOREIGN KEY (duplicate_of) REFERENCES content_items(candidate_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_content_items_review_queue
-  ON content_items(review_status, review_priority DESC, updated_at DESC)
+  ON content_items(
+    review_status,
+    CASE review_priority WHEN 'high' THEN 0 WHEN 'normal' THEN 1 ELSE 2 END,
+    updated_at DESC
+  )
   WHERE deleted_at IS NULL;
 
 CREATE INDEX IF NOT EXISTS idx_content_items_publication_status
@@ -237,6 +241,9 @@ CREATE TABLE IF NOT EXISTS publication_candidates (
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_publication_candidates_item_target
+  ON publication_candidates(content_item_id, publication_target);
 
 CREATE INDEX IF NOT EXISTS idx_publication_candidates_content_item
   ON publication_candidates(content_item_id, status);
