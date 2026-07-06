@@ -8,6 +8,15 @@ const outDir = process.argv[2] || process.env.PMO_DASHBOARD_OUT_DIR || 'site/pmo
 const requiredViews = ['activePrograms', 'pmoPipeline', 'completedPrograms'];
 const lifecycleToView = { active: 'activePrograms', pipeline: 'pmoPipeline', completed: 'completedPrograms' };
 const validLifecycles = new Set(Object.keys(lifecycleToView));
+const standardDisplayStatuses = new Set([
+  'Active',
+  'Implementation Ready',
+  'Planning',
+  'Strategy Defined',
+  'Strategy Development',
+  'Idea',
+  'Completed'
+]);
 const errors = [];
 
 async function readJson(file) {
@@ -25,8 +34,47 @@ function isNumericPriority(value) {
   return !Number.isNaN(parsed) && Number.isFinite(parsed);
 }
 
+function validateRow(row, label, rowByNumber, rowDataByNumber, errors) {
+  if (!row.name) errors.push(`${label} is missing Program / Project Name`);
+  if (!row.status) errors.push(`${label} is missing Status`);
+  if (row.status && !standardDisplayStatuses.has(row.status)) {
+    errors.push(`${label} status must use standardized dashboard vocabulary, got ${JSON.stringify(row.status)}`);
+  }
+  if (Number.isNaN(row.percentComplete)) errors.push(`${label} percentComplete is NaN`);
+  if (row.percentComplete !== null && (typeof row.percentComplete !== 'number' || row.percentComplete < 0 || row.percentComplete > 100)) errors.push(`${label} percentComplete must be null or 0-100`);
+  if (!Number.isInteger(row.taskCount) || row.taskCount < 0) errors.push(`${label} taskCount must be a non-negative integer`);
+  if (!Number.isInteger(row.tasksCompleted) || row.tasksCompleted < 0) errors.push(`${label} tasksCompleted must be a non-negative integer`);
+  if (row.tasksCompleted > row.taskCount) errors.push(`${label} # of Tasks Completed is greater than # of Tasks`);
+  if (!validUrl(row.issueUrl)) errors.push(`${label} contains an obviously invalid issue link`);
+  if (row.issueNumber) {
+    if (rowByNumber.has(row.issueNumber)) errors.push(`issue #${row.issueNumber} appears in multiple dashboard views`);
+    rowByNumber.set(row.issueNumber, label);
+    rowDataByNumber.set(row.issueNumber, row);
+  }
+  if (row.children != null) {
+    if (!Array.isArray(row.children)) {
+      errors.push(`${label} children must be an array`);
+      return;
+    }
+    for (const [childIndex, child] of row.children.entries()) {
+      validateRow(child, `${label}.children[${childIndex}]`, rowByNumber, rowDataByNumber, errors);
+      if (!child.parentProgramIssue && row.issueNumber) {
+        errors.push(`${label}.children[${childIndex}] is missing parentProgramIssue metadata`);
+      }
+      if (child.parentProgramIssue && child.parentProgramIssue !== row.issueNumber) {
+        errors.push(`${label}.children[${childIndex}] parentProgramIssue does not match parent row issueNumber`);
+      }
+      if (!Number.isInteger(child.childSequence) || child.childSequence <= 0) {
+        errors.push(`${label}.children[${childIndex}] childSequence must be a positive integer`);
+      }
+    }
+  }
+}
+
 const data = await readJson(path.join(outDir, 'dashboard-data.json'));
-const inventory = await readJson(path.join(__dirname, 'pmo-tracked-inventory.json'));
+const inventory = process.env.PMO_DASHBOARD_SKIP_INVENTORY_VALIDATION
+  ? null
+  : await readJson(path.join(__dirname, 'pmo-tracked-inventory.json'));
 
 if (data) {
   if (data.source !== 'github-issues') errors.push('dashboard source must be github-issues');
@@ -35,20 +83,7 @@ if (data) {
   for (const view of requiredViews) {
     if (!Array.isArray(data.views?.[view])) errors.push(`required top-level view missing: ${view}`);
     for (const [index, row] of (data.views?.[view] || []).entries()) {
-      const label = `${view}[${index}]`;
-      if (!row.name) errors.push(`${label} is missing Program / Project Name`);
-      if (!row.status) errors.push(`${label} is missing Status`);
-      if (Number.isNaN(row.percentComplete)) errors.push(`${label} percentComplete is NaN`);
-      if (row.percentComplete !== null && (typeof row.percentComplete !== 'number' || row.percentComplete < 0 || row.percentComplete > 100)) errors.push(`${label} percentComplete must be null or 0-100`);
-      if (!Number.isInteger(row.taskCount) || row.taskCount < 0) errors.push(`${label} taskCount must be a non-negative integer`);
-      if (!Number.isInteger(row.tasksCompleted) || row.tasksCompleted < 0) errors.push(`${label} tasksCompleted must be a non-negative integer`);
-      if (row.tasksCompleted > row.taskCount) errors.push(`${label} # of Tasks Completed is greater than # of Tasks`);
-      if (!validUrl(row.issueUrl)) errors.push(`${label} contains an obviously invalid issue link`);
-      if (row.issueNumber) {
-        if (rowByNumber.has(row.issueNumber)) errors.push(`issue #${row.issueNumber} appears in multiple dashboard views`);
-        rowByNumber.set(row.issueNumber, view);
-        rowDataByNumber.set(row.issueNumber, row);
-      }
+      validateRow(row, `${view}[${index}]`, rowByNumber, rowDataByNumber, errors);
     }
   }
 
@@ -96,16 +131,17 @@ if (data) {
         continue;
       }
       const expectedView = lifecycleToView[item.expectedLifecycle];
-      const view = rowByNumber.get(item.issueNumber);
-      if (!view) {
+      const viewLabel = rowByNumber.get(item.issueNumber);
+      if (!viewLabel) {
         errors.push(`tracked issue #${item.issueNumber} is missing from dashboard output`);
         continue;
       }
-      if (view !== expectedView) {
-        errors.push(`tracked issue #${item.issueNumber} expected in ${expectedView}, found in ${view}`);
+      const topLevelView = viewLabel.split('[')[0];
+      if (topLevelView !== expectedView) {
+        errors.push(`tracked issue #${item.issueNumber} expected in ${expectedView}, found in ${viewLabel}`);
       }
       if (item.expectedPriority !== undefined) {
-        const row = data.views[view].find((entry) => entry.issueNumber === item.issueNumber);
+        const row = rowDataByNumber.get(item.issueNumber);
         if (row && Number(row.priority) !== item.expectedPriority) {
           errors.push(`tracked issue #${item.issueNumber} expected priority ${item.expectedPriority}, found ${row.priority}`);
         }

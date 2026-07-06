@@ -18,9 +18,40 @@ const TITLE_PREFIXES = [
   { pattern: /^PROJECT:\s*/i, type: 'project' }
 ];
 
+const CHILD_PROJECT_PATTERN = /^PROJECT:\s*(\d+):(\d+)\s*\|\s*(.+)$/i;
+
 const lifecycleToView = { active: 'activePrograms', pipeline: 'pmoPipeline', completed: 'completedPrograms' };
-const statusByLifecycle = { active: 'Active', pipeline: 'PMO Intake', completed: 'Completed' };
-// Keep an explicit allowlist of accepted child-task section headings to avoid counting loose issue references.
+const statusByLifecycle = { active: 'Active', pipeline: 'Implementation Ready', completed: 'Completed' };
+
+const STATUS_ALIASES = new Map([
+  ['active', 'Active'],
+  ['completed', 'Completed'],
+  ['implementation ready', 'Implementation Ready'],
+  ['planning', 'Planning'],
+  ['planning complete', 'Planning'],
+  ['strategy defined', 'Strategy Defined'],
+  ['strategy development', 'Strategy Development'],
+  ['strategy review', 'Strategy Development'],
+  ['idea', 'Idea'],
+  ['pmo intake', 'Implementation Ready'],
+  ['paused', 'Planning'],
+  ['paused (launch-gated)', 'Planning'],
+  ['decision capture', 'Idea']
+]);
+
+const PIPELINE_STATUS_VALUES = new Set([
+  'implementation ready',
+  'planning',
+  'strategy defined',
+  'strategy development',
+  'idea',
+  'pmo intake',
+  'planning complete',
+  'strategy review',
+  'paused (launch-gated)',
+  'paused'
+]);
+
 const taskBlockHeadings = [
   'Task Chain',
   'Child Task Chain',
@@ -92,6 +123,10 @@ function field(body, name) {
 
 function labels(issue) { return (issue.labels || []).map((label) => typeof label === 'string' ? label : label.name); }
 
+function isPmoTracked(issue) {
+  return labels(issue).some((label) => label.toLowerCase() === 'pmo');
+}
+
 function titleType(title) {
   if (!title) return null;
   for (const { pattern, type } of TITLE_PREFIXES) {
@@ -100,11 +135,27 @@ function titleType(title) {
   return null;
 }
 
+function parseChildProject(title) {
+  const match = title?.match(CHILD_PROJECT_PATTERN);
+  if (!match) return null;
+  return {
+    parentProgramIssue: Number(match[1]),
+    sequence: Number(match[2]),
+    displayTitle: decodeBasicHtmlEntities(match[3].trim())
+  };
+}
+
 function cleanName(title) {
   for (const { pattern } of TITLE_PREFIXES) {
     if (pattern.test(title)) return decodeBasicHtmlEntities(title.replace(pattern, '').trim());
   }
   return decodeBasicHtmlEntities(title.trim());
+}
+
+function displayName(issue) {
+  const child = parseChildProject(issue.title);
+  if (child) return child.displayTitle;
+  return cleanName(issue.title);
 }
 
 function decodeBasicHtmlEntities(value) {
@@ -165,15 +216,36 @@ function isComplete(issue) {
 }
 
 function lifecycle(issue) {
-  const explicit = (field(issue.body, 'Dashboard Lifecycle') || '').toLowerCase();
-  if (['active', 'pipeline', 'completed'].includes(explicit)) return explicit;
   if (issue.state === 'closed' || labels(issue).includes('status:complete')) return 'completed';
-  if (labels(issue).some((l) => ['status:implementation', 'status:review', 'status:post-merge-verify', 'status:assigned'].includes(l))) return 'active';
+
+  const bodyStatus = (field(issue.body, 'Status') || '').trim().toLowerCase();
+  if (bodyStatus === 'active') return 'active';
+  if (bodyStatus === 'completed') return 'completed';
+
+  const explicit = (field(issue.body, 'Dashboard Lifecycle') || '').toLowerCase();
+  if (explicit === 'completed') return 'completed';
+  if (explicit === 'active') return 'active';
+  if (explicit === 'pipeline') return 'pipeline';
+
+  if (PIPELINE_STATUS_VALUES.has(bodyStatus)) return 'pipeline';
+
   return 'pipeline';
 }
 
+function normalizeDisplayStatus(issue, life) {
+  const raw = field(issue.body, 'Status') || field(issue.body, 'Dashboard Status');
+  if (raw) {
+    const normalized = raw.trim().toLowerCase();
+    if (STATUS_ALIASES.has(normalized)) return STATUS_ALIASES.get(normalized);
+    for (const [alias, display] of STATUS_ALIASES) {
+      if (normalized.startsWith(alias)) return display;
+    }
+  }
+  return statusByLifecycle[life];
+}
+
 function status(issue, life) {
-  return field(issue.body, 'Status') || field(issue.body, 'Dashboard Status') || labels(issue).find((l) => l.startsWith('status:'))?.replace('status:', '').replace(/-/g, ' ') || statusByLifecycle[life];
+  return normalizeDisplayStatus(issue, life);
 }
 
 function owner(issue) {
@@ -202,6 +274,16 @@ function priorityValue(priority) {
   return Number.isNaN(parsed) ? 9999 : parsed;
 }
 
+function prioritySort(a, b) {
+  return priorityValue(a.priority) - priorityValue(b.priority) || a.name.localeCompare(b.name);
+}
+
+function completedSort(a, b) {
+  const aTime = a.closedAt ? new Date(a.closedAt).getTime() : (a.updatedAt ? new Date(a.updatedAt).getTime() : 0);
+  const bTime = b.closedAt ? new Date(b.closedAt).getTime() : (b.updatedAt ? new Date(b.updatedAt).getTime() : 0);
+  return bTime - aTime || a.name.localeCompare(b.name);
+}
+
 async function loadExcludedIssueNumbers() {
   try {
     const inventory = JSON.parse(await readFile(path.join(__dirname, 'pmo-tracked-inventory.json'), 'utf8'));
@@ -211,24 +293,22 @@ async function loadExcludedIssueNumbers() {
   }
 }
 
-async function main() {
-  const excluded = await loadExcludedIssueNumbers();
-  const issues = await fetchIssues('all');
-  const byNumber = new Map(issues.map((issue) => [issue.number, issue]));
-  const rows = { activePrograms: [], pmoPipeline: [], completedPrograms: [] };
-  const taskAccounting = [];
-  for (const issue of issues.filter((i) => titleType(i.title) && !excluded.has(i.number))) {
-    const type = titleType(issue.title);
-    const life = lifecycle(issue);
-    const declaredTaskIssueNumbers = taskNumbers(issue);
-    const missingTaskIssueNumbers = declaredTaskIssueNumbers.filter((n) => !byNumber.has(n));
-    const completedTaskIssueNumbers = declaredTaskIssueNumbers.filter((n) => isComplete(byNumber.get(n)));
-    const taskCount = declaredTaskIssueNumbers.length;
-    const tasksCompleted = completedTaskIssueNumbers.length;
-    const percentComplete = taskCount > 0 ? Math.round((tasksCompleted / taskCount) * 100) : null;
-    const row = {
+function buildRow(issue, byNumber) {
+  const type = titleType(issue.title);
+  const life = lifecycle(issue);
+  const childMeta = parseChildProject(issue.title);
+  const declaredTaskIssueNumbers = taskNumbers(issue);
+  const missingTaskIssueNumbers = declaredTaskIssueNumbers.filter((n) => !byNumber.has(n));
+  const completedTaskIssueNumbers = declaredTaskIssueNumbers.filter((n) => isComplete(byNumber.get(n)));
+  const taskCount = declaredTaskIssueNumbers.length;
+  const tasksCompleted = completedTaskIssueNumbers.length;
+  const percentComplete = taskCount > 0 ? Math.round((tasksCompleted / taskCount) * 100) : null;
+
+  return {
+    entry: { issue, childMeta, life },
+    row: {
       type,
-      name: cleanName(issue.title),
+      name: displayName(issue),
       issueNumber: issue.number,
       issueUrl: issue.html_url,
       priority: field(issue.body, 'Priority #') || 'TBD',
@@ -238,27 +318,123 @@ async function main() {
       tasksCompleted,
       ownerAgent: owner(issue),
       description: description(issue),
-      anticipatedCompletionDate: field(issue.body, 'Anticipated Completion Date') || 'TBD'
-    };
-    rows[lifecycleToView[life]].push(row);
-    taskAccounting.push({
+      anticipatedCompletionDate: field(issue.body, 'Anticipated Completion Date') || 'TBD',
+      closedAt: issue.closed_at || null,
+      updatedAt: issue.updated_at || null,
+      parentProgramIssue: childMeta?.parentProgramIssue ?? null,
+      childSequence: childMeta?.sequence ?? null
+    },
+    taskAccounting: {
       parentIssueNumber: issue.number,
       declaredTaskIssueNumbers,
       missingTaskIssueNumbers,
       completedTaskIssueNumbers,
       taskCount,
       tasksCompleted
-    });
+    }
+  };
+}
+
+function assembleViews(entries) {
+  const activeParentNumbers = new Set(
+    entries.filter((e) => e.life === 'active' && e.row.type === 'program').map((e) => e.row.issueNumber)
+  );
+  const completedParentNumbers = new Set(
+    entries.filter((e) => e.life === 'completed' && e.row.type === 'program').map((e) => e.row.issueNumber)
+  );
+
+  const childrenByParent = new Map();
+  for (const entry of entries) {
+    if (!entry.childMeta) continue;
+    const parent = entry.childMeta.parentProgramIssue;
+    if (!childrenByParent.has(parent)) childrenByParent.set(parent, []);
+    childrenByParent.get(parent).push(entry);
   }
-  for (const key of Object.keys(rows)) rows[key].sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.name.localeCompare(b.name));
+  for (const children of childrenByParent.values()) {
+    children.sort((a, b) => a.childMeta.sequence - b.childMeta.sequence);
+  }
+
+  function attachChildren(parentEntry) {
+    const children = childrenByParent.get(parentEntry.row.issueNumber) || [];
+    if (!children.length) return;
+    parentEntry.row.children = children.map((child) => child.row);
+  }
+
+  function isNestedUnderActiveParent(entry) {
+    return entry.childMeta && activeParentNumbers.has(entry.childMeta.parentProgramIssue);
+  }
+
+  function isNestedUnderCompletedParent(entry) {
+    return entry.childMeta && completedParentNumbers.has(entry.childMeta.parentProgramIssue);
+  }
+
+  const views = { activePrograms: [], pmoPipeline: [], completedPrograms: [] };
+
+  for (const entry of entries) {
+    if (entry.life === 'active') {
+      if (entry.childMeta && isNestedUnderActiveParent(entry)) continue;
+      if (entry.row.type === 'program') attachChildren(entry);
+      views.activePrograms.push(entry.row);
+      continue;
+    }
+
+    if (entry.life === 'pipeline') {
+      if (isNestedUnderActiveParent(entry)) continue;
+      views.pmoPipeline.push(entry.row);
+      continue;
+    }
+
+    if (entry.life === 'completed') {
+      if (isNestedUnderActiveParent(entry) || isNestedUnderCompletedParent(entry)) continue;
+      if (entry.row.type === 'program') attachChildren(entry);
+      views.completedPrograms.push(entry.row);
+    }
+  }
+
+  views.activePrograms.sort(prioritySort);
+  views.pmoPipeline.sort(prioritySort);
+  views.completedPrograms.sort(completedSort);
+
+  return views;
+}
+
+async function main() {
+  const excluded = await loadExcludedIssueNumbers();
+  const issues = await fetchIssues('all');
+  const byNumber = new Map(issues.map((issue) => [issue.number, issue]));
+  const taskAccounting = [];
+
+  const built = issues
+    .filter((issue) => isPmoTracked(issue) && !excluded.has(issue.number))
+    .map((issue) => buildRow(issue, byNumber));
+
+  for (const item of built) {
+    item.entry.row = item.row;
+    taskAccounting.push(item.taskAccounting);
+  }
+
+  const entries = built.map((item) => item.entry);
+  const rows = assembleViews(entries);
   taskAccounting.sort((a, b) => a.parentIssueNumber - b.parentIssueNumber);
-  const data = { generatedAt: new Date().toISOString(), source: 'github-issues', repository: `${OWNER}/${REPO}`, views: rows, taskAccounting };
+
+  const topLevelCount = Object.values(rows).reduce((sum, view) => sum + view.length, 0);
+  const nestedCount = Object.values(rows).reduce((sum, view) => sum + view.reduce((n, row) => n + (row.children?.length || 0), 0), 0);
+
+  const data = {
+    generatedAt: new Date().toISOString(),
+    source: 'github-issues',
+    repository: `${OWNER}/${REPO}`,
+    trackingModel: 'pmo-label',
+    views: rows,
+    taskAccounting
+  };
+
   await mkdir(path.join(OUT_DIR, 'assets'), { recursive: true });
   await writeFile(path.join(OUT_DIR, 'dashboard-data.json'), `${JSON.stringify(data, null, 2)}\n`);
   await cp(path.join(__dirname, 'static/index.html'), path.join(OUT_DIR, 'index.html'));
   await cp(path.join(__dirname, 'static/pmo-dashboard.css'), path.join(OUT_DIR, 'assets/pmo-dashboard.css'));
   await cp(path.join(__dirname, 'static/pmo-dashboard.js'), path.join(OUT_DIR, 'assets/pmo-dashboard.js'));
-  console.log(`Generated PMO dashboard with ${Object.values(rows).flat().length} rows at ${OUT_DIR}`);
+  console.log(`Generated PMO dashboard with ${topLevelCount} top-level rows and ${nestedCount} nested child rows at ${OUT_DIR}`);
 }
 
 main().catch((error) => { console.error(error); process.exit(1); });
