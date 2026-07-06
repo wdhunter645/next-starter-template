@@ -3,17 +3,17 @@
 
 import {
   parseAdminMediaReferenceUpdate,
+  requireContentPipelineMediaReferenceTables,
   serializeAdminMediaReferences,
   serializeCandidateForAdminReview,
 } from '../../../../_lib/content-pipeline-media-reference';
 import {
   getUploadedMediaReferenceForCandidate,
+  isMemberSubmissionMediaReferenceMissingError,
   updateCandidateMediaReferences,
 } from '../../../../_lib/content-pipeline-candidate-repository';
 import { requireAdmin } from '../../../../_lib/auth';
-import { jsonResponse, requireD1, requireTables } from '../../../../_lib/d1';
-
-const MEDIA_REFERENCE_TABLES = ['content_items', 'member_submissions', 'moderation_events'] as const;
+import { jsonResponse, requireD1 } from '../../../../_lib/d1';
 
 export const onRequestPost = async (context: any): Promise<Response> => {
   const { request, env } = context;
@@ -24,7 +24,7 @@ export const onRequestPost = async (context: any): Promise<Response> => {
   const d1 = requireD1(env);
   if (!d1.ok) return jsonResponse(d1.body, d1.status);
 
-  const tables = await requireTables(d1.db, [...MEDIA_REFERENCE_TABLES]);
+  const tables = await requireContentPipelineMediaReferenceTables(d1.db);
   if (!tables.ok) return jsonResponse(tables.body, tables.status);
 
   try {
@@ -63,10 +63,9 @@ export const onRequestPost = async (context: any): Promise<Response> => {
       },
       200,
     );
-  } catch (err: any) {
-    const message = String(err?.message ?? err ?? '');
-    if (message.includes('member_submissions row')) {
-      return jsonResponse({ ok: false, error: message }, 400);
+  } catch (err: unknown) {
+    if (isMemberSubmissionMediaReferenceMissingError(err)) {
+      return jsonResponse({ ok: false, error: err.message }, 400);
     }
     console.error('admin content-pipeline media-reference error:', err);
     return jsonResponse({ ok: false, error: 'Media reference update failed.' }, 500);

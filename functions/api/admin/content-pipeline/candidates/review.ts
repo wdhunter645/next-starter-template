@@ -8,9 +8,9 @@ import {
 } from '../../../../_lib/content-pipeline-candidate-admin';
 import {
   getUploadedMediaReferenceForCandidate,
-  requireContentPipelineCandidateTables,
   updateCandidateReviewState,
 } from '../../../../_lib/content-pipeline-candidate-repository';
+import { requireContentPipelineAdminCandidateMediaTables } from '../../../../_lib/content-pipeline-media-reference';
 import { requireAdmin } from '../../../../_lib/auth';
 import { jsonResponse, requireD1 } from '../../../../_lib/d1';
 
@@ -23,7 +23,7 @@ export const onRequestPost = async (context: any): Promise<Response> => {
   const d1 = requireD1(env);
   if (!d1.ok) return jsonResponse(d1.body, d1.status);
 
-  const tables = await requireContentPipelineCandidateTables(d1.db);
+  const tables = await requireContentPipelineAdminCandidateMediaTables(d1.db);
   if (!tables.ok) return jsonResponse(tables.body, tables.status);
 
   try {

@@ -6,12 +6,15 @@ import { describe, expect, it } from 'vitest';
 import { upsertCandidate } from '../functions/_lib/content-pipeline-candidate-repository';
 import type { CandidateRecord } from '../functions/_lib/content-pipeline-candidate-import';
 import {
+  CONTENT_PIPELINE_MEDIA_REFERENCE_TABLES,
   parseAdminMediaReferenceUpdate,
   serializeCandidateForAdminReview,
   validateContentPipelineMediaReference,
 } from '../functions/_lib/content-pipeline-media-reference';
 import {
   getUploadedMediaReferenceForCandidate,
+  isMemberSubmissionMediaReferenceMissingError,
+  MemberSubmissionMediaReferenceMissingError,
   updateCandidateMediaReferences,
 } from '../functions/_lib/content-pipeline-candidate-repository';
 import { parseMemberSubmissionIntakeBody, persistMemberSubmissionIntake } from '../functions/_lib/content-pipeline-member-submission-intake';
@@ -132,6 +135,9 @@ describe('content pipeline media reference integration (#2319)', () => {
     expect(validateContentPipelineMediaReference('lgfc-photo-001', 'media_asset_id').ok).toBe(true);
 
     expect(validateContentPipelineMediaReference('https://cdn.example.com/photo.jpg', 'media_asset_id').ok).toBe(false);
+    expect(validateContentPipelineMediaReference('cdn.example.com/photo.jpg', 'media_asset_id').ok).toBe(false);
+    expect(validateContentPipelineMediaReference('example.org/path/to/file.png', 'media_asset_id').ok).toBe(false);
+    expect(validateContentPipelineMediaReference('www.example.com/image.jpg', 'media_asset_id').ok).toBe(false);
     expect(validateContentPipelineMediaReference('b2://../escape', 'media_asset_id').ok).toBe(false);
   });
 
@@ -244,10 +250,62 @@ describe('content pipeline media reference integration (#2319)', () => {
         `SELECT COUNT(*) AS count
          FROM moderation_events me
          JOIN content_items ci ON ci.id = me.content_item_id
-         WHERE ci.candidate_id = ?`,
+         WHERE ci.candidate_id = ?
+           AND me.event_type = 'review_state_change'`,
       )
       .get(persisted.candidate_id) as { count: number };
     expect(eventCount.count).toBe(1);
+  });
+
+  it('returns 400 when uploaded_media_reference update targets a candidate without member_submissions', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    const candidate: CandidateRecord = {
+      candidate_id: 'lgfc-gehrig-2026-502',
+      input_stream: 'admin_seed',
+      title: 'Archive photo lead',
+      source_name: 'LGFC Operator',
+      source_type: 'operator',
+      content_type: 'photo',
+      summary: 'Operator media reference seed',
+      rights_status: 'unknown',
+      source_trust_status: 'pending',
+      relevance_status: 'pending',
+      review_status: 'pending_review',
+      publication_status: 'not_ready',
+      privacy_flag: 'none',
+      privacy_review_status: 'not_applicable',
+      review_priority: 'normal',
+      created_at: '2026-07-06T20:00:00.000Z',
+      updated_at: '2026-07-06T20:00:00.000Z',
+    };
+    await upsertCandidate(db, candidate);
+
+    const response = await mediaReferencePost({
+      env: { DB: db, ADMIN_TOKEN },
+      request: adminPostRequest('/api/admin/content-pipeline/candidates/media-reference', {
+        candidate_id: candidate.candidate_id,
+        uploaded_media_reference: 'b2://pending/reviewed.jpg',
+      }),
+    });
+
+    expect(response.status).toBe(400);
+    const body = await response.json();
+    expect(body.error).toContain('without a member_submissions row');
+  });
+
+  it('uses typed repository errors for missing member_submissions rows', () => {
+    const error = new MemberSubmissionMediaReferenceMissingError('lgfc-gehrig-2026-502');
+    expect(isMemberSubmissionMediaReferenceMissingError(error)).toBe(true);
+    expect(error.code).toBe('member_submission_media_reference_missing');
+  });
+
+  it('includes tag tables in media-reference route table guard', () => {
+    expect(CONTENT_PIPELINE_MEDIA_REFERENCE_TABLES).toEqual(
+      expect.arrayContaining(['tags', 'content_item_tags', 'member_submissions', 'content_items']),
+    );
   });
 
   it('updates media_asset_id on admin-seeded candidates without member_submissions rows', async () => {

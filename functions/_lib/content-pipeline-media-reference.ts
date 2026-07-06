@@ -2,12 +2,25 @@
 // Reference strings/keys only — no binary ingest, upload, transform, or public serving.
 
 import { CANDIDATE_ID_PATTERN, CANDIDATE_ID_VALIDATION_MESSAGE } from './content-pipeline-candidate-constants';
+import { CONTENT_PIPELINE_REPOSITORY_TABLES } from './content-pipeline-candidate-repository';
+import { requireTables } from './d1';
 
 export const CONTENT_PIPELINE_MEDIA_REFERENCE_MAX_LENGTH = 512;
+
+export const CONTENT_PIPELINE_ADMIN_CANDIDATE_MEDIA_TABLES = [
+  ...CONTENT_PIPELINE_REPOSITORY_TABLES,
+  'member_submissions',
+] as const;
+
+export const CONTENT_PIPELINE_MEDIA_REFERENCE_TABLES = [
+  ...CONTENT_PIPELINE_REPOSITORY_TABLES,
+  'member_submissions',
+] as const;
 
 const UNSAFE_URI_SCHEME = /^(https?:|javascript:|data:|file:|ftp:)/i;
 const CONTROL_CHARACTERS = /[\x00-\x1f\x7f]/;
 const SAFE_REFERENCE_BODY = /^[a-zA-Z0-9][a-zA-Z0-9._/-]*$/;
+const SCHEMELESS_HOST_PATH_REFERENCE = /^[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+\/.+/;
 
 export type ContentPipelineMediaReferenceValidation =
   | { ok: true; value: string }
@@ -30,6 +43,21 @@ export type ParseAdminMediaReferenceUpdateResult =
 
 function asTrimmedString(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
+}
+
+export function looksLikeSchemelessHostPathReference(value: string): boolean {
+  if (/^www\./i.test(value)) {
+    return true;
+  }
+  return SCHEMELESS_HOST_PATH_REFERENCE.test(value);
+}
+
+export async function requireContentPipelineAdminCandidateMediaTables(db: unknown) {
+  return requireTables(db, [...CONTENT_PIPELINE_ADMIN_CANDIDATE_MEDIA_TABLES]);
+}
+
+export async function requireContentPipelineMediaReferenceTables(db: unknown) {
+  return requireTables(db, [...CONTENT_PIPELINE_MEDIA_REFERENCE_TABLES]);
 }
 
 export function validateContentPipelineMediaReference(
@@ -61,6 +89,10 @@ export function validateContentPipelineMediaReference(
       return { ok: false, error: `${fieldLabel} must use a safe media_uid: identifier.` };
     }
     return { ok: true, value: raw };
+  }
+
+  if (looksLikeSchemelessHostPathReference(raw)) {
+    return { ok: false, error: `${fieldLabel} must not use a public URL-like host/path value.` };
   }
 
   if (!SAFE_REFERENCE_BODY.test(raw)) {
