@@ -1,5 +1,25 @@
 // Candidate registry validation and D1 import helpers for Program #2286 / #2288.
 
+import {
+  CANDIDATE_ID_PATTERN,
+  CONSENT_STATUSES,
+  CONTENT_TYPES,
+  CREDIT_PREFERENCES,
+  INPUT_STREAMS,
+  PRIVACY_FLAGS,
+  PRIVACY_REVIEW_STATUSES,
+  PUBLICATION_STATUSES,
+  PUBLICATION_TARGETS,
+  REGISTRY_CLASSES,
+  RELEVANCE_STATUSES,
+  REVIEW_PRIORITIES,
+  REVIEW_STATUSES,
+  RIGHTS_STATUSES,
+  SOURCE_TRUST_STATUSES,
+  SOURCE_TYPES,
+  SUBMISSION_TYPES,
+} from './content-pipeline-candidate-constants';
+
 export const CONTENT_PIPELINE_CORE_TABLES = [
   'sources',
   'submitters',
@@ -96,123 +116,6 @@ export type ImportPlan = {
   candidateCount: number;
   statements: ImportSqlStatement[];
 };
-
-const INPUT_STREAMS = new Set([
-  'public_research',
-  'member_submission',
-  'admin_seed',
-  'scheduled_discovery',
-]);
-
-const SOURCE_TYPES = new Set([
-  'archive',
-  'museum',
-  'newspaper',
-  'library',
-  'member',
-  'social',
-  'auction',
-  'institution',
-  'operator',
-  'other',
-]);
-
-const CONTENT_TYPES = new Set([
-  'photo',
-  'article',
-  'record',
-  'story',
-  'video',
-  'audio',
-  'artifact',
-  'quote',
-  'timeline_fact',
-  'biography_note',
-  'source_lead',
-  'correction',
-  'identification',
-  'other',
-]);
-
-const RIGHTS_STATUSES = new Set([
-  'unknown',
-  'public_domain_candidate',
-  'permission_needed',
-  'permission_requested',
-  'permission_granted',
-  'copyright_restricted',
-  'blocked',
-]);
-
-const SOURCE_TRUST_STATUSES = new Set(['pending', 'trusted', 'questionable', 'blocked', 'deleted']);
-
-const RELEVANCE_STATUSES = new Set(['pending', 'relevant', 'not_relevant', 'uncertain']);
-
-const REVIEW_STATUSES = new Set([
-  'pending_review',
-  'approved_internal_reference',
-  'approved_public_candidate',
-  'approved_citation_reference_only',
-  'deferred_source_verification',
-  'deferred_rights_review',
-  'deferred_privacy_review',
-  'rejected',
-  'private_internal_only',
-]);
-
-const PUBLICATION_STATUSES = new Set([
-  'not_ready',
-  'draft_candidate',
-  'staged',
-  'approved_for_publish',
-  'published',
-  'unpublished',
-  'archived',
-]);
-
-const PUBLICATION_TARGETS = new Set([
-  'biography',
-  'timeline',
-  'gallery',
-  'library',
-  'memorabilia',
-  'article',
-  'homepage_feature',
-  'lou_gehrig_day',
-  'newsletter',
-  'social',
-  'internal_reference_only',
-]);
-
-const PRIVACY_FLAGS = new Set(['none', 'living_person', 'donor_member', 'minors', 'sensitive', 'other']);
-
-const PRIVACY_REVIEW_STATUSES = new Set([
-  'not_applicable',
-  'pending_review',
-  'approved',
-  'restricted',
-  'blocked',
-]);
-
-const REVIEW_PRIORITIES = new Set(['low', 'normal', 'high']);
-
-const SUBMISSION_TYPES = new Set([
-  'story',
-  'photo',
-  'memorabilia',
-  'correction',
-  'identification',
-  'source_lead',
-  'historical_note',
-]);
-
-const CREDIT_PREFERENCES = new Set(['public_credit', 'anonymous', 'private', 'custom']);
-
-const CONSENT_STATUSES = new Set(['pending', 'granted', 'restricted', 'denied']);
-
-const REGISTRY_CLASSES = new Set(['seed_transitional', 'fixture', 'operator_export']);
-
-const CANDIDATE_ID_PATTERN = /^lgfc-gehrig-[0-9]{4}-[0-9]{3,}$/;
 
 const REQUIRED_CANDIDATE_FIELDS = [
   'candidate_id',
