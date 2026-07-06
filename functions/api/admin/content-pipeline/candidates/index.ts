@@ -2,8 +2,10 @@
 // Lists or fetches LGFC content pipeline candidates. Protected by ADMIN_TOKEN.
 
 import {
+  isValidCandidateId,
   parseCandidateListQuery,
   serializeCandidateForAdmin,
+  CANDIDATE_ID_VALIDATION_MESSAGE,
 } from '../../../../_lib/content-pipeline-candidate-admin';
 import {
   getCandidateByCandidateId,
@@ -30,6 +32,10 @@ export const onRequestGet = async (context: any): Promise<Response> => {
     const candidateId = url.searchParams.get('candidate_id')?.trim() || '';
 
     if (candidateId) {
+      if (!isValidCandidateId(candidateId)) {
+        return jsonResponse({ ok: false, error: CANDIDATE_ID_VALIDATION_MESSAGE }, 400);
+      }
+
       const includeDeleted =
         url.searchParams.get('include_deleted') === '1' ||
         url.searchParams.get('include_deleted') === 'true';

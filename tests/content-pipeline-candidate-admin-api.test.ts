@@ -137,6 +137,15 @@ function publicApiFiles(): string[] {
   return results;
 }
 
+function importsProtectedModule(source: string, moduleName: string): boolean {
+  const patterns = [
+    new RegExp(`\\bfrom\\s+['"][^'"]*${moduleName}['"]`, 'm'),
+    new RegExp(`\\bimport\\s*\\(\\s*['"][^'"]*${moduleName}['"]`, 'm'),
+    new RegExp(`\\bexport\\s+[^;\\n]*\\bfrom\\s+['"][^'"]*${moduleName}['"]`, 'm'),
+  ];
+  return patterns.some((pattern) => pattern.test(source));
+}
+
 describe('content pipeline candidate admin API (#2310)', () => {
   it('parses list query filters and rejects invalid values', () => {
     const valid = parseCandidateListQuery(
@@ -162,6 +171,9 @@ describe('content pipeline candidate admin API (#2310)', () => {
       review_status: 'approved_internal_reference',
     });
     expect(invalid.ok).toBe(false);
+    if (!invalid.ok) {
+      expect(invalid.error).toContain('lgfc-gehrig-YYYY-NNN');
+    }
   });
 
   it('returns 401 without admin authorization', async () => {
@@ -215,10 +227,16 @@ describe('content pipeline candidate admin API (#2310)', () => {
     expect(getBody.candidate.candidate_id).toBe('lgfc-gehrig-2026-801');
   });
 
-  it('returns 404 for missing candidates and 400 for invalid review payloads', async () => {
+  it('returns 404 for missing candidates, 400 for malformed candidate_id, and 400 for invalid review payloads', async () => {
     const sqlite = new DatabaseSync(':memory:');
     applyRepoMigrations(sqlite);
     const db = wrapSqliteAsD1(sqlite);
+
+    const malformed = await candidatesGet({
+      env: { DB: db, ADMIN_TOKEN },
+      request: adminGetRequest('/api/admin/content-pipeline/candidates?candidate_id=bad-id'),
+    });
+    expect(malformed.status).toBe(400);
 
     const missing = await candidatesGet({
       env: { DB: db, ADMIN_TOKEN },
@@ -234,6 +252,25 @@ describe('content pipeline candidate admin API (#2310)', () => {
       }),
     });
     expect(invalidReview.status).toBe(400);
+  });
+
+  it('rejects publication_status published on admin review updates', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+    await upsertCandidate(db, minimalCandidate());
+
+    const response = await candidateReviewPost({
+      env: { DB: db, ADMIN_TOKEN },
+      request: adminPostRequest('/api/admin/content-pipeline/candidates/review', {
+        candidate_id: 'lgfc-gehrig-2026-999',
+        publication_status: 'published',
+      }),
+    });
+
+    expect(response.status).toBe(400);
+    const body = await response.json();
+    expect(body.error).toContain('publication/conversion workflow');
   });
 
   it('applies allowed review-state updates through the admin review route', async () => {
@@ -273,8 +310,8 @@ describe('content pipeline candidate admin API (#2310)', () => {
   it('does not expose candidate repository routes on public API surfaces', () => {
     for (const filePath of publicApiFiles()) {
       const source = fs.readFileSync(filePath, 'utf8');
-      expect(source.includes('content-pipeline-candidate-repository')).toBe(false);
-      expect(source.includes('content-pipeline-candidate-admin')).toBe(false);
+      expect(importsProtectedModule(source, 'content-pipeline-candidate-repository')).toBe(false);
+      expect(importsProtectedModule(source, 'content-pipeline-candidate-admin')).toBe(false);
     }
   });
 

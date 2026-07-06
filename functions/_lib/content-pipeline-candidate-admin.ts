@@ -1,67 +1,28 @@
 // Admin API helpers for LGFC content pipeline candidate review (#2286 / #2310).
 
+import {
+  ADMIN_REVIEW_PUBLICATION_STATUS_BLOCKED_MESSAGE,
+  ADMIN_REVIEW_PUBLICATION_STATUS_SET,
+  CANDIDATE_ID_PATTERN,
+  CANDIDATE_ID_VALIDATION_MESSAGE,
+  INPUT_STREAMS,
+  PRIVACY_REVIEW_STATUSES,
+  PUBLICATION_STATUSES,
+  RELEVANCE_STATUSES,
+  REVIEW_PRIORITIES,
+  REVIEW_STATUSES,
+  RIGHTS_STATUSES,
+  SOURCE_TRUST_STATUSES,
+} from './content-pipeline-candidate-constants';
 import type { CandidateListFilter, CandidateReviewStateUpdate } from './content-pipeline-candidate-repository';
 
-export const CANDIDATE_ID_PATTERN = /^lgfc-gehrig-[0-9]{4}-[0-9]{3,}$/;
-
-const REVIEW_STATUSES = new Set([
-  'pending_review',
-  'approved_internal_reference',
-  'approved_public_candidate',
-  'approved_citation_reference_only',
-  'deferred_source_verification',
-  'deferred_rights_review',
-  'deferred_privacy_review',
-  'rejected',
-  'private_internal_only',
-]);
-
-const RIGHTS_STATUSES = new Set([
-  'unknown',
-  'public_domain_candidate',
-  'permission_needed',
-  'permission_requested',
-  'permission_granted',
-  'copyright_restricted',
-  'blocked',
-]);
-
-const SOURCE_TRUST_STATUSES = new Set(['pending', 'trusted', 'questionable', 'blocked', 'deleted']);
-
-const RELEVANCE_STATUSES = new Set(['pending', 'relevant', 'not_relevant', 'uncertain']);
-
-const PUBLICATION_STATUSES = new Set([
-  'not_ready',
-  'draft_candidate',
-  'staged',
-  'approved_for_publish',
-  'published',
-  'unpublished',
-  'archived',
-]);
-
-const PRIVACY_REVIEW_STATUSES = new Set([
-  'not_applicable',
-  'pending_review',
-  'approved',
-  'restricted',
-  'blocked',
-]);
-
-const INPUT_STREAMS = new Set([
-  'public_research',
-  'member_submission',
-  'admin_seed',
-  'scheduled_discovery',
-]);
-
-const REVIEW_PRIORITIES = new Set(['low', 'normal', 'high']);
+export { CANDIDATE_ID_PATTERN, CANDIDATE_ID_VALIDATION_MESSAGE };
 
 const REVIEW_FIELD_VALIDATORS: Record<keyof CandidateReviewStateUpdate, Set<string> | null> = {
   review_status: REVIEW_STATUSES,
   rights_status: RIGHTS_STATUSES,
   privacy_review_status: PRIVACY_REVIEW_STATUSES,
-  publication_status: PUBLICATION_STATUSES,
+  publication_status: ADMIN_REVIEW_PUBLICATION_STATUS_SET,
   relevance_status: RELEVANCE_STATUSES,
   source_trust_status: SOURCE_TRUST_STATUSES,
   admin_notes: null,
@@ -148,7 +109,7 @@ export function parseCandidateReviewRequest(
   const record = body as Record<string, unknown>;
   const candidateId = asTrimmedString(record.candidate_id);
   if (!candidateId || !isValidCandidateId(candidateId)) {
-    return { ok: false, error: 'candidate_id must match lgfc-gehrig-YYYY-NNNN+.' };
+    return { ok: false, error: CANDIDATE_ID_VALIDATION_MESSAGE };
   }
 
   const update: CandidateReviewStateUpdate = {};
@@ -167,6 +128,9 @@ export function parseCandidateReviewRequest(
     const value = asTrimmedString(rawValue);
     if (!value) {
       return { ok: false, error: `${field} must be a non-empty string when provided.` };
+    }
+    if (field === 'publication_status' && value === 'published') {
+      return { ok: false, error: ADMIN_REVIEW_PUBLICATION_STATUS_BLOCKED_MESSAGE };
     }
     const allowed = REVIEW_FIELD_VALIDATORS[field];
     if (allowed && !allowed.has(value)) {
