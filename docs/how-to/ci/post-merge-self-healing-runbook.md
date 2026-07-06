@@ -5,8 +5,8 @@ Authority Level: Operational
 Owns: Operator procedure for OPS — Post-Merge Self-Healing workflow dispatch, artifact review, and Cursor escalation handling
 Does Not Own: Classifier contract, detector implementation, auto-fix execution code, escalation script implementation, merge approval
 Canonical Reference: /docs/reference/ci/post-merge-self-healing-classification-contract.md
-Related issues: #1847, #1853, #1906, #1914, #1921, #1963
-Last Reviewed: 2026-06-29
+Related issues: #1847, #1853, #1906, #1914, #1921, #1963, #2308
+Last Reviewed: 2026-07-06
 ---
 
 # Post-Merge Self-Healing Operator Runbook
@@ -221,6 +221,61 @@ When Cursor receives a generated self-healing escalation issue:
 
 Operator-authorization findings require Bill/Atlas approval before Cursor
 implements any issue or queue mutation.
+
+### Remediate missing reviewer-disposition closeout failures
+
+This failure means merged code may be valid, but governance closeout is blocked.
+Post-Merge Detection opens a remediation issue (for example
+`Post-merge closeout exception for PR #NNNN / source #MMMM /
+undispositioned_reviewer_comment`) when trusted reviewer comments or outdated
+review threads lack required PR-body dispositions. The repair is PR-body reviewer
+accounting, not runtime code.
+
+Procedure:
+
+1. Inspect the remediation issue and the linked merged PR.
+2. Read the listed comment IDs and failure codes in the issue body or
+   `post-merge-validation-result` artifact.
+3. Preserve the existing merged PR body; add or update a
+   `## REVIEWER RESPONSE ACCOUNTING` section with explicit disposition lines for
+   every required ID:
+
+   ```text
+   - review-comment:1234567890 — accepted — Cubic P1 finding was addressed by commit <sha> before merge; thread state: outdated
+   ```
+
+4. Use accepted disposition verbs only: `accepted`, `rejected`, `acknowledged`,
+   `not applicable` / `not-applicable` / `n/a`.
+5. For outdated review threads, include `thread state: outdated` in the
+   disposition line.
+6. Use `follow-up-issue:#<number>` only when a bounded follow-up issue was
+   intentionally created and is linked in repository evidence.
+7. Do not fabricate reviewer intent; record only dispositions supported by PR
+   commits, resolved threads, or other repository evidence.
+8. Update the merged PR body (`gh pr edit <number> --body-file …` or REST PATCH
+   if `gh pr edit` fails).
+9. Rerun the failed Post-Merge Detection workflow run linked from the remediation
+   issue, or use the documented closeout replay path in
+   `post-merge-pr-body-closeout.yml` when applicable.
+10. Verify after rerun:
+
+    - source issue remains closed with terminal `status:complete`;
+    - stale labels such as `status:failed` and `status:post-merge-verify` are
+      removed;
+    - remediation issue is closed or has explicit resolved evidence;
+    - parent program remains active unless separately complete;
+    - queue advancement resumes only after clean closeout passes.
+
+Example from #2306 / #2308 remediation:
+
+```text
+- review-comment:4637562625 — accepted — Cubic review submission was reviewed; all actionable findings were addressed by follow-up commits 6e00b831 and 024585719 before merge.
+- review-comment:3530200178 — accepted — outdated Cubic thread was reviewed and addressed before merge; thread state: outdated
+```
+
+Self-healing cannot fabricate these dispositions. A docs-only PR that documents
+this procedure does not by itself clear the remediation issue; the merged PR
+body must carry the dispositions and closeout must rerun successfully.
 
 ## Post-Merge PR Body Closeout batch workflow (Program #1963)
 
