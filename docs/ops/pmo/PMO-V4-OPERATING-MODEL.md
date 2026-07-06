@@ -96,6 +96,20 @@ Rules:
 - A program may be PMO-queued while operations work focuses on a different repository-need priority (for example, CI hardening temporarily preceding website build-out).
 - PMO meeting issues and weekly project review update PMO surfaces; PR/check evidence updates operations surfaces.
 
+### PMO dashboard state precedence
+
+The PMO dashboard is a generated reporting snapshot, not the live source of executable truth. GitHub issues remain authoritative for current PMO state, and dashboard JSON must be regenerated before operators rely on it as current.
+
+Dashboard state uses this precedence model:
+
+1. The `pmo` label controls dashboard inclusion.
+2. A closed GitHub issue or `status:complete` label controls Completed lifecycle and display state.
+3. For open non-complete PMO issues, issue-body `Status: Active` controls Active lifecycle.
+4. For open non-complete PMO issues, issue-body future-work statuses and `Dashboard Lifecycle: pipeline` control Pipeline lifecycle.
+5. Task/ops execution labels such as post-merge verification or failed do not become PMO dashboard display statuses.
+
+Completed dashboard rows display `Completed`. Open issues intentionally marked `status:complete` may appear in Completed with `closedAt = null` and sort by `updatedAt`; that is a metadata-hygiene signal, not a Pipeline state.
+
 ## Workload inventory
 
 The PMO workload inventory lists all known open master program records unless Bill requests a subset.

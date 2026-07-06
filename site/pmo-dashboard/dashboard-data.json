@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-06T19:32:07.989Z",
+  "generatedAt": "2026-07-06T20:06:51.000Z",
   "source": "github-issues",
   "repository": "wdhunter645/next-starter-template",
   "trackingModel": "pmo-label",
@@ -438,27 +438,27 @@
         "updatedAt": "2026-07-06T17:25:59Z",
         "parentProgramIssue": null,
         "childSequence": null
-      },
+      }
+    ],
+    "completedPrograms": [
       {
         "type": "project",
         "name": "PMO label-driven dashboard grouping and nested program projects",
         "issueNumber": 2313,
         "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/2313",
         "priority": "TBD",
-        "status": "Implementation Ready",
+        "status": "Completed",
         "percentComplete": null,
         "taskCount": 0,
         "tasksCompleted": 0,
         "ownerAgent": "Cursor",
         "description": "Update the PMO dashboard and PMO/dashboard documentation so PMO tracking is label-driven, dashboard grouping is concise, and child projects remain visible under active programs.",
         "anticipatedCompletionDate": "TBD",
-        "closedAt": null,
-        "updatedAt": "2026-07-06T19:14:55Z",
+        "closedAt": "2026-07-06T19:58:48Z",
+        "updatedAt": "2026-07-06T19:58:48Z",
         "parentProgramIssue": null,
         "childSequence": null
-      }
-    ],
-    "completedPrograms": [
+      },
       {
         "type": "project",
         "name": "PMO V4 Repository Authority Promotion",

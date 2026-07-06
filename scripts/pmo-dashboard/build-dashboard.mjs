@@ -245,6 +245,7 @@ function normalizeDisplayStatus(issue, life) {
 }
 
 function status(issue, life) {
+  if (life === 'completed') return statusByLifecycle.completed;
   return normalizeDisplayStatus(issue, life);
 }
 

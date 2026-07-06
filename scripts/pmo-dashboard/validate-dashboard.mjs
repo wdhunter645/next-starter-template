@@ -17,6 +17,11 @@ const standardDisplayStatuses = new Set([
   'Idea',
   'Completed'
 ]);
+const allowedStatusByView = {
+  activePrograms: new Set(['Active']),
+  pmoPipeline: new Set(['Implementation Ready', 'Planning', 'Strategy Defined', 'Strategy Development', 'Idea']),
+  completedPrograms: new Set(['Completed'])
+};
 const errors = [];
 
 async function readJson(file) {
@@ -34,12 +39,26 @@ function isNumericPriority(value) {
   return !Number.isNaN(parsed) && Number.isFinite(parsed);
 }
 
+function topLevelViewFromLabel(label) {
+  return label.split('[')[0];
+}
+
+function validateViewStatus(row, label, errors) {
+  if (label.includes('.children[')) return;
+  const view = topLevelViewFromLabel(label);
+  const allowed = allowedStatusByView[view];
+  if (row.status && allowed && !allowed.has(row.status)) {
+    errors.push(`${label} status ${JSON.stringify(row.status)} is not allowed in ${view}; allowed statuses: ${[...allowed].join(', ')}`);
+  }
+}
+
 function validateRow(row, label, rowByNumber, rowDataByNumber, errors) {
   if (!row.name) errors.push(`${label} is missing Program / Project Name`);
   if (!row.status) errors.push(`${label} is missing Status`);
   if (row.status && !standardDisplayStatuses.has(row.status)) {
     errors.push(`${label} status must use standardized dashboard vocabulary, got ${JSON.stringify(row.status)}`);
   }
+  validateViewStatus(row, label, errors);
   if (Number.isNaN(row.percentComplete)) errors.push(`${label} percentComplete is NaN`);
   if (row.percentComplete !== null && (typeof row.percentComplete !== 'number' || row.percentComplete < 0 || row.percentComplete > 100)) errors.push(`${label} percentComplete must be null or 0-100`);
   if (!Number.isInteger(row.taskCount) || row.taskCount < 0) errors.push(`${label} taskCount must be a non-negative integer`);
