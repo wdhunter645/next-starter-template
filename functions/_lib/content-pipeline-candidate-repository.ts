@@ -80,7 +80,17 @@ export type CandidateReviewStateUpdate = {
   admin_notes?: string;
 };
 
-type ReviewStateField = keyof CandidateReviewStateUpdate;
+const REVIEW_STATE_UPDATE_FIELDS = [
+  'review_status',
+  'rights_status',
+  'privacy_review_status',
+  'publication_status',
+  'relevance_status',
+  'source_trust_status',
+  'admin_notes',
+] as const satisfies readonly (keyof CandidateReviewStateUpdate)[];
+
+type ReviewStateField = (typeof REVIEW_STATE_UPDATE_FIELDS)[number];
 
 const REVIEW_STATE_EVENT_TYPES: Record<ReviewStateField, string> = {
   review_status: 'review_state_change',
@@ -104,6 +114,10 @@ const TAG_ARRAY_TO_CATEGORY: Record<keyof CandidateTags, 'people' | 'topics' | '
   places: 'places',
 };
 
+type D1PreparedStatement = {
+  run: () => Promise<unknown>;
+};
+
 function parseSourceMetadata(raw: string | null | undefined): SourceMetadata | undefined {
   if (!raw || raw.trim() === '' || raw.trim() === '{}') {
     return undefined;
@@ -118,6 +132,46 @@ function parseSourceMetadata(raw: string | null | undefined): SourceMetadata | u
 
 function emptyTags(): CandidateTags {
   return { people: [], topics: [], places: [] };
+}
+
+function applyTagRows(tags: CandidateTags, rows: Array<{ tag_name: unknown; tag_category: unknown }>) {
+  for (const row of rows) {
+    const tagName = String(row.tag_name || '');
+    const category = String(row.tag_category || '') as keyof typeof TAG_CATEGORY_TO_ARRAY;
+    const bucket = TAG_CATEGORY_TO_ARRAY[category];
+    if (bucket && tagName) {
+      tags[bucket].push(tagName);
+    }
+  }
+}
+
+async function runD1Batch(db: any, statements: D1PreparedStatement[]) {
+  if (statements.length === 0) {
+    return;
+  }
+
+  if (typeof db.batch === 'function') {
+    await db.batch(statements);
+    return;
+  }
+
+  if (typeof db.exec === 'function') {
+    db.exec('BEGIN');
+    try {
+      for (const statement of statements) {
+        await statement.run();
+      }
+      db.exec('COMMIT');
+    } catch (error) {
+      db.exec('ROLLBACK');
+      throw error;
+    }
+    return;
+  }
+
+  for (const statement of statements) {
+    await statement.run();
+  }
 }
 
 export function mapContentItemRowToCandidate(
@@ -169,39 +223,57 @@ export async function requireContentPipelineCandidateTables(db: unknown) {
   return requireTables(db, [...CONTENT_PIPELINE_REPOSITORY_TABLES]);
 }
 
-export async function fetchCandidateTags(db: any, contentItemId: number): Promise<CandidateTags> {
+export async function fetchCandidateTagsByContentItemIds(
+  db: any,
+  contentItemIds: number[],
+): Promise<Map<number, CandidateTags>> {
+  const tagsById = new Map<number, CandidateTags>();
+  if (contentItemIds.length === 0) {
+    return tagsById;
+  }
+
+  for (const contentItemId of contentItemIds) {
+    tagsById.set(contentItemId, emptyTags());
+  }
+
+  const placeholders = contentItemIds.map(() => '?').join(',');
   const result = await db
     .prepare(
-      `SELECT t.tag_name, t.tag_category
+      `SELECT cit.content_item_id, t.tag_name, t.tag_category
        FROM content_item_tags cit
        JOIN tags t ON t.id = cit.tag_id
-       WHERE cit.content_item_id = ?
-       ORDER BY t.tag_category ASC, t.tag_name ASC`,
+       WHERE cit.content_item_id IN (${placeholders})
+       ORDER BY cit.content_item_id ASC, t.tag_category ASC, t.tag_name ASC`,
     )
-    .bind(contentItemId)
+    .bind(...contentItemIds)
     .all();
 
-  const tags = emptyTags();
   for (const row of result.results || []) {
-    const tagName = String(row.tag_name || '');
-    const category = String(row.tag_category || '') as keyof typeof TAG_CATEGORY_TO_ARRAY;
-    const bucket = TAG_CATEGORY_TO_ARRAY[category];
-    if (bucket && tagName) {
-      tags[bucket].push(tagName);
-    }
+    const contentItemId = Number(row.content_item_id);
+    const tags = tagsById.get(contentItemId) ?? emptyTags();
+    applyTagRows(tags, [row]);
+    tagsById.set(contentItemId, tags);
   }
-  return tags;
+
+  return tagsById;
+}
+
+export async function fetchCandidateTags(db: any, contentItemId: number): Promise<CandidateTags> {
+  const tagsById = await fetchCandidateTagsByContentItemIds(db, [contentItemId]);
+  return tagsById.get(contentItemId) ?? emptyTags();
 }
 
 async function loadStoredCandidate(
   db: any,
   row: ContentItemRow | null,
+  tags?: CandidateTags,
 ): Promise<StoredCandidate | null> {
   if (!row) {
     return null;
   }
-  const tags = await fetchCandidateTags(db, row.id);
-  return mapContentItemRowToCandidate(row as ContentItemRow, tags);
+
+  const resolvedTags = tags ?? (await fetchCandidateTags(db, row.id));
+  return mapContentItemRowToCandidate(row as ContentItemRow, resolvedTags);
 }
 
 export async function getCandidateByCandidateId(
@@ -269,21 +341,19 @@ export async function listCandidates(
     .bind(...binds, limit, offset)
     .all();
 
-  const stored: StoredCandidate[] = [];
-  for (const row of result.results || []) {
-    const candidate = await loadStoredCandidate(db, row as ContentItemRow);
-    if (candidate) {
-      stored.push(candidate);
-    }
-  }
-  return stored;
+  const rows = (result.results || []) as ContentItemRow[];
+  const contentItemIds = rows.map((row) => row.id);
+  const tagsById = await fetchCandidateTagsByContentItemIds(db, contentItemIds);
+
+  return rows.map((row) =>
+    mapContentItemRowToCandidate(row, tagsById.get(row.id) ?? emptyTags()),
+  );
 }
 
 async function syncCandidateTags(db: any, contentItemId: number, candidate: CandidateRecord) {
-  await db
-    .prepare('DELETE FROM content_item_tags WHERE content_item_id = ?')
-    .bind(contentItemId)
-    .run();
+  const statements: D1PreparedStatement[] = [
+    db.prepare('DELETE FROM content_item_tags WHERE content_item_id = ?').bind(contentItemId),
+  ];
 
   const tagEntries: Array<{ category: 'people' | 'topics' | 'places'; name: string }> = [];
   for (const name of candidate.people_tags ?? []) {
@@ -297,26 +367,29 @@ async function syncCandidateTags(db: any, contentItemId: number, candidate: Cand
   }
 
   for (const entry of tagEntries) {
-    await db
-      .prepare(
-        `INSERT INTO tags (tag_name, tag_category)
-         VALUES (?, ?)
-         ON CONFLICT(tag_name, tag_category) DO NOTHING`,
-      )
-      .bind(entry.name, entry.category)
-      .run();
-
-    await db
-      .prepare(
-        `INSERT INTO content_item_tags (content_item_id, tag_id)
-         SELECT ?, t.id
-         FROM tags t
-         WHERE t.tag_name = ? AND t.tag_category = ?
-         ON CONFLICT(content_item_id, tag_id) DO NOTHING`,
-      )
-      .bind(contentItemId, entry.name, entry.category)
-      .run();
+    statements.push(
+      db
+        .prepare(
+          `INSERT INTO tags (tag_name, tag_category)
+           VALUES (?, ?)
+           ON CONFLICT(tag_name, tag_category) DO NOTHING`,
+        )
+        .bind(entry.name, entry.category),
+    );
+    statements.push(
+      db
+        .prepare(
+          `INSERT INTO content_item_tags (content_item_id, tag_id)
+           SELECT ?, t.id
+           FROM tags t
+           WHERE t.tag_name = ? AND t.tag_category = ?
+           ON CONFLICT(content_item_id, tag_id) DO NOTHING`,
+        )
+        .bind(contentItemId, entry.name, entry.category),
+    );
   }
+
+  await runD1Batch(db, statements);
 }
 
 export async function upsertCandidate(db: any, candidate: CandidateRecord): Promise<StoredCandidate> {
@@ -417,36 +490,14 @@ export async function upsertCandidate(db: any, candidate: CandidateRecord): Prom
     candidate.location_tags !== undefined
   ) {
     await syncCandidateTags(db, stored.id, candidate);
-    return (await getCandidateByCandidateId(db, candidate.candidate_id)) as StoredCandidate;
+    const reloaded = await getCandidateByCandidateId(db, candidate.candidate_id, { includeDeleted: true });
+    if (!reloaded) {
+      throw new Error(`Failed to load candidate after tag sync: ${candidate.candidate_id}`);
+    }
+    return reloaded;
   }
 
   return stored;
-}
-
-async function appendModerationEvent(
-  db: any,
-  contentItemId: number,
-  eventType: string,
-  actor: string | null,
-  fromState: Record<string, unknown>,
-  toState: Record<string, unknown>,
-  notes?: string,
-) {
-  await db
-    .prepare(
-      `INSERT INTO moderation_events (
-        content_item_id, event_type, actor, from_state, to_state, notes
-      ) VALUES (?, ?, ?, ?, ?, ?)`,
-    )
-    .bind(
-      contentItemId,
-      eventType,
-      actor,
-      JSON.stringify(fromState),
-      JSON.stringify(toState),
-      notes ?? null,
-    )
-    .run();
 }
 
 export async function updateCandidateReviewState(
@@ -464,7 +515,7 @@ export async function updateCandidateReviewState(
   const binds: unknown[] = [];
   const events: Array<{ field: ReviewStateField; from: unknown; to: unknown }> = [];
 
-  for (const field of Object.keys(update) as ReviewStateField[]) {
+  for (const field of REVIEW_STATE_UPDATE_FIELDS) {
     const nextValue = update[field];
     if (nextValue === undefined || nextValue === existing[field]) {
       continue;
@@ -481,28 +532,37 @@ export async function updateCandidateReviewState(
   assignments.push(`updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')`);
   binds.push(candidateId);
 
-  await db
-    .prepare(
-      `UPDATE content_items
-       SET ${assignments.join(', ')}
-       WHERE candidate_id = ?
-         AND deleted_at IS NULL`,
-    )
-    .bind(...binds)
-    .run();
+  const statements: D1PreparedStatement[] = [
+    db
+      .prepare(
+        `UPDATE content_items
+         SET ${assignments.join(', ')}
+         WHERE candidate_id = ?
+           AND deleted_at IS NULL`,
+      )
+      .bind(...binds),
+  ];
 
   for (const event of events) {
-    await appendModerationEvent(
-      db,
-      existing.id,
-      REVIEW_STATE_EVENT_TYPES[event.field],
-      options.actor ?? null,
-      { [event.field]: event.from },
-      { [event.field]: event.to },
-      options.notes,
+    statements.push(
+      db
+        .prepare(
+          `INSERT INTO moderation_events (
+            content_item_id, event_type, actor, from_state, to_state, notes
+          ) VALUES (?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(
+          existing.id,
+          REVIEW_STATE_EVENT_TYPES[event.field],
+          options.actor ?? null,
+          JSON.stringify({ [event.field]: event.from }),
+          JSON.stringify({ [event.field]: event.to }),
+          options.notes ?? null,
+        ),
     );
   }
 
+  await runD1Batch(db, statements);
   return getCandidateByCandidateId(db, candidateId);
 }
 

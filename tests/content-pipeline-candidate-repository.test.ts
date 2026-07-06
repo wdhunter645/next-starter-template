@@ -13,6 +13,7 @@ import {
   requireContentPipelineCandidateTables,
   updateCandidateReviewState,
   upsertCandidate,
+  type CandidateReviewStateUpdate,
   type ContentItemRow,
 } from '../functions/_lib/content-pipeline-candidate-repository';
 
@@ -53,6 +54,22 @@ function applyRepoMigrations(db: DatabaseSync) {
 
 function wrapSqliteAsD1(sqlite: DatabaseSync) {
   return {
+    exec(sql: string) {
+      sqlite.exec(sql);
+    },
+    async batch(statements: Array<{ run: () => Promise<unknown> }>) {
+      sqlite.exec('BEGIN');
+      try {
+        for (const statement of statements) {
+          await statement.run();
+        }
+        sqlite.exec('COMMIT');
+      } catch (error) {
+        sqlite.exec('ROLLBACK');
+        throw error;
+      }
+      return statements.map(() => ({ success: true }));
+    },
     prepare(sql: string) {
       const stmt = sqlite.prepare(sql);
       const bound = (...args: SQLInputValue[]) => ({
@@ -268,6 +285,42 @@ describe('content pipeline candidate repository (#2305)', () => {
     expect(tags.topics).toEqual(['Iron Horse', 'Yankees']);
   });
 
+  it('upserts soft-deleted candidates with tag sync without returning null', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    await upsertCandidate(
+      db,
+      minimalCandidate({
+        people_tags: ['Lou Gehrig'],
+      }),
+    );
+
+    sqlite
+      .prepare(
+        `UPDATE content_items
+         SET deleted_at = '2026-07-06T12:00:00.000Z'
+         WHERE candidate_id = ?`,
+      )
+      .run('lgfc-gehrig-2026-999');
+
+    const updated = await upsertCandidate(
+      db,
+      minimalCandidate({
+        title: 'Soft-deleted refresh',
+        people_tags: ['Lou Gehrig', 'Eleanor Gehrig'],
+      }),
+    );
+
+    expect(updated.title).toBe('Soft-deleted refresh');
+    expect(updated.people_tags).toEqual(['Eleanor Gehrig', 'Lou Gehrig']);
+    expect(await getCandidateByCandidateId(db, 'lgfc-gehrig-2026-999')).toBeNull();
+    expect(
+      await getCandidateByCandidateId(db, 'lgfc-gehrig-2026-999', { includeDeleted: true }),
+    ).not.toBeNull();
+  });
+
   it('updates review state and appends moderation events', async () => {
     const sqlite = new DatabaseSync(':memory:');
     applyRepoMigrations(sqlite);
@@ -308,6 +361,24 @@ describe('content pipeline candidate repository (#2305)', () => {
     ]);
     expect(events[0]?.actor).toBe('operator@test');
     expect(events[0]?.notes).toBe('Initial review complete');
+  });
+
+  it('ignores unknown review-state keys and does not mutate unrelated columns', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    await upsertCandidate(db, minimalCandidate({ title: 'Protected title' }));
+
+    const maliciousUpdate = {
+      review_status: 'approved_internal_reference',
+      title: 'Injected title',
+    } as CandidateReviewStateUpdate;
+
+    const updated = await updateCandidateReviewState(db, 'lgfc-gehrig-2026-999', maliciousUpdate);
+
+    expect(updated?.review_status).toBe('approved_internal_reference');
+    expect(updated?.title).toBe('Protected title');
   });
 
   it('returns null when updating a missing candidate', async () => {
