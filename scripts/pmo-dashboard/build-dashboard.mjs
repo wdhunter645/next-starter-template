@@ -23,16 +23,6 @@ const CHILD_PROJECT_PATTERN = /^PROJECT:\s*(\d+):(\d+)\s*\|\s*(.+)$/i;
 const lifecycleToView = { active: 'activePrograms', pipeline: 'pmoPipeline', completed: 'completedPrograms' };
 const statusByLifecycle = { active: 'Active', pipeline: 'Implementation Ready', completed: 'Completed' };
 
-const STANDARD_DISPLAY_STATUSES = new Set([
-  'Active',
-  'Implementation Ready',
-  'Planning',
-  'Strategy Defined',
-  'Strategy Development',
-  'Idea',
-  'Completed'
-]);
-
 const STATUS_ALIASES = new Map([
   ['active', 'Active'],
   ['completed', 'Completed'],
