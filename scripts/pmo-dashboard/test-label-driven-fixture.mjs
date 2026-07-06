@@ -54,7 +54,10 @@ async function main() {
     assert(!pipelineNumbers.has(9010), 'title-prefix issue without PMO label must be excluded');
 
     assert(completed[0].issueNumber === 9006, 'completed section should sort newest closed first');
-    assert(completed[1].issueNumber === 9007, 'older completed program should sort second');
+    assert(completed[1].issueNumber === 9011, 'closed stale-status project should sort by closedAt after #9006');
+    assert(completed[1].status === 'Completed', 'closed stale-status project must display Completed');
+    assert(completed[2].issueNumber === 9007, 'older completed program should sort third');
+    assert(!pipelineNumbers.has(9011), 'closed stale-status project must not appear in pipeline');
 
     const standardStatuses = new Set([
       'Active', 'Implementation Ready', 'Planning', 'Strategy Defined',
