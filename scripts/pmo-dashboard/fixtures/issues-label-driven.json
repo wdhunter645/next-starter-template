@@ -72,6 +72,17 @@
     "updated_at": "2026-06-01T10:00:00Z"
   },
   {
+    "number": 9008,
+    "title": "PROJECT: 9001:3 | Completed child under active program",
+    "state": "closed",
+    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9008",
+    "body": "Dashboard Lifecycle: completed\nPriority #: 3\nStatus: Completed\nOwner / Agent: Cursor\nProject Description: Completed child that must nest under active #9001 and not duplicate in Completed.",
+    "labels": [{ "name": "pmo" }, { "name": "status:complete" }],
+    "assignees": [],
+    "closed_at": "2026-07-05T12:00:00Z",
+    "updated_at": "2026-07-05T12:00:00Z"
+  },
+  {
     "number": 9010,
     "title": "PROJECT: Title prefix but no PMO label",
     "state": "open",

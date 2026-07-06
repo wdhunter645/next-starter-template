@@ -61,8 +61,8 @@ PROJECT: 2286:1 | Implement D1 candidate metadata migrations
 Parse rule:
 
 ```text
-parentProgramIssue = number before first colon
-sequence = number after first colon and before pipe
+parentProgramIssue = issue number after `PROJECT:` and before the next colon
+sequence = number after parentProgramIssue colon and before pipe
 display title = text right of pipe
 ```
 

@@ -395,7 +395,7 @@ function assembleViews(entries) {
     }
 
     if (entry.life === 'completed') {
-      if (isNestedUnderCompletedParent(entry)) continue;
+      if (isNestedUnderActiveParent(entry) || isNestedUnderCompletedParent(entry)) continue;
       if (entry.row.type === 'program') attachChildren(entry);
       views.completedPrograms.push(entry.row);
     }

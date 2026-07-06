@@ -51,16 +51,22 @@ function validateRow(row, label, rowByNumber, rowDataByNumber, errors) {
     rowByNumber.set(row.issueNumber, label);
     rowDataByNumber.set(row.issueNumber, row);
   }
-  for (const [childIndex, child] of (row.children || []).entries()) {
-    validateRow(child, `${label}.children[${childIndex}]`, rowByNumber, rowDataByNumber, errors);
-    if (!child.parentProgramIssue && row.issueNumber) {
-      errors.push(`${label}.children[${childIndex}] is missing parentProgramIssue metadata`);
+  if (row.children != null) {
+    if (!Array.isArray(row.children)) {
+      errors.push(`${label} children must be an array`);
+      return;
     }
-    if (child.parentProgramIssue && child.parentProgramIssue !== row.issueNumber) {
-      errors.push(`${label}.children[${childIndex}] parentProgramIssue does not match parent row issueNumber`);
-    }
-    if (!Number.isInteger(child.childSequence) || child.childSequence <= 0) {
-      errors.push(`${label}.children[${childIndex}] childSequence must be a positive integer`);
+    for (const [childIndex, child] of row.children.entries()) {
+      validateRow(child, `${label}.children[${childIndex}]`, rowByNumber, rowDataByNumber, errors);
+      if (!child.parentProgramIssue && row.issueNumber) {
+        errors.push(`${label}.children[${childIndex}] is missing parentProgramIssue metadata`);
+      }
+      if (child.parentProgramIssue && child.parentProgramIssue !== row.issueNumber) {
+        errors.push(`${label}.children[${childIndex}] parentProgramIssue does not match parent row issueNumber`);
+      }
+      if (!Number.isInteger(child.childSequence) || child.childSequence <= 0) {
+        errors.push(`${label}.children[${childIndex}] childSequence must be a positive integer`);
+      }
     }
   }
 }

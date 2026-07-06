@@ -40,9 +40,13 @@ async function main() {
 
     assert(active.length === 1, `expected one active program, got ${active.length}`);
     assert(active[0].issueNumber === 9001, 'active program should be #9001');
-    assert(active[0].children?.length === 2, 'active program should have two nested children');
+    assert(active[0].children?.length === 3, 'active program should have three nested children including completed child');
     assert(active[0].children[0].issueNumber === 9003, 'first child should be sequence 1 (#9003)');
     assert(active[0].children[1].issueNumber === 9002, 'second child should be sequence 2 (#9002)');
+    assert(active[0].children[2].issueNumber === 9008, 'third child should be sequence 3 completed child (#9008)');
+
+    const completedNumbers = new Set(completed.map((row) => row.issueNumber));
+    assert(!completedNumbers.has(9008), 'completed child under active parent must not duplicate in Completed section');
 
     const pipelineNumbers = new Set(pipeline.map((row) => row.issueNumber));
     assert(!pipelineNumbers.has(9002) && !pipelineNumbers.has(9003), 'nested children must not appear in pipeline');
