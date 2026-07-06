@@ -113,6 +113,9 @@ describe('content pipeline member submission intake (#2316)', () => {
   it('parses required intake fields and rejects missing consent overrides', () => {
     const parsed = parseMemberSubmissionIntakeBody(validIntakeBody());
     expect(parsed.ok).toBe(true);
+    if (parsed.ok) {
+      expect(parsed.request.admin_followup_required).toBe(true);
+    }
 
     const missingTitle = parseMemberSubmissionIntakeBody(validIntakeBody({ title: '   ' }));
     expect(missingTitle.ok).toBe(false);
@@ -122,6 +125,12 @@ describe('content pipeline member submission intake (#2316)', () => {
     if (!grantedConsent.ok) {
       expect(grantedConsent.error).toContain('pending');
     }
+
+    const invalidSourceType = parseMemberSubmissionIntakeBody(validIntakeBody({ source_type: 'not_real' }));
+    expect(invalidSourceType.ok).toBe(false);
+
+    const invalidContentType = parseMemberSubmissionIntakeBody(validIntakeBody({ content_type: 'not_real' }));
+    expect(invalidContentType.ok).toBe(false);
   });
 
   it('computes admin follow-up for privacy-sensitive and pending consent cases', () => {
@@ -253,6 +262,44 @@ describe('content pipeline member submission intake (#2316)', () => {
       request: memberPostRequest(validIntakeBody({ submission_type: 'not_real' })),
     });
     expect(invalid.status).toBe(400);
+
+    const invalidSourceType = await memberSubmitPost({
+      env: { DB: db },
+      request: memberPostRequest(validIntakeBody({ source_type: 'not_real' })),
+    });
+    expect(invalidSourceType.status).toBe(400);
+
+    const invalidContentType = await memberSubmitPost({
+      env: { DB: db },
+      request: memberPostRequest(validIntakeBody({ content_type: 'not_real' })),
+    });
+    expect(invalidContentType.status).toBe(400);
+  });
+
+  it('ignores client admin_followup_required:false and persists admin follow-up as true', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    seedMemberSession(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    const response = await memberSubmitPost({
+      env: { DB: db },
+      request: memberPostRequest(validIntakeBody({ admin_followup_required: false })),
+    });
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.admin_followup_required).toBe(true);
+
+    const memberSubmission = sqlite
+      .prepare(
+        `SELECT ms.admin_followup_required
+         FROM member_submissions ms
+         JOIN content_items ci ON ci.id = ms.content_item_id
+         WHERE ci.candidate_id = ?`,
+      )
+      .get(body.candidate_id) as { admin_followup_required: number };
+    expect(memberSubmission.admin_followup_required).toBe(1);
   });
 
   it('accepts authenticated intake and omits private fields from the response', async () => {

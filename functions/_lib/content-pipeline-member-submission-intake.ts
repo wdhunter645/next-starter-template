@@ -7,8 +7,10 @@ import {
   CONTENT_PIPELINE_PRIVACY_FLAGS,
   CONTENT_PIPELINE_SUBMISSION_TYPES,
   CONSENT_STATUSES,
+  CONTENT_TYPES,
   CREDIT_PREFERENCES,
   PRIVACY_FLAGS,
+  SOURCE_TYPES,
   SUBMISSION_TYPES,
 } from './content-pipeline-candidate-constants';
 import {
@@ -22,6 +24,8 @@ export const MEMBER_SUBMISSION_INTAKE_TABLES = [
   'content_items',
   'submitters',
   'member_submissions',
+  'tags',
+  'content_item_tags',
 ] as const;
 
 const SUBMISSION_TYPE_TO_CONTENT_TYPE: Record<string, string> = {
@@ -140,6 +144,8 @@ export function parseMemberSubmissionIntakeBody(body: unknown): ParseMemberSubmi
   const creditPreference = asTrimmedString(body.credit_preference);
   const consentStatus = asTrimmedString(body.consent_status) || 'pending';
   const privacyFlag = asTrimmedString(body.privacy_flag) || 'none';
+  const sourceType = asTrimmedString(body.source_type);
+  const contentType = asTrimmedString(body.content_type);
 
   const errors: string[] = [];
   if (!submitterName) errors.push('submitter_name is required.');
@@ -159,6 +165,13 @@ export function parseMemberSubmissionIntakeBody(body: unknown): ParseMemberSubmi
     errors.push('consent_status must be pending on member intake.');
   }
 
+  if (sourceType) {
+    pushEnumError(errors, 'source_type', sourceType, SOURCE_TYPES);
+  }
+  if (contentType) {
+    pushEnumError(errors, 'content_type', contentType, CONTENT_TYPES);
+  }
+
   const relatedCandidateId = asTrimmedString(body.related_candidate_id);
   if (relatedCandidateId && !CANDIDATE_ID_PATTERN.test(relatedCandidateId)) {
     errors.push('related_candidate_id must match lgfc-gehrig-YYYY-NNN with at least 3 trailing digits.');
@@ -168,15 +181,12 @@ export function parseMemberSubmissionIntakeBody(body: unknown): ParseMemberSubmi
     return { ok: false, error: errors.join(' ') };
   }
 
-  const adminFollowupRequired =
-    typeof body.admin_followup_required === 'boolean'
-      ? body.admin_followup_required
-      : computeAdminFollowupRequired({
-          consent_status: consentStatus,
-          privacy_flag: privacyFlag,
-          permission_statement: permissionStatement,
-          uploaded_media_reference: asTrimmedString(body.uploaded_media_reference) || undefined,
-        });
+  const adminFollowupRequired = computeAdminFollowupRequired({
+    consent_status: consentStatus,
+    privacy_flag: privacyFlag,
+    permission_statement: permissionStatement,
+    uploaded_media_reference: asTrimmedString(body.uploaded_media_reference) || undefined,
+  });
 
   return {
     ok: true,
@@ -192,8 +202,8 @@ export function parseMemberSubmissionIntakeBody(body: unknown): ParseMemberSubmi
       admin_followup_required: adminFollowupRequired,
       source_name: asTrimmedString(body.source_name) || undefined,
       source_url: asTrimmedString(body.source_url) || undefined,
-      source_type: asTrimmedString(body.source_type) || undefined,
-      content_type: asTrimmedString(body.content_type) || undefined,
+      source_type: sourceType || undefined,
+      content_type: contentType || undefined,
       credit_line: asTrimmedString(body.credit_line) || undefined,
       date_or_period: asTrimmedString(body.date_or_period) || undefined,
       privacy_flag: privacyFlag,
