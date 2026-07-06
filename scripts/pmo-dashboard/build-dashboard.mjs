@@ -154,15 +154,22 @@ function isPlaceholderDescription(value) {
   return /^<[^>]+>$/.test(trimmed) || /^tbd$/i.test(trimmed);
 }
 
+function isSkippableDescriptionLine(line) {
+  const trimmed = line.trim();
+  if (!trimmed || trimmed.startsWith('#')) return true;
+  if (isPlaceholderDescription(trimmed)) return true;
+  if (/^(Dashboard Lifecycle|Priority #|Owner \/ Agent|Anticipated Completion Date|Program Description|Project Description|Dashboard Status|Status|Purpose)\s*:/i.test(trimmed)) return true;
+  if (/^-\s*#\d+/.test(trimmed)) return true;
+  return false;
+}
+
 function description(issue) {
-  for (const name of ['Program Description', 'Project Description']) {
+  for (const name of ['Program Description', 'Project Description', 'Purpose']) {
     const value = field(issue.body, name);
     if (value && !isPlaceholderDescription(value)) return value;
   }
-  const purpose = field(issue.body, 'Purpose');
-  if (purpose && !isPlaceholderDescription(purpose)) return purpose;
-  const line = (issue.body || '').split('\n').find((entry) => entry.trim() && !entry.trim().startsWith('#'));
-  return line?.trim() && !isPlaceholderDescription(line.trim()) ? line.trim() : '';
+  const line = (issue.body || '').split('\n').find((entry) => !isSkippableDescriptionLine(entry));
+  return line?.trim() || '';
 }
 
 function priorityValue(priority) {
@@ -171,12 +178,8 @@ function priorityValue(priority) {
 }
 
 async function loadExcludedIssueNumbers() {
-  try {
-    const inventory = JSON.parse(await readFile(path.join(__dirname, 'pmo-tracked-inventory.json'), 'utf8'));
-    return new Set((inventory.excluded || []).map((item) => item.issueNumber));
-  } catch {
-    return new Set();
-  }
+  const inventory = JSON.parse(await readFile(path.join(__dirname, 'pmo-tracked-inventory.json'), 'utf8'));
+  return new Set((inventory.excluded || []).map((item) => item.issueNumber));
 }
 
 async function main() {
