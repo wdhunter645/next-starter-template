@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: LGFC post-merge validation surface, evidence reporting model, remediation and orchestration pause behavior, source-issue closeout behavior
 Does Not Own: Pre-merge merge protection gates, OPS runtime monitoring behavior, website product behavior
 Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related issues: #1197, #1249, #1075, #1058, #1548, #1963
-Last Reviewed: 2026-06-29
+Related issues: #1197, #1249, #1075, #1058, #1548, #1963, #2308
+Last Reviewed: 2026-07-06
 ---
 
 # LGFC Post-Merge Validation Surface
@@ -62,6 +62,16 @@ Post-Merge Detection reports evidence from after merge; the pre-merge gate check
 - merged DIATAXIS documentation alignment
 - late trusted reviewer findings
 - required merge-protection workflow outcomes on merge/head SHAs
+
+### Reviewer-disposition failures (blocking)
+
+Missing or incomplete PR-body reviewer dispositions are blocking post-merge
+validation failures. When trusted reviewer comments or outdated review threads
+lack explicit `review-comment:<id>` lines in the merged PR body, Post-Merge
+Detection records `reviewer_disposition_failures`, validation status is `fail`,
+and source-issue terminal closeout is refused until the merged PR body is
+corrected and closeout reruns successfully. This gate applies even when merged
+implementation evidence, DIATAXIS checks, and required workflow outcomes pass.
 
 ## Orchestration Behavior
 
