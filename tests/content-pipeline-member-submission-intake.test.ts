@@ -6,7 +6,10 @@ import { describe, expect, it } from 'vitest';
 import {
   allocateMemberSubmissionCandidateId,
   buildMemberSubmissionCandidateRecord,
+  candidateAllocationYearFromIso,
   computeAdminFollowupRequired,
+  deriveMemberIntakeContentType,
+  isCandidateIdUniqueConflict,
   parseMemberSubmissionIntakeBody,
   persistMemberSubmissionIntake,
   serializeMemberSubmissionIntakeResponse,
@@ -84,6 +87,20 @@ function seedMemberSession(db: DatabaseSync, sessionId = 'session-2316', email =
   `);
 }
 
+function insertContentItemRow(sqlite: DatabaseSync, candidateId: string) {
+  sqlite.exec(`
+    INSERT INTO content_items (
+      candidate_id, input_stream, title, source_name, source_type, content_type, summary,
+      rights_status, source_trust_status, relevance_status, review_status, publication_status,
+      privacy_flag, privacy_review_status, review_priority, source_metadata, created_at, updated_at
+    ) VALUES (
+      '${candidateId}', 'admin_seed', 'Existing', 'LGFC', 'operator', 'story', 'Existing summary',
+      'unknown', 'pending', 'pending', 'pending_review', 'not_ready',
+      'none', 'not_applicable', 'normal', '{}', '2026-07-06T19:00:00.000Z', '2026-07-06T19:00:00.000Z'
+    );
+  `);
+}
+
 function validIntakeBody(overrides: Record<string, unknown> = {}) {
   return {
     submitter_name: 'Jane Member',
@@ -110,7 +127,7 @@ function memberPostRequest(body: unknown, sessionId = 'session-2316'): Request {
 }
 
 describe('content pipeline member submission intake (#2316)', () => {
-  it('parses required intake fields and rejects missing consent overrides', () => {
+  it('parses required intake fields and rejects member-controlled classification fields', () => {
     const parsed = parseMemberSubmissionIntakeBody(validIntakeBody());
     expect(parsed.ok).toBe(true);
     if (parsed.ok) {
@@ -126,11 +143,36 @@ describe('content pipeline member submission intake (#2316)', () => {
       expect(grantedConsent.error).toContain('pending');
     }
 
-    const invalidSourceType = parseMemberSubmissionIntakeBody(validIntakeBody({ source_type: 'not_real' }));
-    expect(invalidSourceType.ok).toBe(false);
+    const suppliedSourceType = parseMemberSubmissionIntakeBody(validIntakeBody({ source_type: 'member' }));
+    expect(suppliedSourceType.ok).toBe(false);
+    if (!suppliedSourceType.ok) {
+      expect(suppliedSourceType.error).toContain('source_type is not accepted');
+    }
 
-    const invalidContentType = parseMemberSubmissionIntakeBody(validIntakeBody({ content_type: 'not_real' }));
-    expect(invalidContentType.ok).toBe(false);
+    const suppliedContentType = parseMemberSubmissionIntakeBody(validIntakeBody({ content_type: 'story' }));
+    expect(suppliedContentType.ok).toBe(false);
+    if (!suppliedContentType.ok) {
+      expect(suppliedContentType.error).toContain('content_type is not accepted');
+    }
+  });
+
+  it('derives candidate classification server-side from submission_type', () => {
+    expect(deriveMemberIntakeContentType('memorabilia')).toBe('artifact');
+    expect(candidateAllocationYearFromIso('2025-03-01T00:00:00.000Z')).toBe(2025);
+
+    const parsed = parseMemberSubmissionIntakeBody(validIntakeBody({ submission_type: 'photo' }));
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+
+    const candidate = buildMemberSubmissionCandidateRecord(parsed.request, {
+      candidateId: 'lgfc-gehrig-2025-101',
+      submitterContact: 'member@example.com',
+      memberSubmitterId: 'member@example.com',
+      now: '2025-03-01T00:00:00.000Z',
+    });
+
+    expect(candidate.source_type).toBe('member');
+    expect(candidate.content_type).toBe('photo');
   });
 
   it('computes admin follow-up for privacy-sensitive and pending consent cases', () => {
@@ -185,14 +227,15 @@ describe('content pipeline member submission intake (#2316)', () => {
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) return;
 
+    const intakeNow = '2026-07-06T19:00:00.000Z';
     const result = await persistMemberSubmissionIntake(db, parsed.request, {
       submitterContact: 'member@example.com',
       memberSubmitterId: 'member@example.com',
-      now: '2026-07-06T19:00:00.000Z',
+      now: intakeNow,
     });
 
     expect(result.publication_status).toBe('not_ready');
-    expect(result.candidate_id).toMatch(/^lgfc-gehrig-2026-\d{3,}$/);
+    expect(result.candidate_id).toBe('lgfc-gehrig-2026-001');
 
     const contentItem = sqlite
       .prepare(`SELECT * FROM content_items WHERE candidate_id = ?`)
@@ -200,6 +243,8 @@ describe('content pipeline member submission intake (#2316)', () => {
     expect(contentItem.publication_status).toBe('not_ready');
     expect(contentItem.content_inventory_id).toBeNull();
     expect(contentItem.input_stream).toBe('member_submission');
+    expect(contentItem.source_type).toBe('member');
+    expect(contentItem.content_type).toBe('story');
 
     const memberSubmission = sqlite
       .prepare(
@@ -225,24 +270,60 @@ describe('content pipeline member submission intake (#2316)', () => {
     expect(inventoryCount.count).toBe(0);
   });
 
-  it('allocates sequential candidate IDs within a calendar year', async () => {
+  it('allocates sequential candidate IDs within an explicit allocation year', async () => {
     const sqlite = new DatabaseSync(':memory:');
     applyRepoMigrations(sqlite);
     const db = wrapSqliteAsD1(sqlite);
 
-    sqlite.exec(`
-      INSERT INTO content_items (
-        candidate_id, input_stream, title, source_name, source_type, content_type, summary,
-        rights_status, source_trust_status, relevance_status, review_status, publication_status,
-        privacy_flag, privacy_review_status, review_priority, source_metadata, created_at, updated_at
-      ) VALUES (
-        'lgfc-gehrig-2026-005', 'admin_seed', 'Existing', 'LGFC', 'operator', 'story', 'Existing summary',
-        'unknown', 'pending', 'pending', 'pending_review', 'not_ready',
-        'none', 'not_applicable', 'normal', '{}', '2026-07-06T19:00:00.000Z', '2026-07-06T19:00:00.000Z'
-      );
-    `);
+    insertContentItemRow(sqlite, 'lgfc-gehrig-2026-005');
 
     await expect(allocateMemberSubmissionCandidateId(db, 2026)).resolves.toBe('lgfc-gehrig-2026-006');
+  });
+
+  it('uses options.now year for candidate ID allocation', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    const parsed = parseMemberSubmissionIntakeBody(validIntakeBody());
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+
+    const result = await persistMemberSubmissionIntake(db, parsed.request, {
+      submitterContact: 'member@example.com',
+      memberSubmitterId: 'member@example.com',
+      now: '2025-12-31T23:59:59.000Z',
+    });
+
+    expect(result.candidate_id).toBe('lgfc-gehrig-2025-001');
+  });
+
+  it('detects candidate_id unique constraint conflicts for retry handling', () => {
+    expect(isCandidateIdUniqueConflict(new Error('UNIQUE constraint failed: content_items.candidate_id'))).toBe(
+      true,
+    );
+    expect(isCandidateIdUniqueConflict(new Error('some other failure'))).toBe(false);
+  });
+
+  it('allocates the next free candidate ID when lower sequence numbers are occupied', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    insertContentItemRow(sqlite, 'lgfc-gehrig-2026-006');
+    insertContentItemRow(sqlite, 'lgfc-gehrig-2026-007');
+
+    const parsed = parseMemberSubmissionIntakeBody(validIntakeBody());
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+
+    const result = await persistMemberSubmissionIntake(db, parsed.request, {
+      submitterContact: 'member@example.com',
+      memberSubmitterId: 'member@example.com',
+      now: '2026-07-06T19:00:00.000Z',
+    });
+
+    expect(result.candidate_id).toBe('lgfc-gehrig-2026-008');
   });
 
   it('returns 401 without member authentication and 400 for invalid payloads', async () => {
@@ -265,13 +346,13 @@ describe('content pipeline member submission intake (#2316)', () => {
 
     const invalidSourceType = await memberSubmitPost({
       env: { DB: db },
-      request: memberPostRequest(validIntakeBody({ source_type: 'not_real' })),
+      request: memberPostRequest(validIntakeBody({ source_type: 'archive' })),
     });
     expect(invalidSourceType.status).toBe(400);
 
     const invalidContentType = await memberSubmitPost({
       env: { DB: db },
-      request: memberPostRequest(validIntakeBody({ content_type: 'not_real' })),
+      request: memberPostRequest(validIntakeBody({ content_type: 'article' })),
     });
     expect(invalidContentType.status).toBe(400);
   });
@@ -317,7 +398,7 @@ describe('content pipeline member submission intake (#2316)', () => {
     const body = await response.json();
     expect(body.ok).toBe(true);
     expect(body.publication_status).toBe('not_ready');
-    expect(body.candidate_id).toMatch(/^lgfc-gehrig-2026-\d{3,}$/);
+    expect(body.candidate_id).toMatch(/^lgfc-gehrig-\d{4}-\d{3,}$/);
     expect(body.submitter_contact).toBeUndefined();
     expect(body.ownership_statement).toBeUndefined();
     expect(body.permission_statement).toBeUndefined();

@@ -7,10 +7,8 @@ import {
   CONTENT_PIPELINE_PRIVACY_FLAGS,
   CONTENT_PIPELINE_SUBMISSION_TYPES,
   CONSENT_STATUSES,
-  CONTENT_TYPES,
   CREDIT_PREFERENCES,
   PRIVACY_FLAGS,
-  SOURCE_TYPES,
   SUBMISSION_TYPES,
 } from './content-pipeline-candidate-constants';
 import {
@@ -39,6 +37,8 @@ const SUBMISSION_TYPE_TO_CONTENT_TYPE: Record<string, string> = {
 };
 
 const MEMBER_INTAKE_CONSENT_STATUSES = new Set(['pending']);
+const MEMBER_INTAKE_SOURCE_TYPE = 'member';
+const MAX_CANDIDATE_ID_ALLOCATION_ATTEMPTS = 5;
 
 export type MemberSubmissionIntakeRequest = {
   submitter_name: string;
@@ -52,8 +52,6 @@ export type MemberSubmissionIntakeRequest = {
   admin_followup_required: boolean;
   source_name?: string;
   source_url?: string;
-  source_type?: string;
-  content_type?: string;
   credit_line?: string;
   date_or_period?: string;
   privacy_flag?: string;
@@ -103,6 +101,23 @@ function pushEnumError(errors: string[], path: string, value: unknown, allowed: 
   }
 }
 
+export function candidateAllocationYearFromIso(now: string): number {
+  const match = /^(\d{4})/.exec(now);
+  if (match) {
+    return Number.parseInt(match[1], 10);
+  }
+  return new Date(now).getUTCFullYear();
+}
+
+export function deriveMemberIntakeContentType(submissionType: string): string {
+  return SUBMISSION_TYPE_TO_CONTENT_TYPE[submissionType] ?? 'other';
+}
+
+export function isCandidateIdUniqueConflict(error: unknown): boolean {
+  const message = String((error as { message?: string })?.message ?? error ?? '').toLowerCase();
+  return message.includes('unique constraint failed') && message.includes('content_items.candidate_id');
+}
+
 export function computeAdminFollowupRequired(input: {
   consent_status: string;
   privacy_flag: string;
@@ -144,8 +159,6 @@ export function parseMemberSubmissionIntakeBody(body: unknown): ParseMemberSubmi
   const creditPreference = asTrimmedString(body.credit_preference);
   const consentStatus = asTrimmedString(body.consent_status) || 'pending';
   const privacyFlag = asTrimmedString(body.privacy_flag) || 'none';
-  const sourceType = asTrimmedString(body.source_type);
-  const contentType = asTrimmedString(body.content_type);
 
   const errors: string[] = [];
   if (!submitterName) errors.push('submitter_name is required.');
@@ -165,11 +178,11 @@ export function parseMemberSubmissionIntakeBody(body: unknown): ParseMemberSubmi
     errors.push('consent_status must be pending on member intake.');
   }
 
-  if (sourceType) {
-    pushEnumError(errors, 'source_type', sourceType, SOURCE_TYPES);
+  if (asTrimmedString(body.source_type)) {
+    errors.push('source_type is not accepted on member intake; classification is determined server-side.');
   }
-  if (contentType) {
-    pushEnumError(errors, 'content_type', contentType, CONTENT_TYPES);
+  if (asTrimmedString(body.content_type)) {
+    errors.push('content_type is not accepted on member intake; derived from submission_type.');
   }
 
   const relatedCandidateId = asTrimmedString(body.related_candidate_id);
@@ -202,8 +215,6 @@ export function parseMemberSubmissionIntakeBody(body: unknown): ParseMemberSubmi
       admin_followup_required: adminFollowupRequired,
       source_name: asTrimmedString(body.source_name) || undefined,
       source_url: asTrimmedString(body.source_url) || undefined,
-      source_type: sourceType || undefined,
-      content_type: contentType || undefined,
       credit_line: asTrimmedString(body.credit_line) || undefined,
       date_or_period: asTrimmedString(body.date_or_period) || undefined,
       privacy_flag: privacyFlag,
@@ -222,14 +233,11 @@ export function buildMemberSubmissionCandidateRecord(
   options: {
     candidateId: string;
     submitterContact: string;
-    memberSubmitterId?: string;
+    memberSubmitterId: string;
     now: string;
   },
 ): CandidateRecord {
-  const contentType =
-    request.content_type ||
-    SUBMISSION_TYPE_TO_CONTENT_TYPE[request.submission_type] ||
-    'other';
+  const contentType = deriveMemberIntakeContentType(request.submission_type);
 
   const memberSubmission: MemberSubmissionExtension = {
     submitter_id: options.memberSubmitterId,
@@ -252,7 +260,7 @@ export function buildMemberSubmissionCandidateRecord(
     title: request.title,
     source_url: request.source_url,
     source_name: request.source_name || request.submitter_name,
-    source_type: request.source_type || 'member',
+    source_type: MEMBER_INTAKE_SOURCE_TYPE,
     content_type: contentType,
     summary: request.summary,
     date_or_period: request.date_or_period,
@@ -307,23 +315,19 @@ async function runD1Batch(db: any, statements: D1PreparedStatement[]) {
   }
 }
 
-export async function allocateMemberSubmissionCandidateId(db: any, year = new Date().getUTCFullYear()): Promise<string> {
+export async function allocateMemberSubmissionCandidateId(db: any, year: number): Promise<string> {
   const prefix = `lgfc-gehrig-${year}-`;
-  const result = await db
-    .prepare(`SELECT candidate_id FROM content_items WHERE candidate_id LIKE ?`)
-    .bind(`${prefix}%`)
-    .all();
+  const sequenceStart = prefix.length + 1;
+  const row = await db
+    .prepare(
+      `SELECT MAX(CAST(substr(candidate_id, ?) AS INTEGER)) AS max_seq
+       FROM content_items
+       WHERE candidate_id LIKE ?`,
+    )
+    .bind(sequenceStart, `${prefix}%`)
+    .first();
 
-  let maxSeq = 0;
-  for (const row of result.results || []) {
-    const match = String((row as { candidate_id?: string }).candidate_id || '').match(
-      /^lgfc-gehrig-\d{4}-(\d+)$/,
-    );
-    if (match) {
-      maxSeq = Math.max(maxSeq, Number.parseInt(match[1], 10));
-    }
-  }
-
+  const maxSeq = Number((row as { max_seq?: number | null })?.max_seq ?? 0);
   const nextSeq = String(maxSeq + 1).padStart(3, '0');
   return `${prefix}${nextSeq}`;
 }
@@ -370,19 +374,12 @@ async function syncCandidateTags(db: any, contentItemId: number, candidate: Cand
   await runD1Batch(db, statements);
 }
 
-export async function persistMemberSubmissionIntake(
+async function persistMemberSubmissionIntakeAttempt(
   db: any,
   request: MemberSubmissionIntakeRequest,
-  options: { submitterContact: string; memberSubmitterId?: string; now?: string },
+  options: { submitterContact: string; memberSubmitterId: string; now: string; candidateId: string },
 ): Promise<MemberSubmissionIntakeResult> {
-  const now = options.now ?? new Date().toISOString();
-  const candidateId = await allocateMemberSubmissionCandidateId(db);
-  const candidate = buildMemberSubmissionCandidateRecord(request, {
-    candidateId,
-    submitterContact: options.submitterContact,
-    memberSubmitterId: options.memberSubmitterId,
-    now,
-  });
+  const candidate = buildMemberSubmissionCandidateRecord(request, options);
 
   const validation = validateCandidateRegistry({
     schema_version: '1',
@@ -398,37 +395,17 @@ export async function persistMemberSubmissionIntake(
     throw new Error('member_submission extension missing after candidate build.');
   }
 
-  const statements: D1PreparedStatement[] = [];
-
-  if (options.memberSubmitterId) {
-    statements.push(
-      db
-        .prepare(
-          `INSERT INTO submitters (member_submitter_id, submitter_name, submitter_contact)
-           VALUES (?, ?, ?)
-           ON CONFLICT(member_submitter_id) DO UPDATE SET
-             submitter_name = excluded.submitter_name,
-             submitter_contact = excluded.submitter_contact,
-             updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')`,
-        )
-        .bind(options.memberSubmitterId, member.submitter_name, member.submitter_contact),
-    );
-  } else {
-    statements.push(
-      db
-        .prepare(
-          `INSERT INTO submitters (member_submitter_id, submitter_name, submitter_contact)
-           SELECT NULL, ?, ?
-           WHERE NOT EXISTS (
-             SELECT 1 FROM submitters
-             WHERE submitter_name = ? AND submitter_contact = ?
-           )`,
-        )
-        .bind(member.submitter_name, member.submitter_contact, member.submitter_name, member.submitter_contact),
-    );
-  }
-
-  statements.push(
+  const statements: D1PreparedStatement[] = [
+    db
+      .prepare(
+        `INSERT INTO submitters (member_submitter_id, submitter_name, submitter_contact)
+         VALUES (?, ?, ?)
+         ON CONFLICT(member_submitter_id) DO UPDATE SET
+           submitter_name = excluded.submitter_name,
+           submitter_contact = excluded.submitter_contact,
+           updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')`,
+      )
+      .bind(options.memberSubmitterId, member.submitter_name, member.submitter_contact),
     db
       .prepare(
         `INSERT INTO content_items (
@@ -475,17 +452,6 @@ export async function persistMemberSubmissionIntake(
         candidate.created_at,
         candidate.updated_at,
       ),
-  );
-
-  const submitterJoin = options.memberSubmitterId
-    ? `LEFT JOIN submitters s ON s.member_submitter_id = ?`
-    : `LEFT JOIN submitters s ON s.submitter_name = ? AND s.submitter_contact = ?`;
-
-  const submitterBind = options.memberSubmitterId
-    ? [options.memberSubmitterId]
-    : [member.submitter_name, member.submitter_contact];
-
-  statements.push(
     db
       .prepare(
         `INSERT INTO member_submissions (
@@ -514,7 +480,7 @@ export async function persistMemberSubmissionIntake(
           ?,
           ?
         FROM content_items ci
-        ${submitterJoin}
+        LEFT JOIN submitters s ON s.member_submitter_id = ?
         WHERE ci.candidate_id = ?`,
       )
       .bind(
@@ -527,10 +493,10 @@ export async function persistMemberSubmissionIntake(
         member.related_candidate_id ?? null,
         member.consent_status,
         member.admin_followup_required ? 1 : 0,
-        ...submitterBind,
+        options.memberSubmitterId,
         candidate.candidate_id,
       ),
-  );
+  ];
 
   await runD1Batch(db, statements);
 
@@ -553,6 +519,41 @@ export async function persistMemberSubmissionIntake(
     review_status: 'pending_review',
     admin_followup_required: member.admin_followup_required,
   };
+}
+
+export async function persistMemberSubmissionIntake(
+  db: any,
+  request: MemberSubmissionIntakeRequest,
+  options: { submitterContact: string; memberSubmitterId: string; now?: string },
+): Promise<MemberSubmissionIntakeResult> {
+  const memberSubmitterId = asTrimmedString(options.memberSubmitterId);
+  if (!memberSubmitterId) {
+    throw new Error('memberSubmitterId is required for member submission intake persistence.');
+  }
+
+  const now = options.now ?? new Date().toISOString();
+  const year = candidateAllocationYearFromIso(now);
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < MAX_CANDIDATE_ID_ALLOCATION_ATTEMPTS; attempt += 1) {
+    const candidateId = await allocateMemberSubmissionCandidateId(db, year);
+    try {
+      return await persistMemberSubmissionIntakeAttempt(db, request, {
+        submitterContact: options.submitterContact,
+        memberSubmitterId,
+        now,
+        candidateId,
+      });
+    } catch (error) {
+      if (isCandidateIdUniqueConflict(error) && attempt < MAX_CANDIDATE_ID_ALLOCATION_ATTEMPTS - 1) {
+        lastError = error;
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw lastError ?? new Error('Failed to allocate a unique candidate_id for member submission intake.');
 }
 
 export function serializeMemberSubmissionIntakeResponse(result: MemberSubmissionIntakeResult) {
