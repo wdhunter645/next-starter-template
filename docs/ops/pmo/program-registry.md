@@ -65,7 +65,13 @@ Required implications:
 
 ## PMO Execution Chain
 
-The authoritative chain under PMO v3 is:
+After PR #2282 merges, the authoritative chain is defined in `/docs/ops/pmo/PMO-V4-OPERATING-MODEL.md` ([PMO hierarchy](PMO-V4-OPERATING-MODEL.md#pmo-hierarchy)):
+
+```text
+PMO meeting issue → PMO Backlog review/update → program of work → component project → master issue → child implementation issues → PR(s) → Atlas review / acceptance → production Ops monitoring → Ops exception issues if needed → closeout
+```
+
+Until PR #2282 merges, the PMO V3 chain remains in effect for active execution:
 
 ```text
 PMO meeting issue → PMO Backlog review/update → program issue → project / task issue → PR → verification → closeout

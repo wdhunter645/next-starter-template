@@ -2,11 +2,11 @@
 Doc Type: Operations
 Audience: Human + AI
 Authority Level: Canonical PMO Authority
-Owns: LGFC PMO v4 program inventory, workload reporting, backlog inventory, lifecycle terms, program preparation, Cursor execution boundaries, launch gates, completed/historical archive treatment, PMO reporting vs operations reporting separation, and Drive drafting model
+Owns: LGFC PMO v4 program inventory, workload reporting, backlog inventory, lifecycle terms, component-project hierarchy, reduced-gate delivery model, program preparation, Cursor execution boundaries, launch gates, Ops production handoff, completed/historical archive treatment, PMO reporting vs operations reporting separation, and Drive drafting model
 Does Not Own: Product-specific design, runtime implementation, workflow YAML, production configuration, secrets, or unauthorized GitHub issue mutation
 Canonical Reference: /docs/ops/pmo/PMO-V4-OPERATING-MODEL.md
-Related Issues: #2100
-Last Reviewed: 2026-07-05
+Related Issues: #2100, #2296
+Last Reviewed: 2026-07-06
 ---
 
 # PMO V4 Operating Model
@@ -60,7 +60,7 @@ Source for this promotion: issue #2100 embedded comments (Drive draft *LGFC PMO 
 
 ## Scope
 
-This document owns PMO v4 terminology, workload inventory rules, backlog categories, program-preparation rules, Cursor execution boundaries, launch gates, completed/historical archive treatment, PMO reporting vs operations reporting separation, and documentation replacement order.
+This document owns PMO v4 terminology, workload inventory rules, backlog categories, component-project hierarchy, reduced-gate delivery model, program-preparation rules, Cursor execution boundaries, launch gates, Ops production handoff, completed/historical archive treatment, PMO reporting vs operations reporting separation, and documentation replacement order.
 
 It does not own task-level implementation plans, workflow YAML, runtime code, or unauthorized GitHub issue mutation.
 
@@ -192,9 +192,44 @@ A program or task sequence may execute only when all applicable launch gates are
 
 Launch gate failures are stop conditions. Cursor must not execute from planning/reference material alone.
 
+### Launch gates vs CI/custom gates
+
+PMO launch gates and repository CI/custom gates serve different purposes. Do not conflate them.
+
+| Gate class | Purpose | Default posture |
+| --- | --- | --- |
+| **PMO launch gates** | Planning, authorization, predecessor, and scope controls before Cursor execution begins | Required for every program and component project |
+| **CI/custom gates** | Repository safety, build integrity, and production-risk checks on PRs | Minimized unless specifically justified by production risk or repo safety |
+
+Rules:
+
+- PMO launch gates answer whether work is authorized, prepared, and scoped for Cursor execution.
+- CI/custom gates answer whether a PR is safe to merge under repository enforcement.
+- Normal repository safety checks remain in force. This model does not remove required CI.
+- Do not create new custom gates by default. Add custom gates only when production risk or repo safety specifically requires them.
+- Ops exception issues handle production gaps discovered after deployment rather than blocking every possible concern before merge.
+
 ## Program preparation
 
-Before Cursor launches any PMO program, Atlas prepares the program to the maximum feasible extent. This preparation step is mandatory for PMO V4 and is intended to reduce Cursor resource usage, reduce agent drift, and make program execution deterministic.
+Before Cursor launches any PMO program or component project, Atlas prepares work to the maximum feasible extent. Preparation may occur at the **full-program level** or at the **component-project level** when a bounded capability is ready for Cursor execution. This preparation step is mandatory for PMO V4 and is intended to reduce Cursor resource usage, reduce agent drift, and make execution deterministic.
+
+### Component-project preparation
+
+When Atlas prepares a component project for Cursor, the preparation packet should include, where feasible:
+
+- component objective and parent program-of-work reference;
+- master issue body (execution coordination record for the component);
+- linked child issue plan and child execution order;
+- Cursor prompts sized for one child issue at a time;
+- acceptance criteria;
+- likely file/path scope and file-touch allowlist;
+- verification expectations;
+- documentation targets;
+- production/Ops handoff expectations;
+- known risks and explicitly accepted risks;
+- explicit stop condition (typically READY FOR REVIEW).
+
+Component-project preparation does not require waiting for full-program preparation of every sibling component. Each bounded component may be prepared and launched independently when Bill/Atlas authorize it and predecessor conditions are satisfied.
 
 ### Preparation packet contents
 
@@ -242,7 +277,7 @@ Atlas should use this standard structure when preparing a program for Cursor.
 
 - Execution agent: Cursor
 - Local agent rule: one local Cursor agent only
-- Work rule: one program, one child issue, one PR
+- Work rule: one component project child issue, one PR
 - Stop condition: READY FOR REVIEW
 - Merge authority: Bill/Atlas only
 - Issue mutation authority: none unless explicitly granted by source issue
@@ -393,7 +428,9 @@ Every program should end with a terminal child task that consolidates evidence a
 
 ## Cursor execution boundaries
 
-Resource-control rule: **one local Cursor agent, one program, one child issue, one PR, stop at READY FOR REVIEW.**
+Resource-control rule: **one local Cursor agent, one component project child issue, one PR, stop at READY FOR REVIEW.**
+
+Component projects decompose into a master issue (coordination) and child implementation issues (Cursor-executable units). Cursor executes one child issue at a time unless Bill/Atlas explicitly authorize otherwise.
 
 | Actor | May do | May not do without explicit authorization |
 | --- | --- | --- |
@@ -409,12 +446,87 @@ Cursor must not interpret "continuous execution" as approval to start adjacent w
 ```text
 PMO meeting issue
 → PMO Backlog review/update
-→ program issue
-→ project / task issue
-→ PR
-→ validation
+→ program of work
+→ component project
+→ master issue
+→ child implementation issues
+→ PR(s)
+→ Atlas review / acceptance
+→ production Ops monitoring
+→ Ops exception issues if needed
 → closeout
 ```
+
+Small projects are **component projects** inside larger programs of work, not random standalone tasks. A program of work may contain multiple component projects delivered incrementally.
+
+GitHub program issue numbers remain the durable identifiers for programs of work. Master issues and child implementation issues carry execution detail within each component project.
+
+## Component-project delivery model
+
+| Term | Definition |
+| --- | --- |
+| **Program of work** | Strategic outcome and durable work container. Identified by a GitHub program issue. Holds one or more component projects toward a shared strategic goal. |
+| **Component project** | Bounded capability within a program of work — for example, a website back-office slice, admin tool, or content workflow. Small enough for focused Cursor execution and Atlas review. |
+| **Master issue** | Execution coordination record for a component project. Holds scope, child-issue plan, execution order, and handoff expectations. Does not replace the parent program-of-work issue. |
+| **Child issue** | Smallest Cursor-implementable unit. One bounded task with an explicit allowlist, acceptance criteria, and verification plan. |
+| **PR** | Reviewable implementation unit. One PR per child issue unless Bill/Atlas explicitly authorize otherwise. |
+| **Atlas review / acceptance** | Post-Cursor control point. Atlas reviews merged or ready-for-review implementation against acceptance criteria before Ops handoff or component closeout. |
+| **Ops production ownership** | Monitoring, support, exception creation, remediation routing, and production evidence capture after deployment. |
+
+Delivery flow for a typical component project:
+
+```text
+small component project assigned
+→ implemented by Cursor (child issues → PRs)
+→ reviewed/accepted by Atlas
+→ deployed to production
+→ Ops managed in production
+```
+
+## Reduced-gate risk posture
+
+LGFC accepts **higher delivery risk** for small bounded website/back-office component projects in exchange for **lower process drag**, faster implementation, Atlas review, and Ops-managed correction after production deployment.
+
+This is not uncontrolled implementation. Safeguards are:
+
+- detailed planning at program and component-project levels;
+- small scope per child issue;
+- master/child issue hierarchy;
+- Cursor-local implementation (one agent, one child issue, one PR);
+- Atlas review/acceptance as the post-implementation control point;
+- production Ops monitoring after deployment;
+- Ops exception issues when production gaps are found.
+
+Explicitly discouraged:
+
+- custom gate proliferation;
+- governance-first delivery;
+- large perfect-before-launch programs;
+- heavy pre-merge gates for every concern;
+- sprawling Cursor prompts;
+- monster issues spanning multiple capabilities.
+
+When a concern can be validated in production under Ops monitoring, prefer Ops exception routing over adding a new pre-merge gate.
+
+## Ops production handoff
+
+After Atlas accepts a component project and production deployment occurs, **Ops owns production management** for that capability.
+
+Ops responsibilities after deployment:
+
+- monitoring production behavior and health;
+- support for operator-reported issues;
+- exception issue creation when production gaps are found;
+- remediation routing to the appropriate agent or operator;
+- production evidence capture where applicable.
+
+Ops exception issues handle production gaps rather than blocking every possible concern before merge. PMO launch gates and Atlas review remain the pre-deployment controls; Ops owns post-deployment correction and evidence.
+
+Rules:
+
+- Atlas acceptance is the post-Cursor control point before Ops handoff.
+- Ops does not replace Bill/Atlas launch or merge authority.
+- Production gaps discovered after deployment route through Ops exception issues, not retroactive scope expansion on closed child issues.
 
 ## Completed and historical program archive
 
@@ -498,7 +610,7 @@ The following items are identified for bounded follow-up issues. They are **not*
 | PMO Enterprise Stabilization Sequence | Drive planning doc #28 — stabilization sequence authority | Bounded planning issue |
 | Agent rule-load management | Drive planning docs #30–#31 — agent rule checklist and documentation inventory | Governance program follow-on |
 | Release evidence ownership | Release/operations lifecycle from stabilization sequence | Operations follow-on |
-| `lgfc-cursor-execution-contract.md` reconciliation | Align cursor execution contract with PMO V4 preparation model | Priority #3 / #1722 |
+| `lgfc-cursor-execution-contract.md` reconciliation | Align cursor execution contract with PMO V4 component-project and preparation model | Priority #3 / #1722 |
 | Full registry/backlog reconciliation | Reconcile detailed program-registry and pmo-backlog rows to PMO V4 workload inventory (#1738, #1847, Phase 2 shaping) | Post-promotion maintenance issue |
 | Drive planning docs #27–#31 | Remain in Drive until individually promoted by issue/PR | Atlas |
 
