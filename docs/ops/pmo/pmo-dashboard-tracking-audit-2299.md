@@ -5,7 +5,7 @@ Authority Level: Evidence / Audit
 Owns: PMO dashboard tracking reconciliation audit for issue #2299
 Does Not Own: Final priority authorization or issue closeout
 Canonical Reference: /docs/ops/pmo/PMO-V4-OPERATING-MODEL.md
-Related Issues: #2299, #1719
+Related Issues: #2299, #1719, #2313
 Last Reviewed: 2026-07-06
 ---
 
@@ -24,6 +24,17 @@ Expanded dashboard title inclusion from `PROGRAM:` / `PROJECT:` only to also inc
 - `STRATEGY REVIEW:`
 
 Machine-readable inventory and validation guardrails: `scripts/pmo-dashboard/pmo-tracked-inventory.json`.
+
+## Label-driven tracking update (#2313)
+
+Issue #2313 supersedes title-prefix inclusion as the dashboard tracking gate:
+
+- `PMO` / `pmo` label = PMO-tracked and eligible for dashboard rows.
+- No PMO label = excluded even when a recognized title prefix is present.
+- Title prefixes still identify row type for display.
+- Child projects use `PROJECT: <parentProgramIssue>:<sequence> | <title>` and nest under active parent programs.
+
+Canonical operator documentation: `docs/how-to/pmo/pmo-dashboard.md`.
 
 ## Active programs (numeric priority)
 

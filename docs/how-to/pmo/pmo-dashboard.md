@@ -5,7 +5,7 @@ Authority Level: Operational Guidance
 Owns: PMO dashboard generation, refresh, validation, and GitHub Pages limitations
 Does Not Own: PMO lifecycle definitions, GitHub issues source records, or Cloudflare production deployment
 Canonical Reference: /docs/ops/pmo/workflow-automation.md
-Related Issues: #2101, #2299
+Related Issues: #2101, #2299, #2313
 Last Reviewed: 2026-07-06
 ---
 
@@ -29,7 +29,16 @@ This how-to covers dashboard source fields, local generation, CI build validatio
 
 ## Source data
 
-The generator reads public repository GitHub issues with PMO dashboard title prefixes:
+PMO dashboard inclusion is label-driven:
+
+```text
+label = PMO -> issue is PMO-tracked and eligible for dashboard rows
+no PMO label -> issue is not PMO-tracked and is excluded
+```
+
+The `PMO` / `pmo` label is the only dashboard inclusion flag. Title prefixes identify row type for display but do not control inclusion.
+
+Recognized title prefixes for row-type display:
 
 - `PROGRAM:`
 - `PROJECT:`
@@ -37,7 +46,60 @@ The generator reads public repository GitHub issues with PMO dashboard title pre
 - `STRATEGY:`
 - `STRATEGY REVIEW:`
 
-Issues outside these prefixes (for example `DESIGN:`, `TASK:`, or `OPS` titles) are excluded from dashboard rows unless renamed or explicitly tracked with documented exclusion rationale in `scripts/pmo-dashboard/pmo-tracked-inventory.json`.
+Child projects inside an active program use this title syntax:
+
+```text
+PROJECT: <parentProgramIssue>:<sequence> | <child project title>
+```
+
+Example:
+
+```text
+PROJECT: 2286:1 | Implement D1 candidate metadata migrations
+```
+
+Parse rule:
+
+```text
+parentProgramIssue = number before first colon
+sequence = number after first colon and before pipe
+display title = text right of pipe
+```
+
+Child projects under an active parent program render nested beneath the parent in sequence order and do not duplicate as standalone Pipeline rows.
+
+Issues without the PMO label are excluded even when they use a recognized title prefix. Explicit exclusion rationale for non-PMO or historical rows lives in `scripts/pmo-dashboard/pmo-tracked-inventory.json`.
+
+## Dashboard grouping
+
+Grouping is driven by concise PMO status/lifecycle rules:
+
+```text
+PMO + Status: Active -> Active Programs
+PMO + future pipeline statuses -> PMO Pipeline
+PMO + status:complete or closed issue -> Completed Programs
+```
+
+Pipeline means future PMO work. Active means active PMO work. `status:complete` means completed PMO work only when paired with the PMO label.
+
+Standardized display statuses:
+
+```text
+Active
+Implementation Ready
+Planning
+Strategy Defined
+Strategy Development
+Idea
+Completed
+```
+
+Task-level execution states such as post-merge verification, reviewer response, or closeout are not top-level PMO dashboard statuses.
+
+Sorting:
+
+- Active Programs and PMO Pipeline top-level rows sort by numeric `Priority #` low to high.
+- Completed Programs sort by `closed_at` newest to oldest, falling back to `updated_at` when `closed_at` is unavailable.
 
 Included issues should provide these explicit dashboard fields:
 
@@ -64,9 +126,10 @@ Task-accounting rules:
 2. Add child tasks only inside one or more recognized task-chain blocks (`Task Chain`, `Child Task Chain`, `Child Tasks`, `Child Issue Chain`, `Child Issues`, `Expected Child Issue Chain`, `Expected Child Task Chain`, `Required Child Issue Chain`, `Required Child Task Chain`, `Implementation Tasks`, `Implementation Task Chain`, `Implementation Issue Chain`, `Task List`, or `Issue Chain`).
 3. Run or wait for **PMO dashboard CI build**.
 4. Confirm generation and validation of `site/pmo-dashboard/dashboard-data.json` and static assets.
-5. Confirm **PMO dashboard CI deploy** publishes the validated dashboard and records the Pages URL.
-6. Record the published GitHub Pages URL on the controlling PMO dashboard issue before closeout.
-7. Treat the dashboard as a reporting aid, not an authoritative tracker.
+5. Run `node scripts/pmo-dashboard/test-label-driven-fixture.mjs` when changing label-driven inclusion or nested child display logic.
+6. Confirm **PMO dashboard CI deploy** publishes the validated dashboard and records the Pages URL.
+7. Record the published GitHub Pages URL on the controlling PMO dashboard issue before closeout.
+8. Treat the dashboard as a reporting aid, not an authoritative tracker.
 
 ## Refresh and validation
 

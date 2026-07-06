@@ -1,10 +1,10 @@
 {
-  "version": 1,
-  "sourceIssue": 2299,
+  "version": 2,
+  "sourceIssue": 2313,
   "included": [
-    { "issueNumber": 2286, "expectedLifecycle": "active", "expectedPriority": 1, "requiresTaskAccounting": true, "expectedMinimumTaskCount": 1 },
-    { "issueNumber": 1719, "expectedLifecycle": "active", "expectedPriority": 2, "requiresTaskAccounting": true, "expectedMinimumTaskCount": 1 },
-    { "issueNumber": 2299, "expectedLifecycle": "active", "expectedPriority": 3 },
+    { "issueNumber": 2286, "expectedLifecycle": "active", "expectedPriority": 1 },
+    { "issueNumber": 1719, "expectedLifecycle": "active", "expectedPriority": 2 },
+    { "issueNumber": 2299, "expectedLifecycle": "completed" },
     { "issueNumber": 2294, "expectedLifecycle": "pipeline", "expectedPriority": 1 },
     { "issueNumber": 2292, "expectedLifecycle": "pipeline", "expectedPriority": 2 },
     { "issueNumber": 2291, "expectedLifecycle": "pipeline", "expectedPriority": 3 },
@@ -41,7 +41,7 @@
     },
     {
       "issueNumber": 2288,
-      "rationale": "TASK issue under #2286 runtime program; child tasks are not standalone PMO dashboard rows per #2299 scope."
+      "rationale": "Legacy TASK child issue under #2286; excluded until renamed to PROJECT: 2286:<sequence> | <title> and displayed nested under the active parent program per #2313."
     },
     {
       "issueNumber": 1075,
@@ -67,7 +67,11 @@
   "decisionsResolved": [
     {
       "issueNumber": 1685,
-      "decision": "Keep Dashboard Lifecycle: completed. Do not close GitHub issue in #2299 PR; closure is a separate Bill/Atlas closeout decision."
+      "decision": "Keep Dashboard Lifecycle: completed. GitHub issue may remain open with status:complete until separate Bill/Atlas closeout."
+    },
+    {
+      "issueNumber": 2299,
+      "decision": "Closed complete 2026-07-06 after #2299 reconciliation; dashboard inventory tracks as completed PMO work."
     },
     {
       "issueNumber": 1738,
