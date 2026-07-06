@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-06T14:45:48.336Z",
+  "generatedAt": "2026-07-06T14:54:47.946Z",
   "source": "github-issues",
   "repository": "wdhunter645/next-starter-template",
   "views": {
@@ -345,6 +345,20 @@
     ],
     "completedPrograms": [
       {
+        "type": "project",
+        "name": "Content Strategy / Editorial Inventory",
+        "issueNumber": 1256,
+        "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/1256",
+        "priority": "1",
+        "status": "complete",
+        "percentComplete": null,
+        "taskCount": 0,
+        "tasksCompleted": 0,
+        "ownerAgent": "Atlas",
+        "description": "Content strategy and editorial inventory for Lou Gehrig historical content, media associations, editorial rotation, search/discovery, and intake/review workflows under program #1255.",
+        "anticipatedCompletionDate": "TBD"
+      },
+      {
         "type": "program",
         "name": "Website Completion / Fan Club Product Buildout",
         "issueNumber": 1685,
@@ -373,6 +387,20 @@
         "anticipatedCompletionDate": "TBD"
       },
       {
+        "type": "project",
+        "name": "Website Operations Admin",
+        "issueNumber": 1258,
+        "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/1258",
+        "priority": "2",
+        "status": "complete",
+        "percentComplete": null,
+        "taskCount": 0,
+        "tasksCompleted": 0,
+        "ownerAgent": "Atlas",
+        "description": "Website operations and admin workflows for post-launch LGFC operations, including fan club, moderation, content/media management, events, fundraiser, and matchup admin under program #1255.",
+        "anticipatedCompletionDate": "TBD"
+      },
+      {
         "type": "program",
         "name": "Website Public Launch / Relaunch Readiness",
         "issueNumber": 2039,
@@ -384,6 +412,34 @@
         "tasksCompleted": 0,
         "ownerAgent": "Atlas",
         "description": "Website public launch and relaunch readiness program.",
+        "anticipatedCompletionDate": "TBD"
+      },
+      {
+        "type": "project",
+        "name": "Website QA and Production Validation",
+        "issueNumber": 1259,
+        "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/1259",
+        "priority": "3",
+        "status": "complete",
+        "percentComplete": null,
+        "taskCount": 0,
+        "tasksCompleted": 0,
+        "ownerAgent": "Atlas",
+        "description": "Canonical Website QA and production validation for program #1255: route, navigation, auth, mobile, D1/B2 verification, public-core closeout, and production audit handoff.",
+        "anticipatedCompletionDate": "TBD"
+      },
+      {
+        "type": "project",
+        "name": "Website QA and Production Validation",
+        "issueNumber": 1264,
+        "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/1264",
+        "priority": "4",
+        "status": "queued",
+        "percentComplete": null,
+        "taskCount": 0,
+        "tasksCompleted": 0,
+        "ownerAgent": "Atlas",
+        "description": "Superseded duplicate of #1259; closed as stale with no independent execution history. Retained for program #1255 audit continuity only.",
         "anticipatedCompletionDate": "TBD"
       },
       {
@@ -430,20 +486,6 @@
       },
       {
         "type": "project",
-        "name": "Content Strategy / Editorial Inventory",
-        "issueNumber": 1256,
-        "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/1256",
-        "priority": "TBD",
-        "status": "complete",
-        "percentComplete": null,
-        "taskCount": 0,
-        "tasksCompleted": 0,
-        "ownerAgent": "Pending Assignment",
-        "description": "- #1255 — PROGRAM: Website Implementation and Content Operations",
-        "anticipatedCompletionDate": "TBD"
-      },
-      {
-        "type": "project",
         "name": "Documentation Completion & Production Definition",
         "issueNumber": 1132,
         "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/1132",
@@ -482,48 +524,6 @@
         "tasksCompleted": 0,
         "ownerAgent": "Pending Assignment",
         "description": "Master program issue for the remaining LGFC website implementation, content operations, operational/admin tooling, and launch-validation work.",
-        "anticipatedCompletionDate": "TBD"
-      },
-      {
-        "type": "project",
-        "name": "Website Operations Admin",
-        "issueNumber": 1258,
-        "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/1258",
-        "priority": "TBD",
-        "status": "complete",
-        "percentComplete": null,
-        "taskCount": 0,
-        "tasksCompleted": 0,
-        "ownerAgent": "Pending Assignment",
-        "description": "- #1255 — PROGRAM: Website Implementation and Content Operations",
-        "anticipatedCompletionDate": "TBD"
-      },
-      {
-        "type": "project",
-        "name": "Website QA and Production Validation",
-        "issueNumber": 1259,
-        "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/1259",
-        "priority": "TBD",
-        "status": "complete",
-        "percentComplete": null,
-        "taskCount": 0,
-        "tasksCompleted": 0,
-        "ownerAgent": "Pending Assignment",
-        "description": "- #1255 — PROGRAM: Website Implementation and Content Operations",
-        "anticipatedCompletionDate": "TBD"
-      },
-      {
-        "type": "project",
-        "name": "Website QA and Production Validation",
-        "issueNumber": 1264,
-        "issueUrl": "https://github.com/wdhunter645/next-starter-template/issues/1264",
-        "priority": "TBD",
-        "status": "queued",
-        "percentComplete": null,
-        "taskCount": 0,
-        "tasksCompleted": 0,
-        "ownerAgent": "Pending Assignment",
-        "description": "- #1255 — PROGRAM: Website Implementation and Content Operations",
         "anticipatedCompletionDate": "TBD"
       }
     ]
