@@ -1,12 +1,22 @@
 #!/usr/bin/env node
 import { mkdir, writeFile, cp, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OWNER = process.env.GITHUB_REPOSITORY_OWNER || 'wdhunter645';
 const REPO = (process.env.GITHUB_REPOSITORY || 'wdhunter645/next-starter-template').split('/')[1];
 const TOKEN = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
 const OUT_DIR = process.env.PMO_DASHBOARD_OUT_DIR || 'site/pmo-dashboard';
 const API = process.env.GITHUB_API_URL || 'https://api.github.com';
+
+const TITLE_PREFIXES = [
+  { pattern: /^PROGRAM CANDIDATE:\s*/i, type: 'program-candidate' },
+  { pattern: /^STRATEGY REVIEW:\s*/i, type: 'strategy-review' },
+  { pattern: /^STRATEGY:\s*/i, type: 'strategy' },
+  { pattern: /^PROGRAM:\s*/i, type: 'program' },
+  { pattern: /^PROJECT:\s*/i, type: 'project' }
+];
 
 const lifecycleToView = { active: 'activePrograms', pipeline: 'pmoPipeline', completed: 'completedPrograms' };
 const statusByLifecycle = { active: 'Active', pipeline: 'PMO Intake', completed: 'Completed' };
@@ -18,7 +28,7 @@ async function github(pathname) {
   if (TOKEN) headers.Authorization = `Bearer ${TOKEN}`;
   const res = await fetch(`${API}${pathname}`, { headers });
   if (!res.ok) throw new Error(`GitHub API ${res.status} for ${pathname}: ${await res.text()}`);
-  return res.json();
+  return { data: await res.json(), headers: res.headers };
 }
 
 async function fetchIssues(state) {
@@ -26,12 +36,21 @@ async function fetchIssues(state) {
     const fixture = JSON.parse(await readFile(process.env.PMO_DASHBOARD_ISSUES_FIXTURE, 'utf8'));
     return fixture.filter((issue) => !issue.pull_request && (state === 'all' || issue.state === state));
   }
+  const states = state === 'all' ? ['open', 'closed'] : [state];
   const all = [];
-  for (let page = 1; ; page += 1) {
-    const batch = await github(`/repos/${OWNER}/${REPO}/issues?state=${state}&per_page=100&page=${page}`);
-    const issues = batch.filter((issue) => !issue.pull_request);
-    all.push(...issues);
-    if (batch.length < 100) break;
+  for (const issueState of states) {
+    let after = null;
+    for (;;) {
+      const params = new URLSearchParams({ state: issueState, per_page: '100' });
+      if (after) params.set('after', after);
+      const { data: batch, headers } = await github(`/repos/${OWNER}/${REPO}/issues?${params.toString()}`);
+      const issues = batch.filter((issue) => !issue.pull_request);
+      all.push(...issues);
+      const link = headers.get('link');
+      const nextAfter = link?.match(/<[^>]*[?&]after=([^>&]+)[^>]*>;\s*rel="next"/)?.[1];
+      if (!nextAfter) break;
+      after = decodeURIComponent(nextAfter);
+    }
   }
   return all;
 }
@@ -43,8 +62,21 @@ function field(body, name) {
 }
 
 function labels(issue) { return (issue.labels || []).map((label) => typeof label === 'string' ? label : label.name); }
-function titleType(title) { return title?.startsWith('PROGRAM:') ? 'program' : title?.startsWith('PROJECT:') ? 'project' : null; }
-function cleanName(title) { return title.replace(/^(PROGRAM|PROJECT):\s*/i, '').trim(); }
+
+function titleType(title) {
+  if (!title) return null;
+  for (const { pattern, type } of TITLE_PREFIXES) {
+    if (pattern.test(title)) return type;
+  }
+  return null;
+}
+
+function cleanName(title) {
+  for (const { pattern } of TITLE_PREFIXES) {
+    if (pattern.test(title)) return title.replace(pattern, '').trim();
+  }
+  return title.trim();
+}
 
 function explicitTaskBlocks(body) {
   const lines = (body || '').split(/\r?\n/);
@@ -146,9 +178,9 @@ async function main() {
   const data = { generatedAt: new Date().toISOString(), source: 'github-issues', repository: `${OWNER}/${REPO}`, views: rows };
   await mkdir(path.join(OUT_DIR, 'assets'), { recursive: true });
   await writeFile(path.join(OUT_DIR, 'dashboard-data.json'), `${JSON.stringify(data, null, 2)}\n`);
-  await cp('scripts/pmo-dashboard/static/index.html', path.join(OUT_DIR, 'index.html'));
-  await cp('scripts/pmo-dashboard/static/pmo-dashboard.css', path.join(OUT_DIR, 'assets/pmo-dashboard.css'));
-  await cp('scripts/pmo-dashboard/static/pmo-dashboard.js', path.join(OUT_DIR, 'assets/pmo-dashboard.js'));
+  await cp(path.join(__dirname, 'static/index.html'), path.join(OUT_DIR, 'index.html'));
+  await cp(path.join(__dirname, 'static/pmo-dashboard.css'), path.join(OUT_DIR, 'assets/pmo-dashboard.css'));
+  await cp(path.join(__dirname, 'static/pmo-dashboard.js'), path.join(OUT_DIR, 'assets/pmo-dashboard.js'));
   console.log(`Generated PMO dashboard with ${Object.values(rows).flat().length} rows at ${OUT_DIR}`);
 }
 
