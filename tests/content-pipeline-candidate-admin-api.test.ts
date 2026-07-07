@@ -30,7 +30,7 @@ function moderationEventsForCandidate(sqlite: DatabaseSync, candidateId: string)
     event_type: string;
     actor: string | null;
     from_state: string | null;
-    to_state: string;
+    to_state: string | null;
     notes: string | null;
   }>;
 }
@@ -328,7 +328,7 @@ describe('content pipeline candidate admin API (#2310)', () => {
     );
     expect(events[1].actor).toBe('operator@test');
     expect(JSON.parse(events[1].from_state || '{}')).toMatchObject({ review_status: 'pending_review' });
-    expect(JSON.parse(events[1].to_state)).toMatchObject({
+    expect(JSON.parse(events[1].to_state ?? '{}')).toMatchObject({
       review_status: 'approved_internal_reference',
     });
   });
@@ -377,7 +377,7 @@ describe('content pipeline candidate admin API (#2310)', () => {
     expect(events).toHaveLength(1);
     expect(events[0].event_type).toBe('review_state_change');
     expect(events[0].from_state).toBe('{}');
-    expect(JSON.parse(events[0].to_state)).toMatchObject({
+    expect(JSON.parse(events[0].to_state ?? '{}')).toMatchObject({
       candidate_id: 'lgfc-gehrig-2026-880',
       review_status: 'pending_review',
     });

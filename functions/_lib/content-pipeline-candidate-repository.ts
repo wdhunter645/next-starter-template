@@ -188,13 +188,52 @@ export function createModerationEventStatement(db: any, event: ModerationEventWr
     );
 }
 
+function normalizeAuditComparable(value: unknown): unknown {
+  if (value === undefined || value === null || value === '') {
+    return null;
+  }
+  return value;
+}
+
+function resolvedUpsertReviewFieldValue(candidate: CandidateRecord, field: ReviewStateField): unknown {
+  if (field === 'admin_notes') {
+    return candidate.admin_notes ?? null;
+  }
+  return candidate[field];
+}
+
+function createModerationEventStatementForCandidateId(
+  db: any,
+  candidateId: string,
+  event: ModerationEventWrite,
+): D1PreparedStatement {
+  return db
+    .prepare(
+      `INSERT INTO moderation_events (
+        content_item_id, event_type, actor, from_state, to_state, notes
+      )
+      SELECT ci.id, ?, ?, ?, ?, ?
+      FROM content_items ci
+      WHERE ci.candidate_id = ?
+      LIMIT 1`,
+    )
+    .bind(
+      event.eventType,
+      event.actor ?? null,
+      serializeModerationEventState(event.fromState),
+      serializeModerationEventState(event.toState),
+      event.notes ?? null,
+      candidateId,
+    );
+}
+
 function buildCandidateUpsertAuditEvents(
   contentItemId: number,
   existing: StoredCandidate | null,
   candidate: CandidateRecord,
 ): ModerationEventWrite[] {
   if (!existing) {
-  // Candidate creation maps to review_state_change; no dedicated create enum exists in migration 0042.
+    // Candidate creation maps to review_state_change; no dedicated create enum exists in migration 0042.
     return [
       buildMultiFieldModerationEvent(
         contentItemId,
@@ -216,9 +255,9 @@ function buildCandidateUpsertAuditEvents(
   const events: ModerationEventWrite[] = [];
 
   for (const field of REVIEW_STATE_UPDATE_FIELDS) {
-    const fromValue = existing[field];
-    const toValue = candidate[field];
-    if (toValue === undefined || fromValue === toValue) {
+    const fromValue = normalizeAuditComparable(existing[field]);
+    const toValue = normalizeAuditComparable(resolvedUpsertReviewFieldValue(candidate, field));
+    if (fromValue === toValue) {
       continue;
     }
     events.push(
@@ -233,38 +272,34 @@ function buildCandidateUpsertAuditEvents(
     );
   }
 
-  if (candidate.media_asset_id !== undefined) {
-    const fromValue = existing.media_asset_id ?? null;
-    const toValue = candidate.media_asset_id ?? null;
-    if (fromValue !== toValue) {
-      events.push(
-        buildFieldModerationEvent(
-          contentItemId,
-          'media_asset_id',
-          CONTENT_PIPELINE_MEDIA_REFERENCE_EVENT_TYPE,
-          fromValue,
-          toValue,
-          { notes: 'candidate registry upsert' },
-        ),
-      );
-    }
+  const fromMedia = normalizeAuditComparable(existing.media_asset_id);
+  const toMedia = normalizeAuditComparable(candidate.media_asset_id ?? null);
+  if (fromMedia !== toMedia) {
+    events.push(
+      buildFieldModerationEvent(
+        contentItemId,
+        'media_asset_id',
+        CONTENT_PIPELINE_MEDIA_REFERENCE_EVENT_TYPE,
+        fromMedia,
+        toMedia,
+        { notes: 'candidate registry upsert' },
+      ),
+    );
   }
 
-  if (candidate.duplicate_of !== undefined) {
-    const fromValue = existing.duplicate_of ?? null;
-    const toValue = candidate.duplicate_of ?? null;
-    if (fromValue !== toValue) {
-      events.push(
-        buildFieldModerationEvent(
-          contentItemId,
-          'duplicate_of',
-          toValue ? 'duplicate_flagged' : 'review_state_change',
-          fromValue,
-          toValue,
-          { notes: 'candidate registry upsert' },
-        ),
-      );
-    }
+  const fromDuplicate = normalizeAuditComparable(existing.duplicate_of);
+  const toDuplicate = normalizeAuditComparable(candidate.duplicate_of ?? null);
+  if (fromDuplicate !== toDuplicate) {
+    events.push(
+      buildFieldModerationEvent(
+        contentItemId,
+        'duplicate_of',
+        toDuplicate ? 'duplicate_flagged' : 'review_state_change',
+        fromDuplicate,
+        toDuplicate,
+        { notes: 'candidate registry upsert' },
+      ),
+    );
   }
 
   return events;
@@ -565,7 +600,7 @@ export async function upsertCandidate(db: any, candidate: CandidateRecord): Prom
   const sourceMetadata = JSON.stringify(candidate.source_metadata ?? {});
   const now = candidate.updated_at;
 
-  await db
+  const upsertStatement = db
     .prepare(
       `INSERT INTO content_items (
         candidate_id, input_stream, title, source_url, source_name, source_owner, source_domain,
@@ -645,17 +680,26 @@ export async function upsertCandidate(db: any, candidate: CandidateRecord): Prom
       candidate.last_event_at ?? null,
       candidate.created_at,
       now,
-    )
-    .run();
+    );
+
+  const statements: D1PreparedStatement[] = [upsertStatement];
+  if (existing) {
+    const auditEvents = buildCandidateUpsertAuditEvents(existing.id, existing, candidate);
+    for (const event of auditEvents) {
+      statements.push(createModerationEventStatement(db, event));
+    }
+  } else {
+    const auditEvents = buildCandidateUpsertAuditEvents(0, null, candidate);
+    for (const event of auditEvents) {
+      statements.push(createModerationEventStatementForCandidateId(db, candidate.candidate_id, event));
+    }
+  }
+
+  await runD1Batch(db, statements);
 
   const stored = await getCandidateByCandidateId(db, candidate.candidate_id, { includeDeleted: true });
   if (!stored) {
     throw new Error(`Failed to load candidate after upsert: ${candidate.candidate_id}`);
-  }
-
-  const auditEvents = buildCandidateUpsertAuditEvents(stored.id, existing, candidate);
-  if (auditEvents.length > 0) {
-    await runD1Batch(db, auditEvents.map((event) => createModerationEventStatement(db, event)));
   }
 
   if (

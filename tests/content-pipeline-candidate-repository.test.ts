@@ -353,14 +353,66 @@ describe('content pipeline candidate repository (#2305)', () => {
       )
       .all('lgfc-gehrig-2026-999') as Array<{ event_type: string; actor: string | null; notes: string | null }>;
 
-    expect(events.length).toBe(3);
-    expect(events.map((event) => event.event_type)).toEqual([
+    expect(events.length).toBe(4);
+    expect(events[0]).toMatchObject({
+      event_type: 'review_state_change',
+      notes: 'candidate registry create',
+    });
+    expect(events.slice(1).map((event) => event.event_type)).toEqual([
       'review_state_change',
       'rights_update',
       'review_state_change',
     ]);
-    expect(events[0]?.actor).toBe('operator@test');
-    expect(events[0]?.notes).toBe('Initial review complete');
+    expect(events[1]?.actor).toBe('operator@test');
+    expect(events[1]?.notes).toBe('Initial review complete');
+  });
+
+  it('audits registry upserts that clear optional media and admin note fields', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    await upsertCandidate(
+      db,
+      minimalCandidate({
+        media_asset_id: 'media_uid:lgfc-photo-001',
+        admin_notes: 'Keep until import refresh',
+      }),
+    );
+
+    await upsertCandidate(
+      db,
+      minimalCandidate({
+        updated_at: '2026-07-07T10:00:00.000Z',
+      }),
+    );
+
+    const events = sqlite
+      .prepare(
+        `SELECT event_type, from_state, to_state, notes
+         FROM moderation_events me
+         JOIN content_items ci ON ci.id = me.content_item_id
+         WHERE ci.candidate_id = ?
+           AND me.notes = 'candidate registry upsert'
+         ORDER BY me.id ASC`,
+      )
+      .all('lgfc-gehrig-2026-999') as Array<{
+      event_type: string;
+      from_state: string | null;
+      to_state: string | null;
+      notes: string | null;
+    }>;
+
+    expect(events).toHaveLength(2);
+    expect(events.map((event) => event.event_type).sort()).toEqual(
+      ['review_state_change', 'review_state_change'].sort(),
+    );
+    expect(JSON.parse(events.find((event) => event.from_state?.includes('media_asset_id'))!.from_state!)).toMatchObject({
+      media_asset_id: 'media_uid:lgfc-photo-001',
+    });
+    expect(JSON.parse(events.find((event) => event.from_state?.includes('admin_notes'))!.from_state!)).toMatchObject({
+      admin_notes: 'Keep until import refresh',
+    });
   });
 
   it('ignores unknown review-state keys and does not mutate unrelated columns', async () => {
