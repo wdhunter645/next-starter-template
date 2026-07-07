@@ -83,8 +83,8 @@ function wrapSqliteAsD1(sqlite: DatabaseSync) {
           return { results: stmt.all(...args) };
         },
         async run() {
-          stmt.run(...args);
-          return { success: true };
+          const result = stmt.run(...args);
+          return { success: true, meta: { changes: result.changes } };
         },
       });
 
@@ -97,8 +97,42 @@ function wrapSqliteAsD1(sqlite: DatabaseSync) {
           return { results: stmt.all() };
         },
         async run() {
-          stmt.run();
-          return { success: true };
+          const result = stmt.run();
+          return { success: true, meta: { changes: result.changes } };
+        },
+      };
+    },
+  };
+}
+
+function wrapSqliteAsD1WithZeroRowUpdatesOn(sqlite: DatabaseSync, sqlNeedle: string) {
+  const base = wrapSqliteAsD1(sqlite);
+  return {
+    ...base,
+    prepare(sql: string) {
+      const prepared = base.prepare(sql);
+      if (!sql.includes(sqlNeedle)) {
+        return prepared;
+      }
+
+      return {
+        bind: (...args: SQLInputValue[]) => {
+          const bound = prepared.bind(...args);
+          return {
+            ...bound,
+            async run() {
+              return { success: true, meta: { changes: 0 } };
+            },
+          };
+        },
+        async first() {
+          return prepared.first();
+        },
+        async all() {
+          return prepared.all();
+        },
+        async run() {
+          return { success: true, meta: { changes: 0 } };
         },
       };
     },
@@ -650,12 +684,44 @@ describe('content pipeline retention and soft-delete (#2339)', () => {
     );
 
     const eventCountBefore = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length;
+    const softDeleteEventsBefore = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').filter(
+      (event) => event.event_type === 'soft_delete',
+    ).length;
     const second = await softDeleteCandidate(db, 'lgfc-gehrig-2026-999', {
       retention_reason: 'Different reason',
     });
 
     expect(second).not.toBeNull();
     expect(moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length).toBe(eventCountBefore);
+    expect(
+      moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').filter(
+        (event) => event.event_type === 'soft_delete',
+      ).length,
+    ).toBe(softDeleteEventsBefore);
+  });
+
+  it('does not write soft_delete audit when guarded update reports zero changed rows', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1WithZeroRowUpdatesOn(sqlite, 'SET deleted_at = ?');
+
+    await upsertCandidate(db, minimalCandidate());
+
+    const eventsBefore = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length;
+    await softDeleteCandidate(
+      db,
+      'lgfc-gehrig-2026-999',
+      { retention_reason: 'Retained for audit trail' },
+      { deleted_at: '2026-07-07T12:00:00.000Z' },
+    );
+
+    expect(moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length).toBe(eventsBefore);
+    expect(
+      moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').some(
+        (event) => event.event_type === 'soft_delete',
+      ),
+    ).toBe(false);
+    expect(await getCandidateByCandidateId(db, 'lgfc-gehrig-2026-999')).not.toBeNull();
   });
 
   it('updates retention fields without deleting and writes retention_update audit', async () => {
@@ -724,6 +790,27 @@ describe('content pipeline retention and soft-delete (#2339)', () => {
     expect(moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length).toBe(eventCountBefore);
   });
 
+  it('does not write retention_update audit when guarded retention update changes zero rows', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1WithZeroRowUpdatesOn(sqlite, 'SET retention_reason = ?');
+
+    await upsertCandidate(db, minimalCandidate());
+
+    const eventsBefore = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length;
+    await updateCandidateRetention(db, 'lgfc-gehrig-2026-999', {
+      retention_reason: 'Legal hold',
+      purge_eligible_at: '2028-06-01T00:00:00.000Z',
+    });
+
+    expect(moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length).toBe(eventsBefore);
+    expect(
+      moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').some(
+        (event) => event.event_type === 'retention_update',
+      ),
+    ).toBe(false);
+  });
+
   it('restores a soft-deleted candidate and audits via retention_update', async () => {
     const sqlite = new DatabaseSync(':memory:');
     applyRepoMigrations(sqlite);
@@ -766,6 +853,51 @@ describe('content pipeline retention and soft-delete (#2339)', () => {
       deleted_at: null,
       retention_reason: 'Temporary archive',
     });
+  });
+
+  it('does not write retention_update audit when restore guarded update changes zero rows', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    await upsertCandidate(db, minimalCandidate());
+
+    const eventsBefore = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length;
+    await restoreSoftDeletedCandidate(db, 'lgfc-gehrig-2026-999');
+
+    expect(moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length).toBe(eventsBefore);
+    expect(
+      moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').some(
+        (event) => event.event_type === 'retention_update' && event.notes === 'candidate restore',
+      ),
+    ).toBe(false);
+  });
+
+  it('does not write restore audit when guarded update reports zero changed rows on deleted row', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1WithZeroRowUpdatesOn(sqlite, 'SET deleted_at = NULL');
+
+    await upsertCandidate(db, minimalCandidate());
+    await softDeleteCandidate(
+      db,
+      'lgfc-gehrig-2026-999',
+      { retention_reason: 'Temporary archive' },
+      { deleted_at: '2026-07-07T12:00:00.000Z' },
+    );
+
+    const eventsBefore = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length;
+    await restoreSoftDeletedCandidate(db, 'lgfc-gehrig-2026-999');
+
+    expect(moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length).toBe(eventsBefore);
+    expect(
+      moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').filter(
+        (event) => event.event_type === 'retention_update' && event.notes === 'candidate restore',
+      ),
+    ).toHaveLength(0);
+    expect(
+      await getCandidateByCandidateId(db, 'lgfc-gehrig-2026-999', { includeDeleted: true }),
+    ).not.toBeNull();
   });
 
   it('excludes soft-deleted candidates from default list and includes them when requested', async () => {
