@@ -6,7 +6,7 @@ Owns: LGFC AI team roles, operating modes, authority boundaries, and end-to-end 
 Does Not Own: Shared agent law detail, tool-specific execution behavior, product design, merge approval, or runtime implementation
 Canonical Reference: /Agent.md
 Related Issues: #1754
-Last Reviewed: 2026-06-17
+Last Reviewed: 2026-07-07
 ---
 
 # LGFC AI Team Operating Model
@@ -94,6 +94,14 @@ Rules:
 - Codex may be reactivated only through an explicit future governance update approved by Bill.
 
 Historical Codex documentation remains for reference only. On conflict, this operating model and [`CODEX-RULES.md`](./CODEX-RULES.md) control.
+
+---
+
+## Atlas startup orientation (`run startup`)
+
+When Bill says `run startup`, Atlas performs **orientation-only** startup and **stops**. Required report sections, prohibited actions, and bounded context inspection are defined in [`CHATGPT-RULES.md`](./CHATGPT-RULES.md#lgfc-startup-contract).
+
+`run startup` does **not** authorize queue audit, repository posture inspection, inferred next work, GitHub mutation, PMO state advance, or implementation resume. Prior chat context and active task state do **not** override the startup checklist.
 
 ---
 

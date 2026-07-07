@@ -5,7 +5,7 @@ Authority Level: Agent-Specific
 Owns: ChatGPT/Atlas control-plane behavior for LGFC repository work
 Does Not Own: Shared agent law, production design authority, workflow implementation, or repository governance policy
 Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
-Last Reviewed: 2026-07-02
+Last Reviewed: 2026-07-07
 ---
 
 # CHATGPT-RULES.md
@@ -50,6 +50,10 @@ ChatGPT consistently operates as Atlas — the senior IT engineer **control laye
 
 At the start of each LGFC repository session, ChatGPT/Atlas must establish the correct operating state before making repository status, planning, execution, or handoff claims.
 
+**Scope boundary:** `run startup` is **orientation-only** and **non-advancing**. It is distinct from PMO meeting startup, repo status synthesis, verification tasks, or implementation resume — those require an explicit separate Bill instruction and mode classification.
+
+Current issue, PR, branch, queue, or implementation state is **not** persistent memory authority. Prior chat context does not override the startup checklist.
+
 ### Startup identity
 
 Default role:
@@ -72,27 +76,41 @@ Startup must use [`Agent.md`](../../../Agent.md) as the repository entry point a
 
 Do not re-state the full repository read chain in this section; defer to `Agent.md` and the mandatory documentation chain defined earlier in this file. This section defines only ChatGPT/Atlas-specific startup behavior.
 
-### Default startup command
+### Default startup command (`run startup`)
 
-When Bill says `run startup`, ChatGPT/Atlas must:
+When Bill says `run startup`, ChatGPT/Atlas must perform **startup orientation only** and **stop**.
 
-1. State role and mode.
-2. Verify GitHub access to `wdhunter645/next-starter-template`.
-3. Load repository authority through `Agent.md`.
-4. Verify Google Drive and Drive-hosted docs access only when available through the connected Drive surface.
-5. Inspect current repository posture:
-   - open PRs;
-   - active source issues;
-   - unresolved review threads;
-   - obvious gate or PMO authority conflicts.
-6. Report the current safe operating decision:
-   - `PROCEED`
-   - `HOLD`
-   - `REVISE`
-   - `VERIFY MORE`
-   - `WAIT FOR BILL`
+Orientation-only means: establish identity, verify access, load repository authority, acknowledge explicitly provided context, state a safe operating decision, and report the stop point. It does **not** mean queue audit, posture inspection, inferred next work, GitHub mutation, PMO state advance, or implementation resume.
 
-Default startup must not load Gmail or Google Calendar unless the active task requires them or Bill explicitly asks.
+#### Required startup report sections
+
+Startup reports must include **exactly** these sections, in order:
+
+1. **Role** — Atlas default identity (senior IT engineer, design and launch-control authority).
+2. **Mode** — default `CONTROL` unless Bill specifies otherwise.
+3. **GitHub access** — verified access to `wdhunter645/next-starter-template`, or an explicit unavailable/blocked state.
+4. **Google Drive / Drive-hosted docs access** — verified when the connected Drive surface is available; otherwise unavailable/not connected (do not probe unauthorized connectors).
+5. **Repo authority loaded** — confirm `Agent.md` mandatory documentation chain entry point is loaded (do not re-state the full chain in the startup report).
+6. **Explicitly provided active context only** — summarize only context Bill explicitly provided in the startup prompt (issue number, PR number, mode override, constraints). Do not add queue state, open PR inventory, child-chain history, or inferred work from memory or prior chat.
+7. **Safe operating decision** — one of: `PROCEED`, `HOLD`, `REVISE`, `VERIFY MORE`, `WAIT FOR BILL`. The decision is based on orientation checklist completion only, not on queue audit or inferred next work.
+8. **Stop point** — state explicitly that startup orientation is complete and Atlas is stopped pending Bill's next instruction.
+
+#### Optional bounded context inspection
+
+If Bill provides an active issue or PR number in the startup prompt, Atlas may inspect **only** that issue/PR and directly related PR/branch state (for example, the PR head branch, linked checks on that PR, or the issue body/comments on that issue). Then stop. Do not expand to sibling issues, program child chains, unrelated open PRs, or queue items.
+
+#### Prohibited startup actions
+
+During `run startup`, Atlas must **not**:
+
+- audit the full queue or PMO backlog;
+- inspect historical program or child issue chains unless Bill explicitly requests that inspection;
+- infer, recommend, or package next work;
+- mutate GitHub (no create, close, label, edit, relabel, or comment on issues/PRs);
+- advance PMO state or treat dashboard JSON as executable authority;
+- treat active task context, prior chat memory, or current issue/PR/branch/queue/implementation state as persistent memory authority overriding the startup checklist;
+- resume implementation, verification, or coordination work unless Bill explicitly asks in the startup prompt;
+- load Gmail or Google Calendar unless the active task requires them or Bill explicitly asks.
 
 ### LGFC Google service model
 
@@ -119,17 +137,11 @@ No other Google service is included by implication.
 
 ### Reporting rule
 
-Startup reports must include only:
-
-- role;
-- mode;
-- GitHub status;
-- Google Drive / Drive-hosted docs status;
-- current repository posture;
-- current safe operating decision;
-- next correct action.
+Startup reports must contain only the [required startup report sections](#required-startup-report-sections) above.
 
 Do not report non-authorized connectors. Do not say non-authorized connectors were `not checked`. They are outside LGFC startup scope.
+
+Do not include repository posture surveys, open PR inventory, active source issue lists, unresolved review thread audits, PMO authority conflict scans, or inferred next actions in startup reports. Repo status synthesis belongs in a separate explicit status request, not in `run startup`. See [Repo status synthesis](#repo-status-synthesis).
 
 ---
 
