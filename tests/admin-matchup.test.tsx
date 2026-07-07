@@ -125,6 +125,12 @@ function makeMatchupDb(matchups: Array<Record<string, unknown>> = [], votes: Rec
           if (sql.includes("status='active'") && sql.includes('LIMIT 1') && !sql.includes('UPDATE')) {
             return matchups.find((row) => row.status === 'active') ?? null;
           }
+          if (sql.includes("status='closed'") && sql.includes('LIMIT 1') && sql.includes('FROM weekly_matchups')) {
+            const closed = matchups
+              .filter((row) => row.status === 'closed')
+              .sort((a, b) => String(b.week_start).localeCompare(String(a.week_start)));
+            return closed[0] ?? null;
+          }
           if (sql.includes('FROM weekly_votes') && sql.includes('week_start')) {
             const week = String(args[0]);
             const totals = votes[week] || { a: 0, b: 0 };
@@ -141,7 +147,18 @@ function makeMatchupDb(matchups: Array<Record<string, unknown>> = [], votes: Rec
         },
         run: makeRun(sql, args),
       }),
-      first: async () => matchups.find((row) => row.status === 'active') ?? null,
+      first: async () => {
+        if (sql.includes("status='closed'") && sql.includes('LIMIT 1') && sql.includes('FROM weekly_matchups')) {
+          const closed = matchups
+            .filter((row) => row.status === 'closed')
+            .sort((a, b) => String(b.week_start).localeCompare(String(a.week_start)));
+          return closed[0] ?? null;
+        }
+        if (sql.includes("status='active'") && sql.includes('LIMIT 1') && sql.includes('FROM weekly_matchups')) {
+          return matchups.find((row) => row.status === 'active') ?? null;
+        }
+        return matchups.find((row) => row.status === 'active') ?? null;
+      },
       run: makeRun(sql),
     })),
     batch: vi.fn(async (statements: Array<{ run: () => Promise<unknown> }>) => {
@@ -614,5 +631,157 @@ describe('public matchup read paths', () => {
       week_start: null,
       totals: { a: 0, b: 0 },
     });
+  });
+
+  it('includes winner_photo for last closed week when winner A resolves', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const url = String(input);
+      if (url.includes('/api/photos/get?id=10')) {
+        return Promise.resolve(
+          jsonResponse({ ok: true, item: { id: 10, url: 'https://cdn.example/photo-a.jpg', title: 'Photo A' } }),
+        );
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${url}`));
+    });
+
+    const { db } = makeMatchupDb(
+      [
+        {
+          id: 1,
+          week_start: '2026-05-25',
+          photo_a_id: 10,
+          photo_b_id: 11,
+          status: 'closed',
+          created_at: '2026-05-25T12:00:00Z',
+        },
+        {
+          id: 2,
+          week_start: '2026-06-01',
+          photo_a_id: 20,
+          photo_b_id: 21,
+          status: 'active',
+          created_at: '2026-06-01T12:00:00Z',
+        },
+      ],
+      { '2026-05-25': { a: 5, b: 2 }, '2026-06-01': { a: 1, b: 0 } },
+    );
+
+    const response = await publicMatchupResultsGet({
+      request: new Request('https://www.lougehrigfanclub.com/api/matchup/results?week_start=2026-06-01'),
+      env: { DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      last_week: {
+        week_start: '2026-05-25',
+        winner: 'a',
+        winner_photo: { id: 10, url: 'https://cdn.example/photo-a.jpg', alt: 'Photo A' },
+      },
+    });
+  });
+
+  it('includes winner_photo for last closed week when winner B resolves', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const url = String(input);
+      if (url.includes('/api/photos/get?id=11')) {
+        return Promise.resolve(
+          jsonResponse({ ok: true, item: { id: 11, url: 'https://cdn.example/photo-b.jpg' } }),
+        );
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${url}`));
+    });
+
+    const { db } = makeMatchupDb(
+      [
+        {
+          id: 1,
+          week_start: '2026-05-25',
+          photo_a_id: 10,
+          photo_b_id: 11,
+          status: 'closed',
+          created_at: '2026-05-25T12:00:00Z',
+        },
+      ],
+      { '2026-05-25': { a: 1, b: 4 } },
+    );
+
+    const response = await publicMatchupResultsGet({
+      request: new Request('https://www.lougehrigfanclub.com/api/matchup/results?week_start=2026-06-01'),
+      env: { DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      last_week: {
+        winner: 'b',
+        winner_photo: { id: 11, url: 'https://cdn.example/photo-b.jpg', alt: 'Last week winning photo' },
+      },
+    });
+  });
+
+  it('omits winner_photo for tie results', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+
+    const { db } = makeMatchupDb(
+      [
+        {
+          id: 1,
+          week_start: '2026-05-25',
+          photo_a_id: 10,
+          photo_b_id: 11,
+          status: 'closed',
+          created_at: '2026-05-25T12:00:00Z',
+        },
+      ],
+      { '2026-05-25': { a: 3, b: 3 } },
+    );
+
+    const response = await publicMatchupResultsGet({
+      request: new Request('https://www.lougehrigfanclub.com/api/matchup/results?week_start=2026-06-01'),
+      env: { DB: db },
+    });
+
+    const body = await response.json();
+    expect(response.status).toBe(200);
+    expect(body.last_week).toMatchObject({ winner: 'tie' });
+    expect(body.last_week.winner_photo).toBeUndefined();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('fails closed when winner photo cannot be resolved', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const url = String(input);
+      if (url.includes('/api/photos/get?id=10')) {
+        return Promise.resolve(jsonResponse({ ok: false, error: 'Not found' }, 404));
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${url}`));
+    });
+
+    const { db } = makeMatchupDb(
+      [
+        {
+          id: 1,
+          week_start: '2026-05-25',
+          photo_a_id: 10,
+          photo_b_id: 11,
+          status: 'closed',
+          created_at: '2026-05-25T12:00:00Z',
+        },
+      ],
+      { '2026-05-25': { a: 6, b: 1 } },
+    );
+
+    const response = await publicMatchupResultsGet({
+      request: new Request('https://www.lougehrigfanclub.com/api/matchup/results?week_start=2026-06-01'),
+      env: { DB: db },
+    });
+
+    const body = await response.json();
+    expect(response.status).toBe(200);
+    expect(body.last_week).toMatchObject({ winner: 'a', week_start: '2026-05-25' });
+    expect(body.last_week.winner_photo).toBeUndefined();
   });
 });
