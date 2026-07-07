@@ -447,18 +447,43 @@ function d1UpdateChangedRows(result: unknown): number {
   return Number((result as D1RunResult)?.meta?.changes ?? 0);
 }
 
+async function runRetentionMutationTransaction(
+  db: any,
+  work: () => Promise<boolean>,
+): Promise<boolean> {
+  if (typeof db.exec === 'function') {
+    await db.exec('BEGIN');
+    try {
+      const committed = await work();
+      if (committed) {
+        await db.exec('COMMIT');
+      } else {
+        await db.exec('ROLLBACK');
+      }
+      return committed;
+    } catch (error) {
+      await db.exec('ROLLBACK');
+      throw error;
+    }
+  }
+
+  return work();
+}
+
 async function runRowChangingUpdateWithAudit(
   db: any,
   updateStatement: D1PreparedStatement,
   auditEvent: ModerationEventWrite,
 ): Promise<boolean> {
-  const updateResult = await updateStatement.run();
-  if (d1UpdateChangedRows(updateResult) === 0) {
-    return false;
-  }
+  return runRetentionMutationTransaction(db, async () => {
+    const updateResult = await updateStatement.run();
+    if (d1UpdateChangedRows(updateResult) === 0) {
+      return false;
+    }
 
-  await runD1Batch(db, [createModerationEventStatement(db, auditEvent)]);
-  return true;
+    await createModerationEventStatement(db, auditEvent).run();
+    return true;
+  });
 }
 
 export function mapContentItemRowToCandidate(

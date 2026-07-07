@@ -139,6 +139,45 @@ function wrapSqliteAsD1WithZeroRowUpdatesOn(sqlite: DatabaseSync, sqlNeedle: str
   };
 }
 
+function wrapSqliteAsD1WithFailingAuditInsertOn(
+  sqlite: DatabaseSync,
+  shouldFail: (sql: string, args: readonly SQLInputValue[]) => boolean,
+) {
+  const base = wrapSqliteAsD1(sqlite);
+  return {
+    ...base,
+    prepare(sql: string) {
+      const prepared = base.prepare(sql);
+      return {
+        bind: (...args: SQLInputValue[]) => {
+          const bound = prepared.bind(...args);
+          return {
+            ...bound,
+            async run() {
+              if (shouldFail(sql, args)) {
+                throw new Error('moderation_events insert failed');
+              }
+              return bound.run();
+            },
+          };
+        },
+        async first() {
+          return prepared.first();
+        },
+        async all() {
+          return prepared.all();
+        },
+        async run() {
+          if (shouldFail(sql, [])) {
+            throw new Error('moderation_events insert failed');
+          }
+          return prepared.run();
+        },
+      };
+    },
+  };
+}
+
 function sampleRow(overrides: Partial<ContentItemRow> = {}): ContentItemRow {
   return {
     id: 1,
@@ -898,6 +937,35 @@ describe('content pipeline retention and soft-delete (#2339)', () => {
     expect(
       await getCandidateByCandidateId(db, 'lgfc-gehrig-2026-999', { includeDeleted: true }),
     ).not.toBeNull();
+  });
+
+  it('rolls back retention mutation when audit insert fails inside the transaction', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1WithFailingAuditInsertOn(
+      sqlite,
+      (sql, args) => sql.includes('INSERT INTO moderation_events') && args[1] === 'soft_delete',
+    );
+
+    await upsertCandidate(db, minimalCandidate());
+
+    await expect(
+      softDeleteCandidate(db, 'lgfc-gehrig-2026-999', {
+        retention_reason: 'Should not persist',
+      }),
+    ).rejects.toThrow('moderation_events insert failed');
+
+    const row = sqlite
+      .prepare(`SELECT deleted_at, retention_reason FROM content_items WHERE candidate_id = ?`)
+      .get('lgfc-gehrig-2026-999') as { deleted_at: string | null; retention_reason: string | null };
+
+    expect(row.deleted_at).toBeNull();
+    expect(row.retention_reason).toBeNull();
+    expect(
+      moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').some(
+        (event) => event.event_type === 'soft_delete',
+      ),
+    ).toBe(false);
   });
 
   it('excludes soft-deleted candidates from default list and includes them when requested', async () => {
