@@ -27,6 +27,27 @@ This how-to covers dashboard source fields, local generation, CI build validatio
 - The deploy workflow publishes after a successful PMO dashboard CI build and can also be run manually during controlled rollout.
 - Automatic deployment from successful builds is approved for the PMO dashboard closeout path.
 
+
+## Public access URLs
+
+The canonical public PMO dashboard HTML page is:
+
+```text
+https://wdhunter645.github.io/next-starter-template/pmo-dashboard/
+```
+
+The canonical public PMO dashboard JSON endpoint is:
+
+```text
+https://wdhunter645.github.io/next-starter-template/pmo-dashboard/dashboard-data.json
+```
+
+Atlas and ChatGPT should use the public `dashboard-data.json` endpoint as the preferred PMO meeting startup reporting input. At meeting startup, fetch the JSON first, parse it as JSON, validate the expected top-level reporting fields and views, and use `generatedAt` to disclose snapshot freshness before summarizing PMO workload state.
+
+If the JSON fetch, parse, or validation step fails, fall back to GitHub Issues directly for startup reporting. GitHub Issues remain the authoritative current-state records for PMO execution and lifecycle state; dashboard JSON is a generated reporting snapshot and must not override live issue state.
+
+The JSON field `source` is expected to equal the string `"github-issues"`. Treat any different `source` value as a validation concern and confirm current state from GitHub Issues before reporting.
+
 ## Source data
 
 PMO dashboard inclusion is label-driven:
