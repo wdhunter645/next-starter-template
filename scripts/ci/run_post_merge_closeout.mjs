@@ -38,6 +38,8 @@ function writeCloseoutOutput(name, value) {
 export function toSyncPr({ pr } = {}) {
 	return {
 		body: pr?.body || '',
+		title: pr?.title || '',
+		headRefName: pr?.head?.ref || pr?.headRefName || '',
 		url: pr?.html_url || pr?.url || '',
 		mergedAt: pr?.merged_at || pr?.mergedAt || '',
 		state: pr?.merged_at || pr?.mergedAt ? 'MERGED' : pr?.state || '',

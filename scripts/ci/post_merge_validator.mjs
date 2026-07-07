@@ -7,7 +7,7 @@ import { diataxisEvidenceFailures } from './post_merge_diataxis_audit.mjs';
 import { implementationEvidenceFailures } from './post_merge_implementation_evidence.mjs';
 export { implementationEvidenceFailures } from './post_merge_implementation_evidence.mjs';
 
-import { linkedIssueNumber, sourceIssueAccounting } from './issue_accounting.mjs';
+import { linkedIssueNumber, resolveSourceIssueFromPr, sourceIssueAccounting } from './issue_accounting.mjs';
 import {
 	isPermittedClosedSourceIssueFollowup,
 	planActiveSourceIssueRelabel,
@@ -21,7 +21,7 @@ import { evaluateReviewerCommentDisposition, hasValidDisposition, parseReviewerD
 import { defaultCloseoutBodyPath } from './post_merge_closeout_trigger.mjs';
 import { AUTO_REPAIR_END, AUTO_REPAIR_START } from './pr_body_auto_repair.mjs';
 
-export { linkedIssueNumber, sourceIssueAccounting };
+export { linkedIssueNumber, resolveSourceIssueFromPr, sourceIssueAccounting };
 
 export const PR_1552_MAINTAINER_BODY = "<!-- CURSOR_AGENT_PR_BODY_BEGIN -->\n- **Issue:** #1544\n\n## PRE-OPEN GATE PREFLIGHT (MANDATORY)\n- [x] Confirm exactly one same-repository, open, non-PR source issue exists.\n- [x] Confirm one accepted issue-accounting line is present before opening or updating the PR. Preferred format: `- **Issue:** #1544`.\n- [x] Read the workflow files that will run for this PR's touched paths before opening the PR.\n- [x] Read or update `.github/CI_GUARDRAILS_MAP.md` when workflow behavior is unclear or changed.\n- [x] Read `docs/reference/governance/troubleshooting-data-surface-requirements.md` before making any merge-readiness claim.\n- [x] For docs changes, confirm every changed active Markdown file starts with the required authority header from `docs/templates/markdown-header-template.md`.\n- [x] For `docs/how-to/**`, confirm every changed file includes `## Steps`, `## Procedure`, or `## Execution`.\n- [x] Confirm every `Canonical Reference:` value points to a file that exists in the same branch at PR-open time, or is intentionally self-referential.\n- [x] Confirm PR body file allowlist exactly matches the final changed-file list before opening.\n\n## MANDATORY FIRST STEP (ZIP SAFETY)\n- [x] No ZIP file exists in the repo root\n- [x] Final diff confirms no ZIP file is committed\n\n## QUEUE / DEPENDENCY MAP STATUS (REQUIRED FOR LAUNCHED-PROGRAM QUEUE TASKS)\n- Dependency-map result: pass\n- Parent program context: Program #1500 (CI Post-Merge Closeout Reliability) \u2014 not a primary source issue\n- Next queue item: halt \u2014 Task 002 remains blocked until Task 001 merges and post-merge closeout verifies\n- Continue/halt decision: halt \u2014 serial Program #1500 queue requires Task 001 closeout before any successor task starts\n\n## PROGRESS + READINESS (MANDATORY)\n- Phase: Program #1500 \u2014 Phase 1 Wrap-Up (parent program context only)\n- Task: Task 001 \u2014 Add pre-merge post-merge-readiness gate\n- Status: READY FOR REVIEW\n- Scope Confirmed: YES\n- Out-of-Scope Changes Present: NO\n- Blocking Issues: none\n- Notes: Successor queue work remains blocked. Task 002 was not started.\n\n## DOCUMENTATION SOURCE (MANDATORY)\n- [x] DIATAXIS_ROUTED\n\nSource Files Used:\n- `docs/reference/ci/post-merge-validation-surface.md`\n- `docs/reference/ci/merge-protection-surface.md`\n- `docs/how-to/cursor/open-task-pr.md`\n- `.github/CI_GUARDRAILS_MAP.md`\n- `docs/governance/PR_GOVERNANCE.md`\n- `docs/governance/PR_PROCESS.md`\n\n## LABEL\n- Intent label for this PR: change-ops\n\n## DESIGN SOURCE OF TRUTH (NON-NEGOTIABLE)\n- Canonical process reference: `/docs/governance/PR_PROCESS.md`\n- Canonical governance reference: `/docs/governance/PR_GOVERNANCE.md`\n- Canonical troubleshooting reference: `/docs/reference/governance/troubleshooting-data-surface-requirements.md`\n- Canonical design reference: `/docs/reference/design/LGFC-Production-Design-and-Standards.md`\n- Additional design/reference docs used for this PR:\n  - `docs/reference/ci/post-merge-validation-surface.md`\n  - `docs/reference/ci/merge-protection-surface.md`\n  - `docs/how-to/cursor/open-task-pr.md`\n\n## FILE-TOUCH ALLOWLIST (MANDATORY)\nAllowed files:\n- `.github/CI_GUARDRAILS_MAP.md`\n- `.github/workflows/gate-post-merge-readiness.yml`\n- `docs/how-to/cursor/open-task-pr.md`\n- `docs/reference/ci/merge-protection-surface.md`\n- `docs/reference/ci/post-merge-validation-surface.md`\n- `scripts/ci/post_merge_readiness_gate.mjs`\n- `scripts/ci/post_merge_validator.mjs`\n- `tests/gate-post-merge-readiness.test.mjs`\n- `tests/post-merge-validator.test.mjs`\n\nAll other files are out of scope\n\n## VISUAL / UX INVARIANTS (MANDATORY)\n- [x] Header, footer, navigation, auth, and route invariants preserved unless explicitly in scope\n- [x] No unauthorized visual drift introduced\n- [x] No out-of-scope UX changes introduced\n- [x] Store behavior, Join/Login behavior, and Fan Club/Admin gating remain compliant unless explicitly in scope\n\n## DRIFT GATE ALIGNMENT (MANDATORY)\n- [x] Exactly ONE intent label applied\n- [x] File changes match allowlist exactly\n- [x] No mixed-intent changes present\n\n## DOCS-ONLY ASSERTION (REQUIRED FOR change-ops)\n- [ ] This PR contains documentation-only changes\n- [ ] No application code, config, or runtime behavior modified\n\n## CHANGE SUMMARY\n- Added blocking workflow `.github/workflows/gate-post-merge-readiness.yml` (job id `post-merge-readiness`) that evaluates PR metadata before merge.\n- Added `scripts/ci/post_merge_readiness_gate.mjs` reusing shared exports from `post_merge_validator.mjs` for body, allowlist, forbidden tokens, and reviewer-disposition checks.\n- Fixed `pull_request_target` trusted-code execution: workflow checks out base/default ref gate scripts and collects PR data via GitHub API only.\n- Fixed ESM CLI entrypoint (`pathToFileURL`) and hardened input handling for malformed JSON, null payloads, invalid paths, and missing `--output` values.\n- Added/updated tests and CI docs for the new gate and trusted-code execution model.\n\n## BUILD / TEST / VERIFICATION\n- Commands run:\n  - `git diff --check` \u2014 PASS (no issues)\n  - `npm test -- tests/gate-post-merge-readiness.test.mjs tests/post-merge-validator.test.mjs` \u2014 PASS (33 tests, 2 files)\n  - `node -e \"import('./scripts/ci/post_merge_readiness_gate.mjs')\"` \u2014 PASS (import succeeds, exit 0)\n  - Direct CLI: `node scripts/ci/post_merge_readiness_gate.mjs --pr <file> --files <file> --issue-comments <file> --review-comments <file> --reviews <file> --repository wdhunter645/next-starter-template --output <file>` \u2014 PASS (main() runs, report + result.json written)\n  - `./scripts/ci/docs_check_headers.sh .github/CI_GUARDRAILS_MAP.md docs/reference/ci/post-merge-validation-surface.md docs/reference/ci/merge-protection-surface.md docs/how-to/cursor/open-task-pr.md` \u2014 PASS\n- Gate verification:\n  - Commit-level workflow runs inspected: YES\n  - PR-level governance/accounting workflows inspected: YES\n  - Failed job logs inspected for every failing gate: YES\n  - Required gates rerun or re-evaluated after fixes: YES\n- Result summary: PASS\n\n## DOCUMENTATION UPDATES\n- [x] Documentation updated in this PR\n- Files:\n  - `.github/CI_GUARDRAILS_MAP.md`\n  - `docs/reference/ci/post-merge-validation-surface.md`\n  - `docs/reference/ci/merge-protection-surface.md`\n  - `docs/how-to/cursor/open-task-pr.md`\n\n## REVIEWER RESPONSE ACCOUNTING\n- [x] Reviewed all reviewer comments.\n- [x] Reviewed all bot comments.\n- [x] Reviewed all GitHub review threads.\n- [x] Copilot disposition received or not applicable.\n- [x] Codex disposition received or not applicable.\n- [x] Gemini disposition received or not applicable.\n- [x] Cubic disposition received or not applicable.\n- [x] Every actionable reviewer comment has a PR-body disposition with `review-comment:<id>`.\n- [x] Every GitHub review thread has an explicit thread-state disposition.\n\nReviewer items:\n- review-comment:3395187299 \u2014 accepted \u2014 added `GateInputError` and type checks in `readJson` for non-string paths \u2014 thread state: resolved\n- review-comment:3395187303 \u2014 accepted \u2014 `normalizeFiles` now guards non-array/null elements \u2014 thread state: resolved\n- review-comment:3395187309 \u2014 accepted \u2014 `normalizePr` now handles null/non-object payloads \u2014 thread state: resolved\n- review-comment:3395187321 \u2014 accepted \u2014 `--output` without value now fails deterministically via `GateInputError` \u2014 thread state: resolved\n- review-comment:3395187323 \u2014 accepted \u2014 `normalizeReviewerDispositionFailures` guards null/malformed disposition \u2014 thread state: resolved\n- review-comment:3395192693 \u2014 accepted \u2014 workflow now checks out trusted base/default ref, not PR head SHA \u2014 thread state: resolved\n- review-comment:3395210538 \u2014 accepted \u2014 same trusted-base checkout fix and documented trusted-code model \u2014 thread state: resolved\n- review-comment:3395210583 \u2014 accepted \u2014 pre-merge failure messages mapped in gate runner \u2014 thread state: resolved\n- review-comment:3395210607 \u2014 accepted \u2014 added `pathToFileURL` import from `node:url` \u2014 thread state: resolved\n- review-comment:3395210629 \u2014 accepted \u2014 CLI entrypoint uses `pathToFileURL(process.argv[1]).href` pattern \u2014 thread state: resolved\n- review-comment:4475941934 \u2014 accepted \u2014 all Copilot inline findings addressed in remediation commit \u2014 thread state: resolved\n\n## PR GATE READINESS CHECKLIST\n- [x] Live PR check panel inspected\n- [x] Commit-level workflow runs inspected\n- [x] PR-level pull_request_target workflows inspected\n- [x] Latest head workflow runs inspected\n- [x] Failed job logs inspected for every failing gate\n- [x] Workflow YAML or enforcement logic inspected before documenting gate behavior\n- [x] PR issue-accounting confirms exactly one same-repository, open, non-PR source issue\n- [x] PR body contains one accepted source-issue accounting line governed by `/docs/governance/PR_GOVERNANCE.md`.\n- [x] All review threads and comments inspected\n- [x] Actionable review feedback has PR-body disposition and GitHub thread-state disposition\n- [x] Bot comments inspected\n- [x] Required gates rerun or re-evaluated after fixes\n- [x] Final PR panel confirms merge-readiness\n\n## POST-MERGE CLOSEOUT CHECKLIST\n- [ ] PR merged state verified\n- [ ] Merge commit recorded\n- [ ] Source issue state inspected after merge\n- [ ] Source issue closed manually when automation did not close it\n- [ ] Operator adds `post-merge-readiness` to `main` branch-protection required checks\n\n## ACCEPTANCE CRITERIA\n- [x] Required source issue exists, is open, is same-repository, and is not a PR.\n- [x] Gate fails PRs missing required post-merge body sections and allowlist.\n- [x] Gate fails forbidden tokens and undispositioned trusted reviewer findings.\n- [x] Gate passes compliant reference PR body fixture.\n- [x] No duplicate validation logic forked without PR justification.\n- [x] Guardrails map and merge-protection surface document the new gate.\n- [x] One issue, one branch, one PR \u2014 serial implementation only.\n- [x] Successor queue work was not started.\n\n## REQUIRED PRE-REVIEW SELF-CHECK\n- [x] PR body contains all required sections with exact headings\n- [x] PR body contains one accepted source-issue accounting line governed by `/docs/governance/PR_GOVERNANCE.md`.\n- [x] Allowed files section matches final diff exactly\n- [x] No files outside allowlist\n- [x] ZIP safety confirmed\n- [x] Intent label correct and singular\n- [x] Local checks executed and passed or exact blocker documented\n- [x] Commit message aligns with scope\n- [x] No prohibited artifacts introduced\n- [x] All reviewer feedback has both textual disposition and GitHub thread-state disposition\n- [x] Status is set to READY FOR REVIEW only after all required gates and reviewer-response obligations are complete\n<!-- CURSOR_AGENT_PR_BODY_END -->\n";
 
@@ -213,7 +213,7 @@ export function resolvePrNumber({
 	return { pr: '', method: 'commit-pulls-api', skip_reason: 'no merged PR associated with commit' };
 }
 
-export function sourceIssueStateFailures({ body = '', sourceIssue = null, sourceIssueError = '', repoLabels = [] } = {}) {
+export function sourceIssueStateFailures({ body = '', sourceIssue = null, sourceIssueError = '', repoLabels = [], issueNumber = '' } = {}) {
 	if (sourceIssueError) {
 		return [{
 			code: 'source_issue_unreadable',
@@ -229,7 +229,7 @@ export function sourceIssueStateFailures({ body = '', sourceIssue = null, source
 			message: 'Accepted source issue reference points to a pull request, not an issue.',
 		});
 	}
-	if (shouldPreserveSourceIssueOpen({ body, issueMeta: sourceIssue, issueNumber: linkedIssueNumber(body) })) {
+	if (shouldPreserveSourceIssueOpen({ body, issueMeta: sourceIssue, issueNumber: issueNumber || linkedIssueNumber(body) })) {
 		const relabel = planActiveSourceIssueRelabel({
 			issueLabels: sourceIssue.labels || [],
 		});
@@ -272,6 +272,14 @@ export function blockerDeclarationFailures(body = '') {
 		}];
 	}
 	return [];
+}
+
+function uniqueIssueNumbersFromResolverCandidates(candidates = []) {
+	return [...new Set(
+		(candidates || [])
+			.map((candidate) => String(candidate || '').replace(/^#/, '').trim())
+			.filter((issueNumber) => /^\d+$/.test(issueNumber)),
+	)];
 }
 
 export function alternateProgramLaneFailures(sourceAccounting = {}) {
@@ -325,15 +333,18 @@ export function preMergeReadinessBodyFailures(body = '') {
 export function metadataFailures(pr, filesExist = () => true, { repository = '', sourceIssue = null, sourceIssueError = '', repoLabels = [] } = {}) {
 	const failures = [];
 	const body = pr?.body || '';
-	const sourceAccounting = sourceIssueAccounting(body, { repository });
+	const sourceResolution = resolveSourceIssueFromPr(pr, { repository });
+	const resolvedIssueNumbers = sourceResolution.issueNumber
+		? [sourceResolution.issueNumber]
+		: uniqueIssueNumbersFromResolverCandidates(sourceResolution.candidates);
 
 	if (!pr || pr.isDraft === true || !pr.mergedAt || pr.baseRefName !== 'main') {
 		failures.push({ code: 'not_merged_to_main', message: 'Resolved PR is not a merged PR into main.' });
 	}
 
-	failures.push(...sourceAccounting.failures);
-	failures.push(...alternateProgramLaneFailures(sourceAccounting));
-	failures.push(...sourceIssueStateFailures({ body, sourceIssue, sourceIssueError, repoLabels }));
+	failures.push(...sourceResolution.failures);
+	failures.push(...alternateProgramLaneFailures({ issueNumbers: resolvedIssueNumbers }));
+	failures.push(...sourceIssueStateFailures({ body, sourceIssue, sourceIssueError, repoLabels, issueNumber: sourceResolution.issueNumber }));
 
 	failures.push(...preMergeReadinessBodyFailures(body));
 
@@ -577,12 +588,14 @@ export function buildResult({
 		reviewerDispositionFailures.length > 0 ||
 		remediationWorkflowFailures.length > 0;
 
+	const sourceResolution = pr ? resolveSourceIssueFromPr(pr, { repository }) : null;
+
 	return {
 		status,
 		pr: Number(resolution.pr),
 		merge_sha: mergeSha || pr?.mergeCommit?.oid || pr?.merge_commit_sha || '',
-		source_issue: sourceIssueAccounting(pr?.body || '', { repository }).issueNumber || null,
-		source_issue_candidates: sourceIssueCandidates.length ? sourceIssueCandidates : sourceIssueAccounting(pr?.body || '', { repository }).sourceIssueCandidates,
+		source_issue: sourceResolution?.issueNumber || null,
+		source_issue_candidates: sourceIssueCandidates.length ? sourceIssueCandidates : (sourceResolution?.candidates || []),
 		source_issue_closeout_mode: sourceIssueCloseoutMode,
 		late_findings: findings.length,
 		workflow_failures: failures,
@@ -846,6 +859,8 @@ export async function runValidator({
 
 	const normalizedPr = {
 		body: pr.body || '',
+		title: pr.title || '',
+		headRefName: pr.head?.ref || '',
 		files: await paginate({ token, repository, path: `/pulls/${resolution.pr}/files` }),
 		isDraft: pr.draft,
 		mergedAt: pr.merged_at,
@@ -854,16 +869,16 @@ export async function runValidator({
 		url: pr.html_url,
 	};
 
-	const sourceAccounting = sourceIssueAccounting(normalizedPr.body, { repository });
+	const sourceResolution = resolveSourceIssueFromPr(normalizedPr, { repository });
 	let sourceIssue = null;
 	let sourceIssueError = '';
 	let repoLabels = [];
 	let terminalLabelResult = null;
 	let sourceIssueCloseoutMode = '';
-	if (sourceAccounting.issueNumber) {
+	if (sourceResolution.issueNumber) {
 		try {
 			const [issue, labels] = await Promise.all([
-				apiRequest({ token, repository, path: `/issues/${sourceAccounting.issueNumber}` }),
+				apiRequest({ token, repository, path: `/issues/${sourceResolution.issueNumber}` }),
 				paginate({ token, repository, path: '/labels' }),
 			]);
 			sourceIssue = issue;
@@ -871,7 +886,7 @@ export async function runValidator({
 			const preserveSourceIssueOpen = shouldPreserveSourceIssueOpen({
 				body: normalizedPr.body || '',
 				issueMeta: sourceIssue,
-				issueNumber: sourceAccounting.issueNumber,
+				issueNumber: sourceResolution.issueNumber,
 			});
 			terminalLabelResult = preserveSourceIssueOpen
 				? planActiveSourceIssueRelabel({ issueLabels: sourceIssue.labels || [] })
@@ -961,7 +976,7 @@ export async function runValidator({
 		reviewerDispositionFailures: dispositionFailures,
 		failures,
 		mergeSha: canonicalMergeSha,
-		sourceIssueCandidates: sourceAccounting.sourceIssueCandidates,
+		sourceIssueCandidates: sourceResolution.candidates,
 		terminalLabelResult,
 		sourceIssueCloseoutMode,
 		repository,

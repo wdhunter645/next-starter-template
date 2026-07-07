@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 
-import { linkedIssueNumber, sourceIssueAccounting } from '../ci/issue_accounting.mjs';
+import { linkedIssueNumber, resolveSourceIssueFromPr } from '../ci/issue_accounting.mjs';
 import {
   buildFailureCloseoutComment,
   buildSourceIssueCloseoutComment,
@@ -121,7 +121,8 @@ export function syncPrState({
   getRepoLabels = repoLabelNames,
   postMergeResult = readPostMergeResult(),
 } = {}) {
-  const issueNumber = sourceIssueAccounting(pr.body || '', { repository: repo }).issueNumber;
+  const sourceResolution = resolveSourceIssueFromPr(pr, { repository: repo });
+  const issueNumber = sourceResolution.issueNumber;
   const isMerged = Boolean(pr.mergedAt) || pr.state === 'MERGED';
 
   if (!issueNumber) {
@@ -302,7 +303,7 @@ export function main() {
     process.exit(1);
   }
 
-  const prJson = runGh(['pr', 'view', prNumber, '--repo', repo, '--json', 'body,url,mergedAt,state,mergeCommit']);
+  const prJson = runGh(['pr', 'view', prNumber, '--repo', repo, '--json', 'body,title,headRefName,url,mergedAt,state,mergeCommit']);
   const pr = JSON.parse(prJson);
   syncPrState({ pr, prNumber, action });
 }

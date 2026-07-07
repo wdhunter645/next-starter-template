@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { linkedIssueNumber, sourceIssueAccounting } from '../scripts/ci/issue_accounting.mjs';
+import { linkedIssueNumber, branchIssueTokens, resolveSourceIssueFromPr, sourceIssueAccounting } from '../scripts/ci/issue_accounting.mjs';
 import {
 	buildFailureCloseoutComment,
 	buildSourceIssueCloseoutComment,
@@ -65,6 +65,58 @@ describe('issue accounting formats', () => {
 		expect(linkedIssueNumber('- **Issue:** #1196')).toBe('1196');
 		expect(linkedIssueNumber('Issue: https://github.com/org/repo/issues/1196')).toBe('1196');
 		expect(linkedIssueNumber('<!-- orchestrator-source-issue: 1196 -->')).toBe('1196');
+	});
+
+	it('resolves post-merge source issues by deterministic metadata precedence', () => {
+		expect(resolveSourceIssueFromPr({ body: '- **Issue:** #1196', title: 'fix(#1196): same issue', headRefName: 'codex/1196-same-issue' }).issueNumber).toBe('1196');
+		expect(resolveSourceIssueFromPr({ body: '', title: 'fix(#1197): closeout hardening', headRefName: 'codex/closeout-hardening' }).issueNumber).toBe('1197');
+		expect(resolveSourceIssueFromPr({ body: '', title: 'closeout hardening', headRefName: 'codex/1198-closeout-hardening' }).issueNumber).toBe('1198');
+		expect(resolveSourceIssueFromPr({ body: '<!-- orchestrator-source-issue: 1199 -->', title: 'closeout hardening', headRefName: 'codex/closeout-hardening' }).issueNumber).toBe('1199');
+	});
+
+	it('fails closed when source issue metadata is missing or ambiguous', () => {
+		expect(resolveSourceIssueFromPr({ body: '', title: 'closeout hardening', headRefName: 'codex/closeout-hardening' }).failures).toContainEqual(
+			expect.objectContaining({ code: 'missing_source_issue' }),
+		);
+		expect(resolveSourceIssueFromPr({ body: '', title: 'fix(#1197): closeout', headRefName: 'codex/1198-closeout' }).failures).toContainEqual(
+			expect.objectContaining({ code: 'ambiguous_source_issue_candidates' }),
+		);
+	});
+
+	it('fails deterministically on invalid or external title issue references', () => {
+		expect(
+			resolveSourceIssueFromPr({
+				body: '',
+				title: 'fix(https://github.com/other/repo/issues/1200): closeout hardening',
+				headRefName: 'codex/1201-closeout-hardening',
+			}, { repository: 'owner/repo' }).failures,
+		).toContainEqual(expect.objectContaining({ code: 'invalid_source_issue_reference' }));
+	});
+
+	it('extracts intentional branch issue tokens without semver or suffix noise', () => {
+		expect(branchIssueTokens('codex/2323-post-merge-closeout-hardening').issueNumbers).toEqual(['2323']);
+		expect(branchIssueTokens('cursor/2334-post-merge-source-issue-resolver').issueNumbers).toEqual(['2334']);
+		expect(branchIssueTokens('feature/#2334-closeout').issueNumbers).toEqual(['2334']);
+		expect(branchIssueTokens('dependabot/npm_and_yarn/pkg-1.2.3').issueNumbers).toEqual([]);
+		expect(branchIssueTokens('codex/2323-task-2').issueNumbers).toEqual(['2323']);
+	});
+
+	it('does not treat version or suffix digits as conflicting branch candidates when body resolves', () => {
+		const dependabotResolution = resolveSourceIssueFromPr({
+			body: '- **Issue:** #2334',
+			title: 'fix(ci): dependency bump',
+			headRefName: 'dependabot/npm_and_yarn/pkg-1.2.3',
+		});
+		expect(dependabotResolution.issueNumber).toBe('2334');
+		expect(dependabotResolution.failures).toEqual([]);
+
+		const suffixResolution = resolveSourceIssueFromPr({
+			body: '- **Issue:** #2323',
+			title: 'fix(ci): closeout hardening',
+			headRefName: 'codex/2323-task-2',
+		});
+		expect(suffixResolution.issueNumber).toBe('2323');
+		expect(suffixResolution.failures).toEqual([]);
 	});
 
 	it('rejects ambiguous and external post-merge source issue accounting', () => {
@@ -527,6 +579,75 @@ describe('sync-pr-state successful closeout', () => {
 		expect(run).toHaveBeenCalledWith(
 			expect.arrayContaining(['issue', 'close', '1196', '--repo', 'owner/repo', '--reason', 'completed']),
 		);
+	});
+
+	it('closes source issues resolved from PR title metadata when the body lacks accounting', async () => {
+		process.env.GITHUB_REPOSITORY = 'owner/repo';
+		const syncPrState = await import('../scripts/orchestrator/sync-pr-state.mjs');
+		const run = vi.fn();
+
+		const result = syncPrState.syncPrState({
+			prNumber: '1240',
+			action: 'post_merge_success',
+			pr: {
+				body: baseBody.replace('- **Issue:** #1196', ''),
+				title: 'fix(#1240): close title resolved source',
+				headRefName: 'codex/title-resolved-source',
+				mergedAt: '2026-06-02T17:21:10Z',
+				state: 'MERGED',
+				url: 'https://example.test/pr/1240',
+			},
+			postMergeResult: { status: 'pass', remediation_required: false },
+			getRepoLabels: () => new Set(['status:complete', 'status:post-merge-verify']),
+			getIssueMeta: () => ({ title: 'Title sourced task', labels: ['status:post-merge-verify'], state: 'OPEN' }),
+			reconcileTerminalLabelsFn: vi.fn(),
+			run,
+		});
+
+		expect(result).toBe('complete');
+		expect(run).toHaveBeenCalledWith(
+			expect.arrayContaining(['issue', 'close', '1240', '--repo', 'owner/repo', '--reason', 'completed']),
+		);
+	});
+
+	it('blocks alternate-program lane issues resolved from PR title metadata', () => {
+		const failures = blockingMetadataFailures(
+			metadataFailures(
+				{
+					body: baseBody.replace('- **Issue:** #1196', ''),
+					title: 'fix(#1255): alternate program lane',
+					headRefName: 'codex/alternate-program-lane',
+					mergedAt: '2026-06-01T00:00:00Z',
+					baseRefName: 'main',
+					isDraft: false,
+					files: [],
+				},
+				() => true,
+				{ repository: 'owner/repo' },
+			),
+		);
+
+		expect(failures).toContainEqual(expect.objectContaining({ code: 'active_alternate_program_lane' }));
+	});
+
+	it('blocks alternate-program lane issues resolved from branch metadata', () => {
+		const failures = blockingMetadataFailures(
+			metadataFailures(
+				{
+					body: baseBody.replace('- **Issue:** #1196', ''),
+					title: 'closeout hardening',
+					headRefName: 'codex/1255-closeout-hardening',
+					mergedAt: '2026-06-01T00:00:00Z',
+					baseRefName: 'main',
+					isDraft: false,
+					files: [],
+				},
+				() => true,
+				{ repository: 'owner/repo' },
+			),
+		);
+
+		expect(failures).toContainEqual(expect.objectContaining({ code: 'active_alternate_program_lane' }));
 	});
 
 	it('allows closed-source reconciliation when PR body matches follow-up language even without closeout mode metadata', () => {
