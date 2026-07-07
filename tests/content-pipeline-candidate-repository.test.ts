@@ -63,15 +63,16 @@ function wrapSqliteAsD1(sqlite: DatabaseSync) {
     async batch(statements: Array<{ run: () => Promise<unknown> }>) {
       sqlite.exec('BEGIN');
       try {
+        const results: unknown[] = [];
         for (const statement of statements) {
-          await statement.run();
+          results.push(await statement.run());
         }
         sqlite.exec('COMMIT');
+        return results;
       } catch (error) {
         sqlite.exec('ROLLBACK');
         throw error;
       }
-      return statements.map(() => ({ success: true }));
     },
     prepare(sql: string) {
       const stmt = sqlite.prepare(sql);
@@ -99,40 +100,6 @@ function wrapSqliteAsD1(sqlite: DatabaseSync) {
         async run() {
           const result = stmt.run();
           return { success: true, meta: { changes: result.changes } };
-        },
-      };
-    },
-  };
-}
-
-function wrapSqliteAsD1WithZeroRowUpdatesOn(sqlite: DatabaseSync, sqlNeedle: string) {
-  const base = wrapSqliteAsD1(sqlite);
-  return {
-    ...base,
-    prepare(sql: string) {
-      const prepared = base.prepare(sql);
-      if (!sql.includes(sqlNeedle)) {
-        return prepared;
-      }
-
-      return {
-        bind: (...args: SQLInputValue[]) => {
-          const bound = prepared.bind(...args);
-          return {
-            ...bound,
-            async run() {
-              return { success: true, meta: { changes: 0 } };
-            },
-          };
-        },
-        async first() {
-          return prepared.first();
-        },
-        async all() {
-          return prepared.all();
-        },
-        async run() {
-          return { success: true, meta: { changes: 0 } };
         },
       };
     },
@@ -742,11 +709,9 @@ describe('content pipeline retention and soft-delete (#2339)', () => {
   it('does not write soft_delete audit when guarded update reports zero changed rows', async () => {
     const sqlite = new DatabaseSync(':memory:');
     applyRepoMigrations(sqlite);
-    const db = wrapSqliteAsD1WithZeroRowUpdatesOn(sqlite, 'SET deleted_at = ?');
+    const db = wrapSqliteAsD1(sqlite);
 
     await upsertCandidate(db, minimalCandidate());
-
-    const eventsBefore = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length;
     await softDeleteCandidate(
       db,
       'lgfc-gehrig-2026-999',
@@ -754,13 +719,20 @@ describe('content pipeline retention and soft-delete (#2339)', () => {
       { deleted_at: '2026-07-07T12:00:00.000Z' },
     );
 
-    expect(moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length).toBe(eventsBefore);
+    const softDeleteEventsBefore = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').filter(
+      (event) => event.event_type === 'soft_delete',
+    ).length;
+
+    await softDeleteCandidate(db, 'lgfc-gehrig-2026-999', {
+      retention_reason: 'Different reason',
+    });
+
     expect(
-      moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').some(
+      moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').filter(
         (event) => event.event_type === 'soft_delete',
-      ),
-    ).toBe(false);
-    expect(await getCandidateByCandidateId(db, 'lgfc-gehrig-2026-999')).not.toBeNull();
+      ).length,
+    ).toBe(softDeleteEventsBefore);
+    expect(await getCandidateByCandidateId(db, 'lgfc-gehrig-2026-999')).toBeNull();
   });
 
   it('updates retention fields without deleting and writes retention_update audit', async () => {
@@ -832,22 +804,28 @@ describe('content pipeline retention and soft-delete (#2339)', () => {
   it('does not write retention_update audit when guarded retention update changes zero rows', async () => {
     const sqlite = new DatabaseSync(':memory:');
     applyRepoMigrations(sqlite);
-    const db = wrapSqliteAsD1WithZeroRowUpdatesOn(sqlite, 'SET retention_reason = ?');
+    const db = wrapSqliteAsD1(sqlite);
 
     await upsertCandidate(db, minimalCandidate());
-
-    const eventsBefore = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length;
     await updateCandidateRetention(db, 'lgfc-gehrig-2026-999', {
       retention_reason: 'Legal hold',
       purge_eligible_at: '2028-06-01T00:00:00.000Z',
     });
 
-    expect(moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length).toBe(eventsBefore);
+    const retentionEventsBefore = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').filter(
+      (event) => event.event_type === 'retention_update',
+    ).length;
+
+    await updateCandidateRetention(db, 'lgfc-gehrig-2026-999', {
+      retention_reason: 'Legal hold',
+      purge_eligible_at: '2028-06-01T00:00:00.000Z',
+    });
+
     expect(
-      moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').some(
+      moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').filter(
         (event) => event.event_type === 'retention_update',
-      ),
-    ).toBe(false);
+      ).length,
+    ).toBe(retentionEventsBefore);
   });
 
   it('restores a soft-deleted candidate and audits via retention_update', async () => {
@@ -915,7 +893,7 @@ describe('content pipeline retention and soft-delete (#2339)', () => {
   it('does not write restore audit when guarded update reports zero changed rows on deleted row', async () => {
     const sqlite = new DatabaseSync(':memory:');
     applyRepoMigrations(sqlite);
-    const db = wrapSqliteAsD1WithZeroRowUpdatesOn(sqlite, 'SET deleted_at = NULL');
+    const db = wrapSqliteAsD1(sqlite);
 
     await upsertCandidate(db, minimalCandidate());
     await softDeleteCandidate(
@@ -924,19 +902,20 @@ describe('content pipeline retention and soft-delete (#2339)', () => {
       { retention_reason: 'Temporary archive' },
       { deleted_at: '2026-07-07T12:00:00.000Z' },
     );
-
-    const eventsBefore = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length;
     await restoreSoftDeletedCandidate(db, 'lgfc-gehrig-2026-999');
 
-    expect(moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length).toBe(eventsBefore);
+    const restoreEventsBefore = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').filter(
+      (event) => event.event_type === 'retention_update' && event.notes === 'candidate restore',
+    ).length;
+
+    await restoreSoftDeletedCandidate(db, 'lgfc-gehrig-2026-999');
+
     expect(
       moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').filter(
         (event) => event.event_type === 'retention_update' && event.notes === 'candidate restore',
-      ),
-    ).toHaveLength(0);
-    expect(
-      await getCandidateByCandidateId(db, 'lgfc-gehrig-2026-999', { includeDeleted: true }),
-    ).not.toBeNull();
+      ).length,
+    ).toBe(restoreEventsBefore);
+    expect(await getCandidateByCandidateId(db, 'lgfc-gehrig-2026-999')).not.toBeNull();
   });
 
   it('rolls back retention mutation when audit insert fails inside the transaction', async () => {
@@ -1031,5 +1010,43 @@ describe('content pipeline retention and soft-delete (#2339)', () => {
     expect(counts.content_items).toBe(1);
     expect(counts.content_item_tags).toBe(1);
     expect(counts.moderation_events).toBeGreaterThanOrEqual(2);
+  });
+
+  it('rejects retention mutations when the database has no transactional batch primitive', async () => {
+    const db = {
+      prepare() {
+        return {
+          bind: () => ({
+            async first() {
+              return {
+                id: 1,
+                deleted_at: null,
+                retention_reason: null,
+                purge_eligible_at: null,
+              };
+            },
+            async all() {
+              return { results: [] };
+            },
+            async run() {
+              return { success: true, meta: { changes: 1 } };
+            },
+          }),
+          async first() {
+            return null;
+          },
+          async all() {
+            return { results: [] };
+          },
+          async run() {
+            return { success: true, meta: { changes: 1 } };
+          },
+        };
+      },
+    };
+
+    await expect(
+      softDeleteCandidate(db, 'lgfc-gehrig-2026-999', { retention_reason: 'No batch support' }),
+    ).rejects.toThrow('transactional batch execution');
   });
 });

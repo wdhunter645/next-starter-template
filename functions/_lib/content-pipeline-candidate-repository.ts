@@ -204,6 +204,25 @@ export function createModerationEventStatement(db: any, event: ModerationEventWr
     );
 }
 
+function createConditionalModerationEventStatement(db: any, event: ModerationEventWrite): D1PreparedStatement {
+  return db
+    .prepare(
+      `INSERT INTO moderation_events (
+        content_item_id, event_type, actor, from_state, to_state, notes
+      )
+      SELECT ?, ?, ?, ?, ?, ?
+      WHERE changes() > 0`,
+    )
+    .bind(
+      event.contentItemId,
+      event.eventType,
+      event.actor ?? null,
+      serializeModerationEventState(event.fromState),
+      serializeModerationEventState(event.toState),
+      event.notes ?? null,
+    );
+}
+
 function normalizeAuditComparable(value: unknown): unknown {
   if (value === undefined || value === null) {
     return null;
@@ -411,32 +430,35 @@ function applyTagRows(tags: CandidateTags, rows: Array<{ tag_name: unknown; tag_
 }
 
 async function runD1Batch(db: any, statements: D1PreparedStatement[]) {
+  await runD1BatchWithResults(db, statements);
+}
+
+async function runD1BatchWithResults(db: any, statements: D1PreparedStatement[]): Promise<unknown[]> {
   if (statements.length === 0) {
-    return;
+    return [];
   }
 
   if (typeof db.batch === 'function') {
-    await db.batch(statements);
-    return;
+    const results = await db.batch(statements);
+    return Array.isArray(results) ? results : statements.map(() => ({ success: true }));
   }
 
   if (typeof db.exec === 'function') {
     await db.exec('BEGIN');
     try {
+      const results: unknown[] = [];
       for (const statement of statements) {
-        await statement.run();
+        results.push(await statement.run());
       }
       await db.exec('COMMIT');
+      return results;
     } catch (error) {
       await db.exec('ROLLBACK');
       throw error;
     }
-    return;
   }
 
-  for (const statement of statements) {
-    await statement.run();
-  }
+  throw new Error('D1 database does not support transactional batch execution');
 }
 
 type D1RunResult = {
@@ -447,43 +469,16 @@ function d1UpdateChangedRows(result: unknown): number {
   return Number((result as D1RunResult)?.meta?.changes ?? 0);
 }
 
-async function runRetentionMutationTransaction(
-  db: any,
-  work: () => Promise<boolean>,
-): Promise<boolean> {
-  if (typeof db.exec === 'function') {
-    await db.exec('BEGIN');
-    try {
-      const committed = await work();
-      if (committed) {
-        await db.exec('COMMIT');
-      } else {
-        await db.exec('ROLLBACK');
-      }
-      return committed;
-    } catch (error) {
-      await db.exec('ROLLBACK');
-      throw error;
-    }
-  }
-
-  return work();
-}
-
 async function runRowChangingUpdateWithAudit(
   db: any,
   updateStatement: D1PreparedStatement,
   auditEvent: ModerationEventWrite,
 ): Promise<boolean> {
-  return runRetentionMutationTransaction(db, async () => {
-    const updateResult = await updateStatement.run();
-    if (d1UpdateChangedRows(updateResult) === 0) {
-      return false;
-    }
-
-    await createModerationEventStatement(db, auditEvent).run();
-    return true;
-  });
+  const results = await runD1BatchWithResults(db, [
+    updateStatement,
+    createConditionalModerationEventStatement(db, auditEvent),
+  ]);
+  return d1UpdateChangedRows(results[0]) > 0;
 }
 
 export function mapContentItemRowToCandidate(
