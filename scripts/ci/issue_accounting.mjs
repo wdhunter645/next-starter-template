@@ -47,6 +47,99 @@ export function issueReferenceFromToken(token = '', { repository = '' } = {}) {
 	}
 }
 
+function uniqueIssueNumbersFromRefs(refs = []) {
+	return [...new Set((refs || []).map((ref) => String(ref.issueNumber || '')).filter(Boolean))];
+}
+
+export function exactIssueTokens(value = '', { repository = '', source = 'metadata' } = {}) {
+	const refs = [];
+	const invalidRefs = [];
+	for (const token of issueRefTokens(value)) {
+		const parsed = issueReferenceFromToken(token, { repository });
+		if (parsed.issueNumber && parsed.sameRepository) {
+			refs.push({ issueNumber: parsed.issueNumber, ref: parsed.ref, source });
+		} else {
+			invalidRefs.push({
+				ref: parsed.ref,
+				source,
+				reason: parsed.external ? 'external_repository_issue' : 'invalid_issue_reference',
+			});
+		}
+	}
+	return { refs, invalidRefs, issueNumbers: uniqueIssueNumbersFromRefs(refs) };
+}
+
+export function branchIssueTokens(value = '', { source = 'branch' } = {}) {
+	const refs = [];
+	for (const match of String(value || '').matchAll(/(?:^|[^A-Za-z0-9])#?(\d+)(?=$|[^A-Za-z0-9])/g)) {
+		refs.push({ issueNumber: match[1], ref: match[0].trim() || match[1], source });
+	}
+	return { refs, invalidRefs: [], issueNumbers: uniqueIssueNumbersFromRefs(refs) };
+}
+
+function resolverFailure(code, message, candidates = []) {
+	return { code, message, candidates };
+}
+
+function titleStageFailures(titleTokens = {}) {
+	if (!titleTokens.invalidRefs?.length) return [];
+	return [{
+		code: 'invalid_source_issue_reference',
+		message: `Merged PR title contains invalid or external source issue reference(s): ${titleTokens.invalidRefs.map((ref) => ref.ref).join(', ')}`,
+	}];
+}
+
+export function resolveSourceIssueFromPr(pr = {}, { repository = '' } = {}) {
+	const bodyAccounting = sourceIssueAccounting(pr?.body || '', { repository });
+	const titleTokens = exactIssueTokens(pr?.title || '', { repository, source: 'title' });
+	const branchTokens = branchIssueTokens(pr?.headRefName || pr?.head?.ref || '', { source: 'branch' });
+	const marker = String(pr?.body || '').match(/<!--\s*orchestrator-source-issue:\s*(\d+)\s*-->/i);
+	const titleFailures = titleStageFailures(titleTokens);
+	const stages = [
+		{ source: 'primary-body-line', issueNumbers: bodyAccounting.issueNumbers, candidates: bodyAccounting.sourceIssueCandidates, failures: bodyAccounting.failures },
+		{ source: 'title', issueNumbers: titleTokens.issueNumbers, candidates: titleTokens.refs.map((ref) => `#${ref.issueNumber}`), failures: titleFailures },
+		{ source: 'branch', issueNumbers: branchTokens.issueNumbers, candidates: branchTokens.refs.map((ref) => `#${ref.issueNumber}`), failures: [] },
+		{ source: 'hidden-marker', issueNumbers: marker ? [marker[1]] : [], candidates: marker ? [`#${marker[1]}`] : [], failures: [] },
+	];
+
+	const precedence = [
+		{ source: 'primary-body-line', issueNumbers: bodyAccounting.issueNumber ? [bodyAccounting.issueNumber] : [] },
+		{ source: 'title', issueNumbers: titleTokens.issueNumbers },
+		{ source: 'branch', issueNumbers: branchTokens.issueNumbers },
+		{ source: 'hidden-marker', issueNumbers: marker ? [marker[1]] : [] },
+	];
+	const allNumbers = uniqueIssueNumbersFromRefs([
+		...bodyAccounting.refs,
+		...titleTokens.refs,
+		...branchTokens.refs,
+		...(marker ? [{ issueNumber: marker[1] }] : []),
+	]);
+	const candidates = allNumbers.map((number) => `#${number}`);
+	const failures = [];
+	if (bodyAccounting.failures.some((failure) => failure.code !== 'missing_source_issue')) failures.push(...bodyAccounting.failures);
+	if (titleFailures.length) failures.push(...titleFailures);
+	if (titleTokens.issueNumbers.length > 1 || branchTokens.issueNumbers.length > 1) {
+		failures.push(resolverFailure('multiple_source_issues', 'Post-merge source issue resolver found multiple issue tokens in a single metadata field.', candidates));
+	}
+	if (allNumbers.length > 1) {
+		failures.push(resolverFailure('ambiguous_source_issue_candidates', `Post-merge source issue resolver found conflicting candidates: ${candidates.join(', ')}.`, candidates));
+	}
+	if (failures.length) return { issueNumber: '', source: '', candidates, failures, stages };
+
+	const resolved = precedence.find((stage) => stage.issueNumbers.length === 1);
+	if (resolved) {
+		return { issueNumber: resolved.issueNumbers[0], source: resolved.source, candidates: [`#${resolved.issueNumbers[0]}`], failures: [], stages };
+	}
+
+	return {
+		issueNumber: '',
+		source: '',
+		candidates: [],
+		failures: [resolverFailure('missing_source_issue', 'Post-merge source issue resolver could not identify exactly one same-repository source issue from PR body, title, branch, or supported hidden marker.', [])],
+		stages,
+	};
+}
+
 export function sourceIssueAccounting(body = '', { repository = '' } = {}) {
 	const refs = [];
 	const invalidRefs = [];

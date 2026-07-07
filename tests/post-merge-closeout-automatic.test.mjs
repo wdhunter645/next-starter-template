@@ -196,6 +196,8 @@ describe('post-merge closeout sync propagation', () => {
 			toSyncPr({
 				pr: {
 					body: '- **Issue:** #1545',
+					title: 'fix(#1546): ignored',
+					head: { ref: 'codex/1547-ignored' },
 					html_url: 'https://github.test/repo/pull/1567',
 					merged_at: '2026-06-11T16:18:08Z',
 					merge_commit_sha: '314c236c986c',
@@ -203,6 +205,8 @@ describe('post-merge closeout sync propagation', () => {
 			}),
 		).toMatchObject({
 			body: '- **Issue:** #1545',
+			title: 'fix(#1546): ignored',
+			headRefName: 'codex/1547-ignored',
 			url: 'https://github.test/repo/pull/1567',
 			state: 'MERGED',
 			mergeCommit: { oid: '314c236c986c' },
