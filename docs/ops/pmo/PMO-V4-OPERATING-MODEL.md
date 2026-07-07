@@ -80,6 +80,23 @@ A repository need may supersede website build-out and become Priority #1 only wh
 
 Atlas prepares classifications, sequencing recommendations, and launch-readiness assessments. Bill authorizes final prioritization, launch, hold, reprioritization, and merge decisions.
 
+## Atlas/ChatGPT dashboard startup input
+
+For PMO v4 meeting startup, Atlas and ChatGPT should use the canonical public PMO dashboard JSON as the preferred reporting input when it is reachable and valid:
+
+```text
+https://wdhunter645.github.io/next-starter-template/pmo-dashboard/dashboard-data.json
+```
+
+This dashboard JSON is a generated reporting snapshot. It may accelerate startup summaries by presenting normalized Active Programs, PMO Pipeline, and Completed Programs views, but it does not become executable authority. GitHub Issues remain the authoritative current-state and executable truth for PMO work, including labels, issue state, issue-body metadata, comments, assignments, and closeout evidence.
+
+Operating rule:
+
+- Use dashboard JSON first for PMO startup reporting when fetch, parse, and schema validation succeed.
+- Check `generatedAt` before describing the snapshot as current.
+- Confirm live current state from GitHub Issues when the snapshot is stale, ambiguous, missing expected fields or views, or conflicts with issue evidence.
+- Never let dashboard JSON override live GitHub issue state.
+
 ## PMO reporting vs operations reporting separation
 
 PMO V4 separates **PMO status reporting** from **operations status reporting**. Do not conflate them.
