@@ -4,8 +4,7 @@
   "included": [
     {
       "issueNumber": 2286,
-      "expectedLifecycle": "active",
-      "expectedPriority": 1
+      "expectedLifecycle": "completed"
     },
     {
       "issueNumber": 1719,
@@ -191,7 +190,7 @@
     },
     {
       "issueNumber": 2286,
-      "decision": "Active Priority #1 \u2014 core acceptance condition."
+      "decision": "Closed complete 2026-07-07 after all eight runtime foundation child issues merged (#2288\u2013#2339); program #2286 success criteria met."
     }
   ]
 }
