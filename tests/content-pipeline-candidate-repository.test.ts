@@ -367,6 +367,107 @@ describe('content pipeline candidate repository (#2305)', () => {
     expect(events[1]?.notes).toBe('Initial review complete');
   });
 
+  it('audits registry upserts when nullable optional fields change between null and empty string', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    await upsertCandidate(
+      db,
+      minimalCandidate({
+        admin_notes: '',
+        media_asset_id: '',
+      }),
+    );
+
+    await upsertCandidate(
+      db,
+      minimalCandidate({
+        updated_at: '2026-07-07T11:00:00.000Z',
+      }),
+    );
+
+    const clearEvents = sqlite
+      .prepare(
+        `SELECT from_state, to_state
+         FROM moderation_events me
+         JOIN content_items ci ON ci.id = me.content_item_id
+         WHERE ci.candidate_id = ?
+           AND me.notes = 'candidate registry upsert'
+         ORDER BY me.id ASC`,
+      )
+      .all('lgfc-gehrig-2026-999') as Array<{ from_state: string | null; to_state: string | null }>;
+
+    expect(clearEvents).toHaveLength(2);
+    expect(JSON.parse(clearEvents.find((event) => event.from_state?.includes('admin_notes'))!.from_state!)).toMatchObject({
+      admin_notes: '',
+    });
+    expect(JSON.parse(clearEvents.find((event) => event.from_state?.includes('admin_notes'))!.to_state!)).toMatchObject({
+      admin_notes: null,
+    });
+    expect(JSON.parse(clearEvents.find((event) => event.from_state?.includes('media_asset_id'))!.from_state!)).toMatchObject({
+      media_asset_id: '',
+    });
+    expect(JSON.parse(clearEvents.find((event) => event.from_state?.includes('media_asset_id'))!.to_state!)).toMatchObject({
+      media_asset_id: null,
+    });
+
+    const upsertEventCountBeforeRestore = (
+      sqlite
+        .prepare(
+          `SELECT COUNT(*) AS count
+           FROM moderation_events me
+           JOIN content_items ci ON ci.id = me.content_item_id
+           WHERE ci.candidate_id = ?
+             AND me.notes = 'candidate registry upsert'`,
+        )
+        .get('lgfc-gehrig-2026-999') as { count: number }
+    ).count;
+
+    await upsertCandidate(
+      db,
+      minimalCandidate({
+        admin_notes: '',
+        media_asset_id: '',
+        updated_at: '2026-07-07T12:00:00.000Z',
+      }),
+    );
+
+    const restoreEvents = sqlite
+      .prepare(
+        `SELECT from_state, to_state
+         FROM moderation_events me
+         JOIN content_items ci ON ci.id = me.content_item_id
+         WHERE ci.candidate_id = ?
+           AND me.notes = 'candidate registry upsert'
+         ORDER BY me.id ASC`,
+      )
+      .all('lgfc-gehrig-2026-999') as Array<{
+      from_state: string | null;
+      to_state: string | null;
+    }>;
+
+    expect(restoreEvents.slice(upsertEventCountBeforeRestore)).toHaveLength(2);
+    const restoredAdminEvent = restoreEvents
+      .slice(upsertEventCountBeforeRestore)
+      .find((event) => event.to_state?.includes('admin_notes'));
+    const restoredMediaEvent = restoreEvents
+      .slice(upsertEventCountBeforeRestore)
+      .find((event) => event.to_state?.includes('media_asset_id'));
+    expect(JSON.parse(restoredAdminEvent!.from_state!)).toMatchObject({
+      admin_notes: null,
+    });
+    expect(JSON.parse(restoredAdminEvent!.to_state!)).toMatchObject({
+      admin_notes: '',
+    });
+    expect(JSON.parse(restoredMediaEvent!.from_state!)).toMatchObject({
+      media_asset_id: null,
+    });
+    expect(JSON.parse(restoredMediaEvent!.to_state!)).toMatchObject({
+      media_asset_id: '',
+    });
+  });
+
   it('audits registry upserts that clear optional media and admin note fields', async () => {
     const sqlite = new DatabaseSync(':memory:');
     applyRepoMigrations(sqlite);
