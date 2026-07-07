@@ -12,6 +12,7 @@ import {
   validateContentPipelineMediaReference,
 } from '../functions/_lib/content-pipeline-media-reference';
 import {
+  CONTENT_PIPELINE_MEDIA_REFERENCE_EVENT_TYPE,
   getUploadedMediaReferenceForCandidate,
   isMemberSubmissionMediaReferenceMissingError,
   MemberSubmissionMediaReferenceMissingError,
@@ -246,16 +247,77 @@ describe('content pipeline media reference integration (#2319)', () => {
     const uploadedReference = await getUploadedMediaReferenceForCandidate(db, contentItemId);
     expect(uploadedReference).toBe('b2://pending/reviewed.jpg');
 
-    const eventCount = sqlite
+    const eventRow = sqlite
+      .prepare(
+        `SELECT me.event_type, me.from_state, me.to_state, me.notes
+         FROM moderation_events me
+         JOIN content_items ci ON ci.id = me.content_item_id
+         WHERE ci.candidate_id = ?
+           AND me.notes = 'media reference update'
+         ORDER BY me.id DESC
+         LIMIT 1`,
+      )
+      .get(persisted.candidate_id) as {
+      event_type: string;
+      from_state: string;
+      to_state: string;
+      notes: string;
+    };
+    expect(eventRow.event_type).toBe(CONTENT_PIPELINE_MEDIA_REFERENCE_EVENT_TYPE);
+    expect(JSON.parse(eventRow.from_state)).toMatchObject({
+      media_asset_id: null,
+      uploaded_media_reference: 'b2://pending/original.jpg',
+    });
+    expect(JSON.parse(eventRow.to_state)).toMatchObject({
+      media_asset_id: 'media_uid:lgfc-photo-001',
+      uploaded_media_reference: 'b2://pending/reviewed.jpg',
+    });
+  });
+
+  it('does not write a moderation event when media reference update is a no-op', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    const parsed = parseMemberSubmissionIntakeBody(
+      validIntakeBody({ uploaded_media_reference: 'b2://pending/original.jpg' }),
+    );
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+
+    const persisted = await persistMemberSubmissionIntake(db, parsed.request, {
+      submitterContact: 'member@example.com',
+      memberSubmitterId: 'member@example.com',
+      now: '2026-07-06T20:00:00.000Z',
+    });
+
+    const beforeCount = sqlite
       .prepare(
         `SELECT COUNT(*) AS count
          FROM moderation_events me
          JOIN content_items ci ON ci.id = me.content_item_id
-         WHERE ci.candidate_id = ?
-           AND me.event_type = 'review_state_change'`,
+         WHERE ci.candidate_id = ?`,
       )
       .get(persisted.candidate_id) as { count: number };
-    expect(eventCount.count).toBe(1);
+
+    const response = await mediaReferencePost({
+      env: { DB: db, ADMIN_TOKEN },
+      request: adminPostRequest('/api/admin/content-pipeline/candidates/media-reference', {
+        candidate_id: persisted.candidate_id,
+        uploaded_media_reference: 'b2://pending/original.jpg',
+      }),
+    });
+
+    expect(response.status).toBe(200);
+    const afterCount = sqlite
+      .prepare(
+        `SELECT COUNT(*) AS count
+         FROM moderation_events me
+         JOIN content_items ci ON ci.id = me.content_item_id
+         WHERE ci.candidate_id = ?`,
+      )
+      .get(persisted.candidate_id) as { count: number };
+    expect(afterCount.count).toBe(beforeCount.count);
   });
 
   it('returns 400 when uploaded_media_reference update targets a candidate without member_submissions', async () => {

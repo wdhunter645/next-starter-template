@@ -7,12 +7,33 @@ import {
   parseCandidateListQuery,
   parseCandidateReviewRequest,
 } from '../functions/_lib/content-pipeline-candidate-admin';
-import { upsertCandidate } from '../functions/_lib/content-pipeline-candidate-repository';
+import {
+  updateCandidateReviewState,
+  upsertCandidate,
+} from '../functions/_lib/content-pipeline-candidate-repository';
 import type { CandidateRecord } from '../functions/_lib/content-pipeline-candidate-import';
 import { onRequestGet as candidatesGet } from '../functions/api/admin/content-pipeline/candidates/index';
 import { onRequestPost as candidateReviewPost } from '../functions/api/admin/content-pipeline/candidates/review';
 
 const ADMIN_TOKEN = 'test-admin-token';
+
+function moderationEventsForCandidate(sqlite: DatabaseSync, candidateId: string) {
+  return sqlite
+    .prepare(
+      `SELECT me.event_type, me.actor, me.from_state, me.to_state, me.notes
+       FROM moderation_events me
+       JOIN content_items ci ON ci.id = me.content_item_id
+       WHERE ci.candidate_id = ?
+       ORDER BY me.id ASC`,
+    )
+    .all(candidateId) as Array<{
+    event_type: string;
+    actor: string | null;
+    from_state: string | null;
+    to_state: string | null;
+    notes: string | null;
+  }>;
+}
 
 function minimalCandidate(overrides: Partial<CandidateRecord> = {}): CandidateRecord {
   return {
@@ -296,15 +317,70 @@ describe('content pipeline candidate admin API (#2310)', () => {
     expect(body.candidate.review_status).toBe('approved_internal_reference');
     expect(body.candidate.rights_status).toBe('permission_needed');
 
-    const eventCount = sqlite
-      .prepare(
-        `SELECT COUNT(*) AS count
-         FROM moderation_events me
-         JOIN content_items ci ON ci.id = me.content_item_id
-         WHERE ci.candidate_id = ?`,
-      )
-      .get('lgfc-gehrig-2026-999') as { count: number };
-    expect(eventCount.count).toBe(2);
+    const events = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999');
+    expect(events).toHaveLength(3);
+    expect(events[0]).toMatchObject({
+      event_type: 'review_state_change',
+      notes: 'candidate registry create',
+    });
+    expect(events.slice(1).map((event) => event.event_type).sort()).toEqual(
+      ['review_state_change', 'rights_update'].sort(),
+    );
+    expect(events[1].actor).toBe('operator@test');
+    expect(JSON.parse(events[1].from_state || '{}')).toMatchObject({ review_status: 'pending_review' });
+    expect(JSON.parse(events[1].to_state ?? '{}')).toMatchObject({
+      review_status: 'approved_internal_reference',
+    });
+  });
+
+  it('writes publication_prep and privacy_update event types for matching field changes', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+    await upsertCandidate(db, minimalCandidate());
+
+    await updateCandidateReviewState(db, 'lgfc-gehrig-2026-999', {
+      publication_status: 'draft_candidate',
+      privacy_review_status: 'approved',
+    });
+
+    const events = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').filter(
+      (event) => event.notes !== 'candidate registry create',
+    );
+    expect(events.map((event) => event.event_type).sort()).toEqual(
+      ['privacy_update', 'publication_prep'].sort(),
+    );
+  });
+
+  it('does not write moderation events when review-state update is a no-op', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+    await upsertCandidate(db, minimalCandidate());
+
+    const beforeCount = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length;
+    await updateCandidateReviewState(db, 'lgfc-gehrig-2026-999', {
+      review_status: 'pending_review',
+    });
+    const afterCount = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length;
+    expect(afterCount).toBe(beforeCount);
+  });
+
+  it('audits candidate registry create with a single review_state_change row', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    await upsertCandidate(db, minimalCandidate({ candidate_id: 'lgfc-gehrig-2026-880' }));
+
+    const events = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-880');
+    expect(events).toHaveLength(1);
+    expect(events[0].event_type).toBe('review_state_change');
+    expect(events[0].from_state).toBe('{}');
+    expect(JSON.parse(events[0].to_state ?? '{}')).toMatchObject({
+      candidate_id: 'lgfc-gehrig-2026-880',
+      review_status: 'pending_review',
+    });
   });
 
   it('does not expose candidate repository routes on public API surfaces', () => {
