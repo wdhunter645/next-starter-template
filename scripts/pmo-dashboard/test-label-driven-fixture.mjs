@@ -60,7 +60,7 @@ async function main() {
     assert(!pipelineNumbers.has(9011), 'closed stale-status project must not appear in pipeline');
 
     const standardStatuses = new Set([
-      'Active', 'Implementation Ready', 'Planning', 'Strategy Defined',
+      'Active', 'Implementation Ready', 'Update Needed', 'Planning', 'Strategy Defined',
       'Strategy Development', 'Idea', 'Completed'
     ]);
     const allRows = [...active, ...pipeline, ...completed, ...(active[0].children || [])];
@@ -68,6 +68,10 @@ async function main() {
       assert(standardStatuses.has(row.status), `row #${row.issueNumber} has non-standard status: ${row.status}`);
     }
     assert(pipeline.find((row) => row.issueNumber === 9004)?.status === 'Implementation Ready', 'PMO Intake should normalize to Implementation Ready');
+    assert(pipeline.find((row) => row.issueNumber === 9012)?.status === 'Update Needed', 'pipeline issue with no explicit status should display Update Needed');
+    assert(pipeline.find((row) => row.issueNumber === 9013)?.status === 'Implementation Ready', 'explicit Implementation Ready status should be preserved');
+    assert(pipeline.find((row) => row.issueNumber === 9014)?.status === 'Planning', 'explicit Planning status should be preserved');
+    assert(pipeline.find((row) => row.issueNumber === 9015)?.status === 'Update Needed', 'pipeline issue with unrecognized status should display Update Needed');
     assert(active[0].children.every((child) => Number.isInteger(child.childSequence) && child.childSequence > 0), 'nested children must carry positive integer childSequence');
 
     console.log('PMO label-driven fixture test passed');

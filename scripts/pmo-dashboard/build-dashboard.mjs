@@ -21,12 +21,13 @@ const TITLE_PREFIXES = [
 const CHILD_PROJECT_PATTERN = /^PROJECT:\s*(\d+):(\d+)\s*\|\s*(.+)$/i;
 
 const lifecycleToView = { active: 'activePrograms', pipeline: 'pmoPipeline', completed: 'completedPrograms' };
-const statusByLifecycle = { active: 'Active', pipeline: 'Implementation Ready', completed: 'Completed' };
+const statusByLifecycle = { active: 'Active', pipeline: 'Update Needed', completed: 'Completed' };
 
 const STATUS_ALIASES = new Map([
   ['active', 'Active'],
   ['completed', 'Completed'],
   ['implementation ready', 'Implementation Ready'],
+  ['update needed', 'Update Needed'],
   ['planning', 'Planning'],
   ['planning complete', 'Planning'],
   ['strategy defined', 'Strategy Defined'],
@@ -41,6 +42,7 @@ const STATUS_ALIASES = new Map([
 
 const PIPELINE_STATUS_VALUES = new Set([
   'implementation ready',
+  'update needed',
   'planning',
   'strategy defined',
   'strategy development',

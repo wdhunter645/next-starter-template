@@ -11,6 +11,7 @@ const validLifecycles = new Set(Object.keys(lifecycleToView));
 const standardDisplayStatuses = new Set([
   'Active',
   'Implementation Ready',
+  'Update Needed',
   'Planning',
   'Strategy Defined',
   'Strategy Development',
@@ -19,7 +20,7 @@ const standardDisplayStatuses = new Set([
 ]);
 const allowedStatusByView = {
   activePrograms: new Set(['Active']),
-  pmoPipeline: new Set(['Implementation Ready', 'Planning', 'Strategy Defined', 'Strategy Development', 'Idea']),
+  pmoPipeline: new Set(['Implementation Ready', 'Update Needed', 'Planning', 'Strategy Defined', 'Strategy Development', 'Idea']),
   completedPrograms: new Set(['Completed'])
 };
 const errors = [];

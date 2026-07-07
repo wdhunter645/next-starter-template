@@ -88,6 +88,7 @@ Standardized display statuses:
 ```text
 Active
 Implementation Ready
+Update Needed
 Planning
 Strategy Defined
 Strategy Development
@@ -95,7 +96,7 @@ Idea
 Completed
 ```
 
-Task-level execution states such as post-merge verification, reviewer response, or closeout are not top-level PMO dashboard statuses. Completed rows display only `Completed`; future-work statuses such as `Implementation Ready`, `Planning`, `Strategy Development`, and `Idea` are valid only in the PMO Pipeline view. Active rows display only `Active`.
+Task-level execution states such as post-merge verification, reviewer response, or closeout are not top-level PMO dashboard statuses. Completed rows display only `Completed`; future-work statuses such as `Implementation Ready`, `Update Needed`, `Planning`, `Strategy Development`, and `Idea` are valid only in the PMO Pipeline view. `Implementation Ready` must be explicit in `Status:` or `Dashboard Status:` metadata; missing or unrecognized pipeline status metadata displays as `Update Needed` so operators can see the metadata problem instead of a false readiness signal. Active rows display only `Active`.
 
 Sorting:
 

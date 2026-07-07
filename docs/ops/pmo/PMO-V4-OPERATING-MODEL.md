@@ -107,6 +107,7 @@ Dashboard state uses this precedence model:
 3. For open non-complete PMO issues, issue-body `Status: Active` controls Active lifecycle.
 4. For open non-complete PMO issues, issue-body future-work statuses and `Dashboard Lifecycle: pipeline` control Pipeline lifecycle.
 5. Task/ops execution labels such as post-merge verification or failed do not become PMO dashboard display statuses.
+6. `Implementation Ready` must be explicit in issue-body `Status:` or `Dashboard Status:` metadata; missing or unrecognized pipeline status metadata displays as `Update Needed`, not `Implementation Ready`.
 
 Completed dashboard rows display `Completed`. Open issues intentionally marked `status:complete` may appear in Completed with `closedAt = null` and sort by `updatedAt`; that is a metadata-hygiene signal, not a Pipeline state.
 
