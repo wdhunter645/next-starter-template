@@ -343,7 +343,10 @@ export async function buildPublicationPrepViewForCandidate(
     candidate.input_stream === 'member_submission'
       ? await fetchMemberSubmissionPrepContext(db, candidate.id)
       : null;
-  const uploadedMediaReference = await getUploadedMediaReferenceForCandidate(db, candidate.id);
+  const uploadedMediaReference =
+    candidate.input_stream === 'member_submission'
+      ? await getUploadedMediaReferenceForCandidate(db, candidate.id)
+      : null;
   const mediaReferences = serializeAdminMediaReferences(
     candidate as unknown as Record<string, unknown>,
     uploadedMediaReference,
