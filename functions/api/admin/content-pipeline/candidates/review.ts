@@ -3,12 +3,14 @@
 
 import {
   parseCandidateReviewRequest,
-  serializeCandidateForAdmin,
+  serializeAdminMediaReferences,
+  serializeCandidateForAdminReview,
 } from '../../../../_lib/content-pipeline-candidate-admin';
 import {
-  requireContentPipelineCandidateTables,
+  getUploadedMediaReferenceForCandidate,
   updateCandidateReviewState,
 } from '../../../../_lib/content-pipeline-candidate-repository';
+import { requireContentPipelineAdminCandidateMediaTables } from '../../../../_lib/content-pipeline-media-reference';
 import { requireAdmin } from '../../../../_lib/auth';
 import { jsonResponse, requireD1 } from '../../../../_lib/d1';
 
@@ -21,7 +23,7 @@ export const onRequestPost = async (context: any): Promise<Response> => {
   const d1 = requireD1(env);
   if (!d1.ok) return jsonResponse(d1.body, d1.status);
 
-  const tables = await requireContentPipelineCandidateTables(d1.db);
+  const tables = await requireContentPipelineAdminCandidateMediaTables(d1.db);
   if (!tables.ok) return jsonResponse(tables.body, tables.status);
 
   try {
@@ -37,10 +39,14 @@ export const onRequestPost = async (context: any): Promise<Response> => {
       return jsonResponse({ ok: false, error: 'Candidate not found.' }, 404);
     }
 
+    const uploadedMediaReference = await getUploadedMediaReferenceForCandidate(d1.db, updated.id);
     return jsonResponse(
       {
         ok: true,
-        candidate: serializeCandidateForAdmin(updated as unknown as Record<string, unknown>),
+        candidate: serializeCandidateForAdminReview(
+          updated as unknown as Record<string, unknown>,
+          serializeAdminMediaReferences(updated as unknown as Record<string, unknown>, uploadedMediaReference),
+        ),
       },
       200,
     );

@@ -4,14 +4,16 @@
 import {
   isValidCandidateId,
   parseCandidateListQuery,
-  serializeCandidateForAdmin,
+  serializeAdminMediaReferences,
+  serializeCandidateForAdminReview,
   CANDIDATE_ID_VALIDATION_MESSAGE,
 } from '../../../../_lib/content-pipeline-candidate-admin';
 import {
   getCandidateByCandidateId,
+  getUploadedMediaReferenceForCandidate,
   listCandidates,
-  requireContentPipelineCandidateTables,
 } from '../../../../_lib/content-pipeline-candidate-repository';
+import { requireContentPipelineAdminCandidateMediaTables } from '../../../../_lib/content-pipeline-media-reference';
 import { requireAdmin } from '../../../../_lib/auth';
 import { jsonResponse, requireD1 } from '../../../../_lib/d1';
 
@@ -24,7 +26,7 @@ export const onRequestGet = async (context: any): Promise<Response> => {
   const d1 = requireD1(env);
   if (!d1.ok) return jsonResponse(d1.body, d1.status);
 
-  const tables = await requireContentPipelineCandidateTables(d1.db);
+  const tables = await requireContentPipelineAdminCandidateMediaTables(d1.db);
   if (!tables.ok) return jsonResponse(tables.body, tables.status);
 
   try {
@@ -43,10 +45,14 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       if (!candidate) {
         return jsonResponse({ ok: false, error: 'Candidate not found.' }, 404);
       }
+      const uploadedMediaReference = await getUploadedMediaReferenceForCandidate(d1.db, candidate.id);
       return jsonResponse(
         {
           ok: true,
-          candidate: serializeCandidateForAdmin(candidate as unknown as Record<string, unknown>),
+          candidate: serializeCandidateForAdminReview(
+            candidate as unknown as Record<string, unknown>,
+            serializeAdminMediaReferences(candidate as unknown as Record<string, unknown>, uploadedMediaReference),
+          ),
         },
         200,
       );
@@ -63,7 +69,10 @@ export const onRequestGet = async (context: any): Promise<Response> => {
         ok: true,
         count: candidates.length,
         candidates: candidates.map((candidate) =>
-          serializeCandidateForAdmin(candidate as unknown as Record<string, unknown>),
+          serializeCandidateForAdminReview(
+            candidate as unknown as Record<string, unknown>,
+            serializeAdminMediaReferences(candidate as unknown as Record<string, unknown>),
+          ),
         ),
       },
       200,
