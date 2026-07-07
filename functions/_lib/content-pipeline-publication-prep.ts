@@ -1,7 +1,7 @@
 // Safe publication-prep view/helper for LGFC content pipeline (#2286 / #2324).
 // Admin/internal preparation surface only — no content_inventory writes or public exposure.
 
-import { CANDIDATE_ID_PATTERN, CANDIDATE_ID_VALIDATION_MESSAGE } from './content-pipeline-candidate-constants';
+import { CANDIDATE_ID_PATTERN, CANDIDATE_ID_VALIDATION_MESSAGE, PUBLICATION_STATUSES, REVIEW_STATUSES } from './content-pipeline-candidate-constants';
 import type { StoredCandidate } from './content-pipeline-candidate-repository';
 import {
   getCandidateByCandidateId,
@@ -31,7 +31,9 @@ const PREP_BLOCKED_SOURCE_TRUST_STATUSES = new Set(['blocked', 'deleted']);
 
 const PREP_BLOCKED_RELEVANCE_STATUSES = new Set(['not_relevant', 'pending']);
 
-const PREP_BLOCKED_PUBLICATION_STATUSES = new Set(['published', 'archived']);
+const PREP_VALID_PUBLICATION_STATUSES = new Set(['draft_candidate', 'staged', 'approved_for_publish']);
+
+export const MEMBER_SUBMISSION_PREP_SOURCE_NAME = 'LGFC Member Submission';
 
 export type PublicationPrepGateResult = {
   pass: boolean;
@@ -175,9 +177,9 @@ export function evaluatePublicationPrepEligibility(
   }
 
   const publicationGate = gate(
-    !PREP_BLOCKED_PUBLICATION_STATUSES.has(candidate.publication_status),
+    PREP_VALID_PUBLICATION_STATUSES.has(candidate.publication_status),
     candidate.publication_status,
-    'publication_status must not be published or archived',
+    'publication_status must be draft_candidate, staged, or approved_for_publish',
   );
   if (!publicationGate.pass) {
     reasons.push(publicationGate.requirement);
@@ -248,6 +250,15 @@ export function evaluatePublicationPrepEligibility(
   };
 }
 
+export function resolvePublicationPrepSourceName(
+  candidate: Pick<StoredCandidate, 'input_stream' | 'source_name'>,
+): string {
+  if (candidate.input_stream === 'member_submission') {
+    return MEMBER_SUBMISSION_PREP_SOURCE_NAME;
+  }
+  return candidate.source_name;
+}
+
 export function serializePublicationPrepView(input: {
   candidate: StoredCandidate;
   mediaReferences: AdminMediaReferenceFields;
@@ -259,7 +270,7 @@ export function serializePublicationPrepView(input: {
     candidate_id: candidate.candidate_id,
     title: candidate.title,
     summary: candidate.summary,
-    source_name: candidate.source_name,
+    source_name: resolvePublicationPrepSourceName(candidate),
     source_url: candidate.source_url ?? null,
     content_type: candidate.content_type,
     input_stream: candidate.input_stream,
@@ -362,17 +373,46 @@ export async function listPublicationPrepViews(
   db: any,
   filter: PublicationPrepListFilter = {},
 ): Promise<PublicationPrepView[]> {
-  const candidates = await listCandidates(db, filter);
-  const views: PublicationPrepView[] = [];
+  const limit = filter.limit ?? 50;
+  const offset = filter.offset ?? 0;
+  const eligibleOnly = filter.eligible_only !== false;
+  const repoFilter: CandidateListFilter = {
+    review_status: filter.review_status,
+    input_stream: filter.input_stream,
+    review_priority: filter.review_priority,
+    publication_status: filter.publication_status,
+    include_deleted: filter.include_deleted,
+  };
 
-  for (const candidate of candidates) {
-    const view = await buildPublicationPrepViewForCandidate(db, candidate);
-    if (filter.eligible_only === false || view.eligibility.eligible) {
-      views.push(view);
-    }
+  if (!eligibleOnly) {
+    const candidates = await listCandidates(db, { ...repoFilter, limit, offset });
+    return Promise.all(candidates.map((candidate) => buildPublicationPrepViewForCandidate(db, candidate)));
   }
 
-  return views;
+  const eligibleViews: PublicationPrepView[] = [];
+  let scanOffset = 0;
+  const scanBatch = 200;
+
+  while (true) {
+    const batch = await listCandidates(db, { ...repoFilter, limit: scanBatch, offset: scanOffset });
+    if (batch.length === 0) {
+      break;
+    }
+
+    for (const candidate of batch) {
+      const view = await buildPublicationPrepViewForCandidate(db, candidate);
+      if (view.eligibility.eligible) {
+        eligibleViews.push(view);
+      }
+    }
+
+    if (batch.length < scanBatch) {
+      break;
+    }
+    scanOffset += scanBatch;
+  }
+
+  return eligibleViews.slice(offset, offset + limit);
 }
 
 export function parsePublicationPrepListQuery(
@@ -391,11 +431,17 @@ export function parsePublicationPrepListQuery(
 
   const reviewStatus = asTrimmedString(url.searchParams.get('review_status'));
   if (reviewStatus) {
+    if (!REVIEW_STATUSES.has(reviewStatus)) {
+      return { ok: false, error: 'Invalid review_status filter.' };
+    }
     filter.review_status = reviewStatus;
   }
 
   const publicationStatus = asTrimmedString(url.searchParams.get('publication_status'));
   if (publicationStatus) {
+    if (!PUBLICATION_STATUSES.has(publicationStatus)) {
+      return { ok: false, error: 'Invalid publication_status filter.' };
+    }
     filter.publication_status = publicationStatus;
   }
 
