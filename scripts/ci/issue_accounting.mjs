@@ -71,9 +71,39 @@ export function exactIssueTokens(value = '', { repository = '', source = 'metada
 
 export function branchIssueTokens(value = '', { source = 'branch' } = {}) {
 	const refs = [];
-	for (const match of String(value || '').matchAll(/(?:^|[^A-Za-z0-9])#?(\d+)(?=$|[^A-Za-z0-9])/g)) {
-		refs.push({ issueNumber: match[1], ref: match[0].trim() || match[1], source });
+	const branch = String(value || '');
+	const seen = new Set();
+
+	const record = (issueNumber, ref) => {
+		if (!issueNumber || seen.has(issueNumber)) return;
+		seen.add(issueNumber);
+		refs.push({ issueNumber, ref, source });
+	};
+
+	const isSemverDigitFragment = (digitIndex, digitLength) => {
+		const before = branch[digitIndex - 1];
+		const after = branch[digitIndex + digitLength];
+		return before === '.' || after === '.';
+	};
+
+	// Explicit hash token: feature/#2334-closeout
+	for (const match of branch.matchAll(/#(\d+)(?=$|[-/])/g)) {
+		const issueNumber = match[1];
+		const digitIndex = match.index + match[0].indexOf(issueNumber);
+		if (!isSemverDigitFragment(digitIndex, issueNumber.length)) {
+			record(issueNumber, match[0].trim());
+		}
 	}
+
+	// Path-segment issue token: codex/2323-post-merge-closeout-hardening
+	for (const match of branch.matchAll(/(?:^|\/)(\d+)(?=$|[-/])/g)) {
+		const issueNumber = match[1];
+		const digitIndex = match.index + match[0].length - issueNumber.length;
+		if (!isSemverDigitFragment(digitIndex, issueNumber.length)) {
+			record(issueNumber, match[0].trim() || issueNumber);
+		}
+	}
+
 	return { refs, invalidRefs: [], issueNumbers: uniqueIssueNumbersFromRefs(refs) };
 }
 

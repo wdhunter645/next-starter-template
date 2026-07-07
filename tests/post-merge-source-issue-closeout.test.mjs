@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { linkedIssueNumber, resolveSourceIssueFromPr, sourceIssueAccounting } from '../scripts/ci/issue_accounting.mjs';
+import { linkedIssueNumber, branchIssueTokens, resolveSourceIssueFromPr, sourceIssueAccounting } from '../scripts/ci/issue_accounting.mjs';
 import {
 	buildFailureCloseoutComment,
 	buildSourceIssueCloseoutComment,
@@ -91,6 +91,32 @@ describe('issue accounting formats', () => {
 				headRefName: 'codex/1201-closeout-hardening',
 			}, { repository: 'owner/repo' }).failures,
 		).toContainEqual(expect.objectContaining({ code: 'invalid_source_issue_reference' }));
+	});
+
+	it('extracts intentional branch issue tokens without semver or suffix noise', () => {
+		expect(branchIssueTokens('codex/2323-post-merge-closeout-hardening').issueNumbers).toEqual(['2323']);
+		expect(branchIssueTokens('cursor/2334-post-merge-source-issue-resolver').issueNumbers).toEqual(['2334']);
+		expect(branchIssueTokens('feature/#2334-closeout').issueNumbers).toEqual(['2334']);
+		expect(branchIssueTokens('dependabot/npm_and_yarn/pkg-1.2.3').issueNumbers).toEqual([]);
+		expect(branchIssueTokens('codex/2323-task-2').issueNumbers).toEqual(['2323']);
+	});
+
+	it('does not treat version or suffix digits as conflicting branch candidates when body resolves', () => {
+		const dependabotResolution = resolveSourceIssueFromPr({
+			body: '- **Issue:** #2334',
+			title: 'fix(ci): dependency bump',
+			headRefName: 'dependabot/npm_and_yarn/pkg-1.2.3',
+		});
+		expect(dependabotResolution.issueNumber).toBe('2334');
+		expect(dependabotResolution.failures).toEqual([]);
+
+		const suffixResolution = resolveSourceIssueFromPr({
+			body: '- **Issue:** #2323',
+			title: 'fix(ci): closeout hardening',
+			headRefName: 'codex/2323-task-2',
+		});
+		expect(suffixResolution.issueNumber).toBe('2323');
+		expect(suffixResolution.failures).toEqual([]);
 	});
 
 	it('rejects ambiguous and external post-merge source issue accounting', () => {

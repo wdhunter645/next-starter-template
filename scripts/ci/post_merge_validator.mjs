@@ -588,12 +588,14 @@ export function buildResult({
 		reviewerDispositionFailures.length > 0 ||
 		remediationWorkflowFailures.length > 0;
 
+	const sourceResolution = pr ? resolveSourceIssueFromPr(pr, { repository }) : null;
+
 	return {
 		status,
 		pr: Number(resolution.pr),
 		merge_sha: mergeSha || pr?.mergeCommit?.oid || pr?.merge_commit_sha || '',
-		source_issue: resolveSourceIssueFromPr(pr, { repository }).issueNumber || null,
-		source_issue_candidates: sourceIssueCandidates.length ? sourceIssueCandidates : resolveSourceIssueFromPr(pr, { repository }).candidates,
+		source_issue: sourceResolution?.issueNumber || null,
+		source_issue_candidates: sourceIssueCandidates.length ? sourceIssueCandidates : (sourceResolution?.candidates || []),
 		source_issue_closeout_mode: sourceIssueCloseoutMode,
 		late_findings: findings.length,
 		workflow_failures: failures,
