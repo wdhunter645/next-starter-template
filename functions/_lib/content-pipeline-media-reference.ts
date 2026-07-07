@@ -7,20 +7,17 @@ import { requireTables } from './d1';
 
 export const CONTENT_PIPELINE_MEDIA_REFERENCE_MAX_LENGTH = 512;
 
-export const CONTENT_PIPELINE_ADMIN_CANDIDATE_MEDIA_TABLES = [
-  ...CONTENT_PIPELINE_REPOSITORY_TABLES,
-  'member_submissions',
-] as const;
-
 export const CONTENT_PIPELINE_MEDIA_REFERENCE_TABLES = [
   ...CONTENT_PIPELINE_REPOSITORY_TABLES,
   'member_submissions',
 ] as const;
 
+export const CONTENT_PIPELINE_ADMIN_CANDIDATE_MEDIA_TABLES = CONTENT_PIPELINE_MEDIA_REFERENCE_TABLES;
+
 const UNSAFE_URI_SCHEME = /^(https?:|javascript:|data:|file:|ftp:)/i;
 const CONTROL_CHARACTERS = /[\x00-\x1f\x7f]/;
 const SAFE_REFERENCE_BODY = /^[a-zA-Z0-9][a-zA-Z0-9._/-]*$/;
-const SCHEMELESS_HOST_PATH_REFERENCE = /^[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+\/.+/;
+const SCHEMELESS_HOST_PATH_REFERENCE = /^[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+\/.*$/;
 
 export type ContentPipelineMediaReferenceValidation =
   | { ok: true; value: string }
@@ -52,12 +49,12 @@ export function looksLikeSchemelessHostPathReference(value: string): boolean {
   return SCHEMELESS_HOST_PATH_REFERENCE.test(value);
 }
 
-export async function requireContentPipelineAdminCandidateMediaTables(db: unknown) {
-  return requireTables(db, [...CONTENT_PIPELINE_ADMIN_CANDIDATE_MEDIA_TABLES]);
-}
-
 export async function requireContentPipelineMediaReferenceTables(db: unknown) {
   return requireTables(db, [...CONTENT_PIPELINE_MEDIA_REFERENCE_TABLES]);
+}
+
+export async function requireContentPipelineAdminCandidateMediaTables(db: unknown) {
+  return requireContentPipelineMediaReferenceTables(db);
 }
 
 export function validateContentPipelineMediaReference(

@@ -136,6 +136,7 @@ describe('content pipeline media reference integration (#2319)', () => {
 
     expect(validateContentPipelineMediaReference('https://cdn.example.com/photo.jpg', 'media_asset_id').ok).toBe(false);
     expect(validateContentPipelineMediaReference('cdn.example.com/photo.jpg', 'media_asset_id').ok).toBe(false);
+    expect(validateContentPipelineMediaReference('example.com/', 'media_asset_id').ok).toBe(false);
     expect(validateContentPipelineMediaReference('example.org/path/to/file.png', 'media_asset_id').ok).toBe(false);
     expect(validateContentPipelineMediaReference('www.example.com/image.jpg', 'media_asset_id').ok).toBe(false);
     expect(validateContentPipelineMediaReference('b2://../escape', 'media_asset_id').ok).toBe(false);
@@ -306,6 +307,13 @@ describe('content pipeline media reference integration (#2319)', () => {
     expect(CONTENT_PIPELINE_MEDIA_REFERENCE_TABLES).toEqual(
       expect.arrayContaining(['tags', 'content_item_tags', 'member_submissions', 'content_items']),
     );
+  });
+
+  it('shares admin and media-reference table constants from one source list', async () => {
+    const { CONTENT_PIPELINE_ADMIN_CANDIDATE_MEDIA_TABLES } = await import(
+      '../functions/_lib/content-pipeline-media-reference'
+    );
+    expect(CONTENT_PIPELINE_ADMIN_CANDIDATE_MEDIA_TABLES).toBe(CONTENT_PIPELINE_MEDIA_REFERENCE_TABLES);
   });
 
   it('updates media_asset_id on admin-seeded candidates without member_submissions rows', async () => {
