@@ -1,3 +1,22 @@
+type WinnerPhoto = {
+  id: number;
+  url: string;
+  alt?: string;
+};
+
+function isUsablePhoto(item: any): item is WinnerPhoto & { description?: string; title?: string } {
+  return !!item && typeof item.id === 'number' && typeof item.url === 'string' && item.url.trim().length > 0;
+}
+
+async function readPhotoById(request: Request, id: number): Promise<(WinnerPhoto & { description?: string; title?: string }) | null> {
+  const endpoint = new URL(`/api/photos/get?id=${id}`, request.url);
+  const resp = await fetch(endpoint.toString(), { method: 'GET' });
+  if (!resp.ok) return null;
+  const json = await resp.json().catch(() => null);
+  const item = json?.item;
+  return isUsablePhoto(item) ? item : null;
+}
+
 export const onRequestGet = async (context: any): Promise<Response> => {
   const { env, request } = context;
 
@@ -30,7 +49,7 @@ export const onRequestGet = async (context: any): Promise<Response> => {
 
     // Last closed matchup (optional)
     const last = await env.DB.prepare(
-      "SELECT week_start FROM weekly_matchups WHERE status='closed' ORDER BY week_start DESC LIMIT 1;"
+      "SELECT week_start, photo_a_id, photo_b_id FROM weekly_matchups WHERE status='closed' ORDER BY week_start DESC LIMIT 1;"
     ).first();
 
     let last_week: any = null;
@@ -43,6 +62,20 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       const lb = Number((lr && lr.b) || 0);
       const winner = la === lb ? 'tie' : (la > lb ? 'a' : 'b');
       last_week = { week_start: lws, totals: { a: la, b: lb }, winner };
+
+      if (winner === 'a' || winner === 'b') {
+        const winnerPhotoId = Number(winner === 'a' ? last.photo_a_id : last.photo_b_id);
+        if (Number.isFinite(winnerPhotoId) && winnerPhotoId > 0) {
+          const photo = await readPhotoById(request, winnerPhotoId);
+          if (photo) {
+            last_week.winner_photo = {
+              id: photo.id,
+              url: photo.url,
+              alt: photo.title || photo.description || 'Last week winning photo',
+            };
+          }
+        }
+      }
     }
 
     return new Response(JSON.stringify({ ok: true, week_start: ws, totals: { a, b }, last_week }, null, 2), {

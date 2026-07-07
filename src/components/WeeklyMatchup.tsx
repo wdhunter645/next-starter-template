@@ -29,7 +29,12 @@ type ResultsResp = {
   ok: boolean;
   week_start: string | null;
   totals: { a: number; b: number };
-  last_week: null | { week_start: string; totals: { a: number; b: number }; winner: 'a' | 'b' | 'tie' };
+  last_week: null | {
+    week_start: string;
+    totals: { a: number; b: number };
+    winner: 'a' | 'b' | 'tie';
+    winner_photo?: { id: number; url: string; alt?: string } | null;
+  };
 };
 
 const gridStyle: CSSProperties = {
@@ -152,12 +157,39 @@ export default function WeeklyMatchup() {
   );
 }
 
+function LastWeekWinnerThumbnail({ photo }: { photo: { url: string; alt?: string } }) {
+  const [hidden, setHidden] = useState(false);
+  if (hidden) return null;
+
+  return (
+    <img
+      src={photo.url}
+      alt={photo.alt || 'Last week winning photo'}
+      onError={() => setHidden(true)}
+      style={{
+        marginTop: 8,
+        width: 96,
+        height: 96,
+        objectFit: 'cover',
+        objectPosition: 'center',
+        borderRadius: 8,
+        display: 'block',
+      }}
+    />
+  );
+}
+
 function renderMatchupBody(
   items: { id: number; url: string; description?: string; title?: string }[],
   hasVoted: boolean,
   submitting: boolean,
   totals: { a: number; b: number } | null,
-  lastWeek: { week_start: string; totals: { a: number; b: number }; winner: 'a' | 'b' | 'tie' } | null,
+  lastWeek: {
+    week_start: string;
+    totals: { a: number; b: number };
+    winner: 'a' | 'b' | 'tie';
+    winner_photo?: { id: number; url: string; alt?: string } | null;
+  } | null,
   submit: (choice: 'a' | 'b') => void,
 ) {
   const a = items[0];
@@ -230,6 +262,9 @@ function renderMatchupBody(
           {lastWeek && (
             <div className="sub" style={{ marginTop: 10, opacity: 0.85 }}>
               Last closed week ({lastWeek.week_start}): A {lastWeek.totals.a} · B {lastWeek.totals.b} · Winner: {lastWeek.winner.toUpperCase()}
+              {lastWeek.winner_photo?.url && (
+                <LastWeekWinnerThumbnail photo={lastWeek.winner_photo} />
+              )}
             </div>
           )}
         </div>
