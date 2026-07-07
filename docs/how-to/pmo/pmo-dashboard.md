@@ -100,7 +100,7 @@ Task-level execution states such as post-merge verification, reviewer response, 
 Sorting:
 
 - Active Programs and PMO Pipeline top-level rows sort by numeric `Priority #` low to high.
-- Completed Programs sort by `closed_at` newest to oldest, falling back to `updated_at` when `closed_at` is unavailable. The fallback is expected for open PMO issues intentionally marked with `status:complete`; operators should treat those rows as completed dashboard work that still needs separate GitHub issue hygiene or closeout.
+- Completed Programs sort by `closedAt` newest to oldest, falling back to `updatedAt` when `closedAt` is unavailable. The fallback is expected for open PMO issues intentionally marked with `status:complete`; operators should treat those rows as completed dashboard work that still needs separate GitHub issue hygiene or closeout.
 
 Included issues should provide these explicit dashboard fields:
 
