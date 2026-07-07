@@ -92,7 +92,17 @@ const REVIEW_STATE_UPDATE_FIELDS = [
 
 type ReviewStateField = (typeof REVIEW_STATE_UPDATE_FIELDS)[number];
 
-const REVIEW_STATE_EVENT_TYPES: Record<ReviewStateField, string> = {
+export type ContentPipelineModerationEventType =
+  | 'review_state_change'
+  | 'rights_update'
+  | 'privacy_update'
+  | 'publication_prep'
+  | 'duplicate_flagged'
+  | 'promotion'
+  | 'soft_delete'
+  | 'retention_update';
+
+const REVIEW_STATE_EVENT_TYPES: Record<ReviewStateField, ContentPipelineModerationEventType> = {
   review_status: 'review_state_change',
   rights_status: 'rights_update',
   privacy_review_status: 'privacy_update',
@@ -101,6 +111,164 @@ const REVIEW_STATE_EVENT_TYPES: Record<ReviewStateField, string> = {
   source_trust_status: 'review_state_change',
   admin_notes: 'review_state_change',
 };
+
+// Media-reference changes use review_state_change because moderation_events has no media-specific enum.
+export const CONTENT_PIPELINE_MEDIA_REFERENCE_EVENT_TYPE: ContentPipelineModerationEventType =
+  'review_state_change';
+
+export type ModerationEventWrite = {
+  contentItemId: number;
+  eventType: ContentPipelineModerationEventType;
+  fromState: Record<string, unknown> | null;
+  toState: Record<string, unknown>;
+  actor?: string | null;
+  notes?: string | null;
+};
+
+export function serializeModerationEventState(state: Record<string, unknown> | null): string | null {
+  if (state === null) {
+    return null;
+  }
+  return JSON.stringify(state);
+}
+
+export function moderationEventTypeForReviewField(field: ReviewStateField): ContentPipelineModerationEventType {
+  return REVIEW_STATE_EVENT_TYPES[field];
+}
+
+export function buildFieldModerationEvent(
+  contentItemId: number,
+  field: string,
+  eventType: ContentPipelineModerationEventType,
+  from: unknown,
+  to: unknown,
+  options: { actor?: string | null; notes?: string | null } = {},
+): ModerationEventWrite {
+  return {
+    contentItemId,
+    eventType,
+    fromState: { [field]: from ?? null },
+    toState: { [field]: to ?? null },
+    actor: options.actor ?? null,
+    notes: options.notes ?? null,
+  };
+}
+
+export function buildMultiFieldModerationEvent(
+  contentItemId: number,
+  eventType: ContentPipelineModerationEventType,
+  fromState: Record<string, unknown>,
+  toState: Record<string, unknown>,
+  options: { actor?: string | null; notes?: string | null } = {},
+): ModerationEventWrite {
+  return {
+    contentItemId,
+    eventType,
+    fromState,
+    toState,
+    actor: options.actor ?? null,
+    notes: options.notes ?? null,
+  };
+}
+
+export function createModerationEventStatement(db: any, event: ModerationEventWrite): D1PreparedStatement {
+  return db
+    .prepare(
+      `INSERT INTO moderation_events (
+        content_item_id, event_type, actor, from_state, to_state, notes
+      ) VALUES (?, ?, ?, ?, ?, ?)`,
+    )
+    .bind(
+      event.contentItemId,
+      event.eventType,
+      event.actor ?? null,
+      serializeModerationEventState(event.fromState),
+      serializeModerationEventState(event.toState),
+      event.notes ?? null,
+    );
+}
+
+function buildCandidateUpsertAuditEvents(
+  contentItemId: number,
+  existing: StoredCandidate | null,
+  candidate: CandidateRecord,
+): ModerationEventWrite[] {
+  if (!existing) {
+  // Candidate creation maps to review_state_change; no dedicated create enum exists in migration 0042.
+    return [
+      buildMultiFieldModerationEvent(
+        contentItemId,
+        'review_state_change',
+        {},
+        {
+          candidate_id: candidate.candidate_id,
+          input_stream: candidate.input_stream,
+          review_status: candidate.review_status,
+          rights_status: candidate.rights_status,
+          privacy_review_status: candidate.privacy_review_status,
+          publication_status: candidate.publication_status,
+        },
+        { notes: 'candidate registry create' },
+      ),
+    ];
+  }
+
+  const events: ModerationEventWrite[] = [];
+
+  for (const field of REVIEW_STATE_UPDATE_FIELDS) {
+    const fromValue = existing[field];
+    const toValue = candidate[field];
+    if (toValue === undefined || fromValue === toValue) {
+      continue;
+    }
+    events.push(
+      buildFieldModerationEvent(
+        contentItemId,
+        field,
+        REVIEW_STATE_EVENT_TYPES[field],
+        fromValue,
+        toValue,
+        { notes: 'candidate registry upsert' },
+      ),
+    );
+  }
+
+  if (candidate.media_asset_id !== undefined) {
+    const fromValue = existing.media_asset_id ?? null;
+    const toValue = candidate.media_asset_id ?? null;
+    if (fromValue !== toValue) {
+      events.push(
+        buildFieldModerationEvent(
+          contentItemId,
+          'media_asset_id',
+          CONTENT_PIPELINE_MEDIA_REFERENCE_EVENT_TYPE,
+          fromValue,
+          toValue,
+          { notes: 'candidate registry upsert' },
+        ),
+      );
+    }
+  }
+
+  if (candidate.duplicate_of !== undefined) {
+    const fromValue = existing.duplicate_of ?? null;
+    const toValue = candidate.duplicate_of ?? null;
+    if (fromValue !== toValue) {
+      events.push(
+        buildFieldModerationEvent(
+          contentItemId,
+          'duplicate_of',
+          toValue ? 'duplicate_flagged' : 'review_state_change',
+          fromValue,
+          toValue,
+          { notes: 'candidate registry upsert' },
+        ),
+      );
+    }
+  }
+
+  return events;
+}
 
 const TAG_CATEGORY_TO_ARRAY: Record<'people' | 'topics' | 'places', keyof CandidateTags> = {
   people: 'people',
@@ -393,6 +561,7 @@ async function syncCandidateTags(db: any, contentItemId: number, candidate: Cand
 }
 
 export async function upsertCandidate(db: any, candidate: CandidateRecord): Promise<StoredCandidate> {
+  const existing = await getCandidateByCandidateId(db, candidate.candidate_id, { includeDeleted: true });
   const sourceMetadata = JSON.stringify(candidate.source_metadata ?? {});
   const now = candidate.updated_at;
 
@@ -484,6 +653,11 @@ export async function upsertCandidate(db: any, candidate: CandidateRecord): Prom
     throw new Error(`Failed to load candidate after upsert: ${candidate.candidate_id}`);
   }
 
+  const auditEvents = buildCandidateUpsertAuditEvents(stored.id, existing, candidate);
+  if (auditEvents.length > 0) {
+    await runD1Batch(db, auditEvents.map((event) => createModerationEventStatement(db, event)));
+  }
+
   if (
     candidate.people_tags !== undefined ||
     candidate.topic_tags !== undefined ||
@@ -545,20 +719,17 @@ export async function updateCandidateReviewState(
 
   for (const event of events) {
     statements.push(
-      db
-        .prepare(
-          `INSERT INTO moderation_events (
-            content_item_id, event_type, actor, from_state, to_state, notes
-          ) VALUES (?, ?, ?, ?, ?, ?)`,
-        )
-        .bind(
+      createModerationEventStatement(
+        db,
+        buildFieldModerationEvent(
           existing.id,
+          event.field,
           REVIEW_STATE_EVENT_TYPES[event.field],
-          options.actor ?? null,
-          JSON.stringify({ [event.field]: event.from }),
-          JSON.stringify({ [event.field]: event.to }),
-          options.notes ?? null,
+          event.from,
+          event.to,
+          { actor: options.actor ?? null, notes: options.notes ?? null },
         ),
+      ),
     );
   }
 
@@ -696,24 +867,16 @@ export async function updateCandidateMediaReferences(
 
   if (Object.keys(mediaChanges).length > 0) {
     statements.push(
-      db
-        .prepare(
-          `INSERT INTO moderation_events (
-            content_item_id, event_type, actor, from_state, to_state, notes
-          ) VALUES (?, ?, ?, ?, ?, ?)`,
-        )
-        .bind(
+      createModerationEventStatement(
+        db,
+        buildMultiFieldModerationEvent(
           existing.id,
-          'review_state_change',
-          options.actor ?? null,
-          JSON.stringify(
-            Object.fromEntries(Object.entries(mediaChanges).map(([key, value]) => [key, value.from])),
-          ),
-          JSON.stringify(
-            Object.fromEntries(Object.entries(mediaChanges).map(([key, value]) => [key, value.to])),
-          ),
-          options.notes ?? 'media reference update',
+          CONTENT_PIPELINE_MEDIA_REFERENCE_EVENT_TYPE,
+          Object.fromEntries(Object.entries(mediaChanges).map(([key, value]) => [key, value.from])),
+          Object.fromEntries(Object.entries(mediaChanges).map(([key, value]) => [key, value.to])),
+          { actor: options.actor ?? null, notes: options.notes ?? 'media reference update' },
         ),
+      ),
     );
   }
 

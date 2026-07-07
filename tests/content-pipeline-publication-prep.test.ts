@@ -425,6 +425,37 @@ describe('content pipeline publication prep (#2324)', () => {
     }
   });
 
+  it('does not write moderation events when publication prep views are listed or fetched', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    await upsertCandidate(db, eligibleCandidate({ candidate_id: 'lgfc-gehrig-2026-931' }));
+
+    const beforeCount = sqlite
+      .prepare(`SELECT COUNT(*) AS count FROM moderation_events`)
+      .get() as { count: number };
+
+    const listResponse = await publicationPrepGet({
+      env: { DB: db, ADMIN_TOKEN },
+      request: adminGetRequest('/api/admin/content-pipeline/publication-prep'),
+    });
+    expect(listResponse.status).toBe(200);
+
+    const detailResponse = await publicationPrepGet({
+      env: { DB: db, ADMIN_TOKEN },
+      request: adminGetRequest(
+        '/api/admin/content-pipeline/publication-prep?candidate_id=lgfc-gehrig-2026-931',
+      ),
+    });
+    expect(detailResponse.status).toBe(200);
+
+    const afterCount = sqlite
+      .prepare(`SELECT COUNT(*) AS count FROM moderation_events`)
+      .get() as { count: number };
+    expect(afterCount.count).toBe(beforeCount.count);
+  });
+
   it('does not register publication-prep route segments under non-admin API paths', () => {
     const apiRoot = path.join(process.cwd(), 'functions/api');
     const nonAdminRoutes = collectNonAdminApiRouteSegments(apiRoot);
