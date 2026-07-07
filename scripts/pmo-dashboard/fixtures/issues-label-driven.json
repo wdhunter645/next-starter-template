@@ -144,5 +144,61 @@
     "assignees": [],
     "closed_at": "2026-07-04T12:00:00Z",
     "updated_at": "2026-07-04T12:00:00Z"
+  },
+  {
+    "number": 9012,
+    "title": "PROJECT: Missing explicit status fallback",
+    "state": "open",
+    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9012",
+    "body": "Dashboard Lifecycle: pipeline\nPriority #: 7\nOwner / Agent: Cursor\nProject Description: Pipeline issue with no Status or Dashboard Status field.",
+    "labels": [
+      {
+        "name": "pmo"
+      }
+    ],
+    "assignees": [],
+    "updated_at": "2026-07-06T12:00:00Z"
+  },
+  {
+    "number": 9013,
+    "title": "PROJECT: Explicit implementation-ready pipeline",
+    "state": "open",
+    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9013",
+    "body": "Dashboard Lifecycle: pipeline\nPriority #: 8\nStatus: Implementation Ready\nOwner / Agent: Cursor\nProject Description: Pipeline issue with explicit implementation readiness.",
+    "labels": [
+      {
+        "name": "pmo"
+      }
+    ],
+    "assignees": [],
+    "updated_at": "2026-07-06T13:00:00Z"
+  },
+  {
+    "number": 9014,
+    "title": "PROJECT: Explicit planning pipeline",
+    "state": "open",
+    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9014",
+    "body": "Dashboard Lifecycle: pipeline\nPriority #: 10\nStatus: Planning\nOwner / Agent: Atlas\nProject Description: Pipeline issue with explicit planning status.",
+    "labels": [
+      {
+        "name": "pmo"
+      }
+    ],
+    "assignees": [],
+    "updated_at": "2026-07-06T14:00:00Z"
+  },
+  {
+    "number": 9015,
+    "title": "PROJECT: Unrecognized status pipeline",
+    "state": "open",
+    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9015",
+    "body": "Dashboard Lifecycle: pipeline\nPriority #: 11\nStatus: Needs triage\nOwner / Agent: Atlas\nProject Description: Pipeline issue with unrecognized status metadata.",
+    "labels": [
+      {
+        "name": "pmo"
+      }
+    ],
+    "assignees": [],
+    "updated_at": "2026-07-06T15:00:00Z"
   }
 ]
