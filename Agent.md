@@ -5,7 +5,7 @@ Authority Level: Navigation
 Owns: Read order, authority hierarchy, execution entry point
 Does Not Own: Execution rules, design authority, governance policies
 Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
-Last Reviewed: 2026-06-17
+Last Reviewed: 2026-07-07
 ---
 
 # Agent.md
@@ -78,6 +78,14 @@ Tracker files are historical/status indexes. Agents may read tracker files for v
 This entrypoint defines the active read order for current repository work. Older cross-agent or tracker documents remain supporting references unless the source issue explicitly scopes tracker governance, tracker reconciliation, or status-index maintenance.
 
 If conflict exists → follow highest authority.
+
+---
+
+## ATLAS STARTUP ROUTING (`run startup`)
+
+When Bill says `run startup`, Atlas (ChatGPT) must perform **orientation-only** startup per [`docs/ops/ai/CHATGPT-RULES.md`](docs/ops/ai/CHATGPT-RULES.md) — checklist-bound, non-advancing, and stopped after the required report sections.
+
+`run startup` is **not** queue audit, repository posture inspection, inferred next work, implementation resume, or GitHub mutation authority. Current issue, PR, branch, queue, or implementation state is **not** persistent memory authority.
 
 ---
 
