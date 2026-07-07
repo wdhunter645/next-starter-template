@@ -11,6 +11,9 @@ import {
   listCandidates,
   mapContentItemRowToCandidate,
   requireContentPipelineCandidateTables,
+  restoreSoftDeletedCandidate,
+  softDeleteCandidate,
+  updateCandidateRetention,
   updateCandidateReviewState,
   upsertCandidate,
   type CandidateReviewStateUpdate,
@@ -60,15 +63,16 @@ function wrapSqliteAsD1(sqlite: DatabaseSync) {
     async batch(statements: Array<{ run: () => Promise<unknown> }>) {
       sqlite.exec('BEGIN');
       try {
+        const results: unknown[] = [];
         for (const statement of statements) {
-          await statement.run();
+          results.push(await statement.run());
         }
         sqlite.exec('COMMIT');
+        return results;
       } catch (error) {
         sqlite.exec('ROLLBACK');
         throw error;
       }
-      return statements.map(() => ({ success: true }));
     },
     prepare(sql: string) {
       const stmt = sqlite.prepare(sql);
@@ -80,8 +84,8 @@ function wrapSqliteAsD1(sqlite: DatabaseSync) {
           return { results: stmt.all(...args) };
         },
         async run() {
-          stmt.run(...args);
-          return { success: true };
+          const result = stmt.run(...args);
+          return { success: true, meta: { changes: result.changes } };
         },
       });
 
@@ -94,8 +98,47 @@ function wrapSqliteAsD1(sqlite: DatabaseSync) {
           return { results: stmt.all() };
         },
         async run() {
-          stmt.run();
-          return { success: true };
+          const result = stmt.run();
+          return { success: true, meta: { changes: result.changes } };
+        },
+      };
+    },
+  };
+}
+
+function wrapSqliteAsD1WithFailingAuditInsertOn(
+  sqlite: DatabaseSync,
+  shouldFail: (sql: string, args: readonly SQLInputValue[]) => boolean,
+) {
+  const base = wrapSqliteAsD1(sqlite);
+  return {
+    ...base,
+    prepare(sql: string) {
+      const prepared = base.prepare(sql);
+      return {
+        bind: (...args: SQLInputValue[]) => {
+          const bound = prepared.bind(...args);
+          return {
+            ...bound,
+            async run() {
+              if (shouldFail(sql, args)) {
+                throw new Error('moderation_events insert failed');
+              }
+              return bound.run();
+            },
+          };
+        },
+        async first() {
+          return prepared.first();
+        },
+        async all() {
+          return prepared.all();
+        },
+        async run() {
+          if (shouldFail(sql, [])) {
+            throw new Error('moderation_events insert failed');
+          }
+          return prepared.run();
         },
       };
     },
@@ -544,5 +587,466 @@ describe('content pipeline candidate repository (#2305)', () => {
     });
 
     expect(result).toBeNull();
+  });
+});
+
+describe('content pipeline retention and soft-delete (#2339)', () => {
+  function moderationEventsForCandidate(sqlite: DatabaseSync, candidateId: string) {
+    return sqlite
+      .prepare(
+        `SELECT event_type, actor, notes, from_state, to_state
+         FROM moderation_events me
+         JOIN content_items ci ON ci.id = me.content_item_id
+         WHERE ci.candidate_id = ?
+         ORDER BY me.id ASC`,
+      )
+      .all(candidateId) as Array<{
+      event_type: string;
+      actor: string | null;
+      notes: string | null;
+      from_state: string | null;
+      to_state: string | null;
+    }>;
+  }
+
+  it('soft-deletes a candidate, records retention fields, and writes soft_delete audit', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    await upsertCandidate(db, minimalCandidate({ people_tags: ['Lou Gehrig'] }));
+
+    const deleted = await softDeleteCandidate(
+      db,
+      'lgfc-gehrig-2026-999',
+      {
+        retention_reason: 'Retained for rights follow-up',
+        purge_eligible_at: '2027-01-01T00:00:00.000Z',
+      },
+      { actor: 'operator@test', notes: 'Archive stale seed', deleted_at: '2026-07-07T12:00:00.000Z' },
+    );
+
+    expect(deleted?.title).toBe('Test candidate');
+    expect(await getCandidateByCandidateId(db, 'lgfc-gehrig-2026-999')).toBeNull();
+    expect(
+      await getCandidateByCandidateId(db, 'lgfc-gehrig-2026-999', { includeDeleted: true }),
+    ).not.toBeNull();
+
+    const row = sqlite
+      .prepare(
+        `SELECT deleted_at, retention_reason, purge_eligible_at
+         FROM content_items
+         WHERE candidate_id = ?`,
+      )
+      .get('lgfc-gehrig-2026-999') as {
+      deleted_at: string;
+      retention_reason: string;
+      purge_eligible_at: string;
+    };
+
+    expect(row.deleted_at).toBe('2026-07-07T12:00:00.000Z');
+    expect(row.retention_reason).toBe('Retained for rights follow-up');
+    expect(row.purge_eligible_at).toBe('2027-01-01T00:00:00.000Z');
+
+    const tagCount = sqlite
+      .prepare(
+        `SELECT COUNT(*) AS count
+         FROM content_item_tags cit
+         JOIN content_items ci ON ci.id = cit.content_item_id
+         WHERE ci.candidate_id = ?`,
+      )
+      .get('lgfc-gehrig-2026-999') as { count: number };
+    expect(tagCount.count).toBe(1);
+
+    const events = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999');
+    const softDeleteEvent = events.find((event) => event.event_type === 'soft_delete');
+    expect(softDeleteEvent).toMatchObject({
+      actor: 'operator@test',
+      notes: 'Archive stale seed',
+    });
+    expect(JSON.parse(softDeleteEvent!.from_state!)).toMatchObject({
+      deleted_at: null,
+      retention_reason: null,
+      purge_eligible_at: null,
+    });
+    expect(JSON.parse(softDeleteEvent!.to_state!)).toMatchObject({
+      deleted_at: '2026-07-07T12:00:00.000Z',
+      retention_reason: 'Retained for rights follow-up',
+      purge_eligible_at: '2027-01-01T00:00:00.000Z',
+    });
+  });
+
+  it('no-ops duplicate soft-delete calls without writing another audit row', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    await upsertCandidate(db, minimalCandidate());
+    await softDeleteCandidate(
+      db,
+      'lgfc-gehrig-2026-999',
+      { retention_reason: 'Retained for audit trail' },
+      { deleted_at: '2026-07-07T12:00:00.000Z' },
+    );
+
+    const eventCountBefore = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length;
+    const softDeleteEventsBefore = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').filter(
+      (event) => event.event_type === 'soft_delete',
+    ).length;
+    const second = await softDeleteCandidate(db, 'lgfc-gehrig-2026-999', {
+      retention_reason: 'Different reason',
+    });
+
+    expect(second).not.toBeNull();
+    expect(moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length).toBe(eventCountBefore);
+    expect(
+      moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').filter(
+        (event) => event.event_type === 'soft_delete',
+      ).length,
+    ).toBe(softDeleteEventsBefore);
+  });
+
+  it('does not write soft_delete audit when guarded update reports zero changed rows', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    await upsertCandidate(db, minimalCandidate());
+    await softDeleteCandidate(
+      db,
+      'lgfc-gehrig-2026-999',
+      { retention_reason: 'Retained for audit trail' },
+      { deleted_at: '2026-07-07T12:00:00.000Z' },
+    );
+
+    const softDeleteEventsBefore = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').filter(
+      (event) => event.event_type === 'soft_delete',
+    ).length;
+
+    await softDeleteCandidate(db, 'lgfc-gehrig-2026-999', {
+      retention_reason: 'Different reason',
+    });
+
+    expect(
+      moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').filter(
+        (event) => event.event_type === 'soft_delete',
+      ).length,
+    ).toBe(softDeleteEventsBefore);
+    expect(await getCandidateByCandidateId(db, 'lgfc-gehrig-2026-999')).toBeNull();
+  });
+
+  it('updates retention fields without deleting and writes retention_update audit', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    await upsertCandidate(db, minimalCandidate());
+
+    const updated = await updateCandidateRetention(
+      db,
+      'lgfc-gehrig-2026-999',
+      {
+        retention_reason: 'Legal hold',
+        purge_eligible_at: '2028-06-01T00:00:00.000Z',
+      },
+      { actor: 'operator@test' },
+    );
+
+    expect(updated).not.toBeNull();
+    expect(await getCandidateByCandidateId(db, 'lgfc-gehrig-2026-999')).not.toBeNull();
+
+    const row = sqlite
+      .prepare(
+        `SELECT deleted_at, retention_reason, purge_eligible_at
+         FROM content_items
+         WHERE candidate_id = ?`,
+      )
+      .get('lgfc-gehrig-2026-999') as {
+      deleted_at: string | null;
+      retention_reason: string;
+      purge_eligible_at: string;
+    };
+
+    expect(row.deleted_at).toBeNull();
+    expect(row.retention_reason).toBe('Legal hold');
+    expect(row.purge_eligible_at).toBe('2028-06-01T00:00:00.000Z');
+
+    const retentionEvent = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').find(
+      (event) => event.event_type === 'retention_update',
+    );
+    expect(retentionEvent?.actor).toBe('operator@test');
+    expect(JSON.parse(retentionEvent!.to_state!)).toMatchObject({
+      retention_reason: 'Legal hold',
+      purge_eligible_at: '2028-06-01T00:00:00.000Z',
+    });
+  });
+
+  it('skips retention_update audit when retention values do not change', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    await upsertCandidate(db, minimalCandidate());
+    await updateCandidateRetention(db, 'lgfc-gehrig-2026-999', {
+      retention_reason: 'Legal hold',
+      purge_eligible_at: '2028-06-01T00:00:00.000Z',
+    });
+
+    const eventCountBefore = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length;
+    await updateCandidateRetention(db, 'lgfc-gehrig-2026-999', {
+      retention_reason: 'Legal hold',
+      purge_eligible_at: '2028-06-01T00:00:00.000Z',
+    });
+
+    expect(moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length).toBe(eventCountBefore);
+  });
+
+  it('does not write retention_update audit when guarded retention update changes zero rows', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    await upsertCandidate(db, minimalCandidate());
+    await updateCandidateRetention(db, 'lgfc-gehrig-2026-999', {
+      retention_reason: 'Legal hold',
+      purge_eligible_at: '2028-06-01T00:00:00.000Z',
+    });
+
+    const retentionEventsBefore = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').filter(
+      (event) => event.event_type === 'retention_update',
+    ).length;
+
+    await updateCandidateRetention(db, 'lgfc-gehrig-2026-999', {
+      retention_reason: 'Legal hold',
+      purge_eligible_at: '2028-06-01T00:00:00.000Z',
+    });
+
+    expect(
+      moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').filter(
+        (event) => event.event_type === 'retention_update',
+      ).length,
+    ).toBe(retentionEventsBefore);
+  });
+
+  it('restores a soft-deleted candidate and audits via retention_update', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    await upsertCandidate(db, minimalCandidate());
+    await softDeleteCandidate(
+      db,
+      'lgfc-gehrig-2026-999',
+      { retention_reason: 'Temporary archive' },
+      { deleted_at: '2026-07-07T12:00:00.000Z' },
+    );
+
+    const restored = await restoreSoftDeletedCandidate(db, 'lgfc-gehrig-2026-999', {
+      actor: 'operator@test',
+      notes: 'Restore after review',
+    });
+
+    expect(restored?.title).toBe('Test candidate');
+    expect(await getCandidateByCandidateId(db, 'lgfc-gehrig-2026-999')).not.toBeNull();
+
+    const row = sqlite
+      .prepare(`SELECT deleted_at, retention_reason FROM content_items WHERE candidate_id = ?`)
+      .get('lgfc-gehrig-2026-999') as { deleted_at: string | null; retention_reason: string };
+
+    expect(row.deleted_at).toBeNull();
+    expect(row.retention_reason).toBe('Temporary archive');
+
+    const restoreEvent = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999')
+      .filter((event) => event.event_type === 'retention_update')
+      .at(-1);
+    expect(restoreEvent).toMatchObject({
+      actor: 'operator@test',
+      notes: 'Restore after review',
+    });
+    expect(JSON.parse(restoreEvent!.from_state!)).toMatchObject({
+      deleted_at: '2026-07-07T12:00:00.000Z',
+    });
+    expect(JSON.parse(restoreEvent!.to_state!)).toMatchObject({
+      deleted_at: null,
+      retention_reason: 'Temporary archive',
+    });
+  });
+
+  it('does not write retention_update audit when restore guarded update changes zero rows', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    await upsertCandidate(db, minimalCandidate());
+
+    const eventsBefore = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length;
+    await restoreSoftDeletedCandidate(db, 'lgfc-gehrig-2026-999');
+
+    expect(moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').length).toBe(eventsBefore);
+    expect(
+      moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').some(
+        (event) => event.event_type === 'retention_update' && event.notes === 'candidate restore',
+      ),
+    ).toBe(false);
+  });
+
+  it('does not write restore audit when guarded update reports zero changed rows on deleted row', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    await upsertCandidate(db, minimalCandidate());
+    await softDeleteCandidate(
+      db,
+      'lgfc-gehrig-2026-999',
+      { retention_reason: 'Temporary archive' },
+      { deleted_at: '2026-07-07T12:00:00.000Z' },
+    );
+    await restoreSoftDeletedCandidate(db, 'lgfc-gehrig-2026-999');
+
+    const restoreEventsBefore = moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').filter(
+      (event) => event.event_type === 'retention_update' && event.notes === 'candidate restore',
+    ).length;
+
+    await restoreSoftDeletedCandidate(db, 'lgfc-gehrig-2026-999');
+
+    expect(
+      moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').filter(
+        (event) => event.event_type === 'retention_update' && event.notes === 'candidate restore',
+      ).length,
+    ).toBe(restoreEventsBefore);
+    expect(await getCandidateByCandidateId(db, 'lgfc-gehrig-2026-999')).not.toBeNull();
+  });
+
+  it('rolls back retention mutation when audit insert fails inside the transaction', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1WithFailingAuditInsertOn(
+      sqlite,
+      (sql, args) => sql.includes('INSERT INTO moderation_events') && args[1] === 'soft_delete',
+    );
+
+    await upsertCandidate(db, minimalCandidate());
+
+    await expect(
+      softDeleteCandidate(db, 'lgfc-gehrig-2026-999', {
+        retention_reason: 'Should not persist',
+      }),
+    ).rejects.toThrow('moderation_events insert failed');
+
+    const row = sqlite
+      .prepare(`SELECT deleted_at, retention_reason FROM content_items WHERE candidate_id = ?`)
+      .get('lgfc-gehrig-2026-999') as { deleted_at: string | null; retention_reason: string | null };
+
+    expect(row.deleted_at).toBeNull();
+    expect(row.retention_reason).toBeNull();
+    expect(
+      moderationEventsForCandidate(sqlite, 'lgfc-gehrig-2026-999').some(
+        (event) => event.event_type === 'soft_delete',
+      ),
+    ).toBe(false);
+  });
+
+  it('excludes soft-deleted candidates from default list and includes them when requested', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    await upsertCandidate(
+      db,
+      minimalCandidate({
+        candidate_id: 'lgfc-gehrig-2026-801',
+      }),
+    );
+    await upsertCandidate(
+      db,
+      minimalCandidate({
+        candidate_id: 'lgfc-gehrig-2026-802',
+      }),
+    );
+
+    await softDeleteCandidate(
+      db,
+      'lgfc-gehrig-2026-801',
+      { retention_reason: 'Archived seed' },
+      { deleted_at: '2026-07-07T12:00:00.000Z' },
+    );
+
+    expect((await listCandidates(db)).map((candidate) => candidate.candidate_id)).toEqual([
+      'lgfc-gehrig-2026-802',
+    ]);
+    expect(
+      (await listCandidates(db, { include_deleted: true })).map((candidate) => candidate.candidate_id).sort(),
+    ).toEqual(['lgfc-gehrig-2026-801', 'lgfc-gehrig-2026-802']);
+  });
+
+  it('does not physically delete content_items or moderation_events rows', async () => {
+    const sqlite = new DatabaseSync(':memory:');
+    applyRepoMigrations(sqlite);
+    const db = wrapSqliteAsD1(sqlite);
+
+    await upsertCandidate(db, minimalCandidate({ people_tags: ['Lou Gehrig'] }));
+    await softDeleteCandidate(db, 'lgfc-gehrig-2026-999', {
+      retention_reason: 'Retained for audit trail',
+    });
+
+    const counts = sqlite
+      .prepare(
+        `SELECT
+           (SELECT COUNT(*) FROM content_items WHERE candidate_id = ?) AS content_items,
+           (SELECT COUNT(*) FROM content_item_tags cit
+              JOIN content_items ci ON ci.id = cit.content_item_id
+             WHERE ci.candidate_id = ?) AS content_item_tags,
+           (SELECT COUNT(*) FROM moderation_events me
+              JOIN content_items ci ON ci.id = me.content_item_id
+             WHERE ci.candidate_id = ?) AS moderation_events`,
+      )
+      .get('lgfc-gehrig-2026-999', 'lgfc-gehrig-2026-999', 'lgfc-gehrig-2026-999') as {
+      content_items: number;
+      content_item_tags: number;
+      moderation_events: number;
+    };
+
+    expect(counts.content_items).toBe(1);
+    expect(counts.content_item_tags).toBe(1);
+    expect(counts.moderation_events).toBeGreaterThanOrEqual(2);
+  });
+
+  it('rejects retention mutations when the database has no transactional batch primitive', async () => {
+    const db = {
+      prepare() {
+        return {
+          bind: () => ({
+            async first() {
+              return {
+                id: 1,
+                deleted_at: null,
+                retention_reason: null,
+                purge_eligible_at: null,
+              };
+            },
+            async all() {
+              return { results: [] };
+            },
+            async run() {
+              return { success: true, meta: { changes: 1 } };
+            },
+          }),
+          async first() {
+            return null;
+          },
+          async all() {
+            return { results: [] };
+          },
+          async run() {
+            return { success: true, meta: { changes: 1 } };
+          },
+        };
+      },
+    };
+
+    await expect(
+      softDeleteCandidate(db, 'lgfc-gehrig-2026-999', { retention_reason: 'No batch support' }),
+    ).rejects.toThrow('transactional batch execution');
   });
 });

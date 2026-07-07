@@ -80,6 +80,22 @@ export type CandidateReviewStateUpdate = {
   admin_notes?: string;
 };
 
+export type CandidateRetentionState = {
+  deleted_at: string | null;
+  retention_reason: string | null;
+  purge_eligible_at: string | null;
+};
+
+export type CandidateSoftDeleteInput = {
+  retention_reason: string;
+  purge_eligible_at?: string | null;
+};
+
+export type CandidateRetentionUpdate = {
+  retention_reason?: string | null;
+  purge_eligible_at?: string | null;
+};
+
 const REVIEW_STATE_UPDATE_FIELDS = [
   'review_status',
   'rights_status',
@@ -188,11 +204,76 @@ export function createModerationEventStatement(db: any, event: ModerationEventWr
     );
 }
 
+function createConditionalModerationEventStatement(db: any, event: ModerationEventWrite): D1PreparedStatement {
+  return db
+    .prepare(
+      `INSERT INTO moderation_events (
+        content_item_id, event_type, actor, from_state, to_state, notes
+      )
+      SELECT ?, ?, ?, ?, ?, ?
+      WHERE changes() > 0`,
+    )
+    .bind(
+      event.contentItemId,
+      event.eventType,
+      event.actor ?? null,
+      serializeModerationEventState(event.fromState),
+      serializeModerationEventState(event.toState),
+      event.notes ?? null,
+    );
+}
+
 function normalizeAuditComparable(value: unknown): unknown {
   if (value === undefined || value === null) {
     return null;
   }
   return value;
+}
+
+function buildRetentionAuditSnapshot(state: CandidateRetentionState): Record<string, unknown> {
+  return {
+    deleted_at: state.deleted_at,
+    retention_reason: state.retention_reason,
+    purge_eligible_at: state.purge_eligible_at,
+  };
+}
+
+async function loadCandidateRetentionState(
+  db: any,
+  candidateId: string,
+  options: { includeDeleted?: boolean } = {},
+): Promise<{ id: number; state: CandidateRetentionState } | null> {
+  const includeDeleted = options.includeDeleted === true;
+  const row = await db
+    .prepare(
+      `SELECT id, deleted_at, retention_reason, purge_eligible_at
+       FROM content_items
+       WHERE candidate_id = ?
+         AND (? = 1 OR deleted_at IS NULL)
+       LIMIT 1`,
+    )
+    .bind(candidateId, includeDeleted ? 1 : 0)
+    .first();
+
+  if (!row) {
+    return null;
+  }
+
+  const typedRow = row as {
+    id: number;
+    deleted_at?: string | null;
+    retention_reason?: string | null;
+    purge_eligible_at?: string | null;
+  };
+
+  return {
+    id: typedRow.id,
+    state: {
+      deleted_at: typedRow.deleted_at ?? null,
+      retention_reason: typedRow.retention_reason ?? null,
+      purge_eligible_at: typedRow.purge_eligible_at ?? null,
+    },
+  };
 }
 
 function resolvedUpsertReviewFieldValue(candidate: CandidateRecord, field: ReviewStateField): unknown {
@@ -349,32 +430,55 @@ function applyTagRows(tags: CandidateTags, rows: Array<{ tag_name: unknown; tag_
 }
 
 async function runD1Batch(db: any, statements: D1PreparedStatement[]) {
+  await runD1BatchWithResults(db, statements);
+}
+
+async function runD1BatchWithResults(db: any, statements: D1PreparedStatement[]): Promise<unknown[]> {
   if (statements.length === 0) {
-    return;
+    return [];
   }
 
   if (typeof db.batch === 'function') {
-    await db.batch(statements);
-    return;
+    const results = await db.batch(statements);
+    return Array.isArray(results) ? results : statements.map(() => ({ success: true }));
   }
 
   if (typeof db.exec === 'function') {
     await db.exec('BEGIN');
     try {
+      const results: unknown[] = [];
       for (const statement of statements) {
-        await statement.run();
+        results.push(await statement.run());
       }
       await db.exec('COMMIT');
+      return results;
     } catch (error) {
       await db.exec('ROLLBACK');
       throw error;
     }
-    return;
   }
 
-  for (const statement of statements) {
-    await statement.run();
-  }
+  throw new Error('D1 database does not support transactional batch execution');
+}
+
+type D1RunResult = {
+  meta?: { changes?: number };
+};
+
+function d1UpdateChangedRows(result: unknown): number {
+  return Number((result as D1RunResult)?.meta?.changes ?? 0);
+}
+
+async function runRowChangingUpdateWithAudit(
+  db: any,
+  updateStatement: D1PreparedStatement,
+  auditEvent: ModerationEventWrite,
+): Promise<boolean> {
+  const results = await runD1BatchWithResults(db, [
+    updateStatement,
+    createConditionalModerationEventStatement(db, auditEvent),
+  ]);
+  return d1UpdateChangedRows(results[0]) > 0;
 }
 
 export function mapContentItemRowToCandidate(
@@ -778,6 +882,163 @@ export async function updateCandidateReviewState(
   }
 
   await runD1Batch(db, statements);
+  return getCandidateByCandidateId(db, candidateId);
+}
+
+export async function softDeleteCandidate(
+  db: any,
+  candidateId: string,
+  input: CandidateSoftDeleteInput,
+  options: { actor?: string; notes?: string; deleted_at?: string } = {},
+): Promise<StoredCandidate | null> {
+  const existing = await loadCandidateRetentionState(db, candidateId, { includeDeleted: true });
+  if (!existing) {
+    return null;
+  }
+
+  const deletedAt = options.deleted_at ?? new Date().toISOString();
+  const nextState: CandidateRetentionState = {
+    deleted_at: deletedAt,
+    retention_reason: input.retention_reason,
+    purge_eligible_at:
+      input.purge_eligible_at === undefined ? existing.state.purge_eligible_at : input.purge_eligible_at,
+  };
+
+  await runRowChangingUpdateWithAudit(
+    db,
+    db
+      .prepare(
+        `UPDATE content_items
+         SET deleted_at = ?,
+             retention_reason = ?,
+             purge_eligible_at = ?,
+             updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+         WHERE candidate_id = ?
+           AND deleted_at IS NULL`,
+      )
+      .bind(
+        nextState.deleted_at,
+        nextState.retention_reason,
+        nextState.purge_eligible_at,
+        candidateId,
+      ),
+    buildMultiFieldModerationEvent(
+      existing.id,
+      'soft_delete',
+      buildRetentionAuditSnapshot(existing.state),
+      buildRetentionAuditSnapshot(nextState),
+      { actor: options.actor ?? null, notes: options.notes ?? 'candidate soft delete' },
+    ),
+  );
+
+  return getCandidateByCandidateId(db, candidateId, { includeDeleted: true });
+}
+
+export async function updateCandidateRetention(
+  db: any,
+  candidateId: string,
+  update: CandidateRetentionUpdate,
+  options: { actor?: string; notes?: string } = {},
+): Promise<StoredCandidate | null> {
+  const existing = await loadCandidateRetentionState(db, candidateId, { includeDeleted: true });
+  if (!existing) {
+    return null;
+  }
+
+  const nextState: CandidateRetentionState = {
+    deleted_at: existing.state.deleted_at,
+    retention_reason:
+      update.retention_reason === undefined ? existing.state.retention_reason : update.retention_reason,
+    purge_eligible_at:
+      update.purge_eligible_at === undefined ? existing.state.purge_eligible_at : update.purge_eligible_at,
+  };
+
+  if (
+    normalizeAuditComparable(existing.state.retention_reason) ===
+      normalizeAuditComparable(nextState.retention_reason) &&
+    normalizeAuditComparable(existing.state.purge_eligible_at) ===
+      normalizeAuditComparable(nextState.purge_eligible_at)
+  ) {
+    return getCandidateByCandidateId(db, candidateId, {
+      includeDeleted: existing.state.deleted_at !== null,
+    });
+  }
+
+  const statements: D1PreparedStatement[] = [
+    db
+      .prepare(
+        `UPDATE content_items
+         SET retention_reason = ?,
+             purge_eligible_at = ?,
+             updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+         WHERE candidate_id = ?
+           AND (
+             IFNULL(retention_reason, '') != IFNULL(?, '')
+             OR IFNULL(purge_eligible_at, '') != IFNULL(?, '')
+           )`,
+      )
+      .bind(
+        nextState.retention_reason,
+        nextState.purge_eligible_at,
+        candidateId,
+        nextState.retention_reason,
+        nextState.purge_eligible_at,
+      ),
+  ];
+
+  await runRowChangingUpdateWithAudit(
+    db,
+    statements[0],
+    buildMultiFieldModerationEvent(
+      existing.id,
+      'retention_update',
+      buildRetentionAuditSnapshot(existing.state),
+      buildRetentionAuditSnapshot(nextState),
+      { actor: options.actor ?? null, notes: options.notes ?? 'candidate retention update' },
+    ),
+  );
+
+  return getCandidateByCandidateId(db, candidateId, {
+    includeDeleted: nextState.deleted_at !== null,
+  });
+}
+
+export async function restoreSoftDeletedCandidate(
+  db: any,
+  candidateId: string,
+  options: { actor?: string; notes?: string } = {},
+): Promise<StoredCandidate | null> {
+  const existing = await loadCandidateRetentionState(db, candidateId, { includeDeleted: true });
+  if (!existing) {
+    return null;
+  }
+
+  const nextState: CandidateRetentionState = {
+    deleted_at: null,
+    retention_reason: existing.state.retention_reason,
+    purge_eligible_at: existing.state.purge_eligible_at,
+  };
+
+  await runRowChangingUpdateWithAudit(
+    db,
+    db
+      .prepare(
+        `UPDATE content_items
+         SET deleted_at = NULL,
+             updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+         WHERE candidate_id = ?
+           AND deleted_at IS NOT NULL`,
+      )
+      .bind(candidateId),
+    buildMultiFieldModerationEvent(
+      existing.id,
+      'retention_update',
+      buildRetentionAuditSnapshot(existing.state),
+      buildRetentionAuditSnapshot(nextState),
+      { actor: options.actor ?? null, notes: options.notes ?? 'candidate restore' },
+    ),
+  );
+
   return getCandidateByCandidateId(db, candidateId);
 }
 
