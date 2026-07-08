@@ -6,7 +6,7 @@ Owns: Cursor local and Cloud Agent session bootstrap verification
 Does Not Own: Canonical governance doctrine or merge authority
 Canonical Reference: /Agent.md
 Related Issues: #1609, #1614, #2398
-Last Reviewed: 2026-06-12
+Last Reviewed: 2026-07-08
 ---
 
 # Agent session bootstrap

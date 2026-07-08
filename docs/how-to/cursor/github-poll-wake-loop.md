@@ -11,6 +11,21 @@ Last Reviewed: 2026-07-08
 
 # Cursor local GitHub poll-wake loop
 
+## Purpose
+
+Document local Cursor GitHub poll-wake loop operation so Bill, ChatGPT, and Cursor share one description of watch rules, wake semantics, and handoff pairing.
+
+## Scope
+
+Covers `~/.cursor/github-poller/` operator behavior for `wdhunter645/next-starter-template`. Does not cover vendoring poller scripts into the repository, GitHub webhooks, or cloud agent billing.
+
+## Current known truth
+
+- The poller watches **`agent:cursor` + `handoff:ready`**, assigned issues, and assigned PRs only.
+- Queue-unblock issue comments without matching labels are human-actionable but not machine-detected.
+- Agent background loops can intermittently log `poll failed` while manual `gh` polls succeed.
+- Issue comments (`CHATGPT HANDOFF`, `handoff:ready`) remain the reliable control plane.
+
 ## Goal
 
 Keep an **open Cursor agent chat** aware of qualifying GitHub activity on `wdhunter645/next-starter-template` without cloud agents or usage credits. Wake the agent **only** when new qualifying activity is detected.
@@ -145,3 +160,6 @@ bash scripts/ci/docs_check_headers.sh
 Expect JSON with `"ok":true` and either `"fresh":0` or `"fresh":N` from the poller; docs header check **PASS** for repository doc changes.
 
 ## Stop conditions
+
+- Do not treat poller wake as merge authorization or scope approval.
+- Stop work if poller behavior in `~/.cursor/github-poller/` diverges from this doc without a doc update.
