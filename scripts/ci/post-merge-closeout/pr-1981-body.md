@@ -66,7 +66,7 @@ All other files are out of scope
 - Result summary: PASS
 
 ## ACCEPTANCE CRITERIA
-- [x] Required source issue exists, is open, is same-repository, and is not a PR.
+- [x] Required source issue exists, is same-repository, and closed-source follow-up closeout evidence is recorded.
 - [x] PR issue-accounting gate passes.
 - [x] Drift gate passes.
 - [x] Intent gate passes.
@@ -79,11 +79,6 @@ All other files are out of scope
 
 ## REVIEWER RESPONSE ACCOUNTING
 - [x] Reviewed all reviewer comments, bot comments, and review threads.
-- review-comment:3474644506 — accepted — post-merge closeout remediation for prior PR #1981 — thread state: outdated
-- review-comment:3474644527 — accepted — post-merge closeout remediation for prior PR #1981 — thread state: outdated
-- review-comment:3474655690 — accepted — post-merge closeout remediation for prior PR #1981 — thread state: outdated
-- review-comment:3474655753 — accepted — post-merge closeout remediation for prior PR #1981 — thread state: outdated
-- review-comment:3474655785 — accepted — post-merge closeout remediation for prior PR #1981 — thread state: outdated
 - review-comment:3474664465 — accepted — post-merge closeout remediation for prior PR #1981 — thread state: outdated
 - review-comment:3474735526 — accepted — post-merge closeout remediation for prior PR #1981 — thread state: outdated
 - review-comment:3474841547 — accepted — post-merge closeout remediation for prior PR #1981 — thread state: outdated
@@ -104,7 +99,7 @@ All other files are out of scope
 - [x] Merge commit recorded: `4589576566653f2d9a8ba5d8da6bd3a74c631c06`
 - [x] Source issue #1962 state inspected after merge
 - [x] Post-merge closeout reconciliation for prior PR #1981 delegated to closeout workflow
-- [x] Source issue closeout delegated to post-merge closeout workflow
+- [x] Remediation follow-up for closed source issue #1962 recorded in this post-merge closeout body
 
 ## REQUIRED PRE-REVIEW SELF-CHECK
 - [x] PR body contains all required sections with exact headings

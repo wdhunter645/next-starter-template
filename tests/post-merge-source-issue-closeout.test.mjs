@@ -74,6 +74,27 @@ describe('issue accounting formats', () => {
 		expect(resolveSourceIssueFromPr({ body: '<!-- orchestrator-source-issue: 1199 -->', title: 'closeout hardening', headRefName: 'codex/closeout-hardening' }).issueNumber).toBe('1199');
 	});
 
+	it('trusts authoritative closeout body lines over conflicting title and branch tokens', () => {
+		expect(resolveSourceIssueFromPr({
+			body: '- **Issue:** #1787',
+			title: 'ops(#1787): remediate PR #1786 closeout body and reconcile #1777 labels',
+			headRefName: 'cursor/closeout-1786-remediation-ff39',
+		})).toMatchObject({
+			issueNumber: '1787',
+			source: 'primary-body-line',
+			failures: [],
+		});
+		expect(resolveSourceIssueFromPr({
+			body: '- **Issue:** #2345',
+			title: 'ops(#2345): remediate #2340 post-merge closeout for #2286',
+			headRefName: 'cursor/2286-closeout-housekeeping-2e48',
+		})).toMatchObject({
+			issueNumber: '2345',
+			source: 'primary-body-line',
+			failures: [],
+		});
+	});
+
 	it('fails closed when source issue metadata is missing or ambiguous', () => {
 		expect(resolveSourceIssueFromPr({ body: '', title: 'closeout hardening', headRefName: 'codex/closeout-hardening' }).failures).toContainEqual(
 			expect.objectContaining({ code: 'missing_source_issue' }),
