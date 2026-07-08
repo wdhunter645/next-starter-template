@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: LGFC post-merge validation surface, evidence reporting model, remediation and orchestration pause behavior, source-issue closeout behavior
 Does Not Own: Pre-merge merge protection gates, OPS runtime monitoring behavior, website product behavior
 Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related issues: #1197, #1249, #1075, #1058, #1548, #1963, #2308, #2376
-Last Reviewed: 2026-07-06
+Related Issues: #1197, #1249, #1075, #1058, #1548, #1963, #2308, #2376, #2380
+Last Reviewed: 2026-07-08
 ---
 
 # LGFC Post-Merge Validation Surface
@@ -76,8 +76,42 @@ implementation evidence, DIATAXIS checks, and required workflow outcomes pass.
 ## Orchestration Behavior
 
 - Validation `pass` allows orchestrator post-merge success sync.
-- Validation `fail` blocks queue advancement and triggers remediation issue creation or update. A merged PR with failed required pre-merge gates is a post-merge Ops exception: the remediation issue records the merged PR, merge SHA, failed workflow run, failed job/step details when the Actions API exposes them, whether future PR/queue advancement is blocked, linked remediation issue evidence when known, and the requested Atlas/Bill owner action.
+- Validation `fail` blocks queue advancement and triggers remediation issue creation or update. A merged PR with failed required pre-merge gates is a post-merge Ops exception: the remediation issue records the merged PR, merge SHA, failed workflow run, failed job/step details when the Actions API exposes them, whether future PR/queue advancement is blocked, linked remediation issue evidence when known, and the requested ChatGPT/Bill owner action.
 - Optional non-blocking workflow failures may still be recorded without failing validation.
+
+## Merged PR with failed required pre-merge check (#2376)
+
+### Problem statement
+
+Bill or ChatGPT may authorize merge while a required pre-merge check on the PR head remains failed. Merge does not clear that failure. Before PR #2380, Post-Merge Detection could miss failed checks still attached to the PR head, leaving no automatic Ops issue and creating a visibility gap (observed on PR #2373 during Phase 0 launch).
+
+### Current expected behavior
+
+Post-#2380, Post-Merge Detection inspects required workflow outcomes on both merge SHA and PR head scope. When a merged PR still carries failed required pre-merge checks:
+
+1. post-merge validation status is `fail`;
+2. source-issue terminal closeout is refused until validation passes or Bill/ChatGPT records an accepted exception with authority;
+3. queue advancement halts;
+4. Post-Merge Remediation creates or updates a canonical remediation issue with PR, merge SHA, failed gate, run/job/step evidence, blocking status, linked root-cause issue when known, and requested owner/action;
+5. duplicate remediation issues are avoided by matching the canonical remediation group.
+
+Implementation reference: PR #2380. This reference documents behavior; it does not redefine workflow code.
+
+### Operator procedure
+
+When merge occurs with a known failed required pre-merge check, operators must verify automatic remediation surfaced the failure and use the manual fallback if it did not.
+
+Operator how-to (required reading): `docs/how-to/ci/merged-pr-failed-pre-gate-followup.md`.
+
+### Separate concerns
+
+| Track | Example | Owns |
+| --- | --- | --- |
+| Process visibility / automation gap | #2376 | Whether post-merge automation surfaces failed pre-gates |
+| Root-cause gate failure | #2374 | ZIP history artifact remediation |
+| Launch continuation | #2359 | Bill/ChatGPT program authorization |
+
+Do not merge these concerns into one undifferentiated issue.
 
 ## Source Issue Closeout
 
