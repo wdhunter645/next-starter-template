@@ -21,7 +21,9 @@ import {
 } from '../scripts/ci/run_post_merge_closeout.mjs';
 import {
 	blockingCloseoutFailures,
+	blockingFuturePrs,
 	findCanonicalRemediationIssue,
+	remediationBody,
 	shouldUpsertRemediationIssue,
 	selfHealingCanResolve,
 } from '../scripts/ci/post_merge_remediation_issue.mjs';
@@ -325,6 +327,45 @@ describe('closeout fail-safe remediation evidence', () => {
 			status: 'pass',
 			metadata_failures: [{ code: 'missing_advisory_section', severity: 'advisory', message: 'advisory' }],
 		})).toEqual([]);
+	});
+
+
+	it('records failed pre-gate run and job identifiers in remediation issue bodies', () => {
+		const body = remediationBody({
+			status: 'fail',
+			remediation_required: true,
+			pr: 2373,
+			merge_sha: 'abc123',
+			source_issue: 2376,
+			workflow_run_url: 'https://github.test/actions/runs/999',
+			workflow_failures: [
+				{
+					workflow: 'ZIP History Audit (Full History)',
+					classification: 'required-workflow-failure',
+					required: true,
+					run_id: 28957717158,
+					url: 'https://github.test/actions/runs/28957717158',
+					jobs: [
+						{
+							id: 12345,
+							name: 'audit',
+							conclusion: 'failure',
+							failed_steps: [{ name: 'Scan full git history for ZIPs', conclusion: 'failure' }],
+						},
+					],
+				},
+			],
+		});
+
+		expect(body).toContain('- PR: #2373');
+		expect(body).toContain('- Merge SHA: abc123');
+		expect(body).toContain('- Blocking future PRs: yes');
+		expect(body).toContain('- Linked remediation issue: none recorded');
+		expect(body).toContain('- Requested owner/action: Atlas/Bill review');
+		expect(body).toContain('ZIP History Audit (Full History)');
+		expect(body).toContain('run 28957717158');
+		expect(body).toContain('Job 12345: audit (failure); failed steps: Scan full git history for ZIPs (failure)');
+		expect(blockingFuturePrs({ workflow_failures: [{ required: true }] })).toContain('yes');
 	});
 
 	it('skips remediation issue creation when self-healing proves a safe resolution', () => {

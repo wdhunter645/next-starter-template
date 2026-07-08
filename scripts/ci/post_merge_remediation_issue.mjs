@@ -295,6 +295,16 @@ export function remediationTitle(result) {
 	return `${REMEDIATION_TITLE_PREFIX}${pr} / ${exceptionKey(result)}`;
 }
 
+export function blockingFuturePrs(result = {}) {
+	return blockingCloseoutFailures(result).length > 0
+		? 'yes — queue advancement remains stopped until this Ops exception is resolved'
+		: 'no — no blocking closeout failures recorded';
+}
+
+export function linkedRemediationIssue(result = {}) {
+	return result.linked_remediation_issue || result.remediation_issue || result.remediationIssue || 'none recorded';
+}
+
 export function remediationBody(result) {
 	const conditions = failureConditions(result);
 	const lines = [
@@ -307,6 +317,9 @@ export function remediationBody(result) {
 		`- Source issue closeout mode: ${result.source_issue_closeout_mode || 'not evaluated'}`,
 		`- Validator status: ${result.status}`,
 		`- Remediation required: ${result.remediation_required ? 'yes' : 'no'}`,
+		`- Blocking future PRs: ${blockingFuturePrs(result)}`,
+		`- Linked remediation issue: ${linkedRemediationIssue(result)}`,
+		`- Requested owner/action: Atlas/Bill review, then assign a bounded remediation owner before queue advancement resumes`,
 		`- Workflow run URL: ${result.workflow_run_url || 'not recorded'}`,
 		`- Terminal label result: ${result.terminal_label_result?.summary || 'not evaluated'}`,
 		`- Queue advancement status: ${result.queue_advancement_status || 'stopped; Atlas/Bill review required'}`,
@@ -346,8 +359,18 @@ export function remediationBody(result) {
 	if (result.workflow_failures?.length) {
 		for (const failure of result.workflow_failures) {
 			lines.push(
-				`- ${failure.workflow} — ${failure.classification} — ${failure.required ? 'required' : 'optional'} — ${failure.url || 'no run URL'}`,
+				`- ${failure.workflow} — ${failure.classification} — ${failure.required ? 'required' : 'optional'} — run ${failure.run_id || 'unknown'} — ${failure.url || 'no run URL'}`,
 			);
+			if (failure.jobs?.length) {
+				for (const job of failure.jobs) {
+					const steps = job.failed_steps?.length
+						? `; failed steps: ${job.failed_steps.map((step) => `${step.name} (${step.conclusion || 'unknown'})`).join(', ')}`
+						: '';
+					lines.push(`  - Job ${job.id || 'unknown'}: ${job.name || 'unknown job'} (${job.conclusion || 'unknown'})${steps}${job.url ? ` — ${job.url}` : ''}`);
+				}
+			} else {
+				lines.push('  - Job identifiers: not available from Actions API response');
+			}
 		}
 	} else {
 		lines.push('- none');

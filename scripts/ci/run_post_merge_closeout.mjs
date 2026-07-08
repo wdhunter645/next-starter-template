@@ -12,7 +12,7 @@ import {
 	shouldSuppressRemediationForCircuitBreaker,
 	upsertRemediationIssue,
 } from './post_merge_remediation_issue.mjs';
-import { runValidator, WORKFLOW_RUN_SCOPE_MERGE_ONLY } from './post_merge_validator.mjs';
+import { runValidator, WORKFLOW_RUN_SCOPE_MERGE_AND_HEAD } from './post_merge_validator.mjs';
 import { githubRepoRequest } from './github_issue_api.mjs';
 import {
 	applyTerminalLabelReconciliation,
@@ -270,7 +270,7 @@ export async function runPostMergeCloseout({
 	sha = '',
 	runId = '',
 	skipBodyApply = false,
-	workflowRunScope = WORKFLOW_RUN_SCOPE_MERGE_ONLY,
+	workflowRunScope = WORKFLOW_RUN_SCOPE_MERGE_AND_HEAD,
 	eventName = 'workflow_dispatch',
 	eventPrMerged = '',
 	eventPrBaseRef = '',

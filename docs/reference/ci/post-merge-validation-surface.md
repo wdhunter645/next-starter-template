@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: LGFC post-merge validation surface, evidence reporting model, remediation and orchestration pause behavior, source-issue closeout behavior
 Does Not Own: Pre-merge merge protection gates, OPS runtime monitoring behavior, website product behavior
 Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related issues: #1197, #1249, #1075, #1058, #1548, #1963, #2308
+Related issues: #1197, #1249, #1075, #1058, #1548, #1963, #2308, #2376
 Last Reviewed: 2026-07-06
 ---
 
@@ -61,7 +61,7 @@ Post-Merge Detection reports evidence from after merge; the pre-merge gate check
 - merged implementation evidence against declared allowlist and acceptance criteria
 - merged DIATAXIS documentation alignment
 - late trusted reviewer findings
-- required merge-protection workflow outcomes on merge/head SHAs
+- required merge-protection workflow outcomes on merge/head SHAs, including failed pre-merge checks still attached to the PR head at merge time
 
 ### Reviewer-disposition failures (blocking)
 
@@ -76,7 +76,7 @@ implementation evidence, DIATAXIS checks, and required workflow outcomes pass.
 ## Orchestration Behavior
 
 - Validation `pass` allows orchestrator post-merge success sync.
-- Validation `fail` blocks queue advancement and triggers remediation issue creation.
+- Validation `fail` blocks queue advancement and triggers remediation issue creation or update. A merged PR with failed required pre-merge gates is a post-merge Ops exception: the remediation issue records the merged PR, merge SHA, failed workflow run, failed job/step details when the Actions API exposes them, whether future PR/queue advancement is blocked, linked remediation issue evidence when known, and the requested Atlas/Bill owner action.
 - Optional non-blocking workflow failures may still be recorded without failing validation.
 
 ## Source Issue Closeout
@@ -99,7 +99,7 @@ Closeout does not run when validation status is `fail`, remediation remains requ
 
 ## Remediation Preservation
 
-Duplicate remediation issue cleanup remains unchanged. Canonical remediation issues stay open; duplicate remediation issues close. Failed validation continues to open or update remediation issues through `post_merge_remediation_issue.mjs`.
+Duplicate remediation issue cleanup remains unchanged. Canonical remediation issues stay open; duplicate remediation issues close. Failed validation continues to open or update remediation issues through `post_merge_remediation_issue.mjs`; duplicate creation is avoided by matching the canonical remediation group for the same PR/source/failure condition before creating a new issue.
 
 `Post-Merge Remediation` runs self-healing (backlog scan + detect + apply) before opening or updating exception issues. When self-healing cannot auto-close an exception, it comments on the same issue and adds the `ops-pr-escalation` label instead of opening child escalation issues. See `docs/explanation/ci/post-merge-self-healing-architecture.md`.
 
