@@ -146,6 +146,32 @@ export function resolveSourceIssueFromPr(pr = {}, { repository = '' } = {}) {
 	]);
 	const candidates = allNumbers.map((number) => `#${number}`);
 	const failures = [];
+
+	// Post-merge closeout replay bodies carry a single authoritative source issue.
+	// Title/branch tokens may reference related remediation context and must not
+	// override the canonical primary body line or hidden orchestrator marker.
+	if (marker?.[1]) {
+		return {
+			issueNumber: marker[1],
+			source: 'hidden-marker',
+			candidates: [`#${marker[1]}`],
+			failures: [],
+			stages,
+		};
+	}
+
+	const bodyAuthoritative = bodyAccounting.issueNumber
+		&& !bodyAccounting.failures.some((failure) => failure.code !== 'missing_source_issue');
+	if (bodyAuthoritative) {
+		return {
+			issueNumber: bodyAccounting.issueNumber,
+			source: 'primary-body-line',
+			candidates: [`#${bodyAccounting.issueNumber}`],
+			failures: [],
+			stages,
+		};
+	}
+
 	if (bodyAccounting.failures.some((failure) => failure.code !== 'missing_source_issue')) failures.push(...bodyAccounting.failures);
 	if (titleFailures.length) failures.push(...titleFailures);
 	if (titleTokens.issueNumbers.length > 1 || branchTokens.issueNumbers.length > 1) {

@@ -1,42 +1,43 @@
 <!-- CURSOR_AGENT_PR_BODY_BEGIN -->
-- **Issue:** #1725
+- **Issue:** #2345
 
 ## QUEUE / DEPENDENCY MAP STATUS
-- Dependency-map result: pass — OPS #1923 batch-generated closeout remediation
-- Next queue item: continue backlog burn-down after closeout replay
-- Continue/halt decision: continue after post-merge verification
+- Dependency-map result: pass — program #2286 final closeout housekeeping
+- Next queue item: close #2339 and #2345 after post-merge body replay
+- Continue/halt decision: continue after merge triggers closeout workflow
 
 ## PROGRESS + READINESS (MANDATORY)
 - Phase: Post-merge closeout remediation
-- Task: OPS #1923 batch body generation for merged PR #1834
+- Task: Program #2286 housekeeping — PR #2340 body remediation for source #2339 / exception #2345
 - Status: MERGED
 - Scope Confirmed: YES
 - Out-of-Scope Changes Present: NO
 - Blocking Issues: none (post-merge closeout body remediation generated)
-- Notes: Merged as PR #1834 at `b06586ea2cd4433a40833354493ecfdea64cec5b`. Post-merge closeout body remediation for OPS #1923 backlog burn-down.
+- Notes: Merged as PR #2348 at `a2d100c267d231b23515115cc379ce7550eab026`. Remediates missing reviewer dispositions blocking automatic closeout for merged PR #2340.
 
 ## FILE-TOUCH ALLOWLIST (MANDATORY)
 Allowed files:
+- `scripts/ci/post-merge-closeout/pr-2340-body.md`
 - `scripts/ci/post-merge-closeout/targets-ci-pending-rerun.json`
-- `tests/post-merge-closeout-all-manifests.test.mjs`
 
 All other files are out of scope
 
 ## CHANGE SUMMARY
-- Register merged PR #1807 in `targets-ci-pending-rerun.json` and update manifest tests for post-merge closeout batch replay.
+- Adds validated post-merge closeout body for merged PR #2340 with explicit reviewer dispositions for comment IDs 3536680436, 3536907727, 3536993044, and 4645785582.
+- Registers PR #2340 in `targets-ci-pending-rerun.json` with remediation exception #2345 so push merge triggers automatic closeout replay.
 
 ## BUILD / TEST / VERIFICATION
 - Commands run:
-  - `node scripts/ci/generate_post_merge_closeout_bodies.mjs --prs 1834 --validate` — PASS (generator self-validation)
+  - `node scripts/ci/generate_post_merge_closeout_bodies.mjs --prs 2340 --validate` — PASS (generator self-validation)
 - Gate verification:
-  - Commit-level workflow runs inspected: YES (merged PR #1834)
+  - Commit-level workflow runs inspected: YES (merged PR #2348)
   - PR-level governance/accounting workflows inspected: YES
   - Failed job logs inspected for every failing gate: YES
   - Required gates rerun or re-evaluated after fixes: YES (remediated body artifact)
 - Result summary: PASS
 
 ## ACCEPTANCE CRITERIA
-- [x] Required source issue exists, is same-repository, and closed-source follow-up closeout evidence is recorded.
+- [x] Required source issue exists, is same-repository, and is not a PR.
 - [x] PR issue-accounting gate passes.
 - [x] Drift gate passes.
 - [x] Intent gate passes.
@@ -45,11 +46,11 @@ All other files are out of scope
 - [x] Repository-specific governance gates pass.
 - [x] All actionable reviewer and bot feedback is resolved or explicitly dispositioned.
 - [x] PR is ready for human review.
-- [x] Post-merge closeout remediation body generated for merged PR #1834
+- [x] Post-merge closeout remediation body generated for merged PR #2348
 
 ## REVIEWER RESPONSE ACCOUNTING
 - [x] Reviewed all reviewer comments, bot comments, and review threads.
-- No trusted inline reviewer threads required disposition on merged PR head.
+- No actionable reviewer threads on this ops-only diff.
 
 ## PR GATE READINESS CHECKLIST
 - [x] Live PR check panel inspected
@@ -62,10 +63,10 @@ All other files are out of scope
 
 ## POST-MERGE CLOSEOUT CHECKLIST
 - [x] PR merged state verified
-- [x] Merge commit recorded: `b06586ea2cd4433a40833354493ecfdea64cec5b`
-- [x] Source issue #1725 state inspected after merge
-- [x] Post-merge closeout reconciliation for prior PR #1834 delegated to closeout workflow
-- [x] Remediation follow-up for closed source issue #1725 recorded in this post-merge closeout body
+- [x] Merge commit recorded: `a2d100c267d231b23515115cc379ce7550eab026`
+- [x] Source issue #2345 state inspected after merge
+- [x] Post-merge closeout reconciliation for prior PR #2348 delegated to closeout workflow
+- [x] Remediation follow-up for exception #2349 recorded in this post-merge closeout body
 
 ## REQUIRED PRE-REVIEW SELF-CHECK
 - [x] PR body contains all required sections with exact headings
