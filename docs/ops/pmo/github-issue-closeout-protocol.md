@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: GitHub issue closeout protocol, post-merge evidence requirements, bounded batch closeout, issue-mutation separation, atomic source-issue closeout, and successor queue advancement for LGFC program tasks
 Does Not Own: Merge authority, branch protection, workflow implementation, or issue mutation outside approved scope
 Canonical Reference: /docs/reference/pmo/lgfc-cursor-execution-contract.md
-Related Issues: #1411, #1409, #1379, #1255, #1335, #1548, #2359, #2360
+Related Issues: #1411, #1409, #1379, #1255, #1335, #1548, #2359, #2360, #2376, #2380
 Last Reviewed: 2026-07-08
 ---
 
@@ -122,6 +122,37 @@ blocker reporting.
 8. Keep umbrella or program issues open when the task says they remain active.
 9. Advance the next task only after source task closeout is clean and queue
    authority is clear.
+
+## Merged PR with failed required pre-merge check
+
+Merge authorization does not resolve a failed required pre-merge check that
+remained on the PR head at merge time.
+
+### Closeout rules
+
+When a merged PR still carried a failed required pre-merge check:
+
+1. Do not treat merge alone as closeout verified.
+2. Inspect Post-Merge Detection output for the merge commit before claiming
+   source-issue closeout or successor advancement.
+3. When post-merge validation fails, the source issue remains in closeout
+   verification or receives failure disposition; do not close it as completed
+   unless Bill/ChatGPT records an accepted exception with authority citation.
+4. Record failed gate name, workflow run, job, and step evidence in the
+   closeout packet when available.
+5. Link the canonical remediation issue and any root-cause ops issue (for
+   example ZIP history remediation) as separate tracks.
+6. Halt queue advancement until remediation posture is dispositioned or an
+   accepted exception is recorded on the parent program or source issue.
+
+### Operator procedure
+
+Follow `docs/how-to/ci/merged-pr-failed-pre-gate-followup.md` for verification
+checklist and manual fallback when automation does not create or update the
+expected remediation issue.
+
+Validation surface reference: `docs/reference/ci/post-merge-validation-surface.md`
+(merged PR with failed required pre-merge check).
 
 ## Atomic source-issue closeout and successor advancement
 

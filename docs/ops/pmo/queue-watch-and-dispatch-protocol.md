@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: LGFC queue watch, handoff marker dispatch, Cursor wake-label routing, silent-stall detection, and launch-halting process remediation routing
 Does Not Own: ChatGPT product automation configuration, GitHub workflow YAML implementation, merge authority, issue closure authority, branch deletion, or uncontrolled automatic issue mutation
 Canonical Reference: /docs/ops/pmo/github-issue-closeout-protocol.md
-Related Issues: #2396, #2391, #2386, #2360, #2361, #2363, #2364, #2359
+Related Issues: #2396, #2391, #2386, #2360, #2361, #2363, #2364, #2359, #2376, #2380
 Last Reviewed: 2026-07-08
 ---
 
@@ -53,6 +53,7 @@ The dispatcher must check these trigger classes for launched or launch-control w
 | Cursor task wake | Successor issue selected as the next active Cursor task | Set or verify `agent:cursor` and `handoff:ready`; do not rely on prose/comments alone. |
 | PR review/merge queue | Open PR tied to active source issue | Review readiness, close duplicate/superseded PRs, merge only when authorized and gates/exceptions are acceptable. |
 | Post-merge closeout | Merged PR and source issue state | Apply the GitHub Issue Closeout Protocol or record why closeout is blocked. |
+| Merged PR with failed required pre-gate | Merge completed while a required PR-head check remained failed | Verify Post-Merge Detection created or updated a `post-merge-failure` remediation issue; use `docs/how-to/ci/merged-pr-failed-pre-gate-followup.md` manual fallback if not; halt queue advancement until dispositioned. |
 | Successor unblock | Closed completed predecessor and open successor still blocked by that predecessor | Unblock, queue, explicitly halt successor, or create remediation; if routed to Cursor, set wake labels. |
 | Silent stall | No active Cursor task after predecessor close; successors remain blocked, unlabeled, or missing wake labels | Create/update remediation issue and route next eligible work with required labels. |
 | Launch-halting process failure | Any process defect preventing launch queue movement | Create/update Ops issue, document owner, stop condition, and next action. |
@@ -141,6 +142,7 @@ Create or update an Ops remediation issue when any of the following are true:
 - a handoff marker requiring ChatGPT action is not consumed by a configured watch or manual dispatcher;
 - a process failure stops launch work and is only recorded in chat;
 - a post-merge closeout packet lacks successor/queue disposition;
+- a merged PR carried a failed required pre-merge check and no canonical remediation issue surfaced the condition;
 - duplicate or superseded PRs remain open and obscure the active queue;
 - the project has no active Cursor task after a predecessor closes and the queue should continue;
 - a successor is described as the next Cursor task but lacks `agent:cursor` or `handoff:ready`.
@@ -198,6 +200,7 @@ Create/update remediation issue for any launch-halting process defect.
 
 ## Related authorities
 
+- Merged PR with failed pre-gate follow-up: `/docs/how-to/ci/merged-pr-failed-pre-gate-followup.md`
 - ChatGPT / Cursor handoff workflow: `/docs/ops/ai/chatgpt-cursor-handoff-workflow.md`
 - GitHub issue closeout protocol: `/docs/ops/pmo/github-issue-closeout-protocol.md`
 - PR lifecycle state machine: `/docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`

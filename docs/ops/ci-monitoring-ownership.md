@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: CI and OPS workflow monitoring ownership, trigger classes, escalation paths for the LGFC CI redesign
 Does Not Own: Workflow implementation code, branch protection settings, product UX behavior
 Canonical Reference: /docs/reference/ci/lgfc-ci-as-built-reconciliation.md
-Related Issues: #1199, #1075, #1058, #1335, #1340, #1343
-Last Reviewed: 2026-06-05
+Related Issues: #1199, #1075, #1058, #1335, #1340, #1343, #2376, #2380
+Last Reviewed: 2026-07-08
 ---
 
 # CI and OPS Monitoring Ownership
@@ -37,6 +37,7 @@ each workflow in `scripts/ci/ops_runtime_surface.mjs`.
 | Required PR check failure | GitHub PR checks panel | Fix and rerun on same PR |
 | Advisory PR comment | PR conversation | Correct metadata/docs before merge readiness claim |
 | Post-merge detection failure | `Post-Merge Detection` workflow on `main` | Remediation issue and follow-up PR |
+| Merged PR with failed required pre-merge check | PR checks panel at merge time plus `Post-Merge Detection` on merge commit | Verify canonical `post-merge-failure` remediation issue exists; use manual fallback in `docs/how-to/ci/merged-pr-failed-pre-gate-followup.md` if missing; route root-cause work separately |
 | Orchestrator pause | Issue labels / queue state | Complete remediation before next CI task starts |
 | OPS scheduled failure | OPS workflow run + issue | Triage using workflow artifacts and ops runbook |
 | Direct push to `main` | `OPS — Main Change Monitor` issue | Admin verification or revert |
@@ -53,7 +54,8 @@ each workflow in `scripts/ci/ops_runtime_surface.mjs`.
 
 1. Inspect `post-merge-result.md` artifact or PR comment from Post-Merge Detection.
 2. Open or update remediation work from generated issue output.
-3. Do not advance CI orchestration until post-merge validation passes.
+3. When merge occurred with a failed required pre-merge check still on the PR head, confirm the remediation issue names the failed gate and links root-cause work when known; follow `docs/how-to/ci/merged-pr-failed-pre-gate-followup.md`.
+4. Do not advance CI orchestration until post-merge validation passes or Bill/ChatGPT records an accepted exception with authority.
 
 ### OPS runtime
 
