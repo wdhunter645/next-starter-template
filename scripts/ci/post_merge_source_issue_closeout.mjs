@@ -7,6 +7,8 @@ export const STALE_SOURCE_ISSUE_LABELS = [
 	'status:pr-draft',
 	'status:review',
 	'status:implementation',
+	'status:implementation-ready',
+	'status:ready-for-cursor',
 ];
 
 export const REMEDIATION_ISSUE_LABEL = 'post-merge-failure';

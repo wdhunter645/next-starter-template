@@ -485,6 +485,8 @@ describe('source issue closeout evidence', () => {
 			'status:pr-draft',
 			'status:review',
 			'status:implementation',
+			'status:implementation-ready',
+			'status:ready-for-cursor',
 		]);
 	});
 
