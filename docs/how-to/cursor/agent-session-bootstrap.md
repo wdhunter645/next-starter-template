@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: Cursor local and Cloud Agent session bootstrap verification
 Does Not Own: Canonical governance doctrine or merge authority
 Canonical Reference: /Agent.md
-Related Issues: #1609, #1614
-Last Reviewed: 2026-06-12
+Related Issues: #1609, #1614, #2398
+Last Reviewed: 2026-07-08
 ---
 
 # Agent session bootstrap
@@ -66,6 +66,10 @@ npm test -- tests/agent-governance-bootstrap.test.mjs
 ```
 
 Both commands must pass before marking the PR ready for review.
+
+## Related procedures
+
+- Local GitHub poll-wake loop (optional activity watcher for open agent chats): [`github-poll-wake-loop.md`](./github-poll-wake-loop.md)
 
 ## Execution
 
