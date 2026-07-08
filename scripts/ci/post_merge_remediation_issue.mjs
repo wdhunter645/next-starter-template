@@ -346,8 +346,14 @@ export function remediationBody(result) {
 	if (result.workflow_failures?.length) {
 		for (const failure of result.workflow_failures) {
 			lines.push(
-				`- ${failure.workflow} — ${failure.classification} — ${failure.required ? 'required' : 'optional'} — ${failure.url || 'no run URL'}`,
+				`- ${failure.workflow} — ${failure.classification} — ${failure.required ? 'required / blocking future PRs' : 'optional / not blocking future PRs'} — run ${failure.run_id || 'unknown'} — ${failure.url || 'no run URL'}`,
 			);
+			for (const job of failure.jobs || []) {
+				lines.push(`  - Job ${job.id || 'unknown'}: ${job.name}${job.url ? ` — ${job.url}` : ''}`);
+				for (const step of job.steps || []) {
+					lines.push(`    - Step: ${step.name} (${step.conclusion || 'failed'})`);
+				}
+			}
 		}
 	} else {
 		lines.push('- none');
@@ -416,7 +422,7 @@ async function paginateOpenIssues({ token, repository }) {
 export function shouldUpsertRemediationIssue(result = {}) {
 	if (selfHealingCanResolve(result)) return false;
 	if (result.status === 'skipped') return false;
-	return blockingCloseoutFailures(result).length > 0;
+	return blockingCloseoutFailures(result).length > 0 || (result.workflow_failures || []).length > 0;
 }
 
 export function selfHealingCanResolve(result = {}) {

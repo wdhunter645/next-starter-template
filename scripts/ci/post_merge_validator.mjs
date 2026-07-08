@@ -521,6 +521,7 @@ export function classifyWorkflowRun(run, prBody = '') {
 		run_id: run.databaseId || run.id || null,
 		url: run.url || run.html_url || '',
 		conclusion,
+		jobs: run.failedJobs || [],
 		required,
 		classification,
 	};
@@ -807,18 +808,29 @@ async function enrichFailedRuns({ token, repository, runs, currentRunId }) {
 
 			try {
 				const jobs = await apiRequest({ token, repository, path: `/actions/runs/${runId}/jobs?per_page=100` });
-				const failureText = (jobs.jobs || [])
-					.flatMap((job) => [
-						job.name,
-						...(job.steps || [])
+				const failedJobs = (jobs.jobs || [])
+					.filter((job) =>
+						['failure', 'cancelled', 'timed_out', 'action_required'].includes(String(job.conclusion || '').toLowerCase())
+						|| (job.steps || []).some((step) =>
+							['failure', 'cancelled', 'timed_out', 'action_required'].includes(String(step.conclusion || '').toLowerCase()),
+						),
+					)
+					.map((job) => ({
+						id: job.id || null,
+						name: job.name || 'unknown job',
+						url: job.html_url || '',
+						conclusion: job.conclusion || '',
+						steps: (job.steps || [])
 							.filter((step) =>
 								['failure', 'cancelled', 'timed_out', 'action_required'].includes(String(step.conclusion || '').toLowerCase()),
 							)
-							.map((step) => step.name),
-					])
+							.map((step) => ({ name: step.name || 'unknown step', conclusion: step.conclusion || '' })),
+					}));
+				const failureText = failedJobs
+					.flatMap((job) => [job.name, ...(job.steps || []).map((step) => step.name)])
 					.filter(Boolean)
 					.join(' ');
-				return { ...run, failureText };
+				return { ...run, failureText, failedJobs };
 			} catch {
 				return run;
 			}

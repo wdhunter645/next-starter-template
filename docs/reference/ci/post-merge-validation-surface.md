@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: LGFC post-merge validation surface, evidence reporting model, remediation and orchestration pause behavior, source-issue closeout behavior
 Does Not Own: Pre-merge merge protection gates, OPS runtime monitoring behavior, website product behavior
 Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related issues: #1197, #1249, #1075, #1058, #1548, #1963, #2308
+Related issues: #1197, #1249, #1075, #1058, #1548, #1963, #2308, #2376
 Last Reviewed: 2026-07-06
 ---
 
@@ -77,6 +77,7 @@ implementation evidence, DIATAXIS checks, and required workflow outcomes pass.
 
 - Validation `pass` allows orchestrator post-merge success sync.
 - Validation `fail` blocks queue advancement and triggers remediation issue creation.
+- Any failed pre-merge gate/check still present on the merged PR head or merge evidence is recorded in an Ops remediation issue, even when the failure is advisory and does not fail source-issue closeout. The issue records the PR number, merge SHA, workflow/run/job/step evidence when available, whether the failure is required/blocking for future PRs, and the owner/action handoff.
 - Optional non-blocking workflow failures may still be recorded without failing validation.
 
 ## Source Issue Closeout
@@ -111,7 +112,7 @@ Duplicate remediation issue cleanup remains unchanged. Canonical remediation iss
 | `scripts/ci/post_merge_readiness_gate.mjs` | Runs the pre-merge post-merge-readiness gate against PR metadata collected via the GitHub API; workflow executes trusted base-ref gate code only |
 | `scripts/ci/post_merge_implementation_evidence.mjs` | Allowlist, acceptance, and verification evidence checks |
 | `scripts/ci/post_merge_diataxis_audit.mjs` | DIATAXIS post-merge audit helpers |
-| `scripts/ci/post_merge_remediation_issue.mjs` | Remediation issue generation on validation failure |
+| `scripts/ci/post_merge_remediation_issue.mjs` | Remediation issue generation on validation failure or failed pre-gate/check evidence after merge |
 | `scripts/ci/post_merge_reviewer_audit.mjs` | Late reviewer follow-up issue generation |
 | `scripts/ci/post_merge_source_issue_closeout.mjs` | Closeout decision helpers and evidence comment format |
 | `scripts/ci/post_merge_validation_surface.mjs` | Surface inventory validator |
