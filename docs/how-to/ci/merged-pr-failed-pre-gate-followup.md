@@ -71,7 +71,7 @@ Reference implementation and behavior summary: PR #2380 (`OPS: Surface failed pr
 
 Detailed validation surface: `docs/reference/ci/post-merge-validation-surface.md`.
 
-## Operator verification checklist (required after merge)
+## Procedure
 
 Run this checklist whenever merge occurred with a known failed required pre-merge check.
 
