@@ -2,10 +2,10 @@
 Doc Type: Operational Workflow
 Audience: ChatGPT, Cursor, Bill
 Authority Level: Agent-Specific Workflow
-Owns: Cursor to ChatGPT handoff format, Cursor wake-label expectations, source-issue PR-open notification, review-trigger expectations, and marker/dispatcher boundaries for LGFC repository work
-Does Not Own: Shared agent law, merge authorization, implementation authority, production design authority, PR lifecycle gates, ChatGPT account-level scheduled automation, or repo-native watch implementation
+Owns: Cursor to ChatGPT handoff format, Cursor wake-label expectations, source-issue PR-open notification, review-trigger expectations, local Cursor resume markers, and marker/dispatcher boundaries for LGFC repository work
+Does Not Own: Shared agent law, merge authorization, implementation authority, production design authority, PR lifecycle gates, ChatGPT account-level scheduled automation, Cursor cloud-agent invocation behavior, or repo-native watch implementation
 Canonical Reference: /docs/ops/ai/CHATGPT-RULES.md
-Related Issues: #2396, #2391, #2369, #2360, #2359
+Related Issues: #2396, #2391, #2379, #2369, #2360, #2359
 Last Reviewed: 2026-07-08
 ---
 
@@ -15,7 +15,7 @@ Last Reviewed: 2026-07-08
 
 Define the standard issue-based handoff workflow for LGFC repository work involving Cursor and ChatGPT.
 
-This file controls communication format, marker expectations, and Cursor wake-label expectations. It does not change implementation authority, review authority, merge authorization, closeout authority, PR lifecycle gates, shared agent law, or the requirement for a real dispatcher/watch to consume handoff markers.
+This file controls communication format, marker expectations, Cursor wake-label expectations, and local Cursor resume behavior. It does not change implementation authority, review authority, merge authorization, closeout authority, PR lifecycle gates, shared agent law, or the requirement for a real dispatcher/watch to consume handoff markers.
 
 ## Authority
 
@@ -35,6 +35,7 @@ This file controls communication format, marker expectations, and Cursor wake-la
 | Propagate chat decisions | ChatGPT | Bill and ChatGPT decide direction in chat UI | Source issue, PR, or repo doc | Write accepted decision into the relevant GitHub-controlled surface before Cursor is expected to act | Do not expect Cursor to act on chat-only context |
 | Route Cursor task | ChatGPT / Bill / authorized dispatcher | A successor issue is selected as the next active Cursor task | Source issue labels, body, and comment | Set or verify `agent:cursor` and `handoff:ready`, then comment the queue disposition | Do not claim Cursor is engaged if either wake label is missing |
 | Review handoff | ChatGPT | Issue has `agent:ChatGPT` and a `CHATGPT HANDOFF` comment that is surfaced by a manual dispatcher, scheduled watch, or explicit chat request | Source issue, PR, repo files, validation evidence | Respond in the issue or PR with decisions, requested changes, approval path, or closeout direction | Stop if repository authority or evidence is insufficient |
+| Resume local Cursor after delayed ChatGPT response | Local Cursor / Bill / authorized dispatcher | Prior local Cursor session stopped, timed out, or lost context after `CHATGPT HANDOFF`; GitHub later contains a ChatGPT response | Source issue and linked PR | Re-read the latest `CHATGPT RESPONSE` or `CHATGPT CLOSEOUT` comment, verify wake labels and issue state, then continue only from GitHub-recorded instructions | Stop if the latest response is absent, ambiguous, chat-only, or references stale branch/PR state |
 | Run queue/watch dispatcher | ChatGPT / Bill / authorized automation | Manual request, scheduled watch, or repo-native workflow | GitHub issues, PRs, labels, comments, and closeout evidence | Apply `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`; surface action, route next task, or create remediation issue | Do not mutate GitHub unless explicitly authorized |
 | Authorize merge readiness | ChatGPT / Bill | PR is ready for merge-readiness review | PR and source issue | Verify scope, source issue accounting, validation, PR body, and closeout expectations | Human authorization required for merge |
 
@@ -76,6 +77,72 @@ The handoff must include:
 - changed-file scope;
 - validation or check status;
 - requested ChatGPT action, such as PR review, merge-readiness review, or blocker decision.
+
+## ChatGPT response markers
+
+When ChatGPT responds to a Cursor handoff in GitHub and expects later local Cursor action, the response comment must begin with one of these stable markers:
+
+```text
+CHATGPT RESPONSE
+```
+
+or:
+
+```text
+CHATGPT CLOSEOUT
+```
+
+Use `CHATGPT RESPONSE` for decisions, requested changes, resumed implementation direction, or clarification. Use `CHATGPT CLOSEOUT` for merge-readiness disposition, source-issue closeout direction, queue disposition, or terminal stop/continue decisions.
+
+A resumable ChatGPT response must include:
+
+```text
+CHATGPT RESPONSE
+Issue: #<issue-number>
+Responds to: <handoff comment URL or PR number>
+Cursor local action: <resume | revise | open-pr | update-pr | stop | wait>
+Decision:
+- <accepted decision or requested change>
+Evidence / authority:
+- <repo doc, issue, PR, check, or validation evidence>
+Next step:
+- <single next action for local Cursor or explicit halt reason>
+```
+
+Do not rely on chat-only text, side-channel notes, or undocumented memory for local Cursor resumption.
+
+## Local Cursor resume protocol
+
+If a local Cursor session disconnects, idles out, or loses issue context after posting `CHATGPT HANDOFF`, a later Cursor session must resume from GitHub, not from chat memory.
+
+Resume checklist:
+
+1. Open the source issue named in the prior handoff.
+2. Find the latest `CHATGPT RESPONSE` or `CHATGPT CLOSEOUT` after the handoff comment.
+3. Verify the response references the same issue, PR, branch, and requested action.
+4. Verify current labels still permit Cursor action: `agent:cursor` plus `handoff:ready`, unless the response explicitly states a manual/no-loop exception.
+5. Verify no newer comment, PR review, failed check, merge, closeout, or issue state change supersedes the response.
+6. Continue only the single next action recorded in the GitHub response.
+7. If any item is missing or ambiguous, post a new `CHATGPT HANDOFF` asking for clarification and stop.
+
+The regression case for this protocol is #2360 / PR #2372: the workflow must remain resumable even if ChatGPT response arrives after the original local Cursor session is no longer active.
+
+## Cloud-agent invocation boundary
+
+Do not use `@cursor` when the intended actor is local Cursor. `@cursor` is treated as a cloud-agent invocation path, not a local Cursor resume marker.
+
+For local Cursor routing, use GitHub issue labels and explicit comments instead:
+
+```text
+LOCAL CURSOR RESUME
+Issue: #<issue-number>
+Source handoff: <comment URL>
+Resume from: <CHATGPT RESPONSE or CHATGPT CLOSEOUT comment URL>
+Next local action:
+- <single bounded action>
+```
+
+`LOCAL CURSOR RESUME` is a human/operator marker for local Cursor context recovery. It does not wake Cursor by itself and must still be paired with an authorized dispatcher path or manual operator action.
 
 ## Watch marker limitation
 
