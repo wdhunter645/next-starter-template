@@ -2,11 +2,11 @@
 Doc Type: Operations
 Audience: Human + AI
 Authority Level: Operational Authority
-Owns: GitHub issue closeout protocol, post-merge evidence requirements, bounded batch closeout, and issue-mutation separation for LGFC program tasks
+Owns: GitHub issue closeout protocol, post-merge evidence requirements, bounded batch closeout, issue-mutation separation, atomic source-issue closeout, and successor queue advancement for LGFC program tasks
 Does Not Own: Merge authority, branch protection, workflow implementation, or issue mutation outside approved scope
 Canonical Reference: /docs/reference/pmo/lgfc-cursor-execution-contract.md
-Related Issues: #1411, #1409, #1379, #1255, #1335, #1548
-Last Reviewed: 2026-06-15
+Related Issues: #1411, #1409, #1379, #1255, #1335, #1548, #2359, #2360
+Last Reviewed: 2026-07-08
 ---
 
 # GitHub Issue Closeout Protocol
@@ -24,6 +24,7 @@ This document owns:
 - separation between evidence preparation and issue mutation;
 - bounded batch closeout authorization;
 - terminal completed-issue label reconciliation;
+- atomic source-issue closeout and successor queue advancement;
 - umbrella issue closeout exclusion policy;
 - Program 2 non-interference during Program 1 planning;
 - Cursor closeout recommendations and stop points.
@@ -40,6 +41,10 @@ This document does not own:
 - Cursor may document closeout recommendations, but may not close issues,
   relabel issues, advance queues, or mutate issue state unless the active source
   issue explicitly authorizes that action.
+- Source-issue closure must not be separated from terminal label reconciliation
+  or required successor queue disposition. If successor state cannot be verified
+  or updated, the source issue remains in closeout verification and the blocker
+  is recorded.
 - Program 1 `#1411` planning must not mutate active Program 2 `#1255` issues.
 - Completed Program 1 `#1335` is historical evidence only and is not the closeout
   parent for the new Program 1 cycle.
@@ -61,6 +66,8 @@ This document does not own:
 - Automation can later consume a clear closeout packet without guessing at merge,
   issue, or queue state.
 - Completed source issues do not retain stale active or failure workflow labels.
+- A completed predecessor issue unblocks or explicitly halts its successor in the
+  same authorized closeout pass.
 - Batch closeout remains bounded by explicit Atlas/Bill authorization.
 - Cursor stops at evidence and recommendation unless mutation is separately
   authorized.
@@ -75,6 +82,11 @@ for an authorized human or automation path.
 
 Merge is not sufficient closeout evidence by itself.
 
+Source-issue closure is an atomic closeout action. A source issue must not be
+closed as complete unless the same authorized closeout pass also records terminal
+label reconciliation, parent or umbrella disposition, successor or queue
+disposition, and any remediation or tracker follow-up.
+
 ## Required Closeout Evidence
 
 A closeout packet must identify:
@@ -88,6 +100,8 @@ A closeout packet must identify:
 - authorized issue action, if any;
 - terminal label reconciliation decision, if any;
 - queue advancement decision, if any;
+- successor issue actions, including unblock, continue, halt, or not applicable;
+- parent, project, program, or tracker actions, if any;
 - unresolved blockers or follow-up items;
 - rollback or remediation path when applicable.
 
@@ -108,6 +122,82 @@ blocker reporting.
 8. Keep umbrella or program issues open when the task says they remain active.
 9. Advance the next task only after source task closeout is clean and queue
    authority is clear.
+
+## Atomic source-issue closeout and successor advancement
+
+A completed source issue may be closed only inside an atomic closeout pass. The
+same pass must decide and record the successor state before reporting closeout as
+clean.
+
+### Required atomic actions
+
+When closing a source issue as completed, the authorized closeout actor must:
+
+1. read the source issue state, labels, body, and latest closeout-relevant
+   comments;
+2. confirm the merged PR, merge commit, validation status, and accepted
+   exceptions;
+3. compute and apply terminal source-issue labels in the same mutation path as
+   closure;
+4. identify successor, dependent, parent, project, program, tracker, and
+   remediation issues named by the source issue, PR body, parent issue, or queue
+   map;
+5. decide for each successor whether it is unblocked, still blocked, explicitly
+   deferred, or not applicable;
+6. update or comment on the successor issue when it is unblocked or remains
+   blocked for a documented reason;
+7. comment on the parent, project, or program issue when the parent actively
+   tracks child status or queue progression;
+8. record tracker or status-index follow-up only when the source issue or PR
+   explicitly owns that tracker/status surface;
+9. leave umbrella, master, project, and program issues open unless the bounded
+   closeout instruction explicitly names them for terminal closure;
+10. verify the final source issue state, terminal labels, successor state, and
+    queue continuation result before reporting closeout verified.
+
+### Successor advancement rule
+
+If the closed issue is a predecessor in a serial or partially serial queue, the
+next eligible issue must be advanced in the same closeout pass unless Bill or the
+source issue explicitly authorizes a halt or parallel execution exception.
+
+Advancement means one of the following, depending on the issue's existing label
+model and body vocabulary:
+
+- remove or supersede blocked-pending-predecessor state;
+- add or retain the appropriate active, assigned, implementation-ready, or
+  `agent:ChatGPT` routing state;
+- post a closeout/continuation comment naming the cleared predecessor and the
+  next allowed action;
+- record that the successor remains blocked and why.
+
+Do not close the predecessor as complete if the successor cannot be identified,
+its block state cannot be reconciled, or queue authority is unclear. Instead,
+leave the predecessor in closeout verification and record the blocker.
+
+### Closeout packet template
+
+Authorized closeout comments should use this minimum structure when a source
+issue is closed or intentionally left open after merge:
+
+```text
+CLOSEOUT VERIFIED
+Source issue: #____
+Merged PR: #____
+Merge commit: ______
+Validation: pass / accepted exception / failed
+Accepted exceptions: none / <exception and authority>
+Terminal labels reconciled: yes / no / not applicable
+Issue state: closed completed / remains open / blocked
+Successor issue action: unblocked #____ / remains blocked #____ / no queue action / halted
+Parent/project/program action: updated #____ / no parent action
+Tracker/status-index action: updated <path-or-issue> / no tracker action
+Remediation action: none / created #____ / remains open #____
+Queue continuation: continue / halt / not applicable
+```
+
+A closeout report that does not include successor or queue disposition is not
+closeout verified.
 
 ## Umbrella issue closeout exclusion policy
 
@@ -182,6 +272,11 @@ tasks. If the controller or Atlas closeout step cannot complete the label
 reconciliation, the source issue remains in closeout verification and the
 blocker is recorded instead of advancing the queue.
 
+Terminal label cleanup, source issue closure, and required successor queue
+disposition must not be split into separate follow-up tasks. If any one of those
+steps cannot be completed, closeout remains blocked and queue advancement halts
+unless Bill explicitly authorizes a recorded exception.
+
 ## Cursor Closeout Boundary
 
 Cursor may:
@@ -214,6 +309,8 @@ Each authorized closeout comment should include:
 - merge commit;
 - validation summary;
 - terminal label reconciliation result when the issue is closed as completed;
+- successor issue action or explicit no-queue-action statement;
+- parent, project, program, tracker, or status-index action when relevant;
 - superseded-by or deferred-to reference when relevant;
 - statement of whether the issue remains open or is closed;
 - queue advancement result or explicit "no queue action" statement.
@@ -245,6 +342,8 @@ Future workflow automation may use this protocol as the design target for:
 - closeout evidence packet schemas;
 - post-merge verification gates;
 - terminal completed-issue label reconciliation;
+- atomic successor advancement checks;
+- parent/project/program progress comment routing;
 - batch closeout safety checks;
 - queue advancement preconditions;
 - umbrella issue exclusion checks;
