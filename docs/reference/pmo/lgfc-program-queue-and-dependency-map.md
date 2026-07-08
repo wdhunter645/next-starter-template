@@ -2,20 +2,18 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Operational Authority
-Owns: Launched-program queue mode, dependency-map requirements, execution-mode selection, and continue/halt decision rules for PMO-governed programs
-Does Not Own: Workflow YAML implementation, GitHub merge authority, issue mutation authority, or orchestrator label automation
+Owns: Launched-program queue mode, dependency-map requirements, execution-mode selection, continue/halt decision rules, and dispatcher requirements for PMO-governed programs
+Does Not Own: Workflow YAML implementation, GitHub merge authority, issue mutation authority, ChatGPT account-level scheduled automation, or uncontrolled orchestrator label automation
 Canonical Reference: /docs/reference/pmo/lgfc-program-portfolio-model.md
-Related Issues: #1449, #1448, #1411, #1255, #1256, #1258, #1259, #1501, #1500, #1719, #1725
-Last Reviewed: 2026-06-19
+Related Issues: #2391, #2386, #2360, #2361, #2363, #2364, #1449, #1448, #1411, #1255, #1256, #1258, #1259, #1501, #1500, #1719, #1725
+Last Reviewed: 2026-07-08
 ---
 
 # LGFC Program Queue and Dependency Map
 
 ## Purpose
 
-Define how LGFC program issues advance through prepared task queues when an approved
-dependency map exists, and how that model differs from one-task handoff mode for
-one-off work or programs without approved dependency maps.
+Define how LGFC program issues advance through prepared task queues when an approved dependency map exists, and how that model differs from one-task handoff mode for one-off work or programs without approved dependency maps.
 
 ## Scope
 
@@ -25,12 +23,14 @@ This document owns:
 - one-task handoff mode definition;
 - dependency-map structure and approval requirements;
 - continue/halt decision rules Cursor may apply from documentation;
-- authority boundaries for Bill (merge) and Atlas (batch verification/rebaseline).
+- dispatcher/watch requirements for keeping a launched queue moving;
+- authority boundaries for Bill (merge) and Atlas/ChatGPT (batch verification/rebaseline).
 
 This document does not own:
 
 - workflow YAML or orchestrator script implementation;
 - GitHub issue closure, relabeling, or queue mutation;
+- ChatGPT product automation configuration;
 - production configuration or secrets;
 - merge, approval, closeout, or destructive-action authority.
 
@@ -64,8 +64,12 @@ This document does not own:
   launch authorization.
 - PMO automation **new execution** from the #1411 planning body remains blocked
   until Program #1255 is completed and signed off.
+- Queue markers such as labels, blocked-status text, dependency-map rows, and
+  `CHATGPT HANDOFF` comments do not advance work by themselves. A launched queue
+  requires a manual dispatcher, scheduled ChatGPT watch, or repo-native automation
+  path defined in `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`.
 - Bill owns merge authority, launch gates, and destructive issue actions.
-- Atlas owns governance review, queue conformance, batch verification, and
+- Atlas/ChatGPT owns governance review, queue conformance, batch verification, and
   rebaseline authority.
 - Cursor may not merge, approve, close, relabel, advance queues, or mutate issue
   state unless the active source issue explicitly authorizes that action.
@@ -80,11 +84,12 @@ This document does not own:
   queues.
 - Implementation plans require dependency maps before launch.
 - Task issues and PR bodies report queue position and continue/halt decisions.
+- Every launched queue has a documented dispatcher/watch path so a completed
+  predecessor cannot leave eligible successor work silently blocked.
 
 ## Execution Modes
 
-LGFC recognizes two execution modes. Select the mode from program issue state and
-dependency-map approval, not from agent preference.
+LGFC recognizes two execution modes. Select the mode from program issue state and dependency-map approval, not from agent preference.
 
 ### Mode A — One-Task Handoff
 
@@ -105,6 +110,8 @@ one source issue → one PR → READY FOR REVIEW → human review → closeout �
 - The next task requires a new explicit authorization (Atlas/Bill/controller
   `@cursor` comment or a new source issue assignment).
 - Cursor must not infer the next task from queue order, labels, or merge state.
+- The operator must still create an Ops remediation issue if a process failure
+  leaves launch work halted without an active next task.
 
 ### Mode B — Launched-Program Queue
 
@@ -128,17 +135,40 @@ approved dependency map → active task issue → one PR → READY FOR REVIEW �
   authorization all permit it.
 - Cursor must halt when a rebaseline pause, open halt checkpoint, or unresolved
   blocker is documented in the map or active issue.
+- A launched-program queue must have a dispatcher/watch path under
+  `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`. Without that path, queue
+  markers are manual-only metadata and must not be described as active watches.
 
-Launched-program queue mode does not grant Cursor merge, close, relabel, queue
-mutation, or issue-state authority.
+Launched-program queue mode does not grant Cursor merge, close, relabel, queue mutation, or issue-state authority.
+
+## Queue watch and dispatcher requirement
+
+For launched or launch-control work, closeout is not complete until queue continuation has been checked.
+
+The responsible Atlas/ChatGPT/operator path must verify:
+
+1. the predecessor issue state and terminal labels;
+2. the successor or dependent issues named by the issue body, parent issue, PR body, or dependency map;
+3. whether each successor is unblocked, queued, still blocked, or explicitly halted;
+4. whether Cursor has exactly one next active source issue unless parallel work is authorized;
+5. whether an Ops remediation issue exists for any silent-stall or dispatcher failure.
+
+If a predecessor closes and any successor still says blocked by that predecessor, the dispatcher must correct the successor state or create/update a remediation issue. Do not treat stale blocked text as harmless documentation drift.
+
+Regression case for this requirement:
+
+```text
+#2360 closed completed.
+#2361, #2363, and #2364 still said Blocked Pending #2360.
+Cursor had no next active Phase 0 task.
+Expected correction: #2361 active for Cursor; #2363/#2364 unblocked but queued; remediation issue opened for watch/dispatcher gap.
+```
 
 ## Dependency Map Requirements
 
 ### Plan-Level Map (Required Before Launch)
 
-Every implementation plan for a launched program issue must include a **Dependency Map**
-section before the plan may move to `production-ready` or authorize issue
-creation.
+Every implementation plan for a launched program issue must include a **Dependency Map** section before the plan may move to `production-ready` or authorize issue creation.
 
 Required map fields per task or checkpoint:
 
@@ -173,9 +203,7 @@ Approval:
 | Task 006 `#1725` | Same plan; reconciliation report `docs/ops/reports/program-1500-queue-wave-reconciliation.md` | Active reconciliation — Program #1500 closeout vs queue/wave model |
 | Tasks 007–008 | Same plan | Blocked — Task 007 halts until #1725 merges; Task 008 is terminal closeout |
 
-Program #1500 closeout is **not** an active queue lane. It is closed complete
-historical evidence consumed by Task #1725. Cursor must not rebuild #1500
-workflow or closeout work without a new CI source issue.
+Program #1500 closeout is **not** an active queue lane. It is closed complete historical evidence consumed by Task #1725. Cursor must not rebuild #1500 workflow or closeout work without a new CI source issue.
 
 ### Issue-Level Fields (Required for Queue Tasks)
 
@@ -187,9 +215,9 @@ Every executable task issue in launched-program queue mode must state:
 | Successor | `#1403` or `Task 005` |
 | Stage-before-merge | `yes` / `no` |
 | Halt/resume condition | Rebaseline complete; `#1448` closed; predecessor PR merged |
+| Dispatcher path | manual / scheduled ChatGPT watch / repo-native automation / not configured |
 
-Partial overlap with dependency/blocking criteria is not sufficient. Use the
-field names above in the issue body.
+Partial overlap with dependency/blocking criteria is not sufficient. Use the field names above in the issue body.
 
 ### PR-Level Reporting (Required for Queue Tasks)
 
@@ -200,9 +228,9 @@ Every PR for a launched-program queue task must report:
 | Dependency-map result | `pass` / `fail` / `not-applicable` |
 | Next queue item | issue number and title, `halt — <reason>`, or `not-applicable` |
 | Continue/halt decision | `continue` / `halt` / `not-applicable` with one-sentence rationale |
+| Dispatcher/remediation result | active dispatcher checked / remediation issue created / not-applicable |
 
-See `/.github/pull_request_template.md` and
-`/docs/how-to/cursor/open-task-pr.md`.
+See `/.github/pull_request_template.md` and `/docs/how-to/cursor/open-task-pr.md`.
 
 ## Continue vs Halt Decision Rules
 
@@ -216,8 +244,7 @@ Cursor may **continue** (prepare or update the current task PR) when:
 5. validation can run or a concrete blocker can be reported;
 6. explicit continuation authorization permits the next child task when required.
 
-Cursor must **halt** (stop at `READY FOR REVIEW` or report without
-implementing) when:
+Cursor must **halt** (stop at `READY FOR REVIEW` or report without implementing) when:
 
 1. a rebaseline pause is active (for example `#1448` while open);
 2. the dependency map marks the next item blocked;
@@ -226,23 +253,23 @@ implementing) when:
    issue creation without explicit authorization;
 5. more than one source issue would be needed for the PR body.
 
-When halted, Cursor reports the blocking checkpoint, the next queue item if
-known, and the continue/halt decision. Cursor does not infer authorization from
-labels, merge state, or queue order alone.
+When halted, Cursor reports the blocking checkpoint, the next queue item if known, and the continue/halt decision. Cursor does not infer authorization from labels, merge state, or queue order alone.
+
+If the halt is caused by missing dispatcher/watch behavior, stale blocked successor state, or launch-halting process failure, Atlas/ChatGPT must create or update an Ops remediation issue under `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`.
 
 ## Authority Model
 
 | Role | Authority |
 | --- | --- |
 | Bill | Merge, launch gates, destructive issue actions, strategy exceptions |
-| Atlas | Governance review, queue conformance, batch verification, rebaseline, dependency-map approval preparation |
+| Atlas/ChatGPT | Governance review, queue conformance, batch verification, rebaseline, dispatcher/remediation routing when authorized |
 | Cursor | Bounded implementation, validation, PR-body evidence, `READY FOR REVIEW` handoff |
 
-Cursor does not own merge, approval, closeout, relabel, production, or secret
-authority in either execution mode.
+Cursor does not own merge, approval, closeout, relabel, production, or secret authority in either execution mode.
 
 ## Related References
 
+- Queue watch / dispatcher protocol: `/docs/ops/pmo/queue-watch-and-dispatch-protocol.md`
 - Cursor execution contract: `/docs/reference/pmo/lgfc-cursor-execution-contract.md`
 - PMO critical path: `/docs/ops/pmo/critical-path.md`
 - Implementation plan format: `/docs/ops/implementation-plans/README.md`
