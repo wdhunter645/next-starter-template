@@ -37,6 +37,7 @@ Each major program should leave at least one reusable control for the next progr
 | ZIP intake can fail full-history audit on unrelated PRs | #2374 | Intake how-to and remediation planning separate from process visibility |
 | Cloud Cursor may fail on billing limits | #2360 `@cursor` comment | Document fallback; do not assume cloud pickup |
 | Lessons register should exist before launch | #2366 scope | This document (in progress while #2359 runs) |
+| Docs-only ops PR closeout may fail on PR-body metadata | PR #2395 / #2376 | Pre-merge PR body hygiene + remove `status:in-progress` before merge; manual closeout when deliverable verified on `main` |
 
 ## Content Collection Phase 0 launch lessons (in progress)
 
@@ -70,12 +71,26 @@ Captured during #2359 documentation-promotion launch. Expand as launch continues
 
 **Control:** Append launch lessons here as they occur; link from #2366 and #2359; close #2366 only after Bill/ChatGPT authorize register maintenance complete.
 
+### L-CC-004 — Docs-only ops PR post-merge closeout hygiene (#2376 / #2395)
+
+**Observed:** PR #2395 merged the #2376 documentation deliverable, but Post-Merge Detection failed (`metadata=3`, `terminal_label_conflict` from `status:in-progress` on source issue). Remediation issue #2403 opened.
+
+**Impact:** Source issue remained open with `status:failed` despite docs landing on `main`; queue appeared blocked.
+
+**Controls adopted:**
+
+- Phase 0 launch playbook Step 4–5: PR-body sections and label hygiene before merge.
+- Drive intake how-to Step 6 gate checklist.
+- Manual closeout acceptable when deliverable verified on `main` and automation gap is documented (#2403 disposition).
+
+**Still open:** Prefer fixing PR body and labels **before** merge to avoid remediation churn.
+
 ## Open PMO improvement opportunities
 
 | ID | Opportunity | Suggested next step |
 | --- | --- | --- |
-| O-001 | Phase 0 launch playbook for #2359 child chain | How-to under `docs/how-to/ops/` (see #2389 R4) |
-| O-002 | Drive-draft intake how-to with ZIP gate interaction | How-to (see #2389 R5) |
+| O-001 | Phase 0 launch playbook for #2359 child chain | **Done** — `docs/how-to/ops/content-collection-phase0-launch-playbook.md` |
+| O-002 | Drive-draft intake how-to with ZIP gate interaction | **Done** — `docs/how-to/ops/drive-draft-intake-and-promotion.md` |
 | O-003 | Child issue template references handoff doc by path only | ChatGPT issue hygiene on #2361–#2365 |
 | O-004 | Cloud Cursor billing fallback in Cursor rules | Docs PR when authorized |
 | O-005 | Label automation on `CHATGPT HANDOFF` | Evaluate separately; not required for #2376 docs closeout |
@@ -84,10 +99,10 @@ Captured during #2359 documentation-promotion launch. Expand as launch continues
 
 ### Before launch
 
-- [ ] Lessons register exists or is explicitly in progress (#2366).
-- [ ] Handoff workflow doc path is canonical and referenced from program issues.
-- [ ] Queue watch / dispatcher procedure is identified (manual or automated).
-- [ ] Intake mechanics (including ZIP audit interaction) are documented or tracked as ops work.
+- [x] Lessons register exists or is explicitly in progress (#2366).
+- [x] Handoff workflow doc path is canonical and referenced from program issues.
+- [x] Queue watch / dispatcher procedure is identified (manual or automated).
+- [x] Intake mechanics (including ZIP audit interaction) are documented or tracked as ops work.
 
 ### During execution
 
@@ -118,5 +133,7 @@ When starting a new LGFC program, add a row to the lessons table and answer:
 - Parent program: #2359
 - Lessons issue (open): #2366
 - Phase 0 workflow review: #2389
+- Phase 0 launch playbook: `docs/how-to/ops/content-collection-phase0-launch-playbook.md`
+- Drive intake how-to: `docs/how-to/ops/drive-draft-intake-and-promotion.md`
 - Queue watch protocol: `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`
 - Handoff workflow: `docs/ops/ai/chatgpt-cursor-handoff-workflow.md`

@@ -35,7 +35,7 @@ Intake rule (from intake README/manifest): staged `.docx` files and the retained
 
 | Command | Result |
 | --- | --- |
-| `bash scripts/ci/docs_check_headers.sh` | **FAIL** — pre-existing: `docs/ops/ai/atlas-cursor-handoff-workflow.md` missing required docs header fence |
+| `bash scripts/ci/docs_check_headers.sh` | **FAIL** — pre-existing on intake branch: legacy handoff path reference; active workflow is `docs/ops/ai/chatgpt-cursor-handoff-workflow.md` |
 | `node scripts/ci/diataxis_folder_audit.mjs` | **PASS** — no DIATAXIS folder hygiene defects detected |
 | `node scripts/check-repo-structure.mjs` | **PASS** |
 | `node .agents/checks/agent-governance-check.mjs` | **PASS** |
@@ -89,7 +89,7 @@ Governance / CI / PMO / PR:
 - `docs/ops/pmo/github-issue-closeout-protocol.md`
 - `docs/templates/agent-assignment-template.md`
 - `docs/reference/ci/*` (merge protection, post-merge validation, workflow inventory surfaces)
-- `docs/ops/ai/atlas-cursor-handoff-workflow.md`
+- `docs/ops/ai/chatgpt-cursor-handoff-workflow.md`
 
 Design / website surfaces:
 
