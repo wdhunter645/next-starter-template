@@ -5,7 +5,7 @@ Authority Level: Operational Plan (non-authoritative until promoted via Issue/PR
 Owns: CI-002 implementation envelope — safe administrative closeout auto-repair boundary for Content Collection program
 Does Not Own: Product defect repair, merge authorization, reviewer disposition, or live classifier implementation (#2361 is docs-only)
 Canonical Reference: /docs/reference/ci/post-merge-validation-surface.md
-Related Issues: #2361, #2359, #2360, #1131
+Related Issues: #2409, #2361, #2359, #2360, #1131
 Last Reviewed: 2026-07-08
 ---
 
@@ -44,8 +44,8 @@ CI-002 does **not** repair product, scope, security, build, data, auth, or desig
 | PR body auto-repair | `scripts/ci/run_pr_body_auto_repair.mjs` | Deterministic body fixes |
 | Closeout surface doc | `docs/reference/ci/post-merge-validation-surface.md` | Reference |
 | Verification closeout skill | `.agents/skills/lgfc-verification-closeout/SKILL.md` | Agent procedure |
-| Admin closeout classifier | `scripts/ci/closeout-classifier.mjs` | **Missing** — P1 implementation |
-| Admin auto-repair | `scripts/ci/admin-closeout-auto-repair.mjs` | **Missing** — P1 implementation |
+| Admin closeout classifier | `scripts/ci/closeout_classifier.mjs` | **Missing** — P1 implementation |
+| Admin auto-repair | `scripts/ci/admin_closeout_auto_repair.mjs` | **Missing** — P1 implementation |
 | Intake `docs/ops/programs/...` path | — | **Rejected** per #2360 |
 
 **Approved package path:** `docs/ops/implementation-plans/content-collection/packages/ci-002-admin-closeout-auto-repair-package.md`
@@ -124,6 +124,18 @@ Never auto-repair without Bill/ChatGPT:
 - Package path and affected files.
 - Blocker classification from table above.
 
+## Naming convention
+
+| Artifact kind | Convention | Example |
+| --- | --- | --- |
+| `scripts/ci/*.mjs` | **underscore** (matches `post_merge_validator.mjs`, `run_post_merge_closeout.mjs`) | `closeout_classifier.mjs`, `admin_closeout_auto_repair.mjs` |
+| `scripts/ci/fixtures/` | **underscore** directory names | `fixtures/admin_closeout/` |
+| `tests/` | **underscore** prefixes where applicable | `closeout_classifier.test.mjs` |
+| `docs/reference/ci/*.md` | **hyphen** reference doc filenames | `admin-closeout-auto-repair-contract.md` |
+| `.github/workflows/*.yml` | **hyphen** workflow filenames (existing repo pattern) | `post-merge-closeout.yml`, `ops-post-merge-self-healing.yml` |
+
+Allowlist globs below use underscore patterns for scripts/fixtures/tests and hyphen patterns for workflow filenames.
+
 ## Repo-verified implementation surfaces
 
 | Path | Status |
@@ -131,9 +143,9 @@ Never auto-repair without Bill/ChatGPT:
 | `scripts/ci/post_merge_validator.mjs` | Exists |
 | `scripts/ci/run_post_merge_closeout.mjs` | Exists |
 | `scripts/ci/run_pr_body_auto_repair.mjs` | Exists |
-| `scripts/ci/closeout-classifier.mjs` | To create (P1) |
-| `scripts/ci/admin-closeout-auto-repair.mjs` | To create (P1) |
-| `scripts/ci/fixtures/admin-closeout/` | To create (P1) |
+| `scripts/ci/closeout_classifier.mjs` | To create (P1) |
+| `scripts/ci/admin_closeout_auto_repair.mjs` | To create (P1) |
+| `scripts/ci/fixtures/admin_closeout/` | To create (P1) |
 | `docs/reference/ci/admin-closeout-auto-repair-contract.md` | To create with implementation |
 | This package | Operational envelope |
 
@@ -141,14 +153,16 @@ Never auto-repair without Bill/ChatGPT:
 
 ```text
 scripts/ci/**closeout**
-scripts/ci/**self-healing**
+scripts/ci/**self_healing**
 tests/**closeout**
-tests/**self-healing**
+tests/**self_healing**
 docs/ops/implementation-plans/content-collection/packages/ci-002-admin-closeout-auto-repair-package.md
 docs/reference/ci/admin-closeout-auto-repair-contract.md
 .github/workflows/*closeout*.yml
 .github/workflows/*self-healing*.yml
 ```
+
+`scripts/ci/**closeout**` matches existing underscore closeout scripts (for example `post_merge_closeout.mjs`). Workflow globs use hyphens because workflow filenames in this repo use hyphens.
 
 **Do not touch without approval:** feature implementation files, content asset libs, fanclub UI, middleware/auth, unrelated deploy workflows.
 
@@ -173,7 +187,7 @@ docs/reference/ci/admin-closeout-auto-repair-contract.md
 
 ```bash
 npm test -- --run tests/closeout*
-node scripts/ci/closeout-classifier.mjs --dry-run --pr <number>
+node scripts/ci/closeout_classifier.mjs --dry-run --pr <number>
 ```
 
 **Dry-run mode required** before any apply mode ships.

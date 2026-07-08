@@ -5,7 +5,7 @@ Authority Level: Operational Plan (non-authoritative until promoted via Issue/PR
 Owns: CI-001 implementation envelope — deterministic PR body generation and procedural preclearance for Content Collection work
 Does Not Own: Merge authorization, PR approval, Bill/ChatGPT gate decisions, or live CI script implementation (#2361 is docs-only)
 Canonical Reference: /docs/reference/ci/pr-hygiene-foundation.md
-Related Issues: #2361, #2359, #2360, #1131, #1075
+Related Issues: #2409, #2361, #2359, #2360, #1131, #1075
 Last Reviewed: 2026-07-08
 ---
 
@@ -30,7 +30,7 @@ Define a deterministic PR body generator and procedural preclearance validator t
 - Bypassing Bill/ChatGPT gates.
 - Resolving design ambiguity.
 - Codex assignment (Codex inactive per operating model).
-- Implementing `scripts/ci/pr-body-generator.mjs` in #2361 (Phase P1 child issue).
+- Implementing `scripts/ci/pr_body_generator.mjs` in #2361 (Phase P1 child issue).
 
 ## Current known truth
 
@@ -41,7 +41,7 @@ Define a deterministic PR body generator and procedural preclearance validator t
 | PR hygiene audit | `scripts/ci/pr_hygiene_audit.mjs` | **Exists** — does not generate bodies |
 | PR body auto-repair | `scripts/ci/run_pr_body_auto_repair.mjs` | **Exists** — post-open repair, not generator |
 | PR governance skill | `.agents/skills/lgfc-pr-governance/SKILL.md` | **Exists** |
-| PR body generator script | `scripts/ci/pr-body-generator.mjs` | **Missing** — implement in P1 child issue |
+| PR body generator script | `scripts/ci/pr_body_generator.mjs` | **Missing** — implement in P1 child issue |
 | Generator contract ref | `docs/reference/ci/pr-body-generator-contract.md` | **Missing** — create when implementation authorizes |
 | Intake draft target `docs/ops/programs/...` | — | **Rejected** — use path below |
 
@@ -55,7 +55,7 @@ CI-001 must preserve:
 
 - Exactly one primary source issue (`- **Issue:** #NNN`) unless approved mixed scope.
 - Bill/ChatGPT merge authority unchanged.
-- Parser-safe PR bodies per `SHARED-AGENT-RULES.md` and PR lifecycle docs.
+- Parser-safe PR bodies per `docs/ops/ai/SHARED-AGENT-RULES.md` and PR lifecycle docs.
 - No "pre-approved merge" language (rejected Accelerated Policy C1).
 
 ## Required generator inputs
@@ -118,14 +118,25 @@ Align with `.github/pull_request_template.md` plus Content Collection extensions
 
 **Administrative warning only:** formatting mismatch, optional as-built deferral with rationale, minor wording deviation.
 
+## Naming convention
+
+| Artifact kind | Convention | Example |
+| --- | --- | --- |
+| `scripts/ci/*.mjs` | **underscore** (matches `pr_hygiene_audit.mjs`, `run_pr_body_auto_repair.mjs`) | `pr_body_generator.mjs`, `validate_pr_body.mjs` |
+| `scripts/ci/fixtures/` | **underscore** directory names | `fixtures/pr_body_generator/` |
+| `tests/` | **underscore** test file prefixes | `pr_body_generator.test.mjs` |
+| `docs/reference/ci/*.md` | **hyphen** reference doc filenames (existing CI reference pattern) | `pr-body-generator-contract.md` |
+
+Allowlist globs use underscore patterns for scripts, fixtures, and tests. Reference doc paths use the hyphenated filename above.
+
 ## Repo-verified future implementation surfaces
 
 | Path | Purpose |
 | --- | --- |
-| `scripts/ci/pr-body-generator.mjs` | Generator (to create) |
-| `scripts/ci/validate-pr-body.mjs` | Preclearance validator (to create or extend `pr_hygiene_audit.mjs`) |
-| `scripts/ci/fixtures/pr-body-generator/` | Fixture inputs/outputs |
-| `tests/pr-body-generator*.test.*` | Unit tests |
+| `scripts/ci/pr_body_generator.mjs` | Generator (to create) |
+| `scripts/ci/validate_pr_body.mjs` | Preclearance validator (to create or extend `pr_hygiene_audit.mjs`) |
+| `scripts/ci/fixtures/pr_body_generator/` | Fixture inputs/outputs |
+| `tests/pr_body_generator*.test.*` | Unit tests |
 | `docs/reference/ci/pr-body-generator-contract.md` | Reference contract (to create with implementation) |
 | This package | Operational envelope |
 
@@ -140,7 +151,7 @@ docs/ops/implementation-plans/content-collection/packages/ci-001-pr-body-generat
 docs/reference/ci/pr-body-generator-contract.md
 ```
 
-Note: existing scripts use underscores (`pr_hygiene_audit.mjs`, `run_pr_body_auto_repair.mjs`); globs above match underscore names.
+Globs match underscore script/fixture/test names per table above. The reference contract doc uses a hyphenated filename under `docs/reference/ci/`.
 
 **Do not touch without approval:** feature routes, content model libs, production deploy workflows, middleware/auth.
 
@@ -165,8 +176,8 @@ Note: existing scripts use underscores (`pr_hygiene_audit.mjs`, `run_pr_body_aut
 **Commands:**
 
 ```bash
-npm test -- --run tests/pr-body-generator*
-node scripts/ci/pr-body-generator.mjs --dry-run --fixture scripts/ci/fixtures/pr-body-generator/valid-cc-task.json
+npm test -- --run tests/pr_body_generator*
+node scripts/ci/pr_body_generator.mjs --dry-run --fixture scripts/ci/fixtures/pr_body_generator/valid-cc-task.json
 ```
 
 **Pass:** Generator produces template-compatible output; validator catches procedural defects.
