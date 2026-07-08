@@ -76,9 +76,9 @@ This how-to documents operator behavior for the **local poller** installed at `~
 | Success, `fresh: 0` | Connected; no qualifying **new** activity since last baseline |
 | Success, `fresh > 0` | New qualifying activity; agent wake line emitted |
 
-## How to start the loop
+## Procedure
 
-### Terminal (operator)
+### Start from terminal (operator)
 
 ```bash
 ~/.cursor/github-poller/poll-wake-loop.sh 5
@@ -86,7 +86,7 @@ This how-to documents operator behavior for the **local poller** installed at `~
 
 Requires `gh auth status` OK and one agent chat left open in the workspace.
 
-### Chat (Cursor agent)
+### Start from Cursor agent chat
 
 Ask the agent:
 
@@ -95,6 +95,14 @@ Start poll-wake-loop.sh 5 as a monitored background loop with full permissions (
 ```
 
 `required_permissions: ["all"]` is an **agent tool** setting when the agent spawns the background job. It is not bash syntax.
+
+### Operate the loop
+
+1. Leave one agent chat open in the workspace.
+2. Confirm `gh auth status` before starting.
+3. Avoid duplicate loops (`pgrep -af poll-wake-loop`); kill extras before a clean restart.
+4. Stop with **Ctrl+C** in the terminal running the loop.
+5. Reset baseline if needed: `rm ~/.cursor/github-poller/state.json`.
 
 **Reliability note:** agent-spawned background shells may still run under Cursor sandbox wrappers. Manual `gh` polls from fresh agent Shell calls can succeed while scheduled background ticks intermittently log `poll failed`. Treat the loop as **best-effort**, not a guaranteed notification bus.
 
@@ -124,17 +132,16 @@ GitHub does not push notifications to Cursor. Durable issue comments remain the 
 
 Cursor does not automatically begin the next queue issue from poll connectivity alone. Read the issue thread or act on an explicit chat instruction.
 
-## Stop conditions
+## Execution
 
-- Stop the loop with **Ctrl+C** in the terminal running `poll-wake-loop.sh`.
-- Kill duplicate loops before starting a clean restart (`pgrep -af poll-wake-loop`).
-- Do not treat poller wake as merge authorization or scope approval.
-
-## Verification
+Record verification in the PR body when this how-to is changed.
 
 ```bash
 gh auth status
 node ~/.cursor/github-poller/poll-github.mjs
+bash scripts/ci/docs_check_headers.sh
 ```
 
-Expect JSON with `"ok":true` and either `"fresh":0` or `"fresh":N`.
+Expect JSON with `"ok":true` and either `"fresh":0` or `"fresh":N` from the poller; docs header check **PASS** for repository doc changes.
+
+## Stop conditions
