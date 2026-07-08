@@ -66,7 +66,19 @@ Define the source, credit, citation, provenance, rights, privacy, publication-re
 
 ## Rights and privacy public-display rules
 
-Content **must not** display publicly when:
+Content **must not** display publicly when canonical or draft-equivalent states match the blocking sets below.
+
+### Field-name normalization (canonical → draft alias)
+
+| Canonical (repo authority) | CC-002 draft alias | Notes |
+| --- | --- | --- |
+| `privacy_flag` | `privacy_status` | Same semantic role in candidate/inventory models |
+| `review_status` | `publication_status` | Map draft publication states to `review_status` values in `lou-gehrig-content-metadata-schema.md` |
+| `rights_status` | draft rights labels (`unknown_pending_review`, …) | Map draft labels to canonical `rights_status` enum before enforcement |
+
+Implementers must normalize to **canonical** field names at runtime and in tests. Draft enum labels in this package are planning aliases only.
+
+### Blocking values
 
 | Domain | Blocking values |
 | --- | --- |

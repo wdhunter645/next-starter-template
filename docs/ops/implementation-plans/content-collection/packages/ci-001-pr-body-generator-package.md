@@ -132,13 +132,15 @@ Align with `.github/pull_request_template.md` plus Content Collection extensions
 ## File allowlist (CI-001 implementation child issue)
 
 ```text
-scripts/ci/**pr-body**
-scripts/ci/**pr-hygiene**
-tests/**pr-body**
-tests/**pr-hygiene**
+scripts/ci/**pr_body**
+scripts/ci/**pr_hygiene**
+tests/**pr_body**
+tests/**pr_hygiene**
 docs/ops/implementation-plans/content-collection/packages/ci-001-pr-body-generator-package.md
 docs/reference/ci/pr-body-generator-contract.md
 ```
+
+Note: existing scripts use underscores (`pr_hygiene_audit.mjs`, `run_pr_body_auto_repair.mjs`); globs above match underscore names.
 
 **Do not touch without approval:** feature routes, content model libs, production deploy workflows, middleware/auth.
 

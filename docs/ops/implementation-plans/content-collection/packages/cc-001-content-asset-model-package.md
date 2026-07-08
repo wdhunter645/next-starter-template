@@ -89,7 +89,7 @@ Feature lanes must consume only governed fields. Minimum consumption:
 
 ### Club Newspaper
 
-`title`, summary/body, media reference, block type, date/era, source/credit when derived, display priority.
+`id`, `title`, summary/body, media reference, block type, date/era, source/credit when derived, display priority.
 
 ## Freeze marker (blocks feature work)
 
@@ -130,10 +130,12 @@ docs/reference/website/unified-content-workflow.md
 docs/ops/implementation-plans/content-collection/packages/cc-001-content-asset-model-package.md
 functions/_lib/content-pipeline-*.ts
 functions/_lib/content-inventory-*.ts
-migrations/*content_asset*
+migrations/*content*
 tests/*content-asset*
 tests/*content-pipeline*
 ```
+
+Note: use `migrations/*content*` consistently (covers `content_asset` and related migration names).
 
 ## Parallel execution control
 
