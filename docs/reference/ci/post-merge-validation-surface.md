@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: LGFC post-merge validation surface, evidence reporting model, remediation and orchestration pause behavior, source-issue closeout behavior
 Does Not Own: Pre-merge merge protection gates, OPS runtime monitoring behavior, website product behavior
 Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related issues: #1197, #1249, #1075, #1058, #1548, #1963, #2308, #2376, #2380
+Related Issues: #1197, #1249, #1075, #1058, #1548, #1963, #2308, #2376, #2380
 Last Reviewed: 2026-07-08
 ---
 
