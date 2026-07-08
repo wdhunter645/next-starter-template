@@ -4,8 +4,8 @@ Audience: Human + AI
 Authority Level: Task Evidence
 Owns: Closeout evidence for ZIP history ref cleanup under issue #2374
 Does Not Own: Authorization for future repository-history rewrites or general ZIP-policy changes
-Canonical Reference: .github/platform-intent-and-zip-governance.md
-Related Issues: #2374, #2359
+Canonical Reference: /.github/platform-intent-and-zip-governance.md
+Related Issues: "#2374, #2359"
 Last Reviewed: 2026-07-08
 ---
 
@@ -16,6 +16,35 @@ Last Reviewed: 2026-07-08
 This report records the governed cleanup performed for issue #2374 after the ZIP history remediation plan identified two stale remote branch refs as the only known refs keeping the Content Collection ZIP artifact reachable.
 
 The cleanup followed the safest immediate path recommended in `docs/ops/implementation-plans/zip-history-remediation-plan-2374.md`: disposition stale branch refs first, then revalidate before considering any full repository history rewrite.
+
+## Scope
+
+This report is limited to closeout evidence for the #2374 stale-ref cleanup already performed against the two branch refs identified by the remediation plan.
+
+In scope:
+
+- record the affected refs and cleanup action;
+- record connector-side validation evidence;
+- record the expected PR and issue closeout path;
+- preserve the fact that no repository-wide history rewrite or purge workflow was run.
+
+Out of scope:
+
+- authorizing any future repository-history rewrite;
+- changing ZIP governance policy;
+- changing CI workflows or gates;
+- reopening or expanding Phase 0 documentation-promotion scope.
+
+## Current known truth
+
+As of this report:
+
+- `main` is the clean reference for the cleanup.
+- The two known stale refs from the #2374 plan were reset to `main` commit `e4d7d693d8bda9fc890edbe994491a6037328ee9`.
+- Connector comparison shows `atlas/drive-draft-intake-2367` is identical to `main`.
+- Connector comparison shows `cursor/2360-docs-audit-2e48` is identical to `main`.
+- ZIP History Audit passed on PR #2390 after the stale-ref cleanup.
+- Final issue closeout still depends on PR merge and post-merge verification.
 
 ## Source issue
 
