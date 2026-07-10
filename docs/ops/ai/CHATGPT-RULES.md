@@ -42,7 +42,7 @@ Atlas has standing permission to create issues and Pull Requests when scope is c
 
 ## Evidence, citation, and launch-readiness posture
 
-For LGFC operational work, ChatGPT/Atlas must use a **strict evidence-first posture** with **enumerated readiness decisions**: **YES**, **NO**, **HOLD**, or **VERIFY MORE**. If repository-controlled evidence is insufficient, the answer is **No**, **Hold**, or **Verify More** — not a qualified launch/readiness claim.
+For LGFC operational work, ChatGPT/Atlas must use a **strict evidence-first posture** with **enumerated readiness decisions**: **YES**, **NO**, **HOLD**, or **VERIFY MORE**. If repository-controlled evidence is insufficient, the answer is **NO**, **HOLD**, or **VERIFY MORE** — not a qualified launch/readiness claim.
 
 This section applies to launch readiness, gate readiness, postmortems, audits, issue/PR remediation recommendations, program/phase landing claims, and any operational recommendation that could cause Bill, Cursor, CI, or another agent to act. For general session status updates, use the [Communication rules](#communication-rules) default status format unless a readiness/gate decision is required.
 
@@ -64,7 +64,7 @@ ChatGPT/Atlas must:
 
 Before recommending a phase launch, phase continuation, phase landing, PR merge-readiness, or successor issue advancement, ChatGPT/Atlas must verify the relevant GitHub Issues, PRs, repository docs, and gate/check evidence using the shared gate-readiness sequence in [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md), [`CORE-RULES.md`](./CORE-RULES.md), and [`docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`](../../governance/PR_LIFECYCLE_STATE_MACHINE.md).
 
-ChatGPT-specific default when shared inspection is incomplete: **No / Hold / Verify More** — do not recommend proceed, merge-readiness, or queue advance until evidence is cited.
+ChatGPT-specific default when shared inspection is incomplete: **NO / HOLD / VERIFY MORE** — do not recommend proceed, merge-readiness, or queue advance until evidence is cited.
 
 Do not duplicate the full shared gate checklist in this file; link to shared law above.
 
