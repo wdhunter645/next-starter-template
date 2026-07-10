@@ -5,7 +5,7 @@ Authority Level: Operational Plan (non-authoritative until promoted via Issue/PR
 Owns: Index and navigation for Content Collection foundation and feature implementation packages
 Does Not Own: Canonical content model, governance law, runtime implementation, or merge authority
 Canonical Reference: /docs/ops/reports/content-collection-docs-audit-dedup-2360.md
-Related Issues: #2361, #2362, #2359, #2360, #1738, #2286
+Related Issues: #2361, #2362, #2364, #2359, #2360, #1738, #2286
 Last Reviewed: 2026-07-10
 ---
 
@@ -34,6 +34,17 @@ Navigate Content Collection implementation packages enriched from Drive intake d
 | MEM-001 | [mem-001-memorabilia-package.md](./packages/mem-001-memorabilia-package.md) | `/fanclub/memorabilia` | **Yes** |
 | CLUB-001 | [club-001-club-newspaper-design-package.md](./packages/club-001-club-newspaper-design-package.md) | `/fanclub` | **Conditional** — shell risk controls; content fields need freeze |
 
+## Support documents (#2364)
+
+| Doc ID | Title | Target path |
+| --- | --- | --- |
+| SUP-001 | Support docs index | [support-docs-index.md](./support/support-docs-index.md) |
+| SUP-002 | Label/status mapping addendum | [github-label-status-mapping-addendum.md](./support/github-label-status-mapping-addendum.md) |
+| SUP-003 | Cursor assignment prompt pack | [cursor-assignment-prompt-pack.md](./support/cursor-assignment-prompt-pack.md) |
+| SUP-004 | Review throttle / PR queue standard | [review-throttle-pr-queue-standard.md](./support/review-throttle-pr-queue-standard.md) |
+| SUP-005 | Deferred work register | [deferred-work-register.md](./support/deferred-work-register.md) |
+| SUP-006 | Risk register | [risk-register.md](./support/risk-register.md) |
+
 ## Current known truth
 
 - Rejected target roots: `docs/ops/programs/`, `docs/reference/website/content-collection/` (per #2360).
@@ -53,6 +64,11 @@ Navigate Content Collection implementation packages enriched from Drive intake d
 | `LIB-001 … Draft.docx` | `packages/lib-001-library-package.md` |
 | `MEM-001 … Draft.docx` | `packages/mem-001-memorabilia-package.md` |
 | `CLUB-001 … Draft.docx` | `packages/club-001-club-newspaper-design-package.md` |
+| `LGFC GitHub Label and Status Mapping Addendum …` | `support/github-label-status-mapping-addendum.md` |
+| `LGFC Cursor Assignment Prompt Pack …` | `support/cursor-assignment-prompt-pack.md` |
+| `LGFC Review Throttle and PR Queue Standard …` | `support/review-throttle-pr-queue-standard.md` |
+| `LGFC Deferred Work Register …` | `support/deferred-work-register.md` |
+| `LGFC Risk Register …` | `support/risk-register.md` |
 
 ## Procedure
 
