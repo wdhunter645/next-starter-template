@@ -5,7 +5,7 @@ Authority Level: Operational Addendum (non-authoritative; defers to PMO V4 and r
 Owns: Content Collection program label/status mapping addendum — repo-grounded gaps, proposed labels, and PMO field alignment for #2359 child chain
 Does Not Own: PMO lifecycle authority, label creation/deletion, GitHub automation, or merge authorization
 Canonical Reference: /docs/ops/pmo/PMO-V4-OPERATING-MODEL.md
-Related Issues: #2364, #2359, #2360, #2396, #2391
+Related Issues: #2422, #2364, #2419, #2359, #2360, #2396, #2391
 Last Reviewed: 2026-07-10
 ---
 
@@ -72,7 +72,8 @@ Every Content Collection program issue should include these body fields (verifie
 | `status:ready-for-cursor` | **Yes** | Alternate routing hint — still require wake labels |
 | `status:needs-review` | **Yes** | Review pending |
 | `status:implementation-ready` | **Yes** | Pipeline readiness |
-| `status:complete` / `status:completed` | **Yes** | Terminal — dashboard Completed |
+| `status:complete` | **Yes** | Terminal — dashboard Completed; in `.github/orchestrator-labels.json` |
+| `status:completed` | **Yes** (GitHub) / **No** (orchestrator) | Exists in live GitHub label set but **not** in `orchestrator-labels.json`; prefer `status:complete` for automation |
 | `status:post-merge-verify` | **Yes** | Post-merge validation in progress |
 | `status:needs-atlas-review` (draft) | **No** | **PROPOSED** — use `agent:ChatGPT` + `CHATGPT HANDOFF` instead |
 | `status:ready-for-merge` (draft) | **No** | **PROPOSED** — PR lifecycle state, not issue label |
@@ -82,9 +83,12 @@ Every Content Collection program issue should include these body fields (verifie
 
 | Label | Exists | Use |
 | --- | --- | --- |
-| `docs-only` / `intent:docs` / `type:docs` | **Yes** | Documentation PRs |
+| `docs-only` | **Yes** | Primary docs intent label for PR gates |
+| `intent:docs` | **Yes** | Alternate intent label — verify gate/parser before use |
+| `type:docs` | **Yes** | Type classification (orchestrator-managed) |
 | `pmo` | **Yes** | PMO dashboard inclusion |
-| `change-ops` / `ops` | **Yes** | Operations work |
+| `change-ops` | **Yes** | Primary ops intent label for PR gates |
+| `ops` | **Yes** | General ops label — prefer `change-ops` for intent when gate requires it |
 | `post-merge-failure` | **Yes** | Current post-merge remediation marker |
 
 ### Content Collection area labels (draft vs repo)

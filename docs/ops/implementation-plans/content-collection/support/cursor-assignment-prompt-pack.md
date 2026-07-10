@@ -184,7 +184,7 @@ Use **only after** `CONTRACT-FROZEN: content-asset-model v1` is recorded in issu
 MODE: Implementation
 SOURCE ISSUE: #<task>
 PACKAGE: GAL-001
-PACKAGE PATH: docs/ops/implementation-plans/content-collection/packages/gal-001-gallery-package.md (when enriched)
+PACKAGE PATH: docs/ops/implementation-plans/content-collection/packages/gal-001-gallery-package.md
 
 Prerequisite: CONTRACT-FROZEN marker on program issue thread
 
@@ -205,11 +205,73 @@ Stop if:
 
 ## P3 — Library prompt (LIB-001)
 
-Same structure as P2; replace Gallery with Library; package `lib-001-library-package.md`.
+Use **only after** `CONTRACT-FROZEN: content-asset-model v1` is recorded in issue/PR.
+
+```markdown
+MODE: Implementation
+SOURCE ISSUE: #<task>
+PACKAGE: LIB-001
+PACKAGE PATH: docs/ops/implementation-plans/content-collection/packages/lib-001-library-package.md
+
+Prerequisite: CONTRACT-FROZEN marker on program issue thread
+
+Read first:
+- lib-001-library-package.md
+- docs/ops/implementation-plans/content-collection/packages/cc-001-content-asset-model-package.md (downstream view contract)
+
+Scope:
+- Governed Library display within package allowlist only
+- Consume frozen content asset contract fields per CC-001 downstream view contract
+
+Out of scope:
+- Gallery, Memorabilia, Club shell
+- CI workflows
+- Shared content model files unless explicitly authorized
+
+Stop if:
+- CONTRACT-FROZEN missing
+- Hot-zone path collision with open PR (see risk register R-003)
+- Design compliance gaps (lgfc-design-compliance skill)
+
+Validation:
+- Package validation commands
+- Post `CHATGPT HANDOFF` at review points
+```
 
 ## P4 — Memorabilia prompt (MEM-001)
 
-Same structure as P2; replace Gallery with Memorabilia; package `mem-001-memorabilia-package.md`.
+Use **only after** `CONTRACT-FROZEN: content-asset-model v1` is recorded in issue/PR.
+
+```markdown
+MODE: Implementation
+SOURCE ISSUE: #<task>
+PACKAGE: MEM-001
+PACKAGE PATH: docs/ops/implementation-plans/content-collection/packages/mem-001-memorabilia-package.md
+
+Prerequisite: CONTRACT-FROZEN marker on program issue thread
+
+Read first:
+- mem-001-memorabilia-package.md
+- docs/ops/implementation-plans/content-collection/packages/cc-001-content-asset-model-package.md (downstream view contract)
+
+Scope:
+- Governed Memorabilia display within package allowlist only
+- Consume frozen content asset contract fields per CC-001 downstream view contract
+
+Out of scope:
+- Gallery, Library, Club shell
+- CI workflows
+- Shared content model files unless explicitly authorized
+
+Stop if:
+- CONTRACT-FROZEN missing
+- Hot-zone path collision with open PR (see risk register R-003)
+- Design compliance gaps (lgfc-design-compliance skill)
+
+Validation:
+- Package validation commands
+- Post `CHATGPT HANDOFF` at review points
+```
 
 ## P5 — Club newspaper prompt (CLUB-001)
 

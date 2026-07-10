@@ -68,7 +68,7 @@ Use GitHub PR state + PR body/lifecycle language. Do not invent parallel issue l
 
 ## Throttle rules
 
-1. **Do not** move more than **3 PRs** to READY FOR REVIEW simultaneously.
+1. **Do not** move more than **3 PRs** to READY FOR REVIEW simultaneously (pause at 3).
 2. **CI/admin PRs** should not crowd out product verification PRs unless they unblock implementation (e.g. gate fix).
 3. **Same-lane remediation:** A lane with changes requested must be remediated before starting a new same-lane PR.
 4. **Hot-zone rule:** A hot-zone PR must merge or close before another hot-zone PR starts (see parallel execution / worktree standard when promoted).
@@ -96,7 +96,7 @@ Pause and post `CHATGPT HANDOFF` when:
 
 | Condition | Action |
 | --- | --- |
-| More than 3 PRs waiting for review | Hold new READY FOR REVIEW transitions |
+| 3 or more PRs waiting for review | Hold new READY FOR REVIEW transitions |
 | Shared contract changes after dependent work started | Halt dependent lanes; assess rework |
 | Hot-zone path collision | Pause affected lane (risk R-003) |
 | Validation backlog blocks reliable closeout | Halt queue advance per closeout protocol |
