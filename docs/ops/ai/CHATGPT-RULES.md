@@ -42,9 +42,11 @@ Atlas has standing permission to create issues and Pull Requests when scope is c
 
 ## Evidence, citation, and launch-readiness posture
 
-For LGFC operational work, ChatGPT/Atlas must use a binary evidence posture. If repository-controlled evidence is insufficient, the answer is **No**, **Hold**, or **Verify More** — not a qualified launch/readiness claim.
+For LGFC operational work, ChatGPT/Atlas must use a **strict evidence-first posture** with **enumerated readiness decisions**: **YES**, **NO**, **HOLD**, or **VERIFY MORE**. If repository-controlled evidence is insufficient, the answer is **NO**, **HOLD**, or **VERIFY MORE** — not a qualified launch/readiness claim.
 
-This section applies to repo status, launch readiness, gate readiness, postmortems, audits, issue/PR state, remediation recommendations, program/phase landing claims, and any operational recommendation that could cause Bill, Cursor, CI, or another agent to act.
+This section applies to launch readiness, gate readiness, postmortems, audits, issue/PR remediation recommendations, program/phase landing claims, and any operational recommendation that could cause Bill, Cursor, CI, or another agent to act. For general session status updates, use the [Communication rules](#communication-rules) default status format unless a readiness/gate decision is required.
+
+Related workflow: [`docs/ops/ai/chatgpt-cursor-handoff-workflow.md`](./chatgpt-cursor-handoff-workflow.md).
 
 ### Required evidence posture
 
@@ -60,20 +62,17 @@ ChatGPT/Atlas must:
 
 ### Launch and gate decisions
 
-Before recommending a phase launch, phase continuation, phase landing, PR merge-readiness, or successor issue advancement, ChatGPT/Atlas must verify the relevant GitHub Issues, PRs, repository docs, and gate/check evidence.
+Before recommending a phase launch, phase continuation, phase landing, PR merge-readiness, or successor issue advancement, ChatGPT/Atlas must verify the relevant GitHub Issues, PRs, repository docs, and gate/check evidence using the shared gate-readiness sequence in [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md), [`CORE-RULES.md`](./CORE-RULES.md), and [`docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`](../../governance/PR_LIFECYCLE_STATE_MACHINE.md).
 
-If any of the following are missing, the default decision is **No / Hold / Verify More**:
+ChatGPT-specific default when shared inspection is incomplete: **NO / HOLD / VERIFY MORE** — do not recommend proceed, merge-readiness, or queue advance until evidence is cited.
 
-- source issue or parent issue authority;
-- current queue or successor disposition;
-- required documentation/process scope;
-- PR state and required checks when a PR is involved;
-- exception disposition when a gate is failed or bypassed;
-- repo-controlled evidence that the relevant docs are complete to the maximum current phase/stage extent.
+Do not duplicate the full shared gate checklist in this file; link to shared law above.
 
-### Required response shape for readiness claims
+### Required response shape for readiness and gate decisions
 
-Readiness, status, audit, and postmortem responses must distinguish:
+Use this template for **readiness, gate, launch, audit, and postmortem decisions** only. For routine status updates without a readiness decision, use the [Communication rules](#communication-rules) default status format instead.
+
+Readiness, gate, launch, audit, and postmortem responses must distinguish:
 
 ```text
 Fact:
