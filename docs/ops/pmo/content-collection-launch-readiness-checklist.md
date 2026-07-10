@@ -1,11 +1,11 @@
 ---
 Doc Type: Operational Checklist
 Audience: Bill, ChatGPT, Cursor, LGFC maintainers
-Authority Level: Operational (non-authoritative until promoted via Issue/PR)
-Owns: Go/no-go checklist before Content Collection Phase 0 issue creation, implementation launch, and terminal promotion
-Does Not Own: Merge authorization, GitHub issue mutation, or feature implementation
+Authority Level: Operational
+Owns: Go/no-go checklist before Content Collection Phase 0 issue creation, Phase 1 launch, implementation start, and terminal promotion
+Does Not Own: Merge authorization, GitHub issue mutation, feature implementation, or automatic launch authorization
 Canonical Reference: /docs/ops/reports/content-collection-docs-audit-dedup-2360.md
-Related Issues: #2363, #2359, #2360, #2365
+Related Issues: #2363, #2359, #2360, #2365, #2431, #2432, #2433, #2434, #2435, #2436, #2437, #2438
 Last Reviewed: 2026-07-10
 ---
 
@@ -13,18 +13,22 @@ Last Reviewed: 2026-07-10
 
 ## Purpose
 
-Determine go/no-go for Content Collection program steps: child-issue enrichment PRs, implementation child issues, and terminal #2365 promotion closeout.
+Determine go/no-go for Content Collection program steps: Phase 0 documentation enrichment, terminal Phase 0 promotion closeout, Phase 1 preparation, and later implementation launch.
 
 ## Scope
 
-Phase 0 documentation promotion only unless a row explicitly references later implementation lanes.
+This checklist covers repository-documentation and implementation-control gates. It does not authorize implementation by itself.
 
 ## Current known truth
 
 - #2360 audit disposition is authoritative (`docs/ops/reports/content-collection-docs-audit-dedup-2360.md`).
-- Rejected paths: `docs/ops/programs/`, `docs/reference/website/content-collection/`.
+- Phase 0 documentation promotion completed via PR #2427.
+- Phase 1 preparation issue set is #2431–#2438.
+- #2431 is the prepared Phase 1 Go / NoGo control issue.
+- Rejected paths remain `docs/ops/programs/` and `docs/reference/website/content-collection/`.
 - Cursor is sole implementation executor; Codex is inactive.
 - Bill/ChatGPT retain merge authorization — no pre-approved merge language.
+- GAL / LIB / MEM / CLUB feature code remains blocked until `CONTRACT-FROZEN: content-asset-model v1` is posted and ChatGPT verifies downstream release.
 
 ## Pre-enrichment PR (Phase 0 child issues)
 
@@ -58,6 +62,23 @@ Phase 0 documentation promotion only unless a row explicitly references later im
 | 16 | VAL-001 evidence template fillable | `docs/ops/implementation-plans/content-collection/packages/val-001-integrated-program-validation-package.md` | `validation_plan_ready` |
 | 17 | No open post-merge queue blocker | No unresolved `post-merge-failure` exception blocking queue | `queue_unblocked` |
 
+## Phase 1 Go / NoGo gate
+
+| # | Check | Pass criteria | Status field |
+| ---: | --- | --- | --- |
+| 18 | Phase 0 terminal state accepted | #2359 / #2365 complete and PR #2427 merged | `phase0_complete` |
+| 19 | Phase 1 parent issue prepared | #2431 exists and is blocked pending Go / NoGo | `phase1_parent_ready` |
+| 20 | Phase 1 child graph prepared | #2432–#2438 exist and cite #2431 | `phase1_children_ready` |
+| 21 | Phase 1 prep doc exists | `docs/ops/implementation-plans/content-collection/phase1-launch-prep.md` | `phase1_doc_ready` |
+| 22 | Gate 0 stale-state repair is first | #2432 precedes implementation tasks | `gate0_first` |
+| 23 | CC-001 / CC-002 freeze sequence explicit | #2433 then #2434 before feature lanes | `contract_sequence_ready` |
+| 24 | CI Stage 0 precedes CI tooling | #2435 before #2436 / #2437 | `ci_stage0_first` |
+| 25 | Feature lanes remain blocked | D-008 deferred until verified freeze | `feature_lanes_blocked` |
+| 26 | CI tooling remains gated | D-009 under review, not auto-launched | `ci_tooling_gated` |
+| 27 | Review throttle accepted | Maximum two to three `READY FOR REVIEW` PRs | `review_throttle_ready` |
+| 28 | No automation overreach | No AI/OCR/crawler/auto-publication authorization | `automation_guardrails_clear` |
+| 29 | Bill / ChatGPT launch decision recorded | Explicit Go / NoGo comment on #2431 | `launch_decision_recorded` |
+
 ## Stop rules
 
 Stop and post `CHATGPT HANDOFF` when:
@@ -65,6 +86,8 @@ Stop and post `CHATGPT HANDOFF` when:
 - Operational doc conflicts with `docs/ops/pmo/PMO-V4-OPERATING-MODEL.md`, PR lifecycle, or shared agent rules.
 - Accelerated Policy / pre-approved merge language appears in promoted docs (C1/C8).
 - Proposed path reintroduces `docs/ops/programs/`.
+- Phase 1 issue attempts to start feature implementation before the freeze marker.
+- CI tooling attempts to bypass Bill / ChatGPT merge, review, or closeout authority.
 
 ## Validation
 
@@ -80,10 +103,10 @@ Record PASS/FAIL in PR body.
 
 ## Procedure
 
-1. Copy this checklist into the source issue or terminal closeout issue.
+1. Copy the relevant gate subset into the source issue or terminal closeout issue.
 2. Mark each row `pass` / `fail` / `deferred` with evidence link.
 3. **No-go** if any blocking row is `fail` without approved deferral issue.
-4. **Go** when all required rows for the target gate are `pass`.
+4. **Go** when all required rows for the target gate are `pass` and Bill / ChatGPT explicitly authorize launch.
 
 ## Execution
 
@@ -92,3 +115,4 @@ Use gate-specific subsets:
 - **Enrichment PR:** rows 1–5.
 - **Implementation launch:** rows 6–12.
 - **#2365 closeout:** rows 13–17.
+- **Phase 1 Go / NoGo:** rows 18–29.
