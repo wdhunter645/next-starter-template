@@ -34,7 +34,7 @@ Define the implementation envelope for governed **Gallery** content on the membe
 | Design authority | `docs/reference/design/fanclub-subpages.md` | **Canonical** — `/fanclub/photo` spec |
 | Production design | `docs/reference/design/LGFC-Production-Design-and-Standards.md` | Parent authority |
 | Content pipeline | `functions/_lib/content-pipeline-*.ts` | **#2286** — consume, do not rebuild |
-| Foundation packages | `packages/cc-001-*.md`, `packages/cc-002-*.md` | Contract + freeze rules |
+| Foundation packages | `docs/ops/implementation-plans/content-collection/packages/cc-001-content-asset-model-package.md`, `cc-002-provenance-rights-contract-package.md` | Contract + freeze rules |
 
 **Access boundary today:** Gallery is **member-only** (`requireMember` on API; layout session gate). Not a public route.
 
@@ -115,8 +115,8 @@ docs/ops/reports/gal-001-as-built-*.md
 ```bash
 npm run typecheck
 npm run build
-npm test -- --run tests/fanclub-operations.test.tsx
-npm test -- --run tests/e2e/launch-readiness-fanclub-routes.spec.ts
+npm test -- tests/fanclub-operations.test.tsx
+npm run test:e2e -- tests/e2e/launch-readiness-fanclub-routes.spec.ts
 ```
 
 **Evidence required:** build/test output, screenshot or smoke notes, design authority citation, as-built path.

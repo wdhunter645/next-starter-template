@@ -31,7 +31,7 @@ Define the implementation envelope for governed **Library** content on the membe
 | Inventory model | `docs/reference/website/content-inventory-model.md` | **Canonical** reference |
 | Legacy fallback | `library_entries` table in API | Transitional read if inventory empty |
 | Design authority | `docs/reference/design/fanclub-subpages.md` | `/fanclub/library` spec |
-| Foundation packages | `cc-001`, `cc-002` packages | Freeze dependency |
+| Foundation packages | `docs/ops/implementation-plans/content-collection/packages/cc-001-content-asset-model-package.md`, `cc-002-provenance-rights-contract-package.md` | Freeze dependency |
 
 **Access boundary:** Member-only (`requireMember` on API; layout session gate).
 
@@ -69,7 +69,6 @@ See [cc-001-content-asset-model-package.md](./cc-001-content-asset-model-package
 src/app/fanclub/library/**
 functions/api/fanclub/library.ts
 functions/_lib/content-inventory-public.ts
-functions/_lib/content-inventory-club-home.ts
 tests/*library*
 tests/e2e/launch-readiness-fanclub-routes.spec.ts
 docs/ops/implementation-plans/content-collection/packages/lib-001-library-package.md
@@ -105,8 +104,8 @@ docs/ops/reports/lib-001-as-built-*.md
 ```bash
 npm run typecheck
 npm run build
-npm test -- --run tests/fanclub-operations.test.tsx
-npm test -- --run tests/e2e/launch-readiness-fanclub-routes.spec.ts
+npm test -- tests/fanclub-operations.test.tsx
+npm run test:e2e -- tests/e2e/launch-readiness-fanclub-routes.spec.ts
 ```
 
 **Pass:** Governed entries display with source/provenance per CC-002 after freeze; empty state justified or populated.

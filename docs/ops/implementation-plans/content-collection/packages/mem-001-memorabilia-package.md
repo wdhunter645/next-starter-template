@@ -26,10 +26,10 @@ Define the implementation envelope for governed **Memorabilia** content on `/fan
 | Surface | Repo path | Status |
 | --- | --- | --- |
 | Route | `src/app/fanclub/memorabilia/page.tsx` | **Exists** — grid, search, tags, load-more |
-| Photos API (memorabilia mode) | `functions/api/fanclub/photos.ts` | **Exists** — `memorabilia=true` query via client |
-| Memorabilia API | `functions/api/fanclub/memorabilia.ts` | **Exists** |
+| Photos API (gallery mode) | `functions/api/fanclub/photos.ts` | **Exists** — D1 `photos`, excludes memorabilia rows |
+| Memorabilia API | `functions/api/fanclub/memorabilia.ts` | **Exists** — separate endpoint (client does not use `memorabilia=true` on photos URL) |
 | Tags API | `functions/api/fanclub/memorabilia/tags.ts` | **Exists** |
-| API client | `src/lib/fanclubApi.ts` | `buildFanclubPhotoListApiUrl({ memorabilia: true, ... })` |
+| API client | `src/lib/fanclubApi.ts` | Switches path: `/api/fanclub/memorabilia` vs `/api/fanclub/photos` |
 | Grid styles | `src/components/fanclub/fanclubGridStyles.ts` | **Shared hot zone** with Gallery |
 | Related stories | API returns `related_library_entries` | **Exists** — links to Library |
 | Design authority | `docs/reference/design/fanclub-subpages.md` | Memorabilia section |
@@ -75,7 +75,7 @@ docs/ops/reports/mem-001-as-built-*.md
 
 **Hot zones:**
 
-- `src/app/fanclub/photo/**`, `library/**`, `page.tsx`, `layout.tsx`
+- `src/app/fanclub/photo/**`, `src/app/fanclub/library/**`, `src/app/fanclub/page.tsx`, `src/app/fanclub/layout.tsx`
 - `src/components/fanclub/fanclubGridStyles.ts`
 - `.github/workflows/**`, `scripts/ci/**`
 
@@ -102,8 +102,8 @@ docs/ops/reports/mem-001-as-built-*.md
 ```bash
 npm run typecheck
 npm run build
-npm test -- --run tests/fanclub-operations.test.tsx
-npm test -- --run tests/e2e/launch-readiness-fanclub-routes.spec.ts
+npm test -- tests/fanclub-operations.test.tsx
+npm run test:e2e -- tests/e2e/launch-readiness-fanclub-routes.spec.ts
 ```
 
 ## Design authority

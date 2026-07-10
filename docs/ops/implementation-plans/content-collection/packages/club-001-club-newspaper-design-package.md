@@ -91,7 +91,7 @@ docs/ops/reports/club-001-as-built-*.md
 **Do not touch without approval:**
 
 - `src/app/fanclub/layout.tsx` (unless auth bug fix explicitly scoped)
-- `src/app/fanclub/photo/**`, `library/**`, `memorabilia/**`
+- `src/app/fanclub/photo/**`, `src/app/fanclub/library/**`, `src/app/fanclub/memorabilia/**`
 - `src/components/fanclub/fanclubGridStyles.ts`
 - `src/components/FloatingLogo.tsx` (design lock)
 - `.github/workflows/**`, `scripts/ci/**`
@@ -120,10 +120,10 @@ docs/ops/reports/club-001-as-built-*.md
 ```bash
 npm run typecheck
 npm run build
-npm test -- --run tests/fanclub-home-dynamic.test.tsx
-npm test -- --run tests/fanclub-home-shell.test.tsx
-npm test -- --run tests/content-inventory-club-home.test.ts
-npm test -- --run tests/e2e/launch-readiness-fanclub-routes.spec.ts
+npm test -- tests/fanclub-home-dynamic.test.tsx
+npm test -- tests/fanclub-home-shell.test.tsx
+npm test -- tests/content-inventory-club-home.test.ts
+npm run test:e2e -- tests/e2e/launch-readiness-fanclub-routes.spec.ts
 ```
 
 **Evidence:** screenshots/smoke notes, design compliance citation, auth boundary confirmation, as-built path.
