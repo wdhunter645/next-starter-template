@@ -24,6 +24,7 @@ import {
 	blockingFuturePrs,
 	findCanonicalRemediationIssue,
 	remediationBody,
+	remediationIssueLabels,
 	shouldUpsertRemediationIssue,
 	selfHealingCanResolve,
 } from '../scripts/ci/post_merge_remediation_issue.mjs';
@@ -421,5 +422,11 @@ describe('closeout fail-safe remediation evidence', () => {
 			remediation_required: true,
 			sync_action: 'post_merge_failure',
 		});
+	});
+
+	it('uses workflow-state remediation labels without auto-routing agent labels', () => {
+		expect(remediationIssueLabels({
+			reviewer_disposition_failures: [{ code: 'undispositioned_reviewer_comment' }],
+		})).toEqual(['post-merge-failure']);
 	});
 });

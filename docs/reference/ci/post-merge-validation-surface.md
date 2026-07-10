@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: LGFC post-merge validation surface, evidence reporting model, remediation and orchestration pause behavior, source-issue closeout behavior
 Does Not Own: Pre-merge merge protection gates, OPS runtime monitoring behavior, website product behavior
 Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related Issues: #1197, #1249, #1075, #1058, #1548, #1963, #2308, #2376, #2380
+Related Issues: #1197, #1249, #1075, #1058, #1548, #1963, #2308, #2376, #2380, #2418
 Last Reviewed: 2026-07-08
 ---
 
@@ -119,10 +119,11 @@ After a merged implementation PR passes post-merge validation with no blocking r
 
 1. Resolve the linked source issue from accepted accounting formats (`- **Issue:** #NNNN`, orchestrator marker, or existing URL forms).
 2. Skip closeout when the linked issue is a remediation issue (`post-merge-failure` label or remediation title prefix).
-3. Remove stale active-state labels: `status:blocked`, `status:queued`, `status:failed`, `status:post-merge-verify`.
+3. Remove stale active-state labels: `status:blocked`, `status:queued`, `status:assigned`, `status:failed`, `status:post-merge-verify`, `status:changes-requested`, `status:in-progress`, and other labels in `STALE_SOURCE_ISSUE_LABELS` (see `docs/reference/ci/post-merge-failure-label-transition.md`).
 4. Add a closeout evidence comment containing PR number, merge SHA, validator status, verification result, and closeout reason.
 5. Validate closeout evidence integrity: recorded merge SHA must equal the merged PR `merge_commit_sha` and must not belong to another PR.
-6. Apply `status:complete`, remove stale workflow labels, close the source issue, then re-fetch the issue and assert terminal label integrity (`status:complete` present; `status:post-merge-verify` and other stale labels absent). Retry deterministic label cleanup once before failing validation.
+6. Apply `status:complete`, remove stale workflow labels, close the source issue when still open, then re-fetch the issue and assert terminal label integrity (`status:complete` present; stale/intermediate labels absent). Retry deterministic label cleanup once before failing validation.
+7. When the source issue is already closed completed and validation passed, perform idempotent label normalization without failing on `source_issue_not_open` (see `docs/reference/ci/post-merge-failure-label-transition.md`).
 
 Umbrella, master, program, parent, queue, roadmap, and tracking issue boundaries
 are PR-body and operator-governance policy unless and until runtime closeout logic

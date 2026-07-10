@@ -115,7 +115,7 @@ Per issue #2364 comment (Phase 0 design-doc requirement):
 | Ambiguous source issue | Do not invent `post-merge:issue-####`; preserve ambiguity in remediation issue title/body |
 | ChatGPT scan path | ChatGPT Tasks should scan `post-merge:failed` / `post-merge-failure` independently of `agent:ChatGPT` |
 
-**Gap:** `post-merge:failed` and `post-merge:issue-####` are **not yet in the repo**. Current automation uses `post-merge-failure`. Document as transition debt; do not relabel without authorized CI/workflow issue.
+**Gap:** `post-merge:failed` and `post-merge:issue-####` are **not yet in the repo**. Current automation uses `post-merge-failure`. Document as transition debt; do not relabel without authorized CI/workflow issue. Implementation design and idempotent closeout rules: `docs/reference/ci/post-merge-failure-label-transition.md` (#2418).
 
 ## Suggested lifecycle values (issue-body `Dashboard Lifecycle:`)
 
