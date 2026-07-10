@@ -34,8 +34,8 @@ export function issueLabelNameList(issueMeta = {}) {
 export function isClosedCompletedSourceIssue(sourceIssue = null) {
 	if (!sourceIssue) return false;
 	if (String(sourceIssue.state || '').toLowerCase() !== 'closed') return false;
-	const reason = String(sourceIssue.state_reason || sourceIssue.stateReason || 'completed').toLowerCase();
-	return reason === 'completed' || reason === '';
+	const reason = String(sourceIssue.state_reason || sourceIssue.stateReason || '').toLowerCase();
+	return reason === 'completed';
 }
 
 export function resolveSourceIssueCloseoutMode({

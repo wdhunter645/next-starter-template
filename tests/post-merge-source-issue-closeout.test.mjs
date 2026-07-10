@@ -531,9 +531,19 @@ describe('source issue closeout evidence', () => {
 
 	it('recognizes closed completed source issues for idempotent normalization', () => {
 		expect(isClosedCompletedSourceIssue({ state: 'closed', state_reason: 'completed' })).toBe(true);
+		expect(isClosedCompletedSourceIssue({ state: 'closed', state_reason: 'COMPLETED' })).toBe(true);
 		expect(resolveSourceIssueCloseoutMode({
 			sourceIssue: { state: 'closed', state_reason: 'completed' },
 		})).toBe('closed_completed_idempotent_normalize');
+	});
+
+	it('does not treat closed issues with missing or non-completed close reasons as idempotent targets', () => {
+		expect(isClosedCompletedSourceIssue({ state: 'closed' })).toBe(false);
+		expect(isClosedCompletedSourceIssue({ state: 'closed', state_reason: '' })).toBe(false);
+		expect(isClosedCompletedSourceIssue({ state: 'closed', state_reason: 'not_planned' })).toBe(false);
+		expect(resolveSourceIssueCloseoutMode({
+			sourceIssue: { state: 'closed' },
+		})).toBe('exception_required');
 	});
 
 	it('does not emit source_issue_not_open for closed completed issues during validation', () => {

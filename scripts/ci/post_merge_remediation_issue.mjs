@@ -305,7 +305,6 @@ export function remediationIssueLabels(result = {}) {
 		labels.push('ops-pr-escalation');
 	}
 	// Do not auto-add agent:ChatGPT. Operators add governance-routing labels only when review is required.
-	void requiresGovernanceException(result);
 	return labels;
 }
 
