@@ -38,7 +38,7 @@ Phase 0 status: complete_with_deferrals
 | 3 | #2363 | Control/operational docs | #2420 | Closed complete |
 | 4 | #2364 | Support registers / assignment docs | #2419, #2424 (#2422 remediation) | Closed complete |
 | 5 | #2362 | Feature package docs | #2415 | Closed complete |
-| 6 | #2365 | Terminal promotion closeout (this report) | TBD | Open |
+| 6 | #2365 | Terminal promotion closeout (this report) | #2427 | Open |
 | parallel | #2366 | Lessons-learned register | #2407 (playbook) | Living doc |
 | remediation | #2422 | PR #2419 reviewer disposition | #2424 | Closed complete |
 
@@ -49,26 +49,26 @@ Phase 0 status: complete_with_deferrals
 | Intake draft | Enriched path | PR |
 | --- | --- | --- |
 | CC-001 Content Asset Model | `docs/ops/implementation-plans/content-collection/packages/cc-001-content-asset-model-package.md` | #2405 |
-| CC-002 Provenance/Rights | `packages/cc-002-provenance-rights-contract-package.md` | #2405 |
-| CI-001 PR Body Generator | `packages/ci-001-pr-body-generator-package.md` | #2405 |
-| CI-002 Admin Closeout Auto-Repair | `packages/ci-002-admin-closeout-auto-repair-package.md` | #2405 |
-| VAL-001 Integrated Validation | `packages/val-001-integrated-program-validation-package.md` | #2405 |
+| CC-002 Provenance/Rights | `docs/ops/implementation-plans/content-collection/packages/cc-002-provenance-rights-contract-package.md` | #2405 |
+| CI-001 PR Body Generator | `docs/ops/implementation-plans/content-collection/packages/ci-001-pr-body-generator-package.md` | #2405 |
+| CI-002 Admin Closeout Auto-Repair | `docs/ops/implementation-plans/content-collection/packages/ci-002-admin-closeout-auto-repair-package.md` | #2405 |
+| VAL-001 Integrated Validation | `docs/ops/implementation-plans/content-collection/packages/val-001-integrated-program-validation-package.md` | #2405 |
 
 ### Feature packages (#2362)
 
 | Intake draft | Enriched path | PR |
 | --- | --- | --- |
-| GAL-001 Gallery | `packages/gal-001-gallery-package.md` | #2415 |
-| LIB-001 Library | `packages/lib-001-library-package.md` | #2415 |
-| MEM-001 Memorabilia | `packages/mem-001-memorabilia-package.md` | #2415 |
-| CLUB-001 Club Newspaper | `packages/club-001-club-newspaper-design-package.md` | #2415 |
+| GAL-001 Gallery | `docs/ops/implementation-plans/content-collection/packages/gal-001-gallery-package.md` | #2415 |
+| LIB-001 Library | `docs/ops/implementation-plans/content-collection/packages/lib-001-library-package.md` | #2415 |
+| MEM-001 Memorabilia | `docs/ops/implementation-plans/content-collection/packages/mem-001-memorabilia-package.md` | #2415 |
+| CLUB-001 Club Newspaper | `docs/ops/implementation-plans/content-collection/packages/club-001-club-newspaper-design-package.md` | #2415 |
 
 ### Control documents (#2363)
 
 | Intake draft | Enriched path | PR |
 | --- | --- | --- |
 | Launch Readiness Checklist v2 | `docs/ops/pmo/content-collection-launch-readiness-checklist.md` | #2420 |
-| Diataxis Promotion Map | `docs/ops/pmo/content-collection-diataxis-promotion-map.md` | #2420 |
+| Diataxis Promotion Map | `docs/ops/pmo/content-collection-diataxis-promotion-map.md` | #2420, #2427 |
 | Parallel Execution Matrix | `docs/ops/pmo/content-collection-parallel-execution-matrix.md` | #2420 |
 | Cursor Parallel Worktree Standard | `docs/how-to/ops/cursor-parallel-worktree-standard.md` | #2420 |
 | Program Closeout Template | `docs/ops/pmo/content-collection-program-closeout-template.md` | #2420 |
@@ -77,19 +77,20 @@ Phase 0 status: complete_with_deferrals
 
 | Intake draft | Enriched path | PR |
 | --- | --- | --- |
-| Label/Status Mapping Addendum | `support/github-label-status-mapping-addendum.md` | #2419, #2424 |
-| Cursor Assignment Prompt Pack | `support/cursor-assignment-prompt-pack.md` | #2419, #2424 |
-| Review Throttle / PR Queue Standard | `support/review-throttle-pr-queue-standard.md` | #2419, #2424 |
-| Deferred Work Register | `support/deferred-work-register.md` | #2419, #2424 |
-| Risk Register | `support/risk-register.md` | #2419, #2424 |
-| Support docs index | `support/support-docs-index.md` | #2419 |
+| Label/Status Mapping Addendum | `docs/ops/implementation-plans/content-collection/support/github-label-status-mapping-addendum.md` | #2419, #2424 |
+| Cursor Assignment Prompt Pack | `docs/ops/implementation-plans/content-collection/support/cursor-assignment-prompt-pack.md` | #2419, #2424 |
+| Review Throttle / PR Queue Standard | `docs/ops/implementation-plans/content-collection/support/review-throttle-pr-queue-standard.md` | #2419, #2424 |
+| Deferred Work Register | `docs/ops/implementation-plans/content-collection/support/deferred-work-register.md` | #2419, #2424 |
+| Risk Register | `docs/ops/implementation-plans/content-collection/support/risk-register.md` | #2419, #2424 |
+| Support docs index | `docs/ops/implementation-plans/content-collection/support/support-docs-index.md` | #2419 |
 
 ### Audit and navigation
 
 | Item | Path | PR |
 | --- | --- | --- |
 | #2360 audit/dedup | `docs/ops/reports/content-collection-docs-audit-dedup-2360.md` | #2372 |
-| Package index | `docs/ops/implementation-plans/content-collection/package-index.md` | #2405, #2415, #2420, #2419, #2424, #2365 |
+| Package index | `docs/ops/implementation-plans/content-collection/package-index.md` | #2405, #2415, #2420, #2419, #2424, #2427 |
+| Phase 0 closeout report | `docs/ops/reports/content-collection-phase0-promotion-closeout-2365.md` | #2427 |
 | Phase 0 launch playbook | `docs/how-to/ops/content-collection-phase0-launch-playbook.md` | #2407 |
 | Drive intake how-to | `docs/how-to/ops/drive-draft-intake-and-promotion.md` | #2407 |
 
@@ -101,7 +102,7 @@ Per #2360 ChatGPT disposition (C3/C4/C5):
 | --- | --- | --- |
 | CC-001 content asset contract | `docs/reference/content/lgfc-content-candidate-model.md` + related refs | Gap matrices in package doc only |
 | CC-002 provenance/rights | `docs/reference/website/lou-gehrig-source-provenance-model.md`, rights model | No parallel contract file |
-| VAL-001 + Validation Standard | Single package at `packages/val-001-*.md` | C5 consolidation |
+| VAL-001 + Validation Standard | `docs/ops/implementation-plans/content-collection/packages/val-001-integrated-program-validation-package.md` | C5 consolidation |
 | Documentation Dedup Plan | Merged into #2360 audit report | No separate dedup doc |
 | Cursor Assignment Prompt Pack | Supplements `docs/templates/agent-assignment-template.md` | Not parallel template |
 
@@ -140,9 +141,9 @@ See `docs/ops/implementation-plans/content-collection/support/deferred-work-regi
 
 | Command | Result | When |
 | --- | --- | --- |
-| `bash scripts/ci/docs_check_headers.sh` | PASS | #2365 PR head |
-| `node scripts/ci/diataxis_folder_audit.mjs` | PASS | #2365 PR head |
-| `node .agents/checks/agent-governance-check.mjs` | PASS | #2365 PR head |
+| `bash scripts/ci/docs_check_headers.sh` | PASS | #2427 PR head |
+| `node scripts/ci/diataxis_folder_audit.mjs` | PASS | #2427 PR head |
+| `node .agents/checks/agent-governance-check.mjs` | PASS | #2427 PR head |
 | `git ls-files docs/ops/implementation-plans/content-collection/` | Verified paths exist | Closeout |
 | `git ls-files docs/ops/pmo/content-collection-*` | Verified control docs exist | Closeout |
 

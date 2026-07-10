@@ -41,12 +41,12 @@ Navigate Content Collection implementation packages enriched from Drive intake d
 | Doc ID | Title | Path | Status | PR |
 | --- | --- | --- | --- | --- |
 | CTRL-001 | Launch Readiness Checklist | [content-collection-launch-readiness-checklist.md](../../pmo/content-collection-launch-readiness-checklist.md) | `validated` | #2420 |
-| CTRL-002 | Diataxis Promotion Map | [content-collection-diataxis-promotion-map.md](../../pmo/content-collection-diataxis-promotion-map.md) | `validated` | #2420, #2365 |
+| CTRL-002 | Diataxis Promotion Map | [content-collection-diataxis-promotion-map.md](../../pmo/content-collection-diataxis-promotion-map.md) | `validated` | #2420, #2427 |
 | CTRL-003 | Parallel Execution Matrix | [content-collection-parallel-execution-matrix.md](../../pmo/content-collection-parallel-execution-matrix.md) | `validated` | #2420 |
 | CTRL-004 | Cursor Parallel Worktree Standard | [cursor-parallel-worktree-standard.md](../../../how-to/ops/cursor-parallel-worktree-standard.md) | `validated` | #2420 |
 | CTRL-005 | Program Closeout Template | [content-collection-program-closeout-template.md](../../pmo/content-collection-program-closeout-template.md) | `validated` | #2420 |
 | CTRL-006 | Dedup / Merge Plan | [content-collection-docs-audit-dedup-2360.md](../../reports/content-collection-docs-audit-dedup-2360.md) | `complete` | #2372 |
-| CTRL-007 | Phase 0 Closeout Report | [content-collection-phase0-promotion-closeout-2365.md](../../reports/content-collection-phase0-promotion-closeout-2365.md) | `pr_open` | #2365 |
+| CTRL-007 | Phase 0 Closeout Report | [content-collection-phase0-promotion-closeout-2365.md](../../reports/content-collection-phase0-promotion-closeout-2365.md) | `pr_open` | #2427 |
 
 ## Support documents (#2364)
 
@@ -68,7 +68,7 @@ Navigate Content Collection implementation packages enriched from Drive intake d
 
 ## Current known truth
 
-- Phase 0 docs promotion (#2360–#2365) complete on merge of #2365 closeout PR.
+- Phase 0 docs promotion (#2360–#2364) completes on merge of closeout PR #2427 (source issue #2365).
 - Rejected target roots: `docs/ops/programs/`, `docs/reference/website/content-collection/` (per #2360).
 - All four feature routes **exist** on `main` with member auth; packages document gaps vs CC-001/CC-002 and implementation allowlists.
 - Intake `.docx` remains on `atlas/drive-draft-intake-2367` only.

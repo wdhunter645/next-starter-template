@@ -50,32 +50,32 @@ Dedup/merge authority: `docs/ops/reports/content-collection-docs-audit-dedup-236
 
 | Drive draft | Approved path | promotion_status | Issue |
 | --- | --- | --- | --- |
-| Launch Readiness Checklist v2 | `docs/ops/pmo/content-collection-launch-readiness-checklist.md` | `promoted_to_repo` | #2363 |
-| Parallel Execution Matrix | `docs/ops/pmo/content-collection-parallel-execution-matrix.md` | `promoted_to_repo` | #2363 |
-| Cursor Parallel Worktree Standard | `docs/how-to/ops/cursor-parallel-worktree-standard.md` | `promoted_to_repo` | #2363 |
-| Program Closeout Template | `docs/ops/pmo/content-collection-program-closeout-template.md` | `promoted_to_repo` | #2363 |
-| Diataxis Promotion Map | `docs/ops/pmo/content-collection-diataxis-promotion-map.md` | `validated` | #2363, #2365 |
-| Package Index | `docs/ops/implementation-plans/content-collection/package-index.md` | `validated` | #2361–#2365 |
-| Documentation Dedup Plan | `docs/ops/reports/content-collection-docs-audit-dedup-2360.md` | `complete` | #2360 |
-| Phase 0 Closeout Report | `docs/ops/reports/content-collection-phase0-promotion-closeout-2365.md` | `pr_open` | #2365 |
+| Launch Readiness Checklist v2 | `docs/ops/pmo/content-collection-launch-readiness-checklist.md` | `validated` | #2363 |
+| Parallel Execution Matrix | `docs/ops/pmo/content-collection-parallel-execution-matrix.md` | `validated` | #2363 |
+| Cursor Parallel Worktree Standard | `docs/how-to/ops/cursor-parallel-worktree-standard.md` | `validated` | #2363 |
+| Program Closeout Template | `docs/ops/pmo/content-collection-program-closeout-template.md` | `validated` | #2363 |
+| Diataxis Promotion Map | `docs/ops/pmo/content-collection-diataxis-promotion-map.md` | `validated` | #2363 (#2420), #2365 (#2427) |
+| Package Index | `docs/ops/implementation-plans/content-collection/package-index.md` | `validated` | #2361 (#2405), #2365 (#2427) |
+| Documentation Dedup Plan | `docs/ops/reports/content-collection-docs-audit-dedup-2360.md` | `complete` | #2360 (#2372) |
+| Phase 0 Closeout Report | `docs/ops/reports/content-collection-phase0-promotion-closeout-2365.md` | `pr_open` | #2365 (#2427) |
 
 ## Package paths
 
 | Package | Path | promotion_status | Issue |
 | --- | --- | --- | --- |
-| CC-001–VAL-001 | `docs/ops/implementation-plans/content-collection/packages/` | `promoted_to_repo` | #2361 |
+| CC-001–VAL-001 | `docs/ops/implementation-plans/content-collection/packages/` | `validated` | #2361 (#2405) |
 | GAL-001–CLUB-001 | same cluster | `validated` | #2362 (#2415) |
 
 ## Support documents (#2364)
 
 | Drive draft | Approved path | promotion_status | Issue / PR |
 | --- | --- | --- | --- |
-| Label/Status Mapping Addendum | `support/github-label-status-mapping-addendum.md` | `validated` | #2364 (#2419, #2424) |
-| Cursor Assignment Prompt Pack | `support/cursor-assignment-prompt-pack.md` | `validated` | #2364 (#2419, #2424) |
-| Review Throttle / PR Queue | `support/review-throttle-pr-queue-standard.md` | `validated` | #2364 (#2419, #2424) |
-| Deferred Work Register | `support/deferred-work-register.md` | `validated` | #2364 (#2419, #2424) |
-| Risk Register | `support/risk-register.md` | `validated` | #2364 (#2419, #2424) |
-| Support Docs Index | `support/support-docs-index.md` | `validated` | #2364 (#2419) |
+| Label/Status Mapping Addendum | `docs/ops/implementation-plans/content-collection/support/github-label-status-mapping-addendum.md` | `validated` | #2364 (#2419, #2424) |
+| Cursor Assignment Prompt Pack | `docs/ops/implementation-plans/content-collection/support/cursor-assignment-prompt-pack.md` | `validated` | #2364 (#2419, #2424) |
+| Review Throttle / PR Queue | `docs/ops/implementation-plans/content-collection/support/review-throttle-pr-queue-standard.md` | `validated` | #2364 (#2419, #2424) |
+| Deferred Work Register | `docs/ops/implementation-plans/content-collection/support/deferred-work-register.md` | `validated` | #2364 (#2419, #2424) |
+| Risk Register | `docs/ops/implementation-plans/content-collection/support/risk-register.md` | `validated` | #2364 (#2419, #2424) |
+| Support Docs Index | `docs/ops/implementation-plans/content-collection/support/support-docs-index.md` | `validated` | #2364 (#2419) |
 
 ## Deferred / do not promote
 
