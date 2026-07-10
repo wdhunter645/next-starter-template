@@ -28,6 +28,19 @@ Track program risks for the Content Collection successor program (#2359) with re
 - Enterprise risk management outside repository execution.
 - Automatic risk scoring tooling.
 
+## Current known truth
+
+- #2364 support docs merged via PR #2419; post-merge closeout exception #2421 opened for undispositioned reviewer findings.
+- This remediation (#2422) addresses advisory findings without reopening #2364 substantively.
+- Queue advancement toward #2365 remains blocked until #2363 and #2364 remediation paths clear.
+- R-006 pause threshold aligns with review throttle: pause at **3 or more** ready-for-review PRs.
+
+## Intended final state
+
+- Every major program risk has mitigation, owner, trigger, and imperative stop rule.
+- Risk register reviewed at each major program transition and at VAL-001 closeout.
+- Closed risks retain history with evidence links; open risks have active mitigations.
+
 ## Risk fields
 
 Each risk entry includes:
@@ -54,7 +67,7 @@ Each risk entry includes:
 | R-003 | Parallel file conflicts | All implementation | high | high | Multiple Cursor sessions edit same paths | Worktree standard (when promoted); allowlists; hot-zone halt; parallel-agent Rule 1 | Cursor | open | **Pause** affected lane on path collision |
 | R-004 | Shared content model drift | Feature lanes | high | critical | GAL/LIB/MEM start before CC-001/CC-002 frozen | CONTRACT-FROZEN marker; CC-001 package blocks feature lanes | ChatGPT | open | **Block** dependent feature implementation until frozen |
 | R-005 | CI scope creep | CI / workflows | medium | high | CI PR edits feature files or unsafe auto-repair | CI-001/CI-002 packages; Stage 0 inventory-first; dry-run-first; Phase 0 docs-only boundary | Cursor | open | **Serialize or defer** CI workflow work on collision |
-| R-006 | Review backlog | PMO / PR queue | high | medium | >3 PRs ready-for-review; ChatGPT/Bill capacity exceeded | Review throttle standard; draft staging; `CHATGPT HANDOFF` discipline | ChatGPT | open | **Pause** new ready-for-review PRs when queue exceeds limit |
+| R-006 | Review backlog | PMO / PR queue | high | medium | 3 or more PRs ready-for-review; ChatGPT/Bill capacity exceeded | Review throttle standard; draft staging; `CHATGPT HANDOFF` discipline | ChatGPT | open | **Pause** new ready-for-review PRs when queue reaches 3 |
 | R-007 | Design drift | Feature UI | medium | high | Functional pages miss LGFC design standards | `lgfc-design-compliance` skill; visual evidence in PR | Cursor | open | **Hold** UI lane until design review |
 | R-008 | Exposure / privacy defect | Feature / publication | low | critical | Private or unapproved content displays publicly | CC-002 contract; rights model; validation fixtures | Cursor | open | **Block** affected lane until fixed |
 | R-009 | Documentation sprawl | Docs / governance | medium | high | Drive drafts promote into duplicate repo SOTs | #2360 audit; dedup disposition; Diataxis promotion map; one issue per PR | ChatGPT | open | **Block** promotion until disposition set |
@@ -74,7 +87,7 @@ Cursor must halt and post `CHATGPT HANDOFF` when:
 3. Hot-zone / allowlist path collision (R-003).
 4. Feature lane without CONTRACT-FROZEN (R-004).
 5. CI changes exceed authorized scope (R-005).
-6. Review queue >3 ready-for-review (R-006).
+6. Review queue reaches 3 or more ready-for-review (R-006).
 7. Public exposure / rights defect (R-008).
 8. Promotion without #2360 disposition (R-009).
 9. Deferred register item in scope without authorization (R-010).
@@ -85,11 +98,11 @@ Cursor must halt and post `CHATGPT HANDOFF` when:
 
 | Risk cluster | Primary docs |
 | --- | --- |
-| R-001, R-004, R-008 | `packages/cc-001-*.md`, `packages/cc-002-*.md` |
-| R-003, R-005 | `support/review-throttle-pr-queue-standard.md`; `cursor-parallel-worktree-standard.md` (when promoted) |
-| R-006, R-012, R-013 | `queue-watch-and-dispatch-protocol.md`, `github-issue-closeout-protocol.md` |
-| R-009, R-010, R-011 | `content-collection-docs-audit-dedup-2360.md`, `support/deferred-work-register.md`, `support/github-label-status-mapping-addendum.md` |
-| R-014 | `PR_LIFECYCLE_STATE_MACHINE.md`, `.agents/skills/lgfc-pr-governance/SKILL.md` |
+| R-001, R-004, R-008 | `docs/ops/implementation-plans/content-collection/packages/cc-001-*.md`, `cc-002-*.md` |
+| R-003, R-005 | `support/review-throttle-pr-queue-standard.md`; `docs/how-to/ops/cursor-parallel-worktree-standard.md` (when promoted) |
+| R-006, R-012, R-013 | `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`, `docs/ops/pmo/github-issue-closeout-protocol.md` |
+| R-009, R-010, R-011 | `docs/ops/reports/content-collection-docs-audit-dedup-2360.md`, `support/deferred-work-register.md`, `support/github-label-status-mapping-addendum.md` |
+| R-014 | `docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`, `.agents/skills/lgfc-pr-governance/SKILL.md` |
 
 ## Review cadence
 
