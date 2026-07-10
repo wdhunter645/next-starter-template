@@ -5,7 +5,7 @@ Authority Level: Planning Map (non-authoritative until items promoted via Issue/
 Owns: Drive-draft → repository path mapping with C7-remapped targets and promotion status fields
 Does Not Own: Diataxis authority of intake `.docx` files or merge authorization
 Canonical Reference: /docs/ops/reports/content-collection-docs-audit-dedup-2360.md
-Related Issues: #2363, #2360, #2359, #2367
+Related Issues: #2365, #2363, #2360, #2359, #2364, #2367
 Last Reviewed: 2026-07-10
 ---
 
@@ -26,6 +26,8 @@ Does not own Diataxis authority of intake `.docx` files, feature implementation,
 - Intake `.docx` files on `atlas/drive-draft-intake-2367` are non-authoritative.
 - Dedup/merge authority is `docs/ops/reports/content-collection-docs-audit-dedup-2360.md` only.
 - Rejected roots: `docs/ops/programs/`, `docs/reference/website/content-collection/`.
+- Phase 0 child chain #2360–#2364 merged; terminal closeout #2365 in progress.
+- Closeout artifact: `docs/ops/reports/content-collection-phase0-promotion-closeout-2365.md`.
 
 ## Intended final state
 
@@ -52,16 +54,28 @@ Dedup/merge authority: `docs/ops/reports/content-collection-docs-audit-dedup-236
 | Parallel Execution Matrix | `docs/ops/pmo/content-collection-parallel-execution-matrix.md` | `promoted_to_repo` | #2363 |
 | Cursor Parallel Worktree Standard | `docs/how-to/ops/cursor-parallel-worktree-standard.md` | `promoted_to_repo` | #2363 |
 | Program Closeout Template | `docs/ops/pmo/content-collection-program-closeout-template.md` | `promoted_to_repo` | #2363 |
-| Diataxis Promotion Map | `docs/ops/pmo/content-collection-diataxis-promotion-map.md` | `pr_open` | #2363 |
-| Package Index | `docs/ops/implementation-plans/content-collection/package-index.md` | `promoted_to_repo` | #2361, #2363 |
+| Diataxis Promotion Map | `docs/ops/pmo/content-collection-diataxis-promotion-map.md` | `validated` | #2363, #2365 |
+| Package Index | `docs/ops/implementation-plans/content-collection/package-index.md` | `validated` | #2361–#2365 |
 | Documentation Dedup Plan | `docs/ops/reports/content-collection-docs-audit-dedup-2360.md` | `complete` | #2360 |
+| Phase 0 Closeout Report | `docs/ops/reports/content-collection-phase0-promotion-closeout-2365.md` | `pr_open` | #2365 |
 
 ## Package paths
 
 | Package | Path | promotion_status | Issue |
 | --- | --- | --- | --- |
 | CC-001–VAL-001 | `docs/ops/implementation-plans/content-collection/packages/` | `promoted_to_repo` | #2361 |
-| GAL-001–CLUB-001 | same cluster | `promoted_to_repo` | #2362 (#2415) |
+| GAL-001–CLUB-001 | same cluster | `validated` | #2362 (#2415) |
+
+## Support documents (#2364)
+
+| Drive draft | Approved path | promotion_status | Issue / PR |
+| --- | --- | --- | --- |
+| Label/Status Mapping Addendum | `support/github-label-status-mapping-addendum.md` | `validated` | #2364 (#2419, #2424) |
+| Cursor Assignment Prompt Pack | `support/cursor-assignment-prompt-pack.md` | `validated` | #2364 (#2419, #2424) |
+| Review Throttle / PR Queue | `support/review-throttle-pr-queue-standard.md` | `validated` | #2364 (#2419, #2424) |
+| Deferred Work Register | `support/deferred-work-register.md` | `validated` | #2364 (#2419, #2424) |
+| Risk Register | `support/risk-register.md` | `validated` | #2364 (#2419, #2424) |
+| Support Docs Index | `support/support-docs-index.md` | `validated` | #2364 (#2419) |
 
 ## Deferred / do not promote
 
@@ -70,7 +84,8 @@ Dedup/merge authority: `docs/ops/reports/content-collection-docs-audit-dedup-236
 | Accelerated Policy | do_not_promote until rewrite (C1/C8) |
 | Digital Asset Standard | deferred pending Owns review |
 | Issue-body packs | GitHub-only |
-| Deferred/risk registers | #2364 scope |
+| Deferred/risk registers | Promoted under #2364 — see Support documents |
+| Runbook v2, inheritance map, successor decision | deferred — future child issues per #2360 first-set |
 
 ## Promotion status values
 

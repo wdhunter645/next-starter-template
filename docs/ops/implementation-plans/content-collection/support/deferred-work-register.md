@@ -31,7 +31,7 @@ Track work intentionally excluded from the current Content Collection program wa
 
 ## Current known truth
 
-- Parent program #2359 Phase 0 docs promotion is active; #2360–#2362 enrichment PRs are merged.
+- Phase 0 child chain #2360–#2364 merged; terminal closeout tracked in `docs/ops/reports/content-collection-phase0-promotion-closeout-2365.md`.
 - #2364 support docs are on `main` under `docs/ops/implementation-plans/content-collection/support/`.
 - GAL/LIB/MEM/CLUB feature implementation remains deferred until `CONTRACT-FROZEN: content-asset-model v1`.
 - Codex is inactive per `docs/ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md`.
