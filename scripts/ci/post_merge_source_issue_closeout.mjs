@@ -1,3 +1,8 @@
+export const INTERMEDIATE_SOURCE_ISSUE_LABELS = [
+	'status:changes-requested',
+	'status:in-progress',
+];
+
 export const STALE_SOURCE_ISSUE_LABELS = [
 	'status:blocked',
 	'status:queued',
@@ -9,9 +14,11 @@ export const STALE_SOURCE_ISSUE_LABELS = [
 	'status:implementation',
 	'status:implementation-ready',
 	'status:ready-for-cursor',
+	...INTERMEDIATE_SOURCE_ISSUE_LABELS,
 ];
 
 export const REMEDIATION_ISSUE_LABEL = 'post-merge-failure';
+export const PREFERRED_REMEDIATION_ISSUE_LABEL = 'post-merge:failed';
 export const REMEDIATION_TITLE_PREFIX = 'Post-merge closeout exception for ';
 export const LEGACY_REMEDIATION_TITLE_PREFIX = 'Post-merge remediation required for ';
 export const TERMINAL_SOURCE_ISSUE_LABEL = 'status:complete';
@@ -22,6 +29,43 @@ export function issueLabelNameList(issueMeta = {}) {
 	return (issueMeta?.labels || [])
 		.map((label) => (typeof label === 'string' ? label : label?.name))
 		.filter(Boolean);
+}
+
+export function isClosedCompletedSourceIssue(sourceIssue = null) {
+	if (!sourceIssue) return false;
+	if (String(sourceIssue.state || '').toLowerCase() !== 'closed') return false;
+	const reason = String(sourceIssue.state_reason || sourceIssue.stateReason || '').toLowerCase();
+	return reason === 'completed';
+}
+
+export function resolveSourceIssueCloseoutMode({
+	sourceIssue = null,
+	prBody = '',
+	preserveSourceIssueOpen = false,
+} = {}) {
+	if (!sourceIssue) return 'not_evaluated';
+	if (isPermittedClosedSourceIssueFollowup({ body: prBody, sourceIssue })) {
+		return 'closed_remediation_followup';
+	}
+	if (preserveSourceIssueOpen) return 'source_issue_preserved_open';
+	if (String(sourceIssue.state || '').toLowerCase() === 'open') return 'source_issue_open_at_validation';
+	if (isClosedCompletedSourceIssue(sourceIssue)) return 'closed_completed_idempotent_normalize';
+	return 'exception_required';
+}
+
+export function canIdempotentlyNormalizeClosedCompletedSourceIssue({
+	sourceIssue = null,
+	postMergeResult = null,
+	terminalLabelResult = null,
+} = {}) {
+	if (!isClosedCompletedSourceIssue(sourceIssue)) return false;
+	if (!postMergeResult || postMergeResult.status !== 'pass') return false;
+	if (postMergeResult.remediation_required) return false;
+	if ((postMergeResult.reviewer_disposition_failures || []).length > 0) return false;
+	if ((postMergeResult.implementation_failures || []).length > 0) return false;
+	if ((postMergeResult.diataxis_failures || []).length > 0) return false;
+	if ((postMergeResult.reviewer_findings || []).length > 0) return false;
+	return Boolean(terminalLabelResult?.ok);
 }
 
 export function terminalSourceIssueCloseoutModeFromSync(syncResult = '') {
@@ -432,6 +476,15 @@ export function shouldCloseSourceIssue({
 					: null,
 			}));
 	if (issueMeta?.state && String(issueMeta.state).toUpperCase() !== 'OPEN' && !closedFollowupAllowed) {
+		if (
+			canIdempotentlyNormalizeClosedCompletedSourceIssue({
+				sourceIssue: issueMeta,
+				postMergeResult,
+				terminalLabelResult,
+			})
+		) {
+			return { close: true, reason: 'closed_completed_idempotent_normalize' };
+		}
 		return { close: false, reason: 'source_issue_not_open' };
 	}
 	if (postMergeResult && postMergeResult.status !== 'pass') {

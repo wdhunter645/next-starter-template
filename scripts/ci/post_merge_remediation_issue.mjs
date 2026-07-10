@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { parseRemediationIssue } from './close_duplicate_remediation_issues.mjs';
 import { githubRepoRequest } from './github_issue_api.mjs';
-import { REMEDIATION_TITLE_PREFIX } from './post_merge_source_issue_closeout.mjs';
+import { REMEDIATION_ISSUE_LABEL, REMEDIATION_TITLE_PREFIX } from './post_merge_source_issue_closeout.mjs';
 
 export const CLOSEOUT_RUNTIME_ERROR_CODE = 'closeout_runtime_error';
 export const BATCH_CIRCUIT_BREAKER_THRESHOLD = 3;
@@ -280,6 +280,34 @@ export function blockingCloseoutFailures(result = {}) {
 	];
 }
 
+export function requiresGovernanceException(result = {}) {
+	const governanceCodes = new Set([
+		'undispositioned_reviewer_comment',
+		'outdated_reviewer_thread_without_disposition',
+		'closeout_blocker_declared',
+		'unresolved_auto_repair_scaffold',
+		'forbidden_placeholder_token',
+		'missing_required_section',
+		'missing_source_issue',
+		'ambiguous_source_issue_candidates',
+		'active_alternate_program_lane',
+		'implementation_evidence_failure',
+		'diataxis_failure',
+		'late_reviewer_finding',
+		'workflow_failure',
+	]);
+	return blockingCloseoutFailures(result).some((failure) => governanceCodes.has(failure.code));
+}
+
+export function remediationIssueLabels(result = {}) {
+	const labels = [REMEDIATION_ISSUE_LABEL];
+	if (result?.self_healing_safe) {
+		labels.push('ops-pr-escalation');
+	}
+	// Do not auto-add agent:ChatGPT. Operators add governance-routing labels only when review is required.
+	return labels;
+}
+
 function failureConditions(result = {}) {
 	return blockingCloseoutFailures(result);
 }
@@ -516,7 +544,7 @@ export async function upsertRemediationIssue({ token, repository, result }) {
 		repository,
 		path: '/issues',
 		method: 'POST',
-		body: { title, body, labels: ['post-merge-failure'] },
+		body: { title, body, labels: remediationIssueLabels(result) },
 	});
 
 	return { action: 'created', issue: created.html_url || `#${created.number}` };

@@ -9,9 +9,11 @@ export { implementationEvidenceFailures } from './post_merge_implementation_evid
 
 import { linkedIssueNumber, resolveSourceIssueFromPr, sourceIssueAccounting } from './issue_accounting.mjs';
 import {
+	isClosedCompletedSourceIssue,
 	isPermittedClosedSourceIssueFollowup,
 	planActiveSourceIssueRelabel,
 	planTerminalLabelReconciliation,
+	resolveSourceIssueCloseoutMode,
 	shouldPreserveSourceIssueOpen,
 	terminalSourceIssueLabelIntegrityFailures,
 } from './post_merge_source_issue_closeout.mjs';
@@ -243,11 +245,14 @@ export function sourceIssueStateFailures({ body = '', sourceIssue = null, source
 	}
 
 	const closedFollowupAllowed = isPermittedClosedSourceIssueFollowup({ body, sourceIssue });
+	const closedCompleted = isClosedCompletedSourceIssue(sourceIssue);
 	if (String(sourceIssue.state || '').toLowerCase() !== 'open' && !closedFollowupAllowed) {
-		failures.push({
-			code: 'source_issue_not_open',
-			message: `Source issue is ${sourceIssue.state || 'unknown'} at closeout start; CI refused to relabel or close it.`,
-		});
+		if (!closedCompleted) {
+			failures.push({
+				code: 'source_issue_not_open',
+				message: `Source issue is ${sourceIssue.state || 'unknown'} at closeout start; CI refused to relabel or close it.`,
+			});
+		}
 	}
 
 	const terminalLabelResult = planTerminalLabelReconciliation({
@@ -908,16 +913,11 @@ export async function runValidator({
 					issueLabels: sourceIssue.labels || [],
 					repoLabels,
 				});
-			sourceIssueCloseoutMode = isPermittedClosedSourceIssueFollowup({
-				body: normalizedPr.body,
+			sourceIssueCloseoutMode = resolveSourceIssueCloseoutMode({
 				sourceIssue,
-			})
-				? 'closed_remediation_followup'
-				: preserveSourceIssueOpen
-					? 'source_issue_preserved_open'
-					: String(sourceIssue.state || '').toLowerCase() === 'open'
-						? 'source_issue_open_at_validation'
-						: 'exception_required';
+				prBody: normalizedPr.body,
+				preserveSourceIssueOpen,
+			});
 		} catch (error) {
 			sourceIssueError = error instanceof Error ? error.message : String(error);
 		}

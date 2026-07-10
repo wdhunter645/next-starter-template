@@ -4,6 +4,8 @@ import { linkedIssueNumber, branchIssueTokens, resolveSourceIssueFromPr, sourceI
 import {
 	buildFailureCloseoutComment,
 	buildSourceIssueCloseoutComment,
+	canIdempotentlyNormalizeClosedCompletedSourceIssue,
+	isClosedCompletedSourceIssue,
 	isRemediationIssue,
 	isUmbrellaSourceIssue,
 	planActiveSourceIssueRelabel,
@@ -11,6 +13,7 @@ import {
 	planTerminalLabelReconciliation,
 	postMergeVerificationResult,
 	requestsSourceIssueTerminalClose,
+	resolveSourceIssueCloseoutMode,
 	shouldCloseSourceIssue,
 	shouldKeepActiveSourceIssueOpen,
 	shouldPreserveSourceIssueOpen,
@@ -18,7 +21,7 @@ import {
 	shouldReopenUmbrellaSourceIssue,
 	STALE_SOURCE_ISSUE_LABELS,
 } from '../scripts/ci/post_merge_source_issue_closeout.mjs';
-import { metadataFailures, blockingMetadataFailures, buildResult } from '../scripts/ci/post_merge_validator.mjs';
+import { metadataFailures, blockingMetadataFailures, buildResult, sourceIssueStateFailures } from '../scripts/ci/post_merge_validator.mjs';
 import {
 	duplicateCloseComment,
 	groupRemediationIssues,
@@ -508,7 +511,91 @@ describe('source issue closeout evidence', () => {
 			'status:implementation',
 			'status:implementation-ready',
 			'status:ready-for-cursor',
+			'status:changes-requested',
+			'status:in-progress',
 		]);
+	});
+
+	it('treats intermediate review labels as removable during terminal reconciliation', () => {
+		const plan = planTerminalLabelReconciliation({
+			issueLabels: ['agent:cursor', 'status:changes-requested', 'status:in-progress'],
+			repoLabels: ['status:complete'],
+		});
+
+		expect(plan).toMatchObject({
+			ok: true,
+			removeLabels: ['status:changes-requested', 'status:in-progress'],
+			addLabel: 'status:complete',
+		});
+	});
+
+	it('recognizes closed completed source issues for idempotent normalization', () => {
+		expect(isClosedCompletedSourceIssue({ state: 'closed', state_reason: 'completed' })).toBe(true);
+		expect(isClosedCompletedSourceIssue({ state: 'closed', state_reason: 'COMPLETED' })).toBe(true);
+		expect(resolveSourceIssueCloseoutMode({
+			sourceIssue: { state: 'closed', state_reason: 'completed' },
+		})).toBe('closed_completed_idempotent_normalize');
+	});
+
+	it('does not treat closed issues with missing or non-completed close reasons as idempotent targets', () => {
+		expect(isClosedCompletedSourceIssue({ state: 'closed' })).toBe(false);
+		expect(isClosedCompletedSourceIssue({ state: 'closed', state_reason: '' })).toBe(false);
+		expect(isClosedCompletedSourceIssue({ state: 'closed', state_reason: 'not_planned' })).toBe(false);
+		expect(resolveSourceIssueCloseoutMode({
+			sourceIssue: { state: 'closed' },
+		})).toBe('exception_required');
+	});
+
+	it('does not emit source_issue_not_open for closed completed issues during validation', () => {
+		const failures = sourceIssueStateFailures({
+			body: baseBody,
+			sourceIssue: {
+				state: 'closed',
+				state_reason: 'completed',
+				labels: [{ name: 'status:changes-requested' }],
+			},
+			repoLabels: [{ name: 'status:complete' }],
+		});
+
+		expect(failures).not.toContainEqual(expect.objectContaining({ code: 'source_issue_not_open' }));
+		expect(failures).toEqual([]);
+	});
+
+	it('allows idempotent label normalization when the source issue is already closed completed', () => {
+		const postMergeResult = {
+			status: 'pass',
+			remediation_required: false,
+			reviewer_disposition_failures: [],
+		};
+		const terminalLabelResult = planTerminalLabelReconciliation({
+			issueLabels: ['status:changes-requested'],
+			repoLabels: ['status:complete'],
+		});
+
+		expect(
+			shouldCloseSourceIssue({
+				action: 'post_merge_success',
+				issueNumber: '2363',
+				isMerged: true,
+				postMergeResult,
+				terminalLabelResult,
+				issueMeta: { state: 'closed', state_reason: 'completed', labels: [{ name: 'status:changes-requested' }] },
+			}),
+		).toEqual({ close: true, reason: 'closed_completed_idempotent_normalize' });
+	});
+
+	it('still blocks idempotent normalization when reviewer disposition failures remain', () => {
+		expect(
+			canIdempotentlyNormalizeClosedCompletedSourceIssue({
+				sourceIssue: { state: 'closed', state_reason: 'completed' },
+				postMergeResult: {
+					status: 'pass',
+					remediation_required: false,
+					reviewer_disposition_failures: [{ code: 'undispositioned_reviewer_comment' }],
+				},
+				terminalLabelResult: { ok: true },
+			}),
+		).toBe(false);
 	});
 
 	it('plans terminal label reconciliation including stale failure labels', () => {
@@ -601,6 +688,54 @@ describe('sync-pr-state successful closeout', () => {
 		);
 		expect(run).toHaveBeenCalledWith(
 			expect.arrayContaining(['issue', 'close', '1196', '--repo', 'owner/repo', '--reason', 'completed']),
+		);
+	});
+
+	it('normalizes labels on already-closed completed source issues without reopening', async () => {
+		process.env.GITHUB_REPOSITORY = 'owner/repo';
+		const syncPrState = await import('../scripts/orchestrator/sync-pr-state.mjs');
+		const run = vi.fn();
+		const reconciliations = [];
+
+		const result = syncPrState.syncPrState({
+			prNumber: '2420',
+			action: 'post_merge_success',
+			pr: {
+				body: baseBody,
+				mergedAt: '2026-07-10T12:58:41Z',
+				state: 'MERGED',
+				url: 'https://example.test/pr/2420',
+				mergeCommit: { oid: '50ca674b2817' },
+			},
+			postMergeResult: {
+				status: 'pass',
+				remediation_required: false,
+				merge_sha: '50ca674b2817',
+				source_issue_closeout_mode: 'closed_completed_idempotent_normalize',
+				terminal_label_result: {
+					ok: true,
+					removeLabels: ['status:changes-requested'],
+					addLabel: 'status:complete',
+					summary: 'remove status:changes-requested; add status:complete',
+				},
+			},
+			getIssueMeta: () => ({
+				title: 'Docs task',
+				labels: ['agent:cursor', 'status:changes-requested'],
+				state: 'CLOSED',
+				state_reason: 'completed',
+			}),
+			reconcileTerminalLabelsFn: (...args) => reconciliations.push(args),
+			run,
+		});
+
+		expect(result).toBe('complete');
+		expect(reconciliations).toHaveLength(1);
+		expect(run).not.toHaveBeenCalledWith(
+			expect.arrayContaining(['issue', 'close', '1196']),
+		);
+		expect(run).toHaveBeenCalledWith(
+			expect.arrayContaining(['issue', 'comment', '1196', '--repo', 'owner/repo', '--body', expect.stringContaining('PR: #2420')]),
 		);
 	});
 
