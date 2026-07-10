@@ -15,6 +15,23 @@ Last Reviewed: 2026-07-10
 
 Define how multiple Cursor Local sessions may operate without conflicting file changes, branch confusion, or PR queue overload during Content Collection parallel lanes.
 
+## Scope
+
+Owns worktree setup, session start checklist, allowlist execution, collision halt, and review throttle for parallel Cursor Local sessions.
+
+Does not own merge authorization, GitHub issue creation, CI workflow changes, or program queue dispatch.
+
+## Current known truth
+
+- One task → one branch → one worktree → one PR unless ChatGPT/Bill authorize bundling.
+- Docs-only child issues use `cursor/<issue>-<task>-2e48` branch names (for example `cursor/2363-control-ops-docs-2e48`).
+- Implementation lanes may use descriptive lane branches only when the source issue explicitly assigns them.
+- Hot zones and allowlists are defined in `docs/ops/pmo/content-collection-parallel-execution-matrix.md`.
+
+## Intended final state
+
+Every parallel session can identify its issue, branch, worktree, allowlist, halt rules, and validation plan before editing files.
+
 ## Procedure
 
 ### Step 1 — Confirm task authorization
@@ -37,13 +54,20 @@ Stop if any field is missing. Post `CHATGPT HANDOFF` on the issue.
 
 ```bash
 git fetch origin main
-git worktree add ../lgfc-p2-gallery -b cursor/p2-gallery origin/main
-cd ../lgfc-p2-gallery
+git worktree add ../lgfc-2363-control-ops -b cursor/2363-control-ops-docs-2e48 origin/main
+cd ../lgfc-2363-control-ops
 ```
 
 One git worktree per Cursor Local session. Do not run multiple Cursor sessions in one shared working tree.
 
-Docs-only child issues use `cursor/<issue>-<task>-2e48` branch names.
+Branch naming:
+
+| Task type | Pattern | Example |
+| --- | --- | --- |
+| Docs-only child issue | `cursor/<issue>-<task>-2e48` | `cursor/2363-control-ops-docs-2e48` |
+| Implementation lane (issue-assigned) | `cursor/<lane>-<surface>` | Only when source issue assigns the lane branch |
+
+Do not use lane-style branch names for docs-only issues.
 
 ### Step 3 — Session start checklist
 

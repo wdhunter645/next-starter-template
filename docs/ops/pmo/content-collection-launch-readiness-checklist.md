@@ -53,9 +53,9 @@ Phase 0 documentation promotion only unless a row explicitly references later im
 | # | Check | Pass criteria | Status field |
 | ---: | --- | --- | --- |
 | 13 | Package index reflects promoted paths | `docs/ops/implementation-plans/content-collection/package-index.md` | `index_current` |
-| 14 | Diataxis promotion map status fields current | `content-collection-diataxis-promotion-map.md` | `promotion_map_current` |
+| 14 | Diataxis promotion map status fields current | `docs/ops/pmo/content-collection-diataxis-promotion-map.md` | `promotion_map_current` |
 | 15 | Deferred/risk registers reviewed | Support docs on `main` | `registers_current` |
-| 16 | VAL-001 evidence template fillable | `val-001-integrated-program-validation-package.md` | `validation_plan_ready` |
+| 16 | VAL-001 evidence template fillable | `docs/ops/implementation-plans/content-collection/packages/val-001-integrated-program-validation-package.md` | `validation_plan_ready` |
 | 17 | No open post-merge queue blocker | No unresolved `post-merge-failure` exception blocking queue | `queue_unblocked` |
 
 ## Stop rules

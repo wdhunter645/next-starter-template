@@ -15,6 +15,22 @@ Last Reviewed: 2026-07-10
 
 Standardize terminal closeout for the Content Collection successor program (#2359). Use when VAL-001 or Phase 0 terminal promotion (#2365) authorizes closeout.
 
+## Scope
+
+Owns closeout header, lane/PR/validation tables, administrative queue classification, #1738 disposition, and final verification blocks.
+
+Does not own merge authorization, issue closure, or queue mutation.
+
+## Current known truth
+
+- Closeout evidence follows `docs/ops/pmo/github-issue-closeout-protocol.md`.
+- VAL-001 package path: `docs/ops/implementation-plans/content-collection/packages/val-001-integrated-program-validation-package.md`.
+- Bill/ChatGPT retain merge and program-termination authority.
+
+## Intended final state
+
+Terminal closeout produces linked validation evidence, as-built references, and explicit deferral records for every non-complete lane.
+
 ## Closeout header
 
 ```text
@@ -79,6 +95,6 @@ Closeout complete when validation evidence exists, as-built docs are linked, blo
 
 ## Related documents
 
-- `packages/val-001-integrated-program-validation-package.md`
+- `docs/ops/implementation-plans/content-collection/packages/val-001-integrated-program-validation-package.md`
 - `docs/ops/pmo/content-collection-diataxis-promotion-map.md`
 - `docs/ops/implementation-plans/content-collection/package-index.md`

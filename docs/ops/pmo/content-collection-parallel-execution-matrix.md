@@ -15,6 +15,23 @@ Last Reviewed: 2026-07-10
 
 Define safe parallel Cursor Local sessions for Content Collection without file conflicts, dependency churn, or PR queue overload.
 
+## Scope
+
+Owns lane definitions (P1–P6), concurrency ceilings, pairwise matrix, freeze marker, per-lane file allowlists, hot zones, merge order, and PR review throttle.
+
+Does not own merge authorization, GitHub issue creation, or CI workflow implementation.
+
+## Current known truth
+
+- Cursor is the sole LGFC implementation executor; Codex is inactive.
+- Default max concurrent sessions: 3; exceptional: 4 with disjoint allowlists.
+- Gallery/Library/Memorabilia parallel code work requires `CONTRACT-FROZEN: content-asset-model v1`.
+- Package docs live under `docs/ops/implementation-plans/content-collection/packages/`.
+
+## Intended final state
+
+Every parallel implementation task cites lane ID, file allowlist, hot-zone halt rules, and review throttle before work begins.
+
 ## Lane definitions
 
 | Lane | Title |
@@ -86,19 +103,19 @@ Do not touch: library/memorabilia routes, `fanclub/page.tsx`, `layout.tsx`, `fan
 - `src/app/fanclub/library/**`
 - `functions/api/library/**`
 - `tests/*library*`
-- `packages/lib-001-library-package.md`
+- `docs/ops/implementation-plans/content-collection/packages/lib-001-library-package.md`
 
 ### P4 — Memorabilia
 
 - `src/app/fanclub/memorabilia/**`
 - `tests/*memorabilia*`
-- `packages/mem-001-memorabilia-package.md`
+- `docs/ops/implementation-plans/content-collection/packages/mem-001-memorabilia-package.md`
 
 ### P5 — Club Newspaper
 
 - `src/app/fanclub/page.tsx`
 - `src/components/fanclub/ClubHome*.tsx`
-- `packages/club-001-club-newspaper-design-package.md`
+- `docs/ops/implementation-plans/content-collection/packages/club-001-club-newspaper-design-package.md`
 
 Start only after shared fanclub shell risk is controlled.
 

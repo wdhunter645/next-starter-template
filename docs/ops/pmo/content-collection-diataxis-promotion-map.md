@@ -15,6 +15,22 @@ Last Reviewed: 2026-07-10
 
 Assign every Drive planning document under `_incoming/drive-drafts/content-collection/` to an approved repository path before promotion.
 
+## Scope
+
+Owns C7-remapped target paths, control/package mapping tables, promotion status tokens, and conflict stop rules for intake drafts.
+
+Does not own Diataxis authority of intake `.docx` files, feature implementation, or merge authorization.
+
+## Current known truth
+
+- Intake `.docx` files on `atlas/drive-draft-intake-2367` are non-authoritative.
+- Dedup/merge authority is `docs/ops/reports/content-collection-docs-audit-dedup-2360.md` only.
+- Rejected roots: `docs/ops/programs/`, `docs/reference/website/content-collection/`.
+
+## Intended final state
+
+Every intake draft has an approved target path or explicit `do_not_promote` / `deferred` disposition with trackable `promotion_status` tokens.
+
 ## Promotion rule
 
 Intake `.docx` files are planning support only. Authority requires Markdown at the mapped path, a reviewed PR with one source issue, and issue linkage.
@@ -30,22 +46,22 @@ Dedup/merge authority: `docs/ops/reports/content-collection-docs-audit-dedup-236
 
 ## Control documents (#2363)
 
-| Drive draft | Approved path | Status | Issue |
+| Drive draft | Approved path | promotion_status | Issue |
 | --- | --- | --- | --- |
-| Launch Readiness Checklist v2 | `docs/ops/pmo/content-collection-launch-readiness-checklist.md` | promoted (#2363) | #2363 |
-| Parallel Execution Matrix | `docs/ops/pmo/content-collection-parallel-execution-matrix.md` | promoted (#2363) | #2363 |
-| Cursor Parallel Worktree Standard | `docs/how-to/ops/cursor-parallel-worktree-standard.md` | promoted (#2363) | #2363 |
-| Program Closeout Template | `docs/ops/pmo/content-collection-program-closeout-template.md` | promoted (#2363) | #2363 |
-| Diataxis Promotion Map | `docs/ops/pmo/content-collection-diataxis-promotion-map.md` | this document | #2363 |
-| Package Index | `docs/ops/implementation-plans/content-collection/package-index.md` | enriched | #2361, #2363 |
-| Documentation Dedup Plan | `docs/ops/reports/content-collection-docs-audit-dedup-2360.md` | merged (#2360) | #2360 |
+| Launch Readiness Checklist v2 | `docs/ops/pmo/content-collection-launch-readiness-checklist.md` | `promoted_to_repo` | #2363 |
+| Parallel Execution Matrix | `docs/ops/pmo/content-collection-parallel-execution-matrix.md` | `promoted_to_repo` | #2363 |
+| Cursor Parallel Worktree Standard | `docs/how-to/ops/cursor-parallel-worktree-standard.md` | `promoted_to_repo` | #2363 |
+| Program Closeout Template | `docs/ops/pmo/content-collection-program-closeout-template.md` | `promoted_to_repo` | #2363 |
+| Diataxis Promotion Map | `docs/ops/pmo/content-collection-diataxis-promotion-map.md` | `pr_open` | #2363 |
+| Package Index | `docs/ops/implementation-plans/content-collection/package-index.md` | `promoted_to_repo` | #2361, #2363 |
+| Documentation Dedup Plan | `docs/ops/reports/content-collection-docs-audit-dedup-2360.md` | `complete` | #2360 |
 
 ## Package paths
 
-| Package | Path | Status | Issue |
+| Package | Path | promotion_status | Issue |
 | --- | --- | --- | --- |
-| CC-001–VAL-001 | `docs/ops/implementation-plans/content-collection/packages/` | promoted | #2361 |
-| GAL-001–CLUB-001 | same cluster | promoted | #2362 (#2415) |
+| CC-001–VAL-001 | `docs/ops/implementation-plans/content-collection/packages/` | `promoted_to_repo` | #2361 |
+| GAL-001–CLUB-001 | same cluster | `promoted_to_repo` | #2362 (#2415) |
 
 ## Deferred / do not promote
 
@@ -77,4 +93,4 @@ node .agents/checks/agent-governance-check.mjs
 1. Read #2360 disposition before adding rows.
 2. Enrich with `git ls-files` verification.
 3. Open one-issue docs PR with exact allowlist.
-4. Update Status column after merge.
+4. Update `promotion_status` column after merge.
