@@ -11,9 +11,23 @@ Last Reviewed: 2026-07-12
 
 # PR Process Current State
 
-## Status
+## Purpose
 
-The repository PR-process redesign is complete in code and workflow disposition.
+Define the current implemented PR-process baseline after the July 2026 rebuild and the retirement of the #1075 orchestration path.
+
+## Scope
+
+This reference covers required checks, active advisory checks, manual-only workflows, post-merge ownership, and the operational effect of #2469. It does not change canonical policy or live branch-protection settings.
+
+## Current known truth
+
+The PR-process redesign is implemented around stable-facts PR bodies, GitHub-native reviewer state, deterministic required checks, advisory-first promotion, single-owner post-merge closeout, and routine incremental exception housekeeping. There is no active dedicated #1075 CI phase-generation engine.
+
+## Intended final state
+
+The repository maintains this minimal deterministic PR surface, confirms live branch protection matches documented required checks, and prevents retired #1075 mechanisms or PR-body lifecycle mutation from returning without new authorization and evidence.
+
+## Status
 
 Current principles:
 
