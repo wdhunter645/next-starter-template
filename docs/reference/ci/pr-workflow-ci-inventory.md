@@ -49,6 +49,7 @@ These workflows must not be required while manual-only.
 | `ops-post-merge-self-healing.yml` | Scheduled/manual exception hygiene |
 | `diataxis-post-merge-validate.yml` | Documentation validation support |
 | `ops-pr-process-metrics.yml` | Metrics |
+| `post-merge-intent-verification.yml` | Inert manual compatibility marker only |
 
 ## Retired in #2469
 
@@ -57,7 +58,6 @@ The following legacy PR/CI assets are removed and must not be treated as active:
 - `ci-orchestration-engine.yml`
 - `gate-reviewer-response.yml`
 - `gate-close-work-issue.yml`
-- `post-merge-intent-verification.yml`
 - parked legacy `ci.yml`
 - parked legacy `deploy.yml`
 - parked legacy `deploy-dev.yml`
@@ -67,6 +67,8 @@ The following legacy PR/CI assets are removed and must not be treated as active:
 - parked legacy `test-homepage.yml`
 
 The fixed #1075 state file and scripts are also removed. No workflow may recreate `lgfc-ci-phase:*` issues.
+
+The previous hardcoded implementation of `post-merge-intent-verification.yml` is retired. Its retained marker has no PR trigger, issue-write permission, PR-write permission, body mutation, or closeout ownership.
 
 ## Non-PR operations
 
