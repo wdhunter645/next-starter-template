@@ -13,14 +13,24 @@ Last Reviewed: 2026-07-12
 
 # Retired #1075 CI Redesign Rollout
 
-The six-task #1075 rollout was implemented and later superseded.
+## Purpose
 
-This plan is retained as historical evidence only. Its tasks are terminal and it is not eligible for issue-factory execution. It must not generate new task issues or define current CI authority.
+Preserve the completed six-task #1075 rollout as a compliant historical implementation record.
+
+## Scope
+
+This plan covers only the original #1075 redesign sequence and its terminal disposition. It does not authorize current CI work, issue generation, or queue advancement.
+
+## Current known truth
+
+The six-task rollout was implemented, later stabilized by Program #1500, and superseded by the July 2026 PR-process strategy. The dedicated phase-generation engine and fixed state are removed by #2469.
+
+## Intended final state
+
+This plan remains retired and non-executable. It must not use `Status: production-ready`, generate new task issues, or define current CI authority.
 
 Current CI authority:
 
 - `/docs/governance/PR_PROCESS.md`
 - `/docs/reference/ci/pr-process-current-state.md`
 - `/docs/reference/ci/merge-protection-surface.md`
-
-The dedicated phase-generation engine and fixed state were removed by #2469.
