@@ -12,9 +12,21 @@ Last Reviewed: 2026-07-12
 
 # Retired LGFC CI Orchestration Engine
 
-The dedicated scheduled CI phase engine created under #1075 is retired by #2469.
+## Purpose
 
-Its workflow, JSON state, implementation script, fixed task decomposition assets, and dedicated tests were removed. It must not generate `lgfc-ci-phase:*` issues, create #1089-style remediation, or influence current CI queue decisions.
+Preserve an auditable record of the dedicated scheduled CI phase engine created under #1075.
+
+## Scope
+
+This reference covers the retired engine, its fixed state model, and its historical outputs. It does not define current workflow behavior, issue generation, queue authority, or branch protection.
+
+## Current known truth
+
+Issue #2469 removes the engine workflow, JSON state, implementation script, fixed task decomposition assets, and dedicated tests. The retired system cannot generate `lgfc-ci-phase:*` issues, create #1089-style remediation, or influence current CI queue decisions.
+
+## Intended final state
+
+This file remains historical context only. The retired engine must not be restored without a new authorized design and issue.
 
 Current CI authority is maintained in:
 
@@ -22,5 +34,3 @@ Current CI authority is maintained in:
 - `/docs/reference/ci/pr-process-current-state.md`
 - `/docs/reference/ci/merge-protection-surface.md`
 - `/docs/reference/ci/pr-workflow-ci-inventory.md`
-
-This file is retained only to preserve historical context and links from closed issues and PRs.
