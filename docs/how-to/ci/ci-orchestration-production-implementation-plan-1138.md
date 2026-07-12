@@ -14,6 +14,9 @@ Last Reviewed: 2026-07-12
 
 The #1138 documentation package and its #1075 implementation sequencing are historical.
 
-Do not use this file to generate CI tasks, select a next phase, or block current work. Current CI changes require a newly authorized issue under the July 2026 PR-process strategy.
+## Procedure
 
-Historical PRs and issues remain evidence. The dedicated phase engine was removed by #2469.
+1. Use this file only to interpret historical #1138 and #1075 decisions.
+2. Do not generate CI tasks, select a next phase, or block current work from this document.
+3. Route current CI changes through a newly authorized issue under the July 2026 PR-process strategy.
+4. Preserve historical PRs and issues as evidence; the dedicated phase engine was removed by #2469.
