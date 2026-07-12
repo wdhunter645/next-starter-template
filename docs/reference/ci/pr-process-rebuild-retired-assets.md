@@ -40,7 +40,8 @@ These implemented the retired PR-body reviewer ledger.
 - `.github/workflows/test-homepage.yml`
 - `.github/workflows/gate-reviewer-response.yml`
 - `.github/workflows/gate-close-work-issue.yml`
-- `.github/workflows/post-merge-intent-verification.yml`
+
+The previous hardcoded implementation of `.github/workflows/post-merge-intent-verification.yml` is also removed. A manual-only, read-only compatibility marker remains so retained tests can verify it is not an automatic closeout owner.
 
 ## Retained current assets
 
