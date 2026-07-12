@@ -18,9 +18,9 @@ The dedicated CI redesign issue model created under #1075 is retired by #2469.
 
 The old model generated serial `lgfc-ci-phase:*` issues from a fixed JSON state file and paused on stale, failed, duplicate, or unstable phase state. That rollout completed, was subsequently superseded by Program #1500 and the July 2026 PR-process rebuild, and must not generate new work.
 
-## Current operating model
+## Procedure
 
-Current CI work must follow:
+For current CI work, follow:
 
 1. GitHub Issues as executable work truth.
 2. `/docs/governance/PR_PROCESS.md` as canonical PR-process policy.
