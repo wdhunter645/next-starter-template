@@ -11,6 +11,22 @@ Last Reviewed: 2026-07-12
 
 # LGFC Post-Merge Validation Surface
 
+## Purpose
+
+Define the current post-merge validation, remediation, and source-issue closeout surface.
+
+## Scope
+
+This reference covers automatic closeout ownership, supporting workflows, evidence domains, failure handling, and the #1075 retirement boundary. It does not define pre-merge branch protection or production monitoring.
+
+## Current known truth
+
+`.github/workflows/post-merge-closeout.yml` is the sole automatic post-merge source-issue validation and closeout owner. Supporting workflows may provide remediation, documentation evidence, manual backfill, metrics, or exception housekeeping without racing the same mutation boundary.
+
+## Intended final state
+
+Post-merge closeout remains single-owner, evidence-driven, and idempotent. The retired #1075 phase engine cannot generate false orchestration pauses, while legitimate current failures continue to produce bounded remediation evidence.
+
 ## Current ownership
 
 Automatic post-merge source-issue validation and reconciliation has one owner:
@@ -82,8 +98,8 @@ Retirement of #1075 prevents obsolete CI phase issues from creating false orches
 | `scripts/orchestrator/sync-pr-state.mjs` | Shared issue lifecycle synchronization used by the closeout runner |
 | `scripts/ci/post_merge_validation_surface.mjs` | Current workflow/script surface validator |
 
-## Verification reference
+## Verification
 
-The validation entry point is `node scripts/ci/post_merge_validation_surface.mjs`. Execute it from an authorized implementation or verification context; this Reference document records the command identity but does not provide an executable runbook.
+Validation command: `node scripts/ci/post_merge_validation_surface.mjs`.
 
 The validator must confirm the active automatic owner and its required supporting scripts without requiring retired #1075 workflows.
