@@ -11,6 +11,22 @@ Last Reviewed: 2026-07-12
 
 # PR Workflow CI Inventory
 
+## Purpose
+
+Record the current PR workflow surface, required checks, advisory checks, manual-only workflows, and #2469 retirements.
+
+## Scope
+
+This reference covers workflows that directly participate in PR readiness, review evidence, or source-issue closeout. It excludes production deployment and non-PR operations unless they directly affect those boundaries.
+
+## Current known truth
+
+Only `quality` and `gitleaks` are required. PR hygiene, diff scope, and reviewer response are advisory. `post-merge-closeout.yml` is the single automatic closeout owner, and the #1075 phase engine is retired.
+
+## Intended final state
+
+The PR workflow surface remains deterministic, minimal, and documented. No manual-only or retired check may become required without explicit promotion evidence and branch-protection alignment.
+
 ## Current required surface
 
 | Workflow | Job | Classification |
