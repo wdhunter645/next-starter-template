@@ -14,8 +14,18 @@ Last Reviewed: 2026-07-12
 
 # Retired #1075 Phase 2 Closeout and Maintenance Rollout
 
-This plan formerly defined #1075 closeout and #1058 maintenance tasks.
+## Purpose
 
-The plan is superseded by the July 2026 PR-process strategy and #2469. It is not production-ready, must not be scanned as executable work, and must not generate or advance #1273–#1276.
+Preserve the former #1075 closeout and #1058 maintenance rollout as a compliant historical record.
 
-#1058 requires a separate current-state audit. This historical plan does not authorize its closure or new implementation.
+## Scope
+
+This plan covers only the former phase-2 task sequence and its retirement status. It does not authorize closure of #1058, execution of #1273–#1276, or new CI implementation.
+
+## Current known truth
+
+The plan is superseded by the July 2026 PR-process strategy and #2469. It is not production-ready, cannot be scanned as executable work, and cannot generate or advance #1273–#1276.
+
+## Intended final state
+
+This file remains retired and non-executable. Issue #1058 receives a separate current-state audit, and current CI work proceeds only through newly authorized issues.
