@@ -12,11 +12,25 @@ Last Reviewed: 2026-07-12
 
 # Retired #1075 CI Orchestration Issue Model
 
+## Purpose
+
+Explain how to interpret the retired #1075 issue model without reactivating it.
+
+## Scope
+
+This How-To covers historical markers, the retired fixed-state phase model, preserved generic orchestration, and the procedure for routing new CI work. It does not authorize current issue generation from #1075 artifacts.
+
+## Current known truth
+
+The dedicated CI redesign issue model generated serial `lgfc-ci-phase:*` issues from a fixed JSON state file. It is retired by #2469 after completion, Program #1500 stabilization, and the July 2026 PR-process rebuild.
+
+## Intended final state
+
+Historical markers remain evidence only. New CI work uses a current scoped GitHub issue, current authority, and the single-owner post-merge closeout model.
+
 ## Disposition
 
-The dedicated CI redesign issue model created under #1075 is retired by #2469.
-
-The old model generated serial `lgfc-ci-phase:*` issues from a fixed JSON state file and paused on stale, failed, duplicate, or unstable phase state. That rollout completed, was subsequently superseded by Program #1500 and the July 2026 PR-process rebuild, and must not generate new work.
+The old model must not generate new work, block current work, or define current completion state.
 
 ## Procedure
 
