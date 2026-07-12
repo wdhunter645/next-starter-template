@@ -11,6 +11,22 @@ Last Reviewed: 2026-07-12
 
 # LGFC Workflow Classification Matrix
 
+## Purpose
+
+Classify current and retired CI workflows by lifecycle role after the July 2026 PR-process rebuild and #2469 retirement.
+
+## Scope
+
+This reference covers required merge protection, advisory PR checks, manual-only workflows, post-merge/OPS workflows, and retired #1075 assets. It does not define implementation details or live branch protection.
+
+## Current known truth
+
+`gate-quality.yml` and `gitleaks.yml` are the required deterministic checks. PR hygiene, diff scope, and reviewer response are advisory. Post-merge closeout is single-owner, and the #1075 phase engine is retired.
+
+## Intended final state
+
+Each workflow remains in the correct lifecycle domain, retired assets stay absent, and no advisory or manual-only workflow becomes required without explicit promotion evidence.
+
 ## Required merge protection
 
 | Workflow | Classification | Current role |
