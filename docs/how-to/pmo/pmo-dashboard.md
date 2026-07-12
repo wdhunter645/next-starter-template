@@ -26,12 +26,12 @@ This how-to covers dashboard source fields, local generation, CI build validatio
 - The build workflow generates, validates, and uploads dashboard artifacts.
 - The deploy workflow regenerates and validates the dashboard before checking whether GitHub Pages is enabled.
 - When GitHub Pages is enabled with GitHub Actions as the source, the workflow configures Pages, uploads the artifact, and deploys automatically.
-- When Pages is unavailable, deployment steps are skipped and the workflow reports the required operator action without misreporting dashboard generation or validation as failed.
+- When Pages is unavailable or uses a source other than GitHub Actions, deployment steps are skipped and the workflow reports the required operator action without misreporting dashboard generation or validation as failed.
 - GitHub Pages enablement is a one-time repository setting and cannot be performed by the workflow's default `GITHUB_TOKEN`.
 
 ## Intended final state
 
-The PMO dashboard build remains independently verifiable, GitHub Pages deployment runs automatically after successful builds, missing repository configuration is surfaced as an explicit operator action, and the public dashboard URLs are verified before operational issue closeout.
+The PMO dashboard build remains independently verifiable, GitHub Pages deployment runs automatically after successful builds, missing or incompatible repository configuration is surfaced as an explicit operator action, and the public dashboard URLs are verified before operational issue closeout.
 
 ## Public access URLs
 
@@ -155,8 +155,8 @@ Task-accounting rules:
 3. Run or wait for **PMO dashboard CI build**.
 4. Confirm generation and validation of `site/pmo-dashboard/dashboard-data.json` and static assets.
 5. Run `node scripts/pmo-dashboard/test-label-driven-fixture.mjs` when changing label-driven inclusion or nested child display logic.
-6. Confirm the **PMO dashboard CI deploy** Pages preflight reports `enabled` before expecting publication.
-7. When preflight reports Pages unavailable, complete the one-time operator procedure under **GitHub Pages setup notes**.
+6. Confirm the **PMO dashboard CI deploy** Pages preflight reports `enabled: true` before expecting publication.
+7. When preflight reports Pages unavailable or a non-workflow source, complete the one-time operator procedure under **GitHub Pages setup notes**.
 8. Manually dispatch **PMO dashboard CI deploy** after Pages enablement.
 9. Verify the published HTML and JSON URLs and record the evidence on the controlling operational issue.
 10. Treat the dashboard as a reporting aid, not an authoritative tracker.
@@ -171,7 +171,7 @@ Tracked PMO inventory expectations live in `scripts/pmo-dashboard/pmo-tracked-in
 
 Reconciliation audit evidence: `docs/ops/pmo/pmo-dashboard-tracking-audit-2299.md`.
 
-The deploy workflow runs after a successful PMO dashboard CI build and can also be started manually. Deploy regenerates and validates the dashboard before evaluating Pages availability so stale checked-in output is not intentionally deployed. A missing Pages site produces an operator-action summary and skips deployment; it does not convert a successful dashboard build and validation into a false-red CI incident. Unexpected API, generation, validation, artifact, or deployment errors still fail the workflow.
+The deploy workflow runs after a successful PMO dashboard CI build and can also be started manually. Deploy regenerates and validates the dashboard before evaluating Pages readiness so stale checked-in output is not intentionally deployed. A missing Pages site or a Pages source other than GitHub Actions produces an operator-action summary and skips deployment; it does not convert a successful dashboard build and validation into a false-red CI incident. Unexpected API, generation, validation, artifact, or deployment errors still fail the workflow.
 
 ## GitHub Pages setup notes
 
@@ -187,7 +187,7 @@ One-time operator procedure:
 6. Verify:
    - `https://wdhunter645.github.io/next-starter-template/pmo-dashboard/`
    - `https://wdhunter645.github.io/next-starter-template/pmo-dashboard/dashboard-data.json`
-7. Record the successful workflow run and public URL evidence on issue #2471 before closeout.
+7. Record the successful workflow run and public URL evidence on the controlling operational issue before closeout. For the current remediation, that issue is #2471.
 
 Do not add a PAT or privileged secret merely to let `actions/configure-pages` enable the site. Repository configuration remains a human operator responsibility.
 
