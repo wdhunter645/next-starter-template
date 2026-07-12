@@ -11,6 +11,22 @@ Last Reviewed: 2026-07-12
 
 # LGFC Orchestration Model
 
+## Purpose
+
+Define the active generic orchestration architecture after retirement of the dedicated #1075 CI phase engine.
+
+## Scope
+
+This reference covers approved implementation-plan issue generation, task routing, serial queue state, draft PR handoff, PR-state synchronization, and queue advancement. It excludes CI redesign phase generation, branch protection, reviewer policy, and production monitoring.
+
+## Current known truth
+
+The generic orchestration model remains active for explicitly approved production-ready implementation plans. The dedicated #1075 scheduled phase engine, fixed JSON state, and `lgfc-ci-phase:*` generation are retired by #2469.
+
+## Intended final state
+
+Generic orchestration remains bounded to approved plans and stable task markers. Historical #1075 state cannot authorize work, create blockers, or influence queue decisions.
+
 ## Current scope
 
 The active generic orchestration model converts explicitly approved implementation plans into issue-scoped work. It may create stable task issues, route them by task type, manage serial queue labels, synchronize linked PR state, and advance a blocked queue after post-merge verification.
