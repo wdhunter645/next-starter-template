@@ -2,19 +2,38 @@
 Doc Type: Architecture Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: Orchestrator state model, routing contract, queue contract, and workflow inventory
-Does Not Own: Implementation plan writing procedure; orchestration rationale; product design
+Owns: Generic implementation-plan issue generation, routing, queue state, PR handoff, and post-merge queue advancement
+Does Not Own: Dedicated CI redesign phase generation, PR-process policy, branch protection settings, or product design
 Canonical Reference: /docs/governance/DOCUMENT-ARCHITECTURE.md
-Last Reviewed: 2026-05-05
+Related Issues: #2469
+Last Reviewed: 2026-07-12
 ---
 
 # LGFC Orchestration Model
 
-## Definition
+## Purpose
 
-The LGFC orchestration model is a GitHub-native execution system for converting approved implementation plans into serially executed Issues, draft Pull Requests, agent handoffs, review states, and post-merge verification states.
+Define the active generic orchestration architecture after retirement of the dedicated #1075 CI phase engine.
 
-## Sources
+## Scope
+
+This reference covers approved implementation-plan issue generation, task routing, serial queue state, draft PR handoff, PR-state synchronization, and queue advancement. It excludes CI redesign phase generation, branch protection, reviewer policy, and production monitoring.
+
+## Current known truth
+
+The generic orchestration model remains active for explicitly approved production-ready implementation plans. The dedicated #1075 scheduled phase engine, fixed JSON state, and `lgfc-ci-phase:*` generation are retired by #2469.
+
+## Intended final state
+
+Generic orchestration remains bounded to approved plans and stable task markers. Historical #1075 state cannot authorize work, create blockers, or influence queue decisions.
+
+## Current scope
+
+The active generic orchestration model converts explicitly approved implementation plans into issue-scoped work. It may create stable task issues, route them by task type, manage serial queue labels, synchronize linked PR state, and advance a blocked queue after post-merge verification.
+
+The dedicated CI redesign phase engine created under #1075 is retired by #2469. Generic orchestration must not infer or generate CI redesign phases from historical #1075 state.
+
+## Active sources
 
 | Area | Source |
 | --- | --- |
@@ -22,23 +41,15 @@ The LGFC orchestration model is a GitHub-native execution system for converting 
 | Routing contract | `/.github/orchestrator-routing.json` |
 | Status labels | `/.github/orchestrator-labels.json` |
 | Issue factory | `/scripts/orchestrator/create-issues.mjs` |
-| Draft PR creation | `/scripts/orchestrator/create-draft-pr.mjs` |
+| Draft PR handoff | `/scripts/orchestrator/create-draft-pr.mjs` |
 | Agent trigger | `/scripts/orchestrator/trigger-agent.mjs` |
 | PR state sync | `/scripts/orchestrator/sync-pr-state.mjs` |
 | Queue advancement | `/scripts/orchestrator/advance-queue.mjs` |
 | Queue tests | `/tests/orchestrator-queue.test.mjs` |
-| CI orchestration state | `/.github/ci-orchestration-state.json` |
-| CI orchestration engine | `/scripts/orchestrator/ci-orchestration-engine.mjs` |
 
-## Plan Eligibility
+## Plan eligibility
 
-Only implementation plan files under `/docs/ops/implementation-plans/` with `Status: production-ready` are eligible for issue creation.
-
-After issue creation, the issue factory changes the plan status to `issues-created`.
-
-`README.md` in that directory is not an executable implementation plan.
-
-## Stable Task Identity
+Only implementation-plan files under `/docs/ops/implementation-plans/` with `Status: production-ready` are eligible for issue creation. Retired and historical plans must never use that status.
 
 Each generated issue includes a stable marker:
 
@@ -46,114 +57,49 @@ Each generated issue includes a stable marker:
 <!-- lgfc-task-id:<project-slug>:Task-000 -->
 ```
 
-The marker prevents duplicate issue creation when a production-ready plan is updated after a previous factory run.
+The marker prevents duplicate task creation when a plan is updated.
 
-## Task Types and Agents
+## Queue contract
 
-| Task type | Default agent | Allowed agents | PR intent labels |
-| --- | --- | --- | --- |
-| `repository` | `codex` | `codex` | `infra`, `platform`, `change-ops`, `codex` |
-| `website` | `cursor` | `cursor` | `feature` |
-| `governance` | `copilot` | `copilot`, `atlas` | `infra`, `change-ops` |
-| `docs` | `atlas` | `atlas`, `copilot` | `docs-only` |
-| `recovery` | `atlas` | `atlas`, `copilot`, `codex`, `cursor` | `recovery` |
-| `ci` | `cursor` | `cursor`, `codex`, `copilot`, `atlas` | `infra`, `change-ops` |
+The generic issue factory may label the first generated task `status:queued` and later tasks `status:blocked`. Queue advancement remains serial unless a separately approved program defines another execution model.
 
-## Labels
+Queue advancement must halt while:
 
-Base label:
+- an active orchestrator issue exists;
+- an orchestrator issue is labeled `status:failed`;
+- post-merge verification has not completed;
+- authority or dependency state is ambiguous.
 
-- `orchestrator`
+## PR and closeout boundary
 
-Status labels:
+Generic orchestration may update issue lifecycle labels associated with a linked PR. Automatic post-merge source-issue reconciliation is owned by `.github/workflows/post-merge-closeout.yml` and must remain single-owner and idempotent.
 
-- `status:queued`
-- `status:blocked`
-- `status:assigned`
-- `status:pr-draft`
-- `status:implementation`
-- `status:review`
-- `status:merged`
-- `status:post-merge-verify`
-- `status:complete`
-- `status:failed`
+The generic orchestrator does not own:
 
-Type labels:
+- required PR checks;
+- reviewer lifecycle policy;
+- current CI redesign;
+- branch protection configuration;
+- production runtime monitoring.
 
-- `type:repository`
-- `type:website`
-- `type:governance`
-- `type:docs`
-- `type:recovery`
-- `type:ci`
-
-Agent labels:
-
-- `agent:codex`
-- `agent:cursor`
-- `agent:copilot`
-- `agent:atlas`
-
-## Serial Queue Contract
-
-The routing configuration sets `defaultConcurrency` to `serial`.
-
-Issue creation applies:
-
-- `status:queued` to the first generated task.
-- `status:blocked` to every later generated task.
-
-Queue advancement applies:
-
-- No advancement while any orchestrator issue is in an active state.
-- No advancement while any orchestrator issue is in `status:failed`.
-- The oldest `status:blocked` issue advances to `status:queued` after the active pipeline completes.
-
-Active states:
-
-- `status:queued`
-- `status:assigned`
-- `status:pr-draft`
-- `status:implementation`
-- `status:review`
-- `status:post-merge-verify`
-
-## State Transition Model
-
-| Transition | Trigger | Result |
-| --- | --- | --- |
-| Plan to issues | Push to `main` under `/docs/ops/implementation-plans/**` | Issues are created with routing and status labels |
-| Queued issue to draft PR | Issue opened or labeled with `status:queued` | Draft PR branch and draft PR are created |
-| Draft PR to implementation | Issue labeled `status:pr-draft` | Agent trigger comment is posted and issue enters `status:implementation` |
-| Implementation to review | PR marked ready for review | Linked issue enters `status:review` |
-| Review to post-merge verify | PR merged | Linked issue enters `status:post-merge-verify` |
-| Post-merge pass | Sync action reports `post_merge_success` | Linked issue enters `status:complete` and closes |
-| Post-merge failure | Sync action reports `post_merge_failure` | Linked issue enters `status:failed` |
-| Queue advance | Issue labeled `status:complete` or `status:failed` | Queue either advances next blocked task or halts |
-
-## Workflow Inventory
+## Workflow inventory
 
 | Workflow | Event | Script |
 | --- | --- | --- |
-| `orchestrator-issue-factory.yml` | Push to `main` for implementation plans | `create-issues.mjs` |
-| `orchestrator-draft-pr.yml` | Issue opened or labeled | `create-draft-pr.mjs` |
-| `orchestrator-agent-trigger.yml` | Issue labeled | `trigger-agent.mjs` |
-| `orchestrator-pr-state-sync.yml` | PR ready for review or closed | `sync-pr-state.mjs` |
-| `orchestrator-queue-advance.yml` | Issue labeled complete or failed | `advance-queue.mjs` |
-| `ci-orchestration-engine.yml` | Schedule or manual dispatch | `ci-orchestration-engine.mjs` |
+| `orchestrator-issue-factory.yml` | Approved implementation-plan change | `create-issues.mjs` |
+| `orchestrator-draft-pr.yml` | Issue opened or queued | `create-draft-pr.mjs` |
+| `orchestrator-agent-trigger.yml` | Issue handoff label | `trigger-agent.mjs` |
+| `orchestrator-pr-state-sync.yml` | PR ready/merged lifecycle event | `sync-pr-state.mjs` |
+| `orchestrator-queue-advance.yml` | Terminal issue label | `advance-queue.mjs` |
 
-## Draft PR Contract
+## Retired architecture
 
-The current as-built handoff does not create placeholder PRs. `create-draft-pr.mjs` moves queued issues to `status:pr-draft`, comments with handoff instructions, and lets the assigned implementation agent create a PR only after real file changes exist.
+The following #1075-only model is historical and non-executable:
 
-## Failure Contract
+- scheduled CI phase selection;
+- `.github/ci-orchestration-state.json`;
+- `lgfc-ci-phase:*` issue generation;
+- automatic #1089-style CI orchestration remediation;
+- fixed #1075 decomposition inventory.
 
-An orchestrator issue in `status:failed` halts queue advancement.
-
-The failure state remains until recovery work changes the status through a deliberate follow-up.
-
-## CI Orchestration Contract
-
-The CI orchestration engine creates one active CI implementation issue at a time using the state in `/.github/ci-orchestration-state.json`.
-
-It advances through the CI redesign phases only when the prior phase is complete, post-merge verification has succeeded, and recent CI health does not show blocking instability. Failed or stale CI implementation issues pause the rollout and create or update a remediation issue with evidence.
+Historical records remain evidence only and must not be treated as operational authority.

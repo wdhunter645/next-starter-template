@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: CI lifecycle philosophy, production-grade CI design rationale, LGFC workflow domain model
 Does Not Own: Individual workflow implementation, branch protection configuration, runtime secrets
 Canonical Reference: /docs/reference/ci/lgfc-ci-ci-domain-reference.md
-Related Issues: #1199, #1058
-Last Reviewed: 2026-06-03
+Related Issues: #1199, #1058, #2175, #2208, #2469
+Last Reviewed: 2026-07-12
 ---
 
 # LGFC Production CI Design
@@ -25,74 +25,59 @@ It does not define individual GitHub Actions implementation details or repositor
 
 ## Current Known Truth
 
-As of 2026-06-03 on `main`, CI redesign Tasks 001 through 006 are merged. The
-authoritative reconciliation record is
-`docs/reference/ci/lgfc-ci-as-built-reconciliation.md`.
+As of 2026-07-12, the July PR-process rebuild is the current operating model. Required merge protection is limited to deterministic `quality` and `gitleaks` checks. PR hygiene, diff scope, and reviewer lifecycle operate advisory-first. Automatic source-issue closeout has one owner: `.github/workflows/post-merge-closeout.yml`.
 
-Merged domains on `main`:
+Issue #2469 retires the dedicated #1075 CI phase engine, fixed JSON state, orphaned task selector, and legacy workflow residue. The generic implementation-plan issue factory remains available only for explicitly approved production-ready plans.
 
-- PR hygiene advisories (`docs/reference/ci/pr-hygiene-foundation.md`)
-- Merge protection consolidation (`docs/reference/ci/merge-protection-surface.md`)
-- Reviewer lifecycle redesign (`docs/reference/ci/reviewer-lifecycle-surface.md`)
-- Post-merge validation expansion (`docs/reference/ci/post-merge-validation-surface.md`)
-- OPS runtime consolidation (`docs/reference/ci/ops-runtime-surface.md`)
-- As-built documentation reconciliation (`docs/reference/ci/lgfc-ci-as-built-reconciliation.md`)
+Current authority is maintained in:
 
-Remaining architectural debt is tracked as **CI maintenance** under `#1058`,
-not as redesign rework: drift gate ZIP deduplication, legacy workflow retirement,
-full workflow inventory rewrite, and branch protection UI reconciliation.
+- `docs/governance/PR_PROCESS.md`
+- `docs/reference/ci/pr-process-current-state.md`
+- `docs/reference/ci/merge-protection-surface.md`
+- `docs/reference/ci/pr-workflow-ci-inventory.md`
+- `docs/reference/ci/lgfc-ci-as-built-reconciliation.md`
+
+Issue #1058 requires a separate current-state audit and is not automatically closed or reactivated by this design.
 
 ## Intended Final State
 
-The repository will evolve toward four stable CI lifecycle domains:
+The repository maintains four stable CI lifecycle domains:
 
 - deterministic merge protection
 - corrective PR hygiene
 - retrospective post-merge validation
 - OPS runtime monitoring and self-healing
 
-The final architecture will preserve governance rigor while reducing false-positive failures and reviewer deadlocks.
-
-As-built reconciliation and deferred items are tracked in
-`docs/reference/ci/lgfc-ci-as-built-reconciliation.md`.
+The final architecture preserves governance rigor while reducing false-positive failures and reviewer deadlocks. Retired #1075 orchestration mechanisms remain absent, and legitimate exception issues are handled incrementally through routine housekeeping.
 
 ## Orchestration Final State
 
-The CI redesign program (`#1075`) delivered six implementation phases on `main`.
-Orchestration now operates in two layers:
+The CI redesign program (`#1075`) delivered six implementation phases, but its dedicated phase-generation architecture is retired by #2469.
 
-### Layer 1 — Issue factory (markdown plans)
+### Active generic orchestration
 
-Trigger path: push to `main` under `docs/ops/implementation-plans/**` via
-`orchestrator-issue-factory.yml`.
+Trigger path: approved implementation-plan changes under `docs/ops/implementation-plans/**` through `orchestrator-issue-factory.yml`.
 
 Behavior:
 
-- Plans with `Status: production-ready` are scanned for `## Task NNN —` sections.
-- Tasks marked `Status: completed`, `closed`, or `issues-created` are skipped.
-- Tasks with existing `lgfc-task-id:<plan-slug>:Task-NNN` markers are skipped.
-- The first net-new task receives `status:queued`; later tasks receive `status:blocked`.
+- only plans with `Status: production-ready` are eligible;
+- terminal tasks are skipped;
+- stable `lgfc-task-id:<plan-slug>:Task-NNN` markers prevent duplicate creation;
+- queue labels remain serial unless a separately authorized program defines another model;
+- automatic post-merge source-issue closeout remains owned by `post-merge-closeout.yml`.
 
-Phase 1 plan (`issue-1075-ci-redesign-rollout.md`) is complete. All Tasks 001–006
-are terminal. Phase 2 plan (`issue-1075-ci-phase2-closeout-rollout.md`) owns
-program closeout and `#1058` maintenance work.
+### Retired dedicated CI orchestration
 
-### Layer 2 — CI orchestration engine (JSON phases)
+The following model is historical and non-executable:
 
-`ci-orchestration-engine.yml` reads `/.github/ci-orchestration-state.json` for
-phase-1 monitoring, pause decisions, and legacy phase issue markers. It does not
-parse markdown plans. Phase-2 execution is driven by the issue factory.
+- `.github/workflows/ci-orchestration-engine.yml`;
+- `.github/ci-orchestration-state.json`;
+- scheduled CI phase selection;
+- `lgfc-ci-phase:*` issue generation;
+- automatic #1089-style phase remediation;
+- the fixed #1075 task selector and inventory.
 
-### Intended steady state after phase 2
-
-- `#1075` closed after program closeout task completes.
-- `#1058` remains the open CI normalization and maintenance umbrella.
-- One active orchestrator issue at a time.
-- Post-merge validation closes source issues when merge evidence passes.
-- Website sequencing under `#1053` is tracked through GitHub issues. Legacy ops
-  tracker documents under `docs/ops/trackers/**` are not updated for new website
-  work and may disagree with issue state; they are not retired or reconciled by
-  this CI program.
+Historical #1075 and phase-2 plans remain evidence only. They do not generate work or define current CI authority.
 
 ## Core Principle
 

@@ -1,73 +1,78 @@
 # CI Guardrails Map
 
 **Status:** AUTHORITATIVE  
-**Effective Date:** 2026-06-15  
-**Purpose:** Reference for current CI/CD guardrails, closeout ownership, and validation surfaces
+**Effective Date:** 2026-07-12  
+**Purpose:** Current CI/CD guardrails, PR-process checks, post-merge ownership, and retired workflow disposition
 
----
+## Controlling authority
 
-## Overview
-
-This document maps the CI/CD guardrails relevant to Program #1500 Task 005
-closeout reconciliation. It records effective, parked, manual, targeted, and
-backfill workflow roles for the closeout surface.
-
-As-built reconciliation for the `#1075` CI redesign is maintained in
-`docs/reference/ci/lgfc-ci-as-built-reconciliation.md`. Domain surface references:
-
+- `docs/governance/PR_PROCESS.md`
+- `docs/reference/ci/pr-process-current-state.md`
 - `docs/reference/ci/merge-protection-surface.md`
-- `docs/reference/ci/reviewer-lifecycle-surface.md`
-- `docs/reference/ci/post-merge-validation-surface.md`
-- `docs/reference/ci/ops-runtime-surface.md`
+- `docs/reference/ci/pr-workflow-ci-inventory.md`
 
-**Last reconciliation review:** 2026-06-22 (Programs #1847/#1914 self-healing activation and `ops-pr-escalation` handoff)
+The dedicated #1075 CI phase engine is retired under #2469 and is not a guardrail, monitor, queue owner, or issue-generation authority.
 
-## Action Workflow Inventory — Closeout Surface
+## Required pre-merge checks
 
-| Workflow file | Workflow name | Effectiveness | Primary use |
-|---|---|---|---|
-| `gate-post-merge-readiness.yml` | GATE — Post-Merge Readiness | Effective | Pre-merge readiness check for PR metadata, allowlist evidence, and reviewer disposition. |
-| `post-merge-closeout.yml` | Post-Merge Detection | Effective | Primary automatic post-merge reconciliation workflow for merged PRs to `main`. |
-| `post-merge-pr-body-closeout.yml` | Post-Merge PR Body Closeout | Effective (Manual / Backfill) | Manual single-PR reconciliation, batch manifests, and push-triggered backfill. |
-| `post-merge-intent-verification.yml` | Post-Merge Maintainer Body Apply | Effective (Targeted automatic / dispatch) | Maintainer PR-body updates for explicitly targeted PR synchronize events and maintainer-dispatched legacy PRs. |
-| `post-merge-remediation.yml` | Post-Merge Remediation | Effective | Remediation workflow for failed post-merge validation; runs self-healing before opening exception issues. |
-| `ops-post-merge-self-healing.yml` | OPS — Post-Merge Self-Healing | Effective | Post-merge backlog burn-down, safe auto-fix apply, and `ops-pr-escalation` Ops handoff on the same exception issue. |
-| `ops-pr-issue-accounting.yml` | GATE — PR Issue Accounting | Effective | Pre-merge PR-to-ticket accounting audit. |
-| `gate-close-work-issue.yml` | gate-close-work-issue | Ineffective (Parked no-op) | Legacy parked workflow retained for traceability only. |
+| Workflow | Job | Role |
+| --- | --- | --- |
+| `gate-quality.yml` | `quality` | Class-aware deterministic quality routing |
+| `gitleaks.yml` | `gitleaks` | Secret exposure blocker |
 
-## Closeout Ownership Rule
+No retired or manual-only workflow may be required by branch protection.
 
-Automatic post-merge reconciliation has one effective owner:
-`.github/workflows/post-merge-closeout.yml`.
+## Active advisory checks
 
-`gate-close-work-issue.yml` is parked and must not be listed or treated as an
-effective workflow. Any status report, workflow inventory, or queue decision that
-identifies it as active is stale.
+| Workflow | Job | Role |
+| --- | --- | --- |
+| `gate-pr-hygiene.yml` | `pr-hygiene` | Stable PR-body hygiene and guidance |
+| `gate-diff-scope.yml` | `diff-scope` | Allowed-path diff assessment |
+| `reviewer-response-completion.yml` | `reviewer-response-completion` | GitHub-native reviewer/thread assessment |
 
-Pre-merge accounting remains separate and is owned by
-`.github/workflows/ops-pr-issue-accounting.yml`.
+Advisory checks remain non-blocking until promotion criteria in `PR_PROCESS.md` are satisfied.
 
-## Umbrella issue rule
+## Manual-only / paused checks
 
-Program, umbrella, master, parent, roadmap, queue, and tracking boundaries are
-operator and PR-body governance policy for selecting the accepted source ticket.
-Runtime classification remains a deferred implementation item unless a later task
-adds that explicit check.
+| Workflow | Disposition |
+| --- | --- |
+| `gate-intent-labeler.yml` | Manual-only pending advisory-first rebuild |
+| `ops-pr-issue-accounting.yml` | Manual-only while paused |
+| `gate-drift.yml` | Manual-only; rebuild only if current evidence justifies it |
+| `gate-branch-freshness.yml` | Manual-only |
+| `docs-guardrails.yml` | Manual-only |
+| `design-compliance-warn.yml` | Manual-only |
+| `gate-post-merge-readiness.yml` | Manual backfill only |
 
-## Gate Enforcement Policy
+## Post-merge ownership
 
-- Pre-merge gates validate PR scope, accounting, metadata, reviewer disposition,
-  and readiness evidence.
-- Post-merge detection verifies the merged PR and handles reconciliation only
-  after successful validation.
-- Parked workflows are traceability artifacts, not enforcement paths.
-- Documentation-only reconciliation PRs must not change workflow runtime logic.
+Automatic source-issue closeout has one owner:
 
-## Related References
+- `.github/workflows/post-merge-closeout.yml`
 
-| Reference | Role |
-|---|---|
-| `docs/reference/ci/post-merge-validation-surface.md` | Authoritative post-merge validation and closeout ownership surface |
-| `docs/reference/ci/workflow-inventory.md` | Closeout-related workflow inventory rows and broader inventory boundary |
-| `docs/reference/ci/lgfc-ci-as-built-reconciliation.md` | As-built reconciliation and deferred-item tracking |
-| `docs/ops/pmo/github-issue-closeout-protocol.md` | issue closeout protocol, terminal label reconciliation, and umbrella exclusion policy |
+Supporting post-merge and operational workflows must not independently claim the same closeout mutation boundary.
+
+| Workflow | Role |
+| --- | --- |
+| `post-merge-closeout.yml` | Automatic validation, source-issue reconciliation, and evidence |
+| `post-merge-remediation.yml` | Failure remediation support |
+| `ops-post-merge-self-healing.yml` | Scheduled/manual exception backlog hygiene |
+| `ops-pr-process-metrics.yml` | PR-process metrics |
+| `post-merge-intent-verification.yml` | Inert manual compatibility marker; no automatic trigger or mutation permissions |
+
+## Removed legacy workflows
+
+#2469 removes the following executable residue:
+
+- `ci-orchestration-engine.yml`
+- `gate-reviewer-response.yml`
+- `gate-close-work-issue.yml`
+- parked legacy `ci.yml`, `deploy*.yml`, `lgfc-validate.yml`, `test.yml`, and `test-homepage.yml`
+
+The old hardcoded logic from `post-merge-intent-verification.yml` is removed. Only a zero-effect manual marker remains for compatibility-test continuity.
+
+Retired names must not appear in branch protection, current queue decisions, or active CI reports.
+
+## Exception handling boundary
+
+Legitimate current exceptions remain valid and are handled incrementally through routine housekeeping. Retirement of #1075 eliminates obsolete phase-generation and false remediation loops; it does not suppress current security, validation, production, or closeout failures.

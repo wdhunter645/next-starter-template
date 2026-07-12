@@ -2,111 +2,94 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: Current PR process baseline after #2228 closeout
-Does Not Own: Canonical PR-process policy, live GitHub branch protection settings, GitHub App installation settings
+Owns: Current PR process baseline after #2228 and #2469 closeout
+Does Not Own: Canonical PR-process policy, live GitHub branch protection settings, or GitHub App settings
 Canonical Reference: /docs/governance/PR_PROCESS.md
-Related issues: #2175, #2208, #2228
-Last Reviewed: 2026-07-04
+Related Issues: #2175, #2208, #2228, #2469
+Last Reviewed: 2026-07-12
 ---
 
 # PR Process Current State
 
-This reference records the **current operational state** after the PR-process redesign closeout (#2228). It supports, but does not replace, `/docs/governance/PR_PROCESS.md`.
+## Purpose
 
----
+Define the current implemented PR-process baseline after the July 2026 rebuild and the retirement of the #1075 orchestration path.
+
+## Scope
+
+This reference covers required checks, active advisory checks, manual-only workflows, post-merge ownership, and the operational effect of #2469. It does not change canonical policy or live branch-protection settings.
+
+## Current known truth
+
+The PR-process redesign is implemented around stable-facts PR bodies, GitHub-native reviewer state, deterministic required checks, advisory-first promotion, single-owner post-merge closeout, and routine incremental exception housekeeping. There is no active dedicated #1075 CI phase-generation engine. Controlled and operational authority documents that formerly described that engine as active are reconciled by #2469.
+
+## Intended final state
+
+The repository maintains this minimal deterministic PR surface, confirms live branch protection matches documented required checks, and prevents retired #1075 mechanisms or PR-body lifecycle mutation from returning without new authorization and evidence.
 
 ## Status
 
-**PR Process Redesign complete in repository code and workflow disposition.**
+Current principles:
 
 - stable-facts PR bodies only;
-- GitHub-native reviewer lifecycle (no PR-body ledger);
-- rebuilt advisory gates with artifacts;
-- class-aware required quality routing;
+- GitHub-native reviewer lifecycle;
+- deterministic required checks;
+- advisory-first promotion;
 - single-owner post-merge closeout;
-- lightweight PR-process metrics on merge;
-- post-merge validator accepts stable PR template headings (legacy uppercase headings remain supported);
-- legacy marker workflows paused as manual-only pending rebuild.
+- routine incremental exception housekeeping;
+- no dedicated #1075 CI phase-generation engine.
 
-**Remaining operator actions before closing #2175 / #2208:**
+## Required operator confirmation
 
-1. Verify live GitHub branch protection matches `/docs/reference/ci/merge-protection-surface.md` (`quality` + `gitleaks` only).
-2. Confirm Codex auto-review remains disabled (operator UI).
-3. Remove `post-merge-readiness` from branch protection if still listed (retired as pre-merge auto-trigger).
+Before merging #2469, verify live branch protection for `main` requires only:
 
-Advisory gates remain advisory until observation across merged PRs satisfies promotion criteria in `/docs/governance/PR_PROCESS.md`.
+- `quality`
+- `gitleaks`
 
----
+Remove retired check names if still configured.
 
 ## Required checks
 
-| Job id | Workflow | Behavior |
-|---|---|---|
-| `quality` | `gate-quality.yml` | Class-aware structure/ZIP/backend-ref/typecheck/lint/tests/build |
-| `gitleaks` | `gitleaks.yml` | Secret scan |
+| Job | Workflow |
+| --- | --- |
+| `quality` | `gate-quality.yml` |
+| `gitleaks` | `gitleaks.yml` |
 
-## Active advisory checks (rebuilt)
+## Active advisory checks
 
-| Job id | Workflow | Owner script | Behavior |
-|---|---|---|---|
-| `pr-hygiene` | `gate-pr-hygiene.yml` | `pr_hygiene_audit.mjs` | Stable PR-body validation; artifact; upsert comment; non-blocking |
-| `diff-scope` | `gate-diff-scope.yml` | `diff_scope_gate.mjs` | Allowed-path diff validation; artifact; upsert comment; non-blocking |
-| `reviewer-response-completion` | `reviewer-response-completion.yml` | `reviewer_lifecycle_gate.mjs` | GitHub-native review/thread state; artifact; non-blocking |
+| Job | Workflow |
+| --- | --- |
+| `pr-hygiene` | `gate-pr-hygiene.yml` |
+| `diff-scope` | `gate-diff-scope.yml` |
+| `reviewer-response-completion` | `reviewer-response-completion.yml` |
 
 ## Manual-only / rebuild later
 
-| Workflow | Disposition | Rationale |
-|---|---|---|
-| `gate-intent-labeler.yml` | Manual-only | Avoid label mutation loops until rebuilt advisory-first |
-| `ops-pr-issue-accounting.yml` | Manual-only | Paused; must not be required while manual-only |
-| `gate-drift.yml` | Manual-only | Retired auto-trigger marker; rebuild as advisory if needed |
-| `gate-branch-freshness.yml` | Manual-only | Retired auto-trigger marker; rebuild as advisory if needed |
-| `docs-guardrails.yml` | Manual-only | Retired auto-trigger marker; rebuild as advisory if needed |
-| `design-compliance-warn.yml` | Manual-only | Retired auto-trigger marker; rebuild as advisory if needed |
-| `gate-post-merge-readiness.yml` | Manual-only | Retired pre-merge auto-trigger; manual backfill only |
+| Workflow | Disposition |
+| --- | --- |
+| `gate-intent-labeler.yml` | Manual-only |
+| `ops-pr-issue-accounting.yml` | Manual-only |
+| `gate-drift.yml` | Manual-only |
+| `gate-branch-freshness.yml` | Manual-only |
+| `docs-guardrails.yml` | Manual-only |
+| `design-compliance-warn.yml` | Manual-only |
+| `gate-post-merge-readiness.yml` | Manual backfill only |
 
 ## Post-merge and metrics
 
 | Workflow | Role |
-|---|---|
-| `post-merge-closeout.yml` | Single automatic closeout owner on merged PRs |
-| `ops-post-merge-self-healing.yml` | Scheduled/manual only; no issue/push self-trigger loop |
-| `ops-pr-process-metrics.yml` | Records first-pass/second-pass metrics artifact on merged PRs |
+| --- | --- |
+| `post-merge-closeout.yml` | Single automatic closeout owner |
+| `post-merge-remediation.yml` | Failure support |
+| `ops-post-merge-self-healing.yml` | Scheduled/manual exception hygiene |
+| `ops-pr-process-metrics.yml` | Metrics |
 
-## External automation
+## #1075 retirement
 
-- **Codex:** automatic PR review disabled at operator UI; do not re-enable.
-- **Cubic:** external; may append PR summaries and post reviews.
-- **Cursor PR Review:** repo advisory; scope validation only.
+#2469 removes the old scheduled phase engine, fixed state file, orphaned decomposition assets, and legacy workflow residue. Historical #1075 phase issues do not block or authorize current CI work.
 
----
-
-## Rebuild / closeout task status
-
-| Task | Status |
-|---|---|
-| 3 PR hygiene advisory | **Complete** (#2224) |
-| 4 Diff scope advisory | **Complete** (#2225) |
-| 5 Reviewer lifecycle advisory | **Complete** (#2225) |
-| 6 Class-aware quality | **Complete** (#2225) |
-| 7 Branch protection reference | **Complete** — live GitHub verification pending operator |
-| 8 Post-merge closeout | **Complete** |
-| 9 Metrics | **Complete** (#2225, #2228 PR A) |
-| 10 Closeout / disposition | **Complete** (#2228 PR B) |
-
----
+The remaining exception queue is handled incrementally through routine housekeeping rather than a new large remediation program.
 
 ## Do not promote without evidence
 
-Do not promote advisory gates to required or reintroduce PR-body lifecycle mutation. See `/docs/governance/PR_PROCESS.md`, `/docs/reference/ci/pr-process-metrics.md`, and promotion criteria in #2228.
-
----
-
-## Related references
-
-- `/docs/governance/PR_PROCESS.md`
-- `/docs/reference/ci/merge-protection-surface.md`
-- `/docs/reference/ci/pr-workflow-ci-inventory.md`
-- `/docs/reference/ci/pr-process-metrics.md`
-- `/docs/reference/ci/pr-process-skeleton-validation.md`
-- `/docs/reference/ci/codex-pr-review-disablement.md`
+Do not promote advisory gates to required status or restore PR-body lifecycle mutation without satisfying `/docs/governance/PR_PROCESS.md`.

@@ -1,64 +1,14 @@
-name: Post-Merge Maintainer Body Apply
+name: Post-Merge Maintainer Body Apply (Retired)
 
 on:
-  pull_request:
-    types: [synchronize]
-    branches: [main]
   workflow_dispatch:
-    inputs:
-      pr_number:
-        description: Pull request number to verify
-        required: false
-        type: string
-      apply_maintainer_body:
-        description: Apply Cursor maintainer PR body for an open PR
-        required: false
-        default: false
-        type: boolean
 
 permissions:
-  actions: read
   contents: read
-  pull-requests: read
-  issues: write
 
 jobs:
-  apply-maintainer-body:
-    if: |
-      (github.event_name == 'workflow_dispatch' && inputs.apply_maintainer_body == true) ||
-      (github.event_name == 'pull_request' &&
-        (
-          github.event.pull_request.number == 1241 &&
-          !contains(github.event.pull_request.body, 'review-comment:3349689698')
-        ) ||
-        github.event.pull_request.number == 1618 ||
-        github.event.pull_request.number == 1639 ||
-        github.event.pull_request.number == 1733 ||
-        github.event.pull_request.number == 1747 ||
-        github.event.pull_request.number == 1802 ||
-        github.event.pull_request.number == 1972)
+  retired:
     runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      pull-requests: write
-      issues: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Apply Cursor maintainer PR body
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          APPLY_MAINTAINER_PR_BODY: 'true'
-          FORCE_APPLY_OPEN_PR_BODY: ${{ (github.event.pull_request.number == 1618 || github.event.pull_request.number == 1639 || github.event.pull_request.number == 1733 || github.event.pull_request.number == 1747 || github.event.pull_request.number == 1802 || github.event.pull_request.number == 1972) && 'true' || '' }}
-          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
-        run: node scripts/ci/post_merge_validator.mjs
+      - name: Retired compatibility marker
+        run: echo "Retired by issue #2469; no automatic trigger, PR mutation, issue mutation, or closeout ownership remains."

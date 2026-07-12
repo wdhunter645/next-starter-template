@@ -2,98 +2,75 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: LGFC CI redesign as-built reconciliation, design-vs-as-built variances, deferred implementation items, monitoring ownership map
-Does Not Own: GitHub branch protection UI settings, workflow runtime code, secret configuration
-Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related Issues: #1199, #1075, #1058, #1335, #1340, #1548, #1674, #1847, #1914, #1921
-Last Reviewed: 2026-06-22
+Owns: Historical #1075/#1500 CI reconciliation and current retirement disposition
+Does Not Own: Canonical PR policy, branch protection settings, or production runtime configuration
+Canonical Reference: /docs/governance/PR_PROCESS.md
+Related Issues: #1075, #1058, #1500, #2175, #2208, #2469
+Last Reviewed: 2026-07-12
 ---
 
 # LGFC CI As-Built Reconciliation
 
 ## Purpose
 
-This reference records CI redesign and Program #1500 closeout stabilization as
-built on `main`. It tracks design-vs-as-built variances and identifies the
-current authoritative documents for CI closeout ownership.
+Reconcile the implemented #1075 and #1500 CI work with the current July 2026 PR-process and retirement state.
 
-## Reconciliation Baseline
+## Scope
 
-| Source | Role |
-|---|---|
-| Intended design | `docs/explanation/ci/lgfc-ci-production-design.md` |
-| Program #1500 closeout explanation | `docs/explanation/ci/program-1500-closeout-reconciliation.md` |
-| Program #1500 alignment matrix | `docs/reference/ci/program-1500-as-built-alignment.md` |
-| Rollout plan | `docs/ops/implementation-plans/issue-1075-ci-redesign-rollout.md` |
-| Workflow inventory | `docs/reference/ci/workflow-inventory.md` |
-| Guardrails map | `.github/CI_GUARDRAILS_MAP.md` |
-| Post-merge validation surface | `docs/reference/ci/post-merge-validation-surface.md` |
-| issue closeout protocol | `docs/ops/pmo/github-issue-closeout-protocol.md` |
+This reference covers delivered capabilities, retained current assets, retired #1075 mechanisms, exception-storm resolution, and closeout ownership. It does not define canonical PR policy or live branch protection.
 
-## Program #1500 Closeout Stabilization
+## Current known truth
 
-| Task | issue | Status | Primary evidence |
-|---|---|---|---|
-| Task 001 | #1544 | Merged and closed out | Pre-merge post-merge-readiness gate |
-| Task 002 | #1545 | Merged and closed out | Post-merge closeout consolidation, PR #1567 |
-| Task 003 | #1546 | Merged and closed out | Closeout metadata/check hardening |
-| Task 004 | #1547 | Merged and closed out | Manifest pruning / batch closeout stabilization, PR #1647 |
-| Task 005 | #1548 | Merged and closed out | CI/orchestration documentation reconciliation, PR #1660 |
+The #1075 implementation wave delivered CI capabilities but also contributed to post-merge remediation loops later stabilized by Program #1500. The July 2026 PR-process rebuild supersedes the remaining #1075 design authority, and #2469 retires its dedicated phase-generation engine and legacy residue.
 
-## Closeout Ownership Reconciliation
+## Intended final state
 
-Automatic post-merge source issue closeout has a single effective owner:
-`.github/workflows/post-merge-closeout.yml`.
+Current deterministic checks, advisory review controls, single-owner closeout, OPS monitoring, and explicitly approved generic orchestration remain. Retired #1075 phase mechanisms remain historical and non-executable.
 
-`gate-close-work-issue.yml` is a parked no-op legacy workflow retained for
-traceability. It performs no issue mutation and must not be treated as an
-effective closeout owner in guardrails, inventory, queue decisions, or PR status
-reports.
+## Current disposition
 
-Pre-merge PR-to-issue accounting is separate from source issue closeout and is
-owned by `.github/workflows/ops-pr-issue-accounting.yml`.
+The #1075 CI redesign implementation wave delivered PR hygiene, merge-protection, reviewer, post-merge, OPS, and documentation changes. Program #1500 then stabilized the post-merge closeout failures and remediation loops produced by that operating model. The July 2026 PR-process rebuild superseded the remaining #1075 design authority.
 
-Post-merge self-healing hygiene (`OPS — Post-Merge Self-Healing`) is a separate
-downstream layer owned by `.github/workflows/ops-post-merge-self-healing.yml`.
-It burns down open post-merge exception backlog, applies bounded safe repairs,
-and labels non-auto-fixable exceptions `ops-pr-escalation` on the same issue
-instead of opening child escalation issues by default. Architecture:
-`docs/explanation/ci/post-merge-self-healing-architecture.md`.
+Issue #2469 retires the dedicated #1075 phase-generation engine and legacy workflow residue.
 
-## Umbrella issue boundary
+## Current authority
 
-The current as-built automation resolves and closes the single accepted source
-issue when validation succeeds. Program, umbrella, master, parent, roadmap,
-queue, and tracking issue boundaries are operator and PR-body governance policy
-for selecting the source issue. Runtime umbrella/program classification remains a
-deferred implementation item unless a later task adds that explicit check.
+| Concern | Current authority |
+| --- | --- |
+| PR policy | `docs/governance/PR_PROCESS.md` |
+| Current baseline | `docs/reference/ci/pr-process-current-state.md` |
+| Required checks | `docs/reference/ci/merge-protection-surface.md` |
+| PR workflow inventory | `docs/reference/ci/pr-workflow-ci-inventory.md` |
+| Automatic closeout | `.github/workflows/post-merge-closeout.yml` |
+| Generic orchestration | `docs/reference/architecture/orchestration-model.md` |
 
-## Deferred and Out-of-Scope Items
+## Capabilities retained
 
-| Item | Reason deferred | Owner domain |
-|---|---|---|
-| Full workflow inventory rewrite | Large mechanical update outside Program #1500 closeout-only scope | CI maintenance follow-up |
-| Branch protection UI reconciliation | Repository setting change outside workflow files | Human operator |
-| Retire parked legacy workflows | Requires separate cleanup PR with retirement evidence | OPS / CI maintenance |
-| Runtime workflow logic changes | Task 005 was documentation/comment-only | Future implementation task |
-| Runtime umbrella/program closeout classification | Policy exists, but the current automation does not classify umbrella/program issue types before source issue closeout | Future implementation task |
+- deterministic `quality` and `gitleaks` required checks;
+- advisory PR hygiene, diff-scope, and GitHub-native reviewer checks;
+- single-owner automatic post-merge closeout;
+- bounded remediation and routine exception housekeeping;
+- production OPS monitoring;
+- generic implementation-plan issue generation where explicitly approved.
 
-## Monitoring Behavior and Operational Ownership
+## Assets retired by #2469
 
-| Workflow group | Primary owner | Trigger model | Failure signal | Escalation path |
-|---|---|---|---|---|
-| Merge protection (`gate-quality`, `gitleaks`, `ops-pr-issue-accounting`) | CI governance | PR / push | Required check failure on PR | Fix PR before merge |
-| PR hygiene advisories | CI governance | PR | Advisory comments | Agent/human correction pre-merge |
-| Reviewer lifecycle (`reviewer-response-completion`) | CI governance | PR target / review events | Required check failure on protected CI scope | Trusted review + thread resolution |
-| Post-merge detection / remediation | CI orchestration | merged PR close / `main` push | Workflow failure on `main`; orchestrator pause | Remediation issue + follow-up PR |
-| Post-merge self-healing (`ops-post-merge-self-healing`) | CI orchestration | schedule / issues / workflow_run / manual | Backlog artifact reports preserved exceptions; `ops-pr-escalation` queue | Ops queue: `label:ops-pr-escalation` + bounded remediation PR |
-| OPS assessment / production audit | Operations | schedule / manual / scan trigger | Workflow failure + GitHub issue via `ops_runtime_escalation.mjs` | Ops issue triage |
+- scheduled #1075 CI phase engine;
+- fixed CI phase state and `lgfc-ci-phase:*` generation;
+- orphaned fixed #1075 task decomposition files;
+- no-op and hardcoded legacy workflow residue;
+- active-authority claims in #1075-only documentation.
 
-Detailed monitoring map: `docs/ops/ci-monitoring-ownership.md`.
+## Exception-storm resolution
 
-## Website Program Boundary
+The retirement prevents the old engine from creating new obsolete phase issues, treating stale #1075 issues as current blockers, or updating #1089-style orchestration remediation.
 
-Website implementation under `#1053` is outside this CI/orchestration
-reconciliation. This document does not declare website tasks complete.
-Operational truth for website work must be verified from GitHub issues and
-merged PRs.
+Existing legitimate exception issues are not bulk-closed. They remain routine housekeeping work and are handled incrementally.
+
+## Closeout ownership
+
+`.github/workflows/post-merge-closeout.yml` is the single automatic source-issue closeout owner. Other post-merge workflows may provide remediation, evidence, metrics, or scheduled cleanup but must not race the same mutation boundary.
+
+## Historical evidence
+
+Original rollout plans, issues, and merged PRs remain historical evidence. Historical status does not authorize reactivation of the retired architecture.

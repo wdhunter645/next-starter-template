@@ -2,94 +2,83 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: Current-to-future CI workflow mapping, consolidation targets, rebuild classifications
-Does Not Own: Workflow implementation details
-Canonical Reference: /docs/reference/ci/workflow-inventory.md
-Related Issues: #1058
-Last Reviewed: 2026-05-21
+Owns: Current CI workflow classification by lifecycle domain and retirement status
+Does Not Own: Workflow implementation details or branch protection settings
+Canonical Reference: /docs/governance/PR_PROCESS.md
+Related Issues: #1058, #2175, #2208, #2469
+Last Reviewed: 2026-07-12
 ---
 
 # LGFC Workflow Classification Matrix
 
 ## Purpose
 
-This document maps the current workflow inventory to the final LGFC CI architecture.
+Classify current and retired CI workflows by lifecycle role after the July 2026 PR-process rebuild and #2469 retirement.
 
-It identifies:
+## Scope
 
-- workflows that remain valid
-- workflows that require redesign
-- workflows that should become corrective instead of punitive
-- workflows that should move post-merge
-- workflows that should retire entirely
-- workflows whose responsibilities should be assimilated into larger CI domains
+This reference covers required merge protection, advisory PR checks, manual-only workflows, post-merge/OPS workflows, and retired #1075 assets. It does not define implementation details or live branch protection.
 
-## Classification Definitions
+## Current known truth
 
-### Keep
+`gate-quality.yml` and `gitleaks.yml` are the required deterministic checks. PR hygiene, diff scope, and reviewer response are advisory. Post-merge closeout is single-owner, and the #1075 phase engine is retired.
 
-Workflow remains operationally valid with minimal structural change.
+## Intended final state
 
-### Rebuild
+Each workflow remains in the correct lifecycle domain, retired assets stay absent, and no advisory or manual-only workflow becomes required without explicit promotion evidence.
 
-Workflow purpose remains valid but lifecycle placement, logic, or architecture must change.
+## Required merge protection
 
-### Assimilate
+| Workflow | Classification | Current role |
+| --- | --- | --- |
+| `gate-quality.yml` | Keep | Deterministic class-aware quality blocker |
+| `gitleaks.yml` | Keep | Secret exposure blocker |
 
-Workflow responsibilities should move into a consolidated workflow domain.
+## Active advisory PR checks
 
-### Retire
+| Workflow | Classification | Current role |
+| --- | --- | --- |
+| `gate-pr-hygiene.yml` | Keep advisory | Stable PR-body hygiene |
+| `gate-diff-scope.yml` | Keep advisory | Allowed-path diff assessment |
+| `reviewer-response-completion.yml` | Keep advisory | GitHub-native reviewer and thread assessment |
 
-Workflow should be removed once replacement coverage exists.
+## Manual-only / paused
 
-## Current Workflow Mapping
+| Workflow | Classification | Current role |
+| --- | --- | --- |
+| `gate-intent-labeler.yml` | Rebuild only if justified | Manual-only |
+| `ops-pr-issue-accounting.yml` | Rebuild only if justified | Manual-only |
+| `gate-drift.yml` | Rebuild only if justified | Manual-only |
+| `gate-branch-freshness.yml` | Rebuild only if justified | Manual-only |
+| `docs-guardrails.yml` | Rebuild only if justified | Manual-only |
+| `design-compliance-warn.yml` | Rebuild only if justified | Manual-only |
+| `gate-post-merge-readiness.yml` | Retired automatic role | Manual backfill only |
 
-| Workflow | Current Role | Final Role | Classification | Notes |
-|---|---|---|---|---|
-| gate-quality.yml | Pre-merge blocker | Merge Protection | Keep | Core deterministic merge safety |
-| gitleaks.yml | Secret scan | Merge Protection | Keep | Remains hard blocker |
-| gate-zip-safety.yml | ZIP blocker | Merge Protection | Assimilated | Absorbed into `gate-quality.yml` during Task 002 |
-| gate-drift.yml | Drift enforcement | Scope advisor + post-merge audit | Rebuild | Remove timing-sensitive merge blocking |
-| gate-intent-labeler.yml | Intent labeling | PR Hygiene | Rebuild | Corrective/advisory instead of blocking |
-| reviewer-response-completion.yml | Reviewer lifecycle enforcement | Reviewer audit + protected-scope gate | Rebuild | Task 003 removes timing/PR-body brittle blocking; protected CI scope only |
-| design-compliance-warn.yml | Advisory PR warnings | PR Hygiene + post-merge audit | Rebuild | Convert to corrective guidance |
-| docs-guardrails.yml | Docs governance | Merge Protection + PR Hygiene | Rebuild | Add deterministic auto-fix capability |
-| diataxis-folder-authority-check.yml | Docs placement validation | PR Hygiene | Assimilate | Fold into docs correction system |
-| diataxis-post-merge-validate.yml | Post-merge docs validation | Post-Merge Validation | Keep/Rebuild | Expand evidence reporting |
-| ops-pr-issue-accounting.yml | Source issue enforcement | Merge Protection | Keep/Rebuild | Use tolerant parser model |
-| ops-assess.yml | Site assessment | OPS Runtime | Keep | Current operational assessment base |
-| production-audit.yml | Production invariants | OPS Runtime | Rebuild | Task 005 consolidated naming and runtime escalation evidence |
-| b2-s3-smoke-test.yml | B2 smoke test | OPS Runtime | Assimilated | Task 005 OPS naming and shared escalation |
-| b2-d1-daily-sync.yml | B2/D1 sync | OPS Runtime | Assimilated | Task 005 OPS naming and shared escalation |
-| ops-design-compliance-audit.yml | Design audit | Post-Merge Validation | Keep/Rebuild | Expand implementation-verification role |
-| post-merge-intent-verification.yml | Post-merge metadata validation | Post-Merge Validation | Rebuild | Expanded evidence reporting and remediation handoff in Task 004 |
-| post-merge-remediation.yml | Remediation workflow | Post-Merge Validation | Keep/Rebuild | Expand remediation issue generation |
-| ops-cf-pages-retry.yml | Deployment retry | OPS Runtime | Keep | Strong operational utility |
-| snapshot.yml | Snapshot/rollback evidence | OPS Runtime | Keep | Preserve rollback evidence |
-| d1-migrations.yml | Migration execution | Merge Protection + OPS | Rebuild | Consolidate D1 execution logic |
-| lgfc-d1-migrate.yml | Manual migration execution | OPS Runtime | Assimilate | Fold into unified D1 model |
-| enforce-pr-only.yml | Main branch protection | Merge Protection | Assimilate | Merge with main-monitor logic |
-| ops-main-change-monitor.yml | Main branch monitoring | OPS Runtime | Assimilate | Combine with branch-protection monitoring |
-| assess-nightly.yml | Legacy assessment | OPS Runtime | Retired | Removed; superseded by `ops-assess.yml` (#1058) |
-| gate-reviewer-response.yml | Disabled reviewer gate | None | Retire | Superseded by redesign |
-| post-recovery-425-verify.yml | Legacy PR-specific recovery | None | Retire | Stale historical workflow |
-| ci.yml | Legacy parked workflow | None | Retire | Remove after cleanup |
-| deploy.yml | Legacy parked workflow | None | Retire | Remove after cleanup |
-| deploy-dev.yml | Legacy parked workflow | None | Retire | Remove after cleanup |
-| deploy-prod.yml | Legacy parked workflow | None | Retire | Remove after cleanup |
-| lgfc-validate.yml | Legacy parked workflow | None | Retire | Remove after cleanup |
-| test.yml | Legacy parked workflow | None | Retire | Remove after cleanup |
-| test-homepage.yml | Legacy parked workflow | None | Retire | Remove after cleanup |
+## Post-merge and operations
 
-## Final Architectural Direction
+| Workflow | Classification | Current role |
+| --- | --- | --- |
+| `post-merge-closeout.yml` | Keep | Single automatic source-issue closeout owner |
+| `post-merge-pr-body-closeout.yml` | Keep bounded | Manual/backfill closeout |
+| `post-merge-remediation.yml` | Keep bounded | Failure remediation support |
+| `ops-post-merge-self-healing.yml` | Keep bounded | Scheduled/manual exception hygiene |
+| `diataxis-post-merge-validate.yml` | Keep support | Documentation evidence |
+| `ops-assess.yml` | Keep OPS | Site assessment |
+| `production-audit.yml` | Keep OPS | Production invariant audit |
+| `snapshot.yml` | Keep OPS | Snapshot and rollback evidence |
+| `b2-s3-smoke-test.yml` | Keep OPS | B2 smoke testing |
+| `b2-d1-daily-sync.yml` | Keep OPS | B2/D1 synchronization |
+| `post-merge-intent-verification.yml` | Compatibility marker | Manual-only, read-only, no mutation |
 
-The repository retains enterprise-grade governance discipline while moving each workflow responsibility to the correct lifecycle domain.
+## Retired by #2469
 
-The final design intentionally separates:
+- `ci-orchestration-engine.yml`
+- `gate-reviewer-response.yml`
+- `gate-close-work-issue.yml`
+- parked legacy `ci.yml`, `deploy*.yml`, `lgfc-validate.yml`, `test.yml`, and `test-homepage.yml`
+- fixed #1075 state and phase-generation scripts
+- hardcoded maintainer-body logic formerly in `post-merge-intent-verification.yml`
 
-- deterministic merge safety
-- corrective branch hygiene
-- retrospective implementation validation
-- production operational monitoring
+## Architectural rule
 
-This reduces false-positive failures, eliminates reviewer deadlocks, improves AI-agent usability, and preserves long-term operational integrity.
+Current CI separates deterministic merge safety, advisory branch hygiene, single-owner post-merge closeout, and production operations. Retired #1075 assets must not be restored through historical plans or stale issue state.

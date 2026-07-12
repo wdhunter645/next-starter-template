@@ -2,68 +2,81 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: PR process rebuild retired asset inventory
-Does Not Own: Canonical PR-process policy or branch protection settings
+Owns: PR-process and CI retired asset inventory
+Does Not Own: Canonical PR policy or branch protection settings
 Canonical Reference: /docs/governance/PR_PROCESS.md
-Related issues: #2175, #2185, #2208
-Last Reviewed: 2026-07-04
+Related Issues: #2175, #2185, #2208, #2469
+Last Reviewed: 2026-07-12
 ---
 
 # PR Process Rebuild Retired Asset Inventory
 
-This controlled reference supports `/docs/governance/PR_PROCESS.md` by recording which PR-process assets are removed, retained, simplified, or manual-only during the rebuild.
-
 ## Purpose
 
-Record which PR-process assets are kept, temporarily simplified, or removed during the Priority 1 ground-up PR-process rebuild.
+Maintain an auditable inventory of PR-process and CI assets retired before or by #2469.
 
-## Removed in #2185
+## Scope
+
+This reference covers removed scripts, workflows, state files, tests, and compatibility boundaries. It does not define current PR policy or branch protection.
+
+## Current known truth
+
+The #1075 phase engine, fixed state, orphaned selector, and parked legacy workflows are removed or reduced to a non-mutating compatibility marker. Current required, advisory, closeout, generic orchestration, and OPS assets remain in place.
+
+## Intended final state
+
+Retired assets remain absent and cannot regain operational authority without a new issue, dependency review, and current documentation update.
+
+## Removed before #2469
 
 - `scripts/ci/reviewer-response-gate.mjs`
 - `tests/reviewer-response-gate.test.mjs`
 
-These assets implemented the retired PR-body reviewer-response ledger model. Reviewer lifecycle state must be rebuilt around GitHub-native reviews and review threads, not PR-body comment IDs or disposition lines.
+These implemented the retired PR-body reviewer ledger.
 
-## Temporarily simplified before #2185
+## Removed in #2469
 
-The following workflows were simplified to passing marker checks so they stop blocking PR-process repair work while the new process is rebuilt:
+### Dedicated #1075 engine
 
-- `.github/workflows/gate-quality.yml`
-- `.github/workflows/gate-drift.yml`
-- `.github/workflows/gate-branch-freshness.yml`
-- `.github/workflows/docs-guardrails.yml`
-- `.github/workflows/design-compliance-warn.yml`
-- `.github/workflows/reviewer-response-completion.yml`
+- `.github/workflows/ci-orchestration-engine.yml`
+- `.github/ci-orchestration-state.json`
+- `scripts/orchestrator/ci-orchestration-engine.mjs`
+- dedicated CI-engine coverage from `tests/orchestrator-queue.test.mjs`
+- `scripts/orchestrator/implementation-plan-tasks.mjs`
+- `docs/reference/ci/lgfc-ci-orchestration-tasks.json`
 
-These workflow names remain present so branch-protection check wiring does not deadlock merges while the rebuild is underway.
+### Legacy workflows
 
-## Manual-only during rebuild
+- `.github/workflows/ci.yml`
+- `.github/workflows/deploy.yml`
+- `.github/workflows/deploy-dev.yml`
+- `.github/workflows/deploy-prod.yml`
+- `.github/workflows/lgfc-validate.yml`
+- `.github/workflows/test.yml`
+- `.github/workflows/test-homepage.yml`
+- `.github/workflows/gate-reviewer-response.yml`
+- `.github/workflows/gate-close-work-issue.yml`
 
-- `.github/workflows/gate-intent-labeler.yml`
-- `.github/workflows/gate-diff-scope.yml`
-- `.github/workflows/ops-pr-issue-accounting.yml`
+The previous hardcoded implementation of `.github/workflows/post-merge-intent-verification.yml` is also removed. A manual-only, read-only compatibility marker remains so retained tests can verify it is not an automatic closeout owner.
 
-These must not be promoted back to automatic or required until advisory behavior is implemented and verified.
+## Retained current assets
 
-## Kept compatibility assets
+- `gate-quality.yml`
+- `gitleaks.yml`
+- `gate-pr-hygiene.yml`
+- `gate-diff-scope.yml`
+- `reviewer-response-completion.yml`
+- `post-merge-closeout.yml`
+- generic issue-factory and queue scripts/workflows
+- scripts actively imported by the current closeout runner
+- OPS production monitoring
 
-- `scripts/ci/reviewer_lifecycle_gate.mjs`
-- `scripts/ci/reviewer_comment_disposition.mjs`
-- `tests/reviewer-lifecycle-gate.test.mjs`
-- `tests/reviewer-comment-disposition.test.mjs`
+## Deletion criteria
 
-`reviewer_comment_disposition.mjs` remains because the current native lifecycle script still imports compatibility helpers from it. Remove it only after those compatibility exports are removed from `reviewer_lifecycle_gate.mjs`.
+Retired assets may be removed only when:
 
-## Required-check position
-
-The merge-protection reference identifies the reduced required surface as deterministic blockers only. PR-process rebuild work must not promote redesigned checks back to required until advisory evidence proves they are stable.
-
-## Next cleanup criteria
-
-Delete additional retired assets only when all are true:
-
-- the asset has no live workflow caller;
-- branch protection does not require its check name;
-- replacement logic exists and has advisory evidence;
-- deletion will not strand imports in retained scripts;
-- the final CI inventory is updated in the same PR.
+- there is no live workflow caller;
+- branch protection does not require the check;
+- replacement or retained capability is identified;
+- imports are not stranded;
+- current inventory and authority docs are updated in the same PR.
