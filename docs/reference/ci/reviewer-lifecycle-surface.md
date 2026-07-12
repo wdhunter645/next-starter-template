@@ -2,90 +2,47 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: Reviewer lifecycle gate behavior, protected-scope blocking rules, post-merge reviewer audit handoff
-Does Not Own: Branch protection settings UI, merge protection consolidation, website runtime behavior
-Canonical Reference: /docs/explanation/ci/lgfc-reviewer-lifecycle-redesign.md
-Related Issues: #1452, #1196, #1075, #1058
-Last Reviewed: 2026-06-08
+Owns: Current GitHub-native reviewer lifecycle surface and advisory enforcement status
+Does Not Own: Canonical PR policy, branch protection settings, or post-merge closeout ownership
+Canonical Reference: /docs/governance/PR_PROCESS.md
+Related Issues: #2175, #2179, #2197, #2469
+Last Reviewed: 2026-07-12
 ---
 
 # LGFC Reviewer Lifecycle Surface
 
-## Purpose
+## Current model
 
-This reference documents reviewer lifecycle enforcement for LGFC PRs. Every
-actionable trusted reviewer comment must be resolved, explicitly dispositioned in
-the PR body, or linked to a bounded follow-up issue. Outdated review threads do
-not satisfy enforcement by themselves.
+Reviewer lifecycle state comes from GitHub-native reviews and review threads. The PR body is not a reviewer-state ledger.
 
-## Pre-Merge Workflow
+The active reviewer workflow is:
 
-| Workflow file | Display name | Enforcement |
-|---|---|---|
-| `reviewer-response-completion.yml` | `GATE — Reviewer Response Completion` | Blocking on `pull_request_target`, `pull_request_review`, `pull_request_review_comment`, and PR `issue_comment` events when any actionable trusted reviewer comment lacks PR-body disposition, when outdated threads lack explicit disposition, when late pre-merge comments remain undispositioned (dispositioned late findings are informational only), or when protected CI scope has unresolved protected review threads or lacks a current-head trusted review artifact on the enforced head SHA |
-| `gate-reviewer-response.yml` | `GATE — Reviewer Response` | Retired manual-only stub; superseded by Task 003 redesign |
+| Workflow | Job | Status |
+| --- | --- | --- |
+| `reviewer-response-completion.yml` | `reviewer-response-completion` | Advisory and non-blocking |
 
-## Protected Scope
+The workflow may report:
 
-Hard reviewer enforcement applies only when changed files include:
+- latest human review state;
+- unresolved non-outdated human threads;
+- stale or outdated comments;
+- trusted-bot findings as advisory evidence;
+- pagination or data-read failures.
 
-- `.github/workflows/**`
-- `scripts/ci/**`
+Human findings may become blocking only after an explicit promotion decision and successful advisory observation. Bot findings remain advisory unless separately promoted by governance.
 
-Reviewer disposition enforcement applies to all scopes. Protected CI scope adds
-current-head trusted review artifact requirements on top of disposition rules.
+## Retired surface
 
-Current-head protected review enforcement requires a trusted review or review
-comment whose `commit_id` exactly matches the current PR head SHA. Trusted reviews
-on earlier commits do not satisfy protected workflow/config scope.
+#2469 removes `gate-reviewer-response.yml`, the retired manual stub from the #1075 design.
 
-Unresolved protected threads are evaluated by review thread and latest trusted
-review state, not only by `commit_id` matching. A new commit cannot clear
-unresolved protected inline threads or stale `CHANGES_REQUESTED` reviews without
-an explicit resolution reply or a later approving review on the current head.
+The prior PR-body disposition-ledger model and its synchronous timing rules are historical. Do not require review-comment IDs, thread-state lines, or dynamic reviewer status blocks in PR bodies.
 
-### Break-glass override
+## Post-merge boundary
 
-Emergency protected-scope merges may use a narrow break-glass path only when:
+Automatic post-merge validation and source-issue closeout are owned by `post-merge-closeout.yml`. Reviewer audit helpers may contribute evidence or bounded remediation on failure, but they do not own source-issue closeout.
 
-- the PR has the `recovery` intent label, and
-- the PR body includes `<!-- reviewer-lifecycle-break-glass -->`.
+The retained `post-merge-intent-verification.yml` file is an inert manual compatibility marker. It has no PR trigger, mutation permissions, validator execution, or closeout ownership.
 
-The reviewer lifecycle gate records break-glass use in its PR comment. Post-merge
-reviewer audit output also records break-glass when that workflow runs.
+## Required policy
 
-## Post-Merge Workflow
-
-| Workflow file | Responsibility |
-|---|---|
-| `post-merge-intent-verification.yml` | Runs `post_merge_validator.mjs` and fails on undispositioned reviewer comments, late reviewer findings, or required workflow failures; runs `post_merge_reviewer_audit.mjs` to open follow-up issues when validation fails |
-
-Undispositioned reviewer findings and late post-merge comments pause orchestration,
-block source issue closeout, and stop queue advancement until a post-merge
-exception issue is resolved.
-
-## Shared Scripts
-
-| Script | Role |
-|---|---|
-| `scripts/ci/reviewer-gate-simulation.mjs` | Deterministic governance simulation and protected-scope classification |
-| `scripts/ci/reviewer_comment_disposition.mjs` | Parses PR-body dispositions and evaluates trusted reviewer comment completeness |
-| `scripts/ci/reviewer-response-gate.mjs` | Shared reviewer response gate assessment for pre-merge and post-merge phases |
-| `scripts/ci/reviewer_lifecycle_gate.mjs` | Live reviewer lifecycle assessment used by the pre-merge workflow |
-| `scripts/ci/post_merge_reviewer_audit.mjs` | Post-merge late-finding issue generation |
-
-## Disposition Evidence (Required)
-
-Every actionable trusted reviewer comment must end in one of these states:
-
-1. resolved by code/doc change and thread marked resolved;
-2. outdated with explicit PR-body disposition using `review-comment:<id>` and `thread state: outdated`;
-3. rejected / not applicable with rationale;
-4. linked to a bounded follow-up issue via `follow-up-issue:#<number>`.
-
-`is_outdated: true` without PR-body disposition is a failure. `is_resolved: false`
-with no disposition is a failure.
-
-## Rollback
-
-Revert reviewer workflow/script changes and this reference documentation only.
+Use `/docs/governance/PR_PROCESS.md` and `/docs/explanation/ci/lgfc-reviewer-lifecycle-redesign.md` for current policy and rationale.
