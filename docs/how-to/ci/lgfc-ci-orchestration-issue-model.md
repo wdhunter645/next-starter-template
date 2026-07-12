@@ -1,128 +1,51 @@
 ---
 Doc Type: How-To
 Audience: Human + AI
-Authority Level: Controlled
-Owns: CI implementation issue orchestration model
-Does Not Own: Workflow implementation logic
-Canonical Reference: /docs/how-to/ci/lgfc-ci-implementation-plan.md
-Related Issues: #1058, #1075
-Last Reviewed: 2026-06-03
+Authority Level: Historical
+Status: Retired
+Owns: Historical record of the #1075 CI implementation issue model
+Does Not Own: Current CI strategy, issue generation, PR policy, or workflow behavior
+Canonical Reference: /docs/governance/PR_PROCESS.md
+Related Issues: #1075, #2469
+Last Reviewed: 2026-07-12
 ---
 
-# LGFC CI Orchestration Issue Model
+# Retired #1075 CI Orchestration Issue Model
 
-## Purpose
+## Disposition
 
-This document defines how orchestration workflows should create and manage CI redesign implementation issues.
+The dedicated CI redesign issue model created under #1075 is retired by #2469.
 
-## One-Issue Execution Rule
+The old model generated serial `lgfc-ci-phase:*` issues from a fixed JSON state file and paused on stale, failed, duplicate, or unstable phase state. That rollout completed, was subsequently superseded by Program #1500 and the July 2026 PR-process rebuild, and must not generate new work.
 
-Only one CI implementation issue should be active at a time.
+## Current operating model
 
-This reduces:
+Current CI work must follow:
 
-- merge conflicts
-- workflow overlap
-- governance drift
-- rollback complexity
-- branch protection instability
+1. GitHub Issues as executable work truth.
+2. `/docs/governance/PR_PROCESS.md` as canonical PR-process policy.
+3. `/docs/reference/ci/pr-process-current-state.md` for the current implementation baseline.
+4. `/docs/reference/ci/merge-protection-surface.md` for required checks.
+5. One scoped issue and one PR for authorized CI changes.
+6. Single-owner post-merge closeout through `.github/workflows/post-merge-closeout.yml`.
 
-## Execution
+There is no active dedicated CI phase engine.
 
-The orchestration layer should follow this execution sequence:
+## Preserved generic capability
 
-1. Validate that no other CI implementation issue is active.
-2. Create one implementation issue for the next dependency phase.
-3. Include exact workflow scope and allowed files.
-4. Assign the implementation issue to Cursor.
-5. Wait for the implementation PR to complete merge protection successfully.
-6. Validate post-merge stability.
-7. Create the next implementation issue only after verification succeeds.
+The repository may still use the generic implementation-plan issue factory and serial queue for explicitly approved plans. That capability is documented in `/docs/reference/architecture/orchestration-model.md` and does not reactivate #1075.
 
-After CI redesign Tasks 001–006 merge, phase-2 work is defined in
-`docs/ops/implementation-plans/issue-1075-ci-phase2-closeout-rollout.md`. Completed
-phase-1 tasks remain marked `Status: completed` in
-`issue-1075-ci-redesign-rollout.md` so the issue factory skips them by terminal
-status and by existing `lgfc-task-id` markers.
+## Historical markers
 
-The orchestration layer must pause advancement automatically when:
+Existing `lgfc-ci-phase:*` markers and #1075 task issues are historical evidence. They do not authorize implementation, block current work, or define completion state.
 
-- CI instability exists
-- rollback is required
-- remediation work remains open
-- branch protection becomes unstable
+## New CI work
 
-## Required Issue Structure
+New CI changes require a current issue with:
 
-Each implementation issue should contain:
-
-- objective
-- workflow scope
-- allowed files
-- rollback plan
-- acceptance criteria
-- CI impact statement
-- validation requirements
-- post-merge verification requirements
-
-## Required Lifecycle
-
-1. issue created
-2. issue assigned to Cursor
-3. implementation PR created
-4. CI validated
-5. PR merged
-6. post-merge verification completed
-7. orchestration creates next issue
-
-## Failure Handling
-
-If a phase fails:
-
-- orchestration pauses advancement
-- remediation issue may be created
-- rollback recommendation may be generated
-- next implementation issue must not be created until stability returns
-
-## As-Built Engine
-
-The active engine is:
-
-- workflow: `/.github/workflows/ci-orchestration-engine.yml`
-- state model: `/.github/ci-orchestration-state.json`
-- script: `/scripts/orchestrator/ci-orchestration-engine.mjs`
-- reference: `/docs/reference/ci/lgfc-ci-orchestration-engine.md`
-
-The engine creates or updates only one CI implementation issue at a time. It pauses when an active or failed CI implementation issue exists, when phase dependencies are incomplete, when a duplicate phase marker exists, or when recent workflow runs show blocking CI instability.
-
-## Implementation Categories
-
-### Category A — Merge Protection
-
-Examples:
-- deterministic gate consolidation
-- branch protection simplification
-- catastrophic blocker isolation
-
-### Category B — PR Hygiene
-
-Examples:
-- docs auto-fix
-- metadata normalization
-- Diataxis correction
-
-### Category C — Post-Merge Validation
-
-Examples:
-- reviewer audit
-- design audit
-- implementation verification
-- remediation issue generation
-
-### Category D — OPS Runtime
-
-Examples:
-- deployment verification
-- smoke testing
-- runtime health
-- retry/recovery automation
+- explicit objective and authority;
+- bounded files;
+- current-state validation;
+- rollback boundary;
+- acceptance criteria;
+- confirmation that the change does not restore retired #1075 behavior.
