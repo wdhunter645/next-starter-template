@@ -2,95 +2,45 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: Program #1500 closeout workflow inventory excerpt, classification, overlap notes, deprecation candidates
-Does Not Own: Complete workflow inventory, workflow implementation, branch protection settings, CI architecture rationale
-Canonical Reference: /docs/reference/ci/github-actions_MASTER.md
-Related Issues: #1199, #1058, #1545, #1548, #1674
-Last Reviewed: 2026-06-22
+Owns: Current closeout-related workflow inventory excerpt and retirement disposition
+Does Not Own: Complete repository workflow inventory, branch protection settings, or CI policy rationale
+Canonical Reference: /docs/governance/PR_PROCESS.md
+Related Issues: #1500, #2175, #2208, #2469
+Last Reviewed: 2026-07-12
 ---
 
 # GitHub Actions Closeout Workflow Inventory Excerpt
 
-## Purpose
+## Current closeout surface
 
-This reference records the closeout-related GitHub Actions workflow surface for
-Program #1500. It is a closeout ownership excerpt, not the complete repository
-workflow inventory.
+| Workflow | Classification | Current role |
+| --- | --- | --- |
+| `post-merge-closeout.yml` | Operational | Single automatic source-issue validation and closeout owner |
+| `post-merge-pr-body-closeout.yml` | Operational | Manual/backfill and active-manifest closeout |
+| `post-merge-remediation.yml` | Operational | Failure remediation support |
+| `ops-post-merge-self-healing.yml` | Operational | Scheduled/manual exception hygiene |
+| `ops-pr-process-metrics.yml` | Operational | PR-process metrics |
+| `ops-pr-issue-accounting.yml` | Manual-only | Pre-merge source-issue accounting while paused |
+| `post-merge-intent-verification.yml` | Compatibility marker | Manual-only, read-only, no validation or mutation |
 
-## Scope
+## Retired by #2469
 
-This excerpt covers closeout-related workflows under `.github/workflows/`. It
-does not claim to enumerate every workflow file in the repository, change
-workflow behavior, or define branch protection requirements.
+- `ci-orchestration-engine.yml`
+- `gate-close-work-issue.yml`
+- `gate-reviewer-response.yml`
+- parked legacy `ci.yml`, `deploy*.yml`, `lgfc-validate.yml`, `test.yml`, and `test-homepage.yml`
+- the hardcoded legacy implementation formerly stored in `post-merge-intent-verification.yml`
 
-## Current Known Truth
+The #1075 state file and phase-generation scripts are also retired. No current inventory may treat them as effective workflows or queue owners.
 
-There are 64 workflow files on `main` as of 2026-06-19 (`assess-nightly.yml` retired; superseded by `ops-assess.yml`). The authoritative
-as-built reconciliation for the `#1075` CI redesign is
-`docs/reference/ci/lgfc-ci-as-built-reconciliation.md`.
+## Ownership rule
 
-Merged redesign phases on `main`:
+`.github/workflows/post-merge-closeout.yml` is the only automatic source-issue closeout owner. Supporting workflows may provide manual backfill, remediation, evidence, metrics, or scheduled cleanup, but must not race the same automatic mutation boundary.
 
-- Task 001 PR hygiene advisories
-- Task 002 merge protection consolidation (`gate-zip-safety.yml` retired)
-- Task 003 reviewer lifecycle redesign (PR #1239)
-- Task 004 post-merge validation expansion (PR #1240)
-- Task 005 OPS runtime consolidation (PR #1242)
+## Required-check boundary
 
-Task 005 merged before Task 004 without file conflicts because the domains are
-disjoint.
+The current required PR checks are maintained in `/docs/reference/ci/merge-protection-surface.md`. Closeout and OPS workflows are not merge-protection checks.
 
-Program #1500 closeout stabilization on `main`:
+## Exception boundary
 
-- Task 001 merged and closed out (pre-merge post-merge-readiness gate)
-- Task 002 merged and closed out (post-merge consolidation, PR #1567 / #1545)
-- Task 003 merged and closed out (metadata/check hardening)
-- Task 004 merged and closed out (manifest pruning / batch stabilization)
-- Task 005 merged and closed out (CI/orchestration documentation reconciliation, PR #1660 / #1548)
-
-Use the as-built reconciliation doc and domain surface references for current
-merged truth:
-
-- `docs/reference/ci/merge-protection-surface.md`
-- `docs/reference/ci/pr-hygiene-foundation.md`
-- `docs/reference/ci/reviewer-lifecycle-surface.md`
-- `docs/reference/ci/post-merge-validation-surface.md`
-- `docs/reference/ci/ops-runtime-surface.md`
-- `docs/reference/ci/program-1500-as-built-alignment.md`
-
-The complete closeout surface table remains in
-`docs/reference/ci/post-merge-validation-surface.md`; use that reference for
-readiness, manual/backfill, body-apply, remediation, and parked legacy workflow
-coverage.
-
-## Intended Final State
-
-Each workflow should have a clear owner, visible name, filename, trigger class, blocking/advisory status, protected scope, dependency list, and deprecation or consolidation recommendation. Future phases should reduce false positives, remove stale workflow surfaces, and make GitHub Checks panel names easy to map back to workflow files.
-
-## Classification Legend
-
-- `Blocking`: intended to fail PRs or protected integration when a concrete required condition fails.
-- `Advisory`: reports warnings or guidance and should not block merge readiness.
-- `Operational`: scheduled, manual, post-merge, deployment, audit, or maintenance workflow outside normal PR gating.
-- `Support`: automation support for agents, orchestration, setup, or comments.
-- `Parked`: legacy no-op workflow retained temporarily.
-
-## Workflow Inventory
-
-| YAML filename | Visible workflow name | Purpose | Triggers | Class | Protected scope | Dependencies | PR body parsing | False-positive risk | Overlap / redundancy | Deprecation candidate |
-|---|---|---|---|---|---|---|---|---|---|---|
-| `gate-post-merge-readiness.yml` | GATE — Post-Merge Readiness | Pre-merge readiness check for PR metadata, allowlist evidence, and reviewer disposition. | `pull_request_target` | Blocking | pre-merge readiness | checkout, Node, readiness gate | Yes | Medium | Mirrors the post-merge metadata subset before merge. | No |
-| `post-merge-closeout.yml` | Post-Merge Detection | Primary automatic post-merge reconciliation workflow for merged PRs to `main`. | `pull_request_target` closed (merged to `main`) | Operational | post-merge reconciliation | checkout, Node, reconciliation runner, gh, reviewer audit helper | Yes | Medium | Owns the automatic post-merge reconciliation path. | No |
-| `post-merge-pr-body-closeout.yml` | Post-Merge PR Body Closeout | Manual and backfill reconciliation. | workflow dispatch / push backfill | Operational | manual/backfill reconciliation | Node, batch manifest, helper scripts | Yes | Medium | Supports manual and batch reconciliation only. | No |
-| `post-merge-intent-verification.yml` | Post-Merge Maintainer Body Apply | Targeted automatic and dispatch maintainer support path. | targeted PR synchronize / workflow dispatch | Support | targeted maintainer support | Node, validator helper | Yes | Medium | Targeted legacy support path; not broad ownership. | Redesign candidate |
-| `post-merge-remediation.yml` | Post-Merge Remediation | Remediation workflow after failed post-merge validation; pre-heals via self-healing before exception issue upsert. | post-merge detection handoff | Operational | remediation | Node, remediation helper, self-healing scripts | Yes | Medium | Runs after failed validation only. | No |
-| `ops-post-merge-self-healing.yml` | OPS — Post-Merge Self-Healing | Post-merge backlog scan, safe auto-fix apply, and `ops-pr-escalation` label handoff on the same exception issue. | schedule / issues / workflow_run / manual dispatch | Operational | post-merge hygiene | Node, backlog/detect/apply/escalate scripts | Yes | Medium | Downstream hygiene layer after closeout; does not replace pre-merge gates. | No |
-| `gate-close-work-issue.yml` | gate-close-work-issue | Parked no-op legacy workflow. | `pull_request_target` closed | Parked | None | none | No | Low | Replaced by the current post-merge and pre-merge accounting surfaces. | Yes |
-| `ops-pr-issue-accounting.yml` | OPS - PR Issue Accounting | Normalize and verify one linked ticket per PR before merge. | `pull_request_target` | Blocking | ticket-first PR accounting | GitHub Script | Yes | Medium | Owns pre-merge accounting only. | Redesign candidate |
-
-## Inventory Rewrite Boundary
-
-This Program #1500 reconciliation updates the closeout-related rows needed to
-remove effective/ineffective conflicts and to record final Program #1500 status.
-A full mechanical workflow inventory rewrite remains separate work and must not
-be inferred from this closeout ownership excerpt.
+Existing exception issues are handled incrementally through routine housekeeping. The #2469 retirement removes obsolete exception generation without disabling legitimate failure reporting.
