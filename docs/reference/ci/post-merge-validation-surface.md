@@ -82,12 +82,8 @@ Retirement of #1075 prevents obsolete CI phase issues from creating false orches
 | `scripts/orchestrator/sync-pr-state.mjs` | Shared issue lifecycle synchronization used by the closeout runner |
 | `scripts/ci/post_merge_validation_surface.mjs` | Current workflow/script surface validator |
 
-## Verification
+## Verification reference
 
-Run:
-
-```bash
-node scripts/ci/post_merge_validation_surface.mjs
-```
+The validation entry point is `node scripts/ci/post_merge_validation_surface.mjs`. Execute it from an authorized implementation or verification context; this Reference document records the command identity but does not provide an executable runbook.
 
 The validator must confirm the active automatic owner and its required supporting scripts without requiring retired #1075 workflows.
