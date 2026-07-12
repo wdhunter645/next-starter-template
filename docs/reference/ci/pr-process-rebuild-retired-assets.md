@@ -11,6 +11,22 @@ Last Reviewed: 2026-07-12
 
 # PR Process Rebuild Retired Asset Inventory
 
+## Purpose
+
+Maintain an auditable inventory of PR-process and CI assets retired before or by #2469.
+
+## Scope
+
+This reference covers removed scripts, workflows, state files, tests, and compatibility boundaries. It does not define current PR policy or branch protection.
+
+## Current known truth
+
+The #1075 phase engine, fixed state, orphaned selector, and parked legacy workflows are removed or reduced to a non-mutating compatibility marker. Current required, advisory, closeout, generic orchestration, and OPS assets remain in place.
+
+## Intended final state
+
+Retired assets remain absent and cannot regain operational authority without a new issue, dependency review, and current documentation update.
+
 ## Removed before #2469
 
 - `scripts/ci/reviewer-response-gate.mjs`
