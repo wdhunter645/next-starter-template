@@ -11,6 +11,22 @@ Last Reviewed: 2026-07-12
 
 # LGFC CI As-Built Reconciliation
 
+## Purpose
+
+Reconcile the implemented #1075 and #1500 CI work with the current July 2026 PR-process and retirement state.
+
+## Scope
+
+This reference covers delivered capabilities, retained current assets, retired #1075 mechanisms, exception-storm resolution, and closeout ownership. It does not define canonical PR policy or live branch protection.
+
+## Current known truth
+
+The #1075 implementation wave delivered CI capabilities but also contributed to post-merge remediation loops later stabilized by Program #1500. The July 2026 PR-process rebuild supersedes the remaining #1075 design authority, and #2469 retires its dedicated phase-generation engine and legacy residue.
+
+## Intended final state
+
+Current deterministic checks, advisory review controls, single-owner closeout, OPS monitoring, and explicitly approved generic orchestration remain. Retired #1075 phase mechanisms remain historical and non-executable.
+
 ## Current disposition
 
 The #1075 CI redesign implementation wave delivered PR hygiene, merge-protection, reviewer, post-merge, OPS, and documentation changes. Program #1500 then stabilized the post-merge closeout failures and remediation loops produced by that operating model. The July 2026 PR-process rebuild superseded the remaining #1075 design authority.
