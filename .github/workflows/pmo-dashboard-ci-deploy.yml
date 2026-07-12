@@ -55,26 +55,63 @@ jobs:
       - name: Validate deploy artifact
         run: node scripts/pmo-dashboard/validate-dashboard.mjs "$PMO_DASHBOARD_OUT_DIR"
 
+      - name: Check GitHub Pages availability
+        id: pages
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              const { data } = await github.rest.repos.getPages({
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              });
+              core.info(`GitHub Pages is enabled; build type: ${data.build_type || 'unknown'}`);
+              core.setOutput('enabled', 'true');
+            } catch (error) {
+              if (error.status === 404) {
+                core.warning(
+                  'GitHub Pages is not enabled. Repository Settings > Pages must use GitHub Actions as the source before deployment can run.'
+                );
+                core.setOutput('enabled', 'false');
+                return;
+              }
+              throw error;
+            }
+
       - name: Configure GitHub Pages
+        if: ${{ steps.pages.outputs.enabled == 'true' }}
         uses: actions/configure-pages@v5
 
       - name: Prepare Pages artifact for /pmo-dashboard/ path
+        if: ${{ steps.pages.outputs.enabled == 'true' }}
         run: |
           mkdir -p pages-artifact/pmo-dashboard
           cp -R "$PMO_DASHBOARD_OUT_DIR"/. pages-artifact/pmo-dashboard/
 
       - name: Upload Pages artifact
+        if: ${{ steps.pages.outputs.enabled == 'true' }}
         uses: actions/upload-pages-artifact@v3
         with:
           path: pages-artifact
 
       - name: Deploy to GitHub Pages
+        if: ${{ steps.pages.outputs.enabled == 'true' }}
         id: deployment
         uses: actions/deploy-pages@v4
 
       - name: Write deploy summary
+        if: ${{ steps.pages.outputs.enabled == 'true' }}
         run: |
           echo "## PMO dashboard CI deploy" >> "$GITHUB_STEP_SUMMARY"
           echo "Published site root: ${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"
           echo "Published dashboard URL: ${{ steps.deployment.outputs.page_url }}pmo-dashboard/" >> "$GITHUB_STEP_SUMMARY"
           echo "Published dashboard JSON: ${{ steps.deployment.outputs.page_url }}pmo-dashboard/dashboard-data.json" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Write Pages setup required summary
+        if: ${{ steps.pages.outputs.enabled != 'true' }}
+        run: |
+          echo "## PMO dashboard CI deploy" >> "$GITHUB_STEP_SUMMARY"
+          echo "Dashboard generation and validation passed." >> "$GITHUB_STEP_SUMMARY"
+          echo "Deployment was not attempted because GitHub Pages is not enabled for this repository." >> "$GITHUB_STEP_SUMMARY"
+          echo "Operator action: Repository Settings > Pages > Source: GitHub Actions, then manually dispatch this workflow." >> "$GITHUB_STEP_SUMMARY"
+          echo "::warning title=GitHub Pages setup required::Enable GitHub Pages with GitHub Actions as the source, then rerun PMO dashboard CI deploy."
