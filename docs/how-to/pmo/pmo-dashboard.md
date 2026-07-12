@@ -5,8 +5,8 @@ Authority Level: Operational Guidance
 Owns: PMO dashboard generation, refresh, validation, and GitHub Pages limitations
 Does Not Own: PMO lifecycle definitions, GitHub issues source records, or Cloudflare production deployment
 Canonical Reference: /docs/ops/pmo/workflow-automation.md
-Related Issues: #2101, #2299, #2313
-Last Reviewed: 2026-07-06
+Related Issues: #2101, #2299, #2313, #2471
+Last Reviewed: 2026-07-12
 ---
 
 # PMO Dashboard
@@ -17,16 +17,21 @@ The PMO dashboard is a generated static GitHub Pages reporting surface for PMO-m
 
 ## Scope
 
-This how-to covers dashboard source fields, local generation, CI build validation, manual or automatic GitHub Pages deployment, and operational limits. It does not define the PMO lifecycle, replace GitHub issues as source records, or modify the Cloudflare production deployment.
+This how-to covers dashboard source fields, local generation, CI build validation, GitHub Pages availability preflight, manual or automatic deployment, and operational limits. It does not define the PMO lifecycle, replace GitHub issues as source records, or modify the Cloudflare production deployment.
 
 ## Current known truth
 
 - GitHub issues are the live source for dashboard data.
 - The generated dashboard is reporting-only.
 - The build workflow generates, validates, and uploads dashboard artifacts.
-- The deploy workflow publishes after a successful PMO dashboard CI build and can also be run manually during controlled rollout.
-- Automatic deployment from successful builds is approved for the PMO dashboard closeout path.
+- The deploy workflow regenerates and validates the dashboard before checking whether GitHub Pages is enabled.
+- When GitHub Pages is enabled with GitHub Actions as the source, the workflow configures Pages, uploads the artifact, and deploys automatically.
+- When Pages is unavailable, deployment steps are skipped and the workflow reports the required operator action without misreporting dashboard generation or validation as failed.
+- GitHub Pages enablement is a one-time repository setting and cannot be performed by the workflow's default `GITHUB_TOKEN`.
 
+## Intended final state
+
+The PMO dashboard build remains independently verifiable, GitHub Pages deployment runs automatically after successful builds, missing repository configuration is surfaced as an explicit operator action, and the public dashboard URLs are verified before operational issue closeout.
 
 ## Public access URLs
 
@@ -150,9 +155,11 @@ Task-accounting rules:
 3. Run or wait for **PMO dashboard CI build**.
 4. Confirm generation and validation of `site/pmo-dashboard/dashboard-data.json` and static assets.
 5. Run `node scripts/pmo-dashboard/test-label-driven-fixture.mjs` when changing label-driven inclusion or nested child display logic.
-6. Confirm **PMO dashboard CI deploy** publishes the validated dashboard and records the Pages URL.
-7. Record the published GitHub Pages URL on the controlling PMO dashboard issue before closeout.
-8. Treat the dashboard as a reporting aid, not an authoritative tracker.
+6. Confirm the **PMO dashboard CI deploy** Pages preflight reports `enabled` before expecting publication.
+7. When preflight reports Pages unavailable, complete the one-time operator procedure under **GitHub Pages setup notes**.
+8. Manually dispatch **PMO dashboard CI deploy** after Pages enablement.
+9. Verify the published HTML and JSON URLs and record the evidence on the controlling operational issue.
+10. Treat the dashboard as a reporting aid, not an authoritative tracker.
 
 ## Refresh and validation
 
@@ -164,13 +171,25 @@ Tracked PMO inventory expectations live in `scripts/pmo-dashboard/pmo-tracked-in
 
 Reconciliation audit evidence: `docs/ops/pmo/pmo-dashboard-tracking-audit-2299.md`.
 
-The deploy workflow publishes after a successful PMO dashboard CI build and can also be started manually during controlled rollout. Deploy regenerates and validates the dashboard before publishing so stale checked-in output is not intentionally deployed. Manual deploy is the operator path for publishing a current-state dashboard before the next scheduled build.
+The deploy workflow runs after a successful PMO dashboard CI build and can also be started manually. Deploy regenerates and validates the dashboard before evaluating Pages availability so stale checked-in output is not intentionally deployed. A missing Pages site produces an operator-action summary and skips deployment; it does not convert a successful dashboard build and validation into a false-red CI incident. Unexpected API, generation, validation, artifact, or deployment errors still fail the workflow.
 
 ## GitHub Pages setup notes
 
 GitHub Pages must be enabled for this repository with GitHub Actions as the Pages source. This dashboard is a separate GitHub Pages reporting target and does not replace or modify the Cloudflare Pages production deployment.
 
-The published GitHub Pages URL must be recorded on the controlling PMO dashboard issue before final closeout.
+One-time operator procedure:
+
+1. Open repository **Settings**.
+2. Open **Pages**.
+3. Under **Build and deployment**, set **Source** to **GitHub Actions**.
+4. Manually dispatch **PMO dashboard CI deploy**.
+5. Confirm the workflow executes Configure Pages, Upload Pages artifact, and Deploy to GitHub Pages.
+6. Verify:
+   - `https://wdhunter645.github.io/next-starter-template/pmo-dashboard/`
+   - `https://wdhunter645.github.io/next-starter-template/pmo-dashboard/dashboard-data.json`
+7. Record the successful workflow run and public URL evidence on issue #2471 before closeout.
+
+Do not add a PAT or privileged secret merely to let `actions/configure-pages` enable the site. Repository configuration remains a human operator responsibility.
 
 ## Display safety notes
 
@@ -180,5 +199,6 @@ The dashboard UI treats issue-derived fields as untrusted display text. Titles, 
 
 - Anticipated completion dates are explicit issue-body values or `TBD`; the dashboard does not forecast completion dates.
 - Rows with missing optional fields fall back to `TBD`, `Pending Assignment`, or blank descriptions.
+- The public reporting surface is unavailable until GitHub Pages is enabled with GitHub Actions as the source.
 - v1 does not add charts, per-program detail pages, or private/internal reporting.
-- issue-event rebuilds are intentionally deferred to reduce automation noise.
+- Issue-event rebuilds are intentionally deferred to reduce automation noise.
