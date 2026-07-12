@@ -11,9 +11,23 @@ Last Reviewed: 2026-07-12
 
 # LGFC Reviewer Lifecycle Surface
 
-## Current model
+## Purpose
 
-Reviewer lifecycle state comes from GitHub-native reviews and review threads. The PR body is not a reviewer-state ledger.
+Define the current reviewer lifecycle surface after the July 2026 PR-process rebuild.
+
+## Scope
+
+This reference covers GitHub-native review state, review threads, advisory enforcement, and the retirement of the #1075 reviewer-response stub. It does not define branch protection or automatic post-merge closeout ownership.
+
+## Current known truth
+
+Reviewer lifecycle state comes from GitHub-native reviews and review threads. The PR body is not a reviewer-state ledger. `reviewer-response-completion.yml` is advisory and non-blocking, and `gate-reviewer-response.yml` is retired by #2469.
+
+## Intended final state
+
+Reviewer checks remain GitHub-native and advisory unless explicitly promoted after evidence. The retired PR-body ledger and timing-dependent enforcement must not return.
+
+## Current model
 
 The active reviewer workflow is:
 
