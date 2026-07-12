@@ -55,7 +55,7 @@ jobs:
       - name: Validate deploy artifact
         run: node scripts/pmo-dashboard/validate-dashboard.mjs "$PMO_DASHBOARD_OUT_DIR"
 
-      - name: Check GitHub Pages availability
+      - name: Check GitHub Pages deployment readiness
         id: pages
         uses: actions/github-script@v7
         with:
@@ -65,14 +65,27 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo
               });
-              core.info(`GitHub Pages is enabled; build type: ${data.build_type || 'unknown'}`);
+              const buildType = data.build_type || 'unknown';
+              core.info(`GitHub Pages is enabled; build type: ${buildType}`);
+
+              if (buildType !== 'workflow') {
+                core.warning(
+                  `GitHub Pages uses build type "${buildType}", not GitHub Actions. Repository Settings > Pages must use GitHub Actions as the source before deployment can run.`
+                );
+                core.setOutput('enabled', 'false');
+                core.setOutput('reason', 'source-not-workflow');
+                return;
+              }
+
               core.setOutput('enabled', 'true');
+              core.setOutput('reason', 'ready');
             } catch (error) {
               if (error.status === 404) {
                 core.warning(
                   'GitHub Pages is not enabled. Repository Settings > Pages must use GitHub Actions as the source before deployment can run.'
                 );
                 core.setOutput('enabled', 'false');
+                core.setOutput('reason', 'not-enabled');
                 return;
               }
               throw error;
@@ -112,6 +125,7 @@ jobs:
         run: |
           echo "## PMO dashboard CI deploy" >> "$GITHUB_STEP_SUMMARY"
           echo "Dashboard generation and validation passed." >> "$GITHUB_STEP_SUMMARY"
-          echo "Deployment was not attempted because GitHub Pages is not enabled for this repository." >> "$GITHUB_STEP_SUMMARY"
+          echo "Deployment was not attempted because GitHub Pages is not ready for GitHub Actions deployment." >> "$GITHUB_STEP_SUMMARY"
+          echo "Preflight reason: ${{ steps.pages.outputs.reason }}" >> "$GITHUB_STEP_SUMMARY"
           echo "Operator action: Repository Settings > Pages > Source: GitHub Actions, then manually dispatch this workflow." >> "$GITHUB_STEP_SUMMARY"
           echo "::warning title=GitHub Pages setup required::Enable GitHub Pages with GitHub Actions as the source, then rerun PMO dashboard CI deploy."
