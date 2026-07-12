@@ -12,7 +12,21 @@ Last Reviewed: 2026-07-12
 
 # Retired CI Orchestration Production Package Plan
 
-The #1138 documentation package and its #1075 implementation sequencing are historical.
+## Purpose
+
+Explain how to use the retired #1138 package as historical evidence without treating it as executable work.
+
+## Scope
+
+This How-To covers interpretation of the former #1138/#1075 implementation sequence and the procedure for routing current CI changes. It does not authorize task generation or phase selection.
+
+## Current known truth
+
+The #1138 package and #1075 sequencing are historical. The dedicated phase engine is removed by #2469, and current CI authority comes from the July 2026 PR-process strategy.
+
+## Intended final state
+
+This file remains a compliant historical record. Current CI work proceeds only through newly authorized issues and current authority documents.
 
 ## Procedure
 
