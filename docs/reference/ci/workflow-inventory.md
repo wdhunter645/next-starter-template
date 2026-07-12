@@ -11,6 +11,22 @@ Last Reviewed: 2026-07-12
 
 # GitHub Actions Closeout Workflow Inventory Excerpt
 
+## Purpose
+
+Identify the current closeout-related workflow surface and record the retirement of obsolete #1075 paths.
+
+## Scope
+
+This reference covers automatic closeout ownership, supporting post-merge workflows, and the legacy assets retired by #2469. It does not define branch protection or the complete repository workflow inventory.
+
+## Current known truth
+
+`.github/workflows/post-merge-closeout.yml` is the only automatic source-issue closeout owner. Supporting workflows may provide manual backfill, remediation, evidence, metrics, or scheduled cleanup, but must not race the same automatic mutation boundary.
+
+## Intended final state
+
+Closeout remains single-owner and idempotent. Retired #1075 workflows and state must remain absent, while legitimate exception reporting and incremental housekeeping remain available.
+
 ## Current closeout surface
 
 | Workflow | Classification | Current role |
