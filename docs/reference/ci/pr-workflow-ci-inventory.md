@@ -2,139 +2,76 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: PR-workflow CI inventory, pre-merge/post-merge classification, legacy PR CI adoption or decommission recommendations
-Does Not Own: Canonical PR-process policy, full repository CI inventory, workflow implementation, branch protection settings UI, production deployment behavior, non-PR scheduled operations
+Owns: Current PR-workflow CI inventory and active/retired classification
+Does Not Own: Canonical PR-process policy, branch protection settings, production deployment, or non-PR operations
 Canonical Reference: /docs/governance/PR_PROCESS.md
-Related issues: #2142, #2175, #2208
-Last Reviewed: 2026-07-04
+Related Issues: #2175, #2208, #2469
+Last Reviewed: 2026-07-12
 ---
 
 # PR Workflow CI Inventory
 
-This controlled reference supports `/docs/governance/PR_PROCESS.md` by identifying workflows that participate in the pull request lifecycle.
+## Current required surface
 
-## Purpose
+| Workflow | Job | Classification |
+| --- | --- | --- |
+| `gate-quality.yml` | `quality` | Required deterministic blocker |
+| `gitleaks.yml` | `gitleaks` | Required deterministic blocker |
 
-This reference defines the CI workflows and checks that are part of the LGFC Pull Request lifecycle.
+## Active advisory surface
 
-It exists to prevent routine PR hygiene failures from escaping pre-merge review and becoming post-merge backlog issues, while avoiding noisy or overlapping gates.
+| Workflow | Job | Classification |
+| --- | --- | --- |
+| `gate-pr-hygiene.yml` | `pr-hygiene` | Advisory |
+| `gate-diff-scope.yml` | `diff-scope` | Advisory |
+| `reviewer-response-completion.yml` | `reviewer-response-completion` | Advisory |
 
-## Scope
+## Manual-only or paused
 
-This inventory covers CI workflows/checks used by the PR workflow:
+| Workflow | Disposition |
+| --- | --- |
+| `gate-intent-labeler.yml` | Manual-only |
+| `ops-pr-issue-accounting.yml` | Manual-only |
+| `gate-drift.yml` | Manual-only |
+| `gate-branch-freshness.yml` | Manual-only |
+| `docs-guardrails.yml` | Manual-only |
+| `design-compliance-warn.yml` | Manual-only |
+| `gate-post-merge-readiness.yml` | Manual backfill only |
 
-- PR open;
-- PR body/template validation;
-- issue accounting;
-- file/diff governance;
-- reviewer and bot review state;
-- merge-readiness checks;
-- post-merge PR closeout.
+These workflows must not be required while manual-only.
 
-This inventory does not cover the full repository CI surface, production runtime monitoring, scheduled site audits, Cloudflare deployment management, data sync workflows, AI orchestration workflows, or manually dispatched maintenance jobs unless they participate directly in the PR lifecycle.
+## Post-merge PR workflow
 
-## Current known truth after #2228 closeout
+| Workflow | Role |
+| --- | --- |
+| `post-merge-closeout.yml` | Single automatic source-issue closeout owner |
+| `post-merge-remediation.yml` | Failure support |
+| `ops-post-merge-self-healing.yml` | Scheduled/manual exception hygiene |
+| `diataxis-post-merge-validate.yml` | Documentation validation support |
+| `ops-pr-process-metrics.yml` | Metrics |
 
-The broader repository workflow inventory supports more than the PR process and must not be treated as a complete PR-workflow classification.
+## Retired in #2469
 
-The current reduced deterministic pre-merge blocker reference is maintained in `/docs/reference/ci/merge-protection-surface.md`.
+The following legacy PR/CI assets are removed and must not be treated as active:
 
-| Disposition | Workflows |
-|---|---|
-| Required | `gate-quality.yml`, `gitleaks.yml` |
-| Advisory | `gate-pr-hygiene.yml`, `gate-diff-scope.yml`, `reviewer-response-completion.yml` |
-| Manual-only / rebuild later | `gate-intent-labeler.yml`, `ops-pr-issue-accounting.yml`, `gate-drift.yml`, `gate-branch-freshness.yml`, `docs-guardrails.yml`, `design-compliance-warn.yml`, `gate-post-merge-readiness.yml` |
-| Post-merge metrics | `ops-pr-process-metrics.yml` |
-| Post-merge closeout owner | `post-merge-closeout.yml` |
+- `ci-orchestration-engine.yml`
+- `gate-reviewer-response.yml`
+- `gate-close-work-issue.yml`
+- `post-merge-intent-verification.yml`
+- parked legacy `ci.yml`
+- parked legacy `deploy.yml`
+- parked legacy `deploy-dev.yml`
+- parked legacy `deploy-prod.yml`
+- parked legacy `lgfc-validate.yml`
+- parked legacy `test.yml`
+- parked legacy `test-homepage.yml`
 
-## Intended final state
+The fixed #1075 state file and scripts are also removed. No workflow may recreate `lgfc-ci-phase:*` issues.
 
-Every CI workflow that participates in the PR lifecycle has one explicit role:
+## Non-PR operations
 
-- pre-merge required gate;
-- pre-merge advisory check;
-- post-merge closeout gate;
-- post-merge PR lifecycle monitor;
-- scheduled/manual operation outside PR workflow;
-- deprecated/legacy PR workflow.
+Production deployment, Cloudflare, D1/B2, site audits, snapshots, and other scheduled operational workflows are outside this PR inventory unless they directly participate in PR readiness or source-issue closeout.
 
-Legacy PR CI must either be adopted into the current CI design or decommissioned. Routine PR hygiene failures should be caught before merge only by deterministic, low-noise checks.
+## Promotion rule
 
----
-
-## Classification legend
-
-| Class | Meaning | Failure handling |
-|---|---|---|
-| Pre-merge required gate | Required PR lifecycle check that must pass before merge authorization | Block merge only after deterministic validation and branch-protection alignment |
-| Pre-merge advisory check | PR workflow check that comments, reports, or emits artifacts but does not block during rollout | Do not block merge unless reclassified |
-| Post-merge closeout gate | Runs after merge to reconcile source issue, closeout evidence, and merged-state validation | Create/update post-merge exception only for failures that could not be deterministically blocked before merge |
-| Post-merge PR lifecycle monitor | Post-merge support, remediation, self-healing, or evidence publication | Create/update existing Ops issue or evidence only |
-| Scheduled/manual operation | Not part of normal PR workflow | No PR merge effect |
-| Deprecated/legacy PR workflow | Old workflow retained temporarily, parked, duplicated, or superseded | Decommission unless explicitly adopted |
-
----
-
-## Current transition PR workflow CI
-
-| Workflow file | Visible check / workflow | PR phase | Classification | Current transition status | Notes |
-|---|---|---:|---|---|---|
-| `.github/workflows/gate-quality.yml` | `GATE — Quality Checks` / `quality` | Pre-merge | Pre-merge required gate | Active class-aware deterministic routing | Owns structure/ZIP/typecheck/lint/tests/build routing by PR class. |
-| `.github/workflows/gitleaks.yml` | `GATE — Secret Scan` / `gitleaks` | Pre-merge | Pre-merge required gate | Active deterministic safety | Owns secret exposure detection. |
-| `.github/workflows/gate-pr-hygiene.yml` | `GATE — PR Hygiene` / `pr-hygiene` | Pre-merge | Pre-merge advisory check | Active advisory | Stable PR-body validation with artifact + upsert comment. |
-| `.github/workflows/gate-diff-scope.yml` | `GATE — Diff Scope` / `diff-scope` | Pre-merge | Pre-merge advisory check | Active advisory | Allowed-path diff validation with artifact + upsert comment. |
-| `.github/workflows/reviewer-response-completion.yml` | `GATE — Reviewer Response Completion` / `reviewer-response-completion` | Pre-merge | Pre-merge advisory check | Active advisory | GitHub-native reviewer lifecycle with artifact + upsert comment. |
-| `.github/workflows/ops-pr-issue-accounting.yml` | `GATE — PR Issue Accounting` / `pr-issue-accounting` | Pre-merge | Manual-only | Manual-only | Must not be required while manual-only. |
-| `.github/workflows/docs-guardrails.yml` | `Docs Guardrails` | Pre-merge | Manual-only | Manual-only | Rebuild as advisory in follow-up issue if needed. |
-| `.github/workflows/design-compliance-warn.yml` | `Design Compliance (Warn)` | Pre-merge | Manual-only | Manual-only | Rebuild as advisory in follow-up issue if needed. |
-| `.github/workflows/gate-branch-freshness.yml` | `GATE — Branch Freshness` | Pre-merge | Manual-only | Manual-only | Rebuild as advisory in follow-up issue if needed. |
-| `.github/workflows/gate-intent-labeler.yml` | `GATE — Intent Labeler` | Pre-merge | Manual-only | Manual-only | Avoid label mutation loops. |
-| `.github/workflows/gate-drift.yml` | `GATE — Drift Control` | Pre-merge | Manual-only | Manual-only | Rebuild as advisory in follow-up issue if needed. |
-| `.github/workflows/gate-post-merge-readiness.yml` | `GATE — Post-Merge Readiness` / `post-merge-readiness` | Pre-merge (retired) | Manual-only backfill | Manual-only | Retired auto-trigger; superseded by stable-facts + advisory gates. |
-| `.github/workflows/ops-pr-process-metrics.yml` | `OPS — PR Process Metrics` | Post-merge | Post-merge PR lifecycle monitor | Active metrics collection | Records first-pass/second-pass PR-process metrics on merge. |
-| `.github/workflows/design-authority-check.yml` | `Design Authority Check` | Pre-merge | Pre-merge advisory/check hybrid | Active where wired | Not a post-merge closeout owner. |
-| `.github/workflows/diataxis-folder-authority-check.yml` | `DIATAXIS Folder Authority Check` | Pre-merge | Pre-merge advisory/check hybrid | Active where wired | Supports DIATAXIS folder authority. |
-| `.github/workflows/cursor-review.yml` | `Cursor PR Review` | Pre-merge | Reviewer/advisory support | Active where wired | Should not be treated as merge approval. |
-
----
-
-## Post-merge PR workflow CI
-
-| Workflow file | Visible check / workflow | PR phase | Classification | Current design status | Notes |
-|---|---|---:|---|---|---|
-| `.github/workflows/post-merge-closeout.yml` | `Post-Merge Detection` | Post-merge | Post-merge closeout gate | Official post-merge owner candidate | Should remain single-owner and idempotent. |
-| `.github/workflows/post-merge-pr-body-closeout.yml` | `Post-Merge PR Body Closeout` | Post-merge/manual | Post-merge PR lifecycle monitor | Manual/backfill only | Not normal PR merge gating. |
-| `.github/workflows/post-merge-remediation.yml` | `Post-Merge Remediation` | Post-merge | Post-merge PR lifecycle monitor | Current support | Must not become pre-merge required check. |
-| `.github/workflows/ops-post-merge-self-healing.yml` | `OPS — Post-Merge Self-Healing` | Post-merge/scheduled | Post-merge PR lifecycle monitor | Current support | Should reduce backlog, not create new child escalation loops. |
-| `.github/workflows/diataxis-post-merge-validate.yml` | `DIATAXIS Post-Merge Validation` | Post-merge | Post-merge PR lifecycle monitor | Current docs validation support | Not a pre-merge gate unless separately adopted. |
-| `.github/workflows/post-merge-intent-verification.yml` | `Post-Merge Maintainer Body Apply` | Post-merge/targeted support | Legacy support | Redesign/decommission candidate | Keep only if still needed for legacy PR-body apply path. |
-
----
-
-## Legacy or pre-design PR CI assessment
-
-| Workflow file | Visible check / workflow | Legacy assessment | Required action |
-|---|---|---|---|
-| `.github/workflows/gate-close-work-issue.yml` | `gate-close-work-issue` | Parked no-op legacy workflow; no effective closeout ownership | Decommission when no historical reference or fallback need remains. Do not adopt into current design. |
-| `.github/workflows/gate-reviewer-response.yml` | `GATE — Reviewer Response` | Retired manual-only/stub reviewer workflow superseded by reviewer lifecycle redesign | Decommission if still present and not used by branch protection. Do not adopt. |
-| `.github/workflows/pr-triage-zip-taint.yml` | PR ZIP taint triage | Legacy/pre-design ZIP PR support overlapping with quality/ZIP checks | Decommission unless a current failing scenario proves unique coverage. |
-| `.github/workflows/ensure-ai-build-label.yml` | Ensure AI build label | Legacy/pre-design label workflow | Decommission unless explicitly adopted into PR intent/label model. |
-| `.github/workflows/bridge-optional-closeout.yml` | Optional closeout bridge | Legacy bridge/orchestration support, not normal PR gate | Keep out of PR workflow unless a current design doc adopts it. |
-| `.github/workflows/update-docs.md` | Markdown file under workflows folder | Non-workflow documentation artifact in workflow directory | Move or archive outside `.github/workflows/` if not intentionally executable workflow documentation. |
-| `.github/workflows/update-docs.lock.yml` | Update docs lock | Legacy/support workflow | Assess separately; not PR workflow unless it has PR triggers. |
-
----
-
-## Non-PR workflow classes explicitly out of this inventory
-
-The following workflow families are outside this PR-workflow inventory unless a future issue explicitly brings them into PR lifecycle scope:
-
-- production deployment and Cloudflare workflows;
-- B2/D1 sync and migration workflows;
-- scheduled production audits and site assessment;
-- AI execution bridge smoke/support workflows;
-- PMO dashboard deploy workflows;
-- orchestration issue-factory, queue, draft-PR, and agent-trigger workflows;
-- snapshots and manual recovery operations.
-
-These may still be valid repository CI, but they do not own PR readiness or post-merge source-issue closeout.
+A check may become required only after deterministic implementation, advisory observation, branch-protection alignment, and current-state documentation updates.
