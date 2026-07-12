@@ -2,166 +2,92 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: LGFC post-merge validation surface, evidence reporting model, remediation and orchestration pause behavior, source-issue closeout behavior
-Does Not Own: Pre-merge merge protection gates, OPS runtime monitoring behavior, website product behavior
-Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related Issues: #1197, #1249, #1075, #1058, #1548, #1963, #2308, #2376, #2380, #2418
-Last Reviewed: 2026-07-08
+Owns: Current post-merge validation, source-issue closeout, evidence, and remediation surface
+Does Not Own: Pre-merge required checks, branch protection settings, or production runtime monitoring
+Canonical Reference: /docs/governance/PR_PROCESS.md
+Related Issues: #1197, #1500, #2175, #2208, #2380, #2469
+Last Reviewed: 2026-07-12
 ---
 
 # LGFC Post-Merge Validation Surface
 
-## Purpose
+## Current ownership
 
-This reference documents Task 004 post-merge validation expansion and the
-source-issue closeout behavior added after Task 003. Post-merge validation
-inspects merged code and PR governance evidence after landings on `main`.
-Failures create remediation output and pause orchestration advancement. Program
-#1500 Task 001 adds a pre-merge readiness gate that reuses validator exports to
-catch closeout metadata failures before merge.
+Automatic post-merge source-issue validation and reconciliation has one owner:
 
-## Trusted-Code Execution Model
+- `.github/workflows/post-merge-closeout.yml`
 
-`gate-post-merge-readiness.yml` runs on `pull_request_target` with base-repository
-token context. Gate enforcement scripts are checked out from the trusted
-base/default ref. PR body, changed files, issue comments, review comments, and
-reviews are fetched through the GitHub API and passed to the gate runner.
-Mutable PR-head gate code must not execute as trusted enforcement logic.
+It runs for merged pull requests targeting `main`, invokes `scripts/ci/run_post_merge_closeout.mjs`, writes evidence artifacts, comments the result, and fails when current validation reports a blocking exception.
 
-## Workflows
+## Current workflows
 
-| Workflow file | Display name | Role |
-|---|---|---|
-| `gate-post-merge-readiness.yml` | GATE — Post-Merge Readiness | Pre-merge blocker for PR body metadata, allowlist evidence, placeholders, and reviewer dispositions that would fail closeout |
-| `post-merge-closeout.yml` | Post-Merge Detection | Sole automatic post-merge source-issue closeout owner per merge: body apply when configured, validate, one orchestrator sync, PR comment, reviewer audit on failure |
-| `post-merge-pr-body-closeout.yml` | Post-Merge PR Body Closeout | Manual single-PR closeout, batch manifests, and push-triggered backfill only (no automatic merge trigger). Push paths include `targets-active.json` and active manifest files; completed wave manifests replay only via explicit `workflow_dispatch`. Matrix mode shards active manifests, aggregates shard reports, persists rate-limit rerun queue (`targets-ci-pending-rerun.json`), treats resumable rate-limit `partial_failure` as workflow success, and emits backlog metrics (`emit_closeout_backlog_metrics.mjs`) with `summary.by_code` failure taxonomy on batch reports. |
-| `post-merge-intent-verification.yml` | Post-Merge Maintainer Body Apply | Targeted PR synchronize and workflow-dispatch maintainer PR body apply path for legacy open PRs |
-| `post-merge-remediation.yml` | Post-Merge Remediation | Opens remediation issues only when Post-Merge Detection fails |
-| `gate-close-work-issue.yml` | gate-close-work-issue | Parked no-op legacy issue closer; performs no issue mutation and is not an effective closeout owner |
-| `diataxis-post-merge-validate.yml` | DIATAXIS Post-Merge Validation | Uploads DIATAXIS evidence for merged documentation changes |
-| `ops-design-compliance-audit.yml` | OPS — Design Compliance Audit | OPS observability only; not post-merge validation authority |
+| Workflow | Role |
+| --- | --- |
+| `post-merge-closeout.yml` | Single automatic validation and source-issue closeout owner |
+| `post-merge-pr-body-closeout.yml` | Manual/backfill and active-manifest closeout only |
+| `post-merge-remediation.yml` | Failure remediation support after Post-Merge Detection fails |
+| `diataxis-post-merge-validate.yml` | Documentation evidence support |
+| `ops-post-merge-self-healing.yml` | Scheduled/manual exception backlog hygiene |
+| `post-merge-intent-verification.yml` | Inert manual compatibility marker; no validation or mutation |
 
-## Effective Closeout Ownership
+#2469 removes the parked `gate-close-work-issue.yml` workflow and the previous hardcoded implementation of `post-merge-intent-verification.yml`.
 
-Automatic source-issue closeout has a single effective owner:
-`.github/workflows/post-merge-closeout.yml`.
+## Validation boundary
 
-The parked `gate-close-work-issue.yml` workflow exists only as a legacy no-op
-placeholder for traceability. It must not be treated as a competing closeout path
-in docs, queue logic, or status reporting.
+Post-merge validation may inspect:
 
-Pre-merge PR-to-issue accounting remains separate and is owned by
-`.github/workflows/ops-pr-issue-accounting.yml`.
+- merged PR and merge SHA;
+- accepted source issue linkage;
+- changed-file and implementation evidence;
+- required workflow outcomes on applicable merge/head scope;
+- current reviewer findings and thread state;
+- documentation evidence;
+- remediation requirements.
 
-## Evidence Domains
+The validator must follow current `/docs/governance/PR_PROCESS.md` policy. Historical PR-body reviewer ledgers are not current authority.
 
-Post-Merge Detection reports evidence from after merge; the pre-merge gate checks the overlapping PR-body and reviewer-disposition subset before merge:
+## Source-issue closeout
 
-- PR metadata completeness and source issue linkage
-- merged implementation evidence against declared allowlist and acceptance criteria
-- merged DIATAXIS documentation alignment
-- late trusted reviewer findings
-- required merge-protection workflow outcomes on merge/head SHAs, including failed pre-merge checks still attached to the PR head at merge time
+When validation passes and no blocking remediation remains, the closeout runner may:
 
-### Reviewer-disposition failures (blocking)
+1. resolve the accepted source issue;
+2. reconcile stale lifecycle labels;
+3. add `status:complete` when available;
+4. record PR, merge SHA, validator result, and closeout reason;
+5. close an eligible open source issue;
+6. verify terminal label integrity.
 
-Missing or incomplete PR-body reviewer dispositions are blocking post-merge
-validation failures. When trusted reviewer comments or outdated review threads
-lack explicit `review-comment:<id>` lines in the merged PR body, Post-Merge
-Detection records `reviewer_disposition_failures`, validation status is `fail`,
-and source-issue terminal closeout is refused until the merged PR body is
-corrected and closeout reruns successfully. This gate applies even when merged
-implementation evidence, DIATAXIS checks, and required workflow outcomes pass.
+Program, umbrella, parent, roadmap, queue, and tracking boundaries remain governed by current issue/PR policy and explicit closeout decisions.
 
-## Orchestration Behavior
+## Failure and remediation
 
-- Validation `pass` allows orchestrator post-merge success sync.
-- Validation `fail` blocks queue advancement and triggers remediation issue creation or update. A merged PR with failed required pre-merge gates is a post-merge Ops exception: the remediation issue records the merged PR, merge SHA, failed workflow run, failed job/step details when the Actions API exposes them, whether future PR/queue advancement is blocked, linked remediation issue evidence when known, and the requested ChatGPT/Bill owner action.
-- Optional non-blocking workflow failures may still be recorded without failing validation.
+When current validation fails:
 
-## Merged PR with failed required pre-merge check (#2376)
+- terminal source-issue closeout is refused;
+- the source issue may be reconciled to a failure state;
+- `post-merge-remediation.yml` may create or update bounded exception evidence;
+- queue advancement may halt when the failure affects authorized work;
+- legitimate exception issues remain available for incremental housekeeping.
 
-### Problem statement
+Retirement of #1075 prevents obsolete CI phase issues from creating false orchestration pauses. It does not suppress legitimate current validation, security, or production failures.
 
-Bill or ChatGPT may authorize merge while a required pre-merge check on the PR head remains failed. Merge does not clear that failure. Before PR #2380, Post-Merge Detection could miss failed checks still attached to the PR head, leaving no automatic Ops issue and creating a visibility gap (observed on PR #2373 during Phase 0 launch).
-
-### Current expected behavior
-
-Post-#2380, Post-Merge Detection inspects required workflow outcomes on both merge SHA and PR head scope. When a merged PR still carries failed required pre-merge checks:
-
-1. post-merge validation status is `fail`;
-2. source-issue terminal closeout is refused until validation passes or Bill/ChatGPT records an accepted exception with authority;
-3. queue advancement halts;
-4. Post-Merge Remediation creates or updates a canonical remediation issue with PR, merge SHA, failed gate, run/job/step evidence, blocking status, linked root-cause issue when known, and requested owner/action;
-5. duplicate remediation issues are avoided by matching the canonical remediation group.
-
-Implementation reference: PR #2380. This reference documents behavior; it does not redefine workflow code.
-
-### Operator procedure
-
-When merge occurs with a known failed required pre-merge check, operators must verify automatic remediation surfaced the failure and use the manual fallback if it did not.
-
-Operator how-to (required reading): `docs/how-to/ci/merged-pr-failed-pre-gate-followup.md`.
-
-### Separate concerns
-
-| Track | Example | Owns |
-| --- | --- | --- |
-| Process visibility / automation gap | #2376 | Whether post-merge automation surfaces failed pre-gates |
-| Root-cause gate failure | #2374 | ZIP history artifact remediation |
-| Launch continuation | #2359 | Bill/ChatGPT program authorization |
-
-Do not merge these concerns into one undifferentiated issue.
-
-## Source Issue Closeout
-
-After a merged implementation PR passes post-merge validation with no blocking remediation:
-
-1. Resolve the linked source issue from accepted accounting formats (`- **Issue:** #NNNN`, orchestrator marker, or existing URL forms).
-2. Skip closeout when the linked issue is a remediation issue (`post-merge-failure` label or remediation title prefix).
-3. Remove stale active-state labels: `status:blocked`, `status:queued`, `status:assigned`, `status:failed`, `status:post-merge-verify`, `status:changes-requested`, `status:in-progress`, and other labels in `STALE_SOURCE_ISSUE_LABELS` (see `docs/reference/ci/post-merge-failure-label-transition.md`).
-4. Add a closeout evidence comment containing PR number, merge SHA, validator status, verification result, and closeout reason.
-5. Validate closeout evidence integrity: recorded merge SHA must equal the merged PR `merge_commit_sha` and must not belong to another PR.
-6. Apply `status:complete`, remove stale workflow labels, close the source issue when still open, then re-fetch the issue and assert terminal label integrity (`status:complete` present; stale/intermediate labels absent). Retry deterministic label cleanup once before failing validation.
-7. When the source issue is already closed completed and validation passed, perform idempotent label normalization without failing on `source_issue_not_open` (see `docs/reference/ci/post-merge-failure-label-transition.md`).
-
-Umbrella, master, program, parent, queue, roadmap, and tracking issue boundaries
-are PR-body and operator-governance policy unless and until runtime closeout logic
-implements an explicit classification check. Do not document that automation
-skips those issue types as an as-built guarantee.
-
-Closeout does not run when validation status is `fail`, remediation remains required, required workflow failures exist, the source issue cannot be confidently identified, or the PR did not merge into `main`.
-
-## Remediation Preservation
-
-Duplicate remediation issue cleanup remains unchanged. Canonical remediation issues stay open; duplicate remediation issues close. Failed validation continues to open or update remediation issues through `post_merge_remediation_issue.mjs`; duplicate creation is avoided by matching the canonical remediation group for the same PR/source/failure condition before creating a new issue.
-
-`Post-Merge Remediation` runs self-healing (backlog scan + detect + apply) before opening or updating exception issues. When self-healing cannot auto-close an exception, it comments on the same issue and adds the `ops-pr-escalation` label instead of opening child escalation issues. See `docs/explanation/ci/post-merge-self-healing-architecture.md`.
-
-## Core Scripts
+## Core scripts
 
 | Script | Role |
-|---|---|
-| `scripts/ci/post_merge_validator.mjs` | Aggregates post-merge evidence, exports shared readiness contract checks, and writes result artifacts |
-| `scripts/ci/post_merge_readiness_gate.mjs` | Runs the pre-merge post-merge-readiness gate against PR metadata collected via the GitHub API; workflow executes trusted base-ref gate code only |
-| `scripts/ci/post_merge_implementation_evidence.mjs` | Allowlist, acceptance, and verification evidence checks |
-| `scripts/ci/post_merge_diataxis_audit.mjs` | DIATAXIS post-merge audit helpers |
-| `scripts/ci/post_merge_remediation_issue.mjs` | Remediation issue generation on validation failure |
-| `scripts/ci/post_merge_reviewer_audit.mjs` | Late reviewer follow-up issue generation |
-| `scripts/ci/post_merge_source_issue_closeout.mjs` | Closeout decision helpers and evidence comment format |
-| `scripts/ci/post_merge_validation_surface.mjs` | Surface inventory validator |
-| `scripts/ci/close_duplicate_remediation_issues.mjs` | Closes duplicate remediation issues only |
-| `scripts/ci/post_merge_self_heal_backlog.mjs` | Backlog scan, safe-close, and `ops-pr-escalation` handoff for open exception issues |
-| `scripts/ci/run_post_merge_closeout_all_manifests.mjs` | Loads active manifest registry (`targets-active.json`), runs batch closeout across active manifests, aggregates matrix shard reports, merges `summary.by_code`, and resolves resumable `partial_failure` exit codes |
-| `scripts/ci/emit_closeout_backlog_metrics.mjs` | Fetches authoritative `ops-pr-escalation` open/closed counts via GraphQL and writes workflow step summary including batch `summary.by_code` rollup |
-| `scripts/ci/resolve_closeout_manifests_from_push.mjs` | Maps push path changes to path-scoped manifest replay list |
-| `scripts/ci/append_closeout_rerun_targets.mjs` | Appends rate-limited targets to `targets-ci-pending-rerun.json` |
-| `scripts/ci/prune_closeout_manifest.mjs` | Per-target manifest prune on batch `partial_failure` (pass-only removal) |
-| `scripts/orchestrator/sync-pr-state.mjs` | Applies orchestrator labels and source-issue closeout |
+| --- | --- |
+| `scripts/ci/run_post_merge_closeout.mjs` | Single automatic closeout runner |
+| `scripts/ci/post_merge_validator.mjs` | Evidence aggregation and result contract |
+| `scripts/ci/post_merge_remediation_issue.mjs` | Bounded remediation issue handling |
+| `scripts/ci/post_merge_source_issue_closeout.mjs` | Source-issue closeout decisions and label reconciliation |
+| `scripts/orchestrator/sync-pr-state.mjs` | Shared issue lifecycle synchronization used by the closeout runner |
+| `scripts/ci/post_merge_validation_surface.mjs` | Current workflow/script surface validator |
 
-## Rollback
+## Verification
 
-Revert `gate-post-merge-readiness.yml`, `post_merge_readiness_gate.mjs`, shared
-validator export wiring, and this reference documentation for Task 001 rollback.
-Revert later post-merge validation and remediation workflow/script changes only
-when those later tasks are in scope.
+Run:
+
+```bash
+node scripts/ci/post_merge_validation_surface.mjs
+```
+
+The validator must confirm the active automatic owner and its required supporting scripts without requiring retired #1075 workflows.
