@@ -58,6 +58,7 @@ Supporting post-merge and operational workflows must not independently claim the
 | `post-merge-remediation.yml` | Failure remediation support |
 | `ops-post-merge-self-healing.yml` | Scheduled/manual exception backlog hygiene |
 | `ops-pr-process-metrics.yml` | PR-process metrics |
+| `post-merge-intent-verification.yml` | Inert manual compatibility marker; no automatic trigger or mutation permissions |
 
 ## Removed legacy workflows
 
@@ -66,10 +67,11 @@ Supporting post-merge and operational workflows must not independently claim the
 - `ci-orchestration-engine.yml`
 - `gate-reviewer-response.yml`
 - `gate-close-work-issue.yml`
-- `post-merge-intent-verification.yml`
 - parked legacy `ci.yml`, `deploy*.yml`, `lgfc-validate.yml`, `test.yml`, and `test-homepage.yml`
 
-These names must not appear in branch protection, current queue decisions, or active CI reports.
+The old hardcoded logic from `post-merge-intent-verification.yml` is removed. Only a zero-effect manual marker remains for compatibility-test continuity.
+
+Retired names must not appear in branch protection, current queue decisions, or active CI reports.
 
 ## Exception handling boundary
 
