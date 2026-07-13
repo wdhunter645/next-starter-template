@@ -30,7 +30,7 @@ Record the authority disposition for every canonical document touched by issue #
 | Current path | Current owner | Target owner | Action | Replacement / notes | Reference-update scope |
 | --- | --- | --- | --- | --- | --- |
 | `docs/governance/REPOSITORY-AUTHORITY.md` | — | Constitution (Layer 0) | retain (new) | This file is the new constitution | `Agent.md`, architecture docs, inventory map |
-| `docs/governance/standards/document-authority-hierarchy_MASTER.md` | Governance | Documentation and Knowledge | consolidate | Precedence detail moves under `REPOSITORY-AUTHORITY.md`; file becomes pointer or archive in later pass | Self, `DOCUMENT-ARCHITECTURE.md` |
+| `docs/governance/standards/document-authority-hierarchy_MASTER.md` | Governance | Documentation and Knowledge | supersede | Competing canonical precedence removed; file is a superseded pointer to `REPOSITORY-AUTHORITY.md` until archived | Self, `DOCUMENT-ARCHITECTURE.md` |
 | `docs/governance/DOCUMENT-ARCHITECTURE.md` | Governance | Documentation and Knowledge | retain | Reconcile `docs/ops/ai/` binding-policy claim with DIATAXIS ops prohibition | All paths citing ops/ai as binding policy owner |
 | `docs/governance/standards/DIATAXIS-FOLDER-AUTHORITY.md` | Documentation and Knowledge | Documentation and Knowledge | retain | Align ops prohibition with agent routing table in constitution | `DOCUMENT-ARCHITECTURE.md`, resolution doc |
 | `docs/governance/standards/DIATAXIS-AUTHORITY-RESOLUTION.md` | Documentation and Knowledge | Documentation and Knowledge | retain | Add constitution precedence above resolution rules | Inventory map, architecture |
@@ -55,6 +55,7 @@ Until Task 4 migration completes, legacy `docs/ops/ai/` binding files remain **i
 
 | Domain | Target policy path | Introduced by |
 | --- | --- | --- |
+| Product and Design | `docs/governance/PRODUCT-AND-DESIGN.md` | Later delivery-system child |
 | PMO and Portfolio | `docs/governance/PMO-PORTFOLIO.md` | Task 3 |
 | Delivery and Release | `docs/governance/DELIVERY-AND-RELEASE.md` | Task 5 |
 | Agent Team | `docs/governance/AGENT-TEAM.md` | Task 4 |
@@ -66,6 +67,8 @@ Until Task 4 migration completes, legacy `docs/ops/ai/` binding files remain **i
 
 - [x] Every touched allowlist row has target owner and action recorded
 - [x] Agent-policy conflict documented with interim authority noted
+- [x] Every required domain names exactly one canonical policy file in `REPOSITORY-AUTHORITY.md`
+- [x] `document-authority-hierarchy_MASTER.md` no longer carries competing canonical precedence
 - [x] No duplicate active authority introduced in touched set
 - [x] Direct references updated within touched documents
 - [x] Header checks pass on modified files (local run)

@@ -57,20 +57,29 @@ A normal PR that touches a legacy document must complete disposition (migrate, c
 
 ## Domain ownership
 
-Each domain has exactly one canonical policy owner. Shared contracts link domains; they do not duplicate domain policy.
+Each domain has exactly one canonical policy file. Shared contracts and supporting documents may link to that owner; they are not co-owners.
 
-| Domain | Canonical policy owner (target) | Owns |
+| Domain | Canonical policy owner | Owns |
 | --- | --- | --- |
-| Product and Design | `docs/reference/design/` (product authority) + governance design-compliance policy when present | Product behavior, UX, functional requirements |
+| Product and Design | `docs/governance/PRODUCT-AND-DESIGN.md` (target; see disposition map) | Product behavior, UX, functional requirements |
 | PMO and Portfolio | `docs/governance/PMO-PORTFOLIO.md` (target; see disposition map) | Work inventory, size, priority, launch authorization |
 | Delivery and Release | `docs/governance/DELIVERY-AND-RELEASE.md` (target; see disposition map) | Model A, Model B, promotion, approval, rollback policy |
 | Agent Team | `docs/governance/AGENT-TEAM.md` (target; see disposition map) | Chat, Cursor, Bill roles and binding agent policy |
 | CI and Verification | `docs/governance/CI-AND-VERIFICATION.md` (target; see disposition map) | Gate profiles, evidence, promotion criteria |
 | Operations and Recovery | `docs/governance/OPERATIONS-AND-RECOVERY.md` (target; see disposition map) | Upkeep, degradation, incidents, emergency recovery |
-| Documentation and Knowledge | `docs/governance/standards/DIATAXIS-FOLDER-AUTHORITY.md` + related governance | DIATAXIS routing, migration ratchet, archive rules |
+| Documentation and Knowledge | `docs/governance/standards/DIATAXIS-FOLDER-AUTHORITY.md` | DIATAXIS routing, migration ratchet, archive rules |
 | Platform and Environment | `docs/governance/PLATFORM-AND-ENVIRONMENT.md` (target; see disposition map) | Cloudflare, D1, B2, preview/production boundaries |
 
-Target domain policy filenames are introduced through the delivery-system program; until merged, the disposition map records interim owners.
+Target domain policy filenames are introduced through the delivery-system program. Until a target file lands, the disposition map records interim supporting material only — not alternate policy owners.
+
+### Supporting references (non-authoritative)
+
+These documents inform domains but do not share canonical policy ownership:
+
+| Domain | Supporting references |
+| --- | --- |
+| Product and Design | `docs/reference/design/LGFC-Production-Design-and-Standards.md`; page specs under `docs/reference/design/**` |
+| Documentation and Knowledge | `docs/governance/standards/DIATAXIS-AUTHORITY-RESOLUTION.md`; `docs/governance/DOCUMENT-ARCHITECTURE.md` |
 
 ## Agent material routing (binding)
 
