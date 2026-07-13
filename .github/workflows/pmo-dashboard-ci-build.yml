@@ -19,8 +19,31 @@ env:
   PMO_DASHBOARD_OUT_DIR: site/pmo-dashboard
 
 jobs:
+  branch-validation:
+    name: Validate PMO dashboard branch changes
+    if: ${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run deterministic dashboard fixture
+        run: node scripts/pmo-dashboard/test-label-driven-fixture.mjs
+
+      - name: Write branch validation summary
+        run: |
+          echo "## PMO dashboard branch validation" >> "$GITHUB_STEP_SUMMARY"
+          echo "Deterministic fixture generation and validation passed." >> "$GITHUB_STEP_SUMMARY"
+          echo "Live issue inventory validation remains reserved for main, scheduled, and manual operational runs." >> "$GITHUB_STEP_SUMMARY"
+
   build:
     name: Build PMO dashboard
+    if: ${{ github.event_name != 'push' || github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -50,4 +73,4 @@ jobs:
       - name: Write build summary
         run: |
           echo "## PMO dashboard CI build" >> "$GITHUB_STEP_SUMMARY"
-          echo "Validated generated output at \`$PMO_DASHBOARD_OUT_DIR/\`." >> "$GITHUB_STEP_SUMMARY"
+          echo "Validated live GitHub issue inventory output at \`$PMO_DASHBOARD_OUT_DIR/\`." >> "$GITHUB_STEP_SUMMARY"
