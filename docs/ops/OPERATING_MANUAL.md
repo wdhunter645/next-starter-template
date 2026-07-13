@@ -1,14 +1,30 @@
 ---
 Doc Type: Operations
 Audience: Human + AI
-Authority Level: Operational Authority
-Owns: Live operating procedures, incident response, monitoring, operator workflows
-Does Not Own: Redefining design/architecture/platform specs; historical records
-Canonical Reference: /docs/ops/OPERATING_MANUAL.md
-Last Reviewed: 2026-02-20
+Authority Level: Superseded
+Owns: Historical operator procedures only — delivery, rollback, and emergency policy moved to governance
+Does Not Own: Delivery-model selection, production approval routing, degraded-service routing, or emergency recovery authority
+Canonical Reference: /docs/governance/OPERATIONS-AND-RECOVERY.md
+Related Issues: #2495
+Last Reviewed: 2026-07-13
 ---
 
 # LGFC Operating Manual
+
+## Status
+
+**Superseded for delivery, rollback, incident routing, and emergency recovery policy.** Canonical domain policy now lives in governance:
+
+| Topic | Canonical owner |
+| --- | --- |
+| Model A, Model B, promotion, and rollback policy | `docs/governance/DELIVERY-AND-RELEASE.md` |
+| Degraded-service routing and emergency recovery | `docs/governance/OPERATIONS-AND-RECOVERY.md` |
+| Rollback profiles and evidence schema | `docs/reference/delivery/delivery-and-rollback-profiles.md` |
+| Model A release procedure | `docs/how-to/delivery/run-model-a-release.md` |
+| Model B component release procedure | `docs/how-to/delivery/run-model-b-component-release.md` |
+| Emergency recovery procedure | `docs/how-to/ops/run-emergency-recovery.md` |
+
+The body below retains historical operator context until a later archive pass. Do not cite this file for delivery-model boundaries, production rollback policy, incident severity routing, or emergency response authority.
 
 ## Codespaces Shell Rule (Hard Prohibition)
 
