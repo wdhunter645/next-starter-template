@@ -1,0 +1,141 @@
+{
+  "version": 1,
+  "lastAudited": "2026-07-13",
+  "auditIssue": 2496,
+  "canonicalReference": "docs/reference/platform/component-environment-isolation.md",
+  "classifications": [
+    "isolated",
+    "read-only",
+    "test-namespaced",
+    "disabled",
+    "production-shared"
+  ],
+  "safeDefaults": {
+    "MAILCHANNELS_ENABLED": "0",
+    "NEXT_PUBLIC_GA_ID": ""
+  },
+  "sideEffectGetRoutes": [
+    {
+      "route": "GET /api/matchup/current",
+      "handler": "functions/api/matchup/current.ts",
+      "effect": "Closes stale matchups and upserts weekly_matchups on page load"
+    }
+  ],
+  "resources": [
+    {
+      "id": "cf-pages-project",
+      "name": "Cloudflare Pages project",
+      "category": "pages",
+      "classification": "production-shared",
+      "evidence": ["docs/reference/platform/CLOUDFLARE.md", "wrangler.toml"],
+      "blockingRule": "Same project and bindings for preview and production URLs; Model B auto-integration blocked until runtime isolation is proven.",
+      "protected": true
+    },
+    {
+      "id": "d1-lgfc-lite",
+      "name": "D1 database lgfc_lite",
+      "category": "d1",
+      "classification": "production-shared",
+      "evidence": ["wrangler.toml", "functions/_lib/d1.ts"],
+      "databaseId": "22d0dc3e-ad34-43af-8e6a-2063df1a1e04",
+      "blockingRule": "Preview and component deployments bind the same database_id; all API writes hit production D1 until a separate preview database is provisioned.",
+      "protected": true
+    },
+    {
+      "id": "api-rate-limiter",
+      "name": "Cloudflare rate limiter API_RATE_LIMITER",
+      "category": "pages",
+      "classification": "production-shared",
+      "evidence": ["wrangler.toml"],
+      "blockingRule": "Shared namespace_id across environments; changes require protected-change-review.",
+      "protected": true
+    },
+    {
+      "id": "b2-runtime-list",
+      "name": "Backblaze B2 object list (runtime)",
+      "category": "b2",
+      "classification": "read-only",
+      "evidence": ["functions/_lib/b2.ts", "docs/reference/platform/Backblaze_B2.md"],
+      "blockingRule": "Pages Functions perform ListObjectsV2 only; no PutObject or DeleteObject in runtime code."
+    },
+    {
+      "id": "b2-sync-from-b2",
+      "name": "Admin B2 to D1 sync",
+      "category": "b2",
+      "classification": "production-shared",
+      "evidence": ["functions/api/admin/media-assets/sync-from-b2.ts", "docs/ops/tasks/MEDIA-01.md"],
+      "blockingRule": "INSERT OR IGNORE into media_assets on production D1 when ADMIN_TOKEN and B2 secrets are present on preview.",
+      "protected": true
+    },
+    {
+      "id": "mailchannels-email",
+      "name": "MailChannels outbound email",
+      "category": "email",
+      "classification": "disabled",
+      "classificationWhenEnabled": "production-shared",
+      "evidence": ["functions/_lib/email.ts", ".env.example"],
+      "blockingRule": "MAILCHANNELS_ENABLED must remain 0 on preview and component builds; enabling sends real email to production addresses.",
+      "protected": true
+    },
+    {
+      "id": "google-analytics",
+      "name": "Google Analytics 4",
+      "category": "analytics",
+      "classification": "disabled",
+      "classificationWhenEnabled": "production-shared",
+      "evidence": ["src/components/GoogleAnalytics.tsx", ".env.example"],
+      "blockingRule": "NEXT_PUBLIC_GA_ID must remain unset on preview and component builds to avoid polluting production analytics."
+    },
+    {
+      "id": "ai-review",
+      "name": "AI review access surface",
+      "category": "api",
+      "classification": "read-only",
+      "evidence": ["src/lib/aiReviewAccess.ts", "functions/api/_ai-review/page-snapshot.ts", "docs/ops/ai/AI-REVIEW-ACCESS.md"],
+      "blockingRule": "Mutation methods return 405; enabled only when AI_REVIEW_ENABLED=1 with token."
+    },
+    {
+      "id": "admin-token-gate",
+      "name": "Admin API token gate",
+      "category": "admin",
+      "classification": "disabled",
+      "classificationWhenTokenSet": "production-shared",
+      "evidence": ["functions/_lib/auth.ts", ".env.example"],
+      "blockingRule": "Preview must not mirror production ADMIN_TOKEN; when set, all /api/admin/* routes mutate production D1.",
+      "protected": true
+    },
+    {
+      "id": "ci-d1-migrations",
+      "name": "CI D1 migrations on main",
+      "category": "ci",
+      "classification": "production-shared",
+      "evidence": [".github/workflows/d1-migrations.yml", ".github/workflows/lgfc-d1-migrate.yml"],
+      "blockingRule": "Remote wrangler d1 migrations apply targets production lgfc_lite; not preview-triggered."
+    },
+    {
+      "id": "ci-b2-d1-sync",
+      "name": "CI B2 to D1 daily sync",
+      "category": "ci",
+      "classification": "production-shared",
+      "evidence": [".github/workflows/b2-d1-daily-sync.yml", "scripts/b2_d1_incremental_sync.sh"],
+      "blockingRule": "Scheduled workflow writes production D1 from B2 inventory; not preview-accessible."
+    }
+  ],
+  "mutatingRoutes": [
+    { "method": "POST", "path": "/api/join", "handler": "functions/api/join.ts", "classification": "production-shared", "tables": ["join_requests", "join_email_log"] },
+    { "method": "POST", "path": "/api/ask", "handler": "functions/api/ask.ts", "classification": "production-shared", "tables": ["join_requests"] },
+    { "method": "POST", "path": "/api/login", "handler": "functions/api/login.ts", "classification": "production-shared", "tables": ["login_attempts", "member_sessions"] },
+    { "method": "POST", "path": "/api/logout", "handler": "functions/api/logout.ts", "classification": "production-shared", "tables": ["member_sessions"] },
+    { "method": "POST", "path": "/api/matchup/vote", "handler": "functions/api/matchup/vote.ts", "classification": "production-shared", "tables": ["weekly_votes"] },
+    { "method": "GET", "path": "/api/matchup/current", "handler": "functions/api/matchup/current.ts", "classification": "production-shared", "tables": ["weekly_matchups"], "sideEffect": true },
+    { "method": "POST", "path": "/api/faq/submit", "handler": "functions/api/faq/submit.ts", "classification": "production-shared", "tables": ["faq_entries"] },
+    { "method": "POST", "path": "/api/faq/view", "handler": "functions/api/faq/view.ts", "classification": "production-shared", "tables": ["faq_entries"] },
+    { "method": "POST", "path": "/api/reports/create", "handler": "functions/api/reports/create.ts", "classification": "production-shared", "tables": ["reports"] },
+    { "method": "POST", "path": "/api/reports/close", "handler": "functions/api/reports/close.ts", "classification": "production-shared", "tables": ["reports"], "requiresAdminToken": true },
+    { "method": "POST", "path": "/api/fanclub/profile", "handler": "functions/api/fanclub/profile.ts", "classification": "production-shared", "tables": ["members", "join_requests"] },
+    { "method": "POST", "path": "/api/library/submit", "handler": "functions/api/library/submit.ts", "classification": "production-shared", "tables": ["library_entries"] },
+    { "method": "POST", "path": "/api/library/content-pipeline/submit", "handler": "functions/api/library/content-pipeline/submit.ts", "classification": "production-shared", "tables": ["content_items", "member_submissions"] },
+    { "method": "POST", "path": "/api/discussions/create", "handler": "functions/api/discussions/create.ts", "classification": "production-shared", "tables": ["discussions"] },
+    { "method": "POST", "path": "/api/admin/**", "handler": "functions/api/admin/**", "classification": "production-shared", "requiresAdminToken": true }
+  ]
+}
