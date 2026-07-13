@@ -124,7 +124,7 @@ function pushExpectedError(errors, field, actual, expected) {
 
 function parseLineValue(body, label) {
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const pattern = new RegExp(`^\\s*(?:[-*]\\s*)?${escaped}:\\s*(.*?)\\s*$`, 'im');
+  const pattern = new RegExp(`^[^\\S\\r\\n]*(?:[-*][^\\S\\r\\n]*)?${escaped}:[^\\S\\r\\n]*([^\\r\\n]*)[\\r\\n]*$`, 'im');
   const match = String(body || '').match(pattern);
   return match ? match[1] : '';
 }
