@@ -10,12 +10,40 @@ Last Reviewed: 2026-06-20
 
 # CURSOR-RULES.md
 
-Purpose: Defines **Cursor-specific** execution behavior for local and cloud agent sessions.
+Purpose: Defines **Cursor-specific** execution behavior. LGFC implementation defaults to **local Cursor**; cloud is an explicit exception only.
 
 Cursor is the **sole LGFC implementation executor**. Canonical team roles and workflow: [`LGFC-AI-TEAM-OPERATING-MODEL.md`](./LGFC-AI-TEAM-OPERATING-MODEL.md).
 
+Binding runtime policy: [`docs/governance/standards/CURSOR-RUNTIME-ROUTING.md`](../../governance/standards/CURSOR-RUNTIME-ROUTING.md).
+
 Shared agent law: [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md).
 Detailed shared execution: [`CORE-RULES.md`](./CORE-RULES.md).
+
+---
+
+# RUNTIME ROUTING (MANDATORY)
+
+Every Cursor assignment must declare exactly one runtime in the source issue:
+
+```text
+Runtime: local | cloud | either
+```
+
+Rules:
+
+- **`local`** is the LGFC default.
+- **`cloud`** or **`either`** requires explicit Bill/Chat authorization recorded in the source issue.
+- **`@cursor`** is a Cursor Cloud invocation and is **prohibited** for local LGFC work.
+- Local routing uses `agent:cursor` + `handoff:ready` plus an explicit `LOCAL CURSOR RESUME` issue or PR comment.
+- Local Cursor resumes from GitHub-recorded authority, not chat memory.
+- Labels and comments are durable routing/context markers; they do not prove an agent process is running.
+
+Local procedures:
+
+- [`chatgpt-cursor-handoff-workflow.md`](./chatgpt-cursor-handoff-workflow.md)
+- [`docs/how-to/cursor/github-poll-wake-loop.md`](../../how-to/cursor/github-poll-wake-loop.md)
+
+Cloud Agent sessions may proceed only when the source issue explicitly authorizes `Runtime: cloud` or `Runtime: either` and includes cloud authorization from Bill or Chat.
 
 ---
 
@@ -62,6 +90,7 @@ Before editing files for a **newly authored** launch-control issue package, Curs
 1. Read the source issue and linked documentation package.
 2. Confirm the package includes all required fields per [`docs/templates/agent-assignment-template.md`](../../templates/agent-assignment-template.md):
    - source issue;
+   - runtime (`local` default; `cloud`/`either` only with issue authorization);
    - documentation package reference;
    - draft/reference code or pseudocode;
    - file allowlist;
@@ -107,7 +136,7 @@ Cursor MUST:
 
 Stop and wait for approval before execution when that workflow applies.
 
-Cloud Agent sessions that receive explicit "implement now" instructions from the repo workflow or source Issue may proceed when approval is already encoded in the Issue.
+Cloud Agent sessions that receive explicit "implement now" instructions from the repo workflow or source Issue may proceed when approval is already encoded in the Issue **and** the issue explicitly authorizes `Runtime: cloud` or `Runtime: either`.
 
 ---
 

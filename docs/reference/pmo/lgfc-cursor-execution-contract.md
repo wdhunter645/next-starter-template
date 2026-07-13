@@ -4,9 +4,9 @@ Audience: Human + AI
 Authority Level: Operational Authority
 Owns: Cursor execution permissions, continuation rules, PR handoff behavior, and issue-mutation boundaries for LGFC program tasks
 Does Not Own: Cursor product configuration, local developer environment, workflow implementation, GitHub merge authority, or GitHub issue mutation authority
-Canonical Reference: /docs/reference/pmo/lgfc-program-portfolio-model.md
-Related Issues: #1449, #1448, #1411, #1409, #1379, #1255, #1335, #1501
-Last Reviewed: 2026-06-09
+Canonical Reference: /docs/governance/standards/CURSOR-RUNTIME-ROUTING.md
+Related Issues: #1449, #1448, #1411, #1409, #1379, #1255, #1335, #1501, #2489
+Last Reviewed: 2026-07-13
 ---
 
 # LGFC Cursor Execution Contract
@@ -15,6 +15,10 @@ Last Reviewed: 2026-06-09
 
 Define what Cursor may do by default when implementing or documenting LGFC
 program tasks, and define where Cursor must stop for Atlas/Bill review.
+
+Runtime selection and local-versus-cloud invocation boundaries are owned by
+[`docs/governance/standards/CURSOR-RUNTIME-ROUTING.md`](../../governance/standards/CURSOR-RUNTIME-ROUTING.md).
+This contract does not authorize `@cursor` for local work.
 
 ## Scope
 
@@ -95,7 +99,7 @@ LGFC uses two execution modes defined in
 
 | Mode | When | Next-task authority |
 | --- | --- | --- |
-| One-task handoff | One-off tasks; programs without an approved dependency map | Explicit `@cursor` comment or new source issue per task |
+| One-task handoff | One-off tasks; programs without an approved dependency map | Explicit `LOCAL CURSOR RESUME` comment with `agent:cursor` + `handoff:ready`, or a new source issue per task |
 | Launched-program queue | Launched program with an approved dependency map | Approved map + issue predecessor/successor fields + halt/resume conditions |
 
 In both modes, one source issue maps to one PR. Queue mode governs which task is
@@ -136,7 +140,13 @@ PR readiness is not merge authority.
 
 For active Program #1255, Cursor may continue from one child task to another only
 when the next child issue contains the latest valid Atlas, Bill, or controller
-`@cursor` continuation authorization comment.
+execution authorization recorded on GitHub — typically a bounded `LOCAL CURSOR RESUME`
+comment with `agent:cursor` + `handoff:ready`, or an equivalent explicit issue
+comment that names exactly one next child issue.
+
+Do not use `@cursor` for local LGFC continuation. `@cursor` is a prohibited
+cloud invocation for local work under
+[`docs/governance/standards/CURSOR-RUNTIME-ROUTING.md`](../../governance/standards/CURSOR-RUNTIME-ROUTING.md).
 
 Cursor must not treat labels, merge state, closed or completed prior issue
 state, queue order, open PR order, or branch availability as executable
