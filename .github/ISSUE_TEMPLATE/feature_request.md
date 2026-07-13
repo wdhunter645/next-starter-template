@@ -26,7 +26,14 @@ Gate profile:
 Rollback profile:
 Component branch:
 Component master:
+Promotion PR:
 ```
+
+## Classification evidence
+
+- Work-size contract row or rationale:
+- Model A/B decision evidence (if Medium):
+- Protected-change paths touched (if any):
 
 ## Acceptance Criteria
 Define measurable outcome.
