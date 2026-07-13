@@ -2,6 +2,7 @@
 LGFC PR Template — stable facts only
 
 Canonical PR-process authority: docs/governance/PR_PROCESS.md
+Delivery metadata authority: docs/reference/ci/delivery-profile-contract.md
 
 Design principle: this body holds only facts that are stable at PR-open time
 and concise human-readable implementation evidence. It does not hold dynamic
@@ -12,6 +13,36 @@ Dynamic state lives in GitHub reviews, review threads, labels, required checks,
 and post-merge closeout records. Merge authority remains GitHub branch
 protection and required checks. The ready-for-merge label is a derived
 operator-visibility signal only.
+
+Profile examples (stable fields only — replace placeholders before opening):
+
+Model A child:
+  Size: small | Delivery model: A | Change mode: routine-ops
+  Target environment: production | Approval profile: chat-bill-production
+  Gate profile: production-candidate | Rollback profile: one-step
+  Component branch: not-applicable | Component master: not-applicable
+  Promotion PR: not-applicable
+
+Model B child:
+  Size: medium | Delivery model: B-child | Change mode: project
+  Target environment: component | Approval profile: component-auto-integration
+  Gate profile: component-child | Rollback profile: multi-step
+  Component branch: component/<release-unit> | Component master: #<program-issue>
+  Promotion PR: not-applicable
+
+Model B promotion:
+  Size: large | Delivery model: B-promotion | Change mode: planned-migration
+  Target environment: production | Approval profile: chat-bill-production
+  Gate profile: component-promotion | Rollback profile: multi-step
+  Component branch: component/<release-unit> | Component master: #<program-issue>
+  Promotion PR: #<this-pr-number>
+
+Emergency recovery:
+  Size: medium | Delivery model: emergency-recovery | Change mode: emergency
+  Target environment: recovery | Approval profile: emergency-approval
+  Gate profile: emergency-recovery | Rollback profile: emergency-stabilization
+  Component branch: not-applicable | Component master: not-applicable
+  Promotion PR: not-applicable
 -->
 
 # PR Summary
@@ -28,6 +59,7 @@ operator-visibility signal only.
 - Rollback profile: <!-- one-step / multi-step / emergency-stabilization -->
 - Component branch: <!-- component/<release-unit> / not-applicable -->
 - Component master: <!-- #<program-issue> / not-applicable -->
+- Promotion PR: <!-- #<promotion-pr-number> / not-applicable -->
 
 ## Scope
 

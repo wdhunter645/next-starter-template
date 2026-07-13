@@ -12,6 +12,8 @@ assignees: []
 
 ## PMO intake (required before launch)
 
+All work enters as `Size: medium-provisional` until classified. See `docs/how-to/pmo/classify-work-and-select-delivery-model.md`.
+
 ```text
 Size: medium-provisional
 Delivery model:
@@ -22,10 +24,17 @@ Gate profile:
 Rollback profile:
 Component branch:
 Component master:
+Promotion PR:
 Runtime: local
 ```
 
 Classify before implementation per `docs/how-to/pmo/classify-work-and-select-delivery-model.md`.
+
+## Classification evidence
+
+- Work-size contract row or rationale:
+- Model A/B decision evidence (if Medium):
+- Protected-change paths touched (if any):
 
 ## Task
 
