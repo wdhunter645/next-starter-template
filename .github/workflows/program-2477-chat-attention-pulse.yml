@@ -1,0 +1,127 @@
+name: Program 2477 Chat Attention Pulse
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+concurrency:
+  group: program-2477-chat-attention-pulse
+  cancel-in-progress: false
+
+jobs:
+  pulse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Detect active Delivery System state
+        id: detect
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -u
+
+          program_state="$(gh api "repos/${REPO}/issues/2477" --jq '.state')"
+          if [ "${program_state}" != "open" ]; then
+            echo "active=false" >> "${GITHUB_OUTPUT}"
+            echo "reason=program-closed" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          promotion_count="$(
+            gh api "repos/${REPO}/pulls?state=open&per_page=100" \
+              --jq '[.[] | select(.head.ref == "component/delivery-system-v1" and .base.ref == "main")] | length'
+          )"
+
+          remaining_count=0
+          remaining_issues=""
+          for issue_number in 2501 2502; do
+            issue_state="$(gh api "repos/${REPO}/issues/${issue_number}" --jq '.state')"
+            if [ "${issue_state}" = "open" ]; then
+              remaining_count=$((remaining_count + 1))
+              if [ -n "${remaining_issues}" ]; then
+                remaining_issues="${remaining_issues}, "
+              fi
+              remaining_issues="${remaining_issues}#${issue_number}"
+            fi
+          done
+
+          if [ "${promotion_count}" -eq 0 ] && [ "${remaining_count}" -eq 0 ]; then
+            echo "active=false" >> "${GITHUB_OUTPUT}"
+            echo "reason=no-open-promotion-or-remaining-stage" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          echo "active=true" >> "${GITHUB_OUTPUT}"
+          echo "promotion_count=${promotion_count}" >> "${GITHUB_OUTPUT}"
+          echo "remaining_issues=${remaining_issues}" >> "${GITHUB_OUTPUT}"
+
+      - name: Check pulse deduplication window
+        id: dedupe
+        if: steps.detect.outputs.active == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+        shell: bash
+        run: |
+          set -u
+
+          if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
+            echo "post=true" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          latest_pulse="$(
+            gh api --paginate "repos/${REPO}/issues/2477/comments?per_page=100" \
+              --jq '.[] | select(.body | startswith("CHAT ATTENTION PULSE")) | .created_at' \
+              | tail -n 1
+          )"
+
+          if [ -z "${latest_pulse}" ]; then
+            echo "post=true" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          now_epoch="$(date -u +%s)"
+          pulse_epoch="$(date -u -d "${latest_pulse}" +%s)"
+          age_seconds=$((now_epoch - pulse_epoch))
+
+          if [ "${age_seconds}" -lt 1200 ]; then
+            echo "post=false" >> "${GITHUB_OUTPUT}"
+          else
+            echo "post=true" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Post Chat attention pulse
+        if: steps.detect.outputs.active == 'true' && steps.dedupe.outputs.post == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PROMOTION_COUNT: ${{ steps.detect.outputs.promotion_count }}
+          REMAINING_ISSUES: ${{ steps.detect.outputs.remaining_issues }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
+        run: |
+          set -u
+
+          body="$(cat <<EOF
+          CHAT ATTENTION PULSE
+
+          Program: #2477
+          Open promotion PR count: ${PROMOTION_COUNT}
+          Open remaining stages: ${REMAINING_ISSUES}
+          Requested action: Review current issues, pull requests, checks, review threads, and canonical handoffs; then continue authorized Delivery System v1 work.
+          Workflow run: ${RUN_URL}
+
+          This automated pulse is a liveness signal only. It does not approve, merge, route Cursor Cloud, use @cursor, or change repository authority.
+          EOF
+          )"
+
+          gh issue comment 2477 --repo "${REPO}" --body "${body}"
