@@ -103,6 +103,10 @@ function isComponentRef(ref) {
   return /^component\/[^/].*/.test(String(ref || ''));
 }
 
+function isValidComponentMasterIssue(ref) {
+  return /^#\d+$/.test(String(ref || '').trim());
+}
+
 function isProtectedPath(filePath) {
   const normalized = String(filePath || '').replace(/^\.\/+/, '');
   return PROTECTED_PATTERNS.some((pattern) => pattern.test(normalized));
@@ -130,8 +134,41 @@ function parseLineValue(body, label) {
 }
 
 function readListFile(filePath) {
-  if (!filePath || !fs.existsSync(filePath)) return [];
+  if (!filePath || !fs.existsSync(filePath)) {
+    return null;
+  }
   return fs.readFileSync(filePath, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+}
+
+function validateComponentMasterIssue(errors, componentMaster) {
+  if (!componentMaster) {
+    errors.push(deliveryError('missing_componentMaster', 'Component master is required for Model B PRs.'));
+    return;
+  }
+  if (!isValidComponentMasterIssue(componentMaster)) {
+    errors.push(deliveryError(
+      'invalid_componentMaster',
+      'Component master must be a canonical GitHub issue reference matching #<number>.',
+      { value: componentMaster },
+    ));
+  }
+}
+
+function rejectComponentMetadataForNonModelB(errors, componentBranch, componentMaster, deliveryModel) {
+  if (componentBranch) {
+    errors.push(deliveryError(
+      'invalid_componentBranch',
+      `Component branch must be empty or not-applicable for ${deliveryModel} PRs.`,
+      { value: componentBranch },
+    ));
+  }
+  if (componentMaster) {
+    errors.push(deliveryError(
+      'invalid_componentMaster',
+      `Component master must be empty or not-applicable for ${deliveryModel} PRs.`,
+      { value: componentMaster },
+    ));
+  }
 }
 
 function writeJsonArtifact(result, env) {
@@ -152,11 +189,12 @@ export function classifyDeliveryProfile({
   baseRef = '',
   headRef = '',
   body = '',
-  changedFiles = [],
+  changedFiles = undefined,
 } = {}) {
   const metadata = parseDeliveryMetadata(body);
-  const protectedChange = changedFiles.some(isProtectedPath);
   const errors = [];
+  const hasChangedFileEvidence = Array.isArray(changedFiles);
+  const protectedChange = hasChangedFileEvidence && changedFiles.some(isProtectedPath);
 
   for (const field of REQUIRED_FIELDS) {
     if (!metadata[field]) {
@@ -192,9 +230,16 @@ export function classifyDeliveryProfile({
         value: baseRef,
       }));
     }
+    rejectComponentMetadataForNonModelB(errors, componentBranch, componentMaster, 'Model A');
   }
 
   if (metadata.deliveryModel === 'B-child') {
+    if (!hasChangedFileEvidence) {
+      errors.push(deliveryError(
+        'missing_changed_files_evidence',
+        'Changed-file evidence is required for Model B child PRs.',
+      ));
+    }
     pushExpectedError(errors, 'targetEnvironment', metadata.targetEnvironment, 'component');
     pushExpectedError(
       errors,
@@ -218,9 +263,7 @@ export function classifyDeliveryProfile({
         value: componentBranch,
       }));
     }
-    if (!componentMaster) {
-      errors.push(deliveryError('missing_componentMaster', 'Component master is required for Model B child PRs.'));
-    }
+    validateComponentMasterIssue(errors, componentMaster);
   }
 
   if (metadata.deliveryModel === 'B-promotion') {
@@ -248,14 +291,7 @@ export function classifyDeliveryProfile({
         value: componentBranch,
       }));
     }
-    if (!componentMaster) {
-      errors.push(deliveryError('missing_componentMaster', 'Component master is required for Model B promotion PRs.'));
-    } else if (componentMaster !== baseRef) {
-      errors.push(deliveryError('invalid_componentMaster', 'Component master must match the base ref.', {
-        expected: baseRef,
-        value: componentMaster,
-      }));
-    }
+    validateComponentMasterIssue(errors, componentMaster);
   }
 
   if (metadata.deliveryModel === 'emergency-recovery') {
@@ -270,6 +306,7 @@ export function classifyDeliveryProfile({
         value: baseRef,
       }));
     }
+    rejectComponentMetadataForNonModelB(errors, componentBranch, componentMaster, 'emergency recovery');
   }
 
   return {
@@ -310,7 +347,38 @@ export function runCli(env = process.env) {
   }
 
   const body = fs.readFileSync(env.PR_BODY_FILE, 'utf8');
-  const changedFiles = readListFile(env.CHANGED_FILES_FILE);
+  const metadata = parseDeliveryMetadata(body);
+  let changedFiles = undefined;
+  if (env.CHANGED_FILES_FILE) {
+    if (!fs.existsSync(env.CHANGED_FILES_FILE)) {
+      if (metadata.deliveryModel === 'B-child') {
+        const result = {
+          deliveryModel: metadata.deliveryModel,
+          size: metadata.size,
+          changeMode: metadata.changeMode,
+          targetEnvironment: metadata.targetEnvironment,
+          approvalProfile: metadata.approvalProfile,
+          gateProfile: metadata.gateProfile,
+          rollbackProfile: metadata.rollbackProfile,
+          componentBranch: normalizeOptionalComponentValue(metadata.componentBranch),
+          componentMaster: normalizeOptionalComponentValue(metadata.componentMaster),
+          protectedChange: false,
+          errors: [
+            deliveryError(
+              'missing_changed_files_file',
+              'CHANGED_FILES_FILE is required and must point to an existing file for Model B child PRs.',
+            ),
+          ],
+        };
+        writeJsonArtifact(result, env);
+        console.log(JSON.stringify(result, null, 2));
+        return 1;
+      }
+      changedFiles = [];
+    } else {
+      changedFiles = readListFile(env.CHANGED_FILES_FILE);
+    }
+  }
   const result = classifyDeliveryProfile({
     baseRef: env.PR_BASE_REF || '',
     headRef: env.PR_HEAD_REF || '',

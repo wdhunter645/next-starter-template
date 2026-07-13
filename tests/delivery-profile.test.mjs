@@ -52,11 +52,12 @@ Stable PR class fields are intentionally independent from the delivery profile.
 }
 
 function classify(overrides = {}, options = {}) {
+  const changedFiles = 'changedFiles' in options ? options.changedFiles : ['src/app/page.tsx'];
   return classifyDeliveryProfile({
     baseRef: options.baseRef || 'main',
     headRef: options.headRef || 'cursor/example',
     body: metadataBody(overrides),
-    changedFiles: options.changedFiles || ['src/app/page.tsx'],
+    changedFiles,
   });
 }
 
@@ -92,7 +93,7 @@ describe('parseDeliveryMetadata', () => {
       gateProfile: 'component-child',
       rollbackProfile: 'multi-step',
       componentBranch: 'component/delivery-system-v1',
-      componentMaster: 'main',
+      componentMaster: '#2477',
     }));
 
     expect(metadata).toEqual({
@@ -104,7 +105,7 @@ describe('parseDeliveryMetadata', () => {
       gateProfile: 'component-child',
       rollbackProfile: 'multi-step',
       componentBranch: 'component/delivery-system-v1',
-      componentMaster: 'main',
+      componentMaster: '#2477',
     });
     expect(metadata.prClass).toBeUndefined();
   });
@@ -155,7 +156,7 @@ describe('classifyDeliveryProfile', () => {
         gateProfile: 'component-child',
         rollbackProfile: 'multi-step',
         componentBranch: 'component/delivery-system-v1',
-        componentMaster: 'main',
+        componentMaster: '#2477',
       },
       {
         baseRef: 'component/delivery-system-v1',
@@ -172,7 +173,7 @@ describe('classifyDeliveryProfile', () => {
       gateProfile: 'component-child',
       rollbackProfile: 'multi-step',
       componentBranch: 'component/delivery-system-v1',
-      componentMaster: 'main',
+      componentMaster: '#2477',
       protectedChange: false,
       errors: [],
     });
@@ -187,7 +188,7 @@ describe('classifyDeliveryProfile', () => {
         gateProfile: 'component-child',
         rollbackProfile: 'multi-step',
         componentBranch: 'component/delivery-system-v1',
-        componentMaster: 'main',
+        componentMaster: '#2477',
       },
       {
         baseRef: 'component/delivery-system-v1',
@@ -210,11 +211,12 @@ describe('classifyDeliveryProfile', () => {
         gateProfile: 'component-promotion',
         rollbackProfile: 'multi-step',
         componentBranch: 'component/delivery-system-v1',
-        componentMaster: 'main',
+        componentMaster: '#2477',
       },
       {
         baseRef: 'main',
         headRef: 'component/delivery-system-v1',
+        changedFiles: ['docs/reference/ci/delivery-profile-contract.md'],
       },
     );
 
@@ -225,7 +227,7 @@ describe('classifyDeliveryProfile', () => {
       gateProfile: 'component-promotion',
       rollbackProfile: 'multi-step',
       componentBranch: 'component/delivery-system-v1',
-      componentMaster: 'main',
+      componentMaster: '#2477',
       protectedChange: false,
       errors: [],
     });
@@ -301,11 +303,12 @@ describe('classifyDeliveryProfile', () => {
         gateProfile: 'component-promotion',
         rollbackProfile: 'multi-step',
         componentBranch: 'component/delivery-system-v1',
-        componentMaster: 'main',
+        componentMaster: '#2477',
       },
       {
         baseRef: 'main',
         headRef: 'cursor/not-component',
+        changedFiles: ['docs/reference/ci/delivery-profile-contract.md'],
       },
     );
 
@@ -328,11 +331,129 @@ describe('classifyDeliveryProfile', () => {
       },
       {
         baseRef: 'component/delivery-system-v1',
+        changedFiles: ['docs/reference/ci/delivery-profile-contract.md'],
       },
     );
 
     expect(profile.errors).toContainEqual(expect.objectContaining({
       code: 'missing_componentMaster',
+    }));
+  });
+
+  it('fails explicitly for malformed component master issue references', () => {
+    const profile = classify(
+      {
+        deliveryModel: 'B-child',
+        targetEnvironment: 'component',
+        approvalProfile: 'component-auto-integration',
+        gateProfile: 'component-child',
+        rollbackProfile: 'multi-step',
+        componentBranch: 'component/delivery-system-v1',
+        componentMaster: 'main',
+      },
+      {
+        baseRef: 'component/delivery-system-v1',
+        changedFiles: ['docs/reference/ci/delivery-profile-contract.md'],
+      },
+    );
+
+    expect(profile.errors).toContainEqual(expect.objectContaining({
+      code: 'invalid_componentMaster',
+      value: 'main',
+    }));
+  });
+
+  it('retains the same component master from child through promotion', () => {
+    const child = classify(
+      {
+        deliveryModel: 'B-child',
+        targetEnvironment: 'component',
+        approvalProfile: 'component-auto-integration',
+        gateProfile: 'component-child',
+        rollbackProfile: 'multi-step',
+        componentBranch: 'component/delivery-system-v1',
+        componentMaster: '#2477',
+      },
+      {
+        baseRef: 'component/delivery-system-v1',
+        changedFiles: ['docs/reference/ci/delivery-profile-contract.md'],
+      },
+    );
+    const promotion = classify(
+      {
+        deliveryModel: 'B-promotion',
+        targetEnvironment: 'production',
+        approvalProfile: 'chat-bill-production',
+        gateProfile: 'component-promotion',
+        rollbackProfile: 'multi-step',
+        componentBranch: 'component/delivery-system-v1',
+        componentMaster: '#2477',
+      },
+      {
+        baseRef: 'main',
+        headRef: 'component/delivery-system-v1',
+        changedFiles: ['docs/reference/ci/delivery-profile-contract.md'],
+      },
+    );
+
+    expect(child.componentMaster).toBe('#2477');
+    expect(promotion.componentMaster).toBe('#2477');
+    expect(child.errors).toEqual([]);
+    expect(promotion.errors).toEqual([]);
+  });
+
+  it('fails closed when Model B child changed-file evidence is absent', () => {
+    const profile = classifyDeliveryProfile({
+      baseRef: 'component/delivery-system-v1',
+      headRef: 'cursor/example',
+      body: metadataBody({
+        deliveryModel: 'B-child',
+        targetEnvironment: 'component',
+        approvalProfile: 'component-auto-integration',
+        gateProfile: 'component-child',
+        rollbackProfile: 'multi-step',
+        componentBranch: 'component/delivery-system-v1',
+        componentMaster: '#2477',
+      }),
+    });
+
+    expect(profile.errors).toContainEqual(expect.objectContaining({
+      code: 'missing_changed_files_evidence',
+    }));
+    expect(profile.protectedChange).toBe(false);
+  });
+
+  it('rejects non-empty component metadata on Model A PRs', () => {
+    const profile = classify({
+      componentBranch: 'component/delivery-system-v1',
+      componentMaster: '#2477',
+    });
+
+    expect(profile.errors).toContainEqual(expect.objectContaining({
+      code: 'invalid_componentBranch',
+    }));
+    expect(profile.errors).toContainEqual(expect.objectContaining({
+      code: 'invalid_componentMaster',
+    }));
+  });
+
+  it('rejects non-empty component metadata on emergency recovery PRs', () => {
+    const profile = classify({
+      deliveryModel: 'emergency-recovery',
+      changeMode: 'emergency',
+      targetEnvironment: 'recovery',
+      approvalProfile: 'emergency-approval',
+      gateProfile: 'emergency-recovery',
+      rollbackProfile: 'emergency-stabilization',
+      componentBranch: 'component/delivery-system-v1',
+      componentMaster: '#2477',
+    });
+
+    expect(profile.errors).toContainEqual(expect.objectContaining({
+      code: 'invalid_componentBranch',
+    }));
+    expect(profile.errors).toContainEqual(expect.objectContaining({
+      code: 'invalid_componentMaster',
     }));
   });
 
@@ -345,7 +466,7 @@ describe('classifyDeliveryProfile', () => {
         gateProfile: 'component-child',
         rollbackProfile: 'multi-step',
         componentBranch: 'component/delivery-system-v1',
-        componentMaster: 'main',
+        componentMaster: '#2477',
       },
       {
         baseRef: 'component/delivery-system-v1',
@@ -366,7 +487,15 @@ describe('delivery profile CLI', () => {
     const bodyPath = 'delivery-profile-body.test.md';
     const changedPath = 'delivery-profile-changed.test.txt';
     const resultPath = 'delivery-profile-result.test.json';
-    fs.writeFileSync(bodyPath, metadataBody({ deliveryModel: 'Model C' }));
+    fs.writeFileSync(bodyPath, metadataBody({
+      deliveryModel: 'Model C',
+      targetEnvironment: 'component',
+      approvalProfile: 'protected-change-review',
+      gateProfile: 'component-child',
+      rollbackProfile: 'multi-step',
+      componentBranch: 'component/delivery-system-v1',
+      componentMaster: '#2477',
+    }));
     fs.writeFileSync(changedPath, 'scripts/ci/delivery_profile.mjs\n');
 
     try {
@@ -385,6 +514,71 @@ describe('delivery profile CLI', () => {
       expect(artifact.protectedChange).toBe(true);
     } finally {
       for (const file of [bodyPath, changedPath, resultPath]) {
+        if (fs.existsSync(file)) fs.unlinkSync(file);
+      }
+    }
+  });
+
+  it('fails closed when Model B child changed-file evidence is missing from the CLI', () => {
+    const bodyPath = 'delivery-profile-body-missing-files.test.md';
+    const resultPath = 'delivery-profile-result-missing-files.test.json';
+    fs.writeFileSync(bodyPath, metadataBody({
+      deliveryModel: 'B-child',
+      targetEnvironment: 'component',
+      approvalProfile: 'protected-change-review',
+      gateProfile: 'component-child',
+      rollbackProfile: 'multi-step',
+      componentBranch: 'component/delivery-system-v1',
+      componentMaster: '#2477',
+    }));
+
+    try {
+      expect(runCli({
+        PR_BODY_FILE: bodyPath,
+        PR_BASE_REF: 'component/delivery-system-v1',
+        PR_HEAD_REF: 'cursor/2485-delivery-profile-contract',
+        DELIVERY_PROFILE_RESULT_JSON: resultPath,
+      })).toBe(1);
+
+      const artifact = JSON.parse(fs.readFileSync(resultPath, 'utf8'));
+      expect(artifact.errors).toContainEqual(expect.objectContaining({
+        code: 'missing_changed_files_evidence',
+      }));
+    } finally {
+      for (const file of [bodyPath, resultPath]) {
+        if (fs.existsSync(file)) fs.unlinkSync(file);
+      }
+    }
+  });
+
+  it('fails closed when Model B child changed-file list file is absent', () => {
+    const bodyPath = 'delivery-profile-body-absent-file.test.md';
+    const resultPath = 'delivery-profile-result-absent-file.test.json';
+    fs.writeFileSync(bodyPath, metadataBody({
+      deliveryModel: 'B-child',
+      targetEnvironment: 'component',
+      approvalProfile: 'protected-change-review',
+      gateProfile: 'component-child',
+      rollbackProfile: 'multi-step',
+      componentBranch: 'component/delivery-system-v1',
+      componentMaster: '#2477',
+    }));
+
+    try {
+      expect(runCli({
+        PR_BODY_FILE: bodyPath,
+        PR_BASE_REF: 'component/delivery-system-v1',
+        PR_HEAD_REF: 'cursor/2485-delivery-profile-contract',
+        CHANGED_FILES_FILE: 'delivery-profile-missing-changed-list.test.txt',
+        DELIVERY_PROFILE_RESULT_JSON: resultPath,
+      })).toBe(1);
+
+      const artifact = JSON.parse(fs.readFileSync(resultPath, 'utf8'));
+      expect(artifact.errors).toContainEqual(expect.objectContaining({
+        code: 'missing_changed_files_file',
+      }));
+    } finally {
+      for (const file of [bodyPath, resultPath]) {
         if (fs.existsSync(file)) fs.unlinkSync(file);
       }
     }

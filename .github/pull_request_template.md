@@ -27,7 +27,7 @@ operator-visibility signal only.
 - Gate profile: <!-- component-child / production-candidate / component-promotion / emergency-recovery -->
 - Rollback profile: <!-- one-step / multi-step / emergency-stabilization -->
 - Component branch: <!-- component/<release-unit> / not-applicable -->
-- Component master: <!-- main / not-applicable -->
+- Component master: <!-- #<program-issue> / not-applicable -->
 
 ## Scope
 

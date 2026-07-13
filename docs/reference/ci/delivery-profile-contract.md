@@ -126,7 +126,9 @@ not silently downgrade one delivery model to another.
 - Gate profile: `component-child`
 - Rollback profile: `multi-step`
 - Component branch: must match the PR base branch
-- Component master: required
+- Component master: required GitHub issue reference matching `#<number>` for the
+  stable component/program master issue (for example `#2477`); it is not a branch
+  name and must not be compared to `baseRef`
 - Approval profile:
   - `component-auto-integration` when no protected paths are changed
   - `protected-change-review` when protected paths are changed
@@ -143,7 +145,9 @@ eligible.
 - Gate profile: `component-promotion`
 - Rollback profile: `multi-step`
 - Component branch: must match the PR head branch
-- Component master: must match the PR base branch
+- Component master: required GitHub issue reference matching `#<number>` for the
+  same component/program master issue used by child PRs; it is not a branch name
+  and must not be compared to `baseRef`
 
 ### Emergency recovery
 
@@ -153,6 +157,13 @@ eligible.
 - Approval profile: `emergency-approval`
 - Gate profile: `emergency-recovery`
 - Rollback profile: `emergency-stabilization`
+- Component branch: must be empty or `not-applicable`
+- Component master: must be empty or `not-applicable`
+
+### Model A
+
+Model A PRs must also keep component branch and component master empty or
+`not-applicable`. Contradictory component metadata must fail explicitly.
 
 ## Protected path baseline
 
@@ -187,7 +198,10 @@ The CLI reads:
 - `PR_BODY_FILE` — required path to the PR body Markdown file
 - `PR_BASE_REF` — PR base ref
 - `PR_HEAD_REF` — PR head ref
-- `CHANGED_FILES_FILE` — optional newline-delimited changed-file list
+- `CHANGED_FILES_FILE` — required newline-delimited changed-file list for Model B
+  child PRs; optional for other delivery models. Missing or unreadable changed-file
+  evidence for Model B child PRs fails closed instead of assuming
+  `protectedChange: false`.
 - `DELIVERY_PROFILE_RESULT_JSON` — optional JSON artifact output path
 
 The command exits `0` when classification succeeds, `1` when metadata or
