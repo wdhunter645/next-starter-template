@@ -2,154 +2,160 @@
 Doc Type: How-To
 Audience: Bill, ChatGPT, Cursor, LGFC maintainers
 Authority Level: Operational Authority
-Owns: Local Cursor GitHub poll-wake loop operation, watch rules, wake semantics, and known reliability limits
+Owns: Local Cursor GitHub poll-wake loop operation, watch rules, wake semantics, pickup evidence, and known reliability limits
 Does Not Own: Poller script implementation in `~/.cursor/github-poller/`, merge authority, GitHub webhook configuration, or cloud agent billing
 Canonical Reference: /docs/how-to/cursor/agent-session-bootstrap.md
-Related Issues: #2398
-Last Reviewed: 2026-07-08
+Related Issues: #2398, #2492
+Last Reviewed: 2026-07-13
 ---
 
 # Cursor local GitHub poll-wake loop
 
 ## Purpose
 
-Document local Cursor GitHub poll-wake loop operation so Bill, ChatGPT, and Cursor share one description of watch rules, wake semantics, and handoff pairing.
+Document local Cursor GitHub poll-wake operation so Bill, ChatGPT, and Cursor share one exact description of detection rules, dispatch requirements, wake semantics, and pickup evidence.
 
 ## Scope
 
-Covers `~/.cursor/github-poller/` operator behavior for `wdhunter645/next-starter-template`. Does not cover vendoring poller scripts into the repository, GitHub webhooks, or cloud agent billing.
+Covers operator behavior for `~/.cursor/github-poller/` while working in `wdhunter645/next-starter-template`. The scripts are user-local tooling and are not part of the repository tree.
 
 ## Current known truth
 
-- The poller watches **`agent:cursor` + `handoff:ready`**, assigned issues, and assigned PRs only.
-- Queue-unblock issue comments without matching labels are human-actionable but not machine-detected.
-- Agent background loops can intermittently log `poll failed` while manual `gh` polls succeed.
-- Issue comments (`CHATGPT HANDOFF`, `handoff:ready`) remain the reliable control plane.
-
-## Goal
-
-Keep an **open Cursor agent chat** aware of qualifying GitHub activity on `wdhunter645/next-starter-template` without cloud agents or usage credits. Wake the agent **only** when new qualifying activity is detected.
-
-This how-to documents operator behavior for the **local poller** installed at `~/.cursor/github-poller/`. Those scripts are user-local tooling; they are not part of the repository tree.
+- The poller watches open issues with **`agent:cursor` + `handoff:ready`**, assigned issues, and assigned PRs.
+- An item is fresh only when its `updatedAt` or equivalent is later than the saved `state.since` watermark.
+- Any comment on a qualifying issue can bump `updatedAt`; the machine trigger is **qualifying labels/assignment plus new issue activity**, not the text marker alone.
+- `LOCAL CURSOR RESUME` is the human/agent resume pointer to the canonical Chat decision.
+- Labels, comments, and wake output do not prove Cursor began work.
+- `@cursor` is a cloud invocation and is not a local wake mechanism.
 
 ## Components
 
 | Path | Role |
 | --- | --- |
-| `~/.cursor/github-poller/poll-github.mjs` | Single poll via `gh` CLI; writes JSON to stdout |
-| `~/.cursor/github-poller/poll-wake-loop.sh` | Loop wrapper: poll immediately, then every *N* minutes |
-| `~/.cursor/github-poller/poll-loop.sh` | Alert-only loop (terminal output; no agent wake) |
-| `~/.cursor/github-poller/state.json` | Baseline `since` timestamp and seen event keys |
-| `~/.cursor/github-poller/README.md` | Local operator quick reference |
+| `~/.cursor/github-poller/poll-github.mjs` | Single poll through `gh`; emits JSON |
+| `~/.cursor/github-poller/poll-wake-loop.sh` | Repeating poll and wake wrapper |
+| `~/.cursor/github-poller/poll-loop.sh` | Alert-only loop |
+| `~/.cursor/github-poller/state.json` | Saved watermark and seen-event state |
+| `~/.cursor/github-poller/poll-errors.log` | Recommended persistent failure log |
+| `~/.cursor/github-poller/README.md` | Local operator reference |
 
-## What the poller watches
+## Detection rules
 
-`poll-github.mjs` treats activity as **new** only when `updatedAt` (or equivalent) is later than `state.since` **and** the item matches one of these rules:
+`poll-github.mjs` treats an item as new only when its update time is later than `state.since` and it matches one of these rules:
 
 | Trigger | Rule |
 | --- | --- |
-| Cursor handoff queue | Open issues labeled **`agent:cursor`** and **`handoff:ready`** |
-| Assigned issues | Open issues **assigned to** `GITHUB_POLL_LOGIN` (default: `wdhunter645`) |
-| Assigned PRs | Open PRs **assigned to** `GITHUB_POLL_LOGIN` |
+| Cursor handoff queue | Open issue labeled `agent:cursor` **and** `handoff:ready` |
+| Assigned issue | Open issue assigned to `GITHUB_POLL_LOGIN` (default `wdhunter645`) |
+| Assigned PR | Open PR assigned to `GITHUB_POLL_LOGIN` |
 
-### What the poller does not watch
+The preferred routing bundle uses all available paths:
 
-- Issues with only `agent:cursor` (missing `handoff:ready`)
-- `QUEUE UNBLOCK — CURSOR START` or `CHATGPT HANDOFF` comments alone
-- Issues labeled `agent:ChatGPT` without matching assignee/handoff rules
-- PR/issue comments unless the parent issue/PR matches a watch rule and its `updatedAt` moved
+1. Open source issue.
+2. `agent:cursor` + `handoff:ready`.
+3. Assign source issue to `wdhunter645`.
+4. If revising a PR, assign the open PR to `wdhunter645`.
+5. Post exactly one canonical `CHATGPT RESPONSE` or `CHATGPT CLOSEOUT` on the source issue.
+6. Post exactly one separate `LOCAL CURSOR RESUME` on the source issue referencing that response.
 
-**Operational implication:** a queue-unblocked issue (for example `#2361` after `#2360` closed) is **human-actionable** in the issue thread but **not machine-actionable** for the poller until labels/assignment match the table above.
+## What the poller does not reliably detect
+
+- Issues missing either required wake label.
+- PR-only review comments on unassigned PRs.
+- `agent:ChatGPT` issues unless another watch rule matches.
+- A comment whose parent issue/PR is not in a watched class.
+- Activity older than the saved watermark.
+- Chat-only instructions.
 
 ## Loop behavior
 
-`poll-wake-loop.sh [minutes]` (allowed interval: **2–12**, default **5**):
+`poll-wake-loop.sh [minutes]` accepts intervals from 2 through 12 minutes and defaults to 5.
 
 1. Run `node poll-github.mjs`.
-2. On success with **`fresh: 0`** — **silent** in the loop log (no agent wake, no credits).
-3. On success with **`fresh > 0`** — print:
+2. On success with `fresh: 0`, remain silent.
+3. On success with `fresh > 0`, emit the agent wake line.
+4. On failure, emit a failure message and persist stderr to `~/.cursor/github-poller/poll-errors.log`.
 
-   ```text
-   AGENT_LOOP_TICK_github_poll {"fresh":N,"prompt":"..."}
-   ```
+Expected wake output:
 
-   Monitored Cursor agent chat may react to this line.
+```text
+AGENT_LOOP_TICK_github_poll {"fresh":N,"prompt":"..."}
+```
 
-4. On failure (no JSON on stdout) — print:
+A wake means qualifying activity was detected. It does not authorize merge, broaden scope, or prove execution started.
 
-   ```text
-   [timestamp] poll failed
-   ```
+## Required marker alignment
 
-   The underlying `gh` error is discarded (`2>/dev/null` in the loop script).
+The poller prompt and local README must recognize the live markers:
 
-### Poll failure vs idle success vs new activity
+- `CHATGPT HANDOFF`
+- `CHATGPT RESPONSE`
+- `CHATGPT CLOSEOUT`
+- `LOCAL CURSOR RESUME`
 
-| Outcome | Meaning |
-| --- | --- |
-| `poll failed` | Poll did not complete; **not** “no GitHub actions found” |
-| Success, `fresh: 0` | Connected; no qualifying **new** activity since last baseline |
-| Success, `fresh > 0` | New qualifying activity; agent wake line emitted |
+Legacy `### AGENT HANDOFF` may be accepted only as an alias during local migration. It must not remain the sole marker named in the prompt.
+
+After a wake, Cursor must:
+
+1. Open the qualifying source issue.
+2. Read the latest canonical Chat response.
+3. Read the separate `LOCAL CURSOR RESUME` referencing that response.
+4. Verify branch, PR, labels, open issue state, and one bounded action.
+5. Perform that action only.
+6. Return canonical `CHATGPT HANDOFF` when review, blocker, PR-ready, or completion state is reached.
 
 ## Procedure
 
-### Start from terminal (operator)
+From a terminal:
 
 ```bash
 ~/.cursor/github-poller/poll-wake-loop.sh 5
 ```
 
-Requires `gh auth status` OK and one agent chat left open in the workspace.
-
-### Start from Cursor agent chat
-
-Ask the agent:
-
-```text
-Start poll-wake-loop.sh 5 as a monitored background loop with full permissions (required_permissions: all).
-```
-
-`required_permissions: ["all"]` is an **agent tool** setting when the agent spawns the background job. It is not bash syntax.
-
-### Operate the loop
-
-1. Leave one agent chat open in the workspace.
-2. Confirm `gh auth status` before starting.
-3. Avoid duplicate loops (`pgrep -af poll-wake-loop`); kill extras before a clean restart.
-4. Stop with **Ctrl+C** in the terminal running the loop.
-5. Reset baseline if needed: `rm ~/.cursor/github-poller/state.json`.
-
-**Reliability note:** agent-spawned background shells may still run under Cursor sandbox wrappers. Manual `gh` polls from fresh agent Shell calls can succeed while scheduled background ticks intermittently log `poll failed`. Treat the loop as **best-effort**, not a guaranteed notification bus.
-
-## Environment overrides
+Before starting:
 
 ```bash
-export GITHUB_POLL_REPO=wdhunter645/next-starter-template
-export GITHUB_POLL_LOGIN=wdhunter645
-export GITHUB_POLL_INTERVAL_MINUTES=5
+gh auth status
+pgrep -af poll-wake-loop
 ```
 
-## Reset poll baseline
+Operational rules:
+
+- Keep one local Cursor agent chat open.
+- Run only one poll-wake loop.
+- Start the loop with full local permissions.
+- Stop with Ctrl+C in the terminal running the loop.
+- Reset the watermark only when deliberately replaying current activity:
 
 ```bash
 rm ~/.cursor/github-poller/state.json
 ```
 
-## Recommended pairing with issue handoff
+Do not pulse labels by default. Removing and re-adding `handoff:ready` is a recovery action only after confirming the issue is eligible, the loop is running, the canonical transaction exists, and the prior activity may have fallen behind the watermark. Record the reason in the issue.
 
-GitHub does not push notifications to Cursor. Durable issue comments remain the primary control plane.
+## Failure handling
 
-| Intent | Recommended signal |
-| --- | --- |
-| Cursor should start work | `agent:cursor` + **`handoff:ready`** + issue comment with start/handoff block |
-| ChatGPT should review | **`agent:ChatGPT`** + **`CHATGPT HANDOFF`** comment on the issue |
-| Queue unblock after predecessor closes | Issue comment (for example `QUEUE UNBLOCK — CURSOR START`) **and** add `handoff:ready` if the poller should detect it |
+The loop is best-effort, not a guaranteed notification bus.
 
-Cursor does not automatically begin the next queue issue from poll connectivity alone. Read the issue thread or act on an explicit chat instruction.
+| Outcome | Meaning | Required response |
+| --- | --- | --- |
+| `fresh: 0` | Poll succeeded; no qualifying new activity | No action |
+| `fresh > 0` | Qualifying activity detected | Read canonical issue transaction |
+| `poll failed` | Poll did not complete | Inspect `poll-errors.log`; do not interpret as idle |
+| Wake with no valid transaction | Detection worked but routing is malformed | Post canonical `CHATGPT HANDOFF` with `Status: blocked` |
+| Valid transaction with no later Cursor evidence | Pickup not proven | Dispatcher re-checks eligibility and loop health |
 
-## Execution
+Recommended loop wrapper behavior:
 
-Record verification in the PR body when this how-to is changed.
+```text
+append poll stderr and timestamp to ~/.cursor/github-poller/poll-errors.log
+preserve the existing wake output contract
+avoid discarding stderr with 2>/dev/null
+```
+
+## Verification
+
+When this how-to changes, record:
 
 ```bash
 gh auth status
@@ -157,9 +163,22 @@ node ~/.cursor/github-poller/poll-github.mjs
 bash scripts/ci/docs_check_headers.sh
 ```
 
-Expect JSON with `"ok":true` and either `"fresh":0` or `"fresh":N` from the poller; docs header check **PASS** for repository doc changes.
+Expected:
+
+- poll JSON contains `"ok":true` and `"fresh":0` or `"fresh":N`;
+- active prompt names the live markers;
+- failure logging is enabled locally;
+- repository documentation header check passes.
 
 ## Stop conditions
 
-- Do not treat poller wake as merge authorization or scope approval.
-- Stop work if poller behavior in `~/.cursor/github-poller/` diverges from this doc without a doc update.
+- Stop if local poller behavior diverges from this document.
+- Stop if the latest resume contains multiple independent actions.
+- Stop if source issue labels, assignment, branch, PR, or canonical response do not agree.
+- Do not treat poller wake as scope or merge authorization.
+
+## Related authority
+
+- `docs/ops/ai/chatgpt-cursor-handoff-workflow.md`
+- `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`
+- `docs/governance/standards/CURSOR-RUNTIME-ROUTING.md`
