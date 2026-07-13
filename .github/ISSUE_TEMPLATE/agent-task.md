@@ -10,6 +10,23 @@ assignees: []
 
 <!-- Why are we doing this? Link prior issues/PRs. -->
 
+## PMO intake (required before launch)
+
+```text
+Size: medium-provisional
+Delivery model:
+Change mode:
+Target environment:
+Approval profile:
+Gate profile:
+Rollback profile:
+Component branch:
+Component master:
+Runtime: local
+```
+
+Classify before implementation per `docs/how-to/pmo/classify-work-and-select-delivery-model.md`.
+
 ## Task
 
 <!-- Exact change. Keep it small; UI-only unless stated otherwise. -->

@@ -1,19 +1,31 @@
 ---
 Doc Type: Operations
 Audience: Human + AI
-Authority Level: Canonical PMO Authority
-Owns: LGFC PMO v4 program inventory, workload reporting, backlog inventory, lifecycle terms, component-project hierarchy, reduced-gate delivery model, program preparation, Cursor execution boundaries, launch gates, Ops production handoff, completed/historical archive treatment, PMO reporting vs operations reporting separation, and Drive drafting model
-Does Not Own: Product-specific design, runtime implementation, workflow YAML, production configuration, secrets, or unauthorized GitHub issue mutation
-Canonical Reference: /docs/ops/pmo/PMO-V4-OPERATING-MODEL.md
-Related Issues: #2100, #2296
-Last Reviewed: 2026-07-06
+Authority Level: Superseded
+Owns: Historical PMO v4 operational detail only — sizing and Model A/B policy moved to governance
+Does Not Own: Work sizing, Model A/B selection, launch authorization, or portfolio policy
+Canonical Reference: /docs/governance/PMO-PORTFOLIO.md
+Related Issues: #2100, #2296, #2487
+Last Reviewed: 2026-07-13
 ---
 
 # PMO V4 Operating Model
 
+## Status
+
+**Superseded for PMO policy.** Work sizing, `medium-provisional` intake, Medium Model A/B selection, and launch authorization now live exclusively in [`docs/governance/PMO-PORTFOLIO.md`](../../governance/PMO-PORTFOLIO.md).
+
+| Topic | Canonical owner |
+| --- | --- |
+| PMO sizing and Model A/B policy | `docs/governance/PMO-PORTFOLIO.md` |
+| Evidence contract and decision matrix | `docs/reference/pmo/work-size-and-delivery-model-contract.md` |
+| Classification procedure | `docs/how-to/pmo/classify-work-and-select-delivery-model.md` |
+
+The body below retains historical PMO v4 operational context (registry routing, program hierarchy, Drive drafting) until a later archive pass. Do not cite this file for sizing or delivery-model decisions.
+
 ## Purpose
 
-This document is the top-level LGFC PMO v4 authority. It supersedes `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` for new PMO planning and implementation decisions **only after** issue #2100 merges by PR.
+This document was the top-level LGFC PMO v4 authority. It superseded `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` for new PMO planning and implementation decisions **only after** issue #2100 merges by PR.
 
 PMO v4 preserves the issue-number-based program model from PMO v3. A program is a GitHub program issue. Program issue numbers are the durable program identifiers.
 
