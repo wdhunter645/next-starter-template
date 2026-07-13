@@ -1,19 +1,33 @@
 ---
 Doc Type: Operational Rules
 Audience: Human + AI
-Authority Level: Core
-Owns: LGFC AI team roles, operating modes, authority boundaries, and end-to-end workflow requirements
-Does Not Own: Shared agent law detail, tool-specific execution behavior, product design, merge approval, or runtime implementation
-Canonical Reference: /Agent.md
-Related Issues: #1754
-Last Reviewed: 2026-07-07
+Authority Level: Superseded
+Owns: Historical LGFC AI team operating detail only — agent policy moved to governance
+Does Not Own: Team roles, approval authority, protected stops, or launch-control policy
+Canonical Reference: /docs/governance/AGENT-TEAM.md
+Related Issues: #1754, #2494
+Last Reviewed: 2026-07-13
 ---
 
 # LGFC AI Team Operating Model
 
+## Status
+
+**Superseded for agent team policy.** Team roles, approval authority, protected stop conditions, and launch-control workflow now live exclusively in [`docs/governance/AGENT-TEAM.md`](../../governance/AGENT-TEAM.md).
+
+| Topic | Canonical owner |
+| --- | --- |
+| Agent team policy and approval routing | `docs/governance/AGENT-TEAM.md` |
+| Role contracts and protected-stop flags | `docs/reference/agents/implementation-authority-contract.md` |
+| Model A execution procedure | `docs/how-to/agents/run-model-a.md` |
+| Model B execution procedure | `docs/how-to/agents/run-model-b.md` |
+| Shared execution detail | `docs/ops/ai/CORE-RULES.md` |
+
+The body below retains historical operating-model context until a later archive pass. Do not cite this file for team roles, Bill/Chat/Cursor approval routing, or protected stops.
+
 ## Purpose
 
-This document is the **canonical operating model** for the LGFC AI team: who owns what, which modes apply, how work flows from requirements to closeout, and where agents must stop for human authorization.
+This document was the **canonical operating model** for the LGFC AI team: who owns what, which modes apply, how work flows from requirements to closeout, and where agents must stop for human authorization.
 
 Shared agent law remains in [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md) and [`CORE-RULES.md`](./CORE-RULES.md). Tool-specific behavior remains in agent-specific rule files. This document does not weaken shared law.
 
