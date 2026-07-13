@@ -104,7 +104,7 @@ After a wake, Cursor must:
 5. Perform that action only.
 6. Return canonical `CHATGPT HANDOFF` when review, blocker, PR-ready, or completion state is reached.
 
-## Start and operate
+## Procedure
 
 From a terminal:
 
