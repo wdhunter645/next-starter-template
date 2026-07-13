@@ -19,6 +19,15 @@ operator-visibility signal only.
 - **Issue:** #____
 - Intent label: <!-- intent:docs / intent:feature / intent:fix / intent:chore / intent:config / intent:ci / intent:ops -->
 - PR class: <!-- docs-governance / docs-content / code / config / ci / release / ops / mixed-approved -->
+- Size: <!-- medium-provisional / small / medium / large -->
+- Delivery model: <!-- A / B-child / B-promotion / emergency-recovery -->
+- Change mode: <!-- project / routine-ops / planned-migration / emergency -->
+- Target environment: <!-- component / preview / production / recovery -->
+- Approval profile: <!-- component-auto-integration / chat-bill-production / protected-change-review / emergency-approval -->
+- Gate profile: <!-- component-child / production-candidate / component-promotion / emergency-recovery -->
+- Rollback profile: <!-- one-step / multi-step / emergency-stabilization -->
+- Component branch: <!-- component/<release-unit> / not-applicable -->
+- Component master: <!-- #<program-issue> / not-applicable -->
 
 ## Scope
 
