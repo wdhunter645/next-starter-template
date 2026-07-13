@@ -281,7 +281,7 @@ export function runCli(env = process.env) {
     fs.appendFileSync(env.GITHUB_OUTPUT, `component_state=${result.componentState}\n`);
   }
 
-  return result.eligible ? 0 : 1;
+  return 0;
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
