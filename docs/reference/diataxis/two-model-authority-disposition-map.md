@@ -64,8 +64,8 @@ Until Task 4 migration completes, legacy `docs/ops/ai/` binding files remain **i
 
 ## Validation checklist (#2486)
 
-- [ ] Every touched allowlist row has target owner and action recorded
-- [ ] Agent-policy conflict documented with interim authority noted
-- [ ] No duplicate active authority introduced in touched set
-- [ ] Direct references updated within touched documents
-- [ ] Header and DIATAXIS checks pass on modified files
+- [x] Every touched allowlist row has target owner and action recorded
+- [x] Agent-policy conflict documented with interim authority noted
+- [x] No duplicate active authority introduced in touched set
+- [x] Direct references updated within touched documents
+- [x] Header checks pass on modified files (local run)

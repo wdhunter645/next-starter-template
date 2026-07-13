@@ -18,6 +18,9 @@ This document exists to prevent dual-authority drift during the transition perio
 
 ## Resolution Rule
 
+Constitutional precedence and domain ownership:
+[`REPOSITORY-AUTHORITY.md`](../REPOSITORY-AUTHORITY.md).
+
 For any documentation topic:
 
 1. If a Diataxis-aligned document exists for that topic, that Diataxis document is authoritative.

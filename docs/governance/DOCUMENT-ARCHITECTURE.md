@@ -81,9 +81,10 @@ Do not add new binding policy under `docs/ops/ai/`.
 
 ### 3. docs/governance/
 
-Purpose: System-level authority and process enforcement
+Purpose: System-level authority, domain policy, and process enforcement
 
 Owns:
+- Repository constitution (`REPOSITORY-AUTHORITY.md`)
 - PR process
 - CI/CD rules
 - Documentation standards
@@ -107,16 +108,21 @@ Does Not Own:
 
 ## Canonical File Rules
 
-- Each domain must have ONE canonical file
+- Each domain must have ONE canonical policy owner (see `REPOSITORY-AUTHORITY.md`)
 - No duplicate authority files allowed
 - All references must point to the canonical file
 
-Example:
-VALID:
-docs/ops/ai/CURSOR-RULES.md
+Interim example (legacy path until Task 4 migration):
 
-INVALID:
-docs/CURSOR_RULES.md
+```text
+docs/ops/ai/CURSOR-RULES.md  → interim execution rules; binding policy migrates to governance
+```
+
+Invalid duplicate:
+
+```text
+docs/CURSOR_RULES.md  → non-canonical path
+```
 
 ---
 
@@ -177,6 +183,7 @@ Required actions when a duplicate is found:
 4. Do not create new files that duplicate existing canonical authority
 
 Canonical governance files (single source per topic):
+- Repository constitution: `/docs/governance/REPOSITORY-AUTHORITY.md`
 - PR process: `/docs/governance/PR_PROCESS.md`
 - PR governance: `/docs/governance/PR_GOVERNANCE.md`
 - Document architecture: `/docs/governance/DOCUMENT-ARCHITECTURE.md` (this file)
