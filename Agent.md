@@ -5,7 +5,7 @@ Authority Level: Navigation
 Owns: Read order, authority hierarchy, execution entry point
 Does Not Own: Execution rules, design authority, governance policies
 Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
-Last Reviewed: 2026-07-07
+Last Reviewed: 2026-07-13
 ---
 
 # Agent.md
@@ -25,6 +25,33 @@ See `docs/how-to/cursor/agent-session-bootstrap.md` for verification.
 
 ---
 
+## LGFC CURSOR RUNTIME BOUNDARY
+
+LGFC implementation defaults to **local Cursor**.
+
+Every Cursor assignment must declare exactly one runtime:
+
+```text
+Runtime: local | cloud | either
+```
+
+Rules:
+
+- `local` is the default.
+- `cloud` or `either` requires explicit authorization in the source GitHub issue from Bill or Chat.
+- `@cursor` is a Cursor Cloud invocation and is prohibited for local LGFC work.
+- Local Cursor routing uses `agent:cursor` + `handoff:ready` plus an explicit `LOCAL CURSOR RESUME` issue or PR comment.
+- Labels and comments are durable routing/context markers; they do not prove an agent process is running.
+
+Binding runtime policy: [`docs/governance/standards/CURSOR-RUNTIME-ROUTING.md`](docs/governance/standards/CURSOR-RUNTIME-ROUTING.md).
+
+Detailed local procedures:
+
+- [`docs/ops/ai/chatgpt-cursor-handoff-workflow.md`](docs/ops/ai/chatgpt-cursor-handoff-workflow.md)
+- [`docs/how-to/cursor/github-poll-wake-loop.md`](docs/how-to/cursor/github-poll-wake-loop.md)
+
+---
+
 ## MANDATORY DOCUMENTATION CHAIN
 
 Before any repo work — including exploration, implementation, PR creation, issue work, review, or remediation — every agent must follow this chain in order:
@@ -40,6 +67,7 @@ Before any repo work — including exploration, implementation, PR creation, iss
    - `/docs/ops/ai/COPILOT-RULES.md`
    - `/docs/ops/ai/DEVIN-RULES.md`
 6. **Applicable repo governance and procedure docs** — including source GitHub issue, task-linked design/architecture/governance files, and for PR/issue/review/remediation/implementation work:
+   - `docs/governance/standards/CURSOR-RUNTIME-ROUTING.md` when Cursor runtime or routing applies
    - `.agents/skills/lgfc-pr-governance/SKILL.md`
    - `.github/pull_request_template.md`
    - `/docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`
@@ -97,7 +125,7 @@ Summary:
 
 - **Bill** — project owner, final authority, PR approval, gate authorization.
 - **Atlas (ChatGPT)** — design authority, documentation PR/package authority, program and child issue authorship, launch-control packages, gate review partner.
-- **Cursor** — **sole** LGFC implementation executor; pre-implementation package review required before execution.
+- **Cursor** — **sole** LGFC implementation executor; pre-implementation package review required before execution; runtime defaults to local unless the source issue explicitly authorizes cloud or either.
 - **Codex** — **inactive/out** for LGFC implementation unless Bill explicitly reauthorizes in a future governance update.
 
 Execution discipline:
@@ -110,7 +138,7 @@ Execution discipline:
 - PR lifecycle states must follow `/docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`
 - Cursor stops at verification gates; Bill/Atlas authorize continue, hold, or revise
 
-**Agent assignments (PMO model):** All future Cursor implementation assignments must use [`docs/templates/agent-assignment-template.md`](docs/templates/agent-assignment-template.md), including documentation package, draft/reference code, Cursor review checkpoint, and Bill/Atlas stop-gate authorization fields.
+**Agent assignments (PMO model):** All future Cursor implementation assignments must use [`docs/templates/agent-assignment-template.md`](docs/templates/agent-assignment-template.md), including runtime selection, documentation package, draft/reference code, Cursor review checkpoint, and Bill/Atlas stop-gate authorization fields.
 
 ---
 

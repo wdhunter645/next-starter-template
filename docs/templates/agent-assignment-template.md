@@ -6,7 +6,7 @@ Owns: Standard format for assigning scoped work to Cursor, Codex, Copilot, Devin
 Does Not Own: Source issue scope, design authority, implementation decisions, or merge approval
 Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
 Related Issues: #1449
-Last Reviewed: 2026-06-17
+Last Reviewed: 2026-07-13
 ---
 
 # Agent Assignment Template
@@ -28,7 +28,8 @@ This document does not replace shared agent law. It operationalizes how Bill and
 Use this template when:
 
 - assigning any **implementation** task to **Cursor**;
-- opening a Cursor Cloud session for LGFC implementation;
+- opening a **local** Cursor session for LGFC implementation (default);
+- opening a Cursor Cloud session only when the source issue explicitly authorizes `Runtime: cloud` or `Runtime: either`;
 - routing work through Program 1 — Phase 1 Wrap-Up or any child project under the PMO model;
 - converting a source GitHub issue into a launch-control-ready Cursor package without expanding scope.
 
@@ -46,6 +47,7 @@ Every Cursor implementation assignment must include all of the following. If any
 | Field | Requirement |
 | --- | --- |
 | Operating mode | Exactly one mode; agent must not switch modes |
+| Runtime | Exactly one value: `local` (default), `cloud`, or `either`; see [`CURSOR-RUNTIME-ROUTING.md`](../governance/standards/CURSOR-RUNTIME-ROUTING.md) |
 | Source issue | Exactly one primary source issue (`#number`) |
 | Documentation package | Link or PR reference to merged/approved canonical docs that gate this work |
 | Draft/reference code | Pseudocode or reference implementation for Cursor handoff (not a substitute for allowlist authority) |
@@ -83,6 +85,10 @@ For LGFC implementation work, mode must be **Implementation** and executor must 
 ## 2. Source Issue
 
 Primary source issue: #<number>
+
+Runtime: local | cloud | either
+
+Default is **local**. `cloud` or `either` requires explicit Bill/Chat authorization recorded in the source issue. Do not use `@cursor` for local work; see `docs/governance/standards/CURSOR-RUNTIME-ROUTING.md`.
 
 Use only this issue as task authority.
 
@@ -191,6 +197,7 @@ If verification fails or Bill/Atlas issue hold:
 Before editing files, Cursor must comment on the source issue:
 
 - [ ] Documentation package read
+- [ ] Runtime declared (`local` default; `cloud`/`either` only with issue authorization)
 - [ ] Draft/reference code reviewed
 - [ ] Allowlist complete
 - [ ] Non-goals clear
