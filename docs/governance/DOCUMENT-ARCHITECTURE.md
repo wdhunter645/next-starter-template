@@ -4,8 +4,8 @@ Audience: Human + AI
 Authority Level: Canonical
 Owns: Document structure, ownership boundaries, path resolution rules
 Does Not Own: Implementation sequencing, tracker state, design authority
-Canonical Reference: /docs/governance/DOCUMENT-ARCHITECTURE.md
-Last Reviewed: 2026-03-19
+Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
+Last Reviewed: 2026-07-13
 ---
 
 # DOCUMENT ARCHITECTURE (AUTHORITY)
@@ -13,6 +13,12 @@ Last Reviewed: 2026-03-19
 ## Purpose
 Defines the authoritative document structure, ownership boundaries, and path resolution rules for the repository.
 All CI scripts, AI agents, and contributors must follow this model.
+
+Constitutional precedence and domain ownership:
+[`REPOSITORY-AUTHORITY.md`](./REPOSITORY-AUTHORITY.md).
+
+Disposition map for Task 2:
+[`docs/reference/diataxis/two-model-authority-disposition-map.md`](../reference/diataxis/two-model-authority-disposition-map.md).
 
 ---
 
@@ -41,23 +47,35 @@ Examples:
 
 ### 2. docs/ops/
 
-Purpose: Operational procedures and execution rules
+Purpose: Operational procedures, project tracking, and **runtime execution state**
+
+Does Not Own:
+- Binding system authority or domain policy (see `docs/governance/REPOSITORY-AUTHORITY.md`)
 
 #### docs/ops/ai/
 
-Owns:
-- AI agent behavior rules
-- Execution constraints
-- Thread discipline
+**Interim location** for legacy agent execution material during the delivery-system migration.
 
-Canonical Files:
-- SHARED-AGENT-RULES.md
-- CORE-RULES.md
-- CHATGPT-RULES.md
-- CURSOR-RULES.md
-- CODEX-RULES.md
-- COPILOT-RULES.md
-- DEVIN-RULES.md
+Target routing (binding policy → governance; contracts → reference; procedures → how-to; runtime state → ops):
+
+| Material | Target canonical location |
+| --- | --- |
+| Binding agent policy | `docs/governance/**` |
+| Agent facts and contracts | `docs/reference/**` |
+| Agent execution procedures | `docs/how-to/**` |
+| Live queues, handoffs, poll-wake state | `docs/ops/**` |
+
+Until migrated under an explicit delivery-system child issue, these interim canonical files remain authoritative for execution:
+
+- `SHARED-AGENT-RULES.md`
+- `CORE-RULES.md`
+- `CHATGPT-RULES.md`
+- `CURSOR-RULES.md`
+- `CODEX-RULES.md`
+- `COPILOT-RULES.md`
+- `DEVIN-RULES.md`
+
+Do not add new binding policy under `docs/ops/ai/`.
 
 ---
 

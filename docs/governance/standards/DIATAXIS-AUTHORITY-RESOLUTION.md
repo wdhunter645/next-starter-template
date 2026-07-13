@@ -4,8 +4,8 @@ Audience: Human + AI
 Authority Level: Canonical
 Owns: Diataxis-to-legacy authority resolution during transition
 Does Not Own: Folder-purpose rules; product design; operational work tracking
-Canonical Reference: /docs/governance/DOCUMENT-ARCHITECTURE.md
-Last Reviewed: 2026-05-02
+Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
+Last Reviewed: 2026-07-13
 ---
 
 # DIATAXIS AUTHORITY RESOLUTION

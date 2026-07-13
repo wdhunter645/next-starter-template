@@ -4,12 +4,17 @@ Audience: Human + AI
 Authority Level: Canonical
 Owns: Governance rules, PR process, enforcement, AI guardrails
 Does Not Own: Design/architecture/platform specifications; step-by-step ops procedures
-Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md
-Last Reviewed: 2026-02-20
+Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
+Last Reviewed: 2026-07-13
 ---
 
-
 # Document Authority Hierarchy (_MASTER)
+
+## Status
+
+Layer-0 precedence and domain ownership now live in
+[`REPOSITORY-AUTHORITY.md`](../REPOSITORY-AUTHORITY.md). This file retains a
+short legacy precedence summary until consolidated in a later disposition pass.
 
 ## Precedence Order
 1. Governance
