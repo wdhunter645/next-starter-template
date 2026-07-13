@@ -1,0 +1,132 @@
+name: DIATAXIS Folder Authority
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'docs/**'
+      - 'Agent.md'
+      - 'scripts/ci/diataxis_folder_audit.mjs'
+      - 'scripts/ci/diataxis_migration_ratchet.mjs'
+      - '.github/workflows/diataxis-folder-authority.yml'
+
+jobs:
+  validate-diataxis-authority:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Collect DIATAXIS changed files
+        run: |
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" \
+            | grep -E '^(docs/|Agent\.md$)' \
+            | tee diataxis_changed_files.txt || true
+
+      - name: Validate DIATAXIS folder authority
+        id: diataxis_folder_audit
+        continue-on-error: true
+        env:
+          DIATAXIS_CHANGED_FILES_FILE: diataxis_changed_files.txt
+        run: node scripts/ci/diataxis_folder_audit.mjs > diataxis_folder_report.md
+
+      - name: Validate DIATAXIS migration ratchet
+        id: diataxis_migration_ratchet
+        continue-on-error: true
+        env:
+          DIATAXIS_CHANGED_FILES_FILE: diataxis_changed_files.txt
+          MIGRATION_RATCHET_BODY_FILE: pr_body.txt
+          MIGRATION_RATCHET_ENFORCE_FAILURE: 'false'
+        run: |
+          gh pr view "${{ github.event.pull_request.number }}" --json body --jq .body > pr_body.txt
+          node scripts/ci/diataxis_migration_ratchet.mjs > diataxis_migration_ratchet_report.md
+
+      - name: Post or update DIATAXIS folder advisory
+        if: steps.diataxis_folder_audit.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        env:
+          REMEDIATION_MARKER: '<!-- diataxis-folder-advisory -->'
+          REPORT_FILE: diataxis_folder_report.md
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = process.env.REMEDIATION_MARKER;
+            const report = fs.readFileSync(process.env.REPORT_FILE, 'utf8').trim();
+            const body = `${marker}\n${report}\n\nThis advisory is non-blocking during PR Hygiene Foundation rollout.`;
+            const issue_number = context.payload.pull_request.number;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number,
+              per_page: 100,
+            });
+
+            const existing = comments.find((comment) => comment.body && comment.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number,
+                body,
+              });
+            }
+
+      - name: Post or update DIATAXIS migration ratchet advisory
+        if: steps.diataxis_migration_ratchet.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        env:
+          REMEDIATION_MARKER: '<!-- diataxis-migration-ratchet-advisory -->'
+          REPORT_FILE: diataxis_migration_ratchet_report.md
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = process.env.REMEDIATION_MARKER;
+            const report = fs.readFileSync(process.env.REPORT_FILE, 'utf8').trim();
+            const body = `${marker}\n${report}\n\nThis migration ratchet runs in advisory mode until pilot evidence supports blocking enforcement.`;
+            const issue_number = context.payload.pull_request.number;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number,
+              per_page: 100,
+            });
+
+            const existing = comments.find((comment) => comment.body && comment.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number,
+                body,
+              });
+            }
+
+      - name: Summary
+        run: |
+          echo "DIATAXIS folder authority and migration ratchet completed in advisory mode."
