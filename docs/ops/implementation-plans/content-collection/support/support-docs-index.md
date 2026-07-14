@@ -41,7 +41,7 @@ Support docs govern **how** tasks are assigned, labeled, queued, and halted. Fou
 - Intake `.docx` files remain non-authoritative under `_incoming/` on `atlas/drive-draft-intake-2367`.
 - Rejected target root `docs/ops/programs/content-collection/` — remapped to `docs/ops/implementation-plans/content-collection/support/` per #2360 C7.
 - Cursor assignment prompts supplement `docs/templates/agent-assignment-template.md`; they do not replace it.
-- Label addendum defers to PMO V4 — not parallel label authority.
+- Label addendum defers to PMO July 2026 — not parallel label authority.
 - Issue-first collaboration required before PR (#2364 Bill comment; Phase 0 playbook Step 3).
 
 ## Source intake mapping

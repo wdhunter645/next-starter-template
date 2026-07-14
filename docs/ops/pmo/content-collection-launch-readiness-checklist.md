@@ -37,7 +37,7 @@ This checklist covers repository-documentation and implementation-control gates.
 | 1 | Source issue open with ChatGPT PR authorization comment | `#2363` / `#2364` etc. | `issue_authorized` |
 | 2 | #2360 audit merged and disposition recorded | Report on `main` | `audit_complete` |
 | 3 | File allowlist defined before edits | Listed in issue or PR body | `allowlist_defined` |
-| 4 | No governance conflict with PMO V4 / PR lifecycle / Agent.md chain | Stop and `CHATGPT HANDOFF` if conflict | `governance_clear` |
+| 4 | No governance conflict with PMO July 2026 / PR lifecycle / Agent.md chain | Stop and `CHATGPT HANDOFF` if conflict | `governance_clear` |
 | 5 | Docs validation commands planned | See Validation section | `validation_planned` |
 
 ## Pre-implementation launch (post–Phase 0 docs)
@@ -83,7 +83,7 @@ This checklist covers repository-documentation and implementation-control gates.
 
 Stop and post `CHATGPT HANDOFF` when:
 
-- Operational doc conflicts with `docs/ops/pmo/PMO-V4-OPERATING-MODEL.md`, PR lifecycle, or shared agent rules.
+- Operational doc conflicts with `docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`, PR lifecycle, or shared agent rules.
 - Accelerated Policy / pre-approved merge language appears in promoted docs (C1/C8).
 - Proposed path reintroduces `docs/ops/programs/`.
 - Phase 1 issue attempts to start feature implementation before the freeze marker.

@@ -2,48 +2,48 @@
 Doc Type: Operations
 Audience: Human + AI
 Authority Level: Canonical PMO Authority
-Owns: LGFC PMO v4 program inventory, workload reporting, backlog inventory, lifecycle terms, component-project hierarchy, reduced-gate delivery model, program preparation, Cursor execution boundaries, launch gates, Ops production handoff, completed/historical archive treatment, PMO reporting vs operations reporting separation, and Drive drafting model
+Owns: LGFC PMO July 2026 program inventory, PMO issue contract, label contract, pipeline stages, workload reporting, backlog inventory, lifecycle terms, component-project hierarchy, reduced-gate delivery model, program preparation, Cursor execution boundaries, launch gates, Ops production handoff, completed/historical archive treatment, PMO reporting vs operations reporting separation, dashboard data-quality requirements, and Drive drafting model
 Does Not Own: Product-specific design, runtime implementation, workflow YAML, production configuration, secrets, or unauthorized GitHub issue mutation
-Canonical Reference: /docs/ops/pmo/PMO-V4-OPERATING-MODEL.md
-Related Issues: #2100, #2296
-Last Reviewed: 2026-07-06
+Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
+Related Issues: #2100, #2296, #2516
+Last Reviewed: 2026-07-14
 ---
 
-# PMO V4 Operating Model
+# PMO July 2026 Operating Model
 
 ## Purpose
 
-This document is the top-level LGFC PMO v4 authority. It supersedes `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` for new PMO planning and implementation decisions **only after** issue #2100 merges by PR.
+This document is the top-level LGFC PMO July 2026 authority. It supersedes `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` and the superseded `PMO-V4-OPERATING-MODEL.md` naming for current PMO planning, issue tracking, dashboard reporting, and implementation-readiness decisions.
 
-PMO v4 preserves the issue-number-based program model from PMO v3. A program is a GitHub program issue. Program issue numbers are the durable program identifiers.
+PMO July 2026 preserves the issue-number-based program model from PMO v3. A program is a GitHub program issue. Program issue numbers are the durable program identifiers.
 
 ## Current known truth
 
-Until PR #2282 for issue #2100 merges, `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` remains the current repository PMO authority.
+PR #2282 for issue #2100 has promoted the former PMO V4 material into repository authority. This July 2026 document is the current canonical PMO operating model and replaces the version-only PMO V4 route for active authority references.
 
-This PMO V4 document is staged authority while PR #2282 is open. It is proposed repository authority, not controlling repository authority, until the PR merges.
-
-Google Drive PMO V4 material and the embedded PMO V4 source comments in issue #2100 are planning inputs. They inform this promotion, but they do not become repository authority by themselves.
+Google Drive PMO material and the embedded source comments in issue #2100 remain planning inputs and historical promotion evidence. They do not become repository authority by themselves.
 
 `program-registry.md` and `pmo-backlog.md` remain subordinate PMO routing and inventory surfaces. They must not override the controlling PMO operating model.
 
 ## Intended final state
 
-After PR #2282 merges, this document becomes the controlling LGFC PMO authority for new PMO planning and implementation decisions.
+Every PMO-tracked GitHub issue has complete, mutually consistent metadata; the dashboard can place it into Active, Pipeline, Completed, or Incomplete without silent fallback; and operators can remediate metadata defects from documented issue-contract rules.
 
-After PR #2282 merges, `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` becomes historical reference unless a later source issue explicitly restores or updates it.
+`/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` remains historical reference unless a later source issue explicitly restores or updates it.
 
-After PR #2282 merges, `program-registry.md` and `pmo-backlog.md` route readers to PMO V4 for current PMO authority while continuing to serve their narrower registry and backlog functions.
+`program-registry.md`, `pmo-backlog.md`, dashboard documentation, readiness packages, and label-mapping addenda route readers to PMO July 2026 for current PMO authority while continuing to serve their narrower functions.
 
-Future PMO V4 refinements still require the normal GitHub Issue / PR path before they become repository authority.
+Future PMO refinements still require the normal GitHub Issue / PR path before they become repository authority.
 
-## Transition from PMO V3
+## Transition from PMO V3 and PMO V4 naming
 
 Authority timing is defined in [Current known truth](#current-known-truth) and [Intended final state](#intended-final-state).
 
-After PR #2282 merges, where older PMO documents conflict with this file, this file controls for new work.
+Where older PMO documents conflict with this file, this file controls for new work.
 
-Subordinate PMO docs (`program-registry.md`, `pmo-backlog.md`, implementation plans, and task issues) must be reconciled to conform after promotion. This promotion PR reconciles only the minimum index/backlog routing references in `program-registry.md` and `pmo-backlog.md`.
+The former `PMO-V4-OPERATING-MODEL.md` path is superseded historical naming and must not be used as the current canonical route. Historical files may mention PMO V3 or PMO V4 as evidence of prior transitions, but active authority headers and current routing references must point to `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`.
+
+Subordinate PMO docs (`program-registry.md`, `pmo-backlog.md`, dashboard docs, implementation plans, readiness packages, and task issues) must be reconciled to conform when touched by authorized work.
 
 ## Drive vs repository authority
 
@@ -53,22 +53,22 @@ Rules:
 
 - **Drive drafts are planning inputs.** They are not repository authority.
 - **Repository docs become authority only through issue/PR merge.**
-- Repository documentation remains authoritative until a PMO V4 replacement PR lands.
+- Repository documentation remains authoritative until a PMO July 2026 replacement PR lands.
 - Future PMO notebook content matures in Drive first; promotion to the repository still requires the normal issue/PR path.
 
-Source for this promotion: issue #2100 embedded comments (Drive draft *LGFC PMO V4 Operating Model — Updated Draft 2026-06-20*).
+Source for the original PMO V4 promotion: issue #2100 embedded comments (Drive draft *LGFC PMO V4 Operating Model — Updated Draft 2026-06-20*).
 
 ## Scope
 
-This document owns PMO v4 terminology, workload inventory rules, backlog categories, component-project hierarchy, reduced-gate delivery model, program-preparation rules, Cursor execution boundaries, launch gates, Ops production handoff, completed/historical archive treatment, PMO reporting vs operations reporting separation, and documentation replacement order.
+This document owns PMO July 2026 terminology, the PMO issue contract, label requirements, lifecycle rules, pipeline stages, priority rules, task accounting, workload inventory rules, backlog categories, component-project hierarchy, reduced-gate delivery model, program-preparation rules, Cursor execution boundaries, launch gates, Ops production handoff, completed/historical archive treatment, PMO reporting vs operations reporting separation, dashboard data-quality requirements, and documentation replacement order.
 
 It does not own task-level implementation plans, workflow YAML, runtime code, or unauthorized GitHub issue mutation.
 
-## Core PMO V4 rules
+## Core PMO July 2026 rules
 
 ### Complete inventory reporting
 
-PMO V4 reporting uses **complete inventories**. Atlas may classify status, launch state, risk, sequencing pressure, and dependencies, but **Bill makes final prioritization decisions**. Unless Bill asks for a subset, program/project/idea lists should include all known entries in the applicable category.
+PMO July 2026 reporting uses **complete inventories**. Atlas may classify status, launch state, risk, sequencing pressure, and dependencies, but **Bill makes final prioritization decisions**. Unless Bill asks for a subset, program/project/idea lists should include all known entries in the applicable category.
 
 ### Website build-out priority rule
 
@@ -80,9 +80,109 @@ A repository need may supersede website build-out and become Priority #1 only wh
 
 Atlas prepares classifications, sequencing recommendations, and launch-readiness assessments. Bill authorizes final prioritization, launch, hold, reprioritization, and merge decisions.
 
+## PMO July 2026 Issue Contract
+
+The PMO issue contract is the required metadata model for every GitHub issue included in PMO portfolio reporting. Dashboard generation and validation must treat contract failures as data-quality defects, not as reasons to silently invent defaults.
+
+### Tracking eligibility
+
+The `pmo` label controls PMO tracking:
+
+- `pmo` means the issue is tracked by PMO and is eligible for PMO portfolio reporting.
+- No `pmo` label means the issue is outside PMO portfolio reporting, even when the issue title uses a PMO-like prefix.
+
+Supported standalone portfolio title prefixes are:
+
+- `PROGRAM:`
+- `PROJECT:`
+- `PROGRAM CANDIDATE:`
+- `STRATEGY:`
+- `STRATEGY REVIEW:`
+
+`pmo:task` issues are never standalone portfolio rows; they contribute to parent task accounting when their parent reference is valid.
+
+### Lifecycle labels
+
+Every PMO-tracked issue must carry exactly one lifecycle label:
+
+| Label | Meaning | Dashboard placement |
+| --- | --- | --- |
+| `pmo:pipeline` | Not active yet; retained for PMO review, design, planning, or launch preparation | Pipeline unless invalid metadata sends it to Incomplete |
+| `pmo:active` | Active PMO work or active implementation coordination | Active unless invalid metadata sends it to Incomplete |
+| `pmo:closed` | Completed, closed, or intentionally terminal PMO work | Completed unless invalid metadata sends it to Incomplete |
+
+Closed GitHub issue state must reconcile to `pmo:closed`. A closed PMO issue without `pmo:closed`, or an open issue with contradictory terminal metadata, is incomplete until reconciled.
+
+### Pipeline stage labels
+
+Every `pmo:pipeline` issue must carry exactly one pipeline-stage label. Stage labels are mutually exclusive and describe the current progression from initial idea through launch readiness:
+
+| Order | Label | Stage | Meaning |
+| ---: | --- | --- | --- |
+| 1 | `pmo:stage:intake` | Idea / topic intake | Topic captured for PMO awareness; not yet discovery-ready |
+| 2 | `pmo:stage:discovery` | Discussion / discovery | PMO is shaping purpose, owner, risks, and rough boundaries |
+| 3 | `pmo:stage:definition` | Definition / design | Repository-ready scope, design, and authority are being defined |
+| 4 | `pmo:stage:planning` | Planning | Implementation sequence, dependencies, and acceptance criteria are being planned |
+| 5 | `pmo:stage:prep` | Implementation preparation | Documentation package, issue chain, file scope, and verification model are being prepared |
+| 6 | `pmo:stage:ready-for-launch` | Ready for launch | Code/docs preparation is complete, implementation plan is complete, and master/child issues are created and linked; only explicit Bill/Atlas Go/No-Go remains |
+
+Ready for launch is a prepared-but-not-launched state. It does not authorize Cursor execution, issue mutation, production launch, or merge. Execution begins only after explicit Bill/Atlas Go/No-Go authorization is recorded on the relevant source issue or assignment thread.
+
+### Priority labels
+
+Every PMO-tracked issue must carry exactly one priority label:
+
+| Label | Meaning |
+| --- | --- |
+| `pmo:priority:1`, `pmo:priority:2`, `pmo:priority:3`, and so on | Ordered execution or portfolio priority; lower numbers sort first |
+| `pmo:priority:idea` | Topic retained in Pipeline and on the PMO meeting agenda without a numbered execution priority |
+
+`pmo:priority:none` is prohibited. Missing priority labels, multiple priority labels, unsupported priority labels, and `pmo:priority:none` are incomplete data-quality defects.
+
+### Task issues and parent references
+
+`pmo:task` identifies a task issue. Every task must have a valid parent program/project reference that resolves to a PMO-tracked parent issue.
+
+Task state derives from the same PMO lifecycle labels:
+
+| Task labels | Task state |
+| --- | --- |
+| `pmo:task` + `pmo:pipeline` | Pending task |
+| `pmo:task` + `pmo:active` | In-progress task |
+| `pmo:task` + `pmo:closed` | Done task |
+
+For each parent program or project:
+
+- `taskCount` equals all linked `pmo:task` issues with a valid parent reference.
+- `tasksCompleted` equals linked tasks with `pmo:closed`.
+- `percentComplete` equals `round(tasksCompleted / taskCount * 100)` when `taskCount > 0`.
+- `tasksCompleted` must never exceed `taskCount`.
+
+Tasks with missing or invalid parent references are incomplete. Parent rows with inconsistent task accounting are incomplete until the task graph is corrected.
+
+### Incomplete data-quality handling
+
+Any `pmo` issue with missing, conflicting, or invalid required metadata must appear in the dashboard Incomplete section rather than Active, Pipeline, or Completed.
+
+Incomplete detection includes at least:
+
+- missing or conflicting lifecycle label;
+- missing or conflicting priority label;
+- `pmo:priority:none`;
+- missing or conflicting pipeline-stage label for `pmo:pipeline` work;
+- missing or invalid parent reference for a `pmo:task`;
+- invalid task accounting;
+- missing issue number, issue URL, or other issue identity in generated output;
+- unsupported or contradictory PMO classification;
+- GitHub closed state that does not reconcile to `pmo:closed`.
+
+The Incomplete view must list issue number/link, current labels, data-quality errors, required remediation, and last updated date. Incomplete rows are remediation work queues; they do not count as valid Active, Pipeline, or Completed portfolio rows until corrected.
+
+Dashboard field behavior, JSON shape, validation, sorting, and rendering are specified in `/docs/ops/pmo/PMO-JULY-2026-DASHBOARD-SPECIFICATION.md`.
+
 ## Atlas/ChatGPT dashboard startup input
 
-For PMO v4 meeting startup, Atlas and ChatGPT should use the canonical public PMO dashboard JSON as the preferred reporting input when it is reachable and valid:
+For PMO July 2026 meeting startup, Atlas and ChatGPT should use the canonical public PMO dashboard JSON as the preferred reporting input when it is reachable and valid:
 
 ```text
 https://wdhunter645.github.io/next-starter-template/pmo-dashboard/dashboard-data.json
@@ -99,11 +199,11 @@ Operating rule:
 
 ## PMO reporting vs operations reporting separation
 
-PMO V4 separates **PMO status reporting** from **operations status reporting**. Do not conflate them.
+PMO July 2026 separates **PMO status reporting** from **operations status reporting**. Do not conflate them.
 
 | Surface | Owns | Examples |
 | --- | --- | --- |
-| **PMO status reporting** | Program inventory, backlog inventory, launch state, lifecycle status, prioritization queue, promotion candidates, and historical archive classification | Workload inventory (master program records), PMO Backlog rows, program lifecycle terms (Launch Ready, Implementation Active, Post-Implementation Verification, Complete / Closed), future backlog shaping |
+| **PMO status reporting** | Program inventory, backlog inventory, launch state, lifecycle status, prioritization queue, promotion candidates, and historical archive classification | Workload inventory (master program records), PMO Backlog rows, program lifecycle terms (Ready for Launch, Implementation Active, Post-Implementation Verification, Complete / Closed), future backlog shaping |
 | **Operations status reporting** | Live repository execution evidence and agent work queues | Open PRs, active issue clusters, CI/post-merge hardening state, Atlas current task queue, blocked design items, verification gate status |
 
 Rules:
@@ -119,14 +219,15 @@ The PMO dashboard is a generated reporting snapshot, not the live source of exec
 
 Dashboard state uses this precedence model:
 
-1. The `pmo` label controls dashboard inclusion.
-2. A closed GitHub issue or `status:complete` label controls Completed lifecycle and display state.
-3. For open non-complete PMO issues, issue-body `Status: Active` controls Active lifecycle.
-4. For open non-complete PMO issues, issue-body future-work statuses and `Dashboard Lifecycle: pipeline` control Pipeline lifecycle.
-5. Task/ops execution labels such as post-merge verification or failed do not become PMO dashboard display statuses.
-6. `Implementation Ready` must be explicit in issue-body `Status:` or `Dashboard Status:` metadata; missing or unrecognized pipeline status metadata displays as `Update Needed`, not `Implementation Ready`.
+1. The `pmo` label controls PMO tracking eligibility.
+2. Required contract validation runs before Active, Pipeline, or Completed placement.
+3. Issues with missing, conflicting, or invalid PMO metadata appear in Incomplete.
+4. A closed GitHub issue must reconcile to `pmo:closed` and Completed placement.
+5. Valid `pmo:active` issues appear in Active.
+6. Valid `pmo:pipeline` issues appear in Pipeline and must include exactly one `pmo:stage:*` label.
+7. Valid `pmo:closed` issues appear in Completed.
 
-Completed dashboard rows display `Completed`. Open issues intentionally marked `status:complete` may appear in Completed with `closedAt = null` and sort by `updatedAt`; that is a metadata-hygiene signal, not a Pipeline state.
+Task/ops execution labels such as post-merge verification or failed do not become PMO dashboard display statuses. Completed dashboard rows display `Completed`. Pipeline stage labels distinguish idea intake, discovery, definition, planning, implementation preparation, and ready-for-launch work.
 
 ## Workload inventory
 
@@ -157,7 +258,7 @@ Workload inventory rules:
 
 ## Backlog categories
 
-PMO V4 uses two backlog surfaces:
+PMO July 2026 uses two backlog surfaces:
 
 | Surface | Role | Classification |
 | --- | --- | --- |
@@ -201,16 +302,16 @@ Repository backlog detail and rank tables remain in `/docs/ops/pmo/pmo-backlog.m
 
 ## Program lifecycle status nomenclature
 
-PMO program lifecycle terms remain as defined in PMO V3 until reconciled here. They are distinct from PR lifecycle states in `/docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`.
+PMO program lifecycle terms are defined here. They are distinct from PR lifecycle states in `/docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`.
 
 | Term | Meaning |
 | --- | --- |
-| **Launch Ready** | Scope, issue chain, acceptance criteria, and execution order are documented well enough for Cursor implementation to begin. Does **not** mean production complete. |
+| **Ready for Launch** | Scope, issue chain, acceptance criteria, execution order, code/docs preparation, implementation plan, and master/child issue linkage are documented well enough for Bill/Atlas Go/No-Go. Does **not** mean launched or production complete. |
 | **Implementation Active** | Cursor is executing the approved issue/PR chain. One PR per issue unless explicitly authorized otherwise. |
 | **Post-Implementation Verification** | Implementation PRs are merged or ready for final verification; validation, cleanup, closeout, and remediation checks are running. |
 | **Complete / Closed** | Production/governance validation passed; cleanup resolved; source and child issues closed or explicitly deferred with documented rationale. |
 
-**Principle:** Do not use "launch ready" to mean production complete.
+**Principle:** Do not use "ready for launch" to mean launched, authorized for execution, or production complete.
 
 ## Launch gates
 
@@ -243,7 +344,7 @@ Rules:
 
 ## Program preparation
 
-Before Cursor launches any PMO program or component project, Atlas prepares work to the maximum feasible extent. Preparation may occur at the **full-program level** or at the **component-project level** when a bounded capability is ready for Cursor execution. This preparation step is mandatory for PMO V4 and is intended to reduce Cursor resource usage, reduce agent drift, and make execution deterministic.
+Before Cursor launches any PMO program or component project, Atlas prepares work to the maximum feasible extent. Preparation may occur at the **full-program level** or at the **component-project level** when a bounded capability is ready for Cursor execution. This preparation step is mandatory for PMO July 2026 and is intended to reduce Cursor resource usage, reduce agent drift, and make execution deterministic.
 
 ### Component-project preparation
 
@@ -608,9 +709,9 @@ Atlas identifies DIATAXIS migration opportunities and determines whether they ar
 
 ## Source-of-truth hierarchy
 
-After PMO V4 promotion merges:
+Current PMO authority hierarchy:
 
-1. PMO V4 operating model: this file
+1. PMO July 2026 Operating Model: this file
 2. Current active repository documentation governing the subject
 3. Current program implementation plan
 4. Task/source issue body
@@ -624,7 +725,7 @@ Drive drafts remain planning inputs at all times unless promoted by issue/PR.
 
 Future PMO documentation changes must be top-down:
 
-1. Update this PMO V4 operating model first.
+1. Update this PMO July 2026 operating model first.
 2. Update subordinate PMO docs to conform.
 3. Update program implementation plans.
 4. Update task/source issues only after the governing docs are aligned.
@@ -642,13 +743,14 @@ The following items are identified for bounded follow-up issues. They are **not*
 | PMO Enterprise Stabilization Sequence | Drive planning doc #28 — stabilization sequence authority | Bounded planning issue |
 | Agent rule-load management | Drive planning docs #30–#31 — agent rule checklist and documentation inventory | Governance program follow-on |
 | Release evidence ownership | Release/operations lifecycle from stabilization sequence | Operations follow-on |
-| `lgfc-cursor-execution-contract.md` reconciliation | Align cursor execution contract with PMO V4 component-project and preparation model | Priority #3 / #1722 |
-| Full registry/backlog reconciliation | Reconcile detailed program-registry and pmo-backlog rows to PMO V4 workload inventory (#1738, #1847, Phase 2 shaping) | Post-promotion maintenance issue |
+| `lgfc-cursor-execution-contract.md` reconciliation | Align cursor execution contract with PMO July 2026 component-project and preparation model | Priority #3 / #1722 |
+| Full registry/backlog reconciliation | Reconcile detailed program-registry and pmo-backlog rows to PMO July 2026 workload inventory (#1738, #1847, Phase 2 shaping) | Post-promotion maintenance issue |
 | Drive planning docs #27–#31 | Remain in Drive until individually promoted by issue/PR | Atlas |
 
 ## Related references
 
-- PMO V3 operating model (historical after promotion): `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`
+- PMO V3 operating model (historical): `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`
+- PMO July 2026 dashboard specification: `/docs/ops/pmo/PMO-JULY-2026-DASHBOARD-SPECIFICATION.md`
 - PMO program registry: `/docs/ops/pmo/program-registry.md`
 - PMO Backlog: `/docs/ops/pmo/pmo-backlog.md`
 - PR lifecycle state machine: `/docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`

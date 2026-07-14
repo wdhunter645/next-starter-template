@@ -1,15 +1,17 @@
 ---
 Doc Type: Operations
 Audience: Human + AI
-Authority Level: Canonical PMO Authority
+Authority Level: Historical PMO Authority
 Owns: LGFC PMO v3 program issue model, PMO meeting issue model, PMO Backlog rules, launch gates, promotion rules, agent authority boundaries, and top-down PMO documentation replacement intent
-Does Not Own: Product-specific design, runtime implementation, workflow YAML, production configuration, secrets, or unauthorized GitHub issue mutation
-Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501, #1500, #1719, #1725, #1856
-Last Reviewed: 2026-06-20
+Does Not Own: Current PMO operating policy, product-specific design, runtime implementation, workflow YAML, production configuration, secrets, or unauthorized GitHub issue mutation
+Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
+Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501, #1500, #1719, #1725, #1856, #2100
+Last Reviewed: 2026-07-14
 ---
 
 # PMO V3 Operating Model
+
+> **Historical reference.** Current PMO authority is `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`. This file preserves PMO v3 evidence and terminology for continuity.
 
 ## Purpose
 

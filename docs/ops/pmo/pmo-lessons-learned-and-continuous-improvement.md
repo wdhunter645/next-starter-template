@@ -4,7 +4,7 @@ Audience: Human + AI
 Authority Level: Operational Authority
 Owns: PMO lessons learned, continuous-improvement controls, and reusable launch checkpoints for LGFC programs
 Does Not Own: Program scope, merge authorization, workflow implementation, or issue closure authority
-Canonical Reference: /docs/ops/pmo/PMO-V4-OPERATING-MODEL.md
+Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
 Related Issues: #2366, #2359, #2376, #2380, #2389
 Last Reviewed: 2026-07-08
 ---
