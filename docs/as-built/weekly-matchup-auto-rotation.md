@@ -5,20 +5,21 @@ Authority Level: Supporting
 Owns: Runtime behavior for D1-backed weekly photo matchup auto-rotation
 Does Not Own: Component design, voting policy, photo curation UI
 Canonical Reference: /docs/as-built/weekly-matchup-auto-rotation.md
-Related issues: #2157, #2230
-Last Reviewed: 2026-07-04
+Related issues: #2157, #2230, #2519
+Last Reviewed: 2026-07-15
 ---
 
 # Weekly Photo Matchup auto-rotation
 
 ## Purpose
 
-Records how `GET /api/matchup/current` resolves the homepage Weekly Photo Matchup pair from D1 without requiring manual admin action each week.
+Records how `GET /api/matchup/current` resolves the homepage Weekly Photo Matchup pair from D1 without requiring manual admin action each week, and how browser image-load failures trigger server repair.
 
 ## Scope
 
-- Backend resolver only (`functions/api/matchup/current.ts`).
-- Public contract consumed by `src/components/WeeklyMatchup.tsx` is unchanged.
+- Backend resolver (`functions/api/matchup/current.ts`).
+- Browser-driven repair (`POST /api/matchup/repair` via `functions/api/matchup/repair.ts`).
+- Public contract consumed by `src/components/WeeklyMatchup.tsx`.
 - Photo club-use curation (`photos.is_matchup_eligible`) is defined in `/docs/reference/platform/Backblaze_B2.md`.
 - Admin photo curation UI is planned for `/admin/d1-test/` under a future PMO program; until then, inspect-only.
 
@@ -34,10 +35,21 @@ On each request, the API:
    - prefers non-memorabilia rows;
    - excludes photo IDs used in the last eight matchups when enough alternatives exist;
    - skips rows where `is_matchup_eligible < 0`;
-   - inserts a new active row for the current week (handles `UNIQUE` race by re-read);
+   - inserts/updates an active row for the current week (handles `UNIQUE` race by re-read);
+   - clears that week's votes when the photo pair changes mid-week;
    - returns the two-photo payload.
 4. Fails closed with `ok: true`, `matchup_id: null`, `items: []` when fewer than two eligible photos exist.
 
+### Broken-image repair (`POST /api/matchup/repair`)
+
+When a homepage matchup `<img>` fires `onError`:
+
+1. The client posts `{ broken_photo_id }` to `/api/matchup/repair` (max two attempts per page load).
+2. The server verifies the id is in the active current-week pair.
+3. It probes the object URL (HEAD, then ranged GET). Confirmed missing/unreachable objects are marked `is_matchup_eligible = -1` with a `PURGE_ELIGIBLE` rights note.
+4. It keeps the healthy photo when possible and selects a replacement for the broken slot (falls back to a full new pair).
+5. Pair change clears `weekly_votes` for the week so votes are not transferred.
+6. The client replaces the displayed pair and re-syncs the pair-scoped vote lock.
 **Lazy rotation:** the first homepage or API hit of a new week creates the new pair. No separate scheduled rollover job is required.
 
 ## Eligibility (interim)

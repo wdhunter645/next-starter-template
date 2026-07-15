@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { apiGet, apiPost } from '@/lib/api';
 
 type Photo = {
@@ -76,7 +76,7 @@ export function legacyWeeklyVoteStorageKey(weekStart: string): string {
 /**
  * Keep only the lock for the current photo pair.
  * Drops the legacy week-only key and any prior-pair keys for this week.
- * Returning the current lock state after cleanup.
+ * Returns the current lock state after cleanup.
  */
 export function syncWeeklyVoteLock(
   weekStart: string,
@@ -97,16 +97,61 @@ export function syncWeeklyVoteLock(
   return { voteKey, voted: window.localStorage.getItem(voteKey) === '1' };
 }
 
+type RepairResp = CurrentResp & {
+  repaired?: boolean;
+  excluded_broken_photo_id?: number;
+};
+
 export default function WeeklyMatchup() {
   const [items, setItems] = useState<Photo[]>([]);
   const [weekStart, setWeekStart] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [repairing, setRepairing] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   const [hasVoted, setHasVoted] = useState(false);
   const [totals, setTotals] = useState<{ a: number; b: number } | null>(null);
   const [lastWeek, setLastWeek] = useState<ResultsResp['last_week']>(null);
+  const repairAttemptsRef = useRef(0);
+
+  async function applyCurrentMatchup(data: CurrentResp) {
+    const gotWeek = data.week_start ?? null;
+    const nextItems = (data.items ?? []).slice(0, 2);
+
+    setWeekStart(gotWeek);
+    setItems(nextItems);
+
+    if (gotWeek && nextItems.length >= 2) {
+      const synced = syncWeeklyVoteLock(gotWeek, nextItems[0].id, nextItems[1].id);
+      const voteKey = synced.voteKey;
+      let voted = synced.voted;
+
+      if (voted) {
+        const r = await apiGet<ResultsResp>(`/api/matchup/results?week_start=${encodeURIComponent(gotWeek)}`);
+        const totalVotes = Number(r.totals?.a || 0) + Number(r.totals?.b || 0);
+        if (totalVotes === 0) {
+          window.localStorage.removeItem(voteKey);
+          voted = false;
+          setHasVoted(false);
+          setTotals(null);
+          setLastWeek(null);
+        } else {
+          setHasVoted(true);
+          setTotals(r.totals);
+          setLastWeek(r.last_week);
+        }
+      } else {
+        setHasVoted(false);
+        setTotals(null);
+        setLastWeek(null);
+      }
+    } else {
+      setHasVoted(false);
+      setTotals(null);
+      setLastWeek(null);
+    }
+  }
 
   useEffect(() => {
     async function load() {
@@ -115,39 +160,7 @@ export default function WeeklyMatchup() {
         setLoading(true);
 
         const data = await apiGet<CurrentResp>('/api/matchup/current');
-        const gotWeek = data.week_start ?? null;
-        const nextItems = (data.items ?? []).slice(0, 2);
-
-        setWeekStart(gotWeek);
-        setItems(nextItems);
-
-        if (gotWeek && nextItems.length >= 2) {
-          // Server push of a new pair (or same week with cleared votes) drives unlock here.
-          const synced = syncWeeklyVoteLock(gotWeek, nextItems[0].id, nextItems[1].id);
-          const voteKey = synced.voteKey;
-          let voted = synced.voted;
-
-          if (voted) {
-            const r = await apiGet<ResultsResp>(`/api/matchup/results?week_start=${encodeURIComponent(gotWeek)}`);
-            const totalVotes = Number(r.totals?.a || 0) + Number(r.totals?.b || 0);
-            // Mid-week vote wipe leaves totals at 0; treat that as server reset of the client lock.
-            if (totalVotes === 0) {
-              window.localStorage.removeItem(voteKey);
-              voted = false;
-              setHasVoted(false);
-              setTotals(null);
-              setLastWeek(null);
-            } else {
-              setHasVoted(true);
-              setTotals(r.totals);
-              setLastWeek(r.last_week);
-            }
-          } else {
-            setHasVoted(false);
-            setTotals(null);
-            setLastWeek(null);
-          }
-        }
+        await applyCurrentMatchup(data);
       } catch (e: unknown) {
         const errorMsg = e instanceof Error ? e.message : String(e);
         setErr(errorMsg);
@@ -172,6 +185,24 @@ export default function WeeklyMatchup() {
       clearTimeout(timer);
     };
   }, []);
+
+  async function repairBrokenPhoto(brokenPhotoId: number) {
+    if (repairing || repairAttemptsRef.current >= 2) return;
+    repairAttemptsRef.current += 1;
+    try {
+      setRepairing(true);
+      setErr(null);
+      const data = await apiPost<RepairResp>('/api/matchup/repair', {
+        broken_photo_id: brokenPhotoId,
+      });
+      await applyCurrentMatchup(data);
+    } catch (e: unknown) {
+      const errorMsg = e instanceof Error ? e.message : String(e);
+      setErr(errorMsg);
+    } finally {
+      setRepairing(false);
+    }
+  }
 
   async function submit(choice: 'a' | 'b') {
     if (!weekStart) return;
@@ -202,10 +233,12 @@ export default function WeeklyMatchup() {
       <h2 className="title-lgfc" style={{ marginTop: 24 }}>Weekly Photo Matchup. Vote for your favorite!</h2>
 
       {loading && <div style={{ paddingTop: 12 }}>Loading matchup…</div>}
+      {repairing && <div style={{ paddingTop: 12 }}>Refreshing photos…</div>}
       {!loading && err && <div style={{ paddingTop: 12 }}>{err}</div>}
       {!loading && !err && items.length < 2 && <div style={{ paddingTop: 12 }}>No matchup available this week.</div>}
 
-      {hasMatchup && renderMatchupBody(items, hasVoted, submitting, totals, lastWeek, submit)}
+      {hasMatchup &&
+        renderMatchupBody(items, hasVoted, submitting || repairing, totals, lastWeek, submit, repairBrokenPhoto)}
     </div>
   );
 }
@@ -244,6 +277,7 @@ function renderMatchupBody(
     winner_photo?: { id: number; url: string; alt?: string } | null;
   } | null,
   submit: (choice: 'a' | 'b') => void,
+  onBrokenPhoto: (photoId: number) => void,
 ) {
   const a = items[0];
   const b = items[1];
@@ -258,6 +292,7 @@ function renderMatchupBody(
               src={a.url}
               alt={a.description || 'Lou Gehrig'}
               style={photoStyle}
+              onError={() => onBrokenPhoto(a.id)}
             />
           </div>
 
@@ -281,6 +316,7 @@ function renderMatchupBody(
               src={b.url}
               alt={b.description || 'Lou Gehrig'}
               style={photoStyle}
+              onError={() => onBrokenPhoto(b.id)}
             />
           </div>
 

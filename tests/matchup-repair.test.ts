@@ -1,0 +1,221 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import {
+  repairBrokenActiveMatchupPhoto,
+  MATCHUP_WEEK_START_SQL,
+  MATCHUP_EXCLUDED_ELIGIBILITY,
+} from '../functions/api/matchup/current';
+import { onRequestPost as matchupRepairPost } from '../functions/api/matchup/repair';
+
+function jsonResponse(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+type MatchupRow = {
+  id: number;
+  week_start: string;
+  photo_a_id: number;
+  photo_b_id: number;
+  status: string;
+};
+
+type PhotoRow = {
+  id: number;
+  url: string;
+  is_memorabilia: number;
+  is_matchup_eligible: number;
+  rights_notes?: string | null;
+};
+
+function makeRepairDb(options: {
+  weekStart: string;
+  matchups: MatchupRow[];
+  photos: PhotoRow[];
+  votes?: Array<{ week_start: string }>;
+}) {
+  const matchups = [...options.matchups];
+  const photos = [...options.photos];
+  const votes = [...(options.votes ?? [])];
+
+  const db = {
+    prepare: vi.fn((sql: string) => ({
+      bind: (...args: unknown[]) => ({
+        first: async () => runFirst(sql, args),
+        all: async () => runAll(sql, args),
+        run: async () => runWrite(sql, args),
+      }),
+      first: async () => runFirst(sql, []),
+      all: async () => runAll(sql, []),
+      run: async () => runWrite(sql, []),
+    })),
+  };
+
+  function runFirst(sql: string, args: unknown[]) {
+    if (sql === MATCHUP_WEEK_START_SQL || sql.includes("date('now'")) {
+      return { week_start: options.weekStart };
+    }
+    if (sql.includes('sqlite_master')) return null;
+    if (sql.includes("status = 'active'") && sql.includes('week_start = ?')) {
+      return matchups.find((row) => row.week_start === String(args[0]) && row.status === 'active') ?? null;
+    }
+    if (sql.includes('FROM photos WHERE id = ?') && sql.includes('is_matchup_eligible')) {
+      const photo = photos.find((row) => Number(row.id) === Number(args[0]));
+      return photo ? { is_matchup_eligible: photo.is_matchup_eligible } : null;
+    }
+    if (sql.includes('FROM weekly_matchups WHERE week_start = ?') && sql.includes('LIMIT 1')) {
+      return matchups.find((row) => row.week_start === String(args[0])) ?? null;
+    }
+    return null;
+  }
+
+  function runAll(sql: string, args: unknown[]) {
+    if (sql.includes('sqlite_master')) {
+      return { results: [{ name: 'weekly_matchups' }, { name: 'weekly_votes' }, { name: 'photos' }] };
+    }
+    if (sql.includes('FROM weekly_matchups ORDER BY week_start DESC')) {
+      const limit = Number(args[0] ?? 8);
+      return {
+        results: [...matchups]
+          .sort((a, b) => b.week_start.localeCompare(a.week_start))
+          .slice(0, limit)
+          .map((row) => ({ photo_a_id: row.photo_a_id, photo_b_id: row.photo_b_id })),
+      };
+    }
+    if (sql.includes('FROM photos WHERE url IS NOT NULL')) {
+      return { results: photos.filter((row) => row.is_matchup_eligible >= 0) };
+    }
+    return { results: [] };
+  }
+
+  function runWrite(sql: string, args: unknown[]) {
+    if (sql.includes('UPDATE photos') && sql.includes('is_matchup_eligible')) {
+      const target = photos.find((row) => Number(row.id) === Number(args[3]));
+      if (target) {
+        target.is_matchup_eligible = Number(args[0]);
+        target.rights_notes = String(args[1]);
+      }
+      return { meta: { changes: 1 } };
+    }
+    if (sql.includes('UPDATE weekly_matchups SET photo_a_id')) {
+      const target = matchups.find((row) => Number(row.id) === Number(args[2]));
+      if (target) {
+        target.photo_a_id = Number(args[0]);
+        target.photo_b_id = Number(args[1]);
+        target.status = 'active';
+      }
+      return { meta: { changes: 1 } };
+    }
+    if (sql.includes('DELETE FROM weekly_votes WHERE week_start')) {
+      const week = String(args[0]);
+      let removed = 0;
+      for (let i = votes.length - 1; i >= 0; i -= 1) {
+        if (votes[i].week_start === week) {
+          votes.splice(i, 1);
+          removed += 1;
+        }
+      }
+      return { meta: { changes: removed } };
+    }
+    return { meta: { changes: 0 } };
+  }
+
+  return { db, matchups, photos, votes };
+}
+
+describe('matchup broken-image repair', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('excludes a missing Photo B and replaces that slot without transferring votes', async () => {
+    const weekStart = '2026-07-13';
+    const { db, matchups, photos, votes } = makeRepairDb({
+      weekStart,
+      matchups: [
+        { id: 5, week_start: weekStart, photo_a_id: 10, photo_b_id: 20, status: 'active' },
+      ],
+      votes: [{ week_start: weekStart }, { week_start: weekStart }],
+      photos: [
+        { id: 10, url: 'https://example.test/10.jpg', is_memorabilia: 0, is_matchup_eligible: 1 },
+        { id: 20, url: 'https://example.test/20-missing.jpg', is_memorabilia: 0, is_matchup_eligible: 1 },
+        { id: 30, url: 'https://example.test/30.jpg', is_memorabilia: 0, is_matchup_eligible: 1 },
+        { id: 40, url: 'https://example.test/40.jpg', is_memorabilia: 0, is_matchup_eligible: 1 },
+      ],
+    });
+
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method || 'GET').toUpperCase();
+      if (method === 'HEAD' || (method === 'GET' && url.includes('example.test'))) {
+        if (url.includes('20-missing')) return jsonResponse({}, 404);
+        return jsonResponse({}, 200);
+      }
+      const getMatch = url.match(/\/api\/photos\/get\?id=(\d+)/);
+      if (getMatch) {
+        const id = Number(getMatch[1]);
+        const photo = photos.find((row) => row.id === id);
+        if (!photo || photo.is_matchup_eligible < 0) return jsonResponse({ ok: false }, 404);
+        return jsonResponse({ ok: true, item: { id: photo.id, url: photo.url } });
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${url}`));
+    });
+
+    const response = await repairBrokenActiveMatchupPhoto({
+      db,
+      request: new Request('https://www.lougehrigfanclub.com/api/matchup/repair'),
+      brokenPhotoId: 20,
+    });
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.repaired).toBe(true);
+    expect(body.items).toHaveLength(2);
+    expect(body.items.map((item: { id: number }) => item.id)).not.toContain(20);
+    expect(body.items[0].id).toBe(10);
+    expect(photos.find((row) => row.id === 20)?.is_matchup_eligible).toBe(MATCHUP_EXCLUDED_ELIGIBILITY);
+    expect(matchups[0].photo_b_id).not.toBe(20);
+    expect(votes).toHaveLength(0);
+  });
+
+  it('rejects invalid broken_photo_id through the HTTP adapter', async () => {
+    const response = await matchupRepairPost({
+      request: new Request('https://www.lougehrigfanclub.com/api/matchup/repair', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ broken_photo_id: 'nope' }),
+      }),
+      env: {
+        DB: {
+          prepare: vi.fn((sql: string) => ({
+            bind: (..._args: unknown[]) => ({
+              first: async () => null,
+              all: async () => {
+                if (sql.includes('sqlite_master')) {
+                  return {
+                    results: [
+                      { name: 'weekly_matchups' },
+                      { name: 'weekly_votes' },
+                      { name: 'photos' },
+                    ],
+                  };
+                }
+                return { results: [] };
+              },
+              run: async () => ({ meta: { changes: 0 } }),
+            }),
+            first: async () => null,
+            all: async () => ({ results: [] }),
+            run: async () => ({ meta: { changes: 0 } }),
+          })),
+        },
+      },
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({ ok: false, error: 'invalid_broken_photo_id' });
+  });
+});
