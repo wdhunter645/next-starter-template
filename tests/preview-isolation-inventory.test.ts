@@ -36,10 +36,6 @@ function handlerHasMutationExport(filePath: string): boolean {
   return MUTATION_EXPORTS.some((name) => new RegExp(`export\\s+(?:async\\s+)?(?:const|function)\\s+${name}\\b`).test(source));
 }
 
-function handlerRequiresAdminToken(filePath: string): boolean {
-  return readHandlerSource(filePath).includes('requireAdmin(');
-}
-
 describe('preview isolation inventory', () => {
   it('keeps the canonical reference document present', () => {
     expect(existsSync(manifest.canonicalReference)).toBe(true);
@@ -74,24 +70,14 @@ describe('preview isolation inventory', () => {
     const manifestHandlers = new Set(
       manifest.mutatingRoutes.flatMap((route) => {
         if (route.handler.endsWith('/**')) {
-          return handlers.filter((path) => path.startsWith('functions/api/admin/'));
+          const prefix = route.handler.slice(0, -3);
+          return handlers.filter((path) => path.startsWith(prefix));
         }
         return [route.handler];
       }),
     );
 
-    const missing = handlers.filter((handler) => {
-      if (manifestHandlers.has(handler)) {
-        return false;
-      }
-      if (handler.startsWith('functions/api/admin/')) {
-        return false;
-      }
-      if (handlerRequiresAdminToken(handler)) {
-        return false;
-      }
-      return true;
-    });
+    const missing = handlers.filter((handler) => !manifestHandlers.has(handler));
     expect(missing, `Add missing mutating handlers: ${missing.join(', ')}`).toEqual([]);
   });
 

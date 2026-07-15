@@ -160,7 +160,7 @@ eligible.
 - Component branch: must be empty or `not-applicable`
 - Component master: must be empty or `not-applicable`
 
-### Model A
+### Model A component-metadata constraints
 
 Model A PRs must also keep component branch and component master empty or
 `not-applicable`. Contradictory component metadata must fail explicitly.

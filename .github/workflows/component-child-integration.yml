@@ -52,11 +52,11 @@ jobs:
           gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/files" --paginate \
             | jq -r '.[].filename' > "$RUNNER_TEMP/changed_files.txt"
           gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews" --paginate \
-            > "$RUNNER_TEMP/reviews.json"
+            | jq -s 'add // []' > "$RUNNER_TEMP/reviews.json"
           gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/labels" --paginate \
-            > "$RUNNER_TEMP/labels.json"
+            | jq -s 'add // []' > "$RUNNER_TEMP/labels.json"
           gh api "repos/${GITHUB_REPOSITORY}/commits/$(cat "$RUNNER_TEMP/head_sha.txt")/check-runs" --paginate \
-            | jq '[.check_runs[] | {name, conclusion, status}]' > "$RUNNER_TEMP/checks.json"
+            | jq -s '[.[].check_runs[] | {name, conclusion, status}]' > "$RUNNER_TEMP/checks.json"
           {
             echo "base_ref=$(jq -r '.base.ref' "$RUNNER_TEMP/pr.json")"
             echo "head_ref=$(jq -r '.head.ref' "$RUNNER_TEMP/pr.json")"
@@ -162,6 +162,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ steps.pr.outputs.number }}
         run: |
+          ALLOW_AUTO_MERGE="$(gh api "repos/${GITHUB_REPOSITORY}" --jq '.allow_auto_merge')"
+          if [ "$ALLOW_AUTO_MERGE" != "true" ]; then
+            echo "Skipping auto-merge enablement: repository allow_auto_merge=${ALLOW_AUTO_MERGE}."
+            exit 0
+          fi
           gh api graphql -f query='
             mutation($pullRequestId: ID!) {
               enablePullRequestAutoMerge(input: {

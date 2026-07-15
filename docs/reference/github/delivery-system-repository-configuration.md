@@ -76,10 +76,10 @@ Protected Model B child PRs use `protected-change-review` instead of `component-
 | --- | --- | --- |
 | `component/delivery-system-v1` branch | exists | bootstrap integration branch for program #2477 |
 | Component ruleset | none | no dedicated ruleset; bootstrap uses manual Chat integration decisions per implementation plan |
-| Child auto-integration workflow | pending #2498 | `component-child-integration.yml` not yet on component branch |
-| Repo `allow_auto_merge` | `false` | repository-wide auto-merge disabled |
+| Child auto-integration workflow | present | `.github/workflows/component-child-integration.yml` on component branch; eligibility check publishes `Component Integration Eligibility` |
+| Repo `allow_auto_merge` | `false` | repository-wide auto-merge disabled; workflow skips GraphQL enablement when false |
 
-Component child integration automation is designed in Task 8 (#2498). Until that workflow is proven, eligible children still require Chat manual integration per bootstrap rules.
+Component child integration automation is implemented (#2498). With `allow_auto_merge=false`, eligible children receive a passing eligibility check but still require Chat manual integration until auto-merge is enabled and the #2501 Pilot proves end-to-end behavior.
 
 ## `main` production approval controls
 
