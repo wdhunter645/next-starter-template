@@ -111,12 +111,16 @@ The script inserts into the `photos` table with the following mapping:
 7. **Deletion reconciliation** (`scripts/b2_d1_deletion_reconcile.sh`):
    - keys present in D1 (`is_matchup_eligible >= 0`) but absent from B2
    - soft-retire with `is_matchup_eligible = -1` and `PURGE_ELIGIBLE` note
-   - refuse to run when B2 inventory is empty (fail closed)
+   - repair active `weekly_matchups` still referencing excluded photos
+   - clear `weekly_votes` when a repaired pair changes
+   - refuse to retire when B2 inventory is empty (fail closed)
+   - emit `has_findings` / counts to GitHub Actions; open findings issue only on
+     actionable retires/repairs (failure still uses ops runtime escalation)
    - idempotent (reruns update zero already-retired rows)
 8. **Log summary** (counts/keys only, no credentials)
 
-Active weekly matchups that still reference a retired photo are repaired on the next
-`GET /api/matchup/current` request (eligibility + object probe) or via
+Between daily runs, missing objects may still be repaired by
+`GET /api/matchup/current` (eligibility + object probe) or
 `POST /api/matchup/repair` from browser image failures.
 
 ## Testing
@@ -126,6 +130,7 @@ Run integration tests:
 ```bash
 bash scripts/test_b2_d1_incremental_sync.sh
 bash scripts/test_b2_d1_deletion_reconcile.sh
+node scripts/test_ops_reconcile_findings.mjs
 ```
 
 Tests verify:

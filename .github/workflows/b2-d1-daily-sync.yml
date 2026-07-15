@@ -106,6 +106,19 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: bash scripts/b2_d1_deletion_reconcile.sh
 
+      - name: Open findings issue when reconcile has actionable results
+        if: success() && steps.reconcile.outputs.has_findings == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          OPS_FINDINGS_WORKFLOW: OPS — B2 D1 Daily Sync
+          OPS_FINDINGS_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          OPS_FINDINGS_RETIRED_COUNT: ${{ steps.reconcile.outputs.retired_count }}
+          OPS_FINDINGS_REPAIRED_MATCHUPS: ${{ steps.reconcile.outputs.repaired_matchups }}
+          OPS_FINDINGS_HAS_FINDINGS: ${{ steps.reconcile.outputs.has_findings }}
+          OPS_FINDINGS_STALE_KEY_SAMPLE: ${{ steps.reconcile.outputs.stale_key_sample }}
+          OPS_FINDINGS_LABELS: ops-runtime-finding,b2-runtime,d1-runtime
+        run: node scripts/ci/ops_reconcile_findings.mjs
+
       - name: Write runtime step summary
         if: always()
         run: |
@@ -113,6 +126,9 @@ jobs:
             echo "## OPS — B2 D1 Daily Sync"
             echo "- Sync result: ${{ steps.sync.outcome }}"
             echo "- Deletion reconciliation: ${{ steps.reconcile.outcome }}"
+            echo "- Soft-retired rows: ${{ steps.reconcile.outputs.retired_count }}"
+            echo "- Active matchups repaired: ${{ steps.reconcile.outputs.repaired_matchups }}"
+            echo "- Actionable findings: ${{ steps.reconcile.outputs.has_findings }}"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Escalate runtime failure

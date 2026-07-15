@@ -118,8 +118,13 @@ Scripts:
   - Production daily additive sync: list B2 → insert unseen keys into `photos` (no deletes).
 - `scripts/b2_d1_deletion_reconcile.sh`
   - Deletion reconciliation (#2519): soft-retire D1 rows whose B2 keys are missing
-    (`is_matchup_eligible = -1`, `PURGE_ELIGIBLE` note). Fails closed on empty B2 inventory.
-    Runs after incremental sync in `.github/workflows/b2-d1-daily-sync.yml`.
+    (`is_matchup_eligible = -1`, `PURGE_ELIGIBLE` note); repair active matchups that
+    still reference excluded photos and clear votes on pair change; emit findings
+    for an ops issue only when retires/repairs occurred. Fails closed on empty B2
+    inventory. Runs after incremental sync in `.github/workflows/b2-d1-daily-sync.yml`
+    (daily **04:00 EST** / `0 9 * * *` UTC + `workflow_dispatch`).
+- `scripts/ci/ops_reconcile_findings.mjs`
+  - Upserts the actionable-findings issue for successful reconcile results.
 - `scripts/d1_media_ingest.js`
   - Reads inventory JSON and inserts only previously unseen objects into D1 (idempotent).
 

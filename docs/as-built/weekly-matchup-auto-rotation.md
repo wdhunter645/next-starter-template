@@ -47,10 +47,21 @@ On each request, the API:
 
 Additive daily sync inserts new B2 keys only. Deletion reconciliation
 (`scripts/b2_d1_deletion_reconcile.sh`, after incremental sync in
-`.github/workflows/b2-d1-daily-sync.yml`) soft-retires D1 rows whose object keys
-are absent from B2: `is_matchup_eligible = -1` plus a `PURGE_ELIGIBLE` rights note.
-It fails closed if the B2 inventory is empty. Historical matchup rows keep their
-photo IDs; those photos are never reselected for new matchups.
+`.github/workflows/b2-d1-daily-sync.yml` at **04:00 EST** / `0 9 * * *` UTC):
+
+1. Soft-retires D1 rows whose object keys are absent from B2
+   (`is_matchup_eligible = -1` plus a `PURGE_ELIGIBLE` rights note).
+2. Repairs any **active** `weekly_matchups` row that still references excluded
+   photos (keeps the healthy slot when possible; otherwise picks a new pair).
+3. Clears `weekly_votes` for that week when the pair changes.
+4. Emits audit outputs; opens/updates an ops findings issue only when rows were
+   retired or a matchup was repaired (silent when nothing changed).
+5. Fails closed if the B2 inventory is empty; escalates a failure issue on
+   workflow error.
+
+Historical matchup rows keep their photo IDs; retired photos are never
+reselected for new matchups. Browser `POST /api/matchup/repair` and
+`GET /api/matchup/current` object probes remain defense in depth between daily runs.
 
 ### Broken-image repair (`POST /api/matchup/repair`)
 
