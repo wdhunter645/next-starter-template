@@ -152,6 +152,61 @@ describe('WeeklyMatchup last closed week winner thumbnail', () => {
     expect(window.localStorage.getItem(`lgfc_weekly_vote_${currentWeek}`)).toBeNull();
   });
 
+  it('requests matchup repair when a photo fails to load', async () => {
+    window.localStorage.clear();
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
+      const path = String(input);
+      const method = String(init?.method || 'GET').toUpperCase();
+
+      if (path === '/api/matchup/current') {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            week_start: currentWeek,
+            matchup_id: 2,
+            items: [
+              { id: 10, url: '/photos/10.jpg', title: 'Current A' },
+              { id: 11, url: '/photos/broken.jpg', title: 'Broken B' },
+            ],
+          }),
+        );
+      }
+
+      if (path === '/api/matchup/repair' && method === 'POST') {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            week_start: currentWeek,
+            matchup_id: 2,
+            repaired: true,
+            items: [
+              { id: 10, url: '/photos/10.jpg', title: 'Current A' },
+              { id: 12, url: '/photos/12.jpg', title: 'Replacement B' },
+            ],
+          }),
+        );
+      }
+
+      return Promise.reject(new Error(`Unexpected fetch: ${method} ${path}`));
+    });
+
+    render(<WeeklyMatchup />);
+
+    await screen.findByText('Broken B');
+    const images = screen.getAllByRole('img', { name: 'Lou Gehrig' });
+    const brokenImg = images.find((img) => img.getAttribute('src') === '/photos/broken.jpg');
+    expect(brokenImg).toBeTruthy();
+    fireEvent.error(brokenImg!);
+
+    await waitFor(() => {
+      expect(screen.getByText('Replacement B')).toBeInTheDocument();
+    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/matchup/repair',
+      expect.objectContaining({ method: 'POST' }),
+    );
+  });
+
   it('renders winner A thumbnail and keeps result text', async () => {
     mockVotedMatchupFetch({
       week_start: '2026-05-25',
