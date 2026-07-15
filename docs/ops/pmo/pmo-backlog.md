@@ -4,8 +4,7 @@ Audience: Human + AI
 Authority Level: Operational Authority
 Owns: PMO Backlog inventory for ideas, project drafts, implementation-ready projects, backlog review history, and promotion candidates
 Does Not Own: Program launch approval, final prioritization, implementation scope, issue creation, merge authority, or Cursor execution authorization
-Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-PMO V4 promotion: /docs/ops/pmo/PMO-V4-OPERATING-MODEL.md (becomes canonical after #2100 merges)
+Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
 Related Issues: #1379, #1411, #1255, #1500, #1501, #1678, #1685, #1696, #1700, #1701, #1702, #1703, #1704, #1705, #1706, #1707, #1708, #1713, #1719, #1720, #1721, #1722, #1723, #1724, #1725, #1726, #1727, #2039, #2040, #2041, #2042, #2043, #2044, #2045, #2046, #2047, #2048, #2100
 Last Reviewed: 2026-07-05
 ---
@@ -14,7 +13,7 @@ Last Reviewed: 2026-07-05
 
 PMO Backlog = ideas, project drafts, governance/ops backlog items, implementation-ready projects, and launch-control-ready program groups.
 
-**Authority transition:** Until issue #2100 merges, PMO backlog rules follow `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`. After #2100 merges, backlog categories and inventory rules follow `/docs/ops/pmo/PMO-V4-OPERATING-MODEL.md`. Drive notebook rows remain planning inputs until promoted by issue/PR.
+**Authority:** PMO backlog categories and inventory rules follow `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`. Drive notebook rows remain planning inputs until promoted by issue/PR.
 
 This document is the durable, **prioritized working inventory** for PMO backlog review. It does not launch work, create issues, authorize Cursor or Codex execution, or establish final execution authorization by itself. Work becomes executable only through a **current open program or task/source issue** with explicit launch/assignment authorization.
 
@@ -36,12 +35,12 @@ This document owns PMO Backlog inventory, promotion history, weekly project revi
 - **Priority #2 Fundraiser / Charity Campaign Operations Buildout** has program issue #1700 and child issue chain #1701 through #1708. Task 001 assignment guidance is posted on #1701. It remains queued behind Program #1255/#1259 and parked Priority #1 unless Bill/Atlas explicitly reprioritize.
 - **Priority #3 PMO Governance / Workflow Automation Completion** has program issue #1719 and child issue chain #1720 through #1727. Task 001 assignment guidance is posted on #1720. It remains queued behind Program #1255/#1259, parked Priority #1, and Priority #2 unless Bill/Atlas explicitly reprioritize.
 - **The backlog does not authorize implementation by itself.** Production-ready documentation and launch-control issues remain execution gates: projects move only when explicitly authorized.
-- Filenames that still contain `program-5` (for example `docs/ops/pmo/program-5-admin-page-and-tools-design-readiness.md`) are **legacy source material** from the retired PMO v2 five-lane model. They are not active PMO v3 program authority and require PMO v3 conversion before promotion.
+- Filenames that still contain `program-5` (for example `docs/ops/pmo/program-5-admin-page-and-tools-design-readiness.md`) are **legacy source material** from the retired PMO v2 five-lane model. They are not active PMO July 2026 program authority and require PMO July 2026 conversion before promotion.
 
 ## Intended final state
 
 - Backlog items are classified, prioritized top-down by current need, and tracked with production-documentation readiness.
-- No backlog link can be mistaken for an active PMO v3 program lane or automatic execution queue.
+- No backlog link can be mistaken for an active PMO July 2026 program lane or automatic execution queue.
 - Weekly PMO project review keeps the backlog current rather than static.
 - Priority #1 remains parked until Bill/Atlas explicitly launch or reprioritize it.
 - Website Public Launch / Relaunch Readiness is launch-control ready after #1685 closeout and task assignment.
@@ -51,7 +50,7 @@ This document owns PMO Backlog inventory, promotion history, weekly project revi
 
 ## Prioritized working backlog inventory
 
-Items are sorted **top-down by current priority need** as of the Bill/Atlas PMO v3 review and subsequent readiness updates. Priority guides discussion and preparation order; **production-ready documentation plus explicit launch authorization remain the gates for execution.**
+Items are sorted **top-down by current priority need** as of the Bill/Atlas PMO July 2026 review and subsequent readiness updates. Priority guides discussion and preparation order; **production-ready documentation plus explicit launch authorization remain the gates for execution.**
 
 | Rank | project / idea name | Classification | Brief description | Suggested next action | Related references | Duplicate / version note | Production doc readiness |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -59,7 +58,7 @@ Items are sorted **top-down by current priority need** as of the Bill/Atlas PMO 
 | 1 successor | **Website Public Launch / Relaunch Readiness** | launch-control ready successor program | Prepare the structural website baseline for public relaunch after #1685 closeout, including public copy, admin club staging, social/media reliability, donation/fundraiser readiness, SEO/analytics, launch checklist, rollback, and evidence. | Keep blocked until #1685 closeout and explicit Bill/Atlas authorization to begin #2041. | `#2039`; `#2041`–`#2048`; `docs/ops/pmo/website-public-launch-relaunch-readiness.md`; `docs/ops/implementation-plans/website-public-launch-relaunch-readiness.md` | Successor lane to Priority #1; does not replace #1685 and does not authorize #2040 publication workflow. | launch-control ready; blocked until #1685 closeout and queue authorization |
 | 1 publication | **Website Automatic Content Publication Capability** | registered publication authority | Future controlled content-publication support for approval states, admin review, staged promotion, scheduled publication, rotation, audit evidence, rollback, unpublish, and safety checks. | Keep separate from #2039; execute only through #2040 or its authorized child issues after manual workflow evidence exists. | `#2040`; `docs/ops/pmo/website-automatic-content-publication-capability.md`; `docs/ops/implementation-plans/website-automatic-content-publication-capability.md` | Publication authority for work explicitly excluded from #2039. | planning-ready; blocked until #2040 launch authorization |
 | 2 | **Fundraiser / Charity Campaign Operations Buildout** | launch-control ready future program | Repeatable fundraiser operations, Givebutter integration boundary, leaderboard/winner rules, homepage promotion, donor recognition without PII exposure, and launch testing. | Keep queued behind Program #1255/#1259, parked Priority #1, and #2039 successor unless Bill/Atlas explicitly launch or reprioritize. | `#1696`; `#1700`; `#1701`–`#1708`; `#1379` (historical ideas source); `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md`; `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md` | Bill/Atlas identified this as the Priority #2 group. Prior backlog row "Fundraiser / charity campaign operations" merged here. | launch-control ready; blocked until queue authorization |
-| 3 | **PMO Governance / Workflow Automation Completion** | launch-control ready future program | Consolidate PMO v3 authority, workflow automation design, Cursor continuation rules, PR readiness, merge/issue policy, queue/wave planning, closeout stabilization, and backlog promotion gates. | Keep queued behind Program #1255/#1259, parked Priority #1, #2039 successor, and Priority #2 unless Bill/Atlas explicitly launch or reprioritize. | `#1713`; `#1719`; `#1720`–`#1727`; `#1411`; `#1500`; `docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md`; `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md`; `docs/ops/reports/program-1500-queue-wave-reconciliation.md` | Groups former ranks 3–10 into one Priority #3 program candidate. #1411 historical; #1500 reconciled by #1725 (closed complete). | launch-control ready; blocked until queue authorization |
+| 3 | **PMO Governance / Workflow Automation Completion** | launch-control ready future program | Consolidate PMO July 2026 authority, workflow automation design, Cursor continuation rules, PR readiness, merge/issue policy, queue/wave planning, closeout stabilization, and backlog promotion gates. | Keep queued behind Program #1255/#1259, parked Priority #1, #2039 successor, and Priority #2 unless Bill/Atlas explicitly launch or reprioritize. | `#1713`; `#1719`; `#1720`–`#1727`; `#1411`; `#1500`; `docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md`; `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md`; `docs/ops/reports/program-1500-queue-wave-reconciliation.md` | Groups former ranks 3–10 into one Priority #3 program candidate. #1411 historical; #1500 reconciled by #1725 (closed complete). | launch-control ready; blocked until queue authorization |
 | 11 | Admin Page and Tools Design Readiness | project draft | Complete admin product/tool design, token UX, active/diagnostic/retired tool status, and backend failure-state design. | Complete inventory/readiness review before promotion. | `docs/ops/pmo/program-5-admin-page-and-tools-design-readiness.md` | **Legacy `program-5-*` filename** — PMO v2 artifact, not active Program 5 lane. | partial |
 | 12 | Lou Gehrig content collection strategy | project draft | Continuous collection, source/credit tracking, review, and publication pipeline for Lou Gehrig content. | Retain as future expansion beyond Priority #1 if external monitoring, AI-assisted research, or large-scale ingestion is desired. | `#1255`, `#1256`, Priority #1 readiness package | **Partially absorbed into Priority #1 content management / content collection subordination (#1690)** for normal editorial intake/source-credit workflow. Large-scale external collection remains future scope. | partial |
 | 13 | Annual Lou Gehrig Day operations package | project draft | Repeatable annual operations checklist and website spotlight plan for Lou Gehrig Day. | Convert into ops checklist when annual operations become a priority. | `#1379` (historical) | None identified. | none |
@@ -141,7 +140,7 @@ Future PMO review should identify:
 | Obsolete references to archive | Stale PMO v2 Program 1–5 lane labels in child task issues (review only — do not mutate issues from backlog doc updates) |
 | Items superseded by `#1500` | Post-merge closeout evidence stabilization; queue/wave model only where satisfied by Program #1500 closeout |
 
-## PMO v3 execution rule (non-negotiable)
+## PMO July 2026 execution rule (non-negotiable)
 
 - **PMO Backlog is documentation-owned.**
 - **Backlog placement does not authorize Cursor or Codex implementation.**

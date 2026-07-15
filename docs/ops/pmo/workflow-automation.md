@@ -4,7 +4,7 @@ Audience: Human + AI
 Authority Level: Operational Authority
 Owns: PMO workflow automation planning authority, Cursor queue-control boundaries, PR readiness rules, wave/run control concepts, and PMO Backlog promotion handoff for workflow automation
 Does Not Own: Workflow YAML implementation, runtime application behavior, D1 migrations, production secrets, GitHub issue mutation, or merge authority
-Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
+Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
 Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501
 Last Reviewed: 2026-06-09
 ---
@@ -17,7 +17,7 @@ Represent the LGFC Workflow Automation design in GitHub documentation authority 
 
 This document converts Workflow Automation from PMO Backlog material into bounded repository-owned planning authority. It defines what the automation program may design before any workflow code, label mutation, issue mutation, or runtime implementation begins.
 
-This document is subordinate to `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`.
+This document is subordinate to `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`.
 
 ## Scope
 
@@ -64,7 +64,7 @@ This document does not own:
 
 | Area | Program #1411 design output | Implementation boundary |
 | --- | --- | --- |
-| PMO v3 authority | Durable language that program issue numbers identify programs and PMO Backlog holds ideas/project drafts | No issue or label mutation |
+| PMO July 2026 authority | Durable language that program issue numbers identify programs and PMO Backlog holds ideas/project drafts | No issue or label mutation |
 | Workflow Automation design migration | This GitHub authority page replaces Drive/chat-only planning for workflow automation | No workflow YAML edits |
 | Cursor continuation and queue contract | Rules for when Cursor continues, stops, reports, and waits | No automated queue advancement in this PR |
 | PR readiness and batch review control | Ready-for-review rules that preserve Atlas/Bill review | No PR merge or review-state mutation by Cursor |
@@ -77,7 +77,7 @@ This document does not own:
 
 ### Program issue model
 
-Under PMO v3, programs are GitHub program issues identified by issue number. Program #1411 is the staged/blocked program for PMO Automation and Agent Workflow Control. PMO Backlog is not a program; it is a documentation-owned inventory for ideas, project drafts, and implementation-ready projects.
+Under PMO July 2026, programs are GitHub program issues identified by issue number. Program #1411 is the staged/blocked program for PMO Automation and Agent Workflow Control. PMO Backlog is not a program; it is a documentation-owned inventory for ideas, project drafts, and implementation-ready projects.
 
 ### Execution modes and queue control
 
@@ -174,7 +174,7 @@ Workflow Automation satisfies early promotion requirements for planning through 
 
 ## Related References
 
-- PMO v3 operating model: `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`
+- PMO July 2026 Operating Model: `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`
 - PMO Backlog: `/docs/ops/pmo/pmo-backlog.md`
 - Program registry: `/docs/ops/pmo/program-registry.md`
 - Program portfolio model: `/docs/reference/pmo/lgfc-program-portfolio-model.md`

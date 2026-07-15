@@ -1,10 +1,10 @@
 ---
 Doc Type: Implementation Plan
 Audience: Bill, ChatGPT, Cursor, LGFC maintainers
-Authority Level: Operational Addendum (non-authoritative; defers to PMO V4 and repo label reality)
+Authority Level: Operational Addendum (non-authoritative; defers to PMO July 2026 and repo label reality)
 Owns: Content Collection program label/status mapping addendum — repo-grounded gaps, proposed labels, and PMO field alignment for #2359 child chain
 Does Not Own: PMO lifecycle authority, label creation/deletion, GitHub automation, or merge authorization
-Canonical Reference: /docs/ops/pmo/PMO-V4-OPERATING-MODEL.md
+Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
 Related Issues: #2422, #2364, #2419, #2359, #2360, #2396, #2391
 Last Reviewed: 2026-07-10
 ---
@@ -15,7 +15,7 @@ Last Reviewed: 2026-07-10
 
 Provide a repo-grounded label and status mapping addendum for the Content Collection documentation-promotion program (#2359). This document helps Cursor and ChatGPT align issue metadata, agent routing, and PMO dashboard state without inventing parallel label authority.
 
-**This addendum defers to PMO V4** (`docs/ops/pmo/PMO-V4-OPERATING-MODEL.md`) and live GitHub label inventory. Proposed labels are marked **PROPOSED** until Bill/ChatGPT authorize creation.
+**This addendum defers to PMO July 2026** (`docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`) and live GitHub label inventory. Proposed labels are marked **PROPOSED** until Bill/ChatGPT authorize creation.
 
 ## Scope
 
@@ -31,7 +31,7 @@ Provide a repo-grounded label and status mapping addendum for the Content Collec
 
 - Creating or deleting GitHub labels (requires separate authorization).
 - Assigning issues to unavailable users.
-- Replacing PMO V4 dashboard precedence rules.
+- Replacing PMO July 2026 dashboard precedence rules.
 
 ## Current known truth
 
@@ -41,7 +41,7 @@ Every Content Collection program issue should include these body fields (verifie
 
 | Field | Example | Authority |
 | --- | --- | --- |
-| Dashboard Lifecycle | `active`, `pipeline` | PMO V4 dashboard precedence |
+| Dashboard Lifecycle | `active`, `pipeline` | PMO July 2026 issue contract |
 | Priority # | `TBD` or explicit | Bill final authority |
 | Status | `Implementation Ready`, `Unblocked` | Issue-body metadata; not a substitute for labels |
 | Owner / Agent | `Cursor`, `ChatGPT` | Routing hint; wake labels required for Cursor |
@@ -101,7 +101,7 @@ Intake draft proposed `area:content-collection`, `area:gallery`, `area:library`,
 | `area:gallery` / `area:library` / `area:memorabilia` / `area:club-newspaper` | **PROPOSED** | Defer until feature-lane implementation issues open |
 | `type:program` / `type:project` / `type:task` | **PROPOSED** | Defer — `pmo` + issue hierarchy covers Phase 0 |
 
-**Stop rule (#2360 C6):** Do not create program-local lifecycle vocabulary that conflicts with PMO V4. If area labels are needed, ChatGPT must approve before creation.
+**Stop rule (#2360 C6):** Do not create program-local lifecycle vocabulary that conflicts with PMO July 2026. If area labels are needed, ChatGPT must approve before creation.
 
 ## Post-merge failure labeling (#2364 design requirement)
 
@@ -119,14 +119,14 @@ Per issue #2364 comment (Phase 0 design-doc requirement):
 
 ## Suggested lifecycle values (issue-body `Dashboard Lifecycle:`)
 
-Defer to PMO V4. Content Collection child issues use:
+Defer to PMO July 2026. Content Collection child issues use:
 
 | Value | Meaning |
 | --- | --- |
 | `active` | Current program work |
 | `pipeline` | Queued / not yet active |
 
-Completed issues use closed state + `status:complete` per PMO V4 dashboard precedence.
+Completed issues use closed state + `status:complete` per PMO July 2026 issue contract.
 
 ## Suggested status values (issue-body `Status:`)
 
@@ -137,7 +137,7 @@ Completed issues use closed state + `status:complete` per PMO V4 dashboard prece
 | `Blocked` | Predecessor or authority conflict — document which |
 | `Complete` / `Closed` | Terminal closeout |
 
-Do not use draft-only values (`Merge Authorized`, `Merged Pending Validation`) as issue-body status unless PMO V4 adopts them.
+Do not use draft-only values (`Merge Authorized`, `Merged Pending Validation`) as issue-body status unless PMO July 2026 adopts them.
 
 ## Blocking rules
 
@@ -150,7 +150,7 @@ Do not use draft-only values (`Merge Authorized`, `Merged Pending Validation`) a
 
 ## Procedure
 
-1. Read PMO V4 dashboard precedence before setting issue metadata.
+1. Read PMO July 2026 issue contract before setting issue metadata.
 2. For Cursor routing, set `agent:cursor` + `handoff:ready` per `docs/ops/ai/chatgpt-cursor-handoff-workflow.md`.
 3. For ChatGPT review, set `agent:ChatGPT` and post `CHATGPT HANDOFF`.
 4. Before creating new labels, compare against this addendum and request ChatGPT approval.
@@ -160,7 +160,7 @@ Do not use draft-only values (`Merge Authorized`, `Merged Pending Validation`) a
 
 - [ ] Label/status mapping checked against live repo inventory (this document, 2026-07-10).
 - [ ] Proposed labels clearly marked **PROPOSED** vs verified.
-- [ ] PMO V4 remains canonical; this file is addendum only.
+- [ ] PMO July 2026 remains canonical; this file is addendum only.
 - [ ] Post-merge labeling gap documented for CI follow-up.
 - [ ] No parallel label authority created.
 

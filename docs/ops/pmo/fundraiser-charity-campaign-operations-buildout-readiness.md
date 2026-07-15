@@ -4,7 +4,7 @@ Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and revi
 Authority Level: Operational Authority
 Owns: Priority #2 PMO readiness decision, fundraiser program candidate scope, child-project boundaries, campaign operations design/readiness state, Cursor launch preconditions
 Does Not Own: Runtime implementation, issue creation, merge authority, production secrets, vendor configuration, Givebutter account configuration, fundraiser execution launch
-Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
+Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
 Related Issues: #1696, #1379, #1255, #1259, #1685, #1686, #1694
 Last Reviewed: 2026-06-17
 ---
@@ -15,7 +15,7 @@ Last Reviewed: 2026-06-17
 
 ## Purpose
 
-This document converts PMO Backlog Priority #2 into a PMO v3 future-program readiness package.
+This document converts PMO Backlog Priority #2 into a PMO July 2026 future-program readiness package.
 
 Priority #2 is the **Fundraiser / Charity Campaign Operations Buildout** group. The group contains the future work required to run repeatable LGFC fundraiser campaigns with clear external-vendor boundaries, website campaign surfaces, leaderboard/winner rules, donor/sponsor recognition controls, and pre-launch verification.
 
@@ -52,7 +52,7 @@ After this readiness package is approved, Priority #2 should be usable as a futu
 
 The intended final state before implementation launch is:
 
-- one PMO v3 program candidate with a clear launch-state control statement;
+- one PMO July 2026 program candidate with a clear launch-state control statement;
 - child-project boundaries for operations, Givebutter integration, leaderboard/winner calculation, homepage campaign surface, donor/sponsor recognition, and launch testing;
 - an implementation plan that defines task order, file areas, validation, and closeout expectations;
 - explicit separation between external campaign ownership and internal website/data ownership;
@@ -77,7 +77,7 @@ The intended final state before implementation launch is:
 
 | Priority item | project name | Current state | Design authority | Implementation plan state | Readiness decision |
 | --- | --- | --- | --- | --- | --- |
-| 2 | Fundraiser / Charity Campaign Operations Buildout | PMO v3 program candidate | This readiness doc plus PMO backlog row | `fundraiser-charity-campaign-operations-buildout.md` | Ready for Bill/Atlas planning review; blocked from launch |
+| 2 | Fundraiser / Charity Campaign Operations Buildout | PMO July 2026 program candidate | This readiness doc plus PMO backlog row | `fundraiser-charity-campaign-operations-buildout.md` | Ready for Bill/Atlas planning review; blocked from launch |
 | 2a | Fundraiser operations playbook | Draft concept | This readiness doc; future Task 001 output | Covered by Tasks 001, 007, 008 | Needs documentation before build |
 | 2b | Givebutter integration model | Draft concept | This readiness doc; future Task 002 output | Covered by Tasks 002, 004, 006, 007 | Needs external/internal boundary confirmation |
 | 2c | Leaderboard / winner system | Draft concept | This readiness doc; future Tasks 002 and 003 outputs | Covered by Tasks 003, 006, 007 | Needs scoring and snapshot rules |
@@ -140,6 +140,6 @@ Before Cursor receives implementation assignment for this program:
 
 ## Readiness conclusion
 
-Priority #2 is now documented as a future PMO v3 program candidate.
+Priority #2 is now documented as a future PMO July 2026 program candidate.
 
 It is **planning-ready**, not executable. It becomes implementation-ready only after Bill/Atlas explicitly launch it and authorize child task issue creation from `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md`.

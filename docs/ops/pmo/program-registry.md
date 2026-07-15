@@ -3,9 +3,8 @@ Doc Type: Operations
 Audience: Human + AI
 Authority Level: Operational Authority
 Owns: PMO program issue registry, current program issue assignments, launch-state control, child-project mapping, and authoritative execution chain for LGFC orchestrated work
-Does Not Own: PMO v3 top-level policy, implementation plan task definitions, workflow code, runtime behavior, product design, or unauthorized GitHub issue changes
-Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-PMO V4 promotion: /docs/ops/pmo/PMO-V4-OPERATING-MODEL.md (becomes canonical after #2100 merges)
+Does Not Own: PMO July 2026 top-level policy, implementation plan task definitions, workflow code, runtime behavior, product design, or unauthorized GitHub issue changes
+Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
 Related issues: #1411, #1379, #1255, #1259, #1500, #1678, #1685, #1696, #1700, #1713, #1719, #1720, #1721, #1722, #1723, #1724, #1725, #1726, #1727, #1963, #2039, #2040, #2041, #2042, #2043, #2044, #2045, #2046, #2047, #2048, #2049, #2050, #2051, #2052, #2053, #2054, #2055, #2056, #2100
 Last Reviewed: 2026-07-05
 ---
@@ -14,13 +13,13 @@ Last Reviewed: 2026-07-05
 
 ## Purpose
 
-This registry is the PMO program index. During the #2100 authority transition, `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` remains current PMO authority until PR #2282 merges. After PR #2282 merges, `/docs/ops/pmo/PMO-V4-OPERATING-MODEL.md` controls PMO authority and this registry routes readers to PMO V4.
+This registry is the PMO program index. `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md` controls current PMO authority and this registry routes readers to PMO July 2026.
 
 If this registry conflicts with the active PMO operating model, the operating model controls.
 
 ## Scope
 
-This registry records current program issue assignments, launch-state control, child-project mapping, and the PMO execution chain. It does not own PMO v3 top-level policy, task-level implementation detail, workflow code, runtime behavior, product design, or unauthorized GitHub issue changes.
+This registry records current program issue assignments, launch-state control, child-project mapping, and the PMO execution chain. It does not own PMO July 2026 top-level policy, task-level implementation detail, workflow code, runtime behavior, product design, or unauthorized GitHub issue changes.
 
 ## Current known truth
 
@@ -65,17 +64,12 @@ Required implications:
 
 ## PMO Execution Chain
 
-After PR #2282 merges, the authoritative chain is defined in `/docs/ops/pmo/PMO-V4-OPERATING-MODEL.md` ([PMO hierarchy](PMO-V4-OPERATING-MODEL.md#pmo-hierarchy)):
+The authoritative chain is defined in `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md` ([PMO hierarchy](PMO-JULY-2026-OPERATING-MODEL.md#pmo-hierarchy)):
 
 ```text
 PMO meeting issue → PMO Backlog review/update → program of work → component project → master issue → child implementation issues → PR(s) → Atlas review / acceptance → production Ops monitoring → Ops exception issues if needed → closeout
 ```
 
-Until PR #2282 merges, the PMO V3 chain remains in effect for active execution:
-
-```text
-PMO meeting issue → PMO Backlog review/update → program issue → project / task issue → PR → verification → closeout
-```
 
 ## Current active program issues
 
@@ -156,7 +150,7 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 
 | Child project | PMO decision | Implementation-plan coverage | issue |
 | --- | --- | --- | --- |
-| PMO v3 authority and stale issue reconciliation | Included in Priority #3 | Task 001 | #1720 |
+| PMO July 2026 authority and stale issue reconciliation | Included in Priority #3 | Task 001 | #1720 |
 | Workflow automation design migration and gap inventory | Included in Priority #3 | Task 002 | #1721 |
 | Cursor continuation and queue contract hardening | Included in Priority #3 | Task 003 | #1722 |
 | PR readiness and merge authority control | Included in Priority #3 | Task 004 | #1723 |
@@ -207,7 +201,7 @@ Completed program cycles remain audit evidence and may be cited for historical c
 | Status | **Completed planning artifact** (issue closed, `status:complete`) — not executable until a current open source issue exists and Atlas/Bill explicitly launch the next cycle |
 | Source issue | `#1411` |
 | Implementation plan | `docs/ops/implementation-plans/program-1-pmo-automation-agent-workflow-control.md` |
-| PMO v3 authority | `docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` |
+| PMO July 2026 authority | `docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md` |
 | Workflow Automation authority | `docs/ops/pmo/workflow-automation.md` |
 | Project slug | `program-1-pmo-automation-agent-workflow-control` |
 
@@ -217,7 +211,7 @@ Completed program cycles remain audit evidence and may be cited for historical c
 
 | Area | Registry decision |
 | --- | --- |
-| PMO v3 authority | Included in Priority #3 #1720 |
+| PMO July 2026 authority | Included in Priority #3 #1720 |
 | Workflow Automation design migration | Included in Priority #3 #1721 |
 | Cursor continuation and queue contract | Included in Priority #3 #1722 |
 | PR readiness and batch review control | Included in Priority #3 #1723 |
@@ -253,8 +247,9 @@ Program #1255 remains controlled by its own active source issues and Cursor exec
 
 ## Related References
 
-- PMO v3 operating model (current authority until #2100 merges): `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`
-- PMO v4 operating model (canonical after #2100 merges): `/docs/ops/pmo/PMO-V4-OPERATING-MODEL.md`
+- PMO July 2026 Operating Model: `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`
+- PMO July 2026 Dashboard Specification: `/docs/ops/pmo/PMO-JULY-2026-DASHBOARD-SPECIFICATION.md`
+- PMO v3 operating model (historical): `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`
 - PMO Backlog: `/docs/ops/pmo/pmo-backlog.md`
 - Priority #1 readiness: `/docs/ops/pmo/website-completion-fan-club-product-buildout-readiness.md`
 - Priority #1 implementation plan: `/docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md`

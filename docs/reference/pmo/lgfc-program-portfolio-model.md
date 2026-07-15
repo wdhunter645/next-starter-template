@@ -2,9 +2,9 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Operational Authority
-Owns: LGFC PMO v3 program issue portfolio model, PMO Backlog intake model, and execution-chain reference
+Owns: LGFC PMO July 2026 program issue portfolio model, PMO Backlog intake model, and execution-chain reference
 Does Not Own: Product design, workflow implementation, runtime behavior, GitHub issue mutation, or merge authority
-Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
+Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
 Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501
 Last Reviewed: 2026-06-09
 ---
@@ -13,9 +13,9 @@ Last Reviewed: 2026-06-09
 
 ## Purpose
 
-Define the PMO v3 program issue portfolio model used to coordinate LGFC work across planning, execution, review, verification, and closeout without overloading agents with unbounded prompts or creating competing issue trees.
+Define the PMO July 2026 program issue portfolio model used to coordinate LGFC work across planning, execution, review, verification, and closeout without overloading agents with unbounded prompts or creating competing issue trees.
 
-This document is subordinate to `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`. It explains the portfolio mechanics; PMO v3 controls if there is a conflict.
+This document is subordinate to `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`. It explains the portfolio mechanics; PMO July 2026 controls if there is a conflict.
 
 ## Scope
 
@@ -55,7 +55,7 @@ This document does not own:
 
 ## Portfolio Chain
 
-PMO v3 uses this execution chain:
+PMO July 2026 uses this execution chain:
 
 ```text
 PMO meeting issue → PMO Backlog review/update → program issue → child project → task issue → PR → verification → closeout
@@ -108,7 +108,7 @@ Workflow Automation follows this path: it was captured as backlog material, then
 For PMO-governed tasks, Cursor should read:
 
 1. The active source issue.
-2. `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`.
+2. `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`.
 3. `/docs/ops/pmo/program-registry.md`.
 4. `/docs/ops/pmo/pmo-backlog.md` when backlog or promotion context is involved.
 5. `/docs/reference/pmo/lgfc-program-queue-and-dependency-map.md` when the program uses launched-program queue mode.

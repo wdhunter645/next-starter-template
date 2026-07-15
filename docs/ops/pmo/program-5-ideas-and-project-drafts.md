@@ -4,14 +4,14 @@ Audience: Human + AI
 Authority Level: Historical Authority
 Owns: Historical Program 5 ideas/project-drafts evidence only
 Does Not Own: Current PMO Backlog inventory, portfolio admission, final prioritization, launch approval, implementation scope, issue creation, or merge authority
-Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
-Related Issues: #1379, #1411, #1255, #1501
-Last Reviewed: 2026-06-09
+Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
+Related Issues: #1379, #1411, #1255, #1501, #2100
+Last Reviewed: 2026-07-14
 ---
 
 # Program 5 — Ideas and Project Drafts (Superseded)
 
-> **Superseded by PMO v3.** The current PMO Backlog inventory is `/docs/ops/pmo/pmo-backlog.md`.
+> **Superseded by PMO v3, then PMO July 2026.** The current PMO Backlog inventory is `/docs/ops/pmo/pmo-backlog.md`.
 >
 > PMO v3 retired the Program 5 operating label. Ideas, project drafts, and implementation-ready projects are tracked in the PMO Backlog document, not as a program lane.
 
@@ -22,4 +22,4 @@ Under PMO v2, Program 5 was the ideas and project-drafts intake lane. That model
 For current backlog inventory and promotion rules, see:
 
 - `/docs/ops/pmo/pmo-backlog.md`
-- `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`
+- `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`
