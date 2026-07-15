@@ -1,5 +1,5 @@
 ---
-Doc Type: Specification
+Doc Type: Reference
 Audience: Human + AI
 Authority Level: Canonical Platform Specification
 Owns: Cloudflare, D1, B2, platform constraints, platform operational rules
