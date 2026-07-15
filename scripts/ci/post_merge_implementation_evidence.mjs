@@ -72,9 +72,20 @@ export function allowlistEvidenceFailures({ body = '', files = [] } = {}) {
 	}
 
 	const changedFiles = files
-		.map((file) => (typeof file === 'string' ? file : file.filename || file.path))
-		.filter(Boolean);
-	const unlisted = findUnlistedChangedFiles(changedFiles, allowedFiles);
+		.map((file) => {
+			if (typeof file === 'string') {
+				return { filename: file, status: 'modified' };
+			}
+			return {
+				filename: file.filename || file.path,
+				status: file.status || 'modified',
+			};
+		})
+		.filter((file) => Boolean(file.filename) && file.status !== 'removed');
+	const unlisted = findUnlistedChangedFiles(
+		changedFiles.map((file) => file.filename),
+		allowedFiles,
+	);
 
 	return unlisted.map((file) => ({
 		code: 'allowlist_violation',
