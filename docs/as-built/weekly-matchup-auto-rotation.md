@@ -28,7 +28,10 @@ Records how `GET /api/matchup/current` resolves the homepage Weekly Photo Matchu
 On each request, the API:
 
 1. Computes the current Monday `week_start` (`YYYY-MM-DD`) with a Monday-inclusive expression: `date('now','-6 days','weekday 1')`.
-2. Returns an existing **active** `weekly_matchups` row for that week when both photos resolve and remain eligible.
+2. For an existing **active** `weekly_matchups` row for that week:
+   - both photos must resolve and remain eligible (`is_matchup_eligible >= 0`);
+   - both object URLs are probed (HEAD, then ranged GET) before return;
+   - if either probe fails, the same repair path as `POST /api/matchup/repair` runs so a missing B2 object is not returned as usable.
 3. Otherwise:
    - closes stale active rows from prior weeks;
    - selects two eligible photos from `photos`;
@@ -40,9 +43,19 @@ On each request, the API:
    - returns the two-photo payload.
 4. Fails closed with `ok: true`, `matchup_id: null`, `items: []` when fewer than two eligible photos exist.
 
+### Proactive B2 ↔ D1 deletion reconciliation
+
+Additive daily sync inserts new B2 keys only. Deletion reconciliation
+(`scripts/b2_d1_deletion_reconcile.sh`, after incremental sync in
+`.github/workflows/b2-d1-daily-sync.yml`) soft-retires D1 rows whose object keys
+are absent from B2: `is_matchup_eligible = -1` plus a `PURGE_ELIGIBLE` rights note.
+It fails closed if the B2 inventory is empty. Historical matchup rows keep their
+photo IDs; those photos are never reselected for new matchups.
+
 ### Broken-image repair (`POST /api/matchup/repair`)
 
-When a homepage matchup `<img>` fires `onError`:
+When a homepage matchup `<img>` fires `onError` (defense in depth if a probe or
+reconcile has not yet run):
 
 1. The client posts `{ broken_photo_id }` to `/api/matchup/repair` (max two attempts per page load).
 2. The server verifies the id is in the active current-week pair.
@@ -50,6 +63,7 @@ When a homepage matchup `<img>` fires `onError`:
 4. It keeps the healthy photo when possible and selects a replacement for the broken slot (falls back to a full new pair).
 5. Pair change clears `weekly_votes` for the week so votes are not transferred.
 6. The client replaces the displayed pair and re-syncs the pair-scoped vote lock.
+
 **Lazy rotation:** the first homepage or API hit of a new week creates the new pair. No separate scheduled rollover job is required.
 
 ## Eligibility (interim)
