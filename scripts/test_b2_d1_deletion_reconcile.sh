@@ -76,6 +76,32 @@ if ! grep -q "is_matchup_eligible >= 0" "$RECONCILE_SCRIPT"; then
 fi
 echo "  ✓ PASSED"
 
+echo "Test 8: Active matchup repair + vote clear..."
+if ! grep -q "Scanning active weekly_matchups" "$RECONCILE_SCRIPT"; then
+  echo "  ✗ FAILED: Script should scan active matchups for excluded photos"
+  exit 1
+fi
+if ! grep -q "DELETE FROM weekly_votes" "$RECONCILE_SCRIPT"; then
+  echo "  ✗ FAILED: Script should clear weekly_votes when pair changes"
+  exit 1
+fi
+if ! grep -q "UPDATE weekly_matchups SET photo_a_id" "$RECONCILE_SCRIPT"; then
+  echo "  ✗ FAILED: Script should update weekly_matchups pair on repair"
+  exit 1
+fi
+echo "  ✓ PASSED"
+
+echo "Test 9: Findings outputs for Actions..."
+if ! grep -q "has_findings=" "$RECONCILE_SCRIPT"; then
+  echo "  ✗ FAILED: Script should emit has_findings to GITHUB_OUTPUT"
+  exit 1
+fi
+if ! grep -q "repaired_matchups=" "$RECONCILE_SCRIPT"; then
+  echo "  ✗ FAILED: Script should emit repaired_matchups"
+  exit 1
+fi
+echo "  ✓ PASSED"
+
 echo ""
 echo "============================================"
 echo "All tests PASSED ✓"
