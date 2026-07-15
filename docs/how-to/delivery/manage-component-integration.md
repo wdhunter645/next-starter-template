@@ -5,8 +5,8 @@ Authority Level: Procedure
 Owns: Operator procedure for managing Model B component child auto-integration, holds, and rollback disablement
 Does Not Own: Delivery policy, evaluator implementation, or branch protection configuration
 Canonical Reference: /docs/governance/DELIVERY-AND-RELEASE.md
-Related Issues: #2498
-Last Reviewed: 2026-07-13
+Related Issues: #2498, #2502
+Last Reviewed: 2026-07-15
 ---
 
 # Manage Component Integration
@@ -89,6 +89,28 @@ Disable child auto-integration without deleting component evidence:
 2. Disable repository auto-merge settings if no other workflow depends on them.
 3. Record the rollback action on the source issue.
 4. Retain the component branch and merged child PR history for promotion planning.
+
+### 8. Restore repository configuration after failed promotion
+
+Use this ordered restoration when a Model B promotion to `main` fails or must be reversed. Snapshot facts live in `docs/reference/github/delivery-system-repository-configuration.md`.
+
+1. Pause component auto-integration deterministically using one of these mechanisms (record which was used on the source issue):
+   - Apply hold label `component-integration-hold` or `hold:component-integration` to every open Model B child PR targeting the component branch (and to the component master issue when Chat directs a branch-wide pause); confirm the child integration workflow publishes a blocked `Component Integration Eligibility` result; **or**
+   - Disable the workflow file `.github/workflows/component-child-integration.yml` via a Chat-authorized config change (rename/remove in a scoped PR, or disable the workflow in GitHub Actions UI when authorized), then confirm no new `component-child-integration` runs start for `component/**` children.
+2. Restore ruleset `15885337` (or the pre-change ruleset export) if promotion altered branch protection.
+3. Restore template files from the recorded pre-promotion commit on `main`.
+4. Revert the promotion merge commit if production activation occurred.
+5. Restore the previous Cloudflare Pages deployment if required.
+6. Verify required checks `quality` and `gitleaks` on `main`.
+7. Reconcile source issues, Program #2477 status, and authority references.
+
+Verification commands (operator):
+
+```bash
+gh api repos/wdhunter645/next-starter-template/rulesets
+gh api repos/wdhunter645/next-starter-template --jq '{allow_auto_merge, allow_merge_commit, allow_rebase_merge, allow_squash_merge}'
+gh api repos/wdhunter645/next-starter-template/rulesets/15885337
+```
 
 ## Verification checklist
 
