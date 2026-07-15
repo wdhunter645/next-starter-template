@@ -17,7 +17,7 @@ The `b2_d1_incremental_sync.sh` script provides a **daily, idempotent** synchron
 
 ### GitHub Actions (Automated)
 
-The workflow runs automatically daily at 06:17 UTC via `.github/workflows/b2-d1-daily-sync.yml`.
+The workflow runs automatically daily at **04:00 EST** (`0 9 * * *` UTC) via `.github/workflows/b2-d1-daily-sync.yml` (incremental sync + deletion reconciliation). During daylight time (EDT) that fire time is 05:00 Eastern.
 
 Manual trigger:
 ```bash

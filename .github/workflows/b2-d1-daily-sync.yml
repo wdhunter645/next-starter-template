@@ -3,7 +3,8 @@ name: OPS — B2 D1 Daily Sync
 on:
   workflow_dispatch:
   schedule:
-    - cron: "17 6 * * *" # Daily at 06:17 UTC
+    # 04:00 America/New_York (EST) = 09:00 UTC. During EDT this is 05:00 local.
+    - cron: "0 9 * * *"
 
 concurrency:
   group: b2-d1-daily-sync
