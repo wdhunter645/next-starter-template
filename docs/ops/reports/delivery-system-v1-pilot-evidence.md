@@ -27,7 +27,7 @@ Last Reviewed: 2026-07-15
 | --- | --- | --- |
 | Fixture-level evaluator proof | PASS | Acceptance matrix 12/12 |
 | Live protected-child proof | PASS | #2527 only |
-| Live eligible-child proof | See #2536 / promotion-readiness report | Not claimed by Pilot #2527 |
+| Live eligible-child proof | PASS under #2536 | PR #2540 + corrected workflow_dispatch artifact `eligible=true` |
 | Repository-setting blocker | `allow_auto_merge=false` | Unchanged; no auto-merge success claim |
 | Rollback schema validation | PASS | Required fields present |
 | Rollback ordered dry-run simulation | PASS under #2536 fixtures | Scenarios 11–12 now execute non-mutating state machines |
@@ -76,6 +76,22 @@ Evidence expectations on that child PR:
 3. Deterministic eligible auto-integration remains proven by scenario 3 fixtures; repository `allow_auto_merge` remains `false`, so eligible children currently receive a green eligibility check and Chat/manual integration, matching as-built configuration.
 
 Live PR number, head SHA, and Component Integration Eligibility check conclusion are filled in the ChatGPT handoff comment after the child PR opens.
+
+
+## Live eligible-child exercise (#2536 F2)
+
+| Field | Value |
+| --- | --- |
+| Evidence child PR | [#2540](https://github.com/wdhunter645/next-starter-template/pull/2540) |
+| Evaluated head SHA | `ec3baac4f43c94dddcd5b4d470667db635c98e37` |
+| Approval profile | `component-auto-integration` |
+| Protected change | `false` (docs/ops/reports only) |
+| Component Integration Eligibility | **SUCCESS** — [check](https://github.com/wdhunter645/next-starter-template/runs/87387275467) |
+| Corrected evaluation run | [workflow_dispatch #29425645275](https://github.com/wdhunter645/next-starter-template/actions/runs/29425645275) from remediation branch |
+| Artifact | `eligible=true`, `requiresChatReview=false`, `componentState=green`, `blockedReasons=[]` |
+| Legacy evaluator contrast | Component-tip run [29425298595](https://github.com/wdhunter645/next-starter-template/actions/runs/29425298595): false `component_hold` + unrelated pending checks |
+| Auto-merge enablement | Path attempted; skipped — repository `allow_auto_merge=false` |
+| Repository `allow_auto_merge` | `false` (unchanged; **no auto-merge success claim**) |
 
 ## Rollback simulations
 

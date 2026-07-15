@@ -189,15 +189,17 @@ export function assertRollbackFailsWhenReordered({ initialState, steps }) {
   if (steps.length < 2) {
     throw new Error('reorder assertion requires at least two steps');
   }
+  // Swap the first two steps and rely on step preconditions/dependencies —
+  // do not inject original-order expectations that would force a false fail.
   const reordered = [steps[1], steps[0], ...steps.slice(2)];
   try {
     runOrderedRollbackSimulation({
       initialState,
       steps: reordered,
-      expectedAfterEach: steps.map((step) => ({ lastStep: step.id })),
+      expectedFinal: { verified: true },
     });
   } catch {
     return true;
   }
-  throw new Error('expected reordered rollback steps to fail');
+  throw new Error('expected reordered rollback steps to fail due to step preconditions');
 }

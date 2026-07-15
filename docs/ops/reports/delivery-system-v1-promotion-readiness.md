@@ -44,7 +44,7 @@ Last Reviewed: 2026-07-15
 | --- | --- | --- |
 | Fixture-level evaluator proof | PASS | `node scripts/ci/delivery_system_acceptance.mjs` 12/12 |
 | Live protected-child proof | PASS | PR #2527: eligibility neutral; `requiresChatReview: yes` |
-| Live eligible-child integration proof | IN PROGRESS under #2536 | Non-protected child exercise + artifact recorded in #2536 handoff |
+| Live eligible-child integration proof | PASS under #2536 | PR #2540; workflow_dispatch `29425645275`; artifact eligible=true / requiresChatReview=false; allow_auto_merge=false structural skip |
 | Repository-setting blockers | CONFIRMED | `allow_auto_merge=false` — do not claim actual auto-merge success |
 | Rollback schema validation | PASS | Required multi-step / one-step fields |
 | Rollback ordered dry-run simulation | PASS under #2536 | Scenarios 11–12 execute ordered dry-runs with omit/reorder failure |
@@ -65,7 +65,7 @@ Owning files: `.github/workflows/component-child-integration.yml`, `scripts/ci/c
 
 ### F2 — Live eligible-child auto-integration unproven
 
-**Confirmed. Requires live proof (and optional repo setting authorization).**
+**Confirmed and remediated under #2536 (live proof recorded; repo setting unchanged).**
 
 - Pilot #2527 was a protected child (`protected-change-review`).
 - Scenario 3 fixture is not a live exercise.
