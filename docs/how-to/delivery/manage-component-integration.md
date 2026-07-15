@@ -94,7 +94,9 @@ Disable child auto-integration without deleting component evidence:
 
 Use this ordered restoration when a Model B promotion to `main` fails or must be reversed. Snapshot facts live in `docs/reference/github/delivery-system-repository-configuration.md`.
 
-1. Pause component auto-integration workflow runs targeting `component/**`.
+1. Pause component auto-integration deterministically using one of these mechanisms (record which was used on the source issue):
+   - Apply hold label `component-integration-hold` or `hold:component-integration` to every open Model B child PR targeting the component branch (and to the component master issue when Chat directs a branch-wide pause); confirm the child integration workflow publishes a blocked `Component Integration Eligibility` result; **or**
+   - Disable the workflow file `.github/workflows/component-child-integration.yml` via a Chat-authorized config change (rename/remove in a scoped PR, or disable the workflow in GitHub Actions UI when authorized), then confirm no new `component-child-integration` runs start for `component/**` children.
 2. Restore ruleset `15885337` (or the pre-change ruleset export) if promotion altered branch protection.
 3. Restore template files from the recorded pre-promotion commit on `main`.
 4. Revert the promotion merge commit if production activation occurred.

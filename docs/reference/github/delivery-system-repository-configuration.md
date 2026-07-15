@@ -78,7 +78,7 @@ Protected Model B child PRs use `protected-change-review` instead of `component-
 | Component ruleset | none | no dedicated ruleset; Chat still performs protected-child and promotion decisions |
 | Child auto-integration workflow | present | `.github/workflows/component-child-integration.yml`; publishes `Component Integration Eligibility` |
 | Repo `allow_auto_merge` | `false` | confirmed live via GitHub API on 2026-07-15; workflow no-ops GraphQL enablement when false |
-| Sync gap vs `main` | 6 commits on `main` not in component; 15 component commits not in `main` | must merge `main` into component before promotion reopen |
+| Sync gap vs `main` | 6 commits on `main` not in component; 15 component commits not in `main` | measured 2026-07-15 against `main` `74b4776f50c6ab643eb1efd5ad25fab8650e6602`; gating rationale in `docs/ops/reports/delivery-system-v1-promotion-readiness.md` |
 
 Component child integration automation is implemented (#2498). Live non-protected eligible-child auto-integration remains unproven; repository `allow_auto_merge=false` is a structural blocker for hands-off enablement. See `docs/ops/reports/delivery-system-v1-promotion-readiness.md`.
 
@@ -206,7 +206,7 @@ Capture before any promotion or ruleset change. Restoration operator procedure l
 | `allow_auto_merge` | `false` |
 | `allow_squash_merge` | `true` |
 | Component branch head | `component/delivery-system-v1` @ `69cc81fba57aba0a8436fd6883db62755493bac8` |
-| Promotion PR | #2511 (draft, held; must not merge until #2502 readiness is green) |
+| Promotion PR | #2511 (open draft; labels include `status:changes-requested` as of 2026-07-15) |
 | PR template path | `.github/pull_request_template.md` |
 | Issue templates | `.github/ISSUE_TEMPLATE/{agent-task,bug_report,delivery-task,feature_request,homepage-execution-plan,config}.yml` |
 | Recent github-pages deployment SHA (sample) | `66c3ca75c1c74d7b7154cf05c57ed604295eb426` |
