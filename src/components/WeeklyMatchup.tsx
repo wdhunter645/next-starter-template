@@ -123,7 +123,9 @@ export default function WeeklyMatchup() {
 
         if (gotWeek && nextItems.length >= 2) {
           // Server push of a new pair (or same week with cleared votes) drives unlock here.
-          let { voteKey, voted } = syncWeeklyVoteLock(gotWeek, nextItems[0].id, nextItems[1].id);
+          const synced = syncWeeklyVoteLock(gotWeek, nextItems[0].id, nextItems[1].id);
+          const voteKey = synced.voteKey;
+          let voted = synced.voted;
 
           if (voted) {
             const r = await apiGet<ResultsResp>(`/api/matchup/results?week_start=${encodeURIComponent(gotWeek)}`);
