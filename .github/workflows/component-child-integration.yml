@@ -158,7 +158,6 @@ jobs:
 
       - name: Enable auto-merge for eligible child PRs
         if: steps.eligibility.outputs.eligible == 'true'
-        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ steps.pr.outputs.number }}

@@ -70,23 +70,14 @@ describe('preview isolation inventory', () => {
     const manifestHandlers = new Set(
       manifest.mutatingRoutes.flatMap((route) => {
         if (route.handler.endsWith('/**')) {
-          return handlers.filter((path) => path.startsWith('functions/api/admin/'));
+          const prefix = route.handler.slice(0, -3);
+          return handlers.filter((path) => path.startsWith(prefix));
         }
         return [route.handler];
       }),
     );
 
-    const missing = handlers.filter((handler) => {
-      if (manifestHandlers.has(handler)) {
-        return false;
-      }
-      // Admin-token handlers remain inventory-required; only the admin/** glob
-      // coverage above satisfies their enumeration via the manifest.
-      if (handler.startsWith('functions/api/admin/')) {
-        return false;
-      }
-      return true;
-    });
+    const missing = handlers.filter((handler) => !manifestHandlers.has(handler));
     expect(missing, `Add missing mutating handlers: ${missing.join(', ')}`).toEqual([]);
   });
 

@@ -1,4 +1,7 @@
-import { classifyDeliveryProfile } from '../../../scripts/ci/delivery_profile.mjs';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { classifyDeliveryProfile, runCli as runDeliveryProfileCli } from '../../../scripts/ci/delivery_profile.mjs';
 import { evaluateComponentIntegration } from '../../../scripts/ci/component_integration_eligibility.mjs';
 import {
   evaluateMigrationRatchet,
@@ -327,8 +330,7 @@ Follow-up issue: #2599
         changedFiles: ['src/components/example.tsx'],
       };
 
-      const localProfile = classifyDeliveryProfile(input);
-      const ciProfile = classifyDeliveryProfile(input);
+      // Local/preflight path: in-process evaluator used by `npm run pr:preflight`.
       const localPreflight = evaluatePrPreflight({
         body: input.body,
         baseRef: input.baseRef,
@@ -336,34 +338,50 @@ Follow-up issue: #2599
         changedFiles: input.changedFiles,
         repository: 'wdhunter645/next-starter-template',
       });
+      const localProfile = localPreflight.deliveryProfile;
 
-      assert(localProfile.errors.length === 0, `local profile errors: ${JSON.stringify(localProfile.errors)}`);
-      assert(
-        JSON.stringify({
+      // CI/CLI path: file-based wrapper that Actions jobs invoke via env files.
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'delivery-system-parity-'));
+      const bodyFile = path.join(tmpDir, 'pr_body.md');
+      const changedFilesFile = path.join(tmpDir, 'changed_files.txt');
+      const resultFile = path.join(tmpDir, 'delivery_profile.json');
+      try {
+        fs.writeFileSync(bodyFile, input.body);
+        fs.writeFileSync(changedFilesFile, `${input.changedFiles.join('\n')}\n`);
+        const exitCode = runDeliveryProfileCli({
+          PR_BODY_FILE: bodyFile,
+          CHANGED_FILES_FILE: changedFilesFile,
+          PR_BASE_REF: input.baseRef,
+          PR_HEAD_REF: input.headRef,
+          DELIVERY_PROFILE_RESULT_JSON: resultFile,
+        });
+        assert(exitCode === 0, `CI delivery-profile CLI failed with exit ${exitCode}`);
+        const ciProfile = JSON.parse(fs.readFileSync(resultFile, 'utf8'));
+
+        const localSummary = {
           deliveryModel: localProfile.deliveryModel,
           gateProfile: localProfile.gateProfile,
           approvalProfile: localProfile.approvalProfile,
           rollbackProfile: localProfile.rollbackProfile,
           protectedChange: localProfile.protectedChange,
           errors: localProfile.errors,
-        }) === JSON.stringify({
+        };
+        const ciSummary = {
           deliveryModel: ciProfile.deliveryModel,
           gateProfile: ciProfile.gateProfile,
           approvalProfile: ciProfile.approvalProfile,
           rollbackProfile: ciProfile.rollbackProfile,
           protectedChange: ciProfile.protectedChange,
           errors: ciProfile.errors,
-        }),
-        'local and CI classifiers diverged',
-      );
-      assert(
-        localPreflight.deliveryProfile.deliveryModel === localProfile.deliveryModel,
-        'preflight delivery model mismatch',
-      );
-      assert(
-        localPreflight.deliveryProfile.gateProfile === localProfile.gateProfile,
-        'preflight gate profile mismatch',
-      );
+        };
+        assert(
+          JSON.stringify(localSummary) === JSON.stringify(ciSummary),
+          `local/preflight vs CI/CLI classification diverged: ${JSON.stringify({ localSummary, ciSummary })}`,
+        );
+        assert(localProfile.errors.length === 0, `local profile errors: ${JSON.stringify(localProfile.errors)}`);
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
     },
   },
   {

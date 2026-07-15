@@ -15,10 +15,12 @@ Last Reviewed: 2026-07-15
 
 - Source issue: #2501
 - Working branch: `cursor/2501-integrated-pilot`
+- Child PR: #2527
 - Target: `component/delivery-system-v1`
 - Base component SHA at Pilot start: `8bf68e7de29c780feeecd398e5496817b2ee000d`
 - Pilot acceptance command: `node scripts/ci/delivery_system_acceptance.mjs`
 - Acceptance result: **PASS (12/12)**
+- Remediation pass: Chat changes-requested on #2527 (admin inventory exemption, auto-merge continue-on-error, scenario 10 CI/CLI parity, machine-readable PR body allowlist/attestation)
 
 ## Scenario matrix
 
@@ -45,7 +47,9 @@ Fixture authority: `tests/fixtures/delivery-system/**`
 | --- | --- | --- |
 | Paginated reviews/labels JSON invalid | `.github/workflows/component-child-integration.yml` | `jq -s 'add // []'` after `--paginate` |
 | Paginated check-runs JSON invalid | `.github/workflows/component-child-integration.yml` | slurp + flatten `check_runs` |
-| Auto-merge fails when disabled | `.github/workflows/component-child-integration.yml` | guard on `allow_auto_merge` + `continue-on-error` |
+| Auto-merge fails when disabled | `.github/workflows/component-child-integration.yml` | guard on `allow_auto_merge` with explicit no-op exit 0; no `continue-on-error` |
+| Admin inventory false-pass risk | `tests/preview-isolation-inventory.test.ts` | expand `/**` globs from handler prefix; no unconditional admin exemption |
+| Scenario 10 same-classifier duplicate | `tests/fixtures/delivery-system/scenarios.mjs` | compare `evaluatePrPreflight` local path vs `delivery_profile.runCli` file-based CI path |
 | Missing `GH_TOKEN` for ratchet body fetch | `.github/workflows/diataxis-folder-authority.yml` | set `GH_TOKEN: ${{ github.token }}` |
 | Admin-token mutating handlers skipped in inventory | `tests/preview-isolation-inventory.test.ts` | stop exempting `requireAdmin(` handlers from inventory completeness |
 | As-built said workflow pending | `docs/reference/github/delivery-system-repository-configuration.md` | mark workflow present; note auto-merge still false |
