@@ -1,11 +1,11 @@
 ---
-Doc Type: Specification
+Doc Type: Reference
 Audience: Human + AI
 Authority Level: Canonical Platform Specification
 Owns: Cloudflare, D1, B2, platform constraints, platform operational rules
 Does Not Own: UI design specifics; PR process; incident response playbooks
 Canonical Reference: /docs/reference/platform/CLOUDFLARE.md
-Last Reviewed: 2026-02-20
+Last Reviewed: 2026-07-15
 ---
 
 # Backblaze B2 — Resource Inventory (LGFC)
