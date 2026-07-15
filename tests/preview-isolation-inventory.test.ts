@@ -36,10 +36,6 @@ function handlerHasMutationExport(filePath: string): boolean {
   return MUTATION_EXPORTS.some((name) => new RegExp(`export\\s+(?:async\\s+)?(?:const|function)\\s+${name}\\b`).test(source));
 }
 
-function handlerRequiresAdminToken(filePath: string): boolean {
-  return readHandlerSource(filePath).includes('requireAdmin(');
-}
-
 describe('preview isolation inventory', () => {
   it('keeps the canonical reference document present', () => {
     expect(existsSync(manifest.canonicalReference)).toBe(true);
@@ -84,10 +80,9 @@ describe('preview isolation inventory', () => {
       if (manifestHandlers.has(handler)) {
         return false;
       }
+      // Admin-token handlers remain inventory-required; only the admin/** glob
+      // coverage above satisfies their enumeration via the manifest.
       if (handler.startsWith('functions/api/admin/')) {
-        return false;
-      }
-      if (handlerRequiresAdminToken(handler)) {
         return false;
       }
       return true;

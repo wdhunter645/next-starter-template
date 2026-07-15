@@ -45,6 +45,7 @@ jobs:
           DIATAXIS_CHANGED_FILES_FILE: diataxis_changed_files.txt
           MIGRATION_RATCHET_BODY_FILE: pr_body.txt
           MIGRATION_RATCHET_ENFORCE_FAILURE: 'false'
+          GH_TOKEN: ${{ github.token }}
         run: |
           gh pr view "${{ github.event.pull_request.number }}" --json body --jq .body > pr_body.txt
           node scripts/ci/diataxis_migration_ratchet.mjs > diataxis_migration_ratchet_report.md
