@@ -73,6 +73,30 @@ export function legacyWeeklyVoteStorageKey(weekStart: string): string {
   return `lgfc_weekly_vote_${weekStart}`;
 }
 
+/**
+ * Keep only the lock for the current photo pair.
+ * Drops the legacy week-only key and any prior-pair keys for this week.
+ * Returning the current lock state after cleanup.
+ */
+export function syncWeeklyVoteLock(
+  weekStart: string,
+  photoAId: number,
+  photoBId: number,
+): { voteKey: string; voted: boolean } {
+  const voteKey = weeklyVoteStorageKey(weekStart, photoAId, photoBId);
+  const prefix = `lgfc_weekly_vote_${weekStart}`;
+
+  for (let i = window.localStorage.length - 1; i >= 0; i -= 1) {
+    const key = window.localStorage.key(i);
+    if (!key || !key.startsWith(prefix)) continue;
+    if (key !== voteKey) {
+      window.localStorage.removeItem(key);
+    }
+  }
+
+  return { voteKey, voted: window.localStorage.getItem(voteKey) === '1' };
+}
+
 export default function WeeklyMatchup() {
   const [items, setItems] = useState<Photo[]>([]);
   const [weekStart, setWeekStart] = useState<string | null>(null);
@@ -98,18 +122,26 @@ export default function WeeklyMatchup() {
         setItems(nextItems);
 
         if (gotWeek && nextItems.length >= 2) {
-          // Drop the pre-#2519 week-only lock so a replaced pair can be voted again.
-          window.localStorage.removeItem(legacyWeeklyVoteStorageKey(gotWeek));
-
-          const voteKey = weeklyVoteStorageKey(gotWeek, nextItems[0].id, nextItems[1].id);
-          const voted = window.localStorage.getItem(voteKey) === '1';
-          setHasVoted(voted);
+          // Server push of a new pair (or same week with cleared votes) drives unlock here.
+          let { voteKey, voted } = syncWeeklyVoteLock(gotWeek, nextItems[0].id, nextItems[1].id);
 
           if (voted) {
             const r = await apiGet<ResultsResp>(`/api/matchup/results?week_start=${encodeURIComponent(gotWeek)}`);
-            setTotals(r.totals);
-            setLastWeek(r.last_week);
+            const totalVotes = Number(r.totals?.a || 0) + Number(r.totals?.b || 0);
+            // Mid-week vote wipe leaves totals at 0; treat that as server reset of the client lock.
+            if (totalVotes === 0) {
+              window.localStorage.removeItem(voteKey);
+              voted = false;
+              setHasVoted(false);
+              setTotals(null);
+              setLastWeek(null);
+            } else {
+              setHasVoted(true);
+              setTotals(r.totals);
+              setLastWeek(r.last_week);
+            }
           } else {
+            setHasVoted(false);
             setTotals(null);
             setLastWeek(null);
           }

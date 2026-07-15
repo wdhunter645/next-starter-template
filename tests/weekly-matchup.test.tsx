@@ -82,6 +82,46 @@ describe('WeeklyMatchup last closed week winner thumbnail', () => {
     });
   });
 
+  it('unlocks when server vote totals were reset to zero for the current pair', async () => {
+    window.localStorage.clear();
+    window.localStorage.setItem(weeklyVoteStorageKey(currentWeek, 10, 11), '1');
+
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const path = String(input);
+      if (path === '/api/matchup/current') {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            week_start: currentWeek,
+            matchup_id: 2,
+            items: [
+              { id: 10, url: '/photos/10.jpg', title: 'Current A' },
+              { id: 11, url: '/photos/11.jpg', title: 'Current B' },
+            ],
+          }),
+        );
+      }
+      if (path.startsWith('/api/matchup/results')) {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            week_start: currentWeek,
+            totals: { a: 0, b: 0 },
+            last_week: null,
+          }),
+        );
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${path}`));
+    });
+
+    render(<WeeklyMatchup />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Vote A' })).toBeInTheDocument();
+    });
+    expect(window.localStorage.getItem(weeklyVoteStorageKey(currentWeek, 10, 11))).toBeNull();
+  });
+
   it('clears the legacy week-only vote lock when a replacement pair loads', async () => {
     window.localStorage.clear();
     window.localStorage.setItem(`lgfc_weekly_vote_${currentWeek}`, '1');
