@@ -5,7 +5,7 @@ Authority Level: Evidence
 Owns: Delivery System v1 Task 11 (#2501) Pilot and rollback exercise evidence
 Does Not Own: Promotion authorization, production merge, or Program #2477 closeout
 Canonical Reference: /docs/ops/implementation-plans/two-model-delivery-system/implementation-plan.md
-Related Issues: #2501, #2477, #2511
+Related Issues: #2501, #2477, #2511, #2536
 Last Reviewed: 2026-07-15
 ---
 
@@ -13,14 +13,24 @@ Last Reviewed: 2026-07-15
 
 ## Status
 
-- Source issue: #2501
-- Working branch: `cursor/2501-integrated-pilot`
-- Child PR: #2527
+- Source issue: #2501 (closed completed)
+- Child PR: #2527 (merged)
 - Target: `component/delivery-system-v1`
 - Base component SHA at Pilot start: `8bf68e7de29c780feeecd398e5496817b2ee000d`
 - Pilot acceptance command: `node scripts/ci/delivery_system_acceptance.mjs`
-- Acceptance result: **PASS (12/12)**
-- Remediation pass: Chat changes-requested on #2527 (admin inventory exemption, auto-merge continue-on-error, scenario 10 CI/CLI parity, machine-readable PR body allowlist/attestation)
+- Acceptance result: **PASS (12/12)** (fixture matrix)
+- Post-pilot remediation: #2536 corrects orchestration truthfulness, admin glob boundary, and upgrades scenarios 11–12 to ordered dry-run simulations
+
+## Proof class distinction (post-#2536)
+
+| Proof class | Status | Notes |
+| --- | --- | --- |
+| Fixture-level evaluator proof | PASS | Acceptance matrix 12/12 |
+| Live protected-child proof | PASS | #2527 only |
+| Live eligible-child proof | See #2536 / promotion-readiness report | Not claimed by Pilot #2527 |
+| Repository-setting blocker | `allow_auto_merge=false` | Unchanged; no auto-merge success claim |
+| Rollback schema validation | PASS | Required fields present |
+| Rollback ordered dry-run simulation | PASS under #2536 fixtures | Scenarios 11–12 now execute non-mutating state machines |
 
 ## Scenario matrix
 

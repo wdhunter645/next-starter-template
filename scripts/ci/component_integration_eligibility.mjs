@@ -6,6 +6,37 @@ import { classifyDeliveryProfile } from './delivery_profile.mjs';
 export const HOLD_LABELS = ['component-integration-hold', 'hold:component-integration'];
 export const COMPONENT_STATES = ['green', 'red', 'hold'];
 
+/** Check names produced by this workflow — never used as blockers. */
+export const SELF_CHECK_NAMES = new Set([
+  'Component Integration Eligibility',
+  'component-child-integration',
+]);
+
+/** Name patterns that are advisory/unrelated to child auto-integration gates. */
+export const ADVISORY_CHECK_NAME_PATTERNS = [
+  /advisory/i,
+  /diataxis/i,
+  /cursor-review/i,
+  /cubic/i,
+  /semgrep/i,
+  /cloudflare pages/i,
+  /^Agent Governance$/i,
+  /^Design Authority/i,
+  /^validate-/i,
+  /^noop$/i,
+  /^gate-ensure-issue$/i,
+  /attention pulse/i,
+];
+
+/** Required current-head check names for Model B child eligibility. */
+export const REQUIRED_CHECK_NAME_PATTERNS = [
+  /^GATE — Quality Checks$/i,
+  /^GATE — Diff Scope$/i,
+  /^GATE — Secret Scan$/i,
+  /^quality$/i,
+  /^gitleaks$/i,
+];
+
 const CHECK_FAILURE = new Set(['failure', 'cancelled', 'timed_out', 'action_required']);
 const CHECK_PENDING = new Set(['queued', 'in_progress', 'pending', 'waiting']);
 
@@ -33,36 +64,136 @@ function hasHoldLabel(labels = []) {
   return HOLD_LABELS.some((label) => names.has(label.toLowerCase()));
 }
 
-function assessChecks(checks = []) {
-  const failed = [];
-  const pending = [];
+function checkTimestamp(check = {}) {
+  const raw = check.completed_at || check.completedAt || check.started_at || check.startedAt || '';
+  const parsed = Date.parse(raw);
+  if (!Number.isNaN(parsed)) return parsed;
+  return Number(check.id) || 0;
+}
+
+export function isSelfCheckName(name = '') {
+  return SELF_CHECK_NAMES.has(String(name || ''));
+}
+
+export function isAdvisoryCheckName(name = '') {
+  const value = String(name || '');
+  if (isSelfCheckName(value)) return true;
+  return ADVISORY_CHECK_NAME_PATTERNS.some((pattern) => pattern.test(value));
+}
+
+export function isRequiredCheckName(name = '') {
+  const value = String(name || '');
+  return REQUIRED_CHECK_NAME_PATTERNS.some((pattern) => pattern.test(value));
+}
+
+/**
+ * Keep the latest authoritative current-head result per check name after
+ * excluding self, advisory, and unrelated runs.
+ */
+export function selectAuthoritativeChecks(checks = []) {
+  const latestByName = new Map();
 
   for (const check of checks) {
-    const status = normalizeCheckStatus(check.conclusion || check.status);
-    const name = check.name || check.context || 'unknown-check';
-    if (CHECK_FAILURE.has(status)) {
-      failed.push(integrationError('failed_check', `Required check failed: ${name}.`, { check: name, status }));
-    } else if (CHECK_PENDING.has(status)) {
-      pending.push(integrationError('pending_check', `Required check pending: ${name}.`, { check: name, status }));
+    const name = check.name || check.context || '';
+    if (!name || isAdvisoryCheckName(name) || !isRequiredCheckName(name)) {
+      continue;
+    }
+    const existing = latestByName.get(name);
+    if (!existing || checkTimestamp(check) >= checkTimestamp(existing)) {
+      latestByName.set(name, check);
     }
   }
 
-  return { failed, pending };
+  return [...latestByName.values()];
 }
 
-function assessReviews(reviews = []) {
-  const blockers = [];
+export function assessChecks(checks = []) {
+  const authoritative = selectAuthoritativeChecks(checks);
+  const failed = [];
+  const pending = [];
+  const successConclusions = new Set(['success', 'neutral', 'skipped']);
+
+  for (const check of authoritative) {
+    const conclusion = normalizeCheckStatus(check.conclusion);
+    const status = normalizeCheckStatus(check.status);
+    const name = check.name || check.context || 'unknown-check';
+    if (CHECK_FAILURE.has(conclusion)) {
+      failed.push(integrationError('failed_check', `Required check failed: ${name}.`, { check: name, status: conclusion }));
+      continue;
+    }
+    if (successConclusions.has(conclusion)) {
+      continue;
+    }
+    if (!conclusion || CHECK_PENDING.has(conclusion) || CHECK_PENDING.has(status)) {
+      pending.push(integrationError(
+        'pending_check',
+        `Required check pending: ${name}.`,
+        { check: name, status: conclusion || status || 'pending' },
+      ));
+    }
+  }
+
+  return { failed, pending, authoritative };
+}
+
+function reviewTimestamp(review = {}) {
+  const raw = review.submitted_at || review.submittedAt || '';
+  const parsed = Date.parse(raw);
+  if (!Number.isNaN(parsed)) return parsed;
+  return 0;
+}
+
+/**
+ * Latest-by-author review accounting. Prefer reviews whose commit_id matches
+ * headSha when present; otherwise keep the latest review for that author.
+ * Only the chosen review's state can block via CHANGES_REQUESTED.
+ */
+export function selectLatestReviewsByAuthor(reviews = [], { headSha = '' } = {}) {
+  const currentHead = [];
   for (const review of reviews) {
+    const commitId = review.commit_id || review.commitId || '';
+    if (!headSha) {
+      currentHead.push(review);
+      continue;
+    }
+    // Missing commit_id is treated as applicable to the evaluation head.
+    // Mismatched commit_id is superseded historical evidence and is ignored.
+    if (!commitId || commitId === headSha) {
+      currentHead.push(review);
+    }
+  }
+
+  const byAuthor = new Map();
+  for (const review of [...currentHead].sort((left, right) => reviewTimestamp(left) - reviewTimestamp(right))) {
+    const author = review.author?.login || review.user?.login || 'unknown';
+    byAuthor.set(author, review);
+  }
+  return [...byAuthor.values()];
+}
+
+export function assessReviews(reviews = [], { headSha = '' } = {}) {
+  const blockers = [];
+  for (const review of selectLatestReviewsByAuthor(reviews, { headSha })) {
     const state = String(review.state || '').toUpperCase();
     if (state === 'CHANGES_REQUESTED') {
       blockers.push(integrationError(
         'changes_requested',
-        'A reviewer requested changes on the current head.',
+        'A reviewer requested changes on the authoritative current-head review.',
         { author: review.author?.login || review.user?.login || 'unknown' },
       ));
     }
   }
   return blockers;
+}
+
+/**
+ * Map GitHub combined status to green/red only.
+ * Hold is never inferred from pending/absent legacy status — only explicit labels.
+ */
+export function deriveComponentStateFromCombinedStatus(state = '') {
+  const normalized = String(state || '').trim().toLowerCase();
+  if (normalized === 'failure' || normalized === 'error') return 'red';
+  return 'green';
 }
 
 export function evaluateComponentIntegration({
@@ -72,6 +203,7 @@ export function evaluateComponentIntegration({
   componentState = 'green',
   labels = [],
   changedFiles = [],
+  headSha = '',
 } = {}) {
   const blockedReasons = [];
   let requiresChatReview = false;
@@ -103,6 +235,7 @@ export function evaluateComponentIntegration({
   const baseRef = normalizedProfile.baseRef || '';
   const baseBehindComponentHead = Number(normalizedProfile.baseBehindComponentHead || 0);
   const profileErrors = classified.errors || normalizedProfile.errors || [];
+  const resolvedHeadSha = headSha || normalizedProfile.headSha || '';
 
   if (deliveryModel !== 'B-child') {
     blockedReasons.push(integrationError(
@@ -171,6 +304,7 @@ export function evaluateComponentIntegration({
     ));
   }
 
+  // Hold only from explicit labels (or an explicitly supplied hold state from labels).
   if (componentState === 'hold' || hasHoldLabel(labels)) {
     blockedReasons.push(integrationError(
       'component_hold',
@@ -188,7 +322,7 @@ export function evaluateComponentIntegration({
 
   const { failed, pending } = assessChecks(checks);
   blockedReasons.push(...failed, ...pending);
-  blockedReasons.push(...assessReviews(reviews));
+  blockedReasons.push(...assessReviews(reviews, { headSha: resolvedHeadSha }));
 
   const eligible = blockedReasons.length === 0;
 
@@ -264,6 +398,7 @@ export function runCli(env = process.env) {
     componentState: env.COMPONENT_INTEGRATION_STATE || profile.componentState || 'green',
     labels,
     changedFiles,
+    headSha: env.COMPONENT_INTEGRATION_HEAD_SHA || profile.headSha || '',
   });
 
   const report = renderIntegrationReport(result);

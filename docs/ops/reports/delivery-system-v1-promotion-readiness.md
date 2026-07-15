@@ -15,7 +15,7 @@ Last Reviewed: 2026-07-15
 
 **BLOCKED — do not merge PR #2511.**
 
-#2502 documentation reconciliation progresses, but production promotion remains blocked until Chat authorizes and Cursor completes a bounded remediation issue for confirmed post-pilot implementation defects. No new implementation was added under #2502.
+#2536 is the active remediation issue. #2502 remains halted until #2536 merges and passes Chat closeout. This report tracks evidence classes; implementation lives in the #2536 child PR.
 
 ## Authority
 
@@ -42,12 +42,12 @@ Last Reviewed: 2026-07-15
 
 | Proof class | Status | Evidence |
 | --- | --- | --- |
-| Fixture-level evaluator proof | PASS | `node scripts/ci/delivery_system_acceptance.mjs` 12/12 on Pilot head |
-| Live protected-child proof | PASS | PR #2527: `Component Integration Eligibility` neutral; `requiresChatReview: yes`; Chat integrated manually |
-| Live eligible-child integration proof | **MISSING** | No non-protected Model B child reached `eligible: true` / integration-enablement path |
-| Repository-setting blockers | **CONFIRMED** | `allow_auto_merge=false` (live API) |
-| Rollback schema validation | PASS | Scenario 11/12 field presence |
-| Rollback ordered dry-run simulation | **MISSING** | Scenarios assert fields/length only; no state-machine dry-run |
+| Fixture-level evaluator proof | PASS | `node scripts/ci/delivery_system_acceptance.mjs` 12/12 |
+| Live protected-child proof | PASS | PR #2527: eligibility neutral; `requiresChatReview: yes` |
+| Live eligible-child integration proof | IN PROGRESS under #2536 | Non-protected child exercise + artifact recorded in #2536 handoff |
+| Repository-setting blockers | CONFIRMED | `allow_auto_merge=false` — do not claim actual auto-merge success |
+| Rollback schema validation | PASS | Required multi-step / one-step fields |
+| Rollback ordered dry-run simulation | PASS under #2536 | Scenarios 11–12 execute ordered dry-runs with omit/reorder failure |
 
 ## Confirmed post-pilot evidence findings (no silent #2502 implementation)
 
