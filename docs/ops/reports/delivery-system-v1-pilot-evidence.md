@@ -75,17 +75,21 @@ This section records the non-protected Model B child opened under remediation is
 
 | Field | Value |
 | --- | --- |
-| Evidence child PR | pending open |
-| Head SHA | pending |
+| Evidence child PR | [#2540](https://github.com/wdhunter645/next-starter-template/pull/2540) |
+| Head SHA | `ec3baac4f43c94dddcd5b4d470667db635c98e37` |
 | Approval profile | `component-auto-integration` |
 | Protected change | `false` (docs/ops/reports only) |
-| Component Integration Eligibility | pending live evaluation |
-| Artifact `eligible` | pending |
-| Artifact `requiresChatReview` | pending |
-| Auto-merge enablement | Attempted path / structural skip when `allow_auto_merge=false` |
-| Repository `allow_auto_merge` | `false` (unchanged; no auto-merge success claim) |
+| Component Integration Eligibility check | **SUCCESS** (`eligible`; Chat review no) — [check run](https://github.com/wdhunter645/next-starter-template/runs/87387275467) |
+| Corrected evaluation run | [workflow_dispatch #29425645275](https://github.com/wdhunter645/next-starter-template/actions/runs/29425645275) from `cursor/2536-integration-truthfulness` |
+| Artifact `eligible` | `true` |
+| Artifact `requiresChatReview` | `false` |
+| Artifact `componentState` | `green` |
+| Artifact `blockedReasons` | `[]` |
+| Legacy evaluator contrast (component tip) | Run [29425298595](https://github.com/wdhunter645/next-starter-template/actions/runs/29425298595): `eligible=false` with false `component_hold` + unrelated pending checks (F1 defect) |
+| Auto-merge enablement | Step ran; skipped because repository `allow_auto_merge=false` |
+| Repository `allow_auto_merge` | `false` (unchanged; **no auto-merge success claim**) |
 
-Evaluation method: after required GATE Quality / Diff Scope / Secret Scan succeed on the evidence child, run `Component Child Integration` from the #2536 remediation branch via `workflow_dispatch` so the corrected evaluator assesses this PR without merging protected remediation paths first.
+Evaluation method: after required GATE Quality / Diff Scope / Secret Scan succeeded on this evidence child, `Component Child Integration` was re-run from remediation branch `cursor/2536-integration-truthfulness` via `workflow_dispatch` (`pr_number=2540`) so the corrected evaluator assessed the live non-protected child before the protected remediation package merges.
 
 ## Rollback simulations
 
