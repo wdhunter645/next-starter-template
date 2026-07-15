@@ -63,6 +63,40 @@ const photoStyle: CSSProperties = {
   display: 'block',
 };
 
+/** Vote lock is pair-scoped so mid-week photo replacement unlocks voting for the new pair. */
+export function weeklyVoteStorageKey(weekStart: string, photoAId: number, photoBId: number): string {
+  return `lgfc_weekly_vote_${weekStart}_${photoAId}_${photoBId}`;
+}
+
+/** Legacy week-only lock from before pair-scoped keys; must not block a replaced pair. */
+export function legacyWeeklyVoteStorageKey(weekStart: string): string {
+  return `lgfc_weekly_vote_${weekStart}`;
+}
+
+/**
+ * Keep only the lock for the current photo pair.
+ * Drops the legacy week-only key and any prior-pair keys for this week.
+ * Returning the current lock state after cleanup.
+ */
+export function syncWeeklyVoteLock(
+  weekStart: string,
+  photoAId: number,
+  photoBId: number,
+): { voteKey: string; voted: boolean } {
+  const voteKey = weeklyVoteStorageKey(weekStart, photoAId, photoBId);
+  const prefix = `lgfc_weekly_vote_${weekStart}`;
+
+  for (let i = window.localStorage.length - 1; i >= 0; i -= 1) {
+    const key = window.localStorage.key(i);
+    if (!key || !key.startsWith(prefix)) continue;
+    if (key !== voteKey) {
+      window.localStorage.removeItem(key);
+    }
+  }
+
+  return { voteKey, voted: window.localStorage.getItem(voteKey) === '1' };
+}
+
 export default function WeeklyMatchup() {
   const [items, setItems] = useState<Photo[]>([]);
   const [weekStart, setWeekStart] = useState<string | null>(null);
@@ -82,18 +116,36 @@ export default function WeeklyMatchup() {
 
         const data = await apiGet<CurrentResp>('/api/matchup/current');
         const gotWeek = data.week_start ?? null;
+        const nextItems = (data.items ?? []).slice(0, 2);
 
         setWeekStart(gotWeek);
-        setItems((data.items ?? []).slice(0, 2));
+        setItems(nextItems);
 
-        if (gotWeek) {
-          const voted = window.localStorage.getItem(`lgfc_weekly_vote_${gotWeek}`) === '1';
-          setHasVoted(voted);
+        if (gotWeek && nextItems.length >= 2) {
+          // Server push of a new pair (or same week with cleared votes) drives unlock here.
+          const synced = syncWeeklyVoteLock(gotWeek, nextItems[0].id, nextItems[1].id);
+          const voteKey = synced.voteKey;
+          let voted = synced.voted;
 
           if (voted) {
             const r = await apiGet<ResultsResp>(`/api/matchup/results?week_start=${encodeURIComponent(gotWeek)}`);
-            setTotals(r.totals);
-            setLastWeek(r.last_week);
+            const totalVotes = Number(r.totals?.a || 0) + Number(r.totals?.b || 0);
+            // Mid-week vote wipe leaves totals at 0; treat that as server reset of the client lock.
+            if (totalVotes === 0) {
+              window.localStorage.removeItem(voteKey);
+              voted = false;
+              setHasVoted(false);
+              setTotals(null);
+              setLastWeek(null);
+            } else {
+              setHasVoted(true);
+              setTotals(r.totals);
+              setLastWeek(r.last_week);
+            }
+          } else {
+            setHasVoted(false);
+            setTotals(null);
+            setLastWeek(null);
           }
         }
       } catch (e: unknown) {
@@ -127,8 +179,9 @@ export default function WeeklyMatchup() {
       setSubmitting(true);
       setErr(null);
 
+      if (items.length < 2) return;
       const r = await apiPost<VoteResp>('/api/matchup/vote', { week_start: weekStart, choice });
-      window.localStorage.setItem(`lgfc_weekly_vote_${weekStart}`, '1');
+      window.localStorage.setItem(weeklyVoteStorageKey(weekStart, items[0].id, items[1].id), '1');
       setHasVoted(true);
       setTotals(r.totals);
 

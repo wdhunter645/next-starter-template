@@ -191,6 +191,11 @@ async function closeStaleActiveMatchups(db: any, weekStart: string): Promise<voi
     .run();
 }
 
+async function clearVotesForWeek(db: any, weekStart: string): Promise<void> {
+  // Mid-week pair replacement must not transfer A/B votes onto replacement photos.
+  await db.prepare("DELETE FROM weekly_votes WHERE week_start = ?;").bind(weekStart).run();
+}
+
 async function upsertCurrentWeekMatchup(
   db: any,
   weekStart: string,
@@ -199,12 +204,21 @@ async function upsertCurrentWeekMatchup(
 ): Promise<number> {
   const existing = await findCurrentWeekMatchup(db, weekStart);
   if (existing) {
+    const pairChanged =
+      Number(existing.photo_a_id) !== Number(photoAId) ||
+      Number(existing.photo_b_id) !== Number(photoBId);
+
     await db
       .prepare(
         "UPDATE weekly_matchups SET photo_a_id = ?, photo_b_id = ?, status = 'active' WHERE id = ?;",
       )
       .bind(photoAId, photoBId, existing.id)
       .run();
+
+    if (pairChanged) {
+      await clearVotesForWeek(db, weekStart);
+    }
+
     return existing.id;
   }
 
@@ -255,7 +269,7 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       return jsonResponse(d1Check.body, d1Check.status);
     }
 
-    const tablesCheck = await requireTables(d1Check.db, ["weekly_matchups", "photos"]);
+    const tablesCheck = await requireTables(d1Check.db, ["weekly_matchups", "weekly_votes", "photos"]);
     if (!tablesCheck.ok) {
       return jsonResponse(tablesCheck.body, tablesCheck.status);
     }
