@@ -68,6 +68,11 @@ export function weeklyVoteStorageKey(weekStart: string, photoAId: number, photoB
   return `lgfc_weekly_vote_${weekStart}_${photoAId}_${photoBId}`;
 }
 
+/** Legacy week-only lock from before pair-scoped keys; must not block a replaced pair. */
+export function legacyWeeklyVoteStorageKey(weekStart: string): string {
+  return `lgfc_weekly_vote_${weekStart}`;
+}
+
 export default function WeeklyMatchup() {
   const [items, setItems] = useState<Photo[]>([]);
   const [weekStart, setWeekStart] = useState<string | null>(null);
@@ -93,6 +98,9 @@ export default function WeeklyMatchup() {
         setItems(nextItems);
 
         if (gotWeek && nextItems.length >= 2) {
+          // Drop the pre-#2519 week-only lock so a replaced pair can be voted again.
+          window.localStorage.removeItem(legacyWeeklyVoteStorageKey(gotWeek));
+
           const voteKey = weeklyVoteStorageKey(gotWeek, nextItems[0].id, nextItems[1].id);
           const voted = window.localStorage.getItem(voteKey) === '1';
           setHasVoted(voted);
@@ -101,6 +109,9 @@ export default function WeeklyMatchup() {
             const r = await apiGet<ResultsResp>(`/api/matchup/results?week_start=${encodeURIComponent(gotWeek)}`);
             setTotals(r.totals);
             setLastWeek(r.last_week);
+          } else {
+            setTotals(null);
+            setLastWeek(null);
           }
         }
       } catch (e: unknown) {

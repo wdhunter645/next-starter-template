@@ -82,6 +82,36 @@ describe('WeeklyMatchup last closed week winner thumbnail', () => {
     });
   });
 
+  it('clears the legacy week-only vote lock when a replacement pair loads', async () => {
+    window.localStorage.clear();
+    window.localStorage.setItem(`lgfc_weekly_vote_${currentWeek}`, '1');
+
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const path = String(input);
+      if (path === '/api/matchup/current') {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            week_start: currentWeek,
+            matchup_id: 2,
+            items: [
+              { id: 20, url: '/photos/20.jpg', title: 'Replacement A' },
+              { id: 21, url: '/photos/21.jpg', title: 'Replacement B' },
+            ],
+          }),
+        );
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${path}`));
+    });
+
+    render(<WeeklyMatchup />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Vote A' })).toBeInTheDocument();
+    });
+    expect(window.localStorage.getItem(`lgfc_weekly_vote_${currentWeek}`)).toBeNull();
+  });
+
   it('renders winner A thumbnail and keeps result text', async () => {
     mockVotedMatchupFetch({
       week_start: '2026-05-25',
