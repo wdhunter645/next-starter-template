@@ -63,6 +63,11 @@ const photoStyle: CSSProperties = {
   display: 'block',
 };
 
+/** Vote lock is pair-scoped so mid-week photo replacement unlocks voting for the new pair. */
+export function weeklyVoteStorageKey(weekStart: string, photoAId: number, photoBId: number): string {
+  return `lgfc_weekly_vote_${weekStart}_${photoAId}_${photoBId}`;
+}
+
 export default function WeeklyMatchup() {
   const [items, setItems] = useState<Photo[]>([]);
   const [weekStart, setWeekStart] = useState<string | null>(null);
@@ -82,12 +87,14 @@ export default function WeeklyMatchup() {
 
         const data = await apiGet<CurrentResp>('/api/matchup/current');
         const gotWeek = data.week_start ?? null;
+        const nextItems = (data.items ?? []).slice(0, 2);
 
         setWeekStart(gotWeek);
-        setItems((data.items ?? []).slice(0, 2));
+        setItems(nextItems);
 
-        if (gotWeek) {
-          const voted = window.localStorage.getItem(`lgfc_weekly_vote_${gotWeek}`) === '1';
+        if (gotWeek && nextItems.length >= 2) {
+          const voteKey = weeklyVoteStorageKey(gotWeek, nextItems[0].id, nextItems[1].id);
+          const voted = window.localStorage.getItem(voteKey) === '1';
           setHasVoted(voted);
 
           if (voted) {
@@ -127,8 +134,9 @@ export default function WeeklyMatchup() {
       setSubmitting(true);
       setErr(null);
 
+      if (items.length < 2) return;
       const r = await apiPost<VoteResp>('/api/matchup/vote', { week_start: weekStart, choice });
-      window.localStorage.setItem(`lgfc_weekly_vote_${weekStart}`, '1');
+      window.localStorage.setItem(weeklyVoteStorageKey(weekStart, items[0].id, items[1].id), '1');
       setHasVoted(true);
       setTotals(r.totals);
 

@@ -53,7 +53,7 @@ function weekStartFromCalendarDate(ymd: string): string {
 }
 
 function sqliteMasterResults() {
-  return { results: [{ name: 'weekly_matchups' }, { name: 'photos' }] };
+  return { results: [{ name: 'weekly_matchups' }, { name: 'weekly_votes' }, { name: 'photos' }] };
 }
 
 function makeWeekStartDb(nowYmd: string) {
@@ -93,6 +93,7 @@ function makeRotationDb(options: {
   weekStart?: string;
   matchups?: MatchupRow[];
   photos?: PhotoInput[];
+  votes?: Array<{ week_start: string; choice: 'a' | 'b'; source_hash?: string }>;
   simulateInsertRace?: boolean;
 }) {
   const weekStart = options.weekStart ?? '2026-06-30';
@@ -101,6 +102,7 @@ function makeRotationDb(options: {
     ...row,
     is_matchup_eligible: row.is_matchup_eligible ?? 0,
   }));
+  const votes = [...(options.votes ?? [])];
 
   const db = {
     prepare: vi.fn((sql: string) => ({
@@ -187,6 +189,18 @@ function makeRotationDb(options: {
       return { meta: { changes: 1 } };
     }
 
+    if (sql.includes('DELETE FROM weekly_votes WHERE week_start')) {
+      const targetWeek = String(args[0]);
+      let removed = 0;
+      for (let i = votes.length - 1; i >= 0; i -= 1) {
+        if (votes[i].week_start === targetWeek) {
+          votes.splice(i, 1);
+          removed += 1;
+        }
+      }
+      return { meta: { changes: removed } };
+    }
+
     if (sql.includes('INSERT INTO weekly_matchups')) {
       const nextWeek = String(args[0]);
       if (options.simulateInsertRace) {
@@ -219,7 +233,7 @@ function makeRotationDb(options: {
     return { meta: { changes: 0 } };
   }
 
-  return { db, matchups, photos, weekStart };
+  return { db, matchups, photos, votes, weekStart };
 }
 
 function mockPhotoFetch(photoMap: Record<number, { url: string; description?: string; title?: string }>) {
@@ -462,7 +476,7 @@ describe('public matchup current rotation', () => {
 
   it('replaces an active matchup photo when it is flagged ineligible in D1', async () => {
     const currentWeek = '2026-06-29';
-    const { db, matchups, weekStart } = makeRotationDb({
+    const { db, matchups, votes, weekStart } = makeRotationDb({
       weekStart: currentWeek,
       matchups: [
         {
@@ -472,6 +486,10 @@ describe('public matchup current rotation', () => {
           photo_b_id: 348,
           status: 'active',
         },
+      ],
+      votes: [
+        { week_start: currentWeek, choice: 'a', source_hash: 'hash-a' },
+        { week_start: currentWeek, choice: 'b', source_hash: 'hash-b' },
       ],
       photos: [
         { id: 254, url: '/photos/254.jpg', is_memorabilia: 0, is_matchup_eligible: 0 },
@@ -501,6 +519,7 @@ describe('public matchup current rotation', () => {
     expect(body.items).toHaveLength(2);
     expect(body.items.map((item: { id: number }) => item.id)).not.toContain(348);
     expect(matchups.find((row) => row.id === 3)?.photo_b_id).not.toBe(348);
+    expect(votes.filter((row) => row.week_start === currentWeek)).toHaveLength(0);
   });
 
   it('returns structured 503 when D1 binding is missing', async () => {
