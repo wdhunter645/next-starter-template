@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: As-built GitHub repository configuration for Delivery System v1, template stable-field surfaces, component branch requirements, production approval controls, and rollback snapshot
 Does Not Own: Domain policy definitions, CI workflow implementation, or live operator merge decisions
 Canonical Reference: /docs/ops/implementation-plans/two-model-delivery-system/implementation-plan.md
-Related Issues: #2500, #2477
-Last Reviewed: 2026-07-13
+Related Issues: #2500, #2477, #2502
+Last Reviewed: 2026-07-15
 ---
 
 # Delivery System Repository Configuration
@@ -70,16 +70,17 @@ Protected Model B child PRs use `protected-change-review` instead of `component-
 | Auto-integration blocked | protected changes, failed/pending checks, component red state, hold labels, branch mismatch, missing component master |
 | Production merge | promotion PR only — no child PR may target `main` for feature work |
 
-### As-built state (2026-07-13)
+### As-built state (2026-07-15)
 
 | Setting | Current value | Notes |
 | --- | --- | --- |
-| `component/delivery-system-v1` branch | exists | bootstrap integration branch for program #2477 |
-| Component ruleset | none | no dedicated ruleset; bootstrap uses manual Chat integration decisions per implementation plan |
-| Child auto-integration workflow | present | `.github/workflows/component-child-integration.yml` on component branch; eligibility check publishes `Component Integration Eligibility` |
-| Repo `allow_auto_merge` | `false` | repository-wide auto-merge disabled; workflow skips GraphQL enablement when false |
+| `component/delivery-system-v1` branch | exists at `69cc81fba57aba0a8436fd6883db62755493bac8` | includes Pilot PR #2527 |
+| Component ruleset | none | no dedicated ruleset; Chat still performs protected-child and promotion decisions |
+| Child auto-integration workflow | present | `.github/workflows/component-child-integration.yml`; publishes `Component Integration Eligibility` |
+| Repo `allow_auto_merge` | `false` | confirmed live via GitHub API on 2026-07-15; workflow no-ops GraphQL enablement when false |
+| Sync gap vs `main` | 6 commits on `main` not in component; 15 component commits not in `main` | must merge `main` into component before promotion reopen |
 
-Component child integration automation is implemented (#2498). With `allow_auto_merge=false`, eligible children receive a passing eligibility check but still require Chat manual integration until auto-merge is enabled and the #2501 Pilot proves end-to-end behavior.
+Component child integration automation is implemented (#2498). Live non-protected eligible-child auto-integration remains unproven; repository `allow_auto_merge=false` is a structural blocker for hands-off enablement. See `docs/ops/reports/delivery-system-v1-promotion-readiness.md`.
 
 ## `main` production approval controls
 
@@ -192,37 +193,23 @@ Intent labeler maps `.github/pull_request_template.md` under `intent:docs` per `
 
 ## Configuration rollback snapshot
 
-Capture before any promotion or ruleset change. Restore in this order if promotion fails.
+Capture before any promotion or ruleset change. Restoration operator procedure lives in `docs/how-to/delivery/manage-component-integration.md` (section **Restore repository configuration after failed promotion**).
 
-### Snapshot (2026-07-13)
+### Snapshot (2026-07-15)
 
 | Asset | Value |
 | --- | --- |
+| `main` SHA | `74b4776f50c6ab643eb1efd5ad25fab8650e6602` |
 | `main` ruleset id | `15885337` |
-| `main` ruleset updated_at | `2026-07-04T15:43:53.326-04:00` |
+| `main` ruleset name / enforcement | `Main` / `active` |
 | Required checks | `quality`, `gitleaks` |
 | `allow_auto_merge` | `false` |
-| Component branch | `component/delivery-system-v1` at merge-base with merged children through #2487 |
+| `allow_squash_merge` | `true` |
+| Component branch head | `component/delivery-system-v1` @ `69cc81fba57aba0a8436fd6883db62755493bac8` |
+| Promotion PR | #2511 (draft, held; must not merge until #2502 readiness is green) |
 | PR template path | `.github/pull_request_template.md` |
 | Issue templates | `.github/ISSUE_TEMPLATE/{agent-task,bug_report,delivery-task,feature_request,homepage-execution-plan,config}.yml` |
-
-### Restoration procedure
-
-1. Pause component auto-integration workflows when they exist.
-2. Restore ruleset `15885337` or previous ruleset export if changed.
-3. Restore template files from the pre-change commit.
-4. Revert promotion merge commit if production activation occurred.
-5. Restore previous Cloudflare deployment if required.
-6. Verify `quality` and `gitleaks` on `main`.
-7. Reconcile issues and authority references.
-
-Operator commands for re-verification:
-
-```bash
-gh api repos/wdhunter645/next-starter-template/rulesets
-gh api repos/wdhunter645/next-starter-template --jq '{allow_auto_merge, allow_merge_commit, allow_rebase_merge, allow_squash_merge}'
-gh api repos/wdhunter645/next-starter-template/rulesets/15885337
-```
+| Recent github-pages deployment SHA (sample) | `66c3ca75c1c74d7b7154cf05c57ed604295eb426` |
 
 ## Canonical references
 
@@ -232,4 +219,6 @@ gh api repos/wdhunter645/next-starter-template/rulesets/15885337
 | Delivery and release policy | `docs/governance/DELIVERY-AND-RELEASE.md` |
 | PMO sizing and model selection | `docs/governance/PMO-PORTFOLIO.md` |
 | Merge protection surface | `docs/reference/ci/merge-protection-surface.md` |
-| Implementation plan Task 10 | `docs/ops/implementation-plans/two-model-delivery-system/implementation-plan.md` |
+| Configuration restoration procedure | `docs/how-to/delivery/manage-component-integration.md` |
+| Promotion readiness evidence | `docs/ops/reports/delivery-system-v1-promotion-readiness.md` |
+| Implementation plan Task 10–12 | `docs/ops/implementation-plans/two-model-delivery-system/implementation-plan.md` |
