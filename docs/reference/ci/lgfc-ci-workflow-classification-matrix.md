@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Current CI workflow classification by lifecycle domain and retirement status
 Does Not Own: Workflow implementation details or branch protection settings
 Canonical Reference: /docs/governance/PR_PROCESS.md
-Related Issues: #1058, #2175, #2208, #2469
-Last Reviewed: 2026-07-12
+Related Issues: #1058, #2175, #2208, #2469, #2524
+Last Reviewed: 2026-07-15
 ---
 
 # LGFC Workflow Classification Matrix
@@ -78,6 +78,12 @@ Each workflow remains in the correct lifecycle domain, retired assets stay absen
 - parked legacy `ci.yml`, `deploy*.yml`, `lgfc-validate.yml`, `test.yml`, and `test-homepage.yml`
 - fixed #1075 state and phase-generation scripts
 - hardcoded maintainer-body logic formerly in `post-merge-intent-verification.yml`
+
+## Retired by #2524
+
+- `update-docs.md` / `update-docs.lock.yml` (Auto-Sync Documentation GitHub Agentic workflow)
+  - Was Copilot-CLI README maintenance only; not Diátaxis or as-built sync
+  - Removed to eliminate recurring `COPILOT_GITHUB_TOKEN` failure noise
 
 ## Architectural rule
 
