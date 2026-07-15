@@ -277,6 +277,8 @@ Pre-merge CI should enforce the `READY FOR REVIEW -> READY FOR MERGE -> HUMAN ME
 
 Post-merge CI should enforce the `MERGED -> CLOSEOUT VERIFIED` transition. Any post-merge failure should create or update a bounded remediation issue and halt queue advancement until resolved.
 
+Deterministic clerical primary-issue mismatch is not a post-merge exception when repository evidence identifies exactly one unambiguous correct source issue. In that case post-merge closeout may repair the durable PR/source-issue linkage, apply completion labels, and close the corrected source issue without creating a remediation issue. Material ambiguity, changed-file authority conflicts, unmet acceptance criteria, and unresolved required review findings still stop for human review.
+
 ---
 
 ## Related authorities

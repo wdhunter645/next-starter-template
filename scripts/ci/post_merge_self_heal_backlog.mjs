@@ -205,6 +205,10 @@ function hasProvenNoRemainingAction(parsed = {}, sourceIssue = {}) {
 
 function hasUnsafeOperatorSignal(parsed = {}) {
 	const text = `${parsed.failure_code}\n${parsed.title}\n${parsed.body}`;
+	if (/\bclerical_linkage_mismatch\b/i.test(text)
+		|| /post-merge-clerical-source-issue-reconciliation/i.test(text)) {
+		return /\b(auth|secret|token|configuration|runtime app|production|queue advancement|program lane)\b/i.test(text);
+	}
 	return /\b(auth|secret|token|configuration|runtime app|production|queue advancement|program lane|source issue linkage)\b/i.test(text);
 }
 

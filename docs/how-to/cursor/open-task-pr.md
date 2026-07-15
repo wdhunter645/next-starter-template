@@ -65,6 +65,11 @@ The PR body must explicitly include:
   trusted-reviewer dispositions in the `review-comment:<id>` format when the
   reviewer-response surface requires them
 
+Keep exactly one primary source issue in the PR body before merge. A wrong primary
+issue number is still a pre-merge defect to correct when noticed; post-merge
+closeout may deterministically repair that clerical mismatch only when exactly one
+issue clearly owns the delivered scope.
+
 ## Validation
 
 Before opening the PR, run the validation commands named in the source issue. When
