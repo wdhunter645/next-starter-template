@@ -7,8 +7,9 @@ The `b2_d1_incremental_sync.sh` script provides a **daily, idempotent** synchron
 ## Key Features
 
 - ✅ **Idempotent**: Safe to re-run indefinitely, no duplicates
-- ✅ **Additive only**: No updates, no deletes, no backfills
-- ✅ **Delta-based**: Compares B2 against D1 to insert only new files
+- ✅ **Additive insert sync**: Discovers and inserts new B2 objects
+- ✅ **Deletion reconciliation**: Retires D1 rows whose B2 objects are missing (`is_matchup_eligible = -1`)
+- ✅ **Delta-based**: Compares B2 against D1
 - ✅ **Secure**: SQL injection protection, no secrets logged
 - ✅ **Robust**: Explicit error codes for different failure scenarios
 
@@ -36,6 +37,7 @@ export CLOUDFLARE_ACCOUNT_ID="your-cf-account-id"
 export PUBLIC_B2_BASE_URL="https://cdn.example.com"
 
 bash scripts/b2_d1_incremental_sync.sh
+bash scripts/b2_d1_deletion_reconcile.sh
 ```
 
 ### Dry Run Mode
@@ -45,7 +47,16 @@ Test without making changes:
 ```bash
 export DRY_RUN=1
 bash scripts/b2_d1_incremental_sync.sh
+bash scripts/b2_d1_deletion_reconcile.sh
 ```
+
+## Idempotency Guarantees
+
+- Incremental sync uses `INSERT ... WHERE NOT EXISTS` guards.
+- Deletion reconciliation updates only rows with `is_matchup_eligible >= 0` for
+  keys absent from B2; already-retired rows are left unchanged.
+- Safe to run multiple times per day.
+- Soft-retire only: no `DELETE FROM photos`.
 
 ## Required Environment Variables
 
@@ -97,14 +108,16 @@ The script inserts into the `photos` table with the following mapping:
 4. **Calculate delta** (new objects = B2 objects - D1 records)
 5. **Generate SQL** `INSERT ... WHERE NOT EXISTS` statements for new objects only
 6. **Execute SQL** via `wrangler d1 execute`
-7. **Log summary** (counts only, no secrets)
+7. **Deletion reconciliation** (`scripts/b2_d1_deletion_reconcile.sh`):
+   - keys present in D1 (`is_matchup_eligible >= 0`) but absent from B2
+   - soft-retire with `is_matchup_eligible = -1` and `PURGE_ELIGIBLE` note
+   - refuse to run when B2 inventory is empty (fail closed)
+   - idempotent (reruns update zero already-retired rows)
+8. **Log summary** (counts/keys only, no credentials)
 
-## Idempotency Guarantees
-
-- Uses `INSERT ... WHERE NOT EXISTS` guards to prevent duplicate inserts
-- Compares B2 keys against existing `photo_id` values before inserting
-- Safe to run multiple times per day
-- No updates or deletes, only inserts
+Active weekly matchups that still reference a retired photo are repaired on the next
+`GET /api/matchup/current` request (eligibility + object probe) or via
+`POST /api/matchup/repair` from browser image failures.
 
 ## Testing
 
@@ -112,6 +125,7 @@ Run integration tests:
 
 ```bash
 bash scripts/test_b2_d1_incremental_sync.sh
+bash scripts/test_b2_d1_deletion_reconcile.sh
 ```
 
 Tests verify:

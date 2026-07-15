@@ -114,12 +114,18 @@ Scripts:
   - End-to-end pipeline: inventory → enrich → SQL seed → execute via wrangler → verify count.
 - `scripts/b2_d1_daily_sync.sh`
   - Delta-only daily sync: compares B2 objects against committed snapshot and upserts only new keys into D1.
+- `scripts/b2_d1_incremental_sync.sh`
+  - Production daily additive sync: list B2 → insert unseen keys into `photos` (no deletes).
+- `scripts/b2_d1_deletion_reconcile.sh`
+  - Deletion reconciliation (#2519): soft-retire D1 rows whose B2 keys are missing
+    (`is_matchup_eligible = -1`, `PURGE_ELIGIBLE` note). Fails closed on empty B2 inventory.
+    Runs after incremental sync in `.github/workflows/b2-d1-daily-sync.yml`.
 - `scripts/d1_media_ingest.js`
   - Reads inventory JSON and inserts only previously unseen objects into D1 (idempotent).
 
 Docs:
 - `scripts/B2_D1_SYNC_README.md`
-  - Describes daily idempotent B2→D1 incremental sync flow and governance.
+  - Describes daily idempotent B2→D1 incremental sync + deletion reconciliation.
 
 Snapshot file (committed reference):
 - `data/b2/inventory.json`

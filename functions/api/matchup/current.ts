@@ -432,11 +432,26 @@ export const onRequestGet = async (context: any): Promise<Response> => {
         activeCurrentWeek.photo_b_id,
       );
       if (items.length >= 2 && photoAEligible && photoBEligible) {
-        return jsonResponse({
-          ok: true,
-          week_start: weekStart,
-          matchup_id: activeCurrentWeek.id,
-          items: items.slice(0, 2),
+        // Proactive existence check before returning usable public photos (#2519).
+        const [probeA, probeB] = await Promise.all([
+          probePhotoObjectAvailable(items[0].url),
+          probePhotoObjectAvailable(items[1].url),
+        ]);
+
+        if (probeA.available && probeB.available) {
+          return jsonResponse({
+            ok: true,
+            week_start: weekStart,
+            matchup_id: activeCurrentWeek.id,
+            items: items.slice(0, 2),
+          });
+        }
+
+        const brokenId = !probeA.available ? Number(items[0].id) : Number(items[1].id);
+        return await repairBrokenActiveMatchupPhoto({
+          db,
+          request,
+          brokenPhotoId: brokenId,
         });
       }
     }
