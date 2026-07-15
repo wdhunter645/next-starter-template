@@ -121,7 +121,7 @@ const HIGH_SEVERITY_PATTERN =
 	/(^|[^A-Za-z0-9])(P0|P1)([^A-Za-z0-9]|$)|high[- ]priority|request changes|requested changes|must fix|blocking/i;
 const RESOLVED_PATTERN = /addressed in|\bresolved\b|all checks passed|no warnings detected/i;
 const UNRESOLVED_PATTERN = /\bunresolved\b|\bnot\s+resolved\b|\bstill\s+open\b|\bstill\s+blocking\b/i;
-const OPTIONAL_WORKFLOWS = new Set(['Auto-Sync Documentation']);
+const OPTIONAL_WORKFLOWS = new Set();
 const MERGE_PROTECTION_JOB_PATTERNS = [/^quality$/i, /^gitleaks$/i, /^pr-issue-accounting$/i];
 const ACTIVE_ALTERNATE_PROGRAM_ISSUES = new Set(['1255']);
 const MERGE_PROTECTION_WORKFLOW_PATTERNS = [

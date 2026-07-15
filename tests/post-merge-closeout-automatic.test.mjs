@@ -291,8 +291,8 @@ describe('closeout fail-safe remediation evidence', () => {
 				remediation_required: true,
 				workflow_failures: [
 					{
-						workflow: 'Auto-Sync Documentation',
-						classification: 'secret-access/configuration',
+						workflow: 'Docs Guardrails',
+						classification: 'optional-remediation-failure',
 						required: false,
 					},
 				],
