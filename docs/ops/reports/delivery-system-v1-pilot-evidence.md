@@ -80,18 +80,25 @@ Live PR number, head SHA, and Component Integration Eligibility check conclusion
 
 ## Live eligible-child exercise (#2536 F2)
 
+This section records the non-protected Model B child opened under remediation issue #2536. It is **not** claimed by Pilot PR #2527. PR #2540 is merged into `component/delivery-system-v1` at `6af2236b89f5a7833fe5974b97a3a435e6090a45`.
+
 | Field | Value |
 | --- | --- |
-| Evidence child PR | [#2540](https://github.com/wdhunter645/next-starter-template/pull/2540) |
+| Evidence child PR | [#2540](https://github.com/wdhunter645/next-starter-template/pull/2540) (merged) |
 | Evaluated head SHA | `ec3baac4f43c94dddcd5b4d470667db635c98e37` |
 | Approval profile | `component-auto-integration` |
 | Protected change | `false` (docs/ops/reports only) |
-| Component Integration Eligibility | **SUCCESS** — [check](https://github.com/wdhunter645/next-starter-template/runs/87387275467) |
-| Corrected evaluation run | [workflow_dispatch #29425645275](https://github.com/wdhunter645/next-starter-template/actions/runs/29425645275) from remediation branch |
-| Artifact | `eligible=true`, `requiresChatReview=false`, `componentState=green`, `blockedReasons=[]` |
-| Legacy evaluator contrast | Component-tip run [29425298595](https://github.com/wdhunter645/next-starter-template/actions/runs/29425298595): false `component_hold` + unrelated pending checks |
-| Auto-merge enablement | Path attempted; skipped — repository `allow_auto_merge=false` |
+| Component Integration Eligibility check | **SUCCESS** (`eligible`; Chat review no) — [check run](https://github.com/wdhunter645/next-starter-template/runs/87387275467) |
+| Corrected evaluation run | [workflow_dispatch #29425645275](https://github.com/wdhunter645/next-starter-template/actions/runs/29425645275) from `cursor/2536-integration-truthfulness` |
+| Artifact `eligible` | `true` |
+| Artifact `requiresChatReview` | `false` |
+| Artifact `componentState` | `green` |
+| Artifact `blockedReasons` | `[]` |
+| Legacy evaluator contrast (component tip) | Run [29425298595](https://github.com/wdhunter645/next-starter-template/actions/runs/29425298595): `eligible=false` with false `component_hold` + unrelated pending checks (F1 defect) |
+| Auto-merge enablement | Step ran; skipped because repository `allow_auto_merge=false` |
 | Repository `allow_auto_merge` | `false` (unchanged; **no auto-merge success claim**) |
+
+Evaluation method: after required GATE Quality / Diff Scope / Secret Scan succeeded on this evidence child, `Component Child Integration` was re-run from remediation branch `cursor/2536-integration-truthfulness` via `workflow_dispatch` (`pr_number=2540`) so the corrected evaluator assessed the live non-protected child before the protected remediation package merges.
 
 ## Rollback simulations
 
