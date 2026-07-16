@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "issueNumber": 9001,
+    "slug": "fixture-valid-project",
+    "title": "Fixture Valid Project",
+    "parentIssueNumber": 9000,
+    "lifecycle": "active",
+    "priorityLabel": "pmo:priority:1",
+    "objective": "Validate a minimal compliant Model B project manifest.",
+    "completedDeliverable": "Validated fixture with one terminal closeout task.",
+    "designPath": "docs/explanation/projects/fixture-valid-project-design.md",
+    "implementationPlanPath": "docs/ops/implementation-plans/fixture-valid-project/implementation-plan.md",
+    "manifestPath": "tests/pmo-projects/fixtures/valid-manifest.json"
+  },
+  "roles": {
+    "preparationOwner": "chatgpt-atlas",
+    "executionAgent": "cursor-local",
+    "operationsOwner": ["bill", "cursor-local"],
+    "tier2Escalation": "chatgpt-atlas",
+    "productAuthority": "bill",
+    "productionApprovers": ["bill", "chatgpt-atlas"]
+  },
+  "delivery": {
+    "model": "B",
+    "projectBranch": "component/fixture-valid-project",
+    "productionBase": "main",
+    "autoIntegrateNonMain": true,
+    "autoMergeProduction": false,
+    "childPullRequestBase": "component/fixture-valid-project",
+    "promotionPullRequestBase": "main",
+    "promotionApproval": "bill-or-chatgpt",
+    "rollbackProfile": "one-step"
+  },
+  "launch": {
+    "state": "launched",
+    "authorizationIssueNumber": 9001,
+    "startConditions": ["Package complete"],
+    "blockingConditions": ["Automatic production merge enabled"],
+    "continuousExecution": true,
+    "requiresNewPromptBetweenTasks": false
+  },
+  "deliverables": [
+    {
+      "id": "D1",
+      "type": "runtime",
+      "description": "Validator proof",
+      "required": true,
+      "acceptanceEvidence": "tests pass"
+    },
+    {
+      "id": "D2",
+      "type": "operations",
+      "description": "Operator handoff",
+      "required": true,
+      "acceptanceEvidence": "handoff doc"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "001",
+      "issueNumber": 9101,
+      "title": "First task",
+      "objective": "Implement first task",
+      "state": "active",
+      "predecessors": [],
+      "successors": ["002"],
+      "parallelGroup": null,
+      "branchPattern": "cursor/9001-001-*",
+      "pullRequestBase": "component/fixture-valid-project",
+      "allowedPaths": ["scripts/pmo-projects/**"],
+      "prohibitedPaths": [".github/workflows/**"],
+      "acceptanceCriteria": ["Validator accepts fixture"],
+      "verification": ["Focused tests"],
+      "stopConditions": ["Authority conflict"],
+      "labels": ["pmo", "pmo:task", "agent:cursor", "handoff:ready"],
+      "wakeEligible": true
+    },
+    {
+      "id": "002",
+      "issueNumber": 9102,
+      "title": "Terminal closeout",
+      "objective": "Close out fixture project",
+      "state": "prepared",
+      "predecessors": ["001"],
+      "successors": [],
+      "parallelGroup": null,
+      "branchPattern": "cursor/9001-002-*",
+      "pullRequestBase": "component/fixture-valid-project",
+      "allowedPaths": ["docs/ops/reports/**"],
+      "prohibitedPaths": ["merge to main"],
+      "acceptanceCriteria": ["Closeout complete"],
+      "verification": ["Report exists"],
+      "stopConditions": ["Unsafe promotion"],
+      "labels": ["pmo", "pmo:task", "agent:cursor"],
+      "wakeEligible": false
+    }
+  ],
+  "validation": {
+    "manifestCommand": "npm run pmo:project:validate -- tests/pmo-projects/fixtures/valid-manifest.json",
+    "materializeDryRunCommand": "npm run pmo:project:materialize -- --dry-run tests/pmo-projects/fixtures/valid-manifest.json",
+    "requiredProfiles": ["node-tests"],
+    "projectIntegrationChecks": ["manifest validation"],
+    "productionPromotionChecks": ["Bill/ChatGPT approval"]
+  },
+  "closeout": {
+    "terminalTaskId": "002",
+    "finalReview": "bill-or-chatgpt",
+    "productionVerificationRequired": true,
+    "operationsOwner": ["bill", "cursor-local"],
+    "tier2Escalation": "chatgpt-atlas",
+    "rollbackReference": "docs/ops/implementation-plans/fixture-valid-project/implementation-plan.md#rollback"
+  }
+}
