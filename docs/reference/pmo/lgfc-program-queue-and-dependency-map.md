@@ -206,8 +206,9 @@ Approval:
 | --- | --- | --- |
 | Task 001 `#1720` | `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md`; report `docs/ops/reports/pmo-july-2026-authority-reconciliation-1720.md` | Complete — merged to `main` via PR #2543 |
 | Task 002 `#1721` | Same plan; report `docs/ops/reports/workflow-automation-design-gap-inventory-1721.md` | Complete — PR #2545 on component branch |
-| Task 003 `#1722` | Same plan; report `docs/ops/reports/cursor-continuation-contract-matrix-1722.md` | Active — contract matrix hardening |
-| Tasks 004–005 `#1723`–`#1724` | Same plan | Authorized after predecessors; protected governance review on promotion path |
+| Task 003 `#1722` | Same plan; report `docs/ops/reports/cursor-continuation-contract-matrix-1722.md` | Complete — PR #2548 on component branch |
+| Task 004 `#1723` | Same plan; report `docs/ops/reports/pr-readiness-merge-authority-1723.md` | Complete — PR #2555 on component branch |
+| Task 005 `#1724` | Same plan; report `docs/ops/reports/issue-mutation-closeout-permission-1724.md` | Component-doc model under `component-auto-integration`; no intermediate human gate for governance docs alone |
 | Task 006 `#1725` | Same plan; reconciliation report `docs/ops/reports/program-1500-queue-wave-reconciliation.md` | Complete — do not rerun |
 | Tasks 007–008 `#1726`–`#1727` | Same plan | Authorized after #1724; #1725 remains complete evidence; #1727 terminal |
 

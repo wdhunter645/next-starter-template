@@ -67,7 +67,7 @@ Assessment date: **2026-07-16**.
 | --- | --- | --- | --- |
 | G-01 | Cursor continuation contract still frames universal stop-at-READY-FOR-REVIEW / human walkthrough without Model B component-auto-integration and continuous reduced-gate serial rules from #1719 | Documentation | **#1722** |
 | G-02 | Queue/dependency-map Current Known Truth still carries pre-launch #1411/#1719 phrasing in places | Documentation | **#1722** (light refresh in allowlist) |
-| G-03 | PR readiness / batch-review alignment with protected governance review points (#1723/#1724) incomplete | Documentation | **#1723** |
+| G-03 | PR readiness / batch-review alignment with protected governance review points (#1723/#1724) incomplete | Documentation | **#1723** / **#1724** — component-doc model; obsolete protected-review stop removed |
 | G-04 | Issue mutation permission matrix not authoritative across PMO program types | Documentation | **#1724** |
 | G-05 | Wave/run labels remain planning concepts (confirmed by #1725) | No action now / Workflow implementation candidate | **#1726** scopes only if accepted |
 | G-06 | Runtime umbrella/program closeout classifier not implemented (#1500 deferred) | CI script / Workflow implementation candidate | **#1726** |
