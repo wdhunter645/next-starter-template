@@ -1204,12 +1204,18 @@ describe('clerical source-issue linkage repair (#2532)', () => {
 				corrected_issue: '2517',
 				action: 'body_patched',
 			},
-			syncActionOverride: 'skipped',
 		});
 		expect(result.status).toBe('pass');
+		expect(result.sync_action).toBe('post_merge_success');
 		expect(result.source_issue).toBe('2517');
 		expect(result.self_healing_safe).toBe(true);
 		expect(selfHealingCanResolve(result)).toBe(true);
 		expect(shouldUpsertRemediationIssue(result)).toBe(false);
+	});
+
+	it('exports a finite clerical candidate fetch cap for fail-closed human review', async () => {
+		const { MAX_CLERICAL_SOURCE_ISSUE_CANDIDATES } = await import('../scripts/ci/post_merge_validator.mjs');
+		expect(MAX_CLERICAL_SOURCE_ISSUE_CANDIDATES).toBeGreaterThan(0);
+		expect(MAX_CLERICAL_SOURCE_ISSUE_CANDIDATES).toBeLessThanOrEqual(50);
 	});
 });
