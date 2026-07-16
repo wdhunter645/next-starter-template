@@ -5,8 +5,8 @@ Authority Level: Binding
 Owns: LGFC Cursor runtime selection, local-versus-cloud invocation boundary, assignment runtime metadata, and local resume routing
 Does Not Own: Cursor product configuration, local poller implementation, implementation scope, merge approval, or cloud billing
 Canonical Reference: /Agent.md
-Related Issues: #2477, #2489
-Last Reviewed: 2026-07-13
+Related Issues: #2477, #2489, #2550
+Last Reviewed: 2026-07-16
 ---
 
 # Cursor Runtime Routing
@@ -37,14 +37,16 @@ Runtime: either
 
 `@cursor` is a Cursor Cloud invocation. It is prohibited for local LGFC work.
 
-Local Cursor routing uses all of the following:
+Local Cursor routing uses:
 
 - source issue label `agent:cursor`;
 - source issue label `handoff:ready`;
-- an explicit issue or PR comment beginning with `LOCAL CURSOR RESUME`;
+- an executable assignment event (`CURSOR ASSIGNMENT`, or after escalation a `CHATGPT RESPONSE`);
 - manual operator action or the documented local poll-wake loop.
 
-Required local resume shape:
+Cursor claims with `CURSOR ACK` and transitions to `handoff:in-progress`.
+
+`LOCAL CURSOR RESUME` is a legacy/recovery helper and is not required for launched Model B continuous execution. When used, it must reference a prior canonical ChatGPT decision:
 
 ```text
 LOCAL CURSOR RESUME

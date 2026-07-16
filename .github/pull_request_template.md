@@ -60,6 +60,10 @@ Emergency recovery:
 - Component branch: <!-- component/<release-unit> / not-applicable -->
 - Component master: <!-- #<program-issue> / not-applicable -->
 - Promotion PR: <!-- #<promotion-pr-number> / not-applicable -->
+- Parent project: <!-- #<project-issue> / not-applicable -->
+- Predecessor / Successor: <!-- #<issue> / none -->
+- Manifest path: <!-- docs/ops/implementation-plans/<slug>/project-manifest.json / not-applicable -->
+- Production merge: <!-- prohibited / requires-bill-or-chatgpt -->
 
 ## Scope
 

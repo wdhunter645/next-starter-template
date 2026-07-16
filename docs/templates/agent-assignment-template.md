@@ -61,7 +61,7 @@ Every Cursor implementation assignment must include all of the following. If any
 | Verification plan | Commands, checks, or review steps with reported results |
 | Rollback plan | How to revert or safely halt if verification fails |
 | Cursor review checkpoint | Required pre-implementation comment/pass before file edits on new packages |
-| Bill/Atlas stop-gate authorization | Explicit continue authorization before execution and at verification stop points |
+| Bill/Atlas stop-gate authorization | Project-level or task Go before execution; protected stops and production/`main` boundaries only for routine launched Model B work |
 | Handoff | Files changed, summary, verification, risks, scope confirmation |
 | Dependency fields | For launched-program queue tasks: predecessor, successor, stage-before-merge, halt/resume condition |
 

@@ -51,13 +51,13 @@ Cursor may:
 
 Cursor must stop for protected conditions, scope conflict, or explicit Chat/Bill hold—not for routine Bill approval.
 
-### 5. Submit for integration review
+### 5. Submit for component integration
 
-When required gates pass and lifecycle preconditions are satisfied, Cursor marks the PR ready for review and stops. Cursor does not approve or merge its own work.
+When required gates pass and lifecycle preconditions are satisfied, Cursor posts `CURSOR STATUS` or `CURSOR COMPLETE` and remains Cursor-owned through authorized non-`main` component integration. Cursor does not approve or merge its own work and does not post a routine `CHATGPT HANDOFF` merely because the PR is technically ready.
 
 ### 6. Chat review and integration
 
-Chat reviews the child PR as primary approver. When delivery policy and eligibility checks pass, the child may auto-integrate into the component branch. Protected changes pause for Chat review per approval profile.
+For non-protected Model B children, eligible PRs may auto-integrate into the component branch when technically necessary checks pass. Chat reviews protected-change, escalation, or production-promotion cases as primary. Protected changes pause for Chat review per approval profile.
 
 Bill approves or merges only as alternate when Chat is unavailable or branch protection requires it.
 

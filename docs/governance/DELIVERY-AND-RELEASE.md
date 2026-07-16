@@ -95,7 +95,7 @@ Child PRs integrate bounded increments into the component branch.
 
 Child PRs do **not** require whole-feature production approval, production closeout prediction, or final Operations documentation closeout.
 
-Protected-change child PRs require Chat review before integration. Cursor must not self-approve protected child work.
+Protected-change child PRs require Chat review before integration. Cursor must not self-approve protected child work. Routine eligible non-protected children do not require a `CHATGPT HANDOFF` merely to open or integrate a non-`main` PR; see `docs/ops/ai/chatgpt-cursor-handoff-workflow.md`.
 
 ### Model B promotion
 
