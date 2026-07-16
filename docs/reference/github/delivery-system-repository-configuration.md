@@ -74,13 +74,13 @@ Protected Model B child PRs use `protected-change-review` instead of `component-
 
 | Setting | Current value | Notes |
 | --- | --- | --- |
-| `component/delivery-system-v1` branch | exists at `b46322730478d2564d070f3d0b0e2debd7845c16` | includes Pilot #2527, remediation #2539/#2540/#2574 |
+| `component/delivery-system-v1` branch | exists at `0767a2125afd55e28be21916960e763e5e29a583` | includes Pilot #2527, remediations, #2579 main sync |
 | Component ruleset | none | no dedicated ruleset; Chat still performs protected-child and promotion decisions |
 | Child auto-integration workflow | present | `.github/workflows/component-child-integration.yml`; publishes `Component Integration Eligibility` |
 | Repo `allow_auto_merge` | `false` | confirmed live via GitHub API on 2026-07-16; workflow no-ops GraphQL enablement when false |
-| Sync gap vs `main` | 3 commits on `main` not in component; 30 component commits not in `main` | measured 2026-07-16 against `main` `90d2e391ef67436987568e65fcddf9db872a1a06` (#2561); gating rationale in `docs/ops/reports/delivery-system-v1-promotion-readiness.md` |
+| Sync gap vs `main` | 0 commits on `main` not in component; 34 component commits not in `main` | measured 2026-07-16 against `main` `90d2e391ef67436987568e65fcddf9db872a1a06`; gating rationale in `docs/ops/reports/delivery-system-v1-promotion-readiness.md` |
 | Live eligible-child proof | PR #2540 | artifact `eligible=true`, `requiresChatReview=false`; auto-merge not claimed while `allow_auto_merge=false` |
-| Promotion release validation | PASS at #2511 head `b4632273…` | `quality` + `gitleaks` green; PR remains draft/held |
+| Promotion release validation | PASS at #2511 head `0767a212…` | `quality` + `gitleaks` green; PR remains draft/held |
 
 Component child integration automation is implemented (#2498). Live non-protected eligible-child eligibility is proven (#2540); repository `allow_auto_merge=false` remains a structural blocker for hands-off enablement. See `docs/ops/reports/delivery-system-v1-promotion-readiness.md`.
 
@@ -207,8 +207,8 @@ Capture before any promotion or ruleset change. Restoration operator procedure l
 | Required checks | `quality`, `gitleaks` |
 | `allow_auto_merge` | `false` |
 | `allow_squash_merge` | `true` |
-| Component branch head | `component/delivery-system-v1` @ `b46322730478d2564d070f3d0b0e2debd7845c16` |
-| Promotion PR | #2511 (open draft; held; Quality PASS at head; final main sync pending before production merge) |
+| Component branch head | `component/delivery-system-v1` @ `0767a2125afd55e28be21916960e763e5e29a583` |
+| Promotion PR | #2511 (open draft; held; Quality PASS; awaiting Chat/Bill production authorization) |
 | PR template path | `.github/pull_request_template.md` |
 | Issue templates | `.github/ISSUE_TEMPLATE/{agent-task,bug_report,delivery-task,feature_request,homepage-execution-plan,config}.yml` |
 | Recent github-pages deployment SHA (sample) | `9f87b4bcb514bf8feeaee22b688cde704e8eb21b` |
