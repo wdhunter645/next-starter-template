@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: LGFC PMO July 2026 program issue portfolio model, PMO Backlog intake model, and execution-chain reference
 Does Not Own: Product design, workflow implementation, runtime behavior, GitHub issue mutation, or merge authority
 Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
-Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501
-Last Reviewed: 2026-06-09
+Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501, #1719, #1720
+Last Reviewed: 2026-07-16
 ---
 
 # LGFC Program Portfolio Model
@@ -37,12 +37,14 @@ This document does not own:
 ## Current Known Truth
 
 - The portfolio is not limited to five programs. Each approved body of work receives or uses a GitHub program issue. The program issue number is the durable identifier.
-- Program #1255 remains the current active program (historical label: Program 2).
-- Program #1411 is staged / blocked and cannot launch until Program #1255 is completed and signed off (historical label: Program 1).
+- Program #1255 remains an active website execution program (historical label: Program 2).
+- Program #1719 is Implementation Active under continuous reduced-gate serial authorization (2026-07-16).
+- Program #1411 is a **completed historical planning/control artifact** (historical label: Program 1). It is not staged/blocked current authority.
+- Issues #1417–#1424 are stale historical task issues from the #1411 cycle; evidence only; do not mutate.
 - Former Program 5 is now PMO Backlog (`/docs/ops/pmo/pmo-backlog.md`).
 - Legacy `#1379` is historical ideas/future-projects source evidence, superseded by PMO Backlog documentation.
-- The prior Program 1 cycle `#1335` is closed historical evidence only and is not a parent for Program #1411.
-- Workflow Automation has been promoted from PMO Backlog material into Program #1411.
+- The prior Program 1 cycle `#1335` is closed historical evidence only and is not a parent for Program #1411 or #1719.
+- Workflow Automation planning was promoted through `#1411` and continues under Priority #3 Program `#1719`.
 
 ## Intended Final State
 
@@ -74,7 +76,8 @@ Program issue numbers identify PMO work bodies. They are not permanent subject d
 | Program issue | Role | Current state |
 | --- | --- | --- |
 | #1255 | Active execution program | Website Implementation and Content Operations (historical label: Program 2) |
-| #1411 | Staged / blocked program | PMO Automation and Agent Workflow Control (historical label: Program 1) |
+| #1719 | Implementation Active | PMO Governance / Workflow Automation Completion — continuous reduced-gate serial |
+| #1411 | Completed historical planning artifact | PMO Automation and Agent Workflow Control (historical label: Program 1) |
 
 A later program issue is not a child of an earlier program issue unless the current source issue explicitly creates that relationship.
 
@@ -92,7 +95,7 @@ A PMO Backlog item may move toward executable work only after:
 8. Cursor or another agent receives a specific issue, file allowlist, validation requirement, and stop condition.
 9. Atlas/Bill explicitly authorize launch.
 
-Workflow Automation follows this path: it was captured as backlog material, then promoted into Program #1411 through `#1411` for documentation authority and later child issue preparation.
+Workflow Automation follows this path: it was captured as backlog material, promoted into historical Program `#1411` for documentation planning, and continues under current Priority #3 Program `#1719` child issues.
 
 ## Operating Invariants
 

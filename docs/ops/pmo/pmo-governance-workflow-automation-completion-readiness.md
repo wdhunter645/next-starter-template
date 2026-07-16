@@ -5,13 +5,13 @@ Authority Level: Operational Authority
 Owns: Priority #3 PMO readiness decision, governance/workflow automation program candidate scope, child-project boundaries, design/readiness state, Cursor launch preconditions
 Does Not Own: Runtime implementation, workflow code, CI script changes, issue creation, merge authority, production secrets, vendor configuration, unauthorized GitHub issue mutation
 Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
-Related Issues: #1713, #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1500, #1255, #1259, #1685, #1700, #1719, #1725
-Last Reviewed: 2026-06-19
+Related Issues: #1713, #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1500, #1255, #1259, #1685, #1700, #1719, #1720, #1725
+Last Reviewed: 2026-07-16
 ---
 
 # PMO Governance / Workflow Automation Completion Readiness
 
-> This program is BLOCKED from execution until Atlas/Bill explicitly launch it. Planning, review, and documentation discussion may continue, but Cursor may not execute implementation work from this program until Bill/Atlas explicitly launch it.
+> **Launch state (2026-07-16):** Program #1719 is Implementation Active under continuous reduced-gate serial authorization. Cursor executes remaining child issues in order after predecessor merge and clean post-merge verification. Cursor stops each child at `READY FOR REVIEW` and may not approve, merge, or mutate issues.
 
 ## Purpose
 
@@ -38,14 +38,11 @@ This document does not launch implementation, create child issues, authorize Cur
 
 ## Current known truth
 
-- PMO Backlog ranks 3–10 are governance/ops backlog items, not executable tasks by themselves.
-- #1411 is closed and completed as a planning/control artifact.
-- #1417–#1424 exist as stale task issues with PMO v2 terminology and require review before reuse or closure.
-- Program #1500 closed complete and may already satisfy parts of closeout reliability and queue/wave planning.
-- Program #1255/#1259 remains active and ahead unless Bill/Atlas explicitly reprioritize.
-- Priority #1 Website Completion / Fan Club Product Buildout is parked as #1685 with child issues #1686 through #1694.
-- Priority #2 Fundraiser / Charity Campaign Operations Buildout is launch-control ready as #1700 with child issues #1701 through #1708.
-- Cursor is the intended implementation agent after explicit Bill/Atlas launch authorization, but governance or script-sensitive work may require human/trusted-reviewer gates before merge.
+- Program #1719 is **Implementation Active** (Bill continuous reduced-gate authorization, 2026-07-16). Active child #1720; #1725 closed complete.
+- #1411 is closed and completed as a planning/control artifact (historical evidence only).
+- #1417–#1424 exist as stale historical task issues with older PMO terminology; they are evidence only and must not be mutated or treated as current source issues.
+- Program #1500 closed complete; Task #1725 recorded queue/wave and closeout reconciliation.
+- Cursor is the implementation agent for the authorized serial chain; governance/protected-change work (#1723, #1724) requires independent review before merge.
 
 ## Intended final state
 
@@ -68,7 +65,7 @@ The intended final state before implementation launch is:
 | PMO source | PMO Backlog ranks 3–10 |
 | Source issue | #1719 |
 | Execution agent after launch | Cursor, with human/trusted reviewer gates where protected governance/CI files are touched |
-| Current readiness | Launch-control ready; queued behind Program #1255/#1259, parked Priority #1, and Priority #2 |
+| Current readiness | Implementation Active — continuous reduced-gate serial execution authorized 2026-07-16 |
 | Primary implementation plan | `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md` |
 | Primary governance authority | `docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md` |
 | Product surface | PMO governance, workflow automation design, queue/closeout controls, PR readiness, and execution contracts |
@@ -78,7 +75,7 @@ The intended final state before implementation launch is:
 
 | Priority item | Project name | Current state | Design authority | Implementation plan state | Readiness decision |
 | --- | --- | --- | --- | --- | --- |
-| 3 | PMO July 2026 authority | Partial governance authority exists | `PMO-JULY-2026-OPERATING-MODEL.md`, `program-registry.md`, `pmo-backlog.md` | Covered by Tasks 001, 008 | Needs consolidation and conflict review |
+| 3 | PMO July 2026 authority | Reconciled by Task #1720 | `PMO-JULY-2026-OPERATING-MODEL.md`, `program-registry.md`, `pmo-backlog.md`, `docs/ops/reports/pmo-july-2026-authority-reconciliation-1720.md` | Covered by Tasks 001, 008 | #1720 reconciliation complete; remaining follow-ups deferred |
 | 4 | Workflow Automation Design Migration | Partial docs exist | `workflow-automation.md`, #1411 planning evidence | Covered by Tasks 002, 007, 008 | Needs source migration and gap review |
 | 5 | Cursor Continuation and Queue Contract | Partial contract exists | `lgfc-cursor-execution-contract.md`, current PR process | Covered by Tasks 003, 007, 008 | Needs authoritative continuation/stop matrix |
 | 6 | PR Readiness and Batch Review Control | Partial process exists | `PR_PROCESS.md`, `PR_GOVERNANCE.md` | Covered by Tasks 004, 007, 008 | Needs batch/readiness alignment |
@@ -116,7 +113,7 @@ A later launched Priority #3 program may:
 | Decision | Needed before | Current default |
 | --- | --- | --- |
 | Whether Priority #3 uses docs-only tasks first or includes workflow/script tasks | Launch issue creation | Docs-first; protected files require explicit later authorization |
-| Whether #1417–#1424 are reused, superseded, or left historical | Task 001 / Task 008 | Treat as historical evidence only |
+| Whether #1417–#1424 are reused, superseded, or left historical | Task 001 / Task 008 | **Resolved for Task 001 (#1720):** historical evidence only; no mutation |
 | Whether Program #1500 fully satisfies rank 9 | Task 006 (#1725) | **Resolved:** baseline satisfied; deferred register items are CI maintenance, not incomplete #1500 scope |
 | Whether queue/wave labels become real labels or planning concepts only | Task 006 (#1725) | **Resolved for planning:** concepts only until Task #1727+ explicitly authorizes implementation |
 | Whether Cursor may mutate issues during closeout | Task 005 | No mutation unless current source issue explicitly grants it |
@@ -124,19 +121,18 @@ A later launched Priority #3 program may:
 
 ## Launch preconditions
 
-Before Cursor receives implementation assignment for this program:
+Launch preconditions for Program #1719 were **satisfied on 2026-07-16** by Bill’s continuous reduced-gate authorization on #1719. Remaining operating rules:
 
-1. Program #1255/#1259 status must be resolved, or Bill/Atlas must explicitly reprioritize.
-2. Parked Priority #1 status (#1685–#1694) must be resolved, deferred, or explicitly superseded.
-3. Queued Priority #2 status (#1700–#1708) must be resolved, deferred, or explicitly superseded.
-4. A current program issue must explicitly launch Priority #3.
-5. Child task issues must be created from the implementation plan only after launch approval.
-6. Cursor must receive one task issue at a time unless Bill/Atlas explicitly approve parallel execution.
-7. Protected workflow/script changes must require explicit trusted-reviewer expectations before implementation.
-8. Issue mutation permissions must be explicit per task.
+1. Cursor receives one child task at a time unless Bill/Atlas explicitly approve parallel execution.
+2. After a predecessor PR merges and post-merge verification is clean, Cursor may start the next authorized child without another launch prompt.
+3. Protected workflow/script changes require explicit trusted-reviewer expectations before implementation.
+4. Issue mutation permissions remain denied unless a current source issue explicitly grants them.
+5. #1723 and #1724 remain protected governance review points before merge.
+
+Historical planning-era preconditions (queue behind #1255/#1685/#1700) are superseded for this program by the 2026-07-16 authorization on #1719.
 
 ## Readiness conclusion
 
-Priority #3 is documented as a launch-control-ready PMO July 2026 program candidate with master issue #1719 and child task issues #1720 through #1727.
+Priority #3 is an **Implementation Active** PMO July 2026 program with master issue #1719 and child task issues #1720 through #1727.
 
-It is **launch-control ready**, not executable. Cursor may begin only after Bill/Atlas explicitly authorize Task 001 on #1720.
+Cursor is authorized to execute the remaining serial chain under #1719 continuous reduced-gate rules. Active child: #1720.
