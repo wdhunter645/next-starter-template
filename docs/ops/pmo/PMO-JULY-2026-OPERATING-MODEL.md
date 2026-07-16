@@ -365,14 +365,14 @@ When Atlas prepares a component project for Cursor, the preparation packet shoul
 - component objective and parent program-of-work reference;
 - master issue body (execution coordination record for the component);
 - linked child issue plan and child execution order;
-- Cursor prompts sized for one child issue at a time;
+- Cursor prompts sized for one child issue as the current executable unit, with linked successors defined in the project manifest;
 - acceptance criteria;
 - likely file/path scope and file-touch allowlist;
 - verification expectations;
 - documentation targets;
 - production/Ops handoff expectations;
 - known risks and explicitly accepted risks;
-- explicit stop condition (typically READY FOR REVIEW).
+- project-level continuous-execution rule after one Go (routine stops are protected/escalation/`main` only, not every child READY FOR REVIEW).
 
 Component-project preparation does not require waiting for full-program preparation of every sibling component. Each bounded component may be prepared and launched independently when Bill/Atlas authorize it and predecessor conditions are satisfied.
 
@@ -553,10 +553,11 @@ PR body must include:
 - Files changed
 - Verification commands/results
 - Out-of-scope confirmation
-- Status: READY FOR REVIEW
+- Status: CURSOR COMPLETE / eligible for component integration when checks pass
 
 Stop:
-READY FOR REVIEW.
+Protected stop, genuine CHATGPT HANDOFF, or production/`main` boundary only.
+Do not stop for ChatGPT merely because a non-main PR opened or became technically clean.
 ```
 
 #### 10. Program closeout and handoff template
@@ -573,18 +574,19 @@ Every program should end with a terminal child task that consolidates evidence a
 
 ## Cursor execution boundaries
 
-Resource-control rule: **one local Cursor agent, one component project child issue, one PR, stop at READY FOR REVIEW.**
+Resource-control rule for launched Model B projects: **one local Cursor claim (`handoff:in-progress`) per approved lane; one child issue evidence unit; child PRs target the project branch; continue linked successors after project-branch integration without a routine human prompt.**
 
-Component projects decompose into a master issue (coordination) and child implementation issues (Cursor-executable units). Cursor executes one child issue at a time unless Bill/Atlas explicitly authorize otherwise.
+Component projects decompose into a master issue (coordination) and child implementation issues (Cursor-executable units). After one project-level Go on a complete package, Cursor executes linked children in dependency order. Cursor still claims only one colliding task at a time.
 
-| Actor | May do | May not do without explicit authorization |
+| Actor | Does | Does not |
 | --- | --- | --- |
-| **Bill** | Final prioritization, launch gates, merges, protected actions | N/A |
-| **Atlas** | Prepare program packets, classify PMO inventory, author issues/docs | Mutate repo state when asked only for prompts or analysis |
-| **Cursor** | Implement bounded tasks within allowlist, verify, stop at READY FOR REVIEW | Merge, close issues, relabel, advance queues, create child issues, expand scope, redesign programs |
-| **Controller / automation** | Run explicitly defined checks and authorized closeout steps | Infer authority from merge state, labels, or queue order |
+| **Cursor** | Implement bounded tasks within allowlist, verify, post CURSOR STATUS/COMPLETE, prepare component integration evidence | Self-approve, self-merge, merge to `main`, invent scope, skip protected stops |
+| **ChatGPT** | Project preparation, genuine escalation response, protected-path/production review | Routine stop between every linked child on an already-launched project |
+| **Bill** | Product Go/No-Go, production approval, material decisions | Routine per-child gate after project Go |
 
-Cursor must not interpret "continuous execution" as approval to start adjacent work, advance the program queue, or pick up the next GitHub issue without Bill/Atlas authorization.
+Cursor may interpret continuous execution as permission to activate eligible successors after predecessor integration when the project Go and manifest authorize it. Cursor must not self-merge or auto-merge to `main`.
+
+Legacy controller automation may still run explicitly defined checks and authorized closeout steps. It must not infer authority from merge state, labels, or queue order alone.
 
 ## PMO hierarchy
 

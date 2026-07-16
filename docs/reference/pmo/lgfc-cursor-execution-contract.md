@@ -105,8 +105,9 @@ LGFC uses two execution modes defined in
 
 | Mode | When | Next-task authority |
 | --- | --- | --- |
-| One-task handoff | One-off tasks; programs without an approved dependency map | Explicit `LOCAL CURSOR RESUME` comment with `agent:cursor` + `handoff:ready`, or a new source issue per task |
+| One-task handoff | One-off tasks; programs without an approved dependency map | `CURSOR ASSIGNMENT` with `agent:cursor` + `handoff:ready`, or a new source issue per task |
 | Launched-program queue | Launched program with an approved dependency map | Approved map + issue predecessor/successor fields + halt/resume conditions |
+| Launched Model B project | Prepared project package with project-level Go (#2546 pattern) | Project manifest task graph + continuous linked execution after Go; pickup via `agent:cursor` + `handoff:ready` |
 
 In both modes, one source issue maps to one PR. Queue mode governs which task is
 authorized next, not whether multiple tasks share one PR.
@@ -128,27 +129,39 @@ Cursor may continue forward while all of the following are true:
 6. For launched-program queue mode: the dependency map and active issue
    predecessor, stage-before-merge, and halt/resume fields permit continuation.
 
-When a PR is ready for review, Cursor continues only far enough to:
+When a non-`main` PR is technically ready on a launched Model B project, Cursor continues only far enough to:
 
 1. run required validation;
 2. inspect the final diff and file allowlist;
-3. update or create the PR body with exact evidence, including queue reporting
-   fields when the program uses launched-program queue mode;
-4. commit and push any final documentation-only fixes;
-5. set the PR handoff status to `READY FOR REVIEW`;
-6. stop for Atlas/Bill walkthrough.
+3. update or create the PR body with exact evidence;
+4. commit and push any final in-scope fixes;
+5. post `CURSOR STATUS` or `CURSOR COMPLETE`;
+6. remain Cursor-owned through authorized component integration unless a genuine `CHATGPT HANDOFF` stop applies.
 
-PR readiness is not merge authority.
+Do **not** stop for Atlas/Bill walkthrough merely because a non-`main` PR opened or became ready. Production/`main` promotion and protected stops still require ChatGPT/Bill.
+
+PR readiness is not merge authority. Cursor never self-approves or self-merges.
 
 ## Active Program Issue Child-Task Continuation
 
-### Program #1255 (current active program)
+### Launched Model B projects (#2546 pattern)
 
-For active Program #1255, Cursor may continue from one child task to another only
+For launched Model B projects with a complete package and one project-level Go:
+
+- Cursor executes linked tasks in dependency order without a new routine launch prompt.
+- Pickup uses `CURSOR ASSIGNMENT` + `agent:cursor` + `handoff:ready`, then `CURSOR ACK`.
+- Routine progress uses `CURSOR STATUS` / `CURSOR COMPLETE`.
+- Successor activation follows manifest eligibility after project-branch integration.
+- `LOCAL CURSOR RESUME` is optional recovery after a genuine ChatGPT escalation, not a per-child requirement.
+
+Canonical communication contract: `docs/ops/ai/chatgpt-cursor-handoff-workflow.md`.
+
+### Program #1255 (legacy active-program pattern)
+
+For historical Program #1255-style continuation, Cursor may continue from one child task to another only
 when the next child issue contains the latest valid Atlas, Bill, or controller
-execution authorization recorded on GitHub — typically a bounded `LOCAL CURSOR RESUME`
-comment with `agent:cursor` + `handoff:ready`, or an equivalent explicit issue
-comment that names exactly one next child issue.
+execution authorization recorded on GitHub — typically a bounded `CURSOR ASSIGNMENT`
+(or legacy `LOCAL CURSOR RESUME`) with `agent:cursor` + `handoff:ready`.
 
 Do not use `@cursor` for local LGFC continuation. `@cursor` is a prohibited
 cloud invocation for local work under

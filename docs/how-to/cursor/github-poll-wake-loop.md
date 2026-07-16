@@ -2,30 +2,30 @@
 Doc Type: How-To
 Audience: Bill, ChatGPT, Cursor, LGFC maintainers
 Authority Level: Operational Authority
-Owns: Local Cursor GitHub poll-wake loop operation, watch rules, wake semantics, pickup evidence, and known reliability limits
+Owns: Local Cursor GitHub poll-wake loop operation aligned to the canonical communication state machine
 Does Not Own: Poller script implementation in `~/.cursor/github-poller/`, merge authority, GitHub webhook configuration, or cloud agent billing
-Canonical Reference: /docs/how-to/cursor/agent-session-bootstrap.md
-Related Issues: #2398, #2492
-Last Reviewed: 2026-07-13
+Canonical Reference: /docs/ops/ai/chatgpt-cursor-handoff-workflow.md
+Related Issues: #2550, #2546, #2294, #2492, #2398
+Last Reviewed: 2026-07-16
 ---
 
 # Cursor local GitHub poll-wake loop
 
 ## Purpose
 
-Document local Cursor GitHub poll-wake operation so Bill, ChatGPT, and Cursor share one exact description of detection rules, dispatch requirements, wake semantics, and pickup evidence.
+Document local Cursor GitHub poll-wake operation against the canonical communication contract in `docs/ops/ai/chatgpt-cursor-handoff-workflow.md`.
 
-## Scope
+## Authority boundary
 
-Covers operator behavior for `~/.cursor/github-poller/` while working in `wdhunter645/next-starter-template`. The scripts are user-local tooling and are not part of the repository tree.
+Until that contract is promoted to `main`, treat this as target-state guidance for Project #2546 / component-branch work. Project #2294 implements durable poller/pickup behavior against the same contract.
 
 ## Current known truth
 
-- The poller watches open issues with **`agent:cursor` + `handoff:ready`**, assigned issues, and assigned PRs.
-- An item is fresh only when its `updatedAt` or equivalent is later than the saved `state.since` watermark.
-- Any comment on a qualifying issue can bump `updatedAt`; the machine trigger is **qualifying labels/assignment plus new issue activity**, not the text marker alone.
-- `LOCAL CURSOR RESUME` is the human/agent resume pointer to the canonical Chat decision.
-- Labels, comments, and wake output do not prove Cursor began work.
+- Authoritative Cursor pickup requires an open issue with **`agent:cursor` + `handoff:ready`**.
+- Assignee state, PR updates, and `agent:cursor` alone are **not** pickup authority.
+- Labels are current state; comments are durable events.
+- A comment without matching current labels is historical evidence only.
+- Labels/comments do not prove Cursor began work.
 - `@cursor` is a cloud invocation and is not a local wake mechanism.
 
 ## Components
@@ -34,47 +34,71 @@ Covers operator behavior for `~/.cursor/github-poller/` while working in `wdhunt
 | --- | --- |
 | `~/.cursor/github-poller/poll-github.mjs` | Single poll through `gh`; emits JSON |
 | `~/.cursor/github-poller/poll-wake-loop.sh` | Repeating poll and wake wrapper |
-| `~/.cursor/github-poller/poll-loop.sh` | Alert-only loop |
-| `~/.cursor/github-poller/state.json` | Saved watermark and seen-event state |
-| `~/.cursor/github-poller/poll-errors.log` | Recommended persistent failure log |
+| `~/.cursor/github-poller/state.json` | Watermark and seen-event state |
 | `~/.cursor/github-poller/README.md` | Local operator reference |
 
-## Detection rules
+Local scripts may lag this document until #2294 reconciliation. Operators must not widen pickup rules beyond this contract.
 
-`poll-github.mjs` treats an item as new only when its update time is later than `state.since` and it matches one of these rules:
+## Detection rules (target state)
 
 | Trigger | Rule |
 | --- | --- |
-| Cursor handoff queue | Open issue labeled `agent:cursor` **and** `handoff:ready` |
-| Assigned issue | Open issue assigned to `GITHUB_POLL_LOGIN` (default `wdhunter645`) |
-| Assigned PR | Open PR assigned to `GITHUB_POLL_LOGIN` |
+| Cursor pickup queue | Open issue labeled `agent:cursor` **and** `handoff:ready` |
+| In-progress monitoring | Open issue labeled `handoff:in-progress` may be inspected, never dual-claimed |
+| ChatGPT escalation queue | Open issue labeled `agent:ChatGPT` with unresolved `CHATGPT HANDOFF` (ChatGPT/dispatcher concern, not Cursor pickup) |
 
-The preferred routing bundle uses all available paths:
+Deprecated as pickup authority (do not use for new work):
+
+- assigned-issue-only matches;
+- assigned-PR-only matches;
+- `agent:cursor` without `handoff:ready`.
+
+## Preferred routing bundle
 
 1. Open source issue.
-2. `agent:cursor` + `handoff:ready`.
-3. Assign source issue to `wdhunter645`.
-4. If revising a PR, assign the open PR to `wdhunter645`.
-5. Post exactly one canonical `CHATGPT RESPONSE` or `CHATGPT CLOSEOUT` on the source issue.
-6. Post exactly one separate `LOCAL CURSOR RESUME` on the source issue referencing that response.
+2. Post `CURSOR ASSIGNMENT` with one bounded action.
+3. Set `agent:cursor` + `handoff:ready`.
+4. Local poller/operator wakes on those labels.
+5. Cursor posts `CURSOR ACK` and transitions to `handoff:in-progress`.
+6. Cursor posts `CURSOR STATUS` / `CURSOR COMPLETE` for routine progress.
+7. Use `CHATGPT HANDOFF` only for genuine escalation; ChatGPT replies with `CHATGPT RESPONSE` and restores `agent:cursor` + `handoff:ready` when Cursor should continue.
 
-## What the poller does not reliably detect
+`LOCAL CURSOR RESUME` is optional recovery after a ChatGPT response. It is not required for launched Model B continuous execution.
 
-- Issues missing either required wake label.
-- PR-only review comments on unassigned PRs.
-- `agent:ChatGPT` issues unless another watch rule matches.
-- A comment whose parent issue/PR is not in a watched class.
-- Activity older than the saved watermark.
-- Chat-only instructions.
+## Required marker alignment
+
+Recognize:
+
+- `CURSOR ASSIGNMENT`
+- `CURSOR ACK`
+- `CURSOR STATUS`
+- `CURSOR COMPLETE`
+- `CHATGPT HANDOFF`
+- `CHATGPT RESPONSE`
+- `CHATGPT CLOSEOUT`
+
+Legacy `LOCAL CURSOR RESUME` / `### AGENT HANDOFF` may be accepted only as migration aliases.
+
+After a wake, Cursor must:
+
+1. Open the qualifying source issue.
+2. Confirm `agent:cursor` + `handoff:ready` still present.
+3. Post `CURSOR ACK` and claim (`handoff:in-progress`).
+4. Execute the bounded assignment.
+5. Return `CURSOR STATUS` / `CURSOR COMPLETE`, or `CHATGPT HANDOFF` only for a genuine stop.
+
+Do not stop for ChatGPT merely because a non-`main` PR opened or became technically clean.
+
+## Idempotency and stale events
+
+- Persist consumed event IDs / comment IDs in local state.
+- Ignore already-consumed events on restart.
+- Ignore comments whose required labels are no longer present.
+- Never claim a second colliding Cursor task while one `handoff:in-progress` task is active in the same lane.
 
 ## Loop behavior
 
 `poll-wake-loop.sh [minutes]` accepts intervals from 2 through 12 minutes and defaults to 5.
-
-1. Run `node poll-github.mjs`.
-2. On success with `fresh: 0`, remain silent.
-3. On success with `fresh > 0`, emit the agent wake line.
-4. On failure, emit a failure message and persist stderr to `~/.cursor/github-poller/poll-errors.log`.
 
 Expected wake output:
 
@@ -84,101 +108,12 @@ AGENT_LOOP_TICK_github_poll {"fresh":N,"prompt":"..."}
 
 A wake means qualifying activity was detected. It does not authorize merge, broaden scope, or prove execution started.
 
-## Required marker alignment
-
-The poller prompt and local README must recognize the live markers:
-
-- `CHATGPT HANDOFF`
-- `CHATGPT RESPONSE`
-- `CHATGPT CLOSEOUT`
-- `LOCAL CURSOR RESUME`
-
-Legacy `### AGENT HANDOFF` may be accepted only as an alias during local migration. It must not remain the sole marker named in the prompt.
-
-After a wake, Cursor must:
-
-1. Open the qualifying source issue.
-2. Read the latest canonical Chat response.
-3. Read the separate `LOCAL CURSOR RESUME` referencing that response.
-4. Verify branch, PR, labels, open issue state, and one bounded action.
-5. Perform that action only.
-6. Return canonical `CHATGPT HANDOFF` when review, blocker, PR-ready, or completion state is reached.
-
-## Procedure
-
-From a terminal:
-
-```bash
-~/.cursor/github-poller/poll-wake-loop.sh 5
-```
-
-Before starting:
-
-```bash
-gh auth status
-pgrep -af poll-wake-loop
-```
-
-Operational rules:
-
-- Keep one local Cursor agent chat open.
-- Run only one poll-wake loop.
-- Start the loop with full local permissions.
-- Stop with Ctrl+C in the terminal running the loop.
-- Reset the watermark only when deliberately replaying current activity:
-
-```bash
-rm ~/.cursor/github-poller/state.json
-```
-
-Do not pulse labels by default. Removing and re-adding `handoff:ready` is a recovery action only after confirming the issue is eligible, the loop is running, the canonical transaction exists, and the prior activity may have fallen behind the watermark. Record the reason in the issue.
-
-## Failure handling
-
-The loop is best-effort, not a guaranteed notification bus.
-
-| Outcome | Meaning | Required response |
-| --- | --- | --- |
-| `fresh: 0` | Poll succeeded; no qualifying new activity | No action |
-| `fresh > 0` | Qualifying activity detected | Read canonical issue transaction |
-| `poll failed` | Poll did not complete | Inspect `poll-errors.log`; do not interpret as idle |
-| Wake with no valid transaction | Detection worked but routing is malformed | Post canonical `CHATGPT HANDOFF` with `Status: blocked` |
-| Valid transaction with no later Cursor evidence | Pickup not proven | Dispatcher re-checks eligibility and loop health |
-
-Recommended loop wrapper behavior:
-
-```text
-append poll stderr and timestamp to ~/.cursor/github-poller/poll-errors.log
-preserve the existing wake output contract
-avoid discarding stderr with 2>/dev/null
-```
-
-## Verification
-
-When this how-to changes, record:
-
-```bash
-gh auth status
-node ~/.cursor/github-poller/poll-github.mjs
-bash scripts/ci/docs_check_headers.sh
-```
-
-Expected:
-
-- poll JSON contains `"ok":true` and `"fresh":0` or `"fresh":N`;
-- active prompt names the live markers;
-- failure logging is enabled locally;
-- repository documentation header check passes.
-
 ## Stop conditions
 
-- Stop if local poller behavior diverges from this document.
-- Stop if the latest resume contains multiple independent actions.
-- Stop if source issue labels, assignment, branch, PR, or canonical response do not agree.
-- Do not treat poller wake as scope or merge authorization.
+Stop and escalate when:
 
-## Related authority
-
-- `docs/ops/ai/chatgpt-cursor-handoff-workflow.md`
-- `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`
-- `docs/governance/standards/CURSOR-RUNTIME-ROUTING.md`
+- pickup labels are missing or contradictory;
+- a second colliding task would be claimed;
+- required credentials or repository settings are missing;
+- production/`main` approval is required;
+- authority sources conflict.

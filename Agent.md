@@ -42,7 +42,8 @@ Rules:
 - `local` is the default.
 - `cloud` or `either` requires explicit authorization in the source GitHub issue from Bill or Chat.
 - `@cursor` is a Cursor Cloud invocation and is prohibited for local LGFC work.
-- Local Cursor routing uses `agent:cursor` + `handoff:ready` plus an explicit `LOCAL CURSOR RESUME` issue or PR comment.
+- Local Cursor routing uses `agent:cursor` + `handoff:ready` plus an executable assignment event (`CURSOR ASSIGNMENT`, or after escalation a `CHATGPT RESPONSE`). Cursor claims with `CURSOR ACK` (`handoff:in-progress`).
+- `LOCAL CURSOR RESUME` is a legacy/recovery helper and is not required for launched Model B continuous execution.
 - Labels and comments are durable routing/context markers; they do not prove an agent process is running.
 
 Binding runtime policy: [`docs/governance/standards/CURSOR-RUNTIME-ROUTING.md`](docs/governance/standards/CURSOR-RUNTIME-ROUTING.md).

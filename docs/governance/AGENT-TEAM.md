@@ -113,8 +113,9 @@ After Chat (or Bill as alternate) authorizes implementation Go on a complete lau
 
 - Cursor proceeds through routine implementation, validation, and PR remediation **without** routine Bill stop points.
 - Cursor stops only for protected conditions, incomplete packages, scope conflict, failing required gates, unresolved blocking review threads, or explicit Chat/Bill hold instruction.
-- Chat owns primary review/approval at PR ready-for-review and merge boundaries.
-- Bill receives final completed-product review after Chat verification and success declaration.
+- For launched Model B projects after project-level Go, Chat is not a routine stop between linked children or for technically clean non-`main` component integration.
+- Chat owns primary review/approval for protected changes, Model A work, and promotion to `main`.
+- Bill receives final completed-product review after Chat verification and success declaration for production outcomes.
 
 ## Launch-control package requirements
 
@@ -146,6 +147,7 @@ When Bill says `run startup`, Chat performs **orientation-only** startup and **s
 | Model A execution procedure | `docs/how-to/agents/run-model-a.md` |
 | Model B execution procedure | `docs/how-to/agents/run-model-b.md` |
 | Shared execution rules | `docs/ops/ai/CORE-RULES.md` |
+| Communication state machine | `docs/ops/ai/chatgpt-cursor-handoff-workflow.md` |
 | Cursor runtime routing | `docs/governance/standards/CURSOR-RUNTIME-ROUTING.md` |
 | PMO sizing and delivery model | `docs/governance/PMO-PORTFOLIO.md` |
 | Assignment envelope | `docs/templates/agent-assignment-template.md` |

@@ -25,8 +25,20 @@ Rollback profile:
 Component branch:
 Component master:
 Promotion PR:
+Parent project:
+Predecessor:
+Successor:
+Manifest path:
+Production merge: prohibited
 Runtime: local
 ```
+
+## Communication routing
+
+- Executable tasks use `agent:cursor` + `handoff:ready` (claim → `handoff:in-progress`).
+- Routine progress uses `CURSOR STATUS` / `CURSOR COMPLETE`.
+- Genuine stops use `CHATGPT HANDOFF`.
+- See `docs/ops/ai/chatgpt-cursor-handoff-workflow.md`.
 
 ## Classification evidence
 
@@ -58,4 +70,4 @@ All other paths are out of scope.
 
 ## Stop rule
 
-Stop only for authority conflict, missing allowlist, or a material business/security decision. Routine template, label, ruleset, and evidence corrections remain in scope.
+Stop only for authority conflict, missing allowlist, material business/security decision, or production/`main` approval. Routine non-`main` PR readiness on a launched Model B project does not require a ChatGPT stop.
