@@ -5,7 +5,7 @@ Authority Level: Evidence
 Owns: Delivery System v1 Task 12 (#2502) as-designed/as-built reconciliation, rollback package status, sync gap, and promotion-readiness verdict
 Does Not Own: Production merge authorization, Program #2477 closeout, or code/workflow remediation implementation
 Canonical Reference: /docs/ops/implementation-plans/two-model-delivery-system/implementation-plan.md
-Related Issues: #2502, #2501, #2477, #2511, #2536
+Related Issues: #2502, #2501, #2477, #2511, #2536, #2572, #2575
 Last Reviewed: 2026-07-16
 ---
 
@@ -13,147 +13,113 @@ Last Reviewed: 2026-07-16
 
 ## Verdict
 
-**READY FOR RELEASE VALIDATION — do not merge PR #2511 until Chat completes release validation and records production approval.**
+**RELEASE VALIDATION PASS — ready for Chat/Bill production review after a final `main` sync; do not merge PR #2511 without explicit production authorization.**
 
-#2536 remediation is merged and closed. Component tip includes a full sync from `main` (`c15eca80`). Remaining gate is #2502 release validation + Chat production approval on #2511.
+- #2574 / #2572 inventory remediation is integrated at component tip `b4632273…`.
+- PR #2511 current-head CI is green, including `quality` and `gitleaks`.
+- Multi-step rollback package is finalized below.
+- **Sync caveat:** `main` advanced by 3 commits after the last component sync (`#2561` manual-closeout SHA fixes). Re-sync `main` → component before production merge.
+- **#2511 remains draft and held.** No production merge is authorized by this report.
+- Deferred non-blocker: #2575 (matchup/current table inventory refinement) — does not fail current Quality.
 
 ## Authority
 
 | Item | State |
 | --- | --- |
-| Source issue | #2502 OPEN — resume for release validation / promotion closeout |
-| Remediation #2536 | CLOSED; PRs #2539 + #2540 merged into component |
-| Predecessor #2501 | CLOSED completed; must not reopen |
-| Pilot PR #2527 | MERGED at `69cc81fba57aba0a8436fd6883db62755493bac8` |
-| Promotion PR #2511 | OPEN draft; conflicts cleared; review threads resolved; awaiting release validation |
-| Reconciliation authority | https://github.com/wdhunter645/next-starter-template/issues/2502#issuecomment-4981538030 |
-| Remediation authority | https://github.com/wdhunter645/next-starter-template/issues/2536#issuecomment-4981838899 |
+| Source issue | #2502 OPEN — Task 12 promotion closeout |
+| Remediation #2536 | CLOSED; PRs #2539 + #2540 merged |
+| Inventory remediation #2572 | CLOSED path via PR #2574 merged at `b4632273…` |
+| Predecessor #2501 | CLOSED completed |
+| Pilot PR #2527 | MERGED |
+| Promotion PR #2511 | OPEN draft; held; Quality PASS at head `b4632273…` |
+| Deferred | #2575 OPEN — non-blocking inventory refinement |
 
 ## As-designed vs as-built
 
-| Area | As-designed | As-built (2026-07-15) | Agree? |
+| Area | As-designed | As-built (2026-07-16) | Agree? |
 | --- | --- | --- | --- |
-| Model A/B metadata contract | Stable PR/issue fields + classifier | Present on component branch; CI scripts + templates integrated | Yes |
-| Branch-aware CI / preflight | Shared classification local + CI | `delivery_profile.mjs`, `pr_preflight.mjs`, quality routing present | Yes (fixture-proven) |
-| Model B child auto-integration | Eligible children auto-integrate when green | Remediation #2536/#2539 + live eligible PR #2540 (`eligible=true`); `allow_auto_merge=false` blocks actual enablement | Partial — eligibility proven; auto-merge setting blocker remains |
-| DIATAXIS migration ratchet | Touched legacy disposition enforced | Workflow + ratchet present; Pilot scenario 9 fixture pass; F4 docs disposition integrated via #2535 | Yes |
-| Component promotion | One promotion PR, no new implementation, full rollback package | #2511 synced with `main`; ordered rollback dry-runs remediated under #2536; release validation still open | Partial — awaiting #2502 release validation |
-| Production approval | Chat primary; Bill alternate; checks `quality`+`gitleaks` | Ruleset `15885337` active; matches | Yes |
+| Model A/B metadata contract | Stable PR/issue fields + classifier | Present on component; CI scripts + templates integrated | Yes |
+| Branch-aware CI / preflight | Shared classification local + CI | `delivery_profile.mjs`, `pr_preflight.mjs`, quality routing present | Yes |
+| Model B child auto-integration | Eligible children auto-integrate when green | #2536/#2539 + live eligible #2540 (`eligible=true`); `allow_auto_merge=false` blocks enablement | Partial — eligibility proven; setting blocker remains |
+| DIATAXIS migration ratchet | Touched legacy disposition enforced | Workflow + ratchet; Pilot scenario 9; F4 via #2535 | Yes |
+| Component promotion | One promotion PR, no new implementation, full rollback package | #2511 draft/held; rollback package finalized; release validation PASS; final main sync pending | Partial — sync caveat |
+| Production approval | Chat primary; Bill alternate; `quality`+`gitleaks` | Ruleset `15885337` active | Yes |
 
 ## Evidence class distinction
 
 | Proof class | Status | Evidence |
 | --- | --- | --- |
-| Fixture-level evaluator proof | PASS | `node scripts/ci/delivery_system_acceptance.mjs` 12/12 |
-| Live protected-child proof | PASS | PR #2527: eligibility neutral; `requiresChatReview: yes` |
-| Live eligible-child integration proof | PASS under #2536 | PR #2540; workflow_dispatch `29425645275`; artifact eligible=true / requiresChatReview=false; allow_auto_merge=false structural skip |
-| Repository-setting blockers | CONFIRMED | `allow_auto_merge=false` — do not claim actual auto-merge success |
-| Rollback schema validation | PASS | Required multi-step / one-step fields |
-| Rollback ordered dry-run simulation | PASS under #2536 | Scenarios 11–12 execute ordered dry-runs with omit/reorder failure |
+| Fixture-level evaluator proof | PASS | `node scripts/ci/delivery_system_acceptance.mjs` 12/12 on tip `b4632273…` |
+| Live protected-child proof | PASS | PR #2527 |
+| Live eligible-child integration proof | PASS under #2536 | PR #2540; `eligible=true`, `requiresChatReview=false`; `allow_auto_merge=false` structural skip |
+| Preview-isolation inventory (matchup/repair) | PASS | PR #2574 / #2572 |
+| Full release validation on #2511 | PASS | CI `quality` run `29505299276` + `gitleaks` + peer gates at head `b4632273…` |
+| Repository-setting blockers | CONFIRMED | `allow_auto_merge=false` — no auto-merge success claim |
+| Rollback ordered dry-run simulation | PASS | Acceptance scenarios 11–12 |
+| Deferred inventory refinement | OPEN #2575 | Separated; does not fail current Quality |
 
-## Confirmed post-pilot evidence findings (no silent #2502 implementation)
+## Multi-step rollback package (promotion scope) — FINALIZED
 
-### F1 — Component-integration orchestration self-blocks and false-holds
-
-**Confirmed historically; remediated under #2536 PR #2539.**
-
-- Check evaluation is latest-authoritative per required name; self/advisory/unrelated runs excluded.
-- Settle reevaluation via `workflow_run` after PR-triggered peer gates (`GATE — Quality Checks` / Diff Scope / Secret Scan).
-- Component `hold` is no longer inferred from pending combined commit status; only explicit hold labels (or explicit hold state) block.
-- Review blockers use current-head / latest-by-author accounting.
-
-Owning files: `.github/workflows/component-child-integration.yml`, `scripts/ci/component_integration_eligibility.mjs`, `tests/component-integration-eligibility.test.mjs`
-
-### F2 — Live eligible-child auto-integration proof
-
-**Confirmed historically missing; live proof recorded under #2536 PR #2540 (repo setting unchanged).**
-
-- Non-protected child #2540: `Component Integration Eligibility` success; artifact `eligible=true`, `requiresChatReview=false`.
-- Workflow_dispatch run `29425645275` with corrected evaluator produced the same result.
-- `allow_auto_merge=false` remains a structural blocker — **no auto-merge success claim**.
-
-### F3 — Admin glob boundary overmatch
-
-**Confirmed historically; remediated under #2536 PR #2539.**
-
-- Glob expansion now preserves the trailing directory separator (`functions/api/admin/`).
-- Positive/negative boundary tests cover `administrator.ts`, `admin-backup/`, and `admin.ts` non-matches.
-
-Owning files: `tests/preview-isolation-inventory.test.ts`
-
-### F4 — DIATAXIS reference procedure/command content
-
-**Confirmed as of Pilot; documentation remediation started under #2502 allowlist.**
-
-- Advisory on #2527 flagged `FORBIDDEN_STRUCTURE_PRESENT` for bash + procedure content in `docs/reference/github/delivery-system-repository-configuration.md`.
-- #2502 moves procedure/commands into `docs/how-to/delivery/manage-component-integration.md` and retains snapshot facts in the reference document.
-
-### F5 — Rollback “simulations” are schema checks only
-
-**Confirmed historically; remediated under #2536 PR #2539.**
-
-- Scenarios 11–12 now execute deterministic ordered dry-run state machines with omit/reorder failure paths.
-- No production, Cloudflare, GitHub configuration, D1, or external-resource mutation.
-
-Owning files: `tests/fixtures/delivery-system/scenarios.mjs`, `tests/fixtures/delivery-system/helpers.mjs`
-
-## Multi-step rollback package (promotion scope) — draft
-
-Status: **schema retained; ordered dry-run simulation PASS under #2536 acceptance scenarios 11–12. Package still `package_finalized_before_promotion: no` until #2502 release validation completes.**
+Status: **`package_finalized_before_promotion: yes`** — schema + ordered dry-run simulation PASS; operator restoration procedure linked. Execute only under Chat/Bill rollback authorization.
 
 ```text
 release_unit: component/delivery-system-v1
 rollback_trigger: promotion verification failure, production smoke failure, or Chat/Bill rollback authorization
-disablement_steps: pause component-child-integration workflow; keep allow_auto_merge=false
+disablement_steps: pause component-child-integration via hold labels component-integration-hold / hold:component-integration (confirm blocked eligibility) OR Chat-authorized disablement of .github/workflows/component-child-integration.yml; keep allow_auto_merge=false
 external_write_stops: no new promotion merges; pause write routes that mutate production-shared resources if activated by promotion
-config_restoration: restore ruleset 15885337, templates, and workflows from pre-promotion main SHA 74b4776f50c6ab643eb1efd5ad25fab8650e6602
+config_restoration: restore ruleset 15885337, templates, and workflows from pre-promotion main SHA (record exact SHA at Chat merge authorization; current main tip sample 90d2e391…)
 data_restoration: retain forward-compatible migrations; no destructive D1 rollback required by this promotion set
 deployment_restoration: restore Cloudflare Pages artifact from pre-promotion deployment
 dependency_order: 1 pause automation; 2 stop external writes; 3 revert promotion merge; 4 restore config/ruleset; 5 restore deployment; 6 verify quality+gitleaks+routes; 7 reconcile #2477/#2502/#2511
 verification_checklist: main required checks green; production routes respond; ruleset intact; component branch retained
 reconciliation: reopen or annotate #2502 from live evidence; keep Program #2477 open until verified
 package_owner: Chat
-package_finalized_before_promotion: no
-integrated_children_complete: yes (#2503–#2510, #2527)
+package_finalized_before_promotion: yes
+integrated_children_complete: yes (#2503–#2510, #2527, #2535, #2539, #2540, #2574)
 pilot_evidence_path: docs/ops/reports/delivery-system-v1-pilot-evidence.md
-authority_disposition_complete: provisional — see disposition map; open remediation blocking promotion
+authority_disposition_complete: yes for F1–F5 and #2572 inventory gap; #2575 deferred non-blocker
+operator_procedure: docs/how-to/delivery/manage-component-integration.md §8
 ```
-
-Operator restoration procedure: `docs/how-to/delivery/manage-component-integration.md` §8.
 
 ## Synchronization status
 
 | Ref | SHA / count |
 | --- | --- |
-| Component tip | `c15eca80ca74ab3dff6e221bd9adc83944daeed2` |
-| `main` tip | `323faea9c0be4643aeebc276843690fba2383963` |
-| Commits on `main` not in component | 0 |
-| Commits on component not in `main` | 25 |
-| Sync performed | **Yes** — `origin/main` merged into `component/delivery-system-v1` for promotion prep (includes #2538 clerical closeout + matchup/Actions fixes) |
+| Component tip | `b46322730478d2564d070f3d0b0e2debd7845c16` (#2574 merge) |
+| `main` tip | `90d2e391ef67436987568e65fcddf9db872a1a06` |
+| Commits on `main` not in component | **3** (`#2561` / `90d2e391…`, `a3b0a7f7…`, `7b00ed1a…`) |
+| Commits on component not in `main` | 30 |
+| Prior sync | Yes — earlier sync included through `9f87b4bc…`; reopened by subsequent main merges |
+| Action before production merge | Re-sync `origin/main` into `component/delivery-system-v1`, re-confirm #2511 Quality |
 
-## Release validation
+## Release validation (2026-07-16)
 
-Not claimed complete for promotion. Full release validation must still run under #2502 before Chat production approval and merge of #2511.
+| Check | Result |
+| --- | --- |
+| Delivery System acceptance (local) | PASS 12/12 |
+| Preview-isolation inventory (local) | PASS 10/10 |
+| `npm run typecheck` (local) | PASS |
+| CI `quality` on #2511 @ `b4632273…` | PASS (`29505299276`) |
+| CI `gitleaks` | PASS |
+| Diff Scope / PR hygiene / reviewer-response / DIATAXIS / design authority | PASS |
 
 ## Acceptance criteria map (#2502)
 
 | Criterion | Status |
 | --- | --- |
-| As-designed and as-built records agree | **Partial** — eligibility/simulation gaps closed under #2536; release validation still open |
-| Authority disposition and references complete | **Partial** — F4 integrated via #2535; remaining closeout under #2502 |
-| Multi-step rollback complete and tested | **Simulation PASS under #2536**; package not yet finalized for promotion |
-| Component synchronized with `main` | **PASS** — tip `c15eca80` includes `main` @ `323faea9` |
-| Full release validation passes | **Not claimed** |
-| Promotion PR contains no new implementation | Meta OK after sync merge; readiness not granted |
-| Chat production approval and merge | **Not requested** |
+| As-designed and as-built records agree | **PASS** (with documented `allow_auto_merge=false` partial and #2575 deferral) |
+| Authority disposition and references complete | **PASS** for promotion package |
+| Multi-step rollback complete and tested | **PASS** — package finalized; simulation PASS |
+| Component synchronized with `main` | **PARTIAL** — 3 commits pending re-sync |
+| Full release validation passes | **PASS** at tip `b4632273…` |
+| Promotion PR contains no new implementation | **PASS** — #2511 metadata only under #2502; code via prior children |
+| Chat production approval and merge | **Not granted** — #2511 HOLD |
 | Production/post-merge verification | **Not started** |
 | Program #2477 closed | **No** |
 
-## Remediation status (#2536)
+## Remaining Chat / Bill decisions
 
-Remediation issue #2536 is closed completed:
-
-- Code/workflow/test remediation: PR #2539 merged
-- Live non-protected eligible-child exercise: PR #2540 merged (`eligible=true`, `requiresChatReview=false`; `allow_auto_merge=false` structural skip)
-- Component synced with `main`; #2511 review threads resolved
-- Next: #2502 release validation + Chat production approval on #2511
+1. Authorize and complete final `main` → component sync (#2561 trio), then confirm #2511 Quality still green.
+2. Explicit production approval to undraft/merge #2511 (no waiver; Cursor will not merge).
+3. Optional: schedule #2575 after promotion or as a follow-up on the component/main line.
+4. Post-merge production verification and Program #2477 closeout.
