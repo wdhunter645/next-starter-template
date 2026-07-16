@@ -293,6 +293,24 @@ When migrating existing PMO records:
 - never add wake state to an unprepared pipeline record;
 - never launch a project as a side effect of metadata migration.
 
+## Schema artifact
+
+The deterministic JSON Schema companion used by the Task 001 tooling lives at:
+
+```text
+scripts/pmo-projects/project-manifest.schema.json
+```
+
+Validation and materialization commands:
+
+```text
+npm run pmo:project:validate -- <manifest-path>
+npm run pmo:project:materialize -- --dry-run [--repo owner/name] <manifest-path>
+PMO_MATERIALIZE_APPLY_AUTHORIZED=true npm run pmo:project:materialize -- --apply [--repo owner/name] <manifest-path>
+```
+
+Apply mode is fail-closed without `PMO_MATERIALIZE_APPLY_AUTHORIZED=true`.
+
 ## Failure behavior
 
 Validation and materialization fail closed when:
