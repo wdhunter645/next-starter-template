@@ -137,7 +137,8 @@ explicit authorization.
 | Continuous reduced-gate serial to `main` | `main` | `READY FOR REVIEW`; wait for Bill/ChatGPT merge + clean post-merge | Bill/ChatGPT only | After merge + clean post-merge, start next authorized child without new launch prompt |
 | Model B component-auto-integration | `component/**` | No human review handoff between authorized children; finish validation and PR-body evidence | Atlas-controlled component integration / authorized non-`main` auto-merge | After clean component integration, start next authorized child without new launch prompt |
 | Model B promotion to `main` | `main` | `READY FOR REVIEW` / protected review as required | Bill/ChatGPT only | Per promotion issue |
-| Protected governance child (`#1723`, `#1724`) | As named by issue | Complete PR; require independent governance review before merge/promotion | Bill/ChatGPT (and Chat review when required) | After authorized merge/integration |
+
+Program `#1719` Tasks `#1723` and `#1724` are component-branch documentation work under `component-auto-integration`. They do **not** require an intermediate human gate merely because they modify governance documentation. Repository-wide effect waits for Bill/ChatGPT-approved promotion to `main`. Issue-mutation policy: `/docs/ops/reports/issue-mutation-closeout-permission-1724.md`.
 
 Material stop conditions (all paths): unresolved authority conflict; required work
 outside allowlist; unauthorized workflow/CI/runtime/secret/production change;
@@ -205,11 +206,15 @@ Rules:
 2. After predecessor component integration is clean, begin the next authorized
    child without a new Bill/Atlas launch prompt.
 3. `#1725` is complete — do not rerun.
-4. `#1723` and `#1724` remain protected governance review points before
-   merge/promotion affecting those scopes.
+4. `#1723` and `#1724` are component-branch documentation tasks under
+   `component-auto-integration`. They do not require an intermediate human gate
+   merely because they modify governance documentation. Repository-wide effect
+   waits for Bill/ChatGPT-approved promotion to `main`.
 5. Promotion of the component branch to `main` remains Bill/ChatGPT authority.
 6. Gap inventory successor inputs live in
    `docs/ops/reports/workflow-automation-design-gap-inventory-1721.md`.
+7. Issue mutation remains denied unless the active child issue explicitly grants
+   it (`docs/ops/reports/issue-mutation-closeout-permission-1724.md`).
 
 ### Program #1255 (current active website program)
 

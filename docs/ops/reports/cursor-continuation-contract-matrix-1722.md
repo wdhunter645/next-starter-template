@@ -3,7 +3,7 @@ Doc Type: Operations
 Audience: Bill, Atlas, Cursor, LGFC maintainers, and reviewers
 Authority Level: Controlled
 Owns: Task #1722 durable Cursor continuation/stop contract matrix for main vs Model B component-auto-integration vs continuous reduced-gate serial paths
-Does Not Own: Workflow YAML implementation, CI script changes, merge to main, issue mutation, or protected governance policy authorship for #1723/#1724
+Does Not Own: Workflow YAML implementation, CI script changes, merge to main, or unauthorized issue mutation
 Canonical Reference: /docs/reference/pmo/lgfc-cursor-execution-contract.md
 Related Issues: #1722, #1719, #1720, #1721, #1723, #1724, #1725
 Last Reviewed: 2026-07-16
@@ -24,6 +24,9 @@ gap G-01 and harden
 - Program `#1719` continuous reduced-gate authorization (2026-07-16)
 - Operator rule: non-`main` component PRs may auto-merge; `main` requires
   Bill/ChatGPT approval
+- Documentation authority levels: `docs/governance/PR_PROCESS.md` and
+  Task `#1723` evidence
+- Issue mutation matrix: `docs/ops/reports/issue-mutation-closeout-permission-1724.md`
 
 ## Matrix
 
@@ -33,7 +36,11 @@ gap G-01 and harden
 | Continuous reduced-gate to `main` | `main` | `READY FOR REVIEW` | Bill/ChatGPT | After merge + clean post-merge → next child |
 | Model B component-auto-integration | `component/**` | No inter-child human review handoff | Atlas-controlled / authorized non-`main` auto-merge | After clean component integration → next child |
 | Model B promotion | `main` | Review / protected as required | Bill/ChatGPT | Per promotion issue |
-| Protected governance `#1723`/`#1724` | As named | Complete PR; independent governance review | Bill/ChatGPT | After authorized merge/integration |
+
+Tasks `#1723` and `#1724` follow the Model B component-auto-integration row.
+Governance-doc edits on the project component branch do not invent an
+intermediate human gate. Repository-wide authority still requires
+Bill/ChatGPT-approved promotion to `main`.
 
 ## Material stops (all paths)
 
@@ -45,7 +52,7 @@ gap G-01 and harden
 - Unclean predecessor integration
 
 Non-stops: routine PR transitions, normal review findings, documentation
-placement, correctable validation failures.
+placement, correctable validation failures, governance-folder placement alone.
 
 ## Program #1719 application
 
@@ -53,8 +60,9 @@ placement, correctable validation failures.
 | ---: | --- | --- |
 | #1720 | Complete on `main` (PR #2543) | Authority reconciliation |
 | #1721 | Complete on component (PR #2545) | Gap inventory |
-| #1722 | This task | Contract matrix |
-| #1723 / #1724 | Protected governance review | Do not weaken |
+| #1722 | Complete on component (PR #2548) | Contract matrix |
+| #1723 | Complete on component (PR #2555) | PR readiness / merge authority; two-level docs authority |
+| #1724 | Mutation matrix (Task #1724) | Component-doc model; no intermediate human gate for governance docs |
 | #1725 | Complete | Do not rerun |
 | #1726 / #1727 | Later | Implementation candidates / terminal |
 
@@ -62,5 +70,5 @@ placement, correctable validation failures.
 
 - Workflow YAML / CI scripts
 - Runtime / website / package files
-- Issue mutation
+- Unauthorized issue mutation
 - Merge or promotion to `main` from this child

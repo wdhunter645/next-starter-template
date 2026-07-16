@@ -162,6 +162,20 @@ The final design should distinguish:
 
 Human blocking findings may become enforcement inputs only when the related gate is intentionally promoted. Bot findings remain advisory unless explicitly promoted by governance decision.
 
+## Issue mutation and closeout permission
+
+Default deny for Cursor: do not close, reopen, relabel, assign, milestone, project-board mutate, or otherwise change issue state unless the **active source issue explicitly grants** that exact action for a **named** issue.
+
+| Actor | Typical closeout mutation | Rule |
+| --- | --- | --- |
+| Cursor | Close / reopen / relabel / state change | Denied unless the active source issue grants it |
+| Atlas / controller | Close completed source issue; reconcile terminal labels | Allowed only on an authorized closeout path after clean verification |
+| Bill / ChatGPT | Any mutation | Owner authority |
+
+Merge is not closeout. A merged or component-integrated PR does not by itself authorize issue close, relabel, or queue advancement. Docs recommendations are not GitHub mutation authority.
+
+Full matrix: `/docs/ops/reports/issue-mutation-closeout-permission-1724.md`.
+
 ## Post-merge closeout policy
 
 Post-merge closeout must be single-owner and idempotent.
@@ -169,12 +183,12 @@ Post-merge closeout must be single-owner and idempotent.
 It should:
 
 - validate the merged PR;
-- reconcile the source issue;
+- reconcile the source issue **only when the closeout actor is authorized**;
 - record closeout evidence;
 - create an exception issue only when required;
 - avoid self-healing cascades and repeated mutation loops.
 
-Post-merge closeout on `main` remains the automatic closeout owner defined by repository CI. Component-branch integration does not by itself satisfy `main` post-merge closeout.
+Post-merge closeout on `main` remains the automatic closeout owner defined by repository CI. Component-branch integration does not by itself satisfy `main` post-merge closeout and does not authorize Cursor to close or relabel the source issue.
 
 ## Codex PR review policy
 

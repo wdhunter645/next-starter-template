@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: PMO workflow automation planning authority, Cursor queue-control boundaries, PR readiness rules, wave/run control concepts, and PMO Backlog promotion handoff for workflow automation
 Does Not Own: Workflow YAML implementation, runtime application behavior, D1 migrations, production secrets, GitHub issue mutation, or merge authority
 Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
-Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501, #1719, #1720, #1721, #1722, #1725, #1726
+Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501, #1719, #1720, #1721, #1722, #1723, #1724, #1725, #1726
 Last Reviewed: 2026-07-16
 ---
 
@@ -135,9 +135,13 @@ Batch review must preserve:
 
 ### Merge and issue mutation policy
 
-Cursor may not merge PRs, close issues, relabel issues, mark issue state, advance queues, create child issues, or mutate other program work unless the active source issue explicitly authorizes that action.
+Cursor may not merge PRs to `main`, close issues, relabel issues, mark issue state, advance queues, create child issues, or mutate other program work unless the active source issue explicitly authorizes that action.
+
+Non-`main` Model B component integration may proceed under `component-auto-integration` when the source issue authorizes it. That path still does not grant Cursor issue close/relabel authority.
 
 Docs may recommend future issue structure or label concepts. Recommendations are not permission to mutate GitHub state.
+
+Authoritative matrix: `/docs/ops/reports/issue-mutation-closeout-permission-1724.md`.
 
 ### Queue/wave model and labels
 

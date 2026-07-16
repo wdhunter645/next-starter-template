@@ -30,6 +30,14 @@ This document is a supporting governance reference. The canonical pull request p
 
 Full matrix: `/docs/ops/reports/pr-readiness-merge-authority-1723.md`.
 
+## Issue mutation (summary)
+
+- Cursor does not close, reopen, or relabel issues unless the active source issue explicitly grants that exact mutation.
+- Merge or component integration is not issue closeout.
+- Atlas/controller closeout mutations require an authorized closeout path after clean verification.
+
+Full matrix: `/docs/ops/reports/issue-mutation-closeout-permission-1724.md`.
+
 ## Source issue accounting
 
 Source issue accounting is governed by `/docs/governance/PR_PROCESS.md`.

@@ -52,13 +52,16 @@ the component branch for Tasks `#1723` or `#1724`.
 - [x] No new custom gates added
 - [x] No automatic merge to `main` authorized
 
-## Follow-up note (outside this PR allowlist)
+## Follow-up note
 
-`docs/reference/pmo/lgfc-cursor-execution-contract.md` and
-`docs/ops/reports/cursor-continuation-contract-matrix-1722.md` still contain
-older “protected governance `#1723`/`#1724`” phrasing from Task `#1722`. Clear
-that residual wording in Task `#1724` (allowlist includes `docs/reference/pmo/**`
-and `docs/ops/reports/**`).
+Residual “protected governance `#1723`/`#1724`” phrasing from Task `#1722` was
+cleared in Task `#1724` (allowlist includes `docs/reference/pmo/**` and
+`docs/ops/reports/**`). See
+`docs/ops/reports/issue-mutation-closeout-permission-1724.md`.
+
+`docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md`
+may still hold older dependency-map wording outside the `#1723`/`#1724`
+allowlists; clear in `#1726`/`#1727` when writable.
 
 ## Out of scope
 
