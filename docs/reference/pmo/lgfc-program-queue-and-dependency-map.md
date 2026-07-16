@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: Launched-program queue mode, dependency-map requirements, execution-mode selection, continue/halt decision rules, and dispatcher requirements for PMO-governed programs
 Does Not Own: Workflow YAML implementation, GitHub merge authority, issue mutation authority, ChatGPT account-level scheduled automation, or uncontrolled orchestrator label automation
 Canonical Reference: /docs/reference/pmo/lgfc-program-portfolio-model.md
-Related Issues: #2391, #2386, #2360, #2361, #2363, #2364, #1449, #1448, #1411, #1255, #1256, #1258, #1259, #1501, #1500, #1719, #1725
-Last Reviewed: 2026-07-08
+Related Issues: #2391, #2386, #2360, #2361, #2363, #2364, #1449, #1448, #1411, #1255, #1256, #1258, #1259, #1501, #1500, #1719, #1720, #1721, #1725
+Last Reviewed: 2026-07-16
 ---
 
 # LGFC Program Queue and Dependency Map
@@ -53,26 +53,31 @@ This document does not own:
   ChatGPT became capable of implementation. **Do not reopen #1500.** Reconciliation
   evidence for Priority #3 queue/wave and closeout planning is recorded in
   `docs/ops/reports/program-1500-queue-wave-reconciliation.md` (Task #1725).
-- Priority #3 program #1719 (PMO Governance / Workflow Automation Completion)
-  has child tasks #1720–#1727. Task #1725 reconciles Program #1500 against
-  queue/wave planning; remaining Priority #3 work belongs to #1719 and later
-  scoped child issues, not to Program #1500.
+- Priority #3 program #1719 (PMO Governance / Workflow Automation Completion) is
+  **Implementation Active** under continuous reduced-gate serial authorization
+  (2026-07-16). Project branch: `component/pmo-governance-workflow-automation`
+  (Model B / `component-auto-integration`). Task #1720 complete (PR #2543). Task
+  #1721 owns workflow-automation design migration / gap inventory. Task #1725 is
+  closed complete and must not be rerun. Remaining work belongs to #1719 children,
+  not to Program #1500.
 - `#1448` rebaseline is **closed complete**.
 - issue `#1411` is a **completed planning/control artifact** (completed,
   status:complete). It is not an open blocked program. Future execution work
   from that planning body requires a current open source issue and explicit
   launch authorization.
-- PMO automation **new execution** from the #1411 planning body remains blocked
-  until Program #1255 is completed and signed off.
+- Historical `#1411` planning does **not** block Program `#1719` execution after
+  the 2026-07-16 continuous authorization.
 - Queue markers such as labels, blocked-status text, dependency-map rows, and
   `CHATGPT HANDOFF` comments do not advance work by themselves. A launched queue
   requires a manual dispatcher, scheduled ChatGPT watch, or repo-native automation
   path defined in `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`.
-- Bill owns merge authority, launch gates, and destructive issue actions.
-- Atlas/ChatGPT owns governance review, queue conformance, batch verification, and
-  rebaseline authority.
-- Cursor may not merge, approve, close, relabel, advance queues, or mutate issue
-  state unless the active source issue explicitly authorizes that action.
+- Bill owns merge authority to `main`, launch gates, and destructive issue actions.
+- Atlas/ChatGPT owns governance review, queue conformance, batch verification,
+  rebaseline authority, and Atlas-controlled component integration for Model B.
+- Cursor may not merge to `main`, approve, close, relabel, advance queues, or mutate
+  issue state unless the active source issue explicitly authorizes that action.
+  Non-`main` component integration may proceed under source-issue
+  `component-auto-integration` rules when technically necessary checks pass.
 
 ## Intended Final State
 
@@ -199,9 +204,12 @@ Approval:
 
 | Child task | Plan path | Status |
 | --- | --- | --- |
-| Tasks 001–005 | `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md` | Open — serial predecessors; halt until each task PR merges |
-| Task 006 `#1725` | Same plan; reconciliation report `docs/ops/reports/program-1500-queue-wave-reconciliation.md` | Active reconciliation — Program #1500 closeout vs queue/wave model |
-| Tasks 007–008 | Same plan | Blocked — Task 007 halts until #1725 merges; Task 008 is terminal closeout |
+| Task 001 `#1720` | `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md`; report `docs/ops/reports/pmo-july-2026-authority-reconciliation-1720.md` | Complete — merged to `main` via PR #2543 |
+| Task 002 `#1721` | Same plan; report `docs/ops/reports/workflow-automation-design-gap-inventory-1721.md` | Active — component branch `component/pmo-governance-workflow-automation` |
+| Task 003 `#1722` | Same plan; cursor contract hardening | Authorized after #1721 component integration |
+| Tasks 004–005 `#1723`–`#1724` | Same plan | Authorized after predecessors; protected governance review on promotion path |
+| Task 006 `#1725` | Same plan; reconciliation report `docs/ops/reports/program-1500-queue-wave-reconciliation.md` | Complete — do not rerun |
+| Tasks 007–008 `#1726`–`#1727` | Same plan | Authorized after #1724; #1725 remains complete evidence; #1727 terminal |
 
 Program #1500 closeout is **not** an active queue lane. It is closed complete historical evidence consumed by Task #1725. Cursor must not rebuild #1500 workflow or closeout work without a new CI source issue.
 
