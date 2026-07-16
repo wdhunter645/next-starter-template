@@ -111,7 +111,7 @@ When a source issue specifies Model B / `component-auto-integration` and a non-`
 4. after technically necessary checks pass and no material defect remains, treat the PR as eligible for Atlas-controlled component integration;
 5. proceed to the authorized successor child without a new launch prompt when the source issue says so.
 
-**Hardening owner:** Task `#1722` must publish the authoritative continuation/stop matrix covering both paths. Until then, the active source issue’s delivery-model fields control.
+**Hardening owner:** Task `#1722` published the authoritative continuation/stop matrix in `docs/reference/pmo/lgfc-cursor-execution-contract.md` and `docs/ops/reports/cursor-continuation-contract-matrix-1722.md`. Active source-issue delivery-model fields still control each PR.
 
 Cursor continuation must support safe progress without converting component integration into `main` merge authority.
 

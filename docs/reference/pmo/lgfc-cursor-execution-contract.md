@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: Cursor execution permissions, continuation rules, PR handoff behavior, and issue-mutation boundaries for LGFC program tasks
 Does Not Own: Cursor product configuration, local developer environment, workflow implementation, GitHub merge authority, or GitHub issue mutation authority
 Canonical Reference: /docs/reference/pmo/lgfc-program-portfolio-model.md
-Related Issues: #1449, #1448, #1411, #1409, #1379, #1255, #1335, #1501, #1719, #1720, #1722, #2489
+Related Issues: #1449, #1448, #1411, #1409, #1379, #1255, #1335, #1501, #1719, #1720, #1721, #1722, #2489
 Last Reviewed: 2026-07-16
 ---
 
@@ -26,6 +26,8 @@ This document owns:
 
 - default Cursor permissions and prohibitions;
 - continuation rules when a PR becomes ready for review;
+- Model B / component-auto-integration continuation boundaries;
+- continuous reduced-gate serial continuation boundaries;
 - issue-comment bridge boundaries;
 - merge, close, relabel, queue, and issue-mutation limits;
 - required Cursor output for PMO-governed tasks.
@@ -35,7 +37,7 @@ This document does not own:
 - branch protection settings;
 - workflow YAML implementation;
 - production configuration or secrets;
-- human merge, closeout, launch-gate, or destructive-action authority.
+- human merge to `main`, closeout, launch-gate, or destructive-action authority.
 
 ## Current Known Truth
 
@@ -43,7 +45,9 @@ This document does not own:
   not authorize current execution. Remaining PMO governance / workflow automation
   work executes under Program `#1719` when authorized.
 - Program `#1719` is Implementation Active under continuous reduced-gate serial
-  authorization (2026-07-16). Hardening of this contract is Task `#1722`.
+  authorization (2026-07-16). Project branch:
+  `component/pmo-governance-workflow-automation`. Tasks `#1720` and `#1721` are
+  complete. Task `#1722` owns this contract matrix.
 - Program `#1255` remains active and must not be blocked, closed, relabeled,
   or otherwise mutated by Priority #3 docs work.
 - Completed Program 1 cycle `#1335` is historical evidence only and is not a
@@ -51,25 +55,28 @@ This document does not own:
 - Issues `#1417`–`#1424` are stale historical evidence only; do not mutate.
 - Cursor may execute bounded repository work only through an active source issue,
   file allowlist, validation requirement, and PR handoff.
-- Cursor may not merge PRs, close issues, relabel issues, create child issues,
-  advance queues, or mutate issue state unless the active source issue explicitly
-  authorizes that action.
+- **Merge to `main` requires Bill/ChatGPT approval.** Cursor does not self-approve
+  or self-merge to `main`.
+- **Non-`main` component integration** may proceed under source-issue
+  `component-auto-integration` / Model B rules when technically necessary checks
+  pass and no material defect remains.
 - Program issue number and source issue body control execution authority.
 - Labels, merge state, closed predecessor issues, queue order, open PR order, or
   branch availability alone do not authorize execution.
 - Continuous reduced-gate authorization on a program issue permits serial child
-  continuation after predecessor merge and clean post-merge verification; it does
-  not grant merge, issue-mutation, or protected-action authority.
+  continuation after predecessor integration is clean; it does not grant `main`
+  merge, issue-mutation, or protected-action authority.
 
 ## Intended Final State
 
 - Cursor can safely move work forward through implementation, validation,
   PR-body evidence, commit, push, and PR update.
-- Cursor stops at the authorized review handoff when a PR is ready for review.
-- Atlas and Bill retain review, merge, launch-gate, queue-control, and
+- Cursor applies the correct handoff path for the active delivery model
+  (`main` review vs component-auto-integration).
+- Atlas and Bill retain `main` merge, launch-gate, queue-control, and
   destructive-action authority.
-- Workflow automation can later encode these rules without changing the human
-  authority model.
+- Workflow automation can encode these rules without changing the human
+  authority model for `main`.
 
 ## Default Permissions
 
@@ -82,16 +89,20 @@ Cursor may:
 - open or update a PR for the active task when the source issue or an explicit
   workflow instruction authorizes it;
 - report validation results and unresolved blockers in the PR body or handoff
-  response.
+  response;
+- when the source issue specifies Model B / `component-auto-integration` and a
+  non-`main` project branch: complete technical remediation and allow
+  Atlas-controlled component integration / authorized non-`main` auto-merge after
+  required technical checks pass.
 
 Cursor may not, by default:
 
-- merge PRs;
+- merge PRs to `main`;
 - close issues;
 - relabel issues;
 - create implementation child issues;
 - mark or mutate issue state;
-- advance queues;
+- advance queues outside an authorized continuous reduced-gate or Model B rule;
 - mutate Program `#1255` issues while Priority #3 (`#1719`) work is active;
 - modify workflow YAML, application/runtime code, D1 migrations, production
   configuration, or secrets outside the task scope;
@@ -100,21 +111,43 @@ Cursor may not, by default:
 
 ## Execution Modes
 
-LGFC uses two execution modes defined in
-`/docs/reference/pmo/lgfc-program-queue-and-dependency-map.md`:
+LGFC uses these execution modes (queue detail in
+`/docs/reference/pmo/lgfc-program-queue-and-dependency-map.md`):
 
 | Mode | When | Next-task authority |
 | --- | --- | --- |
 | One-task handoff | One-off tasks; programs without an approved dependency map | Explicit `LOCAL CURSOR RESUME` comment with `agent:cursor` + `handoff:ready`, or a new source issue per task |
 | Launched-program queue | Launched program with an approved dependency map | Approved map + issue predecessor/successor fields + halt/resume conditions |
+| Continuous reduced-gate serial | Program issue records continuous serial authorization (example: `#1719`) | Predecessor PR integrated + clean verification; no new launch prompt between authorized children |
+| Model B component-auto-integration | Source issue names project branch `component/**`, delivery model `B-child`, approval profile `component-auto-integration` | After technical checks pass, integrate to project branch; proceed to successor when issue says so |
 
-In both modes, one source issue maps to one PR. Queue mode governs which task is
-authorized next, not whether multiple tasks share one PR.
+In all modes, one source issue maps to one PR. Queue/continuation mode governs
+which task is authorized next, not whether multiple tasks share one PR.
 
 Cursor must not apply universal one-task-only rules in a way that blocks
-launched prepared program queues. Cursor must not treat launched-program queue
-mode as permission to merge, close, relabel, or advance queues without explicit
-authorization.
+launched prepared program queues or continuous reduced-gate chains. Cursor must
+not treat any mode as permission to merge to `main`, close, or relabel without
+explicit authorization.
+
+## Continuation / stop matrix (authoritative)
+
+| Path | PR base | Cursor stop / handoff | Who merges | Successor child |
+| --- | --- | --- | --- | --- |
+| Default / Model A to `main` | `main` | `READY FOR REVIEW` for Atlas/Bill walkthrough | Bill/ChatGPT only | Requires explicit resume / launch unless continuous reduced-gate applies |
+| Continuous reduced-gate serial to `main` | `main` | `READY FOR REVIEW`; wait for Bill/ChatGPT merge + clean post-merge | Bill/ChatGPT only | After merge + clean post-merge, start next authorized child without new launch prompt |
+| Model B component-auto-integration | `component/**` | No human review handoff between authorized children; finish validation and PR-body evidence | Atlas-controlled component integration / authorized non-`main` auto-merge | After clean component integration, start next authorized child without new launch prompt |
+| Model B promotion to `main` | `main` | `READY FOR REVIEW` / protected review as required | Bill/ChatGPT only | Per promotion issue |
+| Protected governance child (`#1723`, `#1724`) | As named by issue | Complete PR; require independent governance review before merge/promotion | Bill/ChatGPT (and Chat review when required) | After authorized merge/integration |
+
+Material stop conditions (all paths): unresolved authority conflict; required work
+outside allowlist; unauthorized workflow/CI/runtime/secret/production change;
+material design or prioritization decision; required checks unremediable in
+scope; unclean predecessor integration.
+
+Do **not** stop for routine PR transitions, normal review findings,
+documentation placement, or correctable validation failures.
+
+Durable matrix evidence: `docs/ops/reports/cursor-continuation-contract-matrix-1722.md`.
 
 ## Continuation Rule
 
@@ -122,27 +155,63 @@ Cursor may continue forward while all of the following are true:
 
 1. The work remains inside the active source issue.
 2. The changed files match the active allowlist.
-3. No explicit stop condition has been reached.
+3. No explicit material stop condition has been reached.
 4. Validation can be run or a concrete external blocker can be documented.
-5. No merge, close, relabel, queue, or issue-state mutation is required.
-6. For launched-program queue mode: the dependency map and active issue
-   predecessor, stage-before-merge, and halt/resume fields permit continuation.
+5. No unauthorized merge-to-`main`, close, relabel, queue, or issue-state mutation is required.
+6. For launched-program queue / continuous reduced-gate mode: the dependency map
+   and active issue predecessor, stage-before-merge, and halt/resume fields
+   permit continuation.
 
-When a PR is ready for review, Cursor continues only far enough to:
+### When PR base is `main`
+
+Cursor continues only far enough to:
 
 1. run required validation;
 2. inspect the final diff and file allowlist;
 3. update or create the PR body with exact evidence, including queue reporting
-   fields when the program uses launched-program queue mode;
-4. commit and push any final documentation-only fixes;
+   fields when applicable;
+4. commit and push any final in-scope fixes;
 5. set the PR handoff status to `READY FOR REVIEW`;
 6. stop for Atlas/Bill walkthrough.
 
-PR readiness is not merge authority.
+`READY FOR REVIEW` is not merge authority for `main`.
+
+### When PR base is `component/**` under Model B / component-auto-integration
+
+Cursor continues only far enough to:
+
+1. run technically necessary validation;
+2. keep the delivery-profile metadata complete (`B-child`, `component-child`,
+   component branch/master, etc.);
+3. remediate technical, safety, scope, or authority defects in scope;
+4. enable or allow authorized non-`main` auto-merge / Atlas-controlled component
+   integration when checks pass;
+5. after clean component integration, begin the authorized successor child when
+   the source issue / program continuous rule says so.
+
+Do not invent custom approval gates. Advisory findings are not blockers unless
+they identify a real technical, safety, scope, or authority defect.
 
 ## Active Program Issue Child-Task Continuation
 
-### Program #1255 (current active program)
+### Program #1719 (Implementation Active — continuous reduced-gate + Model B)
+
+Program `#1719` authorizes continuous reduced-gate serial execution of remaining
+children on project branch `component/pmo-governance-workflow-automation`.
+
+Rules:
+
+1. One local Cursor agent; one child issue; one PR.
+2. After predecessor component integration is clean, begin the next authorized
+   child without a new Bill/Atlas launch prompt.
+3. `#1725` is complete — do not rerun.
+4. `#1723` and `#1724` remain protected governance review points before
+   merge/promotion affecting those scopes.
+5. Promotion of the component branch to `main` remains Bill/ChatGPT authority.
+6. Gap inventory successor inputs live in
+   `docs/ops/reports/workflow-automation-design-gap-inventory-1721.md`.
+
+### Program #1255 (current active website program)
 
 For active Program #1255, Cursor may continue from one child task to another only
 when the next child issue contains the latest valid Atlas, Bill, or controller
@@ -169,7 +238,7 @@ program reference `#1255`, parent project reference when applicable, dependency
 or prior-task criteria, blocking criteria, required source documents, exact
 scope, hard out-of-scope boundaries, expected file areas or a file-touch
 allowlist, validation expectations, exact PR source issue line requirement, no
-merge authority, and no issue close or relabel authority unless explicitly
+`main` merge authority, and no issue close or relabel authority unless explicitly
 granted.
 
 ### Future active program issues
@@ -207,11 +276,13 @@ Cursor must stop and report when:
 - the requested change would touch files outside the allowlist;
 - the task requires workflow YAML, runtime, D1, production configuration, or
   secret changes not explicitly authorized;
-- issue closure, relabeling, queue advancement, child issue creation, or merge is
-  needed;
-- Program #1255 state would be mutated by Program #1411 planning work;
+- issue closure, relabeling, unauthorized queue advancement, child issue
+  creation, or merge to `main` is needed without explicit authorization;
+- Program `#1255` state would be mutated by Priority #3 docs work;
 - validation fails and the root cause is outside the authorized scope;
-- more than one source issue would be needed for the PR body.
+- more than one source issue would be needed for the PR body;
+- a material design, prioritization, credential, or unresolved authority
+  decision is required.
 
 ## PR Readiness and Batch Review
 
@@ -221,15 +292,17 @@ For each PR, Cursor owns:
 - file-touch allowlist evidence;
 - docs-only or implementation-scope assertion;
 - exact validation commands and outcomes;
+- delivery-profile metadata when Model B / component paths apply;
 - reviewer and bot disposition when present, including `review-comment:<id>` lines for every actionable trusted reviewer comment and explicit outdated-thread disposition;
 - clear blocker reporting.
 
-Atlas owns governance review, source-issue accounting, queue conformance, and
-review-thread disposition. Bill owns protected merges, launch gates, destructive
-issue actions, production-sensitive decisions, and strategy exceptions.
+Atlas owns governance review, source-issue accounting, queue conformance,
+component integration control for Model B, and review-thread disposition. Bill
+owns protected merges to `main`, launch gates, destructive issue actions,
+production-sensitive decisions, and strategy exceptions.
 
 Batch review may group related PRs for human efficiency, but it must not convert
-Cursor into the merge authority or allow Cursor to mutate issue state.
+Cursor into the `main` merge authority or allow Cursor to mutate issue state.
 
 ## PMO Issue-Comment Bridge
 
