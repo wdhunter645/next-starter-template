@@ -5,8 +5,8 @@ Authority Level: Domain Policy
 Owns: Model A production delivery, Model B child integration and promotion, approval profiles, rollback policy boundaries, and release-unit promotion rules
 Does Not Own: Agent role contracts, PMO sizing, CI gate implementation, environment isolation proof, or emergency stabilization procedures
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2495
-Last Reviewed: 2026-07-13
+Related Issues: #2495, #1723
+Last Reviewed: 2026-07-16
 ---
 
 # Delivery and Release
@@ -97,6 +97,8 @@ Child PRs do **not** require whole-feature production approval, production close
 
 Protected-change child PRs require Chat review before integration. Cursor must not self-approve protected child work.
 
+Governance documentation on an authorized project component branch is version-controlled project work. Edits under `docs/governance/**` (or other documentation paths) do **not** by themselves select `protected-change-review` or create an intermediate human gate. See `/docs/governance/PR_PROCESS.md` documentation authority levels.
+
 ### Model B promotion
 
 Promotion activates production after all intended child increments are integrated and verified.
@@ -147,7 +149,7 @@ See `docs/reference/delivery/delivery-and-rollback-profiles.md` for the evidence
 | Model B promotion | Chat | Bill | No |
 | Emergency recovery | Chat | Bill | No |
 
-Cursor implements and remediates but never approves or merges its own work.
+Cursor implements and remediates but never approves or merges its own work. Cursor does not merge to `main`.
 
 ## Protected changes
 
@@ -159,6 +161,8 @@ The following child changes require Chat review before component integration:
 - deployment workflow or production binding;
 - branch protection or governance enforcement;
 - irreversible external-service mutation.
+
+Documentation-only edits, including governance documentation, are **not** listed above and do not inherit protected-change status merely from folder location. Program `#1719` Tasks `#1723` and `#1724` follow `component-auto-integration` on the project component branch; repository-wide authority still requires Bill/ChatGPT-approved promotion to `main`.
 
 The protected-path baseline is defined in `docs/reference/ci/delivery-profile-contract.md`.
 

@@ -13,8 +13,8 @@ Supporting References:
   - /docs/explanation/ci/lgfc-reviewer-lifecycle-redesign.md
   - /docs/reference/ci/merge-protection-surface.md
   - /docs/reference/ci/pr-workflow-ci-inventory.md
-Related issues: #2175, #2208, #2217
-Last Reviewed: 2026-07-04
+Related issues: #2175, #2208, #2217, #1719, #1722, #1723
+Last Reviewed: 2026-07-16
 ---
 
 # Pull Request Process
@@ -42,6 +42,8 @@ All older PR-process guidance is superseded by this document unless it is explic
 8. Advisory checks must prove low-noise behavior before promotion.
 9. Post-merge closeout must be single-owner and idempotent.
 10. Codex must not be configured as an automatic PR reviewer.
+11. Merge to `main` requires Bill/ChatGPT approval. Cursor does not self-approve or self-merge to `main`.
+12. Non-`main` component project branches may use Model B / `component-auto-integration` when the source issue authorizes it; that does not authorize promotion to `main`.
 
 ## Required stable PR body facts
 
@@ -57,6 +59,8 @@ Every PR should use `.github/pull_request_template.md` and include:
 - acceptance criteria;
 - follow-up issue declaration;
 - reviewer/bot review attestation.
+
+Model B / component child PRs must also include delivery-profile fields required by repository preflight (`Size`, `Delivery model`, `Change mode`, `Target environment`, `Approval profile`, `Gate profile`, `Rollback profile`, `Component branch`, `Component master`).
 
 ## Prohibited PR body authority
 
@@ -85,6 +89,51 @@ Current classes include:
 - `ops`
 - `mixed-approved`
 
+## Documentation authority levels
+
+LGFC keeps two documentation authority levels during Model B project construction:
+
+| Level | Branch / surface | Authority meaning |
+| --- | --- | --- |
+| Project construction authority | `component/<project>` (for Program `#1719`: `component/pmo-governance-workflow-automation`) | Version-controlled authority for construction and successor execution **within that project** |
+| Repository-wide authority | `main` | Default authority for the whole repository outside the active project branch |
+
+Rules:
+
+1. Documentation integrated into the project component branch is versioned project authority for that program’s remaining child work.
+2. Documentation on `main` remains repository-wide authority.
+3. Project-branch documentation becomes repository-wide authority **only** through a Bill/ChatGPT-approved promotion PR to `main`.
+4. If another active workstream must consume an updated rule before the project finishes, use a **separate bounded documentation promotion PR** to `main`, then synchronize the project branch.
+5. Documentation location, governance-folder placement, or canonical status does **not** by itself create an intermediate human-review gate on the component branch.
+6. Cursor does not self-approve or self-merge. Cursor does not merge to `main`.
+
+## Merge authority and readiness
+
+| Target | Readiness meaning | Merge / integration authority |
+| --- | --- | --- |
+| `main` | `READY FOR REVIEW` means ready for human/Atlas inspection; not merge authority | Bill/ChatGPT only |
+| `component/**` under Model B / `component-auto-integration` | Technically necessary checks pass; no material defect | Atlas-controlled component integration / authorized non-`main` auto-merge |
+| Promotion of component work to `main` | Promotion PR ready for Bill/ChatGPT decision | Bill/ChatGPT only |
+
+`READY FOR REVIEW` never authorizes Cursor to merge to `main`.
+
+Program `#1719` Tasks `#1723` and `#1724` are component-branch documentation work. They do **not** require an intermediate human gate merely because they modify governance documentation. They integrate under `component-auto-integration` when technically necessary checks pass. Repository-wide effect still waits for Bill/ChatGPT-approved promotion to `main` (or a separate early documentation promotion when required).
+
+Continuation/stop detail for Cursor: `/docs/reference/pmo/lgfc-cursor-execution-contract.md` and `/docs/ops/reports/cursor-continuation-contract-matrix-1722.md`.
+
+Task `#1723` evidence: `/docs/ops/reports/pr-readiness-merge-authority-1723.md`.
+
+## Batch review control
+
+Batch review may group related PRs for human efficiency. Batch review must:
+
+- preserve one source issue per PR;
+- preserve Bill/ChatGPT authority for `main` merges and other Bill-protected actions;
+- preserve Atlas authority for Model B component integration control;
+- not convert Cursor into `main` merge authority;
+- not invent an intermediate human gate for ordinary governance-doc edits on an authorized component branch;
+- not allow Cursor to close, reopen, or relabel issues unless the source issue explicitly grants that authority.
+
 ## CI policy
 
 CI must use one owner per concern. Required checks must be deterministic and low-noise.
@@ -95,6 +144,8 @@ During #2175 / #2208 rebuild, PR-process gates may remain marker-only, advisory,
 2. at least one clean PR validates it;
 3. the required-check / branch-protection surface is updated;
 4. the current-state docs are updated.
+
+Do not create new custom gates by default. Add custom gates only when production risk or repository safety specifically requires them.
 
 ## Reviewer lifecycle policy
 
@@ -122,6 +173,8 @@ It should:
 - record closeout evidence;
 - create an exception issue only when required;
 - avoid self-healing cascades and repeated mutation loops.
+
+Post-merge closeout on `main` remains the automatic closeout owner defined by repository CI. Component-branch integration does not by itself satisfy `main` post-merge closeout.
 
 ## Codex PR review policy
 
