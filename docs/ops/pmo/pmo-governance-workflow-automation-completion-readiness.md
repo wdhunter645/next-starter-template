@@ -11,7 +11,7 @@ Last Reviewed: 2026-07-16
 
 # PMO Governance / Workflow Automation Completion Readiness
 
-> **Launch state (2026-07-16):** Program #1719 is Implementation Active under continuous reduced-gate serial authorization. Cursor executes remaining child issues in order after predecessor merge and clean post-merge verification. Cursor stops each child at `READY FOR REVIEW` and may not approve, merge, or mutate issues.
+> **Construction state (2026-07-16):** Program #1719 documentation construction on the project component branch is complete through Task #1727. Closeout packet: `docs/ops/reports/pmo-governance-workflow-automation-closeout-1727.md`. Bill/Atlas acceptance and Bill/ChatGPT-approved promotion to `main` remain outstanding. Cursor may not approve, merge to `main`, or mutate issues.
 
 ## Purpose
 
@@ -38,11 +38,11 @@ This document does not launch implementation, create child issues, authorize Cur
 
 ## Current known truth
 
-- Program #1719 is **Implementation Active** (Bill continuous reduced-gate authorization, 2026-07-16). Active child advances through the serial chain; #1725 closed complete.
+- Program #1719 documentation construction is **complete on the component branch** through Task #1727. #1725 closed complete earlier and was not rerun.
 - #1411 is closed and completed as a planning/control artifact (historical evidence only).
 - #1417–#1424 exist as stale historical task issues with older PMO terminology; they are evidence only and must not be mutated or treated as current source issues.
 - Program #1500 closed complete; Task #1725 recorded queue/wave and closeout reconciliation.
-- Cursor is the implementation agent for the authorized serial chain. Governance documentation on the project component branch is version-controlled project work and does not require an intermediate human gate solely because governance files change. Promotion to `main` remains Bill/ChatGPT authority.
+- Cursor completed the authorized serial docs chain. Promotion to `main` remains Bill/ChatGPT authority. Deferred workflow/CI candidates require new source issues (`#1726` / `#1727` reports).
 
 ## Intended final state
 
@@ -65,7 +65,7 @@ The intended final state before implementation launch is:
 | PMO source | PMO Backlog ranks 3–10 |
 | Source issue | #1719 |
 | Execution agent after launch | Cursor, under continuous reduced-gate + Model B `component-auto-integration` on the project component branch; Bill/ChatGPT for promotion to `main` |
-| Current readiness | Implementation Active — continuous reduced-gate serial execution authorized 2026-07-16 |
+| Current readiness | Construction complete (component) — Bill/Atlas acceptance + promotion to `main` pending |
 | Primary implementation plan | `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md` |
 | Primary governance authority | `docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md` |
 | Product surface | PMO governance, workflow automation design, queue/closeout controls, PR readiness, and execution contracts |
@@ -133,6 +133,6 @@ Historical planning-era preconditions (queue behind #1255/#1685/#1700) are super
 
 ## Readiness conclusion
 
-Priority #3 is an **Implementation Active** PMO July 2026 program with master issue #1719 and child task issues #1720 through #1727.
+Priority #3 is a **Construction complete (component)** PMO July 2026 program with master issue #1719 and child task issues #1720 through #1727 dispositioned on `component/pmo-governance-workflow-automation`.
 
-Cursor is authorized to execute the remaining serial chain under #1719 continuous reduced-gate rules. After #1726 component integration, next authorized child is #1727.
+Bill/Atlas should accept the closeout packet in `docs/ops/reports/pmo-governance-workflow-automation-closeout-1727.md`. Repository-wide authority requires Bill/ChatGPT-approved promotion to `main`. Cursor must not close program issues or merge to `main` from this package.

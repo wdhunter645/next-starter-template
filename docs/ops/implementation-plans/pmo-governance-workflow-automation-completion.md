@@ -4,7 +4,7 @@ Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and revi
 Authority Level: Operational Plan
 Owns: Cursor task sequence, child-project boundaries, validation model, file-area expectations, and closeout rules for PMO Governance / Workflow Automation Completion
 Does Not Own: Runtime implementation before task issues, workflow code before explicit task authorization, CI script changes before explicit task authorization, issue creation before launch authorization, merge authority, unauthorized issue mutation
-Status: implementation-active
+Status: construction-complete-component
 project: pmo-governance-workflow-automation-completion
 Owner: Atlas
 Execution Mode: cursor-continuous-reduced-gate-serial
@@ -17,7 +17,7 @@ Last Reviewed: 2026-07-16
 
 # PMO Governance / Workflow Automation Completion Implementation Plan
 
-> **Launch state (2026-07-16):** Bill authorized continuous reduced-gate serial execution for Program #1719. Cursor may execute remaining child issues in order after each predecessor PR merges and post-merge verification is clean. A separate Bill/Atlas launch prompt is not required between authorized child tasks. Cursor stops each child at `READY FOR REVIEW` and may not approve, merge, close, reopen, or relabel issues.
+> **Construction state (2026-07-16):** Program #1719 documentation construction on `component/pmo-governance-workflow-automation` is complete through Task #1727 (`docs/ops/reports/pmo-governance-workflow-automation-closeout-1727.md`). Task #1725 was previously complete and was not rerun. Cursor may not approve, merge to `main`, close, reopen, or relabel issues. Bill/Atlas acceptance and Bill/ChatGPT-approved promotion to `main` remain outstanding.
 
 ## Purpose
 
@@ -43,12 +43,13 @@ This plan does not authorize this documentation PR to change workflows, CI scrip
 
 ## Current known truth
 
-- Program #1719 is **Implementation Active** under continuous reduced-gate serial authorization recorded on #1719 (2026-07-16).
-- Active child: #1720 (Task 001). Successor chain: #1721 → #1722 → #1723 (protected governance review) → #1724 (protected governance review) → #1726 → #1727. Task #1725 is **closed complete** and must not be rerun.
+- Program #1719 documentation construction is **complete on the component branch** through Task #1727 (2026-07-16).
+- Child chain disposition: #1720 → #1721 → #1722 → #1723 → #1724 → (#1725 complete, skipped) → #1726 → #1727. Tasks #1723/#1724 used `component-auto-integration` (no intermediate human gate for governance docs alone).
 - #1411 is closed complete as a planning/control artifact (historical evidence only).
 - #1417–#1424 are stale historical task issues and must not be treated as current executable source issues; do not mutate them.
 - #1500 is closed complete; Task #1725 recorded queue/wave and closeout reconciliation evidence.
-- Cursor is the implementation agent for the authorized serial chain, with trusted reviewer expectations for protected governance/CI areas (#1723, #1724).
+- Cursor remains the implementation agent for any Bill-authorized follow-on; promotion to `main` is Bill/ChatGPT only.
+- Deferred workflow/CI candidates are listed in `#1726` / `#1727` reports and require new source issues.
 
 ## Intended final state
 
@@ -109,8 +110,8 @@ Cursor must reconcile before building. Existing PMO docs, governance docs, workf
 | 001 (#1720) | #1719 continuous authorization (2026-07-16) | 002 | yes | Material allowlist/authority conflict | Start now |
 | 002 (#1721) | 001 merged + post-merge clean | 003 | yes | Predecessor not clean | Automatically authorized |
 | 003 (#1722) | 002 merged + post-merge clean | 004 | yes | Predecessor not clean | Automatically authorized |
-| 004 (#1723) | 003 merged + post-merge clean | 005 | yes | Predecessor not clean | Automatically authorized; protected governance review |
-| 005 (#1724) | 004 merged + post-merge clean | 007 | yes | Predecessor not clean | Automatically authorized; protected governance review |
+| 004 (#1723) | 003 merged + post-merge clean | 005 | yes | Predecessor not clean | Automatically authorized; component-auto-integration |
+| 005 (#1724) | 004 merged + post-merge clean | 007 | yes | Predecessor not clean | Automatically authorized; component-auto-integration |
 | 006 (#1725) | — | — | — | — | **COMPLETE — do not rerun** |
 | 007 (#1726) | 005 merged + post-merge clean; #1725 remains complete | 008 | yes | Predecessor not clean | Automatically authorized |
 | 008 (#1727) | 001–007 complete or explicitly dispositioned | terminal | yes | Evidence package incomplete | Automatically authorized; terminal review |
@@ -137,7 +138,7 @@ Expected validation categories:
 
 Default stop condition per child: GitHub `READY FOR REVIEW`.
 
-Protected review points remain for #1723 and #1724. Material stop/escalation conditions are those listed on #1719 (authority conflict, allowlist overrun, unauthorized protected-surface change, material design/priority decision, unremediable required checks, unclean predecessor).
+Protected review points for intermediate governance-doc gates on `#1723`/`#1724` are **obsolete**. Material stop/escalation conditions remain those listed on #1719 (authority conflict, allowlist overrun, unauthorized protected-surface change, material design/priority decision, unremediable required checks, unclean predecessor). Promotion to `main` remains Bill/ChatGPT authority.
 
 ## Closeout rules
 
