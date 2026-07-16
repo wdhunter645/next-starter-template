@@ -116,3 +116,90 @@ export function missingEvidenceFields(fields, required) {
     return !value || value === 'no' || value === 'missing' || value === 'tbd';
   });
 }
+
+/**
+ * Deterministic, non-mutating ordered rollback dry-run.
+ * Each step is a pure state transition; no GitHub/Cloudflare/D1 side effects.
+ */
+export function runOrderedRollbackSimulation({
+  initialState = {},
+  steps = [],
+  expectedAfterEach = [],
+  expectedFinal = null,
+} = {}) {
+  if (!Array.isArray(steps) || steps.length === 0) {
+    throw new Error('rollback simulation requires an ordered step list');
+  }
+
+  let state = { ...initialState, history: [] };
+  const snapshots = [];
+
+  for (let index = 0; index < steps.length; index += 1) {
+    const step = steps[index];
+    if (typeof step.apply !== 'function') {
+      throw new Error(`rollback step ${index} is missing apply()`);
+    }
+    state = step.apply({ ...state });
+    state = {
+      ...state,
+      history: [...(state.history || []), step.id],
+    };
+    snapshots.push({ afterStep: step.id, state: { ...state } });
+
+    const expected = expectedAfterEach[index];
+    if (expected) {
+      for (const [key, value] of Object.entries(expected)) {
+        if (state[key] !== value) {
+          throw new Error(
+            `after step ${step.id}: expected ${key}=${JSON.stringify(value)} but got ${JSON.stringify(state[key])}`,
+          );
+        }
+      }
+    }
+  }
+
+  if (expectedFinal) {
+    for (const [key, value] of Object.entries(expectedFinal)) {
+      if (state[key] !== value) {
+        throw new Error(
+          `final state: expected ${key}=${JSON.stringify(value)} but got ${JSON.stringify(state[key])}`,
+        );
+      }
+    }
+  }
+
+  return { ok: true, finalState: state, snapshots };
+}
+
+export function assertRollbackFailsWhenOmitted({ initialState, steps, omitStepId }) {
+  const reduced = steps.filter((step) => step.id !== omitStepId);
+  try {
+    runOrderedRollbackSimulation({
+      initialState,
+      steps: reduced,
+      expectedFinal: { verified: true },
+    });
+  } catch {
+    return true;
+  }
+  throw new Error(`expected omission of ${omitStepId} to fail verification`);
+}
+
+export function assertRollbackFailsWhenReordered({ initialState, steps }) {
+  if (steps.length < 2) {
+    throw new Error('reorder assertion requires at least two steps');
+  }
+  // Swap the first two steps and rely on step preconditions/dependencies —
+  // do not inject original-order expectations that would force a false fail.
+  const reordered = [steps[1], steps[0], ...steps.slice(2)];
+  try {
+    runOrderedRollbackSimulation({
+      initialState,
+      steps: reordered,
+      expectedFinal: { verified: true },
+    });
+  } catch {
+    return true;
+  }
+  throw new Error('expected reordered rollback steps to fail due to step preconditions');
+}

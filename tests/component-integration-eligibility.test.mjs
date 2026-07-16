@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import {
   COMPONENT_STATES,
   HOLD_LABELS,
+  assessChecks,
+  assessReviews,
+  deriveComponentStateFromCombinedStatus,
   evaluateComponentIntegration,
+  selectAuthoritativeChecks,
 } from '../scripts/ci/component_integration_eligibility.mjs';
 
 function eligibleProfile(overrides = {}) {
@@ -36,6 +40,7 @@ function evaluate(overrides = {}, options = {}) {
     componentState: options.componentState || 'green',
     labels: options.labels || [],
     changedFiles: options.changedFiles || ['src/components/example.tsx'],
+    headSha: options.headSha || profile.headSha || 'abc123',
   });
 }
 
@@ -194,5 +199,130 @@ describe('component integration positive fixture', () => {
       componentMaster: '#2477',
       protectedChange: false,
     });
+  });
+});
+
+describe('component integration check/review truthfulness (#2536)', () => {
+  it('ignores self, advisory, stale, and unrelated check runs', () => {
+    const authoritative = selectAuthoritativeChecks([
+      { name: 'Component Integration Eligibility', status: 'in_progress', id: 1 },
+      { name: 'component-child-integration', status: 'queued', id: 2 },
+      { name: 'cursor-review', conclusion: 'failure', completed_at: '2026-07-15T12:00:00Z', id: 3 },
+      { name: 'DIATAXIS Folder Authority', conclusion: 'failure', completed_at: '2026-07-15T12:00:01Z', id: 4 },
+      { name: 'Cloudflare Pages', status: 'in_progress', id: 5 },
+      {
+        name: 'GATE — Quality Checks',
+        conclusion: 'failure',
+        completed_at: '2026-07-15T11:00:00Z',
+        id: 6,
+      },
+      {
+        name: 'GATE — Quality Checks',
+        conclusion: 'success',
+        completed_at: '2026-07-15T12:30:00Z',
+        id: 7,
+      },
+      {
+        name: 'GATE — Diff Scope',
+        conclusion: 'success',
+        completed_at: '2026-07-15T12:30:01Z',
+        id: 8,
+      },
+    ]);
+
+    expect(authoritative.map((check) => check.name).sort()).toEqual([
+      'GATE — Diff Scope',
+      'GATE — Quality Checks',
+    ]);
+    expect(authoritative.find((check) => check.name === 'GATE — Quality Checks')?.conclusion).toBe('success');
+    expect(assessChecks(authoritative).failed).toEqual([]);
+    expect(assessChecks(authoritative).pending).toEqual([]);
+  });
+
+  it('reproduces the #2527-style false-block and proves settle eligibility', () => {
+    const artifactLikeChecks = [
+      { name: 'component-child-integration', status: 'in_progress', id: 1 },
+      { name: 'Component Integration Eligibility', status: 'queued', id: 2 },
+      { name: 'validate-diataxis-authority', status: 'in_progress', id: 3 },
+      { name: 'reviewer-response-completion', status: 'in_progress', id: 4 },
+      { name: 'cursor-review', status: 'queued', id: 5 },
+      {
+        name: 'GATE — Quality Checks',
+        conclusion: 'success',
+        completed_at: '2026-07-15T13:00:00Z',
+        id: 6,
+      },
+      {
+        name: 'GATE — Diff Scope',
+        conclusion: 'success',
+        completed_at: '2026-07-15T13:00:01Z',
+        id: 7,
+      },
+      {
+        name: 'GATE — Secret Scan',
+        conclusion: 'success',
+        completed_at: '2026-07-15T13:00:02Z',
+        id: 8,
+      },
+    ];
+
+    const settled = evaluate({
+      profile: { headSha: 'abc123' },
+    }, {
+      checks: artifactLikeChecks,
+      reviews: [
+        {
+          state: 'CHANGES_REQUESTED',
+          commit_id: 'oldsha',
+          submitted_at: '2026-07-15T10:00:00Z',
+          user: { login: 'copilot-pull-request-reviewer' },
+        },
+      ],
+      componentState: deriveComponentStateFromCombinedStatus('pending'),
+    });
+
+    expect(deriveComponentStateFromCombinedStatus('pending')).toBe('green');
+    expect(settled.eligible).toBe(true);
+    expect(settled.requiresChatReview).toBe(false);
+    expect(settled.blockedReasons).toEqual([]);
+  });
+
+  it('blocks only current-head CHANGES_REQUESTED after latest-by-author selection', () => {
+    const headSha = 'headsha';
+    const blocked = assessReviews([
+      {
+        state: 'CHANGES_REQUESTED',
+        commit_id: headSha,
+        submitted_at: '2026-07-15T12:00:00Z',
+        user: { login: 'reviewer' },
+      },
+    ], { headSha });
+    expect(blocked.map((reason) => reason.code)).toContain('changes_requested');
+
+    const cleared = assessReviews([
+      {
+        state: 'CHANGES_REQUESTED',
+        commit_id: 'old',
+        submitted_at: '2026-07-15T11:00:00Z',
+        user: { login: 'reviewer' },
+      },
+      {
+        state: 'APPROVED',
+        commit_id: headSha,
+        submitted_at: '2026-07-15T12:00:00Z',
+        user: { login: 'reviewer' },
+      },
+    ], { headSha });
+    expect(cleared).toEqual([]);
+  });
+
+  it('does not treat pending combined status as component hold', () => {
+    expect(deriveComponentStateFromCombinedStatus('pending')).toBe('green');
+    expect(deriveComponentStateFromCombinedStatus('failure')).toBe('red');
+    const held = evaluate({}, {
+      labels: [{ name: 'component-integration-hold' }],
+      componentState: 'green',
+    });
+    expect(held.blockedReasons.map((reason) => reason.code)).toContain('component_hold');
   });
 });

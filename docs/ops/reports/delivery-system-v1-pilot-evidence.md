@@ -13,14 +13,24 @@ Last Reviewed: 2026-07-15
 
 ## Status
 
-- Source issue: #2501
-- Working branch: `cursor/2501-integrated-pilot`
-- Child PR: #2527
+- Source issue: #2501 (closed completed)
+- Child PR: #2527 (merged)
 - Target: `component/delivery-system-v1`
 - Base component SHA at Pilot start: `8bf68e7de29c780feeecd398e5496817b2ee000d`
 - Pilot acceptance command: `node scripts/ci/delivery_system_acceptance.mjs`
-- Acceptance result: **PASS (12/12)**
-- Remediation pass: Chat changes-requested on #2527 (admin inventory exemption, auto-merge continue-on-error, scenario 10 CI/CLI parity, machine-readable PR body allowlist/attestation)
+- Acceptance result: **PASS (12/12)** (fixture matrix)
+- Post-pilot remediation: #2536 corrects orchestration truthfulness, admin glob boundary, and upgrades scenarios 11–12 to ordered dry-run simulations
+
+## Proof class distinction (post-#2536)
+
+| Proof class | Status | Notes |
+| --- | --- | --- |
+| Fixture-level evaluator proof | PASS | Acceptance matrix 12/12 |
+| Live protected-child proof | PASS | #2527 only |
+| Live eligible-child proof | PASS under #2536 | PR #2540 + corrected workflow_dispatch artifact `eligible=true` |
+| Repository-setting blocker | `allow_auto_merge=false` | Unchanged; no auto-merge success claim |
+| Rollback schema validation | PASS | Required fields present |
+| Rollback ordered dry-run simulation | PASS under #2536 fixtures | Scenarios 11–12 now execute non-mutating state machines |
 
 ## Scenario matrix
 
@@ -68,15 +78,14 @@ Evidence expectations on that child PR:
 Live PR number, head SHA, and Component Integration Eligibility check conclusion are filled in the ChatGPT handoff comment after the child PR opens.
 
 
-
 ## Live eligible-child exercise (#2536 F2)
 
-This section records the non-protected Model B child opened under remediation issue #2536. It is **not** claimed by Pilot PR #2527.
+This section records the non-protected Model B child opened under remediation issue #2536. It is **not** claimed by Pilot PR #2527. PR #2540 is merged into `component/delivery-system-v1` at `6af2236b89f5a7833fe5974b97a3a435e6090a45`.
 
 | Field | Value |
 | --- | --- |
-| Evidence child PR | [#2540](https://github.com/wdhunter645/next-starter-template/pull/2540) |
-| Head SHA | `ec3baac4f43c94dddcd5b4d470667db635c98e37` |
+| Evidence child PR | [#2540](https://github.com/wdhunter645/next-starter-template/pull/2540) (merged) |
+| Evaluated head SHA | `ec3baac4f43c94dddcd5b4d470667db635c98e37` |
 | Approval profile | `component-auto-integration` |
 | Protected change | `false` (docs/ops/reports only) |
 | Component Integration Eligibility check | **SUCCESS** (`eligible`; Chat review no) — [check run](https://github.com/wdhunter645/next-starter-template/runs/87387275467) |

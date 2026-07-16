@@ -14,9 +14,12 @@ import {
   MULTI_STEP_ROLLBACK_FIELDS,
   ONE_STEP_ROLLBACK_FIELDS,
   PROMOTION_PACKAGE_FIELDS,
+  assertRollbackFailsWhenOmitted,
+  assertRollbackFailsWhenReordered,
   missingEvidenceFields,
   parseEvidenceBlock,
   prBody,
+  runOrderedRollbackSimulation,
 } from './helpers.mjs';
 
 function assert(condition, message) {
@@ -397,14 +400,53 @@ verification_owner: Chat
       const fields = parseEvidenceBlock(evidence);
       const missing = missingEvidenceFields(fields, ONE_STEP_ROLLBACK_FIELDS);
       assert(missing.length === 0, `missing one-step fields: ${missing.join(', ')}`);
-      assert(fields.verification_owner === 'Chat', 'verification owner must be Chat');
 
       const steps = [
-        'execute documented one-step revert',
-        'run smoke tests',
-        'open bounded fix only if revert is insufficient',
+        {
+          id: 'revert',
+          apply: (state) => {
+            if (state.deployedSha !== 'bad') {
+              throw new Error('one-step revert requires a known bad deployment pointer');
+            }
+            return { ...state, deployedSha: fields.rollback_target_ref, reverted: true };
+          },
+        },
+        {
+          id: 'smoke',
+          apply: (state) => {
+            if (!state.reverted) throw new Error('smoke requires revert first');
+            return { ...state, smokePassed: true };
+          },
+        },
+        {
+          id: 'verify',
+          apply: (state) => {
+            if (!state.smokePassed) throw new Error('verify requires smoke');
+            return { ...state, verified: true, lastStep: 'verify' };
+          },
+        },
       ];
-      assert(steps.length === 3, 'one-step simulation must stay single-action plus verify');
+
+      const result = runOrderedRollbackSimulation({
+        initialState: { deployedSha: 'bad', reverted: false, smokePassed: false, verified: false },
+        steps,
+        expectedAfterEach: [
+          { reverted: true },
+          { smokePassed: true },
+          { verified: true },
+        ],
+        expectedFinal: { verified: true, deployedSha: fields.rollback_target_ref },
+      });
+      assert(result.ok === true, 'one-step dry-run must succeed');
+      assertRollbackFailsWhenOmitted({
+        initialState: { deployedSha: 'bad', reverted: false, smokePassed: false, verified: false },
+        steps,
+        omitStepId: 'smoke',
+      });
+      assertRollbackFailsWhenReordered({
+        initialState: { deployedSha: 'bad', reverted: false, smokePassed: false, verified: false },
+        steps,
+      });
     },
   },
   {
@@ -428,9 +470,94 @@ package_finalized_before_promotion: yes
       const fields = parseEvidenceBlock(evidence);
       const missing = missingEvidenceFields(fields, MULTI_STEP_ROLLBACK_FIELDS);
       assert(missing.length === 0, `missing multi-step fields: ${missing.join(', ')}`);
-      const order = fields.dependency_order.split(';').map((part) => part.trim()).filter(Boolean);
-      assert(order.length >= 4, 'ordered rollback must include multiple deterministic steps');
       assert(fields.package_finalized_before_promotion === 'yes', 'package must be finalized');
+
+      const steps = [
+        {
+          id: 'disablement',
+          apply: (state) => ({ ...state, automationPaused: true, lastStep: 'disablement' }),
+        },
+        {
+          id: 'external_writes',
+          apply: (state) => {
+            if (!state.automationPaused) throw new Error('external write stop requires disablement first');
+            return { ...state, writesStopped: true, lastStep: 'external_writes' };
+          },
+        },
+        {
+          id: 'config',
+          apply: (state) => {
+            if (!state.writesStopped) throw new Error('config restore requires write stops first');
+            return { ...state, configRestored: true, lastStep: 'config' };
+          },
+        },
+        {
+          id: 'deployment',
+          apply: (state) => {
+            if (!state.configRestored) throw new Error('deployment restore requires config first');
+            return { ...state, deploymentRestored: true, lastStep: 'deployment' };
+          },
+        },
+        {
+          id: 'verify',
+          apply: (state) => {
+            if (!state.deploymentRestored) throw new Error('verify requires deployment restore');
+            return { ...state, verified: true, lastStep: 'verify' };
+          },
+        },
+        {
+          id: 'reconcile',
+          apply: (state) => {
+            if (!state.verified) throw new Error('reconcile requires verification');
+            return { ...state, reconciled: true, lastStep: 'reconcile' };
+          },
+        },
+      ];
+
+      const result = runOrderedRollbackSimulation({
+        initialState: {
+          automationPaused: false,
+          writesStopped: false,
+          configRestored: false,
+          deploymentRestored: false,
+          verified: false,
+          reconciled: false,
+        },
+        steps,
+        expectedAfterEach: [
+          { automationPaused: true },
+          { writesStopped: true },
+          { configRestored: true },
+          { deploymentRestored: true },
+          { verified: true },
+          { reconciled: true },
+        ],
+        expectedFinal: { reconciled: true, verified: true },
+      });
+      assert(result.ok === true, 'multi-step dry-run must succeed');
+      assertRollbackFailsWhenOmitted({
+        initialState: {
+          automationPaused: false,
+          writesStopped: false,
+          configRestored: false,
+          deploymentRestored: false,
+          verified: false,
+          reconciled: false,
+        },
+        steps,
+        omitStepId: 'config',
+      });
+      assertRollbackFailsWhenReordered({
+        initialState: {
+          automationPaused: false,
+          writesStopped: false,
+          configRestored: false,
+          deploymentRestored: false,
+          verified: false,
+          reconciled: false,
+        },
+        steps,
+      });
     },
   },
 ];

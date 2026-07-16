@@ -5,8 +5,8 @@ Authority Level: Evidence
 Owns: Delivery System v1 Task 12 (#2502) as-designed/as-built reconciliation, rollback package status, sync gap, and promotion-readiness verdict
 Does Not Own: Production merge authorization, Program #2477 closeout, or code/workflow remediation implementation
 Canonical Reference: /docs/ops/implementation-plans/two-model-delivery-system/implementation-plan.md
-Related Issues: #2502, #2501, #2477, #2511
-Last Reviewed: 2026-07-15
+Related Issues: #2502, #2501, #2477, #2511, #2536
+Last Reviewed: 2026-07-16
 ---
 
 # Delivery System v1 Promotion Readiness
@@ -15,17 +15,19 @@ Last Reviewed: 2026-07-15
 
 **BLOCKED — do not merge PR #2511.**
 
-#2502 documentation reconciliation progresses, but production promotion remains blocked until Chat authorizes and Cursor completes a bounded remediation issue for confirmed post-pilot implementation defects. No new implementation was added under #2502.
+#2536 is the active remediation issue. #2502 remains halted until #2536 merges and passes Chat closeout. This report tracks evidence classes; implementation lives in the #2536 child PR.
 
 ## Authority
 
 | Item | State |
 | --- | --- |
-| Source issue | #2502 ACTIVE |
+| Source issue | #2502 BLOCKED pending #2536 closeout |
+| Active remediation | #2536 (PRs #2539 code + #2540 live eligible child) |
 | Predecessor #2501 | CLOSED completed; must not reopen |
 | Pilot PR #2527 | MERGED at `69cc81fba57aba0a8436fd6883db62755493bac8` |
-| Promotion PR #2511 | OPEN draft, held; head currently equals component tip |
+| Promotion PR #2511 | OPEN draft, held; not authorized for merge |
 | Reconciliation authority | https://github.com/wdhunter645/next-starter-template/issues/2502#issuecomment-4981538030 |
+| Remediation authority | https://github.com/wdhunter645/next-starter-template/issues/2536#issuecomment-4981838899 |
 
 ## As-designed vs as-built
 
@@ -33,53 +35,51 @@ Last Reviewed: 2026-07-15
 | --- | --- | --- | --- |
 | Model A/B metadata contract | Stable PR/issue fields + classifier | Present on component branch; CI scripts + templates integrated | Yes |
 | Branch-aware CI / preflight | Shared classification local + CI | `delivery_profile.mjs`, `pr_preflight.mjs`, quality routing present | Yes (fixture-proven) |
-| Model B child auto-integration | Eligible children auto-integrate when green | Workflow present; **live eligible path unproven**; `allow_auto_merge=false` | **No** |
-| DIATAXIS migration ratchet | Touched legacy disposition enforced | Workflow + ratchet present; Pilot scenario 9 fixture pass | Yes (fixture) |
-| Component promotion | One promotion PR, no new implementation, full rollback package | #2511 exists; rollback schema incomplete for simulation claim; sync gap open | **No** |
+| Model B child auto-integration | Eligible children auto-integrate when green | Remediation #2536/#2539 + live eligible PR #2540 (`eligible=true`); `allow_auto_merge=false` blocks actual enablement | Partial — eligibility proven; auto-merge setting blocker remains |
+| DIATAXIS migration ratchet | Touched legacy disposition enforced | Workflow + ratchet present; Pilot scenario 9 fixture pass; F4 docs disposition integrated via #2535 | Yes |
+| Component promotion | One promotion PR, no new implementation, full rollback package | #2511 held; ordered rollback dry-runs remediated under #2536; sync gap still open | Partial — sync/#2511 still blocked until #2536 closeout then #2502 resume |
 | Production approval | Chat primary; Bill alternate; checks `quality`+`gitleaks` | Ruleset `15885337` active; matches | Yes |
 
 ## Evidence class distinction
 
 | Proof class | Status | Evidence |
 | --- | --- | --- |
-| Fixture-level evaluator proof | PASS | `node scripts/ci/delivery_system_acceptance.mjs` 12/12 on Pilot head |
-| Live protected-child proof | PASS | PR #2527: `Component Integration Eligibility` neutral; `requiresChatReview: yes`; Chat integrated manually |
-| Live eligible-child integration proof | **MISSING** | No non-protected Model B child reached `eligible: true` / integration-enablement path |
-| Repository-setting blockers | **CONFIRMED** | `allow_auto_merge=false` (live API) |
-| Rollback schema validation | PASS | Scenario 11/12 field presence |
-| Rollback ordered dry-run simulation | **MISSING** | Scenarios assert fields/length only; no state-machine dry-run |
+| Fixture-level evaluator proof | PASS | `node scripts/ci/delivery_system_acceptance.mjs` 12/12 |
+| Live protected-child proof | PASS | PR #2527: eligibility neutral; `requiresChatReview: yes` |
+| Live eligible-child integration proof | PASS under #2536 | PR #2540; workflow_dispatch `29425645275`; artifact eligible=true / requiresChatReview=false; allow_auto_merge=false structural skip |
+| Repository-setting blockers | CONFIRMED | `allow_auto_merge=false` — do not claim actual auto-merge success |
+| Rollback schema validation | PASS | Required multi-step / one-step fields |
+| Rollback ordered dry-run simulation | PASS under #2536 | Scenarios 11–12 execute ordered dry-runs with omit/reorder failure |
 
 ## Confirmed post-pilot evidence findings (no silent #2502 implementation)
 
 ### F1 — Component-integration orchestration self-blocks and false-holds
 
-**Confirmed. Requires implementation.**
+**Confirmed historically; remediated under #2536 PR #2539.**
 
-- Workflow loads all check-runs for the child head with no exclude/dedupe for its own job or `Component Integration Eligibility`.
-- Evaluator treats `queued|in_progress|pending|waiting` as hard `pending_check`.
-- Component state maps GitHub combined commit status `pending` → `hold` (not only explicit hold labels).
-- `assessReviews` treats any historical `CHANGES_REQUESTED` as blocking; no latest-by-author / current-head filter.
-- No settle reevaluation triggers (`check_run` / `workflow_run`).
+- Check evaluation is latest-authoritative per required name; self/advisory/unrelated runs excluded.
+- Settle reevaluation via `workflow_run` after PR-triggered peer gates (`GATE — Quality Checks` / Diff Scope / Secret Scan).
+- Component `hold` is no longer inferred from pending combined commit status; only explicit hold labels (or explicit hold state) block.
+- Review blockers use current-head / latest-by-author accounting.
 
 Owning files: `.github/workflows/component-child-integration.yml`, `scripts/ci/component_integration_eligibility.mjs`, `tests/component-integration-eligibility.test.mjs`
 
-### F2 — Live eligible-child auto-integration unproven
+### F2 — Live eligible-child auto-integration proof
 
-**Confirmed. Requires live proof (and optional repo setting authorization).**
+**Confirmed historically missing; live proof recorded under #2536 PR #2540 (repo setting unchanged).**
 
-- Pilot #2527 was a protected child (`protected-change-review`).
-- Scenario 3 fixture is not a live exercise.
-- `allow_auto_merge=false` prevents real enablement even if eligibility later returns true.
+- Non-protected child #2540: `Component Integration Eligibility` success; artifact `eligible=true`, `requiresChatReview=false`.
+- Workflow_dispatch run `29425645275` with corrected evaluator produced the same result.
+- `allow_auto_merge=false` remains a structural blocker — **no auto-merge success claim**.
 
 ### F3 — Admin glob boundary overmatch
 
-**Confirmed. Requires implementation.**
+**Confirmed historically; remediated under #2536 PR #2539.**
 
-- `tests/preview-isolation-inventory.test.ts` expands `functions/api/admin/**` via `slice(0,-3)` → prefix `functions/api/admin` without trailing `/`.
-- `startsWith` would incorrectly match `functions/api/administrator.ts`, `functions/api/admin-backup/...`, `functions/api/admin.ts`.
-- No such colliding paths exist today; latent inventory false coverage.
+- Glob expansion now preserves the trailing directory separator (`functions/api/admin/`).
+- Positive/negative boundary tests cover `administrator.ts`, `admin-backup/`, and `admin.ts` non-matches.
 
-Owning files: `tests/preview-isolation-inventory.test.ts` (optionally manifest)
+Owning files: `tests/preview-isolation-inventory.test.ts`
 
 ### F4 — DIATAXIS reference procedure/command content
 
@@ -90,16 +90,16 @@ Owning files: `tests/preview-isolation-inventory.test.ts` (optionally manifest)
 
 ### F5 — Rollback “simulations” are schema checks only
 
-**Confirmed. Requires implementation.**
+**Confirmed historically; remediated under #2536 PR #2539.**
 
-- Scenario 11/12 validate required evidence fields and a local string-list length/`package_finalized` flag.
-- They do not execute ordered dry-run state transitions or failure-on-reorder/omission cases.
+- Scenarios 11–12 now execute deterministic ordered dry-run state machines with omit/reorder failure paths.
+- No production, Cloudflare, GitHub configuration, D1, or external-resource mutation.
 
-Owning files: `tests/fixtures/delivery-system/scenarios.mjs`, `tests/fixtures/delivery-system/helpers.mjs`, evidence report
+Owning files: `tests/fixtures/delivery-system/scenarios.mjs`, `tests/fixtures/delivery-system/helpers.mjs`
 
 ## Multi-step rollback package (promotion scope) — draft
 
-Status: **schema draft recorded; dry-run simulation NOT complete (F5).**
+Status: **schema retained; ordered dry-run simulation PASS under #2536 acceptance scenarios 11–12. Package still `package_finalized_before_promotion: no` until #2502 sync/release validation resumes after #2536 closeout.**
 
 ```text
 release_unit: component/delivery-system-v1
@@ -148,89 +148,22 @@ Not claimed complete for promotion. Local documentation edits under this stop we
 
 | Criterion | Status |
 | --- | --- |
-| As-designed and as-built records agree | **Partial** — disagreements recorded above |
-| Authority disposition and references complete | **Partial** — provisional; blocked by open findings |
-| Multi-step rollback complete and tested | **Blocked** (F5) |
-| Component synchronized with `main` | **Blocked / deferred** |
+| As-designed and as-built records agree | **Partial** — eligibility/simulation gaps closed under #2536; sync/promotion still open |
+| Authority disposition and references complete | **Partial** — F4 integrated via #2535; remaining closeout after #2536 |
+| Multi-step rollback complete and tested | **Simulation PASS under #2536**; package not yet finalized for promotion |
+| Component synchronized with `main` | **Blocked / deferred** until #2536 closeout then #2502 resume |
 | Full release validation passes | **Not claimed** |
-| Promotion PR contains no new implementation | Meta OK for #2511 head content; readiness not granted |
+| Promotion PR contains no new implementation | Meta OK; readiness not granted |
 | Chat production approval and merge | **Not requested** |
 | Production/post-merge verification | **Not started** |
 | Program #2477 closed | **No** |
 
-## Bounded remediation-issue proposal (stop deliverable)
+## Remediation status (#2536)
 
-Propose Chat create **one** same-repository remediation issue under Program #2477 / Project #2478 before any #2511 promotion progress.
+Authorized remediation issue #2536 is in flight:
 
-### Title
+- Code/workflow/test remediation: PR #2539
+- Live non-protected eligible-child exercise: PR #2540 (`eligible=true`, `requiresChatReview=false`; `allow_auto_merge=false` structural skip)
+- #2511 remains held; #2502 remains blocked until #2536 Chat closeout
 
-`TASK: Delivery System v1 — Remediate component auto-integration truthfulness and Pilot evidence gaps`
-
-### Exact defects and repository evidence
-
-1. Orchestration self-block / stale checks / historical CHANGES_REQUESTED / pending→hold mapping / no settle reevaluation — see F1; files cited above; Pilot live artifact behavior for #2527 showed pending/self-related blockers alongside protected_change.
-2. Missing live eligible-child proof + `allow_auto_merge=false` structural blocker — F2.
-3. Admin glob overmatch — F3; prefix without trailing `/`.
-4. Rollback scenarios lack ordered dry-run state machine — F5.
-5. DIATAXIS reference violation — F4; docs move started under #2502; verify advisory clean after docs land.
-
-### Owning files / proposed allowlist
-
-```text
-.github/workflows/component-child-integration.yml
-scripts/ci/component_integration_eligibility.mjs
-tests/component-integration-eligibility.test.mjs
-tests/preview-isolation-inventory.test.ts
-tests/fixtures/delivery-system/**
-scripts/ci/delivery_system_acceptance.mjs
-docs/ops/reports/delivery-system-v1-pilot-evidence.md
-docs/ops/reports/delivery-system-v1-promotion-readiness.md
-```
-
-Docs-only disposition verification may also touch:
-
-```text
-docs/reference/github/delivery-system-repository-configuration.md
-docs/how-to/delivery/manage-component-integration.md
-```
-
-Repository setting change `allow_auto_merge` is **out of file allowlist** and requires explicit Chat/Bill authorization with before/after rollback evidence if exercised.
-
-### Acceptance criteria
-
-- [ ] Integration workflow ignores its own in-flight checks; evaluates latest authoritative current-head check per required name; stale/duplicate/advisory/unrelated/superseded runs do not block.
-- [ ] Eligibility reevaluates after required checks settle (event-driven or equivalent deterministic design).
-- [ ] Component `hold` only from explicit hold signals / documented deterministic conditions; not mere legacy commit-status pending absence.
-- [ ] Current-head review/thread accounting; superseded historical `CHANGES_REQUESTED` does not permanently block a corrected head.
-- [ ] Regression tests reproduce prior artifact false-block and prove clean non-protected child → `eligible: true` after settle.
-- [ ] One real non-protected Model B child targeting `component/delivery-system-v1` demonstrates `approvalProfile: component-auto-integration`, green required checks, `Component Integration Eligibility` eligible, `requiresChatReview: false`, and reaches enablement path; if auto-merge remains disabled, record structural blocker without claiming auto-merge success.
-- [ ] Admin glob matches only descendants of `functions/api/admin/` (positive + negative tests).
-- [ ] Scenarios 11–12 perform deterministic dry-run ordered rollback simulations with failure-on-omit/reorder; no production mutation.
-- [ ] Evidence reports distinguish fixture vs live protected vs live eligible vs setting blockers vs simulation proof.
-- [ ] #2511 remains unmerged throughout.
-
-### Validation plan
-
-- `node scripts/ci/delivery_system_acceptance.mjs`
-- Focused Vitest: component-integration, delivery-profile, preflight, migration-ratchet, preview-isolation, rollback simulation
-- `npm run typecheck && npm run lint && npm test && npm run build`
-- Live panel: final child PR checks, review threads, integration artifact JSON
-
-### Rollback plan
-
-- Revert remediation child PR(s) on component branch.
-- Keep `allow_auto_merge=false` unless explicitly changed; restore prior setting if temporarily enabled.
-- Retain #2511 draft/held; do not promote.
-
-### Why #2511 must remain blocked
-
-Promotion would ship a Model B system whose auto-integration contract is not live-proven, whose eligibility evaluator can self-block / false-hold / over-weight stale reviews, whose inventory gate can over-match admin paths, and whose “rollback simulation” evidence is schema-only. That is an unsafe production promotion condition under #2502 stop rules.
-
-## Explicit non-actions under this stop
-
-- Did not reopen #2501
-- Did not implement workflow/evaluator/test/config corrections under #2502
-- Did not add implementation to #2511
-- Did not merge #2511
-- Did not start a silent repository setting change
-- Did not claim READY FOR MERGE / production approval
+The prior bounded remediation-issue proposal text is superseded by live issue #2536 and is retained only as historical context in GitHub issue comments / earlier report revisions.

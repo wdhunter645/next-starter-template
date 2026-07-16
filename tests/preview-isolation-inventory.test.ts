@@ -36,6 +36,25 @@ function handlerHasMutationExport(filePath: string): boolean {
   return MUTATION_EXPORTS.some((name) => new RegExp(`export\\s+(?:async\\s+)?(?:const|function)\\s+${name}\\b`).test(source));
 }
 
+/** Expand mutatingRoutes handler globs with a trailing directory boundary. */
+export function resolveManifestHandlers(
+  mutatingRoutes: Array<{ handler: string }>,
+  handlers: string[],
+): Set<string> {
+  return new Set(
+    mutatingRoutes.flatMap((route) => {
+      if (route.handler.endsWith('/**')) {
+        let prefix = route.handler.slice(0, -3);
+        if (!prefix.endsWith('/')) {
+          prefix = `${prefix}/`;
+        }
+        return handlers.filter((path) => path.startsWith(prefix));
+      }
+      return [route.handler];
+    }),
+  );
+}
+
 describe('preview isolation inventory', () => {
   it('keeps the canonical reference document present', () => {
     expect(existsSync(manifest.canonicalReference)).toBe(true);
@@ -67,18 +86,28 @@ describe('preview isolation inventory', () => {
       return handlerHasMutationExport(filePath);
     });
 
-    const manifestHandlers = new Set(
-      manifest.mutatingRoutes.flatMap((route) => {
-        if (route.handler.endsWith('/**')) {
-          const prefix = route.handler.slice(0, -3);
-          return handlers.filter((path) => path.startsWith(prefix));
-        }
-        return [route.handler];
-      }),
-    );
+    const manifestHandlers = resolveManifestHandlers(manifest.mutatingRoutes, handlers);
 
     const missing = handlers.filter((handler) => !manifestHandlers.has(handler));
     expect(missing, `Add missing mutating handlers: ${missing.join(', ')}`).toEqual([]);
+  });
+
+  it('expands admin/** globs with a trailing directory boundary only', () => {
+    const handlers = [
+      'functions/api/admin/media-assets/sync-from-b2.ts',
+      'functions/api/administrator.ts',
+      'functions/api/admin-backup/example.ts',
+      'functions/api/admin.ts',
+      'functions/api/contact.ts',
+    ];
+    const resolved = resolveManifestHandlers(
+      [{ handler: 'functions/api/admin/**' }],
+      handlers,
+    );
+    expect([...resolved]).toEqual(['functions/api/admin/media-assets/sync-from-b2.ts']);
+    expect(resolved.has('functions/api/administrator.ts')).toBe(false);
+    expect(resolved.has('functions/api/admin-backup/example.ts')).toBe(false);
+    expect(resolved.has('functions/api/admin.ts')).toBe(false);
   });
 
   it('flags documented side-effect GET routes', () => {
