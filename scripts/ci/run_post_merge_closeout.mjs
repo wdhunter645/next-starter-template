@@ -83,13 +83,97 @@ export async function resolveCloseoutSyncPr({
 	return pr;
 }
 
-async function fetchMergedPr({ token, repository, prNumber }) {
+export async function fetchMergedPr({ token, repository, prNumber }) {
 	return githubRepoRequest({
 		token,
 		repository,
 		path: `/pulls/${prNumber}`,
 		userAgent: 'lgfc-post-merge-closeout',
 	});
+}
+
+/**
+ * Production closeout may only run for PRs already merged into main.
+ */
+export function assertProductionCloseoutPr({ pr = null, prNumber = '' } = {}) {
+	const number = String(prNumber || pr?.number || 'unknown');
+	if (!pr?.merged_at && !pr?.mergedAt) {
+		throw new Error(`PR #${number} is not merged; refusing post-merge closeout.`);
+	}
+	const baseRef = String(pr?.base?.ref || '').trim();
+	if (baseRef !== 'main') {
+		throw new Error(
+			`PR #${number} base is '${baseRef || 'unknown'}', not main; refusing production closeout path.`,
+		);
+	}
+	const mergeCommitSha = String(pr?.merge_commit_sha || pr?.mergeCommit?.oid || '').trim();
+	if (!mergeCommitSha) {
+		throw new Error(`PR #${number} is missing merge_commit_sha; refusing post-merge closeout.`);
+	}
+}
+
+/**
+ * Resolve the evidence SHA used by closeout validation.
+ *
+ * Manual workflow_dispatch replay must always use the target PR's merge_commit_sha.
+ * Workflow checkout SHAs (current main tip) must never override that value.
+ * Automatic pull_request_target closeout preserves the prior supplied-SHA preference
+ * (workflows already pass merge_commit_sha as GITHUB_SHA).
+ */
+export function resolveCloseoutEvidenceMergeSha({
+	eventName = '',
+	suppliedSha = '',
+	pr = null,
+} = {}) {
+	const mergeCommitSha = String(pr?.merge_commit_sha || pr?.mergeCommit?.oid || '').trim();
+	const supplied = String(suppliedSha || '').trim();
+	const isManualReplay = String(eventName || '') === 'workflow_dispatch';
+
+	if (isManualReplay) {
+		if (!mergeCommitSha) {
+			throw new Error('Merged PR is missing merge_commit_sha; refusing manual closeout replay.');
+		}
+		return mergeCommitSha;
+	}
+
+	return supplied || mergeCommitSha;
+}
+
+/**
+ * Error artifacts may only report a PR merge SHA after production closeout
+ * eligibility is proven. Provisional GitHub merge_commit_sha values on
+ * unmerged/non-main PRs must not appear as closeout evidence.
+ */
+export function resolveErrorArtifactMergeSha({
+	eventName = '',
+	suppliedSha = '',
+	pr = null,
+	prNumber = '',
+} = {}) {
+	const fallback = String(suppliedSha || '').trim();
+	if (!pr) return fallback;
+	try {
+		assertProductionCloseoutPr({ pr, prNumber });
+		return resolveCloseoutEvidenceMergeSha({ eventName, suppliedSha, pr });
+	} catch {
+		return fallback;
+	}
+}
+
+export async function resolveCloseoutEvidenceMergeShaForPr({
+	token,
+	repository,
+	prNumber,
+	eventName = '',
+	suppliedSha = '',
+	fetchMergedPrFn = fetchMergedPr,
+} = {}) {
+	const pr = await fetchMergedPrFn({ token, repository, prNumber });
+	assertProductionCloseoutPr({ pr, prNumber });
+	return {
+		pr,
+		mergeSha: resolveCloseoutEvidenceMergeSha({ eventName, suppliedSha, pr }),
+	};
 }
 
 export function resolveCloseoutEventContext({
@@ -276,13 +360,16 @@ export async function runPostMergeCloseout({
 	eventPrBaseRef = '',
 	suppressRemediationIssues = false,
 	batchCircuitBreaker = null,
+	fetchMergedPrFn = fetchMergedPr,
 } = {}) {
-	const pr = await fetchMergedPr({ token, repository, prNumber });
-	if (!pr.merged_at) {
-		throw new Error(`PR #${prNumber} is not merged; refusing post-merge closeout.`);
-	}
+	const pr = await fetchMergedPrFn({ token, repository, prNumber });
+	assertProductionCloseoutPr({ pr, prNumber });
 
-	const mergeSha = sha || pr.merge_commit_sha || '';
+	const mergeSha = resolveCloseoutEvidenceMergeSha({
+		eventName,
+		suppliedSha: sha,
+		pr,
+	});
 
 	if (!skipBodyApply) {
 		if (!bodyFile) {
@@ -451,9 +538,21 @@ export async function main() {
 		});
 	} catch (error) {
 		console.error(error);
+		let evidenceSha = process.env.GITHUB_SHA || '';
+		try {
+			const pr = await fetchMergedPr({ token, repository, prNumber: context.prNumber });
+			evidenceSha = resolveErrorArtifactMergeSha({
+				eventName: context.eventName,
+				suppliedSha: process.env.GITHUB_SHA || '',
+				pr,
+				prNumber: context.prNumber,
+			});
+		} catch {
+			// Keep checkout SHA only when PR metadata cannot be fetched.
+		}
 		result = buildCloseoutErrorResult({
 			prNumber: context.prNumber,
-			mergeSha: process.env.GITHUB_SHA || '',
+			mergeSha: evidenceSha,
 			message: error instanceof Error ? error.message : String(error),
 		});
 		await writePostMergeResultArtifactsAsync(result);
@@ -486,9 +585,24 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 		const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
 		const repository = process.env.GITHUB_REPOSITORY;
 		const prNumber = process.env.PR_NUMBER || process.env.EVENT_PR_NUMBER || '';
+		const eventName = process.env.GITHUB_EVENT_NAME || '';
+		let evidenceSha = process.env.GITHUB_SHA || '';
+		if (token && repository && prNumber) {
+			try {
+				const pr = await fetchMergedPr({ token, repository, prNumber });
+				evidenceSha = resolveErrorArtifactMergeSha({
+					eventName,
+					suppliedSha: process.env.GITHUB_SHA || '',
+					pr,
+					prNumber,
+				});
+			} catch {
+				// Keep checkout SHA only when PR metadata cannot be fetched.
+			}
+		}
 		const result = buildCloseoutErrorResult({
 			prNumber,
-			mergeSha: process.env.GITHUB_SHA || '',
+			mergeSha: evidenceSha,
 			message: error instanceof Error ? error.message : String(error),
 		});
 		try {
