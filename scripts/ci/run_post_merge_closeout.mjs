@@ -139,6 +139,27 @@ export function resolveCloseoutEvidenceMergeSha({
 	return supplied || mergeCommitSha;
 }
 
+/**
+ * Error artifacts may only report a PR merge SHA after production closeout
+ * eligibility is proven. Provisional GitHub merge_commit_sha values on
+ * unmerged/non-main PRs must not appear as closeout evidence.
+ */
+export function resolveErrorArtifactMergeSha({
+	eventName = '',
+	suppliedSha = '',
+	pr = null,
+	prNumber = '',
+} = {}) {
+	const fallback = String(suppliedSha || '').trim();
+	if (!pr) return fallback;
+	try {
+		assertProductionCloseoutPr({ pr, prNumber });
+		return resolveCloseoutEvidenceMergeSha({ eventName, suppliedSha, pr });
+	} catch {
+		return fallback;
+	}
+}
+
 export async function resolveCloseoutEvidenceMergeShaForPr({
 	token,
 	repository,
@@ -520,13 +541,12 @@ export async function main() {
 		let evidenceSha = process.env.GITHUB_SHA || '';
 		try {
 			const pr = await fetchMergedPr({ token, repository, prNumber: context.prNumber });
-			if (pr?.merge_commit_sha || pr?.mergeCommit?.oid) {
-				evidenceSha = resolveCloseoutEvidenceMergeSha({
-					eventName: context.eventName,
-					suppliedSha: process.env.GITHUB_SHA || '',
-					pr,
-				});
-			}
+			evidenceSha = resolveErrorArtifactMergeSha({
+				eventName: context.eventName,
+				suppliedSha: process.env.GITHUB_SHA || '',
+				pr,
+				prNumber: context.prNumber,
+			});
 		} catch {
 			// Keep checkout SHA only when PR metadata cannot be fetched.
 		}
@@ -570,13 +590,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 		if (token && repository && prNumber) {
 			try {
 				const pr = await fetchMergedPr({ token, repository, prNumber });
-				if (pr?.merge_commit_sha || pr?.mergeCommit?.oid) {
-					evidenceSha = resolveCloseoutEvidenceMergeSha({
-						eventName,
-						suppliedSha: process.env.GITHUB_SHA || '',
-						pr,
-					});
-				}
+				evidenceSha = resolveErrorArtifactMergeSha({
+					eventName,
+					suppliedSha: process.env.GITHUB_SHA || '',
+					pr,
+					prNumber,
+				});
 			} catch {
 				// Keep checkout SHA only when PR metadata cannot be fetched.
 			}

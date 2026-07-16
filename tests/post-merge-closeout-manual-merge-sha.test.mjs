@@ -2,12 +2,15 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	assertProductionCloseoutPr,
+	buildCloseoutErrorResult,
 	resolveCloseoutEvidenceMergeSha,
+	resolveErrorArtifactMergeSha,
 	runPostMergeCloseout,
 } from '../scripts/ci/run_post_merge_closeout.mjs';
 
 const PR_2542_MERGE_SHA = 'a184c76bf1f8d821c77621ed1a91512f292eddca';
 const PR_2543_MAIN_TIP = '9f87b4bcb514bf8feeaee22b688cde704e8eb21b';
+const PROVISIONAL_UNMERGED_SHA = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 
 function mergedMainPr({
 	number = 2542,
@@ -134,5 +137,68 @@ describe('manual closeout evidence merge SHA resolution (#2247)', () => {
 				}),
 			}),
 		).rejects.toThrow(/not main/);
+	});
+});
+
+describe('error-artifact merge SHA integrity (#2247 late review)', () => {
+	it('does not report a provisional merge SHA for an unmerged PR', () => {
+		const evidenceSha = resolveErrorArtifactMergeSha({
+			eventName: 'workflow_dispatch',
+			suppliedSha: PR_2543_MAIN_TIP,
+			prNumber: '9999',
+			pr: {
+				number: 9999,
+				merged_at: null,
+				base: { ref: 'main' },
+				merge_commit_sha: PROVISIONAL_UNMERGED_SHA,
+			},
+		});
+
+		expect(evidenceSha).toBe(PR_2543_MAIN_TIP);
+		expect(evidenceSha).not.toBe(PROVISIONAL_UNMERGED_SHA);
+
+		const artifact = buildCloseoutErrorResult({
+			prNumber: '9999',
+			mergeSha: evidenceSha,
+			message: 'PR #9999 is not merged; refusing post-merge closeout.',
+		});
+		expect(artifact.merge_sha).toBe(PR_2543_MAIN_TIP);
+		expect(artifact.merge_sha).not.toBe(PROVISIONAL_UNMERGED_SHA);
+	});
+
+	it('does not report a provisional merge SHA for a non-main PR', () => {
+		const evidenceSha = resolveErrorArtifactMergeSha({
+			eventName: 'workflow_dispatch',
+			suppliedSha: PR_2543_MAIN_TIP,
+			prNumber: '9998',
+			pr: {
+				number: 9998,
+				merged_at: '2026-07-16T00:00:00Z',
+				base: { ref: 'develop' },
+				merge_commit_sha: PROVISIONAL_UNMERGED_SHA,
+			},
+		});
+
+		expect(evidenceSha).toBe(PR_2543_MAIN_TIP);
+		expect(evidenceSha).not.toBe(PROVISIONAL_UNMERGED_SHA);
+
+		const artifact = buildCloseoutErrorResult({
+			prNumber: '9998',
+			mergeSha: evidenceSha,
+			message: "PR #9998 base is 'develop', not main; refusing production closeout path.",
+		});
+		expect(artifact.merge_sha).toBe(PR_2543_MAIN_TIP);
+		expect(artifact.merge_sha).not.toBe(PROVISIONAL_UNMERGED_SHA);
+	});
+
+	it('reports the real merge SHA when production closeout eligibility is proven', () => {
+		expect(
+			resolveErrorArtifactMergeSha({
+				eventName: 'workflow_dispatch',
+				suppliedSha: PR_2543_MAIN_TIP,
+				prNumber: '2542',
+				pr: mergedMainPr(),
+			}),
+		).toBe(PR_2542_MERGE_SHA);
 	});
 });
