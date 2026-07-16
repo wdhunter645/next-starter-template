@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: PMO workflow automation planning authority, Cursor queue-control boundaries, PR readiness rules, wave/run control concepts, and PMO Backlog promotion handoff for workflow automation
 Does Not Own: Workflow YAML implementation, runtime application behavior, D1 migrations, production secrets, GitHub issue mutation, or merge authority
 Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
-Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501, #1719, #1720, #1721, #1722, #1723, #1724, #1725, #1726
+Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501, #1719, #1720, #1721, #1722, #1723, #1724, #1725, #1726, #1727
 Last Reviewed: 2026-07-16
 ---
 
@@ -71,12 +71,12 @@ This document does not own:
 | Area | Historical #1411 design output | Current #1719 owner | Implementation boundary |
 | --- | --- | --- | --- |
 | PMO July 2026 authority | Durable language that program issue numbers identify programs and PMO Backlog holds ideas/project drafts | #1720 (complete) | No issue or label mutation |
-| Workflow Automation design migration | This GitHub authority page replaces Drive/chat-only planning for workflow automation | #1721 (complete — inventory) | No workflow YAML edits in #1721; candidates → #1726 |
-| Cursor continuation and queue contract | Rules for when Cursor continues, stops, reports, and waits | **#1722** | Docs hardening; no automated queue advancement unless later authorized |
-| PR readiness and batch review control | Ready-for-review rules that preserve Atlas/Bill review on `main` | **#1723** | No PR merge or review-state mutation by Cursor on `main` |
-| Merge and issue mutation policy | Explicit prohibition on Cursor merge, close, relabel, and issue-state changes without authorization | **#1724** | No destructive issue action |
-| Queue/wave model and labels | Planning definitions for wave/run identifiers and stop/continue gates | #1725 (complete); implementation candidates → #1726 | No label creation or relabeling in docs tasks |
-| Post-merge closeout evidence stabilization | Evidence and terminal-label reconciliation requirements before issue closeout or queue advancement | #1725 baseline; candidates → #1726 | No closeout automation change without CI source issue |
+| Workflow Automation design migration | This GitHub authority page replaces Drive/chat-only planning for workflow automation | #1721 (complete — inventory) | No workflow YAML edits in #1721; candidates scoped by #1726 |
+| Cursor continuation and queue contract | Rules for when Cursor continues, stops, reports, and waits | #1722 (complete) | Docs hardening; no automated queue advancement unless later authorized |
+| PR readiness and batch review control | Ready-for-review rules that preserve Atlas/Bill review on `main` | #1723 (complete on component) | No PR merge or review-state mutation by Cursor on `main` |
+| Merge and issue mutation policy | Explicit prohibition on Cursor merge, close, relabel, and issue-state changes without authorization | #1724 (complete on component) | No destructive issue action |
+| Queue/wave model and labels | Planning definitions for wave/run identifiers and stop/continue gates | #1725 (complete); candidates scoped by #1726 (C-01) | No label creation or relabeling in docs tasks |
+| Post-merge closeout evidence stabilization | Evidence and terminal-label reconciliation requirements before issue closeout or queue advancement | #1725 baseline; candidates scoped by #1726 (C-02–C-05) | No closeout automation change without CI source issue |
 | PMO Backlog promotion process | Criteria for moving backlog items into program issues | #1727 terminal | No child implementation issues from planning-only PRs |
 
 ## Workflow Automation Design Decisions
@@ -194,7 +194,19 @@ A PMO Backlog item may feed a future program issue only when:
 6. Authorized issue creation after Atlas/Bill walkthrough.
 7. Cursor receives a bounded source issue and PR scope.
 
-Workflow Automation planning was promoted through historical `#1411`. Design migration inventory and gap classification are complete in Task `#1721` (`docs/ops/reports/workflow-automation-design-gap-inventory-1721.md`). Remaining documentation hardening and implementation-candidate scoping continue through `#1722`–`#1727`. This document alone does not authorize workflow YAML, label mutation, or child-issue creation.
+Workflow Automation planning was promoted through historical `#1411`. Design migration inventory and gap classification are complete in Task `#1721` (`docs/ops/reports/workflow-automation-design-gap-inventory-1721.md`). Implementation candidates are scoped (docs vs workflow vs script) in Task `#1726` (`docs/ops/reports/workflow-ci-implementation-candidate-scoping-1726.md`). Remaining terminal closeout continues in `#1727`. This document alone does not authorize workflow YAML, label mutation, or child-issue creation.
+
+## Implementation candidate classes
+
+Future automation work must declare exactly one primary class (or split into separate issues):
+
+| Class | Paths | May start from `#1719` docs children? |
+| --- | --- | --- |
+| Docs-only | Named `docs/**` allowlist | Yes, when the child allowlist includes those paths |
+| Workflow YAML | `.github/workflows/**` | No — new source issue required |
+| CI script-sensitive | `scripts/ci/**` | No — new source issue required |
+
+Authoritative candidate matrix: `/docs/ops/reports/workflow-ci-implementation-candidate-scoping-1726.md`.
 
 ## Related References
 
