@@ -4,20 +4,20 @@ Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and revi
 Authority Level: Operational Plan
 Owns: Cursor task sequence, child-project boundaries, validation model, file-area expectations, and closeout rules for PMO Governance / Workflow Automation Completion
 Does Not Own: Runtime implementation before task issues, workflow code before explicit task authorization, CI script changes before explicit task authorization, issue creation before launch authorization, merge authority, unauthorized issue mutation
-Status: launch-control-ready
+Status: implementation-active
 project: pmo-governance-workflow-automation-completion
 Owner: Atlas
-Execution Mode: cursor-after-launch-authorization
+Execution Mode: cursor-continuous-reduced-gate-serial
 Source Issue: 1719
 Related Program Issue: 1719
 Canonical Reference: /docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md
 Related Issues: #1719, #1720, #1721, #1722, #1723, #1724, #1725, #1726, #1727, #1713, #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1500, #1255, #1259, #1685, #1700
-Last Reviewed: 2026-06-17
+Last Reviewed: 2026-07-16
 ---
 
 # PMO Governance / Workflow Automation Completion Implementation Plan
 
-> This program is BLOCKED from execution until Atlas/Bill explicitly launch it. Planning, review, and documentation discussion may continue, but Cursor may not execute implementation work from this program until Bill/Atlas explicitly launch it.
+> **Launch state (2026-07-16):** Bill authorized continuous reduced-gate serial execution for Program #1719. Cursor may execute remaining child issues in order after each predecessor PR merges and post-merge verification is clean. A separate Bill/Atlas launch prompt is not required between authorized child tasks. Cursor stops each child at `READY FOR REVIEW` and may not approve, merge, close, reopen, or relabel issues.
 
 ## Purpose
 
@@ -43,14 +43,12 @@ This plan does not authorize this documentation PR to change workflows, CI scrip
 
 ## Current known truth
 
-- PMO Backlog ranks 3–10 are governance/ops backlog items with partial documentation readiness.
-- #1411 is closed complete as a planning/control artifact.
-- #1417–#1424 are stale task issues and must not be treated as current executable source issues.
-- #1500 is closed complete and may already satisfy parts of closeout evidence stabilization and queue/wave planning.
-- Program #1255/#1259 remains active and ahead unless Bill/Atlas explicitly reprioritize.
-- Priority #1 is parked as #1685 with child issues #1686 through #1694.
-- Priority #2 is launch-control ready as #1700 with child issues #1701 through #1708.
-- Cursor is the intended implementation agent after Bill/Atlas launch authorization, with trusted reviewer expectations for protected governance/CI areas.
+- Program #1719 is **Implementation Active** under continuous reduced-gate serial authorization recorded on #1719 (2026-07-16).
+- Active child: #1720 (Task 001). Successor chain: #1721 → #1722 → #1723 (protected governance review) → #1724 (protected governance review) → #1726 → #1727. Task #1725 is **closed complete** and must not be rerun.
+- #1411 is closed complete as a planning/control artifact (historical evidence only).
+- #1417–#1424 are stale historical task issues and must not be treated as current executable source issues; do not mutate them.
+- #1500 is closed complete; Task #1725 recorded queue/wave and closeout reconciliation evidence.
+- Cursor is the implementation agent for the authorized serial chain, with trusted reviewer expectations for protected governance/CI areas (#1723, #1724).
 
 ## Intended final state
 
@@ -106,16 +104,16 @@ Cursor must reconcile before building. Existing PMO docs, governance docs, workf
 
 ## Dependency map
 
-| Task | Predecessor | Successor | Stage-before-merge | Halt condition | Resume condition |
+| Task | Predecessor | Successor | Stage-before-merge | Halt condition | Resume / continuation |
 | --- | --- | --- | --- | --- | --- |
-| 001 | launch authorization | 002 | yes | Launch not authorized | Bill/Atlas launch source issue exists |
-| 002 | 001 | 003 | yes | PMO authority/stale issue status unresolved | Task 001 merged |
-| 003 | 001 and 002 | 004 | yes | Workflow automation gaps unknown | Task 002 merged |
-| 004 | 003 | 005 | yes | Cursor continuation/stop contract unresolved | Task 003 merged |
-| 005 | 004 | 006 | yes | PR readiness and merge authority unclear | Task 004 merged |
-| 006 | 005 | 007 | yes | Issue mutation policy incomplete | Task 005 merged |
-| 007 | 006 | 008 | yes | Program #1500 overlap unresolved | Task 006 merged |
-| 008 | 001 through 007 | terminal | yes | Evidence package incomplete | Tasks 001–007 merged or explicitly deferred |
+| 001 (#1720) | #1719 continuous authorization (2026-07-16) | 002 | yes | Material allowlist/authority conflict | Start now |
+| 002 (#1721) | 001 merged + post-merge clean | 003 | yes | Predecessor not clean | Automatically authorized |
+| 003 (#1722) | 002 merged + post-merge clean | 004 | yes | Predecessor not clean | Automatically authorized |
+| 004 (#1723) | 003 merged + post-merge clean | 005 | yes | Predecessor not clean | Automatically authorized; protected governance review |
+| 005 (#1724) | 004 merged + post-merge clean | 007 | yes | Predecessor not clean | Automatically authorized; protected governance review |
+| 006 (#1725) | — | — | — | — | **COMPLETE — do not rerun** |
+| 007 (#1726) | 005 merged + post-merge clean; #1725 remains complete | 008 | yes | Predecessor not clean | Automatically authorized |
+| 008 (#1727) | 001–007 complete or explicitly dispositioned | terminal | yes | Evidence package incomplete | Automatically authorized; terminal review |
 
 ## Validation model
 
@@ -135,11 +133,11 @@ Expected validation categories:
 
 ## Launch gate
 
-This plan becomes executable only when Bill/Atlas create or update a program issue with explicit launch authorization.
+**Satisfied for Program #1719 on 2026-07-16.** Bill recorded continuous reduced-gate serial authorization on #1719. Remaining child tasks execute under that authorization without a new launch decision between tasks when predecessor merge and post-merge verification are clean.
 
-Launch authorization must identify program issue number, first task source issue, Cursor as implementation agent, issue-creation authority, task sequencing mode, and Cursor stop condition.
+Default stop condition per child: GitHub `READY FOR REVIEW`.
 
-Default stop condition: GitHub `READY FOR REVIEW`.
+Protected review points remain for #1723 and #1724. Material stop/escalation conditions are those listed on #1719 (authority conflict, allowlist overrun, unauthorized protected-surface change, material design/priority decision, unremediable required checks, unclean predecessor).
 
 ## Closeout rules
 
@@ -148,12 +146,12 @@ Default stop condition: GitHub `READY FOR REVIEW`.
 - Cursor does not close, reopen, or relabel GitHub issues unless a source issue explicitly grants that authority.
 - Atlas does not self-approve Atlas-authored PRs.
 - Source issue closeout occurs only after merge verification and post-merge validator state are clean.
-- Program closeout requires Task 008 evidence and explicit Bill/Atlas acceptance.
+- Program closeout requires Task 008 (#1727) evidence and explicit Bill/Atlas acceptance.
 
 ## Readiness conclusion
 
-This implementation plan is sufficient for future Cursor task issue creation after explicit launch authorization.
+This implementation plan is the active Cursor execution sequence for Program #1719.
 
-Status: `launch-control-ready`.
+Status: `implementation-active`.
 
-Execution: blocked until Bill/Atlas explicitly authorize Cursor to begin #1720.
+Execution: authorized. Active child #1720; continuous serial continuation through #1727 subject to predecessor merge/post-merge cleanliness and protected review points.
