@@ -57,8 +57,8 @@ Assessment date: **2026-07-16**.
 | Cursor continuation and queue contract | Partial — still main-centric READY FOR REVIEW language; Model B / continuous reduced-gate not fully encoded | Documentation | **#1722** |
 | PR readiness and batch review | Partial process in workflow-automation + PR governance | Documentation (governance) | **#1723** |
 | Merge and issue mutation policy | Partial prohibitions exist; no full matrix | Documentation (governance) | **#1724** |
-| Queue/wave model and labels | Planning concepts; #1725 reconciled baseline | No action for rebuild; label implementation remains candidate | #1725 done; **#1726** if implementing labels |
-| Post-merge closeout evidence | Baseline satisfied by #1500 | CI maintenance candidates only | #1725 done; **#1726** |
+| Queue/wave model and labels | Planning concepts; #1725 reconciled baseline | No action for rebuild; label implementation remains candidate | #1725 done; **#1726** scoped as C-01 (deferred) |
+| Post-merge closeout evidence | Baseline satisfied by #1500 | CI maintenance candidates only | #1725 done; **#1726** scoped as C-02–C-05 |
 | PMO Backlog promotion | Rules exist in backlog + workflow-automation | Documentation checklist polish | **#1727** / promotion gate in terminal task |
 
 ## Gap inventory (classified)
@@ -100,16 +100,15 @@ Observed as-built classes relevant to workflow-automation design (non-exhaustive
 3. Preserve stop conditions for material authority conflict, allowlist overrun, unsafe production/external effect, and unremediable technical failure.
 4. Refresh queue/dependency-map #1719 rows to Implementation Active + #1720 complete + #1721 complete.
 
-### For #1726 (implementation candidate scoping only)
+### For #1726 (implementation candidate scoping only) — complete
 
-1. G-05 wave label implementation (only if accepted).
-2. G-06 umbrella/program closeout classifier.
-3. G-07 mechanical workflow inventory expansion.
-4. G-08 orchestrator ↔ PMO July 2026 mapping (docs vs YAML — split carefully).
+See `docs/ops/reports/workflow-ci-implementation-candidate-scoping-1726.md`
+(candidates C-01–C-08). No YAML/script edits in `#1726`.
 
 ### For #1723 / #1724 / #1727
 
-- Use G-03, G-04, and G-10 respectively; do not expand into those scopes here.
+- G-03 / G-04 closed by `#1723` / `#1724`.
+- G-10 / C-07 / C-08 owned by `#1727`.
 
 ## Out-of-scope confirmation
 

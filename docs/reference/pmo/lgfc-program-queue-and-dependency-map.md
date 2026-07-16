@@ -208,9 +208,10 @@ Approval:
 | Task 002 `#1721` | Same plan; report `docs/ops/reports/workflow-automation-design-gap-inventory-1721.md` | Complete — PR #2545 on component branch |
 | Task 003 `#1722` | Same plan; report `docs/ops/reports/cursor-continuation-contract-matrix-1722.md` | Complete — PR #2548 on component branch |
 | Task 004 `#1723` | Same plan; report `docs/ops/reports/pr-readiness-merge-authority-1723.md` | Complete — PR #2555 on component branch |
-| Task 005 `#1724` | Same plan; report `docs/ops/reports/issue-mutation-closeout-permission-1724.md` | Component-doc model under `component-auto-integration`; no intermediate human gate for governance docs alone |
+| Task 005 `#1724` | Same plan; report `docs/ops/reports/issue-mutation-closeout-permission-1724.md` | Complete — component-doc model under `component-auto-integration` |
 | Task 006 `#1725` | Same plan; reconciliation report `docs/ops/reports/program-1500-queue-wave-reconciliation.md` | Complete — do not rerun |
-| Tasks 007–008 `#1726`–`#1727` | Same plan | Authorized after #1724; #1725 remains complete evidence; #1727 terminal |
+| Task 007 `#1726` | Same plan; report `docs/ops/reports/workflow-ci-implementation-candidate-scoping-1726.md` | Candidate matrix (docs vs workflow vs script); no YAML/script edits |
+| Task 008 `#1727` | Same plan | Terminal closeout / promotion handoff |
 
 Program #1500 closeout is **not** an active queue lane. It is closed complete historical evidence consumed by Task #1725. Cursor must not rebuild #1500 workflow or closeout work without a new CI source issue.
 
