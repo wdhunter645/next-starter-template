@@ -13,19 +13,19 @@ Last Reviewed: 2026-07-16
 
 ## Verdict
 
-**BLOCKED — do not merge PR #2511.**
+**READY FOR RELEASE VALIDATION — do not merge PR #2511 until Chat completes release validation and records production approval.**
 
-#2536 is the active remediation issue. #2502 remains halted until #2536 merges and passes Chat closeout. This report tracks evidence classes; implementation lives in the #2536 child PR.
+#2536 remediation is merged and closed. Component tip includes a full sync from `main` (`c15eca80`). Remaining gate is #2502 release validation + Chat production approval on #2511.
 
 ## Authority
 
 | Item | State |
 | --- | --- |
-| Source issue | #2502 BLOCKED pending #2536 closeout |
-| Active remediation | #2536 (PRs #2539 code + #2540 live eligible child) |
+| Source issue | #2502 OPEN — resume for release validation / promotion closeout |
+| Remediation #2536 | CLOSED; PRs #2539 + #2540 merged into component |
 | Predecessor #2501 | CLOSED completed; must not reopen |
 | Pilot PR #2527 | MERGED at `69cc81fba57aba0a8436fd6883db62755493bac8` |
-| Promotion PR #2511 | OPEN draft, held; not authorized for merge |
+| Promotion PR #2511 | OPEN draft; conflicts cleared; review threads resolved; awaiting release validation |
 | Reconciliation authority | https://github.com/wdhunter645/next-starter-template/issues/2502#issuecomment-4981538030 |
 | Remediation authority | https://github.com/wdhunter645/next-starter-template/issues/2536#issuecomment-4981838899 |
 
@@ -37,7 +37,7 @@ Last Reviewed: 2026-07-16
 | Branch-aware CI / preflight | Shared classification local + CI | `delivery_profile.mjs`, `pr_preflight.mjs`, quality routing present | Yes (fixture-proven) |
 | Model B child auto-integration | Eligible children auto-integrate when green | Remediation #2536/#2539 + live eligible PR #2540 (`eligible=true`); `allow_auto_merge=false` blocks actual enablement | Partial — eligibility proven; auto-merge setting blocker remains |
 | DIATAXIS migration ratchet | Touched legacy disposition enforced | Workflow + ratchet present; Pilot scenario 9 fixture pass; F4 docs disposition integrated via #2535 | Yes |
-| Component promotion | One promotion PR, no new implementation, full rollback package | #2511 held; ordered rollback dry-runs remediated under #2536; sync gap still open | Partial — sync/#2511 still blocked until #2536 closeout then #2502 resume |
+| Component promotion | One promotion PR, no new implementation, full rollback package | #2511 synced with `main`; ordered rollback dry-runs remediated under #2536; release validation still open | Partial — awaiting #2502 release validation |
 | Production approval | Chat primary; Bill alternate; checks `quality`+`gitleaks` | Ruleset `15885337` active; matches | Yes |
 
 ## Evidence class distinction
@@ -99,7 +99,7 @@ Owning files: `tests/fixtures/delivery-system/scenarios.mjs`, `tests/fixtures/de
 
 ## Multi-step rollback package (promotion scope) — draft
 
-Status: **schema retained; ordered dry-run simulation PASS under #2536 acceptance scenarios 11–12. Package still `package_finalized_before_promotion: no` until #2502 sync/release validation resumes after #2536 closeout.**
+Status: **schema retained; ordered dry-run simulation PASS under #2536 acceptance scenarios 11–12. Package still `package_finalized_before_promotion: no` until #2502 release validation completes.**
 
 ```text
 release_unit: component/delivery-system-v1
@@ -125,45 +125,35 @@ Operator restoration procedure: `docs/how-to/delivery/manage-component-integrati
 
 | Ref | SHA / count |
 | --- | --- |
-| Component tip | `69cc81fba57aba0a8436fd6883db62755493bac8` |
-| `main` tip | `74b4776f50c6ab643eb1efd5ad25fab8650e6602` |
-| Commits on `main` not in component | 6 |
-| Commits on component not in `main` | 15 |
-| Sync performed under this #2502 stop | **No** — deferred until remediation authorization; merging `main` now would widen #2511 while Model B contract remains incomplete |
-
-Commits pending into component from `main` (titles):
-
-1. `ci(#2512): add Program 2477 Chat attention pulse`
-2. `docs: define PMO July 2026 operating model (#2518)`
-3. `fix(#2519): mid-week matchup vote reset and stale photo exclusion`
-4. `feat(#2519): repair matchup when a photo image fails to load`
-5. `ci(#2524): retire Auto-Sync Documentation workflow`
-6. `fix(#2519): B2→D1 deletion reconciliation and matchup URL probe (#2529)`
+| Component tip | `c15eca80ca74ab3dff6e221bd9adc83944daeed2` |
+| `main` tip | `323faea9c0be4643aeebc276843690fba2383963` |
+| Commits on `main` not in component | 0 |
+| Commits on component not in `main` | 25 |
+| Sync performed | **Yes** — `origin/main` merged into `component/delivery-system-v1` for promotion prep (includes #2538 clerical closeout + matchup/Actions fixes) |
 
 ## Release validation
 
-Not claimed complete for promotion. Local documentation edits under this stop were not used to mark #2511 ready. Full release validation must rerun after remediation + sync.
+Not claimed complete for promotion. Full release validation must still run under #2502 before Chat production approval and merge of #2511.
 
 ## Acceptance criteria map (#2502)
 
 | Criterion | Status |
 | --- | --- |
-| As-designed and as-built records agree | **Partial** — eligibility/simulation gaps closed under #2536; sync/promotion still open |
-| Authority disposition and references complete | **Partial** — F4 integrated via #2535; remaining closeout after #2536 |
+| As-designed and as-built records agree | **Partial** — eligibility/simulation gaps closed under #2536; release validation still open |
+| Authority disposition and references complete | **Partial** — F4 integrated via #2535; remaining closeout under #2502 |
 | Multi-step rollback complete and tested | **Simulation PASS under #2536**; package not yet finalized for promotion |
-| Component synchronized with `main` | **Blocked / deferred** until #2536 closeout then #2502 resume |
+| Component synchronized with `main` | **PASS** — tip `c15eca80` includes `main` @ `323faea9` |
 | Full release validation passes | **Not claimed** |
-| Promotion PR contains no new implementation | Meta OK; readiness not granted |
+| Promotion PR contains no new implementation | Meta OK after sync merge; readiness not granted |
 | Chat production approval and merge | **Not requested** |
 | Production/post-merge verification | **Not started** |
 | Program #2477 closed | **No** |
 
 ## Remediation status (#2536)
 
-Authorized remediation issue #2536 is in flight:
+Remediation issue #2536 is closed completed:
 
-- Code/workflow/test remediation: PR #2539
-- Live non-protected eligible-child exercise: PR #2540 (`eligible=true`, `requiresChatReview=false`; `allow_auto_merge=false` structural skip)
-- #2511 remains held; #2502 remains blocked until #2536 Chat closeout
-
-The prior bounded remediation-issue proposal text is superseded by live issue #2536 and is retained only as historical context in GitHub issue comments / earlier report revisions.
+- Code/workflow/test remediation: PR #2539 merged
+- Live non-protected eligible-child exercise: PR #2540 merged (`eligible=true`, `requiresChatReview=false`; `allow_auto_merge=false` structural skip)
+- Component synced with `main`; #2511 review threads resolved
+- Next: #2502 release validation + Chat production approval on #2511
