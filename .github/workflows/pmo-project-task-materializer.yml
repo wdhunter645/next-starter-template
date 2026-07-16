@@ -1,0 +1,181 @@
+name: PMO Project Task Materializer
+
+on:
+  workflow_dispatch:
+    inputs:
+      manifest_path:
+        description: Repository-relative path to project-manifest.json
+        required: true
+        type: string
+        default: docs/ops/implementation-plans/pmo-project-autonomous-delivery/project-manifest.json
+      mode:
+        description: dry-run validates only; apply mutates issues after explicit authorization
+        required: true
+        type: choice
+        options:
+          - dry-run
+          - apply
+        default: dry-run
+      authorize_apply:
+        description: Must be true to permit apply-mode issue mutation
+        required: true
+        type: boolean
+        default: false
+  pull_request:
+    paths:
+      - 'docs/ops/implementation-plans/**/project-manifest.json'
+      - 'scripts/pmo-projects/**'
+      - '.github/workflows/pmo-project-task-materializer.yml'
+  push:
+    branches:
+      - 'component/**'
+    paths:
+      - 'docs/ops/implementation-plans/**/project-manifest.json'
+
+permissions:
+  contents: read
+  issues: read
+
+concurrency:
+  group: pmo-project-task-materializer-${{ github.repository }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    # Job-level issues:write is granted only for trusted workflow_dispatch apply.
+    # Fork pull requests and PR events never receive mutation permission.
+    permissions:
+      contents: read
+      issues: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'apply' && inputs.authorize_apply == true && github.event.repository.fork == false && 'write' || 'read' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve mode and authorization
+        id: auth
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'dry-run' }}
+          AUTHORIZE_APPLY: ${{ github.event_name == 'workflow_dispatch' && inputs.authorize_apply || false }}
+          MANIFEST_PATH_INPUT: ${{ github.event_name == 'workflow_dispatch' && inputs.manifest_path || '' }}
+          REPOSITORY: ${{ github.repository }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          IS_FORK: ${{ github.event.pull_request.head.repo.fork || github.event.repository.fork || false }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import {
+            assertManifestPathSafe,
+            resolveMaterializerAuthorization,
+          } from './scripts/pmo-projects/lib/workflow-policy.mjs';
+
+          const eventName = process.env.EVENT_NAME;
+          const mode = process.env.INPUT_MODE || 'dry-run';
+          const explicitApplyAuthorized =
+            String(process.env.AUTHORIZE_APPLY || '').toLowerCase() === 'true';
+          const isFork = String(process.env.IS_FORK || '').toLowerCase() === 'true';
+
+          let manifestPath = process.env.MANIFEST_PATH_INPUT || '';
+          if (!manifestPath) {
+            manifestPath =
+              'docs/ops/implementation-plans/pmo-project-autonomous-delivery/project-manifest.json';
+          }
+
+          const pathCheck = assertManifestPathSafe(manifestPath);
+          if (!pathCheck.ok) {
+            console.error(`Unsafe or missing manifest path (${pathCheck.reason}): ${manifestPath}`);
+            process.exit(1);
+          }
+
+          const decision = resolveMaterializerAuthorization({
+            eventName,
+            mode,
+            repository: process.env.REPOSITORY,
+            headRepository: process.env.HEAD_REPOSITORY,
+            pullRequest: { head: { repo: { fork: isFork } } },
+            explicitApplyAuthorized,
+          });
+
+          if (mode === 'apply' && !decision.allowed) {
+            console.error(`Apply mode refused: ${decision.reason}`);
+            process.exit(1);
+          }
+
+          fs.appendFileSync(
+            process.env.GITHUB_OUTPUT,
+            [
+              `manifest_path=${pathCheck.path}`,
+              `effective_mode=${decision.effectiveMode}`,
+              `auth_reason=${decision.reason}`,
+              `allowed=${decision.allowed}`,
+              '',
+            ].join('\n'),
+          );
+
+          console.log(
+            JSON.stringify(
+              {
+                eventName,
+                requestedMode: mode,
+                effectiveMode: decision.effectiveMode,
+                reason: decision.reason,
+                manifestPath: pathCheck.path,
+              },
+              null,
+              2,
+            ),
+          );
+          NODE
+
+      - name: Validate manifest (fail-closed)
+        run: npm run pmo:project:validate -- "${{ steps.auth.outputs.manifest_path }}"
+
+      - name: Materialize issues
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PMO_MATERIALIZE_APPLY_AUTHORIZED: ${{ steps.auth.outputs.effective_mode == 'apply' && 'true' || 'false' }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ steps.auth.outputs.effective_mode }}" = "apply" ]; then
+            npm run pmo:project:materialize -- --apply --repo "$GITHUB_REPOSITORY" "${{ steps.auth.outputs.manifest_path }}" | tee "$RUNNER_TEMP/materialize-report.txt"
+          else
+            npm run pmo:project:materialize -- --dry-run --repo "$GITHUB_REPOSITORY" "${{ steps.auth.outputs.manifest_path }}" | tee "$RUNNER_TEMP/materialize-report.txt"
+          fi
+
+      - name: Write job summary
+        if: always()
+        run: |
+          {
+            echo "## PMO Project Task Materializer"
+            echo
+            echo "- Event: \`${{ github.event_name }}\`"
+            echo "- Manifest: \`${{ steps.auth.outputs.manifest_path }}\`"
+            echo "- Effective mode: \`${{ steps.auth.outputs.effective_mode }}\`"
+            echo "- Authorization reason: \`${{ steps.auth.outputs.auth_reason }}\`"
+            echo
+            if [ -f "$RUNNER_TEMP/materialize-report.txt" ]; then
+              echo '```'
+              cat "$RUNNER_TEMP/materialize-report.txt"
+              echo '```'
+            else
+              echo "_No materialize report produced._"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload materialize report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmo-project-task-materializer-${{ github.run_id }}
+          path: ${{ runner.temp }}/materialize-report.txt
+          if-no-files-found: warn

@@ -311,6 +311,8 @@ PMO_MATERIALIZE_APPLY_AUTHORIZED=true npm run pmo:project:materialize -- --apply
 
 Apply mode is fail-closed without `PMO_MATERIALIZE_APPLY_AUTHORIZED=true`.
 
+Operator workflow procedure: `docs/how-to/pmo/run-project-task-materializer.md`.
+
 ## Failure behavior
 
 Validation and materialization fail closed when:
