@@ -245,14 +245,14 @@ Task/ops execution labels such as post-merge verification or failed do not becom
 
 The PMO workload inventory lists all known open master program records unless Bill requests a subset.
 
-### Current workload (reconciled with `program-registry.md`, 2026-07-05)
+### Current workload (reconciled with `program-registry.md`, 2026-07-16)
 
 Four open master records:
 
 | Program | Name | PMO status | Notes |
 | ---: | --- | --- | --- |
 | #1700 | Fundraiser / Charity Campaign Operations Buildout | Queued (launch-gated) | Children #1701–#1708 |
-| #1719 | PMO Governance / Workflow Automation Completion | Blocked (launch-gated) | Children #1720–#1727 |
+| #1719 | PMO Governance / Workflow Automation Completion | Implementation Active | Children #1720–#1727; continuous reduced-gate serial authorization 2026-07-16; active child #1720; #1725 complete |
 | #1738 | Gehrig Content Collection Phase 1 | Blocked (launch-gated) | Children #1739–#1746; foundation for content collection strategy |
 | #1847 | OPS Post-Merge Self-Healing CI Program | Implementation active | Children #1848–#1854; active repository need that may temporarily precede website build-out programs until Bill authorizes transition |
 

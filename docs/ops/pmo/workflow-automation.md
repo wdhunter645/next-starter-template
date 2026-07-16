@@ -5,15 +5,15 @@ Authority Level: Operational Authority
 Owns: PMO workflow automation planning authority, Cursor queue-control boundaries, PR readiness rules, wave/run control concepts, and PMO Backlog promotion handoff for workflow automation
 Does Not Own: Workflow YAML implementation, runtime application behavior, D1 migrations, production secrets, GitHub issue mutation, or merge authority
 Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
-Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501
-Last Reviewed: 2026-06-09
+Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1501, #1719, #1720, #1721
+Last Reviewed: 2026-07-16
 ---
 
 # PMO Workflow Automation
 
 ## Purpose
 
-Represent the LGFC Workflow Automation design in GitHub documentation authority for Program #1411 — PMO Automation and Agent Workflow Control.
+Represent the LGFC Workflow Automation design in GitHub documentation authority. Historical planning cycle Program #1411 — PMO Automation and Agent Workflow Control — produced the original planning package. Current executable work for remaining automation gaps routes through Priority #3 Program #1719 (and its child tasks), not through #1411.
 
 This document converts Workflow Automation from PMO Backlog material into bounded repository-owned planning authority. It defines what the automation program may design before any workflow code, label mutation, issue mutation, or runtime implementation begins.
 
@@ -23,7 +23,7 @@ This document is subordinate to `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`
 
 This document owns:
 
-- workflow automation planning boundaries for Program #1411;
+- workflow automation planning boundaries originating from historical Program #1411 and continued under Program #1719;
 - Cursor continuation, stop, and queue-control rules;
 - PR readiness and batch-review control requirements;
 - merge, close, relabel, and issue-mutation prohibitions for Cursor;
@@ -44,17 +44,18 @@ This document does not own:
 
 ## Current Known Truth
 
-- issue `#1411` promotes Workflow Automation from PMO Backlog material into Program #1411 planning.
-- Program #1411 is staged / blocked and may not launch until Program #1255 is completed and signed off.
+- issue `#1411` promoted Workflow Automation from PMO Backlog material into a completed planning/control cycle. `#1411` is **closed complete** historical evidence, not an open staged/blocked program.
+- Issues `#1417`–`#1424` are stale historical task issues from the `#1411` cycle. They are evidence only and must not be mutated or treated as current source issues.
+- Current Priority #3 execution for remaining workflow-automation work is Program `#1719` (Implementation Active as of 2026-07-16). Task `#1721` owns design migration and gap inventory.
 - legacy issue `#1379` captured Workflow Automation as future candidate material and listed available draft concepts.
-- Program #1255 remains active and must not be blocked, relabeled, closed, or otherwise mutated by Program #1411 planning work.
-- Completed Program 1 cycle `#1335` remains historical evidence only. It is not the parent issue for Program #1411.
+- Program `#1255` remains active and must not be blocked, relabeled, closed, or otherwise mutated by Priority #3 planning or docs work.
+- Completed Program 1 cycle `#1335` remains historical evidence only. It is not the parent issue for Program `#1411` or `#1719`.
 - Cursor may prepare docs-only PRs and run validation when authorized, but may not merge PRs, close issues, relabel issues, mutate queue state, or create implementation child issues unless the source issue explicitly authorizes that action.
 
 ## Intended Final State
 
 - GitHub documentation, not Google Drive or chat, is the canonical design source for PMO Workflow Automation.
-- Program #1411 produces production-ready task definitions for later issue alignment after Atlas/Bill walkthrough and launch authorization.
+- Historical Program `#1411` planning outputs feed Priority #3 Program `#1719` child tasks; new execution uses current `#1719`–`#1727` issues only.
 - Wave labels, run identifiers, merge policy labels, and queue-control behavior are specified before workflow code changes begin.
 - Cursor can continue safely when a PR is ready for review by stopping at the correct handoff point, reporting validation, and preserving Atlas/Bill review and merge authority.
 - Completed source issues have reconciled terminal labels: stable non-status labels plus `status:complete`, with stale active or failure status labels removed during closeout.
@@ -77,7 +78,7 @@ This document does not own:
 
 ### Program issue model
 
-Under PMO July 2026, programs are GitHub program issues identified by issue number. Program #1411 is the staged/blocked program for PMO Automation and Agent Workflow Control. PMO Backlog is not a program; it is a documentation-owned inventory for ideas, project drafts, and implementation-ready projects.
+Under PMO July 2026, programs are GitHub program issues identified by issue number. Program `#1411` is a **completed historical planning/control artifact** for PMO Automation and Agent Workflow Control. Current Priority #3 execution is Program `#1719`. PMO Backlog is not a program; it is a documentation-owned inventory for ideas, project drafts, and implementation-ready projects.
 
 ### Execution modes and queue control
 
@@ -170,7 +171,7 @@ A PMO Backlog item may feed a future program issue only when:
 6. Authorized issue creation after Atlas/Bill walkthrough.
 7. Cursor receives a bounded source issue and PR scope.
 
-Workflow Automation satisfies early promotion requirements for planning through `#1411`; it does not yet authorize workflow implementation, label mutation, or child issue creation from this document.
+Workflow Automation planning was promoted through historical `#1411`. Remaining design-migration and implementation-candidate work continues only through current Program `#1719` child issues (starting with `#1721` after `#1720`). This document alone does not authorize workflow YAML, label mutation, or child-issue creation.
 
 ## Related References
 

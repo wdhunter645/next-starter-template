@@ -4,201 +4,302 @@
     "title": "PROGRAM: Content Pipeline Runtime",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9001",
-    "body": "Dashboard Lifecycle: active\nPriority #: 1\nStatus: Active\nOwner / Agent: Atlas\nProgram Description: Active parent program for nested child display tests.",
+    "body": "Owner / Agent: Cursor\nProgram Description: Active implementation program with linked tasks.\nAnticipated Completion Date: 2026-08-01\n",
     "labels": [
-      {
-        "name": "pmo"
-      }
+      { "name": "pmo" },
+      { "name": "pmo:active" },
+      { "name": "pmo:priority:1" }
     ],
-    "assignees": [],
-    "updated_at": "2026-07-01T12:00:00Z"
+    "updated_at": "2026-07-15T12:00:00Z",
+    "closed_at": null
   },
   {
     "number": 9002,
     "title": "PROJECT: 9001:2 | Implement repository service layer",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9002",
-    "body": "Dashboard Lifecycle: pipeline\nPriority #: 2\nStatus: Implementation Ready\nOwner / Agent: Cursor\nProject Description: Child project that should nest under active program #9001.",
+    "body": "Owner / Agent: Cursor\nProject Description: Nested active child project sequence 2.\nParent program: #9001\n",
     "labels": [
-      {
-        "name": "pmo"
-      }
+      { "name": "pmo" },
+      { "name": "pmo:active" },
+      { "name": "pmo:priority:2" }
     ],
-    "assignees": [],
-    "updated_at": "2026-07-02T12:00:00Z"
+    "updated_at": "2026-07-15T11:00:00Z",
+    "closed_at": null
   },
   {
     "number": 9003,
     "title": "PROJECT: 9001:1 | Implement metadata migrations",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9003",
-    "body": "Dashboard Lifecycle: pipeline\nPriority #: 1\nStatus: Implementation Ready\nOwner / Agent: Cursor\nProject Description: First child project under active program #9001.",
+    "body": "Owner / Agent: Cursor\nProject Description: Nested active child project sequence 1.\nParent program: #9001\n",
     "labels": [
-      {
-        "name": "pmo"
-      }
+      { "name": "pmo" },
+      { "name": "pmo:active" },
+      { "name": "pmo:priority:2" }
     ],
-    "assignees": [],
-    "updated_at": "2026-07-03T12:00:00Z"
+    "updated_at": "2026-07-15T10:00:00Z",
+    "closed_at": null
   },
   {
     "number": 9004,
     "title": "PROJECT: Standalone pipeline project",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9004",
-    "body": "Dashboard Lifecycle: pipeline\nPriority #: 5\nStatus: PMO Intake\nOwner / Agent: Atlas\nProject Description: Standalone pipeline row without parent nesting.",
+    "body": "Owner / Agent: Atlas\nProject Description: Ready-for-launch pipeline project.\n",
     "labels": [
-      {
-        "name": "pmo"
-      }
+      { "name": "pmo" },
+      { "name": "pmo:pipeline" },
+      { "name": "pmo:priority:3" },
+      { "name": "pmo:stage:ready-for-launch" }
     ],
-    "assignees": [],
-    "updated_at": "2026-07-04T12:00:00Z"
+    "updated_at": "2026-07-14T12:00:00Z",
+    "closed_at": null
   },
   {
     "number": 9005,
     "title": "STRATEGY: Label-only PMO strategy item",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9005",
-    "body": "Dashboard Lifecycle: pipeline\nPriority #: 6\nStatus: Strategy Defined\nOwner / Agent: Atlas\nProgram Description: PMO-labeled issue without PROGRAM/PROJECT prefix should still appear.",
+    "body": "Owner / Agent: Bill\nProgram Description: Strategy retained in pipeline as idea priority.\n",
     "labels": [
-      {
-        "name": "pmo"
-      }
+      { "name": "pmo" },
+      { "name": "pmo:pipeline" },
+      { "name": "pmo:priority:idea" },
+      { "name": "pmo:stage:intake" }
     ],
-    "assignees": [],
-    "updated_at": "2026-07-05T12:00:00Z"
+    "updated_at": "2026-07-14T11:00:00Z",
+    "closed_at": null
   },
   {
     "number": 9006,
     "title": "PROGRAM: Completed archive program",
     "state": "closed",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9006",
-    "body": "Dashboard Lifecycle: completed\nPriority #: 1\nStatus: Completed\nOwner / Agent: Atlas\nProgram Description: Completed program sorted by closed date.",
+    "body": "Owner / Agent: Bill\nProgram Description: Newest completed program.\n",
     "labels": [
-      {
-        "name": "pmo"
-      },
-      {
-        "name": "status:complete"
-      }
+      { "name": "pmo" },
+      { "name": "pmo:closed" },
+      { "name": "pmo:priority:4" }
     ],
-    "assignees": [],
-    "closed_at": "2026-07-06T18:00:00Z",
-    "updated_at": "2026-07-06T18:00:00Z"
+    "updated_at": "2026-07-13T12:00:00Z",
+    "closed_at": "2026-07-13T12:00:00Z"
   },
   {
     "number": 9007,
     "title": "PROGRAM: Older completed program",
     "state": "closed",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9007",
-    "body": "Dashboard Lifecycle: completed\nPriority #: 2\nStatus: Completed\nOwner / Agent: Atlas\nProgram Description: Older completed row for sort verification.",
+    "body": "Owner / Agent: Bill\nProgram Description: Older completed program.\n",
     "labels": [
-      {
-        "name": "pmo"
-      }
+      { "name": "pmo" },
+      { "name": "pmo:closed" },
+      { "name": "pmo:priority:5" }
     ],
-    "assignees": [],
-    "closed_at": "2026-06-01T10:00:00Z",
-    "updated_at": "2026-06-01T10:00:00Z"
+    "updated_at": "2026-07-01T12:00:00Z",
+    "closed_at": "2026-07-01T12:00:00Z"
   },
   {
     "number": 9008,
     "title": "PROJECT: 9001:3 | Completed child under active program",
     "state": "closed",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9008",
-    "body": "Dashboard Lifecycle: completed\nPriority #: 3\nStatus: Completed\nOwner / Agent: Cursor\nProject Description: Completed child that must nest under active #9001 and not duplicate in Completed.",
+    "body": "Owner / Agent: Cursor\nProject Description: Nested completed child remains under active parent.\nParent program: #9001\n",
     "labels": [
-      {
-        "name": "pmo"
-      },
-      {
-        "name": "status:complete"
-      }
+      { "name": "pmo" },
+      { "name": "pmo:closed" },
+      { "name": "pmo:priority:2" }
     ],
-    "assignees": [],
-    "closed_at": "2026-07-05T12:00:00Z",
-    "updated_at": "2026-07-05T12:00:00Z"
+    "updated_at": "2026-07-12T12:00:00Z",
+    "closed_at": "2026-07-12T12:00:00Z"
   },
   {
     "number": 9010,
     "title": "PROJECT: Title prefix but no PMO label",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9010",
-    "body": "Dashboard Lifecycle: pipeline\nPriority #: 99\nStatus: Planning\nOwner / Agent: Atlas\nProject Description: Must be excluded without PMO label.",
-    "labels": [],
-    "assignees": [],
-    "updated_at": "2026-07-01T12:00:00Z"
+    "body": "Owner / Agent: Cursor\nProject Description: Must be excluded without pmo label.\n",
+    "labels": [
+      { "name": "docs" }
+    ],
+    "updated_at": "2026-07-10T12:00:00Z",
+    "closed_at": null
   },
   {
     "number": 9011,
     "title": "PROJECT: Closed stale implementation-ready body",
     "state": "closed",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9011",
-    "body": "Dashboard Lifecycle: pipeline\nPriority #: 9\nStatus: Implementation Ready\nOwner / Agent: Cursor\nProject Description: Closed PMO issue whose body still says Implementation Ready.",
+    "body": "Status: Implementation Ready\nDashboard Lifecycle: pipeline\nPriority #: 9\nOwner / Agent: Cursor\nProject Description: Closed issue must reconcile via pmo:closed, not body fields.\n",
     "labels": [
-      {
-        "name": "pmo"
-      }
+      { "name": "pmo" },
+      { "name": "pmo:closed" },
+      { "name": "pmo:priority:9" }
     ],
-    "assignees": [],
-    "closed_at": "2026-07-04T12:00:00Z",
-    "updated_at": "2026-07-04T12:00:00Z"
+    "updated_at": "2026-07-11T12:00:00Z",
+    "closed_at": "2026-07-11T18:00:00Z"
   },
   {
-    "number": 9012,
-    "title": "PROJECT: Missing explicit status fallback",
+    "number": 9020,
+    "title": "TASK: Pending linked task for active program",
     "state": "open",
-    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9012",
-    "body": "Dashboard Lifecycle: pipeline\nPriority #: 7\nOwner / Agent: Cursor\nProject Description: Pipeline issue with no Status or Dashboard Status field.",
+    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9020",
+    "body": "Parent program: #9001\nOwner / Agent: Cursor\n",
     "labels": [
-      {
-        "name": "pmo"
-      }
+      { "name": "pmo" },
+      { "name": "pmo:task" },
+      { "name": "pmo:pipeline" },
+      { "name": "pmo:priority:2" },
+      { "name": "pmo:stage:prep" }
     ],
-    "assignees": [],
-    "updated_at": "2026-07-06T12:00:00Z"
+    "updated_at": "2026-07-15T09:00:00Z",
+    "closed_at": null
   },
   {
-    "number": 9013,
-    "title": "PROJECT: Explicit implementation-ready pipeline",
+    "number": 9021,
+    "title": "TASK: Active linked task for active program",
     "state": "open",
-    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9013",
-    "body": "Dashboard Lifecycle: pipeline\nPriority #: 8\nStatus: Implementation Ready\nOwner / Agent: Cursor\nProject Description: Pipeline issue with explicit implementation readiness.",
+    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9021",
+    "body": "Parent program: #9001\nOwner / Agent: Cursor\n",
     "labels": [
-      {
-        "name": "pmo"
-      }
+      { "name": "pmo" },
+      { "name": "pmo:task" },
+      { "name": "pmo:active" },
+      { "name": "pmo:priority:2" }
     ],
-    "assignees": [],
-    "updated_at": "2026-07-06T13:00:00Z"
+    "updated_at": "2026-07-15T09:30:00Z",
+    "closed_at": null
   },
   {
-    "number": 9014,
-    "title": "PROJECT: Explicit planning pipeline",
-    "state": "open",
-    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9014",
-    "body": "Dashboard Lifecycle: pipeline\nPriority #: 10\nStatus: Planning\nOwner / Agent: Atlas\nProject Description: Pipeline issue with explicit planning status.",
+    "number": 9022,
+    "title": "TASK: Completed linked task for active program",
+    "state": "closed",
+    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9022",
+    "body": "Parent program: #9001\nOwner / Agent: Cursor\n",
     "labels": [
-      {
-        "name": "pmo"
-      }
+      { "name": "pmo" },
+      { "name": "pmo:task" },
+      { "name": "pmo:closed" },
+      { "name": "pmo:priority:2" }
     ],
-    "assignees": [],
-    "updated_at": "2026-07-06T14:00:00Z"
+    "updated_at": "2026-07-14T09:00:00Z",
+    "closed_at": "2026-07-14T09:00:00Z"
   },
   {
-    "number": 9015,
-    "title": "PROJECT: Unrecognized status pipeline",
+    "number": 9023,
+    "title": "TASK: Orphan task missing parent",
     "state": "open",
-    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9015",
-    "body": "Dashboard Lifecycle: pipeline\nPriority #: 11\nStatus: Needs triage\nOwner / Agent: Atlas\nProject Description: Pipeline issue with unrecognized status metadata.",
+    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9023",
+    "body": "Owner / Agent: Cursor\n",
     "labels": [
-      {
-        "name": "pmo"
-      }
+      { "name": "pmo" },
+      { "name": "pmo:task" },
+      { "name": "pmo:pipeline" },
+      { "name": "pmo:priority:8" },
+      { "name": "pmo:stage:intake" }
     ],
-    "assignees": [],
-    "updated_at": "2026-07-06T15:00:00Z"
+    "updated_at": "2026-07-15T08:00:00Z",
+    "closed_at": null
+  },
+  {
+    "number": 9024,
+    "title": "OPS: Unsupported PMO operations issue",
+    "state": "open",
+    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9024",
+    "body": "Owner / Agent: Atlas\n",
+    "labels": [
+      { "name": "pmo" },
+      { "name": "pmo:pipeline" },
+      { "name": "pmo:priority:7" },
+      { "name": "pmo:stage:discovery" }
+    ],
+    "updated_at": "2026-07-15T07:00:00Z",
+    "closed_at": null
+  },
+  {
+    "number": 9025,
+    "title": "PROJECT: Missing lifecycle labels",
+    "state": "open",
+    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9025",
+    "body": "Owner / Agent: Atlas\nProject Description: Must quarantine for missing lifecycle.\n",
+    "labels": [
+      { "name": "pmo" },
+      { "name": "pmo:priority:6" }
+    ],
+    "updated_at": "2026-07-15T06:00:00Z",
+    "closed_at": null
+  },
+  {
+    "number": 9026,
+    "title": "PROJECT: Conflicting priority labels",
+    "state": "open",
+    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9026",
+    "body": "Owner / Agent: Atlas\nProject Description: Must quarantine for conflicting priority.\n",
+    "labels": [
+      { "name": "pmo" },
+      { "name": "pmo:pipeline" },
+      { "name": "pmo:priority:1" },
+      { "name": "pmo:priority:2" },
+      { "name": "pmo:stage:planning" }
+    ],
+    "updated_at": "2026-07-15T05:00:00Z",
+    "closed_at": null
+  },
+  {
+    "number": 9027,
+    "title": "PROJECT: Prohibited none priority",
+    "state": "open",
+    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9027",
+    "body": "Owner / Agent: Atlas\nProject Description: Must quarantine for pmo:priority:none.\n",
+    "labels": [
+      { "name": "pmo" },
+      { "name": "pmo:pipeline" },
+      { "name": "pmo:priority:none" },
+      { "name": "pmo:stage:definition" }
+    ],
+    "updated_at": "2026-07-15T04:00:00Z",
+    "closed_at": null
+  },
+  {
+    "number": 9028,
+    "title": "PROJECT: Active with stale pipeline body metadata",
+    "state": "open",
+    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9028",
+    "body": "Dashboard Lifecycle: pipeline\nStatus: Planning\nPriority #: TBD\nOwner / Agent: Cursor\nProject Description: Lifecycle labels must win over stale body metadata.\n",
+    "labels": [
+      { "name": "pmo" },
+      { "name": "pmo:active" },
+      { "name": "pmo:priority:4" }
+    ],
+    "updated_at": "2026-07-15T03:00:00Z",
+    "closed_at": null
+  },
+  {
+    "number": 9029,
+    "title": "PROJECT: Closed without pmo closed label",
+    "state": "closed",
+    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9029",
+    "body": "Owner / Agent: Bill\nProject Description: Closed GitHub state without pmo:closed must quarantine.\n",
+    "labels": [
+      { "name": "pmo" },
+      { "name": "pmo:pipeline" },
+      { "name": "pmo:priority:3" },
+      { "name": "pmo:stage:planning" }
+    ],
+    "updated_at": "2026-07-10T12:00:00Z",
+    "closed_at": "2026-07-10T12:00:00Z"
+  },
+  {
+    "number": 9030,
+    "title": "PROJECT: Completed with no valid priority label",
+    "state": "closed",
+    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9030",
+    "body": "Owner / Agent: Bill\nProject Description: Completed work missing priority must quarantine.\n",
+    "labels": [
+      { "name": "pmo" },
+      { "name": "pmo:closed" }
+    ],
+    "updated_at": "2026-07-09T12:00:00Z",
+    "closed_at": "2026-07-09T12:00:00Z"
   }
 ]

@@ -6,7 +6,7 @@ Owns: PMO Backlog inventory for ideas, project drafts, implementation-ready proj
 Does Not Own: Program launch approval, final prioritization, implementation scope, issue creation, merge authority, or Cursor execution authorization
 Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
 Related Issues: #1379, #1411, #1255, #1500, #1501, #1678, #1685, #1696, #1700, #1701, #1702, #1703, #1704, #1705, #1706, #1707, #1708, #1713, #1719, #1720, #1721, #1722, #1723, #1724, #1725, #1726, #1727, #2039, #2040, #2041, #2042, #2043, #2044, #2045, #2046, #2047, #2048, #2100
-Last Reviewed: 2026-07-05
+Last Reviewed: 2026-07-16
 ---
 
 # PMO Backlog
@@ -25,7 +25,7 @@ This document owns PMO Backlog inventory, promotion history, weekly project revi
 
 - **PMO Backlog is documentation-owned.** Backlog placement does not authorize Cursor or Codex implementation.
 - **Legacy `#1379`** is historical source evidence only. It is superseded by this document.
-- **issue `#1411` is closed** and served its planning/control purpose as a completed planning artifact (`status:complete`). It is not an open or automatically queued program.
+- **issue `#1411` is closed** and served its planning/control purpose as a completed planning artifact (`status:complete`). It is not an open or automatically queued program. Issues `#1417`–`#1424` are stale historical evidence only.
 - **Former `#1411` work areas** now belong to Priority #3 program #1719 and child issue chain #1720 through #1727.
 - **Program `#1255`** remains the active website implementation program owned by Cursor for completion.
 - **Program `#1500` is closed complete.** It remains reconciliation evidence for Priority #3 closeout and queue/wave work, but it does not launch additional governance work by itself.
@@ -33,7 +33,7 @@ This document owns PMO Backlog inventory, promotion history, weekly project revi
 - **Website Public Launch / Relaunch Readiness** has program issue #2039 and child issue chain #2041 through #2048. It follows Program #1685 structural baseline closeout and remains blocked until explicit Bill/Atlas task assignment.
 - **Website Automatic Content Publication Capability** has program issue #2040. It is publication authority for work that Program #2039 explicitly excludes, but implementation remains separate and must be authorized through #2040 or its child issues.
 - **Priority #2 Fundraiser / Charity Campaign Operations Buildout** has program issue #1700 and child issue chain #1701 through #1708. Task 001 assignment guidance is posted on #1701. It remains queued behind Program #1255/#1259 and parked Priority #1 unless Bill/Atlas explicitly reprioritize.
-- **Priority #3 PMO Governance / Workflow Automation Completion** has program issue #1719 and child issue chain #1720 through #1727. Task 001 assignment guidance is posted on #1720. It remains queued behind Program #1255/#1259, parked Priority #1, and Priority #2 unless Bill/Atlas explicitly reprioritize.
+- **Priority #3 PMO Governance / Workflow Automation Completion** has program issue #1719 and child issue chain #1720 through #1727. **Implementation Active** under continuous reduced-gate serial authorization (2026-07-16). Active child #1720; Task #1725 closed complete.
 - **The backlog does not authorize implementation by itself.** Production-ready documentation and launch-control issues remain execution gates: projects move only when explicitly authorized.
 - Filenames that still contain `program-5` (for example `docs/ops/pmo/program-5-admin-page-and-tools-design-readiness.md`) are **legacy source material** from the retired PMO v2 five-lane model. They are not active PMO July 2026 program authority and require PMO July 2026 conversion before promotion.
 
@@ -46,7 +46,7 @@ This document owns PMO Backlog inventory, promotion history, weekly project revi
 - Website Public Launch / Relaunch Readiness is launch-control ready after #1685 closeout and task assignment.
 - Website Automatic Content Publication Capability is registered as separate publication authority and does not execute from #2039.
 - Priority #2 is launch-control ready as #1700 with child tasks #1701 through #1708, pending queue authorization.
-- Priority #3 is launch-control ready as #1719 with child tasks #1720 through #1727, pending queue authorization.
+- Priority #3 is **Implementation Active** as #1719 with child tasks #1720 through #1727 under continuous reduced-gate serial authorization.
 
 ## Prioritized working backlog inventory
 
@@ -58,7 +58,7 @@ Items are sorted **top-down by current priority need** as of the Bill/Atlas PMO 
 | 1 successor | **Website Public Launch / Relaunch Readiness** | launch-control ready successor program | Prepare the structural website baseline for public relaunch after #1685 closeout, including public copy, admin club staging, social/media reliability, donation/fundraiser readiness, SEO/analytics, launch checklist, rollback, and evidence. | Keep blocked until #1685 closeout and explicit Bill/Atlas authorization to begin #2041. | `#2039`; `#2041`–`#2048`; `docs/ops/pmo/website-public-launch-relaunch-readiness.md`; `docs/ops/implementation-plans/website-public-launch-relaunch-readiness.md` | Successor lane to Priority #1; does not replace #1685 and does not authorize #2040 publication workflow. | launch-control ready; blocked until #1685 closeout and queue authorization |
 | 1 publication | **Website Automatic Content Publication Capability** | registered publication authority | Future controlled content-publication support for approval states, admin review, staged promotion, scheduled publication, rotation, audit evidence, rollback, unpublish, and safety checks. | Keep separate from #2039; execute only through #2040 or its authorized child issues after manual workflow evidence exists. | `#2040`; `docs/ops/pmo/website-automatic-content-publication-capability.md`; `docs/ops/implementation-plans/website-automatic-content-publication-capability.md` | Publication authority for work explicitly excluded from #2039. | planning-ready; blocked until #2040 launch authorization |
 | 2 | **Fundraiser / Charity Campaign Operations Buildout** | launch-control ready future program | Repeatable fundraiser operations, Givebutter integration boundary, leaderboard/winner rules, homepage promotion, donor recognition without PII exposure, and launch testing. | Keep queued behind Program #1255/#1259, parked Priority #1, and #2039 successor unless Bill/Atlas explicitly launch or reprioritize. | `#1696`; `#1700`; `#1701`–`#1708`; `#1379` (historical ideas source); `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md`; `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md` | Bill/Atlas identified this as the Priority #2 group. Prior backlog row "Fundraiser / charity campaign operations" merged here. | launch-control ready; blocked until queue authorization |
-| 3 | **PMO Governance / Workflow Automation Completion** | launch-control ready future program | Consolidate PMO July 2026 authority, workflow automation design, Cursor continuation rules, PR readiness, merge/issue policy, queue/wave planning, closeout stabilization, and backlog promotion gates. | Keep queued behind Program #1255/#1259, parked Priority #1, #2039 successor, and Priority #2 unless Bill/Atlas explicitly launch or reprioritize. | `#1713`; `#1719`; `#1720`–`#1727`; `#1411`; `#1500`; `docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md`; `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md`; `docs/ops/reports/program-1500-queue-wave-reconciliation.md` | Groups former ranks 3–10 into one Priority #3 program candidate. #1411 historical; #1500 reconciled by #1725 (closed complete). | launch-control ready; blocked until queue authorization |
+| 3 | **PMO Governance / Workflow Automation Completion** | Implementation Active program | Consolidate PMO July 2026 authority, workflow automation design, Cursor continuation rules, PR readiness, merge/issue policy, queue/wave planning, closeout stabilization, and backlog promotion gates. | Continue serial child chain under #1719 continuous reduced-gate authorization; active child #1720; do not rerun #1725. | `#1713`; `#1719`; `#1720`–`#1727`; `#1411`; `#1500`; `docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md`; `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md`; `docs/ops/reports/program-1500-queue-wave-reconciliation.md`; `docs/ops/reports/pmo-july-2026-authority-reconciliation-1720.md` | Groups former ranks 3–10 into one Priority #3 program. #1411 historical; #1500 reconciled by #1725 (closed complete). | Implementation Active — continuous reduced-gate serial |
 | 11 | Admin Page and Tools Design Readiness | project draft | Complete admin product/tool design, token UX, active/diagnostic/retired tool status, and backend failure-state design. | Complete inventory/readiness review before promotion. | `docs/ops/pmo/program-5-admin-page-and-tools-design-readiness.md` | **Legacy `program-5-*` filename** — PMO v2 artifact, not active Program 5 lane. | partial |
 | 12 | Lou Gehrig content collection strategy | project draft | Continuous collection, source/credit tracking, review, and publication pipeline for Lou Gehrig content. | Retain as future expansion beyond Priority #1 if external monitoring, AI-assisted research, or large-scale ingestion is desired. | `#1255`, `#1256`, Priority #1 readiness package | **Partially absorbed into Priority #1 content management / content collection subordination (#1690)** for normal editorial intake/source-credit workflow. Large-scale external collection remains future scope. | partial |
 | 13 | Annual Lou Gehrig Day operations package | project draft | Repeatable annual operations checklist and website spotlight plan for Lou Gehrig Day. | Convert into ops checklist when annual operations become a priority. | `#1379` (historical) | None identified. | none |
@@ -92,9 +92,9 @@ Website Automatic Content Publication Capability is registered as **planning-rea
 
 Priority #2 is classified as **launch-control ready** because its readiness package, implementation plan, master program issue, child task issues, predecessor/successor chain, and Task 001 assignment guidance exist in repository documentation and GitHub issues.
 
-Priority #3 is classified as **launch-control ready** because its readiness package, implementation plan, master program issue, child task issues, predecessor/successor chain, and Task 001 assignment guidance exist in repository documentation and GitHub issues.
+Priority #3 is classified as **Implementation Active** because Bill authorized continuous reduced-gate serial execution on #1719 (2026-07-16). Active child is #1720; Task #1725 is closed complete and must not be rerun.
 
-No backlog item may execute from this classification alone. Cursor execution still requires a current program/task/source issue and explicit Bill/Atlas launch or assignment authorization.
+No backlog item may execute from backlog classification alone. Cursor execution still requires a current program/task/source issue and explicit Bill/Atlas launch or assignment authorization (satisfied for #1719’s remaining child chain by the 2026-07-16 program authorization).
 
 ## Weekly PMO project review
 
@@ -155,6 +155,7 @@ Future PMO review should identify:
 | 2026-06-16 | Priority #1 readiness package created under #1678. Website Completion / Fan Club Product Buildout is documented as the next-program candidate for Cursor assignment after explicit Bill/Atlas launch authorization. Priority #1 content collection is subordinated to content management strategy (#1690) for normal editorial intake/source-credit workflow. |
 | 2026-06-17 | Priority #2 readiness package created under #1696 and launch-control chain created as #1700–#1708. Fundraiser / Charity Campaign Operations Buildout is documented as launch-control ready, pending queue authorization. Priority #3 readiness package was created under #1713 and launch-control chain was created as #1719–#1727. PMO Governance / Workflow Automation Completion is documented as launch-control ready, pending queue authorization. |
 | 2026-06-29 | Website Public Launch / Relaunch Readiness registered as Program #2039 with child issues #2041–#2048. Website Automatic Content Publication Capability registered as separate Program #2040 publication authority and remains outside #2039 implementation scope. |
+| 2026-07-16 | Bill authorized continuous reduced-gate serial execution for Program #1719. Priority #3 moves from launch-control ready / queued to Implementation Active. Active child #1720; Task #1725 remains closed complete. |
 
 ## Recently promoted (historical)
 

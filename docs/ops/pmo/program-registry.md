@@ -6,7 +6,7 @@ Owns: PMO program issue registry, current program issue assignments, launch-stat
 Does Not Own: PMO July 2026 top-level policy, implementation plan task definitions, workflow code, runtime behavior, product design, or unauthorized GitHub issue changes
 Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
 Related issues: #1411, #1379, #1255, #1259, #1500, #1678, #1685, #1696, #1700, #1713, #1719, #1720, #1721, #1722, #1723, #1724, #1725, #1726, #1727, #1963, #2039, #2040, #2041, #2042, #2043, #2044, #2045, #2046, #2047, #2048, #2049, #2050, #2051, #2052, #2053, #2054, #2055, #2056, #2100
-Last Reviewed: 2026-07-05
+Last Reviewed: 2026-07-16
 ---
 
 # PMO Program Issue Registry
@@ -30,10 +30,10 @@ This registry records current program issue assignments, launch-state control, c
 - Website Public Launch / Relaunch Readiness (#2039) is **closed complete** for repository work; child task issues #2041 through #2048 are complete, and public launch remains blocked only by operator promotion/smoke-test exceptions.
 - Website Automatic Content Publication Capability has program issue #2040 with child task issues #2049 through #2056. It is the publication authority for work excluded from #2039 and remains blocked until explicit Bill/Atlas authorization.
 - Priority #2 Fundraiser / Charity Campaign Operations Buildout has program issue #1700 with child task issues #1701 through #1708. Task 001 assignment guidance is posted on #1701. The program remains queued behind Program #1255/#1259 and parked Priority #1 unless Bill/Atlas explicitly reprioritize.
-- Priority #3 PMO Governance / Workflow Automation Completion has program issue #1719 with child task issues #1720 through #1727. Task 001 assignment guidance is posted on #1720. The program remains queued behind Program #1255/#1259, parked Priority #1, and Priority #2 unless Bill/Atlas explicitly reprioritize.
+- Priority #3 PMO Governance / Workflow Automation Completion has program issue #1719 with child task issues #1720 through #1727. **Implementation Active** under continuous reduced-gate serial authorization (2026-07-16). Active child #1720; Task #1725 closed complete.
 - issue #1500 (CI Post-Merge Closeout Reliability) is **closed complete** and remains reconciliation evidence for Priority #3. Task #1725 reconciliation report: `docs/ops/reports/program-1500-queue-wave-reconciliation.md`.
 - issue #1963 (CI Post-Merge Closeout Automation Hardening) is **closed complete**; implementation queue `docs/ops/trackers/PROGRAM-POST-MERGE-CLOSEOUT-AUTOMATION-IMPLEMENTATION-QUEUE.md`.
-- issue #1411 is completed — a planning/control artifact, not an open blocked program.
+- issue #1411 is completed — a planning/control artifact, not an open blocked program. Issues #1417–#1424 are stale historical evidence only (do not mutate).
 - GitHub issue titles use `Program: <name>`. Documentation references use `Program #<issue-number> — <name>`.
 
 ## Intended final state
@@ -76,6 +76,7 @@ PMO meeting issue → PMO Backlog review/update → program of work → componen
 | Program issue | Name | Historical label | Status | Notes |
 | --- | --- | --- | --- | --- |
 | #1255 | Website Implementation and Content Operations | Program 2 | Active | Cursor owns completion of remaining work |
+| #1719 | PMO Governance / Workflow Automation Completion | none | Implementation Active | Continuous reduced-gate serial chain; active child #1720; #1725 complete |
 
 ### Program #1255 child projects
 
@@ -95,7 +96,7 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 | Website Public Launch / Relaunch Readiness | 1 successor | Closed complete | Repo tasks complete; public launch remains operator-controlled by launch checklist, smoke-test, production promotion, and evidence requirements | `docs/ops/pmo/website-public-launch-relaunch-readiness.md` | `docs/ops/implementation-plans/website-public-launch-relaunch-readiness.md` |
 | Website Automatic Content Publication Capability | 1 publication | Planning-ready publication authority | Blocked until #1738 manual workflow evidence and Atlas/Bill explicitly authorize Cursor to begin #2049 | `docs/ops/pmo/website-automatic-content-publication-capability.md` | `docs/ops/implementation-plans/website-automatic-content-publication-capability.md` |
 | Fundraiser / Charity Campaign Operations Buildout | 2 | Launch-control ready; queued | Blocked until Atlas/Bill explicitly authorize Cursor to begin #1701 | `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md` | `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md` |
-| PMO Governance / Workflow Automation Completion | 3 | Launch-control ready; queued | Blocked until Atlas/Bill explicitly authorize Cursor to begin #1720 | `docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md` | `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md` |
+| PMO Governance / Workflow Automation Completion | 3 | Implementation Active | Continuous reduced-gate serial execution authorized 2026-07-16; active child #1720; #1725 complete | `docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md` | `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md` |
 
 ### Priority #1 candidate child projects
 
@@ -168,7 +169,6 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 | #2039 | Website Public Launch / Relaunch Readiness | none | Closed complete | Child issues #2041–#2048 complete; public launch remains operator-controlled by checklist, smoke-test, production promotion, and evidence requirements. |
 | #2040 | Website Automatic Content Publication Capability | none | Planning-ready publication authority | Child issues #2049–#2056 exist; execution waits for manual workflow evidence and explicit queue authorization. |
 | #1700 | Fundraiser / Charity Campaign Operations Buildout | none | Launch-control ready / queued | Child issues #1701–#1708 exist; Task 001 assignment guidance is posted on #1701; execution waits for explicit queue authorization. |
-| #1719 | PMO Governance / Workflow Automation Completion | none | Launch-control ready / queued | Child issues #1720–#1727 exist; Task 001 assignment guidance is posted on #1720; execution waits for explicit queue authorization. |
 
 ## Historical program evidence
 

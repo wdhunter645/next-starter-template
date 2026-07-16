@@ -4,9 +4,9 @@ Audience: Human + AI
 Authority Level: Operational Authority
 Owns: Cursor execution permissions, continuation rules, PR handoff behavior, and issue-mutation boundaries for LGFC program tasks
 Does Not Own: Cursor product configuration, local developer environment, workflow implementation, GitHub merge authority, or GitHub issue mutation authority
-Canonical Reference: /docs/governance/standards/CURSOR-RUNTIME-ROUTING.md
-Related Issues: #1449, #1448, #1411, #1409, #1379, #1255, #1335, #1501, #2489
-Last Reviewed: 2026-07-13
+Canonical Reference: /docs/reference/pmo/lgfc-program-portfolio-model.md
+Related Issues: #1449, #1448, #1411, #1409, #1379, #1255, #1335, #1501, #1719, #1720, #1722, #2489
+Last Reviewed: 2026-07-16
 ---
 
 # LGFC Cursor Execution Contract
@@ -39,13 +39,16 @@ This document does not own:
 
 ## Current Known Truth
 
-- Program #1411 authorizes docs-only planning for PMO Automation and
-  Agent Workflow Control. It is staged / blocked and may not launch until
-  Program #1255 is completed and signed off.
-- Program #1255 remains active and must not be blocked, closed, relabeled,
-  or otherwise mutated by Program #1411 planning work.
+- Program `#1411` is a **completed historical planning/control artifact**. It does
+  not authorize current execution. Remaining PMO governance / workflow automation
+  work executes under Program `#1719` when authorized.
+- Program `#1719` is Implementation Active under continuous reduced-gate serial
+  authorization (2026-07-16). Hardening of this contract is Task `#1722`.
+- Program `#1255` remains active and must not be blocked, closed, relabeled,
+  or otherwise mutated by Priority #3 docs work.
 - Completed Program 1 cycle `#1335` is historical evidence only and is not a
-  parent issue for Program #1411.
+  parent issue for Program `#1411` or `#1719`.
+- Issues `#1417`–`#1424` are stale historical evidence only; do not mutate.
 - Cursor may execute bounded repository work only through an active source issue,
   file allowlist, validation requirement, and PR handoff.
 - Cursor may not merge PRs, close issues, relabel issues, create child issues,
@@ -54,6 +57,9 @@ This document does not own:
 - Program issue number and source issue body control execution authority.
 - Labels, merge state, closed predecessor issues, queue order, open PR order, or
   branch availability alone do not authorize execution.
+- Continuous reduced-gate authorization on a program issue permits serial child
+  continuation after predecessor merge and clean post-merge verification; it does
+  not grant merge, issue-mutation, or protected-action authority.
 
 ## Intended Final State
 
@@ -86,7 +92,7 @@ Cursor may not, by default:
 - create implementation child issues;
 - mark or mutate issue state;
 - advance queues;
-- mutate Program #1255 issues while Program #1411 planning is active;
+- mutate Program `#1255` issues while Priority #3 (`#1719`) work is active;
 - modify workflow YAML, application/runtime code, D1 migrations, production
   configuration, or secrets outside the task scope;
 - combine multiple source issues into one PR;
