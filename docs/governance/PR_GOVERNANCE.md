@@ -25,6 +25,8 @@ Source issue accounting is governed by `/docs/governance/PR_PROCESS.md`.
 
 During #2175 / #2208 rebuild, `GATE — PR Issue Accounting` is manual-only. Do not treat older issue-accounting workflow comments or PR-body normalization behavior as current authority.
 
+After merge, a singular wrong primary `Issue:` reference may be auto-corrected during post-merge closeout when repository evidence identifies exactly one unambiguous owning source issue. That clerical repair does not weaken pre-merge one-primary-issue accounting and does not authorize guessing among multiple plausible source issues.
+
 ## Canonical references for UI/layout work
 
 - `/docs/reference/design/LGFC-Production-Design-and-Standards.md`

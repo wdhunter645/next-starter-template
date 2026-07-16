@@ -290,6 +290,7 @@ export function requiresGovernanceException(result = {}) {
 		'missing_required_section',
 		'missing_source_issue',
 		'ambiguous_source_issue_candidates',
+		'source_issue_authority_conflict',
 		'active_alternate_program_lane',
 		'implementation_evidence_failure',
 		'diataxis_failure',
@@ -466,12 +467,18 @@ async function paginateOpenIssues({ token, repository }) {
 
 export function shouldUpsertRemediationIssue(result = {}) {
 	if (selfHealingCanResolve(result)) return false;
+	if (result.source_issue_linkage_repair?.applied && !result.remediation_required && result.status === 'pass') {
+		return false;
+	}
 	if (result.status === 'skipped') return false;
 	return blockingCloseoutFailures(result).length > 0;
 }
 
 export function selfHealingCanResolve(result = {}) {
 	const selfHealing = result.self_healing || result.selfHealing || {};
+	if (result.source_issue_linkage_repair?.applied && result.status === 'pass' && !result.remediation_required) {
+		return true;
+	}
 	return Boolean(result.self_healing_safe === true)
 		|| (
 			String(selfHealing.classification || '').toLowerCase() === 'safe_auto_fix'

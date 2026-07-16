@@ -21,7 +21,20 @@ import {
 	shouldReopenUmbrellaSourceIssue,
 	STALE_SOURCE_ISSUE_LABELS,
 } from '../scripts/ci/post_merge_source_issue_closeout.mjs';
-import { metadataFailures, blockingMetadataFailures, buildResult, sourceIssueStateFailures } from '../scripts/ci/post_merge_validator.mjs';
+import {
+	applyClericalSourceIssueCorrection,
+	blockingMetadataFailures,
+	buildResult,
+	correctPrimaryIssueLineInBody,
+	evaluateClericalSourceIssueLinkage,
+	metadataFailures,
+	parseClericalSourceIssueReconciliation,
+	sourceIssueStateFailures,
+} from '../scripts/ci/post_merge_validator.mjs';
+import {
+	selfHealingCanResolve,
+	shouldUpsertRemediationIssue,
+} from '../scripts/ci/post_merge_remediation_issue.mjs';
 import {
 	duplicateCloseComment,
 	groupRemediationIssues,
@@ -1004,5 +1017,205 @@ describe('sync-pr-state successful closeout', () => {
 		expect(result).toBe('failure_relabel_halted');
 		expect(reconciliations).toHaveLength(0);
 		expect(run).not.toHaveBeenCalled();
+	});
+});
+
+
+describe('clerical source-issue linkage repair (#2532)', () => {
+	const pr2518Title = 'DOCS: Rename PMO V4 to PMO July 2026 and define the PMO issue contract';
+	const issue2516 = {
+		number: 2516,
+		title: 'BUG: PMO dashboard data is incomplete, stale, and misclassified',
+		body: '## Purpose\n\nCorrect the PMO dashboard data model.\n',
+		state: 'open',
+	};
+	const issue2517 = {
+		number: 2517,
+		title: pr2518Title,
+		body: [
+			'## Purpose',
+			'',
+			'Rename PMO V4 naming.',
+			'',
+			'Allowed paths:',
+			'- `docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`',
+			'- `docs/how-to/pmo/pmo-dashboard.md`',
+		].join('\n'),
+		state: 'open',
+	};
+	const pr2518 = {
+		title: pr2518Title,
+		headRefName: 'cursor/pmo-july-2026-docs-ccda',
+		body: [
+			'- **Issue:** #2516',
+			'',
+			'## CHANGE SUMMARY',
+			'- Renamed PMO docs.',
+			'',
+			'## BUILD / TEST / VERIFICATION',
+			'- PASS',
+			'',
+			'## ACCEPTANCE CRITERIA',
+			'- [x] Criteria complete',
+			'',
+			'## REQUIRED PRE-REVIEW SELF-CHECK',
+			'- done',
+		].join('\n'),
+		files: [
+			{ filename: 'docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md' },
+			{ filename: 'docs/how-to/pmo/pmo-dashboard.md' },
+		],
+	};
+	const evidence2518 = [
+		'Correct the primary source issue. This documentation migration is authorized by **#2517**. The PR body currently states `Issue: #2516`.',
+	];
+
+	it('does not mutate when the declared issue already owns the title', () => {
+		const evaluation = evaluateClericalSourceIssueLinkage({
+			declaredIssueNumber: '2517',
+			declaredIssue: issue2517,
+			pr: { ...pr2518, body: pr2518.body.replace('#2516', '#2517') },
+			candidateIssues: [issue2516],
+			evidenceTexts: evidence2518,
+		});
+		expect(evaluation.status).toBe('declared_correct');
+	});
+
+	it('auto-selects #2517 for the PR #2518 / #2516 regression fixture', () => {
+		const evaluation = evaluateClericalSourceIssueLinkage({
+			declaredIssueNumber: '2516',
+			declaredIssue: issue2516,
+			pr: pr2518,
+			candidateIssues: [issue2517],
+			evidenceTexts: evidence2518,
+		});
+		expect(evaluation).toMatchObject({
+			status: 'clerical_mismatch',
+			declaredIssueNumber: '2516',
+			correctedIssueNumber: '2517',
+			classification: 'clerical_linkage_mismatch',
+		});
+	});
+
+	it('stops when multiple authoritative candidates remain', () => {
+		const twin = {
+			number: 2599,
+			title: pr2518Title,
+			body: issue2517.body,
+			state: 'open',
+		};
+		const evaluation = evaluateClericalSourceIssueLinkage({
+			declaredIssueNumber: '2516',
+			declaredIssue: issue2516,
+			pr: pr2518,
+			candidateIssues: [issue2517, twin],
+			evidenceTexts: evidence2518,
+		});
+		expect(evaluation.status).toBe('ambiguous');
+		expect(evaluation.failures[0].code).toBe('ambiguous_source_issue_candidates');
+	});
+
+	it('stops when the unique candidate does not authorize changed files', () => {
+		const limited = {
+			...issue2517,
+			body: [
+				'Allowed paths:',
+				'- `docs/ops/pmo/unrelated.md`',
+			].join('\n'),
+		};
+		const evaluation = evaluateClericalSourceIssueLinkage({
+			declaredIssueNumber: '2516',
+			declaredIssue: issue2516,
+			pr: pr2518,
+			candidateIssues: [limited],
+			evidenceTexts: evidence2518,
+		});
+		expect(evaluation.status).toBe('authority_conflict');
+		expect(evaluation.failures[0].code).toBe('source_issue_authority_conflict');
+	});
+
+	it('corrects the primary issue line and records an auditable reconciliation comment', async () => {
+		const patches = [];
+		const comments = [];
+		const repair = await applyClericalSourceIssueCorrection({
+			token: 'test',
+			repository: 'wdhunter645/next-starter-template',
+			prNumber: 2518,
+			body: pr2518.body,
+			declaredIssueNumber: '2516',
+			correctedIssueNumber: '2517',
+			evidence: ['exact_title_match', 'authority_phrase'],
+			applyPullRequestBodyFn: async (args) => {
+				patches.push(args);
+				return {};
+			},
+			postIssueCommentFn: async (args) => {
+				comments.push(args);
+				return {};
+			},
+		});
+
+		expect(repair.applied).toBe(true);
+		expect(repair.action).toBe('body_patched');
+		expect(patches[0].body).toContain('- **Issue:** #2517');
+		expect(patches[0].body).not.toMatch(/^\s*-\s*\*\*Issue:\*\*\s*#2516\s*$/m);
+		expect(comments[0].body).toContain('clerical_linkage_mismatch');
+		expect(parseClericalSourceIssueReconciliation(comments[0].body)).toEqual({
+			declaredIssueNumber: '2516',
+			correctedIssueNumber: '2517',
+		});
+	});
+
+	it('is idempotent when reconciliation already points at the corrected issue', () => {
+		const correctedBody = correctPrimaryIssueLineInBody(pr2518.body, {
+			fromIssue: '2516',
+			toIssue: '2517',
+		});
+		const comment = [
+			'<!-- post-merge-clerical-source-issue-reconciliation -->',
+			'- Declared primary issue: #2516',
+			'- Corrected primary issue: #2517',
+		].join('\n');
+		const evaluation = evaluateClericalSourceIssueLinkage({
+			declaredIssueNumber: '2517',
+			declaredIssue: issue2517,
+			pr: { ...pr2518, body: correctedBody },
+			candidateIssues: [issue2516],
+			evidenceTexts: [...evidence2518, comment],
+		});
+		expect(evaluation.status).toBe('already_reconciled');
+	});
+
+	it('does not create a remediation issue for a successful clerical repair', () => {
+		const result = buildResult({
+			pr: { ...pr2518, body: correctPrimaryIssueLineInBody(pr2518.body, { fromIssue: '2516', toIssue: '2517' }), isDraft: false, mergedAt: '2026-07-15T10:41:38Z', baseRefName: 'main' },
+			resolution: { pr: 2518 },
+			metadata: [],
+			implementation: [],
+			diataxis: [],
+			findings: [],
+			reviewerDispositionFailures: [],
+			failures: [],
+			mergeSha: 'abc',
+			sourceIssueOverride: '2517',
+			sourceIssueLinkageRepair: {
+				applied: true,
+				declared_issue: '2516',
+				corrected_issue: '2517',
+				action: 'body_patched',
+			},
+		});
+		expect(result.status).toBe('pass');
+		expect(result.sync_action).toBe('post_merge_success');
+		expect(result.source_issue).toBe('2517');
+		expect(result.self_healing_safe).toBe(true);
+		expect(selfHealingCanResolve(result)).toBe(true);
+		expect(shouldUpsertRemediationIssue(result)).toBe(false);
+	});
+
+	it('exports a finite clerical candidate fetch cap for fail-closed human review', async () => {
+		const { MAX_CLERICAL_SOURCE_ISSUE_CANDIDATES } = await import('../scripts/ci/post_merge_validator.mjs');
+		expect(MAX_CLERICAL_SOURCE_ISSUE_CANDIDATES).toBeGreaterThan(0);
+		expect(MAX_CLERICAL_SOURCE_ISSUE_CANDIDATES).toBeLessThanOrEqual(50);
 	});
 });
