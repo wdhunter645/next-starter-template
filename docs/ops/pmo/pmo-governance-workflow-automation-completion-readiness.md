@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: Priority #3 PMO readiness decision, governance/workflow automation program candidate scope, child-project boundaries, design/readiness state, Cursor launch preconditions
 Does Not Own: Runtime implementation, workflow code, CI script changes, issue creation, merge authority, production secrets, vendor configuration, unauthorized GitHub issue mutation
 Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
-Related Issues: #1713, #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1500, #1255, #1259, #1685, #1700, #1719, #1720, #1725
+Related Issues: #1713, #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1500, #1255, #1259, #1685, #1700, #1719, #1720, #1721, #1725
 Last Reviewed: 2026-07-16
 ---
 
@@ -76,7 +76,7 @@ The intended final state before implementation launch is:
 | Priority item | Project name | Current state | Design authority | Implementation plan state | Readiness decision |
 | --- | --- | --- | --- | --- | --- |
 | 3 | PMO July 2026 authority | Reconciled by Task #1720 | `PMO-JULY-2026-OPERATING-MODEL.md`, `program-registry.md`, `pmo-backlog.md`, `docs/ops/reports/pmo-july-2026-authority-reconciliation-1720.md` | Covered by Tasks 001, 008 | #1720 reconciliation complete; remaining follow-ups deferred |
-| 4 | Workflow Automation Design Migration | Partial docs exist | `workflow-automation.md`, #1411 planning evidence | Covered by Tasks 002, 007, 008 | Needs source migration and gap review |
+| 4 | Workflow Automation Design Migration | Migrated; gap inventory complete (#1721) | `workflow-automation.md`, `docs/ops/reports/workflow-automation-design-gap-inventory-1721.md`, #1411 historical evidence | Covered by Tasks 002, 007, 008 | #1721 complete; implementation candidates deferred to #1726 |
 | 5 | Cursor Continuation and Queue Contract | Partial contract exists | `lgfc-cursor-execution-contract.md`, current PR process | Covered by Tasks 003, 007, 008 | Needs authoritative continuation/stop matrix |
 | 6 | PR Readiness and Batch Review Control | Partial process exists | `PR_PROCESS.md`, `PR_GOVERNANCE.md` | Covered by Tasks 004, 007, 008 | Needs batch/readiness alignment |
 | 7 | Merge and issue mutation policy | Partial policy exists | `PR_GOVERNANCE.md`, closeout protocol, Cursor contract | Covered by Tasks 004, 005, 007, 008 | Needs mutation-permission matrix |
