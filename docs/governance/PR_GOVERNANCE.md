@@ -23,8 +23,10 @@ This document is a supporting governance reference. The canonical pull request p
 ## Merge authority (summary)
 
 - Merge to `main` requires Bill/ChatGPT approval.
-- Non-`main` Model B component integration may follow `/docs/governance/PR_PROCESS.md` merge-authority rules when the source issue authorizes `component-auto-integration`.
-- Cursor does not self-approve or self-merge to `main`.
+- Non-`main` Model B component integration may follow `/docs/governance/PR_PROCESS.md` when the source issue authorizes `component-auto-integration`.
+- Governance documentation on an authorized project component branch is version-controlled project work; it does not create an intermediate human gate solely because the files live under `docs/governance/**`.
+- Project-branch docs become repository-wide authority only after Bill/ChatGPT-approved promotion to `main` (or a separate early documentation promotion when another active project must consume the rule first).
+- Cursor does not self-approve or self-merge. Cursor does not merge to `main`.
 
 Full matrix: `/docs/ops/reports/pr-readiness-merge-authority-1723.md`.
 

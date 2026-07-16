@@ -89,17 +89,35 @@ Current classes include:
 - `ops`
 - `mixed-approved`
 
+## Documentation authority levels
+
+LGFC keeps two documentation authority levels during Model B project construction:
+
+| Level | Branch / surface | Authority meaning |
+| --- | --- | --- |
+| Project construction authority | `component/<project>` (for Program `#1719`: `component/pmo-governance-workflow-automation`) | Version-controlled authority for construction and successor execution **within that project** |
+| Repository-wide authority | `main` | Default authority for the whole repository outside the active project branch |
+
+Rules:
+
+1. Documentation integrated into the project component branch is versioned project authority for that program’s remaining child work.
+2. Documentation on `main` remains repository-wide authority.
+3. Project-branch documentation becomes repository-wide authority **only** through a Bill/ChatGPT-approved promotion PR to `main`.
+4. If another active workstream must consume an updated rule before the project finishes, use a **separate bounded documentation promotion PR** to `main`, then synchronize the project branch.
+5. Documentation location, governance-folder placement, or canonical status does **not** by itself create an intermediate human-review gate on the component branch.
+6. Cursor does not self-approve or self-merge. Cursor does not merge to `main`.
+
 ## Merge authority and readiness
 
-| Target | Readiness meaning | Merge authority |
+| Target | Readiness meaning | Merge / integration authority |
 | --- | --- | --- |
 | `main` | `READY FOR REVIEW` means ready for human/Atlas inspection; not merge authority | Bill/ChatGPT only |
 | `component/**` under Model B / `component-auto-integration` | Technically necessary checks pass; no material defect | Atlas-controlled component integration / authorized non-`main` auto-merge |
-| `component/**` or `main` with protected governance paths | Complete PR; independent Chat/governance review required | Bill/ChatGPT (and Chat review when required) |
+| Promotion of component work to `main` | Promotion PR ready for Bill/ChatGPT decision | Bill/ChatGPT only |
 
 `READY FOR REVIEW` never authorizes Cursor to merge to `main`.
 
-Protected governance review is required for Program `#1719` Tasks `#1723` and `#1724` before merge/promotion of those scopes.
+Program `#1719` Tasks `#1723` and `#1724` are component-branch documentation work. They do **not** require an intermediate human gate merely because they modify governance documentation. They integrate under `component-auto-integration` when technically necessary checks pass. Repository-wide effect still waits for Bill/ChatGPT-approved promotion to `main` (or a separate early documentation promotion when required).
 
 Continuation/stop detail for Cursor: `/docs/reference/pmo/lgfc-cursor-execution-contract.md` and `/docs/ops/reports/cursor-continuation-contract-matrix-1722.md`.
 
@@ -110,9 +128,10 @@ Task `#1723` evidence: `/docs/ops/reports/pr-readiness-merge-authority-1723.md`.
 Batch review may group related PRs for human efficiency. Batch review must:
 
 - preserve one source issue per PR;
-- preserve Bill/ChatGPT authority for `main` merges and protected actions;
-- preserve Atlas authority for governance review and Model B component integration control;
+- preserve Bill/ChatGPT authority for `main` merges and other Bill-protected actions;
+- preserve Atlas authority for Model B component integration control;
 - not convert Cursor into `main` merge authority;
+- not invent an intermediate human gate for ordinary governance-doc edits on an authorized component branch;
 - not allow Cursor to close, reopen, or relabel issues unless the source issue explicitly grants that authority.
 
 ## CI policy
