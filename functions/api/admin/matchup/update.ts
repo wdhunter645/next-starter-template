@@ -17,7 +17,7 @@ export const onRequestPost = async (context: any): Promise<Response> => {
   const d1 = requireD1(env);
   if (!d1.ok) return jsonResponse(d1.body, d1.status);
 
-  const tables = await requireTables(d1.db, ["weekly_matchups"]);
+  const tables = await requireTables(d1.db, ["weekly_matchups", "weekly_votes"]);
   if (!tables.ok) return jsonResponse(tables.body, tables.status);
 
   try {
@@ -32,7 +32,7 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     }
 
     const existing = await d1.db
-      .prepare("SELECT id, photo_a_id, photo_b_id, status FROM weekly_matchups WHERE id = ?")
+      .prepare("SELECT id, week_start, photo_a_id, photo_b_id, status FROM weekly_matchups WHERE id = ?")
       .bind(id)
       .first();
 
@@ -40,6 +40,7 @@ export const onRequestPost = async (context: any): Promise<Response> => {
       return jsonResponse({ ok: false, error: "matchup_not_found" }, 404);
     }
 
+    const weekStart = String((existing as any).week_start || "");
     const nextPhotoA = photo_a_id === null ? Number((existing as any).photo_a_id) : photo_a_id;
     const nextPhotoB = photo_b_id === null ? Number((existing as any).photo_b_id) : photo_b_id;
     const nextStatus =
@@ -59,6 +60,10 @@ export const onRequestPost = async (context: any): Promise<Response> => {
       return jsonResponse({ ok: false, error: "photo_ids_must_differ" }, 400);
     }
 
+    const pairChanged =
+      nextPhotoA !== Number((existing as any).photo_a_id) ||
+      nextPhotoB !== Number((existing as any).photo_b_id);
+
     if (nextStatus === "active") {
       const batchResults = await d1.db.batch([
         d1.db
@@ -73,6 +78,10 @@ export const onRequestPost = async (context: any): Promise<Response> => {
           .bind(nextPhotoA, nextPhotoB, nextStatus, id),
       ]);
 
+      if (pairChanged && weekStart) {
+        await d1.db.prepare("DELETE FROM weekly_votes WHERE week_start = ?;").bind(weekStart).run();
+      }
+
       const changed = batchResults?.[1]?.meta?.changes || 0;
       return jsonResponse({ ok: true, changed }, 200);
     }
@@ -85,6 +94,10 @@ export const onRequestPost = async (context: any): Promise<Response> => {
       )
       .bind(nextPhotoA, nextPhotoB, nextStatus, id)
       .run();
+
+    if (pairChanged && weekStart) {
+      await d1.db.prepare("DELETE FROM weekly_votes WHERE week_start = ?;").bind(weekStart).run();
+    }
 
     return jsonResponse({ ok: true, changed: out?.meta?.changes || 0 }, 200);
   } catch (err: any) {

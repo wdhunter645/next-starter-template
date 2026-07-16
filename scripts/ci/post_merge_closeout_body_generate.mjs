@@ -63,6 +63,23 @@ export function extractSourceIssueFromBody(body = '') {
 	return match ? Number(match[1]) : null;
 }
 
+export function clericalLinkageRepairNote({
+	declaredIssueNumber = '',
+	correctedIssueNumber = '',
+	evidence = [],
+} = {}) {
+	const declared = String(declaredIssueNumber || '').replace(/^#/, '');
+	const corrected = String(correctedIssueNumber || '').replace(/^#/, '');
+	if (!declared || !corrected || declared === corrected) return '';
+	return [
+		'## Clerical source-issue linkage repair',
+		`- Declared: #${declared}`,
+		`- Corrected: #${corrected}`,
+		`- Evidence: ${evidence.length ? evidence.join('; ') : 'unambiguous repository evidence'}`,
+		'- Classification: clerical_linkage_mismatch',
+	].join('\n');
+}
+
 export function extractChangeSummaryFromBody(body = '') {
 	const section = extractSection(sanitizeMergedPrBody(body), 'CHANGE SUMMARY');
 	if (!section) return '';
@@ -234,6 +251,8 @@ export function generateCloseoutBody({
 	issueComments = [],
 	mergedAt = '',
 	sourceIssueState = 'open',
+	declaredIssueNumber = '',
+	linkageEvidence = [],
 } = {}) {
 	const sanitized = sanitizeMergedPrBody(mergedBody);
 	const allowlist = resolveAllowlist({ mergedBody: sanitized, changedFiles });
@@ -248,6 +267,11 @@ export function generateCloseoutBody({
 		mergedAt,
 	});
 	const remediationNote = failureRemediationNote(failureCode);
+	const linkageNote = clericalLinkageRepairNote({
+		declaredIssueNumber: declaredIssueNumber || extractSourceIssueFromBody(mergedBody),
+		correctedIssueNumber: sourceIssueNumber,
+		evidence: linkageEvidence,
+	});
 	const sourceIssueIsClosed = String(sourceIssueState).toLowerCase() === 'closed';
 	const sourceIssueAcceptanceLine = sourceIssueIsClosed
 		? `- [x] Required source issue exists, is same-repository, and closed-source follow-up closeout evidence is recorded.`
@@ -275,7 +299,7 @@ export function generateCloseoutBody({
 - Out-of-Scope Changes Present: NO
 - Blocking Issues: none (post-merge closeout body remediation generated)
 - Notes: Merged as PR #${prNumber} at \`${mergeSha}\`. ${remediationNote}
-
+${linkageNote ? `\n${linkageNote}\n` : ''}
 ## FILE-TOUCH ALLOWLIST (MANDATORY)
 Allowed files:
 ${allowlistBlock}

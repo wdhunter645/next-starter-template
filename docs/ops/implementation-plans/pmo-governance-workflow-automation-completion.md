@@ -29,7 +29,7 @@ This plan packages PMO Backlog ranks 3–10 into bounded implementation tasks so
 
 This plan covers:
 
-- PMO v3 authority reconciliation;
+- PMO July 2026 authority reconciliation;
 - workflow automation design migration and gap review;
 - Cursor continuation and queue contract hardening;
 - PR readiness and batch review control;
@@ -56,7 +56,7 @@ This plan does not authorize this documentation PR to change workflows, CI scrip
 
 At the end of this program:
 
-1. PMO v3 authority is internally consistent across operating model, registry, backlog, and execution contracts.
+1. PMO July 2026 authority is internally consistent across operating model, registry, backlog, and execution contracts.
 2. Workflow automation design is documented as repository authority and gaps are classified before code/workflow changes.
 3. Cursor continuation, stop, review-handoff, and queue rules are explicit and current.
 4. PR readiness and batch-review controls preserve Bill/Atlas review and merge authority.
@@ -73,7 +73,7 @@ At the end of this program:
 | `docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md` | PMO readiness and child-project boundary authority |
 | `docs/ops/pmo/pmo-backlog.md` | Priority #3 backlog source and child-project inventory |
 | `docs/ops/pmo/program-registry.md` | Program queue and launch-state control authority |
-| `docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` | PMO v3 top-level operating authority |
+| `docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md` | PMO July 2026 top-level operating authority |
 | `docs/ops/pmo/workflow-automation.md` | Workflow automation planning authority |
 | `docs/reference/pmo/lgfc-cursor-execution-contract.md` | Cursor continuation/stop/assignment authority |
 | `docs/governance/PR_PROCESS.md` | PR process authority |
@@ -95,7 +95,7 @@ Cursor must reconcile before building. Existing PMO docs, governance docs, workf
 
 | Task | Title | Objective | Primary project | Allowed files / areas | Verification | Predecessor | Successor |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 001 | PMO v3 authority and stale issue reconciliation | Reconcile PMO v3 authority, registry/backlog terminology, #1411 historical status, and stale #1417–#1424 issue evidence without mutating issues. | PMO v3 authority | `docs/ops/pmo/**`, `docs/reference/pmo/**`, `docs/ops/reports/**` | Docs checks; stale issue evidence table | Launch authorization | 002 |
+| 001 | PMO July 2026 authority and stale issue reconciliation | Reconcile PMO July 2026 authority, registry/backlog terminology, #1411 historical status, and stale #1417–#1424 issue evidence without mutating issues. | PMO July 2026 authority | `docs/ops/pmo/**`, `docs/reference/pmo/**`, `docs/ops/reports/**` | Docs checks; stale issue evidence table | Launch authorization | 002 |
 | 002 | Workflow automation design migration and gap inventory | Review workflow automation authority and classify remaining documentation, automation, and implementation gaps. | Workflow Automation Design Migration | `docs/ops/pmo/**`, `docs/reference/pmo/**`, `docs/ops/reports/**` | Docs checks; gap inventory | 001 | 003 |
 | 003 | Cursor continuation and queue contract hardening | Align Cursor assignment, continuation, halt, review handoff, and READY FOR REVIEW rules. | Cursor Continuation and Queue Contract | `docs/reference/pmo/**`, `docs/ops/pmo/**`, `docs/ops/reports/**` | Docs checks; contract matrix review | 001 and 002 | 004 |
 | 004 | PR readiness and merge authority control | Reconcile PR process/governance docs for batch review, readiness, human review, and merge authority. | PR Readiness and Batch Review Control | `docs/governance/**`, `docs/reference/governance/**`, `docs/ops/reports/**` | Docs checks; PR-process checklist | 003 | 005 |

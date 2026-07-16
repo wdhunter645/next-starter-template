@@ -10,12 +10,14 @@ Owner: Atlas
 Execution Mode: orchestrated
 Source Issue: 1411
 Related Program Issue: 1411
-Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
+Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
 Related Issues: #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1379, #1255, #1335, #1501
 Last Reviewed: 2026-06-10
 ---
 
 # Program #1411 — PMO Automation and Agent Workflow Control
+
+> **Historical planning evidence.** Current PMO authority is `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`. PMO v3 references in this file preserve the historical planning context for Program #1411.
 
 | Field | Value |
 | --- | --- |

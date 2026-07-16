@@ -4,7 +4,7 @@ Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and revi
 Authority Level: Operational Authority
 Owns: Program #2039 readiness decision, public launch readiness scope, club staging placement, child-task boundaries, and launch preconditions
 Does Not Own: Runtime implementation, merge authority, production secrets, vendor configuration, or Program #2040 publication scope
-Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
+Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
 Related Issues: #1685, #2039, #2041, #2042, #2043, #2044, #2045, #2046, #2047, #2048
 Last Reviewed: 2026-07-01
 ---

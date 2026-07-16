@@ -44,7 +44,7 @@ This plan does not authorize this documentation PR to change application code, w
 - Priority #1 is the highest-ranked unfinished PMO backlog project group.
 - Canonical production design and Fan Club subpage design authority already exist.
 - Existing content/admin/backend work exists and must be reconciled before any build task adds new deltas.
-- The legacy `program-3-club-home-page-design.md` file contains useful Fan Club home design evidence but is not PMO v3 launch authority.
+- The legacy `program-3-club-home-page-design.md` file contains useful Fan Club home design evidence but is not PMO July 2026 launch authority.
 - Content collection strategy is merged into the content management strategy for this program.
 - Cursor is the intended implementation agent after Bill/Atlas launch authorization.
 

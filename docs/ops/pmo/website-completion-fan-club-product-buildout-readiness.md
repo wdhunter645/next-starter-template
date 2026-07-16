@@ -4,7 +4,7 @@ Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and revi
 Authority Level: Operational Authority
 Owns: Priority #1 PMO readiness decision, next-program candidate scope, child-project boundaries, design/readiness state, Cursor launch preconditions
 Does Not Own: Runtime implementation, issue creation, merge authority, production secrets, vendor configuration, fundraiser program scope
-Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
+Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
 Related issues: #1678, #1255, #1256, #1258, #1259, #1379, #1685, #1963
 Last Reviewed: 2026-06-29
 ---
@@ -15,7 +15,7 @@ Last Reviewed: 2026-06-29
 
 ## Purpose
 
-This document converts PMO Backlog Priority #1 into a PMO v3 next-program readiness package.
+This document converts PMO Backlog Priority #1 into a PMO July 2026 next-program readiness package.
 
 Priority #1 is the **Website Completion / Fan Club Product Buildout** group. The group contains the unfinished projects required to turn the existing website foundation into a complete member-facing Fan Club product buildout suitable for Cursor implementation after launch authorization.
 
@@ -40,10 +40,10 @@ This document does not launch implementation, create child issues, authorize Cur
 - The PMO Backlog identifies Website Completion / Fan Club Product Buildout as the highest-priority future program candidate.
 - Canonical production design authority exists in `docs/reference/design/LGFC-Production-Design-and-Standards.md`.
 - Fan Club destination-page design authority exists in `docs/reference/design/fanclub-subpages.md`.
-- A legacy Fan Club home design draft exists at `docs/ops/pmo/program-3-club-home-page-design.md`; this file is planning evidence, not PMO v3 launch authority.
+- A legacy Fan Club home design draft exists at `docs/ops/pmo/program-3-club-home-page-design.md`; this file is planning evidence, not PMO July 2026 launch authority.
 - Content strategy and editorial inventory planning exists in `docs/ops/implementation-plans/website-content-strategy-editorial-inventory.md` and supporting Diataxis website content documents.
 - Website operations/admin work is documented as completed in `docs/ops/implementation-plans/website-operations-admin.md`; Priority #1 backend work must reconcile against that existing work instead of rebuilding it.
-- PMO v3 requires explicit Atlas/Bill launch authorization before Cursor implementation.
+- PMO July 2026 requires explicit Atlas/Bill launch authorization before Cursor implementation.
 
 ## Intended final state
 
@@ -51,7 +51,7 @@ After this readiness package is approved, Priority #1 should be usable as the ne
 
 The intended final state before implementation launch is:
 
-- one PMO v3 program candidate with a clear launch-state control statement;
+- one PMO July 2026 program candidate with a clear launch-state control statement;
 - child-project boundaries for Fan Club page design, backend services, content management, content collection, and design/as-built review;
 - an implementation plan that defines task order, file areas, validation, and closeout expectations;
 - explicit decisions for duplicate/merged content strategy items;
@@ -74,7 +74,7 @@ The intended final state before implementation launch is:
 
 | Priority item | project name | Current state | Design authority | Implementation plan state | Readiness decision |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Website Completion / Fan Club Product Buildout | PMO v3 program candidate | This readiness doc plus production design authority | `website-completion-fan-club-product-buildout.md` | Ready for Bill/Atlas launch review |
+| 1 | Website Completion / Fan Club Product Buildout | PMO July 2026 program candidate | This readiness doc plus production design authority | `website-completion-fan-club-product-buildout.md` | Ready for Bill/Atlas launch review |
 | 1a | Fan Club page design | Legacy planning draft with strong design content | `program-3-club-home-page-design.md`, `fanclub-subpages.md`, production design standards | Covered by Tasks 001, 003, 007, 009 | Ready for implementation planning after launch |
 | 1b | Website backend services | Partially implemented across prior content/admin work | production design data model, content inventory model, admin operations plan | Covered by Tasks 001, 002, 004, 005, 006 | Ready for gap-first implementation planning after launch |
 | 1c | Content management strategy | Partially documented and partially implemented | content strategy / content inventory / editorial placement docs | Covered by Tasks 001, 004, 005, 006 | Ready for reconciliation-first implementation planning after launch |
@@ -109,7 +109,7 @@ Cursor must reconcile current `functions/api/**`, D1 tables, B2/media mappings, 
 
 | Area | Primary source | Use in next program |
 | --- | --- | --- |
-| PMO operating model | `docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` | Launch gate, program issue model, backlog promotion rule |
+| PMO operating model | `docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md` | Launch gate, program issue model, backlog promotion rule |
 | PMO backlog | `docs/ops/pmo/pmo-backlog.md` | Priority #1 inventory source |
 | Program registry | `docs/ops/pmo/program-registry.md` | Program numbering, launch-state language, Cursor boundary |
 | Production design | `docs/reference/design/LGFC-Production-Design-and-Standards.md` | Route, auth, navigation, footer, data-model invariants |

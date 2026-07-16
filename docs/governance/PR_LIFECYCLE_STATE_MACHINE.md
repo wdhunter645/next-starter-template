@@ -16,9 +16,9 @@ This document defines the mandatory pull request lifecycle state machine for LGF
 
 It compresses the distributed PR rules in `Agent.md`, shared/core agent rules, the PR governance skill, and the PR template into one executable lifecycle model. Agents must use this document when opening, updating, marking ready, handing off, merging, or closing out PRs.
 
-PMO **program** lifecycle status nomenclature (Launch Ready, Implementation
+PMO **program** lifecycle status nomenclature (Ready for Launch, Implementation
 Active, Post-Implementation Verification, Complete / Closed) is defined in
-`/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`. Do not conflate PR lifecycle states
+`/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`. Do not conflate PR lifecycle states
 with PMO program lifecycle reporting terms.
 
 ## Scope
@@ -276,6 +276,8 @@ Do not claim readiness, merge safety, or closeout success without repository evi
 Pre-merge CI should enforce the `READY FOR REVIEW -> READY FOR MERGE -> HUMAN MERGE DECISION` transitions. The pre-merge gate must reject PRs that would predictably fail post-merge closeout due to missing source issue, closed source issue without approved exception, missing reviewer disposition, unresolved required review thread, stale acceptance criteria, or missing queue/dependency-map decision.
 
 Post-merge CI should enforce the `MERGED -> CLOSEOUT VERIFIED` transition. Any post-merge failure should create or update a bounded remediation issue and halt queue advancement until resolved.
+
+Deterministic clerical primary-issue mismatch is not a post-merge exception when repository evidence identifies exactly one unambiguous correct source issue. In that case post-merge closeout may repair the durable PR/source-issue linkage, apply completion labels, and close the corrected source issue without creating a remediation issue. Material ambiguity, changed-file authority conflicts, unmet acceptance criteria, and unresolved required review findings still stop for human review.
 
 ---
 

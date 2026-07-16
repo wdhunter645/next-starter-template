@@ -4,7 +4,7 @@ Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and revi
 Authority Level: Operational Authority
 Owns: Priority #3 PMO readiness decision, governance/workflow automation program candidate scope, child-project boundaries, design/readiness state, Cursor launch preconditions
 Does Not Own: Runtime implementation, workflow code, CI script changes, issue creation, merge authority, production secrets, vendor configuration, unauthorized GitHub issue mutation
-Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
+Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
 Related Issues: #1713, #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1500, #1255, #1259, #1685, #1700, #1719, #1725
 Last Reviewed: 2026-06-19
 ---
@@ -15,7 +15,7 @@ Last Reviewed: 2026-06-19
 
 ## Purpose
 
-This document converts PMO Backlog ranks 3–10 into a PMO v3 future-program readiness package.
+This document converts PMO Backlog ranks 3–10 into a PMO July 2026 future-program readiness package.
 
 Priority #3 is the **PMO Governance / Workflow Automation Completion** group. The group consolidates the former #1411 PMO automation and agent workflow control areas into a bounded program candidate that can later reconcile PMO authority, workflow automation design, Cursor execution contracts, PR readiness, merge/issue mutation rules, queue/wave planning, post-merge closeout, and backlog promotion gates.
 
@@ -23,7 +23,7 @@ Priority #3 is the **PMO Governance / Workflow Automation Completion** group. Th
 
 This readiness package covers these Priority #3 workstreams:
 
-1. PMO v3 authority
+1. PMO July 2026 authority
 2. Workflow Automation Design Migration
 3. Cursor Continuation and Queue Contract
 4. PR Readiness and Batch Review Control
@@ -34,7 +34,7 @@ This readiness package covers these Priority #3 workstreams:
 
 This document owns the PMO readiness decision, project boundaries, source-of-truth map, missing-decision register, Program #1500 overlap reconciliation, stale issue review notes, implementation-readiness classification, and Cursor pre-launch requirements.
 
-This document does not launch implementation, create child issues, authorize Cursor execution, change workflow YAML, change CI scripts, change runtime behavior, mutate #1411 or #1417–#1424, close issues, relabel issues, or supersede the PMO v3 operating model.
+This document does not launch implementation, create child issues, authorize Cursor execution, change workflow YAML, change CI scripts, change runtime behavior, mutate #1411 or #1417–#1424, close issues, relabel issues, or supersede the PMO July 2026 operating model.
 
 ## Current known truth
 
@@ -53,7 +53,7 @@ After this readiness package is approved, Priority #3 should be usable as a futu
 
 The intended final state before implementation launch is:
 
-- one PMO v3 program candidate with a clear launch-state control statement;
+- one PMO July 2026 program candidate with a clear launch-state control statement;
 - child-project boundaries for PMO authority, workflow automation, Cursor execution rules, PR readiness, merge/issue mutation policy, queue/wave model, post-merge closeout, and backlog promotion gates;
 - a reconciliation map that prevents rebuilding work already completed by Program #1500;
 - a stale issue review plan for #1417–#1424;
@@ -70,7 +70,7 @@ The intended final state before implementation launch is:
 | Execution agent after launch | Cursor, with human/trusted reviewer gates where protected governance/CI files are touched |
 | Current readiness | Launch-control ready; queued behind Program #1255/#1259, parked Priority #1, and Priority #2 |
 | Primary implementation plan | `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md` |
-| Primary governance authority | `docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` |
+| Primary governance authority | `docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md` |
 | Product surface | PMO governance, workflow automation design, queue/closeout controls, PR readiness, and execution contracts |
 | Explicit non-goal | Mutating live workflows, CI scripts, labels, issues, or queue state from this documentation package |
 
@@ -78,14 +78,14 @@ The intended final state before implementation launch is:
 
 | Priority item | Project name | Current state | Design authority | Implementation plan state | Readiness decision |
 | --- | --- | --- | --- | --- | --- |
-| 3 | PMO v3 authority | Partial governance authority exists | `PMO-V3-OPERATING-MODEL.md`, `program-registry.md`, `pmo-backlog.md` | Covered by Tasks 001, 008 | Needs consolidation and conflict review |
+| 3 | PMO July 2026 authority | Partial governance authority exists | `PMO-JULY-2026-OPERATING-MODEL.md`, `program-registry.md`, `pmo-backlog.md` | Covered by Tasks 001, 008 | Needs consolidation and conflict review |
 | 4 | Workflow Automation Design Migration | Partial docs exist | `workflow-automation.md`, #1411 planning evidence | Covered by Tasks 002, 007, 008 | Needs source migration and gap review |
 | 5 | Cursor Continuation and Queue Contract | Partial contract exists | `lgfc-cursor-execution-contract.md`, current PR process | Covered by Tasks 003, 007, 008 | Needs authoritative continuation/stop matrix |
 | 6 | PR Readiness and Batch Review Control | Partial process exists | `PR_PROCESS.md`, `PR_GOVERNANCE.md` | Covered by Tasks 004, 007, 008 | Needs batch/readiness alignment |
 | 7 | Merge and issue mutation policy | Partial policy exists | `PR_GOVERNANCE.md`, closeout protocol, Cursor contract | Covered by Tasks 004, 005, 007, 008 | Needs mutation-permission matrix |
 | 8 | Queue/Wave Model and Label Planning | Partial planning exists; **#1500 overlap reconciled by Task #1725** | PMO backlog, queue/dependency docs, `docs/ops/reports/program-1500-queue-wave-reconciliation.md` | Covered by Tasks 006, 007, 008 | Wave labels remain planning concepts; implementation candidates scoped in Task 007 |
 | 9 | Post-Merge Closeout Evidence Stabilization | **Baseline satisfied by closed #1500**; remaining gaps documented only | closeout protocol, Program #1500 evidence, Task #1725 reconciliation report | Covered by Tasks 006, 007, 008 | Do not rebuild #1500; deferred items route to future CI source issues |
-| 10 | PMO Backlog Promotion and Program #1411 Launch Gate | Partial backlog/promotion rules exist | PMO backlog, PMO v3 operating model, registry | Covered by Tasks 001, 007, 008 | Needs promotion gate checklist and issue-chain standardization |
+| 10 | PMO Backlog Promotion and Program #1411 Launch Gate | Partial backlog/promotion rules exist | PMO backlog, PMO July 2026 operating model, registry | Covered by Tasks 001, 007, 008 | Needs promotion gate checklist and issue-chain standardization |
 
 ## Program #1500 overlap reconciliation
 
@@ -137,6 +137,6 @@ Before Cursor receives implementation assignment for this program:
 
 ## Readiness conclusion
 
-Priority #3 is documented as a launch-control-ready PMO v3 program candidate with master issue #1719 and child task issues #1720 through #1727.
+Priority #3 is documented as a launch-control-ready PMO July 2026 program candidate with master issue #1719 and child task issues #1720 through #1727.
 
 It is **launch-control ready**, not executable. Cursor may begin only after Bill/Atlas explicitly authorize Task 001 on #1720.

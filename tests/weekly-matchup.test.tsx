@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import WeeklyMatchup from '@/components/WeeklyMatchup';
+import WeeklyMatchup, { weeklyVoteStorageKey } from '@/components/WeeklyMatchup';
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -49,7 +49,162 @@ describe('WeeklyMatchup last closed week winner thumbnail', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     window.localStorage.clear();
+    window.localStorage.setItem(weeklyVoteStorageKey(currentWeek, 10, 11), '1');
+  });
+
+  it('unlocks voting when the current pair changes mid-week', async () => {
+    window.localStorage.clear();
+    window.localStorage.setItem(weeklyVoteStorageKey(currentWeek, 10, 11), '1');
+
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const path = String(input);
+      if (path === '/api/matchup/current') {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            week_start: currentWeek,
+            matchup_id: 2,
+            items: [
+              { id: 20, url: '/photos/20.jpg', title: 'Replacement A' },
+              { id: 21, url: '/photos/21.jpg', title: 'Replacement B' },
+            ],
+          }),
+        );
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${path}`));
+    });
+
+    render(<WeeklyMatchup />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Vote A' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Vote B' })).toBeInTheDocument();
+    });
+  });
+
+  it('unlocks when server vote totals were reset to zero for the current pair', async () => {
+    window.localStorage.clear();
+    window.localStorage.setItem(weeklyVoteStorageKey(currentWeek, 10, 11), '1');
+
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const path = String(input);
+      if (path === '/api/matchup/current') {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            week_start: currentWeek,
+            matchup_id: 2,
+            items: [
+              { id: 10, url: '/photos/10.jpg', title: 'Current A' },
+              { id: 11, url: '/photos/11.jpg', title: 'Current B' },
+            ],
+          }),
+        );
+      }
+      if (path.startsWith('/api/matchup/results')) {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            week_start: currentWeek,
+            totals: { a: 0, b: 0 },
+            last_week: null,
+          }),
+        );
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${path}`));
+    });
+
+    render(<WeeklyMatchup />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Vote A' })).toBeInTheDocument();
+    });
+    expect(window.localStorage.getItem(weeklyVoteStorageKey(currentWeek, 10, 11))).toBeNull();
+  });
+
+  it('clears the legacy week-only vote lock when a replacement pair loads', async () => {
+    window.localStorage.clear();
     window.localStorage.setItem(`lgfc_weekly_vote_${currentWeek}`, '1');
+
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const path = String(input);
+      if (path === '/api/matchup/current') {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            week_start: currentWeek,
+            matchup_id: 2,
+            items: [
+              { id: 20, url: '/photos/20.jpg', title: 'Replacement A' },
+              { id: 21, url: '/photos/21.jpg', title: 'Replacement B' },
+            ],
+          }),
+        );
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${path}`));
+    });
+
+    render(<WeeklyMatchup />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Vote A' })).toBeInTheDocument();
+    });
+    expect(window.localStorage.getItem(`lgfc_weekly_vote_${currentWeek}`)).toBeNull();
+  });
+
+  it('requests matchup repair when a photo fails to load', async () => {
+    window.localStorage.clear();
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
+      const path = String(input);
+      const method = String(init?.method || 'GET').toUpperCase();
+
+      if (path === '/api/matchup/current') {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            week_start: currentWeek,
+            matchup_id: 2,
+            items: [
+              { id: 10, url: '/photos/10.jpg', title: 'Current A' },
+              { id: 11, url: '/photos/broken.jpg', title: 'Broken B' },
+            ],
+          }),
+        );
+      }
+
+      if (path === '/api/matchup/repair' && method === 'POST') {
+        return Promise.resolve(
+          jsonResponse({
+            ok: true,
+            week_start: currentWeek,
+            matchup_id: 2,
+            repaired: true,
+            items: [
+              { id: 10, url: '/photos/10.jpg', title: 'Current A' },
+              { id: 12, url: '/photos/12.jpg', title: 'Replacement B' },
+            ],
+          }),
+        );
+      }
+
+      return Promise.reject(new Error(`Unexpected fetch: ${method} ${path}`));
+    });
+
+    render(<WeeklyMatchup />);
+
+    await screen.findByText('Broken B');
+    const images = screen.getAllByRole('img', { name: 'Lou Gehrig' });
+    const brokenImg = images.find((img) => img.getAttribute('src') === '/photos/broken.jpg');
+    expect(brokenImg).toBeTruthy();
+    fireEvent.error(brokenImg!);
+
+    await waitFor(() => {
+      expect(screen.getByText('Replacement B')).toBeInTheDocument();
+    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/matchup/repair',
+      expect.objectContaining({ method: 'POST' }),
+    );
   });
 
   it('renders winner A thumbnail and keeps result text', async () => {

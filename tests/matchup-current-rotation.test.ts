@@ -53,7 +53,7 @@ function weekStartFromCalendarDate(ymd: string): string {
 }
 
 function sqliteMasterResults() {
-  return { results: [{ name: 'weekly_matchups' }, { name: 'photos' }] };
+  return { results: [{ name: 'weekly_matchups' }, { name: 'weekly_votes' }, { name: 'photos' }] };
 }
 
 function makeWeekStartDb(nowYmd: string) {
@@ -93,6 +93,7 @@ function makeRotationDb(options: {
   weekStart?: string;
   matchups?: MatchupRow[];
   photos?: PhotoInput[];
+  votes?: Array<{ week_start: string; choice: 'a' | 'b'; source_hash?: string }>;
   simulateInsertRace?: boolean;
 }) {
   const weekStart = options.weekStart ?? '2026-06-30';
@@ -101,6 +102,7 @@ function makeRotationDb(options: {
     ...row,
     is_matchup_eligible: row.is_matchup_eligible ?? 0,
   }));
+  const votes = [...(options.votes ?? [])];
 
   const db = {
     prepare: vi.fn((sql: string) => ({
@@ -187,6 +189,26 @@ function makeRotationDb(options: {
       return { meta: { changes: 1 } };
     }
 
+    if (sql.includes('UPDATE photos') && sql.includes('is_matchup_eligible')) {
+      const target = photos.find((row) => Number(row.id) === Number(args[3]));
+      if (target) {
+        target.is_matchup_eligible = Number(args[0]);
+      }
+      return { meta: { changes: 1 } };
+    }
+
+    if (sql.includes('DELETE FROM weekly_votes WHERE week_start')) {
+      const targetWeek = String(args[0]);
+      let removed = 0;
+      for (let i = votes.length - 1; i >= 0; i -= 1) {
+        if (votes[i].week_start === targetWeek) {
+          votes.splice(i, 1);
+          removed += 1;
+        }
+      }
+      return { meta: { changes: removed } };
+    }
+
     if (sql.includes('INSERT INTO weekly_matchups')) {
       const nextWeek = String(args[0]);
       if (options.simulateInsertRace) {
@@ -219,12 +241,17 @@ function makeRotationDb(options: {
     return { meta: { changes: 0 } };
   }
 
-  return { db, matchups, photos, weekStart };
+  return { db, matchups, photos, votes, weekStart };
 }
 
-function mockPhotoFetch(photoMap: Record<number, { url: string; description?: string; title?: string }>) {
-  return vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+function mockPhotoFetch(
+  photoMap: Record<number, { url: string; description?: string; title?: string }>,
+  options?: { missingUrls?: string[] },
+) {
+  const missing = new Set(options?.missingUrls ?? []);
+  return vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
     const url = String(input);
+    const method = String(init?.method || 'GET').toUpperCase();
     const getMatch = url.match(/\/api\/photos\/get\?id=(\d+)/);
     if (getMatch) {
       const id = Number(getMatch[1]);
@@ -233,6 +260,16 @@ function mockPhotoFetch(photoMap: Record<number, { url: string; description?: st
         return Promise.resolve(jsonResponse({ ok: false, item: null }, 404));
       }
       return Promise.resolve(jsonResponse({ ok: true, item: { id, ...photo } }));
+    }
+    // Object-existence probes from GET /api/matchup/current (#2519).
+    if (method === 'HEAD' || method === 'GET') {
+      if ([...missing].some((path) => url.includes(path))) {
+        return Promise.resolve(jsonResponse({}, 404));
+      }
+      const knownUrls = Object.values(photoMap).map((photo) => photo.url);
+      if (knownUrls.some((known) => url === known || url.endsWith(known) || known.endsWith(url))) {
+        return Promise.resolve(jsonResponse({}, 200));
+      }
     }
     return Promise.reject(new Error(`Unexpected fetch: ${url}`));
   });
@@ -330,6 +367,59 @@ describe('public matchup current rotation', () => {
         { id: 102, url: '/photos/102.jpg' },
       ],
     });
+  });
+
+  it('probes object URLs and repairs a missing Photo B on GET /api/matchup/current', async () => {
+    const currentWeek = '2026-06-30';
+    const { db, matchups, photos, votes, weekStart } = makeRotationDb({
+      weekStart: currentWeek,
+      matchups: [
+        {
+          id: 8,
+          week_start: currentWeek,
+          photo_a_id: 201,
+          photo_b_id: 202,
+          status: 'active',
+        },
+      ],
+      votes: [
+        { week_start: currentWeek, choice: 'b', source_hash: 'hash-b' },
+      ],
+      photos: [
+        { id: 201, url: '/photos/201.jpg', is_memorabilia: 0, is_matchup_eligible: 1 },
+        { id: 202, url: '/photos/202-missing.jpg', is_memorabilia: 0, is_matchup_eligible: 1 },
+        { id: 203, url: '/photos/203.jpg', is_memorabilia: 0, is_matchup_eligible: 1 },
+        { id: 204, url: '/photos/204.jpg', is_memorabilia: 0, is_matchup_eligible: 1 },
+      ],
+    });
+
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    mockPhotoFetch(
+      {
+        201: { url: '/photos/201.jpg' },
+        202: { url: '/photos/202-missing.jpg' },
+        203: { url: '/photos/203.jpg' },
+        204: { url: '/photos/204.jpg' },
+      },
+      { missingUrls: ['202-missing'] },
+    );
+
+    const response = await publicMatchupCurrentGet({
+      request: new Request('https://www.lougehrigfanclub.com/api/matchup/current'),
+      env: { DB: db },
+    });
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.ok).toBe(true);
+    expect(body.repaired).toBe(true);
+    expect(body.week_start).toBe(weekStart);
+    expect(body.items).toHaveLength(2);
+    expect(body.items.map((item: { id: number }) => item.id)).not.toContain(202);
+    expect(body.items[0].id).toBe(201);
+    expect(photos.find((row) => row.id === 202)?.is_matchup_eligible).toBe(-1);
+    expect(matchups[0].photo_b_id).not.toBe(202);
+    expect(votes).toHaveLength(0);
   });
 
   it('closes stale active matchups and creates a new current-week matchup', async () => {
@@ -462,7 +552,7 @@ describe('public matchup current rotation', () => {
 
   it('replaces an active matchup photo when it is flagged ineligible in D1', async () => {
     const currentWeek = '2026-06-29';
-    const { db, matchups, weekStart } = makeRotationDb({
+    const { db, matchups, votes, weekStart } = makeRotationDb({
       weekStart: currentWeek,
       matchups: [
         {
@@ -472,6 +562,10 @@ describe('public matchup current rotation', () => {
           photo_b_id: 348,
           status: 'active',
         },
+      ],
+      votes: [
+        { week_start: currentWeek, choice: 'a', source_hash: 'hash-a' },
+        { week_start: currentWeek, choice: 'b', source_hash: 'hash-b' },
       ],
       photos: [
         { id: 254, url: '/photos/254.jpg', is_memorabilia: 0, is_matchup_eligible: 0 },
@@ -501,6 +595,7 @@ describe('public matchup current rotation', () => {
     expect(body.items).toHaveLength(2);
     expect(body.items.map((item: { id: number }) => item.id)).not.toContain(348);
     expect(matchups.find((row) => row.id === 3)?.photo_b_id).not.toBe(348);
+    expect(votes.filter((row) => row.week_start === currentWeek)).toHaveLength(0);
   });
 
   it('returns structured 503 when D1 binding is missing', async () => {
@@ -534,26 +629,30 @@ describe('public matchup current rotation', () => {
     let inFlight = 0;
     let maxInFlight = 0;
 
-    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
       const url = String(input);
+      const method = String(init?.method || 'GET').toUpperCase();
       const getMatch = url.match(/\/api\/photos\/get\?id=(\d+)/);
-      if (!getMatch) {
-        return Promise.reject(new Error(`Unexpected fetch: ${url}`));
+      if (getMatch) {
+        inFlight += 1;
+        maxInFlight = Math.max(maxInFlight, inFlight);
+        const id = Number(getMatch[1]);
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            inFlight -= 1;
+            resolve(
+              jsonResponse({
+                ok: true,
+                item: { id, url: `/photos/${id}.jpg` },
+              }),
+            );
+          }, 20);
+        });
       }
-      inFlight += 1;
-      maxInFlight = Math.max(maxInFlight, inFlight);
-      const id = Number(getMatch[1]);
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          inFlight -= 1;
-          resolve(
-            jsonResponse({
-              ok: true,
-              item: { id, url: `/photos/${id}.jpg` },
-            }),
-          );
-        }, 20);
-      });
+      if ((method === 'HEAD' || method === 'GET') && url.includes('/photos/')) {
+        return Promise.resolve(jsonResponse({}, 200));
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${url}`));
     });
 
     const response = await publicMatchupCurrentGet({

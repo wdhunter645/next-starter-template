@@ -92,6 +92,13 @@ function makeMatchupDb(matchups: Array<Record<string, unknown>> = [], votes: Rec
       }
       return { meta: { changes: 1 } };
     }
+    if (sql.includes('DELETE FROM weekly_votes WHERE week_start')) {
+      const week = String(args[0]);
+      const before = votes[week] || { a: 0, b: 0 };
+      const removed = Number(before.a || 0) + Number(before.b || 0);
+      delete votes[week];
+      return { meta: { changes: removed } };
+    }
     return { meta: { changes: 0 } };
   };
 
@@ -583,7 +590,7 @@ describe('public matchup read paths', () => {
           first: async () => null,
           all: async () => {
             if (sql.includes('sqlite_master')) {
-              return { results: [{ name: 'weekly_matchups' }, { name: 'photos' }] };
+              return { results: [{ name: 'weekly_matchups' }, { name: 'weekly_votes' }, { name: 'photos' }] };
             }
             return { results: [] };
           },
@@ -595,7 +602,7 @@ describe('public matchup read paths', () => {
         },
         all: async () => {
           if (sql.includes('sqlite_master')) {
-            return { results: [{ name: 'weekly_matchups' }, { name: 'photos' }] };
+            return { results: [{ name: 'weekly_matchups' }, { name: 'weekly_votes' }, { name: 'photos' }] };
           }
           return { results: [] };
         },

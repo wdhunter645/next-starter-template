@@ -40,6 +40,16 @@ describe('post-merge implementation evidence', () => {
 		]);
 	});
 
+	it('does not flag removed files as allowlist violations', () => {
+		expect(allowlistEvidenceFailures({
+			body,
+			files: [
+				{ filename: 'scripts/ci/post_merge_validator.mjs', status: 'modified' },
+				{ filename: '.github/workflows/update-docs.lock.yml', status: 'removed' },
+			],
+		})).toEqual([]);
+	});
+
 	it('flags pending verification evidence', () => {
 		const pendingBody = body.replace('- Result summary:\n  - PASS', '- Result summary:\n  - PENDING');
 		expect(verificationEvidenceFailures(pendingBody)).toEqual([

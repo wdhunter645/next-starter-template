@@ -119,6 +119,13 @@ function shuffleInPlace<T>(items: T[]): T[] {
   return items;
 }
 
+function pickOneId(photos: EligiblePhoto[], excludeIds: Set<number>): number | null {
+  const candidates = photos.filter((photo) => !excludeIds.has(Number(photo.id)));
+  if (candidates.length < 1) return null;
+  const shuffled = shuffleInPlace([...candidates]);
+  return Number(shuffled[0].id);
+}
+
 function pickTwoDistinctIds(photos: EligiblePhoto[], excludeIds: Set<number>): [number, number] | null {
   const candidates = photos.filter((photo) => !excludeIds.has(Number(photo.id)));
   if (candidates.length < 2) return null;
@@ -191,6 +198,11 @@ async function closeStaleActiveMatchups(db: any, weekStart: string): Promise<voi
     .run();
 }
 
+async function clearVotesForWeek(db: any, weekStart: string): Promise<void> {
+  // Mid-week pair replacement must not transfer A/B votes onto replacement photos.
+  await db.prepare("DELETE FROM weekly_votes WHERE week_start = ?;").bind(weekStart).run();
+}
+
 async function upsertCurrentWeekMatchup(
   db: any,
   weekStart: string,
@@ -199,12 +211,21 @@ async function upsertCurrentWeekMatchup(
 ): Promise<number> {
   const existing = await findCurrentWeekMatchup(db, weekStart);
   if (existing) {
+    const pairChanged =
+      Number(existing.photo_a_id) !== Number(photoAId) ||
+      Number(existing.photo_b_id) !== Number(photoBId);
+
     await db
       .prepare(
         "UPDATE weekly_matchups SET photo_a_id = ?, photo_b_id = ?, status = 'active' WHERE id = ?;",
       )
       .bind(photoAId, photoBId, existing.id)
       .run();
+
+    if (pairChanged) {
+      await clearVotesForWeek(db, weekStart);
+    }
+
     return existing.id;
   }
 
@@ -246,6 +267,140 @@ async function buildSuccessResponse(
   });
 }
 
+/** HEAD/GET probe used by browser-driven broken-image repair (#2519). */
+export async function probePhotoObjectAvailable(url: string): Promise<{ available: boolean; status: number | null }> {
+  if (!url || !url.trim()) return { available: false, status: null };
+
+  for (const method of ["HEAD", "GET"] as const) {
+    try {
+      const resp = await fetch(url, {
+        method,
+        redirect: "follow",
+        headers: method === "GET" ? { Range: "bytes=0-0" } : undefined,
+      });
+      if (resp.status === 404 || resp.status === 410) {
+        return { available: false, status: resp.status };
+      }
+      if (resp.ok || resp.status === 206) {
+        return { available: true, status: resp.status };
+      }
+    } catch {
+      // try next method / fail closed below
+    }
+  }
+
+  return { available: false, status: null };
+}
+
+async function markPhotoExcludedMissingObject(db: any, photoId: number, detail: string): Promise<void> {
+  const note = `PURGE_ELIGIBLE: missing/unreachable B2 object after client image failure; OK to remove (#2519, ${detail})`;
+  await db
+    .prepare(
+      `UPDATE photos
+       SET is_matchup_eligible = ?,
+           rights_notes = CASE
+             WHEN rights_notes IS NULL OR TRIM(rights_notes) = '' THEN ?
+             ELSE rights_notes || ' | ' || ?
+           END
+       WHERE id = ?;`,
+    )
+    .bind(MATCHUP_EXCLUDED_ELIGIBILITY, note, note, photoId)
+    .run();
+}
+
+/**
+ * Browser-reported broken matchup image repair.
+ * Confirms the photo is in the active current-week pair, excludes missing objects,
+ * replaces the broken slot (or the full pair if needed), clears votes on pair change,
+ * and returns the repaired current matchup payload.
+ */
+export async function repairBrokenActiveMatchupPhoto(options: {
+  db: any;
+  request: Request;
+  brokenPhotoId: number;
+}): Promise<Response> {
+  const { db, request, brokenPhotoId } = options;
+  if (!Number.isFinite(brokenPhotoId) || brokenPhotoId <= 0) {
+    return jsonResponse({ ok: false, error: "invalid_broken_photo_id" }, 400);
+  }
+
+  const weekStart = await computeWeekStart(db);
+  if (!weekStart) {
+    return jsonResponse({ ok: true, week_start: null, matchup_id: null, items: [], repaired: false });
+  }
+
+  const active = await findActiveCurrentWeekMatchup(db, weekStart);
+  if (!active) {
+    return jsonResponse({ ok: true, week_start: weekStart, matchup_id: null, items: [], repaired: false });
+  }
+
+  const brokenIsA = Number(active.photo_a_id) === brokenPhotoId;
+  const brokenIsB = Number(active.photo_b_id) === brokenPhotoId;
+  if (!brokenIsA && !brokenIsB) {
+    // Stale client report after another repair already replaced the pair.
+    return buildSuccessResponse(request, weekStart, active.id, active.photo_a_id, active.photo_b_id);
+  }
+
+  const brokenItem = await readPhotoById(request, brokenPhotoId);
+  const probe = brokenItem?.url
+    ? await probePhotoObjectAvailable(brokenItem.url)
+    : { available: false, status: null };
+
+  // Permanent exclude only when the object is confirmed missing/unreachable.
+  // Still replace the slot so the homepage does not stay on a broken image.
+  if (!probe.available) {
+    await markPhotoExcludedMissingObject(
+      db,
+      brokenPhotoId,
+      `status=${probe.status ?? "unreachable"}`,
+    );
+  }
+
+  const keepId = brokenIsA ? Number(active.photo_b_id) : Number(active.photo_a_id);
+  const eligiblePhotos = await fetchEligiblePhotos(db);
+  const recentIds = await getRecentMatchupPhotoIds(db);
+
+  let nextA = brokenIsA ? 0 : keepId;
+  let nextB = brokenIsB ? 0 : keepId;
+
+  let replacement =
+    pickOneId(eligiblePhotos, new Set<number>([brokenPhotoId, keepId, ...recentIds])) ??
+    pickOneId(eligiblePhotos, new Set<number>([brokenPhotoId, keepId]));
+
+  if (replacement) {
+    if (brokenIsA) nextA = replacement;
+    else nextB = replacement;
+  } else {
+    const selected =
+      selectTwoPhotoIds(eligiblePhotos, new Set<number>([brokenPhotoId, ...recentIds])) ??
+      selectTwoPhotoIds(eligiblePhotos, new Set<number>([brokenPhotoId]));
+    if (!selected) {
+      return jsonResponse({ ok: true, week_start: weekStart, matchup_id: null, items: [], repaired: false });
+    }
+    [nextA, nextB] = selected;
+  }
+
+  if (!nextA || !nextB || nextA === nextB) {
+    return jsonResponse({ ok: true, week_start: weekStart, matchup_id: null, items: [], repaired: false });
+  }
+
+  const matchupId = await upsertCurrentWeekMatchup(db, weekStart, nextA, nextB);
+  const resolved = await findCurrentWeekMatchup(db, weekStart);
+  if (!resolved) {
+    return jsonResponse({ ok: true, week_start: weekStart, matchup_id: null, items: [], repaired: false });
+  }
+
+  const response = await buildSuccessResponse(
+    request,
+    weekStart,
+    matchupId || resolved.id,
+    resolved.photo_a_id,
+    resolved.photo_b_id,
+  );
+  const body = await response.json();
+  return jsonResponse({ ...body, repaired: true, excluded_broken_photo_id: brokenPhotoId });
+}
+
 export const onRequestGet = async (context: any): Promise<Response> => {
   const { env, request } = context;
 
@@ -255,7 +410,7 @@ export const onRequestGet = async (context: any): Promise<Response> => {
       return jsonResponse(d1Check.body, d1Check.status);
     }
 
-    const tablesCheck = await requireTables(d1Check.db, ["weekly_matchups", "photos"]);
+    const tablesCheck = await requireTables(d1Check.db, ["weekly_matchups", "weekly_votes", "photos"]);
     if (!tablesCheck.ok) {
       return jsonResponse(tablesCheck.body, tablesCheck.status);
     }
@@ -277,11 +432,26 @@ export const onRequestGet = async (context: any): Promise<Response> => {
         activeCurrentWeek.photo_b_id,
       );
       if (items.length >= 2 && photoAEligible && photoBEligible) {
-        return jsonResponse({
-          ok: true,
-          week_start: weekStart,
-          matchup_id: activeCurrentWeek.id,
-          items: items.slice(0, 2),
+        // Proactive existence check before returning usable public photos (#2519).
+        const [probeA, probeB] = await Promise.all([
+          probePhotoObjectAvailable(items[0].url),
+          probePhotoObjectAvailable(items[1].url),
+        ]);
+
+        if (probeA.available && probeB.available) {
+          return jsonResponse({
+            ok: true,
+            week_start: weekStart,
+            matchup_id: activeCurrentWeek.id,
+            items: items.slice(0, 2),
+          });
+        }
+
+        const brokenId = !probeA.available ? Number(items[0].id) : Number(items[1].id);
+        return await repairBrokenActiveMatchupPhoto({
+          db,
+          request,
+          brokenPhotoId: brokenId,
         });
       }
     }

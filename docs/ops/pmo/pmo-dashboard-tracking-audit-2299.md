@@ -4,7 +4,7 @@ Audience: Bill, Atlas, PMO operators
 Authority Level: Evidence / Audit
 Owns: PMO dashboard tracking reconciliation audit for issue #2299
 Does Not Own: Final priority authorization or issue closeout
-Canonical Reference: /docs/ops/pmo/PMO-V4-OPERATING-MODEL.md
+Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
 Related Issues: #2299, #1719, #2313
 Last Reviewed: 2026-07-06
 ---
@@ -89,7 +89,7 @@ Canonical operator documentation: `docs/how-to/pmo/pmo-dashboard.md`.
 | #1039 | Historical DIATAXIS governance project; outside tracked inventory. |
 | #1076 | Historical DIATAXIS migration project; outside tracked inventory. |
 | #1054 | Historical repository governance project; outside tracked inventory. |
-| #1335 | Historical Phase 1 wrap-up program; PMO V4 archive evidence. |
+| #1335 | Historical Phase 1 wrap-up program; PMO July 2026 archive evidence. |
 
 ## Atlas decisions (resolved)
 
@@ -101,7 +101,7 @@ Canonical operator documentation: `docs/how-to/pmo/pmo-dashboard.md`.
 
 ## Priority rule applied
 
-Priority reflects LGFC website/repository need per PMO V4, not implementation readiness. Pipeline items may rank highly while still launch-gated.
+Priority reflects LGFC website/repository need per PMO July 2026, not implementation readiness. Pipeline items may rank highly while still launch-gated.
 
 ## Validation
 

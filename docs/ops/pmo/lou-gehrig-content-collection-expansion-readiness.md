@@ -4,7 +4,7 @@ Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and revi
 Authority Level: Operational Authority
 Owns: Priority #4 PMO readiness decision, Lou Gehrig content collection expansion scope, child-project boundaries, source/credit/privacy/readiness state, Cursor launch preconditions
 Does Not Own: Runtime implementation, issue creation without launch authorization, merge authority, third-party content rights, bulk ingestion, OCR implementation, AI enrichment implementation, external monitoring implementation
-Canonical Reference: /docs/ops/pmo/PMO-V3-OPERATING-MODEL.md
+Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
 Related Issues: #1736, #1255, #1256, #1685, #1690, #1693, #1379
 Last Reviewed: 2026-06-17
 ---
@@ -15,7 +15,7 @@ Last Reviewed: 2026-06-17
 
 ## Purpose
 
-This document converts the PMO backlog item **Lou Gehrig content collection strategy** into a PMO v3 future-program readiness package.
+This document converts the PMO backlog item **Lou Gehrig content collection strategy** into a PMO July 2026 future-program readiness package.
 
 This program exists because the LGFC website will need a durable content supply chain. Priority #1 absorbs normal editorial intake/source-credit workflow for current website content management, but this package covers the larger future expansion: discovering, triaging, crediting, reviewing, and converting Lou Gehrig-related material into website-ready content at scale.
 
