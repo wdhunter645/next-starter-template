@@ -92,6 +92,20 @@ describe('preview isolation inventory', () => {
     expect(missing, `Add missing mutating handlers: ${missing.join(', ')}`).toEqual([]);
   });
 
+  it('inventories POST /api/matchup/repair as production-shared with exact tables', () => {
+    const entries = manifest.mutatingRoutes.filter(
+      (entry) => entry.handler === 'functions/api/matchup/repair.ts',
+    );
+    expect(entries).toHaveLength(1);
+    expect(entries[0]).toEqual({
+      method: 'POST',
+      path: '/api/matchup/repair',
+      handler: 'functions/api/matchup/repair.ts',
+      classification: 'production-shared',
+      tables: ['weekly_matchups', 'weekly_votes', 'photos'],
+    });
+  });
+
   it('expands admin/** globs with a trailing directory boundary only', () => {
     const handlers = [
       'functions/api/admin/media-assets/sync-from-b2.ts',
