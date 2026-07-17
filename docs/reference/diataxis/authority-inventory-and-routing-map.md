@@ -4,8 +4,8 @@ Audience: Human + AI
 Authority Level: Canonical
 Owns: Repository documentation authority inventory, routing hierarchy, canonical-path classification
 Does Not Own: Workflow implementation behavior
-Canonical Reference: /docs/governance/standards/DIATAXIS-FOLDER-AUTHORITY.md
-Last Reviewed: 2026-05-22
+Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
+Last Reviewed: 2026-07-13
 ---
 
 # LGFC Documentation Authority Inventory and Routing Map
@@ -13,6 +13,12 @@ Last Reviewed: 2026-05-22
 ## Purpose
 
 This document establishes the authoritative documentation routing hierarchy for the LGFC repository.
+
+Constitutional precedence and domain ownership:
+[`docs/governance/REPOSITORY-AUTHORITY.md`](../../governance/REPOSITORY-AUTHORITY.md).
+
+Active disposition work:
+[`docs/reference/diataxis/two-model-authority-disposition-map.md`](./two-model-authority-disposition-map.md).
 
 It defines:
 

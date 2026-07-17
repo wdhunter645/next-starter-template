@@ -4,8 +4,8 @@ Audience: Human + AI
 Authority Level: Canonical
 Owns: Diataxis-to-legacy authority resolution during transition
 Does Not Own: Folder-purpose rules; product design; operational work tracking
-Canonical Reference: /docs/governance/DOCUMENT-ARCHITECTURE.md
-Last Reviewed: 2026-05-02
+Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
+Last Reviewed: 2026-07-13
 ---
 
 # DIATAXIS AUTHORITY RESOLUTION
@@ -17,6 +17,9 @@ Defines how authority is resolved while the repository transitions from legacy d
 This document exists to prevent dual-authority drift during the transition period.
 
 ## Resolution Rule
+
+Constitutional precedence and domain ownership:
+[`REPOSITORY-AUTHORITY.md`](../REPOSITORY-AUTHORITY.md).
 
 For any documentation topic:
 

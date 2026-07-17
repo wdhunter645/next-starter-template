@@ -28,10 +28,33 @@ jobs:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: printf '%s\n' "$PR_BODY" > "$RUNNER_TEMP/pr_body.md"
 
+      - name: Write changed files list
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: git diff --name-only "$GITHUB_BASE_SHA" "$GITHUB_HEAD_SHA" > "$RUNNER_TEMP/changed_files.txt"
+
+      - name: Classify delivery profile
+        if: github.event_name == 'pull_request'
+        id: delivery_profile
+        continue-on-error: true
+        env:
+          PR_BODY_FILE: ${{ runner.temp }}/pr_body.md
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          CHANGED_FILES_FILE: ${{ runner.temp }}/changed_files.txt
+          DELIVERY_PROFILE_RESULT_JSON: ${{ runner.temp }}/delivery_profile.json
+        run: node scripts/ci/delivery_profile.mjs
+
       - name: Determine class-aware quality plan
         id: quality_plan
         env:
           PR_CLASS_BODY_FILE: ${{ runner.temp }}/pr_body.md
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          CHANGED_FILES_FILE: ${{ runner.temp }}/changed_files.txt
+          DELIVERY_PROFILE_JSON: ${{ runner.temp }}/delivery_profile.json
         run: node scripts/ci/pr_class_quality_plan.mjs
 
       - name: Install
@@ -76,10 +99,17 @@ jobs:
         run: |
           node --input-type=module -e "
           import fs from 'node:fs';
+          const deliveryProfile = fs.existsSync('${{ runner.temp }}/delivery_profile.json')
+            ? JSON.parse(fs.readFileSync('${{ runner.temp }}/delivery_profile.json', 'utf8'))
+            : null;
           const record = {
             gate: 'quality',
-            schemaVersion: 1,
+            schemaVersion: 2,
             prClass: '${{ steps.quality_plan.outputs.pr_class }}',
+            deliveryModel: '${{ steps.quality_plan.outputs.delivery_model }}',
+            deliveryGateProfile: '${{ steps.quality_plan.outputs.delivery_gate_profile }}',
+            protectedChange: '${{ steps.quality_plan.outputs.protected_change }}' === 'true',
+            deliveryProfile,
             runTypecheck: '${{ steps.quality_plan.outputs.run_typecheck }}' === 'true',
             runLint: '${{ steps.quality_plan.outputs.run_lint }}' === 'true',
             runTest: '${{ steps.quality_plan.outputs.run_test }}' === 'true',

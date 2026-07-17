@@ -21,8 +21,12 @@ Orchestrated work follows the PMO execution chain documented in `/docs/ops/pmo/p
 Program → Child Project → Task → Issue → PR → Verification → Closeout
 ```
 
+PMO sizing and Model A/B selection policy: `/docs/governance/PMO-PORTFOLIO.md`
+
 Related PMO documents:
 
+- `/docs/reference/pmo/work-size-and-delivery-model-contract.md` — evidence contract and decision matrix
+- `/docs/how-to/pmo/classify-work-and-select-delivery-model.md` — classification procedure
 - `/docs/ops/pmo/critical-path.md` — serial queue and track rules
 - `/docs/ops/pmo/parallel-agent-rules.md` — read-only parallel vs one implementer per task
 

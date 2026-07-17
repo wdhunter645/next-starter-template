@@ -2,206 +2,209 @@
 Doc Type: Operations
 Audience: Human + AI
 Authority Level: Operational Authority
-Owns: LGFC queue watch, handoff marker dispatch, Cursor wake-label routing, silent-stall detection, and launch-halting process remediation routing
-Does Not Own: ChatGPT product automation configuration, GitHub workflow YAML implementation, merge authority, issue closure authority, branch deletion, or uncontrolled automatic issue mutation
+Owns: LGFC queue watch, canonical handoff dispatch, local Cursor wake routing, silent-stall detection, lane-aware continuation, and process-remediation routing
+Does Not Own: ChatGPT product automation configuration, GitHub workflow implementation, merge authority, production configuration, branch deletion, or uncontrolled issue mutation
 Canonical Reference: /docs/ops/pmo/github-issue-closeout-protocol.md
-Related Issues: #2396, #2391, #2386, #2360, #2361, #2363, #2364, #2359, #2376, #2380
-Last Reviewed: 2026-07-08
+Related Issues: #2396, #2391, #2386, #2360, #2361, #2363, #2364, #2359, #2376, #2380, #2492
+Last Reviewed: 2026-07-13
 ---
 
 # Queue Watch and Dispatch Protocol
 
 ## Purpose
 
-Define the minimum operational procedure that keeps LGFC launched work moving when GitHub issue state, handoff comments, PRs, labels, or closeout evidence require ChatGPT, Bill, or Cursor action.
+Keep every approved LGFC execution lane moving by converting GitHub state into one deterministic next action without disrupting the local Cursor poll-wake loop.
 
-This protocol exists because handoff markers alone do not wake ChatGPT, assign Cursor, unblock successor issues, or create remediation work. A marker is only executable when an authorized dispatcher or configured watch actually checks it and acts within its authority.
+Handoff markers are inert until a manual, scheduled, or repo-native dispatcher consumes them. Labels and comments make work detectable; they do not prove agent pickup or execution.
 
-## Current known truth
+## Current operating truths
 
-- GitHub Issues are the executable source of truth for LGFC work.
-- `agent:ChatGPT` and `CHATGPT HANDOFF` are deterministic watch markers, not live notifications by themselves.
-- Cursor can post handoff comments and request labels, but Cursor does not own merge, closeout, relabeling, queue advancement, or child-issue creation unless a source issue explicitly grants that authority.
-- ChatGPT can review, synthesize, comment, route, and perform authorized GitHub mutations only when the current chat/task actually invokes the GitHub connector or an explicit scheduled watch runs.
-- A completed predecessor issue with successors still marked blocked is a queue-stall defect, not a harmless stale label.
-- A successor issue described in prose as the next Cursor task is not actually routed to the Cursor loop unless its wake labels are set.
-- The current Cursor wake-label contract for an active next task is:
+- GitHub Issues are executable task authority.
+- Local Cursor is the default runtime.
+- Never use `@cursor` for local work.
+- The local poller detects qualifying issue/PR activity after its saved watermark.
+- The primary issue watch path requires an open issue with both `agent:cursor` and `handoff:ready`.
+- Assignment to `wdhunter645` provides an independent issue/PR detection path.
+- Parallel Model B lanes are authorized; maintain one eligible active local Cursor task per approved lane rather than one task for the entire repository.
+- A valid dispatch uses exactly one `CHATGPT RESPONSE` or `CHATGPT CLOSEOUT`, followed by exactly one separate `LOCAL CURSOR RESUME`.
+- A source issue cannot close before verified integration evidence and canonical closeout.
+
+## Canonical dispatch transaction
+
+When ChatGPT expects local Cursor action:
 
 ```text
-agent:cursor
-handoff:ready
+1. Confirm the source issue is open.
+2. Confirm the issue has agent:cursor + handoff:ready.
+3. Assign the source issue to wdhunter645.
+4. If PR revision is involved, assign the open PR to wdhunter645.
+5. Post exactly one CHATGPT RESPONSE or CHATGPT CLOSEOUT on the source issue.
+6. Post exactly one separate LOCAL CURSOR RESUME referencing that exact response.
+7. Resume contains exactly one bounded next action.
+8. Do not claim pickup until Cursor comments canonically or pushes a new commit.
 ```
 
-- A launch-halting process defect must be captured in an Ops issue or a bounded PR, not left only in chat.
+Do not post duplicate response/resume pairs for the same decision. A replacement is allowed only when it explicitly says it supersedes the prior instruction and references it.
 
-## Intended final state
-
-- Every launched queue has a visible dispatcher path: manual, scheduled, repo-native automation, or explicitly not available.
-- Closed predecessors cannot silently leave successor issues blocked.
-- `agent:ChatGPT` and `CHATGPT HANDOFF` markers are consumed by an actual review path or explicitly treated as manual-only markers requiring an operator check.
-- Next Cursor tasks have both issue-body/comment disposition and the required Cursor wake labels.
-- Launch-halting process defects create or update an Ops remediation issue before the workstream stalls.
-- Queue continuation, halt, or remediation is recorded in GitHub-controlled surfaces before Cursor is expected to act.
+Full marker formats are owned by `docs/ops/ai/chatgpt-cursor-handoff-workflow.md`.
 
 ## Trigger classes
 
-The dispatcher must check these trigger classes for launched or launch-control work:
-
-| Trigger class | Source evidence | Required dispatcher action |
+| Trigger | Evidence | Dispatcher action |
 | --- | --- | --- |
-| ChatGPT handoff | Issue or PR comment beginning `CHATGPT HANDOFF`; `agent:ChatGPT` label | Review and respond in the issue/PR or route to Bill; do not leave marker unacknowledged. |
-| Cursor task wake | Successor issue selected as the next active Cursor task | Set or verify `agent:cursor` and `handoff:ready`; do not rely on prose/comments alone. |
-| PR review/merge queue | Open PR tied to active source issue | Review readiness, close duplicate/superseded PRs, merge only when authorized and gates/exceptions are acceptable. |
-| Post-merge closeout | Merged PR and source issue state | Apply the GitHub Issue Closeout Protocol or record why closeout is blocked. |
-| Merged PR with failed required pre-gate | Merge completed while a required PR-head check remained failed | Verify Post-Merge Detection created or updated a `post-merge-failure` remediation issue; use `docs/how-to/ci/merged-pr-failed-pre-gate-followup.md` manual fallback if not; halt queue advancement until dispositioned. |
-| Successor unblock | Closed completed predecessor and open successor still blocked by that predecessor | Unblock, queue, explicitly halt successor, or create remediation; if routed to Cursor, set wake labels. |
-| Silent stall | No active Cursor task after predecessor close; successors remain blocked, unlabeled, or missing wake labels | Create/update remediation issue and route next eligible work with required labels. |
-| Launch-halting process failure | Any process defect preventing launch queue movement | Create/update Ops issue, document owner, stop condition, and next action. |
+| Cursor handoff | Canonical `CHATGPT HANDOFF` on source issue | Review, decide, and record one canonical response |
+| Cursor revision required | PR review or failing gate | Mirror the decision on source issue; assign issue/PR; post one response/resume pair |
+| Cursor task wake | Eligible task selected in an approved lane | Verify labels, assignments, branch, runtime, and one action |
+| PR review queue | Open PR tied to active source issue | Review scope, checks, threads, rollback, and target branch |
+| Post-integration closeout | Verified merged PR and source issue | Post `CHATGPT CLOSEOUT`, remove wake state, then close completed issue |
+| Successor unblock | Completed predecessor and eligible successor | Activate one task in the same lane or record halt |
+| Silent stall | Valid work exists but no active eligible task or no pickup evidence | Correct transaction, inspect loop health, or create remediation |
+| Poll failure | Local loop reports failure | Inspect persistent error log; do not treat as idle success |
+| Launch-halting defect | Process failure prevents progress | Create/update bounded Ops remediation issue |
 
-## Dispatcher operating modes
+## Lane-aware dispatcher checklist
 
-### Mode 1 — Manual dispatcher
+For every approved lane:
 
-Use when no configured scheduled watch or repo-native automation is available.
+1. Identify the component/program/project master and current child.
+2. Check open source issues, PRs, CI, review threads, handoffs, predecessors, and component-branch drift.
+3. Confirm no more than one active local Cursor task exists in that lane unless the lane authority explicitly permits internal parallelism.
+4. Confirm the active source issue is open, assigned to `wdhunter645`, and has `agent:cursor` + `handoff:ready`.
+5. If PR work is active, assign the PR to `wdhunter645`.
+6. Ensure the latest Chat-directed action is one canonical response/resume pair on the source issue.
+7. Confirm the resume has one bounded action and current branch/PR references.
+8. Do not report Cursor active until a later comment, commit, or PR update proves pickup.
+9. If no action is eligible, record the halt reason.
+10. If the lane is blocked by a process defect, create/update remediation.
 
-A human or ChatGPT session must explicitly run the dispatcher checklist:
+## Cursor-to-Chat requirement
 
-```text
-1. Review active project issue and child issue queue.
-2. Search for open issues labeled agent:ChatGPT.
-3. Search for recent CHATGPT HANDOFF comments.
-4. Search for open PRs.
-5. Check recently closed predecessor issues for successor disposition.
-6. Check whether any successor still says Blocked Pending <closed predecessor>.
-7. Route Cursor to the next active task or record halt.
-8. If routing Cursor, verify both agent:cursor and handoff:ready are set.
-9. Create/update remediation issue for any process gap that stops launch work.
-```
+Cursor must use canonical `CHATGPT HANDOFF` when stopping for:
 
-Manual dispatcher mode is not background work. It runs only when Bill, ChatGPT, or another authorized operator explicitly invokes it.
+- review;
+- requested decision;
+- blocker;
+- PR opened;
+- remediation pushed;
+- PR ready;
+- completion or closeout request.
 
-### Mode 2 — Scheduled ChatGPT watch
+Noncanonical status prose is informational only. It does not authorize review completion, integration, closeout, or queue advancement.
 
-Use only when Bill explicitly creates or authorizes a ChatGPT scheduled/condition watch.
+## Chat-to-Cursor requirement
 
-Minimum prompt requirements:
+A PR review alone is insufficient when the PR is unassigned or the source issue is the primary poller surface. Every Cursor-directed decision must be mirrored on the source issue through the canonical response/resume transaction.
 
-```text
-Check wdhunter645/next-starter-template for LGFC queue stalls, agent:ChatGPT issues, CHATGPT HANDOFF comments, open PRs needing review, closed predecessors with blocked successors, missing Cursor wake labels on next active tasks, and launch-halting process defects. Notify Bill only when action is needed. Do not mutate GitHub unless explicitly authorized.
-```
-
-The scheduled watch is advisory unless its prompt or a repository issue explicitly authorizes mutation.
-
-### Mode 3 — Repo-native automation
-
-Use only after an issue/PR implements and validates workflow or script behavior.
-
-Repo-native automation may detect and report defects. It must not close issues, relabel, merge, delete branches, or advance queues unless the repository authority and source issue explicitly authorize that exact mutation class.
-
-## Required dispatcher checklist for Phase 0 / Content Collection work
-
-For parent #2359 and child tasks #2360 through #2365:
-
-1. Verify whether the predecessor is closed completed.
-2. Verify the successor issue body no longer says blocked by the completed predecessor.
-3. Verify the successor issue has an active routing state or a documented halt reason.
-4. Verify Cursor has exactly one next active issue unless Bill/ChatGPT authorizes parallel execution.
-5. Verify the next active Cursor issue has both `agent:cursor` and `handoff:ready`.
-6. Verify terminal tasks remain blocked until all predecessors complete.
-7. Verify the parent/project issue remains open unless explicitly authorized for terminal closeout.
-8. Verify process defects are represented by Ops issues and not only by chat messages.
-
-## Regression case: #2360 to #2361 / #2363 / #2364
-
-This case must be used to test future queue-watch fixes.
-
-Observed defect:
-
-- #2360 closed completed.
-- #2361 remained `Blocked Pending #2360`.
-- #2363 remained `Blocked Pending #2360`.
-- #2364 remained `Blocked Pending #2360`.
-- No live dispatcher notified ChatGPT or routed Cursor to the next active work item.
-- After manual queue correction, #2361 was described as the next Cursor task but initially lacked `agent:cursor` plus `handoff:ready`, so the Cursor loop still did not wake.
-
-Expected behavior:
-
-- #2360 closeout identifies #2361, #2363, and #2364 as successors or dependents.
-- #2361 becomes the next active Cursor task unless Bill/ChatGPT authorizes a different order.
-- #2361 receives both `agent:cursor` and `handoff:ready` when routed to Cursor.
-- #2363 and #2364 are marked unblocked or intentionally queued/halted.
-- #2362 remains blocked behind #2361.
-- #2365 remains blocked until #2360 through #2364 are complete.
-- A process remediation issue is created if any of those actions cannot be completed.
-
-## Remediation issue rule
-
-Create or update an Ops remediation issue when any of the following are true:
-
-- a predecessor is closed completed but a successor remains blocked by that predecessor;
-- a handoff marker requiring ChatGPT action is not consumed by a configured watch or manual dispatcher;
-- a process failure stops launch work and is only recorded in chat;
-- a post-merge closeout packet lacks successor/queue disposition;
-- a merged PR carried a failed required pre-merge check and no canonical remediation issue surfaced the condition;
-- duplicate or superseded PRs remain open and obscure the active queue;
-- the project has no active Cursor task after a predecessor closes and the queue should continue;
-- a successor is described as the next Cursor task but lacks `agent:cursor` or `handoff:ready`.
-
-The remediation issue must include:
+One decision means:
 
 ```text
-Problem:
-Evidence:
-Affected issue(s):
-Expected queue state:
-Actual queue state:
-Required correction:
-Owner / dispatcher:
-Mutation authority:
-Stop condition:
-Regression test:
+one CHATGPT RESPONSE
+one LOCAL CURSOR RESUME
+one bounded action
 ```
+
+Do not issue multiple rapid comment pairs for the same decision.
+
+## Scheduled repository watches
+
+Scheduled ChatGPT watches may scan the repository broadly, but intervention must follow this protocol.
+
+They may, when authorized:
+
+- comment on issues and PRs;
+- restore `agent:cursor` and `handoff:ready`;
+- assign the source issue and active PR to `wdhunter645`;
+- post canonical response/resume markers;
+- clear stale predecessor metadata;
+- create/update Ops remediation issues;
+- route the next eligible task in an already approved lane.
+
+They must not:
+
+- invoke Cursor Cloud;
+- remove active wake labels from work still assigned to Cursor;
+- merge PRs without bounded authority;
+- close source or parent issues before verified integration and canonical closeout;
+- alter CI gates;
+- delete branches;
+- modify production configuration;
+- start an unapproved lane.
+
+## Closeout rule
+
+A source issue that delivered a PR may close only after all of the following:
+
+1. PR merge/integration is verified by GitHub state and merge SHA.
+2. Required post-integration checks or component validation are dispositioned.
+3. ChatGPT or Bill posts canonical `CHATGPT CLOSEOUT` on the source issue.
+4. Cursor wake labels are removed or replaced with the next authorized routing state.
+5. Successor or halt disposition is recorded.
+
+Green checks, approval, mergeability, or “ready for review” do not constitute integration.
+
+## Poller alignment
+
+The local poller documentation and prompt must recognize:
+
+- `CHATGPT HANDOFF`;
+- `CHATGPT RESPONSE`;
+- `CHATGPT CLOSEOUT`;
+- `LOCAL CURSOR RESUME`.
+
+Legacy `### AGENT HANDOFF` may be a temporary alias but cannot remain the sole prompt marker.
+
+Poll errors must be persisted locally rather than discarded. A failed poll is not equivalent to `fresh: 0`.
+
+## Recovery from a missed wake
+
+Before changing labels:
+
+1. Verify issue is open and assigned.
+2. Verify both wake labels.
+3. Verify one current canonical response/resume pair.
+4. Verify loop process and authentication.
+5. Inspect the poll error log and saved watermark.
+
+Only then may an authorized operator pulse `handoff:ready` by removing and re-adding it. Record why the pulse was necessary. Label pulsing is recovery, not normal dispatch.
 
 ## Mutation authority
 
-Default posture: detect and comment first; mutate only when authorized.
+Allowed when Bill directly authorizes active repository dispatch:
 
-Allowed without additional issue-specific authorization when Bill directly instructs ChatGPT in the active chat:
+- comments;
+- issue/PR assignment;
+- routing labels;
+- clearing stale predecessor blockers;
+- opening/updating remediation issues;
+- closing duplicate or superseded PRs after review.
 
-- comment on issues or PRs;
-- close duplicate or superseded PRs after review;
-- open an Ops remediation issue;
-- update issue body metadata to clear a completed predecessor blocker;
-- add routing labels that match the issue owner and dispatcher decision, including `agent:cursor` and `handoff:ready` when routing the next active task to Cursor.
+Requires separate bounded authority:
 
-Not allowed without explicit bounded authority:
+- merge;
+- source/parent issue closure;
+- branch/tag deletion;
+- CI gate changes;
+- production configuration changes;
+- unapproved parallel execution.
 
-- merge PRs;
-- close source issues;
-- close parent/project/program issues;
-- delete branches or tags;
-- change CI gates;
-- start parallel execution when the queue says serial;
-- modify production runtime configuration.
+## Regression cases
 
-## Immediate-use operating rule
+The protocol must prevent recurrence of:
 
-Until repo-native automation or a scheduled ChatGPT watch is proven active, every launch-control work session must begin or end with this manual dispatcher check:
-
-```text
-Check active parent issue.
-Check open child issues for stale predecessor blockers.
-Check open PRs for duplicates, superseded branches, failed gates, or review-ready work.
-Check agent:ChatGPT and CHATGPT HANDOFF markers.
-Route exactly one next Cursor task unless parallel execution is authorized.
-Verify the routed Cursor task has agent:cursor and handoff:ready.
-Create/update remediation issue for any launch-halting process defect.
-```
+- completed predecessor with blocked successor;
+- eligible task missing wake labels;
+- prose-only Cursor direction;
+- `LOCAL CURSOR RESUME` used as the decision itself;
+- multiple actions in one resume;
+- duplicate response/resume bursts;
+- PR-only review that does not reach the source issue;
+- issue closed before PR integration;
+- poll failure interpreted as no activity;
+- local Cursor idle until Bill manually says “there is work in the repo.”
 
 ## Related authorities
 
-- Merged PR with failed pre-gate follow-up: `/docs/how-to/ci/merged-pr-failed-pre-gate-followup.md`
-- ChatGPT / Cursor handoff workflow: `/docs/ops/ai/chatgpt-cursor-handoff-workflow.md`
-- GitHub issue closeout protocol: `/docs/ops/pmo/github-issue-closeout-protocol.md`
-- PR lifecycle state machine: `/docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`
-- Program queue and dependency map: `/docs/reference/pmo/lgfc-program-queue-and-dependency-map.md`
+- `docs/ops/ai/chatgpt-cursor-handoff-workflow.md`
+- `docs/how-to/cursor/github-poll-wake-loop.md`
+- `docs/ops/pmo/github-issue-closeout-protocol.md`
+- `docs/governance/standards/CURSOR-RUNTIME-ROUTING.md`

@@ -5,15 +5,27 @@ Authority Level: Canonical PMO Authority
 Owns: LGFC PMO July 2026 program inventory, PMO issue contract, label contract, pipeline stages, workload reporting, backlog inventory, lifecycle terms, component-project hierarchy, reduced-gate delivery model, program preparation, Cursor execution boundaries, launch gates, Ops production handoff, completed/historical archive treatment, PMO reporting vs operations reporting separation, dashboard data-quality requirements, and Drive drafting model
 Does Not Own: Product-specific design, runtime implementation, workflow YAML, production configuration, secrets, or unauthorized GitHub issue mutation
 Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
-Related Issues: #2100, #2296, #2516
+Related Issues: #2100, #2296, #2487, #2516
 Last Reviewed: 2026-07-16
 ---
 
 # PMO July 2026 Operating Model
 
+## Status
+
+**Superseded for PMO policy.** Work sizing, `medium-provisional` intake, Medium Model A/B selection, and launch authorization now live exclusively in [`docs/governance/PMO-PORTFOLIO.md`](../../governance/PMO-PORTFOLIO.md).
+
+| Topic | Canonical owner |
+| --- | --- |
+| PMO sizing and Model A/B policy | `docs/governance/PMO-PORTFOLIO.md` |
+| Evidence contract and decision matrix | `docs/reference/pmo/work-size-and-delivery-model-contract.md` |
+| Classification procedure | `docs/how-to/pmo/classify-work-and-select-delivery-model.md` |
+
+The body below retains historical PMO v4 operational context (registry routing, program hierarchy, Drive drafting) until a later archive pass. Do not cite this file for sizing or delivery-model decisions.
+
 ## Purpose
 
-This document is the top-level LGFC PMO July 2026 authority. It supersedes `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` and the superseded `PMO-V4-OPERATING-MODEL.md` naming for current PMO planning, issue tracking, dashboard reporting, and implementation-readiness decisions.
+This document is the top-level LGFC PMO July 2026 authority. It supersedes `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` and the superseded `PMO-V4-OPERATING-MODEL.md` naming for current PMO planning, issue tracking, dashboard reporting, and implementation-readiness decisions. Work sizing and Model A/B selection remain routed to `docs/governance/PMO-PORTFOLIO.md` per the Status section below.
 
 PMO July 2026 preserves the issue-number-based program model from PMO v3. A program is a GitHub program issue. Program issue numbers are the durable program identifiers.
 
