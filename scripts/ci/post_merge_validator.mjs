@@ -77,6 +77,22 @@ export const ADVISORY_BODY_SECTIONS = ADVISORY_BODY_SECTION_GROUPS.map(
 	(group) => `## ${group.headings[0]}`,
 );
 
+/**
+ * Stable PR-body section omissions are owned by pre-merge hygiene / readiness.
+ * After merge they remain recorded as historical hygiene evidence but must not
+ * independently fail closeout or create Ops remediation exceptions.
+ */
+export const HISTORICAL_PR_BODY_HYGIENE_FAILURE_CODES = Object.freeze([
+	'missing_required_section',
+	'missing_advisory_section',
+]);
+
+const HISTORICAL_PR_BODY_HYGIENE_FAILURE_CODE_SET = new Set(HISTORICAL_PR_BODY_HYGIENE_FAILURE_CODES);
+
+export function isHistoricalPrBodyHygieneFailure(failure = {}) {
+	return HISTORICAL_PR_BODY_HYGIENE_FAILURE_CODE_SET.has(String(failure?.code || '').trim());
+}
+
 const FORBIDDEN_PLACEHOLDER_PATTERN = /\b(TODO|TBD|placeholder)\b/i;
 
 function normalizeHeading(value = '') {
@@ -736,7 +752,16 @@ export function metadataFailures(pr, filesExist = () => true, { repository = '',
 	failures.push(...alternateProgramLaneFailures({ issueNumbers: resolvedIssueNumbers }));
 	failures.push(...sourceIssueStateFailures({ body, sourceIssue, sourceIssueError, repoLabels, issueNumber: sourceResolution.issueNumber }));
 
-	failures.push(...preMergeReadinessBodyFailures(body));
+	// Keep shared section detection for evidence, but demote historical hygiene
+	// codes so post-merge closeout records them without blocking or escalating.
+	failures.push(...preMergeReadinessBodyFailures(body).map((failure) => {
+		if (!isHistoricalPrBodyHygieneFailure(failure)) return failure;
+		return {
+			...failure,
+			severity: 'advisory',
+			message: `${failure.message} (historical PR-body hygiene; owned by pre-merge pr-hygiene / post-merge-readiness)`,
+		};
+	}));
 
 	for (const file of pr?.files || []) {
 		const filePath = typeof file === 'string' ? file : (file.filename || file.path);

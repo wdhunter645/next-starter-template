@@ -330,6 +330,61 @@ describe('closeout fail-safe remediation evidence', () => {
 		})).toEqual([]);
 	});
 
+	it('does not create a post-merge exception for metadata-only missing_required_section (#2117)', () => {
+		const result = {
+			status: 'pass',
+			pr: 2116,
+			source_issue: 2113,
+			remediation_required: false,
+			metadata_failures: [{
+				code: 'missing_required_section',
+				severity: 'advisory',
+				message: 'PR body is missing ## CHANGE SUMMARY (historical PR-body hygiene; owned by pre-merge pr-hygiene / post-merge-readiness)',
+			}],
+		};
+
+		expect(blockingCloseoutFailures(result)).toEqual([]);
+		expect(shouldUpsertRemediationIssue(result)).toBe(false);
+	});
+
+	it('does not create a post-merge exception for legacy missing_advisory_section alone', () => {
+		const result = {
+			status: 'pass',
+			pr: 2116,
+			source_issue: 2113,
+			metadata_failures: [{
+				code: 'missing_advisory_section',
+				message: 'PR body is missing advisory section ## REQUIRED PRE-REVIEW SELF-CHECK',
+			}],
+		};
+
+		expect(blockingCloseoutFailures(result)).toEqual([]);
+		expect(shouldUpsertRemediationIssue(result)).toBe(false);
+	});
+
+	it('still creates an exception when missing_required_section is mixed with a real implementation failure', () => {
+		const result = {
+			status: 'fail',
+			pr: 2116,
+			source_issue: 2113,
+			remediation_required: true,
+			metadata_failures: [{
+				code: 'missing_required_section',
+				severity: 'advisory',
+				message: 'PR body is missing ## CHANGE SUMMARY',
+			}],
+			implementation_failures: [{
+				code: 'implementation_evidence_failure',
+				message: 'Changed file lacks verification evidence.',
+			}],
+		};
+
+		expect(blockingCloseoutFailures(result)).toEqual([
+			expect.objectContaining({ code: 'implementation_evidence_failure' }),
+		]);
+		expect(shouldUpsertRemediationIssue(result)).toBe(true);
+	});
+
 
 	it('records failed pre-gate run and job identifiers in remediation issue bodies', () => {
 		const body = remediationBody({
