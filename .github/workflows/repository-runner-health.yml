@@ -98,15 +98,19 @@ jobs:
 
       - name: Write health summary
         if: always()
+        env:
+          REPOSITORY: ${{ github.repository }}
+          REF_NAME: ${{ github.ref }}
+          ACTOR: ${{ github.actor }}
         run: |
           {
             echo "## Repository Runner Health"
             echo
-            echo "- Repository: `${{ github.repository }}`"
-            echo "- Ref: `${{ github.ref }}`"
-            echo "- Actor: `${{ github.actor }}`"
-            echo "- Runner: `${RUNNER_NAME}`"
-            echo "- OS/architecture: `${RUNNER_OS}/${RUNNER_ARCH}`"
+            echo "- Repository: ${REPOSITORY:-unknown}"
+            echo "- Ref: ${REF_NAME:-unknown}"
+            echo "- Actor: ${ACTOR:-unknown}"
+            echo "- Runner: ${RUNNER_NAME:-unknown}"
+            echo "- OS/architecture: ${RUNNER_OS:-unknown}/${RUNNER_ARCH:-unknown}"
             echo "- Mode: manual health only"
             echo "- Pull-request execution: prohibited"
             echo "- Repository secrets: prohibited"
