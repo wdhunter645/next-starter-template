@@ -43,7 +43,7 @@ Before enabling any routing component, confirm:
 - Project #2294 has an explicit Go decision.
 - The current project manifest validates.
 - The project branch is current with its approved upstream.
-- The #2554 PMO materializer event-routing defect is resolved or explicitly safely dispositioned.
+- The PMO materializer event-routing remediation from PR #2603 is integrated and validated.
 - Required project tasks are integrated through the current rollout phase.
 - `quality` and `gitleaks` are green where applicable.
 - GitHub app/connector access is operational.
@@ -64,7 +64,7 @@ Before enabling any routing component, confirm:
 
 Start every new deployment or major configuration change in `observe`.
 
-## Startup sequence
+## Procedure
 
 ### 1. Verify repository authority
 
@@ -140,321 +140,137 @@ Promote one mode at a time:
 1. `observe`;
 2. `normalize`;
 3. `advance`;
-4. `integrate`.
-
-Require evidence for each promotion. Do not combine initial rollout with a production/main promotion.
+4. `integrate`;
+5. steady-state operation.
 
-## Normal operating cycle
+Before each promotion:
 
-### CI controller
+- review current alerts, false positives, and duplicate suppression;
+- confirm rollback works;
+- confirm no unauthorized mutation occurred;
+- confirm `main` remains manual;
+- record the decision and evidence.
 
-For every qualifying event:
+## Routine watcher cycle
 
-1. normalize event and stable ID;
-2. resolve live state;
-3. verify manifest, dependency, lane, and authority;
-4. produce one action plan;
-5. revalidate expected state;
-6. mutate only when current mode and permission allow it;
-7. record summary, evidence, and action key;
-8. update or resolve alerts;
-9. leave ambiguous state untouched and fail closed.
+For every watcher activation:
 
-### Scheduled reconciler
+1. initialize connector;
+2. load authority;
+3. inventory broad current state;
+4. identify candidate actions;
+5. rank by safety, priority, dependency-unblock value, objective impact, and ownership;
+6. generate the action key;
+7. check active claims;
+8. claim one action;
+9. re-read state;
+10. execute or yield;
+11. record result and successor;
+12. stop.
 
-At each interval:
-
-1. rebuild live lane inventory;
-2. detect missed events;
-3. evaluate configured time thresholds;
-4. detect controller, poller, and watcher-health gaps;
-5. identify independent eligible work;
-6. emit/update alerts or perform deterministic action allowed by mode;
-7. record idle reason where no action is possible.
-
-### Cursor Local
-
-For each wake:
-
-1. open the source Issue;
-2. confirm `agent:cursor + handoff:ready`;
-3. confirm latest valid assignment/response;
-4. confirm manifest eligibility and no lane collision;
-5. post `CURSOR ACK`;
-6. transition to `handoff:in-progress`;
-7. execute bounded work;
-8. post `CURSOR STATUS`, `CURSOR COMPLETE`, or genuine `CHATGPT HANDOFF`;
-9. persist consumed event and claim state.
-
-### ChatGPT watcher
-
-For each run:
-
-1. initialize connector and permissions;
-2. load authority and live state;
-3. inspect active Issues, PRs, checks, reviews, handoffs, dependencies, closeout, and workflow health;
-4. rank authorized candidate actions;
-5. claim one candidate;
-6. re-read state and yield on earlier valid claim;
-7. perform action;
-8. record result/successor/halt;
-9. stop after one bounded action unless the action itself requires a single atomic sequence.
-
-## Work selection priority
-
-Use this default order, modified by explicit repository priority and safety:
-
-1. production/security/safety or authority boundary requiring immediate disposition;
-2. genuine unresolved ChatGPT handoff blocking approved work;
-3. failing required CI or review blocker preventing integration;
-4. eligible non-main integration;
-5. successor activation gap;
-6. ready work without pickup;
-7. post-merge closeout/remediation;
-8. routing contradiction or stale state;
-9. active PMO/governance work that can advance independently;
-10. observability or documentation maintenance.
-
-Do not select unapproved pipeline work merely because higher-priority work is blocked.
-
-## Time-based alerts
-
-Initial thresholds are defined in configuration. Operators should review:
-
-- ready-to-ACK latency;
-- green-to-integration latency;
-- integration-to-successor latency;
-- handoff-to-response latency;
-- in-progress heartbeat age;
-- required-CI-failure age;
-- controller/reconciler heartbeat age;
-- watcher claim age.
-
-Threshold alerts do not prove failure. Re-read live evidence before action.
-
-## Alert handling
-
-For an `LGFC ROUTING ALERT`:
-
-1. validate Alert ID and subject;
-2. confirm the state revision is current;
-3. inspect evidence and authority class;
-4. determine whether CI, Cursor, ChatGPT, or Bill owns the next action;
-5. update/supersede the alert rather than posting duplicates;
-6. resolve the alert only after live state confirms resolution.
-
-## Watcher claim handling
-
-For `CHATGPT WATCH CLAIM`:
-
-- action key must match subject, state revision, and action class;
-- lease must include UTC issue time and expiry;
-- earliest unexpired valid claim wins;
-- later watchers yield;
-- expired claims may be superseded only after live-state recheck;
-- `CHATGPT WATCH RESULT` records the completed action or no-op reason;
-- claims do not transfer routing ownership.
-
-## Health checks
-
-### Controller
-
-Healthy when:
-
-- latest event/reconcile run completed within threshold;
-- state snapshot and action plan were produced;
-- no unresolved dead-letter event exists without alert;
-- mutation mode matches configuration;
-- required permissions are no broader than expected.
-
-### Cursor poller
-
-Healthy when:
-
-- loop process is running;
-- heartbeat is current;
-- state file is readable and valid;
-- last consumed event is plausible;
-- no duplicate active lane claim exists;
-- ready work is picked up within threshold.
-
-### ChatGPT watchers
-
-Healthy when:
-
-- all enabled watcher schedules exist;
-- runs initialize the GitHub connector;
-- repository scans are broad;
-- claims/results are idempotent;
-- connector capability failures are explicit;
-- no watcher repeatedly performs the same action.
-
-## Troubleshooting
-
-### PMO materializer fires on unrelated new component branch
-
-Symptoms:
-
-- PMO Project Task Materializer runs when a new `component/**` branch is created;
-- job validates the #2546 manifest rather than the changed/new project manifest;
-- no intentional materializer dispatch occurred.
-
-Actions:
-
-1. inspect event type and branch;
-2. inspect resolved `manifest_path` in job summary;
-3. confirm whether the event contained an actual changed manifest;
-4. disable or hold mutation; this workflow should be dry-run on non-manual events;
-5. verify #2554 correction for event-to-manifest resolution;
-6. do not treat the run as #2294 launch evidence;
-7. rerun only after the workflow fix or explicit safe scoped dispatch.
-
-### Ready task not picked up
-
-1. confirm Issue is open;
-2. confirm both `agent:cursor` and `handoff:ready`;
-3. confirm latest valid assignment/response;
-4. confirm project is launched and dependencies satisfied;
-5. confirm no colliding in-progress claim;
-6. inspect poller heartbeat and state watermark;
-7. restart loop without deleting state;
-8. escalate only if the defect remains.
-
-### Cursor wakes on wrong task
-
-1. stop local loop;
-2. preserve state file;
-3. remove no labels until authority is verified;
-4. compare event ID, labels, manifest task, and lane;
-5. correct deterministic state or post a genuine handoff;
-6. run stale/duplicate fixture before restart.
-
-### Watchers report no work despite active repository work
-
-1. confirm watcher initialized GitHub connector;
-2. confirm watcher did not use an alert-only query;
-3. confirm active Issues, PRs, checks, reviews, and closeout were inspected;
-4. inspect candidate-ranking evidence;
-5. verify connector permissions;
-6. correct watcher prompt/contract and rerun at next authorized cycle.
-
-### Duplicate ChatGPT actions
-
-1. stop/disable affected watchers if mutations continue;
-2. compare action keys and state revisions;
-3. inspect claim timestamps and comment IDs;
-4. identify earliest valid claim;
-5. revert only duplicated unsafe mutations;
-6. repair claim/race logic;
-7. validate with race fixtures before re-enable.
-
-### CI action repeats
-
-1. inspect event ID and action key;
-2. confirm existing result/alert ledger entry;
-3. confirm expected-state precondition was checked;
-4. disable mutation mode if repeat is unsafe;
-5. repair dedupe or state revision logic;
-6. replay in observe mode.
-
-### Required check fails
-
-1. inspect exact job/step/log;
-2. classify transient versus deterministic defect;
-3. rerun only transient failure when authorized;
-4. remediate deterministic defects in the active task scope;
-5. create/update bounded remediation when outside scope;
-6. do not waive security, scope, or production-safety defects.
-
-### Contradictory labels
-
-Fail closed when:
-
-- both agent labels are active;
-- ready and in-progress coexist;
-- labels conflict with latest valid canonical event;
-- multiple colliding active claims exist.
-
-Resolve only when deterministic authority identifies the correct state. Otherwise route to ChatGPT.
-
-### Missing GitHub connector capability
-
-1. complete read-only analysis;
-2. identify the exact unsupported write operation;
-3. complete any other safe supported actions;
-4. record bounded operator steps;
-5. do not claim completion.
-
-### Dead-letter event
-
-1. inspect original event and retry history;
-2. confirm no mutation partially succeeded;
-3. reconcile subject from live state;
-4. supersede event if stale;
-5. replay only with a stable action key and expected-state guard;
-6. escalate permanent authority or data ambiguity.
-
-## Disable procedure
-
-Use this order unless an immediate unsafe mutation requires faster shutdown:
-
-1. set routing config to `disabled` or disable workflows;
-2. disable five ChatGPT watchers;
-3. stop local Cursor poll-wake loop;
-4. preserve state, claims, alerts, and logs;
-5. prevent non-main integration actions;
-6. inspect any in-flight workflow before cancellation;
-7. return to manual repository operation.
-
-## Rollback procedure
-
-1. create a bounded rollback Issue/PR if runtime files must be reverted;
-2. revert controller/reconciler workflows and scripts;
-3. restore prior canonical docs only when the newer contract itself is defective;
-4. preserve project manifests and task Issues;
-5. remove or resolve stale coordination claims;
-6. normalize labels to live authority;
-7. verify manual assignment/handoff/closeout works;
-8. verify `main` remains human-controlled.
-
-## Recovery procedure
-
-1. resolve root defect;
-2. run all focused tests;
-3. run observe-mode reconciliation;
-4. compare planned actions against live state;
-5. clear/supersede dead-letter alerts deterministically;
-6. restart local poller and verify heartbeat;
-7. enable one ChatGPT watcher as a canary;
-8. validate claim/result behavior;
-9. restore remaining watchers;
-10. promote rollout mode one phase at a time.
-
-## Operator handoff package
-
-Final handoff must contain:
-
-- current design, plan, manifest, and branch;
-- task/PR integration map;
-- configuration and threshold values;
-- GitHub permissions matrix;
-- local Cursor installation/state paths;
-- ChatGPT watcher schedule and prompt contract;
-- controller/reconciler workflow names;
-- acceptance and pilot reports;
-- known exceptions and dead-letter records;
-- disable, rollback, and recovery evidence;
-- proof that no automatic `main` merge path exists;
-- exact Operations owners and Tier 2 escalation.
-
-## Closeout
-
-At component completion:
-
-1. record integrated validation evidence;
-2. confirm no unresolved material defects;
-3. confirm watchers and controller are in the approved rollout state;
-4. confirm operator handoff is complete;
-5. route completed-product review to Bill/ChatGPT;
-6. do not merge to `main` automatically;
-7. prepare a separate production promotion PR only after approval.
+## Routine reconciler cycle
+
+For every scheduled reconciliation:
+
+1. rebuild live state rather than trusting prior event delivery;
+2. compare current state with expected manifest and communication state;
+3. evaluate all approved lanes;
+4. perform safe deterministic correction when enabled;
+5. update alerts and metrics;
+6. record every idle lane with a precise reason;
+7. do not create work merely because capacity is available.
+
+## Time-based response checks
+
+Use configured thresholds from `scripts/agent-routing/config.json`.
+
+Initial pilot expectations:
+
+- ready without ACK: 5 minutes;
+- green eligible non-main PR not integrated: 5 minutes;
+- integrated predecessor without successor activation: 3 minutes;
+- unresolved handoff: immediate alert, stale at 10 minutes;
+- in-progress heartbeat warning: 30 minutes;
+- controller/reconciler heartbeat: 15 minutes;
+- required workflow failure without disposition: 5 minutes;
+- watcher claim lease: 10 minutes.
+
+Do not infer failure solely from elapsed time. Re-read live evidence before any action.
+
+## Failure handling
+
+### Transient event or API failure
+
+- retry only if the operation is read-only or has an idempotency key;
+- use bounded backoff;
+- record retry count;
+- stop before repeating an ambiguous mutation.
+
+### Permanent or ambiguous event failure
+
+- create/update one dead-letter alert;
+- record event ID, subject, state revision, failing step, and error class;
+- do not relabel or repost repeatedly;
+- route to ChatGPT if authority or design judgment is required.
+
+### Controller failure
+
+- set mutation mode to `disabled`;
+- retain read-only reconciliation if safe;
+- stop automatic integration and successor activation;
+- preserve alerts and evidence;
+- continue manual Issue/PR operation.
+
+### Local Cursor poller failure
+
+- stop the loop;
+- preserve `state.json`;
+- verify current labels and latest event;
+- do not post ACK or clear wake state unless Cursor actually resumes;
+- restart only after credential and state checks pass.
+
+### Watcher overlap
+
+- compare action keys and claim timestamps;
+- earlier valid claim proceeds;
+- later watcher yields;
+- expired claim may be superseded only after live-state recheck;
+- never delete historical claim/result evidence merely to win a race.
+
+## Disable sequence
+
+1. disable ChatGPT watchers;
+2. set controller mutation mode to `disabled`;
+3. disable scheduled reconciliation if necessary;
+4. stop local Cursor loop and preserve state;
+5. disable non-main automatic integration;
+6. leave open Issues, PRs, manifests, and comments intact;
+7. record the stop reason and last known state;
+8. keep `main` manual.
+
+## Rollback
+
+If Project #2294 must be rolled back:
+
+1. execute the disable sequence;
+2. revert workflow/script/config changes through a bounded PR;
+3. preserve manifests, Issues, alerts, claims, and dead-letter evidence;
+4. restore manual `CURSOR ASSIGNMENT`, `CURSOR ACK`, explicit review, and closeout;
+5. confirm no stale `handoff:ready` or `handoff:in-progress` state remains;
+6. confirm no automatic `main` merge path exists.
+
+## Operator handoff evidence
+
+Before steady-state handoff, provide:
+
+- final configuration and enabled mode;
+- controller and reconciler workflow references;
+- local poller version and state path;
+- ChatGPT watcher schedules and prompts;
+- permissions matrix;
+- alert and claim formats;
+- time thresholds;
+- validation results;
+- known exceptions;
+- disable and rollback proof;
+- Operations owner and Tier 2 escalation contact.
