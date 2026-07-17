@@ -277,6 +277,39 @@ Self-healing cannot fabricate these dispositions. A docs-only PR that documents
 this procedure does not by itself clear the remediation issue; the merged PR
 body must carry the dispositions and closeout must rerun successfully.
 
+## Manual single-PR Post-Merge PR Body Closeout (#2247)
+
+Operators replaying closeout for one merged PR supply only the PR number (and
+optional body-apply controls). The workflow resolves evidence from that PR's
+`merge_commit_sha`.
+
+| Operator input | Workflow behavior |
+| --- | --- |
+| `pr_number` | Required for single-PR mode |
+| `skip_body_apply` | `true` re-validates and syncs without patching the PR body |
+| `run_batch` / `run_all_pending` | Keep `false` for single-PR replay |
+
+Rules:
+
+1. The target PR must already be merged.
+2. The target PR base must be `main` for this production closeout path.
+3. Closeout evidence SHA is always the target PR `merge_commit_sha`.
+4. The workflow checkout SHA / current `main` tip is never used as merged-PR evidence during manual replay (regression: PR #2542 vs later tip from PR #2543 / #2556).
+5. Automatic `pull_request_target` closeout remains unchanged and continues to pass `merge_commit_sha` explicitly.
+
+Example after a tooling repair lands on `main`:
+
+```bash
+gh workflow run "Post-Merge PR Body Closeout" \
+  -f pr_number=2542 \
+  -f skip_body_apply=true \
+  -f run_batch=false \
+  -f run_all_pending=false
+```
+
+Confirm the result records the target PR merge SHA (for #2542:
+`a184c76bf1f8d821c77621ed1a91512f292eddca`), not the current `main` tip.
+
 ## Post-Merge PR Body Closeout batch workflow (Program #1963)
 
 Program **#1963** hardened `Post-Merge PR Body Closeout`

@@ -284,7 +284,9 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_EVENT_NAME: workflow_dispatch
-          GITHUB_SHA: ${{ github.sha }}
+          # Checkout SHA is intentionally not used as closeout evidence.
+          # scripts/ci/run_post_merge_closeout.mjs resolves evidence from the
+          # target PR merge_commit_sha (see #2247 / #2556).
           GITHUB_RUN_ID: ${{ github.run_id }}
           PR_NUMBER: ${{ github.event.inputs.pr_number || '1239' }}
           BODY_FILE: ${{ github.event.inputs.body_file || 'scripts/ci/post-merge-closeout/pr-1239-body.md' }}
