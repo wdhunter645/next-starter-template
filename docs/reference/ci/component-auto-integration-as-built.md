@@ -38,7 +38,7 @@ Return shape:
 | `eligible` | `true` only when every negative rule passes |
 | `blockedReasons` | Ordered list of `{ code, message, ...details }` |
 | `requiresChatReview` | `true` when protected-change review is required before integration |
-| `componentState` | Evaluated component state, defaulting to `green` when no explicit state is supplied |
+| `componentState` | Supplied `componentState` value returned when truthy; otherwise `green` |
 | `deliveryModel` | Classified or supplied delivery model |
 | `gateProfile` | Classified or supplied gate profile |
 | `approvalProfile` | Classified or supplied approval profile |
