@@ -54,6 +54,12 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
       - name: Resolve event manifest selection and authorization
         id: resolve
         env:
@@ -68,12 +74,6 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/pmo-projects/resolve-workflow-manifests.mjs
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
 
       - name: Install dependencies
         run: npm ci
@@ -118,19 +118,24 @@ jobs:
       - name: Write job summary
         if: always()
         env:
+          EVENT_NAME: ${{ github.event_name }}
+          EFFECTIVE_MODE: ${{ steps.resolve.outputs.effective_mode }}
+          AUTH_REASON: ${{ steps.resolve.outputs.auth_reason }}
+          SELECTION_REASON: ${{ steps.resolve.outputs.selection_reason }}
+          SKIP_EVENT: ${{ steps.resolve.outputs.skip }}
           MANIFEST_PATHS_JSON: ${{ steps.resolve.outputs.manifest_paths_json }}
           DELETED_PATHS_JSON: ${{ steps.resolve.outputs.deleted_paths_json }}
         run: |
           {
             echo "## PMO Project Task Materializer"
             echo
-            echo "- Event: `${{ github.event_name }}`"
-            echo "- Effective mode: `${{ steps.resolve.outputs.effective_mode }}`"
-            echo "- Authorization reason: `${{ steps.resolve.outputs.auth_reason }}`"
-            echo "- Selection reason: `${{ steps.resolve.outputs.selection_reason }}`"
-            echo "- Skip: `${{ steps.resolve.outputs.skip }}`"
-            echo "- Selected manifests: `${MANIFEST_PATHS_JSON:-[]}`"
-            echo "- Deleted manifests: `${DELETED_PATHS_JSON:-[]}`"
+            echo "- Event: ${EVENT_NAME:-unknown}"
+            echo "- Effective mode: ${EFFECTIVE_MODE:-unknown}"
+            echo "- Authorization reason: ${AUTH_REASON:-unknown}"
+            echo "- Selection reason: ${SELECTION_REASON:-unknown}"
+            echo "- Skip: ${SKIP_EVENT:-unknown}"
+            echo "- Selected manifests: ${MANIFEST_PATHS_JSON:-[]}"
+            echo "- Deleted manifests: ${DELETED_PATHS_JSON:-[]}"
             echo
             if [ -d "$RUNNER_TEMP/materialize-reports" ]; then
               for report in "$RUNNER_TEMP"/materialize-reports/*.txt; do
