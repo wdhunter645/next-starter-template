@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: As-built component child auto-integration evaluator, workflow behavior, and GitHub-native state surfaces
 Does Not Own: Delivery policy boundaries, approval authority, or branch protection configuration
 Canonical Reference: /docs/governance/DELIVERY-AND-RELEASE.md
-Related Issues: #2498, #2501, #2502
+Related Issues: #2498, #2501, #2502, #2588
 Last Reviewed: 2026-07-17
 ---
 
@@ -29,6 +29,7 @@ Policy boundaries live in `docs/governance/DELIVERY-AND-RELEASE.md` and `docs/go
 | `componentState` | Derived component branch state |
 | `labels` | Current PR and component routing labels |
 | `changedFiles` | Changed-file paths used for protected-scope evaluation |
+| `headSha` | Current PR head SHA used to exclude superseded review state |
 
 Return shape:
 
@@ -37,6 +38,13 @@ Return shape:
 | `eligible` | `true` only when every negative rule passes |
 | `blockedReasons` | Ordered list of `{ code, message, ...details }` |
 | `requiresChatReview` | `true` when protected-change review is required before integration |
+| `componentState` | Evaluated component state, defaulting to `green` when no explicit state is supplied |
+| `deliveryModel` | Classified or supplied delivery model |
+| `gateProfile` | Classified or supplied gate profile |
+| `approvalProfile` | Classified or supplied approval profile |
+| `componentBranch` | Classified or supplied component branch metadata |
+| `componentMaster` | Classified or supplied component-master issue reference |
+| `protectedChange` | Whether the evaluated profile contains protected scope |
 
 Supporting constants:
 
@@ -78,13 +86,20 @@ A clean Model B child with:
 
 returns `eligible: true` and `requiresChatReview: false`.
 
-## Workflow behavior
+## Workflow triggers
 
-`.github/workflows/component-child-integration.yml` has the following as-built behavior:
+`.github/workflows/component-child-integration.yml` supports three event paths:
+
+| Event | Eligibility boundary |
+| --- | --- |
+| `pull_request` | Runs for `opened`, `synchronize`, `reopened`, and `ready_for_review` events targeting `component/**`; draft PRs are skipped |
+| `workflow_run` | Re-evaluates after `GATE — Quality Checks`, `GATE — Diff Scope`, or `GATE — Secret Scan` completes for a pull-request run; only an associated PR targeting `component/**` proceeds |
+| `workflow_dispatch` | Manually evaluates the supplied `pr_number`; draft PRs are skipped and the evaluator still enforces the component-base contract |
+
+## Workflow behavior
 
 | Stage | Behavior |
 | --- | --- |
-| Trigger | Runs for non-draft pull requests targeting `component/**` |
 | Evidence collection | Reads PR body, changed files, reviews, labels, and head check runs through GitHub APIs |
 | State derivation | Resolves component freshness and branch state as `green`, `red`, or `hold` |
 | Evaluation | Runs `component_integration_eligibility.mjs` |
