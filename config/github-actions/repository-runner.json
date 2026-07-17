@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "repository": "wdhunter645/next-starter-template",
+  "scope": "repository",
+  "runner": {
+    "name": "lgfc-chromebook-linux",
+    "operatingSystem": "linux",
+    "distribution": "debian-12",
+    "architecture": "x64",
+    "serviceManager": "systemd",
+    "labels": [
+      "self-hosted",
+      "linux",
+      "x64",
+      "lgfc-repo-runner",
+      "chromebook",
+      "debian-12"
+    ]
+  },
+  "security": {
+    "publicRepository": true,
+    "trustedEvents": [
+      "workflow_dispatch"
+    ],
+    "trustedRefs": [
+      "refs/heads/main"
+    ],
+    "trustedActors": [
+      "wdhunter645"
+    ],
+    "allowForkPullRequests": false,
+    "allowPullRequestEvents": false,
+    "allowPullRequestTargetEvents": false,
+    "allowWorkflowRunEvents": false,
+    "allowPushEvents": false,
+    "allowScheduledEvents": false,
+    "allowRepositorySecrets": false,
+    "allowProductionCredentials": false,
+    "allowDeployments": false,
+    "allowPersistentGitCredentials": false,
+    "executeIssueOrCommentContent": false
+  },
+  "rollout": {
+    "state": "repository-configured-host-not-registered",
+    "healthWorkflow": ".github/workflows/repository-runner-health.yml",
+    "existingWorkflowMigration": "prohibited-until-health-pass-and-explicit-project-go",
+    "initialUse": "manual-health-and-observe-only",
+    "mutationMode": "disabled"
+  },
+  "operations": {
+    "workDirectory": "_work",
+    "runnerApplicationAutoUpdate": true,
+    "preserveStateOnStop": true,
+    "requiredOutboundPort": 443,
+    "hostMustBeDedicatedToRunnerWork": true,
+    "hostMustNotContainPersonalOrProductionSecrets": true
+  }
+}
