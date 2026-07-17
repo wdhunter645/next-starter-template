@@ -1,7 +1,9 @@
 # Project #2294 Preparation Package
 
-- Design: `docs/explanation/projects/agent-issue-polling-handoff-routing-design.md`
-- Implementation plan: `docs/ops/implementation-plans/agent-issue-polling-handoff-routing/implementation-plan.md`
+- Core design: `docs/explanation/projects/agent-issue-polling-handoff-routing-design.md`
+- Repository runner design: `docs/explanation/projects/agent-issue-polling-handoff-routing-runner-design.md`
+- Core implementation plan: `docs/ops/implementation-plans/agent-issue-polling-handoff-routing/implementation-plan.md`
+- Repository runner implementation addendum: `docs/ops/implementation-plans/agent-issue-polling-handoff-routing/repository-runner-implementation-addendum.md`
 - Manifest: `docs/ops/implementation-plans/agent-issue-polling-handoff-routing/project-manifest.json`
 - Launch prerequisites: `docs/ops/implementation-plans/agent-issue-polling-handoff-routing/launch-prerequisites.md`
 - Runner bootstrap disposition: `docs/ops/implementation-plans/agent-issue-polling-handoff-routing/runner-bootstrap-note.md`
@@ -10,4 +12,4 @@
 - Repository runner contract: `docs/reference/ci/repository-runner-contract.md`
 - Chromebook runner setup: `docs/how-to/ci/configure-lgfc-repository-runner.md`
 
-This package is prepared for Go/No-Go review. It does not launch the project, register the runner, enable ChatGPT watchers, or authorize automatic merge to `main`.
+This package is prepared for Go/No-Go review. It does not launch the project, register the runner, enable ChatGPT watchers, migrate existing workflows, or authorize automatic merge to `main`.
