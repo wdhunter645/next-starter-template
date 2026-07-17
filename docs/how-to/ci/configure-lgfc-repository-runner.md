@@ -17,7 +17,9 @@ Do not begin host registration until the repository runner contract and manual h
 
 Confirm the Chromebook Linux environment is Debian 12 x64, systemd is available, outbound HTTPS works, and the Linux environment is dedicated to runner work while the service is active.
 
-## Create the repository runner
+## Procedure
+
+### Create the repository runner
 
 In `wdhunter645/next-starter-template`:
 
@@ -28,7 +30,7 @@ In `wdhunter645/next-starter-template`:
 
 Use a repository-level runner.
 
-## Install on Chromebook Linux
+### Install on Chromebook Linux
 
 Use the exact runner version, download command, and checksum shown by GitHub.
 
@@ -51,7 +53,7 @@ After downloading and extracting the runner package, register it with the genera
 
 Do not store the registration token in repository files or reusable scripts.
 
-## Install the service
+### Install the service
 
 ```bash
 sudo ./svc.sh install "$USER"
@@ -66,7 +68,7 @@ echo '$nrconf{override_rc}{qr(^actions\.runner\..+\.service$)} = 0;' \
   | sudo tee /etc/needrestart/conf.d/actions_runner_services.conf
 ```
 
-## Verify registration
+### Verify registration
 
 In **Settings → Actions → Runners**, confirm:
 
@@ -75,7 +77,7 @@ In **Settings → Actions → Runners**, confirm:
 - platform: Linux x64;
 - labels include `lgfc-repo-runner`, `chromebook`, and `debian-12`.
 
-## Run the health workflow
+### Run the health workflow
 
 1. Open **Actions → Repository Runner Health**.
 2. Select branch `main`.
