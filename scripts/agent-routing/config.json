@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "mode": "observe",
+  "allowedModes": [
+    "disabled",
+    "observe",
+    "normalize",
+    "advance",
+    "integrate"
+  ],
+  "repository": "wdhunter645/next-starter-template",
+  "projectIssue": 2294,
+  "projectBranch": "component/agent-issue-polling-handoff-routing",
+  "thresholdsMinutes": {
+    "readyWithoutAck": 5,
+    "greenWithoutIntegration": 5,
+    "integrationWithoutSuccessor": 3,
+    "unresolvedHandoff": 10,
+    "inProgressHeartbeat": 30,
+    "controllerHeartbeat": 15,
+    "workflowFailureWithoutDisposition": 5,
+    "watcherClaimLease": 10
+  },
+  "actions": {
+    "normalizeLabels": false,
+    "emitAlerts": true,
+    "activateSuccessor": false,
+    "rerunFailedJob": false,
+    "integrateNonMain": false,
+    "mergeMain": false
+  },
+  "production": {
+    "base": "main",
+    "autoMergeMain": false,
+    "approval": "bill-or-chatgpt"
+  },
+  "watchers": {
+    "enabled": false,
+    "count": 5,
+    "broadRepositoryReview": true,
+    "alertsAreHints": true,
+    "connectorRequired": true
+  },
+  "localCursor": {
+    "enabled": false,
+    "requiredLabels": [
+      "agent:cursor",
+      "handoff:ready"
+    ],
+    "ackMarker": "CURSOR ACK",
+    "statePath": "~/.cursor/github-poller/state.json",
+    "oneClaimPerLane": true
+  },
+  "repositoryRunner": {
+    "bootstrapMode": "manual-health-only",
+    "labels": [
+      "self-hosted",
+      "linux",
+      "x64",
+      "lgfc-repo-runner"
+    ],
+    "allowedEvents": [
+      "workflow_dispatch"
+    ],
+    "forbiddenWorkloads": [
+      "pull_request",
+      "pull_request_target",
+      "push",
+      "schedule",
+      "workflow_run",
+      "deployment",
+      "secret-bearing",
+      "production"
+    ]
+  }
+}

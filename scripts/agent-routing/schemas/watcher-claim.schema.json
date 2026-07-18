@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ChatGPT Watcher Claim",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "actionKey",
+    "watcherId",
+    "claimedAt",
+    "expiresAt",
+    "status"
+  ],
+  "properties": {
+    "actionKey": {
+      "type": "string"
+    },
+    "watcherId": {
+      "type": "string"
+    },
+    "claimedAt": {
+      "type": "string"
+    },
+    "expiresAt": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "active",
+        "complete",
+        "expired"
+      ]
+    },
+    "result": {
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  }
+}
