@@ -5,8 +5,8 @@ Authority Level: Canonical PMO Dashboard Authority
 Owns: PMO July 2026 dashboard JSON contract, view placement rules, validation requirements, Incomplete view behavior, task calculations, sorting, and rendering expectations
 Does Not Own: PMO governance authority, GitHub issue mutation, workflow YAML, runtime implementation, or live label creation
 Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
-Related Issues: #2313, #2471, #2516
-Last Reviewed: 2026-07-14
+Related Issues: #2313, #2471, #2516, #2610, #2611
+Last Reviewed: 2026-07-18
 ---
 
 # PMO July 2026 Dashboard Specification
@@ -15,7 +15,28 @@ Last Reviewed: 2026-07-14
 
 Define how the PMO dashboard represents the PMO July 2026 issue contract in generated JSON and static dashboard views.
 
-The dashboard is a reporting surface. GitHub Issues remain the executable source of truth for labels, issue state, parent/child relationships, comments, assignments, and closeout evidence.
+The dashboard is a reporting surface. GitHub Issues remain the sole operational authority for labels, issue state, parent/child relationships, comments, assignments, lifecycle, priority, pipeline stage, task relationships, and closeout evidence. Generated JSON must never override live Issue metadata.
+
+## Authority hierarchy
+
+```text
+GitHub Issue state + current PMO labels
+                ↓
+PMO issue-contract validation
+                ↓
+Active / Pipeline / Completed / Incomplete
+                ↓
+Generated JSON and static dashboard
+```
+
+| Layer | Role |
+| --- | --- |
+| GitHub Issues | Sole operational authority for PMO tracking, lifecycle, priority, stage, tasks, and closeout |
+| This specification | Reporting contract for JSON fields, views, validation, and Incomplete behavior |
+| Generated `dashboard-data.json` / HTML | Reporting-only snapshot; may be stale between builds |
+| `scripts/pmo-dashboard/pmo-tracked-inventory.json` | Permitted residual role only: deterministic fixtures and explicit non-state exclusions — never live lifecycle/priority authority |
+
+Runtime repair that removes frozen inventory lifecycle/priority enforcement is planned in [`docs/reference/pmo/pmo-dashboard-single-authority-implementation-plan.md`](../../reference/pmo/pmo-dashboard-single-authority-implementation-plan.md).
 
 ## Scope
 
@@ -193,6 +214,8 @@ The static dashboard must:
 
 ## Validation requirements
 
+Validation derives lifecycle, priority, stage, and task state from **current** GitHub Issue metadata reflected in the generated rows. Validation must not compare live rows to frozen `expectedLifecycle` or `expectedPriority` values from static inventory JSON.
+
 Validation must fail generated output that:
 
 - omits required row identity fields;
@@ -203,6 +226,22 @@ Validation must fail generated output that:
 - accepts a Pipeline row without exactly one stage label;
 - loses linked `pmo:task` issues needed for parent task accounting;
 - produces invalid task math.
+
+Permitted residual static-inventory checks (after runtime repair) are limited to:
+
+- explicit non-state exclusion lists (an excluded issue must not appear as a dashboard row);
+- deterministic fixture expectations used only in offline/feature-branch tests;
+- optional presence checks that do not assert a frozen lifecycle or priority value.
+
+## Static inventory residual role
+
+`scripts/pmo-dashboard/pmo-tracked-inventory.json` is not a second source of truth for live PMO state.
+
+| Allowed | Prohibited |
+| --- | --- |
+| Explicit exclusions with rationale for issues that must not appear as portfolio rows | `expectedLifecycle` / `expectedPriority` as live validation authority |
+| Deterministic fixture seeds for offline tests | Overriding current Issue labels or GitHub open/closed state |
+| Temporary migration notes until the runtime child retires frozen fields | Silent coercion of Incomplete rows into Active/Pipeline/Completed |
 
 ## Operator remediation flow
 
@@ -216,3 +255,4 @@ Validation must fail generated output that:
 
 - PMO July 2026 Operating Model: `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`
 - PMO Dashboard how-to: `/docs/how-to/pmo/pmo-dashboard.md`
+- Single-authority runtime repair plan: `/docs/reference/pmo/pmo-dashboard-single-authority-implementation-plan.md`
