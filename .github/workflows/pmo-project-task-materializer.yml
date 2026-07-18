@@ -42,12 +42,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  materialize:
+  validate:
+    name: Validate and dry-run materialization
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      issues: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'apply' && inputs.authorize_apply == true && github.event.repository.fork == false && 'write' || 'read' }}
+      issues: read
     steps:
+      - name: Refuse unauthorized apply request
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'apply' && inputs.authorize_apply != true
+        run: |
+          echo 'Apply mode requires authorize_apply=true.' >&2
+          exit 1
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -60,12 +67,12 @@ jobs:
           node-version: '22'
           cache: npm
 
-      - name: Resolve event manifest selection and authorization
+      - name: Resolve event manifest selection
         id: resolve
         env:
           EVENT_NAME: ${{ github.event_name }}
-          INPUT_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'dry-run' }}
-          AUTHORIZE_APPLY: ${{ github.event_name == 'workflow_dispatch' && inputs.authorize_apply || false }}
+          INPUT_MODE: dry-run
+          AUTHORIZE_APPLY: false
           MANIFEST_PATH_INPUT: ${{ github.event_name == 'workflow_dispatch' && inputs.manifest_path || '' }}
           REPOSITORY: ${{ github.repository }}
           HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
@@ -79,7 +86,7 @@ jobs:
         run: npm ci
 
       - name: Test materializer workflow policy
-        run: npx vitest run tests/pmo-projects/workflow-policy.test.mjs tests/pmo-projects/resolve-workflow-manifests.test.mjs
+        run: npx vitest run tests/pmo-projects/workflow-policy.test.mjs tests/pmo-projects/resolve-workflow-manifests.test.mjs tests/pmo-projects/workflow-definition.test.mjs
 
       - name: Validate selected manifests
         if: steps.resolve.outputs.skip != 'true'
@@ -93,14 +100,15 @@ jobs:
             npm run pmo:project:validate -- "$manifest"
           done
 
-      - name: Materialize selected manifests
+      - name: Dry-run selected manifests
         if: steps.resolve.outputs.skip != 'true'
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
-          PMO_MATERIALIZE_APPLY_AUTHORIZED: ${{ steps.resolve.outputs.effective_mode == 'apply' && 'true' || 'false' }}
+          PMO_MATERIALIZE_APPLY_AUTHORIZED: 'false'
           GH_TOKEN: ${{ github.token }}
           MANIFEST_PATHS_JSON: ${{ steps.resolve.outputs.manifest_paths_json }}
         run: |
+          set -o pipefail
           mkdir -p "$RUNNER_TEMP/materialize-reports"
           mapfile -t manifests < <(
             node -e 'for (const value of JSON.parse(process.env.MANIFEST_PATHS_JSON || "[]")) console.log(value)'
@@ -108,18 +116,13 @@ jobs:
           for manifest in "${manifests[@]}"; do
             slug="$(basename "$(dirname "$manifest")")"
             report="$RUNNER_TEMP/materialize-reports/${slug}.txt"
-            if [ "${{ steps.resolve.outputs.effective_mode }}" = "apply" ]; then
-              npm run pmo:project:materialize -- --apply --repo "$GITHUB_REPOSITORY" "$manifest" | tee "$report"
-            else
-              npm run pmo:project:materialize -- --dry-run --repo "$GITHUB_REPOSITORY" "$manifest" | tee "$report"
-            fi
+            npm run pmo:project:materialize -- --dry-run --repo "$GITHUB_REPOSITORY" "$manifest" | tee "$report"
           done
 
-      - name: Write job summary
+      - name: Write validation summary
         if: always()
         env:
           EVENT_NAME: ${{ github.event_name }}
-          EFFECTIVE_MODE: ${{ steps.resolve.outputs.effective_mode }}
           AUTH_REASON: ${{ steps.resolve.outputs.auth_reason }}
           SELECTION_REASON: ${{ steps.resolve.outputs.selection_reason }}
           SKIP_EVENT: ${{ steps.resolve.outputs.skip }}
@@ -127,10 +130,10 @@ jobs:
           DELETED_PATHS_JSON: ${{ steps.resolve.outputs.deleted_paths_json }}
         run: |
           {
-            echo "## PMO Project Task Materializer"
+            echo "## PMO Project Task Materializer — validation"
             echo
             echo "- Event: ${EVENT_NAME:-unknown}"
-            echo "- Effective mode: ${EFFECTIVE_MODE:-unknown}"
+            echo "- Effective mode: dry-run"
             echo "- Authorization reason: ${AUTH_REASON:-unknown}"
             echo "- Selection reason: ${SELECTION_REASON:-unknown}"
             echo "- Skip: ${SKIP_EVENT:-unknown}"
@@ -150,10 +153,116 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload materializer reports
+      - name: Upload validation reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pmo-project-task-materializer-${{ github.run_id }}
+          name: pmo-project-task-materializer-validate-${{ github.run_id }}
           path: ${{ runner.temp }}/materialize-reports
           if-no-files-found: ignore
+
+  apply:
+    name: Apply authorized materialization
+    needs: validate
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'apply' && inputs.authorize_apply == true && github.event.repository.fork == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Resolve authorized apply manifest
+        id: resolve
+        env:
+          EVENT_NAME: workflow_dispatch
+          INPUT_MODE: apply
+          AUTHORIZE_APPLY: true
+          MANIFEST_PATH_INPUT: ${{ inputs.manifest_path }}
+          REPOSITORY: ${{ github.repository }}
+          HEAD_REPOSITORY: ${{ github.repository }}
+          IS_FORK: false
+          BEFORE_SHA: ''
+          BASE_SHA: ''
+          HEAD_SHA: ${{ github.sha }}
+        run: node scripts/pmo-projects/resolve-workflow-manifests.mjs
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test materializer workflow policy
+        run: npx vitest run tests/pmo-projects/workflow-policy.test.mjs tests/pmo-projects/resolve-workflow-manifests.test.mjs tests/pmo-projects/workflow-definition.test.mjs
+
+      - name: Validate selected manifest
+        env:
+          MANIFEST_PATHS_JSON: ${{ steps.resolve.outputs.manifest_paths_json }}
+        run: |
+          mapfile -t manifests < <(
+            node -e 'for (const value of JSON.parse(process.env.MANIFEST_PATHS_JSON || "[]")) console.log(value)'
+          )
+          for manifest in "${manifests[@]}"; do
+            npm run pmo:project:validate -- "$manifest"
+          done
+
+      - name: Apply selected manifest
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PMO_MATERIALIZE_APPLY_AUTHORIZED: 'true'
+          GH_TOKEN: ${{ github.token }}
+          MANIFEST_PATHS_JSON: ${{ steps.resolve.outputs.manifest_paths_json }}
+        run: |
+          set -o pipefail
+          mkdir -p "$RUNNER_TEMP/materialize-reports"
+          mapfile -t manifests < <(
+            node -e 'for (const value of JSON.parse(process.env.MANIFEST_PATHS_JSON || "[]")) console.log(value)'
+          )
+          for manifest in "${manifests[@]}"; do
+            slug="$(basename "$(dirname "$manifest")")"
+            report="$RUNNER_TEMP/materialize-reports/${slug}.txt"
+            npm run pmo:project:materialize -- --apply --repo "$GITHUB_REPOSITORY" "$manifest" | tee "$report"
+          done
+
+      - name: Write apply summary
+        if: always()
+        env:
+          AUTH_REASON: ${{ steps.resolve.outputs.auth_reason }}
+          MANIFEST_PATHS_JSON: ${{ steps.resolve.outputs.manifest_paths_json }}
+        run: |
+          {
+            echo "## PMO Project Task Materializer — apply"
+            echo
+            echo "- Event: workflow_dispatch"
+            echo "- Effective mode: apply"
+            echo "- Authorization reason: ${AUTH_REASON:-unknown}"
+            echo "- Selected manifests: ${MANIFEST_PATHS_JSON:-[]}"
+            echo
+            if [ -d "$RUNNER_TEMP/materialize-reports" ]; then
+              for report in "$RUNNER_TEMP"/materialize-reports/*.txt; do
+                [ -e "$report" ] || continue
+                echo "### $(basename "$report" .txt)"
+                echo '```'
+                cat "$report"
+                echo '```'
+              done
+            else
+              echo "_No apply report was produced._"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload apply reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmo-project-task-materializer-apply-${{ github.run_id }}
+          path: ${{ runner.temp }}/materialize-reports
+          if-no-files-found: warn
