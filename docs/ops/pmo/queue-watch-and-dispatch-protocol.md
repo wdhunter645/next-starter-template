@@ -194,14 +194,25 @@ A dispatcher watcher must not perform protected or owner-only actions without se
 
 ### Reusable watcher prompt patterns
 
-**Detect-only (advisory):**
+**Detect-only (advisory) — default zero writes:**
 
 ```text
 Watcher profile: advisory
 Mutation classes authorized: none
-Allowed writes: none | notice-comment-only
+Allowed writes: none
 Scan: open issues/PRs in approved lanes; handoffs; wake labels; predecessor blockers; poll health
-On actionable finding: report finding + recommended owner; do not mutate GitHub beyond allowed writes
+On actionable finding: report finding + recommended owner outside GitHub, or in the controlling issue body before the watch runs; do not create GitHub comments or other writes
+Do not interpret monitor/review/notify as mutation authority
+```
+
+**Detect-only (advisory) — notice comments only** (use instead of the default when the controlling issue explicitly authorizes notice comments; do not combine with `Allowed writes: none`):
+
+```text
+Watcher profile: advisory
+Mutation classes authorized: none
+Allowed writes: notice-comment-only
+Scan: open issues/PRs in approved lanes; handoffs; wake labels; predecessor blockers; poll health
+On actionable finding: post one notice comment with finding + recommended owner; do not assign, label, respond, resume, remediate, or otherwise mutate
 Do not interpret monitor/review/notify as mutation authority
 ```
 
@@ -294,15 +305,16 @@ Only then may an authorized operator pulse `handoff:ready` by removing and re-ad
 
 Default: deny GitHub mutation.
 
-Allowed only to a **dispatcher watcher** (or Bill/ChatGPT with owner authority) when the prompt or controlling issue explicitly authorizes the matching class:
+Allowed only to a **dispatcher watcher** (or Bill/ChatGPT with owner authority) when the prompt or controlling issue explicitly authorizes the matching class. These eight classes match the bounded dispatcher list and prompt allowlist above:
 
-- comments;
+- comments on issues and PRs;
+- canonical `CHATGPT RESPONSE` or `CHATGPT CLOSEOUT` (consume one handoff decision);
+- one separate `LOCAL CURSOR RESUME` referencing that response/closeout;
 - issue/PR assignment to `wdhunter645`;
-- approved Cursor wake / routing labels;
-- clearing stale predecessor blockers;
-- opening/updating bounded Ops remediation issues;
-- canonical `CHATGPT RESPONSE` / `CHATGPT CLOSEOUT` + `LOCAL CURSOR RESUME`;
-- closing duplicate or superseded PRs after review (requires explicit class authorization).
+- restore approved Cursor wake labels `agent:cursor` and `handoff:ready`;
+- clear stale completed-predecessor blockers;
+- open or update bounded Ops remediation issues;
+- route the next eligible task in an already approved lane.
 
 Requires separate bounded owner authority (never inferred from advisory language):
 

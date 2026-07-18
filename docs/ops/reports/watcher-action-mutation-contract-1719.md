@@ -23,7 +23,7 @@ Define a precise watcher contract that separates detection-only watches from wat
 
 | Profile | Mutation | Required authority text |
 | --- | --- | --- |
-| **Advisory watcher** | Detect and notify only | Explicit `Watcher profile: advisory` and `Mutation classes authorized: none` (optional `notice-comment-only`) |
+| **Advisory watcher** | Detect and notify only | Explicit `Watcher profile: advisory` and `Mutation classes authorized: none`; choose exactly one write mode — `Allowed writes: none` or `Allowed writes: notice-comment-only` |
 | **Dispatcher watcher** | Bounded mutations listed in the queue-watch protocol | Explicit `Watcher profile: dispatcher` plus a named mutation-class list in the scheduled prompt or controlling repository issue |
 
 Generic words such as “monitor,” “review,” “watch,” or “notify” are not mutation authority.
