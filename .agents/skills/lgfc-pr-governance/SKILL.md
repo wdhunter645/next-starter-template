@@ -4,11 +4,21 @@ Use this skill for PR creation, PR updates, source Issue linkage, scope control,
 
 ## Documentation chain (required before PR work)
 
-Before any PR, issue, review, remediation, or implementation work, complete the mandatory chain in [`Agent.md`](../../../Agent.md):
+`Agent.md` is the mandatory entry point and routing authority. This skill is subordinate to that file and must not replace, abbreviate, or redefine its documentation chain.
 
-`/Agent.md` → `/docs/ops/ai/SHARED-AGENT-RULES.md` → `/docs/ops/ai/CORE-RULES.md` → applicable agent-specific rules under `/docs/ops/ai/` → `/.agents/skills/lgfc-pr-governance/SKILL.md` and `/.github/pull_request_template.md` → `/docs/governance/PR_LIFECYCLE_STATE_MACHINE.md` → other applicable governance docs under `/docs/governance/`.
+Before any PR, issue, review, remediation, or implementation work, follow the current chain in [`Agent.md`](../../../Agent.md) in this order:
 
-Do not open, update, mark ready, request merge, or claim closeout for a PR until this skill, the PR template, and the PR lifecycle state machine have been read for the current task.
+1. [`Agent.md`](../../../Agent.md).
+2. [`docs/governance/AGENT-TEAM.md`](../../../docs/governance/AGENT-TEAM.md) for canonical team roles, approval routing, protected stops, and workflow boundaries.
+3. [`docs/ops/ai/SHARED-AGENT-RULES.md`](../../../docs/ops/ai/SHARED-AGENT-RULES.md) as the retained superseded pointer to shared execution routing.
+4. [`docs/ops/ai/CORE-RULES.md`](../../../docs/ops/ai/CORE-RULES.md) for detailed shared execution rules.
+5. The applicable agent-specific pointer under `docs/ops/ai/`; it is additive and cannot replace governance or core rules.
+6. Applicable repository governance and procedure documents, including the source Issue, task-linked authority, this skill, [`.github/pull_request_template.md`](../../../.github/pull_request_template.md), [`docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`](../../../docs/governance/PR_LIFECYCLE_STATE_MACHINE.md), and other task-relevant governance documents.
+7. Any additional `.agents/skills/*/SKILL.md` files triggered by the task.
+
+`docs/ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md` is superseded for current team policy and approval routing. Do not restore or cite it as an active authority layer when applying this skill.
+
+Do not open, update, mark ready, request merge, or claim closeout for a PR until the mandatory chain, this skill, the PR template, and the PR lifecycle state machine have been read for the current task.
 
 ## Required inputs
 
