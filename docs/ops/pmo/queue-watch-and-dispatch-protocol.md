@@ -23,7 +23,7 @@ Keep approved LGFC execution lanes moving by converting live GitHub state into o
 - Assignee, PR assignment, and alert state are convenience/priority signals only.
 - Routine non-main progress does not create a ChatGPT stop.
 - `CHATGPT HANDOFF` is reserved for genuine blockers, decisions, exceptions, and production boundaries.
-- Automatic merge to `main` is prohibited.
+- Any automatic merge to `main` is prohibited.
 
 ## Deterministic dispatcher transaction
 
