@@ -5,7 +5,7 @@ Authority Level: Agent-Specific Workflow
 Owns: Cursor-to-ChatGPT handoff format, ChatGPT response format, local Cursor resume transaction, Cursor wake-label expectations, source-issue PR-open notification, review-trigger expectations, and marker/dispatcher boundaries for LGFC repository work
 Does Not Own: Shared agent law, merge authorization, implementation authority, production design authority, PR lifecycle gates, ChatGPT account-level scheduled automation, Cursor cloud-agent invocation behavior, or repo-native watch implementation
 Canonical Reference: /docs/ops/ai/CHATGPT-RULES.md
-Related Issues: #2396, #2391, #2379, #2369, #2360, #2359, #2492, #2565, #1719, #2528
+Related Issues: #2396, #2391, #2379, #2369, #2360, #2359, #2492, #2565, #2566, #1719, #2528
 Last Reviewed: 2026-07-18
 ---
 
@@ -67,7 +67,7 @@ All six steps are required unless the ChatGPT response explicitly says `stop` or
 | Propagate chat decisions | ChatGPT | Bill and ChatGPT decide direction in chat UI | Source issue, PR, or repository document | Record the decision in a canonical GitHub comment before Cursor is expected to act | Do not expect Cursor to act on chat-only context |
 | Respond to handoff | ChatGPT | Canonical `CHATGPT HANDOFF` requires a decision | Source issue | Post canonical `CHATGPT RESPONSE` or `CHATGPT CLOSEOUT` | Stop if repository authority or evidence is insufficient |
 | Resume local Cursor | Bill / ChatGPT / authorized dispatcher | Canonical Chat response expects Cursor action | Source issue | Verify open state and labels, then post separate `LOCAL CURSOR RESUME` referencing the exact response and containing one bounded action | Do not claim pickup or execution merely because the marker exists |
-| Run queue/watch dispatcher | ChatGPT / Bill / authorized automation | Manual request, scheduled watch, or repo-native workflow | GitHub issues, PRs, labels, comments, and closeout evidence | Apply the queue-watch protocol and this transaction | Do not mutate GitHub unless authorized |
+| Run queue/watch dispatcher | ChatGPT / Bill / authorized automation | Manual request, scheduled watch, or repo-native workflow | GitHub issues, PRs, labels, comments, and closeout evidence | Apply the queue-watch protocol and this transaction **only when** the watcher’s profile is dispatcher and mutation classes are explicit in the prompt or controlling issue; advisory watches detect/notify only | Do not mutate GitHub unless authorized; do not treat “monitor/review/notify” as mutation authority |
 | Authorize merge readiness | ChatGPT / Bill | PR ready for merge-readiness review | PR and source issue | Verify scope, source issue, validation, review state, rollback, and closeout expectations | Human authorization required for production promotion or protected changes |
 
 ## Cursor-to-ChatGPT handoff
@@ -237,6 +237,8 @@ If a valid handoff is not answered, a valid response is not followed by a resume
 
 The dispatcher must not silently leave an approved execution lane idle.
 
+Watcher profile authority (advisory vs dispatcher, bounded mutation classes, and protected-action denial) is owned by `docs/ops/pmo/queue-watch-and-dispatch-protocol.md` and evidenced in `docs/ops/reports/watcher-action-mutation-contract-1719.md`. An advisory watch that can only detect stalls must report and stop; it must not imply it will clear the stall without dispatcher mutation authority.
+
 ## Decision propagation rule
 
 Decisions made in chat must be written to the relevant GitHub Issue, PR, or repository document before Cursor is expected to act. Cursor must not infer chat-only context.
@@ -251,4 +253,7 @@ docs/ops/ai/chatgpt-cursor-handoff-workflow.md
 
 Queue watch / dispatcher:
 docs/ops/pmo/queue-watch-and-dispatch-protocol.md
+
+Watcher mutation contract:
+docs/ops/reports/watcher-action-mutation-contract-1719.md
 ```
