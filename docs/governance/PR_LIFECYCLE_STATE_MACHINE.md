@@ -1,292 +1,245 @@
 ---
 Doc Type: Governance / Process
 Audience: Human + AI Agents
-Authority Level: Governance
-Owns: Pull request lifecycle states, transition gates, pre-merge closeout prediction, and post-merge closeout evidence requirements
-Does Not Own: Product design authority, runtime architecture, or final human merge approval
-Canonical Reference: /docs/governance/PR_GOVERNANCE.md
-Last Reviewed: 2026-06-20
+Authority Level: Supporting Governance
+Owns: Conceptual pull-request lifecycle states and their mapping to GitHub-native evidence
+Does Not Own: Canonical PR body fields, CI implementation, product design authority, runtime architecture, or final merge approval
+Canonical Reference: /docs/governance/PR_PROCESS.md
+Related Issues: #1719, #2562
+Last Reviewed: 2026-07-17
 ---
 
 # PR Lifecycle State Machine
 
 ## Purpose
 
-This document defines the mandatory pull request lifecycle state machine for LGFC repository work.
+Describe the LGFC pull-request lifecycle without turning the PR body into a lifecycle database.
 
-It compresses the distributed PR rules in `Agent.md`, shared/core agent rules, the PR governance skill, and the PR template into one executable lifecycle model. Agents must use this document when opening, updating, marking ready, handing off, merging, or closing out PRs.
-
-PMO **program** lifecycle status nomenclature (Ready for Launch, Implementation
-Active, Post-Implementation Verification, Complete / Closed) is defined in
-`/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`. Do not conflate PR lifecycle states
-with PMO program lifecycle reporting terms.
+The canonical pull-request policy is `docs/governance/PR_PROCESS.md`. The current PR template defines stable PR-body facts. Dynamic state belongs to GitHub-native reviews, review threads, labels, checks, comments, merge state, and post-merge closeout records.
 
 ## Scope
 
-This document applies to:
+This document provides conceptual lifecycle guidance for:
 
-- all AI-agent PRs;
-- all human-assisted PRs using repository governance;
-- PR body completion;
-- reviewer and bot disposition accounting;
-- gate-readiness claims;
-- post-merge source issue closeout;
-- queue/dependency-map continuation decisions.
+- opening and preparing a PR;
+- moving a PR from draft to review;
+- assessing merge readiness;
+- recording the human merge decision;
+- verifying merge and post-merge closeout;
+- deciding whether a program or project queue may continue.
 
-This document does not authorize scope expansion, merge approval by agents, runtime behavior changes, tracker edits, or exception handling outside the source issue.
+It does not add PR-body sections, require dynamic state ledgers, authorize scope expansion, grant merge authority, or replace the canonical process and template.
 
 ## Current known truth
 
-The repository has strong PR governance rules, but PR lifecycle obligations were previously spread across multiple documents. That distribution allowed agents to produce superficially complete PR bodies while missing lifecycle-critical evidence such as reviewer dispositions, source-issue closeout prediction, and post-merge queue-advancement readiness.
-
-The lifecycle states below are mandatory. A PR may not advance to the next state unless every transition gate for the current state is satisfied or the exact blocker is documented in the PR body.
+- `docs/governance/PR_PROCESS.md` is canonical for pull-request policy.
+- `.github/pull_request_template.md` stores stable facts known at PR-open or implementation-complete time.
+- Review state is read from GitHub reviews and review threads.
+- Gate state is read from GitHub checks and workflow runs.
+- Merge state is read from the PR and merge commit.
+- Post-merge state is read from closeout records and source-issue state.
+- Dynamic comment IDs, thread ledgers, CI ledgers, merge-readiness fields, and post-merge state blocks must not be required in the PR body.
 
 ## Intended final state
 
-Agents and CI should evaluate the same lifecycle contract before merge and after merge. Predictable post-merge closeout failures must be blocked before merge rather than remediated after merge.
+Agents, reviewers, and automation evaluate the same lifecycle using authoritative GitHub-native evidence. The PR body remains concise and stable, while dynamic review, gate, merge, and closeout state remains on the surfaces that own it.
 
----
+## Authority and evidence surfaces
+
+| Surface | Owns |
+| --- | --- |
+| Source issue | Task authority, scope, acceptance criteria, allowlist, and explicit exceptions |
+| PR body | Stable implementation facts required by the current template |
+| GitHub reviews and review threads | Reviewer decisions, actionable findings, replies, and resolution state |
+| GitHub checks and workflow runs | Current validation and gate state for the PR head |
+| Labels | Routing or derived operator-visibility state; not durable evidence by themselves |
+| Issue and PR comments | Handoffs, decisions, status summaries, and bounded rationale |
+| PR merge state and commit | Whether integration occurred and the exact merge SHA |
+| Post-merge closeout records | Source-issue disposition, validation result, remediation, and queue continuation |
+
+When surfaces disagree, follow the operational truth hierarchy in `docs/ops/ai/CORE-RULES.md` and the canonical process in `docs/governance/PR_PROCESS.md`.
 
 ## Lifecycle states
 
 ```text
-NO PR -> DRAFT -> READY FOR REVIEW -> READY FOR MERGE -> HUMAN MERGE DECISION -> MERGED -> CLOSEOUT VERIFIED
+NO PR -> DRAFT -> READY FOR REVIEW -> READY FOR MERGE
+      -> HUMAN MERGE DECISION -> MERGED -> CLOSEOUT VERIFIED
 ```
 
-Agents must not skip states. The human/operator remains the only merge authority.
-
-`READY FOR REVIEW` means the PR is ready for reviewer/human inspection. It does not authorize merge and must not be treated as merge-ready.
-
-`READY FOR MERGE` is the required agent handoff target for final pre-merge authorization. It means all required checks, reviewer-response accounting, source issue accounting, and governance gates are satisfied and the PR is ready for final merge authorization. It does not authorize the agent to merge.
-
----
+These are conceptual operating states. They are not mandatory PR-body fields. A status report or handoff may name the current state, but the state must be derived from live repository evidence.
 
 ## State 0: NO PR
 
 ### Entry condition
 
-A task exists, but no PR exists yet.
+A valid source issue exists and no PR has been opened.
 
-### Required transition to DRAFT
+### Transition to DRAFT
 
-Before opening a PR, the agent must confirm:
+Confirm:
 
-- exactly one same-repository, open, non-PR source issue exists;
-- the source issue is the task authority;
-- file-touch allowlist is known and narrow;
-- one intent label is selected;
-- applicable governance, design, architecture, and skill docs have been read;
-- no ZIP/root artifact risk exists;
-- the PR body can be seeded from `.github/pull_request_template.md`;
-- any queue/dependency-map context is known or explicitly not applicable.
+- exactly one open same-repository source issue owns the work;
+- task scope and changed-file allowlist are clear;
+- one intent label and the applicable delivery profile are known;
+- required authority and design documents have been read;
+- the working branch and PR base are authorized;
+- the PR can be seeded from the current template.
 
-### Stop condition
-
-Stop before PR creation if the source issue is missing, closed, ambiguous, external, or a PR.
-
----
+Stop before PR creation when source authority, scope, branch, runtime, or allowlist is missing or contradictory.
 
 ## State 1: DRAFT
 
 ### Entry condition
 
-A PR exists but implementation, verification, reviewer response, or PR body evidence is incomplete.
+A PR exists, but implementation, stable PR-body facts, verification, or self-review is incomplete.
 
-### Required transition to READY FOR REVIEW
+### Transition to READY FOR REVIEW
 
-Before marking or claiming `READY FOR REVIEW`, the agent must confirm:
+Confirm:
 
-- final diff matches the file-touch allowlist exactly;
-- no mixed intent or opportunistic cleanup exists;
-- PR body matches final diff, source issue, label, evidence, and acceptance criteria;
-- all local/task-relevant checks are run or exact blockers are recorded;
-- live PR check panel and latest head workflow runs are inspected;
-- acceptance criteria are checked, marked not applicable with rationale, or explicitly blocked;
-- no `TODO`, `TBD`, placeholder, or stale evidence remains in required PR-body fields.
+- the final diff matches the issue allowlist;
+- no unrelated intent or opportunistic cleanup is present;
+- the PR body contains the stable facts required by the current template;
+- task-relevant local validation has run or an exact blocker is recorded;
+- acceptance criteria are complete, not applicable with rationale, or explicitly blocked;
+- no template placeholders or stale implementation claims remain.
 
-### Stop condition
-
-Do not mark review-ready if implementation, PR body evidence, or required inspection still requires agent action.
-
----
+Dynamic review-thread state, check results, comment IDs, and merge-readiness state are not copied into the PR body.
 
 ## State 2: READY FOR REVIEW
 
 ### Entry condition
 
-The implementation agent has completed its work and the PR is ready for reviewer/human inspection.
+Implementation and the stable PR body are complete enough for independent review.
 
-### Required transition to READY FOR MERGE
+### Review and remediation
 
-Before marking or claiming `READY FOR MERGE`, the agent must confirm:
+Reviewers and agents must:
 
-- all required gates are green;
-- reviewer-response accounting is complete;
-- source issue accounting is complete;
-- pre-merge closeout prediction is recorded;
-- all reviewer comments, bot comments, and GitHub review threads are inspected;
-- every actionable reviewer item has a parser-safe disposition;
-- every required thread has a parser-safe state: `resolved`, `outdated`, or `unresolved` with rationale recorded in the disposition text;
-- the final PR panel confirms merge-readiness.
+- inspect the current PR head and file scope;
+- use GitHub reviews and review threads for findings and resolution;
+- use current checks and workflow runs for validation state;
+- correct valid findings within scope;
+- reject or mark findings not applicable with specific rationale on the owning review surface;
+- keep the source issue and PR body aligned with the final implementation facts.
 
-If any required gate is failing or pending, remain in `BLOCKED` or `READY FOR REVIEW`; do not claim `READY FOR MERGE`.
+Do not maintain a review-comment ID ledger or thread-state ledger in the PR body.
 
-### Required reviewer disposition format
+### Transition to READY FOR MERGE
 
-```text
-review-comment:<id> — accepted/rejected/acknowledged/not-applicable — <specific resolution or reason> — thread state: resolved/outdated/unresolved
-```
+`READY FOR MERGE` is a derived assessment, not a PR-body field. It requires:
 
-### Stop condition
+- all required checks green on the current head;
+- source-issue accounting valid;
+- all blocking human review findings resolved or superseded;
+- all review threads inspected and dispositioned on GitHub-native surfaces;
+- no known technical, security, data, scope, or production-safety defect;
+- the PR mergeable against its authorized base;
+- pre-merge closeout assessment completed on an issue comment, PR comment, check summary, or other authorized operational record.
 
-Do not mark merge-ready if any gate, reviewer item, bot comment, review thread, source issue accounting item, or PR body section still requires agent action. Do not treat review-ready as merge-ready.
-
----
+Advisory bot findings do not block unless canonical policy or a required gate promotes them to blocking status.
 
 ## State 3: READY FOR MERGE
 
 ### Entry condition
 
-All required checks, reviewer-response accounting, source issue accounting, and governance gates are satisfied. The PR is ready for final merge authorization by the human/operator.
+Live repository evidence shows that the PR is technically and procedurally ready for an authorized merge decision.
 
-### Required transition to HUMAN MERGE DECISION
+### Pre-merge closeout assessment
 
-Before asking for a human merge decision, the responsible agent must perform a pre-merge closeout prediction:
+The responsible reviewer or controller verifies:
 
-- inspect live PR check panel;
-- inspect current head SHA;
-- inspect current PR body;
-- inspect source issue state;
-- inspect reviewer and bot disposition evidence;
-- inspect open review threads;
-- verify exactly one accepted source issue line remains parseable;
-- verify the source issue is still open unless the PR is an approved closed-source remediation exception;
-- predict whether post-merge source issue closeout will pass;
-- record blockers in the PR body if post-merge closeout would not pass.
+- current head SHA and mergeability;
+- required checks and workflow state;
+- source issue state and scope authority;
+- review and thread disposition;
+- expected source-issue action after merge;
+- expected post-merge validation behavior;
+- project/program queue continuation or halt.
 
-### Required pre-merge closeout prediction fields
+The assessment is dynamic operational evidence. Record it in a GitHub-native comment, check summary, or closeout-control record, not as a mandatory PR-body state block.
 
-The PR body must answer:
-
-```text
-Pre-merge closeout prediction: pass / fail / blocked
-Source issue state before merge: open / closed / other
-Expected post-merge source issue action: auto-close / manual close / no-op / remediation follow-up
-Reviewer disposition parseability: pass / fail / not-applicable
-Queue continuation after closeout: continue / halt / not-applicable
-```
-
-### Stop condition
-
-Do not request merge while the prediction is `fail` or `blocked`.
-
----
+Stop when the assessment identifies a predictable post-merge failure that can be corrected before merge.
 
 ## State 4: HUMAN MERGE DECISION
 
 ### Entry condition
 
-The PR is ready for a human/operator merge decision.
+The PR is ready for the merge authority defined by `docs/governance/PR_PROCESS.md`, the delivery profile, and branch protection.
 
-### Required transition to MERGED
+Before merge, verify:
 
-Only the human/operator may merge. Before merging, the PR must have:
+- the source issue and stable PR body remain valid;
+- the current head still has the required checks;
+- no new blocking review or thread has appeared;
+- no new conflict or unsafe production condition exists;
+- the target branch and approval profile are correct.
 
-- one source issue;
-- one intent label;
-- current-head checks green or explicitly accepted by the human/operator;
-- all actionable reviewer and bot feedback dispositioned;
-- no unresolved required review threads;
-- pre-merge closeout prediction recorded as `pass` or explicitly accepted by the human/operator;
-- no known post-merge closeout failure that can be fixed before merge.
-
-### Stop condition
-
-If a predictable post-merge closeout failure exists, return the PR to DRAFT/BLOCKED instead of merging.
-
----
+Cursor and other builders do not self-approve or self-merge. Promotion to `main` remains Bill/ChatGPT controlled.
 
 ## State 5: MERGED
 
 ### Entry condition
 
-The PR is merged into the base branch.
+GitHub reports the PR merged and provides a merge commit SHA.
 
-### Required transition to CLOSEOUT VERIFIED
+### Transition to CLOSEOUT VERIFIED
 
-After merge, the responsible agent or automation must verify:
+Verify from live evidence:
 
-- merged state;
-- merge commit SHA;
-- source issue state;
-- source issue closure or required follow-up;
-- post-merge validation workflow status;
-- queue/dependency-map continuation status;
-- remediation issue state if a remediation issue was created;
-- explicitly authorized tracker/status-index follow-up, if any.
+- merged state, target branch, and merge SHA;
+- post-merge validation result;
+- source-issue disposition;
+- required remediation issue or exception state;
+- project/program queue continuation or halt;
+- any explicitly authorized status-index follow-up.
 
-### Stop condition
-
-If post-merge verification fails, the source issue or remediation issue must show `status:failed` or equivalent failure evidence, and queue advancement must halt until the failure is resolved.
-
----
+A green pre-merge check or mergeable PR is not merge evidence.
 
 ## State 6: CLOSEOUT VERIFIED
 
 ### Entry condition
 
-Post-merge closeout has passed.
+Post-merge closeout passed, or an explicitly authorized exception records why normal closeout is not applicable.
 
-### Required evidence
+Closeout is verified when:
 
-Closeout is verified only when:
+- the source issue is closed or intentionally retained open with rationale;
+- post-merge validation passed or has an accepted not-applicable disposition;
+- no unresolved remediation exception remains;
+- queue continuation is recorded;
+- no required bounded follow-up is silently omitted.
 
-- source issue is closed or explicitly remains open with rationale;
-- post-merge validation passed or was marked not applicable with rationale;
-- queue/dependency-map continuation decision is recorded;
-- no unresolved remediation exception remains for the source issue;
-- no required tracker/status-index follow-up remains unless delegated to a bounded issue.
+Only then may dependent work advance, unless an authorized operator records an explicit override.
 
-### Final state
+## Agent status reporting
 
-The PR lifecycle is complete. Program queue work may advance only after this state is reached or the human/operator explicitly overrides the halt with recorded rationale.
-
----
-
-## Agent reporting requirements
-
-Every agent status report about a PR must include:
+A status report or handoff may summarize:
 
 ```text
-PR lifecycle state: NO PR / DRAFT / READY FOR REVIEW / READY FOR MERGE / HUMAN MERGE DECISION / MERGED / CLOSEOUT VERIFIED
+PR lifecycle state: <state>
 Current head SHA: <sha or not-applicable>
 Source issue: #<issue>
-Gate status: pass / fail / pending / not-applicable
-Reviewer disposition status: pass / fail / pending / not-applicable
-Pre-merge closeout prediction: pass / fail / blocked / not-applicable
-Queue continuation: continue / halt / not-applicable
+Required checks: pass | fail | pending | not-applicable
+Review disposition: pass | fail | pending | not-applicable
+Closeout assessment: pass | fail | blocked | not-applicable
+Queue continuation: continue | halt | not-applicable
 ```
 
-Do not claim readiness, merge safety, or closeout success without repository evidence.
+This summary belongs in the current handoff, issue comment, PR comment, or operational report. It is not a required persistent section of the PR body.
 
----
+## CI alignment
 
-## CI alignment requirement
+Pre-merge automation should evaluate stable PR-body facts together with GitHub-native issue, review, thread, check, and branch state. It must not require the PR body to duplicate dynamic lifecycle state.
 
-Pre-merge CI should enforce the `READY FOR REVIEW -> READY FOR MERGE -> HUMAN MERGE DECISION` transitions. The pre-merge gate must reject PRs that would predictably fail post-merge closeout due to missing source issue, closed source issue without approved exception, missing reviewer disposition, unresolved required review thread, stale acceptance criteria, or missing queue/dependency-map decision.
-
-Post-merge CI should enforce the `MERGED -> CLOSEOUT VERIFIED` transition. Any post-merge failure should create or update a bounded remediation issue and halt queue advancement until resolved.
-
-Deterministic clerical primary-issue mismatch is not a post-merge exception when repository evidence identifies exactly one unambiguous correct source issue. In that case post-merge closeout may repair the durable PR/source-issue linkage, apply completion labels, and close the corrected source issue without creating a remediation issue. Material ambiguity, changed-file authority conflicts, unmet acceptance criteria, and unresolved required review findings still stop for human review.
-
----
+Post-merge automation should evaluate merge state, source-issue authority, closeout evidence, remediation state, and queue continuation. It should remain idempotent and create bounded remediation only for genuine unresolved failures.
 
 ## Related authorities
 
 - `Agent.md`
-- `docs/ops/ai/SHARED-AGENT-RULES.md`
-- `docs/ops/ai/CORE-RULES.md`
-- `.agents/skills/lgfc-pr-governance/SKILL.md`
+- `docs/governance/PR_PROCESS.md`
 - `.github/pull_request_template.md`
 - `docs/governance/PR_GOVERNANCE.md`
+- `docs/ops/ai/CORE-RULES.md`
+- `.agents/skills/lgfc-pr-governance/SKILL.md`
 - `docs/reference/governance/troubleshooting-data-surface-requirements.md`
