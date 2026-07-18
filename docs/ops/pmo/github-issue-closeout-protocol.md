@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: GitHub issue closeout protocol, post-merge evidence requirements, bounded batch closeout, issue-mutation separation, atomic source-issue closeout, and successor queue advancement for LGFC program tasks
 Does Not Own: Merge authority, branch protection, workflow implementation, or issue mutation outside approved scope
 Canonical Reference: /docs/reference/pmo/lgfc-cursor-execution-contract.md
-Related Issues: #1411, #1409, #1379, #1255, #1335, #1548, #2359, #2360, #2376, #2380
-Last Reviewed: 2026-07-08
+Related Issues: #1411, #1409, #1379, #1255, #1335, #1548, #2359, #2360, #2376, #2380, #2566
+Last Reviewed: 2026-07-18
 ---
 
 # GitHub Issue Closeout Protocol
@@ -86,6 +86,13 @@ Source-issue closure is an atomic closeout action. A source issue must not be
 closed as complete unless the same authorized closeout pass also records terminal
 label reconciliation, parent or umbrella disposition, successor or queue
 disposition, and any remediation or tracker follow-up.
+
+Scheduled watchers do not gain closeout mutation from advisory language. Source
+or program issue closure remains a protected action under
+`docs/ops/pmo/queue-watch-and-dispatch-protocol.md` (watcher profiles) and
+`docs/ops/reports/issue-mutation-closeout-permission-1724.md`. Only Bill,
+ChatGPT, or an explicitly authorized closeout controller may close after verified
+integration and canonical `CHATGPT CLOSEOUT`.
 
 ## Required Closeout Evidence
 
