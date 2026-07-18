@@ -5,8 +5,8 @@ Authority Level: Agent-Specific Workflow
 Owns: Cursor-to-ChatGPT handoff format, ChatGPT response format, local Cursor resume transaction, Cursor wake-label expectations, source-issue PR-open notification, review-trigger expectations, and marker/dispatcher boundaries for LGFC repository work
 Does Not Own: Shared agent law, merge authorization, implementation authority, production design authority, PR lifecycle gates, ChatGPT account-level scheduled automation, Cursor cloud-agent invocation behavior, or repo-native watch implementation
 Canonical Reference: /docs/ops/ai/CHATGPT-RULES.md
-Related Issues: #2396, #2391, #2379, #2369, #2360, #2359, #2492
-Last Reviewed: 2026-07-13
+Related Issues: #2396, #2391, #2379, #2369, #2360, #2359, #2492, #2565, #1719, #2528
+Last Reviewed: 2026-07-18
 ---
 
 # ChatGPT / Cursor Handoff Workflow
@@ -16,6 +16,20 @@ Last Reviewed: 2026-07-13
 Define the deterministic GitHub communication contract for LGFC repository work involving ChatGPT and local Cursor.
 
 This file controls communication markers, required fields, wake-label expectations, and local resume behavior. It does not change implementation authority, review authority, merge authorization, closeout authority, PR lifecycle gates, or shared agent law.
+
+## Communication and routing taxonomy
+
+Separate namespaces (full operator matrix: `docs/ops/reports/communication-routing-taxonomy-1719.md`; dispatcher protocol: `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`):
+
+| Namespace | Markers | Action implication |
+| --- | --- | --- |
+| PMO portfolio metadata | `pmo`, `pmo:active` / `pmo:pipeline` / `pmo:closed`, priority, stage, `pmo:task` | Dashboard/reporting only |
+| PR classification | Exactly one PR intent label; PR class in PR body | PR verification/accounting only |
+| ChatGPT review routing | Label `agent:ChatGPT`; comment `CHATGPT HANDOFF` (then `CHATGPT RESPONSE` / `CHATGPT CLOSEOUT`) | Review/decision markers that require an **invoked** dispatcher or scheduled watch — not inert background alerts |
+| Cursor execution routing | `agent:cursor` **+** `handoff:ready` (required wake pair); claim → `handoff:in-progress` | Local Cursor wake eligibility; prose naming Cursor as next does **not** wake or authorize execution |
+| Operational status | `status:*` | Execution/verification bookkeeping; not PMO lifecycle |
+
+Labels represent current routing or portfolio state. Comments represent durable events and evidence. A comment without matching current labels is historical evidence, not executable authority. No label family substitutes for another.
 
 ## Authority
 
@@ -195,23 +209,22 @@ Cloud execution requires explicit source-issue authorization under `docs/governa
 
 ## Wake-label requirements
 
-For local Cursor execution, the open source issue must include:
+For local Cursor execution, the open source issue must include the required wake pair:
 
 ```text
 agent:cursor
 handoff:ready
 ```
 
-Body text or comments alone are insufficient. Labels alone are also insufficient without a qualifying issue update and canonical resume transaction.
+Body text, comments, or prose that only names Cursor as next are insufficient. `agent:cursor` alone is insufficient. Labels alone are also insufficient without a qualifying issue update and canonical resume transaction under this workflow.
 
-For ChatGPT review, use:
+For ChatGPT review routing, use:
 
 ```text
 agent:ChatGPT
-CHATGPT HANDOFF
 ```
 
-These are routing markers and require an actual manual, scheduled, or repo-native dispatcher.
+together with a durable `CHATGPT HANDOFF` comment event when Cursor (or an operator) requests ChatGPT action. These are review markers, not PMO lifecycle labels and not Cursor wake labels. They require an actual manual, scheduled, or repo-native dispatcher/watch to consume them; presence alone is not background auto-notification completion.
 
 ## Queue-stall escalation
 

@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: LGFC queue watch, canonical handoff dispatch, local Cursor wake routing, silent-stall detection, lane-aware continuation, and process-remediation routing
 Does Not Own: ChatGPT product automation configuration, GitHub workflow implementation, merge authority, production configuration, branch deletion, or uncontrolled issue mutation
 Canonical Reference: /docs/ops/pmo/github-issue-closeout-protocol.md
-Related Issues: #2396, #2391, #2386, #2360, #2361, #2363, #2364, #2359, #2376, #2380, #2492
-Last Reviewed: 2026-07-13
+Related Issues: #2396, #2391, #2386, #2360, #2361, #2363, #2364, #2359, #2376, #2380, #2492, #2565, #1719, #2528
+Last Reviewed: 2026-07-18
 ---
 
 # Queue Watch and Dispatch Protocol
@@ -16,6 +16,28 @@ Last Reviewed: 2026-07-13
 Keep every approved LGFC execution lane moving by converting GitHub state into one deterministic next action without disrupting the local Cursor poll-wake loop.
 
 Handoff markers are inert until a manual, scheduled, or repo-native dispatcher consumes them. Labels and comments make work detectable; they do not prove agent pickup or execution.
+
+## Communication and routing taxonomy
+
+These namespaces are separate. No family substitutes for another.
+
+| Namespace | Purpose | Primary markers | Who/what consumes | Causes |
+| --- | --- | --- | --- | --- |
+| **PMO portfolio metadata** | Dashboard placement and portfolio accounting | `pmo`; exactly one of `pmo:active` / `pmo:pipeline` / `pmo:closed`; exactly one `pmo:priority:*`; pipeline-stage when `pmo:pipeline`; `pmo:task` for child linkage | PMO dashboard / portfolio reports | Reporting and placement only — not execution wake |
+| **PR classification** | How a PR is verified and labeled | Exactly one intent label (for example `docs-only`); PR class in the PR body | PR hygiene / intent labeler / reviewers | Verification depth and PR accounting — not PMO lifecycle and not Cursor wake |
+| **ChatGPT review routing** | Genuine ChatGPT-owned next action | Label `agent:ChatGPT`; comment event `CHATGPT HANDOFF` (plus `CHATGPT RESPONSE` / `CHATGPT CLOSEOUT`) | Invoked dispatcher / scheduled watch / Bill | Review, decision, exception, or closeout only after a dispatcher/watch acts — not background notification alone |
+| **Cursor execution routing** | Eligible local Cursor pickup | Labels `agent:cursor` **and** `handoff:ready` together; claim uses `handoff:in-progress` | Local Cursor poller / authorized dispatcher | Wake eligibility only when both labels are present with a valid assignment/response — prose naming Cursor as next does **not** wake or authorize execution |
+| **Operational status** | Execution/verification bookkeeping | `status:*` (for example `status:in-progress`, `status:post-merge-verify`, `status:blocked`, `status:needs-human`, `status:complete`) | Operators, closeout automation, humans | Progress/reporting state — must not be conflated with PMO dashboard lifecycle (`pmo:active` / `pmo:pipeline` / `pmo:closed`) |
+
+Non-substitution rules:
+
+1. A PR intent label does not place work on the PMO dashboard.
+2. `pmo:active` does not wake Cursor.
+3. `agent:ChatGPT` without an invoked dispatcher/watch does not complete review.
+4. `agent:cursor` alone, or narrative “Cursor should…”, does not authorize pickup.
+5. `status:*` labels do not replace `pmo:*` lifecycle labels.
+
+Canonical marker formats: `docs/ops/ai/chatgpt-cursor-handoff-workflow.md`. Operator matrix: `docs/ops/reports/communication-routing-taxonomy-1719.md`.
 
 ## Current operating truths
 

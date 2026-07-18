@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: Cursor execution permissions, continuation rules, PR handoff behavior, and issue-mutation boundaries for LGFC program tasks
 Does Not Own: Cursor product configuration, local developer environment, workflow implementation, GitHub merge authority, or GitHub issue mutation authority
 Canonical Reference: /docs/reference/pmo/lgfc-program-portfolio-model.md
-Related Issues: #1449, #1448, #1411, #1409, #1379, #1255, #1335, #1501, #1719, #1720, #1721, #1722, #2489, #2564
+Related Issues: #1449, #1448, #1411, #1409, #1379, #1255, #1335, #1501, #1719, #1720, #1721, #1722, #2489, #2564, #2565
 Last Reviewed: 2026-07-18
 ---
 
@@ -133,6 +133,13 @@ LGFC uses these execution modes (queue detail in
 
 In all modes, one source issue maps to one PR. Queue/continuation mode governs
 which task is authorized next, not whether multiple tasks share one PR.
+
+Routing taxonomy (do not conflate): PMO portfolio labels are dashboard state;
+PR intent/class are PR classification; `agent:ChatGPT` / `CHATGPT HANDOFF` are
+ChatGPT review markers requiring an invoked dispatcher/watch; `agent:cursor` +
+`handoff:ready` is the required Cursor wake pair; `status:*` is operational
+bookkeeping. See `docs/ops/pmo/queue-watch-and-dispatch-protocol.md` and
+`docs/ops/reports/communication-routing-taxonomy-1719.md`.
 
 Cursor must not apply universal one-task-only rules in a way that blocks
 launched prepared program queues or continuous reduced-gate chains. Cursor must

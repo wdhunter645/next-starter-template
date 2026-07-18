@@ -5,8 +5,8 @@ Authority Level: Canonical PMO Authority
 Owns: LGFC PMO July 2026 program inventory, PMO issue contract, label contract, pipeline stages, workload reporting, backlog inventory, lifecycle terms, component-project hierarchy, reduced-gate delivery model, program preparation, Cursor execution boundaries, launch gates, Ops production handoff, completed/historical archive treatment, PMO reporting vs operations reporting separation, dashboard data-quality requirements, and Drive drafting model
 Does Not Own: Product-specific design, runtime implementation, workflow YAML, production configuration, secrets, or unauthorized GitHub issue mutation
 Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
-Related Issues: #2100, #2296, #2487, #2516
-Last Reviewed: 2026-07-16
+Related Issues: #2100, #2296, #2487, #2516, #2565, #1719
+Last Reviewed: 2026-07-18
 ---
 
 # PMO July 2026 Operating Model
@@ -124,6 +124,8 @@ Every PMO-tracked issue must carry exactly one lifecycle label:
 | `pmo:closed` | Completed, closed, or intentionally terminal PMO work | Completed unless invalid metadata sends it to Incomplete |
 
 Closed GitHub issue state must reconcile to `pmo:closed`. A closed PMO issue without `pmo:closed`, or an open issue with contradictory terminal metadata, is incomplete until reconciled.
+
+PMO lifecycle labels are portfolio/dashboard metadata only. They are not PR intent/class, not ChatGPT review routing, not Cursor wake signals, and not operational `status:*` bookkeeping. See the communication and routing taxonomy in `docs/ops/pmo/queue-watch-and-dispatch-protocol.md` and `docs/ops/reports/communication-routing-taxonomy-1719.md`.
 
 ### Pipeline stage labels
 
