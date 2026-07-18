@@ -29,6 +29,16 @@ This report covers reconciliation among:
 
 No workflow, runtime, PR-template, lifecycle-policy, branch-protection, or production behavior was changed.
 
+## Current known truth
+
+`Agent.md` is the mandatory entry point and currently routes agents through canonical `docs/governance/AGENT-TEAM.md` before the retained shared-rules pointer, detailed `CORE-RULES.md`, additive agent-specific pointers, applicable governance/procedure documents, and task-triggered skills.
+
+`docs/governance/AGENT-TEAM.md` and the historical operating-model file both state that `docs/ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md` is superseded for current team policy, approval routing, and protected stops. The prior PR-governance skill chain omitted `AGENT-TEAM.md` and did not explicitly prevent the superseded operating model from being treated as active authority.
+
+## Intended final state
+
+The PR-governance skill mirrors the current chain in `Agent.md`, remains explicitly subordinate to that routing authority, and directs agents to canonical team policy without reviving superseded documents. This report remains evidence of the bounded reconciliation and does not independently define policy.
+
 ## Authority conflict and resolution
 
 The original Task #2563 wording expected the older AI team operating model to appear as an active layer before shared and core rules. Current repository authority no longer supports that sequence:
