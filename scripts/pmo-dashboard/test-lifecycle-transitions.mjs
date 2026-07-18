@@ -384,12 +384,45 @@ async function main() {
       }
       assert(failed, 'validator must fail closed when frozen live-state fields reappear');
 
+      // Also fail closed when forbidden fields appear on excluded records.
+      await writeFile(
+        inventoryPath,
+        JSON.stringify(
+          {
+            version: 99,
+            included: [],
+            excluded: [{ issueNumber: 9140, expectedLifecycle: 'active', rationale: 'test' }]
+          },
+          null,
+          2
+        )
+      );
+      let excludedFailed = false;
+      try {
+        await execFileAsync('node', [path.join(__dirname, 'validate-dashboard.mjs'), outDir], {
+          env: {
+            ...process.env,
+            PMO_DASHBOARD_INVENTORY_PATH: inventoryPath
+          }
+        });
+      } catch (error) {
+        excludedFailed = true;
+        const stderr = String(error.stderr || error.message || '');
+        assert(
+          /tracked inventory excluded #\d+ must not declare expectedLifecycle/.test(stderr),
+          'forbidden expectedLifecycle on excluded records must fail validation'
+        );
+      }
+      assert(excludedFailed, 'validator must fail closed when excluded records carry frozen fields');
+
       const productionInventory = JSON.parse(
         await readFile(path.join(__dirname, 'pmo-tracked-inventory.json'), 'utf8')
       );
-      for (const item of productionInventory.included || []) {
-        assert(!('expectedLifecycle' in item), 'production inventory must not carry expectedLifecycle');
-        assert(!('expectedPriority' in item), 'production inventory must not carry expectedPriority');
+      for (const collection of ['included', 'excluded']) {
+        for (const item of productionInventory[collection] || []) {
+          assert(!('expectedLifecycle' in item), `production inventory ${collection} must not carry expectedLifecycle`);
+          assert(!('expectedPriority' in item), `production inventory ${collection} must not carry expectedPriority`);
+        }
       }
       assert(Array.isArray(productionInventory.excluded) && productionInventory.excluded.length > 0, 'exclusions retained');
     } finally {

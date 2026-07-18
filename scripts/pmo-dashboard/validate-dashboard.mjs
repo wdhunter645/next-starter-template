@@ -40,6 +40,15 @@ async function readJson(file) {
   }
 }
 
+async function readInventoryJson(file) {
+  try {
+    return JSON.parse(await readFile(file, 'utf8'));
+  } catch (error) {
+    errors.push(`tracked inventory is missing or JSON does not parse (${file}): ${error.message}`);
+    return null;
+  }
+}
+
 function validUrl(value) {
   try {
     const url = new URL(value);
@@ -154,7 +163,7 @@ const inventoryPath =
   process.env.PMO_DASHBOARD_INVENTORY_PATH || path.join(__dirname, 'pmo-tracked-inventory.json');
 const inventory = process.env.PMO_DASHBOARD_SKIP_INVENTORY_VALIDATION
   ? null
-  : await readJson(inventoryPath);
+  : await readInventoryJson(inventoryPath);
 
 if (data) {
   if (data.source !== 'github-issues') errors.push('dashboard source must be github-issues');
@@ -208,13 +217,17 @@ if (data) {
     }
   }
 
-  // Residual inventory role: exclusions only. Fail closed if frozen live-state fields reappear.
-  if (inventory?.included) {
-    for (const item of inventory.included) {
+  // Residual inventory role: exclusions only. Fail closed if frozen live-state fields reappear
+  // on any inventory record (included or excluded).
+  for (const [collection, items] of [
+    ['included', inventory?.included],
+    ['excluded', inventory?.excluded]
+  ]) {
+    for (const item of items || []) {
       for (const field of FORBIDDEN_INVENTORY_LIVE_STATE_FIELDS) {
         if (Object.prototype.hasOwnProperty.call(item, field)) {
           errors.push(
-            `tracked inventory #${item.issueNumber} must not declare ${field}; live GitHub Issue metadata is sole lifecycle/priority authority`
+            `tracked inventory ${collection} #${item.issueNumber} must not declare ${field}; live GitHub Issue metadata is sole lifecycle/priority authority`
           );
         }
       }
