@@ -25,7 +25,7 @@ Publish one unambiguous taxonomy that separates PMO portfolio metadata, PR class
 | --- | --- | --- | --- |
 | PMO portfolio metadata | `pmo`; exactly one `pmo:active` / `pmo:pipeline` / `pmo:closed`; exactly one `pmo:priority:*`; stage when pipeline; `pmo:task` for children | PMO dashboard / portfolio reports | Reporting and dashboard placement |
 | PR classification | Exactly one PR intent label; PR class in PR body | PR hygiene / reviewers / CI intent | Verification depth and PR accounting |
-| ChatGPT review routing | Label `agent:ChatGPT`; comment `CHATGPT HANDOFF` (then RESPONSE / CLOSEOUT) | Invoked dispatcher / scheduled watch / Bill | Review, decision, exception, closeout — requires an invoked watch |
+| ChatGPT review routing | Label `agent:ChatGPT`; comment `CHATGPT HANDOFF` (then `CHATGPT RESPONSE` / `CHATGPT CLOSEOUT`) | Invoked dispatcher / scheduled watch / Bill | Review, decision, exception, closeout — requires an invoked watch |
 | Cursor execution routing | `agent:cursor` **+** `handoff:ready` (required wake pair); claim → `handoff:in-progress` | Local Cursor poller / authorized dispatcher | Wake eligibility only; prose naming Cursor as next does not wake |
 | Operational status | `status:*` | Operators / closeout automation | Execution/verification bookkeeping — not PMO lifecycle |
 
