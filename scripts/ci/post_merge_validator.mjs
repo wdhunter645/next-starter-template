@@ -32,7 +32,7 @@ import { findUnlistedChangedFiles, parseAllowedFiles } from './pr_hygiene_audit.
 
 export { isPermittedClosedSourceIssueFollowup };
 import { evaluateReviewerCommentDisposition, hasValidDisposition, parseReviewerDispositions } from './reviewer_comment_disposition.mjs';
-import { defaultCloseoutBodyPath } from './post_merge_closeout_trigger.mjs';
+import { resolveExistingCloseoutBodyFile } from './post_merge_closeout_trigger.mjs';
 import { AUTO_REPAIR_END, AUTO_REPAIR_START } from './pr_body_auto_repair.mjs';
 
 export { linkedIssueNumber, resolveSourceIssueFromPr, sourceIssueAccounting };
@@ -1621,8 +1621,8 @@ export function resolveMaintainerPrBody(prNumber, workspace = process.cwd()) {
 		return inlineBody;
 	}
 
-	const bodyFile = path.resolve(workspace, defaultCloseoutBodyPath(numericPr));
-	if (fs.existsSync(bodyFile)) {
+	const bodyFile = resolveExistingCloseoutBodyFile(numericPr, workspace);
+	if (bodyFile) {
 		return fs.readFileSync(bodyFile, 'utf8');
 	}
 
