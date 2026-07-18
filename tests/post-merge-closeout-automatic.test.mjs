@@ -95,6 +95,36 @@ describe('automatic closeout runtime context', () => {
 		expect(resolved).toEqual({ bodyFile: bodyPath, skipBodyApply: false });
 	});
 
+	it('does not treat the workspace directory as a closeout body when prNumber is empty (#1945)', () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-empty-pr-'));
+
+		for (const prNumber of ['', null, undefined, 0, '0', '   ', 'NaN', '-1', '../x', '1/2']) {
+			const resolved = resolveCloseoutBodyApply({
+				prNumber,
+				automatic: true,
+				workspace: dir,
+			});
+			expect(resolved).toEqual({ bodyFile: '', skipBodyApply: true });
+			expect(resolved.bodyFile).not.toBe(dir);
+			expect(resolved.bodyFile).not.toBe(path.resolve(dir));
+		}
+	});
+
+	it('skips body apply when the default path exists only as a directory, not a file', () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-dir-collision-'));
+		const bodyDir = path.join(dir, 'scripts/ci/post-merge-closeout');
+		// Create a directory where the body file would be — must not be treated as a body file.
+		fs.mkdirSync(path.join(bodyDir, 'pr-9999-body.md'), { recursive: true });
+
+		const resolved = resolveCloseoutBodyApply({
+			prNumber: '9999',
+			automatic: true,
+			workspace: dir,
+		});
+
+		expect(resolved).toEqual({ bodyFile: '', skipBodyApply: true });
+	});
+
 	it('uses merged PR number and skips body apply on pull_request_target', () => {
 		const context = resolveCloseoutEventContext({
 			eventName: 'pull_request_target',
