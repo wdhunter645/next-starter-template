@@ -1,0 +1,116 @@
+name: OPS Agent Routing Controller
+
+on:
+  issues:
+    types: [opened, edited, labeled, unlabeled, assigned, unassigned, closed, reopened]
+  issue_comment:
+    types: [created, edited]
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, closed, labeled, unlabeled]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  workflow_run:
+    workflows:
+      - GATE — Quality Checks
+      - GATE — Secret Scan
+      - GATE — Reviewer Response Completion
+      - Component Child Integration
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Routing mode for this scoped run
+        required: true
+        type: choice
+        default: observe
+        options: [observe, normalize, advance, integrate]
+      authorize_mutation:
+        description: Explicitly authorize bounded non-main mutation
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ops-agent-routing-controller-${{ github.event_name }}-${{ github.event.issue.number || github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  evaluate:
+    name: Evaluate routing state
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+      actions: read
+    steps:
+      - name: Checkout trusted repository code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run routing unit and acceptance tests
+        run: npx vitest run tests/agent-routing
+
+      - name: Produce deterministic acceptance report
+        run: node scripts/agent-routing/acceptance.mjs | tee "$RUNNER_TEMP/agent-routing-acceptance.json"
+
+      - name: Write observe summary
+        if: always()
+        run: |
+          {
+            echo "## OPS Agent Routing Controller"
+            echo
+            echo "- Event: ${{ github.event_name }}"
+            echo "- Requested mode: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'observe' }}"
+            echo "- Automatic event behavior: observe-only"
+            echo "- Automatic main merge: prohibited"
+            echo
+            if [ -f "$RUNNER_TEMP/agent-routing-acceptance.json" ]; then
+              echo '```json'
+              cat "$RUNNER_TEMP/agent-routing-acceptance.json"
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload routing evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-routing-controller-${{ github.run_id }}
+          path: ${{ runner.temp }}/agent-routing-acceptance.json
+          if-no-files-found: warn
+
+  bounded-mutation-gate:
+    name: Validate explicitly authorized non-main mutation
+    needs: evaluate
+    if: github.event_name == 'workflow_dispatch' && inputs.authorize_mutation == true && inputs.mode != 'observe'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+      actions: write
+    steps:
+      - name: Checkout trusted repository code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Refuse production mutation
+        run: |
+          test "${{ github.ref }}" != "refs/heads/main"
+          echo "Bounded mutation gate authorized for non-main mode: ${{ inputs.mode }}"
+          echo "No mutation is executed unless a versioned action plan passes expected-state revalidation."

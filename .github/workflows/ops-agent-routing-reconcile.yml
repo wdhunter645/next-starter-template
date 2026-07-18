@@ -1,0 +1,73 @@
+name: OPS Agent Routing Reconcile
+
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Reconciliation mode
+        required: true
+        type: choice
+        default: observe
+        options: [observe, normalize, advance, integrate]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+  actions: read
+
+concurrency:
+  group: ops-agent-routing-reconcile
+  cancel-in-progress: true
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate reconciliation, thresholds, races, and recovery
+        run: npx vitest run tests/agent-routing/reconciler-time-policy.test.mjs tests/agent-routing/watcher-claim-race.test.mjs tests/agent-routing/alert-deadletter-metrics.test.mjs tests/agent-routing/integration/routing-acceptance.test.mjs
+
+      - name: Produce observe-only report
+        run: node scripts/agent-routing/acceptance.mjs | tee "$RUNNER_TEMP/agent-routing-reconcile.json"
+
+      - name: Write reconciliation summary
+        if: always()
+        run: |
+          {
+            echo "## OPS Agent Routing Reconcile"
+            echo
+            echo "- Trigger: ${{ github.event_name }}"
+            echo "- Effective automatic mode: observe"
+            echo "- Requested manual mode: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'observe' }}"
+            echo "- Main auto-merge: prohibited"
+            echo
+            if [ -f "$RUNNER_TEMP/agent-routing-reconcile.json" ]; then
+              echo '```json'
+              cat "$RUNNER_TEMP/agent-routing-reconcile.json"
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload reconciliation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-routing-reconcile-${{ github.run_id }}
+          path: ${{ runner.temp }}/agent-routing-reconcile.json
+          if-no-files-found: warn

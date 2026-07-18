@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent Routing Alert",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "subject",
+    "revision",
+    "authority",
+    "code",
+    "status",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "revision": {
+      "type": "string"
+    },
+    "authority": {
+      "enum": [
+        "ci",
+        "cursor",
+        "chatgpt",
+        "human"
+      ]
+    },
+    "code": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "open",
+        "superseded",
+        "resolved"
+      ]
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": "string"
+    },
+    "resolution": {
+      "type": "string"
+    }
+  }
+}

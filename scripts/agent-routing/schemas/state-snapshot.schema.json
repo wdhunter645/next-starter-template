@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent Routing State Snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "identity",
+    "revision",
+    "routingOwner",
+    "dependencyState",
+    "ambiguous"
+  ],
+  "properties": {
+    "identity": {
+      "type": "object"
+    },
+    "revision": {
+      "type": "string"
+    },
+    "routingOwner": {
+      "enum": [
+        "cursor",
+        "chatgpt",
+        "none",
+        "ambiguous"
+      ]
+    },
+    "dependencyState": {
+      "enum": [
+        "ready",
+        "blocked",
+        "complete",
+        "ambiguous"
+      ]
+    },
+    "ambiguous": {
+      "type": "boolean"
+    },
+    "labels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "latestEvent": {
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  }
+}

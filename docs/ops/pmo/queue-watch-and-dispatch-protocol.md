@@ -2,104 +2,104 @@
 Doc Type: Operations
 Audience: Human + AI
 Authority Level: Operational Authority
-Owns: LGFC queue watch, canonical dispatch, local Cursor wake routing, silent-stall detection, lane-aware continuation, and process-remediation routing under the #2550 communication contract
-Does Not Own: ChatGPT product automation configuration, GitHub workflow implementation, merge authority, production configuration, branch deletion, or uncontrolled issue mutation
+Owns: LGFC queue watch, canonical dispatch, local Cursor wake routing, broad ChatGPT review, silent-stall detection, lane-aware continuation, and process-remediation routing
+Does Not Own: Product scheduling configuration, production approval, credentials, repository settings, destructive actions, or automatic merge to main
 Canonical Reference: /docs/ops/ai/chatgpt-cursor-handoff-workflow.md
-Related Issues: #2550, #2546, #2294, #2492, #2396
-Last Reviewed: 2026-07-16
+Related Issues: #2550, #2546, #2294, #2593-#2601
+Last Reviewed: 2026-07-18
 ---
 
 # Queue Watch and Dispatch Protocol
 
 ## Purpose
 
-Keep every approved LGFC execution lane moving by converting GitHub state into one deterministic next action without inventing a second communication model.
+Keep approved LGFC execution lanes moving by converting live GitHub state into one deterministic next action without creating a second authority model.
 
-Handoff markers are inert until a dispatcher, poller, or operator consumes them under matching current labels.
-
-## Current operating truths
+## Operating truths
 
 - GitHub Issues are executable task authority.
-- Local Cursor is the default runtime.
-- Never use `@cursor` for local work.
-- Labels are current state; comments are durable events.
-- Primary Cursor pickup requires `agent:cursor` + `handoff:ready`.
-- Assignee and PR assignment are convenience signals only, not pickup authority.
-- Parallel Model B lanes are authorized; maintain at most one active local Cursor claim per lane unless lane authority permits internal parallelism.
-- Routine non-`main` PR progress uses `CURSOR STATUS` / `CURSOR COMPLETE` and does not create a ChatGPT stop.
-- `CHATGPT HANDOFF` is reserved for genuine blockers, decisions, exceptions, and production/`main` boundaries.
-- A source issue cannot close before verified integration evidence and canonical closeout.
+- Labels are current state; canonical comments are durable events.
+- Local Cursor pickup requires `agent:cursor`, `handoff:ready`, dependency eligibility, and the latest valid assignment/response.
+- Assignee, PR assignment, and alert state are convenience/priority signals only.
+- Routine non-main progress does not create a ChatGPT stop.
+- `CHATGPT HANDOFF` is reserved for genuine blockers, decisions, exceptions, and production boundaries.
+- Automatic merge to `main` is prohibited.
 
-## Canonical dispatch transactions
+## Deterministic dispatcher transaction
 
-### Assign Cursor work (routine)
+1. Load current repository authority and the active project manifest.
+2. Rebuild live Issue, PR, check, review, handoff, dependency, integration, closeout, workflow-health, claim, and dead-letter state.
+3. Evaluate every approved lane; do not stop scanning because one lane is blocked.
+4. Reject ambiguous, stale, contradictory, consumed, or colliding state.
+5. Rank only existing authorized actions; never invent work to use capacity.
+6. Select one action with a stable action key and expected-state revision.
+7. Re-read live state immediately before mutation.
+8. Apply a bounded mutation or record an exact halt/idle reason.
+9. Preserve evidence and stop.
 
-```text
-1. Confirm the source issue is open and executable.
-2. Post CURSOR ASSIGNMENT with one bounded action.
-3. Set agent:cursor + handoff:ready.
-4. Do not require assignee-only pickup.
-5. Do not claim pickup until Cursor posts CURSOR ACK or equivalent claim evidence.
-```
+## Cursor assignment
 
-### Resume after genuine ChatGPT escalation
+1. Confirm the source issue is open, active, and dependency-eligible.
+2. Confirm no colliding `handoff:in-progress` claim exists in the lane.
+3. Post one bounded `CURSOR ASSIGNMENT`.
+4. Set `agent:cursor` and `handoff:ready`.
+5. Do not claim pickup until `CURSOR ACK` exists and the labels transition to `handoff:in-progress`.
 
-```text
-1. Confirm the unresolved CHATGPT HANDOFF and handoff ID.
-2. Post CHATGPT RESPONSE (or CLOSEOUT).
-3. Remove agent:ChatGPT and resolved blocked/needs-human labels.
-4. Restore agent:cursor + handoff:ready.
-5. Optional recovery: LOCAL CURSOR RESUME referencing the exact response.
-6. Cursor claims with CURSOR ACK before continuing.
-```
+## Cursor completion
 
-Do not post duplicate response pairs for the same decision. A replacement must explicitly supersede the prior instruction.
+On `CURSOR COMPLETE`, verify PR base, required checks, review state, component integration, and task acceptance evidence. Integrate only to the authorized non-main project branch. Activate only the exact manifest-eligible successor. Route terminal promotion to Bill/ChatGPT.
+
+## Broad ChatGPT watcher cycle
+
+Every watcher cycle must:
+
+1. initialize the GitHub connector and discover granted capabilities;
+2. load current repository authority;
+3. inspect repository status broadly rather than querying only alerts or `agent:ChatGPT`;
+4. include active Issues, PRs, checks, reviews, dependencies, handoffs, component integration, closeout, workflow health, claims, and dead letters;
+5. use Alerts as priority hints only;
+6. rank candidates by safety, priority, dependency-unblock value, objective impact, and role ownership;
+7. acquire one stable leased claim;
+8. re-read live state;
+9. perform the full connector-supported action or yield;
+10. record `CHATGPT WATCH RESULT` or the exact halt/capability reason.
+
+A watcher must not report “no action” solely because no alert or `agent:ChatGPT` label exists.
 
 ## Trigger classes
 
-| Trigger | Evidence | Dispatcher action |
-| --- | --- | --- |
-| Cursor assignment needed | Eligible task selected | Post `CURSOR ASSIGNMENT`; set ready labels |
-| Routine Cursor progress | `CURSOR STATUS` / `CURSOR COMPLETE` | No ChatGPT stop; monitor; activate successor when eligible |
-| Genuine Cursor escalation | `CHATGPT HANDOFF` | Review, decide, respond |
-| Successor unblock | Predecessor integrated on project branch | Activate next eligible task without routine human stop |
-| Production / `main` boundary | Promotion PR or needs-human production state | Route to ChatGPT/Bill; never auto-merge `main` |
-| Silent stall | Eligible ready task with no ACK/pickup | Correct labels/assignment event; inspect poller health |
-| Launch-halting defect | Process failure prevents progress | Create/update bounded Ops remediation issue |
+| Trigger | Action |
+| --- | --- |
+| Eligible Cursor task | Assign and set ready labels. |
+| Ready task without ACK | Verify event/poller health; emit one deduplicated alert after threshold. |
+| Routine Cursor progress | Monitor without ownership transfer. |
+| Genuine handoff | ChatGPT reviews and responds. |
+| Green eligible non-main PR | Integrate only when the approved mode and expected state permit. |
+| Integrated predecessor | Activate exact successor. |
+| Required CI failure | Classify; rerun only an authorized transient failure. |
+| Ambiguous/permanent failure | Record one dead letter and escalate safely. |
+| Production or repository-setting boundary | Route to Bill/ChatGPT; never auto-merge `main`. |
 
-## Lane-aware dispatcher checklist
+## Lane and collision rules
 
-For every approved lane:
+- Serial predecessors remain serial.
+- Independent non-colliding lanes may proceed.
+- One active local Cursor claim is allowed per lane unless the manifest explicitly permits more.
+- File/Issue mutation overlap blocks concurrent action.
+- Earlier unexpired watcher claims win; later watchers yield.
+- Expired claims may be superseded only after live-state recheck.
 
-1. Identify the component/program/project master and current child.
-2. Check open source issues, PRs, CI, predecessors, and component-branch drift.
-3. Confirm no more than one `handoff:in-progress` local Cursor claim exists in that lane unless explicitly permitted.
-4. Confirm the active executable issue has `agent:cursor` + `handoff:ready` or is correctly `handoff:in-progress`.
-5. Ensure routine progress is not misrouted to ChatGPT.
-6. On genuine escalation, require one canonical response before restoring Cursor ready state.
-7. After non-`main` integration, activate the next eligible manifest task without a routine human prompt when project Go already exists.
-8. If no action is eligible, record the halt reason.
+## Alerts and idle evidence
 
-## Cursor-to-Chat requirement
+Alerts are durable, revision-keyed, deduplicated, and non-authoritative. Every approved idle lane records a precise reason such as dependency blocked, awaiting ACK, required check running, review requested, production approval required, claim collision, or connector capability unavailable.
 
-Cursor must use `CHATGPT HANDOFF` only for genuine stops listed in the handoff workflow.
+## Disable and rollback
 
-Cursor must **not** use `CHATGPT HANDOFF` for:
-
-- opening a non-`main` PR;
-- a technically clean non-`main` PR;
-- advisory/process-only findings without a real defect;
-- authorized component integration availability;
-- eligible successor activation.
-
-## Closeout
-
-- Non-`main` child integration: record evidence; activate successor; keep project continuous execution.
-- Terminal/production closeout: `CHATGPT CLOSEOUT`, remove wake state, then close completed issues only after verified evidence.
-- Never authorize automatic merge to `main` via labels or comments.
+Set mode to `disabled`, disable scheduled mutation, stop the local poller while preserving state, disable watchers, expire active claims, disable non-main integration, and restore manual assignment/review/closeout. Preserve all Issues, comments, manifests, Alerts, claims, dead letters, and reports.
 
 ## Related authority
 
-- Communication state machine: `docs/ops/ai/chatgpt-cursor-handoff-workflow.md`
-- Local poller how-to: `docs/how-to/cursor/github-poll-wake-loop.md`
-- Future poller implementation project: #2294
+- Handoff state machine: `docs/ops/ai/chatgpt-cursor-handoff-workflow.md`
+- Local poller: `docs/how-to/cursor/github-poll-wake-loop.md`
+- Runtime contract: `docs/reference/ci/agent-routing-controller-contract.md`
+- Operator runbook: `docs/how-to/agents/operate-agent-routing.md`
