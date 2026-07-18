@@ -13,7 +13,8 @@ export const CLOSEOUT_BODY_DIR = 'scripts/ci/post-merge-closeout';
 export function defaultCloseoutBodyPath(prNumber) {
 	if (prNumber === undefined || prNumber === null || prNumber === '') return '';
 	const normalized = String(prNumber).trim();
-	if (!normalized || normalized === '0') return '';
+	// GitHub PR numbers only — reject traversal, NaN, zero, and non-integers.
+	if (!/^[1-9]\d*$/.test(normalized)) return '';
 	return path.join(CLOSEOUT_BODY_DIR, `pr-${normalized}-body.md`);
 }
 

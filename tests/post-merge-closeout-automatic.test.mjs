@@ -98,7 +98,7 @@ describe('automatic closeout runtime context', () => {
 	it('does not treat the workspace directory as a closeout body when prNumber is empty (#1945)', () => {
 		const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-empty-pr-'));
 
-		for (const prNumber of ['', null, undefined, 0, '0', '   ']) {
+		for (const prNumber of ['', null, undefined, 0, '0', '   ', 'NaN', '-1', '../x', '1/2']) {
 			const resolved = resolveCloseoutBodyApply({
 				prNumber,
 				automatic: true,

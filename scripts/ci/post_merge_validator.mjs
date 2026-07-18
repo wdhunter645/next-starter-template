@@ -1616,6 +1616,9 @@ const MAINTAINER_PR_BODIES = {
 
 export function resolveMaintainerPrBody(prNumber, workspace = process.cwd()) {
 	const numericPr = Number(prNumber);
+	if (!Number.isInteger(numericPr) || numericPr <= 0) {
+		return null;
+	}
 	const inlineBody = MAINTAINER_PR_BODIES[numericPr];
 	if (inlineBody) {
 		return inlineBody;
