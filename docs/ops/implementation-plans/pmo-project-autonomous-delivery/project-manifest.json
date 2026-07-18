@@ -8,7 +8,7 @@
     "lifecycle": "active",
     "priorityLabel": "pmo:priority:1",
     "objective": "Align every active and pipeline PMO project with a prepared, manifest-linked project delivery model that Cursor Local can execute continuously on a non-production branch.",
-    "completedDeliverable": "A canonical project delivery contract, idempotent task issue materializer, safe CI workflow, migrated PMO portfolio, and verified final human production approval boundary.",
+    "completedDeliverable": "A canonical project delivery contract, idempotent task issue materializer, safe CI workflow, migrated PMO portfolio, verified non-main integration boundary, and complete operator handoff for final human production review.",
     "designPath": "docs/explanation/projects/pmo-project-autonomous-delivery-design.md",
     "implementationPlanPath": "docs/ops/implementation-plans/pmo-project-autonomous-delivery/implementation-plan.md",
     "manifestPath": "docs/ops/implementation-plans/pmo-project-autonomous-delivery/project-manifest.json"
@@ -40,7 +40,7 @@
     "rollbackProfile": "multi-step-project"
   },
   "launch": {
-    "state": "launched",
+    "state": "complete",
     "authorizationIssueNumber": 2546,
     "startConditions": [
       "Project design, implementation plan, manifest contract, and bootstrap task issues exist.",
@@ -60,42 +60,42 @@
       "type": "documentation",
       "description": "Canonical PMO project-to-Cursor delivery authority and templates.",
       "required": true,
-      "acceptanceEvidence": "Task 003 authority reconciliation and validation report"
+      "acceptanceEvidence": "Task 003 authority reconciliation and validation evidence; final #2554 report"
     },
     {
       "id": "D2",
       "type": "runtime",
       "description": "Manifest validator and idempotent GitHub task issue materializer.",
       "required": true,
-      "acceptanceEvidence": "Task 001 tests and dry-run/apply evidence"
+      "acceptanceEvidence": "Task 001 tests, idempotent in-memory apply fixture, and materializer workflow evidence"
     },
     {
       "id": "D3",
       "type": "runtime",
       "description": "Least-privilege CI/manual dispatch for project task materialization.",
       "required": true,
-      "acceptanceEvidence": "Task 002 workflow and event/permission validation"
+      "acceptanceEvidence": "Task 002 workflow plus PR #2608 static-permission correction and successful materializer runs"
     },
     {
       "id": "D4",
       "type": "documentation",
       "description": "Complete active and pipeline PMO portfolio migration and preparation queue.",
       "required": true,
-      "acceptanceEvidence": "Tasks 004-006 portfolio audit reports"
+      "acceptanceEvidence": "Tasks 004-006 audit reports plus refreshed #2554 live inventory"
     },
     {
       "id": "D5",
       "type": "test-evidence",
       "description": "Proof that non-main integration is technically controlled and main cannot auto-merge.",
       "required": true,
-      "acceptanceEvidence": "Task 007 integrated boundary validation"
+      "acceptanceEvidence": "PRs #2616 and #2623 integrated only to non-main project branch; workflows reject automatic main merge"
     },
     {
       "id": "D6",
       "type": "operations",
       "description": "Bill and Cursor Local operations handoff with ChatGPT Tier 2 escalation and rollback/disable procedure.",
       "required": true,
-      "acceptanceEvidence": "Task 007 operator handoff"
+      "acceptanceEvidence": "Task 007 final validation, operator handoff, and promotion metadata package"
     }
   ],
   "tasks": [
@@ -104,7 +104,7 @@
       "issueNumber": 2547,
       "title": "Implement PMO project manifest validator and issue materializer",
       "objective": "Implement deterministic manifest validation and idempotent linked task issue reconciliation.",
-      "state": "active",
+      "state": "complete",
       "predecessors": [],
       "successors": [
         "002"
@@ -143,20 +143,18 @@
       "labels": [
         "pmo",
         "pmo:task",
-        "pmo:active",
         "pmo:priority:1",
-        "agent:cursor",
-        "handoff:ready",
-        "status:in-progress"
+        "pmo:closed",
+        "ci"
       ],
-      "wakeEligible": true
+      "wakeEligible": false
     },
     {
       "id": "002",
       "issueNumber": 2549,
       "title": "Add CI workflow for PMO task issue materialization",
       "objective": "Add trusted least-privilege workflow dispatch around the materializer.",
-      "state": "prepared",
+      "state": "complete",
       "predecessors": [
         "001"
       ],
@@ -198,10 +196,9 @@
       "labels": [
         "pmo",
         "pmo:task",
-        "pmo:pipeline",
-        "pmo:stage:ready-for-launch",
         "pmo:priority:1",
-        "agent:cursor"
+        "pmo:closed",
+        "ci"
       ],
       "wakeEligible": false
     },
@@ -210,7 +207,7 @@
       "issueNumber": 2550,
       "title": "Reconcile canonical PMO and delivery authority",
       "objective": "Align PMO, Cursor, PR, issue, template, and delivery authority with project-level continuous execution.",
-      "state": "prepared",
+      "state": "complete",
       "predecessors": [
         "001",
         "002"
@@ -257,10 +254,10 @@
       "labels": [
         "pmo",
         "pmo:task",
-        "pmo:pipeline",
-        "pmo:stage:ready-for-launch",
         "pmo:priority:1",
-        "agent:cursor"
+        "pmo:closed",
+        "governance",
+        "documentation"
       ],
       "wakeEligible": false
     },
@@ -269,7 +266,7 @@
       "issueNumber": 2551,
       "title": "Migrate active PMO projects to autonomous project delivery",
       "objective": "Audit and align every active PMO portfolio parent record.",
-      "state": "prepared",
+      "state": "complete",
       "predecessors": [
         "003"
       ],
@@ -307,10 +304,9 @@
       "labels": [
         "pmo",
         "pmo:task",
-        "pmo:pipeline",
-        "pmo:stage:ready-for-launch",
         "pmo:priority:1",
-        "agent:cursor"
+        "pmo:closed",
+        "documentation"
       ],
       "wakeEligible": false
     },
@@ -319,7 +315,7 @@
       "issueNumber": 2552,
       "title": "Migrate prepared and planning PMO projects",
       "objective": "Align planning, preparation, and ready-for-launch projects without launching them.",
-      "state": "prepared",
+      "state": "complete",
       "predecessors": [
         "003"
       ],
@@ -357,10 +353,9 @@
       "labels": [
         "pmo",
         "pmo:task",
-        "pmo:pipeline",
-        "pmo:stage:ready-for-launch",
         "pmo:priority:1",
-        "agent:cursor"
+        "pmo:closed",
+        "documentation"
       ],
       "wakeEligible": false
     },
@@ -369,7 +364,7 @@
       "issueNumber": 2553,
       "title": "Normalize PMO strategy and program-candidate records",
       "objective": "Normalize ChatGPT preparation and future Cursor execution roles without inventing or launching implementation scope.",
-      "state": "prepared",
+      "state": "complete",
       "predecessors": [
         "003"
       ],
@@ -408,10 +403,10 @@
       "labels": [
         "pmo",
         "pmo:task",
-        "pmo:pipeline",
-        "pmo:stage:ready-for-launch",
         "pmo:priority:1",
-        "agent:cursor"
+        "pmo:closed",
+        "governance",
+        "documentation"
       ],
       "wakeEligible": false
     },
@@ -420,7 +415,7 @@
       "issueNumber": 2554,
       "title": "Validate portfolio alignment and complete operator handoff",
       "objective": "Validate complete portfolio coverage, idempotency, integration boundaries, rollback, and final review readiness.",
-      "state": "prepared",
+      "state": "complete",
       "predecessors": [
         "004",
         "005",
@@ -463,10 +458,11 @@
       "labels": [
         "pmo",
         "pmo:task",
-        "pmo:pipeline",
-        "pmo:stage:ready-for-launch",
         "pmo:priority:1",
-        "agent:cursor"
+        "pmo:closed",
+        "governance",
+        "documentation",
+        "ci"
       ],
       "wakeEligible": false
     }
@@ -502,6 +498,6 @@
       "cursor-local"
     ],
     "tier2Escalation": "chatgpt-atlas",
-    "rollbackReference": "docs/ops/implementation-plans/pmo-project-autonomous-delivery/implementation-plan.md#rollback"
+    "rollbackReference": "docs/how-to/pmo/operate-project-task-materializer.md#disable-and-rollback"
   }
 }
