@@ -54,7 +54,7 @@ Every Cursor implementation assignment must include all of the following. If any
 | Commit authorized | `YES` / `NO` |
 | Push authorized | `YES` / `NO` |
 | Open PR authorized | `YES` / `NO` |
-| Required PR target | Exact PR base branch, or `not-applicable` when Open PR is `NO` |
+| Required PR target | Exact PR base branch, or `not-applicable` when Open PR authorized is `NO` |
 | PR initial state | `draft` / `ready-for-review` / `not-applicable` |
 | Post-PR continuation | `stop-after-pr-open` / `continue-remediation-same-issue` / `not-applicable` |
 | Self-approval / self-merge / `main` promotion | Explicit prohibition unless separately authorized in the source issue |
@@ -100,7 +100,7 @@ Primary source issue: #<number>
 
 Runtime / execution environment: local | cloud | either
 
-Default is **local** (Cursor Local). `cloud` (Cursor Cloud) or `either` requires explicit Bill/Chat authorization recorded in the source issue. Do not use `@cursor` for local work; see `docs/governance/standards/CURSOR-RUNTIME-ROUTING.md`.
+Default is **local** (Cursor Local). `cloud` (Cursor Cloud) or `either` requires explicit Bill/ChatGPT authorization recorded in the source issue. Do not use `@cursor` for local work; see `docs/governance/standards/CURSOR-RUNTIME-ROUTING.md`.
 
 Use only this issue as task authority.
 
@@ -125,8 +125,8 @@ Fill every field. Do not imply Git or PR authority from surrounding prose.
 
 Delivery class:
 
-- **Local-only** when branch creation, commit, push, and open PR are all `NO`.
-- **Branch/PR delivery** when any of those are `YES` — then working branch, base/target, and PR target (when Open PR is `YES`) must be exact names.
+- **Local-only** when branch creation, commit, push, and Open PR authorized are all `NO`.
+- **Branch/PR delivery** when any of those are `YES` — then working branch, base/target, and PR target (when Open PR authorized is `YES`) must be exact names.
 
 Default prohibition: Cursor must not self-approve, self-merge, or promote to `main` unless the source issue records a separate explicit authorization.
 
