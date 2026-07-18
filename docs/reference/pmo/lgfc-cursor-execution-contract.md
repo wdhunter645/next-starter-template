@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: Cursor execution permissions, continuation rules, PR handoff behavior, and issue-mutation boundaries for LGFC program tasks
 Does Not Own: Cursor product configuration, local developer environment, workflow implementation, GitHub merge authority, or GitHub issue mutation authority
 Canonical Reference: /docs/reference/pmo/lgfc-program-portfolio-model.md
-Related Issues: #1449, #1448, #1411, #1409, #1379, #1255, #1335, #1501, #1719, #1720, #1721, #1722, #2489
-Last Reviewed: 2026-07-16
+Related Issues: #1449, #1448, #1411, #1409, #1379, #1255, #1335, #1501, #1719, #1720, #1721, #1722, #2489, #2564
+Last Reviewed: 2026-07-18
 ---
 
 # LGFC Cursor Execution Contract
@@ -94,6 +94,16 @@ Cursor may:
   non-`main` project branch: complete technical remediation and allow
   Atlas-controlled component integration / authorized non-`main` auto-merge after
   required technical checks pass.
+
+Git, branch, and PR authority for an implementation assignment must be stated as
+mandatory fields in the agent-assignment envelope
+([`docs/templates/agent-assignment-template.md`](../../templates/agent-assignment-template.md)
+section 2A): working branch, base/target branch, branch-creation / commit /
+push / open-PR authorizations, required PR target and initial state when
+applicable, post-PR continuation behavior, and explicit self-approval /
+self-merge / `main`-promotion prohibitions. Narrative prose alone is not
+authorization. Local-only assignments must set create/commit/push/open-PR to
+`NO`; branch/PR delivery assignments must name exact branches.
 
 Cursor may not, by default:
 

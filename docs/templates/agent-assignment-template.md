@@ -5,8 +5,8 @@ Authority Level: Operational
 Owns: Standard format for assigning scoped work to Cursor, Codex, Copilot, Devin, and future agents
 Does Not Own: Source issue scope, design authority, implementation decisions, or merge approval
 Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
-Related Issues: #1449
-Last Reviewed: 2026-07-13
+Related Issues: #1449, #2564, #1719
+Last Reviewed: 2026-07-18
 ---
 
 # Agent Assignment Template
@@ -47,7 +47,17 @@ Every Cursor implementation assignment must include all of the following. If any
 | Field | Requirement |
 | --- | --- |
 | Operating mode | Exactly one mode; agent must not switch modes |
-| Runtime | Exactly one value: `local` (default), `cloud`, or `either`; see [`CURSOR-RUNTIME-ROUTING.md`](../governance/standards/CURSOR-RUNTIME-ROUTING.md) |
+| Runtime / execution environment | Exactly one value: `local` (Cursor Local, default), `cloud` (Cursor Cloud), or `either`; see [`CURSOR-RUNTIME-ROUTING.md`](../governance/standards/CURSOR-RUNTIME-ROUTING.md). Must not be left implied. |
+| Working branch name | Exact branch name Cursor must use, or `not-applicable` for local-only / no-git delivery |
+| Base / target branch | Exact base branch for creation and PR targeting, or `not-applicable` for local-only work |
+| Branch creation authorized | `YES` / `NO` |
+| Commit authorized | `YES` / `NO` |
+| Push authorized | `YES` / `NO` |
+| Open PR authorized | `YES` / `NO` |
+| Required PR target | Exact PR base branch, or `not-applicable` when Open PR is `NO` |
+| PR initial state | `draft` / `ready-for-review` / `not-applicable` |
+| Post-PR continuation | `stop-after-pr-open` / `continue-remediation-same-issue` / `not-applicable` |
+| Self-approval / self-merge / `main` promotion | Explicit prohibition unless separately authorized in the source issue |
 | Source issue | Exactly one primary source issue (`#number`) |
 | Documentation package | Link or PR reference to merged/approved canonical docs that gate this work |
 | Draft/reference code | Pseudocode or reference implementation for Cursor handoff (not a substitute for allowlist authority) |
@@ -64,6 +74,8 @@ Every Cursor implementation assignment must include all of the following. If any
 | Bill/Atlas stop-gate authorization | Explicit continue authorization before execution and at verification stop points |
 | Handoff | Files changed, summary, verification, risks, scope confirmation |
 | Dependency fields | For launched-program queue tasks: predecessor, successor, stage-before-merge, halt/resume condition |
+
+**Local-only vs branch/PR delivery:** if branch creation, commit, push, and open-PR are all `NO`, the assignment is local-only (no repository delivery expected). If any of those are `YES`, the corresponding branch/base/PR-target fields must be concrete names — not implied by prose.
 
 These fields align with [`SHARED-AGENT-RULES.md`](../ops/ai/SHARED-AGENT-RULES.md) (one source issue per PR, scope boundaries, documentation taxonomy) and [`CORE-RULES.md`](../ops/ai/CORE-RULES.md) (execution discipline, allowlist, required verification).
 
@@ -86,13 +98,37 @@ For LGFC implementation work, mode must be **Implementation** and executor must 
 
 Primary source issue: #<number>
 
-Runtime: local | cloud | either
+Runtime / execution environment: local | cloud | either
 
-Default is **local**. `cloud` or `either` requires explicit Bill/Chat authorization recorded in the source issue. Do not use `@cursor` for local work; see `docs/governance/standards/CURSOR-RUNTIME-ROUTING.md`.
+Default is **local** (Cursor Local). `cloud` (Cursor Cloud) or `either` requires explicit Bill/Chat authorization recorded in the source issue. Do not use `@cursor` for local work; see `docs/governance/standards/CURSOR-RUNTIME-ROUTING.md`.
 
 Use only this issue as task authority.
 
 Do not treat umbrella issues, trackers, prior chats, old PRs, or memory as task authority unless explicitly listed below.
+
+## 2A. Git / Branch / PR Authority
+
+Fill every field. Do not imply Git or PR authority from surrounding prose.
+
+- Working branch: `<exact branch name>` / `not-applicable`
+- Base / target branch: `<exact base branch>` / `not-applicable`
+- Branch creation authorized: YES / NO
+- Commit authorized: YES / NO
+- Push authorized: YES / NO
+- Open PR authorized: YES / NO
+- Required PR target: `<exact PR base branch>` / `not-applicable`
+- PR initial state: draft / ready-for-review / `not-applicable`
+- Post-PR continuation: stop-after-pr-open / continue-remediation-same-issue / `not-applicable`
+- Self-approval authorized: NO (default) / YES — `<separate source-issue authorization>`
+- Self-merge authorized: NO (default) / YES — `<separate source-issue authorization>`
+- Promotion to `main` authorized: NO (default) / YES — `<separate Bill/ChatGPT authorization>`
+
+Delivery class:
+
+- **Local-only** when branch creation, commit, push, and open PR are all `NO`.
+- **Branch/PR delivery** when any of those are `YES` — then working branch, base/target, and PR target (when Open PR is `YES`) must be exact names.
+
+Default prohibition: Cursor must not self-approve, self-merge, or promote to `main` unless the source issue records a separate explicit authorization.
 
 ## 3. Documentation Package
 
@@ -197,7 +233,8 @@ If verification fails or Bill/Atlas issue hold:
 Before editing files, Cursor must comment on the source issue:
 
 - [ ] Documentation package read
-- [ ] Runtime declared (`local` default; `cloud`/`either` only with issue authorization)
+- [ ] Runtime / execution environment declared (`local` default; `cloud`/`either` only with issue authorization)
+- [ ] Git / Branch / PR Authority block complete (section 2A), including local-only vs branch/PR delivery class
 - [ ] Draft/reference code reviewed
 - [ ] Allowlist complete
 - [ ] Non-goals clear
@@ -231,6 +268,9 @@ When complete, report:
 Do not send a Cursor implementation assignment without:
 
 - a single numbered source issue (not an umbrella tracker alone);
+- an explicit runtime / execution environment (`local`, `cloud`, or `either`);
+- a complete Git / Branch / PR Authority block (section 2A), including working branch, base/target, create/commit/push/PR authorizations, PR target and initial state when applicable, post-PR continuation, and self-approval/self-merge/`main`-promotion prohibitions;
+- a clear local-only vs branch/PR delivery class;
 - a documentation package reference (merged PR or approved doc paths);
 - draft/reference code or pseudocode;
 - an explicit file allowlist (not “update docs as needed”);
@@ -247,7 +287,9 @@ Do not:
 - reference “see prior chat” or “continue from last PR” as authority;
 - omit operating mode and expect the agent to infer Design vs Implementation;
 - assign implementation to Codex for LGFC work;
-- assign implementation while forbidding all git/PR steps without stating that constraint in non-goals and verification;
+- imply Git, branch, push, or PR authority from narrative prose instead of section 2A fields;
+- authorize branch/PR delivery without naming the working branch and base/PR target;
+- assign implementation while forbidding all git/PR steps without stating that constraint as `NO` fields in section 2A and in non-goals/verification;
 - weaken shared agent law in the assignment text (assignments cannot override `SHARED-AGENT-RULES.md` or `CORE-RULES.md`).
 
 If the work is not yet definable at this level of precision, refine the source issue first. Do not feed high-capacity agents partial authority.
