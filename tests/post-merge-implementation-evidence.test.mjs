@@ -64,6 +64,38 @@ describe('post-merge implementation evidence', () => {
 		]);
 	});
 
+	it('flags local verification Result placeholder and empty Command (#2196)', () => {
+		const localBody = [
+			'## Verification',
+			'',
+			'Local verification:',
+			'- Command: ``',
+			'  Result: PASS / FAIL / NOT RUN',
+			'',
+			'CI verification:',
+			'- Required checks expected to pass: YES',
+		].join('\n');
+
+		const failures = verificationEvidenceFailures(localBody);
+		expect(failures.some((failure) => failure.code === 'verification_placeholder')).toBe(true);
+		expect(failures.some((failure) => failure.code === 'missing_verification_commands')).toBe(true);
+	});
+
+	it('scopes local FAIL checks to the Local verification block only (#2196)', () => {
+		const localPassCiMentionsFail = [
+			'## Verification',
+			'',
+			'Local verification:',
+			'- Command: `npm test`',
+			'  Result: PASS',
+			'',
+			'CI verification:',
+			'- Known failing/advisory checks: GATE — Quality Checks Result: FAIL (advisory log paste)',
+		].join('\n');
+
+		expect(verificationEvidenceFailures(localPassCiMentionsFail)).toEqual([]);
+	});
+
 	it('aggregates implementation evidence failures', () => {
 		const failures = implementationEvidenceFailures({
 			body,
