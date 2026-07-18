@@ -5,8 +5,8 @@ Authority Level: Superseded
 Owns: Historical pointer only — Cursor implementation policy moved to governance
 Does Not Own: Agent team policy, runtime routing standard, or shared execution law
 Canonical Reference: /docs/governance/AGENT-TEAM.md
-Related Issues: #2494
-Last Reviewed: 2026-07-13
+Related Issues: #2494, #2564
+Last Reviewed: 2026-07-18
 ---
 
 # CURSOR-RULES.md
@@ -37,5 +37,8 @@ Detailed Cursor-specific sections (pre-implementation package review steps, thre
 - pre-implementation review → `docs/governance/AGENT-TEAM.md` launch-control requirements and `docs/templates/agent-assignment-template.md`
 - continuous execution without routine Bill stops → `docs/how-to/agents/run-model-b.md`
 - runtime selection → `docs/governance/standards/CURSOR-RUNTIME-ROUTING.md`
+- mandatory Git / branch / PR authority fields (working branch, base/target, create/commit/push/PR authorization, PR target and initial state, post-PR continuation, self-approval/self-merge/`main`-promotion prohibitions, and local-only vs branch/PR delivery class) → `docs/templates/agent-assignment-template.md` section 2A and required-fields table
 
 Binding runtime policy: [`docs/governance/standards/CURSOR-RUNTIME-ROUTING.md`](../../governance/standards/CURSOR-RUNTIME-ROUTING.md).
+
+Cursor must not treat narrative prose as Git or PR authority. If section 2A fields are missing from an implementation assignment, stop and request a complete assignment envelope.
