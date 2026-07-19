@@ -2,144 +2,213 @@
 Doc Type: Governance
 Audience: Human + AI
 Authority Level: Domain Policy
-Owns: Degraded-service routing, emergency recovery policy, component-branch synchronization and red/green state rules, and stabilization-first incident boundaries
-Does Not Own: Delivery-model selection, PMO sizing, agent approval roles, CI gate implementation, or detailed day-to-day operator checklists
+Owns: Production health, degraded-service routing, incident classification, containment, recovery strategy, operational hold release, component recovery, and stabilization-first boundaries
+Does Not Own: Administration & Communications policy, delivery-model selection, PMO sizing, PR approval roles, CI implementation, project objectives, or daily operator checklists
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2495
-Last Reviewed: 2026-07-13
+Related Issues: #2495, #2640, #2641
+Last Reviewed: 2026-07-19
 ---
 
 # Operations and Recovery
 
 ## Purpose
 
-This document is the canonical **Operations and Recovery** domain policy. It defines how degraded service is routed among break-glass recovery, expedited Model A, and planned Model B; how emergency recovery remains stabilization-first and independent from normal delivery models; and how component branches synchronize, recover, and report integration health.
+This document is the canonical Day-2 Operations policy. It defines how production health is monitored, how degradation and outages are classified, how work is paused while impact is unknown, how recovery strategy is selected, and how normal work resumes after an incident is bounded.
 
-Stable rollback evidence requirements live in `docs/reference/delivery/delivery-and-rollback-profiles.md`. Emergency execution steps live in `docs/how-to/ops/run-emergency-recovery.md`.
+Administration & Communications policy is owned separately by `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md`.
 
-## Mutually exclusive recovery paths
+## Day-2 Operations lane
 
-Emergency recovery is **not** Model A and **not** Model B.
+Day-2 Operations begins when a feature reaches Production and continues for the life of the service.
 
-| Path | Trigger | Delivery model metadata | Primary goal |
-| --- | --- | --- | --- |
-| **Emergency recovery** | Production unavailable, unsafe, data at risk, or materially degraded requiring immediate stabilization | `emergency-recovery` | Restore safe service first |
-| **Expedited Model A** | Bounded defect with known cause; slower but usable system; one PR can restore behavior | `A` with expedited handling | Fast complete fix through normal production PR |
-| **Planned Model B** | Structural degradation requiring redesign, multi-component coordination, or multi-step activation | `B-child` / `B-promotion` | Coordinated release-unit construction |
+It owns:
 
-A single incident uses one primary path. Switching paths requires Chat or Bill disposition recorded on the source issue.
+- production monitoring and health interpretation;
+- incident severity and impact classification;
+- containment and rollback decisions;
+- recovery strategy;
+- operational assessment and targeted holds;
+- runner host/service health and recovery;
+- corrective implementation routing;
+- recovery validation and sustained-health criteria;
+- release of operational holds.
 
-## Degraded-service routing table
+All current team members may participate according to their durable roles.
 
-Use this table when production is impaired but the incident is not yet classified as full emergency recovery.
+## Detection and incident creation
 
-| Symptom class | User impact | Data risk | Known cause | Route | Approval |
-| --- | --- | --- | --- | --- | --- |
-| Site down / white screen | Total | Any | Any | **Emergency recovery** | Chat or Bill |
-| Core auth or admin broken | High | High | Any | **Emergency recovery** | Chat or Bill |
-| Single feature broken | Medium | Low | Yes, one bounded fix | **Expedited Model A** | Chat or Bill |
-| Performance materially degraded | Medium–High | Low | Yes, isolated config/deploy | **Expedited Model A** | Chat or Bill |
-| Performance degraded, structural | Medium–High | Low | No — needs redesign | **Planned Model B** | Chat design + normal Model B launch |
-| Multi-component regression | High | Medium | No — spans release unit | **Planned Model B** or **Emergency recovery** if unsafe | Chat or Bill |
-| Cosmetic / docs-only defect | Low | None | Yes | Routine Model A or routine ops | Normal delivery path |
-| Security active exploit | Any | High | Any | **Emergency recovery** first | Chat or Bill |
+Trusted evidence may come from:
 
-When uncertain between emergency recovery and expedited Model A, prefer **emergency recovery** until Chat or Bill confirms a bounded one-PR fix is safe.
+- deployment status;
+- route or uptime monitoring;
+- application health checks;
+- CI/CD runtime checks;
+- D1, B2, or external-service connectivity;
+- logs and alerts;
+- verified human reports.
 
-## Emergency recovery policy
+Deterministic automation may create or elevate a deduplicated operational Issue and attach evidence. It must not invent cause, recovery strategy, or production authority.
 
-Emergency recovery is stabilization-first and independent from Model A and Model B construction flows.
+## Assessment hold
 
-### Response order
+When production impact is unknown, Day-2 Operations may authorize a broad assessment hold.
 
-1. Confirm impact and severity.
-2. Pause conflicting promotions and auto-integration.
-3. Roll back to last known good when possible.
-4. Apply the smallest safe recovery change when rollback alone is insufficient.
-5. Obtain Chat or Bill approval before production-affecting recovery actions.
-6. Run targeted recovery verification.
-7. Restore service to a safe bounded state.
-8. Create mandatory follow-up work for root cause, hardening, and deferred documentation migration.
+The hold exists to prevent project work from worsening the incident or consuming the small team before scope is understood.
 
-### Emergency metadata
+During assessment determine:
 
-| Field | Value |
-| --- | --- |
-| Delivery model | `emergency-recovery` |
-| Change mode | `emergency` |
-| Target environment | `recovery` |
-| Approval profile | `emergency-approval` |
-| Gate profile | `emergency-recovery` |
-| Rollback profile | `emergency-stabilization` |
-| Component branch | `not-applicable` |
-| Component master | `not-applicable` |
+- user and system impact;
+- severity;
+- probable cause or bounded hypothesis;
+- containment;
+- affected projects, branches, environments, and resources;
+- recovery owner;
+- safe next action.
 
-### Stabilization-first rules
+Administration & Communications records the hold, preserves work state, routes assignments, and tracks acknowledgment.
 
-- Restore safe service before root-cause analysis or documentation migration.
-- DIATAXIS migration on touched legacy documents may defer through a mandatory follow-up issue — stabilization takes precedence.
-- Emergency PRs still use one intent label and record rollback plan in the PR body.
-- Cursor does not self-approve emergency recovery PRs.
-- After stabilization, open normal follow-up work (`change-ops` or scoped fix) for RCA and hardening.
+## Narrowing and releasing holds
 
-## Component-branch synchronization and recovery
+A broad assessment hold should not remain until full recovery when the incident has been sufficiently bounded.
 
-### Synchronization rules
+Once impact, probable cause, containment, affected scope, and resolution ownership are understood:
 
-Before a Model B promotion PR opens:
+- convert the broad hold to targeted project or incident-task holds;
+- release unaffected PMO / Engineering and Implementation / Operations resources;
+- continue incident work with the assigned team;
+- preserve any collision or safety restrictions that remain.
 
-- Rebase or merge current `main` into `component/<release-unit>`.
-- Resolve conflicts in favor of the integrated release candidate unless Chat directs otherwise.
-- Re-run integrated release-candidate tests after synchronization.
-- Record the synchronized `main` SHA on the promotion issue.
+Day-2 Operations authorizes hold release. Administration & Communications executes the state restoration and routes `RESUME`.
 
-During active component construction:
+## Recovery paths
 
-- Child branches should track the component branch base, not `main` directly.
-- When `main` receives urgent fixes, Chat decides whether to synchronize into the component branch before the next child integrates.
+A single incident uses one primary path at a time.
 
-### Red/green component state
-
-Component integration health is recorded through GitHub checks or branch status — not PR-body lifecycle prose.
-
-| State | Meaning | Successor child behavior |
+| Path | Trigger | Primary goal |
 | --- | --- | --- |
-| **Green** | Latest integrated child passed required technical checks; component branch is integrable | Next eligible child may proceed |
-| **Red** | Failed integration checks, broken build, or unresolved protected-change hold | Auto-integration blocked; successors halt until green restored |
-| **Hold** | Chat or Bill explicit hold on component integration | No auto-integration; Cursor stops at hold boundary |
+| Emergency stabilization | Production unavailable, unsafe, exploited, data at risk, or materially degraded | Restore safe service first |
+| Bounded corrective release | Known, isolated defect with a complete low-risk fix | Restore behavior through the applicable Promotion Candidate and Production path |
+| Structural recovery | Multi-component, architectural, data, or standards change | Return through PMO / Engineering, Development, Promotion Candidate, and Production |
 
-Rules:
+Changing the recovery path requires a Day-2 Operations decision recorded on the incident Issue. If the new path changes architecture, acceptance, product outcome, delivery model, or Production boundary, route the decision to the owning role.
 
-- A red component state blocks subsequent auto-integration until Cursor restores green with Chat verification.
-- A failed child PR does not advance the component program queue.
-- Component red state does not authorize emergency recovery by itself — classify production impact separately.
+## Degraded-service routing
 
-### Component recovery
+| Symptom | Default route |
+| --- | --- |
+| Site unavailable, active exploit, data-loss risk, unsafe auth/admin behavior | Emergency stabilization |
+| Single feature broken with known bounded fix | Bounded corrective release |
+| Material performance issue with known isolated cause | Bounded corrective release |
+| Structural performance, architecture, or multi-component regression | Structural recovery |
+| Cosmetic or documentation-only defect | Routine delivery unless risk justifies incident priority |
 
-When a child merge breaks the component branch:
+When uncertain, stabilize and contain before choosing a broader implementation path.
 
-1. Identify the failing child PR and integration checks.
-2. Halt successor child dispatch.
-3. Cursor remediates on a fix branch targeting the component branch.
-4. Re-run integrated tests after fix merges.
-5. Chat confirms green state before queue resumes.
+## Emergency stabilization
 
-Component recovery is **not** production rollback unless the defect already reached `main` through an erroneous promotion.
+Response order:
 
-## Day-to-day operations boundary
+1. confirm impact and severity;
+2. pause conflicting Production promotions and Development integration when necessary;
+3. contain traffic, writes, or affected functionality;
+4. roll back to last known good when possible;
+5. apply the smallest safe recovery when rollback is insufficient;
+6. obtain required protected Production authority;
+7. run targeted recovery verification;
+8. restore safe bounded service;
+9. create follow-up work for root cause, hardening, standards, and documentation.
 
-Routine upkeep, monitoring cadence, deploy logging, and operator onboarding procedures remain under `docs/ops/**` execution surfaces. This governance document owns **policy boundaries** for degradation routing, emergency independence, and component health — not step-by-step daily checklists.
+Emergency automation is limited to pre-authorized, deterministic, reversible actions. It must not mutate credentials, paid services, destructive data, or repository settings without authority.
+
+## Corrective implementation and promotion
+
+Operational corrective work uses the profile path required by its risk:
+
+```text
+Day-2 Operations
+  -> Development
+  -> Promotion Candidate
+  -> Production
+  -> recovery verification
+```
+
+A narrowly authorized emergency action may stabilize Production before full release qualification, but the resulting state must be followed by normal Development and Promotion Candidate work when required.
+
+Sandbox may be used by PMO / Engineering to test uncertain recovery assumptions, but Sandbox output cannot move directly into Production.
+
+## Lightweight recovery-strategy adjustment
+
+When new evidence invalidates the current recovery approach:
+
+```text
+PROBLEM FOUND
+  -> Day-2 Operations reviews evidence
+  -> GUIDANCE, ADJUSTMENT, or PLAN CHANGE REQUIRED
+  -> Administration & Communications records and routes
+  -> RESUME under the revised strategy
+```
+
+A bounded adjustment does not require a full incident redesign. A material change to recovery strategy, architecture, Production boundary, or risk classification requires recorded authority.
+
+## Component and Development health
+
+Component integration health is recorded through checks or branch status.
+
+| State | Meaning | Effect |
+| --- | --- | --- |
+| Green | Required Development checks pass | Eligible independent work may integrate |
+| Red | Broken build, integration failure, or unresolved protected issue | Affected integration stops until green is restored |
+| Hold | Explicit operational or Engineering hold | Only covered work stops |
+
+A red Development component is not automatically a Production incident. Classify Production impact separately.
+
+When Development integration breaks:
+
+1. identify the failing change and evidence;
+2. stop affected successor integration;
+3. remediate on a bounded branch;
+4. rerun integrated checks;
+5. restore green state through the applicable approval path;
+6. resume independent work.
+
+## Runner service operations
+
+The runner is communications/control-plane infrastructure, but its host and service are Day-2 Operations assets.
+
+Day-2 Operations owns:
+
+- registration and service availability;
+- `systemd` operation;
+- capacity and storage;
+- patching and security;
+- unexpected workload containment;
+- stop/start, disable, rollback, and recovery.
+
+Administration & Communications owns runner event routing, acknowledgments, retries, escalation, and communication-health state. Implementation / Operations owns workflow creation and onboarding.
+
+## Recovery completion
+
+Recovery is complete when:
+
+- service is safe and functioning within accepted bounds;
+- corrective change and required Promotion Candidate checks are complete;
+- Production verification passes;
+- monitoring shows sustained health for the required period;
+- remaining holds are released;
+- unresolved root cause, hardening, or standards work is tracked;
+- incident evidence and project state are reconciled.
 
 ## Canonical references
 
 | Topic | Owner |
 | --- | --- |
-| Delivery and release models | `docs/governance/DELIVERY-AND-RELEASE.md` |
-| Rollback profiles and evidence | `docs/reference/delivery/delivery-and-rollback-profiles.md` |
+| Administration & Communications policy | `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md` |
+| Lane and profile contract | `docs/reference/operations/operating-lanes-and-promotion-profiles.md` |
+| Delivery and promotion policy | `docs/governance/DELIVERY-AND-RELEASE.md` |
+| Runner contract | `docs/reference/ci/repository-runner-contract.md` |
 | Emergency recovery procedure | `docs/how-to/ops/run-emergency-recovery.md` |
-| PMO emergency exit from sizing tree | `docs/governance/PMO-PORTFOLIO.md` |
-| Delivery metadata contract | `docs/reference/ci/delivery-profile-contract.md` |
+| Rollback evidence | `docs/reference/delivery/delivery-and-rollback-profiles.md` |
 
 ## Supersession
 
-`docs/ops/OPERATING_MANUAL.md` is superseded for delivery procedures, deployment rollback policy, incident severity routing, and emergency response authority. Retained operational detail in that file remains non-authoritative execution context until archived in a later disposition pass.
+This policy supersedes lower-level instructions that keep a repository-wide hold active after the incident is bounded, assign Administration independent recovery authority, or permit operational corrective work to bypass required Development, Promotion Candidate, or Production controls.

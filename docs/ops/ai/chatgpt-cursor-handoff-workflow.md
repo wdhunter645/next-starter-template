@@ -1,259 +1,340 @@
 ---
 Doc Type: Operational Workflow
-Audience: ChatGPT, Cursor, Bill
-Authority Level: Agent-Specific Workflow
-Owns: Cursor-to-ChatGPT handoff format, ChatGPT response format, local Cursor resume transaction, Cursor wake-label expectations, source-issue PR-open notification, review-trigger expectations, and marker/dispatcher boundaries for LGFC repository work
-Does Not Own: Shared agent law, merge authorization, implementation authority, production design authority, PR lifecycle gates, ChatGPT account-level scheduled automation, Cursor cloud-agent invocation behavior, or repo-native watch implementation
-Canonical Reference: /docs/ops/ai/CHATGPT-RULES.md
-Related Issues: #2396, #2391, #2379, #2369, #2360, #2359, #2492, #2565, #2566, #1719, #2528
-Last Reviewed: 2026-07-18
+Audience: Human + AI operators
+Authority Level: Operational Procedure
+Owns: GitHub communication markers, cross-lane routing, lightweight problem adjustment, local Cursor wake/resume, acknowledgment, and task-level handoff behavior
+Does Not Own: Role authority, delivery and promotion policy, PR approval, Production authorization, incident recovery strategy, or runner host maintenance
+Canonical Reference: /docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md
+Related Issues: #2396, #2492, #2640, #2641, #2639, #2648
+Last Reviewed: 2026-07-19
 ---
 
-# ChatGPT / Cursor Handoff Workflow
+# Cross-Lane ChatGPT / Cursor Communication Workflow
 
 ## Purpose
 
-Define the deterministic GitHub communication contract for LGFC repository work involving ChatGPT and local Cursor.
+Define the GitHub communication procedure used by PMO / Engineering, Implementation / Operations, Administration & Communications, and Day-2 Operations.
 
-This file controls communication markers, required fields, wake-label expectations, and local resume behavior. It does not change implementation authority, review authority, merge authorization, closeout authority, PR lifecycle gates, or shared agent law.
+This procedure carries decisions and evidence. It does not create decision authority.
 
-## Communication and routing taxonomy
+ChatGPT and Cursor are operating team members. They communicate directly through this workflow whenever the canonical GitHub surfaces are available.
 
-Separate namespaces (full operator matrix: `docs/ops/reports/communication-routing-taxonomy-1719.md`; dispatcher protocol: `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`):
+## Operating rule
 
-| Namespace | Markers | Action implication |
-| --- | --- | --- |
-| PMO portfolio metadata | `pmo`, `pmo:active` / `pmo:pipeline` / `pmo:closed`, priority, stage, `pmo:task` | Dashboard/reporting only |
-| PR classification | Exactly one PR intent label; PR class in PR body | PR verification/accounting only |
-| ChatGPT review routing | Label `agent:ChatGPT`; comment `CHATGPT HANDOFF` (then `CHATGPT RESPONSE` / `CHATGPT CLOSEOUT`) | Review/decision markers that require an **invoked** dispatcher or scheduled watch — not inert background alerts |
-| Cursor execution routing | `agent:cursor` **+** `handoff:ready` (required wake pair); claim → `handoff:in-progress` | Local Cursor wake eligibility; prose naming Cursor as next does **not** wake or authorize execution |
-| Operational status | `status:*` | Execution/verification bookkeeping; not PMO lifecycle |
+A communication handoff stops only the affected task or incident unless the recorded decision or evidence requires a broader hold.
 
-Labels represent current routing or portfolio state. Comments represent durable events and evidence. A comment without matching current labels is historical evidence, not executable authority. No label family substitutes for another.
+A PR handoff for Task A does not stop independent Task B Development work.
+
+Direct agent-to-agent GitHub communication is preferred. Human relay through Bill is the least-desired fallback and is used only when the canonical channel is unavailable or materially impaired, Product Authority intervention is intentionally required, or an emergency prevents safe direct routing.
+
+Bill is not expected to copy, interpret, translate, or relay routine agent assignments, acknowledgments, review findings, remediation requests, status updates, resumes, or completion messages.
+
+## Communication preference hierarchy
+
+1. Direct ChatGPT ↔ Cursor communication using a canonical structured event on the source GitHub Issue.
+2. Administration & Communications routing, retry, acknowledgment, and escalation through repository automation or the controller.
+3. Human relay through Bill as the least-desired fallback under the bounded exceptions above.
+
+A human-relayed message does not complete an agent handoff. The responsible agent must write the decision or event back to GitHub before repository work depends on it.
 
 ## Authority
 
-- Repository documents and GitHub Issues remain operational authority.
-- Cursor executes assigned implementation or documentation tasks within source-issue scope.
-- ChatGPT performs governance review, disposition decisions, PR readiness review, merge-readiness synthesis, and closeout control where applicable.
-- Bill remains final authority for merge authorization, high-risk scope, and unclear project decisions.
-- Queue watch and dispatcher behavior is controlled by `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`.
-- Local poller behavior is documented by `docs/how-to/cursor/github-poll-wake-loop.md`.
+- Repository documents and GitHub Issues remain authority.
+- Durable role ownership is defined in `docs/governance/AGENT-TEAM.md`.
+- Promotion transitions are defined in `docs/governance/DELIVERY-AND-RELEASE.md`.
+- Administration & Communications policy is defined in `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md`.
+- Runner and controller transport authorized events; they do not make product, Engineering, approval, recovery, or Production decisions.
 
-## Mandatory communication transaction
+## Minimum communication vocabulary
 
-When Cursor requires a ChatGPT decision and ChatGPT expects Cursor to continue, the complete transaction is:
+- `PROBLEM FOUND`
+- `GUIDANCE`
+- `ADJUSTMENT`
+- `HOLD`
+- `PLAN CHANGE REQUIRED`
+- `RESUME`
+- `IMPLEMENTATION HANDOFF`
+- `PR REVIEW REQUEST`
+- `APPROVED FOR INTEGRATION`
+- `PROMOTION CANDIDATE READY`
+- `PRODUCTION GO`
+- `OPERATIONAL INCIDENT`
+- `RECOVERY VERIFIED`
+- `CLOSEOUT`
 
-```text
-1. Cursor posts CHATGPT HANDOFF.
-2. ChatGPT posts CHATGPT RESPONSE or CHATGPT CLOSEOUT.
-3. Dispatcher verifies the source issue is open and has agent:cursor + handoff:ready.
-4. Dispatcher posts a separate LOCAL CURSOR RESUME referencing the exact ChatGPT response.
-5. Local Cursor performs exactly one bounded next action.
-6. Cursor returns a new CHATGPT HANDOFF when the action reaches a review, blocker, PR-ready, or completion point.
-```
+Legacy `CHATGPT HANDOFF`, `CHATGPT RESPONSE`, `CHATGPT CLOSEOUT`, and `LOCAL CURSOR RESUME` markers remain supported adapters until the controller migration is complete.
 
-All six steps are required unless the ChatGPT response explicitly says `stop` or `wait`.
+## Event envelope
 
-`LOCAL CURSOR RESUME` is not a decision record. It is only a wake/context marker pointing to a prior canonical ChatGPT decision.
-
-## Required task list
-
-| Task | Owner | Trigger | Required surface | Required action | Stop condition |
-| --- | --- | --- | --- | --- | --- |
-| Execute assigned work | Cursor | Source issue is open, scope is clear, and issue has `agent:cursor` plus `handoff:ready` unless a manual/no-loop exception is documented | Source issue and working branch | Perform only the single action authorized by the latest valid resume transaction | Stop if scope, authority, target paths, labels, branch, or action are unclear |
-| Post review handoff | Cursor | Review point, blocker, proposed disposition, completion point, PR-readiness point, or closeout request | Source issue comment | Post canonical `CHATGPT HANDOFF` with all required fields | Stop after handoff until ChatGPT responds |
-| Announce opened or updated PR | Cursor | PR opened or materially revised after requested changes | Source issue comment | Post canonical `CHATGPT HANDOFF` with PR, branch, head SHA, changed scope, validation, and requested action | Stop until ChatGPT reviews or gives next direction |
-| Propagate chat decisions | ChatGPT | Bill and ChatGPT decide direction in chat UI | Source issue, PR, or repository document | Record the decision in a canonical GitHub comment before Cursor is expected to act | Do not expect Cursor to act on chat-only context |
-| Respond to handoff | ChatGPT | Canonical `CHATGPT HANDOFF` requires a decision | Source issue | Post canonical `CHATGPT RESPONSE` or `CHATGPT CLOSEOUT` | Stop if repository authority or evidence is insufficient |
-| Resume local Cursor | Bill / ChatGPT / authorized dispatcher | Canonical Chat response expects Cursor action | Source issue | Verify open state and labels, then post separate `LOCAL CURSOR RESUME` referencing the exact response and containing one bounded action | Do not claim pickup or execution merely because the marker exists |
-| Run queue/watch dispatcher | ChatGPT / Bill / authorized automation | Manual request, scheduled watch, or repo-native workflow | GitHub issues, PRs, labels, comments, and closeout evidence | Apply the queue-watch protocol and this transaction **only when** the watcher’s profile is dispatcher and mutation classes are explicit in the prompt or controlling issue; advisory watches detect/notify only | Do not mutate GitHub unless authorized; do not treat “monitor/review/notify” as mutation authority |
-| Authorize merge readiness | ChatGPT / Bill | PR ready for merge-readiness review | PR and source issue | Verify scope, source issue, validation, review state, rollback, and closeout expectations | Human authorization required for production promotion or protected changes |
-
-## Cursor-to-ChatGPT handoff
-
-Cursor must create an issue comment beginning exactly with:
+A cross-lane event records:
 
 ```text
-CHATGPT HANDOFF
-```
-
-Required fields:
-
-```text
-CHATGPT HANDOFF
-Issue: #<issue-number>
-Status: <needs-review | blocked | disposition-proposed | pr-opened | pr-ready | complete>
-PR: <PR number or none>
-Branch: <branch>
-Head SHA: <SHA or none>
-Summary:
-- <work completed, blocker, or decision needed>
-
-Validation:
-- <commands/checks and results>
-
-ChatGPT action requested:
-- <one specific review, decision, authorization, merge-readiness review, or closeout action>
-
-Evidence / paths:
-- <repo paths, PR links, review threads, or check evidence>
-```
-
-A comment beginning with `LOCAL CURSOR STATUS`, `LOCAL CURSOR`, `status update`, or any other marker is informational only. It does not satisfy the handoff contract and must not trigger final review, merge, or closeout disposition.
-
-## PR-open and PR-update handoff
-
-When Cursor opens a PR or pushes requested remediation, Cursor must immediately post a new canonical `CHATGPT HANDOFF` on the source issue.
-
-The handoff must identify:
-
-- PR number and link;
-- branch and current head SHA;
-- short purpose;
-- changed-file scope;
-- validation and current CI state;
-- unresolved review threads or `none`;
-- one requested ChatGPT action.
-
-## ChatGPT response markers
-
-Use `CHATGPT RESPONSE` for decisions, requested changes, resumed implementation direction, or clarification.
-
-Use `CHATGPT CLOSEOUT` only for a terminal child disposition, verified integration, queue disposition after integration, or explicit stop. A source issue must not be closed merely because a PR is ready or checks pass.
-
-Required response form:
-
-```text
-CHATGPT RESPONSE
-Issue: #<issue-number>
-Responds to: <exact CHATGPT HANDOFF comment URL>
-Cursor local action: <resume | revise | open-pr | update-pr | stop | wait>
-Decision:
-- <accepted decision or requested change>
-
-Evidence / authority:
-- <repo document, issue, PR, review, check, or validation evidence>
-
-Next step:
-- <exactly one bounded action for local Cursor or one explicit halt reason>
-```
-
-Required closeout form:
-
-```text
-CHATGPT CLOSEOUT
-Issue: #<issue-number>
-Responds to: <exact CHATGPT HANDOFF comment URL>
-Disposition: <integrated | closed-complete | superseded | stopped | queued>
+Event:
+Subject:
+Source role / lane:
+Target role / lane:
+Profile:
+Status:
 Evidence:
-- <merge SHA, PR state, check state, or authority>
-
-Queue action:
-- <exactly one successor action or explicit none>
+Requested action:
+Blocking scope:
+Decision authority:
+Acknowledgment required:
+Supersedes:
+Resume condition:
 ```
 
-Closeout requires verified integration evidence when the issue delivered a PR. A PR marked ready, green, approved, or mergeable is not integration evidence.
+Only include fields that apply, but the subject, source, target, evidence, requested action, and blocking scope must be clear.
 
-## Local Cursor resume protocol
+## Source-Issue-first rule
 
-A valid local resume requires all of the following:
+For a task, project, or incident handoff, the receiving agent responds on the source Issue first using the canonical event envelope.
 
-1. The source issue is open.
-2. The issue has both `agent:cursor` and `handoff:ready`, unless a documented manual/no-loop exception applies.
-3. A canonical `CHATGPT RESPONSE` or `CHATGPT CLOSEOUT` exists after the relevant handoff.
-4. The response references the same issue and current PR/branch state.
-5. No newer review, failed check, merge, closeout, or issue-state change supersedes it.
-6. A separate `LOCAL CURSOR RESUME` references the exact response URL.
-7. The resume contains exactly one bounded next action.
+- The source Issue is the primary cross-agent routing surface.
+- PR reviews, PR comments, inline threads, checks, deployments, and artifacts are supporting technical evidence.
+- A PR-only disposition does not complete routing back to the implementation agent.
+- When a PR review controls further work, the source-Issue event must reference the PR, candidate SHA, disposition, evidence, and requested next action.
+- Local Cursor execution may additionally require a linked `LOCAL CURSOR RESUME` transport event.
 
-Required resume form:
+A handoff is incomplete when the target role/lane, requested action, blocking scope, or acknowledgment state is missing or ambiguous.
+
+## Direct team-member response requirements
+
+When ChatGPT receives an `IMPLEMENTATION HANDOFF` or `PR REVIEW REQUEST`, ChatGPT must communicate the disposition directly to Cursor through the source Issue before reporting the result externally.
+
+When Cursor receives `APPROVED FOR INTEGRATION`, `ADJUSTMENT`, `PLAN CHANGE REQUIRED`, `HOLD`, or `RESUME`, Cursor must acknowledge through the canonical workflow and must not require Bill to relay the decision.
+
+When canonical GitHub routing is unavailable and Bill relays a message, the originating or receiving agent must write the event back to GitHub as soon as the channel is restored.
+
+## Lightweight problem adjustment
+
+Most discoveries use this path:
+
+```text
+PROBLEM FOUND
+  -> route to the role that made the controlling decision
+  -> GUIDANCE or ADJUSTMENT
+  -> Administration & Communications records and acknowledges
+  -> RESUME
+```
+
+### Problem report
+
+```text
+PROBLEM FOUND
+Subject: #<issue or incident>
+Profile: <sandbox | development | promotion-candidate | production | day-2>
+Observed fact:
+- <what was discovered>
+
+Impact:
+- <why the current action cannot proceed as intended>
+
+Evidence:
+- <checks, paths, logs, screenshots, or links>
+
+Blocking scope:
+- <task | project | promotion | production | repository assessment>
+
+Independent work:
+- <safe to continue | not safe and why>
+
+Decision requested from:
+- <owning role>
+```
+
+### Guidance or adjustment
+
+```text
+GUIDANCE
+Subject: #<issue or incident>
+Decision:
+- <bounded clarification>
+
+OR
+
+ADJUSTMENT
+Subject: #<issue or incident>
+Decision:
+- <bounded change within existing objective and authority>
+
+Resume condition:
+- <exact condition>
+```
+
+Use `PLAN CHANGE REQUIRED` only when product outcome, architecture, acceptance criteria, dependency structure, delivery model, promotion path, Production boundary, or recovery strategy materially changes.
+
+## Implementation handoff
+
+When Implementation / Operations completes bounded Development work:
+
+```text
+IMPLEMENTATION HANDOFF
+Issue: #<issue>
+PR: #<PR or none>
+Branch:
+Head SHA:
+Profile: development
+Summary:
+Validation:
+Changed scope:
+Protected or material concerns:
+Requested action:
+Independent successor safe: <yes | no with reason>
+```
+
+The affected task enters review or integration disposition. An independent successor may continue when the source authority and dependency state allow it.
+
+## PR review request and disposition
+
+```text
+PR REVIEW REQUEST
+Issue:
+PR:
+Candidate/head SHA:
+Profile: <development | promotion-candidate | production>
+Acceptance evidence:
+Checks:
+Protected scope:
+Requested disposition:
+```
+
+PR Approver / Engineering responds on the source Issue with one of:
+
+- `APPROVED FOR INTEGRATION`
+- `ADJUSTMENT`
+- `PLAN CHANGE REQUIRED`
+- `HOLD`
+
+The source-Issue disposition references the PR and candidate SHA. PR comments and reviews provide detailed technical evidence but do not replace the cross-agent response.
+
+Automated Development eligibility is recorded as deterministic CI eligibility, not as human Engineering approval.
+
+## Promotion Candidate communication
+
+```text
+PROMOTION CANDIDATE READY
+Release unit:
+Candidate SHA:
+Development scope included:
+Qualification plan/results:
+Repository standards reconciliation:
+Rollback evidence:
+Unresolved gaps:
+Decision requested:
+```
+
+Promotion Candidate is mandatory before Production. No event may route Sandbox or Development directly to Production.
+
+## Operational incident communication
+
+```text
+OPERATIONAL INCIDENT
+Incident:
+Evidence:
+Known impact:
+Assessment hold: <applied | not applied>
+Current scope:
+Owner needed:
+```
+
+After assessment:
+
+```text
+ADJUSTMENT
+Incident:
+Impact / probable cause / containment:
+Targeted hold:
+Resolution owner:
+Unaffected work resume: <authorized | not authorized>
+```
+
+Day-2 Operations authorizes hold release. Administration & Communications records the state and routes `RESUME`.
+
+## Local Cursor wake and resume adapter
+
+Until runtime migration is complete, local Cursor may still require the legacy wake transaction:
+
+1. authoritative decision/event exists on the source Issue;
+2. Issue is open;
+3. required wake labels exist;
+4. no newer state supersedes the decision;
+5. a separate `LOCAL CURSOR RESUME` references the exact decision;
+6. the resume contains one bounded next action.
 
 ```text
 LOCAL CURSOR RESUME
-Issue: #<issue-number>
-Source handoff: <exact CHATGPT HANDOFF comment URL>
-Resume from: <exact CHATGPT RESPONSE or CHATGPT CLOSEOUT comment URL>
+Issue: #<issue>
+Resume from: <exact decision comment URL>
 Runtime: local
-Branch: <branch>
-PR: <PR number or none>
+Branch:
+PR:
 Next local action:
-- <exactly one bounded action>
-
-Do not invoke Cursor Cloud. Do not merge unless the referenced response explicitly authorizes it.
+- <one bounded action>
 ```
 
-Do not use `LOCAL CURSOR RESUME` as the decision itself. Do not include multiple independent actions, checklists, implementation phases, or alternative paths in one resume. Detailed scope belongs in the source issue or referenced response.
+The marker is transport, not decision authority. It does not prove pickup or work execution.
 
-If any required element is absent or ambiguous, Cursor must post canonical `CHATGPT HANDOFF` with `Status: blocked` and stop.
+## Acknowledgment and retry
 
-## Poller and pickup semantics
+Administration & Communications tracks whether a routed event was acknowledged.
 
-The labels and resume comment make the issue eligible for the local poller. They do not prove that the poller detected the update or that local Cursor began work.
+- Repeated identical events must not create duplicate work.
+- A retry may refresh attention but must preserve the same event/action identity.
+- A stale event must not overwrite a newer review, check, decision, hold, resume, merge, or closeout.
+- Missed acknowledgment routes to the recorded escalation role.
+- Missing acknowledgment must not be silently replaced by human relay.
 
-The poller treats activity as new only when the qualifying issue or PR update time is later than its stored watermark. Therefore:
+## Communication integrity checks
 
-- set or verify both wake labels;
-- post the canonical response;
-- post the separate resume after the response;
-- confirm the source issue remains open;
-- do not report `Cursor active`, `Cursor resumed`, or `work underway` until Cursor posts a subsequent comment or pushes a new commit.
+The workflow must identify or fail closed on:
 
-If no Cursor evidence appears, the dispatcher must treat the lane as idle and re-check poller eligibility rather than assuming engagement.
+- missing source or target role/lane;
+- missing source-Issue event;
+- required acknowledgment not received;
+- findings or instructions available only through Bill or another external relay;
+- PR-only review disposition without source-Issue routing;
+- stale, duplicate, contradictory, or superseded events;
+- use of retired or unrecognized identities;
+- local resume without an exact controlling decision reference.
 
-## Cloud-agent invocation boundary
+## Runner and controller boundary
 
-Do not use `@cursor` when the intended actor is local Cursor. `@cursor` is a cloud-agent invocation path, not a local resume marker.
+The runner/controller may:
 
-Cloud execution requires explicit source-issue authorization under `docs/governance/standards/CURSOR-RUNTIME-ROUTING.md`.
+- detect and normalize events;
+- publish routing and evidence;
+- retry bounded communication;
+- apply authorized labels/comments/checks;
+- execute deterministic authorized automation.
 
-## Wake-label requirements
+It must not:
 
-For local Cursor execution, the open source issue must include the required wake pair:
+- invent authority;
+- make subjective decisions;
+- impersonate human review;
+- skip promotion profiles;
+- merge to `main` without Production authority.
 
-```text
-agent:cursor
-handoff:ready
-```
+Runner host/service failure routes to Day-2 Operations. Communication state and retry remain Administration & Communications responsibilities.
 
-Body text, comments, or prose that only names Cursor as next are insufficient. `agent:cursor` alone is insufficient. Labels alone are also insufficient without a qualifying issue update and canonical resume transaction under this workflow.
+## Decision propagation
 
-For ChatGPT review routing, use:
+A decision made in chat, email, or another external surface must be written to the relevant GitHub Issue, PR, incident, or canonical repository document before repository work depends on it.
 
-```text
-agent:ChatGPT
-```
+Human relay through Bill is the least-desired fallback. The agent receiving or originating the relayed decision owns durable write-back; Bill is not the routine write-back operator.
 
-together with a durable `CHATGPT HANDOFF` comment event when Cursor (or an operator) requests ChatGPT action. These are review markers, not PMO lifecycle labels and not Cursor wake labels. They require an actual manual, scheduled, or repo-native dispatcher/watch to consume them; presence alone is not background auto-notification completion.
+## Closeout
 
-## Queue-stall escalation
+`CLOSEOUT` records task, project, program, release, or incident disposition after required execution, validation, approval, promotion, Production, and evidence conditions are satisfied.
 
-If a valid handoff is not answered, a valid response is not followed by a resume, a resume is not consumed, a PR remains review-ready without disposition, or a successor lacks an active Cursor task, the dispatcher must:
-
-- correct the communication transaction when authorized;
-- preserve the local loop and active wake labels;
-- create or update an Ops remediation issue if the stall cannot be corrected directly;
-- record an explicit halt reason when no action is authorized.
-
-The dispatcher must not silently leave an approved execution lane idle.
-
-Watcher profile authority (advisory vs dispatcher, bounded mutation classes, and protected-action denial) is owned by `docs/ops/pmo/queue-watch-and-dispatch-protocol.md` and evidenced in `docs/ops/reports/watcher-action-mutation-contract-1719.md`. An advisory watch that can only detect stalls must report and stop; it must not imply it will clear the stall without dispatcher mutation authority.
-
-## Decision propagation rule
-
-Decisions made in chat must be written to the relevant GitHub Issue, PR, or repository document before Cursor is expected to act. Cursor must not infer chat-only context.
+Closeout does not block an independent Development successor unless a substantive invariant is missing or contradictory.
 
 ## Required references
 
-Active source issues should reference:
-
-```text
-Handoff workflow:
-docs/ops/ai/chatgpt-cursor-handoff-workflow.md
-
-Queue watch / dispatcher:
-docs/ops/pmo/queue-watch-and-dispatch-protocol.md
-
-Watcher mutation contract:
-docs/ops/reports/watcher-action-mutation-contract-1719.md
-```
+- Roles: `docs/governance/AGENT-TEAM.md`
+- Administration & Communications: `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md`
+- Lane/profile contract: `docs/reference/operations/operating-lanes-and-promotion-profiles.md`
+- Delivery and promotion: `docs/governance/DELIVERY-AND-RELEASE.md`
+- Queue/dispatch: `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`
+- Runner: `docs/reference/ci/repository-runner-contract.md`

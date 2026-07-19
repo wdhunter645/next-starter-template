@@ -2,184 +2,220 @@
 Doc Type: Entry / Control File
 Audience: Human + AI
 Authority Level: Navigation
-Owns: Read order, authority hierarchy routing, execution entry point
-Does Not Own: Agent team policy, execution rules, design authority, or governance policies
-Canonical Reference: /docs/governance/AGENT-TEAM.md
-Last Reviewed: 2026-07-13
+Owns: Read order, authority routing, lane/profile identification, execution entry point
+Does Not Own: Role policy, execution rules, design authority, communication policy, delivery policy, or governance decisions
+Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
+Related Issues: #2640, #2641
+Last Reviewed: 2026-07-19
 ---
 
 # Agent.md
 
 Purpose: **Mandatory starting point and routing authority** for all AI agents. No agent may begin repository work without reading this file first.
 
-This file is navigation only. It does not define team roles, approval routing, or protected stops.
+This file is navigation only. It does not grant implementation, approval, Production, recovery, or administrative authority.
 
----
+## Cursor session bootstrap
 
-## CURSOR SESSION BOOTSTRAP
+Cursor bootstrap routers point here and to canonical governance. They do not replace this file.
 
-Cursor injects thin bootstrap routers that point here and to canonical governance. They do **not** replace this file or governance policy.
+- Local sessions: `.cursor/rules/*.mdc`
+- Cloud sessions: `AGENTS.md`
+- Verification: `docs/how-to/cursor/agent-session-bootstrap.md`
 
-- **Local Composer/Agent sessions:** `.cursor/rules/*.mdc` (`alwaysApply: true`)
-- **Cloud Agent sessions:** root `AGENTS.md`
+## Cursor runtime boundary
 
-See `docs/how-to/cursor/agent-session-bootstrap.md` for verification.
+LGFC implementation defaults to local Cursor unless the source Issue explicitly authorizes another runtime.
 
----
-
-## LGFC CURSOR RUNTIME BOUNDARY
-
-LGFC implementation defaults to **local Cursor**.
-
-Every Cursor assignment must declare exactly one runtime:
+Every Cursor assignment declares:
 
 ```text
 Runtime: local | cloud | either
 ```
 
-Rules:
-
 - `local` is the default.
-- `cloud` or `either` requires explicit authorization in the source GitHub issue from Bill or Chat.
-- `@cursor` is a Cursor Cloud invocation and is prohibited for local LGFC work.
-- Local Cursor routing uses `agent:cursor` + `handoff:ready` plus an explicit `LOCAL CURSOR RESUME` issue or PR comment.
-- Labels and comments are durable routing/context markers; they do not prove an agent process is running.
+- `cloud` or `either` requires source-Issue authority.
+- `@cursor` invokes Cursor Cloud and is not a substitute for local routing.
+- Labels and comments are routing evidence; they do not prove a process is running.
 
-Binding runtime policy: [`docs/governance/standards/CURSOR-RUNTIME-ROUTING.md`](docs/governance/standards/CURSOR-RUNTIME-ROUTING.md).
+Canonical runtime policy: `docs/governance/standards/CURSOR-RUNTIME-ROUTING.md`.
 
-Detailed local procedures:
+## Mandatory authority chain
 
-- [`docs/ops/ai/chatgpt-cursor-handoff-workflow.md`](docs/ops/ai/chatgpt-cursor-handoff-workflow.md)
-- [`docs/how-to/cursor/github-poll-wake-loop.md`](docs/how-to/cursor/github-poll-wake-loop.md)
+Before repository work—including exploration, design, Sandbox, implementation, PR work, review, remediation, communication, incident response, or closeout—read in this order:
 
----
+1. `Agent.md`
+2. `docs/governance/REPOSITORY-AUTHORITY.md`
+3. `docs/governance/AGENT-TEAM.md`
+4. `docs/ops/ai/SHARED-AGENT-RULES.md`
+5. `docs/ops/ai/CORE-RULES.md`
+6. Applicable tool-specific pointer:
+   - `docs/ops/ai/CHATGPT-RULES.md`
+   - `docs/ops/ai/CURSOR-RULES.md`
+   - `docs/ops/ai/CODEX-RULES.md`
+   - `docs/ops/ai/COPILOT-RULES.md`
+   - `docs/ops/ai/DEVIN-RULES.md`
+7. Applicable domain policy and reference contracts
+8. Source GitHub Issue
+9. Task-linked design, plan, procedure, and skill files
 
-## MANDATORY DOCUMENTATION CHAIN
+Prompts, comments, external notifications, and agent memory do not override this chain.
 
-Before any repo work — including exploration, implementation, PR creation, issue work, review, or remediation — every agent must follow this chain in order:
+## Identify role, lane, and profile
 
-1. **This file** (`Agent.md`) — entry point and routing authority
-2. [`docs/governance/AGENT-TEAM.md`](docs/governance/AGENT-TEAM.md) — canonical agent team roles, approval model, protected stops, and workflow boundaries
-3. [`docs/ops/ai/SHARED-AGENT-RULES.md`](docs/ops/ai/SHARED-AGENT-RULES.md) — superseded pointer to shared execution routing (detail in CORE-RULES)
-4. [`docs/ops/ai/CORE-RULES.md`](docs/ops/ai/CORE-RULES.md) — detailed shared execution rules
-5. **Applicable agent-specific pointer** (tool behavior only; additive, never a substitute for governance or core rules):
-   - [`docs/ops/ai/CHATGPT-RULES.md`](docs/ops/ai/CHATGPT-RULES.md)
-   - [`docs/ops/ai/CURSOR-RULES.md`](docs/ops/ai/CURSOR-RULES.md)
-   - [`docs/ops/ai/CODEX-RULES.md`](docs/ops/ai/CODEX-RULES.md)
-   - [`docs/ops/ai/COPILOT-RULES.md`](docs/ops/ai/COPILOT-RULES.md)
-   - [`docs/ops/ai/DEVIN-RULES.md`](docs/ops/ai/DEVIN-RULES.md)
-6. **Applicable repo governance and procedure docs** — including source GitHub issue, task-linked design/architecture/governance files, and for PR/issue/review/remediation/implementation work:
-   - `docs/governance/standards/CURSOR-RUNTIME-ROUTING.md` when Cursor runtime or routing applies
-   - `.agents/skills/lgfc-pr-governance/SKILL.md`
-   - `.github/pull_request_template.md`
-   - `/docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`
-   - `/docs/governance/PR_GOVERNANCE.md` and other governance docs linked from the source issue or PR template
-7. **Applicable `.agents/skills/*/SKILL.md` files** — when the task matches a skill trigger (see [REPO-SCOPED SKILL ROUTING](#repo-scoped-skill-routing))
+Before action, determine:
 
-Agent-specific docs are **additive**. They do not replace governance policy or shared/core rules.
+```text
+Durable role:
+Horizontal lane:
+Promotion profile:
+Source Issue:
+Operational hold:
+```
 
-Task prompts, operator messages, and subagent instructions do not override this chain.
+### Durable roles
 
----
+- Product Authority
+- PMO / Engineering
+- Implementation / Operations
+- PR Approver / Engineering
+- Administration & Communications
+- Day-2 Operations
+- Deterministic CI
 
-## REQUIRED READ ORDER
+Current member mapping: `docs/governance/AGENT-TEAM.md`.
 
-After the mandatory documentation chain above, continue with task-scoped reading:
+### Lane topology
 
-1. [`docs/reference/agents/implementation-authority-contract.md`](docs/reference/agents/implementation-authority-contract.md) when agent authority applies
-2. [`docs/how-to/agents/run-model-a.md`](docs/how-to/agents/run-model-a.md) or [`docs/how-to/agents/run-model-b.md`](docs/how-to/agents/run-model-b.md) per delivery model
-3. `/docs/reference/design/LGFC-Production-Design-and-Standards.md` (when design authority applies)
-4. Source GitHub issue for the assigned task
-5. Task-relevant design, architecture, governance, or implementation-plan files linked from the source issue
+Horizontal lanes:
 
-Tracker files are historical/status indexes. Agents may read tracker files for verification when relevant, but update tracker files only when the source issue explicitly includes tracker governance, tracker reconciliation, or status-index maintenance in scope.
+- PMO / Engineering
+- Implementation / Operations
+- Day-2 Operations
 
----
+Vertical lane:
 
-## AUTHORITY HIERARCHY (ROUTING)
+- Administration & Communications
 
-1. Locked design / platform / governance documents
-2. [`docs/governance/AGENT-TEAM.md`](docs/governance/AGENT-TEAM.md)
-3. [`docs/ops/ai/CORE-RULES.md`](docs/ops/ai/CORE-RULES.md)
-4. Source GitHub issue for task scope and acceptance criteria
-5. Task-specific implementation plan or queue issue
-6. Agent-specific pointer files under `docs/ops/ai/`
-7. Task prompt
+### Promotion profiles
 
-If conflict exists → follow highest authority and stop when a protected stop applies.
+```text
+Sandbox -> Development -> Promotion Candidate -> Production -> Day-2 Operations
+```
 
----
+- Sandbox is optional and cannot move directly to Promotion Candidate or Production.
+- Development cannot move directly to Production.
+- Development and Promotion Candidate are technical profiles inside the conversational Implementation / Operations lane.
 
-## ATLAS STARTUP ROUTING (`run startup`)
+Canonical contract: `docs/reference/operations/operating-lanes-and-promotion-profiles.md`.
 
-When Bill says `run startup`, Atlas (ChatGPT) must perform **orientation-only** startup per the retained startup contract in [`docs/ops/ai/CHATGPT-RULES.md`](docs/ops/ai/CHATGPT-RULES.md) — checklist-bound, non-advancing, and stopped after the required report sections.
+## Task-scoped read order
 
-`run startup` is **not** queue audit, repository posture inspection, inferred next work, implementation resume, or GitHub mutation authority.
+Read the files that match the current task:
 
----
-
-## EXECUTION MODEL (ROUTING SUMMARY)
-
-Canonical agent team policy: [`docs/governance/AGENT-TEAM.md`](docs/governance/AGENT-TEAM.md).
-
-| Actor | Route to |
+| Task | Required authority |
 | --- | --- |
-| Bill | Design go/no-go; alternate approver; final product review |
-| Chat | Primary reviewer/approver; merge; verification |
-| Cursor | Implementation only; no self-approval |
-| Codex | Inactive/out unless future Bill reauthorization |
+| Role or approval question | `docs/governance/AGENT-TEAM.md`; `docs/reference/agents/implementation-authority-contract.md` |
+| PMO intake, sizing, Sandbox, or launch | `docs/governance/PMO-PORTFOLIO.md` |
+| Development, Promotion Candidate, Production, rollback | `docs/governance/DELIVERY-AND-RELEASE.md`; `docs/how-to/operations/run-work-through-promotion-profiles.md` |
+| Communication, routing, labels, hold/resume, reporting, closeout | `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md`; `docs/reference/operations/administrative-control-lane-contract.md` |
+| Production health, incidents, runner host, recovery | `docs/governance/OPERATIONS-AND-RECOVERY.md` |
+| Runner/controller behavior | `docs/reference/ci/repository-runner-contract.md`; applicable routing contract/procedure |
+| PR work | `.agents/skills/lgfc-pr-governance/SKILL.md`; `.github/pull_request_template.md`; `docs/how-to/cursor/open-task-pr.md`; `docs/governance/PR_PROCESS.md`; `docs/governance/PR_LIFECYCLE_STATE_MACHINE.md` |
+| Design | Applicable documents under `docs/reference/design/**` |
+| Model A/B execution | `docs/how-to/agents/run-model-a.md` or `docs/how-to/agents/run-model-b.md` |
 
-Model procedures:
+## Communication routing
 
-- Model A: [`docs/how-to/agents/run-model-a.md`](docs/how-to/agents/run-model-a.md)
-- Model B: [`docs/how-to/agents/run-model-b.md`](docs/how-to/agents/run-model-b.md)
+The minimum lightweight correction path is:
 
-**Agent assignments:** Use [`docs/templates/agent-assignment-template.md`](docs/templates/agent-assignment-template.md) for launch-control envelopes.
+```text
+PROBLEM FOUND
+  -> route to the role that made the controlling decision
+  -> GUIDANCE or ADJUSTMENT
+  -> Administration & Communications records
+  -> RESUME
+```
 
----
+Use `PLAN CHANGE REQUIRED` only for a material change to product outcome, architecture, acceptance criteria, dependencies, delivery model, promotion path, Production boundary, or recovery strategy.
 
-## REPO-SCOPED SKILL ROUTING
+The runner and routing controller are Administration & Communications infrastructure. They transport authorized work; they do not create authority.
 
-Use these repository skills when the task matches the trigger:
+## Execution summary
 
-- PR creation, PR updates, issue linkage, scope control, labels, acceptance criteria, lifecycle state transitions, or pre-merge closeout prediction: `.agents/skills/lgfc-pr-governance/SKILL.md`
-- Homepage, navigation, footer, Join/Login, FanClub, member, admin, Store, route, or visual/layout changes: `.agents/skills/lgfc-design-compliance/SKILL.md`
-- Documentation creation, documentation moves, documentation edits, authority hierarchy, DIATAXIS routing, or documentation checks: `.agents/skills/lgfc-docs-authority/SKILL.md`
-- Packaging scoped work for Cursor implementation: `docs/templates/agent-assignment-template.md`
-- Agent team policy: `docs/governance/AGENT-TEAM.md`
-- Tracker/status-index updates: `.agents/skills/lgfc-docs-authority/SKILL.md` only when the source issue explicitly authorizes tracker governance, tracker reconciliation, or status-index maintenance
-- Next.js build, API, route handler, middleware, Cloudflare Pages, D1, static export, or deployment compatibility changes: `.agents/skills/lgfc-cloudflare-static-export/SKILL.md`
-- Final PR handoff, closeout, verification evidence, or post-merge readiness: `.agents/skills/lgfc-verification-closeout/SKILL.md`
-- Tokenized AI review access (preview-only live inspection): `docs/ops/ai/AI-REVIEW-ACCESS.md`
+```text
+Agent entry and authority load
+  -> PMO / Engineering intake and design
+  -> optional Sandbox
+  -> implementation Go
+  -> Development
+  -> Promotion Candidate
+  -> Production
+  -> Day-2 Operations
+```
 
-Long-form cross-agent instructions live in:
+Administration & Communications spans all steps.
+
+## Startup orientation
+
+When Product Authority says `run startup`, ChatGPT / Atlas performs orientation only and stops.
+
+Startup does not authorize:
+
+- queue audit;
+- inferred next work;
+- implementation resume;
+- administrative reconciliation;
+- GitHub mutation.
+
+## Repository skills
+
+Use repository skills when their trigger matches:
+
+- PR governance: `.agents/skills/lgfc-pr-governance/SKILL.md`
+- Design compliance: `.agents/skills/lgfc-design-compliance/SKILL.md`
+- Documentation authority: `.agents/skills/lgfc-docs-authority/SKILL.md`
+- Cloudflare/static export: `.agents/skills/lgfc-cloudflare-static-export/SKILL.md`
+- Verification/closeout: `.agents/skills/lgfc-verification-closeout/SKILL.md`
+- Assignment envelope: `docs/templates/agent-assignment-template.md`
+
+Tracker/status-index files are updated only when the source Issue authorizes that surface.
+
+## Agent governance implementation references
+
+These paths remain required navigation and validation surfaces:
 
 - `governance/ai/AGENT-GOVERNANCE.md`
 - `ops/ai/CROSS-AGENT-OPERATING-RULES.md`
-
-Agent governance files are checked by:
-
 - `.agents/checks/agent-governance-check.mjs`
 - `.github/workflows/agent-governance.yml`
 
----
+They do not override the constitutional and domain-policy chain above.
 
-## STOP CONDITIONS (ROUTING)
+## Stop conditions
 
-Protected stops and escalation: [`docs/governance/AGENT-TEAM.md`](docs/governance/AGENT-TEAM.md) and [`docs/reference/agents/implementation-authority-contract.md`](docs/reference/agents/implementation-authority-contract.md).
+Stop the affected scope and route the problem when:
 
-Detailed execution stops: [`docs/ops/ai/CORE-RULES.md`](docs/ops/ai/CORE-RULES.md).
+- canonical authority conflicts;
+- required source Issue or role authority is missing;
+- a protected product, design, credential, Production, privacy, legal, cost, or destructive boundary is unresolved;
+- Sandbox/preview/component isolation is unsafe;
+- required validation or independent approval is missing or failed;
+- an active operational hold covers the work;
+- a mandatory promotion profile is being skipped;
+- evidence shows the approved plan cannot satisfy acceptance without material change.
 
----
+Routine bounded correction, deterministic administrative reconciliation, and non-blocking reporting lag are not repository-wide stops.
 
-## FINAL
+## Final routing
 
-This file is navigation only.
+- Constitution: `docs/governance/REPOSITORY-AUTHORITY.md`
+- Roles: `docs/governance/AGENT-TEAM.md`
+- PMO: `docs/governance/PMO-PORTFOLIO.md`
+- Delivery: `docs/governance/DELIVERY-AND-RELEASE.md`
+- Administration & Communications: `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md`
+- Day-2 Operations: `docs/governance/OPERATIONS-AND-RECOVERY.md`
+- Lane/profile reference: `docs/reference/operations/operating-lanes-and-promotion-profiles.md`
+- Shared execution detail: `docs/ops/ai/CORE-RULES.md`
 
-Agent team policy is defined in [`docs/governance/AGENT-TEAM.md`](docs/governance/AGENT-TEAM.md).
-
-Shared execution rules are defined in [`docs/ops/ai/CORE-RULES.md`](docs/ops/ai/CORE-RULES.md).
-
-Tool-specific pointers are defined in the agent-specific files listed above.
-
-Superseded operational authority under `docs/ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md` must not be cited for current team roles or approval routing.
+Legacy person-specific or serialized instructions must not be cited when they conflict with these canonical sources.

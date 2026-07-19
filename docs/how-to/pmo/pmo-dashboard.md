@@ -5,15 +5,15 @@ Authority Level: Operational Guidance
 Owns: PMO dashboard generation, refresh, validation procedure, operator remediation flow, and GitHub Pages limitations
 Does Not Own: PMO lifecycle definitions, PMO issue contract, dashboard JSON specification, GitHub issues source records, or Cloudflare production deployment
 Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-DASHBOARD-SPECIFICATION.md
-Related Issues: #2101, #2299, #2313, #2471, #2516
-Last Reviewed: 2026-07-14
+Related Issues: #2101, #2299, #2313, #2471, #2516, #2610, #2611
+Last Reviewed: 2026-07-18
 ---
 
 # PMO Dashboard
 
 ## Purpose
 
-The PMO dashboard is a generated static GitHub Pages reporting surface for PMO-managed program and project work. GitHub issues remain the executable source of truth. The dashboard normalizes public-safe issue data into Active Programs, PMO Pipeline, Completed Programs, and Incomplete views.
+The PMO dashboard is a generated static GitHub Pages reporting surface for PMO-managed program and project work. GitHub issues remain the sole operational authority for PMO tracking, lifecycle, priority, stage, task relationships, and closeout state. The dashboard normalizes public-safe issue data into Active Programs, PMO Pipeline, Completed Programs, and Incomplete views. Generated JSON is reporting-only and must not override live Issue metadata.
 
 ## Scope
 
@@ -21,16 +21,17 @@ This how-to covers operator procedure for dashboard source fields, local generat
 
 ## Current known truth
 
-- GitHub issues are the live source for dashboard data.
+- GitHub issues are the live source for dashboard data and the sole operational authority for PMO state.
 - The generated dashboard is reporting-only.
 - PMO issue-contract authority lives in `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`.
 - PMO dashboard JSON/view/validation authority lives in `/docs/ops/pmo/PMO-JULY-2026-DASHBOARD-SPECIFICATION.md`.
 - Matching feature-branch pushes run the deterministic label-driven fixture and do not query live GitHub issue inventory.
-- Pushes to `main`, scheduled runs, and manual runs generate from live GitHub issues, validate tracked inventory, and upload dashboard artifacts.
+- Pushes to `main`, scheduled runs, and manual runs generate from live GitHub issues, validate the generated contract against current Issue-derived rows, and upload dashboard artifacts.
 - The deploy workflow regenerates and validates the dashboard before checking whether GitHub Pages is ready.
 - When GitHub Pages is enabled with GitHub Actions as the source, the workflow configures Pages, uploads the artifact, and deploys automatically.
 - When Pages is unavailable or uses a source other than GitHub Actions, deployment steps are skipped and the workflow reports the required operator action without misreporting dashboard generation or validation as failed.
 - GitHub Pages enablement is a one-time repository setting and cannot be performed by the workflow's default `GITHUB_TOKEN`.
+- Static `pmo-tracked-inventory.json` may hold explicit exclusions or offline fixtures; it must not prescribe live lifecycle or priority.
 
 ## Intended final state
 
@@ -97,7 +98,7 @@ display title = text right of pipe
 
 Child projects under an active parent program render nested beneath the parent in sequence order and do not duplicate as standalone Pipeline rows.
 
-Issues without the `pmo` label are excluded even when they use a recognized title prefix. Explicit exclusion rationale for non-PMO or historical rows lives in `scripts/pmo-dashboard/pmo-tracked-inventory.json`.
+Issues without the `pmo` label are excluded even when they use a recognized title prefix. Explicit exclusion rationale for non-PMO or historical rows may live in `scripts/pmo-dashboard/pmo-tracked-inventory.json` as a non-state exclusion list only. That file must not freeze or override live lifecycle or priority labels; see the dashboard specification and [`docs/reference/pmo/pmo-dashboard-single-authority-implementation-plan.md`](../../reference/pmo/pmo-dashboard-single-authority-implementation-plan.md).
 
 Contract details for lifecycle labels, priority labels, pipeline-stage labels, task issues, parent references, and Incomplete handling are owned by the PMO July 2026 Operating Model and dashboard specification.
 
@@ -187,11 +188,13 @@ Remediation procedure:
 
 The checked-in `site/pmo-dashboard/dashboard-data.json` is a generated snapshot, not live truth. It may be stale between operational builds; use its `generatedAt` timestamp to judge freshness. GitHub issues remain authoritative for current state, and a current-state live build is required before treating dashboard data as up to date.
 
-The build workflow performs live issue-inventory generation and validation every six hours, on matching pushes to `main`, and when manually dispatched. Matching feature-branch pushes run only the deterministic label-driven fixture so unrelated live PMO metadata changes or transient GitHub API conditions do not block a proposed branch change. The live build fails when dashboard JSON is missing, required views are absent, row fields are invalid, tracked inventory issues are missing or in the wrong lifecycle view, tracked inventory rows lack required priority data, `pmo:priority:none` appears, excluded inventory issues appear in dashboard output, completed task counts exceed total task counts, static files are missing, or issue links are invalid.
+The build workflow performs live issue-inventory generation and validation every six hours, on matching pushes to `main`, and when manually dispatched. Matching feature-branch pushes run only the deterministic label-driven fixture so unrelated live PMO metadata changes or transient GitHub API conditions do not block a proposed branch change. The live build fails when dashboard JSON is missing, required views are absent, row fields are invalid, `pmo:priority:none` appears, contract-invalid rows are placed in Active/Pipeline/Completed, excluded inventory issues appear in dashboard output, completed task counts exceed total task counts, static files are missing, or issue links are invalid.
 
-Tracked PMO inventory expectations live in `scripts/pmo-dashboard/pmo-tracked-inventory.json`. Live validation fails when a tracked issue disappears from dashboard output, lands in the wrong lifecycle view, or when an explicitly excluded issue appears as a dashboard row. PMO-tracked issues with invalid labels, task accounting, identity, or parent references must appear in Incomplete until remediated.
+Live validation must derive lifecycle and priority from current Issue metadata in the generated rows. It must not treat frozen `expectedLifecycle` / `expectedPriority` values in `scripts/pmo-dashboard/pmo-tracked-inventory.json` as operational authority. Until the runtime child under #2610 removes that enforcement, treat any remaining frozen-field comparison as a known defect documented in the single-authority implementation plan — not as correct operator guidance.
 
-Reconciliation audit evidence: `docs/ops/pmo/pmo-dashboard-tracking-audit-2299.md`.
+After runtime repair, residual inventory checks may only enforce explicit non-state exclusions and offline fixture expectations. PMO-tracked issues with invalid labels, task accounting, identity, or parent references must appear in Incomplete until remediated.
+
+Historical reconciliation audit evidence (non-authoritative for live state): `docs/ops/pmo/pmo-dashboard-tracking-audit-2299.md`.
 
 The deploy workflow runs after a successful live PMO dashboard CI build and can also be started manually. Deploy regenerates and validates the dashboard before evaluating Pages readiness so stale checked-in output is not intentionally deployed. A missing Pages site or a Pages source other than GitHub Actions produces an operator-action summary and skips deployment; it does not convert a successful dashboard build and validation into a false-red CI incident. Unexpected API, generation, validation, artifact, or deployment errors still fail the workflow.
 
@@ -231,3 +234,4 @@ The dashboard UI treats issue-derived fields as untrusted display text. Titles, 
 
 - PMO July 2026 Operating Model: `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`
 - PMO July 2026 Dashboard Specification: `/docs/ops/pmo/PMO-JULY-2026-DASHBOARD-SPECIFICATION.md`
+- Single-authority runtime repair plan: `/docs/reference/pmo/pmo-dashboard-single-authority-implementation-plan.md`

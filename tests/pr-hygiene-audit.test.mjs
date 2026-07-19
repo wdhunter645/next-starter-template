@@ -8,6 +8,7 @@ import {
   extractMarkdownSection,
   findIssueReferences,
   hasRequiredIssueLine,
+  hasVerificationEvidence,
   parseAllowedFiles,
   parseIntentLabel,
   parsePrClass,
@@ -114,6 +115,13 @@ describe('PR hygiene audit foundation', () => {
     expect(report.missingSections).toEqual([]);
     expect(report.hasRequiredPrClass).toBe(true);
     expect(report.hasRequiredIntentLabel).toBe(true);
+  });
+
+  it('rejects template Result placeholder as verification evidence (#2196)', () => {
+    const placeholderBody = stableBody.replace('Result: PASS', 'Result: PASS / FAIL / NOT RUN');
+    expect(hasVerificationEvidence(placeholderBody)).toBe(false);
+    expect(hasVerificationEvidence(stableBody.replace('Result: PASS', 'Result: FAIL'))).toBe(false);
+    expect(hasVerificationEvidence(stableBody)).toBe(true);
   });
 
   it('does not require retired lifecycle-database sections', () => {

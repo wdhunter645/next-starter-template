@@ -2,389 +2,253 @@
 Doc Type: Operations
 Audience: Human + AI
 Authority Level: Operational Authority
-Owns: GitHub issue closeout protocol, post-merge evidence requirements, bounded batch closeout, issue-mutation separation, atomic source-issue closeout, and successor queue advancement for LGFC program tasks
-Does Not Own: Merge authority, branch protection, workflow implementation, or issue mutation outside approved scope
-Canonical Reference: /docs/reference/pmo/lgfc-cursor-execution-contract.md
-Related Issues: #1411, #1409, #1379, #1255, #1335, #1548, #2359, #2360, #2376, #2380, #2566
-Last Reviewed: 2026-07-18
+Owns: Issue closeout evidence, profile-aware completion accounting, deterministic closeout, exception handling, parent/reporting reconciliation, and successor disposition
+Does Not Own: Merge authority, delivery or promotion decisions, project objectives, PR approval, Production authorization, recovery strategy, or workflow implementation
+Canonical Reference: /docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md
+Related Issues: #1411, #2359, #2640, #2641, #2639
+Last Reviewed: 2026-07-19
 ---
 
 # GitHub Issue Closeout Protocol
 
 ## Purpose
 
-Define how LGFC issue closeout evidence, comments, state changes, and queue
-handoffs are handled after a task PR merges.
+Define how LGFC tasks, projects, programs, releases, and incidents are reconciled after their required technical and decision evidence exists.
 
-## Scope
+Closeout is an Administration & Communications function. It records what happened and confirms no required work was lost. It does not replace implementation, PR approval, Promotion Candidate qualification, Production authorization, or Day-2 recovery authority.
 
-This document owns:
+## Core rules
 
-- required post-merge closeout evidence;
-- separation between evidence preparation and issue mutation;
-- bounded batch closeout authorization;
-- terminal completed-issue label reconciliation;
-- atomic source-issue closeout and successor queue advancement;
-- umbrella issue closeout exclusion policy;
-- Program 2 non-interference during Program 1 planning;
-- Cursor closeout recommendations and stop points.
+1. A successful deterministic closeout transaction must not be duplicated.
+2. Closeout blocks only the affected transition when a substantive invariant is missing.
+3. Routine administrative closeout does not block the next independent Development task.
+4. A task may complete at Development integration while its project continues toward Promotion Candidate.
+5. Promotion Candidate, Production, and incident closeout each require their own evidence.
+6. No closeout may claim that a skipped promotion profile was completed.
 
-This document does not own:
+## Completion levels
 
-- PR merge authority;
-- workflow YAML or closeout automation implementation;
-- issue closure, relabeling, or queue mutation without explicit authorization;
-- production configuration, D1 state, or runtime behavior.
+### Task closeout
 
-## Current Known Truth
+A Development task may close after:
 
-- Cursor may document closeout recommendations, but may not close issues,
-  relabel issues, advance queues, or mutate issue state unless the active source
-  issue explicitly authorizes that action.
-- Source-issue closure must not be separated from terminal label reconciliation
-  or required successor queue disposition. If successor state cannot be verified
-  or updated, the source issue remains in closeout verification and the blocker
-  is recorded.
-- Program 1 `#1411` planning must not mutate active Program 2 `#1255` issues.
-- Completed Program 1 `#1335` is historical evidence only and is not the closeout
-  parent for the new Program 1 cycle.
-- Workflow Automation planning may define closeout evidence requirements before
-  any workflow implementation begins.
-- Program, umbrella, master, and tracking issues are not closed by child task PR
-  closeout unless the PR source issue and operator instruction explicitly name
-  that umbrella issue for closure.
-- `gate-close-work-issue.yml` is a parked no-op workflow. It is not an effective
-  source-issue closeout owner.
-- Automatic post-merge source issue closeout is owned by
-  `.github/workflows/post-merge-closeout.yml` and the closeout scripts it invokes.
-- Pre-merge PR-to-issue accounting is owned by
-  `.github/workflows/ops-pr-issue-accounting.yml`.
+- required implementation and validation are complete;
+- the PR is integrated into the correct non-main branch or receives an authorized non-merge disposition;
+- protected review requirements are satisfied;
+- task evidence and terminal state are reconciled;
+- successor dependency state is recorded.
 
-## Intended Final State
+Task closeout does not mean the complete feature is Production-ready.
 
-- Every post-merge closeout action is supported by stable evidence.
-- Automation can later consume a clear closeout packet without guessing at merge,
-  issue, or queue state.
-- Completed source issues do not retain stale active or failure workflow labels.
-- A completed predecessor issue unblocks or explicitly halts its successor in the
-  same authorized closeout pass.
-- Batch closeout remains bounded by explicit Atlas/Bill authorization.
-- Cursor stops at evidence and recommendation unless mutation is separately
-  authorized.
-- Umbrella and program issues remain open until their own explicit closeout
-  authority exists.
+### Project closeout
 
-## Default Rule
+A project closes after:
 
-Implementation PRs do not close or relabel related GitHub issues directly. They
-may add documentation that recommends disposition and records the evidence needed
-for an authorized human or automation path.
+- all planned tasks are completed, removed, superseded, or explicitly deferred;
+- integrated Development scope is reconciled;
+- unresolved gaps are explicit;
+- Promotion Candidate and Production disposition are recorded when required;
+- parent and program reporting are current.
 
-Merge is not sufficient closeout evidence by itself.
+### Promotion Candidate closeout
 
-Source-issue closure is an atomic closeout action. A source issue must not be
-closed as complete unless the same authorized closeout pass also records terminal
-label reconciliation, parent or umbrella disposition, successor or queue
-disposition, and any remediation or tracker follow-up.
+A Promotion Candidate closes with one disposition:
 
-Scheduled watchers do not gain closeout mutation from advisory language. Source
-or program issue closure remains a protected action under
-`docs/ops/pmo/queue-watch-and-dispatch-protocol.md` (watcher profiles) and
-`docs/ops/reports/issue-mutation-closeout-permission-1724.md`. Only Bill,
-ChatGPT, or an explicitly authorized closeout controller may close after verified
-integration and canonical `CHATGPT CLOSEOUT`.
+- approved for Production;
+- returned to Development;
+- superseded by a newer candidate;
+- stopped/not planned.
 
-## Required Closeout Evidence
+Required evidence includes the exact candidate identity, qualification results, standards reconciliation, rollback readiness, unresolved gaps, and decision authority.
 
-A closeout packet must identify:
+### Production closeout
 
-- source issue;
-- merged PR;
-- merge commit;
-- validation commands and results;
-- changed-file scope;
-- reviewer, bot, and gate disposition status;
-- authorized issue action, if any;
-- terminal label reconciliation decision, if any;
-- queue advancement decision, if any;
-- successor issue actions, including unblock, continue, halt, or not applicable;
-- parent, project, program, or tracker actions, if any;
-- unresolved blockers or follow-up items;
-- rollback or remediation path when applicable.
+Production closeout requires:
 
-If any required evidence is missing, closeout must stop at evidence collection or
-blocker reporting.
+- exact approved candidate identity;
+- controlled merge/deployment evidence;
+- live verification;
+- rollback disposition;
+- Day-2 ownership transfer;
+- any incident or remediation state.
 
-## Post-Merge Sequence
+### Incident closeout
 
-1. Verify the PR merged.
-2. Record the merge commit.
-3. Verify required checks and post-merge validation status.
-4. Verify the source issue and active authorization.
-5. Prepare the closeout evidence packet.
-6. Reconcile terminal source-issue labels as part of the same authorized
-   closeout action when the source issue will be closed as completed.
-7. Apply issue comments, closure, relabeling, or queue advancement only when the
-   active source issue and Atlas/Bill path explicitly authorize those actions.
-8. Keep umbrella or program issues open when the task says they remain active.
-9. Advance the next task only after source task closeout is clean and queue
-   authority is clear.
+An incident closes after:
 
-## Merged PR with failed required pre-merge check
+- impact and cause are sufficiently documented;
+- containment and recovery actions are recorded;
+- recovery verification and sustained health meet policy;
+- remaining operational holds are released;
+- follow-up root-cause, hardening, standards, or documentation work is tracked;
+- paused work state is restored or explicitly re-planned.
 
-Merge authorization does not resolve a failed required pre-merge check that
-remained on the PR head at merge time.
+## Required closeout packet
 
-### Closeout rules
-
-When a merged PR still carried a failed required pre-merge check:
-
-1. Do not treat merge alone as closeout verified.
-2. Inspect Post-Merge Detection output for the merge commit before claiming
-   source-issue closeout or successor advancement.
-3. When post-merge validation fails, the source issue remains in closeout
-   verification or receives failure disposition; do not close it as completed
-   unless Bill/ChatGPT records an accepted exception with authority citation.
-4. Record failed gate name, workflow run, job, and step evidence in the
-   closeout packet when available.
-5. Link the canonical remediation issue and any root-cause ops issue (for
-   example ZIP history remediation) as separate tracks.
-6. Halt queue advancement until remediation posture is dispositioned or an
-   accepted exception is recorded on the parent program or source issue.
-
-### Operator procedure
-
-Follow `docs/how-to/ci/merged-pr-failed-pre-gate-followup.md` for verification
-checklist and manual fallback when automation does not create or update the
-expected remediation issue.
-
-Validation surface reference: `docs/reference/ci/post-merge-validation-surface.md`
-(merged PR with failed required pre-merge check).
-
-## Atomic source-issue closeout and successor advancement
-
-A completed source issue may be closed only inside an atomic closeout pass. The
-same pass must decide and record the successor state before reporting closeout as
-clean.
-
-### Required atomic actions
-
-When closing a source issue as completed, the authorized closeout actor must:
-
-1. read the source issue state, labels, body, and latest closeout-relevant
-   comments;
-2. confirm the merged PR, merge commit, validation status, and accepted
-   exceptions;
-3. compute and apply terminal source-issue labels in the same mutation path as
-   closure;
-4. identify successor, dependent, parent, project, program, tracker, and
-   remediation issues named by the source issue, PR body, parent issue, or queue
-   map;
-5. decide for each successor whether it is unblocked, still blocked, explicitly
-   deferred, or not applicable;
-6. update or comment on the successor issue when it is unblocked or remains
-   blocked for a documented reason;
-7. comment on the parent, project, or program issue when the parent actively
-   tracks child status or queue progression;
-8. record tracker or status-index follow-up only when the source issue or PR
-   explicitly owns that tracker/status surface;
-9. leave umbrella, master, project, and program issues open unless the bounded
-   closeout instruction explicitly names them for terminal closure;
-10. verify the final source issue state, terminal labels, successor state, and
-    queue continuation result before reporting closeout verified.
-
-### Successor advancement rule
-
-If the closed issue is a predecessor in a serial or partially serial queue, the
-next eligible issue must be advanced in the same closeout pass unless Bill or the
-source issue explicitly authorizes a halt or parallel execution exception.
-
-Advancement means one of the following, depending on the issue's existing label
-model and body vocabulary:
-
-- remove or supersede blocked-pending-predecessor state;
-- add or retain the appropriate active, assigned, implementation-ready, or
-  `agent:ChatGPT` routing state;
-- post a closeout/continuation comment naming the cleared predecessor and the
-  next allowed action;
-- record that the successor remains blocked and why.
-
-Do not close the predecessor as complete if the successor cannot be identified,
-its block state cannot be reconciled, or queue authority is unclear. Instead,
-leave the predecessor in closeout verification and record the blocker.
-
-### Closeout packet template
-
-Authorized closeout comments should use this minimum structure when a source
-issue is closed or intentionally left open after merge:
+A closeout packet identifies:
 
 ```text
-CLOSEOUT VERIFIED
-Source issue: #____
-Merged PR: #____
-Merge commit: ______
-Validation: pass / accepted exception / failed
-Accepted exceptions: none / <exception and authority>
-Terminal labels reconciled: yes / no / not applicable
-Issue state: closed completed / remains open / blocked
-Successor issue action: unblocked #____ / remains blocked #____ / no queue action / halted
-Parent/project/program action: updated #____ / no parent action
-Tracker/status-index action: updated <path-or-issue> / no tracker action
-Remediation action: none / created #____ / remains open #____
-Queue continuation: continue / halt / not applicable
+Closeout level: task | project | promotion-candidate | production | incident
+Subject:
+Source authority:
+Profile:
+PR / candidate / deployment / incident identity:
+Validation and review evidence:
+Decision authority:
+Terminal state:
+Parent/program/reporting action:
+Successor or resume action:
+Unresolved gaps or follow-up:
+Rollback or recovery evidence:
+Exceptions:
 ```
 
-A closeout report that does not include successor or queue disposition is not
-closeout verified.
+Missing evidence routes to one bounded exception. It does not justify guessing.
 
-## Umbrella issue closeout exclusion policy
+## Deterministic post-merge closeout
 
-Umbrella, master, program, parent, and tracking issues are excluded from automatic
-child task closeout. A task PR may close only its single source issue unless the
-operator explicitly authorizes a bounded batch or umbrella closeout action.
+Successful post-merge automation is the primary merge-triggered administrative actor when the result is mechanically provable.
 
-The exclusion applies even when a PR body references an umbrella issue for
-context. References such as `Related Issues`, `Program`, `Parent`, `Umbrella`,
-`Part of`, or narrative links are not closeout authority.
+It may:
 
-Automation and agents must treat these as non-closeout references by default:
+- verify merge/integration identity;
+- reconcile source-Issue labels and state;
+- record task-level completion;
+- update parent/project reporting;
+- disposition declared successors;
+- create or update one remediation/exception record;
+- verify the final administrative state.
 
-- Program umbrella issues, including Program #1500 parent tracking issues;
-- master planning issues;
-- queue or roadmap issues;
-- issues that remain active after a child task completes;
-- remediation issues unless duplicate-remediation cleanup is explicitly in scope.
-- `PROJECT:` and `PROGRAM:` titled source issues linked by task PRs, unless
-  `## POST-MERGE ISSUE DISPOSITION` explicitly authorizes terminal close.
+It must not:
 
-Post-merge closeout automation enforces this structurally:
+- claim Promotion Candidate or Production success from a Development merge;
+- invent acceptance, approval, or Production authority;
+- close an umbrella/project/program without explicit authority;
+- duplicate an already successful closeout;
+- block independent Development solely because prose, labels, or reporting remain pending.
 
-1. `PROJECT:` / `PROGRAM:` source issues remain open after task PR merge unless
-   disposition explicitly authorizes terminal close.
-2. Keep-open language in `## POST-MERGE ISSUE DISPOSITION` or
-   `## POST-MERGE CLOSEOUT CHECKLIST` prevents automatic source-issue closure.
-3. Incorrect umbrella closure on a prior merge is auto-reopened on the next
-   successful closeout sync when the umbrella guard applies.
+## Successor handling
 
-An umbrella issue may be closed only when all of the following are true:
+Successor eligibility depends on explicit dependency, collision, hold, and authority state—not routine predecessor closeout prose.
 
-1. the closeout packet names the umbrella issue as a closure target;
-2. all child tasks are complete or intentionally canceled;
-3. the operator authorizes umbrella closure in the active instruction path;
-4. the closeout comment states that no active child or queue item remains;
-5. terminal label reconciliation is applied in the same closeout action.
+### Independent successor
 
-If any condition is missing, the umbrella issue remains open and the child task
-closeout proceeds only for the child source issue.
+An independent Development task may start when its source authority and dependencies permit, even if the previous task remains in PR review or administrative closeout.
 
-## Terminal Completed-Issue Label Policy
+### Technical successor
 
-LGFC uses a `status:complete` terminal label for completed source issues. A
-closed source issue with `state_reason: completed` must retain only stable
-non-status labels plus `status:complete`.
+A successor with `technical-integration`, protected, resource-collision, launch-authority, or operational dependencies remains blocked until the applicable condition clears.
 
-A completed source issue must not retain active or failure-state labels,
-including:
+### Administrative-only relationship
 
-- `status:queued`
-- `status:assigned`
-- `status:pr-draft`
-- `status:implementation`
-- `status:review`
-- `status:post-merge-verify`
-- `status:failed`
+Administrative-only state never blocks implementation eligibility.
 
-The controller or authorized Atlas closeout step applies this reconciliation
-after merge verification and before queue advancement. The closeout action must:
+Closeout records the successor disposition but does not create the dependency.
 
-1. read the source issue state and labels;
-2. compute the terminal label set as existing stable non-status labels plus
-   `status:complete`;
-3. remove all non-terminal workflow status labels listed above;
-4. close the source issue with `state_reason: completed` when closure is
-   authorized;
-5. verify the final issue state and label set before reporting closeout clean.
+## Parent and program accounting
 
-Closure and terminal label cleanup must not be split into separate follow-up
-tasks. If the controller or Atlas closeout step cannot complete the label
-reconciliation, the source issue remains in closeout verification and the
-blocker is recorded instead of advancing the queue.
+Administration & Communications reconciles:
 
-Terminal label cleanup, source issue closure, and required successor queue
-disposition must not be split into separate follow-up tasks. If any one of those
-steps cannot be completed, closeout remains blocked and queue advancement halts
-unless Bill explicitly authorizes a recorded exception.
+- task completion and remaining work;
+- project and program status;
+- Promotion Candidate and Production state;
+- deferred, superseded, or removed work;
+- unresolved defects and Production risk;
+- active incidents and operational holds;
+- dashboards and reports explicitly governed by the source authority.
 
-## Cursor Closeout Boundary
+Parent, program, umbrella, and tracking Issues remain open until their own closeout authority exists.
 
-Cursor may:
+## Non-merge dispositions
 
-- report closeout evidence;
-- recommend post-merge issue actions;
-- update documentation with closeout requirements;
-- identify blockers or missing evidence.
+An Issue may close without a merged PR when the source authority records a valid disposition such as:
 
-Cursor may not:
+- duplicate;
+- superseded;
+- not planned;
+- canceled;
+- evidence-only Sandbox result;
+- administrative-only completion;
+- no-change verification.
 
-- close issues;
-- relabel issues;
-- change issue state labels;
-- advance queues;
-- mutate Program 2 issues from Program 1 planning;
-- create child issues;
-- merge PRs.
+Non-merge closeout must not falsely represent implementation, qualification, Production, or recovery success.
 
-Recommendations are not authorization.
+## Closeout exceptions
 
-## Comment Content
-
-Each authorized closeout comment should include:
-
-- action reason;
-- source issue;
-- evidence document path or PR body section;
-- merged PR reference;
-- merge commit;
-- validation summary;
-- terminal label reconciliation result when the issue is closed as completed;
-- successor issue action or explicit no-queue-action statement;
-- parent, project, program, tracker, or status-index action when relevant;
-- superseded-by or deferred-to reference when relevant;
-- statement of whether the issue remains open or is closed;
-- queue advancement result or explicit "no queue action" statement.
-
-## Batch Authorization
-
-Bill may authorize a bounded batch such as:
+Exception lifecycle:
 
 ```text
-After PR <number> merges, apply the documented comments and close only <issue list>.
-Add comment-only handoffs to <issue list>.
-Do not touch any other issues.
+DETECTED -> RECORDED -> ROUTED -> CLARIFICATION OR REMEDIATION -> VERIFIED -> RESOLVED
 ```
 
-Atlas may then act within that exact scope. Cursor may prepare evidence for the
-batch, but may not execute issue mutation unless the active source issue
-explicitly grants that authority.
+One exception record identifies:
 
-## Program 2 Non-Interference
+- affected subject and closeout level;
+- missing or contradictory invariant;
+- current evidence;
+- affected blocking scope;
+- owning role;
+- required clarification or remediation;
+- resume/successor effect;
+- resolution evidence.
 
-Program 1 `#1411` planning must not close, relabel, queue, or otherwise mutate
-Program 2 `#1255` issues. Any future Program 2 closeout must be authorized by an
-active Program 2 source issue or by a separate Atlas/Bill closeout instruction.
+Reporting lag and cosmetic metadata do not block independent work. Missing authority, validation, approval, candidate identity, Production evidence, safety, or collision state blocks only the affected transition unless the issue is shared.
 
-## Workflow Automation Design Hook
+## Lightweight clarification
 
-Future workflow automation may use this protocol as the design target for:
+When closeout evidence reveals a simple inconsistency:
 
-- closeout evidence packet schemas;
-- post-merge verification gates;
-- terminal completed-issue label reconciliation;
-- atomic successor advancement checks;
-- parent/project/program progress comment routing;
-- batch closeout safety checks;
-- queue advancement preconditions;
-- umbrella issue exclusion checks;
-- issue mutation allowlists.
+```text
+PROBLEM FOUND
+  -> route to the role that made the controlling decision
+  -> GUIDANCE or ADJUSTMENT
+  -> Administration & Communications records
+  -> RESUME or CLOSEOUT
+```
 
-No workflow implementation is authorized by this protocol update alone.
+Use `PLAN CHANGE REQUIRED` only when the answer changes product outcome, architecture, acceptance criteria, dependencies, delivery model, promotion path, Production boundary, or recovery strategy.
+
+## Operational hold and resume
+
+During a broad Day-2 assessment hold, closeout preserves active task, branch, claim, candidate, and resume state.
+
+After Day-2 Operations authorizes hold narrowing or release, Administration & Communications:
+
+- restores unaffected work;
+- prevents duplicate claims;
+- preserves superseding decisions;
+- records exact resumed tasks and remaining targeted holds.
+
+## Closeout comment format
+
+```text
+CLOSEOUT
+Level: <task | project | promotion-candidate | production | incident>
+Subject: #____
+Profile: <sandbox | development | promotion-candidate | production | day-2>
+PR / candidate / deployment: ____ / not applicable
+Evidence: pass / accepted exception / failed / not applicable
+Decision authority: ____
+Terminal state: ____
+Successor / resume action: ____
+Parent/program/reporting action: ____
+Unresolved gaps: none / ____
+Exception: none / #____
+```
+
+## Idempotency
+
+- Re-read current state before mutation.
+- Skip an action when the intended state already exists.
+- Do not overwrite newer check, review, decision, candidate, deployment, incident, or closeout evidence.
+- Use stable action/exception identifiers when automated.
+- Re-fetch and verify the final state.
+
+## Required references
+
+- Administration & Communications policy: `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md`
+- Administration contract: `docs/reference/operations/administrative-control-lane-contract.md`
+- Lane/profile contract: `docs/reference/operations/operating-lanes-and-promotion-profiles.md`
+- Delivery and promotion policy: `docs/governance/DELIVERY-AND-RELEASE.md`
+- Day-2 Operations policy: `docs/governance/OPERATIONS-AND-RECOVERY.md`
+- Queue/dispatch procedure: `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`

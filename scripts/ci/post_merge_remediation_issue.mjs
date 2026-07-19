@@ -7,6 +7,16 @@ import { parseRemediationIssue } from './close_duplicate_remediation_issues.mjs'
 import { githubRepoRequest } from './github_issue_api.mjs';
 import { REMEDIATION_ISSUE_LABEL, REMEDIATION_TITLE_PREFIX } from './post_merge_source_issue_closeout.mjs';
 
+/** Keep aligned with HISTORICAL_PR_BODY_HYGIENE_FAILURE_CODES in post_merge_validator.mjs. */
+const HISTORICAL_PR_BODY_HYGIENE_FAILURE_CODES = new Set([
+	'missing_required_section',
+	'missing_advisory_section',
+]);
+
+function isHistoricalPrBodyHygieneFailure(failure = {}) {
+	return HISTORICAL_PR_BODY_HYGIENE_FAILURE_CODES.has(String(failure?.code || '').trim());
+}
+
 export const CLOSEOUT_RUNTIME_ERROR_CODE = 'closeout_runtime_error';
 export const BATCH_CIRCUIT_BREAKER_THRESHOLD = 3;
 export const BATCH_CIRCUIT_BREAKER_TITLE_PREFIX = 'Post-merge closeout batch circuit breaker';
@@ -261,7 +271,8 @@ export async function upsertCircuitBreakerIncident({
 }
 
 export function blockingCloseoutFailures(result = {}) {
-	const blockingMetadata = (result.metadata_failures || []).filter((failure) => failure?.severity !== 'advisory');
+	const blockingMetadata = (result.metadata_failures || []).filter((failure) =>
+		failure?.severity !== 'advisory' && !isHistoricalPrBodyHygieneFailure(failure));
 	const blockingWorkflows = (result.workflow_failures || []).filter((failure) => failure?.required === true);
 
 	return [
@@ -287,7 +298,6 @@ export function requiresGovernanceException(result = {}) {
 		'closeout_blocker_declared',
 		'unresolved_auto_repair_scaffold',
 		'forbidden_placeholder_token',
-		'missing_required_section',
 		'missing_source_issue',
 		'ambiguous_source_issue_candidates',
 		'source_issue_authority_conflict',
