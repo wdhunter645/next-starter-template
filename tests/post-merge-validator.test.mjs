@@ -279,6 +279,31 @@ describe('post-merge metadata validation', () => {
 		expect(result).toMatchObject({ status: 'pass', remediation_required: false, sync_action: 'post_merge_success' });
 	});
 
+	it('records #2117-style missing_required_section as historical hygiene without failing post-merge closeout', () => {
+		const bodyMissingChangeSummary = baseBody.replace('## CHANGE SUMMARY', '## SUMMARY ONLY');
+		const failures = metadataFailures(mergedPr({ body: bodyMissingChangeSummary }), () => true);
+		const result = buildResult({
+			pr: mergedPr({ body: bodyMissingChangeSummary }),
+			resolution: { pr: '2116' },
+			metadata: failures,
+		});
+
+		expect(preMergeReadinessBodyFailures(bodyMissingChangeSummary)).toContainEqual(expect.objectContaining({
+			code: 'missing_required_section',
+		}));
+		expect(failures).toContainEqual(expect.objectContaining({
+			code: 'missing_required_section',
+			severity: 'advisory',
+			message: expect.stringContaining('historical PR-body hygiene'),
+		}));
+		expect(blockingMetadataFailures(failures).filter((failure) => failure.code === 'missing_required_section')).toEqual([]);
+		expect(result).toMatchObject({
+			status: 'pass',
+			remediation_required: false,
+			sync_action: 'post_merge_success',
+		});
+	});
+
 	it('treats optional-remediation-failure workflow noise as non-blocking success', () => {
 		const failures = [
 			{

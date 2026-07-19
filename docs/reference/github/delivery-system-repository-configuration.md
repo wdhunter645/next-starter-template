@@ -70,17 +70,19 @@ Protected Model B child PRs use `protected-change-review` instead of `component-
 | Auto-integration blocked | protected changes, failed/pending checks, component red state, hold labels, branch mismatch, missing component master |
 | Production merge | promotion PR only — no child PR may target `main` for feature work |
 
-### As-built state (2026-07-15)
+### As-built state (2026-07-16)
 
 | Setting | Current value | Notes |
 | --- | --- | --- |
-| `component/delivery-system-v1` branch | exists at `69cc81fba57aba0a8436fd6883db62755493bac8` | includes Pilot PR #2527 |
+| `component/delivery-system-v1` branch | exists at `0767a2125afd55e28be21916960e763e5e29a583` | includes Pilot #2527, remediations, #2579 main sync |
 | Component ruleset | none | no dedicated ruleset; Chat still performs protected-child and promotion decisions |
 | Child auto-integration workflow | present | `.github/workflows/component-child-integration.yml`; publishes `Component Integration Eligibility` |
-| Repo `allow_auto_merge` | `false` | confirmed live via GitHub API on 2026-07-15; workflow no-ops GraphQL enablement when false |
-| Sync gap vs `main` | 6 commits on `main` not in component; 15 component commits not in `main` | measured 2026-07-15 against `main` `74b4776f50c6ab643eb1efd5ad25fab8650e6602`; gating rationale in `docs/ops/reports/delivery-system-v1-promotion-readiness.md` |
+| Repo `allow_auto_merge` | `false` | confirmed live via GitHub API on 2026-07-16; workflow no-ops GraphQL enablement when false |
+| Sync gap vs `main` | 0 commits on `main` not in component; 34 component commits not in `main` | measured 2026-07-16 against `main` `90d2e391ef67436987568e65fcddf9db872a1a06`; gating rationale in `docs/ops/reports/delivery-system-v1-promotion-readiness.md` |
+| Live eligible-child proof | PR #2540 | artifact `eligible=true`, `requiresChatReview=false`; auto-merge not claimed while `allow_auto_merge=false` |
+| Promotion release validation | PASS at #2511 head `0767a212…` | `quality` + `gitleaks` green; PR remains draft/held |
 
-Component child integration automation is implemented (#2498). Live non-protected eligible-child auto-integration remains unproven; repository `allow_auto_merge=false` is a structural blocker for hands-off enablement. See `docs/ops/reports/delivery-system-v1-promotion-readiness.md`.
+Component child integration automation is implemented (#2498). Live non-protected eligible-child eligibility is proven (#2540); repository `allow_auto_merge=false` remains a structural blocker for hands-off enablement. See `docs/ops/reports/delivery-system-v1-promotion-readiness.md`.
 
 ## `main` production approval controls
 
@@ -195,21 +197,21 @@ Intent labeler maps `.github/pull_request_template.md` under `intent:docs` per `
 
 Capture before any promotion or ruleset change. Restoration operator procedure lives in `docs/how-to/delivery/manage-component-integration.md` (section **Restore repository configuration after failed promotion**).
 
-### Snapshot (2026-07-15)
+### Snapshot (2026-07-16)
 
 | Asset | Value |
 | --- | --- |
-| `main` SHA | `74b4776f50c6ab643eb1efd5ad25fab8650e6602` |
+| `main` SHA | `90d2e391ef67436987568e65fcddf9db872a1a06` |
 | `main` ruleset id | `15885337` |
 | `main` ruleset name / enforcement | `Main` / `active` |
 | Required checks | `quality`, `gitleaks` |
 | `allow_auto_merge` | `false` |
 | `allow_squash_merge` | `true` |
-| Component branch head | `component/delivery-system-v1` @ `69cc81fba57aba0a8436fd6883db62755493bac8` |
-| Promotion PR | #2511 (open draft; labels include `status:changes-requested` as of 2026-07-15) |
+| Component branch head | `component/delivery-system-v1` @ `0767a2125afd55e28be21916960e763e5e29a583` |
+| Promotion PR | #2511 (open draft; held; Quality PASS; awaiting Chat/Bill production authorization) |
 | PR template path | `.github/pull_request_template.md` |
 | Issue templates | `.github/ISSUE_TEMPLATE/{agent-task,bug_report,delivery-task,feature_request,homepage-execution-plan,config}.yml` |
-| Recent github-pages deployment SHA (sample) | `66c3ca75c1c74d7b7154cf05c57ed604295eb426` |
+| Recent github-pages deployment SHA (sample) | `9f87b4bcb514bf8feeaee22b688cde704e8eb21b` |
 
 ## Canonical references
 

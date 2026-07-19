@@ -2,11 +2,11 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Project Contract
-Owns: Repository-scoped self-hosted runner identity, labels, trusted invocation policy, and rollout state for Project #2294
-Does Not Own: Host registration, project launch, workflow migration, deployment, or production authorization
+Owns: Repository-scoped self-hosted runner identity, labels, trusted invocation policy, rollout state, and control-plane placement for Project #2294
+Does Not Own: Host registration, project launch, workflow migration, deployment, production authorization, or the meaning of lane decisions
 Canonical Reference: /config/github-actions/repository-runner.json
-Related Issues: #2294, #2554, #2593
-Last Reviewed: 2026-07-17
+Related Issues: #2294, #2554, #2593, #2640, #2641
+Last Reviewed: 2026-07-19
 ---
 
 # LGFC Repository Runner Contract
@@ -17,11 +17,34 @@ Define the repository-side contract for the Chromebook Linux GitHub Actions runn
 
 Because the repository is public, the bootstrap runner is repository-scoped, read-only, and manual-only. It must not accept pull-request, fork, push, schedule, deployment, or secret-bearing work.
 
+## Operating-model placement
+
+The repository runner is shared communications and control-plane infrastructure within the vertical **Administration & Communications** lane.
+
+It provides the repository “dial tone” used by the horizontal lanes to route authorized events, assignments, evidence, acknowledgments, holds, resumes, and deterministic automation.
+
+```text
+Horizontal lane decides
+  -> Administration & Communications records and routes
+  -> runner/controller transports or executes authorized automation
+  -> Administration & Communications confirms the result
+```
+
+The runner does not own the meaning or authority of an event. It must not make product, design, implementation, PR-approval, incident-classification, recovery-strategy, or production-promotion decisions.
+
+Split responsibility:
+
+- **Administration & Communications** owns event transport, routing semantics, acknowledgment, retry, escalation, and communication-health state.
+- **Implementation / Operations** owns creation and onboarding of runner-backed workflows.
+- **Day-2 Operations** owns the host, systemd service, capacity, patching, security, availability, stop/start, rollback, and recovery.
+- The originating horizontal lane owns the meaning and authorization of the work request.
+
 ## Canonical files
 
 - `config/github-actions/repository-runner.json`
 - `.github/workflows/repository-runner-health.yml`
 - `docs/how-to/ci/configure-lgfc-repository-runner.md`
+- `docs/reference/operations/operating-lanes-and-promotion-profiles.md`
 
 ## Identity
 
@@ -63,7 +86,7 @@ Permitted use:
 manual health and observe-only validation
 ```
 
-Existing workflows must remain on their current runners until the host is registered, the health workflow passes, Project #2294 reaches the applicable Go boundary, and Bill authorizes a specific workflow migration.
+Existing workflows must remain on their current runners until the host is registered, the health workflow passes, Project #2294 reaches the applicable Go boundary, and the applicable role authorizes a specific workflow migration.
 
 ## Promotion conditions
 
@@ -73,7 +96,19 @@ Existing workflows must remain on their current runners until the host is regist
 4. Host capability and storage checks pass.
 5. Public-repository isolation rules remain enforced.
 6. Rollback is proven.
-7. Bill approves each workflow migration.
+7. The applicable role approves each workflow migration.
+8. The workflow’s promotion profile permits runner execution.
+9. No workflow may bypass Sandbox, Development, Promotion Candidate, or Production transition rules.
+
+## Communication failure
+
+Runner unavailability, queued-job failure, lost acknowledgment, or unexpected workload routing is a communications/control-plane fault.
+
+- Administration & Communications records and routes the fault.
+- Day-2 Operations restores or disables the host/service.
+- The originating lane determines whether work may proceed through another authorized path.
+
+If any unexpected workflow is routed to the Chromebook, stop the service and disable the runner before investigation.
 
 ## Disable and rollback
 

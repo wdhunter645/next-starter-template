@@ -2,104 +2,245 @@
 Doc Type: Operations
 Audience: Human + AI
 Authority Level: Operational Authority
-Owns: LGFC queue watch, canonical dispatch, local Cursor wake routing, broad ChatGPT review, silent-stall detection, lane-aware continuation, and process-remediation routing
-Does Not Own: Product scheduling configuration, production approval, credentials, repository settings, destructive actions, or automatic merge to main
-Canonical Reference: /docs/ops/ai/chatgpt-cursor-handoff-workflow.md
-Related Issues: #2550, #2546, #2294, #2593-#2601
-Last Reviewed: 2026-07-18
+Owns: Repository queue watch, cross-lane dispatch, local Cursor wake routing, acknowledgment, stale-communication recovery, profile-aware continuation, and bounded administrative reconciliation
+Does Not Own: Product or Engineering decisions, PR approval, Production authorization, recovery strategy, workflow implementation, credentials, or project objectives
+Canonical Reference: /docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md
+Related Issues: #2396, #2492, #2640, #2641, #2639
+Last Reviewed: 2026-07-19
 ---
 
 # Queue Watch and Dispatch Protocol
 
 ## Purpose
 
-Keep approved LGFC execution lanes moving by converting live GitHub state into one deterministic next action without creating a second authority model.
+Keep authorized LGFC work moving by translating current GitHub state into one safe next communication or action without serializing independent work.
 
-## Operating truths
+Administration & Communications is the vertical control lane. It follows:
+
+- PMO / Engineering;
+- Implementation / Operations;
+- Day-2 Operations;
+- Sandbox, Development, Promotion Candidate, and Production profiles.
+
+## Current truths
 
 - GitHub Issues are executable task authority.
-- Labels are current state; canonical comments are durable events.
-- Local Cursor pickup requires `agent:cursor`, `handoff:ready`, dependency eligibility, and the latest valid assignment/response.
-- Assignee, PR assignment, and alert state are convenience/priority signals only.
-- Routine non-main progress does not create a ChatGPT stop.
-- `CHATGPT HANDOFF` is reserved for genuine blockers, decisions, exceptions, and production boundaries.
-- Any automatic merge to `main` is prohibited.
+- Labels and comments make work detectable; they do not prove agent pickup.
+- The runner/controller is transport and deterministic execution infrastructure, not decision authority.
+- Development may continue on an independent task while prior tasks are review- or administration-pending.
+- Promotion Candidate is a mandatory barrier before Production.
+- Sandbox cannot route directly to Promotion Candidate or Production.
+- Development cannot route directly to Production.
+- Administration & Communications is non-blocking unless a substantive invariant fails.
+- Day-2 Operations may authorize a broad assessment hold while Production impact is unknown and narrow it after scope, containment, and ownership are understood.
 
-## Deterministic dispatcher transaction
+## Dispatcher inputs
 
-1. Load current repository authority and the active project manifest.
-2. Rebuild live Issue, PR, check, review, handoff, dependency, integration, closeout, workflow-health, claim, and dead-letter state.
-3. Evaluate every approved lane; do not stop scanning because one lane is blocked.
-4. Reject ambiguous, stale, contradictory, consumed, or colliding state.
-5. Rank only existing authorized actions; never invent work to use capacity.
-6. Select one action with a stable action key and expected-state revision.
-7. Re-read live state immediately before mutation.
-8. Apply a bounded mutation or record an exact halt/idle reason.
-9. Preserve evidence and stop.
+Every cycle inspects, as applicable:
 
-## Cursor assignment
+- source Issues and project/program parents;
+- lane and profile state;
+- assignments and labels;
+- latest structured communication events;
+- PRs, branches, candidate SHAs, checks, reviews, and deployments;
+- dependencies and collisions;
+- operational incidents and holds;
+- acknowledgments and stale events;
+- closeout and successor state;
+- runner/controller communication health.
 
-1. Confirm the source issue is open, active, and dependency-eligible.
-2. Confirm no colliding `handoff:in-progress` claim exists in the lane.
-3. Post one bounded `CURSOR ASSIGNMENT`.
-4. Set `agent:cursor` and `handoff:ready`.
-5. Do not claim pickup until `CURSOR ACK` exists and the labels transition to `handoff:in-progress`.
+Alerts are hints. They do not narrow repository review or create authority.
 
-## Cursor completion
+## Event classes
 
-On `CURSOR COMPLETE`, verify PR base, required checks, review state, component integration, and task acceptance evidence. Integrate only to the authorized non-main project branch. Activate only the exact manifest-eligible successor. Route terminal promotion to Bill/ChatGPT.
+The dispatcher recognizes:
 
-## Broad ChatGPT watcher cycle
+- `PROBLEM FOUND`
+- `GUIDANCE`
+- `ADJUSTMENT`
+- `HOLD`
+- `PLAN CHANGE REQUIRED`
+- `RESUME`
+- `IMPLEMENTATION HANDOFF`
+- `PR REVIEW REQUEST`
+- `APPROVED FOR INTEGRATION`
+- `PROMOTION CANDIDATE READY`
+- `PRODUCTION GO`
+- `OPERATIONAL INCIDENT`
+- `RECOVERY VERIFIED`
+- `CLOSEOUT`
 
-Every watcher cycle must:
+Legacy ChatGPT/Cursor markers remain supported adapters until runtime migration is complete.
 
-1. initialize the GitHub connector and discover granted capabilities;
-2. load current repository authority;
-3. inspect repository status broadly rather than querying only alerts or `agent:ChatGPT`;
-4. include active Issues, PRs, checks, reviews, dependencies, handoffs, component integration, closeout, workflow health, claims, and dead letters;
-5. use Alerts as priority hints only;
-6. rank candidates by safety, priority, dependency-unblock value, objective impact, and role ownership;
-7. acquire one stable leased claim;
-8. re-read live state;
-9. perform the full connector-supported action or yield;
-10. record `CHATGPT WATCH RESULT` or the exact halt/capability reason.
+## Lane/profile resolution
 
-A watcher must not report “no action” solely because no alert or `agent:ChatGPT` label exists.
+For each candidate action, determine:
 
-## Trigger classes
+```text
+Subject:
+Durable owner role:
+Horizontal lane:
+Promotion profile:
+Current authority:
+Blocking scope:
+Operational hold:
+Safe next action:
+```
 
-| Trigger | Action |
-| --- | --- |
-| Eligible Cursor task | Assign and set ready labels. |
-| Ready task without ACK | Verify event/poller health; emit one deduplicated alert after threshold. |
-| Routine Cursor progress | Monitor without ownership transfer. |
-| Genuine handoff | ChatGPT reviews and responds. |
-| Green eligible non-main PR | Integrate only when the approved mode and expected state permit. |
-| Integrated predecessor | Activate exact successor. |
-| Required CI failure | Classify; rerun only an authorized transient failure. |
-| Ambiguous/permanent failure | Record one dead letter and escalate safely. |
-| Production or repository-setting boundary | Route to Bill/ChatGPT; never auto-merge `main`. |
+Fail closed when any required fact is ambiguous.
 
-## Lane and collision rules
+## Normal Development dispatch
 
-- Serial predecessors remain serial.
-- Independent non-colliding lanes may proceed.
-- One active local Cursor claim is allowed per lane unless the manifest explicitly permits more.
-- File/Issue mutation overlap blocks concurrent action.
-- Earlier unexpired watcher claims win; later watchers yield.
-- Expired claims may be superseded only after live-state recheck.
+1. Confirm PMO / Engineering recorded implementation Go.
+2. Confirm the task is in Development and has a valid source Issue.
+3. Confirm dependencies, branch, allowlist, and operational-hold state.
+4. Confirm one active Implementation / Operations claim per approved execution stream unless authority permits more.
+5. Route the assignment or wake event.
+6. Do not report work active until a later comment, commit, or PR update proves pickup.
+7. When `IMPLEMENTATION HANDOFF` occurs, move only that task to review/integration disposition.
+8. Make the next independent Development task eligible when dependencies and collision state allow it.
 
-## Alerts and idle evidence
+Administrative closeout of the prior task is not a universal successor gate.
 
-Alerts are durable, revision-keyed, deduplicated, and non-authoritative. Every approved idle lane records a precise reason such as dependency blocked, awaiting ACK, required check running, review requested, production approval required, claim collision, or connector capability unavailable.
+## Sandbox dispatch
 
-## Disable and rollback
+1. Confirm PMO / Engineering authorized the experiment and its question.
+2. Confirm isolation and no Production path.
+3. Route the bounded experiment.
+4. Record result as discard, evidence-only, or adopt into Development.
+5. For adoption, require a normal Development work package.
+6. Block any direct Sandbox-to-Promotion Candidate or Sandbox-to-Production transition.
 
-Set mode to `disabled`, disable scheduled mutation, stop the local poller while preserving state, disable watchers, expire active claims, disable non-main integration, and restore manual assignment/review/closeout. Preserve all Issues, comments, manifests, Alerts, claims, dead letters, and reports.
+## Promotion Candidate dispatch
 
-## Related authority
+1. Confirm the exact integrated Development candidate identity.
+2. Confirm qualification requirements and evidence owners.
+3. Route applicable integrated, regression, load/performance, security, migration, rollback, readiness, and standards checks.
+4. Route subjective or protected findings to PR Approver / Engineering or the owning role.
+5. Record Go, No-Go, or return-to-Development.
+6. Do not route Production until the candidate is approved and unchanged.
 
-- Handoff state machine: `docs/ops/ai/chatgpt-cursor-handoff-workflow.md`
-- Local poller: `docs/how-to/cursor/github-poll-wake-loop.md`
-- Runtime contract: `docs/reference/ci/agent-routing-controller-contract.md`
-- Operator runbook: `docs/how-to/agents/operate-agent-routing.md`
+## Production dispatch
+
+1. Confirm `PRODUCTION GO` and required approval evidence.
+2. Confirm the exact approved candidate identity.
+3. Confirm no unreviewed drift.
+4. Confirm rollback and environment readiness.
+5. Route controlled promotion/deployment.
+6. Route live verification results.
+7. On failure, route containment, rollback, or `OPERATIONAL INCIDENT`.
+
+## Lightweight problem adjustment
+
+When `PROBLEM FOUND` appears:
+
+1. identify the prior controlling decision;
+2. route to the role that made that decision;
+3. preserve the smallest affected scope;
+4. allow independent work to continue when safe;
+5. route `GUIDANCE`, `ADJUSTMENT`, or `PLAN CHANGE REQUIRED`;
+6. record the decision and route `RESUME` when its condition is met.
+
+Do not convert routine bounded adjustment into a project-wide replan.
+
+## Day-2 incident dispatch
+
+1. Create or update one deduplicated incident from trusted evidence.
+2. Route an assessment hold when impact is unknown.
+3. Preserve active PMO and Implementation state.
+4. Route severity, scope, probable cause, containment, and ownership assessment.
+5. After Day-2 Operations bounds the incident, narrow holds and resume unrelated work.
+6. Route corrective Development and Promotion Candidate work when required.
+7. Route `RECOVERY VERIFIED` and remaining hold release.
+8. Restore preserved work state without duplicate claims.
+
+## Administration & Communications actions
+
+When deterministic and authorized, the dispatcher may:
+
+- add or remove routing, lane, profile, owner, priority, severity, hold, and status labels;
+- reconcile assignments and parent/child/project/program/release/incident links;
+- post structured events, acknowledgments, retries, and escalation;
+- prepare evidence packets;
+- activate or defer an already-authorized successor;
+- apply, narrow, release, or restore an authorized hold;
+- reconcile Issue, PR, check, review, deployment, reporting, and closeout state;
+- create or update bounded remediation, communication-failure, and closeout-exception Issues;
+- perform or verify authorized non-merge dispositions.
+
+The dispatcher must not independently change product outcome, design, acceptance, implementation scope, delivery model, promotion profile, PR disposition, recovery strategy, priority, Production authority, repository settings, credentials, or infrastructure.
+
+## Local Cursor wake adapter
+
+Until the controller migration is complete, a valid local wake requires:
+
+1. open source Issue;
+2. applicable local runtime authority;
+3. current wake labels;
+4. authoritative decision/event on the Issue;
+5. no newer state superseding the action;
+6. one separate `LOCAL CURSOR RESUME` pointing to the decision;
+7. one bounded next action.
+
+The wake marker is transport only. It does not prove pickup.
+
+## Acknowledgment and stale communication
+
+- Stable event/action identities suppress duplicates.
+- Repeated transport retries do not create duplicate work.
+- Acknowledgment confirms receipt, not successful execution.
+- Stale events do not overwrite newer check, review, decision, hold, merge, deployment, or closeout state.
+- Missed acknowledgment routes to the recorded escalation role.
+- Runner/controller failure is recorded as a communication fault and routed to Day-2 Operations for host/service recovery.
+
+## Closeout and successor handling
+
+`CLOSEOUT` reconciles completed work after required execution, validation, approval, profile transitions, integration/deployment, and evidence are satisfied.
+
+- A merged Development child may close after verified non-main integration and required task evidence.
+- Promotion Candidate and Production closeout require their own evidence.
+- A source Issue does not close because a PR is merely green, review-ready, approved, or mergeable.
+- A successful deterministic closeout transaction is not duplicated.
+- Closeout exceptions block only the affected transition or successor when a substantive invariant is missing.
+- Independent Development work continues unless it shares the failed dependency or collision.
+
+## Idempotency and expected state
+
+Before mutation:
+
+1. read current live state;
+2. identify the exact authority and evidence;
+3. compute the intended state revision;
+4. suppress duplicate or stale action;
+5. ensure only the allowed scope changes.
+
+After mutation:
+
+1. re-read the surface;
+2. verify the intended state;
+3. record the next eligible action or exact halt reason;
+4. resolve or supersede any exception record.
+
+## Prohibited outcomes
+
+The dispatcher must prevent:
+
+- repository-wide serialization caused by routine PR review or administration;
+- direct Sandbox-to-Promotion Candidate or Production routing;
+- direct Development-to-Production routing;
+- runner/controller invention of authority;
+- self-approval of protected work;
+- Production promotion without approved candidate identity;
+- operational holds remaining broad after the incident is sufficiently bounded;
+- duplicate assignment, hold, resume, integration, closeout, or incident actions.
+
+## Required references
+
+- Constitution: `docs/governance/REPOSITORY-AUTHORITY.md`
+- Administration & Communications: `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md`
+- Lane/profile contract: `docs/reference/operations/operating-lanes-and-promotion-profiles.md`
+- Cross-lane communication workflow: `docs/ops/ai/chatgpt-cursor-handoff-workflow.md`
+- Delivery policy: `docs/governance/DELIVERY-AND-RELEASE.md`
+- Day-2 policy: `docs/governance/OPERATIONS-AND-RECOVERY.md`
+- Closeout procedure: `docs/ops/pmo/github-issue-closeout-protocol.md`
+- Runner contract: `docs/reference/ci/repository-runner-contract.md`

@@ -5,7 +5,9 @@ import {
 	buildBacklogReport,
 	dispositionComment,
 	executeBacklogReport,
+	extractDetectedFailureConditions,
 	hasOpsPrEscalationLabel,
+	hasUnsafeOperatorSignal,
 	isBacklogScanCandidate,
 	isPostMergeExceptionIssue,
 	OPS_PR_ESCALATION_LABEL,
@@ -226,6 +228,109 @@ describe('post-merge self-healing backlog classification', () => {
 		expect(report.summary.total_scanned).toBe(1);
 		expect(report.classifications[0].disposition)
 			.toBe(BACKLOG_DISPOSITIONS.PRESERVE_AMBIGUOUS_EVIDENCE);
+	});
+
+	it('does not treat generated Queue advancement status boilerplate as unsafe (#2117)', () => {
+		// Historical exception bodies still contain the structured hygiene code plus
+		// generated remediation boilerplate that previously false-escalated.
+		const body = [
+			POST_MERGE_EXCEPTION_SIGNATURE,
+			'',
+			'- PR: #2116',
+			'- Source issue: #2113',
+			'- Validator status: fail',
+			'- Remediation required: yes',
+			'- Queue advancement status: stopped; reviewer exception or remediation issue requires Atlas/Bill review',
+			'',
+			'## Detected failure condition',
+			'- missing_required_section: PR body is missing ## CHANGE SUMMARY.',
+			'',
+			'## Required Atlas/Bill decision',
+			'- Decide whether the source issue may be closed, corrected, or kept open.',
+			'- Queue advancement remains stopped until the exception is resolved.',
+			'',
+			'## Rollback recommendation',
+			'- Consider reverting the merge commit if the merged change cannot be corrected quickly and production/orchestration risk remains.',
+		].join('\n');
+		const parsed = parsePostMergeExceptionIssue(exceptionIssue({
+			number: 2117,
+			title: 'Post-merge closeout exception for PR #2116 / source #2113 / missing_required_section',
+			body,
+		}));
+
+		expect(body).toContain('Queue advancement status');
+		expect(body).toContain('Required Atlas/Bill decision');
+		expect(extractDetectedFailureConditions(body)).toEqual([
+			expect.objectContaining({ code: 'missing_required_section' }),
+		]);
+		expect(hasUnsafeOperatorSignal(parsed)).toBe(false);
+	});
+
+	it('still escalates structured secret/token/runtime/production defects as unsafe', () => {
+		const parsed = parsePostMergeExceptionIssue(exceptionIssue({
+			number: 2118,
+			body: [
+				POST_MERGE_EXCEPTION_SIGNATURE,
+				'- PR: #2116',
+				'- Source issue: #2113',
+				'## Detected failure condition',
+				'- auth_token_secret_failure: missing token configuration blocks closeout',
+				'',
+				'## Rollback recommendation',
+				'- Consider reverting the merge commit if production risk remains.',
+			].join('\n'),
+		}));
+
+		expect(hasUnsafeOperatorSignal(parsed)).toBe(true);
+		const report = buildBacklogReport({
+			issues: [exceptionIssue({
+				number: 2118,
+				body: parsed.body,
+			})],
+			sourceIssuesByNumber: {
+				2113: { number: 2113, state: 'closed', state_reason: 'completed', labels: [{ name: 'status:complete' }] },
+			},
+			dryRun: true,
+		});
+		expect(report.classifications[0].disposition)
+			.toBe(BACKLOG_DISPOSITIONS.UNSAFE_OPERATOR_REVIEW_REQUIRED);
+	});
+
+	it('safe-closes historical hygiene exceptions when the source issue is closed complete', () => {
+		const body = [
+			POST_MERGE_EXCEPTION_SIGNATURE,
+			'',
+			'- PR: #2116',
+			'- Source issue: #2113',
+			'- Validator status: pass',
+			'- Remediation required: no',
+			'- Queue advancement status: stopped; Atlas/Bill review required',
+			'',
+			'## Detected failure condition',
+			'- missing_required_section: PR body is missing ## CHANGE SUMMARY.',
+			'',
+			'## Required Atlas/Bill decision',
+			'- Decide whether the source issue may be closed, corrected, or kept open.',
+		].join('\n');
+		const report = buildBacklogReport({
+			issues: [exceptionIssue({
+				number: 2117,
+				title: 'Post-merge closeout exception for PR #2116 / source #2113 / missing_required_section',
+				body,
+			})],
+			sourceIssuesByNumber: {
+				2113: { number: 2113, state: 'closed', state_reason: 'completed', labels: [{ name: 'status:complete' }] },
+			},
+			dryRun: true,
+		});
+
+		expect(report.classifications[0]).toMatchObject({
+			disposition: BACKLOG_DISPOSITIONS.SAFE_TO_CLOSE,
+			safe_to_close: true,
+			source_issue: 2113,
+		});
+		expect(report.summary.auto_close_planned).toBe(1);
+		expect(report.summary.unsafe_escalated_issues).toBe(0);
 	});
 });
 

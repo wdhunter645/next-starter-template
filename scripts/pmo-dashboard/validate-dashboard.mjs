@@ -6,15 +6,8 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const outDir = process.argv[2] || process.env.PMO_DASHBOARD_OUT_DIR || 'site/pmo-dashboard';
 const requiredViews = ['activePrograms', 'pmoPipeline', 'completedPrograms', 'incomplete'];
-const lifecycleToView = {
-  active: 'activePrograms',
-  pipeline: 'pmoPipeline',
-  completed: 'completedPrograms',
-  closed: 'completedPrograms',
-  incomplete: 'incomplete'
-};
-const validInventoryLifecycles = new Set(['active', 'pipeline', 'completed']);
 const validRowLifecycles = new Set(['active', 'pipeline', 'closed', 'incomplete']);
+const FORBIDDEN_INVENTORY_LIVE_STATE_FIELDS = ['expectedLifecycle', 'expectedPriority'];
 const stageLabels = new Set([
   'pmo:stage:intake',
   'pmo:stage:discovery',
@@ -47,6 +40,15 @@ async function readJson(file) {
   }
 }
 
+async function readInventoryJson(file) {
+  try {
+    return JSON.parse(await readFile(file, 'utf8'));
+  } catch (error) {
+    errors.push(`tracked inventory is missing or JSON does not parse (${file}): ${error.message}`);
+    return null;
+  }
+}
+
 function validUrl(value) {
   try {
     const url = new URL(value);
@@ -54,11 +56,6 @@ function validUrl(value) {
   } catch {
     return false;
   }
-}
-
-function isNumericPriorityDisplay(value) {
-  const parsed = Number(value);
-  return !Number.isNaN(parsed) && Number.isFinite(parsed);
 }
 
 function topLevelViewFromLabel(label) {
@@ -162,9 +159,11 @@ function validateRow(row, label, rowByNumber, rowDataByNumber, errors) {
 }
 
 const data = await readJson(path.join(outDir, 'dashboard-data.json'));
+const inventoryPath =
+  process.env.PMO_DASHBOARD_INVENTORY_PATH || path.join(__dirname, 'pmo-tracked-inventory.json');
 const inventory = process.env.PMO_DASHBOARD_SKIP_INVENTORY_VALIDATION
   ? null
-  : await readJson(path.join(__dirname, 'pmo-tracked-inventory.json'));
+  : await readInventoryJson(inventoryPath);
 
 if (data) {
   if (data.source !== 'github-issues') errors.push('dashboard source must be github-issues');
@@ -218,47 +217,18 @@ if (data) {
     }
   }
 
-  if (inventory?.included) {
-    for (const item of inventory.included) {
-      if (!validInventoryLifecycles.has(item.expectedLifecycle)) {
-        errors.push(`tracked inventory #${item.issueNumber} has invalid expectedLifecycle: ${JSON.stringify(item.expectedLifecycle)}`);
-        continue;
-      }
-      const viewLabel = rowByNumber.get(item.issueNumber);
-      if (!viewLabel) {
-        errors.push(`tracked issue #${item.issueNumber} is missing from dashboard output`);
-        continue;
-      }
-      const topLevelView = viewLabel.split('[')[0];
-      if (topLevelView === 'incomplete') {
-        // Incomplete quarantine satisfies presence; metadata remediation is operator work.
-        continue;
-      }
-      const expectedView = lifecycleToView[item.expectedLifecycle];
-      if (topLevelView !== expectedView) {
-        errors.push(`tracked issue #${item.issueNumber} expected in ${expectedView}, found in ${viewLabel}`);
-      }
-      if (item.expectedPriority !== undefined && ['activePrograms', 'pmoPipeline'].includes(topLevelView)) {
-        const row = rowDataByNumber.get(item.issueNumber);
-        if (row && !isNumericPriorityDisplay(row.priorityDisplay)) {
-          errors.push(`tracked inventory #${item.issueNumber} priority must be numeric, got ${JSON.stringify(row.priorityDisplay)}`);
-        } else if (row && Number(row.priorityDisplay) !== item.expectedPriority) {
-          errors.push(`tracked issue #${item.issueNumber} expected priority ${item.expectedPriority}, found ${row.priorityDisplay}`);
-        }
-      }
-      if (item.requiresTaskAccounting || item.expectedMinimumTaskCount !== undefined) {
-        const row = rowDataByNumber.get(item.issueNumber);
-        const minimumTaskCount = item.expectedMinimumTaskCount ?? 1;
-        if (!row) {
-          errors.push(`tracked issue #${item.issueNumber} requires task accounting but has no dashboard row details`);
-        } else if (row.taskCount < minimumTaskCount) {
-          errors.push(`tracked issue #${item.issueNumber} expected taskCount >= ${minimumTaskCount}, found ${row.taskCount}`);
-        }
-        const taskAudit = taskAccountingByNumber.get(item.issueNumber);
-        if (!taskAudit) {
-          errors.push(`tracked issue #${item.issueNumber} requires task accounting but has no taskAccounting audit entry`);
-        } else if (taskAudit.taskCount < minimumTaskCount) {
-          errors.push(`taskAccounting for tracked issue #${item.issueNumber} expected taskCount >= ${minimumTaskCount}, found ${taskAudit.taskCount}`);
+  // Residual inventory role: exclusions only. Fail closed if frozen live-state fields reappear
+  // on any inventory record (included or excluded).
+  for (const [collection, items] of [
+    ['included', inventory?.included],
+    ['excluded', inventory?.excluded]
+  ]) {
+    for (const item of items || []) {
+      for (const field of FORBIDDEN_INVENTORY_LIVE_STATE_FIELDS) {
+        if (Object.prototype.hasOwnProperty.call(item, field)) {
+          errors.push(
+            `tracked inventory ${collection} #${item.issueNumber} must not declare ${field}; live GitHub Issue metadata is sole lifecycle/priority authority`
+          );
         }
       }
     }

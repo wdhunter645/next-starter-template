@@ -5,11 +5,24 @@ Authority Level: Evidence / Audit
 Owns: PMO dashboard tracking reconciliation audit for issue #2299
 Does Not Own: Final priority authorization or issue closeout
 Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
-Related Issues: #2299, #1719, #2313
-Last Reviewed: 2026-07-06
+Related Issues: #2299, #1719, #2313, #2610, #2611
+Last Reviewed: 2026-07-18
 ---
 
 # PMO Dashboard Tracking Audit — Issue #2299
+
+## Historical status
+
+**Historical evidence only — not live operational authority.**
+
+This audit records the #2299 reconciliation snapshot. Portfolio membership, lifecycle, and priority in this file are frozen evidence from that repair window. Current PMO tracking, lifecycle, priority, stage, task relationships, and closeout state are owned exclusively by live GitHub Issues and the PMO July 2026 issue contract. Do not use this document or frozen `expectedLifecycle` / `expectedPriority` inventory fields to override current Issue metadata.
+
+Canonical current docs:
+
+- `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`
+- `/docs/ops/pmo/PMO-JULY-2026-DASHBOARD-SPECIFICATION.md`
+- `/docs/how-to/pmo/pmo-dashboard.md`
+- `/docs/reference/pmo/pmo-dashboard-single-authority-implementation-plan.md`
 
 ## Purpose
 
@@ -23,7 +36,7 @@ Expanded dashboard title inclusion from `PROGRAM:` / `PROJECT:` only to also inc
 - `STRATEGY:`
 - `STRATEGY REVIEW:`
 
-Machine-readable inventory and validation guardrails: `scripts/pmo-dashboard/pmo-tracked-inventory.json`.
+Machine-readable inventory used at the time of this audit: `scripts/pmo-dashboard/pmo-tracked-inventory.json`. At audit time that file also carried frozen `expectedLifecycle` / `expectedPriority` guardrails. Project #2610 retires those fields as live authority; residual inventory use is limited to explicit non-state exclusions and offline fixtures.
 
 ## Label-driven tracking update (#2313)
 
@@ -103,13 +116,13 @@ Canonical operator documentation: `docs/how-to/pmo/pmo-dashboard.md`.
 
 Priority reflects LGFC website/repository need per PMO July 2026, not implementation readiness. Pipeline items may rank highly while still launch-gated.
 
-## Validation
+## Validation (historical procedure)
 
-After issue metadata updates and dashboard regeneration:
+After issue metadata updates and dashboard regeneration for #2299:
 
 ```bash
 node scripts/pmo-dashboard/build-dashboard.mjs
 node scripts/pmo-dashboard/validate-dashboard.mjs site/pmo-dashboard
 ```
 
-Validation enforces numeric priorities on tracked inventory rows in active/pipeline views, checks tracked inventory presence and lifecycle placement, and fails when excluded inventory issues appear in dashboard output.
+At that time, validation also compared generated rows to frozen inventory `expectedLifecycle` / `expectedPriority` values. That comparison is a documented authority defect under project #2610 and must not be treated as correct current operator guidance. Current validation authority is the live Issue-derived contract in the dashboard specification; residual inventory checks after runtime repair may only enforce explicit exclusions and offline fixtures.

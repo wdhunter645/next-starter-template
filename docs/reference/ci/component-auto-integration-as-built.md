@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: As-built component child auto-integration evaluator, workflow behavior, and GitHub-native state surfaces
 Does Not Own: Delivery policy boundaries, approval authority, or branch protection configuration
 Canonical Reference: /docs/governance/DELIVERY-AND-RELEASE.md
-Related Issues: #2498
-Last Reviewed: 2026-07-13
+Related Issues: #2498, #2501, #2502, #2588
+Last Reviewed: 2026-07-17
 ---
 
 # Component Auto-Integration As-Built
@@ -19,18 +19,17 @@ Policy boundaries live in `docs/governance/DELIVERY-AND-RELEASE.md` and `docs/go
 
 ## Evaluator contract
 
-`scripts/ci/component_integration_eligibility.mjs` exports:
+`scripts/ci/component_integration_eligibility.mjs` exports `evaluateComponentIntegration` with these inputs:
 
-```text
-evaluateComponentIntegration({
-  profile,
-  checks,
-  reviews,
-  componentState,
-  labels,
-  changedFiles,
-})
-```
+| Input | Meaning |
+| --- | --- |
+| `profile` | Parsed delivery-profile metadata |
+| `checks` | Required check conclusions for the child PR head |
+| `reviews` | Current review state |
+| `componentState` | Derived component branch state |
+| `labels` | Current PR and component routing labels |
+| `changedFiles` | Changed-file paths used for protected-scope evaluation |
+| `headSha` | Current PR head SHA used to exclude superseded review state |
 
 Return shape:
 
@@ -39,6 +38,13 @@ Return shape:
 | `eligible` | `true` only when every negative rule passes |
 | `blockedReasons` | Ordered list of `{ code, message, ...details }` |
 | `requiresChatReview` | `true` when protected-change review is required before integration |
+| `componentState` | Supplied `componentState` value returned when truthy; otherwise `green` |
+| `deliveryModel` | Classified or supplied delivery model |
+| `gateProfile` | Classified or supplied gate profile |
+| `approvalProfile` | Classified or supplied approval profile |
+| `componentBranch` | Classified or supplied component branch metadata |
+| `componentMaster` | Classified or supplied component-master issue reference |
+| `protectedChange` | Whether the evaluated profile contains protected scope |
 
 Supporting constants:
 
@@ -80,28 +86,35 @@ A clean Model B child with:
 
 returns `eligible: true` and `requiresChatReview: false`.
 
+## Workflow triggers
+
+`.github/workflows/component-child-integration.yml` supports three event paths:
+
+| Event | Eligibility boundary |
+| --- | --- |
+| `pull_request` | Runs for `opened`, `synchronize`, `reopened`, and `ready_for_review` events targeting `component/**`; draft PRs are skipped |
+| `workflow_run` | Re-evaluates after `GATE — Quality Checks`, `GATE — Diff Scope`, or `GATE — Secret Scan` completes for a pull-request run; only an associated PR targeting `component/**` proceeds |
+| `workflow_dispatch` | Manually evaluates the supplied `pr_number`; draft PRs are skipped and the evaluator still enforces the component-base contract |
+
 ## Workflow behavior
 
-`.github/workflows/component-child-integration.yml`:
+| Stage | Behavior |
+| --- | --- |
+| Evidence collection | Reads PR body, changed files, reviews, labels, and head check runs through GitHub APIs |
+| State derivation | Resolves component freshness and branch state as `green`, `red`, or `hold` |
+| Evaluation | Runs `component_integration_eligibility.mjs` |
+| Published result | Creates a completed check run named `Component Integration Eligibility` |
+| Integration action | Enables squash auto-merge only when `eligible=true` and repository settings permit it |
 
-1. Triggers on non-draft pull requests targeting `component/**`.
-2. Collects PR body, changed files, reviews, labels, and head check runs through GitHub APIs.
-3. Derives component branch freshness and branch status (`green`, `red`, or `hold`).
-4. Runs `component_integration_eligibility.mjs`.
-5. Publishes a completed check run named `Component Integration Eligibility`.
-6. Enables squash auto-merge only when `eligible=true`.
+Component integration state is recorded through the check run conclusion and branch commit status, not PR-body lifecycle prose.
 
-Component integration state is recorded through the check run conclusion and branch commit status — not PR-body lifecycle prose.
+## Validation coverage
 
-## Local verification
-
-```bash
-npx vitest run --config tests/vitest.node.config.ts tests/component-integration-eligibility.test.mjs
-```
+Automated evaluator coverage is maintained in `tests/component-integration-eligibility.test.mjs`. Operator verification and recovery commands are owned by `docs/how-to/delivery/manage-component-integration.md`.
 
 ## Pilot status
 
-Automation is implemented but not yet proven on a live Program #2477 child PR. Treat pilot evidence as required before declaring production-ready child auto-integration.
+A live Model B child pilot completed before Delivery System v1 promotion. The evaluator and workflow are present on `main`; ongoing eligibility remains subject to current repository settings, branch state, required checks, and delivery policy.
 
 ## Canonical references
 

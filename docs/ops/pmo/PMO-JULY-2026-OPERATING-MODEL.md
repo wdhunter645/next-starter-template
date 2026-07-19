@@ -5,27 +5,31 @@ Authority Level: Canonical PMO Authority
 Owns: LGFC PMO July 2026 program inventory, PMO issue contract, label contract, pipeline stages, workload reporting, backlog inventory, lifecycle terms, component-project hierarchy, reduced-gate delivery model, program preparation, Cursor execution boundaries, launch gates, Ops production handoff, completed/historical archive treatment, PMO reporting vs operations reporting separation, dashboard data-quality requirements, and Drive drafting model
 Does Not Own: Product-specific design, runtime implementation, workflow YAML, production configuration, secrets, or unauthorized GitHub issue mutation
 Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
-Related Issues: #2100, #2296, #2487, #2516
-Last Reviewed: 2026-07-16
+Related Issues: #2100, #2296, #2487, #2516, #2610, #2611
+Last Reviewed: 2026-07-18
 ---
 
 # PMO July 2026 Operating Model
 
 ## Status
 
-**Superseded for PMO policy.** Work sizing, `medium-provisional` intake, Medium Model A/B selection, and launch authorization now live exclusively in [`docs/governance/PMO-PORTFOLIO.md`](../../governance/PMO-PORTFOLIO.md).
+**Active for the PMO issue contract and dashboard data-quality rules.** Work sizing, `medium-provisional` intake, Medium Model A/B selection, and launch authorization are routed exclusively to [`docs/governance/PMO-PORTFOLIO.md`](../../governance/PMO-PORTFOLIO.md). Those topics alone are superseded here.
 
 | Topic | Canonical owner |
 | --- | --- |
 | PMO sizing and Model A/B policy | `docs/governance/PMO-PORTFOLIO.md` |
 | Evidence contract and decision matrix | `docs/reference/pmo/work-size-and-delivery-model-contract.md` |
 | Classification procedure | `docs/how-to/pmo/classify-work-and-select-delivery-model.md` |
+| PMO issue contract, labels, lifecycle, Incomplete handling | this file |
+| Dashboard JSON/view/validation contract | `docs/ops/pmo/PMO-JULY-2026-DASHBOARD-SPECIFICATION.md` |
+| Dashboard operator procedure | `docs/how-to/pmo/pmo-dashboard.md` |
+| Runtime single-authority repair plan | `docs/reference/pmo/pmo-dashboard-single-authority-implementation-plan.md` |
 
-The body below retains historical PMO v4 operational context (registry routing, program hierarchy, Drive drafting) until a later archive pass. Do not cite this file for sizing or delivery-model decisions.
+Do not cite this file for sizing or delivery-model decisions. Do cite this file for PMO tracking eligibility, lifecycle/priority/stage/task contract rules, Incomplete remediation, and dashboard reporting authority.
 
 ## Purpose
 
-This document is the top-level LGFC PMO July 2026 authority. It supersedes `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` and the superseded `PMO-V4-OPERATING-MODEL.md` naming for current PMO planning, issue tracking, dashboard reporting, and implementation-readiness decisions. Work sizing and Model A/B selection remain routed to `docs/governance/PMO-PORTFOLIO.md` per the Status section below.
+This document is the top-level LGFC PMO July 2026 authority for the PMO issue contract and related operational rules. It supersedes `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` and the superseded `PMO-V4-OPERATING-MODEL.md` naming for current PMO planning, issue tracking, dashboard reporting, and implementation-readiness decisions. Work sizing and Model A/B selection remain routed to `docs/governance/PMO-PORTFOLIO.md` per the Status section above.
 
 PMO July 2026 preserves the issue-number-based program model from PMO v3. A program is a GitHub program issue. Program issue numbers are the durable program identifiers.
 
@@ -225,6 +229,24 @@ Rules:
 - A program may be PMO-queued while operations work focuses on a different repository-need priority (for example, CI hardening temporarily preceding website build-out).
 - PMO meeting issues and weekly project review update PMO surfaces; PR/check evidence updates operations surfaces.
 
+### PMO dashboard authority hierarchy
+
+GitHub Issues are the sole operational authority for PMO tracking eligibility, lifecycle, priority, pipeline stage, task relationships, and closeout state. Dashboard JSON and static HTML are reporting-only snapshots.
+
+Correct data flow:
+
+```text
+GitHub Issue state + current PMO labels
+                ↓
+PMO issue-contract validation
+                ↓
+Active / Pipeline / Completed / Incomplete
+                ↓
+Generated JSON and static dashboard
+```
+
+Static files such as `scripts/pmo-dashboard/pmo-tracked-inventory.json` may provide deterministic fixtures or explicit non-state exclusions. They must not prescribe live lifecycle or priority, and they must not override current Issue metadata during live validation.
+
 ### PMO dashboard state precedence
 
 The PMO dashboard is a generated reporting snapshot, not the live source of executable truth. GitHub issues remain authoritative for current PMO state, and dashboard JSON must be regenerated before operators rely on it as current.
@@ -232,12 +254,14 @@ The PMO dashboard is a generated reporting snapshot, not the live source of exec
 Dashboard state uses this precedence model:
 
 1. The `pmo` label controls PMO tracking eligibility.
-2. Required contract validation runs before Active, Pipeline, or Completed placement.
+2. Required contract validation runs against **current** GitHub Issue state and PMO labels before Active, Pipeline, or Completed placement.
 3. Issues with missing, conflicting, or invalid PMO metadata appear in Incomplete.
 4. A closed GitHub issue must reconcile to `pmo:closed` and Completed placement.
 5. Valid `pmo:active` issues appear in Active.
 6. Valid `pmo:pipeline` issues appear in Pipeline and must include exactly one `pmo:stage:*` label.
 7. Valid `pmo:closed` issues appear in Completed.
+
+Frozen `expectedLifecycle` / `expectedPriority` values in static inventory JSON are not operational authority and must not be treated as a second lifecycle/priority source of truth.
 
 Task/ops execution labels such as post-merge verification or failed do not become PMO dashboard display statuses. Completed dashboard rows display `Completed`. Pipeline stage labels distinguish idea intake, discovery, definition, planning, implementation preparation, and ready-for-launch work.
 
@@ -765,6 +789,8 @@ The following items are identified for bounded follow-up issues. They are **not*
 
 - PMO V3 operating model (historical): `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md`
 - PMO July 2026 dashboard specification: `/docs/ops/pmo/PMO-JULY-2026-DASHBOARD-SPECIFICATION.md`
+- PMO dashboard how-to: `/docs/how-to/pmo/pmo-dashboard.md`
+- Single-authority runtime repair plan: `/docs/reference/pmo/pmo-dashboard-single-authority-implementation-plan.md`
 - PMO program registry: `/docs/ops/pmo/program-registry.md`
 - PMO Backlog: `/docs/ops/pmo/pmo-backlog.md`
 - PR lifecycle state machine: `/docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`
