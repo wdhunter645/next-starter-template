@@ -2,20 +2,83 @@
 Doc Type: Governance
 Audience: Human + AI
 Authority Level: Domain Policy
-Owns: Degraded-service routing, emergency recovery policy, component-branch synchronization and red/green state rules, and stabilization-first incident boundaries
-Does Not Own: Delivery-model selection, PMO sizing, agent approval roles, CI gate implementation, or detailed day-to-day operator checklists
+Owns: Administrative control lane policy, final clarification and housekeeping resolution, degraded-service routing, emergency recovery policy, component-branch synchronization and red/green state rules, and stabilization-first incident boundaries
+Does Not Own: Delivery-model selection, PMO sizing, agent approval roles, CI gate implementation, project objectives, or detailed day-to-day operator checklists
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2495
-Last Reviewed: 2026-07-13
+Related Issues: #2495, #2641
+Last Reviewed: 2026-07-19
 ---
 
 # Operations and Recovery
 
 ## Purpose
 
-This document is the canonical **Operations and Recovery** domain policy. It defines how degraded service is routed among break-glass recovery, expedited Model A, and planned Model B; how emergency recovery remains stabilization-first and independent from normal delivery models; and how component branches synchronize, recover, and report integration health.
+This document is the canonical **Operations and Recovery** domain policy. It defines the repository-wide administrative control lane; how final clarifications, housekeeping, closeout exceptions, and deterministic metadata corrections are resolved; how degraded service is routed among break-glass recovery, expedited Model A, and planned Model B; how emergency recovery remains stabilization-first and independent from normal delivery models; and how component branches synchronize, recover, and report integration health.
 
-Stable rollback evidence requirements live in `docs/reference/delivery/delivery-and-rollback-profiles.md`. Emergency execution steps live in `docs/how-to/ops/run-emergency-recovery.md`.
+Stable administrative mutation and trigger requirements live in `docs/reference/operations/administrative-control-lane-contract.md`. Stable rollback evidence requirements live in `docs/reference/delivery/delivery-and-rollback-profiles.md`. Administrative execution procedures live in `docs/ops/pmo/queue-watch-and-dispatch-protocol.md` and `docs/ops/pmo/github-issue-closeout-protocol.md`. Emergency execution steps live in `docs/how-to/ops/run-emergency-recovery.md`.
+
+## Administrative control lane
+
+The administrative control lane is the repository's mutation-capable, non-code operational control plane. It follows all approved execution and review lanes from intake through final closure without becoming a repository-wide implementation lock.
+
+### Policy boundary
+
+The lane may reconcile deterministic repository state to existing authority, including:
+
+- lifecycle, status, routing, handoff, PMO, and reporting labels;
+- Issue and PR assignments;
+- parent, child, predecessor, successor, project, and program references;
+- stale, contradictory, duplicate, or terminally invalid administrative state;
+- dashboard, audit, milestone, closeout, and queue-continuation evidence;
+- final administrative closure, reopen, cancellation, supersession, or remediation state when already authorized;
+- bounded exception and housekeeping records.
+
+The lane must not create new execution authority. It must not change:
+
+- project objectives, product scope, acceptance criteria, or non-goals;
+- technical design, architecture, file allowlists, implementation branch, runtime, or environment authority;
+- delivery model, validation requirements, review requirements, or approval requirements;
+- priority, dependency order, or successor order without explicit higher authority;
+- repository code, workflow implementation, production configuration, secrets, credentials, or external infrastructure as an administrative action.
+
+When the correct administrative result is ambiguous, the lane records the conflict and obtains final clarification from the owning authority. It does not guess.
+
+### Final clarification ownership
+
+The administrative control lane owns final clarification management for housekeeping, reporting, routing, and closeout exceptions.
+
+Chat / Atlas resolves routine administrative clarifications from canonical policy, the source Issue, current GitHub state, and verified execution evidence. Bill resolves only material product, priority, cost, credential, business, destructive, or unresolved authority decisions.
+
+Every clarification must be persisted on the relevant GitHub Issue, pull request, or canonical repository document before the resulting administrative mutation is applied.
+
+A clarification that changes objectives, design, acceptance criteria, delivery model, validation, approval, priority, production behavior, or business intent is not an administrative clarification and routes to the owning domain.
+
+### Post-merge and exception ownership
+
+Successful post-merge closeout CI is the primary merge-triggered administrative actor. It should atomically reconcile source-Issue state, terminal labels, parent reporting, successor disposition, remediation state, and final closeout evidence.
+
+The broader administrative lane owns:
+
+- failed or partial post-merge closeout;
+- closeout exceptions and housekeeping remediation;
+- non-merge completion, cancellation, duplicate, not-planned, and supersession dispositions;
+- stale or contradictory state detected before or after merge;
+- clarification and evidence gaps that prevent deterministic closeout;
+- final administrative closure after required execution, validation, review, approval, and closeout evidence is complete.
+
+A successful closeout transaction must not be duplicated. Exceptions must be bounded, idempotent, evidence-backed, and resolved without changing technical objectives.
+
+### Non-blocking rule
+
+Administrative reconciliation is non-blocking by default. Reporting lag, dashboard lag, optional comments, cosmetic label order, and non-critical housekeeping debt do not stop authorized execution.
+
+The administrative lane may block only the affected lane or transition when a required source-Issue, authority, dependency, validation, review, approval, closeout, collision, production, or safety invariant is missing, contradictory, or failed.
+
+Independent approved lanes continue unless they share the failed invariant or mutation collision set.
+
+### Stable contract
+
+Allowed and prohibited mutation classes, trigger classes, blocking rules, evidence requirements, clarification boundaries, idempotency, and exception lifecycle are defined in `docs/reference/operations/administrative-control-lane-contract.md`.
 
 ## Mutually exclusive recovery paths
 
@@ -128,12 +191,15 @@ Component recovery is **not** production rollback unless the defect already reac
 
 ## Day-to-day operations boundary
 
-Routine upkeep, monitoring cadence, deploy logging, and operator onboarding procedures remain under `docs/ops/**` execution surfaces. This governance document owns **policy boundaries** for degradation routing, emergency independence, and component health — not step-by-step daily checklists.
+Routine upkeep, monitoring cadence, administrative reconciliation, clarification handling, closeout housekeeping, deploy logging, and operator onboarding procedures remain under `docs/ops/**` execution surfaces. This governance document owns policy boundaries for the administrative control lane, degradation routing, emergency independence, and component health — not step-by-step daily checklists.
 
 ## Canonical references
 
 | Topic | Owner |
 | --- | --- |
+| Administrative control lane contract | `docs/reference/operations/administrative-control-lane-contract.md` |
+| Queue watch and administrative dispatch procedure | `docs/ops/pmo/queue-watch-and-dispatch-protocol.md` |
+| Post-merge closeout and exception procedure | `docs/ops/pmo/github-issue-closeout-protocol.md` |
 | Delivery and release models | `docs/governance/DELIVERY-AND-RELEASE.md` |
 | Rollback profiles and evidence | `docs/reference/delivery/delivery-and-rollback-profiles.md` |
 | Emergency recovery procedure | `docs/how-to/ops/run-emergency-recovery.md` |
@@ -142,4 +208,4 @@ Routine upkeep, monitoring cadence, deploy logging, and operator onboarding proc
 
 ## Supersession
 
-`docs/ops/OPERATING_MANUAL.md` is superseded for delivery procedures, deployment rollback policy, incident severity routing, and emergency response authority. Retained operational detail in that file remains non-authoritative execution context until archived in a later disposition pass.
+`docs/ops/OPERATING_MANUAL.md` is superseded for delivery procedures, deployment rollback policy, incident severity routing, emergency response authority, administrative control-lane policy, and closeout-exception ownership. Retained operational detail in that file remains non-authoritative execution context until archived in a later disposition pass.
