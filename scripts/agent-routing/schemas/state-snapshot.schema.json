@@ -36,6 +36,12 @@
     "ambiguous": {
       "type": "boolean"
     },
+    "ambiguityReasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "labels": {
       "type": "array",
       "items": {
@@ -47,6 +53,54 @@
         "object",
         "null"
       ]
+    },
+    "dependencyClass": {
+      "type": "string"
+    },
+    "independentAuthority": {
+      "type": "boolean"
+    },
+    "fourLaneEnabled": {
+      "type": "boolean"
+    },
+    "operatingLanes": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "incidentAutoRemediation": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "pullRequests": {
+      "type": "array"
+    },
+    "checks": {
+      "type": "array"
+    },
+    "reviews": {
+      "type": "array"
+    },
+    "activeClaims": {
+      "type": "array"
+    },
+    "consumedEventIds": {
+      "type": "array"
+    },
+    "fileScope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "wakeEligible": {
+      "type": "boolean"
+    },
+    "projectLifecycle": {
+      "type": "string"
     }
   }
 }

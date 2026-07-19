@@ -1,6 +1,19 @@
 import { stableHash } from './lib/stable.mjs';
+import {
+  FOUR_LANE_EVENT_MARKERS,
+  isFourLaneEnabled,
+  resolveOperatingLaneState,
+} from './four-lane-runtime.mjs';
 
-const EVENT_ORDER = ['CURSOR ASSIGNMENT', 'CURSOR ACK', 'CURSOR STATUS', 'CURSOR COMPLETE', 'CHATGPT HANDOFF', 'CHATGPT RESPONSE', 'CHATGPT CLOSEOUT'];
+const LEGACY_EVENT_ORDER = [
+  'CURSOR ASSIGNMENT',
+  'CURSOR ACK',
+  'CURSOR STATUS',
+  'CURSOR COMPLETE',
+  'CHATGPT HANDOFF',
+  'CHATGPT RESPONSE',
+  'CHATGPT CLOSEOUT',
+];
 
 function latestEvent(events = []) {
   return [...events].sort((a, b) => {
@@ -10,7 +23,44 @@ function latestEvent(events = []) {
   }).at(-1) || null;
 }
 
-export function resolveRepositoryState(input = {}) {
+function knownEventMarkers(policy = {}) {
+  return isFourLaneEnabled(policy) ? FOUR_LANE_EVENT_MARKERS : LEGACY_EVENT_ORDER;
+}
+
+function resolveDependencyState({
+  contradictory,
+  eventKnown,
+  task,
+  predecessorStates,
+  dependencyClass,
+  policy,
+  operatingLanes,
+  independentAuthority = false,
+}) {
+  if (contradictory || !eventKnown) return 'ambiguous';
+  if (task.state === 'complete') return 'complete';
+
+  if (isFourLaneEnabled(policy)) {
+    if (operatingLanes?.lanes?.['administration-communications']?.blocksDelivery) {
+      return 'blocked';
+    }
+    if (
+      operatingLanes?.operationalHold?.active
+      && ['assessment', 'targeted-project'].includes(operatingLanes.operationalHold.scope || 'assessment')
+    ) {
+      return 'blocked';
+    }
+    if (dependencyClass === 'administrative-only') return 'ready';
+    if (dependencyClass === 'protected-stop' || dependencyClass === 'explicit-hold') return 'blocked';
+    if (dependencyClass === 'none' || independentAuthority) return 'ready';
+    // direct/stacked (and conservative default) still require predecessor completion
+  }
+
+  const predecessorsComplete = predecessorStates.every((state) => state === 'complete' || state === 'integrated');
+  return predecessorsComplete ? 'ready' : 'blocked';
+}
+
+export function resolveRepositoryState(input = {}, policy = {}) {
   const labels = [...new Set(input.labels || [])].sort();
   const cursor = labels.includes('agent:cursor');
   const chatgpt = labels.includes('agent:ChatGPT');
@@ -18,18 +68,32 @@ export function resolveRepositoryState(input = {}) {
   const inProgress = labels.includes('handoff:in-progress');
   const contradictory = (cursor && chatgpt) || (ready && inProgress);
   const event = latestEvent(input.events || []);
-  const eventKnown = !event || EVENT_ORDER.includes(event.marker);
+  const markers = knownEventMarkers(policy);
+  const eventKnown = !event || markers.includes(event.marker);
   const project = input.project || {};
   const task = input.task || {};
   const predecessorStates = input.predecessorStates || [];
-  const predecessorsComplete = predecessorStates.every((state) => state === 'complete' || state === 'integrated');
-  const dependencyState = contradictory || !eventKnown
-    ? 'ambiguous'
-    : task.state === 'complete'
-      ? 'complete'
-      : predecessorsComplete
-        ? 'ready'
-        : 'blocked';
+  // Four-lane mode defaults missing class to direct so unclassified work stays serialized
+  // unless explicitly marked independent (`none`) or administrative-only.
+  const dependencyClass = Object.prototype.hasOwnProperty.call(input, 'dependencyClass')
+    ? input.dependencyClass
+    : (isFourLaneEnabled(policy) ? 'direct' : 'none');
+  const independentAuthority = input.independentAuthority === true;
+
+  const operatingLanes = isFourLaneEnabled(policy)
+    ? resolveOperatingLaneState(input)
+    : null;
+
+  const dependencyState = resolveDependencyState({
+    contradictory,
+    eventKnown,
+    task,
+    predecessorStates,
+    dependencyClass,
+    policy,
+    operatingLanes,
+    independentAuthority,
+  });
   const routingOwner = contradictory ? 'ambiguous' : cursor ? 'cursor' : chatgpt ? 'chatgpt' : 'none';
   const identity = {
     projectIssue: project.issueNumber ?? null,
@@ -43,6 +107,8 @@ export function resolveRepositoryState(input = {}) {
     routingOwner,
     latestEvent: event,
     dependencyState,
+    dependencyClass,
+    independentAuthority,
     pullRequests: input.pullRequests || [],
     checks: input.checks || [],
     reviews: input.reviews || [],
@@ -51,11 +117,17 @@ export function resolveRepositoryState(input = {}) {
     fileScope: input.fileScope || [],
     wakeEligible: task.wakeEligible === true,
     projectLifecycle: project.lifecycle || 'unknown',
+    fourLaneEnabled: isFourLaneEnabled(policy),
+    operatingLanes,
+    incidentAutoRemediation: input.incidentAutoRemediation || null,
   };
   return {
     ...snapshotData,
     ambiguous: contradictory || !eventKnown,
-    ambiguityReasons: [contradictory ? 'contradictory_labels' : null, !eventKnown ? 'unknown_event_marker' : null].filter(Boolean),
+    ambiguityReasons: [
+      contradictory ? 'contradictory_labels' : null,
+      !eventKnown ? 'unknown_event_marker' : null,
+    ].filter(Boolean),
     revision: stableHash(snapshotData, 'state'),
   };
 }

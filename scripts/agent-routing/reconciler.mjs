@@ -8,11 +8,12 @@ export function reconcileSnapshots(snapshots = [], policy = {}) {
   });
   const dispositions = ordered.map((snapshot) => ({
     snapshot,
-    eligibility: evaluateLaneEligibility(snapshot, ordered, { now: policy.now }),
+    eligibility: evaluateLaneEligibility(snapshot, ordered, { now: policy.now, policy }),
   }));
   const selected = dispositions.find((item) => item.eligibility.eligible)?.snapshot || null;
   const result = {
     mode: policy.mode || 'observe',
+    fourLaneEnabled: policy.fourLaneRuntime?.enabled === true,
     selected,
     dispositions: dispositions.map(({ snapshot, eligibility }) => ({ identity: snapshot.identity, revision: snapshot.revision, ...eligibility })),
     inventedWork: false,

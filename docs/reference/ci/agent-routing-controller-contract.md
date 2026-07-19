@@ -5,8 +5,8 @@ Authority Level: Project Runtime Contract
 Owns: Project #2294 controller inputs, outputs, action classes, state revisions, alert/claim records, permission boundaries, and rollout modes
 Does Not Own: Product decisions, credentials, repository settings, production approval, or automatic merge to main
 Canonical Reference: /docs/explanation/projects/agent-issue-polling-handoff-routing-design.md
-Related Issues: #2294, #2550, #2554, #2593-#2601
-Last Reviewed: 2026-07-18
+Related Issues: #2294, #2546, #2550, #2554, #2593-#2601, #2639, #2640
+Last Reviewed: 2026-07-19
 ---
 
 # Agent Routing Controller Contract
@@ -49,6 +49,13 @@ A snapshot contains project/task identity, current labels, latest valid canonica
 - `integrate_non_main`: technically eligible child targeting the project branch.
 - `chatgpt_review`: genuine ChatGPT responsibility.
 - `human_decision`: production, credential, repository-setting, cost, privacy, legal, or destructive boundary.
+- `nested_pr_review`: implementation handoff awaits nested PR review inside Implementation / Operations.
+- `nested_review_remediation`: changes-required returns bounded remediation without erasing unrelated delivery state.
+- `plan_adjustment_route`: `PROBLEM FOUND` awaits guidance/adjustment.
+- `operational_assessment`: Day-2 assessment hold active before severity classification.
+- `operational_auto_remediation`: safe, deterministic, reversible, evidence-backed auto-fix.
+- `operational_incident_route`: classified incident requires Day-2 or corrective implementation routing.
+- `operational_hold_release`: evidence-backed hold release and project resume.
 
 Every mutation includes the expected state revision and stable action key. The adapter re-reads live state before applying it.
 
@@ -69,3 +76,26 @@ Evaluation requires read-only `contents`, `issues`, `pull-requests`, and `action
 5. Repeated state is idempotent.
 6. Serial dependencies remain serial; independent non-colliding lanes may advance.
 7. Ambiguity fails closed with evidence.
+
+## Four-lane runtime (#2639 / #2640)
+
+`config.fourLaneRuntime.enabled` defaults to `false`. While disabled, the conservative serialized planner remains authoritative and automatic operational holds are off.
+
+When enabled, the controller additionally resolves:
+
+- horizontal lanes: `pmo-engineering`, `implementation-operations`, `day2-operations`;
+- vertical lane: `administration-communications` (runner/controller transport belongs here);
+- nested PR review inside `implementation-operations` (not a top-level lane);
+- `implementationHandoffComplete` distinct from approval, integration, deployment, and closeout;
+- repository-wide Day-2 assessment holds with preserved resume context;
+- lightweight plan adjustment (`PROBLEM FOUND` → `GUIDANCE`/`ADJUSTMENT` → `RESUME`).
+
+Typed disposition rules (fail-closed):
+
+- Integration eligibility requires `APPROVED FOR INTEGRATION` or a legacy `CHATGPT RESPONSE` with explicit `disposition: approved-for-integration`.
+- Review-pending from legacy handoff requires `PR REVIEW REQUEST` or a `CHATGPT HANDOFF` with explicit `disposition: PR REVIEW REQUEST`.
+- Generic `CHATGPT RESPONSE` / `CHATGPT HANDOFF` markers alone never authorize those transitions.
+- `HOLD`, `GUIDANCE`, and `ADJUSTMENT` route to remediation, not integration.
+- Missing `dependencyClass` defaults to `direct` under four-lane mode. Direct/stacked successors remain blocked until predecessor completion unless `none`, `administrative-only`, or `independentAuthority` is explicit.
+
+Administration & Communications is non-blocking unless an explicit substantive defect is present. Automatic merge or promotion to `main` remains prohibited in every mode.

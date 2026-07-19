@@ -45,11 +45,29 @@ describe('agent routing contract', () => {
     const handoff = fs.readFileSync('docs/ops/ai/chatgpt-cursor-handoff-workflow.md', 'utf8');
     const queue = fs.readFileSync('docs/ops/pmo/queue-watch-and-dispatch-protocol.md', 'utf8');
     const contract = fs.readFileSync('docs/reference/ci/agent-routing-controller-contract.md', 'utf8');
-    for (const text of [handoff, queue, contract]) {
-      expect(text).toContain('GitHub connector');
-      expect(text).toContain('broad');
-      expect(text).toContain('Alerts');
-      expect(text).toContain('automatic merge to `main`');
-    }
+
+    expect(contract).toContain('GitHub connector');
+    expect(contract).toContain('broad');
+    expect(contract).toContain('Alerts');
+    expect(contract).toContain('automatic merge to `main`');
+    expect(contract).toContain('fourLaneRuntime');
+
+    expect(queue).toContain('broad');
+    expect(queue).toContain('Alerts');
+    expect(queue).toContain('Administration & Communications');
+    expect(queue).toContain('Production');
+
+    expect(handoff).toContain('Administration & Communications');
+    expect(handoff).toContain('merge to `main`');
+    expect(handoff).toMatch(/broad/);
+  });
+
+  it('publishes config-gated four-lane runtime defaults off', () => {
+    expect(config.fourLaneRuntime.enabled).toBe(false);
+    expect(config.fourLaneRuntime.autoOperationalHolds).toBe(false);
+    expect(config.fourLaneRuntime.autoRemediation).toBe(false);
+    const fourLaneSchema = readJson('scripts/agent-routing/schemas/four-lane-state.schema.json');
+    expect(fourLaneSchema.additionalProperties).toBe(false);
+    expect(fourLaneSchema.required).toEqual(expect.arrayContaining(['topology', 'lanes', 'operationalHold']));
   });
 });
