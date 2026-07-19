@@ -17,6 +17,21 @@ Define the runtime child work that removes frozen `expectedLifecycle` / `expecte
 
 Documentation authority was reconciled by Task #2611. This plan gates subsequent runtime redesign under project #2610.
 
+## Scope
+
+- Owns the runtime repair plan that removes frozen `expectedLifecycle` / `expectedPriority` enforcement from `scripts/pmo-dashboard/pmo-tracked-inventory.json`.
+- Does not own live documentation authority (reconciled by #2611), production merge authorization, Cloudflare migration, or unauthorized GitHub issue mutation.
+
+## Current known truth
+
+- Live GitHub Issue metadata is intended to be the sole operational authority for PMO lifecycle and priority.
+- Frozen expected-state fields in `pmo-tracked-inventory.json` still create a second runtime authority and can fail legitimate label changes.
+- Documentation authority conflict was removed by #2611; runtime repair remains gated under project #2610.
+
+## Intended final state
+
+Dashboard validation and builds derive lifecycle and priority only from live Issue state/labels, with inventory limited to inclusion/exclusion mechanics rather than competing expected-state authority.
+
 ## Current failure mechanism
 
 1. `scripts/pmo-dashboard/build-dashboard.mjs` derives lifecycle and priority from current GitHub Issue labels and open/closed state.

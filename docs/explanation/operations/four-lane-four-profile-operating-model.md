@@ -20,6 +20,22 @@ LGFC separates **who owns work** from **how close that work is to production**.
 
 This prevents production-grade process from slowing early exploration while preserving a mandatory, progressively stricter path to public production use.
 
+## Scope
+
+- Owns conceptual explanation of lane topology and promotion profiles.
+- Does not own role assignments, executable gate configuration, incident severity, or production authorization.
+- Canonical definitions live in `docs/reference/operations/operating-lanes-and-promotion-profiles.md`.
+
+## Current known truth
+
+- Four lanes are authoritative: three horizontal plus vertical Administration & Communications.
+- Four promotion profiles are authoritative: Sandbox, Development, Promotion Candidate, Production.
+- Administration & Communications routes and records; it does not replace horizontal-lane decision authority.
+
+## Intended final state
+
+Readers understand why ownership (lanes) is separated from control intensity (profiles) and can route to the correct canonical reference for operational detail.
+
 ## Operating topology
 
 Three operating lanes run horizontally:

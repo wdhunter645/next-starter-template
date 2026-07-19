@@ -104,8 +104,27 @@ because this task never merges to `main`.
 - Separate Production promotion Issue/PR to `main` is still required after Go.
 - Deferred workflow/CI candidates C-01–C-06 from #1727 remain out of scope.
 
+## Documentation-standard remediation (#2652 review)
+
+Seven Copilot review findings required Minimum Content Requirements
+(`Purpose`, `Scope`, `Current known truth`, and `Intended final state` where
+evolving) on docs brought in by the main synchronization. Remediated in-scope
+on:
+
+1. `docs/tutorials/operations/idea-to-production-feature.md`
+2. `docs/explanation/operations/four-lane-four-profile-operating-model.md`
+3. `docs/how-to/operations/run-work-through-promotion-profiles.md`
+4. `docs/reference/operations/operating-lanes-and-promotion-profiles.md`
+5. `docs/reference/operations/administrative-control-lane-contract.md`
+6. `docs/reference/ci/repository-runner-contract.md`
+7. `docs/reference/pmo/pmo-dashboard-single-authority-implementation-plan.md`
+
+After remediation, the qualification recommendation below applies to the new
+head SHA recorded in the `CHATGPT HANDOFF` / PR.
+
 ## Qualification recommendation
 
 **PROMOTION CANDIDATE READY** for Atlas Go/No-Go review of the synchronized
-component candidate, contingent on CI gates on the child PR and Atlas review of
-this packet. This is not Production Go and does not authorize merge to `main`.
+component candidate, contingent on CI gates on the child PR, disposition of the
+seven documentation-standard review threads, and Atlas review of this packet.
+This is not Production Go and does not authorize merge to `main`.

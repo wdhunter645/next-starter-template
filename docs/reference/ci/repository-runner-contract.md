@@ -17,6 +17,21 @@ Define the repository-side contract for the Chromebook Linux GitHub Actions runn
 
 Because the repository is public, the bootstrap runner is repository-scoped, read-only, and manual-only. It must not accept pull-request, fork, push, schedule, deployment, or secret-bearing work.
 
+## Scope
+
+- Owns repository-scoped self-hosted runner identity, labels, trusted invocation policy, rollout state, and control-plane placement for Project #2294.
+- Does not own host registration, project launch, workflow migration, deployment, production authorization, or the meaning of lane decisions.
+
+## Current known truth
+
+- The runner is shared communications and control-plane infrastructure inside Administration & Communications.
+- Horizontal lanes decide meaning and authorization; the runner transports or executes only authorized automation.
+- Bootstrap posture for the public repository remains repository-scoped, read-only, and manual-only until a later authorized rollout changes that contract.
+
+## Intended final state
+
+A registered Chromebook Linux runner provides reliable Administration & Communications dial tone without owning product, design, implementation, approval, or recovery decisions.
+
 ## Operating-model placement
 
 The repository runner is shared communications and control-plane infrastructure within the vertical **Administration & Communications** lane.

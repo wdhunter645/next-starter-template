@@ -17,6 +17,21 @@ Define the stable repository-wide contract for the vertical Administration & Com
 
 The lane follows PMO / Engineering, Implementation / Operations, and Day-2 Operations from intake through public Production use and closeout. It keeps Issues, PRs, checks, deployments, runner events, portfolio state, holds, resumes, and evidence aligned with existing authority.
 
+## Scope
+
+- Owns the stable Administration & Communications event, mutation, routing, evidence, acknowledgment, escalation, hold/resume, blocking, and exception contract.
+- Does not own product scope, design, delivery-model selection, implementation authority, PR approval, recovery strategy, production authority, or workflow implementation.
+
+## Current known truth
+
+- Administration & Communications is the vertical lane across all horizontal lanes and promotion profiles.
+- It may record, route, reconcile, and execute authorized state transitions only.
+- It is non-blocking unless an explicit invariant is missing, contradictory, or failed.
+
+## Intended final state
+
+Every authorized repository event has a durable evidence path through Administration & Communications without inventing decision authority that belongs to another role or lane.
+
 ## Core rule
 
 > Administration & Communications may record, route, reconcile, and execute authorized state transitions, but it must not create the underlying decision authority.
