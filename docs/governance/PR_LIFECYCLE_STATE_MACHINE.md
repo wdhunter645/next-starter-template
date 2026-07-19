@@ -1,245 +1,232 @@
 ---
 Doc Type: Governance / Process
-Audience: Human + AI Agents
-Authority Level: Supporting Governance
-Owns: Conceptual pull-request lifecycle states and their mapping to GitHub-native evidence
-Does Not Own: Canonical PR body fields, CI implementation, product design authority, runtime architecture, or final merge approval
+Audience: Human + AI
+Authority Level: Governance
+Owns: PR lifecycle states, transition gates, profile-specific readiness, GitHub-native evidence, and closeout transition requirements
+Does Not Own: PR-body policy, delivery-model selection, product/design authority, Administration mutation taxonomy, or Production approval
 Canonical Reference: /docs/governance/PR_PROCESS.md
-Related Issues: #1719, #2562
-Last Reviewed: 2026-07-17
+Related Issues: #2640, #2641
+Last Reviewed: 2026-07-19
 ---
 
 # PR Lifecycle State Machine
 
 ## Purpose
 
-Describe the LGFC pull-request lifecycle without turning the PR body into a lifecycle database.
+Define the GitHub-native lifecycle for LGFC pull requests while preserving the four promotion profiles.
 
-The canonical pull-request policy is `docs/governance/PR_PROCESS.md`. The current PR template defines stable PR-body facts. Dynamic state belongs to GitHub-native reviews, review threads, labels, checks, comments, merge state, and post-merge closeout records.
+```text
+NO PR -> DRAFT -> READY FOR REVIEW -> READY FOR INTEGRATION OR PROMOTION
+      -> AUTHORIZED DECISION -> INTEGRATED OR MERGED -> CLOSEOUT VERIFIED
+```
 
-## Scope
+The logical state is derived from GitHub evidence. It is not duplicated as a dynamic PR-body ledger.
 
-This document provides conceptual lifecycle guidance for:
+## Profile context
 
-- opening and preparing a PR;
-- moving a PR from draft to review;
-- assessing merge readiness;
-- recording the human merge decision;
-- verifying merge and post-merge closeout;
-- deciding whether a program or project queue may continue.
+Every PR lifecycle evaluation identifies:
 
-It does not add PR-body sections, require dynamic state ledgers, authorize scope expansion, grant merge authority, or replace the canonical process and template.
+- source Issue;
+- durable owner roles;
+- delivery model;
+- current promotion profile;
+- target branch/environment;
+- protected scope;
+- current operational hold.
 
-## Current known truth
+The same PR state has different exit authority by profile.
 
-- `docs/governance/PR_PROCESS.md` is canonical for pull-request policy.
-- `.github/pull_request_template.md` stores stable facts known at PR-open or implementation-complete time.
-- Review state is read from GitHub reviews and review threads.
-- Gate state is read from GitHub checks and workflow runs.
-- Merge state is read from the PR and merge commit.
-- Post-merge state is read from closeout records and source-issue state.
-- Dynamic comment IDs, thread ledgers, CI ledgers, merge-readiness fields, and post-merge state blocks must not be required in the PR body.
+| Profile | Normal target | Exit boundary |
+| --- | --- | --- |
+| Sandbox | isolated Sandbox branch | discard, evidence, or Development adoption |
+| Development | non-main component branch | eligible integration into Development |
+| Promotion Candidate | exact integrated candidate/release record | Go/No-Go or return to Development |
+| Production | `main` / Production environment | authorized merge/deploy and live verification |
 
-## Intended final state
+## State 0 — NO PR
 
-Agents, reviewers, and automation evaluate the same lifecycle using authoritative GitHub-native evidence. The PR body remains concise and stable, while dynamic review, gate, merge, and closeout state remains on the surfaces that own it.
+A valid task exists and no PR exists.
 
-## Authority and evidence surfaces
+Before opening a PR confirm:
 
-| Surface | Owns |
+- one primary source Issue;
+- role, lane, profile, delivery model, target, and allowlist;
+- no prohibited profile transition;
+- applicable authority and skills;
+- operational hold state;
+- stable PR facts can be supplied.
+
+Stop when authority, target, profile, or scope is ambiguous.
+
+## State 1 — DRAFT
+
+A PR exists but implementation, validation, stable facts, or handoff evidence is incomplete.
+
+Transition to `READY FOR REVIEW` when:
+
+- diff matches the source allowlist and intent;
+- PR stable facts match the current diff;
+- profile-appropriate builder validation is complete or exact blockers are recorded;
+- acceptance criteria are addressed;
+- Implementation / Operations records the handoff.
+
+The affected task may pause for review. Independent Development work may continue when authorized.
+
+## State 2 — READY FOR REVIEW
+
+The PR is open, not draft, and available for independent inspection.
+
+Review evaluates:
+
+- current head SHA;
+- source Issue and profile;
+- required checks;
+- scope and branch boundary;
+- acceptance and design alignment;
+- protected paths;
+- review threads;
+- candidate/Production constraints when applicable;
+- predictable closeout integrity.
+
+Possible dispositions:
+
+- `APPROVED FOR INTEGRATION` for eligible Development work;
+- `PROMOTION CANDIDATE READY` after complete candidate qualification;
+- `PRODUCTION GO` when the Production decision is authorized;
+- `ADJUSTMENT` for bounded correction;
+- `PLAN CHANGE REQUIRED` for material change;
+- `HOLD` for protected or operational conditions.
+
+## State 3 — READY FOR INTEGRATION OR PROMOTION
+
+Required technical and governance evidence is complete for the current profile.
+
+### Sandbox
+
+Sandbox work may integrate only within the isolated Sandbox or be adopted into a normal Development work package. It cannot become Promotion Candidate or Production directly.
+
+### Development
+
+Non-protected work may integrate automatically into the non-main component branch when deterministic eligibility passes. Protected/material work requires PR Approver / Engineering.
+
+Development integration does not establish Promotion Candidate or Production readiness.
+
+### Promotion Candidate
+
+The exact candidate identity and qualification evidence are complete. The candidate awaits Go/No-Go by the required roles.
+
+### Production
+
+The exact approved candidate, full standards, Production authority, rollback, and environment readiness are complete. The PR awaits the authorized merge/deploy decision.
+
+## State 4 — AUTHORIZED DECISION
+
+The required role or deterministic policy has recorded the transition decision.
+
+Before action recheck:
+
+- current head/candidate SHA;
+- current checks and review threads;
+- source Issue and role authority;
+- branch/environment target;
+- profile transition legality;
+- operational holds;
+- rollback and closeout expectations.
+
+Return to review or Development if evidence regresses or candidate identity changes.
+
+## State 5 — INTEGRATED OR MERGED
+
+GitHub records non-main integration or Production merge.
+
+### Development integration
+
+Administration & Communications verifies:
+
+- correct component branch;
+- required checks and review disposition;
+- source task state;
+- parent/project accounting;
+- successor dependency state;
+- one bounded exception when needed.
+
+Independent successors do not wait for routine administrative prose when their dependencies already permit execution.
+
+### Production merge/deploy
+
+Verify:
+
+- exact approved Promotion Candidate identity;
+- merge/deployment record;
+- required post-deployment checks;
+- live feature and service health;
+- rollback/incident disposition;
+- Day-2 ownership transfer.
+
+## State 6 — CLOSEOUT VERIFIED
+
+The applicable closeout transaction is complete.
+
+Evidence varies by level:
+
+| Closeout level | Required result |
 | --- | --- |
-| Source issue | Task authority, scope, acceptance criteria, allowlist, and explicit exceptions |
-| PR body | Stable implementation facts required by the current template |
-| GitHub reviews and review threads | Reviewer decisions, actionable findings, replies, and resolution state |
-| GitHub checks and workflow runs | Current validation and gate state for the PR head |
-| Labels | Routing or derived operator-visibility state; not durable evidence by themselves |
-| Issue and PR comments | Handoffs, decisions, status summaries, and bounded rationale |
-| PR merge state and commit | Whether integration occurred and the exact merge SHA |
-| Post-merge closeout records | Source-issue disposition, validation result, remediation, and queue continuation |
+| Sandbox | discarded, evidence-only, or adopted into Development |
+| Development task | non-main integration or authorized disposition; task accounting complete |
+| Promotion Candidate | approved, returned, superseded, or stopped |
+| Production | deployment and live verification complete |
+| Incident | recovery verified, holds released, follow-up tracked |
 
-When surfaces disagree, follow the operational truth hierarchy in `docs/ops/ai/CORE-RULES.md` and the canonical process in `docs/governance/PR_PROCESS.md`.
+Later deterministic drift may be corrected without duplicating the original closeout.
 
-## Lifecycle states
+## GitHub-native evidence
 
-```text
-NO PR -> DRAFT -> READY FOR REVIEW -> READY FOR MERGE
-      -> HUMAN MERGE DECISION -> MERGED -> CLOSEOUT VERIFIED
-```
+| State | Surface |
+| --- | --- |
+| Draft/open/merged/closed | PR state |
+| Validation and eligibility | checks/workflow runs |
+| Independent review | reviews and threads |
+| Lane/profile/routing | source Issue, labels, assignments, structured comments |
+| Candidate identity | release Issue/PR, commit, checks, artifacts |
+| Production decision | recorded role authority and merge/deployment record |
+| Holds and recovery | incident Issue, labels, comments, checks |
+| Closeout | source Issue and closeout record |
 
-These are conceptual operating states. They are not mandatory PR-body fields. A status report or handoff may name the current state, but the state must be derived from live repository evidence.
+## Administration & Communications synchronization
 
-## State 0: NO PR
+The vertical lane may reconcile deterministic state but must not:
 
-### Entry condition
+- advance a profile without its evidence and decision;
+- create review or Production authority;
+- convert reporting lag into a gate;
+- serialize independent Development;
+- permit Sandbox -> Promotion Candidate/Production or Development -> Production.
 
-A valid source issue exists and no PR has been opened.
+## Minimal-gate principle
 
-### Transition to DRAFT
+Required gates protect only material invariants:
 
-Confirm:
+- valid authority;
+- exact scope and target;
+- profile-appropriate validation;
+- independent approval when required;
+- protected/Production boundary;
+- legal profile transition;
+- predictable closeout integrity.
 
-- exactly one open same-repository source issue owns the work;
-- task scope and changed-file allowlist are clear;
-- one intent label and the applicable delivery profile are known;
-- required authority and design documents have been read;
-- the working branch and PR base are authorized;
-- the PR can be seeded from the current template.
+Cosmetic metadata, dashboard freshness, duplicate PR-body state, and session presence are not independent gates.
 
-Stop before PR creation when source authority, scope, branch, runtime, or allowlist is missing or contradictory.
+## Non-merge dispositions
 
-## State 1: DRAFT
+Canceled, duplicate, superseded, not-planned, evidence-only Sandbox, administrative-only, and no-change verification may bypass merge when explicit authority records the disposition.
 
-### Entry condition
-
-A PR exists, but implementation, stable PR-body facts, verification, or self-review is incomplete.
-
-### Transition to READY FOR REVIEW
-
-Confirm:
-
-- the final diff matches the issue allowlist;
-- no unrelated intent or opportunistic cleanup is present;
-- the PR body contains the stable facts required by the current template;
-- task-relevant local validation has run or an exact blocker is recorded;
-- acceptance criteria are complete, not applicable with rationale, or explicitly blocked;
-- no template placeholders or stale implementation claims remain.
-
-Dynamic review-thread state, check results, comment IDs, and merge-readiness state are not copied into the PR body.
-
-## State 2: READY FOR REVIEW
-
-### Entry condition
-
-Implementation and the stable PR body are complete enough for independent review.
-
-### Review and remediation
-
-Reviewers and agents must:
-
-- inspect the current PR head and file scope;
-- use GitHub reviews and review threads for findings and resolution;
-- use current checks and workflow runs for validation state;
-- correct valid findings within scope;
-- reject or mark findings not applicable with specific rationale on the owning review surface;
-- keep the source issue and PR body aligned with the final implementation facts.
-
-Do not maintain a review-comment ID ledger or thread-state ledger in the PR body.
-
-### Transition to READY FOR MERGE
-
-`READY FOR MERGE` is a derived assessment, not a PR-body field. It requires:
-
-- all required checks green on the current head;
-- source-issue accounting valid;
-- all blocking human review findings resolved or superseded;
-- all review threads inspected and dispositioned on GitHub-native surfaces;
-- no known technical, security, data, scope, or production-safety defect;
-- the PR mergeable against its authorized base;
-- pre-merge closeout assessment completed on an issue comment, PR comment, check summary, or other authorized operational record.
-
-Advisory bot findings do not block unless canonical policy or a required gate promotes them to blocking status.
-
-## State 3: READY FOR MERGE
-
-### Entry condition
-
-Live repository evidence shows that the PR is technically and procedurally ready for an authorized merge decision.
-
-### Pre-merge closeout assessment
-
-The responsible reviewer or controller verifies:
-
-- current head SHA and mergeability;
-- required checks and workflow state;
-- source issue state and scope authority;
-- review and thread disposition;
-- expected source-issue action after merge;
-- expected post-merge validation behavior;
-- project/program queue continuation or halt.
-
-The assessment is dynamic operational evidence. Record it in a GitHub-native comment, check summary, or closeout-control record, not as a mandatory PR-body state block.
-
-Stop when the assessment identifies a predictable post-merge failure that can be corrected before merge.
-
-## State 4: HUMAN MERGE DECISION
-
-### Entry condition
-
-The PR is ready for the merge authority defined by `docs/governance/PR_PROCESS.md`, the delivery profile, and branch protection.
-
-Before merge, verify:
-
-- the source issue and stable PR body remain valid;
-- the current head still has the required checks;
-- no new blocking review or thread has appeared;
-- no new conflict or unsafe production condition exists;
-- the target branch and approval profile are correct.
-
-Cursor and other builders do not self-approve or self-merge. Promotion to `main` remains Bill/ChatGPT controlled.
-
-## State 5: MERGED
-
-### Entry condition
-
-GitHub reports the PR merged and provides a merge commit SHA.
-
-### Transition to CLOSEOUT VERIFIED
-
-Verify from live evidence:
-
-- merged state, target branch, and merge SHA;
-- post-merge validation result;
-- source-issue disposition;
-- required remediation issue or exception state;
-- project/program queue continuation or halt;
-- any explicitly authorized status-index follow-up.
-
-A green pre-merge check or mergeable PR is not merge evidence.
-
-## State 6: CLOSEOUT VERIFIED
-
-### Entry condition
-
-Post-merge closeout passed, or an explicitly authorized exception records why normal closeout is not applicable.
-
-Closeout is verified when:
-
-- the source issue is closed or intentionally retained open with rationale;
-- post-merge validation passed or has an accepted not-applicable disposition;
-- no unresolved remediation exception remains;
-- queue continuation is recorded;
-- no required bounded follow-up is silently omitted.
-
-Only then may dependent work advance, unless an authorized operator records an explicit override.
-
-## Agent status reporting
-
-A status report or handoff may summarize:
-
-```text
-PR lifecycle state: <state>
-Current head SHA: <sha or not-applicable>
-Source issue: #<issue>
-Required checks: pass | fail | pending | not-applicable
-Review disposition: pass | fail | pending | not-applicable
-Closeout assessment: pass | fail | blocked | not-applicable
-Queue continuation: continue | halt | not-applicable
-```
-
-This summary belongs in the current handoff, issue comment, PR comment, or operational report. It is not a required persistent section of the PR body.
-
-## CI alignment
-
-Pre-merge automation should evaluate stable PR-body facts together with GitHub-native issue, review, thread, check, and branch state. It must not require the PR body to duplicate dynamic lifecycle state.
-
-Post-merge automation should evaluate merge state, source-issue authority, closeout evidence, remediation state, and queue continuation. It should remain idempotent and create bounded remediation only for genuine unresolved failures.
+A non-merge disposition cannot falsely claim implementation, candidate, Production, or recovery success.
 
 ## Related authorities
 
-- `Agent.md`
 - `docs/governance/PR_PROCESS.md`
-- `.github/pull_request_template.md`
-- `docs/governance/PR_GOVERNANCE.md`
-- `docs/ops/ai/CORE-RULES.md`
-- `.agents/skills/lgfc-pr-governance/SKILL.md`
-- `docs/reference/governance/troubleshooting-data-surface-requirements.md`
+- `docs/governance/DELIVERY-AND-RELEASE.md`
+- `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md`
+- `docs/reference/operations/operating-lanes-and-promotion-profiles.md`
+- `docs/reference/operations/administrative-control-lane-contract.md`
+- `docs/ops/pmo/github-issue-closeout-protocol.md`

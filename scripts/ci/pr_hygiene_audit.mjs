@@ -184,7 +184,9 @@ export function hasVerificationEvidence(body = '') {
   const section = extractMarkdownSection(body, 'Verification');
   return /Local verification:/i.test(section)
     && /CI verification:/i.test(section)
-    && /Result:\s*(PASS|FAIL|NOT RUN)/i.test(section);
+    // Reject template placeholder `Result: PASS / FAIL / NOT RUN` (matches prefix PASS)
+    // and do not treat FAIL as clean verification evidence.
+    && /Result:\s*(PASS|NOT RUN)\b(?!\s*\/)/i.test(section);
 }
 
 export function hasAcceptanceCriteriaEvidence(body = '') {

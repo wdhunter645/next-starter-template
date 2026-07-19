@@ -2,161 +2,208 @@
 Doc Type: Governance
 Audience: Human + AI
 Authority Level: Domain Policy
-Owns: LGFC agent team roles, approval authority, protected stop conditions, operating modes, and launch-control workflow boundaries
-Does Not Own: Shared execution rule detail, tool-specific runtime behavior, PMO sizing, delivery release policy, or production merge mechanics
+Owns: Durable LGFC roles, current member mapping, approval authority, protected stops, operating modes, and launch-control workflow boundaries
+Does Not Own: Shared execution detail, tool-specific runtime behavior, PMO sizing, promotion-profile policy, communication mutation taxonomy, or production mechanics
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2494
-Last Reviewed: 2026-07-13
+Related Issues: #2494, #2640, #2641, #2648
+Last Reviewed: 2026-07-19
 ---
 
 # Agent Team
 
 ## Purpose
 
-This document is the canonical **Agent Team** domain policy. It defines who owns design, implementation, review, approval, merge, and verification; where agents must stop; and how Model A and Model B execution proceeds without routine Bill gates between implementation launch and final product review.
+This document defines durable repository roles and maps current team members to them. Broad policy uses role names so team-member or tool changes do not require widespread documentation edits.
 
-Stable role contracts and evidence flags live in `docs/reference/agents/implementation-authority-contract.md`. Execution procedures live in `docs/how-to/agents/run-model-a.md` and `docs/how-to/agents/run-model-b.md`.
+LGFC agents are operating team members. They communicate directly with one another through the canonical GitHub communication workflow whenever it is available. Human relay through Bill is the least-desired fallback and does not replace durable agent-to-agent routing.
 
-Shared execution detail remains in `docs/ops/ai/CORE-RULES.md` until a later disposition pass. Tool-specific additive behavior routes through superseded pointer files under `docs/ops/ai/`.
+## Durable roles
 
-## Current team
-
-| Actor | Role |
+| Role | Authority |
 | --- | --- |
-| **Bill** | Project owner; design go/no-go; alternate PR approver; material-decision escalation; final completed-product reviewer |
-| **Chat (Atlas)** | Final design; implementation planning and launch; primary PR reviewer/approver; merge; verification; success declaration; documentation closeout |
-| **Cursor** | Sole LGFC implementation executor; test evidence; remediation; assigned documentation support; **no self-approval** |
-| **Codex** | **Inactive/out** for LGFC implementation unless Bill explicitly reauthorizes in a future governance update |
+| Product Authority | Product outcome, priority, cost, business decisions, final completed-product review |
+| PMO / Engineering | Requirements, design, architecture, acceptance criteria, planning, Sandbox authority, implementation Go |
+| Implementation / Operations | Development and Promotion Candidate execution, testing, remediation, integration, deployment execution |
+| PR Approver / Engineering | Independent validation that work meets design, acceptance, repository, and promotion requirements |
+| Administration & Communications | Evidence, routing, acknowledgments, escalation, repository-state reconciliation, hold/resume, reporting, closeout |
+| Day-2 Operations | Production monitoring, incident classification, containment, recovery strategy, operational hold release |
+| Deterministic CI | Machine-provable checks, evidence, eligible non-main integration, bounded authorized automation |
+
+No role may self-approve work when independent review is required.
+
+## Current team mapping
+
+| Current member or system | Assigned roles |
+| --- | --- |
+| Bill | Product Authority; Day-2 Operations; alternate protected approval when recorded |
+| ChatGPT | PMO / Engineering; PR Approver / Engineering; Administration & Communications; Day-2 Operations coordination |
+| Cursor Local | Implementation / Operations; Day-2 Operations remediation implementation |
+| GitHub Actions and repository automation | Deterministic CI; Administration & Communications transport/evidence; authorized Day-2 monitoring and bounded remediation |
+| Repository runner and routing controller | Administration & Communications control-plane infrastructure; host/service maintained by Day-2 Operations |
+| Codex | Inactive for LGFC implementation unless Product Authority records future reauthorization |
+
+Changing the mapping does not change the role contract.
+
+## Team communication
+
+- ChatGPT and Cursor communicate directly through structured GitHub events on the relevant source Issue.
+- The target agent acknowledges and acts through the same durable workflow.
+- PR reviews, checks, and threads provide technical evidence but do not replace the source-Issue routing event.
+- Bill is not expected to copy, interpret, or relay routine agent assignments, findings, remediation requests, acknowledgments, resumes, status, or completion messages.
+- Human relay through Bill is the least-desired fallback when the canonical channel is unavailable or Product Authority intervention is intentionally required.
+- Any externally relayed decision must be written back to GitHub by the responsible agent before repository work depends on it.
+
+## Lane topology
+
+### Horizontal lanes
+
+- PMO / Engineering
+- Implementation / Operations
+- Day-2 Operations
+
+### Vertical lane
+
+- Administration & Communications
+
+Development and Promotion Candidate are technical profiles inside the conversational Implementation / Operations lane.
 
 ## Authority boundaries
 
-| Decision | Authority |
+| Decision | Owning role |
 | --- | --- |
-| Requirements and product go/no-go | Bill |
-| Final design and documentation package | Chat |
-| Program and child issue authorship | Chat |
-| Launch-control package completeness | Chat (author) + Cursor (pre-implementation review) |
-| Implementation execution | **Cursor only** |
-| Pre-implementation package review | Cursor (required checkpoint comment) |
-| Implementation launch (Go) after package review | Chat (primary); Bill when Chat unavailable or material design escalation applies |
-| PR review and approval | Chat (primary); Bill (alternate) |
-| PR merge | Chat (primary); Bill (alternate) |
-| Post-merge verification and success declaration | Chat |
-| Final completed-product review notification | Bill |
-| Codex implementation routing | **Forbidden** unless future Bill-approved governance reauthorization |
-
-Cursor must not approve, merge, or declare success on its own PRs or assigned work.
+| Product requirements, priority, cost, business Go/No-Go | Product Authority |
+| Design, architecture, acceptance, project plan, Sandbox decision | PMO / Engineering |
+| Launch-package completeness and implementation Go | PMO / Engineering |
+| Scoped implementation and remediation | Implementation / Operations |
+| PR review and approval | PR Approver / Engineering |
+| Eligible non-main integration | Deterministic CI under Delivery policy or PR Approver / Engineering when protected |
+| Promotion Candidate Go/No-Go | PMO / Engineering, PR Approver / Engineering, and other required roles |
+| Production promotion | Recorded Production authority plus required Engineering approval |
+| Production incident classification and recovery strategy | Day-2 Operations |
+| Issue/PR/check/deployment state, communication, hold/resume administration, closeout | Administration & Communications |
+| Mechanically provable validation and bounded automation | Deterministic CI |
 
 ## Approval model
 
-- **Chat is primary** for PR review, approval, merge, verification, and routine implementation-loop continuation after an authorized Go decision.
-- **Bill is alternate** when Chat is unavailable or when a protected stop requires owner-level product judgment.
-- **Bill is not a routine gate** between implementation Go and final completed-product review for Model B child work or other authorized implementation loops.
-- Bill remains the escalation path for material design decisions, authority conflicts, credentials/cost/business authorization, structural design failure, and final completed-product review.
+- Implementation / Operations does not approve its own protected work or Production promotion.
+- Deterministic CI may record automated eligibility and integrate eligible non-main work; it does not impersonate human Engineering approval.
+- PR Approver / Engineering handles subjective alignment, protected changes, Promotion Candidate qualification, and required Production review.
+- Product Authority is not a routine gate during approved Development work; escalation occurs for product, priority, cost, business, credential, or protected Production decisions.
+
+## Administration & Communications responsibilities
+
+Administration & Communications follows all horizontal lanes.
+
+It may:
+
+- route assignments, evidence, decision requests, acknowledgments, and escalation;
+- reconcile deterministic Issue, PR, PMO, routing, check, deployment, incident, and closeout state;
+- prepare Go/No-Go and Promotion Candidate evidence packets;
+- apply, narrow, release, and restore recorded holds under the owning role’s decision;
+- resolve missing, partial, contradictory, or failed administrative transactions;
+- maintain planned-versus-completed accounting.
+
+It must not independently change product outcome, design, acceptance, implementation scope, delivery model, promotion profile, PR disposition, recovery strategy, priority, or Production authority.
+
+## Runner and controller responsibilities
+
+The runner and routing controller are shared communications/control-plane infrastructure in Administration & Communications.
+
+- They carry authorized events and deterministic actions.
+- They do not own the meaning of the event.
+- Implementation / Operations owns workflow creation and onboarding.
+- Day-2 Operations owns runner host/service availability, security, capacity, stop/start, rollback, and recovery.
+- The originating horizontal lane owns the action’s decision authority.
+
+## Lightweight problem adjustment
+
+Any role may post `PROBLEM FOUND`.
+
+The issue routes to the role that made the controlling decision:
+
+```text
+PROBLEM FOUND
+  -> GUIDANCE or ADJUSTMENT by owning role
+  -> Administration & Communications records the decision
+  -> RESUME
+```
+
+Only the affected scope pauses unless evidence requires broader impact. Use `PLAN CHANGE REQUIRED` only for material changes to product outcome, architecture, acceptance criteria, dependency structure, delivery model, Production boundary, or recovery strategy.
 
 ## Protected stop conditions
 
-Cursor, Chat, and Bill must stop and escalate when any of the following is true:
+All roles stop the affected scope and route the issue when any of the following is true:
 
-1. **Material design decision** — unresolved product, layout, architecture, or acceptance framing that changes scope or locked design.
-2. **Authority conflict** — two active canonical sources disagree and the source issue does not resolve precedence.
-3. **Unsafe preview isolation** — component or preview execution can mutate production resources without an approved control.
-4. **Credentials, cost, or business authorization** — secrets, billing, vendor access, or business approval is required and not recorded on the source issue.
-5. **Structural design failure** — evidence shows the approved design cannot satisfy acceptance criteria without replanning.
+1. unresolved material product, design, architecture, or acceptance decision;
+2. conflicting canonical authority;
+3. unsafe preview, Sandbox, component, or Production isolation;
+4. missing credential, cost, business, privacy, legal, or destructive-action authority;
+5. evidence that the approved design cannot satisfy acceptance without material change;
+6. missing or contradictory source Issue, dependency, validation, approval, promotion-profile, safety, or closeout authority;
+7. active Day-2 operational hold covering the work;
+8. attempted bypass of Sandbox -> Development -> Promotion Candidate -> Production progression.
 
-Routine wording fixes, migration corrections, validation remediation, and bounded implementation corrections within the approved allowlist are **not** protected stops.
+Routine wording corrections, deterministic administrative reconciliation, bounded validation remediation, and in-scope implementation adjustments are not protected stops.
 
 ## Operating modes
 
-Every LGFC repository task must use **exactly one** mode before action:
-
-| Mode | Purpose | Typical owner |
+| Mode | Purpose | Typical role |
 | --- | --- | --- |
-| **Design** | Architecture, decomposition, acceptance framing | Chat (+ Bill review) |
-| **Documentation** | Canonical docs, how-to, reference, governance alignment | Chat (author) / Cursor (when assigned) |
-| **Governance** | Agent rules, PR discipline, authority alignment | Chat / Cursor per assignment |
-| **Worklist** | Program hierarchy, queue organization, issue structure | Chat |
-| **Verification** | PR/issue/CI inspection, post-merge validation | Chat / Cursor per assignment |
-| **Troubleshooting** | Failed gates, broken workflows, inconsistent state | Chat (coordinate) / Cursor (when assigned to fix) |
-| **Implementation** | Scoped file changes within an approved allowlist | **Cursor only** |
-| **Operations cleanup** | Stale ops noise, remediation classification | Chat (coordinate) / Cursor (when assigned) |
+| Design | Architecture, decomposition, acceptance framing | PMO / Engineering |
+| Sandbox | Isolated proof-of-concept and factual design evidence | PMO / Engineering + Implementation / Operations |
+| Documentation | Canonical Explanation, How-to, Reference, Tutorial, and governance alignment | PMO / Engineering or assigned Implementation / Operations |
+| Governance | Authority, role, gate, and policy alignment | PMO / Engineering |
+| Worklist | Program hierarchy and Issue structure | PMO / Engineering + Administration & Communications |
+| Verification | PR, CI, Promotion Candidate, Production, and post-deployment validation | PR Approver / Engineering + Deterministic CI |
+| Troubleshooting | Failed gates, broken workflows, inconsistent state | Owning horizontal lane with Administration & Communications routing |
+| Implementation | Development and Promotion Candidate execution | Implementation / Operations |
+| Administration & Communications | Evidence, routing, state, escalation, hold/resume, reporting, closeout | Administration & Communications + Deterministic CI |
+| Day-2 Operations | Production monitoring, incident response, recovery | Day-2 Operations |
 
 ## End-to-end workflow
 
 ```text
-Bill defines requirements and design go/no-go
-        ↓
-Chat + Bill finalize design
-        ↓
-Chat creates documentation package PR
-        ↓
-Bill reviews / approves documentation PR (when required)
-        ↓
-Chat creates program master issue + child issues
-        ↓
-Cursor reviews launch-control issue package (checkpoint comment)
-        ↓
-Chat authorizes implementation Go (Bill alternate / escalation only)
-        ↓
-Cursor implements and remediates continuously within scope
-        ↓
-Cursor opens/updates PR and stops at verification or protected stop
-        ↓
-Chat reviews, approves, merges, verifies (Bill alternate)
-        ↓
-Chat declares success and notifies Bill for final product review
+Product Authority / PMO input
+  -> PMO / Engineering design and optional Sandbox
+  -> implementation Go
+  -> Development execution and automated PR gates
+  -> Promotion Candidate qualification
+  -> Production approval, deployment, and live verification
+  -> Day-2 Operations monitoring and support
 ```
 
-### Implementation-loop rule
+Administration & Communications supports every step vertically.
 
-After Chat (or Bill as alternate) authorizes implementation Go on a complete launch-control package:
+## Launch-control package
 
-- Cursor proceeds through routine implementation, validation, and PR remediation **without** routine Bill stop points.
-- Cursor stops only for protected conditions, incomplete packages, scope conflict, failing required gates, unresolved blocking review threads, or explicit Chat/Bill hold instruction.
-- Chat owns primary review/approval at PR ready-for-review and merge boundaries.
-- Bill receives final completed-product review after Chat verification and success declaration.
+Before Development begins, the source authority includes:
 
-## Launch-control package requirements
-
-Before Cursor may execute implementation, the issue package must include:
-
-- exactly one primary source issue;
-- runtime declaration (`local` default; `cloud`/`either` only with issue authorization);
-- documentation package reference;
-- draft/reference code or pseudocode;
+- one primary source Issue;
+- role and runtime declaration;
+- active lane and promotion profile;
+- documentation/design reference;
 - exact file allowlist;
-- non-goals;
+- scope and non-goals;
 - acceptance criteria;
-- verification plan;
-- rollback plan;
-- Cursor pre-implementation review checkpoint;
-- Chat implementation Go authorization (Bill alternate when required).
+- dependency and protected-stop state;
+- validation and rollback plan;
+- implementation Go.
 
-Use `docs/templates/agent-assignment-template.md` as the mandatory envelope format.
+## Startup orientation
 
-## Atlas startup orientation (`run startup`)
-
-When Bill says `run startup`, Chat performs **orientation-only** startup and **stops**. Required report sections and prohibited actions remain in the superseded pointer at `docs/ops/ai/CHATGPT-RULES.md` until archived; they do not authorize queue audit, GitHub mutation, or implementation resume.
+When Product Authority says `run startup`, ChatGPT performs orientation only and stops. Startup does not authorize queue audit, implementation resume, GitHub mutation, or administrative reconciliation.
 
 ## Canonical references
 
 | Topic | Owner |
 | --- | --- |
-| Role contracts and protected-stop flags | `docs/reference/agents/implementation-authority-contract.md` |
-| Model A execution procedure | `docs/how-to/agents/run-model-a.md` |
-| Model B execution procedure | `docs/how-to/agents/run-model-b.md` |
-| Shared execution rules | `docs/ops/ai/CORE-RULES.md` |
-| Cursor runtime routing | `docs/governance/standards/CURSOR-RUNTIME-ROUTING.md` |
-| PMO sizing and delivery model | `docs/governance/PMO-PORTFOLIO.md` |
-| Assignment envelope | `docs/templates/agent-assignment-template.md` |
+| Lane and profile contract | `docs/reference/operations/operating-lanes-and-promotion-profiles.md` |
+| Administration & Communications policy | `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md` |
+| Delivery and promotion policy | `docs/governance/DELIVERY-AND-RELEASE.md` |
+| Operations and recovery policy | `docs/governance/OPERATIONS-AND-RECOVERY.md` |
+| Implementation authority evidence | `docs/reference/agents/implementation-authority-contract.md` |
+| Shared execution detail | `docs/ops/ai/CORE-RULES.md` |
 
 ## Supersession
 
-The following files are superseded for agent team policy and approval authority:
-
-- `docs/ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md`
-- `docs/ops/ai/SHARED-AGENT-RULES.md` (shared law index; detail in `CORE-RULES.md`)
-- `docs/ops/ai/CHATGPT-RULES.md`
-- `docs/ops/ai/CURSOR-RULES.md`
-
-Do not cite superseded files for team roles, approval routing, or protected stops. Retained historical content in those files is non-authoritative until archived.
+Legacy person-specific agent policy is superseded where it conflicts with this durable role model. Current team mappings belong here or in project manifests, not across broad governance documents.

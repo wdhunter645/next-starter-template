@@ -52,11 +52,41 @@ export function verificationEvidenceFailures(body = '') {
 		});
 	}
 
-	if (/\bLocal verification:\b/i.test(section) && /\bResult:\s*(FAIL|PENDING)\b/i.test(section)) {
-		failures.push({
-			code: 'verification_not_pass',
-			message: 'Merged PR body still reports FAIL or PENDING local verification evidence.',
+	// Scope Local verification checks to that block only (avoid CI/log false positives).
+	const localMatch = section.match(
+		/\bLocal verification:([\s\S]*?)(?=\n[ \t]*CI verification:|\n##\s|$)/i,
+	);
+	if (localMatch) {
+		const localBlock = localMatch[1];
+		if (/\bResult:\s*PASS\s*\/\s*FAIL(?:\s*\/\s*NOT RUN)?\b/i.test(localBlock)) {
+			failures.push({
+				code: 'verification_placeholder',
+				message: 'Merged PR body still contains the unchanged local verification result placeholder.',
+			});
+		} else if (/\bResult:\s*(FAIL|PENDING)\b/i.test(localBlock)) {
+			failures.push({
+				code: 'verification_not_pass',
+				message: 'Merged PR body still reports FAIL or PENDING local verification evidence.',
+			});
+		}
+
+		const commandLines = localBlock
+			.split(/\r?\n/)
+			.map((line) => line.trim())
+			.filter((line) => /^[-*]?\s*Command:/i.test(line));
+		const hasFilledCommand = commandLines.some((line) => {
+			const value = line.replace(/^[-*]?\s*Command:\s*/i, '').trim();
+			if (!value) return false;
+			if (/^(TODO|TBD|____|<[^>]+>)$/i.test(value)) return false;
+			if (/^`\s*`$/.test(value) || value === '``') return false;
+			return true;
 		});
+		if (commandLines.length === 0 || !hasFilledCommand) {
+			failures.push({
+				code: 'missing_verification_commands',
+				message: 'Merged PR body does not record executed local verification commands.',
+			});
+		}
 	}
 
 	return failures;

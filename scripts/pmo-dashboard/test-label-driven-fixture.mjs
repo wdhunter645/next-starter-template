@@ -104,6 +104,13 @@ async function main() {
     }
 
     console.log('PMO label-driven fixture test passed');
+
+    // Keep single-authority transition coverage on the same CI-executed deterministic path.
+    const transition = await execFileAsync('node', [path.join(__dirname, 'test-lifecycle-transitions.mjs')], {
+      env: { ...process.env }
+    });
+    if (transition.stdout) process.stdout.write(transition.stdout);
+    if (transition.stderr) process.stderr.write(transition.stderr);
   } finally {
     await rm(outDir, { recursive: true, force: true });
   }

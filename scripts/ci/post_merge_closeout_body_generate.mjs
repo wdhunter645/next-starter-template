@@ -601,7 +601,11 @@ export async function validateGeneratedBody({
 }
 
 export function writeCloseoutBodyFile({ body, prNumber, workspace = process.cwd(), dryRun = false } = {}) {
-	const bodyPath = path.resolve(workspace, defaultCloseoutBodyPath(prNumber));
+	const relativePath = defaultCloseoutBodyPath(prNumber);
+	if (!relativePath) {
+		throw new Error('writeCloseoutBodyFile requires a non-empty prNumber');
+	}
+	const bodyPath = path.resolve(workspace, relativePath);
 	if (dryRun) {
 		return { bodyPath, written: false };
 	}

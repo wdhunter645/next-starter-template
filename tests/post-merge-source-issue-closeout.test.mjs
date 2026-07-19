@@ -188,7 +188,7 @@ describe('source issue closeout decision', () => {
 		const result = buildResult({
 			pr: { body: baseBody },
 			resolution: { pr: '1239' },
-			metadata: [{ code: 'missing_required_section', message: 'missing' }],
+			metadata: [{ code: 'closeout_blocker_declared', message: 'blocked scaffold' }],
 		});
 
 		expect(result.sync_action).toBe('post_merge_failure');

@@ -189,12 +189,87 @@ function isOpenActive(issue = {}) {
 	);
 }
 
+const HISTORICAL_PR_BODY_HYGIENE_FAILURE_CODES = new Set([
+	'missing_required_section',
+	'missing_advisory_section',
+]);
+
+const UNSAFE_STRUCTURED_FAILURE_CODES = new Set([
+	'auth_token_secret_failure',
+	'secret-access/configuration',
+	'active_alternate_program_lane',
+	'source_issue_linkage_change',
+	'runtime_app_behavior_change',
+	'closeout_runtime_error',
+	'source_issue_authority_conflict',
+]);
+
+const AMBIGUOUS_STRUCTURED_FAILURE_CODES = new Set([
+	'undispositioned_reviewer_comment',
+	'outdated_reviewer_thread_without_disposition',
+	'workflow_failure',
+	'closeout_blocker_declared',
+	'ambiguous_source_issue_candidates',
+	'missing_source_issue',
+	'closeout_exception',
+]);
+
+const UNSAFE_STRUCTURED_EVIDENCE_PATTERN =
+	/\b(auth(?:entication|orization)?|secret|token|configuration|runtime(?:\s+app)?|production|program[- ]lane|source[- ]issue[- ]linkage)\b/i;
+
+const AMBIGUOUS_STRUCTURED_EVIDENCE_PATTERN =
+	/\b(reviewer|review-comment|source issue candidates|ambiguous|manual review|workflow_failure|closeout_blocker_declared)\b/i;
+
+/**
+ * Parse structured failure rows from the generated remediation body.
+ * Generated boilerplate outside this section must not drive escalation.
+ */
+export function extractDetectedFailureConditions(body = '') {
+	const text = String(body || '');
+	const match = text.match(/^## Detected failure condition\s*\n([\s\S]*?)(?=\n## |\n*$)/m);
+	if (!match) return [];
+	const entries = [];
+	for (const line of match[1].split('\n')) {
+		const row = line.match(/^- ([^:\n]+):\s*(.*)$/);
+		if (!row) continue;
+		entries.push({
+			code: String(row[1] || '').trim().toLowerCase(),
+			message: String(row[2] || '').trim(),
+		});
+	}
+	return entries;
+}
+
+function structuredFailureEvidence(parsed = {}) {
+	const conditions = extractDetectedFailureConditions(parsed.body);
+	const failureCode = String(parsed.failure_code || '').trim().toLowerCase();
+	const texts = [];
+	if (failureCode) texts.push(failureCode);
+	for (const condition of conditions) {
+		texts.push(`${condition.code}: ${condition.message}`);
+	}
+	return { failureCode, conditions, texts };
+}
+
+function isHistoricalPrBodyHygieneFinding(parsed = {}) {
+	const { failureCode, conditions } = structuredFailureEvidence(parsed);
+	if (conditions.length > 0) {
+		return conditions.every((condition) => HISTORICAL_PR_BODY_HYGIENE_FAILURE_CODES.has(condition.code));
+	}
+	return HISTORICAL_PR_BODY_HYGIENE_FAILURE_CODES.has(failureCode);
+}
+
 function hasProvenNoRemainingAction(parsed = {}, sourceIssue = {}) {
-	const body = parsed.body || '';
 	if (!isClosedComplete(sourceIssue)) return false;
-	if (/\b(open blocker|blocking issue|remains blocked|ambiguous|manual review|required atlas\/bill decision)\b/i.test(body)) {
+	if (isHistoricalPrBodyHygieneFinding(parsed)) return true;
+
+	const { texts } = structuredFailureEvidence(parsed);
+	const structuredText = texts.join('\n');
+	if (/\b(open blocker|blocking issue|remains blocked|ambiguous|manual review)\b/i.test(structuredText)) {
 		return false;
 	}
+
+	const body = parsed.body || '';
 	return (
 		/\bValidator status: pass\b/i.test(body)
 		|| /\bRemediation required: no\b/i.test(body)
@@ -203,19 +278,32 @@ function hasProvenNoRemainingAction(parsed = {}, sourceIssue = {}) {
 	);
 }
 
-function hasUnsafeOperatorSignal(parsed = {}) {
-	const text = `${parsed.failure_code}\n${parsed.title}\n${parsed.body}`;
-	if (/\bclerical_linkage_mismatch\b/i.test(text)
-		|| /post-merge-clerical-source-issue-reconciliation/i.test(text)) {
-		return /\b(auth|secret|token|configuration|runtime app|production|queue advancement|program lane)\b/i.test(text);
+export function hasUnsafeOperatorSignal(parsed = {}) {
+	const { failureCode, conditions, texts } = structuredFailureEvidence(parsed);
+	if (conditions.length === 0 && (!failureCode || failureCode === 'closeout_exception')) {
+		// Incomplete payloads without structured failure rows are not operator-unsafe
+		// solely because generated remediation boilerplate mentions queue/production text.
+		return false;
 	}
-	return /\b(auth|secret|token|configuration|runtime app|production|queue advancement|program lane|source issue linkage)\b/i.test(text);
+
+	if (UNSAFE_STRUCTURED_FAILURE_CODES.has(failureCode)) return true;
+	if (conditions.some((condition) => UNSAFE_STRUCTURED_FAILURE_CODES.has(condition.code))) {
+		return true;
+	}
+
+	return texts.some((text) => UNSAFE_STRUCTURED_EVIDENCE_PATTERN.test(text));
 }
 
 function hasAmbiguousSignal(parsed = {}) {
 	if (!parsed.pr_number || !parsed.source_issue) return true;
-	const text = `${parsed.failure_code}\n${parsed.body}`;
-	return /\b(reviewer|review-comment|source issue candidates|ambiguous|manual review|required atlas\/bill decision|workflow_failure|closeout_blocker_declared)\b/i.test(text);
+	if (isHistoricalPrBodyHygieneFinding(parsed)) return false;
+
+	const { failureCode, conditions, texts } = structuredFailureEvidence(parsed);
+	if (AMBIGUOUS_STRUCTURED_FAILURE_CODES.has(failureCode)) return true;
+	if (conditions.some((condition) => AMBIGUOUS_STRUCTURED_FAILURE_CODES.has(condition.code))) {
+		return true;
+	}
+	return texts.some((text) => AMBIGUOUS_STRUCTURED_EVIDENCE_PATTERN.test(text));
 }
 
 function canonicalDuplicateMap(parsedIssues = []) {
@@ -304,13 +392,23 @@ export function classifyBacklogIssue(parsed = {}, context = {}) {
 		};
 	}
 
+	if (isHistoricalPrBodyHygieneFinding(parsed) && sourceIssue && isClosedComplete(sourceIssue)) {
+		return {
+			disposition: BACKLOG_DISPOSITIONS.SAFE_TO_CLOSE,
+			issue_number: parsed.number,
+			source_issue: parsed.source_issue,
+			safe_to_close: true,
+			reason: `Historical PR-body hygiene finding with closed-complete source issue #${parsed.source_issue}; no actionable post-merge defect remains.`,
+		};
+	}
+
 	if (hasUnsafeOperatorSignal(parsed)) {
 		return {
 			disposition: BACKLOG_DISPOSITIONS.UNSAFE_OPERATOR_REVIEW_REQUIRED,
 			issue_number: parsed.number,
 			source_issue: parsed.source_issue,
 			safe_to_close: false,
-			reason: 'Finding includes operator-authority, secret/config, runtime, queue, or linkage signals.',
+			reason: 'Finding includes operator-authority, secret/config, runtime, production, program-lane, or linkage signals.',
 		};
 	}
 

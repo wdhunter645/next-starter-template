@@ -7,8 +7,10 @@ import {
 	resolveAllowlist,
 	sanitizeMergedPrBody,
 	validateGeneratedBody,
+	writeCloseoutBodyFile,
 } from '../scripts/ci/post_merge_closeout_body_generate.mjs';
 import { isPermittedClosedSourceIssueFollowup } from '../scripts/ci/post_merge_validator.mjs';
+import { defaultCloseoutBodyPath } from '../scripts/ci/post_merge_closeout_trigger.mjs';
 
 describe('post_merge_closeout_body_generate', () => {
 	it('sanitizes auto-repair and blocked status from merged PR bodies', () => {
@@ -202,5 +204,13 @@ placeholder
 		});
 		expect(result.status).toBe('fail');
 		expect(result.failures.length).toBeGreaterThan(0);
+	});
+
+	it('rejects invalid prNumber inputs before writing closeout body files (#1945/#2630)', () => {
+		for (const prNumber of ['', '   ', 0, '0', 'NaN', '-1', '1.5', '../etc/passwd', '12/34', '12..34']) {
+			expect(defaultCloseoutBodyPath(prNumber)).toBe('');
+			expect(() => writeCloseoutBodyFile({ body: 'x', prNumber })).toThrow(/non-empty prNumber/i);
+		}
+		expect(defaultCloseoutBodyPath('2630')).toBe('scripts/ci/post-merge-closeout/pr-2630-body.md');
 	});
 });
