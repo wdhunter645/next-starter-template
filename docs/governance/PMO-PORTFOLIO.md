@@ -2,10 +2,10 @@
 Doc Type: Governance
 Audience: Human + AI
 Authority Level: Domain Policy
-Owns: PMO intake, work sizing, Medium Model A/B selection, launch authorization, portfolio inventory rules, and authoritative priority decisions
-Does Not Own: Delivery execution, CI gate behavior, agent runtime routing, administrative-control mutation procedure, or production merge approval
+Owns: PMO intake, work sizing, delivery-model selection, Sandbox authorization, launch authorization, portfolio inventory, and authoritative priority decisions
+Does Not Own: Development execution, Promotion Candidate execution, CI implementation, Administration & Communications mutation procedure, Day-2 recovery strategy, or Production approval
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2477, #2487, #2641
+Related Issues: #2477, #2487, #2640, #2641
 Last Reviewed: 2026-07-19
 ---
 
@@ -13,41 +13,76 @@ Last Reviewed: 2026-07-19
 
 ## Purpose
 
-This document is the canonical **PMO and Portfolio** domain policy. It defines how work enters the portfolio, how size is classified, and how Medium work selects Model A or Model B before launch.
+This document defines how work enters the portfolio, how it is designed and sized, when an optional Sandbox is used, how a delivery model is selected, and when implementation Go is authorized.
 
-Shared delivery metadata values and parser fields live in `docs/reference/pmo/work-size-and-delivery-model-contract.md`. Execution steps live in `docs/how-to/pmo/classify-work-and-select-delivery-model.md`.
+PMO / Engineering owns the decision package. Administration & Communications prepares, routes, records, and reconciles the package but does not make the decision.
 
-Administrative reconciliation of already-authorized PMO state is owned by the Operations and Recovery administrative control lane. That lane may correct PMO labels, parent/child links, lifecycle reporting, and dashboard state only when this policy, a source Issue, or an explicit Bill/Chat decision already establishes the correct value. It must not create or change priority, size, delivery model, launch authority, objectives, or dependency order.
+## Intake
 
-## Intake rule
+Every one-off, project, and program enters PMO with:
 
-Every one-off, project, and program enters PMO as:
+- stated objective;
+- provisional size;
+- Product Authority and PMO / Engineering roles;
+- initial priority;
+- known constraints and dependencies;
+- current lane and profile;
+- unresolved design assumptions.
 
-```text
-Size: medium-provisional
-```
+Provisional intake is not launch authority.
 
-Classification from evidence must complete before launch authorization. Provisional intake is not a final size.
+## Design and planning
+
+Before implementation Go, PMO / Engineering defines:
+
+- requirements and acceptance criteria;
+- architecture and design;
+- scope and non-goals;
+- dependencies and protected stops;
+- verification and rollback expectations;
+- delivery model;
+- whether Sandbox evidence is needed;
+- Development work package;
+- Promotion Candidate expectations;
+- Production and Day-2 boundaries.
+
+## Sandbox authority
+
+Sandbox is an optional PMO / Engineering proof-of-concept profile.
+
+Use Sandbox when factual experimentation can reduce material design uncertainty before Development.
+
+Sandbox requirements:
+
+- isolated remote branch or environment;
+- a clear question or assumption to test;
+- scaled-down safety checks;
+- no Production credentials, writes, bindings, or promotion path;
+- explicit result: discard, retain evidence, or adopt into Development.
+
+Sandbox is not implementation Go and cannot promote directly to Promotion Candidate or Production.
+
+When Sandbox output is adopted, PMO / Engineering converts the evidence into a normal Development work package and identifies experimental shortcuts that must be removed, tested, or hardened.
 
 ## Size contract
 
 ### Small
 
-Small requires **all** of the following:
+Small requires all of the following:
 
 - one complete and independently reviewable PR;
 - one-step rollback;
-- full preview-testable behavior;
+- full pre-Production testability;
 - no unresolved architecture decision;
 - no protected multi-step boundary;
-- no harmful incomplete production state.
+- no harmful incomplete Production state.
 
 ### Large
 
-Large is satisfied when **any** of the following is true:
+Large is satisfied when any of the following is true:
 
 - multiple deployable components;
-- multiple planned production promotions;
+- multiple planned Production promotions;
 - multiple architectural or data domains requiring independent release units;
 - several protected boundaries;
 - a platform migration or repository-wide operating-model change.
@@ -56,68 +91,97 @@ Large is satisfied when **any** of the following is true:
 
 Medium is everything not objectively Small or Large.
 
-## Medium Model A/B decision
+## Delivery-model selection
 
-Select **Model A** only when **every** condition is true:
+Select Model A only when the complete solution fits one reviewable PR, can become a complete Promotion Candidate before merge, and has one-step rollback.
 
-1. The complete solution fits one reviewable PR.
-2. The full behavior can be tested before production.
-3. Intermediate production state is irrelevant because there is only one promotion.
-4. Rollback is one controlled action.
-5. No protected multi-step boundary requires isolated integration.
+Any failed condition selects Model B.
 
-Any failed condition selects **Model B**.
+Model B is the default for remote component-branch implementation, multiple Development increments, or work needing integrated Promotion Candidate qualification.
 
-No Medium case may satisfy both Model A and Model B for the same evidence set.
+No work may use both Model A and Model B for the same release unit.
+
+## Promotion-profile planning
+
+PMO / Engineering records the intended profile path:
+
+```text
+optional Sandbox -> Development -> Promotion Candidate -> Production
+```
+
+For Model A, the single PR itself becomes the Promotion Candidate before Production merge.
+
+For Model B:
+
+- child tasks execute in Development;
+- integrated component state becomes the Promotion Candidate;
+- Production is a separate controlled promotion.
+
+Development cannot promote directly to Production.
+
+## Implementation Go
+
+Implementation Go authorizes Development execution against a complete work package. It does not authorize Production promotion.
+
+After Go:
+
+- routine PMO ceremony does not throttle Development;
+- independent tasks may proceed while prior tasks are review- or administration-pending;
+- PR review pauses the affected task, not the entire project;
+- PMO / Engineering remains available for lightweight problem adjustment;
+- material plan changes return to PMO / Engineering authority.
+
+## Lightweight problem adjustment
+
+When Implementation / Operations reports `PROBLEM FOUND`, PMO / Engineering should first determine whether a bounded adjustment can preserve the approved objective and acceptance criteria.
+
+```text
+PROBLEM FOUND
+  -> PMO / Engineering reviews evidence
+  -> GUIDANCE or ADJUSTMENT
+  -> Administration & Communications records
+  -> RESUME
+```
+
+Use formal `PLAN CHANGE REQUIRED` only when product outcome, architecture, acceptance, dependency structure, delivery model, Production boundary, or release strategy materially changes.
 
 ## Emergency exit
 
-Emergency conditions leave the normal sizing tree and route to `emergency-recovery` per `docs/governance/OPERATIONS-AND-RECOVERY.md`.
+Production degradation, outage, unsafe behavior, or material risk exits normal PMO sequencing and routes to Day-2 Operations.
 
-Emergency routing does not reuse Medium Model A/B logic.
+A broad assessment hold may pause PMO while impact is unknown. Once scope, probable cause, containment, and resolution ownership are sufficiently understood, unaffected PMO work may resume.
 
 ## Portfolio rules
 
-- GitHub program and project issues are the durable portfolio record.
-- Bill makes final prioritization decisions; Atlas may recommend elevation when repository risk blocks website build-out.
-- Website build-out programs default to Priority #1 unless a repository need materially blocks safe execution.
-- Drive notebooks are planning inputs only; repository authority requires issue/PR merge.
-- Administrative-control corrections may reconcile PMO metadata to existing authority but must not originate priority, launch, sizing, delivery-model, objective, or sequencing decisions.
-- PMO reporting lag is not an execution blocker unless the missing or contradictory metadata prevents authority, dependency, validation, approval, closeout, or collision safety from being determined.
-- Independent approved projects may proceed in parallel. PMO and administrative reporting must represent each lane independently and must not create a repository-wide execution lock.
+- GitHub program and project Issues are the durable portfolio record.
+- Product Authority makes final priority decisions.
+- PMO / Engineering may recommend elevation when repository risk blocks safe website build-out.
+- Planning tools outside the repository are inputs only.
+- PMO reporting lag is not an execution blocker unless it prevents authority, dependency, safety, validation, approval, profile transition, or closeout from being determined.
+- Independent approved projects may proceed in parallel.
+- The portfolio must represent Sandbox, Development, Promotion Candidate, Production, and Day-2 state independently.
 
-## Administrative control interface
+## Administration & Communications interface
 
-The administrative control lane may:
+Administration & Communications may:
 
-- reconcile `pmo`, priority, lifecycle, task/project/program, active, queued, blocked, complete, and reporting labels to an authoritative value;
-- correct parent/child and program/project references;
-- update PMO dashboards and portfolio reports from live Issue and PR state;
-- record final clarification and closeout-exception disposition;
-- correct stale or contradictory PMO metadata;
-- preserve the historical audit trail through comments or bounded exception Issues.
+- prepare Go/No-Go and Promotion Candidate evidence packets;
+- reconcile PMO labels, parent/child links, lifecycle reporting, and dashboard state to existing authority;
+- route decisions, acknowledgments, escalation, holds, resumes, and closeout;
+- preserve historical evidence.
 
-It may not:
-
-- set or change priority without an explicit Bill-authorized or canonical PMO source;
-- change work size or delivery model without a completed PMO classification decision;
-- launch a project or program;
-- change objectives, acceptance criteria, dependencies, or successor order;
-- convert reporting preferences into implementation gates.
-
-The stable contract is `docs/reference/operations/administrative-control-lane-contract.md`.
+It may not originate or change priority, size, delivery model, objective, acceptance, dependency, profile, launch authority, or Production Go.
 
 ## Canonical references
 
 | Topic | Owner |
 | --- | --- |
+| Lane and promotion-profile definitions | `docs/reference/operations/operating-lanes-and-promotion-profiles.md` |
+| Delivery and release policy | `docs/governance/DELIVERY-AND-RELEASE.md` |
+| Administration & Communications | `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md` |
 | Size and delivery-model facts | `docs/reference/pmo/work-size-and-delivery-model-contract.md` |
 | Classification procedure | `docs/how-to/pmo/classify-work-and-select-delivery-model.md` |
-| Delivery metadata parser | `docs/reference/ci/delivery-profile-contract.md` |
-| Administrative control lane | `docs/governance/OPERATIONS-AND-RECOVERY.md` |
-| Administrative mutation contract | `docs/reference/operations/administrative-control-lane-contract.md` |
-| Program registry and backlog indexes | `docs/ops/pmo/program-registry.md`, `docs/ops/pmo/pmo-backlog.md` |
 
 ## Supersession
 
-`docs/ops/pmo/PMO-V4-OPERATING-MODEL.md` is superseded for sizing, Model A/B selection, launch policy, and administrative-control authority. Retained operational detail in that file remains non-authoritative execution context until archived in a later disposition pass.
+Lower-level PMO instructions are superseded where they permit administrative reporting, generic predecessor state, or routine per-task PMO review to block independent Development after implementation Go.
