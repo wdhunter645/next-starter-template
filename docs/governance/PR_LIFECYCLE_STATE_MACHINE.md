@@ -214,7 +214,7 @@ GitHub records the PR as merged.
 
 ### Transition to CLOSEOUT VERIFIED
 
-Successful post-merge closeout CI is the primary merge-triggered administrative actor. It should atomically:
+Successful post-merge closeout CI is the primary merge-triggered administrative actor where configured for the PR base. It should atomically:
 
 1. verify the merged PR and merge commit;
 2. verify post-merge validation and accepted exceptions;
@@ -224,7 +224,15 @@ Successful post-merge closeout CI is the primary merge-triggered administrative 
 6. create or update one bounded exception only when required;
 7. verify the final state.
 
-The broader administrative lane handles failed, partial, missing, contradictory, non-merge, or later-discovered housekeeping. It must not duplicate a successful closeout transaction.
+### Current non-`main` implementation boundary
+
+The current `.github/workflows/post-merge-closeout.yml` runs only for merged PRs whose base is `main`.
+
+For Model B child PRs and other authorized non-`main` integrations, the administrative control lane must execute or verify the equivalent closeout until deterministic CI coverage is expanded. A non-`main` merge is not `CLOSEOUT VERIFIED` until source-Issue state, terminal labels, parent/project reporting, successor disposition, and exception state are reconciled.
+
+The manual or scheduled administrative path must remain idempotent, avoid duplication if later automation runs, and must not block independent approved lanes.
+
+The broader administrative lane also handles failed, partial, missing, contradictory, non-merge, or later-discovered housekeeping. It must not duplicate a successful closeout transaction.
 
 ### Stop
 
@@ -283,7 +291,9 @@ Evidence surfaces: <GitHub checks, reviews, Issue, closeout record>
 
 Pre-merge CI should enforce deterministic material invariants and avoid duplicating GitHub-native state in PR-body fields.
 
-Post-merge CI should enforce the `MERGED -> CLOSEOUT VERIFIED` transition as the single primary closeout owner. A failure creates or updates one bounded exception and avoids repeated self-healing mutation loops.
+Post-merge CI should enforce the `MERGED -> CLOSEOUT VERIFIED` transition as the single primary closeout owner for every supported integration base. Until coverage is complete, the administrative lane supplies the equivalent evidence-backed transaction for unsupported bases.
+
+A failure creates or updates one bounded exception and avoids repeated self-healing mutation loops.
 
 A deterministic clerical defect may be repaired when exactly one authoritative result exists. Material ambiguity, objective changes, scope conflicts, unmet acceptance criteria, unresolved required review findings, or missing approval stop for the owning authority.
 
