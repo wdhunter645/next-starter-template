@@ -12,7 +12,7 @@
     "enabled": false,
     "autoOperationalHolds": false,
     "autoRemediation": false,
-    "description": "When disabled, the conservative serialized planner is authoritative and automatic operational holds are off. Enabling activates #2639/#2640 four-lane lane state, nested PR review, Administration & Communications non-blocking rules, and Day-2 preemption."
+    "description": "When disabled, the conservative serialized planner is authoritative and automatic operational holds are off. Enabling activates #2639/#2640 four-lane lane state, nested PR review, Administration & Communications non-blocking rules, Day-2 preemption, and the deterministic Sandbox→Development→Promotion Candidate→Production→Day-2 promotion-profile transition matrix with prohibited-bypass gates."
   },
   "repository": "wdhunter645/next-starter-template",
   "projectIssue": 2294,

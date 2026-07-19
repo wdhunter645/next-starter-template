@@ -8,6 +8,25 @@
  * planning — the conservative serialized planner remains authoritative.
  */
 
+import {
+  evaluateProfileTransition,
+  gateActionByPromotionProfile,
+  resolvePromotionProfileState,
+} from './promotion-profile-matrix.mjs';
+
+export {
+  ALLOWED_PROFILE_TRANSITIONS,
+  PROMOTION_PROFILES,
+  PROHIBITED_PROFILE_BYPASSES,
+  assertProfileTransition,
+  evaluateProfileTransition,
+  gateActionByPromotionProfile,
+  listAllowedTransitions,
+  listProhibitedBypasses,
+  normalizePromotionProfile,
+  resolvePromotionProfileState,
+} from './promotion-profile-matrix.mjs';
+
 export const HORIZONTAL_LANES = Object.freeze([
   'pmo-engineering',
   'implementation-operations',
@@ -246,18 +265,23 @@ export function resolveOperatingLaneState(input = {}) {
       }
     : { active: false, marker: null, awaiting: null };
 
+  const promotionProfile = resolvePromotionProfileState(input);
+
   return {
     topology: {
       horizontal: [...HORIZONTAL_LANES],
       vertical: VERTICAL_LANE,
     },
+    promotionProfile,
     lanes: {
       'pmo-engineering': { status: pmoStatus },
       'implementation-operations': {
         status: implementationStatus,
         nestedReview,
         implementationHandoffComplete: nestedReview.implementationHandoffComplete,
-        profile: input.profile || 'development',
+        profile: promotionProfile.unknownRawProfile
+          ? 'none'
+          : (promotionProfile.current === 'none' ? 'development' : promotionProfile.current),
       },
       'day2-operations': { status: day2Status },
       'administration-communications': {
@@ -329,6 +353,47 @@ export function planFourLaneAction(snapshot, policy = {}) {
   const lanes = snapshot.operatingLanes;
   if (!lanes) {
     return { class: 'halt', reason: 'four_lane_state_missing', mutations: [] };
+  }
+
+  // Fail closed on prohibited promotion-profile bypasses before any delivery action.
+  if (lanes.promotionProfile?.unknownRawProfile || lanes.promotionProfile?.unknownRequestedProfile) {
+    return {
+      class: 'halt',
+      reason: 'unknown_profile',
+      mutations: [],
+      promotionProfile: {
+        code: 'unknown_profile',
+        allowed: false,
+        raw: lanes.promotionProfile.rawProfile,
+      },
+    };
+  }
+  const requestedProfile = policy.targetProfile || snapshot.requestedProfile || lanes.promotionProfile?.requested;
+  if (requestedProfile) {
+    const profileGate = gateActionByPromotionProfile({
+      currentProfile: lanes.promotionProfile?.current || snapshot.profile || 'none',
+      targetProfile: requestedProfile,
+      actionClass: 'profile_transition',
+    });
+    if (profileGate.gated) {
+      return {
+        class: 'halt',
+        reason: profileGate.reason,
+        mutations: [],
+        promotionProfile: profileGate.decision,
+      };
+    }
+  }
+  if (policy.targetProfile && policy.currentProfile) {
+    const explicit = evaluateProfileTransition(policy.currentProfile, policy.targetProfile);
+    if (!explicit.allowed) {
+      return {
+        class: 'halt',
+        reason: explicit.code,
+        mutations: [],
+        promotionProfile: explicit,
+      };
+    }
   }
 
   const hold = lanes.operationalHold;
