@@ -1,127 +1,174 @@
 # LGFC PR Governance Skill
 
-Use this skill for PR creation, PR updates, source Issue linkage, scope control, labels, file allowlists, acceptance criteria, GitHub-native lifecycle transitions, administrative-state synchronization, closeout preparation, and post-merge closeout evidence.
+Use this skill for PR creation, updates, source-Issue linkage, scope control, promotion-profile validation, independent review, Administration & Communications synchronization, and closeout evidence.
 
-## Documentation chain (required before PR work)
+## Required authority chain
 
-Before any PR, issue, review, remediation, administrative reconciliation, or implementation work, complete the mandatory chain in [`Agent.md`](../../../Agent.md):
+Before PR work, read:
 
-`/Agent.md` → `/docs/ops/ai/SHARED-AGENT-RULES.md` → `/docs/ops/ai/CORE-RULES.md` → applicable agent-specific rules under `/docs/ops/ai/` → `/.agents/skills/lgfc-pr-governance/SKILL.md` and `/.github/pull_request_template.md` → `/docs/governance/PR_PROCESS.md` → `/docs/governance/PR_LIFECYCLE_STATE_MACHINE.md` → other applicable governance docs under `/docs/governance/`.
+1. `Agent.md`
+2. `docs/governance/REPOSITORY-AUTHORITY.md`
+3. `docs/governance/AGENT-TEAM.md`
+4. `docs/ops/ai/CORE-RULES.md`
+5. `docs/governance/PR_PROCESS.md`
+6. `docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`
+7. `docs/governance/DELIVERY-AND-RELEASE.md`
+8. `docs/reference/operations/operating-lanes-and-promotion-profiles.md`
+9. source Issue and applicable task documents
 
-For Issue/PR metadata correction, final clarification, PMO/reporting reconciliation, queue housekeeping, non-merge disposition, or closeout exceptions, also read:
+For routing, labels, holds, communication, or closeout also read:
 
-- `/docs/governance/OPERATIONS-AND-RECOVERY.md`
-- `/docs/reference/operations/administrative-control-lane-contract.md`
-- `/docs/ops/pmo/queue-watch-and-dispatch-protocol.md`
-- `/docs/ops/pmo/github-issue-closeout-protocol.md`
-
-Do not open, update, mark ready, request merge, administratively mutate, or claim closeout for a PR until the applicable authority has been read for the current task.
+- `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md`
+- `docs/reference/operations/administrative-control-lane-contract.md`
+- `docs/ops/ai/chatgpt-cursor-handoff-workflow.md`
+- `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`
+- `docs/ops/pmo/github-issue-closeout-protocol.md`
 
 ## Required inputs
 
-- One open primary source Issue.
-- A clear task scope.
-- Exact files expected to change.
-- The intended PR label and PR class.
-- Delivery-profile facts when applicable.
-- Current GitHub PR, check, review, and Issue state when updating an existing PR.
-- Exact administrative authority and evidence when changing Issue or PR state, labels, assignment, routing, reporting, queue, or closeout metadata.
+- one primary source Issue;
+- durable owner roles;
+- horizontal lane;
+- promotion profile;
+- delivery model;
+- target branch/environment;
+- allowed paths and non-goals;
+- acceptance and validation requirements;
+- protected/operational hold state;
+- current PR, check, review, and Issue evidence.
 
-## Core PR-body rule
+## Promotion-profile rule
 
-Canonical `docs/governance/PR_PROCESS.md` controls the PR body.
+Allowed progression:
 
-The PR body stores stable facts only. It must not become a database for:
+```text
+Sandbox -> Development -> Promotion Candidate -> Production
+```
 
-- draft/review/merge lifecycle state;
-- live CI status;
-- review comment IDs or thread state;
-- approval state;
-- queue or successor state;
-- administrative exceptions;
-- post-merge closeout state.
+Prohibited:
 
-Dynamic state belongs in GitHub-native PR state, checks, reviews, threads, Issues, labels, assignments, comments, and closeout records.
+```text
+Sandbox -X-> Promotion Candidate
+Sandbox -X-> Production
+Development -X-> Production
+```
+
+### Sandbox PR
+
+- isolated Sandbox target;
+- scaled-down safety gates;
+- no Production claim or path;
+- result is discard, evidence-only, or Development adoption.
+
+### Development PR
+
+- targets approved non-main Development/component branch;
+- uses automated build/test/security/scope/metadata gates;
+- eligible non-protected work may integrate automatically;
+- protected/material work requires PR Approver / Engineering;
+- does not claim whole-feature Production readiness.
+
+### Promotion Candidate
+
+- exact integrated candidate identity;
+- full applicable qualification and standards reconciliation;
+- Go, No-Go, or return-to-Development decision;
+- mandatory before Production.
+
+### Production PR
+
+- exact approved candidate;
+- no unreviewed drift;
+- full repository standards;
+- required Engineering and Production authority;
+- rollback and live-verification plan.
+
+## PR-body rule
+
+The PR body stores stable facts only:
+
+- source Issue;
+- intent and PR class;
+- delivery model and promotion profile;
+- target branch/environment;
+- component/candidate identity when applicable;
+- allowlist and out-of-scope declaration;
+- change summary;
+- verification already run;
+- acceptance criteria;
+- rollback summary;
+- follow-up declaration;
+- reviewer/bot attestation.
+
+Do not use the PR body as a live database for draft/review/merge state, checks, threads, approval, queue, hold, incident, or closeout state.
 
 ## Procedure
 
-1. Confirm the PR has exactly one primary source Issue line in the body:
-   - `- **Issue:** #123`
-2. Treat umbrella, parent, program, and ops tracker links as context only unless explicitly identified as the primary source Issue.
-3. Define the file-touch allowlist before implementation starts.
-4. Reject mixed-intent work. Split unrelated changes into separate PRs.
-5. Keep stable PR-body facts aligned with `.github/pull_request_template.md` and the final diff.
-6. Use one intent label only.
-7. Apply `/docs/governance/PR_LIFECYCLE_STATE_MACHINE.md` using GitHub-native evidence:
-   - `NO PR -> DRAFT`
-   - `DRAFT -> READY FOR REVIEW`
-   - `READY FOR REVIEW -> READY FOR MERGE`
-   - `READY FOR MERGE -> HUMAN MERGE DECISION`
-   - `HUMAN MERGE DECISION -> MERGED`
-   - `MERGED -> CLOSEOUT VERIFIED`
-8. Treat `READY FOR REVIEW` and `READY FOR MERGE` as distinct logical states. Review-ready does not equal merge-ready.
-9. Do not claim merge readiness until required checks, source-Issue accounting, independent review, review-thread disposition, protected-boundary requirements, and predictable closeout integrity are complete.
-10. Record lifecycle, review, validation, approval, queue, and closeout evidence on their owning GitHub surfaces—not as dynamic PR-body fields.
-11. For every administrative mutation, identify the authoritative fact, re-read current state immediately before mutation, suppress duplicate or stale action, apply only the allowed administrative change, and verify afterward.
-12. Do not use administrative authority to change objectives, acceptance criteria, file allowlists, technical design, delivery model, validation, approval, priority, dependencies, or successor order.
-13. Do not create synthetic tracker Issues or dynamic PR-body ledgers to compensate for missing process state.
-14. Do not change runtime behavior in docs-only or ops-only PRs.
-15. Include exact verification commands and results in the handoff or PR summary when stable and already run.
+1. Confirm one primary source Issue.
+2. Confirm role, lane, profile, delivery model, target, and allowlist.
+3. Reject mixed-intent or prohibited profile transitions.
+4. Confirm stable PR facts match the current diff.
+5. Read current checks, reviews, threads, labels, holds, and candidate identity from GitHub-native surfaces.
+6. Apply profile-appropriate gates.
+7. Distinguish automated Development eligibility from human Engineering approval.
+8. Do not allow Implementation / Operations to self-approve protected work or Production promotion.
+9. Record the appropriate disposition:
+   - `APPROVED FOR INTEGRATION`
+   - `ADJUSTMENT`
+   - `PLAN CHANGE REQUIRED`
+   - `PROMOTION CANDIDATE READY`
+   - `PRODUCTION GO`
+   - `HOLD`
+10. Re-read current state immediately before merge, integration, or administrative mutation.
+11. Verify closeout at the correct level; do not claim Production completion from Development integration.
 
-## Required stable PR body facts
+## Lightweight correction
 
-The PR body should include the stable facts defined by the current template and canonical PR policy:
+When a PR exposes a problem:
 
-- Primary Issue line.
-- Intent label.
-- PR class.
-- Delivery-profile facts when applicable.
-- File-touch allowlist.
-- Out-of-scope declaration.
-- Change summary.
-- Verification summary for commands already run.
-- Acceptance criteria.
-- Follow-up Issue declaration.
-- Reviewer/bot review attestation.
+```text
+PROBLEM FOUND
+  -> route to the role that made the controlling decision
+  -> GUIDANCE or ADJUSTMENT
+  -> Administration & Communications records
+  -> RESUME
+```
 
-Do not require PR lifecycle state, live check status, reviewer disposition ledgers, queue state, administrative exception state, or post-merge closeout prediction as PR-body fields.
-
-## Administrative-control rule
-
-The administrative control lane may reconcile repository state to existing authority. It must not create new execution authority.
-
-Successful post-merge closeout CI is the primary merge-triggered administrative actor. A later agent must not duplicate a successful closeout transaction. The administrative lane handles failed, partial, missing, contradictory, non-merge, or later-discovered housekeeping exceptions.
-
-Administrative reporting is non-blocking unless a required source-Issue, authority, dependency, validation, review, approval, closeout, collision, production, or safety invariant is missing, contradictory, or failed.
+Pause only the affected scope unless evidence requires more. Use `PLAN CHANGE REQUIRED` for material changes to product outcome, architecture, acceptance criteria, dependency structure, delivery model, profile path, Production boundary, or recovery strategy.
 
 ## Minimal-gate rule
 
-Do not introduce a gate merely to duplicate information available from GitHub-native state.
+A required gate must protect a material invariant:
 
-Required gates must protect a material invariant such as:
-
-- source-Issue authority;
+- source authority;
 - scope or branch boundary;
+- profile transition;
 - required validation;
-- independent review or approval;
-- protected-change or production boundary;
-- predictable post-merge closeout integrity.
+- independent review/approval;
+- protected or Production boundary;
+- candidate identity;
+- predictable closeout integrity.
 
-Dashboard freshness, optional PMO comments, cosmetic label order, dynamic PR-body lifecycle fields, and session presence are not independent PR gates.
+Dashboard freshness, optional comments, cosmetic label order, duplicated PR-body state, and session presence are not independent gates.
+
+## Administration & Communications rule
+
+Administration & Communications may reconcile routing, labels, assignments, evidence, holds, resumes, reporting, and closeout to existing authority.
+
+It must not create design, implementation, approval, recovery, or Production authority.
+
+Routine administrative closeout does not block an independent Development successor.
 
 ## Stop conditions
 
-Stop and request correction when:
+Stop the affected transition when:
 
-- No primary source Issue exists.
-- More than one primary source Issue is present.
-- The requested diff spans unrelated intents.
-- The task conflicts with canonical design or governance documentation.
-- The file allowlist does not match the intended diff.
-- The current GitHub lifecycle state is unclear.
-- Administrative authority or evidence is ambiguous.
-- A requested administrative action would change project objectives, technical scope, acceptance criteria, delivery model, validation, approval, priority, dependency, or successor authority.
-- The PR would predictably fail post-merge closeout and the failure can be corrected before merge.
-- An agent claims merge readiness while required checks, source-Issue accounting, independent review, required review threads, protected boundaries, or closeout integrity remain incomplete.
-- An agent treats `READY FOR REVIEW` as merge-ready.
-- Any document requires dynamic lifecycle or closeout state to be written into the PR body contrary to canonical `PR_PROCESS.md`.
+- source authority is missing or contradictory;
+- role, lane, profile, target, or candidate identity is unclear;
+- diff exceeds the allowlist or mixes intents;
+- required checks or independent review are missing or failed;
+- protected or operational hold applies;
+- a prohibited profile transition is attempted;
+- Production work differs from the approved candidate;
+- closeout would falsely claim a higher completion level;
+- the current plan cannot satisfy acceptance without material change.
