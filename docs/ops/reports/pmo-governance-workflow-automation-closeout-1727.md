@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Task #1727 Program #1719 closeout checklist, deferred-work table, evidence index, and Bill/Atlas acceptance packet for component-branch construction completion
 Does Not Own: Workflow YAML, CI scripts, runtime code, unauthorized issue mutation, Cursor self-merge, automatic merge to main, or Bill/ChatGPT promotion approval
 Canonical Reference: /docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md
-Related Issues: #1727, #1719, #1720, #1721, #1722, #1723, #1724, #1725, #1726
-Last Reviewed: 2026-07-16
+Related Issues: #1727, #1719, #1720, #1721, #1722, #1723, #1724, #1725, #1726, #2647
+Last Reviewed: 2026-07-19
 ---
 
 # Program #1719 Closeout and Launch-Control Package (#1727)
@@ -18,6 +18,19 @@ Consolidate Program `#1719` construction evidence on
 status, list deferred work, and prepare the Bill/Atlas acceptance packet for
 component-branch completion. Promotion to `main` remains a separate
 Bill/ChatGPT decision.
+
+## Scope
+
+- Owns the Task #1727 closeout checklist, deferred-work table, evidence index, and Bill/Atlas acceptance packet for component-branch construction completion.
+- Does not own workflow YAML, CI scripts, runtime code, unauthorized issue mutation, Cursor self-merge, automatic merge to `main`, or Production promotion.
+- Successor Task #2647 owns Promotion Candidate synchronization with current `main` and candidate qualification evidence; it does not replace this construction closeout packet.
+
+## Current known truth
+
+- Program #1719 documentation construction on `component/pmo-governance-workflow-automation` completed through Tasks #1720–#1727 (#1725 previously complete; not rerun).
+- Accepted component identity recorded for #2647: `5a005e9e1c3ccff04192709a833d100e35b5874a`.
+- Bill/Atlas construction acceptance and Bill/ChatGPT Production promotion remain separate checklist items below; #2647 prepares the Promotion Candidate after main synchronization.
+- Deferred candidates C-01–C-06 still require new source issues and are not incomplete #1719 construction blockers.
 
 ## Child-task evidence index
 

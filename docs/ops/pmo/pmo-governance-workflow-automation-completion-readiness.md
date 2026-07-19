@@ -5,13 +5,13 @@ Authority Level: Operational Authority
 Owns: Priority #3 PMO readiness decision, governance/workflow automation program candidate scope, child-project boundaries, design/readiness state, Cursor launch preconditions
 Does Not Own: Runtime implementation, workflow code, CI script changes, issue creation, merge authority, production secrets, vendor configuration, unauthorized GitHub issue mutation
 Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
-Related Issues: #1713, #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1500, #1255, #1259, #1685, #1700, #1719, #1720, #1721, #1722, #1725
-Last Reviewed: 2026-07-16
+Related Issues: #1713, #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1500, #1255, #1259, #1685, #1700, #1719, #1720, #1721, #1722, #1725, #1727, #2640, #2647
+Last Reviewed: 2026-07-19
 ---
 
 # PMO Governance / Workflow Automation Completion Readiness
 
-> **Construction state (2026-07-16):** Program #1719 documentation construction on the project component branch is complete through Task #1727. Closeout packet: `docs/ops/reports/pmo-governance-workflow-automation-closeout-1727.md`. Bill/Atlas acceptance and Bill/ChatGPT-approved promotion to `main` remain outstanding. Cursor may not approve, merge to `main`, or mutate issues.
+> **Construction state (2026-07-19):** Program #1719 documentation construction on the project component branch is complete through Task #1727. Closeout packet: `docs/ops/reports/pmo-governance-workflow-automation-closeout-1727.md`. Task #2647 synchronizes the accepted component identity with current `main` (including #2640 four-lane/four-profile authority) and prepares an exact Promotion Candidate for Atlas Go/No-Go. Bill/ChatGPT-approved Production promotion to `main` remains a separate successor. Cursor may not approve, merge to `main`, or mutate issues.
 
 ## Purpose
 
@@ -39,10 +39,12 @@ This document does not launch implementation, create child issues, authorize Cur
 ## Current known truth
 
 - Program #1719 documentation construction is **complete on the component branch** through Task #1727. #1725 closed complete earlier and was not rerun.
+- Accepted component identity before #2647 synchronization: `5a005e9e1c3ccff04192709a833d100e35b5874a` on `component/pmo-governance-workflow-automation`.
+- Task #2647 consumes current `main` (including #2640 four-lane/four-profile authority) to prepare an exact Promotion Candidate; it does not promote or merge to `main`.
 - #1411 is closed and completed as a planning/control artifact (historical evidence only).
 - #1417–#1424 exist as stale historical task issues with older PMO terminology; they are evidence only and must not be mutated or treated as current source issues.
 - Program #1500 closed complete; Task #1725 recorded queue/wave and closeout reconciliation.
-- Cursor completed the authorized serial docs chain. Promotion to `main` remains Bill/ChatGPT authority. Deferred workflow/CI candidates require new source issues (`#1726` / `#1727` reports).
+- Cursor completed the authorized serial docs chain. Production promotion to `main` remains Bill/ChatGPT authority after Atlas Promotion Candidate Go. Deferred workflow/CI candidates require new source issues (`#1726` / `#1727` reports).
 
 ## Intended final state
 
@@ -65,7 +67,7 @@ The intended final state before implementation launch is:
 | PMO source | PMO Backlog ranks 3–10 |
 | Source issue | #1719 |
 | Execution agent after launch | Cursor, under continuous reduced-gate + Model B `component-auto-integration` on the project component branch; Bill/ChatGPT for promotion to `main` |
-| Current readiness | Construction complete (component) — Bill/Atlas acceptance + promotion to `main` pending |
+| Current readiness | Construction complete (component); #2647 Promotion Candidate synchronization with current `main` in progress — Production promotion to `main` still Bill/ChatGPT |
 | Primary implementation plan | `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md` |
 | Primary governance authority | `docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md` |
 | Product surface | PMO governance, workflow automation design, queue/closeout controls, PR readiness, and execution contracts |
