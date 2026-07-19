@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: Project #2294 startup, observation, operation, watcher behavior, local poller handling, health checks, troubleshooting, disable, rollback, and recovery
 Does Not Own: Project launch approval, production merge approval, product priority, repository settings, credentials, secrets, or external-service authorization
 Canonical Reference: /docs/explanation/projects/agent-issue-polling-handoff-routing-design.md
-Related Issues: #2294, #2546, #2550, #2554
-Last Reviewed: 2026-07-17
+Related Issues: #2294, #2546, #2550, #2554, #2601, #2634, #2635, #2636, #2637, #2638
+Last Reviewed: 2026-07-19
 ---
 
 # Operate Agent Issue Polling and Handoff Routing
@@ -117,6 +117,8 @@ On the Chromebook Linux environment:
 ### 5. Enable ChatGPT watchers
 
 Enable the five staggered watchers only after observe-mode evidence is accepted.
+
+Phase 1 (`#2601`) first completed a **read-only observe-pilot** for watchers at minutes 00, 12, 24, 36, and 48. After that cycle was accepted, `#2601` `BILL / ATLAS AUTHORIZATION — WATCHERS ENGAGE, NOT REPORT-ONLY` authorized a **bounded collaboration-dispatch** role: watchers may answer routine handoffs, inspect PR/issue evidence, request bounded remediation, rerun justified failed checks, integrate authorized non-`main` component PRs when the approval profile permits, reconcile stale routing labels, close verified non-production tasks when authority permits, and activate the next eligible serial successor while preserving one active Cursor claim per serial lane. Watchers must still not merge/promote to `main` without explicit Bill/Atlas approval, approve builder-owned work on the builder's behalf, change production configuration/secrets/credentials/paid services/external infrastructure, perform destructive deletes, invent scope, or bypass unresolved authority decisions.
 
 Each watcher must be configured to:
 
