@@ -20,7 +20,7 @@ This file is navigation only. It does not grant implementation, approval, Produc
 Cursor bootstrap routers point here and to canonical governance. They do not replace this file.
 
 - Local sessions: `.cursor/rules/*.mdc`
-- Cloud sessions: root `AGENTS.md`
+- Cloud sessions: `AGENTS.md`
 - Verification: `docs/how-to/cursor/agent-session-bootstrap.md`
 
 ## Cursor runtime boundary
@@ -49,7 +49,12 @@ Before repository work—including exploration, design, Sandbox, implementation,
 3. `docs/governance/AGENT-TEAM.md`
 4. `docs/ops/ai/SHARED-AGENT-RULES.md`
 5. `docs/ops/ai/CORE-RULES.md`
-6. Applicable tool-specific pointer under `docs/ops/ai/`
+6. Applicable tool-specific pointer:
+   - `docs/ops/ai/CHATGPT-RULES.md`
+   - `docs/ops/ai/CURSOR-RULES.md`
+   - `docs/ops/ai/CODEX-RULES.md`
+   - `docs/ops/ai/COPILOT-RULES.md`
+   - `docs/ops/ai/DEVIN-RULES.md`
 7. Applicable domain policy and reference contracts
 8. Source GitHub Issue
 9. Task-linked design, plan, procedure, and skill files
@@ -116,7 +121,7 @@ Read the files that match the current task:
 | Communication, routing, labels, hold/resume, reporting, closeout | `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md`; `docs/reference/operations/administrative-control-lane-contract.md` |
 | Production health, incidents, runner host, recovery | `docs/governance/OPERATIONS-AND-RECOVERY.md` |
 | Runner/controller behavior | `docs/reference/ci/repository-runner-contract.md`; applicable routing contract/procedure |
-| PR work | `.agents/skills/lgfc-pr-governance/SKILL.md`; `.github/pull_request_template.md`; `docs/governance/PR_PROCESS.md`; `docs/governance/PR_LIFECYCLE_STATE_MACHINE.md` |
+| PR work | `.agents/skills/lgfc-pr-governance/SKILL.md`; `.github/pull_request_template.md`; `docs/how-to/cursor/open-task-pr.md`; `docs/governance/PR_PROCESS.md`; `docs/governance/PR_LIFECYCLE_STATE_MACHINE.md` |
 | Design | Applicable documents under `docs/reference/design/**` |
 | Model A/B execution | `docs/how-to/agents/run-model-a.md` or `docs/how-to/agents/run-model-b.md` |
 
@@ -175,6 +180,17 @@ Use repository skills when their trigger matches:
 - Assignment envelope: `docs/templates/agent-assignment-template.md`
 
 Tracker/status-index files are updated only when the source Issue authorizes that surface.
+
+## Agent governance implementation references
+
+These paths remain required navigation and validation surfaces:
+
+- `governance/ai/AGENT-GOVERNANCE.md`
+- `ops/ai/CROSS-AGENT-OPERATING-RULES.md`
+- `.agents/checks/agent-governance-check.mjs`
+- `.github/workflows/agent-governance.yml`
+
+They do not override the constitutional and domain-policy chain above.
 
 ## Stop conditions
 
