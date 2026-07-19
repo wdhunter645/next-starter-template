@@ -74,6 +74,8 @@ Authorized critical-path chain after verified `#2601` closeout:
 
 ## Final acceptance gate
 
-`#2601` final acceptance and operator closeout remain **blocked** until `#2640` and `#2639` integrate and validate the four-lane model. This handoff package records Phase 1 host evidence and watcher engage posture only; it is not final Task 009 closeout.
+`#2640` / `#2639` predecessor blockers are **cleared**. `#2601` now carries Phase 1 host evidence, watcher engage posture, and four-lane runtime validation against component head `79400f428a0c60ccdb3e566c45b2560ca59463e2`.
+
+This package requests ChatGPT Task 009 closeout disposition. Residual disclosed gaps (profile-transition matrix as executable gates; live Sandbox adoption demo; enabling `fourLaneRuntime` in config) are recorded in `docs/ops/reports/agent-routing-pilot.md` and must not be silently treated as complete.
 
 Until the remaining unchecked runner boxes have direct evidence, Chromebook runner registration and controller mode promotion beyond `observe` remain separate decisions on the `#2634`→`#2638` chain after verified `#2601` closeout.
