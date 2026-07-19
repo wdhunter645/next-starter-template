@@ -5,7 +5,7 @@ Authority Level: Domain Policy
 Owns: Durable LGFC roles, current member mapping, approval authority, protected stops, operating modes, and launch-control workflow boundaries
 Does Not Own: Shared execution detail, tool-specific runtime behavior, PMO sizing, promotion-profile policy, communication mutation taxonomy, or production mechanics
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2494, #2640, #2641
+Related Issues: #2494, #2640, #2641, #2648
 Last Reviewed: 2026-07-19
 ---
 
@@ -14,6 +14,8 @@ Last Reviewed: 2026-07-19
 ## Purpose
 
 This document defines durable repository roles and maps current team members to them. Broad policy uses role names so team-member or tool changes do not require widespread documentation edits.
+
+LGFC agents are operating team members. They communicate directly with one another through the canonical GitHub communication workflow whenever it is available. Human relay through Bill is the least-desired fallback and does not replace durable agent-to-agent routing.
 
 ## Durable roles
 
@@ -34,13 +36,22 @@ No role may self-approve work when independent review is required.
 | Current member or system | Assigned roles |
 | --- | --- |
 | Bill | Product Authority; Day-2 Operations; alternate protected approval when recorded |
-| ChatGPT / Atlas | PMO / Engineering; PR Approver / Engineering; Administration & Communications; Day-2 Operations coordination |
+| ChatGPT | PMO / Engineering; PR Approver / Engineering; Administration & Communications; Day-2 Operations coordination |
 | Cursor Local | Implementation / Operations; Day-2 Operations remediation implementation |
 | GitHub Actions and repository automation | Deterministic CI; Administration & Communications transport/evidence; authorized Day-2 monitoring and bounded remediation |
 | Repository runner and routing controller | Administration & Communications control-plane infrastructure; host/service maintained by Day-2 Operations |
 | Codex | Inactive for LGFC implementation unless Product Authority records future reauthorization |
 
 Changing the mapping does not change the role contract.
+
+## Team communication
+
+- ChatGPT and Cursor communicate directly through structured GitHub events on the relevant source Issue.
+- The target agent acknowledges and acts through the same durable workflow.
+- PR reviews, checks, and threads provide technical evidence but do not replace the source-Issue routing event.
+- Bill is not expected to copy, interpret, or relay routine agent assignments, findings, remediation requests, acknowledgments, resumes, status, or completion messages.
+- Human relay through Bill is the least-desired fallback when the canonical channel is unavailable or Product Authority intervention is intentionally required.
+- Any externally relayed decision must be written back to GitHub by the responsible agent before repository work depends on it.
 
 ## Lane topology
 
@@ -180,7 +191,7 @@ Before Development begins, the source authority includes:
 
 ## Startup orientation
 
-When Product Authority says `run startup`, ChatGPT / Atlas performs orientation only and stops. Startup does not authorize queue audit, implementation resume, GitHub mutation, or administrative reconciliation.
+When Product Authority says `run startup`, ChatGPT performs orientation only and stops. Startup does not authorize queue audit, implementation resume, GitHub mutation, or administrative reconciliation.
 
 ## Canonical references
 

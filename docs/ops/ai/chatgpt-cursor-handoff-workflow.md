@@ -5,7 +5,7 @@ Authority Level: Operational Procedure
 Owns: GitHub communication markers, cross-lane routing, lightweight problem adjustment, local Cursor wake/resume, acknowledgment, and task-level handoff behavior
 Does Not Own: Role authority, delivery and promotion policy, PR approval, Production authorization, incident recovery strategy, or runner host maintenance
 Canonical Reference: /docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md
-Related Issues: #2396, #2492, #2640, #2641, #2639
+Related Issues: #2396, #2492, #2640, #2641, #2639, #2648
 Last Reviewed: 2026-07-19
 ---
 
@@ -17,11 +17,25 @@ Define the GitHub communication procedure used by PMO / Engineering, Implementat
 
 This procedure carries decisions and evidence. It does not create decision authority.
 
+ChatGPT and Cursor are operating team members. They communicate directly through this workflow whenever the canonical GitHub surfaces are available.
+
 ## Operating rule
 
 A communication handoff stops only the affected task or incident unless the recorded decision or evidence requires a broader hold.
 
 A PR handoff for Task A does not stop independent Task B Development work.
+
+Direct agent-to-agent GitHub communication is preferred. Human relay through Bill is the least-desired fallback and is used only when the canonical channel is unavailable or materially impaired, Product Authority intervention is intentionally required, or an emergency prevents safe direct routing.
+
+Bill is not expected to copy, interpret, translate, or relay routine agent assignments, acknowledgments, review findings, remediation requests, status updates, resumes, or completion messages.
+
+## Communication preference hierarchy
+
+1. Direct ChatGPT ↔ Cursor communication using a canonical structured event on the source GitHub Issue.
+2. Administration & Communications routing, retry, acknowledgment, and escalation through repository automation or the controller.
+3. Human relay through Bill as the least-desired fallback under the bounded exceptions above.
+
+A human-relayed message does not complete an agent handoff. The responsible agent must write the decision or event back to GitHub before repository work depends on it.
 
 ## Authority
 
@@ -71,6 +85,26 @@ Resume condition:
 ```
 
 Only include fields that apply, but the subject, source, target, evidence, requested action, and blocking scope must be clear.
+
+## Source-Issue-first rule
+
+For a task, project, or incident handoff, the receiving agent responds on the source Issue first using the canonical event envelope.
+
+- The source Issue is the primary cross-agent routing surface.
+- PR reviews, PR comments, inline threads, checks, deployments, and artifacts are supporting technical evidence.
+- A PR-only disposition does not complete routing back to the implementation agent.
+- When a PR review controls further work, the source-Issue event must reference the PR, candidate SHA, disposition, evidence, and requested next action.
+- Local Cursor execution may additionally require a linked `LOCAL CURSOR RESUME` transport event.
+
+A handoff is incomplete when the target role/lane, requested action, blocking scope, or acknowledgment state is missing or ambiguous.
+
+## Direct team-member response requirements
+
+When ChatGPT receives an `IMPLEMENTATION HANDOFF` or `PR REVIEW REQUEST`, ChatGPT must communicate the disposition directly to Cursor through the source Issue before reporting the result externally.
+
+When Cursor receives `APPROVED FOR INTEGRATION`, `ADJUSTMENT`, `PLAN CHANGE REQUIRED`, `HOLD`, or `RESUME`, Cursor must acknowledge through the canonical workflow and must not require Bill to relay the decision.
+
+When canonical GitHub routing is unavailable and Bill relays a message, the originating or receiving agent must write the event back to GitHub as soon as the channel is restored.
 
 ## Lightweight problem adjustment
 
@@ -165,12 +199,14 @@ Protected scope:
 Requested disposition:
 ```
 
-PR Approver / Engineering responds with one of:
+PR Approver / Engineering responds on the source Issue with one of:
 
 - `APPROVED FOR INTEGRATION`
 - `ADJUSTMENT`
 - `PLAN CHANGE REQUIRED`
 - `HOLD`
+
+The source-Issue disposition references the PR and candidate SHA. PR comments and reviews provide detailed technical evidence but do not replace the cross-agent response.
 
 Automated Development eligibility is recorded as deterministic CI eligibility, not as human Engineering approval.
 
@@ -247,6 +283,20 @@ Administration & Communications tracks whether a routed event was acknowledged.
 - A retry may refresh attention but must preserve the same event/action identity.
 - A stale event must not overwrite a newer review, check, decision, hold, resume, merge, or closeout.
 - Missed acknowledgment routes to the recorded escalation role.
+- Missing acknowledgment must not be silently replaced by human relay.
+
+## Communication integrity checks
+
+The workflow must identify or fail closed on:
+
+- missing source or target role/lane;
+- missing source-Issue event;
+- required acknowledgment not received;
+- findings or instructions available only through Bill or another external relay;
+- PR-only review disposition without source-Issue routing;
+- stale, duplicate, contradictory, or superseded events;
+- use of retired or unrecognized identities;
+- local resume without an exact controlling decision reference.
 
 ## Runner and controller boundary
 
@@ -271,6 +321,8 @@ Runner host/service failure routes to Day-2 Operations. Communication state and 
 ## Decision propagation
 
 A decision made in chat, email, or another external surface must be written to the relevant GitHub Issue, PR, incident, or canonical repository document before repository work depends on it.
+
+Human relay through Bill is the least-desired fallback. The agent receiving or originating the relayed decision owns durable write-back; Bill is not the routine write-back operator.
 
 ## Closeout
 
