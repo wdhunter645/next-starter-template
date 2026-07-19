@@ -111,15 +111,43 @@ Continuing prohibitions: merge/promote to `main` without explicit Bill/Atlas app
 - Threshold tuning was not changed; current `scripts/agent-routing/config.json` thresholds remain the pilot baseline (no latency evidence required a change).
 - Repository Automations list returned zero watcher records via Cursor backend API; live watcher enablement remains ChatGPT/Atlas scheduler-side authority.
 
-## Final acceptance gate (blocked)
+## Final acceptance gate (predecessor unblocked)
 
-Host observe evidence and watcher engage samples on `#2601` are recorded above. **Final observe-pilot acceptance and operator closeout are blocked** until corrective tasks integrate and validate:
+Host observe evidence and watcher engage samples on `#2601` are recorded above.
 
-- `#2640` — top-down four-lane adoption (Administration & Communications, design sandbox, lightweight plan adjustment);
-- `#2639` — four-lane controller/runtime implementation consuming that authority.
+Predecessor blockers cleared (2026-07-19):
 
-Until those land, this package is an evidence/progress PR only. It must not be treated as final Task 009 acceptance of the superseded serial `integration-to-successor` continuity model.
+- `#2640` / PR `#2642` authority integrated to `main` and closed complete;
+- `#2639` / PR `#2646` four-lane controller runtime merged into `component/agent-issue-polling-handoff-routing` at `79400f428a0c60ccdb3e566c45b2560ca59463e2`;
+- ChatGPT authorized `#2601` resume after that integration ([CHATGPT RESPONSE](https://github.com/wdhunter645/next-starter-template/issues/2601#issuecomment-5017413036)).
+
+## Four-lane runtime validation (2026-07-19 resume)
+
+Validated against component head `79400f428a0c60ccdb3e566c45b2560ca59463e2` without enabling production `fourLaneRuntime` or runner registration.
+
+| Check | Result |
+| --- | --- |
+| `fourLaneRuntime.enabled` default | `false` (conservative observe planner authoritative) |
+| Observe plan mutations | `[]` |
+| `acceptance.mjs` | 20/20 PASS (includes four-lane scenarios 17–20) |
+| `vitest run tests/agent-routing` | 9 files / 45 tests PASS (13 four-lane) |
+| `pmo:project:validate` (project manifest) | PASS |
+| PROBLEM FOUND → GUIDANCE path | nested review `remediation-required`; Administration does not block delivery |
+| Independent work while review pending | administrative-only successor eligible; reconciler selected task `2634` in fixture |
+| Day-2 assessment hold | plan class `operational_assessment`; preserve + false-positive release OK |
+| Local poller claim / disable / duplicate | claim consumed; disable → `poller_disabled`; duplicate → `event_already_consumed` |
+| Auto-merge `main` under four-lane | still `human_decision` / no mutations |
+
+Host artifacts: `/tmp/lgfc-2601-resume-evidence/` (plus retained `/tmp/lgfc-2601-evidence/`).
+
+## Residual acceptance gaps (disclosed)
+
+Integrated four-lane **lane/communication/Day-2** runtime evidence is present. The following LIVE-PILOT ACCEPTANCE AMENDMENT items remain **not claimed as complete** in this package and need ChatGPT disposition:
+
+1. First-class Sandbox → Development → Promotion Candidate → Production profile-transition matrix as executable controller gates (governance authority exists; agent-routing runtime does not yet encode the full 8-point profile bypass matrix as dedicated profile states).
+2. Live end-to-end Sandbox scaled-gates demo and deliberate Sandbox→Development adoption on a throwaway sandbox surface (not executed in this resume).
+3. Enabling `fourLaneRuntime.enabled=true` in repository config for a live observe window (still deliberately `false` pending ChatGPT Go).
 
 ## Live-pilot boundary
 
-No fabricated live watcher evidence is accepted. Runner registration and any PR to `main` remain Bill/ChatGPT controlled. Watcher collaboration-dispatch mutations must stay inside the Bill/Atlas engage authorization and must not auto-merge `main`.
+No fabricated live watcher evidence is accepted. Runner registration and any PR to `main` remain Bill/ChatGPT controlled. Watcher collaboration-dispatch mutations must stay inside the Bill/Atlas engage authorization and must not auto-merge `main`. Do not wake `#2634` until ChatGPT records verified `#2601` closeout.
