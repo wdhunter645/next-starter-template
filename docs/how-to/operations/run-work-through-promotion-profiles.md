@@ -11,7 +11,9 @@ Last Reviewed: 2026-07-19
 
 # Run Work Through the Promotion Profiles
 
-## 1. Enter through repository authority
+## Procedure
+
+### 1. Enter through repository authority
 
 Before work begins:
 
@@ -24,7 +26,7 @@ Before work begins:
 
 Administration & Communications records and routes this context. The horizontal lane retains decision authority.
 
-## 2. PMO / Engineering intake
+### 2. PMO / Engineering intake
 
 PMO / Engineering defines:
 
@@ -39,7 +41,7 @@ PMO / Engineering defines:
 
 Proceed directly to Development when the design is sufficiently factual. Use Sandbox when material uncertainty can be reduced through isolated proof-of-concept work.
 
-## 3. Run Sandbox work
+### 3. Run Sandbox work
 
 1. Create or select an isolated remote Sandbox branch.
 2. Confirm no production credentials, writes, bindings, or direct promotion path exist.
@@ -53,7 +55,7 @@ Proceed directly to Development when the design is sufficiently factual. Use San
 
 Do not send Sandbox output directly to Promotion Candidate or Production.
 
-## 4. Run Development
+### 4. Run Development
 
 1. Work from the approved Model B task and component branch.
 2. Implement, test, and push the bounded change.
@@ -64,7 +66,7 @@ Do not send Sandbox output directly to Promotion Candidate or Production.
 7. Continue the next independent task while earlier work is review- or administration-pending.
 8. When the integrated Development result is complete enough for release qualification, define the exact scope and immutable identity of the Promotion Candidate.
 
-## 5. Handle a problem found during work
+### 5. Handle a problem found during work
 
 Use the lightweight path first:
 
@@ -89,7 +91,7 @@ Pause only the affected scope unless evidence requires more.
 
 Use `PLAN CHANGE REQUIRED` only when product objective, architecture, acceptance criteria, dependency structure, delivery model, production boundary, or recovery strategy materially changes.
 
-## 6. Build the Promotion Candidate
+### 6. Build the Promotion Candidate
 
 1. Select the exact integrated Development result.
 2. Freeze or identify the candidate SHA/release identity.
@@ -111,7 +113,7 @@ Use `PLAN CHANGE REQUIRED` only when product objective, architecture, acceptance
 
 Promotion Candidate is a mandatory barrier. Development cannot move directly to Production.
 
-## 7. Promote to Production
+### 7. Promote to Production
 
 1. Confirm the approved candidate identity has not changed.
 2. Confirm required manual approvals and production authority.
@@ -121,7 +123,7 @@ Promotion Candidate is a mandatory barrier. Development cannot move directly to 
 6. Record the production result and transfer the feature to Day-2 Operations.
 7. If verification fails, contain or roll back and enter the Day-2 incident path.
 
-## 8. Operate in Day-2
+### 8. Operate in Day-2
 
 When production degradation, outage, unsafe behavior, or material risk is detected:
 
@@ -135,7 +137,7 @@ When production degradation, outage, unsafe behavior, or material risk is detect
 8. Release remaining holds.
 9. Administration & Communications restores preserved work state and records closeout.
 
-## 9. Close work
+### 9. Close work
 
 Administration & Communications verifies:
 
