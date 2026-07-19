@@ -4,7 +4,7 @@ Audience: Human + AI
 Authority Level: Canonical
 Owns: Pull request process policy, PR body authority, PR-process CI promotion rules, reviewer lifecycle policy, and post-merge closeout ownership policy
 Does Not Own: Website product requirements, page design specifications, administrative mutation taxonomy, historical PR evidence, or repository portfolio asset tracking
-Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md
+Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
 Supporting References:
   - /docs/reference/ci/pr-process-current-state.md
   - /docs/reference/ci/codex-pr-review-disablement.md
@@ -145,7 +145,7 @@ The administrative control lane may reflect reviewer state in Issue routing or r
 
 Post-merge closeout must be single-owner and idempotent.
 
-Successful post-merge closeout CI is the primary merge-triggered administrative actor. It should:
+Successful post-merge closeout CI is the primary merge-triggered administrative actor where that workflow is configured for the PR base. It should:
 
 - validate the merged PR;
 - reconcile the source issue;
@@ -156,7 +156,19 @@ Successful post-merge closeout CI is the primary merge-triggered administrative 
 - create or update one bounded exception issue only when required;
 - avoid self-healing cascades, duplicate closeout transactions, and repeated mutation loops.
 
-The broader administrative control lane owns final clarifications, failed or partial closeout housekeeping, non-merge dispositions, and later-detected administrative drift. It must not duplicate a successful closeout transaction or change project objectives through housekeeping.
+### Current implementation boundary
+
+The current `.github/workflows/post-merge-closeout.yml` trigger runs only for merged PRs whose base is `main`.
+
+Until equivalent deterministic coverage is implemented for component branches and other authorized non-`main` integration paths:
+
+- the administrative control lane must perform or verify the equivalent atomic closeout for Model B child integrations;
+- the source Issue must not be treated as complete merely because the child PR merged;
+- terminal labels, parent/project reporting, successor disposition, and exceptions must still be reconciled;
+- the manual or scheduled administrative path must remain idempotent and must not duplicate a later CI transaction;
+- this implementation gap must not serialize independent approved lanes.
+
+The broader administrative control lane also owns final clarifications, failed or partial closeout housekeeping, non-merge dispositions, and later-detected administrative drift. It must not duplicate a successful closeout transaction or change project objectives through housekeeping.
 
 ## Minimal-gate rule
 
