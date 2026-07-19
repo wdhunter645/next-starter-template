@@ -2,9 +2,9 @@
 Doc Type: Governance / Process
 Audience: Human + AI Agents
 Authority Level: Governance
-Owns: Pull request lifecycle states, transition gates, pre-merge closeout prediction, administrative-state synchronization, and post-merge closeout evidence requirements
-Does Not Own: Product design authority, runtime architecture, administrative mutation taxonomy, or final human merge approval
-Canonical Reference: /docs/governance/PR_GOVERNANCE.md
+Owns: Pull request lifecycle states, transition gates, GitHub-native lifecycle evidence, administrative-state synchronization, and post-merge closeout evidence requirements
+Does Not Own: Canonical PR-body policy, product design authority, runtime architecture, administrative mutation taxonomy, or final human merge approval
+Canonical Reference: /docs/governance/PR_PROCESS.md
 Related Issues: #2641
 Last Reviewed: 2026-07-19
 ---
@@ -13,346 +13,286 @@ Last Reviewed: 2026-07-19
 
 ## Purpose
 
-This document defines the mandatory pull request lifecycle state machine for LGFC repository work.
+Define the mandatory GitHub-native pull request lifecycle for LGFC repository work.
 
-It compresses the distributed PR rules in `Agent.md`, shared/core agent rules, the PR governance skill, the administrative control lane contract, and the PR template into one executable lifecycle model. Agents must use this document when opening, updating, marking ready, handing off, merging, administratively reconciling, or closing out PRs.
+This document explains state transitions and evidence surfaces. Canonical PR-body authority remains `docs/governance/PR_PROCESS.md`: the PR body stores stable facts only and must not become a lifecycle, review, check, queue, approval, administrative-exception, or post-merge closeout database.
 
-PMO **program** lifecycle status nomenclature is defined by PMO authority. Do not conflate PR lifecycle states with PMO program lifecycle reporting terms.
-
-## Scope
-
-This document applies to:
-
-- all AI-agent PRs;
-- all human-assisted PRs using repository governance;
-- PR body completion;
-- reviewer and bot disposition accounting;
-- gate-readiness claims;
-- administrative status and reporting synchronization;
-- post-merge source issue closeout;
-- queue/dependency-map continuation decisions.
-
-This document does not authorize scope expansion, merge approval by agents, runtime behavior changes, tracker edits, or exception handling outside the source issue and administrative control contract.
-
-## Current known truth
-
-The repository has strong PR governance rules, but PR lifecycle obligations were previously spread across multiple documents. That distribution allowed agents to produce superficially complete PR bodies while missing lifecycle-critical evidence such as reviewer dispositions, source-issue closeout prediction, administrative state synchronization, and post-merge queue-advancement readiness.
-
-The lifecycle states below are mandatory. A PR may not advance to the next state unless every transition gate for the current state is satisfied or the exact blocker is documented in the PR body.
-
-## Intended final state
-
-Agents, CI, review, and the administrative control lane should evaluate the same lifecycle contract before merge and after merge. Predictable post-merge closeout failures must be blocked before merge rather than remediated after merge.
-
-Administrative reporting follows lifecycle state and may correct deterministic metadata, but it must not create new execution authority or turn optional reporting lag into a merge or execution gate.
-
----
-
-## Lifecycle states
+## Lifecycle
 
 ```text
 NO PR -> DRAFT -> READY FOR REVIEW -> READY FOR MERGE -> HUMAN MERGE DECISION -> MERGED -> CLOSEOUT VERIFIED
 ```
 
-Agents must not skip states. The human/operator remains the only merge authority.
+The states are logical process states. Their evidence comes from GitHub-native surfaces, not duplicated PR-body fields.
 
-`READY FOR REVIEW` means the PR is ready for reviewer/human inspection. It does not authorize merge and must not be treated as merge-ready.
+| Logical state | Authoritative evidence |
+| --- | --- |
+| `NO PR` | No open PR exists for the source Issue and branch |
+| `DRAFT` | GitHub PR is open and draft, or required implementation evidence is incomplete |
+| `READY FOR REVIEW` | GitHub PR is open and not draft; implementation handoff is recorded; reviewer inspection may begin |
+| `READY FOR MERGE` | Required checks, source-Issue accounting, review disposition, thread state, and protected-boundary requirements are satisfied |
+| `HUMAN MERGE DECISION` | A human approver is evaluating or has recorded the merge decision |
+| `MERGED` | GitHub records the PR as merged with a merge commit |
+| `CLOSEOUT VERIFIED` | Single-owner closeout records source-Issue, validation, terminal labels, parent/reporting, successor, and exception disposition |
 
-`READY FOR MERGE` is the required agent handoff target for final pre-merge authorization. It means all required checks, reviewer-response accounting, source issue accounting, and governance gates are satisfied and the PR is ready for final merge authorization. It does not authorize the agent to merge.
+Labels and comments may provide routing and visibility, but they do not replace the authoritative GitHub state above.
 
-The administrative control lane may mirror and reconcile these states on Issues, PRs, PMO, parents, dashboards, and exception records when the correct value is mechanically provable. It may not advance a technical lifecycle state without the required implementation, validation, review, or approval evidence.
+## Scope
 
----
+This lifecycle applies to:
 
-## Administrative synchronization rule
+- all AI-agent and human-assisted PRs using repository governance;
+- implementation completion and review handoff;
+- validation and reviewer evidence;
+- human merge authorization;
+- source-Issue and administrative-state synchronization;
+- post-merge closeout and successor disposition.
 
-At every lifecycle transition, the administrative control lane may:
+It does not authorize scope expansion, self-approval, automatic `main` merge, dynamic PR-body lifecycle ledgers, or administrative mutation outside existing authority.
 
-- reconcile Issue and PR lifecycle labels;
-- reconcile routing, handoff, and assignment state;
-- update actively governed parent/project/program and reporting state;
-- record blockers, clarification, exception, and queue-continuation evidence;
-- remove stale or contradictory administrative state.
+## Minimal-gate principle
 
-It must not:
+Each transition should enforce only the smallest necessary set of material invariants.
 
-- change project objectives, acceptance criteria, file allowlists, design, delivery model, validation, review, approval, or priority;
-- claim implementation pickup, validation success, approval, merge, or closeout without evidence;
-- block a transition solely because optional reporting or dashboard state lags;
+Required gates protect:
+
+- valid source-Issue authority;
+- exact scope and branch boundary;
+- required validation results;
+- independent review and approval where required;
+- protected-change or production boundaries;
+- predictable post-merge closeout integrity.
+
+The following do not become independent PR gates unless canonical policy explicitly promotes them:
+
+- dashboard freshness;
+- optional PMO or audit comments;
+- cosmetic label order;
+- duplicate lifecycle fields in the PR body;
+- administrative summaries derivable from live GitHub state;
+- presence of a particular chat session, watcher session, or dispatcher instance.
+
+Correct clerical defects at the earliest deterministic surface. Stop for material ambiguity rather than adding redundant paperwork.
+
+## Administrative synchronization
+
+The administrative control lane follows each transition and may reconcile deterministic non-code state to existing authority:
+
+- Issue and PR lifecycle labels;
+- routing, handoff, and assignment state;
+- parent/child and predecessor/successor links;
+- PMO, project, program, dashboard, and reporting state;
+- closeout and exception records.
+
+Administrative reconciliation must not:
+
+- advance a technical state without implementation, validation, review, approval, merge, or closeout evidence;
+- change objectives, acceptance criteria, file allowlists, technical design, delivery model, validation, approval, priority, dependencies, or successor authority;
+- turn optional reporting lag into an execution or merge block;
 - serialize independent approved lanes.
 
-The stable administrative contract is `docs/reference/operations/administrative-control-lane-contract.md`.
-
----
+The stable contract is `docs/reference/operations/administrative-control-lane-contract.md`.
 
 ## State 0: NO PR
 
-### Entry condition
+### Entry
 
-A task exists, but no PR exists yet.
+A valid task exists and no PR exists.
 
-### Required transition to DRAFT
+### Transition to DRAFT
 
-Before opening a PR, the agent must confirm:
+Before opening a PR, confirm:
 
-- exactly one same-repository, open, non-PR source issue exists;
-- the source issue is the task authority;
-- file-touch allowlist is known and narrow;
-- one intent label is selected;
-- applicable governance, design, architecture, and skill docs have been read;
-- no ZIP/root artifact risk exists;
-- the PR body can be seeded from `.github/pull_request_template.md`;
-- any queue/dependency-map context is known or explicitly not applicable.
+- exactly one same-repository, open, non-PR source Issue;
+- source-Issue scope and allowlist are clear;
+- one intent label and PR class are selected;
+- delivery profile is known when applicable;
+- applicable authority and skills are read;
+- branch and target boundary are correct;
+- the PR template can be completed with stable facts.
 
-The administrative lane may reconcile source-Issue labels, assignment, PMO/reporting state, and routing metadata before PR creation, but it may not invent missing task authority or scope.
+### Stop
 
-### Stop condition
-
-Stop before PR creation if the source issue is missing, closed, ambiguous, external, or a PR.
-
----
+Stop if source authority, scope, branch, delivery profile, or target is missing or ambiguous.
 
 ## State 1: DRAFT
 
-### Entry condition
+### Entry
 
-A PR exists but implementation, verification, reviewer response, or PR body evidence is incomplete.
+A PR exists but implementation, stable PR facts, validation, or handoff evidence is incomplete.
 
-### Required transition to READY FOR REVIEW
+### Transition to READY FOR REVIEW
 
-Before marking or claiming `READY FOR REVIEW`, the agent must confirm:
+Confirm:
 
-- final diff matches the file-touch allowlist exactly;
-- no mixed intent or opportunistic cleanup exists;
-- PR body matches final diff, source issue, label, evidence, and acceptance criteria;
-- all local/task-relevant checks are run or exact blockers are recorded;
-- live PR check panel and latest head workflow runs are inspected;
-- acceptance criteria are checked, marked not applicable with rationale, or explicitly blocked;
-- no `TODO`, `TBD`, placeholder, or stale evidence remains in required PR-body fields.
+- final diff remains inside the source-Issue allowlist;
+- no mixed intent or unrelated cleanup exists;
+- the PR body stable facts match the current diff;
+- task-relevant checks have been run or exact blockers are recorded;
+- acceptance criteria are complete, explicitly not applicable, or blocked;
+- Cursor or the implementation owner records a review-ready handoff.
 
-The administrative lane may mirror draft status and correct source-Issue/PR linkage, assignment, routing, and reporting metadata. It must not mark the PR review-ready on behalf of incomplete implementation evidence.
+GitHub draft state should then be removed. Do not add a `READY FOR REVIEW` ledger to the PR body.
 
-### Stop condition
+### Stop
 
-Do not mark review-ready if implementation, PR body evidence, or required inspection still requires agent action.
-
----
+Remain draft when implementation, validation, stable PR facts, or handoff evidence still requires builder action.
 
 ## State 2: READY FOR REVIEW
 
-### Entry condition
+### Entry
 
-The implementation agent has completed its work and the PR is ready for reviewer/human inspection.
+The PR is open and not draft, and the implementation owner has handed it off for independent inspection.
 
-### Required transition to READY FOR MERGE
+### Transition to READY FOR MERGE
 
-Before marking or claiming `READY FOR MERGE`, the agent must confirm:
+Confirm from live GitHub state:
 
-- all required gates are green;
-- reviewer-response accounting is complete;
-- source issue accounting is complete;
-- pre-merge closeout prediction is recorded;
-- all reviewer comments, bot comments, and GitHub review threads are inspected;
-- every actionable reviewer item has a parser-safe disposition;
-- every required thread has a parser-safe state: `resolved`, `outdated`, or `unresolved` with rationale recorded in the disposition text;
-- the final PR panel confirms merge-readiness.
+- required checks are green;
+- source-Issue accounting is valid;
+- all human and required bot findings are dispositioned;
+- required review threads are resolved or explicitly accepted by the authorized reviewer;
+- protected-change review is complete when applicable;
+- no predictable closeout defect remains that can be fixed before merge;
+- the independent reviewer records approval or an equivalent repository-authorized disposition.
 
-If any required gate is failing or pending, remain in `BLOCKED` or `READY FOR REVIEW`; do not claim `READY FOR MERGE`.
+`READY FOR REVIEW` does not imply `READY FOR MERGE`.
 
-The administrative lane may reconcile review status and route unresolved findings, but it does not substitute for independent review or approval.
+### Stop
 
-### Required reviewer disposition format
-
-```text
-review-comment:<id> — accepted/rejected/acknowledged/not-applicable — <specific resolution or reason> — thread state: resolved/outdated/unresolved
-```
-
-### Stop condition
-
-Do not mark merge-ready if any gate, reviewer item, bot comment, review thread, source issue accounting item, or PR body section still requires agent action. Do not treat review-ready as merge-ready.
-
----
+Remain in review when a required check, source-Issue defect, actionable finding, thread, protected boundary, or predictable closeout defect remains.
 
 ## State 3: READY FOR MERGE
 
-### Entry condition
+### Entry
 
-All required checks, reviewer-response accounting, source issue accounting, and governance gates are satisfied. The PR is ready for final merge authorization by the human/operator.
+All required technical and governance evidence is complete, and the PR is waiting for human merge authorization.
 
-### Required transition to HUMAN MERGE DECISION
+### Transition to HUMAN MERGE DECISION
 
-Before asking for a human merge decision, the responsible agent must perform a pre-merge closeout prediction:
+The reviewer rechecks:
 
-- inspect live PR check panel;
-- inspect current head SHA;
-- inspect current PR body;
-- inspect source issue state;
-- inspect reviewer and bot disposition evidence;
-- inspect open review threads;
-- verify exactly one accepted source issue line remains parseable;
-- verify the source issue is still open unless the PR is an approved closed-source remediation exception;
-- predict whether post-merge source issue closeout will pass;
-- predict whether terminal labels, parent reporting, successor state, and closeout exceptions can be reconciled;
-- record blockers in the PR body if post-merge closeout would not pass.
+- current PR head SHA;
+- current required checks;
+- current review and thread state;
+- source-Issue state and authority;
+- target branch and protected boundaries;
+- closeout readiness and expected successor handling.
 
-The administrative lane may correct deterministic clerical metadata before the merge decision when existing authority identifies the exact correct value. It must not waive a required technical, review, approval, or authority defect.
+This prediction is recorded through GitHub-native review, Issue, label, or closeout-preparation surfaces—not as a dynamic PR-body ledger.
 
-### Required pre-merge closeout prediction fields
+### Stop
 
-The PR body must answer:
-
-```text
-Pre-merge closeout prediction: pass / fail / blocked
-Source issue state before merge: open / closed / other
-Expected post-merge source issue action: auto-close / manual close / no-op / remediation follow-up
-Reviewer disposition parseability: pass / fail / not-applicable
-Queue continuation after closeout: continue / halt / not-applicable
-Administrative exception expected: none / <bounded exception>
-```
-
-### Stop condition
-
-Do not request merge while the prediction is `fail` or `blocked`.
-
----
+Return to draft or review when a required invariant regresses.
 
 ## State 4: HUMAN MERGE DECISION
 
-### Entry condition
+### Entry
 
-The PR is ready for a human/operator merge decision.
+The PR is technically and administratively ready for the authorized human decision.
 
-### Required transition to MERGED
+### Transition to MERGED
 
-Only the human/operator may merge. Before merging, the PR must have:
+Only an authorized human may merge. Before merge, verify:
 
-- one source issue;
-- one intent label;
-- current-head checks green or explicitly accepted by the human/operator;
-- all actionable reviewer and bot feedback dispositioned;
-- no unresolved required review threads;
-- pre-merge closeout prediction recorded as `pass` or explicitly accepted by the human/operator;
-- no known post-merge closeout failure that can be fixed before merge.
+- exactly one source Issue;
+- current required checks green or explicitly accepted under recorded authority;
+- independent approval complete;
+- no unresolved blocking review thread;
+- no known predictable closeout failure that can be corrected before merge;
+- production or protected-boundary approval complete when required.
 
-Administrative reporting lag alone does not block merge. A missing or contradictory required source-Issue, validation, review, approval, authority, dependency, or closeout invariant does block merge.
+### Stop
 
-### Stop condition
-
-If a predictable post-merge closeout failure exists, return the PR to DRAFT/BLOCKED instead of merging.
-
----
+Do not merge around a correctable source-Issue, validation, review, approval, authority, protected-boundary, or closeout defect.
 
 ## State 5: MERGED
 
-### Entry condition
+### Entry
 
-The PR is merged into the base branch.
+GitHub records the PR as merged.
 
-### Required transition to CLOSEOUT VERIFIED
+### Transition to CLOSEOUT VERIFIED
 
-After merge, the responsible agent or automation must verify:
+Successful post-merge closeout CI is the primary merge-triggered administrative actor. It should atomically:
 
-- merged state;
-- merge commit SHA;
-- source issue state;
-- source issue closure or required follow-up;
-- post-merge validation workflow status;
-- terminal source-Issue label state;
-- actively governed parent/project/program reporting state;
-- queue/dependency-map continuation status;
-- remediation or closeout-exception issue state if one was created;
-- explicitly authorized tracker/status-index follow-up, if any.
+1. verify the merged PR and merge commit;
+2. verify post-merge validation and accepted exceptions;
+3. reconcile the source Issue and terminal labels;
+4. reconcile actively governed parent/project/program and reporting state;
+5. activate, defer, or halt the declared successor;
+6. create or update one bounded exception only when required;
+7. verify the final state.
 
-Successful post-merge closeout CI is the primary merge-triggered administrative actor. The broader administrative lane verifies the result and intervenes only when the transaction fails, partially completes, lacks the required trigger, conflicts with later evidence, or leaves housekeeping unresolved.
+The broader administrative lane handles failed, partial, missing, contradictory, non-merge, or later-discovered housekeeping. It must not duplicate a successful closeout transaction.
 
-### Stop condition
+### Stop
 
-If post-merge verification fails, the source issue or remediation issue must show `status:failed` or equivalent failure evidence, and queue advancement must halt only where the failed invariant requires it. Independent approved lanes continue unless they share the failure or collision set.
-
----
+A failed required invariant halts only the affected closeout or queue transition unless a shared dependency requires a broader halt. Independent approved lanes continue.
 
 ## State 6: CLOSEOUT VERIFIED
 
-### Entry condition
+### Entry
 
-Post-merge closeout has passed and the administrative transaction is complete.
+The single-owner closeout transaction has completed and been verified.
 
-### Required evidence
+Required evidence includes:
 
-Closeout is verified only when:
+- merged state and merge commit;
+- source Issue closed or explicitly preserved open;
+- terminal labels reconciled;
+- validation passed, accepted, or not applicable under authority;
+- parent/project/program reporting reconciled when actively governed;
+- successor or halt disposition recorded;
+- remediation and administrative exceptions resolved or explicitly bounded.
 
-- source issue is closed or explicitly remains open with rationale;
-- terminal source-Issue labels are reconciled;
-- post-merge validation passed or was marked not applicable with rationale;
-- actively governed parent/project/program reporting is reconciled or explicitly not applicable;
-- queue/dependency-map continuation decision is recorded;
-- no unresolved remediation or administrative closeout exception remains for the source issue;
-- no required tracker/status-index follow-up remains unless delegated to a bounded issue;
-- final administrative clarification and housekeeping are complete.
+The lifecycle is complete. Later deterministic drift may be corrected administratively without reopening technical scope or duplicating closeout.
 
-### Final state
+## Non-merge dispositions
 
-The PR lifecycle is complete. Program queue work may advance only after this state is reached or the human/operator explicitly overrides the halt with recorded rationale.
+Canceled, duplicate, superseded, not-planned, and administrative-only work may bypass `MERGED` only when explicit authority establishes the disposition.
 
-The administrative lane may later correct newly discovered deterministic drift, but it must not reopen technical scope or duplicate the completed closeout transaction.
+The administrative lane must reconcile:
 
----
+- source-Issue state and reason;
+- terminal or disposition labels;
+- parent and reporting state;
+- dependency and successor impact;
+- clarification and exception records.
 
-## Non-merge administrative dispositions
+Non-merge disposition must not bypass required implementation, validation, review, approval, promotion, or production boundaries.
 
-Canceled, duplicate, superseded, not-planned, administrative-only, and other authorized non-merge work does not pass through the `MERGED` state.
+## Reporting requirements
 
-The administrative control lane may apply the authorized disposition when:
+Agent reports should summarize current live evidence, not write it into the PR body as process authority.
 
-- the source Issue or higher authority explicitly identifies the disposition;
-- implementation objectives are not being changed through the administrative action;
-- labels, links, comments, parent reporting, and queue effects can be determined;
-- any successor or dependency impact is recorded;
-- the final state is verified.
-
-A non-merge disposition must not be used to bypass required implementation, validation, review, approval, or production boundaries.
-
----
-
-## Agent reporting requirements
-
-Every agent status report about a PR must include:
+A useful report includes:
 
 ```text
-PR lifecycle state: NO PR / DRAFT / READY FOR REVIEW / READY FOR MERGE / HUMAN MERGE DECISION / MERGED / CLOSEOUT VERIFIED
+PR lifecycle state: <state>
 Current head SHA: <sha or not-applicable>
 Source issue: #<issue>
-Gate status: pass / fail / pending / not-applicable
-Reviewer disposition status: pass / fail / pending / not-applicable
-Pre-merge closeout prediction: pass / fail / blocked / not-applicable
-Administrative state: aligned / exception / pending / not-applicable
+Required checks: pass / fail / pending / not-applicable
+Independent review: pass / fail / pending / not-applicable
+Administrative state: aligned / bounded exception / pending / not-applicable
 Queue continuation: continue / halt / not-applicable
+Evidence surfaces: <GitHub checks, reviews, Issue, closeout record>
 ```
 
-Do not claim readiness, merge safety, administrative alignment, or closeout success without repository evidence.
+## CI alignment
 
----
+Pre-merge CI should enforce deterministic material invariants and avoid duplicating GitHub-native state in PR-body fields.
 
-## CI alignment requirement
+Post-merge CI should enforce the `MERGED -> CLOSEOUT VERIFIED` transition as the single primary closeout owner. A failure creates or updates one bounded exception and avoids repeated self-healing mutation loops.
 
-Pre-merge CI should enforce the `READY FOR REVIEW -> READY FOR MERGE -> HUMAN MERGE DECISION` transitions. The pre-merge gate must reject PRs that would predictably fail post-merge closeout due to missing source issue, closed source issue without approved exception, missing reviewer disposition, unresolved required review thread, stale acceptance criteria, or missing queue/dependency-map decision.
-
-Post-merge CI should enforce the `MERGED -> CLOSEOUT VERIFIED` transition. A successful transaction should atomically reconcile source-Issue state, terminal labels, parent reporting, successor disposition, and remediation state. Any post-merge failure should create or update a bounded remediation or administrative exception Issue and halt only the affected queue transition until resolved.
-
-Deterministic clerical primary-issue mismatch is not a post-merge exception when repository evidence identifies exactly one unambiguous correct source issue. In that case post-merge closeout may repair the durable PR/source-issue linkage, apply completion labels, close the corrected source issue, and reconcile the successor without creating a remediation issue. Material ambiguity, changed-file authority conflicts, unmet acceptance criteria, unresolved required review findings, and objective changes still stop for human review.
-
----
+A deterministic clerical defect may be repaired when exactly one authoritative result exists. Material ambiguity, objective changes, scope conflicts, unmet acceptance criteria, unresolved required review findings, or missing approval stop for the owning authority.
 
 ## Related authorities
 
-- `Agent.md`
+- `docs/governance/PR_PROCESS.md`
 - `docs/governance/OPERATIONS-AND-RECOVERY.md`
 - `docs/reference/operations/administrative-control-lane-contract.md`
 - `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`
 - `docs/ops/pmo/github-issue-closeout-protocol.md`
-- `docs/ops/ai/SHARED-AGENT-RULES.md`
-- `docs/ops/ai/CORE-RULES.md`
 - `.agents/skills/lgfc-pr-governance/SKILL.md`
 - `.github/pull_request_template.md`
-- `docs/governance/PR_GOVERNANCE.md`
-- `docs/reference/governance/troubleshooting-data-surface-requirements.md`
