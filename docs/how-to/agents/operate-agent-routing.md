@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: Project #2294 startup, observation, operation, watcher behavior, local poller handling, health checks, troubleshooting, disable, rollback, and recovery
 Does Not Own: Project launch approval, production merge approval, product priority, repository settings, credentials, secrets, or external-service authorization
 Canonical Reference: /docs/explanation/projects/agent-issue-polling-handoff-routing-design.md
-Related Issues: #2294, #2546, #2550, #2554, #2601, #2634, #2635, #2636, #2637, #2638
+Related Issues: #2294, #2546, #2550, #2554, #2601, #2634, #2635, #2636, #2637, #2638, #2639, #2640
 Last Reviewed: 2026-07-19
 ---
 
@@ -25,6 +25,15 @@ Provide the operator procedure for the Project #2294 routing system. This runboo
 - Work may proceed in parallel only when authority and collision checks permit it.
 - No automation merges to `main`.
 - No OpenAI API is used.
+
+## Four-lane runtime (config-gated)
+
+`scripts/agent-routing/config.json` → `fourLaneRuntime.enabled` defaults to `false`.
+
+- **Disabled:** conservative serialized planner; automatic operational holds off; existing claims/history retained.
+- **Enabled:** resolve PMO / Engineering, Implementation / Operations (nested PR review), Day-2 Operations, and vertical Administration & Communications; support assessment hold, plan adjustment, and evidence-backed resume.
+
+Do not enable in production observe pilots until #2639 acceptance evidence is reviewed.
 
 ## Roles
 

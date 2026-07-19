@@ -23,7 +23,14 @@
         "ci_failure_disposition",
         "integrate_non_main",
         "chatgpt_review",
-        "human_decision"
+        "human_decision",
+        "nested_pr_review",
+        "nested_review_remediation",
+        "plan_adjustment_route",
+        "operational_assessment",
+        "operational_auto_remediation",
+        "operational_incident_route",
+        "operational_hold_release"
       ]
     },
     "reason": {

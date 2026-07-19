@@ -6,6 +6,9 @@ import { rankWatcherCandidates } from './watcher-candidate-planner.mjs';
 import { claimAction } from './claim-ledger.mjs';
 import { reconcileSnapshots } from './reconciler.mjs';
 import { resolveWorkflowManifestSelection } from '../pmo-projects/lib/workflow-policy.mjs';
+import { resolveOperatingLaneState } from './four-lane-runtime.mjs';
+import { normalizeIncidentEvidence, upsertOperationalIncident } from './evidence-adapters/incident-evidence.mjs';
+import config from './config.json' with { type: 'json' };
 
 const scenario = (id, ok, detail) => ({ id, ok: Boolean(ok), detail });
 
@@ -46,12 +49,48 @@ export function runAcceptanceScenarios({ now = new Date().toISOString() } = {}) 
     scenario(14, planAction(base, { mode: 'disabled' }).class === 'noop', 'controller mutation disable'),
     scenario(15, materializerNewBranch.skip === true && materializerNewBranch.reason === 'new_branch_no_manifest_delta' && materializerChanged.paths[0]?.includes('agent-issue-polling-handoff-routing'), 'materializer selects the changed project and skips inherited manifests on new branch creation'),
     scenario(16, main.mutations.length === 0, 'automatic main merge rejected'),
+    scenario(17, config.fourLaneRuntime?.enabled === false, 'four-lane runtime config-gated off by default'),
+    scenario(18, (() => {
+      const lanes = resolveOperatingLaneState({
+        project: { lifecycle: 'active' },
+        events: [{ id: 1, marker: 'IMPLEMENTATION HANDOFF', createdAt: now }],
+      });
+      return lanes.topology.vertical === 'administration-communications'
+        && lanes.lanes['implementation-operations'].implementationHandoffComplete === true
+        && lanes.lanes['implementation-operations'].nestedReview.phase === 'review-pending';
+    })(), 'four-lane topology with nested review and implementationHandoffComplete'),
+    scenario(19, (() => {
+      const four = { mode: 'advance', fourLaneRuntime: { enabled: true } };
+      const held = resolveRepositoryState({
+        project: { issueNumber: 2294, lifecycle: 'active', projectBranch: 'component/agent-issue-polling-handoff-routing' },
+        task: { issueNumber: 2639, id: '015', state: 'active' },
+        labels: ['agent:cursor', 'handoff:ready'],
+        events: [{ id: 9, marker: 'OPERATIONAL INCIDENT', createdAt: now }],
+        operationalHold: { active: true, scope: 'assessment', severityClassified: false },
+        claims: [], consumedEventIds: [], pullRequests: [], checks: [], reviews: [],
+      }, four);
+      return planAction(held, four).class === 'operational_assessment';
+    })(), 'day-2 assessment hold preempts delivery planning'),
+    scenario(20, (() => {
+      const created = upsertOperationalIncident([], normalizeIncidentEvidence({
+        trusted: true, source: 'ci', subject: 'prod', runId: 7, summary: 'degraded',
+      }), { now });
+      const elevated = upsertOperationalIncident(created.incidents, normalizeIncidentEvidence({
+        trusted: true, source: 'ci', subject: 'prod', runId: 7, summary: 'degraded',
+      }), { now });
+      return created.ok && elevated.reason === 'elevated_existing' && elevated.incidents.length === 1;
+    })(), 'trusted incident evidence creates and deduplicates operational issues'),
   ];
   return {
     ok: scenarios.every((item) => item.ok),
     generatedAt: now,
     scenarios,
-    invariants: { noOpenAIApi: true, noAutomaticMainMerge: true, observeByDefault: true },
+    invariants: {
+      noOpenAIApi: true,
+      noAutomaticMainMerge: true,
+      observeByDefault: true,
+      fourLaneConfigGated: config.fourLaneRuntime?.enabled === false,
+    },
   };
 }
 

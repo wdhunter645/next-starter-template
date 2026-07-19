@@ -1,4 +1,5 @@
 import { stableHash } from './lib/stable.mjs';
+import { isFourLaneEnabled, planFourLaneAction } from './four-lane-runtime.mjs';
 
 function plan(snapshot, klass, reason, mutations = []) {
   const base = {
@@ -11,7 +12,7 @@ function plan(snapshot, klass, reason, mutations = []) {
   return { ...base, actionKey: stableHash(base, 'action') };
 }
 
-export function planAction(snapshot, policy = {}) {
+function planConservative(snapshot, policy = {}) {
   const mode = policy.mode || 'observe';
   if (!snapshot || snapshot.ambiguous) return plan(snapshot || { identity: {}, revision: 'missing' }, 'halt', 'ambiguous_or_missing_state');
   const mainPr = (snapshot.pullRequests || []).find((pr) => pr.state === 'open' && pr.base === 'main');
@@ -34,10 +35,10 @@ export function planAction(snapshot, policy = {}) {
   }
   if (snapshot.routingOwner === 'chatgpt') return plan(snapshot, 'chatgpt_review', 'chatgpt_owned_state');
   if (
-    snapshot.routingOwner === 'cursor' &&
-    snapshot.labels.includes('handoff:ready') &&
-    snapshot.latestEvent?.marker === 'CURSOR ASSIGNMENT' &&
-    !snapshot.consumedEventIds.includes(snapshot.latestEvent.id)
+    snapshot.routingOwner === 'cursor'
+    && snapshot.labels.includes('handoff:ready')
+    && snapshot.latestEvent?.marker === 'CURSOR ASSIGNMENT'
+    && !snapshot.consumedEventIds.includes(snapshot.latestEvent.id)
   ) {
     return plan(snapshot, 'cursor_ack_required', 'ready_assignment_unclaimed', [
       { type: 'post_comment', marker: 'CURSOR ACK', issue: snapshot.identity.taskIssue },
@@ -52,4 +53,30 @@ export function planAction(snapshot, policy = {}) {
   }
   if (snapshot.dependencyState === 'blocked') return plan(snapshot, 'noop', 'dependency_blocked');
   return plan(snapshot, 'noop', 'no_safe_action');
+}
+
+export function planAction(snapshot, policy = {}) {
+  // Always enforce production main boundary before any planner path.
+  if (snapshot && !snapshot.ambiguous) {
+    const mainPr = (snapshot.pullRequests || []).find((pr) => pr.state === 'open' && pr.base === 'main');
+    if (mainPr) return plan(snapshot, 'human_decision', 'production_main_boundary');
+  }
+
+  if (!isFourLaneEnabled(policy)) {
+    return planConservative(snapshot, policy);
+  }
+
+  if (!snapshot || snapshot.ambiguous) {
+    return plan(snapshot || { identity: {}, revision: 'missing' }, 'halt', 'ambiguous_or_missing_state');
+  }
+  if (policy.mode === 'disabled') return plan(snapshot, 'noop', 'routing_disabled');
+
+  // Prefer existing cursor/chatgpt/CI dispositions when no hold/adjustment is active.
+  const fourLane = planFourLaneAction(snapshot, policy);
+  if (fourLane.class !== 'noop' && fourLane.class !== 'no_four_lane_action') {
+    return plan(snapshot, fourLane.class, fourLane.reason, fourLane.mutations || []);
+  }
+
+  // Fall through to conservative pickup/integration when four-lane has no exclusive action.
+  return planConservative(snapshot, policy);
 }

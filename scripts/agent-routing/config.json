@@ -8,6 +8,12 @@
     "advance",
     "integrate"
   ],
+  "fourLaneRuntime": {
+    "enabled": false,
+    "autoOperationalHolds": false,
+    "autoRemediation": false,
+    "description": "When disabled, the conservative serialized planner is authoritative and automatic operational holds are off. Enabling activates #2639/#2640 four-lane lane state, nested PR review, Administration & Communications non-blocking rules, and Day-2 preemption."
+  },
   "repository": "wdhunter645/next-starter-template",
   "projectIssue": 2294,
   "projectBranch": "component/agent-issue-polling-handoff-routing",

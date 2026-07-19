@@ -47,6 +47,24 @@
         "object",
         "null"
       ]
+    },
+    "dependencyClass": {
+      "type": "string"
+    },
+    "fourLaneEnabled": {
+      "type": "boolean"
+    },
+    "operatingLanes": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "incidentAutoRemediation": {
+      "type": [
+        "object",
+        "null"
+      ]
     }
   }
 }
