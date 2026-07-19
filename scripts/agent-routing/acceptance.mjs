@@ -6,7 +6,7 @@ import { rankWatcherCandidates } from './watcher-candidate-planner.mjs';
 import { claimAction } from './claim-ledger.mjs';
 import { reconcileSnapshots } from './reconciler.mjs';
 import { resolveWorkflowManifestSelection } from '../pmo-projects/lib/workflow-policy.mjs';
-import { resolveOperatingLaneState } from './four-lane-runtime.mjs';
+import { resolveOperatingLaneState, evaluateProfileTransition, planFourLaneAction } from './four-lane-runtime.mjs';
 import { normalizeIncidentEvidence, upsertOperationalIncident } from './evidence-adapters/incident-evidence.mjs';
 import config from './config.json' with { type: 'json' };
 
@@ -80,6 +80,24 @@ export function runAcceptanceScenarios({ now = new Date().toISOString() } = {}) 
       }), { now });
       return created.ok && elevated.reason === 'elevated_existing' && elevated.incidents.length === 1;
     })(), 'trusted incident evidence creates and deduplicates operational issues'),
+    scenario(21, (() => {
+      const lanes = resolveOperatingLaneState({
+        projectGo: true,
+        profile: 'development',
+        events: [{ id: 1, marker: 'CURSOR ACK', createdAt: now }],
+      });
+      const bypass = evaluateProfileTransition('development', 'production');
+      const halt = planFourLaneAction(
+        { operatingLanes: lanes, identity: { taskIssue: 2639 }, pullRequests: [] },
+        { mode: 'advance', currentProfile: 'development', targetProfile: 'production' },
+      );
+      const allowed = evaluateProfileTransition('development', 'promotion-candidate');
+      return lanes.promotionProfile.profiles.includes('promotion-candidate')
+        && bypass.allowed === false
+        && bypass.code === 'prohibited_bypass'
+        && halt.class === 'halt'
+        && allowed.allowed === true;
+    })(), 'promotion-profile matrix rejects Development→Production bypass'),
   ];
   return {
     ok: scenarios.every((item) => item.ok),
