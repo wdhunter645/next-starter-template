@@ -2,11 +2,11 @@
 Doc Type: Governance
 Audience: Human + AI
 Authority Level: Constitutional
-Owns: Repository precedence, GitHub issue authority, domain ownership, canonical-source rules, supersession, and unresolved-conflict escalation
+Owns: Repository precedence, GitHub issue authority, domain ownership, canonical-source rules, administrative-control ownership, supersession, and unresolved-conflict escalation
 Does Not Own: Detailed PMO, PR, agent, CI, Operations, or platform procedures
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2477, #2486
-Last Reviewed: 2026-07-13
+Related Issues: #2477, #2486, #2641
+Last Reviewed: 2026-07-19
 ---
 
 # Repository Authority
@@ -66,7 +66,7 @@ Each domain has exactly one canonical policy file. Shared contracts and supporti
 | Delivery and Release | `docs/governance/DELIVERY-AND-RELEASE.md` (target; see disposition map) | Model A, Model B, promotion, approval, rollback policy |
 | Agent Team | `docs/governance/AGENT-TEAM.md` (target; see disposition map) | Chat, Cursor, Bill roles and binding agent policy |
 | CI and Verification | `docs/governance/CI-AND-VERIFICATION.md` (target; see disposition map) | Gate profiles, evidence, promotion criteria |
-| Operations and Recovery | `docs/governance/OPERATIONS-AND-RECOVERY.md` (target; see disposition map) | Upkeep, degradation, incidents, emergency recovery |
+| Operations and Recovery | `docs/governance/OPERATIONS-AND-RECOVERY.md` (target; see disposition map) | Administrative control lane, upkeep, clarification and exception resolution, degradation, incidents, emergency recovery |
 | Documentation and Knowledge | `docs/governance/standards/DIATAXIS-FOLDER-AUTHORITY.md` | DIATAXIS routing, migration ratchet, archive rules |
 | Platform and Environment | `docs/governance/PLATFORM-AND-ENVIRONMENT.md` (target; see disposition map) | Cloudflare, D1, B2, preview/production boundaries |
 
@@ -79,7 +79,16 @@ These documents inform domains but do not share canonical policy ownership:
 | Domain | Supporting references |
 | --- | --- |
 | Product and Design | `docs/reference/design/LGFC-Production-Design-and-Standards.md`; page specs under `docs/reference/design/**` |
+| Operations and Recovery | `docs/reference/operations/administrative-control-lane-contract.md` |
 | Documentation and Knowledge | `docs/governance/standards/DIATAXIS-AUTHORITY-RESOLUTION.md`; `docs/governance/DOCUMENT-ARCHITECTURE.md` |
+
+## Administrative control lane routing (binding)
+
+The repository-wide administrative control lane is owned by the Operations and Recovery domain policy. It is the mutation-capable, non-code control plane that follows all approved execution and review lanes.
+
+The administrative control lane may reconcile deterministic repository metadata and housekeeping to existing authority. It must not create new execution authority, change project objectives, alter implementation scope, or replace technical review and approval gates.
+
+Stable administrative mutation classes and stop boundaries live in `docs/reference/operations/administrative-control-lane-contract.md`. Execution procedures live in `docs/ops/pmo/queue-watch-and-dispatch-protocol.md` and `docs/ops/pmo/github-issue-closeout-protocol.md`.
 
 ## Agent material routing (binding)
 
@@ -106,10 +115,11 @@ Stop and escalate to Bill (with Chat as gate-review partner) only when:
 - a material product or design decision is unresolved;
 - preview/production isolation cannot be established safely.
 
-Routine document migration, header correction, reference updates, and duplicate cleanup are not escalation events.
+Routine document migration, header correction, reference updates, deterministic administrative reconciliation, and duplicate cleanup are not escalation events.
 
 ## Related documents
 
+- Administrative control lane contract: `docs/reference/operations/administrative-control-lane-contract.md`
 - Disposition map: `docs/reference/diataxis/two-model-authority-disposition-map.md`
 - Delivery system design: `docs/explanation/projects/two-model-delivery-system-design.md`
 - Document architecture: `docs/governance/DOCUMENT-ARCHITECTURE.md`
