@@ -279,7 +279,9 @@ export function resolveOperatingLaneState(input = {}) {
         status: implementationStatus,
         nestedReview,
         implementationHandoffComplete: nestedReview.implementationHandoffComplete,
-        profile: promotionProfile.current === 'none' ? (input.profile || 'development') : promotionProfile.current,
+        profile: promotionProfile.unknownRawProfile
+          ? 'none'
+          : (promotionProfile.current === 'none' ? 'development' : promotionProfile.current),
       },
       'day2-operations': { status: day2Status },
       'administration-communications': {
@@ -354,6 +356,18 @@ export function planFourLaneAction(snapshot, policy = {}) {
   }
 
   // Fail closed on prohibited promotion-profile bypasses before any delivery action.
+  if (lanes.promotionProfile?.unknownRawProfile || lanes.promotionProfile?.unknownRequestedProfile) {
+    return {
+      class: 'halt',
+      reason: 'unknown_profile',
+      mutations: [],
+      promotionProfile: {
+        code: 'unknown_profile',
+        allowed: false,
+        raw: lanes.promotionProfile.rawProfile,
+      },
+    };
+  }
   const requestedProfile = policy.targetProfile || snapshot.requestedProfile || lanes.promotionProfile?.requested;
   if (requestedProfile) {
     const profileGate = gateActionByPromotionProfile({

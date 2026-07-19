@@ -165,13 +165,20 @@ export function assertProfileTransition(fromProfile, toProfile, options = {}) {
  * Resolve current promotion-profile state for a task/snapshot input.
  * Prefers explicit input.profile / input.promotionProfile; otherwise infers
  * from typed communication markers when present.
+ *
+ * Unknown non-empty raw profile strings fail closed: they never become a live
+ * lane profile value.
  */
 export function resolvePromotionProfileState(input = {}) {
-  const explicit = normalizePromotionProfile(input.promotionProfile || input.profile);
+  const rawExplicit = input.promotionProfile ?? input.profile;
+  const hasRawExplicit = rawExplicit != null && String(rawExplicit).trim() !== '';
+  const explicit = normalizePromotionProfile(rawExplicit);
+  const unknownRawProfile = hasRawExplicit && explicit === null;
   const events = input.events || [];
 
   const has = (markers) => events.some((event) => markers.includes(event.marker));
   const inferred = (() => {
+    if (unknownRawProfile) return 'none';
     if (has(['OPERATIONAL INCIDENT', 'RECOVERY VERIFIED']) && has(['PRODUCTION GO', 'CLOSEOUT', 'CHATGPT CLOSEOUT'])) {
       return 'day2-operations';
     }
@@ -180,13 +187,15 @@ export function resolvePromotionProfileState(input = {}) {
     if (has(['IMPLEMENTATION HANDOFF', 'PR REVIEW REQUEST', 'APPROVED FOR INTEGRATION', 'LOCAL CURSOR RESUME', 'CURSOR ACK'])) {
       return 'development';
     }
-    if (input.sandboxAuthorized === true || input.profile === 'sandbox') return 'sandbox';
+    if (input.sandboxAuthorized === true || explicit === 'sandbox') return 'sandbox';
     return 'none';
   })();
 
-  const current = explicit && explicit !== 'none' ? explicit : inferred;
-  const requested = normalizePromotionProfile(input.requestedProfile || input.targetProfile);
-  const transition = requested && requested !== 'none'
+  const current = (!unknownRawProfile && explicit && explicit !== 'none') ? explicit : inferred;
+  const requestedRaw = input.requestedProfile ?? input.targetProfile;
+  const requested = normalizePromotionProfile(requestedRaw);
+  const unknownRequested = requestedRaw != null && String(requestedRaw).trim() !== '' && requested === null;
+  const transition = !unknownRawProfile && !unknownRequested && requested && requested !== 'none'
     ? evaluateProfileTransition(current === 'none' && explicit === 'none' ? 'none' : current, requested)
     : null;
 
@@ -196,9 +205,13 @@ export function resolvePromotionProfileState(input = {}) {
     label: PROMOTION_PROFILE_LABELS[current] || current,
     requested: requested && requested !== 'none' ? requested : null,
     transition,
+    unknownRawProfile,
+    unknownRequestedProfile: unknownRequested,
+    rawProfile: unknownRawProfile ? String(rawExplicit) : null,
     gates: {
       requiresPromotionCandidateBeforeProduction: true,
       automaticMainMergeProhibited: true,
+      failClosedOnUnknownProfile: true,
     },
   };
 }

@@ -126,4 +126,25 @@ describe('promotion-profile transition matrix (#2639)', () => {
     expect(gated.actionClass).toBe('halt');
     expect(gated.decision.code).toBe('prohibited_bypass');
   });
+
+  it('fails closed when unknown raw input.profile would otherwise enter lane state', () => {
+    const lanes = resolveOperatingLaneState({
+      projectGo: true,
+      profile: 'mystery',
+      events: [{ id: 1, marker: 'CURSOR ACK', createdAt: '2026-07-19T16:00:00Z' }],
+    });
+    expect(lanes.promotionProfile.unknownRawProfile).toBe(true);
+    expect(lanes.promotionProfile.current).toBe('none');
+    expect(lanes.lanes['implementation-operations'].profile).toBe('none');
+    expect(lanes.lanes['implementation-operations'].profile).not.toBe('mystery');
+
+    const snapshot = {
+      operatingLanes: lanes,
+      identity: { taskIssue: 2639, projectBranch: 'component/agent-issue-polling-handoff-routing' },
+      pullRequests: [],
+    };
+    const planned = planFourLaneAction(snapshot, { mode: 'advance' });
+    expect(planned.class).toBe('halt');
+    expect(planned.reason).toBe('unknown_profile');
+  });
 });
