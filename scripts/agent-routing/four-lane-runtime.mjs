@@ -79,6 +79,82 @@ function findLatestMarker(events = [], markers = []) {
     .at(-1) || null;
 }
 
+const APPROVAL_DISPOSITIONS = new Set([
+  'approved-for-integration',
+  'APPROVED FOR INTEGRATION',
+]);
+
+const REVIEW_REQUEST_DISPOSITIONS = new Set([
+  'pr-review-request',
+  'PR REVIEW REQUEST',
+]);
+
+const CHANGES_REQUIRED_DISPOSITIONS = new Set([
+  'changes-required',
+  'CHANGES REQUIRED',
+  'adjustment',
+  'ADJUSTMENT',
+  'hold',
+  'HOLD',
+  'guidance',
+  'GUIDANCE',
+  'wait',
+]);
+
+/**
+ * Fail-closed typed disposition parsing.
+ * Generic legacy CHATGPT RESPONSE / CHATGPT HANDOFF markers never authorize
+ * approval or review-request unless an explicit disposition field is present.
+ */
+export function parseTypedDisposition(event = null) {
+  if (!event || !event.marker) {
+    return { kind: 'none', trusted: false, reason: 'missing_event' };
+  }
+  const disposition = event.disposition || event.requestedDisposition || null;
+
+  if (event.marker === 'APPROVED FOR INTEGRATION') {
+    return { kind: 'approved-for-integration', trusted: true, reason: 'typed_marker', event };
+  }
+  if (event.marker === 'PR REVIEW REQUEST') {
+    return { kind: 'pr-review-request', trusted: true, reason: 'typed_marker', event };
+  }
+  if (event.marker === 'ADJUSTMENT' || event.marker === 'HOLD' || event.marker === 'GUIDANCE' || event.marker === 'PLAN CHANGE REQUIRED') {
+    return { kind: 'changes-required', trusted: true, reason: 'typed_marker', event, disposition: event.marker };
+  }
+
+  if (event.marker === 'CHATGPT RESPONSE') {
+    if (APPROVAL_DISPOSITIONS.has(disposition)) {
+      return { kind: 'approved-for-integration', trusted: true, reason: 'legacy_adapter_typed_disposition', event };
+    }
+    if (CHANGES_REQUIRED_DISPOSITIONS.has(disposition)) {
+      return { kind: 'changes-required', trusted: true, reason: 'legacy_adapter_typed_disposition', event, disposition };
+    }
+    return { kind: 'untyped-response', trusted: false, reason: 'generic_chatgpt_response_fail_closed', event };
+  }
+
+  if (event.marker === 'CHATGPT HANDOFF') {
+    if (REVIEW_REQUEST_DISPOSITIONS.has(disposition)) {
+      return { kind: 'pr-review-request', trusted: true, reason: 'legacy_adapter_typed_disposition', event };
+    }
+    return { kind: 'untyped-handoff', trusted: false, reason: 'generic_chatgpt_handoff_fail_closed', event };
+  }
+
+  return { kind: 'other', trusted: false, reason: 'not_disposition_event', event };
+}
+
+function findLatestTyped(events = [], kinds = []) {
+  const wanted = new Set(kinds);
+  return [...events]
+    .map((event) => ({ event, parsed: parseTypedDisposition(event) }))
+    .filter(({ parsed }) => parsed.trusted && wanted.has(parsed.kind))
+    .sort((a, b) => {
+      const time = String(a.event.createdAt || '').localeCompare(String(b.event.createdAt || ''));
+      if (time !== 0) return time;
+      return Number(a.event.id || 0) - Number(b.event.id || 0);
+    })
+    .at(-1) || null;
+}
+
 /**
  * Resolve top-level lane states and nested delivery review phase.
  */
@@ -86,9 +162,9 @@ export function resolveOperatingLaneState(input = {}) {
   const events = input.events || [];
   const event = latestEvent(events);
   const implementationHandoff = findLatestMarker(events, ['IMPLEMENTATION HANDOFF']);
-  const prReviewRequest = findLatestMarker(events, ['PR REVIEW REQUEST', 'CHATGPT HANDOFF']);
-  const approved = findLatestMarker(events, ['APPROVED FOR INTEGRATION', 'CHATGPT RESPONSE']);
-  const changesRequired = findLatestMarker(events, ['ADJUSTMENT']);
+  const typedReview = findLatestTyped(events, ['pr-review-request']);
+  const typedApproval = findLatestTyped(events, ['approved-for-integration']);
+  const typedChanges = findLatestTyped(events, ['changes-required']);
   const closeout = findLatestMarker(events, ['CLOSEOUT', 'CHATGPT CLOSEOUT']);
   const operationalIncident = findLatestMarker(events, ['OPERATIONAL INCIDENT']);
   const recoveryVerified = findLatestMarker(events, ['RECOVERY VERIFIED']);
@@ -105,20 +181,24 @@ export function resolveOperatingLaneState(input = {}) {
     : null;
 
   const nestedReview = (() => {
-    if (!implementationHandoff && !prReviewRequest) {
+    const reviewPendingSignal = Boolean(implementationHandoff || typedReview);
+    if (!reviewPendingSignal) {
       return { phase: 'none', implementationHandoffComplete: false };
     }
     const handoffComplete = Boolean(implementationHandoff);
-    if (approved && (!changesRequired || String(approved.createdAt) >= String(changesRequired.createdAt || ''))) {
-      if (closeout && String(closeout.createdAt) >= String(approved.createdAt || '')) {
+    const approvedAt = typedApproval?.event?.createdAt || '';
+    const changesAt = typedChanges?.event?.createdAt || '';
+
+    if (typedApproval && (!typedChanges || String(approvedAt) >= String(changesAt))) {
+      if (closeout && String(closeout.createdAt) >= String(approvedAt)) {
         return { phase: 'administration-pending', implementationHandoffComplete: handoffComplete };
       }
       return { phase: 'integration-eligible', implementationHandoffComplete: handoffComplete };
     }
-    if (changesRequired && (!approved || String(changesRequired.createdAt) > String(approved.createdAt || ''))) {
+    if (typedChanges && (!typedApproval || String(changesAt) > String(approvedAt))) {
       return { phase: 'remediation-required', implementationHandoffComplete: handoffComplete };
     }
-    if (prReviewRequest || implementationHandoff) {
+    if (typedReview || implementationHandoff) {
       return { phase: 'review-pending', implementationHandoffComplete: handoffComplete };
     }
     return { phase: 'none', implementationHandoffComplete: false };
@@ -203,13 +283,15 @@ export function resolveOperatingLaneState(input = {}) {
 /**
  * Successor eligibility under four-lane rules.
  * administrative-only never blocks. Operational assessment hold blocks delivery claims.
+ * direct/stacked remain blocked until the predecessor completion condition is satisfied;
+ * review/admin pending alone never implies independence.
  */
 export function evaluateSuccessorEligibility({
-  dependencyClass = 'none',
+  dependencyClass = 'direct',
   predecessorComplete = true,
   operationalHold = null,
   administrationBlocks = false,
-  nestedReviewPhase = 'none',
+  independentAuthority = false,
 } = {}) {
   if (administrationBlocks) {
     return { eligible: false, reason: 'administration_substantive_defect' };
@@ -223,20 +305,19 @@ export function evaluateSuccessorEligibility({
   if (dependencyClass === 'protected-stop' || dependencyClass === 'explicit-hold') {
     return { eligible: false, reason: `dependency_${dependencyClass}` };
   }
+  if (dependencyClass === 'collision') {
+    return { eligible: false, reason: 'mutation_scope_collision' };
+  }
   if (dependencyClass === 'direct' || dependencyClass === 'stacked') {
-    if (!predecessorComplete && nestedReviewPhase === 'none') {
-      return { eligible: false, reason: 'direct_predecessor_incomplete' };
-    }
-    // Independent successor may proceed while prior task is review/admin pending.
-    if (!predecessorComplete && ['review-pending', 'administration-pending', 'integration-eligible'].includes(nestedReviewPhase)) {
-      return { eligible: true, reason: 'independent_while_prior_in_review_or_admin' };
+    if (independentAuthority === true) {
+      return { eligible: true, reason: 'explicit_independent_authority' };
     }
     if (!predecessorComplete) {
       return { eligible: false, reason: 'direct_predecessor_incomplete' };
     }
   }
-  if (dependencyClass === 'collision') {
-    return { eligible: false, reason: 'mutation_scope_collision' };
+  if (dependencyClass === 'none') {
+    return { eligible: true, reason: 'explicit_independent_class' };
   }
   return { eligible: true, reason: 'eligible' };
 }

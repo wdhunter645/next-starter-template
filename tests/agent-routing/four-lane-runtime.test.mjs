@@ -119,8 +119,101 @@ describe('four-lane runtime', () => {
     expect(evaluateSuccessorEligibility({
       dependencyClass: 'direct',
       predecessorComplete: false,
-      nestedReviewPhase: 'review-pending',
-    }).reason).toBe('independent_while_prior_in_review_or_admin');
+    }).reason).toBe('direct_predecessor_incomplete');
+    expect(evaluateSuccessorEligibility({
+      dependencyClass: 'direct',
+      predecessorComplete: false,
+      independentAuthority: true,
+    }).reason).toBe('explicit_independent_authority');
+  });
+
+  it('fail-closes generic legacy markers and requires typed dispositions for approval/review', () => {
+    const genericResponse = resolveOperatingLaneState({
+      ...base,
+      events: [
+        { id: 1, marker: 'IMPLEMENTATION HANDOFF', createdAt: '2026-07-19T16:00:00Z' },
+        { id: 2, marker: 'CHATGPT RESPONSE', createdAt: '2026-07-19T16:10:00Z' },
+      ],
+    });
+    expect(genericResponse.lanes['implementation-operations'].nestedReview.phase).toBe('review-pending');
+
+    const holdResponse = resolveOperatingLaneState({
+      ...base,
+      events: [
+        { id: 1, marker: 'IMPLEMENTATION HANDOFF', createdAt: '2026-07-19T16:00:00Z' },
+        { id: 2, marker: 'CHATGPT RESPONSE', disposition: 'HOLD', createdAt: '2026-07-19T16:10:00Z' },
+      ],
+    });
+    expect(holdResponse.lanes['implementation-operations'].nestedReview.phase).toBe('remediation-required');
+
+    const guidance = resolveOperatingLaneState({
+      ...base,
+      events: [
+        { id: 1, marker: 'IMPLEMENTATION HANDOFF', createdAt: '2026-07-19T16:00:00Z' },
+        { id: 2, marker: 'GUIDANCE', createdAt: '2026-07-19T16:10:00Z' },
+      ],
+    });
+    expect(guidance.lanes['implementation-operations'].nestedReview.phase).toBe('remediation-required');
+
+    const adjustment = resolveOperatingLaneState({
+      ...base,
+      events: [
+        { id: 1, marker: 'IMPLEMENTATION HANDOFF', createdAt: '2026-07-19T16:00:00Z' },
+        { id: 2, marker: 'ADJUSTMENT', createdAt: '2026-07-19T16:10:00Z' },
+      ],
+    });
+    expect(adjustment.lanes['implementation-operations'].nestedReview.phase).toBe('remediation-required');
+
+    const genericHandoff = resolveOperatingLaneState({
+      ...base,
+      events: [{ id: 1, marker: 'CHATGPT HANDOFF', createdAt: '2026-07-19T16:00:00Z' }],
+    });
+    expect(genericHandoff.lanes['implementation-operations'].nestedReview.phase).toBe('none');
+
+    const typedHandoff = resolveOperatingLaneState({
+      ...base,
+      events: [{ id: 1, marker: 'CHATGPT HANDOFF', disposition: 'PR REVIEW REQUEST', createdAt: '2026-07-19T16:00:00Z' }],
+    });
+    expect(typedHandoff.lanes['implementation-operations'].nestedReview.phase).toBe('review-pending');
+
+    const typedApproval = resolveOperatingLaneState({
+      ...base,
+      events: [
+        { id: 1, marker: 'IMPLEMENTATION HANDOFF', createdAt: '2026-07-19T16:00:00Z' },
+        { id: 2, marker: 'PR REVIEW REQUEST', createdAt: '2026-07-19T16:05:00Z' },
+        { id: 3, marker: 'APPROVED FOR INTEGRATION', createdAt: '2026-07-19T16:20:00Z' },
+      ],
+    });
+    expect(typedApproval.lanes['implementation-operations'].nestedReview.phase).toBe('integration-eligible');
+
+    const typedLegacyApproval = resolveOperatingLaneState({
+      ...base,
+      events: [
+        { id: 1, marker: 'IMPLEMENTATION HANDOFF', createdAt: '2026-07-19T16:00:00Z' },
+        { id: 2, marker: 'CHATGPT RESPONSE', disposition: 'approved-for-integration', createdAt: '2026-07-19T16:20:00Z' },
+      ],
+    });
+    expect(typedLegacyApproval.lanes['implementation-operations'].nestedReview.phase).toBe('integration-eligible');
+  });
+
+  it('keeps incomplete direct/stacked dependencies blocked even when predecessor is review-pending', () => {
+    expect(evaluateSuccessorEligibility({
+      dependencyClass: 'direct',
+      predecessorComplete: false,
+    }).eligible).toBe(false);
+    expect(evaluateSuccessorEligibility({
+      dependencyClass: 'stacked',
+      predecessorComplete: false,
+    }).eligible).toBe(false);
+
+    const { dependencyClass: _omit, ...withoutClass } = base;
+    const blocked = resolveRepositoryState({
+      ...withoutClass,
+      predecessorStates: ['active'],
+      // omit dependencyClass → four-lane default direct
+    }, fourLaneOn);
+    expect(blocked.dependencyClass).toBe('direct');
+    expect(blocked.dependencyState).toBe('blocked');
   });
 
   it('auto-creates/elevates deduplicated high-priority operational incidents from trusted evidence', () => {

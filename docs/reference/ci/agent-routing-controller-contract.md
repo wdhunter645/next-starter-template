@@ -90,4 +90,12 @@ When enabled, the controller additionally resolves:
 - repository-wide Day-2 assessment holds with preserved resume context;
 - lightweight plan adjustment (`PROBLEM FOUND` → `GUIDANCE`/`ADJUSTMENT` → `RESUME`).
 
+Typed disposition rules (fail-closed):
+
+- Integration eligibility requires `APPROVED FOR INTEGRATION` or a legacy `CHATGPT RESPONSE` with explicit `disposition: approved-for-integration`.
+- Review-pending from legacy handoff requires `PR REVIEW REQUEST` or a `CHATGPT HANDOFF` with explicit `disposition: PR REVIEW REQUEST`.
+- Generic `CHATGPT RESPONSE` / `CHATGPT HANDOFF` markers alone never authorize those transitions.
+- `HOLD`, `GUIDANCE`, and `ADJUSTMENT` route to remediation, not integration.
+- Missing `dependencyClass` defaults to `direct` under four-lane mode. Direct/stacked successors remain blocked until predecessor completion unless `none`, `administrative-only`, or `independentAuthority` is explicit.
+
 Administration & Communications is non-blocking unless an explicit substantive defect is present. Automatic merge or promotion to `main` remains prohibited in every mode.

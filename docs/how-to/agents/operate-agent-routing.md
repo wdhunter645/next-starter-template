@@ -32,15 +32,17 @@ Provide the operator procedure for the Project #2294 routing system. This runboo
 
 - **Disabled:** conservative serialized planner; automatic operational holds off; existing claims/history retained.
 - **Enabled:** resolve PMO / Engineering, Implementation / Operations (nested PR review), Day-2 Operations, and vertical Administration & Communications; support assessment hold, plan adjustment, and evidence-backed resume.
+- Typed dispositions are fail-closed: generic `CHATGPT RESPONSE` / `CHATGPT HANDOFF` markers never authorize integration or review-request unless an explicit `disposition` field is present. Prefer canonical markers `APPROVED FOR INTEGRATION` and `PR REVIEW REQUEST`.
+- Direct/stacked dependencies stay blocked until predecessor completion unless an explicit independent class (`none` / `administrative-only`) or `independentAuthority` is recorded.
 
-Do not enable in production observe pilots until #2639 acceptance evidence is reviewed.
+Do not enable in production observe pilots until #2639 acceptance evidence is reviewed by ChatGPT (`agent:ChatGPT`).
 
 ## Roles
 
 | Role | Normal responsibility |
 | --- | --- |
 | Bill | Product, cost, priority, credential, external-service, and production authority |
-| ChatGPT / Atlas | Preparation, governance, review, routing decisions, protected changes, closeout, Tier 2 escalation |
+| ChatGPT | Preparation, governance, review, routing decisions, protected changes, closeout, Tier 2 escalation |
 | Cursor Local | Implementation, validation, remediation, branch push, routine operations |
 | CI controller | Deterministic monitoring, evaluation, bounded action, alerts, reconciliation |
 | GitHub | Durable Issues, PRs, checks, labels, comments, branches, and workflow evidence |

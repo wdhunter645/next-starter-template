@@ -35,6 +35,7 @@ function resolveDependencyState({
   dependencyClass,
   policy,
   operatingLanes,
+  independentAuthority = false,
 }) {
   if (contradictory || !eventKnown) return 'ambiguous';
   if (task.state === 'complete') return 'complete';
@@ -51,7 +52,8 @@ function resolveDependencyState({
     }
     if (dependencyClass === 'administrative-only') return 'ready';
     if (dependencyClass === 'protected-stop' || dependencyClass === 'explicit-hold') return 'blocked';
-    if (dependencyClass === 'none') return 'ready';
+    if (dependencyClass === 'none' || independentAuthority) return 'ready';
+    // direct/stacked (and conservative default) still require predecessor completion
   }
 
   const predecessorsComplete = predecessorStates.every((state) => state === 'complete' || state === 'integrated');
@@ -71,7 +73,12 @@ export function resolveRepositoryState(input = {}, policy = {}) {
   const project = input.project || {};
   const task = input.task || {};
   const predecessorStates = input.predecessorStates || [];
-  const dependencyClass = input.dependencyClass || 'none';
+  // Four-lane mode defaults missing class to direct so unclassified work stays serialized
+  // unless explicitly marked independent (`none`) or administrative-only.
+  const dependencyClass = Object.prototype.hasOwnProperty.call(input, 'dependencyClass')
+    ? input.dependencyClass
+    : (isFourLaneEnabled(policy) ? 'direct' : 'none');
+  const independentAuthority = input.independentAuthority === true;
 
   const operatingLanes = isFourLaneEnabled(policy)
     ? resolveOperatingLaneState(input)
@@ -85,6 +92,7 @@ export function resolveRepositoryState(input = {}, policy = {}) {
     dependencyClass,
     policy,
     operatingLanes,
+    independentAuthority,
   });
   const routingOwner = contradictory ? 'ambiguous' : cursor ? 'cursor' : chatgpt ? 'chatgpt' : 'none';
   const identity = {
@@ -100,6 +108,7 @@ export function resolveRepositoryState(input = {}, policy = {}) {
     latestEvent: event,
     dependencyState,
     dependencyClass,
+    independentAuthority,
     pullRequests: input.pullRequests || [],
     checks: input.checks || [],
     reviews: input.reviews || [],
