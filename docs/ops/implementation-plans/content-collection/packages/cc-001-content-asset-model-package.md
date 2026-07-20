@@ -132,7 +132,10 @@ States remain **orthogonal** on the candidate registry. Inventory uses a separat
 Candidate intake
   review_status: pending_review → (approved_* | deferred_* | rejected | private_internal_only)
   publication_status: not_ready → draft_candidate → staged → approved_for_publish
-        ↓ editorial conversion (human)
+                     → published → (unpublished | archived)
+        (`published` is reserved for the publication/conversion workflow;
+         admin review may set unpublished/archived but not published)
+        ↓ editorial conversion (human) sets publication_status = published + inventory link
 content_inventory.status: draft → published → archived
         ↓ public/member eligibility
 Surface render only when published + attribution + section + exposure rules pass
