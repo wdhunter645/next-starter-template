@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Canonical LGFC content candidate registry field, state, and promotion model for Program #2273
 Does Not Own: D1 migrations, runtime APIs, admin UI, crawler automation, or public publication
 Canonical Reference: /docs/reference/content/lgfc-content-candidate-model.md
-Related issues: #2273, #2275, #2270, #2274
-Last Reviewed: 2026-07-05
+Related issues: #2273, #2275, #2270, #2274, #2433, #2286
+Last Reviewed: 2026-07-20
 ---
 
 # LGFC Content Candidate Model
@@ -94,6 +94,27 @@ Member submissions are a **first-class** input stream with required extension fi
 `photo`, `article`, `record`, `story`, `video`, `audio`, `artifact`, `quote`,
 `timeline_fact`, `biography_note`, `source_lead`, `correction`, `identification`,
 `other`
+
+Runtime enum authority: `CONTENT_PIPELINE_CONTENT_TYPES` in
+`functions/_lib/content-pipeline-candidate-constants.ts` (#2286).
+
+### Downstream asset type mapping (CC-001)
+
+Downstream Gallery / Library / Memorabilia / Club lanes consume **view labels**
+(`asset_type`) mapped from `content_type` + publication target. They must not
+create a parallel content-type enum.
+
+| Downstream `asset_type` | Typical `content_type` | Typical publication target |
+| --- | --- | --- |
+| `gallery_image` | `photo`, visual `artifact` | `gallery` |
+| `library_entry` | `story`, `article`, `biography_note`, `record`, `quote`, `timeline_fact` | `library` / related editorial targets |
+| `memorabilia_item` | `artifact`, `photo` | `memorabilia` |
+| `club_article` | `story`, `article`, `quote` | `homepage_feature`, `newsletter`, `article` |
+| `internal_reference_only` | any | `internal_reference_only` |
+
+Canonical mapping, state diagram, exposure classes, and freeze evidence live in
+`docs/ops/implementation-plans/content-collection/packages/cc-001-content-asset-model-package.md`
+and `docs/reference/website/unified-content-workflow.md`.
 
 ## Member submission extension
 

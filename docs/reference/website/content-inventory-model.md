@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Content inventory model, field definitions, submission queue requirements, media association requirements, and schema invariants for project #1256
 Does Not Own: D1 migration files, runtime API implementation, UI copy, or editorial fact approval
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Related issues: #1256, #824, #819, #1137, #1689, #1685
-Last Reviewed: 2026-06-23
+Related issues: #1256, #824, #819, #1137, #1689, #1685, #2433, #2286
+Last Reviewed: 2026-07-20
 ---
 
 # Content Inventory Model
@@ -247,6 +247,23 @@ Legacy `photos` catalog rows remain operator-managed approved content without a
 `photos.status` column. New visual content should flow through
 `submission_queue` → editorial publish → inventory and optional
 `content_inventory_media` associations.
+
+## CC-001 exposure alignment (#2433)
+
+Inventory-backed Library and Club Newspaper surfaces consume the CC-001 exposure
+classes defined in `unified-content-workflow.md`:
+
+| Exposure class | Inventory rule |
+| --- | --- |
+| `private_admin` | `status = draft` (and admin-only reads) |
+| `member_only` | `status = published` with Fan Club section placement; member session required |
+| `public` | `status = published` + non-empty `source_name` + `credit_line` + matching `allowed_sections` |
+| `internal_reference_only` | Not eligible for inventory public helpers; remains candidate/admin |
+
+Gallery and Memorabilia primarily read the `photos` catalog today (member-only).
+Governed field migration onto inventory-associated media remains feature-lane
+work after Atlas verifies `CONTRACT-FROZEN: content-asset-model v1` and CC-002
+as required.
 
 ## Automation Triage Fields
 
