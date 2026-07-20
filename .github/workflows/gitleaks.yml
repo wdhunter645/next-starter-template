@@ -26,6 +26,3 @@ jobs:
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
           # Use repo config file.
           GITLEAKS_CONFIG: .gitleaks.toml
-          # The required gate is the scanner result. Keep optional SARIF upload
-          # from turning an artifact-service outage into a false scan failure.
-          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: 'false'
