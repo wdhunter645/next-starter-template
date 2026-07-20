@@ -45,7 +45,7 @@ Local Cursor routing uses all of the following eligibility markers:
 - exactly one bounded next action in that resume;
 - a latest canonical `CHATGPT RESPONSE` (or `CHATGPT CLOSEOUT`) referenced by the resume.
 
-**Primary local transport (auto-start):** GitHub Actions wake delivery on the Chromebook runner writes a host packet; **Cursor Local Bridge** revalidates the full eligibility contract, claims the serial lane, and launches authenticated local `cursor agent` — or falls back to notify + unclaimed. See `docs/reference/ci/cursor-local-bridge-contract.md` and `docs/how-to/cursor/configure-cursor-local-bridge.md`.
+**Primary local transport (auto-start):** GitHub Actions wake delivery on the Chromebook runner writes a host packet; **Cursor Local Bridge** revalidates the full eligibility contract, claims the serial lane, and launches authenticated local `cursor agent` — or falls back to notify + unclaimed. Architecture: `docs/explanation/operations/cursor-local-auto-start-architecture.md`. Contract: `docs/reference/ci/cursor-local-bridge-contract.md`. Install: `docs/how-to/cursor/configure-cursor-local-bridge.md`.
 
 **Backup / legacy:** manual operator action or the documented local poll-wake loop (stdout sentinel only; requires an open agent chat).
 
@@ -75,7 +75,8 @@ For LGFC work:
 
 Local Cursor resumes from repository-controlled state, not chat memory. The detailed procedures are:
 
-- `docs/reference/ci/cursor-local-bridge-contract.md` (primary auto-start)
+- `docs/explanation/operations/cursor-local-auto-start-architecture.md` (as-built design)
+- `docs/reference/ci/cursor-local-bridge-contract.md` (primary auto-start contract)
 - `docs/how-to/cursor/configure-cursor-local-bridge.md`
 - `docs/ops/ai/chatgpt-cursor-handoff-workflow.md`
 - `docs/how-to/cursor/github-poll-wake-loop.md` (legacy backup)

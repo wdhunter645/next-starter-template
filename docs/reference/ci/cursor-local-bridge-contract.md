@@ -4,8 +4,8 @@ Audience: Human + AI
 Authority Level: Project Contract
 Owns: Cursor Local Bridge component inventory, eligibility auto-start gates, wake-packet authority boundary, and fallback taxonomy for Project #2294 Task #2667
 Does Not Own: Product decisions, PR approval, Background Agents, or unrestricted workflow migration onto the Chromebook runner
-Canonical Reference: /config/cursor-bridge/bridge.json
-Related Issues: #2294, #2667
+Canonical Reference: /docs/explanation/operations/cursor-local-auto-start-architecture.md
+Related Issues: #2294, #2667, #2669
 Last Reviewed: 2026-07-20
 ---
 
@@ -16,6 +16,8 @@ Last Reviewed: 2026-07-20
 Define the mandatory **Cursor Local Bridge** that turns GitHub eligibility into an authenticated local `cursor agent` launch — or an explicit unclaimed fallback.
 
 The Chromebook GitHub Actions runner is **event delivery only**. Without this Bridge, labels and wake jobs do not start Cursor.
+
+Conceptual architecture and as-built evidence: `docs/explanation/operations/cursor-local-auto-start-architecture.md`.
 
 ## Component inventory
 
@@ -63,6 +65,7 @@ On auth failure, usage/plan limit, validation failure, claim conflict, or launch
 
 ## Canonical files
 
+- `docs/explanation/operations/cursor-local-auto-start-architecture.md`
 - `config/cursor-bridge/bridge.json`
 - `config/github-actions/repository-runner.json` (`wakeDelivery`)
 - `.github/workflows/cursor-local-wake.yml`
