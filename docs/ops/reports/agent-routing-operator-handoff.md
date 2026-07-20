@@ -74,8 +74,10 @@ Authorized critical-path chain after verified `#2601` closeout:
 
 ## Final acceptance gate
 
-`#2640` / `#2639` predecessor blockers are **cleared**. `#2601` now carries Phase 1 host evidence, watcher engage posture, and four-lane runtime validation against component head `79400f428a0c60ccdb3e566c45b2560ca59463e2`.
+`#2640` / `#2639` predecessor blockers are **cleared**. `#2639` Development closeout accepted PR `#2655` at component head `f5bc9f14c2533def302a8cd2cfa79237e8403406`, supplying the deterministic promotion-profile matrix previously missing from the pilot package.
 
-This package requests ChatGPT Task 009 closeout disposition. Residual disclosed gaps (profile-transition matrix as executable gates; live Sandbox adoption demo; enabling `fourLaneRuntime` in config) are recorded in `docs/ops/reports/agent-routing-pilot.md` and must not be silently treated as complete.
+`#2601` now carries Phase 1 host evidence, watcher engage posture, four-lane runtime validation (prior resume at `79400f42…`), and promotion-profile gate observe reconciliation at `f5bc9f14…`. Executable profile-transition / bypass gates are **satisfied**; residual disclosed gaps are limited to live Sandbox adoption demo and enabling `fourLaneRuntime` in repository config (see `docs/ops/reports/agent-routing-pilot.md`).
+
+This package requests ChatGPT Task 009 closeout disposition. Residual gaps must not be silently treated as complete.
 
 Until the remaining unchecked runner boxes have direct evidence, Chromebook runner registration and controller mode promotion beyond `observe` remain separate decisions on the `#2634`→`#2638` chain after verified `#2601` closeout.

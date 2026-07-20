@@ -35,7 +35,7 @@ Provide the operator procedure for the Project #2294 routing system. This runboo
 - Typed dispositions are fail-closed: generic `CHATGPT RESPONSE` / `CHATGPT HANDOFF` markers never authorize integration or review-request unless an explicit `disposition` field is present. Prefer canonical markers `APPROVED FOR INTEGRATION` and `PR REVIEW REQUEST`.
 - Direct/stacked dependencies stay blocked until predecessor completion unless an explicit independent class (`none` / `administrative-only`) or `independentAuthority` is recorded.
 
-`#2639` / PR `#2646` integrated the four-lane runtime on `component/agent-issue-polling-handoff-routing`. Keep `fourLaneRuntime.enabled=false` for observe pilots until ChatGPT (`agent:ChatGPT`) records an explicit enablement Go. Validation evidence for the gated module lives in `docs/ops/reports/agent-routing-pilot.md`.
+`#2639` / PR `#2646` integrated the four-lane runtime on `component/agent-issue-polling-handoff-routing`. PR `#2655` added the deterministic promotion-profile transition matrix (`scripts/agent-routing/promotion-profile-matrix.mjs`) with fail-closed bypass and unknown-profile halts. Keep `fourLaneRuntime.enabled=false` for observe pilots until ChatGPT (`agent:ChatGPT`) records an explicit enablement Go. Validation evidence for the gated module and profile matrix lives in `docs/ops/reports/agent-routing-pilot.md`.
 
 ## Roles
 
