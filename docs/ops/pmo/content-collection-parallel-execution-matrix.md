@@ -5,8 +5,8 @@ Authority Level: Operational Plan (non-authoritative until linked from program i
 Owns: Pairwise parallel matrix, per-lane file allowlists, hot zones, freeze marker, merge order, and review throttle
 Does Not Own: Merge authorization, GitHub issue creation, or CI workflow implementation
 Canonical Reference: /docs/ops/reports/content-collection-docs-audit-dedup-2360.md
-Related Issues: #2363, #2359, #2360
-Last Reviewed: 2026-07-10
+Related Issues: #2363, #2359, #2360, #2431, #2432, #2433, #2434, #2435, #2436, #2437, #2438
+Last Reviewed: 2026-07-20
 ---
 
 # Content Collection Parallel Execution Matrix and File Allowlist Plan
@@ -27,6 +27,9 @@ Does not own merge authorization, GitHub issue creation, or CI workflow implemen
 - Default max concurrent sessions: 3; exceptional: 4 with disjoint allowlists.
 - Gallery/Library/Memorabilia parallel code work requires `CONTRACT-FROZEN: content-asset-model v1`.
 - Package docs live under `docs/ops/implementation-plans/content-collection/packages/`.
+- Content Collection Phase 1 project #2431 is launched; Gate 0 (#2432) is serial and `parallel_safe: false`.
+- P2–P5 feature implementation remains prohibited until verified freeze (D-008); P6 tooling waits Stage 0 (#2435) and review (D-009).
+- Phase 1 child PRs target `component/content-collection-phase1` only.
 
 ## Intended final state
 
@@ -47,12 +50,12 @@ Every parallel implementation task cites lane ID, file allowlist, hot-zone halt 
 
 | Phase | Max sessions |
 | --- | ---: |
-| Phase 0 docs | 1 |
-| Phase 1 foundation | 1–2 |
+| Phase 0 docs | 1 (complete) |
+| Phase 1 foundation (post-#2431 GO) | 1 until Gate 0 (#2432) integrates; then 1–2 with disjoint allowlists |
 | Phase 3 surfaces (post-freeze) | 3 |
 | Exceptional | 4 |
 
-Six simultaneous full implementation sessions at launch is **not** authorized.
+Six simultaneous full implementation sessions at launch is **not** authorized. #2431 GO does not authorize P2–P5 feature parallelism.
 
 ## Pairwise matrix
 

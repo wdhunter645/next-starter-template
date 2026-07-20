@@ -6,7 +6,7 @@ Owns: Deferred work tracking for Content Collection successor program — preven
 Does Not Own: Issue creation authority, prioritization decisions, launch authorization, or automatic deferral enforcement
 Canonical Reference: /docs/ops/pmo/lou-gehrig-content-collection-expansion-readiness.md
 Related Issues: #2364, #2359, #2360, #1738, #2286, #2431, #2432, #2433, #2434, #2435, #2436, #2437, #2438
-Last Reviewed: 2026-07-10
+Last Reviewed: 2026-07-20
 ---
 
 # Deferred Work Register — Content Collection
@@ -22,22 +22,22 @@ Track work intentionally excluded from the current Content Collection program wa
 - Deferred items from intake draft enriched with repo/issue linkage.
 - Register fields and update procedure.
 - Stop rule when deferred item appears in active task allowlist.
-- Phase 1 preparation carry-forward state for D-008 and D-009.
+- Phase 1 carry-forward state for D-008 and D-009.
 
 **Out of scope:**
 
 - PMO backlog prioritization (Bill final authority).
 - Automatic issue creation for deferred items.
 - Feature implementation of deferred capabilities.
-- Launch authorization.
+- Launch authorization beyond recorded #2431 GO for the sequenced child graph.
 
 ## Current known truth
 
-- Phase 0 child chain #2360–#2365 completed through PR #2427.
+- Phase 0 child chain #2360–#2365 completed through PR #2427; #2359 / #2365 closed.
 - #2364 support docs are on `main` under `docs/ops/implementation-plans/content-collection/support/`.
-- Phase 1 preparation parent is #2431; child issues #2432–#2438 are prepared but blocked pending Go / NoGo.
-- GAL/LIB/MEM/CLUB feature implementation remains deferred until `CONTRACT-FROZEN: content-asset-model v1` is posted and ChatGPT verifies downstream release.
-- CI-001 / CI-002 tooling moved from pure deferral to Phase 1 review-gated preparation, but implementation remains blocked until #2431 Go / NoGo and #2435 Stage 0 analysis.
+- Phase 1 parent #2431 launched GO on 2026-07-20; current executable child is #2432; #2433–#2438 remain sequenced successors.
+- **D-008** (GAL/LIB/MEM/CLUB feature implementation) remains `deferred` and is carried forward into Phase 1 controls — #2431 GO does **not** authorize feature-lane code.
+- **D-009** (CI-001 / CI-002 tooling) remains `under-review` and is carried forward into Phase 1 controls via #2435 → #2436 / #2437; not auto-launched by #2431 GO.
 - Codex is inactive per `docs/ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md`.
 - Post-merge label transition (`post-merge:failed`) is tracked in #2418; current automation uses `post-merge-failure`.
 
@@ -78,8 +78,8 @@ Every deferred entry must include:
 | D-005 | Paid storage/API expansion | Non-free-tier dependencies | Readiness assumptions | Conservative/free-tier controls assumed | Bill approval after cost/risk review | Bill | deferred | — | Platform |
 | D-006 | Broad admin platform redesign | Full admin UX overhaul | Intake draft | Only content collection support in scope | Separate admin UX program | ChatGPT | deferred | — | Admin |
 | D-007 | Codex implementation role | Codex as executor | `docs/ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md` | Codex inactive unless reauthorized | Explicit Bill governance update | Bill | deferred | — | Agents |
-| D-008 | GAL/LIB/MEM/CLUB feature implementation | Gallery, Library, Memorabilia, Club routes | #2360 audit; #2362 | Phase 3 — blocked until CC-001/CC-002 frozen | `CONTRACT-FROZEN: content-asset-model v1` + downstream issue authorization | Cursor | deferred | GAL/LIB/MEM/CLUB | Feature |
-| D-009 | CI-001 / CI-002 tooling implementation | PR body generator, closeout auto-repair scripts | #2360 audit; #2361 packages | Phase 1 review-gated; implementation blocked until Stage 0 and Go / NoGo | #2431 Go / NoGo + #2435 Stage 0 recommendation | Cursor | under-review | CI-001/CI-002 | CI |
+| D-008 | GAL/LIB/MEM/CLUB feature implementation | Gallery, Library, Memorabilia, Club routes | #2360 audit; #2362; #2431 | Phase 3 — blocked until CC-001/CC-002 frozen; carried into Phase 1 controls without authorization | `CONTRACT-FROZEN: content-asset-model v1` + downstream issue authorization | Cursor | deferred | GAL/LIB/MEM/CLUB | Feature |
+| D-009 | CI-001 / CI-002 tooling implementation | PR body generator, closeout auto-repair scripts | #2360 audit; #2361 packages; #2435–#2437 | Phase 1 review-gated; carried into Phase 1 controls; Stage 0 before tooling | #2435 Stage 0 recommendation + #2436/#2437 allowlists | Cursor | under-review | CI-001/CI-002 | CI |
 | D-010 | Accelerated merge policy | "Pre-approved merge" / continuous execution policy | Intake draft; C1/C8 #2360 | Conflicts with PR lifecycle and merge authority | Rewrite as procedural preclearance only; Bill/ChatGPT approve | ChatGPT | deferred | — | Governance |
 | D-011 | `docs/ops/programs/` tree | Proposed program doc root | #2360 C7 | Rejected — use existing ops clusters | N/A — use `docs/ops/reports/`, `implementation-plans/`, `pmo/` | ChatGPT | superseded | — | Docs |
 | D-012 | `docs/reference/website/content-collection/` | Parallel reference root | #2360 C7 | Rejected — merge into existing content/website refs | N/A — gap matrices only | ChatGPT | superseded | CC-001/CC-002 | Docs |
@@ -98,8 +98,9 @@ Every deferred entry must include:
 | Support registers / assignment docs | #2364 | Complete |
 | Terminal Phase 0 closeout | #2365 | Complete via PR #2427 |
 | Lessons learned register | #2366 | Living doc |
-| Phase 1 preparation parent | #2431 | Prepared; blocked pending Go / NoGo |
-| Phase 1 prep children | #2432–#2438 | Prepared; blocked pending Go / NoGo |
+| Phase 1 project parent | #2431 | Launched GO 2026-07-20 |
+| Phase 1 Gate 0 | #2432 | Active executable task |
+| Phase 1 sequenced children | #2433–#2438 | Authorized only after predecessor clean integration |
 
 ## Update procedure
 
@@ -120,13 +121,13 @@ Review this register:
 
 ## Acceptance criteria
 
-- [ ] All known out-of-scope items tracked with source authority.
-- [ ] No deferred item implemented in current wave without explicit authorization.
-- [ ] #2360 disposition items (C7, C1/C8, Phase 3 packages) reflected.
-- [ ] Register fields support issue-linked audit trail.
-- [ ] Superseded items marked — not deleted — for history.
-- [ ] D-008 remains blocked until freeze verification.
-- [ ] D-009 remains gated by #2431 Go / NoGo and #2435 Stage 0.
+- [x] All known out-of-scope items tracked with source authority.
+- [x] No deferred item implemented in current wave without explicit authorization.
+- [x] #2360 disposition items (C7, C1/C8, Phase 3 packages) reflected.
+- [x] Register fields support issue-linked audit trail.
+- [x] Superseded items marked — not deleted — for history.
+- [x] D-008 remains blocked until freeze verification (carried into Phase 1 controls).
+- [x] D-009 remains gated by #2435 Stage 0 and #2436/#2437 allowlists (carried into Phase 1 controls).
 
 ## Source intake mapping
 
