@@ -6,7 +6,7 @@ Owns: Index, asset inventory, promotion-status tracking, and Phase 1 preparation
 Does Not Own: Canonical content model, governance law, runtime implementation, launch authorization, or merge authority
 Canonical Reference: /docs/ops/reports/content-collection-docs-audit-dedup-2360.md
 Related Issues: #2365, #2361, #2362, #2363, #2364, #2359, #2360, #1738, #2286, #2431, #2432, #2433, #2434, #2435, #2436, #2437, #2438
-Last Reviewed: 2026-07-10
+Last Reviewed: 2026-07-20
 ---
 
 # Content Collection Package Index
@@ -44,14 +44,14 @@ These are **operational envelopes** for future Cursor tasks. They become executa
 
 | Doc ID | Title | Path | Status | PR |
 | --- | --- | --- | --- | --- |
-| CTRL-001 | Launch Readiness Checklist | [content-collection-launch-readiness-checklist.md](../../pmo/content-collection-launch-readiness-checklist.md) | `validated` | #2420 |
+| CTRL-001 | Launch Readiness Checklist | [content-collection-launch-readiness-checklist.md](../../pmo/content-collection-launch-readiness-checklist.md) | `validated` | #2420, #2674 |
 | CTRL-002 | Diataxis Promotion Map | [content-collection-diataxis-promotion-map.md](../../pmo/content-collection-diataxis-promotion-map.md) | `validated` | #2420, #2427 |
-| CTRL-003 | Parallel Execution Matrix | [content-collection-parallel-execution-matrix.md](../../pmo/content-collection-parallel-execution-matrix.md) | `validated` | #2420 |
+| CTRL-003 | Parallel Execution Matrix | [content-collection-parallel-execution-matrix.md](../../pmo/content-collection-parallel-execution-matrix.md) | `validated` | #2420, #2674 |
 | CTRL-004 | Cursor Parallel Worktree Standard | [cursor-parallel-worktree-standard.md](../../../how-to/ops/cursor-parallel-worktree-standard.md) | `validated` | #2420 |
 | CTRL-005 | Program Closeout Template | [content-collection-program-closeout-template.md](../../pmo/content-collection-program-closeout-template.md) | `validated` | #2420 |
 | CTRL-006 | Dedup / Merge Plan | [content-collection-docs-audit-dedup-2360.md](../../reports/content-collection-docs-audit-dedup-2360.md) | `complete` | #2372 |
-| CTRL-007 | Phase 0 Closeout Report | [content-collection-phase0-promotion-closeout-2365.md](../../reports/content-collection-phase0-promotion-closeout-2365.md) | `validated` | #2427 |
-| CTRL-008 | Phase 1 Launch Prep | [phase1-launch-prep.md](./phase1-launch-prep.md) | `prepared` | #2431 prep PR |
+| CTRL-007 | Phase 0 Closeout Report | [content-collection-phase0-promotion-closeout-2365.md](../../reports/content-collection-phase0-promotion-closeout-2365.md) | `complete` | #2427 (merged) |
+| CTRL-008 | Phase 1 Launch Prep | [phase1-launch-prep.md](./phase1-launch-prep.md) | `launched` | #2431 GO 2026-07-20; Gate 0 #2432 |
 
 ## Support documents (#2364)
 
@@ -64,17 +64,19 @@ These are **operational envelopes** for future Cursor tasks. They become executa
 | SUP-005 | Deferred work register | [deferred-work-register.md](./support/deferred-work-register.md) | `validated` | #2419, #2424, #2427 |
 | SUP-006 | Risk register | [risk-register.md](./support/risk-register.md) | `validated` | #2419, #2424 |
 
-## Phase 1 prepared issue graph
+## Phase 1 issue graph
 
 | Order | Issue | Title | Package / lane | Launch state |
 | ---: | --- | --- | --- | --- |
-| 0 | #2432 | Phase 1 Gate 0 — Readiness Reconciliation and Stale-State Repair | Gate 0 | Blocked pending #2431 Go / NoGo |
-| 1 | #2433 | CC-001 Content Asset Contract Freeze | CC-001 / P1 | Blocked pending #2431 Go / NoGo |
-| 2 | #2434 | CC-002 Provenance Rights and Publication Contract Freeze | CC-002 / P1 | Blocked pending #2431 Go / NoGo |
-| 3 | #2435 | CI Stage 0 Current-State Gap Analysis | CI Stage 0 / P6 | Blocked pending #2431 Go / NoGo |
-| 4 | #2436 | CI-001 PR Body Generator Preclearance Tooling | CI-001 / P6 | Blocked pending #2431 and #2435 |
-| 5 | #2437 | CI-002 Admin Closeout Auto-Repair Boundary | CI-002 / P6 | Blocked pending #2431 and #2435 |
-| 6 | #2438 | Validation Closeout and Downstream Release Recommendation | VAL-001 | Blocked pending #2431 Go / NoGo |
+| 0 | #2432 | Phase 1 Gate 0 — Readiness Reconciliation and Stale-State Repair | Gate 0 | Active — current executable task after #2431 GO |
+| 1 | #2433 | CC-001 Content Asset Contract Freeze | CC-001 / P1 | Sequenced after #2432 clean integration |
+| 2 | #2434 | CC-002 Provenance Rights and Publication Contract Freeze | CC-002 / P1 | Sequenced after #2433 |
+| 3 | #2435 | CI Stage 0 Current-State Gap Analysis | CI Stage 0 / P6 | Sequenced after #2434 |
+| 4 | #2436 | CI-001 PR Body Generator Preclearance Tooling | CI-001 / P6 | Sequenced after #2435 |
+| 5 | #2437 | CI-002 Admin Closeout Auto-Repair Boundary | CI-002 / P6 | Sequenced after #2435 and #2436 |
+| 6 | #2438 | Validation Closeout and Downstream Release Recommendation | VAL-001 | Sequenced after #2433–#2437 |
+
+Project branch for child PRs: `component/content-collection-phase1`. Production / `main` remain protected. Feature lanes (GAL/LIB/MEM/CLUB) remain non-executable until verified `CONTRACT-FROZEN: content-asset-model v1`.
 
 ## GitHub-only (not repo docs)
 
@@ -85,14 +87,15 @@ These are **operational envelopes** for future Cursor tasks. They become executa
 
 ## Current known truth
 
-- Phase 0 docs promotion (#2360–#2365) completed via PR #2427.
-- Phase 1 preparation issue set is #2431–#2438.
-- #2431 is the prepared Phase 1 Go / NoGo control issue.
+- Phase 0 docs promotion (#2360–#2365) completed via PR #2427 (merged 2026-07-10); #2359 and #2365 are closed.
+- Phase 1 parent #2431 received Bill Product Authority **GO — ACTIVE NOW** on 2026-07-20.
+- Current executable task is #2432 (Gate 0 readiness reconciliation); successors #2433–#2438 run in dependency order after each predecessor is cleanly integrated and verified.
+- Child PRs target `component/content-collection-phase1`; no automatic Production / `main` merge.
 - Rejected target roots remain `docs/ops/programs/` and `docs/reference/website/content-collection/` per #2360.
 - All four feature routes **exist** on `main` with member auth; packages document gaps vs CC-001/CC-002 and implementation allowlists.
 - Intake `.docx` remains on `atlas/drive-draft-intake-2367` only.
-- Feature code remains blocked until `CONTRACT-FROZEN: content-asset-model v1` is posted and ChatGPT verifies downstream release.
-- CI-001 / CI-002 tooling is Phase 1 work only after CI Stage 0 current-state gap analysis.
+- Feature code remains blocked until `CONTRACT-FROZEN: content-asset-model v1` is posted and ChatGPT verifies downstream release (D-008).
+- CI-001 / CI-002 tooling remains gated behind #2435 Stage 0 and review (D-009); #2431 GO does not auto-authorize tooling implementation.
 
 ## Source intake mapping
 
@@ -123,13 +126,13 @@ These are **operational envelopes** for future Cursor tasks. They become executa
 ## Procedure
 
 1. Read #2360 audit disposition before implementation.
-2. Read `phase1-launch-prep.md` and #2431 before Phase 1 Go / NoGo.
+2. Read `phase1-launch-prep.md` and the active #2431 launch record before Phase 1 child work.
 3. Open the package or control/support doc for the assigned child issue.
-4. Re-verify paths on `main` before edits.
+4. Re-verify paths on the project branch / `main` before edits.
 5. Respect `CONTRACT-FROZEN: content-asset-model v1` for GAL/LIB/MEM code PRs.
 6. Serialize CLUB-001 shell edits with other fanclub lanes.
 7. Post `CHATGPT HANDOFF` when authority conflicts remain.
 
 ## Execution
 
-Package, control, and support enrichment (#2361–#2364) stopped at Phase 0 docs. Phase 1 issues #2431–#2438 are prepared but blocked pending Go / NoGo. Code implementation requires a launched child issue with an explicit allowlist and validation plan.
+Package, control, and support enrichment (#2361–#2364) completed in Phase 0. Phase 1 project #2431 is launched; execute only the current authorized child issue (#2432 first) with its exact allowlist and validation plan. Do not treat #2431 GO as feature-lane or contract-freeze marker authorization beyond the sequenced child graph.
