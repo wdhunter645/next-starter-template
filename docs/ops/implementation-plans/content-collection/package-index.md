@@ -44,9 +44,9 @@ These are **operational envelopes** for future Cursor tasks. They become executa
 
 | Doc ID | Title | Path | Status | PR |
 | --- | --- | --- | --- | --- |
-| CTRL-001 | Launch Readiness Checklist | [content-collection-launch-readiness-checklist.md](../../pmo/content-collection-launch-readiness-checklist.md) | `validated` | #2420 |
+| CTRL-001 | Launch Readiness Checklist | [content-collection-launch-readiness-checklist.md](../../pmo/content-collection-launch-readiness-checklist.md) | `validated` | #2420, #2674 |
 | CTRL-002 | Diataxis Promotion Map | [content-collection-diataxis-promotion-map.md](../../pmo/content-collection-diataxis-promotion-map.md) | `validated` | #2420, #2427 |
-| CTRL-003 | Parallel Execution Matrix | [content-collection-parallel-execution-matrix.md](../../pmo/content-collection-parallel-execution-matrix.md) | `validated` | #2420 |
+| CTRL-003 | Parallel Execution Matrix | [content-collection-parallel-execution-matrix.md](../../pmo/content-collection-parallel-execution-matrix.md) | `validated` | #2420, #2674 |
 | CTRL-004 | Cursor Parallel Worktree Standard | [cursor-parallel-worktree-standard.md](../../../how-to/ops/cursor-parallel-worktree-standard.md) | `validated` | #2420 |
 | CTRL-005 | Program Closeout Template | [content-collection-program-closeout-template.md](../../pmo/content-collection-program-closeout-template.md) | `validated` | #2420 |
 | CTRL-006 | Dedup / Merge Plan | [content-collection-docs-audit-dedup-2360.md](../../reports/content-collection-docs-audit-dedup-2360.md) | `complete` | #2372 |
