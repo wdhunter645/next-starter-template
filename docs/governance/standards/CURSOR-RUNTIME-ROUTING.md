@@ -5,8 +5,8 @@ Authority Level: Binding
 Owns: LGFC Cursor runtime selection, local-versus-cloud invocation boundary, assignment runtime metadata, and local resume routing
 Does Not Own: Cursor product configuration, local poller implementation, implementation scope, merge approval, or cloud billing
 Canonical Reference: /Agent.md
-Related Issues: #2477, #2489
-Last Reviewed: 2026-07-13
+Related Issues: #2477, #2489, #2667
+Last Reviewed: 2026-07-20
 ---
 
 # Cursor Runtime Routing
@@ -37,14 +37,19 @@ Runtime: either
 
 `@cursor` is a Cursor Cloud invocation. It is prohibited for local LGFC work.
 
-Local Cursor routing uses all of the following:
+Local Cursor routing uses all of the following eligibility markers:
 
 - source issue label `agent:cursor`;
 - source issue label `handoff:ready`;
 - an explicit issue or PR comment beginning with `LOCAL CURSOR RESUME`;
-- manual operator action or the documented local poll-wake loop.
+- exactly one bounded next action in that resume;
+- a latest canonical `CHATGPT RESPONSE` (or `CHATGPT CLOSEOUT`) referenced by the resume.
 
-Required local resume shape:
+**Primary local transport (auto-start):** GitHub Actions wake delivery on the Chromebook runner writes a host packet; **Cursor Local Bridge** revalidates the full eligibility contract, claims the serial lane, and launches authenticated local `cursor agent` — or falls back to notify + unclaimed. See `docs/reference/ci/cursor-local-bridge-contract.md` and `docs/how-to/cursor/configure-cursor-local-bridge.md`.
+
+**Backup / legacy:** manual operator action or the documented local poll-wake loop (stdout sentinel only; requires an open agent chat).
+
+Labels and comments are durable routing and context markers. They do not prove that a local Cursor process is running and must not be described as an automatic cloud invocation. The Actions runner alone does not notify or start Cursor.
 
 ```text
 LOCAL CURSOR RESUME
@@ -54,8 +59,6 @@ Resume from: <GitHub authority comment URL>
 Next local action:
 - <one bounded action>
 ```
-
-Labels and comments are durable routing and context markers. They do not prove that a local Cursor process is running and must not be described as an automatic cloud invocation.
 
 ## Assignment requirement
 
@@ -72,10 +75,12 @@ For LGFC work:
 
 Local Cursor resumes from repository-controlled state, not chat memory. The detailed procedures are:
 
+- `docs/reference/ci/cursor-local-bridge-contract.md` (primary auto-start)
+- `docs/how-to/cursor/configure-cursor-local-bridge.md`
 - `docs/ops/ai/chatgpt-cursor-handoff-workflow.md`
-- `docs/how-to/cursor/github-poll-wake-loop.md`
+- `docs/how-to/cursor/github-poll-wake-loop.md` (legacy backup)
 
-If either procedure conflicts with this standard, this standard controls runtime selection and the procedures must be corrected.
+If a procedure conflicts with this standard, this standard controls runtime selection and the procedures must be corrected.
 
 ## Prohibited behavior
 

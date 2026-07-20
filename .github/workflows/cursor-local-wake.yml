@@ -1,0 +1,122 @@
+name: Cursor Local Wake Delivery
+
+# Delivery only: write a wake packet on the Chromebook host for Cursor Local Bridge.
+# Does not launch Cursor, hold API keys, claim the lane, or treat labels as authority.
+
+on:
+  issues:
+    types: [labeled]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Issue number to deliver a wake packet for
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: cursor-local-wake-${{ github.event.issue.number || inputs.issue_number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  deliver:
+    if: >-
+      github.repository == 'wdhunter645/next-starter-template' &&
+      (
+        (
+          github.event_name == 'issues' &&
+          github.event.action == 'labeled' &&
+          github.event.label.name == 'handoff:ready' &&
+          contains(join(github.event.issue.labels.*.name, ','), 'agent:cursor')
+        ) ||
+        (
+          github.event_name == 'issue_comment' &&
+          github.event.issue.state == 'open' &&
+          startsWith(github.event.comment.body, 'LOCAL CURSOR RESUME') &&
+          contains(join(github.event.issue.labels.*.name, ','), 'agent:cursor') &&
+          contains(join(github.event.issue.labels.*.name, ','), 'handoff:ready')
+        ) ||
+        (
+          github.event_name == 'workflow_dispatch' &&
+          github.actor == 'wdhunter645'
+        )
+      )
+    runs-on: [self-hosted, linux, x64, lgfc-repo-runner]
+    timeout-minutes: 5
+    steps:
+      - name: Confirm delivery-only gates
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          test "$REPOSITORY" = "wdhunter645/next-starter-template"
+          test "$EVENT_NAME" = "issues" -o "$EVENT_NAME" = "issue_comment" -o "$EVENT_NAME" = "workflow_dispatch"
+          echo "delivery_only=true"
+
+      - name: Resolve issue number
+        id: meta
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          ISSUE_FROM_EVENT: ${{ github.event.issue.number }}
+          ISSUE_FROM_INPUT: ${{ inputs.issue_number }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            ISSUE="$ISSUE_FROM_INPUT"
+          else
+            ISSUE="$ISSUE_FROM_EVENT"
+          fi
+          test -n "$ISSUE"
+          echo "issue=$ISSUE" >> "$GITHUB_OUTPUT"
+          DELIVERY="wake-${RUN_ID}-${ISSUE}-${COMMENT_ID:-nolabel}"
+          echo "delivery_id=$DELIVERY" >> "$GITHUB_OUTPUT"
+
+      - name: Write wake packet on host
+        env:
+          ISSUE: ${{ steps.meta.outputs.issue }}
+          DELIVERY_ID: ${{ steps.meta.outputs.delivery_id }}
+          EVENT_NAME: ${{ github.event_name }}
+          ACTOR: ${{ github.actor }}
+          COMMENT_URL: ${{ github.event.comment.html_url }}
+        run: |
+          HOME_DIR="${LGFC_CURSOR_BRIDGE_HOME:-$HOME/lgfc-cursor-bridge}"
+          QUEUE="$HOME_DIR/queue"
+          mkdir -p "$QUEUE"
+          chmod 700 "$HOME_DIR" "$QUEUE" || true
+          PACKET="$QUEUE/${DELIVERY_ID}.json"
+          export PACKET
+          umask 077
+          python3 <<'PY'
+          import json, os, datetime
+          packet = {
+            "schemaVersion": 1,
+            "issueNumber": int(os.environ["ISSUE"]),
+            "deliveryId": os.environ["DELIVERY_ID"],
+            "eventName": os.environ["EVENT_NAME"],
+            "actor": os.environ.get("ACTOR") or "unknown",
+            "resumeHint": os.environ.get("COMMENT_URL") or "",
+            "deliveredAt": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "runId": os.environ.get("GITHUB_RUN_ID"),
+          }
+          path = os.environ["PACKET"]
+          with open(path, "w", encoding="utf-8") as f:
+              json.dump(packet, f, indent=2)
+              f.write("\n")
+          print(f"Wrote wake packet: {path}")
+          PY
+
+      - name: Optional delivery ack (not started)
+        if: success()
+        env:
+          ISSUE: ${{ steps.meta.outputs.issue }}
+          DELIVERY_ID: ${{ steps.meta.outputs.delivery_id }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BODY=$(printf 'CURSOR BRIDGE ACK: delivered\nDelivery id: %s\nRole: wake packet only — Bridge must revalidate eligibility before any Cursor launch.\n' "$DELIVERY_ID")
+          gh issue comment "$ISSUE" --repo wdhunter645/next-starter-template --body "$BODY"

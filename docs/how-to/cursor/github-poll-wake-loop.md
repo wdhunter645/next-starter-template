@@ -5,15 +5,15 @@ Authority Level: Operational Authority
 Owns: Local Cursor GitHub poll-wake loop operation, watch rules, wake semantics, pickup evidence, and known reliability limits
 Does Not Own: Poller script implementation in `~/.cursor/github-poller/`, merge authority, GitHub webhook configuration, or cloud agent billing
 Canonical Reference: /docs/how-to/cursor/agent-session-bootstrap.md
-Related Issues: #2398, #2492
-Last Reviewed: 2026-07-13
+Related Issues: #2398, #2492, #2667
+Last Reviewed: 2026-07-20
 ---
 
 # Cursor local GitHub poll-wake loop
 
 ## Purpose
 
-Document local Cursor GitHub poll-wake operation so Bill, ChatGPT, and Cursor share one exact description of detection rules, dispatch requirements, wake semantics, and pickup evidence.
+Document the **legacy backup** local Cursor GitHub poll-wake operation. Primary auto-start is Cursor Local Bridge (`docs/how-to/cursor/configure-cursor-local-bridge.md`).
 
 ## Scope
 
@@ -21,11 +21,11 @@ Covers operator behavior for `~/.cursor/github-poller/` while working in `wdhunt
 
 ## Current known truth
 
-- The poller watches open issues with **`agent:cursor` + `handoff:ready`**, assigned issues, and assigned PRs.
+- **Primary path:** Actions wake delivery → host Bridge → authenticated `cursor agent` (or fallback unclaimed).
+- The poller remains an optional backup that watches open issues with **`agent:cursor` + `handoff:ready`**, assigned issues, and assigned PRs.
 - An item is fresh only when its `updatedAt` or equivalent is later than the saved `state.since` watermark.
-- Any comment on a qualifying issue can bump `updatedAt`; the machine trigger is **qualifying labels/assignment plus new issue activity**, not the text marker alone.
 - `LOCAL CURSOR RESUME` is the human/agent resume pointer to the canonical Chat decision.
-- Labels, comments, and wake output do not prove Cursor began work.
+- Poller wake output does **not** launch Cursor; it prints a sentinel for an already-open agent chat.
 - `@cursor` is a cloud invocation and is not a local wake mechanism.
 
 ## Components

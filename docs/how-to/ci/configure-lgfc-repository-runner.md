@@ -5,8 +5,8 @@ Authority Level: Operational Procedure
 Owns: Chromebook Debian 12 installation and verification sequence for the repository-scoped LGFC GitHub Actions runner
 Does Not Own: Repository runner contract, project launch, workflow migration, or production authorization
 Canonical Reference: /docs/reference/ci/repository-runner-contract.md
-Related Issues: #2294, #2593
-Last Reviewed: 2026-07-17
+Related Issues: #2294, #2593, #2667
+Last Reviewed: 2026-07-20
 ---
 
 # Configure the LGFC Chromebook Repository Runner
@@ -17,15 +17,15 @@ Install and verify one repository-scoped Chromebook Linux GitHub Actions runner 
 
 ## Scope
 
-This How-To covers repository-level registration, Debian 12 systemd service install, idle-state verification, the manual health workflow run from `main`, and stop/remove rollback. It does not authorize project launch, workflow migration, Production routing, or retention of registration tokens in repository files.
+This How-To covers repository-level registration, Debian 12 systemd service install, idle-state verification, the manual health workflow run from `main`, wake-packet delivery for Cursor Local Bridge, and stop/remove rollback. It does not authorize project launch, general workflow migration, Production routing, or retention of registration tokens in repository files.
 
 ## Current known truth
 
-The inert runner contract and manual health workflow are prepared for promotion to `main`. The Chromebook runner is not yet registered. No existing workflow other than Repository Runner Health may use `lgfc-repo-runner`.
+The Chromebook runner `lgfc-chromebook-linux` is registered. Permitted runner jobs are Repository Runner Health and Cursor Local Wake Delivery (packet write only). Cursor launch is owned by Cursor Local Bridge — see `docs/how-to/cursor/configure-cursor-local-bridge.md`.
 
 ## Intended final state
 
-After Task #2634 merges and later host tasks complete, the runner is registered, the systemd service is healthy, the manual health workflow has passed from `main`, and existing workflows remain on their current runners until a separate explicit migration decision.
+Runner healthy; Bridge installed and authenticated; wake packets delivered and either auto-started or explicitly fallen back; existing product workflows remain on current runners until a separate migration Go.
 
 ## Prerequisite
 
