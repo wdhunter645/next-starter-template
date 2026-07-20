@@ -53,21 +53,52 @@ jobs:
           const path = 'config/github-actions/repository-runner.json';
           const config = JSON.parse(fs.readFileSync(path, 'utf8'));
           const requiredLabels = ['self-hosted', 'linux', 'x64', 'lgfc-repo-runner'];
+          const security = config.security ?? {};
+          const denyFlags = [
+            'allowForkPullRequests',
+            'allowPullRequestEvents',
+            'allowPullRequestTargetEvents',
+            'allowWorkflowRunEvents',
+            'allowPushEvents',
+            'allowScheduledEvents',
+            'allowRepositorySecrets',
+            'allowProductionCredentials',
+            'allowDeployments',
+            'allowPersistentGitCredentials',
+            'executeIssueOrCommentContent',
+          ];
 
           if (config.schemaVersion !== 1) throw new Error('Unsupported runner config schema');
           if (config.repository !== process.env.GITHUB_REPOSITORY) {
             throw new Error(`Runner config repository mismatch: ${config.repository}`);
           }
           if (config.scope !== 'repository') throw new Error('Runner must remain repository-scoped');
-          if (!config.security?.publicRepository) throw new Error('Public-repository risk flag missing');
-          if (config.security?.allowPullRequestEvents !== false) {
-            throw new Error('Pull request execution must remain disabled');
+          if (!security.publicRepository) throw new Error('Public-repository risk flag missing');
+          if (!Array.isArray(security.trustedEvents) ||
+              security.trustedEvents.length !== 1 ||
+              security.trustedEvents[0] !== 'workflow_dispatch') {
+            throw new Error('Trusted events must be exactly workflow_dispatch');
           }
-          if (config.security?.allowRepositorySecrets !== false) {
-            throw new Error('Repository secrets must remain disabled for the pilot');
+          if (!Array.isArray(security.trustedRefs) ||
+              security.trustedRefs.length !== 1 ||
+              security.trustedRefs[0] !== 'refs/heads/main') {
+            throw new Error('Trusted refs must be exactly refs/heads/main');
           }
-          if (config.security?.allowProductionCredentials !== false) {
-            throw new Error('Production credentials must remain disabled');
+          if (!Array.isArray(security.trustedActors) ||
+              security.trustedActors.length !== 1 ||
+              security.trustedActors[0] !== 'wdhunter645') {
+            throw new Error('Trusted actors must be exactly wdhunter645');
+          }
+          for (const flag of denyFlags) {
+            if (security[flag] !== false) {
+              throw new Error(`${flag} must remain false`);
+            }
+          }
+          if (config.rollout?.mutationMode !== 'disabled') {
+            throw new Error('Rollout mutationMode must remain disabled');
+          }
+          if (config.rollout?.initialUse !== 'manual-health-and-observe-only') {
+            throw new Error('Rollout initialUse must remain manual-health-and-observe-only');
           }
           for (const label of requiredLabels) {
             if (!config.runner?.labels?.includes(label)) {
@@ -88,8 +119,9 @@ jobs:
           echo "runner_name=$RUNNER_NAME"
           echo "runner_os=$RUNNER_OS"
           echo "runner_arch=$RUNNER_ARCH"
-          uname -a
-          cat /etc/os-release
+          # Avoid uname -a hostname disclosure in public logs.
+          uname -srm
+          awk -F= '/^(ID|VERSION_ID|PRETTY_NAME)=/ { print }' /etc/os-release
           node --version
           npm --version
           git --version

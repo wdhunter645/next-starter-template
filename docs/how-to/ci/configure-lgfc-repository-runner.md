@@ -11,6 +11,22 @@ Last Reviewed: 2026-07-17
 
 # Configure the LGFC Chromebook Repository Runner
 
+## Purpose
+
+Install and verify one repository-scoped Chromebook Linux GitHub Actions runner that matches the approved runner contract without routing production, secret-bearing, or untrusted work to the host.
+
+## Scope
+
+This How-To covers repository-level registration, Debian 12 systemd service install, idle-state verification, the manual health workflow run from `main`, and stop/remove rollback. It does not authorize project launch, workflow migration, Production routing, or retention of registration tokens in repository files.
+
+## Current known truth
+
+The inert runner contract and manual health workflow are prepared for promotion to `main`. The Chromebook runner is not yet registered. No existing workflow other than Repository Runner Health may use `lgfc-repo-runner`.
+
+## Intended final state
+
+After Task #2634 merges and later host tasks complete, the runner is registered, the systemd service is healthy, the manual health workflow has passed from `main`, and existing workflows remain on their current runners until a separate explicit migration decision.
+
 ## Prerequisite
 
 Do not begin host registration until the repository runner contract and manual health workflow are present on `main`.
