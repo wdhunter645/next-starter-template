@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Unified editorial workflow from member intake through publication and surface placement for Priority #1
 Does Not Own: Runtime implementation, D1 migrations, B2 configuration, route behavior, or issue closure
 Canonical Reference: /docs/explanation/website/content-strategy.md
-Related issues: #1689, #1685, #1256, #1686, #1687
-Last Reviewed: 2026-06-23
+Related issues: #1689, #1685, #1256, #1686, #1687, #2433, #2286
+Last Reviewed: 2026-07-20
 ---
 
 # Unified Content Workflow
@@ -134,6 +134,54 @@ Use this table before opening the wrong admin surface.
 | Photo Gallery | `photos` | catalog rows per API filters |
 | Memorabilia | `photos` + related inventory | `is_memorabilia` and related-story joins |
 | Search | `content_inventory` | published + `search` section |
+
+## CC-001 cross-lane asset contract (#2433)
+
+Shared Gallery / Library / Memorabilia / Club contracts are frozen under
+`docs/ops/implementation-plans/content-collection/packages/cc-001-content-asset-model-package.md`.
+This section records the workflow-facing mapping so feature lanes do not invent
+parallel type or exposure models. Runtime enums remain #2286
+`functions/_lib/content-pipeline-candidate-constants.ts`.
+
+### Content type → downstream asset type
+
+`asset_type` is a **view label** only. It does not replace candidate
+`content_type` or inventory `story_type`.
+
+| Downstream `asset_type` | Primary candidate `content_type` values | Primary publication target(s) | Durable store after promotion |
+| --- | --- | --- | --- |
+| `gallery_image` | `photo`, visual `artifact` | `gallery` | `photos` (+ optional inventory media association) |
+| `library_entry` | `story`, `article`, `biography_note`, `record`, `quote`, `timeline_fact` | `library`, `article`, `biography`, `timeline` | `content_inventory` with `library` section |
+| `memorabilia_item` | `artifact`, `photo` | `memorabilia` | `photos` memorabilia filter / related inventory |
+| `club_article` | `story`, `article`, `quote` | `homepage_feature`, `newsletter`, `article` | `content_inventory` with `club_home` section |
+| `internal_reference_only` | any | `internal_reference_only` | candidate/admin only — never public routes |
+
+### Unified state path (candidate → inventory → surface)
+
+```text
+Candidate: review_status + publication_status (orthogonal)
+  → human editorial conversion
+content_inventory.status: draft → published → archived
+  → surface render only when published eligibility passes
+```
+
+Public and member inventory helpers must continue to require published status,
+non-empty `source_name` and `credit_line`, and matching `allowed_sections`
+(`functions/_lib/content-inventory-public.ts`). Candidate registry rows are never
+queried by public routes.
+
+### Visibility / exposure classes
+
+| Exposure class | Meaning | Rule |
+| --- | --- | --- |
+| `private_admin` | Admin/operator only | Draft inventory, queue, or candidate rows; excluded from public helpers |
+| `member_only` | Authenticated Fan Club | `/fanclub/**` session gate; Gallery/Memorabilia catalog today |
+| `public` | Public website | Published inventory only; attribution + section filters; no blocked rights/privacy at conversion |
+| `internal_reference_only` | Research/citation | Citation-only / internal targets — no public route payload |
+
+Automatic public publication remains forbidden. Rights and provenance display
+enforcement detail is owned by CC-002 (#2434). Feature lane code remains blocked
+until Atlas verifies `CONTRACT-FROZEN: content-asset-model v1`.
 
 ## Relationship to Other Programs
 

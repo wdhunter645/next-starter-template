@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Metadata fields required for Lou Gehrig content candidates
 Does Not Own: Publication automation, scraping, OCR, AI enrichment, or public routing
 Canonical Reference: /docs/ops/pmo/lou-gehrig-content-collection-expansion-readiness.md
-Related issues: #1738, #1741, #1739, #1740
-Last Reviewed: 2026-07-04
+Related issues: #1738, #1741, #1739, #1740, #2433, #2434, #2286
+Last Reviewed: 2026-07-20
 ---
 
 # Lou Gehrig Content Metadata Schema
@@ -73,3 +73,17 @@ When a candidate converts to website-ready content, fields map to
 | `reviewer`, `reviewed_at` | editorial audit context |
 
 Conversion rules are defined in Task 005 (#1743).
+
+## CC-001 / CC-002 boundary (#2433)
+
+CC-001 freezes the shared content-asset identity, type mapping, state path, and
+downstream view-field contracts. This metadata schema remains the provenance and
+rights field authority for candidates.
+
+- CC-001 consume path: identity + `content_type` + review/publication gates map
+  into the shared asset contract; no duplicate metadata SOT under
+  `docs/reference/website/content-collection/`.
+- CC-002 (#2434): owns provenance/rights/privacy display and public/member
+  enforcement freeze detail that builds on these fields.
+- #2286 runtime: consume existing pipeline libs; do not rebuild metadata capture
+  layers in feature PRs.
