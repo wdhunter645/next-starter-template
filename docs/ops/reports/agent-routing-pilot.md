@@ -140,13 +140,32 @@ Validated against component head `79400f428a0c60ccdb3e566c45b2560ca59463e2` with
 
 Host artifacts: `/tmp/lgfc-2601-resume-evidence/` (plus retained `/tmp/lgfc-2601-evidence/`).
 
+## Promotion-profile matrix reconciliation (2026-07-20)
+
+After `#2639` closeout and PR `#2655` merge, reconciled Task 009 evidence against component head `f5bc9f14c2533def302a8cd2cfa79237e8403406`.
+
+| Check | Result |
+| --- | --- |
+| Integrated module | `scripts/agent-routing/promotion-profile-matrix.mjs` |
+| `acceptance.mjs` | 21/21 PASS (scenario 21: Development→Production bypass rejected) |
+| `vitest run tests/agent-routing` | 10 files / 56 tests PASS (11 promotion-profile) |
+| `pmo:project:validate` (project manifest) | PASS |
+| Eight prohibited bypasses | all `allowed=false` / fail-closed |
+| Allowed transitions | all `allowed=true` |
+| In-memory four-lane observe (config unchanged) | Development→Production → `halt` / `prohibited_bypass`; unknown profile → `halt` / `unknown_profile`; `mutations=[]` |
+| Repository `fourLaneRuntime.enabled` | remains `false` |
+| Config-gated observe plan | `class=observe`, `mutations=[]` |
+
+Host artifacts: `/tmp/lgfc-2601-promotion-gates-evidence/observe-promotion-gates.json`.
+
+LIVE-PILOT ACCEPTANCE AMENDMENT item **1** (executable promotion-profile transition / bypass gates) is **satisfied** by the integrated `#2655` matrix plus the observe validation above. It is no longer a residual `#2601` gap.
+
 ## Residual acceptance gaps (disclosed)
 
-Integrated four-lane **lane/communication/Day-2** runtime evidence is present. The following LIVE-PILOT ACCEPTANCE AMENDMENT items remain **not claimed as complete** in this package and need ChatGPT disposition:
+The following LIVE-PILOT ACCEPTANCE AMENDMENT items remain **not claimed as complete** in this package and need ChatGPT disposition:
 
-1. First-class Sandbox → Development → Promotion Candidate → Production profile-transition matrix as executable controller gates (governance authority exists; agent-routing runtime does not yet encode the full 8-point profile bypass matrix as dedicated profile states).
-2. Live end-to-end Sandbox scaled-gates demo and deliberate Sandbox→Development adoption on a throwaway sandbox surface (not executed in this resume).
-3. Enabling `fourLaneRuntime.enabled=true` in repository config for a live observe window (still deliberately `false` pending ChatGPT Go).
+1. Live end-to-end Sandbox scaled-gates demo and deliberate Sandbox→Development adoption on a throwaway sandbox surface (not executed in this resume).
+2. Enabling `fourLaneRuntime.enabled=true` in repository config for a live observe window (still deliberately `false` pending ChatGPT Go).
 
 ## Live-pilot boundary
 
