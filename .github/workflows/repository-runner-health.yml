@@ -77,7 +77,7 @@ jobs:
           if (!Array.isArray(security.trustedEvents) ||
               security.trustedEvents.length !== 1 ||
               security.trustedEvents[0] !== 'workflow_dispatch') {
-            throw new Error('Trusted events must be exactly workflow_dispatch');
+            throw new Error('Health trusted events must remain exactly workflow_dispatch');
           }
           if (!Array.isArray(security.trustedRefs) ||
               security.trustedRefs.length !== 1 ||
@@ -97,8 +97,22 @@ jobs:
           if (config.rollout?.mutationMode !== 'disabled') {
             throw new Error('Rollout mutationMode must remain disabled');
           }
-          if (config.rollout?.initialUse !== 'manual-health-and-observe-only') {
-            throw new Error('Rollout initialUse must remain manual-health-and-observe-only');
+          const allowedInitialUse = new Set([
+            'manual-health-and-observe-only',
+            'manual-health-and-wake-delivery-only',
+          ]);
+          if (!allowedInitialUse.has(config.rollout?.initialUse)) {
+            throw new Error('Rollout initialUse is not an approved health/wake-delivery value');
+          }
+          const wake = config.wakeDelivery;
+          if (wake) {
+            if (wake.enabled !== true) throw new Error('wakeDelivery.enabled must be true when present');
+            if (wake.mayLaunchCursor !== false) throw new Error('wakeDelivery must not launch Cursor');
+            if (wake.mayHoldApiKeys !== false) throw new Error('wakeDelivery must not hold API keys');
+            if (wake.mayClaimSerialLane !== false) throw new Error('wakeDelivery must not claim the serial lane');
+            if (wake.workflow !== '.github/workflows/cursor-local-wake.yml') {
+              throw new Error('wakeDelivery.workflow path mismatch');
+            }
           }
           for (const label of requiredLabels) {
             if (!config.runner?.labels?.includes(label)) {
