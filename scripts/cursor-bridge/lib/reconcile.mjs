@@ -1,10 +1,25 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { isConsumed } from './claim.mjs';
+import { isConsumed, isClaimActive, claimPath } from './claim.mjs';
 import { validateEligibility } from './eligibility.mjs';
 import { appendBridgeLog } from './notify.mjs';
 import { atomicWriteJson } from './atomic-write.mjs';
+
+/**
+ * Serial-lane gate for reconcile. Fail-closed when the claim file exists but
+ * cannot be read/parsed; otherwise block while any claim is within TTL.
+ */
+export function activeSerialClaimBlocks(config) {
+  const p = claimPath(config);
+  if (!fs.existsSync(p)) return { blocks: false };
+  try {
+    const claim = JSON.parse(fs.readFileSync(p, 'utf8'));
+    return { blocks: isClaimActive(claim, config.claimTtlSeconds || 7200), claim };
+  } catch (err) {
+    return { blocks: true, error: err.message, failClosed: true };
+  }
+}
 
 const DEFAULT_REPO = 'wdhunter645/next-starter-template';
 
@@ -135,6 +150,18 @@ export async function runReconcileSweep(config, dirs, opts = {}) {
     return { ok: false, failedClosed: true, reason: 'api_list_ambiguous', recovered: [] };
   }
 
+  const claimGate = activeSerialClaimBlocks(config);
+  if (claimGate.failClosed) {
+    appendBridgeLog(config, `reconcile claim unreadable: ${claimGate.error}`);
+    return {
+      ok: false,
+      failedClosed: true,
+      reason: `claim_unreadable:${claimGate.error}`,
+      recovered: [],
+    };
+  }
+  const claimBlocks = !!claimGate.blocks;
+
   for (const summary of issues) {
     const issueNumber = Number(summary.number);
     try {
@@ -169,7 +196,7 @@ export async function runReconcileSweep(config, dirs, opts = {}) {
         resumeId,
         consumed,
         hasPendingPacket: pending,
-        claimBlocks: false, // claim is enforced later on normal packet path
+        claimBlocks,
       });
 
       inspected.push({

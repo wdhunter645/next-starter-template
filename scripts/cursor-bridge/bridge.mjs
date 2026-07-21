@@ -148,6 +148,19 @@ async function processPacket(config, dirs, packetPath) {
       deliveryId: packet.deliveryId || path.basename(packetPath),
     });
     if (!claim.ok) {
+      // Serial lane busy: defer/retry quietly so reconcile recovery packets are not
+      // discarded and do not spam fallback comments while another claim is active.
+      if (claim.reason === 'serial_lane_busy') {
+        appendBridgeLog(config, `defer serial_lane_busy issue=#${issueNumber}`);
+        fs.renameSync(processing, packetPath);
+        return { ok: true, reason: 'deferred_serial_lane_busy' };
+      }
+      // Same event already claimed: quiet duplicate (no fallback comment).
+      if (claim.reason === 'already_claimed_same_event') {
+        appendBridgeLog(config, `skip already_claimed_same_event resume=${resumeId}`);
+        fs.renameSync(processing, path.join(dirs.consumed, path.basename(packetPath) + '.dup'));
+        return { ok: true, reason: 'already_claimed_same_event' };
+      }
       fallbackUnclaimed(config, issueNumber, claim.reason);
       writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
       fs.renameSync(processing, path.join(dirs.consumed, path.basename(packetPath) + '.busy'));

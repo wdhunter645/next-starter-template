@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+cd "$ROOT"
 TMP=$(mktemp -d /tmp/lgfc-bridge-val-XXXXXX)
+cleanup() { rm -rf "$TMP"; }
+trap cleanup EXIT
 export LGFC_CURSOR_BRIDGE_HOME="$TMP"
 export LGFC_CURSOR_BRIDGE_WORKSPACE="$ROOT"
 mkdir -p "$TMP/queue" "$TMP/consumed" "$TMP/scripts"
@@ -40,6 +43,8 @@ import { buildRecoveryPacket, writeRecoveryPacket, shouldQueueRecovery } from ".
 const queue = process.env.LGFC_CURSOR_BRIDGE_HOME + "/queue";
 const d = shouldQueueRecovery({ eligibilityOk:true, resumeId:"999", consumed:false, hasPendingPacket:false, claimBlocks:false });
 if (!d.queue) process.exit(1);
+const blocked = shouldQueueRecovery({ eligibilityOk:true, resumeId:"999", consumed:false, hasPendingPacket:false, claimBlocks:true });
+if (blocked.queue || blocked.reason !== "serial_lane_busy") process.exit(1);
 const p = buildRecoveryPacket({ issueNumber: 1, resumeCommentId: 999 });
 const w = writeRecoveryPacket(queue, p);
 const w2 = writeRecoveryPacket(queue, p);
@@ -98,4 +103,3 @@ console.log("ignore rules ok");
 '
 
 echo "ALL ISOLATED HOST CHECKS PASS"
-rm -rf "$TMP"

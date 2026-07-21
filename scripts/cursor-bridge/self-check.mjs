@@ -120,6 +120,16 @@ Next local action:
     }).reason,
     'packet_pending',
   );
+  assert.equal(
+    shouldQueueRecovery({
+      eligibilityOk: true,
+      resumeId: '222',
+      consumed: false,
+      hasPendingPacket: false,
+      claimBlocks: true,
+    }).reason,
+    'serial_lane_busy',
+  );
 }
 
 {
