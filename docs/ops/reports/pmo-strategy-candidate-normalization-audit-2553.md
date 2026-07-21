@@ -68,10 +68,10 @@ All issue-listed minimum IDs were present. No matching open title-class record w
 
 ## Standard fields applied to every record
 
-- PMO Preparation and Solution Design: ChatGPT / ChatGPT
+- PMO Preparation and Solution Design: ChatGPT
 - Future Execution Agent: Cursor Local
 - Operations: Bill + Cursor Local
-- Tier 2 Escalation: ChatGPT / ChatGPT
+- Tier 2 Escalation: ChatGPT
 - Launch State: not executable until design, plan, manifest, task graph, branch, validation, rollback, operations handoff, and Go/No-Go are complete
 - Outcome-level intended deliverable (no invented implementation detail)
 - Explicit ChatGPT preparation checklist

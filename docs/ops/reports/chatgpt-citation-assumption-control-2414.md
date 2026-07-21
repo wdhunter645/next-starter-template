@@ -28,7 +28,7 @@ Record the scoped documentation update for #2414: adding a ChatGPT-specific evid
 
 ## Change summary
 
-The updated ChatGPT rule file now requires ChatGPT/ChatGPT to:
+The updated ChatGPT rule file now requires ChatGPT to:
 
 1. cite repository or GitHub-controlled sources for factual status, readiness, audit, postmortem, and governance claims;
 2. separate facts from assumptions, inference, and unresolved questions;

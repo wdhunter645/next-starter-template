@@ -76,7 +76,7 @@ Engineering priority answers:
 
 > In what order should Pipeline projects be designed, documented, packaged, and made ready for a future Go/No-Go decision?
 
-ChatGPT / ChatGPT is the normal Engineering preparation owner. Cursor may collaborate for bounded repository inspection, feasibility evidence, validation design, or authorized Sandbox work. Collaboration does not authorize Active implementation.
+ChatGPT is the normal Engineering preparation owner. Cursor may collaborate for bounded repository inspection, feasibility evidence, validation design, or authorized Sandbox work. Collaboration does not authorize Active implementation.
 
 ## Exclusive queue ownership
 
@@ -204,7 +204,7 @@ Rules:
 
 ## Engineering preparation assignment
 
-When the PMO meeting sets a Pipeline parent to Engineering P1, the same meeting closeout must create or reactivate one peer Engineering preparation Issue owned by ChatGPT / ChatGPT.
+When the PMO meeting sets a Pipeline parent to Engineering P1, the same meeting closeout must create or reactivate one peer Engineering preparation Issue owned by ChatGPT.
 
 The preparation Issue:
 

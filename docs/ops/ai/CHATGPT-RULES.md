@@ -31,7 +31,7 @@ This file is a superseded pointer. It does not replace governance, shared/core r
 
 ## Historical note
 
-Detailed ChatGPT/ChatGPT control-plane behavior (startup contract, evidence posture, launch-readiness templates, operating-cycle steps, and communication rules) remains in repository history and supporting ops docs until archived in a later disposition pass. For current work, apply [`AGENT-TEAM.md`](../../governance/AGENT-TEAM.md) first, then [`CORE-RULES.md`](./CORE-RULES.md) for execution detail.
+Detailed ChatGPT control-plane behavior (startup contract, evidence posture, launch-readiness templates, operating-cycle steps, and communication rules) remains in repository history and supporting ops docs until archived in a later disposition pass. For current work, apply [`AGENT-TEAM.md`](../../governance/AGENT-TEAM.md) first, then [`CORE-RULES.md`](./CORE-RULES.md) for execution detail.
 
 ### LGFC startup contract (retained reference)
 

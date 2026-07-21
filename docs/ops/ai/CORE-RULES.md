@@ -275,7 +275,7 @@ LGFC implementation routing is defined in [`LGFC-AI-TEAM-OPERATING-MODEL.md`](./
 All LGFC implementation tasks (website, repository, ops, CI, and docs implementation):
 
 1. **Cursor** = sole LGFC implementation executor.
-2. **ChatGPT (ChatGPT)** = design and launch-control authority; does not perform routine scoped file implementation.
+2. **ChatGPT** = design and launch-control authority; does not perform routine scoped file implementation.
 3. **Codex** = inactive/out for LGFC implementation unless Bill explicitly reauthorizes it in a future governance update. See [`CODEX-RULES.md`](./CODEX-RULES.md).
 4. All other agents = tertiary/support agents only by explicit routing need.
 

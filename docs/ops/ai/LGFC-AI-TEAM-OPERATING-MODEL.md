@@ -33,7 +33,7 @@ Shared agent law remains in [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md) a
 
 ## Scope
 
-This document applies to all LGFC repository work coordinated through Bill, ChatGPT (ChatGPT), Cursor, and historical Codex references.
+This document applies to all LGFC repository work coordinated through Bill, ChatGPT, Cursor, and historical Codex references.
 
 This document does not own product design content, workflow YAML, runtime code, or final merge approval.
 
@@ -71,7 +71,7 @@ Bill owns:
 
 Bill does not perform routine scoped file implementation when Cursor is the assigned executor.
 
-### ChatGPT (ChatGPT) — design and launch-control authority
+### ChatGPT — design and launch-control authority
 
 ChatGPT owns:
 

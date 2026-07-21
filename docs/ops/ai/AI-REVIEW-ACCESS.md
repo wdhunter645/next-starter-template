@@ -13,7 +13,7 @@ Last Reviewed: 2026-06-23
 
 ## Purpose
 
-Provide a **read-only, token-protected, live inspection surface** so ChatGPT/ChatGPT can review authenticated LGFC page structure and content without weakening normal `/fanclub` or `/admin` session authentication.
+Provide a **read-only, token-protected, live inspection surface** so ChatGPT can review authenticated LGFC page structure and content without weakening normal `/fanclub` or `/admin` session authentication.
 
 AI review access is **disabled by default** and intended for short, operator-controlled preview or review windows.
 

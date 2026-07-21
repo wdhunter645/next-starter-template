@@ -90,7 +90,7 @@ There is no time limit for remaining in a priority or stage.
 For every Pipeline parent newly assigned Engineering P1:
 
 1. create or reactivate one peer Engineering preparation Issue;
-2. assign ChatGPT / ChatGPT as preparation owner;
+2. assign ChatGPT as preparation owner;
 3. use `Related Pipeline Project:` or `Graduation Target:`;
 4. do not use `Parent Project:`;
 5. do not apply `pmo:task`;

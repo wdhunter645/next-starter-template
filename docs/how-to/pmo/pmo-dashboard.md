@@ -19,7 +19,7 @@ The dashboard normalizes public-safe Issue data into Active, Pipeline, Completed
 
 Queue, priority, Project Graduation, and collaboration semantics are owned by `docs/governance/WORK-QUEUES-AND-COLLABORATION.md`. The JSON and view contract is owned by `docs/ops/pmo/PMO-JULY-2026-DASHBOARD-SPECIFICATION.md`.
 
-This operator guidance was reconciled directly by ChatGPT / ChatGPT under #2699 from the PMO meeting decisions. It must not be delegated to an implementation agent to reinterpret the meeting record.
+This operator guidance was reconciled directly by ChatGPT under #2699 from the PMO meeting decisions. It must not be delegated to an implementation agent to reinterpret the meeting record.
 
 ## Scope
 
