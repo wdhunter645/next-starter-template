@@ -2,10 +2,10 @@
 Doc Type: Governance
 Audience: Human + AI
 Authority Level: Domain Policy
-Owns: PMO intake, work sizing, delivery-model selection, Sandbox authorization, launch authorization, portfolio inventory, and authoritative priority decisions
-Does Not Own: Development execution, Promotion Candidate execution, CI implementation, Administration & Communications mutation procedure, Day-2 recovery strategy, or Production approval
+Owns: PMO intake, work sizing, delivery-model selection, Sandbox authorization, Pipeline preparation direction, Project Graduation, launch authorization, portfolio inventory, and authoritative priority decisions
+Does Not Own: Queue-label mechanics, Development execution, Promotion Candidate execution, CI implementation, Administration & Communications mutation procedure, Day-2 recovery strategy, or Production approval
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2477, #2487, #2640, #2641, #2695
+Related Issues: #2477, #2487, #2640, #2641, #2695, #2699
 Last Reviewed: 2026-07-21
 ---
 
@@ -13,9 +13,33 @@ Last Reviewed: 2026-07-21
 
 ## Purpose
 
-This document defines how work enters the portfolio, how it is designed and sized, when an optional Sandbox is used, how a delivery model is selected, and when implementation Go is authorized.
+This document defines how work enters the portfolio, how it is designed and sized, how Pipeline preparation is prioritized, when an optional Sandbox is used, how a delivery model is selected, when a project is reviewed for Project Graduation, and when implementation Go is authorized.
 
 PMO / Engineering owns the decision package. Administration & Communications prepares, routes, records, and reconciles the package but does not make the decision.
+
+Queue classification, priority-label namespaces, queue precedence, preparation-assignment structure, and universal collaboration are defined in `docs/governance/WORK-QUEUES-AND-COLLABORATION.md`.
+
+## PMO meeting authority
+
+The weekly PMO meeting between Product Authority and ChatGPT / Atlas governs:
+
+- parent portfolio priority;
+- Pipeline preparation priority;
+- project launch and Project Graduation;
+- project hold or reprioritization;
+- Active project completion;
+- Go, No-Go, Hold, and Adjustment decisions.
+
+The PMO meeting does not define individual child-task implementation order.
+
+The project governs:
+
+- child-task sequence;
+- dependencies;
+- implementation order;
+- technical execution within approved authority.
+
+Product Authority makes final priority and business decisions. PMO / Engineering prepares classifications, recommendations, launch packages, and readiness assessments.
 
 ## Intake
 
@@ -24,14 +48,16 @@ Every one-off, project, and program enters PMO with:
 - stated objective;
 - provisional size;
 - Product Authority and PMO / Engineering roles;
-- initial priority;
+- initial Pipeline/Engineering priority or Idea state;
 - known constraints and dependencies;
 - current lane and profile;
 - unresolved design assumptions.
 
 Provisional intake is not launch authority.
 
-## Design and planning
+Pipeline priority identifies preparation order. Pipeline stage identifies actual maturity. Neither establishes implementation Go.
+
+## Pipeline preparation
 
 Before implementation Go, PMO / Engineering defines:
 
@@ -45,6 +71,14 @@ Before implementation Go, PMO / Engineering defines:
 - Development work package;
 - Promotion Candidate expectations;
 - Production and Day-2 boundaries.
+
+When the PMO meeting sets a Pipeline project to Engineering Priority 1, the same decision must create or reactivate accountable Engineering preparation work owned by ChatGPT / Atlas.
+
+That preparation work is a peer Issue related to the Pipeline parent. It is not a project child task, does not use `pmo:task`, and does not count toward implementation completion percentage.
+
+The required output is a complete-enough launch package for the next applicable PMO meeting, including the master Issue, ordered child Issues, implementation plan, dependencies, validation, rollback, stop conditions, execution recommendation, and Go/No-Go readiness assessment.
+
+A Pipeline project may remain at any priority or stage without a time limit. Priority changes are manual PMO decisions and do not assert that the project is already launch-ready.
 
 ## Sandbox authority
 
@@ -119,9 +153,22 @@ For Model B:
 
 Development cannot promote directly to Production.
 
-## Implementation Go
+## Project Graduation and implementation Go
 
-Implementation Go authorizes Development execution against a complete work package. It does not authorize Production promotion.
+Project Graduation is the explicit PMO transition from Pipeline/Engineering preparation to Active/PMO implementation.
+
+Graduation requires:
+
+- a complete-enough launch package;
+- truthful Ready for Launch stage;
+- PMO meeting review;
+- explicit Go;
+- a newly assigned Active PMO priority;
+- recorded implementation owner, first executable task, and authority.
+
+Engineering priority does not transfer automatically to Active PMO priority. Engineering Priority 1 means prepare first. PMO Priority 1 means implement and complete first.
+
+Implementation Go authorizes Development execution against the complete work package. It does not authorize Production promotion.
 
 After Go:
 
@@ -131,9 +178,26 @@ After Go:
 - PMO / Engineering remains available for lightweight problem adjustment;
 - material plan changes return to PMO / Engineering authority.
 
+Active parent priority selects which project receives focus. The selected project's own task sequence and dependencies select the next executable child task. Child tasks do not carry team-level priority.
+
+## Active priority decisions
+
+The PMO meeting manually assigns and changes Active parent priority according to the model in `WORK-QUEUES-AND-COLLABORATION.md`:
+
+- P1, P2, and P3 each have a maximum of four parent projects;
+- P4 has no fixed limit;
+- completed-task percentage produces promotion-eligibility information only;
+- no priority change is automatic;
+- projects may complete at any Active priority;
+- verification, promotion, Production validation, and closeout remain Active work.
+
+Website delivery may be maintained as the top LGFC priority through PMO decisions. It is not an automatic permanent priority rule independent of portfolio conditions.
+
 ## Operations interrupt precedence
 
-Normal repository execution consists primarily of authorized project tasks. A qualifying standalone `OPS:` source Issue is a standing Product Authority interrupt and takes precedence over every project Issue and project task.
+Normal repository execution consists primarily of authorized project tasks and Engineering preparation. A qualifying standalone `OPS:` source Issue is a standing Product Authority interrupt and takes precedence while it carries a numbered Operations priority.
+
+Operations priority, Monitoring, Hold, and resume semantics are defined in `docs/governance/WORK-QUEUES-AND-COLLABORATION.md` and recovery authority is defined in `docs/governance/OPERATIONS-AND-RECOVERY.md`.
 
 A qualifying Operations interrupt is:
 
@@ -142,20 +206,16 @@ A qualifying Operations interrupt is:
 - bounded by an objective, owner, scope, acceptance criteria, validation, rollback, and stop conditions appropriate to the work; and
 - not merely a generated tracker, duplicate, bookkeeping record, advisory alert, or evidence-only record unless Product Authority explicitly elevates it.
 
-When a qualifying `OPS:` Issue appears:
+When a qualifying numbered Operations Issue appears:
 
-1. no new project task may be dispatched;
-2. active project work stops at the nearest safe checkpoint rather than being terminated in a way that corrupts a branch, claim, test, deployment, or evidence state;
-3. Administration & Communications preserves the exact project state and records the Operations interrupt hold;
-4. the Operations Issue receives the next available PMO / Engineering, Implementation / Operations, PR Approver / Engineering, Deterministic CI, and communication capacity it requires;
+1. no new PMO or Engineering work may be dispatched;
+2. active work stops at the nearest safe checkpoint rather than being terminated in a way that corrupts a branch, claim, test, deployment, or evidence state;
+3. Administration & Communications preserves exact state and records the Operations interrupt hold;
+4. the Operations Issue receives the next available capacity it requires;
 5. no additional material-risk test or case-by-case reprioritization decision is required; and
-6. project execution resumes only after the Operations Issue is closed, explicitly deferred by Product Authority or Day-2 Operations within its authority, or a recorded `RESUME` releases the interrupt hold.
-
-`OPS:` is a cross-lane queue classification, not a fifth operating lane. The existing PMO / Engineering, Implementation / Operations, Day-2 Operations, and Administration & Communications lanes retain their normal decision and execution authority.
+6. PMO and Engineering work resume when no numbered Operations Issue remains actionable, subject to recorded Monitoring or Hold interval obligations.
 
 Operations interrupt precedence changes sequencing only. It does not bypass source-Issue scope, promotion profiles, validation, independent review, Production authority, rollback, or protected-stop requirements.
-
-This standing Product Authority rule supersedes lower-level instructions that require a separate risk threshold or new prioritization decision before a qualifying standalone `OPS:` Issue can interrupt project execution.
 
 ## Lightweight problem adjustment
 
@@ -171,19 +231,25 @@ PROBLEM FOUND
 
 Use formal `PLAN CHANGE REQUIRED` only when product outcome, architecture, acceptance, dependency structure, delivery model, Production boundary, or release strategy materially changes.
 
+Universal agent collaboration uses the same source-Issue method defined in `WORK-QUEUES-AND-COLLABORATION.md` and does not change queue ownership.
+
 ## Emergency exit
 
-Production degradation, outage, unsafe behavior, or material risk exits normal PMO sequencing and routes to Day-2 Operations as an incident. Incident handling is a specialized Operations path within the broader `OPS:` interrupt precedence rule.
+Production degradation, outage, unsafe behavior, or material risk exits normal PMO sequencing and routes to Day-2 Operations as an incident. Incident handling is a specialized Operations path within the broader Operations interrupt precedence rule.
 
-A broad assessment hold may pause PMO while incident impact is unknown. Once scope, probable cause, containment, and resolution ownership are sufficiently understood, Day-2 Operations may narrow incident-specific holds, but the standing Operations interrupt remains in effect until the controlling `OPS:` Issue is closed, explicitly deferred, or releases project work through `RESUME`.
+A broad assessment hold may pause PMO and Engineering while incident impact is unknown. Once scope, probable cause, containment, and resolution ownership are sufficiently understood, Day-2 Operations may narrow incident-specific holds. Numbered Operations work remains interrupting until changed to Monitoring, Hold, closed, deferred, or otherwise released under recorded authority.
 
 ## Portfolio rules
 
 - GitHub program and project Issues are the durable portfolio record.
-- Product Authority makes final priority decisions and has established qualifying standalone `OPS:` Issues as automatic interrupts over project execution.
+- Product Authority makes final priority decisions.
+- PMO Active priority and Engineering Pipeline priority are mutually exclusive.
+- Parent portfolio Issues carry team priority; project child tasks do not.
+- Pipeline Priority 1 must have accountable Engineering preparation work.
+- Project Graduation is the only normal Pipeline-to-Active transition.
 - Planning tools outside the repository are inputs only.
 - PMO reporting lag is not an execution blocker unless it prevents authority, dependency, safety, validation, approval, profile transition, or closeout from being determined.
-- Independent approved projects may proceed in parallel only when no Operations interrupt hold is active.
+- Independent approved projects may proceed in parallel only when no numbered Operations interrupt is active.
 - The portfolio must represent Sandbox, Development, Promotion Candidate, Production, and Day-2 state independently.
 
 ## Administration & Communications interface
@@ -191,17 +257,18 @@ A broad assessment hold may pause PMO while incident impact is unknown. Once sco
 Administration & Communications may:
 
 - prepare Go/No-Go and Promotion Candidate evidence packets;
-- reconcile PMO labels, parent/child links, lifecycle reporting, and dashboard state to existing authority;
-- route decisions, acknowledgments, escalation, holds, resumes, and closeout;
+- reconcile team, priority, PMO labels, parent/child links, lifecycle reporting, and dashboard state to existing authority;
+- route collaboration requests, responses, decisions, acknowledgments, escalation, holds, resumes, and closeout;
 - apply and release the standing Operations interrupt hold when the qualifying Issue state and owning-role decision require it;
-- preserve historical evidence and interrupted project state.
+- preserve historical evidence and interrupted work state.
 
-It may not originate or change priority, size, delivery model, objective, acceptance, dependency, profile, launch authority, or Production Go. Applying the standing Operations interrupt rule is execution of recorded Product Authority, not an independent priority decision.
+It may not originate or change priority, size, delivery model, objective, acceptance, dependency, profile, launch authority, recovery strategy, or Production Go.
 
 ## Canonical references
 
 | Topic | Owner |
 | --- | --- |
+| Work queues, priorities, graduation, collaboration | `docs/governance/WORK-QUEUES-AND-COLLABORATION.md` |
 | Lane and promotion-profile definitions | `docs/reference/operations/operating-lanes-and-promotion-profiles.md` |
 | Delivery and release policy | `docs/governance/DELIVERY-AND-RELEASE.md` |
 | Administration & Communications | `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md` |
@@ -211,4 +278,12 @@ It may not originate or change priority, size, delivery model, objective, accept
 
 ## Supersession
 
-Lower-level PMO instructions are superseded where they permit administrative reporting, generic predecessor state, or routine per-task PMO review to block independent Development after implementation Go, or where they require additional risk-based elevation before a qualifying standalone `OPS:` Issue interrupts project execution.
+This policy supersedes lower-level PMO instructions where they:
+
+- hard-code website work as automatic Priority 1 rather than recording a PMO decision;
+- use one priority meaning for both Active implementation and Pipeline preparation;
+- require team priority on child implementation tasks;
+- allow priority without accountable Pipeline preparation work;
+- treat Engineering Priority 1 as proof of launch readiness;
+- permit administrative reporting, generic predecessor state, or routine per-task PMO review to block independent Development after implementation Go;
+- require additional risk-based elevation before a qualifying numbered Operations Issue interrupts normal work.
