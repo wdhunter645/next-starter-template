@@ -1,0 +1,56 @@
+name: Remove retired assistant name once
+
+on:
+  push:
+    branches:
+      - chatgpt/2734-remove-retired-assistant-name
+
+permissions:
+  contents: write
+
+jobs:
+  replace:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out correction branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: chatgpt/2734-remove-retired-assistant-name
+
+      - name: Replace retired name and verify zero matches
+        shell: bash
+        run: |
+          set -e
+          branch='chatgpt/2734-remove-retired-assistant-name'
+          workflow='.github/workflows/remove-retired-assistant-name-once.yml'
+          files=()
+
+          while IFS= read -r -d '' file; do
+            files+=("$file")
+          done < <(git grep -I -l -z -i -w 'atlas' -- . ":(exclude)$workflow" || true)
+
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo 'No repository matches found; refusing an empty correction.'
+            exit 1
+          fi
+
+          printf 'Replacing matches in %s tracked text files.\n' "${#files[@]}"
+          perl -0pi -e 's/\batlas\b/ChatGPT/ig' "${files[@]}"
+
+          rm "$workflow"
+
+          if git grep -I -n -i -w 'atlas' -- .; then
+            echo 'Retired-name matches remain after replacement.'
+            exit 1
+          fi
+
+          git diff --check
+          git status --short
+
+          git config user.name 'LGFC Repository Automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A
+          git commit -m 'fix: replace retired assistant name with ChatGPT'
+          git push origin "HEAD:$branch"
