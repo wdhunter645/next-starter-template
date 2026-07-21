@@ -1,16 +1,21 @@
 ---
-Doc Type: Specification
+Doc Type: Reference
 Audience: Human + AI
-Authority Level: Canonical Platform Specification
-Owns: Cloudflare, D1, B2, platform constraints, platform operational rules
-Does Not Own: UI design specifics; PR process; incident response playbooks
-Canonical Reference: /docs/reference/platform/CLOUDFLARE.md
-Last Reviewed: 2026-02-20
+Authority Level: Controlled
+Owns: Cloudflare Pages and D1 resource inventory facts as a supporting specification
+Does Not Own: Platform and Environment Domain Policy; delivery approval; incident response playbooks
+Canonical Reference: /docs/governance/PLATFORM-AND-ENVIRONMENT.md
+Related Issues: #2688
+Last Reviewed: 2026-07-21
 ---
 
 # CLOUDFLARE — Resource Inventory (LGFC)
 
-This document captures what currently exists in Cloudflare for the LGFC deployment (design + resource inventory only).
+This document is the **supporting Cloudflare resource inventory** under the Platform and Environment Domain Policy (`docs/governance/PLATFORM-AND-ENVIRONMENT.md`).
+
+It captures what currently exists in Cloudflare for the LGFC deployment (design + resource inventory only).
+
+This file is **not** a Domain Policy co-owner. Conflicts with domain policy, Product Authority decisions, or other supporting specs resolve through `docs/governance/PLATFORM-AND-ENVIRONMENT.md`.
 
 ---
 
