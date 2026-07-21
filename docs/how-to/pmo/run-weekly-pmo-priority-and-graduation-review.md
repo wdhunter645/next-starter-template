@@ -5,7 +5,7 @@ Authority Level: Procedure
 Owns: Weekly PMO meeting sequence for Active priority, Engineering Pipeline priority, preparation ownership, Project Graduation, and metadata reconciliation
 Does Not Own: Product priority decisions, implementation execution, recovery strategy, PR approval, Production authorization, or dashboard runtime behavior
 Canonical Reference: /docs/governance/WORK-QUEUES-AND-COLLABORATION.md
-Related Issues: #2699
+Related Issues: #2699, #2705, #2706
 Last Reviewed: 2026-07-21
 ---
 
@@ -28,6 +28,8 @@ Use:
 - the PMO dashboard as a reporting aid only.
 
 GitHub Issues remain authoritative when dashboard data is stale, incomplete, or contradictory.
+
+## Procedure
 
 ## Step 1 — Review Operations precedence
 
