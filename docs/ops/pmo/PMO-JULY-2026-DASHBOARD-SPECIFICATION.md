@@ -2,257 +2,352 @@
 Doc Type: Operations Specification
 Audience: PMO operators, AI agents, dashboard maintainers
 Authority Level: Canonical PMO Dashboard Authority
-Owns: PMO July 2026 dashboard JSON contract, view placement rules, validation requirements, Incomplete view behavior, task calculations, sorting, and rendering expectations
-Does Not Own: PMO governance authority, GitHub issue mutation, workflow YAML, runtime implementation, or live label creation
+Owns: PMO dashboard JSON contract, portfolio view placement, lifecycle-specific team and priority validation, Incomplete behavior, task calculations, sorting, and rendering expectations
+Does Not Own: PMO governance decisions, queue policy, GitHub Issue mutation, workflow YAML, runtime implementation, live label creation, or bulk migration
 Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
-Related Issues: #2313, #2471, #2516, #2610, #2611
-Last Reviewed: 2026-07-18
+Related Issues: #2313, #2471, #2516, #2610, #2611, #2699, #2709
+Last Reviewed: 2026-07-21
 ---
 
 # PMO July 2026 Dashboard Specification
 
 ## Purpose
 
-Define how the PMO dashboard represents the PMO July 2026 issue contract in generated JSON and static dashboard views.
+Define how the PMO dashboard represents the approved Operations, PMO, Engineering, and Project Graduation model in generated JSON and static views.
 
-The dashboard is a reporting surface. GitHub Issues remain the sole operational authority for labels, issue state, parent/child relationships, comments, assignments, lifecycle, priority, pipeline stage, task relationships, and closeout evidence. Generated JSON must never override live Issue metadata.
+The dashboard is reporting only. GitHub Issues remain the sole operational authority for portfolio tracking, lifecycle, team assignment, priority, Pipeline stage, parent/child relationships, comments, assignments, collaboration, and closeout evidence.
+
+Queue and priority semantics are owned by `docs/governance/WORK-QUEUES-AND-COLLABORATION.md`.
 
 ## Authority hierarchy
 
-```text
-GitHub Issue state + current PMO labels
-                ↓
-PMO issue-contract validation
-                ↓
-Active / Pipeline / Completed / Incomplete
-                ↓
-Generated JSON and static dashboard
-```
+GitHub Issue state and current labels → PMO issue-contract validation → Active, Pipeline, Completed, or Incomplete → generated JSON and static dashboard.
 
 | Layer | Role |
 | --- | --- |
-| GitHub Issues | Sole operational authority for PMO tracking, lifecycle, priority, stage, tasks, and closeout |
-| This specification | Reporting contract for JSON fields, views, validation, and Incomplete behavior |
-| Generated `dashboard-data.json` / HTML | Reporting-only snapshot; may be stale between builds |
-| `scripts/pmo-dashboard/pmo-tracked-inventory.json` | Permitted residual role only: deterministic fixtures and explicit non-state exclusions — never live lifecycle/priority authority |
+| GitHub Issues | Live authority for PMO tracking and portfolio state |
+| PMO Operating Model | Operational Issue contract and task accounting |
+| This specification | Reporting fields, view placement, validation, and remediation display |
+| Generated JSON and HTML | Reporting snapshot that may be stale between builds |
+| Static inventory | Test fixtures or explicit non-state exclusions only |
 
-Runtime repair that removes frozen inventory lifecycle/priority enforcement is planned in [`docs/reference/pmo/pmo-dashboard-single-authority-implementation-plan.md`](../../reference/pmo/pmo-dashboard-single-authority-implementation-plan.md).
+Static inventory must not prescribe live lifecycle, team, priority, stage, or closeout state.
 
 ## Scope
 
 This specification covers:
 
-- source issue inclusion and exclusion;
+- source Issue inclusion and exclusion;
+- lifecycle-specific team and priority requirements;
 - JSON row fields;
-- Active, Pipeline, Completed, and Incomplete view placement;
-- lifecycle, priority, pipeline-stage, and task-accounting calculations;
-- validation failures and remediation data;
-- display and rendering expectations.
+- Active, Pipeline, Completed, and Incomplete placement;
+- Pipeline stage mapping;
+- parent task accounting;
+- data-quality errors and required remediation;
+- sorting and rendering expectations.
 
-It does not authorize dashboard generator code changes, label creation, issue metadata backfill, workflow changes, or GitHub issue mutation.
+It does not authorize generator code changes, label creation, live backfill, routing changes, workflow changes, or GitHub mutation. Those runtime changes are tracked separately in #2702.
 
-## Current known truth
+## Portfolio eligibility
 
-- The PMO July 2026 Operating Model owns the PMO issue contract.
-- The `pmo` label controls PMO tracking eligibility.
-- Every PMO-tracked issue must have exactly one PMO lifecycle label and exactly one PMO priority label.
-- Every `pmo:pipeline` issue must have exactly one pipeline-stage label.
-- `pmo:priority:idea` is valid for agenda-retained Pipeline topics without numbered execution priority.
-- `pmo:priority:none` is prohibited.
-- Incomplete PMO metadata must be visible in a dedicated Incomplete section instead of hidden or silently coerced into Active, Pipeline, or Completed.
+An Issue is PMO-tracked when it has the `pmo` label.
 
-## Intended final state
+A standalone portfolio row requires:
 
-The generated `dashboard-data.json` and rendered dashboard are internally consistent, actionable, and lossless enough for operators to identify every PMO row, understand its state, and remediate missing or contradictory metadata.
+1. the `pmo` label;
+2. a supported parent title classification;
+3. no `pmo:task` label.
 
-## Source issue eligibility
+Supported parent prefixes include:
 
-An issue is PMO-tracked when it has the `pmo` label.
+- `PROGRAM:`;
+- `PROJECT:`;
+- `PROGRAM CANDIDATE:`;
+- `STRATEGY:`;
+- `STRATEGY REVIEW:`.
 
-Standalone portfolio rows require both:
+Project child tasks use `pmo:task` and a valid parent reference. They do not render as standalone portfolio rows.
 
-1. the `pmo` label; and
-2. a supported standalone portfolio title prefix:
-   - `PROGRAM:`
-   - `PROJECT:`
-   - `PROGRAM CANDIDATE:`
-   - `STRATEGY:`
-   - `STRATEGY REVIEW:`
+Standalone Operations Issues and peer Engineering preparation Issues do not become PMO portfolio rows merely because they reference a PMO parent. They are excluded from parent task accounting unless they are valid project implementation tasks.
 
-Task issues use `pmo:task` and a valid parent reference. They do not render as standalone portfolio rows. They remain available for parent task accounting.
-
-Unsupported PMO-labeled issues, missing identity, and contradictory classification must render in Incomplete with remediation guidance.
-
-## Required JSON row fields
-
-Every emitted row in any view must include:
-
-| Field | Requirement |
-| --- | --- |
-| `issueNumber` | GitHub issue number |
-| `issueUrl` | GitHub issue URL |
-| `title` | Display title |
-| `labels` | Current label names from the issue snapshot |
-| `lifecycle` | `pipeline`, `active`, `closed`, or `incomplete` |
-| `priorityLabel` | One accepted PMO priority label |
-| `priorityDisplay` | Numeric priority display, `Idea`, or remediation text for Incomplete |
-| `pipelineStageLabel` | Required for valid Pipeline rows; omitted or null outside Pipeline |
-| `pipelineStageDisplay` | Human display name for Pipeline stage |
-| `taskCount` | Count of valid linked `pmo:task` issues |
-| `tasksCompleted` | Count of linked tasks with `pmo:closed` |
-| `percentComplete` | `round(tasksCompleted / taskCount * 100)` when `taskCount > 0`; otherwise null or the documented no-task display value |
-| `updatedAt` | GitHub issue last-updated timestamp |
-| `dataQualityErrors` | Empty for valid Active/Pipeline/Completed rows; populated for Incomplete rows |
-| `requiredRemediation` | Empty for valid rows; populated for Incomplete rows |
-
-Generated output must never omit issue identity for a PMO-tracked issue. Missing identity is itself an Incomplete error.
-
-## Lifecycle and view placement
+## Lifecycle-specific contract
 
 Validation runs before view placement.
 
-| Condition | View |
-| --- | --- |
-| Missing, duplicate, or unsupported required metadata | Incomplete |
-| GitHub issue closed but not reconciled to `pmo:closed` | Incomplete |
-| Valid `pmo:active` | Active Programs/Projects |
-| Valid `pmo:pipeline` | PMO Pipeline |
-| Valid `pmo:closed` | Completed Programs |
+### Active parent
 
-Closed GitHub issue state must reconcile to `pmo:closed`. Open issues may not be treated as completed unless their labels and issue state are reconciled according to the PMO issue contract.
+A valid Active parent has:
+
+- `pmo`;
+- exactly one lifecycle label: `pmo:active`;
+- exactly one team label: `team:pmo`;
+- exactly one priority label: `pmo:priority:1` through `pmo:priority:4`;
+- no Engineering or Operations priority/state label;
+- no Pipeline stage label.
+
+### Pipeline parent
+
+A valid Pipeline parent has:
+
+- `pmo`;
+- exactly one lifecycle label: `pmo:pipeline`;
+- exactly one team label: `team:engineering`;
+- exactly one Engineering priority: `eng:priority:1` through `eng:priority:4`, or `eng:priority:idea`;
+- exactly one Pipeline stage;
+- no PMO or Operations priority/state label.
+
+Engineering priority reports preparation order. Pipeline stage reports maturity. They are independent.
+
+### Completed parent
+
+A valid Completed parent has:
+
+- `pmo`;
+- `pmo:closed`;
+- GitHub closed state or an explicitly reconciled terminal state;
+- no contradictory active lifecycle or current team-priority combination.
+
+Completed reporting may retain the last known team and priority as historical evidence when available, but historical fields must not be treated as active routing authority.
+
+### Project child task
+
+A valid child task has:
+
+- `pmo:task`;
+- one lifecycle label describing pending, active, or completed state;
+- a valid PMO-tracked parent reference;
+- no `team:operations`, `team:pmo`, or `team:engineering` label;
+- no `ops:*`, `pmo:priority:*`, or `eng:priority:*` label.
+
+Project sequence and dependencies govern the child. Parent priority selects the project.
 
 ## Pipeline stage mapping
 
-Every valid Pipeline row must carry exactly one stage:
+Every valid Pipeline parent carries exactly one stage:
 
 | Order | Label | Display |
 | ---: | --- | --- |
-| 1 | `pmo:stage:intake` | Idea / topic intake |
-| 2 | `pmo:stage:discovery` | Discussion / discovery |
-| 3 | `pmo:stage:definition` | Definition / design |
+| 1 | `pmo:stage:intake` | Intake |
+| 2 | `pmo:stage:discovery` | Discovery |
+| 3 | `pmo:stage:definition` | Definition |
 | 4 | `pmo:stage:planning` | Planning |
-| 5 | `pmo:stage:prep` | Implementation preparation |
-| 6 | `pmo:stage:ready-for-launch` | Ready for launch |
+| 5 | `pmo:stage:prep` | Preparation |
+| 6 | `pmo:stage:ready-for-launch` | Ready for Launch |
 
-Ready for launch means preparation is complete and only Bill/Atlas Go/No-Go remains. It must not be rendered as launched, active, or authorized implementation.
+Ready for Launch is a prepared but unlaunched state. It must not render as Active or implementation-authorized.
 
 ## Priority handling
 
-Accepted priority labels are:
+### Active PMO priority
 
-- `pmo:priority:1`, `pmo:priority:2`, `pmo:priority:3`, and so on;
-- `pmo:priority:idea`.
+Accepted Active labels are:
 
-Rules:
+- `pmo:priority:1`;
+- `pmo:priority:2`;
+- `pmo:priority:3`;
+- `pmo:priority:4`.
 
-- Exactly one accepted priority label is required on every PMO-tracked issue.
-- Numeric priorities sort by numeric value.
-- `pmo:priority:idea` displays as `Idea` and remains in Pipeline/PMO meeting agenda reporting until promoted to a numbered priority or closed.
-- `pmo:priority:none` must fail validation and render the issue in Incomplete.
+Active rows sort by PMO priority number.
+
+Capacity limits apply to parents only:
+
+- maximum four P1 parents;
+- maximum four P2 parents;
+- maximum four P3 parents;
+- no fixed P4 limit.
+
+Completion thresholds are eligibility information only and never change priority automatically.
+
+### Pipeline Engineering priority
+
+Accepted Pipeline labels are:
+
+- `eng:priority:1`;
+- `eng:priority:2`;
+- `eng:priority:3`;
+- `eng:priority:4`;
+- `eng:priority:idea`.
+
+Pipeline rows sort by Engineering priority, then stage order, then update time.
+
+`eng:priority:idea` displays as `Idea` and sorts after numbered Pipeline priorities unless an agenda-specific view filters it separately.
+
+### Prohibited priority states
+
+Validation rejects:
+
+- `pmo:priority:none`;
+- legacy `pmo:priority:idea` on a Pipeline parent after migration;
+- PMO priority on Pipeline;
+- Engineering priority on Active;
+- any team priority on a child task;
+- multiple team or priority namespaces on one Issue;
+- automatic transfer of Engineering priority into PMO priority during Project Graduation.
+
+## Required JSON parent-row fields
+
+Every emitted parent row includes:
+
+| Field | Requirement |
+| --- | --- |
+| `issueNumber` | GitHub Issue number |
+| `issueUrl` | GitHub Issue URL |
+| `title` | Display title |
+| `labels` | Current Issue label names |
+| `lifecycle` | `pipeline`, `active`, `closed`, or `incomplete` |
+| `teamLabel` | Current team for valid Active or Pipeline rows; historical or null for Completed |
+| `priorityLabel` | Lifecycle-matching priority for valid Active or Pipeline rows; historical or null for Completed |
+| `priorityDisplay` | Numeric priority, `Idea`, historical text, or remediation text |
+| `pipelineStageLabel` | Required only for valid Pipeline rows |
+| `pipelineStageDisplay` | Human stage display for Pipeline rows |
+| `taskCount` | Count of valid linked project tasks |
+| `tasksCompleted` | Count of linked tasks with `pmo:closed` |
+| `percentComplete` | Rounded completion percentage when tasks exist |
+| `updatedAt` | GitHub last-updated timestamp |
+| `closedAt` | GitHub closed timestamp when applicable |
+| `dataQualityErrors` | Empty for valid rows; populated for Incomplete |
+| `requiredRemediation` | Empty for valid rows; populated for Incomplete |
+
+Generated output must never omit Issue identity for a PMO-tracked record.
+
+## View placement
+
+| Condition | View |
+| --- | --- |
+| Invalid or contradictory required metadata | Incomplete |
+| Valid `pmo:active` parent with PMO team and PMO priority | Active |
+| Valid `pmo:pipeline` parent with Engineering team, Engineering priority, and stage | Pipeline |
+| Valid `pmo:closed` parent reconciled with terminal state | Completed |
+| `pmo:task` with valid parent | Excluded from standalone views; included in parent accounting |
+| Standalone Operations or Engineering preparation Issue | Excluded from PMO standalone views unless separately modeled by an authorized operational view |
 
 ## Task accounting
 
-Task accounting uses linked `pmo:task` issues with valid parent references.
-
 For each parent:
 
-```text
-taskCount = count(linked pmo:task issues)
-tasksCompleted = count(linked pmo:task issues with pmo:closed)
-percentComplete = round(tasksCompleted / taskCount * 100) when taskCount > 0
-```
+- `taskCount` equals linked valid `pmo:task` Issues;
+- `tasksCompleted` equals linked tasks with `pmo:closed`;
+- `percentComplete` equals rounded completed divided by total when tasks exist.
 
 Validation fails when:
 
-- a `pmo:task` issue has no valid parent reference;
-- a parent's `tasksCompleted` exceeds `taskCount`;
-- a parent's percentage does not match the required calculation;
-- a referenced task cannot be identified well enough to determine state;
-- standalone row filtering removes a task from display but also removes it from parent accounting.
+- a child has no valid parent;
+- completed tasks exceed total tasks;
+- percentage does not match task counts;
+- a referenced task cannot be identified;
+- standalone filtering removes a valid child from parent accounting;
+- a peer Engineering preparation or Operations Issue is counted as a child;
+- a child carries a team-priority label.
 
 ## Incomplete view contract
 
-The Incomplete section is the required remediation view for PMO-tracked issues with invalid data.
+Every Incomplete row shows:
 
-Each Incomplete row must show:
-
-- issue number and link;
+- Issue number and link;
 - current labels;
+- lifecycle classification;
 - data-quality errors;
 - required remediation;
-- last updated date.
+- last-updated time.
 
-Incomplete detection includes at least:
+Incomplete detection includes:
 
-- missing or conflicting lifecycle label;
-- missing or conflicting priority label;
-- prohibited `pmo:priority:none`;
-- missing or conflicting pipeline-stage label for Pipeline work;
-- missing or invalid parent reference for a task;
+- missing or conflicting lifecycle;
+- Active parent missing or conflicting `team:pmo` or PMO priority;
+- Pipeline parent missing or conflicting `team:engineering`, Engineering priority, or stage;
+- cross-namespace team or priority labels;
+- prohibited priority label;
+- priority on a child task;
+- missing or invalid child parent reference;
 - invalid task accounting;
-- missing issue identity or URL in generated output;
-- unsupported or contradictory PMO classification.
+- peer work misclassified as project child work;
+- missing Issue identity or URL;
+- unsupported PMO classification;
+- closed state not reconciled to `pmo:closed`.
+
+Incomplete rows remain visible until corrected. The dashboard must not silently invent defaults.
 
 ## Sorting
 
-- Active rows sort by numeric priority, then updated date.
-- Pipeline rows sort by numeric priority, then stage order, then updated date.
-- `pmo:priority:idea` rows sort after numbered Pipeline priority rows unless an operator view explicitly filters agenda ideas.
-- Completed rows sort by closed date when available, then updated date.
-- Incomplete rows sort by severity of data-quality error, then updated date, so remediation work remains visible.
+- Active rows sort by PMO priority, then update time.
+- Pipeline rows sort by Engineering priority, stage order, then update time.
+- Completed rows sort by close time when available, then update time.
+- Incomplete rows sort by error severity, then update time.
 
 ## Rendering requirements
 
 The static dashboard must:
 
 - show Active, Pipeline, Completed, and Incomplete sections;
-- escape issue-derived display text;
-- link issue numbers to GitHub issue URLs;
-- display current labels for Incomplete rows;
-- display task counts and completion percentage from the generated contract fields;
-- avoid substituting `TBD`, blank priority, or default stage values for invalid required metadata.
+- distinguish PMO Active priority from Engineering Pipeline priority;
+- display Pipeline stage separately from preparation priority;
+- link Issue numbers to GitHub;
+- escape Issue-derived display text;
+- show task counts and completion percentage;
+- show current labels and remediation for Incomplete rows;
+- avoid substituting blank, `TBD`, or default values for invalid metadata;
+- avoid showing child tasks as independently prioritized portfolio work.
 
 ## Validation requirements
 
-Validation derives lifecycle, priority, stage, and task state from **current** GitHub Issue metadata reflected in the generated rows. Validation must not compare live rows to frozen `expectedLifecycle` or `expectedPriority` values from static inventory JSON.
+Validation derives lifecycle, team, priority, stage, and task state from current GitHub Issue metadata reflected in generated rows.
 
-Validation must fail generated output that:
+Validation must fail output that:
 
-- omits required row identity fields;
-- emits a PMO-tracked issue into Active/Pipeline/Completed despite invalid required metadata;
-- accepts `pmo:priority:none`;
+- omits required identity fields;
+- emits invalid metadata into Active, Pipeline, or Completed;
 - accepts missing or multiple lifecycle labels;
-- accepts missing or multiple priority labels;
-- accepts a Pipeline row without exactly one stage label;
-- loses linked `pmo:task` issues needed for parent task accounting;
-- produces invalid task math.
-
-Permitted residual static-inventory checks (after runtime repair) are limited to:
-
-- explicit non-state exclusion lists (an excluded issue must not appear as a dashboard row);
-- deterministic fixture expectations used only in offline/feature-branch tests;
-- optional presence checks that do not assert a frozen lifecycle or priority value.
+- accepts missing, multiple, or lifecycle-incompatible parent team/priority labels;
+- accepts a Pipeline row without exactly one stage;
+- accepts team priority on a child task;
+- accepts cross-namespace ownership;
+- loses valid tasks needed for parent accounting;
+- counts peer Operations or Engineering work as child tasks;
+- produces invalid task math;
+- uses frozen inventory lifecycle, team, or priority as live authority.
 
 ## Static inventory residual role
 
-`scripts/pmo-dashboard/pmo-tracked-inventory.json` is not a second source of truth for live PMO state.
+Static inventory may contain:
 
-| Allowed | Prohibited |
-| --- | --- |
-| Explicit exclusions with rationale for issues that must not appear as portfolio rows | `expectedLifecycle` / `expectedPriority` as live validation authority |
-| Deterministic fixture seeds for offline tests | Overriding current Issue labels or GitHub open/closed state |
-| Temporary migration notes until the runtime child retires frozen fields | Silent coercion of Incomplete rows into Active/Pipeline/Completed |
+- explicit non-state exclusions with rationale;
+- deterministic fixture seeds for offline tests;
+- temporary migration notes.
+
+It must not contain or enforce live `expectedLifecycle`, `expectedTeam`, or `expectedPriority` values that override GitHub.
+
+## Runtime transition
+
+This document defines the target dashboard contract approved in #2699 and aligned in #2709.
+
+Runtime implementation is tracked in #2702 and must update:
+
+- label creation and retirement;
+- dashboard generator parsing;
+- validator behavior;
+- tests and fixtures;
+- queue routing;
+- live Issue migration.
+
+Until #2702 merges, existing generated output may not satisfy this target schema. Operators must rely on live GitHub Issues and canonical policy when legacy runtime output conflicts.
 
 ## Operator remediation flow
 
-1. Open the Incomplete section.
-2. For each row, inspect issue number/link, labels, data-quality errors, and required remediation.
-3. Correct labels, parent reference, issue identity, or task linkage in GitHub only when authorized.
-4. Regenerate and validate dashboard output.
-5. Confirm the issue moved to Active, Pipeline, or Completed only after contract validation passes.
+1. Open the Incomplete view.
+2. Inspect live Issue state and the reported errors.
+3. Identify whether the record is an Active parent, Pipeline parent, child task, or excluded peer Issue.
+4. Correct metadata only through authorized migration or reconciliation.
+5. Regenerate and validate output.
+6. Confirm movement into the correct view only after contract validation succeeds.
 
 ## Related references
 
-- PMO July 2026 Operating Model: `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`
-- PMO Dashboard how-to: `/docs/how-to/pmo/pmo-dashboard.md`
-- Single-authority runtime repair plan: `/docs/reference/pmo/pmo-dashboard-single-authority-implementation-plan.md`
+- PMO Operating Model: `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`
+- Work Queues and Collaboration: `/docs/governance/WORK-QUEUES-AND-COLLABORATION.md`
+- Weekly PMO review: `/docs/how-to/pmo/run-weekly-pmo-priority-and-graduation-review.md`
+- Dashboard how-to: `/docs/how-to/pmo/pmo-dashboard.md`
+- Runtime implementation Issue: `#2702`
+
+## Supersession
+
+This specification supersedes dashboard rules that require one PMO priority namespace for all PMO-tracked Issues, require priority on child tasks, use `pmo:priority:idea` as the target Pipeline label, count peer preparation or Operations work as child completion, or allow static inventory to override current GitHub state.
