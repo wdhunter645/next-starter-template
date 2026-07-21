@@ -168,7 +168,8 @@ docs/reference/ci/admin-closeout-auto-repair-contract.md
 
 ## Dependency
 
-- CI Stage 0 gap analysis must complete before workflow/script changes that affect global closeout behavior.
+- **CI Stage 0** gap analysis complete — see `docs/ops/reports/ci-stage-0-current-state-gap-analysis.md` and `docs/reference/ci/ci-stage-0-tooling-boundary-inventory.md` (#2435). Extend `post_merge_self_heal_classify.mjs` rather than duplicating classifier logic; do not replace `post-merge-closeout.yml` ownership.
+- CI-001 (#2436) should merge before CI-002 implementation so PR body fields are standardized.
 - VAL-001 terminal validation references administrative queue disposition.
 
 ## Validation plan
