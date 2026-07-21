@@ -2,10 +2,10 @@
 Doc Type: Governance
 Audience: Human + AI
 Authority Level: Domain Policy
-Owns: Cross-lane communication, evidence, routing, repository-state reconciliation, acknowledgment, escalation, hold/resume administration, reporting, and closeout policy
+Owns: Cross-lane communication, evidence, routing, repository-state reconciliation, acknowledgment, escalation, hold/resume administration, reporting, closeout policy, and closeout delegation boundaries
 Does Not Own: Product outcomes, design decisions, implementation methods, PR approval decisions, incident recovery strategy, runner host maintenance, or production authorization
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2640, #2641, #2639, #2648, #2695
+Related Issues: #2640, #2641, #2639, #2648, #2695, #2700
 Last Reviewed: 2026-07-21
 ---
 
@@ -15,9 +15,7 @@ Last Reviewed: 2026-07-21
 
 Administration & Communications is the vertical control lane that supports PMO / Engineering, Implementation / Operations, and Day-2 Operations.
 
-It ensures that decisions, evidence, assignments, acknowledgments, escalations, holds, resumes, reports, and closeout records move reliably between the horizontal lanes.
-
-It does not make the decisions owned by those lanes.
+It ensures that decisions, evidence, assignments, acknowledgments, escalations, holds, resumes, reports, and closeout records move reliably between the horizontal lanes. It may execute authorized state transitions, but it does not make the decisions owned by those lanes.
 
 ## Operating position
 
@@ -33,32 +31,38 @@ The lane is active before project Go, during implementation and promotion, after
 
 A standalone `OPS:` Issue is an interrupt classification routed across this existing topology. It does not create a fifth lane.
 
+## Role-based operating principle
+
+Repository-wide policy assigns authority to durable roles. Current agents, models, tools, and automation are role holders whose mappings are maintained in `docs/governance/AGENT-TEAM.md` or an approved project manifest.
+
+A role holder may perform only the Administration & Communications actions delegated to its assigned role. Replacing one agent with another does not change the evidence, separation-of-duty, or closeout requirements.
+
 ## Team communication principle
 
-LGFC agents and automation are operating team members. They communicate directly with the responsible team member through the canonical GitHub communication surfaces whenever those surfaces are available.
+LGFC agents and automation are operating team members. They communicate directly with the responsible role holder through canonical GitHub communication surfaces whenever those surfaces are available.
 
-Direct agent-to-agent GitHub communication is the preferred operating model. Human relay through Bill is the least-desired communication path and is reserved for:
+Direct team-member communication is the preferred operating model. Human relay through Product Authority is the least-desired communication path and is reserved for:
 
 - canonical GitHub communication being unavailable or materially impaired;
-- Product Authority, priority, cost, business, credential, legal, privacy, or protected Production intervention;
+- product, priority, cost, business, credential, legal, privacy, or protected Production intervention; or
 - an emergency in which direct routing cannot be completed safely.
 
-Bill is not expected to copy, interpret, translate, or relay routine assignments, acknowledgments, review findings, remediation requests, status updates, resumes, or completion messages between agents.
+Product Authority is not expected to copy, interpret, translate, or relay routine assignments, acknowledgments, review findings, remediation requests, status updates, resumes, or completion messages between role holders.
 
-When human relay is used, the responsible originating or receiving agent must write the resulting decision and routing event back to the relevant GitHub Issue, PR, incident, or canonical repository document before repository work depends on it.
+When human relay is used, the responsible originating or receiving role holder must write the resulting decision and routing event back to the relevant GitHub Issue, PR, incident, or canonical repository document before repository work depends on it.
 
 ## Communication preference hierarchy
 
-1. Direct team-member communication through a canonical structured event on the source GitHub Issue.
+1. Direct role-holder communication through a canonical structured event on the source GitHub Issue.
 2. Administration & Communications transport, retry, acknowledgment, and escalation through repository automation or the controller.
-3. Human relay through Bill as the least-desired fallback under the bounded exceptions above.
+3. Human relay through Product Authority as the least-desired fallback under the bounded exceptions above.
 
 A PR comment or review may contain technical evidence and disposition, but it does not replace the source-Issue cross-lane routing transaction.
 
 ## Owns
 
 - Go/No-Go evidence packet preparation;
-- issue, project, program, PR, check, deployment, release, and incident state reconciliation;
+- Issue, project, program, PR, check, deployment, release, and incident state reconciliation;
 - labels, assignments, current-owner routing, and durable event records;
 - cross-lane communication and acknowledgment tracking;
 - decision requests and escalation routing;
@@ -66,9 +70,10 @@ A PR comment or review may contain technical evidence and disposition, but it do
 - operational hold narrowing, release, and resume administration;
 - traceability from requirement to task, acceptance, validation, and evidence;
 - planned-versus-completed accounting and gap detection;
-- task, issue, project, program, release, and incident closeout;
+- task, Issue, project, program, release, and incident closeout;
+- role-based closeout delegation and transaction boundaries;
 - preservation and restoration of active work state;
-- stale or unanswered communication detection;
+- stale or unanswered communication detection; and
 - runner/controller communication-health state.
 
 ## Does not own
@@ -81,7 +86,7 @@ Administration & Communications must not independently change:
 - delivery model or promotion profile;
 - PR approval disposition;
 - incident classification or recovery strategy;
-- production authorization;
+- Production authorization; or
 - repository settings, credentials, or paid services.
 
 It executes state transitions only from the recorded authority of the role that owns the decision. Applying the standing Product Authority rule that a qualifying standalone `OPS:` Issue interrupts project execution is not an independent priority decision.
@@ -90,7 +95,7 @@ It executes state transitions only from the recorded authority of the role that 
 
 | Surface | Use |
 | --- | --- |
-| GitHub Issues | Durable task, project, program, escalation, Operations, and incident authority; primary cross-agent routing surface |
+| GitHub Issues | Durable task, project, program, escalation, Operations, and incident authority; primary cross-role routing surface |
 | Labels | Current machine-readable lane, profile, owner, priority, severity, hold, and routing state |
 | Structured Issue comments | Durable cross-lane events, decisions, requests, acknowledgments, and resume conditions |
 | PR reviews and threads | Engineering disposition and code-review evidence; supplemental to source-Issue routing |
@@ -101,12 +106,13 @@ It executes state transitions only from the recorded authority of the role that 
 
 ## Source-Issue-first routing
 
-For a task, Operations interrupt, incident, or project handoff, the receiving agent responds on the source Issue first with the canonical event envelope.
+For a task, Operations interrupt, incident, or project handoff, the receiving role holder responds on the source Issue first with the canonical event envelope.
 
 - Implementation delivery uses `IMPLEMENTATION HANDOFF` and `PR REVIEW REQUEST` on the source Issue.
 - Review disposition uses `APPROVED FOR INTEGRATION`, `ADJUSTMENT`, `PLAN CHANGE REQUIRED`, or `HOLD` on the source Issue.
-- Local Cursor execution may additionally require a linked `LOCAL CURSOR RESUME` transport event.
+- Runtime-specific transport may additionally require a linked wake, resume, or acknowledgment event defined by the applicable runtime policy.
 - PR comments, reviews, inline findings, and checks remain technical evidence and must be referenced from the source-Issue event when they control further work.
+- Eligible assigned task closeout uses a `CLOSEOUT` event on the source Issue before or as part of the terminal transaction.
 
 A handoff remains incomplete until the target role/lane, requested action, blocking scope, and acknowledgment state are durable and unambiguous.
 
@@ -117,18 +123,19 @@ Administration & Communications must identify or fail closed on:
 - a missing source or target role/lane;
 - a missing source-Issue event for an agent-to-agent handoff;
 - missing acknowledgment where acknowledgment is required;
-- findings or instructions available only through Bill or another external relay;
+- findings or instructions available only through an external relay;
 - a PR-only review disposition that has not been routed to the source Issue;
 - stale, duplicated, contradictory, or superseded events;
 - use of retired or unrecognized team-member identities;
 - a resume instruction that does not reference the controlling decision;
+- a closeout attempt that does not identify the decision authority and transaction executor; or
 - an `OPS:` record that is a tracker, duplicate, bookkeeping artifact, advisory alert, or evidence-only record rather than a qualifying standalone source Issue.
 
 ## Runner and controller
 
 The repository runner and routing controller are shared communications/control-plane infrastructure in this lane.
 
-They provide the “dial tone” used by horizontal lanes to announce work, route assignments, publish evidence, request decisions, apply holds, and resume work.
+They provide the dial tone used by horizontal lanes to announce work, route assignments, publish evidence, request decisions, apply holds, resume work, and execute deterministic closeout transactions.
 
 They do not own decision authority.
 
@@ -154,7 +161,7 @@ They do not own decision authority.
 - `RECOVERY VERIFIED`
 - `CLOSEOUT`
 
-Events must identify the subject, source role/lane, target role/lane, evidence, requested action, blocking scope, decision authority, acknowledgment requirement, and supersession state when applicable.
+Events must identify the subject, source role/lane, target role/lane, evidence, requested action, blocking scope, decision authority, transaction executor when applicable, acknowledgment requirement, and supersession state.
 
 ## Lightweight problem adjustment
 
@@ -170,7 +177,7 @@ PROBLEM FOUND
 
 Only the affected task or incident pauses unless evidence supports broader impact or a qualifying standalone `OPS:` Issue activates the standing Operations interrupt rule.
 
-Use `PLAN CHANGE REQUIRED` only for material changes to product outcome, architecture, acceptance criteria, dependency structure, delivery model, production boundary, or recovery strategy.
+Use `PLAN CHANGE REQUIRED` only for material changes to product outcome, architecture, acceptance criteria, dependency structure, delivery model, Production boundary, or recovery strategy.
 
 ## Operations interrupt administration
 
@@ -179,7 +186,7 @@ A qualifying standalone `OPS:` source Issue automatically activates an Operation
 Administration & Communications must:
 
 1. verify that the Issue is open, same-repository, non-PR, titled with the `OPS:` prefix, standalone rather than project-child work, and bounded as authoritative source work;
-2. reject tracker-only, duplicate, bookkeeping, advisory, and evidence-only records unless they are explicitly elevated;
+2. reject tracker-only, duplicate, bookkeeping, advisory, and evidence-only records unless explicitly elevated;
 3. stop dispatching new project tasks;
 4. notify active project owners to stop at the nearest safe checkpoint;
 5. preserve each interrupted task's Issue, branch, claim, check, review, deployment, and next-action state;
@@ -199,16 +206,7 @@ Pending prose, labels, dashboards, routine reports, or bookkeeping do not block 
 Administration & Communications may hold or return work when:
 
 - the standing Operations interrupt rule is active; or
-- evidence shows a substantive invariant failure, including missing or contradictory:
-  - authority;
-  - required task;
-  - dependency;
-  - acceptance criterion;
-  - validation;
-  - approval;
-  - safety or production boundary;
-  - promotion-profile transition;
-  - closeout integrity.
+- evidence shows a substantive invariant failure, including missing or contradictory authority, required task, dependency, acceptance criterion, validation, approval, safety or Production boundary, promotion-profile transition, or closeout integrity.
 
 ## Operational hold administration
 
@@ -223,16 +221,57 @@ For an incident assessment hold, Day-2 Operations determines impact, probable ca
 
 Narrowing an incident hold does not by itself release the standing Operations interrupt. Project work resumes only when the controlling `OPS:` Issue or owning authority releases it.
 
-## Closeout
+## Closeout policy
 
-Closeout verifies:
+Closeout records an already-supported terminal decision. It does not replace implementation, independent review, merge or integration authority, Promotion Candidate qualification, Production authorization, or Day-2 recovery authority.
+
+### Role-based closeout executor matrix
+
+| Closeout class | Closeout decision authority | Transaction executor |
+| --- | --- | --- |
+| Assigned project child task | Assigned Implementation / Operations role holder after required independent review and integration evidence exists | Deterministic CI first; assigned Implementation / Operations role holder as fallback under bounded delegated Administration & Communications authority |
+| Assigned child remediation | Assigned Implementation / Operations role holder after required independent review and remediation verification exists | Deterministic CI first; assigned Implementation / Operations role holder as fallback under bounded delegated Administration & Communications authority |
+| Project/master | PMO / Engineering with independent PR Approver / Engineering verification | Designated Administration & Communications role holder who did not solely implement the underlying child work |
+| Program/umbrella | Product Authority and PMO / Engineering under explicitly recorded program-closeout authority | Administration & Communications role holder |
+| Promotion Candidate | PMO / Engineering, PR Approver / Engineering, and additional roles required by the applicable approval profile | Administration & Communications role holder records the disposition |
+| Production | Recorded Production authority with required Engineering approval | Administration & Communications role holder records the disposition |
+| Incident | Day-2 Operations after recovery verification and hold disposition | Administration & Communications role holder records the disposition |
+
+### Delegated task closeout
+
+The assigned Implementation / Operations role holder may complete the transaction for an explicitly assigned project-child or child-remediation Issue only when:
+
+- Issue class, assignment, and parent/master identity are explicit;
+- required implementation and validation are complete;
+- required independent review or authorized integration is recorded;
+- post-integration verification passes;
+- task terminal state and successor disposition are deterministic;
+- no active protected stop or operational hold applies; and
+- the required closeout packet is complete.
+
+This delegation is bounded Administration & Communications authority. It does not grant PR approval, merge authority, project/master closure, program closure, Promotion Candidate disposition, Production authority, release closure, incident closure, standalone `OPS:` closure, or Product Authority decision rights.
+
+If automation already completed the same transaction, the assigned role holder must not duplicate it. If evidence is missing, failed, contradictory, ambiguous, or outside the assigned task boundary, the role holder records and routes one bounded closeout exception.
+
+### Project/master audit control
+
+Project/master closeout is an independent aggregate audit. It verifies:
 
 - every planned item is completed, removed, superseded, or explicitly deferred;
-- required evidence and approvals exist;
-- Promotion Candidate and Production decisions are recorded;
-- unresolved defects and production risks are explicit;
-- issue, project, program, release, Operations interrupt, and incident state agree;
-- no required promotion profile was skipped;
+- required child closeout evidence and independent approvals exist;
+- integrated scope satisfies project acceptance;
+- Promotion Candidate and Production decisions are accurately recorded when applicable;
+- unresolved defects and Production risks are explicit;
+- Issue, project, program, release, Operations interrupt, and incident state agree;
+- no required promotion profile was skipped; and
 - any interrupted project state is restored or explicitly re-sequenced.
 
-Successful deterministic post-merge automation may perform the primary closeout transaction. Administration & Communications owns missing, partial, contradictory, non-merge, and later-discovered exceptions.
+A role holder that implemented child work may supply evidence, but must not be the sole independent project/master auditor.
+
+## Required references
+
+- Agent roles and current mapping: `docs/governance/AGENT-TEAM.md`
+- Administration mutation and executor contract: `docs/reference/operations/administrative-control-lane-contract.md`
+- Issue closeout procedure: `docs/ops/pmo/github-issue-closeout-protocol.md`
+- Delivery and promotion policy: `docs/governance/DELIVERY-AND-RELEASE.md`
+- Day-2 Operations policy: `docs/governance/OPERATIONS-AND-RECOVERY.md`
