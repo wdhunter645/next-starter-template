@@ -2,11 +2,11 @@
 Doc Type: Governance
 Audience: Human + AI
 Authority Level: Constitutional
-Owns: Repository precedence, GitHub Issue authority, domain ownership, lane topology, canonical-source rules, supersession, and unresolved-conflict escalation
-Does Not Own: Detailed PMO, delivery, agent, CI, Administration, Operations, or platform procedures
+Owns: Repository precedence, GitHub Issue authority, domain ownership, lane topology, work-queue topology, canonical-source rules, supersession, and unresolved-conflict escalation
+Does Not Own: Detailed PMO, queue, delivery, agent, CI, Administration, Operations, collaboration, or platform procedures
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2477, #2486, #2640, #2641
-Last Reviewed: 2026-07-19
+Related Issues: #2477, #2486, #2640, #2641, #2699
+Last Reviewed: 2026-07-21
 ---
 
 # Repository Authority
@@ -47,13 +47,13 @@ A normal PR that touches a legacy document must complete its disposition before 
 
 | Layer | Purpose | Typical location |
 | --- | --- | --- |
-| 0 — Constitution | Precedence, domain ownership, lane topology, escalation | `docs/governance/REPOSITORY-AUTHORITY.md` |
+| 0 — Constitution | Precedence, domain ownership, lane and queue topology, escalation | `docs/governance/REPOSITORY-AUTHORITY.md` |
 | 1 — Domain policy | One policy boundary per domain | `docs/governance/**` |
 | 2 — Shared contracts | Stable metadata, profiles, and classification | `docs/reference/**` |
 | 3 — Procedures | Single execution paths | `docs/how-to/**` |
 | 4 — Implementation | Workflows, scripts, templates, live configuration | `.github/**`, `scripts/**`, as-built documents |
 
-## Operating topology
+## Operating lane topology
 
 Three operating lanes run horizontally:
 
@@ -76,6 +76,30 @@ PMO / Engineering -> Implementation / Operations -> Day-2 Operations
 The horizontal lanes make decisions within their authority. Administration & Communications records, routes, acknowledges, escalates, and executes authorized state transitions.
 
 The repository runner and routing controller are communications/control-plane infrastructure in the vertical lane. Their host/service health remains a Day-2 Operations responsibility.
+
+## Work-queue topology
+
+Lanes define durable authority and responsibility. Work queues define which authorized work receives attention first.
+
+```text
+Operations interrupt queue
+        |
+        +-- PMO Active implementation queue
+        +-- Engineering Pipeline-preparation queue
+```
+
+Constitutional queue invariants:
+
+1. Numbered Operations work has interrupt precedence over PMO and Engineering work.
+2. PMO Active implementation and Engineering Pipeline preparation are peer normal-work queues.
+3. A source Issue belongs to at most one team queue at a time.
+4. Team-priority namespaces are mutually exclusive.
+5. Operations Monitoring and Hold are non-blocking states subject to recorded interval review.
+6. Project child tasks do not receive team-level priority; the parent priority selects the project and the project sequence selects the task.
+7. Pipeline-to-Active movement requires explicit Project Graduation and a newly assigned Active priority.
+8. Collaboration may add participants but never creates dual queue ownership.
+
+Detailed queue, priority, graduation, and collaboration rules live in `docs/governance/WORK-QUEUES-AND-COLLABORATION.md`.
 
 ## Promotion-profile authority
 
@@ -100,11 +124,12 @@ Each domain has exactly one canonical policy file.
 | Domain | Canonical policy owner | Owns |
 | --- | --- | --- |
 | Product and Design | `docs/governance/PRODUCT-AND-DESIGN.md` (target) | Product behavior, UX, functional requirements |
-| PMO and Portfolio | `docs/governance/PMO-PORTFOLIO.md` | Intake, sizing, priority, launch authorization, PMO / Engineering boundaries |
+| PMO and Portfolio | `docs/governance/PMO-PORTFOLIO.md` | Intake, sizing, priority decisions, launch authorization, PMO / Engineering boundaries |
+| Work Queues and Collaboration | `docs/governance/WORK-QUEUES-AND-COLLABORATION.md` | Queue classification and precedence, team/priority namespaces, Active and Pipeline priority semantics, Project Graduation, universal collaboration |
 | Delivery and Release | `docs/governance/DELIVERY-AND-RELEASE.md` | Delivery models, four promotion profiles, integration, approval, rollback, promotion |
 | Agent Team | `docs/governance/AGENT-TEAM.md` | Durable roles, current member mapping, approval and protected-stop policy |
 | CI and Verification | `docs/governance/CI-AND-VERIFICATION.md` (target) | Gate profiles, deterministic evidence, promotion criteria |
-| Administration and Communications | `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md` | Cross-lane communication, routing, runner/control-plane placement, evidence, hold/resume, reporting, closeout |
+| Administration and Communications | `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md` | Cross-lane communication transport, routing, runner/control-plane placement, evidence, hold/resume, reporting, closeout |
 | Operations and Recovery | `docs/governance/OPERATIONS-AND-RECOVERY.md` | Production health, incidents, containment, recovery strategy, operational hold release |
 | Documentation and Knowledge | `docs/governance/standards/DIATAXIS-FOLDER-AUTHORITY.md` | DIATAXIS routing, migration ratchet, archive rules |
 | Platform and Environment | `docs/governance/PLATFORM-AND-ENVIRONMENT.md` (target) | Cloudflare, D1, B2, preview/production boundaries |
@@ -173,6 +198,7 @@ Routine document migration, header correction, reference updates, deterministic 
 
 ## Related documents
 
+- Work Queues and Collaboration policy: `docs/governance/WORK-QUEUES-AND-COLLABORATION.md`
 - Administration and Communications policy: `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md`
 - Lane and profile contract: `docs/reference/operations/operating-lanes-and-promotion-profiles.md`
 - Delivery and Release policy: `docs/governance/DELIVERY-AND-RELEASE.md`
