@@ -2,10 +2,10 @@
 Doc Type: Governance
 Audience: Human + AI
 Authority Level: Domain Policy
-Owns: Durable LGFC roles, current member mapping, approval authority, protected stops, operating modes, launch-control workflow boundaries, and member work-precedence mapping
+Owns: Durable LGFC roles, current member mapping, approval authority, protected stops, operating modes, launch-control workflow boundaries, member work-precedence mapping, and delegated task-closeout role boundaries
 Does Not Own: Queue and priority semantics, shared execution detail, tool-specific runtime behavior, PMO sizing, promotion-profile policy, communication mutation taxonomy, or production mechanics
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2494, #2640, #2641, #2648, #2699
+Related Issues: #2494, #2640, #2641, #2648, #2699, #2700
 Last Reviewed: 2026-07-21
 ---
 
@@ -13,9 +13,11 @@ Last Reviewed: 2026-07-21
 
 ## Purpose
 
-This document defines durable repository roles and maps current team members to them. Broad policy uses role names so team-member or tool changes do not require widespread documentation edits.
+This document defines durable repository roles and maps current team members and systems to them. Broad policy uses role names so team-member, vendor, model, runtime, or tool changes do not require widespread documentation edits.
 
-LGFC agents are operating team members. They communicate directly with one another through the canonical GitHub communication workflow whenever it is available. Human relay through Bill is the least-desired fallback and does not replace durable agent-to-agent routing.
+An agent or system may act only through the roles currently assigned to it. A named agent does not permanently own authority merely because it currently fills a role.
+
+LGFC agents are operating team members. They communicate directly through the canonical GitHub communication workflow whenever it is available. Human relay through Product Authority is the least-desired fallback and does not replace durable agent-to-agent routing.
 
 Queue precedence, team priority namespaces, Project Graduation, and the universal collaboration method are defined in `docs/governance/WORK-QUEUES-AND-COLLABORATION.md`.
 
@@ -24,14 +26,14 @@ Queue precedence, team priority namespaces, Project Graduation, and the universa
 | Role | Authority |
 | --- | --- |
 | Product Authority | Product outcome, priority, cost, business decisions, final completed-product review |
-| PMO / Engineering | Requirements, design, architecture, acceptance criteria, planning, Sandbox authority, implementation Go |
-| Implementation / Operations | Development and Promotion Candidate execution, testing, remediation, integration, deployment execution |
+| PMO / Engineering | Requirements, design, architecture, acceptance criteria, planning, Sandbox authority, implementation Go, aggregate project verification |
+| Implementation / Operations | Development and Promotion Candidate execution, testing, remediation, integration, deployment execution, and eligible assigned task-level closeout after required independent evidence exists |
 | PR Approver / Engineering | Independent validation that work meets design, acceptance, repository, and promotion requirements |
-| Administration & Communications | Evidence, routing, acknowledgments, escalation, repository-state reconciliation, hold/resume, reporting, closeout |
+| Administration & Communications | Evidence, routing, acknowledgments, escalation, repository-state reconciliation, hold/resume, reporting, closeout, and authorized transaction execution |
 | Day-2 Operations | Production monitoring, incident classification, containment, recovery strategy, operational hold release |
-| Deterministic CI | Machine-provable checks, evidence, eligible non-main integration, bounded authorized automation |
+| Deterministic CI | Machine-provable checks, evidence, eligible non-main integration, and bounded authorized automation |
 
-No role may self-approve work when independent review is required.
+No role may self-approve work when independent review is required. Implementation / Operations may perform eligible administrative task closeout only after the required independent review, integration, validation, and post-integration evidence already exist.
 
 ## Current team mapping
 
@@ -42,19 +44,27 @@ No role may self-approve work when independent review is required.
 | Cursor Local | Implementation / Operations; Day-2 Operations remediation implementation |
 | GitHub Actions and repository automation | Deterministic CI; Administration & Communications transport/evidence; authorized Day-2 monitoring and bounded remediation |
 | Repository runner and routing controller | Administration & Communications control-plane infrastructure; host/service maintained by Day-2 Operations |
-| Codex | Inactive for LGFC implementation unless Product Authority records future reauthorization |
+| Codex | Inactive for LGFC implementation unless Product Authority records future reauthorization and role assignment |
 
-Changing the mapping does not change the role contract.
+Future agents and systems may be assigned compatible roles through an approved mapping change or project manifest. Changing the mapping does not change the role contract.
+
+## Mapping rules
+
+- Canonical policy names durable roles, not preferred vendors, models, or agent products.
+- Current member names belong in this mapping, a project manifest, or a bounded runtime/compatibility document.
+- A role reassignment changes who may act; it does not alter the authority or evidence required for the action.
+- One member may hold multiple roles, but required independent review and separation-of-duty constraints still apply.
+- A member that implemented child work must not be the sole independent reviewer of that work or the sole project/master closeout auditor.
 
 ## Team communication
 
-- ChatGPT and Cursor communicate directly through structured GitHub events on the relevant source Issue.
-- The target agent acknowledges and acts through the same durable workflow.
+- Operating team members communicate directly through structured GitHub events on the relevant source Issue.
+- The target role holder acknowledges and acts through the same durable workflow.
 - Collaboration adds a bounded participant; it does not change the source Issue's queue, priority, or execution owner.
 - PR reviews, checks, and threads provide technical evidence but do not replace the source-Issue collaboration or routing event.
-- Bill is not expected to copy, interpret, or relay routine agent assignments, findings, remediation requests, acknowledgments, resumes, status, or completion messages.
-- Human relay through Bill is the least-desired fallback when the canonical channel is unavailable or Product Authority intervention is intentionally required.
-- Any externally relayed decision must be written back to GitHub by the responsible agent before repository work depends on it.
+- Product Authority is not expected to copy, interpret, or relay routine assignments, findings, remediation requests, acknowledgments, resumes, status, or completion messages.
+- Human relay through Product Authority is the least-desired fallback when the canonical channel is unavailable or Product Authority intervention is intentionally required.
+- Any externally relayed decision must be written back to GitHub by the responsible role holder before repository work depends on it.
 
 ## Lane topology
 
@@ -92,7 +102,7 @@ This precedence orders each member's available capacity. It does not merge team 
 
 ## Authority boundaries
 
-| Decision | Owning role |
+| Decision or action | Owning role |
 | --- | --- |
 | Product requirements, priority, cost, business Go/No-Go | Product Authority |
 | Design, architecture, acceptance, project plan, Sandbox decision | PMO / Engineering |
@@ -100,19 +110,41 @@ This precedence orders each member's available capacity. It does not merge team 
 | Scoped implementation and remediation | Implementation / Operations |
 | PR review and approval | PR Approver / Engineering |
 | Eligible non-main integration | Deterministic CI under Delivery policy or PR Approver / Engineering when protected |
-| Promotion Candidate Go/No-Go | PMO / Engineering, PR Approver / Engineering, and other required roles |
-| Production promotion | Recorded Production authority plus required Engineering approval |
-| Production incident classification and recovery strategy | Day-2 Operations |
-| Issue/PR/check/deployment state, communication, hold/resume administration, closeout | Administration & Communications |
+| Assigned project-child or child-remediation closeout decision after required evidence exists | Assigned Implementation / Operations role holder |
+| Assigned task closeout transaction | Deterministic CI first; assigned Implementation / Operations role holder as fallback under bounded delegated Administration & Communications authority |
+| Project/master closeout decision | PMO / Engineering with independent PR Approver / Engineering verification |
+| Project/master closeout transaction | Designated Administration & Communications role holder who did not solely implement the underlying child work |
+| Program/umbrella closeout decision | Product Authority and PMO / Engineering under recorded program-closeout authority |
+| Promotion Candidate Go/No-Go and closeout disposition | PMO / Engineering, PR Approver / Engineering, and other roles required by the approval profile |
+| Production promotion and closeout disposition | Recorded Production authority plus required Engineering approval |
+| Production incident classification, recovery strategy, and incident closeout decision | Day-2 Operations |
+| Issue/PR/check/deployment state, communication, hold/resume administration, and recording of authorized closeout | Administration & Communications |
 | Mechanically provable validation and bounded automation | Deterministic CI |
 
 ## Approval model
 
 - Implementation / Operations does not approve its own protected work or Production promotion.
-- Deterministic CI may record automated eligibility and integrate eligible non-main work; it does not impersonate human Engineering approval.
+- Task closeout is an administrative completion action and does not substitute for PR approval, integration authority, Promotion Candidate qualification, or Production approval.
+- Deterministic CI may record automated eligibility, integrate eligible non-main work, and execute authorized deterministic closeout; it does not impersonate human Engineering approval.
 - PR Approver / Engineering handles subjective alignment, protected changes, Promotion Candidate qualification, and required Production review.
 - Product Authority is not a routine gate during approved Development work; escalation occurs for product, priority, cost, business, credential, or protected Production decisions.
 - Advisory collaboration is not formal approval. Formal PR review remains GitHub-native and must be performed by an authorized independent reviewer.
+
+## Delegated task closeout
+
+The assigned Implementation / Operations role holder is accountable for reaching a correct terminal state for an explicitly assigned project-child or child-remediation Issue when all of the following are true:
+
+1. the Issue class and parent/master relationship are explicit;
+2. required implementation and validation are complete;
+3. required independent review or authorized integration has occurred;
+4. post-integration verification passes;
+5. successor and parent reporting disposition are determinable;
+6. no protected stop, operational hold, or unresolved closeout exception remains; and
+7. the closeout packet is complete.
+
+Deterministic CI is the preferred transaction executor. When automation does not complete a mechanically eligible transaction, the assigned Implementation / Operations role holder may post the closeout packet, reconcile permitted task state, and close the assigned Issue under bounded delegated Administration & Communications authority.
+
+This delegation does not authorize the assigned role holder to close a project/master, program/umbrella, Promotion Candidate, Production, release, incident, standalone `OPS:`, or Product Authority disposition Issue.
 
 ## Administration & Communications responsibilities
 
@@ -125,7 +157,9 @@ It may:
 - prepare Go/No-Go and Promotion Candidate evidence packets;
 - apply, narrow, release, and restore recorded holds under the owning role's decision;
 - resolve missing, partial, contradictory, or failed administrative transactions;
-- maintain planned-versus-completed accounting.
+- maintain planned-versus-completed accounting;
+- audit child-task closeout evidence during project/master closeout; and
+- execute closeout transactions under the role-based executor matrix.
 
 It must not independently change product outcome, design, acceptance, implementation scope, delivery model, promotion profile, PR disposition, recovery strategy, priority, queue ownership, or Production authority.
 
@@ -157,7 +191,7 @@ The collaborator normally does not modify the branch or PR. A separately authori
 
 Any role may post `PROBLEM FOUND`.
 
-The issue routes to the role that made the controlling decision:
+The Issue routes to the role that made the controlling decision:
 
 ```text
 PROBLEM FOUND
@@ -170,7 +204,7 @@ Only the affected scope pauses unless evidence requires broader impact. Use `PLA
 
 ## Protected stop conditions
 
-All roles stop the affected scope and route the issue when any of the following is true:
+All roles stop the affected scope and route the Issue when any of the following is true:
 
 1. unresolved material product, design, architecture, or acceptance decision;
 2. conflicting canonical authority;
@@ -180,7 +214,8 @@ All roles stop the affected scope and route the issue when any of the following 
 6. missing or contradictory source Issue, dependency, validation, approval, promotion-profile, safety, or closeout authority;
 7. active numbered Operations interrupt covering the work;
 8. attempted bypass of Sandbox -> Development -> Promotion Candidate -> Production progression;
-9. contradictory team ownership or cross-namespace priority labels.
+9. contradictory team ownership or cross-namespace priority labels; or
+10. attempted task closeout without required independent review, integration, post-integration verification, or deterministic terminal state.
 
 Routine wording corrections, deterministic administrative reconciliation, bounded validation remediation, collaboration, and in-scope implementation adjustments are not protected stops.
 
@@ -196,7 +231,7 @@ Routine wording corrections, deterministic administrative reconciliation, bounde
 | Verification | PR, CI, Promotion Candidate, Production, and post-deployment validation | PR Approver / Engineering + Deterministic CI |
 | Troubleshooting | Failed gates, broken workflows, inconsistent state | Owning horizontal lane with Administration & Communications routing |
 | Implementation | Development and Promotion Candidate execution | Implementation / Operations |
-| Administration & Communications | Evidence, routing, state, escalation, hold/resume, reporting, closeout | Administration & Communications + Deterministic CI |
+| Administration & Communications | Evidence, routing, state, escalation, hold/resume, reporting, closeout | Administration & Communications + Deterministic CI + delegated role holders where policy permits |
 | Day-2 Operations | Production monitoring, incident response, recovery | Day-2 Operations |
 
 ## End-to-end workflow
@@ -206,6 +241,8 @@ Product Authority / PMO input
   -> Engineering Pipeline preparation and optional Sandbox
   -> Project Graduation and implementation Go
   -> PMO Active Development execution and automated PR gates
+  -> independent review or authorized integration
+  -> post-integration task verification and eligible child closeout
   -> Promotion Candidate qualification
   -> Production approval, deployment, and live verification
   -> Day-2 Operations monitoring and support
@@ -220,8 +257,10 @@ Administration & Communications supports every step vertically.
 Before Development begins, the source authority includes:
 
 - one primary source Issue;
-- role and runtime declaration;
+- assigned role and current role holder;
 - active lane and promotion profile;
+- Issue class and parent/master relationship;
+- task-closeout delegation state;
 - documentation/design reference;
 - exact file allowlist;
 - scope and non-goals;
@@ -241,6 +280,8 @@ When Product Authority says `run startup`, ChatGPT performs orientation only and
 | Work queues, priorities, graduation, collaboration | `docs/governance/WORK-QUEUES-AND-COLLABORATION.md` |
 | Lane and profile contract | `docs/reference/operations/operating-lanes-and-promotion-profiles.md` |
 | Administration & Communications policy | `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md` |
+| Administration mutation and closeout executor contract | `docs/reference/operations/administrative-control-lane-contract.md` |
+| Issue closeout procedure | `docs/ops/pmo/github-issue-closeout-protocol.md` |
 | Delivery and promotion policy | `docs/governance/DELIVERY-AND-RELEASE.md` |
 | Operations and recovery policy | `docs/governance/OPERATIONS-AND-RECOVERY.md` |
 | Implementation authority evidence | `docs/reference/agents/implementation-authority-contract.md` |
@@ -248,4 +289,4 @@ When Product Authority says `run startup`, ChatGPT performs orientation only and
 
 ## Supersession
 
-Legacy person-specific agent policy is superseded where it conflicts with this durable role model. Current team mappings belong here or in project manifests, not across broad governance documents. Queue, priority, graduation, and collaboration details belong in `WORK-QUEUES-AND-COLLABORATION.md` rather than being redefined per agent.
+Legacy person-specific or agent-specific policy is superseded where it conflicts with this durable role model. Current team mappings belong here or in project manifests; runtime compatibility documents may describe how a current member exercises an assigned role but must not redefine repository-wide authority. Queue, priority, graduation, and collaboration details belong in `WORK-QUEUES-AND-COLLABORATION.md` rather than being redefined per agent.
