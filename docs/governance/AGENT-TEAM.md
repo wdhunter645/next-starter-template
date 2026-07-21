@@ -17,7 +17,7 @@ This document defines durable repository roles and maps current team members and
 
 An agent or system may act only through the roles currently assigned to it. A named agent does not permanently own authority merely because it currently fills a role.
 
-LGFC agents are operating team members. They communicate directly with one another through the canonical GitHub communication workflow whenever it is available. Human relay through Product Authority is the least-desired fallback and does not replace durable agent-to-agent routing.
+LGFC agents are operating team members. They communicate directly through the canonical GitHub communication workflow whenever it is available. Human relay through Product Authority is the least-desired fallback and does not replace durable agent-to-agent routing.
 
 Queue precedence, team priority namespaces, Project Graduation, and the universal collaboration method are defined in `docs/governance/WORK-QUEUES-AND-COLLABORATION.md`.
 
@@ -46,7 +46,7 @@ No role may self-approve work when independent review is required. Implementatio
 | Repository runner and routing controller | Administration & Communications control-plane infrastructure; host/service maintained by Day-2 Operations |
 | Codex | Inactive for LGFC implementation unless Product Authority records future reauthorization and role assignment |
 
-Future agents and systems, including additional coding, review, verification, operations, or communications agents, may be assigned any compatible role through an approved mapping change or project manifest. Changing the mapping does not change the role contract.
+Future agents and systems may be assigned compatible roles through an approved mapping change or project manifest. Changing the mapping does not change the role contract.
 
 ## Mapping rules
 
@@ -62,7 +62,7 @@ Future agents and systems, including additional coding, review, verification, op
 - The target role holder acknowledges and acts through the same durable workflow.
 - Collaboration adds a bounded participant; it does not change the source Issue's queue, priority, or execution owner.
 - PR reviews, checks, and threads provide technical evidence but do not replace the source-Issue collaboration or routing event.
-- Product Authority is not expected to copy, interpret, or relay routine agent assignments, findings, remediation requests, acknowledgments, resumes, status, or completion messages.
+- Product Authority is not expected to copy, interpret, or relay routine assignments, findings, remediation requests, acknowledgments, resumes, status, or completion messages.
 - Human relay through Product Authority is the least-desired fallback when the canonical channel is unavailable or Product Authority intervention is intentionally required.
 - Any externally relayed decision must be written back to GitHub by the responsible role holder before repository work depends on it.
 
@@ -271,7 +271,7 @@ Before Development begins, the source authority includes:
 
 ## Startup orientation
 
-When Product Authority says `run startup`, the active conversational PMO / Engineering role holder performs orientation only and stops. Startup does not authorize queue audit, implementation resume, GitHub mutation, or administrative reconciliation.
+When Product Authority says `run startup`, ChatGPT performs orientation only and stops. Startup does not authorize queue audit, implementation resume, GitHub mutation, or administrative reconciliation.
 
 ## Canonical references
 
