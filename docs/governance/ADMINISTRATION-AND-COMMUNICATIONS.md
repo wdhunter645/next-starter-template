@@ -5,8 +5,8 @@ Authority Level: Domain Policy
 Owns: Cross-lane communication, evidence, routing, repository-state reconciliation, acknowledgment, escalation, hold/resume administration, reporting, and closeout policy
 Does Not Own: Product outcomes, design decisions, implementation methods, PR approval decisions, incident recovery strategy, runner host maintenance, or production authorization
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2640, #2641, #2639, #2648
-Last Reviewed: 2026-07-19
+Related Issues: #2640, #2641, #2639, #2648, #2695
+Last Reviewed: 2026-07-21
 ---
 
 # Administration and Communications
@@ -30,6 +30,8 @@ PMO / Engineering -> Implementation / Operations -> Day-2 Operations
 ```
 
 The lane is active before project Go, during implementation and promotion, after Production deployment, and throughout Day-2 support.
+
+A standalone `OPS:` Issue is an interrupt classification routed across this existing topology. It does not create a fifth lane.
 
 ## Team communication principle
 
@@ -60,7 +62,8 @@ A PR comment or review may contain technical evidence and disposition, but it do
 - labels, assignments, current-owner routing, and durable event records;
 - cross-lane communication and acknowledgment tracking;
 - decision requests and escalation routing;
-- operational hold, hold-narrowing, release, and resume administration;
+- Operations interrupt holds and operational incident hold administration;
+- operational hold narrowing, release, and resume administration;
 - traceability from requirement to task, acceptance, validation, and evidence;
 - planned-versus-completed accounting and gap detection;
 - task, issue, project, program, release, and incident closeout;
@@ -81,13 +84,13 @@ Administration & Communications must not independently change:
 - production authorization;
 - repository settings, credentials, or paid services.
 
-It executes state transitions only from the recorded authority of the role that owns the decision.
+It executes state transitions only from the recorded authority of the role that owns the decision. Applying the standing Product Authority rule that a qualifying standalone `OPS:` Issue interrupts project execution is not an independent priority decision.
 
 ## Communication surfaces
 
 | Surface | Use |
 | --- | --- |
-| GitHub Issues | Durable task, project, program, escalation, and incident authority; primary cross-agent routing surface |
+| GitHub Issues | Durable task, project, program, escalation, Operations, and incident authority; primary cross-agent routing surface |
 | Labels | Current machine-readable lane, profile, owner, priority, severity, hold, and routing state |
 | Structured Issue comments | Durable cross-lane events, decisions, requests, acknowledgments, and resume conditions |
 | PR reviews and threads | Engineering disposition and code-review evidence; supplemental to source-Issue routing |
@@ -98,7 +101,7 @@ It executes state transitions only from the recorded authority of the role that 
 
 ## Source-Issue-first routing
 
-For a task, incident, or project handoff, the receiving agent responds on the source Issue first with the canonical event envelope.
+For a task, Operations interrupt, incident, or project handoff, the receiving agent responds on the source Issue first with the canonical event envelope.
 
 - Implementation delivery uses `IMPLEMENTATION HANDOFF` and `PR REVIEW REQUEST` on the source Issue.
 - Review disposition uses `APPROVED FOR INTEGRATION`, `ADJUSTMENT`, `PLAN CHANGE REQUIRED`, or `HOLD` on the source Issue.
@@ -118,7 +121,8 @@ Administration & Communications must identify or fail closed on:
 - a PR-only review disposition that has not been routed to the source Issue;
 - stale, duplicated, contradictory, or superseded events;
 - use of retired or unrecognized team-member identities;
-- a resume instruction that does not reference the controlling decision.
+- a resume instruction that does not reference the controlling decision;
+- an `OPS:` record that is a tracker, duplicate, bookkeeping artifact, advisory alert, or evidence-only record rather than a qualifying standalone source Issue.
 
 ## Runner and controller
 
@@ -164,33 +168,60 @@ PROBLEM FOUND
   -> RESUME
 ```
 
-Only the affected task or incident pauses unless evidence supports broader impact.
+Only the affected task or incident pauses unless evidence supports broader impact or a qualifying standalone `OPS:` Issue activates the standing Operations interrupt rule.
 
 Use `PLAN CHANGE REQUIRED` only for material changes to product outcome, architecture, acceptance criteria, dependency structure, delivery model, production boundary, or recovery strategy.
+
+## Operations interrupt administration
+
+A qualifying standalone `OPS:` source Issue automatically activates an Operations interrupt hold over project execution.
+
+Administration & Communications must:
+
+1. verify that the Issue is open, same-repository, non-PR, titled with the `OPS:` prefix, standalone rather than project-child work, and bounded as authoritative source work;
+2. reject tracker-only, duplicate, bookkeeping, advisory, and evidence-only records unless they are explicitly elevated;
+3. stop dispatching new project tasks;
+4. notify active project owners to stop at the nearest safe checkpoint;
+5. preserve each interrupted task's Issue, branch, claim, check, review, deployment, and next-action state;
+6. route the Operations Issue to the existing horizontal roles required for assessment, implementation, review, promotion, and recovery;
+7. give the Operations Issue the next available execution capacity without creating concurrent conflicting claims;
+8. keep project work on hold until the Operations Issue closes, is explicitly deferred, or the owning authority records a `RESUME`; and
+9. restore preserved project state without duplicate dispatch or loss of evidence.
+
+The interrupt is immediate but not destructive. An active command, commit, merge, deployment, migration, rollback, or test sequence must reach the smallest safe checkpoint before its project claim is released.
+
+The standing interrupt changes queue precedence only. It does not authorize Administration & Communications to change the Operations objective, recovery strategy, implementation, PR disposition, Production authority, or rollback path.
 
 ## Non-blocking rule
 
 Pending prose, labels, dashboards, routine reports, or bookkeeping do not block PMO, Development, Promotion Candidate, or Production work.
 
-Administration & Communications may hold or return work only when evidence shows a substantive invariant failure, including missing or contradictory:
+Administration & Communications may hold or return work when:
 
-- authority;
-- required task;
-- dependency;
-- acceptance criterion;
-- validation;
-- approval;
-- safety or production boundary;
-- promotion-profile transition;
-- closeout integrity.
+- the standing Operations interrupt rule is active; or
+- evidence shows a substantive invariant failure, including missing or contradictory:
+  - authority;
+  - required task;
+  - dependency;
+  - acceptance criterion;
+  - validation;
+  - approval;
+  - safety or production boundary;
+  - promotion-profile transition;
+  - closeout integrity.
 
 ## Operational hold administration
 
-When production impact is unknown, Administration & Communications records a broad assessment hold and preserves active work state.
+Operations interrupt holds and incident assessment holds are distinct:
 
-Day-2 Operations determines impact, probable cause, containment, affected scope, resolution ownership, and hold release authority.
+- A qualifying standalone `OPS:` Issue creates an immediate project-execution interrupt until close, explicit deferral, or authorized `RESUME`.
+- When Production impact is unknown, Day-2 Operations may additionally authorize a broad incident assessment hold.
 
-Once the incident is bounded, Administration & Communications narrows the hold and restores unrelated work. Full recovery is not required before unaffected resources resume.
+Administration & Communications records both hold types and preserves active work state.
+
+For an incident assessment hold, Day-2 Operations determines impact, probable cause, containment, affected scope, resolution ownership, and hold release authority. Incident-specific holds may be narrowed after the incident is bounded.
+
+Narrowing an incident hold does not by itself release the standing Operations interrupt. Project work resumes only when the controlling `OPS:` Issue or owning authority releases it.
 
 ## Closeout
 
@@ -200,7 +231,8 @@ Closeout verifies:
 - required evidence and approvals exist;
 - Promotion Candidate and Production decisions are recorded;
 - unresolved defects and production risks are explicit;
-- issue, project, program, release, and incident state agree;
-- no required promotion profile was skipped.
+- issue, project, program, release, Operations interrupt, and incident state agree;
+- no required promotion profile was skipped;
+- any interrupted project state is restored or explicitly re-sequenced.
 
 Successful deterministic post-merge automation may perform the primary closeout transaction. Administration & Communications owns missing, partial, contradictory, non-merge, and later-discovered exceptions.
