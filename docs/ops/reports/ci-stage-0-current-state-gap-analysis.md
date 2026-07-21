@@ -291,7 +291,7 @@ node scripts/ci/diataxis_folder_audit.mjs
 node .agents/checks/agent-governance-check.mjs
 ```
 
-Results recorded in PR #2435 handoff.
+Results recorded in issue #2435 handoff / PR #2685.
 
 ---
 
