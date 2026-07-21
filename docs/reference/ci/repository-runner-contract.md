@@ -99,6 +99,8 @@ manual health + wake-packet delivery only
 
 Cursor Local Bridge revalidates live Issue eligibility before any CLI launch. See `docs/reference/ci/cursor-local-bridge-contract.md`.
 
+Health heartbeat, watchdog restart, and missed-handoff reconciliation are **Bridge-local** concerns. The runner remains transport only and must not own Cursor credentials, serial claims, or agent launch. Recovery packets are written only by the Bridge into the same host queue the wake workflow uses.
+
 Existing product workflows must remain on their current runners until Project #2294 authorizes a specific migration.
 
 ## Promotion conditions

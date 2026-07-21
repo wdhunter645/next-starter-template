@@ -2,10 +2,12 @@
 /**
  * Cursor Local Bridge — sole component allowed to start Cursor Local work.
  * Consumes wake packets, revalidates full eligibility, claims lane, launches CLI or falls back.
+ * Also writes a local heartbeat and runs a bounded missed-handoff reconciliation sweep.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 import { loadConfig, ensureDirs, bridgeHome } from './lib/paths.mjs';
 import { validateEligibility } from './lib/eligibility.mjs';
 import {
@@ -18,6 +20,10 @@ import {
 } from './lib/claim.mjs';
 import { appendBridgeLog, fallbackUnclaimed, postIssueComment, notifyLocal } from './lib/notify.mjs';
 import { cliAuthPreflight, launchLocalAgent } from './lib/launch.mjs';
+import { writeHeartbeat } from './lib/heartbeat.mjs';
+import { runReconcileSweep } from './lib/reconcile.mjs';
+import { collectStatus } from './lib/status.mjs';
+import { atomicWriteJson } from './lib/atomic-write.mjs';
 
 const REPO = 'wdhunter645/next-starter-template';
 
@@ -44,7 +50,6 @@ function fetchIssueBundle(issueNumber) {
     `repos/${REPO}/issues/${issueNumber}/comments`,
     '--paginate',
   ]);
-  // normalize
   const normalized = (Array.isArray(comments) ? comments : []).map((c) => ({
     id: c.id,
     url: c.html_url,
@@ -68,12 +73,43 @@ function readPacket(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
+function metaPath(config) {
+  return path.join(bridgeHome(), config.runtimeMetaPath || 'runtime-meta.json');
+}
+
+function readMeta(config) {
+  const p = metaPath(config);
+  if (!fs.existsSync(p)) return {};
+  try {
+    return JSON.parse(fs.readFileSync(p, 'utf8'));
+  } catch {
+    return {};
+  }
+}
+
+function writeMeta(config, patch) {
+  const next = { ...readMeta(config), ...patch, updatedAt: new Date().toISOString() };
+  atomicWriteJson(metaPath(config), next, 0o600);
+  return next;
+}
+
+function pulseHeartbeat(config, dirs, serviceMode, extra = {}) {
+  const meta = readMeta(config);
+  return writeHeartbeat(config, {
+    serviceMode,
+    queueDepth: listPackets(dirs.queue).length,
+    lastInboundPacketAt: meta.lastInboundPacketAt || null,
+    lastOutboundGithubAt: meta.lastOutboundGithubAt || null,
+    ...extra,
+  });
+}
+
 async function processPacket(config, dirs, packetPath) {
   const packet = readPacket(packetPath);
   const issueNumber = Number(packet.issueNumber || packet.issue);
   appendBridgeLog(config, `dequeue ${path.basename(packetPath)} issue=#${issueNumber}`);
+  writeMeta(config, { lastInboundPacketAt: new Date().toISOString() });
 
-  // Move aside immediately to avoid double-dequeue
   const processing = `${packetPath}.processing`;
   fs.renameSync(packetPath, processing);
 
@@ -86,22 +122,24 @@ async function processPacket(config, dirs, packetPath) {
 
     if (!eligibility.ok) {
       fallbackUnclaimed(config, issueNumber, `validation_failed:${eligibility.errors.join(',')}`);
+      writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
       fs.renameSync(processing, path.join(dirs.consumed, path.basename(packetPath) + '.rejected'));
-      return;
+      return { ok: false, reason: 'validation_failed' };
     }
 
     const resumeId = String(eligibility.resume.id);
     if (isConsumed(config, resumeId)) {
       appendBridgeLog(config, `skip already consumed resume=${resumeId}`);
       fs.renameSync(processing, path.join(dirs.consumed, path.basename(packetPath) + '.dup'));
-      return;
+      return { ok: true, reason: 'already_consumed' };
     }
 
     const auth = cliAuthPreflight(config);
     if (!auth.ok) {
       fallbackUnclaimed(config, issueNumber, auth.reason);
+      writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
       fs.renameSync(processing, path.join(dirs.consumed, path.basename(packetPath) + '.noauth'));
-      return;
+      return { ok: false, reason: auth.reason };
     }
 
     const claim = acquireClaim(config, {
@@ -111,8 +149,9 @@ async function processPacket(config, dirs, packetPath) {
     });
     if (!claim.ok) {
       fallbackUnclaimed(config, issueNumber, claim.reason);
+      writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
       fs.renameSync(processing, path.join(dirs.consumed, path.basename(packetPath) + '.busy'));
-      return;
+      return { ok: false, reason: claim.reason };
     }
 
     markConsumed(config, resumeId, { issueNumber, packet: path.basename(packetPath) });
@@ -123,6 +162,7 @@ async function processPacket(config, dirs, packetPath) {
         issueNumber,
         `${config.startedCommentPrefix || 'CURSOR BRIDGE STARTED'}\nIssue: #${issueNumber}\nResume comment id: ${resumeId}\nAction: ${action}\n`,
       );
+      writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
     } catch (err) {
       appendBridgeLog(config, `started comment failed: ${err.message}`);
     }
@@ -137,8 +177,9 @@ async function processPacket(config, dirs, packetPath) {
     if (launched.error) {
       releaseClaim(config);
       fallbackUnclaimed(config, issueNumber, launched.error);
+      writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
       fs.renameSync(processing, path.join(dirs.consumed, path.basename(packetPath) + '.launchfail'));
-      return;
+      return { ok: false, reason: launched.error };
     }
 
     const { child } = launched;
@@ -169,20 +210,25 @@ async function processPacket(config, dirs, packetPath) {
         ? 'cli_usage_or_plan_limit'
         : `cli_exit_${exitCode}`;
       fallbackUnclaimed(config, issueNumber, reason);
+      writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
       notifyLocal(config, 'LGFC Cursor Bridge', `Agent failed on #${issueNumber}: ${reason}`);
-    } else {
-      try {
-        postIssueComment(
-          issueNumber,
-          `${config.completedCommentPrefix || 'CURSOR BRIDGE COMPLETED'}\nIssue: #${issueNumber}\nExit: 0\nClaim released.\n`,
-        );
-      } catch (err) {
-        appendBridgeLog(config, `completed comment failed: ${err.message}`);
-      }
-      releaseClaim(config);
+      fs.renameSync(processing, path.join(dirs.consumed, path.basename(packetPath) + '.done'));
+      return { ok: false, reason };
     }
 
+    try {
+      postIssueComment(
+        issueNumber,
+        `${config.completedCommentPrefix || 'CURSOR BRIDGE COMPLETED'}\nIssue: #${issueNumber}\nExit: 0\nClaim released.\n`,
+      );
+      writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
+    } catch (err) {
+      appendBridgeLog(config, `completed comment failed: ${err.message}`);
+    }
+    releaseClaim(config);
+
     fs.renameSync(processing, path.join(dirs.consumed, path.basename(packetPath) + '.done'));
+    return { ok: true, reason: 'completed' };
   } catch (err) {
     appendBridgeLog(config, `process error: ${err.message}`);
     try {
@@ -195,15 +241,24 @@ async function processPacket(config, dirs, packetPath) {
     }
     if (issueNumber) {
       fallbackUnclaimed(config, issueNumber, `bridge_error:${err.message}`);
+      writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
     }
+    return { ok: false, reason: `bridge_error:${err.message}` };
   }
 }
 
 async function drainOnce(config, dirs) {
   const files = listPackets(dirs.queue);
+  const results = [];
   for (const file of files) {
-    await processPacket(config, dirs, file);
+    results.push(await processPacket(config, dirs, file));
   }
+  return {
+    at: new Date().toISOString(),
+    drained: files.length,
+    results,
+    ok: results.every((r) => r.ok !== false || r.reason === 'already_consumed'),
+  };
 }
 
 function sleep(ms) {
@@ -217,39 +272,93 @@ async function main() {
 
   const mode = process.argv[2] || 'watch';
   if (mode === 'once') {
-    await drainOnce(config, dirs);
+    const drain = await drainOnce(config, dirs);
+    pulseHeartbeat(config, dirs, 'once', { lastDrain: drain });
     return;
   }
 
   if (mode === 'status') {
-    const claim = readClaim(config);
-    console.log(
-      JSON.stringify(
-        {
-          home: bridgeHome(),
-          claim: claim && isClaimActive(claim, config.claimTtlSeconds) ? claim : null,
-          queue: listPackets(dirs.queue).map((f) => path.basename(f)),
-          auth: cliAuthPreflight(config),
-        },
-        null,
-        2,
-      ),
-    );
+    console.log(JSON.stringify(collectStatus(config), null, 2));
     return;
   }
 
-  // watch loop: poll queue frequently; optional slow reconcile is packet-driven only here
+  if (mode === 'reconcile') {
+    const result = await runReconcileSweep(config, dirs);
+    pulseHeartbeat(config, dirs, 'reconcile', { lastReconcile: result });
+    console.log(JSON.stringify(result, null, 2));
+    if (!result.ok) process.exitCode = 1;
+    return;
+  }
+
+  let lastReconcileAt = 0;
+  let lastReconcile = null;
+  let lastDrain = null;
+  const reconcileIntervalMs = (config.reconcileIntervalSeconds ?? 900) * 1000;
+
+  pulseHeartbeat(config, dirs, 'watch', {});
+
   for (;;) {
     try {
-      await drainOnce(config, dirs);
+      lastDrain = await drainOnce(config, dirs);
     } catch (err) {
       appendBridgeLog(config, `watch loop error: ${err.message}`);
+      lastDrain = { at: new Date().toISOString(), ok: false, error: err.message };
     }
+
+    const now = Date.now();
+    if (config.reconcileEnabled !== false && now - lastReconcileAt >= reconcileIntervalMs) {
+      try {
+        lastReconcile = await runReconcileSweep(config, dirs);
+        lastReconcileAt = now;
+        // Drain immediately so recovered packets enter the normal path.
+        if (lastReconcile.recovered?.length) {
+          lastDrain = await drainOnce(config, dirs);
+        }
+      } catch (err) {
+        lastReconcile = {
+          ok: false,
+          failedClosed: true,
+          reason: `reconcile_exception:${err.message}`,
+          recovered: [],
+          at: new Date().toISOString(),
+        };
+        lastReconcileAt = now;
+        appendBridgeLog(config, `reconcile exception: ${err.message}`);
+      }
+    }
+
+    pulseHeartbeat(config, dirs, 'watch', {
+      lastDrain: lastDrain
+        ? {
+            at: lastDrain.at,
+            drained: lastDrain.drained ?? 0,
+            ok: lastDrain.ok !== false,
+            error: lastDrain.error || null,
+          }
+        : null,
+      lastReconcile: lastReconcile
+        ? {
+            at: lastReconcile.at || new Date().toISOString(),
+            ok: lastReconcile.ok,
+            reason: lastReconcile.reason,
+            recovered: (lastReconcile.recovered || []).length,
+            failedClosed: !!lastReconcile.failedClosed,
+          }
+        : null,
+    });
+
     await sleep(2000);
   }
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+const invokedDirectly =
+  process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
+
+if (invokedDirectly) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}
+
+export { drainOnce, processPacket, listPackets, fetchIssueBundle };
