@@ -12,7 +12,7 @@ import {
   packetMentionsResume,
   hasPendingOrProcessingPacket,
 } from './lib/reconcile.mjs';
-import { evaluateHealth, pruneRestarts } from './watchdog.mjs';
+import { evaluateHealth, pruneRestarts, normalizeState } from './watchdog.mjs';
 import { atomicWriteJson } from './lib/atomic-write.mjs';
 import { writeHeartbeat, readHeartbeat, heartbeatAgeSeconds } from './lib/heartbeat.mjs';
 
@@ -200,6 +200,42 @@ Next local action:
     },
   );
   assert.equal(stopped.restartNeeded, true);
+
+  const corruptHb = evaluateHealth(
+    { claimTtlSeconds: 7200, watchdog: { heartbeatStaleSeconds: 90, minDiskMb: 256 } },
+    {
+      serviceActive: true,
+      heartbeat: { updatedAt: 'not-a-date' },
+      queueReadableWritable: true,
+      workspacePresent: true,
+      ghAuthOk: true,
+      cursorAuthOk: true,
+      claim: null,
+      diskMb: 1024,
+    },
+  );
+  assert.equal(corruptHb.restartNeeded, true);
+  assert.ok(corruptHb.failures.some((f) => f.startsWith('heartbeat_stale')));
+}
+
+{
+  assert.equal(heartbeatAgeSeconds({ updatedAt: 'not-a-date' }), Number.POSITIVE_INFINITY);
+  assert.equal(heartbeatAgeSeconds({ updatedAt: '' }), Number.POSITIVE_INFINITY);
+  assert.equal(heartbeatAgeSeconds(null), Number.POSITIVE_INFINITY);
+}
+
+{
+  const normalized = normalizeState({ restarts: 'bad', lastGithubFaultAt: 123, lastLocalAlertAt: 'nope' });
+  assert.deepEqual(normalized.restarts, []);
+  assert.equal(normalized.lastGithubFaultAt, null);
+  assert.equal(normalized.lastLocalAlertAt, null);
+  const ok = normalizeState({
+    restarts: ['2026-07-21T12:00:00.000Z', 'bogus'],
+    lastGithubFaultAt: '2026-07-21T12:00:00.000Z',
+    lastLocalAlertAt: null,
+  });
+  assert.deepEqual(ok.restarts, ['2026-07-21T12:00:00.000Z']);
+  assert.equal(ok.lastGithubFaultAt, '2026-07-21T12:00:00.000Z');
 }
 
 {

@@ -19,13 +19,35 @@ function statePath(config) {
   return path.join(bridgeHome(), config.watchdog?.statePath || 'watchdog-state.json');
 }
 
+function defaultState() {
+  return { restarts: [], lastGithubFaultAt: null, lastLocalAlertAt: null };
+}
+
+function normalizeState(raw) {
+  const base = defaultState();
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return base;
+  return {
+    restarts: Array.isArray(raw.restarts)
+      ? raw.restarts.filter((ts) => typeof ts === 'string' && Number.isFinite(new Date(ts).getTime()))
+      : [],
+    lastGithubFaultAt:
+      typeof raw.lastGithubFaultAt === 'string' && Number.isFinite(new Date(raw.lastGithubFaultAt).getTime())
+        ? raw.lastGithubFaultAt
+        : null,
+    lastLocalAlertAt:
+      typeof raw.lastLocalAlertAt === 'string' && Number.isFinite(new Date(raw.lastLocalAlertAt).getTime())
+        ? raw.lastLocalAlertAt
+        : null,
+  };
+}
+
 function readState(config) {
   const p = statePath(config);
-  if (!fs.existsSync(p)) return { restarts: [], lastGithubFaultAt: null, lastLocalAlertAt: null };
+  if (!fs.existsSync(p)) return defaultState();
   try {
-    return JSON.parse(fs.readFileSync(p, 'utf8'));
+    return normalizeState(JSON.parse(fs.readFileSync(p, 'utf8')));
   } catch {
-    return { restarts: [], lastGithubFaultAt: null, lastLocalAlertAt: null };
+    return defaultState();
   }
 }
 
@@ -252,4 +274,4 @@ if (invokedDirectly) {
   }
 }
 
-export { evaluateHealth, pruneRestarts };
+export { evaluateHealth, pruneRestarts, normalizeState };

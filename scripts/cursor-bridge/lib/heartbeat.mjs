@@ -54,5 +54,8 @@ export function writeHeartbeat(config, partial = {}) {
 
 export function heartbeatAgeSeconds(heartbeat) {
   if (!heartbeat?.updatedAt) return Number.POSITIVE_INFINITY;
-  return (Date.now() - new Date(heartbeat.updatedAt).getTime()) / 1000;
+  const ms = new Date(heartbeat.updatedAt).getTime();
+  // Invalid/corrupted timestamps must look stale so watchdog restarts, not skip.
+  if (!Number.isFinite(ms)) return Number.POSITIVE_INFINITY;
+  return (Date.now() - ms) / 1000;
 }

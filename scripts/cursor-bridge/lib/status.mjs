@@ -101,10 +101,10 @@ export function collectStatus(config, opts = {}) {
     },
     queue: {
       depth: queueFiles.length,
-      oldestAgeSeconds:
-        oldestPacketAgeSeconds(dirs.queue) != null
-          ? Math.round(oldestPacketAgeSeconds(dirs.queue))
-          : null,
+      oldestAgeSeconds: (() => {
+        const age = oldestPacketAgeSeconds(dirs.queue);
+        return age != null ? Math.round(age) : null;
+      })(),
       files: queueFiles.map((f) => path.basename(f)),
     },
     claim: claimActive
