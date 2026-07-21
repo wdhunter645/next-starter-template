@@ -5,8 +5,8 @@ Authority Level: Constitutional
 Owns: Repository precedence, GitHub Issue authority, domain ownership, lane topology, canonical-source rules, supersession, and unresolved-conflict escalation
 Does Not Own: Detailed PMO, delivery, agent, CI, Administration, Operations, or platform procedures
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2477, #2486, #2640, #2641
-Last Reviewed: 2026-07-19
+Related Issues: #2477, #2486, #2640, #2641, #2686, #2690
+Last Reviewed: 2026-07-21
 ---
 
 # Repository Authority
@@ -99,17 +99,17 @@ Each domain has exactly one canonical policy file.
 
 | Domain | Canonical policy owner | Owns |
 | --- | --- | --- |
-| Product and Design | `docs/governance/PRODUCT-AND-DESIGN.md` (target) | Product behavior, UX, functional requirements |
+| Product and Design | `docs/governance/PRODUCT-AND-DESIGN.md` | Product behavior, UX, functional requirements |
 | PMO and Portfolio | `docs/governance/PMO-PORTFOLIO.md` | Intake, sizing, priority, launch authorization, PMO / Engineering boundaries |
 | Delivery and Release | `docs/governance/DELIVERY-AND-RELEASE.md` | Delivery models, four promotion profiles, integration, approval, rollback, promotion |
 | Agent Team | `docs/governance/AGENT-TEAM.md` | Durable roles, current member mapping, approval and protected-stop policy |
-| CI and Verification | `docs/governance/CI-AND-VERIFICATION.md` (target) | Gate profiles, deterministic evidence, promotion criteria |
+| CI and Verification | `docs/governance/CI-AND-VERIFICATION.md` | Check classification, deterministic evidence, promotion criteria, failure routing, post-merge verification |
 | Administration and Communications | `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md` | Cross-lane communication, routing, runner/control-plane placement, evidence, hold/resume, reporting, closeout |
 | Operations and Recovery | `docs/governance/OPERATIONS-AND-RECOVERY.md` | Production health, incidents, containment, recovery strategy, operational hold release |
 | Documentation and Knowledge | `docs/governance/standards/DIATAXIS-FOLDER-AUTHORITY.md` | DIATAXIS routing, migration ratchet, archive rules |
-| Platform and Environment | `docs/governance/PLATFORM-AND-ENVIRONMENT.md` (target) | Cloudflare, D1, B2, preview/production boundaries |
+| Platform and Environment | `docs/governance/PLATFORM-AND-ENVIRONMENT.md` | Cloudflare, D1, B2, environment boundaries, bindings, credentials, migrations, rollback |
 
-Target policy filenames remain targets until introduced through approved repository work. A target does not create an alternate authority owner before it lands.
+All policy paths named in this table are active canonical owners. Introducing a new domain or replacing an owner requires an approved constitutional update and complete disposition of the prior owner.
 
 ## Supporting references
 
@@ -173,6 +173,9 @@ Routine document migration, header correction, reference updates, deterministic 
 
 ## Related documents
 
+- Product and Design policy: `docs/governance/PRODUCT-AND-DESIGN.md`
+- Platform and Environment policy: `docs/governance/PLATFORM-AND-ENVIRONMENT.md`
+- CI and Verification policy: `docs/governance/CI-AND-VERIFICATION.md`
 - Administration and Communications policy: `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md`
 - Lane and profile contract: `docs/reference/operations/operating-lanes-and-promotion-profiles.md`
 - Delivery and Release policy: `docs/governance/DELIVERY-AND-RELEASE.md`
