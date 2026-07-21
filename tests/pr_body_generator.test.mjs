@@ -9,6 +9,8 @@ import {
 } from '../scripts/ci/pr_body_generator.mjs';
 import {
   FAILURE_CODES,
+  findProhibitedPlaceholders,
+  runValidateCli,
   validatePrBody,
 } from '../scripts/ci/validate_pr_body.mjs';
 import {
@@ -134,6 +136,42 @@ Follow-up issue if required: not-applicable
 
     expect(report.ok).toBe(false);
     expect(report.failures.some((failure) => failure.code === FAILURE_CODES.MISSING_DESIGN_COMPLIANCE)).toBe(true);
+  });
+
+  it('rejects lowercase and mixed-case tbd placeholder tokens', () => {
+    expect(findProhibitedPlaceholders('Status: tbd')).toContain('tbd_token');
+    expect(findProhibitedPlaceholders('Status: Tbd')).toContain('tbd_token');
+    expect(findProhibitedPlaceholders('Status: TBD')).toContain('tbd_token');
+    expect(findProhibitedPlaceholders('updated')).not.toContain('tbd_token');
+  });
+
+  it('validate CLI fails fast when --fixture lacks a rendered body field', () => {
+    const errors = [];
+    const code = runValidateCli(
+      ['--fixture', path.join(fixtureDir, 'valid-cc-task.json')],
+      {
+        stdout: () => {},
+        stderr: (line) => errors.push(String(line)),
+      },
+    );
+
+    expect(code).toBe(2);
+    expect(errors.join('\n')).toMatch(/must include a string "body" field/i);
+    expect(errors.join('\n')).not.toMatch(/missing_source_issue/i);
+  });
+
+  it('validate CLI accepts the rendered-body validator fixture', () => {
+    const logs = [];
+    const code = runValidateCli(
+      ['--fixture', path.join(fixtureDir, 'valid-cc-rendered-body.json')],
+      {
+        stdout: (line) => logs.push(String(line)),
+        stderr: (line) => logs.push(String(line)),
+      },
+    );
+
+    expect(code).toBe(0);
+    expect(logs.join('\n')).toContain('PASS');
   });
 
   it('validator rejects pipeline bodies without #2286 inheritance', () => {

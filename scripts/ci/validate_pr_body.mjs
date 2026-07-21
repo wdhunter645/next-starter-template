@@ -26,7 +26,7 @@ export const PROHIBITED_PLACEHOLDER_PATTERNS = [
   { id: 'package_id_placeholder', pattern: /\[package-id\]/i },
   { id: 'path_placeholder', pattern: /\[path\]/i },
   { id: 'command_placeholder', pattern: /\[command\]/i },
-  { id: 'tbd_token', pattern: /(^|[^A-Za-z])TBD([^A-Za-z]|$)/ },
+  { id: 'tbd_token', pattern: /(^|[^A-Za-z])TBD([^A-Za-z]|$)/i },
   { id: 'blank_issue', pattern: /#____/ },
   { id: 'path_to_placeholder', pattern: /path\/to\//i },
 ];
@@ -297,7 +297,16 @@ export function runValidateCli(argv = process.argv.slice(2), { stdout = console.
 
   if (args.fixture) {
     const fixture = loadFixture(args.fixture);
-    body = fixture.body || '';
+    if (!Object.hasOwn(fixture, 'body') || typeof fixture.body !== 'string') {
+      stderr(
+        'Usage error: --fixture must include a string "body" field (rendered PR body). '
+        + 'Generator-input fixtures (for example valid-cc-task.json) are not valid here; '
+        + 'use --body-file with generated output, or a validator fixture such as '
+        + 'scripts/ci/fixtures/pr_body_generator/valid-cc-rendered-body.json.',
+      );
+      return 2;
+    }
+    body = fixture.body;
     options = {
       packageScoped: fixture.packageScoped ?? options.packageScoped,
       requiresDesignCompliance: fixture.requiresDesignCompliance ?? options.requiresDesignCompliance,

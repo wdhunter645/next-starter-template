@@ -1,0 +1,15 @@
+{
+  "body": "# PR Summary\n\n- **Issue:** #2436\n- Intent label: intent:ci\n- PR class: ci\n- Size: small\n- Delivery model: B-child\n- Change mode: project\n- Target environment: component\n- Approval profile: component-auto-integration\n- Gate profile: component-child\n- Rollback profile: multi-step\n- Component branch: component/content-collection-phase1\n- Component master: #2431\n- Promotion PR: not-applicable\n\n## Scope\n\nAllowed paths:\n- `scripts/ci/pr_body_generator.mjs`\n- `scripts/ci/validate_pr_body.mjs`\n- `scripts/ci/fixtures/pr_body_generator/**`\n- `tests/pr_body_generator.test.mjs`\n- `docs/ops/implementation-plans/content-collection/packages/ci-001-pr-body-generator-package.md`\n- `docs/reference/ci/pr-body-generator-contract.md`\n\nOut-of-scope changes present: NO\nException issue/approval if YES: not-applicable\n\n## Change Summary\n\nAdds the CI-001 deterministic PR body generator and procedural preclearance validator so Content Collection PRs fail early for missing authority, package path, placeholders, allowlist, validation, design compliance, or #2286 inheritance defects.\n\n## Package Compliance\n\n- Package ID: `CI-001`\n- Package path: `docs/ops/implementation-plans/content-collection/packages/ci-001-pr-body-generator-package.md`\n- CI-001 package contract preserved; generator is local preclearance only.\n\n## Parallel Execution / File Allowlist\n\nNo .github/workflows edits; allowlist-bound scripts/docs/tests only.\n\n## Verification\n\nLocal verification:\n- Command: `npm run typecheck`\n  Result: PASS\n- Command: `npm test -- --run tests/pr_body_generator*`\n  Result: PASS\n- Command: `node scripts/ci/pr_body_generator.mjs --dry-run --fixture scripts/ci/fixtures/pr_body_generator/valid-cc-task.json`\n  Result: PASS\n\nCI verification:\n- Required checks expected to pass: YES\n- Known failing/advisory checks: none\n\n## Acceptance Criteria\n\n- [x] Generator contract exists and matches pull_request_template.md\n- [x] Valid fixture produces template-compatible output\n- [x] Invalid fixtures fail for required procedural defects\n- [x] Tooling remains procedural preclearance only\n- [x] No pre-approved merge language is introduced\n\nFollow-up issue required: NO\nFollow-up issue if required: not-applicable\n\n## As-Built Documentation\n\ndocs/reference/ci/pr-body-generator-contract.md\n\n## Closeout\n\nSource task readiness only. Merge authority remains Bill / ChatGPT; tooling does not approve or merge.\n\n## Reviewer / Bot Review Attestation\n\n- [ ] I have read all human review threads on this PR\n- [ ] I have read all bot/advisory findings on this PR\n",
+  "changedFiles": [
+    "scripts/ci/pr_body_generator.mjs",
+    "scripts/ci/validate_pr_body.mjs",
+    "scripts/ci/fixtures/pr_body_generator/valid-cc-task.json",
+    "tests/pr_body_generator.test.mjs",
+    "docs/ops/implementation-plans/content-collection/packages/ci-001-pr-body-generator-package.md",
+    "docs/reference/ci/pr-body-generator-contract.md"
+  ],
+  "packageScoped": true,
+  "requiresDesignCompliance": false,
+  "requires2286Inheritance": false,
+  "mixedScopeApproved": false
+}
