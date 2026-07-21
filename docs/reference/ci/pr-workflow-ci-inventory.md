@@ -2,14 +2,18 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: Current PR-workflow CI inventory and active/retired classification
-Does Not Own: Canonical PR-process policy, branch protection settings, production deployment, or non-PR operations
-Canonical Reference: /docs/governance/PR_PROCESS.md
-Related Issues: #2175, #2208, #2469
-Last Reviewed: 2026-07-12
+Owns: Current PR-workflow CI inventory and active/retired classification as a supporting specification
+Does Not Own: CI and Verification Domain Policy; canonical PR-process policy; branch protection settings; production deployment; non-PR operations
+Canonical Reference: /docs/governance/CI-AND-VERIFICATION.md
+Related Issues: #2689, #2175, #2208, #2469
+Last Reviewed: 2026-07-21
 ---
 
 # PR Workflow CI Inventory
+
+This document is a **supporting PR-workflow CI inventory** under the CI and Verification Domain Policy (`docs/governance/CI-AND-VERIFICATION.md`).
+
+It is **not** a Domain Policy co-owner. Conflicts with domain policy resolve through `docs/governance/CI-AND-VERIFICATION.md`. PR lifecycle procedure remains in `docs/governance/PR_PROCESS.md`.
 
 ## Purpose
 
