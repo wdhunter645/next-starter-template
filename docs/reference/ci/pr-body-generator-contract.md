@@ -90,7 +90,7 @@ Administrative warnings only (non-blocking for CLI exit when configured):
 Generator and validator must fail when final output contains:
 
 - `#[issue]`, `#[program]`, `[package-id]`, `[path]`, `[command]`
-- bare `TBD` tokens
+- bare `TBD` tokens (case-insensitive; `tbd` / `Tbd` / `TBD`)
 - template blanks such as `#____` or `path/to/`
 
 ## Authority boundary
@@ -111,9 +111,15 @@ Prohibited statements:
 
 ```bash
 node scripts/ci/pr_body_generator.mjs --dry-run --fixture scripts/ci/fixtures/pr_body_generator/valid-cc-task.json
-node scripts/ci/validate_pr_body.mjs --fixture scripts/ci/fixtures/pr_body_generator/valid-cc-task.json
+node scripts/ci/validate_pr_body.mjs --fixture scripts/ci/fixtures/pr_body_generator/valid-cc-rendered-body.json
+# Or validate generated markdown directly:
+# node scripts/ci/validate_pr_body.mjs --body-file /tmp/pr-body.md
 npm test -- --run tests/pr_body_generator*
 ```
+
+`--fixture` for the validator requires a rendered `body` string field. Generator-input
+fixtures such as `valid-cc-task.json` are not valid validator fixtures and fail fast
+with a usage error.
 
 ## Relationship to existing surfaces
 
