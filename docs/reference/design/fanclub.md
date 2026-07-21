@@ -1,20 +1,22 @@
 ---
 Doc Type: Specification
 Audience: Human + AI
-Authority Level: Canonical Design Specification
-Owns: Routes, navigation invariants, UI/UX contracts, page content contracts
-Does Not Own: How-to procedures; operational runbooks; governance policies
+Authority Level: Controlled
+Owns: FanClub routes, navigation invariants, UI/UX contracts, and page content contracts as a supporting specification
+Does Not Own: Product and Design Domain Policy; how-to procedures; operational runbooks
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Last Reviewed: 2026-03-27
+Related Issues: #2687
+Last Reviewed: 2026-07-21
 ---
 
-# LGFC — FanClub Area Specification (AUTHORITATIVE)
+# LGFC — FanClub Area Specification
 
-Status: LOCKED — PRODUCTION SOURCE OF TRUTH  
+Status: LOCKED — supporting production specification  
 Effective Date: 2026-01-21
 
-This document defines the **FanClub** (authenticated) experience and routes.
-If any UI, code, or other doc conflicts with this file, this file wins.
+This document defines the **FanClub** (authenticated) experience and routes under the Product and Design Domain Policy and the production design standards hub.
+
+It is not a Domain Policy co-owner. Conflicts with higher Product and Design authority resolve through `docs/governance/PRODUCT-AND-DESIGN.md`.
 
 Canonical auth reference: /docs/reference/design/auth-model.md
 
