@@ -157,7 +157,7 @@ Globs match underscore script/fixture/test names per table above. The reference 
 
 ## Dependency
 
-- **CI Stage 0** gap analysis (`docs/ops/implementation-plans/ci-stage-0-current-state-gap-analysis.md` — to be promoted in later child issue) must inventory existing hygiene/closeout scripts before generator implementation.
+- **CI Stage 0** gap analysis complete — see `docs/ops/reports/ci-stage-0-current-state-gap-analysis.md` and `docs/reference/ci/ci-stage-0-tooling-boundary-inventory.md` (#2435). Generator implementation must follow Section 5 (`CI-001 implementation boundaries`) of `docs/ops/reports/ci-stage-0-current-state-gap-analysis.md`; do not modify post-open audit/repair or closeout scripts.
 
 ## Validation plan
 
