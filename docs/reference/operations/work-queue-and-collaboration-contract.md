@@ -162,7 +162,7 @@ COLLABORATION COMPLETE
 
 - evidence reviewed;
 - bounded analysis, validation, guidance, or recommendation;
-- applicable disposition such as `GUIDANCE`, `ADJUSTMENT`, `PLAN CHANGE REQUIRED`, `HOLD`, or `RESUME`;
+- applicable disposition such as `GUIDANCE`, `ADJUSTMENT`, `PROBLEM FOUND`, `PLAN CHANGE REQUIRED`, `HOLD`, or `RESUME`;
 - remaining condition;
 - next action returned to the Issue owner.
 
