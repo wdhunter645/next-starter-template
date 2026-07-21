@@ -2,14 +2,18 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: Current CI workflow classification by lifecycle domain and retirement status
-Does Not Own: Workflow implementation details or branch protection settings
-Canonical Reference: /docs/governance/PR_PROCESS.md
-Related Issues: #1058, #2175, #2208, #2469, #2524
-Last Reviewed: 2026-07-15
+Owns: Current CI workflow classification by lifecycle domain and retirement status as a supporting specification
+Does Not Own: CI and Verification Domain Policy; workflow implementation details; branch protection settings
+Canonical Reference: /docs/governance/CI-AND-VERIFICATION.md
+Related Issues: #2689, #1058, #2175, #2208, #2469, #2524
+Last Reviewed: 2026-07-21
 ---
 
 # LGFC Workflow Classification Matrix
+
+This document is the **supporting workflow classification matrix** under the CI and Verification Domain Policy (`docs/governance/CI-AND-VERIFICATION.md`).
+
+It is **not** a Domain Policy co-owner. Check-class and ownership conflicts resolve through `docs/governance/CI-AND-VERIFICATION.md`. PR lifecycle procedure remains in `docs/governance/PR_PROCESS.md`.
 
 ## Purpose
 
