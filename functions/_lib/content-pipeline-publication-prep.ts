@@ -33,12 +33,59 @@ const PREP_BLOCKED_RELEVANCE_STATUSES = new Set(['not_relevant', 'pending']);
 
 const PREP_VALID_PUBLICATION_STATUSES = new Set(['draft_candidate', 'staged', 'approved_for_publish']);
 
+/** CC-002 (#2434): fail-closed rights states that must never render on public/member surfaces. */
+const DISPLAY_BLOCKED_RIGHTS_STATUSES = new Set([
+  'unknown',
+  'permission_needed',
+  'permission_requested',
+  'copyright_restricted',
+  'blocked',
+]);
+
+/** CC-002 (#2434): privacy review states that block public/member display. */
+const DISPLAY_BLOCKED_PRIVACY_REVIEW_STATUSES = new Set([
+  'pending_review',
+  'restricted',
+  'blocked',
+]);
+
+/** CC-002 (#2434): privacy flags that require an approved privacy review before any display. */
+const DISPLAY_PRIVACY_FLAGS_REQUIRING_APPROVED_REVIEW = new Set([
+  'living_person',
+  'donor_member',
+  'minors',
+  'sensitive',
+  'other',
+]);
+
+/** Live public/member feature surfaces require this review_status (human-approved only). */
+const DISPLAY_ALLOWED_REVIEW_STATUSES = new Set(['approved_public_candidate']);
+
+/** Live public/member feature surfaces require published inventory conversion. */
+const DISPLAY_ALLOWED_PUBLICATION_STATUSES = new Set(['published']);
+
 export const MEMBER_SUBMISSION_PREP_SOURCE_NAME = 'LGFC Member Submission';
 
 export type PublicationPrepGateResult = {
   pass: boolean;
   value: string | null;
   requirement: string;
+};
+
+export type DisplaySurface = 'public' | 'member';
+
+export type DisplaySafetyResult = {
+  allowed: boolean;
+  surface: DisplaySurface;
+  reasons: string[];
+  gates: {
+    soft_delete: PublicationPrepGateResult;
+    review_status: PublicationPrepGateResult;
+    rights_status: PublicationPrepGateResult;
+    privacy_review_status: PublicationPrepGateResult;
+    privacy_flag: PublicationPrepGateResult;
+    publication_status: PublicationPrepGateResult;
+  };
 };
 
 export type PublicationPrepEligibility = {
@@ -257,6 +304,104 @@ export function resolvePublicationPrepSourceName(
     return MEMBER_SUBMISSION_PREP_SOURCE_NAME;
   }
   return candidate.source_name;
+}
+
+/**
+ * CC-002 (#2434) fail-closed public/member display safety gate.
+ *
+ * Downstream Gallery/Library/Memorabilia/Club feature lanes must call this (or an
+ * equivalent consumer of these gates) before rendering candidate-derived content.
+ * AI/OCR/automation must not approve rights, privacy, credit, provenance, or
+ * publication; only human-approved review_status values may pass.
+ */
+export function evaluatePublicMemberDisplaySafety(
+  candidate: {
+    review_status: string;
+    rights_status: string;
+    privacy_review_status: string;
+    privacy_flag: string;
+    publication_status: string;
+    deleted_at?: string | null;
+  },
+  surface: DisplaySurface,
+): DisplaySafetyResult {
+  const reasons: string[] = [];
+
+  const deletedAt = candidate.deleted_at ?? null;
+  const softDeleteGate = gate(
+    !deletedAt,
+    deletedAt,
+    'soft-deleted candidates (deleted_at set) must not display on public or member surfaces',
+  );
+  if (!softDeleteGate.pass) {
+    reasons.push(softDeleteGate.requirement);
+  }
+
+  const reviewGate = gate(
+    DISPLAY_ALLOWED_REVIEW_STATUSES.has(candidate.review_status),
+    candidate.review_status,
+    'review_status must be approved_public_candidate (human review only) before public/member display',
+  );
+  if (!reviewGate.pass) {
+    reasons.push(reviewGate.requirement);
+  }
+
+  const rightsGate = gate(
+    !DISPLAY_BLOCKED_RIGHTS_STATUSES.has(candidate.rights_status) &&
+      PREP_ACCEPTABLE_RIGHTS_STATUSES.has(candidate.rights_status),
+    candidate.rights_status,
+    'rights_status must be permission_granted or public_domain_candidate before public/member display',
+  );
+  if (!rightsGate.pass) {
+    reasons.push(rightsGate.requirement);
+  }
+
+  const privacyReviewGate = gate(
+    !DISPLAY_BLOCKED_PRIVACY_REVIEW_STATUSES.has(candidate.privacy_review_status) &&
+      PREP_ACCEPTABLE_PRIVACY_REVIEW_STATUSES.has(candidate.privacy_review_status),
+    candidate.privacy_review_status,
+    'privacy_review_status must be approved or not_applicable before public/member display',
+  );
+  if (!privacyReviewGate.pass) {
+    reasons.push(privacyReviewGate.requirement);
+  }
+
+  const privacyFlagRequiresApprovedReview = DISPLAY_PRIVACY_FLAGS_REQUIRING_APPROVED_REVIEW.has(
+    candidate.privacy_flag,
+  );
+  const privacyFlagGate = gate(
+    !privacyFlagRequiresApprovedReview || candidate.privacy_review_status === 'approved',
+    candidate.privacy_flag,
+    'privacy_flag living_person/donor_member/minors/sensitive/other requires privacy_review_status approved',
+  );
+  if (!privacyFlagGate.pass) {
+    reasons.push(privacyFlagGate.requirement);
+  }
+
+  const publicationGate = gate(
+    DISPLAY_ALLOWED_PUBLICATION_STATUSES.has(candidate.publication_status),
+    candidate.publication_status,
+    'publication_status must be published before public/member display',
+  );
+  if (!publicationGate.pass) {
+    reasons.push(publicationGate.requirement);
+  }
+
+  // Both public and member live surfaces share this fail-closed contract until
+  // a later authorized feature lane narrows member-only exceptions.
+  return {
+    allowed: reasons.length === 0,
+    surface,
+    reasons,
+    gates: {
+      soft_delete: softDeleteGate,
+      review_status: reviewGate,
+      rights_status: rightsGate,
+      privacy_review_status: privacyReviewGate,
+      privacy_flag: privacyFlagGate,
+      publication_status: publicationGate,
+    },
+  };
 }
 
 export function serializePublicationPrepView(input: {

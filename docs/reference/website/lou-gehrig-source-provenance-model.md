@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Source metadata, credit display rules, contributor/researcher records, evidence retention, and conflicting-source handling
 Does Not Own: Runtime schema implementation, D1 migrations, or public publication
 Canonical Reference: /docs/reference/website/lou-gehrig-content-metadata-schema.md
-Related issues: #1738, #1741, #1739, #1740
-Last Reviewed: 2026-07-04
+Related Issues: #1738, #1741, #1739, #1740, #2434, #2286
+Last Reviewed: 2026-07-21
 ---
 
 # Lou Gehrig Source Provenance Model
@@ -26,6 +26,7 @@ Lou Gehrig content collection.
 - Conflicting sources must be flagged rather than silently resolved.
 - Primary sources and reputable archives are preferred over derivative summaries.
 - Public-domain assumptions must be reviewed, not guessed.
+- AI/OCR-inferred provenance is advisory until a human reviewer records approval.
 
 ## Required provenance metadata
 
@@ -40,6 +41,18 @@ apply. Provenance-specific requirements:
 | Confidence | `provenance_confidence`, `factual_confidence` |
 | Attribution | `credit_line` required for every candidate |
 
+### Research ↔ pipeline source-type alignment (#2434)
+
+| Research / draft concept | Canonical pipeline field / value |
+| --- | --- |
+| `source_name` / archive title | research `source_title` / pipeline `source_name` |
+| `source_credit` / attribution | `credit_line` |
+| `citation_text` | `source_citation` |
+| `source_type` draft (`member_submission`, `archive_reference`, …) | pipeline `source_type` enum (`member`, `archive`, `museum`, `newspaper`, `library`, `institution`, `operator`, `social`, `auction`, `other`) plus `input_stream` / `acquisition_method` for how the item entered |
+| Member submission channel | `input_stream = member_submission` (not a `source_type` value) |
+
+Normalize to pipeline names before runtime eligibility or display checks.
+
 ## Credit display rules
 
 | Scenario | Credit requirement |
@@ -47,12 +60,14 @@ apply. Provenance-specific requirements:
 | LGFC-owned media | Credit line may state LGFC ownership; document acquisition |
 | Public archive citation | Credit archive name and catalog identifier |
 | Licensed or permission-granted | Credit per license terms; retain permission record in notes |
-| Link-only / reference-only | Credit may point to source URL; no full reproduction |
+| Link-only / reference-only | Credit may point to source URL; no full reproduction (`approved_citation_reference_only`) |
 | User submission | Credit submitter only when approved; separate source credit for underlying material |
 | Unknown rights | No public credit until rights review completes |
 
-Credit lines must be human-readable and suitable for future public display on
-website surfaces (homepage, library, gallery, timeline).
+Credit lines must be human-readable and suitable for future public or member
+display on website surfaces (homepage, library, gallery, timeline, memorabilia,
+Club Newspaper). Downstream surfaces consume CC-001 view contracts and must not
+render without CC-002 display-safety gates.
 
 ## Contributor and researcher records
 
@@ -75,7 +90,8 @@ Retain for the life of the candidate record:
 - review decisions and reviewer identity;
 - rejection or defer reasons;
 - permission documentation references (external to repo when sensitive);
-- conflicting-source flags and resolution notes.
+- conflicting-source flags and resolution notes;
+- soft-delete / suppression evidence (`deleted_at`, `retention_reason`, audit actor).
 
 Do not store paywalled full text, scraped social content, or unlicensed media
 binaries in the repository.
@@ -98,7 +114,8 @@ Escalate unresolved conflicts to Bill/Atlas before public-copy approval.
 Provenance capture at research intake aligns with `submission_queue` source fields
 and `content_inventory` publication requirements. Research candidates that
 promote to public copy must satisfy both this model and
-`docs/reference/website/content-inventory-model.md`.
+`docs/reference/website/content-inventory-model.md`, plus CC-002 display-safety
+enforcement before public/member feature rendering.
 
 ## Acceptance checklist
 
@@ -106,3 +123,4 @@ promote to public copy must satisfy both this model and
 - [x] Source-credit rules documented
 - [x] Contributor/researcher evidence handling documented
 - [x] Conflicting-source handling documented
+- [x] Research ↔ pipeline field alignment documented for CC-002

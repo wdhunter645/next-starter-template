@@ -3,10 +3,10 @@ Doc Type: Implementation Plan
 Audience: Bill, ChatGPT, Cursor, LGFC maintainers, implementation agents
 Authority Level: Operational Plan (non-authoritative until promoted via Issue/PR)
 Owns: CC-002 implementation envelope — source, provenance, rights, privacy, publication-review, takedown, and human-review authority for Content Collection assets
-Does Not Own: Legal conclusions, runtime enforcement, canonical provenance/rights reference docs, or merge authorization
+Does Not Own: Legal conclusions, automated rights determination, or merge authorization
 Canonical Reference: /docs/reference/website/lou-gehrig-source-provenance-model.md
-Related Issues: #2361, #2359, #2360, #1738, #2286
-Last Reviewed: 2026-07-08
+Related Issues: #2361, #2359, #2360, #1738, #2286, #2433, #2434
+Last Reviewed: 2026-07-21
 ---
 
 # CC-002 Source Provenance and Rights Contract Package
@@ -37,9 +37,9 @@ Define the source, credit, citation, provenance, rights, privacy, publication-re
 | --- | --- | --- |
 | Source provenance model | `docs/reference/website/lou-gehrig-source-provenance-model.md` | Credit, contributor records, conflicting sources (#1741) |
 | Rights/privacy/publication review | `docs/reference/website/lou-gehrig-rights-privacy-publication-review.md` | Clearance states, no-publish conditions (#1742) |
-| Metadata schema | `docs/reference/website/lou-gehrig-content-metadata-schema.md` | Required candidate fields |
+| Metadata schema | `docs/reference/website/lou-gehrig-content-metadata-schema.md` | Required candidate fields + enforcement vocabulary |
 | Provenance how-to | `docs/how-to/website/lou-gehrig-source-provenance-review.md` | Operator workflow |
-| #2286 pipeline | `functions/_lib/content-pipeline-publication-prep.ts`, `content-pipeline-candidate-admin.ts` | Publication-prep and review surfaces |
+| #2286 pipeline | `functions/_lib/content-pipeline-publication-prep.ts`, `content-pipeline-candidate-admin.ts` | Publication-prep, display-safety, and review surfaces |
 | Intake draft | `_incoming/.../CC-002 … Draft.docx` on `atlas/drive-draft-intake-2367` | Non-authority |
 
 **ChatGPT disposition (#2360):** CC-002 is `merge_into_existing`. Prefer updates to existing Lou Gehrig provenance/rights docs unless ChatGPT freezes supersession.
@@ -48,44 +48,49 @@ Define the source, credit, citation, provenance, rights, privacy, publication-re
 
 - CC-002 is a **companion** to CC-001; public/member display lanes require both contracts frozen.
 - CC-002 **consumes** #2286 publication-prep and admin review APIs — does not rebuild them.
-- `contract_dependency`: `CONTRACT-FROZEN: content-asset-model v1` before downstream feature display implementation.
+- `contract_dependency`: `CONTRACT-FROZEN: content-asset-model v1` (verified on #2433 / PR #2675 at `d233e2956f4cabd93bf3a41be516e36993723c32`) before downstream feature display implementation.
+- Runtime enforcement helper: `evaluatePublicMemberDisplaySafety` (fail-closed).
 
-## Gap matrix (draft CC-002 vs repo authority)
+## Gap matrix (resolved for #2434 freeze)
 
-| CC-002 draft concept | Existing authority | Gap / action |
+| CC-002 draft concept | Existing authority | Disposition |
 | --- | --- | --- |
-| Source fields (`source_name`, `source_type`, `source_credit`, `citation_text`, …) | metadata schema + provenance model | **Mostly covered** — align enum values at implementation |
-| `source_type` values (member_submission, archive_reference, …) | candidate `source_type` / `acquisition_method` | **Partial** — map draft enums to candidate model enums |
-| Rights state model | rights model clearance table | **Covered** — draft uses more granular labels; map to `rights_status` values |
-| Privacy state model | `privacy_flag` + privacy review process | **Covered** |
-| Publication review states | `review_status` + publication approval path | **Covered** |
-| Human review authority rule | metadata schema automation boundary; rights model | **Covered** — reinforce in implementation PR |
-| Takedown/suppression fields | soft-delete/retention in #2286; rejection states | **Gap** — explicit `suppression_reason`, `takedown_request_source` not in metadata schema; narrow extension if needed |
-| Per-surface display requirements | provenance model credit display table | **Partial** — Gallery/Library/Memorabilia/Club display lists in CC-001/CC-002 packages must align at freeze |
-| Public display block rules | rights model no-publish conditions | **Covered** |
+| Source fields (`source_name`, `source_type`, `source_credit`, `citation_text`, …) | metadata schema + provenance model | **Resolved** — canonical names + research↔pipeline mapping documented |
+| `source_type` values (member_submission, archive_reference, …) | candidate `source_type` / `acquisition_method` / `input_stream` | **Resolved** — map draft enums to #2286 `source_type` + `input_stream` |
+| Rights state model | rights model + #2286 `rights_status` | **Resolved** — enforcement uses underscore enums; research aliases mapped |
+| Privacy state model | `privacy_flag` + `privacy_review_status` | **Resolved** — draft `privacy_status` alias rejected for runtime |
+| Publication review states | `review_status` + `publication_status` | **Resolved** — draft `publication_status` alias for review rejected; both fields kept orthogonal |
+| Human review authority rule | metadata schema automation boundary; rights model | **Resolved** — reinforced in refs + runtime comments |
+| Takedown/suppression fields | soft-delete (`deleted_at`, `retention_reason`, audit actor) | **Resolved (mapped)** — dedicated `takedown_*` columns **deferred** until migration-authorized follow-up; soft-delete fail-closes display |
+| Per-surface display requirements | provenance credit table + CC-001 view contracts | **Resolved** — credit rules + shared fail-closed display gate; surface-specific UI remains feature-lane work |
+| Public display block rules | rights model + `evaluatePublicMemberDisplaySafety` | **Resolved** — testable fail-closed gates |
 
 ## Rights and privacy public-display rules
 
-Content **must not** display publicly when canonical or draft-equivalent states match the blocking sets below.
+Content **must not** display on public or member surfaces when any CC-002 gate fails.
+Canonical field names only: `rights_status`, `privacy_flag`, `privacy_review_status`,
+`review_status`, `publication_status`, `deleted_at`.
 
 ### Field-name normalization (canonical → draft alias)
 
 | Canonical (repo authority) | CC-002 draft alias | Notes |
 | --- | --- | --- |
-| `privacy_flag` | `privacy_status` | Same semantic role in candidate/inventory models |
-| `review_status` | `publication_status` | Map draft publication states to `review_status` values in `lou-gehrig-content-metadata-schema.md` |
-| `rights_status` | draft rights labels (`unknown_pending_review`, …) | Map draft labels to canonical `rights_status` enum before enforcement |
+| `privacy_flag` | `privacy_status` | Draft alias only — do not use at runtime |
+| `privacy_review_status` | (none) | Orthogonal to `privacy_flag` |
+| `review_status` | `publication_status` (misused) | Draft sometimes overloaded review with publication — keep fields separate |
+| `publication_status` | draft publication labels | Use #2286 publication enum |
+| `rights_status` | draft rights labels (`unknown_pending_review`, …) | Map to #2286 `rights_status` before enforcement |
 
-Implementers must normalize to **canonical** field names at runtime and in tests. Draft enum labels in this package are planning aliases only.
-
-### Blocking values
+### Blocking values (fail-closed)
 
 | Domain | Blocking values |
 | --- | --- |
-| `rights_status` | `unknown`, `permission-needed`, `rejected`, `link-only` (for reproduction), or draft equivalent `unknown_pending_review`, `restricted_do_not_publish`, `takedown_requested`, `internal_reference_only`, `fair_use_review_required` (unless Bill/ChatGPT approved) |
-| `privacy_status` / `privacy_flag` | `private_admin_only`, unresolved `privacy_review_required`, `restricted_do_not_publish`, `takedown_requested`, unreviewed `contains_personal_information` |
-| `publication_status` / `review_status` | not `approved-for-public-copy` / `approved_for_publication` / `published` |
-| Suppression | `takedown_requested`, `suppressed`, `soft_deleted` |
+| `rights_status` | `unknown`, `permission_needed`, `permission_requested`, `copyright_restricted`, `blocked` (allow only `permission_granted` or `public_domain_candidate`) |
+| `privacy_review_status` | `pending_review`, `restricted`, `blocked` |
+| `privacy_flag` | `living_person`, `donor_member`, `minors`, `sensitive`, `other` unless `privacy_review_status = approved` |
+| `review_status` | anything other than `approved_public_candidate` |
+| `publication_status` | anything other than `published` |
+| Suppression | `deleted_at` set (soft_deleted) |
 
 ## Human review authority rule
 
@@ -93,15 +98,48 @@ Human/operator review is authoritative. AI, OCR, automated tagging, or inferred 
 
 ## Takedown and suppression
 
-Required when suppressing public display:
+Required draft concepts map to #2286 soft-delete:
 
-- `suppression_reason`
-- `suppressed_by`
-- `suppressed_at`
-- `takedown_request_source`
-- `takedown_resolution_note`
+| Draft field | Mapping |
+| --- | --- |
+| `suppression_reason` | `retention_reason` (+ notes) |
+| `suppressed_by` | soft-delete audit actor |
+| `suppressed_at` | `deleted_at` |
+| `takedown_request_source` | **Deferred** — notes until schema extension |
+| `takedown_resolution_note` | **Deferred** — notes until schema extension |
 
-Verify whether #2286 retention/soft-delete fields satisfy these before adding schema deltas.
+## Freeze marker (blocks feature work)
+
+Until Atlas verifies both CC-001 and CC-002 freeze evidence, **P2/P3/P4/P5 feature implementation must not start**:
+
+```text
+CONTRACT-FROZEN: provenance-rights-publication v1
+```
+
+### Freeze evidence packet (PREPARED — not self-approved)
+
+```text
+CONTRACT-FROZEN: provenance-rights-publication v1
+Status: PREPARED — awaiting independent Atlas verification (Cursor must not self-approve)
+source issue: #2434
+package path: docs/ops/implementation-plans/content-collection/packages/cc-002-provenance-rights-contract-package.md
+CC-001 dependency: CONTRACT-FROZEN: content-asset-model v1 verified via #2433 / PR #2675 @ d233e2956f4cabd93bf3a41be516e36993723c32
+merged PR reference: pending component merge of this child PR (fill SHA after merge)
+fields included:
+  - canonical field-name alignment (privacy_flag, privacy_review_status, rights_status, review_status, publication_status)
+  - research ↔ #2286 enum mapping tables
+  - fail-closed public/member display block rules
+  - human review authority (no AI approval path)
+  - takedown/suppression mapping onto soft-delete + deferred dedicated columns
+  - runtime helper evaluatePublicMemberDisplaySafety + admin re-export
+  - negative-case tests under tests/*provenance*, tests/*rights*, tests/*content-asset*
+downstream lanes released: NONE — P2 Gallery, P3 Library, P4 Memorabilia, P5 Club remain blocked until Atlas verifies CC-001 and CC-002 freeze evidence
+known limitations:
+  - Dedicated takedown_request_source / takedown_resolution_note columns deferred (no migration in #2434 allowlist)
+  - Surface-specific credit UI remains feature-lane work under CC-001 view contracts
+  - No Gallery/Library/Memorabilia/Club route implementation in this PR
+ChatGPT verification request: Verify gap matrix dispositions, fail-closed display rules, human-authority preservation, and whether the freeze marker may be posted on #2434 / #2431
+```
 
 ## Repo-verified implementation surfaces
 
@@ -110,7 +148,7 @@ Verify whether #2286 retention/soft-delete fields satisfy these before adding sc
 | Canonical reference (update when child issue authorizes) | `docs/reference/website/lou-gehrig-source-provenance-model.md`, `docs/reference/website/lou-gehrig-rights-privacy-publication-review.md`, `docs/reference/website/lou-gehrig-content-metadata-schema.md` |
 | Package envelope | `docs/ops/implementation-plans/content-collection/packages/cc-002-provenance-rights-contract-package.md` |
 | Pipeline integration | `functions/_lib/content-pipeline-publication-prep.ts`, `functions/_lib/content-pipeline-candidate-admin.ts` |
-| Tests | `tests/*provenance*`, `tests/*rights*`, `tests/*content-asset*` (when authorized) |
+| Tests | `tests/*provenance*`, `tests/*rights*`, `tests/*content-asset*` |
 
 **Hot zones — require explicit approval:**
 
@@ -138,14 +176,16 @@ tests/*content-asset*
 | --- | --- |
 | `parallel_safe` | `conditional` |
 | `contract_dependency` | CC-001 freeze marker for downstream feature lanes |
+| `required_freeze_marker` | `CONTRACT-FROZEN: provenance-rights-publication v1` |
 | `merge_order_constraint` | CC-002 should merge before public/member-facing content display lanes |
+| `prohibited_parallel_lanes` | public/member-facing P2–P5 until Atlas verifies CC-001 and CC-002 |
 
 ## Validation plan
 
 **What to verify:**
 
-- Source/rights/privacy/publication models documented.
-- Public display cannot bypass review states.
+- Source/rights/privacy/publication models documented with canonical names.
+- Public/member display cannot bypass review states.
 - Human review authority preserved.
 - Downstream lanes know display/enforcement fields.
 
@@ -154,14 +194,16 @@ tests/*content-asset*
 ```bash
 bash scripts/ci/docs_check_headers.sh
 node scripts/ci/diataxis_folder_audit.mjs
+node .agents/checks/agent-governance-check.mjs
 ```
 
-**Commands (code child issue):**
+**Commands (runtime / tests):**
 
 ```bash
 npm run typecheck
 npm test -- --run tests/provenance*
 npm test -- --run tests/rights*
+npm test -- --run tests/content-asset*
 ```
 
 **Pass:** Public/member-visible content cannot bypass source/rights/privacy requirements.
@@ -175,6 +217,7 @@ npm test -- --run tests/rights*
 - Human review authority statement.
 - CC-001 freeze dependency noted.
 - Validation evidence and downstream lane impacts.
+- Freeze marker status (`PREPARED` until Atlas verifies).
 
 ## Procedure
 
@@ -182,13 +225,15 @@ npm test -- --run tests/rights*
 2. Resolve gap matrix (especially takedown/suppression fields).
 3. Implement only within child-issue allowlist.
 4. Verify negative-case fixtures: blocked rights/privacy states never render on public routes.
-5. Post `CHATGPT HANDOFF` if canonical ref updates conflict with locked design/governance.
+5. Prepare freeze evidence packet; do not self-approve.
+6. Post `CHATGPT HANDOFF` for independent Atlas verification.
 
 ## Acceptance criteria
 
-- [ ] Source/provenance/rights contract documented with repo-verified merge targets.
-- [ ] Public/private exposure rules explicit and testable.
-- [ ] Human review remains authoritative; no AI auto-approval path.
-- [ ] CC-001 freeze dependency documented for feature lanes.
-- [ ] Validation commands and evidence requirements defined.
-- [ ] No parallel SOT under rejected `content-collection/` reference tree.
+- [x] Source/provenance/rights contract documented with repo-verified merge targets.
+- [x] Public/private exposure rules explicit and testable.
+- [x] Human review remains authoritative; no AI auto-approval path.
+- [x] CC-001 freeze dependency documented for feature lanes.
+- [x] Validation commands and evidence requirements defined.
+- [x] No parallel SOT under rejected `content-collection/` reference tree.
+- [x] Freeze evidence prepared for Atlas (not self-approved).
