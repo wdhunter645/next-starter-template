@@ -1,6 +1,6 @@
 ---
 Doc Type: Report
-Audience: Bill, Atlas, LGFC maintainers, and implementation agents
+Audience: Bill, ChatGPT, LGFC maintainers, and implementation agents
 Authority Level: Program Evidence
 Owns: Admin and data-surface gap inventory for Lou Gehrig content collection Phase 1
 Does Not Own: Admin UI implementation, migrations, or merge authority

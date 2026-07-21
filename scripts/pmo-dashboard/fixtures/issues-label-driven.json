@@ -46,7 +46,7 @@
     "title": "PROJECT: Standalone pipeline project",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9004",
-    "body": "Owner / Agent: Atlas\nProject Description: Ready-for-launch pipeline project.\n",
+    "body": "Owner / Agent: ChatGPT\nProject Description: Ready-for-launch pipeline project.\n",
     "labels": [
       { "name": "pmo" },
       { "name": "pmo:pipeline" },
@@ -206,7 +206,7 @@
     "title": "OPS: Unsupported PMO operations issue",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9024",
-    "body": "Owner / Agent: Atlas\n",
+    "body": "Owner / Agent: ChatGPT\n",
     "labels": [
       { "name": "pmo" },
       { "name": "pmo:pipeline" },
@@ -221,7 +221,7 @@
     "title": "PROJECT: Missing lifecycle labels",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9025",
-    "body": "Owner / Agent: Atlas\nProject Description: Must quarantine for missing lifecycle.\n",
+    "body": "Owner / Agent: ChatGPT\nProject Description: Must quarantine for missing lifecycle.\n",
     "labels": [
       { "name": "pmo" },
       { "name": "pmo:priority:6" }
@@ -234,7 +234,7 @@
     "title": "PROJECT: Conflicting priority labels",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9026",
-    "body": "Owner / Agent: Atlas\nProject Description: Must quarantine for conflicting priority.\n",
+    "body": "Owner / Agent: ChatGPT\nProject Description: Must quarantine for conflicting priority.\n",
     "labels": [
       { "name": "pmo" },
       { "name": "pmo:pipeline" },
@@ -250,7 +250,7 @@
     "title": "PROJECT: Prohibited none priority",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9027",
-    "body": "Owner / Agent: Atlas\nProject Description: Must quarantine for pmo:priority:none.\n",
+    "body": "Owner / Agent: ChatGPT\nProject Description: Must quarantine for pmo:priority:none.\n",
     "labels": [
       { "name": "pmo" },
       { "name": "pmo:pipeline" },

@@ -63,7 +63,7 @@ PY
 
 | Ref | Reachability | Current tree status |
 | --- | --- | --- |
-| `origin/atlas/drive-draft-intake-2367` | Contains both introduction commit `21bb616af2eab3bb98210f2be6b0b036643f8c95` and deletion commit `dbd98647f509a8864d78a06edaff23f20c87d4fb`. | ZIP is not present at the ref tip. History remains tainted. |
+| `origin/ChatGPT/drive-draft-intake-2367` | Contains both introduction commit `21bb616af2eab3bb98210f2be6b0b036643f8c95` and deletion commit `dbd98647f509a8864d78a06edaff23f20c87d4fb`. | ZIP is not present at the ref tip. History remains tainted. |
 | `origin/cursor/2360-docs-audit-2e48` | Contains introduction commit `21bb616af2eab3bb98210f2be6b0b036643f8c95`. | ZIP remains present at the ref tip. |
 
 No tags were found containing the ZIP-introduction commit during the local
@@ -99,7 +99,7 @@ No tags were found containing the ZIP-introduction commit during the local
 3. Prefer branch/ref cleanup first if these refs are stale and unneeded:
    - delete or archive `origin/cursor/2360-docs-audit-2e48`, because the ZIP is
      still present at the branch tip;
-   - delete or archive `origin/atlas/drive-draft-intake-2367`, because its branch
+   - delete or archive `origin/ChatGPT/drive-draft-intake-2367`, because its branch
      history remains tainted even though its tip deleted the ZIP.
 4. Re-run the full-history audit after ref cleanup. If no protected branch or
    tag still reaches the ZIP object, no full repository rewrite is needed.
@@ -174,8 +174,8 @@ Issue: #2374
 Status: disposition-proposed
 Summary:
 - One ZIP artifact is reachable in full history: _incoming/drive-drafts/content-collection/drive-download-20260708T112039Z-3-001.zip (blob f8b4a97f608ee472e92089036d6dcf02ca15c8c4).
-- The artifact was introduced by commit 21bb616af2eab3bb98210f2be6b0b036643f8c95 and deleted on origin/atlas/drive-draft-intake-2367 by dbd98647f509a8864d78a06edaff23f20c87d4fb.
-- Affected refs identified: origin/atlas/drive-draft-intake-2367 (history tainted, tip clean) and origin/cursor/2360-docs-audit-2e48 (tip still contains ZIP).
+- The artifact was introduced by commit 21bb616af2eab3bb98210f2be6b0b036643f8c95 and deleted on origin/ChatGPT/drive-draft-intake-2367 by dbd98647f509a8864d78a06edaff23f20c87d4fb.
+- Affected refs identified: origin/ChatGPT/drive-draft-intake-2367 (history tainted, tip clean) and origin/cursor/2360-docs-audit-2e48 (tip still contains ZIP).
 - No open PRs were returned by the GitHub REST pulls endpoint during this investigation; no tags were found containing the introduction commit.
 - Recommended safest path is operator-confirmed stale branch/ref cleanup first, then re-run full-history audit; reserve full repository history rewrite for the case where protected/required refs still reach the ZIP.
 
@@ -189,7 +189,7 @@ Evidence / paths:
 - ZIP blob: f8b4a97f608ee472e92089036d6dcf02ca15c8c4
 - Introduction commit: 21bb616af2eab3bb98210f2be6b0b036643f8c95
 - Deletion commit: dbd98647f509a8864d78a06edaff23f20c87d4fb
-- Affected refs: origin/atlas/drive-draft-intake-2367; origin/cursor/2360-docs-audit-2e48
+- Affected refs: origin/ChatGPT/drive-draft-intake-2367; origin/cursor/2360-docs-audit-2e48
 - Scripts/workflows reviewed: scripts/rewrite_zip_history.sh; .github/workflows/purge-zip-history.yml; .github/workflows/zip-history-audit.yml
 - Validation notes: tracked ZIP check on current work tree returned none; full-history checks after fetching all branches/tags found the single ZIP path above; open PR REST query returned zero open PRs.
 ```

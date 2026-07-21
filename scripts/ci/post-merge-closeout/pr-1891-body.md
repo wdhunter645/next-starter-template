@@ -4,7 +4,7 @@
 ## QUEUE / DEPENDENCY MAP STATUS
 - Dependency-map result: pass
 - Next queue item: none — final Program #1847 child task
-- Continue/halt decision: continue; request Atlas/Bill rollout checkpoint on #1847 after merge
+- Continue/halt decision: continue; request ChatGPT/Bill rollout checkpoint on #1847 after merge
 
 ## PRE-MERGE CLOSEOUT PREDICTION
 - Pre-merge closeout prediction: pass

@@ -1,6 +1,6 @@
 ---
 Doc Type: Operations
-Audience: Bill, Atlas, Cursor, LGFC operators, and implementation agents
+Audience: Bill, ChatGPT, Cursor, LGFC operators, and implementation agents
 Authority Level: Controlled
 Owns: Manual seed pilot plan and registry governance for Program #2273 Task-003 (#2276)
 Does Not Own: Crawler automation, D1 migrations, admin UI, or public publication

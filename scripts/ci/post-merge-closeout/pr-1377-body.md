@@ -22,7 +22,7 @@ Allowed files:
 All other files are out of scope
 
 ## CHANGE SUMMARY
-- Explicitly defines ChatGPT/Atlas as the senior IT engineer, technical program lead, and control-plane coordinator for LGFC repository work.
+- Explicitly defines ChatGPT/ChatGPT as the senior IT engineer, technical program lead, and control-plane coordinator for LGFC repository work.
 - Adds project owner/operator framing and control-plane ownership of planning, synthesis, coordination, gate verification, closeout guidance, and safe escalation.
 - Strengthens pre-mutation mode-selection requirements while preserving the existing mode list.
 

@@ -1,12 +1,12 @@
 ---
 Doc Type: Implementation Plan
-Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and reviewers
+Audience: Bill, ChatGPT, Cursor, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Operational Plan
 Owns: Cursor task sequence, child-task boundaries, validation model, file-area expectations, and closeout rules for Website Public Launch / Relaunch Readiness
 Does Not Own: Runtime implementation before assigned task issues, merge authority, production secrets, vendor configuration, or Program #2040 publication workflow
 Status: completed
 Project: website-public-launch-relaunch-readiness
-Owner: Atlas
+Owner: ChatGPT
 Execution Mode: cursor-after-launch-authorization
 Source Issue: 2039
 Related Program Issue: 2039
@@ -60,7 +60,7 @@ At the end of Program #2039:
 5. Donation/fundraiser route behavior is launch-safe.
 6. SEO, analytics, sitemap, metadata, and social-card behavior are verified or explicitly excepted.
 7. Launch checklist, smoke tests, rollback path, and evidence model are documented.
-8. Program #2039 has terminal validation evidence for Bill/Atlas acceptance.
+8. Program #2039 has terminal validation evidence for Bill/ChatGPT acceptance.
 
 ## Execution model
 
@@ -70,7 +70,7 @@ At the end of Program #2039:
 | Work source | Assigned child task issue only |
 | PR source issue | Exactly one source issue per PR |
 | Stop condition | `READY FOR REVIEW` |
-| Merge authority | Bill/Atlas after required review and checks |
+| Merge authority | Bill/ChatGPT after required review and checks |
 | Production changes | Only after explicit operator authorization |
 
 ## Task sequence
@@ -175,7 +175,7 @@ Expected output:
 - consolidated evidence;
 - ready, blocked, or ready-with-exceptions launch state;
 - follow-up issues for exceptions;
-- Bill/Atlas acceptance package.
+- Bill/ChatGPT acceptance package.
 
 ## Validation expectations
 
@@ -192,4 +192,4 @@ Each implementation PR must record relevant validation:
 
 ## Closeout
 
-Program #2039 closes only after Task #2048 evidence and explicit Bill/Atlas acceptance.
+Program #2039 closes only after Task #2048 evidence and explicit Bill/ChatGPT acceptance.

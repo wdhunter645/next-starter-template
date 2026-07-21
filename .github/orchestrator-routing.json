@@ -8,38 +8,38 @@
   "taskTypes": {
     "repository": {
       "defaultAgent": "codex",
-      "allowedAgents": ["codex", "cursor", "copilot", "atlas"],
-      "priorityOrder": ["codex", "cursor", "copilot", "atlas"],
+      "allowedAgents": ["codex", "cursor", "copilot", "ChatGPT"],
+      "priorityOrder": ["codex", "cursor", "copilot", "ChatGPT"],
       "prIntents": ["infra", "platform", "change-ops", "codex"]
     },
     "website": {
       "defaultAgent": "cursor",
-      "allowedAgents": ["cursor", "codex", "copilot", "atlas"],
-      "priorityOrder": ["cursor", "codex", "copilot", "atlas"],
+      "allowedAgents": ["cursor", "codex", "copilot", "ChatGPT"],
+      "priorityOrder": ["cursor", "codex", "copilot", "ChatGPT"],
       "prIntents": ["feature", "codex"]
     },
     "governance": {
       "defaultAgent": "copilot",
-      "allowedAgents": ["copilot", "atlas", "codex", "cursor"],
-      "priorityOrder": ["copilot", "atlas", "codex", "cursor"],
+      "allowedAgents": ["copilot", "ChatGPT", "codex", "cursor"],
+      "priorityOrder": ["copilot", "ChatGPT", "codex", "cursor"],
       "prIntents": ["infra", "change-ops"]
     },
     "docs": {
-      "defaultAgent": "atlas",
-      "allowedAgents": ["atlas", "copilot", "codex", "cursor"],
-      "priorityOrder": ["atlas", "copilot", "codex", "cursor"],
+      "defaultAgent": "ChatGPT",
+      "allowedAgents": ["ChatGPT", "copilot", "codex", "cursor"],
+      "priorityOrder": ["ChatGPT", "copilot", "codex", "cursor"],
       "prIntents": ["docs-only"]
     },
     "recovery": {
-      "defaultAgent": "atlas",
-      "allowedAgents": ["atlas", "copilot", "codex", "cursor"],
-      "priorityOrder": ["atlas", "copilot", "codex", "cursor"],
+      "defaultAgent": "ChatGPT",
+      "allowedAgents": ["ChatGPT", "copilot", "codex", "cursor"],
+      "priorityOrder": ["ChatGPT", "copilot", "codex", "cursor"],
       "prIntents": ["recovery"]
     },
     "ci": {
       "defaultAgent": "cursor",
-      "allowedAgents": ["cursor", "codex", "copilot", "atlas"],
-      "priorityOrder": ["cursor", "codex", "copilot", "atlas"],
+      "allowedAgents": ["cursor", "codex", "copilot", "ChatGPT"],
+      "priorityOrder": ["cursor", "codex", "copilot", "ChatGPT"],
       "prIntents": ["infra", "change-ops"]
     }
   },

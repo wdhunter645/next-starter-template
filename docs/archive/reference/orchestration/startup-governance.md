@@ -3,10 +3,10 @@ Doc Type: Archived Reference
 Audience: LGFC maintainers, orchestration operators, AI builders
 Authority Level: Historical
 Owns: Historical startup governance record only
-Does Not Own: Current ChatGPT/Atlas startup behavior, full DIATAXIS taxonomy, builder implementation details, or repository workflow implementation
+Does Not Own: Current ChatGPT/ChatGPT startup behavior, full DIATAXIS taxonomy, builder implementation details, or repository workflow implementation
 Canonical Reference: /docs/ops/ai/CHATGPT-RULES.md
 Archived From: /docs/reference/orchestration/startup-governance.md
-Archived Reason: Superseded by Agent.md startup routing and ChatGPT/Atlas startup contract
+Archived Reason: Superseded by Agent.md startup routing and ChatGPT/ChatGPT startup contract
 Last Reviewed: 2026-07-02
 ---
 
@@ -83,7 +83,7 @@ The current startup doctrine includes:
 ## Intended Final State
 
 Startup governance should become a stable repository-governed initialization contract that can be used consistently by:
-- Atlas/ChatGPT
+- ChatGPT/ChatGPT
 - orchestration workflows
 - AI builders
 - human maintainers

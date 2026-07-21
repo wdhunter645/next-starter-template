@@ -87,7 +87,7 @@ Other media tables may exist depending on phase (catalog + metadata), but the cu
 
 The B2 bucket may contain objects that are not approved for public club surfaces. D1 indexes every synced object; **club-use eligibility is a separate curation flag** on the `photos` row.
 
-Canonical values (Atlas model):
+Canonical values (ChatGPT model):
 
 | Value | Meaning | Matchup / homepage use |
 | --- | --- | --- |

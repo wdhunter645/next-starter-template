@@ -22,7 +22,7 @@ type EligiblePhoto = {
 
 export const MATCHUP_EXCLUDED_ELIGIBILITY = -1;
 
-/** Atlas curation model — see Backblaze_B2.md § B2 inventory vs club-use curation */
+/** ChatGPT curation model — see Backblaze_B2.md § B2 inventory vs club-use curation */
 export const MATCHUP_ELIGIBILITY = {
   UNREVIEWED: 0,
   APPROVED: 1,

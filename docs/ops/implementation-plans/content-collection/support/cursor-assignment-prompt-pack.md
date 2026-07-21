@@ -42,7 +42,7 @@ Every prompt below must be wrapped in the mandatory template block (section 4 of
 | PR governance skill | `.agents/skills/lgfc-pr-governance/SKILL.md` |
 | Foundation packages | `docs/ops/implementation-plans/content-collection/packages/` |
 | Audit disposition | `docs/ops/reports/content-collection-docs-audit-dedup-2360.md` |
-| Intake drafts (non-authority) | `_incoming/drive-drafts/content-collection/` on `atlas/drive-draft-intake-2367` |
+| Intake drafts (non-authority) | `_incoming/drive-drafts/content-collection/` on `ChatGPT/drive-draft-intake-2367` |
 
 Cursor is the **sole** LGFC implementation executor. Do not assign Codex.
 
@@ -128,7 +128,7 @@ Parent program: #2359
 
 PASS required before file edits on new packages.
 
-## 15. Bill/Atlas Stop-Gate Authorization
+## 15. Bill/ChatGPT Stop-Gate Authorization
 
 Execution authorized: <issue comment reference>
 

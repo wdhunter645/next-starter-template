@@ -254,7 +254,7 @@ The agent's task is complete only when all of the following are true:
 5. The PR status is changed from DRAFT/BLOCKED to READY FOR REVIEW, or the agent explicitly reports the exact blocker preventing readiness.
 6. The agent's final report includes the current head SHA, exact checks run, gate status, reviewer disposition status, and whether the PR is READY FOR REVIEW.
 
-A PR must not be handed to Atlas/Bill for review while any required gate, reviewer comment, bot comment, review thread, PR-body section, or source-issue accounting item still requires agent action.
+A PR must not be handed to ChatGPT/Bill for review while any required gate, reviewer comment, bot comment, review thread, PR-body section, or source-issue accounting item still requires agent action.
 
 ---
 
@@ -275,7 +275,7 @@ LGFC implementation routing is defined in [`LGFC-AI-TEAM-OPERATING-MODEL.md`](./
 All LGFC implementation tasks (website, repository, ops, CI, and docs implementation):
 
 1. **Cursor** = sole LGFC implementation executor.
-2. **Atlas (ChatGPT)** = design and launch-control authority; does not perform routine scoped file implementation.
+2. **ChatGPT (ChatGPT)** = design and launch-control authority; does not perform routine scoped file implementation.
 3. **Codex** = inactive/out for LGFC implementation unless Bill explicitly reauthorizes it in a future governance update. See [`CODEX-RULES.md`](./CODEX-RULES.md).
 4. All other agents = tertiary/support agents only by explicit routing need.
 

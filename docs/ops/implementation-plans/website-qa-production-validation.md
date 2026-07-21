@@ -1,6 +1,6 @@
 ---
 Doc Type: Implementation Plan
-Audience: Atlas, Bill, LGFC maintainers, implementation agents, and reviewers
+Audience: ChatGPT, Bill, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Operational Plan
 Owns: Future build issue sequence and verification plan for Website QA / Production Validation after documentation approval
 Does Not Own: Runtime implementation before child issues, unauthorized GitHub issue mutation, workflow YAML unless explicitly scoped, or final launch authorization
@@ -15,7 +15,7 @@ Task 007 complete: docs/ops/reports/website-qa-production-validation-launch-read
 Task 008 complete: docs/ops/reports/website-qa-production-validation-legacy-disposition-package.md (PR `#1753` merged `678699e`)
 Task 009 complete: docs/ops/reports/website-qa-production-validation-final-qa-handoff.md (PR `#1751` merged `fd17af2`)
 Project: website-qa-production-validation
-Owner: Atlas
+Owner: ChatGPT
 Execution Mode: orchestrated-after-approval
 Source Issue: 1259
 Related Program Issue: 1255
@@ -248,7 +248,7 @@ validation tasks claim gaps.
 | **Objective** | Publish recommended disposition comments for `#1112` and T21–T34 public issues (no bulk close unless authorized). |
 | **Allowed files/areas** | `docs/ops/reports/**`, `docs/how-to/website/**` (QA runbooks if needed) |
 | **Non-goals** | Unauthorized GitHub issue mutation |
-| **Acceptance criteria** | Disposition package ready for Atlas batch review |
+| **Acceptance criteria** | Disposition package ready for ChatGPT batch review |
 | **Verification** | `./scripts/ci/docs_check_headers.sh` |
 | **Dependencies** | Task 001 |
 

@@ -20,6 +20,6 @@
     "agent:codex",
     "agent:cursor",
     "agent:copilot",
-    "agent:atlas"
+    "agent:ChatGPT"
   ]
 }

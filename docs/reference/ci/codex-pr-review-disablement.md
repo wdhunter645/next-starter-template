@@ -25,7 +25,7 @@ Automatic Codex PR review consumes credits/usage and can contribute to 5-hour ra
 
 Do not request, configure, or rely on Codex as a standing PR reviewer.
 
-Codex may still be used deliberately when Bill/Atlas assigns a specific task, but not as an always-on PR review bot.
+Codex may still be used deliberately when Bill/ChatGPT assigns a specific task, but not as an always-on PR review bot.
 
 ## Access distinction
 

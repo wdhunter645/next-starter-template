@@ -74,7 +74,7 @@ Use GitHub PR state + PR body/lifecycle language. Do not invent parallel issue l
 4. **Hot-zone rule:** A hot-zone PR must merge or close before another hot-zone PR starts (see parallel execution / worktree standard when promoted).
 5. **Draft staging:** Draft PRs may exist for parallel prep but must not demand review until capacity exists.
 6. **One task → one PR:** No competing implementation PRs for the same source issue without program owner exception (`parallel-agent-rules.md` Rule 1).
-7. **Issue-first (#2364):** Post enrichment findings in issue thread before opening PR when Bill/Atlas collaboration rule applies.
+7. **Issue-first (#2364):** Post enrichment findings in issue thread before opening PR when Bill/ChatGPT collaboration rule applies.
 
 ## Merge order guidance (Content Collection program)
 

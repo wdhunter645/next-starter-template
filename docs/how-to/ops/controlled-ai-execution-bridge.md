@@ -14,7 +14,7 @@ Last Updated: 2026-06-04
 
 ## Purpose
 
-The controlled AI execution bridge lets Atlas-approved program or project management issues hand off repetitive documentation and repository-maintenance work without manual issue, branch, PR, body, and comment churn.
+The controlled AI execution bridge lets ChatGPT-approved program or project management issues hand off repetitive documentation and repository-maintenance work without manual issue, branch, PR, body, and comment churn.
 
 Phase 1 is deterministic and gated: it validates an approved issue, prepares a branch/PR plan, and comments on the issue. It does not call OpenAI or generate code autonomously.
 
@@ -22,7 +22,7 @@ Phase 1 is deterministic and gated: it validates an approved issue, prepares a b
 
 Use the bridge when all of the following are true:
 
-- The task is documentation-only or governance-only and already approved by a human or Atlas workflow.
+- The task is documentation-only or governance-only and already approved by a human or ChatGPT workflow.
 - The exact files to touch are known in advance.
 - The work can be expressed with the required issue sections and a narrow allowed-files list.
 - A maintainer will still review design alignment and approve merge.
@@ -77,15 +77,15 @@ A later approved phase may connect validated issues to bounded agent execution. 
 
 ## Workflow Overhead Reduction
 
-This bridge reduces repetitive Atlas, Cursor, and GitHub overhead by:
+This bridge reduces repetitive ChatGPT, Cursor, and GitHub overhead by:
 
 - Replacing manual re-entry of scope, allowlist, and validation commands in PR bodies.
 - Standardizing the `ai-build` label as the single automation trigger.
 - Commenting validation results or the prepared branch/PR plan directly on the source issue.
 
-## Human and Atlas Control
+## Human and ChatGPT Control
 
-Design approval and merge approval remain human- or Atlas-controlled. The bridge prepares work; it does not bypass reviewer gates, intent labels, drift checks, or maintainer merge decisions.
+Design approval and merge approval remain human- or ChatGPT-controlled. The bridge prepares work; it does not bypass reviewer gates, intent labels, drift checks, or maintainer merge decisions.
 
 ## Procedure
 
@@ -101,7 +101,7 @@ Design approval and merge approval remain human- or Atlas-controlled. The bridge
 6. Implement changes locally or in Cursor within the allowed-files list only.
 7. Open one PR against `main` using the planned PR governance body and exactly one source issue line: `- **Issue:** #<issue-number>`.
 8. Run the validation commands from the issue and record results in the PR body.
-9. Request human/Atlas review; do not merge until approval.
+9. Request human/ChatGPT review; do not merge until approval.
 ## Automation note
 
 GitHub does not emit `issues:labeled` when the `ai-build` label is applied by `GITHUB_TOKEN` in Actions. In that case use **AI Execution Bridge** `workflow_dispatch` with the issue number, or apply the label manually in the GitHub UI.

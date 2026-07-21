@@ -103,7 +103,7 @@ After merge, the same section omissions are historical hygiene evidence only:
 - `missing_required_section` and legacy `missing_advisory_section` may be recorded in closeout evidence with advisory severity.
 - Those codes alone must not fail closeout, create a new Ops remediation issue, or preserve an exception.
 - Mixed results that also contain implementation, required-workflow, source-linkage, DIATAXIS, security, production, or actionable reviewer defects still create or update an exception.
-- Self-healing unsafe classification evaluates structured failure evidence (`failure_code` and `## Detected failure condition` rows). Generated boilerplate such as `Queue advancement status` or `Required Atlas/Bill decision` must not independently escalate to `unsafe_operator_review_required`.
+- Self-healing unsafe classification evaluates structured failure evidence (`failure_code` and `## Detected failure condition` rows). Generated boilerplate such as `Queue advancement status` or `Required ChatGPT/Bill decision` must not independently escalate to `unsafe_operator_review_required`.
 
 This issue does not promote `pr-hygiene` to a required branch-protection check.
 

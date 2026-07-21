@@ -49,7 +49,7 @@ Prior documentation that described Codex as a primary or secondary implementatio
 
 ## Role (historical reference only)
 
-When Codex was active, it operated as an implementation agent — not the control plane — under Atlas coordination and Bill approval.
+When Codex was active, it operated as an implementation agent — not the control plane — under ChatGPT coordination and Bill approval.
 
 That execution path is **closed** for LGFC unless reauthorized.
 
@@ -57,7 +57,7 @@ Codex does not:
 
 - define scope or acceptance criteria;
 - author program or child issues;
-- replace Atlas design/launch-control authority;
+- replace ChatGPT design/launch-control authority;
 - merge Pull Requests;
 - override Bill gate authorization.
 

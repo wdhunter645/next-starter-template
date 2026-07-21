@@ -33,7 +33,7 @@ This document does not own:
 - workflow YAML, orchestrator script, runtime, D1, production configuration, or
   secret changes;
 - merge authority;
-- creation of implementation child issues before Atlas/Bill walkthrough.
+- creation of implementation child issues before ChatGPT/Bill walkthrough.
 
 ## Current Known Truth
 
@@ -56,7 +56,7 @@ This document does not own:
 - Each active task has one source issue, one primary implementer, and one PR
   unless the program owner records an explicit exception.
 - PR readiness and batch review improve handoff quality while preserving
-  Atlas/Bill review and merge authority.
+  ChatGPT/Bill review and merge authority.
 - Wave labels and run identifiers are designed before any workflow or label
   implementation changes.
 
@@ -103,7 +103,7 @@ Multiple agents may work in parallel when all of the following are true:
 - Repository audit and evidence gathering.
 - Reviewing merged PRs and gate logs.
 - Drafting doc outlines locally without pushing.
-- Atlas governance review of Cursor-produced diffs before PR open or before
+- ChatGPT governance review of Cursor-produced diffs before PR open or before
   `READY FOR REVIEW`.
 
 ### Prohibited parallel activities
@@ -128,11 +128,11 @@ Before setting or reporting `READY FOR REVIEW`, Cursor must confirm:
 - reviewer, bot, and gate blockers are either absent or explicitly dispositioned;
 - no issue closure, relabeling, queue movement, or merge action has been taken.
 
-Atlas/Bill review remains required after Cursor handoff.
+ChatGPT/Bill review remains required after Cursor handoff.
 
 ## Rule 5 — Batch Review Control
 
-Batch review may group related PRs or tasks for Atlas/Bill efficiency, but batch
+Batch review may group related PRs or tasks for ChatGPT/Bill efficiency, but batch
 control must define:
 
 - included PRs/issues;
@@ -174,11 +174,11 @@ Do not create:
 - tracker issues to compensate for PR-first work.
 
 New orchestrated work enters through production-ready implementation plans,
-Atlas/Bill walkthrough, and the approved issue factory path.
+ChatGPT/Bill walkthrough, and the approved issue factory path.
 
 ## Handoff Checklist
 
-Before requesting Atlas/Bill review:
+Before requesting ChatGPT/Bill review:
 
 - [ ] Changes match the active task allowlist.
 - [ ] Changed active Markdown files have required headers.

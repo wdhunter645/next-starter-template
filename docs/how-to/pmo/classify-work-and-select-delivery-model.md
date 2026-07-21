@@ -85,7 +85,7 @@ Compare the outcome to `docs/reference/pmo/work-size-and-delivery-model-contract
 
 ### 7. Authorize launch
 
-Atlas or Bill authorizes launch on the classified issue. Cursor implementation begins only after assignment, runtime, allowlist, and `LOCAL CURSOR RESUME` when local.
+ChatGPT or Bill authorizes launch on the classified issue. Cursor implementation begins only after assignment, runtime, allowlist, and `LOCAL CURSOR RESUME` when local.
 
 ## Verification
 

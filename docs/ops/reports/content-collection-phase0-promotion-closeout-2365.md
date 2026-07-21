@@ -133,7 +133,7 @@ See `docs/ops/implementation-plans/content-collection/support/deferred-work-regi
 
 | Item | Location | Status |
 | --- | --- | --- |
-| Drive `.docx` drafts | `_incoming/drive-drafts/content-collection/` on `atlas/drive-draft-intake-2367` | Retained as planning input only |
+| Drive `.docx` drafts | `_incoming/drive-drafts/content-collection/` on `ChatGPT/drive-draft-intake-2367` | Retained as planning input only |
 | SOURCE-MANIFEST.md | Same intake folder | Inventory; not Diataxis authority |
 | ZIP provenance | Intake folder only | Never promote to repo root |
 

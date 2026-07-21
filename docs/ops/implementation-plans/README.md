@@ -35,7 +35,7 @@ Source issue: `#1385`. Task 006 P0 findings are **adopted**, not waived.
 
 ## Purpose
 
-An implementation plan is the handoff document created by Atlas after the project design is approved. It defines the exact execution steps required to complete a project safely through GitHub Issues, draft Pull Requests, AI agent implementation, automated review, and human approval.
+An implementation plan is the handoff document created by ChatGPT after the project design is approved. It defines the exact execution steps required to complete a project safely through GitHub Issues, draft Pull Requests, AI agent implementation, automated review, and human approval.
 
 ## Activation Rule
 
@@ -46,7 +46,7 @@ Only plans with this front matter are eligible for orchestration:
 Doc Type: Implementation Plan
 Status: production-ready
 Project: <project-name>
-Owner: Atlas
+Owner: ChatGPT
 Execution Mode: orchestrated
 ---
 ```
@@ -78,7 +78,7 @@ The map must list, for each task or checkpoint:
 - Halt condition
 - Resume condition
 
-Atlas prepares the map. Bill approves it before launch. Until approved, the
+ChatGPT prepares the map. Bill approves it before launch. Until approved, the
 program remains in one-task handoff mode.
 
 Canonical reference:
@@ -96,7 +96,7 @@ Each task must use this structure:
 ## Task 001 — <short title>
 
 Type: repository | website | governance | docs | recovery | ci
-Agent: codex | cursor | copilot | atlas
+Agent: codex | cursor | copilot | ChatGPT
 Priority: 1
 Depends On: none | Task 000
 Allowed Files:

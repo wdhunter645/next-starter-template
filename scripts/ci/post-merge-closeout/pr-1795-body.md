@@ -125,7 +125,7 @@ Reviewer items:
 - [x] Post-merge validation gates inspected when applicable
 
 ## POST-MERGE ISSUE DISPOSITION
-- Remediation exception 1800 already dispositioned by Atlas as recursive metadata; replay settles with this body artifact
+- Remediation exception 1800 already dispositioned by ChatGPT as recursive metadata; replay settles with this body artifact
 - Source issue 1794 already closed on merge; do not reopen source issue 1794
 
 ## ACCEPTANCE CRITERIA

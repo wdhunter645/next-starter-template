@@ -13,7 +13,7 @@ Last Reviewed: 2026-06-11
 
 ## Launch-state control
 
-> This program is **BLOCKED from implementation** until Atlas/Bill explicitly launch it after this buildout PR is reviewed. Planning, review, and documentation discussion may continue, but no agent may execute Program #1500 implementation tasks until Bill/Atlas explicitly assign the first ready child task.
+> This program is **BLOCKED from implementation** until ChatGPT/Bill explicitly launch it after this buildout PR is reviewed. Planning, review, and documentation discussion may continue, but no agent may execute Program #1500 implementation tasks until Bill/ChatGPT explicitly assign the first ready child task.
 >
 > **This document is planning/buildout only.** No workflow, CI script, orchestration script, or `targets-ci-pending.json` runtime changes are authorized by this file alone.
 
@@ -58,7 +58,7 @@ Evidence source: GitHub issue `#1500` (2026-06-09 post-merge review) and as-buil
 
 - Production website behavior, Cloudflare runtime, D1 schema changes
 - Program #1255 (`#1258`, `#1259`) website implementation
-- Bulk closure of legacy tracker issues without Atlas authorization
+- Bulk closure of legacy tracker issues without ChatGPT authorization
 - Closing umbrella issue `#1500` or `#1411` from implementation tasks unless explicitly authorized in task scope
 - Parallel Program #1500 implementation (multiple active child tasks)
 - Batching tasks 001–005 into one PR
@@ -98,7 +98,7 @@ Task 001 (pre-merge gate)
 - File allowlist does not conflict with active Program #1255 implementation files.
 - Acceptance criteria and verification commands are explicit in the child issue.
 - Child issue is linked to parent `#1500`.
-- For Task 001 only: buildout PR merged and Atlas/Bill explicit assignment recorded.
+- For Task 001 only: buildout PR merged and ChatGPT/Bill explicit assignment recorded.
 
 ### 2. Assignment state
 
@@ -159,7 +159,7 @@ Completed task handoff must state:
 | 004 | Codex | Manifest automation scripts |
 | 005 | Either (Codex preferred) | Docs-heavy; minimal runtime change |
 
-**Assignment trigger:** Atlas/Bill explicit comment or issue update on the child task after predecessor closeout.
+**Assignment trigger:** ChatGPT/Bill explicit comment or issue update on the child task after predecessor closeout.
 
 Use `docs/templates/agent-assignment-template.md` when packaging assignments.
 
@@ -220,7 +220,7 @@ Program #1500 is complete when **all** of the following are true:
 - [ ] `targets-ci-pending.json` self-prunes on successful batch closeout
 - [ ] `CI_GUARDRAILS_MAP.md` and `post-merge-validation-surface.md` match as-built workflows
 - [ ] Open remediation exceptions cited in `#1500` are dispositioned or documented with owner
-- [ ] Atlas/Bill sign off on `#1500` program closeout (human authority)
+- [ ] ChatGPT/Bill sign off on `#1500` program closeout (human authority)
 
 ## Rollback / recovery notes
 
@@ -658,7 +658,7 @@ node scripts/ci/post_merge_validation_surface.mjs
 git diff --check
 ```
 
-**Required PR body sections:** Standard governance fields; doc drift checklist; program completion handoff to Atlas/Bill for `#1500` signoff.
+**Required PR body sections:** Standard governance fields; doc drift checklist; program completion handoff to ChatGPT/Bill for `#1500` signoff.
 
 **Risk notes:** Docs-only — do not change workflow runtime in this task.
 
@@ -668,7 +668,7 @@ git diff --check
 
 **Codex usage notes:** Low risk; suitable if Codex usage remains available after Tasks 001–004.
 
-**Handoff notes:** Program implementation queue complete — recommend Atlas/Bill `#1500` program closeout review.
+**Handoff notes:** Program implementation queue complete — recommend ChatGPT/Bill `#1500` program closeout review.
 
 **Serial instruction:** Implementation must be serial. Stop if scope exceeds allowlist.
 

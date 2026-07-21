@@ -160,7 +160,7 @@ Administration & Communications spans all steps.
 
 ## Startup orientation
 
-When Product Authority says `run startup`, ChatGPT / Atlas performs orientation only and stops.
+When Product Authority says `run startup`, ChatGPT / ChatGPT performs orientation only and stops.
 
 Startup does not authorize:
 

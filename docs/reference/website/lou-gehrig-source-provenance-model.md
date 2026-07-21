@@ -61,7 +61,7 @@ website surfaces (homepage, library, gallery, timeline).
 | Operator researcher | Reviewer name, review date, intake notes |
 | Member submitter | Submission path, submitter ID (internal), submission timestamp |
 | External institution contact | Institution name, contact reference, response date in notes |
-| Atlas/Bill escalation | Escalation reason and decision in notes |
+| ChatGPT/Bill escalation | Escalation reason and decision in notes |
 
 Researcher identity is retained for audit; public pages display source credit,
 not internal researcher notes, unless editorially approved.
@@ -91,7 +91,7 @@ When two or more sources disagree on a fact:
 5. Alternate perspectives may become non-canonical inventory rows per content
    inventory model; do not silently overwrite canonical facts.
 
-Escalate unresolved conflicts to Bill/Atlas before public-copy approval.
+Escalate unresolved conflicts to Bill/ChatGPT before public-copy approval.
 
 ## Relationship to unified workflow
 

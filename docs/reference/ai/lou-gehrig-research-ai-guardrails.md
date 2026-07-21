@@ -1,6 +1,6 @@
 ---
 Doc Type: Reference
-Audience: LGFC operators, Atlas, Bill, and AI agents
+Audience: LGFC operators, ChatGPT, Bill, and AI agents
 Authority Level: Controlled
 Owns: AI-assisted research guardrails, evidence-preservation requirements, and human-review boundaries for Lou Gehrig content collection
 Does Not Own: AI implementation, OCR, scrapers, or autonomous publishing

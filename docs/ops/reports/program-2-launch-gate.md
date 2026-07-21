@@ -82,7 +82,7 @@ H-003 (immediate/early) → H-001 (early CI/automation) → H-002 (early OPS har
 
 | Sequence | Finding | Required early work | Blocks until addressed |
 |---|---|---|---|
-| **1 — Immediate/early** | H-003 | Atlas/program-owner closeout batch for `#1011`, `#1009`, `#1199` under `#1058` CI maintenance (**A-010**) | Program 2 CI maintenance tasks that treat redesign closeout as complete |
+| **1 — Immediate/early** | H-003 | ChatGPT/program-owner closeout batch for `#1011`, `#1009`, `#1199` under `#1058` CI maintenance (**A-010**) | Program 2 CI maintenance tasks that treat redesign closeout as complete |
 | **2 — Early** | H-001 | Post-merge remediation and closeout-chain stabilization (**A-009**); queue-label reconciliation (**A-013**) | Program 2 work that depends on post-merge closeout metadata stability |
 | **3 — Early** | H-002 | OPS assess hardening — fail-closed or explicit reporting contract (**A-001**) | Program 2 OPS tasks that treat scheduled assessment as authoritative health signal |
 

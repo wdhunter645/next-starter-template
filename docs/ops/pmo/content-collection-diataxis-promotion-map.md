@@ -23,7 +23,7 @@ Does not own Diataxis authority of intake `.docx` files, feature implementation,
 
 ## Current known truth
 
-- Intake `.docx` files on `atlas/drive-draft-intake-2367` are non-authoritative.
+- Intake `.docx` files on `ChatGPT/drive-draft-intake-2367` are non-authoritative.
 - Dedup/merge authority is `docs/ops/reports/content-collection-docs-audit-dedup-2360.md` only.
 - Rejected roots: `docs/ops/programs/`, `docs/reference/website/content-collection/`.
 - Phase 0 child chain #2360–#2364 merged; terminal closeout #2365 in progress.

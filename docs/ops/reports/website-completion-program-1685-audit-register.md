@@ -1,6 +1,6 @@
 ---
 Doc Type: Report
-Audience: Bill, Atlas, operators, and AI implementation agents
+Audience: Bill, ChatGPT, operators, and AI implementation agents
 Authority Level: Operational Evidence
 Owns: Program #1685 audit register, gap disposition, remediation evidence
 Does Not Own: Parent issue #1685 closure authority
@@ -73,7 +73,7 @@ Record as-built verification outcomes for Program **#1685 — Website Completion
 3. ~~Closeout replay closes #1951, #1957, #1959, #1961 and reconciles #1690–#1694.~~ **Complete** (all exceptions closed; tasks #1686–#1694 closed).
 4. CI Program #1963 closeout — **Complete** (issue closed 2026-06-29; no longer blocking launch).
 5. Production/preview smoke with member session — **operator action** (not a structural code blocker).
-6. Bill/Atlas sign-off on deferred items and parent issue #1685 closure.
+6. Bill/ChatGPT sign-off on deferred items and parent issue #1685 closure.
 
 Launch-readiness evidence: `docs/ops/reports/website-completion-program-1685-launch-readiness.md`
 

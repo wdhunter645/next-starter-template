@@ -56,10 +56,10 @@ Every Content Collection program issue should include these body fields (verifie
 | --- | --- | --- |
 | `agent:cursor` | **Yes** | Cursor execution wake (with `handoff:ready`) |
 | `agent:ChatGPT` | **Yes** | ChatGPT review/watch marker |
-| `agent:atlas` | **Yes** | Legacy — do not use for new work per handoff workflow |
+| `agent:ChatGPT` | **Yes** | Legacy — do not use for new work per handoff workflow |
 | `agent:codex` | **Yes** | Inactive — Codex forbidden for LGFC implementation |
 | `agent:copilot` | **Yes** | Support only when explicitly assigned |
-| `agent:Atlas` (draft) | **No** | Draft used wrong casing — use `agent:ChatGPT` |
+| `agent:ChatGPT` (draft) | **No** | Draft used wrong casing — use `agent:ChatGPT` |
 | `agent:CI` (draft) | **No** | **PROPOSED** — not in repo; use workflow/state labels instead |
 | `agent:Cubic` (draft) | **No** | Not in repo; omit unless separately authorized |
 
@@ -75,7 +75,7 @@ Every Content Collection program issue should include these body fields (verifie
 | `status:complete` | **Yes** | Terminal — dashboard Completed; in `.github/orchestrator-labels.json` |
 | `status:completed` | **Yes** (GitHub) / **No** (orchestrator) | Exists in live GitHub label set but **not** in `orchestrator-labels.json`; prefer `status:complete` for automation |
 | `status:post-merge-verify` | **Yes** | Post-merge validation in progress |
-| `status:needs-atlas-review` (draft) | **No** | **PROPOSED** — use `agent:ChatGPT` + `CHATGPT HANDOFF` instead |
+| `status:needs-ChatGPT-review` (draft) | **No** | **PROPOSED** — use `agent:ChatGPT` + `CHATGPT HANDOFF` instead |
 | `status:ready-for-merge` (draft) | **No** | **PROPOSED** — PR lifecycle state, not issue label |
 | `status:validation-required` (draft) | **No** | **PROPOSED** — use `status:post-merge-verify` |
 

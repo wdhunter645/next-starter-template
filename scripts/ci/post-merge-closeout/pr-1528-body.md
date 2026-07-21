@@ -10,7 +10,7 @@
 
 ## QUEUE / DEPENDENCY MAP STATUS
 - Dependency-map result: pass
-- Next queue item: halt — Phase 3 planning complete; Phase 4 implementation awaits Atlas/Bill approval
+- Next queue item: halt — Phase 3 planning complete; Phase 4 implementation awaits ChatGPT/Bill approval
 - Continue/halt decision: halt — planning PR merged; no Phase 4 build work authorized
 
 ## PROGRESS + READINESS (MANDATORY)
@@ -91,7 +91,7 @@ Reviewer items:
 - review-comment:3388176515 — accepted — reconciliation table header changed to `issue` — thread state: outdated
 - review-comment:3388185498 — accepted — boundary bullet rewritten as complete sentence clarifying label authority — thread state: outdated
 - review-comment:3388186741 — accepted — proposed task allowlists now use repo-root paths throughout — thread state: outdated
-- review-comment:3388427176 — acknowledged — full PMO dependency-map fields deferred to Atlas/Bill approval before `production-ready`; Phase 3 plan remains `ready-for-review` — thread state: outdated
+- review-comment:3388427176 — acknowledged — full PMO dependency-map fields deferred to ChatGPT/Bill approval before `production-ready`; Phase 3 plan remains `ready-for-review` — thread state: outdated
 - review-comment:3388427182 — acknowledged — Task 004 allowlist expanded to include `functions/api/admin/welcome-email.ts` and `functions/api/admin/membership-card.ts` in follow-up doc revision — thread state: outdated
 
 ## PR GATE READINESS CHECKLIST

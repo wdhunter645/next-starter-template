@@ -1,6 +1,6 @@
 ---
 Doc Type: Operations
-Audience: Bill, Atlas, Cursor, LGFC maintainers, and implementation agents
+Audience: Bill, ChatGPT, Cursor, LGFC maintainers, and implementation agents
 Authority Level: Controlled
 Owns: Task 004 reconciliation report for content management and collection workflow unification
 Does Not Own: Application code, migrations, issue closure, labels, or merge approval

@@ -63,7 +63,7 @@ OPS runtime, post-merge closeout, and metrics workflows are not merge-protection
 
 ## Live GitHub verification (operator)
 
-Bill/Atlas must confirm live branch protection on `main` matches this reference. Repo-owned docs cannot mutate GitHub settings.
+Bill/ChatGPT must confirm live branch protection on `main` matches this reference. Repo-owned docs cannot mutate GitHub settings.
 
 Operator steps:
 

@@ -1,6 +1,6 @@
 ---
 Doc Type: Operations
-Audience: Atlas, Bill, LGFC maintainers, and AI implementation agents
+Audience: ChatGPT, Bill, LGFC maintainers, and AI implementation agents
 Authority Level: Controlled
 Owns: Recommended GitHub disposition comments for legacy public-core website issues under #1259 Task 008
 Does Not Own: GitHub issue mutation, label changes, bulk closure execution, or workflow YAML
@@ -14,14 +14,14 @@ Last Reviewed: 2026-06-17
 ## Purpose
 
 Task 008 deliverable for Program #1255 child project `#1259`. Publish
-copy-paste disposition comments for Atlas batch review of `#1053` and public-core
+copy-paste disposition comments for ChatGPT batch review of `#1053` and public-core
 T21–T34 / T50 issues (`#943`–`#947`, `#1013`–`#1017`, `#1108`–`#1112`) after
 Phase 4 Tasks 001–007 validation complete. This package **does not** execute GitHub mutations.
 
 ## Boundary
 
 - No issues closed, relabeled, or edited by this document pass
-- No bulk close without explicit Atlas/Bill authorization
+- No bulk close without explicit ChatGPT/Bill authorization
 - Merge evidence on `main` and Phase 4 verification PRs are authoritative over stale issue labels
 - Does not close `#1259` or authorize Program `#1255` terminal closeout
 
@@ -48,7 +48,7 @@ Supporting planning artifact:
 
 | issue | Lane | Disposition | Original delivery | Phase 4 verification | Recommended issue action |
 | --- | --- | --- | --- | --- | --- |
-| `#1053` | Coordination | Subordinated historical index | N/A | Task 001 / 008 | Body update + pointer to `#1259`; closeout deferred to Atlas |
+| `#1053` | Coordination | Subordinated historical index | N/A | Task 001 / 008 | Body update + pointer to `#1259`; closeout deferred to ChatGPT |
 | `#943` | T21 FAQ | Satisfied on main | Phase 1 website history | Task 002 PR `#1662` | Comment + optional label normalization |
 | `#946` | T22 Ask | Satisfied on main | Phase 1 website history | Task 002 PR `#1662` | Comment + optional label normalization |
 | `#947` | T23-E Events | Satisfied on main | Phase 1 website history | Task 002 PR `#1662` | Comment + optional label normalization |
@@ -65,7 +65,7 @@ Supporting planning artifact:
 
 ## Recommended disposition comments
 
-Post the following comments only when Atlas/Bill authorizes the disposition batch.
+Post the following comments only when ChatGPT/Bill authorizes the disposition batch.
 Adjust merge SHAs if replaying on a different branch snapshot.
 
 ### #1053 — coordination umbrella
@@ -82,7 +82,7 @@ This issue remains a **historical T21–T50 index** only. Public-core implementa
 - Disposition package: `docs/ops/reports/website-qa-production-validation-legacy-disposition-package.md`
 - Final handoff: `docs/ops/reports/website-qa-production-validation-final-qa-handoff.md`
 
-**Recommended follow-up (Atlas):** Update issue body to point at #1259; do not use this issue as an implementation queue head. Closeout timing is an Atlas/Bill decision.
+**Recommended follow-up (ChatGPT):** Update issue body to point at #1259; do not use this issue as an implementation queue head. Closeout timing is an ChatGPT/Bill decision.
 ```
 
 ### #943 — T21 FAQ page functionality
@@ -254,17 +254,17 @@ Launch-readiness tooling is **satisfied on main**; scheduled static-export Playw
 
 **Disposition:** Partially satisfied — bounded deferral. Manual pre-release path: `npm run launch-readiness`.
 
-**Do not** close this issue as fully satisfied until Atlas accepts H-011 CI scheduling deferral or authorizes a workflow PR. `status:pr-draft` / queued labels are stale if still present.
+**Do not** close this issue as fully satisfied until ChatGPT accepts H-011 CI scheduling deferral or authorizes a workflow PR. `status:pr-draft` / queued labels are stale if still present.
 
 **Program boundary:** Full CI reliability scope remains `#1500`, not `#1259`.
 ```
 
-## Atlas batch checklist
+## ChatGPT batch checklist
 
 Before posting comments or normalizing labels:
 
 1. Confirm `main` matches assessment date merge `fd17af2` or later Task 008 merge.
-2. Post comments only for issues Atlas intends to disposition in this batch.
+2. Post comments only for issues ChatGPT intends to disposition in this batch.
 3. Remove stale workflow labels (`status:post-merge-verify`, `pr-draft`, erroneous `status:failed`) when normalizing — keep domain labels (`type:website`, `website`).
 4. **Do not close `#1259`** — umbrella remains open until Program `#1255` terminal closeout.
 5. For `#1112`, prefer **comment + label normalization** over premature closure.
@@ -286,7 +286,7 @@ DOCS_HEADER_FILE_LIST=/tmp/task008-docs-header-list.txt ./scripts/ci/docs_check_
 
 | Criterion | Result |
 | --- | --- |
-| Disposition package ready for Atlas batch review | **Pass** — this document |
+| Disposition package ready for ChatGPT batch review | **Pass** — this document |
 | Copy-paste comments for `#943`–`#1112` | **Pass** — see recommended comments |
 | No unauthorized GitHub mutation | **Pass** — documentation only |
 | H-011 / `#1112` bounded deferral preserved | **Pass** — Task 007 authority cited |

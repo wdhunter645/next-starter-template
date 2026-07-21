@@ -33,7 +33,7 @@ Shared agent law remains in [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md) a
 
 ## Scope
 
-This document applies to all LGFC repository work coordinated through Bill, Atlas (ChatGPT), Cursor, and historical Codex references.
+This document applies to all LGFC repository work coordinated through Bill, ChatGPT (ChatGPT), Cursor, and historical Codex references.
 
 This document does not own product design content, workflow YAML, runtime code, or final merge approval.
 
@@ -42,7 +42,7 @@ This document does not own product design content, workflow YAML, runtime code, 
 As of 2026-06-17 (issue #1754):
 
 - **Bill** is project owner and final authority.
-- **Atlas** (ChatGPT) is design and launch-control package authority.
+- **ChatGPT** (ChatGPT) is design and launch-control package authority.
 - **Cursor** is the **sole** LGFC implementation executor.
 - **Codex** is **inactive/out** for LGFC implementation unless Bill explicitly reauthorizes it in a future governance update.
 
@@ -50,11 +50,11 @@ Prior routing that listed Codex as a primary or secondary implementation agent i
 
 ## Intended final state
 
-Every LGFC task follows one predictable path: Bill defines requirements → Atlas and Bill finalize design → Atlas publishes a documentation package → Bill approves → Atlas creates program and child issues → Cursor reviews the launch-control package → Bill/Atlas authorize execution → Cursor implements within scope with verification stop points → Atlas and Bill review gates → Bill authorizes continue, hold, or revise.
+Every LGFC task follows one predictable path: Bill defines requirements → ChatGPT and Bill finalize design → ChatGPT publishes a documentation package → Bill approves → ChatGPT creates program and child issues → Cursor reviews the launch-control package → Bill/ChatGPT authorize execution → Cursor implements within scope with verification stop points → ChatGPT and Bill review gates → Bill authorizes continue, hold, or revise.
 
 PMO program lifecycle status reporting terms (**Ready for Launch**, **Implementation
 Active**, **Post-Implementation Verification**, **Complete / Closed**) are
-defined in `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`. Ready for Launch means prepared for Bill/Atlas Go/No-Go, not production complete.
+defined in `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md`. Ready for Launch means prepared for Bill/ChatGPT Go/No-Go, not production complete.
 
 ---
 
@@ -71,9 +71,9 @@ Bill owns:
 
 Bill does not perform routine scoped file implementation when Cursor is the assigned executor.
 
-### Atlas (ChatGPT) — design and launch-control authority
+### ChatGPT (ChatGPT) — design and launch-control authority
 
-Atlas owns:
+ChatGPT owns:
 
 - design authority and design-package preparation;
 - documentation PR and documentation-package authority;
@@ -83,7 +83,7 @@ Atlas owns:
 - draft/reference implementation packages and pseudocode for Cursor handoff;
 - gate review as Bill's partner before Bill authorizes continue/hold/revise.
 
-Atlas does not perform scoped repository implementation when Cursor is the assigned executor unless the source issue explicitly assigns implementation to Atlas.
+ChatGPT does not perform scoped repository implementation when Cursor is the assigned executor unless the source issue explicitly assigns implementation to ChatGPT.
 
 ### Cursor — sole implementation executor
 
@@ -110,9 +110,9 @@ Historical Codex documentation remains for reference only. On conflict, this ope
 
 ---
 
-## Atlas startup orientation (`run startup`)
+## ChatGPT startup orientation (`run startup`)
 
-When Bill says `run startup`, Atlas performs **orientation-only** startup and **stops**. Required report sections, prohibited actions, and bounded context inspection are defined in [`CHATGPT-RULES.md`](./CHATGPT-RULES.md#lgfc-startup-contract).
+When Bill says `run startup`, ChatGPT performs **orientation-only** startup and **stops**. Required report sections, prohibited actions, and bounded context inspection are defined in [`CHATGPT-RULES.md`](./CHATGPT-RULES.md#lgfc-startup-contract).
 
 `run startup` does **not** authorize queue audit, repository posture inspection, inferred next work, GitHub mutation, PMO state advance, or implementation resume. Prior chat context and active task state do **not** override the startup checklist.
 
@@ -124,14 +124,14 @@ Every LGFC repository task must be classified into **exactly one** mode before a
 
 | Mode | Purpose | Typical owner |
 | --- | --- | --- |
-| **Design** | Architecture, decomposition, implementation strategy, acceptance framing | Atlas (+ Bill review) |
-| **Documentation** | Canonical docs, how-to, reference, governance alignment, documentation PRs | Atlas (author) / Cursor (when assigned to implement doc changes) |
-| **Governance** | Agent rules, PR discipline, authority alignment, process compliance | Atlas / Cursor per assignment |
-| **Worklist** | Program hierarchy, queue organization, issue structure, closeout state | Atlas |
-| **Verification** | PR/issue/CI inspection, post-merge validation, evidence reporting | Atlas / Cursor per assignment |
-| **Troubleshooting** | Failed gates, broken workflows, inconsistent issue/PR state | Atlas (coordinate) / Cursor (when assigned to fix) |
+| **Design** | Architecture, decomposition, implementation strategy, acceptance framing | ChatGPT (+ Bill review) |
+| **Documentation** | Canonical docs, how-to, reference, governance alignment, documentation PRs | ChatGPT (author) / Cursor (when assigned to implement doc changes) |
+| **Governance** | Agent rules, PR discipline, authority alignment, process compliance | ChatGPT / Cursor per assignment |
+| **Worklist** | Program hierarchy, queue organization, issue structure, closeout state | ChatGPT |
+| **Verification** | PR/issue/CI inspection, post-merge validation, evidence reporting | ChatGPT / Cursor per assignment |
+| **Troubleshooting** | Failed gates, broken workflows, inconsistent issue/PR state | ChatGPT (coordinate) / Cursor (when assigned to fix) |
 | **Implementation** | Scoped file changes within an approved allowlist | **Cursor only** |
-| **Operations cleanup** | Stale ops noise, remediation classification, blocked-workflow residue | Atlas (coordinate) / Cursor (when assigned) |
+| **Operations cleanup** | Stale ops noise, remediation classification, blocked-workflow residue | ChatGPT (coordinate) / Cursor (when assigned) |
 
 Mode names in agent assignments and issue packages must match this table.
 
@@ -142,39 +142,39 @@ Mode names in agent assignments and issue packages must match this table.
 ```text
 Bill defines requirements
         ↓
-Atlas + Bill finalize design
+ChatGPT + Bill finalize design
         ↓
-Atlas creates documentation package PR
+ChatGPT creates documentation package PR
         ↓
 Bill reviews / approves documentation PR
         ↓
-Atlas creates program master issue + child issues
+ChatGPT creates program master issue + child issues
         ↓
 Cursor reviews launch-control issue package (comment / checkpoint)
         ↓
-Bill / Atlas authorize execution
+Bill / ChatGPT authorize execution
         ↓
 Cursor implements continuously within scope
         ↓
 Cursor stops at verification gates
         ↓
-Atlas + Bill review gates
+ChatGPT + Bill review gates
         ↓
 Bill authorizes continue / hold / revise
 ```
 
 ### Step detail
 
-1. **Bill defines requirements** — outcome, constraints, and priority. Requirements may start informal; Atlas converts them into repository-ready authority.
-2. **Atlas and Bill finalize design** — locked design references, route/layout invariants, acceptance framing, and explicit non-goals.
-3. **Atlas creates documentation package PR** — canonical docs that define what will be built, where it lives, and how it will be verified. Documentation PRs are docs-only unless the source issue explicitly authorizes otherwise.
+1. **Bill defines requirements** — outcome, constraints, and priority. Requirements may start informal; ChatGPT converts them into repository-ready authority.
+2. **ChatGPT and Bill finalize design** — locked design references, route/layout invariants, acceptance framing, and explicit non-goals.
+3. **ChatGPT creates documentation package PR** — canonical docs that define what will be built, where it lives, and how it will be verified. Documentation PRs are docs-only unless the source issue explicitly authorizes otherwise.
 4. **Bill reviews and approves documentation PR** — Bill is the approval authority for documentation packages that gate downstream work.
-5. **Atlas creates master issue and child issues** — program container, scoped child tasks, exact allowlists, and launch-control fields per [`docs/templates/agent-assignment-template.md`](../../templates/agent-assignment-template.md).
+5. **ChatGPT creates master issue and child issues** — program container, scoped child tasks, exact allowlists, and launch-control fields per [`docs/templates/agent-assignment-template.md`](../../templates/agent-assignment-template.md).
 6. **Cursor reviews issue package before implementation** — for newly authored launch-control packages, Cursor must review and comment on completeness (source issue, documentation package link, draft/reference code, allowlist, non-goals, acceptance criteria, verification plan, rollback plan) **before** editing files. Cursor stops if the package is incomplete.
-7. **Bill / Atlas authorize execution** — explicit authorization to begin or continue implementation after Cursor's pre-implementation review checkpoint.
+7. **Bill / ChatGPT authorize execution** — explicit authorization to begin or continue implementation after Cursor's pre-implementation review checkpoint.
 8. **Cursor implements continuously within scope** — one task, one issue, one PR; no scope expansion; respect shared agent law.
 9. **Cursor stops at verification gates** — do not claim merge-readiness or request the next tranche of work until required local checks, PR gates, and review-thread obligations are satisfied or a documented blocker exists.
-10. **Atlas + Bill review gates** — Atlas synthesizes PR evidence; Bill and Atlas partner on gate review before Bill's authorization decision.
+10. **ChatGPT + Bill review gates** — ChatGPT synthesizes PR evidence; Bill and ChatGPT partner on gate review before Bill's authorization decision.
 11. **Bill authorizes continue / hold / revise** — continue to next queue item, hold for external dependency, or revise scope through updated issues/docs.
 
 ---
@@ -184,14 +184,14 @@ Bill authorizes continue / hold / revise
 | Decision | Authority |
 | --- | --- |
 | Requirements and final product call | Bill |
-| Design and documentation package | Atlas |
-| Documentation PR authorship | Atlas |
-| Program / child issue authorship | Atlas |
-| Launch-control package completeness | Atlas (author) + Cursor (pre-implementation review) |
+| Design and documentation package | ChatGPT |
+| Documentation PR authorship | ChatGPT |
+| Program / child issue authorship | ChatGPT |
+| Launch-control package completeness | ChatGPT (author) + Cursor (pre-implementation review) |
 | Implementation execution | **Cursor only** |
 | Pre-implementation package review | Cursor (required comment/checkpoint) |
-| Execution authorization | Bill / Atlas |
-| Verification stop / continue | Bill (with Atlas gate-review partnership) |
+| Execution authorization | Bill / ChatGPT |
+| Verification stop / continue | Bill (with ChatGPT gate-review partnership) |
 | PR merge | Bill |
 | Codex implementation routing | **Forbidden** unless future Bill-approved governance reauthorization |
 
@@ -210,7 +210,7 @@ Before Cursor may execute implementation, the issue package must include:
 - verification plan;
 - rollback plan;
 - Cursor review checkpoint (completed comment or explicit pass);
-- Bill/Atlas stop-gate authorization for execution.
+- Bill/ChatGPT stop-gate authorization for execution.
 
 Use [`docs/templates/agent-assignment-template.md`](../../templates/agent-assignment-template.md) as the mandatory envelope format.
 
@@ -225,10 +225,10 @@ Cursor executes **continuously** within an authorized package — multiple commi
 - completed implementation tranche pending verification;
 - failing required gates on the PR head;
 - unresolved review threads that block readiness;
-- explicit Bill/Atlas hold instruction;
+- explicit Bill/ChatGPT hold instruction;
 - any mandatory stop condition in [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md) or [`CORE-RULES.md`](./CORE-RULES.md).
 
-After each stop point, Cursor reports evidence and waits for Bill/Atlas authorization before continuing beyond the current gate.
+After each stop point, Cursor reports evidence and waits for Bill/ChatGPT authorization before continuing beyond the current gate.
 
 ---
 
@@ -239,7 +239,7 @@ After each stop point, Cursor reports evidence and waits for Bill/Atlas authoriz
 | [`Agent.md`](../../../Agent.md) | Entry point; routes agents to this operating model |
 | [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md) | Shared agent law for all agents |
 | [`CORE-RULES.md`](./CORE-RULES.md) | Detailed execution rules |
-| [`CHATGPT-RULES.md`](./CHATGPT-RULES.md) | Atlas-specific control-plane behavior |
+| [`CHATGPT-RULES.md`](./CHATGPT-RULES.md) | ChatGPT-specific control-plane behavior |
 | [`CURSOR-RULES.md`](./CURSOR-RULES.md) | Cursor implementation authority and review checkpoint |
 | [`CODEX-RULES.md`](./CODEX-RULES.md) | Codex inactive status |
 | [`docs/templates/agent-assignment-template.md`](../../templates/agent-assignment-template.md) | Mandatory assignment envelope |

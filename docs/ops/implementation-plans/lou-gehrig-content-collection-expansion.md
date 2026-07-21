@@ -1,12 +1,12 @@
 ---
 Doc Type: Implementation Plan
-Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and reviewers
+Audience: Bill, ChatGPT, Cursor, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Operational Plan
 Owns: Cursor task sequence, child-project boundaries, validation model, file-area expectations, and closeout rules for Lou Gehrig Content Collection / Research Pipeline Expansion
 Does Not Own: Runtime implementation before task issues, issue creation before launch authorization, merge authority, bulk ingestion, OCR implementation, external monitoring implementation, AI enrichment implementation, publication rights decisions
 Status: planning-ready
 Project: lou-gehrig-content-collection-expansion
-Owner: Atlas
+Owner: ChatGPT
 Execution Mode: cursor-after-launch-authorization
 Source Issue: 1736
 Related Program Issue: #1738
@@ -17,7 +17,7 @@ Last Reviewed: 2026-06-17
 
 # Lou Gehrig Content Collection / Research Pipeline Expansion Implementation Plan
 
-> This program is BLOCKED from execution until Atlas/Bill explicitly launch it. Planning, review, and documentation discussion may continue, but Cursor may not execute implementation work from this program until Bill/Atlas explicitly launch it.
+> This program is BLOCKED from execution until ChatGPT/Bill explicitly launch it. Planning, review, and documentation discussion may continue, but Cursor may not execute implementation work from this program until Bill/ChatGPT explicitly launch it.
 
 ## Purpose
 
@@ -61,13 +61,13 @@ This plan does not authorize this documentation PR to change application code, w
 | 005 | Editorial conversion and website-ready content workflow | Define how reviewed research becomes website-ready biography, timeline, media, gallery, library, or article content. | `docs/reference/website/**`, `docs/how-to/website/**`, `docs/ops/reports/**`; read-only `src/**` if route mapping is needed | Docs checks; content conversion checklist | 002 through 004 | 006 |
 | 006 | Admin/data-surface boundary and implementation gap review | Identify whether admin tools, D1/B2 data surfaces, forms, or review states are needed; defer build decisions to proper future tasks. | `docs/reference/architecture/**`, `docs/reference/website/**`, `docs/ops/reports/**`; read-only `src/**`, `functions/**`, `migrations/**` | Inventory report; no code-change verification | 001 through 005 | 007 |
 | 007 | AI-assisted research guardrails and automation candidate review | Define if and how AI can assist source discovery, summarization, deduplication, OCR review, or enrichment without bypassing evidence/human review. | `docs/reference/website/**`, `docs/reference/ai/**`, `docs/ops/reports/**` | AI guardrails checklist; deferred automation list | 001 through 006 | 008 |
-| 008 | Program validation and operator handoff | Consolidate evidence, publish operator handoff, identify deferred implementation tasks, and prepare Bill/Atlas acceptance packet. | `docs/ops/reports/**`, scoped `docs/ops/pmo/**`, scoped `docs/ops/implementation-plans/**` | Docs checks; closeout checklist | 001 through 007 | terminal |
+| 008 | Program validation and operator handoff | Consolidate evidence, publish operator handoff, identify deferred implementation tasks, and prepare Bill/ChatGPT acceptance packet. | `docs/ops/reports/**`, scoped `docs/ops/pmo/**`, scoped `docs/ops/implementation-plans/**` | Docs checks; closeout checklist | 001 through 007 | terminal |
 
 ## Dependency map
 
 | Task | Predecessor | Successor | Stage-before-merge | Halt condition | Resume condition |
 | --- | --- | --- | --- | --- | --- |
-| 001 | launch authorization | 002 | yes | Launch not authorized | Bill/Atlas launch source issue exists |
+| 001 | launch authorization | 002 | yes | Launch not authorized | Bill/ChatGPT launch source issue exists |
 | 002 | 001 | 003 | yes | Source intake fields unresolved | Task 001 merged |
 | 003 | 001 and 002 | 004 | yes | Queue states or evidence fields unresolved | Tasks 001–002 merged |
 | 004 | 003 | 005 | yes | Rights/privacy review states unresolved | Task 004 merged |
@@ -94,7 +94,7 @@ Expected validation categories:
 
 ## Launch gate
 
-This plan becomes executable only when Bill/Atlas create or update a program issue with explicit launch authorization.
+This plan becomes executable only when Bill/ChatGPT create or update a program issue with explicit launch authorization.
 
 Launch authorization must identify program issue number, first task source issue, Cursor as implementation agent, issue-creation authority, task sequencing mode, and Cursor stop condition.
 
@@ -105,9 +105,9 @@ Default stop condition: GitHub `READY FOR REVIEW`.
 - Cursor does not approve PRs.
 - Cursor does not merge PRs.
 - Cursor does not close, reopen, or relabel GitHub issues unless a source issue explicitly grants that authority.
-- Atlas does not self-approve Atlas-authored PRs.
+- ChatGPT does not self-approve ChatGPT-authored PRs.
 - Source issue closeout occurs only after merge verification and clean post-merge validator state.
-- Program closeout requires Task 008 evidence and explicit Bill/Atlas acceptance.
+- Program closeout requires Task 008 evidence and explicit Bill/ChatGPT acceptance.
 
 ## Readiness conclusion
 
@@ -115,4 +115,4 @@ This implementation plan is sufficient for future Cursor task issue creation aft
 
 Status: `planning-ready`.
 
-Execution: blocked until Bill/Atlas launch the program.
+Execution: blocked until Bill/ChatGPT launch the program.

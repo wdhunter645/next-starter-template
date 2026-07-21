@@ -30,7 +30,7 @@ reviewer disposition gaps.
 
 Self-healing is the **downstream hygiene and escalation layer**. It does not
 replace PR governance, reviewer-response accounting, source-issue accounting, or
-Bill/Atlas merge authorization.
+Bill/ChatGPT merge authorization.
 
 ## Design principles
 
@@ -245,7 +245,7 @@ Self-healing cannot:
 - broaden a PR file-touch allowlist;
 - modify secrets or production configuration;
 - close, reopen, relabel, or advance issues outside deterministic safe-close rules and the `ops-pr-escalation` handoff label;
-- override Bill/Atlas gate, queue, launch, or merge decisions.
+- override Bill/ChatGPT gate, queue, launch, or merge decisions.
 
 ## Related references
 

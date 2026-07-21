@@ -1,6 +1,6 @@
 ---
 Doc Type: Operations Report
-Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and reviewers
+Audience: Bill, ChatGPT, Cursor, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Operational Evidence
 Owns: Post-merge closeout decision record for remediation issue #2060
 Does Not Own: Program #2040 implementation launch, source issue closure, publication workflow implementation, or runtime behavior
@@ -13,7 +13,7 @@ Last Reviewed: 2026-06-29
 
 ## Purpose
 
-Record the Atlas/Bill remediation decision for post-merge closeout exception #2060.
+Record the ChatGPT/Bill remediation decision for post-merge closeout exception #2060.
 
 ## Scope
 
@@ -32,7 +32,7 @@ This report covers only the closeout/accounting remediation for #2060 after PR #
 ## Current known truth
 
 - PR #2058 merged Program #2040 documentation authority.
-- Program #2040 is a program controller and must remain open until its terminal task chain is complete and Bill/Atlas accept program closeout.
+- Program #2040 is a program controller and must remain open until its terminal task chain is complete and Bill/ChatGPT accept program closeout.
 - #2060 does not identify a DIATAXIS content failure.
 - #2060 does not identify a metadata failure.
 - #2060 does not identify a workflow execution failure.
@@ -40,7 +40,7 @@ This report covers only the closeout/accounting remediation for #2060 after PR #
 
 ## Remediation decision
 
-Atlas/Bill decision:
+ChatGPT/Bill decision:
 
 1. Accept the merged Program #2040 documentation from PR #2058.
 2. Do not revert merge SHA `94831f8ce02a77cbff0e8379409b9b381a3dbf0c`.
@@ -54,7 +54,7 @@ After this remediation report merges:
 
 - Close #2060 as completed.
 - Remove stale failure labels from #2040, including `status:failed` and stale `status:post-merge-verify` if present.
-- Preserve #2040 open with `documentation` and `program:planning` labels unless Bill/Atlas define a more specific program status label.
+- Preserve #2040 open with `documentation` and `program:planning` labels unless Bill/ChatGPT define a more specific program status label.
 
 ## Closeout conclusion
 

@@ -28,8 +28,8 @@ This registry records current program issue assignments, launch-state control, c
 - Program #1255 closeout readiness packet published at `docs/ops/reports/program-1255-closeout-readiness.md`; operator hygiene for `#1123` and `#1258` **complete** (2026-06-17).
 - Priority #1 Website Completion / Fan Club Product Buildout (#1685) is **closed complete**; child tasks #1686–#1694 are complete and structural baseline closeout evidence is on `main`.
 - Website Public Launch / Relaunch Readiness (#2039) is **closed complete** for repository work; child task issues #2041 through #2048 are complete, and public launch remains blocked only by operator promotion/smoke-test exceptions.
-- Website Automatic Content Publication Capability has program issue #2040 with child task issues #2049 through #2056. It is the publication authority for work excluded from #2039 and remains blocked until explicit Bill/Atlas authorization.
-- Priority #2 Fundraiser / Charity Campaign Operations Buildout has program issue #1700 with child task issues #1701 through #1708. Task 001 assignment guidance is posted on #1701. The program remains queued behind Program #1255/#1259 and parked Priority #1 unless Bill/Atlas explicitly reprioritize.
+- Website Automatic Content Publication Capability has program issue #2040 with child task issues #2049 through #2056. It is the publication authority for work excluded from #2039 and remains blocked until explicit Bill/ChatGPT authorization.
+- Priority #2 Fundraiser / Charity Campaign Operations Buildout has program issue #1700 with child task issues #1701 through #1708. Task 001 assignment guidance is posted on #1701. The program remains queued behind Program #1255/#1259 and parked Priority #1 unless Bill/ChatGPT explicitly reprioritize.
 - Priority #3 PMO Governance / Workflow Automation Completion has program issue #1719 with child task issues #1720 through #1727. **Implementation Active** under continuous reduced-gate serial authorization (2026-07-16). Active child #1720; Task #1725 closed complete.
 - issue #1500 (CI Post-Merge Closeout Reliability) is **closed complete** and remains reconciliation evidence for Priority #3. Task #1725 reconciliation report: `docs/ops/reports/program-1500-queue-wave-reconciliation.md`.
 - issue #1963 (CI Post-Merge Closeout Automation Hardening) is **closed complete**; implementation queue `docs/ops/trackers/PROGRAM-POST-MERGE-CLOSEOUT-AUTOMATION-IMPLEMENTATION-QUEUE.md`.
@@ -40,7 +40,7 @@ This registry records current program issue assignments, launch-state control, c
 
 - One authoritative row per active, staged, blocked, completed, or historical program issue with non-contradictory status language.
 - Child projects under each program are clearly subordinate to their umbrella program issue.
-- Priority #1, Website Public Launch / Relaunch Readiness, Website Automatic Content Publication Capability, Priority #2, and Priority #3 are ready for launch review only when Bill/Atlas explicitly authorize execution from their master program issue and first task issue.
+- Priority #1, Website Public Launch / Relaunch Readiness, Website Automatic Content Publication Capability, Priority #2, and Priority #3 are ready for launch review only when Bill/ChatGPT explicitly authorize execution from their master program issue and first task issue.
 
 Program issue numbers identify programs going forward. Future programs should use `Program #<issue-number> — <name>` in documentation. GitHub issue titles use `Program: <name>` when possible. No future Program 3 / Program 4 / Program 5 labels should be introduced as PMO operating identifiers.
 
@@ -50,7 +50,7 @@ Every program planning package must begin with a launch-state control statement.
 
 Required language:
 
-> This program is BLOCKED from execution until Atlas/Bill explicitly launch it. Planning, review, and documentation discussion may continue, but Cursor may not execute implementation work from this program until Bill/Atlas explicitly launch it.
+> This program is BLOCKED from execution until ChatGPT/Bill explicitly launch it. Planning, review, and documentation discussion may continue, but Cursor may not execute implementation work from this program until Bill/ChatGPT explicitly launch it.
 
 Required implications:
 
@@ -58,7 +58,7 @@ Required implications:
 - A planning PR does not launch a program.
 - A ready-for-review planning PR does not launch a program.
 - A merged planning PR does not automatically launch a program.
-- Launch requires an explicit Atlas/Bill launch comment or source issue update.
+- Launch requires an explicit ChatGPT/Bill launch comment or source issue update.
 - Cursor must treat pre-launch program issues as planning/reference only.
 - Child implementation issues must not be created or activated until launch approval.
 
@@ -67,7 +67,7 @@ Required implications:
 The authoritative chain is defined in `/docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md` ([PMO hierarchy](PMO-JULY-2026-OPERATING-MODEL.md#pmo-hierarchy)):
 
 ```text
-PMO meeting issue → PMO Backlog review/update → program of work → component project → master issue → child implementation issues → PR(s) → Atlas review / acceptance → production Ops monitoring → Ops exception issues if needed → closeout
+PMO meeting issue → PMO Backlog review/update → program of work → component project → master issue → child implementation issues → PR(s) → ChatGPT review / acceptance → production Ops monitoring → Ops exception issues if needed → closeout
 ```
 
 
@@ -88,14 +88,14 @@ PMO meeting issue → PMO Backlog review/update → program of work → componen
 
 ## Proposed / future program issues
 
-Future programs are created as GitHub program issues when Atlas/Bill approve a new body of work. Each receives a program issue number as its durable identifier. There is no fixed program count or lane cap.
+Future programs are created as GitHub program issues when ChatGPT/Bill approve a new body of work. Each receives a program issue number as its durable identifier. There is no fixed program count or lane cap.
 
 | Candidate | Backlog rank | Status | Launch rule | Planning package | Implementation plan |
 | --- | ---: | --- | --- | --- | --- |
-| Website Completion / Fan Club Product Buildout | 1 | Structural baseline complete | Ready for Bill/Atlas launch review; closeout evidence in `docs/ops/reports/website-completion-program-1685-launch-readiness.md` | `docs/ops/pmo/website-completion-fan-club-product-buildout-readiness.md` | `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md` |
+| Website Completion / Fan Club Product Buildout | 1 | Structural baseline complete | Ready for Bill/ChatGPT launch review; closeout evidence in `docs/ops/reports/website-completion-program-1685-launch-readiness.md` | `docs/ops/pmo/website-completion-fan-club-product-buildout-readiness.md` | `docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md` |
 | Website Public Launch / Relaunch Readiness | 1 successor | Closed complete | Repo tasks complete; public launch remains operator-controlled by launch checklist, smoke-test, production promotion, and evidence requirements | `docs/ops/pmo/website-public-launch-relaunch-readiness.md` | `docs/ops/implementation-plans/website-public-launch-relaunch-readiness.md` |
-| Website Automatic Content Publication Capability | 1 publication | Planning-ready publication authority | Blocked until #1738 manual workflow evidence and Atlas/Bill explicitly authorize Cursor to begin #2049 | `docs/ops/pmo/website-automatic-content-publication-capability.md` | `docs/ops/implementation-plans/website-automatic-content-publication-capability.md` |
-| Fundraiser / Charity Campaign Operations Buildout | 2 | Launch-control ready; queued | Blocked until Atlas/Bill explicitly authorize Cursor to begin #1701 | `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md` | `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md` |
+| Website Automatic Content Publication Capability | 1 publication | Planning-ready publication authority | Blocked until #1738 manual workflow evidence and ChatGPT/Bill explicitly authorize Cursor to begin #2049 | `docs/ops/pmo/website-automatic-content-publication-capability.md` | `docs/ops/implementation-plans/website-automatic-content-publication-capability.md` |
+| Fundraiser / Charity Campaign Operations Buildout | 2 | Launch-control ready; queued | Blocked until ChatGPT/Bill explicitly authorize Cursor to begin #1701 | `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md` | `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md` |
 | PMO Governance / Workflow Automation Completion | 3 | Implementation Active | Continuous reduced-gate serial execution authorized 2026-07-16; active child #1720; #1725 complete | `docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md` | `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md` |
 
 ### Priority #1 candidate child projects
@@ -164,7 +164,7 @@ Future programs are created as GitHub program issues when Atlas/Bill approve a n
 
 | Program issue | Name | Historical label | Status | Launch rule |
 | --- | --- | --- | --- | --- |
-| #1411 | PMO Automation and Agent Workflow Control | Program 1 | Completed planning artifact (issue closed, status:complete) | issue #1411 is not an open blocked program. New execution requires a current open source issue. PMO automation execution remains blocked until Atlas/Bill explicitly launch a new cycle. |
+| #1411 | PMO Automation and Agent Workflow Control | Program 1 | Completed planning artifact (issue closed, status:complete) | issue #1411 is not an open blocked program. New execution requires a current open source issue. PMO automation execution remains blocked until ChatGPT/Bill explicitly launch a new cycle. |
 | #1685 | Website Completion / Fan Club Product Buildout | none | Closed complete | Child issues #1686–#1694 closed; closeout evidence at `docs/ops/reports/website-completion-program-closeout.md`. |
 | #2039 | Website Public Launch / Relaunch Readiness | none | Closed complete | Child issues #2041–#2048 complete; public launch remains operator-controlled by checklist, smoke-test, production promotion, and evidence requirements. |
 | #2040 | Website Automatic Content Publication Capability | none | Planning-ready publication authority | Child issues #2049–#2056 exist; execution waits for manual workflow evidence and explicit queue authorization. |
@@ -198,7 +198,7 @@ Completed program cycles remain audit evidence and may be cited for historical c
 
 | Field | Value |
 | --- | --- |
-| Status | **Completed planning artifact** (issue closed, `status:complete`) — not executable until a current open source issue exists and Atlas/Bill explicitly launch the next cycle |
+| Status | **Completed planning artifact** (issue closed, `status:complete`) — not executable until a current open source issue exists and ChatGPT/Bill explicitly launch the next cycle |
 | Source issue | `#1411` |
 | Implementation plan | `docs/ops/implementation-plans/program-1-pmo-automation-agent-workflow-control.md` |
 | PMO July 2026 authority | `docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md` |
@@ -207,7 +207,7 @@ Completed program cycles remain audit evidence and may be cited for historical c
 
 ### Program #1411 project areas
 
-**Inventory authority:** These areas are no longer an active or automatically queued program. They live as governance/ops backlog inventory in `/docs/ops/pmo/pmo-backlog.md` and are now grouped under Priority #3 program #1719. `#1411` remains closed; execution requires explicit Atlas/Bill launch authorization through #1719 and its child task issues.
+**Inventory authority:** These areas are no longer an active or automatically queued program. They live as governance/ops backlog inventory in `/docs/ops/pmo/pmo-backlog.md` and are now grouped under Priority #3 program #1719. `#1411` remains closed; execution requires explicit ChatGPT/Bill launch authorization through #1719 and its child task issues.
 
 | Area | Registry decision |
 | --- | --- |
@@ -227,20 +227,20 @@ Completed program cycles remain audit evidence and may be cited for historical c
 - D1 migrations
 - Production configuration or secrets
 - Unauthorized issue state changes
-- Creating additional implementation child issues before Atlas/Bill launch approval
+- Creating additional implementation child issues before ChatGPT/Bill launch approval
 
 ## Program #1255 — Website Implementation and Content Operations
 
 | Field | Value |
 | --- | --- |
-| Status | **Closeout inspection pending** — Phase 4 complete; awaits Atlas/Bill terminal authorization |
+| Status | **Closeout inspection pending** — Phase 4 complete; awaits ChatGPT/Bill terminal authorization |
 | Historical label | Program 2 |
 | Source issue | `#1255` |
 | Primary plan | `docs/how-to/website/website-implementation-and-content-operations-plan.md` |
 | Ops admin plan | `docs/ops/implementation-plans/website-operations-admin.md` |
 | QA plan | `docs/ops/implementation-plans/website-qa-production-validation.md` |
 | Closeout readiness | `docs/ops/reports/program-1255-closeout-readiness.md` |
-| Priority | Atlas/Bill final inspection → terminal closeout authorization → close `#1259` then `#1255` |
+| Priority | ChatGPT/Bill final inspection → terminal closeout authorization → close `#1259` then `#1255` |
 | Parallel program note | `#1500` closed complete — ran in parallel with `#1255`; not a `#1259` task dependency |
 
 Program #1255 remains controlled by its own active source issues and Cursor execution path. Priority #1, Priority #2, and Priority #3 planning documentation must not change Program #1255 issue state, labels, or active assignment without explicit authorization.

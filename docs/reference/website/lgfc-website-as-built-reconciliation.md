@@ -179,7 +179,7 @@ post-merge verification, not during documentation authoring.
 | `#1255` | Keep open — website program umbrella |
 | `#1053` | Keep open — legacy coordination tree; comment with pointer to this doc |
 | `#1121` (T43) | Keep open if still active implementation |
-| Stale legacy issues (#943, #946, #947, #1013–#1017) | Comment-only disposition batch when Atlas authorizes; do not bulk-close in Task 003 unless explicitly listed in merge closeout batch |
+| Stale legacy issues (#943, #946, #947, #1013–#1017) | Comment-only disposition batch when ChatGPT authorizes; do not bulk-close in Task 003 unless explicitly listed in merge closeout batch |
 
 ## Program 1 Task 003 — Website As-Built Closeout
 

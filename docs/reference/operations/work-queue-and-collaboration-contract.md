@@ -94,7 +94,7 @@ Project child tasks:
 
 ## Pipeline preparation assignment
 
-An Engineering P1 Pipeline parent requires one open peer preparation assignment owned by ChatGPT / Atlas.
+An Engineering P1 Pipeline parent requires one open peer preparation assignment owned by ChatGPT / ChatGPT.
 
 The assignment uses:
 

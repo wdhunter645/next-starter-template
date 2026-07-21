@@ -87,7 +87,7 @@ Promoted items proceed to editorial conversion or reference archive per
 
 ## Stop conditions
 
-Stop and escalate to Bill/Atlas when:
+Stop and escalate to Bill/ChatGPT when:
 
 - rights status is ambiguous after review;
 - privacy involves minors or sensitive donor data;

@@ -37,4 +37,4 @@ Rows are append-only. Do not delete historical rows; append corrections with a n
 | legacy path | archive path or deleted | replacement DIATAXIS path | status | rationale | date |
 | --- | --- | --- | --- | --- | --- |
 | *(none yet)* | — | — | — | Placeholder manifest created before portfolio work | 2026-06-05 |
-| docs/reference/orchestration/startup-governance.md | docs/archive/reference/orchestration/startup-governance.md | docs/ops/ai/CHATGPT-RULES.md | retired | Superseded by Agent.md startup routing and the ChatGPT/Atlas startup contract; retained as historical startup governance evidence. | 2026-07-02 |
+| docs/reference/orchestration/startup-governance.md | docs/archive/reference/orchestration/startup-governance.md | docs/ops/ai/CHATGPT-RULES.md | retired | Superseded by Agent.md startup routing and the ChatGPT/ChatGPT startup contract; retained as historical startup governance evidence. | 2026-07-02 |

@@ -1,6 +1,6 @@
 ---
 Doc Type: Reference
-Audience: LGFC maintainers, Atlas, Bill, and implementation agents
+Audience: LGFC maintainers, ChatGPT, Bill, and implementation agents
 Authority Level: Controlled
 Owns: D1/B2/storage boundary model for Lou Gehrig content candidates without implementing ingestion
 Does Not Own: Migrations, API implementation, admin UI, or B2 uploads

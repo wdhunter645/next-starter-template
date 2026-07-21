@@ -21,7 +21,7 @@ Queue classification, priority-label namespaces, queue precedence, preparation-a
 
 ## PMO meeting authority
 
-The weekly PMO meeting between Product Authority and ChatGPT / Atlas governs:
+The weekly PMO meeting between Product Authority and ChatGPT / ChatGPT governs:
 
 - parent portfolio priority;
 - Pipeline preparation priority;
@@ -72,7 +72,7 @@ Before implementation Go, PMO / Engineering defines:
 - Promotion Candidate expectations;
 - Production and Day-2 boundaries.
 
-When the PMO meeting sets a Pipeline project to Engineering Priority 1, the same decision must create or reactivate accountable Engineering preparation work owned by ChatGPT / Atlas.
+When the PMO meeting sets a Pipeline project to Engineering Priority 1, the same decision must create or reactivate accountable Engineering preparation work owned by ChatGPT / ChatGPT.
 
 That preparation work is a peer Issue related to the Pipeline parent. It is not a project child task, does not use `pmo:task`, and does not count toward implementation completion percentage.
 

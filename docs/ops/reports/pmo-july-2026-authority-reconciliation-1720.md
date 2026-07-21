@@ -1,6 +1,6 @@
 ---
 Doc Type: Operations
-Audience: Bill, Atlas, Cursor, LGFC maintainers, and reviewers
+Audience: Bill, ChatGPT, Cursor, LGFC maintainers, and reviewers
 Authority Level: Controlled
 Owns: Task #1720 durable evidence for PMO July 2026 authority reconciliation, historical #1411 / #1417–#1424 disposition, and Program #1719 continuous reduced-gate launch-state alignment
 Does Not Own: Runtime implementation, workflow YAML, CI scripts, GitHub issue mutation, merge authority, or launch of deferred related projects
@@ -125,4 +125,4 @@ Additionally identified as **follow-up candidates** (not launched by #1720):
 ## Successor
 
 After this PR merges and post-merge verification is clean, Cursor may begin
-**#1721** without another Bill/Atlas launch authorization.
+**#1721** without another Bill/ChatGPT launch authorization.

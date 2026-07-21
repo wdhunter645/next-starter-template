@@ -5,7 +5,7 @@ Authority Level: Program Evidence
 Status: Draft — post-merge remediation in progress (#2097)
 source issue: #2042
 Parent Program: #2039
-Owns: Task 002 public launch copy reconciliation evidence and unresolved Bill/Atlas content decisions
+Owns: Task 002 public launch copy reconciliation evidence and unresolved Bill/ChatGPT content decisions
 Does Not Own: Runtime behavior changes, SEO metadata, media fallback, fundraiser mechanics, or content automation
 Canonical Reference: /docs/ops/reports/website-public-launch-gap-inventory.md
 related issues: #2039, #2041, #2042, #2043, #2044, #2045, #2046, #2047
@@ -31,7 +31,7 @@ This report covers public and member-facing launch copy updated in Task #2042. I
 
 ## Intended final state
 
-Public-facing copy clearly distinguishes public preview content from member Fan Club access, avoids false live-fundraiser or automation claims, and documents any remaining Bill/Atlas content decisions before Task #2043.
+Public-facing copy clearly distinguishes public preview content from member Fan Club access, avoids false live-fundraiser or automation claims, and documents any remaining Bill/ChatGPT content decisions before Task #2043.
 
 ## Surfaces updated in Task #2042
 
@@ -59,22 +59,22 @@ Public-facing copy clearly distinguishes public preview content from member Fan 
 | Join public/auth boundary messaging | Addressed on `/join` and Ask page |
 | Fan Club masthead copy | Addressed |
 | False campaign-live claims | Reduced on About and Contact; full fundraiser boundary remains #2045 |
-| Hamburger IA for FAQ / Ask / Events | **Escalated to Bill/Atlas** — no navigation structure changed in #2042 |
-| `/events` route retention | **Escalated to Bill/Atlas** — copy clarified only; route/navigation unchanged |
+| Hamburger IA for FAQ / Ask / Events | **Escalated to Bill/ChatGPT** — no navigation structure changed in #2042 |
+| `/events` route retention | **Escalated to Bill/ChatGPT** — copy clarified only; route/navigation unchanged |
 | `/privacy` and `/terms` legal copy | **Deferred** — no substantive legal rewrite in #2042; metadata remains #2046 |
 | Per-route SEO / social cards | **Deferred to #2046** |
 | Social-wall reliability copy | **Deferred to #2044** |
 | Production smoke / rollback docs | **Deferred to #2047** |
 
-## Unresolved content decisions for Bill/Atlas
+## Unresolved content decisions for Bill/ChatGPT
 
 | Decision | Why it remains open | Recommended owner |
 | --- | --- | --- |
-| `/events` public launch status | Route exists but is absent from canonical design standards and primary navigation | Bill/Atlas IA decision before or during #2046/#2047 |
-| Hamburger inclusion of FAQ, Ask, and Events | Task #2041 flagged discoverability; #2042 did not change nav structure | Bill/Atlas |
-| Final approved 2027 relaunch date/messaging | Copy uses preparatory language only; no operator-approved launch date statement | Bill/Atlas |
-| `/privacy` and `/terms` legal review | No attorney-reviewed rewrite performed in #2042 | Bill/Atlas legal/content review |
-| CMS-managed Contact page body | `/contact` may be overridden by published CMS content when present | Bill/Atlas content ops review |
+| `/events` public launch status | Route exists but is absent from canonical design standards and primary navigation | Bill/ChatGPT IA decision before or during #2046/#2047 |
+| Hamburger inclusion of FAQ, Ask, and Events | Task #2041 flagged discoverability; #2042 did not change nav structure | Bill/ChatGPT |
+| Final approved 2027 relaunch date/messaging | Copy uses preparatory language only; no operator-approved launch date statement | Bill/ChatGPT |
+| `/privacy` and `/terms` legal review | No attorney-reviewed rewrite performed in #2042 | Bill/ChatGPT legal/content review |
+| CMS-managed Contact page body | `/contact` may be overridden by published CMS content when present | Bill/ChatGPT content ops review |
 | Live fundraiser / Givebutter public messaging | Fail-closed placeholders remain; full boundary doc is #2045 | #2045 |
 
 ## Post-merge remediation (#2097)
@@ -92,4 +92,4 @@ Post-merge closeout body `scripts/ci/post-merge-closeout/pr-2096-body.md` record
 
 ## Task 003 readiness
 
-Program #2039 may proceed to Task #2043 (`/admin/clubstaging`) only after Bill/Atlas accept this copy reconciliation or explicitly disposition remaining content decisions above.
+Program #2039 may proceed to Task #2043 (`/admin/clubstaging`) only after Bill/ChatGPT accept this copy reconciliation or explicitly disposition remaining content decisions above.
