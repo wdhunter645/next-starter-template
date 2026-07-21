@@ -1,11 +1,12 @@
 ---
-Doc Type: Design Authority
+Doc Type: Design Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: Join/Login page UI structure and form requirements
-Does Not Own: Canonical auth/session rules and redirect policy
+Owns: Join/Login page UI structure and form requirements as a supporting specification
+Does Not Own: Product and Design Domain Policy; canonical auth/session rules and redirect policy
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Last Reviewed: 2026-03-27
+Related Issues: #2687
+Last Reviewed: 2026-07-21
 ---
 
 # Join / Login Page Design

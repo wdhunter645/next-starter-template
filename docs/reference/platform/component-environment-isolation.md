@@ -1,17 +1,21 @@
 ---
 Doc Type: Reference
 Audience: Human + AI
-Authority Level: Canonical Platform Specification
-Owns: Preview and component-environment isolation classifications, blocking rules, and mutating-resource inventory
-Does Not Own: Delivery approval policy, PR lifecycle, or runtime deployment credentials
-Canonical Reference: /docs/reference/platform/component-environment-isolation.md
-Related Issues: #2496, #2495, #2478
-Last Reviewed: 2026-07-13
+Authority Level: Controlled
+Owns: Preview and component-environment isolation classifications, blocking rules, and mutating-resource inventory as a supporting specification
+Does Not Own: Platform and Environment Domain Policy; delivery approval policy; PR lifecycle; runtime deployment credentials
+Canonical Reference: /docs/governance/PLATFORM-AND-ENVIRONMENT.md
+Related Issues: #2688, #2496, #2495, #2478
+Last Reviewed: 2026-07-21
 ---
 
 # Component and Preview Environment Isolation
 
-This document is the canonical inventory and classification for every preview- and component-accessible mutating resource in the LGFC delivery system. It proves what can and cannot silently mutate production from a Cloudflare Pages preview URL or a Model B component branch deployment.
+This document is the **primary supporting isolation inventory** under the Platform and Environment Domain Policy (`docs/governance/PLATFORM-AND-ENVIRONMENT.md`).
+
+It is the canonical inventory and classification for every preview- and component-accessible mutating resource in the LGFC delivery system. It proves what can and cannot silently mutate production from a Cloudflare Pages preview URL or a Model B component branch deployment.
+
+This file is **not** a Domain Policy co-owner. Domain-policy conflicts resolve through `docs/governance/PLATFORM-AND-ENVIRONMENT.md`.
 
 Machine-readable inventory: `scripts/ci/preview-isolation-manifest.json`  
 Audit evidence: `docs/ops/reports/delivery-system-preview-isolation-audit.md`
@@ -189,6 +193,7 @@ These paths are classified **production-shared** and marked **protected** for Mo
 
 ## Related authority
 
+- `docs/governance/PLATFORM-AND-ENVIRONMENT.md` — Platform and Environment Domain Policy
 - `docs/reference/platform/CLOUDFLARE.md` — Cloudflare resource inventory
 - `docs/governance/DELIVERY-AND-RELEASE.md` — delivery and approval policy (#2495)
 - `docs/reference/ci/delivery-profile-contract.md` — delivery metadata contract

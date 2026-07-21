@@ -1,15 +1,19 @@
 ---
-Doc Type: Specification
+Doc Type: Reference
 Audience: Human + AI
-Authority Level: Canonical Platform Specification
-Owns: Cloudflare, D1, B2, platform constraints, platform operational rules
-Does Not Own: UI design specifics; PR process; incident response playbooks
-Canonical Reference: /docs/reference/platform/CLOUDFLARE.md
-Last Reviewed: 2026-02-20
+Authority Level: Controlled
+Owns: D1 schema, migration, and operations facts as a supporting specification
+Does Not Own: Platform and Environment Domain Policy; UI design specifics; PR process; incident response playbooks
+Canonical Reference: /docs/governance/PLATFORM-AND-ENVIRONMENT.md
+Related Issues: #2688
+Last Reviewed: 2026-07-21
 ---
 
 # LGFC — D1 DATABASE DESIGN + OPERATIONS GUIDE
-Authoritative reference for schema control, migrations, and deployment workflow.
+
+This document is the **supporting D1 design and operations specification** under the Platform and Environment Domain Policy (`docs/governance/PLATFORM-AND-ENVIRONMENT.md`).
+
+Authoritative supporting reference for schema control, migrations, and deployment workflow facts. It is **not** a Domain Policy co-owner.
 
 ---
 
@@ -23,7 +27,7 @@ This document defines:
 - Where authentication happens
 - How to avoid local token/OAuth failures
 
-This is the permanent design record for D1 operations.
+This is the permanent supporting design record for D1 operations. Domain-policy conflicts resolve through `docs/governance/PLATFORM-AND-ENVIRONMENT.md`.
 
 ️
 
@@ -347,9 +351,11 @@ Phase 4:
 
 ---
 
-# SOURCE OF TRUTH
+# OPERATIONAL DATA AUTHORITY (supporting fact)
 
-Production D1 database is authoritative.
+Production D1 database is the authoritative **data** store for runtime records.
 
 Repo migrations define structure.
 Actions workflow enforces deployment.
+
+This section records operational data authority only. It does not make this file a Platform and Environment Domain Policy co-owner.

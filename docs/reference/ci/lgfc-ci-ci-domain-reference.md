@@ -2,14 +2,18 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: LGFC CI domain definitions and workflow responsibilities
-Does Not Own: Workflow implementation details
-Canonical Reference: /docs/explanation/ci/lgfc-ci-production-design.md
-Related Issues: #1058
-Last Reviewed: 2026-05-21
+Owns: Supporting CI domain vocabulary and workflow-responsibility facts
+Does Not Own: CI and Verification Domain Policy; workflow implementation details; branch protection settings
+Canonical Reference: /docs/governance/CI-AND-VERIFICATION.md
+Related Issues: #2689, #1058
+Last Reviewed: 2026-07-21
 ---
 
 # LGFC CI Domain Reference
+
+This document is a **supporting CI domain vocabulary** under the CI and Verification Domain Policy (`docs/governance/CI-AND-VERIFICATION.md`).
+
+It records historical and supporting domain labels used in CI documentation. It is **not** a Domain Policy co-owner. Conflicts with domain policy, Product Authority decisions, or other supporting specs resolve through `docs/governance/CI-AND-VERIFICATION.md`.
 
 ## Pre-Merge Gate Domain
 
