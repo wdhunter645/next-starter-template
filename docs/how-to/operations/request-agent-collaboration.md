@@ -32,7 +32,7 @@ Confirm:
 COLLABORATION REQUEST
 
 Source Issue: #<number>
-Source team: Operations | PMO | Engineering
+Source team: team:operations | team:pmo | team:engineering
 Current owner: <agent or role>
 Requesting agent / role: <agent and role>
 Target agent / role: <agent and role>
@@ -104,7 +104,7 @@ Response:
 <bounded analysis, guidance, validation result, or recommendation>
 
 Disposition:
-GUIDANCE | ADJUSTMENT | PLAN CHANGE REQUIRED | HOLD | RESUME | Evidence only
+GUIDANCE | ADJUSTMENT | PROBLEM FOUND | PLAN CHANGE REQUIRED | HOLD | RESUME
 
 Remaining condition:
 None | <specific condition>
