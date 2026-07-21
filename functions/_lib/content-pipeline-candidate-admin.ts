@@ -23,6 +23,13 @@ import {
 export { CANDIDATE_ID_PATTERN, CANDIDATE_ID_VALIDATION_MESSAGE };
 export { serializeAdminMediaReferences, serializeCandidateForAdminReview };
 
+/** CC-002 (#2434): re-export fail-closed display safety for admin review consumers. */
+export {
+  evaluatePublicMemberDisplaySafety,
+  type DisplaySafetyResult,
+  type DisplaySurface,
+} from './content-pipeline-publication-prep';
+
 const REVIEW_FIELD_VALIDATORS: Record<keyof CandidateReviewStateUpdate, Set<string> | null> = {
   review_status: REVIEW_STATUSES,
   rights_status: RIGHTS_STATUSES,
