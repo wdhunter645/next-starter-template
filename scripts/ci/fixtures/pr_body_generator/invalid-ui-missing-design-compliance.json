@@ -1,0 +1,21 @@
+{
+  "sourceIssue": 2436,
+  "intentLabel": "intent:feature",
+  "prClass": "code",
+  "packageId": "FE-UI",
+  "packagePath": "docs/ops/implementation-plans/content-collection/packages/ci-001-pr-body-generator-package.md",
+  "packageScoped": true,
+  "allowedPaths": [
+    "app/components/Example.tsx"
+  ],
+  "changedFiles": [
+    "app/components/Example.tsx"
+  ],
+  "changeSummary": "Invalid UI fixture omits design compliance evidence.",
+  "validation": [
+    { "command": "npm test -- --run tests/pr_body_generator*", "result": "PASS" }
+  ],
+  "requiresDesignCompliance": true,
+  "requires2286Inheritance": false,
+  "expectedFailureCode": "missing_design_compliance"
+}

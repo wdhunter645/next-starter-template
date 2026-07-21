@@ -1,0 +1,58 @@
+{
+  "sourceIssue": 2436,
+  "intentLabel": "intent:ci",
+  "prClass": "ci",
+  "size": "small",
+  "deliveryModel": "B-child",
+  "changeMode": "project",
+  "targetEnvironment": "component",
+  "approvalProfile": "component-auto-integration",
+  "gateProfile": "component-child",
+  "rollbackProfile": "multi-step",
+  "componentBranch": "component/content-collection-phase1",
+  "componentMaster": "#2431",
+  "promotionPr": "not-applicable",
+  "packageId": "CI-001",
+  "packagePath": "docs/ops/implementation-plans/content-collection/packages/ci-001-pr-body-generator-package.md",
+  "packageScoped": true,
+  "allowedPaths": [
+    "scripts/ci/pr_body_generator.mjs",
+    "scripts/ci/validate_pr_body.mjs",
+    "scripts/ci/fixtures/pr_body_generator/**",
+    "tests/pr_body_generator.test.mjs",
+    "docs/ops/implementation-plans/content-collection/packages/ci-001-pr-body-generator-package.md",
+    "docs/reference/ci/pr-body-generator-contract.md"
+  ],
+  "changedFiles": [
+    "scripts/ci/pr_body_generator.mjs",
+    "scripts/ci/validate_pr_body.mjs",
+    "scripts/ci/fixtures/pr_body_generator/valid-cc-task.json",
+    "tests/pr_body_generator.test.mjs",
+    "docs/ops/implementation-plans/content-collection/packages/ci-001-pr-body-generator-package.md",
+    "docs/reference/ci/pr-body-generator-contract.md"
+  ],
+  "changeSummary": "Adds the CI-001 deterministic PR body generator and procedural preclearance validator so Content Collection PRs fail early for missing authority, package path, placeholders, allowlist, validation, design compliance, or #2286 inheritance defects.",
+  "validation": [
+    { "command": "npm run typecheck", "result": "PASS" },
+    { "command": "npm test -- --run tests/pr_body_generator*", "result": "PASS" },
+    { "command": "node scripts/ci/pr_body_generator.mjs --dry-run --fixture scripts/ci/fixtures/pr_body_generator/valid-cc-task.json", "result": "PASS" }
+  ],
+  "acceptanceCriteria": [
+    "Generator contract exists and matches pull_request_template.md",
+    "Valid fixture produces template-compatible output",
+    "Invalid fixtures fail for required procedural defects",
+    "Tooling remains procedural preclearance only",
+    "No pre-approved merge language is introduced"
+  ],
+  "requiresDesignCompliance": false,
+  "requires2286Inheritance": false,
+  "packageCompliance": "CI-001 package contract preserved; generator is local preclearance only.",
+  "parallelExecution": "No .github/workflows edits; allowlist-bound scripts/docs/tests only.",
+  "asBuiltDocumentation": "docs/reference/ci/pr-body-generator-contract.md",
+  "closeout": "Source task readiness only. Merge authority remains Bill / ChatGPT; tooling does not approve or merge.",
+  "outOfScopePresent": "NO",
+  "exceptionIssue": "not-applicable",
+  "followUpRequired": "NO",
+  "followUpIssue": "not-applicable",
+  "mixedScopeApproved": false
+}
