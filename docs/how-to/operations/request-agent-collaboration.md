@@ -5,7 +5,7 @@ Authority Level: Procedure
 Owns: Single execution path for requesting, acknowledging, responding to, and completing cross-agent collaboration
 Does Not Own: Queue priority, source-Issue scope, implementation authority, PR approval, Production authorization, or recovery strategy
 Canonical Reference: /docs/governance/WORK-QUEUES-AND-COLLABORATION.md
-Related Issues: #2699
+Related Issues: #2699, #2705, #2706
 Last Reviewed: 2026-07-21
 ---
 
@@ -25,6 +25,8 @@ Confirm:
 - the requested contribution is bounded;
 - the collaborator has the required role or expertise;
 - collaboration is not being used to bypass implementation Go, independent review, Project Graduation, or Production authority.
+
+## Procedure
 
 ## Step 1 — Post the request on the source Issue
 
