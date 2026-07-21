@@ -5,8 +5,8 @@ Authority Level: Domain Policy
 Owns: PMO intake, work sizing, delivery-model selection, Sandbox authorization, launch authorization, portfolio inventory, and authoritative priority decisions
 Does Not Own: Development execution, Promotion Candidate execution, CI implementation, Administration & Communications mutation procedure, Day-2 recovery strategy, or Production approval
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2477, #2487, #2640, #2641
-Last Reviewed: 2026-07-19
+Related Issues: #2477, #2487, #2640, #2641, #2695
+Last Reviewed: 2026-07-21
 ---
 
 # PMO Portfolio
@@ -131,6 +131,32 @@ After Go:
 - PMO / Engineering remains available for lightweight problem adjustment;
 - material plan changes return to PMO / Engineering authority.
 
+## Operations interrupt precedence
+
+Normal repository execution consists primarily of authorized project tasks. A qualifying standalone `OPS:` source Issue is a standing Product Authority interrupt and takes precedence over every project Issue and project task.
+
+A qualifying Operations interrupt is:
+
+- an open, same-repository, non-PR Issue whose title begins `OPS:`;
+- a standalone source Issue rather than a child of a project lifecycle;
+- bounded by an objective, owner, scope, acceptance criteria, validation, rollback, and stop conditions appropriate to the work; and
+- not merely a generated tracker, duplicate, bookkeeping record, advisory alert, or evidence-only record unless Product Authority explicitly elevates it.
+
+When a qualifying `OPS:` Issue appears:
+
+1. no new project task may be dispatched;
+2. active project work stops at the nearest safe checkpoint rather than being terminated in a way that corrupts a branch, claim, test, deployment, or evidence state;
+3. Administration & Communications preserves the exact project state and records the Operations interrupt hold;
+4. the Operations Issue receives the next available PMO / Engineering, Implementation / Operations, PR Approver / Engineering, Deterministic CI, and communication capacity it requires;
+5. no additional material-risk test or case-by-case reprioritization decision is required; and
+6. project execution resumes only after the Operations Issue is closed, explicitly deferred by Product Authority or Day-2 Operations within its authority, or a recorded `RESUME` releases the interrupt hold.
+
+`OPS:` is a cross-lane queue classification, not a fifth operating lane. The existing PMO / Engineering, Implementation / Operations, Day-2 Operations, and Administration & Communications lanes retain their normal decision and execution authority.
+
+Operations interrupt precedence changes sequencing only. It does not bypass source-Issue scope, promotion profiles, validation, independent review, Production authority, rollback, or protected-stop requirements.
+
+This standing Product Authority rule supersedes lower-level instructions that require a separate risk threshold or new prioritization decision before a qualifying standalone `OPS:` Issue can interrupt project execution.
+
 ## Lightweight problem adjustment
 
 When Implementation / Operations reports `PROBLEM FOUND`, PMO / Engineering should first determine whether a bounded adjustment can preserve the approved objective and acceptance criteria.
@@ -147,18 +173,17 @@ Use formal `PLAN CHANGE REQUIRED` only when product outcome, architecture, accep
 
 ## Emergency exit
 
-Production degradation, outage, unsafe behavior, or material risk exits normal PMO sequencing and routes to Day-2 Operations.
+Production degradation, outage, unsafe behavior, or material risk exits normal PMO sequencing and routes to Day-2 Operations as an incident. Incident handling is a specialized Operations path within the broader `OPS:` interrupt precedence rule.
 
-A broad assessment hold may pause PMO while impact is unknown. Once scope, probable cause, containment, and resolution ownership are sufficiently understood, unaffected PMO work may resume.
+A broad assessment hold may pause PMO while incident impact is unknown. Once scope, probable cause, containment, and resolution ownership are sufficiently understood, Day-2 Operations may narrow incident-specific holds, but the standing Operations interrupt remains in effect until the controlling `OPS:` Issue is closed, explicitly deferred, or releases project work through `RESUME`.
 
 ## Portfolio rules
 
 - GitHub program and project Issues are the durable portfolio record.
-- Product Authority makes final priority decisions.
-- PMO / Engineering may recommend elevation when repository risk blocks safe website build-out.
+- Product Authority makes final priority decisions and has established qualifying standalone `OPS:` Issues as automatic interrupts over project execution.
 - Planning tools outside the repository are inputs only.
 - PMO reporting lag is not an execution blocker unless it prevents authority, dependency, safety, validation, approval, profile transition, or closeout from being determined.
-- Independent approved projects may proceed in parallel.
+- Independent approved projects may proceed in parallel only when no Operations interrupt hold is active.
 - The portfolio must represent Sandbox, Development, Promotion Candidate, Production, and Day-2 state independently.
 
 ## Administration & Communications interface
@@ -168,9 +193,10 @@ Administration & Communications may:
 - prepare Go/No-Go and Promotion Candidate evidence packets;
 - reconcile PMO labels, parent/child links, lifecycle reporting, and dashboard state to existing authority;
 - route decisions, acknowledgments, escalation, holds, resumes, and closeout;
-- preserve historical evidence.
+- apply and release the standing Operations interrupt hold when the qualifying Issue state and owning-role decision require it;
+- preserve historical evidence and interrupted project state.
 
-It may not originate or change priority, size, delivery model, objective, acceptance, dependency, profile, launch authority, or Production Go.
+It may not originate or change priority, size, delivery model, objective, acceptance, dependency, profile, launch authority, or Production Go. Applying the standing Operations interrupt rule is execution of recorded Product Authority, not an independent priority decision.
 
 ## Canonical references
 
@@ -179,9 +205,10 @@ It may not originate or change priority, size, delivery model, objective, accept
 | Lane and promotion-profile definitions | `docs/reference/operations/operating-lanes-and-promotion-profiles.md` |
 | Delivery and release policy | `docs/governance/DELIVERY-AND-RELEASE.md` |
 | Administration & Communications | `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md` |
+| Operations and recovery | `docs/governance/OPERATIONS-AND-RECOVERY.md` |
 | Size and delivery-model facts | `docs/reference/pmo/work-size-and-delivery-model-contract.md` |
 | Classification procedure | `docs/how-to/pmo/classify-work-and-select-delivery-model.md` |
 
 ## Supersession
 
-Lower-level PMO instructions are superseded where they permit administrative reporting, generic predecessor state, or routine per-task PMO review to block independent Development after implementation Go.
+Lower-level PMO instructions are superseded where they permit administrative reporting, generic predecessor state, or routine per-task PMO review to block independent Development after implementation Go, or where they require additional risk-based elevation before a qualifying standalone `OPS:` Issue interrupts project execution.
