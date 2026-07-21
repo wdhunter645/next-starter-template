@@ -1,0 +1,19 @@
+{
+  "sourceIssue": 2436,
+  "intentLabel": "intent:ci",
+  "prClass": "ci",
+  "packageId": "CI-001",
+  "packagePath": "docs/ops/implementation-plans/content-collection/packages/ci-001-pr-body-generator-package.md",
+  "packageScoped": true,
+  "allowedPaths": [
+    "scripts/ci/pr_body_generator.mjs"
+  ],
+  "changedFiles": [
+    "scripts/ci/pr_body_generator.mjs"
+  ],
+  "changeSummary": "Invalid fixture omits validation evidence.",
+  "validation": [],
+  "requiresDesignCompliance": false,
+  "requires2286Inheritance": false,
+  "expectedFailureCode": "missing_validation"
+}

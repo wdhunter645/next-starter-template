@@ -3,10 +3,10 @@ Doc Type: Implementation Plan
 Audience: Bill, ChatGPT, Cursor, LGFC maintainers, CI maintainers
 Authority Level: Operational Plan (non-authoritative until promoted via Issue/PR)
 Owns: CI-001 implementation envelope — deterministic PR body generation and procedural preclearance for Content Collection work
-Does Not Own: Merge authorization, PR approval, Bill/ChatGPT gate decisions, or live CI script implementation (#2361 is docs-only)
-Canonical Reference: /docs/reference/ci/pr-hygiene-foundation.md
-Related Issues: #2409, #2361, #2359, #2360, #1131, #1075
-Last Reviewed: 2026-07-08
+Does Not Own: Merge authorization, PR approval, Bill/ChatGPT gate decisions, or post-open/post-merge mutation surfaces
+Canonical Reference: /docs/reference/ci/pr-body-generator-contract.md
+Related Issues: #2436, #2435, #2431, #2409, #2361, #2359, #2360, #1131, #1075
+Last Reviewed: 2026-07-21
 ---
 
 # CI-001 PR Body Generator Package
@@ -41,13 +41,15 @@ Define a deterministic PR body generator and procedural preclearance validator t
 | PR hygiene audit | `scripts/ci/pr_hygiene_audit.mjs` | **Exists** — does not generate bodies |
 | PR body auto-repair | `scripts/ci/run_pr_body_auto_repair.mjs` | **Exists** — post-open repair, not generator |
 | PR governance skill | `.agents/skills/lgfc-pr-governance/SKILL.md` | **Exists** |
-| PR body generator script | `scripts/ci/pr_body_generator.mjs` | **Missing** — implement in P1 child issue |
-| Generator contract ref | `docs/reference/ci/pr-body-generator-contract.md` | **Missing** — create when implementation authorizes |
+| PR body generator script | `scripts/ci/pr_body_generator.mjs` | **Exists** — implemented under #2436 |
+| Preclearance validator | `scripts/ci/validate_pr_body.mjs` | **Exists** — implemented under #2436 |
+| Generator contract ref | `docs/reference/ci/pr-body-generator-contract.md` | **Exists** — implemented under #2436 |
+| Generator fixtures | `scripts/ci/fixtures/pr_body_generator/` | **Exists** — valid + invalid cases under #2436 |
 | Intake draft target `docs/ops/programs/...` | — | **Rejected** — use path below |
 
 **Approved package path:** `docs/ops/implementation-plans/content-collection/packages/ci-001-pr-body-generator-package.md`
 
-**Phase:** P1 tooling (deferred implementation per #2360). #2361 enriches the contract only.
+**Phase:** P1 tooling. Implementation authorized by #2436 after #2435 Stage 0 non-duplication recommendation.
 
 ## Procedural preclearance principle
 
@@ -133,11 +135,11 @@ Allowlist globs use underscore patterns for scripts, fixtures, and tests. Refere
 
 | Path | Purpose |
 | --- | --- |
-| `scripts/ci/pr_body_generator.mjs` | Generator (to create) |
-| `scripts/ci/validate_pr_body.mjs` | Preclearance validator (to create or extend `pr_hygiene_audit.mjs`) |
+| `scripts/ci/pr_body_generator.mjs` | Generator |
+| `scripts/ci/validate_pr_body.mjs` | Preclearance validator (reuses `pr_hygiene_audit.mjs` helpers) |
 | `scripts/ci/fixtures/pr_body_generator/` | Fixture inputs/outputs |
 | `tests/pr_body_generator*.test.*` | Unit tests |
-| `docs/reference/ci/pr-body-generator-contract.md` | Reference contract (to create with implementation) |
+| `docs/reference/ci/pr-body-generator-contract.md` | Reference contract |
 | This package | Operational envelope |
 
 ## File allowlist (CI-001 implementation child issue)
@@ -194,8 +196,8 @@ node scripts/ci/pr_body_generator.mjs --dry-run --fixture scripts/ci/fixtures/pr
 
 ## Acceptance criteria
 
-- [ ] Generator contract documented with repo-verified paths.
-- [ ] Procedural preclearance preserves Bill/ChatGPT merge authority.
-- [ ] Placeholder and failure-classification rules explicit.
-- [ ] Implementation deferred to P1 with clear file allowlist.
-- [ ] Alignment with `.github/pull_request_template.md` and `pr-hygiene-foundation.md`.
+- [x] Generator contract documented with repo-verified paths.
+- [x] Procedural preclearance preserves Bill/ChatGPT merge authority.
+- [x] Placeholder and failure-classification rules explicit.
+- [x] Implementation delivered under #2436 with clear file allowlist.
+- [x] Alignment with `.github/pull_request_template.md` and `pr-hygiene-foundation.md`.

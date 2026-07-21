@@ -1,0 +1,21 @@
+{
+  "sourceIssue": 2436,
+  "intentLabel": "intent:feature",
+  "prClass": "code",
+  "packageId": "PIPE-01",
+  "packagePath": "docs/ops/implementation-plans/content-collection/packages/ci-001-pr-body-generator-package.md",
+  "packageScoped": true,
+  "allowedPaths": [
+    "lib/content-pipeline/example.ts"
+  ],
+  "changedFiles": [
+    "lib/content-pipeline/example.ts"
+  ],
+  "changeSummary": "Invalid pipeline fixture omits #2286 inheritance statement.",
+  "validation": [
+    { "command": "npm test -- --run tests/pr_body_generator*", "result": "PASS" }
+  ],
+  "requiresDesignCompliance": false,
+  "requires2286Inheritance": true,
+  "expectedFailureCode": "missing_2286_inheritance"
+}
