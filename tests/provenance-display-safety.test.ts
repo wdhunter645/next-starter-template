@@ -41,6 +41,15 @@ describe('CC-002 provenance display safety (#2434)', () => {
     expect(result.gates.soft_delete.pass).toBe(false);
   });
 
+  it('fails closed when deleted_at is an empty string (unknown suppression state)', () => {
+    const result = evaluatePublicMemberDisplaySafety(
+      displayReadyCandidate({ deleted_at: '' as unknown as string }),
+      'public',
+    );
+    expect(result.allowed).toBe(false);
+    expect(result.gates.soft_delete.pass).toBe(false);
+  });
+
   it('blocks citation-only review status (provenance incomplete for reproduction display)', () => {
     const result = evaluatePublicMemberDisplaySafety(
       displayReadyCandidate({ review_status: 'approved_citation_reference_only' }),

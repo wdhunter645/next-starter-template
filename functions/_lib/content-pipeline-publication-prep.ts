@@ -321,16 +321,16 @@ export function evaluatePublicMemberDisplaySafety(
     privacy_review_status: string;
     privacy_flag: string;
     publication_status: string;
-    deleted_at?: string | null;
+    /** Required: pass `null` when not soft-deleted. Missing/empty values fail closed. */
+    deleted_at: string | null;
   },
   surface: DisplaySurface,
 ): DisplaySafetyResult {
   const reasons: string[] = [];
 
-  const deletedAt = candidate.deleted_at ?? null;
   const softDeleteGate = gate(
-    !deletedAt,
-    deletedAt,
+    candidate.deleted_at === null,
+    candidate.deleted_at,
     'soft-deleted candidates (deleted_at set) must not display on public or member surfaces',
   );
   if (!softDeleteGate.pass) {
