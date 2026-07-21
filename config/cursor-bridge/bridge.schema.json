@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/wdhunter645/next-starter-template/config/cursor-bridge/bridge.schema.json",
+  "title": "LGFC Cursor Local Bridge configuration",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "repository",
+    "queueDir",
+    "consumedDir",
+    "claimPath",
+    "claimTtlSeconds",
+    "reconcileIntervalSeconds",
+    "requiredLabels"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "repository": { "type": "string", "minLength": 3 },
+    "workspacePathEnv": { "type": "string" },
+    "defaultWorkspaceHint": { "type": "string" },
+    "queueDir": { "type": "string" },
+    "consumedDir": { "type": "string" },
+    "claimPath": { "type": "string" },
+    "heartbeatPath": { "type": "string" },
+    "runtimeMetaPath": { "type": "string" },
+    "alertsLog": { "type": "string" },
+    "bridgeLog": { "type": "string" },
+    "claimTtlSeconds": { "type": "integer", "minimum": 60 },
+    "reconcileEnabled": { "type": "boolean" },
+    "reconcileIntervalSeconds": { "type": "integer", "minimum": 60 },
+    "reconcileIssueLimit": { "type": "integer", "minimum": 1, "maximum": 100 },
+    "requiredLabels": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "responseMarker": { "type": "string" },
+    "resumeMarker": { "type": "string" },
+    "fallbackCommentPrefix": { "type": "string" },
+    "ackCommentPrefix": { "type": "string" },
+    "startedCommentPrefix": { "type": "string" },
+    "completedCommentPrefix": { "type": "string" },
+    "cliBinaryCandidates": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "cliLaunchMode": { "type": "string" },
+    "prohibitYolo": { "type": "boolean" },
+    "prohibitCloudHandoff": { "type": "boolean" },
+    "watchdog": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "bridgeUnit": { "type": "string" },
+        "runnerUnit": { "type": ["string", "null"] },
+        "statePath": { "type": "string" },
+        "heartbeatStaleSeconds": { "type": "integer", "minimum": 15 },
+        "minDiskMb": { "type": "integer", "minimum": 64 },
+        "maxRestartAttempts": { "type": "integer", "minimum": 1 },
+        "restartWindowSeconds": { "type": "integer", "minimum": 60 },
+        "localAlertDebounceSeconds": { "type": "integer", "minimum": 60 },
+        "githubFaultEnabled": { "type": "boolean" },
+        "githubFaultDebounceSeconds": { "type": "integer", "minimum": 60 },
+        "opsFaultIssueNumber": { "type": ["integer", "null"] }
+      }
+    }
+  }
+}
