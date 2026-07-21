@@ -128,6 +128,7 @@
     { "method": "POST", "path": "/api/logout", "handler": "functions/api/logout.ts", "classification": "production-shared", "tables": ["member_sessions"] },
     { "method": "POST", "path": "/api/matchup/vote", "handler": "functions/api/matchup/vote.ts", "classification": "production-shared", "tables": ["weekly_votes"] },
     { "method": "GET", "path": "/api/matchup/current", "handler": "functions/api/matchup/current.ts", "classification": "production-shared", "tables": ["weekly_matchups"], "sideEffect": true },
+    { "method": "POST", "path": "/api/matchup/repair", "handler": "functions/api/matchup/repair.ts", "classification": "production-shared", "tables": ["weekly_matchups", "weekly_votes", "photos"] },
     { "method": "POST", "path": "/api/faq/submit", "handler": "functions/api/faq/submit.ts", "classification": "production-shared", "tables": ["faq_entries"] },
     { "method": "POST", "path": "/api/faq/view", "handler": "functions/api/faq/view.ts", "classification": "production-shared", "tables": ["faq_entries"] },
     { "method": "POST", "path": "/api/reports/create", "handler": "functions/api/reports/create.ts", "classification": "production-shared", "tables": ["reports"] },
