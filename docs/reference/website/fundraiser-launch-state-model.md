@@ -20,6 +20,40 @@ This model covers website-side campaign lifecycle only. External Givebutter (or
 other vendor) campaign ownership remains outside LGFC runtime and is documented
 by Task 002.
 
+## Scope
+
+In scope:
+
+- canonical website-side launch-state vocabulary and transitions;
+- approval gates and minimum evidence expectations;
+- public copy/claim limits before `active`;
+- pause/rollback semantics for website display claims.
+
+Out of scope:
+
+- Givebutter/vendor account configuration and payment processing;
+- donor/sponsor privacy field definitions (Task 005);
+- website runtime enums, CMS fields, or route implementation (Task 006);
+- authorizing a live public campaign by publishing this document alone.
+
+## Current known truth
+
+- Program #1700 is launched for Model B execution on
+  `component/fundraiser-charity-campaign-operations`.
+- Task 001 owns the launch-state vocabulary and operator playbook; later tasks
+  consume this model and must not invent competing states.
+- Website surfaces must fail closed when campaign config is missing, disabled,
+  invalid, stale, or unpublished.
+- Public live claims require Product Authority authorization recorded on the
+  controlling Issue; documentation alone does not activate a campaign.
+
+## Intended final state
+
+Operators, reviewers, and Tasks #1702–#1707 share one deterministic six-state
+model (`draft`, `preview`, `active`, `paused`, `ended`, `archived`) with explicit
+gates, evidence, and non-goals so website-side campaign work can proceed without
+inferring lifecycle rules from chat history or vendor assumptions.
+
 ## Canonical launch states
 
 These six states are authoritative for acceptance, checklists, and website
@@ -47,7 +81,12 @@ Operators may use finer workflow labels. Each maps to exactly one canonical stat
 | Scheduled launch | `preview` | Launch time/authority recorded; still not public-live until activation |
 | Live campaign | `active` | Explicit launch authorization recorded on the controlling Issue |
 | Closed campaign | `ended` | End authorization recorded; winner/recognition work may continue |
-| Post-campaign reporting | `ended` or `archived` | Reporting complete → archive decision |
+| Post-campaign reporting | `ended` | Reporting package accepted → archive gate may open |
+
+Deterministic reporting rule: post-campaign reporting always runs under
+canonical state `ended`. Transition to `archived` is a separate archive gate
+after the reporting package is accepted; reporting itself never uses `archived`
+as its active canonical state.
 
 ## Allowed and forbidden actions by state
 

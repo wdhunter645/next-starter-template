@@ -21,6 +21,36 @@ Assessment date: **2026-07-22**
 Source Issue: **#1701**  
 Parent program: **#1700**
 
+## Scope
+
+In scope:
+
+- Task 001 acceptance evidence for playbook + launch-state coverage;
+- operator evidence expectations for all six canonical states;
+- explicit handoff readiness statement for Task 002.
+
+Out of scope:
+
+- live campaign execution or vendor configuration;
+- Issue closeout or merge authority;
+- runtime implementation, privacy-field finalization, or pre-launch test package
+  owned by later tasks.
+
+## Current known truth
+
+- Task 001 deliverables are the three allowlisted docs in the deliverable map
+  below.
+- Canonical states are `draft`, `preview`, `active`, `paused`, `ended`, and
+  `archived`; post-campaign reporting is deterministic under `ended`.
+- This checklist proves documentation coverage for #1701 acceptance; it is not
+  a live-campaign go packet.
+
+## Intended final state
+
+Reviewers can verify #1701 acceptance criteria from this checklist alone, and
+Task 002 can define Givebutter vs LGFC ownership without inventing operational
+flow or competing launch states.
+
 ## Deliverable map
 
 | Artifact | Path | Role |

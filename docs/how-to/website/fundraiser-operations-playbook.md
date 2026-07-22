@@ -38,6 +38,18 @@ Out of scope:
 - merging PRs or closing Issues;
 - claiming a public campaign is live without Product Authority authorization.
 
+## Current known truth
+
+- Canonical launch states and gates live in
+  [`fundraiser-launch-state-model.md`](/docs/reference/website/fundraiser-launch-state-model.md).
+- This playbook is operator procedure only; it does not authorize vendor
+  configuration, store secrets, or launch a public campaign by itself.
+- Admin preview behavior already exists at
+  [`admin-fundraiser-preview.md`](/docs/how-to/website/admin-fundraiser-preview.md)
+  and remains the preview check path during `preview`.
+- Post-campaign reporting runs under `ended`; archive is a later gate after the
+  reporting package is accepted.
+
 ## Steps
 
 1. Confirm program/task authority and campaign identity.
