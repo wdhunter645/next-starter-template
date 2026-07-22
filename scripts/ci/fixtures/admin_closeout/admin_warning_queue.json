@@ -1,0 +1,18 @@
+{
+  "pr_number": 2706,
+  "source_issue": 2437,
+  "validation_status": "pass",
+  "merged": true,
+  "findings": [
+    {
+      "type": "admin_warning_non_deterministic",
+      "code": "admin_warning_non_deterministic",
+      "message": "Dashboard lifecycle text mismatch without machine-readable evidence.",
+      "evidence": [
+        { "kind": "dashboard_text", "observed": "pipeline", "expected": "complete" }
+      ],
+      "pr_number": 2706,
+      "source_issue": 2437
+    }
+  ]
+}

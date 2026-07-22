@@ -1,0 +1,17 @@
+{
+  "pr_number": 2705,
+  "source_issue": null,
+  "validation_status": "pass",
+  "merged": true,
+  "findings": [
+    {
+      "type": "ambiguous_source_issue",
+      "code": "ambiguous_source_issue",
+      "message": "PR body lists multiple candidate source issues without approved mixed scope.",
+      "evidence": [
+        { "kind": "issue_line_candidates", "issues": [2437, 2438] }
+      ],
+      "pr_number": 2705
+    }
+  ]
+}

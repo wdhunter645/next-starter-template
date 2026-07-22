@@ -1,0 +1,17 @@
+{
+  "pr_number": 2703,
+  "source_issue": 2437,
+  "validation_status": "missing",
+  "merged": true,
+  "findings": [
+    {
+      "type": "missing_validation_evidence",
+      "code": "missing_validation_evidence",
+      "message": "Post-merge validation evidence is missing; issue must not close.",
+      "evidence": [],
+      "evidence_complete": false,
+      "pr_number": 2703,
+      "source_issue": 2437
+    }
+  ]
+}

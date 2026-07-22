@@ -1,0 +1,21 @@
+{
+  "pr_number": 2704,
+  "source_issue": 2437,
+  "validation_status": "pass",
+  "merged": true,
+  "findings": [
+    {
+      "type": "duplicate_exception_issue",
+      "code": "duplicate_exception_issue",
+      "message": "Older duplicate exception issue superseded by canonical exception.",
+      "evidence_complete": true,
+      "evidence": [
+        { "kind": "exception_issue", "number": 2601, "canonical": false },
+        { "kind": "exception_issue", "number": 2610, "canonical": true, "canonical_issue": 2610 }
+      ],
+      "pr_number": 2704,
+      "source_issue": 2437,
+      "recommended_action": "close_duplicate_exception"
+    }
+  ]
+}

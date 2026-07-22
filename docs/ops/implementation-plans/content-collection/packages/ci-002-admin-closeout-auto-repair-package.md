@@ -3,10 +3,10 @@ Doc Type: Implementation Plan
 Audience: Bill, ChatGPT, Cursor, LGFC maintainers, CI maintainers
 Authority Level: Operational Plan (non-authoritative until promoted via Issue/PR)
 Owns: CI-002 implementation envelope — safe administrative closeout auto-repair boundary for Content Collection program
-Does Not Own: Product defect repair, merge authorization, reviewer disposition, or live classifier implementation (#2361 is docs-only)
-Canonical Reference: /docs/reference/ci/post-merge-validation-surface.md
-Related Issues: #2409, #2361, #2359, #2360, #1131
-Last Reviewed: 2026-07-08
+Does Not Own: Product defect repair, merge authorization, reviewer disposition, or apply-mode GitHub mutations
+Canonical Reference: /docs/reference/ci/admin-closeout-auto-repair-contract.md
+Related Issues: #2437, #2435, #2436, #2431, #2409, #2361, #2359, #2360, #1131
+Last Reviewed: 2026-07-21
 ---
 
 # CI-002 Administrative Closeout Auto-Repair Package
@@ -44,8 +44,10 @@ CI-002 does **not** repair product, scope, security, build, data, auth, or desig
 | PR body auto-repair | `scripts/ci/run_pr_body_auto_repair.mjs` | Deterministic body fixes |
 | Closeout surface doc | `docs/reference/ci/post-merge-validation-surface.md` | Reference |
 | Verification closeout skill | `.agents/skills/lgfc-verification-closeout/SKILL.md` | Agent procedure |
-| Admin closeout classifier | `scripts/ci/closeout_classifier.mjs` | **Missing** — P1 implementation |
-| Admin auto-repair | `scripts/ci/admin_closeout_auto_repair.mjs` | **Missing** — P1 implementation |
+| Admin closeout classifier | `scripts/ci/closeout_classifier.mjs` | **Exists** — dry-run classifier (#2437) |
+| Admin auto-repair | `scripts/ci/admin_closeout_auto_repair.mjs` | **Exists** — dry-run planner; apply disabled (#2437) |
+| Admin closeout contract | `docs/reference/ci/admin-closeout-auto-repair-contract.md` | **Exists** (#2437) |
+| Admin closeout fixtures | `scripts/ci/fixtures/admin_closeout/` | **Exists** (#2437) |
 | Intake `docs/ops/programs/...` path | — | **Rejected** per #2360 |
 
 **Approved package path:** `docs/ops/implementation-plans/content-collection/packages/ci-002-admin-closeout-auto-repair-package.md`
@@ -143,10 +145,10 @@ Allowlist globs below use underscore patterns for scripts/fixtures/tests and hyp
 | `scripts/ci/post_merge_validator.mjs` | Exists |
 | `scripts/ci/run_post_merge_closeout.mjs` | Exists |
 | `scripts/ci/run_pr_body_auto_repair.mjs` | Exists |
-| `scripts/ci/closeout_classifier.mjs` | To create (P1) |
-| `scripts/ci/admin_closeout_auto_repair.mjs` | To create (P1) |
-| `scripts/ci/fixtures/admin_closeout/` | To create (P1) |
-| `docs/reference/ci/admin-closeout-auto-repair-contract.md` | To create with implementation |
+| `scripts/ci/closeout_classifier.mjs` | Exists (dry-run; wraps self-heal classifier) |
+| `scripts/ci/admin_closeout_auto_repair.mjs` | Exists (dry-run planner; apply refused) |
+| `scripts/ci/fixtures/admin_closeout/` | Exists |
+| `docs/reference/ci/admin-closeout-auto-repair-contract.md` | Exists |
 | This package | Operational envelope |
 
 ## File allowlist (CI-002 implementation child issue)
@@ -174,24 +176,27 @@ docs/reference/ci/admin-closeout-auto-repair-contract.md
 
 ## Validation plan
 
-**Fixture cases (when implemented):**
+**Fixture cases (implemented):**
 
-| Case | Expected outcome |
-| --- | --- |
-| Stale label after clean merge | `safe_auto_fix` or `queue_admin_closeout` |
-| Failed required test | `cursor_remediation_required` — never auto-fix |
-| Missing validation evidence | Blocker — no issue close |
-| Duplicate exception issue | Safe close/link |
-| Ambiguous source issue | `operator_authorization_required` |
+| Case | Fixture | Expected outcome |
+| --- | --- | --- |
+| Stale label after clean merge | `stale_label_after_clean_merge.json` | `safe_auto_fix` (queues when evidence incomplete) |
+| Failed required test | `failed_required_test.json` | `cursor_remediation_required` — never auto-fix |
+| Missing validation evidence | `missing_validation_evidence.json` | Blocker — no issue close |
+| Duplicate exception issue | `duplicate_exception_issue.json` | `safe_auto_fix` (safe close/link planned) |
+| Ambiguous source issue | `ambiguous_source_issue.json` | `operator_authorization_required` |
+| Non-deterministic admin warning | `admin_warning_queue.json` | `queue_admin_closeout` |
 
 **Commands:**
 
 ```bash
 npm test -- --run tests/closeout*
-node scripts/ci/closeout_classifier.mjs --dry-run --pr <number>
+node scripts/ci/closeout_classifier.mjs --dry-run --pr 2701
+node scripts/ci/closeout_classifier.mjs --dry-run --fixture scripts/ci/fixtures/admin_closeout/stale_label_after_clean_merge.json
+node scripts/ci/admin_closeout_auto_repair.mjs --dry-run --fixture scripts/ci/fixtures/admin_closeout/duplicate_exception_issue.json
 ```
 
-**Dry-run mode required** before any apply mode ships.
+**Dry-run mode required** before any apply mode ships. Apply mode is disabled in #2437.
 
 **Pass:** Administrative issues repairable without blocking features; blockers never auto-repaired.
 
@@ -207,9 +212,10 @@ node scripts/ci/closeout_classifier.mjs --dry-run --pr <number>
 
 ## Acceptance criteria
 
-- [ ] Safe vs unsafe actions explicitly documented.
-- [ ] Classifier outcomes and inputs defined.
-- [ ] Existing closeout scripts referenced with verified paths.
-- [ ] Bill/ChatGPT authority preserved; blockers never auto-repaired.
-- [ ] Implementation deferred to P1 with file allowlist.
-- [ ] Dry-run requirement stated before apply mode.
+- [x] Safe vs unsafe actions explicitly documented.
+- [x] Classifier outcomes and inputs defined.
+- [x] Existing closeout scripts referenced with verified paths.
+- [x] Bill/ChatGPT authority preserved; blockers never auto-repaired.
+- [x] Dry-run classifier, repair planner, fixtures, and contract delivered (#2437).
+- [x] Dry-run requirement enforced; apply mode refused until later authorization.
+- [ ] Apply-mode workflow integration (deferred; serialize after fixture soak).

@@ -1,0 +1,18 @@
+{
+  "pr_number": 2702,
+  "source_issue": 2437,
+  "validation_status": "fail",
+  "merged": true,
+  "findings": [
+    {
+      "type": "failed_required_test",
+      "code": "failed_required_test",
+      "message": "Required test suite failed on merge SHA.",
+      "evidence": [
+        { "kind": "workflow", "name": "unit-tests", "conclusion": "failure" }
+      ],
+      "pr_number": 2702,
+      "source_issue": 2437
+    }
+  ]
+}
