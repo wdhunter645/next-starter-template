@@ -18,12 +18,27 @@ import {
   readClaim,
   isClaimActive,
 } from './lib/claim.mjs';
-import { appendBridgeLog, fallbackUnclaimed, postIssueComment, notifyLocal } from './lib/notify.mjs';
+import {
+  appendBridgeLog,
+  fallbackAcceptedFailure,
+  fallbackLaunchRetry,
+  fallbackUnclaimed,
+  postIssueComment,
+  notifyLocal,
+} from './lib/notify.mjs';
 import { cliAuthPreflight, launchLocalAgent } from './lib/launch.mjs';
 import { writeHeartbeat } from './lib/heartbeat.mjs';
 import { runReconcileSweep } from './lib/reconcile.mjs';
 import { collectStatus } from './lib/status.mjs';
 import { atomicWriteJson } from './lib/atomic-write.mjs';
+import {
+  classifyInterruptedLaunch,
+  clearInFlight,
+  monitorAgentProcess,
+  prepareRetryPacket,
+  readInFlight,
+  writeInFlight,
+} from './lib/launch-transaction.mjs';
 
 const REPO = 'wdhunter645/next-starter-template';
 
@@ -60,17 +75,30 @@ function fetchIssueBundle(issueNumber) {
   return { issue, comments: normalized };
 }
 
+function readPacket(file) {
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+
+function packetReady(file) {
+  try {
+    const packet = readPacket(file);
+    if (!packet.notBefore) return true;
+    const notBefore = new Date(packet.notBefore).getTime();
+    return !Number.isFinite(notBefore) || notBefore <= Date.now();
+  } catch {
+    // Let processPacket produce the durable error/fallback evidence.
+    return true;
+  }
+}
+
 function listPackets(queueDir) {
   if (!fs.existsSync(queueDir)) return [];
   return fs
     .readdirSync(queueDir)
     .filter((f) => f.endsWith('.json'))
     .map((f) => path.join(queueDir, f))
+    .filter(packetReady)
     .sort();
-}
-
-function readPacket(file) {
-  return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
 function metaPath(config) {
@@ -104,16 +132,109 @@ function pulseHeartbeat(config, dirs, serviceMode, extra = {}) {
   });
 }
 
-async function processPacket(config, dirs, packetPath) {
-  const packet = readPacket(packetPath);
-  const issueNumber = Number(packet.issueNumber || packet.issue);
-  appendBridgeLog(config, `dequeue ${path.basename(packetPath)} issue=#${issueNumber}`);
-  writeMeta(config, { lastInboundPacketAt: new Date().toISOString() });
+function consumedTarget(dirs, packetPath, suffix) {
+  const base = path.join(dirs.consumed, `${path.basename(packetPath)}.${suffix}`);
+  if (!fs.existsSync(base)) return base;
+  return `${base}.${Date.now()}`;
+}
 
-  const processing = `${packetPath}.processing`;
-  fs.renameSync(packetPath, processing);
+function moveProcessingToConsumed(dirs, packetPath, processing, suffix) {
+  if (!processing || !fs.existsSync(processing)) return null;
+  const target = consumedTarget(dirs, packetPath, suffix);
+  fs.renameSync(processing, target);
+  return target;
+}
+
+function requeuePreacceptFailure(config, packetPath, processing, packet, issueNumber, reason) {
+  const retry = prepareRetryPacket(packet, {
+    reason,
+    baseDelaySeconds: config.launchRetryBaseSeconds ?? 30,
+    maxDelaySeconds: config.launchRetryMaxSeconds ?? 900,
+  });
+  const shouldNotify = !packet.launchFallbackPosted;
+  retry.launchFallbackPosted = packet.launchFallbackPosted || shouldNotify;
+  atomicWriteJson(processing, retry, 0o600);
+  if (fs.existsSync(packetPath)) {
+    fs.unlinkSync(packetPath);
+  }
+  fs.renameSync(processing, packetPath);
+  appendBridgeLog(
+    config,
+    `requeue preaccept issue=#${issueNumber} reason=${reason} attempt=${retry.launchAttempts} notBefore=${retry.notBefore}`,
+  );
+  if (shouldNotify) {
+    fallbackLaunchRetry(config, issueNumber, reason, retry.notBefore);
+    writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
+  }
+  return retry;
+}
+
+function recoverInterruptedLaunch(config, dirs) {
+  const record = readInFlight(config);
+  if (!record) return { recovered: false, reason: 'none' };
+
+  const classification = classifyInterruptedLaunch(record);
+  const packetPath = record.packetPath || null;
+  const processing = record.processingPath || null;
+  const issueNumber = Number(record.issueNumber || 0);
+
+  if (classification === 'retry_preaccept') {
+    if (processing && fs.existsSync(processing) && packetPath) {
+      let packet = record.packet || null;
+      try {
+        packet = readPacket(processing);
+      } catch {
+        /* use recorded packet */
+      }
+      if (packet) {
+        requeuePreacceptFailure(
+          config,
+          packetPath,
+          processing,
+          packet,
+          issueNumber,
+          'bridge_restart_preaccept',
+        );
+      } else {
+        moveProcessingToConsumed(dirs, packetPath, processing, 'corrupt-preaccept');
+      }
+    }
+    releaseClaim(config);
+    clearInFlight(config);
+    appendBridgeLog(config, `recovered interrupted preaccept launch issue=#${issueNumber}`);
+    return { recovered: true, reason: 'retry_preaccept', issueNumber };
+  }
+
+  if (processing && fs.existsSync(processing) && packetPath) {
+    moveProcessingToConsumed(dirs, packetPath, processing, 'interrupted-after-acceptance');
+  }
+  releaseClaim(config);
+  clearInFlight(config);
+  appendBridgeLog(config, `held interrupted accepted launch issue=#${issueNumber}`);
+  if (issueNumber) {
+    fallbackAcceptedFailure(config, issueNumber, 'bridge_restart_after_agent_acceptance');
+    writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
+  }
+  return { recovered: true, reason: 'hold_postaccept', issueNumber };
+}
+
+async function processPacket(config, dirs, packetPath) {
+  let packet = null;
+  let processing = null;
+  let issueNumber = 0;
 
   try {
+    packet = readPacket(packetPath);
+    issueNumber = Number(packet.issueNumber || packet.issue);
+    if (!Number.isInteger(issueNumber) || issueNumber <= 0) {
+      throw new Error('invalid_issue_number');
+    }
+    appendBridgeLog(config, `dequeue ${path.basename(packetPath)} issue=#${issueNumber}`);
+    writeMeta(config, { lastInboundPacketAt: new Date().toISOString() });
+
+    processing = `${packetPath}.processing`;
+    fs.renameSync(packetPath, processing);
+
     const { issue, comments } = fetchIssueBundle(issueNumber);
     const eligibility = validateEligibility(issue, comments, {
       requiredLabels: config.requiredLabels,
@@ -123,22 +244,20 @@ async function processPacket(config, dirs, packetPath) {
     if (!eligibility.ok) {
       fallbackUnclaimed(config, issueNumber, `validation_failed:${eligibility.errors.join(',')}`);
       writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
-      fs.renameSync(processing, path.join(dirs.consumed, path.basename(packetPath) + '.rejected'));
+      moveProcessingToConsumed(dirs, packetPath, processing, 'rejected');
       return { ok: false, reason: 'validation_failed' };
     }
 
     const resumeId = String(eligibility.resume.id);
     if (isConsumed(config, resumeId)) {
       appendBridgeLog(config, `skip already consumed resume=${resumeId}`);
-      fs.renameSync(processing, path.join(dirs.consumed, path.basename(packetPath) + '.dup'));
+      moveProcessingToConsumed(dirs, packetPath, processing, 'dup');
       return { ok: true, reason: 'already_consumed' };
     }
 
     const auth = cliAuthPreflight(config);
     if (!auth.ok) {
-      fallbackUnclaimed(config, issueNumber, auth.reason);
-      writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
-      fs.renameSync(processing, path.join(dirs.consumed, path.basename(packetPath) + '.noauth'));
+      requeuePreacceptFailure(config, packetPath, processing, packet, issueNumber, auth.reason);
       return { ok: false, reason: auth.reason };
     }
 
@@ -148,8 +267,7 @@ async function processPacket(config, dirs, packetPath) {
       deliveryId: packet.deliveryId || path.basename(packetPath),
     });
     if (!claim.ok) {
-      // Serial lane busy: defer/retry quietly so reconcile recovery packets are not
-      // discarded and do not spam fallback comments while another claim is active.
+      // Serial lane busy: defer/retry quietly so recovery packets are not discarded.
       if (claim.reason === 'serial_lane_busy') {
         appendBridgeLog(config, `defer serial_lane_busy issue=#${issueNumber}`);
         fs.renameSync(processing, packetPath);
@@ -158,28 +276,16 @@ async function processPacket(config, dirs, packetPath) {
       // Same event already claimed: quiet duplicate (no fallback comment).
       if (claim.reason === 'already_claimed_same_event') {
         appendBridgeLog(config, `skip already_claimed_same_event resume=${resumeId}`);
-        fs.renameSync(processing, path.join(dirs.consumed, path.basename(packetPath) + '.dup'));
+        moveProcessingToConsumed(dirs, packetPath, processing, 'dup');
         return { ok: true, reason: 'already_claimed_same_event' };
       }
       fallbackUnclaimed(config, issueNumber, claim.reason);
       writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
-      fs.renameSync(processing, path.join(dirs.consumed, path.basename(packetPath) + '.busy'));
+      moveProcessingToConsumed(dirs, packetPath, processing, 'busy');
       return { ok: false, reason: claim.reason };
     }
 
-    markConsumed(config, resumeId, { issueNumber, packet: path.basename(packetPath) });
-
     const action = eligibility.parsed.actions[0];
-    try {
-      postIssueComment(
-        issueNumber,
-        `${config.startedCommentPrefix || 'CURSOR BRIDGE STARTED'}\nIssue: #${issueNumber}\nResume comment id: ${resumeId}\nAction: ${action}\n`,
-      );
-      writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
-    } catch (err) {
-      appendBridgeLog(config, `started comment failed: ${err.message}`);
-    }
-
     const launched = launchLocalAgent(config, {
       issueNumber,
       resume: eligibility.resume,
@@ -189,44 +295,101 @@ async function processPacket(config, dirs, packetPath) {
 
     if (launched.error) {
       releaseClaim(config);
-      fallbackUnclaimed(config, issueNumber, launched.error);
-      writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
-      fs.renameSync(processing, path.join(dirs.consumed, path.basename(packetPath) + '.launchfail'));
+      requeuePreacceptFailure(config, packetPath, processing, packet, issueNumber, launched.error);
       return { ok: false, reason: launched.error };
     }
 
     const { child } = launched;
-    let stdout = '';
-    let stderr = '';
-    child.stdout.on('data', (d) => {
-      stdout += d.toString();
-    });
-    child.stderr.on('data', (d) => {
-      stderr += d.toString();
+    let inFlight = writeInFlight(config, {
+      state: 'cli_spawned',
+      issueNumber,
+      resumeCommentId: resumeId,
+      deliveryId: packet.deliveryId || path.basename(packetPath),
+      packetPath,
+      processingPath: processing,
+      packet,
+      bridgePid: process.pid,
+      childPid: child.pid || null,
+      spawnedAt: new Date().toISOString(),
+      acceptedAt: null,
+      sessionId: null,
     });
 
-    const exitCode = await new Promise((resolve) => {
-      child.on('close', resolve);
-      child.on('error', () => resolve(1));
+    const logPath = path.join(dirs.home, `run-${issueNumber}-${resumeId}.log`);
+    fs.appendFileSync(logPath, `${new Date().toISOString()} launch_state=cli_spawned\n`, {
+      mode: 0o600,
     });
 
-    const logSnippet = (stdout + stderr).slice(-4000);
-    fs.writeFileSync(
-      path.join(dirs.home, `run-${issueNumber}-${resumeId}.log`),
-      logSnippet,
-      { mode: 0o600 },
-    );
+    const lifecycle = await monitorAgentProcess({
+      child,
+      startupTimeoutMs: (config.launchStartupTimeoutSeconds ?? 60) * 1000,
+      executionTimeoutMs: (config.launchExecutionTimeoutSeconds ?? 7200) * 1000,
+      heartbeatIntervalMs: (config.launchHeartbeatIntervalSeconds ?? 5) * 1000,
+      onAccepted: ({ sessionId, acceptedAt }) => {
+        markConsumed(config, resumeId, { issueNumber, packet: path.basename(packetPath), sessionId });
+        inFlight = writeInFlight(config, {
+          ...inFlight,
+          state: 'running',
+          acceptedAt,
+          sessionId,
+        });
+        fs.appendFileSync(
+          logPath,
+          `${new Date().toISOString()} launch_state=agent_accepted session_id=${sessionId}\n`,
+          { mode: 0o600 },
+        );
+        try {
+          postIssueComment(
+            issueNumber,
+            `${config.startedCommentPrefix || 'CURSOR BRIDGE STARTED'}\nIssue: #${issueNumber}\nResume comment id: ${resumeId}\nSession id: ${sessionId}\nAction: ${action}\n`,
+          );
+          writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
+        } catch (err) {
+          appendBridgeLog(config, `started comment failed: ${err.message}`);
+        }
+      },
+      onHeartbeat: ({ accepted, sessionId, state, at }) => {
+        pulseHeartbeat(config, dirs, 'agent-running', {
+          activeLaunch: {
+            issueNumber,
+            resumeCommentId: resumeId,
+            state,
+            accepted,
+            sessionId,
+            at,
+          },
+        });
+      },
+      onDiagnostic: (line) => {
+        fs.appendFileSync(logPath, `${new Date().toISOString()} ${line}\n`, { mode: 0o600 });
+      },
+    });
 
-    if (exitCode !== 0) {
+    if (!lifecycle.accepted) {
       releaseClaim(config);
-      const reason = /rate limit|usage|quota|payment|plan/i.test(logSnippet)
-        ? 'cli_usage_or_plan_limit'
-        : `cli_exit_${exitCode}`;
-      fallbackUnclaimed(config, issueNumber, reason);
+      clearInFlight(config);
+      requeuePreacceptFailure(
+        config,
+        packetPath,
+        processing,
+        packet,
+        issueNumber,
+        lifecycle.reason,
+      );
+      pulseHeartbeat(config, dirs, 'watch', { activeLaunch: null });
+      return { ok: false, reason: lifecycle.reason };
+    }
+
+    clearInFlight(config);
+
+    if (lifecycle.reason !== 'completed') {
+      releaseClaim(config);
+      fallbackAcceptedFailure(config, issueNumber, lifecycle.reason);
       writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
-      notifyLocal(config, 'LGFC Cursor Bridge', `Agent failed on #${issueNumber}: ${reason}`);
-      fs.renameSync(processing, path.join(dirs.consumed, path.basename(packetPath) + '.done'));
-      return { ok: false, reason };
+      notifyLocal(config, 'LGFC Cursor Bridge', `Agent failed on #${issueNumber}: ${lifecycle.reason}`);
+      moveProcessingToConsumed(dirs, packetPath, processing, 'failed-after-acceptance');
+      pulseHeartbeat(config, dirs, 'watch', { activeLaunch: null });
+      return { ok: false, reason: lifecycle.reason };
     }
 
     try {
@@ -240,22 +403,40 @@ async function processPacket(config, dirs, packetPath) {
     }
     releaseClaim(config);
 
-    fs.renameSync(processing, path.join(dirs.consumed, path.basename(packetPath) + '.done'));
+    moveProcessingToConsumed(dirs, packetPath, processing, 'done');
+    pulseHeartbeat(config, dirs, 'watch', { activeLaunch: null });
     return { ok: true, reason: 'completed' };
   } catch (err) {
     appendBridgeLog(config, `process error: ${err.message}`);
+    const interrupted = readInFlight(config);
+    const interruptionClass = classifyInterruptedLaunch(interrupted);
     try {
       releaseClaim(config);
     } catch {
       /* ignore */
     }
-    if (fs.existsSync(processing)) {
-      fs.renameSync(processing, path.join(dirs.consumed, path.basename(packetPath) + '.error'));
+    clearInFlight(config);
+
+    if (processing && fs.existsSync(processing) && packetPath && packet) {
+      if (interruptionClass === 'hold_postaccept') {
+        moveProcessingToConsumed(dirs, packetPath, processing, 'error-after-acceptance');
+      } else {
+        requeuePreacceptFailure(
+          config,
+          packetPath,
+          processing,
+          packet,
+          issueNumber,
+          `bridge_error:${err.message}`,
+        );
+      }
     }
-    if (issueNumber) {
-      fallbackUnclaimed(config, issueNumber, `bridge_error:${err.message}`);
+
+    if (issueNumber && interruptionClass === 'hold_postaccept') {
+      fallbackAcceptedFailure(config, issueNumber, `bridge_error:${err.message}`);
       writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
     }
+    pulseHeartbeat(config, dirs, 'watch', { activeLaunch: null });
     return { ok: false, reason: `bridge_error:${err.message}` };
   }
 }
@@ -282,6 +463,7 @@ async function main() {
   const config = loadConfig();
   const dirs = ensureDirs(config);
   appendBridgeLog(config, `bridge start home=${dirs.home} pid=${process.pid}`);
+  recoverInterruptedLaunch(config, dirs);
 
   const mode = process.argv[2] || 'watch';
   if (mode === 'once') {
@@ -358,6 +540,7 @@ async function main() {
             failedClosed: !!lastReconcile.failedClosed,
           }
         : null,
+      activeLaunch: null,
     });
 
     await sleep(2000);
@@ -374,4 +557,10 @@ if (invokedDirectly) {
   });
 }
 
-export { drainOnce, processPacket, listPackets, fetchIssueBundle };
+export {
+  drainOnce,
+  processPacket,
+  listPackets,
+  fetchIssueBundle,
+  recoverInterruptedLaunch,
+};
