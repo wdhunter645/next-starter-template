@@ -1,0 +1,656 @@
+{
+  "repository": "wdhunter645/next-starter-template",
+  "sourceIssue": 2727,
+  "parentProject": 2702,
+  "registryVersion": 1,
+  "mainCommit": "1fa2b24a44599077f1a570a04ad893d8e74a6ca2",
+  "dashboardGeneratorBlob": "105907bc560c93c332b6385d06acfe42070b5874",
+  "dashboardValidatorBlob": "7129f52f5dfce2784d3bd959f7dd54a5d9315377",
+  "routingBlob": "5db4c798156cc7d025bb421480a4572f235c3856",
+  "capturedAt": "2026-07-22T11:08:57Z",
+  "capturedBy": "wdhunter645",
+  "issues": {
+    "1700": {
+      "labels": [
+        "docs-only",
+        "agent:cursor",
+        "documentation",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "status:in-progress",
+        "pmo:priority:21"
+      ],
+      "number": 1700,
+      "state": "OPEN",
+      "title": "PROGRAM: Fundraiser / Charity Campaign Operations Buildout",
+      "updatedAt": "2026-07-22T10:40:47Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/1700"
+    },
+    "1719": {
+      "labels": [
+        "governance",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:priority:1",
+        "pmo:active",
+        "status:needs-human"
+      ],
+      "number": 1719,
+      "state": "OPEN",
+      "title": "PROGRAM: PMO Governance / Workflow Automation Completion",
+      "updatedAt": "2026-07-21T11:31:12Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/1719"
+    },
+    "1738": {
+      "labels": [
+        "governance",
+        "status:failed",
+        "status:post-merge-verify",
+        "status:active",
+        "documentation",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:20",
+        "pmo:stage:planning"
+      ],
+      "number": 1738,
+      "state": "OPEN",
+      "title": "PROGRAM: Lou Gehrig Content Collection / Research Pipeline Expansion",
+      "updatedAt": "2026-07-16T14:19:14Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/1738"
+    },
+    "2040": {
+      "labels": [
+        "documentation",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:planning",
+        "pmo:priority:4"
+      ],
+      "number": 2040,
+      "state": "OPEN",
+      "title": "PROGRAM: Website Automatic Content Publication Capability",
+      "updatedAt": "2026-07-16T14:19:15Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2040"
+    },
+    "2073": {
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:planning",
+        "pmo:priority:5"
+      ],
+      "number": 2073,
+      "state": "OPEN",
+      "title": "PROGRAM: Gehrig Content Collection Phase 2 / Advanced Research and Media Archive Acquisition",
+      "updatedAt": "2026-07-16T14:19:16Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2073"
+    },
+    "2074": {
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:8"
+      ],
+      "number": 2074,
+      "state": "OPEN",
+      "title": "PROGRAM CANDIDATE: Member Communications and Newsletter Operations",
+      "updatedAt": "2026-07-16T14:38:06Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2074"
+    },
+    "2075": {
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:7"
+      ],
+      "number": 2075,
+      "state": "OPEN",
+      "title": "PROGRAM CANDIDATE: LGFC Social Media Strategy",
+      "updatedAt": "2026-07-16T14:38:08Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2075"
+    },
+    "2076": {
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:17"
+      ],
+      "number": 2076,
+      "state": "OPEN",
+      "title": "PROGRAM CANDIDATE: Cost Analysis and Growth Heat Map",
+      "updatedAt": "2026-07-16T14:38:11Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2076"
+    },
+    "2077": {
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:16"
+      ],
+      "number": 2077,
+      "state": "OPEN",
+      "title": "PROGRAM CANDIDATE: Partner and Friends of the Fan Club Operations",
+      "updatedAt": "2026-07-16T14:38:13Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2077"
+    },
+    "2078": {
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:15"
+      ],
+      "number": 2078,
+      "state": "OPEN",
+      "title": "PROGRAM CANDIDATE: Adam Wilson Award and Recognition System",
+      "updatedAt": "2026-07-16T14:38:15Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2078"
+    },
+    "2079": {
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:14"
+      ],
+      "number": 2079,
+      "state": "OPEN",
+      "title": "PROGRAM CANDIDATE: Community Engagement Cadence",
+      "updatedAt": "2026-07-16T14:38:17Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2079"
+    },
+    "2081": {
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:11"
+      ],
+      "number": 2081,
+      "state": "OPEN",
+      "title": "PROGRAM CANDIDATE: LGFC Monetization Strategy",
+      "updatedAt": "2026-07-16T14:38:20Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2081"
+    },
+    "2082": {
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:12"
+      ],
+      "number": 2082,
+      "state": "OPEN",
+      "title": "PROGRAM CANDIDATE: LGFC Store Strategy",
+      "updatedAt": "2026-07-16T14:38:22Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2082"
+    },
+    "2083": {
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:13"
+      ],
+      "number": 2083,
+      "state": "OPEN",
+      "title": "PROGRAM CANDIDATE: Store and Merchandise Operations",
+      "updatedAt": "2026-07-16T14:38:24Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2083"
+    },
+    "2084": {
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:9"
+      ],
+      "number": 2084,
+      "state": "OPEN",
+      "title": "PROGRAM CANDIDATE: Annual Lou Gehrig Day Operations Package",
+      "updatedAt": "2026-07-16T14:38:26Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2084"
+    },
+    "2085": {
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:6"
+      ],
+      "number": 2085,
+      "state": "OPEN",
+      "title": "PROGRAM CANDIDATE: Admin Page and Tools Design Readiness",
+      "updatedAt": "2026-07-16T14:38:29Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2085"
+    },
+    "2093": {
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:10"
+      ],
+      "number": 2093,
+      "state": "OPEN",
+      "title": "PROGRAM CANDIDATE: 2027 Launch Calendar and Go/No-Go Plan",
+      "updatedAt": "2026-07-16T14:38:31Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2093"
+    },
+    "2270": {
+      "labels": [
+        "documentation",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:19",
+        "pmo:stage:discovery"
+      ],
+      "number": 2270,
+      "state": "OPEN",
+      "title": "STRATEGY REVIEW: LGFC Content Discovery, Review, Approval, and Publication Pipeline",
+      "updatedAt": "2026-07-16T14:37:45Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2270"
+    },
+    "2273": {
+      "labels": [
+        "documentation",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:planning",
+        "pmo:priority:18"
+      ],
+      "number": 2273,
+      "state": "OPEN",
+      "title": "PROGRAM: LGFC Content Pipeline Reconciliation and Candidate Model",
+      "updatedAt": "2026-07-16T14:19:17Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2273"
+    },
+    "2291": {
+      "labels": [
+        "documentation",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:3",
+        "pmo:stage:definition"
+      ],
+      "number": 2291,
+      "state": "OPEN",
+      "title": "STRATEGY: LGFC SEO Strategy and PMO Activation Control",
+      "updatedAt": "2026-07-16T14:37:37Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2291"
+    },
+    "2292": {
+      "labels": [
+        "strategy",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:2",
+        "pmo:stage:definition"
+      ],
+      "number": 2292,
+      "state": "OPEN",
+      "title": "STRATEGY: AI-Assisted Tagging for LGFC Digital Content Assets",
+      "updatedAt": "2026-07-16T14:37:39Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2292"
+    },
+    "2294": {
+      "labels": [
+        "governance",
+        "documentation",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:priority:1",
+        "pmo:active",
+        "status:needs-human"
+      ],
+      "number": 2294,
+      "state": "OPEN",
+      "title": "PROJECT: Agent Issue Polling and Handoff Routing",
+      "updatedAt": "2026-07-19T15:50:52Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2294"
+    },
+    "2312": {
+      "labels": [
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:22"
+      ],
+      "number": 2312,
+      "state": "OPEN",
+      "title": "STRATEGY: LGFC content acquisition storage policy and free-tier risk controls",
+      "updatedAt": "2026-07-16T14:37:42Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2312"
+    },
+    "2342": {
+      "labels": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:23"
+      ],
+      "number": 2342,
+      "state": "OPEN",
+      "title": "STRATEGY REVIEW: Local Cursor Program Queue Pickup and Child-Task Execution Design",
+      "updatedAt": "2026-07-16T14:37:47Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2342"
+    },
+    "2441": {
+      "labels": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake"
+      ],
+      "number": 2441,
+      "state": "OPEN",
+      "title": "STRATEGY REVIEW: Firebase data-layer lock-in and future platform portability",
+      "updatedAt": "2026-07-18T06:14:45Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2441"
+    },
+    "2442": {
+      "labels": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake"
+      ],
+      "number": 2442,
+      "state": "OPEN",
+      "title": "STRATEGY REVIEW: OAuth provider gap and identity-growth impact",
+      "updatedAt": "2026-07-16T14:37:52Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2442"
+    },
+    "2443": {
+      "labels": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake"
+      ],
+      "number": 2443,
+      "state": "OPEN",
+      "title": "STRATEGY REVIEW: Minimal UI foundation and component-system growth constraints",
+      "updatedAt": "2026-07-16T14:37:54Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2443"
+    },
+    "2445": {
+      "labels": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake"
+      ],
+      "number": 2445,
+      "state": "OPEN",
+      "title": "STRATEGY REVIEW: NoSQL schema-governance gap and relational-growth constraints",
+      "updatedAt": "2026-07-16T14:37:57Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2445"
+    },
+    "2447": {
+      "labels": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake"
+      ],
+      "number": 2447,
+      "state": "OPEN",
+      "title": "STRATEGY REVIEW: Automated testing foundation gap and growth risk",
+      "updatedAt": "2026-07-16T14:37:59Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2447"
+    },
+    "2448": {
+      "labels": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake"
+      ],
+      "number": 2448,
+      "state": "OPEN",
+      "title": "STRATEGY REVIEW: Testing foundation gap and quality-scaling impact",
+      "updatedAt": "2026-07-16T14:38:01Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2448"
+    },
+    "2463": {
+      "labels": [
+        "governance",
+        "documentation",
+        "design",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:pipeline",
+        "pmo:priority:3",
+        "pmo:stage:definition"
+      ],
+      "number": 2463,
+      "state": "OPEN",
+      "title": "PROJECT: Club Newspaper Phase 0 \u2014 Design Authority and Implementation Readiness",
+      "updatedAt": "2026-07-21T11:31:32Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2463"
+    },
+    "2528": {
+      "labels": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake"
+      ],
+      "number": 2528,
+      "state": "OPEN",
+      "title": "STRATEGY REVIEW: Governance model audit and code-to-production control alignment",
+      "updatedAt": "2026-07-16T14:38:04Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2528"
+    },
+    "2546": {
+      "labels": [
+        "governance",
+        "documentation",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:priority:1",
+        "pmo:active",
+        "status:needs-human"
+      ],
+      "number": 2546,
+      "state": "OPEN",
+      "title": "PROJECT: PMO Project-to-Cursor Autonomous Delivery Alignment",
+      "updatedAt": "2026-07-19T15:50:59Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2546"
+    },
+    "2610": {
+      "labels": [
+        "change-ops",
+        "pmo",
+        "status:in-progress",
+        "pmo:priority:1",
+        "pmo:active"
+      ],
+      "number": 2610,
+      "state": "OPEN",
+      "title": "PROJECT: PMO Dashboard Single-Authority Redesign and Production Recovery",
+      "updatedAt": "2026-07-19T21:54:30Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2610"
+    },
+    "2615": {
+      "labels": [
+        "status:blocked",
+        "program:planning",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:pipeline",
+        "pmo:priority:1",
+        "pmo:stage:definition"
+      ],
+      "number": 2615,
+      "state": "OPEN",
+      "title": "PROJECT: Issue contract validation and label-triggered draft PR creation",
+      "updatedAt": "2026-07-21T09:55:42Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2615"
+    },
+    "2643": {
+      "labels": [
+        "status:queued",
+        "governance",
+        "ci",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:1"
+      ],
+      "number": 2643,
+      "state": "OPEN",
+      "title": "FOLLOW-ON: #2639 administrative closeout and runtime automation hardening",
+      "updatedAt": "2026-07-19T21:56:56Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2643"
+    },
+    "2677": {
+      "labels": [
+        "governance",
+        "ci",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:pipeline",
+        "pmo:priority:1",
+        "pmo:stage:definition"
+      ],
+      "number": 2677,
+      "state": "OPEN",
+      "title": "PROJECT: Deterministic Cursor handoff controller and continuous queue advancement",
+      "updatedAt": "2026-07-21T09:55:48Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2677"
+    },
+    "2678": {
+      "labels": [
+        "governance",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:pipeline",
+        "pmo:priority:1",
+        "pmo:stage:definition"
+      ],
+      "number": 2678,
+      "state": "OPEN",
+      "title": "PROJECT: Cumulative lane closeout evidence and bounded autonomy model",
+      "updatedAt": "2026-07-21T09:55:53Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2678"
+    },
+    "2679": {
+      "labels": [
+        "governance",
+        "ci",
+        "pmo",
+        "agent:ChatGPT",
+        "status:in-progress",
+        "pmo:priority:1",
+        "pmo:active"
+      ],
+      "number": 2679,
+      "state": "OPEN",
+      "title": "OPS: Workflow transition SLO and daily 5 PM performance report",
+      "updatedAt": "2026-07-20T21:10:38Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2679"
+    },
+    "2680": {
+      "labels": [
+        "ci",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:pipeline",
+        "pmo:priority:1",
+        "pmo:stage:definition"
+      ],
+      "number": 2680,
+      "state": "OPEN",
+      "title": "PROJECT: End-to-end workflow health observability and idle-time dashboard",
+      "updatedAt": "2026-07-21T09:55:57Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2680"
+    },
+    "2681": {
+      "labels": [
+        "ci",
+        "pmo",
+        "agent:ChatGPT",
+        "status:in-progress",
+        "pmo:priority:1",
+        "pmo:active"
+      ],
+      "number": 2681,
+      "state": "OPEN",
+      "title": "TASK: Cursor Local Bridge recurring authentication and capacity preflight",
+      "updatedAt": "2026-07-20T21:11:05Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2681"
+    },
+    "2682": {
+      "labels": [
+        "governance",
+        "pmo",
+        "agent:ChatGPT",
+        "status:in-progress",
+        "pmo:priority:1",
+        "pmo:active"
+      ],
+      "number": 2682,
+      "state": "OPEN",
+      "title": "OPS: Daily PMO design factory and Cursor enrichment pipeline",
+      "updatedAt": "2026-07-20T21:11:17Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2682"
+    },
+    "2683": {
+      "labels": [
+        "governance",
+        "pmo",
+        "agent:ChatGPT",
+        "status:in-progress",
+        "pmo:priority:1",
+        "pmo:active"
+      ],
+      "number": 2683,
+      "state": "OPEN",
+      "title": "OPS: Daily completed-work postmortem and assignment-conformance review",
+      "updatedAt": "2026-07-20T21:11:32Z",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2683"
+    }
+  }
+}
