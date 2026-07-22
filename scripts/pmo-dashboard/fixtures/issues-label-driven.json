@@ -225,7 +225,7 @@
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9032",
     "body": "Related Pipeline Project: #9004\nOwner / Agent: ChatGPT\n",
-    "labels": [{"name":"pmo"},{"name":"team:engineering"},{"name":"eng:priority:1"}],
+    "labels": [{"name":"pmo"},{"name":"team:engineering"}],
     "updated_at": "2026-07-09T10:00:00Z",
     "closed_at": null
   }

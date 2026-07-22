@@ -238,7 +238,7 @@ async function main() {
 
   await withBuild([
     issue({ number: 9150, title: 'PROJECT: Operations peer', labels: ['pmo', 'team:operations', 'ops:priority:1'] }),
-    issue({ number: 9151, title: 'PROJECT: Engineering prep peer', labels: ['pmo', 'team:engineering', 'eng:priority:1'], body: 'Related Pipeline Project: #9102\n' }),
+    issue({ number: 9151, title: 'PROJECT: Engineering prep peer', labels: ['pmo', 'team:engineering'], body: 'Related Pipeline Project: #9102\n' }),
     issue({ number: 9152, title: 'PROJECT: Retained', labels: ['pmo', 'pmo:active', 'team:pmo', 'pmo:priority:1'] })
   ], (data) => {
     assert(!findView(data, 9150), 'T17: Operations peer excluded');

@@ -258,8 +258,11 @@ function carriesConflictingQueueNamespace(labels, allowedTeam) {
     (label) =>
       (label.startsWith('team:') && label !== allowedTeam) ||
       label.startsWith('pmo:priority:') ||
+      label.startsWith('pmo:stage:') ||
       label.startsWith('eng:priority:') ||
-      label.startsWith('ops:')
+      // Native Operations state/priority labels (ops:*) are allowed on clean
+      // team:operations peers and must not count as contradictions.
+      (allowedTeam !== 'team:operations' && label.startsWith('ops:'))
   );
 }
 
