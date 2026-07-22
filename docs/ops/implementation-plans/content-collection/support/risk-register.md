@@ -6,7 +6,7 @@ Owns: Content Collection program risk register — triggers, mitigations, owners
 Does Not Own: Risk acceptance decisions, insurance/compliance sign-off, or automatic halt enforcement
 Canonical Reference: /docs/ops/reports/content-collection-docs-audit-dedup-2360.md
 Related Issues: #2364, #2359, #2360, #2286, #1738
-Last Reviewed: 2026-07-10
+Last Reviewed: 2026-07-21
 ---
 
 # Risk Register — Content Collection
@@ -65,7 +65,7 @@ Each risk entry includes:
 | R-001 | Duplicate #2286 implementation | Content model / runtime | medium | critical | New code rebuilds candidate repo, admin API, media ref, audit layers | CC-001 inheritance rule; package review; classify consume/extend/defect/adapter | Cursor | open | **Stop** affected task if duplicate foundation work appears |
 | R-002 | #1738 issue graph confusion | PMO / issues | medium | high | Implementation uses #1738 children as active tasks instead of #2359 successors | #1738 successor decision doc; clean #2359 child chain; launch playbook serial order | ChatGPT | open | **Pause** issue creation if graph root unclear |
 | R-003 | Parallel file conflicts | All implementation | high | high | Multiple Cursor sessions edit same paths | Worktree standard (when promoted); allowlists; hot-zone halt; parallel-agent Rule 1 | Cursor | open | **Pause** affected lane on path collision |
-| R-004 | Shared content model drift | Feature lanes | high | critical | GAL/LIB/MEM start before CC-001/CC-002 frozen | CONTRACT-FROZEN marker; CC-001 package blocks feature lanes | ChatGPT | open | **Block** dependent feature implementation until frozen |
+| R-004 | Shared content model drift | Feature lanes | high | critical | GAL/LIB/MEM start before CC-001/CC-002 frozen | CONTRACT-FROZEN markers verified (#2433/#2434); feature child issues still require Bill / ChatGPT authorization | ChatGPT | mitigated-open | **Block** auto-launch; allow only authorized allowlisted feature children |
 | R-005 | CI scope creep | CI / workflows | medium | high | CI PR edits feature files or unsafe auto-repair | CI-001/CI-002 packages; Stage 0 inventory-first; dry-run-first; Phase 0 docs-only boundary | Cursor | open | **Serialize or defer** CI workflow work on collision |
 | R-006 | Review backlog | PMO / PR queue | high | medium | 3 or more PRs ready-for-review; ChatGPT/Bill capacity exceeded | Review throttle standard; draft staging; `CHATGPT HANDOFF` discipline | ChatGPT | open | **Pause** new ready-for-review PRs when queue reaches 3 |
 | R-007 | Design drift | Feature UI | medium | high | Functional pages miss LGFC design standards | `lgfc-design-compliance` skill; visual evidence in PR | Cursor | open | **Hold** UI lane until design review |
