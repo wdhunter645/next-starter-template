@@ -6,6 +6,7 @@ import { readClaim, isClaimActive } from './claim.mjs';
 import { readHeartbeat, heartbeatAgeSeconds } from './heartbeat.mjs';
 import { cliAuthPreflight, resolveWorkspace } from './launch.mjs';
 import { freeDiskMb } from './atomic-write.mjs';
+import { readInFlight } from './launch-transaction.mjs';
 
 function listPackets(queueDir) {
   if (!fs.existsSync(queueDir)) return [];
@@ -53,6 +54,7 @@ function systemdUnitActive(unit) {
 export function collectStatus(config, opts = {}) {
   const dirs = ensureDirs(config);
   const claim = readClaim(config);
+  const inFlight = readInFlight(config);
   const ttl = config.claimTtlSeconds || 7200;
   const claimActive = claim && isClaimActive(claim, ttl);
   const claimAgeSeconds = claim?.acquiredAt
@@ -93,12 +95,26 @@ export function collectStatus(config, opts = {}) {
             queueDepth: heartbeat.queueDepth,
           }
         : null,
+      activeLaunch: heartbeat?.activeLaunch || null,
       lastDrain,
       lastReconcile,
       lastInboundPacketAt: heartbeat?.lastInboundPacketAt || null,
       lastOutboundGithubAt: heartbeat?.lastOutboundGithubAt || null,
       lastRecoveryReason: heartbeat?.lastReconcile?.reason || null,
     },
+    launchTransaction: inFlight
+      ? {
+          state: inFlight.state || 'unknown',
+          issueNumber: inFlight.issueNumber || null,
+          resumeCommentId: inFlight.resumeCommentId || null,
+          deliveryId: inFlight.deliveryId || null,
+          spawnedAt: inFlight.spawnedAt || null,
+          acceptedAt: inFlight.acceptedAt || null,
+          sessionId: inFlight.sessionId || null,
+          childPid: inFlight.childPid || null,
+          updatedAt: inFlight.updatedAt || null,
+        }
+      : { state: 'none' },
     queue: {
       depth: queueFiles.length,
       oldestAgeSeconds: (() => {
