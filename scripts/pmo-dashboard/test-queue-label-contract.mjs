@@ -118,6 +118,17 @@ assert(
   'operations issue with Pipeline stage must remain visible for fail-closed classification'
 );
 assert(
+  !isStandaloneOperationsIssue({
+    labels: [
+      { name: 'team:operations' },
+      { name: 'ops:monitoring' },
+      { name: 'pmo:stage:intake' }
+    ],
+    body: 'Related project: #1'
+  }),
+  'operations issue with ops state and Pipeline stage must remain visible for fail-closed classification'
+);
+assert(
   isPeerEngineeringPreparation({
     labels: [{ name: 'team:engineering' }],
     body: 'Related Pipeline Project: #42\nOwner / Agent: ChatGPT\n'
