@@ -5,11 +5,27 @@ Authority Level: Operational Authority
 Owns: Execution ownership for Project #2702 and child Issues #2725, #2726, and #2727
 Does Not Own: Product priority, queue policy, independent review, merge approval, or Production authorization
 Canonical Reference: /docs/governance/AGENT-TEAM.md
-Related Issues: #2702, #2724, #2725, #2726, #2727
+Related Issues: #2702, #2724, #2725, #2726, #2727, #2752
 Last Reviewed: 2026-07-22
 ---
 
 # Project #2702 ChatGPT-Only Execution Ownership
+
+## Purpose
+
+Record the Product Authority decision that all remaining implementation, remediation, promotion, migration, verification, rollback, and closeout work under Project #2702 is executed by ChatGPT.
+
+## Scope
+
+This document applies only to Project #2702 and child Issues #2725, #2726, and #2727. It governs execution ownership and does not grant independent review, merge, Product, or Production authority.
+
+## Current known truth
+
+Project #2702 and its active children are ChatGPT-owned. Cursor is not an authorized executor for this project. Repository changes still require issue-scoped branches, pull requests, required checks, and independent review.
+
+## Intended final state
+
+All #2702 implementation and migration work is completed by ChatGPT, independently reviewed, promoted through the approved repository lifecycle, and closed with no ownership ambiguity or delegation to Cursor.
 
 ## Product Authority decision
 
