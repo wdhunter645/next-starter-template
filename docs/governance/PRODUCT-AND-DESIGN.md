@@ -24,9 +24,9 @@ Agent roles and protected-stop contracts remain in `docs/governance/AGENT-TEAM.m
 | Role | Actor | Owns in this domain |
 | --- | --- | --- |
 | **Product Authority** | Bill | Product go/no-go; material UX or functional-requirement decisions; final completed-product judgment for product outcomes |
-| **PMO / Engineering** | ChatGPT / Atlas | Final design package authorship; launch-control packaging; design documentation completeness; primary PR review for product/design changes |
+| **PMO / Engineering** | ChatGPT | Final design package authorship; launch-control packaging; design documentation completeness; primary PR review for product/design changes |
 | **Implementation / Operations** | Cursor | Scoped implementation of approved product/design work; no self-approval of product or design authority |
-| **PR Approver / Engineering** | ChatGPT / Atlas (Bill alternate) | Approval and merge of product/design PRs per delivery profile; not a substitute for Product Authority on material product decisions |
+| **PR Approver / Engineering** | ChatGPT (Bill alternate) | Approval and merge of product/design PRs per delivery profile; not a substitute for Product Authority on material product decisions |
 | **Supporting design references** | `docs/reference/design/**` and `docs/governance/standards/design-authority_MASTER.md` | Locked behavior facts, page/route contracts, and enforcement pointers only |
 
 Rules:

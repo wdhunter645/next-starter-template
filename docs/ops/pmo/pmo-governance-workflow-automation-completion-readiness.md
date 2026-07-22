@@ -1,6 +1,6 @@
 ---
 Doc Type: Operations
-Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and reviewers
+Audience: Bill, ChatGPT, Cursor, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Operational Authority
 Owns: Priority #3 PMO readiness decision, governance/workflow automation program candidate scope, child-project boundaries, design/readiness state, Cursor launch preconditions
 Does Not Own: Runtime implementation, workflow code, CI script changes, issue creation, merge authority, production secrets, vendor configuration, unauthorized GitHub issue mutation
@@ -123,7 +123,7 @@ A later launched Priority #3 program may:
 
 Launch preconditions for Program #1719 were **satisfied on 2026-07-16** by Bill’s continuous reduced-gate authorization on #1719. Remaining operating rules:
 
-1. Cursor receives one child task at a time unless Bill/Atlas explicitly approve parallel execution.
+1. Cursor receives one child task at a time unless Bill/ChatGPT explicitly approve parallel execution.
 2. After a predecessor PR merges and post-merge verification is clean, Cursor may start the next authorized child without another launch prompt.
 3. Protected workflow/script changes require explicit trusted-reviewer expectations before implementation.
 4. Issue mutation permissions remain denied unless a current source issue explicitly grants them.

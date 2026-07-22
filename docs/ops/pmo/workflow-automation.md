@@ -40,7 +40,7 @@ This document does not own:
 - D1 migrations;
 - production configuration or secrets;
 - GitHub issue closure, relabeling, or queue mutation;
-- creation of implementation child issues before Atlas/Bill launch approval.
+- creation of implementation child issues before ChatGPT/Bill launch approval.
 
 ## Current Known Truth
 
@@ -57,7 +57,7 @@ This document does not own:
 - GitHub documentation, not Google Drive or chat, is the canonical design source for PMO Workflow Automation.
 - Historical Program `#1411` planning outputs feed Priority #3 Program `#1719` child tasks; new execution uses current `#1719`–`#1727` issues only.
 - Wave labels, run identifiers, merge policy labels, and queue-control behavior are specified before workflow code changes begin.
-- Cursor can continue safely when a PR is ready for review by stopping at the correct handoff point, reporting validation, and preserving Atlas/Bill review and merge authority.
+- Cursor can continue safely when a PR is ready for review by stopping at the correct handoff point, reporting validation, and preserving ChatGPT/Bill review and merge authority.
 - Completed source issues have reconciled terminal labels: stable non-status labels plus `status:complete`, with stale active or failure status labels removed during closeout.
 - PMO Backlog remains the documented inventory for work not yet promoted into program issues.
 
@@ -68,7 +68,7 @@ This document does not own:
 | PMO July 2026 authority | Durable language that program issue numbers identify programs and PMO Backlog holds ideas/project drafts | No issue or label mutation |
 | Workflow Automation design migration | This GitHub authority page replaces Drive/chat-only planning for workflow automation | No workflow YAML edits |
 | Cursor continuation and queue contract | Rules for when Cursor continues, stops, reports, and waits | No automated queue advancement in this PR |
-| PR readiness and batch review control | Ready-for-review rules that preserve Atlas/Bill review | No PR merge or review-state mutation by Cursor |
+| PR readiness and batch review control | Ready-for-review rules that preserve ChatGPT/Bill review | No PR merge or review-state mutation by Cursor |
 | Merge and issue mutation policy | Explicit prohibition on Cursor merge, close, relabel, and issue-state changes without authorization | No destructive issue action |
 | Queue/wave model and labels | Planning definitions for wave/run identifiers and stop/continue gates | No label creation or relabeling |
 | Post-merge closeout evidence stabilization | Evidence and terminal-label reconciliation requirements before issue closeout or queue advancement | No closeout automation change |
@@ -91,7 +91,7 @@ Cursor may continue forward only inside the active source issue and changed-file
 1. finish the requested local validation;
 2. update the PR body with exact validation results;
 3. preserve exactly one source issue line;
-4. stop at `READY FOR REVIEW` for Atlas/Bill walkthrough;
+4. stop at `READY FOR REVIEW` for ChatGPT/Bill walkthrough;
 5. avoid merge, close, relabel, queue, or issue-mutation actions unless the active issue explicitly authorizes them.
 
 Cursor continuation must support safe progress without converting readiness into merge authority.
@@ -111,7 +111,7 @@ PR readiness means the implementation or documentation PR is complete enough for
 Batch review must preserve:
 
 - Bill authority for merges, protected actions, launch gates, destructive actions, production-sensitive work, and strategy decisions;
-- Atlas authority for governance review, source-issue accounting, queue conformance, and review disposition;
+- ChatGPT authority for governance review, source-issue accounting, queue conformance, and review disposition;
 - Cursor responsibility for scoped implementation, validation, PR-body evidence, and stopping at the authorized handoff point.
 
 ### Merge and issue mutation policy
@@ -146,11 +146,11 @@ Closeout automation must not treat merge as sufficient evidence by itself. Futur
 - queue advancement decision;
 - unresolved reviewer, gate, or post-merge blockers.
 
-The selected terminal behavior is: a closed completed source issue retains only stable non-status labels plus `status:complete`. The controller or authorized Atlas closeout step must remove active or failure-state labels such as `status:queued`, `status:assigned`, `status:pr-draft`, `status:implementation`, `status:review`, `status:post-merge-verify`, and `status:failed` as part of the same authorized closeout action that closes the issue with `state_reason: completed`. If that reconciliation cannot be verified, queue advancement stops and the blocker is reported.
+The selected terminal behavior is: a closed completed source issue retains only stable non-status labels plus `status:complete`. The controller or authorized ChatGPT closeout step must remove active or failure-state labels such as `status:queued`, `status:assigned`, `status:pr-draft`, `status:implementation`, `status:review`, `status:post-merge-verify`, and `status:failed` as part of the same authorized closeout action that closes the issue with `state_reason: completed`. If that reconciliation cannot be verified, queue advancement stops and the blocker is reported.
 
 ## PMO Backlog Promotion Process
 
-Backlog item promotion starts during PMO meeting review or explicit Bill/Atlas review.
+Backlog item promotion starts during PMO meeting review or explicit Bill/ChatGPT review.
 
 Promotion creates or updates:
 
@@ -168,7 +168,7 @@ A PMO Backlog item may feed a future program issue only when:
 3. Repository documentation becomes the design source of truth.
 4. Non-interference with active program work is documented.
 5. Scope is decomposed into tasks with allowlisted files and validation.
-6. Authorized issue creation after Atlas/Bill walkthrough.
+6. Authorized issue creation after ChatGPT/Bill walkthrough.
 7. Cursor receives a bounded source issue and PR scope.
 
 Workflow Automation planning was promoted through historical `#1411`. Remaining design-migration and implementation-candidate work continues only through current Program `#1719` child issues (starting with `#1721` after `#1720`). This document alone does not authorize workflow YAML, label mutation, or child-issue creation.

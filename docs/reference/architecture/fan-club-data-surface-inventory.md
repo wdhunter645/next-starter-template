@@ -1,6 +1,6 @@
 ---
 Doc Type: Reference
-Audience: Bill, Atlas, Cursor, LGFC maintainers, database implementers, and AI agents
+Audience: Bill, ChatGPT, Cursor, LGFC maintainers, database implementers, and AI agents
 Authority Level: Controlled
 Owns: Fan Club program API-to-data-surface inventory and read/write boundary map for Program #1685
 Does Not Own: Runtime implementation, D1 migrations, B2 configuration, or merge approval

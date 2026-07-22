@@ -76,7 +76,7 @@ Each risk entry includes:
 | R-012 | Queue stall after predecessor close | PMO / dispatch | high | high | Successor blocked/missing wake labels after #2360-style closeout | Queue-watch protocol; regression case #2360→#2361; `agent:cursor` + `handoff:ready` | ChatGPT | open | **Create remediation issue**; do not assume Cursor engaged |
 | R-013 | Post-merge closeout failure | CI / ops | medium | high | Merge with failed gate or broken successor disposition | Closeout protocol; post-merge runbooks; `post-merge-failure` remediation | Cursor | open | **Halt** queue advance until dispositioned |
 | R-014 | Parser-unsafe PR body | PR governance | medium | high | PR body missing Issue line, ZIP checkbox, or allowlist drift | PR template; lgfc-pr-governance skill; CORE preflight | Cursor | open | **Do not** mark ready until parser requirements met |
-| R-015 | Intake branch drift | Docs | low | medium | Cursor reads stale `.docx` not reconciled with main | Intake on `atlas/drive-draft-intake-2367` non-authoritative; enriched docs on main | Cursor | mitigated | **Stop** if enriched doc missing — do not promote from `.docx` alone |
+| R-015 | Intake branch drift | Docs | low | medium | Cursor reads stale `.docx` not reconciled with main | Intake on `ChatGPT/drive-draft-intake-2367` non-authoritative; enriched docs on main | Cursor | mitigated | **Stop** if enriched doc missing — do not promote from `.docx` alone |
 
 ## Stop rule summary (quick reference)
 

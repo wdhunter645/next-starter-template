@@ -16,7 +16,7 @@ Last Reviewed: 2026-07-01
 
 ## Purpose
 
-Validate Program #2039 implementation and documentation evidence, state public-launch readiness, and hand off operator next steps to Bill/Atlas.
+Validate Program #2039 implementation and documentation evidence, state public-launch readiness, and hand off operator next steps to Bill/ChatGPT.
 
 ## Scope
 
@@ -37,7 +37,7 @@ Consolidates Tasks #2041–#2047 deliverables and records Task #2048 validation/
 
 ## Intended final state
 
-Program #2039 repo work is complete. Public launch proceeds only after Bill/Atlas operator sign-off using `docs/how-to/website/website-public-launch-checklist.md`.
+Program #2039 repo work is complete. Public launch proceeds only after Bill/ChatGPT operator sign-off using `docs/how-to/website/website-public-launch-checklist.md`.
 
 ## Readiness determination
 
@@ -56,7 +56,7 @@ Repo implementation and documentation for Program #2039 Tasks #2041–#2048 are 
 
 ### Operator exceptions (not repo blockers)
 
-- Bill/Atlas production promotion authorization required
+- Bill/ChatGPT production promotion authorization required
 - Preview and production smoke tests must be executed and recorded
 - Analytics public environment ID only when analytics launch is authorized
 - No live fundraiser campaign without separate authorization
@@ -73,13 +73,13 @@ Repo implementation and documentation for Program #2039 Tasks #2041–#2048 are 
 - `docs/how-to/website/website-production-rollback.md`
 - `docs/ops/reports/website-public-launch-evidence-template.md`
 
-## Bill/Atlas acceptance criteria
+## Bill/ChatGPT acceptance criteria
 
 - [x] Confirm Tasks #2041–#2048 closed with `status:complete`
 - [ ] Execute preview smoke test per production smoke-test how-to
 - [ ] Authorize or defer production promotion
 - [ ] Record launch evidence in evidence template
-- [x] Record Program #2039 repository closeout evidence after Bill/Atlas acceptance
+- [x] Record Program #2039 repository closeout evidence after Bill/ChatGPT acceptance
 
 ## Handoff notes
 

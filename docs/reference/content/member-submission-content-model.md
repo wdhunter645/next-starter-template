@@ -1,6 +1,6 @@
 ---
 Doc Type: Reference
-Audience: Bill, Atlas, Cursor, LGFC operators, editors, and implementation agents
+Audience: Bill, ChatGPT, Cursor, LGFC operators, editors, and implementation agents
 Authority Level: Controlled
 Owns: Member submission intake field and state model for the LGFC content pipeline
 Does Not Own: Upload runtime, B2 configuration, D1 migrations, or admin UI implementation

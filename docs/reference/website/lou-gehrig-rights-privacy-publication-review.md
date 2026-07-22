@@ -1,6 +1,6 @@
 ---
 Doc Type: Reference
-Audience: LGFC operators, editors, and Bill/Atlas
+Audience: LGFC operators, editors, and Bill/ChatGPT
 Authority Level: Controlled
 Owns: Clearance states, public-domain review, privacy review, excerpt/summary treatment, and no-publish conditions
 Does Not Own: Legal conclusions, runtime enforcement, or public publication
@@ -16,7 +16,7 @@ Last Reviewed: 2026-07-04
 Define operator review workflow for rights clearance, copyright assessment,
 privacy review, excerpt/summary treatment, and conditions that block publication.
 
-This is an operator review workflow, not legal advice. Bill/Atlas retain final
+This is an operator review workflow, not legal advice. Bill/ChatGPT retain final
 authority on ambiguous cases.
 
 ## Clearance states
@@ -36,7 +36,7 @@ authority on ambiguous cases.
 1. Identify work type (text, photo, government document, etc.).
 2. Determine publication date and jurisdiction considerations.
 3. Document assessment in notes; do not assume PD from age alone.
-4. Set `public-domain-candidate` until Bill/Atlas or qualified review confirms.
+4. Set `public-domain-candidate` until Bill/ChatGPT or qualified review confirms.
 5. Confirmed public domain may proceed to `approved-for-reference` or public-copy path.
 
 ## Privacy review process
@@ -46,7 +46,7 @@ authority on ambiguous cases.
 | `none` | Standard review |
 | `living-person` | Verify consent or public-interest editorial justification |
 | `donor/member` | Apply Fan Club privacy rules; no unauthorized disclosure |
-| `minors` | Escalate to Bill/Atlas; default reject for public use |
+| `minors` | Escalate to Bill/ChatGPT; default reject for public use |
 | `sensitive` | Redact or defer; document mitigation |
 | `other` | Document case-specific review in notes |
 

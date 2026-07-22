@@ -131,7 +131,7 @@ This Program 5 item can be promoted into a Program 1-4 portfolio lane only after
 5. error and empty states are specified;
 6. security boundaries are reviewed against the access model;
 7. implementation scope is split into bounded tasks;
-8. Atlas/Bill choose a Program 1-4 lane and explicitly authorize launch.
+8. ChatGPT/Bill choose a Program 1-4 lane and explicitly authorize launch.
 
 ## Recommended PMO classification
 

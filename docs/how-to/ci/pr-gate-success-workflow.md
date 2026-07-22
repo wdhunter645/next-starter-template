@@ -2,7 +2,7 @@
 Doc Type: How-To
 Audience: Human + AI
 Authority Level: Operational
-Owns: Repeatable PR gate-clean execution workflow for Cursor and Atlas
+Owns: Repeatable PR gate-clean execution workflow for Cursor and ChatGPT
 Does Not Own: Canonical PR-process policy or CI implementation design
 Canonical Reference: /docs/governance/PR_PROCESS.md
 Supporting References:

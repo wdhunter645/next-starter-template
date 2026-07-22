@@ -29,7 +29,7 @@ Each major program should leave at least one reusable control for the next progr
 | --- | --- | --- |
 | Repo docs and GitHub Issues are operational authority | Prior programs; #2359 protocol | Issue-first collaboration; `CHATGPT HANDOFF` workflow doc |
 | Drive drafts are not production-ready authority | #2359 readiness assessment | Audit before promotion (#2360); intake folder non-authoritative |
-| Duplicate workflow text across issues drifts terminology | #2359 launch (Atlas vs ChatGPT) | Centralize in `docs/ops/ai/chatgpt-cursor-handoff-workflow.md` |
+| Duplicate workflow text across issues drifts terminology | #2359 launch (ChatGPT vs ChatGPT) | Centralize in `docs/ops/ai/chatgpt-cursor-handoff-workflow.md` |
 | Chat decisions not written to issues block Cursor | #2360 decision-propagation lesson | Decision propagation rule in handoff workflow |
 | Handoff markers do not wake agents by themselves | #2360 queue stall; #2391 | `docs/ops/pmo/queue-watch-and-dispatch-protocol.md` |
 | Predecessor closeout without successor disposition stalls queue | #2360 → #2361/#2363/#2364 | Atomic closeout template in `github-issue-closeout-protocol.md` |

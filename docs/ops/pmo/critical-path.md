@@ -84,7 +84,7 @@ Program master issue → one active task issue → one PR → verify → closeou
 
 | State | Meaning | Who may implement |
 | --- | --- | --- |
-| Planning / review-ready | Documentation or plan is ready for Atlas/Bill review | Assigned planning agent only |
+| Planning / review-ready | Documentation or plan is ready for ChatGPT/Bill review | Assigned planning agent only |
 | `status:queued` / `status:pr-draft` / `status:implementation` / `status:review` | Active pipeline slot | One primary agent on the active task only |
 | `status:blocked` | Waiting for upstream task or queue slot | Read-only exploration only |
 | `status:post-merge-verify` / `status:complete` | Terminal or verifying | No next implementation until closeout/queue authority is clear |
@@ -127,7 +127,7 @@ PMO cycle authority → Workflow Automation authority → Cursor continuation
 | PMO cycle authority | Program 1/2/3 lane model | Docs headers and registry consistency |
 | Workflow Automation authority | Drive/Program 3 design migration into GitHub docs | No workflow/runtime changes |
 | Cursor continuation | Safe continue/stop contract | READY FOR REVIEW handoff preserved |
-| PR readiness/batch review | Human review and merge authority | Atlas/Bill walkthrough |
+| PR readiness/batch review | Human review and merge authority | ChatGPT/Bill walkthrough |
 | Mutation policy | Merge/close/relabel/queue prohibitions | Explicit authorization required |
 | Queue/wave model | Planning labels and run identifiers | No label or workflow mutation |
 | Closeout evidence | Stable post-merge evidence packet | Closeout separated from mutation |

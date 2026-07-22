@@ -295,7 +295,7 @@ The lane and delegated transaction executors must not independently:
 | Trigger | Action |
 | --- | --- |
 | Pipeline intake or preparation | Validate Engineering priority and stage; route accountable preparation without inventing priority |
-| Engineering P1 assigned | Ensure one peer preparation assignment exists for ChatGPT / Atlas |
+| Engineering P1 assigned | Ensure one peer preparation assignment exists for ChatGPT |
 | Project Graduation decision | Reconcile Pipeline/Engineering removal and independently assigned Active/PMO state |
 | PMO Active dispatch | Select parent by PMO priority and child by project sequence |
 | Collaboration requested | Route, acknowledge, track response, and return execution without changing ownership |

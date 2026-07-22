@@ -28,7 +28,7 @@ that program.
 
 | Item | State |
 | --- | --- |
-| `#1255` Website Implementation and Content Operations | **closed complete** — umbrella program; terminal closeout `2026-06-18` (Atlas); child projects dispositioned |
+| `#1255` Website Implementation and Content Operations | **closed complete** — umbrella program; terminal closeout `2026-06-18` (ChatGPT); child projects dispositioned |
 | `#1256` Content Strategy / Editorial Inventory | **closed complete** — Tasks 001–009 |
 | `#1258` Website Operations Admin | **closed complete** — Phase 4 Tasks 001–013; terminal PR `#1652` |
 | `#1259` Website QA / Production Validation | **Phase 4 complete on `main`** — Tasks 001–009 merged; terminal Task 009 PR `#1751`; Task 008 PR `#1753`; GitHub issue open (`status:complete`) pending operator close |

@@ -1,6 +1,6 @@
 ---
 Doc Type: How-To
-Audience: LGFC operators, Atlas, Bill, maintainers, and AI implementation agents
+Audience: LGFC operators, ChatGPT, Bill, maintainers, and AI implementation agents
 Authority Level: Operational Procedure
 Owns: Entry-point operator workflow for Website Operations Admin surfaces under Program #1258
 Does Not Own: GitHub issue closure, runtime deployment, schema migration, or auth policy changes
@@ -80,7 +80,7 @@ Without a saved token, hardened pages fail closed: no stats, lists, exports, or 
 
 Fan Club member operational paths (T40 / `#1118`): [Fan Club operational workflows](./fanclub-operational-workflows.md).
 
-Legacy issue disposition copy-paste package (Atlas batch; no GitHub mutations in-repo):
+Legacy issue disposition copy-paste package (ChatGPT batch; no GitHub mutations in-repo):
 `docs/ops/reports/website-operations-admin-legacy-disposition-package.md`
 
 ### 4. Shared fail-closed signals

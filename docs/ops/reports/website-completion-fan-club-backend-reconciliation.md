@@ -1,6 +1,6 @@
 ---
 Doc Type: Operations
-Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and reviewers
+Audience: Bill, ChatGPT, Cursor, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Controlled
 Owns: Task 002 backend and data-surface reconciliation for Website Completion / Fan Club Product Buildout
 Does Not Own: Application code changes, D1 migrations, B2 configuration, issue closure, labels, or merge approval

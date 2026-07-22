@@ -1,6 +1,6 @@
 ---
 Doc Type: Reference
-Audience: Bill, Atlas, Cursor, database implementers, and LGFC maintainers
+Audience: Bill, ChatGPT, Cursor, database implementers, and LGFC maintainers
 Authority Level: Controlled
 Owns: D1/B2 storage boundary design for LGFC content pipeline metadata and media
 Does Not Own: Migration files, runtime code, bucket configuration, or merge approval

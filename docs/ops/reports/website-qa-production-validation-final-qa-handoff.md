@@ -15,7 +15,7 @@ Last Reviewed: 2026-06-17
 
 Task 009 deliverable for Program #1255 child project `#1259`. Consolidate Phase 4
 validation evidence (Tasks 001–007), classify remaining open blockers, and
-publish explicit operations handoff status for Atlas/Bill program review.
+publish explicit operations handoff status for ChatGPT/Bill program review.
 
 ## Boundary
 
@@ -49,7 +49,7 @@ disposition, legacy disposition package, and this final handoff are evidenced.
 | Legacy GitHub disposition | **Complete** (Task 008) | `website-qa-production-validation-legacy-disposition-package.md` |
 | Program closeout readiness | **Published** | `program-1255-closeout-readiness.md` |
 
-**Handoff status:** Ready for Atlas/Bill **final inspection and terminal closeout
+**Handoff status:** Ready for ChatGPT/Bill **final inspection and terminal closeout
 authorization**. `#1259` remains **open** until sign-off.
 
 ## Phase 4 deliverable index
@@ -102,7 +102,7 @@ items are hygiene, CI scheduling, or explicitly deferred operational validation.
 | Child project `#1256` Content Strategy | **Closed complete** |
 | Child project `#1258` Website Operations Admin | **Closed complete** (PR `#1652`; issue closed 2026-06-17) |
 | Child project `#1259` Website QA / Production Validation | **Phase 4 complete** (Tasks 001–009); **issue remains OPEN** |
-| Program terminal closeout | **Inspection pending** — requires Atlas/Bill authorization |
+| Program terminal closeout | **Inspection pending** — requires ChatGPT/Bill authorization |
 
 ### For operators
 
@@ -125,24 +125,24 @@ npm run launch-readiness
   present; keep `status:active`.
 - Operator closeout prep **complete** (2026-06-17): `#1123` label removed; `#1258`
   closed complete. See `docs/ops/reports/program-1255-closeout-readiness.md`.
-- Do **not** bulk-close legacy T21–T34 issues without Atlas authorization; current
+- Do **not** bulk-close legacy T21–T34 issues without ChatGPT authorization; current
   GitHub state shows lanes closed with Task 008 disposition package on `main`.
 
 ## Closeout readiness (post Task 009)
 
 Task 008 legacy disposition package merged PR `#1753` / `678699e`. Program `#1255`
 closeout readiness packet published at `docs/ops/reports/program-1255-closeout-readiness.md`
-for Atlas/Bill final inspection.
+for ChatGPT/Bill final inspection.
 
 ## Downstream actions (outside Task 009 scope)
 
 | Action | Owner | When |
 | --- | --- | --- |
 | Operator hygiene (`#1123`, `#1258`) | Operator | Before final inspection |
-| Atlas batch review of legacy issue comments | Atlas / Bill | Optional |
-| Program `#1255` terminal closeout authorization | Atlas / Bill | After inspection |
-| Close `#1259` then `#1255` | Atlas / Bill only | After authorization |
-| Optional H-011 CI workflow PR | Cursor / Atlas | Post-closeout if desired |
+| ChatGPT batch review of legacy issue comments | ChatGPT / Bill | Optional |
+| Program `#1255` terminal closeout authorization | ChatGPT / Bill | After inspection |
+| Close `#1259` then `#1255` | ChatGPT / Bill only | After authorization |
+| Optional H-011 CI workflow PR | Cursor / ChatGPT | Post-closeout if desired |
 
 ## Validation commands
 

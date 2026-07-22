@@ -277,7 +277,7 @@ Routes below were verified from `src/app/**/page.tsx` on `main` at 2026-06-29.
 
 Deferred until Tasks #2042–#2047 are merged or explicitly dispositioned.
 
-## Escalations for Bill/Atlas
+## Escalations for Bill/ChatGPT
 
 | Item | Decision needed |
 | --- | --- |
@@ -289,7 +289,7 @@ Deferred until Tasks #2042–#2047 are merged or explicitly dispositioned.
 
 ## Task 002 readiness decision
 
-**Program #2039 may safely proceed to Task 002 (#2042)** after this inventory PR merges, provided Bill/Atlas accept the routed gap list.
+**Program #2039 may safely proceed to Task 002 (#2042)** after this inventory PR merges, provided Bill/ChatGPT accept the routed gap list.
 
 Task 002 should begin with the public copy/content gaps listed above. Tasks #2043–#2047 may proceed in program order as separately authorized; Task 004 depends on Task 003 per the implementation plan.
 

@@ -90,7 +90,7 @@ These are **operational envelopes** for future Cursor tasks. They become executa
 - #2431 is the prepared Phase 1 Go / NoGo control issue.
 - Rejected target roots remain `docs/ops/programs/` and `docs/reference/website/content-collection/` per #2360.
 - All four feature routes **exist** on `main` with member auth; packages document gaps vs CC-001/CC-002 and implementation allowlists.
-- Intake `.docx` remains on `atlas/drive-draft-intake-2367` only.
+- Intake `.docx` remains on `ChatGPT/drive-draft-intake-2367` only.
 - Feature code remains blocked until `CONTRACT-FROZEN: content-asset-model v1` is posted and ChatGPT verifies downstream release.
 - CI-001 / CI-002 tooling is Phase 1 work only after CI Stage 0 current-state gap analysis.
 

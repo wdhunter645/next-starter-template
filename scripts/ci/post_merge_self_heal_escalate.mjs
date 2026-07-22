@@ -77,7 +77,7 @@ export function buildEscalationIssueBody(finding = {}, context = {}) {
 		`- Source issue: ${finding.source_issue ? `#${finding.source_issue}` : 'unknown'}`,
 		`- Failure class: ${failureClass}`,
 		`- Classification: ${finding.classification || 'unknown'}`,
-		`- Bill/Atlas authorization required: ${requiresOperator ? 'yes' : 'no'}`,
+		`- Bill/ChatGPT authorization required: ${requiresOperator ? 'yes' : 'no'}`,
 		'',
 		'## Failure reason',
 		finding.message || 'No message recorded for this finding.',

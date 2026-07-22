@@ -69,7 +69,7 @@ wholesale copies of copyrighted works in the repository.
 
 ## Disallowed or high-risk categories
 
-Do not intake the following without explicit Bill/Atlas authorization and a
+Do not intake the following without explicit Bill/ChatGPT authorization and a
 documented exception path:
 
 | Category | Risk | Action |
@@ -87,7 +87,7 @@ documented exception path:
 
 | Channel | Actor | Output |
 | --- | --- | --- |
-| Operator research | Editor, researcher, Bill/Atlas | Candidate lead with metadata |
+| Operator research | Editor, researcher, Bill/ChatGPT | Candidate lead with metadata |
 | Member submission | Authenticated member via `/fanclub/submit` | Queue item or research lead referral |
 | Internal archive review | Operator reviewing LGFC-owned assets | Candidate with `owned` rights status |
 | External lead referral | Partner, donor, institution contact | Candidate with outreach notes |

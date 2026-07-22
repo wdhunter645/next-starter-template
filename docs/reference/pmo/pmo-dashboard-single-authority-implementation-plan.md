@@ -22,7 +22,7 @@ That repair remains valid historical context, but this document is **superseded 
 - `docs/ops/pmo/PMO-JULY-2026-DASHBOARD-SPECIFICATION.md`;
 - runtime transition Issue #2702.
 
-The final documentation reconciliation was performed directly by ChatGPT / Atlas under #2699 from the PMO meeting record. Implementation agents must not reinterpret the superseded examples in this historical plan.
+The final documentation reconciliation was performed directly by ChatGPT under #2699 from the PMO meeting record. Implementation agents must not reinterpret the superseded examples in this historical plan.
 
 Do not use the former examples in this plan to assign PMO priority to Pipeline parents or child tasks.
 

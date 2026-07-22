@@ -24,9 +24,9 @@ Delivery model selection remains in `docs/governance/PMO-PORTFOLIO.md` and `docs
 | Role | Actor | Owns in this domain |
 | --- | --- | --- |
 | **Product Authority** | Bill | Platform go/no-go that changes product risk; credentials, cost, vendor, or business authorization; final judgment when isolation or hosting model is material |
-| **PMO / Engineering** | ChatGPT / Atlas | Platform documentation package authorship; environment classification completeness; primary PR review for platform/environment policy and protected platform changes |
+| **PMO / Engineering** | ChatGPT | Platform documentation package authorship; environment classification completeness; primary PR review for platform/environment policy and protected platform changes |
 | **Implementation / Operations** | Cursor | Scoped implementation of approved platform docs and allowlisted platform work; no self-approval of platform authority |
-| **PR Approver / Engineering** | ChatGPT / Atlas (Bill alternate) | Approval and merge of platform/environment PRs per delivery profile; not a substitute for Product Authority on credentials, cost, or material isolation decisions |
+| **PR Approver / Engineering** | ChatGPT (Bill alternate) | Approval and merge of platform/environment PRs per delivery profile; not a substitute for Product Authority on credentials, cost, or material isolation decisions |
 | **Supporting platform references** | `docs/reference/platform/**` | Resource inventories, isolation classifications, and operational platform facts only |
 
 Rules:

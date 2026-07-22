@@ -1,6 +1,6 @@
 ---
 Doc Type: Report
-Audience: Bill, Atlas, operators, and AI implementation agents
+Audience: Bill, ChatGPT, operators, and AI implementation agents
 Authority Level: Operational Evidence
 Owns: Task 008 handoff evidence for Program #1685 content operations package
 Does Not Own: Program closeout (#1694) or parent issue closure (#1685)
@@ -25,7 +25,7 @@ implementation evidence—it does not re-implement runtime behavior.
 
 - Program #1685 Tasks 004–007 delivered unified workflow docs, Club Home dynamic integration, backend deltas, and member subpage alignment.
 - Task 008 adds operator and Cursor handoff documents only; no application code changes.
-- Program closeout remains Task #1694 with parent issue #1685 open pending Bill/Atlas acceptance.
+- Program closeout remains Task #1694 with parent issue #1685 open pending Bill/ChatGPT acceptance.
 
 ## Task 008 Deliverables
 
@@ -61,7 +61,7 @@ implementation evidence—it does not re-implement runtime behavior.
 ## Deferred to Task 009
 
 - Consolidated program validation report for Tasks 001–008.
-- Bill/Atlas acceptance and parent issue #1685 closeout decision.
+- Bill/ChatGPT acceptance and parent issue #1685 closeout decision.
 
 ## Validation Performed (Task 008)
 

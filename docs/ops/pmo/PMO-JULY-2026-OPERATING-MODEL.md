@@ -36,7 +36,7 @@ GitHub Issues remain executable authority. Dashboard output, registries, backlog
 
 ## Authority and decision model
 
-Bill and ChatGPT / Atlas conduct the weekly PMO review.
+Bill and ChatGPT conduct the weekly PMO review.
 
 The PMO meeting governs:
 
@@ -53,7 +53,7 @@ The project governs:
 - implementation order;
 - technical execution within approved authority.
 
-Atlas prepares classifications, recommendations, launch packages, and readiness evidence. Bill makes final Product Authority and priority decisions.
+ChatGPT prepares classifications, recommendations, launch packages, and readiness evidence. Bill makes final Product Authority and priority decisions.
 
 Website delivery may be designated the top portfolio priority by a PMO decision. It is not permanently or automatically Priority 1.
 
@@ -177,7 +177,7 @@ Invalid examples include:
 
 ## Engineering preparation assignment
 
-When a Pipeline parent is assigned Engineering P1, the same PMO closeout creates or reactivates one peer preparation Issue owned by ChatGPT / Atlas.
+When a Pipeline parent is assigned Engineering P1, the same PMO closeout creates or reactivates one peer preparation Issue owned by ChatGPT.
 
 The preparation Issue:
 
@@ -314,7 +314,7 @@ Planning documents, planning PRs, and Ready for Launch status do not launch a pr
 
 ## Preparation package
 
-Before Cursor implementation, ChatGPT / Atlas prepares the work to the maximum feasible extent.
+Before Cursor implementation, ChatGPT prepares the work to the maximum feasible extent.
 
 A package includes, as applicable:
 

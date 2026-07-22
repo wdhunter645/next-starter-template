@@ -83,7 +83,7 @@ All other files are out of scope
 - `.github/pull_request_template.md`: distinguish `READY FOR REVIEW` from `READY FOR MERGE`; reorder lifecycle steps; add pre-merge closeout prediction fields.
 - `docs/governance/PR_LIFECYCLE_STATE_MACHINE.md`: add `READY FOR MERGE` state; require green gates before merge handoff; align thread-state examples with parser.
 - `.agents/skills/lgfc-pr-governance/SKILL.md`: align canonical skill transitions and stop conditions with updated state machine.
-- `docs/ops/ai/CURSOR-RULES.md`: preserve Bill/Atlas authorization stop points; forbid advancing to adjacent issues without explicit authorization.
+- `docs/ops/ai/CURSOR-RULES.md`: preserve Bill/ChatGPT authorization stop points; forbid advancing to adjacent issues without explicit authorization.
 
 ## BUILD / TEST / VERIFICATION
 - Commands run:
@@ -155,7 +155,7 @@ Reviewer items:
 ## ACCEPTANCE CRITERIA
 - [x] Required source issue exists, is open, is same-repository, and is not a PR.
 - [x] Lifecycle docs include `READY FOR MERGE` as distinct from `READY FOR REVIEW`.
-- [x] Cursor docs preserve Bill/Atlas authorization stop points.
+- [x] Cursor docs preserve Bill/ChatGPT authorization stop points.
 - [x] PR template uses `READY FOR MERGE` for final pre-merge handoff.
 - [x] Canonical skill aligned with state machine.
 - [x] No out-of-scope file changes.

@@ -15,7 +15,7 @@ describe('Program #1255 closeout readiness packet', () => {
     const source = readFileSync(CLOSEOUT_READINESS_PATH, 'utf8');
     expect(source).toContain('Program #1255');
     expect(source).toContain('#1259');
-    expect(source).toContain('Atlas/Bill final inspection checklist');
+    expect(source).toContain('ChatGPT/Bill final inspection checklist');
   });
 
   it('documents operator hygiene targets and completion status', () => {

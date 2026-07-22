@@ -74,7 +74,7 @@ recommended follow-up issue slug for Program 2 or Program 3 disposition.
 |---|---|---|---|---|
 | H-001 | **Post-merge remediation issue backlog** — 34 open `post-merge-failure` issues indicate repeated metadata validator failures and closeout-chain drift; operators cannot treat post-merge state as stable | CI | GitHub search 2026-06-05; closeout pattern in PRs `#1367`–`#1371`; `docs/reference/ci/post-merge-validation-surface.md` | `#1058` — Program 2 CI maintenance umbrella (pre-merge blocking + post-merge verify-only redesign) |
 | H-002 | **OPS assessment soft-fail masks runtime failures** — `ops-assess.yml` uses `continue-on-error: true`; scheduled health signal may show green while assessment failed | OPS | `docs/ops/reports/program-1-ops-monitoring-snapshot.md` (Known Audit Gaps); `ops-assess.yml` on `main` | `#1058` — OPS hardening under CI Phase 2 maintenance plan |
-| H-003 | **Open CI redesign closeout orphans** — `#1011`, `#1009`, `#1199` remain open despite merged redesign evidence; obscures true CI program state | CI | `docs/ops/program-1-task-002-ci-closeout-evidence.md` (Open row); merge PRs `#1239`, `#1244` | `#1058` — Atlas closeout batch under Program 2 CI maintenance (or program-owner waiver recorded in `#1346`) |
+| H-003 | **Open CI redesign closeout orphans** — `#1011`, `#1009`, `#1199` remain open despite merged redesign evidence; obscures true CI program state | CI | `docs/ops/program-1-task-002-ci-closeout-evidence.md` (Open row); merge PRs `#1239`, `#1244` | `#1058` — ChatGPT closeout batch under Program 2 CI maintenance (or program-owner waiver recorded in `#1346`) |
 
 ### P1 — Should be dispositioned before or during Program 2 activation
 

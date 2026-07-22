@@ -96,7 +96,7 @@ All other files are out of scope
 - Add `reviewer_comment_disposition.mjs` and `reviewer-response-gate.mjs` to parse PR-body `review-comment:<id>` dispositions and fail on undispositioned or outdated-without-disposition trusted reviewer comments.
 - Extend `reviewer_lifecycle_gate.mjs` and `reviewer-gate-simulation.mjs` to block `pull_request_target` when reviewer disposition is incomplete, including late pre-merge comments after READY FOR REVIEW.
 - Extend `post_merge_validator.mjs` and `post_merge_source_issue_closeout.mjs` so undispositioned reviewer findings block source issue closeout and stop queue advancement.
-- Update PR template and reviewer lifecycle documentation to align Atlas, Cursor, and CI on the same disposition standard.
+- Update PR template and reviewer lifecycle documentation to align ChatGPT, Cursor, and CI on the same disposition standard.
 - Add tests covering unresolved threads, outdated threads, late post-merge comments, closeout refusal, and queue halt behavior.
 
 ## BUILD / TEST / VERIFICATION
@@ -176,7 +176,7 @@ Reviewer items:
 - [x] Post-merge source issue closeout refuses to close source issues with undispositioned reviewer findings.
 - [x] Program queue advancement remains stopped while reviewer exceptions exist.
 - [x] Tests prove the behavior.
-- [x] Documentation explains the enforcement rule clearly enough that Atlas, Cursor, and CI all use the same standard.
+- [x] Documentation explains the enforcement rule clearly enough that ChatGPT, Cursor, and CI all use the same standard.
 
 ## REQUIRED PRE-REVIEW SELF-CHECK
 - [x] PR body contains all required sections with exact headings

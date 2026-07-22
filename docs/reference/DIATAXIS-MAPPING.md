@@ -47,7 +47,7 @@ DIATAXIS is considered 100% complete for Phase 1 when:
 |---|---|---|---|---|
 | `docs/ops/ai/SHARED-AGENT-RULES.md` | `docs/ops/ai/SHARED-AGENT-RULES.md` | Reference (ops) | **Migrated** | Retain — canonical shared agent law |
 | `docs/ops/ai/CORE-RULES.md` | `docs/ops/ai/CORE-RULES.md` | Reference (ops) | **Migrated** | Retain — canonical detailed execution rules |
-| `docs/ops/ai/CHATGPT-RULES.md` | `docs/ops/ai/CHATGPT-RULES.md` | Reference (ops) | **Migrated** | Retain — Atlas control-plane rules |
+| `docs/ops/ai/CHATGPT-RULES.md` | `docs/ops/ai/CHATGPT-RULES.md` | Reference (ops) | **Migrated** | Retain — ChatGPT control-plane rules |
 | `docs/ops/ai/CURSOR-RULES.md` | `docs/ops/ai/CURSOR-RULES.md` | Reference (ops) | **Migrated** | Retain — Cursor tool rules |
 | `docs/ops/ai/CODEX-RULES.md` | `docs/ops/ai/CODEX-RULES.md` | Reference (ops) | **Migrated** | Retain — Codex tool rules |
 | `docs/ops/ai/COPILOT-RULES.md` | `docs/ops/ai/COPILOT-RULES.md` | Reference (ops) | **Migrated** | Retain — Copilot tool rules |

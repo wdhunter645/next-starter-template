@@ -1,6 +1,6 @@
 ---
 Doc Type: Report
-Audience: Bill, Atlas, and implementation agents
+Audience: Bill, ChatGPT, and implementation agents
 Authority Level: Program Evidence
 Owns: Deferred automation candidate inventory for Lou Gehrig content collection
 Does Not Own: Automation implementation or #2040 execution
@@ -38,7 +38,7 @@ buckets for #2040 publication automation planning.
 | Final public-copy approval | Brand and factual standards |
 | Publication approval | Public surface impact |
 | Rejection decisions | Accountability |
-| Escalation on ambiguous rights | Bill/Atlas authority |
+| Escalation on ambiguous rights | Bill/ChatGPT authority |
 
 ## Unsafe or deferred
 

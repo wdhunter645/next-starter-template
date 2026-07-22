@@ -23,7 +23,7 @@ Preview validation, production promotion gates, and post-deploy verification han
 
 1. Confirm Tasks #2041–#2046 are closed with `status:complete`.
 2. Run preview deploy smoke per [`website-production-smoke-test.md`](/docs/how-to/website/website-production-smoke-test.md) against the Cloudflare Pages preview URL.
-3. Obtain Bill/Atlas production promotion authorization.
+3. Obtain Bill/ChatGPT production promotion authorization.
 4. Verify Cloudflare Pages production deploy is green.
 5. Confirm `NEXT_PUBLIC_GA_ID` is set only when analytics launch is authorized.
 6. Confirm no live fundraiser campaign is enabled without separate authorization.
@@ -34,7 +34,7 @@ Preview validation, production promotion gates, and post-deploy verification han
 
 - [ ] Tasks #2041–#2046 merged and closed with `status:complete`
 - [ ] Preview deploy smoke test passed (`docs/how-to/website/website-production-smoke-test.md`)
-- [ ] Bill/Atlas authorize production promotion
+- [ ] Bill/ChatGPT authorize production promotion
 - [ ] Cloudflare Pages production deploy green
 - [ ] `NEXT_PUBLIC_GA_ID` set only when analytics launch is authorized
 - [ ] No live fundraiser campaign enabled without separate authorization

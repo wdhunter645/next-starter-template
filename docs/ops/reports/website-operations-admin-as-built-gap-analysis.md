@@ -130,21 +130,21 @@ Classification key:
 | **Docs** | Documentation or operator runbook missing |
 | **Delta** | Concrete missing code path identified |
 | **Hygiene** | GitHub issue labels/body stale; not a build gap |
-| **Decision** | Requires Atlas/Bill policy call |
+| **Decision** | Requires ChatGPT/Bill policy call |
 
 | issue | Task | Class | As-built evidence | Gap / notes | Proposed task |
 | --- | --- | --- | --- | --- | --- |
 | `#1118` | T40 Fan Club ops | **Verify** | Fan Club routes + APIs above | Production empty/error/auth states not documented in ops runbook; manual verification checklist needed | Task 003 (unchanged) |
-| `#1119` | T41 Admin shell | **Verify** + **Docs** | `layout.tsx`, `AdminNav.tsx`, dashboard, join/worklist/member pages | Access-model doc drift affects operator onboarding; `footer-quotes` API has no admin UI | Task 004; consider footer-quotes UI defer to Atlas |
+| `#1119` | T41 Admin shell | **Verify** + **Docs** | `layout.tsx`, `AdminNav.tsx`, dashboard, join/worklist/member pages | Access-model doc drift affects operator onboarding; `footer-quotes` API has no admin UI | Task 004; consider footer-quotes UI defer to ChatGPT |
 | `#1120` | T42 Moderation | **Satisfied** | `moderation/page.tsx`, `faq/page.tsx`, ask/faq/report APIs, `admin-moderation.test.tsx` | Hardening pass only | Task 005 — may be gap-only |
 | `#1121` | T43 CMS/content | **Satisfied** | `cms/`, `content/` pages + APIs, `admin-cms-content.test.tsx` | Overlap with `#1256`; no new CMS schema expected | Task 006 — likely gap-only / docs touch |
 | `#1122` | T44 Media | **Verify** | `media-assets/page.tsx`, `sync-from-b2.ts`, `admin-media-assets.test.tsx` | B2 sync fail-closed UX needs production verification evidence | Task 007 (unchanged) |
-| `#1123` | T45 Editorial | **Verify** + **Decision** | `editorial/page.tsx`, `admin/editorial/**`, `admin-editorial-archive.test.tsx` | `#1256` owns `content_inventory` authority; `#1258` verifies ops alignment only | Task 008; **Atlas/Bill:** confirm boundary |
+| `#1123` | T45 Editorial | **Verify** + **Decision** | `editorial/page.tsx`, `admin/editorial/**`, `admin-editorial-archive.test.tsx` | `#1256` owns `content_inventory` authority; `#1258` verifies ops alignment only | Task 008; **ChatGPT/Bill:** confirm boundary |
 | `#1124` | T46 Events | **Satisfied** | `events/page.tsx`, `admin/events/**`, `events/next.ts`, `admin-events.test.tsx` | Public calendar stability verification deferred to `#1259` if needed | Task 009 — likely gap-only |
 | `#1125` | T47 Fundraiser | **Satisfied** | `fundraiser-preview/page.tsx`, `CampaignSpotlight*.tsx`, `campaignSpotlight.ts`, tests | Preview fail-closed behavior present in UI | Task 010 — likely gap-only |
 | `#1126` | T48 Matchup | **Satisfied** | `matchup/page.tsx`, admin + public matchup APIs, `admin-matchup.test.tsx` | Admin page already compares public read paths | Task 011 — likely gap-only |
 | `#1127` | T49 Audit/reporting | **Satisfied** | `audit/page.tsx`, export/stats/reports APIs, `admin-audit-reporting.test.tsx` | Export table list may need operator doc | Task 012 — likely gap-only |
-| `#1053` | Coordination tree | **Hygiene** + **Decision** | Historical T-task index | Body/labels stale; not implementation authority | Task 013; **Atlas/Bill:** body update vs closeout |
+| `#1053` | Coordination tree | **Hygiene** + **Decision** | Historical T-task index | Body/labels stale; not implementation authority | Task 013; **ChatGPT/Bill:** body update vs closeout |
 
 ## Cross-cutting gaps (all lanes)
 
@@ -153,7 +153,7 @@ Classification key:
 | Access model documentation drift | `access-model.md` vs `layout.tsx` + `auth.ts` + `adminClient.ts` | Operator and agent assumptions | **Task 002** (recommended next) |
 | No general admin operator how-tos | Only `#1256` editorial how-tos exist | Long-term ops handoff | Task 013 |
 | `footer-quotes` API without admin UI | `functions/api/admin/footer-quotes.ts` only | Operator config for footer rotation | Defer or add to Task 004 — **Decision** |
-| PMO dependency-map fields incomplete | Plan has per-task Dependencies but not full predecessor/successor/stage/halt map | `production-ready` promotion | **Atlas/Bill** before child issue creation |
+| PMO dependency-map fields incomplete | Plan has per-task Dependencies but not full predecessor/successor/stage/halt map | `production-ready` promotion | **ChatGPT/Bill** before child issue creation |
 | Legacy GitHub label drift | `#1118`–`#1127` open with `pr-draft` / `post-merge-verify` / `status:failed` | Queue trust | Task 013 disposition batch (authorized separately) |
 | Production QA / launch CI | H-011 in Phase 0 report | Launch confidence | `#1259` only |
 
@@ -164,7 +164,7 @@ Classification key:
 | 001 | As-built inventory | **Complete** (this report) |
 | 002 | Access model docs | **Proceed next** — blocking documentation gap |
 | 003 | Fan Club verification | Unchanged — verification + runbook gap |
-| 004 | Admin shell / member ops | Unchanged; confirm `footer-quotes` UI in/out of scope with Atlas |
+| 004 | Admin shell / member ops | Unchanged; confirm `footer-quotes` UI in/out of scope with ChatGPT |
 | 005–012 | Area hardening | Most may execute as **gap-only** (verification + docs) unless Task 002–004 find code deltas |
 | 006 | CMS delta | Narrow to verification; do not reopen `#1256` schema work |
 | 008 | Editorial alignment | Keep bounded to ops verification under `#1256` authority |
@@ -179,7 +179,7 @@ No task sequence renumbering recommended.
 | Dual admin gate confusion | High | Task 002 before code hardening |
 | Agents infer wrong auth from `access-model.md` | High | Task 002 |
 | False “complete” from stale GitHub labels | Medium | Disposition batch; use this report as truth |
-| Editorial scope creep into `#1256` | Medium | Atlas boundary decision on `#1123` |
+| Editorial scope creep into `#1256` | Medium | ChatGPT boundary decision on `#1123` |
 | B2/media sync partial failure silent in prod | Medium | Task 007 verification with operator evidence |
 | Static export vs Pages Functions mismatch | Medium | Verify admin APIs on deployed target during hardening |
 | `#1500` post-merge closeout failures on ops PRs | Low | Compliant PR bodies; `#1500` deferred |
@@ -199,7 +199,7 @@ Deliverables:
 Out of scope for Task 002: auth redesign, OAuth, workflow YAML, code changes unless
 doc-driven correction is required and explicitly allowlisted.
 
-## Decisions needed (Atlas/Bill)
+## Decisions needed (ChatGPT/Bill)
 
 1. Confirm Task 002 as next authorized task after this PR merges.
 2. `#1123` / `#1256` editorial boundary — ops alignment only vs shared ownership.

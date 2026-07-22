@@ -248,7 +248,7 @@ Admin UI now uses **session-backed layout gating** via `useMemberSession({ requi
 | D1 test photo curation UI | `/admin/d1-test` is inspect-only; `photos.is_matchup_eligible` editing deferred to PMO program | PMO admin tools program |
 | `footer-quotes` admin API without admin UI | Token-only config surface | Task 004 (deferred UI) |
 | Role/session hardening beyond `ADMIN_TOKEN` | OAuth, MFA, server-side UI gate | Future auth program; not `#1258` Task 002 |
-| PMO `production-ready` dependency-map fields | Plan promotion gate | Atlas/Bill before child issue creation |
+| PMO `production-ready` dependency-map fields | Plan promotion gate | ChatGPT/Bill before child issue creation |
 
 ---
 

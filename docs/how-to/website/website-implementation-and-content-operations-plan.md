@@ -74,7 +74,7 @@ Program 2 `#1255` is preparing for launched-program queue mode under child
 project `#1256`. The project-level dependency map draft and rebaseline pause
 are defined in
 [`website-content-strategy-editorial-inventory.md`](../../ops/implementation-plans/website-content-strategy-editorial-inventory.md#program-2-dependency-map-and-rebaseline-pause).
-Queue-mode execution is not authorized until Atlas/Bill approve the map and the
+Queue-mode execution is not authorized until ChatGPT/Bill approve the map and the
 rebaseline pause clears.
 
 No Program 2 task beyond `#1402` may launch until `#1448` rebaseline is
@@ -91,13 +91,13 @@ Canonical reference:
 ## Program 2 child-task continuation handoff
 
 For the remainder of Program 2 after the current Task 003 issue `#1401`
-handoff, Cursor continuation requires an explicit Atlas, Bill, or controller
+handoff, Cursor continuation requires an explicit ChatGPT, Bill, or controller
 `@cursor` issue comment on the next child issue when the program is in
 one-task handoff mode or when the rebaseline pause is active.
 
 Program 2 child-task continuation is not authorized by labels, merge state,
 closed or completed prior issue state, queue order, or open PR order alone.
-Atlas/Bill/controller remains responsible for selecting the next child task, and
+ChatGPT/Bill/controller remains responsible for selecting the next child task, and
 Cursor may execute only the issue explicitly named in the latest valid
 continuation comment.
 

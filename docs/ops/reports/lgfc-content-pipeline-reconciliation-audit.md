@@ -1,6 +1,6 @@
 ---
 Doc Type: Operations
-Audience: Bill, Atlas, Cursor, LGFC maintainers, and implementation agents
+Audience: Bill, ChatGPT, Cursor, LGFC maintainers, and implementation agents
 Authority Level: Controlled
 Owns: Phase 0.5 reconciliation audit for Program #2273 Task-001 (#2274)
 Does Not Own: Canonical candidate model definition, D1 migrations, runtime implementation, or issue closure

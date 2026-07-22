@@ -1,6 +1,6 @@
 ---
 Doc Type: Operations
-Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and reviewers
+Audience: Bill, ChatGPT, Cursor, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Operational Authority
 Owns: Program #2039 readiness decision, public launch readiness scope, club staging placement, child-task boundaries, and launch preconditions
 Does Not Own: Runtime implementation, merge authority, production secrets, vendor configuration, or Program #2040 publication scope
@@ -11,7 +11,7 @@ Last Reviewed: 2026-07-01
 
 # Website Public Launch / Relaunch Readiness
 
-> Program #2039 is **CLOSED** as completed after Bill/Atlas acceptance. This document records the completed readiness package and retains remaining execution-boundary sections as historical reference.
+> Program #2039 is **CLOSED** as completed after Bill/ChatGPT acceptance. This document records the completed readiness package and retains remaining execution-boundary sections as historical reference.
 
 ## Purpose
 
@@ -32,7 +32,7 @@ This readiness package covers:
 7. Production launch checklist, smoke tests, rollback, and evidence capture.
 8. Program validation and public-launch handoff.
 
-This program does **not** build the controlled publication capability owned by Program #2040 or a live fundraiser campaign unless Bill/Atlas separately authorize those lanes.
+This program does **not** build the controlled publication capability owned by Program #2040 or a live fundraiser campaign unless Bill/ChatGPT separately authorize those lanes.
 
 ## Current known truth
 
@@ -43,7 +43,7 @@ This program does **not** build the controlled publication capability owned by P
 - `/admin/homestaging` is reserved as a possible future route but is not required for this program.
 - Program #1738 owns Lou Gehrig content collection and research pipeline expansion.
 - Program #2040 owns controlled content publication capability after manual workflow evidence exists.
-- PMO backlog and program-registry entries are discovery surfaces only; they do not authorize Program #2039 implementation without explicit Bill/Atlas task assignment.
+- PMO backlog and program-registry entries are discovery surfaces only; they do not authorize Program #2039 implementation without explicit Bill/ChatGPT task assignment.
 
 ## Intended final state
 
@@ -66,7 +66,7 @@ At the end of Program #2039:
 | Program name | Website Public Launch / Relaunch Readiness |
 | Predecessor | #1685 — Website Completion / Fan Club Product Buildout |
 | Execution agent | Cursor |
-| Current readiness | Program completed after Bill/Atlas acceptance; repo baseline stable for next website program |
+| Current readiness | Program completed after Bill/ChatGPT acceptance; repo baseline stable for next website program |
 | Primary implementation plan | `docs/ops/implementation-plans/website-public-launch-relaunch-readiness.md` |
 | Required staging route | `/admin/clubstaging` |
 | Explicit non-goal | Controlled content publication capability |
@@ -89,7 +89,7 @@ At the end of Program #2039:
 Cursor implementation may begin only when:
 
 1. Program #1685 structural baseline closeout evidence exists.
-2. Bill/Atlas assign a specific Program #2039 child task issue.
+2. Bill/ChatGPT assign a specific Program #2039 child task issue.
 3. The assigned task identifies its own file-touch boundary.
 4. The PR body cites exactly one source issue.
 5. The task stops at `READY FOR REVIEW`.
@@ -104,4 +104,4 @@ It may display staged/sample club content, production-like visual cards, and rot
 
 ## Closeout requirement
 
-Program #2039 closeout requires terminal Task #2048 evidence and explicit Bill/Atlas acceptance.
+Program #2039 closeout requires terminal Task #2048 evidence and explicit Bill/ChatGPT acceptance.

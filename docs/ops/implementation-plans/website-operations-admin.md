@@ -1,6 +1,6 @@
 ---
 Doc Type: Implementation Plan
-Audience: Atlas, Bill, LGFC maintainers, implementation agents, and reviewers
+Audience: ChatGPT, Bill, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Operational Plan
 Owns: Completed build issue sequence and verification record for Website Operations Admin under #1258
 Does Not Own: Runtime implementation, issue creation before approval, D1 migrations before child issues, or final operator policy decisions
@@ -20,7 +20,7 @@ Task 012 complete: Audit, reporting, and export delta (`#1127` / T49; PR `#1651`
 Task 013 complete: Operator runbooks and legacy disposition documentation (PR `#1652` merged `1aa9d3d`)
 Next task: none — project closed complete; successor `#1259`
 Project: website-operations-admin
-Owner: Atlas
+Owner: ChatGPT
 Execution Mode: orchestrated-after-approval
 Source Issue: 1258
 Related Program Issue: 1255
@@ -179,11 +179,11 @@ Before `#1259` final QA may start:
 1. Every legacy ops/admin issue (`#1053`, `#1118`–`1127`) has a documented
    disposition under `#1258` (see reconciliation report).
 2. As-built admin/ops behavior is documented against design authority with a
-   classified gap table (satisfied / needs delta / needs docs / Atlas decision).
+   classified gap table (satisfied / needs delta / needs docs / ChatGPT decision).
 3. Admin access model documentation matches runtime (session UI + token API).
 4. Operator runbooks exist for each admin surface in approved how-to/reference paths.
 5. Serial child implementation issues are approved but **not yet created** until
-   Atlas/Bill authorize Phase 4.
+   ChatGPT/Bill authorize Phase 4.
 6. No stale `status:failed` or conflicting lifecycle labels block operator trust
    in queue state (disposition batch may be separate authorized pass).
 
@@ -207,13 +207,13 @@ Summary disposition for `#1053` and `#1118`–`#1127`. Full evidence table:
 
 | issue | Disposition |
 | --- | --- |
-| `#1053` | **Subordinated** — retain as historical T-task index; planning authority is `#1255` / `#1258`. Atlas/Bill decision: body update vs later closeout. |
+| `#1053` | **Subordinated** — retain as historical T-task index; planning authority is `#1255` / `#1258`. ChatGPT/Bill decision: body update vs later closeout. |
 | `#1118` T40 | **Satisfied on main** — verification/hardening under Task 003; issue label cleanup deferred. |
 | `#1119` T41 | **Satisfied on main** — verification/hardening under Task 004. |
 | `#1120` T42 | **Satisfied on main** — verification/hardening under Task 005. |
 | `#1121` T43 | **Satisfied on main** — CMS delta review under Task 006; content authority owned by `#1256`. |
 | `#1122` T44 | **Satisfied on main** — media/B2 hardening under Task 007. |
-| `#1123` T45 | **Satisfied on main** — editorial ops alignment under Task 008; scope boundary with `#1256` requires Atlas confirmation. |
+| `#1123` T45 | **Satisfied on main** — editorial ops alignment under Task 008; scope boundary with `#1256` requires ChatGPT confirmation. |
 | `#1124` T46 | **Satisfied on main** — events admin hardening under Task 009; erroneous `status:failed` label stale. |
 | `#1125` T47 | **Satisfied on main** — fundraiser admin under Task 010; closed with stale `status:failed`. |
 | `#1126` T48 | **Satisfied on main** — matchup admin under Task 011. |
@@ -387,14 +387,14 @@ Task 001 classifies the lane as already satisfied.
 | **Objective** | Publish operator how-tos; document recommended disposition comments for `#1053` and `#1118`–`#1127` (no bulk close in task unless authorized). |
 | **Allowed files/areas** | `docs/how-to/website/**`, `docs/ops/reports/**` |
 | **Non-goals** | Unauthorized GitHub issue mutation |
-| **Acceptance criteria** | Runbooks per major admin surface; disposition package ready for Atlas batch |
+| **Acceptance criteria** | Runbooks per major admin surface; disposition package ready for ChatGPT batch |
 | **Verification** | `./scripts/ci/docs_check_headers.sh` on new docs |
 | **Dependencies** | Tasks 002–012 complete or gap-only accepted |
 
 ## Phase 3 exit criteria
 
 Phase 3 planning exit is **met** for bounded Phase 4 execution. The plan remains
-`phase-4-active` until Atlas/Bill promote it to `production-ready` (full PMO
+`phase-4-active` until ChatGPT/Bill promote it to `production-ready` (full PMO
 dependency-map fields still required for that promotion).
 
 | Criterion | State |
@@ -404,7 +404,7 @@ dependency-map fields still required for that promotion).
 | Per-task file allowlists | Met — defined in this plan |
 | Access/security model (session UI + `ADMIN_TOKEN` API) | Met — Task 002 (`#1533`) |
 | D1/B2/admin surface risks reviewed | Met — risk register + Task 001 gap analysis |
-| `#1123` / `#1256` editorial boundary | Met — ops alignment only (Atlas decision) |
+| `#1123` / `#1256` editorial boundary | Met — ops alignment only (ChatGPT decision) |
 | `#1053` umbrella disposition | Met — historical closeout preferred |
 | `#1259` queued | Met — not started |
 | `#1500` queued / out of scope | Met — not started |
@@ -424,7 +424,7 @@ dependency-map fields still required for that promotion).
 | B2 sync partial failure | Silent media drift | Task 007 fail-closed UI; operator runbook |
 | Static export vs Pages Functions boundary | Admin API breaks in preview/prod mismatch | Verify `functions/api/admin/**` on deployed target |
 | Accidental public route regression | Auth/content leak | Scoped allowlists; no public file touches without explicit scope |
-| `#1256` / `#1258` editorial overlap | Duplicate or conflicting content ops | Task 008 boundary; Atlas decision on `#1123` |
+| `#1256` / `#1258` editorial overlap | Duplicate or conflicting content ops | Task 008 boundary; ChatGPT decision on `#1123` |
 | Legacy issue label drift | Wrong queue inference | Disposition batch; do not infer from labels alone |
 | Workflow drift (`#1500` deferred) | Post-merge closeout failures on ops PRs | Compliant PR bodies; defer CI program to `#1500` |
 | Gap-only tasks skipped without verification | False “complete” state | Task 001 required; verification evidence in each task |
@@ -457,5 +457,5 @@ Plan status is `phase-4-active` (not `production-ready`).
 
 Phase 3 planning exit is **met** (see table above). Tasks 001–004 are **complete**.
 **Task 005+** require explicit per-task authorization before implementation PRs
-begin. Child GitHub issues remain held unless Atlas/Bill or existing automation
+begin. Child GitHub issues remain held unless ChatGPT/Bill or existing automation
 explicitly authorizes creation.

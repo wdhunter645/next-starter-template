@@ -76,7 +76,7 @@ All other files are out of scope
 
 ## BUILD / TEST / VERIFICATION
 - Commands run:
-  - GitHub compare: `main...atlas/fix-mobile-footer-privacy-terms-1617` — PASS; only `src/components/Footer.tsx` changed.
+  - GitHub compare: `main...ChatGPT/fix-mobile-footer-privacy-terms-1617` — PASS; only `src/components/Footer.tsx` changed.
   - `quality` workflow on PR head — PASS (merge commit `98394ec9a8ed2e1eb8aa63d724822bddaac13110`).
 - Gate verification:
   - Commit-level workflow runs inspected: YES

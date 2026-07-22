@@ -1,12 +1,12 @@
 ---
 Doc Type: Implementation Plan
-Audience: Atlas, Bill, LGFC maintainers, implementation agents, and reviewers
+Audience: ChatGPT, Bill, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Operational Plan
 Owns: Future build issue sequence and verification plan for Content Strategy / Editorial Inventory after documentation approval
 Does Not Own: Runtime implementation, issue creation before approval, D1 migrations before child issues, or final editorial decisions
 Status: ready-for-review
 Project: website-content-strategy-editorial-inventory
-Owner: Atlas
+Owner: ChatGPT
 Execution Mode: orchestrated-after-approval
 Source Issue: 1256
 Related Program Issue: 1255
@@ -24,7 +24,7 @@ Editorial Inventory project after the Phase 1 documentation package is reviewed
 and approved.
 
 This plan is complete enough for future issue creation, but issue creation is
-held until Atlas/Bill explicitly authorizes it after review.
+held until ChatGPT/Bill explicitly authorizes it after review.
 
 ## Scope
 
@@ -79,7 +79,7 @@ D1 inventory with:
 
 Status is `ready-for-review`, not `production-ready`.
 
-Future child issues must not be opened from this plan until Atlas/Bill approve
+Future child issues must not be opened from this plan until ChatGPT/Bill approve
 the Phase 1 documentation package and explicitly authorize issue creation.
 
 When authorized, each child issue must:
@@ -152,7 +152,7 @@ Checkpoints before `#1256` project completion and `#1258` activation:
 3. Reconcile `#1448` with updated rebaseline comment reflecting Tasks 003–009
    execution history.
 4. Reconcile `#1255` / `#1256` labels (`status:post-merge-verify`,
-   `status:failed`) per Atlas/Bill closeout instructions.
+   `status:failed`) per ChatGPT/Bill closeout instructions.
 5. Do not launch `#1258`, `#1259`, or issue `#1500` until Program #1255
    completion signoff is recorded.
 
@@ -162,7 +162,7 @@ Canonical reference:
 ## Program 2 Child-Task Continuation Handoff
 
 Program 2 child-task continuation for the remainder of `#1255`, including work
-after current Task 003 issue `#1401`, requires an explicit Atlas, Bill, or
+after current Task 003 issue `#1401`, requires an explicit ChatGPT, Bill, or
 controller `@cursor` issue comment on the next child issue when the program is in
 one-task handoff mode or when the rebaseline pause is active.
 
@@ -466,7 +466,7 @@ Validation:
 - The future build sequence starts with implementation inventory and gap analysis.
 - Schema, queue, media, admin/editor, public rendering, search, rotation, and seed verification work are separated into child-sized tasks.
 - Each task identifies dependencies, allowed files, acceptance criteria, and validation expectations.
-- No build issue creation occurs until Atlas/Bill authorize it after review.
+- No build issue creation occurs until ChatGPT/Bill authorize it after review.
 - Future implementation agents can cite repository docs rather than issue comments or chat history.
 
 ## Rollback

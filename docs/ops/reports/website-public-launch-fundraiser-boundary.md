@@ -49,10 +49,10 @@ Public visitors see no false live-fundraiser claims. Any visible campaign spotli
 
 | Topic | Repo boundary | Operator action |
 | --- | --- | --- |
-| Givebutter campaign URLs | Stored in CMS/fundraiser data only when operators publish | Bill/Atlas configure vendor accounts |
+| Givebutter campaign URLs | Stored in CMS/fundraiser data only when operators publish | Bill/ChatGPT configure vendor accounts |
 | Payment collection | Out of scope for #2039 | Program #1700 |
 | PII in join/donation flows | Existing auth/join APIs unchanged | Legal/privacy review (#2042 escalation) |
-| Live campaign go-live | Requires explicit Bill/Atlas authorization | Not implied by #2039 merge |
+| Live campaign go-live | Requires explicit Bill/ChatGPT authorization | Not implied by #2039 merge |
 
 ## Operator follow-up
 

@@ -24,7 +24,7 @@ This document owns:
 - dependency-map structure and approval requirements;
 - continue/halt decision rules Cursor may apply from documentation;
 - dispatcher/watch requirements for keeping a launched queue moving;
-- authority boundaries for Bill (merge) and Atlas/ChatGPT (batch verification/rebaseline).
+- authority boundaries for Bill (merge) and ChatGPT (batch verification/rebaseline).
 
 This document does not own:
 
@@ -69,7 +69,7 @@ This document does not own:
   requires a manual dispatcher, scheduled ChatGPT watch, or repo-native automation
   path defined in `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`.
 - Bill owns merge authority, launch gates, and destructive issue actions.
-- Atlas/ChatGPT owns governance review, queue conformance, batch verification, and
+- ChatGPT owns governance review, queue conformance, batch verification, and
   rebaseline authority.
 - Cursor may not merge, approve, close, relabel, advance queues, or mutate issue
   state unless the active source issue explicitly authorizes that action.
@@ -107,7 +107,7 @@ one source issue → one PR → READY FOR REVIEW → human review → closeout �
 ```
 
 - Cursor executes exactly one source issue per PR.
-- The next task requires a new explicit authorization (Atlas/Bill/controller
+- The next task requires a new explicit authorization (ChatGPT/Bill/controller
   `@cursor` comment or a new source issue assignment).
 - Cursor must not infer the next task from queue order, labels, or merge state.
 - The operator must still create an Ops remediation issue if a process failure
@@ -145,7 +145,7 @@ Launched-program queue mode does not grant Cursor merge, close, relabel, queue m
 
 For launched or launch-control work, closeout is not complete until queue continuation has been checked.
 
-The responsible Atlas/ChatGPT/operator path must verify:
+The responsible ChatGPT/operator path must verify:
 
 1. the predecessor issue state and terminal labels;
 2. the successor or dependent issues named by the issue body, parent issue, PR body, or dependency map;
@@ -183,7 +183,7 @@ Required map fields per task or checkpoint:
 
 Approval:
 
-- Atlas prepares the map in the implementation plan.
+- ChatGPT prepares the map in the implementation plan.
 - Bill approves the map before launch or issue creation.
 - Until approved, the program issue remains in one-task handoff mode.
 
@@ -255,14 +255,14 @@ Cursor must **halt** (stop at `READY FOR REVIEW` or report without implementing)
 
 When halted, Cursor reports the blocking checkpoint, the next queue item if known, and the continue/halt decision. Cursor does not infer authorization from labels, merge state, or queue order alone.
 
-If the halt is caused by missing dispatcher/watch behavior, stale blocked successor state, or launch-halting process failure, Atlas/ChatGPT must create or update an Ops remediation issue under `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`.
+If the halt is caused by missing dispatcher/watch behavior, stale blocked successor state, or launch-halting process failure, ChatGPT must create or update an Ops remediation issue under `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`.
 
 ## Authority Model
 
 | Role | Authority |
 | --- | --- |
 | Bill | Merge, launch gates, destructive issue actions, strategy exceptions |
-| Atlas/ChatGPT | Governance review, queue conformance, batch verification, rebaseline, dispatcher/remediation routing when authorized |
+| ChatGPT | Governance review, queue conformance, batch verification, rebaseline, dispatcher/remediation routing when authorized |
 | Cursor | Bounded implementation, validation, PR-body evidence, `READY FOR REVIEW` handoff |
 
 Cursor does not own merge, approval, closeout, relabel, production, or secret authority in either execution mode.

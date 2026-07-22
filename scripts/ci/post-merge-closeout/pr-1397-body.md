@@ -33,7 +33,7 @@ All other files are out of scope
 - Adds the approved Phase 1 Content Strategy / Editorial Inventory documentation package under website docs paths.
 - Defines the story-centric `content_inventory` model, `submission_queue` intake model, canonical/alternate handling, source/credit fields, media association requirements, placement controls, search/discovery requirements, and editorial rotation rules.
 - Adds how-to and tutorial docs for adding stories, adding media, reviewing submissions, publishing/updating content, and onboarding an editor through a first story.
-- Adds a future implementation plan that decomposes build work into child-sized tasks while holding issue creation until Atlas/Bill approval.
+- Adds a future implementation plan that decomposes build work into child-sized tasks while holding issue creation until ChatGPT/Bill approval.
 - Reconciles useful requirements from related context issues 824, 819, and 1137 without changing issue state.
 
 ## BUILD / TEST / VERIFICATION
