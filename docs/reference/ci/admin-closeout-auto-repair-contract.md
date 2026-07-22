@@ -108,19 +108,19 @@ Ambiguous evidence never reaches `safe_auto_fix`.
 
 ## Dry-run requirement
 
-Both CLIs require `--dry-run`:
+Both CLIs require `--dry-run`. Apply mode is refused until a later authorized
+delivery. `--pr <number>` resolves only a local fixture at
+`scripts/ci/fixtures/admin_closeout/pr-<number>.json`. Live GitHub fetch is not
+performed by the dry-run classifier.
 
-```bash
-node scripts/ci/closeout_classifier.mjs --dry-run --fixture scripts/ci/fixtures/admin_closeout/stale_label_after_clean_merge.json
-node scripts/ci/closeout_classifier.mjs --dry-run --pr 2701
-node scripts/ci/admin_closeout_auto_repair.mjs --dry-run --fixture scripts/ci/fixtures/admin_closeout/duplicate_exception_issue.json
-```
+Canonical CLI usage lives in the CI-002 package validation plan:
+`docs/ops/implementation-plans/content-collection/packages/ci-002-admin-closeout-auto-repair-package.md`.
 
-`--pr <number>` resolves a local fixture at
-`scripts/ci/fixtures/admin_closeout/pr-<number>.json` only. Live GitHub fetch is
-not performed by the dry-run classifier.
+### Fail-closed validation gate
 
-`--apply` is refused with a non-zero exit until a later authorized delivery.
+`safe_auto_fix` requires explicit `validation_status: pass` plus complete
+evidence. `fail`, `missing`, or absent validation status never yields
+`safe_auto_fix`, including when `merged_clean: true` is present.
 
 ## Authority boundary
 

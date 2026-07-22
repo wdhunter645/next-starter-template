@@ -58,10 +58,42 @@ describe('CI-002 closeout classifier', () => {
 		const result = classifyCloseoutFinding({
 			type: 'stale_label_after_clean_merge',
 			code: 'stale_label',
+			validation_status: 'pass',
 			evidence_complete: false,
 		});
 		expect(result.outcome).toBe(CLOSEOUT_OUTCOMES.QUEUE_ADMIN_CLOSEOUT);
 		expect(result.may_auto_repair).toBe(false);
+	});
+
+	it('fail-closes stale_label when validation_status is fail despite merged_clean', () => {
+		const result = classifyCloseoutFinding(
+			{
+				type: 'stale_label_after_clean_merge',
+				code: 'stale_label_after_clean_merge',
+				merged_clean: true,
+				evidence_complete: true,
+				evidence: [{ kind: 'label', stale: true }],
+			},
+			{ validation_status: 'fail' },
+		);
+		expect(result.outcome).toBe(CLOSEOUT_OUTCOMES.CURSOR_REMEDIATION_REQUIRED);
+		expect(result.may_auto_repair).toBe(false);
+		expect(result.blocker).toBe(true);
+	});
+
+	it('fail-closes duplicate_exception when validation_status is missing', () => {
+		const result = classifyCloseoutFinding(
+			{
+				type: 'duplicate_exception_issue',
+				code: 'duplicate_exception_issue',
+				evidence_complete: true,
+				evidence: [{ canonical: true, canonical_issue: 2610 }],
+			},
+			{ validation_status: 'missing' },
+		);
+		expect(result.outcome).toBe(CLOSEOUT_OUTCOMES.CURSOR_REMEDIATION_REQUIRED);
+		expect(result.may_auto_repair).toBe(false);
+		expect(result.blocker).toBe(true);
 	});
 
 	it('maps self-heal intentionally_deferred to queue_admin_closeout', () => {
