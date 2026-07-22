@@ -13,7 +13,7 @@ import {
   runPreflight,
 } from '../scripts/cursor-bridge/lib/preflight.mjs';
 
-function baseConfig(homeOverrides = {}) {
+function baseConfig(homeOverrides: { preflight?: Record<string, unknown> } = {}) {
   return {
     repository: 'wdhunter645/next-starter-template',
     requiredLabels: ['agent:cursor', 'handoff:ready'],
