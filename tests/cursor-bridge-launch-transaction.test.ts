@@ -2,8 +2,11 @@ import { EventEmitter } from 'node:events';
 import { PassThrough } from 'node:stream';
 import { describe, expect, it, vi } from 'vitest';
 import {
+  classifyInterruptedLaunch,
   isAgentAcceptedEvent,
   monitorAgentProcess,
+  prepareRetryPacket,
+  sanitizeDiagnostic,
 } from '../scripts/cursor-bridge/lib/launch-transaction.mjs';
 
 class FakeChild extends EventEmitter {
@@ -43,6 +46,22 @@ describe('Cursor Bridge launch transaction', () => {
     expect(result.reason).toBe('startup_timeout');
     expect(child.killed).toBe(true);
     expect(onAccepted).not.toHaveBeenCalled();
+  });
+
+  it('treats exit before system/init as pre-accept failure', async () => {
+    const child = new FakeChild();
+    const pending = monitorAgentProcess({
+      child,
+      startupTimeoutMs: 100,
+      executionTimeoutMs: 500,
+      heartbeatIntervalMs: 5,
+    });
+
+    child.emit('close', 0, null);
+    const result = await pending;
+
+    expect(result.accepted).toBe(false);
+    expect(result.reason).toBe('preaccept_exit_0');
   });
 
   it('accepts system/init once and completes successfully', async () => {
@@ -95,5 +114,47 @@ describe('Cursor Bridge launch transaction', () => {
 
     expect(result.accepted).toBe(true);
     expect(onHeartbeat.mock.calls.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('creates a bounded retry packet without marking the handoff consumed', () => {
+    const now = new Date('2026-07-22T00:00:00.000Z');
+    const retry = prepareRetryPacket(
+      { issueNumber: 2739, deliveryId: 'wake-1', launchAttempts: 1 },
+      {
+        reason: 'startup_timeout',
+        now,
+        baseDelaySeconds: 30,
+        maxDelaySeconds: 120,
+      },
+    );
+
+    expect(retry.launchAttempts).toBe(2);
+    expect(retry.lastLaunchFailure).toBe('startup_timeout');
+    expect(retry.notBefore).toBe('2026-07-22T00:01:00.000Z');
+    expect(retry).not.toHaveProperty('consumed');
+  });
+
+  it('recovers interrupted pre-accept work as retryable and post-accept work as hold', () => {
+    expect(classifyInterruptedLaunch({ state: 'cli_spawned', acceptedAt: null })).toBe(
+      'retry_preaccept',
+    );
+    expect(
+      classifyInterruptedLaunch({
+        state: 'running',
+        acceptedAt: '2026-07-22T00:00:00.000Z',
+      }),
+    ).toBe('hold_postaccept');
+  });
+
+  it('keeps live diagnostics secret-safe', () => {
+    const text = sanitizeDiagnostic(
+      'CURSOR_API_KEY=secret Token: abc123 Authorization: Bearer xyz sk-test-123',
+    );
+
+    expect(text).not.toContain('secret');
+    expect(text).not.toContain('abc123');
+    expect(text).not.toContain('xyz');
+    expect(text).not.toContain('sk-test-123');
+    expect(text).toContain('[redacted]');
   });
 });
