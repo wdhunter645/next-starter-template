@@ -139,6 +139,44 @@ function hasCanonicalDuplicateEvidence(finding = {}) {
 	return evidence.some((entry) => entry?.canonical === true || entry?.canonical_issue);
 }
 
+/**
+ * Fail-closed validation gate for safe_auto_fix.
+ * Explicit fail/missing always wins over pass or merged_clean shortcuts.
+ */
+export function resolveValidationStatus(finding = {}, context = {}) {
+	const candidates = [finding.validation_status, context.validation_status]
+		.filter((value) => value != null && value !== '')
+		.map((value) => String(value).trim().toLowerCase());
+
+	if (candidates.some((value) => value === 'fail' || value === 'failed')) {
+		return 'fail';
+	}
+	if (candidates.some((value) => value === 'missing')) {
+		return 'missing';
+	}
+	if (candidates.some((value) => value === 'pass' || value === 'success')) {
+		return 'pass';
+	}
+	return candidates[0] || null;
+}
+
+function validationAllowsSafeAutoFix(finding = {}, context = {}) {
+	return resolveValidationStatus(finding, context) === 'pass' && evidenceComplete(finding);
+}
+
+function blockerOutcomeForFailedValidation(finding, adminType, validationStatus) {
+	return buildResult({
+		finding,
+		kind: adminType,
+		outcome: CLOSEOUT_OUTCOMES.CURSOR_REMEDIATION_REQUIRED,
+		blocker: true,
+		may_auto_repair: false,
+		reason: validationStatus === 'missing'
+			? 'Missing validation evidence — blocker; never auto-repaired.'
+			: 'Validation failed — blocker; never auto-repaired.',
+	});
+}
+
 function mapSelfHealOutcome(selfHealClassification) {
 	return OUTCOME_FROM_SELF_HEAL[selfHealClassification] || CLOSEOUT_OUTCOMES.CURSOR_REMEDIATION_REQUIRED;
 }
@@ -184,8 +222,16 @@ export function classifyCloseoutFinding(finding = {}, context = {}) {
 		});
 	}
 
+	const validationStatus = resolveValidationStatus(safeFinding, context);
+
 	if (adminType === ADMIN_FINDING_TYPES.DUPLICATE_EXCEPTION_ISSUE) {
-		if (hasCanonicalDuplicateEvidence(safeFinding) && evidenceComplete(safeFinding)) {
+		if (validationStatus === 'fail' || validationStatus === 'missing') {
+			return blockerOutcomeForFailedValidation(safeFinding, adminType, validationStatus);
+		}
+		if (
+			validationAllowsSafeAutoFix(safeFinding, context)
+			&& hasCanonicalDuplicateEvidence(safeFinding)
+		) {
 			return buildResult({
 				finding: safeFinding,
 				kind: adminType,
@@ -201,15 +247,16 @@ export function classifyCloseoutFinding(finding = {}, context = {}) {
 			outcome: CLOSEOUT_OUTCOMES.QUEUE_ADMIN_CLOSEOUT,
 			blocker: false,
 			may_auto_repair: false,
-			reason: 'Duplicate exception lacks canonical evidence; queue administrative closeout.',
+			reason: 'Duplicate exception lacks complete pass validation or canonical evidence; queue administrative closeout.',
 		});
 	}
 
 	if (adminType === ADMIN_FINDING_TYPES.STALE_LABEL_AFTER_CLEAN_MERGE) {
-		const validationOk = context.validation_status === 'pass'
-			|| safeFinding.validation_status === 'pass'
-			|| safeFinding.merged_clean === true;
-		if (validationOk && evidenceComplete(safeFinding)) {
+		if (validationStatus === 'fail' || validationStatus === 'missing') {
+			return blockerOutcomeForFailedValidation(safeFinding, adminType, validationStatus);
+		}
+		// merged_clean may corroborate pass evidence but cannot override fail/missing.
+		if (validationAllowsSafeAutoFix(safeFinding, context) && safeFinding.merged_clean !== false) {
 			return buildResult({
 				finding: safeFinding,
 				kind: adminType,
@@ -225,7 +272,7 @@ export function classifyCloseoutFinding(finding = {}, context = {}) {
 			outcome: CLOSEOUT_OUTCOMES.QUEUE_ADMIN_CLOSEOUT,
 			blocker: false,
 			may_auto_repair: false,
-			reason: 'Stale label without complete clean-merge evidence; queue administrative closeout.',
+			reason: 'Stale label without complete clean-merge pass evidence; queue administrative closeout.',
 		});
 	}
 
@@ -240,33 +287,41 @@ export function classifyCloseoutFinding(finding = {}, context = {}) {
 		});
 	}
 
-	if (adminType && SAFE_ADMIN_TYPES.has(adminType) && evidenceComplete(safeFinding)) {
-		return buildResult({
-			finding: safeFinding,
-			kind: adminType,
-			outcome: CLOSEOUT_OUTCOMES.SAFE_AUTO_FIX,
-			blocker: false,
-			may_auto_repair: true,
-			reason: 'Deterministic administrative finding with complete evidence (dry-run plan only).',
-		});
+	if (adminType && SAFE_ADMIN_TYPES.has(adminType)) {
+		if (validationStatus === 'fail' || validationStatus === 'missing') {
+			return blockerOutcomeForFailedValidation(safeFinding, adminType, validationStatus);
+		}
+		if (validationAllowsSafeAutoFix(safeFinding, context)) {
+			return buildResult({
+				finding: safeFinding,
+				kind: adminType,
+				outcome: CLOSEOUT_OUTCOMES.SAFE_AUTO_FIX,
+				blocker: false,
+				may_auto_repair: true,
+				reason: 'Deterministic administrative finding with complete pass evidence (dry-run plan only).',
+			});
+		}
 	}
 
 	// Delegate unrecognized / self-heal finding shapes to the existing classifier.
 	const selfHeal = classifySelfHealFinding(safeFinding, context);
 	let outcome = mapSelfHealOutcome(selfHeal.classification);
 
-	if (
+	if (safeFinding.operator_authorization_required === true) {
+		outcome = CLOSEOUT_OUTCOMES.OPERATOR_AUTHORIZATION_REQUIRED;
+	} else if (
 		outcome === CLOSEOUT_OUTCOMES.SAFE_AUTO_FIX
 		&& (
-			safeFinding.operator_authorization_required === true
-			|| safeFinding.blocker === true
-			|| context.validation_status === 'fail'
-			|| context.validation_status === 'missing'
+			safeFinding.blocker === true
+			|| validationStatus === 'fail'
+			|| validationStatus === 'missing'
+			|| validationStatus !== 'pass'
 		)
 	) {
-		outcome = context.validation_status === 'missing' || safeFinding.operator_authorization_required
-			? CLOSEOUT_OUTCOMES.OPERATOR_AUTHORIZATION_REQUIRED
-			: CLOSEOUT_OUTCOMES.CURSOR_REMEDIATION_REQUIRED;
+		// Fail closed: safe_auto_fix requires explicit validation pass.
+		outcome = (validationStatus === 'fail' || validationStatus === 'missing' || safeFinding.blocker === true)
+			? CLOSEOUT_OUTCOMES.CURSOR_REMEDIATION_REQUIRED
+			: CLOSEOUT_OUTCOMES.QUEUE_ADMIN_CLOSEOUT;
 	}
 
 	const blocker = outcome === CLOSEOUT_OUTCOMES.CURSOR_REMEDIATION_REQUIRED
