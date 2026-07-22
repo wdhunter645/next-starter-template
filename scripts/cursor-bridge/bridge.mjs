@@ -169,6 +169,16 @@ function requeuePreacceptFailure(config, packetPath, processing, packet, issueNu
   return retry;
 }
 
+/**
+ * Clear the in-flight transaction only after durable queue/archive mutation completes.
+ * If the process crashes during the mutation, restart recovery still has in-flight state.
+ */
+export function clearInFlightAfterDurable(config, durableMutation) {
+  const result = typeof durableMutation === 'function' ? durableMutation() : undefined;
+  clearInFlight(config);
+  return result;
+}
+
 function recoverInterruptedLaunch(config, dirs) {
   const record = readInFlight(config);
   if (!record) return { recovered: false, reason: 'none' };
@@ -179,37 +189,39 @@ function recoverInterruptedLaunch(config, dirs) {
   const issueNumber = Number(record.issueNumber || 0);
 
   if (classification === 'retry_preaccept') {
-    if (processing && fs.existsSync(processing) && packetPath) {
-      let packet = record.packet || null;
-      try {
-        packet = readPacket(processing);
-      } catch {
-        /* use recorded packet */
-      }
-      if (packet) {
-        requeuePreacceptFailure(
-          config,
-          packetPath,
-          processing,
-          packet,
-          issueNumber,
-          'bridge_restart_preaccept',
-        );
-      } else {
-        moveProcessingToConsumed(dirs, packetPath, processing, 'corrupt-preaccept');
-      }
-    }
     releaseClaim(config);
-    clearInFlight(config);
+    clearInFlightAfterDurable(config, () => {
+      if (processing && fs.existsSync(processing) && packetPath) {
+        let packet = record.packet || null;
+        try {
+          packet = readPacket(processing);
+        } catch {
+          /* use recorded packet */
+        }
+        if (packet) {
+          requeuePreacceptFailure(
+            config,
+            packetPath,
+            processing,
+            packet,
+            issueNumber,
+            'bridge_restart_preaccept',
+          );
+        } else {
+          moveProcessingToConsumed(dirs, packetPath, processing, 'corrupt-preaccept');
+        }
+      }
+    });
     appendBridgeLog(config, `recovered interrupted preaccept launch issue=#${issueNumber}`);
     return { recovered: true, reason: 'retry_preaccept', issueNumber };
   }
 
-  if (processing && fs.existsSync(processing) && packetPath) {
-    moveProcessingToConsumed(dirs, packetPath, processing, 'interrupted-after-acceptance');
-  }
   releaseClaim(config);
-  clearInFlight(config);
+  clearInFlightAfterDurable(config, () => {
+    if (processing && fs.existsSync(processing) && packetPath) {
+      moveProcessingToConsumed(dirs, packetPath, processing, 'interrupted-after-acceptance');
+    }
+  });
   appendBridgeLog(config, `held interrupted accepted launch issue=#${issueNumber}`);
   if (issueNumber) {
     fallbackAcceptedFailure(config, issueNumber, 'bridge_restart_after_agent_acceptance');
@@ -367,27 +379,28 @@ async function processPacket(config, dirs, packetPath) {
 
     if (!lifecycle.accepted) {
       releaseClaim(config);
-      clearInFlight(config);
-      requeuePreacceptFailure(
-        config,
-        packetPath,
-        processing,
-        packet,
-        issueNumber,
-        lifecycle.reason,
-      );
+      clearInFlightAfterDurable(config, () => {
+        requeuePreacceptFailure(
+          config,
+          packetPath,
+          processing,
+          packet,
+          issueNumber,
+          lifecycle.reason,
+        );
+      });
       pulseHeartbeat(config, dirs, 'watch', { activeLaunch: null });
       return { ok: false, reason: lifecycle.reason };
     }
-
-    clearInFlight(config);
 
     if (lifecycle.reason !== 'completed') {
       releaseClaim(config);
       fallbackAcceptedFailure(config, issueNumber, lifecycle.reason);
       writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
       notifyLocal(config, 'LGFC Cursor Bridge', `Agent failed on #${issueNumber}: ${lifecycle.reason}`);
-      moveProcessingToConsumed(dirs, packetPath, processing, 'failed-after-acceptance');
+      clearInFlightAfterDurable(config, () => {
+        moveProcessingToConsumed(dirs, packetPath, processing, 'failed-after-acceptance');
+      });
       pulseHeartbeat(config, dirs, 'watch', { activeLaunch: null });
       return { ok: false, reason: lifecycle.reason };
     }
@@ -403,7 +416,9 @@ async function processPacket(config, dirs, packetPath) {
     }
     releaseClaim(config);
 
-    moveProcessingToConsumed(dirs, packetPath, processing, 'done');
+    clearInFlightAfterDurable(config, () => {
+      moveProcessingToConsumed(dirs, packetPath, processing, 'done');
+    });
     pulseHeartbeat(config, dirs, 'watch', { activeLaunch: null });
     return { ok: true, reason: 'completed' };
   } catch (err) {
@@ -415,22 +430,23 @@ async function processPacket(config, dirs, packetPath) {
     } catch {
       /* ignore */
     }
-    clearInFlight(config);
 
-    if (processing && fs.existsSync(processing) && packetPath && packet) {
-      if (interruptionClass === 'hold_postaccept') {
-        moveProcessingToConsumed(dirs, packetPath, processing, 'error-after-acceptance');
-      } else {
-        requeuePreacceptFailure(
-          config,
-          packetPath,
-          processing,
-          packet,
-          issueNumber,
-          `bridge_error:${err.message}`,
-        );
+    clearInFlightAfterDurable(config, () => {
+      if (processing && fs.existsSync(processing) && packetPath && packet) {
+        if (interruptionClass === 'hold_postaccept') {
+          moveProcessingToConsumed(dirs, packetPath, processing, 'error-after-acceptance');
+        } else {
+          requeuePreacceptFailure(
+            config,
+            packetPath,
+            processing,
+            packet,
+            issueNumber,
+            `bridge_error:${err.message}`,
+          );
+        }
       }
-    }
+    });
 
     if (issueNumber && interruptionClass === 'hold_postaccept') {
       fallbackAcceptedFailure(config, issueNumber, `bridge_error:${err.message}`);
@@ -563,4 +579,5 @@ export {
   listPackets,
   fetchIssueBundle,
   recoverInterruptedLaunch,
+  clearInFlightAfterDurable,
 };

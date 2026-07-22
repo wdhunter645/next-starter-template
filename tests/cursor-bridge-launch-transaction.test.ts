@@ -1,13 +1,23 @@
 import { EventEmitter } from 'node:events';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { PassThrough } from 'node:stream';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { clearInFlightAfterDurable, recoverInterruptedLaunch } from '../scripts/cursor-bridge/bridge.mjs';
 import {
   classifyInterruptedLaunch,
   isAgentAcceptedEvent,
   monitorAgentProcess,
   prepareRetryPacket,
+  readInFlight,
   sanitizeDiagnostic,
+  writeInFlight,
 } from '../scripts/cursor-bridge/lib/launch-transaction.mjs';
+import {
+  FALLBACK_PREFIXES,
+  resolveFallbackPrefix,
+} from '../scripts/cursor-bridge/lib/notify.mjs';
 
 class FakeChild extends EventEmitter {
   stdout = new PassThrough();
@@ -157,4 +167,165 @@ describe('Cursor Bridge launch transaction', () => {
     expect(text).not.toContain('sk-test-123');
     expect(text).toContain('[redacted]');
   });
+});
+
+describe('Cursor Bridge post-merge remediation (#2746)', () => {
+  const previousHome = process.env.LGFC_CURSOR_BRIDGE_HOME;
+  let tempHome = '';
+
+  afterEach(() => {
+    if (previousHome === undefined) {
+      delete process.env.LGFC_CURSOR_BRIDGE_HOME;
+    } else {
+      process.env.LGFC_CURSOR_BRIDGE_HOME = previousHome;
+    }
+    if (tempHome && fs.existsSync(tempHome)) {
+      fs.rmSync(tempHome, { recursive: true, force: true });
+    }
+    tempHome = '';
+  });
+
+  function makeTempBridgeHome() {
+    tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'lgfc-bridge-2746-'));
+    process.env.LGFC_CURSOR_BRIDGE_HOME = tempHome;
+    fs.mkdirSync(path.join(tempHome, 'queue'), { recursive: true, mode: 0o700 });
+    fs.mkdirSync(path.join(tempHome, 'consumed'), { recursive: true, mode: 0o700 });
+    return tempHome;
+  }
+
+  it('uses distinct operator-visible fallback classifications for retry and accepted-run failures', () => {
+    const unclaimed = resolveFallbackPrefix('unclaimed', {});
+    const launchRetry = resolveFallbackPrefix('launch-retry', {});
+    const acceptedFailure = resolveFallbackPrefix('accepted-run-failure', {});
+
+    expect(unclaimed).toBe(FALLBACK_PREFIXES.unclaimed);
+    expect(launchRetry).toBe(FALLBACK_PREFIXES.launchRetry);
+    expect(acceptedFailure).toBe(FALLBACK_PREFIXES.acceptedRunFailure);
+    expect(launchRetry).not.toBe(unclaimed);
+    expect(acceptedFailure).not.toBe(unclaimed);
+    expect(launchRetry).not.toBe(acceptedFailure);
+  });
+
+  it('clears in-flight only after durable mutation completes', () => {
+    makeTempBridgeHome();
+    const config = { inFlightPath: 'in-flight.json' };
+    writeInFlight(config, {
+      state: 'cli_spawned',
+      issueNumber: 2746,
+      acceptedAt: null,
+    });
+
+    const order: string[] = [];
+    clearInFlightAfterDurable(config, () => {
+      expect(readInFlight(config)).not.toBeNull();
+      order.push('durable');
+      fs.writeFileSync(path.join(tempHome, 'durable.marker'), 'ok', { mode: 0o600 });
+    });
+    order.push('cleared');
+
+    expect(order).toEqual(['durable', 'cleared']);
+    expect(readInFlight(config)).toBeNull();
+    expect(fs.existsSync(path.join(tempHome, 'durable.marker'))).toBe(true);
+  });
+
+  it('retains in-flight when durable mutation throws before completion', () => {
+    makeTempBridgeHome();
+    const config = { inFlightPath: 'in-flight.json' };
+    writeInFlight(config, {
+      state: 'cli_spawned',
+      issueNumber: 2746,
+      acceptedAt: null,
+    });
+
+    expect(() =>
+      clearInFlightAfterDurable(config, () => {
+        throw new Error('simulated_crash_before_durable_complete');
+      }),
+    ).toThrow(/simulated_crash_before_durable_complete/);
+
+    expect(readInFlight(config)).not.toBeNull();
+  });
+
+  it('recovers interrupted pre-accept work by requeueing before clearing in-flight', () => {
+    makeTempBridgeHome();
+    const config = {
+      inFlightPath: 'in-flight.json',
+      claimPath: 'claim.json',
+      queueDir: 'queue',
+      consumedDir: 'consumed',
+      launchRetryBaseSeconds: 30,
+      launchRetryMaxSeconds: 120,
+      alertsLog: 'alerts.log',
+      bridgeLog: 'bridge.log',
+    };
+    const dirs = {
+      home: tempHome,
+      queue: path.join(tempHome, 'queue'),
+      consumed: path.join(tempHome, 'consumed'),
+    };
+    const packetPath = path.join(dirs.queue, 'wake-2746.json');
+    const processing = `${packetPath}.processing`;
+    const packet = {
+      issueNumber: 2746,
+      deliveryId: 'wake-2746',
+      launchAttempts: 1,
+      launchFallbackPosted: true,
+    };
+    fs.writeFileSync(processing, JSON.stringify(packet, null, 2), { mode: 0o600 });
+    writeInFlight(config, {
+      state: 'cli_spawned',
+      issueNumber: 2746,
+      acceptedAt: null,
+      packetPath,
+      processingPath: processing,
+      packet,
+    });
+
+    const result = recoverInterruptedLaunch(config, dirs);
+
+    expect(result).toMatchObject({ recovered: true, reason: 'retry_preaccept', issueNumber: 2746 });
+    expect(fs.existsSync(packetPath)).toBe(true);
+    expect(fs.existsSync(processing)).toBe(false);
+    expect(readInFlight(config)).toBeNull();
+    const restored = JSON.parse(fs.readFileSync(packetPath, 'utf8'));
+    expect(restored.launchAttempts).toBe(2);
+    expect(restored.lastLaunchFailure).toBe('bridge_restart_preaccept');
+  });
+
+  it('archives interrupted accepted work before clearing in-flight', () => {
+    makeTempBridgeHome();
+    const config = {
+      inFlightPath: 'in-flight.json',
+      claimPath: 'claim.json',
+      queueDir: 'queue',
+      consumedDir: 'consumed',
+      alertsLog: 'alerts.log',
+      bridgeLog: 'bridge.log',
+      fallbackAcceptedFailureCommentPrefix: FALLBACK_PREFIXES.acceptedRunFailure,
+    };
+    const dirs = {
+      home: tempHome,
+      queue: path.join(tempHome, 'queue'),
+      consumed: path.join(tempHome, 'consumed'),
+    };
+    const packetPath = path.join(dirs.queue, 'wake-2746-accepted.json');
+    const processing = `${packetPath}.processing`;
+    fs.writeFileSync(processing, JSON.stringify({ issueNumber: 0 }, null, 2), { mode: 0o600 });
+    writeInFlight(config, {
+      state: 'running',
+      issueNumber: 0,
+      acceptedAt: '2026-07-22T00:00:00.000Z',
+      packetPath,
+      processingPath: processing,
+    });
+
+    const result = recoverInterruptedLaunch(config, dirs);
+
+    expect(result).toMatchObject({ recovered: true, reason: 'hold_postaccept' });
+    expect(readInFlight(config)).toBeNull();
+    expect(fs.existsSync(processing)).toBe(false);
+    const archived = fs.readdirSync(dirs.consumed);
+    expect(archived.some((name) => name.includes('interrupted-after-acceptance'))).toBe(true);
+  });
+
 });
