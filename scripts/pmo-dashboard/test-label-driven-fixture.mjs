@@ -92,6 +92,10 @@ async function main() {
     if (contract.stdout) process.stdout.write(contract.stdout);
     const transition = await execFileAsync('node', [path.join(__dirname, 'test-lifecycle-transitions.mjs')]);
     if (transition.stdout) process.stdout.write(transition.stdout);
+    const reconcile = await execFileAsync('node', [path.join(__dirname, 'test-reconcile-task-child-labels.mjs')]);
+    if (reconcile.stdout) process.stdout.write(reconcile.stdout);
+    const skew = await execFileAsync('node', [path.join(__dirname, 'test-task-count-incomplete-skew.mjs')]);
+    if (skew.stdout) process.stdout.write(skew.stdout);
     console.log('PMO label-driven fixture test passed');
   } finally {
     await rm(outDir, { recursive: true, force: true });
