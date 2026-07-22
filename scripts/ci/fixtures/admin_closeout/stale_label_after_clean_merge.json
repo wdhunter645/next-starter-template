@@ -1,0 +1,24 @@
+{
+  "pr_number": 2701,
+  "source_issue": 2437,
+  "validation_status": "pass",
+  "merged": true,
+  "findings": [
+    {
+      "type": "stale_label_after_clean_merge",
+      "code": "stale_label_after_clean_merge",
+      "message": "Source issue still has status:in-progress after clean merge.",
+      "validation_status": "pass",
+      "merged_clean": true,
+      "evidence_complete": true,
+      "evidence": [
+        { "kind": "closeout_report", "status": "pass" },
+        { "kind": "required_checks", "conclusion": "success" },
+        { "kind": "label", "name": "status:in-progress", "stale": true }
+      ],
+      "pr_number": 2701,
+      "source_issue": 2437,
+      "recommended_action": "reconcile_stale_label"
+    }
+  ]
+}
