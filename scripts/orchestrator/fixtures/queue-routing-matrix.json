@@ -1,0 +1,334 @@
+{
+  "version": 1,
+  "sourceIssue": 2726,
+  "planAuthority": "docs/ops/implementation-plans/issue-2724-queue-label-migration-plan.md",
+  "registry": ".github/queue-label-registry.json",
+  "cases": [
+    {
+      "id": "ops-priority-1-first",
+      "description": "Open team:operations + ops:priority:1 is first eligible interrupt",
+      "issue": {
+        "number": 1001,
+        "state": "open",
+        "labels": ["team:operations", "ops:priority:1"]
+      },
+      "expect": {
+        "lane": "operations",
+        "action": "dispatch",
+        "precedenceRank": 1,
+        "eligible": true
+      }
+    },
+    {
+      "id": "ops-monitoring-interval",
+      "description": "Open team:operations + ops:monitoring is interval update only",
+      "issue": {
+        "number": 1002,
+        "state": "open",
+        "labels": ["team:operations", "ops:monitoring"]
+      },
+      "expect": {
+        "lane": "operations",
+        "action": "interval_update",
+        "blocksNormalWork": false,
+        "eligible": false
+      }
+    },
+    {
+      "id": "ops-hold-interval",
+      "description": "Open team:operations + ops:hold is interval update only",
+      "issue": {
+        "number": 1003,
+        "state": "open",
+        "labels": ["team:operations", "ops:hold"]
+      },
+      "expect": {
+        "lane": "operations",
+        "action": "interval_update",
+        "blocksNormalWork": false,
+        "eligible": false
+      }
+    },
+    {
+      "id": "pmo-active-child-after-ops",
+      "description": "PMO P1 parent with next executable child is eligible after numbered Operations",
+      "issue": {
+        "number": 2002,
+        "state": "open",
+        "title": "TASK: child",
+        "labels": ["pmo", "pmo:task", "pmo:active"],
+        "body": "Parent: #2001\n"
+      },
+      "context": {
+        "parent": {
+          "number": 2001,
+          "state": "open",
+          "labels": ["pmo", "pmo:active", "team:pmo", "pmo:priority:1"]
+        },
+        "implementationAuthorized": true,
+        "childSequenceReady": true
+      },
+      "expect": {
+        "lane": "pmo_active",
+        "action": "dispatch",
+        "precedenceRank": 2,
+        "eligible": true
+      }
+    },
+    {
+      "id": "pmo-child-with-team-priority-ineligible",
+      "description": "PMO child with team priority is ineligible",
+      "issue": {
+        "number": 2003,
+        "state": "open",
+        "labels": ["pmo", "pmo:task", "pmo:active", "pmo:priority:1"],
+        "body": "Parent: #2001\n"
+      },
+      "context": {
+        "parent": {
+          "number": 2001,
+          "labels": ["pmo", "pmo:active", "team:pmo", "pmo:priority:1"]
+        }
+      },
+      "expect": {
+        "eligible": false,
+        "failClosed": true
+      }
+    },
+    {
+      "id": "engineering-prep-only",
+      "description": "Pipeline Engineering P1 parent is preparation selection only",
+      "issue": {
+        "number": 3001,
+        "state": "open",
+        "labels": [
+          "pmo",
+          "pmo:pipeline",
+          "team:engineering",
+          "eng:priority:1",
+          "pmo:stage:prep"
+        ]
+      },
+      "expect": {
+        "lane": "engineering_pipeline",
+        "action": "preparation",
+        "precedenceRank": 3,
+        "authorizesActiveImplementation": false,
+        "eligible": true
+      }
+    },
+    {
+      "id": "ready-for-launch-without-go",
+      "description": "Pipeline Ready for Launch without Go does not launch implementation",
+      "issue": {
+        "number": 3002,
+        "state": "open",
+        "labels": [
+          "pmo",
+          "pmo:pipeline",
+          "team:engineering",
+          "eng:priority:1",
+          "pmo:stage:ready-for-launch"
+        ]
+      },
+      "context": {
+        "productionGo": false
+      },
+      "expect": {
+        "lane": "engineering_pipeline",
+        "action": "preparation",
+        "authorizesActiveImplementation": false,
+        "eligible": true
+      }
+    },
+    {
+      "id": "collaboration-no-ownership-transfer",
+      "description": "Collaboration request to Cursor does not transfer ownership",
+      "issue": {
+        "number": 4001,
+        "state": "open",
+        "labels": ["pmo", "pmo:active", "team:pmo", "pmo:priority:1"]
+      },
+      "collaboration": {
+        "requestedAgent": "cursor",
+        "sourceOwner": "team:pmo",
+        "sourcePriority": "pmo:priority:1"
+      },
+      "expect": {
+        "ownershipTransferred": false,
+        "priorityTransferred": false,
+        "executionAuthorityTransferred": false,
+        "approvalAuthorityTransferred": false,
+        "productionAuthorityTransferred": false
+      }
+    },
+    {
+      "id": "multiple-team-labels-ineligible",
+      "description": "Multiple team labels are ineligible",
+      "issue": {
+        "number": 5001,
+        "state": "open",
+        "labels": ["team:operations", "team:pmo", "ops:priority:1"]
+      },
+      "expect": {
+        "eligible": false,
+        "failClosed": true
+      }
+    },
+    {
+      "id": "cross-namespace-priority-ineligible",
+      "description": "Cross-namespace priority is ineligible",
+      "issue": {
+        "number": 5002,
+        "state": "open",
+        "labels": ["team:operations", "ops:priority:1", "pmo:priority:1"]
+      },
+      "expect": {
+        "eligible": false,
+        "failClosed": true
+      }
+    },
+    {
+      "id": "active-claim-no-duplicate",
+      "description": "Active claim prevents duplicate launch",
+      "issue": {
+        "number": 6001,
+        "state": "open",
+        "labels": ["team:operations", "ops:priority:1"]
+      },
+      "context": {
+        "claimActive": true
+      },
+      "expect": {
+        "eligible": false,
+        "action": "no_duplicate_launch",
+        "failClosed": true
+      }
+    },
+    {
+      "id": "consumed-handoff-no-duplicate",
+      "description": "Consumed handoff prevents duplicate launch",
+      "issue": {
+        "number": 6002,
+        "state": "open",
+        "labels": ["pmo", "pmo:task", "pmo:active"],
+        "body": "Parent: #2001\n"
+      },
+      "context": {
+        "parent": {
+          "number": 2001,
+          "labels": ["pmo", "pmo:active", "team:pmo", "pmo:priority:1"]
+        },
+        "implementationAuthorized": true,
+        "childSequenceReady": true,
+        "handoffConsumed": true
+      },
+      "expect": {
+        "eligible": false,
+        "action": "no_duplicate_launch",
+        "failClosed": true
+      }
+    },
+    {
+      "id": "api-auth-read-failure-fail-closed",
+      "description": "API/auth/read failure fails closed",
+      "issue": {
+        "number": 7001,
+        "state": "open",
+        "labels": ["team:operations", "ops:priority:1"]
+      },
+      "context": {
+        "readFailure": "auth_error"
+      },
+      "expect": {
+        "eligible": false,
+        "failClosed": true,
+        "action": "fail_closed"
+      }
+    },
+    {
+      "id": "stale-snapshot-reevaluate",
+      "description": "Stale snapshot or changed head SHA requires re-evaluation before action",
+      "issue": {
+        "number": 7002,
+        "state": "open",
+        "labels": ["team:operations", "ops:priority:2"]
+      },
+      "context": {
+        "staleSnapshot": true,
+        "headShaChanged": true
+      },
+      "expect": {
+        "eligible": false,
+        "action": "reevaluate",
+        "failClosed": true
+      }
+    }
+  ],
+  "selectionCases": [
+    {
+      "id": "numbered-ops-before-pmo-and-eng",
+      "description": "Numbered Operations precede Active PMO and Engineering preparation",
+      "candidates": [
+        {
+          "number": 2002,
+          "state": "open",
+          "labels": ["pmo", "pmo:task", "pmo:active"],
+          "body": "Parent: #2001\n",
+          "context": {
+            "parent": {
+              "number": 2001,
+              "labels": ["pmo", "pmo:active", "team:pmo", "pmo:priority:1"]
+            },
+            "implementationAuthorized": true,
+            "childSequenceReady": true
+          }
+        },
+        {
+          "number": 3001,
+          "state": "open",
+          "labels": [
+            "pmo",
+            "pmo:pipeline",
+            "team:engineering",
+            "eng:priority:1",
+            "pmo:stage:prep"
+          ]
+        },
+        {
+          "number": 1001,
+          "state": "open",
+          "labels": ["team:operations", "ops:priority:1"]
+        }
+      ],
+      "expectSelected": 1001
+    },
+    {
+      "id": "monitoring-does-not-block-pmo",
+      "description": "Operations Monitoring does not block PMO Active selection",
+      "candidates": [
+        {
+          "number": 1002,
+          "state": "open",
+          "labels": ["team:operations", "ops:monitoring"]
+        },
+        {
+          "number": 2002,
+          "state": "open",
+          "labels": ["pmo", "pmo:task", "pmo:active"],
+          "body": "Parent: #2001\n",
+          "context": {
+            "parent": {
+              "number": 2001,
+              "labels": ["pmo", "pmo:active", "team:pmo", "pmo:priority:1"]
+            },
+            "implementationAuthorized": true,
+            "childSequenceReady": true
+          }
+        }
+      ],
+      "expectSelected": 2002,
+      "expectIntervalOnly": [1002]
+    }
+  ]
+}
