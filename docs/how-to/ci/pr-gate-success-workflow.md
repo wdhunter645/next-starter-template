@@ -32,7 +32,7 @@ Do **not** use the PR body as a lifecycle database. The following legacy pattern
 
 Reviewer lifecycle state lives in **GitHub reviews and review threads**. Merge readiness lives in **required checks, labels, and operator decision**.
 
-## Required execution sequence
+## Procedure
 
 ### 1. Confirm source issue
 
