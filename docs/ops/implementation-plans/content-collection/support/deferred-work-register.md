@@ -38,7 +38,7 @@ Track work intentionally excluded from the current Content Collection program wa
 - Phase 1 parent #2431 launched GO on 2026-07-20; children #2432–#2437 are closed complete on `component/content-collection-phase1`.
 - Phase 1 closeout packet: `docs/ops/reports/content-collection-phase1-validation-closeout-2438.md` (#2438) — pending Bill / ChatGPT Go / NoGo.
 - **D-008** (GAL/LIB/MEM/CLUB feature implementation) remains `deferred`. Freeze markers are verified; feature launch still requires explicit Bill / ChatGPT child-issue authorization (no auto-launch).
-- **D-009** (CI-001 / CI-002 tooling) is `complete` for Phase 1 dry-run/preclearance (#2435–#2437). CI-002 apply mode remains deferred.
+- **D-009** (CI-001 / CI-002 tooling) remains `deferred`: Phase 1 dry-run/preclearance delivered (#2435–#2437); CI-002 apply mode remains deferred.
 - Codex is inactive per `docs/ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md`.
 - Post-merge label transition (`post-merge:failed`) is tracked in #2418; current automation uses `post-merge-failure`.
 
@@ -80,7 +80,7 @@ Every deferred entry must include:
 | D-006 | Broad admin platform redesign | Full admin UX overhaul | Intake draft | Only content collection support in scope | Separate admin UX program | ChatGPT | deferred | — | Admin |
 | D-007 | Codex implementation role | Codex as executor | `docs/ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md` | Codex inactive unless reauthorized | Explicit Bill governance update | Bill | deferred | — | Agents |
 | D-008 | GAL/LIB/MEM/CLUB feature implementation | Gallery, Library, Memorabilia, Club routes | #2360 audit; #2362; #2431; #2438 | Freeze verified; feature launch still requires explicit child issues | Bill / ChatGPT accept #2438 CONDITIONAL GO + authorize GAL/LIB/MEM/CLUB child issues | Cursor | deferred | GAL/LIB/MEM/CLUB | Feature |
-| D-009 | CI-001 / CI-002 tooling implementation | PR body generator, closeout auto-repair scripts | #2360 audit; #2361 packages; #2435–#2437 | Phase 1 dry-run/preclearance delivered; apply mode still deferred | Later authorized apply-mode soak for CI-002 only | Cursor | complete | CI-001/CI-002 | CI |
+| D-009 | CI-001 / CI-002 tooling implementation | PR body generator, closeout auto-repair scripts | #2360 audit; #2361 packages; #2435–#2437 | Phase 1 dry-run/preclearance delivered; apply mode still deferred | Later authorized apply-mode soak for CI-002 only | Cursor | deferred | CI-001/CI-002 | CI |
 | D-010 | Accelerated merge policy | "Pre-approved merge" / continuous execution policy | Intake draft; C1/C8 #2360 | Conflicts with PR lifecycle and merge authority | Rewrite as procedural preclearance only; Bill/ChatGPT approve | ChatGPT | deferred | — | Governance |
 | D-011 | `docs/ops/programs/` tree | Proposed program doc root | #2360 C7 | Rejected — use existing ops clusters | N/A — use `docs/ops/reports/`, `implementation-plans/`, `pmo/` | ChatGPT | superseded | — | Docs |
 | D-012 | `docs/reference/website/content-collection/` | Parallel reference root | #2360 C7 | Rejected — merge into existing content/website refs | N/A — gap matrices only | ChatGPT | superseded | CC-001/CC-002 | Docs |
