@@ -6,7 +6,7 @@ Owns: VAL-001 integrated program validation — lane evidence requirements, clos
 Does Not Own: Feature implementation, CI script implementation, merge authorization, or canonical validation law (defers to verification-closeout skill and governance standards)
 Canonical Reference: /docs/ops/pmo/lou-gehrig-content-collection-expansion-readiness.md
 Related Issues: #2361, #2359, #2360, #1738, #2286
-Last Reviewed: 2026-07-08
+Last Reviewed: 2026-07-21
 ---
 
 # VAL-001 Integrated Program Validation Package
@@ -289,9 +289,16 @@ node scripts/check-repo-structure.mjs
 
 ## Acceptance criteria
 
-- [ ] Integrated validation plan exists with lane-specific evidence requirements.
-- [ ] Evidence report template included.
-- [ ] Blocker vs administrative warning rules defined and aligned with CI-002.
-- [ ] As-built and closeout requirements defined.
-- [ ] Repo-verified paths; no rejected `docs/ops/programs/` tree.
-- [ ] Final validation executable without inventing criteria post-implementation.
+- [x] Integrated validation plan exists with lane-specific evidence requirements.
+- [x] Evidence report template included.
+- [x] Blocker vs administrative warning rules defined and aligned with CI-002.
+- [x] As-built and closeout requirements defined.
+- [x] Repo-verified paths; no rejected `docs/ops/programs/` tree.
+- [x] Final validation executable without inventing criteria post-implementation.
+- [x] Phase 1 closeout evidence packet produced: `docs/ops/reports/content-collection-phase1-validation-closeout-2438.md` (#2438).
+
+## Phase 1 closeout pointer
+
+Phase 1 (#2431) terminal evidence and downstream Go / NoGo recommendation live in:
+
+`docs/ops/reports/content-collection-phase1-validation-closeout-2438.md`

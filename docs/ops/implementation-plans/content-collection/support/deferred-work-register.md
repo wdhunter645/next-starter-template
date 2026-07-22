@@ -6,7 +6,7 @@ Owns: Deferred work tracking for Content Collection successor program — preven
 Does Not Own: Issue creation authority, prioritization decisions, launch authorization, or automatic deferral enforcement
 Canonical Reference: /docs/ops/pmo/lou-gehrig-content-collection-expansion-readiness.md
 Related Issues: #2364, #2359, #2360, #1738, #2286, #2431, #2432, #2433, #2434, #2435, #2436, #2437, #2438
-Last Reviewed: 2026-07-20
+Last Reviewed: 2026-07-21
 ---
 
 # Deferred Work Register — Content Collection
@@ -35,9 +35,10 @@ Track work intentionally excluded from the current Content Collection program wa
 
 - Phase 0 child chain #2360–#2365 completed through PR #2427; #2359 / #2365 closed.
 - #2364 support docs are on `main` under `docs/ops/implementation-plans/content-collection/support/`.
-- Phase 1 parent #2431 launched GO on 2026-07-20; current executable child is #2432; #2433–#2438 remain sequenced successors.
-- **D-008** (GAL/LIB/MEM/CLUB feature implementation) remains `deferred` and is carried forward into Phase 1 controls — #2431 GO does **not** authorize feature-lane code.
-- **D-009** (CI-001 / CI-002 tooling) remains `under-review` and is carried forward into Phase 1 controls via #2435 → #2436 / #2437; not auto-launched by #2431 GO.
+- Phase 1 parent #2431 launched GO on 2026-07-20; children #2432–#2437 are closed complete on `component/content-collection-phase1`.
+- Phase 1 closeout packet: `docs/ops/reports/content-collection-phase1-validation-closeout-2438.md` (#2438) — pending Bill / ChatGPT Go / NoGo.
+- **D-008** (GAL/LIB/MEM/CLUB feature implementation) remains `deferred`. Freeze markers are verified; feature launch still requires explicit Bill / ChatGPT child-issue authorization (no auto-launch).
+- **D-009** (CI-001 / CI-002 tooling) is `complete` for Phase 1 dry-run/preclearance (#2435–#2437). CI-002 apply mode remains deferred.
 - Codex is inactive per `docs/ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md`.
 - Post-merge label transition (`post-merge:failed`) is tracked in #2418; current automation uses `post-merge-failure`.
 
@@ -78,8 +79,8 @@ Every deferred entry must include:
 | D-005 | Paid storage/API expansion | Non-free-tier dependencies | Readiness assumptions | Conservative/free-tier controls assumed | Bill approval after cost/risk review | Bill | deferred | — | Platform |
 | D-006 | Broad admin platform redesign | Full admin UX overhaul | Intake draft | Only content collection support in scope | Separate admin UX program | ChatGPT | deferred | — | Admin |
 | D-007 | Codex implementation role | Codex as executor | `docs/ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md` | Codex inactive unless reauthorized | Explicit Bill governance update | Bill | deferred | — | Agents |
-| D-008 | GAL/LIB/MEM/CLUB feature implementation | Gallery, Library, Memorabilia, Club routes | #2360 audit; #2362; #2431 | Phase 3 — blocked until CC-001/CC-002 frozen; carried into Phase 1 controls without authorization | `CONTRACT-FROZEN: content-asset-model v1` + downstream issue authorization | Cursor | deferred | GAL/LIB/MEM/CLUB | Feature |
-| D-009 | CI-001 / CI-002 tooling implementation | PR body generator, closeout auto-repair scripts | #2360 audit; #2361 packages; #2435–#2437 | Phase 1 review-gated; carried into Phase 1 controls; Stage 0 before tooling | #2435 Stage 0 recommendation + #2436/#2437 allowlists | Cursor | under-review | CI-001/CI-002 | CI |
+| D-008 | GAL/LIB/MEM/CLUB feature implementation | Gallery, Library, Memorabilia, Club routes | #2360 audit; #2362; #2431; #2438 | Freeze verified; feature launch still requires explicit child issues | Bill / ChatGPT accept #2438 CONDITIONAL GO + authorize GAL/LIB/MEM/CLUB child issues | Cursor | deferred | GAL/LIB/MEM/CLUB | Feature |
+| D-009 | CI-001 / CI-002 tooling implementation | PR body generator, closeout auto-repair scripts | #2360 audit; #2361 packages; #2435–#2437 | Phase 1 dry-run/preclearance delivered; apply mode still deferred | Later authorized apply-mode soak for CI-002 only | Cursor | complete | CI-001/CI-002 | CI |
 | D-010 | Accelerated merge policy | "Pre-approved merge" / continuous execution policy | Intake draft; C1/C8 #2360 | Conflicts with PR lifecycle and merge authority | Rewrite as procedural preclearance only; Bill/ChatGPT approve | ChatGPT | deferred | — | Governance |
 | D-011 | `docs/ops/programs/` tree | Proposed program doc root | #2360 C7 | Rejected — use existing ops clusters | N/A — use `docs/ops/reports/`, `implementation-plans/`, `pmo/` | ChatGPT | superseded | — | Docs |
 | D-012 | `docs/reference/website/content-collection/` | Parallel reference root | #2360 C7 | Rejected — merge into existing content/website refs | N/A — gap matrices only | ChatGPT | superseded | CC-001/CC-002 | Docs |
@@ -98,9 +99,9 @@ Every deferred entry must include:
 | Support registers / assignment docs | #2364 | Complete |
 | Terminal Phase 0 closeout | #2365 | Complete via PR #2427 |
 | Lessons learned register | #2366 | Living doc |
-| Phase 1 project parent | #2431 | Launched GO 2026-07-20 |
-| Phase 1 Gate 0 | #2432 | Active executable task |
-| Phase 1 sequenced children | #2433–#2438 | Authorized only after predecessor clean integration |
+| Phase 1 project parent | #2431 | Launched GO 2026-07-20; close pending #2438 acceptance |
+| Phase 1 Gate 0–CI-002 children | #2432–#2437 | CLOSED complete on component branch |
+| Phase 1 validation closeout | #2438 | Closeout packet ready for Bill / ChatGPT Go / NoGo |
 
 ## Update procedure
 
@@ -126,8 +127,8 @@ Review this register:
 - [x] #2360 disposition items (C7, C1/C8, Phase 3 packages) reflected.
 - [x] Register fields support issue-linked audit trail.
 - [x] Superseded items marked — not deleted — for history.
-- [x] D-008 remains blocked until freeze verification (carried into Phase 1 controls).
-- [x] D-009 remains gated by #2435 Stage 0 and #2436/#2437 allowlists (carried into Phase 1 controls).
+- [x] D-008 remains deferred until Bill / ChatGPT authorize explicit feature child issues after freeze verification (#2438).
+- [x] D-009 Phase 1 dry-run/preclearance complete (#2435–#2437); apply mode remains deferred.
 
 ## Source intake mapping
 

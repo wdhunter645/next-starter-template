@@ -6,7 +6,7 @@ Owns: Index, asset inventory, promotion-status tracking, and Phase 1 preparation
 Does Not Own: Canonical content model, governance law, runtime implementation, launch authorization, or merge authority
 Canonical Reference: /docs/ops/reports/content-collection-docs-audit-dedup-2360.md
 Related Issues: #2365, #2361, #2362, #2363, #2364, #2359, #2360, #1738, #2286, #2431, #2432, #2433, #2434, #2435, #2436, #2437, #2438
-Last Reviewed: 2026-07-20
+Last Reviewed: 2026-07-21
 ---
 
 # Content Collection Package Index
@@ -51,7 +51,8 @@ These are **operational envelopes** for future Cursor tasks. They become executa
 | CTRL-005 | Program Closeout Template | [content-collection-program-closeout-template.md](../../pmo/content-collection-program-closeout-template.md) | `validated` | #2420 |
 | CTRL-006 | Dedup / Merge Plan | [content-collection-docs-audit-dedup-2360.md](../../reports/content-collection-docs-audit-dedup-2360.md) | `complete` | #2372 |
 | CTRL-007 | Phase 0 Closeout Report | [content-collection-phase0-promotion-closeout-2365.md](../../reports/content-collection-phase0-promotion-closeout-2365.md) | `complete` | #2427 (merged) |
-| CTRL-008 | Phase 1 Launch Prep | [phase1-launch-prep.md](./phase1-launch-prep.md) | `launched` | #2431 GO 2026-07-20; Gate 0 #2432 |
+| CTRL-008 | Phase 1 Launch Prep | [phase1-launch-prep.md](./phase1-launch-prep.md) | `phase1-complete-pending-acceptance` | #2431 GO; #2438 closeout |
+| CTRL-009 | Phase 1 Validation Closeout | [content-collection-phase1-validation-closeout-2438.md](../../reports/content-collection-phase1-validation-closeout-2438.md) | `ready-for-review` | #2438 |
 
 ## Support documents (#2364)
 
@@ -68,15 +69,15 @@ These are **operational envelopes** for future Cursor tasks. They become executa
 
 | Order | Issue | Title | Package / lane | Launch state |
 | ---: | --- | --- | --- | --- |
-| 0 | #2432 | Phase 1 Gate 0 — Readiness Reconciliation and Stale-State Repair | Gate 0 | Active — current executable task after #2431 GO |
-| 1 | #2433 | CC-001 Content Asset Contract Freeze | CC-001 / P1 | Sequenced after #2432 clean integration |
-| 2 | #2434 | CC-002 Provenance Rights and Publication Contract Freeze | CC-002 / P1 | Sequenced after #2433 |
-| 3 | #2435 | CI Stage 0 Current-State Gap Analysis | CI Stage 0 / P6 | Sequenced after #2434 |
-| 4 | #2436 | CI-001 PR Body Generator Preclearance Tooling | CI-001 / P6 | Sequenced after #2435 |
-| 5 | #2437 | CI-002 Admin Closeout Auto-Repair Boundary | CI-002 / P6 | Sequenced after #2435 and #2436 |
-| 6 | #2438 | Validation Closeout and Downstream Release Recommendation | VAL-001 | Sequenced after #2433–#2437 |
+| 0 | #2432 | Phase 1 Gate 0 — Readiness Reconciliation and Stale-State Repair | Gate 0 | CLOSED complete (#2674) |
+| 1 | #2433 | CC-001 Content Asset Contract Freeze | CC-001 / P1 | CLOSED complete (#2675); `CONTRACT-FROZEN: content-asset-model v1` verified |
+| 2 | #2434 | CC-002 Provenance Rights and Publication Contract Freeze | CC-002 / P1 | CLOSED complete (#2684); `CONTRACT-FROZEN: provenance-rights-publication v1` verified |
+| 3 | #2435 | CI Stage 0 Current-State Gap Analysis | CI Stage 0 / P6 | CLOSED complete (#2685) |
+| 4 | #2436 | CI-001 PR Body Generator Preclearance Tooling | CI-001 / P6 | CLOSED complete (#2704, #2729) |
+| 5 | #2437 | CI-002 Admin Closeout Auto-Repair Boundary | CI-002 / P6 | CLOSED complete (#2738, #2742); apply mode deferred |
+| 6 | #2438 | Validation Closeout and Downstream Release Recommendation | VAL-001 | Closeout packet ready — `docs/ops/reports/content-collection-phase1-validation-closeout-2438.md` |
 
-Project branch for child PRs: `component/content-collection-phase1`. Production / `main` remain protected. Feature lanes (GAL/LIB/MEM/CLUB) remain non-executable until verified `CONTRACT-FROZEN: content-asset-model v1`.
+Project branch for child PRs: `component/content-collection-phase1`. Production / `main` remain protected. Feature lanes (GAL/LIB/MEM/CLUB) remain non-executable until Bill / ChatGPT accept the #2438 CONDITIONAL GO recommendation and authorize explicit child issues.
 
 ## GitHub-only (not repo docs)
 
@@ -88,14 +89,14 @@ Project branch for child PRs: `component/content-collection-phase1`. Production 
 ## Current known truth
 
 - Phase 0 docs promotion (#2360–#2365) completed via PR #2427 (merged 2026-07-10); #2359 and #2365 are closed.
-- Phase 1 parent #2431 received Bill Product Authority **GO — ACTIVE NOW** on 2026-07-20.
-- Current executable task is #2432 (Gate 0 readiness reconciliation); successors #2433–#2438 run in dependency order after each predecessor is cleanly integrated and verified.
+- Phase 1 parent #2431 received Bill Product Authority **GO — ACTIVE NOW** on 2026-07-20; children #2432–#2437 are closed complete on `component/content-collection-phase1`.
+- Phase 1 terminal closeout packet for #2438: `docs/ops/reports/content-collection-phase1-validation-closeout-2438.md` (pending Bill / ChatGPT Go / NoGo).
 - Child PRs target `component/content-collection-phase1`; no automatic Production / `main` merge.
 - Rejected target roots remain `docs/ops/programs/` and `docs/reference/website/content-collection/` per #2360.
 - All four feature routes **exist** on `main` with member auth; packages document gaps vs CC-001/CC-002 and implementation allowlists.
 - Intake `.docx` remains on `atlas/drive-draft-intake-2367` only.
-- Feature code remains blocked until `CONTRACT-FROZEN: content-asset-model v1` is posted and ChatGPT verifies downstream release (D-008).
-- CI-001 / CI-002 tooling remains gated behind #2435 Stage 0 and review (D-009); #2431 GO does not auto-authorize tooling implementation.
+- `CONTRACT-FROZEN: content-asset-model v1` and `CONTRACT-FROZEN: provenance-rights-publication v1` are independently verified (#2433 / #2434). D-008 feature implementation still requires explicit Bill / ChatGPT child-issue authorization (no auto-launch).
+- D-009 CI-001 / CI-002 Phase 1 dry-run/preclearance tooling is complete (#2435–#2437). CI-002 apply mode remains deferred.
 
 ## Source intake mapping
 

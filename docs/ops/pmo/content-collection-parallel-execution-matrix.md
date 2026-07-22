@@ -6,7 +6,7 @@ Owns: Pairwise parallel matrix, per-lane file allowlists, hot zones, freeze mark
 Does Not Own: Merge authorization, GitHub issue creation, or CI workflow implementation
 Canonical Reference: /docs/ops/reports/content-collection-docs-audit-dedup-2360.md
 Related Issues: #2363, #2359, #2360, #2431, #2432, #2433, #2434, #2435, #2436, #2437, #2438
-Last Reviewed: 2026-07-20
+Last Reviewed: 2026-07-21
 ---
 
 # Content Collection Parallel Execution Matrix and File Allowlist Plan
@@ -27,8 +27,10 @@ Does not own merge authorization, GitHub issue creation, or CI workflow implemen
 - Default max concurrent sessions: 3; exceptional: 4 with disjoint allowlists.
 - Gallery/Library/Memorabilia parallel code work requires `CONTRACT-FROZEN: content-asset-model v1`.
 - Package docs live under `docs/ops/implementation-plans/content-collection/packages/`.
-- Content Collection Phase 1 project #2431 is launched; Gate 0 (#2432) is serial and `parallel_safe: false`.
-- P2–P5 feature implementation remains prohibited until verified freeze (D-008); P6 tooling waits Stage 0 (#2435) and review (D-009).
+- Content Collection Phase 1 project #2431 is launched; children #2432–#2437 are closed complete on `component/content-collection-phase1`.
+- Phase 1 closeout packet (#2438): `docs/ops/reports/content-collection-phase1-validation-closeout-2438.md` — pending Bill / ChatGPT Go / NoGo.
+- P2–P5 feature implementation remains prohibited until Bill / ChatGPT accept CONDITIONAL GO and authorize explicit child issues (D-008); freeze markers are verified.
+- P6 CI-001 / CI-002 Phase 1 dry-run tooling is complete (D-009 complete); CI-002 apply mode remains deferred.
 - Phase 1 child PRs target `component/content-collection-phase1` only.
 
 ## Intended final state

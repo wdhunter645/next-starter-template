@@ -6,7 +6,7 @@ Owns: Go/no-go checklist before Content Collection Phase 0 issue creation, Phase
 Does Not Own: Merge authorization, GitHub issue mutation, feature implementation, or automatic launch authorization
 Canonical Reference: /docs/ops/reports/content-collection-docs-audit-dedup-2360.md
 Related Issues: #2363, #2359, #2360, #2365, #2431, #2432, #2433, #2434, #2435, #2436, #2437, #2438
-Last Reviewed: 2026-07-20
+Last Reviewed: 2026-07-21
 ---
 
 # Content Collection Launch Readiness Checklist
@@ -65,22 +65,22 @@ This checklist covers repository-documentation and implementation-control gates.
 
 ## Phase 1 Go / NoGo gate
 
-Document evidence for #2431 (rows 18–29). Status values below reflect Gate 0 reconciliation on 2026-07-20.
+Document evidence for #2431 / #2438 (rows 18–29). Status values below reflect Phase 1 closeout reconciliation on 2026-07-21.
 
-| # | Check | Pass criteria | Status field | Evidence (2026-07-20) |
+| # | Check | Pass criteria | Status field | Evidence (2026-07-21) |
 | ---: | --- | --- | --- | --- |
 | 18 | Phase 0 terminal state accepted | #2359 / #2365 complete and PR #2427 merged | `phase0_complete` | **pass** — #2359/#2365 closed; PR #2427 merged `0709343a` |
 | 19 | Phase 1 parent issue prepared and launched | #2431 exists; Go decision recorded | `phase1_parent_ready` | **pass** — #2431 open + GO comment `5021338828` |
-| 20 | Phase 1 child graph prepared | #2432–#2438 exist and cite #2431 | `phase1_children_ready` | **pass** — graph present; only #2432 currently executable |
-| 21 | Phase 1 prep doc exists | `docs/ops/implementation-plans/content-collection/phase1-launch-prep.md` | `phase1_doc_ready` | **pass** — on `main` via PR #2439 |
-| 22 | Gate 0 stale-state repair is first | #2432 precedes implementation tasks | `gate0_first` | **pass** — #2432 is current executable task |
-| 23 | CC-001 / CC-002 freeze sequence explicit | #2433 then #2434 before feature lanes | `contract_sequence_ready` | **pass** — sequenced; freeze marker not yet posted |
-| 24 | CI Stage 0 precedes CI tooling | #2435 before #2436 / #2437 | `ci_stage0_first` | **pass** — sequence retained |
-| 25 | Feature lanes remain blocked | D-008 deferred until verified freeze | `feature_lanes_blocked` | **pass** — D-008 still `deferred`; no feature-lane authorization |
-| 26 | CI tooling remains gated | D-009 under review, not auto-launched | `ci_tooling_gated` | **pass** — D-009 `under-review`; waits #2435 |
+| 20 | Phase 1 child graph prepared | #2432–#2438 exist and cite #2431 | `phase1_children_ready` | **pass** — #2432–#2437 closed complete; #2438 closeout packet open |
+| 21 | Phase 1 prep doc exists | `docs/ops/implementation-plans/content-collection/phase1-launch-prep.md` | `phase1_doc_ready` | **pass** — updated with Phase 1 completion state |
+| 22 | Gate 0 stale-state repair is first | #2432 precedes implementation tasks | `gate0_first` | **pass** — #2432 closed complete (#2674) |
+| 23 | CC-001 / CC-002 freeze sequence explicit | #2433 then #2434 before feature lanes | `contract_sequence_ready` | **pass** — both freezes independently verified |
+| 24 | CI Stage 0 precedes CI tooling | #2435 before #2436 / #2437 | `ci_stage0_first` | **pass** — #2435–#2437 closed complete |
+| 25 | Feature lanes remain blocked | D-008 deferred until verified freeze + explicit authorization | `feature_lanes_blocked` | **pass** — freeze verified; D-008 still deferred pending #2438 Go / NoGo |
+| 26 | CI tooling remains gated | D-009 dry-run complete; apply mode not auto-enabled | `ci_tooling_gated` | **pass** — D-009 complete for dry-run; apply deferred |
 | 27 | Review throttle accepted | Maximum two to three `READY FOR REVIEW` PRs | `review_throttle_ready` | **pass** — throttle unchanged |
 | 28 | No automation overreach | No AI/OCR/crawler/auto-publication authorization | `automation_guardrails_clear` | **pass** — D-001–D-004 remain deferred |
-| 29 | Bill / ChatGPT launch decision recorded | Explicit Go / NoGo comment on #2431 | `launch_decision_recorded` | **pass** — Bill GO 2026-07-20; ChatGPT dispatch on #2432 |
+| 29 | Bill / ChatGPT launch decision recorded | Explicit Go / NoGo comment on #2431 | `launch_decision_recorded` | **pass** — Bill GO 2026-07-20; Phase 1 downstream Go / NoGo pending on #2438 |
 
 ## Stop rules
 
