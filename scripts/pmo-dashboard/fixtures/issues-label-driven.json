@@ -4,12 +4,8 @@
     "title": "PROGRAM: Content Pipeline Runtime",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9001",
-    "body": "Owner / Agent: Cursor\nProgram Description: Active implementation program with linked tasks.\nAnticipated Completion Date: 2026-08-01\n",
-    "labels": [
-      { "name": "pmo" },
-      { "name": "pmo:active" },
-      { "name": "pmo:priority:1" }
-    ],
+    "body": "Owner / Agent: ChatGPT\nProgram Description: Active implementation program with linked tasks.\nAnticipated Completion Date: 2026-08-01\n",
+    "labels": [{"name":"pmo"},{"name":"pmo:active"},{"name":"team:pmo"},{"name":"pmo:priority:1"}],
     "updated_at": "2026-07-15T12:00:00Z",
     "closed_at": null
   },
@@ -18,12 +14,8 @@
     "title": "PROJECT: 9001:2 | Implement repository service layer",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9002",
-    "body": "Owner / Agent: Cursor\nProject Description: Nested active child project sequence 2.\nParent program: #9001\n",
-    "labels": [
-      { "name": "pmo" },
-      { "name": "pmo:active" },
-      { "name": "pmo:priority:2" }
-    ],
+    "body": "Owner / Agent: ChatGPT\nProject Description: Nested active child project sequence 2.\nParent program: #9001\n",
+    "labels": [{"name":"pmo"},{"name":"pmo:active"}],
     "updated_at": "2026-07-15T11:00:00Z",
     "closed_at": null
   },
@@ -32,12 +24,8 @@
     "title": "PROJECT: 9001:1 | Implement metadata migrations",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9003",
-    "body": "Owner / Agent: Cursor\nProject Description: Nested active child project sequence 1.\nParent program: #9001\n",
-    "labels": [
-      { "name": "pmo" },
-      { "name": "pmo:active" },
-      { "name": "pmo:priority:2" }
-    ],
+    "body": "Owner / Agent: ChatGPT\nProject Description: Nested active child project sequence 1.\nParent program: #9001\n",
+    "labels": [{"name":"pmo"},{"name":"pmo:active"}],
     "updated_at": "2026-07-15T10:00:00Z",
     "closed_at": null
   },
@@ -47,12 +35,7 @@
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9004",
     "body": "Owner / Agent: ChatGPT\nProject Description: Ready-for-launch pipeline project.\n",
-    "labels": [
-      { "name": "pmo" },
-      { "name": "pmo:pipeline" },
-      { "name": "pmo:priority:3" },
-      { "name": "pmo:stage:ready-for-launch" }
-    ],
+    "labels": [{"name":"pmo"},{"name":"pmo:pipeline"},{"name":"team:engineering"},{"name":"eng:priority:3"},{"name":"pmo:stage:ready-for-launch"}],
     "updated_at": "2026-07-14T12:00:00Z",
     "closed_at": null
   },
@@ -61,13 +44,8 @@
     "title": "STRATEGY: Label-only PMO strategy item",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9005",
-    "body": "Owner / Agent: Bill\nProgram Description: Strategy retained in pipeline as idea priority.\n",
-    "labels": [
-      { "name": "pmo" },
-      { "name": "pmo:pipeline" },
-      { "name": "pmo:priority:idea" },
-      { "name": "pmo:stage:intake" }
-    ],
+    "body": "Owner / Agent: ChatGPT\nProgram Description: Strategy retained in pipeline as idea priority.\n",
+    "labels": [{"name":"pmo"},{"name":"pmo:pipeline"},{"name":"team:engineering"},{"name":"eng:priority:idea"},{"name":"pmo:stage:intake"}],
     "updated_at": "2026-07-14T11:00:00Z",
     "closed_at": null
   },
@@ -76,12 +54,8 @@
     "title": "PROGRAM: Completed archive program",
     "state": "closed",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9006",
-    "body": "Owner / Agent: Bill\nProgram Description: Newest completed program.\n",
-    "labels": [
-      { "name": "pmo" },
-      { "name": "pmo:closed" },
-      { "name": "pmo:priority:4" }
-    ],
+    "body": "Owner / Agent: ChatGPT\nProgram Description: Newest completed program.\n",
+    "labels": [{"name":"pmo"},{"name":"pmo:closed"}],
     "updated_at": "2026-07-13T12:00:00Z",
     "closed_at": "2026-07-13T12:00:00Z"
   },
@@ -90,12 +64,8 @@
     "title": "PROGRAM: Older completed program",
     "state": "closed",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9007",
-    "body": "Owner / Agent: Bill\nProgram Description: Older completed program.\n",
-    "labels": [
-      { "name": "pmo" },
-      { "name": "pmo:closed" },
-      { "name": "pmo:priority:5" }
-    ],
+    "body": "Owner / Agent: ChatGPT\nProgram Description: Older completed program.\n",
+    "labels": [{"name":"pmo"},{"name":"pmo:closed"}],
     "updated_at": "2026-07-01T12:00:00Z",
     "closed_at": "2026-07-01T12:00:00Z"
   },
@@ -104,12 +74,8 @@
     "title": "PROJECT: 9001:3 | Completed child under active program",
     "state": "closed",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9008",
-    "body": "Owner / Agent: Cursor\nProject Description: Nested completed child remains under active parent.\nParent program: #9001\n",
-    "labels": [
-      { "name": "pmo" },
-      { "name": "pmo:closed" },
-      { "name": "pmo:priority:2" }
-    ],
+    "body": "Owner / Agent: ChatGPT\nProject Description: Nested completed child remains under active parent.\nParent program: #9001\n",
+    "labels": [{"name":"pmo"},{"name":"pmo:closed"}],
     "updated_at": "2026-07-12T12:00:00Z",
     "closed_at": "2026-07-12T12:00:00Z"
   },
@@ -118,10 +84,8 @@
     "title": "PROJECT: Title prefix but no PMO label",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9010",
-    "body": "Owner / Agent: Cursor\nProject Description: Must be excluded without pmo label.\n",
-    "labels": [
-      { "name": "docs" }
-    ],
+    "body": "Owner / Agent: ChatGPT\nProject Description: Must be excluded without pmo label.\n",
+    "labels": [{"name":"docs"}],
     "updated_at": "2026-07-10T12:00:00Z",
     "closed_at": null
   },
@@ -130,12 +94,8 @@
     "title": "PROJECT: Closed stale implementation-ready body",
     "state": "closed",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9011",
-    "body": "Status: Implementation Ready\nDashboard Lifecycle: pipeline\nPriority #: 9\nOwner / Agent: Cursor\nProject Description: Closed issue must reconcile via pmo:closed, not body fields.\n",
-    "labels": [
-      { "name": "pmo" },
-      { "name": "pmo:closed" },
-      { "name": "pmo:priority:9" }
-    ],
+    "body": "Status: Implementation Ready\nDashboard Lifecycle: pipeline\nPriority #: 9\nOwner / Agent: ChatGPT\nProject Description: Closed issue must reconcile via pmo:closed, not body fields.\n",
+    "labels": [{"name":"pmo"},{"name":"pmo:closed"}],
     "updated_at": "2026-07-11T12:00:00Z",
     "closed_at": "2026-07-11T18:00:00Z"
   },
@@ -144,14 +104,8 @@
     "title": "TASK: Pending linked task for active program",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9020",
-    "body": "Parent program: #9001\nOwner / Agent: Cursor\n",
-    "labels": [
-      { "name": "pmo" },
-      { "name": "pmo:task" },
-      { "name": "pmo:pipeline" },
-      { "name": "pmo:priority:2" },
-      { "name": "pmo:stage:prep" }
-    ],
+    "body": "Parent program: #9001\nOwner / Agent: ChatGPT\n",
+    "labels": [{"name":"pmo"},{"name":"pmo:task"},{"name":"pmo:pipeline"}],
     "updated_at": "2026-07-15T09:00:00Z",
     "closed_at": null
   },
@@ -160,13 +114,8 @@
     "title": "TASK: Active linked task for active program",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9021",
-    "body": "Parent program: #9001\nOwner / Agent: Cursor\n",
-    "labels": [
-      { "name": "pmo" },
-      { "name": "pmo:task" },
-      { "name": "pmo:active" },
-      { "name": "pmo:priority:2" }
-    ],
+    "body": "Parent program: #9001\nOwner / Agent: ChatGPT\n",
+    "labels": [{"name":"pmo"},{"name":"pmo:task"},{"name":"pmo:active"}],
     "updated_at": "2026-07-15T09:30:00Z",
     "closed_at": null
   },
@@ -175,13 +124,8 @@
     "title": "TASK: Completed linked task for active program",
     "state": "closed",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9022",
-    "body": "Parent program: #9001\nOwner / Agent: Cursor\n",
-    "labels": [
-      { "name": "pmo" },
-      { "name": "pmo:task" },
-      { "name": "pmo:closed" },
-      { "name": "pmo:priority:2" }
-    ],
+    "body": "Parent program: #9001\nOwner / Agent: ChatGPT\n",
+    "labels": [{"name":"pmo"},{"name":"pmo:task"},{"name":"pmo:closed"}],
     "updated_at": "2026-07-14T09:00:00Z",
     "closed_at": "2026-07-14T09:00:00Z"
   },
@@ -190,14 +134,8 @@
     "title": "TASK: Orphan task missing parent",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9023",
-    "body": "Owner / Agent: Cursor\n",
-    "labels": [
-      { "name": "pmo" },
-      { "name": "pmo:task" },
-      { "name": "pmo:pipeline" },
-      { "name": "pmo:priority:8" },
-      { "name": "pmo:stage:intake" }
-    ],
+    "body": "Owner / Agent: ChatGPT\n",
+    "labels": [{"name":"pmo"},{"name":"pmo:task"},{"name":"pmo:active"}],
     "updated_at": "2026-07-15T08:00:00Z",
     "closed_at": null
   },
@@ -207,12 +145,7 @@
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9024",
     "body": "Owner / Agent: ChatGPT\n",
-    "labels": [
-      { "name": "pmo" },
-      { "name": "pmo:pipeline" },
-      { "name": "pmo:priority:7" },
-      { "name": "pmo:stage:discovery" }
-    ],
+    "labels": [{"name":"pmo"},{"name":"pmo:active"},{"name":"team:pmo"},{"name":"pmo:priority:2"}],
     "updated_at": "2026-07-15T07:00:00Z",
     "closed_at": null
   },
@@ -222,10 +155,7 @@
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9025",
     "body": "Owner / Agent: ChatGPT\nProject Description: Must quarantine for missing lifecycle.\n",
-    "labels": [
-      { "name": "pmo" },
-      { "name": "pmo:priority:6" }
-    ],
+    "labels": [{"name":"pmo"},{"name":"team:pmo"},{"name":"pmo:priority:3"}],
     "updated_at": "2026-07-15T06:00:00Z",
     "closed_at": null
   },
@@ -235,13 +165,7 @@
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9026",
     "body": "Owner / Agent: ChatGPT\nProject Description: Must quarantine for conflicting priority.\n",
-    "labels": [
-      { "name": "pmo" },
-      { "name": "pmo:pipeline" },
-      { "name": "pmo:priority:1" },
-      { "name": "pmo:priority:2" },
-      { "name": "pmo:stage:planning" }
-    ],
+    "labels": [{"name":"pmo"},{"name":"pmo:active"},{"name":"team:pmo"},{"name":"pmo:priority:1"},{"name":"pmo:priority:2"}],
     "updated_at": "2026-07-15T05:00:00Z",
     "closed_at": null
   },
@@ -251,12 +175,7 @@
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9027",
     "body": "Owner / Agent: ChatGPT\nProject Description: Must quarantine for pmo:priority:none.\n",
-    "labels": [
-      { "name": "pmo" },
-      { "name": "pmo:pipeline" },
-      { "name": "pmo:priority:none" },
-      { "name": "pmo:stage:definition" }
-    ],
+    "labels": [{"name":"pmo"},{"name":"pmo:active"},{"name":"team:pmo"},{"name":"pmo:priority:none"}],
     "updated_at": "2026-07-15T04:00:00Z",
     "closed_at": null
   },
@@ -265,12 +184,8 @@
     "title": "PROJECT: Active with stale pipeline body metadata",
     "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9028",
-    "body": "Dashboard Lifecycle: pipeline\nStatus: Planning\nPriority #: TBD\nOwner / Agent: Cursor\nProject Description: Lifecycle labels must win over stale body metadata.\n",
-    "labels": [
-      { "name": "pmo" },
-      { "name": "pmo:active" },
-      { "name": "pmo:priority:4" }
-    ],
+    "body": "Dashboard Lifecycle: pipeline\nStatus: Planning\nPriority #: TBD\nOwner / Agent: ChatGPT\nProject Description: Lifecycle labels must win over stale body metadata.\n",
+    "labels": [{"name":"pmo"},{"name":"pmo:active"},{"name":"team:pmo"},{"name":"pmo:priority:4"}],
     "updated_at": "2026-07-15T03:00:00Z",
     "closed_at": null
   },
@@ -279,27 +194,39 @@
     "title": "PROJECT: Closed without pmo closed label",
     "state": "closed",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9029",
-    "body": "Owner / Agent: Bill\nProject Description: Closed GitHub state without pmo:closed must quarantine.\n",
-    "labels": [
-      { "name": "pmo" },
-      { "name": "pmo:pipeline" },
-      { "name": "pmo:priority:3" },
-      { "name": "pmo:stage:planning" }
-    ],
+    "body": "Owner / Agent: ChatGPT\nProject Description: Closed GitHub state without pmo:closed must quarantine.\n",
+    "labels": [{"name":"pmo"},{"name":"pmo:active"},{"name":"team:pmo"},{"name":"pmo:priority:3"}],
     "updated_at": "2026-07-10T12:00:00Z",
     "closed_at": "2026-07-10T12:00:00Z"
   },
   {
     "number": 9030,
-    "title": "PROJECT: Completed with no valid priority label",
-    "state": "closed",
+    "title": "PROJECT: Pipeline with PMO priority",
+    "state": "open",
     "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9030",
-    "body": "Owner / Agent: Bill\nProject Description: Completed work missing priority must quarantine.\n",
-    "labels": [
-      { "name": "pmo" },
-      { "name": "pmo:closed" }
-    ],
+    "body": "Owner / Agent: ChatGPT\nProject Description: Cross-namespace priority must quarantine.\n",
+    "labels": [{"name":"pmo"},{"name":"pmo:pipeline"},{"name":"team:engineering"},{"name":"pmo:priority:2"},{"name":"pmo:stage:planning"}],
     "updated_at": "2026-07-09T12:00:00Z",
-    "closed_at": "2026-07-09T12:00:00Z"
+    "closed_at": null
+  },
+  {
+    "number": 9031,
+    "title": "PROJECT: Operations peer excluded",
+    "state": "open",
+    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9031",
+    "body": "Owner / Agent: ChatGPT\n",
+    "labels": [{"name":"pmo"},{"name":"team:operations"},{"name":"ops:priority:1"}],
+    "updated_at": "2026-07-09T11:00:00Z",
+    "closed_at": null
+  },
+  {
+    "number": 9032,
+    "title": "PROJECT: Engineering preparation peer excluded",
+    "state": "open",
+    "html_url": "https://github.com/wdhunter645/next-starter-template/issues/9032",
+    "body": "Related Pipeline Project: #9004\nOwner / Agent: ChatGPT\n",
+    "labels": [{"name":"pmo"},{"name":"team:engineering"},{"name":"eng:priority:1"}],
+    "updated_at": "2026-07-09T10:00:00Z",
+    "closed_at": null
   }
 ]
