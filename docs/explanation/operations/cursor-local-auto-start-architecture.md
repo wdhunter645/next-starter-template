@@ -15,7 +15,7 @@ Last Reviewed: 2026-07-21
 
 Explain why LGFC uses an event-driven **GitHub Actions wake delivery → Chromebook runner → Cursor Local Bridge → local `cursor agent`** path, why the Actions runner alone is not a Cursor notifier, and why a spawned CLI process is not proof that the agent accepted work.
 
-This document is the as-built design authority derived from Issue #2667 / PR #2669, extended by #2694 for heartbeat, watchdog recovery, and missed-handoff reconciliation, and corrected by #2739 for transactional launch acceptance.
+This document is the as-built design authority derived from Issue #2667 / PR #2669, extended by #2694 for heartbeat, watchdog recovery, and missed-handoff reconciliation, corrected by #2739 for transactional launch acceptance, and extended by #2681 for deterministic preflight before claim/launch.
 
 ## Problem
 
@@ -52,6 +52,7 @@ The third boundary is critical. Transport success, process creation, connection 
 | --- | --- |
 | Idle runner + idle Bridge | None |
 | Wake delivery job | None |
+| Preflight (#2681) | Local status/alert only; no Cursor launch |
 | Local heartbeat / watchdog | None; local only |
 | Reconciliation sweep | None for Cursor until an eligible packet launches |
 | Local Cursor Agent run | Existing account model/agent allowance |

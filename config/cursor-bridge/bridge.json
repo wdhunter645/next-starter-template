@@ -20,14 +20,20 @@
   "reconcileEnabled": true,
   "reconcileIntervalSeconds": 900,
   "reconcileIssueLimit": 40,
-  "requiredLabels": ["agent:cursor", "handoff:ready"],
+  "requiredLabels": [
+    "agent:cursor",
+    "handoff:ready"
+  ],
   "responseMarker": "CHATGPT RESPONSE",
   "resumeMarker": "LOCAL CURSOR RESUME",
   "fallbackCommentPrefix": "CURSOR BRIDGE FALLBACK: unclaimed",
   "ackCommentPrefix": "CURSOR BRIDGE ACK: delivered",
   "startedCommentPrefix": "CURSOR BRIDGE STARTED",
   "completedCommentPrefix": "CURSOR BRIDGE COMPLETED",
-  "cliBinaryCandidates": ["agent", "cursor"],
+  "cliBinaryCandidates": [
+    "agent",
+    "cursor"
+  ],
   "cliLaunchMode": "print",
   "prohibitYolo": true,
   "prohibitCloudHandoff": true,
@@ -42,5 +48,13 @@
     "githubFaultEnabled": true,
     "githubFaultDebounceSeconds": 3600,
     "opsFaultIssueNumber": null
+  },
+  "preflight": {
+    "enforce": true,
+    "resultPath": "preflight-result.json",
+    "alertStatePath": "preflight-alert-state.json",
+    "retrySeconds": 60,
+    "skipBridgeUnitOnStartup": true,
+    "cursorCapacitySignal": "unknown"
   }
 }
