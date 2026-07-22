@@ -5,8 +5,8 @@ Authority Level: Operational Procedure
 Owns: Chromebook install, auth preflight, systemd enablement, transactional launch verification, heartbeat/watchdog/reconciliation verification, and rollback for Cursor Local Bridge
 Does Not Own: Wake workflow gates, runner registration, or Background Agents
 Canonical Reference: /docs/reference/ci/cursor-local-bridge-contract.md
-Related Issues: #2294, #2667, #2669, #2694, #2739
-Last Reviewed: 2026-07-21
+Related Issues: #2294, #2667, #2669, #2694, #2739, #2746
+Last Reviewed: 2026-07-22
 ---
 
 # Configure Cursor Local Bridge
@@ -23,6 +23,30 @@ Design rationale: `docs/explanation/operations/cursor-local-auto-start-architect
 2. `cursor agent` / `agent` is installed.
 3. CLI auth works through `cursor agent login` or an approved systemd user environment. Never commit a key.
 4. One manual non-interactive structured-output run succeeds before auto-start is enabled.
+
+## Procedure
+
+Execute the following sections in order on the Chromebook host. Do not skip auth proof before enabling auto-start, and do not mark #2739 host closeout complete until the stalled-connection and service-restart verifications pass.
+
+1. Authenticate and prove the local CLI.
+2. Install the Bridge service and watchdog.
+3. Confirm configuration controls.
+4. Verify wake delivery without launch.
+5. Verify successful transactional launch.
+6. Verify stalled-connection recovery.
+7. Verify service restart recovery.
+8. Verify heartbeat, watchdog, and reconciliation.
+9. Use service control and rollback only when authorized.
+
+## Acceptance evidence status
+
+| Criterion | Status | Authority |
+| --- | --- | --- |
+| Independently reviewed Production merge of the Bridge launch-acceptance fix to `main` | Satisfied — PR #2740 merged at `b351d7712350005bdbad652cb7d1f795a4d773a4` | #2739 / #2746 |
+| Chromebook reset/reconnect, deliberate-stall, service-restart, and post-install direct-host verification | Pending — keep #2739 open; track under #2694 | #2739 / #2694 / #2746 |
+| Crash-consistent in-flight clear after durable requeue/archive; distinct launch-retry and accepted-run fallback classifications | Addressed by #2746 remediation (repository fix; host soak still pending under #2694) | #2746 |
+
+Do not close #2739 or authorize Production routing expansion from documentation updates alone.
 
 ## Authenticate and prove the local CLI
 
@@ -90,6 +114,12 @@ Host config is `~/lgfc-cursor-bridge/bridge.json`, copied from `config/cursor-br
 
 Schema: `config/cursor-bridge/bridge.schema.json`.
 
+Operator-visible fallback comment prefixes are distinct by class:
+
+- eligibility/claim failures: `CURSOR BRIDGE FALLBACK: unclaimed`
+- pre-accept launch retries: `CURSOR BRIDGE FALLBACK: launch-retry`
+- post-accept duplicate-risk failures: `CURSOR BRIDGE FALLBACK: accepted-run-failure`
+
 ## Verify wake delivery without launch
 
 ```bash
@@ -127,7 +157,7 @@ Per-run logs contain event metadata only. They must not contain prompts, assista
 
 ## Verify stalled-connection recovery
 
-This test is mandatory for #2739 closeout and must use a bounded test handoff.
+This test is mandatory for #2739 closeout and must use a bounded test handoff. Keep the criterion pending under #2694 until the Chromebook host proves it.
 
 1. Configure a short temporary `launchStartupTimeoutSeconds` suitable for the test.
 2. Create or simulate a Cursor connection that spawns but does not emit `system/init`.
@@ -138,7 +168,8 @@ This test is mandatory for #2739 closeout and must use a bounded test handoff.
    - the child is terminated at startup timeout;
    - the claim is released;
    - the same packet returns to `queue/` with `launchAttempts`, `lastLaunchFailure`, and future `notBefore`;
-   - only one fallback comment is posted for the packet.
+   - only one `CURSOR BRIDGE FALLBACK: launch-retry` comment is posted for the packet;
+   - in-flight is cleared only after the packet is durably restored to `queue/`.
 5. Restore the normal timeout and restart the service.
 6. Confirm the packet is retried after `notBefore` and can complete after Cursor accepts it.
 
@@ -151,13 +182,15 @@ Do not repeatedly test against a real implementation Issue. Use a disposable bou
 1. Deliver a test packet and stop/restart the Bridge while state is `cli_spawned` and `acceptedAt` is null.
 2. Confirm the claim clears and the processing packet is restored to bounded retry.
 3. Confirm no consumed marker or duplicate agent exists.
+4. Confirm in-flight clears only after durable requeue.
 
 ### Restart after acceptance
 
 1. Deliver a bounded test that reaches `running`.
 2. Restart the Bridge during execution only in a safe disposable test.
 3. Confirm the resume remains consumed and no automatic duplicate launches.
-4. Confirm the packet is archived as interrupted after acceptance and manual verification fallback is posted.
+4. Confirm the packet is archived as interrupted after acceptance and `CURSOR BRIDGE FALLBACK: accepted-run-failure` is posted.
+5. Confirm in-flight clears only after the packet is moved to `consumed/`.
 
 ## Verify heartbeat and watchdog
 

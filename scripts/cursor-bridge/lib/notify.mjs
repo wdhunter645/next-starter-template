@@ -38,8 +38,30 @@ export function postIssueComment(issueNumber, body) {
   return (r.stdout || '').trim();
 }
 
+export const FALLBACK_PREFIXES = {
+  unclaimed: 'CURSOR BRIDGE FALLBACK: unclaimed',
+  launchRetry: 'CURSOR BRIDGE FALLBACK: launch-retry',
+  acceptedRunFailure: 'CURSOR BRIDGE FALLBACK: accepted-run-failure',
+};
+
+/**
+ * Resolve operator-visible fallback classification prefixes.
+ * Launch-retry and accepted-run-failure must not reuse the unclaimed prefix.
+ */
+export function resolveFallbackPrefix(kind, config = {}) {
+  if (kind === 'launch-retry') {
+    return config.fallbackLaunchRetryCommentPrefix || FALLBACK_PREFIXES.launchRetry;
+  }
+  if (kind === 'accepted-run-failure') {
+    return (
+      config.fallbackAcceptedFailureCommentPrefix || FALLBACK_PREFIXES.acceptedRunFailure
+    );
+  }
+  return config.fallbackCommentPrefix || FALLBACK_PREFIXES.unclaimed;
+}
+
 export function fallbackUnclaimed(config, issueNumber, reason) {
-  const prefix = config.fallbackCommentPrefix || 'CURSOR BRIDGE FALLBACK: unclaimed';
+  const prefix = resolveFallbackPrefix('unclaimed', config);
   const body = `${prefix} — ${reason}\n\nBridge did not claim the serial lane. Manual Cursor pickup remains valid after eligibility is restored.`;
   notifyLocal(config, 'LGFC Cursor Bridge fallback', `Issue #${issueNumber}: ${reason}`);
   try {
@@ -50,7 +72,7 @@ export function fallbackUnclaimed(config, issueNumber, reason) {
 }
 
 export function fallbackLaunchRetry(config, issueNumber, reason, retryAt) {
-  const prefix = config.fallbackCommentPrefix || 'CURSOR BRIDGE FALLBACK: unclaimed';
+  const prefix = resolveFallbackPrefix('launch-retry', config);
   const body = `${prefix} — ${reason}\n\nCursor did not emit an agent-acceptance event. The claim was released, the handoff remains unconsumed, and one local retry is eligible after ${retryAt}.`;
   notifyLocal(config, 'LGFC Cursor Bridge launch retry', `Issue #${issueNumber}: ${reason}`);
   try {
@@ -61,7 +83,7 @@ export function fallbackLaunchRetry(config, issueNumber, reason, retryAt) {
 }
 
 export function fallbackAcceptedFailure(config, issueNumber, reason) {
-  const prefix = config.fallbackCommentPrefix || 'CURSOR BRIDGE FALLBACK: unclaimed';
+  const prefix = resolveFallbackPrefix('accepted-run-failure', config);
   const body = `${prefix} — ${reason}\n\nCursor accepted this handoff before the failure. Automatic retry is suppressed to prevent duplicate execution; manual verification is required.`;
   notifyLocal(config, 'LGFC Cursor Bridge accepted-run failure', `Issue #${issueNumber}: ${reason}`);
   try {
