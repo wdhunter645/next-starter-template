@@ -3,6 +3,8 @@
  * Fail closed: every check must pass.
  */
 
+import { classifyQueueCandidate } from '../../orchestrator/queue-routing.mjs';
+
 const RESPONSE_MARKERS = ['CHATGPT RESPONSE', 'CHATGPT CLOSEOUT'];
 const RESUME_MARKER = 'LOCAL CURSOR RESUME';
 
@@ -131,6 +133,40 @@ export function validateEligibility(issue, comments, opts = {}) {
       if (opts.branchHint !== branch && opts.strictBranch) {
         errors.push(`branch_mismatch:${branch}`);
       }
+    }
+  }
+
+  // Queue-aware fail-closed: contradictory ownership/priority namespaces must not launch.
+  const queueRelevant = labels.some(
+    (label) =>
+      label.startsWith('team:') ||
+      label.startsWith('ops:') ||
+      label.startsWith('pmo:priority:') ||
+      label.startsWith('eng:priority:') ||
+      label.startsWith('pmo:stage:') ||
+      label === 'pmo:task' ||
+      label === 'pmo:active' ||
+      label === 'pmo:pipeline'
+  );
+  if (queueRelevant && opts.skipQueueRoutingCheck !== true) {
+    const classification = classifyQueueCandidate(
+      {
+        number: issue.number,
+        state: issue.state === 'OPEN' || issue.state === 'open' ? 'open' : issue.state,
+        labels,
+        body: issue.body || ''
+      },
+      opts.queueContext || {}
+    );
+    if (
+      classification.failClosed &&
+      classification.reasons?.some((reason) =>
+        /cross_namespace|multiple_team|pmo_child_carries|unclassified|ops_requires|pipeline_requires|pipeline_missing|active_shape|missing_or_mismatched_parent/.test(
+          reason
+        )
+      )
+    ) {
+      errors.push(`queue_routing_ineligible:${classification.reasons.join(',')}`);
     }
   }
 

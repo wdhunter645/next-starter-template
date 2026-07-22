@@ -60,6 +60,76 @@ for (const testCase of matrix.selectionCases || []) {
   runSelection(testCase);
 }
 
+// Wiring coverage: selector + routing contract
+{
+  const routing = JSON.parse(
+    fs.readFileSync(path.join(__dirname, '../../.github/orchestrator-routing.json'), 'utf8')
+  );
+  assert(routing.version === 3, 'orchestrator-routing must be version 3');
+  assert(routing.queueAwareDispatch?.enabled === true, 'queueAwareDispatch must be enabled');
+  assert(
+    routing.queueAwareDispatch.decisionModule === 'scripts/orchestrator/queue-routing.mjs',
+    'decision module path'
+  );
+}
+
+{
+  const { selectFromIssues } = await import('./select-next-queue-work.mjs');
+  const issues = [
+    {
+      number: 3001,
+      state: 'open',
+      labels: [
+        { name: 'pmo' },
+        { name: 'pmo:pipeline' },
+        { name: 'team:engineering' },
+        { name: 'eng:priority:1' },
+        { name: 'pmo:stage:prep' }
+      ],
+      body: ''
+    },
+    {
+      number: 1001,
+      state: 'open',
+      labels: [{ name: 'team:operations' }, { name: 'ops:priority:1' }],
+      body: ''
+    }
+  ];
+  const selected = selectFromIssues(issues);
+  assert(selected.selectedIssueNumber === 1001, 'selector must prefer numbered Operations');
+}
+
+{
+  const { validateEligibility } = await import('../cursor-bridge/lib/eligibility.mjs');
+  const bad = validateEligibility(
+    {
+      number: 9,
+      state: 'OPEN',
+      labels: [{ name: 'agent:cursor' }, { name: 'handoff:ready' }, { name: 'team:operations' }, { name: 'ops:priority:1' }, { name: 'pmo:priority:1' }],
+      body: ''
+    },
+    [
+      {
+        id: 1,
+        body: 'CHATGPT RESPONSE\nOK',
+        createdAt: '2026-07-22T00:00:00.000Z',
+        url: 'https://example.com/#issuecomment-1'
+      },
+      {
+        id: 2,
+        body: 'LOCAL CURSOR RESUME\nIssue: #9\nResume from: https://example.com/#issuecomment-1\nNext local action:\n- do one thing\n',
+        createdAt: '2026-07-22T00:01:00.000Z'
+      }
+    ],
+    { skipQueueRoutingCheck: false }
+  );
+  assert(!bad.ok, 'cross-namespace queue state must fail Bridge eligibility');
+  assert(
+    bad.errors.some((error) => error.startsWith('queue_routing_ineligible:')),
+    'queue_routing_ineligible error required'
+  );
+}
+
 console.log(
-  `Queue routing tests passed (${matrix.cases.length} cases, ${(matrix.selectionCases || []).length} selection cases)`
+  `Queue routing tests passed (${matrix.cases.length} cases, ${(matrix.selectionCases || []).length} selection cases, wiring checks ok)`
 );
