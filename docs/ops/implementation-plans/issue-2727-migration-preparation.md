@@ -2,14 +2,14 @@
 Doc Type: Operations
 Audience: Human + AI
 Authority Level: Controlled Implementation Plan
-Owns: Read-only live inventory, quarantine map, and pre-migration preparation evidence for Issue #2727 under Project #2702
-Does Not Own: Live label mutation, Product Authority priority/stage decisions, merge approval, or Production authorization
+Owns: Live inventory, quarantine map, pre-migration snapshot, and executed migration evidence for Issue #2727 under Project #2702
+Does Not Own: Merge approval or Production authorization beyond Product Authority Go recorded on #2727
 Canonical Reference: /docs/ops/implementation-plans/issue-2724-queue-label-migration-plan.md
 Related Issues: #2702, #2724, #2725, #2726, #2727
 Last Reviewed: 2026-07-22
 ---
 
-# #2727 Migration Preparation (Read-Only)
+# #2727 Migration Preparation and Execution Evidence
 
 ## Purpose
 
@@ -37,17 +37,32 @@ Active parents that are missing only `team:pmo` and already carry exactly one va
 
 ## Quarantine requiring Product Authority decision
 
-Pipeline parents with legacy `pmo:priority:*` must not receive automatic `eng:priority:*` transfer. Each needs an explicit mapping or exclusion decision before live mutation.
+Pipeline parents with non-contract legacy priorities (`pmo:priority:5+`) or missing stage remain quarantined. Contract priorities `{1,2,3,4,idea}` received matching `eng:priority:*` only after Product Authority Go on the reopened #2727 remediation.
 
-## Live mutation gate
+## Live mutation gate — cleared
 
-Blocked until:
+Cleared by Bill/ChatGPT reopen of #2727/#2702 with Cursor ownership to complete PMO Dashboard remediation after incorrect closeout.
 
-1. #2725 dashboard contract remediations are terminal/verified.
-2. #2726 routing/wiring is independently reviewed and complete.
-3. Product Authority authorizes the live execution checkpoint.
-4. Pre-migration snapshot + rollback operations are captured under the #2724 procedure.
+## Execution result (2026-07-22)
+
+Artifacts:
+
+- `docs/ops/implementation-plans/issue-2727-pre-migration-snapshot.json`
+- `docs/ops/implementation-plans/issue-2727-migration-execution-log.json`
+
+Batches applied:
+
+1. Registry labels created (`team:*`, `ops:*`, `eng:priority:*`).
+2. Active auto-team: 8 Issues received `team:pmo`.
+3. Pipeline matching-priority: 15 Issues received `team:engineering` + matching `eng:priority:*`; legacy `pmo:priority:*` removed.
+4. Quarantine retained: 20 Pipeline Issues (non-contract priorities or missing stage).
+
+Local live generate/validate after mutation:
+
+- Active Programs: 4 (PROJECT/PROGRAM portfolio titles with `team:pmo`)
+- PMO Pipeline: 15
+- Incomplete retains OPS:/TASK: Active titles (unsupported portfolio prefixes) and quarantined Pipeline rows by design
 
 ## Rollback
 
-No live changes were made by this preparation artifact. Rollback for future mutation batches remains the exact reverse label operations from the #2724 plan snapshot.
+Reverse each `applied` entry in `issue-2727-migration-execution-log.json`: remove labels in `add[]` and restore labels in `remove[]` / `before`.
