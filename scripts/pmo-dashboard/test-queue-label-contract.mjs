@@ -86,6 +86,20 @@ assert(
   'operations issue detection'
 );
 assert(
+  isStandaloneOperationsIssue({
+    labels: [{ name: 'team:operations' }, { name: 'ops:priority:1' }],
+    body: 'Related project: #1'
+  }),
+  'operations issue with native ops priority remains a clean standalone peer'
+);
+assert(
+  isStandaloneOperationsIssue({
+    labels: [{ name: 'team:operations' }, { name: 'ops:monitoring' }],
+    body: 'Related project: #1'
+  }),
+  'operations issue with native ops state remains a clean standalone peer'
+);
+assert(
   !isStandaloneOperationsIssue({
     labels: [
       { name: 'team:operations' },
@@ -105,10 +119,17 @@ assert(
 );
 assert(
   !isStandaloneOperationsIssue({
-    labels: [{ name: 'team:operations' }, { name: 'ops:monitoring' }],
+    labels: [{ name: 'team:operations' }, { name: 'pmo:priority:1' }],
     body: 'Related project: #1'
   }),
-  'operations issue with ops state must remain visible for validation'
+  'operations issue with PMO priority must remain visible for fail-closed classification'
+);
+assert(
+  !isStandaloneOperationsIssue({
+    labels: [{ name: 'team:operations' }, { name: 'eng:priority:1' }],
+    body: 'Related project: #1'
+  }),
+  'operations issue with Engineering priority must remain visible for fail-closed classification'
 );
 assert(
   !isStandaloneOperationsIssue({
@@ -166,6 +187,13 @@ assert(
     body: 'Related Pipeline Project: #42\n'
   }),
   'engineering preparation with Pipeline stage must remain visible for fail-closed classification'
+);
+assert(
+  !isPeerEngineeringPreparation({
+    labels: [{ name: 'team:engineering' }, { name: 'ops:hold' }],
+    body: 'Related Pipeline Project: #42\n'
+  }),
+  'engineering preparation with Operations state must remain visible for fail-closed classification'
 );
 
 console.log('Queue label contract tests passed');
