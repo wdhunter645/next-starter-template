@@ -86,6 +86,24 @@ assert(
   'operations issue detection'
 );
 assert(
+  !isStandaloneOperationsIssue({
+    labels: [
+      { name: 'team:operations' },
+      { name: 'pmo:active' },
+      { name: 'pmo:priority:1' }
+    ],
+    body: 'Related project: #1'
+  }),
+  'operations issue with PMO lifecycle state must remain visible for fail-closed classification'
+);
+assert(
+  !isStandaloneOperationsIssue({
+    labels: [{ name: 'team:operations' }, { name: 'team:pmo' }],
+    body: 'Related project: #1'
+  }),
+  'operations issue with conflicting team ownership must remain visible for validation'
+);
+assert(
   isPeerEngineeringPreparation({
     labels: [{ name: 'team:engineering' }],
     body: 'Related Pipeline Project: #42\nOwner / Agent: ChatGPT\n'
@@ -98,6 +116,24 @@ assert(
     body: 'Parent Project: #42\n'
   }),
   'project child is not peer engineering preparation'
+);
+assert(
+  !isPeerEngineeringPreparation({
+    labels: [
+      { name: 'team:engineering' },
+      { name: 'pmo:active' },
+      { name: 'pmo:priority:1' }
+    ],
+    body: 'Related Pipeline Project: #42\n'
+  }),
+  'engineering preparation with PMO lifecycle state must remain visible for fail-closed classification'
+);
+assert(
+  !isPeerEngineeringPreparation({
+    labels: [{ name: 'team:engineering' }, { name: 'eng:priority:idea' }],
+    body: 'Related Pipeline Project: #42\n'
+  }),
+  'engineering preparation with queue priority must remain visible for validation'
 );
 
 console.log('Queue label contract tests passed');

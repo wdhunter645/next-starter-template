@@ -247,13 +247,40 @@ export function analyzeQueueLabels({ labels: input, lifecycle, role = 'portfolio
   };
 }
 
+function carriesPmoLifecycleOrTask(labels) {
+  return labels.some(
+    (label) => label === 'pmo:task' || label === 'pmo:active' || label === 'pmo:pipeline' || label === 'pmo:closed'
+  );
+}
+
+function carriesConflictingQueueNamespace(labels, allowedTeam) {
+  return labels.some(
+    (label) =>
+      (label.startsWith('team:') && label !== allowedTeam) ||
+      label.startsWith('pmo:priority:') ||
+      label.startsWith('eng:priority:') ||
+      label.startsWith('ops:')
+  );
+}
+
 export function isStandaloneOperationsIssue(issue) {
-  return normalizeLabels(issue?.labels).includes('team:operations');
+  const labels = normalizeLabels(issue?.labels);
+  return (
+    labels.includes('team:operations') &&
+    !carriesPmoLifecycleOrTask(labels) &&
+    !carriesConflictingQueueNamespace(labels, 'team:operations')
+  );
 }
 
 export function isPeerEngineeringPreparation(issue) {
   const labels = normalizeLabels(issue?.labels);
-  if (!labels.includes('team:engineering') || labels.includes('pmo:task')) return false;
+  if (
+    !labels.includes('team:engineering') ||
+    carriesPmoLifecycleOrTask(labels) ||
+    carriesConflictingQueueNamespace(labels, 'team:engineering')
+  ) {
+    return false;
+  }
   const body = issue?.body || '';
   return /^\s*(?:Related Pipeline Project|Graduation Target)\s*:\s*#?\d+\b/im.test(body)
     && !/^\s*Parent(?:\s+(?:program|project|issue))?\s*:/im.test(body);
