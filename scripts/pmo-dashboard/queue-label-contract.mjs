@@ -86,18 +86,41 @@ export function analyzeQueueLabels({ labels: input, lifecycle, role = 'portfolio
 
   if (lifecycle === 'active') {
     if (teams.length !== 1 || teams[0] !== 'team:pmo') {
-      addError(errors, remediation, 'active portfolio parent requires exactly team:pmo', 'Keep exactly team:pmo');
+      addError(
+        errors,
+        remediation,
+        'active portfolio parent requires exactly team:pmo',
+        'Keep exactly team:pmo'
+      );
     }
     const accepted = pmoPriorities.filter((label) => PMO_PRIORITIES.has(label));
     const unsupported = pmoPriorities.filter((label) => !PMO_PRIORITIES.has(label));
     if (unsupported.length) {
-      addError(errors, remediation, `unsupported Active PMO priority label(s): ${unsupported.join(', ')}`, 'Use exactly one pmo:priority:1 through pmo:priority:4');
+      addError(
+        errors,
+        remediation,
+        `unsupported Active PMO priority label(s): ${unsupported.join(', ')}`,
+        'Use exactly one pmo:priority:1 through pmo:priority:4'
+      );
     }
     if (accepted.length !== 1 || pmoPriorities.length !== 1) {
-      addError(errors, remediation, 'active portfolio parent requires exactly one PMO priority', 'Keep exactly one pmo:priority:1 through pmo:priority:4');
+      addError(
+        errors,
+        remediation,
+        'active portfolio parent requires exactly one PMO priority',
+        'Keep exactly one pmo:priority:1 through pmo:priority:4'
+      );
     }
     if (engineeringPriorities.length || operationsStates.length) {
-      addError(errors, remediation, `active portfolio parent carries cross-namespace label(s): ${[...engineeringPriorities, ...operationsStates].join(', ')}`, 'Remove Engineering priority and Operations state labels from Active PMO parents');
+      addError(
+        errors,
+        remediation,
+        `active portfolio parent carries cross-namespace label(s): ${[
+          ...engineeringPriorities,
+          ...operationsStates
+        ].join(', ')}`,
+        'Remove Engineering priority and Operations state labels from Active PMO parents'
+      );
     }
     const priorityLabel = accepted.length === 1 && pmoPriorities.length === 1 ? accepted[0] : null;
     return {
@@ -111,22 +134,47 @@ export function analyzeQueueLabels({ labels: input, lifecycle, role = 'portfolio
 
   if (lifecycle === 'pipeline') {
     if (teams.length !== 1 || teams[0] !== 'team:engineering') {
-      addError(errors, remediation, 'Pipeline portfolio parent requires exactly team:engineering', 'Keep exactly team:engineering');
+      addError(
+        errors,
+        remediation,
+        'Pipeline portfolio parent requires exactly team:engineering',
+        'Keep exactly team:engineering'
+      );
     }
     const accepted = engineeringPriorities.filter((label) => ENGINEERING_PRIORITIES.has(label));
     const unsupported = engineeringPriorities.filter((label) => !ENGINEERING_PRIORITIES.has(label));
     if (unsupported.length) {
-      addError(errors, remediation, `unsupported Engineering priority label(s): ${unsupported.join(', ')}`, 'Use exactly one eng:priority:1 through eng:priority:4 or eng:priority:idea');
+      addError(
+        errors,
+        remediation,
+        `unsupported Engineering priority label(s): ${unsupported.join(', ')}`,
+        'Use exactly one eng:priority:1 through eng:priority:4 or eng:priority:idea'
+      );
     }
     if (accepted.length !== 1 || engineeringPriorities.length !== 1) {
-      addError(errors, remediation, 'Pipeline portfolio parent requires exactly one Engineering priority', 'Keep exactly one eng:priority:1 through eng:priority:4 or eng:priority:idea');
+      addError(
+        errors,
+        remediation,
+        'Pipeline portfolio parent requires exactly one Engineering priority',
+        'Keep exactly one eng:priority:1 through eng:priority:4 or eng:priority:idea'
+      );
     }
     if (pmoPriorities.length || operationsStates.length) {
-      addError(errors, remediation, `Pipeline portfolio parent carries cross-namespace label(s): ${[...pmoPriorities, ...operationsStates].join(', ')}`, 'Remove PMO priority and Operations state labels from Pipeline Engineering parents');
+      addError(
+        errors,
+        remediation,
+        `Pipeline portfolio parent carries cross-namespace label(s): ${[
+          ...pmoPriorities,
+          ...operationsStates
+        ].join(', ')}`,
+        'Remove PMO priority and Operations state labels from Pipeline Engineering parents'
+      );
     }
-    const priorityLabel = accepted.length === 1 && engineeringPriorities.length === 1 ? accepted[0] : null;
+    const priorityLabel =
+      accepted.length === 1 && engineeringPriorities.length === 1 ? accepted[0] : null;
     return {
-      teamLabel: teams.length === 1 && teams[0] === 'team:engineering' ? teams[0] : null,
+      teamLabel:
+        teams.length === 1 && teams[0] === 'team:engineering' ? teams[0] : null,
       priorityLabel,
       priorityDisplay: priorityDisplay(priorityLabel),
       errors: [...new Set(errors)],
@@ -136,21 +184,51 @@ export function analyzeQueueLabels({ labels: input, lifecycle, role = 'portfolio
 
   if (lifecycle === 'closed') {
     if (teams.length === 1 && teams[0] === 'team:operations') {
-      addError(errors, remediation, 'closed PMO portfolio row cannot be owned by team:operations', 'Remove team:operations from PMO portfolio records');
+      addError(
+        errors,
+        remediation,
+        'closed PMO portfolio row cannot be owned by team:operations',
+        'Remove team:operations from PMO portfolio records'
+      );
     }
     if (pmoPriorities.length > 1 || engineeringPriorities.length > 1) {
-      addError(errors, remediation, 'closed portfolio row carries conflicting priority labels', 'Keep at most one historical matching priority label');
+      addError(
+        errors,
+        remediation,
+        'closed portfolio row carries conflicting priority labels',
+        'Keep at most one historical matching priority label'
+      );
     }
     if (pmoPriorities.length && engineeringPriorities.length) {
-      addError(errors, remediation, 'closed portfolio row carries cross-namespace priorities', 'Keep at most one historical priority namespace');
+      addError(
+        errors,
+        remediation,
+        'closed portfolio row carries cross-namespace priorities',
+        'Keep at most one historical priority namespace'
+      );
     }
     if (teams[0] === 'team:pmo' && engineeringPriorities.length) {
-      addError(errors, remediation, 'closed team:pmo row carries Engineering priority', 'Remove Engineering priority or correct the historical team owner');
+      addError(
+        errors,
+        remediation,
+        'closed team:pmo row carries Engineering priority',
+        'Remove Engineering priority or correct the historical team owner'
+      );
     }
     if (teams[0] === 'team:engineering' && pmoPriorities.length) {
-      addError(errors, remediation, 'closed team:engineering row carries PMO priority', 'Remove PMO priority or correct the historical team owner');
+      addError(
+        errors,
+        remediation,
+        'closed team:engineering row carries PMO priority',
+        'Remove PMO priority or correct the historical team owner'
+      );
     }
-    const priorityLabel = pmoPriorities.length === 1 ? pmoPriorities[0] : engineeringPriorities.length === 1 ? engineeringPriorities[0] : null;
+    const priorityLabel =
+      pmoPriorities.length === 1
+        ? pmoPriorities[0]
+        : engineeringPriorities.length === 1
+          ? engineeringPriorities[0]
+          : null;
     return {
       teamLabel: teams.length === 1 && TEAM_LABELS.has(teams[0]) ? teams[0] : null,
       priorityLabel,
