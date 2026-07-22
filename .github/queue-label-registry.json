@@ -1,0 +1,343 @@
+{
+  "version": 1,
+  "sourceIssue": 2724,
+  "parentProject": 2702,
+  "authority": "docs/governance/WORK-QUEUES-AND-COLLABORATION.md",
+  "status": "planning-only-no-live-mutation",
+  "baseline": {
+    "mainCommit": "0b98e759598bdca55f4c3d7bee26374cb2e488bf",
+    "capturedOn": "2026-07-21",
+    "configuredRegistry": ".github/orchestrator-labels.json",
+    "configuredRouting": ".github/orchestrator-routing.json"
+  },
+  "labels": {
+    "team": [
+      {
+        "name": "team:operations",
+        "color": "b60205",
+        "description": "Day-2 Operations queue owner for standalone operational source Issues"
+      },
+      {
+        "name": "team:pmo",
+        "color": "0052cc",
+        "description": "PMO Active implementation queue owner for launched portfolio parents"
+      },
+      {
+        "name": "team:engineering",
+        "color": "5319e7",
+        "description": "Engineering Pipeline-preparation queue owner for unlaunched portfolio parents and peer preparation Issues"
+      }
+    ],
+    "operations": [
+      {
+        "name": "ops:priority:1",
+        "color": "b60205",
+        "description": "Highest actionable Operations interrupt priority"
+      },
+      {
+        "name": "ops:priority:2",
+        "color": "d93f0b",
+        "description": "Second actionable Operations interrupt priority"
+      },
+      {
+        "name": "ops:priority:3",
+        "color": "fbca04",
+        "description": "Third actionable Operations interrupt priority"
+      },
+      {
+        "name": "ops:priority:4",
+        "color": "fef2c0",
+        "description": "Fourth actionable Operations interrupt priority"
+      },
+      {
+        "name": "ops:monitoring",
+        "color": "0e8a16",
+        "description": "Non-blocking interval-managed Operations monitoring state"
+      },
+      {
+        "name": "ops:hold",
+        "color": "6a737d",
+        "description": "Non-blocking Operations hold awaiting a recorded release condition"
+      }
+    ],
+    "pmoTrackingAndLifecycle": [
+      {
+        "name": "pmo",
+        "color": "1d76db",
+        "description": "Issue is included in PMO portfolio reporting"
+      },
+      {
+        "name": "pmo:pipeline",
+        "color": "c5def5",
+        "description": "PMO-tracked parent retained in Engineering preparation or future graduation review"
+      },
+      {
+        "name": "pmo:active",
+        "color": "0052cc",
+        "description": "PMO-tracked parent or child in authorized Active delivery"
+      },
+      {
+        "name": "pmo:closed",
+        "color": "0e8a16",
+        "description": "PMO-tracked parent or child in reconciled terminal state"
+      },
+      {
+        "name": "pmo:task",
+        "color": "bfdadc",
+        "description": "Project implementation child; never a standalone portfolio row and never team-prioritized"
+      }
+    ],
+    "pmoPriority": [
+      {
+        "name": "pmo:priority:1",
+        "color": "0052cc",
+        "description": "Active PMO parent priority 1"
+      },
+      {
+        "name": "pmo:priority:2",
+        "color": "1d76db",
+        "description": "Active PMO parent priority 2"
+      },
+      {
+        "name": "pmo:priority:3",
+        "color": "539bf5",
+        "description": "Active PMO parent priority 3"
+      },
+      {
+        "name": "pmo:priority:4",
+        "color": "c5def5",
+        "description": "Active PMO parent priority 4"
+      }
+    ],
+    "engineeringPriority": [
+      {
+        "name": "eng:priority:1",
+        "color": "5319e7",
+        "description": "Engineering Pipeline preparation priority 1"
+      },
+      {
+        "name": "eng:priority:2",
+        "color": "7057ff",
+        "description": "Engineering Pipeline preparation priority 2"
+      },
+      {
+        "name": "eng:priority:3",
+        "color": "a2eeef",
+        "description": "Engineering Pipeline preparation priority 3"
+      },
+      {
+        "name": "eng:priority:4",
+        "color": "d4c5f9",
+        "description": "Engineering Pipeline preparation priority 4"
+      },
+      {
+        "name": "eng:priority:idea",
+        "color": "ededed",
+        "description": "Pipeline topic retained for PMO awareness without numbered preparation priority"
+      }
+    ],
+    "pipelineStage": [
+      {
+        "name": "pmo:stage:intake",
+        "color": "ededed",
+        "description": "Pipeline maturity: Intake"
+      },
+      {
+        "name": "pmo:stage:discovery",
+        "color": "d4c5f9",
+        "description": "Pipeline maturity: Discovery"
+      },
+      {
+        "name": "pmo:stage:definition",
+        "color": "c5def5",
+        "description": "Pipeline maturity: Definition"
+      },
+      {
+        "name": "pmo:stage:planning",
+        "color": "bfdadc",
+        "description": "Pipeline maturity: Planning"
+      },
+      {
+        "name": "pmo:stage:prep",
+        "color": "fbca04",
+        "description": "Pipeline maturity: Preparation"
+      },
+      {
+        "name": "pmo:stage:ready-for-launch",
+        "color": "0e8a16",
+        "description": "Pipeline maturity: Ready for Launch; implementation is not yet authorized"
+      }
+    ]
+  },
+  "rules": [
+    {
+      "id": "single-team-owner",
+      "selector": "team:*",
+      "cardinality": "zero-or-one",
+      "failure": "incomplete-or-routing-ineligible"
+    },
+    {
+      "id": "operations-state",
+      "when": [
+        "team:operations"
+      ],
+      "requiresExactlyOneOf": [
+        "ops:priority:1",
+        "ops:priority:2",
+        "ops:priority:3",
+        "ops:priority:4",
+        "ops:monitoring",
+        "ops:hold"
+      ],
+      "forbidsPrefixes": [
+        "pmo:priority:",
+        "eng:priority:"
+      ]
+    },
+    {
+      "id": "active-parent",
+      "when": [
+        "pmo",
+        "pmo:active",
+        "portfolio-parent"
+      ],
+      "requires": [
+        "team:pmo"
+      ],
+      "requiresExactlyOneOf": [
+        "pmo:priority:1",
+        "pmo:priority:2",
+        "pmo:priority:3",
+        "pmo:priority:4"
+      ],
+      "forbidsPrefixes": [
+        "eng:priority:",
+        "ops:"
+      ],
+      "forbids": [
+        "pmo:stage:intake",
+        "pmo:stage:discovery",
+        "pmo:stage:definition",
+        "pmo:stage:planning",
+        "pmo:stage:prep",
+        "pmo:stage:ready-for-launch"
+      ]
+    },
+    {
+      "id": "pipeline-parent",
+      "when": [
+        "pmo",
+        "pmo:pipeline",
+        "portfolio-parent"
+      ],
+      "requires": [
+        "team:engineering"
+      ],
+      "requiresExactlyOneOf": [
+        "eng:priority:1",
+        "eng:priority:2",
+        "eng:priority:3",
+        "eng:priority:4",
+        "eng:priority:idea"
+      ],
+      "requiresExactlyOnePrefix": "pmo:stage:",
+      "forbidsPrefixes": [
+        "pmo:priority:",
+        "ops:"
+      ]
+    },
+    {
+      "id": "project-child",
+      "when": [
+        "pmo:task"
+      ],
+      "requiresExactlyOneOf": [
+        "pmo:pipeline",
+        "pmo:active",
+        "pmo:closed"
+      ],
+      "requiresBodyReference": "Parent Project: #<number> or equivalent approved parent field",
+      "forbidsPrefixes": [
+        "team:",
+        "ops:",
+        "pmo:priority:",
+        "eng:priority:"
+      ]
+    },
+    {
+      "id": "project-graduation",
+      "transition": "pipeline-to-active",
+      "remove": [
+        "pmo:pipeline",
+        "team:engineering",
+        "eng:priority:*",
+        "pmo:stage:*"
+      ],
+      "add": [
+        "pmo:active",
+        "team:pmo",
+        "one PMO-selected pmo:priority:1..4"
+      ],
+      "automaticPriorityTransfer": false
+    }
+  ],
+  "legacyTreatment": {
+    "preserveWithoutQueueAuthority": [
+      "orchestrator",
+      "status:queued",
+      "status:blocked",
+      "status:assigned",
+      "status:pr-draft",
+      "status:implementation",
+      "status:review",
+      "status:merged",
+      "status:post-merge-verify",
+      "status:complete",
+      "status:failed",
+      "type:repository",
+      "type:website",
+      "type:governance",
+      "type:docs",
+      "type:recovery",
+      "type:ci",
+      "agent:ChatGPT",
+      "agent:cursor"
+    ],
+    "quarantineForExplicitRetirementOrRemappingDecision": [
+      "agent:codex",
+      "agent:copilot"
+    ],
+    "replaceOnlyAfterIssueSpecificValidation": [
+      {
+        "from": "pmo:priority:idea",
+        "to": "eng:priority:idea",
+        "appliesWhen": "PMO-tracked Pipeline portfolio parent",
+        "otherwise": "quarantine"
+      }
+    ],
+    "removeFromProjectChildren": [
+      "team:*",
+      "ops:*",
+      "pmo:priority:*",
+      "eng:priority:*"
+    ],
+    "prohibited": [
+      "pmo:priority:none",
+      "multiple team:* labels",
+      "cross-namespace priority combinations"
+    ]
+  },
+  "migrationStages": [
+    "capture-complete-pre-migration-snapshot",
+    "create-missing-target-labels-without-applying-them",
+    "validate-registry-and-no-name-collisions",
+    "migrate-unambiguous-operations-source-issues",
+    "migrate-unambiguous-active-portfolio-parents",
+    "migrate-unambiguous-pipeline-portfolio-parents",
+    "remove-team-and-team-priority-labels-from-valid-project-children",
+    "quarantine-ambiguous-or-authority-incomplete-issues",
+    "regenerate-and-validate-dashboard",
+    "verify-routing-dispatch-and-scheduled-runs",
+    "retire-zero-use-legacy-labels-only-by-separate-recorded-decision"
+  ]
+}
