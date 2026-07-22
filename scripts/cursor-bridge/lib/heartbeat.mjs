@@ -42,6 +42,7 @@ export function writeHeartbeat(config, partial = {}) {
     serviceMode: partial.serviceMode || 'watch',
     queueDepth: partial.queueDepth ?? null,
     activeClaim,
+    activeLaunch: partial.activeLaunch ?? null,
     lastDrain: partial.lastDrain || null,
     lastReconcile: partial.lastReconcile || null,
     lastInboundPacketAt: partial.lastInboundPacketAt || null,
