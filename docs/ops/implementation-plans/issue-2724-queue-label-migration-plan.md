@@ -13,6 +13,8 @@ Last Reviewed: 2026-07-21
 
 > **For agentic workers:** Execute this plan task-by-task. #2724 is planning-only. Runtime implementation belongs to #2725 and #2726. Promotion and live migration belong to #2727.
 
+**Execution ownership update (Project #2702):** Cursor is the authorized implementer for remaining #2725/#2726/#2727 work unless a specific Issue assigns a different owner. Prior ChatGPT-only ownership statements in historical comments are superseded by the live Project #2702 Product Authority direction. Builders still must not self-approve or self-merge.
+
 **Goal:** Establish a machine-readable queue-label contract and a fail-closed, fully reversible migration sequence that implements the approved Operations, PMO Active, and Engineering Pipeline model without inventing Issue state.
 
 **Architecture:** Canonical policy remains in `docs/governance/WORK-QUEUES-AND-COLLABORATION.md`. The new `.github/queue-label-registry.json` is the implementation contract consumed by later dashboard and routing work. Runtime changes are split between #2725 and #2726, and live repository mutation is isolated to #2727 after independent review.
