@@ -48,3 +48,25 @@ export function fallbackUnclaimed(config, issueNumber, reason) {
     appendBridgeLog(config, `fallback comment failed: ${err.message}`);
   }
 }
+
+export function fallbackLaunchRetry(config, issueNumber, reason, retryAt) {
+  const prefix = config.fallbackCommentPrefix || 'CURSOR BRIDGE FALLBACK: unclaimed';
+  const body = `${prefix} — ${reason}\n\nCursor did not emit an agent-acceptance event. The claim was released, the handoff remains unconsumed, and one local retry is eligible after ${retryAt}.`;
+  notifyLocal(config, 'LGFC Cursor Bridge launch retry', `Issue #${issueNumber}: ${reason}`);
+  try {
+    postIssueComment(issueNumber, body);
+  } catch (err) {
+    appendBridgeLog(config, `launch retry comment failed: ${err.message}`);
+  }
+}
+
+export function fallbackAcceptedFailure(config, issueNumber, reason) {
+  const prefix = config.fallbackCommentPrefix || 'CURSOR BRIDGE FALLBACK: unclaimed';
+  const body = `${prefix} — ${reason}\n\nCursor accepted this handoff before the failure. Automatic retry is suppressed to prevent duplicate execution; manual verification is required.`;
+  notifyLocal(config, 'LGFC Cursor Bridge accepted-run failure', `Issue #${issueNumber}: ${reason}`);
+  try {
+    postIssueComment(issueNumber, body);
+  } catch (err) {
+    appendBridgeLog(config, `accepted failure comment failed: ${err.message}`);
+  }
+}

@@ -1,11 +1,11 @@
 ---
 Doc Type: How-To
-Audience: Bill, Cursor Local, Day-2 Operations
+Audience: Bill, ChatGPT, Day-2 Operations
 Authority Level: Operational Procedure
-Owns: Chromebook install, auth preflight, systemd enablement, heartbeat/watchdog/reconciliation verification, and rollback for Cursor Local Bridge
+Owns: Chromebook install, auth preflight, systemd enablement, transactional launch verification, heartbeat/watchdog/reconciliation verification, and rollback for Cursor Local Bridge
 Does Not Own: Wake workflow gates, runner registration, or Background Agents
 Canonical Reference: /docs/reference/ci/cursor-local-bridge-contract.md
-Related Issues: #2294, #2667, #2669, #2694
+Related Issues: #2294, #2667, #2669, #2694, #2739
 Last Reviewed: 2026-07-21
 ---
 
@@ -13,20 +13,18 @@ Last Reviewed: 2026-07-21
 
 ## Purpose
 
-Install the host Bridge that consumes wake packets from the Chromebook Actions runner and either launches an authenticated local `cursor agent` or falls back to notify + unclaimed. Also enable local heartbeat, watchdog recovery, and bounded missed-handoff reconciliation.
+Install the host Bridge that consumes wake packets from the Chromebook Actions runner and launches an authenticated local Cursor Agent only after a positive lifecycle acceptance event. The Bridge also provides local heartbeat, watchdog recovery, bounded missed-handoff reconciliation, and retryable pre-accept failure.
 
 Design rationale: `docs/explanation/operations/cursor-local-auto-start-architecture.md`.
 
-## Prerequisite
+## Prerequisites
 
 1. Repository runner `lgfc-chromebook-linux` is online.
 2. `cursor agent` / `agent` is installed.
-3. CLI auth works: `cursor agent login` **or** `CURSOR_API_KEY` in the systemd user environment (never commit the key).
-4. Prove one manual print-mode run before relying on auto-start.
+3. CLI auth works through `cursor agent login` or an approved systemd user environment. Never commit a key.
+4. One manual non-interactive structured-output run succeeds before auto-start is enabled.
 
-## Procedure
-
-### Authenticate the local CLI
+## Authenticate and prove the local CLI
 
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
@@ -34,17 +32,28 @@ cursor agent login
 cursor agent status
 ```
 
-If status is `Not logged in`, Bridge will only deliver **fallback: unclaimed** until auth succeeds.
+If status is not authenticated, the Bridge must not consume a handoff.
 
-Optional manual proof:
+Manual structured proof:
 
 ```bash
-cursor agent -p "Respond with the single word OK" --workspace "$PWD" --trust
+cursor agent -p "Respond with the single word OK" \
+  --output-format stream-json \
+  --workspace "$PWD" \
+  --trust
 ```
 
-### Install the Bridge service and watchdog timer
+Confirm the stream begins with a valid event containing:
 
-From the repository root on `main` (or the approved PR branch during soak):
+```json
+{"type":"system","subtype":"init","session_id":"..."}
+```
+
+The Bridge treats that event—not process spawn or connection-window display—as agent acceptance.
+
+## Install the Bridge service and watchdog
+
+From the repository root on the approved revision:
 
 ```bash
 bash scripts/cursor-bridge/install.sh
@@ -55,46 +64,113 @@ systemctl --user status lgfc-cursor-bridge-watchdog.timer
 
 Confirm:
 
-- `auth` / `cursorCliAuth.ok` is `true`
-- Bridge systemd unit is active
-- Watchdog timer is active
-- After ~a few seconds of watch, `bridge.heartbeat` is present and fresh
+- `cursorCliAuth.ok` is `true`;
+- Bridge service is active;
+- watchdog timer is active;
+- `bridge.heartbeat` is fresh;
+- `launchTransaction.state` is `none` when idle;
+- `claim.state` is `none` when idle.
 
-### Configuration knobs
+## Configuration controls
 
-Host config lives at `~/lgfc-cursor-bridge/bridge.json` (copied from `config/cursor-bridge/bridge.json`).
+Host config is `~/lgfc-cursor-bridge/bridge.json`, copied from `config/cursor-bridge/bridge.json`.
 
 | Key | Default | Role |
-| --- | --- | --- |
-| `reconcileEnabled` | `true` | Master switch for missed-handoff sweep |
-| `reconcileIntervalSeconds` | `900` | Bounded recovery cadence |
-| `heartbeatPath` | `heartbeat.json` | Local heartbeat file |
-| `watchdog.heartbeatStaleSeconds` | `90` | Restart threshold |
-| `watchdog.opsFaultIssueNumber` | `null` | Optional Issue for debounced GitHub ops faults |
+| --- | ---: | --- |
+| `inFlightPath` | `in-flight.json` | Atomic spawned/accepted/running transaction record |
+| `launchStartupTimeoutSeconds` | `60` | Maximum wait for Cursor `system/init` |
+| `launchExecutionTimeoutSeconds` | `7200` | Overall agent-process limit |
+| `launchHeartbeatIntervalSeconds` | `5` | Heartbeat cadence during active work |
+| `launchRetryBaseSeconds` | `30` | Initial pre-accept retry delay |
+| `launchRetryMaxSeconds` | `900` | Maximum pre-accept retry delay |
+| `reconcileEnabled` | `true` | Missed-handoff recovery switch |
+| `reconcileIntervalSeconds` | `900` | Recovery cadence |
+| `watchdog.heartbeatStaleSeconds` | `90` | Bridge restart threshold |
+| `watchdog.opsFaultIssueNumber` | `null` | Optional debounced Operations fault target |
 
 Schema: `config/cursor-bridge/bridge.schema.json`.
 
-### Verify wake delivery without launching Cursor
+## Verify wake delivery without launch
 
 ```bash
-bash scripts/cursor-bridge/write-wake-packet.sh <issue-number> manual-test-1 manual wdhunter645
-# Bridge watch loop consumes the packet automatically; or:
+bash scripts/cursor-bridge/write-wake-packet.sh <ineligible-issue-number> manual-test-1 manual wdhunter645
 node ~/lgfc-cursor-bridge/scripts/bridge.mjs once
 ```
 
-Expect `CURSOR BRIDGE FALLBACK: unclaimed` when the Issue is not fully eligible.
+Expected: explicit eligibility fallback; no claim, consumed marker, in-flight transaction, or Cursor process.
 
-### Verify heartbeat and watchdog
+## Verify successful transactional launch
+
+Use a temporary bounded test Issue with valid `CHATGPT RESPONSE`, one-action `LOCAL CURSOR RESUME`, `agent:cursor`, and `handoff:ready`.
+
+Observe in order:
+
+1. GitHub posts `CURSOR BRIDGE ACK: delivered`.
+2. Local status may briefly show `launchTransaction.state: cli_spawned`.
+3. There is **no** `CURSOR BRIDGE STARTED` yet.
+4. Cursor emits `system/init`.
+5. Status shows `launchTransaction.state: running`, `acceptedAt`, and `sessionId`.
+6. GitHub posts `CURSOR BRIDGE STARTED`.
+7. The agent performs exactly the bounded action.
+8. GitHub posts `CURSOR BRIDGE COMPLETED`.
+9. Claim and in-flight state clear; the resume is consumed exactly once.
+
+Useful commands:
 
 ```bash
-# Heartbeat should refresh while Bridge is healthy
+node ~/lgfc-cursor-bridge/scripts/bridge.mjs status | jq '{bridge,launchTransaction,claim,queue}'
+journalctl --user -u lgfc-cursor-bridge.service -f
+ls -la ~/lgfc-cursor-bridge/queue ~/lgfc-cursor-bridge/consumed
+```
+
+Per-run logs contain event metadata only. They must not contain prompts, assistant text, tokens, or API keys.
+
+## Verify stalled-connection recovery
+
+This test is mandatory for #2739 closeout and must use a bounded test handoff.
+
+1. Configure a short temporary `launchStartupTimeoutSeconds` suitable for the test.
+2. Create or simulate a Cursor connection that spawns but does not emit `system/init`.
+3. Deliver the eligible packet.
+4. Confirm:
+   - no `CURSOR BRIDGE STARTED` comment is posted;
+   - no consumed-resume marker is created;
+   - the child is terminated at startup timeout;
+   - the claim is released;
+   - the same packet returns to `queue/` with `launchAttempts`, `lastLaunchFailure`, and future `notBefore`;
+   - only one fallback comment is posted for the packet.
+5. Restore the normal timeout and restart the service.
+6. Confirm the packet is retried after `notBefore` and can complete after Cursor accepts it.
+
+Do not repeatedly test against a real implementation Issue. Use a disposable bounded soak Issue.
+
+## Verify service restart recovery
+
+### Restart before acceptance
+
+1. Deliver a test packet and stop/restart the Bridge while state is `cli_spawned` and `acceptedAt` is null.
+2. Confirm the claim clears and the processing packet is restored to bounded retry.
+3. Confirm no consumed marker or duplicate agent exists.
+
+### Restart after acceptance
+
+1. Deliver a bounded test that reaches `running`.
+2. Restart the Bridge during execution only in a safe disposable test.
+3. Confirm the resume remains consumed and no automatic duplicate launches.
+4. Confirm the packet is archived as interrupted after acceptance and manual verification fallback is posted.
+
+## Verify heartbeat and watchdog
+
+```bash
 node ~/lgfc-cursor-bridge/scripts/bridge.mjs status | jq '.bridge.heartbeat'
-
-# Watchdog check (quiet when healthy)
 node ~/lgfc-cursor-bridge/scripts/watchdog.mjs check
+```
 
-# Simulate stale heartbeat recovery (non-production host only):
-# stop Bridge, age heartbeat, run watchdog, confirm restart
+During a long-running accepted agent, `bridge.heartbeat.updatedAt` must continue advancing and `bridge.activeLaunch` must remain present. The watchdog must not restart a healthy Bridge merely because `processPacket()` is awaiting child completion.
+
+To test stale-Bridge recovery on a non-production soak:
+
+```bash
 systemctl --user stop lgfc-cursor-bridge.service
 node ~/lgfc-cursor-bridge/scripts/watchdog.mjs check
 systemctl --user status lgfc-cursor-bridge.service
@@ -102,51 +178,54 @@ systemctl --user status lgfc-cursor-bridge.service
 
 Healthy intervals must not create GitHub comments.
 
-### Verify reconciliation (recovery only)
+## Verify reconciliation
 
 ```bash
-# Manual one-shot sweep (uses live gh; fail-closed on API errors)
 node ~/lgfc-cursor-bridge/scripts/bridge.mjs reconcile
 ```
 
-The sweep queues a `reconcile-recovery` packet only for fully eligible resumes that lack a pending or consumed packet. It does not launch Cursor directly. Duplicate resume ids and active serial claims are handled by the normal Bridge packet path.
+The sweep queues a recovery packet only for a fully eligible resume lacking pending or consumed evidence. Deferred pre-accept retry packets count as pending. Reconciliation never launches Cursor directly.
 
-### Service control
+## Service control
 
 ```bash
 systemctl --user status lgfc-cursor-bridge.service
 systemctl --user restart lgfc-cursor-bridge.service
 systemctl --user status lgfc-cursor-bridge-watchdog.timer
-journalctl --user -u lgfc-cursor-bridge.service -n 50 --no-pager
+journalctl --user -u lgfc-cursor-bridge.service -n 100 --no-pager
 journalctl --user -u lgfc-cursor-bridge-watchdog.service -n 50 --no-pager
 ```
 
-### Stop, disable, or roll back
+## Stop, disable, or roll back
 
-Disable watchdog only:
+Stop automatic launch while preserving packets:
+
+```bash
+systemctl --user stop lgfc-cursor-bridge.service
+```
+
+Disable watchdog:
 
 ```bash
 systemctl --user disable --now lgfc-cursor-bridge-watchdog.timer
 ```
 
-Disable reconciliation without removing the Bridge:
+Disable reconciliation:
 
 ```bash
-# edit ~/lgfc-cursor-bridge/bridge.json
-# set "reconcileEnabled": false
+# edit ~/lgfc-cursor-bridge/bridge.json and set reconcileEnabled=false
 systemctl --user restart lgfc-cursor-bridge.service
 ```
 
-Stop Bridge entirely:
+Disable Bridge entirely:
 
 ```bash
-systemctl --user stop lgfc-cursor-bridge.service
-systemctl --user disable lgfc-cursor-bridge.service
+systemctl --user disable --now lgfc-cursor-bridge.service
 ```
 
-Preserve `queue/`, `consumed/`, `claim.json`, and heartbeat/watchdog state unless cleanup is proven safe. Confirm ordinary wake delivery still works after rollback.
+Preserve `queue/`, `consumed/`, `claim.json`, `in-flight.json`, `heartbeat.json`, runtime metadata, and logs unless cleanup is proven safe. Manual Cursor pickup remains the fallback operating path.
 
-Do not remove the Actions runner unless also disabling `.github/workflows/cursor-local-wake.yml`.
+Do not remove the Actions runner unless `.github/workflows/cursor-local-wake.yml` is also disabled through authorized change control.
 
 ## Related
 

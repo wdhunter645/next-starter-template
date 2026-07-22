@@ -2,10 +2,10 @@
 Doc Type: Explanation
 Audience: Human + AI
 Authority Level: Controlled
-Owns: Conceptual as-built architecture for Cursor Local Auto-Start (Mode B), component roles, event flow rationale, health/recovery paths, cost model, and rejected alternatives
+Owns: Conceptual as-built architecture for Cursor Local Auto-Start, component roles, transactional launch flow, health/recovery paths, cost model, and rejected alternatives
 Does Not Own: Host install runbooks, executable wake gates, Background Agents, or workflow migration Go decisions
 Canonical Reference: /docs/reference/ci/cursor-local-bridge-contract.md
-Related Issues: #2294, #2667, #2669, #2694
+Related Issues: #2294, #2667, #2669, #2694, #2739
 Last Reviewed: 2026-07-21
 ---
 
@@ -13,53 +13,51 @@ Last Reviewed: 2026-07-21
 
 ## Purpose
 
-Explain why LGFC uses an event-driven **GitHub Actions wake delivery → Chromebook runner → Cursor Local Bridge → local `cursor agent`** path, and why the Actions runner alone is not a Cursor notifier.
+Explain why LGFC uses an event-driven **GitHub Actions wake delivery → Chromebook runner → Cursor Local Bridge → local `cursor agent`** path, why the Actions runner alone is not a Cursor notifier, and why a spawned CLI process is not proof that the agent accepted work.
 
-This document is the **as-built** design authority derived from the design recorded on Issue #2667 / PR #2669, extended by Operations Issue #2694 for local heartbeat, watchdog recovery, and bounded missed-handoff reconciliation. Operational install steps live in the how-to; normative gates live in the bridge contract.
+This document is the as-built design authority derived from Issue #2667 / PR #2669, extended by #2694 for heartbeat, watchdog recovery, and missed-handoff reconciliation, and corrected by #2739 for transactional launch acceptance.
 
 ## Problem
 
-GitHub Issues are the source of work. Cursor Local is the implementation agent. The legacy poll-wake loop:
+GitHub Issues are the source of work. Cursor Local is the implementation agent. The legacy poll-wake loop depended on an open Cursor session, only printed a sentinel, and never started work without human initiation.
 
-- depends on an open Cursor agent chat;
-- only prints a stdout sentinel;
-- polls on a multi-minute interval;
-- never starts work without a human or open session initiating the agent.
-
-Bill’s requirement for Mode B: when assignment becomes valid, the Chromebook must receive the event and Cursor must begin work **without** Bill manually opening or prompting an agent.
-
-After Mode B shipped, two reliability gaps remained:
+Mode B therefore added event delivery and a persistent local Bridge. Subsequent live operation exposed three distinct reliability boundaries:
 
 1. a hung Bridge process could stay “active” without proving useful health;
-2. a fully eligible handoff could remain unclaimed if the wake event or host packet was missed.
+2. a fully eligible handoff could remain unclaimed if the wake event or host packet was missed;
+3. the CLI could spawn and open a connection without the Cursor agent accepting the task, while the Bridge prematurely marked the handoff consumed and reported `STARTED`.
+
+The third boundary is critical. Transport success, process creation, connection establishment, agent acceptance, and completed work are different states and must not be collapsed.
 
 ## Decision
 
-**Mode B — Auto-start local CLI agent**, with local health and recovery.
+**Auto-start local CLI agent with transactional acceptance, local health, and recovery.**
 
 | Decision | Choice |
 | --- | --- |
 | Delivery | GitHub Actions job on `lgfc-repo-runner` writes a host wake packet |
-| Execution owner | Cursor Local Bridge (host systemd service) |
-| Agent runtime | Authenticated local `cursor agent` / `agent -p` |
-| Safety gate | Full eligibility contract (not a single label) |
-| Failure mode | Local notify + Issue left **unclaimed** |
-| Health | Local heartbeat + systemd timer watchdog (quiet when healthy) |
-| Missed-handoff recovery | Bounded local reconciliation every `reconcileIntervalSeconds` (default 900s) into the normal packet path |
-| Prohibited | Background Agents, Cloud Agents REST, SDK cloud, paid relays, GitHub keepalive spam |
+| Execution owner | Cursor Local Bridge systemd service |
+| Agent runtime | Authenticated local `cursor agent` / `agent -p --output-format stream-json` |
+| Safety gate | Full Issue eligibility contract plus one serial claim |
+| Acceptance signal | First valid Cursor NDJSON `system/init` event |
+| Pre-accept failure | Release claim, leave resume unconsumed, retain one packet with bounded backoff |
+| Post-accept failure | Keep consumed marker, suppress automatic retry, require manual verification |
+| Health | Local heartbeat + systemd timer watchdog, including active-launch pulses |
+| Missed-handoff recovery | Bounded local reconciliation into the normal packet path |
+| Prohibited | Background Agents, cloud APIs, paid relays, GitHub keepalive spam, `--force`, automatic merge or Production authority |
 
 ## Cost model
 
 | Path | Cursor subscription impact |
 | --- | --- |
 | Idle runner + idle Bridge | None |
-| Wake delivery job (self-hosted) | None |
-| Local heartbeat / watchdog | None (local only) |
-| Reconciliation sweep (GitHub read API) | None for Cursor; uses `gh` read path only until a recovered packet launches |
-| Local `cursor agent` run | Uses existing account model/agent allowance (same class as IDE agent use) |
-| Background Agents / cloud agent APIs | Out of scope / prohibited |
+| Wake delivery job | None |
+| Local heartbeat / watchdog | None; local only |
+| Reconciliation sweep | None for Cursor until an eligible packet launches |
+| Local Cursor Agent run | Existing account model/agent allowance |
+| Background Agents / cloud agent APIs | Prohibited |
 
-Auto-start can increase spent allowance versus manual starts because eligible work launches without Bill choosing to open a chat. Mitigations: full eligibility gate, single-lane claim, dedupe by resume comment id, fallback without claim on auth/limit/validation failure, fail-closed reconciliation.
+Auto-start can consume allowance without Bill opening a chat. The controls are full eligibility, one serial claim, transaction state, positive acceptance, deduplication by resume id, bounded pre-accept retry, and no automatic retry after possible mutation.
 
 ## Architecture
 
@@ -67,110 +65,146 @@ Auto-start can increase spent allowance versus manual starts because eligible wo
 flowchart LR
   subgraph github [GitHub]
     Issue[Source_Issue]
-    Labels[agent_cursor_plus_handoff_ready]
     Response[CHATGPT_RESPONSE]
     Resume[LOCAL_CURSOR_RESUME]
-    WF[cursor_local_wake_workflow]
+    WF[cursor_local_wake]
   end
 
   subgraph chromebook [Chromebook_Debian]
-    Runner[Actions_Runner_Service]
+    Runner[Actions_Runner]
     Queue[Wake_Packet_Queue]
     Bridge[Cursor_Local_Bridge]
+    Claim[Serial_Claim]
+    Tx[Atomic_In_Flight_Transaction]
+    CLI[Cursor_Agent_CLI]
     Heartbeat[Local_Heartbeat]
     Watchdog[Local_Watchdog]
-    Reconcile[Slow_Reconcile_Sweep]
-    Claim[Lane_Claim_Store]
-    CLI[cursor_agent_CLI]
-    Notify[Local_Notify_Fallback]
+    Reconcile[Slow_Reconcile]
+    Notify[Fallback]
   end
 
-  Issue --> Labels
   Response --> Resume
-  Labels --> WF
+  Issue --> WF
   Resume --> WF
-  WF -->|"runs-on lgfc-repo-runner"| Runner
-  Runner -->|"write wake packet only"| Queue
-  Reconcile -->|"recovery packet only"| Queue
-  Reconcile -->|"re-read eligibility"| Issue
+  WF -->|delivery only| Runner
+  Runner --> Queue
+  Reconcile -->|recovery packet| Queue
+  Reconcile -->|re-read eligibility| Issue
   Queue --> Bridge
-  Bridge -->|"revalidate full contract"| Issue
+  Bridge -->|revalidate| Issue
   Bridge --> Claim
-  Bridge -->|"eligible plus claimed"| CLI
-  Bridge -->|"auth limit or validation fail"| Notify
+  Claim --> Tx
+  Tx -->|spawn stream-json| CLI
+  CLI -->|system/init acceptance| Tx
+  Tx -->|accepted only| Heartbeat
   Bridge --> Heartbeat
   Watchdog --> Heartbeat
-  Watchdog -->|"restart or alert"| Bridge
+  Watchdog -->|restart or alert| Bridge
+  Bridge -->|pre-accept retry or post-accept hold| Notify
 ```
 
-Critical boundary: the runner **delivers**; the Bridge **decides and launches**. Health and missed-handoff recovery are **Bridge-local**. They must not move Cursor credentials or launch authority onto the runner.
+Critical boundaries:
 
-## Component inventory
+- The runner **delivers**; it never launches Cursor.
+- The Bridge **validates, claims, launches, and supervises**.
+- `spawn()` means only `CLI_SPAWNED`.
+- Cursor `system/init` means `AGENT_ACCEPTED`.
+- Only acceptance permits the consumed marker and `CURSOR BRIDGE STARTED` evidence.
 
-Every component must have purpose, inputs, outputs, and dependencies. No infrastructure may be introduced without that documentation.
+## Launch state machine
+
+```text
+DELIVERED
+  -> ELIGIBLE
+  -> CLAIMED
+  -> CLI_SPAWNED
+  -> AGENT_ACCEPTED
+  -> RUNNING
+  -> COMPLETED
+```
+
+### Before acceptance
+
+`in-flight.json` records the packet, claim identity, process id, and `cli_spawned` state. The resume remains unconsumed. A startup timeout, connection failure, auth transition, process error, or exit before `system/init` kills the child, releases the claim, restores the same packet with bounded exponential backoff, and emits one deduplicated fallback.
+
+If the Bridge restarts in this state, the processing packet returns to the retry path. No duplicate work is possible because no agent acceptance occurred.
+
+### At acceptance
+
+The Bridge parses newline-delimited JSON from stdout. A valid event must contain:
+
+```json
+{"type":"system","subtype":"init","session_id":"..."}
+```
+
+The Bridge then, in order:
+
+1. writes the consumed-resume marker;
+2. updates `in-flight.json` to `running` with `acceptedAt` and `sessionId`;
+3. posts `CURSOR BRIDGE STARTED`;
+4. continues heartbeat updates while the child executes.
+
+### After acceptance
+
+A zero exit posts `COMPLETED`, releases the claim, clears transaction state, and archives the packet. A nonzero exit, execution timeout, Bridge restart, or supervision error preserves the consumed marker and suppresses auto-retry because repository mutation may already have occurred.
+
+## Component responsibilities
 
 | Component | Purpose | Must not |
 | --- | --- | --- |
-| Source Issue | Task authority and eligibility surface | Be treated as proof of pickup |
-| Wake workflow | Near-real-time delivery of a host packet | Launch Cursor, hold API keys, claim the lane |
-| Actions runner service | Host job receiver for gated workflows | Own Cursor auth, health, or agent lifetime |
-| Wake packet queue | Decouple job lifetime from agent lifetime | Be treated as authority (Bridge revalidates live Issue state) |
-| Cursor Local Bridge | Sole Cursor launcher: validate, dedupe, claim, launch, supervise | Start on labels alone or while unauthenticated |
-| Local heartbeat | Prove the watch loop is alive | Publish routine traffic to GitHub |
-| Local watchdog | Restart stale/hung Bridge; alert on persistent failure | Clear claims outside TTL contract; spam GitHub |
-| Slow reconciliation | Reconstruct missed eligible packets into the queue | Launch Cursor directly or weaken eligibility |
-| Eligibility validator | Fail-closed full contract checks | Accept multi-action resumes |
-| Serial claim store | One Implementation stream at a time | Allow concurrent conflicting claims |
-| Local Cursor CLI | Execute exactly one bounded resume action | Use cloud handoff / Background Agents |
-| Notify fallback | Operator-visible failure without silent drop | Claim the lane on failure |
-| Poll-wake loop | Legacy backup detector only | Remain the primary auto-start path |
-
-Normative eligibility checklist and fallback taxonomy: `docs/reference/ci/cursor-local-bridge-contract.md`.
+| Source Issue | Task authority and eligibility | Be treated as pickup evidence |
+| Wake workflow | Deliver a packet | Launch Cursor, hold keys, or claim the lane |
+| Actions runner | Receive gated delivery jobs | Own Cursor auth or lifetime |
+| Packet queue | Decouple delivery and execution | Become authority |
+| Bridge | Validate, claim, launch, supervise, recover | Report started on spawn alone |
+| In-flight transaction | Preserve launch state across supervision/restart | Contain prompts, secrets, or private output |
+| Cursor CLI | Execute one bounded action and emit lifecycle NDJSON | Use cloud handoff or `--force` |
+| Heartbeat | Prove useful health during idle and execution | Stop refreshing while awaiting child exit |
+| Watchdog | Recover stale Bridge process | Clear valid claims arbitrarily |
+| Reconciliation | Reconstruct missed eligible packets | Bypass the queue or launch directly |
+| Fallback | Make failures visible | Trigger duplicate execution |
 
 ## Event flow
 
-1. ChatGPT posts `CHATGPT RESPONSE` and a separate `LOCAL CURSOR RESUME` with exactly one bounded action; labels include `agent:cursor` and `handoff:ready`.
-2. Wake workflow runs on the Chromebook runner and writes a wake packet.
-3. Bridge dequeues the packet and re-fetches live Issue state.
-4. If eligibility or CLI auth fails → notify + `CURSOR BRIDGE FALLBACK: unclaimed` and stop.
-5. If eligible → acquire serial claim, mark resume comment id consumed, launch `cursor agent`.
-6. On completion or failure → post evidence comments, release claim.
-7. Independently, the Bridge refreshes a local heartbeat each watch cycle.
-8. On the reconcile cadence, the Bridge lists recent open Issues with the required labels, re-applies full eligibility, and queues a recovery packet only when an eligible resume lacks a pending or consumed packet.
+1. ChatGPT posts authority and a separate one-action resume; required labels are present.
+2. The wake workflow writes a packet and may post `ACK: delivered`.
+3. The Bridge dequeues the packet, re-fetches Issue state, and validates eligibility/auth.
+4. The Bridge acquires the serial claim and writes `cli_spawned` transaction state.
+5. The CLI starts in `stream-json` mode.
+6. If no `system/init` arrives before timeout, the child is terminated and the packet is retryable; no `STARTED` or consumed marker exists.
+7. On `system/init`, the Bridge marks consumed, records the session, and posts `STARTED`.
+8. Heartbeats continue while the agent runs.
+9. Completion or post-accept failure releases the claim and records the correct duplicate-safety disposition.
+10. Reconciliation remains an independent recovery path for eligible work lacking pending or consumed evidence.
 
-## Why this beats poll-wake
+## Why this design is required
 
-1. GitHub pushes work to the host when Issue state changes instead of multi-minute polling.
-2. Bridge does not require an open IDE agent chat or stdout sentinel monitoring.
-3. Full eligibility is revalidated before any Cursor usage is spent.
-4. Failures are explicit and leave the Issue unclaimed for safe manual pickup.
-5. Local heartbeat/watchdog recovers hung Bridge processes without GitHub keepalive noise.
-6. Bounded reconciliation recovers missed packets without converting the Bridge into a polling-first architecture.
+1. GitHub delivery no longer depends on an open chat.
+2. A connection window is not mistaken for agent execution.
+3. Pre-accept faults recover automatically without losing the handoff.
+4. Post-accept faults fail safe against duplicate repository mutation.
+5. The watchdog sees a fresh heartbeat during long-running work.
+6. Operators can distinguish queue, claim, spawned, accepted, running, and completed state.
 
 ## Rejected alternatives
 
 | Option | Verdict |
 | --- | --- |
-| Poll-wake only | Requires open session; prints a line; not auto-start |
-| Notify-only bridge | Bill still initiates work |
-| Runner invokes Cursor inside the Actions step | Conflates transport with execution; job timeout kills agent; secrets surface risk |
-| Webhook + public tunnel | Extra moving parts; possible paid relay |
-| Background Agents / SDK cloud | Cost and prohibited path |
-| Persistent dispatcher without runner | Still needs poll or webhook; runner is better ingress |
-| Scheduled GitHub Actions keepalive / synthetic comments | Forbidden noise; does not prove Bridge health |
-| Reconciliation that launches Cursor directly | Bypasses packet path and weakens the sole-launcher boundary |
+| Treat successful `spawn()` as started | False-positive pickup; caused #2739 |
+| Mark consumed before acceptance | Can permanently suppress retry |
+| Retry automatically after acceptance | Duplicate mutation risk |
+| Runner invokes Cursor inside Actions | Conflates transport and execution; timeout/credential risk |
+| Poll-wake only | Requires open session; not auto-start |
+| Public webhook/tunnel | Unnecessary exposure and moving parts |
+| Background Agents / cloud runtime | Prohibited cost/runtime path |
+| Synthetic keepalive comments | Noise; not health evidence |
+| Reconciliation launches directly | Bypasses the normal safety path |
 
-## As-built verification
+## Verification obligations
 
-| Evidence | Result |
-| --- | --- |
-| PR #2669 merged to `main` | Wake workflow, contracts, Bridge scripts on `main` |
-| Host Bridge service | `lgfc-cursor-bridge.service` installed and running |
-| Validation fallback soak | Unclaimed fallback on incomplete eligibility |
-| Auth fallback soak | Unclaimed fallback while CLI logged out |
-| Duplicate suppression | Second delivery for same resume comment id skipped |
-| Authenticated launch soak (#2670) | `CURSOR BRIDGE STARTED` → `COMPLETED` exit 0; claim released |
-| #2694 heartbeat / watchdog / reconcile | Local heartbeat, systemd watchdog timer, bounded reconciliation into normal packet path |
+Repository tests must prove spawn-without-acceptance timeout, pre-accept retryability, single acceptance, heartbeat continuity, secret-safe diagnostics, and restart classification. Chromebook verification must additionally prove reset/reconnect success, an intentional stalled connection, claim release, retryability, and no duplicate launch after service restart.
+
+#2694 and #2638 cannot receive terminal closeout from repository-only tests; the direct-host acceptance evidence remains mandatory.
 
 ## Related documents
 
