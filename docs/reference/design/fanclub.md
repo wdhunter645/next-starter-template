@@ -1,5 +1,5 @@
 ---
-Doc Type: Specification
+Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
 Owns: FanClub routes, navigation invariants, UI/UX contracts, and page content contracts as a supporting specification
