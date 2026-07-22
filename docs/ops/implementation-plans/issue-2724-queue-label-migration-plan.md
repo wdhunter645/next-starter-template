@@ -112,7 +112,7 @@ Disposition:
 
 `scripts/pmo-dashboard/build-dashboard.mjs` currently:
 
-- recognizes only `pmo:priority:<N>`, `pmo:priority:idea`, and `pmo:priority:none`;
+- recognizes only `pmo:priority:[0-9]+`, `pmo:priority:idea`, and `pmo:priority:none`;
 - requires a PMO priority for every PMO-tracked record, including Pipeline records and tasks;
 - has no `teamLabel` field or team-namespace validation;
 - allows arbitrary numeric PMO priority values;
@@ -232,12 +232,12 @@ Quarantined records are not mutated until the controlling authority records the 
   "sourceIssue": 2727,
   "parentProject": 2702,
   "registryVersion": 1,
-  "mainCommit": "<exact-main-sha>",
-  "dashboardGeneratorBlob": "<blob-sha>",
-  "dashboardValidatorBlob": "<blob-sha>",
-  "routingBlob": "<blob-sha>",
-  "capturedAt": "<ISO-8601 UTC>",
-  "capturedBy": "<actor>"
+  "mainCommit": "40 lowercase hexadecimal characters captured immediately before migration",
+  "dashboardGeneratorBlob": "40 lowercase hexadecimal characters",
+  "dashboardValidatorBlob": "40 lowercase hexadecimal characters",
+  "routingBlob": "40 lowercase hexadecimal characters",
+  "capturedAt": "ISO-8601 UTC timestamp",
+  "capturedBy": "authenticated migration actor"
 }
 ```
 
@@ -247,9 +247,9 @@ For every repository label, capture:
 
 ```json
 {
-  "name": "<label>",
-  "color": "<six-hex>",
-  "description": "<description-or-null>"
+  "name": "label-name",
+  "color": "six lowercase hexadecimal characters",
+  "description": "text or null"
 }
 ```
 
@@ -260,15 +260,15 @@ For every open or closed Issue considered by migration, capture:
 ```json
 {
   "number": 123,
-  "title": "<title>",
+  "title": "Issue title at capture",
   "state": "open",
-  "stateReason": "<reason-or-null>",
-  "labels": ["<sorted-label-name>"],
-  "assignees": ["<login>"],
-  "milestone": "<number-or-null>",
-  "updatedAt": "<ISO-8601 UTC>",
-  "bodyHash": "<sha256-of-body>",
-  "parentReference": "<parsed-parent-or-null>"
+  "stateReason": "GitHub state reason or null",
+  "labels": ["sorted-label-name"],
+  "assignees": ["GitHub-login"],
+  "milestone": "milestone number or null",
+  "updatedAt": "ISO-8601 UTC timestamp",
+  "bodyHash": "64 lowercase hexadecimal characters",
+  "parentReference": "parsed parent Issue number or null"
 }
 ```
 
@@ -481,6 +481,7 @@ npm test
 
 - Modify: `.github/orchestrator-labels.json`
 - Modify: `.github/orchestrator-routing.json`
+- Create: `scripts/orchestrator/test-queue-routing.mjs`
 - Modify: queue-watch, orchestrator, controller, and Cursor Bridge scripts that directly consume the changed registry
 - Create or modify deterministic routing fixtures/tests
 - Modify: `docs/ops/github-label-bootstrap.md`
@@ -532,7 +533,7 @@ The implementation PR must enumerate every script path after repository search. 
 Exact commands depend on the touched scripts, but the PR must include:
 
 ```text
-node <focused-routing-test>
+node scripts/orchestrator/test-queue-routing.mjs
 node scripts/cursor-bridge/self-check.mjs
 bash scripts/cursor-bridge/validate-host-isolated.sh
 npm run typecheck
