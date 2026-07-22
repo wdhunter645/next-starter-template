@@ -579,5 +579,4 @@ export {
   listPackets,
   fetchIssueBundle,
   recoverInterruptedLaunch,
-  clearInFlightAfterDurable,
 };
