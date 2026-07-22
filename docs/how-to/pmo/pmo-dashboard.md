@@ -167,15 +167,16 @@ Do not invent missing team, priority, stage, parent, or graduation decisions mer
    - Active: `team:pmo` plus one `pmo:priority:1..4`;
    - Pipeline: `team:engineering` plus one `eng:priority:1..4` or `eng:priority:idea`, plus one stage.
 3. Confirm child tasks have `pmo:task`, a valid parent, and no team-level priority.
-4. Confirm Operations and Engineering preparation peer Issues are not included in parent task accounting.
-5. On a feature branch, confirm **Validate PMO dashboard branch changes** runs the deterministic fixture successfully.
-6. On `main`, scheduled, or manual operational runs, confirm **Build PMO dashboard** generates and validates `site/pmo-dashboard/dashboard-data.json` and uploads the artifact.
-7. Treat feature-branch fixture success as code-path evidence only. Use a live `main`, scheduled, or manual build for current-inventory evidence.
-8. Confirm **PMO dashboard CI deploy** reports GitHub Pages readiness before expecting publication.
-9. When Pages is unavailable or not configured for GitHub Actions, complete the one-time operator procedure below.
-10. Manually dispatch **PMO dashboard CI deploy** after Pages enablement.
-11. Verify the published HTML and JSON URLs and record evidence on the controlling Issue.
-12. Treat the dashboard as a reporting aid, never as authority to create or change priority.
+4. When Incomplete is flooded with `pmo:task` rows and parent `taskCount` values are zero, dry-run then apply `node scripts/pmo-dashboard/reconcile-task-child-labels.mjs` (add `--apply` only after reviewing the plan). The script strips prohibited child queue/stage labels and reconciles lifecycle labels; it does not invent parent references.
+5. Confirm Operations and Engineering preparation peer Issues are not included in parent task accounting.
+6. On a feature branch, confirm **Validate PMO dashboard branch changes** runs the deterministic fixture successfully.
+7. On `main`, scheduled, or manual operational runs, confirm **Build PMO dashboard** generates and validates `site/pmo-dashboard/dashboard-data.json` and uploads the artifact.
+8. Treat feature-branch fixture success as code-path evidence only. Use a live `main`, scheduled, or manual build for current-inventory evidence.
+9. Confirm **PMO dashboard CI deploy** reports GitHub Pages readiness before expecting publication.
+10. When Pages is unavailable or not configured for GitHub Actions, complete the one-time operator procedure below.
+11. Manually dispatch **PMO dashboard CI deploy** after Pages enablement.
+12. Verify the published HTML and JSON URLs and record evidence on the controlling Issue.
+13. Treat the dashboard as a reporting aid, never as authority to create or change priority.
 
 ## Refresh and validation
 
