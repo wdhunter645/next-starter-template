@@ -72,7 +72,8 @@ export function resolveWorkspace(config) {
 }
 
 /**
- * Launch local cursor agent in print mode. Returns ChildProcess or {error}.
+ * Launch local Cursor Agent in non-interactive print mode with structured lifecycle output.
+ * A successful spawn is not agent acceptance; bridge.mjs waits for system/init.
  */
 export function launchLocalAgent(config, { issueNumber, resume, response, action }) {
   const pre = cliAuthPreflight(config);
@@ -88,10 +89,16 @@ export function launchLocalAgent(config, { issueNumber, resume, response, action
   });
 
   const resolved = pre.resolved;
-  const args =
-    resolved.kind === 'cursor-agent'
-      ? ['agent', '-p', prompt, '--workspace', workspace, '--trust']
-      : ['-p', prompt, '--workspace', workspace, '--trust'];
+  const commonArgs = [
+    '-p',
+    prompt,
+    '--output-format',
+    'stream-json',
+    '--workspace',
+    workspace,
+    '--trust',
+  ];
+  const args = resolved.kind === 'cursor-agent' ? ['agent', ...commonArgs] : commonArgs;
 
   if (config.prohibitYolo !== false) {
     // never add --yolo / --force
@@ -107,5 +114,5 @@ export function launchLocalAgent(config, { issueNumber, resume, response, action
     env: process.env,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
-  return { child, workspace, prompt };
+  return { child, workspace, prompt, resolved };
 }
