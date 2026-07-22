@@ -205,10 +205,17 @@ function analyzeLifecycle(issue) {
   return { lifecycle, errors, remediation };
 }
 
-function analyzeStage(issue, lifecycle) {
+function analyzeStage(issue, lifecycle, queueRole) {
   const stageLabels = labels(issue).filter((label) => label.startsWith('pmo:stage:'));
   const errors = [];
   const remediation = [];
+  if (queueRole === 'task') {
+    if (stageLabels.length) {
+      errors.push(`project child carries Pipeline stage label(s): ${stageLabels.join(', ')}`);
+      remediation.push('Remove Pipeline stage labels from project children');
+    }
+    return { pipelineStageLabel: null, pipelineStageDisplay: null, stageOrder: null, errors, remediation };
+  }
   if (lifecycle !== 'pipeline') {
     if (stageLabels.length) {
       errors.push(`non-Pipeline issue carries stage label(s): ${stageLabels.join(', ')}`);
@@ -282,7 +289,7 @@ function classifyTrackedIssue(issue, byNumber) {
   errors.push(...queue.errors);
   remediation.push(...queue.remediation);
 
-  const stage = analyzeStage(issue, life.lifecycle);
+  const stage = analyzeStage(issue, life.lifecycle, queueRole);
   errors.push(...stage.errors);
   remediation.push(...stage.remediation);
 
