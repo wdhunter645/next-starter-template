@@ -5,8 +5,8 @@ Authority Level: Project Contract
 Owns: Cursor Local Bridge component inventory, eligibility auto-start gates, transactional launch acceptance, wake-packet authority boundary, health/watchdog/reconciliation contract, and fallback taxonomy
 Does Not Own: Product decisions, PR approval, Background Agents, or unrestricted workflow migration onto the Chromebook runner
 Canonical Reference: /docs/explanation/operations/cursor-local-auto-start-architecture.md
-Related Issues: #2294, #2667, #2669, #2694, #2739
-Last Reviewed: 2026-07-21
+Related Issues: #2294, #2667, #2669, #2681, #2694, #2739
+Last Reviewed: 2026-07-22
 ---
 
 # Cursor Local Bridge Contract
@@ -38,6 +38,7 @@ Every component has a role. No infrastructure may be introduced without purpose,
 | Serial claim store | One Implementation stream | Claim requests | Exclusive lease | Local `claim.json` |
 | Local Cursor CLI | Execute one bounded action | Bridge prompt + workspace | NDJSON lifecycle events, result, exit | Cursor login or `CURSOR_API_KEY` |
 | Notify fallback | Operator-visible failure | Failure class | Desktop/log + Issue comment | `notify-send` optional |
+| Preflight engine (`lib/preflight.mjs`) | Fail-closed readiness before claim/launch | Injected or host probes | Taxonomy result + `lastPreflight` | Bridge home, watchdog timer |
 | Status command (`bridge.mjs status`) | Bidirectional readiness view | Local Bridge + auth surfaces | Secret-safe JSON status | Host only |
 | Poll-wake loop | Legacy backup detector | GitHub poll | Stdout sentinel only | Open IDE chat — **not primary** |
 
@@ -113,6 +114,15 @@ A Bridge restart with `cli_spawned` and no `acceptedAt` restores the processing 
 ### Post-accept failure
 
 After acceptance, automatic retry is prohibited because work may have mutated the repository. The Bridge keeps the resume consumed, releases the claim, archives the interrupted packet, and posts a manual-verification fallback. A Bridge restart after acceptance must not launch a duplicate agent.
+
+
+## Preflight (#2681)
+
+Shared engine `scripts/cursor-bridge/lib/preflight.mjs` runs on Bridge startup, via `bridge.mjs preflight`, on the existing watchdog timer (periodic), immediately before claim/launch (preclaim), and after auth/capacity/pre-accept failure.
+
+Top-level results: `ready`, `runner_unavailable`, `bridge_unavailable`, `github_not_authenticated`, `cursor_not_authenticated`, `cursor_capacity_unavailable`, `workspace_unavailable`, `queue_unavailable`, `stale_claim`, `configuration_invalid`, `unknown_failure`.
+
+When `preflight.enforce` is true (default), a non-ready preclaim result leaves the resume unconsumed and does not acquire the serial claim or start Cursor. Set `preflight.enforce` to `false` for status-only diagnostics during rollback.
 
 ## Heartbeat and watchdog
 

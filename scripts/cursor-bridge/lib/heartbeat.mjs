@@ -47,6 +47,7 @@ export function writeHeartbeat(config, partial = {}) {
     lastReconcile: partial.lastReconcile || null,
     lastInboundPacketAt: partial.lastInboundPacketAt || null,
     lastOutboundGithubAt: partial.lastOutboundGithubAt || null,
+    lastPreflight: partial.lastPreflight || null,
   };
 
   atomicWriteJson(heartbeatPath(config), record, 0o600);

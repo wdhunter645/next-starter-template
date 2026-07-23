@@ -22,6 +22,9 @@ cp "$REPO_ROOT/config/cursor-bridge/bridge.json" "$HOME_DIR/bridge.json"
 if [[ -f "$REPO_ROOT/config/cursor-bridge/bridge.schema.json" ]]; then
   cp "$REPO_ROOT/config/cursor-bridge/bridge.schema.json" "$HOME_DIR/bridge.schema.json"
 fi
+if [[ -f "$REPO_ROOT/config/cursor-bridge/preflight-result.schema.json" ]]; then
+  cp "$REPO_ROOT/config/cursor-bridge/preflight-result.schema.json" "$HOME_DIR/preflight-result.schema.json"
+fi
 chmod +x "$HOME_DIR/scripts/"*.sh "$HOME_DIR/scripts/"*.mjs 2>/dev/null || true
 
 cat >"$UNIT_DIR/lgfc-cursor-bridge.service" <<EOF

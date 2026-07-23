@@ -15,6 +15,7 @@ import {
 import { evaluateHealth, pruneRestarts, normalizeState } from './watchdog.mjs';
 import { atomicWriteJson } from './lib/atomic-write.mjs';
 import { writeHeartbeat, readHeartbeat, heartbeatAgeSeconds } from './lib/heartbeat.mjs';
+import { runPreflight, TOP_LEVEL_RESULTS, isPreflightAllowingClaim } from './lib/preflight.mjs';
 
 const baseIssue = {
   number: 2667,
@@ -302,6 +303,51 @@ Next local action:
   assert.equal(JSON.parse(fs.readFileSync(target, 'utf8')).a, 1);
   assert.equal(fs.readdirSync(tmp).filter((f) => f.includes('.tmp')).length, 0);
   fs.rmSync(tmp, { recursive: true, force: true });
+}
+
+
+{
+  const prevHome = process.env.LGFC_CURSOR_BRIDGE_HOME;
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lgfc-pf-'));
+  process.env.LGFC_CURSOR_BRIDGE_HOME = tmp;
+  try {
+    fs.mkdirSync(path.join(tmp, 'queue'), { recursive: true, mode: 0o700 });
+    const config = {
+      repository: 'wdhunter645/next-starter-template',
+      requiredLabels: ['agent:cursor', 'handoff:ready'],
+      queueDir: 'queue',
+      consumedDir: 'consumed',
+      claimPath: 'claim.json',
+      claimTtlSeconds: 7200,
+      preflight: { enforce: true, resultPath: 'preflight-result.json', alertStatePath: 'preflight-alert-state.json', retrySeconds: 60 },
+    };
+    const probes = {
+      configuration: () => ({ ok: true }),
+      runner: () => ({ ok: true }),
+      bridge: () => ({ ok: true }),
+      githubAuth: () => ({ ok: true }),
+      cursorAuth: () => ({ ok: true }),
+      cursorCapacity: () => ({ ok: true, status: 'unknown' }),
+      workspace: () => ({ ok: true, path: tmp }),
+      queue: () => ({ ok: true }),
+      claim: () => ({ ok: true }),
+    };
+    const ready = runPreflight(config, { probes, notify: false });
+    assert.equal(ready.result, 'ready');
+    assert.equal(isPreflightAllowingClaim(ready), true);
+    assert.ok(TOP_LEVEL_RESULTS.includes('runner_unavailable'));
+    const blocked = runPreflight(config, {
+      probes: { ...probes, githubAuth: () => ({ ok: false, detail: 'Token: ghp_SECRET' }) },
+      notify: false,
+    });
+    assert.equal(blocked.result, 'github_not_authenticated');
+    assert.equal(isPreflightAllowingClaim(blocked), false);
+    assert.ok(!JSON.stringify(blocked).includes('ghp_SECRET'));
+  } finally {
+    if (prevHome === undefined) delete process.env.LGFC_CURSOR_BRIDGE_HOME;
+    else process.env.LGFC_CURSOR_BRIDGE_HOME = prevHome;
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
 }
 
 console.log('bridge self-check: PASS');

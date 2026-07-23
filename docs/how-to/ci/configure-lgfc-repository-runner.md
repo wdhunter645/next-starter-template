@@ -124,3 +124,7 @@ Remove the runner from repository settings before deleting the local installatio
 If a job remains queued, verify the service is running, the runner is **Idle**, the labels match, the workflow was dispatched from `main`, and the confirmation value is exact.
 
 If any unexpected workflow is routed to the Chromebook, stop the service and disable the runner in repository settings before investigating.
+
+## Bridge preflight relationship (#2681)
+
+The Chromebook runner remains packet transport only. Host readiness before Cursor claim is owned by the Cursor Local Bridge preflight engine and the existing `lgfc-cursor-bridge-watchdog.timer`. Do not add a competing runner-side Cursor launcher.

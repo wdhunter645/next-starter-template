@@ -14,6 +14,7 @@ import { cliAuthPreflight, resolveWorkspace } from './lib/launch.mjs';
 import { appendAlert, appendBridgeLog, notifyLocal, postIssueComment } from './lib/notify.mjs';
 import { freeDiskMb, atomicWriteJson } from './lib/atomic-write.mjs';
 import { collectStatus } from './lib/status.mjs';
+import { runPreflight } from './lib/preflight.mjs';
 
 function statePath(config) {
   return path.join(bridgeHome(), config.watchdog?.statePath || 'watchdog-state.json');
@@ -168,6 +169,12 @@ function main() {
     console.log(JSON.stringify(collectStatus(config), null, 2));
     return;
   }
+
+  const periodic = runPreflight(config, { reason: 'periodic', notify: true });
+  appendBridgeLog(
+    config,
+    `watchdog preflight: ${periodic.result} ready=${periodic.ready} dedupe=${!!periodic.alert?.deduplicated}`,
+  );
 
   const heartbeat = readHeartbeat(config);
   const claim = readClaim(config);

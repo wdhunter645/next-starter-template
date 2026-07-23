@@ -39,6 +39,10 @@ import {
   readInFlight,
   writeInFlight,
 } from './lib/launch-transaction.mjs';
+import {
+  isPreflightAllowingClaim,
+  runPreflight,
+} from './lib/preflight.mjs';
 
 const REPO = 'wdhunter645/next-starter-template';
 
@@ -128,8 +132,23 @@ function pulseHeartbeat(config, dirs, serviceMode, extra = {}) {
     queueDepth: listPackets(dirs.queue).length,
     lastInboundPacketAt: meta.lastInboundPacketAt || null,
     lastOutboundGithubAt: meta.lastOutboundGithubAt || null,
+    lastPreflight: meta.lastPreflight || null,
     ...extra,
   });
+}
+
+function recordPreflight(config, result) {
+  writeMeta(config, {
+    lastPreflight: {
+      result: result.result,
+      ready: result.ready,
+      invocationReason: result.invocationReason,
+      timestamp: result.timestamp,
+      allowClaim: result.allowClaim,
+      alert: result.alert || null,
+    },
+  });
+  return result;
 }
 
 function consumedTarget(dirs, packetPath, suffix) {
@@ -269,8 +288,28 @@ async function processPacket(config, dirs, packetPath) {
 
     const auth = cliAuthPreflight(config);
     if (!auth.ok) {
+      recordPreflight(
+        config,
+        runPreflight(config, { reason: 'postfailure', notify: true }),
+      );
       requeuePreacceptFailure(config, packetPath, processing, packet, issueNumber, auth.reason);
       return { ok: false, reason: auth.reason };
+    }
+
+    const preclaim = recordPreflight(
+      config,
+      runPreflight(config, { reason: 'preclaim', notify: true }),
+    );
+    if (!isPreflightAllowingClaim(preclaim)) {
+      requeuePreacceptFailure(
+        config,
+        packetPath,
+        processing,
+        packet,
+        issueNumber,
+        `preflight_${preclaim.result}`,
+      );
+      return { ok: false, reason: `preflight_${preclaim.result}` };
     }
 
     const claim = acquireClaim(config, {
@@ -307,6 +346,10 @@ async function processPacket(config, dirs, packetPath) {
 
     if (launched.error) {
       releaseClaim(config);
+      recordPreflight(
+        config,
+        runPreflight(config, { reason: 'postfailure', notify: true }),
+      );
       requeuePreacceptFailure(config, packetPath, processing, packet, issueNumber, launched.error);
       return { ok: false, reason: launched.error };
     }
@@ -482,7 +525,27 @@ async function main() {
   recoverInterruptedLaunch(config, dirs);
 
   const mode = process.argv[2] || 'watch';
+  if (mode === 'preflight') {
+    const result = recordPreflight(
+      config,
+      runPreflight(config, { reason: 'manual', notify: true }),
+    );
+    console.log(JSON.stringify(result, null, 2));
+    if (!result.ready) process.exitCode = 1;
+    return;
+  }
+
   if (mode === 'once') {
+    const startup = recordPreflight(
+      config,
+      runPreflight(config, { reason: 'startup', notify: true }),
+    );
+    if (!isPreflightAllowingClaim(startup)) {
+      appendBridgeLog(config, `startup preflight blocked drain: ${startup.result}`);
+      pulseHeartbeat(config, dirs, 'once', {});
+      process.exitCode = 1;
+      return;
+    }
     const drain = await drainOnce(config, dirs);
     pulseHeartbeat(config, dirs, 'once', { lastDrain: drain });
     return;
@@ -506,6 +569,16 @@ async function main() {
   let lastDrain = null;
   const reconcileIntervalMs = (config.reconcileIntervalSeconds ?? 900) * 1000;
 
+  const startup = recordPreflight(
+    config,
+    runPreflight(config, { reason: 'startup', notify: true }),
+  );
+  if (!isPreflightAllowingClaim(startup)) {
+    appendBridgeLog(
+      config,
+      `startup preflight not ready: ${startup.result}; claims remain blocked until recovery`,
+    );
+  }
   pulseHeartbeat(config, dirs, 'watch', {});
 
   for (;;) {

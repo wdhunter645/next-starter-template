@@ -7,6 +7,7 @@ import { readHeartbeat, heartbeatAgeSeconds } from './heartbeat.mjs';
 import { cliAuthPreflight, resolveWorkspace } from './launch.mjs';
 import { freeDiskMb } from './atomic-write.mjs';
 import { readInFlight } from './launch-transaction.mjs';
+import { readLastPreflight } from './preflight.mjs';
 
 function listPackets(queueDir) {
   if (!fs.existsSync(queueDir)) return [];
@@ -61,6 +62,7 @@ export function collectStatus(config, opts = {}) {
     ? (Date.now() - new Date(claim.acquiredAt).getTime()) / 1000
     : null;
   const heartbeat = readHeartbeat(config);
+  const lastPreflight = readLastPreflight(config);
   const queueFiles = listPackets(dirs.queue);
   const workspace = resolveWorkspace(config);
   const diskMb = freeDiskMb(dirs.home);
@@ -101,6 +103,17 @@ export function collectStatus(config, opts = {}) {
       lastInboundPacketAt: heartbeat?.lastInboundPacketAt || null,
       lastOutboundGithubAt: heartbeat?.lastOutboundGithubAt || null,
       lastRecoveryReason: heartbeat?.lastReconcile?.reason || null,
+      lastPreflight: lastPreflight
+        ? {
+            result: lastPreflight.result,
+            ready: lastPreflight.ready,
+            invocationReason: lastPreflight.invocationReason,
+            timestamp: lastPreflight.timestamp,
+            allowClaim: lastPreflight.allowClaim,
+            remediationClass: lastPreflight.remediationClass,
+            alert: lastPreflight.alert || null,
+          }
+        : heartbeat?.lastPreflight || null,
     },
     launchTransaction: inFlight
       ? {

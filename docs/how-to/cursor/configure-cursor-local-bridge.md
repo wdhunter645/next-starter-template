@@ -5,7 +5,7 @@ Authority Level: Operational Procedure
 Owns: Chromebook install, auth preflight, systemd enablement, transactional launch verification, heartbeat/watchdog/reconciliation verification, and rollback for Cursor Local Bridge
 Does Not Own: Wake workflow gates, runner registration, or Background Agents
 Canonical Reference: /docs/reference/ci/cursor-local-bridge-contract.md
-Related Issues: #2294, #2667, #2669, #2694, #2739, #2746
+Related Issues: #2294, #2667, #2669, #2681, #2694, #2739, #2746
 Last Reviewed: 2026-07-22
 ---
 
@@ -47,6 +47,17 @@ Execute the following sections in order on the Chromebook host. Do not skip auth
 | Crash-consistent in-flight clear after durable requeue/archive; distinct launch-retry and accepted-run fallback classifications | Addressed by #2746 remediation (repository fix; host soak still pending under #2694) | #2746 |
 
 Do not close #2739 or authorize Production routing expansion from documentation updates alone.
+
+
+## Verify preflight readiness (#2681)
+
+```bash
+export LGFC_CURSOR_BRIDGE_HOME="${LGFC_CURSOR_BRIDGE_HOME:-$HOME/lgfc-cursor-bridge}"
+node "$LGFC_CURSOR_BRIDGE_HOME/scripts/bridge.mjs" preflight
+node "$LGFC_CURSOR_BRIDGE_HOME/scripts/bridge.mjs" status | jq '.bridge.lastPreflight'
+```
+
+A non-ready result must not claim work. Periodic preflight reuses `lgfc-cursor-bridge-watchdog.timer` (no second timer). Rollback: set `"preflight": { "enforce": false }` in `bridge.json` for status-only mode, or revert the #2681 change and reinstall the prior Bridge revision while preserving queue/claim/consumed/heartbeat state.
 
 ## Authenticate and prove the local CLI
 
