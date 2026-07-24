@@ -135,11 +135,35 @@ test.describe('footer responsive invariants', () => {
     await expect(footer.locator('a[href^="mailto:"]')).toHaveCount(0);
     await expect(footer.getByRole('button', { name: 'Back to top' })).toBeVisible();
 
-    const privacyBox = await footer.getByRole('link', { name: 'Privacy' }).boundingBox();
-    const termsBox = await footer.getByRole('link', { name: 'Terms' }).boundingBox();
-    const contactBox = await footer.getByRole('link', { name: 'Contact' }).boundingBox();
-    expect(Math.abs((privacyBox?.y ?? 0) - (termsBox?.y ?? 0))).toBeLessThanOrEqual(2);
-    expect(contactBox?.y ?? 0).toBeGreaterThan((privacyBox?.y ?? 0) + 8);
+    // Homepage content can still grow after load. Scroll the footer into view and
+    // sample Privacy/Terms/Contact in one layout frame; retry until settled.
+    // Keep the locked thresholds (delta <= 2, Contact below Privacy by > 8).
+    await footer.scrollIntoViewIfNeeded();
+    await expect(async () => {
+      const geometry = await page.evaluate(() => {
+        const root = document.querySelector('footer');
+        if (!root) {
+          throw new Error('footer missing during geometry sample');
+        }
+        const privacy = root.querySelector('a[href*="privacy"]');
+        const terms = root.querySelector('a[href*="terms"]');
+        const contact = root.querySelector('a[href*="contact"]');
+        if (!privacy || !terms || !contact) {
+          throw new Error('footer links missing during geometry sample');
+        }
+        const privacyBox = privacy.getBoundingClientRect();
+        const termsBox = terms.getBoundingClientRect();
+        const contactBox = contact.getBoundingClientRect();
+        return {
+          privacyTermsDelta: Math.abs(privacyBox.y - termsBox.y),
+          contactBelowPrivacy: contactBox.y - privacyBox.y,
+        };
+      });
+
+      expect(geometry.privacyTermsDelta).toBeLessThanOrEqual(2);
+      expect(geometry.contactBelowPrivacy).toBeGreaterThan(8);
+    }).toPass({ timeout: 10_000 });
+
     await assertNoHorizontalOverflow(page);
   });
 });
