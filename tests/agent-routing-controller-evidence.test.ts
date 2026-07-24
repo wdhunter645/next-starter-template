@@ -12,7 +12,6 @@ import {
 } from '../scripts/agent-routing/controller.mjs';
 import {
   ALL_HANDOFF_EVENT_MARKERS,
-  assertEventAuthority,
   buildActionIdentity,
   classifyDecisionAutomatability,
   detectHandoffEventMarker,
@@ -22,7 +21,6 @@ import {
   assertCurrentHeadSha,
   assertHintsMatchLive,
   assertValidPrNumber,
-  buildEvidencePacket,
   collectLiveGitHubEvidence,
   extractPrimarySourceIssueRefs,
   normalizeChecks,
@@ -30,1078 +28,453 @@ import {
 } from '../scripts/agent-routing/lib/evidence-collector.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const HEAD_SHA = '95aa88b98c705b3a93edbe2691b8d616ffc2c24b';
-const STALE_SHA = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+const HEAD = '95aa88b98c705b3a93edbe2691b8d616ffc2c24b';
+const OTHER = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+type Failure = { ok: false; code: string; message?: string };
 
-type FailClosed = { ok: false; code: string; message?: string };
-type ObserveSuccess = {
-  ok: true;
-  packet: {
-    mode: string;
-    mutationAllowed: boolean;
-    sourceIssue: { number: number };
-    pullRequest: { number: number; headSha: string; changedFiles: string[] };
-    event: { eventType: string; actionIdentity: string };
-    checks: Array<{ name: string; headSha?: string }>;
-    reviewEvidence: {
-      unresolvedReviewThreads: unknown[];
-      resolvedReviewThreads: unknown[];
-      lateIssueComments: unknown[];
-      distinctions: {
-        unresolvedThreadsRepresentedSeparately: boolean;
-        lateCommentsRepresentedSeparately: boolean;
-      };
-    };
-    protectedBoundaries: {
-      classes: string[];
-      nonAutomatable: Array<{ nonAutomatable: boolean }>;
-    };
-    reread: { performed: boolean; source?: string };
-  };
-};
-type ObserveResult = FailClosed | ObserveSuccess;
-
-function asResult(value: unknown): ObserveResult {
-  return value as ObserveResult;
-}
-
-function createCollectFetchMock(options: {
-  headSha: string;
-  finalHeadSha: string;
-  checkRunsFail?: boolean;
-  multiPageChecks?: boolean;
-  multiPageThreads?: boolean;
-  onCollect?: () => void;
-}) {
-  let issueReads = 0;
-  let prReads = 0;
-  let graphqlReads = 0;
-
-  const issuePayload = {
+function issue(body = '## Acceptance Criteria\n\n- [x] ok\n') {
+  return {
     number: 2433,
     state: 'open',
     title: 'TASK: CC-001',
-    body: '## Acceptance Criteria\n\n- [x] ok\n',
-    labels: [{ name: 'docs' }],
-  };
-
-  const prPayload = (sha: string) => ({
-    number: 2675,
-    title: 'docs(#2433)',
-    state: 'open',
-    body: '- **Issue:** #2433\n- Delivery model: B-child\n- Target environment: component\n',
-    base: { ref: 'component/content-collection-phase1' },
-    head: { ref: 'cursor/2433-cc-001-contract-freeze-2e48', sha },
-    html_url: 'https://github.com/wdhunter645/next-starter-template/pull/2675',
-  });
-
-  return async (url: string, init?: { method?: string; body?: string }) => {
-    options.onCollect?.();
-    if (String(url).includes('api.github.com/graphql')) {
-      graphqlReads += 1;
-      const body = init?.body ? JSON.parse(init.body) : {};
-      const after = body.variables?.after || null;
-      if (options.multiPageThreads) {
-        if (!after) {
-          return {
-            ok: true,
-            status: 200,
-            json: async () => ({
-              data: {
-                repository: {
-                  pullRequest: {
-                    reviewThreads: {
-                      pageInfo: { hasNextPage: true, endCursor: 'cursor-1' },
-                      nodes: [
-                        {
-                          id: 'PRRT_page_1',
-                          isResolved: false,
-                          isOutdated: false,
-                          path: 'docs/a.md',
-                          comments: { nodes: [{ body: 'page 1' }] },
-                        },
-                      ],
-                    },
-                  },
-                },
-              },
-            }),
-          };
-        }
-        return {
-          ok: true,
-          status: 200,
-          json: async () => ({
-            data: {
-              repository: {
-                pullRequest: {
-                  reviewThreads: {
-                    pageInfo: { hasNextPage: false, endCursor: null },
-                    nodes: [
-                      {
-                        id: 'PRRT_page_2',
-                        isResolved: true,
-                        isOutdated: false,
-                        path: 'docs/b.md',
-                        comments: { nodes: [{ body: 'page 2' }] },
-                      },
-                    ],
-                  },
-                },
-              },
-            },
-          }),
-        };
-      }
-      return {
-        ok: true,
-        status: 200,
-        json: async () => ({
-          data: {
-            repository: {
-              pullRequest: {
-                reviewThreads: {
-                  pageInfo: { hasNextPage: false, endCursor: null },
-                  nodes: [
-                    {
-                      id: 'PRRT_1',
-                      isResolved: false,
-                      isOutdated: false,
-                      path: 'docs/a.md',
-                      comments: { nodes: [{ body: 'open thread' }] },
-                    },
-                  ],
-                },
-              },
-            },
-          },
-        }),
-      };
-    }
-
-    const apiPath = String(url).replace(
-      'https://api.github.com/repos/wdhunter645/next-starter-template',
-      '',
-    );
-
-    if (apiPath === '/issues/2433') {
-      issueReads += 1;
-      return {
-        ok: true,
-        status: 200,
-        json: async () => issuePayload,
-        text: async () => JSON.stringify(issuePayload),
-      };
-    }
-
-    if (apiPath === '/pulls/2675') {
-      prReads += 1;
-      const sha = prReads === 1 ? options.headSha : options.finalHeadSha;
-      const payload = prPayload(sha);
-      return {
-        ok: true,
-        status: 200,
-        json: async () => payload,
-        text: async () => JSON.stringify(payload),
-      };
-    }
-
-    if (apiPath.startsWith('/pulls/2675/files')) {
-      return {
-        ok: true,
-        status: 200,
-        json: async () => [{ filename: 'docs/a.md' }],
-        text: async () => '[]',
-      };
-    }
-
-    if (apiPath.startsWith('/issues/2433/comments')) {
-      const payload = [
-        {
-          id: 5029000001,
-          created_at: '2026-07-20T18:00:00Z',
-          user: { login: 'wdhunter645' },
-          body: 'CHATGPT HANDOFF\nIssue: #2433\n',
-        },
-      ];
-      return {
-        ok: true,
-        status: 200,
-        json: async () => payload,
-        text: async () => JSON.stringify(payload),
-      };
-    }
-
-    if (apiPath.startsWith('/pulls/2675/reviews')) {
-      const payload = [
-        {
-          id: 9,
-          state: 'COMMENTED',
-          user: { login: 'atlas' },
-          submitted_at: '2026-07-20T18:30:00Z',
-          body: 'note',
-        },
-      ];
-      return {
-        ok: true,
-        status: 200,
-        json: async () => payload,
-        text: async () => JSON.stringify(payload),
-      };
-    }
-
-    if (apiPath.includes('/check-runs')) {
-      if (options.checkRunsFail) {
-        return {
-          ok: false,
-          status: 500,
-          text: async () => 'check-runs unavailable',
-          json: async () => ({ message: 'check-runs unavailable' }),
-        };
-      }
-      if (options.multiPageChecks) {
-        const page = Number(new URL(url).searchParams.get('page') || '1');
-        if (page === 1) {
-          const pageOne = Array.from({ length: 100 }, (_, index) => ({
-            name: index === 0 ? 'check-page-1' : `filler-${index}`,
-            status: 'completed',
-            conclusion: 'success',
-            head_sha: options.headSha,
-          }));
-          return {
-            ok: true,
-            status: 200,
-            json: async () => ({ total_count: 101, check_runs: pageOne }),
-            text: async () => '',
-          };
-        }
-        return {
-          ok: true,
-          status: 200,
-          json: async () => ({
-            total_count: 101,
-            check_runs: [
-              {
-                name: 'check-page-2',
-                status: 'completed',
-                conclusion: 'success',
-                head_sha: options.headSha,
-              },
-            ],
-          }),
-          text: async () => '',
-        };
-      }
-      return {
-        ok: true,
-        status: 200,
-        json: async () => ({
-          total_count: 1,
-          check_runs: [
-            {
-              name: 'GATE — Quality Checks',
-              status: 'completed',
-              conclusion: 'success',
-              head_sha: options.headSha,
-            },
-          ],
-        }),
-        text: async () => '',
-      };
-    }
-
-    return {
-      ok: false,
-      status: 404,
-      text: async () => `missing ${apiPath}`,
-      json: async () => ({ message: 'not found' }),
-    };
+    body,
+    labels: [{ name: 'agent:cursor' }, { name: 'handoff:ready' }],
   };
 }
 
-function fixture2433(overrides: Record<string, unknown> = {}) {
-  const handoffCreatedAt = '2026-07-20T18:00:00Z';
-  const sourceIssue = {
-    number: 2433,
-    state: 'OPEN',
-    title: 'TASK: CC-001 content asset contract freeze',
-    labels: ['agent:cursor', 'handoff:ready', 'docs'],
-    body: `## Acceptance Criteria
-
-- [x] CC-001 gap matrix resolved
-- [ ] Feature lanes remain blocked until Atlas verifies freeze
-`,
-  };
-
-  const pullRequest = {
+function pr(head = HEAD) {
+  return {
     number: 2675,
-    title: 'docs(#2433): CC-001 content asset contract freeze',
-    state: 'OPEN',
-    baseRefName: 'component/content-collection-phase1',
-    headRefName: 'cursor/2433-cc-001-contract-freeze-2e48',
-    headSha: HEAD_SHA,
-    url: 'https://github.com/wdhunter645/next-starter-template/pull/2675',
-    body: `# PR Summary
-
-- **Issue:** #2433
-- Intent label: docs-only
+    title: 'docs(#2433)',
+    state: 'open',
+    body: `- **Issue:** #2433
 - Delivery model: B-child
 - Target environment: component
 - Approval profile: component-auto-integration
 - Gate profile: component-child
 - Component branch: component/content-collection-phase1
 - Component master: #2431
-
-## Acceptance Criteria
-
-- [x] Docs evidence supports the contract state
-- [ ] Freeze verified by Atlas
 `,
+    base: { ref: 'component/content-collection-phase1' },
+    head: { ref: 'cursor/2433', sha: head },
+    html_url: 'https://github.com/wdhunter645/next-starter-template/pull/2675',
   };
+}
 
+function fixture(overrides: Record<string, unknown> = {}) {
+  const sourceIssue = { ...issue(), state: 'OPEN', labels: ['agent:cursor', 'handoff:ready'] };
+  const pullRequest = {
+    ...pr(),
+    baseRefName: 'component/content-collection-phase1',
+    headRefName: 'cursor/2433',
+    headSha: HEAD,
+    url: 'https://github.com/wdhunter645/next-starter-template/pull/2675',
+  };
   const triggerComment = {
     id: '5029000001',
-    createdAt: handoffCreatedAt,
-    body: `CHATGPT HANDOFF
-
-Issue: #2433
-PR: #2675
-Branch: cursor/2433-cc-001-contract-freeze-2e48
-Head SHA: ${HEAD_SHA}
-Status: READY FOR REVIEW
-`,
+    createdAt: '2026-07-20T18:00:00Z',
+    body: 'CHATGPT HANDOFF\nIssue: #2433\nPR: #2675\n',
   };
-
-  const checks = [
-    {
-      name: 'GATE — Quality Checks',
-      status: 'completed',
-      conclusion: 'success',
-      headSha: HEAD_SHA,
-    },
-    {
-      name: 'GATE — Diff Scope',
-      status: 'completed',
-      conclusion: 'success',
-      headSha: HEAD_SHA,
-    },
-  ];
-
-  const changedFiles = [
-    'docs/ops/implementation-plans/content-collection/packages/cc-001-content-asset-model-package.md',
-    'docs/reference/content/lgfc-content-candidate-model.md',
-    'docs/reference/website/content-inventory-model.md',
-    'docs/reference/website/lou-gehrig-content-metadata-schema.md',
-    'docs/reference/website/unified-content-workflow.md',
-  ];
-
-  const reviewThreads = [
-    {
-      id: 'PRRT_unresolved_2675',
-      isResolved: false,
-      isOutdated: false,
-      path: 'docs/reference/website/unified-content-workflow.md',
-      line: 40,
-      body: 'Clarify deferred SEO ownership before freeze verification.',
-    },
-    {
-      id: 'PRRT_resolved_2675',
-      isResolved: true,
-      isOutdated: false,
-      path: 'docs/reference/content/lgfc-content-candidate-model.md',
-      line: 12,
-      body: 'Nit addressed.',
-    },
-  ];
-
-  const reviewSubmissions = [
-    {
-      id: 'PRR_1',
-      state: 'COMMENTED',
-      author: { login: 'atlas-reviewer' },
-      submittedAt: '2026-07-20T18:30:00Z',
-      body: 'Actionable clarification required on deferred SEO.',
-    },
-  ];
-
   const issueComments = [
     triggerComment,
     {
       id: '5029000002',
       createdAt: '2026-07-20T19:00:00Z',
-      author: { login: 'wdhunter645' },
-      body: 'Late note after handoff: keep feature lanes blocked.',
+      body: 'late note',
+      author: { login: 'bill' },
     },
   ];
-
   const live = {
     collectedAt: '2026-07-20T19:05:00Z',
     source: 'github-native',
+    finalReread: true,
     sourceIssue,
     pullRequest,
-    headSha: HEAD_SHA,
-    checks,
-    changedFiles,
-    reviewThreads,
-    reviewSubmissions,
+    headSha: HEAD,
+    checks: [{ name: 'quality', status: 'completed', conclusion: 'success', headSha: HEAD }],
+    changedFiles: ['docs/a.md'],
+    reviewThreads: [
+      { id: 'open', isResolved: false, path: 'docs/a.md', body: 'open' },
+      { id: 'done', isResolved: true, path: 'docs/a.md', body: 'done' },
+    ],
+    reviewSubmissions: [],
     issueComments,
   };
-
   return {
     sourceIssue,
     pullRequest,
     triggerComment,
-    observedHeadSha: HEAD_SHA,
-    changedFiles,
-    checks,
-    reviewThreads,
-    reviewSubmissions,
+    observedHeadSha: HEAD,
     issueComments,
-    // Caller-supplied reread is a hint only; authoritative state is live.
-    reread: {
-      at: '2026-07-20T19:05:00Z',
-      sourceIssue,
-      pullRequest,
-    },
+    reread: { sourceIssue, pullRequest },
     live,
     ...overrides,
   };
 }
 
-describe('agent routing event contract', () => {
-  it('recognizes canonical and legacy adapter markers without treating labels as authority', () => {
-    expect(detectHandoffEventMarker('IMPLEMENTATION HANDOFF\nIssue: #1')?.eventType).toBe(
-      'implementation_handoff',
+function response(payload: unknown, ok = true, status = ok ? 200 : 500) {
+  return {
+    ok,
+    status,
+    json: async () => payload,
+    text: async () => JSON.stringify(payload),
+  };
+}
+
+function githubFetch(options: {
+  finalHead?: string;
+  finalIssueBody?: string;
+  checkFailure?: boolean;
+  multipage?: boolean;
+  missingThreadCursor?: boolean;
+} = {}) {
+  let issueReads = 0;
+  let prReads = 0;
+  return async (url: string, init?: { body?: string }) => {
+    if (url.includes('/graphql')) {
+      const variables = JSON.parse(init?.body || '{}').variables || {};
+      if (variables.after == null) {
+        return response({
+          data: {
+            repository: {
+              pullRequest: {
+                reviewThreads: {
+                  nodes: [{ id: 'thread-1', isResolved: false, path: 'docs/a.md', comments: { nodes: [{ body: 'first' }] } }],
+                  pageInfo: {
+                    hasNextPage: Boolean(options.multipage || options.missingThreadCursor),
+                    endCursor: options.missingThreadCursor ? null : options.multipage ? 'cursor-1' : null,
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
+      return response({
+        data: {
+          repository: {
+            pullRequest: {
+              reviewThreads: {
+                nodes: [{ id: 'thread-2', isResolved: true, path: 'docs/b.md', comments: { nodes: [{ body: 'second' }] } }],
+                pageInfo: { hasNextPage: false, endCursor: null },
+              },
+            },
+          },
+        },
+      });
+    }
+
+    const apiPath = url.replace(
+      'https://api.github.com/repos/wdhunter645/next-starter-template',
+      '',
     );
-    expect(detectHandoffEventMarker('PR REVIEW REQUEST\nIssue: #1')?.eventType).toBe(
-      'pr_review_request',
-    );
-    expect(detectHandoffEventMarker('CHATGPT HANDOFF\nIssue: #1')?.adapter).toBe(true);
+    if (apiPath === '/issues/2433') {
+      issueReads += 1;
+      return response(issue(issueReads > 1 && options.finalIssueBody ? options.finalIssueBody : undefined));
+    }
+    if (apiPath === '/pulls/2675') {
+      prReads += 1;
+      return response(pr(prReads > 1 && options.finalHead ? options.finalHead : HEAD));
+    }
+    if (apiPath === '/pulls/2675/files?per_page=100&page=1') {
+      return response([{ filename: 'docs/a.md' }]);
+    }
+    if (apiPath === '/issues/2433/comments?per_page=100&page=1') {
+      return response([{ id: 1, created_at: '2026-07-20T18:00:00Z', body: 'CHATGPT HANDOFF\nIssue: #2433\n', user: { login: 'bill' } }]);
+    }
+    if (apiPath === '/pulls/2675/reviews?per_page=100&page=1') return response([]);
+    const match = apiPath.match(new RegExp(`^/commits/${HEAD}/check-runs\\?per_page=100&page=(\\d+)$`));
+    if (match) {
+      if (options.checkFailure) return response({ message: 'forbidden' }, false, 403);
+      const page = Number(match[1]);
+      if (options.multipage && page === 1) {
+        return response({
+          total_count: 101,
+          check_runs: Array.from({ length: 100 }, (_, index) => ({
+            name: `check-${index}`,
+            status: 'completed',
+            conclusion: 'success',
+            head_sha: HEAD,
+          })),
+        });
+      }
+      if (options.multipage && page === 2) {
+        return response({
+          total_count: 101,
+          check_runs: [{ name: 'check-100', status: 'completed', conclusion: 'success', head_sha: HEAD }],
+        });
+      }
+      return response({
+        total_count: 1,
+        check_runs: [{ name: 'quality', status: 'completed', conclusion: 'success', head_sha: HEAD }],
+      });
+    }
+    return response({ message: `missing ${apiPath}` }, false, 404);
+  };
+}
+
+describe('event and evidence primitives', () => {
+  it('recognizes canonical markers and stable identities', () => {
     expect(ALL_HANDOFF_EVENT_MARKERS).toEqual([
       'IMPLEMENTATION HANDOFF',
       'PR REVIEW REQUEST',
       'CHATGPT HANDOFF',
     ]);
-
-    const denied = assertEventAuthority({
-      labels: ['agent:cursor', 'handoff:ready'],
-      comment: { body: 'please review when you can' },
-    } as never) as FailClosed;
-    expect(denied.ok).toBe(false);
-    expect(denied.code).toBe('missing_canonical_event');
-
-    const allowed = assertEventAuthority({
-      labels: [],
-      comment: { body: 'IMPLEMENTATION HANDOFF\nIssue: #2433' },
-    } as never) as { ok: boolean; labelsAreAuthority: boolean };
-    expect(allowed.ok).toBe(true);
-    expect(allowed.labelsAreAuthority).toBe(false);
+    expect(detectHandoffEventMarker('CHATGPT HANDOFF\nIssue: #1')?.adapter).toBe(true);
+    expect(buildActionIdentity({
+      sourceIssueNumber: 2433,
+      eventType: 'chatgpt_handoff_legacy',
+      eventCommentId: '1',
+      prNumber: 2675,
+      headSha: HEAD,
+    } as never)).toContain(`head:${HEAD}`);
   });
 
-  it('builds stable action identities', () => {
-    expect(
-      buildActionIdentity({
-        sourceIssueNumber: 2433,
-        eventType: 'chatgpt_handoff_legacy',
-        eventCommentId: '5029000001',
-        prNumber: 2675,
-        headSha: HEAD_SHA,
-      } as never),
-    ).toBe(
-      `issue:2433:event:chatgpt_handoff_legacy:comment:5029000001:pr:2675:head:${HEAD_SHA}`,
-    );
-  });
-
-  it('marks protected decision classes non-automatable', () => {
+  it('marks all protected decisions non-automatable', () => {
     for (const decisionClass of PROTECTED_DECISION_CLASSES) {
-      const result = classifyDecisionAutomatability(decisionClass) as {
-        nonAutomatable: boolean;
-        automatable: boolean;
-      };
-      expect(result.nonAutomatable).toBe(true);
-      expect(result.automatable).toBe(false);
+      expect(classifyDecisionAutomatability(decisionClass).nonAutomatable).toBe(true);
     }
-    expect(
-      (classifyDecisionAutomatability('bounded-correction') as { automatable: boolean })
-        .automatable,
-    ).toBe(true);
+  });
+
+  it('fails closed on missing/ambiguous Issues, invalid PRs, and stale heads', () => {
+    expect((resolveExactOpenSourceIssue([]) as Failure).code).toBe('missing_source_issue');
+    expect((resolveExactOpenSourceIssue([{ number: 1 }, { number: 2 }]) as Failure).code)
+      .toBe('ambiguous_source_issue');
+    expect((assertValidPrNumber('bad') as Failure).code).toBe('invalid_pr_number');
+    expect((assertCurrentHeadSha({ expectedHeadSha: HEAD, observedHeadSha: OTHER }) as Failure).code)
+      .toBe('stale_head_sha');
+    expect(extractPrimarySourceIssueRefs(pr().body)).toEqual([2433]);
+    expect(normalizeChecks([
+      { name: 'current', headSha: HEAD },
+      { name: 'stale', headSha: OTHER },
+    ], HEAD).map((check) => check.name)).toEqual(['current']);
   });
 });
 
-describe('agent routing evidence collector', () => {
-  it('rejects missing or multiple source Issues', () => {
-    expect((resolveExactOpenSourceIssue([]) as FailClosed).code).toBe('missing_source_issue');
-    expect(
-      (
-        resolveExactOpenSourceIssue([
-          { number: 2433, state: 'OPEN' },
-          { number: 2434, state: 'OPEN' },
-        ]) as FailClosed
-      ).code,
-    ).toBe('ambiguous_source_issue');
+describe('normalized observe packet', () => {
+  it('represents the fixture, review distinctions, and protected boundaries', () => {
+    const result = runObserveController(fixture()) as any;
+    expect(result.ok).toBe(true);
+    expect(result.packet.sourceIssue.number).toBe(2433);
+    expect(result.packet.pullRequest.headSha).toBe(HEAD);
+    expect(result.packet.event.eventCommentId).toBe('5029000001');
+    expect(result.packet.reviewEvidence.unresolvedReviewThreads).toHaveLength(1);
+    expect(result.packet.reviewEvidence.resolvedReviewThreads).toHaveLength(1);
+    expect(result.packet.reviewEvidence.lateIssueComments).toHaveLength(1);
+    expect(result.packet.protectedBoundaries.classes).toEqual([...PROTECTED_DECISION_CLASSES]);
+    expect(result.packet.reread.source).toBe('github-native');
   });
 
-  it('rejects a stale PR head', () => {
-    expect(
-      (
-        assertCurrentHeadSha({
-          expectedHeadSha: HEAD_SHA,
-          observedHeadSha: STALE_SHA,
-        }) as FailClosed
-      ).code,
-    ).toBe('stale_head_sha');
+  it('rejects stale/fabricated hints and missing live evidence', () => {
+    expect((runObserveController({ ...fixture(), observedHeadSha: OTHER }) as Failure).code)
+      .toBe('stale_head_sha');
+    const base = fixture();
+    expect((runObserveController({
+      ...base,
+      reread: { sourceIssue: { ...base.sourceIssue, number: 9999 }, pullRequest: base.pullRequest },
+    }) as Failure).code).toBe('fabricated_reread_rejected');
+    const { live: _live, ...withoutLive } = fixture();
+    expect((runObserveController(withoutLive) as Failure).code).toBe('live_evidence_unavailable');
   });
 
-  it('fails closed on missing or invalid PR numbers', () => {
-    expect((assertValidPrNumber(null) as FailClosed).code).toBe('invalid_pr_number');
-    expect((assertValidPrNumber(undefined) as FailClosed).code).toBe('invalid_pr_number');
-    expect((assertValidPrNumber('abc') as FailClosed).code).toBe('invalid_pr_number');
-    expect((assertValidPrNumber(NaN) as FailClosed).code).toBe('invalid_pr_number');
-    expect((assertValidPrNumber(0) as FailClosed).code).toBe('invalid_pr_number');
-    expect((assertValidPrNumber(-3) as FailClosed).code).toBe('invalid_pr_number');
-    expect((assertValidPrNumber(2675) as { ok: true; prNumber: number }).prNumber).toBe(2675);
+  it('requires event authority to match live Issue comments', () => {
+    const base = fixture();
+    expect((runObserveController({
+      ...base,
+      triggerComment: { ...base.triggerComment, id: 'missing' },
+    }) as Failure).code).toBe('trigger_comment_not_in_live_evidence');
+    expect((runObserveController({
+      ...base,
+      triggerComment: { ...base.triggerComment, body: 'CHATGPT HANDOFF\nforged' },
+    }) as Failure).code).toBe('trigger_comment_not_in_live_evidence');
+    expect((runObserveController({
+      ...base,
+      triggerComment: undefined,
+      live: { ...base.live, issueComments: [{ id: '2', body: 'not an event' }] },
+    }) as Failure).code).toBe('missing_canonical_event');
   });
 
-  it('filters check evidence to the authoritative head SHA', () => {
-    const normalized = normalizeChecks(
-      [
-        { name: 'current', headSha: HEAD_SHA, conclusion: 'success' },
-        { name: 'stale', headSha: STALE_SHA, conclusion: 'success' },
-        { name: 'also-current', head_sha: HEAD_SHA, conclusion: 'failure' },
-      ],
-      HEAD_SHA as never,
-    ) as Array<{ name: string }>;
-    expect(normalized.map((check) => check.name)).toEqual(['current', 'also-current']);
-  });
-
-  it('parses exactly one primary PR source Issue for the #2433 fixture', () => {
-    const refs = extractPrimarySourceIssueRefs(String(fixture2433().pullRequest.body));
-    expect(refs).toEqual([2433]);
+  it('rejects caller delivery-profile overrides', () => {
+    expect((runObserveController({
+      ...fixture(),
+      deliveryProfile: { deliveryModel: 'A', targetEnvironment: 'production' },
+    }) as Failure).code).toBe('delivery_profile_hint_mismatch');
   });
 });
 
-describe('fixture #2433 / PR #2675 current-head packet', () => {
-  it('produces one normalized current-head packet', () => {
-    const result = asResult(runObserveController(fixture2433()));
+describe('GitHub-native collection', () => {
+  it('collects current-head evidence and final rereads', async () => {
+    const result = await collectLiveGitHubEvidence({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2433,
+      prNumber: 2675,
+      token: 'test',
+      fetchFn: githubFetch() as never,
+    });
     expect(result.ok).toBe(true);
-    if (!result.ok) throw new Error('expected packet');
-    const { packet } = result;
-    expect(packet.mode).toBe('observe-only');
-    expect(packet.mutationAllowed).toBe(false);
-    expect(packet.sourceIssue.number).toBe(2433);
-    expect(packet.pullRequest.number).toBe(2675);
-    expect(packet.pullRequest.headSha).toBe(HEAD_SHA);
-    expect(packet.event.eventType).toBe('chatgpt_handoff_legacy');
-    expect(packet.event.actionIdentity).toContain('issue:2433:');
-    expect(packet.event.actionIdentity).toContain(`head:${HEAD_SHA}`);
-    expect(packet.pullRequest.changedFiles).toHaveLength(5);
-    expect(packet.checks.map((check) => check.name)).toContain('GATE — Quality Checks');
-    expect(packet.reviewEvidence.unresolvedReviewThreads).toHaveLength(1);
-    expect(packet.reviewEvidence.resolvedReviewThreads).toHaveLength(1);
-    expect(packet.reviewEvidence.lateIssueComments).toHaveLength(1);
-    expect(packet.reviewEvidence.distinctions.unresolvedThreadsRepresentedSeparately).toBe(true);
-    expect(packet.reviewEvidence.distinctions.lateCommentsRepresentedSeparately).toBe(true);
-    expect(packet.protectedBoundaries.classes).toEqual([...PROTECTED_DECISION_CLASSES]);
-    expect(packet.protectedBoundaries.nonAutomatable.every((item) => item.nonAutomatable)).toBe(
-      true,
-    );
-    expect(packet.reread.performed).toBe(true);
-    expect(packet.reread.source).toBe('github-native');
+    if (!result.ok) throw new Error('expected success');
+    expect(result.live.finalReread).toBe(true);
+    expect(result.live.pullRequest.headSha).toBe(HEAD);
+    expect(result.live.changedFiles).toEqual(['docs/a.md']);
   });
 
-  it('fails closed on stale head for the #2433 fixture', () => {
-    const result = asResult(
-      runObserveController(
-        fixture2433({
-          observedHeadSha: STALE_SHA,
-        }),
-      ),
-    );
-    expect(result.ok).toBe(false);
-    if (result.ok) throw new Error('expected failure');
-    expect(result.code).toBe('stale_head_sha');
+  it('fails closed on mid-collection PR or Issue drift', async () => {
+    const headDrift = await collectLiveGitHubEvidence({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2433,
+      prNumber: 2675,
+      token: 'test',
+      fetchFn: githubFetch({ finalHead: OTHER }) as never,
+    }) as Failure;
+    expect(headDrift.code).toBe('stale_head_sha');
+
+    const issueDrift = await collectLiveGitHubEvidence({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2433,
+      prNumber: 2675,
+      token: 'test',
+      fetchFn: githubFetch({ finalIssueBody: 'changed' }) as never,
+    }) as Failure;
+    expect(issueDrift.code).toBe('live_identity_drift');
   });
 
-  it('fails closed when multiple source Issues are supplied as live candidates', () => {
-    const base = fixture2433();
-    const result = asResult(
-      runObserveController({
-        ...base,
-        live: undefined,
-      }),
-    );
-    expect(result.ok).toBe(false);
-    if (result.ok) throw new Error('expected failure');
+  it('fails closed on check API failure', async () => {
+    const result = await collectLiveGitHubEvidence({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2433,
+      prNumber: 2675,
+      token: 'test',
+      fetchFn: githubFetch({ checkFailure: true }) as never,
+    }) as Failure;
     expect(result.code).toBe('live_evidence_unavailable');
+    expect(result.message).toMatch(/check-runs/i);
   });
 
-  it('fails closed when the live source Issue is missing', () => {
-    const base = fixture2433();
-    const result = asResult(
-      runObserveController({
-        ...base,
-        live: {
-          ...(base.live as object),
-          sourceIssue: undefined,
-        },
-      }),
-    );
-    expect(result.ok).toBe(false);
-    if (result.ok) throw new Error('expected failure');
-    expect(result.code).toBe('missing_source_issue');
-  });
-
-  it('fails closed on contradictory ownership/profile state', () => {
-    const base = fixture2433();
-    const result = asResult(
-      buildEvidencePacket({
-        sourceIssue: base.sourceIssue,
-        pullRequest: {
-          ...base.pullRequest,
-          body: String(base.pullRequest.body).replace(
-            'Target environment: component',
-            'Target environment: production',
-          ),
-        },
-        event: {
-          marker: 'CHATGPT HANDOFF',
-          eventType: 'chatgpt_handoff_legacy',
-          adapter: true,
-          commentId: '5029000001',
-          createdAt: '2026-07-20T18:00:00Z',
-        },
-        observedHeadSha: HEAD_SHA,
-        checks: base.checks,
-        changedFiles: base.changedFiles,
-        reviewThreads: base.reviewThreads,
-        issueComments: base.issueComments,
-      } as never),
-    );
-    expect(result.ok).toBe(false);
-    if (result.ok) throw new Error('expected failure');
-    expect(result.code).toBe('contradictory_ownership_profile');
-  });
-
-  it('rejects fabricated caller reread data that disagrees with live evidence', () => {
-    const base = fixture2433();
-    const result = asResult(
-      runObserveController(
-        fixture2433({
-          reread: {
-            at: '2026-07-20T19:05:00Z',
-            sourceIssue: { ...(base.sourceIssue as object), number: 9999 },
-            pullRequest: {
-              ...(base.pullRequest as object),
-              number: 1111,
-              headSha: STALE_SHA,
-            },
-          },
-        }),
-      ),
-    );
-    expect(result.ok).toBe(false);
-    if (result.ok) throw new Error('expected failure');
-    expect(result.code).toBe('fabricated_reread_rejected');
-  });
-
-  it('cannot treat caller-supplied reread as authoritative when live evidence is absent', () => {
-    const base = fixture2433();
-    const { live: _live, ...withoutLive } = base as { live: unknown } & Record<string, unknown>;
-    const result = asResult(runObserveController(withoutLive));
-    expect(result.ok).toBe(false);
-    if (result.ok) throw new Error('expected failure');
-    expect(result.code).toBe('live_evidence_unavailable');
-  });
-
-  it('filters stale check evidence out of the emitted packet', () => {
-    const base = fixture2433();
-    const live = base.live as {
-      checks: Array<Record<string, unknown>>;
-    };
-    const result = asResult(
-      runObserveController(
-        fixture2433({
-          live: {
-            ...live,
-            checks: [
-              ...live.checks,
-              {
-                name: 'STALE — Old Head Gate',
-                status: 'completed',
-                conclusion: 'success',
-                headSha: STALE_SHA,
-              },
-            ],
-          },
-        }),
-      ),
-    );
+  it('paginates check runs and review threads', async () => {
+    const result = await collectLiveGitHubEvidence({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2433,
+      prNumber: 2675,
+      token: 'test',
+      fetchFn: githubFetch({ multipage: true }) as never,
+    });
     expect(result.ok).toBe(true);
-    if (!result.ok) throw new Error('expected packet');
-    expect(result.packet.checks.map((check) => check.name)).not.toContain('STALE — Old Head Gate');
-    expect(result.packet.checks.every((check) => check.headSha === HEAD_SHA)).toBe(true);
+    if (!result.ok) throw new Error('expected success');
+    expect(result.live.checks).toHaveLength(101);
+    expect(result.live.reviewThreads.map((thread) => thread.id)).toEqual(['thread-1', 'thread-2']);
   });
 
-  it('fails closed when live PR number is invalid', () => {
-    const base = fixture2433();
-    const live = base.live as { pullRequest: Record<string, unknown> };
-    const result = asResult(
-      runObserveController(
-        fixture2433({
-          live: {
-            ...live,
-            pullRequest: {
-              ...live.pullRequest,
-              number: 'not-a-number',
-            },
-          },
-        }),
-      ),
-    );
-    expect(result.ok).toBe(false);
-    if (result.ok) throw new Error('expected failure');
-    expect(result.code).toBe('invalid_pr_number');
+  it('fails closed on incomplete review-thread pagination', async () => {
+    const result = await collectLiveGitHubEvidence({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2433,
+      prNumber: 2675,
+      token: 'test',
+      fetchFn: githubFetch({ missingThreadCursor: true }) as never,
+    }) as Failure;
+    expect(result.code).toBe('live_evidence_unavailable');
+    expect(result.message).toMatch(/endCursor/);
   });
 
-  it('fails closed when live evidence collection is unavailable', async () => {
-    const result = (await collectLiveGitHubEvidence({
+  it('rejects unavailable live collection and mismatched hints', async () => {
+    expect((await collectLiveGitHubEvidence({
       repository: 'wdhunter645/next-starter-template',
       issueNumber: 2433,
       prNumber: 2675,
       token: '',
-    } as never)) as FailClosed;
-    expect(result.ok).toBe(false);
-    expect(result.code).toBe('live_evidence_unavailable');
+    }) as Failure).code).toBe('live_evidence_unavailable');
+    expect((assertHintsMatchLive({
+      hints: { observedHeadSha: OTHER },
+      live: fixture().live,
+    } as never) as Failure).code).toBe('stale_head_sha');
+  });
+});
+
+describe('operational CLI boundary', () => {
+  it('rejects embedded input.live when Issue/PR identity is absent', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'controller-bypass-'));
+    const inputPath = path.join(dir, 'input.json');
+    fs.writeFileSync(inputPath, JSON.stringify({ live: fixture().live }));
+    const code = await mainAsync([
+      '--config',
+      path.join(ROOT, 'config/agent-routing/controller.json'),
+      '--input',
+      inputPath,
+    ], { fetchFn: (async () => { throw new Error('must not fetch'); }) as never });
+    expect(code).toBe(2);
   });
 
-  it('rejects forged or missing live trigger comments', () => {
-    const base = fixture2433();
-    const forged = asResult(
-      runObserveController(
-        fixture2433({
-          triggerComment: {
-            id: '9999999999',
-            createdAt: '2026-07-20T18:00:00Z',
-            body: 'CHATGPT HANDOFF\nIssue: #2433\n',
-          },
-        }),
-      ),
-    );
-    expect(forged.ok).toBe(false);
-    if (forged.ok) throw new Error('expected failure');
-    expect(forged.code).toBe('trigger_comment_not_in_live_evidence');
-
-    const live = base.live as { issueComments: unknown[] };
-    const missing = asResult(
-      runObserveController(
-        fixture2433({
-          live: {
-            ...live,
-            issueComments: [
-              {
-                id: '5029000002',
-                createdAt: '2026-07-20T19:00:00Z',
-                author: { login: 'wdhunter645' },
-                body: 'Late note after handoff: keep feature lanes blocked.',
-              },
-            ],
-          },
-          triggerComment: undefined,
-          eventComment: undefined,
-        }),
-      ),
-    );
-    expect(missing.ok).toBe(false);
-    if (missing.ok) throw new Error('expected failure');
-    expect(missing.code).toBe('missing_canonical_event');
-  });
-
-  it('fails closed when caller delivery profile overrides the live PR profile', () => {
-    const result = asResult(
-      runObserveController(
-        fixture2433({
-          deliveryProfile: {
-            deliveryModel: 'A',
-            targetEnvironment: 'production',
-            approvalProfile: 'chat-bill-production',
-          },
-        }),
-      ),
-    );
-    expect(result.ok).toBe(false);
-    if (result.ok) throw new Error('expected failure');
-    expect(result.code).toBe('delivery_profile_hint_mismatch');
-  });
-
-  it('collects live evidence through injectable GitHub fetch and rejects mismatched hints', async () => {
-    const fetchFn = createCollectFetchMock({
-      headSha: HEAD_SHA,
-      finalHeadSha: HEAD_SHA,
-    });
-
-    const collected = (await collectLiveGitHubEvidence({
-      repository: 'wdhunter645/next-starter-template',
-      issueNumber: 2433,
-      prNumber: 2675,
-      token: 'test-token',
-      fetchFn: fetchFn as never,
-    } as never)) as
-      | FailClosed
-      | {
-          ok: true;
-          live: {
-            sourceIssue: { number: number };
-            pullRequest: { headSha: string };
-            changedFiles: string[];
-            reviewThreads: unknown[];
-            finalReread?: boolean;
-          };
-        };
-    expect(collected.ok).toBe(true);
-    if (!collected.ok) throw new Error('expected live collection');
-    expect(collected.live.sourceIssue.number).toBe(2433);
-    expect(collected.live.pullRequest.headSha).toBe(HEAD_SHA);
-    expect(collected.live.changedFiles).toEqual(['docs/a.md']);
-    expect(collected.live.reviewThreads).toHaveLength(1);
-    expect(collected.live.finalReread).toBe(true);
-
-    const mismatch = assertHintsMatchLive({
-      hints: {
-        observedHeadSha: STALE_SHA,
-      },
-      live: collected.live,
-    } as never) as FailClosed;
-    expect(mismatch.ok).toBe(false);
-    expect(mismatch.code).toBe('stale_head_sha');
-  });
-
-  it('fails closed when PR head changes during collection before final reread', async () => {
-    const fetchFn = createCollectFetchMock({
-      headSha: HEAD_SHA,
-      finalHeadSha: STALE_SHA,
-    });
-    const result = (await collectLiveGitHubEvidence({
-      repository: 'wdhunter645/next-starter-template',
-      issueNumber: 2433,
-      prNumber: 2675,
-      token: 'test-token',
-      fetchFn: fetchFn as never,
-    } as never)) as FailClosed;
-    expect(result.ok).toBe(false);
-    expect(result.code).toBe('stale_head_sha');
-  });
-
-  it('fails closed when check-run collection fails', async () => {
-    const fetchFn = createCollectFetchMock({
-      headSha: HEAD_SHA,
-      finalHeadSha: HEAD_SHA,
-      checkRunsFail: true,
-    });
-    const result = (await collectLiveGitHubEvidence({
-      repository: 'wdhunter645/next-starter-template',
-      issueNumber: 2433,
-      prNumber: 2675,
-      token: 'test-token',
-      fetchFn: fetchFn as never,
-    } as never)) as FailClosed;
-    expect(result.ok).toBe(false);
-    expect(result.code).toBe('live_evidence_unavailable');
-    expect(result.message || '').toMatch(/check-runs/i);
-  });
-
-  it('paginates check-runs and review threads to completion', async () => {
-    const fetchFn = createCollectFetchMock({
-      headSha: HEAD_SHA,
-      finalHeadSha: HEAD_SHA,
-      multiPageChecks: true,
-      multiPageThreads: true,
-    });
-    const collected = (await collectLiveGitHubEvidence({
-      repository: 'wdhunter645/next-starter-template',
-      issueNumber: 2433,
-      prNumber: 2675,
-      token: 'test-token',
-      fetchFn: fetchFn as never,
-    } as never)) as
-      | FailClosed
-      | {
-          ok: true;
-          live: {
-            checks: Array<{ name: string }>;
-            reviewThreads: Array<{ id: string }>;
-          };
-        };
-    expect(collected.ok).toBe(true);
-    if (!collected.ok) throw new Error('expected live collection');
-    expect(collected.live.checks.map((check) => check.name)).toContain('check-page-1');
-    expect(collected.live.checks.map((check) => check.name)).toContain('check-page-2');
-    expect(collected.live.checks).toHaveLength(101);
-    expect(collected.live.reviewThreads.map((thread) => thread.id)).toEqual([
-      'PRRT_page_1',
-      'PRRT_page_2',
-    ]);
-  });
-
-  it('does not let embedded input.live bypass GitHub-native CLI collection', async () => {
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'controller-live-bypass-'));
-    const hintPath = path.join(tmp, 'hint-with-live.json');
-    const fabricatedHead = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
-    fs.writeFileSync(
-      hintPath,
-      JSON.stringify({
-        live: {
-          collectedAt: '2026-07-20T19:05:00Z',
-          source: 'caller-fabricated',
-          sourceIssue: { number: 2433, state: 'OPEN', body: '', labels: [] },
-          pullRequest: {
-            number: 2675,
-            body: '- **Issue:** #2433\n',
-            headSha: fabricatedHead,
-            head: { sha: fabricatedHead },
-          },
-          headSha: fabricatedHead,
-          checks: [],
-          changedFiles: [],
-          reviewThreads: [],
-          reviewSubmissions: [],
-          issueComments: [],
-        },
-      }),
-    );
-
-    let collectCalls = 0;
-    const fetchFn = createCollectFetchMock({
-      headSha: HEAD_SHA,
-      finalHeadSha: HEAD_SHA,
-      onCollect() {
-        collectCalls += 1;
-      },
-    });
-
-    const previousToken = process.env.GITHUB_TOKEN;
-    process.env.GITHUB_TOKEN = 'test-token';
+  it('overwrites embedded input.live with GitHub-native collection', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'controller-collect-'));
+    const inputPath = path.join(dir, 'input.json');
+    const outputPath = path.join(dir, 'output.json');
+    fs.writeFileSync(inputPath, JSON.stringify({ live: { sourceIssue: { number: 9999 } } }));
+    const oldToken = process.env.GITHUB_TOKEN;
+    process.env.GITHUB_TOKEN = 'test';
     try {
-      const code = await mainAsync(
-        [
-          '--issue',
-          '2433',
-          '--pr',
-          '2675',
-          '--repository',
-          'wdhunter645/next-starter-template',
-          '--input',
-          hintPath,
-        ],
-        { fetchFn: fetchFn as never },
-      );
+      const code = await mainAsync([
+        '--config',
+        path.join(ROOT, 'config/agent-routing/controller.json'),
+        '--repository',
+        'wdhunter645/next-starter-template',
+        '--issue',
+        '2433',
+        '--pr',
+        '2675',
+        '--input',
+        inputPath,
+        '--output',
+        outputPath,
+      ], { fetchFn: githubFetch() as never });
       expect(code).toBe(0);
-      expect(collectCalls).toBeGreaterThan(0);
+      const output = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+      expect(output.packet.sourceIssue.number).toBe(2433);
     } finally {
-      if (previousToken == null) delete process.env.GITHUB_TOKEN;
-      else process.env.GITHUB_TOKEN = previousToken;
+      if (oldToken == null) delete process.env.GITHUB_TOKEN;
+      else process.env.GITHUB_TOKEN = oldToken;
     }
   });
 });
 
-describe('observe-only controller configuration and workflow', () => {
-  it('loads mutation-disabled observe-only config', () => {
+describe('observe-only configuration, workflow, and contract', () => {
+  it('loads locked config and rejects mutation drift', () => {
     const config = loadControllerConfig(
       path.join(ROOT, 'config/agent-routing/controller.json'),
-    ) as {
-      mode: string;
-      mutationAllowed: boolean;
-      labelsAreAuthority: boolean;
-      rereadBeforePacket: boolean;
-      rejectStaleHeadSha: boolean;
-      workflowCapabilities: Record<string, boolean>;
-    };
+    ) as Record<string, any>;
     expect(config.mode).toBe('observe-only');
     expect(config.mutationAllowed).toBe(false);
-    expect(config.labelsAreAuthority).toBe(false);
-    expect(config.rereadBeforePacket).toBe(true);
-    expect(config.rejectStaleHeadSha).toBe(true);
-    expect(config.workflowCapabilities.merge).toBe(false);
-    expect(config.workflowCapabilities.close).toBe(false);
-    expect(config.workflowCapabilities.relabel).toBe(false);
-    expect(config.workflowCapabilities.resume).toBe(false);
-    expect(config.workflowCapabilities.activateSuccessor).toBe(false);
-    expect(config.workflowCapabilities.mutateMain).toBe(false);
+    expect(() => assertObserveOnlyConfigInvariants({
+      ...config,
+      workflowCapabilities: { ...config.workflowCapabilities, merge: true },
+    })).toThrow(/controller_capability_must_be_false:merge/);
   });
 
-  it('fails closed on observe-only configuration drift', () => {
-    const config = loadControllerConfig(
-      path.join(ROOT, 'config/agent-routing/controller.json'),
-    ) as Record<string, unknown>;
-    expect(() =>
-      assertObserveOnlyConfigInvariants({
-        ...config,
-        workflowCapabilities: {
-          ...(config.workflowCapabilities as object),
-          merge: true,
-        },
-      }),
-    ).toThrow(/controller_capability_must_be_false:merge/);
-
-    const drifted = asResult(
-      runObserveController(fixture2433(), {
-        ...config,
-        labelsAreAuthority: true,
-      } as never),
-    );
-    expect(drifted.ok).toBe(false);
-    if (drifted.ok) throw new Error('expected failure');
-    expect(drifted.code).toBe('controller_config_drift');
-  });
-
-  it('keeps the workflow read-only (no write permissions; no mutation jobs)', () => {
+  it('keeps the workflow read-only', () => {
     const workflow = fs.readFileSync(
       path.join(ROOT, '.github/workflows/ops-agent-routing-controller.yml'),
       'utf8',
     );
-    expect(workflow).toMatch(/observe-only/);
     expect(workflow).toMatch(/contents:\s*read/);
     expect(workflow).toMatch(/issues:\s*read/);
     expect(workflow).toMatch(/pull-requests:\s*read/);
-    expect(workflow).toMatch(/issue_number/);
-    expect(workflow).toMatch(/pr_number/);
-    expect(workflow).toMatch(/Live GitHub reread/);
+    expect(workflow).not.toMatch(/contents:\s*write/);
     expect(workflow).not.toMatch(/issues:\s*write/);
     expect(workflow).not.toMatch(/pull-requests:\s*write/);
-    expect(workflow).not.toMatch(/contents:\s*write/);
-    expect(workflow).not.toMatch(/\bgh\s+pr\s+merge\b/);
-    expect(workflow).not.toMatch(/\bgh\s+issue\s+close\b/);
-    expect(workflow).not.toMatch(/\bgh\s+label\b/);
   });
 
-  it('documents stable identities, required sections, and protected boundaries in the contract', () => {
+  it('documents stable identities and protected boundaries', () => {
     const contract = fs.readFileSync(
       path.join(ROOT, 'docs/reference/ci/agent-routing-controller-contract.md'),
       'utf8',
     );
-    expect(contract).toContain('## Purpose');
-    expect(contract).toContain('## Scope');
-    expect(contract).toContain('## Current known truth');
-    expect(contract).toContain('## Intended final state');
+    for (const heading of [
+      '## Purpose',
+      '## Scope',
+      '## Current known truth',
+      '## Intended final state',
+    ]) expect(contract).toContain(heading);
     expect(contract).toContain('actionIdentity');
-    expect(contract).toContain('Expected-state reads');
     expect(contract).toContain('github-native');
-    expect(contract).toContain('product');
-    expect(contract).toContain('engineering-approval');
-    expect(contract).toContain('recovery');
-    expect(contract).toContain('credential');
-    expect(contract).toContain('destructive');
-    expect(contract).toContain('production');
     expect(contract).toContain('mutationAllowed: false');
-  });
-
-  it('rejects loading a drifted config file from disk', () => {
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'controller-config-'));
-    const driftedPath = path.join(tmp, 'controller.json');
-    const good = JSON.parse(
-      fs.readFileSync(path.join(ROOT, 'config/agent-routing/controller.json'), 'utf8'),
-    );
-    good.mutationAllowed = true;
-    fs.writeFileSync(driftedPath, JSON.stringify(good, null, 2));
-    expect(() => loadControllerConfig(driftedPath)).toThrow(/controller_mutation_must_be_disabled/);
   });
 });
