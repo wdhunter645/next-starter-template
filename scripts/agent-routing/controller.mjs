@@ -183,6 +183,14 @@ export function assertObserveOnlyConfigInvariants(config = {}) {
       config.componentIntegration.requiredChecks,
       'component_integration_requires_nonempty_required_checks',
     );
+    assertNonEmptyStringArray(
+      config.componentIntegration.trustedReviewers,
+      'component_integration_requires_trusted_reviewers',
+    );
+    assertNonEmptyStringArray(
+      config.componentIntegration.trustedIntegrationAuthors,
+      'component_integration_requires_trusted_integration_authors',
+    );
     const integrationCaps = config.componentIntegration.capabilities || {};
     for (const [key, expected] of Object.entries(REQUIRED_INTEGRATION_CAPABILITIES)) {
       if (integrationCaps[key] !== expected) {
@@ -396,6 +404,14 @@ function enrichRoutingPacket(packet, live) {
   const reviewEvidence = packet.reviewEvidence || {};
   return {
     ...packet,
+    pullRequest: {
+      ...packet.pullRequest,
+      author:
+        live.pullRequest?.author ||
+        live.pullRequest?.user?.login ||
+        live.pullRequest?.user?.name ||
+        null,
+    },
     reviewEvidence: {
       ...reviewEvidence,
       unresolvedReviewThreads: mergeEvidence(

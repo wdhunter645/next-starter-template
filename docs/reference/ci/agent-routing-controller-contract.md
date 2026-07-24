@@ -239,7 +239,10 @@ Integration is permitted only when all of the following hold:
 7. no unresolved blocking review thread or `CHANGES_REQUESTED` review remains;
 8. authority is either:
    - deterministic profile `component-auto-integration` (repository policy; not human approval), or
-   - protected profile `protected-change-review` with a recorded independent current-head `APPROVED` review whose review commit SHA exactly matches the PR head, or source-Issue `APPROVED FOR INTEGRATION` / `Status: component integration authorized` decision.
+   - protected profile `protected-change-review` with a recorded independent current-head `APPROVED` review whose review commit SHA exactly matches the PR head, whose reviewer is configured as trusted, whose reviewer is not the PR author, and whose PR-author identity is available; or
+   - protected profile `protected-change-review` with a trusted source-Issue `APPROVED FOR INTEGRATION` / `Status: component integration authorized` decision that exactly states Issue, PR, Head SHA, and Target branch.
+
+Bare, untrusted, incomplete, edited-during-reread, wrong-target, stale-head, self-review, missing-author, or headless approvals fail closed before mutation.
 
 A repeated equivalent invocation after the PR is merged verifies the merge SHA on the component target and suppresses with zero mutation.
 
@@ -311,11 +314,12 @@ For `clean` with authorized component integration, route output contains at most
 For `integrate-component`, the write-scoped job:
 
 1. validates all five expected-state identities;
-2. collects and evaluates GitHub-native state;
-3. repeats the complete collection immediately before mutation;
+2. collects and evaluates GitHub-native state with complete check-run pagination;
+3. repeats the complete collection immediately before mutation and fingerprints Issue, PR, check, review, thread, and authority-comment content;
 4. executes at most one merge using the exact expected PR head;
 5. verifies the exact returned merge SHA is contained by the target;
-6. records no closeout or successor action.
+6. performs a GitHub-native post-merge source-Issue reread and requires the Issue to remain explicitly OPEN;
+7. records no closeout or successor action.
 
 For a recorded merge SHA, the artifact may contain one `record_post_integration_verification` instruction.
 
@@ -350,6 +354,9 @@ Fixture coverage must prove:
 - missing source-Issue state fails post-integration verification;
 - component integration can be disabled without disabling route mode;
 - the write-scoped integration executor performs two rereads, one merge, and exact merge-SHA containment verification;
+- protected authority rejects untrusted, self, missing-author, incomplete, wrong-target, edited, or headless approvals;
+- check-run collection paginates completely and fails closed when it cannot prove the full surface;
+- post-merge source-Issue reread is explicit and fails closed when the Issue is unavailable or not OPEN after the merge mutation;
 - verification records exact target and merge SHA while the source Issue remains open.
 
 ## Rollback
