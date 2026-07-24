@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 /**
  * Deterministic handoff controller (#2677 / #2770 / #2771).
- * Operational execution always performs GitHub-native live reads.
+ *
+ * Operational execution always performs GitHub-native live reads. Remediation
+ * routing consumes only that normalized current-head packet and trusted
+ * source-Issue decisions included in the live evidence.
  */
 
 import fs from 'node:fs';
@@ -26,7 +29,6 @@ import {
 } from './lib/evidence-collector.mjs';
 import {
   collectCurrentHeadFindings,
-  collectRequiredCheckFindings,
   extractSourceIssueAuthorizations,
 } from './lib/disposition.mjs';
 import { findLatestDisposition } from './lib/idempotency.mjs';
@@ -52,7 +54,11 @@ const REQUIRED_IDEMPOTENCY_FIELDS = Object.freeze([
   'headSha',
   'actionIdentity',
 ]);
-const REQUIRED_ROUTING_CAPABILITIES = Object.freeze(['response', 'resume', 'escalation']);
+const REQUIRED_ROUTING_CAPABILITIES = Object.freeze([
+  'response',
+  'resume',
+  'escalation',
+]);
 const REQUIRED_ROUTING_PROTECTED_CLASSES = Object.freeze([
   'product',
   'design',
@@ -76,7 +82,9 @@ export function assertObserveOnlyConfigInvariants(config = {}) {
   if (config.mutationAllowed !== false) throw new Error('controller_mutation_must_be_disabled');
   if (config.labelsAreAuthority !== false) throw new Error('controller_labels_must_not_be_authority');
   if (config.requireOpenSourceIssue !== true) throw new Error('controller_must_require_open_source_issue');
-  if (config.requireExactSourceIssueCount !== 1) throw new Error('controller_must_require_exact_one_source_issue');
+  if (config.requireExactSourceIssueCount !== 1) {
+    throw new Error('controller_must_require_exact_one_source_issue');
+  }
   if (config.rereadBeforePacket !== true) throw new Error('controller_must_reread_before_packet');
   if (config.rejectStaleHeadSha !== true) throw new Error('controller_must_reject_stale_head_sha');
 
@@ -90,19 +98,6 @@ export function assertObserveOnlyConfigInvariants(config = {}) {
     for (const decisionClass of REQUIRED_ROUTING_PROTECTED_CLASSES) {
       if (!configuredProtected.has(decisionClass)) {
         throw new Error(`controller_routing_protected_class_missing:${decisionClass}`);
-      }
-    }
-    if (config.remediationRouting.sourceIssueOnly !== true) {
-      throw new Error('remediation_routing_must_be_source_issue_only');
-    }
-    const requiredChecks = config.remediationRouting.requiredChecks || [];
-    if (!Array.isArray(requiredChecks) || requiredChecks.length === 0) {
-      throw new Error('remediation_routing_requires_nonempty_required_checks');
-    }
-    const routingCaps = config.remediationRouting.capabilities || {};
-    for (const key of REQUIRED_ROUTING_CAPABILITIES) {
-      if (routingCaps[key] !== true) {
-        throw new Error(`remediation_routing_capability_required:${key}`);
       }
     }
   }
@@ -126,6 +121,29 @@ export function assertObserveOnlyConfigInvariants(config = {}) {
   for (const field of REQUIRED_IDEMPOTENCY_FIELDS) {
     if (!keyFields.includes(field)) throw new Error(`controller_idempotency_missing_field:${field}`);
   }
+
+  if (config.remediationRouting?.enabled === true) {
+    if (config.remediationRouting.sourceIssueOnly !== true) {
+      throw new Error('remediation_routing_must_be_source_issue_only');
+    }
+    for (const key of REQUIRED_ROUTING_CAPABILITIES) {
+      if (config.remediationRouting.capabilities?.[key] !== true) {
+        throw new Error(`remediation_routing_capability_required:${key}`);
+      }
+    }
+    assertNonEmptyStringArray(
+      config.remediationRouting.requiredChecks,
+      'remediation_routing_requires_nonempty_required_checks',
+    );
+    assertNonEmptyStringArray(
+      config.remediationRouting.trustedDecisionAuthors,
+      'remediation_routing_requires_trusted_decision_authors',
+    );
+    assertNonEmptyStringArray(
+      config.remediationRouting.trustedControllerAuthors,
+      'remediation_routing_requires_trusted_controller_authors',
+    );
+  }
   return true;
 }
 
@@ -138,9 +156,7 @@ export function runObserveController(input = {}, config = loadControllerConfig()
   }
 
   const live = input.live || null;
-  if (!live) {
-    return failClosed('live_evidence_unavailable', 'GitHub-native live evidence is required.');
-  }
+  if (!live) return failClosed('live_evidence_unavailable', 'GitHub-native live evidence is required.');
   const hintCheck = assertHintsMatchLive({ hints: input, live });
   if (!hintCheck.ok) return hintCheck;
 
@@ -206,40 +222,114 @@ export function runController(input = {}, config = loadControllerConfig()) {
   const observed = runObserveController(input, config);
   if (!observed.ok || config.remediationRouting?.enabled !== true) return observed;
 
-  const liveComments = input.live?.issueComments || [];
-  const findings = [
-    ...collectCurrentHeadFindings(observed.packet),
-    ...collectRequiredCheckFindings(
-      observed.packet,
-      config.remediationRouting.requiredChecks,
-    ),
-  ];
+  const routingConfig = config.remediationRouting;
+  const live = input.live || {};
+  const liveComments = live.issueComments || [];
+  const routingPacket = enrichRoutingPacket(observed.packet, live);
+  const findings = collectCurrentHeadFindings(routingPacket);
+
+  const trustedDecisionComments = filterCommentsByAuthor(
+    liveComments,
+    routingConfig.trustedDecisionAuthors,
+  );
   const authorizationResult = extractSourceIssueAuthorizations({
-    comments: liveComments,
+    comments: trustedDecisionComments,
     findings,
-    sourceIssueNumber: observed.packet.sourceIssue.number,
-    prNumber: observed.packet.pullRequest.number,
-    headSha: observed.packet.pullRequest.headSha,
+    sourceIssueNumber: routingPacket.sourceIssue.number,
+    prNumber: routingPacket.pullRequest.number,
+    headSha: routingPacket.pullRequest.headSha,
     repository: config.repository,
   });
   if (!authorizationResult.ok) return authorizationResult;
 
+  const protectedClasses = new Set(config.protectedDecisionClasses || []);
+  const protectedFindingIds = new Set(
+    findings
+      .filter((finding) => protectedClasses.has(finding.decisionClass))
+      .map((finding) => finding.identity),
+  );
+  const boundedAuthorizations = authorizationResult.authorizations.filter(
+    (authorization) => !protectedFindingIds.has(authorization.findingIdentity),
+  );
+  const trustedControllerComments = filterCommentsByAuthor(
+    liveComments,
+    routingConfig.trustedControllerAuthors,
+  );
+  const latestDisposition = findLatestDisposition(trustedControllerComments, {
+    sourceIssueNumber: routingPacket.sourceIssue.number,
+    prNumber: routingPacket.pullRequest.number,
+    trustedAuthors: routingConfig.trustedControllerAuthors,
+  });
+
   const routed = routeRemediation({
-    packet: observed.packet,
+    packet: routingPacket,
     findings,
-    requiredChecks: config.remediationRouting.requiredChecks,
-    authorizations: authorizationResult.authorizations,
+    requiredChecks: routingConfig.requiredChecks,
+    authorizations: boundedAuthorizations,
     dispositionRevision: authorizationResult.dispositionRevision,
     existingComments: liveComments,
-    latestDisposition: findLatestDisposition(liveComments, {
-      sourceIssueNumber: observed.packet.sourceIssue.number,
-      prNumber: observed.packet.pullRequest.number,
-    }),
-    branch: observed.packet.pullRequest.headRef,
-    prUrl: observed.packet.pullRequest.url,
+    latestDisposition,
+    branch: routingPacket.pullRequest.headRef,
+    prUrl: routingPacket.pullRequest.url,
   });
   if (!routed.ok) return routed;
-  return { ok: true, packet: observed.packet, remediation: routed };
+  return { ok: true, packet: routingPacket, remediation: routed };
+}
+
+function enrichRoutingPacket(packet, live) {
+  const reviewEvidence = packet.reviewEvidence || {};
+  return {
+    ...packet,
+    reviewEvidence: {
+      ...reviewEvidence,
+      unresolvedReviewThreads: mergeEvidence(
+        reviewEvidence.unresolvedReviewThreads || [],
+        live.reviewThreads || [],
+      ),
+      reviewSubmissions: mergeEvidence(
+        reviewEvidence.reviewSubmissions || [],
+        live.reviewSubmissions || live.reviews || [],
+      ),
+      lateIssueComments: mergeEvidence(
+        reviewEvidence.lateIssueComments || [],
+        live.issueComments || [],
+      ),
+    },
+  };
+}
+
+function mergeEvidence(normalized, raw) {
+  const rawById = new Map(
+    (raw || [])
+      .map((item) => [String(item?.id || item?.databaseId || item?.node_id || ''), item])
+      .filter(([id]) => id),
+  );
+  return (normalized || []).map((item) => {
+    const id = String(item?.id || item?.databaseId || item?.node_id || '');
+    const merged = { ...(rawById.get(id) || {}), ...item };
+    return merged.decisionClass ? merged : { ...merged, decisionClass: 'implementation' };
+  });
+}
+
+function filterCommentsByAuthor(comments, allowedAuthors) {
+  const allowed = new Set(
+    (allowedAuthors || []).map((author) => String(author).trim().toLowerCase()).filter(Boolean),
+  );
+  return (comments || []).filter((comment) => allowed.has(commentAuthor(comment)));
+}
+
+function commentAuthor(comment) {
+  return String(comment?.author?.login || comment?.user?.login || '').trim().toLowerCase();
+}
+
+function assertNonEmptyStringArray(value, code) {
+  if (
+    !Array.isArray(value) ||
+    value.length === 0 ||
+    value.some((item) => typeof item !== 'string' || item.trim() === '')
+  ) {
+    throw new Error(code);
+  }
 }
 
 function failClosed(code, message, details = {}) {
@@ -345,5 +435,6 @@ export function main(argv = process.argv.slice(2)) {
   );
 }
 
-const isDirect = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+const isDirect =
+  process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isDirect) main();

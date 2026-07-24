@@ -29,12 +29,19 @@
   "remediationRouting": {
     "enabled": true,
     "sourceIssueOnly": true,
-    "requiredChecks": [
-      "quality"
-    ],
     "responseMarker": "ADJUSTMENT",
     "resumeMarker": "LOCAL CURSOR RESUME",
     "escalationMarker": "HOLD",
+    "requiredChecks": [
+      "quality"
+    ],
+    "trustedDecisionAuthors": [
+      "wdhunter645"
+    ],
+    "trustedControllerAuthors": [
+      "wdhunter645",
+      "github-actions[bot]"
+    ],
     "capabilities": {
       "response": true,
       "resume": true,
