@@ -79,7 +79,6 @@ export function classifyDisposition(packet = {}, options = {}) {
     ),
   );
   const blocking = evaluated.filter((finding) => !finding.boundedCorrectionAuthorized);
-
   return {
     ok: true,
     classification:
@@ -107,8 +106,15 @@ export function collectCurrentHeadFindings(packet = {}, additionalFindings = [])
   const findings = [];
 
   for (const thread of reviewEvidence.unresolvedReviewThreads || []) {
-    if (thread.dispositioned === true || thread.actionable === false) continue;
-    if (!isCurrentHeadEvidence(thread, headSha, true)) continue;
+    if (
+      thread.dispositioned === true ||
+      thread.actionable === false ||
+      thread.isResolved === true ||
+      thread.isOutdated === true ||
+      !isCurrentHeadEvidence(thread, headSha, true)
+    ) {
+      continue;
+    }
     findings.push({
       identity: `review-thread:${stableId(thread)}`,
       source: 'review_thread',
@@ -119,9 +125,14 @@ export function collectCurrentHeadFindings(packet = {}, additionalFindings = [])
   }
 
   for (const review of reviewEvidence.reviewSubmissions || []) {
-    if (String(review.state || '').toUpperCase() !== 'CHANGES_REQUESTED') continue;
-    if (review.dispositioned === true) continue;
-    if (!isCurrentHeadEvidence(review, headSha, true)) continue;
+    if (
+      String(review.state || '').toUpperCase() !== 'CHANGES_REQUESTED' ||
+      review.dispositioned === true ||
+      review.isOutdated === true ||
+      !isCurrentHeadEvidence(review, headSha, true)
+    ) {
+      continue;
+    }
     findings.push({
       identity: `review-submission:${stableId(review)}`,
       source: 'review_submission',
@@ -132,8 +143,13 @@ export function collectCurrentHeadFindings(packet = {}, additionalFindings = [])
   }
 
   for (const comment of reviewEvidence.lateIssueComments || []) {
-    if (isRoutingTransactionComment(comment) || !isExplicitlyActionable(comment)) continue;
-    if (!isCurrentHeadEvidence(comment, headSha, true)) continue;
+    if (
+      isRoutingTransactionComment(comment) ||
+      !isExplicitlyActionable(comment) ||
+      !isCurrentHeadEvidence(comment, headSha, true)
+    ) {
+      continue;
+    }
     findings.push({
       identity: `late-comment:${stableId(comment)}`,
       source: 'late_issue_comment',
@@ -187,7 +203,6 @@ export function collectRequiredCheckFindings(packet = {}, requiredChecks = []) {
       });
       continue;
     }
-
     for (const check of matches) {
       const checkHead = normalizeSha(check.headSha || check.head_sha || '');
       const status = String(check.status || '').toLowerCase();
@@ -211,7 +226,6 @@ export function collectRequiredCheckFindings(packet = {}, requiredChecks = []) {
       }
     }
   }
-
   return deduplicateFindings(findings);
 }
 
@@ -264,7 +278,6 @@ export function extractSourceIssueAuthorizations({
       dispositionRevision: revision,
     });
   }
-
   return { ok: true, authorizations, dispositionRevision: highestRevision };
 }
 
@@ -278,9 +291,7 @@ export function normalizeDecisionClass(value) {
 
 function evaluateFinding(finding, authorization, sourceIssueNumber, headSha) {
   const findingClass = normalizeDecisionClass(finding.decisionClass || 'implementation');
-  const authorizationClass = normalizeDecisionClass(
-    authorization?.decisionClass || findingClass,
-  );
+  const authorizationClass = normalizeDecisionClass(authorization?.decisionClass || findingClass);
   const findingProtected = PROTECTED_DECISION_CLASSES.includes(findingClass);
   const authorizationProtected = PROTECTED_DECISION_CLASSES.includes(authorizationClass);
   const protectedDecision = findingProtected || authorizationProtected;
@@ -296,7 +307,6 @@ function evaluateFinding(finding, authorization, sourceIssueNumber, headSha) {
     authorization?.disposition === DISPOSITION_CLASSES.BOUNDED_CORRECTION &&
     sourceIssueDecision &&
     currentHead;
-
   return {
     ...finding,
     decisionClass,
@@ -339,12 +349,16 @@ function isCurrentHeadEvidence(item, headSha, allowMissingHead) {
 
 function commentAuthorizesFinding(comment, { findingIdentity, prNumber, headSha }) {
   const body = String(comment?.body || comment?.bodyText || '');
-  if (!body || isRoutingTransactionComment(comment)) return false;
+  if (!body || hasControllerTransactionMarker(body)) return false;
   if (!/^(?:CHATGPT RESPONSE|ADJUSTMENT)\b/im.test(body.trim())) return false;
   if (!/\bbounded correction authorized\b/i.test(body)) return false;
   if (!body.includes(String(findingIdentity))) return false;
   if (!new RegExp(`\\bPR:\\s*#${prNumber}\\b`, 'i').test(body)) return false;
   return normalizeSha(extractField(body, 'Head SHA') || '') === headSha;
+}
+
+function hasControllerTransactionMarker(body) {
+  return /<!--\s*agent-routing-(?:response|resume|escalation):/i.test(String(body || ''));
 }
 
 function isSourceIssueDecision(url, issueNumber) {
@@ -355,20 +369,15 @@ function isSourceIssueDecision(url, issueNumber) {
 
 function isRoutingTransactionComment(comment) {
   const body = String(comment?.body || comment?.bodyPreview || '').trim();
-  if (/<!--\s*agent-routing-(?:response|resume|escalation):/i.test(body)) return true;
+  if (hasControllerTransactionMarker(body)) return true;
   if (/^LOCAL CURSOR RESUME\b/im.test(body)) return true;
-  if (/^(?:CHATGPT RESPONSE|ADJUSTMENT)\b/i.test(body) &&
-      /\bbounded correction authorized\b/i.test(body) &&
-      /\bFinding identity\s*:/i.test(body)) return true;
   return /^HOLD\b/i.test(body) && /\bDisposition identity\s*:/i.test(body);
 }
 
 function isExplicitlyActionable(comment) {
   if (comment.actionable === true) return true;
   const body = String(comment.body || comment.bodyPreview || '');
-  return /^(?:PR REVIEW FINDING|CHANGES REQUESTED|PROBLEM FOUND|ADJUSTMENT)\b/i.test(
-    body.trim(),
-  );
+  return /^(?:PR REVIEW FINDING|CHANGES REQUESTED|PROBLEM FOUND|ADJUSTMENT)\b/i.test(body.trim());
 }
 
 function extractField(body, label) {
@@ -378,9 +387,7 @@ function extractField(body, label) {
 }
 
 function extractRequestedAction(body) {
-  const match = String(body).match(
-    /^Requested action:\s*\n((?:\s*[-*]\s+.+(?:\n|$))+)/im,
-  );
+  const match = String(body).match(/^Requested action:\s*\n((?:\s*[-*]\s+.+(?:\n|$))+)/im);
   if (!match) return null;
   return match[1]
     .split(/\r?\n/)
