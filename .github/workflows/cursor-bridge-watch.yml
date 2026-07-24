@@ -1,0 +1,68 @@
+name: Cursor Bridge Watch
+
+# Periodic / path-triggered Bridge health + repository-to-host drift classification (#2814).
+# Delivery-only wake workflow remains separate and does not own rebuild logic.
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'config/cursor-bridge/**'
+      - 'scripts/cursor-bridge/**'
+      - '.github/workflows/cursor-bridge-watch.yml'
+      - '.github/workflows/cursor-bridge-build.yml'
+
+permissions:
+  contents: read
+  actions: write
+  issues: write
+
+concurrency:
+  group: cursor-bridge-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    if: github.repository == 'wdhunter645/next-starter-template'
+    runs-on: [self-hosted, linux, x64, lgfc-repo-runner]
+    timeout-minutes: 10
+    steps:
+      - name: Checkout main for package comparison
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Run Bridge Watch
+        env:
+          LGFC_BRIDGE_SOURCE_COMMIT: ${{ github.sha }}
+          LGFC_BRIDGE_WATCH_DISPATCH: '1'
+        run: |
+          HOME_DIR="${LGFC_CURSOR_BRIDGE_HOME:-$HOME/lgfc-cursor-bridge}"
+          export LGFC_CURSOR_BRIDGE_HOME="$HOME_DIR"
+          export LGFC_BRIDGE_SOURCE_COMMIT="${GITHUB_SHA}"
+          WATCH_SCRIPT="$GITHUB_WORKSPACE/scripts/cursor-bridge/bridge-watch.mjs"
+          if [ ! -f "$WATCH_SCRIPT" ]; then
+            WATCH_SCRIPT="$HOME_DIR/scripts/bridge-watch.mjs"
+          fi
+          test -f "$WATCH_SCRIPT"
+          set +e
+          node "$WATCH_SCRIPT" check > /tmp/lgfc-bridge-watch-result.json
+          set -e
+          if grep -E 'CURSOR_API_KEY=|ghp_[A-Za-z0-9]+|github_pat_' /tmp/lgfc-bridge-watch-result.json; then
+            echo "secret-bearing output refused" >&2
+            exit 1
+          fi
+          python3 - <<'PY'
+import json
+from pathlib import Path
+raw = Path("/tmp/lgfc-bridge-watch-result.json").read_text().strip()
+if not raw:
+    print("classification=healthy_quiet")
+else:
+    data = json.loads(raw)
+    print("classification=" + str(data.get("classification") or "unknown"))
+PY

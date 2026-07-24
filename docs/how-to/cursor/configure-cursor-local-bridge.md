@@ -5,8 +5,8 @@ Authority Level: Operational Procedure
 Owns: Chromebook install, auth preflight, systemd enablement, transactional launch verification, heartbeat/watchdog/reconciliation verification, and rollback for Cursor Local Bridge
 Does Not Own: Wake workflow gates, runner registration, or Background Agents
 Canonical Reference: /docs/reference/ci/cursor-local-bridge-contract.md
-Related Issues: #2294, #2667, #2669, #2681, #2694, #2739, #2746
-Last Reviewed: 2026-07-22
+Related Issues: #2294, #2667, #2669, #2681, #2694, #2739, #2746, #2814
+Last Reviewed: 2026-07-24
 ---
 
 # Configure Cursor Local Bridge
@@ -122,8 +122,22 @@ Host config is `~/lgfc-cursor-bridge/bridge.json`, copied from `config/cursor-br
 | `reconcileIntervalSeconds` | `900` | Recovery cadence |
 | `watchdog.heartbeatStaleSeconds` | `90` | Bridge restart threshold |
 | `watchdog.opsFaultIssueNumber` | `null` | Optional debounced Operations fault target |
+| `maintenance.identityPath` | `package-identity.json` | Recorded installed commit + package hashes |
+| `maintenance.resultPath` | `maintenance-result.json` | Last Bridge Watch/Build classification |
 
 Schema: `config/cursor-bridge/bridge.schema.json`.
+
+## Verify Bridge Watch and Bridge Build (#2814)
+
+```bash
+export LGFC_CURSOR_BRIDGE_HOME="${LGFC_CURSOR_BRIDGE_HOME:-$HOME/lgfc-cursor-bridge}"
+node "$LGFC_CURSOR_BRIDGE_HOME/scripts/bridge.mjs" status | jq '{packageIdentity,lastMaintenance,claim,launchTransaction}'
+node scripts/cursor-bridge/bridge-watch.mjs check
+# Authorized rebuild only when the serial lane is idle:
+# node scripts/cursor-bridge/bridge-build.mjs <immutable-main-sha>
+```
+
+Healthy Watch results stay quiet. Active claim / `cli_spawned` / accepted / running state must classify as `rebuild_deferred` with no live promotion. Prefer isolated staging rehearsals while an Implementation run is active; do not mutate the live installation until the lane is idle.
 
 Operator-visible fallback comment prefixes are distinct by class:
 

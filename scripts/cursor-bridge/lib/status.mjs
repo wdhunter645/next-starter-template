@@ -7,7 +7,18 @@ import { readHeartbeat, heartbeatAgeSeconds } from './heartbeat.mjs';
 import { cliAuthPreflight, resolveWorkspace } from './launch.mjs';
 import { freeDiskMb } from './atomic-write.mjs';
 import { readInFlight } from './launch-transaction.mjs';
+import { readInstalledIdentity, secretSafeIdentity } from './package-identity.mjs';
 import { readLastPreflight } from './preflight.mjs';
+
+function readMaintenanceResultSafe(config) {
+  const p = path.join(bridgeHome(), config.maintenance?.resultPath || 'maintenance-result.json');
+  if (!fs.existsSync(p)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(p, 'utf8'));
+  } catch {
+    return null;
+  }
+}
 
 function listPackets(queueDir) {
   if (!fs.existsSync(queueDir)) return [];
@@ -175,6 +186,19 @@ export function collectStatus(config, opts = {}) {
       minMb: minDisk,
       ok: diskMb == null ? null : diskMb >= minDisk,
     },
+    packageIdentity: secretSafeIdentity(readInstalledIdentity(config)),
+    lastMaintenance: (() => {
+      const m = readMaintenanceResultSafe(config);
+      if (!m) return null;
+      return {
+        kind: m.kind || null,
+        classification: m.classification || null,
+        timestamp: m.timestamp || null,
+        sourceCommit: m.sourceCommit || null,
+        packageHash: m.packageHash || null,
+        quiet: Boolean(m.quiet),
+      };
+    })(),
   };
 }
 

@@ -16,6 +16,12 @@ import { evaluateHealth, pruneRestarts, normalizeState } from './watchdog.mjs';
 import { atomicWriteJson } from './lib/atomic-write.mjs';
 import { writeHeartbeat, readHeartbeat, heartbeatAgeSeconds } from './lib/heartbeat.mjs';
 import { runPreflight, TOP_LEVEL_RESULTS, isPreflightAllowingClaim } from './lib/preflight.mjs';
+import { classifyWatchOutcome, detectActiveWork } from './bridge-watch.mjs';
+import {
+  computeRepoManifest,
+  comparePackageManifests,
+  REPO_PACKAGE_PATHS,
+} from './lib/package-identity.mjs';
 
 const baseIssue = {
   number: 2667,
@@ -293,6 +299,30 @@ Next local action:
   assert.equal(cfg.reconcileEnabled, true);
   assert.ok(cfg.watchdog);
   assert.equal(cfg.heartbeatPath, 'heartbeat.json');
+  assert.ok(cfg.maintenance);
+  assert.equal(cfg.maintenance.identityPath, 'package-identity.json');
+}
+
+{
+  assert.equal(
+    classifyWatchOutcome({
+      health: { healthy: true, failures: [], restartNeeded: false },
+      drift: { match: true, classification: 'healthy', drifted: [] },
+      activeWork: { active: false },
+    }).classification,
+    'healthy',
+  );
+  assert.equal(
+    detectActiveWork(
+      { claimTtlSeconds: 7200 },
+      { claim: null, inFlight: { state: 'running' } },
+    ).active,
+    true,
+  );
+  assert.ok(REPO_PACKAGE_PATHS.length > 10);
+  const manifest = computeRepoManifest();
+  assert.equal(manifest.ok, true, (manifest.missing || []).join(','));
+  assert.equal(comparePackageManifests(manifest, manifest).match, true);
 }
 
 {

@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Conceptual as-built architecture for Cursor Local Auto-Start, component roles, transactional launch flow, health/recovery paths, cost model, and rejected alternatives
 Does Not Own: Host install runbooks, executable wake gates, Background Agents, or workflow migration Go decisions
 Canonical Reference: /docs/reference/ci/cursor-local-bridge-contract.md
-Related Issues: #2294, #2667, #2669, #2694, #2739
-Last Reviewed: 2026-07-21
+Related Issues: #2294, #2667, #2669, #2694, #2739, #2814
+Last Reviewed: 2026-07-24
 ---
 
 # Cursor Local Auto-Start Architecture
@@ -15,7 +15,7 @@ Last Reviewed: 2026-07-21
 
 Explain why LGFC uses an event-driven **GitHub Actions wake delivery → Chromebook runner → Cursor Local Bridge → local `cursor agent`** path, why the Actions runner alone is not a Cursor notifier, and why a spawned CLI process is not proof that the agent accepted work.
 
-This document is the as-built design authority derived from Issue #2667 / PR #2669, extended by #2694 for heartbeat, watchdog recovery, and missed-handoff reconciliation, corrected by #2739 for transactional launch acceptance, and extended by #2681 for deterministic preflight before claim/launch.
+This document is the as-built design authority derived from Issue #2667 / PR #2669, extended by #2694 for heartbeat, watchdog recovery, and missed-handoff reconciliation, corrected by #2739 for transactional launch acceptance, extended by #2681 for deterministic preflight before claim/launch, and extended by #2814 for Bridge Watch / Bridge Build package maintenance.
 
 ## Problem
 
@@ -43,6 +43,7 @@ The third boundary is critical. Transport success, process creation, connection 
 | Pre-accept failure | Release claim, leave resume unconsumed, retain one packet with bounded backoff |
 | Post-accept failure | Keep consumed marker, suppress automatic retry, require manual verification |
 | Health | Local heartbeat + systemd timer watchdog, including active-launch pulses |
+| Package maintenance | Bridge Watch classifies drift/health; Bridge Build promotes immutable `main` packages with rollback |
 | Missed-handoff recovery | Bounded local reconciliation into the normal packet path |
 | Prohibited | Background Agents, cloud APIs, paid relays, GitHub keepalive spam, `--force`, automatic merge or Production authority |
 

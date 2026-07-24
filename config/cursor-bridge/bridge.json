@@ -56,5 +56,13 @@
     "retrySeconds": 60,
     "skipBridgeUnitOnStartup": true,
     "cursorCapacitySignal": "unknown"
+  },
+  "maintenance": {
+    "identityPath": "package-identity.json",
+    "resultPath": "maintenance-result.json",
+    "alertStatePath": "maintenance-alert-state.json",
+    "watchdogTimerUnit": "lgfc-cursor-bridge-watchdog.timer",
+    "buildWorkflow": "cursor-bridge-build.yml",
+    "opsFaultIssueNumber": null
   }
 }
