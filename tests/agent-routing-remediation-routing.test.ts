@@ -1,14 +1,18 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  classifyDisposition,
+  classifyDisposition as classifyDispositionRaw,
   DISPOSITION_CLASSES,
 } from '../scripts/agent-routing/lib/disposition.mjs';
 import {
-  buildDispositionIdentity,
+  buildDispositionIdentity as buildDispositionIdentityRaw,
   compareRevisions,
 } from '../scripts/agent-routing/lib/idempotency.mjs';
-import { routeRemediation } from '../scripts/agent-routing/lib/remediation-router.mjs';
+import { routeRemediation as routeRemediationRaw } from '../scripts/agent-routing/lib/remediation-router.mjs';
+
+const classifyDisposition = classifyDispositionRaw as (...args: any[]) => any;
+const buildDispositionIdentity = buildDispositionIdentityRaw as (input: any) => string;
+const routeRemediation = routeRemediationRaw as (input: any) => any;
 
 const HEAD_A = '1111111111111111111111111111111111111111';
 const HEAD_B = '2222222222222222222222222222222222222222';
@@ -199,7 +203,7 @@ describe('idempotent remediation routing', () => {
       dispositionRevision: '3',
     });
     expect(result.ok).toBe(true);
-    expect(result.actions.map((action) => action.type)).toEqual([
+    expect(result.actions.map((action: any) => action.type)).toEqual([
       'post_source_issue_response',
       'post_local_cursor_resume',
     ]);
@@ -215,7 +219,7 @@ describe('idempotent remediation routing', () => {
       dispositionRevision: '3',
     });
     expect(first.ok).toBe(true);
-    const existingComments = first.actions.map((action, index) => ({
+    const existingComments = first.actions.map((action: any, index: number) => ({
       id: index + 1,
       body: action.body || action.bodyTemplate,
       html_url: `https://github.com/example/issues/2771#issuecomment-${index + 1}`,
@@ -255,11 +259,11 @@ describe('idempotent remediation routing', () => {
       dispositionRevision: '1',
     });
     expect(result.ok).toBe(true);
-    expect(result.actions.map((action) => action.type)).toEqual([
+    expect(result.actions.map((action: any) => action.type)).toEqual([
       'post_source_issue_escalation',
     ]);
     expect(result.actions[0].body).toContain('Mutation boundary:');
-    expect(result.actions[0].body).toContain('no remediation response, resume, merge, closeout');
+    expect(result.actions[0].body).toContain('No remediation response, resume, merge, closeout');
   });
 
   it('includes all required disposition identity dimensions', () => {
