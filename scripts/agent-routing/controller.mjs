@@ -240,7 +240,9 @@ export async function mainAsync(argv = process.argv.slice(2), { fetchFn = global
         '  node scripts/agent-routing/controller.mjs --issue <n> --pr <n> [--input <hints.json>] [--output <packet.json>]',
         '',
         'Direct execution always performs GitHub-native live collection.',
+        'Presence of either --issue or --pr is operational intent; partial identity fails closed.',
         'Caller-supplied --input fields are hints only; an embedded `live` object is ignored.',
+        'Fixture-only unit tests may call runObserveController() directly with injected live evidence.',
       ].join('\n') + '\n',
     );
     return 0;
@@ -254,15 +256,28 @@ export async function mainAsync(argv = process.argv.slice(2), { fetchFn = global
     hints = safeHints;
   }
 
-  if (!args.issueNumber || !args.prNumber) {
-    process.stderr.write('error: live collection requires --issue and --pr\n');
+  const hasIssueFlag = args.issueNumber != null && String(args.issueNumber).trim() !== '';
+  const hasPrFlag = args.prNumber != null && String(args.prNumber).trim() !== '';
+  if (!hasIssueFlag || !hasPrFlag) {
+    const partial = hasIssueFlag || hasPrFlag;
+    process.stderr.write(
+      partial
+        ? 'error: operational execution requires both --issue and --pr; partial CLI identity is not accepted and cannot use embedded input.live\n'
+        : 'error: live collection requires --issue and --pr\n',
+    );
     return 2;
+  }
+
+  const prCheck = assertValidPrNumber(args.prNumber);
+  if (!prCheck.ok) {
+    writeResult(prCheck, args.outputPath);
+    return 1;
   }
 
   const collected = await collectLiveGitHubEvidence({
     repository: args.repository || hints.repository,
     issueNumber: Number(args.issueNumber),
-    prNumber: Number(args.prNumber),
+    prNumber: prCheck.prNumber,
     token: args.token,
     fetchFn,
   });

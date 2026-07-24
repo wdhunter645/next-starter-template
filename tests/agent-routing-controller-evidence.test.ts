@@ -42,12 +42,14 @@ function issue(body = '## Acceptance Criteria\n\n- [x] ok\n') {
   };
 }
 
-function pr(head = HEAD) {
+function pr(head = HEAD, overrides: { state?: string; body?: string } = {}) {
   return {
     number: 2675,
     title: 'docs(#2433)',
-    state: 'open',
-    body: `- **Issue:** #2433
+    state: overrides.state || 'open',
+    body:
+      overrides.body ??
+      `- **Issue:** #2433
 - Delivery model: B-child
 - Target environment: component
 - Approval profile: component-auto-integration
@@ -124,6 +126,8 @@ function response(payload: unknown, ok = true, status = ok ? 200 : 500) {
 function githubFetch(options: {
   finalHead?: string;
   finalIssueBody?: string;
+  finalPrState?: string;
+  finalPrBody?: string;
   checkFailure?: boolean;
   multipage?: boolean;
   missingThreadCursor?: boolean;
@@ -174,7 +178,16 @@ function githubFetch(options: {
     }
     if (apiPath === '/pulls/2675') {
       prReads += 1;
-      return response(pr(prReads > 1 && options.finalHead ? options.finalHead : HEAD));
+      const head = prReads > 1 && options.finalHead ? options.finalHead : HEAD;
+      if (prReads > 1) {
+        return response(
+          pr(head, {
+            state: options.finalPrState,
+            body: options.finalPrBody,
+          }),
+        );
+      }
+      return response(pr(head));
     }
     if (apiPath === '/pulls/2675/files?per_page=100&page=1') {
       return response([{ filename: 'docs/a.md' }]);
@@ -338,6 +351,35 @@ describe('GitHub-native collection', () => {
     expect(issueDrift.code).toBe('live_identity_drift');
   });
 
+  it('fails closed when the PR closes during collection before final reread', async () => {
+    const result = await collectLiveGitHubEvidence({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2433,
+      prNumber: 2675,
+      token: 'test',
+      fetchFn: githubFetch({ finalPrState: 'closed' }) as never,
+    }) as Failure;
+    expect(result.code).toBe('pull_request_not_open');
+  });
+
+  it('fails closed when PR body/delivery-profile drifts during collection before final reread', async () => {
+    const result = await collectLiveGitHubEvidence({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2433,
+      prNumber: 2675,
+      token: 'test',
+      fetchFn: githubFetch({
+        finalPrBody: `- **Issue:** #2433
+- Delivery model: A
+- Target environment: production
+- Approval profile: chat-bill-production
+`,
+      }) as never,
+    }) as Failure;
+    expect(result.code).toBe('live_identity_drift');
+    expect(result.message || '').toMatch(/body|delivery profile/i);
+  });
+
   it('fails closed on check API failure', async () => {
     const result = await collectLiveGitHubEvidence({
       repository: 'wdhunter645/next-starter-template',
@@ -402,6 +444,50 @@ describe('operational CLI boundary', () => {
       inputPath,
     ], { fetchFn: (async () => { throw new Error('must not fetch'); }) as never });
     expect(code).toBe(2);
+  });
+
+  it('fails closed on issue-only CLI identity even when input.live is embedded', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'controller-issue-only-'));
+    const inputPath = path.join(dir, 'input.json');
+    fs.writeFileSync(inputPath, JSON.stringify({ live: fixture().live }));
+    let fetchCalls = 0;
+    const code = await mainAsync([
+      '--config',
+      path.join(ROOT, 'config/agent-routing/controller.json'),
+      '--issue',
+      '2433',
+      '--input',
+      inputPath,
+    ], {
+      fetchFn: (async () => {
+        fetchCalls += 1;
+        throw new Error('must not fetch');
+      }) as never,
+    });
+    expect(code).toBe(2);
+    expect(fetchCalls).toBe(0);
+  });
+
+  it('fails closed on PR-only CLI identity even when input.live is embedded', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'controller-pr-only-'));
+    const inputPath = path.join(dir, 'input.json');
+    fs.writeFileSync(inputPath, JSON.stringify({ live: fixture().live }));
+    let fetchCalls = 0;
+    const code = await mainAsync([
+      '--config',
+      path.join(ROOT, 'config/agent-routing/controller.json'),
+      '--pr',
+      '2675',
+      '--input',
+      inputPath,
+    ], {
+      fetchFn: (async () => {
+        fetchCalls += 1;
+        throw new Error('must not fetch');
+      }) as never,
+    });
+    expect(code).toBe(2);
+    expect(fetchCalls).toBe(0);
   });
 
   it('overwrites embedded input.live with GitHub-native collection', async () => {

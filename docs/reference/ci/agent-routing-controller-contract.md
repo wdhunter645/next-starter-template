@@ -132,18 +132,20 @@ Before emitting a packet the controller must perform GitHub-native live reads of
 7. review submissions
 8. unresolved review threads
 
-Optional trigger/snapshot hint fields are compared against those live reads. Caller-supplied `reread` data is never authoritative. Operational CLI/workflow execution with `--issue`/`--pr` always performs GitHub-native collection and overwrites any embedded `input.live` hint. Canonical event authority is resolved only from live Issue comments; a caller trigger ID/body is a selector hint that must exactly match a live comment. Delivery profile is derived from the live PR body; caller profile hints fail closed on mismatch.
+Optional trigger/snapshot hint fields are compared against those live reads. Caller-supplied `reread` data is never authoritative. Operational CLI/workflow execution with both `--issue` and `--pr` always performs GitHub-native collection and overwrites any embedded `input.live` hint. Presence of either identity flag is operational intent; a partial `--issue`-only or `--pr`-only invocation fails closed before any embedded live fixture path is considered. Canonical event authority is resolved only from live Issue comments; a caller trigger ID/body is a selector hint that must exactly match a live comment. Delivery profile is derived from the live PR body; caller profile hints fail closed on mismatch.
 
-After collecting files, comments, reviews, checks, and threads, the collector re-reads the source Issue and PR immediately before emission and fails closed on identity, open-state, linkage, or head-SHA drift. Check-run and review-thread retrieval paginate to completion and fail closed on API failure or incomplete evidence.
+After collecting files, comments, reviews, checks, and threads, the collector re-reads the source Issue and PR immediately before emission and fails closed on identity, open-state, full PR body/delivery-profile, linkage, or head-SHA drift. Check-run and review-thread retrieval paginate to completion and fail closed on API failure or incomplete evidence.
 
 Fail closed when:
 
 - live GitHub evidence is unavailable
 - source Issue is missing, closed, or ambiguous (not exactly one)
+- either `--issue` or `--pr` is supplied without the other (partial CLI identity)
 - PR number is missing or invalid
+- PR is closed or otherwise not open at final reread
 - PR primary `Issue:` reference is missing, multiple, or mismatched
 - observed or hint head SHA is stale versus the authoritative live PR head
-- PR head or Issue identity/state/linkage drifts during collection
+- PR head, body/profile, or Issue identity/state/linkage drifts during collection
 - caller-supplied reread/hint identity fields disagree with live evidence
 - caller trigger/event comment is missing from live Issue comments
 - caller delivery-profile hint disagrees with the live PR-derived profile

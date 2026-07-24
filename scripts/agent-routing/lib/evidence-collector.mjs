@@ -622,6 +622,39 @@ export function assertLiveIssuePrStable({
     });
   }
 
+  const initialPrState = String(initialPr?.state || '').toUpperCase();
+  const finalPrState = String(finalPr?.state || '').toUpperCase();
+  if (finalPrState !== 'OPEN') {
+    return failClosed('pull_request_not_open', `Pull request #${expectedPrNumber} is not open.`, {
+      state: finalPrState,
+    });
+  }
+  if (initialPrState !== finalPrState) {
+    return failClosed('live_identity_drift', 'Pull request state changed during live collection.', {
+      initialPrState,
+      finalPrState,
+    });
+  }
+
+  const initialPrBody = String(initialPr?.body || '');
+  const finalPrBody = String(finalPr?.body || '');
+  if (initialPrBody !== finalPrBody) {
+    return failClosed('live_identity_drift', 'Pull request body changed during live collection.');
+  }
+
+  const initialDeliveryProfile = extractDeliveryProfile(initialPrBody);
+  const finalDeliveryProfile = extractDeliveryProfile(finalPrBody);
+  if (JSON.stringify(initialDeliveryProfile) !== JSON.stringify(finalDeliveryProfile)) {
+    return failClosed(
+      'live_identity_drift',
+      'Pull request delivery profile changed during live collection.',
+      {
+        initialDeliveryProfile,
+        finalDeliveryProfile,
+      },
+    );
+  }
+
   const initialHead = normalizeSha(initialPr?.head?.sha || initialPr?.headSha || '');
   const finalHead = normalizeSha(finalPr?.head?.sha || finalPr?.headSha || '');
   if (!finalHead) {
@@ -634,8 +667,8 @@ export function assertLiveIssuePrStable({
     });
   }
 
-  const initialBodyIssueRefs = extractPrimarySourceIssueRefs(initialPr?.body || '');
-  const finalBodyIssueRefs = extractPrimarySourceIssueRefs(finalPr?.body || '');
+  const initialBodyIssueRefs = extractPrimarySourceIssueRefs(initialPrBody);
+  const finalBodyIssueRefs = extractPrimarySourceIssueRefs(finalPrBody);
   if (JSON.stringify(initialBodyIssueRefs) !== JSON.stringify(finalBodyIssueRefs)) {
     return failClosed('live_identity_drift', 'PR primary Issue linkage changed during live collection.', {
       initialBodyIssueRefs,
