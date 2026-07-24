@@ -51,23 +51,32 @@ export function commentContainsIdentity(comments = [], kind, identity) {
 /** Resolve the most recent recorded disposition from live source-Issue comments. */
 export function findLatestDisposition(
   comments = [],
-  { sourceIssueNumber = null, prNumber = null } = {},
+  { sourceIssueNumber = null, prNumber = null, trustedAuthors = null } = {},
 ) {
   const issue = sourceIssueNumber == null ? null : Number(sourceIssueNumber);
   const pr = prNumber == null ? null : Number(prNumber);
+  const trusted =
+    trustedAuthors == null
+      ? null
+      : new Set((trustedAuthors || []).map((author) => String(author).toLowerCase()));
   let latest = null;
 
   for (const comment of comments || []) {
+    if (trusted) {
+      const authorLogin = String(comment?.author?.login || comment?.user?.login || '').toLowerCase();
+      if (!trusted.has(authorLogin)) continue;
+    }
     const body = String(comment?.body || comment?.bodyText || '');
-    const matches = body.matchAll(
+    const identityMatches = body.matchAll(
       /issue:(\d+):pr:(\d+):head:([0-9a-f]{7,40}):findings:[^\s<]+:revision:([^\s<]+)/gi,
     );
-    for (const match of matches) {
+    for (const match of identityMatches) {
       const candidate = {
         sourceIssueNumber: Number(match[1]),
         prNumber: Number(match[2]),
         headSha: normalizeSha(match[3]),
         dispositionRevision: match[4],
+        dispositionIdentity: match[0],
         commentId: String(comment?.id || comment?.databaseId || ''),
         createdAt: comment?.createdAt || comment?.created_at || null,
       };
@@ -75,8 +84,47 @@ export function findLatestDisposition(
       if (pr != null && candidate.prNumber !== pr) continue;
       if (!latest || isLater(candidate, latest)) latest = candidate;
     }
+
+    const statedHead = normalizeSha(extractField(body, 'Head SHA'));
+    const statedRevision = extractField(body, 'Disposition revision');
+    const statedIdentity = extractField(body, 'Disposition identity');
+    const statedIssue = extractIssueNumber(extractField(body, 'Subject') || extractField(body, 'Issue'));
+    const statedPr = extractPrNumber(extractField(body, 'PR'));
+    if (statedHead && statedRevision) {
+      const candidate = {
+        sourceIssueNumber: statedIssue,
+        prNumber: statedPr,
+        headSha: statedHead,
+        dispositionRevision: statedRevision,
+        dispositionIdentity: statedIdentity || null,
+        commentId: String(comment?.id || comment?.databaseId || ''),
+        createdAt: comment?.createdAt || comment?.created_at || null,
+      };
+      if (issue != null && candidate.sourceIssueNumber != null && candidate.sourceIssueNumber !== issue) {
+        continue;
+      }
+      if (pr != null && candidate.prNumber != null && candidate.prNumber !== pr) continue;
+      if (!latest || isLater(candidate, latest)) latest = candidate;
+    }
   }
   return latest;
+}
+
+/**
+ * Derive the latest trusted disposition from live comments.
+ * Untrusted authors are ignored even when they claim a higher revision.
+ */
+export function deriveLatestDisposition({
+  comments = [],
+  sourceIssueNumber = null,
+  prNumber = null,
+  trustedAuthors = [],
+} = {}) {
+  return findLatestDisposition(comments, {
+    sourceIssueNumber,
+    prNumber,
+    trustedAuthors,
+  });
 }
 
 /**
@@ -130,6 +178,24 @@ function isLater(candidate, current) {
     return candidateTime > currentTime;
   }
   return compareRevisions(candidate.dispositionRevision, current.dispositionRevision) >= 0;
+}
+
+function extractField(body, label) {
+  const escaped = String(label).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = String(body || '').match(new RegExp(`^\\s*${escaped}\\s*:\\s*(.+?)\\s*$`, 'im'));
+  return match?.[1]?.trim() || null;
+}
+
+function extractIssueNumber(value) {
+  if (value == null) return null;
+  const match = String(value).match(/#?(\d+)/);
+  return match ? Number(match[1]) : null;
+}
+
+function extractPrNumber(value) {
+  if (value == null) return null;
+  const match = String(value).match(/#?(\d+)/);
+  return match ? Number(match[1]) : null;
 }
 
 function positiveInteger(value, errorCode) {

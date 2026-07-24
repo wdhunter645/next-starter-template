@@ -3,6 +3,8 @@
  *
  * Classification is conservative: unresolved current-head findings control
  * until an exact live source-Issue comment authorizes a bounded correction.
+ * Caller-supplied authorization selectors are hints only and must resolve
+ * against trusted live source-Issue comments.
  */
 
 export const DISPOSITION_CLASSES = Object.freeze({
@@ -44,7 +46,11 @@ export function classifyDisposition(packet = {}, options = {}) {
     return failClosed('missing_source_issue', 'Source Issue identity is required.');
   }
 
-  const findings = collectCurrentHeadFindings(packet, options.findings || []);
+  const reviewFindings = collectCurrentHeadFindings(packet, options.findings || []);
+  const checkFindings = collectRequiredCheckFindings(packet, options.requiredChecks || []);
+  const findings = [...reviewFindings, ...checkFindings].sort((a, b) =>
+    a.identity.localeCompare(b.identity),
+  );
   const authorizations = authorizationMap(options.authorizations || []);
   const evidence = {
     sourceIssueNumber,
@@ -106,6 +112,7 @@ export function collectCurrentHeadFindings(packet = {}, additionalFindings = [])
 
   for (const thread of reviewEvidence.unresolvedReviewThreads || []) {
     if (thread.dispositioned === true || thread.actionable === false) continue;
+    if (!isCurrentHeadReviewEvidence(thread, headSha, { allowMissingHead: true })) continue;
     findings.push({
       identity: `review-thread:${stableId(thread)}`,
       source: 'review_thread',
@@ -118,6 +125,7 @@ export function collectCurrentHeadFindings(packet = {}, additionalFindings = [])
   for (const review of reviewEvidence.reviewSubmissions || []) {
     if (String(review.state || '').toUpperCase() !== 'CHANGES_REQUESTED') continue;
     if (review.dispositioned === true) continue;
+    if (!isCurrentHeadReviewEvidence(review, headSha, { allowMissingHead: true })) continue;
     findings.push({
       identity: `review-submission:${stableId(review)}`,
       source: 'review_submission',
@@ -130,6 +138,7 @@ export function collectCurrentHeadFindings(packet = {}, additionalFindings = [])
   for (const comment of reviewEvidence.lateIssueComments || []) {
     if (isRoutingDecisionComment(comment)) continue;
     if (!isExplicitlyActionable(comment)) continue;
+    if (!isCurrentHeadReviewEvidence(comment, headSha, { allowMissingHead: true })) continue;
     findings.push({
       identity: `late-comment:${stableId(comment)}`,
       source: 'late_issue_comment',
@@ -155,6 +164,154 @@ export function collectCurrentHeadFindings(packet = {}, additionalFindings = [])
   return [...new Map(findings.map((finding) => [finding.identity, finding])).values()].sort((a, b) =>
     a.identity.localeCompare(b.identity),
   );
+}
+
+export function collectRequiredCheckFindings(packet = {}, requiredChecks = []) {
+  const names = [...new Set((requiredChecks || []).map(String).filter(Boolean))];
+  if (names.length === 0) return [];
+
+  const headSha = normalizeSha(packet?.pullRequest?.headSha);
+  const checks = Array.isArray(packet.checks) ? packet.checks : [];
+  const findings = [];
+
+  for (const name of names) {
+    const matches = checks.filter((check) => String(check.name || check.context || '') === name);
+    if (matches.length === 0) {
+      findings.push({
+        identity: `check:${name}:missing`,
+        source: 'required_check',
+        decisionClass: 'engineering-approval',
+        summary: `Required check "${name}" is missing from current-head evidence.`,
+        headSha,
+        actionable: true,
+      });
+      continue;
+    }
+
+    for (const check of matches) {
+      const checkHead = normalizeSha(check.headSha || check.head_sha);
+      const status = String(check.status || '').toLowerCase();
+      const conclusion = String(check.conclusion || '').toLowerCase();
+      if (checkHead && checkHead !== headSha) {
+        findings.push({
+          identity: `check:${name}:stale-head`,
+          source: 'required_check',
+          decisionClass: 'engineering-approval',
+          summary: `Required check "${name}" targets a stale head SHA.`,
+          headSha,
+          actionable: true,
+        });
+        continue;
+      }
+      if (!(status === 'completed' && conclusion === 'success')) {
+        findings.push({
+          identity: `check:${name}:${status || 'unknown'}:${conclusion || 'none'}`,
+          source: 'required_check',
+          decisionClass: 'engineering-approval',
+          summary: `Required check "${name}" is not terminal-success (status=${status || 'missing'}, conclusion=${conclusion || 'missing'}).`,
+          headSha,
+          actionable: true,
+        });
+      }
+    }
+  }
+
+  return findings;
+}
+
+/**
+ * Resolve authorization selectors against trusted live source-Issue comments.
+ * Selectors are hints only; missing or mismatched live evidence fails closed.
+ */
+export function resolveLiveAuthorizations({
+  selectors = [],
+  liveComments = [],
+  repository = 'wdhunter645/next-starter-template',
+  sourceIssueNumber,
+  prNumber,
+  headSha,
+  trustedAuthors = [],
+} = {}) {
+  const issueNumber = Number(sourceIssueNumber);
+  const pullNumber = Number(prNumber);
+  const head = normalizeSha(headSha);
+  if (!Number.isInteger(issueNumber) || issueNumber <= 0) {
+    return failClosed('invalid_source_issue', 'Source Issue number is invalid.');
+  }
+  if (!Number.isInteger(pullNumber) || pullNumber <= 0) {
+    return failClosed('invalid_pr_number', 'Pull request number is invalid.');
+  }
+  if (!head) return failClosed('missing_current_head', 'Current PR head SHA is required.');
+
+  const trusted = new Set((trustedAuthors || []).map((author) => String(author).toLowerCase()));
+  const authorizations = [];
+
+  for (const selector of selectors || []) {
+    if (!selector) continue;
+    const decisionUrl = String(selector.sourceIssueDecisionUrl || '').trim();
+    if (!decisionUrl) {
+      return failClosed(
+        'source_issue_decision_not_live',
+        'Authorization selector requires an exact source-Issue decision URL.',
+      );
+    }
+
+    const comment = findLiveCommentByDecisionUrl(liveComments, decisionUrl, issueNumber);
+    if (!comment) {
+      return failClosed(
+        'source_issue_decision_not_live',
+        'Authorization selector does not resolve to a live source-Issue comment.',
+        { sourceIssueDecisionUrl: decisionUrl },
+      );
+    }
+
+    const authorLogin = String(comment.author?.login || comment.user?.login || '').toLowerCase();
+    if (trusted.size > 0 && !trusted.has(authorLogin)) {
+      return failClosed(
+        'source_issue_decision_author_untrusted',
+        'Live source-Issue decision author is not trusted.',
+        { author: authorLogin || null },
+      );
+    }
+
+    const parsed = parseAuthorizationFromLiveComment(comment, {
+      issueNumber,
+      prNumber: pullNumber,
+      headSha: head,
+      repository,
+    });
+    if (!parsed.ok) return parsed;
+
+    const hintFinding = String(selector.findingIdentity || selector.identity || '');
+    const hintAction = String(selector.requestedAction || '').trim();
+    const hintHead = normalizeSha(selector.headSha);
+    const hintDisposition = selector.disposition
+      ? normalizeDispositionValue(selector.disposition)
+      : null;
+    const hintClass = selector.decisionClass
+      ? normalizeDecisionClass(selector.decisionClass)
+      : null;
+
+    if (
+      (hintFinding && hintFinding !== parsed.authorization.findingIdentity) ||
+      (hintHead && hintHead !== parsed.authorization.headSha) ||
+      (hintDisposition && hintDisposition !== parsed.authorization.disposition) ||
+      (hintClass && hintClass !== parsed.authorization.decisionClass) ||
+      (hintAction && hintAction !== parsed.authorization.requestedAction)
+    ) {
+      return failClosed(
+        'source_issue_decision_mismatch',
+        'Authorization selector does not match the live source-Issue decision comment.',
+      );
+    }
+
+    authorizations.push({
+      ...parsed.authorization,
+      sourceIssueDecisionUrl: decisionUrl,
+    });
+  }
+
+  return { ok: true, authorizations };
 }
 
 /**
@@ -229,9 +386,19 @@ export function normalizeDecisionClass(value) {
 }
 
 function evaluateFinding(finding, authorization, sourceIssueNumber, headSha) {
-  const decisionClass = normalizeDecisionClass(
-    authorization?.decisionClass || finding.decisionClass,
-  );
+  const findingClass = normalizeDecisionClass(finding.decisionClass);
+  const authClass = authorization
+    ? normalizeDecisionClass(authorization.decisionClass)
+    : null;
+  // Review threads default to engineering-approval and may be authorized as a
+  // bounded correction. Explicit hard-protected finding classes cannot be
+  // downgraded by a caller authorization hint.
+  const nonOverridableProtected =
+    findingClass !== 'engineering-approval' &&
+    PROTECTED_DECISION_CLASSES.includes(findingClass);
+  const decisionClass = nonOverridableProtected
+    ? findingClass
+    : authClass || findingClass;
   const protectedDecision = PROTECTED_DECISION_CLASSES.includes(decisionClass);
   const sourceIssueDecision = isSourceIssueDecision(
     authorization?.sourceIssueDecisionUrl,
@@ -271,15 +438,122 @@ function authorizationMap(authorizations) {
   );
 }
 
+function isCurrentHeadReviewEvidence(item, headSha, { allowMissingHead = true } = {}) {
+  if (item?.isOutdated === true) return false;
+  const evidenceHead = normalizeSha(
+    item?.headSha ||
+      item?.commitOid ||
+      item?.commitId ||
+      item?.commit?.oid ||
+      item?.originalCommitOid ||
+      item?.commitSHA,
+  );
+  if (evidenceHead) return evidenceHead === headSha;
+  return allowMissingHead;
+}
+
 function commentAuthorizesFinding(comment, { findingIdentity, prNumber, headSha }) {
   const body = String(comment?.body || comment?.bodyText || '');
   if (!body) return false;
   if (!/^(?:CHATGPT RESPONSE|ADJUSTMENT)\b/im.test(body.trim())) return false;
-  if (!/\bbounded correction authorized\b/i.test(body)) return false;
+  if (!/\bbounded correction authorized\b/i.test(body) && !/\bDisposition:\s*bounded_correction\b/i.test(body)) {
+    return false;
+  }
   if (!body.includes(String(findingIdentity))) return false;
   if (!new RegExp(`\\bPR:\\s*#${prNumber}\\b`, 'i').test(body)) return false;
   const statedHead = normalizeSha(extractField(body, 'Head SHA') || '');
   return statedHead === headSha;
+}
+
+function findLiveCommentByDecisionUrl(comments, decisionUrl, sourceIssueNumber) {
+  const commentId = extractIssueCommentId(decisionUrl, sourceIssueNumber);
+  if (!commentId) return null;
+  return (
+    (comments || []).find((comment) => {
+      const id = String(comment?.id || comment?.databaseId || '');
+      const url = String(comment?.html_url || comment?.url || '');
+      return (
+        id === commentId ||
+        url === decisionUrl ||
+        extractIssueCommentId(url, sourceIssueNumber) === commentId
+      );
+    }) || null
+  );
+}
+
+function extractIssueCommentId(url, sourceIssueNumber) {
+  if (!url) return null;
+  const escaped = String(sourceIssueNumber).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = String(url).match(new RegExp(`/issues/${escaped}#issuecomment-(\\d+)\\b`));
+  return match ? match[1] : null;
+}
+
+function parseAuthorizationFromLiveComment(
+  comment,
+  { issueNumber, prNumber, headSha, repository },
+) {
+  const body = String(comment?.body || comment?.bodyText || '');
+  if (!/^(?:CHATGPT RESPONSE|ADJUSTMENT)\b/im.test(body.trim())) {
+    return failClosed(
+      'source_issue_decision_mismatch',
+      'Live source-Issue comment is not a bounded-correction authorization.',
+    );
+  }
+
+  const findingIdentity =
+    extractField(body, 'Finding identity') || extractField(body, 'Finding');
+  const liveHead = normalizeSha(extractField(body, 'Head SHA'));
+  const disposition = normalizeDispositionValue(
+    extractField(body, 'Disposition') || DISPOSITION_CLASSES.BOUNDED_CORRECTION,
+  );
+  const decisionClass = normalizeDecisionClass(
+    extractField(body, 'Decision class') || 'bounded-correction',
+  );
+  const requestedAction = extractRequestedAction(body);
+  const statedPr = extractField(body, 'PR');
+
+  if (!findingIdentity || !liveHead || !requestedAction) {
+    return failClosed(
+      'source_issue_decision_mismatch',
+      'Live source-Issue decision comment is missing required fields.',
+    );
+  }
+  if (liveHead !== headSha) {
+    return failClosed(
+      'source_issue_decision_mismatch',
+      'Live source-Issue decision comment targets a different head SHA.',
+    );
+  }
+  if (statedPr && !new RegExp(`^#?${prNumber}$`).test(String(statedPr).trim())) {
+    return failClosed(
+      'source_issue_decision_mismatch',
+      'Live source-Issue decision comment targets a different PR.',
+    );
+  }
+  if (disposition !== DISPOSITION_CLASSES.BOUNDED_CORRECTION) {
+    return failClosed(
+      'source_issue_decision_mismatch',
+      'Live source-Issue decision comment disposition is not bounded_correction.',
+    );
+  }
+
+  const commentId = String(comment.id || comment.databaseId || '');
+  return {
+    ok: true,
+    authorization: {
+      findingIdentity: String(findingIdentity).trim(),
+      disposition: DISPOSITION_CLASSES.BOUNDED_CORRECTION,
+      authorized: true,
+      decisionClass,
+      headSha: liveHead,
+      requestedAction,
+      sourceIssueCommentId: commentId,
+      sourceIssueDecisionUrl:
+        comment.html_url ||
+        comment.url ||
+        `https://github.com/${repository}/issues/${issueNumber}#issuecomment-${commentId}`,
+    },
+  };
 }
 
 function isSourceIssueDecision(url, issueNumber) {
@@ -291,9 +565,13 @@ function isSourceIssueDecision(url, issueNumber) {
 function isRoutingDecisionComment(comment) {
   const body = String(comment.body || comment.bodyPreview || '').trim();
   if (/<!--\s*agent-routing-(?:response|resume|escalation):/i.test(body)) return true;
-  if (/^(?:CHATGPT RESPONSE|ADJUSTMENT)\b/i.test(body) &&
-      /\bbounded correction authorized\b/i.test(body) &&
-      /\bFinding identity\s*:/i.test(body)) return true;
+  if (
+    /^(?:CHATGPT RESPONSE|ADJUSTMENT)\b/i.test(body) &&
+    /\bbounded correction authorized\b/i.test(body) &&
+    /\bFinding identity\s*:/i.test(body)
+  ) {
+    return true;
+  }
   if (/^HOLD\b/i.test(body) && /\bDisposition identity\s*:/i.test(body)) return true;
   return false;
 }
@@ -322,6 +600,13 @@ function extractRequestedAction(body) {
     .map((line) => line.replace(/^\s*[-*]\s+/, '').trim())
     .filter(Boolean)
     .join(' ');
+}
+
+function normalizeDispositionValue(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[_\s]+/g, '_');
 }
 
 function stableId(value) {
@@ -358,6 +643,6 @@ function normalizeSha(value) {
   return /^[0-9a-f]{7,40}$/.test(sha) ? sha : '';
 }
 
-function failClosed(code, message) {
-  return { ok: false, code, message };
+function failClosed(code, message, details = {}) {
+  return { ok: false, code, message, ...details };
 }
