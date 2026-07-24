@@ -329,6 +329,10 @@ describe('closeout and successor evaluation', () => {
       sourceIssue: {
         ...base.sourceIssue,
         labels: ['handoff:ready', 'status:post-merge-verify'],
+        body: String(base.sourceIssue.body).replace(
+          '## Acceptance criteria\n\n- [x] Fixture acceptance is explicit.\n\n',
+          '',
+        ),
       },
       sourceComments: [
         ...base.sourceComments,
@@ -340,6 +344,42 @@ describe('closeout and successor evaluation', () => {
       ],
     });
     expect(partialRetry.ok).toBe(true);
+  });
+
+  it('lets a newer complete closeout authority supersede an older incomplete trusted draft', () => {
+    const base = fixture();
+    const incompleteOlder = {
+      id: 1,
+      author: { login: 'wdhunter645' },
+      body: `APPROVED FOR CLOSEOUT
+Issue: #2433
+PR: #2675
+Head SHA: ${HEAD_SHA}
+Target branch: ${TARGET}
+Integration SHA: ${MERGE_SHA}
+Successor: #2434
+Status: closeout and successor activation authorized`,
+    };
+    const completeNewer = {
+      id: 50,
+      author: { login: 'wdhunter645' },
+      body: `APPROVED FOR CLOSEOUT
+Issue: #2433
+PR: #2675
+Head SHA: ${HEAD_SHA}
+Target branch: ${TARGET}
+Integration SHA: ${MERGE_SHA}
+Successor: #2434
+Review disposition: accepted
+Integration verification: verified
+Status: closeout and successor activation authorized`,
+    };
+    const result: any = evaluateCloseoutSuccessorTransaction({
+      ...base,
+      sourceComments: [incompleteOlder, completeNewer],
+    });
+    expect(result.ok).toBe(true);
+    expect(result.eligible).toBe(true);
   });
 
   it('ignores spoofed idempotency markers from untrusted authors', () => {

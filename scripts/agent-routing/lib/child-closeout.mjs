@@ -84,21 +84,19 @@ export function evaluateCloseoutSuccessorTransaction({
   if (sourceState !== 'OPEN' && !(sourceState === 'CLOSED' && closeoutMarkerPresent)) {
     return failClosed('closeout_source_issue_not_open', 'Source Issue must be OPEN before closeout.');
   }
-  if (sourceState === 'OPEN') {
+  if (sourceState === 'OPEN' && !closeoutMarkerPresent) {
     if (!hasAcceptanceCriteriaSection(sourceIssue?.body || '')) {
       return failClosed(
         'source_acceptance_section_missing',
         'Source Issue must include an Acceptance criteria section.',
       );
     }
-    if (!closeoutMarkerPresent) {
-      const sourceLabels = new Set((sourceIssue?.labels || []).map(labelName));
-      if (!sourceLabels.has('agent:cursor')) {
-        return failClosed(
-          'source_owner_label_missing',
-          'OPEN source Issue must retain agent:cursor ownership before closeout.',
-        );
-      }
+    const sourceLabels = new Set((sourceIssue?.labels || []).map(labelName));
+    if (!sourceLabels.has('agent:cursor')) {
+      return failClosed(
+        'source_owner_label_missing',
+        'OPEN source Issue must retain agent:cursor ownership before closeout.',
+      );
     }
   }
   if (PROTECTED_SOURCE_TITLE.test(String(sourceIssue?.title || '').trim())) {
@@ -534,7 +532,9 @@ function validateCloseoutConfig(config = {}) {
 
 function validateCloseoutAuthority(comments, { expected, trustedAuthors }) {
   const trusted = new Set((trustedAuthors || []).map(normalizeAuthor).filter(Boolean));
-  for (const comment of comments || []) {
+  // GitHub Issues comments are oldest-first; prefer the newest matching packet.
+  const newestFirst = [...(comments || [])].reverse();
+  for (const comment of newestFirst) {
     if (!trusted.has(commentAuthor(comment))) continue;
     const body = String(comment?.body || comment?.bodyText || '');
     if (!/^APPROVED FOR CLOSEOUT\b/im.test(body)) continue;
