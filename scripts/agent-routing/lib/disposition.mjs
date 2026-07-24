@@ -371,7 +371,12 @@ function isRoutingTransactionComment(comment) {
   const body = String(comment?.body || comment?.bodyPreview || '').trim();
   if (hasControllerTransactionMarker(body)) return true;
   if (/^LOCAL CURSOR RESUME\b/im.test(body)) return true;
-  return /^HOLD\b/i.test(body) && /\bDisposition identity\s*:/i.test(body);
+  if (/^HOLD\b/i.test(body) && /\bDisposition identity\s*:/i.test(body)) return true;
+  return (
+    /^(?:CHATGPT RESPONSE|ADJUSTMENT)\b/im.test(body) &&
+    /\bbounded correction authorized\b/i.test(body) &&
+    /\bFinding identity\s*:/i.test(body)
+  );
 }
 
 function isExplicitlyActionable(comment) {
