@@ -2,11 +2,9 @@
 /**
  * Deterministic handoff controller (#2677 / #2770 / #2771).
  *
- * Direct execution always performs GitHub-native reads. Injected `input.live`
- * evidence is accepted only by the pure `runObserveController` test boundary.
- * When remediation routing is enabled, the observe packet is classified and
- * emits source-Issue response, local resume, or protected-stop instructions
- * without the observe-only workflow itself writing to GitHub.
+ * Operational execution always performs GitHub-native live reads. Remediation
+ * routing consumes only that normalized current-head packet and source-Issue
+ * comments included in the live evidence.
  */
 
 import fs from 'node:fs';
@@ -29,6 +27,11 @@ import {
   resolveCanonicalEventFromLiveComments,
   resolveExactOpenSourceIssue,
 } from './lib/evidence-collector.mjs';
+import {
+  collectCurrentHeadFindings,
+  extractSourceIssueAuthorizations,
+} from './lib/disposition.mjs';
+import { findLatestDisposition } from './lib/idempotency.mjs';
 import { routeRemediation } from './lib/remediation-router.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -51,6 +54,24 @@ const REQUIRED_IDEMPOTENCY_FIELDS = Object.freeze([
   'prNumber',
   'headSha',
   'actionIdentity',
+]);
+
+const REQUIRED_ROUTING_CAPABILITIES = Object.freeze([
+  'response',
+  'resume',
+  'escalation',
+]);
+
+const REQUIRED_ROUTING_PROTECTED_CLASSES = Object.freeze([
+  'product',
+  'design',
+  'engineering-approval',
+  'recovery',
+  'credential',
+  'secret',
+  'destructive',
+  'rights-privacy-publication',
+  'production',
 ]);
 
 export function loadControllerConfig(configPath = DEFAULT_CONFIG_PATH) {
@@ -83,10 +104,18 @@ export function assertObserveOnlyConfigInvariants(config = {}) {
     throw new Error('controller_must_reject_stale_head_sha');
   }
 
-  const protectedClasses = [...(config.protectedDecisionClasses || [])].sort();
-  const expectedProtected = [...PROTECTED_DECISION_CLASSES].sort();
-  if (JSON.stringify(protectedClasses) !== JSON.stringify(expectedProtected)) {
-    throw new Error('controller_protected_decision_classes_drift');
+  const configuredProtected = new Set(config.protectedDecisionClasses || []);
+  for (const decisionClass of PROTECTED_DECISION_CLASSES) {
+    if (!configuredProtected.has(decisionClass)) {
+      throw new Error(`controller_protected_decision_class_missing:${decisionClass}`);
+    }
+  }
+  if (config.remediationRouting?.enabled === true) {
+    for (const decisionClass of REQUIRED_ROUTING_PROTECTED_CLASSES) {
+      if (!configuredProtected.has(decisionClass)) {
+        throw new Error(`controller_routing_protected_class_missing:${decisionClass}`);
+      }
+    }
   }
 
   for (const marker of CANONICAL_EVENT_MARKERS) {
@@ -114,14 +143,14 @@ export function assertObserveOnlyConfigInvariants(config = {}) {
     }
   }
 
-  if (config.remediationRouting?.enabled) {
+  if (config.remediationRouting?.enabled === true) {
     if (config.remediationRouting.sourceIssueOnly !== true) {
       throw new Error('remediation_routing_must_be_source_issue_only');
     }
-    const routingCapabilities = config.remediationRouting.capabilities || {};
-    for (const required of ['response', 'resume', 'escalation']) {
-      if (routingCapabilities[required] !== true) {
-        throw new Error(`remediation_routing_capability_required:${required}`);
+    const routingCaps = config.remediationRouting.capabilities || {};
+    for (const key of REQUIRED_ROUTING_CAPABILITIES) {
+      if (routingCaps[key] !== true) {
+        throw new Error(`remediation_routing_capability_required:${key}`);
       }
     }
   }
@@ -131,7 +160,7 @@ export function assertObserveOnlyConfigInvariants(config = {}) {
 
 /**
  * Pure observe entry for deterministic tests and already-collected live evidence.
- * Operational callers must use `mainAsync`, which always collects live evidence.
+ * Operational callers must use mainAsync(), which always collects live evidence.
  */
 export function runObserveController(input = {}, config = loadControllerConfig()) {
   if (config.mutationAllowed) {
@@ -221,25 +250,42 @@ export function runObserveController(input = {}, config = loadControllerConfig()
 }
 
 /**
- * Classify and route the observer packet without directly mutating GitHub.
- * The workflow remains read-only; emitted actions are transaction instructions.
+ * Classify current-head findings and emit deterministic transaction instructions.
+ * Authorizations are derived only from live source-Issue comments.
  */
 export function runController(input = {}, config = loadControllerConfig()) {
   const observed = runObserveController(input, config);
   if (!observed.ok || config.remediationRouting?.enabled !== true) return observed;
 
-  const disposition = input.disposition || {};
+  const liveComments = input.live?.issueComments || [];
+  const findings = collectCurrentHeadFindings(observed.packet);
+  const authorizationResult = extractSourceIssueAuthorizations({
+    comments: liveComments,
+    findings,
+    sourceIssueNumber: observed.packet.sourceIssue.number,
+    prNumber: observed.packet.pullRequest.number,
+    headSha: observed.packet.pullRequest.headSha,
+    repository: config.repository,
+  });
+  if (!authorizationResult.ok) return authorizationResult;
+
+  const latestDisposition = findLatestDisposition(liveComments, {
+    sourceIssueNumber: observed.packet.sourceIssue.number,
+    prNumber: observed.packet.pullRequest.number,
+  });
+
   const routed = routeRemediation({
     packet: observed.packet,
-    findings: disposition.findings || input.findings || [],
-    authorizations: disposition.authorizations || input.authorizations || [],
-    dispositionRevision: disposition.revision || input.dispositionRevision || '1',
-    existingComments: input.issueComments || input.live?.issueComments || [],
-    latestDisposition: disposition.latest || input.latestDisposition || null,
-    branch: observed.packet?.pullRequest?.headRef || null,
-    prUrl: observed.packet?.pullRequest?.url || null,
+    findings,
+    authorizations: authorizationResult.authorizations,
+    dispositionRevision: authorizationResult.dispositionRevision,
+    existingComments: liveComments,
+    latestDisposition,
+    branch: observed.packet.pullRequest.headRef,
+    prUrl: observed.packet.pullRequest.url,
   });
   if (!routed.ok) return routed;
+
   return {
     ok: true,
     packet: observed.packet,
@@ -284,8 +330,7 @@ export async function mainAsync(argv = process.argv.slice(2), { fetchFn = global
         '',
         'Direct execution always performs GitHub-native live collection.',
         'Presence of either --issue or --pr is operational intent; partial identity fails closed.',
-        'Caller-supplied --input fields are hints only; an embedded `live` object is ignored.',
-        'Fixture-only unit tests may call runObserveController() / runController() with injected live evidence.',
+        'Caller-supplied live, findings, authorizations, and disposition fields are ignored.',
       ].join('\n') + '\n',
     );
     return 0;
@@ -295,7 +340,15 @@ export async function mainAsync(argv = process.argv.slice(2), { fetchFn = global
   let hints = {};
   if (args.inputPath) {
     const supplied = JSON.parse(fs.readFileSync(args.inputPath, 'utf8'));
-    const { live: _discardedLive, ...safeHints } = supplied || {};
+    const {
+      live: _discardedLive,
+      findings: _discardedFindings,
+      authorizations: _discardedAuthorizations,
+      disposition: _discardedDisposition,
+      latestDisposition: _discardedLatestDisposition,
+      dispositionRevision: _discardedRevision,
+      ...safeHints
+    } = supplied || {};
     hints = safeHints;
   }
 
@@ -305,7 +358,7 @@ export async function mainAsync(argv = process.argv.slice(2), { fetchFn = global
     const partial = hasIssueFlag || hasPrFlag;
     process.stderr.write(
       partial
-        ? 'error: operational execution requires both --issue and --pr; partial CLI identity is not accepted and cannot use embedded input.live\n'
+        ? 'error: operational execution requires both --issue and --pr; partial CLI identity is not accepted\n'
         : 'error: live collection requires --issue and --pr\n',
     );
     return 2;
