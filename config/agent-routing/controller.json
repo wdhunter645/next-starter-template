@@ -81,6 +81,28 @@
       "activateSuccessor": false
     }
   },
+  "closeoutSuccessor": {
+    "enabled": true,
+    "allowMain": false,
+    "allowProduction": false,
+    "maxTransactionsPerRun": 1,
+    "trustedDecisionAuthors": [
+      "wdhunter645"
+    ],
+    "trustedControllerAuthors": [
+      "wdhunter645",
+      "github-actions[bot]"
+    ],
+    "resumeMarker": "LOCAL CURSOR RESUME",
+    "capabilities": {
+      "close": true,
+      "reportParent": true,
+      "activateSuccessor": true,
+      "resume": true,
+      "merge": false,
+      "mutateMain": false
+    }
+  },
   "idempotency": {
     "keyFields": [
       "sourceIssueNumber",
@@ -95,7 +117,10 @@
       "targetBranch",
       "integrationDisposition",
       "mergeSha",
-      "verificationIdentity"
+      "verificationIdentity",
+      "closeoutIdentity",
+      "parentReportIdentity",
+      "successorIdentity"
     ]
   },
   "workflowCapabilities": {
