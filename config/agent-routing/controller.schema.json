@@ -13,64 +13,30 @@
     "protectedDecisionClasses",
     "remediationRouting",
     "componentIntegration",
+    "closeoutSuccessor",
     "idempotency",
     "workflowCapabilities"
   ],
   "additionalProperties": false,
   "properties": {
-    "schemaVersion": {
-      "type": "integer",
-      "const": 1
-    },
-    "repository": {
-      "type": "string",
-      "minLength": 3
-    },
-    "mode": {
-      "type": "string",
-      "enum": [
-        "observe-only"
-      ]
-    },
-    "mutationAllowed": {
-      "type": "boolean",
-      "const": false
-    },
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "repository": { "type": "string", "minLength": 3 },
+    "mode": { "type": "string", "enum": ["observe-only"] },
+    "mutationAllowed": { "type": "boolean", "const": false },
     "canonicalEventMarkers": {
       "type": "array",
       "minItems": 1,
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
+      "items": { "type": "string", "minLength": 1 }
     },
     "legacyAdapterMarkers": {
       "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
+      "items": { "type": "string", "minLength": 1 }
     },
-    "labelsAreAuthority": {
-      "type": "boolean",
-      "const": false
-    },
-    "requireOpenSourceIssue": {
-      "type": "boolean",
-      "const": true
-    },
-    "requireExactSourceIssueCount": {
-      "type": "integer",
-      "const": 1
-    },
-    "rereadBeforePacket": {
-      "type": "boolean",
-      "const": true
-    },
-    "rejectStaleHeadSha": {
-      "type": "boolean",
-      "const": true
-    },
+    "labelsAreAuthority": { "type": "boolean", "const": false },
+    "requireOpenSourceIssue": { "type": "boolean", "const": true },
+    "requireExactSourceIssueCount": { "type": "integer", "const": 1 },
+    "rereadBeforePacket": { "type": "boolean", "const": true },
+    "rejectStaleHeadSha": { "type": "boolean", "const": true },
     "protectedDecisionClasses": {
       "type": "array",
       "minItems": 9,
@@ -105,74 +71,37 @@
         "capabilities"
       ],
       "properties": {
-        "enabled": {
-          "type": "boolean",
-          "const": true
-        },
-        "sourceIssueOnly": {
-          "type": "boolean",
-          "const": true
-        },
-        "responseMarker": {
-          "type": "string",
-          "const": "ADJUSTMENT"
-        },
-        "resumeMarker": {
-          "type": "string",
-          "const": "LOCAL CURSOR RESUME"
-        },
-        "escalationMarker": {
-          "type": "string",
-          "const": "HOLD"
-        },
+        "enabled": { "type": "boolean", "const": true },
+        "sourceIssueOnly": { "type": "boolean", "const": true },
+        "responseMarker": { "type": "string", "const": "ADJUSTMENT" },
+        "resumeMarker": { "type": "string", "const": "LOCAL CURSOR RESUME" },
+        "escalationMarker": { "type": "string", "const": "HOLD" },
         "requiredChecks": {
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
+          "items": { "type": "string", "minLength": 1 }
         },
         "trustedDecisionAuthors": {
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
+          "items": { "type": "string", "minLength": 1 }
         },
         "trustedControllerAuthors": {
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
+          "items": { "type": "string", "minLength": 1 }
         },
         "capabilities": {
           "type": "object",
           "additionalProperties": false,
-          "required": [
-            "response",
-            "resume",
-            "escalation"
-          ],
+          "required": ["response", "resume", "escalation"],
           "properties": {
-            "response": {
-              "type": "boolean",
-              "const": true
-            },
-            "resume": {
-              "type": "boolean",
-              "const": true
-            },
-            "escalation": {
-              "type": "boolean",
-              "const": true
-            }
+            "response": { "type": "boolean", "const": true },
+            "resume": { "type": "boolean", "const": true },
+            "escalation": { "type": "boolean", "const": true }
           }
         }
       }
@@ -195,115 +124,113 @@
         "capabilities"
       ],
       "properties": {
-        "enabled": {
-          "type": "boolean"
-        },
-        "allowMain": {
-          "type": "boolean",
-          "const": false
-        },
-        "allowProduction": {
-          "type": "boolean",
-          "const": false
-        },
+        "enabled": { "type": "boolean" },
+        "allowMain": { "type": "boolean", "const": false },
+        "allowProduction": { "type": "boolean", "const": false },
         "allowedTargetPrefixes": {
           "type": "array",
           "minItems": 1,
-          "items": {
-            "type": "string",
-            "pattern": "^component/"
-          }
+          "items": { "type": "string", "pattern": "^component/" }
         },
         "deterministicApprovalProfiles": {
           "type": "array",
           "minItems": 1,
-          "items": {
-            "type": "string",
-            "const": "component-auto-integration"
-          }
+          "items": { "type": "string", "const": "component-auto-integration" }
         },
         "independentReviewApprovalProfiles": {
           "type": "array",
           "minItems": 1,
-          "items": {
-            "type": "string",
-            "const": "protected-change-review"
-          }
+          "items": { "type": "string", "const": "protected-change-review" }
         },
-        "mergeMethod": {
-          "type": "string",
-          "enum": [
-            "squash",
-            "merge",
-            "rebase"
-          ]
-        },
-        "maxIntegrationsPerRun": {
-          "type": "integer",
-          "const": 1
-        },
+        "mergeMethod": { "type": "string", "enum": ["squash", "merge", "rebase"] },
+        "maxIntegrationsPerRun": { "type": "integer", "const": 1 },
         "requiredChecks": {
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
+          "items": { "type": "string", "minLength": 1 }
         },
         "trustedReviewAuthors": {
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
+          "items": { "type": "string", "minLength": 1 }
         },
         "trustedIntegrationAuthorizationAuthors": {
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
+          "items": { "type": "string", "minLength": 1 }
         },
         "capabilities": {
           "type": "object",
           "additionalProperties": false,
+          "required": ["integrate", "verify", "close", "activateSuccessor"],
+          "properties": {
+            "integrate": { "type": "boolean", "const": true },
+            "verify": { "type": "boolean", "const": true },
+            "close": { "type": "boolean", "const": false },
+            "activateSuccessor": { "type": "boolean", "const": false }
+          }
+        }
+      }
+    },
+    "closeoutSuccessor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "allowMain",
+        "allowProduction",
+        "maxTransactionsPerRun",
+        "trustedDecisionAuthors",
+        "trustedControllerAuthors",
+        "resumeMarker",
+        "capabilities"
+      ],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "allowMain": { "type": "boolean", "const": false },
+        "allowProduction": { "type": "boolean", "const": false },
+        "maxTransactionsPerRun": { "type": "integer", "const": 1 },
+        "trustedDecisionAuthors": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "trustedControllerAuthors": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "resumeMarker": { "type": "string", "const": "LOCAL CURSOR RESUME" },
+        "capabilities": {
+          "type": "object",
+          "additionalProperties": false,
           "required": [
-            "integrate",
-            "verify",
             "close",
-            "activateSuccessor"
+            "reportParent",
+            "activateSuccessor",
+            "resume",
+            "merge",
+            "mutateMain"
           ],
           "properties": {
-            "integrate": {
-              "type": "boolean",
-              "const": true
-            },
-            "verify": {
-              "type": "boolean",
-              "const": true
-            },
-            "close": {
-              "type": "boolean",
-              "const": false
-            },
-            "activateSuccessor": {
-              "type": "boolean",
-              "const": false
-            }
+            "close": { "type": "boolean", "const": true },
+            "reportParent": { "type": "boolean", "const": true },
+            "activateSuccessor": { "type": "boolean", "const": true },
+            "resume": { "type": "boolean", "const": true },
+            "merge": { "type": "boolean", "const": false },
+            "mutateMain": { "type": "boolean", "const": false }
           }
         }
       }
     },
     "idempotency": {
       "type": "object",
-      "required": [
-        "keyFields"
-      ],
+      "required": ["keyFields"],
       "additionalProperties": false,
       "properties": {
         "keyFields": {
@@ -325,7 +252,10 @@
               "targetBranch",
               "integrationDisposition",
               "mergeSha",
-              "verificationIdentity"
+              "verificationIdentity",
+              "closeoutIdentity",
+              "parentReportIdentity",
+              "successorIdentity"
             ]
           }
         }
@@ -334,39 +264,14 @@
     "workflowCapabilities": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "merge",
-        "close",
-        "relabel",
-        "resume",
-        "activateSuccessor",
-        "mutateMain"
-      ],
+      "required": ["merge", "close", "relabel", "resume", "activateSuccessor", "mutateMain"],
       "properties": {
-        "merge": {
-          "type": "boolean",
-          "const": false
-        },
-        "close": {
-          "type": "boolean",
-          "const": false
-        },
-        "relabel": {
-          "type": "boolean",
-          "const": false
-        },
-        "resume": {
-          "type": "boolean",
-          "const": false
-        },
-        "activateSuccessor": {
-          "type": "boolean",
-          "const": false
-        },
-        "mutateMain": {
-          "type": "boolean",
-          "const": false
-        }
+        "merge": { "type": "boolean", "const": false },
+        "close": { "type": "boolean", "const": false },
+        "relabel": { "type": "boolean", "const": false },
+        "resume": { "type": "boolean", "const": false },
+        "activateSuccessor": { "type": "boolean", "const": false },
+        "mutateMain": { "type": "boolean", "const": false }
       }
     }
   }
