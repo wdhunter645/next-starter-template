@@ -18,10 +18,10 @@ Define the deterministic controller foundation that:
 1. performs GitHub-native current-head evidence collection;
 2. classifies the packet as `clean`, `bounded_correction`, or `protected_stop`;
 3. emits an idempotent source-Issue remediation instruction only when repository authority already decides the action;
-4. when classification is `clean`, evaluates exactly one authorized non-`main` component-integration instruction;
+4. when classification is `clean`, evaluates and may execute exactly one authorized non-`main` component integration;
 5. verifies an already-recorded merge/integration SHA on the authorized component target without closing the source Issue.
 
-The controller workflow remains read-only. It emits transaction instructions as an artifact; it does not itself merge, close, relabel, resume, activate a successor, or mutate `main`.
+The route job remains read-only and emits transaction instructions as an artifact. A separate write-scoped integration job may merge one exact authorized PR into one `component/**` target after a second full GitHub-native reread. Neither job closes, relabels, activates a successor, or mutates `main`.
 
 ## Scope
 
@@ -34,7 +34,7 @@ This document covers #2677-001 / #2770, #2677-002 / #2771, and #2677-003 / #2772
 - source-Issue-bound bounded-correction authorization;
 - one response plus one action-scoped `LOCAL CURSOR RESUME` instruction;
 - one protected-stop escalation instruction;
-- authorized non-`main` component-integration instruction emission;
+- authorized non-`main` component-integration instruction emission and execution;
 - exact post-integration verification of target branch and merge SHA;
 - stable transaction identities and duplicate/stale suppression.
 
@@ -51,7 +51,8 @@ It does not authorize Issue closeout, successor activation, credential changes, 
 - Automated eligibility is never treated as human approval.
 - The deterministic approval profile `component-auto-integration` is repository-policy authority, not human approval.
 - The protected approval profile `protected-change-review` requires recorded independent review or source-Issue integration authorization.
-- The workflow has read-only GitHub permissions and produces transaction instructions only.
+- The route job has read-only GitHub permissions and produces transaction instructions only.
+- The integration job has job-scoped pull-request/content write permission for one component merge only.
 - Protected decisions never produce a remediation resume.
 - Integration and verification never close the source Issue or activate a successor.
 
@@ -78,7 +79,7 @@ This contract is the freeze line for evidence identities, remediation identities
 | `scripts/agent-routing/lib/remediation-router.mjs` | Deterministic remediation instruction builder |
 | `scripts/agent-routing/lib/component-integration.mjs` | Authorized non-main component-integration evaluator |
 | `scripts/agent-routing/lib/post-integration-verify.mjs` | Exact post-integration verification |
-| `.github/workflows/ops-agent-routing-controller.yml` | Read-only routing workflow |
+| `.github/workflows/ops-agent-routing-controller.yml` | Read-only route job and separately write-scoped component-integration job |
 | `tests/agent-routing-controller-evidence.test.ts` | Evidence foundation regressions |
 | `tests/agent-routing-remediation-routing.test.ts` | Classification and routing regressions |
 | `tests/agent-routing-component-integration.test.ts` | Component-integration and verification regressions |
@@ -90,7 +91,7 @@ mode: observe-only
 mutationAllowed: false
 ```
 
-Workflow capabilities remain false for:
+Root route-workflow capabilities remain false for:
 
 - merge
 - close
@@ -101,9 +102,11 @@ Workflow capabilities remain false for:
 
 `remediationRouting.capabilities` describes artifact instruction types, not direct workflow mutation. The permitted remediation instruction types are `response`, `resume`, and `escalation`.
 
-`componentIntegration.capabilities` permits artifact instruction types `integrate` and `verify` only. `close` and `activateSuccessor` remain false. `allowMain` and `allowProduction` remain false. At most one integrate instruction may be emitted per controller run.
+`componentIntegration.capabilities` permits `integrate` and `verify` only. `close` and `activateSuccessor` remain false. `allowMain` and `allowProduction` remain false. At most one integration mutation may execute per integration run.
 
-Workflow permissions remain read-only for `contents`, `issues`, `pull-requests`, `checks`, and `actions`.
+Top-level and route-job permissions remain read-only for `contents`, `issues`, `pull-requests`, `checks`, and `actions`. The `integrate-component` job alone has `contents: write` and `pull-requests: write`; Issue, check, and action access remains read-only.
+
+`componentIntegration.enabled` is a rollback switch. When false, route mode continues and integration execution suppresses without mutation.
 
 ## Recognized handoff events
 
@@ -136,13 +139,14 @@ Operational execution requires both `--issue` and `--pr`. GitHub-native reads co
 7. review threads;
 8. Issue and PR again immediately before emission.
 
-Immediately before component integration, the controller also re-validates:
+Component execution requires explicit source-Issue number, PR number, expected PR head SHA, component target branch, and expected target-head SHA. It performs two complete GitHub-native collections and immediately before the sole merge re-validates:
 
 - base / declared component target branch;
 - required check conclusions on the current head;
 - unresolved blocking threads;
 - approval profile authority;
 - absence of `main`, Production, or ambiguous targets.
+- exact target-head identity and no mid-collection Issue, PR, check, review, thread, comment, or target drift.
 
 The final reread fails closed on Issue identity/state/body drift or PR identity/state/head/body/profile/linkage drift. Check and thread pagination must prove completeness.
 
@@ -231,20 +235,20 @@ Integration is permitted only when all of the following hold:
 3. target environment is `component`;
 4. target branch is an authorized `component/**` ref matching PR base and declared metadata;
 5. target is not `main`, `master`, Production, or otherwise ambiguous;
-6. required checks are terminal-success on the current head;
+6. required checks use exact configured names, explicitly identify the current head, and are terminal-success;
 7. no unresolved blocking review thread or `CHANGES_REQUESTED` review remains;
 8. authority is either:
    - deterministic profile `component-auto-integration` (repository policy; not human approval), or
-   - protected profile `protected-change-review` with a recorded current-head `APPROVED` review or source-Issue `APPROVED FOR INTEGRATION` / `Status: component integration authorized` decision.
+   - protected profile `protected-change-review` with a recorded independent current-head `APPROVED` review whose review commit SHA exactly matches the PR head, or source-Issue `APPROVED FOR INTEGRATION` / `Status: component integration authorized` decision.
 
-A repeated equivalent integrate event after a completed integration identity is suppressed.
+A repeated equivalent invocation after the PR is merged verifies the merge SHA on the component target and suppresses with zero mutation.
 
 ## Post-integration verification
 
 When an exact merge/integration SHA is recorded, verification confirms:
 
 - the authorized target branch contains that merge SHA;
-- the source Issue remains `OPEN`;
+- the source Issue state is explicitly available and remains `OPEN`;
 - closeout and successor activation remain deferred.
 
 Verification records the exact target branch and merge SHA. It never closes the source Issue or activates a successor.
@@ -302,11 +306,20 @@ For `bounded_correction`, the artifact contains:
 
 For `protected_stop`, the artifact contains one `post_source_issue_escalation` instruction.
 
-For `clean` with authorized component integration, the artifact contains at most one `integrate_component_pr` instruction.
+For `clean` with authorized component integration, route output contains at most one `integrate_component_pr` instruction.
+
+For `integrate-component`, the write-scoped job:
+
+1. validates all five expected-state identities;
+2. collects and evaluates GitHub-native state;
+3. repeats the complete collection immediately before mutation;
+4. executes at most one merge using the exact expected PR head;
+5. verifies the exact returned merge SHA is contained by the target;
+6. records no closeout or successor action.
 
 For a recorded merge SHA, the artifact may contain one `record_post_integration_verification` instruction.
 
-The workflow does not execute these instructions itself. Closeout and successor activation remain owned by later authorized tasks.
+The route job does not execute its instructions. Only the explicit integration operation executes a component merge. Closeout and successor activation remain owned by later authorized tasks.
 
 ## Validation
 
@@ -333,6 +346,10 @@ Fixture coverage must prove:
 - a PR targeting `main` is rejected without mutation;
 - changed head, failed required check, unresolved blocking thread, missing authority, or target drift blocks integration;
 - a repeated event after successful integration is suppressed;
+- a protected approval without an explicit current-head review SHA is rejected;
+- missing source-Issue state fails post-integration verification;
+- component integration can be disabled without disabling route mode;
+- the write-scoped integration executor performs two rereads, one merge, and exact merge-SHA containment verification;
 - verification records exact target and merge SHA while the source Issue remains open.
 
 ## Rollback

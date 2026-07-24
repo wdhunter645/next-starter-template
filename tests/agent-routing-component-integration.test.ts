@@ -1,4 +1,6 @@
 // @ts-nocheck -- Runtime contract suite exercises untyped JavaScript controller modules.
+import fs from 'node:fs';
+import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -7,6 +9,7 @@ import {
 } from '../scripts/agent-routing/controller.mjs';
 import {
   evaluateComponentIntegrationTransaction,
+  executeComponentIntegration,
 } from '../scripts/agent-routing/lib/component-integration.mjs';
 import {
   buildIntegrationIdentity,
@@ -19,6 +22,7 @@ import { DISPOSITION_CLASSES } from '../scripts/agent-routing/lib/disposition.mj
 const HEAD = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const MERGE = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 const OTHER = 'cccccccccccccccccccccccccccccccccccccccc';
+const TARGET_HEAD = 'dddddddddddddddddddddddddddddddddddddddd';
 const TARGET = 'component/deterministic-handoff-controller';
 
 function config() {
@@ -286,6 +290,25 @@ describe('authorized non-main component integration', () => {
     expect(result.integration.authority.humanApproval).toBe(true);
   });
 
+  it('rejects an approval that does not identify the reviewed head', () => {
+    const result = runController(
+      liveCleanInput({
+        approvalProfile: 'protected-change-review',
+        reviews: [
+          {
+            id: 'review-headless',
+            state: 'APPROVED',
+            author: { login: 'chatgpt-atlas' },
+          },
+        ],
+      }),
+      config(),
+    );
+    expect(result.integration.ok).toBe(false);
+    expect(result.integration.code).toBe('missing_independent_review');
+    expect(result.integration.actions).toEqual([]);
+  });
+
   it('blocks target drift from declared component branch', () => {
     const blocked = evaluateComponentIntegrationTransaction({
       packet: cleanPacket(),
@@ -365,6 +388,21 @@ describe('post-integration verification', () => {
     expect(failed.actions).toEqual([]);
   });
 
+  it('fails closed when source-Issue state is unavailable', () => {
+    const failed = verifyPostIntegration({
+      packet: cleanPacket({
+        sourceIssue: { number: 2772 },
+      }),
+      targetBranch: TARGET,
+      mergeSha: MERGE,
+      targetBranchContainsMergeSha: true,
+      componentIntegration: config().componentIntegration,
+    });
+    expect(failed.ok).toBe(false);
+    expect(failed.code).toBe('source_issue_state_unavailable');
+    expect(failed.actions).toEqual([]);
+  });
+
   it('wires verification through the controller after a recorded merge SHA', () => {
     const result = runController(
       {
@@ -396,5 +434,165 @@ describe('config and mutation boundaries', () => {
     expect(cfg.componentIntegration.allowMain).toBe(false);
     expect(cfg.componentIntegration.capabilities.close).toBe(false);
     expect(cfg.componentIntegration.capabilities.activateSuccessor).toBe(false);
+  });
+
+  it('permits the documented component-integration rollback switch', () => {
+    const schema = JSON.parse(
+      fs.readFileSync(
+        path.resolve('config/agent-routing/controller.schema.json'),
+        'utf8',
+      ),
+    );
+    expect(schema.properties.componentIntegration.properties.enabled).toEqual({
+      type: 'boolean',
+    });
+  });
+
+  it('defines a separate write-scoped integration job while route stays read-only', () => {
+    const workflow = fs.readFileSync(
+      path.resolve('.github/workflows/ops-agent-routing-controller.yml'),
+      'utf8',
+    );
+    expect(workflow).toMatch(/integrate-component:/);
+    expect(workflow).toMatch(/pull-requests:\s*["']write["']/);
+    expect(workflow).toMatch(/contents:\s*["']write["']/);
+    expect(workflow).toMatch(/--expected-head "\$EXPECTED_HEAD_SHA"/);
+    expect(workflow).toMatch(/--expected-target-head "\$EXPECTED_TARGET_HEAD_SHA"/);
+    const topPermissions = workflow.match(
+      /^permissions:\n([\s\S]*?)(?=\n\S|\nconcurrency:)/m,
+    );
+    expect(topPermissions?.[1]).toMatch(/issues:\s*read/);
+    expect(topPermissions?.[1]).not.toMatch(/\bwrite\b/);
+  });
+});
+
+function executionState(overrides = {}) {
+  return {
+    sourceIssue: {
+      number: 2772,
+      state: 'OPEN',
+      body: 'authorized task',
+    },
+    pullRequest: {
+      number: 2999,
+      state: 'OPEN',
+      merged: false,
+      mergeSha: '',
+      body: `- **Issue:** #2772
+- Delivery model: B-child
+- Target environment: component
+- Approval profile: component-auto-integration
+- Gate profile: component-child
+- Component branch: ${TARGET}
+- Component master: #2677`,
+      headSha: HEAD,
+      baseRef: TARGET,
+      author: 'builder',
+    },
+    targetBranch: TARGET,
+    targetHeadSha: TARGET_HEAD,
+    checks: [
+      {
+        name: 'quality',
+        status: 'completed',
+        conclusion: 'success',
+        headSha: HEAD,
+      },
+    ],
+    reviews: [],
+    comments: [],
+    reviewThreads: [],
+    ...overrides,
+  };
+}
+
+describe('write-scoped component integration executor', () => {
+  it('performs two rereads, one merge, and exact target verification', async () => {
+    let collections = 0;
+    let mutations = 0;
+    let verifications = 0;
+    const result = await executeComponentIntegration({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2772,
+      prNumber: 2999,
+      expectedHeadSha: HEAD,
+      targetBranch: TARGET,
+      expectedTargetHeadSha: TARGET_HEAD,
+      componentIntegration: config().componentIntegration,
+      collectState: async () => {
+        collections += 1;
+        return { ok: true, state: executionState() };
+      },
+      mergePullRequest: async () => {
+        mutations += 1;
+        return { ok: true, merged: true, mergeSha: MERGE };
+      },
+      verifyTargetContainsSha: async ({ mergeSha }) => {
+        verifications += 1;
+        return { ok: true, contains: mergeSha === MERGE };
+      },
+    });
+    expect(result.ok).toBe(true);
+    expect(result.integrated).toBe(true);
+    expect(result.mergeSha).toBe(MERGE);
+    expect(result.targetBranch).toBe(TARGET);
+    expect(result.sourceIssueState).toBe('OPEN');
+    expect(result.closeout).toBe(false);
+    expect(result.successorActivation).toBe(false);
+    expect(collections).toBe(2);
+    expect(mutations).toBe(1);
+    expect(verifications).toBe(1);
+  });
+
+  it('blocks target-head drift before any merge mutation', async () => {
+    let collections = 0;
+    let mutations = 0;
+    const result = await executeComponentIntegration({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2772,
+      prNumber: 2999,
+      expectedHeadSha: HEAD,
+      targetBranch: TARGET,
+      expectedTargetHeadSha: TARGET_HEAD,
+      componentIntegration: config().componentIntegration,
+      collectState: async () => {
+        collections += 1;
+        return {
+          ok: true,
+          state: executionState({
+            targetHeadSha: collections === 1 ? TARGET_HEAD : OTHER,
+          }),
+        };
+      },
+      mergePullRequest: async () => {
+        mutations += 1;
+        return { ok: true, merged: true, mergeSha: MERGE };
+      },
+      verifyTargetContainsSha: async () => ({ ok: true, contains: true }),
+    });
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('expected_target_head_drift');
+    expect(result.mutations).toBe(0);
+    expect(mutations).toBe(0);
+  });
+
+  it('requires every expected-state identity before collection', async () => {
+    let collections = 0;
+    const result = await executeComponentIntegration({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2772,
+      prNumber: 2999,
+      expectedHeadSha: HEAD,
+      targetBranch: TARGET,
+      expectedTargetHeadSha: '',
+      componentIntegration: config().componentIntegration,
+      collectState: async () => {
+        collections += 1;
+        return { ok: true, state: executionState() };
+      },
+    });
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('missing_expected_target_head_sha');
+    expect(collections).toBe(0);
   });
 });
