@@ -79,10 +79,14 @@ This contract is the freeze line for evidence identities, remediation identities
 | `scripts/agent-routing/lib/remediation-router.mjs` | Deterministic remediation instruction builder |
 | `scripts/agent-routing/lib/component-integration.mjs` | Authorized non-main component-integration evaluator |
 | `scripts/agent-routing/lib/post-integration-verify.mjs` | Exact post-integration verification |
-| `.github/workflows/ops-agent-routing-controller.yml` | Read-only route job and separately write-scoped component-integration job |
+| `scripts/agent-routing/lib/child-closeout.mjs` | Verified child closeout and successor activation evaluator/executor |
+| `scripts/agent-routing/lib/child-closeout-guard.mjs` | Guarded workflow entrypoint for closeout/successor execution |
+| `scripts/agent-routing/lib/successor-activation.mjs` | Successor launch-package evaluation and resume payloads |
+| `.github/workflows/ops-agent-routing-controller.yml` | Read-only route job, write-scoped component-integration job, and closeout-successor job |
 | `tests/agent-routing-controller-evidence.test.ts` | Evidence foundation regressions |
 | `tests/agent-routing-remediation-routing.test.ts` | Classification and routing regressions |
 | `tests/agent-routing-component-integration.test.ts` | Component-integration and verification regressions |
+| `tests/agent-routing-closeout-successor.test.ts` | Closeout/successor evaluation, execution, and guard regressions |
 
 ## Mode and mutation boundary
 
@@ -359,6 +363,16 @@ Fixture coverage must prove:
 - component integration can be disabled without disabling route mode;
 - the write-scoped integration executor performs two rereads, one merge, and exact merge-SHA containment verification;
 - verification records exact target and merge SHA while the source Issue remains open.
+
+## Closeout and successor activation (#2677-004 / #2773)
+
+The `closeout-successor` job invokes `scripts/agent-routing/lib/child-closeout-guard.mjs` as the sanctioned entrypoint. The guard re-exports the corrected closeout executor without broadening GitHub permissions.
+
+Closeout idempotency markers are trusted only when authored by configured `closeoutSuccessor.trustedControllerAuthors`. Spoofed markers from untrusted authors do not suppress mutations or make a closed source appear completed.
+
+Trusted `APPROVED FOR CLOSEOUT` authority requires exact identity fields plus `Review disposition: accepted` and `Integration verification: verified`. The parent/project body must identify the source Issue before the successor in explicit sequence order. An OPEN source child must retain `agent:cursor` and include an actual `## Acceptance criteria` section unless a trusted closeout marker already exists from a partial retry.
+
+Post-mutation verification proves source `CLOSED` with `status:complete` and without stale workflow labels; the successor must carry `agent:cursor`, `handoff:ready`, and `status:in-progress` without retaining `status:blocked`.
 
 ## Rollback
 

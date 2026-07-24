@@ -16,12 +16,11 @@ import {
   assessSuccessorLaunchPackage,
   buildSuccessorResume,
   labelsForSuccessorActivation,
-  resolveExplicitSuccessorNumber,
   resolveParentProjectNumber,
 } from './successor-activation.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, '../..');
+const ROOT = path.resolve(__dirname, '../../..');
 const DEFAULT_CONFIG_PATH = path.join(ROOT, 'config/agent-routing/controller.json');
 const PROTECTED_SOURCE_TITLE = /^(?:PROJECT|PROGRAM|PROMOTION CANDIDATE|PRODUCTION|INCIDENT|OPS|PRODUCT AUTHORITY)\s*:/i;
 
@@ -76,9 +75,31 @@ export function evaluateCloseoutSuccessorTransaction({
     return failClosed('closeout_source_issue_mismatch', 'Source Issue identity does not match expected state.');
   }
   const sourceState = String(sourceIssue?.state || '').toUpperCase();
-  const closeoutMarkerPresent = commentHasMarker(sourceComments, 'closeout', identity);
+  const closeoutMarkerPresent = commentHasMarker(
+    sourceComments,
+    'closeout',
+    identity,
+    config.trustedControllerAuthors,
+  );
   if (sourceState !== 'OPEN' && !(sourceState === 'CLOSED' && closeoutMarkerPresent)) {
     return failClosed('closeout_source_issue_not_open', 'Source Issue must be OPEN before closeout.');
+  }
+  if (sourceState === 'OPEN') {
+    if (!hasAcceptanceCriteriaSection(sourceIssue?.body || '')) {
+      return failClosed(
+        'source_acceptance_section_missing',
+        'Source Issue must include an Acceptance criteria section.',
+      );
+    }
+    if (!closeoutMarkerPresent) {
+      const sourceLabels = new Set((sourceIssue?.labels || []).map(labelName));
+      if (!sourceLabels.has('agent:cursor')) {
+        return failClosed(
+          'source_owner_label_missing',
+          'OPEN source Issue must retain agent:cursor ownership before closeout.',
+        );
+      }
+    }
   }
   if (PROTECTED_SOURCE_TITLE.test(String(sourceIssue?.title || '').trim())) {
     return failClosed(
@@ -94,6 +115,12 @@ export function evaluateCloseoutSuccessorTransaction({
   if (String(parentIssue?.state || '').toUpperCase() !== 'OPEN') {
     return failClosed('parent_issue_not_open', 'Parent project must remain OPEN during child closeout.');
   }
+  const parentSequence = validateParentSequence(
+    parentIssue?.body || '',
+    expectedSource,
+    positiveInteger(expected.successorIssueNumber),
+  );
+  if (!parentSequence.ok) return parentSequence;
 
   const expectedPr = positiveInteger(expected.prNumber);
   if (Number(pullRequest?.number) !== expectedPr) {
@@ -133,16 +160,11 @@ export function evaluateCloseoutSuccessorTransaction({
     });
   }
 
-  const closeoutAuthority = findCloseoutAuthority(sourceComments, {
+  const closeoutAuthority = validateCloseoutAuthority(sourceComments, {
     expected,
     trustedAuthors: config.trustedDecisionAuthors,
   });
-  if (!closeoutAuthority) {
-    return failClosed(
-      'closeout_authority_missing',
-      'A trusted exact closeout and successor-activation authorization is required.',
-    );
-  }
+  if (!closeoutAuthority.ok) return closeoutAuthority;
 
   const successorAssessment = assessSuccessorLaunchPackage({
     sourceIssue,
@@ -160,13 +182,16 @@ export function evaluateCloseoutSuccessorTransaction({
     sourceIssueNumber: expectedSource,
     parentIssueNumber: explicitParent,
     successorIssueNumber: successorAssessment.successorIssueNumber,
-    closeoutAuthorityCommentId: String(closeoutAuthority.id || closeoutAuthority.databaseId || ''),
+    closeoutAuthorityCommentId: String(
+      closeoutAuthority.comment?.id || closeoutAuthority.comment?.databaseId || '',
+    ),
     launchPackage: successorAssessment,
     existing: transactionMarkers({
       identity,
       sourceComments,
       parentComments,
       successorComments,
+      trustedControllerAuthors: config.trustedControllerAuthors,
     }),
   };
 }
@@ -235,6 +260,7 @@ export async function executeCloseoutSuccessorTransaction({
     sourceComments: initial.sourceComments,
     parentComments: initial.parentComments,
     successorComments: initial.successorComments,
+    trustedControllerAuthors: config.trustedControllerAuthors,
   });
   if (isCompletedState(initial, initialMarkers)) {
     return {
@@ -350,6 +376,7 @@ export async function executeCloseoutSuccessorTransaction({
     sourceComments: post.sourceComments,
     parentComments: post.parentComments,
     successorComments: post.successorComments,
+    trustedControllerAuthors: config.trustedControllerAuthors,
   });
   if (!isCompletedState(post, postMarkers)) {
     return failClosed(
@@ -505,22 +532,77 @@ function validateCloseoutConfig(config = {}) {
   return { ok: true };
 }
 
-function findCloseoutAuthority(comments, { expected, trustedAuthors }) {
+function validateCloseoutAuthority(comments, { expected, trustedAuthors }) {
   const trusted = new Set((trustedAuthors || []).map(normalizeAuthor).filter(Boolean));
-  return (comments || []).find((comment) => {
-    if (!trusted.has(commentAuthor(comment))) return false;
+  for (const comment of comments || []) {
+    if (!trusted.has(commentAuthor(comment))) continue;
     const body = String(comment?.body || comment?.bodyText || '');
-    if (!/^APPROVED FOR CLOSEOUT\b/im.test(body)) return false;
-    if (!/Status:\s*closeout and successor activation authorized/i.test(body)) return false;
-    return (
+    if (!/^APPROVED FOR CLOSEOUT\b/im.test(body)) continue;
+    if (!/Status:\s*closeout and successor activation authorized/i.test(body)) continue;
+    const identityOk =
       extractNumberField(body, 'Issue') === Number(expected.sourceIssueNumber) &&
       extractNumberField(body, 'PR') === Number(expected.prNumber) &&
       normalizeSha(extractField(body, 'Head SHA')) === normalizeSha(expected.headSha) &&
       String(extractField(body, 'Target branch') || '') === String(expected.targetBranch) &&
       normalizeSha(extractField(body, 'Integration SHA')) === normalizeSha(expected.integrationSha) &&
-      extractNumberField(body, 'Successor') === Number(expected.successorIssueNumber)
+      extractNumberField(body, 'Successor') === Number(expected.successorIssueNumber);
+    if (!identityOk) continue;
+
+    const reviewDisposition = extractField(body, 'Review disposition');
+    if (!reviewDisposition || !/^accepted$/i.test(reviewDisposition.trim())) {
+      return failClosed(
+        'closeout_review_disposition_not_accepted',
+        'Trusted closeout authority requires Review disposition: accepted.',
+      );
+    }
+
+    const integrationVerification = extractField(body, 'Integration verification');
+    if (!integrationVerification || !/^verified$/i.test(integrationVerification.trim())) {
+      return failClosed(
+        'closeout_integration_verification_not_verified',
+        'Trusted closeout authority requires Integration verification: verified.',
+      );
+    }
+
+    return { ok: true, comment };
+  }
+  return failClosed(
+    'closeout_authority_missing',
+    'A trusted exact closeout and successor-activation authorization is required.',
+  );
+}
+
+function validateParentSequence(parentBody, sourceNumber, successorNumber) {
+  const source = positiveInteger(sourceNumber);
+  const successor = positiveInteger(successorNumber);
+  if (!source || !successor) {
+    return failClosed(
+      'parent_sequence_dependency_invalid',
+      'Parent project body must identify the source Issue before the successor in explicit sequence order.',
     );
-  });
+  }
+  const refs = extractOrderedIssueRefs(parentBody);
+  const sourceIndex = refs.indexOf(source);
+  const successorIndex = refs.indexOf(successor);
+  if (sourceIndex === -1 || successorIndex === -1 || sourceIndex >= successorIndex) {
+    return failClosed(
+      'parent_sequence_dependency_invalid',
+      'Parent project body must identify the source Issue before the successor in explicit sequence order.',
+    );
+  }
+  return { ok: true };
+}
+
+function extractOrderedIssueRefs(body) {
+  const refs = [];
+  for (const match of String(body || '').matchAll(/#(\d+)/g)) {
+    refs.push(Number(match[1]));
+  }
+  return refs;
+}
+
+function hasAcceptanceCriteriaSection(body) {
+  return /^##\s+Acceptance criteria\b/im.test(String(body || ''));
 }
 
 function buildCloseoutPacket({ state, expected, identity, evaluation }) {
@@ -561,19 +643,29 @@ function buildParentReport({ expected, identity, evaluation }) {
   ].join('\n');
 }
 
-function transactionMarkers({ identity, sourceComments, parentComments, successorComments }) {
+function transactionMarkers({
+  identity,
+  sourceComments,
+  parentComments,
+  successorComments,
+  trustedControllerAuthors = [],
+}) {
   return {
-    closeout: commentHasMarker(sourceComments, 'closeout', identity),
-    parent: commentHasMarker(parentComments, 'parent', identity),
-    successor: commentHasMarker(successorComments, 'successor', identity),
+    closeout: commentHasMarker(sourceComments, 'closeout', identity, trustedControllerAuthors),
+    parent: commentHasMarker(parentComments, 'parent', identity, trustedControllerAuthors),
+    successor: commentHasMarker(successorComments, 'successor', identity, trustedControllerAuthors),
   };
 }
 
-function commentHasMarker(comments = [], kind, identity) {
+function commentHasMarker(comments = [], kind, identity, trustedControllerAuthors = []) {
   const marker = `<!-- agent-routing-${kind}:${identity} -->`;
-  return (comments || []).some((comment) =>
-    String(comment?.body || comment?.bodyText || '').includes(marker),
-  );
+  const trusted = new Set((trustedControllerAuthors || []).map(normalizeAuthor).filter(Boolean));
+  return (comments || []).some((comment) => {
+    const body = String(comment?.body || comment?.bodyText || '');
+    if (!body.includes(marker)) return false;
+    if (trusted.size === 0) return false;
+    return trusted.has(commentAuthor(comment));
+  });
 }
 
 function isCompletedState(state, markers) {
@@ -582,8 +674,27 @@ function isCompletedState(state, markers) {
     markers.closeout &&
     markers.parent &&
     markers.successor &&
-    successorLabelsActivated(state.successorIssue?.labels || [])
+    sourceLabelsComplete(state.sourceIssue?.labels || []) &&
+    successorLabelsComplete(state.successorIssue?.labels || [])
   );
+}
+
+function sourceLabelsComplete(labels) {
+  const set = new Set((labels || []).map(labelName).filter(Boolean));
+  if (!set.has('status:complete')) return false;
+  if (set.has('agent:cursor') || set.has('handoff:ready')) return false;
+  for (const label of set) {
+    if (label.startsWith('status:') && label !== 'status:complete') return false;
+  }
+  return true;
+}
+
+function successorLabelsComplete(labels) {
+  const set = new Set((labels || []).map(labelName).filter(Boolean));
+  if (!set.has('agent:cursor') || !set.has('handoff:ready') || !set.has('status:in-progress')) {
+    return false;
+  }
+  return !set.has('status:blocked');
 }
 
 function successorLabelsActivated(labels) {

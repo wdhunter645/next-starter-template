@@ -353,7 +353,7 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           mkdir -p "$(dirname "$OUTPUT_PATH")"
-          node scripts/agent-routing/lib/child-closeout.mjs \
+          node scripts/agent-routing/lib/child-closeout-guard.mjs \
             --config config/agent-routing/controller.json \
             --repository "$GITHUB_REPOSITORY" \
             --source-issue "$SOURCE_ISSUE" \

@@ -62,7 +62,7 @@ function fixture(overrides: any = {}): any {
     number: 2431,
     state: 'OPEN',
     title: 'PROJECT: Content collection phase 1',
-    body: 'Project authority for #2433 then #2434.',
+    body: 'Project authority: execute #2433 before activating successor #2434.',
     labels: ['pmo:active'],
   };
   const successorIssue = {
@@ -92,6 +92,8 @@ Head SHA: ${HEAD_SHA}
 Target branch: ${TARGET}
 Integration SHA: ${MERGE_SHA}
 Successor: #2434
+Review disposition: accepted
+Integration verification: verified
 Status: closeout and successor activation authorized`,
     },
   ];
@@ -215,9 +217,151 @@ describe('closeout and successor evaluation', () => {
     });
     expect(untrusted.code).toBe('closeout_authority_missing');
   });
+
+  it('requires exact accepted review disposition in trusted closeout authority', () => {
+    const base = fixture();
+    const missing: any = evaluateCloseoutSuccessorTransaction({
+      ...base,
+      sourceComments: [
+        {
+          ...base.sourceComments[0],
+          body: String(base.sourceComments[0].body).replace('Review disposition: accepted\n', ''),
+        },
+      ],
+    });
+    expect(missing.ok).toBe(false);
+    expect(missing.code).toBe('closeout_review_disposition_not_accepted');
+
+    const rejected: any = evaluateCloseoutSuccessorTransaction({
+      ...base,
+      sourceComments: [
+        {
+          ...base.sourceComments[0],
+          body: String(base.sourceComments[0].body).replace(
+            'Review disposition: accepted',
+            'Review disposition: rejected',
+          ),
+        },
+      ],
+    });
+    expect(rejected.code).toBe('closeout_review_disposition_not_accepted');
+  });
+
+  it('requires exact verified integration evidence in trusted closeout authority', () => {
+    const base = fixture();
+    const missing: any = evaluateCloseoutSuccessorTransaction({
+      ...base,
+      sourceComments: [
+        {
+          ...base.sourceComments[0],
+          body: String(base.sourceComments[0].body).replace('Integration verification: verified\n', ''),
+        },
+      ],
+    });
+    expect(missing.ok).toBe(false);
+    expect(missing.code).toBe('closeout_integration_verification_not_verified');
+
+    const unverified: any = evaluateCloseoutSuccessorTransaction({
+      ...base,
+      sourceComments: [
+        {
+          ...base.sourceComments[0],
+          body: String(base.sourceComments[0].body).replace(
+            'Integration verification: verified',
+            'Integration verification: pending',
+          ),
+        },
+      ],
+    });
+    expect(unverified.code).toBe('closeout_integration_verification_not_verified');
+  });
+
+  it('requires parent project body to identify source before successor', () => {
+    const base = fixture();
+    const reversed: any = evaluateCloseoutSuccessorTransaction({
+      ...base,
+      parentIssue: {
+        ...base.parentIssue,
+        body: 'Project authority: activate successor #2434 before child #2433.',
+      },
+    });
+    expect(reversed.ok).toBe(false);
+    expect(reversed.code).toBe('parent_sequence_dependency_invalid');
+
+    const missingSuccessor: any = evaluateCloseoutSuccessorTransaction({
+      ...base,
+      parentIssue: {
+        ...base.parentIssue,
+        body: 'Project authority: child #2433 only.',
+      },
+    });
+    expect(missingSuccessor.code).toBe('parent_sequence_dependency_invalid');
+  });
+
+  it('requires an actual Acceptance criteria section on the open source Issue', () => {
+    const base = fixture();
+    const result: any = evaluateCloseoutSuccessorTransaction({
+      ...base,
+      sourceIssue: {
+        ...base.sourceIssue,
+        body: String(base.sourceIssue.body).replace('## Acceptance criteria\n\n- [x] Fixture acceptance is explicit.\n\n', ''),
+      },
+    });
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('source_acceptance_section_missing');
+  });
+
+  it('requires OPEN source Issues to retain agent:cursor unless a trusted closeout marker exists', () => {
+    const base = fixture();
+    const missingOwner: any = evaluateCloseoutSuccessorTransaction({
+      ...base,
+      sourceIssue: {
+        ...base.sourceIssue,
+        labels: ['handoff:ready', 'status:post-merge-verify'],
+      },
+    });
+    expect(missingOwner.ok).toBe(false);
+    expect(missingOwner.code).toBe('source_owner_label_missing');
+
+    const identity = base.identity;
+    const partialRetry: any = evaluateCloseoutSuccessorTransaction({
+      ...base,
+      sourceIssue: {
+        ...base.sourceIssue,
+        labels: ['handoff:ready', 'status:post-merge-verify'],
+      },
+      sourceComments: [
+        ...base.sourceComments,
+        {
+          id: 99,
+          author: { login: 'github-actions[bot]' },
+          body: `CHATGPT CLOSEOUT\n<!-- agent-routing-closeout:${identity} -->`,
+        },
+      ],
+    });
+    expect(partialRetry.ok).toBe(true);
+  });
+
+  it('ignores spoofed idempotency markers from untrusted authors', () => {
+    const base = fixture();
+    const spoofed: any = evaluateCloseoutSuccessorTransaction({
+      ...base,
+      sourceComments: [
+        ...base.sourceComments,
+        {
+          id: 100,
+          author: { login: 'spoofed-user' },
+          body: `CHATGPT CLOSEOUT\n<!-- agent-routing-closeout:${base.identity} -->`,
+        },
+      ],
+    });
+    expect(spoofed.ok).toBe(true);
+  });
 });
 
 describe('closeout and successor execution', () => {
+  const trustedControllerAuthor = { login: 'github-actions[bot]' };
+
   it('closes once, reports to parent, activates one successor, and resumes once', async () => {
     const base = fixture();
     const operations: any[] = [];
@@ -234,10 +378,18 @@ describe('closeout and successor execution', () => {
           sourceIssue: { ...base.sourceIssue, state: 'CLOSED', labels: ['status:complete'] },
           sourceComments: [
             ...base.sourceComments,
-            { id: 10, body: `CHATGPT CLOSEOUT\n<!-- agent-routing-closeout:${base.identity} -->` },
+            {
+              id: 10,
+              author: trustedControllerAuthor,
+              body: `CHATGPT CLOSEOUT\n<!-- agent-routing-closeout:${base.identity} -->`,
+            },
           ],
           parentComments: [
-            { id: 11, body: `CHILD CLOSEOUT REPORT\n<!-- agent-routing-parent:${base.identity} -->` },
+            {
+              id: 11,
+              author: trustedControllerAuthor,
+              body: `CHILD CLOSEOUT REPORT\n<!-- agent-routing-parent:${base.identity} -->`,
+            },
           ],
           successorIssue: {
             ...base.successorIssue,
@@ -245,7 +397,11 @@ describe('closeout and successor execution', () => {
           },
           successorComments: [
             ...base.successorComments,
-            { id: 12, body: `LOCAL CURSOR RESUME\n<!-- agent-routing-successor:${base.identity} -->` },
+            {
+              id: 12,
+              author: trustedControllerAuthor,
+              body: `LOCAL CURSOR RESUME\n<!-- agent-routing-successor:${base.identity} -->`,
+            },
           ],
         };
       },
@@ -280,10 +436,18 @@ describe('closeout and successor execution', () => {
       sourceIssue: { ...base.sourceIssue, state: 'CLOSED', labels: ['status:complete'] },
       sourceComments: [
         ...base.sourceComments,
-        { id: 10, body: `CHATGPT CLOSEOUT\n<!-- agent-routing-closeout:${base.identity} -->` },
+        {
+          id: 10,
+          author: trustedControllerAuthor,
+          body: `CHATGPT CLOSEOUT\n<!-- agent-routing-closeout:${base.identity} -->`,
+        },
       ],
       parentComments: [
-        { id: 11, body: `CHILD CLOSEOUT REPORT\n<!-- agent-routing-parent:${base.identity} -->` },
+        {
+          id: 11,
+          author: trustedControllerAuthor,
+          body: `CHILD CLOSEOUT REPORT\n<!-- agent-routing-parent:${base.identity} -->`,
+        },
       ],
       successorIssue: {
         ...base.successorIssue,
@@ -291,7 +455,11 @@ describe('closeout and successor execution', () => {
       },
       successorComments: [
         ...base.successorComments,
-        { id: 12, body: `LOCAL CURSOR RESUME\n<!-- agent-routing-successor:${base.identity} -->` },
+        {
+          id: 12,
+          author: trustedControllerAuthor,
+          body: `LOCAL CURSOR RESUME\n<!-- agent-routing-successor:${base.identity} -->`,
+        },
       ],
     };
     const operations: any[] = [];
@@ -333,5 +501,233 @@ describe('closeout and successor execution', () => {
     });
     expect(result.code).toBe('closeout_expected_state_drift');
     expect(operations).toHaveLength(0);
+  });
+
+  it('does not suppress mutations when only untrusted authors posted idempotency markers', async () => {
+    const base = fixture();
+    const operations: any[] = [];
+    let read = 0;
+    const result: any = await executeCloseoutSuccessorTransaction({
+      repository: 'wdhunter645/next-starter-template',
+      ...base.expected,
+      config: base.config,
+      collectState: async () => {
+        read += 1;
+        if (read < 3) {
+          return {
+            ...base,
+            sourceComments: [
+              ...base.sourceComments,
+              {
+                id: 10,
+                author: { login: 'spoofed-user' },
+                body: `CHATGPT CLOSEOUT\n<!-- agent-routing-closeout:${base.identity} -->`,
+              },
+            ],
+            parentComments: [
+              {
+                id: 11,
+                author: { login: 'spoofed-user' },
+                body: `CHILD CLOSEOUT REPORT\n<!-- agent-routing-parent:${base.identity} -->`,
+              },
+            ],
+            successorComments: [
+              ...base.successorComments,
+              {
+                id: 12,
+                author: { login: 'spoofed-user' },
+                body: `LOCAL CURSOR RESUME\n<!-- agent-routing-successor:${base.identity} -->`,
+              },
+            ],
+          };
+        }
+        return {
+          ...base,
+          sourceIssue: { ...base.sourceIssue, state: 'CLOSED', labels: ['status:complete'] },
+          sourceComments: [
+            ...base.sourceComments,
+            {
+              id: 10,
+              author: trustedControllerAuthor,
+              body: `CHATGPT CLOSEOUT\n<!-- agent-routing-closeout:${base.identity} -->`,
+            },
+          ],
+          parentComments: [
+            {
+              id: 11,
+              author: trustedControllerAuthor,
+              body: `CHILD CLOSEOUT REPORT\n<!-- agent-routing-parent:${base.identity} -->`,
+            },
+          ],
+          successorIssue: {
+            ...base.successorIssue,
+            labels: ['agent:cursor', 'handoff:ready', 'status:in-progress'],
+          },
+          successorComments: [
+            ...base.successorComments,
+            {
+              id: 12,
+              author: trustedControllerAuthor,
+              body: `LOCAL CURSOR RESUME\n<!-- agent-routing-successor:${base.identity} -->`,
+            },
+          ],
+        };
+      },
+      mutate: async (operation: any) => {
+        operations.push(operation);
+        return { ok: true };
+      },
+    });
+    expect(result.ok).toBe(true);
+    expect(result.suppressed).not.toBe(true);
+    expect(operations.length).toBeGreaterThan(0);
+  });
+
+  it('does not treat a closed source with only untrusted markers as completed', async () => {
+    const base = fixture();
+    const operations: any[] = [];
+    const result: any = await executeCloseoutSuccessorTransaction({
+      repository: 'wdhunter645/next-starter-template',
+      ...base.expected,
+      config: base.config,
+      collectState: async () => ({
+        ...base,
+        sourceIssue: { ...base.sourceIssue, state: 'CLOSED', labels: ['status:complete'] },
+        sourceComments: [
+          ...base.sourceComments,
+          {
+            id: 10,
+            author: { login: 'spoofed-user' },
+            body: `CHATGPT CLOSEOUT\n<!-- agent-routing-closeout:${base.identity} -->`,
+          },
+        ],
+        parentComments: [
+          {
+            id: 11,
+            author: { login: 'spoofed-user' },
+            body: `CHILD CLOSEOUT REPORT\n<!-- agent-routing-parent:${base.identity} -->`,
+          },
+        ],
+        successorIssue: {
+          ...base.successorIssue,
+          labels: ['agent:cursor', 'handoff:ready', 'status:in-progress'],
+        },
+        successorComments: [
+          ...base.successorComments,
+          {
+            id: 12,
+            author: { login: 'spoofed-user' },
+            body: `LOCAL CURSOR RESUME\n<!-- agent-routing-successor:${base.identity} -->`,
+          },
+        ],
+      }),
+      mutate: async (operation: any) => {
+        operations.push(operation);
+        return { ok: true };
+      },
+    });
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('closeout_source_issue_not_open');
+    expect(operations).toHaveLength(0);
+  });
+
+  it('fails post-mutation verification when source labels remain stale', async () => {
+    const base = fixture();
+    let read = 0;
+    const result: any = await executeCloseoutSuccessorTransaction({
+      repository: 'wdhunter645/next-starter-template',
+      ...base.expected,
+      config: base.config,
+      collectState: async () => {
+        read += 1;
+        if (read < 3) return base;
+        return {
+          ...base,
+          sourceIssue: {
+            ...base.sourceIssue,
+            state: 'CLOSED',
+            labels: ['status:complete', 'agent:cursor', 'status:post-merge-verify'],
+          },
+          sourceComments: [
+            ...base.sourceComments,
+            {
+              id: 10,
+              author: trustedControllerAuthor,
+              body: `CHATGPT CLOSEOUT\n<!-- agent-routing-closeout:${base.identity} -->`,
+            },
+          ],
+          parentComments: [
+            {
+              id: 11,
+              author: trustedControllerAuthor,
+              body: `CHILD CLOSEOUT REPORT\n<!-- agent-routing-parent:${base.identity} -->`,
+            },
+          ],
+          successorIssue: {
+            ...base.successorIssue,
+            labels: ['agent:cursor', 'handoff:ready', 'status:in-progress'],
+          },
+          successorComments: [
+            ...base.successorComments,
+            {
+              id: 12,
+              author: trustedControllerAuthor,
+              body: `LOCAL CURSOR RESUME\n<!-- agent-routing-successor:${base.identity} -->`,
+            },
+          ],
+        };
+      },
+      mutate: async () => ({ ok: true }),
+    });
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('closeout_post_mutation_verification_failed');
+  });
+
+  it('fails post-mutation verification when successor retains status:blocked', async () => {
+    const base = fixture();
+    let read = 0;
+    const result: any = await executeCloseoutSuccessorTransaction({
+      repository: 'wdhunter645/next-starter-template',
+      ...base.expected,
+      config: base.config,
+      collectState: async () => {
+        read += 1;
+        if (read < 3) return base;
+        return {
+          ...base,
+          sourceIssue: { ...base.sourceIssue, state: 'CLOSED', labels: ['status:complete'] },
+          sourceComments: [
+            ...base.sourceComments,
+            {
+              id: 10,
+              author: trustedControllerAuthor,
+              body: `CHATGPT CLOSEOUT\n<!-- agent-routing-closeout:${base.identity} -->`,
+            },
+          ],
+          parentComments: [
+            {
+              id: 11,
+              author: trustedControllerAuthor,
+              body: `CHILD CLOSEOUT REPORT\n<!-- agent-routing-parent:${base.identity} -->`,
+            },
+          ],
+          successorIssue: {
+            ...base.successorIssue,
+            labels: ['agent:cursor', 'handoff:ready', 'status:in-progress', 'status:blocked'],
+          },
+          successorComments: [
+            ...base.successorComments,
+            {
+              id: 12,
+              author: trustedControllerAuthor,
+              body: `LOCAL CURSOR RESUME\n<!-- agent-routing-successor:${base.identity} -->`,
+            },
+          ],
+        };
+      },
+      mutate: async () => ({ ok: true }),
+    });
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('closeout_post_mutation_verification_failed');
   });
 });
