@@ -77,10 +77,11 @@ export function resolveImmutableMainCommit(repoRoot, sourceCommit) {
       return { ok: false, reason: 'source_commit_not_on_main', detail: contained.detail || containedMain.detail };
     }
   }
-  const changed = run('git', ['-C', repoRoot, 'diff', '--name-only', sha]);
+  // Detect actual working-tree dirtiness, not divergence from sourceCommit.
+  const status = run('git', ['-C', repoRoot, 'status', '--porcelain']);
   // Presence of local dirty tree is fine for building from an immutable tree object;
   // we extract package files from the commit via git show / checkout-index.
-  return { ok: true, sourceCommit: sha, worktreeDirty: Boolean(changed.stdout.trim()) };
+  return { ok: true, sourceCommit: sha, worktreeDirty: Boolean(status.stdout.trim()) };
 }
 
 export function stagePackageFromCommit(repoRoot, sourceCommit, stageRoot) {
@@ -499,17 +500,30 @@ export function runBridgeBuild(config, opts = {}) {
   const evidenceBefore = captureEvidenceSnapshot(home);
   snapshotPackage(home, snapshotRoot);
 
-  const promoted = promoteStagedPackage(home, stageRoot, workspacePath, {
-    skipSystemd: opts.skipSystemd,
-  });
+  let promoted;
+  try {
+    promoted = promoteStagedPackage(home, stageRoot, workspacePath, {
+      skipSystemd: opts.skipSystemd,
+    });
+  } catch (err) {
+    promoted = { ok: false, reason: `promote_threw:${err.message}` };
+  }
   if (!promoted.ok) {
+    let restored = { ok: false, reason: 'restore_not_attempted' };
+    try {
+      restored = restoreSnapshot(home, snapshotRoot, workspacePath, {
+        skipSystemd: opts.skipSystemd,
+      });
+    } catch (restoreErr) {
+      restored = { ok: false, reason: `restore_threw:${restoreErr.message}` };
+    }
     const result = {
       schemaVersion: 1,
       kind: 'bridge_build',
       classification: 'failed',
       timestamp: new Date().toISOString(),
       quiet: false,
-      reasons: [promoted.reason],
+      reasons: [promoted.reason, `restore:${restored.ok ? 'ok' : restored.reason}`],
       sourceCommit,
       packageHash: stagedManifest.packageHash,
       alert: { active: true, posted: false, deduplicated: false },

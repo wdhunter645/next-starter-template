@@ -51,7 +51,7 @@ jobs:
           export LGFC_CURSOR_BRIDGE_WORKSPACE="${LGFC_CURSOR_BRIDGE_WORKSPACE:-$GITHUB_WORKSPACE}"
           node "$GITHUB_WORKSPACE/scripts/cursor-bridge/bridge-build.mjs" "$LGFC_BRIDGE_SOURCE_COMMIT" \
             | tee /tmp/lgfc-bridge-build-result.json
-          if grep -E 'CURSOR_API_KEY=|ghp_[A-Za-z0-9]+|github_pat_' /tmp/lgfc-bridge-build-result.json; then
+          if grep -qE 'CURSOR_API_KEY=|ghp_[A-Za-z0-9]+|github_pat_' /tmp/lgfc-bridge-build-result.json; then
             echo "secret-bearing output refused" >&2
             exit 1
           fi
