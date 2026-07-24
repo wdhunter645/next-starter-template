@@ -31,6 +31,7 @@ export const DETERMINISTIC_APPROVAL_PROFILES = Object.freeze([
 export const INDEPENDENT_REVIEW_APPROVAL_PROFILES = Object.freeze([
   'protected-change-review',
 ]);
+const MAX_CHECK_RUN_PAGES = 20;
 
 /**
  * Evaluate whether an observe packet may emit one component-integration instruction.
@@ -306,6 +307,12 @@ export async function executeComponentIntegration({
 
   const final = await collector(collectArgs);
   if (!final?.ok) return normalizeExecutionFailure(final, 'final_integration_reread_failed');
+  if (integrationCommentsFingerprint(initial.state) !== integrationCommentsFingerprint(final.state)) {
+    return executionFailure(
+      'integration_expected_state_drift',
+      'GitHub-native integration authority comments changed before the merge mutation.',
+    );
+  }
   const finalEvaluation = evaluateExecutionState(final.state, expected, componentIntegration);
   if (!finalEvaluation.ok) return finalEvaluation;
   if (finalEvaluation.alreadyMerged) {
@@ -420,6 +427,38 @@ export async function collectGitHubIntegrationState({
       if (batch.length < 100) return items;
     }
   };
+  const getAllCheckRuns = async (headSha) => {
+    const items = [];
+    let expectedTotal = null;
+    for (let page = 1; page <= MAX_CHECK_RUN_PAGES; page += 1) {
+      const payload = await get(`/commits/${headSha}/check-runs?per_page=100&page=${page}`);
+      if (!payload || !Array.isArray(payload.check_runs)) {
+        throw new Error('check-runs response did not include a check_runs array');
+      }
+      if (payload.total_count != null) {
+        const total = Number(payload.total_count);
+        if (!Number.isInteger(total) || total < 0) {
+          throw new Error('check-runs response included an invalid total_count');
+        }
+        if (expectedTotal == null) expectedTotal = total;
+        else if (expectedTotal !== total) {
+          throw new Error('check-runs total_count changed during pagination');
+        }
+      }
+      items.push(...payload.check_runs);
+      const completeByTotal = expectedTotal != null && items.length >= expectedTotal;
+      const completeByShortPage = payload.check_runs.length < 100;
+      if (completeByTotal || completeByShortPage) {
+        if (expectedTotal != null && items.length < expectedTotal) {
+          throw new Error(
+            `check-runs pagination incomplete: expected ${expectedTotal}, collected ${items.length}`,
+          );
+        }
+        return items;
+      }
+    }
+    throw new Error('check-runs pagination exceeded safe page limit');
+  };
 
   try {
     const [issue, pr, targetRef] = await Promise.all([
@@ -429,8 +468,8 @@ export async function collectGitHubIntegrationState({
     ]);
     const headSha = normalizeSha(pr?.head?.sha);
     if (!headSha) return executionFailure('missing_current_head', 'PR head SHA is unavailable.');
-    const [checksPayload, reviews, comments, threads] = await Promise.all([
-      get(`/commits/${headSha}/check-runs?per_page=100`),
+    const [checkRuns, reviews, comments, threads] = await Promise.all([
+      getAllCheckRuns(headSha),
       getAll(`/pulls/${Number(prNumber)}/reviews`),
       getAll(`/issues/${Number(issueNumber)}/comments`),
       collectGitHubReviewThreads({
@@ -460,7 +499,7 @@ export async function collectGitHubIntegrationState({
         },
         targetBranch: String(targetBranch),
         targetHeadSha: normalizeSha(targetRef?.object?.sha),
-        checks: (checksPayload?.check_runs || []).map((check) => ({
+        checks: (checkRuns || []).map((check) => ({
           name: check.name || '',
           status: check.status || null,
           conclusion: check.conclusion || null,
@@ -685,7 +724,8 @@ function resolveIntegrationAuthority({
       const reviewer = reviewAuthor(review);
       const prAuthor = String(packet?.pullRequest?.author || '').trim().toLowerCase();
       if (!reviewer || !trustedReviewers.has(reviewer)) return false;
-      return !prAuthor || reviewer !== prAuthor;
+      if (!prAuthor) return false;
+      return reviewer !== prAuthor;
     });
     if (approvedReview) {
       return {
@@ -1145,9 +1185,23 @@ function integrationStateFingerprint(state) {
         isOutdated: thread.isOutdated === true,
       }))
       .sort((a, b) => a.id.localeCompare(b.id)),
-    comments: [...(state?.comments || [])].map((comment) => String(comment.id || '')).sort(),
+    comments: normalizeCommentsForFingerprint(state?.comments || []),
   };
   return JSON.stringify(normalize);
+}
+
+function integrationCommentsFingerprint(state) {
+  return JSON.stringify(normalizeCommentsForFingerprint(state?.comments || []));
+}
+
+function normalizeCommentsForFingerprint(comments = []) {
+  return [...(comments || [])]
+    .map((comment) => ({
+      id: String(comment.id || ''),
+      author: commentAuthor(comment),
+      body: String(comment.body || comment.bodyText || ''),
+    }))
+    .sort((a, b) => a.id.localeCompare(b.id));
 }
 
 async function collectGitHubReviewThreads({ repository, prNumber, token, fetchFn }) {
