@@ -1,5 +1,6 @@
 /**
- * Stable identities and stale/duplicate suppression for remediation routing.
+ * Stable identities and stale/duplicate suppression for remediation routing
+ * and authorized component integration / post-integration verification.
  */
 
 export function buildDispositionIdentity({
@@ -34,8 +35,50 @@ export function buildEscalationIdentity(dispositionIdentity) {
   return `escalation:${dispositionIdentity}`;
 }
 
+/**
+ * Deduplicate component integration by source Issue, PR head SHA, target branch,
+ * integration disposition, and merge SHA (or `pending` before merge).
+ */
+export function buildIntegrationIdentity({
+  sourceIssueNumber,
+  prNumber,
+  headSha,
+  targetBranch,
+  integrationDisposition = 'clean',
+  mergeSha = 'pending',
+} = {}) {
+  const issue = positiveInteger(sourceIssueNumber, 'integration_identity_requires_source_issue');
+  const pr = positiveInteger(prNumber, 'integration_identity_requires_pr');
+  const head = normalizeSha(headSha);
+  if (!head) throw new Error('integration_identity_requires_head_sha');
+  const target = String(targetBranch || '').trim();
+  if (!target) throw new Error('integration_identity_requires_target_branch');
+  const disposition = String(integrationDisposition || 'clean').trim() || 'clean';
+  const merge = mergeSha === 'pending' ? 'pending' : normalizeSha(mergeSha);
+  if (!merge) throw new Error('integration_identity_requires_merge_sha');
+  return `issue:${issue}:pr:${pr}:head:${head}:target:${target}:disposition:${disposition}:merge:${merge}`;
+}
+
+export function buildVerificationIdentity({
+  sourceIssueNumber,
+  prNumber,
+  headSha,
+  targetBranch,
+  mergeSha,
+} = {}) {
+  const issue = positiveInteger(sourceIssueNumber, 'verification_identity_requires_source_issue');
+  const pr = positiveInteger(prNumber, 'verification_identity_requires_pr');
+  const head = normalizeSha(headSha);
+  const merge = normalizeSha(mergeSha);
+  const target = String(targetBranch || '').trim();
+  if (!head) throw new Error('verification_identity_requires_head_sha');
+  if (!merge) throw new Error('verification_identity_requires_merge_sha');
+  if (!target) throw new Error('verification_identity_requires_target_branch');
+  return `issue:${issue}:pr:${pr}:head:${head}:target:${target}:merge:${merge}`;
+}
+
 export function identityMarker(kind, identity) {
-  if (!['response', 'resume', 'escalation'].includes(kind)) {
+  if (!['response', 'resume', 'escalation', 'integration', 'verification'].includes(kind)) {
     throw new Error('unsupported_identity_marker_kind');
   }
   return `<!-- agent-routing-${kind}:${identity} -->`;

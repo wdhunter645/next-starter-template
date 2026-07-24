@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 /**
- * Deterministic handoff controller (#2677 / #2770 / #2771).
+ * Deterministic handoff controller (#2677 / #2770 / #2771 / #2772).
  *
  * Operational execution always performs GitHub-native live reads. Remediation
  * routing consumes only that normalized current-head packet and trusted
- * source-Issue decisions included in the live evidence.
+ * source-Issue decisions included in the live evidence. Component integration
+ * emits at most one non-main integrate instruction plus exact post-integration
+ * verification when a merge SHA is recorded.
  */
 
 import fs from 'node:fs';
@@ -29,10 +31,13 @@ import {
 } from './lib/evidence-collector.mjs';
 import {
   collectCurrentHeadFindings,
+  DISPOSITION_CLASSES,
   extractSourceIssueAuthorizations,
 } from './lib/disposition.mjs';
 import { findLatestDisposition } from './lib/idempotency.mjs';
 import { routeRemediation } from './lib/remediation-router.mjs';
+import { evaluateComponentIntegrationTransaction } from './lib/component-integration.mjs';
+import { verifyPostIntegration } from './lib/post-integration-verify.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '../..');
@@ -70,6 +75,18 @@ const REQUIRED_ROUTING_PROTECTED_CLASSES = Object.freeze([
   'rights-privacy-publication',
   'production',
 ]);
+const REQUIRED_INTEGRATION_IDEMPOTENCY_FIELDS = Object.freeze([
+  'targetBranch',
+  'integrationDisposition',
+  'mergeSha',
+  'verificationIdentity',
+]);
+const REQUIRED_INTEGRATION_CAPABILITIES = Object.freeze({
+  integrate: true,
+  verify: true,
+  close: false,
+  activateSuccessor: false,
+});
 
 export function loadControllerConfig(configPath = DEFAULT_CONFIG_PATH) {
   const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
@@ -143,6 +160,37 @@ export function assertObserveOnlyConfigInvariants(config = {}) {
       config.remediationRouting.trustedControllerAuthors,
       'remediation_routing_requires_trusted_controller_authors',
     );
+  }
+
+  if (config.componentIntegration?.enabled === true) {
+    if (config.componentIntegration.allowMain !== false) {
+      throw new Error('component_integration_must_forbid_main');
+    }
+    if (config.componentIntegration.allowProduction !== false) {
+      throw new Error('component_integration_must_forbid_production');
+    }
+    if (Number(config.componentIntegration.maxIntegrationsPerRun) !== 1) {
+      throw new Error('component_integration_max_must_be_one');
+    }
+    const prefixes = config.componentIntegration.allowedTargetPrefixes || [];
+    if (!prefixes.includes('component/')) {
+      throw new Error('component_integration_requires_component_prefix');
+    }
+    assertNonEmptyStringArray(
+      config.componentIntegration.requiredChecks,
+      'component_integration_requires_nonempty_required_checks',
+    );
+    const integrationCaps = config.componentIntegration.capabilities || {};
+    for (const [key, expected] of Object.entries(REQUIRED_INTEGRATION_CAPABILITIES)) {
+      if (integrationCaps[key] !== expected) {
+        throw new Error(`component_integration_capability_invalid:${key}`);
+      }
+    }
+    for (const field of REQUIRED_INTEGRATION_IDEMPOTENCY_FIELDS) {
+      if (!keyFields.includes(field)) {
+        throw new Error(`controller_idempotency_missing_field:${field}`);
+      }
+    }
   }
   return true;
 }
@@ -273,7 +321,72 @@ export function runController(input = {}, config = loadControllerConfig()) {
     prUrl: routingPacket.pullRequest.url,
   });
   if (!routed.ok) return routed;
-  return { ok: true, packet: routingPacket, remediation: routed };
+
+  const result = { ok: true, packet: routingPacket, remediation: routed };
+  if (config.componentIntegration?.enabled !== true) return result;
+
+  const classification = routed.classification?.classification || null;
+  const integration = evaluateComponentIntegrationTransaction({
+    packet: routingPacket,
+    classification,
+    existingComments: liveComments,
+    reviewSubmissions:
+      live.reviewSubmissions || live.reviews || routingPacket.reviewEvidence?.reviewSubmissions || [],
+    requiredChecks: config.componentIntegration.requiredChecks || routingConfig.requiredChecks || [],
+    componentIntegration: config.componentIntegration,
+    observedTargetBranch:
+      input.observedTargetBranch || routingPacket.pullRequest.baseRef || null,
+    recordedMergeSha: input.recordedMergeSha || null,
+  });
+  result.integration = integration;
+
+  if (integration.ok && Array.isArray(integration.actions) && integration.actions.length > 1) {
+    return failClosed(
+      'integration_transaction_limit_exceeded',
+      'Controller may emit at most one component-integration transaction per run.',
+      { actionCount: integration.actions.length },
+    );
+  }
+
+  const shouldVerify =
+    Boolean(input.recordedMergeSha) ||
+    integration.code === 'integration_already_completed' ||
+    integration.code === 'integration_already_recorded';
+
+  if (shouldVerify && config.componentIntegration.capabilities?.verify === true) {
+    const mergeSha =
+      normalizeSha(input.recordedMergeSha) || normalizeSha(integration.mergeSha) || null;
+    result.verification = verifyPostIntegration({
+      packet: routingPacket,
+      targetBranch: integration.targetBranch || routingPacket.pullRequest.baseRef,
+      mergeSha,
+      targetBranchContainsMergeSha: input.targetBranchContainsMergeSha,
+      targetBranchHeadSha: input.targetBranchHeadSha || null,
+      existingComments: liveComments,
+      componentIntegration: config.componentIntegration,
+    });
+  } else if (
+    classification === DISPOSITION_CLASSES.CLEAN &&
+    integration.ok &&
+    integration.eligible
+  ) {
+    result.verification = {
+      ok: true,
+      verified: false,
+      suppressed: true,
+      code: 'verification_deferred_until_merge_sha',
+      closeout: false,
+      successorActivation: false,
+      actions: [],
+    };
+  }
+
+  return result;
+}
+
+function normalizeSha(value) {
+  const sha = String(value || '').trim().toLowerCase();
+  return /^[0-9a-f]{7,40}$/.test(sha) ? sha : '';
 }
 
 function enrichRoutingPacket(packet, live) {

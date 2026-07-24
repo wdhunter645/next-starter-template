@@ -1,127 +1,197 @@
-const FORBIDDEN_TARGETS = new Set(['main', 'master', 'production', 'prod']);
+/**
+ * Exact post-integration verification for #2677-003 / #2772.
+ *
+ * Verifies the recorded merge/integration SHA is present on the authorized
+ * component target and that the source Issue remains open. This module never
+ * closes Issues or activates successors.
+ */
 
-export function assertSafeComponentTarget(targetBranch, config = {}) {
-  const target = normalizeRef(targetBranch);
-  if (!target) return failClosed('missing_target_branch', 'Target branch is required.');
-  const forbidden = new Set([
-    ...FORBIDDEN_TARGETS,
-    ...(config.forbiddenTargets || []).map(normalizeRef),
-  ]);
-  if (forbidden.has(target) || /(^|\/)(?:main|master|prod(?:uction)?)(?:\/|$)/i.test(target)) {
-    return failClosed('forbidden_target_branch', `Target branch ${target} is protected.`);
-  }
-  const exact = (config.allowedTargets || []).map(normalizeRef).filter(Boolean);
-  const prefixes = (config.allowedTargetPrefixes || []).map(normalizeRef).filter(Boolean);
-  if (!exact.includes(target) && !prefixes.some((prefix) => target.startsWith(prefix))) {
-    return failClosed('unauthorized_target_branch', `Target branch ${target} is not authorized.`);
-  }
-  return { ok: true, targetBranch: target };
-}
+import {
+  buildVerificationIdentity,
+  commentContainsIdentity,
+  identityMarker,
+} from './idempotency.mjs';
 
-export function verifyPostIntegrationEvidence({
-  targetBranch,
-  targetHeadSha,
-  mergeSha,
-  compareStatus = null,
-  sourceIssueState = null,
-  config = {},
+/**
+ * Verify an already-recorded component integration result.
+ */
+export function verifyPostIntegration({
+  packet,
+  targetBranch = null,
+  mergeSha = null,
+  targetBranchContainsMergeSha = null,
+  targetBranchHeadSha = null,
+  existingComments = [],
+  componentIntegration = {},
 } = {}) {
-  const targetCheck = assertSafeComponentTarget(targetBranch, config);
-  if (!targetCheck.ok) return targetCheck;
-  const targetHead = normalizeSha(targetHeadSha);
-  const merge = normalizeSha(mergeSha);
-  if (!merge) return failClosed('invalid_merge_sha', 'Merge SHA is missing or invalid.');
-  if (!targetHead) return failClosed('invalid_target_head_sha', 'Target head SHA is missing or invalid.');
-  const containsMerge = targetHead === merge || ['ahead', 'identical'].includes(String(compareStatus));
-  if (!containsMerge) {
-    return failClosed('merge_not_on_target', 'Target branch does not contain the integration SHA.', {
-      targetHeadSha: targetHead,
-      mergeSha: merge,
-      compareStatus,
-    });
-  }
-  if (sourceIssueState && String(sourceIssueState).toUpperCase() !== 'OPEN') {
-    return failClosed('source_issue_closed_during_integration', 'Source Issue must remain open after integration.');
-  }
-  return {
-    ok: true,
-    targetBranch: targetCheck.targetBranch,
-    targetHeadSha: targetHead,
-    mergeSha: merge,
-    containsMerge: true,
-    sourceIssueState: sourceIssueState ? String(sourceIssueState).toUpperCase() : null,
-  };
-}
-
-export async function verifyPostIntegration({
-  repository,
-  targetBranch,
-  mergeSha,
-  sourceIssueNumber,
-  token,
-  config = {},
-  fetchFn = globalThis.fetch,
-} = {}) {
-  if (!repository || !token) {
-    return failClosed('verification_unavailable', 'Repository and token are required for verification.');
-  }
-  const targetCheck = assertSafeComponentTarget(targetBranch, config);
-  if (!targetCheck.ok) return targetCheck;
-  const merge = normalizeSha(mergeSha);
-  if (!merge) return failClosed('invalid_merge_sha', 'Merge SHA is missing or invalid.');
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    Accept: 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28',
-    'User-Agent': 'lgfc-component-integration-verifier',
-  };
-  async function get(path) {
-    const response = await fetchFn(`https://api.github.com/repos/${repository}${path}`, {
-      method: 'GET',
-      headers,
-    });
-    if (!response?.ok) {
-      const text = typeof response?.text === 'function' ? await response.text() : '';
-      throw new Error(`GET ${path} failed: ${response?.status ?? 'unknown'} ${text}`);
-    }
-    return response.json();
+  if (componentIntegration?.enabled !== true) {
+    return {
+      ok: true,
+      verified: false,
+      suppressed: true,
+      code: 'component_integration_disabled',
+      actions: [],
+    };
   }
 
-  try {
-    const encodedTarget = targetCheck.targetBranch.split('/').map(encodeURIComponent).join('/');
-    const targetRef = await get(`/git/ref/heads/${encodedTarget}`);
-    const targetHeadSha = normalizeSha(targetRef?.object?.sha || '');
-    let compareStatus = targetHeadSha === merge ? 'identical' : null;
-    if (!compareStatus) {
-      const comparison = await get(`/compare/${merge}...${encodedTarget}`);
-      compareStatus = comparison?.status || null;
-    }
-    const issue = await get(`/issues/${Number(sourceIssueNumber)}`);
-    return verifyPostIntegrationEvidence({
-      targetBranch: targetCheck.targetBranch,
-      targetHeadSha,
-      mergeSha: merge,
-      compareStatus,
-      sourceIssueState: issue?.state,
-      config,
-    });
-  } catch (error) {
+  const sourceIssueNumber = Number(packet?.sourceIssue?.number);
+  const prNumber = Number(packet?.pullRequest?.number);
+  const headSha = normalizeSha(packet?.pullRequest?.headSha);
+  const recordedMergeSha = normalizeSha(mergeSha);
+  const resolvedTarget = String(
+    targetBranch ||
+      packet?.pullRequest?.deliveryProfile?.componentBranch ||
+      packet?.pullRequest?.baseRef ||
+      '',
+  ).trim();
+
+  if (!Number.isInteger(sourceIssueNumber) || sourceIssueNumber <= 0) {
+    return failClosed('missing_source_issue', 'Source Issue identity is required.');
+  }
+  if (!Number.isInteger(prNumber) || prNumber <= 0) {
+    return failClosed('missing_pr_number', 'Pull request number is required.');
+  }
+  if (!headSha) {
+    return failClosed('missing_current_head', 'Pre-integration head SHA is required.');
+  }
+  if (!recordedMergeSha) {
     return failClosed(
-      'verification_unavailable',
-      `Post-integration verification failed: ${error instanceof Error ? error.message : String(error)}`,
+      'missing_merge_sha',
+      'Exact merge/integration SHA is required for post-integration verification.',
     );
   }
+  if (!resolvedTarget) {
+    return failClosed('missing_target_branch', 'Exact target branch is required.');
+  }
+  if (/^(main|master|production|prod)$/i.test(resolvedTarget)) {
+    return failClosed(
+      'forbidden_verification_target',
+      'Post-integration verification refuses main/Production targets.',
+      { targetBranch: resolvedTarget },
+    );
+  }
+
+  const sourceState = String(packet?.sourceIssue?.state || '').toUpperCase();
+  if (sourceState && sourceState !== 'OPEN') {
+    return failClosed(
+      'source_issue_closed_prematurely',
+      'Source Issue must remain open after the integration transaction.',
+      { state: sourceState },
+    );
+  }
+
+  const containsMerge =
+    targetBranchContainsMergeSha === true ||
+    normalizeSha(targetBranchHeadSha) === recordedMergeSha;
+  if (!containsMerge) {
+    return failClosed(
+      'merge_sha_not_on_target',
+      'Target branch does not contain the recorded merge/integration SHA.',
+      {
+        targetBranch: resolvedTarget,
+        mergeSha: recordedMergeSha,
+        targetBranchHeadSha: normalizeSha(targetBranchHeadSha) || null,
+      },
+    );
+  }
+
+  const verificationIdentity = buildVerificationIdentity({
+    sourceIssueNumber,
+    prNumber,
+    headSha,
+    targetBranch: resolvedTarget,
+    mergeSha: recordedMergeSha,
+  });
+
+  if (commentContainsIdentity(existingComments, 'verification', verificationIdentity)) {
+    return {
+      ok: true,
+      verified: true,
+      suppressed: true,
+      code: 'verification_already_recorded',
+      verificationIdentity,
+      targetBranch: resolvedTarget,
+      mergeSha: recordedMergeSha,
+      sourceIssueState: 'OPEN',
+      closeout: false,
+      successorActivation: false,
+      actions: [],
+    };
+  }
+
+  const action = {
+    type: 'record_post_integration_verification',
+    issueNumber: sourceIssueNumber,
+    prNumber,
+    headSha,
+    targetBranch: resolvedTarget,
+    mergeSha: recordedMergeSha,
+    identity: verificationIdentity,
+    body: verificationBody({
+      sourceIssueNumber,
+      prNumber,
+      headSha,
+      targetBranch: resolvedTarget,
+      mergeSha: recordedMergeSha,
+      verificationIdentity,
+    }),
+  };
+
+  return {
+    ok: true,
+    verified: true,
+    suppressed: false,
+    code: 'verification_recorded',
+    verificationIdentity,
+    targetBranch: resolvedTarget,
+    mergeSha: recordedMergeSha,
+    sourceIssueState: 'OPEN',
+    closeout: false,
+    successorActivation: false,
+    actions: [action],
+  };
 }
 
-function normalizeRef(value = '') {
-  return String(value || '').replace(/^refs\/heads\//, '').trim();
+function verificationBody({
+  sourceIssueNumber,
+  prNumber,
+  headSha,
+  targetBranch,
+  mergeSha,
+  verificationIdentity,
+}) {
+  return `POST-INTEGRATION VERIFICATION
+Issue: #${sourceIssueNumber}
+PR: #${prNumber}
+Pre-integration head SHA: ${headSha}
+Target branch: ${targetBranch}
+Merge SHA: ${mergeSha}
+Source Issue state: OPEN
+Closeout: deferred
+Successor activation: deferred
+Mutation boundary:
+- Verification only.
+- Do not close the source Issue.
+- Do not activate a successor.
+- Do not mutate main or Production.
+${identityMarker('verification', verificationIdentity)}`;
 }
 
-function normalizeSha(value = '') {
+function normalizeSha(value) {
   const sha = String(value || '').trim().toLowerCase();
   return /^[0-9a-f]{7,40}$/.test(sha) ? sha : '';
 }
 
 function failClosed(code, message, details = {}) {
-  return { ok: false, code, message, ...details };
+  return {
+    ok: false,
+    verified: false,
+    suppressed: false,
+    code,
+    message,
+    closeout: false,
+    successorActivation: false,
+    actions: [],
+    ...details,
+  };
 }

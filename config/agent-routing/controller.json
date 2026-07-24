@@ -50,32 +50,28 @@
   },
   "componentIntegration": {
     "enabled": true,
-    "allowedTargets": [
-      "component/deterministic-handoff-controller"
-    ],
+    "allowMain": false,
+    "allowProduction": false,
     "allowedTargetPrefixes": [
       "component/"
-    ],
-    "forbiddenTargets": [
-      "main",
-      "master",
-      "production",
-      "prod"
-    ],
-    "requiredChecks": [
-      "quality"
-    ],
-    "allowedApprovalProfiles": [
-      "component-auto-integration",
-      "protected-change-review"
     ],
     "deterministicApprovalProfiles": [
       "component-auto-integration"
     ],
+    "independentReviewApprovalProfiles": [
+      "protected-change-review"
+    ],
     "mergeMethod": "squash",
-    "sourceIssueMustRemainOpen": true,
-    "verifyAfterMerge": true,
-    "maxMutationsPerRun": 1
+    "maxIntegrationsPerRun": 1,
+    "requiredChecks": [
+      "quality"
+    ],
+    "capabilities": {
+      "integrate": true,
+      "verify": true,
+      "close": false,
+      "activateSuccessor": false
+    }
   },
   "idempotency": {
     "keyFields": [
@@ -89,7 +85,9 @@
       "dispositionRevision",
       "resumeIdentity",
       "targetBranch",
-      "mergeSha"
+      "integrationDisposition",
+      "mergeSha",
+      "verificationIdentity"
     ]
   },
   "workflowCapabilities": {
