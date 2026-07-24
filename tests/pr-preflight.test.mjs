@@ -314,4 +314,21 @@ describe('pr preflight evidence surfaces', () => {
     expect(result.reviewThreadResult.status).toBe('fail');
     expect(result.result).toBe('fail');
   });
+
+  it('fails when the implementation identity approves its own PR', () => {
+    const result = runPreflight({}, {
+      pr: { author: { login: 'codex' } },
+      reviews: [{
+        user: { login: 'codex' },
+        state: 'APPROVED',
+        commit_id: 'head-sha',
+      }],
+    });
+
+    expect(result.reviewThreadResult.blockingReasons).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'implementer-self-approval' }),
+    ]));
+    expect(result.result).toBe('fail');
+  });
+
 });
