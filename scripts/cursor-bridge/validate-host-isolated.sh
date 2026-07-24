@@ -7,11 +7,14 @@ cleanup() { rm -rf "$TMP"; }
 trap cleanup EXIT
 export LGFC_CURSOR_BRIDGE_HOME="$TMP"
 export LGFC_CURSOR_BRIDGE_WORKSPACE="$ROOT"
-mkdir -p "$TMP/queue" "$TMP/consumed" "$TMP/scripts"
+mkdir -p "$TMP/queue" "$TMP/consumed" "$TMP/scripts" "$TMP/orchestrator"
 cp -a "$ROOT/scripts/cursor-bridge/." "$TMP/scripts/"
+# Immutable packaged runtime dependency for eligibility.mjs relative import.
+cp "$ROOT/scripts/orchestrator/queue-routing.mjs" "$TMP/orchestrator/queue-routing.mjs"
 cp "$ROOT/config/cursor-bridge/bridge.json" "$TMP/bridge.json"
 cp "$ROOT/config/cursor-bridge/bridge.schema.json" "$TMP/bridge.schema.json"
 chmod +x "$TMP/scripts/"*.mjs "$TMP/scripts/"*.sh || true
+chmod +x "$TMP/orchestrator/"*.mjs || true
 
 echo '== self-check =='
 node "$ROOT/scripts/cursor-bridge/self-check.mjs"

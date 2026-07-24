@@ -49,20 +49,45 @@ jobs:
             WATCH_SCRIPT="$HOME_DIR/scripts/bridge-watch.mjs"
           fi
           test -f "$WATCH_SCRIPT"
+          RESULT_FILE=/tmp/lgfc-bridge-watch-result.json
           set +e
-          node "$WATCH_SCRIPT" check > /tmp/lgfc-bridge-watch-result.json
+          node "$WATCH_SCRIPT" check > "$RESULT_FILE"
+          WATCH_RC=$?
           set -e
-          if grep -qE 'CURSOR_API_KEY=|ghp_[A-Za-z0-9]+|github_pat_' /tmp/lgfc-bridge-watch-result.json; then
+          # Always run secret scan + result validation; never treat crash/empty as healthy.
+          if grep -qE 'CURSOR_API_KEY=|ghp_[A-Za-z0-9]+|github_pat_' "$RESULT_FILE" 2>/dev/null; then
             echo "secret-bearing output refused" >&2
             exit 1
           fi
+          export WATCH_RC
+          export RESULT_FILE
           python3 - <<'PY'
 import json
+import os
+import sys
 from pathlib import Path
-raw = Path("/tmp/lgfc-bridge-watch-result.json").read_text().strip()
+
+raw = Path(os.environ["RESULT_FILE"]).read_text().strip()
+rc = int(os.environ.get("WATCH_RC", "1"))
 if not raw:
-    print("classification=healthy_quiet")
-else:
+    print("classification=failed_empty_result", file=sys.stderr)
+    sys.exit(1)
+try:
     data = json.loads(raw)
-    print("classification=" + str(data.get("classification") or "unknown"))
+except json.JSONDecodeError as exc:
+    print(f"classification=failed_invalid_json:{exc}", file=sys.stderr)
+    sys.exit(1)
+classification = str(data.get("classification") or "unknown")
+print("classification=" + classification)
+if classification in ("healthy", "healthy_quiet") and rc != 0:
+    print("non-zero exit cannot be classified healthy", file=sys.stderr)
+    sys.exit(1)
+if rc != 0 and classification not in (
+    "rebuild_required",
+    "rebuild_deferred",
+    "manual_review_required",
+    "failed",
+):
+    print(f"unexpected classification with non-zero exit: {classification}", file=sys.stderr)
+    sys.exit(1)
 PY

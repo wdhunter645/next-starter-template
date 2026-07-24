@@ -38,6 +38,10 @@ export const REPO_PACKAGE_PATHS = Object.freeze([
   'scripts/cursor-bridge/lib/preflight.mjs',
   'scripts/cursor-bridge/lib/reconcile.mjs',
   'scripts/cursor-bridge/lib/status.mjs',
+  // Immutable packaged runtime dependency for installed eligibility.mjs
+  // (resolves to <bridge-home>/orchestrator/queue-routing.mjs). Do not edit
+  // the repository source from Bridge maintenance work; package only.
+  'scripts/orchestrator/queue-routing.mjs',
 ]);
 
 /** Runtime evidence — never hashed for package drift and never deleted by rebuild. */
@@ -89,6 +93,9 @@ export function installedPathForRepoPath(repoRelative, home = bridgeHome()) {
   }
   if (repoRelative.startsWith('config/cursor-bridge/')) {
     return path.join(home, path.basename(repoRelative));
+  }
+  if (repoRelative === 'scripts/orchestrator/queue-routing.mjs') {
+    return path.join(home, 'orchestrator', 'queue-routing.mjs');
   }
   throw new Error(`unsupported_package_path:${repoRelative}`);
 }

@@ -8,7 +8,7 @@ HOME_DIR="${LGFC_CURSOR_BRIDGE_HOME:-$HOME/lgfc-cursor-bridge}"
 UNIT_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
 WORKSPACE="${LGFC_CURSOR_BRIDGE_WORKSPACE:-$REPO_ROOT}"
 
-mkdir -p "$HOME_DIR/queue" "$HOME_DIR/consumed" "$HOME_DIR/scripts" "$UNIT_DIR"
+mkdir -p "$HOME_DIR/queue" "$HOME_DIR/consumed" "$HOME_DIR/scripts" "$HOME_DIR/orchestrator" "$UNIT_DIR"
 chmod 700 "$HOME_DIR" "$HOME_DIR/queue" "$HOME_DIR/consumed"
 
 # Package scripts only — never delete runtime evidence directories.
@@ -22,12 +22,17 @@ else
   cp -a "$REPO_ROOT/scripts/cursor-bridge/." "$HOME_DIR/scripts/"
 fi
 
+# Immutable packaged runtime dependency for eligibility.mjs
+# (installed path: <bridge-home>/orchestrator/queue-routing.mjs).
+cp "$REPO_ROOT/scripts/orchestrator/queue-routing.mjs" "$HOME_DIR/orchestrator/queue-routing.mjs"
+
 cp "$REPO_ROOT/config/cursor-bridge/bridge.json" "$HOME_DIR/bridge.json"
 for schema in "$REPO_ROOT"/config/cursor-bridge/*.schema.json; do
   cp "$schema" "$HOME_DIR/$(basename "$schema")"
 done
 chmod +x "$HOME_DIR/scripts/"*.sh "$HOME_DIR/scripts/"*.mjs 2>/dev/null || true
 chmod +x "$HOME_DIR/scripts/lib/"*.mjs 2>/dev/null || true
+chmod +x "$HOME_DIR/orchestrator/"*.mjs 2>/dev/null || true
 
 SOURCE_COMMIT="$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || echo unknown)"
 export LGFC_CURSOR_BRIDGE_HOME="$HOME_DIR"
