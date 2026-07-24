@@ -102,6 +102,8 @@ jobs:
               if (cfg.componentIntegration?.allowMain !== false) process.exit(1);
               if (cfg.componentIntegration?.allowProduction !== false) process.exit(1);
               if (Number(cfg.componentIntegration?.maxIntegrationsPerRun) !== 1) process.exit(1);
+              if (!Array.isArray(cfg.componentIntegration?.trustedReviewAuthors) || cfg.componentIntegration.trustedReviewAuthors.length === 0) process.exit(1);
+              if (!Array.isArray(cfg.componentIntegration?.trustedIntegrationAuthorizationAuthors) || cfg.componentIntegration.trustedIntegrationAuthorizationAuthors.length === 0) process.exit(1);
             }
             const caps = cfg.workflowCapabilities || {};
             for (const key of ["merge","close","relabel","resume","activateSuccessor","mutateMain"]) {

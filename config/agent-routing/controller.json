@@ -66,6 +66,14 @@
     "requiredChecks": [
       "quality"
     ],
+    "trustedReviewAuthors": [
+      "chatgpt-atlas",
+      "wdhunter645"
+    ],
+    "trustedIntegrationAuthorizationAuthors": [
+      "chatgpt-atlas",
+      "wdhunter645"
+    ],
     "capabilities": {
       "integrate": true,
       "verify": true,
