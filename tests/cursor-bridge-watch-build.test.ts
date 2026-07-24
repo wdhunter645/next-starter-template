@@ -370,21 +370,23 @@ describe('Cursor Bridge Watch / Build (#2814)', () => {
     const head = spawnSync('git', ['-C', repoRoot, 'rev-parse', 'HEAD'], {
       encoding: 'utf8',
     }).stdout.trim();
-    const parent = spawnSync('git', ['-C', repoRoot, 'rev-parse', 'HEAD~1'], {
+    // Use origin/main (immutable, on main) rather than HEAD~1, which may be a
+    // local remediation commit that is not an ancestor of main.
+    const onMain = spawnSync('git', ['-C', repoRoot, 'rev-parse', 'origin/main'], {
       encoding: 'utf8',
     }).stdout.trim();
-    expect(parent).toMatch(/^[0-9a-f]{40}$/);
+    expect(onMain).toMatch(/^[0-9a-f]{40}$/);
 
-    const fromParent = resolveImmutableMainCommit(repoRoot, parent) as {
+    const fromMain = resolveImmutableMainCommit(repoRoot, onMain) as {
       ok: boolean;
       worktreeDirty?: boolean;
     };
-    expect(fromParent.ok).toBe(true);
-    // Parent != HEAD is normal on a clean tree; dirty must reflect porcelain only.
+    expect(fromMain.ok).toBe(true);
+    // Commit identity != HEAD is normal on a feature branch; dirty must reflect porcelain only.
     const porcelain = spawnSync('git', ['-C', repoRoot, 'status', '--porcelain'], {
       encoding: 'utf8',
     }).stdout.trim();
-    expect(fromParent.worktreeDirty).toBe(Boolean(porcelain));
+    expect(fromMain.worktreeDirty).toBe(Boolean(porcelain));
 
     const fromHead = resolveImmutableMainCommit(repoRoot, head) as {
       ok: boolean;
