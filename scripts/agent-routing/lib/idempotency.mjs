@@ -48,9 +48,40 @@ export function commentContainsIdentity(comments = [], kind, identity) {
   );
 }
 
+/** Resolve the most recent recorded disposition from live source-Issue comments. */
+export function findLatestDisposition(
+  comments = [],
+  { sourceIssueNumber = null, prNumber = null } = {},
+) {
+  const issue = sourceIssueNumber == null ? null : Number(sourceIssueNumber);
+  const pr = prNumber == null ? null : Number(prNumber);
+  let latest = null;
+
+  for (const comment of comments || []) {
+    const body = String(comment?.body || comment?.bodyText || '');
+    const matches = body.matchAll(
+      /issue:(\d+):pr:(\d+):head:([0-9a-f]{7,40}):findings:[^\s<]+:revision:([^\s<]+)/gi,
+    );
+    for (const match of matches) {
+      const candidate = {
+        sourceIssueNumber: Number(match[1]),
+        prNumber: Number(match[2]),
+        headSha: normalizeSha(match[3]),
+        dispositionRevision: match[4],
+        commentId: String(comment?.id || comment?.databaseId || ''),
+        createdAt: comment?.createdAt || comment?.created_at || null,
+      };
+      if (issue != null && candidate.sourceIssueNumber !== issue) continue;
+      if (pr != null && candidate.prNumber !== pr) continue;
+      if (!latest || isLater(candidate, latest)) latest = candidate;
+    }
+  }
+  return latest;
+}
+
 /**
  * A recorded disposition on another head is never reusable. A higher numeric
- * revision on the same head suppresses a stale proposed mutation.
+ * revision on the same head suppresses a stale proposed transaction.
  */
 export function assessExpectedState({
   proposedHeadSha,
@@ -90,6 +121,15 @@ export function compareRevisions(left, right) {
   const bNumber = Number(b);
   if (Number.isFinite(aNumber) && Number.isFinite(bNumber)) return aNumber - bNumber;
   return a.localeCompare(b, undefined, { numeric: true });
+}
+
+function isLater(candidate, current) {
+  const candidateTime = Date.parse(candidate.createdAt || '');
+  const currentTime = Date.parse(current.createdAt || '');
+  if (!Number.isNaN(candidateTime) && !Number.isNaN(currentTime) && candidateTime !== currentTime) {
+    return candidateTime > currentTime;
+  }
+  return compareRevisions(candidate.dispositionRevision, current.dispositionRevision) >= 0;
 }
 
 function positiveInteger(value, errorCode) {
