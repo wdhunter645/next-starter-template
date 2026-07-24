@@ -11,7 +11,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { collectLiveGitHubEvidence, extractDeliveryProfile } from './evidence-collector.mjs';
-import { verifyPostIntegration } from './post-integration-verify.mjs';
+import { verifyPostIntegrationEvidence } from './post-integration-verify.mjs';
 
 export const INTEGRATION_DISPOSITIONS = Object.freeze({
   ELIGIBLE: 'component_integration_eligible',
@@ -57,13 +57,7 @@ export function evaluateComponentIntegration({
   const prNumber = Number(pullRequest.number);
   const sourceIssueNumber = Number(sourceIssue.number);
 
-  const context = {
-    sourceIssueNumber,
-    prNumber,
-    headSha,
-    targetBranch,
-    targetHeadSha,
-  };
+  const context = { sourceIssueNumber, prNumber, headSha, targetBranch, targetHeadSha };
   const block = (code, message, details = {}) => ({
     ok: true,
     disposition: INTEGRATION_DISPOSITIONS.BLOCKED,
@@ -108,8 +102,7 @@ export function evaluateComponentIntegration({
     return block('non_component_environment', 'Only component-target delivery profiles are eligible.');
   }
   const approvalProfile = String(profile.approvalProfile || '').trim();
-  const allowedApprovalProfiles = new Set(config.allowedApprovalProfiles || []);
-  if (!allowedApprovalProfiles.has(approvalProfile)) {
+  if (!new Set(config.allowedApprovalProfiles || []).has(approvalProfile)) {
     return block('approval_profile_not_authorized', 'The approval profile is not authorized.');
   }
 
@@ -123,13 +116,7 @@ export function evaluateComponentIntegration({
     if (matches.length === 0) {
       return block('required_check_missing', `Required check "${requiredName}" is missing.`);
     }
-    if (
-      matches.some(
-        (check) =>
-          check.status !== 'completed' ||
-          check.conclusion !== 'success',
-      )
-    ) {
+    if (matches.some((check) => check.status !== 'completed' || check.conclusion !== 'success')) {
       return block('required_check_not_successful', `Required check "${requiredName}" is not successful.`);
     }
   }
@@ -176,12 +163,6 @@ export function evaluateComponentIntegration({
     });
   }
 
-  const pendingIdentity = buildComponentIntegrationIdentity({
-    sourceIssueNumber,
-    prNumber,
-    headSha,
-    targetBranch,
-  });
   const prior = (priorIntegrations || []).find(
     (record) =>
       record &&
@@ -219,7 +200,12 @@ export function evaluateComponentIntegration({
     message: 'Current live evidence authorizes one component integration mutation.',
     context,
     deliveryProfile: profile,
-    integrationIdentity: pendingIdentity,
+    integrationIdentity: buildComponentIntegrationIdentity({
+      sourceIssueNumber,
+      prNumber,
+      headSha,
+      targetBranch,
+    }),
     mergeMethod: config.mergeMethod || 'squash',
     maxMutations: 1,
   };
@@ -240,9 +226,7 @@ export async function executeComponentIntegration({
     expectedTargetHeadSha,
     priorIntegrations,
   });
-  if (!evaluated.ok || evaluated.disposition !== INTEGRATION_DISPOSITIONS.ELIGIBLE) {
-    return evaluated;
-  }
+  if (!evaluated.ok || evaluated.disposition !== INTEGRATION_DISPOSITIONS.ELIGIBLE) return evaluated;
   if (!adapter || typeof adapter.mergePullRequest !== 'function') {
     return failClosed('integration_adapter_missing', 'A merge adapter is required.');
   }
@@ -268,23 +252,16 @@ export async function executeComponentIntegration({
           mergeSha,
         })
       : {};
-  const verification = verifyPostIntegration({
-    sourceIssueNumber: evaluated.context.sourceIssueNumber,
-    prNumber: evaluated.context.prNumber,
+  const verification = verifyPostIntegrationEvidence({
     sourceIssueState: verificationEvidence.sourceIssueState || live.sourceIssue?.state,
     targetBranch: evaluated.context.targetBranch,
     mergeSha,
     targetHeadSha: verificationEvidence.targetHeadSha,
     compareStatus: verificationEvidence.compareStatus,
-    expectedTargetBranch: evaluated.context.targetBranch,
+    config,
   });
   if (!verification.ok) {
-    return {
-      ...verification,
-      mutationOccurred: true,
-      mergeSha,
-      requiresAuthorizedRecovery: true,
-    };
+    return { ...verification, mutationOccurred: true, mergeSha, requiresAuthorizedRecovery: true };
   }
 
   return {
@@ -315,18 +292,10 @@ export async function collectComponentIntegrationEvidence({
   token,
   fetchFn = globalThis.fetch,
 } = {}) {
-  const collected = await collectLiveGitHubEvidence({
-    repository,
-    issueNumber,
-    prNumber,
-    token,
-    fetchFn,
-  });
+  const collected = await collectLiveGitHubEvidence({ repository, issueNumber, prNumber, token, fetchFn });
   if (!collected.ok) return collected;
   const live = collected.live;
-  const targetBranch = String(
-    live.pullRequest?.baseRefName || live.pullRequest?.base?.ref || '',
-  ).trim();
+  const targetBranch = String(live.pullRequest?.baseRefName || live.pullRequest?.base?.ref || '').trim();
   if (!targetBranch) return failClosed('missing_target_branch', 'The live PR target branch is missing.');
   const branch = await githubJson({
     repository,
@@ -345,21 +314,14 @@ export async function collectComponentIntegrationEvidence({
   };
 }
 
-export function createGitHubIntegrationAdapter({
-  repository,
-  token,
-  fetchFn = globalThis.fetch,
-} = {}) {
+export function createGitHubIntegrationAdapter({ repository, token, fetchFn = globalThis.fetch } = {}) {
   return {
     async mergePullRequest({ prNumber, expectedHeadSha, mergeMethod }) {
       const response = await githubJson({
         repository,
         path: `/pulls/${prNumber}/merge`,
         method: 'PUT',
-        body: {
-          sha: expectedHeadSha,
-          merge_method: mergeMethod || 'squash',
-        },
+        body: { sha: expectedHeadSha, merge_method: mergeMethod || 'squash' },
         token,
         fetchFn,
       });
@@ -372,18 +334,8 @@ export function createGitHubIntegrationAdapter({
     },
     async readVerificationEvidence({ sourceIssueNumber, targetBranch, mergeSha }) {
       const [issue, branch, compare] = await Promise.all([
-        githubJson({
-          repository,
-          path: `/issues/${sourceIssueNumber}`,
-          token,
-          fetchFn,
-        }),
-        githubJson({
-          repository,
-          path: `/branches/${encodeURIComponent(targetBranch)}`,
-          token,
-          fetchFn,
-        }),
+        githubJson({ repository, path: `/issues/${sourceIssueNumber}`, token, fetchFn }),
+        githubJson({ repository, path: `/branches/${encodeURIComponent(targetBranch)}`, token, fetchFn }),
         githubJson({
           repository,
           path: `/compare/${encodeURIComponent(mergeSha)}...${encodeURIComponent(targetBranch)}`,
@@ -400,14 +352,7 @@ export function createGitHubIntegrationAdapter({
   };
 }
 
-async function githubJson({
-  repository,
-  path: apiPath,
-  method = 'GET',
-  body = null,
-  token,
-  fetchFn,
-}) {
+async function githubJson({ repository, path: apiPath, method = 'GET', body = null, token, fetchFn }) {
   if (!repository || !token || typeof fetchFn !== 'function') {
     return failClosed('github_client_unavailable', 'Repository, token, and fetch are required.');
   }
@@ -426,11 +371,7 @@ async function githubJson({
     return failClosed('github_request_failed', error instanceof Error ? error.message : String(error));
   }
   let data = null;
-  try {
-    data = await response.json();
-  } catch {
-    data = null;
-  }
+  try { data = await response.json(); } catch { data = null; }
   if (!response.ok) {
     return failClosed('github_request_failed', `GitHub API returned ${response.status}.`, {
       status: response.status,
@@ -442,10 +383,7 @@ async function githubJson({
 
 function normalizeCurrentHeadChecks(checks, headSha) {
   return (checks || [])
-    .filter(
-      (check) =>
-        normalizeSha(check.headSha || check.head_sha || check.commit_sha || headSha) === headSha,
-    )
+    .filter((check) => normalizeSha(check.headSha || check.head_sha || check.commit_sha || headSha) === headSha)
     .map((check) => ({
       name: String(check.name || check.context || ''),
       status: String(check.status || '').toLowerCase(),
@@ -458,31 +396,23 @@ function checkNameMatches(actual, required) {
   const r = normalizeName(required);
   return a === r || a.endsWith(r) || a.includes(r);
 }
-
 function normalizeName(value) {
   return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
 }
-
 function isAuthorizedTarget(target, config) {
   const exact = new Set(config.allowedTargets || []);
-  if (exact.has(target)) return true;
-  return (config.allowedTargetPrefixes || []).some((prefix) => target.startsWith(prefix));
+  return exact.has(target) || (config.allowedTargetPrefixes || []).some((prefix) => target.startsWith(prefix));
 }
-
 function isProtectedTarget(target, config) {
   const normalized = target.toLowerCase();
   if (['main', 'master', 'production', 'prod'].includes(normalized)) return true;
-  if ((config.forbiddenTargets || []).map((value) => String(value).toLowerCase()).includes(normalized)) {
-    return true;
-  }
+  if ((config.forbiddenTargets || []).map((value) => String(value).toLowerCase()).includes(normalized)) return true;
   return /(production|prod|credential|secret|destructive)/i.test(target);
 }
-
 function normalizeSha(value) {
   const sha = String(value || '').trim().toLowerCase();
   return /^[0-9a-f]{7,40}$/.test(sha) ? sha : '';
 }
-
 function failClosed(code, message, details = {}) {
   return { ok: false, code, message, mutationAllowed: false, ...details };
 }
@@ -514,9 +444,7 @@ export async function main(argv = process.argv.slice(2)) {
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
   const config = JSON.parse(fs.readFileSync(path.resolve(root, args.configPath), 'utf8'));
   const integrationConfig = config.componentIntegration || {};
-  if (!integrationConfig.enabled) {
-    throw new Error('component_integration_disabled');
-  }
+  if (!integrationConfig.enabled) throw new Error('component_integration_disabled');
   const evidence = await collectComponentIntegrationEvidence({
     repository: args.repository,
     issueNumber: args.issueNumber,
@@ -525,25 +453,20 @@ export async function main(argv = process.argv.slice(2)) {
   });
   let result = evidence;
   if (evidence.ok) {
-    if (args.integrate) {
-      result = await executeComponentIntegration({
-        live: evidence.live,
-        config: integrationConfig,
-        expectedHeadSha: args.expectedHeadSha,
-        expectedTargetHeadSha: args.expectedTargetHeadSha,
-        adapter: createGitHubIntegrationAdapter({
-          repository: args.repository,
-          token: args.token,
-        }),
-      });
-    } else {
-      result = evaluateComponentIntegration({
-        live: evidence.live,
-        config: integrationConfig,
-        expectedHeadSha: args.expectedHeadSha,
-        expectedTargetHeadSha: args.expectedTargetHeadSha,
-      });
-    }
+    result = args.integrate
+      ? await executeComponentIntegration({
+          live: evidence.live,
+          config: integrationConfig,
+          expectedHeadSha: args.expectedHeadSha,
+          expectedTargetHeadSha: args.expectedTargetHeadSha,
+          adapter: createGitHubIntegrationAdapter({ repository: args.repository, token: args.token }),
+        })
+      : evaluateComponentIntegration({
+          live: evidence.live,
+          config: integrationConfig,
+          expectedHeadSha: args.expectedHeadSha,
+          expectedTargetHeadSha: args.expectedTargetHeadSha,
+        });
   }
   const output = path.resolve(root, args.outputPath);
   fs.mkdirSync(path.dirname(output), { recursive: true });
@@ -552,13 +475,10 @@ export async function main(argv = process.argv.slice(2)) {
   return result.ok && result.disposition !== INTEGRATION_DISPOSITIONS.BLOCKED ? 0 : 1;
 }
 
-const isDirect =
-  process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+const isDirect = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isDirect) {
   main().then(
-    (code) => {
-      process.exitCode = code;
-    },
+    (code) => { process.exitCode = code; },
     (error) => {
       process.stderr.write(`${error instanceof Error ? error.stack || error.message : String(error)}\n`);
       process.exitCode = 1;
