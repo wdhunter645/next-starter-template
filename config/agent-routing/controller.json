@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "repository": "wdhunter645/next-starter-template",
+  "mode": "observe-only",
+  "mutationAllowed": false,
+  "canonicalEventMarkers": [
+    "IMPLEMENTATION HANDOFF",
+    "PR REVIEW REQUEST"
+  ],
+  "legacyAdapterMarkers": [
+    "CHATGPT HANDOFF"
+  ],
+  "labelsAreAuthority": false,
+  "requireOpenSourceIssue": true,
+  "requireExactSourceIssueCount": 1,
+  "rereadBeforePacket": true,
+  "rejectStaleHeadSha": true,
+  "protectedDecisionClasses": [
+    "product",
+    "engineering-approval",
+    "recovery",
+    "credential",
+    "destructive",
+    "production"
+  ],
+  "idempotency": {
+    "keyFields": [
+      "sourceIssueNumber",
+      "eventType",
+      "eventCommentId",
+      "prNumber",
+      "headSha",
+      "actionIdentity"
+    ]
+  },
+  "workflowCapabilities": {
+    "merge": false,
+    "close": false,
+    "relabel": false,
+    "resume": false,
+    "activateSuccessor": false,
+    "mutateMain": false
+  }
+}

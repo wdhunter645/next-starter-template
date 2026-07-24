@@ -1,0 +1,128 @@
+name: OPS — Agent Routing Controller (Observe)
+
+# #2677-001 / #2770 — read-only foundation.
+# Collects a normalized current-head evidence packet from an input snapshot.
+# Must not merge, close, relabel, resume, activate successors, or mutate main.
+
+on:
+  workflow_dispatch:
+    inputs:
+      input_path:
+        description: Repository-relative JSON snapshot/fixture path for observe-only packet generation
+        required: true
+        type: string
+      output_path:
+        description: Repository-relative output path for the evidence packet artifact content
+        required: false
+        default: reports/agent-routing/controller-packet.json
+        type: string
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+  checks: read
+  actions: read
+
+concurrency:
+  group: ops-agent-routing-controller-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  observe:
+    name: Observe current-head evidence
+    if: github.repository == 'wdhunter645/next-starter-template'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Confirm observe-only capabilities
+        run: |
+          node -e '
+            const fs = require("fs");
+            const cfg = JSON.parse(fs.readFileSync("config/agent-routing/controller.json", "utf8"));
+            if (cfg.mode !== "observe-only") process.exit(1);
+            if (cfg.mutationAllowed !== false) process.exit(1);
+            const caps = cfg.workflowCapabilities || {};
+            for (const key of ["merge","close","relabel","resume","activateSuccessor","mutateMain"]) {
+              if (caps[key] !== false) {
+                console.error("capability must be false:", key);
+                process.exit(1);
+              }
+            }
+            console.log("observe_only_confirmed");
+          '
+
+      - name: Refuse write permissions in this workflow
+        run: |
+          node -e '
+            const fs = require("fs");
+            const yaml = fs.readFileSync(".github/workflows/ops-agent-routing-controller.yml", "utf8");
+            const permBlock = yaml.match(/^permissions:\n([\s\S]*?)(?=\n\S|\nconcurrency:)/m);
+            if (!permBlock) {
+              console.error("permissions block missing");
+              process.exit(1);
+            }
+            if (/\bwrite\b/.test(permBlock[1])) {
+              console.error("write permission forbidden in observe-only workflow");
+              process.exit(1);
+            }
+            console.log("read_only_permissions_confirmed");
+          '
+
+      - name: Run observe controller
+        env:
+          INPUT_PATH: ${{ inputs.input_path }}
+          OUTPUT_PATH: ${{ inputs.output_path }}
+        run: |
+          test -n "$INPUT_PATH"
+          test -f "$INPUT_PATH"
+          mkdir -p "$(dirname "$OUTPUT_PATH")"
+          node scripts/agent-routing/controller.mjs \
+            --config config/agent-routing/controller.json \
+            --input "$INPUT_PATH" \
+            --output "$OUTPUT_PATH"
+
+      - name: Upload evidence packet artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-routing-controller-packet
+          path: ${{ inputs.output_path }}
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Write step summary
+        if: always()
+        env:
+          OUTPUT_PATH: ${{ inputs.output_path }}
+        run: |
+          {
+            echo "## Agent routing controller (observe-only)"
+            echo
+            echo "- Mode: observe-only"
+            echo "- Mutation allowed: false"
+            echo "- Merge/close/relabel/resume/successor/main mutation: disabled"
+            echo "- Input: \`${{ inputs.input_path }}\`"
+            echo "- Output: \`$OUTPUT_PATH\`"
+            if [ -f "$OUTPUT_PATH" ]; then
+              echo
+              echo '```json'
+              head -c 8000 "$OUTPUT_PATH"
+              echo
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
