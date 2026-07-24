@@ -31,6 +31,16 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const HEAD = '95aa88b98c705b3a93edbe2691b8d616ffc2c24b';
 const OTHER = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 type Failure = { ok: false; code: string; message?: string };
+type LiveSuccess = {
+  ok: true;
+  live: {
+    finalReread?: boolean;
+    pullRequest: { headSha: string };
+    changedFiles: string[];
+    checks: unknown[];
+    reviewThreads: Array<{ id: string }>;
+  };
+};
 
 function issue(body = '## Acceptance Criteria\n\n- [x] ok\n') {
   return {
@@ -317,13 +327,13 @@ describe('normalized observe packet', () => {
 
 describe('GitHub-native collection', () => {
   it('collects current-head evidence and final rereads', async () => {
-    const result = await collectLiveGitHubEvidence({
+    const result = (await collectLiveGitHubEvidence({
       repository: 'wdhunter645/next-starter-template',
       issueNumber: 2433,
       prNumber: 2675,
       token: 'test',
       fetchFn: githubFetch() as never,
-    });
+    })) as Failure | LiveSuccess;
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error('expected success');
     expect(result.live.finalReread).toBe(true);
@@ -393,17 +403,20 @@ describe('GitHub-native collection', () => {
   });
 
   it('paginates check runs and review threads', async () => {
-    const result = await collectLiveGitHubEvidence({
+    const result = (await collectLiveGitHubEvidence({
       repository: 'wdhunter645/next-starter-template',
       issueNumber: 2433,
       prNumber: 2675,
       token: 'test',
       fetchFn: githubFetch({ multipage: true }) as never,
-    });
+    })) as Failure | LiveSuccess;
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error('expected success');
     expect(result.live.checks).toHaveLength(101);
-    expect(result.live.reviewThreads.map((thread) => thread.id)).toEqual(['thread-1', 'thread-2']);
+    expect(result.live.reviewThreads.map((thread: { id: string }) => thread.id)).toEqual([
+      'thread-1',
+      'thread-2',
+    ]);
   });
 
   it('fails closed on incomplete review-thread pagination', async () => {
