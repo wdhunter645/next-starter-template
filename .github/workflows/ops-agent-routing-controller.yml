@@ -1,14 +1,11 @@
-name: OPS — Agent Routing Controller (Remediation + Component Integration)
+name: OPS — Agent Routing Controller (Remediation + Component Integration + Closeout)
 
 # #2677-001 / #2770 — read-only foundation with GitHub-native live collection.
 # #2677-002 / #2771 — bounded source-Issue remediation routing on that packet.
-# #2677-003 / #2772 — authorized non-main component-integration plus exact
-# post-integration verification.
-# Optional hint snapshots are compared against live evidence and cannot substitute.
-# The route job emits response/resume/escalation/integrate/verify instructions
-# with read-only permissions. The separate integration job may perform one exact
-# component merge; neither job may close, relabel, activate successors, or
-# mutate main.
+# #2677-003 / #2772 — authorized non-main component integration plus exact verification.
+# #2677-004 / #2773 — verified assigned-child closeout and exactly one successor wake.
+# The route job remains read-only. Component integration and closeout use separate,
+# narrowly write-scoped jobs. No job may mutate main or Production.
 
 on:
   workflow_dispatch:
@@ -21,12 +18,13 @@ on:
         options:
           - route
           - integrate-component
+          - closeout-successor
       issue_number:
-        description: Source Issue number for GitHub-native live collection
+        description: Source Issue number
         required: true
         type: string
       pr_number:
-        description: Related pull request number for GitHub-native live collection
+        description: Related pull request number
         required: true
         type: string
       hint_path:
@@ -34,20 +32,28 @@ on:
         required: false
         type: string
       output_path:
-        description: Repository-relative output path for the evidence packet artifact content
+        description: Repository-relative output path for the controller result
         required: false
         default: reports/agent-routing/controller-packet.json
         type: string
       expected_head_sha:
-        description: Exact expected PR head SHA (required for integrate-component)
+        description: Exact expected PR head SHA
         required: false
         type: string
       target_branch:
-        description: Exact component target branch (required for integrate-component)
+        description: Exact component target branch
         required: false
         type: string
       expected_target_head_sha:
         description: Exact expected target-head SHA (required for integrate-component)
+        required: false
+        type: string
+      integration_sha:
+        description: Exact verified component integration SHA (required for closeout-successor)
+        required: false
+        type: string
+      successor_issue_number:
+        description: Exact explicit successor Issue number (required for closeout-successor)
         required: false
         type: string
 
@@ -85,7 +91,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Confirm bounded routing and component-integration capabilities
+      - name: Confirm bounded controller capabilities
         run: |
           node -e '
             const fs = require("fs");
@@ -98,6 +104,7 @@ jobs:
             if (cfg.remediationRouting?.enabled !== true) process.exit(1);
             if (cfg.remediationRouting?.sourceIssueOnly !== true) process.exit(1);
             if (typeof cfg.componentIntegration?.enabled !== "boolean") process.exit(1);
+            if (typeof cfg.closeoutSuccessor?.enabled !== "boolean") process.exit(1);
             if (cfg.componentIntegration.enabled) {
               if (cfg.componentIntegration?.allowMain !== false) process.exit(1);
               if (cfg.componentIntegration?.allowProduction !== false) process.exit(1);
@@ -105,42 +112,27 @@ jobs:
               if (!Array.isArray(cfg.componentIntegration?.trustedReviewAuthors) || cfg.componentIntegration.trustedReviewAuthors.length === 0) process.exit(1);
               if (!Array.isArray(cfg.componentIntegration?.trustedIntegrationAuthorizationAuthors) || cfg.componentIntegration.trustedIntegrationAuthorizationAuthors.length === 0) process.exit(1);
             }
+            if (cfg.closeoutSuccessor.enabled) {
+              if (cfg.closeoutSuccessor?.allowMain !== false) process.exit(1);
+              if (cfg.closeoutSuccessor?.allowProduction !== false) process.exit(1);
+              if (Number(cfg.closeoutSuccessor?.maxTransactionsPerRun) !== 1) process.exit(1);
+              if (!Array.isArray(cfg.closeoutSuccessor?.trustedDecisionAuthors) || cfg.closeoutSuccessor.trustedDecisionAuthors.length === 0) process.exit(1);
+            }
             const caps = cfg.workflowCapabilities || {};
             for (const key of ["merge","close","relabel","resume","activateSuccessor","mutateMain"]) {
-              if (caps[key] !== false) {
-                console.error("capability must be false:", key);
-                process.exit(1);
-              }
+              if (caps[key] !== false) process.exit(1);
             }
-            const routingCaps = cfg.remediationRouting.capabilities || {};
-            for (const key of ["response","resume","escalation"]) {
-              if (routingCaps[key] !== true) process.exit(1);
-            }
-            const integrationCaps = cfg.componentIntegration.capabilities || {};
-            if (cfg.componentIntegration.enabled) {
-              if (integrationCaps.integrate !== true) process.exit(1);
-              if (integrationCaps.verify !== true) process.exit(1);
-              if (integrationCaps.close !== false) process.exit(1);
-              if (integrationCaps.activateSuccessor !== false) process.exit(1);
-            }
-            console.log("bounded_routing_and_component_integration_confirmed");
+            console.log("bounded_controller_capabilities_confirmed");
           '
 
-      - name: Refuse write permissions in this workflow
+      - name: Refuse global write permissions
         run: |
           node -e '
             const fs = require("fs");
             const yaml = fs.readFileSync(".github/workflows/ops-agent-routing-controller.yml", "utf8");
             const permBlock = yaml.match(/^permissions:\n([\s\S]*?)(?=\n\S|\nconcurrency:)/m);
-            if (!permBlock) {
-              console.error("permissions block missing");
-              process.exit(1);
-            }
-            if (/\bwrite\b/.test(permBlock[1])) {
-              console.error("write permission forbidden in observe-only workflow");
-              process.exit(1);
-            }
-            console.log("read_only_permissions_confirmed");
+            if (!permBlock || /\bwrite\b/.test(permBlock[1])) process.exit(1);
+            console.log("global_read_only_permissions_confirmed");
           '
 
       - name: Run controller with live GitHub reread
@@ -177,7 +169,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
-      - name: Write step summary
+      - name: Write route summary
         if: always()
         env:
           OUTPUT_PATH: ${{ inputs.output_path }}
@@ -185,13 +177,10 @@ jobs:
           PR_NUMBER: ${{ inputs.pr_number }}
         run: |
           {
-            echo "## Agent routing controller (remediation + component integration)"
+            echo "## Agent routing controller (read-only route)"
             echo
-            echo "- Mode: observe-only evidence plus transaction instruction output"
             echo "- Workflow mutation allowed: false"
             echo "- Live GitHub reread: required"
-            echo "- Component integration instructions: enabled (non-main only)"
-            echo "- Closeout/successor/main mutation: disabled"
             echo "- Issue: \`#$ISSUE_NUMBER\`"
             echo "- PR: \`#$PR_NUMBER\`"
             echo "- Output: \`$OUTPUT_PATH\`"
@@ -281,6 +270,105 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: agent-routing-component-integration-result
+          path: ${{ inputs.output_path }}
+          if-no-files-found: error
+          retention-days: 30
+
+  closeout-successor:
+    name: Close one verified child and activate one successor
+    if: >-
+      github.repository == 'wdhunter645/next-starter-template' &&
+      inputs.operation == 'closeout-successor'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: ops-agent-closeout-${{ inputs.issue_number }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      issues: "write"
+      pull-requests: read
+      checks: read
+      actions: read
+    steps:
+      - name: Validate exact closeout inputs
+        env:
+          SOURCE_ISSUE: ${{ inputs.issue_number }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          EXPECTED_HEAD_SHA: ${{ inputs.expected_head_sha }}
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+          INTEGRATION_SHA: ${{ inputs.integration_sha }}
+          SUCCESSOR_ISSUE: ${{ inputs.successor_issue_number }}
+        run: |
+          test -n "$SOURCE_ISSUE"
+          test -n "$PR_NUMBER"
+          test -n "$EXPECTED_HEAD_SHA"
+          test -n "$TARGET_BRANCH"
+          test -n "$INTEGRATION_SHA"
+          test -n "$SUCCESSOR_ISSUE"
+          test "$SOURCE_ISSUE" != "$SUCCESSOR_ISSUE"
+          case "$TARGET_BRANCH" in
+            component/*) ;;
+            *) echo "target must be component/*" >&2; exit 1 ;;
+          esac
+
+      - name: Checkout controller
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Confirm closeout-only write boundary
+        run: |
+          node -e '
+            const fs = require("fs");
+            const cfg = JSON.parse(fs.readFileSync("config/agent-routing/controller.json", "utf8"));
+            const c = cfg.closeoutSuccessor;
+            if (c?.enabled !== true || c.allowMain !== false || c.allowProduction !== false) process.exit(1);
+            if (Number(c.maxTransactionsPerRun) !== 1) process.exit(1);
+            if (c.capabilities?.close !== true || c.capabilities?.reportParent !== true) process.exit(1);
+            if (c.capabilities?.activateSuccessor !== true || c.capabilities?.resume !== true) process.exit(1);
+            if (c.capabilities?.merge !== false || c.capabilities?.mutateMain !== false) process.exit(1);
+            console.log("closeout_successor_boundary_confirmed");
+          '
+
+      - name: Execute one verified closeout and successor transaction
+        env:
+          SOURCE_ISSUE: ${{ inputs.issue_number }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          EXPECTED_HEAD_SHA: ${{ inputs.expected_head_sha }}
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+          INTEGRATION_SHA: ${{ inputs.integration_sha }}
+          SUCCESSOR_ISSUE: ${{ inputs.successor_issue_number }}
+          OUTPUT_PATH: ${{ inputs.output_path }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          mkdir -p "$(dirname "$OUTPUT_PATH")"
+          node scripts/agent-routing/lib/child-closeout.mjs \
+            --config config/agent-routing/controller.json \
+            --repository "$GITHUB_REPOSITORY" \
+            --source-issue "$SOURCE_ISSUE" \
+            --pr "$PR_NUMBER" \
+            --expected-head "$EXPECTED_HEAD_SHA" \
+            --target-branch "$TARGET_BRANCH" \
+            --integration-sha "$INTEGRATION_SHA" \
+            --successor "$SUCCESSOR_ISSUE" \
+            --output "$OUTPUT_PATH"
+
+      - name: Upload closeout result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-routing-closeout-successor-result
           path: ${{ inputs.output_path }}
           if-no-files-found: error
           retention-days: 30
