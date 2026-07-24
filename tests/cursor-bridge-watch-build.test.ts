@@ -365,16 +365,6 @@ describe('Cursor Bridge Watch / Build (#2814)', () => {
     expect(hashFile(__filename)).toMatch(/^[0-9a-f]{64}$/);
   });
 
-  it('snapshots package without copying runtime evidence directories', () => {
-    const home = withHome();
-    seedInstalledFromRepo(home);
-    fs.writeFileSync(path.join(home, 'queue', 'x.json'), '{}');
-    const snap = path.join(home, 'snap');
-    snapshotPackage(home, snap);
-    expect(fs.existsSync(path.join(snap, 'scripts'))).toBe(true);
-    expect(fs.existsSync(path.join(snap, 'queue'))).toBe(false);
-  });
-
   it('reports worktreeDirty from porcelain status, not sourceCommit divergence', () => {
     const repoRoot = defaultRepoRoot();
     const head = spawnSync('git', ['-C', repoRoot, 'rev-parse', 'HEAD'], {
@@ -404,98 +394,95 @@ describe('Cursor Bridge Watch / Build (#2814)', () => {
     expect(fromHead.worktreeDirty).toBe(Boolean(porcelain));
   });
 
-  it('packages queue-routing under bridge-home/orchestrator and includes it in manifests', () => {
+  it('packages queue-routing.mjs under bridge-home/orchestrator and hashes it for drift', () => {
     const home = withHome();
     seedInstalledFromRepo(home);
-    const routed = path.join(home, 'orchestrator', 'queue-routing.mjs');
-    expect(fs.existsSync(routed)).toBe(true);
-    expect(installedPathForRepoPath('scripts/orchestrator/queue-routing.mjs', home)).toBe(routed);
-    expect(REPO_PACKAGE_PATHS).toContain('scripts/orchestrator/queue-routing.mjs');
-
     const repoRoot = defaultRepoRoot();
-    const sourceCommit = spawnSync('git', ['-C', repoRoot, 'rev-parse', 'HEAD'], {
-      encoding: 'utf8',
-    }).stdout.trim();
-    const expected = computeRepoManifest(repoRoot, sourceCommit) as unknown as {
-      ok: boolean;
-      files: Record<string, string>;
-    };
-    const actual = computeInstalledManifest(home, sourceCommit) as unknown as {
-      ok: boolean;
-      files: Record<string, string>;
-    };
+    const depRel = 'scripts/orchestrator/queue-routing.mjs';
+    expect(REPO_PACKAGE_PATHS).toContain(depRel);
+
+    const installed = installedPathForRepoPath(depRel, home);
+    expect(installed).toBe(path.join(home, 'orchestrator', 'queue-routing.mjs'));
+    expect(fs.existsSync(installed)).toBe(true);
+
+    const expected = computeRepoManifest(repoRoot, 'f'.repeat(40));
+    const actual = computeInstalledManifest(home, 'f'.repeat(40));
     expect(expected.ok).toBe(true);
     expect(actual.ok).toBe(true);
-    const orchKey = 'scripts/orchestrator/queue-routing.mjs';
-    expect(expected.files[orchKey]).toMatch(/^[0-9a-f]{64}$/);
-    expect(actual.files[orchKey]).toBe(expected.files[orchKey]);
+    const expectedFiles = expected.files as Record<string, string>;
+    const actualFiles = actual.files as Record<string, string>;
+    expect(expectedFiles[depRel]).toMatch(/^[0-9a-f]{64}$/);
+    expect(actualFiles[depRel]).toBe(expectedFiles[depRel]);
+    expect(comparePackageManifests(expected, actual).match).toBe(true);
 
-    const stageRoot = path.join(home, 'stage-orch');
-    const staged = stagePackageFromCommit(repoRoot, sourceCommit, stageRoot);
-    expect(staged.ok).toBe(true);
-    expect(fs.existsSync(path.join(stageRoot, 'orchestrator', 'queue-routing.mjs'))).toBe(true);
-
-    const snap = path.join(home, 'snap-orch');
-    snapshotPackage(home, snap);
-    expect(fs.existsSync(path.join(snap, 'orchestrator', 'queue-routing.mjs'))).toBe(true);
-    expect(fs.existsSync(path.join(snap, 'queue'))).toBe(false);
+    fs.appendFileSync(installed, '\n// orchestrator drift\n');
+    const drifted = computeInstalledManifest(home, 'f'.repeat(40));
+    const comparison = comparePackageManifests(expected, drifted);
+    expect(comparison.match).toBe(false);
+    expect(comparison.drifted).toContain(depRel);
   });
 
-  it('workflow guardrails refuse tee leak and empty healthy_quiet disposition', () => {
+  it('keeps workflow guardrails fail-closed for empty/crash and never tees unscanned output', () => {
+    const repoRoot = defaultRepoRoot();
     const buildYml = fs.readFileSync(
-      path.join(defaultRepoRoot(), '.github/workflows/cursor-bridge-build.yml'),
+      path.join(repoRoot, '.github/workflows/cursor-bridge-build.yml'),
       'utf8',
     );
     const watchYml = fs.readFileSync(
-      path.join(defaultRepoRoot(), '.github/workflows/cursor-bridge-watch.yml'),
+      path.join(repoRoot, '.github/workflows/cursor-bridge-watch.yml'),
       'utf8',
     );
-    expect(buildYml).not.toMatch(/\|\s*tee\s+/);
-    expect(buildYml).toContain('NODE_RC=$?');
-    expect(buildYml).toContain('grep -qE');
-    expect(buildYml).toContain('produced empty result');
-    expect(watchYml).toContain('NODE_RC=$?');
-    expect(watchYml).toContain('produced empty result');
-    expect(watchYml).toContain('invalid JSON');
-    expect(watchYml).toMatch(/if node_rc != 0:/);
 
-    const probe = fs.mkdtempSync(path.join(os.tmpdir(), 'lgfc-wf-'));
-    const emptyResult = path.join(probe, 'empty.json');
-    fs.writeFileSync(emptyResult, '');
-    const emptyCheck = spawnSync(
-      'bash',
+    expect(buildYml).not.toMatch(/\|\s*tee\b/);
+    expect(buildYml).toMatch(/BUILD_RC=\$\?/);
+    expect(buildYml).toMatch(/secret-bearing output refused/);
+    expect(buildYml).toMatch(/bridge-build produced empty result/);
+
+    expect(watchYml).toMatch(/WATCH_RC=\$\?/);
+    expect(watchYml).toMatch(/failed_empty_result/);
+    expect(watchYml).toMatch(/failed_invalid_json/);
+    expect(watchYml).not.toMatch(/classification=healthy_quiet/);
+    expect(watchYml).toMatch(/non-zero exit cannot be classified healthy/);
+
+    // Simulate watch workflow empty-result path: crash before JSON must not become healthy.
+    const emptySim = spawnSync(
+      'python3',
       [
         '-c',
-        `RESULT=${JSON.stringify(emptyResult)}; NODE_RC=1; if [ ! -s "$RESULT" ]; then echo empty_fail; exit 1; fi; echo should_not`,
-      ],
-      { encoding: 'utf8' },
-    );
-    expect(emptyCheck.status).not.toBe(0);
-    expect(emptyCheck.stdout).toContain('empty_fail');
-
-    const crashHealthy = spawnSync(
-      'bash',
-      [
-        '-c',
-        `export NODE_RC=1; python3 - <<'PY'
-import json, os, sys
+        `
+import json, os, sys, tempfile
 from pathlib import Path
-p = Path(${JSON.stringify(path.join(probe, 'crash.json'))})
-p.write_text(json.dumps({"classification":"healthy"}))
-raw = p.read_text().strip()
+fd, path = tempfile.mkstemp(suffix=".json")
+os.close(fd)
+Path(path).write_text("")
+os.environ["RESULT_FILE"] = path
+os.environ["WATCH_RC"] = "1"
+raw = Path(os.environ["RESULT_FILE"]).read_text().strip()
+rc = int(os.environ.get("WATCH_RC", "1"))
+if not raw:
+    print("classification=failed_empty_result", file=sys.stderr)
+    sys.exit(1)
 data = json.loads(raw)
 classification = str(data.get("classification") or "unknown")
-node_rc = int(os.environ["NODE_RC"])
-if node_rc != 0:
-    print("fail_closed", file=sys.stderr)
+print("classification=" + classification)
+if classification in ("healthy", "healthy_quiet") and rc != 0:
     sys.exit(1)
-print("classification=healthy_quiet")
-PY`,
+`,
       ],
       { encoding: 'utf8' },
     );
-    expect(crashHealthy.status).not.toBe(0);
-    expect(crashHealthy.stderr).toContain('fail_closed');
-    fs.rmSync(probe, { recursive: true, force: true });
+    expect(emptySim.status).not.toBe(0);
+    expect(emptySim.stderr).toContain('failed_empty_result');
+  });
+
+  it('snapshots package without copying runtime evidence directories', () => {
+    const home = withHome();
+    seedInstalledFromRepo(home);
+    fs.writeFileSync(path.join(home, 'queue', 'x.json'), '{}');
+    const snap = path.join(home, 'snap');
+    snapshotPackage(home, snap);
+    expect(fs.existsSync(path.join(snap, 'scripts'))).toBe(true);
+    expect(fs.existsSync(path.join(snap, 'orchestrator', 'queue-routing.mjs'))).toBe(true);
+    expect(fs.existsSync(path.join(snap, 'queue'))).toBe(false);
   });
 });

@@ -49,34 +49,50 @@ jobs:
           HOME_DIR="${LGFC_CURSOR_BRIDGE_HOME:-$HOME/lgfc-cursor-bridge}"
           export LGFC_CURSOR_BRIDGE_HOME="$HOME_DIR"
           export LGFC_CURSOR_BRIDGE_WORKSPACE="${LGFC_CURSOR_BRIDGE_WORKSPACE:-$GITHUB_WORKSPACE}"
-          RESULT=/tmp/lgfc-bridge-build-result.json
+          RESULT_FILE=/tmp/lgfc-bridge-build-result.json
           set +e
-          node "$GITHUB_WORKSPACE/scripts/cursor-bridge/bridge-build.mjs" "$LGFC_BRIDGE_SOURCE_COMMIT" >"$RESULT" 2>/tmp/lgfc-bridge-build-stderr.txt
-          NODE_RC=$?
+          node "$GITHUB_WORKSPACE/scripts/cursor-bridge/bridge-build.mjs" "$LGFC_BRIDGE_SOURCE_COMMIT" \
+            > "$RESULT_FILE"
+          BUILD_RC=$?
           set -e
-          # Always scan before any classification print; never echo unscanned result content.
-          if [ ! -s "$RESULT" ]; then
-            echo "bridge-build produced empty result (exit=$NODE_RC)" >&2
-            exit 1
-          fi
-          if grep -qE 'CURSOR_API_KEY=|ghp_[A-Za-z0-9]+|github_pat_' "$RESULT"; then
+          # Always run secret scan + result validation; never print unscanned content.
+          if grep -qE 'CURSOR_API_KEY=|ghp_[A-Za-z0-9]+|github_pat_' "$RESULT_FILE" 2>/dev/null; then
             echo "secret-bearing output refused" >&2
             exit 1
           fi
-          if [ "$NODE_RC" -ne 0 ]; then
-            echo "bridge-build failed (exit=$NODE_RC)" >&2
+          if [ ! -s "$RESULT_FILE" ]; then
+            echo "bridge-build produced empty result (exit=$BUILD_RC)" >&2
             exit 1
           fi
+          export BUILD_RC
+          export RESULT_FILE
           CLASS="$(python3 - <<'PY'
 import json
+import os
+import sys
 from pathlib import Path
-raw = Path("/tmp/lgfc-bridge-build-result.json").read_text().strip()
-data = json.loads(raw)
+raw = Path(os.environ["RESULT_FILE"]).read_text().strip()
+if not raw:
+    print("empty_result", file=sys.stderr)
+    sys.exit(1)
+try:
+    data = json.loads(raw)
+except json.JSONDecodeError as exc:
+    print(f"invalid_json:{exc}", file=sys.stderr)
+    sys.exit(1)
 print(data.get("classification") or "unknown")
 PY
 )"
           echo "classification=$CLASS"
           case "$CLASS" in
-            promoted|rebuild_deferred) exit 0 ;;
-            *) exit 1 ;;
+            promoted|rebuild_deferred)
+              if [ "$CLASS" = "promoted" ] && [ "$BUILD_RC" -ne 0 ]; then
+                echo "promoted classification with non-zero exit refused" >&2
+                exit 1
+              fi
+              exit 0
+              ;;
+            *)
+              exit 1
+              ;;
           esac

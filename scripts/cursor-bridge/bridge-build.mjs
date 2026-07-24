@@ -221,12 +221,13 @@ function promoteStagedPackage(home, stageRoot, workspacePath, { skipSystemd = fa
     return { ok: false, reason: `scripts_promote_failed:${err.message}` };
   }
 
-  // Promote config files via temp + rename.
+  // Promote config + packaged orchestrator dependency via temp + rename.
   for (const rel of REPO_PACKAGE_PATHS) {
     if (rel.startsWith('scripts/cursor-bridge/')) continue;
     const src = installedPathForRepoPath(rel, stageRoot);
     if (!fs.existsSync(src)) continue;
     const dest = installedPathForRepoPath(rel, home);
+    fs.mkdirSync(path.dirname(dest), { recursive: true, mode: 0o700 });
     const tmp = `${dest}.promoting.${process.pid}`;
     fs.copyFileSync(src, tmp);
     fs.renameSync(tmp, dest);

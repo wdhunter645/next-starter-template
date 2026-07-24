@@ -49,42 +49,45 @@ jobs:
             WATCH_SCRIPT="$HOME_DIR/scripts/bridge-watch.mjs"
           fi
           test -f "$WATCH_SCRIPT"
-          RESULT=/tmp/lgfc-bridge-watch-result.json
-          : >"$RESULT"
+          RESULT_FILE=/tmp/lgfc-bridge-watch-result.json
           set +e
-          node "$WATCH_SCRIPT" check >"$RESULT" 2>/tmp/lgfc-bridge-watch-stderr.txt
-          NODE_RC=$?
+          node "$WATCH_SCRIPT" check > "$RESULT_FILE"
+          WATCH_RC=$?
           set -e
-          if [ ! -s "$RESULT" ]; then
-            echo "bridge-watch produced empty result (exit=$NODE_RC)" >&2
-            exit 1
-          fi
-          if grep -qE 'CURSOR_API_KEY=|ghp_[A-Za-z0-9]+|github_pat_' "$RESULT"; then
+          # Always run secret scan + result validation; never treat crash/empty as healthy.
+          if grep -qE 'CURSOR_API_KEY=|ghp_[A-Za-z0-9]+|github_pat_' "$RESULT_FILE" 2>/dev/null; then
             echo "secret-bearing output refused" >&2
             exit 1
           fi
-          NODE_RC="$NODE_RC" python3 - <<'PY'
+          export WATCH_RC
+          export RESULT_FILE
+          python3 - <<'PY'
 import json
 import os
 import sys
 from pathlib import Path
-raw = Path("/tmp/lgfc-bridge-watch-result.json").read_text().strip()
+
+raw = Path(os.environ["RESULT_FILE"]).read_text().strip()
+rc = int(os.environ.get("WATCH_RC", "1"))
 if not raw:
-    print("bridge-watch empty result refused", file=sys.stderr)
+    print("classification=failed_empty_result", file=sys.stderr)
     sys.exit(1)
 try:
     data = json.loads(raw)
-except json.JSONDecodeError as err:
-    print(f"bridge-watch invalid JSON: {err}", file=sys.stderr)
+except json.JSONDecodeError as exc:
+    print(f"classification=failed_invalid_json:{exc}", file=sys.stderr)
     sys.exit(1)
 classification = str(data.get("classification") or "unknown")
-node_rc = int(os.environ["NODE_RC"])
-if node_rc != 0:
-    print(f"bridge-watch failed (exit={node_rc}) classification={classification}", file=sys.stderr)
+print("classification=" + classification)
+if classification in ("healthy", "healthy_quiet") and rc != 0:
+    print("non-zero exit cannot be classified healthy", file=sys.stderr)
     sys.exit(1)
-# Quiet healthy only after successful exit + non-empty valid JSON.
-if classification in ("healthy", "healthy_quiet"):
-    print("classification=healthy_quiet")
-else:
-    print("classification=" + classification)
+if rc != 0 and classification not in (
+    "rebuild_required",
+    "rebuild_deferred",
+    "manual_review_required",
+    "failed",
+):
+    print(f"unexpected classification with non-zero exit: {classification}", file=sys.stderr)
+    sys.exit(1)
 PY

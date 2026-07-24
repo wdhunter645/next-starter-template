@@ -22,7 +22,8 @@ else
   cp -a "$REPO_ROOT/scripts/cursor-bridge/." "$HOME_DIR/scripts/"
 fi
 
-# Immutable packaged runtime dependency for eligibility relative import.
+# Immutable packaged runtime dependency for eligibility.mjs
+# (installed path: <bridge-home>/orchestrator/queue-routing.mjs).
 cp "$REPO_ROOT/scripts/orchestrator/queue-routing.mjs" "$HOME_DIR/orchestrator/queue-routing.mjs"
 
 cp "$REPO_ROOT/config/cursor-bridge/bridge.json" "$HOME_DIR/bridge.json"
