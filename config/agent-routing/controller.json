@@ -17,12 +17,37 @@
   "rejectStaleHeadSha": true,
   "protectedDecisionClasses": [
     "product",
+    "design",
     "engineering-approval",
     "recovery",
     "credential",
+    "secret",
     "destructive",
+    "rights-privacy-publication",
     "production"
   ],
+  "remediationRouting": {
+    "enabled": true,
+    "sourceIssueOnly": true,
+    "responseMarker": "ADJUSTMENT",
+    "resumeMarker": "LOCAL CURSOR RESUME",
+    "escalationMarker": "HOLD",
+    "requiredChecks": [
+      "quality"
+    ],
+    "trustedDecisionAuthors": [
+      "wdhunter645"
+    ],
+    "trustedControllerAuthors": [
+      "wdhunter645",
+      "github-actions[bot]"
+    ],
+    "capabilities": {
+      "response": true,
+      "resume": true,
+      "escalation": true
+    }
+  },
   "idempotency": {
     "keyFields": [
       "sourceIssueNumber",
@@ -30,7 +55,10 @@
       "eventCommentId",
       "prNumber",
       "headSha",
-      "actionIdentity"
+      "actionIdentity",
+      "findingIdentity",
+      "dispositionRevision",
+      "resumeIdentity"
     ]
   },
   "workflowCapabilities": {

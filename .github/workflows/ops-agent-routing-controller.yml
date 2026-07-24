@@ -1,9 +1,11 @@
-name: OPS — Agent Routing Controller (Observe)
+name: OPS — Agent Routing Controller (Remediation Routing)
 
-# #2677-001 / #2770 — read-only foundation.
-# Collects a normalized current-head evidence packet from GitHub-native live reads.
+# #2677-001 / #2770 — read-only foundation with GitHub-native live collection.
+# #2677-002 / #2771 — bounded source-Issue remediation routing on that packet.
 # Optional hint snapshots are compared against live evidence and cannot substitute.
-# Must not merge, close, relabel, resume, activate successors, or mutate main.
+# Emits response/resume/escalation transaction instructions only. The workflow
+# itself must not write Issues, merge, close, relabel, activate successors, or
+# mutate main.
 
 on:
   workflow_dispatch:
@@ -38,8 +40,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  observe:
-    name: Observe current-head evidence
+  route:
+    name: Route bounded current-head remediation
     if: github.repository == 'wdhunter645/next-starter-template'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -58,7 +60,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Confirm observe-only capabilities
+      - name: Confirm bounded routing capabilities
         run: |
           node -e '
             const fs = require("fs");
@@ -68,6 +70,8 @@ jobs:
             if (cfg.labelsAreAuthority !== false) process.exit(1);
             if (cfg.rereadBeforePacket !== true) process.exit(1);
             if (cfg.rejectStaleHeadSha !== true) process.exit(1);
+            if (cfg.remediationRouting?.enabled !== true) process.exit(1);
+            if (cfg.remediationRouting?.sourceIssueOnly !== true) process.exit(1);
             const caps = cfg.workflowCapabilities || {};
             for (const key of ["merge","close","relabel","resume","activateSuccessor","mutateMain"]) {
               if (caps[key] !== false) {
@@ -75,7 +79,11 @@ jobs:
                 process.exit(1);
               }
             }
-            console.log("observe_only_confirmed");
+            const routingCaps = cfg.remediationRouting.capabilities || {};
+            for (const key of ["response","resume","escalation"]) {
+              if (routingCaps[key] !== true) process.exit(1);
+            }
+            console.log("bounded_remediation_routing_confirmed");
           '
 
       - name: Refuse write permissions in this workflow
@@ -95,7 +103,7 @@ jobs:
             console.log("read_only_permissions_confirmed");
           '
 
-      - name: Run observe controller with live GitHub reread
+      - name: Run remediation controller with live GitHub reread
         env:
           ISSUE_NUMBER: ${{ inputs.issue_number }}
           PR_NUMBER: ${{ inputs.pr_number }}
@@ -120,11 +128,11 @@ jobs:
           fi
           node scripts/agent-routing/controller.mjs "${ARGS[@]}"
 
-      - name: Upload evidence packet artifact
+      - name: Upload controller packet artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: agent-routing-controller-packet
+          name: agent-routing-remediation-packet
           path: ${{ inputs.output_path }}
           if-no-files-found: warn
           retention-days: 30
@@ -137,10 +145,10 @@ jobs:
           PR_NUMBER: ${{ inputs.pr_number }}
         run: |
           {
-            echo "## Agent routing controller (observe-only)"
+            echo "## Agent routing controller (remediation routing)"
             echo
-            echo "- Mode: observe-only"
-            echo "- Mutation allowed: false"
+            echo "- Mode: observe-only evidence plus remediation-routing transaction output"
+            echo "- Workflow mutation allowed: false"
             echo "- Live GitHub reread: required"
             echo "- Merge/close/relabel/resume/successor/main mutation: disabled"
             echo "- Issue: \`#$ISSUE_NUMBER\`"
