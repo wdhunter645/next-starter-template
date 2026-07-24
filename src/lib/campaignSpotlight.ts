@@ -16,16 +16,63 @@ const CAMPAIGN_SPOTLIGHT_PLACEHOLDER_CTA_HREFS = new Set(['/charities', '/charit
 
 export type CampaignSpotlightLeaderboardType = 'individual' | 'team';
 
+/** Task 001 canonical launch states for website campaign display. */
+export type CampaignLaunchStatus =
+  | 'draft'
+  | 'preview'
+  | 'active'
+  | 'paused'
+  | 'ended'
+  | 'archived';
+
+/** Task 005 recognition consent states for public leaderboard/recognition rows. */
+export type CampaignRecognitionConsent =
+  | 'unknown'
+  | 'anonymous-only'
+  | 'display-name-approved'
+  | 'sponsor-public-approved'
+  | 'withdrawn'
+  | 'rejected';
+
+export const CAMPAIGN_LAUNCH_STATUSES: readonly CampaignLaunchStatus[] = [
+  'draft',
+  'preview',
+  'active',
+  'paused',
+  'ended',
+  'archived',
+] as const;
+
+const CAMPAIGN_LAUNCH_STATUS_SET = new Set<string>(CAMPAIGN_LAUNCH_STATUSES);
+
+const PUBLIC_VISIBLE_LAUNCH_STATUSES = new Set<CampaignLaunchStatus>(['active', 'paused', 'ended']);
+
+const PUBLIC_BLOCKED_CONSENTS = new Set<CampaignRecognitionConsent>([
+  'unknown',
+  'withdrawn',
+  'rejected',
+]);
+
 export type CampaignSpotlightLeaderboardEntry = {
   name: string;
   type: CampaignSpotlightLeaderboardType;
   funds: number;
   supporters: number;
   points: number;
+  /** Optional Task 005 consent; omitted means legacy snapshot (allowed when privacy-safe). */
+  consent?: CampaignRecognitionConsent;
+  is_anonymous?: boolean;
+  /** Optional approved public label override (Task 005 display_label). */
+  display_label?: string;
 };
 
 export type CampaignSpotlightConfig = {
   enabled: boolean;
+  /**
+   * Canonical launch status. Omitted/`undefined` preserves legacy configs:
+   * enabled + missing status behaves as live/active for backward compatibility.
+   */
+  status?: CampaignLaunchStatus;
   eyebrow: string;
   badge: string;
   title: string;
@@ -46,6 +93,7 @@ export type CampaignSpotlightConfig = {
 
 export const defaultCampaignSpotlightConfig: CampaignSpotlightConfig = {
   enabled: false,
+  status: 'draft',
   eyebrow: 'Temporary Campaign Spotlight',
   badge: 'Admin Preview Only',
   title: 'ALS Fundraiser 2026',
@@ -91,6 +139,28 @@ function parseLeaderboardType(value: unknown): CampaignSpotlightLeaderboardType 
   return null;
 }
 
+function parseCampaignLaunchStatus(value: unknown): CampaignLaunchStatus | undefined | null {
+  if (value === undefined || value === null || value === '') return undefined;
+  if (typeof value !== 'string') return null;
+  if (!CAMPAIGN_LAUNCH_STATUS_SET.has(value)) return null;
+  return value as CampaignLaunchStatus;
+}
+
+function parseRecognitionConsent(value: unknown): CampaignRecognitionConsent | undefined | null {
+  if (value === undefined || value === null || value === '') return undefined;
+  if (
+    value === 'unknown' ||
+    value === 'anonymous-only' ||
+    value === 'display-name-approved' ||
+    value === 'sponsor-public-approved' ||
+    value === 'withdrawn' ||
+    value === 'rejected'
+  ) {
+    return value;
+  }
+  return null;
+}
+
 export function mapFundraiserTeamToLeaderboardEntry(team: FundraiserTeam): CampaignSpotlightLeaderboardEntry {
   return {
     name: team.teamName,
@@ -98,6 +168,8 @@ export function mapFundraiserTeamToLeaderboardEntry(team: FundraiserTeam): Campa
     funds: team.totalAmount,
     supporters: team.donorCount,
     points: team.points,
+    consent: 'display-name-approved',
+    display_label: team.teamName,
   };
 }
 
@@ -122,16 +194,71 @@ export function parseCampaignSpotlightLeaderboard(raw: unknown): CampaignSpotlig
     const funds = asNumber(item.funds);
     const supporters = asNumber(item.supporters);
     const points = asNumber(item.points);
+    const consent = parseRecognitionConsent(item.consent);
+    if (consent === null) return null;
+
+    const displayLabelRaw = asString(item.display_label).trim();
+    const isAnonymous = item.is_anonymous === undefined ? undefined : asBoolean(item.is_anonymous, false);
 
     if (!name || !type) return null;
     if (!Number.isFinite(funds) || funds < 0) return null;
     if (!Number.isFinite(supporters) || supporters < 0 || !Number.isInteger(supporters)) return null;
     if (!Number.isFinite(points) || points < 0) return null;
 
-    entries.push({ name, type, funds, supporters, points });
+    const entry: CampaignSpotlightLeaderboardEntry = { name, type, funds, supporters, points };
+    if (consent !== undefined) entry.consent = consent;
+    if (isAnonymous !== undefined) entry.is_anonymous = isAnonymous;
+    if (displayLabelRaw) entry.display_label = displayLabelRaw;
+
+    entries.push(entry);
   }
 
   return entries;
+}
+
+/** Effective launch status for display gates (legacy enabled configs without status act as active). */
+export function getEffectiveCampaignLaunchStatus(config: CampaignSpotlightConfig): CampaignLaunchStatus {
+  if (config.status) return config.status;
+  return config.enabled ? 'active' : 'draft';
+}
+
+/** Public homepage may render only for enabled + active|paused|ended. */
+export function isCampaignSpotlightPubliclyVisible(config: CampaignSpotlightConfig): boolean {
+  if (!config.enabled) return false;
+  return PUBLIC_VISIBLE_LAUNCH_STATUSES.has(getEffectiveCampaignLaunchStatus(config));
+}
+
+/** Live donate/auction CTAs only while campaign is active. */
+export function campaignAllowsLiveDonationCtas(config: CampaignSpotlightConfig): boolean {
+  return config.enabled && getEffectiveCampaignLaunchStatus(config) === 'active';
+}
+
+export function getCampaignSpotlightStatusBadge(config: CampaignSpotlightConfig): string | null {
+  const status = getEffectiveCampaignLaunchStatus(config);
+  if (status === 'paused') return 'Campaign paused';
+  if (status === 'ended') return 'Campaign ended';
+  return null;
+}
+
+function resolveRecognitionConsent(entry: CampaignSpotlightLeaderboardEntry): CampaignRecognitionConsent {
+  if (entry.consent) return entry.consent;
+  // Legacy team snapshots without consent: team names are public labels, not donor PII.
+  if (entry.type === 'team') return 'display-name-approved';
+  return 'unknown';
+}
+
+/**
+ * Privacy-safe public recognition label (Task 005). Returns null when the row must be hidden.
+ */
+export function getCampaignSpotlightRecognitionLabel(entry: CampaignSpotlightLeaderboardEntry): string | null {
+  if (entry.is_anonymous) return 'Anonymous';
+
+  const consent = resolveRecognitionConsent(entry);
+  if (PUBLIC_BLOCKED_CONSENTS.has(consent)) return null;
+  if (consent === 'anonymous-only') return 'Anonymous';
+
+  const label = (entry.display_label || entry.name).trim();
+  return label || null;
 }
 
 export function validateCampaignSpotlightLeaderboard(
@@ -170,8 +297,23 @@ export function validateCampaignSpotlightLeaderboard(
 
 export function getCampaignSpotlightLeaderboardForDisplay(
   config: CampaignSpotlightConfig,
-): CampaignSpotlightLeaderboardEntry[] {
-  return config.leaderboard.slice(0, CAMPAIGN_SPOTLIGHT_LEADERBOARD_DISPLAY_COUNT);
+  options: { publicRecognitionOnly?: boolean } = {},
+): Array<CampaignSpotlightLeaderboardEntry & { publicLabel: string }> {
+  const publicRecognitionOnly = options.publicRecognitionOnly ?? true;
+  const rows: Array<CampaignSpotlightLeaderboardEntry & { publicLabel: string }> = [];
+
+  for (const entry of config.leaderboard) {
+    if (rows.length >= CAMPAIGN_SPOTLIGHT_LEADERBOARD_DISPLAY_COUNT) break;
+    const publicLabel = getCampaignSpotlightRecognitionLabel(entry);
+    if (!publicLabel) {
+      if (publicRecognitionOnly) continue;
+      rows.push({ ...entry, publicLabel: entry.name });
+      continue;
+    }
+    rows.push({ ...entry, publicLabel });
+  }
+
+  return rows;
 }
 
 export type CampaignSpotlightCta = {
@@ -231,6 +373,8 @@ export function getCampaignSpotlightLinkProps(
 export function getCampaignSpotlightPrimaryCtaForDisplay(
   config: CampaignSpotlightConfig,
 ): CampaignSpotlightCta | null {
+  if (!campaignAllowsLiveDonationCtas(config)) return null;
+
   const label = config.primaryCtaLabel.trim();
   const href = config.primaryCtaHref.trim();
 
@@ -246,6 +390,8 @@ export function getCampaignSpotlightPrimaryCtaForDisplay(
 export function getCampaignSpotlightSecondaryCtaForDisplay(
   config: CampaignSpotlightConfig,
 ): CampaignSpotlightCta | null {
+  if (!campaignAllowsLiveDonationCtas(config)) return null;
+
   const label = config.secondaryCtaLabel.trim();
   const href = config.secondaryCtaHref.trim();
 
@@ -314,6 +460,9 @@ export function parseCampaignSpotlightConfig(raw: string | null | undefined): Ca
     const parsedLeaderboard = parseCampaignSpotlightLeaderboard(parsed.leaderboard);
     if (parsed.leaderboard !== undefined && parsedLeaderboard === null) return null;
 
+    const status = parseCampaignLaunchStatus(parsed.status);
+    if (status === null) return null;
+
     const config: CampaignSpotlightConfig = {
       enabled: asBoolean(parsed.enabled, defaultCampaignSpotlightConfig.enabled),
       eyebrow: asString(parsed.eyebrow, defaultCampaignSpotlightConfig.eyebrow).trim(),
@@ -333,6 +482,8 @@ export function parseCampaignSpotlightConfig(raw: string | null | undefined): Ca
       archiveLabel: asString(parsed.archiveLabel, defaultCampaignSpotlightConfig.archiveLabel).trim(),
       leaderboard: parsedLeaderboard ?? defaultCampaignSpotlightConfig.leaderboard,
     };
+
+    if (status !== undefined) config.status = status;
 
     return config;
   } catch {
@@ -363,6 +514,10 @@ export function validateCampaignSpotlightConfig(config: CampaignSpotlightConfig 
 
   errors.push(...validateCampaignSpotlightCtaHref('primaryCtaHref', config.primaryCtaHref, { required: true }));
   errors.push(...validateCampaignSpotlightCtaHref('secondaryCtaHref', config.secondaryCtaHref));
+
+  if (config.status !== undefined && !CAMPAIGN_LAUNCH_STATUS_SET.has(config.status)) {
+    errors.push('status must be a canonical launch state.');
+  }
 
   if (config.enabled) {
     if (isCampaignSpotlightPlaceholderCtaHref(config.primaryCtaHref)) {

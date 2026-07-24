@@ -7,13 +7,17 @@ import {
   CAMPAIGN_SPOTLIGHT_GIVEBUTTER_AUCTION_URL,
   CAMPAIGN_SPOTLIGHT_GIVEBUTTER_CAMPAIGN_URL,
   CAMPAIGN_SPOTLIGHT_KEY,
+  campaignAllowsLiveDonationCtas,
   defaultCampaignSpotlightConfig,
   parseCampaignSpotlightConfig,
   serializeCampaignSpotlightConfig,
   buildPersistedCampaignConfig,
+  getCampaignSpotlightLeaderboardForDisplay,
   getCampaignSpotlightLinkProps,
   getCampaignSpotlightPrimaryCtaForDisplay,
+  getCampaignSpotlightRecognitionLabel,
   getCampaignSpotlightSecondaryCtaForDisplay,
+  isCampaignSpotlightPubliclyVisible,
   snapshotLeaderboardFromFundraiser,
   validateCampaignSpotlightConfig,
   type CampaignSpotlightConfig,
@@ -32,6 +36,7 @@ function validConfig(overrides: Partial<CampaignSpotlightConfig> = {}): Campaign
   return {
     ...defaultCampaignSpotlightConfig,
     enabled: true,
+    status: 'active',
     eyebrow: 'ALS Fundraiser 2026',
     badge: '',
     title: 'Support the Campaign',
@@ -176,9 +181,33 @@ describe('campaignSpotlight config helpers', () => {
 
   it('snapshots the top three fundraiser teams for published snapshots', () => {
     expect(snapshotLeaderboardFromFundraiser()).toEqual([
-      { name: 'New York Yankees', type: 'team', funds: 0, supporters: 0, points: 0 },
-      { name: 'Detroit Tigers', type: 'team', funds: 0, supporters: 0, points: 0 },
-      { name: 'Cleveland Guardians', type: 'team', funds: 0, supporters: 0, points: 0 },
+      {
+        name: 'New York Yankees',
+        type: 'team',
+        funds: 0,
+        supporters: 0,
+        points: 0,
+        consent: 'display-name-approved',
+        display_label: 'New York Yankees',
+      },
+      {
+        name: 'Detroit Tigers',
+        type: 'team',
+        funds: 0,
+        supporters: 0,
+        points: 0,
+        consent: 'display-name-approved',
+        display_label: 'Detroit Tigers',
+      },
+      {
+        name: 'Cleveland Guardians',
+        type: 'team',
+        funds: 0,
+        supporters: 0,
+        points: 0,
+        consent: 'display-name-approved',
+        display_label: 'Cleveland Guardians',
+      },
     ]);
   });
 
@@ -266,6 +295,107 @@ describe('campaignSpotlight config helpers', () => {
     expect(persisted.secondaryCtaHref).toBe('');
     expect(validateCampaignSpotlightConfig(persisted)).toEqual([]);
   });
+
+  it('gates public visibility and live CTAs by launch status', () => {
+    expect(isCampaignSpotlightPubliclyVisible(validConfig({ status: 'active' }))).toBe(true);
+    expect(campaignAllowsLiveDonationCtas(validConfig({ status: 'active' }))).toBe(true);
+
+    expect(isCampaignSpotlightPubliclyVisible(validConfig({ status: 'paused' }))).toBe(true);
+    expect(campaignAllowsLiveDonationCtas(validConfig({ status: 'paused' }))).toBe(false);
+
+    expect(isCampaignSpotlightPubliclyVisible(validConfig({ status: 'ended' }))).toBe(true);
+    expect(campaignAllowsLiveDonationCtas(validConfig({ status: 'ended' }))).toBe(false);
+
+    expect(isCampaignSpotlightPubliclyVisible(validConfig({ status: 'draft' }))).toBe(false);
+    expect(isCampaignSpotlightPubliclyVisible(validConfig({ status: 'preview' }))).toBe(false);
+    expect(isCampaignSpotlightPubliclyVisible(validConfig({ status: 'archived' }))).toBe(false);
+
+    const legacyEnabled = validConfig();
+    delete legacyEnabled.status;
+    expect(isCampaignSpotlightPubliclyVisible(legacyEnabled)).toBe(true);
+    expect(campaignAllowsLiveDonationCtas(legacyEnabled)).toBe(true);
+
+    expect(parseCampaignSpotlightConfig(JSON.stringify({ ...validConfig(), status: 'not-a-state' }))).toBeNull();
+  });
+
+  it('applies Task 005 recognition privacy to public leaderboard labels', () => {
+    expect(
+      getCampaignSpotlightRecognitionLabel({
+        name: 'Hidden Donor',
+        type: 'individual',
+        funds: 10,
+        supporters: 1,
+        points: 1,
+        consent: 'unknown',
+      }),
+    ).toBeNull();
+
+    expect(
+      getCampaignSpotlightRecognitionLabel({
+        name: 'Alice',
+        type: 'individual',
+        funds: 10,
+        supporters: 1,
+        points: 1,
+        consent: 'anonymous-only',
+      }),
+    ).toBe('Anonymous');
+
+    expect(
+      getCampaignSpotlightRecognitionLabel({
+        name: 'legal-name',
+        type: 'individual',
+        funds: 10,
+        supporters: 1,
+        points: 1,
+        consent: 'display-name-approved',
+        display_label: 'A. Fan',
+      }),
+    ).toBe('A. Fan');
+
+    const displayed = getCampaignSpotlightLeaderboardForDisplay(
+      validConfig({
+        leaderboard: [
+          {
+            name: 'secret',
+            type: 'individual',
+            funds: 5,
+            supporters: 1,
+            points: 1,
+            consent: 'withdrawn',
+          },
+          {
+            name: 'Anon Donor',
+            type: 'individual',
+            funds: 20,
+            supporters: 2,
+            points: 2,
+            is_anonymous: true,
+          },
+          {
+            name: 'New York Yankees',
+            type: 'team',
+            funds: 100,
+            supporters: 4,
+            points: 40,
+          },
+          {
+            name: 'Detroit Tigers',
+            type: 'team',
+            funds: 90,
+            supporters: 3,
+            points: 30,
+          },
+        ],
+      }),
+    );
+
+    expect(displayed.map((row) => row.publicLabel)).toEqual([
+      'Anonymous',
+      'New York Yankees',
+      'Detroit Tigers',
+    ]);
+  });
 });
 
 describe('CampaignSpotlightCard CTA rendering', () => {
@@ -284,6 +414,15 @@ describe('CampaignSpotlightCard CTA rendering', () => {
     expect(secondary).toHaveAttribute('target', '_blank');
     expect(secondary).toHaveAttribute('rel', 'noopener noreferrer');
     expect(screen.getByRole('link', { name: 'View Auction (opens in new tab)' })).toBe(secondary);
+  });
+
+  it('suppresses live CTAs and shows status badge when paused', () => {
+    render(<CampaignSpotlightCard config={validConfig({ status: 'paused' })} />);
+
+    expect(screen.queryByTestId('campaign-spotlight-primary-cta')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('campaign-spotlight-secondary-cta')).not.toBeInTheDocument();
+    expect(screen.getByTestId('campaign-spotlight-status-badge')).toHaveTextContent('Campaign paused');
+    expect(getCampaignSpotlightPrimaryCtaForDisplay(validConfig({ status: 'paused' }))).toBeNull();
   });
 
   it('suppresses malformed primary CTA links without breaking the card', () => {
@@ -612,6 +751,44 @@ describe('CampaignSpotlightSlot fail-closed behavior', () => {
     expect(screen.queryByTestId('campaign-spotlight')).not.toBeInTheDocument();
   });
 
+  it('renders nothing when enabled draft/preview/archived statuses are not publicly visible', async () => {
+    for (const status of ['draft', 'preview', 'archived'] as const) {
+      vi.stubGlobal(
+        'fetch',
+        mockCmsGetResponse({
+          publishedBodyMd: serializeCampaignSpotlightConfig(validConfig({ status })),
+        }),
+      );
+
+      const { unmount } = render(<CampaignSpotlightSlot />);
+
+      await waitFor(() => {
+        expect(fetch).toHaveBeenCalled();
+      });
+
+      expect(screen.queryByTestId('campaign-spotlight')).not.toBeInTheDocument();
+      unmount();
+    }
+  });
+
+  it('renders paused campaign messaging without live donate CTAs', async () => {
+    vi.stubGlobal(
+      'fetch',
+      mockCmsGetResponse({
+        publishedBodyMd: serializeCampaignSpotlightConfig(validConfig({ status: 'paused' })),
+      }),
+    );
+
+    render(<CampaignSpotlightSlot />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('campaign-spotlight')).toBeInTheDocument();
+    });
+
+    expect(screen.getByTestId('campaign-spotlight-status-badge')).toHaveTextContent('Campaign paused');
+    expect(screen.queryByTestId('campaign-spotlight-primary-cta')).not.toBeInTheDocument();
+  });
+
   it('renders nothing when fetch throws', async () => {
     vi.stubGlobal(
       'fetch',
@@ -649,5 +826,104 @@ describe('CampaignSpotlightSlot fail-closed behavior', () => {
     expect(primary).toHaveAttribute('rel', 'noopener noreferrer');
     expect(screen.getByTestId('campaign-spotlight-leaderboard')).toBeInTheDocument();
     expect(screen.getByText('New York Yankees')).toBeInTheDocument();
+  });
+
+  it('renders nothing when launch status is draft even if enabled', async () => {
+    vi.stubGlobal(
+      'fetch',
+      mockCmsGetResponse({
+        publishedBodyMd: serializeCampaignSpotlightConfig(validConfig({ status: 'draft' })),
+      }),
+    );
+
+    render(<CampaignSpotlightSlot />);
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalled();
+    });
+
+    expect(screen.queryByTestId('campaign-spotlight')).not.toBeInTheDocument();
+  });
+
+  it('shows paused campaign without live donation CTAs', async () => {
+    vi.stubGlobal(
+      'fetch',
+      mockCmsGetResponse({
+        publishedBodyMd: serializeCampaignSpotlightConfig(
+          validConfig({ status: 'paused', badge: '' }),
+        ),
+      }),
+    );
+
+    render(<CampaignSpotlightSlot />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('campaign-spotlight')).toBeInTheDocument();
+    });
+
+    expect(screen.getByTestId('campaign-spotlight-status-badge')).toHaveTextContent('Campaign paused');
+    expect(screen.queryByTestId('campaign-spotlight-primary-cta')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('campaign-spotlight-secondary-cta')).not.toBeInTheDocument();
+  });
+});
+
+describe('campaign recognition privacy', () => {
+  it('fail-closes unknown/withdrawn/rejected recognition labels', () => {
+    expect(
+      getCampaignSpotlightRecognitionLabel({
+        name: 'Hidden Donor',
+        type: 'individual',
+        funds: 10,
+        supporters: 1,
+        points: 1,
+        consent: 'unknown',
+      }),
+    ).toBeNull();
+    expect(
+      getCampaignSpotlightRecognitionLabel({
+        name: 'Withdrawn',
+        type: 'individual',
+        funds: 10,
+        supporters: 1,
+        points: 1,
+        consent: 'withdrawn',
+      }),
+    ).toBeNull();
+  });
+
+  it('renders anonymous and approved display labels', () => {
+    expect(
+      getCampaignSpotlightRecognitionLabel({
+        name: 'Secret',
+        type: 'individual',
+        funds: 10,
+        supporters: 1,
+        points: 1,
+        consent: 'anonymous-only',
+      }),
+    ).toBe('Anonymous');
+    expect(
+      getCampaignSpotlightRecognitionLabel({
+        name: 'Legal Name',
+        type: 'individual',
+        funds: 10,
+        supporters: 1,
+        points: 1,
+        consent: 'display-name-approved',
+        display_label: 'Fan Friend',
+      }),
+    ).toBe('Fan Friend');
+  });
+
+  it('treats legacy team rows without consent as displayable', () => {
+    expect(
+      getCampaignSpotlightRecognitionLabel({
+        name: 'New York Yankees',
+        type: 'team',
+        funds: 0,
+        supporters: 0,
+        points: 0,
+      }),
+    ).toBe('New York Yankees');
   });
 });
