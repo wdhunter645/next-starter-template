@@ -12,82 +12,35 @@
     "legacyAdapterMarkers",
     "protectedDecisionClasses",
     "remediationRouting",
+    "componentIntegration",
     "idempotency",
     "workflowCapabilities"
   ],
   "additionalProperties": false,
   "properties": {
-    "schemaVersion": {
-      "type": "integer",
-      "const": 1
-    },
-    "repository": {
-      "type": "string",
-      "minLength": 3
-    },
-    "mode": {
-      "type": "string",
-      "enum": [
-        "observe-only"
-      ]
-    },
-    "mutationAllowed": {
-      "type": "boolean",
-      "const": false
-    },
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "repository": { "type": "string", "minLength": 3 },
+    "mode": { "type": "string", "enum": ["observe-only"] },
+    "mutationAllowed": { "type": "boolean", "const": false },
     "canonicalEventMarkers": {
       "type": "array",
       "minItems": 1,
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
+      "items": { "type": "string", "minLength": 1 }
     },
     "legacyAdapterMarkers": {
       "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
+      "items": { "type": "string", "minLength": 1 }
     },
-    "labelsAreAuthority": {
-      "type": "boolean",
-      "const": false
-    },
-    "requireOpenSourceIssue": {
-      "type": "boolean",
-      "const": true
-    },
-    "requireExactSourceIssueCount": {
-      "type": "integer",
-      "const": 1
-    },
-    "rereadBeforePacket": {
-      "type": "boolean",
-      "const": true
-    },
-    "rejectStaleHeadSha": {
-      "type": "boolean",
-      "const": true
-    },
+    "labelsAreAuthority": { "type": "boolean", "const": false },
+    "requireOpenSourceIssue": { "type": "boolean", "const": true },
+    "requireExactSourceIssueCount": { "type": "integer", "const": 1 },
+    "rereadBeforePacket": { "type": "boolean", "const": true },
+    "rejectStaleHeadSha": { "type": "boolean", "const": true },
     "protectedDecisionClasses": {
       "type": "array",
       "minItems": 9,
       "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "enum": [
-          "product",
-          "design",
-          "engineering-approval",
-          "recovery",
-          "credential",
-          "secret",
-          "destructive",
-          "rights-privacy-publication",
-          "production"
-        ]
-      }
+      "items": { "type": "string" }
     },
     "remediationRouting": {
       "type": "object",
@@ -104,142 +57,127 @@
         "capabilities"
       ],
       "properties": {
-        "enabled": {
-          "type": "boolean",
-          "const": true
-        },
-        "sourceIssueOnly": {
-          "type": "boolean",
-          "const": true
-        },
-        "responseMarker": {
-          "type": "string",
-          "const": "ADJUSTMENT"
-        },
-        "resumeMarker": {
-          "type": "string",
-          "const": "LOCAL CURSOR RESUME"
-        },
-        "escalationMarker": {
-          "type": "string",
-          "const": "HOLD"
-        },
+        "enabled": { "type": "boolean", "const": true },
+        "sourceIssueOnly": { "type": "boolean", "const": true },
+        "responseMarker": { "type": "string", "const": "ADJUSTMENT" },
+        "resumeMarker": { "type": "string", "const": "LOCAL CURSOR RESUME" },
+        "escalationMarker": { "type": "string", "const": "HOLD" },
         "requiredChecks": {
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
+          "items": { "type": "string", "minLength": 1 }
         },
         "trustedDecisionAuthors": {
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
+          "items": { "type": "string", "minLength": 1 }
         },
         "trustedControllerAuthors": {
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
+          "items": { "type": "string", "minLength": 1 }
         },
         "capabilities": {
           "type": "object",
           "additionalProperties": false,
-          "required": [
-            "response",
-            "resume",
-            "escalation"
-          ],
+          "required": ["response", "resume", "escalation"],
           "properties": {
-            "response": {
-              "type": "boolean",
-              "const": true
-            },
-            "resume": {
-              "type": "boolean",
-              "const": true
-            },
-            "escalation": {
-              "type": "boolean",
-              "const": true
-            }
+            "response": { "type": "boolean", "const": true },
+            "resume": { "type": "boolean", "const": true },
+            "escalation": { "type": "boolean", "const": true }
           }
         }
       }
     },
-    "idempotency": {
+    "componentIntegration": {
       "type": "object",
-      "required": [
-        "keyFields"
-      ],
       "additionalProperties": false,
+      "required": [
+        "enabled",
+        "allowedTargets",
+        "allowedTargetPrefixes",
+        "forbiddenTargets",
+        "requiredChecks",
+        "allowedApprovalProfiles",
+        "deterministicApprovalProfiles",
+        "mergeMethod",
+        "sourceIssueMustRemainOpen",
+        "verifyAfterMerge",
+        "maxMutationsPerRun"
+      ],
       "properties": {
-        "keyFields": {
+        "enabled": { "type": "boolean", "const": true },
+        "allowedTargets": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^component/" }
+        },
+        "allowedTargetPrefixes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^component/" }
+        },
+        "forbiddenTargets": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "requiredChecks": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "allowedApprovalProfiles": {
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
           "items": {
             "type": "string",
-            "enum": [
-              "sourceIssueNumber",
-              "eventType",
-              "eventCommentId",
-              "prNumber",
-              "headSha",
-              "actionIdentity",
-              "findingIdentity",
-              "dispositionRevision",
-              "resumeIdentity"
-            ]
+            "enum": ["component-auto-integration", "protected-change-review"]
           }
+        },
+        "deterministicApprovalProfiles": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "enum": ["component-auto-integration"] }
+        },
+        "mergeMethod": { "type": "string", "enum": ["squash"] },
+        "sourceIssueMustRemainOpen": { "type": "boolean", "const": true },
+        "verifyAfterMerge": { "type": "boolean", "const": true },
+        "maxMutationsPerRun": { "type": "integer", "const": 1 }
+      }
+    },
+    "idempotency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["keyFields"],
+      "properties": {
+        "keyFields": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string" }
         }
       }
     },
     "workflowCapabilities": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "merge",
-        "close",
-        "relabel",
-        "resume",
-        "activateSuccessor",
-        "mutateMain"
-      ],
+      "required": ["merge", "close", "relabel", "resume", "activateSuccessor", "mutateMain"],
       "properties": {
-        "merge": {
-          "type": "boolean",
-          "const": false
-        },
-        "close": {
-          "type": "boolean",
-          "const": false
-        },
-        "relabel": {
-          "type": "boolean",
-          "const": false
-        },
-        "resume": {
-          "type": "boolean",
-          "const": false
-        },
-        "activateSuccessor": {
-          "type": "boolean",
-          "const": false
-        },
-        "mutateMain": {
-          "type": "boolean",
-          "const": false
-        }
+        "merge": { "type": "boolean", "const": false },
+        "close": { "type": "boolean", "const": false },
+        "relabel": { "type": "boolean", "const": false },
+        "resume": { "type": "boolean", "const": false },
+        "activateSuccessor": { "type": "boolean", "const": false },
+        "mutateMain": { "type": "boolean", "const": false }
       }
     }
   }
