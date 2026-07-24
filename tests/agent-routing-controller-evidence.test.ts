@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import {
   assertObserveOnlyConfigInvariants,
   loadControllerConfig,
+  mainAsync,
   runObserveController,
 } from '../scripts/agent-routing/controller.mjs';
 import {
@@ -62,6 +63,260 @@ type ObserveResult = FailClosed | ObserveSuccess;
 
 function asResult(value: unknown): ObserveResult {
   return value as ObserveResult;
+}
+
+function createCollectFetchMock(options: {
+  headSha: string;
+  finalHeadSha: string;
+  checkRunsFail?: boolean;
+  multiPageChecks?: boolean;
+  multiPageThreads?: boolean;
+  onCollect?: () => void;
+}) {
+  let issueReads = 0;
+  let prReads = 0;
+  let graphqlReads = 0;
+
+  const issuePayload = {
+    number: 2433,
+    state: 'open',
+    title: 'TASK: CC-001',
+    body: '## Acceptance Criteria\n\n- [x] ok\n',
+    labels: [{ name: 'docs' }],
+  };
+
+  const prPayload = (sha: string) => ({
+    number: 2675,
+    title: 'docs(#2433)',
+    state: 'open',
+    body: '- **Issue:** #2433\n- Delivery model: B-child\n- Target environment: component\n',
+    base: { ref: 'component/content-collection-phase1' },
+    head: { ref: 'cursor/2433-cc-001-contract-freeze-2e48', sha },
+    html_url: 'https://github.com/wdhunter645/next-starter-template/pull/2675',
+  });
+
+  return async (url: string, init?: { method?: string; body?: string }) => {
+    options.onCollect?.();
+    if (String(url).includes('api.github.com/graphql')) {
+      graphqlReads += 1;
+      const body = init?.body ? JSON.parse(init.body) : {};
+      const after = body.variables?.after || null;
+      if (options.multiPageThreads) {
+        if (!after) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({
+              data: {
+                repository: {
+                  pullRequest: {
+                    reviewThreads: {
+                      pageInfo: { hasNextPage: true, endCursor: 'cursor-1' },
+                      nodes: [
+                        {
+                          id: 'PRRT_page_1',
+                          isResolved: false,
+                          isOutdated: false,
+                          path: 'docs/a.md',
+                          comments: { nodes: [{ body: 'page 1' }] },
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            }),
+          };
+        }
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            data: {
+              repository: {
+                pullRequest: {
+                  reviewThreads: {
+                    pageInfo: { hasNextPage: false, endCursor: null },
+                    nodes: [
+                      {
+                        id: 'PRRT_page_2',
+                        isResolved: true,
+                        isOutdated: false,
+                        path: 'docs/b.md',
+                        comments: { nodes: [{ body: 'page 2' }] },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          }),
+        };
+      }
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          data: {
+            repository: {
+              pullRequest: {
+                reviewThreads: {
+                  pageInfo: { hasNextPage: false, endCursor: null },
+                  nodes: [
+                    {
+                      id: 'PRRT_1',
+                      isResolved: false,
+                      isOutdated: false,
+                      path: 'docs/a.md',
+                      comments: { nodes: [{ body: 'open thread' }] },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        }),
+      };
+    }
+
+    const apiPath = String(url).replace(
+      'https://api.github.com/repos/wdhunter645/next-starter-template',
+      '',
+    );
+
+    if (apiPath === '/issues/2433') {
+      issueReads += 1;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => issuePayload,
+        text: async () => JSON.stringify(issuePayload),
+      };
+    }
+
+    if (apiPath === '/pulls/2675') {
+      prReads += 1;
+      const sha = prReads === 1 ? options.headSha : options.finalHeadSha;
+      const payload = prPayload(sha);
+      return {
+        ok: true,
+        status: 200,
+        json: async () => payload,
+        text: async () => JSON.stringify(payload),
+      };
+    }
+
+    if (apiPath.startsWith('/pulls/2675/files')) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => [{ filename: 'docs/a.md' }],
+        text: async () => '[]',
+      };
+    }
+
+    if (apiPath.startsWith('/issues/2433/comments')) {
+      const payload = [
+        {
+          id: 5029000001,
+          created_at: '2026-07-20T18:00:00Z',
+          user: { login: 'wdhunter645' },
+          body: 'CHATGPT HANDOFF\nIssue: #2433\n',
+        },
+      ];
+      return {
+        ok: true,
+        status: 200,
+        json: async () => payload,
+        text: async () => JSON.stringify(payload),
+      };
+    }
+
+    if (apiPath.startsWith('/pulls/2675/reviews')) {
+      const payload = [
+        {
+          id: 9,
+          state: 'COMMENTED',
+          user: { login: 'atlas' },
+          submitted_at: '2026-07-20T18:30:00Z',
+          body: 'note',
+        },
+      ];
+      return {
+        ok: true,
+        status: 200,
+        json: async () => payload,
+        text: async () => JSON.stringify(payload),
+      };
+    }
+
+    if (apiPath.includes('/check-runs')) {
+      if (options.checkRunsFail) {
+        return {
+          ok: false,
+          status: 500,
+          text: async () => 'check-runs unavailable',
+          json: async () => ({ message: 'check-runs unavailable' }),
+        };
+      }
+      if (options.multiPageChecks) {
+        const page = Number(new URL(url).searchParams.get('page') || '1');
+        if (page === 1) {
+          const pageOne = Array.from({ length: 100 }, (_, index) => ({
+            name: index === 0 ? 'check-page-1' : `filler-${index}`,
+            status: 'completed',
+            conclusion: 'success',
+            head_sha: options.headSha,
+          }));
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({ total_count: 101, check_runs: pageOne }),
+            text: async () => '',
+          };
+        }
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            total_count: 101,
+            check_runs: [
+              {
+                name: 'check-page-2',
+                status: 'completed',
+                conclusion: 'success',
+                head_sha: options.headSha,
+              },
+            ],
+          }),
+          text: async () => '',
+        };
+      }
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          total_count: 1,
+          check_runs: [
+            {
+              name: 'GATE — Quality Checks',
+              status: 'completed',
+              conclusion: 'success',
+              head_sha: options.headSha,
+            },
+          ],
+        }),
+        text: async () => '',
+      };
+    }
+
+    return {
+      ok: false,
+      status: 404,
+      text: async () => `missing ${apiPath}`,
+      json: async () => ({ message: 'not found' }),
+    };
+  };
 }
 
 function fixture2433(overrides: Record<string, unknown> = {}) {
@@ -519,100 +774,70 @@ describe('fixture #2433 / PR #2675 current-head packet', () => {
     expect(result.code).toBe('live_evidence_unavailable');
   });
 
-  it('collects live evidence through injectable GitHub fetch and rejects mismatched hints', async () => {
-    const routes: Record<string, unknown> = {
-      '/issues/2433': {
-        number: 2433,
-        state: 'open',
-        title: 'TASK: CC-001',
-        body: '## Acceptance Criteria\n\n- [x] ok\n',
-        labels: [{ name: 'docs' }],
-      },
-      '/pulls/2675': {
-        number: 2675,
-        title: 'docs(#2433)',
-        state: 'open',
-        body: '- **Issue:** #2433\n',
-        base: { ref: 'component/content-collection-phase1' },
-        head: { ref: 'cursor/2433-cc-001-contract-freeze-2e48', sha: HEAD_SHA },
-        html_url: 'https://github.com/wdhunter645/next-starter-template/pull/2675',
-      },
-      '/pulls/2675/files?per_page=100&page=1': [{ filename: 'docs/a.md' }],
-      '/issues/2433/comments?per_page=100&page=1': [
-        {
-          id: 1,
-          created_at: '2026-07-20T18:00:00Z',
-          user: { login: 'wdhunter645' },
-          body: 'CHATGPT HANDOFF\nIssue: #2433\n',
-        },
-      ],
-      '/pulls/2675/reviews?per_page=100&page=1': [
-        {
-          id: 9,
-          state: 'COMMENTED',
-          user: { login: 'atlas' },
-          submitted_at: '2026-07-20T18:30:00Z',
-          body: 'note',
-        },
-      ],
-      [`/commits/${HEAD_SHA}/check-runs?per_page=100`]: {
-        check_runs: [
-          {
-            name: 'GATE — Quality Checks',
-            status: 'completed',
-            conclusion: 'success',
-            head_sha: HEAD_SHA,
+  it('rejects forged or missing live trigger comments', () => {
+    const base = fixture2433();
+    const forged = asResult(
+      runObserveController(
+        fixture2433({
+          triggerComment: {
+            id: '9999999999',
+            createdAt: '2026-07-20T18:00:00Z',
+            body: 'CHATGPT HANDOFF\nIssue: #2433\n',
           },
-        ],
-      },
-    };
+        }),
+      ),
+    );
+    expect(forged.ok).toBe(false);
+    if (forged.ok) throw new Error('expected failure');
+    expect(forged.code).toBe('trigger_comment_not_in_live_evidence');
 
-    const fetchFn = async (url: string, init?: { method?: string; body?: string }) => {
-      if (String(url).includes('api.github.com/graphql')) {
-        return {
-          ok: true,
-          status: 200,
-          json: async () => ({
-            data: {
-              repository: {
-                pullRequest: {
-                  reviewThreads: {
-                    nodes: [
-                      {
-                        id: 'PRRT_1',
-                        isResolved: false,
-                        isOutdated: false,
-                        path: 'docs/a.md',
-                        comments: { nodes: [{ body: 'open thread' }] },
-                      },
-                    ],
-                  },
-                },
+    const live = base.live as { issueComments: unknown[] };
+    const missing = asResult(
+      runObserveController(
+        fixture2433({
+          live: {
+            ...live,
+            issueComments: [
+              {
+                id: '5029000002',
+                createdAt: '2026-07-20T19:00:00Z',
+                author: { login: 'wdhunter645' },
+                body: 'Late note after handoff: keep feature lanes blocked.',
               },
-            },
-          }),
-        };
-      }
-      const apiPath = String(url).replace(
-        'https://api.github.com/repos/wdhunter645/next-starter-template',
-        '',
-      );
-      const payload = routes[apiPath];
-      if (!payload) {
-        return {
-          ok: false,
-          status: 404,
-          text: async () => `missing ${apiPath}`,
-          json: async () => ({ message: 'not found' }),
-        };
-      }
-      return {
-        ok: true,
-        status: 200,
-        json: async () => payload,
-        text: async () => JSON.stringify(payload),
-      };
-    };
+            ],
+          },
+          triggerComment: undefined,
+          eventComment: undefined,
+        }),
+      ),
+    );
+    expect(missing.ok).toBe(false);
+    if (missing.ok) throw new Error('expected failure');
+    expect(missing.code).toBe('missing_canonical_event');
+  });
+
+  it('fails closed when caller delivery profile overrides the live PR profile', () => {
+    const result = asResult(
+      runObserveController(
+        fixture2433({
+          deliveryProfile: {
+            deliveryModel: 'A',
+            targetEnvironment: 'production',
+            approvalProfile: 'chat-bill-production',
+          },
+        }),
+      ),
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('expected failure');
+    expect(result.code).toBe('delivery_profile_hint_mismatch');
+  });
+
+  it('collects live evidence through injectable GitHub fetch and rejects mismatched hints', async () => {
+    const fetchFn = createCollectFetchMock({
+      headSha: HEAD_SHA,
+      finalHeadSha: HEAD_SHA,
+    });
 
     const collected = (await collectLiveGitHubEvidence({
       repository: 'wdhunter645/next-starter-template',
@@ -629,6 +854,7 @@ describe('fixture #2433 / PR #2675 current-head packet', () => {
             pullRequest: { headSha: string };
             changedFiles: string[];
             reviewThreads: unknown[];
+            finalReread?: boolean;
           };
         };
     expect(collected.ok).toBe(true);
@@ -637,6 +863,7 @@ describe('fixture #2433 / PR #2675 current-head packet', () => {
     expect(collected.live.pullRequest.headSha).toBe(HEAD_SHA);
     expect(collected.live.changedFiles).toEqual(['docs/a.md']);
     expect(collected.live.reviewThreads).toHaveLength(1);
+    expect(collected.live.finalReread).toBe(true);
 
     const mismatch = assertHintsMatchLive({
       hints: {
@@ -646,6 +873,133 @@ describe('fixture #2433 / PR #2675 current-head packet', () => {
     } as never) as FailClosed;
     expect(mismatch.ok).toBe(false);
     expect(mismatch.code).toBe('stale_head_sha');
+  });
+
+  it('fails closed when PR head changes during collection before final reread', async () => {
+    const fetchFn = createCollectFetchMock({
+      headSha: HEAD_SHA,
+      finalHeadSha: STALE_SHA,
+    });
+    const result = (await collectLiveGitHubEvidence({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2433,
+      prNumber: 2675,
+      token: 'test-token',
+      fetchFn: fetchFn as never,
+    } as never)) as FailClosed;
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('stale_head_sha');
+  });
+
+  it('fails closed when check-run collection fails', async () => {
+    const fetchFn = createCollectFetchMock({
+      headSha: HEAD_SHA,
+      finalHeadSha: HEAD_SHA,
+      checkRunsFail: true,
+    });
+    const result = (await collectLiveGitHubEvidence({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2433,
+      prNumber: 2675,
+      token: 'test-token',
+      fetchFn: fetchFn as never,
+    } as never)) as FailClosed;
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('live_evidence_unavailable');
+    expect(result.message || '').toMatch(/check-runs/i);
+  });
+
+  it('paginates check-runs and review threads to completion', async () => {
+    const fetchFn = createCollectFetchMock({
+      headSha: HEAD_SHA,
+      finalHeadSha: HEAD_SHA,
+      multiPageChecks: true,
+      multiPageThreads: true,
+    });
+    const collected = (await collectLiveGitHubEvidence({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2433,
+      prNumber: 2675,
+      token: 'test-token',
+      fetchFn: fetchFn as never,
+    } as never)) as
+      | FailClosed
+      | {
+          ok: true;
+          live: {
+            checks: Array<{ name: string }>;
+            reviewThreads: Array<{ id: string }>;
+          };
+        };
+    expect(collected.ok).toBe(true);
+    if (!collected.ok) throw new Error('expected live collection');
+    expect(collected.live.checks.map((check) => check.name)).toContain('check-page-1');
+    expect(collected.live.checks.map((check) => check.name)).toContain('check-page-2');
+    expect(collected.live.checks).toHaveLength(101);
+    expect(collected.live.reviewThreads.map((thread) => thread.id)).toEqual([
+      'PRRT_page_1',
+      'PRRT_page_2',
+    ]);
+  });
+
+  it('does not let embedded input.live bypass GitHub-native CLI collection', async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'controller-live-bypass-'));
+    const hintPath = path.join(tmp, 'hint-with-live.json');
+    const fabricatedHead = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+    fs.writeFileSync(
+      hintPath,
+      JSON.stringify({
+        live: {
+          collectedAt: '2026-07-20T19:05:00Z',
+          source: 'caller-fabricated',
+          sourceIssue: { number: 2433, state: 'OPEN', body: '', labels: [] },
+          pullRequest: {
+            number: 2675,
+            body: '- **Issue:** #2433\n',
+            headSha: fabricatedHead,
+            head: { sha: fabricatedHead },
+          },
+          headSha: fabricatedHead,
+          checks: [],
+          changedFiles: [],
+          reviewThreads: [],
+          reviewSubmissions: [],
+          issueComments: [],
+        },
+      }),
+    );
+
+    let collectCalls = 0;
+    const fetchFn = createCollectFetchMock({
+      headSha: HEAD_SHA,
+      finalHeadSha: HEAD_SHA,
+      onCollect() {
+        collectCalls += 1;
+      },
+    });
+
+    const previousToken = process.env.GITHUB_TOKEN;
+    process.env.GITHUB_TOKEN = 'test-token';
+    try {
+      const code = await mainAsync(
+        [
+          '--issue',
+          '2433',
+          '--pr',
+          '2675',
+          '--repository',
+          'wdhunter645/next-starter-template',
+          '--input',
+          hintPath,
+        ],
+        { fetchFn: fetchFn as never },
+      );
+      expect(code).toBe(0);
+      expect(collectCalls).toBeGreaterThan(0);
+    } finally {
+      if (previousToken == null) delete process.env.GITHUB_TOKEN;
+      else process.env.GITHUB_TOKEN = previousToken;
+    }
   });
 });
 

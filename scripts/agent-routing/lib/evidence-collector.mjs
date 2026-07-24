@@ -8,7 +8,9 @@
  */
 
 import {
+  assertEventAuthority,
   classifyDecisionAutomatability,
+  findLatestHandoffEvent,
   normalizeEventEnvelope,
   protectedDecisionInventory,
 } from './event-contract.mjs';
@@ -382,8 +384,6 @@ export async function collectLiveGitHubEvidence({
   if (!token) {
     return failClosed('live_evidence_unavailable', 'GITHUB_TOKEN is required for live collection.');
   }
-  const issueCheck = resolveExactOpenSourceIssue([{ number: issueNumber, state: 'OPEN' }]);
-  if (!issueCheck.ok && issueCheck.code === 'invalid_source_issue') return issueCheck;
   const issueNum = Number(issueNumber);
   if (!Number.isFinite(issueNum) || issueNum <= 0) {
     return failClosed('invalid_source_issue', 'Source Issue number is invalid.');
@@ -424,6 +424,24 @@ export async function collectLiveGitHubEvidence({
     return items;
   }
 
+  async function ghGetAllCheckRuns(headSha) {
+    const items = [];
+    let page = 1;
+    while (true) {
+      const payload = await ghGet(`/commits/${headSha}/check-runs?per_page=100&page=${page}`);
+      const batch = payload.check_runs || [];
+      if (!Array.isArray(batch)) {
+        throw new Error('check-runs response did not include a check_runs array');
+      }
+      items.push(...batch);
+      const total = Number(payload.total_count);
+      if (Number.isFinite(total) && items.length >= total) break;
+      if (batch.length < 100) break;
+      page += 1;
+    }
+    return items;
+  }
+
   let sourceIssue;
   let pullRequest;
   let changedFileEntries;
@@ -431,37 +449,47 @@ export async function collectLiveGitHubEvidence({
   let reviewSubmissions;
   let checkRuns;
   let reviewThreads;
+  let finalSourceIssue;
+  let finalPullRequest;
   try {
-    [sourceIssue, pullRequest, changedFileEntries, issueComments, reviewSubmissions] =
-      await Promise.all([
-        ghGet(`/issues/${issueNum}`),
-        ghGet(`/pulls/${prCheck.prNumber}`),
-        ghGetAll(`/pulls/${prCheck.prNumber}/files`),
-        ghGetAll(`/issues/${issueNum}/comments`),
-        ghGetAll(`/pulls/${prCheck.prNumber}/reviews`),
-      ]);
+    [sourceIssue, pullRequest] = await Promise.all([
+      ghGet(`/issues/${issueNum}`),
+      ghGet(`/pulls/${prCheck.prNumber}`),
+    ]);
 
-    const headSha = normalizeSha(pullRequest.head?.sha || '');
-    if (!headSha) {
+    if (!sourceIssue || sourceIssue.pull_request) {
+      return failClosed('live_evidence_unavailable', 'Live source Issue read did not return an Issue.');
+    }
+    if (!pullRequest || pullRequest.number == null) {
+      return failClosed('live_evidence_unavailable', 'Live pull request read failed.');
+    }
+
+    const initialHeadSha = normalizeSha(pullRequest.head?.sha || '');
+    if (!initialHeadSha) {
       return failClosed('missing_expected_head_sha', 'Authoritative PR head SHA is missing from live PR.');
     }
 
-    const checksPayload = await ghGet(
-      `/commits/${headSha}/check-runs?per_page=100`,
-    ).catch(async () => {
-      // Fall back to check-suites listing when check-runs path is unavailable.
-      return { check_runs: [] };
-    });
-    checkRuns = checksPayload.check_runs || checksPayload || [];
+    [changedFileEntries, issueComments, reviewSubmissions, checkRuns, reviewThreads] =
+      await Promise.all([
+        ghGetAll(`/pulls/${prCheck.prNumber}/files`),
+        ghGetAll(`/issues/${issueNum}/comments`),
+        ghGetAll(`/pulls/${prCheck.prNumber}/reviews`),
+        ghGetAllCheckRuns(initialHeadSha),
+        fetchLiveReviewThreads({
+          owner,
+          repo,
+          prNumber: prCheck.prNumber,
+          token,
+          fetchFn,
+          userAgent,
+        }),
+      ]);
 
-    reviewThreads = await fetchLiveReviewThreads({
-      owner,
-      repo,
-      prNumber: prCheck.prNumber,
-      token,
-      fetchFn,
-      userAgent,
-    });
+    // Final live reread immediately before emission — reject mid-collection drift.
+    [finalSourceIssue, finalPullRequest] = await Promise.all([
+      ghGet(`/issues/${issueNum}`),
+      ghGet(`/pulls/${prCheck.prNumber}`),
+    ]);
   } catch (error) {
     return failClosed(
       'live_evidence_unavailable',
@@ -469,14 +497,24 @@ export async function collectLiveGitHubEvidence({
     );
   }
 
-  if (!sourceIssue || sourceIssue.pull_request) {
-    return failClosed('live_evidence_unavailable', 'Live source Issue read did not return an Issue.');
+  if (!finalSourceIssue || finalSourceIssue.pull_request) {
+    return failClosed('live_evidence_unavailable', 'Final live source Issue reread did not return an Issue.');
   }
-  if (!pullRequest || pullRequest.number == null) {
-    return failClosed('live_evidence_unavailable', 'Live pull request read failed.');
+  if (!finalPullRequest || finalPullRequest.number == null) {
+    return failClosed('live_evidence_unavailable', 'Final live pull request reread failed.');
   }
 
-  const headSha = normalizeSha(pullRequest.head?.sha || '');
+  const drift = assertLiveIssuePrStable({
+    initialIssue: sourceIssue,
+    finalIssue: finalSourceIssue,
+    initialPr: pullRequest,
+    finalPr: finalPullRequest,
+    expectedIssueNumber: issueNum,
+    expectedPrNumber: prCheck.prNumber,
+  });
+  if (!drift.ok) return drift;
+
+  const headSha = normalizeSha(finalPullRequest.head?.sha || '');
   const collectedAt = new Date().toISOString();
 
   return {
@@ -484,26 +522,30 @@ export async function collectLiveGitHubEvidence({
     live: {
       collectedAt,
       source: 'github-native',
+      finalReread: true,
       sourceIssue: {
-        number: sourceIssue.number,
-        state: String(sourceIssue.state || '').toUpperCase() === 'OPEN' ? 'OPEN' : sourceIssue.state,
-        title: sourceIssue.title || null,
-        body: sourceIssue.body || '',
-        labels: (sourceIssue.labels || []).map((label) =>
+        number: finalSourceIssue.number,
+        state:
+          String(finalSourceIssue.state || '').toUpperCase() === 'OPEN'
+            ? 'OPEN'
+            : finalSourceIssue.state,
+        title: finalSourceIssue.title || null,
+        body: finalSourceIssue.body || '',
+        labels: (finalSourceIssue.labels || []).map((label) =>
           typeof label === 'string' ? label : label?.name || '',
         ),
       },
       pullRequest: {
-        number: pullRequest.number,
-        title: pullRequest.title || null,
-        state: pullRequest.state || null,
-        body: pullRequest.body || '',
-        baseRefName: pullRequest.base?.ref || null,
-        headRefName: pullRequest.head?.ref || null,
+        number: finalPullRequest.number,
+        title: finalPullRequest.title || null,
+        state: finalPullRequest.state || null,
+        body: finalPullRequest.body || '',
+        baseRefName: finalPullRequest.base?.ref || null,
+        headRefName: finalPullRequest.head?.ref || null,
         headSha,
         head: { sha: headSha },
-        url: pullRequest.html_url || null,
-        html_url: pullRequest.html_url || null,
+        url: finalPullRequest.html_url || null,
+        html_url: finalPullRequest.html_url || null,
       },
       headSha,
       changedFiles: (changedFileEntries || []).map((file) => file.filename || file.path).filter(Boolean),
@@ -532,6 +574,78 @@ export async function collectLiveGitHubEvidence({
   };
 }
 
+/**
+ * Fail closed when source Issue or PR identity/state/head drifts during collection.
+ */
+export function assertLiveIssuePrStable({
+  initialIssue,
+  finalIssue,
+  initialPr,
+  finalPr,
+  expectedIssueNumber,
+  expectedPrNumber,
+} = {}) {
+  const initialIssueNumber = Number(initialIssue?.number);
+  const finalIssueNumber = Number(finalIssue?.number);
+  if (initialIssueNumber !== expectedIssueNumber || finalIssueNumber !== expectedIssueNumber) {
+    return failClosed('live_identity_drift', 'Source Issue identity changed during live collection.', {
+      expectedIssueNumber,
+      initialIssueNumber,
+      finalIssueNumber,
+    });
+  }
+
+  const initialState = String(initialIssue?.state || '').toUpperCase();
+  const finalState = String(finalIssue?.state || '').toUpperCase();
+  if (finalState !== 'OPEN') {
+    return failClosed('source_issue_not_open', `Source Issue #${expectedIssueNumber} is not open.`, {
+      state: finalState,
+    });
+  }
+  if (initialState !== finalState) {
+    return failClosed('live_identity_drift', 'Source Issue state changed during live collection.', {
+      initialState,
+      finalState,
+    });
+  }
+  if (String(initialIssue?.body || '') !== String(finalIssue?.body || '')) {
+    return failClosed('live_identity_drift', 'Source Issue body changed during live collection.');
+  }
+
+  const initialPrNumber = Number(initialPr?.number);
+  const finalPrNumber = Number(finalPr?.number);
+  if (initialPrNumber !== expectedPrNumber || finalPrNumber !== expectedPrNumber) {
+    return failClosed('live_identity_drift', 'Pull request identity changed during live collection.', {
+      expectedPrNumber,
+      initialPrNumber,
+      finalPrNumber,
+    });
+  }
+
+  const initialHead = normalizeSha(initialPr?.head?.sha || initialPr?.headSha || '');
+  const finalHead = normalizeSha(finalPr?.head?.sha || finalPr?.headSha || '');
+  if (!finalHead) {
+    return failClosed('missing_expected_head_sha', 'Authoritative PR head SHA is missing from final live PR.');
+  }
+  if (initialHead !== finalHead) {
+    return failClosed('stale_head_sha', 'PR head SHA changed during live evidence collection.', {
+      expectedHeadSha: initialHead,
+      observedHeadSha: finalHead,
+    });
+  }
+
+  const initialBodyIssueRefs = extractPrimarySourceIssueRefs(initialPr?.body || '');
+  const finalBodyIssueRefs = extractPrimarySourceIssueRefs(finalPr?.body || '');
+  if (JSON.stringify(initialBodyIssueRefs) !== JSON.stringify(finalBodyIssueRefs)) {
+    return failClosed('live_identity_drift', 'PR primary Issue linkage changed during live collection.', {
+      initialBodyIssueRefs,
+      finalBodyIssueRefs,
+    });
+  }
+
+  return { ok: true, headSha: finalHead };
+}
+
 async function fetchLiveReviewThreads({
   owner,
   repo,
@@ -541,10 +655,16 @@ async function fetchLiveReviewThreads({
   userAgent,
 }) {
   const query = `
-    query AgentRoutingControllerThreads($owner: String!, $repo: String!, $number: Int!) {
+    query AgentRoutingControllerThreads(
+      $owner: String!
+      $repo: String!
+      $number: Int!
+      $after: String
+    ) {
       repository(owner: $owner, name: $repo) {
         pullRequest(number: $number) {
-          reviewThreads(first: 100) {
+          reviewThreads(first: 100, after: $after) {
+            pageInfo { hasNextPage endCursor }
             nodes {
               id
               isResolved
@@ -559,32 +679,52 @@ async function fetchLiveReviewThreads({
       }
     }
   `;
-  const response = await fetchFn('https://api.github.com/graphql', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'User-Agent': userAgent,
-    },
-    body: JSON.stringify({
-      query,
-      variables: { owner, repo, number: Number(prNumber) },
-    }),
-  });
-  const payload = await response.json();
-  if (!response.ok || payload.errors?.length) {
-    throw new Error(
-      `GraphQL reviewThreads failed: ${response.status} ${JSON.stringify(payload.errors || payload)}`,
-    );
+
+  const nodes = [];
+  let after = null;
+  let page = 0;
+  const maxPages = 20;
+  while (page < maxPages) {
+    page += 1;
+    const response = await fetchFn('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'User-Agent': userAgent,
+      },
+      body: JSON.stringify({
+        query,
+        variables: { owner, repo, number: Number(prNumber), after },
+      }),
+    });
+    const payload = await response.json();
+    if (!response.ok || payload.errors?.length) {
+      throw new Error(
+        `GraphQL reviewThreads failed: ${response.status} ${JSON.stringify(payload.errors || payload)}`,
+      );
+    }
+    const connection = payload.data?.repository?.pullRequest?.reviewThreads;
+    if (!connection) {
+      throw new Error('GraphQL reviewThreads response missing pullRequest.reviewThreads');
+    }
+    nodes.push(...(connection.nodes || []));
+    if (!connection.pageInfo?.hasNextPage) break;
+    if (!connection.pageInfo?.endCursor) {
+      throw new Error('GraphQL reviewThreads hasNextPage without endCursor');
+    }
+    after = connection.pageInfo.endCursor;
   }
-  const nodes = payload.data?.repository?.pullRequest?.reviewThreads?.nodes || [];
+  if (page >= maxPages) {
+    throw new Error('GraphQL reviewThreads pagination exceeded fail-closed page limit');
+  }
+
   return nodes.map((thread) => ({
     id: thread.id,
     isResolved: Boolean(thread.isResolved),
     isOutdated: Boolean(thread.isOutdated),
     path: thread.path || null,
     body: thread.comments?.nodes?.[0]?.body || '',
-    comments: thread.comments,
   }));
 }
 
@@ -738,7 +878,7 @@ export function markDecision(decisionClass) {
   return classifyDecisionAutomatability(decisionClass);
 }
 
-function extractDeliveryProfile(prBody = '') {
+export function extractDeliveryProfile(prBody = '') {
   const read = (label) => {
     const re = new RegExp(`^\\s*(?:[-*]\\s*)?(?:\\*\\*)?${label}(?:\\*\\*)?\\s*:\\s*(.+)\\s*$`, 'im');
     const match = String(prBody || '').match(re);
@@ -755,6 +895,112 @@ function extractDeliveryProfile(prBody = '') {
     componentBranch: read('Component branch'),
     componentMaster: read('Component master'),
   };
+}
+
+/**
+ * Caller delivery-profile hints must match the live PR-derived profile exactly.
+ */
+export function assertDeliveryProfileHintMatchesLive({ hint = null, liveProfile = null } = {}) {
+  if (!hint || typeof hint !== 'object') return { ok: true, profile: liveProfile };
+  if (!liveProfile || typeof liveProfile !== 'object') {
+    return failClosed(
+      'delivery_profile_unavailable',
+      'Live PR delivery profile is required when a caller profile hint is supplied.',
+    );
+  }
+  const fields = [
+    'deliveryModel',
+    'targetEnvironment',
+    'approvalProfile',
+    'gateProfile',
+    'componentBranch',
+    'componentMaster',
+  ];
+  for (const field of fields) {
+    if (!(field in hint) || hint[field] == null) continue;
+    if (String(hint[field]) !== String(liveProfile[field] ?? '')) {
+      return failClosed(
+        'delivery_profile_hint_mismatch',
+        'Caller delivery profile hint does not match live PR-derived profile.',
+        { field, hintValue: hint[field], liveValue: liveProfile[field] ?? null },
+      );
+    }
+  }
+  return { ok: true, profile: liveProfile };
+}
+
+/**
+ * Resolve the controlling handoff/review event exclusively from live Issue comments.
+ * Any caller trigger is a selector hint that must exactly match a live comment.
+ */
+export function resolveCanonicalEventFromLiveComments({
+  liveComments = [],
+  triggerHint = null,
+  markers = null,
+} = {}) {
+  const comments = Array.isArray(liveComments) ? liveComments : [];
+  if (comments.length === 0) {
+    return failClosed(
+      'missing_canonical_event',
+      'No live Issue comments are available to resolve event authority.',
+    );
+  }
+
+  if (triggerHint) {
+    const hintId = String(triggerHint.id || triggerHint.databaseId || '');
+    const hintBody = String(triggerHint.body || triggerHint.bodyText || '');
+    const hintCreatedAt = triggerHint.createdAt || triggerHint.created_at || null;
+    const match = comments.find((comment) => {
+      const commentId = String(comment.id || comment.databaseId || '');
+      const commentBody = String(comment.body || comment.bodyText || '');
+      const commentCreatedAt = comment.createdAt || comment.created_at || null;
+      if (hintId && commentId && hintId === commentId) {
+        if (hintBody && hintBody !== commentBody) return false;
+        if (hintCreatedAt && commentCreatedAt && hintCreatedAt !== commentCreatedAt) return false;
+        return true;
+      }
+      if (!hintId && hintBody) {
+        return (
+          hintBody === commentBody &&
+          (!hintCreatedAt || !commentCreatedAt || hintCreatedAt === commentCreatedAt)
+        );
+      }
+      return false;
+    });
+    if (!match) {
+      return failClosed(
+        'trigger_comment_not_in_live_evidence',
+        'Caller trigger/event comment does not exactly match a live Issue comment.',
+        { hintId: hintId || null },
+      );
+    }
+    const authority = assertEventAuthority({ labels: [], comment: match });
+    if (!authority.ok) {
+      return failClosed(
+        authority.code,
+        'Matched live Issue comment is not a canonical or legacy handoff/review event.',
+        { commentId: String(match.id || match.databaseId || '') },
+      );
+    }
+    return {
+      ok: true,
+      event: {
+        ...authority.event,
+        comment: match,
+        commentId: String(match.id || match.databaseId || ''),
+        createdAt: match.createdAt || match.created_at || null,
+      },
+    };
+  }
+
+  const latest = findLatestHandoffEvent(comments, markers ? { markers } : undefined);
+  if (!latest) {
+    return failClosed(
+      'missing_canonical_event',
+      'No canonical or legacy handoff/review event marker found in live Issue comments.',
+    );
+  }
+  return { ok: true, event: latest };
 }
 
 function firstThreadBody(thread = {}) {

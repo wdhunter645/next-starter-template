@@ -13,18 +13,19 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
-  assertEventAuthority,
-  findLatestHandoffEvent,
   PROTECTED_DECISION_CLASSES,
   CANONICAL_EVENT_MARKERS,
   LEGACY_ADAPTER_MARKERS,
 } from './lib/event-contract.mjs';
 import {
+  assertDeliveryProfileHintMatchesLive,
   assertHintsMatchLive,
   assertValidPrNumber,
   buildEvidencePacket,
   collectLiveGitHubEvidence,
+  extractDeliveryProfile,
   extractPrimarySourceIssueRefs,
+  resolveCanonicalEventFromLiveComments,
   resolveExactOpenSourceIssue,
 } from './lib/evidence-collector.mjs';
 
@@ -121,6 +122,7 @@ export function assertObserveOnlyConfigInvariants(config = {}) {
  * Pure observe entry used by tests and the workflow.
  * Authoritative state must come from `input.live` (GitHub-native collection).
  * Top-level snapshot fields and `input.reread` are hints only.
+ * Trigger comments and delivery-profile hints must match live evidence.
  * @param {object} input fixture or live snapshot
  * @param {object} [config]
  */
@@ -146,32 +148,13 @@ export function runObserveController(input = {}, config = loadControllerConfig()
   const hintCheck = assertHintsMatchLive({ hints: input, live });
   if (!hintCheck.ok) return hintCheck;
 
-  const authority = assertEventAuthority({
-    labels: live.sourceIssue?.labels || input.sourceIssue?.labels || [],
-    comment: input.triggerComment || input.eventComment || null,
+  const eventResolution = resolveCanonicalEventFromLiveComments({
+    liveComments: live.issueComments || [],
+    triggerHint: input.triggerComment || input.eventComment || null,
+    markers: [...(config.canonicalEventMarkers || []), ...(config.legacyAdapterMarkers || [])],
   });
-
-  let event = null;
-  const liveComments = live.issueComments || [];
-  if (authority.ok) {
-    const comment = input.triggerComment || input.eventComment;
-    event = {
-      ...authority.event,
-      comment,
-      commentId: String(comment.id || comment.databaseId || ''),
-      createdAt: comment.createdAt || comment.created_at || null,
-    };
-  } else if (liveComments.length || input.issueComments?.length) {
-    const latest = findLatestHandoffEvent(liveComments.length ? liveComments : input.issueComments, {
-      markers: [...(config.canonicalEventMarkers || []), ...(config.legacyAdapterMarkers || [])],
-    });
-    if (!latest) {
-      return failClosed(authority.code, authority.message, { labelsAreAuthority: false });
-    }
-    event = latest;
-  } else {
-    return failClosed(authority.code, authority.message, { labelsAreAuthority: false });
-  }
+  if (!eventResolution.ok) return eventResolution;
+  const event = eventResolution.event;
 
   const sourceIssue = live.sourceIssue;
   const issueResolution = resolveExactOpenSourceIssue([sourceIssue]);
@@ -200,6 +183,13 @@ export function runObserveController(input = {}, config = loadControllerConfig()
     });
   }
 
+  const liveProfile = extractDeliveryProfile(pullRequest.body || '');
+  const profileHintCheck = assertDeliveryProfileHintMatchesLive({
+    hint: input.deliveryProfile || null,
+    liveProfile,
+  });
+  if (!profileHintCheck.ok) return profileHintCheck;
+
   const liveHeadSha =
     hintCheck.liveHeadSha ||
     pullRequest.headRefOid ||
@@ -220,7 +210,7 @@ export function runObserveController(input = {}, config = loadControllerConfig()
     issueComments: live.issueComments || [],
     observedHeadSha: liveHeadSha,
     rereadAt,
-    deliveryProfile: input.deliveryProfile || null,
+    deliveryProfile: liveProfile,
   });
 }
 
@@ -258,10 +248,11 @@ export async function mainAsync(argv = process.argv.slice(2), { fetchFn = global
       [
         'Usage:',
         '  node scripts/agent-routing/controller.mjs --issue <n> --pr <n> [--input <hints.json>] [--output <packet.json>]',
-        '  node scripts/agent-routing/controller.mjs --input <fixture-with-live.json> [--output <packet.json>]',
         '',
+        'Operational CLI/workflow execution always performs GitHub-native live collection when --issue and --pr are supplied.',
+        'Embedded input.live in a hint file cannot bypass collection.',
+        'Fixture-only unit tests may call runObserveController() directly with injected live evidence.',
         'Live GitHub collection requires GITHUB_TOKEN and GITHUB_REPOSITORY (or --repository).',
-        'Caller-supplied --input fields are hints only and cannot substitute for live evidence.',
       ].join('\n') + '\n',
     );
     return 0;
@@ -273,13 +264,9 @@ export async function mainAsync(argv = process.argv.slice(2), { fetchFn = global
     input = JSON.parse(fs.readFileSync(args.inputPath, 'utf8'));
   }
 
-  if (!input.live) {
-    if (!args.issueNumber || !args.prNumber) {
-      process.stderr.write(
-        'error: live collection requires --issue and --pr (or a fixture that already embeds authoritative input.live)\n',
-      );
-      return 2;
-    }
+  const hasCliIdentity = Boolean(args.issueNumber && args.prNumber);
+  if (hasCliIdentity) {
+    // Operational path: always collect authoritative live evidence and overwrite any hint live blob.
     const collected = await collectLiveGitHubEvidence({
       repository: args.repository || input.repository,
       issueNumber: Number(args.issueNumber),
@@ -297,7 +284,13 @@ export async function mainAsync(argv = process.argv.slice(2), { fetchFn = global
       }
       return 1;
     }
-    input = { ...input, live: collected.live };
+    const { live: _ignoredLive, ...hintsOnly } = input;
+    input = { ...hintsOnly, live: collected.live };
+  } else if (!input.live) {
+    process.stderr.write(
+      'error: operational execution requires --issue and --pr; embedded input.live is not an operational bypass\n',
+    );
+    return 2;
   }
 
   const result = runObserveController(input, config);
