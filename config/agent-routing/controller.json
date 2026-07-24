@@ -29,6 +29,9 @@
   "remediationRouting": {
     "enabled": true,
     "sourceIssueOnly": true,
+    "requiredChecks": [
+      "quality"
+    ],
     "responseMarker": "ADJUSTMENT",
     "resumeMarker": "LOCAL CURSOR RESUME",
     "escalationMarker": "HOLD",
