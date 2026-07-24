@@ -455,6 +455,8 @@ function isCurrentHeadReviewEvidence(item, headSha, { allowMissingHead = true } 
 function commentAuthorizesFinding(comment, { findingIdentity, prNumber, headSha }) {
   const body = String(comment?.body || comment?.bodyText || '');
   if (!body) return false;
+  if (/<!--\s*agent-routing-(?:response|resume|escalation):/i.test(body)) return false;
+  if (/^LOCAL CURSOR RESUME\b/im.test(body.trim())) return false;
   if (!/^(?:CHATGPT RESPONSE|ADJUSTMENT)\b/im.test(body.trim())) return false;
   if (!/\bbounded correction authorized\b/i.test(body) && !/\bDisposition:\s*bounded_correction\b/i.test(body)) {
     return false;
@@ -565,14 +567,15 @@ function isSourceIssueDecision(url, issueNumber) {
 function isRoutingDecisionComment(comment) {
   const body = String(comment.body || comment.bodyPreview || '').trim();
   if (/<!--\s*agent-routing-(?:response|resume|escalation):/i.test(body)) return true;
+  if (/^(?:LOCAL CURSOR RESUME|HOLD)\b/i.test(body)) return true;
   if (
     /^(?:CHATGPT RESPONSE|ADJUSTMENT)\b/i.test(body) &&
-    /\bbounded correction authorized\b/i.test(body) &&
-    /\bFinding identity\s*:/i.test(body)
+    (/\bbounded correction authorized\b/i.test(body) ||
+      /\bDisposition identity\s*:/i.test(body) ||
+      /\bFinding identity\s*:/i.test(body))
   ) {
     return true;
   }
-  if (/^HOLD\b/i.test(body) && /\bDisposition identity\s*:/i.test(body)) return true;
   return false;
 }
 

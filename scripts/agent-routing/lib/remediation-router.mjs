@@ -98,7 +98,6 @@ export function routeRemediation({
     responseIdentity,
   );
   const resumeExists = commentContainsIdentity(existingComments, 'resume', resumeIdentity);
-  const responseUrl = findCommentUrl(existingComments, 'response', responseIdentity);
 
   if (!responseExists) {
     base.actions.push({
@@ -112,22 +111,21 @@ export function routeRemediation({
         responseIdentity,
       }),
     });
-    return base;
   }
 
-  if (!resumeExists && responseUrl) {
+  if (!resumeExists) {
     base.actions.push({
       type: 'post_local_cursor_resume',
       issueNumber: Number(packet.sourceIssue.number),
       identity: resumeIdentity,
       responseIdentity,
-      resumeFromUrl: responseUrl,
-      body: localCursorResumeBody({
+      resumeFromUrl: findCommentUrl(existingComments, 'response', responseIdentity),
+      bodyTemplate: localCursorResumeBody({
         packet,
         classification,
         dispositionIdentity,
         resumeIdentity,
-        resumeFromUrl: responseUrl,
+        resumeFromUrl: '{{RESPONSE_COMMENT_URL}}',
         branch,
         prUrl,
       }),

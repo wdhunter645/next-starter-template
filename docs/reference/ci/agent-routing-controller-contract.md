@@ -39,7 +39,7 @@ It does not authorize component integration, Issue closeout, successor activatio
 ## Current known truth
 
 - Mode remains `observe-only` with `mutationAllowed: false`.
-- Authoritative state comes from GitHub-native reads immediately before packet emission.
+- Authoritative packet state comes from GitHub-native live reads performed immediately before emission (`source: github-native`).
 - Caller `live`, `reread`, finding, authorization, and disposition objects cannot substitute for live evidence.
 - Canonical event authority is resolved from live source-Issue comments.
 - Bounded-correction authority must be an actual live comment on that same source Issue.
@@ -110,9 +110,9 @@ Rules:
 - a trigger hint must exactly match a live source-Issue comment;
 - missing or ambiguous event authority fails closed.
 
-## GitHub-native expected-state reads
+## Expected-state reads
 
-Operational execution requires both `--issue` and `--pr`. It reads:
+Operational execution requires both `--issue` and `--pr`. GitHub-native reads cover:
 
 1. the exact open source Issue;
 2. the related open PR and current head SHA;

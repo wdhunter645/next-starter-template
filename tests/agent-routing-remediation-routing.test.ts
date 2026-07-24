@@ -1,16 +1,24 @@
 import { describe, expect, it } from 'vitest';
 
-import { runController } from '../scripts/agent-routing/controller.mjs';
+import { runController as runControllerRaw } from '../scripts/agent-routing/controller.mjs';
 import {
-  classifyDisposition,
+  classifyDisposition as classifyDispositionRaw,
   DISPOSITION_CLASSES,
-  extractSourceIssueAuthorizations,
+  extractSourceIssueAuthorizations as extractSourceIssueAuthorizationsRaw,
 } from '../scripts/agent-routing/lib/disposition.mjs';
 import {
-  buildDispositionIdentity,
+  buildDispositionIdentity as buildDispositionIdentityRaw,
   compareRevisions,
 } from '../scripts/agent-routing/lib/idempotency.mjs';
-import { routeRemediation } from '../scripts/agent-routing/lib/remediation-router.mjs';
+import { routeRemediation as routeRemediationRaw } from '../scripts/agent-routing/lib/remediation-router.mjs';
+
+const runController = runControllerRaw as (...args: any[]) => any;
+const classifyDisposition = classifyDispositionRaw as (...args: any[]) => any;
+const extractSourceIssueAuthorizations = extractSourceIssueAuthorizationsRaw as (
+  ...args: any[]
+) => any;
+const buildDispositionIdentity = buildDispositionIdentityRaw as (input: any) => string;
+const routeRemediation = routeRemediationRaw as (...args: any[]) => any;
 
 const HEAD_A = '1111111111111111111111111111111111111111';
 const HEAD_B = '2222222222222222222222222222222222222222';
