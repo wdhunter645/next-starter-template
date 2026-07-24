@@ -194,8 +194,7 @@
       ],
       "properties": {
         "enabled": {
-          "type": "boolean",
-          "const": true
+          "type": "boolean"
         },
         "allowMain": {
           "type": "boolean",

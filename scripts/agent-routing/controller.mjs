@@ -36,7 +36,10 @@ import {
 } from './lib/disposition.mjs';
 import { findLatestDisposition } from './lib/idempotency.mjs';
 import { routeRemediation } from './lib/remediation-router.mjs';
-import { evaluateComponentIntegrationTransaction } from './lib/component-integration.mjs';
+import {
+  evaluateComponentIntegrationTransaction,
+  executeComponentIntegration,
+} from './lib/component-integration.mjs';
 import { verifyPostIntegration } from './lib/post-integration-verify.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -458,6 +461,10 @@ function parseArgs(argv) {
     prNumber: null,
     repository: process.env.GITHUB_REPOSITORY || null,
     token: process.env.GITHUB_TOKEN || process.env.GH_TOKEN || null,
+    integrate: false,
+    expectedHeadSha: null,
+    targetBranch: null,
+    expectedTargetHeadSha: null,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -467,6 +474,10 @@ function parseArgs(argv) {
     else if (arg === '--issue') out.issueNumber = argv[++i];
     else if (arg === '--pr') out.prNumber = argv[++i];
     else if (arg === '--repository') out.repository = argv[++i];
+    else if (arg === '--integrate') out.integrate = true;
+    else if (arg === '--expected-head') out.expectedHeadSha = argv[++i];
+    else if (arg === '--target-branch') out.targetBranch = argv[++i];
+    else if (arg === '--expected-target-head') out.expectedTargetHeadSha = argv[++i];
     else if (arg === '--help' || arg === '-h') out.help = true;
   }
   return out;
@@ -476,7 +487,8 @@ export async function mainAsync(argv = process.argv.slice(2), { fetchFn = global
   const args = parseArgs(argv);
   if (args.help) {
     process.stdout.write(
-      'Usage: node scripts/agent-routing/controller.mjs --issue <n> --pr <n> [--input <hints.json>] [--output <packet.json>]\n',
+      'Usage: node scripts/agent-routing/controller.mjs --issue <n> --pr <n> [--input <hints.json>] [--output <packet.json>]\n' +
+        '       node scripts/agent-routing/controller.mjs --integrate --issue <n> --pr <n> --expected-head <sha> --target-branch <component/ref> --expected-target-head <sha> [--output <result.json>]\n',
     );
     return 0;
   }
@@ -507,6 +519,22 @@ export async function mainAsync(argv = process.argv.slice(2), { fetchFn = global
   if (!prCheck.ok) {
     writeResult(prCheck, args.outputPath);
     return 1;
+  }
+
+  if (args.integrate) {
+    const result = await executeComponentIntegration({
+      repository: args.repository || hints.repository,
+      token: args.token,
+      issueNumber: Number(args.issueNumber),
+      prNumber: prCheck.prNumber,
+      expectedHeadSha: args.expectedHeadSha,
+      targetBranch: args.targetBranch,
+      expectedTargetHeadSha: args.expectedTargetHeadSha,
+      componentIntegration: config.componentIntegration,
+      fetchFn,
+    });
+    writeResult(result, args.outputPath);
+    return result.ok ? 0 : 1;
   }
 
   const collected = await collectLiveGitHubEvidence({
