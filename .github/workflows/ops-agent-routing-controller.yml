@@ -204,9 +204,9 @@ jobs:
       group: ops-agent-component-integration-${{ inputs.target_branch }}
       cancel-in-progress: false
     permissions:
-      contents: write
+      contents: "write"
       issues: read
-      pull-requests: write
+      pull-requests: "write"
       checks: read
       actions: read
     steps:
@@ -286,7 +286,7 @@ jobs:
       cancel-in-progress: false
     permissions:
       contents: read
-      issues: write
+      issues: "write"
       pull-requests: read
       checks: read
       actions: read
