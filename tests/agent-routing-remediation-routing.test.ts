@@ -19,8 +19,9 @@ import { routeRemediation } from '../scripts/agent-routing/lib/remediation-route
 
 const HEAD_A = '1111111111111111111111111111111111111111';
 const HEAD_B = '2222222222222222222222222222222222222222';
+type AnyRecord = Record<string, any>;
 
-function packet(overrides: Record<string, unknown> = {}) {
+function packet(overrides: AnyRecord = {}): AnyRecord {
   return {
     sourceIssue: { number: 2771, state: 'OPEN' },
     pullRequest: {
@@ -49,8 +50,8 @@ function packet(overrides: Record<string, unknown> = {}) {
 function thread(
   id = 'thread-1',
   decisionClass = 'implementation',
-  extra: Record<string, unknown> = {},
-) {
+  extra: AnyRecord = {},
+): AnyRecord {
   return {
     id,
     isResolved: false,
@@ -61,13 +62,14 @@ function thread(
   };
 }
 
-function sourceDecision({
-  id = '5066000001',
-  findingIdentity = 'review-thread:thread-1',
-  headSha = HEAD_A,
-  decisionClass = 'implementation',
-  revision = '3',
-} = {}) {
+function sourceDecision(args: AnyRecord = {}): AnyRecord {
+  const {
+    id = '5066000001',
+    findingIdentity = 'review-thread:thread-1',
+    headSha = HEAD_A,
+    decisionClass = 'implementation',
+    revision = '3',
+  } = args;
   return {
     id,
     html_url:
@@ -86,20 +88,21 @@ Requested action:
   };
 }
 
-function liveInput({
-  threads = [thread()],
-  comments = [sourceDecision()],
-  checks = [
-    {
-      name: 'quality',
-      status: 'completed',
-      conclusion: 'success',
-      headSha: HEAD_A,
-    },
-  ],
-  headSha = HEAD_A,
-} = {}) {
-  const trigger = {
+function liveInput(args: AnyRecord = {}): AnyRecord {
+  const {
+    threads = [thread()],
+    comments = [sourceDecision()],
+    checks = [
+      {
+        name: 'quality',
+        status: 'completed',
+        conclusion: 'success',
+        headSha: HEAD_A,
+      },
+    ],
+    headSha = HEAD_A,
+  } = args;
+  const trigger: AnyRecord = {
     id: '5065000001',
     createdAt: '2026-07-24T03:00:00Z',
     author: { login: 'wdhunter645' },
@@ -147,7 +150,7 @@ function liveInput({
 
 describe('configuration invariants', () => {
   it('requires a nonempty required-check set', () => {
-    const config = loadControllerConfig() as Record<string, any>;
+    const config = loadControllerConfig() as AnyRecord;
     expect(config.remediationRouting.requiredChecks).toEqual(['quality']);
     expect(() =>
       assertObserveOnlyConfigInvariants({
@@ -163,7 +166,7 @@ describe('configuration invariants', () => {
 
 describe('current-head classification', () => {
   it('classifies clean only with successful configured checks', () => {
-    const result = classifyDisposition(packet(), { requiredChecks: ['quality'] }) as any;
+    const result = classifyDisposition(packet(), { requiredChecks: ['quality'] }) as AnyRecord;
     expect(result.classification).toBe(DISPOSITION_CLASSES.CLEAN);
   });
 
@@ -184,14 +187,14 @@ describe('current-head classification', () => {
   ])('blocks $label required checks', ({ checks }) => {
     const result = classifyDisposition(packet({ checks }), {
       requiredChecks: ['quality'],
-    }) as any;
+    }) as AnyRecord;
     expect(result.classification).toBe(DISPOSITION_CLASSES.PROTECTED_STOP);
     expect(result.evidence.currentHeadFindingIdentities[0]).toContain('check:quality');
   });
 
   it('fails closed when the required-check configuration is empty', () => {
     const findings = collectRequiredCheckFindings(packet(), []);
-    expect(findings.map((finding: any) => finding.identity))
+    expect(findings.map((finding: AnyRecord) => finding.identity))
       .toEqual(['checks:required-set-missing']);
   });
 
@@ -205,7 +208,7 @@ describe('current-head classification', () => {
         reviewSubmissions: [],
         lateIssueComments: [],
       },
-    }), { requiredChecks: ['quality'] }) as any;
+    }), { requiredChecks: ['quality'] }) as AnyRecord;
     expect(result.classification).toBe(DISPOSITION_CLASSES.CLEAN);
   });
 
@@ -223,7 +226,7 @@ describe('current-head classification', () => {
       sourceIssueNumber: 2771,
       prNumber: 2835,
       headSha: HEAD_A,
-    }) as any;
+    }) as AnyRecord;
     const result = classifyDisposition(packet({
       reviewEvidence: {
         unresolvedReviewThreads: [thread()],
@@ -235,7 +238,7 @@ describe('current-head classification', () => {
       findings,
       authorizations: extracted.authorizations,
       dispositionRevision: extracted.dispositionRevision,
-    }) as any;
+    }) as AnyRecord;
     expect(result.classification).toBe(DISPOSITION_CLASSES.BOUNDED_CORRECTION);
   });
 
@@ -250,26 +253,24 @@ describe('current-head classification', () => {
     'rights-privacy-publication',
     'production',
   ])('never downgrades protected class %s', (decisionClass) => {
-    const input = liveInput({
+    const result = runController(liveInput({
       threads: [thread('thread-1', decisionClass)],
       comments: [sourceDecision({ decisionClass: 'implementation' })],
-    });
-    const result = runController(input) as any;
+    })) as AnyRecord;
     expect(result.remediation.classification.classification)
       .toBe(DISPOSITION_CLASSES.PROTECTED_STOP);
-    expect(result.remediation.actions.map((action: any) => action.type))
+    expect(result.remediation.actions.map((action: AnyRecord) => action.type))
       .toEqual(['post_source_issue_escalation']);
   });
 });
 
 describe('one-transition remediation transaction', () => {
   it('emits response first, resume after live reread, then deduplicates', () => {
-    const first = runController(liveInput()) as any;
-    expect(first.ok).toBe(true);
-    expect(first.remediation.actions.map((action: any) => action.type))
+    const first = runController(liveInput()) as AnyRecord;
+    expect(first.remediation.actions.map((action: AnyRecord) => action.type))
       .toEqual(['post_source_issue_response']);
 
-    const responseComment = {
+    const responseComment: AnyRecord = {
       id: '5067000001',
       html_url:
         'https://github.com/wdhunter645/next-starter-template/issues/2771#issuecomment-5067000001',
@@ -278,24 +279,24 @@ describe('one-transition remediation transaction', () => {
     };
     const second = runController(liveInput({
       comments: [sourceDecision(), responseComment],
-    })) as any;
-    expect(second.remediation.actions.map((action: any) => action.type))
+    })) as AnyRecord;
+    expect(second.remediation.actions.map((action: AnyRecord) => action.type))
       .toEqual(['post_local_cursor_resume']);
     expect(second.remediation.actions[0].body).toContain(responseComment.html_url);
 
-    const resumeComment = {
+    const resumeComment: AnyRecord = {
       id: '5067000002',
       createdAt: '2026-07-24T03:42:00Z',
       body: second.remediation.actions[0].body,
     };
     const third = runController(liveInput({
       comments: [sourceDecision(), responseComment, resumeComment],
-    })) as any;
+    })) as AnyRecord;
     expect(third.remediation.actions).toEqual([]);
   });
 
   it('ignores fabricated caller authority', () => {
-    const input: any = liveInput({ comments: [] });
+    const input = liveInput({ comments: [] });
     input.findings = [{ identity: 'review-thread:thread-1' }];
     input.authorizations = [{
       findingIdentity: 'review-thread:thread-1',
@@ -306,19 +307,19 @@ describe('one-transition remediation transaction', () => {
       sourceIssueDecisionUrl:
         'https://github.com/wdhunter645/next-starter-template/issues/2771#issuecomment-999',
     }];
-    const result = runController(input) as any;
+    const result = runController(input) as AnyRecord;
     expect(result.remediation.classification.classification)
       .toBe(DISPOSITION_CLASSES.PROTECTED_STOP);
   });
 
   it('does not self-trigger on emitted transaction comments', () => {
-    const input: any = liveInput();
+    const input = liveInput();
     input.live.issueComments.push({
       id: 'response',
       createdAt: '2026-07-24T03:35:00Z',
       body: 'ADJUSTMENT\n<!-- agent-routing-response:response:existing -->',
     });
-    const result = runController(input) as any;
+    const result = runController(input) as AnyRecord;
     expect(result.remediation.classification.evidence.currentHeadFindingIdentities)
       .toEqual(['review-thread:thread-1']);
   });
@@ -344,7 +345,7 @@ describe('one-transition remediation transaction', () => {
       }],
       dispositionRevision: '2',
       latestDisposition: { headSha: HEAD_A, dispositionRevision: '10' },
-    }) as any;
+    }) as AnyRecord;
     expect(result.ok).toBe(false);
     expect(result.code).toBe('stale_disposition_revision');
     expect(result.actions).toEqual([]);
