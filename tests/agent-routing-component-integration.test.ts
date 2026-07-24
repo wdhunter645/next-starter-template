@@ -8,6 +8,7 @@ import {
   runController,
 } from '../scripts/agent-routing/controller.mjs';
 import {
+  collectGitHubIntegrationState,
   evaluateComponentIntegrationTransaction,
   executeComponentIntegration,
 } from '../scripts/agent-routing/lib/component-integration.mjs';
@@ -106,6 +107,7 @@ function liveCleanInput({
         headRefName: 'cursor/2677-003-component-integration',
         headSha,
         head: { sha: headSha },
+        user: { login: 'builder' },
         url: 'https://github.com/wdhunter645/next-starter-template/pull/2999',
       },
       headSha,
@@ -309,6 +311,86 @@ describe('authorized non-main component integration', () => {
     expect(result.integration.actions).toEqual([]);
   });
 
+  it.each([
+    ['untrusted reviewer', { login: 'random-reviewer' }],
+    ['self review', { login: 'builder' }],
+    ['missing reviewer identity', {}],
+  ])('rejects %s for protected integration', (_name, author) => {
+    const result = runController(
+      liveCleanInput({
+        approvalProfile: 'protected-change-review',
+        reviews: [
+          {
+            id: 'review-untrusted',
+            state: 'APPROVED',
+            commit_id: HEAD,
+            author,
+          },
+        ],
+      }),
+      config(),
+    );
+    expect(result.integration.ok).toBe(false);
+    expect(result.integration.code).toBe('missing_independent_review');
+  });
+
+  it('requires trusted and complete source-Issue integration authority', () => {
+    const validBody = `APPROVED FOR INTEGRATION
+Issue: #2772
+PR: #2999
+Head SHA: ${HEAD}
+Target branch: ${TARGET}`;
+    const cases = [
+      {
+        name: 'bare authorization',
+        comment: { id: 'bare', author: { login: 'wdhunter645' }, body: 'APPROVED FOR INTEGRATION' },
+      },
+      {
+        name: 'wrong target',
+        comment: {
+          id: 'wrong-target',
+          author: { login: 'wdhunter645' },
+          body: validBody.replace(TARGET, 'component/other'),
+        },
+      },
+      {
+        name: 'untrusted author',
+        comment: {
+          id: 'untrusted',
+          author: { login: 'random-reviewer' },
+          body: validBody,
+        },
+      },
+    ];
+    for (const testCase of cases) {
+      const result = runController(
+        liveCleanInput({
+          approvalProfile: 'protected-change-review',
+          comments: [testCase.comment],
+        }),
+        config(),
+      );
+      expect(result.integration.ok, testCase.name).toBe(false);
+      expect(result.integration.code, testCase.name).toBe('missing_independent_review');
+    }
+
+    const authorized = runController(
+      liveCleanInput({
+        approvalProfile: 'protected-change-review',
+        comments: [
+          {
+            id: 'trusted-complete',
+            author: { login: 'wdhunter645' },
+            body: validBody,
+          },
+        ],
+      }),
+      config(),
+    );
+    expect(authorized.integration.ok).toBe(true);
+    expect(authorized.integration.authority.kind).toBe('source_issue_authorization');
+  });
+
   it('blocks target drift from declared component branch', () => {
     const blocked = evaluateComponentIntegrationTransaction({
       packet: cleanPacket(),
@@ -506,6 +588,98 @@ function executionState(overrides = {}) {
   };
 }
 
+describe('GitHub-native integration collection', () => {
+  it('paginates the complete current-head check-run surface', async () => {
+    const check = (index: number) => ({
+      id: index,
+      name: `check-${index}`,
+      status: 'completed',
+      conclusion: 'success',
+      head_sha: HEAD,
+    });
+    const fetchFn = async (url: string, options: RequestInit = {}) => {
+      if (url === 'https://api.github.com/graphql') {
+        return new Response(
+          JSON.stringify({
+            data: {
+              repository: {
+                pullRequest: {
+                  reviewThreads: {
+                    pageInfo: { hasNextPage: false, endCursor: null },
+                    nodes: [],
+                  },
+                },
+              },
+            },
+          }),
+          { status: 200 },
+        );
+      }
+      const parsed = new URL(url);
+      if (parsed.pathname.endsWith('/issues/2772/comments')) {
+        return new Response(JSON.stringify([]), { status: 200 });
+      }
+      if (parsed.pathname.endsWith('/pulls/2999/reviews')) {
+        return new Response(JSON.stringify([]), { status: 200 });
+      }
+      if (parsed.pathname.endsWith(`/commits/${HEAD}/check-runs`)) {
+        const page = parsed.searchParams.get('page');
+        return new Response(
+          JSON.stringify({
+            total_count: 101,
+            check_runs:
+              page === '2'
+                ? [check(101)]
+                : Array.from({ length: 100 }, (_, index) => check(index + 1)),
+          }),
+          { status: 200 },
+        );
+      }
+      if (parsed.pathname.endsWith('/issues/2772')) {
+        return new Response(
+          JSON.stringify({ number: 2772, state: 'open', body: 'task' }),
+          { status: 200 },
+        );
+      }
+      if (parsed.pathname.endsWith('/pulls/2999')) {
+        return new Response(
+          JSON.stringify({
+            number: 2999,
+            state: 'open',
+            merged: false,
+            merge_commit_sha: null,
+            body: '- **Issue:** #2772',
+            head: { sha: HEAD },
+            base: { ref: TARGET },
+            user: { login: 'builder' },
+          }),
+          { status: 200 },
+        );
+      }
+      if (parsed.pathname.includes('/git/ref/heads/')) {
+        return new Response(
+          JSON.stringify({ object: { sha: TARGET_HEAD } }),
+          { status: 200 },
+        );
+      }
+      return new Response(`unexpected request: ${url} ${options.method || 'GET'}`, {
+        status: 404,
+      });
+    };
+    const collected = await collectGitHubIntegrationState({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2772,
+      prNumber: 2999,
+      targetBranch: TARGET,
+      token: 'test-token',
+      fetchFn,
+    });
+    expect(collected.ok).toBe(true);
+    expect(collected.state.checks).toHaveLength(101);
+    expect(collected.state.checks.at(-1).name).toBe('check-101');
+  });
+});
+
 describe('write-scoped component integration executor', () => {
   it('performs two rereads, one merge, and exact target verification', async () => {
     let collections = 0;
@@ -531,6 +705,7 @@ describe('write-scoped component integration executor', () => {
         verifications += 1;
         return { ok: true, contains: mergeSha === MERGE };
       },
+      rereadSourceIssue: async () => ({ ok: true, state: 'OPEN' }),
     });
     expect(result.ok).toBe(true);
     expect(result.integrated).toBe(true);
@@ -594,5 +769,74 @@ describe('write-scoped component integration executor', () => {
     expect(result.ok).toBe(false);
     expect(result.code).toBe('missing_expected_target_head_sha');
     expect(collections).toBe(0);
+  });
+
+  it('blocks edited authority comment content before mutation', async () => {
+    let collections = 0;
+    let mutations = 0;
+    const result = await executeComponentIntegration({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2772,
+      prNumber: 2999,
+      expectedHeadSha: HEAD,
+      targetBranch: TARGET,
+      expectedTargetHeadSha: TARGET_HEAD,
+      componentIntegration: config().componentIntegration,
+      collectState: async () => {
+        collections += 1;
+        return {
+          ok: true,
+          state: executionState({
+            comments: [
+              {
+                id: 'authority-1',
+                author: { login: collections === 1 ? 'wdhunter645' : 'random-reviewer' },
+                body:
+                  collections === 1
+                    ? 'APPROVED FOR INTEGRATION'
+                    : 'APPROVED FOR INTEGRATION — edited',
+              },
+            ],
+          }),
+        };
+      },
+      mergePullRequest: async () => {
+        mutations += 1;
+        return { ok: true, merged: true, mergeSha: MERGE };
+      },
+      verifyTargetContainsSha: async () => ({ ok: true, contains: true }),
+      rereadSourceIssue: async () => ({ ok: true, state: 'OPEN' }),
+    });
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('integration_expected_state_drift');
+    expect(result.mutations).toBe(0);
+    expect(mutations).toBe(0);
+  });
+
+  it.each([
+    ['missing', { ok: false, state: null }],
+    ['closed', { ok: true, state: 'CLOSED' }],
+  ])('records the merge but fails when post-merge Issue state is %s', async (_name, issueState) => {
+    let mutations = 0;
+    const result = await executeComponentIntegration({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2772,
+      prNumber: 2999,
+      expectedHeadSha: HEAD,
+      targetBranch: TARGET,
+      expectedTargetHeadSha: TARGET_HEAD,
+      componentIntegration: config().componentIntegration,
+      collectState: async () => ({ ok: true, state: executionState() }),
+      mergePullRequest: async () => {
+        mutations += 1;
+        return { ok: true, merged: true, mergeSha: MERGE };
+      },
+      verifyTargetContainsSha: async () => ({ ok: true, contains: true }),
+      rereadSourceIssue: async () => issueState,
+    });
+    expect(result.ok).toBe(false);
+    expect(result.mutations).toBe(1);
+    expect(result.mergeSha).toBe(MERGE);
+    expect(mutations).toBe(1);
   });
 });

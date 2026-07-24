@@ -61,6 +61,13 @@
     "independentReviewApprovalProfiles": [
       "protected-change-review"
     ],
+    "trustedIntegrationDecisionAuthors": [
+      "wdhunter645"
+    ],
+    "trustedReviewAuthors": [
+      "chatgpt-atlas",
+      "copilot-pull-request-reviewer[bot]"
+    ],
     "mergeMethod": "squash",
     "maxIntegrationsPerRun": 1,
     "requiredChecks": [

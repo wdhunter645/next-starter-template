@@ -53,6 +53,7 @@ It does not authorize Issue closeout, successor activation, credential changes, 
 - The protected approval profile `protected-change-review` requires recorded independent review or source-Issue integration authorization.
 - The route job has read-only GitHub permissions and produces transaction instructions only.
 - The integration job has job-scoped pull-request/content write permission for one component merge only.
+- Protected integration authority uses configured trusted source-decision and reviewer allowlists.
 - Protected decisions never produce a remediation resume.
 - Integration and verification never close the source Issue or activate a successor.
 
@@ -147,6 +148,7 @@ Component execution requires explicit source-Issue number, PR number, expected P
 - approval profile authority;
 - absence of `main`, Production, or ambiguous targets.
 - exact target-head identity and no mid-collection Issue, PR, check, review, thread, comment, or target drift.
+- complete pagination of current-head check runs.
 
 The final reread fails closed on Issue identity/state/body drift or PR identity/state/head/body/profile/linkage drift. Check and thread pagination must prove completeness.
 
@@ -239,7 +241,10 @@ Integration is permitted only when all of the following hold:
 7. no unresolved blocking review thread or `CHANGES_REQUESTED` review remains;
 8. authority is either:
    - deterministic profile `component-auto-integration` (repository policy; not human approval), or
-   - protected profile `protected-change-review` with a recorded independent current-head `APPROVED` review whose review commit SHA exactly matches the PR head, or source-Issue `APPROVED FOR INTEGRATION` / `Status: component integration authorized` decision.
+   - protected profile `protected-change-review` with a recorded independent current-head `APPROVED` review whose reviewer is configured as trusted, whose review commit SHA exactly matches the PR head, and whose identity differs from the explicit PR author; or
+   - a source-Issue `APPROVED FOR INTEGRATION` / `Status: component integration authorized` decision from a configured trusted author that states the exact Issue, PR, head SHA, and target branch.
+
+Missing PR-author identity, missing reviewer identity, self-review, untrusted review, headless review, incomplete source authorization, or target mismatch fails closed.
 
 A repeated equivalent invocation after the PR is merged verifies the merge SHA on the component target and suppresses with zero mutation.
 
@@ -249,6 +254,7 @@ When an exact merge/integration SHA is recorded, verification confirms:
 
 - the authorized target branch contains that merge SHA;
 - the source Issue state is explicitly available and remains `OPEN`;
+- a fresh GitHub-native source-Issue reread after the merge still proves the exact Issue is `OPEN`;
 - closeout and successor activation remain deferred.
 
 Verification records the exact target branch and merge SHA. It never closes the source Issue or activates a successor.
@@ -313,9 +319,11 @@ For `integrate-component`, the write-scoped job:
 1. validates all five expected-state identities;
 2. collects and evaluates GitHub-native state;
 3. repeats the complete collection immediately before mutation;
-4. executes at most one merge using the exact expected PR head;
-5. verifies the exact returned merge SHA is contained by the target;
-6. records no closeout or successor action.
+4. compares stable authority-bearing comment IDs, authors, and normalized bodies to detect edits or author drift;
+5. executes at most one merge using the exact expected PR head;
+6. verifies the exact returned merge SHA is contained by the target;
+7. rereads the source Issue after merge and requires explicit `OPEN` state;
+8. records no closeout or successor action.
 
 For a recorded merge SHA, the artifact may contain one `record_post_integration_verification` instruction.
 
@@ -350,6 +358,11 @@ Fixture coverage must prove:
 - missing source-Issue state fails post-integration verification;
 - component integration can be disabled without disabling route mode;
 - the write-scoped integration executor performs two rereads, one merge, and exact merge-SHA containment verification;
+- bare, incomplete, wrong-target, or untrusted source-Issue integration authority blocks;
+- untrusted, self, missing-author, stale, or headless review approval blocks;
+- authority comment body or author drift blocks before mutation;
+- current-head check-run pagination is complete;
+- missing or closed source-Issue state after merge fails with mutation evidence;
 - verification records exact target and merge SHA while the source Issue remains open.
 
 ## Rollback
