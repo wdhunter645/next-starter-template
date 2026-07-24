@@ -17,10 +17,13 @@
   "rejectStaleHeadSha": true,
   "protectedDecisionClasses": [
     "product",
+    "design",
     "engineering-approval",
     "recovery",
     "credential",
+    "secret",
     "destructive",
+    "rights-privacy-publication",
     "production"
   ],
   "remediationRouting": {
