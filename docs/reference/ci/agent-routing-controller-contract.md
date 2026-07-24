@@ -2,10 +2,10 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: Deterministic handoff-controller live evidence, finding classification, bounded remediation transaction identities, and protected-stop boundaries for #2677-001 and #2677-002
-Does Not Own: Component integration, child closeout, successor activation, or Production authorization
+Owns: Deterministic handoff-controller live evidence, finding classification, bounded remediation identities, authorized non-main component-integration instructions, and post-integration verification for #2677-001 through #2677-003
+Does Not Own: Child closeout, successor activation, or Production authorization
 Canonical Reference: /config/agent-routing/controller.json
-Related Issues: #2677, #2770, #2771, #2676, #2433
+Related Issues: #2677, #2770, #2771, #2772, #2676, #2433
 Last Reviewed: 2026-07-24
 ---
 
@@ -17,13 +17,15 @@ Define the deterministic controller foundation that:
 
 1. performs GitHub-native current-head evidence collection;
 2. classifies the packet as `clean`, `bounded_correction`, or `protected_stop`;
-3. emits an idempotent source-Issue transaction instruction only when repository authority already decides the action.
+3. emits an idempotent source-Issue remediation instruction only when repository authority already decides the action;
+4. when classification is `clean`, evaluates exactly one authorized non-`main` component-integration instruction;
+5. verifies an already-recorded merge/integration SHA on the authorized component target without closing the source Issue.
 
 The controller workflow remains read-only. It emits transaction instructions as an artifact; it does not itself merge, close, relabel, resume, activate a successor, or mutate `main`.
 
 ## Scope
 
-This document covers #2677-001 / #2770 and #2677-002 / #2771:
+This document covers #2677-001 / #2770, #2677-002 / #2771, and #2677-003 / #2772:
 
 - canonical and legacy handoff event recognition;
 - GitHub-native live collection of Issue, PR, checks, files, comments, reviews, and review threads;
@@ -32,9 +34,11 @@ This document covers #2677-001 / #2770 and #2677-002 / #2771:
 - source-Issue-bound bounded-correction authorization;
 - one response plus one action-scoped `LOCAL CURSOR RESUME` instruction;
 - one protected-stop escalation instruction;
+- authorized non-`main` component-integration instruction emission;
+- exact post-integration verification of target branch and merge SHA;
 - stable transaction identities and duplicate/stale suppression.
 
-It does not authorize component integration, Issue closeout, successor activation, credential changes, destructive action, or Production / `main` mutation.
+It does not authorize Issue closeout, successor activation, credential changes, destructive action, or Production / `main` mutation.
 
 ## Current known truth
 
@@ -43,34 +47,41 @@ It does not authorize component integration, Issue closeout, successor activatio
 - Caller `live`, `reread`, finding, authorization, and disposition objects cannot substitute for live evidence.
 - Canonical event authority is resolved from live source-Issue comments.
 - Bounded-correction authority must be an actual live comment on that same source Issue.
+- Component integration requires a `clean` disposition plus an authorized component target.
+- Automated eligibility is never treated as human approval.
+- The deterministic approval profile `component-auto-integration` is repository-policy authority, not human approval.
+- The protected approval profile `protected-change-review` requires recorded independent review or source-Issue integration authorization.
 - The workflow has read-only GitHub permissions and produces transaction instructions only.
 - Protected decisions never produce a remediation resume.
+- Integration and verification never close the source Issue or activate a successor.
 
 ## Intended final state
 
 Later #2677 children consume this contract serially:
 
-- #2677-003 / #2772 performs authorized non-`main` component integration;
 - #2677-004 / #2773 performs eligible closeout and successor activation;
 - #2677-005 / #2774 adds reconciliation, observability, E2E fixtures, and rollout.
 
-This contract is the freeze line for evidence identities, remediation identities, source-Issue authority, and protected boundaries.
+This contract is the freeze line for evidence identities, remediation identities, component-integration identities, source-Issue authority, and protected boundaries.
 
 ## Canonical files
 
 | Path | Role |
 | --- | --- |
-| `config/agent-routing/controller.json` | Observe and remediation-routing configuration |
+| `config/agent-routing/controller.json` | Observe, remediation-routing, and component-integration configuration |
 | `config/agent-routing/controller.schema.json` | Configuration schema |
-| `scripts/agent-routing/controller.mjs` | Live evidence and routing entrypoint |
+| `scripts/agent-routing/controller.mjs` | Live evidence, routing, and integration entrypoint |
 | `scripts/agent-routing/lib/event-contract.mjs` | Event and action identities |
 | `scripts/agent-routing/lib/evidence-collector.mjs` | GitHub-native current-head collector |
 | `scripts/agent-routing/lib/disposition.mjs` | Finding classification and source-Issue authorization extraction |
-| `scripts/agent-routing/lib/idempotency.mjs` | Disposition/response/resume/escalation identities |
-| `scripts/agent-routing/lib/remediation-router.mjs` | Deterministic transaction instruction builder |
+| `scripts/agent-routing/lib/idempotency.mjs` | Disposition/response/resume/escalation/integration/verification identities |
+| `scripts/agent-routing/lib/remediation-router.mjs` | Deterministic remediation instruction builder |
+| `scripts/agent-routing/lib/component-integration.mjs` | Authorized non-main component-integration evaluator |
+| `scripts/agent-routing/lib/post-integration-verify.mjs` | Exact post-integration verification |
 | `.github/workflows/ops-agent-routing-controller.yml` | Read-only routing workflow |
 | `tests/agent-routing-controller-evidence.test.ts` | Evidence foundation regressions |
 | `tests/agent-routing-remediation-routing.test.ts` | Classification and routing regressions |
+| `tests/agent-routing-component-integration.test.ts` | Component-integration and verification regressions |
 
 ## Mode and mutation boundary
 
@@ -88,7 +99,9 @@ Workflow capabilities remain false for:
 - activateSuccessor
 - mutateMain
 
-`remediationRouting.capabilities` describes artifact instruction types, not direct workflow mutation. The permitted instruction types are `response`, `resume`, and `escalation`.
+`remediationRouting.capabilities` describes artifact instruction types, not direct workflow mutation. The permitted remediation instruction types are `response`, `resume`, and `escalation`.
+
+`componentIntegration.capabilities` permits artifact instruction types `integrate` and `verify` only. `close` and `activateSuccessor` remain false. `allowMain` and `allowProduction` remain false. At most one integrate instruction may be emitted per controller run.
 
 Workflow permissions remain read-only for `contents`, `issues`, `pull-requests`, `checks`, and `actions`.
 
@@ -123,6 +136,14 @@ Operational execution requires both `--issue` and `--pr`. GitHub-native reads co
 7. review threads;
 8. Issue and PR again immediately before emission.
 
+Immediately before component integration, the controller also re-validates:
+
+- base / declared component target branch;
+- required check conclusions on the current head;
+- unresolved blocking threads;
+- approval profile authority;
+- absence of `main`, Production, or ambiguous targets.
+
 The final reread fails closed on Issue identity/state/body drift or PR identity/state/head/body/profile/linkage drift. Check and thread pagination must prove completeness.
 
 Optional hints are selectors only. Embedded `live`, findings, authorizations, disposition revisions, and latest-disposition objects are discarded by the operational CLI.
@@ -144,7 +165,7 @@ A successful packet includes:
 
 ### `clean`
 
-No unresolved actionable finding controls the current head. No remediation response or resume instruction is emitted.
+No unresolved actionable finding controls the current head. No remediation response or resume instruction is emitted. Component integration may be evaluated only from this class.
 
 ### `bounded_correction`
 
@@ -201,6 +222,33 @@ Requested action:
 
 The comment must be present in the GitHub-native source-Issue comment collection. A PR-only comment does not qualify.
 
+## Component integration authority
+
+Integration is permitted only when all of the following hold:
+
+1. remediation classification is `clean`;
+2. delivery model is `B-child` and gate profile is `component-child`;
+3. target environment is `component`;
+4. target branch is an authorized `component/**` ref matching PR base and declared metadata;
+5. target is not `main`, `master`, Production, or otherwise ambiguous;
+6. required checks are terminal-success on the current head;
+7. no unresolved blocking review thread or `CHANGES_REQUESTED` review remains;
+8. authority is either:
+   - deterministic profile `component-auto-integration` (repository policy; not human approval), or
+   - protected profile `protected-change-review` with a recorded current-head `APPROVED` review or source-Issue `APPROVED FOR INTEGRATION` / `Status: component integration authorized` decision.
+
+A repeated equivalent integrate event after a completed integration identity is suppressed.
+
+## Post-integration verification
+
+When an exact merge/integration SHA is recorded, verification confirms:
+
+- the authorized target branch contains that merge SHA;
+- the source Issue remains `OPEN`;
+- closeout and successor activation remain deferred.
+
+Verification records the exact target branch and merge SHA. It never closes the source Issue or activates a successor.
+
 ## Stable identities
 
 Evidence identity:
@@ -216,11 +264,23 @@ Disposition identity:
 issue:<n>:pr:<n>:head:<sha>:findings:<sorted-identities>:revision:<revision>
 ```
 
-Derived transaction identities:
+Derived remediation identities:
 
 - `response:<dispositionIdentity>`
 - `resume:<dispositionIdentity>`
 - `escalation:<dispositionIdentity>`
+
+Component-integration identity:
+
+```text
+issue:<n>:pr:<n>:head:<sha>:target:<branch>:disposition:<disposition>:merge:<sha|pending>
+```
+
+Verification identity:
+
+```text
+issue:<n>:pr:<n>:head:<sha>:target:<branch>:merge:<sha>
+```
 
 Identity markers are embedded in transaction bodies so repeated equivalent events produce no duplicate instruction.
 
@@ -229,8 +289,9 @@ Identity markers are embedded in transaction bodies so repeated equivalent event
 - A changed PR head creates a new disposition identity and requires current-head reevaluation.
 - A higher recorded disposition revision on the same head suppresses an older proposal.
 - A transaction from another head is never reused.
-- Existing response, resume, and escalation markers are read only from live source-Issue comments.
+- Existing response, resume, escalation, integration, and verification markers are read only from live source-Issue comments.
 - Routing decision and emitted transaction comments are not reclassified as new late findings.
+- Target drift, failed required checks, unresolved blocking threads, missing authority, or forbidden targets block integration without mutation.
 
 ## Transaction output
 
@@ -241,19 +302,22 @@ For `bounded_correction`, the artifact contains:
 
 For `protected_stop`, the artifact contains one `post_source_issue_escalation` instruction.
 
-For `clean`, the action list is empty.
+For `clean` with authorized component integration, the artifact contains at most one `integrate_component_pr` instruction.
 
-The workflow does not execute these instructions in #2771. Execution, integration, closeout, and successor mutation remain owned by later authorized tasks.
+For a recorded merge SHA, the artifact may contain one `record_post_integration_verification` instruction.
+
+The workflow does not execute these instructions itself. Closeout and successor activation remain owned by later authorized tasks.
 
 ## Validation
 
 Required validation:
 
-- `npx vitest run tests/agent-routing-controller-evidence.test.ts tests/agent-routing-remediation-routing.test.ts`
+- `npx vitest run tests/agent-routing-controller-evidence.test.ts tests/agent-routing-remediation-routing.test.ts tests/agent-routing-component-integration.test.ts`
 - `npm run typecheck`
 - `npm run lint`
 - `git diff --check`
-- changed-file inspection against the exact #2771 allowlist
+- changed-file inspection against the exact #2772 allowlist
+- config/schema validation against `config/agent-routing/controller.schema.json`
 
 Fixture coverage must prove:
 
@@ -264,10 +328,15 @@ Fixture coverage must prove:
 - late findings re-enter;
 - protected classes escalate only;
 - fabricated caller authorization is ignored;
-- PR-only authority cannot complete source-Issue routing.
+- PR-only authority cannot complete source-Issue routing;
+- an authorized clean component PR integrates once;
+- a PR targeting `main` is rejected without mutation;
+- changed head, failed required check, unresolved blocking thread, missing authority, or target drift blocks integration;
+- a repeated event after successful integration is suppressed;
+- verification records exact target and merge SHA while the source Issue remains open.
 
 ## Rollback
 
-Disable `remediationRouting.enabled` and revert the #2771 task PR from `component/deterministic-handoff-controller`.
+Disable `componentIntegration.enabled` and/or `remediationRouting.enabled`, then revert the #2772 task PR from `component/deterministic-handoff-controller`. Any already-created component integration must be reversed through a separately authorized revert; never rewrite branch history.
 
-Preserve emitted identity markers during rollback so restoration does not permit duplicate response, resume, or escalation instructions.
+Preserve emitted identity markers during rollback so restoration does not permit duplicate response, resume, escalation, integration, or verification instructions.

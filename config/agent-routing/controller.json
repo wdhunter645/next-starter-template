@@ -48,6 +48,31 @@
       "escalation": true
     }
   },
+  "componentIntegration": {
+    "enabled": true,
+    "allowMain": false,
+    "allowProduction": false,
+    "allowedTargetPrefixes": [
+      "component/"
+    ],
+    "deterministicApprovalProfiles": [
+      "component-auto-integration"
+    ],
+    "independentReviewApprovalProfiles": [
+      "protected-change-review"
+    ],
+    "mergeMethod": "squash",
+    "maxIntegrationsPerRun": 1,
+    "requiredChecks": [
+      "quality"
+    ],
+    "capabilities": {
+      "integrate": true,
+      "verify": true,
+      "close": false,
+      "activateSuccessor": false
+    }
+  },
   "idempotency": {
     "keyFields": [
       "sourceIssueNumber",
@@ -58,7 +83,11 @@
       "actionIdentity",
       "findingIdentity",
       "dispositionRevision",
-      "resumeIdentity"
+      "resumeIdentity",
+      "targetBranch",
+      "integrationDisposition",
+      "mergeSha",
+      "verificationIdentity"
     ]
   },
   "workflowCapabilities": {

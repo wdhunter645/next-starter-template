@@ -12,6 +12,7 @@
     "legacyAdapterMarkers",
     "protectedDecisionClasses",
     "remediationRouting",
+    "componentIntegration",
     "idempotency",
     "workflowCapabilities"
   ],
@@ -176,6 +177,109 @@
         }
       }
     },
+    "componentIntegration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "allowMain",
+        "allowProduction",
+        "allowedTargetPrefixes",
+        "deterministicApprovalProfiles",
+        "independentReviewApprovalProfiles",
+        "mergeMethod",
+        "maxIntegrationsPerRun",
+        "requiredChecks",
+        "capabilities"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "const": true
+        },
+        "allowMain": {
+          "type": "boolean",
+          "const": false
+        },
+        "allowProduction": {
+          "type": "boolean",
+          "const": false
+        },
+        "allowedTargetPrefixes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^component/"
+          }
+        },
+        "deterministicApprovalProfiles": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "const": "component-auto-integration"
+          }
+        },
+        "independentReviewApprovalProfiles": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "const": "protected-change-review"
+          }
+        },
+        "mergeMethod": {
+          "type": "string",
+          "enum": [
+            "squash",
+            "merge",
+            "rebase"
+          ]
+        },
+        "maxIntegrationsPerRun": {
+          "type": "integer",
+          "const": 1
+        },
+        "requiredChecks": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "capabilities": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "integrate",
+            "verify",
+            "close",
+            "activateSuccessor"
+          ],
+          "properties": {
+            "integrate": {
+              "type": "boolean",
+              "const": true
+            },
+            "verify": {
+              "type": "boolean",
+              "const": true
+            },
+            "close": {
+              "type": "boolean",
+              "const": false
+            },
+            "activateSuccessor": {
+              "type": "boolean",
+              "const": false
+            }
+          }
+        }
+      }
+    },
     "idempotency": {
       "type": "object",
       "required": [
@@ -198,7 +302,11 @@
               "actionIdentity",
               "findingIdentity",
               "dispositionRevision",
-              "resumeIdentity"
+              "resumeIdentity",
+              "targetBranch",
+              "integrationDisposition",
+              "mergeSha",
+              "verificationIdentity"
             ]
           }
         }
