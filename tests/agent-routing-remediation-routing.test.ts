@@ -1,6 +1,5 @@
-// @ts-nocheck -- Temporary CI diagnostic for JavaScript controller runtime outputs.
-import fs from 'node:fs';
-import { afterAll, describe, expect, it } from 'vitest';
+// @ts-nocheck -- Runtime contract suite exercises untyped JavaScript controller modules.
+import { describe, expect, it } from 'vitest';
 
 import { runController } from '../scripts/agent-routing/controller.mjs';
 import {
@@ -12,7 +11,6 @@ import { routeRemediation } from '../scripts/agent-routing/lib/remediation-route
 
 const HEAD = '1111111111111111111111111111111111111111';
 const OTHER = '2222222222222222222222222222222222222222';
-const diagnostics = {};
 
 function packet(overrides = {}) {
   return {
@@ -23,7 +21,14 @@ function packet(overrides = {}) {
       headRef: 'cursor/2677-002-review-remediation-routing-f1de',
       url: 'https://github.com/wdhunter645/next-starter-template/pull/2835',
     },
-    checks: [{ name: 'quality', status: 'completed', conclusion: 'success', headSha: HEAD }],
+    checks: [
+      {
+        name: 'quality',
+        status: 'completed',
+        conclusion: 'success',
+        headSha: HEAD,
+      },
+    ],
     reviewEvidence: {
       unresolvedReviewThreads: [],
       reviewSubmissions: [],
@@ -48,7 +53,8 @@ function decisionComment(overrides = {}) {
   const id = overrides.id || '5066000001';
   return {
     id,
-    html_url: `https://github.com/wdhunter645/next-starter-template/issues/2771#issuecomment-${id}`,
+    html_url:
+      `https://github.com/wdhunter645/next-starter-template/issues/2771#issuecomment-${id}`,
     createdAt: '2026-07-24T03:30:00Z',
     author: { login: overrides.author || 'wdhunter645' },
     body: `ADJUSTMENT
@@ -102,7 +108,12 @@ function liveInput(overrides = {}) {
       headSha: HEAD,
       changedFiles: ['scripts/agent-routing/lib/disposition.mjs'],
       checks: overrides.checks || [
-        { name: 'quality', status: 'completed', conclusion: 'success', headSha: HEAD },
+        {
+          name: 'quality',
+          status: 'completed',
+          conclusion: 'success',
+          headSha: HEAD,
+        },
       ],
       issueComments: [trigger, ...(overrides.comments || [decisionComment()])],
       reviewSubmissions: [],
@@ -112,75 +123,100 @@ function liveInput(overrides = {}) {
   };
 }
 
-afterAll(() => {
-  fs.mkdirSync('.quality-routing', { recursive: true });
-  fs.writeFileSync(
-    '.quality-routing/runtime-diagnostics.json',
-    JSON.stringify(diagnostics, null, 2),
-  );
+describe('required current-head checks', () => {
+  it('classifies clean only when configured checks are current and successful', () => {
+    const result = classifyDisposition(packet(), { requiredChecks: ['quality'] });
+    expect(result.classification).toBe(DISPOSITION_CLASSES.CLEAN);
+  });
+
+  it.each([
+    ['missing', []],
+    [
+      'pending',
+      [{ name: 'quality', status: 'in_progress', conclusion: null, headSha: HEAD }],
+    ],
+    [
+      'failed',
+      [{ name: 'quality', status: 'completed', conclusion: 'failure', headSha: HEAD }],
+    ],
+    [
+      'stale',
+      [{ name: 'quality', status: 'completed', conclusion: 'success', headSha: OTHER }],
+    ],
+  ])('blocks %s required-check evidence', (_label, checks) => {
+    const result = classifyDisposition(packet({ checks }), {
+      requiredChecks: ['quality'],
+    });
+    expect(result.classification).toBe(DISPOSITION_CLASSES.PROTECTED_STOP);
+  });
+
+  it('fails closed when the required-check set is empty', () => {
+    expect(collectRequiredCheckFindings(packet(), []).map((finding) => finding.identity))
+      .toEqual(['checks:required-set-missing']);
+  });
 });
 
-describe('runtime diagnostic', () => {
-  it('records required-check classifications', () => {
-    diagnostics.checks = {
-      success: classifyDisposition(packet(), { requiredChecks: ['quality'] }),
-      missing: classifyDisposition(packet({ checks: [] }), { requiredChecks: ['quality'] }),
-      pending: classifyDisposition(packet({ checks: [
-        { name: 'quality', status: 'in_progress', conclusion: null, headSha: HEAD },
-      ] }), { requiredChecks: ['quality'] }),
-      failed: classifyDisposition(packet({ checks: [
-        { name: 'quality', status: 'completed', conclusion: 'failure', headSha: HEAD },
-      ] }), { requiredChecks: ['quality'] }),
-      stale: classifyDisposition(packet({ checks: [
-        { name: 'quality', status: 'completed', conclusion: 'success', headSha: OTHER },
-      ] }), { requiredChecks: ['quality'] }),
-      emptyRequiredSet: collectRequiredCheckFindings(packet(), []),
-    };
-    expect(diagnostics.checks.success.classification).toBe(DISPOSITION_CLASSES.CLEAN);
-    for (const key of ['missing', 'pending', 'failed', 'stale']) {
-      expect(diagnostics.checks[key].classification).toBe(DISPOSITION_CLASSES.PROTECTED_STOP);
-    }
+describe('current-head review authority', () => {
+  it('excludes outdated and prior-head review evidence', () => {
+    const result = classifyDisposition(packet({
+      reviewEvidence: {
+        unresolvedReviewThreads: [
+          reviewThread('implementation', { isOutdated: true }),
+          reviewThread('implementation', { headSha: OTHER }),
+        ],
+        reviewSubmissions: [],
+        lateIssueComments: [],
+      },
+    }), { requiredChecks: ['quality'] });
+    expect(result.classification).toBe(DISPOSITION_CLASSES.CLEAN);
   });
 
-  it('records protected classes', () => {
-    diagnostics.protected = {};
-    for (const decisionClass of [
-      'product',
-      'design',
-      'engineering-approval',
-      'recovery',
-      'credential',
-      'secret',
-      'destructive',
-      'rights-privacy-publication',
-      'production',
-    ]) {
-      diagnostics.protected[decisionClass] = runController(liveInput({
-        threads: [reviewThread(decisionClass)],
-        comments: [decisionComment({ decisionClass: 'implementation' })],
-      }));
-      expect(diagnostics.protected[decisionClass].remediation.classification.classification)
-        .toBe(DISPOSITION_CLASSES.PROTECTED_STOP);
-    }
+  it.each([
+    'product',
+    'design',
+    'engineering-approval',
+    'recovery',
+    'credential',
+    'secret',
+    'destructive',
+    'rights-privacy-publication',
+    'production',
+  ])('never downgrades protected class %s', (decisionClass) => {
+    const result = runController(liveInput({
+      threads: [reviewThread(decisionClass)],
+      comments: [decisionComment({ decisionClass: 'implementation' })],
+    }));
+    expect(result.remediation.classification.classification)
+      .toBe(DISPOSITION_CLASSES.PROTECTED_STOP);
+    expect(result.remediation.actions.map((action) => action.type))
+      .toEqual(['post_source_issue_escalation']);
   });
 
-  it('records untrusted authority', () => {
-    diagnostics.untrusted = runController(liveInput({
+  it('ignores untrusted source-Issue authority', () => {
+    const result = runController(liveInput({
       comments: [decisionComment({ author: 'untrusted-user' })],
     }));
-    expect(diagnostics.untrusted.remediation.classification.classification)
+    expect(result.remediation.classification.classification)
       .toBe(DISPOSITION_CLASSES.PROTECTED_STOP);
   });
 
-  it('records response/resume/dedupe sequence', () => {
+  it('does not reclassify a valid source decision as a late finding', () => {
+    const result = runController(liveInput());
+    expect(result.remediation.classification.evidence.currentHeadFindingIdentities)
+      .toEqual(['review-thread:thread-1']);
+  });
+});
+
+describe('one-transition remediation transaction', () => {
+  it('emits response first, resume after live reread, then deduplicates', () => {
     const first = runController(liveInput());
-    diagnostics.first = first;
     expect(first.remediation.actions.map((action) => action.type))
       .toEqual(['post_source_issue_response']);
 
     const responseComment = {
       id: '5067000001',
-      html_url: 'https://github.com/wdhunter645/next-starter-template/issues/2771#issuecomment-5067000001',
+      html_url:
+        'https://github.com/wdhunter645/next-starter-template/issues/2771#issuecomment-5067000001',
       createdAt: '2026-07-24T03:41:00Z',
       author: { login: 'wdhunter645' },
       body: first.remediation.actions[0].body,
@@ -188,9 +224,9 @@ describe('runtime diagnostic', () => {
     const second = runController(liveInput({
       comments: [decisionComment(), responseComment],
     }));
-    diagnostics.second = second;
     expect(second.remediation.actions.map((action) => action.type))
       .toEqual(['post_local_cursor_resume']);
+    expect(second.remediation.actions[0].body).toContain(responseComment.html_url);
 
     const resumeComment = {
       id: '5067000002',
@@ -201,12 +237,11 @@ describe('runtime diagnostic', () => {
     const third = runController(liveInput({
       comments: [decisionComment(), responseComment, resumeComment],
     }));
-    diagnostics.third = third;
     expect(third.remediation.actions).toEqual([]);
   });
 
-  it('records stale revision suppression', () => {
-    diagnostics.staleRevision = routeRemediation({
+  it('suppresses a stale lower revision on the same head', () => {
+    const result = routeRemediation({
       packet: packet({
         reviewEvidence: {
           unresolvedReviewThreads: [reviewThread()],
@@ -220,12 +255,15 @@ describe('runtime diagnostic', () => {
         disposition: DISPOSITION_CLASSES.BOUNDED_CORRECTION,
         authorized: true,
         decisionClass: 'implementation',
-        sourceIssueDecisionUrl: 'https://github.com/wdhunter645/next-starter-template/issues/2771#issuecomment-1',
+        sourceIssueDecisionUrl:
+          'https://github.com/wdhunter645/next-starter-template/issues/2771#issuecomment-1',
         headSha: HEAD,
       }],
       dispositionRevision: '2',
       latestDisposition: { headSha: HEAD, dispositionRevision: '10' },
     });
-    expect(diagnostics.staleRevision.code).toBe('stale_disposition_revision');
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('stale_disposition_revision');
+    expect(result.actions).toEqual([]);
   });
 });
