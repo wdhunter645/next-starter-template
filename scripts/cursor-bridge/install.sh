@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Install Cursor Local Bridge to ~/lgfc-cursor-bridge and enable systemd user service + watchdog timer.
+# Preserves queue/, consumed/, claim, in-flight, heartbeat, runtime-meta, and log evidence.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -10,22 +11,49 @@ WORKSPACE="${LGFC_CURSOR_BRIDGE_WORKSPACE:-$REPO_ROOT}"
 mkdir -p "$HOME_DIR/queue" "$HOME_DIR/consumed" "$HOME_DIR/scripts" "$UNIT_DIR"
 chmod 700 "$HOME_DIR" "$HOME_DIR/queue" "$HOME_DIR/consumed"
 
-rsync -a --delete \
-  --exclude 'install.sh' \
-  "$REPO_ROOT/scripts/cursor-bridge/" "$HOME_DIR/scripts/" || {
+# Package scripts only — never delete runtime evidence directories.
+if command -v rsync >/dev/null 2>&1; then
+  rsync -a --delete \
+    --exclude 'install.sh' \
+    "$REPO_ROOT/scripts/cursor-bridge/" "$HOME_DIR/scripts/"
+else
   rm -rf "$HOME_DIR/scripts"
   mkdir -p "$HOME_DIR/scripts"
   cp -a "$REPO_ROOT/scripts/cursor-bridge/." "$HOME_DIR/scripts/"
-}
+fi
 
 cp "$REPO_ROOT/config/cursor-bridge/bridge.json" "$HOME_DIR/bridge.json"
-if [[ -f "$REPO_ROOT/config/cursor-bridge/bridge.schema.json" ]]; then
-  cp "$REPO_ROOT/config/cursor-bridge/bridge.schema.json" "$HOME_DIR/bridge.schema.json"
-fi
-if [[ -f "$REPO_ROOT/config/cursor-bridge/preflight-result.schema.json" ]]; then
-  cp "$REPO_ROOT/config/cursor-bridge/preflight-result.schema.json" "$HOME_DIR/preflight-result.schema.json"
-fi
+for schema in "$REPO_ROOT"/config/cursor-bridge/*.schema.json; do
+  cp "$schema" "$HOME_DIR/$(basename "$schema")"
+done
 chmod +x "$HOME_DIR/scripts/"*.sh "$HOME_DIR/scripts/"*.mjs 2>/dev/null || true
+chmod +x "$HOME_DIR/scripts/lib/"*.mjs 2>/dev/null || true
+
+SOURCE_COMMIT="$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || echo unknown)"
+export LGFC_CURSOR_BRIDGE_HOME="$HOME_DIR"
+export LGFC_BRIDGE_SOURCE_COMMIT="$SOURCE_COMMIT"
+node --input-type=module <<EOF
+import fs from 'node:fs';
+import {
+  computeInstalledManifest,
+  writeInstalledIdentity,
+} from 'file://$HOME_DIR/scripts/lib/package-identity.mjs';
+
+const home = process.env.LGFC_CURSOR_BRIDGE_HOME;
+const sourceCommit = process.env.LGFC_BRIDGE_SOURCE_COMMIT || null;
+const config = JSON.parse(fs.readFileSync(home + '/bridge.json', 'utf8'));
+const manifest = computeInstalledManifest(home, sourceCommit);
+if (manifest.ok) {
+  writeInstalledIdentity(config, {
+    sourceCommit,
+    packageHash: manifest.packageHash,
+    files: manifest.files,
+  });
+  console.log('package-identity recorded', String(manifest.packageHash).slice(0, 12));
+} else {
+  console.warn('package-identity deferred:', manifest.reason, (manifest.missing || []).join(','));
+}
+EOF
 
 cat >"$UNIT_DIR/lgfc-cursor-bridge.service" <<EOF
 [Unit]
@@ -84,7 +112,10 @@ systemctl --user --no-pager status lgfc-cursor-bridge-watchdog.timer || true
 echo "Installed bridge at $HOME_DIR"
 echo "Service: lgfc-cursor-bridge.service"
 echo "Watchdog timer: lgfc-cursor-bridge-watchdog.timer"
+echo "Source commit: $SOURCE_COMMIT"
 echo "Auth required before auto-start: cursor agent login (or CURSOR_API_KEY)"
 echo "Status: node $HOME_DIR/scripts/bridge.mjs status"
+echo "Watch: node $HOME_DIR/scripts/bridge-watch.mjs check"
+echo "Build: node $HOME_DIR/scripts/bridge-build.mjs <immutable-main-sha>"
 echo "Disable reconciliation: set reconcileEnabled=false in $HOME_DIR/bridge.json"
 echo "Disable watchdog: systemctl --user disable --now lgfc-cursor-bridge-watchdog.timer"

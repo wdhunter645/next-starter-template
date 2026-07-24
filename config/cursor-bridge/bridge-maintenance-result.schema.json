@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/wdhunter645/next-starter-template/config/cursor-bridge/bridge-maintenance-result.schema.json",
+  "title": "LGFC Cursor Local Bridge maintenance result (Watch / Build)",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "kind",
+    "classification",
+    "timestamp",
+    "quiet"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "kind": {
+      "type": "string",
+      "enum": ["bridge_watch", "bridge_build"]
+    },
+    "classification": {
+      "type": "string",
+      "enum": [
+        "healthy",
+        "rebuild_required",
+        "rebuild_deferred",
+        "manual_review_required",
+        "failed",
+        "promoted",
+        "rolled_back"
+      ]
+    },
+    "timestamp": { "type": "string", "minLength": 1 },
+    "quiet": { "type": "boolean" },
+    "deduplicated": { "type": "boolean" },
+    "sourceCommit": { "type": ["string", "null"] },
+    "packageHash": { "type": ["string", "null"] },
+    "reasons": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "activeWork": { "type": ["object", "null"] },
+    "drift": { "type": ["object", "null"] },
+    "dispatch": { "type": ["object", "null"] },
+    "promotion": { "type": ["object", "null"] },
+    "rollback": { "type": ["object", "null"] },
+    "alert": { "type": "object" }
+  }
+}

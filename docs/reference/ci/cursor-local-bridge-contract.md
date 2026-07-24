@@ -5,8 +5,8 @@ Authority Level: Project Contract
 Owns: Cursor Local Bridge component inventory, eligibility auto-start gates, transactional launch acceptance, wake-packet authority boundary, health/watchdog/reconciliation contract, and fallback taxonomy
 Does Not Own: Product decisions, PR approval, Background Agents, or unrestricted workflow migration onto the Chromebook runner
 Canonical Reference: /docs/explanation/operations/cursor-local-auto-start-architecture.md
-Related Issues: #2294, #2667, #2669, #2681, #2694, #2739
-Last Reviewed: 2026-07-22
+Related Issues: #2294, #2667, #2669, #2681, #2694, #2739, #2814
+Last Reviewed: 2026-07-24
 ---
 
 # Cursor Local Bridge Contract
@@ -33,6 +33,8 @@ Every component has a role. No infrastructure may be introduced without purpose,
 | Launch transaction (`in-flight.json`) | Distinguish process spawn from agent acceptance | Claim, packet, Cursor stream events | `cli_spawned`, `running`, recovery disposition | Atomic local storage |
 | Local heartbeat | Prove useful Bridge health during idle and active launches | Watch-loop and launch state | `heartbeat.json` (atomic, mode `0600`) | Bridge process |
 | Local watchdog (`watchdog.mjs` + systemd timer) | Detect hung/stale Bridge and restart or alert | Heartbeat age, service, queue, workspace, `gh`/CLI auth, claim TTL, disk | Local restart/alert; optional debounced GitHub ops fault | systemd user timer |
+| Bridge Watch (`bridge-watch.mjs` + `cursor-bridge-watch.yml`) | Classify health and repository-to-host package drift | Installed package hashes, claim/in-flight, heartbeat, units | `healthy` / `rebuild_required` / `rebuild_deferred` / `manual_review_required` / `failed` | Host Bridge home + `main` checkout |
+| Bridge Build (`bridge-build.mjs` + `cursor-bridge-build.yml`) | Stage, validate, atomically promote, or roll back Bridge package | Immutable `main` commit SHA | Promoted package identity or automatic restore | Idle serial lane; same-filesystem rename |
 | Missed-handoff reconciliation | Recover eligible handoffs when wake packet was missed | `reconcileIntervalSeconds` cadence + live Issue eligibility | Recovery packet into normal queue | `gh`, full eligibility contract |
 | Eligibility validator | Fail-closed gate | Issue + comments | ok / errors | Full eligibility checklist below |
 | Serial claim store | One Implementation stream | Claim requests | Exclusive lease | Local `claim.json` |
@@ -55,6 +57,8 @@ local slow reconciliation -> detect missed eligible handoff -> local packet -> n
 Health path:
 local heartbeat <- Bridge watch loop and active launch monitor
 local watchdog -> restart or alert (GitHub ops fault only when persistent/actionable)
+Bridge Watch -> classify drift/health; quiet when healthy
+Bridge Build -> stage/validate/promote or restore prior package (idle lane only)
 ```
 
 Rules:
@@ -63,6 +67,9 @@ Rules:
 - Reconciliation is recovery only, rate-limited (`reconcileIntervalSeconds`, default `900`), and fail-closed on API/ambiguity.
 - Reconciliation must not launch Cursor, bypass the packet path, reinterpret authority, or claim beyond the serial lane.
 - Routine healthy checks stay local and quiet — no synthetic GitHub keepalive traffic.
+- `cursor-local-wake.yml` remains delivery-only and must not own rebuild behavior.
+- Bridge Build refuses promotion while a claim, `cli_spawned`, accepted, or running transaction exists.
+- Runtime evidence (`queue/`, `consumed/`, `claim.json`, `in-flight.json`, `heartbeat.json`, `runtime-meta.json`, alerts/logs/preflight/watchdog state) is never deleted by rebuild.
 
 ## Eligibility (auto-start only when all true)
 
@@ -143,7 +150,21 @@ Restart when the service is inactive or the heartbeat is missing/stale. Local al
 
 ## Status surface
 
-`node ~/lgfc-cursor-bridge/scripts/bridge.mjs status` reports runner/transport observation, Bridge service/heartbeat, active launch, atomic launch transaction state, queue depth and oldest packet age, claim state, GitHub and Cursor CLI auth, last inbound/outbound times, last reconciliation result, and disk headroom. It must not print tokens, API keys, prompts, assistant content, or private logs.
+`node ~/lgfc-cursor-bridge/scripts/bridge.mjs status` reports runner/transport observation, Bridge service/heartbeat, active launch, atomic launch transaction state, queue depth and oldest packet age, claim state, GitHub and Cursor CLI auth, last inbound/outbound times, last reconciliation result, disk headroom, secret-safe package identity, and last Bridge Watch/Build maintenance classification. It must not print tokens, API keys, prompts, assistant content, or private logs.
+
+## Bridge Watch and Bridge Build (#2814)
+
+Bridge Watch compares the installed package manifest to the exact checked-out `main` commit hashes for the allowlisted Bridge package files, reuses existing preflight/status/heartbeat/claim/in-flight evidence, and classifies:
+
+| Classification | Meaning |
+| --- | --- |
+| `healthy` | Quiet; no alert or rebuild |
+| `rebuild_required` | Drift or rebuildable failure with idle serial lane |
+| `rebuild_deferred` | Rebuild needed but claim / `cli_spawned` / accepted / running work is active |
+| `manual_review_required` | Incompatible schema or ambiguous package identity |
+| `failed` | Runtime failure after bounded local recovery path |
+
+Bridge Build accepts only an immutable commit SHA that is an ancestor of `main`, stages outside `~/lgfc-cursor-bridge`, validates, re-reads active-work state before promotion, snapshots the prior package, promotes via same-filesystem atomic rename, restarts Bridge + watchdog, verifies, and restores the prior package on post-install failure.
 
 ## Configuration
 
@@ -182,8 +203,13 @@ Restart when the service is inactive or the heartbeat is missing/stale. Local al
 - `docs/explanation/operations/cursor-local-auto-start-architecture.md`
 - `config/cursor-bridge/bridge.json`
 - `config/cursor-bridge/bridge.schema.json`
+- `config/cursor-bridge/bridge-maintenance-result.schema.json`
 - `config/github-actions/repository-runner.json` (`wakeDelivery`)
 - `.github/workflows/cursor-local-wake.yml`
+- `.github/workflows/cursor-bridge-watch.yml`
+- `.github/workflows/cursor-bridge-build.yml`
 - `scripts/cursor-bridge/**`
 - `tests/cursor-bridge-launch-transaction.test.ts`
+- `tests/cursor-bridge-preflight.test.ts`
+- `tests/cursor-bridge-watch-build.test.ts`
 - `docs/how-to/cursor/configure-cursor-local-bridge.md`

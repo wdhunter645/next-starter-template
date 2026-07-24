@@ -219,6 +219,33 @@
           ]
         }
       }
+    },
+    "maintenance": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "identityPath": {
+          "type": "string"
+        },
+        "resultPath": {
+          "type": "string"
+        },
+        "alertStatePath": {
+          "type": "string"
+        },
+        "watchdogTimerUnit": {
+          "type": "string"
+        },
+        "buildWorkflow": {
+          "type": "string"
+        },
+        "opsFaultIssueNumber": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
     }
   }
 }

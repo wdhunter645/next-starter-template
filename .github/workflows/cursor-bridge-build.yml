@@ -1,0 +1,68 @@
+name: Cursor Bridge Build
+
+# Rebuild and promote the Chromebook Bridge from one immutable main commit (#2814).
+# Invoked when Bridge Watch returns rebuild_required, or by authorized manual dispatch.
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_commit:
+        description: Immutable main commit SHA to install
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: cursor-bridge-build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.repository == 'wdhunter645/next-starter-template'
+    runs-on: [self-hosted, linux, x64, lgfc-repo-runner]
+    timeout-minutes: 30
+    steps:
+      - name: Checkout requested immutable commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_commit }}
+          fetch-depth: 0
+
+      - name: Refuse symbolic or non-main identities
+        env:
+          SOURCE_COMMIT: ${{ inputs.source_commit }}
+        run: |
+          test -n "$SOURCE_COMMIT"
+          echo "$SOURCE_COMMIT" | grep -Eq '^[0-9a-f]{40}$'
+          FULL="$(git rev-parse "$SOURCE_COMMIT")"
+          test "$FULL" = "$SOURCE_COMMIT"
+          git fetch origin main
+          git merge-base --is-ancestor "$SOURCE_COMMIT" origin/main
+
+      - name: Run Bridge Build
+        env:
+          LGFC_BRIDGE_SOURCE_COMMIT: ${{ inputs.source_commit }}
+        run: |
+          HOME_DIR="${LGFC_CURSOR_BRIDGE_HOME:-$HOME/lgfc-cursor-bridge}"
+          export LGFC_CURSOR_BRIDGE_HOME="$HOME_DIR"
+          export LGFC_CURSOR_BRIDGE_WORKSPACE="${LGFC_CURSOR_BRIDGE_WORKSPACE:-$GITHUB_WORKSPACE}"
+          node "$GITHUB_WORKSPACE/scripts/cursor-bridge/bridge-build.mjs" "$LGFC_BRIDGE_SOURCE_COMMIT" \
+            | tee /tmp/lgfc-bridge-build-result.json
+          if grep -E 'CURSOR_API_KEY=|ghp_[A-Za-z0-9]+|github_pat_' /tmp/lgfc-bridge-build-result.json; then
+            echo "secret-bearing output refused" >&2
+            exit 1
+          fi
+          CLASS="$(python3 - <<'PY'
+import json
+data=json.load(open("/tmp/lgfc-bridge-build-result.json"))
+print(data.get("classification") or "unknown")
+PY
+)"
+          echo "classification=$CLASS"
+          case "$CLASS" in
+            promoted|rebuild_deferred) exit 0 ;;
+            *) exit 1 ;;
+          esac

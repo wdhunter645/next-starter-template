@@ -33,6 +33,23 @@ export function atomicWriteJson(filePath, value, mode = 0o600) {
   return filePath;
 }
 
+/**
+ * Atomically replace a file with bytes from another path (same-filesystem rename).
+ */
+export function atomicReplaceFile(sourcePath, destPath, mode = 0o644) {
+  const dir = path.dirname(destPath);
+  fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
+  const tmp = path.join(dir, `.${path.basename(destPath)}.${process.pid}.${Date.now()}.tmp`);
+  fs.copyFileSync(sourcePath, tmp);
+  try {
+    fs.chmodSync(tmp, mode);
+  } catch {
+    /* ignore */
+  }
+  fs.renameSync(tmp, destPath);
+  return destPath;
+}
+
 export function freeDiskMb(targetPath) {
   try {
     if (typeof fs.statfsSync === 'function') {

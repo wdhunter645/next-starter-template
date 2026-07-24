@@ -2,6 +2,7 @@
 /**
  * Local Bridge watchdog — checks health and restarts the Bridge when needed.
  * Healthy intervals stay local and quiet. Persistent failures may post one GitHub ops fault.
+ * Package drift / rebuild classification is owned by bridge-watch.mjs (#2814), not this watchdog.
  */
 import fs from 'node:fs';
 import path from 'node:path';

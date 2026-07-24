@@ -31,3 +31,12 @@ export function ensureDirs(config) {
   fs.chmodSync(home, 0o700);
   return { home, queue, consumed };
 }
+
+export function maintenancePaths(config = {}) {
+  const home = bridgeHome();
+  return {
+    identity: path.join(home, config.maintenance?.identityPath || 'package-identity.json'),
+    result: path.join(home, config.maintenance?.resultPath || 'maintenance-result.json'),
+    alertState: path.join(home, config.maintenance?.alertStatePath || 'maintenance-alert-state.json'),
+  };
+}
