@@ -8,6 +8,8 @@ import {
   runController,
 } from '../scripts/agent-routing/controller.mjs';
 import {
+  collectGitHubCheckRuns,
+  collectGitHubIntegrationState,
   evaluateComponentIntegrationTransaction,
   executeComponentIntegration,
 } from '../scripts/agent-routing/lib/component-integration.mjs';
@@ -106,6 +108,7 @@ function liveCleanInput({
         headRefName: 'cursor/2677-003-component-integration',
         headSha,
         head: { sha: headSha },
+        user: { login: 'builder' },
         url: 'https://github.com/wdhunter645/next-starter-template/pull/2999',
       },
       headSha,
@@ -123,6 +126,38 @@ function liveCleanInput({
       reviewThreads: threads,
     },
     triggerComment: trigger,
+  };
+}
+
+function integrationAuthorizationComment(overrides = {}) {
+  const {
+    id = 'auth-1',
+    author = 'wdhunter645',
+    issue = 2772,
+    pr = 2999,
+    head = HEAD,
+    target = TARGET,
+    bodySuffix = '',
+  } = overrides;
+  return {
+    id,
+    createdAt: '2026-07-24T04:40:00Z',
+    author: { login: author },
+    body: `APPROVED FOR INTEGRATION
+Issue: #${issue}
+PR: #${pr}
+Head SHA: ${head}
+Target branch: ${target}
+Status: component integration authorized${bodySuffix}`,
+  };
+}
+
+function jsonResponse(payload, ok = true, status = 200) {
+  return {
+    ok,
+    status,
+    json: async () => payload,
+    text: async () => JSON.stringify(payload),
   };
 }
 
@@ -290,6 +325,77 @@ describe('authorized non-main component integration', () => {
     expect(result.integration.authority.humanApproval).toBe(true);
   });
 
+  it('rejects untrusted, self, and missing-author review approvals', () => {
+    const cases = [
+      {
+        name: 'untrusted reviewer',
+        input: liveCleanInput({
+          approvalProfile: 'protected-change-review',
+          reviews: [
+            {
+              id: 'review-untrusted',
+              state: 'APPROVED',
+              commit_id: HEAD,
+              author: { login: 'random-reviewer' },
+            },
+          ],
+        }),
+      },
+      {
+        name: 'self-review',
+        input: liveCleanInput({
+          approvalProfile: 'protected-change-review',
+          reviews: [
+            {
+              id: 'review-self',
+              state: 'APPROVED',
+              commit_id: HEAD,
+              author: { login: 'builder' },
+            },
+          ],
+        }),
+      },
+      {
+        name: 'missing PR author',
+        input: (() => {
+          const input = liveCleanInput({
+            approvalProfile: 'protected-change-review',
+            reviews: [
+              {
+                id: 'review-no-pr-author',
+                state: 'APPROVED',
+                commit_id: HEAD,
+                author: { login: 'chatgpt-atlas' },
+              },
+            ],
+          });
+          delete input.live.pullRequest.user;
+          return input;
+        })(),
+      },
+      {
+        name: 'missing reviewer author',
+        input: liveCleanInput({
+          approvalProfile: 'protected-change-review',
+          reviews: [
+            {
+              id: 'review-no-reviewer',
+              state: 'APPROVED',
+              commit_id: HEAD,
+            },
+          ],
+        }),
+      },
+    ];
+
+    for (const testCase of cases) {
+      const result = runController(testCase.input, config());
+      expect(result.integration.ok, testCase.name).toBe(false);
+      expect(result.integration.code, testCase.name).toBe('missing_independent_review');
+      expect(result.integration.actions, testCase.name).toEqual([]);
+    }
+  });
+
   it('rejects an approval that does not identify the reviewed head', () => {
     const result = runController(
       liveCleanInput({
@@ -307,6 +413,66 @@ describe('authorized non-main component integration', () => {
     expect(result.integration.ok).toBe(false);
     expect(result.integration.code).toBe('missing_independent_review');
     expect(result.integration.actions).toEqual([]);
+  });
+
+  it('accepts a trusted complete source-Issue integration authorization', () => {
+    const result = runController(
+      liveCleanInput({
+        approvalProfile: 'protected-change-review',
+        comments: [integrationAuthorizationComment()],
+      }),
+      config(),
+    );
+    expect(result.integration.ok).toBe(true);
+    expect(result.integration.eligible).toBe(true);
+    expect(result.integration.authority.kind).toBe('source_issue_authorization');
+    expect(result.integration.authority.humanApproval).toBe(true);
+  });
+
+  it('blocks untrusted, bare, incomplete, and wrong-target source authorizations', () => {
+    const cases = [
+      {
+        name: 'untrusted author',
+        comment: integrationAuthorizationComment({ author: 'random-reviewer' }),
+      },
+      {
+        name: 'bare approval',
+        comment: {
+          id: 'auth-bare',
+          author: { login: 'wdhunter645' },
+          body: 'APPROVED FOR INTEGRATION',
+        },
+      },
+      {
+        name: 'missing target',
+        comment: {
+          id: 'auth-missing-target',
+          author: { login: 'wdhunter645' },
+          body: `APPROVED FOR INTEGRATION
+Issue: #2772
+PR: #2999
+Head SHA: ${HEAD}
+Status: component integration authorized`,
+        },
+      },
+      {
+        name: 'wrong target',
+        comment: integrationAuthorizationComment({ target: 'component/other-target' }),
+      },
+    ];
+
+    for (const testCase of cases) {
+      const result = runController(
+        liveCleanInput({
+          approvalProfile: 'protected-change-review',
+          comments: [testCase.comment],
+        }),
+        config(),
+      );
+      expect(result.integration.ok, testCase.name).toBe(false);
+      expect(result.integration.code, testCase.name).toBe('missing_independent_review');
+      expect(result.integration.actions, testCase.name).toEqual([]);
+    }
   });
 
   it('blocks target drift from declared component branch', () => {
@@ -466,6 +632,87 @@ describe('config and mutation boundaries', () => {
   });
 });
 
+describe('GitHub-native integration collection helpers', () => {
+  it('fails closed when the source Issue number resolves to a pull request', async () => {
+    const result = await collectGitHubIntegrationState({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2772,
+      prNumber: 2999,
+      targetBranch: TARGET,
+      token: 'test-token',
+      fetchFn: async (url) => {
+        const pathname = decodeURIComponent(new URL(String(url)).pathname);
+        if (pathname.endsWith('/issues/2772')) {
+          return jsonResponse({
+            number: 2772,
+            state: 'open',
+            body: 'not an issue',
+            pull_request: { url: 'https://api.github.test/pr' },
+          });
+        }
+        if (pathname.endsWith('/pulls/2999')) {
+          return jsonResponse({
+            number: 2999,
+            state: 'open',
+            merged: false,
+            body: '',
+            head: { sha: HEAD },
+            base: { ref: TARGET },
+            user: { login: 'builder' },
+          });
+        }
+        if (pathname.endsWith(`/git/ref/heads/${TARGET}`)) {
+          return jsonResponse({ object: { sha: TARGET_HEAD } });
+        }
+        throw new Error(`unexpected URL: ${url}`);
+      },
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('source_issue_is_pull_request');
+  });
+
+  it('paginates current-head check runs until the complete total is collected', async () => {
+    const requestedUrls = [];
+    const checks = await collectGitHubCheckRuns({
+      repository: 'wdhunter645/next-starter-template',
+      headSha: HEAD,
+      token: 'test-token',
+      fetchFn: async (url) => {
+        requestedUrls.push(String(url));
+        const page = new URL(String(url)).searchParams.get('page');
+        if (page === '1') {
+          return jsonResponse({
+            total_count: 101,
+            check_runs: Array.from({ length: 100 }, (_, index) => ({
+              name: `advisory-${index}`,
+              status: 'completed',
+              conclusion: 'success',
+              head_sha: HEAD,
+            })),
+          });
+        }
+        return jsonResponse({
+          total_count: 101,
+          check_runs: [
+            {
+              name: 'quality',
+              status: 'completed',
+              conclusion: 'success',
+              head_sha: HEAD,
+            },
+          ],
+        });
+      },
+    });
+
+    expect(checks).toHaveLength(101);
+    expect(checks.at(-1).name).toBe('quality');
+    expect(requestedUrls).toHaveLength(2);
+    expect(requestedUrls[1]).toContain('page=2');
+  });
+});
+
 function executionState(overrides = {}) {
   return {
     sourceIssue: {
@@ -511,6 +758,7 @@ describe('write-scoped component integration executor', () => {
     let collections = 0;
     let mutations = 0;
     let verifications = 0;
+    let sourceIssueRereads = 0;
     const result = await executeComponentIntegration({
       repository: 'wdhunter645/next-starter-template',
       issueNumber: 2772,
@@ -531,6 +779,10 @@ describe('write-scoped component integration executor', () => {
         verifications += 1;
         return { ok: true, contains: mergeSha === MERGE };
       },
+      rereadSourceIssue: async () => {
+        sourceIssueRereads += 1;
+        return { ok: true, state: 'OPEN' };
+      },
     });
     expect(result.ok).toBe(true);
     expect(result.integrated).toBe(true);
@@ -542,6 +794,7 @@ describe('write-scoped component integration executor', () => {
     expect(collections).toBe(2);
     expect(mutations).toBe(1);
     expect(verifications).toBe(1);
+    expect(sourceIssueRereads).toBe(1);
   });
 
   it('blocks target-head drift before any merge mutation', async () => {
@@ -569,6 +822,7 @@ describe('write-scoped component integration executor', () => {
         return { ok: true, merged: true, mergeSha: MERGE };
       },
       verifyTargetContainsSha: async () => ({ ok: true, contains: true }),
+      rereadSourceIssue: async () => ({ ok: true, state: 'OPEN' }),
     });
     expect(result.ok).toBe(false);
     expect(result.code).toBe('expected_target_head_drift');
@@ -594,5 +848,90 @@ describe('write-scoped component integration executor', () => {
     expect(result.ok).toBe(false);
     expect(result.code).toBe('missing_expected_target_head_sha');
     expect(collections).toBe(0);
+  });
+
+  it('blocks source-authorization comment body or author drift before mutation', async () => {
+    const driftCases = [
+      {
+        name: 'body',
+        finalComment: integrationAuthorizationComment({
+          bodySuffix: '\nAdditional note: edited before merge',
+        }),
+      },
+      {
+        name: 'author',
+        finalComment: integrationAuthorizationComment({ author: 'chatgpt-atlas' }),
+      },
+    ];
+
+    for (const driftCase of driftCases) {
+      let collections = 0;
+      let mutations = 0;
+      const initialComment = integrationAuthorizationComment();
+      const result = await executeComponentIntegration({
+        repository: 'wdhunter645/next-starter-template',
+        issueNumber: 2772,
+        prNumber: 2999,
+        expectedHeadSha: HEAD,
+        targetBranch: TARGET,
+        expectedTargetHeadSha: TARGET_HEAD,
+        componentIntegration: config().componentIntegration,
+        collectState: async () => {
+          collections += 1;
+          return {
+            ok: true,
+            state: executionState({
+              pullRequest: {
+                ...executionState().pullRequest,
+                body: `- **Issue:** #2772
+- Delivery model: B-child
+- Target environment: component
+- Approval profile: protected-change-review
+- Gate profile: component-child
+- Component branch: ${TARGET}
+- Component master: #2677`,
+              },
+              comments: [collections === 1 ? initialComment : driftCase.finalComment],
+            }),
+          };
+        },
+        mergePullRequest: async () => {
+          mutations += 1;
+          return { ok: true, merged: true, mergeSha: MERGE };
+        },
+        verifyTargetContainsSha: async () => ({ ok: true, contains: true }),
+        rereadSourceIssue: async () => ({ ok: true, state: 'OPEN' }),
+      });
+      expect(result.ok, driftCase.name).toBe(false);
+      expect(result.code, driftCase.name).toBe('integration_expected_state_drift');
+      expect(result.mutations, driftCase.name).toBe(0);
+      expect(mutations, driftCase.name).toBe(0);
+    }
+  });
+
+  it('fails closed when post-merge source-Issue reread is missing or closed', async () => {
+    let mutations = 0;
+    const result = await executeComponentIntegration({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2772,
+      prNumber: 2999,
+      expectedHeadSha: HEAD,
+      targetBranch: TARGET,
+      expectedTargetHeadSha: TARGET_HEAD,
+      componentIntegration: config().componentIntegration,
+      collectState: async () => ({ ok: true, state: executionState() }),
+      mergePullRequest: async () => {
+        mutations += 1;
+        return { ok: true, merged: true, mergeSha: MERGE };
+      },
+      verifyTargetContainsSha: async () => ({ ok: true, contains: true }),
+      rereadSourceIssue: async () => ({ ok: true, state: 'CLOSED' }),
+    });
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('post_merge_source_issue_not_open');
+    expect(result.mutations).toBe(1);
+    expect(mutations).toBe(1);
+    expect(result.closeout).toBe(false);
+    expect(result.successorActivation).toBe(false);
   });
 });

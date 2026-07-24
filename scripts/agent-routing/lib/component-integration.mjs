@@ -106,6 +106,10 @@ export function evaluateComponentIntegrationTransaction({
     independentReviewProfiles:
       componentIntegration.independentReviewApprovalProfiles ||
       INDEPENDENT_REVIEW_APPROVAL_PROFILES,
+    trustedReviewAuthors: componentIntegration.trustedReviewAuthors || [],
+    trustedIntegrationAuthorizationAuthors:
+      componentIntegration.trustedIntegrationAuthorizationAuthors || [],
+    targetBranch,
   });
   if (!authority.ok) return authority;
 
@@ -234,6 +238,7 @@ export async function executeComponentIntegration({
   collectState = null,
   mergePullRequest = null,
   verifyTargetContainsSha = null,
+  rereadSourceIssue = null,
 } = {}) {
   if (componentIntegration?.enabled !== true) {
     return {
@@ -276,6 +281,14 @@ export async function executeComponentIntegration({
     verifyTargetContainsSha ||
     ((args) =>
       verifyGitHubTargetContainsSha({
+        ...args,
+        token,
+        fetchFn,
+      }));
+  const sourceIssueReader =
+    rereadSourceIssue ||
+    ((args) =>
+      rereadGitHubSourceIssue({
         ...args,
         token,
         fetchFn,
@@ -350,6 +363,24 @@ export async function executeComponentIntegration({
     );
   }
 
+  const sourceIssueAfterMerge = await sourceIssueReader({
+    repository,
+    issueNumber: expected.issueNumber,
+  });
+  if (!sourceIssueAfterMerge?.ok) {
+    return normalizeExecutionFailure(
+      { ...(sourceIssueAfterMerge || {}), mutations: 1 },
+      'post_merge_source_issue_reread_failed',
+    );
+  }
+  if (String(sourceIssueAfterMerge.state || '').toUpperCase() !== 'OPEN') {
+    return executionFailure(
+      sourceIssueAfterMerge.state ? 'post_merge_source_issue_not_open' : 'post_merge_source_issue_unavailable',
+      'Source Issue must be explicitly OPEN after the merge mutation.',
+      { sourceIssueState: sourceIssueAfterMerge.state || null, mutations: 1 },
+    );
+  }
+
   const integrationIdentity = buildIntegrationIdentity({
     sourceIssueNumber: expected.issueNumber,
     prNumber: expected.prNumber,
@@ -414,10 +445,21 @@ export async function collectGitHubIntegrationState({
       get(`/pulls/${Number(prNumber)}`),
       get(`/git/ref/heads/${encodeURIComponent(String(targetBranch))}`),
     ]);
+    if (issue?.pull_request) {
+      return executionFailure(
+        'source_issue_is_pull_request',
+        'Source Issue identity resolved to a pull request, not an Issue.',
+      );
+    }
     const headSha = normalizeSha(pr?.head?.sha);
     if (!headSha) return executionFailure('missing_current_head', 'PR head SHA is unavailable.');
     const [checksPayload, reviews, comments, threads] = await Promise.all([
-      get(`/commits/${headSha}/check-runs?per_page=100`),
+      collectGitHubCheckRuns({
+        repository,
+        headSha,
+        token,
+        fetchFn,
+      }),
       getAll(`/pulls/${Number(prNumber)}/reviews`),
       getAll(`/issues/${Number(issueNumber)}/comments`),
       collectGitHubReviewThreads({
@@ -447,7 +489,7 @@ export async function collectGitHubIntegrationState({
         },
         targetBranch: String(targetBranch),
         targetHeadSha: normalizeSha(targetRef?.object?.sha),
-        checks: (checksPayload?.check_runs || []).map((check) => ({
+        checks: (checksPayload || []).map((check) => ({
           name: check.name || '',
           status: check.status || null,
           conclusion: check.conclusion || null,
@@ -529,6 +571,35 @@ async function verifyGitHubTargetContainsSha({
   return {
     ok: true,
     contains: ['ahead', 'identical'].includes(String(payload.status || '').toLowerCase()),
+  };
+}
+
+async function rereadGitHubSourceIssue({
+  repository,
+  issueNumber,
+  token,
+  fetchFn,
+}) {
+  const response = await fetchFn(
+    `https://api.github.com/repos/${repository}/issues/${Number(issueNumber)}`,
+    { method: 'GET', headers: githubHeaders(token) },
+  );
+  if (!response.ok) {
+    return executionFailure(
+      'post_merge_source_issue_unavailable',
+      `GitHub source-Issue reread failed: ${response.status} ${await response.text()}`,
+    );
+  }
+  const payload = await response.json();
+  if (payload?.pull_request) {
+    return executionFailure(
+      'post_merge_source_issue_is_pull_request',
+      'Post-merge source-Issue reread resolved to a pull request, not an Issue.',
+    );
+  }
+  return {
+    ok: true,
+    state: String(payload?.state || '').toUpperCase(),
   };
 }
 
@@ -638,6 +709,9 @@ function resolveIntegrationAuthority({
   existingComments = [],
   deterministicProfiles = DETERMINISTIC_APPROVAL_PROFILES,
   independentReviewProfiles = INDEPENDENT_REVIEW_APPROVAL_PROFILES,
+  trustedReviewAuthors = [],
+  trustedIntegrationAuthorizationAuthors = [],
+  targetBranch = null,
 } = {}) {
   const approvalProfile = String(profile.approvalProfile || '').trim();
   if (!approvalProfile) {
@@ -660,6 +734,13 @@ function resolveIntegrationAuthority({
 
   if (independentReviewProfiles.includes(approvalProfile)) {
     const headSha = normalizeSha(packet?.pullRequest?.headSha);
+    const trustedReviewers = normalizeAuthorSet(trustedReviewAuthors);
+    if (trustedReviewers.size === 0) {
+      return failClosed(
+        'missing_trusted_reviewer_allowlist',
+        'Protected approval profile requires a configured trusted reviewer allowlist.',
+      );
+    }
     const approvedReview = (reviewSubmissions || []).find((review) => {
       const state = String(review.state || '').toUpperCase();
       if (state !== 'APPROVED') return false;
@@ -667,7 +748,9 @@ function resolveIntegrationAuthority({
       if (!commitId || commitId !== headSha) return false;
       const reviewer = reviewAuthor(review);
       const prAuthor = String(packet?.pullRequest?.author || '').trim().toLowerCase();
-      return !prAuthor || (reviewer && reviewer !== prAuthor);
+      if (!reviewer || !prAuthor) return false;
+      if (!trustedReviewers.has(reviewer)) return false;
+      return reviewer !== prAuthor;
     });
     if (approvedReview) {
       return {
@@ -683,6 +766,8 @@ function resolveIntegrationAuthority({
       sourceIssueNumber: packet?.sourceIssue?.number,
       prNumber: packet?.pullRequest?.number,
       headSha,
+      targetBranch,
+      trustedAuthors: trustedIntegrationAuthorizationAuthors,
     });
     if (decision) {
       return {
@@ -788,11 +873,19 @@ function assessBlockingThreads(packet) {
   return { ok: true };
 }
 
-function findIntegrationAuthorizationComment(comments = [], { sourceIssueNumber, prNumber, headSha }) {
+function findIntegrationAuthorizationComment(
+  comments = [],
+  { sourceIssueNumber, prNumber, headSha, targetBranch, trustedAuthors = [] },
+) {
   const issue = Number(sourceIssueNumber);
   const pr = Number(prNumber);
   const head = normalizeSha(headSha);
+  const target = String(targetBranch || '').trim();
+  const trusted = normalizeAuthorSet(trustedAuthors);
+  if (trusted.size === 0 || !target) return null;
   for (const comment of comments || []) {
+    const author = commentAuthor(comment);
+    if (!author || !trusted.has(author)) continue;
     const body = String(comment?.body || comment?.bodyText || '');
     const authorized =
       /^APPROVED FOR INTEGRATION\b/im.test(body) ||
@@ -804,11 +897,15 @@ function findIntegrationAuthorizationComment(comments = [], { sourceIssueNumber,
     const statedIssue = extractIssueNumber(
       extractField(body, 'Issue') || extractField(body, 'Subject'),
     );
-    if (statedPr != null && statedPr !== pr) continue;
-    if (statedHead && statedHead !== head) continue;
-    if (statedIssue != null && statedIssue !== issue) continue;
+    const statedTarget = extractField(body, 'Target branch') || extractField(body, 'Target');
+    if (statedPr == null || statedPr !== pr) continue;
+    if (!statedHead || statedHead !== head) continue;
+    if (statedIssue == null || statedIssue !== issue) continue;
+    if (!statedTarget || statedTarget !== target) continue;
     return {
       ...comment,
+      author: comment.author || comment.user || { login: author },
+      authorLogin: author,
       url:
         comment.html_url ||
         comment.url ||
@@ -1075,7 +1172,13 @@ function integrationStateFingerprint(state) {
         isOutdated: thread.isOutdated === true,
       }))
       .sort((a, b) => a.id.localeCompare(b.id)),
-    comments: [...(state?.comments || [])].map((comment) => String(comment.id || '')).sort(),
+    comments: [...(state?.comments || [])]
+      .map((comment) => ({
+        id: String(comment.id || ''),
+        author: commentAuthor(comment),
+        body: String(comment.body || comment.bodyText || ''),
+      }))
+      .sort((a, b) => a.id.localeCompare(b.id)),
   };
   return JSON.stringify(normalize);
 }
@@ -1094,7 +1197,13 @@ async function collectGitHubReviewThreads({ repository, prNumber, token, fetchFn
   }`;
   const threads = [];
   let cursor = null;
+  let pageCount = 0;
+  const maxPages = 20;
   do {
+    pageCount += 1;
+    if (pageCount > maxPages) {
+      throw new Error('GraphQL review threads exceeded the safe pagination limit');
+    }
     const response = await fetchFn('https://api.github.com/graphql', {
       method: 'POST',
       headers: githubHeaders(token),
@@ -1111,9 +1220,48 @@ async function collectGitHubReviewThreads({ repository, prNumber, token, fetchFn
     const connection = payload.data?.repository?.pullRequest?.reviewThreads;
     if (!connection) throw new Error('GraphQL review threads response is incomplete');
     threads.push(...(connection.nodes || []));
+    if (connection.pageInfo?.hasNextPage && !connection.pageInfo.endCursor) {
+      throw new Error('GraphQL review threads pagination omitted endCursor');
+    }
     cursor = connection.pageInfo?.hasNextPage ? connection.pageInfo.endCursor : null;
   } while (cursor);
   return threads;
+}
+
+export async function collectGitHubCheckRuns({
+  repository,
+  headSha,
+  token,
+  fetchFn = globalThis.fetch,
+  maxPages = 20,
+} = {}) {
+  const head = normalizeSha(headSha);
+  if (!head) throw new Error('check-run collection requires an exact head SHA');
+  const checks = [];
+  let expectedTotal = null;
+  for (let page = 1; page <= maxPages; page += 1) {
+    const response = await fetchFn(
+      `https://api.github.com/repos/${repository}/commits/${head}/check-runs?per_page=100&page=${page}`,
+      { method: 'GET', headers: githubHeaders(token) },
+    );
+    if (!response.ok) {
+      throw new Error(`GET check-runs failed: ${response.status} ${await response.text()}`);
+    }
+    const payload = await response.json();
+    if (!Array.isArray(payload?.check_runs)) {
+      throw new Error('GET check-runs did not return check_runs array');
+    }
+    if (Number.isInteger(payload.total_count)) expectedTotal = payload.total_count;
+    checks.push(...payload.check_runs);
+    if (expectedTotal != null && checks.length >= expectedTotal) return checks;
+    if (payload.check_runs.length < 100) {
+      if (expectedTotal != null && checks.length < expectedTotal) {
+        throw new Error('GET check-runs ended before total_count was collected');
+      }
+      return checks;
+    }
+  }
+  throw new Error('GET check-runs exceeded the safe pagination limit');
 }
 
 function githubHeaders(token) {
@@ -1127,7 +1275,31 @@ function githubHeaders(token) {
 }
 
 function reviewAuthor(review) {
-  return String(review?.author?.login || review?.user?.login || '').trim().toLowerCase();
+  return String(
+    typeof review?.author === 'string'
+      ? review.author
+      : review?.author?.login || review?.user?.login || '',
+  )
+    .trim()
+    .toLowerCase();
+}
+
+function commentAuthor(comment) {
+  return String(
+    typeof comment?.author === 'string'
+      ? comment.author
+      : comment?.author?.login || comment?.user?.login || '',
+  )
+    .trim()
+    .toLowerCase();
+}
+
+function normalizeAuthorSet(authors = []) {
+  return new Set(
+    (authors || [])
+      .map((author) => String(author).trim().toLowerCase())
+      .filter(Boolean),
+  );
 }
 
 function normalizeExecutionFailure(result, fallbackCode) {
