@@ -235,11 +235,11 @@ Integration is permitted only when all of the following hold:
 3. target environment is `component`;
 4. target branch is an authorized `component/**` ref matching PR base and declared metadata;
 5. target is not `main`, `master`, Production, or otherwise ambiguous;
-6. required checks use exact configured names, explicitly identify the current head, and are terminal-success;
+6. required checks are collected across complete bounded current-head check-run pagination, use exact configured names, explicitly identify the current head, and are terminal-success;
 7. no unresolved blocking review thread or `CHANGES_REQUESTED` review remains;
 8. authority is either:
    - deterministic profile `component-auto-integration` (repository policy; not human approval), or
-   - protected profile `protected-change-review` with a configured trusted reviewer’s independent current-head `APPROVED` review whose review commit SHA exactly matches the PR head and is not PR-author self-review, or a configured trusted source-Issue `APPROVED FOR INTEGRATION` / `Status: component integration authorized` decision that states the exact Issue, PR, head SHA, and target branch.
+   - protected profile `protected-change-review` with a configured trusted reviewer’s independent current-head `APPROVED` review whose review commit SHA exactly matches the PR head, whose reviewer and PR-author identities are both available, and whose reviewer is not the PR author, or a configured trusted source-Issue `APPROVED FOR INTEGRATION` / `Status: component integration authorized` decision that states the exact Issue, PR, head SHA, and target branch.
 
 A repeated equivalent invocation after the PR is merged verifies the merge SHA on the component target and suppresses with zero mutation.
 
@@ -254,8 +254,8 @@ Integration mode requires exact `issue_number`, `pr_number`, `expected_head_sha`
 mutation. It performs an initial GitHub-native collection and a second final
 reread immediately before the single merge call. Issue state/body, PR
 state/body/head/base/source linkage, required checks, reviews, unresolved
-threads, target branch, and target-head identity must match; drift blocks with
-zero mutation.
+threads, authorization comment ID/author/body, target branch, and target-head
+identity must match; drift blocks with zero mutation.
 
 After a successful merge response, the executor verifies the exact merge SHA on
 the authorized target and rereads the source Issue state. Missing source-Issue

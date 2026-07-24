@@ -1201,7 +1201,13 @@ function normalizeCommentsForFingerprint(comments = []) {
       author: commentAuthor(comment),
       body: String(comment.body || comment.bodyText || ''),
     }))
-    .sort((a, b) => a.id.localeCompare(b.id));
+    .sort((a, b) => {
+      const id = a.id.localeCompare(b.id);
+      if (id) return id;
+      const author = a.author.localeCompare(b.author);
+      if (author) return author;
+      return a.body.localeCompare(b.body);
+    });
 }
 
 async function collectGitHubReviewThreads({ repository, prNumber, token, fetchFn }) {

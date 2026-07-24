@@ -386,6 +386,27 @@ describe('authorized non-main component integration', () => {
     expect(result.integration.actions).toEqual([]);
   });
 
+  it('rejects protected approval when PR-author identity is missing', () => {
+    const result = runController(
+      liveCleanInput({
+        approvalProfile: 'protected-change-review',
+        prAuthor: '',
+        reviews: [
+          {
+            id: 'review-trusted-current-head',
+            state: 'APPROVED',
+            commit_id: HEAD,
+            author: { login: 'chatgpt-atlas' },
+          },
+        ],
+      }),
+      config(),
+    );
+    expect(result.integration.ok).toBe(false);
+    expect(result.integration.code).toBe('missing_independent_review');
+    expect(result.integration.actions).toEqual([]);
+  });
+
   it('accepts only exact trusted source-Issue integration authorization', () => {
     const authorized = {
       id: 'auth-1',
@@ -844,13 +865,7 @@ describe('write-scoped component integration executor', () => {
     expect(mutations).toBe(0);
   });
 
-  it('blocks authority comment author drift before any merge mutation', async () => {
-    const initial = protectedExecutionState({
-      comments: [sourceAuthorizationComment()],
-    });
-    const final = protectedExecutionState({
-      comments: [sourceAuthorizationComment({ author: 'drive-by-reviewer' })],
-    });
+  it('blocks source-authorization author drift between rereads before merge mutation', async () => {
     let collections = 0;
     let mutations = 0;
     const result = await executeComponentIntegration({
@@ -860,15 +875,27 @@ describe('write-scoped component integration executor', () => {
       expectedHeadSha: HEAD,
       targetBranch: TARGET,
       expectedTargetHeadSha: TARGET_HEAD,
-      componentIntegration: config().componentIntegration,
+      componentIntegration: {
+        ...config().componentIntegration,
+        trustedIntegrationAuthors: ['wdhunter645', 'chatgpt-atlas'],
+      },
       collectState: async () => {
         collections += 1;
-        return { ok: true, state: collections === 1 ? initial : final };
+        return {
+          ok: true,
+          state:
+            collections === 1
+              ? protectedExecutionState({ comments: [sourceAuthorizationComment()] })
+              : protectedExecutionState({
+                  comments: [sourceAuthorizationComment({ author: 'chatgpt-atlas' })],
+                }),
+        };
       },
       mergePullRequest: async () => {
         mutations += 1;
         return { ok: true, merged: true, mergeSha: MERGE };
       },
+      verifyTargetContainsSha: async () => ({ ok: true, contains: true }),
     });
     expect(result.ok).toBe(false);
     expect(result.code).toBe('integration_expected_state_drift');
@@ -876,15 +903,15 @@ describe('write-scoped component integration executor', () => {
     expect(mutations).toBe(0);
   });
 
-  it('blocks authority comment body target/head drift before any merge mutation', async () => {
+  it('blocks source-authorization body head or target drift between rereads before merge mutation', async () => {
     const cases = [
       {
-        name: 'target',
-        finalComment: sourceAuthorizationComment({ targetBranch: 'component/other-target' }),
+        name: 'head',
+        comment: sourceAuthorizationComment({ headSha: OTHER }),
       },
       {
-        name: 'head',
-        finalComment: sourceAuthorizationComment({ headSha: OTHER }),
+        name: 'target',
+        comment: sourceAuthorizationComment({ targetBranch: 'component/other-target' }),
       },
     ];
     for (const item of cases) {
@@ -905,13 +932,14 @@ describe('write-scoped component integration executor', () => {
             state:
               collections === 1
                 ? protectedExecutionState({ comments: [sourceAuthorizationComment()] })
-                : protectedExecutionState({ comments: [item.finalComment] }),
+                : protectedExecutionState({ comments: [item.comment] }),
           };
         },
         mergePullRequest: async () => {
           mutations += 1;
           return { ok: true, merged: true, mergeSha: MERGE };
         },
+        verifyTargetContainsSha: async () => ({ ok: true, contains: true }),
       });
       expect(result.ok, item.name).toBe(false);
       expect(result.code, item.name).toBe('integration_expected_state_drift');
