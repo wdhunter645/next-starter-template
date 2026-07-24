@@ -72,11 +72,11 @@ export function verifyPostIntegration({
   }
 
   const sourceState = String(packet?.sourceIssue?.state || '').toUpperCase();
-  if (sourceState && sourceState !== 'OPEN') {
+  if (sourceState !== 'OPEN') {
     return failClosed(
-      'source_issue_closed_prematurely',
-      'Source Issue must remain open after the integration transaction.',
-      { state: sourceState },
+      sourceState ? 'source_issue_closed_prematurely' : 'source_issue_state_unavailable',
+      'Source Issue state must be explicitly OPEN after the integration transaction.',
+      { state: sourceState || null },
     );
   }
 
