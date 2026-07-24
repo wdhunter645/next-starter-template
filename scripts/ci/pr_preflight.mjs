@@ -57,6 +57,10 @@ export function evaluatePrPreflight({
     files: normalizedChangedFiles.map((filename) => ({ filename })),
     reviews,
     reviewThreads,
+    implementationLogin: pr.author?.login || pr.user?.login || '',
+    requireActorIndependentApproval: reviews.some(
+      (review) => String(review.state || '').toUpperCase() === 'APPROVED',
+    ),
     enforceFailure: false,
   });
 
