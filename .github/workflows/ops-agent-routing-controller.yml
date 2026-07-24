@@ -1,15 +1,24 @@
 name: OPS — Agent Routing Controller (Observe)
 
 # #2677-001 / #2770 — read-only foundation.
-# Collects a normalized current-head evidence packet from an input snapshot.
+# Collects a normalized current-head evidence packet from GitHub-native live reads.
+# Optional hint snapshots are compared against live evidence and cannot substitute.
 # Must not merge, close, relabel, resume, activate successors, or mutate main.
 
 on:
   workflow_dispatch:
     inputs:
-      input_path:
-        description: Repository-relative JSON snapshot/fixture path for observe-only packet generation
+      issue_number:
+        description: Source Issue number for GitHub-native live collection
         required: true
+        type: string
+      pr_number:
+        description: Related pull request number for GitHub-native live collection
+        required: true
+        type: string
+      hint_path:
+        description: Optional repository-relative JSON hint snapshot compared against live reads
+        required: false
         type: string
       output_path:
         description: Repository-relative output path for the evidence packet artifact content
@@ -56,6 +65,9 @@ jobs:
             const cfg = JSON.parse(fs.readFileSync("config/agent-routing/controller.json", "utf8"));
             if (cfg.mode !== "observe-only") process.exit(1);
             if (cfg.mutationAllowed !== false) process.exit(1);
+            if (cfg.labelsAreAuthority !== false) process.exit(1);
+            if (cfg.rereadBeforePacket !== true) process.exit(1);
+            if (cfg.rejectStaleHeadSha !== true) process.exit(1);
             const caps = cfg.workflowCapabilities || {};
             for (const key of ["merge","close","relabel","resume","activateSuccessor","mutateMain"]) {
               if (caps[key] !== false) {
@@ -83,18 +95,30 @@ jobs:
             console.log("read_only_permissions_confirmed");
           '
 
-      - name: Run observe controller
+      - name: Run observe controller with live GitHub reread
         env:
-          INPUT_PATH: ${{ inputs.input_path }}
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          HINT_PATH: ${{ inputs.hint_path }}
           OUTPUT_PATH: ${{ inputs.output_path }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          test -n "$INPUT_PATH"
-          test -f "$INPUT_PATH"
+          test -n "$ISSUE_NUMBER"
+          test -n "$PR_NUMBER"
           mkdir -p "$(dirname "$OUTPUT_PATH")"
-          node scripts/agent-routing/controller.mjs \
-            --config config/agent-routing/controller.json \
-            --input "$INPUT_PATH" \
+          ARGS=(
+            --config config/agent-routing/controller.json
+            --issue "$ISSUE_NUMBER"
+            --pr "$PR_NUMBER"
+            --repository "$GITHUB_REPOSITORY"
             --output "$OUTPUT_PATH"
+          )
+          if [ -n "$HINT_PATH" ]; then
+            test -f "$HINT_PATH"
+            ARGS+=(--input "$HINT_PATH")
+          fi
+          node scripts/agent-routing/controller.mjs "${ARGS[@]}"
 
       - name: Upload evidence packet artifact
         if: always()
@@ -109,14 +133,18 @@ jobs:
         if: always()
         env:
           OUTPUT_PATH: ${{ inputs.output_path }}
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          PR_NUMBER: ${{ inputs.pr_number }}
         run: |
           {
             echo "## Agent routing controller (observe-only)"
             echo
             echo "- Mode: observe-only"
             echo "- Mutation allowed: false"
+            echo "- Live GitHub reread: required"
             echo "- Merge/close/relabel/resume/successor/main mutation: disabled"
-            echo "- Input: \`${{ inputs.input_path }}\`"
+            echo "- Issue: \`#$ISSUE_NUMBER\`"
+            echo "- PR: \`#$PR_NUMBER\`"
             echo "- Output: \`$OUTPUT_PATH\`"
             if [ -f "$OUTPUT_PATH" ]; then
               echo

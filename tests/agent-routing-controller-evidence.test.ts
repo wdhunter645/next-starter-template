@@ -1,9 +1,15 @@
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-import { loadControllerConfig, runObserveController } from '../scripts/agent-routing/controller.mjs';
+import {
+  assertObserveOnlyConfigInvariants,
+  loadControllerConfig,
+  mainAsync,
+  runObserveController,
+} from '../scripts/agent-routing/controller.mjs';
 import {
   ALL_HANDOFF_EVENT_MARKERS,
   assertEventAuthority,
@@ -14,8 +20,12 @@ import {
 } from '../scripts/agent-routing/lib/event-contract.mjs';
 import {
   assertCurrentHeadSha,
+  assertHintsMatchLive,
+  assertValidPrNumber,
   buildEvidencePacket,
+  collectLiveGitHubEvidence,
   extractPrimarySourceIssueRefs,
+  normalizeChecks,
   resolveExactOpenSourceIssue,
 } from '../scripts/agent-routing/lib/evidence-collector.mjs';
 
@@ -32,7 +42,7 @@ type ObserveSuccess = {
     sourceIssue: { number: number };
     pullRequest: { number: number; headSha: string; changedFiles: string[] };
     event: { eventType: string; actionIdentity: string };
-    checks: Array<{ name: string }>;
+    checks: Array<{ name: string; headSha?: string }>;
     reviewEvidence: {
       unresolvedReviewThreads: unknown[];
       resolvedReviewThreads: unknown[];
@@ -46,13 +56,278 @@ type ObserveSuccess = {
       classes: string[];
       nonAutomatable: Array<{ nonAutomatable: boolean }>;
     };
-    reread: { performed: boolean };
+    reread: { performed: boolean; source?: string };
   };
 };
 type ObserveResult = FailClosed | ObserveSuccess;
 
 function asResult(value: unknown): ObserveResult {
   return value as ObserveResult;
+}
+
+function createCollectFetchMock(options: {
+  headSha: string;
+  finalHeadSha: string;
+  checkRunsFail?: boolean;
+  multiPageChecks?: boolean;
+  multiPageThreads?: boolean;
+  finalPrState?: string;
+  finalPrBody?: string;
+  onCollect?: () => void;
+}) {
+  let issueReads = 0;
+  let prReads = 0;
+  let graphqlReads = 0;
+
+  const issuePayload = {
+    number: 2433,
+    state: 'open',
+    title: 'TASK: CC-001',
+    body: '## Acceptance Criteria\n\n- [x] ok\n',
+    labels: [{ name: 'docs' }],
+  };
+
+  const defaultPrBody =
+    '- **Issue:** #2433\n- Delivery model: B-child\n- Target environment: component\n';
+
+  const prPayload = (sha: string, overrides: { state?: string; body?: string } = {}) => ({
+    number: 2675,
+    title: 'docs(#2433)',
+    state: overrides.state || 'open',
+    body: overrides.body ?? defaultPrBody,
+    base: { ref: 'component/content-collection-phase1' },
+    head: { ref: 'cursor/2433-cc-001-contract-freeze-2e48', sha },
+    html_url: 'https://github.com/wdhunter645/next-starter-template/pull/2675',
+  });
+
+  return async (url: string, init?: { method?: string; body?: string }) => {
+    options.onCollect?.();
+    if (String(url).includes('api.github.com/graphql')) {
+      graphqlReads += 1;
+      const body = init?.body ? JSON.parse(init.body) : {};
+      const after = body.variables?.after || null;
+      if (options.multiPageThreads) {
+        if (!after) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({
+              data: {
+                repository: {
+                  pullRequest: {
+                    reviewThreads: {
+                      pageInfo: { hasNextPage: true, endCursor: 'cursor-1' },
+                      nodes: [
+                        {
+                          id: 'PRRT_page_1',
+                          isResolved: false,
+                          isOutdated: false,
+                          path: 'docs/a.md',
+                          comments: { nodes: [{ body: 'page 1' }] },
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            }),
+          };
+        }
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            data: {
+              repository: {
+                pullRequest: {
+                  reviewThreads: {
+                    pageInfo: { hasNextPage: false, endCursor: null },
+                    nodes: [
+                      {
+                        id: 'PRRT_page_2',
+                        isResolved: true,
+                        isOutdated: false,
+                        path: 'docs/b.md',
+                        comments: { nodes: [{ body: 'page 2' }] },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          }),
+        };
+      }
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          data: {
+            repository: {
+              pullRequest: {
+                reviewThreads: {
+                  pageInfo: { hasNextPage: false, endCursor: null },
+                  nodes: [
+                    {
+                      id: 'PRRT_1',
+                      isResolved: false,
+                      isOutdated: false,
+                      path: 'docs/a.md',
+                      comments: { nodes: [{ body: 'open thread' }] },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        }),
+      };
+    }
+
+    const apiPath = String(url).replace(
+      'https://api.github.com/repos/wdhunter645/next-starter-template',
+      '',
+    );
+
+    if (apiPath === '/issues/2433') {
+      issueReads += 1;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => issuePayload,
+        text: async () => JSON.stringify(issuePayload),
+      };
+    }
+
+    if (apiPath === '/pulls/2675') {
+      prReads += 1;
+      const sha = prReads === 1 ? options.headSha : options.finalHeadSha;
+      const payload =
+        prReads === 1
+          ? prPayload(sha)
+          : prPayload(sha, {
+              state: options.finalPrState,
+              body: options.finalPrBody,
+            });
+      return {
+        ok: true,
+        status: 200,
+        json: async () => payload,
+        text: async () => JSON.stringify(payload),
+      };
+    }
+
+    if (apiPath.startsWith('/pulls/2675/files')) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => [{ filename: 'docs/a.md' }],
+        text: async () => '[]',
+      };
+    }
+
+    if (apiPath.startsWith('/issues/2433/comments')) {
+      const payload = [
+        {
+          id: 5029000001,
+          created_at: '2026-07-20T18:00:00Z',
+          user: { login: 'wdhunter645' },
+          body: 'CHATGPT HANDOFF\nIssue: #2433\n',
+        },
+      ];
+      return {
+        ok: true,
+        status: 200,
+        json: async () => payload,
+        text: async () => JSON.stringify(payload),
+      };
+    }
+
+    if (apiPath.startsWith('/pulls/2675/reviews')) {
+      const payload = [
+        {
+          id: 9,
+          state: 'COMMENTED',
+          user: { login: 'atlas' },
+          submitted_at: '2026-07-20T18:30:00Z',
+          body: 'note',
+        },
+      ];
+      return {
+        ok: true,
+        status: 200,
+        json: async () => payload,
+        text: async () => JSON.stringify(payload),
+      };
+    }
+
+    if (apiPath.includes('/check-runs')) {
+      if (options.checkRunsFail) {
+        return {
+          ok: false,
+          status: 500,
+          text: async () => 'check-runs unavailable',
+          json: async () => ({ message: 'check-runs unavailable' }),
+        };
+      }
+      if (options.multiPageChecks) {
+        const page = Number(new URL(url).searchParams.get('page') || '1');
+        if (page === 1) {
+          const pageOne = Array.from({ length: 100 }, (_, index) => ({
+            name: index === 0 ? 'check-page-1' : `filler-${index}`,
+            status: 'completed',
+            conclusion: 'success',
+            head_sha: options.headSha,
+          }));
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({ total_count: 101, check_runs: pageOne }),
+            text: async () => '',
+          };
+        }
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            total_count: 101,
+            check_runs: [
+              {
+                name: 'check-page-2',
+                status: 'completed',
+                conclusion: 'success',
+                head_sha: options.headSha,
+              },
+            ],
+          }),
+          text: async () => '',
+        };
+      }
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          total_count: 1,
+          check_runs: [
+            {
+              name: 'GATE — Quality Checks',
+              status: 'completed',
+              conclusion: 'success',
+              head_sha: options.headSha,
+            },
+          ],
+        }),
+        text: async () => '',
+      };
+    }
+
+    return {
+      ok: false,
+      status: 404,
+      text: async () => `missing ${apiPath}`,
+      json: async () => ({ message: 'not found' }),
+    };
+  };
 }
 
 function fixture2433(overrides: Record<string, unknown> = {}) {
@@ -108,73 +383,98 @@ Status: READY FOR REVIEW
 `,
   };
 
+  const checks = [
+    {
+      name: 'GATE — Quality Checks',
+      status: 'completed',
+      conclusion: 'success',
+      headSha: HEAD_SHA,
+    },
+    {
+      name: 'GATE — Diff Scope',
+      status: 'completed',
+      conclusion: 'success',
+      headSha: HEAD_SHA,
+    },
+  ];
+
+  const changedFiles = [
+    'docs/ops/implementation-plans/content-collection/packages/cc-001-content-asset-model-package.md',
+    'docs/reference/content/lgfc-content-candidate-model.md',
+    'docs/reference/website/content-inventory-model.md',
+    'docs/reference/website/lou-gehrig-content-metadata-schema.md',
+    'docs/reference/website/unified-content-workflow.md',
+  ];
+
+  const reviewThreads = [
+    {
+      id: 'PRRT_unresolved_2675',
+      isResolved: false,
+      isOutdated: false,
+      path: 'docs/reference/website/unified-content-workflow.md',
+      line: 40,
+      body: 'Clarify deferred SEO ownership before freeze verification.',
+    },
+    {
+      id: 'PRRT_resolved_2675',
+      isResolved: true,
+      isOutdated: false,
+      path: 'docs/reference/content/lgfc-content-candidate-model.md',
+      line: 12,
+      body: 'Nit addressed.',
+    },
+  ];
+
+  const reviewSubmissions = [
+    {
+      id: 'PRR_1',
+      state: 'COMMENTED',
+      author: { login: 'atlas-reviewer' },
+      submittedAt: '2026-07-20T18:30:00Z',
+      body: 'Actionable clarification required on deferred SEO.',
+    },
+  ];
+
+  const issueComments = [
+    triggerComment,
+    {
+      id: '5029000002',
+      createdAt: '2026-07-20T19:00:00Z',
+      author: { login: 'wdhunter645' },
+      body: 'Late note after handoff: keep feature lanes blocked.',
+    },
+  ];
+
+  const live = {
+    collectedAt: '2026-07-20T19:05:00Z',
+    source: 'github-native',
+    sourceIssue,
+    pullRequest,
+    headSha: HEAD_SHA,
+    checks,
+    changedFiles,
+    reviewThreads,
+    reviewSubmissions,
+    issueComments,
+  };
+
   return {
     sourceIssue,
     pullRequest,
     triggerComment,
     observedHeadSha: HEAD_SHA,
-    changedFiles: [
-      'docs/ops/implementation-plans/content-collection/packages/cc-001-content-asset-model-package.md',
-      'docs/reference/content/lgfc-content-candidate-model.md',
-      'docs/reference/website/content-inventory-model.md',
-      'docs/reference/website/lou-gehrig-content-metadata-schema.md',
-      'docs/reference/website/unified-content-workflow.md',
-    ],
-    checks: [
-      {
-        name: 'GATE — Quality Checks',
-        status: 'completed',
-        conclusion: 'success',
-        headSha: HEAD_SHA,
-      },
-      {
-        name: 'GATE — Diff Scope',
-        status: 'completed',
-        conclusion: 'success',
-        headSha: HEAD_SHA,
-      },
-    ],
-    reviewThreads: [
-      {
-        id: 'PRRT_unresolved_2675',
-        isResolved: false,
-        isOutdated: false,
-        path: 'docs/reference/website/unified-content-workflow.md',
-        line: 40,
-        body: 'Clarify deferred SEO ownership before freeze verification.',
-      },
-      {
-        id: 'PRRT_resolved_2675',
-        isResolved: true,
-        isOutdated: false,
-        path: 'docs/reference/content/lgfc-content-candidate-model.md',
-        line: 12,
-        body: 'Nit addressed.',
-      },
-    ],
-    reviewSubmissions: [
-      {
-        id: 'PRR_1',
-        state: 'COMMENTED',
-        author: { login: 'atlas-reviewer' },
-        submittedAt: '2026-07-20T18:30:00Z',
-        body: 'Actionable clarification required on deferred SEO.',
-      },
-    ],
-    issueComments: [
-      triggerComment,
-      {
-        id: '5029000002',
-        createdAt: '2026-07-20T19:00:00Z',
-        author: { login: 'wdhunter645' },
-        body: 'Late note after handoff: keep feature lanes blocked.',
-      },
-    ],
+    changedFiles,
+    checks,
+    reviewThreads,
+    reviewSubmissions,
+    issueComments,
+    // Caller-supplied reread is a hint only; authoritative state is live.
     reread: {
       at: '2026-07-20T19:05:00Z',
       sourceIssue,
       pullRequest,
     },
+    live,
     ...overrides,
   };
 }
@@ -263,6 +563,28 @@ describe('agent routing evidence collector', () => {
     ).toBe('stale_head_sha');
   });
 
+  it('fails closed on missing or invalid PR numbers', () => {
+    expect((assertValidPrNumber(null) as FailClosed).code).toBe('invalid_pr_number');
+    expect((assertValidPrNumber(undefined) as FailClosed).code).toBe('invalid_pr_number');
+    expect((assertValidPrNumber('abc') as FailClosed).code).toBe('invalid_pr_number');
+    expect((assertValidPrNumber(NaN) as FailClosed).code).toBe('invalid_pr_number');
+    expect((assertValidPrNumber(0) as FailClosed).code).toBe('invalid_pr_number');
+    expect((assertValidPrNumber(-3) as FailClosed).code).toBe('invalid_pr_number');
+    expect((assertValidPrNumber(2675) as { ok: true; prNumber: number }).prNumber).toBe(2675);
+  });
+
+  it('filters check evidence to the authoritative head SHA', () => {
+    const normalized = normalizeChecks(
+      [
+        { name: 'current', headSha: HEAD_SHA, conclusion: 'success' },
+        { name: 'stale', headSha: STALE_SHA, conclusion: 'success' },
+        { name: 'also-current', head_sha: HEAD_SHA, conclusion: 'failure' },
+      ],
+      HEAD_SHA as never,
+    ) as Array<{ name: string }>;
+    expect(normalized.map((check) => check.name)).toEqual(['current', 'also-current']);
+  });
+
   it('parses exactly one primary PR source Issue for the #2433 fixture', () => {
     const refs = extractPrimarySourceIssueRefs(String(fixture2433().pullRequest.body));
     expect(refs).toEqual([2433]);
@@ -295,6 +617,7 @@ describe('fixture #2433 / PR #2675 current-head packet', () => {
       true,
     );
     expect(packet.reread.performed).toBe(true);
+    expect(packet.reread.source).toBe('github-native');
   });
 
   it('fails closed on stale head for the #2433 fixture', () => {
@@ -310,30 +633,28 @@ describe('fixture #2433 / PR #2675 current-head packet', () => {
     expect(result.code).toBe('stale_head_sha');
   });
 
-  it('fails closed when multiple source Issues are supplied', () => {
+  it('fails closed when multiple source Issues are supplied as live candidates', () => {
     const base = fixture2433();
     const result = asResult(
       runObserveController({
         ...base,
-        sourceIssue: undefined,
-        sourceIssues: [
-          base.sourceIssue,
-          { number: 2434, state: 'OPEN', title: 'successor', body: '', labels: [] },
-        ],
+        live: undefined,
       }),
     );
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error('expected failure');
-    expect(result.code).toBe('ambiguous_source_issue');
+    expect(result.code).toBe('live_evidence_unavailable');
   });
 
-  it('fails closed when the source Issue is missing', () => {
+  it('fails closed when the live source Issue is missing', () => {
     const base = fixture2433();
     const result = asResult(
       runObserveController({
         ...base,
-        sourceIssue: undefined,
-        sourceIssues: [],
+        live: {
+          ...(base.live as object),
+          sourceIssue: undefined,
+        },
       }),
     );
     expect(result.ok).toBe(false);
@@ -371,6 +692,462 @@ describe('fixture #2433 / PR #2675 current-head packet', () => {
     if (result.ok) throw new Error('expected failure');
     expect(result.code).toBe('contradictory_ownership_profile');
   });
+
+  it('rejects fabricated caller reread data that disagrees with live evidence', () => {
+    const base = fixture2433();
+    const result = asResult(
+      runObserveController(
+        fixture2433({
+          reread: {
+            at: '2026-07-20T19:05:00Z',
+            sourceIssue: { ...(base.sourceIssue as object), number: 9999 },
+            pullRequest: {
+              ...(base.pullRequest as object),
+              number: 1111,
+              headSha: STALE_SHA,
+            },
+          },
+        }),
+      ),
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('expected failure');
+    expect(result.code).toBe('fabricated_reread_rejected');
+  });
+
+  it('cannot treat caller-supplied reread as authoritative when live evidence is absent', () => {
+    const base = fixture2433();
+    const { live: _live, ...withoutLive } = base as { live: unknown } & Record<string, unknown>;
+    const result = asResult(runObserveController(withoutLive));
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('expected failure');
+    expect(result.code).toBe('live_evidence_unavailable');
+  });
+
+  it('filters stale check evidence out of the emitted packet', () => {
+    const base = fixture2433();
+    const live = base.live as {
+      checks: Array<Record<string, unknown>>;
+    };
+    const result = asResult(
+      runObserveController(
+        fixture2433({
+          live: {
+            ...live,
+            checks: [
+              ...live.checks,
+              {
+                name: 'STALE — Old Head Gate',
+                status: 'completed',
+                conclusion: 'success',
+                headSha: STALE_SHA,
+              },
+            ],
+          },
+        }),
+      ),
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('expected packet');
+    expect(result.packet.checks.map((check) => check.name)).not.toContain('STALE — Old Head Gate');
+    expect(result.packet.checks.every((check) => check.headSha === HEAD_SHA)).toBe(true);
+  });
+
+  it('fails closed when live PR number is invalid', () => {
+    const base = fixture2433();
+    const live = base.live as { pullRequest: Record<string, unknown> };
+    const result = asResult(
+      runObserveController(
+        fixture2433({
+          live: {
+            ...live,
+            pullRequest: {
+              ...live.pullRequest,
+              number: 'not-a-number',
+            },
+          },
+        }),
+      ),
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('expected failure');
+    expect(result.code).toBe('invalid_pr_number');
+  });
+
+  it('fails closed when live evidence collection is unavailable', async () => {
+    const result = (await collectLiveGitHubEvidence({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2433,
+      prNumber: 2675,
+      token: '',
+    } as never)) as FailClosed;
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('live_evidence_unavailable');
+  });
+
+  it('rejects forged or missing live trigger comments', () => {
+    const base = fixture2433();
+    const forged = asResult(
+      runObserveController(
+        fixture2433({
+          triggerComment: {
+            id: '9999999999',
+            createdAt: '2026-07-20T18:00:00Z',
+            body: 'CHATGPT HANDOFF\nIssue: #2433\n',
+          },
+        }),
+      ),
+    );
+    expect(forged.ok).toBe(false);
+    if (forged.ok) throw new Error('expected failure');
+    expect(forged.code).toBe('trigger_comment_not_in_live_evidence');
+
+    const live = base.live as { issueComments: unknown[] };
+    const missing = asResult(
+      runObserveController(
+        fixture2433({
+          live: {
+            ...live,
+            issueComments: [
+              {
+                id: '5029000002',
+                createdAt: '2026-07-20T19:00:00Z',
+                author: { login: 'wdhunter645' },
+                body: 'Late note after handoff: keep feature lanes blocked.',
+              },
+            ],
+          },
+          triggerComment: undefined,
+          eventComment: undefined,
+        }),
+      ),
+    );
+    expect(missing.ok).toBe(false);
+    if (missing.ok) throw new Error('expected failure');
+    expect(missing.code).toBe('missing_canonical_event');
+  });
+
+  it('fails closed when caller delivery profile overrides the live PR profile', () => {
+    const result = asResult(
+      runObserveController(
+        fixture2433({
+          deliveryProfile: {
+            deliveryModel: 'A',
+            targetEnvironment: 'production',
+            approvalProfile: 'chat-bill-production',
+          },
+        }),
+      ),
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('expected failure');
+    expect(result.code).toBe('delivery_profile_hint_mismatch');
+  });
+
+  it('collects live evidence through injectable GitHub fetch and rejects mismatched hints', async () => {
+    const fetchFn = createCollectFetchMock({
+      headSha: HEAD_SHA,
+      finalHeadSha: HEAD_SHA,
+    });
+
+    const collected = (await collectLiveGitHubEvidence({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2433,
+      prNumber: 2675,
+      token: 'test-token',
+      fetchFn: fetchFn as never,
+    } as never)) as
+      | FailClosed
+      | {
+          ok: true;
+          live: {
+            sourceIssue: { number: number };
+            pullRequest: { headSha: string };
+            changedFiles: string[];
+            reviewThreads: unknown[];
+            finalReread?: boolean;
+          };
+        };
+    expect(collected.ok).toBe(true);
+    if (!collected.ok) throw new Error('expected live collection');
+    expect(collected.live.sourceIssue.number).toBe(2433);
+    expect(collected.live.pullRequest.headSha).toBe(HEAD_SHA);
+    expect(collected.live.changedFiles).toEqual(['docs/a.md']);
+    expect(collected.live.reviewThreads).toHaveLength(1);
+    expect(collected.live.finalReread).toBe(true);
+
+    const mismatch = assertHintsMatchLive({
+      hints: {
+        observedHeadSha: STALE_SHA,
+      },
+      live: collected.live,
+    } as never) as FailClosed;
+    expect(mismatch.ok).toBe(false);
+    expect(mismatch.code).toBe('stale_head_sha');
+  });
+
+  it('fails closed when PR head changes during collection before final reread', async () => {
+    const fetchFn = createCollectFetchMock({
+      headSha: HEAD_SHA,
+      finalHeadSha: STALE_SHA,
+    });
+    const result = (await collectLiveGitHubEvidence({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2433,
+      prNumber: 2675,
+      token: 'test-token',
+      fetchFn: fetchFn as never,
+    } as never)) as FailClosed;
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('stale_head_sha');
+  });
+
+  it('fails closed when check-run collection fails', async () => {
+    const fetchFn = createCollectFetchMock({
+      headSha: HEAD_SHA,
+      finalHeadSha: HEAD_SHA,
+      checkRunsFail: true,
+    });
+    const result = (await collectLiveGitHubEvidence({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2433,
+      prNumber: 2675,
+      token: 'test-token',
+      fetchFn: fetchFn as never,
+    } as never)) as FailClosed;
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('live_evidence_unavailable');
+    expect(result.message || '').toMatch(/check-runs/i);
+  });
+
+  it('paginates check-runs and review threads to completion', async () => {
+    const fetchFn = createCollectFetchMock({
+      headSha: HEAD_SHA,
+      finalHeadSha: HEAD_SHA,
+      multiPageChecks: true,
+      multiPageThreads: true,
+    });
+    const collected = (await collectLiveGitHubEvidence({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2433,
+      prNumber: 2675,
+      token: 'test-token',
+      fetchFn: fetchFn as never,
+    } as never)) as
+      | FailClosed
+      | {
+          ok: true;
+          live: {
+            checks: Array<{ name: string }>;
+            reviewThreads: Array<{ id: string }>;
+          };
+        };
+    expect(collected.ok).toBe(true);
+    if (!collected.ok) throw new Error('expected live collection');
+    expect(collected.live.checks.map((check) => check.name)).toContain('check-page-1');
+    expect(collected.live.checks.map((check) => check.name)).toContain('check-page-2');
+    expect(collected.live.checks).toHaveLength(101);
+    expect(collected.live.reviewThreads.map((thread) => thread.id)).toEqual([
+      'PRRT_page_1',
+      'PRRT_page_2',
+    ]);
+  });
+
+  it('does not let embedded input.live bypass GitHub-native CLI collection', async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'controller-live-bypass-'));
+    const hintPath = path.join(tmp, 'hint-with-live.json');
+    const fabricatedHead = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+    fs.writeFileSync(
+      hintPath,
+      JSON.stringify({
+        live: {
+          collectedAt: '2026-07-20T19:05:00Z',
+          source: 'caller-fabricated',
+          sourceIssue: { number: 2433, state: 'OPEN', body: '', labels: [] },
+          pullRequest: {
+            number: 2675,
+            body: '- **Issue:** #2433\n',
+            headSha: fabricatedHead,
+            head: { sha: fabricatedHead },
+          },
+          headSha: fabricatedHead,
+          checks: [],
+          changedFiles: [],
+          reviewThreads: [],
+          reviewSubmissions: [],
+          issueComments: [],
+        },
+      }),
+    );
+
+    let collectCalls = 0;
+    const fetchFn = createCollectFetchMock({
+      headSha: HEAD_SHA,
+      finalHeadSha: HEAD_SHA,
+      onCollect() {
+        collectCalls += 1;
+      },
+    });
+
+    const previousToken = process.env.GITHUB_TOKEN;
+    process.env.GITHUB_TOKEN = 'test-token';
+    try {
+      const code = await mainAsync(
+        [
+          '--issue',
+          '2433',
+          '--pr',
+          '2675',
+          '--repository',
+          'wdhunter645/next-starter-template',
+          '--input',
+          hintPath,
+        ],
+        { fetchFn: fetchFn as never },
+      );
+      expect(code).toBe(0);
+      expect(collectCalls).toBeGreaterThan(0);
+    } finally {
+      if (previousToken == null) delete process.env.GITHUB_TOKEN;
+      else process.env.GITHUB_TOKEN = previousToken;
+    }
+  });
+
+  it('fails closed on issue-only CLI identity even when input.live is embedded', async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'controller-issue-only-'));
+    const hintPath = path.join(tmp, 'hint-with-live.json');
+    fs.writeFileSync(
+      hintPath,
+      JSON.stringify({
+        live: {
+          collectedAt: '2026-07-20T19:05:00Z',
+          source: 'caller-fabricated',
+          sourceIssue: { number: 2433, state: 'OPEN', body: '', labels: [] },
+          pullRequest: {
+            number: 2675,
+            body: '- **Issue:** #2433\n',
+            headSha: HEAD_SHA,
+            head: { sha: HEAD_SHA },
+          },
+          headSha: HEAD_SHA,
+          checks: [],
+          changedFiles: [],
+          reviewThreads: [],
+          reviewSubmissions: [],
+          issueComments: [],
+        },
+      }),
+    );
+
+    let collectCalls = 0;
+    const fetchFn = createCollectFetchMock({
+      headSha: HEAD_SHA,
+      finalHeadSha: HEAD_SHA,
+      onCollect() {
+        collectCalls += 1;
+      },
+    });
+
+    const code = await mainAsync(
+      [
+        '--issue',
+        '2433',
+        '--repository',
+        'wdhunter645/next-starter-template',
+        '--input',
+        hintPath,
+      ],
+      { fetchFn: fetchFn as never },
+    );
+    expect(code).toBe(2);
+    expect(collectCalls).toBe(0);
+  });
+
+  it('fails closed on PR-only CLI identity even when input.live is embedded', async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'controller-pr-only-'));
+    const hintPath = path.join(tmp, 'hint-with-live.json');
+    fs.writeFileSync(
+      hintPath,
+      JSON.stringify({
+        live: {
+          collectedAt: '2026-07-20T19:05:00Z',
+          source: 'caller-fabricated',
+          sourceIssue: { number: 2433, state: 'OPEN', body: '', labels: [] },
+          pullRequest: {
+            number: 2675,
+            body: '- **Issue:** #2433\n',
+            headSha: HEAD_SHA,
+            head: { sha: HEAD_SHA },
+          },
+          headSha: HEAD_SHA,
+          checks: [],
+          changedFiles: [],
+          reviewThreads: [],
+          reviewSubmissions: [],
+          issueComments: [],
+        },
+      }),
+    );
+
+    let collectCalls = 0;
+    const fetchFn = createCollectFetchMock({
+      headSha: HEAD_SHA,
+      finalHeadSha: HEAD_SHA,
+      onCollect() {
+        collectCalls += 1;
+      },
+    });
+
+    const code = await mainAsync(
+      [
+        '--pr',
+        '2675',
+        '--repository',
+        'wdhunter645/next-starter-template',
+        '--input',
+        hintPath,
+      ],
+      { fetchFn: fetchFn as never },
+    );
+    expect(code).toBe(2);
+    expect(collectCalls).toBe(0);
+  });
+
+  it('fails closed when the PR closes during collection before final reread', async () => {
+    const fetchFn = createCollectFetchMock({
+      headSha: HEAD_SHA,
+      finalHeadSha: HEAD_SHA,
+      finalPrState: 'closed',
+    });
+    const result = (await collectLiveGitHubEvidence({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2433,
+      prNumber: 2675,
+      token: 'test-token',
+      fetchFn: fetchFn as never,
+    } as never)) as FailClosed;
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('pull_request_not_open');
+  });
+
+  it('fails closed when PR body/delivery-profile drifts during collection before final reread', async () => {
+    const fetchFn = createCollectFetchMock({
+      headSha: HEAD_SHA,
+      finalHeadSha: HEAD_SHA,
+      finalPrBody:
+        '- **Issue:** #2433\n- Delivery model: A\n- Target environment: production\n- Approval profile: chat-bill-production\n',
+    });
+    const result = (await collectLiveGitHubEvidence({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2433,
+      prNumber: 2675,
+      token: 'test-token',
+      fetchFn: fetchFn as never,
+    } as never)) as FailClosed;
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('live_identity_drift');
+    expect(result.message || '').toMatch(/body|delivery profile/i);
+  });
 });
 
 describe('observe-only controller configuration and workflow', () => {
@@ -381,17 +1158,46 @@ describe('observe-only controller configuration and workflow', () => {
       mode: string;
       mutationAllowed: boolean;
       labelsAreAuthority: boolean;
+      rereadBeforePacket: boolean;
+      rejectStaleHeadSha: boolean;
       workflowCapabilities: Record<string, boolean>;
     };
     expect(config.mode).toBe('observe-only');
     expect(config.mutationAllowed).toBe(false);
     expect(config.labelsAreAuthority).toBe(false);
+    expect(config.rereadBeforePacket).toBe(true);
+    expect(config.rejectStaleHeadSha).toBe(true);
     expect(config.workflowCapabilities.merge).toBe(false);
     expect(config.workflowCapabilities.close).toBe(false);
     expect(config.workflowCapabilities.relabel).toBe(false);
     expect(config.workflowCapabilities.resume).toBe(false);
     expect(config.workflowCapabilities.activateSuccessor).toBe(false);
     expect(config.workflowCapabilities.mutateMain).toBe(false);
+  });
+
+  it('fails closed on observe-only configuration drift', () => {
+    const config = loadControllerConfig(
+      path.join(ROOT, 'config/agent-routing/controller.json'),
+    ) as Record<string, unknown>;
+    expect(() =>
+      assertObserveOnlyConfigInvariants({
+        ...config,
+        workflowCapabilities: {
+          ...(config.workflowCapabilities as object),
+          merge: true,
+        },
+      }),
+    ).toThrow(/controller_capability_must_be_false:merge/);
+
+    const drifted = asResult(
+      runObserveController(fixture2433(), {
+        ...config,
+        labelsAreAuthority: true,
+      } as never),
+    );
+    expect(drifted.ok).toBe(false);
+    if (drifted.ok) throw new Error('expected failure');
+    expect(drifted.code).toBe('controller_config_drift');
   });
 
   it('keeps the workflow read-only (no write permissions; no mutation jobs)', () => {
@@ -403,6 +1209,9 @@ describe('observe-only controller configuration and workflow', () => {
     expect(workflow).toMatch(/contents:\s*read/);
     expect(workflow).toMatch(/issues:\s*read/);
     expect(workflow).toMatch(/pull-requests:\s*read/);
+    expect(workflow).toMatch(/issue_number/);
+    expect(workflow).toMatch(/pr_number/);
+    expect(workflow).toMatch(/Live GitHub reread/);
     expect(workflow).not.toMatch(/issues:\s*write/);
     expect(workflow).not.toMatch(/pull-requests:\s*write/);
     expect(workflow).not.toMatch(/contents:\s*write/);
@@ -411,13 +1220,18 @@ describe('observe-only controller configuration and workflow', () => {
     expect(workflow).not.toMatch(/\bgh\s+label\b/);
   });
 
-  it('documents stable identities and protected boundaries in the contract', () => {
+  it('documents stable identities, required sections, and protected boundaries in the contract', () => {
     const contract = fs.readFileSync(
       path.join(ROOT, 'docs/reference/ci/agent-routing-controller-contract.md'),
       'utf8',
     );
+    expect(contract).toContain('## Purpose');
+    expect(contract).toContain('## Scope');
+    expect(contract).toContain('## Current known truth');
+    expect(contract).toContain('## Intended final state');
     expect(contract).toContain('actionIdentity');
     expect(contract).toContain('Expected-state reads');
+    expect(contract).toContain('github-native');
     expect(contract).toContain('product');
     expect(contract).toContain('engineering-approval');
     expect(contract).toContain('recovery');
@@ -425,5 +1239,16 @@ describe('observe-only controller configuration and workflow', () => {
     expect(contract).toContain('destructive');
     expect(contract).toContain('production');
     expect(contract).toContain('mutationAllowed: false');
+  });
+
+  it('rejects loading a drifted config file from disk', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'controller-config-'));
+    const driftedPath = path.join(tmp, 'controller.json');
+    const good = JSON.parse(
+      fs.readFileSync(path.join(ROOT, 'config/agent-routing/controller.json'), 'utf8'),
+    );
+    good.mutationAllowed = true;
+    fs.writeFileSync(driftedPath, JSON.stringify(good, null, 2));
+    expect(() => loadControllerConfig(driftedPath)).toThrow(/controller_mutation_must_be_disabled/);
   });
 });
