@@ -1,9 +1,8 @@
 /**
  * Deterministic current-head finding classification for #2677-002 / #2771.
  *
- * Classification is deliberately conservative: an unresolved current-head
- * finding is controlling until a source-Issue disposition explicitly
- * authorizes a bounded correction.
+ * Classification is conservative: unresolved current-head findings control
+ * until an exact live source-Issue comment authorizes a bounded correction.
  */
 
 export const DISPOSITION_CLASSES = Object.freeze({
@@ -37,10 +36,6 @@ const PROTECTED_ALIASES = Object.freeze({
   main: 'production',
 });
 
-/**
- * @param {object} packet normalized evidence packet
- * @param {{ findings?: object[], authorizations?: object[] }} options
- */
 export function classifyDisposition(packet = {}, options = {}) {
   const headSha = normalizeSha(packet?.pullRequest?.headSha);
   const sourceIssueNumber = Number(packet?.sourceIssue?.number);
@@ -84,7 +79,7 @@ export function classifyDisposition(packet = {}, options = {}) {
       ok: true,
       classification: DISPOSITION_CLASSES.PROTECTED_STOP,
       reason:
-        'At least one current-head finding requires subjective/protected authority or lacks an exact source-Issue bounded-correction decision.',
+        'At least one current-head finding requires protected authority or lacks an exact live source-Issue bounded-correction decision.',
       evidence: {
         ...evidence,
         blockingFindingIdentities: blocking.map((item) => item.identity),
@@ -97,7 +92,7 @@ export function classifyDisposition(packet = {}, options = {}) {
   return {
     ok: true,
     classification: DISPOSITION_CLASSES.BOUNDED_CORRECTION,
-    reason: 'Every controlling current-head finding has an exact source-Issue bounded correction.',
+    reason: 'Every controlling current-head finding has an exact live source-Issue bounded correction.',
     evidence,
     findings: evaluated,
     dispositionRevision: normalizeRevision(options.dispositionRevision),
@@ -133,6 +128,7 @@ export function collectCurrentHeadFindings(packet = {}, additionalFindings = [])
   }
 
   for (const comment of reviewEvidence.lateIssueComments || []) {
+    if (isRoutingDecisionComment(comment)) continue;
     if (!isExplicitlyActionable(comment)) continue;
     findings.push({
       identity: `late-comment:${stableId(comment)}`,
@@ -161,6 +157,69 @@ export function collectCurrentHeadFindings(packet = {}, additionalFindings = [])
   );
 }
 
+/**
+ * Build authorizations only from comments collected from the live source Issue.
+ * Caller-provided authorization objects are never consulted operationally.
+ */
+export function extractSourceIssueAuthorizations({
+  comments = [],
+  findings = [],
+  sourceIssueNumber,
+  prNumber,
+  headSha,
+  repository = 'wdhunter645/next-starter-template',
+} = {}) {
+  const issueNumber = Number(sourceIssueNumber);
+  const pullNumber = Number(prNumber);
+  const head = normalizeSha(headSha);
+  if (!Number.isInteger(issueNumber) || issueNumber <= 0) {
+    return failClosed('invalid_source_issue', 'Source Issue number is invalid.');
+  }
+  if (!Number.isInteger(pullNumber) || pullNumber <= 0) {
+    return failClosed('invalid_pr_number', 'Pull request number is invalid.');
+  }
+  if (!head) return failClosed('missing_current_head', 'Current PR head SHA is required.');
+
+  const authorizations = [];
+  let highestRevision = '1';
+  for (const finding of findings || []) {
+    const matching = [...(comments || [])].reverse().find((comment) =>
+      commentAuthorizesFinding(comment, {
+        findingIdentity: finding.identity,
+        prNumber: pullNumber,
+        headSha: head,
+      }),
+    );
+    if (!matching) continue;
+
+    const body = String(matching.body || matching.bodyText || '');
+    const revision = extractField(body, 'Disposition revision') || '1';
+    if (compareRevisions(revision, highestRevision) > 0) highestRevision = revision;
+    const decisionClass = normalizeDecisionClass(
+      extractField(body, 'Decision class') || 'implementation',
+    );
+    const commentId = String(matching.id || matching.databaseId || '');
+    authorizations.push({
+      findingIdentity: finding.identity,
+      disposition: DISPOSITION_CLASSES.BOUNDED_CORRECTION,
+      authorized: true,
+      decisionClass,
+      sourceIssueDecisionUrl:
+        `https://github.com/${repository}/issues/${issueNumber}#issuecomment-${commentId}`,
+      sourceIssueCommentId: commentId,
+      headSha: head,
+      requestedAction: extractRequestedAction(body) || finding.summary,
+      dispositionRevision: revision,
+    });
+  }
+
+  return {
+    ok: true,
+    authorizations,
+    dispositionRevision: highestRevision,
+  };
+}
+
 export function normalizeDecisionClass(value) {
   const normalized = String(value || '')
     .trim()
@@ -178,7 +237,7 @@ function evaluateFinding(finding, authorization, sourceIssueNumber, headSha) {
     authorization?.sourceIssueDecisionUrl,
     sourceIssueNumber,
   );
-  const authorizationHead = normalizeSha(authorization?.headSha || headSha);
+  const authorizationHead = normalizeSha(authorization?.headSha || '');
   const currentHead = authorizationHead === headSha;
   const boundedCorrectionAuthorized =
     !protectedDecision &&
@@ -212,10 +271,31 @@ function authorizationMap(authorizations) {
   );
 }
 
+function commentAuthorizesFinding(comment, { findingIdentity, prNumber, headSha }) {
+  const body = String(comment?.body || comment?.bodyText || '');
+  if (!body) return false;
+  if (!/^(?:CHATGPT RESPONSE|ADJUSTMENT)\b/im.test(body.trim())) return false;
+  if (!/\bbounded correction authorized\b/i.test(body)) return false;
+  if (!body.includes(String(findingIdentity))) return false;
+  if (!new RegExp(`\\bPR:\\s*#${prNumber}\\b`, 'i').test(body)) return false;
+  const statedHead = normalizeSha(extractField(body, 'Head SHA') || '');
+  return statedHead === headSha;
+}
+
 function isSourceIssueDecision(url, issueNumber) {
   if (!url) return false;
   const escaped = String(issueNumber).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return new RegExp(`/issues/${escaped}#issuecomment-\\d+\\b`).test(String(url));
+}
+
+function isRoutingDecisionComment(comment) {
+  const body = String(comment.body || comment.bodyPreview || '').trim();
+  if (/<!--\s*agent-routing-(?:response|resume|escalation):/i.test(body)) return true;
+  if (/^(?:CHATGPT RESPONSE|ADJUSTMENT)\b/i.test(body) &&
+      /\bbounded correction authorized\b/i.test(body) &&
+      /\bFinding identity\s*:/i.test(body)) return true;
+  if (/^HOLD\b/i.test(body) && /\bDisposition identity\s*:/i.test(body)) return true;
+  return false;
 }
 
 function isExplicitlyActionable(comment) {
@@ -224,6 +304,24 @@ function isExplicitlyActionable(comment) {
   return /^(?:PR REVIEW FINDING|CHANGES REQUESTED|PROBLEM FOUND|ADJUSTMENT)\b/i.test(
     body.trim(),
   );
+}
+
+function extractField(body, label) {
+  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = String(body).match(new RegExp(`^\\s*${escaped}\\s*:\\s*(.+?)\\s*$`, 'im'));
+  return match?.[1]?.trim() || null;
+}
+
+function extractRequestedAction(body) {
+  const match = String(body).match(
+    /^Requested action:\s*\n((?:\s*[-*]\s+.+(?:\n|$))+)/im,
+  );
+  if (!match) return null;
+  return match[1]
+    .split(/\r?\n/)
+    .map((line) => line.replace(/^\s*[-*]\s+/, '').trim())
+    .filter(Boolean)
+    .join(' ');
 }
 
 function stableId(value) {
@@ -244,6 +342,15 @@ function simpleHash(value) {
 function normalizeRevision(value) {
   const revision = String(value || '1').trim();
   return revision || '1';
+}
+
+function compareRevisions(left, right) {
+  const a = String(left ?? '0');
+  const b = String(right ?? '0');
+  const aNumber = Number(a);
+  const bNumber = Number(b);
+  if (Number.isFinite(aNumber) && Number.isFinite(bNumber)) return aNumber - bNumber;
+  return a.localeCompare(b, undefined, { numeric: true });
 }
 
 function normalizeSha(value) {
