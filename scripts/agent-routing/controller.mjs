@@ -2,10 +2,8 @@
 /**
  * Deterministic handoff controller — observe-only foundation (#2677-001 / #2770).
  *
- * Recognizes canonical handoff/review events, resolves exactly one open source
- * Issue + related PR/head, performs GitHub-native live rereads, and emits a
- * normalized evidence packet. This task performs no Issue, PR, branch, label,
- * closeout, resume, or integration mutation.
+ * Direct execution always performs GitHub-native reads. Injected `input.live`
+ * evidence is accepted only by the pure `runObserveController` test boundary.
  */
 
 import fs from 'node:fs';
@@ -58,9 +56,6 @@ export function loadControllerConfig(configPath = DEFAULT_CONFIG_PATH) {
   return config;
 }
 
-/**
- * Fail closed when observe-only configuration drifts from the locked contract.
- */
 export function assertObserveOnlyConfigInvariants(config = {}) {
   if (config.mode !== 'observe-only') {
     throw new Error('controller_mode_must_be_observe_only');
@@ -119,12 +114,8 @@ export function assertObserveOnlyConfigInvariants(config = {}) {
 }
 
 /**
- * Pure observe entry used by tests and the workflow.
- * Authoritative state must come from `input.live` (GitHub-native collection).
- * Top-level snapshot fields and `input.reread` are hints only.
- * Trigger comments and delivery-profile hints must match live evidence.
- * @param {object} input fixture or live snapshot
- * @param {object} [config]
+ * Pure observe entry for deterministic tests and already-collected live evidence.
+ * Operational callers must use `mainAsync`, which always collects live evidence.
  */
 export function runObserveController(input = {}, config = loadControllerConfig()) {
   if (config.mutationAllowed) {
@@ -197,7 +188,6 @@ export function runObserveController(input = {}, config = loadControllerConfig()
     pullRequest.head?.sha ||
     live.headSha ||
     '';
-  const rereadAt = live.collectedAt || new Date().toISOString();
 
   return buildEvidencePacket({
     sourceIssue,
@@ -209,7 +199,7 @@ export function runObserveController(input = {}, config = loadControllerConfig()
     reviewSubmissions: live.reviewSubmissions || live.reviews || [],
     issueComments: live.issueComments || [],
     observedHeadSha: liveHeadSha,
-    rereadAt,
+    rereadAt: live.collectedAt || new Date().toISOString(),
     deliveryProfile: liveProfile,
   });
 }
@@ -249,64 +239,54 @@ export async function mainAsync(argv = process.argv.slice(2), { fetchFn = global
         'Usage:',
         '  node scripts/agent-routing/controller.mjs --issue <n> --pr <n> [--input <hints.json>] [--output <packet.json>]',
         '',
-        'Operational CLI/workflow execution always performs GitHub-native live collection when --issue and --pr are supplied.',
-        'Embedded input.live in a hint file cannot bypass collection.',
-        'Fixture-only unit tests may call runObserveController() directly with injected live evidence.',
-        'Live GitHub collection requires GITHUB_TOKEN and GITHUB_REPOSITORY (or --repository).',
+        'Direct execution always performs GitHub-native live collection.',
+        'Caller-supplied --input fields are hints only; an embedded `live` object is ignored.',
       ].join('\n') + '\n',
     );
     return 0;
   }
 
   const config = loadControllerConfig(args.configPath);
-  let input = {};
+  let hints = {};
   if (args.inputPath) {
-    input = JSON.parse(fs.readFileSync(args.inputPath, 'utf8'));
+    const supplied = JSON.parse(fs.readFileSync(args.inputPath, 'utf8'));
+    const { live: _discardedLive, ...safeHints } = supplied || {};
+    hints = safeHints;
   }
 
-  const hasCliIdentity = Boolean(args.issueNumber && args.prNumber);
-  if (hasCliIdentity) {
-    // Operational path: always collect authoritative live evidence and overwrite any hint live blob.
-    const collected = await collectLiveGitHubEvidence({
-      repository: args.repository || input.repository,
-      issueNumber: Number(args.issueNumber),
-      prNumber: Number(args.prNumber),
-      token: args.token,
-      fetchFn,
-    });
-    if (!collected.ok) {
-      const payload = `${JSON.stringify(collected, null, 2)}\n`;
-      if (args.outputPath) {
-        fs.mkdirSync(path.dirname(args.outputPath), { recursive: true });
-        fs.writeFileSync(args.outputPath, payload, 'utf8');
-      } else {
-        process.stdout.write(payload);
-      }
-      return 1;
-    }
-    const { live: _ignoredLive, ...hintsOnly } = input;
-    input = { ...hintsOnly, live: collected.live };
-  } else if (!input.live) {
-    process.stderr.write(
-      'error: operational execution requires --issue and --pr; embedded input.live is not an operational bypass\n',
-    );
+  if (!args.issueNumber || !args.prNumber) {
+    process.stderr.write('error: live collection requires --issue and --pr\n');
     return 2;
   }
 
-  const result = runObserveController(input, config);
-  const payload = `${JSON.stringify(result, null, 2)}\n`;
-  if (args.outputPath) {
-    fs.mkdirSync(path.dirname(args.outputPath), { recursive: true });
-    fs.writeFileSync(args.outputPath, payload, 'utf8');
-  } else {
-    process.stdout.write(payload);
+  const collected = await collectLiveGitHubEvidence({
+    repository: args.repository || hints.repository,
+    issueNumber: Number(args.issueNumber),
+    prNumber: Number(args.prNumber),
+    token: args.token,
+    fetchFn,
+  });
+  if (!collected.ok) {
+    writeResult(collected, args.outputPath);
+    return 1;
   }
 
+  const result = runObserveController({ ...hints, live: collected.live }, config);
+  writeResult(result, args.outputPath);
   return result.ok ? 0 : 1;
 }
 
+function writeResult(result, outputPath) {
+  const payload = `${JSON.stringify(result, null, 2)}\n`;
+  if (outputPath) {
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+    fs.writeFileSync(outputPath, payload, 'utf8');
+  } else {
+    process.stdout.write(payload);
+  }
+}
+
 export function main(argv = process.argv.slice(2)) {
-  // Sync wrapper for direct execution; prefers async live collection when needed.
   return mainAsync(argv).then(
     (code) => {
       process.exitCode = code;
