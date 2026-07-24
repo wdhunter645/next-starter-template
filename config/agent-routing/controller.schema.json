@@ -51,7 +51,8 @@
       "const": false
     },
     "requireOpenSourceIssue": {
-      "type": "boolean"
+      "type": "boolean",
+      "const": true
     },
     "requireExactSourceIssueCount": {
       "type": "integer",
@@ -62,7 +63,8 @@
       "const": true
     },
     "rejectStaleHeadSha": {
-      "type": "boolean"
+      "type": "boolean",
+      "const": true
     },
     "protectedDecisionClasses": {
       "type": "array",

@@ -1,6 +1,10 @@
 /**
  * Read-only current-head evidence collector for the deterministic handoff controller.
  * Produces a normalized packet; performs no GitHub mutations.
+ *
+ * Authoritative evidence comes from GitHub-native live reads (or an injected live
+ * snapshot produced by those reads). Caller-supplied snapshot/reread fields are
+ * hints only and must match live state or fail closed.
  */
 
 import {
@@ -35,6 +39,22 @@ export function resolveExactOpenSourceIssue(candidates = []) {
     });
   }
   return { ok: true, issue, issueNumber: number };
+}
+
+/**
+ * Fail closed when a PR number is absent, non-numeric, or non-positive.
+ */
+export function assertValidPrNumber(value) {
+  if (value == null || value === '') {
+    return failClosed('invalid_pr_number', 'Pull request number is missing.');
+  }
+  const prNumber = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(prNumber) || !Number.isInteger(prNumber) || prNumber <= 0) {
+    return failClosed('invalid_pr_number', 'Pull request number is invalid.', {
+      received: value,
+    });
+  }
+  return { ok: true, prNumber };
 }
 
 /**
@@ -200,21 +220,376 @@ export function partitionReviewEvidence({
 }
 
 /**
- * Normalize check-run evidence for the current head.
+ * Normalize check-run evidence and retain only checks for the authoritative head.
+ * @param {Array<object>} [checks]
+ * @param {string|null} [authoritativeHeadSha]
  */
-export function normalizeChecks(checks = []) {
-  return (checks || []).map((check) => ({
-    name: check.name || check.context || '',
-    status: check.status || null,
-    conclusion: check.conclusion || check.state || null,
-    headSha: normalizeSha(check.headSha || check.head_sha || check.commit_sha || ''),
-    completedAt: check.completedAt || check.completed_at || null,
+export function normalizeChecks(checks = [], authoritativeHeadSha = null) {
+  const head = normalizeSha(authoritativeHeadSha || '');
+  return (checks || [])
+    .map((check) => ({
+      name: check.name || check.context || '',
+      status: check.status || null,
+      conclusion: check.conclusion || check.state || null,
+      headSha: normalizeSha(check.headSha || check.head_sha || check.commit_sha || ''),
+      completedAt: check.completedAt || check.completed_at || null,
+    }))
+    .filter((check) => {
+      if (!head) return true;
+      return check.headSha === head;
+    });
+}
+
+/**
+ * Compare optional caller/trigger hints against authoritative live evidence.
+ * Hints may be omitted; when present they must match live identity fields.
+ * @param {{ hints?: object|null, live?: object|null }} [args]
+ */
+export function assertHintsMatchLive({ hints = null, live = null } = {}) {
+  if (!live) {
+    return failClosed(
+      'live_evidence_unavailable',
+      'Authoritative live GitHub evidence is required before packet emission.',
+    );
+  }
+  if (!live.sourceIssue) {
+    return failClosed('missing_source_issue', 'Live source Issue evidence is missing.');
+  }
+  if (!live.pullRequest) {
+    return failClosed('missing_pull_request', 'Live pull request evidence is missing.');
+  }
+  if (!hints || typeof hints !== 'object') return { ok: true };
+
+  const liveIssueNumber = Number(live.sourceIssue.number);
+  const livePrCheck = assertValidPrNumber(live.pullRequest.number);
+  if (!livePrCheck.ok) return livePrCheck;
+  const liveHead = normalizeSha(
+    live.pullRequest?.headRefOid ||
+      live.pullRequest?.headSha ||
+      live.pullRequest?.head?.sha ||
+      live.headSha ||
+      '',
+  );
+  if (!liveHead) {
+    return failClosed('missing_expected_head_sha', 'Authoritative live PR head SHA is missing.');
+  }
+
+  const hintIssue = hints.sourceIssue || hints.reread?.sourceIssue || null;
+  if (hintIssue?.number != null) {
+    const hintIssueNumber = Number(hintIssue.number);
+    if (hintIssueNumber !== liveIssueNumber) {
+      return failClosed('hint_source_issue_mismatch', 'Caller hint source Issue does not match live Issue.', {
+        hintIssueNumber,
+        liveIssueNumber,
+      });
+    }
+  }
+
+  const hintPr = hints.pullRequest || hints.reread?.pullRequest || null;
+  if (hintPr?.number != null) {
+    const hintPrCheck = assertValidPrNumber(hintPr.number);
+    if (!hintPrCheck.ok) return hintPrCheck;
+    if (hintPrCheck.prNumber !== livePrCheck.prNumber) {
+      return failClosed('hint_pr_number_mismatch', 'Caller hint PR number does not match live PR.', {
+        hintPrNumber: hintPrCheck.prNumber,
+        livePrNumber: livePrCheck.prNumber,
+      });
+    }
+    const hintHead = normalizeSha(
+      hintPr.headRefOid || hintPr.headSha || hintPr.head?.sha || '',
+    );
+    if (hintHead && hintHead !== liveHead) {
+      return failClosed('hint_head_sha_mismatch', 'Caller hint head SHA does not match live PR head.', {
+        hintHeadSha: hintHead,
+        liveHeadSha: liveHead,
+      });
+    }
+  }
+
+  if (hints.observedHeadSha) {
+    const observed = normalizeSha(hints.observedHeadSha);
+    if (observed && observed !== liveHead) {
+      return failClosed('stale_head_sha', 'Observed head SHA does not match the current PR head.', {
+        expectedHeadSha: liveHead,
+        observedHeadSha: observed,
+      });
+    }
+  }
+
+  if (hints.reread?.sourceIssue || hints.reread?.pullRequest) {
+    const rereadIssueNumber =
+      hints.reread.sourceIssue?.number != null
+        ? Number(hints.reread.sourceIssue.number)
+        : null;
+    if (rereadIssueNumber != null && rereadIssueNumber !== liveIssueNumber) {
+      return failClosed(
+        'fabricated_reread_rejected',
+        'Caller-supplied reread Issue cannot substitute for live GitHub evidence.',
+        { rereadIssueNumber, liveIssueNumber },
+      );
+    }
+    const rereadPr = hints.reread.pullRequest;
+    if (rereadPr?.number != null) {
+      const rereadPrCheck = assertValidPrNumber(rereadPr.number);
+      if (!rereadPrCheck.ok) return rereadPrCheck;
+      if (rereadPrCheck.prNumber !== livePrCheck.prNumber) {
+        return failClosed(
+          'fabricated_reread_rejected',
+          'Caller-supplied reread PR cannot substitute for live GitHub evidence.',
+          { rereadPrNumber: rereadPrCheck.prNumber, livePrNumber: livePrCheck.prNumber },
+        );
+      }
+    }
+    const rereadHead = normalizeSha(
+      rereadPr?.headRefOid || rereadPr?.headSha || rereadPr?.head?.sha || '',
+    );
+    if (rereadHead && rereadHead !== liveHead) {
+      return failClosed(
+        'fabricated_reread_rejected',
+        'Caller-supplied reread head SHA cannot substitute for live GitHub evidence.',
+        { rereadHeadSha: rereadHead, liveHeadSha: liveHead },
+      );
+    }
+  }
+
+  return { ok: true, liveHeadSha: liveHead, livePrNumber: livePrCheck.prNumber };
+}
+
+/**
+ * Collect authoritative live evidence via GitHub-native read-only REST/GraphQL.
+ * Injectable fetchFn supports unit tests without network.
+ * @param {{
+ *   repository: string,
+ *   issueNumber: number|string,
+ *   prNumber: number|string,
+ *   token: string,
+ *   fetchFn?: typeof fetch,
+ *   userAgent?: string,
+ * }} args
+ * @returns {Promise<{ok:true, live: object}|{ok:false, code:string, message:string}>}
+ */
+export async function collectLiveGitHubEvidence({
+  repository,
+  issueNumber,
+  prNumber,
+  token,
+  fetchFn = globalThis.fetch,
+  userAgent = 'lgfc-agent-routing-controller',
+} = {}) {
+  if (!repository || !String(repository).includes('/')) {
+    return failClosed('live_evidence_unavailable', 'GITHUB_REPOSITORY is required for live collection.');
+  }
+  if (!token) {
+    return failClosed('live_evidence_unavailable', 'GITHUB_TOKEN is required for live collection.');
+  }
+  const issueCheck = resolveExactOpenSourceIssue([{ number: issueNumber, state: 'OPEN' }]);
+  if (!issueCheck.ok && issueCheck.code === 'invalid_source_issue') return issueCheck;
+  const issueNum = Number(issueNumber);
+  if (!Number.isFinite(issueNum) || issueNum <= 0) {
+    return failClosed('invalid_source_issue', 'Source Issue number is invalid.');
+  }
+  const prCheck = assertValidPrNumber(prNumber);
+  if (!prCheck.ok) return prCheck;
+
+  const [owner, repo] = String(repository).split('/');
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+    'User-Agent': userAgent,
+  };
+
+  async function ghGet(apiPath) {
+    const response = await fetchFn(`https://api.github.com/repos/${repository}${apiPath}`, {
+      method: 'GET',
+      headers,
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`GET ${apiPath} failed: ${response.status} ${text}`);
+    }
+    return response.json();
+  }
+
+  async function ghGetAll(apiPath) {
+    const items = [];
+    let page = 1;
+    while (true) {
+      const batch = await ghGet(`${apiPath}${apiPath.includes('?') ? '&' : '?'}per_page=100&page=${page}`);
+      if (!Array.isArray(batch) || batch.length === 0) break;
+      items.push(...batch);
+      if (batch.length < 100) break;
+      page += 1;
+    }
+    return items;
+  }
+
+  let sourceIssue;
+  let pullRequest;
+  let changedFileEntries;
+  let issueComments;
+  let reviewSubmissions;
+  let checkRuns;
+  let reviewThreads;
+  try {
+    [sourceIssue, pullRequest, changedFileEntries, issueComments, reviewSubmissions] =
+      await Promise.all([
+        ghGet(`/issues/${issueNum}`),
+        ghGet(`/pulls/${prCheck.prNumber}`),
+        ghGetAll(`/pulls/${prCheck.prNumber}/files`),
+        ghGetAll(`/issues/${issueNum}/comments`),
+        ghGetAll(`/pulls/${prCheck.prNumber}/reviews`),
+      ]);
+
+    const headSha = normalizeSha(pullRequest.head?.sha || '');
+    if (!headSha) {
+      return failClosed('missing_expected_head_sha', 'Authoritative PR head SHA is missing from live PR.');
+    }
+
+    const checksPayload = await ghGet(
+      `/commits/${headSha}/check-runs?per_page=100`,
+    ).catch(async () => {
+      // Fall back to check-suites listing when check-runs path is unavailable.
+      return { check_runs: [] };
+    });
+    checkRuns = checksPayload.check_runs || checksPayload || [];
+
+    reviewThreads = await fetchLiveReviewThreads({
+      owner,
+      repo,
+      prNumber: prCheck.prNumber,
+      token,
+      fetchFn,
+      userAgent,
+    });
+  } catch (error) {
+    return failClosed(
+      'live_evidence_unavailable',
+      `GitHub-native live collection failed: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+
+  if (!sourceIssue || sourceIssue.pull_request) {
+    return failClosed('live_evidence_unavailable', 'Live source Issue read did not return an Issue.');
+  }
+  if (!pullRequest || pullRequest.number == null) {
+    return failClosed('live_evidence_unavailable', 'Live pull request read failed.');
+  }
+
+  const headSha = normalizeSha(pullRequest.head?.sha || '');
+  const collectedAt = new Date().toISOString();
+
+  return {
+    ok: true,
+    live: {
+      collectedAt,
+      source: 'github-native',
+      sourceIssue: {
+        number: sourceIssue.number,
+        state: String(sourceIssue.state || '').toUpperCase() === 'OPEN' ? 'OPEN' : sourceIssue.state,
+        title: sourceIssue.title || null,
+        body: sourceIssue.body || '',
+        labels: (sourceIssue.labels || []).map((label) =>
+          typeof label === 'string' ? label : label?.name || '',
+        ),
+      },
+      pullRequest: {
+        number: pullRequest.number,
+        title: pullRequest.title || null,
+        state: pullRequest.state || null,
+        body: pullRequest.body || '',
+        baseRefName: pullRequest.base?.ref || null,
+        headRefName: pullRequest.head?.ref || null,
+        headSha,
+        head: { sha: headSha },
+        url: pullRequest.html_url || null,
+        html_url: pullRequest.html_url || null,
+      },
+      headSha,
+      changedFiles: (changedFileEntries || []).map((file) => file.filename || file.path).filter(Boolean),
+      checks: (checkRuns || []).map((check) => ({
+        name: check.name || check.context || '',
+        status: check.status || null,
+        conclusion: check.conclusion || check.state || null,
+        headSha: normalizeSha(check.head_sha || check.headSha || headSha),
+        completedAt: check.completed_at || check.completedAt || null,
+      })),
+      issueComments: (issueComments || []).map((comment) => ({
+        id: String(comment.id),
+        createdAt: comment.created_at || null,
+        author: { login: comment.user?.login || null },
+        body: comment.body || '',
+      })),
+      reviewSubmissions: (reviewSubmissions || []).map((review) => ({
+        id: String(review.id),
+        state: review.state || null,
+        author: { login: review.user?.login || null },
+        submittedAt: review.submitted_at || null,
+        body: review.body || '',
+      })),
+      reviewThreads: reviewThreads || [],
+    },
+  };
+}
+
+async function fetchLiveReviewThreads({
+  owner,
+  repo,
+  prNumber,
+  token,
+  fetchFn,
+  userAgent,
+}) {
+  const query = `
+    query AgentRoutingControllerThreads($owner: String!, $repo: String!, $number: Int!) {
+      repository(owner: $owner, name: $repo) {
+        pullRequest(number: $number) {
+          reviewThreads(first: 100) {
+            nodes {
+              id
+              isResolved
+              isOutdated
+              path
+              comments(first: 1) {
+                nodes { body author { login } }
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+  const response = await fetchFn('https://api.github.com/graphql', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'User-Agent': userAgent,
+    },
+    body: JSON.stringify({
+      query,
+      variables: { owner, repo, number: Number(prNumber) },
+    }),
+  });
+  const payload = await response.json();
+  if (!response.ok || payload.errors?.length) {
+    throw new Error(
+      `GraphQL reviewThreads failed: ${response.status} ${JSON.stringify(payload.errors || payload)}`,
+    );
+  }
+  const nodes = payload.data?.repository?.pullRequest?.reviewThreads?.nodes || [];
+  return nodes.map((thread) => ({
+    id: thread.id,
+    isResolved: Boolean(thread.isResolved),
+    isOutdated: Boolean(thread.isOutdated),
+    path: thread.path || null,
+    body: thread.comments?.nodes?.[0]?.body || '',
+    comments: thread.comments,
   }));
 }
 
 /**
- * Build the normalized current-head controller packet.
- * Caller must re-read Issue + PR immediately before invoking this.
+ * Build the normalized current-head controller packet from authoritative live evidence.
  */
 export function buildEvidencePacket({
   sourceIssue,
@@ -233,7 +608,10 @@ export function buildEvidencePacket({
   if (!issueResolution.ok) return issueResolution;
 
   const issueNumber = issueResolution.issueNumber;
-  const prNumber = pullRequest?.number == null ? null : Number(pullRequest.number);
+  const prNumberCheck = assertValidPrNumber(pullRequest?.number);
+  if (!prNumberCheck.ok) return prNumberCheck;
+  const prNumber = prNumberCheck.prNumber;
+
   const authoritativeHead = normalizeSha(
     pullRequest?.headRefOid ||
       pullRequest?.headSha ||
@@ -312,7 +690,7 @@ export function buildEvidencePacket({
         acceptanceCriteria: acceptanceFromPr,
         changedFiles: [...changedFiles].map(String).sort(),
       },
-      checks: normalizeChecks(checks),
+      checks: normalizeChecks(checks, headCheck.headSha),
       reviewEvidence: {
         unresolvedReviewThreads: partitioned.unresolvedReviewThreads,
         resolvedReviewThreads: partitioned.resolvedReviewThreads,
@@ -341,7 +719,16 @@ export function buildEvidencePacket({
       reread: {
         performed: true,
         at: rereadAt || null,
-        surfaces: ['source_issue', 'pull_request', 'checks', 'review_threads'],
+        source: 'github-native',
+        surfaces: [
+          'source_issue',
+          'pull_request',
+          'checks',
+          'changed_files',
+          'issue_comments',
+          'review_submissions',
+          'review_threads',
+        ],
       },
     },
   };
