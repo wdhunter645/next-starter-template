@@ -5,13 +5,15 @@ Authority Level: Operational Authority
 Owns: Priority #2 PMO readiness decision, fundraiser program candidate scope, child-project boundaries, campaign operations design/readiness state, Cursor launch preconditions
 Does Not Own: Runtime implementation, issue creation, merge authority, production secrets, vendor configuration, Givebutter account configuration, fundraiser execution launch
 Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
-Related Issues: #1696, #1379, #1255, #1259, #1685, #1686, #1694
-Last Reviewed: 2026-06-17
+Related Issues: #1696, #1379, #1255, #1259, #1685, #1686, #1694, #1700
+Last Reviewed: 2026-07-24
 ---
 
 # Fundraiser / Charity Campaign Operations Buildout Readiness
 
-> This program is BLOCKED from execution until Atlas/Bill explicitly launch it. Planning, review, and documentation discussion may continue, but Cursor may not execute implementation work from this program until Bill/Atlas explicitly launch it.
+> Program #1700 launched child Tasks 001–007 on the component branch. Task 008
+> publishes the closeout/handoff packet for Bill/Atlas acceptance. Live campaign
+> activation, vendor configuration, and `main` promotion remain separately gated.
 
 ## Purpose
 
@@ -140,6 +142,18 @@ Before Cursor receives implementation assignment for this program:
 
 ## Readiness conclusion
 
-Priority #2 is now documented as a future PMO July 2026 program candidate.
+Priority #2 was launched as program **#1700** and child Tasks **#1701–#1707**
+are integrated on `component/fundraiser-charity-campaign-operations`.
 
-It is **planning-ready**, not executable. It becomes implementation-ready only after Bill/Atlas explicitly launch it and authorize child task issue creation from `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md`.
+Website-side operations buildout status: **component delivery complete —
+awaiting Bill/Atlas acceptance of Task 008**
+(`docs/ops/reports/fundraiser-task-008-program-closeout-handoff.md`).
+
+Still **blocked** without separate explicit authority:
+
+- public live campaign activation;
+- Givebutter/vendor account configuration;
+- component promotion to `main`.
+
+Do not treat Task 008 merge as Product Authority launch GO or as authority to
+close #1700.
