@@ -1,0 +1,17 @@
+{
+  "name": "protected-stop",
+  "description": "Protected decision class escalates and never resumes or integrates.",
+  "sourceIssueNumber": 2433,
+  "prNumber": 2675,
+  "headSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "targetBranch": "component/content-collection-phase1",
+  "approvalProfile": "component-auto-integration",
+  "expectedClassification": "protected_stop",
+  "protectedFinding": {
+    "id": "protected-thread-1",
+    "isResolved": false,
+    "isOutdated": false,
+    "body": "Protected engineering-approval boundary.",
+    "decisionClass": "engineering-approval"
+  }
+}

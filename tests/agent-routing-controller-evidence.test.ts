@@ -97,6 +97,7 @@ function createCollectFetchMock(options: {
     body: overrides.body ?? defaultPrBody,
     base: { ref: 'component/content-collection-phase1' },
     head: { ref: 'cursor/2433-cc-001-contract-freeze-2e48', sha },
+    user: { login: 'builder' },
     html_url: 'https://github.com/wdhunter645/next-starter-template/pull/2675',
   });
 
@@ -251,6 +252,7 @@ function createCollectFetchMock(options: {
           user: { login: 'atlas' },
           submitted_at: '2026-07-20T18:30:00Z',
           body: 'note',
+          commit_id: options.headSha,
         },
       ];
       return {
@@ -862,9 +864,10 @@ describe('fixture #2433 / PR #2675 current-head packet', () => {
           ok: true;
           live: {
             sourceIssue: { number: number };
-            pullRequest: { headSha: string };
+            pullRequest: { headSha: string; author?: string | null; user?: { login?: string | null } };
             changedFiles: string[];
             reviewThreads: unknown[];
+            reviewSubmissions?: Array<{ commit_id?: string | null; commitId?: string | null }>;
             finalReread?: boolean;
           };
         };
@@ -875,6 +878,10 @@ describe('fixture #2433 / PR #2675 current-head packet', () => {
     expect(collected.live.changedFiles).toEqual(['docs/a.md']);
     expect(collected.live.reviewThreads).toHaveLength(1);
     expect(collected.live.finalReread).toBe(true);
+    expect(collected.live.pullRequest.author).toBe('builder');
+    expect(collected.live.pullRequest.user?.login).toBe('builder');
+    expect(collected.live.reviewSubmissions?.[0]?.commit_id).toBe(HEAD_SHA);
+    expect(collected.live.reviewSubmissions?.[0]?.commitId).toBe(HEAD_SHA);
 
     const mismatch = assertHintsMatchLive({
       hints: {
@@ -1161,6 +1168,8 @@ describe('observe-only controller configuration and workflow', () => {
       rereadBeforePacket: boolean;
       rejectStaleHeadSha: boolean;
       workflowCapabilities: Record<string, boolean>;
+      reconciliation: { mutationAllowed: boolean };
+      mutationSwitches: { reconciliationMutations: boolean };
     };
     expect(config.mode).toBe('observe-only');
     expect(config.mutationAllowed).toBe(false);
@@ -1173,6 +1182,8 @@ describe('observe-only controller configuration and workflow', () => {
     expect(config.workflowCapabilities.resume).toBe(false);
     expect(config.workflowCapabilities.activateSuccessor).toBe(false);
     expect(config.workflowCapabilities.mutateMain).toBe(false);
+    expect(config.reconciliation.mutationAllowed).toBe(false);
+    expect(config.mutationSwitches.reconciliationMutations).toBe(false);
   });
 
   it('fails closed on observe-only configuration drift', () => {

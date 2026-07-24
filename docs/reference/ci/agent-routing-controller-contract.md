@@ -2,10 +2,10 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: Deterministic handoff-controller live evidence, finding classification, bounded remediation identities, authorized non-main component-integration instructions, and post-integration verification for #2677-001 through #2677-003
-Does Not Own: Child closeout, successor activation, or Production authorization
+Owns: Deterministic handoff-controller live evidence, finding classification, bounded remediation identities, authorized non-main component-integration instructions, post-integration verification, closeout/successor activation, reconciliation safety net, structured observability, and disable/recovery controls for #2677-001 through #2677-005
+Does Not Own: Production authorization or promotion to main
 Canonical Reference: /config/agent-routing/controller.json
-Related Issues: #2677, #2770, #2771, #2772, #2676, #2433
+Related Issues: #2677, #2770, #2771, #2772, #2773, #2774, #2676, #2433
 Last Reviewed: 2026-07-24
 ---
 
@@ -19,16 +19,20 @@ Define the deterministic controller foundation that:
 2. classifies the packet as `clean`, `bounded_correction`, or `protected_stop`;
 3. emits an idempotent source-Issue remediation instruction only when repository authority already decides the action;
 4. when classification is `clean`, evaluates and may execute exactly one authorized non-`main` component integration;
-5. verifies an already-recorded merge/integration SHA on the authorized component target without closing the source Issue.
+5. verifies an already-recorded merge/integration SHA on the authorized component target without closing the source Issue;
+6. closes an eligible verified child and activates exactly one authorized successor;
+7. reconciles missed or stale eligible transactions as a non-mutating safety net;
+8. emits structured observability for every controlling transition.
 
-The route job remains read-only and emits transaction instructions as an artifact. A separate write-scoped integration job may merge one exact authorized PR into one `component/**` target after a second full GitHub-native reread. Neither job closes, relabels, activates a successor, or mutates `main`.
+The route job remains read-only and emits transaction instructions as an artifact. Separate write-scoped jobs may perform one authorized component merge or one closeout/successor transaction after a second full GitHub-native reread. Reconciliation remains read-only. No job mutates `main` or Production.
 
 ## Scope
 
-This document covers #2677-001 / #2770, #2677-002 / #2771, and #2677-003 / #2772:
+This document covers #2677-001 / #2770 through #2677-005 / #2774:
 
 - canonical and legacy handoff event recognition;
 - GitHub-native live collection of Issue, PR, checks, files, comments, reviews, and review threads;
+- preservation of PR-author login and review commit SHA through `collectLiveGitHubEvidence()` into protected-integration evaluation;
 - final Issue/PR expected-state rereads;
 - current-head finding classification;
 - source-Issue-bound bounded-correction authorization;
@@ -36,9 +40,13 @@ This document covers #2677-001 / #2770, #2677-002 / #2771, and #2677-003 / #2772
 - one protected-stop escalation instruction;
 - authorized non-`main` component-integration instruction emission and execution;
 - exact post-integration verification of target branch and merge SHA;
+- verified child closeout and exactly one successor wake;
+- scheduled/manual reconciliation as a non-mutating safety net;
+- structured observability for handoff, evidence, disposition, resume, integration, verification, closeout, successor, duplicate suppression, blocker, and escalation;
+- independent mutation switches that preserve read-only diagnostics;
 - stable transaction identities and duplicate/stale suppression.
 
-It does not authorize Issue closeout, successor activation, credential changes, destructive action, or Production / `main` mutation.
+It does not authorize credential changes, destructive action, or Production / `main` mutation.
 
 ## Current known truth
 
@@ -51,31 +59,34 @@ It does not authorize Issue closeout, successor activation, credential changes, 
 - Automated eligibility is never treated as human approval.
 - The deterministic approval profile `component-auto-integration` is repository-policy authority, not human approval.
 - The protected approval profile `protected-change-review` requires a trusted recorded independent review or a trusted source-Issue integration authorization.
+- Live collection must transport PR-author login and review commit SHA; missing identities fail closed for protected review.
 - The route job has read-only GitHub permissions and produces transaction instructions only.
 - The integration job has job-scoped pull-request/content write permission for one component merge only.
+- The closeout job has job-scoped issues write permission for one child closeout and one successor wake only.
+- Reconciliation is safety-net only, remains non-mutating, and reuses controller identities to suppress duplicates.
+- Independent `mutationSwitches` can disable remediation instructions, component integration, and closeout while preserving diagnostics.
 - Protected decisions never produce a remediation resume.
-- Integration and verification never close the source Issue or activate a successor.
+- Integration and verification never close the source Issue or activate a successor unless the dedicated closeout path is authorized.
 
 ## Intended final state
 
-Later #2677 children consume this contract serially:
+#2774 completes the component construction package. Independent Promotion Candidate review on `component/deterministic-handoff-controller` remains required before any `main` / Production promotion. #2676 and #2677 stay open until that protected promotion path succeeds.
 
-- #2677-004 / #2773 performs eligible closeout and successor activation;
-- #2677-005 / #2774 adds reconciliation, observability, E2E fixtures, and rollout.
-
-This contract is the freeze line for evidence identities, remediation identities, component-integration identities, source-Issue authority, and protected boundaries.
+This contract is the freeze line for evidence identities, remediation identities, component-integration identities, closeout/successor identities, reconciliation identities, source-Issue authority, observability schema, and protected boundaries.
 
 ## Canonical files
 
 | Path | Role |
 | --- | --- |
-| `config/agent-routing/controller.json` | Observe, remediation-routing, and component-integration configuration |
+| `config/agent-routing/controller.json` | Observe, remediation, integration, closeout, reconciliation, observability, and mutation-switch configuration |
 | `config/agent-routing/controller.schema.json` | Configuration schema |
-| `scripts/agent-routing/controller.mjs` | Live evidence, routing, and integration entrypoint |
+| `scripts/agent-routing/controller.mjs` | Live evidence, routing, integration, and observability entrypoint |
+| `scripts/agent-routing/reconcile.mjs` | Non-mutating reconciliation safety net |
 | `scripts/agent-routing/lib/event-contract.mjs` | Event and action identities |
 | `scripts/agent-routing/lib/evidence-collector.mjs` | GitHub-native current-head collector |
 | `scripts/agent-routing/lib/disposition.mjs` | Finding classification and source-Issue authorization extraction |
-| `scripts/agent-routing/lib/idempotency.mjs` | Disposition/response/resume/escalation/integration/verification identities |
+| `scripts/agent-routing/lib/idempotency.mjs` | Disposition/response/resume/escalation/integration/verification/reconciliation identities |
+| `scripts/agent-routing/lib/observability.mjs` | Structured transition records for SLO/conformance consumers |
 | `scripts/agent-routing/lib/remediation-router.mjs` | Deterministic remediation instruction builder |
 | `scripts/agent-routing/lib/component-integration.mjs` | Authorized non-main component-integration evaluator |
 | `scripts/agent-routing/lib/post-integration-verify.mjs` | Exact post-integration verification |
@@ -83,10 +94,14 @@ This contract is the freeze line for evidence identities, remediation identities
 | `scripts/agent-routing/lib/child-closeout-guard.mjs` | Guarded workflow entrypoint for closeout/successor execution |
 | `scripts/agent-routing/lib/successor-activation.mjs` | Successor launch-package evaluation and resume payloads |
 | `.github/workflows/ops-agent-routing-controller.yml` | Read-only route job, write-scoped component-integration job, and closeout-successor job |
+| `.github/workflows/ops-agent-routing-reconcile.yml` | Read-only reconciliation safety-net workflow |
+| `docs/how-to/ci/operate-agent-routing-controller.md` | Operator disable, recovery, replay, and verification procedure |
 | `tests/agent-routing-controller-evidence.test.ts` | Evidence foundation regressions |
 | `tests/agent-routing-remediation-routing.test.ts` | Classification and routing regressions |
 | `tests/agent-routing-component-integration.test.ts` | Component-integration and verification regressions |
 | `tests/agent-routing-closeout-successor.test.ts` | Closeout/successor evaluation, execution, and guard regressions |
+| `tests/agent-routing-controller-e2e.test.ts` | End-to-end fixtures, reconciliation, observability, and collector-to-controller proof |
+| `tests/fixtures/agent-routing/*.json` | Operational fixtures for clean, late-review, duplicate, protected-stop, and #2433→#2434 path |
 
 ## Mode and mutation boundary
 
@@ -110,7 +125,39 @@ Root route-workflow capabilities remain false for:
 
 Top-level and route-job permissions remain read-only for `contents`, `issues`, `pull-requests`, `checks`, and `actions`. The `integrate-component` job alone has `contents: write` and `pull-requests: write`; Issue, check, and action access remains read-only.
 
-`componentIntegration.enabled` is a rollback switch. When false, route mode continues and integration execution suppresses without mutation.
+`componentIntegration.enabled`, `closeoutSuccessor.enabled`, `remediationRouting.enabled`, and `mutationSwitches.*` are independent rollback switches. When mutation switches are all false, route and reconcile modes continue as read-only diagnostics without emitting actionable mutation instructions. `reconciliation.mutationAllowed` and `mutationSwitches.reconciliationMutations` remain false.
+
+## Reconciliation safety net (#2677-005 / #2774)
+
+Event-driven `ops-agent-routing-controller.yml` remains primary. `ops-agent-routing-reconcile.yml` is recovery only:
+
+- role: `safety-net`;
+- primary path: `event-driven`;
+- mutations: never;
+- max candidates per run: 1;
+- detects missed or stale eligible transactions;
+- suppresses when integration, verification, closeout, successor, remediation, or reconciliation identities already exist;
+- recommends replay through the event-driven write jobs rather than inventing a second mutation path.
+
+## Observability (#2677-005 / #2774)
+
+Every controller or reconciliation run may attach an `observability` snapshot with schema version `1`. Required transition kinds include:
+
+- `handoff_received`
+- `evidence_complete`
+- `disposition`
+- `resume`
+- `integration`
+- `verification`
+- `closeout`
+- `successor_activation`
+- `duplicate_suppression`
+- `blocker`
+- `escalation`
+- `reconciliation_scan`
+- `mutation_disabled`
+
+These records are consumable by #2680 and daily SLO/conformance reporting. Observability never mutates GitHub state.
 
 ## Recognized handoff events
 
@@ -332,11 +379,13 @@ The route job does not execute its instructions. Only the explicit integration o
 
 Required validation:
 
-- `npx vitest run tests/agent-routing-controller-evidence.test.ts tests/agent-routing-remediation-routing.test.ts tests/agent-routing-component-integration.test.ts`
+- `npx vitest run tests/agent-routing-controller-evidence.test.ts tests/agent-routing-remediation-routing.test.ts tests/agent-routing-component-integration.test.ts tests/agent-routing-closeout-successor.test.ts tests/agent-routing-controller-e2e.test.ts`
+- `npm test`
 - `npm run typecheck`
 - `npm run lint`
+- `npm run check:structure`
 - `git diff --check`
-- changed-file inspection against the exact #2772 allowlist
+- changed-file inspection against the exact #2774 allowlist
 - config/schema validation against `config/agent-routing/controller.schema.json`
 
 Fixture coverage must prove:
@@ -354,7 +403,7 @@ Fixture coverage must prove:
 - changed head, failed required check, unresolved blocking thread, missing authority, or target drift blocks integration;
 - a repeated event after successful integration is suppressed;
 - a protected approval without an explicit current-head review SHA is rejected;
-- untrusted, self, missing-author, stale, or headless protected reviews are rejected;
+- untrusted, self, missing-author, stale, or headless protected reviews are rejected through the collector-to-controller path;
 - source-Issue integration authorization requires trusted author plus exact Issue, PR, Head SHA, target branch, and authorization marker fields;
 - source-Issue authorization comment body or author drift blocks before mutation;
 - GitHub check-run collection paginates until the complete current-head check surface is collected;
@@ -362,7 +411,10 @@ Fixture coverage must prove:
 - missing source-Issue state fails post-integration verification;
 - component integration can be disabled without disabling route mode;
 - the write-scoped integration executor performs two rereads, one merge, and exact merge-SHA containment verification;
-- verification records exact target and merge SHA while the source Issue remains open.
+- verification records exact target and merge SHA while the source Issue remains open;
+- the #2433 → #2434 fixture completes through exactly one successor wake;
+- event-driven and reconciliation paths cannot duplicate integration, closeout, or successor wake;
+- mutation switches can disable mutation while read-only diagnosis remains available.
 
 ## Closeout and successor activation (#2677-004 / #2773)
 
@@ -376,6 +428,11 @@ Post-mutation verification proves source `CLOSED` with `status:complete` and wit
 
 ## Rollback
 
-Disable `componentIntegration.enabled` and/or `remediationRouting.enabled`, then revert the #2772 task PR from `component/deterministic-handoff-controller`. Any already-created component integration must be reversed through a separately authorized revert; never rewrite branch history.
+1. Set `mutationSwitches.remediationInstructions`, `mutationSwitches.componentIntegration`, and `mutationSwitches.closeoutSuccessor` to `false` while leaving observability enabled.
+2. Set `componentIntegration.enabled`, `closeoutSuccessor.enabled`, and/or `remediationRouting.enabled` to `false` as needed.
+3. Disable or skip `ops-agent-routing-reconcile.yml`.
+4. Revert the #2774 task PR from `component/deterministic-handoff-controller` when a full rollback is required.
 
-Preserve emitted identity markers during rollback so restoration does not permit duplicate response, resume, escalation, integration, or verification instructions.
+Any already-created component integration or closeout must be reversed through a separately authorized revert; never rewrite branch history.
+
+Preserve emitted identity markers, logs, and evidence during rollback so restoration cannot repeat completed response, resume, escalation, integration, verification, closeout, successor, or reconciliation transactions.

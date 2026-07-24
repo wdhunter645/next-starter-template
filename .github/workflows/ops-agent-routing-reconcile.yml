@@ -1,0 +1,140 @@
+name: OPS — Agent Routing Controller Reconciliation (Safety Net)
+
+# #2677-005 / #2774 — scheduled/recovery reconciliation only.
+# Event-driven ops-agent-routing-controller.yml remains the primary path.
+# This workflow is read-only. It must not merge, close, resume, or mutate main.
+
+on:
+  schedule:
+    # Sparse safety-net cadence; not the primary execution path.
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Source Issue number to reconcile
+        required: true
+        type: string
+      pr_number:
+        description: Related pull request number
+        required: true
+        type: string
+      output_path:
+        description: Repository-relative output path for the reconciliation result
+        required: false
+        default: reports/agent-routing/reconcile-result.json
+        type: string
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+  checks: read
+  actions: read
+
+concurrency:
+  group: ops-agent-routing-reconcile-${{ github.event.inputs.issue_number || 'scheduled' }}
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    name: Reconcile one eligible controller candidate (read-only)
+    if: github.repository == 'wdhunter645/next-starter-template'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Confirm reconciliation remains non-mutating
+        run: |
+          node -e '
+            const fs = require("fs");
+            const cfg = JSON.parse(fs.readFileSync("config/agent-routing/controller.json", "utf8"));
+            if (cfg.mode !== "observe-only") process.exit(1);
+            if (cfg.mutationAllowed !== false) process.exit(1);
+            if (cfg.reconciliation?.enabled !== true) process.exit(1);
+            if (cfg.reconciliation?.role !== "safety-net") process.exit(1);
+            if (cfg.reconciliation?.primaryPath !== "event-driven") process.exit(1);
+            if (cfg.reconciliation?.mutationAllowed !== false) process.exit(1);
+            if (cfg.mutationSwitches?.reconciliationMutations !== false) process.exit(1);
+            const yaml = fs.readFileSync(".github/workflows/ops-agent-routing-reconcile.yml", "utf8");
+            const permBlock = yaml.match(/^permissions:\n([\s\S]*?)(?=\n\S|\nconcurrency:)/m);
+            if (!permBlock || /\bwrite\b/.test(permBlock[1])) process.exit(1);
+            if (/mutateMain|merge.*main|targets?:\s*main/i.test(yaml)) process.exit(1);
+            console.log("reconciliation_non_mutating_confirmed");
+          '
+
+      - name: Require explicit candidate on workflow_dispatch
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+        run: |
+          test -n "$ISSUE_NUMBER"
+          test -n "$PR_NUMBER"
+
+      - name: Skip scheduled run without explicit candidate
+        if: github.event_name == 'schedule'
+        run: |
+          echo "Scheduled reconciliation is armed as a safety net."
+          echo "Manual workflow_dispatch with exact --issue/--pr is required to evaluate a candidate."
+          echo "This preserves event-driven primacy and prevents speculative mutation."
+
+      - name: Run read-only reconciliation
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          OUTPUT_PATH: ${{ inputs.output_path }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          mkdir -p "$(dirname "$OUTPUT_PATH")"
+          node scripts/agent-routing/reconcile.mjs \
+            --config config/agent-routing/controller.json \
+            --issue "$ISSUE_NUMBER" \
+            --pr "$PR_NUMBER" \
+            --repository "$GITHUB_REPOSITORY" \
+            --output "$OUTPUT_PATH"
+
+      - name: Upload reconciliation artifact
+        if: github.event_name == 'workflow_dispatch' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-routing-reconcile-result
+          path: ${{ inputs.output_path }}
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Write reconciliation summary
+        if: always()
+        env:
+          OUTPUT_PATH: ${{ inputs.output_path }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          {
+            echo "## Agent routing reconciliation (safety net)"
+            echo
+            echo "- Primary path: event-driven"
+            echo "- Reconciliation role: safety-net"
+            echo "- Mutation allowed: false"
+            echo "- Event: \`$EVENT_NAME\`"
+            if [ -f "$OUTPUT_PATH" ]; then
+              echo
+              echo '```json'
+              head -c 8000 "$OUTPUT_PATH"
+              echo
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,11 @@
+{
+  "name": "duplicate-events",
+  "description": "Repeated equivalent event and reconciliation scan must not duplicate integration, closeout, or successor wake.",
+  "sourceIssueNumber": 2433,
+  "prNumber": 2675,
+  "headSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "mergeSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "targetBranch": "component/content-collection-phase1",
+  "approvalProfile": "component-auto-integration",
+  "expectedDuplicateSuppression": true
+}

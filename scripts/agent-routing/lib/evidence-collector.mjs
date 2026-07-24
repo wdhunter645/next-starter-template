@@ -211,13 +211,22 @@ export function partitionReviewEvidence({
     resolvedReviewThreads: resolvedThreads,
     lateIssueComments: lateComments,
     priorIssueComments: priorComments,
-    reviewSubmissions: (reviewSubmissions || []).map((review) => ({
-      id: String(review.id || review.databaseId || ''),
-      state: review.state || null,
-      author: review.author?.login || review.user?.login || null,
-      submittedAt: review.submittedAt || review.submitted_at || null,
-      bodyPreview: String(review.body || '').slice(0, 240),
-    })),
+    reviewSubmissions: (reviewSubmissions || []).map((review) => {
+      const commitId = normalizeSha(
+        review.commit_id || review.commitId || review.headSha || review.head?.sha || '',
+      );
+      return {
+        id: String(review.id || review.databaseId || ''),
+        state: review.state || null,
+        author: review.author?.login || review.user?.login || null,
+        submittedAt: review.submittedAt || review.submitted_at || null,
+        bodyPreview: String(review.body || '').slice(0, 240),
+        // Preserve review commit identity for protected-change-review evaluation.
+        commit_id: commitId || null,
+        commitId: commitId || null,
+        headSha: commitId || null,
+      };
+    }),
   };
 }
 
@@ -544,6 +553,11 @@ export async function collectLiveGitHubEvidence({
         headRefName: finalPullRequest.head?.ref || null,
         headSha,
         head: { sha: headSha },
+        // Preserve PR-author login for protected independent-review evaluation.
+        author: finalPullRequest.user?.login || finalPullRequest.author?.login || null,
+        user: {
+          login: finalPullRequest.user?.login || finalPullRequest.author?.login || null,
+        },
         url: finalPullRequest.html_url || null,
         html_url: finalPullRequest.html_url || null,
       },
@@ -562,13 +576,20 @@ export async function collectLiveGitHubEvidence({
         author: { login: comment.user?.login || null },
         body: comment.body || '',
       })),
-      reviewSubmissions: (reviewSubmissions || []).map((review) => ({
-        id: String(review.id),
-        state: review.state || null,
-        author: { login: review.user?.login || null },
-        submittedAt: review.submitted_at || null,
-        body: review.body || '',
-      })),
+      reviewSubmissions: (reviewSubmissions || []).map((review) => {
+        const commitId = normalizeSha(review.commit_id || review.commitId || '');
+        return {
+          id: String(review.id),
+          state: review.state || null,
+          author: { login: review.user?.login || null },
+          submittedAt: review.submitted_at || null,
+          body: review.body || '',
+          // Preserve review commit SHA for collector-to-controller protected review proof.
+          commit_id: commitId || null,
+          commitId: commitId || null,
+          headSha: commitId || null,
+        };
+      }),
       reviewThreads: reviewThreads || [],
     },
   };
@@ -858,6 +879,11 @@ export function buildEvidencePacket({
         baseRef: pullRequest?.baseRefName || pullRequest?.base?.ref || null,
         headRef: pullRequest?.headRefName || pullRequest?.head?.ref || null,
         headSha: headCheck.headSha,
+        author:
+          pullRequest?.author ||
+          pullRequest?.user?.login ||
+          pullRequest?.author?.login ||
+          null,
         url: pullRequest?.url || pullRequest?.html_url || null,
         deliveryProfile: profile,
         acceptanceCriteria: acceptanceFromPr,

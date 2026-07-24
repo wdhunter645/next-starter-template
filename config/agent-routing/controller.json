@@ -26,6 +26,26 @@
     "rights-privacy-publication",
     "production"
   ],
+  "mutationSwitches": {
+    "remediationInstructions": true,
+    "componentIntegration": true,
+    "closeoutSuccessor": true,
+    "reconciliationMutations": false
+  },
+  "observability": {
+    "enabled": true,
+    "schemaVersion": 1
+  },
+  "reconciliation": {
+    "enabled": true,
+    "role": "safety-net",
+    "primaryPath": "event-driven",
+    "mutationAllowed": false,
+    "maxCandidatesPerRun": 1,
+    "detectMissedEligible": true,
+    "detectStaleEligible": true,
+    "staleEligibleAfterMinutes": 45
+  },
   "remediationRouting": {
     "enabled": true,
     "sourceIssueOnly": true,
@@ -120,7 +140,8 @@
       "verificationIdentity",
       "closeoutIdentity",
       "parentReportIdentity",
-      "successorIdentity"
+      "successorIdentity",
+      "reconciliationIdentity"
     ]
   },
   "workflowCapabilities": {
