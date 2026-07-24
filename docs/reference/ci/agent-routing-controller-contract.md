@@ -356,6 +356,7 @@ Fixture coverage must prove:
 - the write-scoped integration executor performs two rereads, one merge, and exact merge-SHA containment verification;
 - protected authority rejects untrusted, self, missing-author, incomplete, wrong-target, edited, or headless approvals;
 - check-run collection paginates completely and fails closed when it cannot prove the full surface;
+- review-thread collection has a fail-closed cursor and page-limit guard;
 - post-merge source-Issue reread is explicit and fails closed when the Issue is unavailable or not OPEN after the merge mutation;
 - verification records exact target and merge SHA while the source Issue remains open.
 

@@ -756,6 +756,79 @@ describe('write-scoped component integration executor', () => {
     expect(collected.state.checks.some((check) => check.name === 'quality')).toBe(true);
   });
 
+  it('fails closed when review-thread pagination cannot prove completion', async () => {
+    const fetchFn = async (url) => {
+      const text = async () => '';
+      if (String(url).endsWith('/graphql')) {
+        return {
+          ok: true,
+          text,
+          json: async () => ({
+            data: {
+              repository: {
+                pullRequest: {
+                  reviewThreads: {
+                    pageInfo: { hasNextPage: true, endCursor: null },
+                    nodes: [],
+                  },
+                },
+              },
+            },
+          }),
+        };
+      }
+      const request = new URL(String(url));
+      const pathName = request.pathname;
+      if (pathName.endsWith('/issues/2772')) {
+        return {
+          ok: true,
+          text,
+          json: async () => ({ number: 2772, state: 'open', body: 'source issue' }),
+        };
+      }
+      if (pathName.endsWith('/pulls/2999')) {
+        return {
+          ok: true,
+          text,
+          json: async () => ({
+            number: 2999,
+            state: 'open',
+            merged: false,
+            body: executionState().pullRequest.body,
+            head: { sha: HEAD },
+            base: { ref: TARGET },
+            user: { login: 'builder' },
+          }),
+        };
+      }
+      if (pathName.includes('/git/ref/heads/')) {
+        return { ok: true, text, json: async () => ({ object: { sha: TARGET_HEAD } }) };
+      }
+      if (pathName.includes(`/commits/${HEAD}/check-runs`)) {
+        return { ok: true, text, json: async () => ({ total_count: 0, check_runs: [] }) };
+      }
+      if (pathName.endsWith('/pulls/2999/reviews')) {
+        return { ok: true, text, json: async () => [] };
+      }
+      if (pathName.endsWith('/issues/2772/comments')) {
+        return { ok: true, text, json: async () => [] };
+      }
+      throw new Error(`unexpected request ${url}`);
+    };
+
+    const collected = await collectGitHubIntegrationState({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2772,
+      prNumber: 2999,
+      targetBranch: TARGET,
+      token: 'token',
+      fetchFn,
+    });
+    expect(collected.ok).toBe(false);
+    expect(collected.code).toBe('live_evidence_unavailable');
+    expect(collected.message).toContain('missing endCursor');
+  });
+
   it('performs two rereads, one merge, and exact target verification', async () => {
     let collections = 0;
     let mutations = 0;

@@ -1244,7 +1244,7 @@ async function collectGitHubReviewThreads({ repository, prNumber, token, fetchFn
   }`;
   const threads = [];
   let cursor = null;
-  do {
+  for (let page = 1; page <= 20; page += 1) {
     const response = await fetchFn('https://api.github.com/graphql', {
       method: 'POST',
       headers: githubHeaders(token),
@@ -1261,9 +1261,13 @@ async function collectGitHubReviewThreads({ repository, prNumber, token, fetchFn
     const connection = payload.data?.repository?.pullRequest?.reviewThreads;
     if (!connection) throw new Error('GraphQL review threads response is incomplete');
     threads.push(...(connection.nodes || []));
-    cursor = connection.pageInfo?.hasNextPage ? connection.pageInfo.endCursor : null;
-  } while (cursor);
-  return threads;
+    if (!connection.pageInfo?.hasNextPage) return threads;
+    cursor = connection.pageInfo.endCursor;
+    if (!cursor) {
+      throw new Error('GraphQL review threads pagination missing endCursor');
+    }
+  }
+  throw new Error('GraphQL review threads pagination exceeded safety limit');
 }
 
 function githubHeaders(token) {
