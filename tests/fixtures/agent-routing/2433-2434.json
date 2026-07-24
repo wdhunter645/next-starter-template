@@ -1,0 +1,22 @@
+{
+  "name": "2433-2434-complete-path",
+  "description": "Complete handoff through evidence, clean disposition, component integration, verification, closeout, and exactly one successor wake.",
+  "sourceIssueNumber": 2433,
+  "successorIssueNumber": 2434,
+  "prNumber": 2675,
+  "headSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "mergeSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "targetBranch": "component/content-collection-phase1",
+  "approvalProfile": "component-auto-integration",
+  "prAuthor": "builder",
+  "stages": [
+    "handoff",
+    "evidence",
+    "disposition_clean",
+    "integration",
+    "verification",
+    "closeout",
+    "successor_wake"
+  ],
+  "expectedSuccessorWakes": 1
+}

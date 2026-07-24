@@ -11,6 +11,9 @@
     "canonicalEventMarkers",
     "legacyAdapterMarkers",
     "protectedDecisionClasses",
+    "mutationSwitches",
+    "observability",
+    "reconciliation",
     "remediationRouting",
     "componentIntegration",
     "closeoutSuccessor",
@@ -56,6 +59,55 @@
         ]
       }
     },
+    "mutationSwitches": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "remediationInstructions",
+        "componentIntegration",
+        "closeoutSuccessor",
+        "reconciliationMutations"
+      ],
+      "properties": {
+        "remediationInstructions": { "type": "boolean" },
+        "componentIntegration": { "type": "boolean" },
+        "closeoutSuccessor": { "type": "boolean" },
+        "reconciliationMutations": { "type": "boolean", "const": false }
+      }
+    },
+    "observability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "schemaVersion"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "schemaVersion": { "type": "integer", "const": 1 }
+      }
+    },
+    "reconciliation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "role",
+        "primaryPath",
+        "mutationAllowed",
+        "maxCandidatesPerRun",
+        "detectMissedEligible",
+        "detectStaleEligible",
+        "staleEligibleAfterMinutes"
+      ],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "role": { "type": "string", "const": "safety-net" },
+        "primaryPath": { "type": "string", "const": "event-driven" },
+        "mutationAllowed": { "type": "boolean", "const": false },
+        "maxCandidatesPerRun": { "type": "integer", "const": 1 },
+        "detectMissedEligible": { "type": "boolean" },
+        "detectStaleEligible": { "type": "boolean" },
+        "staleEligibleAfterMinutes": { "type": "integer", "minimum": 1 }
+      }
+    },
     "remediationRouting": {
       "type": "object",
       "additionalProperties": false,
@@ -71,7 +123,7 @@
         "capabilities"
       ],
       "properties": {
-        "enabled": { "type": "boolean", "const": true },
+        "enabled": { "type": "boolean" },
         "sourceIssueOnly": { "type": "boolean", "const": true },
         "responseMarker": { "type": "string", "const": "ADJUSTMENT" },
         "resumeMarker": { "type": "string", "const": "LOCAL CURSOR RESUME" },
@@ -255,7 +307,8 @@
               "verificationIdentity",
               "closeoutIdentity",
               "parentReportIdentity",
-              "successorIdentity"
+              "successorIdentity",
+              "reconciliationIdentity"
             ]
           }
         }

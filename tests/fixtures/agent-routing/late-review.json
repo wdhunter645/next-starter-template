@@ -1,0 +1,17 @@
+{
+  "name": "late-review",
+  "description": "Late actionable review after earlier green checks re-enters remediation.",
+  "sourceIssueNumber": 2433,
+  "prNumber": 2675,
+  "headSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "targetBranch": "component/content-collection-phase1",
+  "approvalProfile": "component-auto-integration",
+  "expectedClassification": "bounded_correction",
+  "lateReview": {
+    "id": "late-thread-1",
+    "isResolved": false,
+    "isOutdated": false,
+    "body": "Late review: fix the remaining bounded defect.",
+    "decisionClass": "implementation"
+  }
+}

@@ -105,6 +105,11 @@ jobs:
             if (cfg.remediationRouting?.sourceIssueOnly !== true) process.exit(1);
             if (typeof cfg.componentIntegration?.enabled !== "boolean") process.exit(1);
             if (typeof cfg.closeoutSuccessor?.enabled !== "boolean") process.exit(1);
+            if (cfg.reconciliation?.role !== "safety-net") process.exit(1);
+            if (cfg.reconciliation?.primaryPath !== "event-driven") process.exit(1);
+            if (cfg.reconciliation?.mutationAllowed !== false) process.exit(1);
+            if (cfg.mutationSwitches?.reconciliationMutations !== false) process.exit(1);
+            if (typeof cfg.observability?.enabled !== "boolean") process.exit(1);
             if (cfg.componentIntegration.enabled) {
               if (cfg.componentIntegration?.allowMain !== false) process.exit(1);
               if (cfg.componentIntegration?.allowProduction !== false) process.exit(1);

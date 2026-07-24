@@ -78,7 +78,18 @@ export function buildVerificationIdentity({
 }
 
 export function identityMarker(kind, identity) {
-  if (!['response', 'resume', 'escalation', 'integration', 'verification'].includes(kind)) {
+  if (
+    ![
+      'response',
+      'resume',
+      'escalation',
+      'integration',
+      'verification',
+      'closeout',
+      'successor',
+      'reconciliation',
+    ].includes(kind)
+  ) {
     throw new Error('unsupported_identity_marker_kind');
   }
   return `<!-- agent-routing-${kind}:${identity} -->`;
@@ -212,6 +223,24 @@ export function compareRevisions(left, right) {
   const bNumber = Number(b);
   if (Number.isFinite(aNumber) && Number.isFinite(bNumber)) return aNumber - bNumber;
   return a.localeCompare(b, undefined, { numeric: true });
+}
+
+/**
+ * Stable reconciliation scan identity. Detection-only safety-net path must not
+ * invent a second mutation when an equivalent controller action already exists.
+ */
+export function buildReconciliationIdentity({
+  sourceIssueNumber,
+  prNumber,
+  headSha,
+  actionIdentity = 'scan',
+} = {}) {
+  const issue = positiveInteger(sourceIssueNumber, 'reconciliation_identity_requires_source_issue');
+  const pr = positiveInteger(prNumber, 'reconciliation_identity_requires_pr');
+  const head = normalizeSha(headSha);
+  if (!head) throw new Error('reconciliation_identity_requires_head_sha');
+  const action = String(actionIdentity || 'scan').trim() || 'scan';
+  return `reconcile:issue:${issue}:pr:${pr}:head:${head}:action:${action}`;
 }
 
 function isLater(candidate, current) {

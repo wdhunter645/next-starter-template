@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 /**
- * Deterministic handoff controller (#2677 / #2770 / #2771 / #2772).
+ * Deterministic handoff controller (#2677 / #2770 / #2771 / #2772 / #2773 / #2774).
  *
  * Operational execution always performs GitHub-native live reads. Remediation
  * routing consumes only that normalized current-head packet and trusted
  * source-Issue decisions included in the live evidence. Component integration
  * emits at most one non-main integrate instruction plus exact post-integration
- * verification when a merge SHA is recorded.
+ * verification when a merge SHA is recorded. #2774 adds observability and
+ * independent mutation switches while preserving read-only diagnostics.
  */
 
 import fs from 'node:fs';
@@ -41,6 +42,11 @@ import {
   executeComponentIntegration,
 } from './lib/component-integration.mjs';
 import { verifyPostIntegration } from './lib/post-integration-verify.mjs';
+import {
+  attachObservability,
+  createObservabilityRecorder,
+  recordControllerTransitions,
+} from './lib/observability.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '../..');
@@ -203,7 +209,69 @@ export function assertObserveOnlyConfigInvariants(config = {}) {
       }
     }
   }
+
+  const switches = config.mutationSwitches || {};
+  for (const key of [
+    'remediationInstructions',
+    'componentIntegration',
+    'closeoutSuccessor',
+    'reconciliationMutations',
+  ]) {
+    if (typeof switches[key] !== 'boolean') {
+      throw new Error(`controller_mutation_switch_required:${key}`);
+    }
+  }
+  if (switches.reconciliationMutations !== false) {
+    throw new Error('reconciliation_mutations_must_remain_disabled');
+  }
+  if (config.reconciliation) {
+    if (config.reconciliation.role !== 'safety-net') {
+      throw new Error('reconciliation_role_must_be_safety_net');
+    }
+    if (config.reconciliation.primaryPath !== 'event-driven') {
+      throw new Error('reconciliation_primary_path_must_be_event_driven');
+    }
+    if (config.reconciliation.mutationAllowed !== false) {
+      throw new Error('reconciliation_mutation_must_be_disabled');
+    }
+    if (Number(config.reconciliation.maxCandidatesPerRun) !== 1) {
+      throw new Error('reconciliation_max_candidates_must_be_one');
+    }
+  }
+  if (config.observability && typeof config.observability.enabled !== 'boolean') {
+    throw new Error('observability_enabled_must_be_boolean');
+  }
+  if (keyFields.length > 0 && !keyFields.includes('reconciliationIdentity')) {
+    throw new Error('controller_idempotency_missing_field:reconciliationIdentity');
+  }
   return true;
+}
+
+/**
+ * Resolve independent mutation switches. Diagnostics remain available when
+ * every mutation switch is false.
+ */
+export function resolveMutationSwitches(config = {}) {
+  const switches = {
+    remediationInstructions: config.mutationSwitches?.remediationInstructions !== false,
+    componentIntegration:
+      config.mutationSwitches?.componentIntegration !== false &&
+      config.componentIntegration?.enabled === true,
+    closeoutSuccessor:
+      config.mutationSwitches?.closeoutSuccessor !== false &&
+      config.closeoutSuccessor?.enabled === true,
+    reconciliationMutations: false,
+  };
+  const anyMutationEnabled = Boolean(
+    switches.remediationInstructions ||
+      switches.componentIntegration ||
+      switches.closeoutSuccessor,
+  );
+  return {
+    ...switches,
+    diagnosticsOnly: !anyMutationEnabled,
+    anyMutationEnabled,
+  };
 }
 
 export function runObserveController(input = {}, config = loadControllerConfig()) {
@@ -278,8 +346,31 @@ export function runObserveController(input = {}, config = loadControllerConfig()
 }
 
 export function runController(input = {}, config = loadControllerConfig()) {
+  const mutationSwitches = resolveMutationSwitches(config);
+  const pathLabel = input.observabilitySource || 'event-driven';
+  const recorder = createObservabilityRecorder({
+    runId: input.runId || null,
+    source: pathLabel,
+    enabled: config.observability?.enabled !== false,
+  });
+
   const observed = runObserveController(input, config);
-  if (!observed.ok || config.remediationRouting?.enabled !== true) return observed;
+  if (!observed.ok) {
+    recordControllerTransitions(observed, recorder, { path: pathLabel });
+    return attachObservability(
+      { ...observed, mutationSwitches, diagnosticsOnly: mutationSwitches.diagnosticsOnly },
+      recorder,
+    );
+  }
+  if (config.remediationRouting?.enabled !== true) {
+    const result = {
+      ...observed,
+      mutationSwitches,
+      diagnosticsOnly: mutationSwitches.diagnosticsOnly,
+    };
+    recordControllerTransitions(result, recorder, { path: pathLabel });
+    return attachObservability(result, recorder);
+  }
 
   const routingConfig = config.remediationRouting;
   const live = input.live || {};
@@ -299,7 +390,17 @@ export function runController(input = {}, config = loadControllerConfig()) {
     headSha: routingPacket.pullRequest.headSha,
     repository: config.repository,
   });
-  if (!authorizationResult.ok) return authorizationResult;
+  if (!authorizationResult.ok) {
+    recordControllerTransitions(authorizationResult, recorder, { path: pathLabel });
+    return attachObservability(
+      {
+        ...authorizationResult,
+        mutationSwitches,
+        diagnosticsOnly: mutationSwitches.diagnosticsOnly,
+      },
+      recorder,
+    );
+  }
 
   const protectedClasses = new Set(config.protectedDecisionClasses || []);
   const protectedFindingIds = new Set(
@@ -320,7 +421,7 @@ export function runController(input = {}, config = loadControllerConfig()) {
     trustedAuthors: routingConfig.trustedControllerAuthors,
   });
 
-  const routed = routeRemediation({
+  let routed = routeRemediation({
     packet: routingPacket,
     findings,
     requiredChecks: routingConfig.requiredChecks,
@@ -331,10 +432,42 @@ export function runController(input = {}, config = loadControllerConfig()) {
     branch: routingPacket.pullRequest.headRef,
     prUrl: routingPacket.pullRequest.url,
   });
-  if (!routed.ok) return routed;
+  if (!routed.ok) {
+    recordControllerTransitions(routed, recorder, { path: pathLabel });
+    return attachObservability(
+      { ...routed, mutationSwitches, diagnosticsOnly: mutationSwitches.diagnosticsOnly },
+      recorder,
+    );
+  }
 
-  const result = { ok: true, packet: routingPacket, remediation: routed };
-  if (config.componentIntegration?.enabled !== true) return result;
+  if (!mutationSwitches.remediationInstructions) {
+    routed = {
+      ...routed,
+      actions: [],
+      suppressed: true,
+      suppressionReason: 'mutation_switch_remediation_disabled',
+    };
+  }
+
+  const result = {
+    ok: true,
+    packet: routingPacket,
+    remediation: routed,
+    mutationSwitches,
+    diagnosticsOnly: mutationSwitches.diagnosticsOnly,
+  };
+  if (!mutationSwitches.componentIntegration) {
+    result.integration = {
+      ok: true,
+      eligible: false,
+      suppressed: true,
+      code: 'component_integration_mutation_disabled',
+      actions: [],
+      diagnostics: true,
+    };
+    recordControllerTransitions(result, recorder, { path: pathLabel });
+    return attachObservability(result, recorder);
+  }
 
   const classification = routed.classification?.classification || null;
   const integration = evaluateComponentIntegrationTransaction({
@@ -352,11 +485,13 @@ export function runController(input = {}, config = loadControllerConfig()) {
   result.integration = integration;
 
   if (integration.ok && Array.isArray(integration.actions) && integration.actions.length > 1) {
-    return failClosed(
+    const limited = failClosed(
       'integration_transaction_limit_exceeded',
       'Controller may emit at most one component-integration transaction per run.',
-      { actionCount: integration.actions.length },
+      { actionCount: integration.actions.length, mutationSwitches },
     );
+    recordControllerTransitions(limited, recorder, { path: pathLabel });
+    return attachObservability(limited, recorder);
   }
 
   const shouldVerify =
@@ -392,7 +527,8 @@ export function runController(input = {}, config = loadControllerConfig()) {
     };
   }
 
-  return result;
+  recordControllerTransitions(result, recorder, { path: pathLabel });
+  return attachObservability(result, recorder);
 }
 
 function normalizeSha(value) {
