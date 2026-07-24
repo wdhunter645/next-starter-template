@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import CampaignSpotlightCard from '@/components/home/CampaignSpotlightCard';
 import {
   CAMPAIGN_SPOTLIGHT_KEY,
+  isCampaignSpotlightPubliclyVisible,
   parseCampaignSpotlightConfig,
   type CampaignSpotlightConfig,
   validateCampaignSpotlightConfig,
@@ -32,7 +33,9 @@ export default function CampaignSpotlightSlot() {
 
         const parsed = parseCampaignSpotlightConfig(data.block.published_body_md);
         const errors = validateCampaignSpotlightConfig(parsed);
-        if (cancelled || !parsed || errors.length > 0 || !parsed.enabled) return;
+        if (cancelled || !parsed || errors.length > 0 || !isCampaignSpotlightPubliclyVisible(parsed)) {
+          return;
+        }
 
         setConfig(parsed);
       } catch {

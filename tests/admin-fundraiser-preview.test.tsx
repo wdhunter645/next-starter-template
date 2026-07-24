@@ -260,7 +260,7 @@ describe('admin fundraiser preview page', () => {
       expect(screen.getByText(/No campaign spotlight block exists yet/i)).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByLabelText('Enabled for homepage rendering after publish'));
+    fireEvent.click(screen.getByLabelText(/Enabled for homepage rendering after publish/i));
 
     await waitFor(() => {
       expect(screen.getByText(/Campaign validation errors/i)).toBeInTheDocument();

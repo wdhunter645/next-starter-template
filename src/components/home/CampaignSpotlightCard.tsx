@@ -4,6 +4,7 @@ import {
   getCampaignSpotlightLinkProps,
   getCampaignSpotlightPrimaryCtaForDisplay,
   getCampaignSpotlightSecondaryCtaForDisplay,
+  getCampaignSpotlightStatusBadge,
   validateCampaignSpotlightLeaderboard,
   type CampaignSpotlightConfig,
 } from '@/lib/campaignSpotlight';
@@ -12,13 +13,23 @@ import styles from './CampaignSpotlightCard.module.css';
 type Props = {
   config: CampaignSpotlightConfig;
   previewLabel?: string;
+  /** Admin preview may show rows that public recognition would hide. */
+  publicRecognitionOnly?: boolean;
 };
 
-export default function CampaignSpotlightCard({ config, previewLabel }: Props) {
+export default function CampaignSpotlightCard({
+  config,
+  previewLabel,
+  publicRecognitionOnly = true,
+}: Props) {
   const primaryCta = getCampaignSpotlightPrimaryCtaForDisplay(config);
   const secondaryCta = getCampaignSpotlightSecondaryCtaForDisplay(config);
+  const statusBadge = getCampaignSpotlightStatusBadge(config);
   const leaderboardErrors = validateCampaignSpotlightLeaderboard(config.leaderboard);
-  const leaderboard = leaderboardErrors.length === 0 ? getCampaignSpotlightLeaderboardForDisplay(config) : [];
+  const leaderboard =
+    leaderboardErrors.length === 0
+      ? getCampaignSpotlightLeaderboardForDisplay(config, { publicRecognitionOnly })
+      : [];
 
   return (
     <section aria-label="Campaign spotlight" className={styles.wrap}>
@@ -27,6 +38,11 @@ export default function CampaignSpotlightCard({ config, previewLabel }: Props) {
           <div className={styles.eyebrowRow}>
             <div className={styles.eyebrow}>{config.eyebrow}</div>
             {config.badge ? <div className={styles.badge}>{config.badge}</div> : null}
+            {statusBadge ? (
+              <div className={styles.badge} data-testid="campaign-spotlight-status-badge">
+                {statusBadge}
+              </div>
+            ) : null}
             {previewLabel ? <div className={styles.badge}>{previewLabel}</div> : null}
           </div>
 
@@ -65,10 +81,10 @@ export default function CampaignSpotlightCard({ config, previewLabel }: Props) {
               <h3 className={styles.leaderboardTitle}>Top Teams</h3>
               <ol className={styles.leaderboardList}>
                 {leaderboard.map((entry, index) => (
-                  <li key={`${entry.name}-${index}`} className={styles.leaderboardItem}>
+                  <li key={`${entry.publicLabel}-${index}`} className={styles.leaderboardItem}>
                     <span className={styles.leaderboardRank}>{index + 1}</span>
                     <div className={styles.leaderboardDetails}>
-                      <div className={styles.leaderboardName}>{entry.name}</div>
+                      <div className={styles.leaderboardName}>{entry.publicLabel}</div>
                       <div className={styles.leaderboardMetrics}>
                         <span>{formatCampaignSpotlightFunds(entry.funds)} raised</span>
                         <span>{entry.supporters} supporters</span>

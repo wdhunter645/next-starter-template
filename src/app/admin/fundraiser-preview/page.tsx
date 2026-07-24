@@ -8,15 +8,19 @@ import AdminTokenPanel from '@/components/admin/AdminTokenPanel';
 import CampaignSpotlightCard from '@/components/home/CampaignSpotlightCard';
 import { adminJson, getStoredAdminToken } from '@/lib/adminClient';
 import {
+  CAMPAIGN_LAUNCH_STATUSES,
   CAMPAIGN_SPOTLIGHT_KEY,
   CAMPAIGN_SPOTLIGHT_PAGE,
   CAMPAIGN_SPOTLIGHT_SECTION,
   CAMPAIGN_SPOTLIGHT_TITLE,
+  campaignAllowsLiveDonationCtas,
   defaultCampaignSpotlightConfig,
   buildPersistedCampaignConfig,
+  isCampaignSpotlightPubliclyVisible,
   parseCampaignSpotlightConfig,
   serializeCampaignSpotlightConfig,
   snapshotLeaderboardFromFundraiser,
+  type CampaignLaunchStatus,
   type CampaignSpotlightConfig,
   validateCampaignSpotlightConfig,
 } from '@/lib/campaignSpotlight';
@@ -427,9 +431,11 @@ export default function FundraiserPreviewPage() {
           {publishedConfig && publishedErrors.length === 0 ? (
             <p style={{ marginTop: 12, marginBottom: 0, color: '#184d12', fontWeight: 700 }}>
               Published snapshot is valid and currently{' '}
-              {publishedConfig.enabled
-                ? 'eligible to render on the homepage.'
-                : 'hidden because Enabled is off.'}
+              {!isCampaignSpotlightPubliclyVisible(publishedConfig)
+                ? 'hidden on the homepage (not publicly visible for this launch status).'
+                : campaignAllowsLiveDonationCtas(publishedConfig)
+                  ? 'eligible to render live on the homepage.'
+                  : 'eligible for non-live homepage messaging (paused/ended; donate CTAs suppressed).'}
             </p>
           ) : (
             <p style={{ marginTop: 12, marginBottom: 0, color: '#7a4b00', fontWeight: 700 }}>
@@ -441,6 +447,21 @@ export default function FundraiserPreviewPage() {
         <section style={{ border: '1px solid rgba(0,0,0,0.12)', borderRadius: 16, padding: 18, background: '#fff' }}>
           <h2 style={{ marginTop: 0, fontSize: 22 }}>Editor</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 14 }}>
+            <label style={{ display: 'grid', gap: 6 }}>
+              <span>Launch status</span>
+              <select
+                value={form.status ?? 'draft'}
+                onChange={(e) => updateField('status', e.target.value as CampaignLaunchStatus)}
+                style={fieldStyle()}
+                data-testid="campaign-spotlight-status"
+              >
+                {CAMPAIGN_LAUNCH_STATUSES.map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </label>
             <label style={{ display: 'grid', gap: 6 }}>
               <span>Eyebrow</span>
               <input value={form.eyebrow} onChange={(e) => updateField('eyebrow', e.target.value)} style={fieldStyle()} />
@@ -508,7 +529,7 @@ export default function FundraiserPreviewPage() {
 
           <label style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 16, fontWeight: 700 }}>
             <input type="checkbox" checked={form.enabled} onChange={(e) => updateField('enabled', e.target.checked)} />
-            Enabled for homepage rendering after publish
+            Enabled for homepage rendering after publish (still requires launch status active/paused/ended)
           </label>
 
           {validationErrors.length > 0 ? (
@@ -538,7 +559,13 @@ export default function FundraiserPreviewPage() {
               <h2 style={{ marginTop: 0, marginBottom: 10, fontSize: 22 }}>Published Snapshot</h2>
               <CampaignSpotlightCard
                 config={publishedConfig}
-                previewLabel={publishedConfig.enabled ? 'Homepage Eligible' : 'Published Hidden State'}
+                previewLabel={
+                  !isCampaignSpotlightPubliclyVisible(publishedConfig)
+                    ? 'Published Hidden State'
+                    : campaignAllowsLiveDonationCtas(publishedConfig)
+                      ? 'Homepage Live Eligible'
+                      : 'Homepage Non-Live Messaging'
+                }
               />
             </div>
           ) : null}
