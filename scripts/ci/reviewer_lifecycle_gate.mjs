@@ -35,6 +35,54 @@ function timestamp(value = '') {
   return Date.parse(value || '') || 0;
 }
 
+function normalizeActorLogin(value = '') {
+  return String(value || '').trim().toLowerCase();
+}
+
+export function assessActorIndependentApproval({
+  implementationLogin = '',
+  reviews = [],
+  requireActorIndependentApproval = false,
+} = {}) {
+  if (!requireActorIndependentApproval) return [];
+
+  const implementer = normalizeActorLogin(implementationLogin);
+  if (!implementer) {
+    return [{
+      code: 'ambiguous-implementation-identity',
+      message: 'Implementation identity is required for actor-independent approval.',
+    }];
+  }
+
+  const approvedReviews = [...latestReviewByAuthor(reviews).values()]
+    .filter((review) => String(review.state || '').toUpperCase() === 'APPROVED');
+
+  const ambiguousApproval = approvedReviews.find((review) => !normalizeActorLogin(
+    review.author?.login || review.user?.login || '',
+  ));
+  if (ambiguousApproval) {
+    return [{
+      code: 'ambiguous-approver-identity',
+      message: 'Approver identity is required for actor-independent approval.',
+    }];
+  }
+
+  const hasIndependentApproval = approvedReviews.some((review) => normalizeActorLogin(
+    review.author?.login || review.user?.login || '',
+  ) !== implementer);
+  if (hasIndependentApproval) return [];
+
+  const hasSelfApproval = approvedReviews.some((review) => normalizeActorLogin(
+    review.author?.login || review.user?.login || '',
+  ) === implementer);
+  return hasSelfApproval
+    ? [{
+        code: 'implementer-self-approval',
+        message: `${implementationLogin} cannot satisfy the required approval for its own implementation.`,
+      }]
+    : [];
+}
+
 export function latestReviewByAuthor(reviews = []) {
   const latest = new Map();
   for (const review of reviews) {
@@ -250,6 +298,8 @@ export function assessReviewerLifecycle({
   reviewThreads = [],
   trustedBotLogins = DEFAULT_TRUSTED_BOT_LOGINS,
   exceptionLabel = DEFAULT_EXCEPTION_LABEL,
+  implementationLogin = '',
+  requireActorIndependentApproval = false,
   enforceFailure = isEnforcingReviewerLifecycleEvent(eventName),
   paginationFailures = [],
 } = {}) {
@@ -263,6 +313,11 @@ export function assessReviewerLifecycle({
   });
   const blockingReasons = [
     ...paginationFailures.filter(Boolean).map((message) => ({ code: 'pagination-incomplete', message })),
+    ...assessActorIndependentApproval({
+      implementationLogin,
+      reviews,
+      requireActorIndependentApproval,
+    }),
     ...humanReviewBlockers.map((review) => ({ code: 'human-changes-requested', message: `${review.author} latest review is CHANGES_REQUESTED.` })),
     ...threadState.blocking.map((thread) => ({ code: 'unresolved-human-review-thread', message: `${thread.author || 'unknown'} unresolved thread${thread.path ? ` on ${thread.path}` : ''}: ${thread.excerpt}` })),
   ];
