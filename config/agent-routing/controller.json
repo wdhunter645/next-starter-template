@@ -61,6 +61,13 @@
     "independentReviewApprovalProfiles": [
       "protected-change-review"
     ],
+    "trustedReviewAuthors": [
+      "wdhunter645",
+      "chatgpt-atlas"
+    ],
+    "trustedIntegrationAuthors": [
+      "wdhunter645"
+    ],
     "mergeMethod": "squash",
     "maxIntegrationsPerRun": 1,
     "requiredChecks": [

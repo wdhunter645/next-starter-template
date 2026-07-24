@@ -96,6 +96,7 @@ export function evaluateComponentIntegrationTransaction({
   const authority = resolveIntegrationAuthority({
     profile,
     packet,
+    targetBranch,
     reviewSubmissions:
       reviewSubmissions ||
       packet?.reviewEvidence?.reviewSubmissions ||
@@ -106,6 +107,8 @@ export function evaluateComponentIntegrationTransaction({
     independentReviewProfiles:
       componentIntegration.independentReviewApprovalProfiles ||
       INDEPENDENT_REVIEW_APPROVAL_PROFILES,
+    trustedReviewAuthors: componentIntegration.trustedReviewAuthors || [],
+    trustedIntegrationAuthors: componentIntegration.trustedIntegrationAuthors || [],
   });
   if (!authority.ok) return authority;
 
@@ -349,6 +352,16 @@ export async function executeComponentIntegration({
       { mergeSha, mutations: 1 },
     );
   }
+
+  const postMerge = await collector(collectArgs);
+  if (!postMerge?.ok) {
+    return normalizeExecutionFailure(
+      { ...postMerge, mutations: 1 },
+      'post_merge_integration_reread_failed',
+    );
+  }
+  const postMergeCheck = verifyPostMergeState(postMerge.state, expected, mergeSha);
+  if (!postMergeCheck.ok) return postMergeCheck;
 
   const integrationIdentity = buildIntegrationIdentity({
     sourceIssueNumber: expected.issueNumber,
@@ -634,10 +647,13 @@ function assertDeliveryProfileForIntegration(profile = {}) {
 function resolveIntegrationAuthority({
   profile,
   packet,
+  targetBranch,
   reviewSubmissions = [],
   existingComments = [],
   deterministicProfiles = DETERMINISTIC_APPROVAL_PROFILES,
   independentReviewProfiles = INDEPENDENT_REVIEW_APPROVAL_PROFILES,
+  trustedReviewAuthors = [],
+  trustedIntegrationAuthors = [],
 } = {}) {
   const approvalProfile = String(profile.approvalProfile || '').trim();
   if (!approvalProfile) {
@@ -660,6 +676,7 @@ function resolveIntegrationAuthority({
 
   if (independentReviewProfiles.includes(approvalProfile)) {
     const headSha = normalizeSha(packet?.pullRequest?.headSha);
+    const trustedReviewers = normalizeAuthorSet(trustedReviewAuthors);
     const approvedReview = (reviewSubmissions || []).find((review) => {
       const state = String(review.state || '').toUpperCase();
       if (state !== 'APPROVED') return false;
@@ -667,7 +684,8 @@ function resolveIntegrationAuthority({
       if (!commitId || commitId !== headSha) return false;
       const reviewer = reviewAuthor(review);
       const prAuthor = String(packet?.pullRequest?.author || '').trim().toLowerCase();
-      return !prAuthor || (reviewer && reviewer !== prAuthor);
+      if (!reviewer || !trustedReviewers.has(reviewer)) return false;
+      return !prAuthor || reviewer !== prAuthor;
     });
     if (approvedReview) {
       return {
@@ -683,6 +701,8 @@ function resolveIntegrationAuthority({
       sourceIssueNumber: packet?.sourceIssue?.number,
       prNumber: packet?.pullRequest?.number,
       headSha,
+      targetBranch,
+      trustedAuthors: trustedIntegrationAuthors,
     });
     if (decision) {
       return {
@@ -788,11 +808,18 @@ function assessBlockingThreads(packet) {
   return { ok: true };
 }
 
-function findIntegrationAuthorizationComment(comments = [], { sourceIssueNumber, prNumber, headSha }) {
+function findIntegrationAuthorizationComment(
+  comments = [],
+  { sourceIssueNumber, prNumber, headSha, targetBranch, trustedAuthors = [] },
+) {
   const issue = Number(sourceIssueNumber);
   const pr = Number(prNumber);
   const head = normalizeSha(headSha);
+  const target = String(targetBranch || '').trim();
+  const trusted = normalizeAuthorSet(trustedAuthors);
   for (const comment of comments || []) {
+    const author = commentAuthor(comment);
+    if (!trusted.has(author)) continue;
     const body = String(comment?.body || comment?.bodyText || '');
     const authorized =
       /^APPROVED FOR INTEGRATION\b/im.test(body) ||
@@ -801,12 +828,14 @@ function findIntegrationAuthorizationComment(comments = [], { sourceIssueNumber,
     if (!authorized) continue;
     const statedPr = extractPrNumber(extractField(body, 'PR'));
     const statedHead = normalizeSha(extractField(body, 'Head SHA'));
+    const statedTarget = String(extractField(body, 'Target branch') || '').trim();
     const statedIssue = extractIssueNumber(
       extractField(body, 'Issue') || extractField(body, 'Subject'),
     );
-    if (statedPr != null && statedPr !== pr) continue;
-    if (statedHead && statedHead !== head) continue;
-    if (statedIssue != null && statedIssue !== issue) continue;
+    if (statedIssue !== issue) continue;
+    if (statedPr !== pr) continue;
+    if (statedHead !== head) continue;
+    if (statedTarget !== target) continue;
     return {
       ...comment,
       url:
@@ -1033,6 +1062,47 @@ async function verifyEquivalentPriorIntegration({
   };
 }
 
+function verifyPostMergeState(state, expected, mergeSha) {
+  if (Number(state?.sourceIssue?.number) !== expected.issueNumber) {
+    return executionFailure('source_issue_mismatch_after_merge', 'Source Issue identity changed after integration.', {
+      mutations: 1,
+      mergeSha,
+    });
+  }
+  const sourceState = String(state?.sourceIssue?.state || '').toUpperCase();
+  if (sourceState !== 'OPEN') {
+    return executionFailure(
+      sourceState ? 'source_issue_not_open_after_merge' : 'source_issue_state_unavailable_after_merge',
+      'Source Issue state must be explicitly OPEN after integration.',
+      { mutations: 1, mergeSha, state: sourceState || null },
+    );
+  }
+  if (Number(state?.pullRequest?.number) !== expected.prNumber) {
+    return executionFailure('pull_request_mismatch_after_merge', 'PR identity changed after integration.', {
+      mutations: 1,
+      mergeSha,
+    });
+  }
+  if (state?.pullRequest?.merged !== true || normalizeSha(state?.pullRequest?.mergeSha) !== mergeSha) {
+    return executionFailure(
+      'merge_sha_not_recorded_after_merge',
+      'Post-merge reread must expose the exact recorded merge SHA.',
+      {
+        mutations: 1,
+        mergeSha,
+        observedMergeSha: normalizeSha(state?.pullRequest?.mergeSha) || null,
+      },
+    );
+  }
+  if (String(state?.pullRequest?.baseRef || '') !== expected.targetBranch) {
+    return executionFailure('target_base_drift_after_merge', 'PR target changed after integration.', {
+      mutations: 1,
+      mergeSha,
+    });
+  }
+  return { ok: true };
+}
+
 function integrationStateFingerprint(state) {
   const normalize = {
     issue: {
@@ -1128,6 +1198,18 @@ function githubHeaders(token) {
 
 function reviewAuthor(review) {
   return String(review?.author?.login || review?.user?.login || '').trim().toLowerCase();
+}
+
+function commentAuthor(comment) {
+  return String(comment?.author?.login || comment?.user?.login || '').trim().toLowerCase();
+}
+
+function normalizeAuthorSet(authors = []) {
+  return new Set(
+    (authors || [])
+      .map((author) => String(author).trim().toLowerCase())
+      .filter(Boolean),
+  );
 }
 
 function normalizeExecutionFailure(result, fallbackCode) {

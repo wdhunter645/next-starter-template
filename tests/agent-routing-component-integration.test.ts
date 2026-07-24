@@ -68,6 +68,7 @@ function liveCleanInput({
   approvalProfile = 'component-auto-integration',
   baseRefName = TARGET,
   headSha = HEAD,
+  prAuthor = 'builder',
   threads = [],
   checks = null,
   reviews = [],
@@ -106,6 +107,7 @@ function liveCleanInput({
         headRefName: 'cursor/2677-003-component-integration',
         headSha,
         head: { sha: headSha },
+        user: { login: prAuthor },
         url: 'https://github.com/wdhunter645/next-starter-template/pull/2999',
       },
       headSha,
@@ -290,6 +292,68 @@ describe('authorized non-main component integration', () => {
     expect(result.integration.authority.humanApproval).toBe(true);
   });
 
+  it('rejects untrusted, stale, headless, and self review approvals', () => {
+    const cases = [
+      {
+        name: 'untrusted',
+        reviews: [
+          {
+            id: 'review-untrusted',
+            state: 'APPROVED',
+            commit_id: HEAD,
+            author: { login: 'drive-by-reviewer' },
+          },
+        ],
+      },
+      {
+        name: 'stale',
+        reviews: [
+          {
+            id: 'review-stale',
+            state: 'APPROVED',
+            commit_id: OTHER,
+            author: { login: 'chatgpt-atlas' },
+          },
+        ],
+      },
+      {
+        name: 'headless',
+        reviews: [
+          {
+            id: 'review-headless',
+            state: 'APPROVED',
+            author: { login: 'chatgpt-atlas' },
+          },
+        ],
+      },
+      {
+        name: 'self',
+        prAuthor: 'chatgpt-atlas',
+        reviews: [
+          {
+            id: 'review-self',
+            state: 'APPROVED',
+            commit_id: HEAD,
+            author: { login: 'chatgpt-atlas' },
+          },
+        ],
+      },
+    ];
+    for (const item of cases) {
+      const result = runController(
+        liveCleanInput({
+          approvalProfile: 'protected-change-review',
+          prAuthor: item.prAuthor,
+          reviews: item.reviews,
+        }),
+        config(),
+      );
+      expect(result.integration.ok, item.name).toBe(false);
+      expect(result.integration.code, item.name).toBe('missing_independent_review');
+      expect(result.integration.actions, item.name).toEqual([]);
+    }
+  });
+
   it('rejects an approval that does not identify the reviewed head', () => {
     const result = runController(
       liveCleanInput({
@@ -307,6 +371,145 @@ describe('authorized non-main component integration', () => {
     expect(result.integration.ok).toBe(false);
     expect(result.integration.code).toBe('missing_independent_review');
     expect(result.integration.actions).toEqual([]);
+  });
+
+  it('accepts only exact trusted source-Issue integration authorization', () => {
+    const authorized = {
+      id: 'auth-1',
+      createdAt: '2026-07-24T04:40:00Z',
+      author: { login: 'wdhunter645' },
+      body: `APPROVED FOR INTEGRATION
+Issue: #2772
+PR: #2999
+Head SHA: ${HEAD}
+Target branch: ${TARGET}`,
+    };
+    const result = runController(
+      liveCleanInput({
+        approvalProfile: 'protected-change-review',
+        comments: [authorized],
+      }),
+      config(),
+    );
+    expect(result.integration.ok).toBe(true);
+    expect(result.integration.authority.kind).toBe('source_issue_authorization');
+  });
+
+  it('rejects source-Issue integration authorization with missing or mismatched fields', () => {
+    const cases = [
+      {
+        name: 'missing target',
+        body: `APPROVED FOR INTEGRATION
+Issue: #2772
+PR: #2999
+Head SHA: ${HEAD}`,
+      },
+      {
+        name: 'missing head',
+        body: `APPROVED FOR INTEGRATION
+Issue: #2772
+PR: #2999
+Target branch: ${TARGET}`,
+      },
+      {
+        name: 'wrong pr',
+        body: `APPROVED FOR INTEGRATION
+Issue: #2772
+PR: #3000
+Head SHA: ${HEAD}
+Target branch: ${TARGET}`,
+      },
+      {
+        name: 'untrusted author',
+        author: 'drive-by-reviewer',
+        body: `APPROVED FOR INTEGRATION
+Issue: #2772
+PR: #2999
+Head SHA: ${HEAD}
+Target branch: ${TARGET}`,
+      },
+    ];
+    for (const item of cases) {
+      const result = runController(
+        liveCleanInput({
+          approvalProfile: 'protected-change-review',
+          comments: [
+            {
+              id: `auth-${item.name}`,
+              author: { login: item.author || 'wdhunter645' },
+              body: item.body,
+            },
+          ],
+        }),
+        config(),
+      );
+      expect(result.integration.ok, item.name).toBe(false);
+      expect(result.integration.code, item.name).toBe('missing_independent_review');
+      expect(result.integration.actions, item.name).toEqual([]);
+    }
+  });
+
+  it('requires exact current-head required checks', () => {
+    const cases = [
+      {
+        name: 'headless',
+        checks: [{ name: 'quality', status: 'completed', conclusion: 'success' }],
+        code: 'missing_required_check_head',
+      },
+      {
+        name: 'fuzzy',
+        checks: [
+          {
+            name: 'quality / advisory',
+            status: 'completed',
+            conclusion: 'success',
+            headSha: HEAD,
+          },
+        ],
+        code: 'missing_required_check',
+      },
+      {
+        name: 'pending',
+        checks: [{ name: 'quality', status: 'queued', conclusion: null, headSha: HEAD }],
+        code: 'failed_required_check',
+      },
+      {
+        name: 'cancelled',
+        checks: [
+          {
+            name: 'quality',
+            status: 'completed',
+            conclusion: 'cancelled',
+            headSha: HEAD,
+          },
+        ],
+        code: 'failed_required_check',
+      },
+      {
+        name: 'action_required',
+        checks: [
+          {
+            name: 'quality',
+            status: 'completed',
+            conclusion: 'action_required',
+            headSha: HEAD,
+          },
+        ],
+        code: 'failed_required_check',
+      },
+    ];
+    for (const item of cases) {
+      const result = evaluateComponentIntegrationTransaction({
+        packet: cleanPacket({ checks: item.checks }),
+        classification: DISPOSITION_CLASSES.CLEAN,
+        requiredChecks: ['quality'],
+        componentIntegration: config().componentIntegration,
+        observedTargetBranch: TARGET,
+      });
+      expect(result.ok, item.name).toBe(false);
+      expect(result.code, item.name).toBe(item.code);
+      expect(result.actions, item.name).toEqual([]);
+    }
   });
 
   it('blocks target drift from declared component branch', () => {
@@ -349,6 +552,45 @@ ${identityMarker('integration', completedIdentity)}`,
     expect(repeated.integration.suppressed).toBe(true);
     expect(repeated.integration.code).toBe('integration_already_completed');
     expect(repeated.integration.actions).toEqual([]);
+  });
+
+  it('suppresses an already-merged equivalent PR after target verification', async () => {
+    let mutations = 0;
+    let verifications = 0;
+    const result = await executeComponentIntegration({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2772,
+      prNumber: 2999,
+      expectedHeadSha: HEAD,
+      targetBranch: TARGET,
+      expectedTargetHeadSha: TARGET_HEAD,
+      componentIntegration: config().componentIntegration,
+      collectState: async () => ({
+        ok: true,
+        state: executionState({
+          pullRequest: {
+            ...executionState().pullRequest,
+            state: 'CLOSED',
+            merged: true,
+            mergeSha: MERGE,
+          },
+        }),
+      }),
+      mergePullRequest: async () => {
+        mutations += 1;
+        return { ok: true, merged: true, mergeSha: MERGE };
+      },
+      verifyTargetContainsSha: async ({ mergeSha }) => {
+        verifications += 1;
+        return { ok: true, contains: mergeSha === MERGE };
+      },
+    });
+    expect(result.ok).toBe(true);
+    expect(result.suppressed).toBe(true);
+    expect(result.code).toBe('equivalent_integration_already_completed');
+    expect(result.mutations).toBe(0);
+    expect(mutations).toBe(0);
+    expect(verifications).toBe(1);
   });
 });
 
@@ -521,7 +763,20 @@ describe('write-scoped component integration executor', () => {
       componentIntegration: config().componentIntegration,
       collectState: async () => {
         collections += 1;
-        return { ok: true, state: executionState() };
+        return {
+          ok: true,
+          state:
+            collections < 3
+              ? executionState()
+              : executionState({
+                  pullRequest: {
+                    ...executionState().pullRequest,
+                    state: 'CLOSED',
+                    merged: true,
+                    mergeSha: MERGE,
+                  },
+                }),
+        };
       },
       mergePullRequest: async () => {
         mutations += 1;
@@ -539,7 +794,7 @@ describe('write-scoped component integration executor', () => {
     expect(result.sourceIssueState).toBe('OPEN');
     expect(result.closeout).toBe(false);
     expect(result.successorActivation).toBe(false);
-    expect(collections).toBe(2);
+    expect(collections).toBe(3);
     expect(mutations).toBe(1);
     expect(verifications).toBe(1);
   });
@@ -594,5 +849,46 @@ describe('write-scoped component integration executor', () => {
     expect(result.ok).toBe(false);
     expect(result.code).toBe('missing_expected_target_head_sha');
     expect(collections).toBe(0);
+  });
+
+  it('fails closed when post-merge source-Issue state is unavailable', async () => {
+    let collections = 0;
+    let mutations = 0;
+    const result = await executeComponentIntegration({
+      repository: 'wdhunter645/next-starter-template',
+      issueNumber: 2772,
+      prNumber: 2999,
+      expectedHeadSha: HEAD,
+      targetBranch: TARGET,
+      expectedTargetHeadSha: TARGET_HEAD,
+      componentIntegration: config().componentIntegration,
+      collectState: async () => {
+        collections += 1;
+        return {
+          ok: true,
+          state:
+            collections < 3
+              ? executionState()
+              : executionState({
+                  sourceIssue: { number: 2772, body: 'state unavailable' },
+                  pullRequest: {
+                    ...executionState().pullRequest,
+                    state: 'CLOSED',
+                    merged: true,
+                    mergeSha: MERGE,
+                  },
+                }),
+        };
+      },
+      mergePullRequest: async () => {
+        mutations += 1;
+        return { ok: true, merged: true, mergeSha: MERGE };
+      },
+      verifyTargetContainsSha: async () => ({ ok: true, contains: true }),
+    });
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('source_issue_state_unavailable_after_merge');
+    expect(result.mutations).toBe(1);
+    expect(mutations).toBe(1);
   });
 });

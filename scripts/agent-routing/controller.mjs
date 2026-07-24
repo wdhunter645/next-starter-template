@@ -394,8 +394,20 @@ function normalizeSha(value) {
 
 function enrichRoutingPacket(packet, live) {
   const reviewEvidence = packet.reviewEvidence || {};
+  const prAuthor = String(
+    live?.pullRequest?.author ||
+      live?.pullRequest?.user?.login ||
+      live?.pullRequest?.head?.user?.login ||
+      '',
+  )
+    .trim()
+    .toLowerCase();
   return {
     ...packet,
+    pullRequest: {
+      ...packet.pullRequest,
+      ...(prAuthor ? { author: prAuthor } : {}),
+    },
     reviewEvidence: {
       ...reviewEvidence,
       unresolvedReviewThreads: mergeEvidence(

@@ -50,7 +50,7 @@ It does not authorize Issue closeout, successor activation, credential changes, 
 - Component integration requires a `clean` disposition plus an authorized component target.
 - Automated eligibility is never treated as human approval.
 - The deterministic approval profile `component-auto-integration` is repository-policy authority, not human approval.
-- The protected approval profile `protected-change-review` requires recorded independent review or source-Issue integration authorization.
+- The protected approval profile `protected-change-review` requires recorded independent review or source-Issue integration authorization from configured trusted authors.
 - The route job has read-only GitHub permissions and produces transaction instructions only.
 - The integration job has job-scoped pull-request/content write permission for one component merge only.
 - Protected decisions never produce a remediation resume.
@@ -239,9 +239,28 @@ Integration is permitted only when all of the following hold:
 7. no unresolved blocking review thread or `CHANGES_REQUESTED` review remains;
 8. authority is either:
    - deterministic profile `component-auto-integration` (repository policy; not human approval), or
-   - protected profile `protected-change-review` with a recorded independent current-head `APPROVED` review whose review commit SHA exactly matches the PR head, or source-Issue `APPROVED FOR INTEGRATION` / `Status: component integration authorized` decision.
+   - protected profile `protected-change-review` with a configured trusted reviewer’s independent current-head `APPROVED` review whose review commit SHA exactly matches the PR head and is not PR-author self-review, or a configured trusted source-Issue `APPROVED FOR INTEGRATION` / `Status: component integration authorized` decision that states the exact Issue, PR, head SHA, and target branch.
 
 A repeated equivalent invocation after the PR is merged verifies the merge SHA on the component target and suppresses with zero mutation.
+
+## Write-scoped integration operation
+
+The workflow exposes a separate `integrate-component` operation with job-scoped
+`contents: write` and `pull-requests: write` permissions. The route operation and
+top-level workflow permissions remain read-only.
+
+Integration mode requires exact `issue_number`, `pr_number`, `expected_head_sha`,
+`target_branch`, and `expected_target_head_sha` inputs before any GitHub read or
+mutation. It performs an initial GitHub-native collection and a second final
+reread immediately before the single merge call. Issue state/body, PR
+state/body/head/base/source linkage, required checks, reviews, unresolved
+threads, target branch, and target-head identity must match; drift blocks with
+zero mutation.
+
+After a successful merge response, the executor verifies the exact merge SHA on
+the authorized target and rereads the source Issue state. Missing source-Issue
+state or any state other than `OPEN` fails closed. The operation records no
+closeout, successor activation, `main`, or Production mutation authority.
 
 ## Post-integration verification
 
