@@ -52,7 +52,7 @@ jobs:
           set +e
           node "$WATCH_SCRIPT" check > /tmp/lgfc-bridge-watch-result.json
           set -e
-          if grep -E 'CURSOR_API_KEY=|ghp_[A-Za-z0-9]+|github_pat_' /tmp/lgfc-bridge-watch-result.json; then
+          if grep -qE 'CURSOR_API_KEY=|ghp_[A-Za-z0-9]+|github_pat_' /tmp/lgfc-bridge-watch-result.json; then
             echo "secret-bearing output refused" >&2
             exit 1
           fi

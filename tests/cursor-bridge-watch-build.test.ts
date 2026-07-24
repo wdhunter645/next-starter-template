@@ -11,6 +11,7 @@ import {
 } from '../scripts/cursor-bridge/bridge-watch.mjs';
 import {
   runBridgeBuild,
+  resolveImmutableMainCommit,
   stagePackageFromCommit,
   snapshotPackage,
   captureEvidenceSnapshot,
@@ -375,5 +376,34 @@ describe('Cursor Bridge Watch / Build (#2814)', () => {
     snapshotPackage(home, snap);
     expect(fs.existsSync(path.join(snap, 'scripts'))).toBe(true);
     expect(fs.existsSync(path.join(snap, 'queue'))).toBe(false);
+  });
+
+  it('reports worktreeDirty from porcelain status, not sourceCommit divergence', () => {
+    const repoRoot = defaultRepoRoot();
+    const head = spawnSync('git', ['-C', repoRoot, 'rev-parse', 'HEAD'], {
+      encoding: 'utf8',
+    }).stdout.trim();
+    const parent = spawnSync('git', ['-C', repoRoot, 'rev-parse', 'HEAD~1'], {
+      encoding: 'utf8',
+    }).stdout.trim();
+    expect(parent).toMatch(/^[0-9a-f]{40}$/);
+
+    const fromParent = resolveImmutableMainCommit(repoRoot, parent) as {
+      ok: boolean;
+      worktreeDirty?: boolean;
+    };
+    expect(fromParent.ok).toBe(true);
+    // Parent != HEAD is normal on a clean tree; dirty must reflect porcelain only.
+    const porcelain = spawnSync('git', ['-C', repoRoot, 'status', '--porcelain'], {
+      encoding: 'utf8',
+    }).stdout.trim();
+    expect(fromParent.worktreeDirty).toBe(Boolean(porcelain));
+
+    const fromHead = resolveImmutableMainCommit(repoRoot, head) as {
+      ok: boolean;
+      worktreeDirty?: boolean;
+    };
+    expect(fromHead.ok).toBe(true);
+    expect(fromHead.worktreeDirty).toBe(Boolean(porcelain));
   });
 });
