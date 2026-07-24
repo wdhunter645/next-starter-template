@@ -49,15 +49,29 @@ jobs:
           HOME_DIR="${LGFC_CURSOR_BRIDGE_HOME:-$HOME/lgfc-cursor-bridge}"
           export LGFC_CURSOR_BRIDGE_HOME="$HOME_DIR"
           export LGFC_CURSOR_BRIDGE_WORKSPACE="${LGFC_CURSOR_BRIDGE_WORKSPACE:-$GITHUB_WORKSPACE}"
-          node "$GITHUB_WORKSPACE/scripts/cursor-bridge/bridge-build.mjs" "$LGFC_BRIDGE_SOURCE_COMMIT" \
-            | tee /tmp/lgfc-bridge-build-result.json
-          if grep -qE 'CURSOR_API_KEY=|ghp_[A-Za-z0-9]+|github_pat_' /tmp/lgfc-bridge-build-result.json; then
+          RESULT=/tmp/lgfc-bridge-build-result.json
+          set +e
+          node "$GITHUB_WORKSPACE/scripts/cursor-bridge/bridge-build.mjs" "$LGFC_BRIDGE_SOURCE_COMMIT" >"$RESULT" 2>/tmp/lgfc-bridge-build-stderr.txt
+          NODE_RC=$?
+          set -e
+          # Always scan before any classification print; never echo unscanned result content.
+          if [ ! -s "$RESULT" ]; then
+            echo "bridge-build produced empty result (exit=$NODE_RC)" >&2
+            exit 1
+          fi
+          if grep -qE 'CURSOR_API_KEY=|ghp_[A-Za-z0-9]+|github_pat_' "$RESULT"; then
             echo "secret-bearing output refused" >&2
+            exit 1
+          fi
+          if [ "$NODE_RC" -ne 0 ]; then
+            echo "bridge-build failed (exit=$NODE_RC)" >&2
             exit 1
           fi
           CLASS="$(python3 - <<'PY'
 import json
-data=json.load(open("/tmp/lgfc-bridge-build-result.json"))
+from pathlib import Path
+raw = Path("/tmp/lgfc-bridge-build-result.json").read_text().strip()
+data = json.loads(raw)
 print(data.get("classification") or "unknown")
 PY
 )"

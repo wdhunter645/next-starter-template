@@ -49,20 +49,42 @@ jobs:
             WATCH_SCRIPT="$HOME_DIR/scripts/bridge-watch.mjs"
           fi
           test -f "$WATCH_SCRIPT"
+          RESULT=/tmp/lgfc-bridge-watch-result.json
+          : >"$RESULT"
           set +e
-          node "$WATCH_SCRIPT" check > /tmp/lgfc-bridge-watch-result.json
+          node "$WATCH_SCRIPT" check >"$RESULT" 2>/tmp/lgfc-bridge-watch-stderr.txt
+          NODE_RC=$?
           set -e
-          if grep -qE 'CURSOR_API_KEY=|ghp_[A-Za-z0-9]+|github_pat_' /tmp/lgfc-bridge-watch-result.json; then
+          if [ ! -s "$RESULT" ]; then
+            echo "bridge-watch produced empty result (exit=$NODE_RC)" >&2
+            exit 1
+          fi
+          if grep -qE 'CURSOR_API_KEY=|ghp_[A-Za-z0-9]+|github_pat_' "$RESULT"; then
             echo "secret-bearing output refused" >&2
             exit 1
           fi
-          python3 - <<'PY'
+          NODE_RC="$NODE_RC" python3 - <<'PY'
 import json
+import os
+import sys
 from pathlib import Path
 raw = Path("/tmp/lgfc-bridge-watch-result.json").read_text().strip()
 if not raw:
+    print("bridge-watch empty result refused", file=sys.stderr)
+    sys.exit(1)
+try:
+    data = json.loads(raw)
+except json.JSONDecodeError as err:
+    print(f"bridge-watch invalid JSON: {err}", file=sys.stderr)
+    sys.exit(1)
+classification = str(data.get("classification") or "unknown")
+node_rc = int(os.environ["NODE_RC"])
+if node_rc != 0:
+    print(f"bridge-watch failed (exit={node_rc}) classification={classification}", file=sys.stderr)
+    sys.exit(1)
+# Quiet healthy only after successful exit + non-empty valid JSON.
+if classification in ("healthy", "healthy_quiet"):
     print("classification=healthy_quiet")
 else:
-    data = json.loads(raw)
-    print("classification=" + str(data.get("classification") or "unknown"))
+    print("classification=" + classification)
 PY

@@ -23,6 +23,7 @@ import {
   computeRepoManifest,
   defaultRepoRoot,
   hashFile,
+  installedPathForRepoPath,
   writeInstalledIdentity,
   secretSafeIdentity,
 } from '../scripts/cursor-bridge/lib/package-identity.mjs';
@@ -84,16 +85,12 @@ describe('Cursor Bridge Watch / Build (#2814)', () => {
     for (const rel of REPO_PACKAGE_PATHS) {
       const src = path.join(repoRoot, rel);
       if (!fs.existsSync(src)) continue;
-      const dest = rel.startsWith('scripts/cursor-bridge/')
-        ? path.join(home, 'scripts', rel.slice('scripts/cursor-bridge/'.length))
-        : path.join(home, path.basename(rel));
+      const dest = installedPathForRepoPath(rel, home);
       fs.mkdirSync(path.dirname(dest), { recursive: true, mode: 0o700 });
       fs.copyFileSync(src, dest);
     }
     if (mutateRel) {
-      const dest = mutateRel.startsWith('scripts/cursor-bridge/')
-        ? path.join(home, 'scripts', mutateRel.slice('scripts/cursor-bridge/'.length))
-        : path.join(home, path.basename(mutateRel));
+      const dest = installedPathForRepoPath(mutateRel, home);
       fs.appendFileSync(dest, '\n// drift\n');
     }
   }
@@ -405,5 +402,100 @@ describe('Cursor Bridge Watch / Build (#2814)', () => {
     };
     expect(fromHead.ok).toBe(true);
     expect(fromHead.worktreeDirty).toBe(Boolean(porcelain));
+  });
+
+  it('packages queue-routing under bridge-home/orchestrator and includes it in manifests', () => {
+    const home = withHome();
+    seedInstalledFromRepo(home);
+    const routed = path.join(home, 'orchestrator', 'queue-routing.mjs');
+    expect(fs.existsSync(routed)).toBe(true);
+    expect(installedPathForRepoPath('scripts/orchestrator/queue-routing.mjs', home)).toBe(routed);
+    expect(REPO_PACKAGE_PATHS).toContain('scripts/orchestrator/queue-routing.mjs');
+
+    const repoRoot = defaultRepoRoot();
+    const sourceCommit = spawnSync('git', ['-C', repoRoot, 'rev-parse', 'HEAD'], {
+      encoding: 'utf8',
+    }).stdout.trim();
+    const expected = computeRepoManifest(repoRoot, sourceCommit) as unknown as {
+      ok: boolean;
+      files: Record<string, string>;
+    };
+    const actual = computeInstalledManifest(home, sourceCommit) as unknown as {
+      ok: boolean;
+      files: Record<string, string>;
+    };
+    expect(expected.ok).toBe(true);
+    expect(actual.ok).toBe(true);
+    const orchKey = 'scripts/orchestrator/queue-routing.mjs';
+    expect(expected.files[orchKey]).toMatch(/^[0-9a-f]{64}$/);
+    expect(actual.files[orchKey]).toBe(expected.files[orchKey]);
+
+    const stageRoot = path.join(home, 'stage-orch');
+    const staged = stagePackageFromCommit(repoRoot, sourceCommit, stageRoot);
+    expect(staged.ok).toBe(true);
+    expect(fs.existsSync(path.join(stageRoot, 'orchestrator', 'queue-routing.mjs'))).toBe(true);
+
+    const snap = path.join(home, 'snap-orch');
+    snapshotPackage(home, snap);
+    expect(fs.existsSync(path.join(snap, 'orchestrator', 'queue-routing.mjs'))).toBe(true);
+    expect(fs.existsSync(path.join(snap, 'queue'))).toBe(false);
+  });
+
+  it('workflow guardrails refuse tee leak and empty healthy_quiet disposition', () => {
+    const buildYml = fs.readFileSync(
+      path.join(defaultRepoRoot(), '.github/workflows/cursor-bridge-build.yml'),
+      'utf8',
+    );
+    const watchYml = fs.readFileSync(
+      path.join(defaultRepoRoot(), '.github/workflows/cursor-bridge-watch.yml'),
+      'utf8',
+    );
+    expect(buildYml).not.toMatch(/\|\s*tee\s+/);
+    expect(buildYml).toContain('NODE_RC=$?');
+    expect(buildYml).toContain('grep -qE');
+    expect(buildYml).toContain('produced empty result');
+    expect(watchYml).toContain('NODE_RC=$?');
+    expect(watchYml).toContain('produced empty result');
+    expect(watchYml).toContain('invalid JSON');
+    expect(watchYml).toMatch(/if node_rc != 0:/);
+
+    const probe = fs.mkdtempSync(path.join(os.tmpdir(), 'lgfc-wf-'));
+    const emptyResult = path.join(probe, 'empty.json');
+    fs.writeFileSync(emptyResult, '');
+    const emptyCheck = spawnSync(
+      'bash',
+      [
+        '-c',
+        `RESULT=${JSON.stringify(emptyResult)}; NODE_RC=1; if [ ! -s "$RESULT" ]; then echo empty_fail; exit 1; fi; echo should_not`,
+      ],
+      { encoding: 'utf8' },
+    );
+    expect(emptyCheck.status).not.toBe(0);
+    expect(emptyCheck.stdout).toContain('empty_fail');
+
+    const crashHealthy = spawnSync(
+      'bash',
+      [
+        '-c',
+        `export NODE_RC=1; python3 - <<'PY'
+import json, os, sys
+from pathlib import Path
+p = Path(${JSON.stringify(path.join(probe, 'crash.json'))})
+p.write_text(json.dumps({"classification":"healthy"}))
+raw = p.read_text().strip()
+data = json.loads(raw)
+classification = str(data.get("classification") or "unknown")
+node_rc = int(os.environ["NODE_RC"])
+if node_rc != 0:
+    print("fail_closed", file=sys.stderr)
+    sys.exit(1)
+print("classification=healthy_quiet")
+PY`,
+      ],
+      { encoding: 'utf8' },
+    );
+    expect(crashHealthy.status).not.toBe(0);
+    expect(crashHealthy.stderr).toContain('fail_closed');
+    fs.rmSync(probe, { recursive: true, force: true });
   });
 });

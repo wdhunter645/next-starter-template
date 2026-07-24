@@ -38,6 +38,8 @@ export const REPO_PACKAGE_PATHS = Object.freeze([
   'scripts/cursor-bridge/lib/preflight.mjs',
   'scripts/cursor-bridge/lib/reconcile.mjs',
   'scripts/cursor-bridge/lib/status.mjs',
+  // Immutable packaged runtime dependency for eligibility (do not edit source here).
+  'scripts/orchestrator/queue-routing.mjs',
 ]);
 
 /** Runtime evidence — never hashed for package drift and never deleted by rebuild. */
@@ -86,6 +88,10 @@ export function hashFile(filePath) {
 export function installedPathForRepoPath(repoRelative, home = bridgeHome()) {
   if (repoRelative.startsWith('scripts/cursor-bridge/')) {
     return path.join(home, 'scripts', repoRelative.slice('scripts/cursor-bridge/'.length));
+  }
+  if (repoRelative === 'scripts/orchestrator/queue-routing.mjs') {
+    // Matches eligibility.mjs relative import from installed scripts/lib/.
+    return path.join(home, 'orchestrator', 'queue-routing.mjs');
   }
   if (repoRelative.startsWith('config/cursor-bridge/')) {
     return path.join(home, path.basename(repoRelative));
