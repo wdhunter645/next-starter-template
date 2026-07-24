@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 /**
- * Deterministic handoff controller — observe-only foundation (#2677-001 / #2770).
+ * Deterministic handoff controller (#2677 / #2770 / #2771).
  *
  * Direct execution always performs GitHub-native reads. Injected `input.live`
  * evidence is accepted only by the pure `runObserveController` test boundary.
+ * When remediation routing is enabled, the observe packet is classified and
+ * emits source-Issue response, local resume, or protected-stop instructions
+ * without the observe-only workflow itself writing to GitHub.
  */
 
 import fs from 'node:fs';
@@ -26,6 +29,7 @@ import {
   resolveCanonicalEventFromLiveComments,
   resolveExactOpenSourceIssue,
 } from './lib/evidence-collector.mjs';
+import { routeRemediation } from './lib/remediation-router.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '../..');
@@ -107,6 +111,18 @@ export function assertObserveOnlyConfigInvariants(config = {}) {
   for (const field of REQUIRED_IDEMPOTENCY_FIELDS) {
     if (!keyFields.includes(field)) {
       throw new Error(`controller_idempotency_missing_field:${field}`);
+    }
+  }
+
+  if (config.remediationRouting?.enabled) {
+    if (config.remediationRouting.sourceIssueOnly !== true) {
+      throw new Error('remediation_routing_must_be_source_issue_only');
+    }
+    const routingCapabilities = config.remediationRouting.capabilities || {};
+    for (const required of ['response', 'resume', 'escalation']) {
+      if (routingCapabilities[required] !== true) {
+        throw new Error(`remediation_routing_capability_required:${required}`);
+      }
     }
   }
 
@@ -204,6 +220,33 @@ export function runObserveController(input = {}, config = loadControllerConfig()
   });
 }
 
+/**
+ * Classify and route the observer packet without directly mutating GitHub.
+ * The workflow remains read-only; emitted actions are transaction instructions.
+ */
+export function runController(input = {}, config = loadControllerConfig()) {
+  const observed = runObserveController(input, config);
+  if (!observed.ok || config.remediationRouting?.enabled !== true) return observed;
+
+  const disposition = input.disposition || {};
+  const routed = routeRemediation({
+    packet: observed.packet,
+    findings: disposition.findings || input.findings || [],
+    authorizations: disposition.authorizations || input.authorizations || [],
+    dispositionRevision: disposition.revision || input.dispositionRevision || '1',
+    existingComments: input.issueComments || input.live?.issueComments || [],
+    latestDisposition: disposition.latest || input.latestDisposition || null,
+    branch: observed.packet?.pullRequest?.headRef || null,
+    prUrl: observed.packet?.pullRequest?.url || null,
+  });
+  if (!routed.ok) return routed;
+  return {
+    ok: true,
+    packet: observed.packet,
+    remediation: routed,
+  };
+}
+
 function failClosed(code, message, details = {}) {
   return { ok: false, code, message, ...details };
 }
@@ -242,7 +285,7 @@ export async function mainAsync(argv = process.argv.slice(2), { fetchFn = global
         'Direct execution always performs GitHub-native live collection.',
         'Presence of either --issue or --pr is operational intent; partial identity fails closed.',
         'Caller-supplied --input fields are hints only; an embedded `live` object is ignored.',
-        'Fixture-only unit tests may call runObserveController() directly with injected live evidence.',
+        'Fixture-only unit tests may call runObserveController() / runController() with injected live evidence.',
       ].join('\n') + '\n',
     );
     return 0;
@@ -286,7 +329,7 @@ export async function mainAsync(argv = process.argv.slice(2), { fetchFn = global
     return 1;
   }
 
-  const result = runObserveController({ ...hints, live: collected.live }, config);
+  const result = runController({ ...hints, live: collected.live }, config);
   writeResult(result, args.outputPath);
   return result.ok ? 0 : 1;
 }

@@ -11,6 +11,7 @@
     "canonicalEventMarkers",
     "legacyAdapterMarkers",
     "protectedDecisionClasses",
+    "remediationRouting",
     "idempotency"
   ],
   "additionalProperties": false,
@@ -81,6 +82,35 @@
         ]
       }
     },
+    "remediationRouting": {
+      "type": "object",
+      "required": [
+        "enabled",
+        "sourceIssueOnly",
+        "responseMarker",
+        "resumeMarker",
+        "escalationMarker",
+        "capabilities"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "sourceIssueOnly": { "type": "boolean", "const": true },
+        "responseMarker": { "type": "string", "const": "ADJUSTMENT" },
+        "resumeMarker": { "type": "string", "const": "LOCAL CURSOR RESUME" },
+        "escalationMarker": { "type": "string", "const": "HOLD" },
+        "capabilities": {
+          "type": "object",
+          "required": ["response", "resume", "escalation"],
+          "additionalProperties": false,
+          "properties": {
+            "response": { "type": "boolean", "const": true },
+            "resume": { "type": "boolean", "const": true },
+            "escalation": { "type": "boolean", "const": true }
+          }
+        }
+      }
+    },
     "idempotency": {
       "type": "object",
       "required": ["keyFields"],
@@ -97,7 +127,10 @@
               "eventCommentId",
               "prNumber",
               "headSha",
-              "actionIdentity"
+              "actionIdentity",
+              "findingIdentity",
+              "dispositionRevision",
+              "resumeIdentity"
             ]
           }
         }

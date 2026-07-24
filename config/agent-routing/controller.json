@@ -23,6 +23,18 @@
     "destructive",
     "production"
   ],
+  "remediationRouting": {
+    "enabled": true,
+    "sourceIssueOnly": true,
+    "responseMarker": "ADJUSTMENT",
+    "resumeMarker": "LOCAL CURSOR RESUME",
+    "escalationMarker": "HOLD",
+    "capabilities": {
+      "response": true,
+      "resume": true,
+      "escalation": true
+    }
+  },
   "idempotency": {
     "keyFields": [
       "sourceIssueNumber",
@@ -30,7 +42,10 @@
       "eventCommentId",
       "prNumber",
       "headSha",
-      "actionIdentity"
+      "actionIdentity",
+      "findingIdentity",
+      "dispositionRevision",
+      "resumeIdentity"
     ]
   },
   "workflowCapabilities": {

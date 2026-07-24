@@ -2,34 +2,37 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: Deterministic handoff-controller observe-only event identities, expected-state reads, evidence-packet schema, and protected non-automatable boundaries for #2677-001
-Does Not Own: Finding classification, remediation routing, component integration, closeout, successor activation, or Production authorization
+Owns: Deterministic handoff-controller event identities, expected-state reads, evidence-packet schema, current-head finding classification, bounded source-Issue remediation routing, duplicate suppression, and protected-stop escalation through #2677-002
+Does Not Own: Component integration, closeout, successor activation, Product/design/Engineering/recovery decisions, credentials, destructive action, rights/privacy/publication decisions, or Production authorization
 Canonical Reference: /config/agent-routing/controller.json
-Related Issues: #2677, #2770, #2676, #2433
+Related Issues: #2677, #2770, #2771, #2676, #2433
 Last Reviewed: 2026-07-24
 ---
 
-# Agent Routing Controller Contract (Observe-Only)
+# Agent Routing Controller Contract
 
 ## Purpose
 
-Define the read-only foundation for the deterministic Cursor handoff controller.
+Define the evidence and bounded-remediation stages of the deterministic Cursor handoff controller.
 
 This contract normalizes canonical source-Issue handoff/review events and collects current-head Issue, PR, check, diff-scope, acceptance, comment, and unresolved-review-thread evidence into one deterministic controller packet.
 
-This task performs **no** Issue, PR, branch, label, closeout, resume, integration, or `main` mutation.
+The remediation stage classifies that packet as `clean`, `bounded_correction`, or `protected_stop`. It may emit one source-Issue response and one exact `LOCAL CURSOR RESUME` only when current source-Issue authority already decides every correction. Otherwise it emits at most one protected-stop escalation.
+
+The observe-only workflow performs no merge, closeout, relabel, successor activation, branch mutation, Issue write, or `main` mutation. Emitted remediation actions are transaction instructions for a separately authorized executor.
 
 ## Scope
 
-This document covers only the observe-only evidence foundation for #2677-001 / #2770:
+This document covers the observe-only evidence foundation for #2677-001 / #2770 and the bounded remediation-routing stage for #2677-002 / #2771:
 
 - canonical and legacy handoff/review event recognition;
 - GitHub-native live collection of current-head Issue, PR, checks, files, comments, reviews, and unresolved threads;
 - fail-closed comparison of optional trigger/snapshot hints against those live reads;
 - stable action identities and protected non-automatable decision classes;
-- the read-only workflow that emits an evidence artifact.
+- current-head finding classification and source-Issue-only remediation routing;
+- the read-only workflow that emits an evidence/remediation artifact.
 
-It does not authorize finding classification, remediation routing, component integration, closeout, successor activation, credential use beyond read-only GitHub token scopes, or any Production / `main` mutation.
+It does not authorize component integration, closeout, successor activation, credential use beyond read-only GitHub token scopes, or any Production / `main` mutation.
 
 ## Current known truth
 
@@ -39,36 +42,43 @@ It does not authorize finding classification, remediation routing, component int
 - Checks retained in the packet are filtered to the authoritative current PR head SHA.
 - Invalid or missing PR numbers fail closed before action-identity construction.
 - Observe-only configuration invariants (markers, protected classes, workflow capabilities, reread/stale-head flags) are validated at load time.
-- Workflow permissions remain read-only; merge, close, relabel, resume, successor activation, and `main` mutation stay disabled.
+- `remediationRouting.enabled: true` adds classification and transaction-instruction output without broadening workflow write permissions.
+- Workflow permissions remain read-only; merge, close, relabel, resume, successor activation, and `main` mutation stay disabled at the workflow capability layer.
 
 ## Intended final state
 
-Later #2677 child tasks consume this observe-only packet without widening mutation authority in this foundation:
+Later #2677 child tasks consume this observe-only packet and remediation instructions without widening mutation authority in this foundation:
 
-- #2677-002 / #2771 classifies findings and routes bounded remediation;
+- #2677-002 / #2771 classifies findings and routes bounded remediation (this contract stage);
 - #2677-003 / #2772 performs authorized non-`main` component integration;
 - #2677-004 / #2773 performs eligible closeout and successor activation;
 - #2677-005 / #2774 adds reconciliation, observability, E2E fixtures, and rollout.
 
-This contract remains the freeze line for observe-only identities, live expected-state reads, and protected boundaries until a later authorized Issue changes it.
+This contract remains the freeze line for observe-only identities, live expected-state reads, remediation identities, and protected boundaries until a later authorized Issue changes it.
 
 ## Canonical files
 
 | Path | Role |
 | --- | --- |
-| `config/agent-routing/controller.json` | Observe-only controller configuration |
+| `config/agent-routing/controller.json` | Controller mode, protected boundary, capability, remediation, and idempotency configuration |
 | `config/agent-routing/controller.schema.json` | Configuration schema |
-| `scripts/agent-routing/controller.mjs` | Observe entrypoint with live collection |
+| `scripts/agent-routing/controller.mjs` | Observe entrypoint with live collection and remediation classification |
 | `scripts/agent-routing/lib/event-contract.mjs` | Event marker and action-identity contract |
 | `scripts/agent-routing/lib/evidence-collector.mjs` | Live collector and current-head packet builder |
+| `scripts/agent-routing/lib/disposition.mjs` | Current-head finding classification |
+| `scripts/agent-routing/lib/idempotency.mjs` | Stable response/resume/escalation identities and stale suppression |
+| `scripts/agent-routing/lib/remediation-router.mjs` | Source-Issue action construction and duplicate suppression |
 | `.github/workflows/ops-agent-routing-controller.yml` | Read-only workflow (artifact only) |
 | `tests/agent-routing-controller-evidence.test.ts` | Fixture coverage for #2433 / PR #2675 |
+| `tests/agent-routing-remediation-routing.test.ts` | Clean, correction, duplicate, late-finding, stale-head, and protected-stop fixtures |
 
 ## Mode and mutation boundary
 
 ```text
 mode: observe-only
 mutationAllowed: false
+remediationRouting.enabled: true
+remediationRouting.sourceIssueOnly: true
 ```
 
 Workflow capabilities are fixed false for:
@@ -80,7 +90,9 @@ Workflow capabilities are fixed false for:
 - activateSuccessor
 - mutateMain
 
-Workflow permissions are read-only (`contents`, `issues`, `pull-requests`, `checks`, `actions`).
+The root workflow capabilities, including `resume`, remain false. The nested remediation-routing capabilities authorize deterministic response/resume/escalation transaction output for a separately authorized executor. Workflow permissions remain read-only; this task does not broaden the observe workflow into a GitHub writer.
+
+Disabling `remediationRouting.enabled` suppresses remediation transaction output without erasing emitted identities.
 
 ## Recognized events
 
@@ -108,7 +120,7 @@ actionIdentity =
   issue:<n>:event:<type>:comment:<id>:pr:<n|none>:head:<sha|none>
 ```
 
-Idempotency key fields:
+Observation idempotency fields:
 
 - `sourceIssueNumber`
 - `eventType`
@@ -117,7 +129,18 @@ Idempotency key fields:
 - `headSha`
 - `actionIdentity`
 
-Later mutation tasks must reuse these identities for duplicate suppression.
+Remediation idempotency fields:
+
+- source Issue number
+- PR number and current head SHA
+- sorted review-thread/finding identities
+- disposition revision
+- response identity
+- resume identity
+
+Equivalent reruns independently suppress an already-posted response, resume, or escalation. This permits recovery after a partial response/resume transaction without duplicating the successful half.
+
+A changed PR head invalidates the earlier disposition identity and requires a complete current-head re-evaluation. A higher disposition revision suppresses stale lower-revision actions on the same head.
 
 ## Expected-state reads
 
@@ -166,9 +189,28 @@ A successful packet includes:
 - idempotency key and action identity
 - reread attestation with `source: github-native`
 
+## Disposition rules
+
+`clean` requires no unresolved actionable current-head finding and emits no remediation resume.
+
+`bounded_correction` requires every controlling finding to have:
+
+- a stable finding identity;
+- the current PR head SHA;
+- an explicit `bounded_correction` disposition;
+- `authorized: true`;
+- a non-protected decision class;
+- an exact decision URL on the authoritative source Issue.
+
+An authorization available only in a PR comment or review does not complete source-Issue routing.
+
+An unresolved current-head review thread controls even when all checks are green. A late actionable review finding re-enters classification and therefore cannot reuse an earlier clean result.
+
+`protected_stop` applies when any current-head finding lacks bounded source-Issue authority or belongs to a protected/subjective class. It emits at most one `HOLD` escalation and no response or resume.
+
 ## Protected non-automatable decisions
 
-These classes are always marked non-automatable:
+Observe-packet inventory classes (event-contract / config):
 
 - `product`
 - `engineering-approval`
@@ -177,21 +219,42 @@ These classes are always marked non-automatable:
 - `destructive`
 - `production`
 
-Observe-only mode records the boundary. It does not escalate, approve, or mutate.
+Remediation classification always-escalates these additional protected/subjective classes as well:
+
+- `design`
+- `secret`
+- `rights-privacy-publication`
+
+The controller records and escalates these boundaries. It does not decide or mutate them.
+
+## Transaction order and collision safety
+
+Immediately before emitting each transaction, the controller uses the re-read open source Issue, PR head SHA, and current Issue comments supplied by the evidence stage. A transaction executor must repeat those expected-state reads before applying an emitted action.
+
+For a bounded correction:
+
+1. post or find the exact response identity;
+2. use that response comment URL in the exact resume;
+3. post the resume only when its identity is absent;
+4. suppress remaining actions if the PR head changes.
+
+The emitted transaction targets the source Issue only. A PR-only comment never satisfies a source-Issue decision or response identity.
 
 ## Fixture authority
 
 The primary fixture represents the observed incident path for source Issue `#2433` / PR `#2675` (content-collection CC-001). Tests inject authoritative `live` evidence that simulates GitHub-native collection. The fixture must produce exactly one normalized current-head packet when the head is current and a single open source Issue is resolved. Fabricated caller `reread` data, stale heads/checks, invalid PR numbers, unavailable live evidence, and configuration drift must fail closed.
 
+Remediation fixtures cover clean evidence, one bounded correction, duplicate suppression, late actionable findings, changed-head re-evaluation, and protected-stop escalation.
+
 ## Successor ownership
 
 | Later task | Owns |
 | --- | --- |
-| #2677-002 / #2771 | Finding classification and bounded remediation routing |
+| #2677-002 / #2771 | Finding classification and bounded remediation routing (this contract) |
 | #2677-003 / #2772 | Authorized non-`main` component integration |
 | #2677-004 / #2773 | Eligible closeout and successor activation |
 | #2677-005 / #2774 | Reconciliation, observability, E2E fixtures, rollout |
 
 ## Rollback
 
-Revert the task PR from `component/deterministic-handoff-controller`. Because this foundation is read-only, no live routing state or source Issue is mutated by this contract.
+Disable `remediationRouting.enabled` and revert the task PR from `component/deterministic-handoff-controller`. Preserve emitted response, resume, and escalation markers so rollback cannot make an equivalent event eligible for duplicate routing.
