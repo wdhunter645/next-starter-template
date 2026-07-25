@@ -1,0 +1,22 @@
+{
+  "issue": 2878,
+  "branch": "component/historical-code-collection",
+  "sources": [
+    {"name":"CollectionBuilder CSV","repo":"https://github.com/CollectionBuilder/collectionbuilder-csv.git","license":"MIT","mode":"permissive"},
+    {"name":"Omeka S","repo":"https://github.com/omeka/omeka-s.git","license":"GPL-3.0","mode":"restricted-reference"},
+    {"name":"Omeka Classic","repo":"https://github.com/omeka/Omeka.git","license":"GPL-3.0","mode":"restricted-reference"},
+    {"name":"Mukurtu CMS","repo":"https://github.com/MukurtuCMS/mukurtucms.git","license":"GPL","mode":"restricted-reference"},
+    {"name":"TimelineJS3","repo":"https://github.com/NUKnightLab/TimelineJS3.git","license":"MPL-2.0","mode":"file-level-copyleft"},
+    {"name":"OpenSeadragon","repo":"https://github.com/openseadragon/openseadragon.git","license":"BSD-3-Clause","mode":"permissive"},
+    {"name":"PhotoSwipe","repo":"https://github.com/dimsemenov/PhotoSwipe.git","license":"MIT","mode":"permissive"},
+    {"name":"FullCalendar Standard","repo":"https://github.com/fullcalendar/fullcalendar.git","license":"MIT","mode":"permissive"},
+    {"name":"Payload CMS","repo":"https://github.com/payloadcms/payload.git","license":"MIT","mode":"permissive"},
+    {"name":"Payload reusable content example","repo":"https://github.com/payloadcms/reusable-content-example.git","license":"verify-with-parent","mode":"permissive-candidate"},
+    {"name":"Sveltia CMS","repo":"https://github.com/sveltia/sveltia-cms.git","license":"MIT","mode":"permissive"},
+    {"name":"Pages CMS","repo":"https://github.com/pages-cms/pages-cms.git","license":"MIT","mode":"permissive"},
+    {"name":"Decap CMS","repo":"https://github.com/decaporg/decap-cms.git","license":"MIT","mode":"permissive"}
+  ],
+  "unresolved": [
+    {"name":"Better Giving","reason":"Public website advertises open-source self-hosting, but the exact repository URL was not exposed by the accessible page/search results. Do not guess the repository."}
+  ]
+}
