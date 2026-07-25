@@ -2,7 +2,11 @@
 
 import fs from 'node:fs';
 import { classifyDeliveryProfile } from './delivery_profile.mjs';
-import { assessActorIndependentApproval } from './reviewer_lifecycle_gate.mjs';
+import {
+  assessActorIndependentApproval,
+  isActorApprovalReview,
+  parseImplementationActor,
+} from './reviewer_lifecycle_gate.mjs';
 
 export const HOLD_LABELS = ['component-integration-hold', 'hold:component-integration'];
 export const COMPONENT_STATES = ['green', 'red', 'hold'];
@@ -205,6 +209,7 @@ export function evaluateComponentIntegration({
   labels = [],
   changedFiles = [],
   headSha = '',
+  implementationActor = '',
   implementationLogin = '',
 } = {}) {
   const blockedReasons = [];
@@ -327,11 +332,9 @@ export function evaluateComponentIntegration({
   blockedReasons.push(...assessReviews(reviews, { headSha: resolvedHeadSha }));
   const currentHeadReviews = selectLatestReviewsByAuthor(reviews, { headSha: resolvedHeadSha });
   blockedReasons.push(...assessActorIndependentApproval({
-    implementationLogin,
+    implementationActor: implementationActor || implementationLogin,
     reviews: currentHeadReviews,
-    requireActorIndependentApproval: currentHeadReviews.some(
-      (review) => String(review.state || '').toUpperCase() === 'APPROVED',
-    ),
+    requireActorIndependentApproval: currentHeadReviews.some(isActorApprovalReview),
   }));
 
   const eligible = blockedReasons.length === 0;
@@ -409,6 +412,9 @@ export function runCli(env = process.env) {
     labels,
     changedFiles,
     headSha: env.COMPONENT_INTEGRATION_HEAD_SHA || profile.headSha || '',
+    implementationActor: env.COMPONENT_INTEGRATION_IMPLEMENTATION_ACTOR
+      || profile.implementationActor
+      || parseImplementationActor(profile.body || ''),
   });
 
   const report = renderIntegrationReport(result);

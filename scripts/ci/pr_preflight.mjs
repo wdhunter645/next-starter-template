@@ -6,7 +6,11 @@ import { buildDiffScopeReport } from './diff_scope_gate.mjs';
 import { sourceIssueAccounting } from './issue_accounting.mjs';
 import { evaluatePostMergeReadinessGate } from './post_merge_readiness_gate.mjs';
 import { determineQualityPlan } from './pr_class_quality_plan.mjs';
-import { assessReviewerLifecycle } from './reviewer_lifecycle_gate.mjs';
+import {
+  assessReviewerLifecycle,
+  isActorApprovalReview,
+  parseImplementationActor,
+} from './reviewer_lifecycle_gate.mjs';
 
 export function buildRequiredLocalCommands(qualityPlan = {}) {
   const commands = [];
@@ -57,10 +61,12 @@ export function evaluatePrPreflight({
     files: normalizedChangedFiles.map((filename) => ({ filename })),
     reviews,
     reviewThreads,
-    implementationLogin: pr.author?.login || pr.user?.login || '',
-    requireActorIndependentApproval: reviews.some(
-      (review) => String(review.state || '').toUpperCase() === 'APPROVED',
-    ),
+    implementationActor: pr.implementationActor
+      || parseImplementationActor(body)
+      || pr.author?.login
+      || pr.user?.login
+      || '',
+    requireActorIndependentApproval: reviews.some(isActorApprovalReview),
     enforceFailure: false,
   });
 
