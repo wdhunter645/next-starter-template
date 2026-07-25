@@ -2,6 +2,7 @@
 
 import fs from 'node:fs';
 import { classifyDeliveryProfile } from './delivery_profile.mjs';
+import { assessActorIndependentApproval } from './reviewer_lifecycle_gate.mjs';
 
 export const HOLD_LABELS = ['component-integration-hold', 'hold:component-integration'];
 export const COMPONENT_STATES = ['green', 'red', 'hold'];
@@ -204,6 +205,7 @@ export function evaluateComponentIntegration({
   labels = [],
   changedFiles = [],
   headSha = '',
+  implementationLogin = '',
 } = {}) {
   const blockedReasons = [];
   let requiresChatReview = false;
@@ -323,6 +325,14 @@ export function evaluateComponentIntegration({
   const { failed, pending } = assessChecks(checks);
   blockedReasons.push(...failed, ...pending);
   blockedReasons.push(...assessReviews(reviews, { headSha: resolvedHeadSha }));
+  const currentHeadReviews = selectLatestReviewsByAuthor(reviews, { headSha: resolvedHeadSha });
+  blockedReasons.push(...assessActorIndependentApproval({
+    implementationLogin,
+    reviews: currentHeadReviews,
+    requireActorIndependentApproval: currentHeadReviews.some(
+      (review) => String(review.state || '').toUpperCase() === 'APPROVED',
+    ),
+  }));
 
   const eligible = blockedReasons.length === 0;
 
