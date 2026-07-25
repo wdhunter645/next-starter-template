@@ -323,6 +323,7 @@ export function assessReviewerLifecycle({
   reviewThreads = [],
   trustedBotLogins = DEFAULT_TRUSTED_BOT_LOGINS,
   exceptionLabel = DEFAULT_EXCEPTION_LABEL,
+  implementationActor = '',
   implementationLogin = '',
   requireActorIndependentApproval = false,
   enforceFailure = isEnforcingReviewerLifecycleEvent(eventName),
@@ -339,7 +340,7 @@ export function assessReviewerLifecycle({
   const blockingReasons = [
     ...paginationFailures.filter(Boolean).map((message) => ({ code: 'pagination-incomplete', message })),
     ...assessActorIndependentApproval({
-      implementationLogin,
+      implementationActor: implementationActor || implementationLogin,
       reviews,
       requireActorIndependentApproval,
     }),
