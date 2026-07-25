@@ -1,0 +1,44 @@
+name: OpenHands Agent Resolver
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  run-openhands:
+    # Only run if the applied label is 'openhands'
+    if: github.event.label.name == 'openhands'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Trigger OpenHands Cloud Execution
+        env:
+          OPENHANDS_API_KEY: ${{ secrets.OPENHANDS_API_KEY }}
+          REPO_NAME: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          echo "Triggering OpenHands for issue #${ISSUE_NUMBER} on ${REPO_NAME}..."
+          
+          curl -X POST "https://app.all-hands.dev/api/conversations" \
+            -H "Authorization: Bearer ${OPENHANDS_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d $(jq -n \
+              --arg repo "$REPO_NAME" \
+              --arg issue "$ISSUE_NUMBER" \
+              --arg title "$ISSUE_TITLE" \
+              --arg body "$ISSUE_BODY" \
+              '{
+                repository: $repo,
+                issue_number: ($issue | tonumber),
+                instruction: ("Resolve GitHub Issue #" + $issue + ": " + $title + "\n\nRequirements:\n" + $body)
+              }')
