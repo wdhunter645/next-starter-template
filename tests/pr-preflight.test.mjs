@@ -331,4 +331,24 @@ describe('pr preflight evidence surfaces', () => {
     expect(result.result).toBe('fail');
   });
 
+  it('accepts Work approval when Work and the implementer share a GitHub login', () => {
+    const result = runPreflight({}, {
+      pr: {
+        author: { login: 'wdhunter645' },
+        implementationActor: 'codex',
+      },
+      reviews: [{
+        user: { login: 'wdhunter645' },
+        body: 'Reviewer actor: Work',
+        state: 'APPROVED',
+        commit_id: 'head-sha',
+      }],
+    });
+
+    expect(result.reviewThreadResult.blockingReasons).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'implementer-self-approval' }),
+    ]));
+    expect(result.result).toBe('pass');
+  });
+
 });
