@@ -139,6 +139,16 @@ export function recordControllerTransitions(result, recorder, context = {}) {
         identity: action.identity || action.escalationIdentity || null,
         suppressed: Boolean(action.suppressed),
       });
+    } else if (isMutationDisabledSuppression(action)) {
+      recorder.emit('mutation_disabled', type || 'remediation', {
+        path,
+        identity: action.identity || null,
+        reason:
+          action.suppressionReason ||
+          action.code ||
+          action.reason ||
+          'mutation_switch_disabled',
+      });
     } else if (action.suppressed || action.duplicate) {
       recorder.emit('duplicate_suppression', type || 'remediation', {
         path,
@@ -150,7 +160,15 @@ export function recordControllerTransitions(result, recorder, context = {}) {
 
   if (result.integration) {
     const integration = result.integration;
-    if (integration.suppressed || integration.code?.includes('already')) {
+    if (isMutationDisabledSuppression(integration)) {
+      recorder.emit('mutation_disabled', 'integration', {
+        path,
+        code: integration.code || null,
+        identity: integration.identity || null,
+        eligible: Boolean(integration.eligible),
+        underlyingCode: integration.underlyingCode || null,
+      });
+    } else if (integration.suppressed || integration.code?.includes('already')) {
       recorder.emit('duplicate_suppression', 'integration', {
         path,
         code: integration.code || null,
@@ -170,6 +188,7 @@ export function recordControllerTransitions(result, recorder, context = {}) {
         identity: integration.identity || null,
         eligible: Boolean(integration.eligible),
         authorityKind: integration.authority?.kind || null,
+        mutationDisabled: Boolean(integration.mutationDisabled),
       },
     );
   }
@@ -228,6 +247,17 @@ export function recordControllerTransitions(result, recorder, context = {}) {
       switches: result.mutationSwitches || null,
     });
   }
+}
+
+function isMutationDisabledSuppression(value = {}) {
+  if (!value || typeof value !== 'object') return false;
+  if (value.mutationDisabled === true) return true;
+  const code = String(value.code || value.suppressionReason || value.reason || '');
+  return (
+    code.includes('mutation_disabled') ||
+    code.includes('mutation_switch_') ||
+    code.endsWith('_mutation_disabled')
+  );
 }
 
 function sanitizeDetails(details = {}) {
