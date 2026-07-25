@@ -274,6 +274,81 @@ export function resolveMutationSwitches(config = {}) {
   };
 }
 
+/**
+ * When component-integration mutation is disabled, preserve blocker and
+ * duplicate/already-* semantics. Relabel as mutation-disabled only when the
+ * underlying transaction would otherwise be actionable/eligible.
+ * @param {object} integration
+ */
+export function applyComponentIntegrationMutationSwitch(integration = {}) {
+  const base = {
+    ...integration,
+    actions: [],
+    diagnostics: true,
+    mutationSwitchDisabled: true,
+    underlyingOk: integration.ok !== false,
+    underlyingEligible: Boolean(integration.eligible),
+    underlyingCode: integration.code || null,
+    underlyingSuppressed: Boolean(integration.suppressed),
+  };
+
+  if (integration.ok === false) {
+    return {
+      ...base,
+      ok: false,
+      eligible: false,
+      suppressed: Boolean(integration.suppressed),
+      mutationDisabled: false,
+      code: integration.code || 'integration_blocked',
+      message: integration.message || null,
+    };
+  }
+
+  if (isDuplicateOrAlreadyIntegrated(integration)) {
+    return {
+      ...base,
+      ok: true,
+      eligible: false,
+      suppressed: true,
+      mutationDisabled: false,
+      code: integration.code,
+      integrationIdentity: integration.integrationIdentity || integration.identity || null,
+    };
+  }
+
+  if (integration.ok && integration.eligible) {
+    return {
+      ...base,
+      ok: true,
+      eligible: true,
+      suppressed: true,
+      mutationDisabled: true,
+      code: 'component_integration_mutation_disabled',
+    };
+  }
+
+  return {
+    ...base,
+    ok: true,
+    eligible: false,
+    suppressed: Boolean(integration.suppressed),
+    mutationDisabled: false,
+    code: integration.code || 'integration_not_eligible',
+  };
+}
+
+function isDuplicateOrAlreadyIntegrated(integration = {}) {
+  const code = String(integration.code || '');
+  return (
+    integration.duplicate === true ||
+    code === 'integration_already_recorded' ||
+    code === 'integration_already_completed' ||
+    code === 'equivalent_integration_already_completed' ||
+    code.includes('already_recorded') ||
+    code.includes('already_completed')
+  );
+}
+
 export function runObserveController(input = {}, config = loadControllerConfig()) {
   if (config.mutationAllowed) return failClosed('mutation_forbidden', 'Controller mutation is disabled.');
   try {
@@ -471,18 +546,7 @@ export function runController(input = {}, config = loadControllerConfig()) {
   });
 
   if (!mutationSwitches.componentIntegration) {
-    // Diagnostics-only: keep evaluated eligibility, suppress mutation actions.
-    result.integration = {
-      ...integration,
-      ok: true,
-      eligible: Boolean(integration.eligible),
-      suppressed: true,
-      mutationDisabled: true,
-      diagnostics: true,
-      actions: [],
-      underlyingCode: integration.code || null,
-      code: 'component_integration_mutation_disabled',
-    };
+    result.integration = applyComponentIntegrationMutationSwitch(integration);
     recordControllerTransitions(result, recorder, { path: pathLabel });
     return attachObservability(result, recorder);
   }

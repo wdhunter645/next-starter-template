@@ -380,14 +380,7 @@ Requested action:
     expect(typeof reconId).toBe('string');
   });
 
-  it('emits structured observability for required transitions and supports mutation disable', () => {
-    const enabled = runController(baseLive());
-    const kinds = new Set(enabled.observability.events.map((event) => event.kind));
-    expect(kinds.has('handoff_received')).toBe(true);
-    expect(kinds.has('evidence_complete')).toBe(true);
-    expect(kinds.has('disposition')).toBe(true);
-    expect(kinds.has('integration')).toBe(true);
-
+  it('preserves blocker, duplicate, and eligible semantics when integration mutation is disabled', () => {
     const config = loadControllerConfig();
     const disabled = {
       ...config,
@@ -397,7 +390,6 @@ Requested action:
         closeoutSuccessor: false,
         reconciliationMutations: false,
       },
-      // Keep subsystems enabled so diagnostics can still evaluate eligibility.
       componentIntegration: {
         ...config.componentIntegration,
         enabled: true,
@@ -407,30 +399,118 @@ Requested action:
         enabled: true,
       },
     };
-    const switches = resolveMutationSwitches(disabled);
-    expect(switches.diagnosticsOnly).toBe(true);
+    expect(resolveMutationSwitches(disabled).diagnosticsOnly).toBe(true);
 
-    const diagnosis = runController(baseLive(), disabled);
-    expect(diagnosis.ok).toBe(true);
-    expect(diagnosis.packet).toBeTruthy();
-    expect(diagnosis.diagnosticsOnly).toBe(true);
-    expect(diagnosis.remediation.actions).toEqual([]);
-    expect(diagnosis.integration.code).toBe('component_integration_mutation_disabled');
-    expect(diagnosis.integration.mutationDisabled).toBe(true);
-    expect(diagnosis.integration.actions).toEqual([]);
-    // Diagnostics-only must still evaluate whether integration would be eligible.
-    expect(typeof diagnosis.integration.eligible).toBe('boolean');
-    expect(diagnosis.integration.eligible).toBe(true);
+    // 1) Eligible/actionable → mutation-disabled suppression only.
+    const eligible = runController(baseLive(), disabled);
+    expect(eligible.diagnosticsOnly).toBe(true);
+    expect(eligible.remediation.actions).toEqual([]);
+    expect(eligible.integration.ok).toBe(true);
+    expect(eligible.integration.eligible).toBe(true);
+    expect(eligible.integration.suppressed).toBe(true);
+    expect(eligible.integration.mutationDisabled).toBe(true);
+    expect(eligible.integration.code).toBe('component_integration_mutation_disabled');
+    expect(eligible.integration.actions).toEqual([]);
+    expect(eligible.integration.underlyingEligible).toBe(true);
     expect(
-      diagnosis.observability.events.some((event) => event.kind === 'mutation_disabled'),
+      eligible.observability.events.some(
+        (event) =>
+          event.kind === 'mutation_disabled' &&
+          event.outcome === 'integration' &&
+          event.code === 'component_integration_mutation_disabled',
+      ),
     ).toBe(true);
     expect(
-      diagnosis.observability.events.some(
+      eligible.observability.events.some(
         (event) =>
           event.kind === 'duplicate_suppression' &&
           event.code === 'component_integration_mutation_disabled',
       ),
     ).toBe(false);
+
+    // 2) Real blocker/error → fail-closed blocker remains (not relabeled mutation-disabled).
+    const protectedFixture = readFixture('protected-stop.json');
+    const blocked = runController(
+      baseLive({
+        threads: [protectedFixture.protectedFinding],
+      }),
+      disabled,
+    );
+    expect(blocked.integration.ok).toBe(false);
+    expect(blocked.integration.eligible).toBe(false);
+    expect(blocked.integration.mutationDisabled).toBe(false);
+    expect(blocked.integration.code).not.toBe('component_integration_mutation_disabled');
+    expect(blocked.integration.code).toBeTruthy();
+    expect(blocked.integration.actions).toEqual([]);
+    expect(blocked.integration.mutationSwitchDisabled).toBe(true);
+    expect(blocked.integration.underlyingCode).toBe(blocked.integration.code);
+    expect(
+      blocked.observability.events.some(
+        (event) =>
+          event.kind === 'integration' && event.outcome === 'blocked',
+      ),
+    ).toBe(true);
+    expect(
+      blocked.observability.events.some(
+        (event) =>
+          event.kind === 'mutation_disabled' &&
+          event.code === 'component_integration_mutation_disabled',
+      ),
+    ).toBe(false);
+
+    // 3) Duplicate/already-recorded → duplicate semantics remain intact.
+    const identity = buildIntegrationIdentity({
+      sourceIssueNumber: 2433,
+      prNumber: 2675,
+      headSha: HEAD,
+      targetBranch: TARGET,
+      integrationDisposition: 'clean',
+      mergeSha: 'pending',
+    });
+    const duplicate = runController(
+      baseLive({
+        comments: [
+          {
+            id: '7201',
+            author: { login: 'github-actions[bot]' },
+            body: `Integration recorded\n${identityMarker('integration', identity)}`,
+          },
+        ],
+      }),
+      disabled,
+    );
+    expect(duplicate.integration.ok).toBe(true);
+    expect(duplicate.integration.eligible).toBe(false);
+    expect(duplicate.integration.suppressed).toBe(true);
+    expect(duplicate.integration.code).toBe('integration_already_recorded');
+    expect(duplicate.integration.mutationDisabled).toBe(false);
+    expect(duplicate.integration.actions).toEqual([]);
+    expect(duplicate.integration.mutationSwitchDisabled).toBe(true);
+    expect(duplicate.integration.underlyingCode).toBe('integration_already_recorded');
+    expect(
+      duplicate.observability.events.some(
+        (event) =>
+          event.kind === 'duplicate_suppression' &&
+          event.outcome === 'integration' &&
+          event.code === 'integration_already_recorded',
+      ),
+    ).toBe(true);
+    expect(
+      duplicate.observability.events.some(
+        (event) =>
+          event.kind === 'mutation_disabled' &&
+          event.code === 'component_integration_mutation_disabled',
+      ),
+    ).toBe(false);
+  });
+
+  it('emits structured observability for required transitions', () => {
+    const enabled = runController(baseLive());
+    const kinds = new Set(enabled.observability.events.map((event) => event.kind));
+    expect(kinds.has('handoff_received')).toBe(true);
+    expect(kinds.has('evidence_complete')).toBe(true);
+    expect(kinds.has('disposition')).toBe(true);
+    expect(kinds.has('integration')).toBe(true);
   });
 
   it('proves collector-to-controller protected review identity path', async () => {
