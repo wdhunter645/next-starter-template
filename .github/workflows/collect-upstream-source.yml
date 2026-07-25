@@ -1,0 +1,110 @@
+name: Collect upstream source workspace
+
+on:
+  push:
+    branches:
+      - component/historical-code-collection
+    paths:
+      - .github/workflows/collect-upstream-source.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: historical-source-collection
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout collection branch
+        uses: actions/checkout@v4
+        with:
+          ref: component/historical-code-collection
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Add complete pinned upstream repositories
+        shell: bash
+        run: |
+          set -u
+          mkdir -p external-sources/permissive external-sources/file-copyleft external-sources/restricted
+
+          add_source() {
+            local path="$1"
+            local url="$2"
+            if [ -e "$path" ] || git config --file .gitmodules --get-regexp path 2>/dev/null | grep -Fq "$path"; then
+              echo "Already collected: $path"
+              return
+            fi
+            git submodule add --depth 1 "$url" "$path"
+          }
+
+          # Permissive or similarly reusable candidates
+          add_source external-sources/permissive/collectionbuilder https://github.com/CollectionBuilder/collectionbuilder-csv.git
+          add_source external-sources/permissive/openseadragon https://github.com/openseadragon/openseadragon.git
+          add_source external-sources/permissive/photoswipe https://github.com/dimsemenov/PhotoSwipe.git
+          add_source external-sources/permissive/fullcalendar https://github.com/fullcalendar/fullcalendar.git
+          add_source external-sources/permissive/payload https://github.com/payloadcms/payload.git
+          add_source external-sources/permissive/payload-reusable-content https://github.com/payloadcms/reusable-content-example.git
+          add_source external-sources/permissive/sveltia-cms https://github.com/sveltia/sveltia-cms.git
+          add_source external-sources/permissive/decap-cms https://github.com/decaporg/decap-cms.git
+          add_source external-sources/permissive/react-admin https://github.com/marmelab/react-admin.git
+          add_source external-sources/permissive/photoprism https://github.com/photoprism/photoprism.git
+
+          # File-level copyleft: retain intact and isolate modifications by file
+          add_source external-sources/file-copyleft/timelinejs3 https://github.com/NUKnightLab/TimelineJS3.git
+
+          # Reciprocal-license/reference-only systems; do not merge source into LGFC runtime
+          add_source external-sources/restricted/omeka-s https://github.com/omeka/omeka-s.git
+          add_source external-sources/restricted/omeka-classic https://github.com/omeka/Omeka.git
+          add_source external-sources/restricted/mukurtu https://github.com/MukurtuCMS/mukurtucms.git
+          add_source external-sources/restricted/givewp https://github.com/impress-org/givewp.git
+
+      - name: Write collection policy
+        shell: bash
+        run: |
+          cat > external-sources/README.md <<'EOF'
+          # Complete upstream source workspace
+
+          Collected for LGFC Issue #2878.
+
+          These directories are pinned Git submodules containing complete upstream repositories. Clone with:
+
+          ```bash
+          git clone --recurse-submodules <LGFC repository URL>
+          ```
+
+          For an existing clone:
+
+          ```bash
+          git submodule update --init --recursive
+          ```
+
+          Classification:
+
+          - `permissive/`: candidates for controlled adoption or adaptation after file-level license, security, dependency, and architecture review.
+          - `file-copyleft/`: components whose covered files and modifications must retain their license terms.
+          - `restricted/`: reciprocal-license/reference systems. Do not copy their implementation into LGFC runtime code without an explicit legal and architectural decision.
+
+          A submodule's own LICENSE, notices, history, and upstream attribution remain authoritative. No submodule is connected to production routes or package manifests by this collection commit.
+          EOF
+
+      - name: Commit complete source workspace
+        shell: bash
+        run: |
+          git add .gitmodules external-sources
+          if git diff --cached --quiet; then
+            echo "No collection changes required."
+            exit 0
+          fi
+          git commit -m "chore(vendor): collect complete upstream source workspace for #2878 [vendor-sync]"
+          git push origin HEAD:component/historical-code-collection
