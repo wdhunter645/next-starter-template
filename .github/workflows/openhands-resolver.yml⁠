@@ -3,6 +3,8 @@ name: OpenHands Agent Resolver
 on:
   issues:
     types: [labeled]
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: write
@@ -11,8 +13,9 @@ permissions:
 
 jobs:
   run-openhands:
-    # Only run if the applied label is 'openhands'
-    if: github.event.label.name == 'openhands'
+    if: >
+      github.event.label.name == 'openhands' ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@openhands-agent'))
     runs-on: ubuntu-latest
 
     steps:
@@ -24,8 +27,7 @@ jobs:
           OPENHANDS_API_KEY: ${{ secrets.OPENHANDS_API_KEY }}
           REPO_NAME: ${{ github.repository }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
-          ISSUE_TITLE: ${{ github.event.issue.title }}
-          ISSUE_BODY: ${{ github.event.issue.body }}
+          INSTRUCTION: ${{ github.event.comment.body || github.event.issue.body }}
         run: |
           echo "Triggering OpenHands for issue #${ISSUE_NUMBER} on ${REPO_NAME}..."
           
@@ -35,10 +37,9 @@ jobs:
             -d $(jq -n \
               --arg repo "$REPO_NAME" \
               --arg issue "$ISSUE_NUMBER" \
-              --arg title "$ISSUE_TITLE" \
-              --arg body "$ISSUE_BODY" \
+              --arg instruction "$INSTRUCTION" \
               '{
                 repository: $repo,
                 issue_number: ($issue | tonumber),
-                instruction: ("Resolve GitHub Issue #" + $issue + ": " + $title + "\n\nRequirements:\n" + $body)
+                instruction: $instruction
               }')
