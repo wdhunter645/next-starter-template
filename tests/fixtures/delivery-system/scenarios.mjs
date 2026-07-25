@@ -109,7 +109,7 @@ export const SCENARIOS = [
         changedFiles: ['src/components/example.tsx'],
       });
       assert(result.eligible === true, `expected eligible: ${JSON.stringify(result.blockedReasons)}`);
-      assert(result.requiresChatReview === false, 'eligible child must not require Chat review');
+      assert(result.requiresChatReview === false, 'eligible child must not require Work review');
     },
   },
   {
@@ -131,7 +131,7 @@ export const SCENARIOS = [
   },
   {
     id: 5,
-    name: 'Protected Model B child pauses for Chat review',
+    name: 'Protected Model B child pauses for Work review',
     run() {
       const body = prBody({
         deliveryModel: 'B-child',
@@ -154,7 +154,7 @@ export const SCENARIOS = [
         changedFiles: ['.github/workflows/component-child-integration.yml'],
       });
       assert(result.eligible === false, 'protected child must not auto-integrate');
-      assert(result.requiresChatReview === true, 'protected child requires Chat review');
+      assert(result.requiresChatReview === true, 'protected child requires Work review');
       assert(codes(result.blockedReasons).includes('protected_change'), 'expected protected_change');
     },
   },
@@ -179,7 +179,7 @@ export const SCENARIOS = [
       const incompleteBody = prBody({
         deliveryModel: 'B-promotion',
         targetEnvironment: 'production',
-        approvalProfile: 'chat-bill-production',
+        approvalProfile: 'work-bill-production',
         gateProfile: 'component-promotion',
         rollbackProfile: 'multi-step',
         componentBranch: 'component/delivery-system-v1',
@@ -216,7 +216,7 @@ deployment_restoration: restore pre-promotion Cloudflare deployment
 dependency_order: 1 pause automation; 2 revert promotion; 3 restore config; 4 verify
 verification_checklist: production routes; required checks; ruleset state
 reconciliation: reopen #2502 if promotion rolled back
-package_owner: Chat
+package_owner: Work
 package_finalized_before_promotion: yes
 integrated_children_complete: yes
 pilot_evidence_path: docs/ops/reports/delivery-system-v1-pilot-evidence.md
@@ -395,7 +395,7 @@ Follow-up issue: #2599
 rollback_target_type: revert-commit
 rollback_target_ref: 8bf68e7de29c780feeecd398e5496817b2ee000d
 smoke_tests: 1 homepage; 2 health endpoint; 3 required GitHub checks
-verification_owner: Chat
+verification_owner: Work
 `;
       const fields = parseEvidenceBlock(evidence);
       const missing = missingEvidenceFields(fields, ONE_STEP_ROLLBACK_FIELDS);
@@ -464,7 +464,7 @@ deployment_restoration: redeploy Cloudflare Pages artifact from pre-promotion co
 dependency_order: 1 disablement; 2 external writes; 3 config; 4 deployment; 5 verify; 6 reconcile
 verification_checklist: component green; production routes; required checks
 reconciliation: update #2477/#2501/#2502 status from live evidence
-package_owner: Chat
+package_owner: Work
 package_finalized_before_promotion: yes
 `;
       const fields = parseEvidenceBlock(evidence);

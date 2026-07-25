@@ -8,7 +8,7 @@ export const CHANGE_MODES = ['project', 'routine-ops', 'planned-migration', 'eme
 export const TARGET_ENVIRONMENTS = ['component', 'preview', 'production', 'recovery'];
 export const APPROVAL_PROFILES = [
   'component-auto-integration',
-  'chat-bill-production',
+  'work-bill-production',
   'protected-change-review',
   'emergency-approval',
 ];
@@ -221,7 +221,7 @@ export function classifyDeliveryProfile({
 
   if (metadata.deliveryModel === 'A') {
     pushExpectedError(errors, 'targetEnvironment', metadata.targetEnvironment, 'production');
-    pushExpectedError(errors, 'approvalProfile', metadata.approvalProfile, 'chat-bill-production');
+    pushExpectedError(errors, 'approvalProfile', metadata.approvalProfile, 'work-bill-production');
     pushExpectedError(errors, 'gateProfile', metadata.gateProfile, 'production-candidate');
     pushExpectedError(errors, 'rollbackProfile', metadata.rollbackProfile, 'one-step');
     if (baseRef !== 'main') {
@@ -268,7 +268,7 @@ export function classifyDeliveryProfile({
 
   if (metadata.deliveryModel === 'B-promotion') {
     pushExpectedError(errors, 'targetEnvironment', metadata.targetEnvironment, 'production');
-    pushExpectedError(errors, 'approvalProfile', metadata.approvalProfile, 'chat-bill-production');
+    pushExpectedError(errors, 'approvalProfile', metadata.approvalProfile, 'work-bill-production');
     pushExpectedError(errors, 'gateProfile', metadata.gateProfile, 'component-promotion');
     pushExpectedError(errors, 'rollbackProfile', metadata.rollbackProfile, 'multi-step');
     if (baseRef !== 'main') {

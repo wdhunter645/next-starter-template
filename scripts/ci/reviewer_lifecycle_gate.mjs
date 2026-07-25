@@ -35,6 +35,79 @@ function timestamp(value = '') {
   return Date.parse(value || '') || 0;
 }
 
+function normalizeActorIdentity(value = '') {
+  return String(value || '').trim().toLowerCase();
+}
+
+function attestedField(body = '', field = '') {
+  const escaped = field.replace(/[.*+?^${}()|[]\\]/g, '\\$&');
+  return String(body || '').match(new RegExp(`^\\s*${escaped}\\s*:\\s*(.+?)\\s*$`, 'im'))?.[1]?.trim() || '';
+}
+
+export function parseImplementationActor(body = '') {
+  return attestedField(body, 'Implementation agent');
+}
+
+export function reviewerActor(review = {}) {
+  return attestedField(review.body || '', 'Reviewer actor')
+    || review.author?.login
+    || review.user?.login
+    || '';
+}
+
+export function isActorApprovalReview(review = {}) {
+  const decision = attestedField(review.body || '', 'Decision');
+  return String(decision || review.state || '').trim().toUpperCase() === 'APPROVED';
+}
+
+function latestReviewByActor(reviews = []) {
+  const latest = new Map();
+  for (const review of reviews) {
+    const actor = normalizeActorIdentity(reviewerActor(review));
+    if (!actor) continue;
+    const submittedAt = review.submittedAt || review.submitted_at || review.created_at || '';
+    const current = latest.get(actor);
+    if (!current || timestamp(submittedAt) >= timestamp(current.submittedAt || current.submitted_at || current.created_at || '')) {
+      latest.set(actor, review);
+    }
+  }
+  return latest;
+}
+
+export function assessActorIndependentApproval({
+  implementationActor = '',
+  implementationLogin = '',
+  reviews = [],
+  requireActorIndependentApproval = false,
+} = {}) {
+  if (!requireActorIndependentApproval) return [];
+
+  const implementationIdentity = implementationActor || implementationLogin;
+  const implementer = normalizeActorIdentity(implementationIdentity);
+  if (!implementer) {
+    return [{
+      code: 'ambiguous-implementation-identity',
+      message: 'Implementation identity is required for actor-independent approval.',
+    }];
+  }
+
+  const approvedReviews = [...latestReviewByActor(reviews).values()].filter(isActorApprovalReview);
+  const hasIndependentApproval = approvedReviews.some(
+    (review) => normalizeActorIdentity(reviewerActor(review)) !== implementer,
+  );
+  if (hasIndependentApproval) return [];
+
+  const hasSelfApproval = approvedReviews.some(
+    (review) => normalizeActorIdentity(reviewerActor(review)) === implementer,
+  );
+  return hasSelfApproval
+    ? [{
+        code: 'implementer-self-approval',
+        message: `${implementationIdentity} cannot satisfy the required approval for its own implementation.`,
+      }]
+    : [];
+}
+
 export function latestReviewByAuthor(reviews = []) {
   const latest = new Map();
   for (const review of reviews) {
@@ -250,6 +323,9 @@ export function assessReviewerLifecycle({
   reviewThreads = [],
   trustedBotLogins = DEFAULT_TRUSTED_BOT_LOGINS,
   exceptionLabel = DEFAULT_EXCEPTION_LABEL,
+  implementationActor = '',
+  implementationLogin = '',
+  requireActorIndependentApproval = false,
   enforceFailure = isEnforcingReviewerLifecycleEvent(eventName),
   paginationFailures = [],
 } = {}) {
@@ -263,6 +339,11 @@ export function assessReviewerLifecycle({
   });
   const blockingReasons = [
     ...paginationFailures.filter(Boolean).map((message) => ({ code: 'pagination-incomplete', message })),
+    ...assessActorIndependentApproval({
+      implementationActor: implementationActor || implementationLogin,
+      reviews,
+      requireActorIndependentApproval,
+    }),
     ...humanReviewBlockers.map((review) => ({ code: 'human-changes-requested', message: `${review.author} latest review is CHANGES_REQUESTED.` })),
     ...threadState.blocking.map((thread) => ({ code: 'unresolved-human-review-thread', message: `${thread.author || 'unknown'} unresolved thread${thread.path ? ` on ${thread.path}` : ''}: ${thread.excerpt}` })),
   ];
@@ -426,7 +507,7 @@ export async function fetchNativeReviewState({ owner, repo, prNumber, token }) {
       repository(owner: $owner, name: $repo) {
         pullRequest(number: $number) {
           labels(first: 100) { nodes { name } pageInfo { hasNextPage } }
-          reviews(first: 100) { nodes { author { login } state submittedAt } pageInfo { hasNextPage } }
+          reviews(first: 100) { nodes { author { login } body state submittedAt } pageInfo { hasNextPage } }
           reviewThreads(first: 100) {
             nodes {
               id
@@ -483,6 +564,8 @@ export async function runReviewerLifecycleGate({
     reviewThreads: nativeState.reviewThreads,
     trustedBotLogins,
     exceptionLabel,
+    implementationActor: parseImplementationActor(pull.body || ''),
+    requireActorIndependentApproval: nativeState.reviews.some(isActorApprovalReview),
     enforceFailure,
     paginationFailures: nativeState.paginationFailures,
   });
