@@ -1,0 +1,45 @@
+[submodule "external-sources/permissive/collectionbuilder"]
+	path = external-sources/permissive/collectionbuilder
+	url = https://github.com/CollectionBuilder/collectionbuilder-csv.git
+[submodule "external-sources/permissive/openseadragon"]
+	path = external-sources/permissive/openseadragon
+	url = https://github.com/openseadragon/openseadragon.git
+[submodule "external-sources/permissive/photoswipe"]
+	path = external-sources/permissive/photoswipe
+	url = https://github.com/dimsemenov/PhotoSwipe.git
+[submodule "external-sources/permissive/fullcalendar"]
+	path = external-sources/permissive/fullcalendar
+	url = https://github.com/fullcalendar/fullcalendar.git
+[submodule "external-sources/permissive/payload"]
+	path = external-sources/permissive/payload
+	url = https://github.com/payloadcms/payload.git
+[submodule "external-sources/permissive/payload-reusable-content"]
+	path = external-sources/permissive/payload-reusable-content
+	url = https://github.com/payloadcms/reusable-content-example.git
+[submodule "external-sources/permissive/sveltia-cms"]
+	path = external-sources/permissive/sveltia-cms
+	url = https://github.com/sveltia/sveltia-cms.git
+[submodule "external-sources/permissive/decap-cms"]
+	path = external-sources/permissive/decap-cms
+	url = https://github.com/decaporg/decap-cms.git
+[submodule "external-sources/permissive/react-admin"]
+	path = external-sources/permissive/react-admin
+	url = https://github.com/marmelab/react-admin.git
+[submodule "external-sources/permissive/photoprism"]
+	path = external-sources/permissive/photoprism
+	url = https://github.com/photoprism/photoprism.git
+[submodule "external-sources/file-copyleft/timelinejs3"]
+	path = external-sources/file-copyleft/timelinejs3
+	url = https://github.com/NUKnightLab/TimelineJS3.git
+[submodule "external-sources/restricted/omeka-s"]
+	path = external-sources/restricted/omeka-s
+	url = https://github.com/omeka/omeka-s.git
+[submodule "external-sources/restricted/omeka-classic"]
+	path = external-sources/restricted/omeka-classic
+	url = https://github.com/omeka/Omeka.git
+[submodule "external-sources/restricted/mukurtu"]
+	path = external-sources/restricted/mukurtu
+	url = https://github.com/MukurtuCMS/mukurtucms.git
+[submodule "external-sources/restricted/givewp"]
+	path = external-sources/restricted/givewp
+	url = https://github.com/impress-org/givewp.git
