@@ -18,7 +18,9 @@ Last Reviewed: 2026-07-24
 - `config/agent-routing/controller.json` remains `mode: observe-only` and `mutationAllowed: false`.
 - Independent review owner remains ChatGPT / Atlas for protected promotion.
 
-## Primary path (event-driven)
+## Procedure
+
+### Primary path (event-driven)
 
 1. Dispatch `OPS — Agent Routing Controller` with `operation=route`, exact Issue number, and exact PR number.
 2. Inspect the uploaded packet artifact and observability snapshot.
@@ -50,8 +52,8 @@ To preserve diagnostics while stopping mutation:
    - `mutationSwitches.remediationInstructions`
    - `mutationSwitches.componentIntegration`
    - `mutationSwitches.closeoutSuccessor`
-2. Optionally set `componentIntegration.enabled` and `closeoutSuccessor.enabled` to `false`.
-3. Keep `observability.enabled: true`.
+2. Keep `componentIntegration.enabled` and `closeoutSuccessor.enabled` at `true` so diagnostics still evaluate eligibility; mutation switches alone clear actions.
+3. Keep `observability.enabled: true`. Mutation-disabled suppressions emit `mutation_disabled`, not `duplicate_suppression`.
 4. Keep `mutationSwitches.reconciliationMutations: false` and `reconciliation.mutationAllowed: false`.
 5. Disable or avoid dispatching `ops-agent-routing-reconcile.yml` if the safety net itself should idle.
 

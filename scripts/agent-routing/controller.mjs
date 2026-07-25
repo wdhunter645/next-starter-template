@@ -456,19 +456,6 @@ export function runController(input = {}, config = loadControllerConfig()) {
     mutationSwitches,
     diagnosticsOnly: mutationSwitches.diagnosticsOnly,
   };
-  if (!mutationSwitches.componentIntegration) {
-    result.integration = {
-      ok: true,
-      eligible: false,
-      suppressed: true,
-      code: 'component_integration_mutation_disabled',
-      actions: [],
-      diagnostics: true,
-    };
-    recordControllerTransitions(result, recorder, { path: pathLabel });
-    return attachObservability(result, recorder);
-  }
-
   const classification = routed.classification?.classification || null;
   const integration = evaluateComponentIntegrationTransaction({
     packet: routingPacket,
@@ -482,6 +469,24 @@ export function runController(input = {}, config = loadControllerConfig()) {
       input.observedTargetBranch || routingPacket.pullRequest.baseRef || null,
     recordedMergeSha: input.recordedMergeSha || null,
   });
+
+  if (!mutationSwitches.componentIntegration) {
+    // Diagnostics-only: keep evaluated eligibility, suppress mutation actions.
+    result.integration = {
+      ...integration,
+      ok: true,
+      eligible: Boolean(integration.eligible),
+      suppressed: true,
+      mutationDisabled: true,
+      diagnostics: true,
+      actions: [],
+      underlyingCode: integration.code || null,
+      code: 'component_integration_mutation_disabled',
+    };
+    recordControllerTransitions(result, recorder, { path: pathLabel });
+    return attachObservability(result, recorder);
+  }
+
   result.integration = integration;
 
   if (integration.ok && Array.isArray(integration.actions) && integration.actions.length > 1) {

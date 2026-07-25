@@ -301,7 +301,23 @@ Requested action:
       ],
     });
     const first = runController(duplicateInput);
-    expect(first.integration.code === 'integration_already_recorded' || first.integration.suppressed || first.integration.eligible === false || first.integration.ok).toBeTruthy();
+    expect(first.integration.ok).toBe(true);
+    expect(first.integration.suppressed).toBe(true);
+    expect(first.integration.code).toBe('integration_already_recorded');
+    expect(first.integration.eligible).toBe(false);
+    expect(
+      first.observability.events.some(
+        (event) =>
+          event.kind === 'duplicate_suppression' && event.outcome === 'integration',
+      ),
+    ).toBe(true);
+    expect(
+      first.observability.events.some(
+        (event) =>
+          event.kind === 'mutation_disabled' &&
+          event.code === 'component_integration_mutation_disabled',
+      ),
+    ).toBe(false);
 
     const reconcileDup = await runReconciliation({
       ...duplicateInput,
@@ -381,13 +397,14 @@ Requested action:
         closeoutSuccessor: false,
         reconciliationMutations: false,
       },
+      // Keep subsystems enabled so diagnostics can still evaluate eligibility.
       componentIntegration: {
         ...config.componentIntegration,
-        enabled: false,
+        enabled: true,
       },
       closeoutSuccessor: {
         ...config.closeoutSuccessor,
-        enabled: false,
+        enabled: true,
       },
     };
     const switches = resolveMutationSwitches(disabled);
@@ -399,9 +416,21 @@ Requested action:
     expect(diagnosis.diagnosticsOnly).toBe(true);
     expect(diagnosis.remediation.actions).toEqual([]);
     expect(diagnosis.integration.code).toBe('component_integration_mutation_disabled');
+    expect(diagnosis.integration.mutationDisabled).toBe(true);
+    expect(diagnosis.integration.actions).toEqual([]);
+    // Diagnostics-only must still evaluate whether integration would be eligible.
+    expect(typeof diagnosis.integration.eligible).toBe('boolean');
+    expect(diagnosis.integration.eligible).toBe(true);
     expect(
       diagnosis.observability.events.some((event) => event.kind === 'mutation_disabled'),
     ).toBe(true);
+    expect(
+      diagnosis.observability.events.some(
+        (event) =>
+          event.kind === 'duplicate_suppression' &&
+          event.code === 'component_integration_mutation_disabled',
+      ),
+    ).toBe(false);
   });
 
   it('proves collector-to-controller protected review identity path', async () => {
