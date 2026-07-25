@@ -22,7 +22,7 @@ function metadataBody(overrides = {}) {
     deliveryModel: 'A',
     changeMode: 'project',
     targetEnvironment: 'production',
-    approvalProfile: 'chat-bill-production',
+    approvalProfile: 'work-bill-production',
     gateProfile: 'production-candidate',
     rollbackProfile: 'one-step',
     componentBranch: 'not-applicable',
@@ -69,7 +69,7 @@ describe('delivery profile contract constants', () => {
     expect(TARGET_ENVIRONMENTS).toEqual(['component', 'preview', 'production', 'recovery']);
     expect(APPROVAL_PROFILES).toEqual([
       'component-auto-integration',
-      'chat-bill-production',
+      'work-bill-production',
       'protected-change-review',
       'emergency-approval',
     ]);
@@ -150,7 +150,7 @@ describe('classifyDeliveryProfile', () => {
       size: 'medium',
       changeMode: 'project',
       targetEnvironment: 'production',
-      approvalProfile: 'chat-bill-production',
+      approvalProfile: 'work-bill-production',
       gateProfile: 'production-candidate',
       rollbackProfile: 'one-step',
       componentBranch: '',
@@ -221,7 +221,7 @@ describe('classifyDeliveryProfile', () => {
       {
         deliveryModel: 'B-promotion',
         targetEnvironment: 'production',
-        approvalProfile: 'chat-bill-production',
+        approvalProfile: 'work-bill-production',
         gateProfile: 'component-promotion',
         rollbackProfile: 'multi-step',
         componentBranch: 'component/delivery-system-v1',
@@ -237,7 +237,7 @@ describe('classifyDeliveryProfile', () => {
     expect(profile).toMatchObject({
       deliveryModel: 'B-promotion',
       targetEnvironment: 'production',
-      approvalProfile: 'chat-bill-production',
+      approvalProfile: 'work-bill-production',
       gateProfile: 'component-promotion',
       rollbackProfile: 'multi-step',
       componentBranch: 'component/delivery-system-v1',
@@ -313,7 +313,7 @@ describe('classifyDeliveryProfile', () => {
       {
         deliveryModel: 'B-promotion',
         targetEnvironment: 'production',
-        approvalProfile: 'chat-bill-production',
+        approvalProfile: 'work-bill-production',
         gateProfile: 'component-promotion',
         rollbackProfile: 'multi-step',
         componentBranch: 'component/delivery-system-v1',
@@ -397,7 +397,7 @@ describe('classifyDeliveryProfile', () => {
       {
         deliveryModel: 'B-promotion',
         targetEnvironment: 'production',
-        approvalProfile: 'chat-bill-production',
+        approvalProfile: 'work-bill-production',
         gateProfile: 'component-promotion',
         rollbackProfile: 'multi-step',
         componentBranch: 'component/delivery-system-v1',
