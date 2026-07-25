@@ -378,7 +378,7 @@ describe('pr preflight evidence surfaces', () => {
 
 describe('reviewer lifecycle actor metadata parsing', () => {
   it('reads the implementation actor from standard bulleted PR metadata', () => {
-    const body = '# PR Summary\n\n- Implementation agent: Codex\n- Independent reviewer: ChatGPT Work';
+    const body = '# PR Summary\\n\\n- Implementation agent: Codex\\n- Independent reviewer: ChatGPT Work';
 
     expect(parseImplementationActor(body)).toBe('Codex');
   });
@@ -389,11 +389,6 @@ describe('reviewer lifecycle actor metadata parsing', () => {
       'utf8',
     );
 
-    expect(source).toContain("field.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\  it('reads the implementation actor from standard bulleted PR metadata', () => {
-    const body = '# PR Summary\n\n- Implementation agent: Codex\n- Independent reviewer: ChatGPT Work';
-
-    expect(parseImplementationActor(body)).toBe('Codex');
-  });
-});');");
+    expect(source).toContain("field.replace(/[.*+?^${}()|[\\\\]\\\\\\\\]/g, '\\\\\\\\$&')");
   });
 });
