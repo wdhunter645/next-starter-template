@@ -351,4 +351,24 @@ describe('pr preflight evidence surfaces', () => {
     expect(result.result).toBe('pass');
   });
 
+  it('rejects Codex approval attestation when actors share a GitHub login', () => {
+    const result = runPreflight({}, {
+      pr: {
+        author: { login: 'wdhunter645' },
+        implementationActor: 'codex',
+      },
+      reviews: [{
+        user: { login: 'wdhunter645' },
+        body: 'Reviewer actor: Codex\nDecision: APPROVED',
+        state: 'COMMENTED',
+        commit_id: 'head-sha',
+      }],
+    });
+
+    expect(result.reviewThreadResult.blockingReasons).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'implementer-self-approval' }),
+    ]));
+    expect(result.result).toBe('fail');
+  });
+
 });
