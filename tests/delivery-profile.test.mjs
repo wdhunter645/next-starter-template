@@ -128,6 +128,20 @@ describe('parseDeliveryMetadata', () => {
 });
 
 describe('classifyDeliveryProfile', () => {
+  it('classifies Model A production candidates with Work review and Bill protection', () => {
+    const profile = classify({
+      approvalProfile: 'work-bill-production',
+    });
+
+    expect(profile).toMatchObject({
+      deliveryModel: 'A',
+      targetEnvironment: 'production',
+      approvalProfile: 'work-bill-production',
+      gateProfile: 'production-candidate',
+      errors: [],
+    });
+  });
+
   it('classifies Model A production candidates', () => {
     const profile = classify();
 
