@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { evaluatePrPreflight } from '../scripts/ci/pr_preflight.mjs';
 import { parseImplementationActor } from '../scripts/ci/reviewer_lifecycle_gate.mjs';
@@ -391,7 +392,7 @@ describe('reviewer lifecycle actor metadata parsing', () => {
 
   it('uses the canonical regex metacharacter escape class', () => {
     const source = readFileSync(
-      new URL('../scripts/ci/reviewer_lifecycle_gate.mjs', import.meta.url),
+      resolve(process.cwd(), 'scripts/ci/reviewer_lifecycle_gate.mjs'),
       'utf8',
     );
 
