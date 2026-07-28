@@ -40,8 +40,8 @@ function normalizeActorIdentity(value = '') {
 }
 
 function attestedField(body = '', field = '') {
-  const escaped = field.replace(/[.*+?^${}()|[]\\]/g, '\\$&');
-  return String(body || '').match(new RegExp(`^\\s*${escaped}\\s*:\\s*(.+?)\\s*$`, 'im'))?.[1]?.trim() || '';
+  const escaped = field.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return String(body || '').match(new RegExp(`^\\s*-?\\s*${escaped}\\s*:\\s*(.+?)\\s*$`, 'im'))?.[1]?.trim() || '';
 }
 
 export function parseImplementationActor(body = '') {

@@ -1,5 +1,8 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { evaluatePrPreflight } from '../scripts/ci/pr_preflight.mjs';
+import { parseImplementationActor } from '../scripts/ci/reviewer_lifecycle_gate.mjs';
 
 function metadataBody(overrides = {}, prClass = 'ci', allowedPaths = null) {
   const values = {
@@ -371,4 +374,28 @@ describe('pr preflight evidence surfaces', () => {
     expect(result.result).toBe('fail');
   });
 
+});
+
+
+describe('reviewer lifecycle actor metadata parsing', () => {
+  it('reads the implementation actor from standard bulleted PR metadata', () => {
+    const body = '# PR Summary\n\n- Implementation agent: Codex\n- Independent reviewer: ChatGPT Work';
+
+    expect(parseImplementationActor(body)).toBe('Codex');
+  });
+
+  it('reads the implementation actor from unbulleted PR metadata', () => {
+    const body = '# PR Summary\n\nImplementation agent: Codex\nIndependent reviewer: ChatGPT Work';
+
+    expect(parseImplementationActor(body)).toBe('Codex');
+  });
+
+  it('uses the canonical regex metacharacter escape class', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'scripts/ci/reviewer_lifecycle_gate.mjs'),
+      'utf8',
+    );
+
+    expect(source).toContain("field.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')");
+  });
 });
