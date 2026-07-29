@@ -545,6 +545,18 @@ export function runController(input = {}, config = loadControllerConfig()) {
     recordedMergeSha: input.recordedMergeSha || null,
   });
 
+  const componentIntegrationSubsystemEnabled = config.componentIntegration?.enabled === true;
+
+  if (!componentIntegrationSubsystemEnabled) {
+    // The subsystem itself is off, not the explicit mutation switch.
+    // evaluateComponentIntegrationTransaction() already returned the truthful
+    // component_integration_disabled result — preserve it verbatim instead of
+    // relabeling it as a mutation-switch suppression.
+    result.integration = integration;
+    recordControllerTransitions(result, recorder, { path: pathLabel });
+    return attachObservability(result, recorder);
+  }
+
   if (!mutationSwitches.componentIntegration) {
     result.integration = applyComponentIntegrationMutationSwitch(integration);
     recordControllerTransitions(result, recorder, { path: pathLabel });
