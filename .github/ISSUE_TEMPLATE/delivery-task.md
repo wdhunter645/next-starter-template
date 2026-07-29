@@ -59,3 +59,7 @@ All other paths are out of scope.
 ## Stop rule
 
 Stop only for authority conflict, missing allowlist, or a material business/security decision. Routine template, label, ruleset, and evidence corrections remain in scope.
+
+## Optional: Issue-side PR contract
+
+A task may optionally publish a marked, versioned Issue-side PR contract for automated preclearance, per `docs/reference/ci/issue-pr-contract.md`. This is a design-time specification only — no label, workflow, or automatic PR creation is enabled by adding this section to a task.

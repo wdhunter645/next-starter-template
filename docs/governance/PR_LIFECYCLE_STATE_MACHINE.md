@@ -230,3 +230,4 @@ A non-merge disposition cannot falsely claim implementation, candidate, Producti
 - `docs/reference/operations/operating-lanes-and-promotion-profiles.md`
 - `docs/reference/operations/administrative-control-lane-contract.md`
 - `docs/ops/pmo/github-issue-closeout-protocol.md`
+- `docs/reference/ci/issue-pr-contract.md` (design-stage Issue-side preclearance ahead of State 0 — NO PR)
