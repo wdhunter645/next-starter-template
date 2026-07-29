@@ -3,6 +3,7 @@
 import fs from 'node:fs';
 import { classifyDeliveryProfile } from './delivery_profile.mjs';
 import { buildDiffScopeReport } from './diff_scope_gate.mjs';
+import { buildPrHygieneReport } from './pr_hygiene_audit.mjs';
 import { sourceIssueAccounting } from './issue_accounting.mjs';
 import { evaluatePostMergeReadinessGate } from './post_merge_readiness_gate.mjs';
 import { determineQualityPlan } from './pr_class_quality_plan.mjs';
@@ -45,6 +46,9 @@ export function evaluatePrPreflight({
   });
   const qualityPlan = determineQualityPlan({ body, deliveryProfile });
   const scopeResult = buildDiffScopeReport({ body, changedFiles: normalizedChangedFiles });
+  // Informational only, matching pr-hygiene's existing advisory (non-blocking)
+  // status — does not affect `result` below (#2619 shared validation authority).
+  const hygieneResult = buildPrHygieneReport({ body, changedFiles: normalizedChangedFiles });
   const sourceIssueResult = sourceIssueAccounting(body, { repository });
   const githubEvidence = {
     prBody: Boolean(body),
@@ -143,6 +147,7 @@ export function evaluatePrPreflight({
     deliveryProfile,
     qualityPlan,
     scopeResult,
+    hygieneResult,
     requiredLocalCommands: buildRequiredLocalCommands(qualityPlan),
     githubEvidence,
     reviewThreadResult: {
@@ -179,6 +184,11 @@ export function renderPreflightReport(result) {
     result.scopeResult.ok
       ? '- All changed files are covered by the allowlist.'
       : `- Scope advisory: ${result.scopeResult.unlistedChangedFiles.length} unlisted file(s)`,
+    '',
+    '## PR hygiene (advisory)',
+    result.hygieneResult.isClean
+      ? '- No PR hygiene defects detected.'
+      : `- Hygiene advisory: ${result.hygieneResult.missingSections.length} missing section(s), ${result.hygieneResult.unlistedChangedFiles.length} unlisted file(s).`,
     '',
     '## Required local commands',
     ...result.requiredLocalCommands.map((command) => `- \`${command}\``),
